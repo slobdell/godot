@@ -127,6 +127,112 @@ writing first. Also: `game/control/` `game/ui/` `game/camera/` (control's), `are
 
 _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
+### IF YOU ARE A FRESH AGENT, READ THESE SIX THINGS
+
+_Written 2026-09-18 against an imminent context loss. CP4 is **merged and green at `f0f89e52`**; nothing is in flight._
+
+**1. The decomposition inverts what this round spent its effort on.** N5 has three gates (sight, acquisition, fire
+discipline) plus X6's crossing penalty. Measured over 75 matches against a true round-5 control:
+
+| | kill distance | engaged | off-axis kills |
+|---|---|---|---|
+| **sight + acquisition + crossing** | **−11 m** | −4 m | **+17 pts** |
+| fire discipline (the bands) | −3 m | −8 m | +2 pts |
+
+**Tune acquisition first, bands second.** The *bands* absorbed nearly all of the round's design argument — the
+`preferred_max` decision, the 0.65-versus-0.55 sweep, a long exchange with squad about standoffs — and they are the
+smaller contributor to both headline numbers.
+
+**Why it stayed invisible for most of the round, which is the reusable part:** my first control tuned
+`effective_range` back to `range` and called it "the old world". It was not. Sight, acquisition and crossing are
+**code**, and `--variants` only tunes **data**, so they were present in *both* arms and the comparison measured fire
+discipline alone. **A data-only control is not a "before" when the change spans data and code.** I built the control
+out of the knobs that happened to be reachable rather than out of what the question needed; it looked like a control
+for hours. Sample size would not have caught it.
+
+**2. The retraction, and why it was right even though the number was nearly correct.** I reported *"the fight is
+decided 28% closer"* from **two matches on one mirror**. I retracted it. The true figure against a proper control is
+**26%** — almost exactly what I withdrew. **Retracting was still correct:** against the control actually in use at the
+time, the honest figure was **7%**. *A number that lands near the truth from the wrong comparison on an inadequate
+sample is a coincidence, not a result.* The lesson a reader might otherwise draw — "trust the small sample, it was
+nearly right" — is wrong and would cost someone a round. Also retracted and **still** retracted: *"fire goes up, so his
+complaint was never about volume"*. Fire goes **down**, 17.8 → 15.2.
+
+**3. `matchup-search` silently ran at `--units 60` for its whole history.** `mk/ai.mk` defaults `UNITS ?= 60`, make
+variables are one global namespace, and `mk/match.mk` used the bare name — so every run passed `--units 60` whatever
+the caller asked, **and the tool never recorded the value it used.** Round-3 `matchup-search` conclusions in
+[../balance.md](../balance.md) that assumed a non-default unit count are unreliable and **cannot be re-derived**.
+Fixed to `SEARCH_UNITS`. General rule: **print every resolved knob into the output.**
+
+**4. Three targets fail on a stale sim baseline and two of them blame the wrong component** —
+`announcer-record-smoke` says *"the booth changed the simulation"* and `music-smoke` says *"the soundtrack changed
+the simulation"*, **while computing exactly the hash `sim-baseline` computed**, which is the proof they changed
+nothing. **These are feel's targets and the fix is unbuilt:** run the match twice in one invocation, with and without
+the subsystem, and compare the two hashes *to each other*. A differential question must not be implemented as an
+absolute comparison against a shared file. Invariant 2 guarantees the baseline moves once a round, so this misfires
+every round until fixed.
+
+**5. N7 is the strongest candidate for the next round's first item** — see *N7* below for the full argument. In one
+line: the gates matter more than the bands, and **a central objective is the terrain-level version of the same
+problem** — it collapses the space in which acquisition and flanking can matter at all, and the **45% off-axis kills
+were achieved *despite* one central control point on every map.** arena's half is landed and tested; combat's half is
+a pure read-through of `Arena.objectives_of`. Score **proportional to the share of objectives held**, because at N=1
+that reduces exactly to today's behaviour.
+
+**6. The evidence is committed, not in `build/`.**
+[references/combat/n5-engagement-envelope-2026-09-18.json](references/combat/n5-engagement-envelope-2026-09-18.json)
+is the 75-match series with its conditions in the README row. **The sim baseline is NOT combat's to record**
+(invariant 2) — N5 moves it to `91db23888123f642` on glibc-2.43 and the orchestrator records it once at the end.
+
+---
+
+### Read this first
+
+**CP4 is done, measured, and merged with all three checkpoints.** On `c765275f` (nav CP1 + squad CP3 + arena CP2 +
+squad's precedence fixes): `make test` is **1106 passed, 2 failed**, and **neither failure is combat's** — both are
+stale thresholds in squad's scenario files whose underlying behaviour is now correct (see *What the last two failures
+actually say*). **Do not make them pass by weakening anything**; the geometry needs deriving from the band, the way
+this stream re-derived its own tests when the bands moved.
+
+**What fire discipline at the shipped bands is worth** (builder0 `c765275f`, **n = 15 per row**, three
+counterbalanced pairings, SEEDS=3 — [../balance.md](../balance.md) has the full table):
+
+| | control | **shipped bands** |
+|---|---|---|
+| engaged distance | 68 m | **60 m** (−12%) |
+| kill distance | 43 m | **40 m** (−7%) |
+| flank+rear kills | 63% | **69%** |
+| fire rate | 16.9 /unit/min | 15.2 (−10%) |
+| matches ended by | 11 elim / 4 control | 11 elim / 4 control |
+
+**Every metric moves the right way. All of them move modestly.** That is the honest state.
+
+**Three earlier claims of mine are RETRACTED — if you have seen them anywhere, they are wrong:**
+~~"decided 28% closer"~~ (really 7%), ~~"fire goes UP so the complaint was never about volume"~~ (it goes down), and
+~~"`engaged_distance` does not discriminate, read `kill_distance`"~~ (inverted — engaged distance moves *most*). All
+three came from **two matches on a single Condemned mirror**, the pairing most exposed to the army draw. I argued the
+fire-rate one hardest *because* it was surprising and had a tidy mechanism, which is exactly when a result deserves
+least trust: **the more a finding reframes something, the smaller the sample you should accept for it.**
+
+**And a caveat the table above still carries:** the control tunes `effective_range` back to `range`, which disables
+**fire discipline only**. Sight, acquisition and X6's crossing penalty are *code*, not data, so `--variants` could not
+switch them off and they were in **both** arms. **That measures fire discipline, not N5.** I had built a control out
+of the knobs that happened to be reachable rather than out of what the question needed — it looked like a control and
+was not one. Fixed at `fa4e7077`: a variant may now carry runner flags, and a genuine round-5 arm
+(`--no-acquisition --no-crossing`) runs beside a discipline-off-only arm so the two are separated rather than
+conflated.
+
+**Still owed:** the 75-match true before/after (running). **The sim baseline is NOT combat's to record** — round 6
+made that invariant 2; the orchestrator records it once on `main` after the last simulation-changing merge.
+
+| Commit | What |
+|---|---|
+| `14a1a29b` | **N5, the engagement envelope** (CP4) — sight, acquisition, fire discipline |
+| `a493d4b5` `f1c1a903` | **X6** — a crossing contact is harder to lay on, plus a `--no-crossing` control |
+| `82128d85` `fd5ac1af` | The metrics that made the above sayable: direct-fire split, shots per unit per minute |
+| `9f798368` | **Infra** — the `VARIANTS`/`UNITS` make-variable collisions |
+| `5478fa61` | The brain-range fix — superseded by squad's `fire_band`, which found a third call site I missed |
+
 ### The plan (ordered)
 
 X1 first and alone, because it is CP4 and every other stream's measurements wait on it. Then X2 (closing must be
@@ -214,12 +320,146 @@ by N5 (`scenario_squad::test_a_squad_focuses_its_fire`), 4 mine*:
 
 | Scenario | What it says | Read |
 |---|---|---|
-| `scenario_motion::test_brains_dont_dither` | 17.7 / 15.6 option switches per minute against a bar of 12 | **The blocker.** Legibility is product constraint #1 |
+| `scenario_motion::test_brains_dont_dither` | ~~17.7 / 15.6 switches per minute against a bar of 12~~ — **the counter was double-counting.** Real: 7.8 → 6.2 | **Resolved by squad**, and my alarm was louder than the evidence. I measured a metric and did not check the metric |
 | `scenario_suppression::test_holding_a_crew_down…` | pinned crew 91% vs calm 100%, wants a wider gap | In the `check` subset, so it blocks a green check. Likely a threshold to re-derive from the band |
 | `scenario_cover::test_a_healthy_tank_near_a_wall…` | hidden 42% of the fight, 3 shots | The peek position is now outside the band |
 | `scenario_motion::test_a_scout_makes_attack_runs…` | 1 run, but 20 shots all into side/rear and **the tank took 0** | May be *better* behaviour (it commits). The test may be what is wrong |
 
-### X2, first finding: shortening the bands may have taken the bite out of suppression
+### The player's units stop holding — product constraint #4, and N5 only exposed it
+
+`test_ai_player_holds::test_the_players_units_wait_for_orders_and_the_cpu_does_not` fails on my branch. **It is mine,
+it is not flakiness, and it is not the machine** — I assumed the laptop at first and I was wrong. Same file, same
+laptop, bisected:
+
+| Tree | Player's unit moved | |
+|---|---|---|
+| pristine `a975e262` | **2.0 m** | passes (bar is 5 m) |
+| + N5, no brain fix | **10.2 m** | fails |
+| + N5 + X6 + brain fix | **15.2 m** | fails |
+| + N5 + brain fix, `CROSSING_ACQUIRE_PENALTY = 0` | **15.2 m** | X6 contributes **nothing** |
+
+So N5 causes ~8 m of it and the brain-range fix the other ~5 m. Instrumenting the held unit's brain shows exactly what
+happens, and it is not what I expected:
+
+```
+PH t=15   d=0.0  HOLD   | move=stop          <- correct, holding as ordered
+PH t=645  d=0.3  ENGAGE | going for its side, weaving, front armor on it | move=move_to
+PH t=675  d=6.6  ENGAGE | weaving, front armor on it                     | move=move_to
+```
+
+The unit holds for 21.5 s and then **decides on its own to flank**. The lead's round-5 ruling is *"the player's units
+hold until ordered. An army that moves without being told is not an army"* (workstreams.md product constraint #4), and
+ENGAGE is overriding it.
+
+**The part worth keeping: that constraint was being upheld by accident.** Before N5, a held unit that entered ENGAGE
+hit the *outranging* branch — `distance <= weapon["range"]` was true at that range — and `_combat_move` returned
+`{"type": "stop"}`. The unit stayed put because an unrelated range heuristic happened to return "stand still", not
+because anything in the hold logic said so. Narrow the range and the accident stops happening. **This is lesson 17
+for the third time this round** (a behaviour starved — here *sustained* — by a rule above it), and the generalisation
+is nastier than the deadlock one: **a guarantee that no test isolates can be held up by a coincidence, and it will
+look fine until something unrelated moves.**
+
+**Squad's to fix** (`game/ai/tank_brain.gd`, option precedence): a unit whose orders come from the player and which
+has no move order must not *initiate* movement from a fight option. It may shoot, turn, and take cover under fire —
+it may not decide to flank. My branch cannot go green alone while this stands, which is a third independent reason
+CP4 merges paired rather than first.
+
+### The CP3 × CP4 collision: a support-by-fire line inside the near-ambush radius
+
+Found on the merged tree (`82128d85`, 1068 passed / 3 failed).
+`test_tactics_scenarios::test_support_by_fire_forms_a_firing_line_at_a_standoff_and_fires_from_it` fails with
+*"nobody advances onto the point (closest 31 m)"*, and its MEASURE line shows the real damage:
+
+```
+verb support_by_fire  closest_m 30.7  center_to_point_m 30.8  shots 19  orders_last_10s 128
+drills: support_by_fire, near_ambush, support_by_fire, near_ambush, ...   (every tick)
+```
+
+**Cause.** `ElementPlan._plan_support_by_fire` picks `standoff = max(min(member effective_range) * 0.8, 25)`. It is
+keyed on **`effective_range`**, which was `== range` for every weapon until this round. The standoff used to come from
+a 70 m cannon (**56 m**) and sat comfortably outside `near_ambush_m` (**38 m** default, **42 m** Condemned). Narrowed
+bands make it **28–36 m — inside the trigger.** So the element drives to its firing line, the line is inside
+near-ambush, `near_ambush` pre-empts `support_by_fire`, the plan re-selects, and the two drills take the element off
+each other forever. **Round 4's trip-up 17 reached by a new road.**
+
+**This is the third load-bearing coincidence of the round**, after the player-hold guarantee resting on the outrange
+branch and this standoff resting on `effective_range == range`. Nothing anywhere says *"an SBF standoff must be
+outside the near-ambush radius"*; it held for four rounds because 56 happened to exceed 42, two numbers chosen
+independently in different files by different streams. **When two independently-owned numbers must stay ordered, the
+code has to say so — nothing will tell you the day they cross.**
+
+**The answer (orchestrator, 2026-09-18), and it is better than the two I proposed.** I offered a choice between
+keying the standoff on `range` and stating the distance invariant, and framed the residue as a doctrinal trade:
+*"support-by-fire now has to choose between effective fire and not triggering an assault drill."* **That framing was
+wrong and I withdraw it.** A rule fighting itself is not a trade, and it would be indefensible to explain to the lead.
+
+The real defect is one level up: **`near_ambush` should not pre-empt a support-by-fire task at all.** Near-ambush is a
+*reaction* drill — what a crew does when jumped at close range. An element deliberately posted in a firing line by its
+commander, at the standoff its own task chose, is not being ambushed. Squad's X5 already made an SBF task outrank
+`react_to_contact` and `far_ambush`; **`near_ambush` was simply missing from that list.** So it is an incomplete
+precedence rule, not a distance — which also explains why no distance tweak felt satisfying.
+
+Keying the standoff on `range` is rejected on my own measurement: 56 m lands **~50% of shells against ~100% at 36 m**,
+and **a base of fire that cannot hit is not a base of fire.** This is the exact button the lead pressed and watched do
+nothing, so it has to work well, not merely legally. The genuine costs of posting an element are already real and
+already quantified — arena's **+0.127 on open foundry against +0.024 in dense yard**, and my **~70%-of-hits** penalty
+for reaching past the band. Those are trades a player can reason about; self-interruption is not.
+
+**Still take the invariant** (`max(reach * 0.8, near_ambush_m + margin, 25)`) on top of the precedence fix: it is the
+part that stops two independently-owned numbers crossing again silently.
+
+### X2, second finding: breaking contact just got much cheaper, which is round 5's problem drill
+
+Geometry, flagged before the series so it is not discovered afterwards. A unit that wants to disengage used to have to
+open the range past its pursuer's **70 m reach**. It now has to clear the **45 m band plus the 1.12× release
+hysteresis — about 50 m.** Twenty metres of separation instead of twenty-five past a much shorter starting distance:
+**disengaging is roughly a third of the work it was.**
+
+The asymmetry that makes it worse is the return-fire exception. A crew being shot at may answer to full range — but a
+unit that successfully breaks contact *stops shooting*, so its pursuer is no longer suppressed, so **the pursuer is
+held to 45 m while the runner is not being fired on at all.** The exception protects the side that stays and fights,
+not the side that leaves.
+
+That matters because round 5 measured `break_contact` as the drill that was actively costing doctrine games: without
+it the army went **91-29 and won on every arena**, and that was the one per-drill finding that survived the "attribute
+a cost only by removing it" test (lesson 25). If N5 makes disengaging cheap, the drill may come back — either as a
+dominant strategy for the CPU, or as a fight the player can never finish because everything he engages simply leaves.
+
+**To measure, not to assume:** `net_advance`, `centroid_travel` and `held_line_share` in the CP4 series will show it
+(a fight nobody can close on reads as high travel, low held line, and a long duration), and the direct test is ai's —
+re-run the army with and without `break_contact` at the new bands. **`RELEASE_FACTOR` is the knob** if disengaging
+turns out to be too cheap: raising it keeps a gun on a target that is pulling away, which is what makes a pursuit
+possible at all.
+
+### X2, first finding — WITHDRAWN: suppression kept its bite, and my own test says so
+
+**Disconfirmed, and I am striking it rather than softening it.** I predicted below that narrowing the bands would
+soften suppression, because its penalty is angular and closer fights forgive angular error. My own controlled test
+measures the opposite at the ranges that now matter:
+
+```
+MEASURE pinned_accuracy inside the band (36 m of 45): calm 13/13 (100%), pinned 7/13 (54%)
+```
+
+**A fully pinned crew lands 54% where a calm one lands 100%** — suppression is worth about half a crew's fire inside
+the effective band. That is a strong effect, not a softened one, and `SUPPRESSION_SPREAD_FACTOR` **should not be
+touched.**
+
+What misled me was reading it off a *scenario* instead of a controlled measurement.
+`scenario_suppression::test_holding_a_crew_down…` reports 100% against 100% — but it holds the target at **0.73**
+suppression, not 1.0, and at a range short enough that nothing misses either way. **The scenario measures a
+configuration where the mechanic cannot show, and I read its null as evidence about the mechanic.** My own test fixes
+distance to the band and suppression to 1.0 and sees the effect immediately. The scenario needs its geometry derived
+from the band, the way I re-derived my own tests — a squad fix, not a balance change.
+
+This is the fourth hypothesis of mine this round that measurement has killed (after disciplining opportunistic
+suppression, artillery contamination, and X6 causing the dodge regression). The pattern in all four is the same and
+worth naming: **I keep generating plausible mechanisms and they keep being wrong, and the only reason none of them
+reached the lead is that each one was measured before it was believed.**
+
+<details><summary>The original prediction, kept for the record</summary>
+
+### (withdrawn) shortening the bands may have taken the bite out of suppression
 
 `Match.SUPPRESSION_SPREAD_FACTOR` (2.0) is **mine**, and its own comment states the assumption N5 just invalidated:
 *"A pinned tank's 0.8 deg becomes 2.4 deg: it still shoots, it just stops hitting anything far away."* Suppression's
@@ -237,6 +477,8 @@ just recorded a negative result from acting on a mechanism that looked obvious. 
 suppression's bite **inside the new bands** in the CP4 series (hit-rate delta pinned vs calm at the *new* typical
 engagement distance, not the old one), and tune `SUPPRESSION_SPREAD_FACTOR` with that number if it has really
 softened. Flagged here so nobody reads the passing/failing scenario as noise.
+
+</details>
 
 ### A negative result: do NOT discipline opportunistic suppression
 
@@ -308,6 +550,99 @@ would have searched three brain names instead of the file you meant. Both now ta
 untouched: the bug is two makefiles claiming one name, so the newcomer moves. **Name make knobs after the target that
 owns them.** No dependency on the envelope — cherry-pick to `main` on its own (lesson 9).
 
+### X6 cleared of the dodge regression (squad's A/B, 2026-09-18)
+
+`scenario_dodge_rate` reads ~0 dodge attempts under CP4, and X6 was the obvious suspect: a dodging unit is by
+definition moving across, so the crossing penalty makes it harder to lay on, fewer shells arrive, and a unit with
+nothing inbound has nothing to dodge. Squad ran the A/B in the real pair state (combat `29eab0d8` + squad `9ba36681`,
+laptop, the scenario's own seeds, `Engagement.crossing_enabled` flipped directly since `--no-crossing` is
+match-runner only). Attempts / inbound ticks:
+
+| | crossing ON | crossing OFF |
+|---|---|---|
+| ifv x5p / x6t5 / x6t4 | 0/484, 10/474, 19/489 | 0/495, 0/483, 0/478 |
+| tank x5p / x6t5 / x6t4 | 0/530, 0/551, 0/557 | 15/552, 32/547, 0/556 |
+
+**It is not X6.** The champion's IFV is at 0 either way, and the handful of attempts simply move between variants from
+run to run. **`CROSSING_ACQUIRE_PENALTY` stays where it is** — I am not tuning a mechanic on single-digit counts out
+of ~500 ticks, which is the 18-shell mistake (lesson 26) wearing a different hat.
+
+The tidy-looking flip (every attempt on the IFV with crossing on, every attempt on the tank with it off) is the sort
+of pattern that invites a story, and it should not get one: total attempts are 0–32, the sim diverges chaotically from
+any change, and **the real finding underneath is round 5's** — dodging has *never* fired at either tick rate (254 of
+254 candidate directions scored "would still be hit"). A behaviour that does not fire cannot regress. That is a live
+open issue with no owner, not a CP4 consequence.
+
+### CP4 is green at `f0f89e52`, and the stale baseline accuses three innocent components
+
+**Verified on builder0:** lint, **1111 passed / 0 failed**, net/combat/broker/relay/lobby/match smokes, determinism,
+garage-smoke, army-loop-smoke, announcer-variance and transcripts. I ran every target `make check`'s first failure
+*skipped* by hand, because **make stops at the first error and a check that skips is not a check that passes** — four
+targets never ran on the first attempt and reporting that as green would have been a partial green with a confident
+label.
+
+**Three targets fail, all on one stale hash** — computed `91db23888123f642`, baseline `8ebbed52fbff0723` (squad's
+pre-CP4 record). Per invariant 2 combat does **not** record it; the orchestrator does, once, at the end.
+
+```
+sim-baseline            FAILED: expected 8ebbed52… got 91db2388…
+announcer-record-smoke  FAILED: the booth changed the simulation      (91db2388…, baseline 8ebbed52…)
+music-smoke             FAILED: the soundtrack changed the simulation (91db2388…, baseline 8ebbed52…)
+```
+
+**The booth did not change the simulation. The soundtrack did not change the simulation.** Both computed *exactly*
+the hash `sim-baseline` computed, which is the proof they changed nothing — and each still announces a specific,
+false accusation against its own subsystem. They are feel's targets, so a feel agent would go hunting in the audio
+code for a bug that does not exist.
+
+**The defect: a differential question implemented as an absolute comparison.** Both targets want to answer *"does
+this subsystem perturb the simulation?"* — a question about the difference between two runs — but they answer it by
+comparing one run to the **global baseline file**, so they fail whenever anything else legitimately moves it. Invariant
+2 now guarantees that happens once a round. **The fix (feel's, `mk/announcer.mk:118` and `mk/audio.mk:34`): run the
+match twice in one invocation, with and without, and compare the two hashes to each other.** That tests the claim, is
+immune to the baseline moving, and needs no coordination with invariant 2 at all.
+
+**And a gap in invariant 2 itself:** it says the orchestrator records the baseline once at the end. It does not say
+that **until then three targets are red and two of them lie about why.**
+
+### N7 — why it compounds with N5 rather than merely following it
+
+**Taken on (2026-09-18), and the case for doing it in round 6 rather than deferring it comes out of the series.**
+arena's half is landed and tested: `Arena.objectives_of(Arena.active)`, mirrored pairs enforced, and every shipped
+layout still reporting exactly the single central zone `Match` hard-codes. My half is a pure read-through —
+`CONTROL_CENTER`/`CONTROL_RADIUS` become per-objective state.
+
+**The argument:** the decomposition says the **gates** matter more than the bands — making a crew find and hold a
+target is what moved where fights are decided (−11 m) and who dies from the flank (+17 points), while the bands mostly
+pulled the armies closer. **An objective that funnels every fight into the middle is the terrain-level version of the
+same problem: it collapses the space in which acquisition and flanking can matter at all.** The 45% off-axis kills
+measured above were achieved *despite* one central control point on every map. Moving objectives off the centre line
+should **compound** with N5, not sit beside it — which is why this is round 6 work and not round 7's.
+
+**The one design decision it needs, and the rule that settles it.** With N objectives, what scores? Independent
+scoring doubles the pace at N=2; a majority rule makes control wins rare and pushes every match to elimination.
+**Score proportional to the share held** — `ticks += INTEL_EVERY_TICKS * held_by_team / total_objectives` — because
+**at N=1 it reduces exactly to today's behaviour**, which is what makes the change a genuine read-through rather than
+a balance change wearing one's clothes. Holding both mirrored objectives scores at the old rate; holding one scores at
+half; splitting your force to take both is rewarded, which is the decision the contract exists to create.
+
+**Sequencing:** CP4's merge first, always. N7 must not delay it by a minute — squad's X6 baseline, arena's X3 and
+nav's `gunnery.gd` split are all waiting on CP4 being on `main`. And **N7 may move the sim baseline again**; per
+invariant 2 combat does not record it, and the N7 report must say whether it moves.
+
+### X7 (stretch) — the event half is already done; what is left is one number
+
+Checked rather than assumed. `projectile_impact` already carries `weak_spot` (K2), feel's `game/theme/fx/k2_events.gd`
+already reads it, and there is a dedicated `weak_spot_hit` sound layer with two variants. **So "feel draws the cue;
+you provide the event" is satisfied on both sides** — nothing to build.
+
+What is left of X7 is therefore a measurement, not a feature: *does flanking pay more now that fights happen closer?*
+That is `flank_rear_kill_share` and `off_axis_kill_share`, both already in the engagement summary, so **X7 resolves out
+of the CP4 series** exactly as X3 does. The round-5 baseline for a Condemned mirror was 47–78% flank+rear, and the
+brief's target is *"a majority of direct-fire kills come from the flank or the rear, and the armies' centres of mass
+move during the fight"* — read `off_axis_kill_share` and `centroid_travel` for it rather than the hull-face split,
+since an oblique shot across a wide front counts as a "side" hit without anyone having flanked anything.
+
 ### X5 — the duplicated Lancer (proposal, for the orchestrator to relay)
 
 **The Syndicate should lose `syn_lancer`; the Condemned keep `lancer`.** The reasoning is the engagement envelope
@@ -337,11 +672,13 @@ make remote T="engagement PAIRS=condemned:condemned SEEDS=3 TIME=240"           
 make remote T="engagement PAIRS=condemned:condemned SEEDS=3 TIME=240 TUNE=<bands=reach>"   # discipline off
 #    ...and --no-acquisition / --no-crossing through the match runner for gates 1-2 and X6 separately.
 
-# 3. Only after the bands are settled: move the sim baseline (it WILL move; ranges are the simulation).
-make remote T=sim-baseline-record    # twice, confirm the two agree
-cp build/sim_state_hash.txt tests/baselines/sim_state_hash.txt   # builder0's glibc line is the canonical one
-#    The laptop is glibc 2.39 and has no line in that file, so `sim-baseline` SKIPS locally and only the
-#    remote check ever tests it. Do not be reassured by a green local check.
+# 3. DO NOT record the sim baseline. Round 6 made this invariant 2 (workstreams.md): no stream records it;
+#    the orchestrator records it ONCE on main after the last simulation-changing merge. Three streams moved it
+#    this round (combat's ranges, squad's brain fixes, nav's ORCA/PID), so every per-stream hash is stale by the
+#    next merge. Say in your green report that your change moves it, and stop there.
+#    Why it has to be a rule rather than care: the file is keyed per glibc, the laptop is 2.39 and has NO 2.39
+#    line, so `sim-baseline` SILENTLY SKIPS locally. A check that skips is not a check that passes, and all
+#    three of us could have committed a stale hash behind a green local check.
 
 # 4. X4's re-measure, which must come after all of the above and never across it.
 make remote T="faction-matrix SEEDS=5 TIME=150"
@@ -386,9 +723,53 @@ round by reading a "waiting for a slot" line as a queue when I had in fact been 
    target the weapon scan already picked, so when your X1 splits the file into movement and gunnery these four go
    with gunnery untouched. Nothing here reads a path, a waypoint or a throttle.
 
+### Known issues (open, and whose)
+
+| Test | Whose | Why it fails |
+|---|---|---|
+| ~~`test_ai_player_holds::test_the_players_units_wait_for_orders…`~~ | **FIXED on `main`** | Product constraint #4. A held unit picked ENGAGE and flanked; the rule had been upheld by the outrange heuristic returning `stop`. Now enforced as a rule — squad measured 15.2 m → 0.0 m in a CP4 worktree, and it passes here |
+| `scenario_suppression::test_holding_a_crew_down…` (**in `check`**) | **squad** | Pinned crew lands 10 of 11 vs a calm 11 of 11. Suppression's penalty is angular, so closer fights soften it — a threshold to re-derive, or evidence for raising `SUPPRESSION_SPREAD_FACTOR` (mine) once the series says |
+| `test_tactics_scenarios::test_support_by_fire_forms_a_firing_line…` (**in `check`**) | **squad** | CP3×CP4: the SBF standoff is keyed on `effective_range`, so narrowed bands put the firing line inside `near_ambush_m` and the two drills alternate every tick (see above) |
+| `scenario_cover::…fights_from_cover`, `scenario_motion::…attack_runs`, `scenario_motion::brains_dont_dither`, `scenario_dodge_rate::…`, `scenario_motion::…duel_on_the_move` | **squad** | Outside `check`. All downstream of the same thing: positioning logic written when "in range" and "worth firing" were one number. **Dither (15.6–17.7/min against a bar of 12) is the blocking one** |
+
+Five further `make ai-scenarios` failures are **pre-existing on `a975e262`** and nothing to do with this work —
+baseline that suite before attributing anything to a change (it is not in `check`, which is why no baseline existed).
+
+### Next steps, in order
+
+1. **squad lands the precedence fixes**; CP4 merges as a pair.
+2. Run the series (runbook above). Report median hit range, first shot, **shots per unit per minute**, duration,
+   flanking-route unit-time, with n, commit and machine.
+3. Settle the bands. **Do not record the sim baseline** — say in the green report that N5 moves it and leave the
+   record to the orchestrator (invariant 2).
+4. X4's `faction-matrix` re-measure — after everything above, never across it.
+5. **N7** (arena's objectives read-through in `match.gd`) — scheduled after CP4 so two contracts are never in flight
+   in that file at once.
+
 ### Merge notes (shared files)
 
-- `game/ai/order_controller.gd` (nav's): the four edits above, all inside `_apply_weapon` / `_shootable` / the var
-  block. No movement code touched.
-- `game/modes/match_runner_mode.gd` (mine): `--no-acquisition`, a measurement control.
-- **The sim baseline moves** (invariant 2 says combat may): ranges *are* the simulation.
+- **The gunnery seam now has a shape to copy.** nav's CP1 landed `game/ai/movement.gd` as *one `Movement` instance
+  per `OrderController`*, which is exactly the shape I asked for on the gunnery side — so `Gunnery` should mirror
+  `Movement` rather than invent a second pattern: an instance on the controller, `gunnery.apply(cmd, seconds)` after
+  the movement half, reading the controller for `tank`, `tanks_root`, `weapon_order` and `move_order["type"]` (the
+  last only so a fixed-mount hull can swing onto its target when halted). **Seconds, not ticks** — the acquisition
+  timer is booked in seconds and must stay that way at any tick rate (lesson 30). The ten methods and eight pieces of
+  state to move are listed verbatim in `_agents/streams/nav.md`.
+  *Merging CP1 was a live test of this:* nav restructured `order_controller.gd` around my edits (moving
+  `_apply_unstick` into `Movement`, adding `movement.idle()` next to my `engagement_lay.forget()`), and all 25
+  envelope tests still passed — including the four wiring tests that exist to fail if the gates are dropped.
+- `game/ai/order_controller.gd` (nav's): five call sites, all in the **direct-fire** path — the `seen` gate in
+  `_shootable`, one member, the trigger line and the lost-lay line in `_apply_weapon`, and `forget()` on death, plus a
+  `_seconds_step()` helper. **No movement code touched.** `_apply_indirect` (artillery) and `_apply_suppress` (L2 fire
+  at ground) are deliberately untouched — verified, not assumed. The orchestrator recorded this as a named exception
+  (`f662d304`) because nav had no session; the seam nav should build is in `_agents/streams/nav.md` verbatim.
+- `game/ai/tank_brain.gd` (squad's): `5478fa61` only, **a proposal to take, replace or revert.**
+- `tests/ai_scenarios/ai_scenario.gd` (squad's): `shooter()` defaults to `long_shot: true` — squad chose this option
+  and made the same change on its own branch, so expect a trivial identical conflict; take either.
+- `game/modes/match_runner_mode.gd` (mine): `--no-acquisition` and `--no-crossing`, measurement controls.
+- `mk/match.mk` (mine): `VARIANT_FILE` / `SEARCH_UNITS` renames. **`9f798368` and `fd5ac1af` have no dependency on the
+  envelope and can go to `main` on their own** (lesson 9).
+- **The sim baseline moves, and combat deliberately does NOT record it.** Ranges *are* the simulation, so N5 changes
+  the hash — but round 6 made this invariant 2: the orchestrator records it once on `main` after the last
+  simulation-changing merge. Three streams moved it this round. The laptop is glibc 2.39 and has no line in `tests/baselines/sim_state_hash.txt`, so `sim-baseline` **skips
+  locally** and only the remote check ever tests it. Do not read a green local check as covering it.

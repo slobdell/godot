@@ -158,6 +158,13 @@ presentation job is the arena as a place).
    A stream whose change moves the simulation says so in its green report — *"the sim baseline moves and is
    deliberately NOT recorded here"* — and the orchestrator records it at the end with `make remote
    T=sim-baseline-record` (twice, confirming it repeats) in a commit that names every change it covers.
+   **While the baseline is stale, THREE targets fail and two of them lie about why** (found by combat, 2026-09-18):
+   `sim-baseline` says what is actually wrong, but `announcer-record-smoke` announces *"the booth changed the
+   simulation"* and `music-smoke` announces *"the soundtrack changed the simulation"* — **both computing exactly the
+   same hash `sim-baseline` computed, which is the proof they changed nothing.** They are feel's targets, so a feel
+   agent would go hunting in audio code for a bug that does not exist. **If you see either of those messages, check
+   whether the three hashes agree before believing the accusation.** The underlying defect and its fix are in
+   [orchestration.md](orchestration.md) lesson 65.
 2b. **The old text, for the rules it still carries:** the baseline (`tests/baselines/sim_state_hash.txt`, one hash per glibc version; builder0 canonical) changes
    only on purpose, recorded with `make remote T=sim-baseline-record`, in the same commit as the reason.
    **Round 6: nav, squad and combat will move it** (movement and ranges are the simulation); control, arena and feel

@@ -839,3 +839,196 @@ The kickoff prompt is one line; this section is the rest.
     predict the same observation, **stop looking harder at the observation and find the cheap test that separates
     them** (cf. lesson 54 — a probe consistently measuring a bridge, broken open by implausibility rather than by
     repetition).
+65. **A differential question implemented as an absolute comparison produces a confident false accusation.** Round 6,
+    found by combat while verifying CP4: with the sim baseline legitimately stale, **three** targets failed on the same
+    pair of hashes — and only one of them said anything true.
+    ```
+    sim-baseline FAILED: expected 8ebbed52… got 91db2388…
+    announcer-record-smoke FAILED: the booth changed the simulation (91db2388…, baseline 8ebbed52…)
+    music-smoke FAILED: the soundtrack changed the simulation (91db2388…, baseline 8ebbed52…)
+    ```
+    **The booth changed nothing and the soundtrack changed nothing** — each computed *exactly* the hash `sim-baseline`
+    computed, which is the proof. Both targets want to answer *"does this subsystem perturb the simulation?"*, a
+    question about the **difference between two runs**, and both answer it by comparing one run against the **global
+    baseline file**. So they fail whenever anything else legitimately moves that baseline — which invariant 2 now
+    guarantees happens once per round — and each time they name an innocent subsystem in their own owner's code.
+    **The fix:** run the match twice in one invocation, with and without the subsystem, and compare **the two hashes to
+    each other**. That tests what the target claims, is immune to the baseline moving, and needs no coordination with
+    invariant 2 at all.
+    The general instruction: **when a target's message names a culprit, check that its comparison can actually
+    implicate that culprit.** A test that asks "did X change this?" by consulting a global constant is not asking about
+    X — it is asking "is the world as it was", and will blame X for everyone else's changes. And for anyone reading a
+    red check: **three failures reporting the same number are one failure**, not three.
+66. **A derived value copied into a second place is a stale value waiting for its moment — and one stream hit this
+    four times in a single day.** Round 6, arena, each instance the same bug in a different costume:
+    1. `exposure()` hard-coding a **110 m** watcher range — a weapon-range assumption wearing a sightline's clothes,
+       which had inverted a *published* flanking conclusion (1.8–2.1× detour became 1.0–1.1× once derived).
+    2. `UNITS`/`ARENAS`/`RUNS` as bare make knobs another file's default could reach (with combat's `VARIANTS`).
+    3. A plot titled `direct_route_exposure` — the legacy measure — printed beside a card quoting the derived one:
+       **two different numbers with the same name on one page**, which is how a reader learns to distrust both.
+    4. A **"posted" reach hand-set to 70 m** from "a cannon's full range", where the catalog's own median of
+       `min(full range, sight radius)` is **60 m** — several units cannot *see* as far as they can shoot, and the
+       sight cap that the *idle* figure applied had not been applied to the posted one. **It inflated every posting
+       figure by about half.**
+    The fix was the same every time and the stream said so: **put it in one place and read it.** `make arena-reach`
+    now runs `Engagement.covering_range()` and writes a file the report reads, with the constants demoted to a
+    labelled fallback and a flag to override.
+    Two instructions:
+    - **A number you did not compute in the place you use it is a copy, whatever it looks like.** A named constant, a
+      make default, a plot title, a figure in prose — all copies. Derive it, or read it from where it is derived.
+    - **When a re-derivation moves a number, find out whose error it was before relaying blame.** Here the
+      orchestrator had warned that combat's proposal might shift arena's figures; the figure that actually shifted was
+      arena's own hand-set constant, and combat's derivation was right all along.
+67. **A consistent failure on one machine and an intermittent one on another are usually one bug, differing only in
+    timing.** Round 6: `shell-playtest`'s faction-click checks failed **every** run on builder0 and **one in seven** on
+    the laptop. The laptop case had been filed as a stray-mouse artefact (trip-up 32) and the builder0 case as "a click
+    or resolution issue on builder0" — two environmental explanations for one defect. The cause was neither: the
+    **loading screen** is a full-screen, click-stopping `CanvasLayer` on the root, and it was **still fading out** when
+    the playtest clicked. builder0's ~1 fps desktop made the race certain; the laptop lost it occasionally.
+    Two instructions:
+    - **When the same check fails always here and sometimes there, do not reach for two environment stories.** Look for
+      a race whose window the slower machine widens. "Flaky on A, broken on B" is one of the strongest available hints
+      that a timing window exists.
+    - **A gate that always fails is as uninformative as one that always passes**, and it hides real signal: this one
+      had been red unconditionally on the machine we verify on, which is precisely why a texture leak in another
+      stream's code went unnoticed until a human looked by hand. After this fix `shell-playtest` exits 0 on builder0
+      for the first time — **an always-red check should be treated as an outage, not as a known quirk.**
+68. **A checkpoint merge has a shelf life, and the tell is a third number.** Round 6, arena: it merged `main` at the
+    announced point, did an hour's work, and its check failed `sim-baseline` — expected `8ebbed52…` (its tree's
+    committed line), **produced `91db2388…`**, while the baseline the orchestrator had just recorded on `main` was
+    `ae7466f3…`. **Three different numbers.** The explanation was not a defect: `main` had taken nav's and control's
+    merges in the meantime, so `91db2388…` was the correct hash of a real third state — CP4 without nav or control.
+    **The produced hash matching *neither* candidate is what made it legible**, and that is the part to remember:
+    - had it matched the orchestrator's `ae7466f3…`, the obvious reading is *"my baseline file is just stale"*;
+    - had it matched its own `8ebbed52…`, the obvious reading is *"CP4 did not move the simulation"*;
+    - both readings would have been wrong, and each is the first thing a reasonable agent would conclude.
+    So: **when a hash comparison fails, enumerate every hash you can name and check which ones the produced value
+    matches.** A value matching none of them means your tree is a state nobody has a record of — usually because
+    "`main`" meant something different an hour ago. And **say so when you hand over a branch merged at a stale
+    checkpoint**: arena warned that its next hash would carry nav's and control's work as well as its own, which is
+    exactly what an orchestrator expecting an arena-only diff needs to hear.
+69. **"It fails on `main` too" clears a stream only if `main` does not contain that stream's work — and that stops
+    being true the moment it first merges.** Round 6, the round's most careful isolation and it was still unsafe. nav
+    reported a failing scenario, ruled its own work out by switching **five** mechanisms off individually and all
+    together on its branch, and observed the same failure on `main` — a properly constructed control. The orchestrator
+    relayed it to another stream as "not nav's". **But `main` already contained nav's earlier merge**, including the one
+    mechanism whose experiment switch was broken and which therefore had *not* been in the A/B. nav caught it and
+    retracted before the other stream had spent an hour.
+    Two instructions:
+    - **In a round where streams merge repeatedly, `main` is a clean baseline for a stream only until that stream's
+      first merge.** After that, "reproduces on `main`" means "reproduces with my own work present". Use
+      `git archive` of a commit *before* your first merge, or an explicit revert, if you need a real control.
+    - **A feature whose kill switch does not work is invisible to your own A/B, and you will not notice** — the switch
+      reads as coverage. When you build an experiment switch, test that it actually changes behaviour (mutation-check
+      it) before you rely on it to exonerate anything.
+    And the orchestrator's half: **when a stream hands you an exoneration, check that the control is still a control
+    before relaying it.** The relay is where a plausible inference becomes another stream's afternoon.
+70. **A false premise in a brief propagates; a false instruction only costs one worker an afternoon.** Round 6, found
+    at the close: **"wrecks are on physics layer 4 on purpose, so they never block driving"** appeared in *two* stream
+    briefs and in the orchestrator's HANDOFF survey, and the orchestrator repeated it in a relay. **It is false.** Only
+    `tank.tscn` sets a collision layer anywhere; `Arena._build_obstacles()` makes a plain `StaticBody3D` on default
+    **layer 1**, the `Obstacles` node carries the `navigation_source` group, and the bake parses layer-1 shapes in it —
+    so the `wreck` **kit prop** is baked into the navmesh and blocks like any container. A destroyed **vehicle** leaves
+    no body at all. **Two different things share one name.** The claim traces to `balance.md`'s destructible-cover
+    proposal — *"a wreck **moves to** collision layer 4"*, future tense, never built — restated as present fact and
+    carried for two rounds.
+    Three instructions:
+    - **This is trip-up 24 with a worse blast radius.** There, a confident wrong *instruction* cost one worker half an
+      hour. Here the wrong belief was written into the briefs, so it was *inherited* by every agent who read them and
+      shaped what two streams did and did not attempt (nav nearly wrote off X9 on it). **Check a claim before you put
+      it in a brief, at the standard you would use before telling the lead.**
+    - **A proposal quoted out of a design doc becomes a fact.** When you lift a line from a design document into a
+      brief, carry its tense. If `balance.md` says a thing *would* move to layer 4, the brief must not say it *is*.
+    - **The suite had already proved it and nobody read the test.** `ArenaFixture.inside_cover()` probes the widest
+      collidable prop — a wreck on two shipped layouts — and asserts it is *off* the mesh, for every layout, passing
+      all along. **A passing test is a statement about the world that nobody is reading.** When a belief matters, grep
+      the tests for it before grepping the code: a green assertion is cheaper evidence than an investigation.
+71. **After resolving a conflict, run `git status` before you commit — the index may already hold something you were
+    thinking about earlier.** Round 6's close: the orchestrator ran `cp build/sim_state_hash.txt tests/baselines/` and
+    `git add` it in the *same command* as a merge that then failed on a conflict. After resolving the conflict it staged
+    the one file it had fixed and committed — **sweeping the baseline record into a merge whose message says "docs
+    only".** The content was right; the message is now wrong, and a bisector chasing a simulation change through that
+    range will not find the baseline move where it is announced.
+    The fix was a follow-up commit stating exactly where the baseline landed, **not** an amend: rewriting a merge that
+    other worktrees may have seen is worse than an inaccurate message with a correction attached to it.
+    This is lesson/trip-up 16 and 70 in a third place (`git add -A`, then a `.tools` symlink, now a staged file
+    surviving a failed commit). The generalisation that finally covers all three: **the index is not empty just because
+    your last command failed.** A failed commit leaves everything staged, and the next `git add <one path>` adds to that
+    set rather than replacing it.
+72. **No agent on this project can play the game, and that decides which questions only the lead can answer.** Round 6
+    closed with the lead playing `make skirmish` and reporting two things no stream had caught: **the camera he had
+    chosen twice was unplayable**, and **the audio was silent**. Both had passed every gate. control's own statement of
+    its limit is the cleanest account of why: *"I've run scripted sessions and looked at their frames at both settings.
+    I can't play with a mouse."*
+    Everything this project calls playtesting is **scripted input plus screenshots**. That is genuinely powerful — it
+    caught the wall-clipping, the fascia, the crowd's value range, the popping — and it is blind to an entire class of
+    property: how much ground you can read *while deciding*, whether panning feels right, whether a sound is present,
+    whether a response feels instant rather than measures as instant. **For those, the lead is not the best check; he is
+    the only one.**
+    Three consequences to design around, rather than lament:
+    - **Sort every open question by whether an agent can answer it.** "Does the crowd read at 200 m" is measurable —
+      pixels, contrast, figure height. "Is this camera playable" is not, at any effort. Put the second kind in front of
+      him **early and cheaply**, and never let a measurable proxy stand in for it. A page of stills was a proxy for
+      playability and it produced a confidently wrong answer that cost a day's work in both directions.
+    - **When you must ask him, make the artefact move.** A clip, a recording, or him driving it. The round asked him to
+      pick a camera from frozen frames and to judge crowd audio from an MP3 — the second worked *because sound is
+      time-domain and the recording was too*; the first failed because playability is not visible in a frame.
+    - **Expect the gates to be silent about exactly the things he notices first.** Audio presence and camera feel are
+      both first-thirty-seconds properties and both invisible to `make check`. Twice now he has reported an audio fault
+      no automated check saw. **That is not a gap in the audio tests; it is the boundary of what a test can be.**
+73. **A default that has to be passed is not a default — and it will work on exactly the path its author tested.**
+    Round 6's last defect, reported by the lead as *"the audio is defaulted to off"*. The music director and the
+    announcer booth both read `flags.text("music", "off")`: **a missing flag means OFF.** Only `make skirmish` and
+    `make audio-pass` pass `--announcer=voice --music=on`. So **every other way into the game launched with no booth and
+    no music** — the title screen's SKIRMISH, the garage's FIGHT, a plain launch — for as long as those defaults have
+    existed. The sound *effects* were never muted, which is why it read as "some audio" rather than "no audio" and why
+    nobody chased it.
+    This is lesson 23's shape (*a behaviour behind a flag the default path never passes has not shipped*) with the
+    polarity reversed: **the flag was the on-switch, and only two of five entry points knew to throw it.** The fix is a
+    real default — a launch with a window gets voice and music unless a flag says otherwise — with the exclusions stated
+    (headless, `--mute`, and the title screen's backdrop fight, which otherwise had the booth calling a match behind the
+    menu).
+    Two instructions:
+    - **When you add a capability behind a flag, enumerate every entry point and check each one.** "The make target
+      passes it" is a statement about one path. This project has five ways into a match and the feature worked on two.
+    - **The verification has to traverse the path, not the unit.** feel's fix came with `make audio-launch-smoke`,
+      which drives the real title → SKIRMISH → faction menu → FIGHT sequence with no audio flags, mutation-checked
+      against the old code (FAIL: "no speaking booth") — the only kind of test that can see a defect that lives in
+      *how the game is entered*.
+74. **An interaction is only verified by performing it — reading the source you wrote cannot tell you it does nothing.**
+    Round 6: the lead's arena review page presented *"Keep it · Fix it · Cut it · I'd rather just play it first"* per map
+    and he reported *"that page doesn't have buttons I can click"*. The orchestrator guessed a missing `db` capability
+    or an event-binding bug. **Neither. The four answers were printed as a sentence in a `<p>` tag.** They look exactly
+    like a control and are text. **There were never any buttons to bind or to store from** — a page built to collect an
+    answer, structurally incapable of collecting one. It had been verified by reading the HTML, which confirms the words
+    are on the screen and *cannot distinguish that from a working control*.
+    The stream's own note is the sharpest part: *"it caught me even after I had written the same lesson about my own
+    instruments twice today"* (lessons 54 and 66). **Knowing the lesson does not transfer across media.** It had learned
+    to distrust a probe and still trusted a page.
+    Two instructions:
+    - **Perform the interaction on the published artefact before handing over the link.** Click it. For anything a human
+      is meant to *do* rather than read, source review is not verification — same boundary as lesson 72's "no agent here
+      can play the game", one layer out.
+    - **Prefer the shape that cannot half-work.** The fix uses real radio inputs, a textarea that rebuilds from them, and
+      a Copy button — **no database, no stored state**, because the pick is the entire payload and a storage layer would
+      be more to get wrong than the thing it stores. It degrades to "describe your picks" if the script fails, rather
+      than to nothing. That is the same pattern that finally settled the camera (live controls, one key to print a
+      pasteable line), and it worked for the same reason.
+75. **A stateless form loses the answer of anyone who does not perform the final step — and "press the buttons" feels
+    complete.** Round 6: the orchestrator recommended the arena review page store nothing, on the reasoning that the pick
+    *is* the whole payload and a storage layer is more to get wrong than the thing it stores (lesson 74). arena built it
+    that way, correctly. **The lead then pressed every button and left**, and the answers existed only on his clipboard.
+    They are lost.
+    The camera pattern it was copied from worked for a reason that did not transfer: **there, printing the pose was the
+    natural end of the interaction** — he was hunting a value, and `P` was how he captured what he had found. **Here,
+    choosing was the whole task, so pressing the last radio button felt like finishing.** A Copy button after that reads
+    as optional.
+    So the rule is narrower than "prefer stateless":
+    - **Stateless is right when the human's own goal ends in taking the value away** (hunting a setting, capturing a
+      measurement). **Persist when the human's goal ends in having answered** (a form, a review, a vote) — because they
+      will stop at the point their task feels done, not at the point yours does.
+    - **If it must be stateless, make the final step the only step**: no separate Copy button after the last choice —
+      auto-select the summary, or make each choice update something visibly outward-bound, so there is no state in which
+      the page looks finished and has sent nothing.
+    - **And test the abandonment path, not the happy path.** The question to ask of any collection artefact is *what
+      reaches me if they close the tab right now?*

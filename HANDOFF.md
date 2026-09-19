@@ -6,6 +6,86 @@
 
 _Last updated: 2026-09-18. **Round 5 is closed and merged; round 6 is planned and launching.**_
 
+## ⚠ READ THIS FIRST: the round stopped on a quota limit, 2026-09-18
+
+**The weekly quota ran out. It resets ~2026-09-22. Every stream session's context is gone; nothing on disk is lost.**
+All six stream branches are merged into `main`, every worktree is clean, and each brief's **Status is written for a
+stranger** — that was the last thing every stream did before stopping. Read your stream's Status before anything else;
+it holds what the session knew that the code does not say.
+
+### The five-minute version of where this stands
+
+**Round 6 is complete and merged.** The sim baseline is `glibc-2.43 b0df248dc0140639`, recorded once at the end by the
+orchestrator (invariant 2).
+
+**`main`'s state, stated precisely rather than claimed:** the last commit verified by a full `make remote T=check` was
+**1130 passed, 0 failed**. Everything merged after that point is **feel's audio-defaults fix, which was itself green at
+`b00b8ff9` (1130/0), plus documentation-only merges from all six streams.** No unverified code is on `main` — that was
+deliberate (see *UNMERGED WORK* below). So `main` is very probably green, and **nobody has proved it.** The quota ran out
+before a confirming run was worth the tokens. **First action when quota returns: `make remote T=check` on `main`**
+(30–50 minutes), *then* the unmerged branches.
+
+**What round 6 did:** movement you can trust (100% arrival on every configuration, up from 33/60 on a shipping map),
+one formation system instead of three, the player's units holding until ordered *by a rule rather than a coincidence*, a
+plain move keeping a squad a squad, loading 7.6 s → 1.4 s, 3,011 spectators visible where 0 of 2,040 had been, a city
+skyline, engagement ranges that decide fights at 40 m instead of 54 with flanking up from 26% to 45%, and the maze the
+movement work is measured against.
+
+**THE GAME IS STILL NOT PLAYABLE, and the lead said so after the round closed.** Two reasons, in his words: the camera,
+and *"getting adequate command of our units (I couldn't tell what direction they were facing)"*. **Round 7's whole
+subject is legibility, not capability** — see *Round 7 direction* in [game_design.md](_agents/game_design.md), which holds
+his feedback verbatim and is the most important document to read after this banner.
+
+### What was in flight when it stopped, and where to pick it up
+
+| Item | State | Owner |
+|---|---|---|
+| **The lead's settled camera pose** — `pitch=21 distance_m=49 fov=35`, auto-frame on | committed by control; **`fov=35` is the floor of the range and two agents argued the wrong way about it** | control |
+| **Announcer voices cut each other off** | diagnosed only; his rule is *interrupt is fine, the incumbent yields **after** being interrupted, never truncated* | feel |
+| **Machine gun: no tracer, and missing sounds** | not started; **ElevenLabs approved broadly** — plenty of credits, a monthly budget that is wasted unspent | feel |
+| **Unit scale not honouring `hull_size`** (a gang tank renders smaller than a scout) | not started | feel |
+| **The gangs' IFV drives backwards** | not started; **check whether the SIM is reversed too, not just the visual** — if so it has been taking front-armour hits on its rear | feel |
+| **Arena verdict: KEEP Pit + Yard, CUT the other four** | recorded, **nothing deleted** — the four are *do-not-invest*; Foundry is `DEFAULT_LAYOUT`, so cutting it is an infrastructure change | orchestrator |
+
+### UNMERGED WORK, deliberately left on its branch — this is the first thing to do when quota returns
+
+**RESOLVED AFTER THE BANNER WAS WRITTEN: control's camera is verified and merged.** Check #14 came back green at
+**`017fda42`, 1085 passed, 0 failed**, and it is on `main` — `DEFAULT_PITCH_DEG 21`, `FOV_DEG 35`, `MIN_PITCH_DEG 8`,
+confirmed in the file rather than taken on report. **So the lead's camera is safe and does not need re-deriving.** Only
+feel's four remain below.
+
+**Nothing is lost. These commits are real work that was never check-verified, and merging unverified code before a
+4-day silence would risk leaving `main` red with nobody able to fix it.** `main` is the safe state; the branches hold
+the value. **Run `make remote T=check` on each, then merge at the commit that goes green.**
+
+| Branch | Commit | What it is | Last fully green |
+|---|---|---|---|
+| `stream/feel` | `2586c7a6` | Unit scale from `hull_size` | `b00b8ff9` |
+| `stream/feel` | `d2076221` | Machine-gun tracers | |
+| `stream/feel` | `0999d755`, `53b3a84a` | Machine-gun sound — **while firing, the MGs went from 15 dB to 4.7 dB under the mix** | |
+| `stream/feel` | **`82f99c6e`** | **The announcer fix.** The trace shows no overruns: every clip was a deliberate interruption faded in 0.08 s, and an interrupted voice now trails off over 0.8 s under the new one — his rule exactly. **Nobody has heard it.** A check was started on builder0 and its result was never read. | |
+
+**Also on `stream/feel` but not started: the gangs' IFV driving backwards.** feel checked the code and reports **the
+simulation never reads the model, so it is art only** — no balance consequence, which is the good answer.
+
+### The three things a fresh orchestrator should not have to rediscover
+
+1. **No agent on this project can play the game** (lesson 72). Everything we call playtesting is scripted input plus
+   screenshots. Feel-questions — camera, order legibility, audio presence — can only be answered by the lead. **The
+   pattern that finally worked was giving him live in-game controls and one key that prints a pasteable line** (the
+   camera took four attempts from still images and one from live controls). Build the instrument, hand it over, let the
+   design come out of him using it.
+2. **This round found more broken instruments than broken game code.** Lessons 32–75 in
+   [orchestration.md](_agents/orchestration.md) are all round 6, and most are measurement failures: three load-bearing
+   coincidences, four constants calibrated against a camera that had changed, six tick-rate leftovers of which three
+   lied to a *reader* rather than failing a test, a build queue that starved rather than being slow, an audio harness
+   recording at 1/10 speed, and a series whose control was not a real "before".
+3. **`centre_sees_share` predicts the lead's map taste.** He cut the four most open arenas and kept the two least open,
+   with the numbers in front of him but no way to sort by them. That makes it a **design target for new maps**, and it
+   is the most transferable thing the arena work produced.
+
+---
+
 ## Current state (main)
 
 - **Round 5 is fully merged** (render, arena, control, combat, ai, audio). Briefs and their reports are archived in
@@ -212,6 +292,47 @@ feel.
 7. **Carried over:** rotate the Meshy API key; the round-2 questions in `streams/archive/round2/`.
 
 ## Open questions and follow-ups (not scheduled)
+
+- **Dynamic obstacles: deliberately none, and now with a reason rather than a default** (arena ruled, nav verified,
+  2026-09-18). **Nothing blocks drivable space mid-match, now or planned**, so a `NavigationObstacle3D` has no consumer.
+  The strong argument against building one is **fairness, not cost**: the navmesh is baked as the southern half plus its
+  180° rotation *as a second region*, because a normal bake is not point-symmetric — mirrored trips differed by up to
+  4.4 m and the south base won 64% of 140 matches (trip-up 21). **Any mid-match re-bake must reproduce that
+  construction or silently reintroduce the base bias**, with units standing on the mesh while it happens. And the lead's
+  approved destructible-cover design (*a stack collapses to a lower stack, never changing drivable space*) was chosen to
+  avoid exactly this, so X6 will not create a consumer either.
+  **If round 7 ever revisits the startup-only mesh, it must revisit `agent_max_climb` in the same breath** — both are
+  consequences of the same construction, and both need the swap-bases control re-run.
+
+- **The unifying shape of round 7's best candidates, named by arena:** *the correct behaviour depends on what the
+  element is currently trying to do.* Round 6 made each layer correct **in general** — avoidance that keeps a column a
+  column, an objective at the centre, a formation that holds its geometry — and the residue in every case is that the
+  *right* answer changes with the element's current intent. Three items below are the same statement at different
+  scales: not overtaking is right for a column and wrong for a charge; a central objective is right for a brawl and
+  wrong for a game about flanking; a fixed slot is right for holding and wrong for forming up. **A round that made
+  behaviour context-dependent would be the natural successor to one that made it correct.**
+- **Should a battle drill override formation discipline?** Round 6's ORCA deliberately does **not** treat a friend
+  moving the same way as a collision, so a column stays a column — which is right for formations and is why round 5's
+  overtaking sidestep was removed (it also steered into walls unchecked). Attributed cost, measured by bisect: an
+  assault-through an ambush now takes **18.5 s against 17.7 s**, because the quick units no longer pass the slow ones.
+  **0.8 s is not worth re-adding overtaking for** — it would risk nav's 33/60 → 60/60 arrival result. But *a charge is
+  the one case where you might want the fast units through rather than the column preserved*, and the lead would notice
+  it as *"my fast units got stuck behind the slow ones during a charge"*. Round-7 question: do drills get to suspend
+  formation discipline, and which ones?
+- **The lead's PID request is half-delivered, and the missing half is the visible half.** nav's N6 regulates any
+  `move_to` whose goal *slides* — a squad follower's leader-anchored slot is such a goal, so **squad station-keeping is
+  PID-controlled and measured (0.35 m mean gap against 4.58 m for the old proportional law)**. squad deliberately added
+  **no second regulator**, which is right. But **element slots are fixed per leg or per click**, so the PID never
+  engages for elements: an element still *snaps* to its formation geometry rather than **flowing** into it. The lead's
+  own words were *"no matter where they might be currently, there's a formula to form up"* and *"a PID loop would
+  conceptually be useful for a unit trying to get back in his formation"* — the second is delivered for squads and not
+  for elements. **Making elements flow into formation is the next build on top of N6**, and it is the piece most likely
+  to make the formations *look* as good as they now measure. A round-7 candidate, and cheap now that the regulator
+  exists.
+- **Per-faction PID gains** (nav's X8, not started): the lead asked for it by name — *"we might even be able to
+  differentiate units of different factions by PID values"* — the Syndicate crisp, the gangs loose. `control_gains.gd`
+  exists and the defaults are stable, so this is now a data exercise. It must be **measured** rather than shipped as
+  flavour: if identical armies with different gains win equally often and look the same on screen, say so.
 
 - **A texture leak on `main` that `make check` cannot see** (found by control on the merged tree at `2fa58c01`,
   laptop, windowed): `make shell-playtest` fails its clean-console gate with two `ERROR: Texture with GL ID of

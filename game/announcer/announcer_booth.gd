@@ -49,20 +49,24 @@ var _last_cue := {}
 static func attach(main: Node) -> AnnouncerBooth:
 	var flags: LaunchFlags = main.flags
 	# --music attaches a silent booth too: the music follows the mood the booth keeps.
-	if not flags.has("announcer") and not flags.has("announcer-record") and flags.text("music", "off") == "off":
+	# Feel (round 6): a launch that doesn't say gets the booth on a game with a window (AudioDefaults).
+	var announcer := AudioDefaults.value(flags, "announcer")
+	if announcer == "off" and not flags.has("announcer-record") and AudioDefaults.value(flags, "music") == "off":
 		return null
 	var booth := AnnouncerBooth.new()
 	booth.name = "AnnouncerBooth"
 	booth.add_to_group(CrowdVoice.BOOTH_GROUP)  # the crowd follows the same mood the booth keeps
 	booth.game_match = main.game_match
 	booth.hud = main.hud
-	booth.mode = flags.text("announcer", "off" if flags.has("announcer-record") else "text")
+	# Headless with only --music (music-smoke) keeps its old text booth; a windowed game defaults to the voice.
+	booth.mode = flags.text("announcer", "off" if flags.has("announcer-record") else (announcer if announcer != "off" else "text"))
 	booth.record_path = flags.text("announcer-record")
 	var seed_text := flags.text("announcer-seed")
 	booth.history_path = flags.text("announcer-history", AnnouncerHistory.PATH)
 	booth.setup(arena_key(flags.text("arena", Arena.DEFAULT_LAYOUT)), int(seed_text) if seed_text.is_valid_int() else -1,
 			flags.text("announcer-clips", DEFAULT_CLIPS), float(flags.text("announcer-volume", "0")))
 	main.game_match.add_child(booth)
+	print("ANNOUNCER_BOOTH mode=%s" % booth.mode)  # make audio-launch-smoke reads this
 	return booth
 
 

@@ -26,8 +26,10 @@
   routes took 4–5% of unit-time on dense layouts against 14% on foundry, and three streams independently landed on
   the same explanation — **a single central control point overrides every tactical choice**, so terrain has nothing to
   decide. combat separately measured median hit range at 39–43 m on *every* map. More props will not fix that.
-- Wrecks are on physics layer 4 **on purpose**, so they never block driving and the startup-only navmesh never goes
-  stale. nav may want to change that (its X9); it is a conversation, not a unilateral change.
+- ~~Wrecks are on physics layer 4 **on purpose**, so they never block driving~~ — **this is false**, and it was
+  false when the brief was written. See *X9 / dynamic obstacles* in the Status: the `wreck` kit prop is a layer-1
+  StaticBody3D under the `navigation_source` group, so it blocks driving and is baked into the navmesh like any
+  container; a destroyed vehicle leaves no body at all.
 
 ## Backlog (in order)
 
@@ -95,9 +97,66 @@ coordinate with nav — anything that changes what blocks driving touches the na
 `game/ai/**` (nav's and squad's), `game/control/` `game/ui/` `game/camera/` (control's), `game/units/` `game/combat/`
 `game/match/` (combat's), `game/theme/**` (feel's — including how your props are *dressed*; you place, feel dresses).
 
+## Resume here (written at the round-6 quota stop, 2026-09-18)
+
+**Branch merged, tree clean, nothing in flight.** The durable knowledge is in
+[../arenas.md](../arenas.md) — *Designing a new map: start here* and *Why the navmesh is baked as one half plus a
+mirror* — deliberately there rather than only here, because a map author reads that file and not a stream's Status.
+
+**The three things that would hurt most to lose:**
+1. **`centre_sees_share` predicted the lead's verdict and is therefore a design target, not a description.** Aim
+   below ~0.30; above ~0.50 he has rejected it twice. Pure geometry, cannot go stale, one `make arena-report` to
+   check before anyone models a prop.
+2. **X2 scores what a route costs and never what it reaches**, so it reports cheap flanks on maps that play as a
+   brawl. A cheap route to nowhere is scenery. The objective work and the terrain work are one job.
+3. **The 60-unit nav-maze baselines are superseded** (nav's spawn-coincidence fix — 52 spawn points, `slot %
+   size` wrapped 8 pairs onto each other); **the 30-unit row is not** (30 < 52). See
+   [references/arena/README.md](references/arena/README.md).
+
+**Two knobs, both deliberate:** `WATCHER_REACH_M` is read from the catalog (`make arena-reach` → `Engagement.
+covering_range()`), `--reach` overrides; `agent_max_climb` is **untouched on purpose** — raising it lifts the ~20°
+terrain ceiling but re-bakes every arena's mirrored-half mesh and needs the swap-bases control re-run.
+
+**Not started, on instruction:** the octagon/hexagon shape change, bridges/water, and X3.
+
+## The lead's answer (2026-09-18, from the review page's own store)
+
+**Asked keep / fix / cut / play-it-first per map, he cut four and kept two.** Read back from `answers/arenas` on
+https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4 :
+
+| Arena | centre sees | His call |
+|---|---|---|
+| **Boulevard** | 0.64 | **CUT** |
+| **Foundry** (its card covered the **Furnace**) | 0.56 | **CUT** |
+| **Boneyard** | 0.40 | **CUT** |
+| **Scrapyard** | 0.29 | **CUT** |
+| Pit | 0.30 | **KEEP** |
+| Yard | 0.20 | **KEEP** |
+
+No notes given. **The four most open maps are exactly the four he cut** — centre-visibility predicted his answer
+better than anything else measured, though scrapyard (0.29) and pit (0.30) are nearly tied and he split them, so it
+is not a pure function of the metric.
+
+**Confirmed in words as well as buttons:** *"the only two maps worth keeping were the last one and the one with the
+octagon of shipping containers. All the maps need to be higher quality regardless."* **Nothing is being deleted** —
+the four are *do-not-invest*, and Foundry stays `DEFAULT_LAYOUT` until he rules on that infrastructure change.
+The original caveats, which he has now answered:
+1. Taken literally it removes **five of seven** shipping arenas. The page invited "cut" as a real answer but never
+   said "you are about to remove most of the game's maps"; he may have meant that, or may have meant "not worth
+   fixing, prioritise accordingly".
+2. **Foundry is `Arena.DEFAULT_LAYOUT`** — every headless run, the sim baseline and most tests use it. Cutting it
+   is an infrastructure change that moves the baseline, not a content change.
+
+If he confirms, X5's remaining scope collapses: *"make every shipping arena worth landing on"* becomes *"make two
+good ones"*, and X3's objective work only has to serve pit and yard.
+
 ## Waiting on the lead
 
-1. **Which arena is fun** — **the page is live and with him: https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4**
+1. ~~**Which arena is fun**~~ — **answered above.** The page itself is still live — **the page is live and with him: https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4**
+   (**version 3**: the first two had no controls at all — the four answers were printed as a *sentence* that looks
+   like a control and is not one. He said so: *"doesn't have buttons I can click to give feedback"*. Now radio
+   buttons, a summary he copies, and a notes box; no database, because the pick is the whole payload. **Verify an
+   interaction by performing it — reading the HTML you wrote cannot tell you the words do nothing.**)
    (`make arena-page` rebuilds it; republish that URL to update it). Six cards, worst first, each asking
    *keep it · fix it · cut it · I'd rather just play it first*. A link rather than a path under `build/` on purpose:
    lesson 12's failure was review pages nobody could open.
@@ -126,7 +185,13 @@ _Round 6, arena. Updated 2026-09-18._
 | X5 the arenas the lead will play | **Done, with him.** Page live at https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4 — the round-5 gate is finally open |
 | X6 destructible cover (stretch) | Not started, correctly — X3 is not done and nav's avoidance has not landed |
 
-**Green commit: `912f8713`** (merged). Earlier green: `5590c465`. Original text: — `make remote T=check`, runner `1018 passed, 0 failed`, wrapper
+**Everything through `d3a42267` is merged into `main`.** The last check on that tree was `1125 passed, 1 failed` —
+the one failure was `test_tactics_scenarios::test_an_element_ambushed_at_close_range_assaults_through_it`, which is
+**not this stream's**: my diff against `main` under `game/` and `tests/` is a single file the test runner never
+collects (`reach_probe.gd`, not `test_*.gd`), and `tests/tactics/` is byte-identical to `main`. The orchestrator
+verified that before merging. Cause, confirmed by nav's bisect and reproduced here twice: nav removed round 5's
+`_around_friends` sidestep, so a column no longer overtakes and the assault arrives 24 ticks later; squad widened
+the window. Earlier greens on this branch: `912f8713`, `5590c465`. — `make remote T=check`, runner `1018 passed, 0 failed`, wrapper
 `>> remote: make check exited 0`. Reported to the orchestrator. **`38c15f77` and `13add85d` are RED — do not merge
 either** (see *The mistake worth reading* below).
 
@@ -263,6 +328,29 @@ A banner at the top, not a footnote, says **nobody has played these**: everythin
 not measured play, and he is the only one who can supply the rest. That is also why "play it first" is offered as a
 real answer — he has never driven any of them, which is the actual reason this has been open since round 5.
 
+### After CP4: X2 re-derived, and it caught an error of mine
+
+Merged `main` at the CP4 checkpoint and re-derived X2's exposure against the settled bands. **45 m (idle) was
+right. My 60 m... was not what I had.** I had hand-set "posted" to **70 m** from "a cannon's full range", where the
+catalog's median of `min(full range, sight radius)` over all 14 units is **60 m** — several units cannot *see* as
+far as they can shoot, and I had not applied the sight cap that `covering_range()` applies to the idle figure. That
+inflated every posting figure by about half.
+
+| | before (70 m) | after (60 m) |
+|---|---|---|
+| boulevard posting gain | +0.107 | **+0.067 (2.0×)** |
+| foundry posting gain | +0.127 | **+0.077 (1.7×)** |
+| yard posting gain | +0.024 | **+0.017** |
+| centre sees | 0.64 / 0.56 / 0.20 | **unchanged** |
+
+**No ranking changed, and `centre_sees_share` cannot change** — it is pure geometry with no weapon in it. So both
+claims the lead's page leads with survive any band move. The page was rescaled and republished (version 2).
+
+**This was the fourth instance of one bug in my own output today:** a value derived from data, restated in a second
+place, going stale silently. The others were the plot's `direct_route_exposure`, the `UNITS` collision, and the
+110 m watcher reach. The fix is the same every time — **put it in one place and read it** — and `make arena-reach`
+is that fix here.
+
 ### The 60-unit baselines are superseded (nav, 2026-09-18)
 
 A layout has 52 spawn points and `Arena.spawn_spot` wraps with `slot % spots.size()`, so `NAV_UNITS=60` put **eight
@@ -274,6 +362,68 @@ adjusted, because nav's before/after is on a fixed tree.
 **What I should have done:** I treated the tail as more of the headline. A stable minority failing the same way is a
 defect, not variance, and nav found it by asking *which* units failed rather than how many. Left in a baseline it
 would have flattered every later fix by 8 units a run.
+
+### X2's limitation, found by the lead (2026-09-18)
+
+> *"Clearly crossing a bridge is risky, so you don't want a simple map with 2 sides connecting two bridges. There
+> generally has to be some compelling reason to cross the bridge to take some advantageous ground."*
+
+**Terrain creates risk, objectives create reason, neither works alone, and the prize goes where the risk is.** That
+reframes my own headline. I measured *"covered routes cost a 1.0–1.1× detour on every map and nobody takes them"*
+and read it as "flanking is cheap and unused". His framing says the cheapness is the symptom: **a route that is
+cheap and leads nowhere worth going is not a tactical option, it is scenery.**
+
+So **X2's analysis measures only half the thing.** It scores a route by what it *costs* — exposure, detour — and
+never by what it *reaches*. That is why it reports that every arena already offers an affordable flank while the
+game plays as a brawl: both statements are true and the metric cannot see the contradiction. Any round-7 version
+needs a term for the value at the end of the route, and **X3 and the bridge/water work are one job** — measuring
+either alone will under-read it.
+
+### X9 / dynamic obstacles: keep the navmesh a startup snapshot (arena's ruling, 2026-09-18)
+
+nav asked whether wrecks should become soft nav obstacles and whether anything will stop blocking mid-match.
+**Answering it turned up a false premise that is written in both our briefs, including this one.**
+
+**"Wrecks are on physics layer 4 on purpose, so they never block driving" is wrong.** Checked in the code, not
+recalled:
+
+- **Nothing in `game/` sets a collision layer** except `tank.tscn` (`collision_layer = 2`). `Arena._build_obstacles()`
+  makes a plain `StaticBody3D` per obstacle, which defaults to **layer 1**.
+- The `Obstacles` node carries the `navigation_source` group (`arena.tscn:64`), and the bake parses layer-1 shapes
+  in that group. So **the `wreck` kit prop is baked into the navmesh and does block driving**, exactly like a
+  container.
+- Independent confirmation already in the suite: `ArenaFixture.inside_cover()` picks the widest collidable prop,
+  which on **boneyard and yard is a wreck** (min dimension 3.2 m), and asserts a point at its centre is off the
+  navmesh. `test_every_shipped_layout_connects_both_bases_and_the_centre` runs that for every layout and passes.
+- **A destroyed vehicle leaves no body at all.** `game/theme/fx/fire_sites.gd:7`: *"Visual only: a site is just
+  where a kill explosion happened. (Keeping a wreck MODEL there needs rules to leave the…)"*
+
+Two different things share the name: the **kit prop** (static scenery, permanent cover, in the mesh) and a
+**destroyed vehicle's husk** (does not exist). The layer-4 claim looks like a design that was discussed and never
+built, and it has been repeated for at least two rounds.
+
+**So both of nav's questions dissolve.** There is nothing to make "soft" — the props are already hard and already
+baked — and the dynamic thing is not there to be avoided.
+
+**The ruling, with the reason, so it is chosen rather than inherited: nothing should block drivable space
+mid-match, and the navmesh stays a startup snapshot.**
+
+1. Wrecks as permanent props already buy the tactical value (hard cover at 2.0 m, above the 1.3 m eye line) at zero
+   dynamic cost.
+2. The lead's approved destructible-cover design (X6) **deliberately never changes drivable space** — a stack
+   collapses to a lower stack, the footprint stays. So X6 will not create a consumer for X9 either.
+3. nav reached 100% arrival on a static mesh.
+4. **The real blocker is fairness, not performance, and nobody had written it down.** The navmesh is baked from the
+   southern half plus its 180° rotation *as a second region* precisely because a normal bake is not point-symmetric
+   — an asymmetric bake gave the south base a 64% win rate (trip-up 21). **Any mid-match re-bake would have to
+   reproduce that construction, or it silently reintroduces the bias**, and it would have to do so while units are
+   standing on the mesh. That is the argument against dynamic obstacles, and it is much stronger than the cost of
+   the bake.
+5. `NavigationObstacle3D` (soft avoidance, no re-bake) sidesteps 4 — but it overlaps with nav's ORCA, which already
+   steers around every living hull as of `7cce78af`.
+
+**If round 7 revisits this, revisit it with `agent_max_climb`**: both are consequences of "the navmesh is a startup
+snapshot baked in two mirrored halves", and both are cheap to change and expensive to get wrong.
 
 ### The mistake worth reading
 
@@ -314,8 +464,8 @@ geometry, same code, opposite conclusion — the finding lived entirely in one c
 
 - **combat:** read `Arena.objectives_of(Arena.active)` instead of `Match.CONTROL_CENTER` / `CONTROL_RADIUS`, and
   hold a per-objective owner instead of one scalar. Pure read-through; no existing arena changes. Blocks X3.
-- **combat:** ship `Engagement.covering_range()` with CP4 and tell me its value; `arena_report.py` currently mirrors
-  45 m / 70 m and takes `--reach` so re-deriving is a flag, not an edit.
+- ~~**combat:** ship `Engagement.covering_range()` with CP4~~ — **done.** `make arena-reach` now reads it from the
+  catalog into `build/arena-reach.json` and `arena_report` reads that file, so nothing here restates it.
 
 ### Next
 

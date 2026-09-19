@@ -99,3 +99,37 @@ func test_eta_follows_the_route_not_the_crow() -> void:
 	var behind := LANE + Vector3(0, 0, 40)
 	assert_true(Movement.eta(tank, behind) > straight + 1.0, "a point behind costs the pivot too")
 	assert_near(Movement.eta(tank, tank.global_position), 0.0, 0.001, "zero when already there")
+
+
+func test_asked_to_give_way_it_steps_off_the_line_and_resumes() -> void:
+	var setup: Array = await _setup()
+	var game_match: Match = setup[0]
+	var asker: Tank = setup[1]
+	var asker_orders: OrderController = setup[2]
+	# A friend parked in the lane, 12 m up it, holding a stop order.
+	var parked := game_match.spawn_tank("Parked", 1, Match.Team.GREEN)
+	parked.global_position = LANE + Vector3(0, 0, -12)
+	var parked_orders := OrderController.new()
+	parked_orders.tank = parked
+	parked_orders.tanks_root = game_match.tanks
+	add_to_tree(parked_orders)
+	await wait_physics_frames(2)
+	var mover := Movement.of(parked)
+	assert_true(mover != null, "setup: the parked unit has a mover")
+	assert_true(mover.ask("Mover", asker.global_position, Vector2(0, -1)), "asked, it finds a spot and gives way")
+	var reading := Movement.state(parked)
+	assert_eq(reading["phase"], "yielding", "and says so (%s)" % reading)
+	assert_eq(reading["blocked_by"], "Mover", "naming who it is giving way to")
+	assert_true(absf(mover._yield_point.x - LANE.x) >= 2.0 * Avoidance.radius_of(parked.unit_id),
+			"its spot is off the asker's line (%s)" % mover._yield_point)
+	asker_orders.set_orders({"type": "move_to", "x": LANE.x, "z": LANE.z - 30.0}, {"type": "hold_fire"})
+	var resumed := false
+	for frame in SimClock.TICK_RATE * 10:
+		await tree.physics_frame
+		if Movement.state(parked)["phase"] != "yielding":
+			resumed = true
+			break
+	assert_true(resumed, "once the asker is past it stops giving way")
+	assert_eq(parked_orders.move_order["type"], "stop", "and its own order is still the one it had")
+	assert_true(not mover.ask("Mover", asker.global_position, Vector2(0, -1)),
+			"it never gives way twice in a row to the same unit")

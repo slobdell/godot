@@ -306,6 +306,17 @@ stack first, then the layer that commands it, then how the player reads and issu
 
 ### What this means, by area
 
+- **CLOSED, and the cause was worse than the symptom.** The lead opened round 6 with *"a bunch of cars just get stuck
+  or blocked by other cars"*. The survey found `TankBrain.ORDER_STALL_ARRIVE = 12.0`: after 3 s of no progress, a unit
+  **within twelve metres of its goal declared its order complete** — which explained why a jammed horde looked like it
+  had *decided* to stop. It was described in this round's briefs as *dishonest reporting*. **It was worse than that: it
+  created the jam.** nav's measurement on the maze, before deleting it: 29/30 arrived, one "completed" **8.1 m short**,
+  and one **never arrived at all, blocked 90 m out**. The unit that falsely completed had **parked in a corridor**, and
+  the unit that never arrived was the one stuck behind it. A rule that let a vehicle stop early turned that vehicle into
+  an obstacle for everyone behind it. After deletion: **30/30, t100 73.2 s, 0 finishing short.**
+  The generalisable form: **a lenient completion rule does not merely mis-report, it leaves a live obstacle in the
+  world.** Anything that lets an actor declare success while still occupying contested space converts one soft failure
+  into a hard one for whoever comes next.
 - **Navigation is the blocker, and it is three separate problems.** (a) *Path planning*: does a unit have a route
   around an obstacle at all (A*/navmesh/flow field)? (b) *Local avoidance*: two units heading through the same gap
   must resolve it — the lead's own instinct is the right one, units that see each other negotiate ("an in-game command
@@ -372,6 +383,16 @@ stack first, then the layer that commands it, then how the player reads and issu
   sweep, the standoff negotiation — are the **smaller** contributor to both headline metrics.
   **If anyone tunes this later: acquisition first, bands second.** This was only visible once the control disabled the
   gates rather than just the bands; a control that is not a real "before" hides which half of a change did the work.
+- **Why the objective must come off the centre line, stated by two streams arriving from opposite ends** (arena from
+  terrain, combat from the engagement decomposition, 2026-09-18). They are **the same claim at two scales:**
+  the acquisition gates reward approaches that **break line of sight**, and an objective off the centre line is what
+  makes taking such an approach **worth the drive**. arena's measurements say the terrain *already* offers covered
+  routes at a **1.0–1.1× detour on every map** — nobody takes them because the only thing worth holding is in the
+  middle. arena's sentence, which is the round's sharpest statement of the risk:
+  > *"If N7 lands and objectives stay central, the gates will have made flanking pay in a game that still gives no
+  > reason to flank."*
+  The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
+  changes should compound rather than merely coexist.
 - **0.55 of reach is confirmed as the overshoot**: lowest fire rate, longest matches, fewest eliminations of any arm.
   A fight the player cannot close. The shipped bands are nowhere near it.
 - **Superseded, kept for the method:** an earlier n = 15 pass
@@ -395,7 +416,31 @@ He chose from control's page (https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL 
 every pose): **pitch 25° · 50 m out · FOV 60°**, no note. Applied as `DEFAULT_PITCH_DEG 25`, `FOV_DEG 60` (was 55),
 start 50 m out; the player tilts freely 22°–50°, and `O` is the deliberate 77° top-down.
 
-**FINAL, 2026-09-18 18:01 UTC — he went lower again: `pitch 12° · 50 m · FOV 60°`.** Asked a second time on a page
+**REVERSED IN PLAY, 2026-09-18, and this supersedes everything below: the lead played `make skirmish` at 12° and
+said the game is UNPLAYABLE.** His words: *"I was totally wrong about the camera, the game is unplayable now with low
+field of view."* **The default pitch goes back to ~45°. 12° remains reachable in the player's range; it is not the
+default and must not be restored as one.**
+
+**Why the wrong answer was produced, because the mechanism matters more than the number.** He was asked to choose from
+a page of **still frames of a frozen fight** — and a still frame cannot show playability. It shows *composition*, and at
+12° the composition is genuinely striking: that is why he picked the floor of the range twice, and why control and feel
+both reported independently that it looked excellent. What a still cannot show is how much ground you can read while
+commanding, how the horizon eats the screen when you need to decide where to send a squad, or what panning feels like.
+**He evaluated a photograph and then had to play a game.** The orchestrator designed that question and put no played
+sequence in front of him, so the failure is in the question, not in his answer.
+
+**What survives, and it is the actual win:** his original complaint was that *zooming out turned into a bird's-eye
+view*. **Decoupling pitch from zoom fixed that**, and it is untouched by this reversal — as are the wall cutaway and
+the far-range tilt floor. A 45° default with an independent tilt axis is a strictly better camera than round 5's, which
+is what he asked for. The 12° default was an over-correction produced by a bad question.
+
+**The rule for next time: a playability choice is made from a played session, never from a frame.** If a decision is
+about how something *feels to operate*, the artefact put in front of him must move — a recording, a short clip, or him
+driving it himself. Stills are for looks.
+
+---
+
+**Superseded (kept for the record): he went lower twice on stills — `pitch 12° · 50 m · FOV 60°`.** Asked a second time on a page
 offering 12/16/20/25°, he took **the floor of that grid too** (`picks/lead` on
 https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7, no note). Two pages, two floors: this settles the long-open
 question of where *"somewhere in the middle between StarCraft 2 and Twisted Metal"* actually sits, and the answer is
@@ -451,6 +496,255 @@ Two things this pick changed on its own:
 - **`perf_scene.gd` reads `RtsCamera.FOV_DEG` and `pose_for`**, so the performance harness's camera becomes 25°/60°
   at that merge: **M1 frame numbers move for a camera reason, not an art reason**, and a 25° camera sees all the way
   to the far stands. Re-baseline after the merge; never publish a frame number measured across it.
+
+## Round 7 direction: the lead's playtest of round 6 (2026-09-18, same evening)
+
+> *"ok with make skirmish it's still not playable because of the camera. Here's what I need: we need some 3d
+> perspective view so it's not a lame. And then I think the camera is another dimension that can really make or break
+> this game. Basically I think the camera's yaw orientation should match the intended facing position of the squad or
+> selected unit - this is what I think can differentiate us from a normal RTS game. This makes it so the user can always
+> see the action, is somewhat constrained based on the perspective of the vehicle, squad, or selection, and has a good
+> understanding of the orientation of the vehicle, which should be an important thing (i.e. trying to emplace units in
+> an ambush). I also just did another quick play. The bird's eye view was better but then it also made it so tanks were
+> shooting at enemies I couldn't even see. So I think it makes sense here to somehow make the field of view match the
+> range of the vehicle or the max range of the selection. For the UX indicators on the bottom, there's some obvious
+> improvements to make: 1. instead of tank icons or scout icons, we should be able to actually re-use the meshy
+> renderings we have per vehicle. The control buttons (i.e. screen, etc) are too small and difficult to make out. It's
+> also really overwhelming to know what each of those buttons does - we should add some popover help type thing on a
+> sleek HUD that shows an animation of the movement would do for the squad (i.e. I don't know what it means to tell a
+> unit to screen. I don't know what way they'll point or if they'll hold position or what. So it would be really cool to
+> have a sleek video game HUD that takes advantage of our theme and does some entertaining but visually purposeful UX to
+> communicate what each action does). Also, some of the vehicles pointed backwards at start-up when I played with the
+> gang. ALso it seems like squad are not scoped together at the start; the units should start out like an army where
+> there actually is a starting formation where each squad is separated. The other thing that's really confusing about
+> the buttons is that some of them seem to be actions that require a follow on click, and other seem to be buttons that
+> are applied passively (if I click the attack button will they do something or do I need to direct them?). My last run
+> of make skirmish was also worse camera behavior than whatever was iterated, it's unplayable because of the field of
+> view right now"*
+
+**THE CAMERA IS SETTLED, from a played session with live controls, 2026-09-18:**
+
+```
+CAMERA_POSE pitch=21 distance_m=49 fov=35 yaw=-0 zoom=0.365 auto_frame=on
+```
+
+**`fov=35` is the floor of the offered range, and it is the answer nobody guessed.** A *low* angle with a
+**telephoto** lens. Every still page and both agents reasoned the other way — control measured that FOV 60 shows more
+of the fight than 55 and concluded *"on his 'enemies I couldn't see', wider is the right direction"*, and the
+orchestrator relayed that. It was backwards. At a low pitch a wide lens produces a sweeping vista of mostly horizon
+with tiny vehicles; the same pitch at 35° crops to the action and makes the machines large. **"Low field of view" meant
+what it said, and he wanted it lower still.**
+Three things this settles that months of argument did not:
+- **Pitch 21° is close to the 12° he rejected** — so pitch was never the problem. *The lens was.* His two "wrong"
+  picks from stills were right about the angle and could not express the lens, because a still at a fixed FOV cannot
+  show you that you want a different one.
+- **He left `auto_frame=on`.** The L4 vision framing is wanted; it just needed a distance floor (control set 45 m after
+  finding it closed to ~29 m).
+- **A telephoto at 49 m is the Twisted-Metal-to-StarCraft answer** the project has been hunting since round 4: the
+  compression makes vehicles read as heavy machines rather than units on a map, without a close camera's loss of
+  tactical read.
+**Nobody may widen `FOV_DEG` toward 55–60 again without him.** It is the constant two agents independently argued the
+wrong way about.
+
+**The rest of the camera work below is round 7.** Everything else in this section is round 7.
+
+### The camera design he is asking for, which is a real differentiator and not just a fix
+
+1. **Yaw follows the selection's intended facing.** *"The camera's yaw orientation should match the intended facing
+   position of the squad or selected unit — this is what I think can differentiate us from a normal RTS game."* Three
+   things he wants from it: the player **always sees the action**; the view is **constrained to the unit's own
+   perspective** rather than being a free god view; and the player **understands which way his vehicles are pointing**,
+   *"which should be an important thing (i.e. trying to emplace units in an ambush)"*. Note how this compounds with
+   round 6: armour facing, the crossing-acquisition penalty and support-by-fire arcs all make *facing* mechanically
+   real, and the camera currently hides it.
+2. **Field of view tied to the selection's weapon range.** From a real observation: at a high angle *"tanks were
+   shooting at enemies I couldn't even see."* So the frame should show what the selection can **fight**, not an
+   arbitrary distance — the view and the engagement envelope become the same number. This is the camera version of
+   round 4's *no unearned god view*, and it also means round 6's shortened ranges should pull the camera **in**.
+3. **A 3D perspective, "not lame."** Both extremes are rejected now: 12° is unplayable, and bird's-eye hides the fight.
+   The answer is somewhere between, and **nobody has found it from stills** (lesson 72 — no agent here can play).
+
+### The HUD he is asking for
+
+4. **Vehicle renderings, not role icons.** *"Instead of tank icons or scout icons, we should be able to actually re-use
+   the meshy renderings we have per vehicle."* The art exists (`game/theme/factions/`).
+5. **The control buttons are too small and difficult to make out.**
+6. **Popover help that ANIMATES what an action does.** *"I don't know what it means to tell a unit to screen. I don't
+   know what way they'll point or if they'll hold position or what."* He wants *"a sleek video game HUD that takes
+   advantage of our theme and does some entertaining but visually purposeful UX to communicate what each action does"* —
+   an animated preview of the resulting posture, not a tooltip. **This is the answer to round 6's N4 the round did not
+   find:** the military symbol made the button nameable; it did not make the behaviour knowable.
+7. **Which buttons need a follow-on click, and which apply immediately, is not legible.** *"If I click the attack button
+   will they do something or do I need to direct them?"* Two different grammars share one row of buttons with no visual
+   distinction.
+
+### Two more defects from the same session (2026-09-18)
+
+10. **No machine-gun fire from the scouts.** *"I'm not seeing any cool machine gun fire from the scouts."* The weapon
+    exists (`machine_gun`, 45 m, 3.5 damage hitscan at 10/s) and round 5's audio work covered it; what is missing is the
+    **visible** fire. A hitscan weapon with no tracer is invisible, and the scouts are the units whose whole job is to
+    be seen working.
+11. **Unit sizes are not to scale, and the discrepancy is backwards.** *"There's a huge size discrepancy for the units.
+    Our semi truck for the gang that was supposed to be a huge tank is tiny compared to the other vehicles. Our unit
+    sizes should be reflected here. Scouts are small, the IFVs are bigger, the tanks bigger than that (everything drawn
+    to scale basically)."* The catalog already carries `hull_size` per unit (C1), so **the data exists and the visuals
+    are not honouring it** — a gang *tank* rendering smaller than a scout inverts the read the whole
+    rock-paper-scissors design depends on. This is the same class as every other round-6 finding: the information is
+    there and does not reach the screen.
+
+### Map building blocks: the lead's two additions (2026-09-18)
+
+12. **A kit of sci-fi buildings drawn from primitives, not from Meshy — and the reason is a cityscape map.** He
+    clarified the purpose (2026-09-19): *"on the shaped primitives, the reason I was thinking about this is because a
+    cityscape type map would be good, but I would just need to get it to match the theme and consistency of our gladiator
+    environment."* **So the deliverable is not a generic block kit, it is a city that reads as part of this venue.** That
+    is a harder and better brief: the constraint is *theme consistency with the gladiator arena*, which already has a
+    settled look — blast-barrier walls with neon light bars, grandstands, floodlight towers, ad screens, gang-tagged
+    container barricades, a lit city skyline on the horizon (feel's X4). A cityscape map should read as **the city that
+    skyline belongs to**, seen from inside it, rather than as a different game's level.
+    Note the pleasing consequence: feel built a distant skyline this round for the camera to find at low angles. **A
+    cityscape arena is that skyline made playable** — same palette, same neon vocabulary, the buildings the horizon was
+    promising. *"To build more complex maps we'll need more
+    building blocks to work with. I realize that all these meshy artifacts take up a lot of space. Therefore, would we
+    be able to formulate some of cool-looking sci-fi 'buildings' or blocks or something like that that's completely
+    rendered using primitive types in our system - you should have better ideas than me but I'd envision that has the
+    cyberpunk neon borders. This way, these can become building blocks for creating more complex maps (where we can
+    allow teams to set up kill zones or whatever other strategy)."*
+    **Why this is better than it sounds, and cheap:** procedural blocks cost no disk, no Meshy credits and no concept
+    review cycle; they are **parameterisable**, so a map author asks for *"a 40 m block with two entrances"* rather than
+    placing meshes by hand; and they suit the renderer, which does not batch 3D draws (trip-up 45) but does batch static
+    art per material via `StaticBatcher`. They also sidestep round 6's terrain limits: **the navmesh caps slopes near
+    26.6° and every ramp needs a flat shelf at the top** (arena's X4), and blocks with explicit footprints are far
+    easier to keep navigable than sculpted geometry. The existing arena kit (containers, ad screens, barricades, signs)
+    is the precedent; this extends it with buildings.
+13. **Water or pits: impassable but shootable over.** *"We need water or pits - these would be elements that units could
+    not cross but they could still fire over. Useful for setting up kill zones. i.e. we could have a map that required
+    crossing some bridges to get to the other side."*
+    **This is the single cheapest tactical primitive available to us, because of how the two systems are already
+    separated:** navigation is baked from collision shapes in the `navigation_source` group, while line of sight is a
+    physics ray at 1.3 m eye height (`game/ai/perception.gd`). **So a hole in the navmesh that carries no tall collider
+    is impassable and transparent to fire, for free** — no new mechanic, only geometry. It needs: a `water`/`pit`
+    footprint type that carves the mesh, a **bridge** that restores a walkable strip across it, and fairness care —
+    holes and bridges must be point-symmetric like everything else, because the mesh is baked as one half plus its 180°
+    mirror (trip-up 21).
+    **And it is the terrain answer to the round-6 finding three streams reached independently:** covered flanking routes
+    already cost only a 1.0–1.1× detour and nobody takes them, because the only thing worth holding is in the middle.
+    A map where crossing is funnelled onto bridges makes *position* matter without needing the objective to move —
+    it is arena's X3 argument achieved with geometry instead of rules, and the two should compound.
+
+### The lead's arena verdict (2026-09-19, read back from the review page's store)
+
+| Arena | His call | Centre sees |
+|---|---|---|
+| **Boulevard** | **CUT** | 0.64 |
+| **Foundry** (and the Furnace) | **CUT** | 0.56 |
+| **Boneyard** | **CUT** | 0.40 |
+| **Scrapyard** | **CUT** | 0.29 |
+| **Pit** | **KEEP** | 0.30 |
+| **Yard** | **KEEP** | 0.20 |
+
+No notes. **He kept two and cut the rest** — five of seven shipping arenas, counting the Furnace on Foundry's card.
+
+**The finding that matters more than the verdict: centre-visibility predicted it.** Rank the six by the share of the
+field their centre can see and **the four most open maps are exactly the four he cut.** He had those numbers on the page
+but no way to sort by them, so this is not him reading the metric back to us. Scrapyard (0.29) and Pit (0.30) are nearly
+tied and he split them, so it is not a pure function of the measure — but **nothing else we have predicts his taste this
+well.** That turns `centre_sees_share` from a description into a **design target**: a map whose middle can see most of
+the field is a map he will not want, and we can now know that before he plays it.
+
+**CONFIRMED by him in words as well as buttons (2026-09-19):** *"the only two maps worth keeping were the last one and
+the one with the octagon of shipping containers. All the maps need to be higher quality regardless."*
+- **One ambiguity, deliberately not resolved by guessing:** neither Pit nor Yard is a clean ring in the data (container
+  radii spread wide on both), so *"the octagon of shipping containers"* does not map onto one of them unmistakably. **His
+  button answers are the record** — Pit and Yard — and nothing is being deleted, so a mismatch is cheap to correct. Ask
+  once when convenient rather than inferring.
+- **"All the maps need to be higher quality regardless"** — so the two survivors are not finished either. Keeping a map
+  means investing in it, not shipping it as-is.
+
+**NOT ACTED ON — awaiting one line from him, and the reason is size, not doubt** (arena raised both, correctly):
+1. **The page did not prepare him for a cut this large.** It said cut was a real answer we would act on and led with
+   boulevard; it did not say *"you are about to remove five of the seven maps in the game"*. He may mean exactly that, or
+   he may mean *"these four are not worth fixing — prioritise accordingly"*. One line settles it.
+2. **Foundry is `Arena.DEFAULT_LAYOUT`.** Every headless run, the sim baseline and most tests use it. **Cutting it is an
+   infrastructure change, not a content change**, and it would move the baseline. That must be deliberate rather than a
+   consequence.
+**Meanwhile, treat the four as "do not invest" rather than deleted:** no new work on them, and any round-7 map effort
+goes to Pit, Yard and new maps built to the risk-and-reason principle below.
+
+### The principle behind all of it: terrain makes risk, objectives make reason (lead, 2026-09-18)
+
+> *"On the bridge note, what I'm thinking though is that clearly crossing a bridge is risky, so you don't want a simple
+> map with 2 sides connecting two bridges. There generally has to be some compelling reason to cross the bridge to take
+> some advantageous ground."*
+
+**This is the design rule the round-6 findings were circling, and it settles what arena's X3 is actually for.** Note
+that the two failures it describes are the *same* failure inverted:
+
+- **A central objective** makes every fight collapse into the middle, so terrain has nothing to decide. Measured three
+  ways this round: flanking routes used 4–5% of unit-time on dense layouts, median hit range 39–43 m on *every* map
+  regardless of shape, and doctrine winning at squad scale but losing at 30 a side *with a control point*.
+- **A bridge with nothing beyond it** makes every fight collapse onto your own side. Both armies hold safe ground,
+  crossing is pure downside, and the map is a wall with a decoration on it.
+
+Both are the same defect: **the map offers no reason to be somewhere risky.** So:
+
+> **Terrain creates risk. Objectives create reason. Neither works alone, and they must be placed in relation to each
+> other — the prize goes where the risk is.**
+
+What follows for map authoring, and these are testable claims rather than taste:
+0. **The measurement we have scores only half of this, and arena flagged it.** Its X2 exposure analysis scores a route
+   by **what it costs** (exposure, detour) and never by **what it reaches**. So it reports that every map already offers
+   cheap covered flanks — 1.0–1.1× detour everywhere — when the lead's framing says the cheapness is the *symptom*:
+   **a route that is cheap and leads nowhere worth going is not a tactical option, it is scenery.** Any round-7 metric
+   for this needs a term for *what is at the end of the route*, or it will keep reporting that the maps are already fine.
+1. **An objective must sit on ground you have to cross something to reach**, or the crossing is decoration. arena's
+   measurement — covered flanking routes already cost only a **1.0–1.1× detour** on every map and nobody takes them —
+   is exactly this: the routes are cheap and lead nowhere worth going.
+2. **Contested ground must be *better* than your own safe ground**, or a rational player never leaves. Symmetric safe
+   ground plus a symmetric objective in the middle is the current map and it produces the brawl he has complained about
+   twice.
+3. **A kill zone is only a decision if the defender gives something up to hold it.** If overwatching the bridge is free,
+   it is not a choice. arena has the instrument for this already: posting an element buys **+0.077 on open foundry
+   against +0.017 in the dense yard** — so what an overwatch position is *worth* is already measurable per map, and a
+   good bridge map should show a large gap.
+4. **Therefore arena's X3 and the bridge work are one job, not two.** Moving the objective off the centre line and
+   funnelling crossings onto bridges are the reason-half and the risk-half of the same change, and measuring either
+   alone will under-read it — exactly as combat's series under-read N5 until its control disabled the gates as well as
+   the bands (lesson 62).
+
+### The arena's shape and finish (lead, 2026-09-19)
+
+14. **The announcers cut each other off.** *"The announcers cut each others' audio off, so that destroys the feel of the
+    announcement."* A priority/queueing defect in the booth, not a content problem — and it undoes the most expensive
+    asset in the game. Round 4 already found one silencing bug in the booth (a priority rule starving the Veteran), so
+    this is the second time announcer *scheduling* has been the fault rather than the lines.
+15. **The arena is a plain square and needs to stop being one.** *"We need to figure out how to upgrade the vibe of the
+    arena. Our environment is very clearly a simple square. As was the case with our popups, chamfered edges even though
+    they're fairly subtle gives the attention to detail to bring the game to life. The arena could also take on octagon
+    or hexagon-like shapes."*
+    Two separate asks inside that, and the first is cheap while the second is not:
+    - **Chamfered edges as a design language**, carried from the HUD widgets into the 3D world. He is pointing at
+      something the UI already does (the cyber frames) and asking for the same restraint in the arena: subtle, not
+      showy, and specifically as *attention to detail* rather than as decoration.
+    - **A non-rectangular arena** — octagon or hexagon.
+    **The shape change is NOT an art job, and this is the coupling to know before anyone starts.** `Arena.validate()`
+    requires `half_size` to equal `Match.ARENA_HALF_SIZE` exactly — a single scalar — *"the perimeter, radar, and fog are
+    sized for it"*. And `RtsCamera` computes the wall cutaway as **how far the focus is from the perimeter *square***
+    (`perimeter_half()`, and the comment says square). So a hexagonal arena touches: **the camera's cutaway** (control's,
+    and it is load-bearing at the lead's 21° pitch), **the radar outline**, **the fog**, **spawn and point-symmetry
+    validation**, and **the navmesh's half-plus-180°-mirror construction** (which survives 6- and 8-fold symmetry, but
+    the bake region and the seam do not obviously). Octagon and hexagon both contain a 180° rotation, so fairness is
+    preservable — but it is a contract change across three streams, not a layout edit.
+    **Cheapest honest first step:** chamfer the *corners* of the existing square — which is literally an octagon with
+    four short sides, gets the visual win he is asking for, and can be done with a per-arena corner-cut parameter rather
+    than by making `half_size` a polygon.
+
+### Two defects to fix, not design
+
+8. **Some vehicles point backwards at start-up** (seen with the gangs).
+9. **Squads do not start as an army.** *"It seems like squads are not scoped together at the start; the units should
+   start out like an army where there actually is a starting formation where each squad is separated."* Round 6 built
+   formations and form-up, and then the match still opens with an undifferentiated mass.
 
 ## Units: fixed types that counter each other
 

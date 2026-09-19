@@ -63,3 +63,7 @@ slope-probe: import ## X4: what slope the navmesh bakes over and a vehicle can c
 .PHONY: arena-page
 arena-page: ## X5: the lead's arena review page -- every shipping arena as a picture plus what it measures, one self-contained file (needs make arena-report and make remote T=arena-shots first) -> build/arena-page/index.html
 	$(PYTHON) tools/arena_page.py --report $(BUILD_DIR)/arenas/report.json --out $(BUILD_DIR)/arena-page/index.html
+
+.PHONY: arena-reach
+arena-reach: import ## X2: write the catalog's covering ranges (Engagement.covering_range) to build/arena-reach.json, which arena-report reads
+	$(GODOT) --headless --path . --script res://tests/arena/reach_probe.gd -- --json=$(CURDIR)/$(BUILD_DIR)/arena-reach.json

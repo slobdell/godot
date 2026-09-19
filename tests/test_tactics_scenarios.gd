@@ -7,7 +7,12 @@ extends TestCase
 func test_an_element_ambushed_at_close_range_assaults_through_it() -> void:
 	# The lead: "if a unit gets ambushed, the standard operating procedure is to face the direction of the
 	# ambush and charge forward."
-	var result: Dictionary = await TacticsScenarios.near_ambush(self, 18.0)
+	# 22 s, the scenario's own default. The check used 18 until round 6, when the element came through at 18.5 s: nav
+	# bisected it (00c99bf4, CP4 before nav: 531 ticks = 17.7 s; 7cce78af, nav's merge: 555 = 18.5 s; every nav mechanism
+	# off at once: still 555; round 5's _around_friends sidestep back on alone: 531). The cause is the removal of that
+	# overtaking sidestep — followers no longer pass a friend in the same lane, so the column stays a column and reaches
+	# the far side 0.8 s later. The assault itself is unchanged (~12.7 s). Not slack: a deliberate behaviour change.
+	var result: Dictionary = await TacticsScenarios.near_ambush(self)
 	var drills: Array = result["drills"]
 	assert_true(drills.has("near_ambush"), "the element recognises a near ambush (ran %s)" % [drills])
 	assert_true(drills.has("assault_through"), "and assaults through it (ran %s)" % [drills])

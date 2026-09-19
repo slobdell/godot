@@ -128,8 +128,9 @@ const ATTACK_MOVE_FIGHT := 0.5
 const ATTACK_MOVE_REACH_MARGIN := 10.0
 ## A move or attack-move counts as done within this distance of the unit's slot (meters)...
 const ORDER_ARRIVE := 3.5
-## ...or this close, when it has made no progress for STALL_TICKS (a crowded slot, a slot against a wall).
-const ORDER_STALL_ARRIVE := 12.0
+## (Round 6, nav: there is no "close enough after a stall" any more. Round 5 completed a stalled move from up to 12 m away,
+## which is what made a jammed horde look like it had decided to stop. An order completes when the unit arrives; a unit
+## that cannot says so through Movement.state() — phase "blocked", and what blocks it — and keeps trying.)
 ## ...and for wheeled units within this share of their turning radius (see _order_arrive), at most WHEELS_ARRIVE_MAX.
 const WHEELS_ARRIVE_RADII := 0.6
 const WHEELS_ARRIVE_MAX := 6.0
@@ -576,8 +577,8 @@ func _update_order_progress() -> void:
 			# An attack-move is done when it's there and nothing is left to shoot (control's rule).
 			var fighting: bool = order["verb"] == "attack_move" and engaged_target != ""
 			var arrive := _order_arrive()
-			if not fighting and (distance <= arrive or (stalled_ticks >= STALL_TICKS and distance <= ORDER_STALL_ARRIVE)):
-				_finish_order(goal if distance <= arrive else here)
+			if not fighting and distance <= arrive:
+				_finish_order(goal)
 		"stop":
 			# Stopped, and stopped for a moment (a unit that had barely started moving would finish at once).
 			if tank.estimated_velocity.length() < STOPPED_SPEED and game_match.tick - int(order["issued_tick"]) >= STOP_SETTLE_TICKS:
