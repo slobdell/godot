@@ -907,3 +907,19 @@ The kickoff prompt is one line; this section is the rest.
     "`main`" meant something different an hour ago. And **say so when you hand over a branch merged at a stale
     checkpoint**: arena warned that its next hash would carry nav's and control's work as well as its own, which is
     exactly what an orchestrator expecting an arena-only diff needs to hear.
+69. **"It fails on `main` too" clears a stream only if `main` does not contain that stream's work — and that stops
+    being true the moment it first merges.** Round 6, the round's most careful isolation and it was still unsafe. nav
+    reported a failing scenario, ruled its own work out by switching **five** mechanisms off individually and all
+    together on its branch, and observed the same failure on `main` — a properly constructed control. The orchestrator
+    relayed it to another stream as "not nav's". **But `main` already contained nav's earlier merge**, including the one
+    mechanism whose experiment switch was broken and which therefore had *not* been in the A/B. nav caught it and
+    retracted before the other stream had spent an hour.
+    Two instructions:
+    - **In a round where streams merge repeatedly, `main` is a clean baseline for a stream only until that stream's
+      first merge.** After that, "reproduces on `main`" means "reproduces with my own work present". Use
+      `git archive` of a commit *before* your first merge, or an explicit revert, if you need a real control.
+    - **A feature whose kill switch does not work is invisible to your own A/B, and you will not notice** — the switch
+      reads as coverage. When you build an experiment switch, test that it actually changes behaviour (mutation-check
+      it) before you rely on it to exonerate anything.
+    And the orchestrator's half: **when a stream hands you an exoneration, check that the control is still a control
+    before relaying it.** The relay is where a plausible inference becomes another stream's afternoon.
