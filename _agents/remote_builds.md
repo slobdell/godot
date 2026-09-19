@@ -227,3 +227,18 @@ six streams depend on and it should not be rewritten mid-round — the disciplin
    after assuming anything older than its launch was stale and killing its own live chain — exit 143).
 4. **Kill only a PID you can tie to a specific launch by its start time.** Age alone is not evidence: checks legitimately
    run 30–50 minutes.
+
+## ⚠ A cwd-filtered `pkill` can match its own shell (control, 2026-09-19)
+
+control killed a superseded queued run with `pgrep -f "remote.sh|make remote"` filtered by cwd — **and the pattern matched
+the kill command's own shell**, whose command line contains `make remote` and whose cwd is the worktree. **It killed
+itself before reaching the ssh step, leaving the builder0 half orphaned in the queue.**
+
+This is trip-up 79 one layer deeper: **filtering by cwd is necessary and not sufficient, because your own shell is also in
+that cwd.**
+
+- **Exclude `$$` and its parent from any cwd-filtered kill**, then **verify on builder0 afterwards** rather than assuming
+  the local kill reached the remote side (it never does — see the orphaned-run section above).
+- **An orphaned `slot.sh` ignores SIGTERM while sleeping in its wait loop and needs `kill -9`.**
+- **`slot.sh`'s `kill -0` ticket check made the dead ticket harmless** — a queue that prunes tickets by liveness survives
+  exactly this, which is why it was rewritten that way.
