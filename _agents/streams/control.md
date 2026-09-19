@@ -153,7 +153,7 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
 **STATE AT PAUSE (2026-09-18, quota stop; resuming ~4 days later): everything is committed.** Last commit with code:
 `017fda42` (the lead's camera: 21°, FOV 35, 49 m, auto-framing on; the `-` `=` hints; squad-1 first frame; tests
-pin their lens). **Its `make remote T=check` (#14) was still running at the stop — result unknown: re-verify it.**
+pin their lens). **Its `make remote T=check` (#14) came back GREEN: 1085 passed, 0 failed (builder0). Merge here: `017fda42`.**
 It passed locally (camera 42, control 145, command 50, radar 7, touch 9, all 0 failed; laptop) and `make remote
 T=shell-playtest` exited 0 on it (builder0). **Last verified green: `2dbd985d`** (1082/0) and `ff28563d` (1084/0);
 `42d42fd2` and `eb2d7b74` were never fully checked (superseded). Nothing is mid-way: no feature started after
