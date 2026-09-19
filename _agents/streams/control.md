@@ -178,7 +178,9 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | Attack pin wording (squad's, adopted by the orchestrator) | done (`648563f8`): `ATTACK · 2/4 on target · 1 moving round · 1 NOT COMPLYING` — "moving round" = the member's order names the target and its gun is on nothing else | `test_control_order_refused` (6, 5/5 runs) |
 | Drift heuristic for move/attack-move tasks | **declined by the orchestrator, on evidence**: under attack-move units spend 30–36% of their time off their order by design (arena's measurement), so a "not obeying" light would fire a third of the time and teach him to ignore the HUD. A predicate needs a measurement of normal first | — |
 
-**Round 8 candidate: `4ebe47a7`** (main 28eb403f merged) — #26 running. #25 on `9dc17901` was not a verdict: feel's
+| Scale playtest regression (squad, after its consolidation) | done (`3c1c224e`): with nothing selected the vision camera framed the whole army (can't fit 100 m at 35°) → now group 1; and the lean toward the reach parked the selected squad UNDER the command card (symmetric 0.78 bound vs the card at 0.44 of the half-height) → `VISION_FRAME_BOTTOM` 0.40. Playtest with squad's 90bd2212: ok=true, group 1 at y 586–653 vs card ~778 | `test_rts_camera::test_a_long_lean_keeps_the_squad_above_the_command_card` (fails on the old camera: 0.49) |
+
+**Round 8 candidate: `3c1c224e`** (next check). Before it, **`4ebe47a7`** (main 28eb403f merged) — #26 running. #25 on `9dc17901` was not a verdict: feel's
 `test_a_new_state_waits_for_a_bar_line` failed on builder0 (audio-driver timing; reported to feel), so make stopped at
 `test`. **Round 8 is otherwise done for control.**
 
