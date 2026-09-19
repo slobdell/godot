@@ -447,9 +447,29 @@ stack first, then the layer that commands it, then how the player reads and issu
   ordered, 30 Hz, Jolt and all of CP4 — so **the directive bug is an unexcluded candidate, not a demonstrated cause, and
   neither is the mechanics story below.** combat has retracted its own attribution in `balance.md` at `0c1fb760`, in
   place, keeping the measurement and striking the cause. **Read the explanation below as one of two candidates.**
-  **What settles it is an ablation, not an argument** (lesson 25 — attribute a cost by *removing* the behaviour):
-  **delete the `gangs/scout` entry on the current build and re-run the matrix.** Collapse toward 23% means the directive
-  did the work; holding near 53% means the mechanics explanation survives. Scheduled after the per-map designator runs.
+  **⚠ ABLATION RUN, AND IT CANNOT ANSWER THE QUESTION — so both numbers are RETIRED rather than explained** (combat,
+  builder0 at `f745f48a`, n=30 per faction per arm, per map, never pooled; positive control fired in all four arms —
+  21 sides fielded a designator, 535/559/758/656 paints; `compare_arms` accepted both subtractions):
+
+  | faction | boulevard (0.64) | yard (0.20) | treated? |
+  |---|---|---|---|
+  | **gangs** | **+7 pts** | **+7 pts** | **yes — the only one** |
+  | law | −7 pts | −10 pts | no |
+  | condemned | +3 pts | +0 pts | no |
+  | syndicate | −3 pts | +3 pts | no |
+
+  **`gangs/scout` is the only faction-keyed entry in `Army.SQUADS`, so every other row measures what an UNTREATED faction
+  does between two arms — and law moved −10 points without being touched, larger than the gangs' +7.** The noise floor is
+  not an argument; it is in the table, measured by factions that received no treatment. SE of a difference of win rates at
+  n=30 is **12.9 points**.
+  **The direction is consistent** (the gangs are worse without their directive on both an open and a closed map) **and it
+  is an order of magnitude short of explaining 23% → 53%.** So **neither CP4 nor the `gangs/scout` fix is established as
+  the cause, and combat claims none of it.**
+  **Most likely the original comparison was never a comparison** — different builds and, on this project's own foundry
+  finding, plausibly different maps. **That is exactly the subtraction `compare_arms` now refuses and could not refuse
+  then.** Resolving ±7 points would need ~n=400 per faction per arm — about SEEDS=70 and four hours of builder0 — for an
+  effect smaller than any balance difference the lead would notice. **Decision: do not chase it. The two numbers are
+  retired.**
   **And the 23% itself was not a false number** — combat's correction, which is the sharper point: *a build in which 15
   assault vehicles sit at standoff spotting while the swarm dies really does win 23%.* **The error was treating a
   measurement of a configuration as a fact about a faction** — the same error as reading a foundry number as a property
