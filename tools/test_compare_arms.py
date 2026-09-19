@@ -90,6 +90,41 @@ class Refusals(unittest.TestCase):
         self.assertEqual(self.check(arm(json="x.json"), arm(no_faction_directives=True, json="y.json")), [])
 
 
+class BuildIsTheArm(unittest.TestCase):
+    """Sizing a vehicle cannot be put behind a runner flag, so without this the tool refuses the one comparison it
+    exists to make. Declaring it must SWAP which guard applies, never remove one."""
+
+    def check(self, treatment, control, declared):
+        return compare_arms.refusals(treatment, control, ("t.json", "c.json"), declared)
+
+    def test_a_declared_build_arm_allows_the_commits_to_differ(self):
+        self.assertEqual(self.check(arm(commit="aaaa1111"), arm(commit="bbbb2222"), "gang_tank 5.6 m -> 14 m"), [])
+
+    def test_and_then_REQUIRES_them_to_differ(self):
+        # The teeth. If the build is the arm and both runs are the same build, it is one arm run twice -- the
+        # clean-null failure, wearing the costume of a legitimate code-level treatment.
+        problems = self.check(arm(), arm(), "gang_tank 5.6 m -> 14 m")
+        self.assertTrue(any("one arm run twice" in p for p in problems), problems)
+
+    def test_an_undeclared_commit_difference_is_still_refused(self):
+        problems = self.check(arm(commit="aaaa1111"), arm(commit="bbbb2222"), "")
+        self.assertTrue(any("run.commit differs" in p for p in problems), problems)
+        self.assertTrue(any("--build-is-the-arm" in p for p in problems), "and it says how to declare it")
+
+    def test_declaring_it_does_not_excuse_a_different_machine(self):
+        problems = self.check(arm(commit="aaaa1111"), arm(commit="bbbb2222", machine="flightdeck"),
+                              "gang_tank 5.6 m -> 14 m")
+        self.assertTrue(any("run.machine" in p for p in problems), problems)
+
+    def test_declaring_it_does_not_excuse_a_different_workload(self):
+        problems = self.check(arm(commit="aaaa1111"), arm(commit="bbbb2222", arena="pit"), "a size change")
+        self.assertTrue(any("args.arena" in p for p in problems), problems)
+
+    def test_declaring_it_does_not_excuse_a_dirty_tree(self):
+        problems = self.check(arm(commit="aaaa1111"), arm(commit="bbbb2222", dirty=True), "a size change")
+        self.assertTrue(any("DIRTY" in p for p in problems), problems)
+
+
 class ExitStatus(unittest.TestCase):
     def test_a_refusal_exits_nonzero(self):
         # faction_matrix.py shipped with `main()` called bare, so its refusals returned 2 and the process exited
