@@ -1720,6 +1720,24 @@
  "control_point": {
   "radius": 16.0
  },
+ "objectives": [
+  {
+   "name": "the west depot",
+   "position": [
+    -62.0,
+    -34.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "the west depot (far)",
+   "position": [
+    62.0,
+    34.0
+   ],
+   "radius": 14.0
+  }
+ ],
  "shape": {
   "kind": "hexagon"
  }

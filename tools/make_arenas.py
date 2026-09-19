@@ -166,7 +166,13 @@ def objective(name, x, z, radius=14.0):
 
 def objective_pair(name, x, z, radius=14.0):
     """An objective and its 180 degree twin. Each side gets one it holds cheaply and one it must contest, which is
-    the dilemma combat's share-of-objectives scoring creates: hold your own at half rate, or take theirs at full."""
+    the dilemma combat's share-of-objectives scoring creates: hold your own at half rate, or take theirs at full.
+
+    **Decision spread is not a quantity to maximise**, which a sweep of pit's placements made obvious: pushing the
+    pair from z = -30 to -70 ran the spread 0.13 -> 0.42 -> 0.63 -> 0.96, and 0.96 is not a better map. It means
+    one objective is nearly free and the other nearly impossible, which is a formality rather than a choice -- and
+    at z = -70 it sits in the base's approach funnel, the boulevard failure this stream wrote a placement rule
+    against. Too little spread is no decision; too much is no contest. Both shipping pairs sit near 0.4."""
     return [objective(name, x, z, radius), objective(name + " (far)", -x, -z, radius)]
 
 
@@ -273,11 +279,11 @@ write_v2("yard", "The Container Yard",
                 lane("outer west", [(-67, 90), (-67, 0), (-67, -90)], 28),
                 lane("far west", [(-100, 90), (-100, 0), (-100, -90)], 26)],
          shape={"kind": "hexagon"}, half_size=140.0,
-         # OBJECTIVE PAIR, MEASURED AND HELD BACK: objective_pair("the west depot", -62.0, -34.0) takes yard's
-         # decision spread from 0.00 to 0.35 -- one objective each side holds cheaply and one it must contest.
-         # It cannot ship until squad moves game/tactics/objectives.gd onto N7's instance API: its guard refuses a
-         # non-central layout, and a real match on this yard threw 35,336 errors while still producing a winner.
-         # Re-enable by uncommenting; nothing else needs to change.
+         # A mirrored pair: each side has one objective it holds cheaply and one it must contest. Combat's
+         # share-of-objectives scoring makes that a real dilemma -- hold your own at half rate, or take theirs at
+         # full. Held back until squad's Objectives migration landed (2341201f); its guard refused a non-central
+         # layout until then, and rightly.
+         objectives=objective_pair("the west depot", -62.0, -34.0),
          regions=[region("the plaza", "centre", 0, 0, 16),
                   region("yard gate", "chokepoint", -34, 38, 8), region("east alley", "chokepoint", 67, 38, 8),
                   region("west stacks", "cover_cluster", -67, 40, 22), region("base apron", "cover_cluster", 0, 78, 30)])
@@ -356,8 +362,9 @@ write_v2("pit", "The Pit",
          "ring; artillery punishes whoever crowds it.",
          pit,
          shape={"kind": "hexagon"}, half_size=140.0,
-         # As yard: objective_pair("the west yard", -74.0, -30.0, 15.0) takes pit from 0.00 to 0.26. Held back on
-         # squad's Objectives migration.
+         # As yard: the ring is still the centre, but holding it is no longer the whole game -- you must leave it
+         # to score at full rate.
+         objectives=objective_pair("the west yard", -74.0, -50.0, 15.0),
          lanes=[lane("south gate", [(0, 90), (0, 42), (0, 0), (0, -42), (0, -90)], 12) | {"self_mirror": True},
                 lane("west gate", [(-40, 90), (-70, 40), (-42, 0), (0, 0), (42, 0), (70, -40), (40, -90)], 12) | {"self_mirror": True},
                 lane("west flank", [(-66, 90), (-100, 0), (-66, -90)], 30)],

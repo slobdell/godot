@@ -1162,6 +1162,24 @@
  "control_point": {
   "radius": 16.0
  },
+ "objectives": [
+  {
+   "name": "the west yard",
+   "position": [
+    -74.0,
+    -50.0
+   ],
+   "radius": 15.0
+  },
+  {
+   "name": "the west yard (far)",
+   "position": [
+    74.0,
+    50.0
+   ],
+   "radius": 15.0
+  }
+ ],
  "shape": {
   "kind": "hexagon"
  }
