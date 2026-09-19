@@ -712,6 +712,68 @@ What follows for map authoring, and these are testable claims rather than taste:
    alone will under-read it — exactly as combat's series under-read N5 until its control disabled the gates as well as
    the bands (lesson 62).
 
+### THE ROUND'S HEADLINE: the units are still not smart enough (lead, 2026-09-19)
+
+> *"Another thing that's making the game unplayable on closer inspection is that the vehicles are still just too dumb. A
+> lot of them just keep getting stuck in places, and that's I think why I'm feeling like the units aren't obeying me. Dumb
+> vehicles that can't get into formation will also never provide the feel I was hoping for to create formations. And in
+> fact, the fact that this is challenging to implement is a good sign, because when it does eventually work it will look
+> and feel sophisticated. I want you to research and implement whatever pathing algorithms or decision weighing
+> algorithms necessary to make these units look and feel smart."*
+
+**This contradicts round 6's headline number, and the contradiction is the finding.** nav measured **60/60 arrival on
+every configuration** and **30/30 order completion with five squads ordered across one another**. Both are real. **Both
+were measured with no enemy.** `tests/nav/order_probe.gd` says so in its own header: *"Nobody fights (no enemy): this
+measures driving and order completion only."* And `mk/nav.mk` notes the maze probe has no randomness *"in a hold-fire
+drive"*.
+
+**So the round proved that a horde can drive. It never measured whether a horde can drive while fighting** — which is the
+only configuration the lead ever plays. This is lesson 23 for the fifth time in this project: *a number taken in a
+configuration the player does not get measures a game nobody plays.*
+
+**The suspect is therefore not pathfinding, and the lead's own phrasing points at it:** *"pathing algorithms **or decision
+weighing algorithms**"*. In a real fight the decision layer re-tasks the movement layer constantly — brains re-decide
+(ENGAGE, SUPPRESS, cover-seeking, `CombatMotion`'s 16-direction context steering), drills re-issue element orders,
+targets change, units halt to shoot and back away under fire. **A unit re-tasked before it can complete any movement
+looks stuck and is stuck, with no pathing bug anywhere.** Round 6 has direct evidence that this class of failure is real
+and common: round 4's drills stole the element from each other *every tick* so neither completed once; the
+support-by-fire line alternated with `near_ambush` **every tick**, 128 orders in 10 s; and squad's own X4 found 47 idle
+re-issues per window before fixing it. **Every one of those was thrash between a decider and an executor, and every one
+was invisible until something measured it.**
+
+**What the round must therefore build first is an instrument, not an algorithm:** the arrival, stall and re-task
+measurements **in a real fight**, per unit, with the *reason* a unit is not making progress attributed — re-tasked,
+blocked, yielding, halted to shoot, no path. Until that exists, any algorithm is a guess, and this project has spent a
+round learning what guesses cost.
+
+**And his framing is worth keeping, because it licenses the expensive version:** *"the fact that this is challenging to
+implement is a good sign, because when it does eventually work it will look and feel sophisticated."* He is explicitly
+authorising research and real algorithms rather than patches. Formations that *look* sophisticated are the goal; a unit
+that cannot hold a slot while fighting cannot ever deliver that.
+
+### ANSWERED: why he could not tell which way his units were facing (2026-09-19)
+
+*"I couldn't tell what direction they were facing."* **Facing was broken at every layer, and two streams found the halves
+independently without either seeing the whole:**
+
+- **squad found the value being dropped.** K1 has carried an optional `facing` since round 5, and **`OrderFeed` never
+  passed it to the brain** — so *a unit told to face east faced north*. Element tasks **rejected `facing` outright** as an
+  unknown key. Both fixed.
+- **nav found that even when it arrives, brains never execute it.** Measured (`make nav-facing`, builder0, yard, 30 units
+  ordered to face 90° off their travel): after move+facing **the median unit is 85° off and still is 10 s later — 2 of 30
+  within 15°**; for hold+facing, **1 of 29**. The cause is in `tank_brain` (squad's file), and nav has a **measured
+  prototype patch** — move **29/30** within 15° at +10 s, hold 22/29 — left at
+  `_agents/streams/references/nav/round7_brain_facing.patch` rather than applied to someone else's file.
+
+**So there was usually no facing to see.** The contract carried it, the feed dropped it, the tasks rejected it, and the
+brain ignored it. **Three independent failures of one feature, none of which any test noticed**, because nothing asserted
+the *outcome* — that a unit told to face a direction ends up facing it. That is lesson 47's shape again: a guarantee no
+test isolates.
+
+**Why this matters beyond the complaint:** round 6 made facing *mechanically* real in four places — armour facing, the
+crossing-acquisition penalty, support-by-fire arcs, `UnitCommand.facing`. **All four were operating on a quantity the
+player could not control and the units did not honour.** Emplacing an ambush, the use case he named, was not achievable.
+
 ### The arena's shape and finish (lead, 2026-09-19)
 
 14. **The announcers cut each other off.** *"The announcers cut each others' audio off, so that destroys the feel of the
@@ -735,7 +797,34 @@ What follows for map authoring, and these are testable claims rather than taste:
     validation**, and **the navmesh's half-plus-180°-mirror construction** (which survives 6- and 8-fold symmetry, but
     the bake region and the seam do not obviously). Octagon and hexagon both contain a 180° rotation, so fairness is
     preservable — but it is a contract change across three streams, not a layout edit.
-    **Cheapest honest first step:** chamfer the *corners* of the existing square — which is literally an octagon with
+    **DECIDED: a hexagon, flat side facing each base** (arena, 2026-09-19, `40029d59`). Measured at our 121 m apothem,
+    not argued:
+
+    | shape | side | midfield width | width at z = ±60 | centre-to-wall variation | corner |
+    |---|---|---|---|---|---|
+    | square | 242 m | 242 m | 242 m | **41.4%** | 90° |
+    | **hexagon** | 139.7 m | **279 m** | **210 m** | 15.5% | 120° |
+    | octagon | 100.2 m | 242 m | 222 m | **8.2%** | 135° |
+
+    Base-to-base is 2 × apothem = 242 m in all three, so the crossing itself does not change.
+    **The hexagon is the shape that varies most, and variation is what the complaint is about.** Wide in the middle
+    (**279 m — 15% more lateral room to flank** than either alternative) and pinched to 210 m at the approaches: an open
+    midfield for manoeuvre and two natural funnels in front of the bases, **produced by the boundary alone, before a
+    single prop is placed.**
+    **The octagon is the most uniform arena available** — 8.2% variation, width barely changing, 135° corners that
+    shelter almost nothing. **The closest thing to a featureless disc, and *"the game is just this big open brawl"* is
+    the complaint we are answering, so its uniformity is the failure mode rather than a neutral property.** The stands'
+    tiling (a hexagon takes exactly 6 × 23.07 m modules; an octagon leaves 3.9 m gaps at all eight corners) agrees and
+    was **confirmatory, not decisive** — arena states it would have chosen a hexagon with no stands at all.
+    **Orientation is a real choice and it is flat-side-to-base**, which preserves how bases sit on a wall today. The
+    alternative — a *vertex* facing each base — inverts everything: spawns in a corner, pinched midfield, wide
+    approaches. One constant, and worth an argument rather than an assumption if anyone prefers it.
+    **The caveat, with a trigger date:** the pinch leaves **less room for a wide flank near a base** (210 m against the
+    square's 242 m). That is fine, arguably good, **only while objectives stay off the base line** — an objective near a
+    base turns that funnel into a corridor with no way round, which is the boulevard failure in a new shape.
+    **Re-check when off-centre objectives land**, which is also when the reward-term metric exists to check it with.
+
+    **Cheapest first step if the shape ever needs deferring:** chamfer the *corners* of the existing square — which is literally an octagon with
     four short sides, gets the visual win he is asking for, and can be done with a per-arena corner-cut parameter rather
     than by making `half_size` a polygon.
 
