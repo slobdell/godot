@@ -1561,6 +1561,12 @@ The kickoff prompt is one line; this section is the rest.
        the rule was silent on it. **A pre-registered rule protects only the metrics you thought of**, and the one that
        moved was the one closest to the lead's own complaint. nav reported it unprompted, against its own result, which
        is the only reason it is not lost — **but the practice should not depend on that.**
+     - **When the arms share seeds, the PAIRED read is the right one — and the unpaired read hides real effects.** nav's
+       attack-move progressing: unpaired, ON mean .409 (sd .026) against OFF .439 (sd .038), so the 3-point drop sits
+       **inside the arms' spread and looks like noise**. Paired per seed it is **−.046 −.012 −.032 −.005 −.052 — lower on
+       5/5, mean −2.9 points, sd 1.8.** **Real, and small.** Seeded A/Bs in this project always share seeds, so the
+       unpaired read is simply the wrong test; it converts a consistent small effect into "within noise", which is the
+       phrase lesson 106 warns absorbs inconvenient results.
      - **Say the noise threshold in advance too** ("beyond seed noise"), because *"within noise"* is the phrase that
        absorbs an inconvenient result after the fact.
      - **This is the practice for every A/B in this project from here.** It pairs with the positive control (lesson 101):
