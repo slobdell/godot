@@ -2137,3 +2137,24 @@ The kickoff prompt is one line; this section is the rest.
      - **Second revert of the round after measurement, and both were cheap because they were measured before shipping**
        — nav's gear-change cost (aimed at the wrong third of the flips) and this. **The expensive version is the one we
        did earlier: ship, measure twice, then discover the mechanism was never reached.**
+139. **An algorithm's canonical use case has to match the problem you actually have.** nav built flow fields behind a
+     switch, measured them on terminus at 45 a side over three seeds, and **reverted them by the rule it had written
+     first.** `stuck_share` off → on: **−10%, −1%, +9%. Mean ≈ −1%.**
+     **The mechanism worked** — the field answered **70–75% of route plans**, falling back to A\* for the rest — **and it
+     did not help.** nav's explanation is the reusable part: **a flow field buys CPU when an ARMY SHARES ONE GOAL, and a
+     fight's goals are PER UNIT.** A 2 m grid over a street map returns the routes A\* already returns.
+     **I assigned this as *"the named answer to his loudest complaint"* — from his sentence, not from a measurement.**
+     *Stuck behind barriers* sounds like pathing; it was churn, and `blocked_terrain` was 0.000–0.010 all along.
+     - **⚠ THE SEED THAT LOOKED GOOD WAS THE ONE RUN FIRST.** Seed 3 alone reads as a −10% win, and nav says it *"would
+       have reported it as promising if the rule had not said three seeds."* **That is the entire value of fixing the
+       sample size in advance** — the first result is the one you form an opinion on, and it is the one most likely to be
+       reported.
+     - **Deleted with its switch**, as pre-registered. *"A mechanism nobody reaches is how commitment got measured twice
+       for nothing."*
+     - **The guard it produced outlasts it, and is worth more than the feature would have been:** `--nav-off` now
+       **refuses an unknown mechanism name** (`Movement.OFF_NAMES`). **arena had already hit the failure it prevents** —
+       running an A/B with `--nav-off=flow` on a tree that had no flow fields, and getting **a clean null with a
+       correct-looking arm header.** A switch that silently accepts a name it does not implement produces the most
+       convincing wrong answer available.
+     - **And filming both arms before deleting** leaves a picture of what shared-gradient routing looks like for whoever
+       tries it next. **A null is cheaper to re-derive than to re-discover.**
