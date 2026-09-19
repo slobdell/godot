@@ -352,6 +352,26 @@ fielded on every map.
   > 20% higher in ≥ 2 of them. Either way the fight changed character and needs a look before shipping.
 - Anything else is inconclusive. It then ships only with the lead's say-so.
 
+**Hold hysteresis A/B: result (builder0; runs rsynced from 7c4ec608 to 7f14241b, identical fight and sim code).**
+
+Arms read live, holdband=true vs false. Figures are on vs off.
+
+| map | (G) scout events/min | (G) units lost | (C) oscillation |
+|---|---|---|---|
+| boneyard | 2.84 vs 3.62, **−22%** | 3 vs 4 | 6.6% vs 6.6% |
+| boulevard | 2.72 vs 3.38, −19.5% | 2 vs 5 | 5.3% vs 5.3% |
+| pit | 3.17 vs 3.43, −8% | 2 vs 3 | 5.8% vs 5.8% |
+| yard | 3.44 vs 3.67, −6% | 2 vs 5 | 8.3% vs 7.2% |
+
+- Primary: 1 of 4 maps reached ≥ 20% lower. Secondary: oscillation was not higher on 3 of 4.
+- The **kills guard tripped**: 4 of 8 runs had > 20% fewer lost. The counts are 2–5 units out of 90 in 120 s, so the guard
+  has almost no power here. But the rule was fixed in advance.
+- **Verdict: not a win.** Hysteresis is now **opt-in** (`--nav-off=holdband` turns it ON, like `r5sidestep`), so the
+  default game is round 7's hold. The direction is consistently downward (scout −6% to −22% on all four maps), so it is
+  worth the lead's eye, not dropping.
+- Also noticed: (C) Condemned oscillation came out identical to the third decimal on 3 of 4 maps between arms.
+  Condemned fights rarely hit a standoff hold. The churn in the headline is not in the hold path.
+
 ### Round 7 report (nav, 2026-09-19) — read this first when resuming round 7
 
 **Green, merge here: `d963d9ad`** (builder0: `test` 1191/1 — the 1 is control's `test_radar`, a static leaked by

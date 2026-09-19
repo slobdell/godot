@@ -138,12 +138,14 @@ const RUN_VEER := 10.0
 ## standing still) breaks the hold; a gun on the move stops only inside the band with nothing incoming. Measured before:
 ## gang cars flipped hold <-> move at the band edge and on every incoming round, and each flip made a wheeled hull re-lay
 ## itself with a K-turn — about 40% of their in-place-yaw events, and the hold never saw the commitment bonus.
-## `--nav-off=holdband` restores round 7's memoryless hold (A/B).
+## OFF by default (like r5sidestep, `--nav-off=holdband` turns it ON): its pre-registered A/B (builder0, 7c4ec608,
+## _agents/streams/nav.md) cut scout in-place yaw 20%+ on only 1 of 4 maps and tripped the kills guard, so it does not
+## ship without the lead's say-so.
 const HOLD_SLACK_M := 3.0
 
 
 static func hold_band_on() -> bool:
-	return not Movement.switched_off("holdband")
+	return Movement.switched_off("holdband")
 
 
 ## Standoff: should a fixed gun stop and shoot from where it is? Inside its hold band, with nothing incoming.

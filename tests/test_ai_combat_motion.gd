@@ -134,6 +134,8 @@ func test_boxed_in_by_obstacles_it_still_picks_a_way_out() -> void:
 ## Round 8 (nav): a standoff hold has hysteresis. The lead's "semi trucks yawing in place" measured as wheeled gang cars
 ## flipping hold <-> move at the band edge and on every incoming round; each flip made a car re-lay its hull (a K-turn).
 func test_a_holding_fixed_gun_keeps_its_spot_just_past_the_band_edge() -> void:
+	var saved := Movement._off
+	Movement._off = PackedStringArray(["holdband"])  # opt-in (the A/B did not clear its bar)
 	var just_out := Vector3(0, 0, -(45.0 + CombatMotion.HOLD_SLACK_M * 0.5))
 	var holding := CombatMotion.choose(_request("standoff", just_out, {"previous_index": -1}))
 	var moving := CombatMotion.choose(_request("standoff", just_out, {"previous_index": 0}))
@@ -142,9 +144,12 @@ func test_a_holding_fixed_gun_keeps_its_spot_just_past_the_band_edge() -> void:
 	var far := CombatMotion.choose(_request("standoff", Vector3(0, 0, -(45.0 + CombatMotion.HOLD_SLACK_M * 2.0)),
 			{"previous_index": -1}))
 	assert_true(not bool(far.get("hold", false)), "well past the edge, even a holding gun moves")
+	Movement._off = saved
 
 
 func test_a_holding_fixed_gun_only_breaks_its_hold_for_a_round_that_would_hit() -> void:
+	var saved := Movement._off
+	Movement._off = PackedStringArray(["holdband"])  # opt-in (the A/B did not clear its bar)
 	var target := Vector3(0, 0, -30)
 	# A shell crossing 20 m to my left, and one coming straight at me.
 	var miss := [{"position": Vector3(-20, 0, 20), "velocity": Vector3(0, 0, -80), "eta_ticks": 10}]
@@ -153,3 +158,4 @@ func test_a_holding_fixed_gun_only_breaks_its_hold_for_a_round_that_would_hit() 
 	var holding_hit := CombatMotion.choose(_request("standoff", target, {"previous_index": -1, "incoming": hit}))
 	assert_true(bool(holding_miss.get("hold", false)), "a round that will miss doesn't make a holding gun move")
 	assert_true(not bool(holding_hit.get("hold", false)), "a round that will hit does")
+	Movement._off = saved

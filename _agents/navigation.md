@@ -98,7 +98,7 @@ completes and how far from its goal the unit really was. `--nav-off=…` switche
 | `repath` | X7's re-plan policy (back to every 1 s) | cost/benefit of re-planning |
 | `carrot` | X7's pure-pursuit carrot (round 5's exact corner-following) | path smoothing's effect |
 | `standoff` / `commit` | round 7's standoff style / CombatMotion commitment | fixed-gun behaviour; re-aim churn (read live from `NAV_FIGHT_ARM`) |
-| `holdband` | round 8's standoff-hold hysteresis (HOLD_SLACK_M, hit-only break) | whether hold ↔ move flips are the wheeled "yaw in place" |
+| `holdband` | **turns ON** round 8's standoff-hold hysteresis (HOLD_SLACK_M, hit-only break; off by default: its A/B missed) | whether hold ↔ move flips are the wheeled "yaw in place" |
 | `r5sidestep` | **turns ON** round 5's single-friend sidestep | the one thing X3 REMOVED; it alone restored squad's near-ambush timing (555 → 531 ticks) |
 
 **Two traps, both hit this round — read before trusting an A/B:**
