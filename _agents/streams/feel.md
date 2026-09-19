@@ -153,8 +153,20 @@ place, you do not place).
 - **Arena shape:** hexagon, circumradius 139.7 m, `ARENA_HALF_SIZE` 140, module **23.07 m, six per side**; my gates
   in the middle of each base side (18.5 m gate + screens + 2 modules each flank); edge schema `spans`. Owed: reshape
   the stands to `Arena.perimeter()` and publish their height profile as data for control.
-- **Pending / next:** the check on `dcdbcfa9` (merged main: baseline `253ecfdeed84bc4d`); the stands reshape; the
-  hull fit weighing height (combat's taller catalog: the semi is 4.4 m); the block facade look.
+- **Green and merged: `dcdbcfa9`** (builder0: 1175 passed; merged main, baseline `253ecfdeed84bc4d`; has the gun cuts).
+- **Venue follows the perimeter polygon** (`c97520a9`, arena's contract D): walls, stands on each edge span, gates and
+  screens, towers at the vertices and the crowd all come from `ArenaShape.edges()`. **`StandsProfile.points()`**
+  publishes the stands' height profile as data (from the placed kit model and the dressing's own constants) for
+  control's cutaway; it agrees with control's old hand values at the back, not the front (the kit is right,
+  `dd9537de`). The floor's **hazard band** follows the polygon too (`7776d70e`: `band_sides` in
+  `arena_ground.gdshaderinc`; it drew a square outside the hexagon's walls). Looked at: `make arena-kit-gallery
+  VIEWS=venue SHAPE=hexagon` on builder0 — band inside the walls on all six sides.
+- **Facade v3** (`831268ea`): window grid everywhere, grime streaks, per-block bay width, pale chamfer/bevel edges.
+  Frames for the lead via the orchestrator (`build/city-review/`). **Lead gate:** street-level detail waits on that.
+- **Check on `7776d70e`** (covers all of the above plus `9e44977f`) running on builder0.
+- **Pending / next:** the hull fit weighing height once combat's taller `hull_size` catalog is on main (today's fit is
+  uniform by length, so heights won't follow); block entrances need arena's `CityBlock.solids()` seam; optional
+  ElevenLabs crowd beds and the four remaining Syndicate energy sounds (credits approved: pilot, listen, ship).
 
 ### Resumed after the quota stop — current state (read this, then the handover below for detail)
 
