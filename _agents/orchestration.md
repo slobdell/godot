@@ -1449,3 +1449,40 @@ The kickoff prompt is one line; this section is the rest.
     own check output carefully**, not anyone's caution. **Recording the wrong cause of a success is the same error as
     recording the wrong cause of a failure** — see the gangs' 23%, where an unexcluded candidate was reported as a
     demonstrated cause in this very document.
+101. **Assert that the treatment engaged — a measurement cannot otherwise tell you that the thing you meant to measure is
+     the thing that ran.** combat's framing of the gap, after two designator runs in one night measured a different game
+     than it thought: first the unit **was not on the battlefield at all** (silently dropped from every army by a keyed
+     table), then it **was on it wearing the wrong hat** (role `"designator"` put it outside `FRAGILE_ROLES` and
+     `PROTECTED_ROLES`, so the CPU front-lined a spotter). **Both were found by a result looking slightly wrong, not by any
+     check** — which is lesson 94's trap: the same bug pushing the plausible way would have shipped.
+     **The answer is the clinical-trial idea of adherence: you do not report a drug trial without checking the patients
+     took the drug.** So the harness **counts the mechanism's own events and refuses — not annotates, refuses — to report a
+     treatment arm showing zero.** A treatment arm with no treatment is **not a null result, it is a failed run**, and
+     that distinction is what cost two runs. Built at `e0f6ce40`.
+     - **Every A/B in this project should assert its treatment engaged.** The standoff run counts scouts entering the
+       standoff state; the `gangs/scout` ablation asserts the entry is genuinely absent from the tree that ran.
+     - **arena's extension is the general form and the one to copy:** *"assert the map is the one named, the objectives are
+       where the layout says, and the armies are the size requested — inside the probe. Every wrong number this stream
+       produced today would have been caught by one of those three."*
+     - **The distinction that makes this more than hygiene:** `run: <machine> at <commit>` proves **which build**; a
+       positive control proves **which behaviour**. Conditions *around* the run versus conditions *inside* it — and only
+       the inside version survives someone changing the setup, including an agent who has never read this file.
+102. **A new value in a keyed system is an interface change, not a value.** combat, having authorised-by-me a re-role of one
+     unit, went looking for how many places would need editing and found **eight lists across four streams**:
+     `Units.ROLES` · `Army.SQUADS` · `SquadTactics.FRAGILE_ROLES` · `TacticsFormation.PROTECTED_ROLES` · `CpuCommander`'s
+     line/support split · `ElementSituation` · `ArmyCatalog.ROLE_LABELS` · `command_icons`. **None reference a single
+     registry.** Adding a role means editing eight independent lists owned by four people, and missing one fails either
+     **silently** (the army drop) or **obscurely** (a missing icon).
+     **combat's statement: *"a value that eight places key off is not a value, it is an interface"* — and this one has no
+     owner, no registry and no enforcement.**
+     - **The fix that worked was not doing it.** Designation is a **capability**, not a taxonomy: `role` stayed `"lancer"`
+       and the unit carries `"designates": true`. All eight lists keep working untouched, the `SQUADS` entry became
+       unnecessary, and the faction kept five roles **without a re-role at all** — a strictly smaller change than the one
+       the orchestrator authorised. `game_design.md` already said *"the role is shared across factions, the vehicle is
+       not"*; nobody applied it.
+     - **Stopping one fix into an eight-fix patch is the hard part.** combat was at 1 a.m. with seven edits to go and went
+       backwards instead. **When the cost of a change is discovered to be eight times the estimate, that is data about the
+       design, not a reason to push on.**
+     - **Orchestrator's share: I approved "re-role it" while thinking about art budget, and never asked what `role` was
+       load-bearing for.** Fourth instance in one day of approving a change by evaluating the change and not its
+       surroundings.
