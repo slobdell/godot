@@ -314,6 +314,36 @@ the shipped bands (`preferred_max`) sit between the 0.65 and old-world rows on r
 
 **4. Tighter bands buy flanking**, which is the design goal: flank+rear 28% → 57% → 53%, off-axis 27% → 26% → 55%.
 
+### The height spread does not move the balance (builder0, `6e82e57b`, 60 matches, same seeds)
+
+The lead: *"the gang tank is still tiny… that truck should be at least 3 or 4 times the height of the scout."* Every
+vehicle was 1.40–1.80 m — a **1.29×** spread from the smallest buggy to a semi tractor — while lengths varied 2.8–5.6
+m. At his 21° telephoto, **height is the dimension that reads.** Now **1.4–4.4 m, a 3.14× spread**, referenced to the
+real vehicle: War Rig 4.4 (a semi tractor is ~4.0), IFV 3.0 (Bradley), Tank 2.4 (Abrams hull), scouts unchanged.
+**Nothing got shorter** — trip-up 15 is what happens when a hull box drops below the barrel line, so shrinking is the
+direction that hides shots.
+
+`hull_size` is the collision box, so taller units are **easier to hit**. Re-run of the same matrix, same seeds:
+
+| faction | before | after | change |
+|---|---|---|---|
+| condemned | 53% | 57% | +3 pts |
+| gangs | 53% | 50% | −3 pts |
+| law | 50% | 50% | 0 |
+| syndicate | 43% | 43% | 0 |
+
+**No detectable balance consequence.** Three of six pairings did not move at all; the other three moved by **exactly
+one match in ten**, which is the smallest non-zero change measurable and far inside the ±30-point interval of an
+n=10 pairing. **The lead gets his silhouettes for free.**
+
+**What may NOT be concluded: that height has no effect.** An effect smaller than roughly ±30 points per pairing is
+invisible at this sample size, and this is a *paired* re-run of the same seeds rather than an independent sample.
+The one directionally interesting scrap — the gangs grew most (War Rig 1.8→4.4, tanker 1.8→3.6, gun truck 1.5→2.2)
+and are the only faction that moved down — is **one match** and should not be told as a story.
+
+Per-match results:
+[streams/references/combat/faction-matrix-heights-2026-09-18.json](streams/references/combat/faction-matrix-heights-2026-09-18.json).
+
 ### X4 — THE GANGS' 23% IS GONE (builder0, `1333cc73`, 60 matches, 5 seeds per pairing, counterbalanced)
 
 Open since round 4 and deferred twice, because the stream would not tune against numbers taken while drills and
