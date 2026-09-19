@@ -216,7 +216,7 @@ func _sample_inplace() -> void:
 		inplace_alive_ticks[tank.unit_id] = int(inplace_alive_ticks.get(tank.unit_id, 0)) + 1
 		var forward := -tank.global_basis.z
 		var trail: Array = inplace_trail.get(key, [])
-		trail.append([tank.global_position.x, tank.global_position.z, rad_to_deg(atan2(-forward.x, -forward.z))])
+		trail.append([tank.global_position.x, tank.global_position.z, rad_to_deg(atan2(-forward.x, -forward.z)), tank.speed()])
 		if trail.size() > span:
 			trail.remove_at(0)
 		inplace_trail[key] = trail
@@ -247,6 +247,13 @@ func _sample_inplace() -> void:
 			var motion: Variant = tank.get("_motion")
 			var creeping := motion is Dictionary and int((motion as Dictionary).get("creep_dir", 0)) != 0
 			detail["creeping"] = int(detail.get("creeping", 0)) + (1 if creeping else 0)
+			# Gear changes in the window: forward and reverse both above 0.5 m/s (a car shuffling back and forth).
+			var fwd := false
+			var rev := false
+			for sample: Array in trail:
+				fwd = fwd or float(sample[3]) > 0.5
+				rev = rev or float(sample[3]) < -0.5
+			detail["shuffled"] = int(detail.get("shuffled", 0)) + (1 if fwd and rev else 0)
 			inplace_detail[tank.unit_id] = detail
 
 
