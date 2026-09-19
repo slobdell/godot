@@ -967,6 +967,21 @@ brain ignored it. **Three independent failures of one feature, none of which any
 the *outcome* — that a unit told to face a direction ends up facing it. That is lesson 47's shape again: a guarantee no
 test isolates.
 
+**MEASURED AFTER THE FIX (nav, on squad's `bfcc2607`, builder0, yard, 30 player units in 5 squads each ordered to face
+90° off their direction of travel — same probe and same configuration as the "before"):**
+
+| units within 15° of the ordered facing | before | after |
+|---|---|---|
+| **MOVE + facing**, at +10 s | **2/30** | **27/30** (median **1.6°**; 20/30 already at +2 s, 24/30 at +5 s) |
+| **HOLD + facing**, at +10 s | **1/29** | **21/30** (median **5.5°**; 15/30 at +2 s, 18/30 at +5 s) |
+
+**For the lead, in one line: an ordered facing now actually happens, within seconds, for about 9 in 10 units on a move.**
+
+**The remaining tail is named rather than hidden:** move leaves 3 units off after 10 s (worst **136°**), hold leaves 9 off
+(worst **73°**). **Hold settles slower and less completely than move**, and nav's hypothesis is that **wheeled units cannot
+pivot** — a car rolls round at `WHEELS_MIN_THROTTLE` instead of turning on the spot — or that units are still settling onto
+their position. nav owns the execution of *face* and will diagnose the tail after the commitment A/B.
+
 **Why this matters beyond the complaint:** round 6 made facing *mechanically* real in four places — armour facing, the
 crossing-acquisition penalty, support-by-fire arcs, `UnitCommand.facing`. **All four were operating on a quantity the
 player could not control and the units did not honour.** Emplacing an ambush, the use case he named, was not achievable.
