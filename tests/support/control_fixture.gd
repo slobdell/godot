@@ -69,6 +69,7 @@ func build(with_executor := true) -> void:
 	controls.camera = camera
 	controls.rig = rig
 	controls.reveal_all = true  # no visibility field here: every enemy counts as seen
+	controls.range_frame = 0.0  # round 7's range framing is tested on its own (test_control_facing_camera)
 	test.add_to_tree(controls)
 	markers = EdgeMarkers.new()
 	markers.controls = controls

@@ -8,6 +8,8 @@ extends Control
 const FONT_1080 := 16.0
 
 var rig: RtsCamera
+## Round 7: for the range-framing factor and the selection's reach (optional).
+var controls: RtsControls
 ## The last pose P copied, shown for a few seconds as confirmation.
 var _copied := ""
 var _copied_left := 0.0
@@ -35,10 +37,11 @@ func lines() -> Array[String]:
 	if rig == null:
 		return result
 	var distance := RtsCamera.distance_for(rig.zoom)
-	result.append("CAMERA  pitch %d°   distance %d m   FOV %d°   yaw %d°   auto-frame %s" % [
+	result.append("CAMERA  pitch %d°   distance %d m   FOV %d°   yaw %d°   auto-frame %s   yaw-follow %s   range %s" % [
 			roundi(RtsCamera.tilt_at(rig.pitch, distance)), roundi(distance), roundi(RtsCamera.fov),
-			roundi(rad_to_deg(rig.yaw)), "ON" if rig.auto_frame else "OFF"])
-	result.append("PgUp/PgDn tilt · wheel or - = distance · [ ] FOV · , . turn · V auto-frame · P copy pose")
+			roundi(rad_to_deg(rig.yaw)), "ON" if rig.auto_frame else "OFF", "ON" if rig.yaw_follow else "OFF",
+			("x%.2f (%d m)" % [controls.range_frame, roundi(controls.selection_reach())]) if controls != null else "-"])
+	result.append("PgUp/PgDn tilt · wheel or - = distance · [ ] FOV · , . turn · V auto-frame · Y yaw-follow · ; ' range · P copy pose")
 	if _copied_left > 0.0:
 		result.append("Copied: " + _copied)
 	return result

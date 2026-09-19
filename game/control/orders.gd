@@ -127,6 +127,8 @@ func issue(command: Variant, team: int = -1) -> String:
 		base["target"] = String(target.name)
 	if command.has("facing"):
 		base["facing"] = command["facing"]
+	if command.has("slot"):
+		base["slot"] = [float(command["slot"][0]), float(command["slot"][1])]
 	var per_unit := _resolve_group(base, names, queued)
 	for unit_name: String in names:
 		var order: Dictionary = per_unit[unit_name]
@@ -278,6 +280,9 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 	elif verb == "follow":
 		slots = GroupFormation.follow_slots(tanks)
 		formation = "rows" if tanks.size() > 1 else "single"
+		# Round 7 (K1): an element's follower names its own place in the leader's frame.
+		if base.has("slot") and names.size() == 1:
+			slots = {names[0]: Vector2(float(base["slot"][0]), float(base["slot"][1]))}
 	var facing: Array = []
 	if base.has("facing"):
 		var direction := Vector2(float(base["facing"][0]), float(base["facing"][1])).normalized()

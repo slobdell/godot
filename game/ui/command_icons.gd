@@ -402,3 +402,18 @@ static func formation_texture(formation: String) -> Texture2D:
 			draw_unit(raster, "scout", points[i], TASK_TEXTURE_PX * 0.34, Color.WHITE if i == 0 else Color(1, 1, 1, 0.75))
 		_formation_textures[formation] = raster.texture()
 	return _formation_textures[formation]
+
+
+static var _pointer_texture: Texture2D = null
+
+
+## Round 7 (C3): a mouse pointer, the badge on command-card buttons that wait for a click.
+static func pointer_texture() -> Texture2D:
+	if _pointer_texture == null:
+		var raster := IconRaster.new(48)
+		var tip := Vector2(12, 6)
+		var arrow := PackedVector2Array([tip, tip + Vector2(0, 30), tip + Vector2(8, 23), tip + Vector2(14, 36),
+				tip + Vector2(19, 33), tip + Vector2(13, 21), tip + Vector2(23, 21)])
+		raster.draw_colored_polygon(arrow, Color.WHITE)
+		_pointer_texture = raster.texture()
+	return _pointer_texture
