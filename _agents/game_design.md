@@ -712,6 +712,33 @@ What follows for map authoring, and these are testable claims rather than taste:
    alone will under-read it — exactly as combat's series under-read N5 until its control disabled the gates as well as
    the bands (lesson 62).
 
+### The arena's shape and finish (lead, 2026-09-19)
+
+14. **The announcers cut each other off.** *"The announcers cut each others' audio off, so that destroys the feel of the
+    announcement."* A priority/queueing defect in the booth, not a content problem — and it undoes the most expensive
+    asset in the game. Round 4 already found one silencing bug in the booth (a priority rule starving the Veteran), so
+    this is the second time announcer *scheduling* has been the fault rather than the lines.
+15. **The arena is a plain square and needs to stop being one.** *"We need to figure out how to upgrade the vibe of the
+    arena. Our environment is very clearly a simple square. As was the case with our popups, chamfered edges even though
+    they're fairly subtle gives the attention to detail to bring the game to life. The arena could also take on octagon
+    or hexagon-like shapes."*
+    Two separate asks inside that, and the first is cheap while the second is not:
+    - **Chamfered edges as a design language**, carried from the HUD widgets into the 3D world. He is pointing at
+      something the UI already does (the cyber frames) and asking for the same restraint in the arena: subtle, not
+      showy, and specifically as *attention to detail* rather than as decoration.
+    - **A non-rectangular arena** — octagon or hexagon.
+    **The shape change is NOT an art job, and this is the coupling to know before anyone starts.** `Arena.validate()`
+    requires `half_size` to equal `Match.ARENA_HALF_SIZE` exactly — a single scalar — *"the perimeter, radar, and fog are
+    sized for it"*. And `RtsCamera` computes the wall cutaway as **how far the focus is from the perimeter *square***
+    (`perimeter_half()`, and the comment says square). So a hexagonal arena touches: **the camera's cutaway** (control's,
+    and it is load-bearing at the lead's 21° pitch), **the radar outline**, **the fog**, **spawn and point-symmetry
+    validation**, and **the navmesh's half-plus-180°-mirror construction** (which survives 6- and 8-fold symmetry, but
+    the bake region and the seam do not obviously). Octagon and hexagon both contain a 180° rotation, so fairness is
+    preservable — but it is a contract change across three streams, not a layout edit.
+    **Cheapest honest first step:** chamfer the *corners* of the existing square — which is literally an octagon with
+    four short sides, gets the visual win he is asking for, and can be done with a per-arena corner-cut parameter rather
+    than by making `half_size` a polygon.
+
 ### Two defects to fix, not design
 
 8. **Some vehicles point backwards at start-up** (seen with the gangs).
