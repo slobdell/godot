@@ -36,25 +36,46 @@ decision weighing algorithms necessary to make these units look and feel smart."
 | **combat** | `d6e28e27` | Height spread (**War Rig 3.14× the scout**); N7 acquisition; **the Syndicate designator** | Check to be run on the final tip. Faction matrix re-running as a paired comparison against 53/53/50/43 |
 | **feel** | `ec10d9f5` | `make facing-audit`; the gang IFV fixed **in the part generator's data**; a second backwards vehicle nobody had reported (Syndicate lancer, `cb171a98`) | Cutting the baked guns out of three hulls — **gang tank, Syndicate IFV, Law artillery** |
 
+### THE CRITICAL PATH (2026-09-19, late) — one chain gates the whole map programme
+
+**~~baseline recorded on main~~ ✅ `b70608d6` → `arena's bound relaxation merged` → `combat's ARENA_HALF_SIZE 120 → 140` → `the hexagon` → `Pit and Yard rebuilt`**
+
+**The first link is done.** `tests/baselines/sim_state_hash.txt` is `glibc-2.43 e38fd65b6b6ead3f`, recorded on three independent
+observations: control's #17 on a branch that cannot move a sim hash, the orchestrator's own `check` on `main`, and
+`sim-baseline-record`. **That check also established that everything before `sim-baseline` passes on `main`** — lint, test,
+net-smoke, combat-smoke, broker-test, relay-smoke, lobby-smoke, match-smoke, determinism — and that combat's `test_army`
+failure was its own, not `main`'s. **`garage-smoke`, `army-loop-smoke`, `announcer-check` and `audio-check` have not run on
+`main` today**, because the abort hid them; the next full check will be the first to cover them.
+
+**Every remaining link is blocked on the one before it.** arena has verified both of its
+gates in the code rather than assuming them, and **the reason Pit and Yard are untouched is this chain, not slow progress.**
+
+**⚠ Ordering within the chain is load-bearing.** arena's `877dc34a` relaxes `Arena.validate` so a layout's `half_size` is a
+**maximum bound** rather than forced equal to `ARENA_HALF_SIZE`. **Bumping the constant first makes every existing square
+map 280 × 280 instead of 240 × 240 — a 36% resize of the two maps the lead actually kept.** Relax, then bump.
+
+**Also gating the map work: N7 is NOT on `main`.** `Arena.objectives_of()` exists (arena's, last round) but **nothing in
+`game/` consumes it** — `Match.in_control_zone` is still the static central zone. Until combat's read-through lands,
+**`spread` cannot move off 0.00 and no map can have a reason to manoeuvre.** squad's `Objectives` shim **errors** for a
+non-central layout rather than answering plausibly, which is what stopped arena authoring a layout that would misbehave.
+
 ### THE MERGE QUEUE, in order, with the reason for each position
 
-**Every position below is "at the commit whose check went green", never a branch tip.** Run `make remote T=check` on
-`main` after each sim-changing merge, and read the wrapper's own `>> remote: make check exited <N>` line.
+**Every position is "at the commit whose check went green", never a branch tip.** After each sim-changing merge, record the
+baseline **in the same session** (amended invariant 2) and say so in the merge commit.
 
 | # | Branch, commit | Why here | Risk |
 |---|---|---|---|
-| **1** | **control `a1d92ad6`** | **The lead asked for this work by name** and believes it may be lost. It is HUD, camera and preview only — **no simulation change, so it cannot move the sim baseline.** Verified with `git show a1d92ad6:<path>` across eleven patterns | lowest |
-| **2** | **feel**, at its green hash | **The gang IFV driving backwards has been reported by the lead three times.** Art only — *the simulation never reads the model* — so it is nearly free to land, and it is the complaint with the worst report-to-fix ratio in the project | lowest |
-| **3** | **control's self-revealing help** (the commit after `a1d92ad6`) | Deliberately not held for #1: builder0's queue is the bottleneck, so it rides the next check rather than delaying the popover work | lowest |
-| **4** | **nav `2cae3bda` (standoff) and/or squad**, whichever is green first | **squad has merged `2cae3bda` into its own branch**, so squad's check covers the standoff *and* the two brain hooks together — stronger than either alone. Whichever green hash arrives first brings the standoff to `main` | sim-changing |
-| **5** | **nav `8ad2c606`** — in-fight unsticking, per-hull chord slack | Separate commit on purpose: if its maze validation is bad, the standoff is unaffected and lands without it | sim-changing |
-| **6** | **combat**, designator + heights + N7 | Sim-changing and self-contained. **Must land before #7**, because arena's hexagon needs combat's extent change, which combat is holding until this is merged | sim-changing |
-| **7** | **combat's extent change** — `ARENA_HALF_SIZE` 120 → 140, `DRIVABLE_LIMIT` → **117** (not 136) | Its own check, deliberately: one check must not cover both the designator and the extent, or a failure cannot be attributed | sim-changing |
-| **8** | **arena** — hexagon at 139.7 m, contract **M4** `Arena.contains`/`clamp_into`, water/pits/bridges | Last because it depends on #7's constants, and because the M4 predicate is what makes the hexagon *safe* — merging the shape without the predicate ships a square clamp on a hexagonal arena | highest |
-| **9** | **The sim baseline** — recorded by the orchestrator, on `main`, once | **Invariant 2.** Only after #8. Three separate merges above change the simulation | — |
+| **1** | **control `9c889025`** (check #19) | **The lead asked for this by name** and thinks it may be lost. HUD, camera, previews, portraits — **cannot move a sim hash**. Carries the self-revealing Screen tooltip too, so it supersedes `a1d92ad6` | lowest |
+| **2** | **feel**, at its green hash | **The gang IFV has been reported three times.** Art only — *the simulation never reads the model* | lowest |
+| **3** | **nav `5e5ef5f0`** — standoff + maze slack | The lead's loudest bug. Validation clean: **60/60 on maze, head-on maze, yard both ways, foundry**; plain-move progress **74% → 83%**, terrain-blocking **gone**, friend-blocking **6.7% → 0.6%** | sim-changing |
+| **4** | **squad** — standoff hooks, inverted scout test, facing, army start, `agent_bridge.gd:179` | Carries nav's `2cae3bda` by a deliberate in-branch merge, so its check covers the standoff **and** the hooks together | sim-changing |
+| **5** | **combat `f1fb19ad`** — designator as a capability, heights, N7 | `designates: true` rather than a new role, so the eight role-keyed lists stay untouched | sim-changing |
+| **6** | **arena `877dc34a`** — `half_size` as a maximum bound | **Must precede combat's constant bump**, or the square maps grow 36% | low |
+| **7** | **combat's extent change** — `ARENA_HALF_SIZE` 140, `DRIVABLE_LIMIT` **117** (not 136) | Its own check, so a failure can be attributed | sim-changing |
+| **8** | **arena** — hexagon, **M4** `contains`/`clamp_into`, water/pits/bridges | Depends on 6 and 7. **M4 is what makes the hexagon safe**: merging the shape without the predicate ships a square clamp on a hexagonal arena | highest |
 
-**If a check comes back red, the branch does not move and the queue does not stall behind it** — skip to the next
-position. Nothing in 1–3 depends on anything else.
+**A red check does not stall the queue behind it** — skip to the next position. 1–3 are mutually independent.
 
 ### Decisions I made this round, so nobody re-derives them
 

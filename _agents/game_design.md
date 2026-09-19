@@ -433,7 +433,30 @@ stack first, then the layer that commands it, then how the player reads and issu
   on one layout. Fixed at `c2b27516` — the tool now takes `ARENA=`, names the map in its header, and writes a per-arena
   file. **The comparisons remain sound, because every arm ran on the same ground**; what is *not* established is that any
   of these win rates is a property of a faction rather than of a faction on foundry. **Re-read every row below as "on
-  foundry".** Lesson 90:
+  foundry".** And foundry is **not a neutral default**: arena measured it at `centre_sees_share` **0.56, the second-most
+  open map in the game**, so every number here sits on ground that *favours anything paying off with sightlines*. Lesson 90.
+  **⚠ AND THE EXPLANATION BELOW IS UNDER CHALLENGE, added 2026-09-19.** combat found that `Army.squads_for()` iterates the
+  `SQUADS` table rather than the units, so **a unit whose role is not a key is silently dropped from every army** — and
+  that same table's comment records the gangs' rat rods being given the Condemned scout's *spotters-first* directive,
+  *"and the faction won 10-30% of everything."* **That is this table's 23%.** So there is a competing explanation for the
+  recovery — *somebody fixed the directive bug* — and it is simpler than the one written below.
+  **TIMELINE ANSWERED (combat, `git log -S'"gangs/scout"'`): the fix came FIRST.** `f1b0ee9e` (2026-09-16) **reports the
+  23% and adds the `gangs/scout` entry in the same diff** — the run found the bug, and the fix was written in response to
+  it. No faction matrix ran again until `1333cc73` (2026-09-18), which measured 53%. **So the 23% is a pre-fix number and
+  the 53% is a post-fix one.** But the gap between them also contains the `ready_to_fire` tick, armies holding until
+  ordered, 30 Hz, Jolt and all of CP4 — so **the directive bug is an unexcluded candidate, not a demonstrated cause, and
+  neither is the mechanics story below.** combat has retracted its own attribution in `balance.md` at `0c1fb760`, in
+  place, keeping the measurement and striking the cause. **Read the explanation below as one of two candidates.**
+  **What settles it is an ablation, not an argument** (lesson 25 — attribute a cost by *removing* the behaviour):
+  **delete the `gangs/scout` entry on the current build and re-run the matrix.** Collapse toward 23% means the directive
+  did the work; holding near 53% means the mechanics explanation survives. Scheduled after the per-map designator runs.
+  **And the 23% itself was not a false number** — combat's correction, which is the sharper point: *a build in which 15
+  assault vehicles sit at standoff spotting while the swarm dies really does win 23%.* **The error was treating a
+  measurement of a configuration as a fact about a faction** — the same error as reading a foundry number as a property
+  of the game. This matters beyond the history:
+  the 23% → 53% collapse is the evidence for *"a balance problem dissolved by mechanics"*, which is the principle the
+  stream twice used to refuse tuning against mid-flight numbers. If the evidence is a bug fix, **the principle needs
+  different evidence rather than a quiet retirement**:
 
   | faction | win% | was (pre-CP4) |
   |---|---|---|
@@ -735,6 +758,35 @@ the one with the octagon of shipping containers. All the maps need to be higher 
    consequence.
 **Meanwhile, treat the four as "do not invest" rather than deleted:** no new work on them, and any round-7 map effort
 goes to Pit, Yard and new maps built to the risk-and-reason principle below.
+
+#### MEASURED: every shipping arena scores `spread 0.00` — there is nothing to cross the bridge *for* (arena, 2026-09-19)
+
+**arena built the cost-and-reward metric and the first result is a flat zero on every map in the game.** The reason is
+not subtle: **every shipping arena has exactly one objective**, so **every route is the same route** — there is no
+expensive path and no cheap path, because there is only one thing to go to and it sits in the middle.
+
+**This is the lead's own principle, measured, and it says the principle is currently unimplementable:**
+
+> *"Clearly crossing a bridge is risky, so you don't want a simple map with 2 sides connecting two bridges. **There
+> generally has to be some compelling reason to cross the bridge to take some advantageous ground.**"*
+
+**A bridge cannot be compelling on a map with one central objective**, no matter how the terrain is arranged. Risk
+without reward is just cost, and units correctly decline it — which means **the flanking, ambushing and manoeuvre he
+wants cannot be produced by geometry alone.** It needs something worth taking that is *not* in the middle.
+
+**What this reframes:**
+- **N7 (objectives are the arena's, not a constant) stops being infrastructure and becomes the gate on the whole map
+  programme.** Until an arena can place its own objectives off-centre, `spread` cannot move off zero and no amount of
+  chamfering, hexagons, water or bridges will produce a reason to manoeuvre.
+- **It explains "one big open brawl" better than openness does.** We had been reading his complaint as *the maps are too
+  open* and answering it with `centre_sees_share`. Both are true, but **a single central objective is a stronger cause**:
+  it actively instructs both armies to converge on one point.
+- **It gives the bridge work an acceptance test rather than a look.** A bridge is doing its job when `spread` is
+  non-zero *and* combat's falsification test shows unit-time actually spent on the expensive route. Either alone is
+  decoration.
+
+**The metric needed no build slot and no other stream**, which is worth noting for its own sake: the most important
+design finding of the day came from writing down a number nobody had asked for.
 
 ### The principle behind all of it: terrain makes risk, objectives make reason (lead, 2026-09-18)
 

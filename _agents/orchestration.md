@@ -1297,3 +1297,272 @@ The kickoff prompt is one line; this section is the rest.
     - **And beware an over-determined failure standing in for evidence.** combat's branch carried three of its own
       hash-moving changes, so its `sim-baseline` failure was *"consistent with both stories and evidence for neither"* —
       combat said so rather than letting me quote it as confirmation. **Only a check on `main` establishes `main`.**
+93. **A silent lookup in a keyed table produced this project's longest-running false finding — twice.** combat, round 7:
+    `Army.squads_for()` loops **`for role in SQUADS`** — it iterates the *table*, not the units. **A unit whose role is
+    not a key in that table is silently dropped from every generated army.** No error; the army still builds; one unit
+    type simply never appears. So re-roling the Lance Platform from `"lancer"` to `"designator"` **deleted it from the
+    Syndicate**, which then fought 60 matches with four unit types instead of five.
+    **The same table caused the gangs' 23%.** Its own comment records it: the gangs' rat rods were given the Condemned
+    scout's *spotters-first* directive, so 15 assault vehicles sat at standoff range while the swarm died. We treated that
+    as a faction balance problem across two rounds and later watched it "dissolve" to 53%. One table, two silent
+    failures, two multi-round false findings — a *wrong* value the first time and *no* value the second.
+    **I first wrote here that the 23% "was never real". combat corrected me and the correction is the better lesson:**
+    > *"The 23% **was** a real measurement of a real build. What it was never is a **property of the faction**. A build
+    > in which 15 assault vehicles sit at standoff spotting while the swarm dies really does win 23%; that is a true
+    > number about a broken army, not a false number. The error was treating a measurement of a configuration as a fact
+    > about a faction — the same error as reading a foundry number as a property of the game. 'Never real' invites the
+    > reading that measurements lie, and this one did not."*
+    **That is the unifying form of lessons 90, 93 and 94: every number here is a measurement of a configuration, and
+    almost every mistake in this project has been promoting one to a property.** The defence is that an instrument prints
+    the configuration it ran in, so the promotion has to be done deliberately rather than by omission.
+    **Timeline established (combat, `git log -S`), and it is worth keeping because the shape recurs:** `f1b0ee9e`
+    **reports the 23% and adds the `gangs/scout` entry in the same diff** — the run found the bug and the fix was written
+    in response. No faction matrix ran again until `1333cc73` two days later, which measured 53%. So the fix precedes the
+    recovery — **but the gap also contains the `ready_to_fire` tick, armies holding until ordered, 30 Hz, Jolt and all of
+    CP4.** The directive bug is an **unexcluded candidate, not a demonstrated cause**, and neither is the mechanics story.
+    **The settling move is the ablation this project already knows to run (lesson 25): delete the `gangs/scout` entry on
+    the current build and re-run the matrix.** A direct test beats an inference from a timeline, and it costs one
+    60-match run.
+    - **Any lookup keyed by a value from elsewhere needs a test that every possible key resolves.** combat's
+      `test_every_roster_role_can_be_put_in_a_squad` walks every roster unit and asserts its role has a `SQUADS` entry —
+      and it is **mutation-checked**: combat removed the entry and watched it fail, naming the unit. **A test you have not
+      seen fail is a test you are hoping about.**
+    - **Iterating the table instead of the contents is the code smell.** It makes absence unrepresentable and therefore
+      unreportable.
+    - **Orchestrator's share, and it is the real one: I made the re-role decision and never asked what else was keyed by
+      role.** Same failure as the hexagon (*what has to fit inside it?*) and the baseline (*who pays during the
+      interval?*), three times in one day: **approving a change by evaluating the change and not its surroundings.**
+94. **A confound is only investigated when it pushes the wrong way, so the dangerous confounds are the plausible ones.**
+    combat looked for the bug above **because the designator — a pure buff — measured as making its faction slightly
+    worse** (43% → 40%). Its own words: *"I could have written a tidy paragraph about how an acquisition buff might
+    backfire."*
+    **Invert it and nothing happens.** Had the missing unit made the Syndicate look *better*, or had it been dropped from
+    an opponent, the identical bug would have produced a believable number with a good explanation attached, and it would
+    have travelled: stream → orchestrator → lead → design decision. **Our whole error-detection process is "does this
+    surprise me", which is exactly blind to confounds that produce expected results.**
+    - **The defence is not more scepticism about surprising results — it is guardrails that fire without anyone being
+      suspicious.** A test, a printed configuration, an assertion that every key resolves. Suspicion does not scale;
+      mutation-checked invariants do.
+    - **Corollary for reporting: a result in the expected direction deserves the same confound hunt as a surprising one**,
+      and it will not get it unless the hunt is a checklist rather than an instinct.
+95. **`make check` stops at the first failing target, so one known failure silently hides every target after it — and
+    `N passed, 0 failed` still reads as comprehensive.** Round 7, found by control while reading its own check #17 rather
+    than reporting it. With `sim-baseline` red on `main`, the four targets that follow it — **`garage-smoke`,
+    `army-loop-smoke`, `announcer-check`, `audio-check`** — **never ran.** From outside, *"`sim-baseline` was the only
+    failure"* and *"`sim-baseline` was the last target that got a chance to fail"* are **indistinguishable**.
+    **The orchestrator's error, and it was broadcast:** I told five streams *"if `sim-baseline` is the only failure, treat
+    the tree as green."* That instruction **converts an incomplete result into a complete one by assertion.** Worse, the
+    hidden targets were in each case **the ones most relevant to the stream's own diff** — `army-loop-smoke` exercises the
+    relaunch path control's loading screen sits on and the match setup squad's army layout runs in; `announcer-check` and
+    `audio-check` are feel's; `garage-smoke` and `army-loop-smoke` are where combat's designator changes *when units fire*
+    across a loop of matches. **A truncated run is least informative precisely where it matters most.**
+    - **Never read a partial run as a pass.** The operational form: **run every target *except* the known-bad one**
+      (control's `#18`), which is conclusive, rather than running all of them and excusing one, which is not.
+    - **A summary line must count what it did not run.** `N passed, M failed` with four targets unattempted is a true
+      sentence that misleads. `N passed, M failed, K not run` would have made this self-evident.
+    - **⚠ AMENDED, combat: it is not "the four after `sim-baseline`" — it is "everything after whatever fails first".**
+      `check` is `lint test net-smoke … determinism sim-baseline garage-smoke …` and **`test` is second.** combat's
+      `d21a3d86` failed inside `test`, so **`sim-baseline` and the four after it never ran either** — that run established
+      *lint passed, `test` has one failure, and nothing whatsoever about the other eleven targets.* **A stream reading
+      `>> exited 2` cannot tell how far it got without counting targets in the log**, so the abort position is itself
+      invisible. Any instruction of the form *"if X is the only failure…"* is therefore unsound on this Makefile,
+      whatever X is.
+    - **Fix the shared breakage instead of teaching everyone to read around it.** Five *"here is how to interpret the
+      failure"* messages were the wrong response to *"the baseline needs re-recording"*, and they cost more than the fix.
+    - **The generalised orchestrator failure, third instance in one day:** relaying the lancer deletion as settled before
+      it was implemented; relaying a container argument without checking its contents; relaying a truncated check as
+      green. **One mechanism — promoting something provisional to something established at the moment of relaying it.**
+      That is a relay failure, not a judgement failure, and it needs watching for by name.
+96. **Summarising and asserting are the same word in the output, which is why a relay failure is invisible to the
+    relayer.** combat, on my three relay failures in one day: *"Promoting something provisional to something established
+    at the moment of relaying it is invisible **because the compression is the job.** You cannot relay six streams'
+    states without discarding detail, and 'treat a single known failure as green' is a perfectly good summary right up
+    until the discarded detail is the load-bearing part. The failure mode is not carelessness — it is that summarising and
+    asserting look identical in the output. A summary that says 'green' and a judgement that says 'green' are the same
+    word."*
+    **The conclusion is the important part, and it arrived from two directions at once:** *"make the artefact carry its own
+    conditions… **you cannot fix a relay by trying harder at the relay**."* Every fix that worked today was of that shape
+    and none of them were about diligence: `ARENA=` printing the map in the header; an instrument printing its
+    configuration; a merge commit declaring that it moves the sim baseline; `git show HEAD:<path>` instead of trusting the
+    working tree; a reference patch naming the commit that provides its symbols. **Each removes something the relayer
+    would otherwise have to remember to say.**
+    **And the cost structure is what made this one expensive.** Five streams each received the unsafe rule **separately
+    and privately, with no way to compare notes.** combat had independently hit the same problem that morning — it ran the
+    skipped targets by hand after a `sim-baseline` failure, on the principle *"a check that skips is not a check that
+    passes"* — and **did not flag my rule as unsafe, because when I gave it, it matched what combat had already done.**
+    Two agents each held half of it. **A worker who has solved a process problem should assume the orchestrator has not**,
+    and say so; and the orchestrator should ask *"has anyone already hit this?"* before issuing a reading rule, because in
+    a star topology only the centre can connect two halves — and the centre is the one who was wrong.
+97. **The thing that moves the code to the machine is the thing that strips the identity of the code.** combat built the
+    mechanical guard for mismatched comparisons — `tools/run_conditions.py`, so `faction_matrix` and `engagement_report`
+    print `run: <machine> at <commit>` and record `{machine, commit, dirty}` in their json — and found while checking it
+    that **`tools/remote.sh` excludes `.git/` from its rsync.** So on **builder0, where nearly every measurement this
+    project quotes is taken, there is no repository to ask**, and a naive helper would have printed `commit: unknown`
+    exactly where it matters most. Fixed in `remote.sh` (orchestrator's file): the commit and dirty flag are captured
+    locally and exported into the remote environment, with the helper falling back to git when run locally.
+    - **`dirty` is the load-bearing field, not `commit`.** An rsync carries uncommitted changes, so on a dirty tree the
+      commit **does not identify what ran**. combat made the helper shout about it — the case most worth seeing and the
+      easiest to miss, since a dirty tree is the normal state of a working stream.
+    - **combat found it by checking whether the helper worked *remotely before* wiring it in**, not after. A guard that is
+      only exercised in the environment it was written in is untested where it is needed.
+    - **The general form: every transport boundary is a place where context is silently dropped** — rsync without `.git`,
+      a pipe that loses an exit code, a patch that loses the commit providing its symbols, a summary that loses which
+      targets ran. **Name what each boundary drops, and carry it explicitly across.**
+98. **Agreement reached from different premises looks identical to agreement, and it is the cheapest place to lose a
+    finding.** combat's mirror of *a worker who has solved a process problem should assume the orchestrator has not*:
+    > *"When an instruction matches what you already do, that is the moment to check whether it matches for the **same
+    > reason**. Mine matched your rule by coincidence — I had run the skipped targets because I distrusted the skip, not
+    > because I knew the abort position was invisible."*
+    combat had been running the masked targets by hand since that morning. My unsafe rule — *treat a single known failure
+    as green* — **produced the same behaviour from a false premise**, so there was nothing for combat to object to, and the
+    finding stayed put until control hit it independently. **Two agents each held half and the agreement hid the gap.**
+    - **When you find yourself agreeing with an instruction, state your reason, not your assent.** *"Yes, I already do
+      that, because X"* exposes a mismatched X; *"yes"* does not.
+    - This is the social form of lesson 47 (*a guarantee no test isolates*): **a shared conclusion with unshared reasoning
+      is a guarantee nobody is checking.**
+99. **The fix for "the wrong answer and the right answer are indistinguishable at the point you look" is never a better
+    property — it is finding something that can only be true of the right object.** arena's generalisation, drawn from
+    **four separate defects found in a single day**:
+    - `ArenaFixture`'s readiness probe — *"a point inside this layout's cover is off the mesh"* — was equally true of the
+      **previous** arena's navmesh, so a test varying only `terrain` or `shape` measured the arena before it (lesson 87).
+    - the perimeter span symmetry rule agreed with itself for a **centred** gate, so it could not detect an asymmetric one.
+    - `sim-baseline` locally **skips and exits 0** on a glibc with no recorded line, so it passes identically to a real
+      pass (lesson 91).
+    - a truncated `check` and a complete one are **byte-identical in their summary line** — there is no `N of M targets`
+      anywhere, so the only way to tell them apart is to know the target order and find where the output stops, *"which is
+      exactly the kind of thing nobody does when the last line says what they hoped"* (lesson 95).
+    **Every one was fixed by tightening a property, repeatedly, and every one came back.** The pattern that ends it is
+    **identity**: wait for the map's regions to be *exactly this arena's*; assert the preview came *from the planner*;
+    verify `git show HEAD:<path>` rather than the file on disk; print `run: <machine> at <commit>`. **Ask of any check:
+    what else in the world satisfies this? If the answer is "the previous version of the thing I am testing", it is not a
+    check.**
+    **Applies to test design too, not just instruments.** Round 3's `runs >= 3` was a property the *buggy* scout satisfied;
+    *"never inside the ram gap, most of the time in band and nose on"* is one **only the correct behaviour** can satisfy.
+100. **Credit the mechanism, not the instinct — including when a stream declines the credit you offered.** I praised arena
+    for holding out for a conclusive run (*"nothing of mine should merge until I send the wrapper line"*) and treated it
+    as foresight about the truncation problem. arena corrected me:
+    > *"My 'nothing merges until I send the wrapper line' was about **my** uncertainty, not foresight about yours — I had
+    > no idea `check` stopped at the first failure until you told me. **The instinct was right for the wrong reason**,
+    > which is worth recording accurately if it goes in the lessons."*
+    **A lesson file that credits instincts teaches people to have hunches; one that credits mechanisms teaches people to
+    build guards.** And the accurate history matters here: what actually caught the truncation was **control reading its
+    own check output carefully**, not anyone's caution. **Recording the wrong cause of a success is the same error as
+    recording the wrong cause of a failure** — see the gangs' 23%, where an unexcluded candidate was reported as a
+    demonstrated cause in this very document.
+101. **Assert that the treatment engaged — a measurement cannot otherwise tell you that the thing you meant to measure is
+     the thing that ran.** combat's framing of the gap, after two designator runs in one night measured a different game
+     than it thought: first the unit **was not on the battlefield at all** (silently dropped from every army by a keyed
+     table), then it **was on it wearing the wrong hat** (role `"designator"` put it outside `FRAGILE_ROLES` and
+     `PROTECTED_ROLES`, so the CPU front-lined a spotter). **Both were found by a result looking slightly wrong, not by any
+     check** — which is lesson 94's trap: the same bug pushing the plausible way would have shipped.
+     **The answer is the clinical-trial idea of adherence: you do not report a drug trial without checking the patients
+     took the drug.** So the harness **counts the mechanism's own events and refuses — not annotates, refuses — to report a
+     treatment arm showing zero.** A treatment arm with no treatment is **not a null result, it is a failed run**, and
+     that distinction is what cost two runs. Built at `e0f6ce40`.
+     - **Every A/B in this project should assert its treatment engaged.** The standoff run counts scouts entering the
+       standoff state; the `gangs/scout` ablation asserts the entry is genuinely absent from the tree that ran.
+     - **arena's extension is the general form and the one to copy:** *"assert the map is the one named, the objectives are
+       where the layout says, and the armies are the size requested — inside the probe. Every wrong number this stream
+       produced today would have been caught by one of those three."*
+     - **The distinction that makes this more than hygiene:** `run: <machine> at <commit>` proves **which build**; a
+       positive control proves **which behaviour**. Conditions *around* the run versus conditions *inside* it — and only
+       the inside version survives someone changing the setup, including an agent who has never read this file.
+102. **A new value in a keyed system is an interface change, not a value.** combat, having authorised-by-me a re-role of one
+     unit, went looking for how many places would need editing and found **eight lists across four streams**:
+     `Units.ROLES` · `Army.SQUADS` · `SquadTactics.FRAGILE_ROLES` · `TacticsFormation.PROTECTED_ROLES` · `CpuCommander`'s
+     line/support split · `ElementSituation` · `ArmyCatalog.ROLE_LABELS` · `command_icons`. **None reference a single
+     registry.** Adding a role means editing eight independent lists owned by four people, and missing one fails either
+     **silently** (the army drop) or **obscurely** (a missing icon).
+     **combat's statement: *"a value that eight places key off is not a value, it is an interface"* — and this one has no
+     owner, no registry and no enforcement.**
+     - **The fix that worked was not doing it.** Designation is a **capability**, not a taxonomy: `role` stayed `"lancer"`
+       and the unit carries `"designates": true`. All eight lists keep working untouched, the `SQUADS` entry became
+       unnecessary, and the faction kept five roles **without a re-role at all** — a strictly smaller change than the one
+       the orchestrator authorised. `game_design.md` already said *"the role is shared across factions, the vehicle is
+       not"*; nobody applied it.
+     - **Stopping one fix into an eight-fix patch is the hard part.** combat was at 1 a.m. with seven edits to go and went
+       backwards instead. **When the cost of a change is discovered to be eight times the estimate, that is data about the
+       design, not a reason to push on.**
+     - **Orchestrator's share: I approved "re-role it" while thinking about art budget, and never asked what `role` was
+       load-bearing for.** Fourth instance in one day of approving a change by evaluating the change and not its
+       surroundings.
+103. **A control must state the condition it checked and what it refuses to report — never *why* the condition matters.**
+     arena's new `nav-maze` control fired correctly on its first run and printed: *"8 pairs of units started on top of
+     each other — spawn slots wrapped, **and those hulls cannot move, so every arrival number below would be wrong**."*
+     The assertion was right. **The explanation was a round-6 fact in the present tense**: coincident hulls have parted by
+     name since `e291a35a` (`avoidance.gd:204`), on `main` since `7cce78af`. In round 5 they genuinely never moved — 8 of
+     the 20 non-arrivals in arena's own baseline — and the sentence outlived its cause.
+     nav settled it with arithmetic rather than a claim about whose tree was whose: **the probe counts all 60 units and the
+     8 wrapped pairs are 16 of them, so if those hulls could not move, at most 52 of 60 could arrive. 60/60 means all 16
+     moved.**
+     **A stale diagnosis in a failure message is worse than one in a document, because it arrives at the moment someone is
+     deciding what to do.** I read it, immediately suspected nav's validation, told nav its numbers might be void, and
+     offered to hold a commit out of the merge queue. **The control was right and still nearly cost a merge and a
+     retraction — because I believed the explanation, not just the assertion.**
+     - **Write:** *"8 pairs started on top of each other: spawn slots wrapped, so this run is not the experiment named (60
+       distinct start points). No number written."* Permanently true, and it invites no conclusion about movement.
+     - **And fix the cause rather than downgrading the check.** nav offered "make it a warning"; the condition genuinely is
+       violated, so **refusing is right and the fix is to give the probe 60 distinct start points.** A warning is the
+       invisible-skip failure of lesson 91 wearing a different hat. **Fixed at `c2ed5b3c`**: surplus units are offset half
+       a column sideways, so 60 means 60 distinct start points, and the control passes at 30 and 60, one-way and head-on.
+       arena then **added a condition for the fix itself** — *every unit must start on the navmesh* — because shifting a
+       hull sideways could put it inside cover on a layout with a tighter spawn zone. **A fix to a setup deserves its own
+       assertion, since it is exactly the change that breaks something quietly.**
+     - **⚠ The detail that stings, in arena's words: *"I copied a finding from the very stream that had since fixed it."***
+       The sentence came from nav's round-5 report, and nav fixed the cause in round 6. **Copying a peer's finding copies
+       its timestamp, and nothing in the copy carries it.**
+     - **arena produced four distinct forms of lesson 84 in a single day**, which is worth listing because they look
+       unrelated until they are side by side: a **proposal read as a description** (`balance.md`'s physics layer 4); a
+       **legacy constant surviving inside something that looked updated** (the plot's `direct_route_exposure`); a **metric
+       name promoted from configuration to property** (`centre_sees_share`); and a **fact copied forward past its fix**
+       (this one). **All four are a claim that outlived its conditions**, which is the same disease as promoting a
+       measurement to a property (lesson 93) — and it is the single most common failure in this project's history.
+     - **And the unforeseeable payoff, which arena rightly says nobody would have argued for in advance: the positive
+       control generated a test in another stream's paths.** arena built probe hygiene; nav saw that **wrapped spawns also
+       happen in real matches — respawns, big armies — so "coincident starts separate within N s" is a behaviour test for
+       the thing that actually matters.** An assertion about an experiment became an assertion about the game.
+104. **Refuse to *persist*, not merely to *print*. A printed refusal can be scrolled past; an absent file cannot be
+     cited.** combat's positive control refused to print a result; arena's refuses to write the JSON at all. combat adopted
+     arena's version on seeing the difference: *"a refused run cannot end up in `references/` by someone copying the last
+     file they see."*
+     **And the two controls caught different classes, which is the argument for having both:** combat's caught a
+     **treatment that never engaged** — a missing effect. arena's caught a **control arm that was silently broken**, which
+     is worse, *"because a broken control does not look like nothing, it looks like a result."*
+105. **Being protected by an unexamined habit is not the same as being safe, and it feels identical.** combat checked its
+     own exposure to the notification trap and found its waiters read the wrapper's line correctly — then reported *why*:
+     > *"not because I had reasoned about the notification. I built those waiters that way because the wrapper's line was
+     > what `CLAUDE.md` told me to read on my first hour, and I never revisited it. **I was protected by a habit I had not
+     > examined** — exactly the position you were in with the rule that matched what I already did. I would have been
+     > vulnerable the first time I wrote a waiter that polled a notification instead of a log, and nothing in my process
+     > would have stopped me."*
+     **This is lesson 98 from the inside.** Agreement from unshared premises is invisible; so is compliance from an
+     unexamined premise. **When you find you are already doing the right thing, ask what would have to change for you to
+     stop** — if the answer is "nothing in particular", the protection is luck with a good track record.
+     **Four instances today of one shape and one defence.** A faction number with no map, a truncated check, a container
+     argued without its contents, and an `exit code 0` from the wrong process: *the wrong answer and the right answer are
+     indistinguishable at the point you look*. **Every defence that worked made the channel carry what it is about** — the
+     wrapper line names the target, `run: <machine> at <commit>` names the build, the positive control names the behaviour.
+     **None of them are vigilance.**
+106. **Pre-register the decision rule before running the experiment. It costs one sentence and it is the only defence
+     against interpreting a result after it arrives.** nav, before building a commitment term in `CombatMotion`:
+     > *"The decision rule, stated now so I can't move it later: if commitment cuts churn and survivability doesn't get
+     > worse beyond seed noise, it ships and the churn was not the price of not dying. If survivability drops, evasion is
+     > load-bearing, and I tell you the fix is legibility (control) with the numbers."*
+     **Every measurement failure this round was a result interpreted after the fact**, and each had a plausible story ready:
+     the designator's 43% → 40% was one paragraph away from *"an acquisition buff can backfire"* (it was a missing unit);
+     the gangs' 23% → 53% became *"a balance problem dissolved by mechanics"* (it may be a bug fix, and the ablation is
+     still pending); my own n=2 range finding became design understanding and inverted at n=15. **None of those were
+     dishonest. A result arrives with its explanation already forming, and the explanation is free.**
+     - **A pre-registered rule makes a null result reportable and a bad result unspinnable.** It also forces the *acceptance
+       criteria* to be chosen while they can still be chosen fairly — nav's include *survivability must not get worse*,
+       which is the criterion an author hoping for a churn win would quietly omit.
+     - **Say the noise threshold in advance too** ("beyond seed noise"), because *"within noise"* is the phrase that
+       absorbs an inconvenient result after the fact.
+     - **This is the practice for every A/B in this project from here.** It pairs with the positive control (lesson 101):
+       one asserts the treatment engaged, the other fixes what the answer means before you know it.
+     **And nav's decomposition is the model for what precedes a fix.** Evasion split into **(a)** dodging a round actually
+     in flight (`would_be_hit` against `IncomingFire`, reactive, load-bearing, never cut) and **(b)** timer-driven replans
+     and strafe-side flips *with nothing incoming* — whose justification, spoiling a gunner's lead, **is real for tank
+     shells at 60–70 m and weak against hitscan.** So a behaviour that pays for itself against one weapon class is being
+     applied against all of them. **That is a falsifiable claim about where a cost is unjustified**, which is a far better
+     starting point than "reduce the churn".
