@@ -10,7 +10,13 @@ extends Node
 
 const BUS := "Announcer"
 const WORLD_BUS := "World"
-const CUT_FADE_S := 0.08
+## Round 6 (the lead: "The announcers cut each others' audio off ... if someone interrupts then an announcer should
+## interrupt (if necessary) and the other announcer only stops speaking after they've been interrupted"). A traced real
+## match had every clipped line a deliberate interruption faded out in 0.08 s, mid-word (the PA lost 7.7 s of a line).
+## An interrupted voice now trails off like a person being talked over: it drops under at once and fades over
+## TRAIL_S, on its own player, while the interrupting line starts on the other.
+const TRAIL_S := 0.8
+const TRAIL_DUCK_DB := -5.0
 ## The booth's level under --announcer-volume. X6's first full-match recording had the booth's lines 15-20 dB over the
 ## battle, clipping with the music underneath: it already ducks everything else, so it doesn't also need to be hot.
 const TRIM_DB := -4.0
@@ -28,6 +34,10 @@ var load_stream: Callable = func(path: String) -> AudioStream: return AudioStrea
 var manifest := {}
 var _player: AudioStreamPlayer
 var _queue: Array = []
+var _current_line := ""
+var _players: Array[AudioStreamPlayer] = []
+var _trails := {}
+var _current_speaker := ""
 var _stop_at := -1.0
 var _clock := 0.0
 
@@ -71,11 +81,20 @@ func load_clips(folder: String) -> bool:
 
 func _ready() -> void:
 	ensure_bus()
-	_player = AudioStreamPlayer.new()
-	_player.bus = BUS
-	add_child(_player)
-	_player.finished.connect(_play_next)
+	for i in 2:
+		var player := AudioStreamPlayer.new()
+		player.name = "Voice%d" % i
+		player.bus = BUS
+		add_child(player)
+		player.finished.connect(_on_finished.bind(player))
+		_players.append(player)
+	_player = _players[0]
 	volume_db = volume_db
+
+
+func _on_finished(player: AudioStreamPlayer) -> void:
+	if player == _player:
+		_play_next()
 
 
 ## The clip file for a cue: one whole sentence, recorded for exactly these slot values. Empty when this
@@ -101,24 +120,69 @@ func play(cue: Dictionary) -> bool:
 	var files := files_for(cue)
 	if files.is_empty() or _player == null:
 		return false
+	_trace_clip(cue)
+	if _player.playing:
+		_trail_off()  # the challenger starts; the incumbent yields under it
 	_queue = Array(files)
+	_current_line = String(cue.get("line_id", ""))
+	_current_speaker = String(cue.get("speaker", ""))
 	_stop_at = -1.0
 	_player.volume_db = 0.0
 	_play_next()
 	return true
 
 
+## Round 6 (the lead: "The announcers cut each others' audio off"): every line that is still sounding when another
+## starts is logged with how much of it was lost and why, so the booth's scheduling can be read from a real match.
+## ANNOUNCER_CLIPPED lost=<s> of=<line> by=<line> cut_in=<the director meant to interrupt>.
+func _trace_clip(cue: Dictionary) -> void:
+	if not _player.playing or _player.stream == null:
+		return
+	var lost := _player.stream.get_length() - _player.get_playback_position()
+	if lost <= 0.05:
+		return
+	print("ANNOUNCER_CLIPPED lost=%.2f of=%s by=%s cut_in=%s speakers=%s>%s" % [lost, _current_line, cue.get("line_id", ""),
+			str(cue.get("cut_in", false)), _current_speaker, cue.get("speaker", "")])
+
+
 ## The director cut the current line: fade and stop.
 func cut() -> void:
+	if _player != null and _player.playing and _player.stream != null:
+		print("ANNOUNCER_CUT lost=%.2f of=%s" % [_player.stream.get_length() - _player.get_playback_position(), _current_line])
 	_queue.clear()
 	if _player != null and _player.playing:
-		var tween := create_tween()
-		tween.tween_property(_player, "volume_db", -40.0, CUT_FADE_S)
-		tween.tween_callback(_player.stop)
+		_trail_off()
+
+
+## The speaking player trails off (ducked at once, silent after TRAIL_S) and the other player becomes the one that
+## speaks next. A third voice arriving while one still trails stops that one: two voices at once is the most.
+func _trail_off() -> void:
+	var leaving := _player
+	var next: AudioStreamPlayer = _players[1] if leaving == _players[0] else _players[0]
+	if next.playing:
+		next.stop()
+	if _trails.has(next):
+		(_trails[next] as Tween).kill()
+		_trails.erase(next)
+	var tween := create_tween()
+	tween.tween_property(leaving, "volume_db", leaving.volume_db + TRAIL_DUCK_DB, 0.05)
+	tween.tween_property(leaving, "volume_db", -40.0, TRAIL_S)
+	tween.tween_callback(leaving.stop)
+	_trails[leaving] = tween
+	_player = next
+	_player.volume_db = 0.0
 
 
 func is_speaking() -> bool:
 	return _player != null and (_player.playing or not _queue.is_empty())
+
+
+## Voices sounding right now, a trailing one included (tests).
+func voices_sounding() -> int:
+	var count := 0
+	for player in _players:
+		count += 1 if player.playing else 0
+	return count
 
 
 func _play_next() -> void:
