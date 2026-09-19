@@ -148,6 +148,34 @@ Nothing blocking. The task palette (N4) goes to him through control's page, not 
 
 _Updated 2026-09-18 by the squad worker._
 
+### Resume here (written 2026-09-18 before a 4-day pause; read first)
+
+**State:** everything is merged to main; the last green hash is `e683d0d3` (builder0, 1126 passed). The tree is clean.
+**Do not start** X6's baseline, X8, or anything on PID: all three are parked on others (X6 on CP4-on-main plus the
+orchestrator's sim-baseline record; X8 on N7; PID is done by nav's N6, see the X3 row).
+
+What is hardest to rediscover, and where it now lives:
+1. **The dither metric reported DOUBLE the real rate** from the 30 Hz move until `1fc83daf` (it divided by a hard-coded
+   3600 ticks). Real x3 rates, same seed: pre-CP4 5.8, CP4 raw 7.8, CP4 + fix 6.2-6.3 per unit-minute, bar 12: nothing
+   was ever over the bar, but CP4 did add 31% more switches, which the brain fix removed (count 21 → 16). **Any older
+   dither number is doubled; never compare it with a post-fix one.** Warning is also in `scenario_motion.gd`.
+2. **The discovery bridge fed its decider half the real elapsed time and stepped at double the cadence** from the 30 Hz
+   move until `1fc83daf`/`5521f741`. The one recorded discovery finding (`pin_and_flank`) predates the move and is
+   unaffected; logs produced in between are not comparable. Warning is in `unit_ai.md` ("Clock warning").
+3. **The player-hold rule is a rule in `TankBrain._order_move`, not a range comparison.** The old guarantee was a
+   coincidence (an outranging heuristic returned "stop"). The test asserts the mechanism (0 move ticks while holding)
+   with a CPU control that must move; both explanations are next to the test and the rule.
+4. **Support by fire has no near-ambush distance floor, on purpose**: it would put the line outside the band. The
+   precedence (SBF task above near ambush) is the invariant; the reasoning is next to `ElementPlan.SBF_STANDOFF`.
+5. **Unproven, worth a look:** (a) a unit shot at by an enemy it cannot see stands still after one react-to-contact;
+   (b) with elements on, ~1 order per unit-second remains from leg re-issues (the `make squad-coherence` smoke, one
+   laptop seed, pre-CP4); (c) two of control's five-squad units ended 36-39 m from their slots (maybe stuck: nav's
+   `Movement.state` can say); (d) `near_ambush` often ends without `assault_through` in the coherence probe; that
+   is probably its 0.5 s sampling missing a short assault, not a bug; (e) should a charge let fast units overtake a
+   column (round 7, orchestrator's note)?
+6. **Measurements only in `build/`, not committed:** the `make squad-coherence` smoke runs (laptop, 1 seed, 60 s,
+   pre-CP4; indicative only, quoted in Known issues). Everything else quoted here is in commit messages and this Status.
+
 ### Plan and progress (smallest foundation first)
 
 | Item | State |
