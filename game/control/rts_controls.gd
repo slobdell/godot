@@ -248,19 +248,22 @@ func vision_state() -> Dictionary:
 				frame.append(middle * 2.0 - at)
 				break
 	# Round 7 (B), the lead: "tanks were shooting at enemies I couldn't even see ... make the field of view match the
-	# range of the vehicle or the max range of the selection". The frame reaches out to what the selection can fight,
-	# in the direction it faces.
-	if range_frame > 0.0 and not eyes.is_empty():
+	# range of the vehicle or the max range of the selection". The view leans out toward what the selection can fight,
+	# in the direction it faces - as a LEAN (RtsCamera.order_pose: the units stay framed, the view leans as far toward
+	# the point as that allows), not as one more point to fit. Fitting it pulled the frame's centre forward and, with
+	# the auto camera's distance capped, dropped the squad off the bottom of the screen with the enemy in view (round
+	# 5's "focusing on the enemy", back again; shell-playtest caught it). An order's destination still wins the lean.
+	var destination: Variant = _element_destination(element, frame)
+	if destination == null and range_frame > 0.0 and not eyes.is_empty():
 		var ahead: Variant = selection_facing()
 		if ahead == null:
 			ahead = Match.team_frame(team)["forward"]
-		frame.append(middle + (ahead as Vector3) * selection_reach() * range_frame)
+		destination = middle + (ahead as Vector3) * selection_reach() * range_frame
 	var friendly: Array = []
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
 			friendly.append(tank)
-	return {"frame": frame, "destination": _element_destination(element, frame),
-			"region": VisionRegion.of(friendly)}
+	return {"frame": frame, "destination": destination, "region": VisionRegion.of(friendly)}
 
 
 ## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective

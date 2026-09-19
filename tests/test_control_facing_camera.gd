@@ -79,15 +79,16 @@ func test_the_frame_reaches_out_to_what_the_selection_can_fight() -> void:
 		expected = maxf(expected, minf(Engagement.effective_range(Weapons.profile(tank.weapon_id)), tank.sight_radius))
 	assert_near(f.controls.selection_reach(), expected, 0.01, "reach is the selection's longest covering range (%.0f m)" % expected)
 	f.controls.range_frame = 1.0
-	var with_range: Array = f.controls.vision_state()["frame"]
+	var with_range: Dictionary = f.controls.vision_state()
 	f.controls.range_frame = 0.0
-	var without: Array = f.controls.vision_state()["frame"]
-	assert_eq(with_range.size(), without.size() + 1, "range framing adds one point, at the selection's reach")
-	var middle := Vector3.ZERO
-	for p: Vector3 in without.slice(0, 2):
-		middle += p
-	var reach_point: Vector3 = with_range.back()
-	assert_true(reach_point.distance_to(middle / 2.0) > expected * 0.8, "out where the selection can fight (%.0f m)" % reach_point.distance_to(middle / 2.0))
+	var without: Dictionary = f.controls.vision_state()
+	assert_eq((with_range["frame"] as Array).size(), (without["frame"] as Array).size(),
+			"the reach is a lean, not a point the frame must fit (fitting it dropped the squad off the screen)")
+	assert_true(without["destination"] == null and with_range["destination"] is Vector3, "the view leans toward the reach")
+	var middle := (f.tank("Green_Alpha_1").global_position + f.tank("Green_Bravo_2").global_position) / 2.0
+	var lean: Vector3 = with_range["destination"]
+	assert_true(Vector2(lean.x - middle.x, lean.z - middle.z).length() > expected * 0.8,
+			"out where the selection can fight (%.0f m)" % Vector2(lean.x - middle.x, lean.z - middle.z).length())
 
 
 ## Round 7: the auto camera never pulls further out than auto_frame_max_m, however spread the squad (at the lead's 35°
@@ -105,4 +106,26 @@ func test_the_auto_camera_stays_near_the_leads_distance() -> void:
 		await tree.process_frame
 	assert_true(RtsCamera.distance_for(f.rig.zoom) <= f.rig.auto_frame_max_m + 0.5,
 			"a 220 m-wide selection is framed from no further than %.0f m (%.0f m)" % [f.rig.auto_frame_max_m, RtsCamera.distance_for(f.rig.zoom)])
+	RtsCamera.fov = 55.0
+
+
+## Round 7 regression (shell-playtest, planning): with range framing and the distance cap together, the squad fell off
+## the bottom of the screen and the enemy filled it. The reach is a lean: the selected squad stays on screen.
+func test_leaning_toward_the_reach_keeps_the_squad_on_screen() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	RtsCamera.fov = RtsCamera.FOV_DEG
+	f.rig.pitch = RtsCamera.DEFAULT_PITCH_DEG
+	f.rig.vision = f.controls.vision_state
+	f.controls.range_frame = 2.0  # the most the keys allow
+	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
+	f.rig.take_vision()
+	var until := Time.get_ticks_msec() + 2500
+	while Time.get_ticks_msec() < until:
+		await tree.process_frame
+	var screen := Rect2(Vector2.ZERO, Vector2(tree.root.size))
+	for unit_name in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
+		var at := f.camera.unproject_position(f.tank(unit_name).global_position)
+		assert_true(not f.camera.is_position_behind(f.tank(unit_name).global_position) and screen.has_point(at),
+				"%s stays on screen while the view leans toward the reach (%s)" % [unit_name, at])
 	RtsCamera.fov = 55.0
