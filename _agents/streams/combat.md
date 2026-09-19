@@ -539,7 +539,41 @@ for doing N7 promptly after CP4.
 That is exactly what `separation_at_contact_m` and `engaged_distance_m` measure, so X3 resolves itself out of the CP4
 series rather than needing its own run.
 
-**X3 — BLOCKED (2026-09-19), and blocked on another stream, not on a decision.** Raising `ARENA_HALF_SIZE` to 140
+**X3 — DONE (2026-09-19), once the orchestrator authorised merging arena's commit directly.** `ARENA_HALF_SIZE`
+is **140 and a bound**: a layout declares its own `half_size` under it, so Pit and Yard stay 120 x 120 and nothing
+about the maps the lead has played changes. `stream/combat` contains arena's `877dc34a` (a real merge, `0da3f015`),
+which is what makes the bump legal — before it, `validate` demanded equality.
+
+**`DRIVABLE_LIMIT` stays at 116, and that is a deliberate deviation from the instruction to set 117.** The warning
+behind the instruction is right and I kept it: scaling it with the bound to 136 would make a *square* clamp admit
+points 192 m from centre on a hexagon whose wall is 121 m away on the flats — about three times too permissive, and
+`Arena.validate` would approve every one of them. But 117 is the hexagon's inscribed bound (121.0 − 4.0) and **116
+is already inside it**, so 116 is safe for the hexagon *and* for today's squares, while moving to 117 would take a
+metre of clearance off every shipped map in exchange for nothing. It is a fallback square bound; `Arena.contains()`
+is the real answer, and each surviving `clampf(..., DRIVABLE_LIMIT)` is a site still to migrate.
+
+**What the bump broke, and why it was fixed here rather than requested.** `ARENA_HALF_SIZE` was doing two jobs —
+*how big is the play area* and *how big is the world the HUD must cover* — and a non-square arena is what makes them
+different numbers. Three readers were on the wrong side of that split and would have shipped visibly wrong the
+moment the constant moved, so they moved with it (**owners: rewrite freely, this is your call, not mine**):
+
+| File | Owner | Was | Now |
+|---|---|---|---|
+| `game/ui/radar.gd` | control/feel | a **square** outline at `±ARENA_HALF_SIZE` | `Arena.perimeter()` — the real inner face. Two bugs in one line: it would have drawn 20 m outside every wall, **and** drawn a hexagon as a square |
+| `game/agent/agent_bridge.gd` | agent | declared `bounds` = the constant | the active layout's size — it was about to tell an agent the world is 140 m wide when the map is 120 |
+| `game/match/visibility_field.gd` | **combat** | `const ORIGIN` off the constant | `var origin`, sized to the active layout. Presentation only, but a 120 m map would have carried a 280 x 280 field: 36% more cells to fill and upload, all of it outside the walls |
+
+`VisibilityField.ORIGIN` is therefore `field.origin` now — per-instance, because the answer depends on which layout
+is loaded. `radar.gd` and `skirmish_mode.gd` were the two static readers and both are updated.
+
+**And one of arena's tests was measuring the map size, not the shape.** `test_a_hexagon_is_the_shape_that_varies_most`
+probed the pinch ratio at a hard-coded **z = 60 m**. The ratio is scale-invariant — hexagon 0.711, octagon 0.914 at
+*any* bound — but 60 m is a different fraction of a 140 m arena than of a 120 m one, so at the new bound it read
+**0.753 against a 0.75 bar and failed**, having detected nothing except that the map got bigger. The probe now sits
+at `bound * 0.5` and reproduces the original numbers at every size. **A constant in a test is a scale assumption
+whenever the thing under test has a size.**
+
+_Superseded, kept for the record — the blocked writeup:_ **X3 was BLOCKED (2026-09-19), on another stream.** Raising `ARENA_HALF_SIZE` to 140
 as a *bound* needs `Arena.validate()` to stop demanding equality, which is arena's `877dc34a` ("half_size is a bound,
 not a requirement (unblocks combat's ARENA_HALF_SIZE)"). **That commit is on `stream/arena` and is NOT on `main`** —
 I checked with `git merge-base --is-ancestor 877dc34a main` after merging main, precisely because my own notes had

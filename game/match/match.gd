@@ -41,8 +41,29 @@ const BASE_DAMAGE := 34.0
 ## Arena geometry. Obstacles and spawns come from the arena layout (arenas/*.json, Arena); the size is fixed here.
 ## 2026-09-13: doubled from 60 → 120 after the lead's first skirmish; contact was
 ## immediate on the small map and formations had no room.
-const ARENA_HALF_SIZE := 120.0
+##
+## X3 (round 7, 2026-09-19): 120 → 140, and it is now a **BOUND, not a size**. A layout declares its own
+## `half_size` under it (Arena.validate), so Pit and Yard stay 120 x 120 and nothing about them changes; what moved
+## is the ceiling, which is what a hexagon of circumradius 139.7 needs in order to exist at all. Depends on arena's
+## `877dc34a`, merged into this branch: before it, validate demanded half_size == this constant, so raising it would
+## have grown every shipped map 36% as a side effect of a shape change nobody asked to apply to them.
+##
+## The constant was doing two jobs -- "how big is the play area" and "how big is the world the HUD must cover" -- and
+## a non-square arena is what makes them different numbers. **Anything that draws or declares the PLAY AREA must read
+## `Arena.active.half_size`** (the pattern in `RtsCamera.perimeter_half()`), never this.
+const ARENA_HALF_SIZE := 140.0
 ## How close to the perimeter tanks and slots may be sent (walls' inner face minus clearance).
+##
+## X3: this did NOT scale with the bound, and the reason is the whole point of M4. It is a **square** clamp, so on a
+## hexagon of circumradius 139.7 -- inradius 121.0 -- a limit of 136 would admit points 192 m from centre on the
+## diagonal, well outside the wall, and `Arena.validate` would approve every one of them. It is about three times too
+## permissive, not slightly. The conservative inscribed bound is 121.0 - 4.0 = **117**.
+##
+## Left at **116**, one metre inside that, deliberately: 116 is already within 117, so it is safe for the hexagon as
+## well as for today's squares, while moving it to 117 would take a metre of clearance off every shipped map -- a
+## change to maps the lead has played, bought in exchange for nothing. It is a FALLBACK square bound that is
+## conservative for every shape; the real answer to "is this point inside the arena" is `Arena.contains()`, and each
+## remaining `clampf(..., DRIVABLE_LIMIT)` is a site still to migrate (M4 in _agents/workstreams.md).
 const DRIVABLE_LIMIT := 116.0
 const BASE_Z := 90.0
 ## Spawn grid. Slot 0 is the middle of the front row, then out to the flanks, then the rows behind it,
