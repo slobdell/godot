@@ -25,6 +25,11 @@ const BACK_MARGIN_M := 4.0
 ## An army waiting for orders stands in an ASSEMBLY area, tighter than it moves: a squad starts at most this far between
 ## vehicles (hulls are ~4 m long), and opens out to its own spacing when it is ordered to move. The start view frames it.
 const ASSEMBLY_SPACING_M := 6.5
+## ...but never less than the squad's longest hull plus this much clear ground (vehicle sizes vary 3x between factions:
+## a gang War Rig is far longer than a scout), and the same for the packing floor.
+const HULL_CLEAR_M := 2.0
+## A widened rank keeps this far off the drivable floor's side edges.
+const SIDE_MARGIN_M := 6.0
 ## Clear ground between one rank of squads and the next (a hull is ~4 m long).
 const RANK_GAP_M := 6.0
 ## A squad with no formation of its own starts in this one; a squad bigger than BLOCK_OVER waits in a compact block
@@ -54,9 +59,17 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 	# As few ranks of squads as fit: each squad takes the width its own formation needs plus a gap, the rank is centred
 	# (a small army stands together, not strung across the whole zone), spacing is compressed only if a rank will not
 	# fit, and when even the tightest spacing will not, the squads stand in more ranks, the first nearest the enemy.
+	# The zone is where the old spawn grid lived; when an army of big hulls will not fit it, a rank may widen out toward
+	# the drivable floor's edges (the base is open there) rather than stack vehicles against a clamp.
+	var widest := 2.0 * (Match.DRIVABLE_LIMIT - SIDE_MARGIN_M) - 2.0 * absf(center.dot(right))
 	var ranks := 1
 	while ranks < 4 and not _fits(shapes, ranks, Vector2(size.x, _usable_depth(size))):
 		ranks += 1
+	if not _fits(shapes, ranks, Vector2(size.x, _usable_depth(size))):
+		ranks = 1
+		while ranks < 4 and not _fits(shapes, ranks, Vector2(widest, _usable_depth(size))):
+			ranks += 1
+		size = Vector2(widest, size.y)
 	var per_rank := ceili(float(count) / ranks)
 	var rank_depth := _usable_depth(size) / float(ranks)
 	# Each rank stands behind the ACTUAL back of the one in front (a rank packed to the spacing floor can be deeper than
@@ -70,7 +83,7 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 		var widths: Array = []
 		var total := 0.0
 		for shape: Dictionary in row:
-			var spacing := maxf(float(shape["spacing"]) * scale, MIN_SPACING_M)
+			var spacing := maxf(float(shape["spacing"]) * scale, float(shape["floor"]))
 			var width: float = (float(shape["across"]) + GAP_SPACINGS) * spacing
 			widths.append([spacing, width])
 			total += width
@@ -112,24 +125,37 @@ static func _shape_of(squad: Dictionary) -> Dictionary:
 	var ahead := 0.0
 	for slot in raw:
 		ahead = maxf(ahead, -slot.y)
-	return {"front": ahead,"name": String(squad["name"]), "members": members, "formation": shape,
+	var longest := 0.0
+	for member: Dictionary in members:
+		var unit := String(member.get("unit", ""))
+		if Units.exists(unit):
+			var hull: Array = Units.stat(unit, "hull_size", [2.6, 1.8, 4.0])
+			longest = maxf(longest, maxf(float(hull[0]), float(hull[2])))
+	var floor_m := maxf(MIN_SPACING_M, longest + HULL_CLEAR_M)
+	return {"front": ahead, "floor": floor_m, "name": String(squad["name"]), "members": members, "formation": shape,
 			"leader": String(squad.get("leader", "")),
-			"spacing": minf(float(squad.get("spacing", TacticsFormation.DEFAULT_SPACING)), ASSEMBLY_SPACING_M),
+			"spacing": maxf(minf(float(squad.get("spacing", TacticsFormation.DEFAULT_SPACING)), ASSEMBLY_SPACING_M), floor_m),
 			"across": _extent(raw, true), "deep": _extent(raw, false)}
 
 
-## Whether `shapes` fit the zone in `ranks` ranks at the tightest spacing.
+## Whether `shapes` fit in `ranks` ranks at their tightest spacing: every rank no wider than size.x, and the ranks'
+## real depths plus the gaps between them no deeper than size.y (the placement stacks them the same way).
 static func _fits(shapes: Array, ranks: int, size: Vector2) -> bool:
 	var per_rank := ceili(float(shapes.size()) / ranks)
+	var depth := 0.0
 	for r in ranks:
+		var row: Array = shapes.slice(r * per_rank, mini((r + 1) * per_rank, shapes.size()))
+		if row.is_empty():
+			continue
 		var width := 0.0
-		for shape: Dictionary in shapes.slice(r * per_rank, mini((r + 1) * per_rank, shapes.size())):
-			width += (float(shape["across"]) + GAP_SPACINGS) * MIN_SPACING_M
-			if float(shape["deep"]) * MIN_SPACING_M > size.y / ranks - RANK_GAP_M:
-				return false
+		var deepest := 0.0
+		for shape: Dictionary in row:
+			width += (float(shape["across"]) + GAP_SPACINGS) * float(shape["floor"])
+			deepest = maxf(deepest, float(shape["deep"]) * float(shape["floor"]))
 		if width > size.x:
 			return false
-	return true
+		depth += deepest + (RANK_GAP_M if r > 0 else 0.0)
+	return depth <= size.y
 
 
 ## How much a rank's squads must be packed (<= 1) to fit its width and depth.
