@@ -211,7 +211,7 @@ What is hardest to rediscover, and where it now lives:
 | **CP4 pairing** (fire band, dither, cover timing, suppression threshold) | `1fc83daf`, `5521f741` |
 | **Player units hold until ordered** (lesson 47) | `fbf1650a`: a rule, tested as a mechanism |
 | Sim baseline | `9ba36681` (8ebbed52, stream/squad pre-CP4; combat's post-CP4 record supersedes it) |
-| X8 army layer (stretch) | not started: its measurement needs CP4 on main and N7 (movable objectives) |
+| X8 army layer (stretch) | **Verdict re-run first** (as doctrine.md asked): brains x5p 51-13 over the faction doctrine (builder0, tree at `1d011765`, 64 matches, gangs v law 5200, control on, yard/boulevard/pit/boneyard, 2 seeds × 4 ways): the approach phase did NOT rescue doctrine. Its ledger names the direct commander: `support_by_fire` is 72% of doctrine's time at exchange 0.58 (brains 1.25). `ArmyPlan` (`25da833b`, `1d011765`) replaces that decision; ladder brains/faction/army running |
 
 **Which instrument caught what (worth knowing before choosing between writing a test and building an instrument):**
 `make squad-coherence` (X6) found support by fire and near ambush taking an element from each other every update in a
