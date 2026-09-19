@@ -1449,3 +1449,120 @@ The kickoff prompt is one line; this section is the rest.
     own check output carefully**, not anyone's caution. **Recording the wrong cause of a success is the same error as
     recording the wrong cause of a failure** — see the gangs' 23%, where an unexcluded candidate was reported as a
     demonstrated cause in this very document.
+101. **Assert that the treatment engaged — a measurement cannot otherwise tell you that the thing you meant to measure is
+     the thing that ran.** combat's framing of the gap, after two designator runs in one night measured a different game
+     than it thought: first the unit **was not on the battlefield at all** (silently dropped from every army by a keyed
+     table), then it **was on it wearing the wrong hat** (role `"designator"` put it outside `FRAGILE_ROLES` and
+     `PROTECTED_ROLES`, so the CPU front-lined a spotter). **Both were found by a result looking slightly wrong, not by any
+     check** — which is lesson 94's trap: the same bug pushing the plausible way would have shipped.
+     **The answer is the clinical-trial idea of adherence: you do not report a drug trial without checking the patients
+     took the drug.** So the harness **counts the mechanism's own events and refuses — not annotates, refuses — to report a
+     treatment arm showing zero.** A treatment arm with no treatment is **not a null result, it is a failed run**, and
+     that distinction is what cost two runs. Built at `e0f6ce40`.
+     - **Every A/B in this project should assert its treatment engaged.** The standoff run counts scouts entering the
+       standoff state; the `gangs/scout` ablation asserts the entry is genuinely absent from the tree that ran.
+     - **arena's extension is the general form and the one to copy:** *"assert the map is the one named, the objectives are
+       where the layout says, and the armies are the size requested — inside the probe. Every wrong number this stream
+       produced today would have been caught by one of those three."*
+     - **The distinction that makes this more than hygiene:** `run: <machine> at <commit>` proves **which build**; a
+       positive control proves **which behaviour**. Conditions *around* the run versus conditions *inside* it — and only
+       the inside version survives someone changing the setup, including an agent who has never read this file.
+102. **A new value in a keyed system is an interface change, not a value.** combat, having authorised-by-me a re-role of one
+     unit, went looking for how many places would need editing and found **eight lists across four streams**:
+     `Units.ROLES` · `Army.SQUADS` · `SquadTactics.FRAGILE_ROLES` · `TacticsFormation.PROTECTED_ROLES` · `CpuCommander`'s
+     line/support split · `ElementSituation` · `ArmyCatalog.ROLE_LABELS` · `command_icons`. **None reference a single
+     registry.** Adding a role means editing eight independent lists owned by four people, and missing one fails either
+     **silently** (the army drop) or **obscurely** (a missing icon).
+     **combat's statement: *"a value that eight places key off is not a value, it is an interface"* — and this one has no
+     owner, no registry and no enforcement.**
+     - **The fix that worked was not doing it.** Designation is a **capability**, not a taxonomy: `role` stayed `"lancer"`
+       and the unit carries `"designates": true`. All eight lists keep working untouched, the `SQUADS` entry became
+       unnecessary, and the faction kept five roles **without a re-role at all** — a strictly smaller change than the one
+       the orchestrator authorised. `game_design.md` already said *"the role is shared across factions, the vehicle is
+       not"*; nobody applied it.
+     - **Stopping one fix into an eight-fix patch is the hard part.** combat was at 1 a.m. with seven edits to go and went
+       backwards instead. **When the cost of a change is discovered to be eight times the estimate, that is data about the
+       design, not a reason to push on.**
+     - **Orchestrator's share: I approved "re-role it" while thinking about art budget, and never asked what `role` was
+       load-bearing for.** Fourth instance in one day of approving a change by evaluating the change and not its
+       surroundings.
+103. **A control must state the condition it checked and what it refuses to report — never *why* the condition matters.**
+     arena's new `nav-maze` control fired correctly on its first run and printed: *"8 pairs of units started on top of
+     each other — spawn slots wrapped, **and those hulls cannot move, so every arrival number below would be wrong**."*
+     The assertion was right. **The explanation was a round-6 fact in the present tense**: coincident hulls have parted by
+     name since `e291a35a` (`avoidance.gd:204`), on `main` since `7cce78af`. In round 5 they genuinely never moved — 8 of
+     the 20 non-arrivals in arena's own baseline — and the sentence outlived its cause.
+     nav settled it with arithmetic rather than a claim about whose tree was whose: **the probe counts all 60 units and the
+     8 wrapped pairs are 16 of them, so if those hulls could not move, at most 52 of 60 could arrive. 60/60 means all 16
+     moved.**
+     **A stale diagnosis in a failure message is worse than one in a document, because it arrives at the moment someone is
+     deciding what to do.** I read it, immediately suspected nav's validation, told nav its numbers might be void, and
+     offered to hold a commit out of the merge queue. **The control was right and still nearly cost a merge and a
+     retraction — because I believed the explanation, not just the assertion.**
+     - **Write:** *"8 pairs started on top of each other: spawn slots wrapped, so this run is not the experiment named (60
+       distinct start points). No number written."* Permanently true, and it invites no conclusion about movement.
+     - **And fix the cause rather than downgrading the check.** nav offered "make it a warning"; the condition genuinely is
+       violated, so **refusing is right and the fix is to give the probe 60 distinct start points.** A warning is the
+       invisible-skip failure of lesson 91 wearing a different hat. **Fixed at `c2ed5b3c`**: surplus units are offset half
+       a column sideways, so 60 means 60 distinct start points, and the control passes at 30 and 60, one-way and head-on.
+       arena then **added a condition for the fix itself** — *every unit must start on the navmesh* — because shifting a
+       hull sideways could put it inside cover on a layout with a tighter spawn zone. **A fix to a setup deserves its own
+       assertion, since it is exactly the change that breaks something quietly.**
+     - **⚠ The detail that stings, in arena's words: *"I copied a finding from the very stream that had since fixed it."***
+       The sentence came from nav's round-5 report, and nav fixed the cause in round 6. **Copying a peer's finding copies
+       its timestamp, and nothing in the copy carries it.**
+     - **arena produced four distinct forms of lesson 84 in a single day**, which is worth listing because they look
+       unrelated until they are side by side: a **proposal read as a description** (`balance.md`'s physics layer 4); a
+       **legacy constant surviving inside something that looked updated** (the plot's `direct_route_exposure`); a **metric
+       name promoted from configuration to property** (`centre_sees_share`); and a **fact copied forward past its fix**
+       (this one). **All four are a claim that outlived its conditions**, which is the same disease as promoting a
+       measurement to a property (lesson 93) — and it is the single most common failure in this project's history.
+     - **And the unforeseeable payoff, which arena rightly says nobody would have argued for in advance: the positive
+       control generated a test in another stream's paths.** arena built probe hygiene; nav saw that **wrapped spawns also
+       happen in real matches — respawns, big armies — so "coincident starts separate within N s" is a behaviour test for
+       the thing that actually matters.** An assertion about an experiment became an assertion about the game.
+104. **Refuse to *persist*, not merely to *print*. A printed refusal can be scrolled past; an absent file cannot be
+     cited.** combat's positive control refused to print a result; arena's refuses to write the JSON at all. combat adopted
+     arena's version on seeing the difference: *"a refused run cannot end up in `references/` by someone copying the last
+     file they see."*
+     **And the two controls caught different classes, which is the argument for having both:** combat's caught a
+     **treatment that never engaged** — a missing effect. arena's caught a **control arm that was silently broken**, which
+     is worse, *"because a broken control does not look like nothing, it looks like a result."*
+105. **Being protected by an unexamined habit is not the same as being safe, and it feels identical.** combat checked its
+     own exposure to the notification trap and found its waiters read the wrapper's line correctly — then reported *why*:
+     > *"not because I had reasoned about the notification. I built those waiters that way because the wrapper's line was
+     > what `CLAUDE.md` told me to read on my first hour, and I never revisited it. **I was protected by a habit I had not
+     > examined** — exactly the position you were in with the rule that matched what I already did. I would have been
+     > vulnerable the first time I wrote a waiter that polled a notification instead of a log, and nothing in my process
+     > would have stopped me."*
+     **This is lesson 98 from the inside.** Agreement from unshared premises is invisible; so is compliance from an
+     unexamined premise. **When you find you are already doing the right thing, ask what would have to change for you to
+     stop** — if the answer is "nothing in particular", the protection is luck with a good track record.
+     **Four instances today of one shape and one defence.** A faction number with no map, a truncated check, a container
+     argued without its contents, and an `exit code 0` from the wrong process: *the wrong answer and the right answer are
+     indistinguishable at the point you look*. **Every defence that worked made the channel carry what it is about** — the
+     wrapper line names the target, `run: <machine> at <commit>` names the build, the positive control names the behaviour.
+     **None of them are vigilance.**
+106. **Pre-register the decision rule before running the experiment. It costs one sentence and it is the only defence
+     against interpreting a result after it arrives.** nav, before building a commitment term in `CombatMotion`:
+     > *"The decision rule, stated now so I can't move it later: if commitment cuts churn and survivability doesn't get
+     > worse beyond seed noise, it ships and the churn was not the price of not dying. If survivability drops, evasion is
+     > load-bearing, and I tell you the fix is legibility (control) with the numbers."*
+     **Every measurement failure this round was a result interpreted after the fact**, and each had a plausible story ready:
+     the designator's 43% → 40% was one paragraph away from *"an acquisition buff can backfire"* (it was a missing unit);
+     the gangs' 23% → 53% became *"a balance problem dissolved by mechanics"* (it may be a bug fix, and the ablation is
+     still pending); my own n=2 range finding became design understanding and inverted at n=15. **None of those were
+     dishonest. A result arrives with its explanation already forming, and the explanation is free.**
+     - **A pre-registered rule makes a null result reportable and a bad result unspinnable.** It also forces the *acceptance
+       criteria* to be chosen while they can still be chosen fairly — nav's include *survivability must not get worse*,
+       which is the criterion an author hoping for a churn win would quietly omit.
+     - **Say the noise threshold in advance too** ("beyond seed noise"), because *"within noise"* is the phrase that
+       absorbs an inconvenient result after the fact.
+     - **This is the practice for every A/B in this project from here.** It pairs with the positive control (lesson 101):
+       one asserts the treatment engaged, the other fixes what the answer means before you know it.
+     **And nav's decomposition is the model for what precedes a fix.** Evasion split into **(a)** dodging a round actually
+     in flight (`would_be_hit` against `IncomingFire`, reactive, load-bearing, never cut) and **(b)** timer-driven replans
+     and strafe-side flips *with nothing incoming* — whose justification, spoiling a gunner's lead, **is real for tank
+     shells at 60–70 m and weak against hitscan.** So a behaviour that pays for itself against one weapon class is being
+     applied against all of them. **That is a falsifiable claim about where a cost is unjustified**, which is a far better
+     starting point than "reduce the churn".
