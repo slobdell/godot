@@ -86,6 +86,9 @@ const CONTACT_MEMORY_TICKS := SimClock.TICK_RATE * 12
 @export var control_point := false
 const CONTROL_CENTER := Vector3.ZERO
 const CONTROL_RADIUS := 16.0
+## X5: how long a designator's paint lasts before it must be refreshed (one intel pass is 0.1 s, so this is a
+## generous hold that still fades when the designator dies or looks away).
+const DESIGNATE_SECONDS := 1.5
 const CONTROL_CAPTURE_SECONDS := 8.0
 const CONTROL_POINTS_TO_WIN := 90
 ## N7 (round 6): the objectives this match is fought over, read from the layout rather than hard-coded.
@@ -286,6 +289,7 @@ func _physics_process(delta: float) -> void:
 		t = _profile_start()
 		_resupply()
 		_apply_hazards()
+		_paint_designated()
 		_sample_brain_options()
 		if control_point and not _finished:
 			_update_control()
@@ -756,6 +760,31 @@ func _update_control() -> void:
 		if held[team] > 0:
 			_control_ticks[team] += float(INTEL_EVERY_TICKS) * float(held[team]) / total
 			control_score[team] = int(_control_ticks[team] / SimClock.TICK_RATE)
+
+
+## X5 (round 6): DESIGNATORS paint. Every intel pass, each living designator marks the nearest enemy its own team can
+## see inside its sight radius; while the paint lasts, that contact is acquired in a quarter of the usual time by
+## everyone on the designator's side (Engagement.DESIGNATED_ACQUIRE_SCALE).
+##
+## It paints what its team can see rather than what it personally has a line to, because the unit's job is to turn
+## the Syndicate's eyes into everyone's tempo — and because making it require its own line of sight would just make it
+## a second scout. It runs on the intel cadence, not per tick, and refreshes a countdown rather than setting a flag,
+## so a designator that dies stops helping within DESIGNATE_SECONDS instead of instantly or forever.
+func _paint_designated() -> void:
+	for tank in _sorted_tanks():
+		if not tank.is_alive() or Units.role_of(tank.unit_id) != "designator":
+			continue
+		var best: Tank = null
+		var best_distance := tank.sight_radius
+		for enemy in sorted_team_tanks(1 - tank.team):
+			if not enemy.is_alive() or not is_visible_to(tank.team, enemy):
+				continue
+			var distance := tank.global_position.distance_to(enemy.global_position)
+			if distance <= best_distance:
+				best = enemy
+				best_distance = distance
+		if best != null:
+			best.designated_seconds = DESIGNATE_SECONDS
 
 
 func _sample_brain_options() -> void:

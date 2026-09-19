@@ -392,3 +392,58 @@ func test_the_crossing_penalty_has_its_own_control() -> void:
 	assert_true(with_it > without, "the control actually removes the penalty (%.2f s vs %.2f s)" % [with_it, without])
 	assert_near(without, Engagement.acquire_seconds(gunner, null, 60.0), 0.0001,
 			"and leaves the rest of acquisition exactly as it was")
+
+
+# ---- X5: the Syndicate's designator turns eyes into tempo ---------------------------------
+# The Lance Platform was a second Lancer outranged by its own faction's tank. Deleting it would have left the
+# Syndicate with only the four core roles and no special, so the chassis is re-roled. Its job acts on N5's
+# ACQUISITION gate rather than on damage, which is what makes it a tempo advantage instead of a stat multiplier --
+# and it is only possible because the gate exists: before N5, "your side acquires faster" described nothing.
+
+func test_a_designated_target_is_acquired_far_faster() -> void:
+	var gunner := _tank("syn_tank")
+	var contact := _tank("tank", 1)
+	var plain := Engagement.acquire_seconds(gunner, contact, 60.0)
+	contact.designated_seconds = 1.0
+	var painted := Engagement.acquire_seconds(gunner, contact, 60.0)
+	assert_near(painted, plain * Engagement.DESIGNATED_ACQUIRE_SCALE, 0.0001,
+			"a painted contact is most of the way onto the reticle already (%.2f s against %.2f s)" % [painted, plain])
+	assert_true(painted < plain * 0.5, "and the difference is worth a unit slot, not a rounding error")
+
+
+func test_the_paint_helps_EVERY_gun_not_just_the_designator() -> void:
+	# The point of the role: it turns one unit's eyes into the whole side's tempo. If only the spotter benefited it
+	# would be a scout with extra steps.
+	var contact := _tank("tank", 1)
+	contact.designated_seconds = 1.0
+	for shooter_id in ["syn_tank", "syn_ifv", "syn_scout"]:
+		var shooter := _tank(shooter_id)
+		var painted := Engagement.acquire_seconds(shooter, contact, 50.0)
+		contact.designated_seconds = 0.0
+		var plain := Engagement.acquire_seconds(shooter, contact, 50.0)
+		contact.designated_seconds = 1.0
+		assert_true(painted < plain, "%s lays on a painted contact faster (%.2f against %.2f)" % [shooter_id, painted, plain])
+
+
+func test_the_paint_changes_TEMPO_and_not_damage_or_accuracy() -> void:
+	# The failure mode the design is avoiding: a special that quietly grants +x% damage is a stat multiplier wearing
+	# a costume. Designation must touch acquisition and nothing else.
+	var contact := _tank("tank", 1)
+	var weapon := Weapons.profile("railgun")
+	var spread_plain := Match.shot_spread(weapon, 0.0, 0.0, 50.0)
+	var armor_plain := Match.armor_multiplier(weapon, contact.unit_id, "front")
+	contact.designated_seconds = 1.0
+	assert_near(Match.shot_spread(weapon, 0.0, 0.0, 50.0), spread_plain, 0.00001, "designation does not tighten spread")
+	assert_near(Match.armor_multiplier(weapon, contact.unit_id, "front"), armor_plain, 0.00001,
+			"and does not help a round through armour")
+
+
+func test_the_syndicate_still_fills_five_roles_after_the_re_role() -> void:
+	# The hole that stopped the removal: every other faction has a special beyond the four core roles, and deleting
+	# this unit left the Syndicate with none.
+	var roles := {}
+	for unit_id in Units.roster("syndicate"):
+		roles[Units.role_of(unit_id)] = true
+	for role in ["scout", "tank", "ifv", "artillery"]:
+		assert_true(roles.has(role), "the syndicate still fields a %s" % role)
+	assert_true(roles.has("designator"), "and its special is now the designator (%s)" % [roles.keys()])

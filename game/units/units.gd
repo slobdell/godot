@@ -740,13 +740,23 @@ const PROFILES := {
 		"weak_vs": ["scout"],
 	},
 	"syn_lancer": {
-		"display_name": "Lance Platform",
-		"role": "lancer",
+		"display_name": "Spotter Platform",
+		"role": "designator",
 		"faction": "syndicate",
-		# The lead's pick for the Syndicate's special (2026-09-15). The Condemned keep their own Lancer: the ROLE is
-		# shared across factions, the vehicle is not (game_design.md *Factions*, "same roles, wildly different
-		# trade-offs"). Flagged for the lead in the combat brief's Status.
-		"blurb": "The laser, on a hull that can afford it: energy shields, hover, and standoff range.",
+		# X5 (2026-09-18): this WAS the Syndicate's second Lancer, and it was outranged by its own faction's tank --
+		# an 86 m band against the railgun's 104, a cheaper but shorter duplicate of a role the Syndicate already
+		# dominated in every slot. Deleting it outright would have left the Syndicate with only the four core roles
+		# and no special at all, which test_combat_factions correctly refuses. So the chassis is re-roled rather than
+		# retired: same hull, same art, a different job.
+		#
+		# The job acts on N5's ACQUISITION gate, not on damage. It paints the nearest enemy its team can see, and
+		# every Syndicate crew then lays on that contact in a quarter of the usual time. That turns the faction's
+		# sight advantage -- syn_scout has the best eyes in the game at 135 m -- into a TEMPO advantage: the Syndicate
+		# shoots sooner, not harder. A +x% damage special would have been a stat multiplier wearing a costume.
+		#
+		# It is worth noting WHY this unit can exist now: before the engagement envelope, acquisition cost nothing, so
+		# "your side acquires faster" described a mechanic that was not there. The gate bought the design space.
+		"blurb": "Eyes for the syndicate: it paints a target and every gun on your side is already on it.",
 		"cost": 340,
 		"unlock_tier": 1,
 		"hull_size": [2.4, 2.2, 4.4],
