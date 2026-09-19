@@ -148,6 +148,16 @@ Nothing blocking. The task palette (N4) goes to him through control's page, not 
 
 _Updated 2026-09-18 by the squad worker._
 
+### Round 8 (2026-09-19): the lead played round 7 — "they still generally don't do what I command them"
+
+| Item | State |
+|---|---|
+| **Orphaned units** (keys 1-4 miss vehicles) | fixed `90bd2212`: the generator splits types into squads of ≤5 (gangs 10-11 squads, condemned 7-9, law 6) and keys reached 1-5, so 4-17 vehicles had no key. `SquadConsolidation.for_player` (families fold, smallest same-role merge, >8 split) → 2-5 squads, 0 keyless, every faction × 3 seeds; one line in control's `skirmish_mode._start_match` (approved). Player only. control's `ee9a434c` seeds up to 9 keys as the belt |
+| **Ignored attack order** | fixed `cb02c0ef`: his gesture is an element TASK; drills aimed at `Drills.nearest_visible`, never the task target. Now drills aim at it, the drill's moves/attack-moves carry it, a named move lays its gun on it, a named attack-move fights only it. `test_attack_order_obeyed` (laptop): task path old/new target 765/155 → 164/759; direct 0/960 before and after (commitment cleared) |
+| Hull overlap at deploy | stale (measured on a tree before `f1c3afcb`); combat's footprint test landed green `3fdfec1b`: 0 overlaps, min 3.7-4.6 m on this tree |
+| Wheeled "face" shuffle | waiting on nav's pre-registered test; design view owed (turret does the work vs acceptance angle) |
+| Parked | X8 (measured: lost), X6 baseline, the flow gate |
+
 ### Round 7 (after the quota lift, 2026-09-19): the lead's defects
 
 | Item | State |
