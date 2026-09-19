@@ -1032,3 +1032,70 @@ The kickoff prompt is one line; this section is the rest.
       the page looks finished and has sent nothing.
     - **And test the abandonment path, not the happy path.** The question to ask of any collection artefact is *what
       reaches me if they close the tab right now?*
+76. **Reachability is "the path ends at the goal", never "a path came back".** Round 7, arena, and it is the **third**
+    time this exact shape bit the same stream (the maze fixture, the slope probe, now the water probe). Its first water
+    run reported `reachable: true` with an **8 m route for a 46 m trip across a channel spanning the whole arena**.
+    The cause is documented behaviour, not a bug: `Pathing.find_path()`'s own docstring says *"an unreachable `to` yields
+    a path to the closest reachable point"* — so a non-empty return means *"I got as close as I could"*, and every caller
+    that treats it as success is wrong.
+    **This is not only a probe problem, which is why it matters more than the three instances suggest.** `Movement` (N1)
+    is built on `find_path`, so a unit ordered somewhere it cannot reach drives to the nearest point it can. If it then
+    reports `arrived`, an order completes at the wrong place and the player sees **disobedience**; if it sits there, the
+    player sees a **stuck vehicle**. Both are exactly what the lead reported after round 6 measured 100% arrival — and
+    neither requires a pathing defect. **The pathfinder behaves as documented and the layer above believes it.**
+    And the transient case is the dangerous one: a goal inside a crowd of parked friends, behind a wreck, or on a slot
+    one's own formation is standing on is *temporarily* unreachable — so the unit paths to "nearest reachable", arrives,
+    and the decider re-issues. **A thrash loop from a cause nobody would suspect.**
+    Two instructions:
+    - **Assert the endpoint, not the emptiness.** Any caller of a pathfinder must compare the path's last point to the
+      requested goal within a tolerance it chooses deliberately, and report *"closest reachable"* as its own state.
+    - **A documented convenience is a trap when it is convenient.** "Returns the closest point instead of failing" is a
+      kindness to a caller that wants to make progress and a lie to a caller that wants to know. When an API offers
+      graceful degradation, find out which of those you are.
+77. **A generalisation that does not reduce to the current case is not a read-through — it is a balance change wearing
+    one's clothes.** Round 7, combat generalising a single central control point into a list of objectives. The test it
+    applied to its own change: score by the **share** of objectives held (`ticks += INTEL_EVERY_TICKS × held/total`)
+    **because at N=1 it reduces to the old accumulation exactly.** Holding both of a mirrored pair then scores at the old
+    rate and holding one scores at half — so splitting your force becomes the decision the contract exists to create,
+    without any shipped arena changing. **Apply that reduction test to every "just a read-through"**: if the old case
+    does not come out identical, you are shipping a balance change under a refactor's name, and nobody will review it as
+    one.
+    Two more findings from the same change, both about *shared mutable* state:
+    - **Make the compatibility shim a VIEW, not a copy.** Its first cut made the legacy `control_owner` a copy the tick
+      wrote back — and a test that pokes that field between frames had its poke overwritten, so **the match silently
+      never ended.** Five streams both read *and write* that state; only a write-through view keeps every pre-existing
+      reader and writer working untouched.
+    - **A static accessor that can only know the default is a quiet staleness bomb.** `Match.in_control_zone` is kept
+      because five streams call it, but it cannot see an off-centre objective — so the day such a layout ships,
+      `cpu_commander.gd`'s call goes **quietly stale rather than loudly breaking.** Flagged with its instance
+      replacements. *Prefer a loud break to a silent wrong answer when you deprecate.*
+78. **The standard is easier to apply outward: expect to fail your own rule the moment your own work is the suspect.**
+    Round 7, combat, in its own words: *"every time I have been wrong today, I was wrong about my own work while holding
+    other people's to a standard I had just failed."* The instance: a test failed after its change, it compared a
+    **filtered** pre-change run against a **full** post-change run, saw pass-then-fail, and concluded *"it IS mine,
+    despite having zero references to control"* — **having given the orchestrator that exact distinction as a refinement
+    to lesson 45 earlier the same day.** A filtered run and a full run answer different questions. The filtered run on
+    the new tree (17/0) is what actually exonerated the change.
+    So: **when your own work is the suspect, apply your own checklist deliberately rather than by instinct** — instinct
+    is what defers to the suspicion. And the practical form, which is also what saved it: **re-run rather than reason.**
+    The same shape appeared in three streams this round (arena's filtered 5/5, nav's `main`-is-not-a-control, this), so
+    it is not a personal failing; it is what suspicion does to a standard.
+79. **Ask the lead to object, not to adjudicate.** Round 7, third time in one evening: the orchestrator asked him whether
+    the crowd murmur *"sounds like people or like hiss"*, whether to *"keep or drop the per-faction driving feel"*, and
+    which faction should keep a duplicated unit. He did not answer the first two and replied to the third with **"I don't
+    understand the question."** None of the three was a bad *decision* to want from him; all three were **badly shaped
+    asks**.
+    **What he answers well, on the evidence:** a concrete choice with the consequence stated — the camera page (he picked,
+    twice), the arena verdict (keep / fix / cut / play it first, six maps, answered in one sitting), *"which arena is
+    fun"* once it became *"this map funnels every fight into the middle — keep, fix, or cut?"*. **What he does not
+    answer:** a trade-off between options whose consequences he has no way to evaluate, and anything requiring him to
+    hold internal design context he has never been given.
+    **So the default shape is: state what we are doing and why, in one or two sentences of his vocabulary, and ask
+    whether he objects.** *"We are dropping the Syndicate's Lancer because their tank already shoots further than it
+    does — object?"* is answerable in three seconds. *"Which faction should keep the Lancer?"* requires him to know four
+    rosters. **A recommendation with a visible reason costs him a yes/no; a question costs him a design session he did not
+    ask for.**
+    Corollary, and it is the reason this keeps happening: **the orchestrator asks questions in the shape the streams
+    hand them over in.** A stream that has just weighed two options naturally reports the two options — and relaying that
+    shape is the failure. **Converting a stream's trade-off into a recommendation is part of the relay, not an optional
+    courtesy.**

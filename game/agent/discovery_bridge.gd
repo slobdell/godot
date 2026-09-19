@@ -125,7 +125,8 @@ func observe() -> Dictionary:
 		regions.append({"name": region["name"], "kind": region["kind"], "at": _xz(region["position"])})
 	return {"step": _step, "tick": game_match.tick, "seconds": snappedf(game_match.tick / float(SimClock.TICK_RATE), 0.1), "team": team,
 			"score": [game_match.score_green, game_match.score_rust],
-			"control": {"at": _xz(Match.CONTROL_CENTER), "owner": game_match.control_owner} if game_match.control_point else null,
+			"control": {"at": _xz(Objectives.center(game_match)), "owner": Objectives.owner(game_match)}
+					if Objectives.active(game_match) else null,
 			"elements": own, "contacts": contacts, "lanes": lanes, "regions": regions,
 			"half_size": float(Arena.active.get("half_size", 120.0))}
 

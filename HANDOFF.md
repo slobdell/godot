@@ -68,6 +68,17 @@ the value. **Run `make remote T=check` on each, then merge at the commit that go
 **Also on `stream/feel` but not started: the gangs' IFV driving backwards.** feel checked the code and reports **the
 simulation never reads the model, so it is art only** — no balance consequence, which is the good answer.
 
+### The standard of work, set 2026-09-19
+
+The lead: *"We want to use the best algorithms, no matter how difficult they might be to implement… it's all well
+established industry knowledge."* **When a good-enough approach and a known-best approach differ, take the known-best
+one.** "The simple version passes the test" is explicitly not the bar. It does **not** license inventing a technique where
+a standard one exists, and it does **not** suspend determinism.
+**The roster is [`_agents/algorithms.md`](_agents/algorithms.md):** what we have (navmesh A\*, ORCA, PID, context
+steering), what we **owe** (funnel path smoothing, Reeds–Shepp for turn radius, arrival-with-standoff, flow fields,
+hierarchical pathfinding, hysteresis in utility scoring), and what is **rejected with reasons** (RL for steering —
+determinism). Each row carries its canonical reference and the measured symptom it addresses.
+
 ### The three things a fresh orchestrator should not have to rediscover
 
 1. **No agent on this project can play the game** (lesson 72). Everything we call playtesting is scripted input plus

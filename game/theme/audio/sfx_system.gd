@@ -77,6 +77,9 @@ const BED_BUS := "Bed"
 ## different place from the fight: an impact dips them gently rather than silencing them, and the bus's own meter is
 ## what `--crowd-meter` reads to prove the crowd is audible in a real match.
 const CROWD_BUS := "Crowd"
+## Round 6 (the lead: "I believe we're missing machine guns"): the machine guns' held loops left the Bed bus, where every
+## cannon impact ducked them 5:1 and they dropped out exactly when the fight was busiest. Their own bus takes a 2:1 dip.
+const GUNFIRE_BUS := "Gunfire"
 const IMPACT_SOUNDS := ["tank_boom", "shell_hit_armor", "explosion_big", "explosion_small", "weak_spot_hit",
 		"dirt_impact", "shield_down"]
 const LIMIT_DB := -1.0
@@ -124,6 +127,7 @@ var listener: Variant = null
 const ALIAS := {
 	"railgun_shot": "tank_boom", "energy_beam": "laser_pulse", "plasma_loop": "mg_loop", "pulse_shot": "autocannon_shot",
 	"missile_launch": "mortar_launch", "energy_hit": "shell_hit_armor", "sonic_loop": "mg_loop",
+	"twin_mg_loop": "mg_loop",
 }
 ## Sounds --audio-solo keeps quiet.
 var silenced := {}
@@ -237,6 +241,18 @@ static func ensure_world_bus() -> int:
 		duck.attack_us = 1000.0  # in before the hit's peak
 		duck.release_ms = 420.0  # the fight comes back up as the boom falls away
 		AudioServer.add_bus_effect(bed, duck)
+	if AudioServer.get_bus_index(GUNFIRE_BUS) < 0:
+		AudioServer.add_bus()
+		var guns := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(guns, GUNFIRE_BUS)
+		AudioServer.set_bus_send(guns, WORLD_BUS)
+		var gun_dip := AudioEffectCompressor.new()
+		gun_dip.sidechain = IMPACT_BUS
+		gun_dip.threshold = -22.0
+		gun_dip.ratio = 2.0
+		gun_dip.attack_us = 2000.0
+		gun_dip.release_ms = 350.0
+		AudioServer.add_bus_effect(guns, gun_dip)
 	if AudioServer.get_bus_index(CROWD_BUS) < 0:
 		AudioServer.add_bus()
 		var crowd := AudioServer.bus_count - 1
