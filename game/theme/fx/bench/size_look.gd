@@ -85,10 +85,13 @@ func _run() -> void:
 	_camera.current = true
 	var army := _army(scene)
 	if not army.is_empty():
+		# Framed on the rigs when the army has any (the question is what they do to their squad), else on the army.
+		var rigs := army.filter(func(t: Node) -> bool: return String(t.get("unit_id")) == RIG)
+		var framed := rigs if not rigs.is_empty() else army
 		var centre := Vector3.ZERO
-		for tank: Node3D in army:
+		for tank: Node3D in framed:
 			centre += tank.global_position
-		centre /= army.size()
+		centre /= framed.size()
 		_camera.global_transform = RtsCamera.pose_at(centre, heading, DISTANCE_M, PITCH_DEG)
 		get_tree().paused = true
 		for i in 4:
