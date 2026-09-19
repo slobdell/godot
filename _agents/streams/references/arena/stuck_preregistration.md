@@ -60,3 +60,42 @@ all three is a result, not a failure**, and I will say so.
   anywhere would be worthless and perfectly plausible.
 - **Report per arena, never pooled.** `--arena=random` is the whole point of hypothesis 1; a pooled number would
   hide exactly the thing it is meant to expose.
+
+
+---
+
+# Results (2026-09-19, `d2d1bc04`+, laptop, 30 units, 60 s, hold-fire, one way)
+
+**Reported against the definitions above, which were committed before the probe existed and have not moved.**
+
+| | `blocked`/crawl | `oscillating` | **`no_progress`** | arrived |
+|---|---|---|---|---|
+| **barriers** (the fixture) | 0.112 | 0.015 — 11 units | **0.192 — 26 of 30 units** | 23/30 |
+| **yard** (a shipping map) | 0.028 | 0.001 — 2 units | 0.050 — 8 units | 30/30 |
+
+## The hypothesis was right in direction and wrong in size
+
+**Oscillation is real and discriminates** — 15× between the barrier fixture and yard, 11 units against 2 — **but at
+1.5% of under-way time it is not "indefinitely".** I pre-registered that a near-zero would be reported as a result
+rather than a failure, and this is the honest version of that: *the thing I named is happening, and it is not the
+main thing.*
+
+## The measure that matters is the third one, and the gap between them is the finding
+
+`no_progress` reads **0.192 on the barrier fixture, affecting 26 of 30 units** — against `crawl` at 0.112 and
+`oscillating` at 0.015. **Those do not add up to it.** Roughly 6.5 points of under-way time is units making no
+progress while being *neither* slow enough to count as blocked *nor* travelling far enough to count as shuffling:
+a unit creeping back and forth at 1–2 m/s, which is what being pinned at a barrier end actually looks like.
+
+**So the instrument and the game disagree because they are asking different questions.** `nav-fight` asks *is this
+unit blocked*, and the honest answer is usually no. The player asks *is this unit getting where I sent it*, and the
+answer is no for a fifth of the time on ground built to stall. **A unit can fail the second test while passing the
+first, and that is the whole gap.**
+
+## What this does and does not license
+
+- **It does not say flow fields are the wrong fix.** It says the fix must be measured against progress, not
+  against blockage, or it will show no improvement whatever it does.
+- **It is not his configuration yet.** This is hold-fire, no enemy, ordered to a far point. He plays `make
+  skirmish` with an enemy, his own orders, and **`--arena=random`** across four maps. Hypothesis 1 is still
+  untested and remains the likeliest source of any remaining difference.

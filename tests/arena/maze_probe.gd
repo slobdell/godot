@@ -46,6 +46,26 @@ var arrived_at := {}     # tank name -> seconds
 var best_remaining := {} # tank name -> closest it has come to its goal
 var stall_seconds := {}  # tank name -> seconds since it last improved on best_remaining
 var stuck_events := {}   # tank name -> count
+## Round 8: the lead's stall, measured as OSCILLATION rather than blockage (pre-registration in
+## _agents/streams/references/arena/stuck_preregistration.md, committed before this code existed).
+##
+## "Moving back and forth indefinitely trying to get unstuck" is not `blocked`: a unit that is MOVING fails a
+## speed test, so a blocked-by-terrain counter reads zero while the player watches a vehicle shuffle in place.
+## Over a window, a unit that is going somewhere has net displacement close to its path length; a unit shuffling
+## has a large path and almost no net. The ratio separates them and is scale-free, so it needs no per-unit tuning.
+const WINDOW_S := 4.0
+const OSCILLATE_PATH_M := 8.0
+const OSCILLATE_RATIO := 0.25
+## The third pre-registered measure, and the one that covers the gap between the other two. `crawl` catches a unit
+## too SLOW to be going anywhere (< 0.5 m/s); `oscillating` catches one travelling far enough to be obviously
+## shuffling (>= 8 m of path). **A unit creeping back and forth at 1-2 m/s is neither** -- too fast to crawl, too
+## little path to oscillate -- and that is exactly what being pinned against a barrier end looks like. `no_progress`
+## asks the question directly: over the window, did this unit get any closer to where it was sent?
+const PROGRESS_M := 2.0
+var trail := {}            # tank name -> Array[Vector3], one per tick over the window
+var goal_trail := {}       # tank name -> Array[float], distance to goal per tick
+var oscillating_ticks := {}
+var no_progress_ticks := {}
 var crawl_ticks := 0
 var under_way_ticks := 0
 var time_limit := 180.0
@@ -216,6 +236,7 @@ func _sample() -> void:
 		under_way_ticks += 1
 		if tank.speed() < CRAWL_SPEED:
 			crawl_ticks += 1
+		_sample_trail(tank, key)
 		# Progress is measured against the BEST it has ever done, not against the last tick: a unit shuffling back
 		# and forth in a gap moves every tick and arrives never, and that is exactly the failure we are counting.
 		if remaining < best_remaining[key] - 0.5:
@@ -228,6 +249,48 @@ func _sample() -> void:
 				stall_seconds[key] = 0.0
 	if arrived_at.size() == units.size() or elapsed >= time_limit:
 		_report(elapsed)
+
+
+## One tick of the oscillation window for `tank`.
+func _sample_trail(tank: Tank, key: String) -> void:
+	var span_goal := int(WINDOW_S * SimClock.TICK_RATE)
+	var goals: Array = goal_trail.get(key, [])
+	goals.append(_flat(tank.global_position, goals_of(key)))
+	if goals.size() > span_goal:
+		goals.remove_at(0)
+	goal_trail[key] = goals
+	if goals.size() == span_goal and float(goals[0]) - float(goals[goals.size() - 1]) < PROGRESS_M:
+		no_progress_ticks[key] = int(no_progress_ticks.get(key, 0)) + 1
+	var history: Array = trail.get(key, [])
+	history.append(tank.global_position)
+	var span := int(WINDOW_S * SimClock.TICK_RATE)
+	if history.size() > span:
+		history.remove_at(0)
+	trail[key] = history
+	if history.size() < span:
+		return
+	var path := 0.0
+	for i in range(1, history.size()):
+		path += _flat(history[i - 1], history[i])
+	if path < OSCILLATE_PATH_M:
+		return  # not moving enough to be "moving back and forth"; that is the blocked case, counted separately
+	if _flat(history[0], history[history.size() - 1]) / path < OSCILLATE_RATIO:
+		oscillating_ticks[key] = int(oscillating_ticks.get(key, 0)) + 1
+
+
+func _total(counter: Dictionary) -> int:
+	var sum := 0
+	for tank in units:
+		sum += int(counter.get(String(tank.name), 0))
+	return sum
+
+
+func _with_any(counter: Dictionary) -> int:
+	var count := 0
+	for tank in units:
+		if int(counter.get(String(tank.name), 0)) > 0:
+			count += 1
+	return count
 
 
 func _report(elapsed: float) -> void:
@@ -258,8 +321,23 @@ func _report(elapsed: float) -> void:
 	for tank in units:
 		if _flat(tank.global_position, NavigationServer3D.map_get_closest_point(map, tank.global_position)) > OFF_NAVMESH_M:
 			off += 1
+	var oscillating_total := 0
+	var oscillating_units := 0
+	for tank in units:
+		var ticks := int(oscillating_ticks.get(String(tank.name), 0))
+		oscillating_total += ticks
+		if ticks > 0:
+			oscillating_units += 1
 	var out := {
 		"arena": String(Arena.active.get("name", "?")), "units": units.size(), "seconds": snappedf(elapsed, 0.01),
+		# THE LEAD'S STALL. Separate from `crawl_*`, which is the blocked case: a unit can be in one, the other,
+		# both or neither, and reporting them pooled would hide exactly the distinction being tested.
+		"oscillating_unit_seconds": snappedf(float(oscillating_total) / float(SimClock.TICK_RATE), 0.1),
+		"oscillating_share": snappedf(float(oscillating_total) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"oscillating_units": oscillating_units,
+		"no_progress_unit_seconds": snappedf(float(_total(no_progress_ticks)) / float(SimClock.TICK_RATE), 0.1),
+		"no_progress_share": snappedf(float(_total(no_progress_ticks)) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"no_progress_units": _with_any(no_progress_ticks),
 		"both_ways": OS.get_cmdline_user_args().has("--both-ways"),
 		"time_limit_s": time_limit, "arrived": arrived_at.size(),
 		"arrived_fraction": snappedf(float(arrived_at.size()) / maxf(1.0, float(units.size())), 0.001),
@@ -280,6 +358,10 @@ func _report(elapsed: float) -> void:
 			file.close()
 			print("NAV_MAZE_JSON %s" % path)
 	quit(0)
+
+
+func goals_of(key: String) -> Vector3:
+	return goals[key]
 
 
 func _flat_of(a: Vector3) -> Vector2:
