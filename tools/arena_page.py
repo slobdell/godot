@@ -132,6 +132,52 @@ VERDICTS = {
              "round costs almost nothing — but so broken up that posting a squad to watch a lane buys little.", "good"),
 }
 
+## Plain DOM, no library, no storage. The summary is rebuilt from the radios on every change, so what he copies is
+## always what the page shows -- there is no second source of truth to drift. The clipboard write is wrapped because
+## it throws in some sandboxed frames; when it does, the textarea is selected instead so "copy" still means
+## something. The page works with JavaScript broken too: the radios are real inputs and he can describe his picks.
+SCRIPT = """
+(function () {
+  var LABELS = %s;
+  var ANSWERS = {keep: "KEEP", fix: "FIX", cut: "CUT", play: "PLAY IT FIRST"};
+  var summary = document.getElementById("summary");
+  var note = document.getElementById("note");
+  function build() {
+    var lines = ["Tank Squad arenas \u2014 my answers", ""];
+    Object.keys(LABELS).forEach(function (name) {
+      var picked = document.querySelector('input[name="vote-' + name + '"]:checked');
+      lines.push("- " + LABELS[name] + ": " + (picked ? ANSWERS[picked.value] : "\u2014"));
+    });
+    var extra = (note && note.value || "").trim();
+    if (extra) { lines.push("", "Notes: " + extra); }
+    summary.value = lines.join("\n");
+  }
+  document.addEventListener("change", function (e) {
+    if (e.target && e.target.type === "radio") { build(); }
+  });
+  if (note) { note.addEventListener("input", build); }
+  var copy = document.getElementById("copy");
+  var said = document.getElementById("copied");
+  copy.addEventListener("click", function () {
+    summary.select();
+    summary.setSelectionRange(0, summary.value.length);
+    var done = function () { said.hidden = false; setTimeout(function () { said.hidden = true; }, 2500); };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(summary.value).then(done, function () { said.textContent = "Selected \u2014 press Ctrl/Cmd+C."; done(); });
+        return;
+      }
+      document.execCommand("copy");
+      done();
+    } catch (err) {
+      said.textContent = "Selected \u2014 press Ctrl/Cmd+C.";
+      done();
+    }
+  });
+  build();
+})();
+"""
+
 CSS = """
 :root { color-scheme: dark; --bg:#11131a; --card:#1a1d27; --line:#2b3040; --ink:#e8eaf2; --dim:#9aa1b8;
         --good:#4ec9a0; --mixed:#d8b45a; --bad:#e2685f; }
@@ -166,6 +212,27 @@ li.good::before { color:var(--good); } li.mixed::before { color:var(--mixed); }
 li.bad::before { color:var(--bad); } li.plain::before { color:var(--dim); }
 li.plain { color:var(--dim); }
 .q { margin:14px 0 0; padding-top:12px; border-top:1px solid var(--line); font-weight:600; }
+fieldset.vote { border:1px solid var(--line); border-radius:10px; margin:14px 0 0; padding:12px 14px 14px;
+                display:flex; flex-wrap:wrap; gap:8px; }
+fieldset.vote legend { color:var(--dim); font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; padding:0 6px; }
+.opt { display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:999px;
+       padding:9px 15px; cursor:pointer; background:#141720; font-size:.95rem; min-height:44px; }
+.opt:hover { border-color:var(--dim); }
+.opt input { accent-color:var(--good); width:17px; height:17px; margin:0; }
+.opt:has(input:checked) { border-color:var(--good); background:rgba(78,201,160,.12); }
+.opt:has(input:focus-visible) { outline:2px solid var(--good); outline-offset:2px; }
+.answers { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin:0 0 24px; }
+.answers h2 { margin:0 0 4px; font-size:1.15rem; }
+.answers .sub { margin:0 0 12px; }
+textarea { width:100%; background:#0d0f15; color:var(--ink); border:1px solid var(--line); border-radius:8px;
+           padding:12px; font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; resize:vertical; }
+.row { display:flex; align-items:center; gap:12px; margin:12px 0 4px; }
+button { background:var(--good); color:#0b1a15; border:0; border-radius:8px; padding:12px 18px; font-size:1rem;
+         font-weight:650; cursor:pointer; min-height:44px; }
+button:hover { filter:brightness(1.08); }
+button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+#copied { color:var(--good); font-size:.9rem; }
+.notes { display:block; color:var(--dim); font-size:.88rem; margin:16px 0 6px; }
 footer { color:var(--dim); font-size:.9rem; border-top:1px solid var(--line); padding-top:18px; margin-top:8px; }
 code { background:#0d0f15; padding:1px 5px; border-radius:4px; font-size:.9em; }
 @media (max-width:600px){ .wrap{padding-block:16px 48px; padding-inline:16px;} h1{font-size:1.35rem;} }
@@ -176,6 +243,25 @@ code { background:#0d0f15; padding:1px 5px; border-radius:4px; font-size:.9em; }
 ## The page commits to one dark look on purpose: it is a page of screenshots of a night-time arena game, and a light
 ## ground would fight every image on it. So no light/dark token swap -- but every colour is declared explicitly on
 ## :root and the body paints its own background, so the page holds whatever ground it is composited over.
+## The four answers, as real radio buttons. The first version of this page printed them as a SENTENCE -- "Keep it ·
+## Fix it · Cut it · I'd rather just play it first" -- which looks exactly like a control and is not one. The lead
+## opened it and said "doesn't have buttons I can click to give feedback". A page built to collect an answer and
+## unable to collect one is the same failure as a review page nobody can open, one step further in.
+##
+## Deliberately no database and no stored state: the answers go into a textarea he copies and pastes back. That
+## needs nothing to be provisioned, works with site data blocked, and cannot half-work. The pick is the whole
+## payload; a storage layer would be more to get wrong than the thing it stores.
+ANSWERS = [("keep", "Keep it"), ("fix", "Fix it"), ("cut", "Cut it"), ("play", "Let me play it first")]
+
+
+def choices(name):
+    buttons = "".join(
+        '<label class="opt" for="v-%s-%s"><input type="radio" id="v-%s-%s" name="vote-%s" value="%s">'
+        '<span>%s</span></label>' % (name, key, name, key, name, key, label)
+        for key, label in ANSWERS)
+    return '<fieldset class="vote"><legend>Your call</legend>%s</fieldset>' % buttons
+
+
 def render(report, order, shots, plans, fragment=False):
     cards = []
     for name in order:
@@ -194,13 +280,18 @@ def render(report, order, shots, plans, fragment=False):
         bullets = "".join('<li class="%s">%s</li>' % (tone_, text) for tone_, text in plain_english(entry))
         cards.append(
             '<div class="card">%s<div class="body"><div class="name">%s<span class="tag %s">%s</span></div>'
-            '<p class="verdict">%s</p><ul>%s</ul><p class="q">Keep it &nbsp;·&nbsp; Fix it &nbsp;·&nbsp; Cut it &nbsp;·&nbsp; I\'d rather just play it first</p></div></div>'
+            '<p class="verdict">%s</p><ul>%s</ul>%s</div></div>'
             % (picture, html.escape(entry.get("title", name.title())), tone,
                {"good": "worth keeping", "mixed": "middling", "bad": "too open"}[tone],
-               html.escape(verdict), bullets))
+               html.escape(verdict), bullets, choices(name)))
     head = "" if fragment else ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
                                 '<meta name="viewport" content="width=device-width,initial-scale=1">')
     tail = "" if fragment else "</body></html>"
+    # Foundry's card covers the Furnace too, so its line in the pasted answer has to say so -- otherwise he
+    # answers for one map and we apply it to two without him having agreed to that.
+    labels = {name: read(report, name).get("title", name.title()) for name in order if read(report, name)}
+    if "foundry" in labels:
+        labels["foundry"] = "Foundry (and the Furnace)"
     return """%s<title>Tank Squad Arenas</title><style>%s</style>%s<div class="wrap">
 <h1>The seven arenas</h1>
 <p class="sub">Each one as the match runner sees it, and what it measures. Round 6, arena stream.</p>
@@ -218,13 +309,22 @@ The ones marked <b style="color:var(--bad)">too open</b> are the measured versio
 big open brawl&rdquo;: their middles see most of the battlefield, so there is nowhere to set up an ambush and
 nothing a flank can take. <b>Boulevard is the worst, and it is first.</b></div>
 %s
+<section class="answers" id="answers">
+<h2>Your answers</h2>
+<p class="sub">This fills in as you choose. Copy it and send it back — that is the whole loop.</p>
+<textarea id="summary" rows="10" readonly aria-label="Your answers, ready to copy"></textarea>
+<div class="row"><button id="copy" type="button">Copy my answers</button><span id="copied" hidden>Copied.</span></div>
+<label class="notes" for="note">Anything else worth saying (optional)</label>
+<textarea id="note" rows="3" placeholder="e.g. cut the boulevard, it looks like a car park"></textarea>
+</section>
 <footer>Pictures: <code>make arena-shots</code>, the match runner's own camera, 30 a side.
 Measurements: <code>make arena-report</code> — static geometry, no match played.
 &ldquo;Seen&rdquo; assumes a defender covers 45 m, which is what an ordinary crew manages on its own judgement;
 a squad you <i>order</i> to watch a lane reaches further, so &ldquo;covered&rdquo; is never a guarantee.
 The Furnace shares the Foundry's card — same shape, different hazards. The Maze is not here: it is a nav test
 fixture, not a map.
-</footer></div>%s""" % (head, CSS, "" if fragment else "</head><body>", "".join(cards), tail)
+</footer></div><script>%s</script>%s""" % (head, CSS, "" if fragment else "</head><body>",
+                                           "".join(cards), SCRIPT % json.dumps(labels), tail)
 
 
 def main():
