@@ -65,3 +65,22 @@ func test_the_readout_speaks_nav_as_it_shipped() -> void:
 	assert_eq(readout.card_line("Green_Alpha_3"), "", "on the card either")
 	assert_eq(readout.route("Green_Bravo_1").size(), 2, "the route nav means to take is there to draw")
 	assert_eq(readout.route("Green_Alpha_3").size(), 0, "and absent when there is none")
+
+
+## With nav's N1 on main (f03a795c), the real provider: an ordered unit reports a driving phase and an ETA through the
+## readout, and its card says when it arrives.
+func test_the_real_movement_api_reaches_the_card() -> void:
+	var f := Fixture.new(self)
+	await f.build(true)
+	var provider := MovementReadout.from_movement(f.game_match)
+	assert_true(provider.is_valid(), "nav's Movement is on main, so the provider is live")
+	f.controls.movement.provider = provider
+	await f.select(["Green_Bravo_2"])
+	assert_eq(f.controls.order_selection("move", {"to": [20.0, -20.0]}), "", "the unit is sent 60 m north")
+	await wait_physics_frames(12)
+	var reading := f.controls.movement.state("Green_Bravo_2")
+	print("MEASURE control_movement_readout real state %s" % [reading])
+	assert_true(String(reading.get("phase", "")) in ["pathing", "driving", "blocked", "yielding"], "it reports a phase (%s)" % [reading])
+	assert_true(float(reading.get("eta_s", -1.0)) > 0.0, "and an ETA")
+	var line := f.controls.movement.card_line("Green_Bravo_2", f.controls._unit_label)
+	assert_true(line != "", "its card says something about getting there (%s)" % line)

@@ -84,23 +84,35 @@ same text for all six:
 
 > /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
 
-### Where round 6 actually stands (2026-09-18, end of the lead's first away window)
+### Where round 6 actually stands (2026-09-18 evening, the lead away)
 
-**Merged and verified on `main`:** squad's **CP3** (`df736a8e` — one formation system, support-by-fire that forms a
-firing line, slots validated against geometry), arena's **CP2** (`5590c465` — the maze, `make nav-maze`, the objective
-schema, the stale-navmesh fixture), feel (`e817194a` — the 130× vehicle-spawn load fix and a crowd that reads), and
-combat's two make-namespace fixes cherry-picked (`9f798368`, `fd5ac1af`). Plus the `slot.sh` FIFO rewrite.
+**Four streams have finished: feel, control, combat, squad.** arena has delivered its review page and holds one item;
+nav is the only stream with work in flight.
 
-**Green and waiting on one word:** control's `758a45a8` (the lead's camera, the wall cutaway, the task palette with
-Support by Fire and Screen *earned*, the loading screen, X7's "why did my element do that"). X4 is deliberately
-**reverted** out of it — see the bar below.
+**Merged and green on `main`** (every merge at the commit whose own full check went green):
+one formation system instead of three · support-by-fire that forms a real firing line · the player's units holding
+until ordered, *enforced by a rule rather than by a coincidence* · a plain move keeping a squad a squad without order
+thrash · form-up paced by a real navigation ETA · loading **7.6 s → 1.4 s** · **3,011 spectators in the default frame**
+(round 5's default showed 0 of 2,040) · stands on all four sides, a city skyline, crowd audible through a proper mix ·
+the lead's **12°** camera with the wall cutaway · the task palette with APP-6 symbology, `move`/`follow` off the card,
+Support by Fire / Screen / Ambush earned · a loading screen and "why did my element do that" · the maze and
+`make nav-maze` · terrain authoring rules · the **N1 Movement API** · engagement ranges: **fights decided at 40 m
+instead of 54, off-axis kills 26% → 45%**.
 
-**The round's one dependency chain, and squad is the bottleneck:**
-`squad's two precedence fixes` → `combat's CP4` → `nav's gunnery.gd split`. combat's branch is **red by construction**
-and has refused to chase greenness by weakening a test that is telling the truth. If squad stalls, the round stalls;
-re-cut priorities rather than letting nav or combat idle.
+**Held deliberately, and it is the lead's call:** nav's ORCA avoidance + right-of-way + PID reaches **100% arrival in
+every configuration** (maze-60 head-on went **0 → 60/60**; `yard`-60 34 → 60/60) but costs a tick of order-response
+latency — **4 ticks where K1 guarantees 3 (100 ms)**. Arrival bought with responsiveness is a trade he has not
+approved, and *"the units aren't very responsive to my input"* is his own round-5 complaint. **Do not merge it, and do
+not let anyone weaken the K1 test, without him.**
 
-**Open orchestrator obligations (round 6):**
+**What the round actually taught, and it is not what anyone expected:** it found **more broken instruments than broken
+game code**. Three load-bearing coincidences (lesson 50), four constants calibrated against a camera that had changed
+(lesson 59), six tick-rate leftovers of which three lied to a reader rather than failing a test (lesson 30), a build
+queue that starved rather than being slow (lesson 48), an audio harness recording at 1/10 speed (lesson 46), a
+measurement whose outliers were a spawn bug (lesson 57), and a series whose control was not a real "before" and so
+hid which half of the change did the work (lesson 62). Lessons 32–62 are all round 6.
+
+**Open orchestrator obligations (round 6):****Open orchestrator obligations (round 6):**
 
 1. **Ping arena the moment CP4 merges.** arena is holding X3 (objectives off the centre line) until then, because it
    is a tactical claim that would straddle the range change. At the same ping it re-derives X2's exposure numbers at
@@ -200,6 +212,19 @@ feel.
 7. **Carried over:** rotate the Meshy API key; the round-2 questions in `streams/archive/round2/`.
 
 ## Open questions and follow-ups (not scheduled)
+
+- **A texture leak on `main` that `make check` cannot see** (found by control on the merged tree at `2fa58c01`,
+  laptop, windowed): `make shell-playtest` fails its clean-console gate with two `ERROR: Texture with GL ID of
+  142/143: leaked 5460 bytes` lines, absent in all seven pre-merge runs. Likely feel's `night_sky`/skyline shaders or
+  `arena_environment` crossing the **title → skirmish scene switch** — control's inference, not a proof; routed to
+  feel. **Why it matters beyond two console lines:** `shell-playtest` is **not in `make check`**, so `main` goes green
+  with it; a leaked resource is an **ERROR**, and the relay and net smokes fail their clients on any ERROR
+  (trip-up 75), so this may be one scene switch from breaking a gated smoke; and it happens on the transition every
+  player crosses. **Round-7 candidate regardless of this fix: `shell-playtest`'s console gate belongs in `check`, or
+  its expected state belongs in a committed baseline** (lesson 42 — do not simply add a red suite to the gate).
+- **The void below the near wall.** The ground plane ends at the stands, so any camera outside the venue looks down
+  into black — the bottom 15–40% of a far frame, **seen every match at the lead's 12°**. feel's to fill (a dark plaza,
+  car park or road out toward the new skyline).
 
 - **FIGHT → playable is 7.6 s → 1.4 s** (laptop, `make shell-playtest` gangs vs law on Boulevard: 7,563 ms at
   `a975e262` against 1,398/1,406 ms on two runs of `8d9c59af`'s tree). feel's strong-reference fix did the shortening —

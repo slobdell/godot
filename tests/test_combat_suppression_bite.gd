@@ -10,11 +10,26 @@ extends TestCase
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
 ## The lane runs along x at z = 0 on the west side, clear of foundry's cover (a crate sits at the arena center).
-## The gunner's aim point is exactly a machine gun's 45 m reach away, and the crossing point is inside it.
+## The CROSSING point is fixed, because it is the one spot on this map known to be clear of obstacles; the GUN LINE is
+## placed relative to it, scaled to the machine gun's effective band.
+##
+## N5 (round 6): those distances used to be written down (guns at x -55, aim at the gun's full 45 m reach, crossing at
+## -16), which was fine while every weapon's band equalled its reach. It no longer does: at full reach the spread is
+## (1 + Match.RANGE_SPREAD_FACTOR) = 4x wider, which turns the curtain this file is about into thin scattered fire and
+## would have this test measuring range falloff instead of "can crews cut off an avenue". The gun line now sits so the
+## crossing is at the same FRACTION of the band that it used to be of the reach.
 const LANE_Z := 0.0
-const LANE_FROM := Vector3(-55.0, 0.0, LANE_Z)
-const LANE_TO := Vector3(-10.0, 0.0, LANE_Z)
 const CROSSING_X := -16.0
+## Where the crossing sits along the gun line, as a fraction of the band (39 m of the old 45 m reach).
+const CROSSING_FRACTION := 0.87
+
+static func _lane_band() -> float:
+	return Engagement.effective_range(Weapons.profile("machine_gun"))
+
+
+## The gun line: back far enough that the crossing point sits at CROSSING_FRACTION of the band.
+static func _lane_from() -> Vector3:
+	return Vector3(CROSSING_X - _lane_band() * CROSSING_FRACTION, 0.0, LANE_Z)
 
 
 func _setup() -> Match:
@@ -49,11 +64,11 @@ const ESTABLISH_TICKS := SimClock.TICK_RATE * 3
 func _cross_the_lane(game_match: Match, gunners: Array[Tank], crosser: Tank, crews: int) -> Dictionary:
 	for index in gunners.size():
 		# Spread the crews along the lane's near side; a fixed-mount scout has to point down it (+x is yaw -90°).
-		gunners[index].global_position = LANE_FROM + Vector3(0.0, 0.0, (index - 1) * 4.0)
+		gunners[index].global_position = _lane_from() + Vector3(0.0, 0.0, (index - 1) * 4.0)
 		gunners[index].rotation.y = -PI / 2.0
 	crosser.global_position = Vector3(CROSSING_X, 0.0, LANE_Z - 26.0)
 	crosser.rotation.y = PI  # facing +z, so full throttle drives it across the lane
-	var aim := Vector3(LANE_TO.x, 0.0, LANE_Z)
+	var aim := Vector3(_lane_from().x + _lane_band(), 0.0, LANE_Z)
 	for tick in ESTABLISH_TICKS:
 		for index in gunners.size():
 			gunners[index].command = TankCommand.new(0.0, 0.0, aim + Vector3(0.0, 0.0, (index - 1) * 4.0), index < crews)
@@ -171,8 +186,13 @@ func test_a_pinned_gunner_misses_what_it_would_otherwise_hit() -> void:
 		var pair: Array = await _pair(game_match, "tank", "tank")
 		var gunner: Tank = pair[0]
 		var target: Tank = pair[1]
-		gunner.global_position = Vector3(-60.0, 0.0, 30.0)
-		target.global_position = Vector3(-60.0, 0.0, -30.0)
+		# N5 (round 6): inside the cannon's effective band, derived from the weapon. This test measures what
+		# SUPPRESSION costs a gunner's aim; at the old fixed 60 m the shot is now beyond the band, so range falloff
+		# (Match.range_spread_multiplier) dominated and the calm control only hit 46% — two effects in one number.
+		# What a long shot costs is measured on its own, below.
+		var band := Engagement.effective_range(Weapons.profile("cannon"))
+		gunner.global_position = Vector3(-60.0, 0.0, band * 0.4)
+		target.global_position = Vector3(-60.0, 0.0, -band * 0.4)
 		target.max_health = 1_000_000
 		target.health = 1_000_000
 		target.max_shield = 0.0
@@ -191,11 +211,13 @@ func test_a_pinned_gunner_misses_what_it_would_otherwise_hit() -> void:
 	var pinned: Dictionary = results[1.0]
 	var calm_rate := float(calm["hits"]) / maxf(float(calm["shots"]), 1.0)
 	var pinned_rate := float(pinned["hits"]) / maxf(float(pinned["shots"]), 1.0)
-	print("MEASURE pinned_accuracy at 60 m: calm %d/%d (%.0f%%), pinned %d/%d (%.0f%%)"
-			% [calm["hits"], calm["shots"], calm_rate * 100.0, pinned["hits"], pinned["shots"], pinned_rate * 100.0])
+	var band := Engagement.effective_range(Weapons.profile("cannon"))
+	print("MEASURE pinned_accuracy inside the band (%.0f m of %.0f): calm %d/%d (%.0f%%), pinned %d/%d (%.0f%%)"
+			% [band * 0.8, band, calm["hits"], calm["shots"], calm_rate * 100.0, pinned["hits"], pinned["shots"],
+			pinned_rate * 100.0])
 	assert_true(int(calm["shots"]) >= 8, "the control fired enough shells to measure (%d)" % calm["shots"])
 	assert_eq(pinned["shots"], calm["shots"], "a pinned crew still shoots as often: only its aim suffers")
-	assert_true(calm_rate > 0.7, "a calm tank hits a standing target at 60 m (%.0f%%)" % (calm_rate * 100.0))
+	assert_true(calm_rate > 0.7, "a calm tank hits a standing target inside its band (%.0f%%)" % (calm_rate * 100.0))
 	assert_true(pinned_rate < calm_rate - 0.2, "a pinned one misses a lot more (%.0f%% vs %.0f%%)"
 			% [pinned_rate * 100.0, calm_rate * 100.0])
 
@@ -253,3 +275,51 @@ func test_volume_beats_damage_at_suppressing() -> void:
 	# ...while its damage stays the worst in the game against anything armored.
 	assert_true(Match.armor_multiplier(Weapons.profile("machine_gun"), "tank", "front") <= 0.1,
 			"the machine gun still cannot scratch a tank's front: volume, not damage")
+
+
+# ---- N5 (round 6): is reaching past the band a real trade, or free reach? ----------------
+# squad's question when it wired `long_shot: true` into support-by-fire tasks: a posted SBF element fights at the
+# weapon's full range as a matter of course, which for a cannon is 56% further out than an unposted crew. If the
+# falloff past the band is not a real cost, "always task support-by-fire" becomes the dominant strategy and fire
+# discipline only ever binds the side that forgot to use it. This measures the price of that reach.
+# The gunner is commanded directly, so the engagement envelope's gates are not in play — only accuracy is.
+
+func test_a_shot_beyond_the_effective_band_is_a_real_gamble() -> void:
+	var band := Engagement.effective_range(Weapons.profile("cannon"))
+	var reach := float(Weapons.profile("cannon")["range"])
+	var rates := {}
+	for distance in [band * 0.8, reach]:
+		var game_match := _setup()
+		var pair: Array = await _pair(game_match, "tank", "tank")
+		var gunner: Tank = pair[0]
+		var target: Tank = pair[1]
+		gunner.global_position = Vector3(-60.0, 0.0, distance / 2.0)
+		target.global_position = Vector3(-60.0, 0.0, -distance / 2.0)
+		target.max_health = 1_000_000
+		target.health = 1_000_000
+		target.max_shield = 0.0
+		target.shield = 0.0
+		for tick in SimClock.TICK_RATE * 62:  # a 5 s reload: about a dozen shells
+			gunner.command = TankCommand.new(0.0, 0.0, target.global_position, true)
+			target.command = TankCommand.new(0.0, 0.0, gunner.global_position, false)
+			await wait_physics_frames(1)
+		rates[distance] = {"shots": game_match.stats["shots"][Match.Team.GREEN],
+				"hits": game_match.stats["hits"][Match.Team.GREEN]}
+		(game_match.get_meta("arena") as Node).queue_free()
+		game_match.queue_free()
+		await wait_physics_frames(2)
+	var inside: Dictionary = rates[band * 0.8]
+	var outside: Dictionary = rates[reach]
+	var inside_rate := float(inside["hits"]) / maxf(float(inside["shots"]), 1.0)
+	var outside_rate := float(outside["hits"]) / maxf(float(outside["shots"]), 1.0)
+	print("MEASURE long_shot_cost: inside the band (%.0f m) %d/%d (%.0f%%), at full reach (%.0f m) %d/%d (%.0f%%)"
+			% [band * 0.8, inside["hits"], inside["shots"], inside_rate * 100.0,
+			reach, outside["hits"], outside["shots"], outside_rate * 100.0])
+	assert_true(int(inside["shots"]) >= 8 and int(outside["shots"]) >= 8,
+			"both runs fired enough shells to measure (%d, %d)" % [inside["shots"], outside["shots"]])
+	assert_true(inside_rate > 0.7, "inside its band a stationary gun is reliable (%.0f%%)" % (inside_rate * 100.0))
+	# The bar the design needs: reach past the band must COST something a commander can feel. Half the hit rate is a
+	# trade; a tenth off is free reach and would make support-by-fire strictly dominant.
+	assert_true(outside_rate < inside_rate * 0.65,
+			"and at full reach it is a gamble, not free reach (%.0f%% against %.0f%%)"
+			% [outside_rate * 100.0, inside_rate * 100.0])

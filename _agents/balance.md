@@ -182,6 +182,250 @@ it does nothing). Past it, `Match.shot_spread` widens linearly to `(1 + Match.RA
 long shots become a gamble and closing pays. Try values with `--tune=cannon.effective_range=38,…`; a first set of
 variants is in `tools/matchup_variants/x1_range_falloff.json`.
 
+## Round 6 N5 (CP4): the engagement envelope — seeing is not shooting
+
+The lead, in both his round-5 and round-6 playtests: *"The long range of the weapons is also I think making the game
+unplayable (units see each other and then everyone just starts firing)."* Round 5's brief said the same thing and it
+did not land, because the lever round 5 built (`effective_range`) shipped **equal to `range` on every weapon**, so the
+spread falloff above never fired once in a real match.
+
+### What now stands between seeing an enemy and shooting at it
+
+Three gates, in `game/combat/engagement.gd`, all of them consulted from one place in the order controller:
+
+1. **Sight.** A target must be *seen* — through the team's shared intel (`Match.is_visible_to`, the existing
+   `spotter`) or the crew's own `sight_radius`. Round 5 found this test computed and thrown away; it is back on
+   purpose, and it sits **before** the line-of-sight raycast, so rejecting a contact now saves a ray rather than
+   costing a dictionary walk.
+2. **Acquisition.** A crew must hold a contact for `acquire_seconds` before its first round: **0.3 s** at arm's
+   length rising to **1.6 s** at the edge of its own vision, ×2 at full suppression, ×0.55 for a scout. **Switching
+   target restarts it.** Losing the contact bleeds the lay off at half rate instead of wiping it, so a target that
+   ducks behind a crate is not found from scratch.
+3. **Fire discipline.** A crew holds its fire until it is inside its weapon's **effective range**, with a 1.12×
+   release hysteresis so the gun does not stutter at the edge of the band. Two exceptions: a crew already being shot
+   at (`suppression ≥ 0.25`) may answer at any range it can reach, and an order carrying `"long_shot": true` lifts
+   discipline for that target.
+
+### The two decisions in it, and why
+
+**`effective_range` is now each weapon's own `preferred_max`, not a flat fraction of its reach.** A flat 55–65% of
+maximum (which is what the brief suggested, and which is measured below as a variant) deletes the two long-range
+archetypes: the Lancer's laser and the Syndicate's railgun exist precisely to out-reach a tank, and cutting them to
+59 m and 72 m leaves them with no job. `preferred_max` is the band each weapon was *designed* to work in, and using it
+means **one number per weapon serves the spread falloff, the brain's positioning and the trigger** — which is also
+why `TankBrain`'s ENGAGE state already closes to exactly the distance where its gun is allowed to speak.
+
+| weapon | reach | band (was) | weapon | reach | band (was) |
+|---|---|---|---|---|---|
+| `cannon` | 70 | **45** (70) | `assault_gun` | 80 | **62** (80) |
+| `autocannon` | 60 | **45** (60) | `railgun` | 110 | **104** (110) |
+| `laser` | 90 | **86** (90) | `pulse_cannon` | 70 | **55** (70) |
+| `machine_gun` | 45 | **35** (45) | `pulse_repeater` | 55 | **45** (55) |
+| `twin_mg` | 35 | **28** (35) | `scrap_cannon` | 50 | **36** (50) |
+| `spear_gun` | 30 | **24** (30) | | | |
+
+Cones (`flamethrower`, `fuel_spray`, `sonic_emitter`) and arcs (`mortar`, `catapult`, `gas_rockets`,
+`guided_missiles`) are deliberately untouched: a cone is disciplined by its own 14–32 m reach, and indirect fire
+already requires a spotter and a `[min_range, range]` window, so it is spotted fire by construction.
+
+**The `long_shot` override has to be asked for by name, and this is the trap worth remembering.** The first cut let
+any `{"type": "target"}` weapon order lift fire discipline — "unless ordered otherwise", which is what the brief says.
+But `TankBrain`'s ENGAGE state issues a `target` order **every tick**, so that exception would have exempted every CPU
+unit in the game and left this contract doing nothing at all, while every rule test went on passing. This is
+orchestration.md lesson 23 inverted: not a feature behind a flag the default path never passes, but an **exception the
+default path always passes**. The override is now `"long_shot": true`, which nothing sets by default; it is the hook
+for a doctrinal support-by-fire or attack-by-fire task (squad's to set) and for a player who deliberately designates a
+distant target (control's).
+
+### The number other streams need
+
+Any metric of the form *"can a defender at this position cover this approach"* must stop hard-coding a watcher range.
+`Engagement.covering_range()` returns the median of `min(effective_range, sight_radius)` over every unit in all four
+rosters — **45.0 m** today (n=14; min 24, max 104). The distribution matters more than the median:
+
+- 24–36 m: `gang_scout` 24, `gang_ifv` 28, `scout`/`law_scout` 35, `gang_tank` 36
+- **45 m: `tank`, `ifv`, `law_ifv`, `syn_scout`** — the mass of every roster
+- 55–62 m: `syn_ifv` 55, `law_tank` 62
+- 86–104 m: `lancer`/`syn_lancer` 86, `syn_tank` 104
+
+arena's `exposure()` used **110 m**, which was a weapon-range assumption wearing a sightline's clothes. Use 45 m for
+"covered by an ordinary defender" and a second pass at 86 m for "deniable by a long-range archetype". Carry the
+caveat: an ordered `long_shot` reaches the weapon's full range, so a 45 m-safe approach is safe from units using their
+own judgement, not safe absolutely — which is the intended design, since an ambush should be beatable by a commander
+who spends the order.
+
+### How to measure it (and how *not* to)
+
+The control for gates 1 and 2 is `--no-acquisition` on the match runner. The control for gate 3 needs no flag at all:
+`--tune=cannon.effective_range=70,…` puts every band back at its weapon's reach, which **is** the world before this
+contract. `tools/matchup_variants/engagement_bands.json` holds three alternatives as ready-made tune strings — *reach
+(the old world)*, *0.65 of reach*, *0.55 of reach* — to be run beside the shipped default with
+`make engagement VARIANTS=tools/matchup_variants/engagement_bands.json`.
+
+### What IS measured (laptop, `fd5ac1af`, `make test`; not a before/after — see the pending note below)
+
+These are properties of the new build measured in isolation, not comparisons across CP4, so they are safe to quote.
+Both come from tests that recompute their own bar rather than pinning today's output, so they survive the bands moving.
+
+- **An ordered long shot is a real trade, not free reach.** A stationary cannon against a stationary target, 13 shells
+  each: **100% hits inside the band (36 m) against 31% at full reach (70 m)**. Reaching past the band costs about
+  **70% of your hits**. This is the number squad asked for when it wired `long_shot: true` into support-by-fire tasks:
+  a posted element fights 56% further out, and pays roughly three shells for every one an unposted crew spends.
+  (`test_a_shot_beyond_the_effective_band_is_a_real_gamble`.) Next to arena's finding that posting buys **+0.127 on
+  open foundry and +0.024 in the dense yard**, "always task support-by-fire" does not look dominant.
+- **Effective fire got *better*, which was not the expected direction.** Interdicting a lane from inside the machine
+  gun's band rather than at its reach: one crew now lays **1.26 threat density** (was 0.56) and **0.34 suppression**
+  (was 0.27); three crews pin at **0.68** (was 0.56). Tighter spread inside the band is what makes concentrated fire
+  mean more — L2's contract finally paying off.
+- **`Engagement.covering_range()` = 45.0 m** over 14 units in four rosters (min 24, max 104), replacing arena's
+  hard-coded 110 m watcher range. At 110 m flanking priced out at a 1.8–2.1× detour on six of seven arenas; at the
+  derived 45 m the same geometry and the same code price it at **1.0–1.1×**. Same maps, opposite conclusion, the whole
+  finding resting on one number nobody had derived.
+
+### First directional read, and two things it taught about the METRICS (builder0, `6377c202`, **n = 1 per row**)
+
+`make engagement PAIRS=condemned:condemned SEEDS=1 TIME=240 VARIANT_FILE=…/engagement_bands.json`. **One match per
+configuration. Directional only — do not tune on this, and do not quote it to the lead.** It is here because what it
+says about the *metrics* is solid regardless of sample size.
+
+| bands | length | fire /unit/min | engaged (direct) | **kill** | flank+rear | off-axis | indirect |
+|---|---|---|---|---|---|---|---|
+| reach (the old world) | 73 s | 6.4 | 72 m (70 m) | **42 m** | 28% | 27% | 3% |
+| 0.65 of reach | 92 s | 6.3 | 75 m (76 m) | **40 m** | 57% | 26% | 8% |
+| 0.55 of reach | 125 s | 4.2 | 68 m (67 m) | **31 m** | 53% | 55% | 11% |
+
+**1. My artillery-contamination hypothesis was wrong at this scale, and the split is what showed it.** I built the
+direct-only figures expecting artillery to be inflating `engaged_distance`. It is not: direct and all-shots agree
+within 2 m on every row, and indirect is only 3–11% of kills in a Condemned mirror. The split was still worth
+building — it *disproved* the hypothesis instead of leaving it as a plausible story — but the contamination I
+predicted is not there. Keep the columns; drop the theory.
+
+**2. `engaged_distance` does not discriminate, and now I know why.** It sits at ~70 m in *every* configuration
+including the old world, because it is dominated by the **longest-band unit in the army**: the Condemned Lancer's
+laser band is **86 m by design**, so it is engaging while the line is still closing. That is `covering_range`'s lesson
+again — an army-level average is set by its outlier. **`kill_distance` is the headline** (42 → 40 → 31), because it
+says where fights are *decided* rather than where the first gun can speak. `1st shot 6 s @ 103 m` is identical across
+all three rows for the same reason: neither artillery nor a Lancer is bound by discipline at that range.
+
+**3. The quiet-fight risk is real and visible at 0.55.** Fire rate falls 6.4 → 6.3 → **4.2** per unit per minute while
+match length climbs 73 → 92 → **125 s**. This is exactly what the shots-per-unit-minute column was added to catch, and
+it caught it on its first run. Whatever the definitive series says, **0.55 of reach looks like the overshoot** — and
+the shipped bands (`preferred_max`) sit between the 0.65 and old-world rows on reach, not at the tight end.
+
+**4. Tighter bands buy flanking**, which is the design goal: flank+rear 28% → 57% → 53%, off-axis 27% → 26% → 55%.
+
+### N5 MEASURED AGAINST THE REAL OLD WORLD (builder0, `fa4e7077`, **n = 15 per arm**, 3 counterbalanced pairings)
+
+**This is the answer. Everything below it is superseded.** The control arm is a genuine round 5 — bands at reach
+**plus `--no-acquisition --no-crossing`**, so sight, acquisition and the crossing penalty are off, not merely the
+bands. The middle arm keeps those gates and only relaxes the bands, which is what isolates fire discipline.
+
+| arm | length | fire /unit/min | engaged | **kill** | **off-axis kills** | flank+rear (rear) | ended |
+|---|---|---|---|---|---|---|---|
+| **ROUND 5 (the real before)** | 91 s | 17.8 | 72 m | **54 m** | **26%** | 55% (11%) | 13 elim / 2 control |
+| discipline off, gates 1+2+X6 on | 101 s | 16.9 | 68 m | 43 m | 43% | 63% (20%) | 11 / 4 |
+| **SHIPPED (full N5)** | 99 s | 15.2 | **60 m** | **40 m** | **45%** | **69% (21%)** | 11 / 4 |
+| 0.65 of reach | 109 s | 13.5 | 63 m | 40 m | 47% | 67% (24%) | 10 / 5 |
+| 0.55 of reach | 110 s | 11.4 | 59 m | 34 m | 49% | 65% (22%) | 10 / 5 |
+
+**What N5 bought, in full: kill distance 54 → 40 m (−26%), engaged distance 72 → 60 m (−17%), off-axis kills
+26% → 45% (+19 points, a 73% relative rise), rear-armour kills 11% → 21%, fire rate 17.8 → 15.2 (−15%).**
+
+**The brief's own acceptance target is met:** *"a majority of direct-fire kills come from the flank or the rear"* —
+flank+rear is **69%**, up from 55%, and the off-axis share (the metric that actually means *flanking the army* rather
+than an oblique hit on a hull) nearly doubles.
+
+### The decomposition, which is the part I did not expect
+
+| | kill | engaged | off-axis |
+|---|---|---|---|
+| **sight + acquisition + X6 crossing** | **−11 m** | −4 m | **+17 pts** |
+| **fire discipline (the bands)** | −3 m | **−8 m** | +2 pts |
+
+**The gates do the heavy lifting; the bands mostly pull the armies closer.** Making a crew *find and hold* a target
+before it may shoot is what moves where the fight is decided and who dies from the flank. The effective bands — the
+part of N5 that got the most design argument, the whole `preferred_max` decision, the 0.65-versus-0.55 sweep — are the
+*smaller* contributor to both. Anyone tuning this later should tune acquisition first and the bands second.
+
+**A note on the 28% I retracted.** The true figure against the real old world is **26%** — almost exactly the number I
+withdrew. It was still right to withdraw it: it was measured against the wrong control (discipline-off, not round 5)
+on two matches of one mirror, and against *that* control the honest figure was 7%. **A number that lands near the
+truth from the wrong comparison on an inadequate sample is not a result, it is a coincidence**, and treating it as
+vindication would be the same mistake with a better outcome.
+
+**Still true and still retracted:** fire rate goes **down** (17.8 → 15.2), so the "his complaint was never about
+volume" reframing stays withdrawn. And **0.55 of reach remains the overshoot** — the lowest fire rate, the longest
+matches, and the fewest eliminations of any arm.
+
+### (superseded) The 60-match run whose control disabled fire discipline only
+
+**This supersedes both small runs below, and it contradicts them. Read this row set and no other.**
+
+| bands | length | fire /unit/min | engaged (direct) | **kill** | flank+rear | off-axis | ended |
+|---|---|---|---|---|---|---|---|
+| reach ("old world") | 101 s | **16.9** | 68 m (67) | **43 m** | 63% | 43% | 11 elim / 4 control |
+| **shipped (`preferred_max`)** | 99 s | **15.2** | **60 m** (59) | **40 m** | 69% | 45% | 11 elim / 4 control |
+| 0.65 of reach | 109 s | 13.5 | 63 m (62) | 40 m | 67% | 47% | 10 / 5 |
+| 0.55 of reach | 110 s | 11.4 | 59 m (58) | **34 m** | 65% | 49% | 10 / 5 |
+
+**What fire discipline at the shipped bands is worth: engaged distance 68 → 60 m (−12%), kill distance 43 → 40 m
+(−7%), flank+rear 63% → 69%, fire rate 16.9 → 15.2 (−10%), and no change in how matches end.** Every metric moves the
+right way. All of them move modestly.
+
+**Three claims from the n=2 runs are retracted, and they were mine:**
+1. ~~"the fight is decided 28% closer"~~ — that was **two matches on one Condemned mirror**, the pairing most exposed
+   to the army draw (the winner follows the army in 15 of 16 seeds). The real figure is **7%**.
+2. ~~"fire goes UP, so the complaint was never about volume"~~ — **it goes down**, 16.9 → 15.2. A tidy reframing built
+   on a two-match sample. I argued it hardest *because* it was surprising, which is when it deserved least trust.
+3. ~~"`engaged_distance` does not discriminate, read `kill_distance`"~~ — **inverted.** At n=15 engaged distance moves
+   most (12%) and kill distance least (7%). The "it only measures the Lancer's 86 m band" story was an artefact of
+   four matches.
+
+**A limit on all of the above that no sample size fixes.** The `reach` row tunes `effective_range` back to `range`, so
+it disables **fire discipline only**. Gates 1 and 2 (sight, acquisition) and X6's crossing penalty are in **both**
+arms, because they are code and `--variants` only tunes data. **So this measures what fire discipline alone is worth,
+not what N5 is worth.** A true before/after needs `--no-acquisition` in the control arm, which `make engagement`
+cannot pass today (it has `TUNE=` but no flag passthrough). Until that runs, every row here carries the label *"with
+acquisition and crossing already on"*.
+
+### (superseded, kept for the record) The shipped bands at **n = 2 per row** — do not quote
+
+Same command with the shipped bands added as a row (they were missing from the first run — `--variants` runs only
+what is in the file). **Condemned mirror only, two matches per row, pre-merge build. Directional, not final.**
+
+| bands | length | **fire /unit/min** | engaged (direct) | **kill** | flank+rear (rear) | off-axis | ended by |
+|---|---|---|---|---|---|---|---|
+| reach (the old world) | 88 s | 7.6 | 76 m (75) | **47 m** | 42% (1%) | 32% | 2 × elimination |
+| **shipped (`preferred_max`)** | 105 s | **9.7** | 77 m (77) | **34 m** | 45% (4%) | 40% | 1 elim, 1 control |
+| 0.65 of reach | 108 s | 8.8 | 77 m (78) | **36 m** | 55% (3%) | 37% | 1 elim, 1 control |
+| 0.55 of reach | 125 s | 6.5 | 72 m (72) | **30 m** | 61% (18%) | 55% | **2 × control** |
+
+**The shipped bands do what the lead asked, and the number to quote is kill distance: 47 m → 34 m, a 28% reduction.**
+Flanking rises with it (off-axis 32% → 40%, flank+rear 42% → 45%).
+
+**The quiet-fight worry does not materialise at the shipped bands — it reverses.** Fire rate goes *up*, 7.6 → **9.7**
+rounds per unit per minute. That is not a contradiction: units close to where their fire counts instead of trading
+gambles at maximum range, so more rounds are worth firing. The lead's complaint was never "too much shooting", it was
+shooting from a distance where nothing else was possible; a denser, closer fight is the fix, not a side effect.
+
+**0.55 of reach is the overshoot, and it fails in the way predicted.** Fire drops to 6.5 — *below* the old world —
+matches stretch to 125 s, and **both ended on the control point rather than elimination: neither side could finish.**
+That is the "a fight the player can never close" failure written down under X2 before the series ran. Do not go there.
+
+**Two metric findings from the first run are confirmed at n = 2**, and one of them is mine being wrong twice:
+- **`engaged_distance` still does not discriminate** — 72–77 m in *all four* configurations including the old world,
+  because it is dominated by the Lancer's 86 m band. `1st shot 6 s @ 96 m` is likewise identical in all four. Use
+  **kill distance**.
+- **Direct-only and all-shots agree to within 1 m on every row** (77/77, 76/75, 77/78, 72/72). My artillery-
+  contamination hypothesis is now disconfirmed twice. The columns stay — they are what disproved it — but nobody
+  should repeat the theory.
+
+> **Still to do before these are final:** re-take on the post-CP4 merge (squad's precedence fixes change behaviour),
+> across the three counterbalanced pairings rather than one mirror, at SEEDS=3. Then the sim baseline. Nothing in this section below the design is a measured
+> claim, and **no number taken across CP4 may be published by any stream** (workstreams.md invariant 9). When the
+> series lands, its results go here with n, commit and machine, and the per-match file goes in
+> `streams/references/combat/`.
+
 ## Round 5 X2: is hard cover worth using? (the mechanics half, measured 2026-09-17)
 
 `tests/test_combat_cover.gd`, on the default arena's 18 x 1.5 m walls:

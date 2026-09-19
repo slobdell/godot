@@ -151,6 +151,17 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
+**Report (2026-09-18, night).** **Green, merge here: `2dbd985d`** (`make remote T=check` 1082 passed, 0 failed,
+builder0) — main `0f559857` merged in, X4 re-landed, Ambush, X5 on nav's real Movement. Merged to `main` earlier:
+`758a45a8`, `aa7f3499` + `9ef6bbee`. (This Status edit is docs-only, on top of it.)
+- **Done:** X1 (no Move/Follow buttons), X2 (the N4 palette with tactical task graphics; Support by Fire and Screen
+  earned from squad's evidence), X3 (pitch its own axis; **the lead picked 12° · 50 m · FOV 60** on two camera pages,
+  played and fixed: wall cutaway, far-range tilt floor), X4 (loading screen; FIGHT → playable 7.6 s → 1.4 s with
+  feel's fix), X6 chips, X7 "why did my element do that".
+- **Landed after main merged nav, feel and squad:** the plain move keeps the squad a squad (0 idle commands in the
+  lead's sequence), Ambush on the card (B), X5 on nav's real Movement API.
+- **Debt recorded:** touch needs its own framing (phone bar 24 → 22 px provisionally).
+
 ### Plan (order, with reasons)
 
 1. **X1** cut Move and Follow off the card — smallest, and the lead named it. **Done** (keys M/F kept).
@@ -173,9 +184,9 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | X3 camera pages | answered: https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL; follow-up below 25°: https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7 | `make camera-looks`; laptop render, 1920×1080, frames in the scratchpad (not committed: 26 MB of JPEG) |
 | X2 palette + symbols | done; Screen / Support by Fire held off the card until squad's X5 | `TaskPalette`, `CommandIcons.draw_task`, table in `tactical_map.md` "Task palette (N4)", `test_control_panel` |
 | X4 loading screen | done; FIGHT → playable 7.6 s → 1.4 s with feel's fix (below) | `LoadingScreen`, `GameLauncher.start` staged, `test_loading_screen`, shell-playtest `loading_screen_shows` + frame `2b_loading` |
-| X5 orders you see landing | built against N1 with a fake provider; **lights up when nav's CP1 is on `main`** (wire `MovementReadout.from_movement` to the real call shape then) | `test_control_movement_readout` |
+| X5 orders you see landing | **live** with nav's N1 (on main `f03a795c`): real provider reports `driving`, ETA 4.9 s, 58.9 m, the route's points (`test_the_real_movement_api_reaches_the_card`) | `test_control_movement_readout` |
 | X7 (stretch) "why did my element do that" | done: `ElementLog` keeps each element's last 6 decisions with match time; hover the card's doctrine line | `test_control_element_log` |
-| X6 a plain move keeps the squad a squad | **HELD** (landed in `8d9c59af`, reverted before merge: see the next row). What stays: a direct order to part of a squad releases only those units, and re-selecting the group re-forms it | `test_control_commands::test_a_direct_order_to_part_of_an_element_releases_only_those_units` |
+| X6 a plain move keeps the squad a squad | **RE-LANDED** after squad's fix (`4d734b1e`, on main `0f559857`), admitted by the A/B that held it: the lead's five-squad sequence on the merged tree (laptop, seed 3, one run each) — X4 on: **0 idle commands**, 1.0 changes/s, 14 arrived and stayed, 1 never arrived, 5.9 m mean from slot (element units 6.7 m from their current slots); direct: 0, 0.8/s, 12, 1, 5.6 m. Both runs showed 6–7 `no_goal_recorded`: the instrument's click spots were screen fractions set at a 45° camera, and at 12° squad 2's spot was sky (no order). Fixed (walk the click down to ground); re-run with X4 on: all 21 ordered, 18 arrived and stayed, 3 still travelling, **0 idle commands**, 1.2 changes/s. A direct order to part of a squad still releases only those units | `test_control_commands::test_a_direct_order_to_part_of_an_element_releases_only_those_units` |
 | X6 plain move, **played — why it is held** | Held by the orchestrator, 2026-09-18, until squad explains the re-issuing; do NOT re-add `"move"` to `ELEMENT_TASKS` without this A/B coming back at 0 idle commands on five squads (the lead's sequence, not a single-squad lab). Question to squad: in the lead's sequence (`make squad-orders-test`, 5 squads from the spawn) elements re-issue in the idle window. Laptop, seed 3, one run each, same tree: X4 on → 31 idle commands (all element moves), 7.0 changes/s, 3/21 never_arrived, slot error mean 14.5 / worst 28 m; X4 off → 0, 1.0/s, 0 never_arrived, 14.1 / 20 m. Station-keeping by design or thrash? If thrash, X4 is a one-line revert (`"move"` out of `ELEMENT_TASKS`). **Second reading** (new `element_slot_m`: distance from the slot the element holds *now*; X4 on, one more run): element units are on their current slots (mean 5.8 m over 17, worst 30) but the slots drift 15–22 m from where the first orders put them, with 38 idle commands (8.5/s) — the formation keeps its shape but leaves the clicked spot. Sent to squad | `build/squad-orders/run.log`, `squad_orders.json` `element_slot_m` |
 | CP3 adapter review | `group_formation.gd` as squad's shim over `TacticsFormation`: pacing identical (`PACE_NEAR` 8, `PACE_FLOOR` 0.35, same formula), seating through `place(..., {"policy": "front"})`; all control formation tests pass on the merge | — |
 | X6 squad chips | chips say IDLE / MOVING / CONTACT / UNDER FIRE; lit by living members in any order. Plain move keeping the element: agreed with squad, waits on their green | `test_control_groups::test_group_chips_say_what_each_squad_is_doing` |
@@ -268,12 +279,23 @@ awaits returned, by which time the whole stall had happened, so it read 0 ms bef
 
 ### Known issues
 
+- ~~**GL textures leak at exit after merging main**~~ feel's (the night sky's radiance maps), fixed on main and merged.
+  Also fixed by feel: the "void below the near wall" was never missing geometry — the cutaway clips every real surface
+  in that band and the sky dome's below-horizon colour showed through; the dome now draws the city's ground.
+- (history) **GL textures leak at exit after merging main** (two "Texture with GL ID … leaked 5460 bytes" lines in
+  `make shell-playtest`, which fails its clean-console gate). Absent in every pre-merge run; nothing control added
+  creates a texture of that size; the merge brought feel's sky and skyline shaders. Reported to the orchestrator.
+
 - **The floor ends at the stands** (feel's): a camera outside the venue (far framing, the free camera after a defeat)
   sees black void below the stands; the far-range tilt floor keeps it to the bottom strip in normal play.
 - **X4 (a plain move keeps the squad a squad) is held** until squad's `4d734b1e` is on `main` and the five-squad A/B
   comes back at 0 idle commands (see the X6 rows).
-- `shell-playtest`'s `faction_row_under_mouse` failed once in seven windowed runs on the shared laptop desktop (a real
-  mouse can move the hover; trip-up 32); it passed on the immediate re-run.
+- ~~`shell-playtest`'s `faction_row_under_mouse` failed once in seven windowed runs (blamed on the desktop's mouse)~~
+  **Not a flake, and mine** (`31a4aa11`): on builder0 the faction checks failed every run, and the control under the
+  mouse was the loading screen — a full-rect, click-stopping layer on the root, still fading when the playtest clicked.
+  One consistent failure plus one intermittent one of the same check was one cause. The screen now lets clicks through
+  the moment the load is done (tested, mutation-checked) and the playtest waits for it to go. After merging feel's leak
+  fix, `make remote T=shell-playtest` exits 0 on builder0 for the first time: 18/18 checks, clean console.
 - **Touch needs its own framing — a debt, not a resolution.** At the lead's 12° / FOV 60° a start-view vehicle is
   23.7 px on a 1200×540 phone, 40.0 px at 1920×1080 (headless projection, one fixture, laptop). He chose that camera for
   desktop; the phone inherits it. The phone bar moved 24 → 22 px provisionally (desktop got its own, 36 px); when touch

@@ -31,25 +31,27 @@ const PICK_BODY_M := 2.6
 ## Screen positions count as "inside the box" within this margin (hull edges peeking in).
 const BOX_MARGIN_PX := 4.0
 ## Armed orders a key waits for a click to complete (A, F, M), and what each click becomes.
-const MODES := {KEY_A: "attack_move", KEY_F: "follow", KEY_M: "move", KEY_E: "screen", KEY_R: "support_by_fire"}
+const MODES := {KEY_A: "attack_move", KEY_F: "follow", KEY_M: "move", KEY_E: "screen", KEY_R: "support_by_fire",
+		KEY_B: "ambush"}
 const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy", "follow": "FOLLOW: click a friendly unit",
 		"move": "MOVE: click the ground", "screen": "SCREEN: click the flank to cover",
-		"support_by_fire": "SUPPORT BY FIRE: click what to cover (the leader picks the firing line)"}
+		"support_by_fire": "SUPPORT BY FIRE: click what to cover (the leader picks the firing line)",
+		"ambush": "AMBUSH: click the kill zone"}
 ## X3: verbs the player gives an element as an L1 task (its leader picks the formation, technique and drills).
 ## attack-move maps onto a move task on purpose: an element on the move already runs react-to-contact, which is
 ## what attack-move means. `follow` stays a direct order - it is micro, not a task - and `stop` stands the element
 ## down so its leader stops re-issuing.
 ##
-## A plain `move` is NOT here - and round 6 tried putting it back. Round 5 took it out because a leader holding a move
-## task kept re-slotting and manoeuvring (20 order changes a second, units ending 20-90 m from the click; the lead:
-## "their behavior is overridden by a higher priority"). Round 6 (squad X4) gave the task a plain form, `"drills":
-## false`, and control re-added `"move": "move"` here - then played the lead's own sequence (`make squad-orders-test`,
-## five squads ordered from the spawn; laptop, seed 3, one run each, same tree): with it, 31 element commands and 7.0
-## order changes/s while nobody touched the controls and 3 of 21 units never arrived; without it, 0, 1.0/s and 0.
-## Held until squad explains the re-issuing (the orchestrator, 2026-09-18). Re-adding it needs that A/B to come back
-## at 0 idle commands on five squads, not a single-squad lab. The `"drills": false` branch in assign_task stays ready.
-const ELEMENT_TASKS := {"attack_move": "move", "attack": "attack", "hold": "hold",
-		"screen": "screen", "support_by_fire": "support_by_fire"}
+## A plain `move` is here again (round 6, with squad's X4). Round 5 took it out because a leader holding a move task
+## kept re-slotting and manoeuvring (20 order changes a second, units ending 20-90 m from the click; the lead: "their
+## behavior is overridden by a higher priority"). Round 6 put it back as a plain move (`"drills": false`: formed up, no
+## contact drills, one formation anchored on the click) - and the first attempt was HELD: in the lead's own sequence
+## (`make squad-orders-test`, five squads from the spawn) elements re-issued 31-38 commands while nobody touched the
+## controls, against 0 for direct moves. Squad found two re-send rules (fix 4d734b1e). Re-admitted on the same test on
+## the merged tree (laptop, seed 3, one run each): X4 on 0 idle commands, 14 arrived and stayed, 1 never arrived,
+## mean 5.9 m from the given slot; direct 0, 12, 1, 5.6 m. If you touch this, re-run that A/B first.
+const ELEMENT_TASKS := {"move": "move", "attack_move": "move", "attack": "attack", "hold": "hold",
+		"screen": "screen", "support_by_fire": "support_by_fire", "ambush": "ambush"}
 ## G cycles the formation the next orders ask for (auto = by role and situation, GroupFormation.choose).
 const FORMATION_CYCLE := [UnitCommand.AUTO, "wedge", "line", "column", "vee"]
 ## A right-clicked enemy is attacked only by selected units whose weapon does at least this fraction of its damage
@@ -536,7 +538,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				disarm()
 			else:
 				selection.clear()
-		KEY_A, KEY_F, KEY_M, KEY_E, KEY_R:
+		KEY_A, KEY_F, KEY_M, KEY_E, KEY_R, KEY_B:
 			arm(MODES[key.keycode])
 		KEY_S:
 			order_selection("stop")
@@ -685,9 +687,9 @@ func armed_world_order(world: Vector3, queue := false) -> String:
 	var armed := mode
 	if not queue:
 		disarm()
-	if armed in ["screen", "support_by_fire"] and not can_task():
+	if armed in ["screen", "support_by_fire", "ambush"] and not can_task():
 		return "select a whole element to give it a task"
-	if armed in ["attack_move", "move", "screen", "support_by_fire"]:
+	if armed in ["attack_move", "move", "screen", "support_by_fire", "ambush"]:
 		return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""
 
@@ -815,7 +817,7 @@ func armed_click_order(at: Vector2, queue := false) -> String:
 		"move":
 			if world != null:
 				return order_selection("move", {"to": [world.x, world.z], "queue": queue})
-		"screen", "support_by_fire":
+		"screen", "support_by_fire", "ambush":
 			if not can_task():
 				return "select a whole element to give it a task"
 			if world != null:

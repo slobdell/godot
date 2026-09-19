@@ -342,16 +342,60 @@ stack first, then the layer that commands it, then how the player reads and issu
   top-down and too far. Lower the default pitch, get the vehicles in profile, keep the tactical read. The standing
   guidance is unchanged: **somewhere between StarCraft 2 and Twisted Metal**.
 - **The stands are empty.** Ambient crowd — visible in the stands and audible — is missing entirely.
-- **What the range complaint actually was** (established by measurement, 2026-09-18, and it corrects how two rounds of
-  briefs had read it). Everyone — including this document — had been treating *"units see each other and then everyone
-  just starts firing"* as **too much shooting**. It is not. When engagement discipline was added and measured, the fire
-  rate went **up**, not down: units close to where their fire actually counts instead of trading gambles at maximum
-  range, so more rounds are worth firing. **His complaint was never the volume of fire — it was fire from a distance
-  where nothing else was possible.** A denser, closer fight is the *fix*, not a side effect to be tolerated.
-  The corollary, which protects the design from the obvious over-correction: **there is a point where tightening goes
-  too far, and it is recognisable.** At 0.55 of weapon reach the fire rate fell *below* the old world, matches stretched
-  by 40%, and both test matches ended on the control point rather than by elimination — **neither side could finish**.
-  That is "a fight the player can never close", and nobody should tune toward it. The shipped bands are nowhere near it.
+- **RETRACTED 2026-09-18, and left here as a warning rather than deleted.** For a few hours this section claimed
+  *"what the range complaint actually was: not volume of fire but distance — adding discipline makes the fire rate go
+  UP"*, and drew a design conclusion from it. **That rested on two matches of a single Condemned mirror and does not
+  replicate.** At **n = 15** (three counterbalanced pairings, SEEDS=3) the fire rate goes **down**, 16.9 → 15.2 per
+  unit per minute. The reframing is unsupported and must not be quoted.
+  **Why it got in here is the part worth keeping:** combat sent the number labelled *directional, n = 2, not for the
+  lead*, and the orchestrator held it back from him correctly — then wrote the *conclusion* into this document as
+  established design understanding, where the caveat did not survive. **A caveat that travels with a number in a
+  message does not travel with the idea into a doc.** Lesson 26 says a relayed number becomes a fact; this is the same
+  failure committed against oneself, in writing, in the file that briefs every future stream. **Nothing goes into this
+  document from a sample that could not support a claim to the lead.**
+- **SETTLED (75 matches, 15 per configuration across three counterbalanced faction pairings, builder0, `996a25fd`),
+  against a genuine round-5 control** — bands at reach **plus `--no-acquisition --no-crossing`**, so the gates are off
+  and not merely the bands:
+  **kill distance 54 → 40 m (−26%)**, engaged distance 72 → 60 m (−17%), **off-axis kills 26% → 45%**, rear-armour
+  kills 11% → 21%, fire rate 17.8 → 15.2 (−15%). The round-6 acceptance target — *a majority of direct-fire kills come
+  from the flank or the rear* — is **met at 69%**, up from 55%.
+- **THE DECOMPOSITION, and it is the most important thing round 6 learned about combat:**
+
+  | | kill distance | engaged distance | off-axis kills |
+  |---|---|---|---|
+  | **sight + acquisition + the crossing penalty** | **−11 m** | −4 m | **+17 pts** |
+  | **fire discipline (the effective bands)** | −3 m | **−8 m** | +2 pts |
+
+  **The gates do the heavy lifting; the bands mostly pull the armies closer.** Making a crew *find and hold* a target
+  before it may shoot is what moves where the fight is decided and who dies from the flank. The effective bands — the
+  part that took by far the most design argument this round, the whole `preferred_max` decision, the 0.65-vs-0.55
+  sweep, the standoff negotiation — are the **smaller** contributor to both headline metrics.
+  **If anyone tunes this later: acquisition first, bands second.** This was only visible once the control disabled the
+  gates rather than just the bands; a control that is not a real "before" hides which half of a change did the work.
+- **Why the objective must come off the centre line, stated by two streams arriving from opposite ends** (arena from
+  terrain, combat from the engagement decomposition, 2026-09-18). They are **the same claim at two scales:**
+  the acquisition gates reward approaches that **break line of sight**, and an objective off the centre line is what
+  makes taking such an approach **worth the drive**. arena's measurements say the terrain *already* offers covered
+  routes at a **1.0–1.1× detour on every map** — nobody takes them because the only thing worth holding is in the
+  middle. arena's sentence, which is the round's sharpest statement of the risk:
+  > *"If N7 lands and objectives stay central, the gates will have made flanking pay in a game that still gives no
+  > reason to flank."*
+  The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
+  changes should compound rather than merely coexist.
+- **0.55 of reach is confirmed as the overshoot**: lowest fire rate, longest matches, fewest eliminations of any arm.
+  A fight the player cannot close. The shipped bands are nowhere near it.
+- **Superseded, kept for the method:** an earlier n = 15 pass
+, stated at the strength the evidence allows (builder0,
+  `c765275f`, three counterbalanced pairings, SEEDS=3, **with acquisition and the crossing penalty on in both arms** —
+  the control tunes `effective_range` back up, so it isolates *fire discipline alone*, not all of N5):
+  fire discipline at the shipped bands moves the fight **modestly** closer — **engaged distance 68 → 60 m (12%)**,
+  **kill distance 43 → 40 m (7%)**, **flank+rear 63% → 69%** — with a **small reduction** in fire rate and **no change**
+  in how matches end. **Every metric moves the right way; none moves dramatically.** A true before/after needs the
+  control arm to disable acquisition too, which the harness cannot yet pass; until then these numbers are about
+  discipline, not about the whole envelope.
+  The over-correction is still real and still recognisable: at **0.55 of reach** kill distance falls to 34 m but the
+  fire rate drops to 11.4 and matches lengthen — tune toward it and the fight becomes one the player cannot close.
+  **The shipped bands are nowhere near it.**
 - **Weapon ranges are still too long.** *"Units see each other and then everyone just starts firing."* This was round
   5's combat brief too, and the lead still sees it: the first contact should not be the whole fight.
 

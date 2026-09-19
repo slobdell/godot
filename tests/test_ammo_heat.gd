@@ -112,7 +112,10 @@ func test_low_on_shells_it_skips_long_shots() -> void:
 	orders.tank = tank
 	orders.tanks_root = game_match.tanks
 	add_to_tree(orders)
-	orders.set_orders({"type": "stop"}, {"type": "fire_at_will"})
+	# N5 (round 6): the target is DESIGNATED by name, which is the one thing that overrides the engagement envelope's
+	# fire discipline. Without that this test would pass on discipline alone (a 45 m band and a 45 m preferred range
+	# are the same number now) and would stop saying anything about ammo.
+	orders.set_orders({"type": "stop"}, {"type": "target", "name": "Far"})
 	await wait_physics_frames(SimClock.TICK_RATE * 4)
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 0, "with 5 shells left it holds fire at 60 m")
 	far.global_position = Vector3(LANE_X, 0.0, -5.0)  # 35 m

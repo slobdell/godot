@@ -32,9 +32,10 @@ const ROWS := [
 		"line": "Click a spot: spread into a line across it, watch, and fight only what comes to you."},
 	{"id": "support_by_fire", "name": "Support by Fire", "hotkey": "R", "kind": "task", "earned": true,
 		"line": "Click a target area: take firing positions facing it, suppress it, and don't advance."},
-	# squad's new verb (a8048028): a line facing the kill zone, holding fire until an enemy is in it. Earned once squad
-	# confirms it green and it is on main; B is free.
-	{"id": "ambush", "name": "Ambush", "hotkey": "B", "kind": "task", "earned": false,
+	# squad's verb: a line facing the kill zone, holding fire until an enemy is in it (or they are found). Earned
+	# 2026-09-18, squad 9ba36681 (on main 0f559857): TacticsScenarios.ambush in make check - 0 shots before the enemy
+	# entered the kill zone, sprung ~1 s after, 8 after.
+	{"id": "ambush", "name": "Ambush", "hotkey": "B", "kind": "task", "earned": true,
 		"line": "Click a kill zone: hide in a line facing it and hold fire until the enemy is in it, or they are found."},
 	{"id": "attack_by_fire", "name": "Attack by Fire", "hotkey": "", "kind": "task", "earned": false,
 		"line": "Click a target: destroy it with fire from a distance, without closing."},
