@@ -1944,3 +1944,19 @@ The kickoff prompt is one line; this section is the rest.
      **This is a distinct failure from the copied-value one (lesson 66) and we did not have it.** A duplicated value asks
      *which copy is true*; a **dead** value asks *whether either copy is read*. **Trace a constant to its consumer, not
      just to its definitions** — and when the consumer is overwritten a line later, the constant is decoration.
+129. **The stream that owns the thing being guarded should own the assertion, because it is the one that will set the bar
+     high enough to fail.** combat's words, on its own guard letting through a regression it had caused.
+     combat wrote `tests/test_army_footprint.gd` and asserted only on the **small-army control**, leaving `gang_ram` as a
+     printed `MEASURE` line — **for the good reason that the bar was not its to set.** squad, taking the file over,
+     asserted on `gang_ram`, `gang_pack` and `law_line`.
+     **Then combat landed a 14 m rig and broke between-squad spacing: `gang_ram` min 3.7 → 0.4 m, median 6.8 → 2.7.** On
+     **combat's** branch that passed its own test; combat found it by reading the printed number. **On squad's copy it
+     would have failed.**
+     - **A guard written by someone who cannot set the bar will be set where it cannot fail.** That is not timidity, it is
+       the correct response to not owning the threshold — **which means the guard must be handed to whoever does own it,
+       not left where it was written.**
+     - **Corollary for the orchestrator: when a stream builds an instrument for another stream's property, route the
+       ASSERTION as deliberately as the code.** combat did this unprompted and told squad its version was the better guard.
+     - **And notice the shape: the author's own regression passed the author's own test.** This is lesson 108 (*a guard
+       earns more end-to-end exercise than the thing it guards*) from a new angle — **the guard was exercised and was
+       simply aimed too low**, which no amount of mutation-checking the guard itself would have revealed.
