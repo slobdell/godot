@@ -1890,7 +1890,9 @@ The kickoff prompt is one line; this section is the rest.
        **before its first run**: (a) angular rate 0 → ≥90% of peak, or ≥90% → 0, **within one tick**; (b) overshoot, or a
        last tick > 30% of peak; (c) rotating about a point it is not driving around.
      - **Two of three shapes failed and one passed, each for a nameable reason** — a tank pivot robotic by (a); a scout's
-       K-turn robotic by (b), **overshooting its final heading by 20.7°, arriving still turning**; a four-unit squad wheel
+       K-turn ~~robotic by (b), overshooting its final heading by 20.7°~~ — **RETRACTED: an angle-wrap bug in the
+       reporter, `wrapf(last - first)` on a 201° arc that never reversed. Fixed 7f14241b; overshoot is 0.0 everywhere,
+       and Reeds-Shepp lost the only measured defect behind it.** A four-unit squad wheel
        **smooth by all three**. A definition that only ever fires is not a definition.
      - **The passing case is as valuable as the failures:** it says the squad-level motion the lead asked about is already
        right, so nobody spends a round on it.
