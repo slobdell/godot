@@ -293,7 +293,13 @@ another class's static silently did nothing (the first A/B's arms were byte-iden
 time and `nav-fight-ab` refuses identical arms; seeded A/Bs are PAIRED (the progress cost was invisible unpaired);
 pre-register a guard metric, not only a success metric.
 
-**Not done / owed:** flow fields (the root fix for crowding; an architecture change, explicitly not this round);
+**Looked at like a player** (`make remote T=control-scale-shots`, builder0, `b6a5b7ca`, 34 a side, foundry, the lead's
+camera: pitch 21°, FOV 35°, 61-62 m): an attack-moving squad rounds a barricade as a spaced column with nobody pressed
+on its end (the round-6 carrot pinned hulls exactly there); a moving squad threads out of the parked army without
+shoving it. **Limit:** stills can't show how a hull ROTATES (pivots, three-point turns), which is what the telephoto
+makes visible; judging that needs motion (a short capture), not done.
+
+**Not done / owed:** motion capture of hull rotation at the lead's pose; flow fields (the root fix for crowding; an architecture change, explicitly not this round);
 Reeds-Shepp paths for cars; faction-gain screenshots at the lead's 21° pose; the idle ADVANCE+stop facing miss (squad).
 
 ### Round 7 A/B, pre-registered (written 2026-09-19 BEFORE the run)
