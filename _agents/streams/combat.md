@@ -539,6 +539,23 @@ for doing N7 promptly after CP4.
 That is exactly what `separation_at_contact_m` and `engaged_distance_m` measure, so X3 resolves itself out of the CP4
 series rather than needing its own run.
 
+**X3 — BLOCKED (2026-09-19), and blocked on another stream, not on a decision.** Raising `ARENA_HALF_SIZE` to 140
+as a *bound* needs `Arena.validate()` to stop demanding equality, which is arena's `877dc34a` ("half_size is a bound,
+not a requirement (unblocks combat's ARENA_HALF_SIZE)"). **That commit is on `stream/arena` and is NOT on `main`** —
+I checked with `git merge-base --is-ancestor 877dc34a main` after merging main, precisely because my own notes had
+recorded it as landed. Until it merges, every layout must still have `half_size == 120` and the change cannot be
+made on this branch at all.
+
+Two things for whoever picks it up:
+
+- **It is a contract change, not a combat edit.** The clamps live in six places across five streams —
+  `ui/radar.gd`, `ui/tactical_map.gd`, `control/rts_controls.gd`, `tactics/army_layout.gd`, `ai/combat_motion.gd`,
+  `ai/cover_map.gd` (plus `arena/arena.gd` and `match/visibility_field.gd`) — so it goes through
+  [../workstreams.md](../workstreams.md) before a line moves.
+- **`DRIVABLE_LIMIT` goes to 117, not 136.** It is `ARENA_HALF_SIZE − 4` today (120 → 116); keeping that *relative*
+  relationship at 140 would push the drivable edge out by 20 m and silently re-scale every spawn row, cover map and
+  fog grid that derives from it. The bound is meant to make room for a non-square layout, **not** to grow the maps.
+
 ### Infra: `make engagement` was broken, and `make matchup-search` silently wrong (`9f798368`)
 
 `mk/ai.mk` sets `VARIANTS ?= r1,a4,a6` (brain-variant *names*). **A make variable set in any `mk/*.mk` is global**, and
