@@ -42,7 +42,8 @@
    "yard": "the Container Yard",
    "boulevard": "the Boulevard",
    "pit": "the Pit",
-   "boneyard": "the Boneyard"
+   "boneyard": "the Boneyard",
+   "terminus": "the Terminus"
   },
   "faction": {
    "condemned": "the Condemned",
