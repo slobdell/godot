@@ -174,9 +174,15 @@ func describe_map() -> Dictionary:
 						"x": [snappedf(bounds.position.x, 0.1), snappedf(bounds.end.x, 0.1)],
 						"z": [snappedf(bounds.position.z, 0.1), snappedf(bounds.end.z, 0.1)],
 						"height": snappedf(box.size.y, 0.1)})
+	# Where an order can actually send a unit on THIS map: the active layout's own half size (ARENA_HALF_SIZE is only the
+	# largest any layout may be), less the wall margin, and never past the limit Orders clamps destinations to. Declaring
+	# the global maximum told an agent it could drive to places it cannot: its orders were clamped silently and it looked
+	# like the model deciding badly (round 7, arena's finding).
+	var half := minf(float(Arena.active.get("half_size", Match.ARENA_HALF_SIZE)) - (Match.ARENA_HALF_SIZE - Match.DRIVABLE_LIMIT),
+			Match.DRIVABLE_LIMIT)
 	return {
 		"coordinates": "meters; x grows east, z grows south; compass 0=north(-z) 90=east(+x)",
-		"bounds": {"x": [-Match.ARENA_HALF_SIZE, Match.ARENA_HALF_SIZE], "z": [-Match.ARENA_HALF_SIZE, Match.ARENA_HALF_SIZE]},
+		"bounds": {"x": [-half, half], "z": [-half, half]},
 		"bases": {"Green": [0, Match.BASE_Z], "Rust": [0, -Match.BASE_Z]},
 		"shell_speed": Shell.SPEED, "shell_range": Shell.MAX_RANGE,
 		"armor_multipliers": {"front": 0.5, "side": 1.0, "rear": 1.5},
