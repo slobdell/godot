@@ -2039,13 +2039,19 @@ func _act(s: Dictionary) -> void:
 			if watch == null and sector.get("facing") != null:
 				watch = my_position + (sector["facing"] as Vector3) * 20.0  # nothing in sight: keep watching my arc
 				why = TankBrain._join(why, "covering its sector")
+			# Nothing to watch: the facing the unit was TOLD (its K1 order's, else its post's) beats a doctrine squad's
+			# default, which beats standing still. (An element's sector already came first above; a unit the player
+			# ordered directly is detached from its element and has no sector.)
+			var told: Variant = intended_facing()
 			if watch != null:
 				_order_move({"type": "face", "x": watch.x, "z": watch.z})
+			elif told != null:
+				_order_move(_face_intended_or({"type": "stop"}))
 			elif s.get("squad") != null:
 				var look: Vector3 = my_position + (s["squad"]["facing"] as Vector3) * 20.0
 				_order_move({"type": "face", "x": look.x, "z": look.z})
 			else:
-				_order_move(_face_intended_or({"type": "stop"}))
+				_order_move({"type": "stop"})
 			_order_weapon({"type": "fire_at_will"})
 
 
