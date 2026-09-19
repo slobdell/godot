@@ -182,7 +182,9 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
 **Hexagon, first look (main `0ae1b223`, `make camera-looks` on yard, laptop):** radar outline is the hexagon; far and
 diagonal walls keep their stands and crowd; no void and no foreground occlusion in the default, overview and 90 m
-frames. Not yet seen: a camera parked right behind a DIAGONAL wall at 21°/49 m (the frames don't include one).
+frames. **Behind the walls, diagonals included: looked at, clean** — `make camera-looks` now adds a "behind wall k" frame per edge
+of half the perimeter (180° symmetric) at the lead's 21°/49 m/FOV 35, focus 20 m inside the edge, camera out beyond
+it; on the yard hexagon all three (two diagonals) cut the wall and stands and keep the floor to the bottom of the frame.
 
 **Round 8 candidate: `1b3da573`** (main `0ae1b223` merged, baseline `668b7d49`; contains `3c1c224e`) — #27 running.
 Before it, `3c1c224e` (waited for main's new sim line). #26 on `4ebe47a7`: 1228/0 tests,
