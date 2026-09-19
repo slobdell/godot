@@ -74,3 +74,26 @@ func test_the_gang_ifv_and_the_syndicate_lancer_face_forward() -> void:
 		assert_near(absf(wrapf(model.rotation.y, -PI, PI)), PI, 0.01, "%s's hull model is turned round to face -Z" % unit_id)
 		tank.queue_free()
 	GameTheme.use(previous)
+
+
+func test_a_gun_baked_into_its_hull_turns_with_the_turret() -> void:
+	## Round 7 (the lead: "the turrets on the gang tanks didn't rotate"): the gang tank's gun was generated as part of its
+	## hull, with a nub for a turret part. The gun is cut out of the hull and yaws with the tank's turret.
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var tank := _spawn("gang_tank")
+	await wait_physics_frames(2)
+	GameTheme.use(previous)
+	var pivots := tank.get_node("HullVisual").find_children("GunPivot", "Node3D", true, false)
+	assert_eq(pivots.size(), 1, "the hull gave its gun a pivot of its own")
+	var gun_meshes := (pivots[0] as Node3D).find_children("Gun", "MeshInstance3D", true, false)
+	assert_true(gun_meshes.size() >= 1, "with the gun's triangles in it")
+	var turret_models := tank.get_node("Turret").find_children("Model", "Node3D", true, false)
+	for model in turret_models:
+		assert_true(not (model as Node3D).is_visible_in_tree(), "the stand-in nub is hidden")
+	tank.turret.rotation.y = 1.0
+	await tree.process_frame
+	await tree.process_frame
+	await tree.process_frame
+	assert_true(absf(tank.turret.rotation.y) > 0.1, "the turret is turned")
+	assert_near((pivots[0] as Node3D).rotation.y, tank.turret.rotation.y, 0.05, "the gun follows the turret's yaw")
