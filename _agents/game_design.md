@@ -433,7 +433,18 @@ stack first, then the layer that commands it, then how the player reads and issu
   on one layout. Fixed at `c2b27516` — the tool now takes `ARENA=`, names the map in its header, and writes a per-arena
   file. **The comparisons remain sound, because every arm ran on the same ground**; what is *not* established is that any
   of these win rates is a property of a faction rather than of a faction on foundry. **Re-read every row below as "on
-  foundry".** Lesson 90:
+  foundry".** And foundry is **not a neutral default**: arena measured it at `centre_sees_share` **0.56, the second-most
+  open map in the game**, so every number here sits on ground that *favours anything paying off with sightlines*. Lesson 90.
+  **⚠ AND THE EXPLANATION BELOW IS UNDER CHALLENGE, added 2026-09-19.** combat found that `Army.squads_for()` iterates the
+  `SQUADS` table rather than the units, so **a unit whose role is not a key is silently dropped from every army** — and
+  that same table's comment records the gangs' rat rods being given the Condemned scout's *spotters-first* directive,
+  *"and the faction won 10-30% of everything."* **That is this table's 23%.** So there is a competing explanation for the
+  recovery — *somebody fixed the directive bug* — and it is simpler than the one written below. **Open question with
+  combat: was the rat-rod directive fixed before or after the 60-match run that produced 53%?** Until that is answered,
+  **read the mechanics explanation below as one of two candidates, not as established.** This matters beyond the history:
+  the 23% → 53% collapse is the evidence for *"a balance problem dissolved by mechanics"*, which is the principle the
+  stream twice used to refuse tuning against mid-flight numbers. If the evidence is a bug fix, **the principle needs
+  different evidence rather than a quiet retirement**:
 
   | faction | win% | was (pre-CP4) |
   |---|---|---|
