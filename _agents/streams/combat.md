@@ -161,6 +161,42 @@ per range — a scout re-aims quickly because it acquires quickly — instead of
 **It touches squad** (the brain chooses) **and combat** (the envelope says what a choice costs), so it is a contract
 conversation before it is code.
 
+### THE 14 m RIG'S COST: one matchup, not one faction (2026-09-19)
+
+Treatment vs the baseline taken with the rig reverted, both maps, `make compare-arms` with the build declared as
+the arm, positive control engaged in all four runs. **Per matchup, because per faction hides it:**
+
+| map | arm | gangs vs condemned | **vs law** | vs syndicate | gangs overall |
+|---|---|---|---|---|---|
+| yard | baseline | 60% | **60%** | 70% | 63% |
+| yard | **rig 14 m** | 40% | **0%** | 40% | **27%** |
+| pit | baseline | 20% | **30%** | 40% | 30% |
+| pit | **rig 14 m** | 50% | **0%** | 40% | **30%** |
+
+**THE FINDING: `gangs vs law` went from 9/20 to 0/20 across both maps.** Twenty counterbalanced matches, no wins,
+two-sided p ≈ **2×10⁻⁶**. Nothing else survives both maps — vs condemned the rig *helps* on pit (+30) and hurts on
+yard (−20), which is what a map-dependent nothing looks like.
+
+**AND POOLING HID IT COMPLETELY ON PIT.** The gangs' overall rate there is **30% in both arms** — a flat zero —
+because losing the law matchup outright was offset by gaining the condemned one. A per-faction table says "no
+effect on pit"; the per-matchup table says one matchup became unwinnable. **The yard headline I first reported
+(−37 points to the gangs) is the same effect seen through a pooled number, and it understates what happened on
+one matchup while inventing a size that does not generalise.** Read matchups, not factions.
+
+**Mechanism, stated as a hypothesis with the evidence it rests on:** law is the suppression faction (Sonic Emitter,
+Gas Rocket Truck). In both maps' law matchups the suppression on the loser is the **highest figure in the table**
+(0.077 yard, 0.078 pit) and gang losses are near-total (**40.0 and 40.7 of 43 vehicles**). A 14 m hull is a far
+larger target for splash and for the near-miss rounds that drive suppression. **Not established** — the rival
+explanation is the wheeled creep (`TankMotion`'s designed multi-point turn: alternating 0.5 s forward/reverse legs
+whenever throttle falls below `WHEEL_CREEP_THROTTLE × |turn|`), which a big hull in a packed formation meets far
+more often, and a unit shuffling under fire dies without needing to be a bigger target. **The two differ at the
+trajectory level, which nav's counters can already measure.**
+
+**Nobody is proposing to shrink the truck over this.** The lead asked for it three times; feel measured 14 m as the
+length that reads *huge* (281 px against a tank's 95) and **12 m as the length that first reads unmistakably as a
+semi** (242 px) — so 12 m is a real option if someone wants to buy part of the cost back, and that is the lead's
+call against his own word "huge", not mine.
+
 ### THE BALANCE PICTURE ON THE MAPS HE ACTUALLY PLAYS (2026-09-19)
 
 **Every faction number this project has ever quoted was measured on `foundry`** — a square, one central objective,
