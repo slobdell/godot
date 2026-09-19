@@ -1843,3 +1843,20 @@ The kickoff prompt is one line; this section is the rest.
        message is an interface between streams — write it for the person who will read it, who is not you.**
      - **And it fired on the first layout anyone pointed it at**, which is the strongest possible validation: it was
        written for a hazard that had not yet occurred, and the hazard occurred exactly as described.
+123. **A clamp and its containment test are one contract, and ours disagreed with itself.** control migrated its four
+     square clamps onto M4 and found **`ArenaShape.clamp_into`'s margin put corner points on the NEIGHBOURING edge with
+     no clearance** — `(130,130) → (116,120)`. arena fixed it at `f295ff30` **and found a second bug behind it:
+     `clamp_into` returned points its own `contains` rejected.**
+     **A function that places a point inside a shape and a function that tests whether a point is inside it are two
+     halves of one claim.** When they disagree, every caller is in an unwinnable position: **clamp then check fails, and
+     check then clamp loops.** Neither bug is visible from either function alone — only from using them together, which
+     is what a consumer does and an author usually does not.
+     - **The property worth asserting is the round trip: `contains(clamp_into(p))` for every `p`**, including far outside,
+       on corners, and on the diagonal. That is one test and it catches both bugs.
+     - **The bugs surfaced because a consumer migrated onto the contract**, not because arena re-read its own code.
+       **M4 was reviewed by combat, written by arena, and specified by the orchestrator; none of that found it.** Contract
+       bugs are found by the first real caller — **so land a contract with a consumer, not before one.**
+     - control measured the old behaviour it replaced: **the square box admitted points 164 m out on the diagonal**, and
+       the new clamp keeps all 24 test bearings inside the wall while reproducing **exactly the old ±116 on a square,
+       corners included.** *Reproducing the old behaviour exactly where it was right* is what makes a replacement
+       trustworthy.
