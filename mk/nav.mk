@@ -87,7 +87,7 @@ nav-fight-maps: import ## nav (round 8): nav-fight on every map --arena=random c
 				--arena=$$map --seed=$(or $(FIGHT_SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(FIGHT_BUDGET),6500) --busy=$$busy $(if $(STALL_VERB),--stall-verb=$(STALL_VERB)) \
 				$(if $(FIGHT_GREEN_FACTION),--green-faction=$(FIGHT_GREEN_FACTION)) $(if $(FIGHT_RUST_FACTION),--rust-faction=$(FIGHT_RUST_FACTION)) \
 				$(if $(FIGHT_GREEN_ARMY),--green-army=$(FIGHT_GREEN_ARMY)) $(if $(FIGHT_RUST_ARMY),--rust-army=$(FIGHT_RUST_ARMY)) \
-				$(if $(FIGHT_REQUIRE),--require=$(FIGHT_REQUIRE)) \
+				$(if $(FIGHT_REQUIRE),--require=$(FIGHT_REQUIRE)) $(NAV_FLAGS) \
 				> $(BUILD_DIR)/nav-maps/$$map-busy$$busy.log 2>&1; echo ">> nav-fight-maps: $$map busy=$$busy done"' _ {}
 	@for f in $(BUILD_DIR)/nav-maps/*.log; do echo "$$(basename $$f .log) $$(grep -E '^NAV_FIGHT ' $$f | head -1 | cut -c1-40)"; done
 	@! grep -l "control FAILED" $(BUILD_DIR)/nav-maps/*.log || { echo ">> nav-fight-maps: a run REFUSED (its control failed): no numbers from it"; exit 1; }
