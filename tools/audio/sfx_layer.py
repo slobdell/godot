@@ -83,6 +83,47 @@ def moving_mean(x: np.ndarray, n: int, same: bool = False) -> np.ndarray:
     return np.concatenate([np.full(head, valid[0]), valid, np.full(len(x) - len(valid) - head, valid[-1])])
 
 
+## Loops (round 6): where a loop's sound starts and ends, relative to its peak, and the longest dip allowed inside it.
+LOOP_ONSET_DB = -24.0
+MAX_LOOP_DIP_S = 0.25
+MIN_LOOP_S = 1.2
+
+
+def longest_active(x: np.ndarray, below_db: float = 12.0, rate: int = RATE) -> np.ndarray:
+    """The longest stretch of `x` with no dip longer than MAX_LOOP_DIP_S (10 ms frames against the median level)."""
+    hop = rate // 100
+    frames = len(x) // hop
+    level = 20 * np.log10(np.sqrt((x[: frames * hop].reshape(frames, hop) ** 2).mean(axis=1)) + 1e-9)
+    quiet = level < np.median(level) - below_db
+    allowed = int(MAX_LOOP_DIP_S * 100)
+    best = (0, 0)
+    start = 0
+    run = 0
+    for i, q in enumerate(quiet):
+        run = run + 1 if q else 0
+        if run > allowed:
+            start = i + 1
+            continue
+        if not q and i + 1 - start > best[1] - best[0]:
+            best = (start, i + 1)
+    return x[best[0] * hop: best[1] * hop]
+
+
+def longest_dip(x: np.ndarray, below_db: float = 12.0, rate: int = RATE) -> float:
+    """The longest stretch (s) whose 10 ms level sits more than `below_db` under the take's median level."""
+    hop = rate // 100
+    frames = len(x) // hop
+    if frames == 0:
+        return 0.0
+    level = 20 * np.log10(np.sqrt((x[: frames * hop].reshape(frames, hop) ** 2).mean(axis=1)) + 1e-9)
+    quiet = level < np.median(level) - below_db
+    best = run = 0
+    for q in quiet:
+        run = run + 1 if q else 0
+        best = max(best, run)
+    return best * hop / rate
+
+
 def trim_onset(x: np.ndarray, threshold_db: float = -36.0, pre_s: float = 0.004, rate: int = RATE) -> np.ndarray:
     """Drops what comes before the sound starts (relative to its own peak), keeping a few ms of pre-roll."""
     env = envelope(x, rate=rate)
@@ -209,7 +250,19 @@ def build_take(master: Path, source: dict, take: int) -> tuple[np.ndarray, dict]
     if raw_peak_db < MIN_MASTER_PEAK_DB:
         raise ValueError("%s peaks at %.1f dBFS: a failed generation (delete it and make sfx-generate re-rolls it)"
                          % (master.name, raw_peak_db))
-    if not loop:
+    if loop:
+        # Round 6: a loop starts on its sound (a generated take's quiet lead-in was a silence on every repeat), and a
+        # loop with a hole in it is a gun that stutters: refused, like a near-silent master (delete it to re-roll).
+        body = trim_onset(body, threshold_db=LOOP_ONSET_DB)
+        body = trim_onset(body[::-1], threshold_db=LOOP_ONSET_DB)[::-1]
+        if longest_dip(body) > MAX_LOOP_DIP_S:
+            # Generated "unbroken" bursts often pause: keep the longest stretch without a hole, if it is long enough
+            # to loop without the repeat showing.
+            body = longest_active(body)
+            if len(body) / RATE < MIN_LOOP_S:
+                raise ValueError("%s: no stretch of %.1f s without a hole to loop (delete it and make sfx-generate "
+                                 "re-rolls it)" % (master.name, MIN_LOOP_S))
+    else:
         body = trim_onset(body)
     if settings["max_s"]:
         body = body[: int(float(settings["max_s"]) * RATE)]
