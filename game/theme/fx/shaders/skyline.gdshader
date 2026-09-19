@@ -12,8 +12,10 @@ uniform vec3 building : source_color = vec3(0.018, 0.018, 0.03);
 uniform vec3 haze : source_color = vec3(0.13, 0.06, 0.11);
 uniform float window_level = 0.55;
 
+#include "res://game/theme/fx/shaders/city_windows.gdshaderinc"
+
 float hash(vec2 p) {
-	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+	return city_hash(p);
 }
 
 // One layer of towers: returns (roof height 0..1, column id, lamp) for this column of the ring.
@@ -27,20 +29,8 @@ vec3 towers(float around, float count, float seed, float low, float span) {
 	return vec3(roof, column, step(0.97, hash(vec2(column, seed + 3.0))));
 }
 
-// Lit windows on a facade: floors 3.6 m, bays 4 m. Fades to its average lit value where a window is under ~2 px, so
-// the far city doesn't shimmer as the camera moves.
 vec3 windows(vec2 metres, float column, float seed) {
-	vec2 cell = metres / vec2(4.0, 3.6);
-	vec2 id = floor(cell);
-	vec2 inside = fract(cell);
-	float lit = step(1.0 - 0.28 * (0.6 + 0.8 * hash(vec2(column, seed + 11.0))), hash(id + column * 17.0 + seed));
-	float pane = step(0.25, inside.x) * step(inside.x, 0.8) * step(0.3, inside.y) * step(inside.y, 0.75);
-	float pick = hash(id * 1.7 + column);
-	vec3 tint = pick > 0.85 ? vec3(0.45, 0.85, 1.0) : (pick > 0.8 ? vec3(1.0, 0.4, 0.8) : vec3(1.0, 0.72, 0.42));
-	vec3 sharp = tint * lit * pane;
-	vec3 average = tint * 0.28 * 0.25;
-	float px = max(fwidth(cell.x), fwidth(cell.y));
-	return mix(average, sharp, 1.0 - smoothstep(0.25, 0.6, px)) * window_level;
+	return city_windows(metres, column, seed, window_level);
 }
 
 void fragment() {

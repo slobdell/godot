@@ -136,9 +136,13 @@ place, you do not place).
   MG sound, announcer trail-off. Sent to the orchestrator.
 - `f7878bdd` (unchecked, small): music-smoke and announcer-record-smoke compare against a same-match control run
   instead of the shared baseline (combat's report: they failed and blamed the music/booth whenever the baseline moved).
-- **Announcer, awaiting the lead's ear:** 10 clips in `build/announcer-cuts/` (booth-only and full mix, one pair per
-  interruption, 150 s real-pace match on builder0 with the fix). Waveforms: no silence after any cut, largest 100 ms
-  drop at a cut 4–9 dB (was a near-total drop in 0.08 s). Not reported fixed until he has listened.
+- **Announcer overlap: CLOSED — the lead listened: "the announcer clips sound good enough now, no complaints."**
+  Fix `82f99c6e` (interrupted voice trails off over 0.8 s under the interrupter). **Known, left as is:** when the
+  match result arrives the director can replace the caller's own kill line ~0.5 s early, so the caller trails off
+  under himself (clip 5; the lead did not comment, which is "not bothersome", not "approved"). It is a scheduling
+  choice in `AnnouncerDirector` (the result line is not an `_interrupt` — it replaces the current cue when it is
+  queued; see the `ANNOUNCER_CLIPPED ... cut_in=false` trace line); the fix, if wanted, is to let a same-speaker line
+  finish before the result starts.
 - **combat's `test_it_follows_a_mood_signal` full-suite failure does not reproduce on this tree** (passes in the green
   full check; the 13-file prefix passes 82/0 on the laptop). Replied with a file-list bisect recipe.
 - **Arena shape settled: hexagon, flat side to each base** (arena's reasoning; the stands tile it: 6 modules of
