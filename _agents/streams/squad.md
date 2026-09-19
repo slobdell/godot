@@ -156,7 +156,10 @@ _Updated 2026-09-18 by the squad worker._
 | **Ignored attack order** | fixed `cb02c0ef`: his gesture is an element TASK; drills aimed at `Drills.nearest_visible`, never the task target. Now drills aim at it, the drill's moves/attack-moves carry it, a named move lays its gun on it, a named attack-move fights only it. `test_attack_order_obeyed` (laptop): task path old/new target 765/155 → 164/759; direct 0/960 before and after (commitment cleared) |
 | Hull overlap at deploy | stale (measured on a tree before `f1c3afcb`); combat's footprint test landed green `3fdfec1b`: 0 overlaps, min 3.7-4.6 m on this tree |
 | Wheeled "face" shuffle | waiting on nav's pre-registered test; design view owed (turret does the work vs acceptance angle) |
-| Parked | X8 (measured: lost), X6 baseline, the flow gate |
+| **Lead decisions (round 8)** | *"a 4s slower march for a tidier traversal is better, yes"*: element flow is DECIDED, `ElementPlan.FLOW_ENABLED` stays true. *"making the units appear smart is better, so flanking and maneuvering is fine"*: a flanker carrying the target in its order is obeying; no `drills: false` on attack. The boundary (game_design.md): **manoeuvring is smart, churn is not** |
+| Churn (nav: 5.3-6.6% of attack-move travel oscillating) | ~70% CombatMotion re-aim (commitment `bf51acf0`, on main); ~30% option switches are mine: waiting on nav's main re-measure, then a dwell floor from the engagement envelope (combat: no re-target faster than `acquire_seconds`), not a tuned constant |
+| Rig placement | fixed `9a736f15` (rank overhangs, no back-edge clamp, anisotropic pitch, deploy box guard) |
+| Parked | X8 (measured: lost), X6 baseline |
 
 ### Round 7 (after the quota lift, 2026-09-19): the lead's defects
 
