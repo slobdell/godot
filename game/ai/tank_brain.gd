@@ -1424,8 +1424,8 @@ func build_situation() -> Dictionary:
 		"resupply": Match.resupply_center(team),
 		"enemy_base": Match.spawn_position(1 - team, 0),
 		"memory_ticks": Match.CONTACT_MEMORY_TICKS,
-		"control": {"center": Match.CONTROL_CENTER, "radius": Match.CONTROL_RADIUS, "owner": game_match.control_owner}
-				if game_match.control_point else null,
+		"control": {"center": Objectives.center(game_match), "radius": Objectives.radius(game_match),
+				"owner": Objectives.owner(game_match)} if Objectives.active(game_match) else null,
 		"order": order_context,
 		"element": element if not element.is_empty() else null,
 		"cooldowns": cooldowns,
