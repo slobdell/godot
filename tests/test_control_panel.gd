@@ -186,3 +186,81 @@ func test_the_palette_shows_only_earned_tasks_and_the_doc_lists_every_row() -> v
 	assert_true(doc.contains("## Task palette (N4)"), "tactical_map.md has the palette table")
 	for row: Dictionary in TaskPalette.ROWS:
 		assert_true(doc.contains("| `%s` |" % row["id"]), "the doc's table has a row for %s" % row["id"])
+
+
+## Round 7 (C3), the lead: "some of them seem to be actions that require a follow on click, and other seem to be buttons
+## that are applied passively (if I click the attack button will they do something or do I need to direct them?)".
+## Every row says which, the card draws the two differently, and the tooltip says it in words.
+func test_buttons_that_need_a_click_say_so() -> void:
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var panel: SelectionPanel = setup[1]
+	for row: Dictionary in TaskPalette.ROWS:
+		assert_true(row.has("then"), "%s says whether it needs a click" % row["id"])
+	assert_eq(TaskPalette.row("attack_move")["then"], "click", "Attack-move waits for a click")
+	assert_eq(TaskPalette.row("stop")["then"], "now", "Stop happens at once")
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	await tree.process_frame
+	var commands: Array = panel.summary()["commands"]
+	for command: Dictionary in commands:
+		assert_eq(command["then"], TaskPalette.row(command["id"])["then"], "%s's button carries it" % command["id"])
+	f.motion(panel.get_global_rect().position + panel.command_rect("attack_move").get_center(), false, 0)
+	await tree.process_frame
+	assert_true(String(panel.tooltip().get("title", "")).contains("then click"), "the tooltip says a click follows (%s)" % panel.tooltip().get("title", ""))
+	f.motion(panel.get_global_rect().position + panel.command_rect("stop").get_center(), false, 0)
+	await tree.process_frame
+	assert_true(String(panel.tooltip().get("title", "")).contains("at once"), "and when it does not (%s)" % panel.tooltip().get("title", ""))
+
+
+## Round 7 (C2): hovering a task shows what it does as a loop - where the squad goes, which way it faces, whether it fires
+## and whether it keeps advancing - not only words.
+func test_a_task_button_previews_the_posture_it_leaves_the_squad_in() -> void:
+	for id in ["support_by_fire", "screen", "ambush", "attack_move", "hold", "stop"]:
+		var shape := TaskPreview.posture(id)
+		assert_true(not shape.is_empty() and (shape["slots"] as Array).size() == TaskPreview.UNITS, "%s has a posture" % id)
+	assert_eq(TaskPreview.posture("support_by_fire")["advances"], false, "support by fire does not advance")
+	assert_eq(TaskPreview.posture("attack_move")["advances"], true, "attack-move does")
+	assert_eq(TaskPreview.posture("ambush")["fires"], "on_contact", "an ambush holds fire until contact")
+	var sbf := TaskPreview.posture("support_by_fire")
+	assert_eq(sbf.get("source", ""), "planner", "the preview is squad's real planner (ElementPlan.preview), not a drawing")
+	for i in (sbf["slots"] as Array).size():
+		var slot: Vector2 = sbf["slots"][i]
+		var to_point: Vector2 = (Vector2(0.5, 0.2) - slot).normalized()
+		# Each gun covers its own sector of the point (interlocking arcs), so "faces it" means within ~53°, not exactly.
+		assert_true((sbf["facing"][i] as Vector2).dot(to_point) > 0.6, "a support-by-fire gun faces toward the point")
+		assert_true(slot.y > 0.3, "and stays at a standoff, short of it")
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var panel: SelectionPanel = setup[1]
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	await tree.process_frame
+	f.motion(panel.get_global_rect().position + panel.command_rect("attack_move").get_center(), false, 0)
+	await tree.process_frame
+	await tree.process_frame
+	assert_true(panel._preview_rect.has_area(), "the hovered button's tooltip carries a preview")
+
+
+## Round 7: the animated help only appears on hover, which is invisible to a player who does not know it is there (the
+## lead looked at "Screen" and did not know what it was). During the planning pause the card opens the Screen tooltip by
+## itself, once; his first click or key closes it and it never returns.
+func test_the_card_shows_its_help_once_by_itself() -> void:
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var panel: SelectionPanel = setup[1]
+	SelectionPanel.intro_done = false
+	panel.intro_requires_pause = false  # the test cannot pause the tree it runs in; the game shows it in planning
+	# The planning pause selects squad 1 for the player with no input (recall_group); select() would click, and a click
+	# is exactly what closes the intro.
+	f.controls.selection.set_units(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"] as Array[String])
+	await tree.process_frame
+	await tree.process_frame
+	assert_eq(panel.tooltip().get("id", ""), "screen", "without any hover, the card shows what Screen does")
+	await tree.process_frame
+	assert_true(panel._preview_rect.has_area(), "with its animation")
+	await f.key(KEY_H)
+	await tree.process_frame
+	assert_true(panel.tooltip().is_empty(), "the first key press closes it")
+	await tree.process_frame
+	await tree.process_frame
+	assert_true(panel.tooltip().is_empty(), "and it does not come back")
+	SelectionPanel.intro_done = true

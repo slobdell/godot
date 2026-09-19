@@ -31,3 +31,30 @@ nav-where: import ## nav: one maze-probe run (ARENA=foundry NAV_UNITS=60 NAV_BOT
 nav-orders: import ## nav: the lead's test with brains — 5 player squads ordered across each other at once (ARENA=yard NAV_TIME=90); prints NAV_ORDERS (completed, completed_far = done > 7 m from the goal, never_completed, t50/t90/t100)
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/order_probe.gd -- \
 		--arena=$(or $(ARENA),yard) --time-limit=$(or $(NAV_TIME),90) $(NAV_FLAGS) 2>&1 | grep -E "NAV_ORDERS|SCRIPT ERROR|ERROR" || true
+
+.PHONY: nav-facing
+nav-facing: import ## nav (round 7): do units achieve an ordered facing? 5 player squads sent across one another, each told to face 90 deg off its travel (VERB=move|hold, ARENA=yard, NAV_TIME=90); prints NAV_FACING (heading error at arrival and +2/+5/+10 s)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/facing_probe.gd -- \
+		--arena=$(or $(ARENA),yard) --time-limit=$(or $(NAV_TIME),90) --verb=$(or $(VERB),move) $(NAV_FLAGS) 2>&1 | grep -E "NAV_FACING|SCRIPT ERROR|ERROR" || true
+
+.PHONY: nav-fight
+nav-fight: import ## nav (round 7): why ordered units aren't making progress IN A FIGHT — two ~30-unit CPU-rostered armies, GREEN ordered by Orders like a player; every ordered unit-tick bucketed (progressing, yielding, blocked_*, halted_shooting, retasked:<option>, slow) (ARENA=yard FIGHT_SEED=3 NAV_TIME=120 FIGHT_BUDGET=6500; not SEED/BUDGET: other mk files default those globally, lesson 44)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/fight_probe.gd -- \
+		--arena=$(or $(ARENA),yard) --seed=$(or $(FIGHT_SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(FIGHT_BUDGET),6500) \
+		$(NAV_FLAGS) 2>&1 | grep -E "NAV_FIGHT|SCRIPT ERROR|ERROR" || true
+
+.PHONY: nav-fight-ab
+nav-fight-ab: import ## nav: nav-fight over FIGHT_SEEDS (default 1 3 5 7 9) with and without --nav-off=$(AB_OFF), NAV_JOBS at a time -> build/nav-ab/*.log + a one-line summary per run (NAV_ORDERS lines grep-able)
+	@rm -rf $(BUILD_DIR)/nav-ab && mkdir -p $(BUILD_DIR)/nav-ab
+	@for seed in $(or $(FIGHT_SEEDS),1 3 5 7 9); do for arm in on off; do echo "$$seed:$$arm"; done; done | \
+		xargs -P $(NAV_JOBS) -I{} sh -c 'seed=$${1%%:*}; arm=$${1##*:}; flags=""; [ "$$arm" = off ] && flags="--nav-off=$(AB_OFF)"; \
+			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/fight_probe.gd -- \
+				--arena=$(or $(ARENA),yard) --seed=$$seed --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(FIGHT_BUDGET),6500) $$flags \
+				> $(BUILD_DIR)/nav-ab/s$$seed-$$arm.log 2>&1; echo ">> nav-fight-ab: seed $$seed $$arm done"' _ {}
+	@for f in $(BUILD_DIR)/nav-ab/*.log; do echo "$$(basename $$f .log) $$(grep -E '^NAV_FIGHT_ARM ' $$f | head -1) $$(grep -E '^NAV_FIGHT ' $$f | head -1)"; done
+	@# The arms must be arms (round 7: the first commitment A/B's switch never applied and both arms came back
+	@# byte-identical — which a pre-registered "no worse" rule would have read as a pass). Fail if the live treatment
+	@# line is the same in both arms of any seed, or if every seed's results are identical across arms.
+	@for seed in $(or $(FIGHT_SEEDS),1 3 5 7 9); do 		a=$$(grep -E '^NAV_FIGHT_ARM ' $(BUILD_DIR)/nav-ab/s$$seed-on.log); b=$$(grep -E '^NAV_FIGHT_ARM ' $(BUILD_DIR)/nav-ab/s$$seed-off.log); 		if [ "$$a" = "$$b" ]; then echo "nav-fight-ab control FAILED: seed $$seed ran the same treatment in both arms ($$a)"; exit 1; fi; done
+	@same=1; for seed in $(or $(FIGHT_SEEDS),1 3 5 7 9); do 		a=$$(grep -E '^NAV_FIGHT ' $(BUILD_DIR)/nav-ab/s$$seed-on.log); b=$$(grep -E '^NAV_FIGHT ' $(BUILD_DIR)/nav-ab/s$$seed-off.log); 		[ "$$a" = "$$b" ] || same=0; done; 		if [ $$same = 1 ]; then echo "nav-fight-ab control FAILED: every seed gave identical results in both arms: the switch changed nothing"; exit 1; fi
+	@echo ">> nav-fight-ab: arms differ in treatment and in outcome; results are comparisons"

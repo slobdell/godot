@@ -12,7 +12,13 @@ extends RefCounted
 ## Styles (STYLES):
 ##   strafe  turret units: circle the target inside the weapon's band, tangential, jinking sides now and then
 ##   angle   heavy tracked units: the same, but keep the thick front toward the target (oblique arcs, reversing)
-##   run     fixed guns (the scout's machine gun): attack runs at the target's side and rear, then break away
+##   standoff fixed guns (round 7, the default): a gun truck's shoot-and-scoot — drive (with arrival) to a firing
+##           position inside the effective band, stop, lay the hull on the target and fire; slide along the band when
+##           rounds are incoming; never close to ramming range. The result carries "hold": true when it should stop
+##           and shoot. The lead, round 7: *"Scouts are just running directly into their targets and then they have
+##           to turn around to get a fix again"* — which is exactly what `run` did.
+##   run     fixed guns (round 3, kept for A/B: `--nav-off=standoff`): attack runs at the target's side and rear,
+##           closing to RUN_BREAK (9 m, whatever the band), then driving AWAY to RUN_RETURN and turning back
 ##
 ## request: {"position", "forward" (flat unit), "speed" (m/s top), "reverse_speed", "style",
 ##           "target": {"position", "forward", "velocity"?}, "band": [min, max] (preferred range),
@@ -29,7 +35,38 @@ extends RefCounted
 ## result:  {"point": Vector3 (steer at it), "reverse": bool, "index": int, "score": float} or {} when every
 ##          direction is blocked.
 
-const STYLES := ["strafe", "angle", "run"]
+const STYLES := ["strafe", "angle", "run", "standoff"]
+## Round 7: the style a fixed gun fights with. `--nav-off=standoff` restores round 3's attack runs (for A/B).
+## Resolved at READ time, never in a static initialiser: one initialised from another class's static (Movement._off) can
+## run before that one is populated (Movement, TankBrain and CombatMotion reference each other), and then the switch
+## silently does nothing — round 7's first commitment A/B came back with two byte-identical arms for exactly that
+## reason. Assigning it (tests, squad's scenario) pins it; reading it otherwise follows --nav-off=standoff.
+static var _fixed_style_pinned := ""
+static var fixed_style: String:
+	get:
+		if _fixed_style_pinned != "":
+			return _fixed_style_pinned
+		return "run" if Movement.switched_off("standoff") else "standoff"
+	set(value):
+		_fixed_style_pinned = value
+## Round 7: commitment. The direction chosen at the last plan ("previous_index"/"previous_reverse" in the request) gets
+## this score bonus. `--nav-off=commit` switches it off (A/B: squad measured ~70% of attack-move target jumps as motion
+## inside one unchanged decision — ENGAGE re-planning its circle).
+## (Read at call time — see fixed_style.)
+static func commit_on() -> bool:
+	return not Movement.switched_off("commit")
+const COMMIT_BONUS := 0.35
+## ...and a fighter jinks on a timer (to spoil a gunner's lead) only against weapons with a flight time to lead:
+## `jink_worth(contact_weapon)`. Against hitscan the jink buys nothing and reads as dithering.
+static func jink_worth(weapon_id: String) -> bool:
+	if not commit_on():
+		return true
+	var kind: int = int(Weapons.profile(weapon_id).get("kind", Weapons.Kind.PROJECTILE))
+	return kind == Weapons.Kind.PROJECTILE or kind == Weapons.Kind.ARC
+
+
+## Standoff: hold and shoot anywhere from this share of the band's outer edge out to the edge (a scout: 17.5-35 m).
+const STANDOFF_HOLD_SHARE := 0.5
 ## 16 directions around the compass (x, z), every 22.5°, as constants.
 const RING: Array[Vector2] = [Vector2(0, -1), Vector2(0.38268343, -0.9238795), Vector2(0.70710678, -0.70710678),
 		Vector2(0.9238795, -0.38268343), Vector2(1, 0), Vector2(0.9238795, 0.38268343), Vector2(0.70710678, 0.70710678),
@@ -60,6 +97,7 @@ const WHEELS_STEER_RADII := 3.0
 const WEIGHTS := {
 	"strafe": {"range": 1.0, "tangent": 0.8, "side": 0.35, "flank": 0.35, "armor": 0.15, "continuity": 0.1, "reverse": 0.25, "turn": 0.25},
 	"angle": {"range": 1.0, "tangent": 0.35, "side": 0.35, "flank": 0.1, "armor": 1.0, "continuity": 0.2, "reverse": 0.1, "turn": 0.25},
+	"standoff": {"range": 1.2, "tangent": 0.5, "side": 0.2, "flank": 0.3, "armor": 0.3, "continuity": 0.3, "reverse": 0.1, "turn": 0.1},
 	"run": {"range": 0.0, "tangent": 0.3, "side": 0.2, "flank": 0.6, "armor": 0.0, "continuity": 1.0, "reverse": -1.0, "turn": 0.0},
 }
 ## Dangers are subtracted (scores can go below zero once turning costs are in): heading side-on in the angle style,
@@ -95,8 +133,19 @@ const RUN_RETURN := 22.0
 const RUN_VEER := 10.0
 
 
+## Standoff: should a fixed gun stop and shoot from where it is? Inside its hold band, with nothing incoming.
+static func standoff_holds(request: Dictionary) -> bool:
+	var band: Array = request.get("band", [15.0, 40.0])
+	var outer := float(band[1])
+	var distance := _flat(request["position"]).distance_to(_flat((request["target"] as Dictionary)["position"]))
+	return distance >= maxf(float(band[0]), outer * STANDOFF_HOLD_SHARE) and distance <= outer \
+			and (request.get("incoming", []) as Array).is_empty()
+
+
 static func choose(request: Dictionary) -> Dictionary:
 	var style: String = request.get("style", "strafe")
+	if style == "standoff" and standoff_holds(request):
+		return {"hold": true, "point": _flat(request["position"]), "reverse": false, "index": -1, "score": 0.0}
 	var weights: Dictionary = WEIGHTS.get(style, WEIGHTS["strafe"])
 	var here := _flat(request["position"])
 	var forward := _flat(request["forward"]).normalized()
@@ -139,6 +188,8 @@ static func choose(request: Dictionary) -> Dictionary:
 	var leash: Dictionary = request.get("leash", {})
 	var leash_center := _flat(leash.get("center", Vector3.ZERO))
 	var leash_radius := float(leash.get("radius", 0.0))
+	var previous_index := int(request.get("previous_index", -1))
+	var previous_reverse := bool(request.get("previous_reverse", false))
 	var scored: Array = []
 	for i in RING.size():
 		var ring := Vector3(RING[i].x, 0.0, RING[i].y)
@@ -203,6 +254,11 @@ static func choose(request: Dictionary) -> Dictionary:
 				if _flat(friend).distance_to(end) < FRIEND_SPACING:
 					score -= PENALTY_CROWD
 					break
+			# Round 7: commitment (hysteresis, the standard cure for a utility argmax that flips between near-equals).
+			# The direction chosen last plan keeps a bonus, so a rival has to be clearly better to take over; a round
+			# actually on its way (PENALTY_HIT below) still outweighs it, so reactive dodging is untouched.
+			if commit_on() and i == previous_index and reverse == previous_reverse:
+				score += COMMIT_BONUS
 			var undodged := score
 			if not incoming.is_empty() and CombatMotion.would_be_hit(here, velocity_now,
 					ring * (float(request.get("reverse_speed", 0.0)) if reverse else float(request["speed"])), incoming,

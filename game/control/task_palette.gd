@@ -13,41 +13,42 @@ extends RefCounted
 ##     documented so the symbol is ready, and stay off the card. _agents/tactical_map.md "Task palette (N4)" is the
 ##     same table in words, and says which rows squad has earned.
 ##
-## Row keys: id (what the card presses: an RtsControls verb or "formation") · name · hotkey · kind ("order" = a direct
+## Row keys: id (what the card presses: an RtsControls verb or "formation") · then ("click" = arms, and the player clicks
+## where; "now" = applies at once - round 7: the lead could not tell which) · name · hotkey · kind ("order" = a direct
 ## K1 order any selection can take, "task" = an L1 element task, "setting") · line (the tooltip, one sentence, what
 ## the player will see happen) · earned.
 
 const ROWS := [
-	{"id": "stop", "name": "Stop", "hotkey": "S", "kind": "order", "earned": true,
+	{"id": "stop", "then": "now", "name": "Stop", "hotkey": "S", "kind": "order", "earned": true,
 		"line": "Drop every order and stand still. They still shoot back."},
-	{"id": "hold", "name": "Hold", "hotkey": "H", "kind": "order", "earned": true,
+	{"id": "hold", "then": "now", "name": "Hold", "hotkey": "H", "kind": "order", "earned": true,
 		"line": "Stay on this ground and fight from it. Nobody chases."},
-	{"id": "attack_move", "name": "Attack-move", "hotkey": "A", "kind": "order", "earned": true,
+	{"id": "attack_move", "then": "click", "name": "Attack-move", "hotkey": "A", "kind": "order", "earned": true,
 		"line": "Click a spot: go there, fighting anything met on the way."},
 	# Screen and Support by Fire were held off the card until squad showed the behaviour (with no enemy in sight a
 	# support-by-fire task used to hold every unit where it stood). Earned 2026-09-18, squad `df736a8e`: SBF → a 30 m
 	# line 54-56 m off the point, all facing it, firing, no contact drill selected; screen → a 42 m line across its point.
 	# Posture tests: tests/test_tactics_tasks.gd, test_tactics_scenarios.gd (squad's, in make check).
-	{"id": "screen", "name": "Screen", "hotkey": "E", "kind": "task", "earned": true,
+	{"id": "screen", "then": "click", "name": "Screen", "hotkey": "E", "kind": "task", "earned": true,
 		"line": "Click a spot: spread into a line across it, watch, and fight only what comes to you."},
-	{"id": "support_by_fire", "name": "Support by Fire", "hotkey": "R", "kind": "task", "earned": true,
+	{"id": "support_by_fire", "then": "click", "name": "Support by Fire", "hotkey": "R", "kind": "task", "earned": true,
 		"line": "Click a target area: take firing positions facing it, suppress it, and don't advance."},
 	# squad's verb: a line facing the kill zone, holding fire until an enemy is in it (or they are found). Earned
 	# 2026-09-18, squad 9ba36681 (on main 0f559857): TacticsScenarios.ambush in make check - 0 shots before the enemy
 	# entered the kill zone, sprung ~1 s after, 8 after.
-	{"id": "ambush", "name": "Ambush", "hotkey": "B", "kind": "task", "earned": true,
+	{"id": "ambush", "then": "click", "name": "Ambush", "hotkey": "B", "kind": "task", "earned": true,
 		"line": "Click a kill zone: hide in a line facing it and hold fire until the enemy is in it, or they are found."},
-	{"id": "attack_by_fire", "name": "Attack by Fire", "hotkey": "", "kind": "task", "earned": false,
+	{"id": "attack_by_fire", "then": "click", "name": "Attack by Fire", "hotkey": "", "kind": "task", "earned": false,
 		"line": "Click a target: destroy it with fire from a distance, without closing."},
-	{"id": "guard", "name": "Guard", "hotkey": "", "kind": "task", "earned": false,
+	{"id": "guard", "then": "click", "name": "Guard", "hotkey": "", "kind": "task", "earned": false,
 		"line": "Click a flank: protect the army there, fighting to stop anything getting through."},
-	{"id": "cover", "name": "Cover", "hotkey": "", "kind": "task", "earned": false,
+	{"id": "cover", "then": "click", "name": "Cover", "hotkey": "", "kind": "task", "earned": false,
 		"line": "Click a spot ahead: operate out in front of the army, buying it time and space."},
-	{"id": "fix", "name": "Fix", "hotkey": "", "kind": "task", "earned": false,
+	{"id": "fix", "then": "click", "name": "Fix", "hotkey": "", "kind": "task", "earned": false,
 		"line": "Click an enemy: pin it where it is so the rest of the army can hit it."},
-	{"id": "block", "name": "Block", "hotkey": "", "kind": "task", "earned": false,
+	{"id": "block", "then": "click", "name": "Block", "hotkey": "", "kind": "task", "earned": false,
 		"line": "Click a route: deny the enemy passage along it."},
-	{"id": "formation", "name": "Formation", "hotkey": "G", "kind": "setting", "earned": true,
+	{"id": "formation", "then": "now", "name": "Formation", "hotkey": "G", "kind": "setting", "earned": true,
 		"line": "Choose the shape the next orders move in. Auto lets each squad pick."},
 ]
 ## Verbs the mouse already gives, which the card must never show (X1).

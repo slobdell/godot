@@ -12,6 +12,9 @@ extends "res://game/theme/cyberpunk/cyber_vehicle.gd"
 @export var part := "hull"
 ## How strongly paint recolors the model's body (its grime and neon survive).
 @export_range(0.0, 1.0) var paint_strength := 0.45
+## A model generated facing +Z instead of the engine's -Z is turned round here (tools/assets/build_faction_parts.py
+## MODEL_YAW_DEG; round 7: the gang IFV drove backwards). Degrees about +Y.
+@export var model_yaw_deg := 0.0
 ## Hulls only: the engine loop this vehicle runs (EngineSystem; "" = silent).
 @export var engine_sound := "engine_diesel"
 
@@ -27,8 +30,13 @@ func _ready() -> void:
 	if model_scene != null:
 		model = model_scene.instantiate() as Node3D
 		model.name = "Model"
+		model.rotation.y = deg_to_rad(model_yaw_deg)
 		add_child(model)
 		_prepare_model()
+		if part == "hull":
+			_cut_gun()
+		elif part == "turret" and _tank() != null and not FactionArt.gun_cut(String(_tank().get("unit_id"))).is_empty():
+			model.visible = false  # the nub that stood in for a turret: the real gun is cut out of the hull
 		bounds = _model_bounds()
 		if part == "hull":
 			_fit_to_hull()
@@ -51,6 +59,7 @@ func _ready() -> void:
 	_apply_skin()
 	if part != "hull" and model != null:
 		_fit_to_hull.call_deferred()  # after the tank has placed and scaled its turret
+	set_process(gun_pivot != null)  # only a hull with a cut gun has anything to do per frame
 
 
 ## Round 6 (feel; the lead: "our semi truck for the gang that was supposed to be a huge tank is tiny ... everything
@@ -79,6 +88,62 @@ func _fit_to_hull() -> void:
 		model.position.y += (fit - 1.0) * pivot / inherited
 	if part == "hull":
 		bounds = _model_bounds()
+
+
+## Round 7: a hull whose gun was generated into its mesh (FactionArt.GUN_CUTS) gives the gun to a pivot of its own,
+## which follows the tank's turret yaw every frame. The hull and gun keep the approved model's exact geometry.
+var gun_pivot: Node3D
+var _gun_rest_yaw := 0.0
+
+
+func _cut_gun() -> void:
+	var tank := _tank()
+	if tank == null:
+		return
+	var cut := FactionArt.gun_cut(String(tank.get("unit_id")))
+	if cut.is_empty():
+		return
+	var box: AABB = cut["box"]
+	var pivot: Vector3 = cut["pivot"]
+	_gun_rest_yaw = deg_to_rad(float(cut.get("rest_yaw_deg", 0.0)))
+	gun_pivot = Node3D.new()
+	gun_pivot.name = "GunPivot"
+	gun_pivot.position = pivot
+	model.add_child(gun_pivot)
+	for node in model.find_children("*", "MeshInstance3D", true, false):
+		var instance := node as MeshInstance3D
+		if instance.mesh == null or gun_pivot.is_ancestor_of(instance):
+			continue
+		var to_model := _relative_to(instance, model)
+		var pieces := FactionArt.split_mesh(instance.mesh, to_model, box)
+		if pieces[1] == null:
+			continue
+		instance.mesh = pieces[0]
+		instance.visible = pieces[0] != null
+		var gun := MeshInstance3D.new()
+		gun.name = "Gun"
+		gun.mesh = pieces[1]
+		# The gun's own frame: its pivot at the origin, then turned to point ahead at rest.
+		gun.transform = Transform3D(Basis(Vector3.UP, _gun_rest_yaw), Vector3.ZERO) * Transform3D(Basis(), -pivot) * to_model
+		gun_pivot.add_child(gun)
+
+
+func _process(_delta: float) -> void:
+	if gun_pivot != null:
+		var tank := _tank()
+		var turret: Variant = tank.get("turret") if tank != null else null
+		if turret is Node3D:
+			gun_pivot.rotation.y = (turret as Node3D).rotation.y
+
+
+func _relative_to(node: Node3D, ancestor: Node3D) -> Transform3D:
+	var result := Transform3D.IDENTITY
+	var current: Node = node
+	while current != null and current != ancestor:
+		if current is Node3D:
+			result = (current as Node3D).transform * result
+		current = current.get_parent()
+	return result
 
 
 func _tank() -> Node3D:

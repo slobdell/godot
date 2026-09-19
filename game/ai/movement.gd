@@ -32,6 +32,14 @@ const WHEELS_LOOKAHEAD_RADII := 1.2
 const CARROT_ALIGNED_COS := 0.5
 ## A car looks at most this many turning radii further along the route for a point it can drive forward onto.
 const WHEELS_LOOKAHEAD_MAX_RADII := 4.0
+## Round 7: the straight line to the carrot must stay on the navmesh; checked at these shares of its length, within
+## this much slack (flat metres), and if it doesn't the carrot is pulled back to these shares of the lookahead.
+const CHORD_SAMPLES: Array[float] = [0.5, 1.0]
+const CHORD_SLACK := 0.3
+## The navmesh bake's agent radius (Arena._bake: agent_radius 2.0) and the clearance kept from an obstacle face.
+const NAV_AGENT_RADIUS := 2.0
+const CHORD_MARGIN := 0.2
+const CARROT_PULLBACK: Array[float] = [0.6, 0.3]
 ## Driving at >50% throttle but moving slower than this for STUCK_SECONDS = stuck.
 const STUCK_SPEED := 0.8
 const STUCK_SECONDS := 1.0
@@ -46,6 +54,8 @@ const BLOCKER_REACH := 8.0
 const BLOCKER_AHEAD_COS := 0.5
 ## A route that ends further than this from the goal did not reach it: the goal is inside something or cut off.
 const NO_PATH_MARGIN := 3.0
+## ...and a unit within this of the end of such a route has gone as far as it can: `blocked`, `no_path`, at once.
+const UNREACHABLE_AT_END := 4.0
 ## eta(): the share of top speed a route is driven at on average (corners, the slow-down at the end).
 const ETA_CRUISE_SHARE := 0.85
 
@@ -93,13 +103,25 @@ const FIRE_LEG_MIN_TICKS := maxi(1, SimClock.TICK_RATE / 4)
 
 ## X3: ORCA local avoidance on (the kill switch is for measuring the difference, `--no-avoidance`).
 static var avoidance_on := not OS.get_cmdline_user_args().has("--no-avoidance")
-## Measuring only: `--nav-off=grace,minpace,pushidle,carrot,yield,unstick,repath` switches single mechanisms off for an A/B
+## Measuring only: `--nav-off=grace,minpace,pushidle,carrot,yield,unstick,repath,chord,guard,backup` switches single mechanisms off for an A/B
 ## (nav-where), and `r5sidestep` switches round 5's single-friend sidestep back ON (it overtakes a friend ahead in the lane).
 ## TWO TRAPS, both hit in round 6 (_agents/navigation.md "Measuring"): (1) a switch that silently does nothing makes
 ## your A/B a comparison of a thing with itself — the first `carrot` switch was broken exactly so; prove each switch
 ## changes SOMETHING before trusting an equal result. (2) Once a nav commit is merged, `main` is no longer the
 ## before-picture: bisect on named commits, not on "main vs my branch".
 static var _off := _parse_off()
+
+
+## Is mechanism `name` switched off (--nav-off=…)? Parses the command line on first use, so it is right whenever it is
+## asked — including from another class's code before Movement's own statics have been touched.
+static func switched_off(name: String) -> bool:
+	if _off.is_empty() and not _off_parsed:
+		_off = _parse_off()
+	_off_parsed = true
+	return _off.has(name)
+
+
+static var _off_parsed := false
 
 
 static func _parse_off() -> PackedStringArray:
@@ -142,11 +164,15 @@ const YIELD_SPOT_CLEARANCE := 3.5
 const YIELD_MESH_SLACK := 0.5
 ## Where to look for a spot, as [along the asker's travel, across it] (metres), nearest first. The across ones step
 ## off its line; the along ones (last resort, in a corridor with no room beside) lead the way out ahead of it.
+## ...and when none of those is free, straight back along the hull this far (metres): the move a car always has.
+const YIELD_BACK_UP: Array[float] = [6.0, 10.0]
 const YIELD_SPOTS: Array[Vector2] = [Vector2(0, 5), Vector2(3, 6), Vector2(-3, 6), Vector2(0, 8), Vector2(5, 9),
 		Vector2(0, 11), Vector2(10, 0), Vector2(16, 0), Vector2(24, 0)]
 
 ## Measurement only: give-ways begun, asks refused for lack of room, and units that gave way themselves.
 static var yields_started := 0
+## Measurement only: ticks the guard found neither the chosen point nor the next corner drivable (_guard_steer).
+static var guard_rescues := 0
 static var asks_refused := 0
 
 ## X6 (N6): station-keeping. A move_to whose goal is itself moving (a formation slot riding its anchor, a follow's
@@ -188,6 +214,10 @@ var _unstick_pivot := false
 var _progress_goal := Vector3.INF
 var _progress_best := INF
 var _goal := Vector3.INF
+## Round 7: does the current route end at the goal? (False = the navmesh can only get this unit near it.)
+var _reachable := true
+## The last Pathing.query for this route (its gaps go into Movement.state for anyone who needs the numbers).
+var _route_reading := {}
 var _arrive := 0.0
 var _remaining := 0.0
 var _blocker_left := 0
@@ -316,7 +346,8 @@ func reading() -> Dictionary:
 			points = _path.slice(_path_index)
 	return {"phase": phase, "eta_s": eta_s, "remaining_m": _remaining if phase != "arrived" else 0.0,
 			"path_points": points, "blocked_by": blocked_by if phase == "blocked" or phase == "yielding" else "",
-			"yield_to": yield_to, "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
+			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
+			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE)}
 
@@ -397,6 +428,8 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			arrive = 0.1  # steering at an avoiding point, not the goal: never "arrive" at it
 		waypoint = avoided[0]
 		pace = avoided[1]
+	if not direct and waypoint != goal and not _off.has("guard"):
+		waypoint = _guard_steer(tank.global_position, waypoint)
 	lap = OrderController._lap("move.friends", lap)
 	var drive_vector: Vector2
 	var radius := wheel_radius()
@@ -493,6 +526,12 @@ func _update_phase(goal: Vector3, drive_vector: Vector2, direct: bool) -> void:
 		phase = "arrived"
 		blocked_by = ""
 		return
+	if not _reachable and not direct and not _path.is_empty() \
+			and _flat_distance(ctl.tank.global_position, _path[_path.size() - 1]) <= UNREACHABLE_AT_END:
+		# As near as the navmesh goes: say so now rather than after BLOCKED_SECONDS of grinding.
+		phase = "blocked"
+		blocked_by = "no_path"
+		return
 	if stalled_ticks >= int(BLOCKED_SECONDS * SimClock.TICK_RATE):
 		# The cause is re-read twice a second, not every tick (it walks the neighbours).
 		_blocker_left -= ctl._step
@@ -534,8 +573,14 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 	if not there:
 		var drive_vector := Steering.drive_toward(here, -tank.global_basis.z, _yield_point, YIELD_REACHED * 0.5)
 		if wheel_radius() > 0.0:
-			drive_vector = Steering.drive_toward_wheels(here, -tank.global_basis.z, _yield_point, YIELD_REACHED * 0.5,
-					wheel_radius(), tank.speed())
+			if _straight_behind(_yield_point):
+				drive_vector = Steering.reverse_toward_wheels(here, -tank.global_basis.z, _yield_point, YIELD_REACHED * 0.5,
+						wheel_radius(), tank.speed())
+			else:
+				drive_vector = Steering.drive_toward_wheels(here, -tank.global_basis.z, _yield_point, YIELD_REACHED * 0.5,
+						wheel_radius(), tank.speed())
+		elif _straight_behind(_yield_point):
+			drive_vector = Steering.reverse_toward(here, -tank.global_basis.z, _yield_point, YIELD_REACHED * 0.5)
 		cmd.throttle = drive_vector.x * 0.7
 		cmd.turn = drive_vector.y
 	return true
@@ -588,21 +633,46 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2) -> bool:
 			# Never give way TOWARD the unit being let past (backing into it is how two units end up nose to tail).
 			if _flat_distance(point, from) < _flat_distance(here, from):
 				continue
-			# Wheels can't pivot: a spot inside the turning circle is a three-point turn, i.e. backing up. Skip it.
-			if wheel_radius() > 0.0 and not _ahead_of_wheels(point):
+			# Wheels can't pivot: a spot inside the turning circle is a three-point turn. A car takes a spot it can
+			# drive forward onto, or one straight behind it (reversing in a straight line is what a car CAN do).
+			if wheel_radius() > 0.0 and not _ahead_of_wheels(point) and not _straight_behind(point):
 				continue
 			if not _free_spot(point, String(tank.name), other):
 				continue
-			yield_to = other
-			_yield_point = point
-			_yield_dir = along
-			_yield_left = int(YIELD_MAX_SECONDS * SimClock.TICK_RATE)
-			_yield_held = 0
-			phase = "yielding"
-			blocked_by = other
-			yields_started += 1
+			_start_yield(other, point, along)
+			return true
+	if _off.has("backup"):
+		return false
+	# Last resort (round 7, nav-fight: two cars nose to nose for 30 s with no legal spot): back straight up along my own
+	# hull, as long as that isn't toward the unit being let past.
+	var back := Vector2(tank.global_basis.z.x, tank.global_basis.z.z).normalized()
+	for distance: float in YIELD_BACK_UP:
+		var point := Vector3(here.x + back.x * distance, 0.0, here.z + back.y * distance)
+		if _flat_distance(point, from) < _flat_distance(here, from):
+			continue
+		if _free_spot(point, String(tank.name), other):
+			_start_yield(other, point, along)
 			return true
 	return false
+
+
+func _start_yield(other: String, point: Vector3, along: Vector2) -> void:
+	yield_to = other
+	_yield_point = point
+	_yield_dir = along
+	_yield_left = int(YIELD_MAX_SECONDS * SimClock.TICK_RATE)
+	_yield_held = 0
+	phase = "yielding"
+	blocked_by = other
+	yields_started += 1
+
+
+## Is `point` straight behind this hull (within ~25 degrees of its tail)? A car reaches that by reversing.
+func _straight_behind(point: Vector3) -> bool:
+	var tank := ctl.tank
+	var to := Vector2(point.x - tank.global_position.x, point.z - tank.global_position.z)
+	var back := Vector2(tank.global_basis.z.x, tank.global_basis.z.z)
+	return to.length_squared() > 0.01 and back.normalized().dot(to.normalized()) >= 0.9
 
 
 ## A wheeled hull can drive forward onto `point` (it is outside both turning circles and not behind it).
@@ -966,7 +1036,15 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	if _repath_left <= 0.0 or _flat_distance(goal, _path_goal) > 1.0 or off_path or stalled:
 		_repath_left = 1.0 if _off.has("repath") else REPATH_SECONDS
 		_path_goal = goal
-		_path = Pathing.find_path(tank, here, goal)
+		# Round 7: reachability is "the route ENDS at the goal", never "a route came back" (lesson 76). NavigationServer
+		# answers an unreachable goal with a route to the nearest reachable point, which reads as success; Pathing.query
+		# says which it is. For a MOVE the question is also whether the unit can get within its arrive radius of the goal:
+		# a goal inside cover is on its island but NO_PATH_MARGIN+ off the mesh, so it is "no_path" for driving purposes.
+		var route := Pathing.query(tank, here, goal)
+		_path = route["points"]
+		_reachable = not bool(route["ready"]) or _path.size() < 2 \
+				or (bool(route["reachable"]) and float(route["goal_gap_m"]) <= NO_PATH_MARGIN)
+		_route_reading = route
 		_path_index = 1 if _path.size() >= 2 else _path.size()
 	if _path.size() < 2:
 		_path_index = _path.size()
@@ -995,16 +1073,43 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		for i in range(_path_index, _path.size()):
 			if _flat_distance(_path[i], here) >= look and (wheel_radius() <= 0.0 or _ahead_of_wheels(_path[i])):
 				return Vector3(_path[i].x, 0.0, _path[i].z)
-		return goal
+		return _route_end(goal)
 	# Walk the lookahead along the route from there. A car's point must be one it can drive forward onto (outside
 	# both turning circles): a point inside one is a three-point turn, so look further along the route until it isn't.
 	var point := _along_route(best_point, look)
+	# Round 7 (nav-fight): a carrot round a corner can put the straight line to it THROUGH the obstacle the route bends
+	# round (the route is on the navmesh; the chord across its bend is not). A tank pressed its nose into a barricade's
+	# end for 35 s steering at a carrot on the far side. Pull the carrot back toward the corner until the chord is on the
+	# navmesh; the corner itself always is.
+	if point != Vector3.INF and not _off.has("chord") and not _chord_on_mesh(here, point):
+		point = Vector3.INF
+		for share: float in CARROT_PULLBACK:
+			var nearer := _along_route(best_point, look * share)
+			if nearer != Vector3.INF and _chord_on_mesh(here, nearer):
+				point = nearer
+				break
+		if point == Vector3.INF:
+			return Vector3(_path[_path_index].x, 0.0, _path[_path_index].z)
+		return point
 	if wheel_radius() > 0.0:
+		# ...but never to a point whose chord leaves the navmesh (the round-7 pinned car steered 20 m through a wall).
+		var carrot := point
 		var further := look
 		while point != Vector3.INF and not _ahead_of_wheels(point) and further < look + WHEELS_LOOKAHEAD_MAX_RADII * wheel_radius():
 			further += wheel_radius()
 			point = _along_route(best_point, further)
-	return point if point != Vector3.INF else goal
+		if point != Vector3.INF and point != carrot and not _off.has("chord") and not _chord_on_mesh(here, point):
+			point = carrot  # no reachable-and-drivable point further on: take the carrot and the three-point turn
+	return point if point != Vector3.INF else _route_end(goal)
+
+
+## Where the route runs out: the goal itself, or — when the goal is unreachable — the last point the route reaches
+## (steering on toward the goal from there only presses the hull into whatever cuts it off).
+func _route_end(goal: Vector3) -> Vector3:
+	if _reachable or _path.is_empty():
+		return goal
+	var end := _path[_path.size() - 1]
+	return Vector3(end.x, 0.0, end.z)
 
 
 ## The point `distance` metres along the route from `from` (on segment _path_index - 1), or INF past its end.
@@ -1031,6 +1136,46 @@ func _corner_waypoint(goal: Vector3) -> Vector3:
 	if _path_index >= _path.size():
 		return goal
 	return Vector3(_path[_path_index].x, 0.0, _path[_path_index].z)
+
+
+## Round 7 (nav-fight): the LAST word on where to steer. Every source of a steering point — the route carrot, a car's
+## look-ahead, a fixed corner, an avoiding velocity — can pick one whose straight line clips an obstacle's end, and a
+## hull steering at it presses into that end forever (four such units in one 52-unit fight, pinned 20-35 s each). If
+## the line leaves the navmesh (allowing for my hull's width), steer at the next route corner; if even that line does,
+## keep the chosen point (and count it: guard_rescues).
+func _guard_steer(here: Vector3, waypoint: Vector3) -> Vector3:
+	if _chord_on_mesh(here, waypoint):
+		return waypoint
+	if _path_index < _path.size():
+		var corner := Vector3(_path[_path_index].x, 0.0, _path[_path_index].z)
+		if _chord_on_mesh(here, corner):
+			return corner
+	# (A "steer back onto the mesh" rescue was tried here and removed: in a narrow corridor a hull is legitimately in the
+	# mesh's erosion margin, and the rescue fired 1106 times in one maze run, sending hulls sideways into each other.)
+	guard_rescues += 1
+	return waypoint
+
+
+## Is the straight line from `from` to `to` on the navmesh (sampled at CHORD_SAMPLES points)? Only asked when there is
+## a carrot to check, so it costs a couple of NavigationServer queries per moving unit per tick.
+func _chord_on_mesh(from: Vector3, to: Vector3) -> bool:
+	if not Pathing.enabled or not Pathing.is_ready(ctl.tank):
+		return true
+	var map := ctl.tank.get_world_3d().navigation_map
+	for share: float in CHORD_SAMPLES:
+		var probe := Vector3(lerpf(from.x, to.x, share), 0.0, lerpf(from.z, to.z, share))
+		if _flat_distance(NavigationServer3D.map_get_closest_point(map, probe), probe) > _chord_slack():
+			return false
+	return true
+
+
+## How far off the navmesh a point on my line may be and still be physically clear for MY hull: the bake erodes the
+## mesh by the agent radius (2 m), so a point that far out is at an obstacle's face; my hull needs its half-width of
+## that. A 0.3 m slack for every hull (the first version) called ordinary driving in the maze's 3 m corridors "off the
+## mesh" and dropped head-on maze-60 from 60/60 to 27/60 (builder0, nav-where, round 7).
+func _chord_slack() -> float:
+	var size: Variant = Units.stat(ctl.tank.unit_id, "hull_size", [2.4, 1.6, 3.8])
+	return maxf(CHORD_SLACK, NAV_AGENT_RADIUS - float(size[0]) / 2.0 - CHORD_MARGIN)
 
 
 ## Flat distance from `here` to the route near where the hull is on it.
@@ -1082,9 +1227,29 @@ func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			_unstick_pivot = not _off.has("unstick") and _hull_within(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing,
 					UNSTICK_CLEARANCE)
 			if not _unstick_pivot or wheel_radius() <= 0.0:
-				_unstick_left = UNSTICK_SECONDS  # wheels can't pivot: with a friend behind they wait for right-of-way
+				_unstick_left = UNSTICK_SECONDS
+			else:
+				# A car can't pivot: with a friend right behind it, ask that friend to make room, and back off next time.
+				_ask_behind(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing)
 	else:
 		_stuck_time = 0.0
+
+
+## Ask the friend nearest behind (along `direction`) to give way, so this car has room to back off.
+func _ask_behind(direction: Vector2) -> void:
+	var tank := ctl.tank
+	var here := tank.global_position
+	Avoidance.refresh(ctl.tanks_root)
+	for row: Array in Avoidance.neighbours(String(tank.name), here.x, here.z):
+		var i: int = row[2]
+		var offset := Vector2(Avoidance._xs[i] - here.x, Avoidance._zs[i] - here.z)
+		if offset.length_squared() < 0.01 or offset.normalized().dot(direction) < 0.7:
+			continue
+		var other := ctl.tanks_root.get_node_or_null(NodePath(String(row[1]))) as Tank
+		var mover := Movement.of(other) if other != null and other.team == tank.team else null
+		if mover != null:
+			mover.ask(String(tank.name), here, direction)
+		return
 
 
 ## Is there a hull within `reach` metres (beyond both radii) along `direction` (flat, unit) — within ±45° of it?

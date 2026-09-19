@@ -108,3 +108,29 @@ func test_tap_orders_the_selected_squad_and_drag_looks() -> void:
 	radar._gui_input(release)
 	assert_true((squad.destination as Vector3).distance_to(goal) < 3.0, "a long press on the radar orders nothing")
 	assert_true(rig.focus.distance_to(Vector3(-20, 0, 80)) < 3.0, "it looks there (%s)" % rig.focus)
+
+
+## Round 7: the radar draws the arena's own outline - its perimeter polygon when there is one, else the active layout's
+## bound (not the global maximum, which becomes larger than most maps once the hexagon ships).
+func test_the_radar_outline_is_the_arenas_own_shape() -> void:
+	var radar := Radar.new()
+	radar.size = Vector2(200, 200)
+	var saved := Arena.active
+	# Isolation: RtsCamera.perimeter_poly is a STATIC, and since arena's round-7 merge any earlier test that sets up an
+	# arena leaves it populated (rts_camera.gd adopts the layout's perimeter). Without this clear, outline_points() takes
+	# the polygon branch and this test measures the PREVIOUS test's arena - which is how it went red on main.
+	var saved_poly := RtsCamera.perimeter_poly
+	RtsCamera.perimeter_poly = PackedVector2Array()
+	Arena.active = {"half_size": 100.0}
+	var box := radar.outline_points()
+	assert_eq(box.size(), 5, "a square layout draws a closed box")
+	assert_near(box[1].x - box[0].x, radar.world_to_radar(Vector3(100, 0, 0)).x - radar.world_to_radar(Vector3(-100, 0, 0)).x, 0.01,
+			"at the active layout's bound, not ARENA_HALF_SIZE")
+	var hexagon := PackedVector2Array()
+	for k in 6:
+		hexagon.append(Vector2.from_angle(deg_to_rad(60.0 * k)) * 139.7)
+	RtsCamera.perimeter_poly = hexagon
+	assert_eq(radar.outline_points().size(), 7, "a perimeter polygon draws as that polygon, closed")
+	RtsCamera.perimeter_poly = saved_poly
+	Arena.active = saved
+	radar.free()

@@ -38,9 +38,16 @@ decision weighing algorithms necessary to make these units look and feel smart."
 
 ### THE CRITICAL PATH (2026-09-19, late) — one chain gates the whole map programme
 
-**`baseline recorded on main` → `arena 877dc34a merged` → `combat's ARENA_HALF_SIZE 120 → 140` → `the hexagon` → `Pit and Yard rebuilt`**
+**~~baseline recorded on main~~ ✅ `b70608d6` → `arena's bound relaxation merged` → `combat's ARENA_HALF_SIZE 120 → 140` → `the hexagon` → `Pit and Yard rebuilt`**
 
-**Every link is blocked on the one before it, and the first link is the orchestrator's.** arena has verified both of its
+**The first link is done.** `tests/baselines/sim_state_hash.txt` is `glibc-2.43 e38fd65b6b6ead3f`, recorded on three independent
+observations: control's #17 on a branch that cannot move a sim hash, the orchestrator's own `check` on `main`, and
+`sim-baseline-record`. **That check also established that everything before `sim-baseline` passes on `main`** — lint, test,
+net-smoke, combat-smoke, broker-test, relay-smoke, lobby-smoke, match-smoke, determinism — and that combat's `test_army`
+failure was its own, not `main`'s. **`garage-smoke`, `army-loop-smoke`, `announcer-check` and `audio-check` have not run on
+`main` today**, because the abort hid them; the next full check will be the first to cover them.
+
+**Every remaining link is blocked on the one before it.** arena has verified both of its
 gates in the code rather than assuming them, and **the reason Pit and Yard are untouched is this chain, not slow progress.**
 
 **⚠ Ordering within the chain is load-bearing.** arena's `877dc34a` relaxes `Arena.validate` so a layout's `half_size` is a

@@ -1,0 +1,45 @@
+diff --git a/game/ai/tank_brain.gd b/game/ai/tank_brain.gd
+index 26832452..166d297b 100644
+--- a/game/ai/tank_brain.gd
++++ b/game/ai/tank_brain.gd
+@@ -617,9 +617,11 @@ func _order_context() -> Variant:
+ 	if order.is_empty():
+ 		var post: Variant = OrderFeed.station(_order_source, String(tank.name))
+ 		return {"verb": "idle", "goal": post if post != null else _order_home, "target": "", "speed": 1.0,
+-				"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
++				"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null,
++				"facing": OrderFeed.station_heading(_order_source, String(tank.name))}
+ 	var context := {"verb": order["verb"], "goal": order["goal"], "target": order["target"], "speed": order["speed"],
+-			"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
++			"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null,
++			"facing": order.get("facing")}
+ 	# Live values: a follow's station moves with the friend, and a group's pace changes as it closes up.
+ 	if _order_source != null:
+ 		if order["verb"] == "follow":
+@@ -1684,7 +1686,13 @@ func _act(s: Dictionary) -> void:
+ 			var goal: Vector3 = o["goal"]
+ 			why = TankBrain._join(why, "attack-move" if o["verb"] == "attack_move" else "ordered")
+ 			if _flat(my_position).distance_to(goal) <= _order_arrive():
+-				_order_move({"type": "stop"})
++				# Round 7 (nav): arrived — swing onto the ordered facing, if the player gave one ("emplace an ambush").
++				var facing: Variant = o.get("facing")
++				if facing != null:
++					var look: Vector3 = my_position + (facing as Vector3) * 20.0
++					_order_move({"type": "face", "x": look.x, "z": look.z})
++				else:
++					_order_move({"type": "stop"})
+ 			else:
+ 				_order_move(_move_to(goal, false, float(o["speed"]), _order_arrive()))
+ 			_order_weapon({"type": "fire_at_will"})
+@@ -2039,6 +2047,11 @@ func _act(s: Dictionary) -> void:
+ 			if watch == null and sector.get("facing") != null:
+ 				watch = my_position + (sector["facing"] as Vector3) * 20.0  # nothing in sight: keep watching my arc
+ 				why = TankBrain._join(why, "covering its sector")
++			var ordered_facing: Variant = (s["order"] as Dictionary).get("facing") if s.get("order") != null else null
++			if watch == null and ordered_facing != null:
++				# Round 7 (nav): nothing in sight — face the way the player's order (or its station) said to.
++				watch = my_position + (ordered_facing as Vector3) * 20.0
++				why = TankBrain._join(why, "facing as ordered")
+ 			if watch != null:
+ 				_order_move({"type": "face", "x": watch.x, "z": watch.z})
+ 			elif s.get("squad") != null:

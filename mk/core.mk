@@ -56,7 +56,11 @@ test: import ## Run the headless test suite (FILTER=substring to run a subset)
 
 # ---- Verification bundles (see _agents/verification.md) ------------------------
 
-check: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
+# match-pytest is LAST and it is 3 ms: the measurement tools' own guards (what compare_arms refuses to subtract).
+# Those guards sit on the hot path of every future measurement, and this round shipped two that had never been run
+# end to end -- one crashed every run it was added to protect, the other exited 0 while refusing. Appended rather
+# than inserted because `check` aborts at the first failing target, so anything added early hides everything after.
+check: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
 
 check-all: check relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke web-relay-smoke web-host-smoke export-server ## check + desktop render + browser checks + server export
 	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --server=$(SMOKE_NET_PORT) --bots=2 2>&1 \

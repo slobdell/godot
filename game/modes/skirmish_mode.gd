@@ -244,7 +244,7 @@ func _start_match() -> void:
 	fog.name = "FogOfWar"
 	fog.slot = "fx.fog_of_war"
 	main.add_child(fog)
-	fog.invoke("setup", [{"texture": field.texture, "origin": VisibilityField.ORIGIN,
+	fog.invoke("setup", [{"texture": field.texture, "origin": field.origin,
 			"size": field.cells * VisibilityField.CELL_SIZE}])
 	field.refresh_all.call_deferred()
 	LoadingScreen.mark("fog")
@@ -317,6 +317,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.elements = Elements.of_match(game_match)
 	controls.movement.provider = MovementReadout.from_movement(game_match)  # X5: silent until nav's N1 is on main
 	controls.element_log.attach(controls.elements, game_match)  # X7: "why did my element do that"
+	rig.facing = controls.selection_facing  # round 7 (A): the camera's yaw follows the selection's facing
 	main.hud.add_child(controls)
 	var markers := SelectionMarkers.new()
 	markers.name = "SelectionMarkers"
@@ -380,6 +381,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		var readout := CameraReadout.new()
 		readout.name = "CameraReadout"
 		readout.rig = rig
+		readout.controls = controls
 		controls.add_child(readout)
 		controls.pose_copied.connect(readout.copied)
 	if flags.has("squad-orders-test"):

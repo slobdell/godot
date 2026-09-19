@@ -221,8 +221,17 @@ static func typical_size(faction: String, budget: int) -> int:
 	return 0 if average <= 0.0 else mini(MAX_ARMY_UNITS, int(floor(float(budget) / average)))
 
 
+## X4 (round 7) MEASUREMENT CONTROL, never normal play: false makes every unit take its plain-role directive, so a
+## series can ask what a faction's own tactics are worth. The gangs went 23% -> 53% across one commit that carried
+## both CP4 and the `gangs/scout` fix, with no matrix between them; this is how that gets separated. The runner's
+## --no-faction-directives sets it and MATCH_RESULT reports it, because an arm that is not in the output is an arm
+## nobody can tell apart from the other one later.
+static var faction_directives := true
+
 ## The SQUADS key for a unit: its faction's own entry for that role if there is one, else the role.
 static func squad_key(unit_id: String) -> String:
+	if not faction_directives:
+		return Units.role_of(unit_id)
 	var faction_key := "%s/%s" % [Units.faction_of(unit_id), Units.role_of(unit_id)]
 	return faction_key if SQUADS.has(faction_key) else Units.role_of(unit_id)
 

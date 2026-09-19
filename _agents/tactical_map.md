@@ -22,6 +22,16 @@
 | **The wall cutaway** | At a low camera a squad near a wall (every spawn) is framed from a camera past the wall, among or behind the stands; the camera's near plane then sits just past the wall's top edge, so the stands and the wall between it and the arena aren't drawn (`RtsCamera.cutaway_near`). It cuts only when the stands would hide something: always when the camera is among the seats, and from beyond their back only when the sight line to a vehicle inside the wall passes through the stands' measured profile; otherwise the stands and crowd stay as foreground. Over the arena nothing changes. Chosen over raising the pitch near walls, which would bring back the top-down view exactly where every match starts. |
 | **Why did it do that** | Hover the doctrine line on the card: the selected element's last six decisions with the match time ("0:47  line, react to contact — contact ahead"; `ElementLog`). |
 
+## Round 7 (control)
+
+| Round 7 | What it means |
+|---|---|
+| **Yaw follows the selection's facing** (Y toggles) | Source, in order: a tasked squad's formation heading; each unit's ordered `facing` / travel heading; the hulls' forward — averaged as directions. Nothing selected, or a mixed selection (mean resultant < 0.6): the camera keeps its yaw, never snaps. Turns at 70°/s once 12° off, settles within 2°; manual yaw (`,` `.`) pauses it for the hand-back. |
+| **Facing on the vehicle** | Every selected vehicle shows a forward chevron on the ground; a gun that can't traverse all round also shows its fire-arc edges. |
+| **The frame reaches the selection's range** (`;` `'`) | The vision frame includes a point at the selection's reach — the largest `min(effective range, sight)` among it (Engagement's covering rule) — ahead along its facing. Distance varies; the 35° telephoto stays. The auto camera never pulls further than 100 m (`auto_frame_max_m`): at 35° a squad strung along the spawn line pulled it to ~220 m. |
+| **Two grammars, told apart** | Every palette row says `then: click` or `then: now`. Click buttons wear a pointer badge and an inset border; the tooltip says "then click where" or "happens at once". |
+| **K1: `follow` with a `slot`** | `{"verb": "follow", "target": leader, "slot": [right, back]}` for ONE unit: its place in the leader's frame, a live sliding goal (≤ 0.52 m per tick with the leader turning 90°/s, under nav's 3 m PID reset). For elements flowing into formation instead of re-ordering members every update (the X4 thrash). |
+
 ## Open items (round 6)
 
 - **Touch has no framing of its own.** At the 45° / FOV 60° default a start-view vehicle is 30.3 px on a 1200×540 phone
@@ -29,7 +39,12 @@
   provisionally; it is back at 24. If a camera change pushes phones under the bar, give touch its own framing (a
   closer start or its own pitch) — never lower the bar (`tests/test_command_readability.gd`).
 
-- **The camera assumes a SQUARE arena (read before changing the arena's shape).** `RtsCamera.cutaway_near` finds where
+- ~~**The camera assumes a SQUARE arena**~~ **Handled (round 7):** the cutaway crosses arena's own perimeter when the
+  build has it (`Arena.perimeter()` / `perimeter_edges()`, looked up by name; `RtsCamera.load_perimeter`), and the span
+  of wall the sight line crosses decides what stands behind it (`stands`/`gate`: the stands profile; `none`: the wall
+  only). The square (`perimeter_half`) remains the fallback. `STANDS_PROFILE` is still control's measurement of feel's
+  straight stands: when feel publishes the reshaped stands' height profile as data, read it instead. (history:)
+  **The camera assumed a SQUARE arena.** `RtsCamera.cutaway_near` finds where
   the camera's sight line crosses the wall by intersecting it with the perimeter *square* (`perimeter_half()`: the
   layout's `half_size` + 1 m), and judges occlusion against `STANDS_PROFILE`, measured from feel's straight
   `kit_stands` (15.7 m high, 19.9 m deep, 0.3 m past a 2 m wall; `WALL_HEIGHT_M` 3 m). An octagonal or hexagonal arena
