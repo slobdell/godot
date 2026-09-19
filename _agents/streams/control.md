@@ -178,7 +178,8 @@ slightly more often near the wall) — **looked at, fine:** at 21° (49 m and 10
 wall are clear and the far stands keep their crowd; the profile only decides at steep far poses. **M4 done:**
 `Orders.clamp_to_arena` (shape inset by a 4 m hull clearance = exactly ±116 on the square, then `Arena.clamp_into`)
 replaces the four square clamps; when arena's `f295ff30` (exact `margin` in `ArenaShape.clamp_into`, fixing the corner
-bug control reported) is on main, pass the margin through instead of scaling the bound here. Round 8: timing tests to measurements (verification.md policy).
+bug control reported) is on main, pass the margin through instead of scaling the bound here. **Round 8 timing policy: done** — `make check` measures
+control's timing, `make control-timing` judges it (run on an idle builder0).
 Was: **MERGE HERE: `baf04ead` — #20 GREEN (builder0): `make check exited 0`, 1162 passed / 0 failed, `sim-baseline passed:
 e38fd65b6b6ead3f`, every target through `audio-check passed`** (main `b70608d6` merged in). After it, unchecked:
 `35c72304` (order/click/bars as ratios) and docs. **Decided before the result (orchestrator, lesson 106):** `baf04ead`

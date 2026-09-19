@@ -34,6 +34,22 @@ static func reference_work() -> void:
 		seen[i % 64] = Vector3(float(i), 0.0, -float(i)).length() + float(i)
 
 
+## Policy (verification.md, "Timing in tests"): `make check` MEASURES timing and never judges it - six to nine checks
+## share builder0, and a fully oversubscribed CPU inflated the order path 14x against a 2x reference. `make
+## control-timing` (TANK_SQUAD_JUDGE_TIMING=1), run on purpose on an idle builder0, is where these budgets assert.
+static func judging_timing() -> bool:
+	return OS.get_environment("TANK_SQUAD_JUDGE_TIMING") == "1"
+
+
+## Assert a timing budget when judging; otherwise print it as a measurement, marked NOT JUDGED (and whether it would
+## have failed), so a timing line in make check is never mistaken for a pass.
+static func judge_timing(test: TestCase, within: bool, message: String) -> void:
+	if judging_timing():
+		test.assert_true(within, message)
+	else:
+		print("TIMING NOT JUDGED (make control-timing judges): %s%s" % [message, "" if within else "  [OVER BUDGET]"])
+
+
 ## The fastest of `rounds` calls of `work` and of the reference, interleaved: [work_ms, reference_ms].
 static func fastest_ms(work: Callable, rounds: int) -> Array[float]:
 	var best := INF

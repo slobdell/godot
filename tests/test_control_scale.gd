@@ -43,7 +43,7 @@ func test_a_whole_army_can_be_selected_and_ordered_in_one_go() -> void:
 	var timed := Fixture.fastest_ms(func() -> void: f.controls.order_selection("move", {"to": [0.0, -60.0]}), 10)
 	var ratio := timed[0] / timed[1]
 	print("MEASURE control_scale order_ms=%.2f reference_ms=%.3f ratio=%.1f units=%d" % [timed[0], timed[1], ratio, PER_SIDE])
-	assert_true(ratio < ORDER_BUDGET_REFERENCES, "ordering %d units takes %.1f reference workloads (budget %.0f; %.2f ms)"
+	Fixture.judge_timing(self, ratio < ORDER_BUDGET_REFERENCES, "ordering %d units takes %.1f reference workloads (budget %.0f; %.2f ms)"
 			% [PER_SIDE, ratio, ORDER_BUDGET_REFERENCES, timed[0]])
 
 
@@ -76,7 +76,7 @@ func test_input_to_order_latency_with_a_box_around_the_army() -> void:
 	assert_eq(ordered.size(), PER_SIDE, "every selected unit has an order on the same frame as the click")
 	print("MEASURE control_scale box_ms=%.2f click_to_order_ms=%.2f reference_ms=%.3f ratio=%.1f units=%d" % [box_ms, order_ms,
 			timed[1], click_ratio, PER_SIDE])
-	assert_true(click_ratio < ORDER_BUDGET_REFERENCES, "a right click on %d units takes %.1f reference workloads (budget %.0f; %.2f ms)"
+	Fixture.judge_timing(self, click_ratio < ORDER_BUDGET_REFERENCES, "a right click on %d units takes %.1f reference workloads (budget %.0f; %.2f ms)"
 			% [PER_SIDE, click_ratio, ORDER_BUDGET_REFERENCES, order_ms])
 
 
@@ -175,7 +175,7 @@ func test_the_ui_stays_cheap_with_a_full_army_selected() -> void:
 	var ratio := per_frame / reference
 	print("MEASURE control_scale_frame units=%d selected=%d %s per_frame_ms=%.3f reference_ms=%.3f ratio=%.2f" % [
 			PER_SIDE * 2, f.controls.selection.units.size(), " ".join(parts), per_frame, reference, ratio])
-	assert_true(ratio < FRAME_BUDGET_REFERENCES, "control costs %.2f reference workloads a frame with %d units (budget %.1f; %.3f ms): %s"
+	Fixture.judge_timing(self, ratio < FRAME_BUDGET_REFERENCES, "control costs %.2f reference workloads a frame with %d units (budget %.1f; %.3f ms): %s"
 			% [ratio, PER_SIDE * 2, FRAME_BUDGET_REFERENCES, per_frame, " ".join(parts)])
 	panel.queue_free()
 
