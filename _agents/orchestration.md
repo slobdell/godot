@@ -1960,3 +1960,28 @@ The kickoff prompt is one line; this section is the rest.
      - **And notice the shape: the author's own regression passed the author's own test.** This is lesson 108 (*a guard
        earns more end-to-end exercise than the thing it guards*) from a new angle — **the guard was exercised and was
        simply aimed too low**, which no amount of mutation-checking the guard itself would have revealed.
+130. **Verify the object, and then forget to ask whether the object is still in the question.** arena's framing, of a
+     failure it and combat made independently **on the same day, in different files**:
+     - **combat** verified *which of two copies of the spawn geometry wins* — correctly — and never asked **whether spawn
+       positions survive the frame.** They do not; `deploy()` teleports at tick 0.
+     - **arena** built a barrier fixture around **where units demonstrably pin**, and never asked **whether it was ground
+       the lead drives on.** It is not: `--arena=random` picks from yard, boulevard, pit, boneyard, and **the two maps
+       nobody had ever measured are the best of the four.**
+     **Both did careful, correct work on an object that had already fallen out of the question.** The check is one
+     sentence and neither of us said it: ***"if I am right about this, does it still matter?"***
+131. **A metric's owner must name what the metric is NOT responsible for, before anyone builds against it.** arena,
+     unprompted, on work assigned to a different stream:
+     > *"If `retasked` stays at 0.30–0.36, better paths can only recover the `blocked` + `slow` + `yielding` slice, which
+     > is **under 3 points on all four maps**. That is not an argument against flow fields; it is an argument that **the
+     > number they get judged on must not be the number that looks worst.**"*
+     **Flow fields measured on attack-move progress would have moved it by under 3 points and read as a failure** — for
+     an architecture change doing exactly what it was designed to do. **The stream that owns the instrument is the only
+     one positioned to say this, and it is worth more than the measurement itself.**
+     - **Pre-register the metric a change is responsible for, not just the threshold** (lesson 106's missing half).
+     - **And the orchestrator's error underneath it: I assigned flow fields as "the named answer to his loudest
+       complaint" from HIS SENTENCE, not from a measurement.** *Stuck behind barriers* sounds like pathing.
+       **`blocked_terrain` is 0.000–0.010 on every map he plays.** Sixth diagnosis-from-a-report today.
+     - **The unclosed gap, which arena refused to close by assertion: the lead described a TRAJECTORY — "moving back and
+       forth" — and we have TIME ALLOCATION.** Different quantities, and nothing connects them. arena's words:
+       *"I have where the time goes, not what the trajectory does… this is round 8's third chance to report a number past
+       what it measures, and I would rather flag it than take it."*
