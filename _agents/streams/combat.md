@@ -157,8 +157,21 @@ two copies of the spawn geometry wins* — a good question, correctly answered �
 positions survive the frame*. **Finding the authoritative copy of a value is not the same as checking that the value
 still matters.**
 
-**THE REAL CEILING, AND A LIVE BUG (tests/test_army_footprint.gd, laptop at `787d8632`).** Nearest-neighbour
-centre-to-centre after deploy:
+**⚠ RETRACTED THE SAME DAY — the table below is REAL BUT STALE, and is kept only as a worked example of how.**
+It was measured on this branch at `787d8632`, where `ArmyLayout` is `ASSEMBLY_SPACING_M := 8.0` over a flat
+`MIN_SPACING_M := 5.0`. **squad's `f1c3afcb` — "army start spacing derived from each squad's longest hull" — is on
+`main` and is not in this tree** (merge base `c6a5c550`). So I reported a defect squad had already fixed, and
+recommended to them the fix they had already written. **I carried the commit on the number, which is the rule, and
+the rule was not enough: carrying the commit makes a number ATTRIBUTABLE, it does not make it CURRENT.** A defect
+measured on a branch is a statement about that branch; I stated it about the game.
+
+**The check against `main` was invalid too, so there is no replacement number here.** Copying `main`'s
+`army_layout.gd` into this tree and re-running gave min 0.0 m and **median 0.0 m** for both armies — not a result,
+every unit in one place. One file from a tree ~40 commits ahead is a Frankenstein build: the mismatched comparison
+`compare_arms` exists to refuse, assembled by hand. Both of its numbers are discarded. **squad has been asked to run
+`tests/test_army_footprint.gd` on its own tree**, which is where the answer lives.
+
+**The stale table (laptop at `787d8632`, pre-`f1c3afcb`), nearest-neighbour centre-to-centre after deploy:**
 
 | army | vehicles | min | median |
 |---|---|---|---|
@@ -167,15 +180,21 @@ centre-to-centre after deploy:
 | law_line | 24 | 2.3 m | 3.7 m |
 | **syndicate_standoff** (control) | 18 | **7.4 m** | 8.3 m |
 
-**A gang army stands with its hulls inside each other today, at current sizes** — about four metres of
-interpenetration. The 18-vehicle control gets 7.4 m from the same code, so the defect is `ArmyLayout` **compressing
-a rank to fit the zone** (`MIN_SPACING_M` 5.0) with no reference to hull length, under comments reading "hulls are
-~4 m long". **This, not the spawn grid, is what blocks a 14 m rig.**
+On that tree a gang army stood with about four metres of hull interpenetration, and the 18-vehicle control got
+7.4 m from the same code — so on **that** tree the defect was `ArmyLayout` compressing a rank to fit the zone with
+no reference to hull length. **squad's `f1c3afcb` does exactly what I was about to recommend**, so the likeliest
+reading is that this was fixed before I measured it.
 
-**Three owners, which is why it is not fixed here:** spacing is **squad**'s, `spawn_zones` (150 × 32) is **arena**'s,
-and how many vehicles 5200 points buys is **mine**. squad has the numbers, the control, and a ready-made assertion.
-**The assertion is deliberately NOT landed** — it would fail `check` for five streams over a defect I cannot fix in
-my own files, and downgrading it to a warning is the invisible-skip failure in another costume.
+**What survives the retraction, and it is the useful half:**
+
+- **`tests/test_army_footprint.gd` is a real instrument** and worth keeping whatever the answer: it measures the
+  geometry that actually constrains vehicle size, and it is the regression guard for a 14 m rig.
+- **The spawn grid still does not constrain vehicle size.** That correction stands on its own — `deploy()`
+  teleports at tick 0 regardless of anyone's spacing constants.
+- **The size question is no longer blocked.** squad reports assembly spacing is now `max(6.5 m, longest hull + 2 m)`,
+  so a 14 m rig gives a gang squad ~16 m between vehicles and a wider frontage, which squad will re-check on sight.
+- **Not landing the assertion was right for a second reason I did not have at the time:** had I landed it, my branch
+  would now carry a failing test asserting a defect that main has already fixed.
 
 ### GREEN AND READY TO MERGE: `80bcd085`
 
