@@ -97,6 +97,33 @@ coordinate with nav — anything that changes what blocks driving touches the na
 `game/ai/**` (nav's and squad's), `game/control/` `game/ui/` `game/camera/` (control's), `game/units/` `game/combat/`
 `game/match/` (combat's), `game/theme/**` (feel's — including how your props are *dressed*; you place, feel dresses).
 
+## "N passed, 0 failed" can be a TRUNCATED run (round 7)
+
+**`make check` stops at the first failing target.** Its targets run in order — `lint test net-smoke combat-smoke
+broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke
+announcer-check audio-check` — so a failure at `sim-baseline` means the **four after it never run**, and the
+runner still prints `N passed, 0 failed` for the ones that did.
+
+So *"sim-baseline was the only failure"* is indistinguishable from *"sim-baseline was the last target that got a
+chance to fail"*. **`0 failed` is a property of the targets that ran, and it passes for the wrong object.** Same
+shape as the readiness bug in `ArenaFixture`: a claim built on a property rather than an identity.
+
+**This bites arena specifically.** `announcer-check` and `audio-check` are the last two targets, and the perimeter
+work touches the stands and gates feel dresses — and `tools/announcer/test_arena_names.py` is a file this stream
+edits by recorded exception, precisely the sort of thing a new arena shape could disturb. **A truncated run cannot
+tell you whether your own change broke them.**
+
+**What to do instead of waiting:** the expensive parts need builder0, but the test components run locally in
+minutes and cover most of the risk —
+
+```bash
+python3 -m unittest discover -s tools/announcer -p 'test_*.py'   # 58 tests, ~2 min
+make audio-pytest                                                # 16 tests, ~30 s
+```
+
+Both green on the round-7 perimeter and terrain work (2026-09-19), so the hexagon's edge spans do not disturb the
+announcer's arena-name handling.
+
 ## A local `make check` does NOT check the simulation baseline (round 7)
 
 **`sim-baseline` SKIPS on this laptop and always will.** The baseline file is keyed by glibc version, builder0 is
