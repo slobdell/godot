@@ -955,3 +955,24 @@ The kickoff prompt is one line; this section is the rest.
     surviving a failed commit). The generalisation that finally covers all three: **the index is not empty just because
     your last command failed.** A failed commit leaves everything staged, and the next `git add <one path>` adds to that
     set rather than replacing it.
+72. **No agent on this project can play the game, and that decides which questions only the lead can answer.** Round 6
+    closed with the lead playing `make skirmish` and reporting two things no stream had caught: **the camera he had
+    chosen twice was unplayable**, and **the audio was silent**. Both had passed every gate. control's own statement of
+    its limit is the cleanest account of why: *"I've run scripted sessions and looked at their frames at both settings.
+    I can't play with a mouse."*
+    Everything this project calls playtesting is **scripted input plus screenshots**. That is genuinely powerful — it
+    caught the wall-clipping, the fascia, the crowd's value range, the popping — and it is blind to an entire class of
+    property: how much ground you can read *while deciding*, whether panning feels right, whether a sound is present,
+    whether a response feels instant rather than measures as instant. **For those, the lead is not the best check; he is
+    the only one.**
+    Three consequences to design around, rather than lament:
+    - **Sort every open question by whether an agent can answer it.** "Does the crowd read at 200 m" is measurable —
+      pixels, contrast, figure height. "Is this camera playable" is not, at any effort. Put the second kind in front of
+      him **early and cheaply**, and never let a measurable proxy stand in for it. A page of stills was a proxy for
+      playability and it produced a confidently wrong answer that cost a day's work in both directions.
+    - **When you must ask him, make the artefact move.** A clip, a recording, or him driving it. The round asked him to
+      pick a camera from frozen frames and to judge crowd audio from an MP3 — the second worked *because sound is
+      time-domain and the recording was too*; the first failed because playability is not visible in a frame.
+    - **Expect the gates to be silent about exactly the things he notices first.** Audio presence and camera feel are
+      both first-thirty-seconds properties and both invisible to `make check`. Twice now he has reported an audio fault
+      no automated check saw. **That is not a gap in the audio tests; it is the boundary of what a test can be.**
