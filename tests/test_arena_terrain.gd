@@ -424,3 +424,33 @@ func test_a_smaller_layout_still_has_to_hold_its_own_armies() -> void:
 	layout["half_size"] = 60.0
 	layout["shape"] = {"kind": "hexagon"}
 	assert_true(Arena.validate(layout) != "", "a layout too small for its spawn block is still refused")
+
+
+## The invariant that makes clamp/contains a pair rather than two functions: **a clamp must return a point its own
+## predicate accepts, for every shape, every margin, and every direction — corners included.**
+##
+## It did not. `clamp_into` added `inward * margin` per edge, so a point whose nearest projection was a VERTEX got
+## the inset of one edge only: square, bound 120, margin 4, `(130, 130)` -> `(116, 120)`, which `contains(margin 4)`
+## rejected, and a second clamp returned it unchanged. control found it in `Orders.clamp_to_arena` before any
+## caller shipped with a margin.
+func test_a_clamp_always_lands_somewhere_its_own_predicate_accepts() -> void:
+	for kind: String in ["square", "hexagon", "octagon"]:
+		for margin: float in [0.0, 4.0, 12.0]:
+			for angle in 24:
+				var a := TAU * float(angle) / 24.0
+				# Well outside, from every direction, so corners and edges are both covered.
+				var outside := Vector2(cos(a), sin(a)) * 400.0
+				var landed := ArenaShape.clamp_into(kind, 140.0, outside, margin)
+				assert_true(ArenaShape.contains(kind, 140.0, landed, margin),
+						"%s margin %.0f from %.0f deg: clamped to %s, which contains() rejects"
+						% [kind, margin, rad_to_deg(a), landed])
+				# And it must be stable: clamping an already-clamped point cannot move it.
+				var again := ArenaShape.clamp_into(kind, 140.0, landed, margin)
+				assert_true(landed.distance_to(again) < 0.01,
+						"%s margin %.0f: clamping twice moved the point %s -> %s" % [kind, margin, landed, again])
+
+
+func test_the_corner_case_control_found() -> void:
+	var landed := ArenaShape.clamp_into("square", 120.0, Vector2(130.0, 130.0), 4.0)
+	assert_near(landed.x, 116.0, 0.05, "a square inset by 4 puts the corner at 116 on x")
+	assert_near(landed.y, 116.0, 0.05, "and 116 on z — not 120, which is the bug")
