@@ -1878,3 +1878,22 @@ The kickoff prompt is one line; this section is the rest.
        cut the four most open maps, and nothing says what *too closed* looks like.
      - **The tell was that the number moved while the map got worse.** A metric whose extreme is obviously bad is a
        metric you can still trust; one whose extreme *looks like success* is the dangerous kind.
+125. **Fix it at the plant, not at the caller that noticed.** nav's rotation capture found a tank pivoting on a `face`
+     order reaches **90% of its peak turn rate in one tick** — because **`TankMotion`'s plant has no angular acceleration
+     at all**: yaw rate = turn × max rate, applied instantly. **The obvious fix is to ease the rate inside `face`, which is
+     where the symptom was seen. The right fix is an angular-acceleration limit in `TankMotion.step_in_place`**, because
+     **every caller of the plant has the same defect and only one of them happened to be looked at.**
+     **A symptom is observed at a caller; a defect usually lives at the thing every caller shares.** Masking it where it
+     was noticed leaves the same bug in every other path and guarantees it is found again, separately, later.
+     - **And the capture is the model for answering a feel question.** *"Do the vehicles look robotic?"* is unanswerable
+       after the fact — you see whatever you expected. nav wrote three operational definitions into the script header
+       **before its first run**: (a) angular rate 0 → ≥90% of peak, or ≥90% → 0, **within one tick**; (b) overshoot, or a
+       last tick > 30% of peak; (c) rotating about a point it is not driving around.
+     - **Two of three shapes failed and one passed, each for a nameable reason** — a tank pivot robotic by (a); a scout's
+       K-turn robotic by (b), **overshooting its final heading by 20.7°, arriving still turning**; a four-unit squad wheel
+       **smooth by all three**. A definition that only ever fires is not a definition.
+     - **The passing case is as valuable as the failures:** it says the squad-level motion the lead asked about is already
+       right, so nobody spends a round on it.
+     - **nav's capture lied on its first run** — *"never turned" for every hull* — the packed-array value trap in its own
+       logging, caught by a debug line showing the hulls had in fact turned. **Sixth instrument defect this round, and the
+       sixth caught by someone looking at the output rather than by a failure.**
