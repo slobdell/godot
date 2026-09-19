@@ -98,6 +98,8 @@ const COS_ASTERN := 0.70710678
 ## ...when the estimated duel advantage is at least ORBIT_START_ADVANTAGE, and keeps orbiting down to ORBIT_KEEP_ADVANTAGE.
 const ORBIT_START_ADVANTAGE := 0.9
 const ORBIT_KEEP_ADVANTAGE := 0.6
+## A SUPPRESS nobody else is served by scores at most this fraction of the best winnable ENGAGE (round 7).
+const SUPPRESS_UNDER_WINNABLE := 0.95
 ## ...bursts in when the target's gun is more than 60° off it (cos 0.5) and it's this close...
 const ORBIT_BURST_RANGE := 30.0
 const ORBIT_BURST_COS := 0.5
@@ -385,6 +387,9 @@ var _bait_seen := -1
 var _motion_cache := {}
 var _jink_tick := 0
 var _run_phase := "run"
+## Round 7 (nav): the direction CombatMotion chose last plan, handed back so it can commit to it.
+var _motion_prev_index := -1
+var _motion_prev_reverse := false
 
 
 func think(_delta: float) -> void:
@@ -898,7 +903,11 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				matchup_factor = (0.5 + 0.5 * float(m["kill_rate"]) / best_kill_rate) * clampf(pow(float(m["advantage"]), 0.25), 0.8, 1.25)
 				# Orbit a turret I can out-turn when the duel looks winnable; once circling, keep at it unless it's clearly lost.
 				var keep_orbiting: bool = current.get("option", "") == "ORBIT" and current.get("target", "") == c["name"]
-				if m.get("orbit", false) and c["visible"] and float(m["advantage"]) >= (ORBIT_KEEP_ADVANTAGE if keep_orbiting else ORBIT_START_ADVANTAGE):
+				# Round 7: a target I am already circling stays mine while its contact is fresh, seen or not. Circling IS
+				# crossing its line of sight fast, which combat's X6 makes hard to hold continuously: at 25 m the scout lost
+				# sight mid-orbit, dropped to SPOT, backed off to its standoff and never fired (scenario_cp2 engine deck).
+				if m.get("orbit", false) and (c["visible"] or keep_orbiting) \
+						and float(m["advantage"]) >= (ORBIT_KEEP_ADVANTAGE if keep_orbiting else ORBIT_START_ADVANTAGE):
 					orbits.append([c["name"], maxf(engage * 1.2, 0.95 * confidence * firepower * leash_factor)])
 			engage *= matchup_factor
 			# A6: the squad's plan tilts who to shoot (never whether to follow the player's order).
@@ -942,9 +951,12 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				if worth_pinning:
 					var suppress_score := SUPPRESS_WEIGHT * reach * confidence * leash_factor * firepower
 					# Holding down the one a teammate is going round is the point of a base of fire.
-					if (own_flank and not flanker_fix) or ElementFeed.is_firing_base(element_context):
+					var firing_base := ElementFeed.is_firing_base(element_context)
+					if (own_flank and not flanker_fix) or firing_base:
 						suppress_score *= 1.25
-					suppressions.append([c["name"], suppress_score])
+					# Only "my rounds barely mark it": no teammate is served by pinning this one (see the cap below).
+					var only_poor_kill: bool = not (keep_pinned or own_flank or firing_base or c["name"] == tactics.get("focus", ""))
+					suppressions.append([c["name"], suppress_score, only_poor_kill])
 			# FLANK pays when the target is busy facing a teammate; pointless if I already see its side.
 			var flank := float(d["flanking"]) * (1.0 if c["facing_ally"] else 0.55) * confidence * reach * leash_factor * firepower \
 					* minf(matchup_factor, 1.0)
@@ -996,8 +1008,21 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		candidates.append({"option": "FLANK", "target": pair[0], "score": float(pair[1] * fight_scale)})
 	# SUPPRESS (X3): keep a crew's head down. It scores below a fight this unit can actually win, and above hanging
 	# back doing nothing — which is what a machine-gun scout did with 84% of its time before this existed.
+	# Round 7: the cap that sentence promises. An IFV between a tank it barely marks and a scout it counters suppressed
+	# the tank (0.90) over killing the scout (0.51; scenario_matchups). Where nobody is served by the pin, SUPPRESS stays
+	# just under the best ENGAGE on a target this unit is not reduced to pinning.
+	var suppressed := {}
 	for pair in suppressions:
-		candidates.append({"option": "SUPPRESS", "target": pair[0], "score": float(pair[1] * fight_scale)})
+		suppressed[pair[0]] = true
+	var best_winnable := 0.0
+	for pair in engages:
+		if not suppressed.has(pair[0]):
+			best_winnable = maxf(best_winnable, float(pair[1]) * fight_scale)
+	for pair in suppressions:
+		var suppress := float(pair[1] * fight_scale)
+		if bool(pair[2]) and best_winnable > 0.0:
+			suppress = minf(suppress, best_winnable * SUPPRESS_UNDER_WINNABLE)
+		candidates.append({"option": "SUPPRESS", "target": pair[0], "score": suppress})
 	# ORBIT (A5): a fixed gun can't out-shoot a turret head-on, but it can out-turn a slow one: circle it and burst in
 	# when its gun points away. Scores above SPOT, so scouts fight what they counter instead of hanging back.
 	for pair in orbits:
@@ -1699,7 +1724,9 @@ static func threat_list(contacts: Array, my_position: Vector3) -> Array:
 func _act(s: Dictionary) -> void:
 	why = TankBrain.tactics_tag(s, choice)
 	# Round 6 (lesson 47): what a held player unit may do instead of moving, and whether it is under fire.
-	_held_face = TankBrain._face_threat_or(s, {"type": "stop"})
+	# With nothing to face, the facing it was told (nav's round-7 probe: two idle player units chose ADVANCE after their
+	# move finished, the refused move became a bare stop, and nothing turned them to the ordered facing).
+	_held_face = TankBrain._face_threat_or(s, _face_intended_or({"type": "stop"}))
 	_held_under_fire = tank.ticks_since_hit < HELD_UNDER_FIRE_TICKS or not (s.get("incoming", []) as Array).is_empty()
 	if choice["option"] != "CLEAR_LANE":
 		_lane_goal = null
@@ -1932,6 +1959,11 @@ func _act(s: Dictionary) -> void:
 				_order_move(_move_to(my_position + away * (ARTILLERY_SAFE_DISTANCE - nearest_threat + 10.0), true))
 			elif distance > float(weapon["preferred_max"]):
 				_order_move(_move_to(target_position + (my_position - target_position).normalized() * float(weapon["preferred_max"])))
+			elif tank.deploy_seconds > 0.0 and tank.deploy_ratio > 0.0 \
+					and String(Units.profile(tank.unit_id).get("mount", "turret")) == "turret":
+				# Dug in (or digging in): the turret follows the target. Turning the hull to face it is a drive command,
+				# and held long enough it packs the battery up (combat's request (d); scenario_cp2: 3 pack-ups in 25 s).
+				_order_move({"type": "stop"})
 			else:
 				_order_move({"type": "face", "x": target_position.x, "z": target_position.z})
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
@@ -2182,6 +2214,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		"strafe":
 			# Close in, jinks spoil a gunner's lead; at a long standoff they just look like rocking (a Lancer at 80 m).
 			jink_due = distance <= JINK_RANGE and tick >= _jink_tick + (think_offset * 37) % JINK_SPREAD_TICKS
+	# Round 7 (nav): a jink only buys anything against a gun with a flight time to lead (CombatMotion.jink_worth).
+	jink_due = jink_due and CombatMotion.jink_worth(String(contact.get("weapon", "")))
 	if jink_due:
 		_strafe_side = -_strafe_side
 		_jink_tick = tick + JINK_MIN_TICKS
@@ -2250,7 +2284,11 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 			return SuppressionFeed.beaten(fields, team, from, to)
 	_incoming_count = (s.get("incoming", []) as Array).size()
 	var clock := Time.get_ticks_usec() if OrderController.profiling else 0
+	request["previous_index"] = _motion_prev_index  # round 7 (nav): commitment to last plan's direction
+	request["previous_reverse"] = _motion_prev_reverse
 	var result := CombatMotion.choose(request)
+	_motion_prev_index = int(result.get("index", -1))
+	_motion_prev_reverse = bool(result.get("reverse", false))
 	if OrderController.profiling:
 		profile_parts["motion"] = int(profile_parts.get("motion", 0)) + Time.get_ticks_usec() - clock
 	if result.is_empty():

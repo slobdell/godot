@@ -57,8 +57,11 @@ func test_holds_fire_while_a_friendly_crosses_the_line() -> void:
 			shots_before = s.shots_by(me)
 			if blocked:
 				fired_through += 1
-	print("MEASURE ai_friendly_lane shots %d, through the friend %d, lane blocked %d ticks" % [s.shots_by(me), fired_through, lane_blocked_ticks])
-	assert_true(lane_blocked_ticks >= 60, "setup: the friend really crosses the lane (%d ticks blocked)" % lane_blocked_ticks)
+	var blocked_s := float(lane_blocked_ticks) / SimClock.TICK_RATE
+	print("MEASURE ai_friendly_lane shots %d, through the friend %d, lane blocked %.1f s" % [s.shots_by(me), fired_through, blocked_s])
+	# In seconds (lesson 30): the bar was 60 TICKS, written at 60 Hz for one second; at 30 Hz the same crossing measured
+	# 42 ticks (1.4 s) and failed the setup check until round 7.
+	assert_true(blocked_s >= 1.0, "setup: the friend really crosses the lane (%.1f s blocked)" % blocked_s)
 	assert_true(s.shots_by(me) >= 2, "it still shoots when the lane is clear (%d shots)" % s.shots_by(me))
 	assert_eq(fired_through, 0, "it never fires while the friend is in the line of fire")
 
