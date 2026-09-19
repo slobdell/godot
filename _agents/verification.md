@@ -169,3 +169,48 @@ either.
 - `web-net-smoke`'s screenshot timing depends on the bot's drive time; if the bot isn't in frame, the check still passes (it only asserts boot + spawn). Look at the picture.
 - Latency and jitter are *injected* (`--relay-latency`, `--relay-jitter`) on localhost; no real cellular link or phone has been measured yet.
 - No input-injection tests yet (keyboard/mouse → `PlayerController`). `ScriptedController` covers the command path; the input map mapping itself is untested.
+
+## Why two tests failed depending on what ran before them (2026-09-19)
+
+**`tests/run_tests.gd` runs every test file in ONE process, sharing one `SceneTree` and every autoload.** The loop is:
+
+```gdscript
+var case: TestCase = script.new()
+case.tree = self          # the SAME SceneTree for every case, all run long
+await case.call(method_name)
+case.teardown()           # isolation is whatever this happens to do
+```
+
+**So isolation is honour-system, per case, and everything in an autoload survives the whole run** — `Pathing`'s baked
+navmesh, `Arena.active`, `Units.tuning`, `GameTheme.slots`, and any node a teardown forgot. **A test's result is therefore
+a function of the order the suite happens to run in, and that order changes whenever anyone adds a file.**
+
+**Two round-7 failures, both in files whose owners had not seen them, both exposed by an unrelated timing change:**
+
+| failure | what it read that the previous test left |
+|---|---|
+| `test_navigation::test_path_goes_around_a_wall` — path goes straight through the wall | `_setup` waits for **`Pathing.is_ready`** — *any* navmesh — so after another test bakes a different arena it paths against **that** mesh. Lesson 87: a readiness check on a property, not an identity. `TacticsLab.navigation_is_this_arenas()` is the fix |
+| `test_units_roster::test_the_catalog_is_where_stats_come_from` — muzzle y **0.26** against catalog **1.12** | the assertion read `turret.GLOBAL_position.y`, so it claimed **both** *the catalog sets the muzzle above the hull* (deterministic) **and** *the hull has settled one physics frame after spawn* (physics, and whatever state the previous test left). The scout was sitting **0.86 m low** |
+
+**`Units.tuning` was the first suspect and was innocent** — it tunes shields, damage and armour, never a muzzle height,
+and clears both dictionaries at the end of its body.
+
+### Two rules from it
+
+1. **One assertion, one claim** (combat). *"A conflated assertion cannot tell you which of its claims broke — the failure
+   gets attributed to whatever changed most recently."* That is precisely how this arrived as a guess about a static in a
+   third stream's file. **If a claim needs the physics world to have settled, say so and give it the frames.**
+2. **Wait on identity, never on a symptom** (arena, lesson 87). *"Every previous fix of mine made the property more
+   specific; only identity ends it."*
+
+### The root cause is NOT fixed, and both fixes above only hide it
+
+**Something earlier in a full run leaves the world in a state where a tank has not settled after one physics frame.**
+combat flagged this rather than claiming closure: its fix makes the symptom invisible to that test. **If nav's navmesh
+case has the same root — a test reading world state a previous test left — finding it is worth more than either fix.**
+
+**Proposed for round 8, NOT now** (`run_tests.gd` is shared and six streams have checks in flight; breaking the runner
+mid-round would stop everybody): **after each `teardown()`, the runner asserts the world is clean** — no leftover tanks in
+the tree, `Arena.active` cleared, `Units.tuning` empty, no baked navmesh — and **FAILS naming the test that leaked**,
+rather than letting the next test inherit it. **A guard, not a documented discipline: today proved that a warning written
+by the stream that later hit it was not enough** (lesson 117).
