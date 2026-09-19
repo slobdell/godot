@@ -129,6 +129,28 @@ place, you do not place).
 
 ## Status
 
+### Round 8 (2026-09-19) — "the gang tanks are still tiny" (the lead, third time)
+
+- **Why it was still tiny (two causes, both measured):** (1) the art is fitted uniformly by LENGTH and the War Rig
+  model is slim (natural 0.85 × 1.35 × 3.6), so combat's 4.4 m box height never reached the screen: it drew
+  1.33 × 2.09 × 5.6. (2) My round-7 gun cut made the fit measure the hull after its baked gun was turned to rest, so the
+  overhang counted as hull and the rig and Law artillery drew at ~80% (fixed `14bdb039`, test mutation-checked). At the
+  lead's camera (21°, 49 m, FOV 35, real skirmish, builder0) today's rig was **91 px tall, shorter than the Condemned
+  tank's 103 px**.
+- **`make size-look`** (`SizeLook`, `--size-look`): the rig beside a scout and a tank at his pose, once per candidate
+  length, box in the model's own proportions (`SizeLook.box_at_length`). After the fix (builder0, `14bdb039`, px tall /
+  long; scout 86/194, tank 95/176): today 114/268; 10 m 202/486; 12 m 242/587; **14 m 281/689**.
+- **Agreed with combat: `gang_tank` [3.32, 5.24, 14.0], `gang_support` [3.39, 3.59, 7.0]** (boxes in the models'
+  proportions, so the art fills them exactly with no art change). combat's catalog change + deployment (longest hulls
+  in the front row) is with the orchestrator. **When it lands:** merge it, re-shoot `make size-look LENGTHS=14`, and land
+  the rig + tanker box-fill test with it.
+- **Roster-wide hitbox finding (combat's, C1, not this round):** every art unit's box disagrees with its drawn mesh (all
+  19 more than 5% out on some axis; the rig +1.7 w +2.3 h, law_suppressor drawn 1.0 m taller than its box). Table sent
+  to combat for `_agents/balance.md`; regenerate with `SizeLook.box_at_length(unit, hull_size[2])`. The every-unit
+  box-fill test lands with that fix.
+- **Articulated trailer — costed, not started** (waits on nav's wheeled-yaw fix; see the message to the orchestrator):
+  visual-only hinge ≈ 1 day, negligible runtime, sim untouched; the rigid 14 m collision box is the compromise.
+
 ### Round 7 so far (2026-09-19) — the lead's visible defects first
 
 - **Green and merged: `ec10d9f5`** (builder0: 1142 passed; `sim-baseline passed: b0df248dc0140639` on a tree without
