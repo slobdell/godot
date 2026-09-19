@@ -127,6 +127,25 @@ writing first. Also: `game/control/` `game/ui/` `game/camera/` (control's), `are
 
 _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
+### GREEN AND READY TO MERGE: `80bcd085`
+
+`>> remote: make ... exited 0` on builder0, **1187 passed, 0 failed**, plus `match-pytest` **Ran 11 tests — OK**.
+Working tree clean at that hash and unchanged since the sync, so the verdict is that commit's and not an
+unlabelled tree's.
+
+**The fourteen targets:** lint, test, net-smoke, combat-smoke, broker-test, relay-smoke, lobby-smoke, match-smoke,
+determinism, garage-smoke, army-loop-smoke, announcer-check, audio-check, match-pytest. **`sim-baseline` is
+excluded** — invariant 2, and see *why invariant 2 is right* below: a branch's green baseline predicts nothing
+about `main` after merge, so recording it here would be worse than not running it.
+
+**This branch contains arena's `877dc34a`** (a real merge at `0da3f015`, authorised by the orchestrator) and
+`main` at the `96368bf6` checkpoint (baseline `253ecfdeed84bc4d`) via `c6a5c550`. **It does NOT contain the four
+branches merged after that**, deliberately: control owns the `radar.gd` resolution against my X3 block and should
+take it on its own post-merge re-check rather than have me sit on both sides of it.
+
+**One shared-file edit to know about:** `mk/core.mk` (`ac3f331f`) appends `match-pytest` to `check` — 3 ms, and
+appended rather than inserted because `check` aborts at the first failing target.
+
 ### IF YOU ARE A FRESH AGENT, START HERE (round 7, 2026-09-19)
 
 **Round 7 in one paragraph.** X4 (the gangs' unattributed 23% → 53% swing) and X3 (the arena bound) are **built**;
