@@ -240,10 +240,13 @@ YARD_B = [(-6, 6), (20, 44), (58, 70)]
 ## -- the arena gets roomier and the sightlines get LONGER, which trades one of the lead's complaints for another.
 ## Their segments are shorter because the hexagon narrows toward the bases and a container out there would be
 ## through the wall.
-YARD_OUTER = [(-4, 28), (44, 62)]
-YARD_COLUMNS = [(-115, YARD_OUTER, 2, "mixed"), (-84, YARD_A, 2, "condemned"), (-50, YARD_B, 1, "mixed"),
+## x = +-98, not 115: a hexagon narrows toward the bases, so a column out at 115 only fits within about 30 m of
+## midfield. 98 with a 10..60 m segment hugs the new wall for its whole length -- checked against the inset
+## boundary rather than guessed, after 115 put a container through the wall at z = 47.
+YARD_OUTER = [(10, 60)]
+YARD_COLUMNS = [(-98, YARD_OUTER, 2, "mixed"), (-84, YARD_A, 2, "condemned"), (-50, YARD_B, 1, "mixed"),
                 (-17, YARD_A, 2, "law"), (17, YARD_B, 1, "gangs"), (50, YARD_A, 2, "syndicate"),
-                (84, YARD_B, 1, "mixed"), (115, YARD_OUTER, 2, "law")]
+                (84, YARD_B, 1, "mixed"), (98, YARD_OUTER, 2, "law")]
 yard = []
 for x, segments, stack, faction in YARD_COLUMNS:
     for z0, z1 in segments:
