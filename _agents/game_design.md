@@ -957,9 +957,18 @@ still cannot command his units. **Improvements he can see did not change the ver
    and the game is right** — this is lesson 23's shape: a number taken in a configuration the player does not get.
 4. **The semi is not articulated** — tractor and trailer move as one body. He explicitly offers to shelve it: *"I don't
    know how easy this is to do or if we should shelve it for later."*
-5. **⚠ THE SEMI YAWS IN PLACE, "should be impossible, they're not a tracker vehicle."** This is a *class* bug and nav has
-   already measured its neighbour: `TankMotion.step_in_place` pivots a hull about its own centre, **which nav called
-   "right for tracks"** — and it is applied to wheeled hulls too. **A wheeled vehicle must not rotate without translating.**
+5. **⚠ THE SEMI YAWS IN PLACE, "should be impossible, they're not a tracker vehicle."** **The symptom is real; the
+   orchestrator's first mechanism was wrong and nav corrected it from the code.** `step_in_place` does **not** pivot
+   wheeled hulls like tracks — the wheels branch sets `yaw = |speed| × turn / turning_radius`, **so a car at 0 m/s cannot
+   yaw at all**, and speed is re-read after `move_and_slide` from what the hull actually did.
+   **nav's hypothesis: the wheels' multi-point-turn CREEP.** When a car is told to *face* something — which brains do
+   constantly while holding or fighting — the plant drives **alternating forward/reverse legs of 0.5 s at low throttle**.
+   **Each leg is kinematically legal; ±1 m shuffles at full lock add up to a truck rotating on the spot.** Same symptom,
+   different mechanism, and a different fix: **legs long enough to be real (distance-based, a share of the turning
+   radius), plus probably brains not asking cars to face in place at all** — which is squad's half.
+   **Pre-registered test, written before the run:** a wheeled hull that turns **≥ 30° while its centre stays within
+   1.5 m of its start** is *yawing in place*. Running on `gang_tank` (12 m turning circle).
+   **For tracks and hover the angular-acceleration limit in the plant still stands**, and it is a separate fix.
 6. **ORPHANED UNITS: not every unit belongs to a squad**, so cycling 1–4 never selects them. **A player cannot command
    what he cannot select**, which makes this a direct cause of item 2.
 7. **A GROUP ORDERED TO ATTACK ONE UNIT KEEPS SHOOTING WHAT IT WAS ALREADY SHOOTING.** An explicit target order is the
