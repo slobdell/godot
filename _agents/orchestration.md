@@ -1566,3 +1566,23 @@ The kickoff prompt is one line; this section is the rest.
      shells at 60–70 m and weak against hitscan.** So a behaviour that pays for itself against one weapon class is being
      applied against all of them. **That is a falsifiable claim about where a cost is unjustified**, which is a far better
      starting point than "reduce the churn".
+107. **An absolute timing budget is a claim about the machine, not about the code — and in this project it is a claim about
+     other streams' activity.** control's `test_the_ui_stays_cheap_with_a_full_army_selected` asserted a 2.0 ms frame
+     budget and failed at **2.33 ms** on builder0. Idle builder0 is about **0.65 ms**; the laptop measures **1.80** and
+     **also tripped it at loads 4–8 (2.2–3.1 ms)**. **The old budget had 11% headroom**, so with six to nine concurrent
+     remote runs — the normal state of a round here — it was one busy afternoon away from failing at any time, for reasons
+     having nothing to do with the code under test.
+     **The fix is to remove the variable rather than tune against it:** control's frame time is now divided by a **fixed
+     reference workload timed interleaved with it**. Ratio 5.5–7.2 across loads 3–8, budget 8.0, and **mutation-checked —
+     +1 ms in `summary()` gives 9.7 and fails.**
+     - **A test whose result depends on a shared resource nobody owns fails in a way that looks like a code defect.** That
+       is the same shape as the stale sim baseline, and both cost this project a day.
+     - **The too-tight instrument was also hiding a real defect:** `summary()` sorted the selection **twice a frame**.
+       Because the test could not separate *"the UI is expensive"* from *"the machine is busy"*, nobody could act on it in
+       either direction. **An instrument nobody trusts is worse than none, because it also excuses what it should catch.**
+     - **Suspect every wall-clock assertion in the suite**, including generous-looking ones: `match-smoke`'s `speedup > 2`,
+       any per-tick budget, and latency tests. A fastest-of-N sample reduces noise but is **still absolute** — control
+       measured a **24 ms** excursion on ~4 ms of work, a 6× outlier.
+     - **Prefer a ratio, a count, or a comparison against a reference measured in the same run.** *"Every number carries
+       its machine"* (CLAUDE.md) is the reporting rule; this is its testing counterpart — **a number that must not depend
+       on the machine should not be measured in units the machine controls.**
