@@ -180,7 +180,12 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
 | Scale playtest regression (squad, after its consolidation) | done (`3c1c224e`): with nothing selected the vision camera framed the whole army (can't fit 100 m at 35°) → now group 1; and the lean toward the reach parked the selected squad UNDER the command card (symmetric 0.78 bound vs the card at 0.44 of the half-height) → `VISION_FRAME_BOTTOM` 0.40. Playtest with squad's 90bd2212: ok=true, group 1 at y 586–653 vs card ~778 | `test_rts_camera::test_a_long_lean_keeps_the_squad_above_the_command_card` (fails on the old camera: 0.49) |
 
-**Round 8 candidate: `3c1c224e`** (next check, after main records a new sim line). #26 on `4ebe47a7`: 1228/0 tests,
+**Hexagon, first look (main `0ae1b223`, `make camera-looks` on yard, laptop):** radar outline is the hexagon; far and
+diagonal walls keep their stands and crowd; no void and no foreground occlusion in the default, overview and 90 m
+frames. Not yet seen: a camera parked right behind a DIAGONAL wall at 21°/49 m (the frames don't include one).
+
+**Round 8 candidate: `1b3da573`** (main `0ae1b223` merged, baseline `668b7d49`; contains `3c1c224e`) — #27 running.
+Before it, `3c1c224e` (waited for main's new sim line). #26 on `4ebe47a7`: 1228/0 tests,
 then `sim-baseline FAILED` (expected `53d4e0ac`, got `668b7d49`) — **main's line is stale, not this branch:** the same
 command on the laptop gives one hash (`34507d95`, glibc 2.39) for main `28eb403f`, this branch, and this branch with the
 pre-M4 `orders.gd`; and clean main `28eb403f` on builder0 gives `668b7d49` too (control's scratch run). The orchestrator
