@@ -172,7 +172,8 @@ of the ratio timing tests; the cutaway reads feel's `StandsProfile` by path when
 fallback; the kit's front is 9.64 m from 4.2 m out, not the measured 7 m at 2.3 m, so one test case moved 30° → 40°).
 #21 on it: RED on `test_radar`'s outline test only (1191/1, builder0), the static-leak main fixed at `5cc17ee6`;
 smokes never ran. **Candidate now `c7f9cd4e`** (main through `5cc17ee6` merged at `af9e4f1e`, plus the same leak guarded
-in `test_rts_camera`, positive-controlled): #22 running. **Open:** look at the cutaway at the lead's pose once `StandsProfile` is on main (it cuts the front of the stands
+in `test_rts_camera`, positive-controlled). **MERGE HERE: `c7f9cd4e` — #22 GREEN (builder0): `make check exited 0`,
+1193 passed / 0 failed, `sim-baseline passed: 253ecfdeed84bc4d`, every target through `audio-check passed`.** **Open:** look at the cutaway at the lead's pose once `StandsProfile` is on main (it cuts the front of the stands
 slightly more often near the wall); round 8: timing tests to measurements (verification.md policy).
 Was: **MERGE HERE: `baf04ead` — #20 GREEN (builder0): `make check exited 0`, 1162 passed / 0 failed, `sim-baseline passed:
 e38fd65b6b6ead3f`, every target through `audio-check passed`** (main `b70608d6` merged in). After it, unchecked:
