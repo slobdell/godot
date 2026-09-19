@@ -198,10 +198,12 @@ func test_the_spawn_grid_says_how_big_a_vehicle_is_allowed_to_be() -> void:
 	# behind it. The truck could only grow upward, so it grew upward, and a top-down camera foreshortens height and
 	# shows FOOTPRINT. The catalog number that was free to move was the one the player cannot see.
 	#
-	# This test exists to make the ceiling VISIBLE. A constraint nobody can see will quietly redirect effort onto
-	# whichever axis is free, and the result satisfies the brief while missing the point -- which is what happened.
-	# Raising a vehicle's length past the grid now fails here, naming the constant to change, instead of silently
-	# stacking two hulls in one place at spawn.
+	# CORRECTED the same day: this is NOT the ceiling on how big a vehicle may be, and it never was. `load_doctrine`
+	# ends with `ArmyLayout.deploy()`, which teleports every unit at tick 0 before any physics step, so two hulls
+	# sharing a spawn slot never coexist in a simulated frame. The real ceiling is the spacing the army STANDS at
+	# (tests/test_army_footprint.gd). The arithmetic below is still true of `spawn_position` -- which non-doctrine
+	# spawns (network players, bare bots) do reach -- so the test stays, but it guards a holding position and not
+	# the geometry anyone plays. 5.6 m matching the War Rig exactly is a coincidence of no consequence.
 	# Measure the grid the game ACTUALLY spawns on, not the constants. `Arena.spawn_spot` returns the LAYOUT's baked
 	# spawn list whenever it has one, and every shipped layout does -- so Match.SPAWN_ROW_SPACING is a fallback that
 	# a real match never reaches, and `tools/make_arenas.py` keeps a SECOND copy of the pitch, mirrored by a comment
