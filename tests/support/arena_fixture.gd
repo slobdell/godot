@@ -22,8 +22,20 @@ const ARENA := preload("res://game/arena/arena.tscn")
 ## An arena of `layout_name`, in the tree, with its own navigation synced. Fails the test and returns the arena
 ## anyway if it never syncs, so the caller's assertions report the real problem rather than a cascade of nulls.
 static func build(test: TestCase, layout_name: String, seconds := 2.0) -> Arena:
+	return await _ready_arena(test, layout_name, {}, seconds)
+
+
+## The same wait, for a layout built in the test rather than shipped in arenas/.
+static func build_layout(test: TestCase, layout: Dictionary, seconds := 2.0) -> Arena:
+	return await _ready_arena(test, String(layout.get("name", "layout")), layout, seconds)
+
+
+static func _ready_arena(test: TestCase, label: String, override: Dictionary, seconds: float) -> Arena:
 	var arena: Arena = ARENA.instantiate()
-	arena.layout_name = layout_name
+	if override.is_empty():
+		arena.layout_name = label
+	else:
+		arena.layout_override = override
 	test.add_to_tree(arena)
 	var found: Variant = inside_cover(arena.layout)
 	var probe: Vector3 = found if found != null else Vector3.ZERO
@@ -41,7 +53,7 @@ static func build(test: TestCase, layout_name: String, seconds := 2.0) -> Arena:
 		await test.tree.physics_frame
 	test.assert_true(ready.call(),
 			"setup: %s's OWN navigation synced within %.0f s (a point inside its cover is off the mesh)"
-			% [layout_name, seconds])
+			% [label, seconds])
 	return arena
 
 

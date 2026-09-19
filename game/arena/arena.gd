@@ -10,6 +10,10 @@ extends Node3D
 ##   spawn_zones: {green: {center [x, z], size [width, depth]}, rust: ...}  every spawn inside, clear of cover.
 ##   lanes: [{name, points [[x, z], ...] (green's end first), width}]    routes between the bases, for the AI.
 ##   regions: [{name, kind (ArenaKit.REGION_KINDS), position [x, z], radius}]  centre, open ground, cover clusters...
+##   terrain: [{kind (ArenaTerrain.KINDS: water, pit, bridge), name, rect [centre_x, centre_z, width, depth]}]
+##     (round 7) ground a unit cannot cross but can fire over. The floor is rebuilt as the arena MINUS every
+##     water/pit and PLUS every bridge deck, so the hole in the navmesh is the impassability; a 0.9 m rim stops
+##     hulls without blocking sight. Axis-aligned only. Point-symmetric like everything else.
 ##   objectives: [{name, position [x, z], radius}]  (X3, round 6) what the match is fought over. Off-centre ones must
 ##     come in mirrored PAIRS. Absent = the single central control point, which is what Match hard-codes today.
 ## load_layout() returns the NORMALIZED layout: colliding props are appended to `obstacles` (with `size` resolved and
@@ -40,6 +44,9 @@ const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}
 ## Extra bake margin past the seam so the half-mesh isn't shrunk by the agent
 ## radius where it meets its mirror (NavigationMesh.border_size, for chunked bakes).
 const SEAM_BORDER := 2.5
+## The stock Ground slab's thickness, and how far past the arena edge a carved floor still reaches.
+const GROUND_THICKNESS := 1.0
+const GROUND_MARGIN := 40.0
 const HALF_EXTENT := Match.ARENA_HALF_SIZE + 40.0
 ## Mirror pairs must match to this many meters (and degrees).
 const SYMMETRY_TOLERANCE := 0.01
@@ -51,6 +58,10 @@ static var active: Dictionary = {}
 
 ## Set before the arena enters the tree to pick a layout in code (tests); else `--arena=`, else DEFAULT_LAYOUT.
 @export var layout_name := ""
+## Set before the arena enters the tree to supply a layout DIRECTLY, beating `layout_name` (tests that build a
+## layout the repo does not ship). Deliberately not a temp file under arenas/: that would show up in
+## `layout_names()` and make every all-layouts test depend on which test ran first.
+@export var layout_override: Dictionary = {}
 var layout: Dictionary = {}
 
 @onready var navigation: NavigationRegion3D = $Navigation
@@ -61,14 +72,20 @@ var decor_root: Node3D
 
 func _ready() -> void:
 	var flags := LaunchFlags.from_environment()
-	var wanted := layout_name if layout_name != "" else flags.text("arena", DEFAULT_LAYOUT)
-	wanted = resolve_name(wanted, flags.integer("seed", -1) if flags.has("seed") else -1)
-	var loaded := load_layout(wanted)
+	var loaded := {}
+	if not layout_override.is_empty():
+		var problem := validate(layout_override)
+		loaded = {"error": problem} if problem != "" else {"layout": normalize(layout_override)}
+	else:
+		var wanted := layout_name if layout_name != "" else flags.text("arena", DEFAULT_LAYOUT)
+		wanted = resolve_name(wanted, flags.integer("seed", -1) if flags.has("seed") else -1)
+		loaded = load_layout(wanted)
 	if loaded.has("error"):
 		push_error("arena: %s; using %s" % [loaded["error"], DEFAULT_LAYOUT])
 		loaded = load_layout(DEFAULT_LAYOUT)
 	layout = loaded["layout"]
 	active = layout
+	_build_terrain()
 	_build_obstacles()
 	_build_decor()
 	_build_hazards()
@@ -96,6 +113,58 @@ func _bake() -> void:
 	mirror.transform = Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
 	add_child(mirror)
 	navigation_ready.emit()
+
+
+## Round 7: water, pits and the bridges over them. The FLOOR is rebuilt as the arena minus every carving footprint
+## plus every deck, because the hole in the navmesh is what makes the water impassable; the rim and the pan are
+## deliberately NOT navigation sources, so they stop hulls without ever reaching the bake.
+func _build_terrain() -> void:
+	var terrain: Array = layout.get("terrain", [])
+	if terrain.is_empty():
+		return
+	var half := float(layout["half_size"]) + GROUND_MARGIN
+	# The stock Ground is one slab covering everything; a carved layout replaces it wholesale.
+	var ground := get_node_or_null("Ground") as StaticBody3D
+	if ground != null:
+		var stock := ground.get_node_or_null("Collision") as CollisionShape3D
+		if stock != null:
+			stock.disabled = true
+		for slab: Array in ArenaTerrain.slabs(half, terrain):
+			ground.add_child(_slab(Vector3(slab[0], -GROUND_THICKNESS / 2.0, slab[1]),
+					Vector3(slab[2], GROUND_THICKNESS, slab[3])))
+	var rims := StaticBody3D.new()
+	rims.name = "TerrainRims"
+	var pans := StaticBody3D.new()
+	pans.name = "TerrainPans"
+	for entry: Dictionary in terrain:
+		if not ArenaTerrain.carves(String(entry["kind"])):
+			continue
+		for slab: Array in ArenaTerrain.rim_slabs(entry, terrain):
+			rims.add_child(_slab(Vector3(slab[0], ArenaTerrain.RIM_HEIGHT / 2.0, slab[1]),
+					Vector3(slab[2], ArenaTerrain.RIM_HEIGHT, slab[3])))
+		var depth := float(ArenaTerrain.KINDS[entry["kind"]]["pan_depth"])
+		var rect: Array = entry["rect"]
+		pans.add_child(_slab(Vector3(rect[0], -depth - GROUND_THICKNESS / 2.0, rect[1]),
+				Vector3(rect[2], GROUND_THICKNESS, rect[3])))
+	add_child(rims)
+	add_child(pans)
+	# Only if feel has the slot: VisualSlot pushes an engine error for a slot the theme lacks, and an arena that
+	# errors because its water has no art yet is worse than water with no art. Same guard the kit props use.
+	if GameTheme.slots.has("arena.terrain"):
+		var dressing := VisualSlot.new()
+		dressing.name = "TerrainVisual"
+		dressing.slot = "arena.terrain"
+		add_child(dressing)
+		dressing.invoke("setup", [terrain])
+
+
+func _slab(at: Vector3, size: Vector3) -> CollisionShape3D:
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	shape.position = at
+	return shape
 
 
 func _build_obstacles() -> void:
@@ -470,6 +539,41 @@ static func _validate_v2(data: Dictionary) -> String:
 				if absf(float(spot[0]) - float(zone["center"][0])) > float(zone["size"][0]) / 2.0 + SYMMETRY_TOLERANCE \
 						or absf(float(spot[1]) - float(zone["center"][1])) > float(zone["size"][1]) / 2.0 + SYMMETRY_TOLERANCE:
 					return "spawns.%s point %s is outside its spawn zone" % [side, spot]
+	var terrain: Variant = data.get("terrain", [])
+	if typeof(terrain) != TYPE_ARRAY:
+		return "'terrain' must be a list"
+	for entry in terrain:
+		if typeof(entry) != TYPE_DICTIONARY or typeof(entry.get("kind")) != TYPE_STRING or typeof(entry.get("name")) != TYPE_STRING:
+			return "every terrain entry needs a string 'kind' and 'name'"
+		if not ArenaTerrain.is_kind(entry["kind"]):
+			return "unknown terrain kind '%s' (have %s)" % [entry["kind"], ", ".join(PackedStringArray(ArenaTerrain.KINDS.keys()))]
+		var rect: Variant = entry.get("rect")
+		if typeof(rect) != TYPE_ARRAY or rect.size() != 4 or not rect.all(func(v: Variant) -> bool: return _is_number(v)):
+			return "terrain %s needs 'rect' [centre_x, centre_z, width, depth]" % entry["name"]
+		if float(rect[2]) <= 0.0 or float(rect[3]) <= 0.0:
+			return "terrain %s needs a positive width and depth" % entry["name"]
+	for entry: Dictionary in terrain:
+		# Point-symmetric like everything else: a river on one side and not the other decides the match.
+		var twin: bool = terrain.any(func(other: Dictionary) -> bool:
+			return other["kind"] == entry["kind"] \
+					and absf(float(other["rect"][0]) + float(entry["rect"][0])) <= SYMMETRY_TOLERANCE \
+					and absf(float(other["rect"][1]) + float(entry["rect"][1])) <= SYMMETRY_TOLERANCE \
+					and is_equal_approx(float(other["rect"][2]), float(entry["rect"][2])) \
+					and is_equal_approx(float(other["rect"][3]), float(entry["rect"][3])))
+		if not twin:
+			return "not point-symmetric: terrain %s at %s has no 180° mirror" % [entry["name"], [entry["rect"][0], entry["rect"][1]]]
+		if not ArenaTerrain.is_deck(String(entry["kind"])):
+			continue
+		# A deck must actually bridge something, and be wide enough to leave navmesh after the agent radius.
+		var narrow: float = minf(float(entry["rect"][2]), float(entry["rect"][3]))
+		if narrow < ArenaTerrain.MIN_DECK_M:
+			return "bridge %s is %.1f m across: under %.1f m the %0.1f m agent radius leaves no navmesh on it" \
+					% [entry["name"], narrow, ArenaTerrain.MIN_DECK_M, 2.0]
+		var crosses: bool = terrain.any(func(other: Dictionary) -> bool:
+			return ArenaTerrain.carves(String(other["kind"])) \
+					and ArenaTerrain.overlaps(ArenaTerrain.bounds(entry), ArenaTerrain.bounds(other)))
+		if not crosses:
+			return "bridge %s crosses no water or pit (a bridge over nothing is just floor)" % entry["name"]
 	if data.has("fixture") and typeof(data["fixture"]) != TYPE_BOOL:
 		return "'fixture' must be true or false"
 	var objectives: Variant = data.get("objectives", [])
