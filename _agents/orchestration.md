@@ -1612,3 +1612,29 @@ The kickoff prompt is one line; this section is the rest.
      authorisation** because I had not used the word.
      **Third time in one day a stream was more careful than the orchestrator.** The fix is mine and it is mechanical: **say
      "this is an announced checkpoint" in those words, and name the commit.** `b70608d6` is one.
+110. **A rule taught without its purpose gets applied where it does not fit — state what every proxy is a proxy FOR.**
+     feel's `check10` ran every target to completion: `1142 passed, 0 failed`, `sim-baseline passed`, every smoke through to
+     **`audio-check passed`** — and `audio-check` is the **last** target in `check`. Its wrapper then died before printing
+     `>> remote: make check exited N`, and feel concluded *"by the rule, that's no verdict"* and discarded a forty-minute
+     run on a saturated build machine.
+     **feel was right about the rule and the rule was wrong here.** *"Read the wrapper's own exit line"* is a **proxy** for
+     *did every target run, and did every target pass*. It exists because a piped exit code answers a different question.
+     **A complete target list ending in the final target's pass is stronger evidence than the exit line, not weaker** — the
+     exit line gives you a number, the target list tells you what happened.
+     - **This is lesson 99 turned on our own process: prefer identity to property.** The exit line is a property that
+       usually accompanies success; *"the last target passed"* is nearer the identity of green.
+     - **The orchestrator's error: I taught the proxy for months without teaching what it stood for.** A rule stated
+       without its purpose either lets something through or throws away good evidence, and there is no way for the person
+       following it to tell which case they are in. **Every rule in this file that is a proxy should name its target.**
+     - **It cost nothing here only because the run was on the wrong commit anyway** (`39dd5b2f` predates `cb171a98`, so it
+       did not cover the second backwards vehicle). **That is luck, not process.**
+111. **`make facing-audit` found four backwards-authored parts; the lead reported one.** The gang IFV (which he saw), the
+     **Syndicate lancer**, the **gang tank's barrel** and the **Law rocket pod** — all authored pointing backwards, three of
+     them never reported by anybody. **The argument for the audit was never "the lead complained"**; it was that **nobody
+     on this project can inspect 21 units by eye** (lesson 72), so the only alternative to an audit is waiting for him to
+     notice one at a time.
+     **And the audit itself lied on its first run**, which feel caught from the renders: *"the tank drives its own turret
+     back to rest, so the audit wasn't really showing 70°."* **An instrument that is asked for 70°, renders 0°, and labels
+     the picture 70° does not error — it produces a plausible artefact.** Fixed by holding the turret at the angle asked
+     for. **Fourth instrument defect found in one day**, and the fourth to be caught by someone looking at the output
+     rather than by a failure.
