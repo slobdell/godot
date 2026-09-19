@@ -188,7 +188,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		# A facing the player chose is everyone's facing, not the formation's all-round sectors.
 		for unit_name: String in plan["sectors"]:
 			plan["sectors"][unit_name] = 0.0
-	_flow(plan, situation)
+	_flow(plan, situation, state)
 
 
 ## Round 7: the element FLOWS into formation on the way, not only at the end (the lead's "formula to form up", its
@@ -200,14 +200,19 @@ static var FLOW_ENABLED := true
 const FLOW_JOIN_M := 15.0
 
 
-static func _flow(plan: Dictionary, situation: Dictionary) -> void:
+static func _flow(plan: Dictionary, situation: Dictionary, state: Dictionary) -> void:
 	var leader := String(plan.get("leader", ""))
-	if not FLOW_ENABLED or leader == "" or not (plan["seats"] as Dictionary).has(leader):
+	# Once the element has joined its final slots for this task it never flows again: a leader fighting near its slot
+	# drifts in and out of FLOW_JOIN_M, and toggling follow <-> move would re-order everyone (the CPU five-squad test
+	# caught 6 idle orders). A new task clears it (Element.assign).
+	plan["flow_joined"] = bool(state.get("flow_joined", false))
+	if not FLOW_ENABLED or plan["flow_joined"] or leader == "" or not (plan["seats"] as Dictionary).has(leader):
 		return
 	var at := {}
 	for member: Dictionary in situation.get("members", []):
 		at[String(member["name"])] = member["position"]
 	if not at.has(leader) or (at[leader] as Vector3).distance_to(plan["slots"][leader]) <= FLOW_JOIN_M:
+		plan["flow_joined"] = true
 		return
 	var heading: Vector3 = plan["heading"]
 	var right := Vector3(-heading.z, 0.0, heading.x)

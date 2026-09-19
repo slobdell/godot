@@ -63,6 +63,8 @@ var anchor: Variant = null
 ## X7: the covered route the element is following (waypoints) and which one it is driving to.
 var route: Array = []
 var route_index := 0
+## Round 7 flow: the element has switched to its final slots for this task (never flows again until a new task).
+var flow_joined := false
 var heading := Vector3.FORWARD
 var bounding := 0
 var arrived := false
@@ -112,6 +114,7 @@ func assign(new_task: Variant) -> String:
 	anchor = null
 	route = []
 	route_index = 0
+	flow_joined = false
 	arrived = false
 	drill = ""
 	drill_point = null
@@ -159,7 +162,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	_known = situation["known"]
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
-			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation,
+			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
 			"route": route, "route_index": route_index}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
@@ -349,6 +352,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	slots = plan["slots"]
 	sectors = plan["sectors"]
 	seats = plan["seats"]
+	flow_joined = bool(plan.get("flow_joined", false))
 	route = plan["route"]
 	route_index = int(plan["route_index"])
 	strength = (situation["members"] as Array).size()

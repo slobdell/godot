@@ -141,7 +141,13 @@ func test_a_plain_move_runs_no_drill_even_under_fire() -> void:
 	var plan := ElementPlan.build(_situation(enemy), _state(task), table)
 	assert_eq(plan["drill"], "", "no react to contact, no ambush drill")
 	for unit: String in plan["orders"]:
-		assert_eq(plan["orders"][unit]["verb"], "move", "%s keeps driving to its slot" % unit)
+		# The leader drives to its slot; the others FOLLOW the leader at their slot's offset (round 7 flow): both are
+		# "keep going to your place", neither is a drill.
+		var order: Dictionary = plan["orders"][unit]
+		assert_true(String(order["verb"]) in ["move", "follow"], "%s keeps going to its place (%s)" % [unit, order["verb"]])
+		if String(order["verb"]) == "follow":
+			assert_true(order.has("slot") and String(order["target"]) == String(plan["leader"]),
+					"%s follows its leader at a slot" % unit)
 	var with_drills := ElementPlan.build(_situation(enemy), _state({"verb": "move", "to": [0, -100]}), table)
 	assert_true(with_drills["drill"] != "", "the same contact on an attack-move task does start a drill (%s)" % with_drills["drill"])
 
