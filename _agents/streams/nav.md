@@ -271,7 +271,7 @@ and a stuck unit that reported success from 12 m away. That is what this stream 
 | **X6** PID | Done for station-keeping (`pid.gd`, `control_gains.gd`): 0.35 m mean gap vs 4.58 m for the P law. Speed matching is the same loop; turret lay not attempted (combat's turret already has a rate limit, which is the dominant dynamics). |
 | **X7** path quality | Done: carrot along the route, cars look until they can drive onto the point, re-plan on change. |
 | **X8** factions by gains | Done as data (`ControlGains.FACTIONS`), measured on movement; win rates not measured (below). Found and fixed a stopped-slot overshoot first. |
-| X9 dynamic obstacles | **Not started** — see *Next steps*. |
+| X9 dynamic obstacles | **Blocked on arena's decision** (asked 2026-09-18): wrecks are on layer 4 on purpose, and nothing in the arenas stops blocking mid-match yet, so there is nothing to make dynamic until arena says what should be. |
 
 ### Numbers (builder0, `make nav-suite`, hold-fire, 180 s; arrived of N)
 
@@ -326,6 +326,16 @@ changes how a formation moves and halts; nothing here shows it changes who wins,
   same lane. ORCA doesn't overtake (a friend moving your way isn't a collision). squad restored its own 22 s window.
 - **Cars and short lookaheads don't mix.** Any steering point inside a car's turning circle is a three-point turn; the
   carrot, the avoiding point and the give-way spot all have to be forward-reachable.
+
+### Report (nav, 2026-09-18)
+
+**Green, merge here: `34293b3b`** (builder0 `make check`: 1127 passed, 0 failed, all smokes; `5b8e0df7` and this Status on
+top are docs only). **The sim baseline moves and is deliberately not recorded here** (orchestrator's ruling); on this
+tree it was `glibc-2.43 b0df248dc0140639`. Earlier merges to main: CP1 at `30e3250d`, X3–X7 at `1923059c`.
+
+Looked at like a player: `make remote T=control-scale-shots` (34 a side, foundry, 1920×1080, builder0, 18:36): squad 1
+moves out as a spaced column, squad 2 threads out of the parked line without disturbing it, no piling. The lead's own
+scenario, headless and with brains, is `make nav-orders` (numbers above).
 
 ### What to playtest (the lead)
 
@@ -382,11 +392,16 @@ changes how a formation moves and halts; nothing here shows it changes who wins,
 
 ### Requests to other streams
 
+- **arena** (X9): would wrecks/destructible cover become navigation obstacles, and is anything planned that stops
+  blocking mid-match? Asked by message; nothing waits on it this round.
 - **arena**: `tests/arena/maze_probe.gd` drives plain `OrderController`s, so round 5's brains-only `_around_friends`
   never ran in your baseline. Not a problem now (N1 avoidance is on for every controller) — just a note for reading
   the old numbers.
 
 ### Merge notes
 
-- New files: `game/ai/{movement,avoidance}.gd`, `tests/test_{movement,avoidance}.gd`, `mk/nav.mk`,
-  `tools/nav_suite.py`, `_agents/navigation.md`.
+- New files: `game/ai/{movement,avoidance,pid,control_gains,gunnery}.gd` (**gunnery.gd is combat's**),
+  `tests/test_{movement,avoidance,pid,station_keeping}.gd`, `tests/nav/{nav_probe,order_probe}.gd`, `mk/nav.mk`,
+  `tools/nav_suite.py`, `_agents/navigation.md`, `_agents/streams/references/nav/`.
+- Edits outside nav's paths: `game/ai/tank_brain.gd` — only `ORDER_STALL_ARRIVE` and its one use (agreed with the
+  orchestrator). `tests/baselines/sim_state_hash.txt` is untouched (recorded by the orchestrator at the close).
