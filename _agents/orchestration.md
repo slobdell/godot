@@ -995,3 +995,22 @@ The kickoff prompt is one line; this section is the rest.
       which drives the real title → SKIRMISH → faction menu → FIGHT sequence with no audio flags, mutation-checked
       against the old code (FAIL: "no speaking booth") — the only kind of test that can see a defect that lives in
       *how the game is entered*.
+74. **An interaction is only verified by performing it — reading the source you wrote cannot tell you it does nothing.**
+    Round 6: the lead's arena review page presented *"Keep it · Fix it · Cut it · I'd rather just play it first"* per map
+    and he reported *"that page doesn't have buttons I can click"*. The orchestrator guessed a missing `db` capability
+    or an event-binding bug. **Neither. The four answers were printed as a sentence in a `<p>` tag.** They look exactly
+    like a control and are text. **There were never any buttons to bind or to store from** — a page built to collect an
+    answer, structurally incapable of collecting one. It had been verified by reading the HTML, which confirms the words
+    are on the screen and *cannot distinguish that from a working control*.
+    The stream's own note is the sharpest part: *"it caught me even after I had written the same lesson about my own
+    instruments twice today"* (lessons 54 and 66). **Knowing the lesson does not transfer across media.** It had learned
+    to distrust a probe and still trusted a page.
+    Two instructions:
+    - **Perform the interaction on the published artefact before handing over the link.** Click it. For anything a human
+      is meant to *do* rather than read, source review is not verification — same boundary as lesson 72's "no agent here
+      can play the game", one layer out.
+    - **Prefer the shape that cannot half-work.** The fix uses real radio inputs, a textarea that rebuilds from them, and
+      a Copy button — **no database, no stored state**, because the pick is the entire payload and a storage layer would
+      be more to get wrong than the thing it stores. It degrades to "describe your picks" if the script fails, rather
+      than to nothing. That is the same pattern that finally settled the camera (live controls, one key to print a
+      pasteable line), and it worked for the same reason.

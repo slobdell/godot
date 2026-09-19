@@ -643,6 +643,11 @@ Both are the same defect: **the map offers no reason to be somewhere risky.** So
 > other — the prize goes where the risk is.**
 
 What follows for map authoring, and these are testable claims rather than taste:
+0. **The measurement we have scores only half of this, and arena flagged it.** Its X2 exposure analysis scores a route
+   by **what it costs** (exposure, detour) and never by **what it reaches**. So it reports that every map already offers
+   cheap covered flanks — 1.0–1.1× detour everywhere — when the lead's framing says the cheapness is the *symptom*:
+   **a route that is cheap and leads nowhere worth going is not a tactical option, it is scenery.** Any round-7 metric
+   for this needs a term for *what is at the end of the route*, or it will keep reporting that the maps are already fine.
 1. **An objective must sit on ground you have to cross something to reach**, or the crossing is decoration. arena's
    measurement — covered flanking routes already cost only a **1.0–1.1× detour** on every map and nobody takes them —
    is exactly this: the routes are cheap and lead nowhere worth going.
