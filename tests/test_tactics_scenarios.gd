@@ -121,3 +121,10 @@ func test_a_cpu_army_under_the_same_orders_is_not_re_ordered_for_fighting_from_i
 	assert_true(int(result["idle_orders"]) <= 2, "the leaders leave them to it (%d orders in the last 10 s)" % result["idle_orders"])
 	for off: float in result["anchor_off_m"]:
 		assert_true(off < 0.5, "every formation stands on the spot it was sent to (anchor %.1f m off)" % off)
+
+
+func test_attack_move_decisions_measured() -> void:
+	# Round 7: a measurement first (the bar comes after the fix, from what it measures).
+	var result: Dictionary = await TacticsScenarios.attack_move_decisions(self)
+	print("MEASURE attack_move_decisions %s" % result)
+	assert_true(float(result["unit_minutes"]) > 3.0, "setup: six units fought for most of a minute")

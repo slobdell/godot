@@ -541,3 +541,58 @@ static func five_squads(case: TestCase, players := true, seconds := 45.0, idle_s
 			"mean_off_slot_m": snappedf(mean / maxf(off_slot.size(), 1.0), 0.1), "far": far}
 	lab.dispose()
 	return result
+
+
+## Round 7: does the DECIDER thrash under attack-move? nav moved the movement layer a long way and attack-move's
+## re-task rate did not move (~45 per unit-minute): the brain is choosing. Six player tanks attack-move across the strip
+## through six CPU tanks (both durable, so the fight lasts). Every tick, each green brain's option label: `switches` (any
+## change) and `reversals` — leaving an option and coming BACK to it within REVERSAL_S — the shape that can only be
+## thrash, never the evasion or target change attack-move legitimately includes. Per unit-minute, with the top pairs.
+const REVERSAL_S := 3.0
+
+
+static func attack_move_decisions(case: TestCase, seconds := 60.0) -> Dictionary:
+	var lab := TacticsLab.create(case, 29)
+	lab.game_match.set_meta("player_team", Match.Team.GREEN)
+	var names: Array = []
+	for i in 6:
+		var tank := lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), Vector3(LANE_X - 10.0 + (i % 3) * 10.0, 0.0, 60.0 + (i / 3) * 10.0), 0.0)
+		AiScenario.make_durable(tank)
+		names.append(String(tank.name))
+	for i in 6:
+		var enemy := lab.unit(Match.Team.RUST, "Rust_B_%d" % (i + 1), Vector3(LANE_X - 10.0 + (i % 3) * 10.0, 0.0, -30.0 - (i / 3) * 10.0), PI)
+		AiScenario.make_durable(enemy)
+	await lab.start()
+	(lab.orders as Orders).issue(UnitCommand.make(names, "attack_move", {"to": [LANE_X, -90.0], "source": "player"}))
+	var history := {}  # name -> [[label, since_tick], ...] (last three)
+	var switches := 0
+	var reversals := 0
+	var pairs := {}
+	var unit_ticks := 0
+	var window := int(REVERSAL_S * SimClock.TICK_RATE)
+	for tick in int(seconds * SimClock.TICK_RATE):
+		await lab.step()
+		for unit_name: String in names:
+			var brain := lab.game_match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain
+			if brain == null or brain.choice.is_empty():
+				continue
+			unit_ticks += 1
+			var label := "%s %s" % [brain.choice.get("option", ""), brain.choice.get("target", "")]
+			var seen: Array = history.get_or_add(unit_name, [])
+			if seen.is_empty() or String(seen[-1][0]) != label:
+				if not seen.is_empty():
+					switches += 1
+					# A -> B -> A with B held under REVERSAL_S: back where it was, having gone nowhere.
+					if seen.size() >= 2 and String(seen[-2][0]) == label and tick - int(seen[-1][1]) <= window:
+						reversals += 1
+						var key := "%s<->%s" % [label, seen[-1][0]]
+						pairs[key] = int(pairs.get(key, 0)) + 1
+				seen.append([label, tick])
+				if seen.size() > 3:
+					seen.pop_front()
+	var minutes := maxf(unit_ticks / (SimClock.TICK_RATE * 60.0), 0.01)
+	var result := {"switches_per_unit_min": snappedf(switches / minutes, 0.1),
+			"reversals_per_unit_min": snappedf(reversals / minutes, 0.1), "top_reversals": CoherenceProbe.top(pairs, 6),
+			"unit_minutes": snappedf(minutes, 0.01)}
+	lab.dispose()
+	return result
