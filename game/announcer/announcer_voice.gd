@@ -141,14 +141,15 @@ func _trace_clip(cue: Dictionary) -> void:
 	var lost := _player.stream.get_length() - _player.get_playback_position()
 	if lost <= 0.05:
 		return
-	print("ANNOUNCER_CLIPPED lost=%.2f of=%s by=%s cut_in=%s speakers=%s>%s" % [lost, _current_line, cue.get("line_id", ""),
-			str(cue.get("cut_in", false)), _current_speaker, cue.get("speaker", "")])
+	print("ANNOUNCER_CLIPPED lost=%.2f of=%s by=%s cut_in=%s speakers=%s>%s ticks_ms=%d" % [lost, _current_line,
+			cue.get("line_id", ""), str(cue.get("cut_in", false)), _current_speaker, cue.get("speaker", ""), Time.get_ticks_msec()])
 
 
 ## The director cut the current line: fade and stop.
 func cut() -> void:
 	if _player != null and _player.playing and _player.stream != null:
-		print("ANNOUNCER_CUT lost=%.2f of=%s" % [_player.stream.get_length() - _player.get_playback_position(), _current_line])
+		print("ANNOUNCER_CUT lost=%.2f of=%s ticks_ms=%d" % [_player.stream.get_length() - _player.get_playback_position(),
+				_current_line, Time.get_ticks_msec()])
 	_queue.clear()
 	if _player != null and _player.playing:
 		_trail_off()

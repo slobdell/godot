@@ -20,16 +20,17 @@ const STYLES := {
 	"default": {"tail": 5.0, "width": 0.3, "intensity": 1.0, "splat_width": 2.2, "splat_length": 6.0, "splat_intensity": 0.3,
 			"light_energy": 2.5, "light_range": 9.0, "priority": LightPool.PRIORITY_TRACER},
 	# The tank shell: a white-hot slug you can follow, dragging a pool of light along the floor.
-	"shell": {"tail": 7.0, "width": 0.55, "intensity": 1.5, "splat_width": 3.5, "splat_length": 9.0, "splat_intensity": 0.5,
+	"shell": {"tail": 7.0, "width": 0.7, "intensity": 1.5, "splat_width": 3.5, "splat_length": 9.0, "splat_intensity": 0.5,
 			"light_energy": 6.0, "light_range": 15.0, "priority": LightPool.PRIORITY_SHELL},
-	# Round 6: up with the stream below (a 25 mm round stays the fatter, heavier tracer of the two).
-	"burst": {"tail": 5.5, "width": 0.42, "intensity": 2.0, "splat_width": 2.0, "splat_length": 5.5, "splat_intensity": 0.32,
+	# Round 6: up with the stream below (a 25 mm round stays the fatter, heavier tracer of the two), and the shell up to
+	# 0.7 so it stays more than twice either (test_fx_tank_shell: the shell is the round you follow).
+	"burst": {"tail": 5.5, "width": 0.34, "intensity": 2.0, "splat_width": 2.0, "splat_length": 5.5, "splat_intensity": 0.32,
 			"light_energy": 1.8, "light_range": 6.0, "priority": LightPool.PRIORITY_TRACER},
 	# Round 6 (the lead: "I'm not seeing any cool machine gun fire from the scouts"): at round 5's halved style and
 	# HITSCAN_SPEED a scout's 10 rounds/s at 26 m left about one thin 4 m dash on screen at a time, a speck from the RTS
 	# camera. A stream now flies slower (its own `speed`) so 3-4 rounds are in the air at once, with a longer, hotter
 	# tail: a hose of fire you can follow from gun to target.
-	"stream": {"tail": 8.0, "width": 0.32, "intensity": 2.4, "splat_width": 1.6, "splat_length": 6.0, "splat_intensity": 0.3,
+	"stream": {"tail": 8.0, "width": 0.3, "intensity": 2.4, "splat_width": 1.6, "splat_length": 6.0, "splat_intensity": 0.3,
 			"light_energy": 1.2, "light_range": 4.5, "priority": LightPool.PRIORITY_TRACER - 0.3, "speed": 90.0},
 	"arc": {"tail": 5.0, "width": 0.45, "intensity": 1.2, "splat_width": 2.8, "splat_length": 6.0, "splat_intensity": 0.4,
 			"light_energy": 3.0, "light_range": 10.0, "priority": LightPool.PRIORITY_TRACER + 0.5},
