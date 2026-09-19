@@ -49,7 +49,14 @@ KIT = {  # ArenaKit.PROPS (game/arena/arena_kit.gd): one level [x, height, z], c
     "wreck": ([3.2, 2.0, 6.4], "hard", True),
     "floodlight": ([2.4, 3.0, 2.4], "hard", True),
     "sign": ([0.4, 6.0, 0.4], "none", False),
+    "block": ([40.0, 24.0, 40.0], "hard", True),
 }
+# ⚠ THIS TABLE IS A SECOND COPY OF `ArenaKit.PROPS` AND NOTHING CHECKS THAT IT AGREES. A comment where a
+# dependency should be -- the same trap combat found in this file's spawn pitch the same day, and it bit here
+# immediately: `block` shipped in `arena_kit.gd` in round 7 and was missing from this table until the cityscape
+# tried to use it, which failed loudly only because a KeyError is loud. A prop whose SIZE drifted instead of going
+# missing would have failed silently, and every measurement taken with it would have been wrong and believable.
+# `test_the_kit_table_still_matches_the_game` (tools/test_arena_report.py) now asserts the two agree, entry by entry.
 LEGACY = {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}
 
 

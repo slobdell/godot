@@ -68,6 +68,16 @@ func _physics_process(_delta: float) -> void:
 		_drive(tank, controller, order)
 
 
+## Round 8: what `unit_name`'s gun is actually on, whoever drives it - this executor's controller when it holds the unit,
+## else the unit's brain. The truth the HUD holds an order against ("they shoot at whatever they were already shooting
+## at", the lead): an order and what the unit does are two facts, and only showing both makes a refusal visible.
+func engaged_target_of(unit_name: String) -> String:
+	if _controllers.has(unit_name):
+		return (_controllers[unit_name] as OrderController).engaged_target
+	var brain := game_match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain if game_match != null else null
+	return brain.engaged_target if brain != null else ""
+
+
 ## Pause the unit's brain and hand it to an OrderController (once).
 func _take(tank: Tank) -> OrderController:
 	var unit_name := String(tank.name)

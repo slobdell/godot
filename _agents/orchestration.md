@@ -1556,6 +1556,16 @@ The kickoff prompt is one line; this section is the rest.
      - **A pre-registered rule makes a null result reportable and a bad result unspinnable.** It also forces the *acceptance
        criteria* to be chosen while they can still be chosen fairly — nav's include *survivability must not get worse*,
        which is the criterion an author hoping for a churn win would quietly omit.
+     - **A rule you honour when it costs you is the only kind that works.** nav's hold-hysteresis A/B came back **down on
+       all four maps** — scout in-place events −22%, −19.5%, −8%, −6% — **which is a real effect and it misses the
+       pre-registered bar of ≥20% on ≥3 maps.** nav shipped it **opt-in** rather than arguing the direction was
+       consistent. **And the kills guard tripped** (>20% fewer losses on 4 of 8 runs), with nav noting the guard has
+       almost no power — **2–5 deaths out of 90 units in 120 s** — and adding: *"it was fixed in advance, and I'm not
+       arguing with it after the fact."* **That sentence is the whole value of pre-registering.**
+     - **⚠ But a guard with no power is the 34×-headroom problem again** (lesson 107): **a threshold that cannot
+       meaningfully fail is not protecting anything**, and one that trips on 2-vs-5 deaths is noise wearing a rule's
+       clothes. **nav named the fix itself — more deaths per run, via a longer `NAV_TIME`.** **Check a guard's power when
+       you pre-register it, not after it fires.**
      - **Pre-register a GUARD metric as well as a success metric — name what must NOT get worse.** nav's rule covered
        churn and survivability; the thing that actually moved was a third, **attack-move "progressing" 44% → 41%**, and
        the rule was silent on it. **A pre-registered rule protects only the metrics you thought of**, and the one that
@@ -1890,7 +1900,9 @@ The kickoff prompt is one line; this section is the rest.
        **before its first run**: (a) angular rate 0 → ≥90% of peak, or ≥90% → 0, **within one tick**; (b) overshoot, or a
        last tick > 30% of peak; (c) rotating about a point it is not driving around.
      - **Two of three shapes failed and one passed, each for a nameable reason** — a tank pivot robotic by (a); a scout's
-       K-turn robotic by (b), **overshooting its final heading by 20.7°, arriving still turning**; a four-unit squad wheel
+       K-turn ~~robotic by (b), overshooting its final heading by 20.7°~~ — **RETRACTED: an angle-wrap bug in the
+       reporter, `wrapf(last - first)` on a 201° arc that never reversed. Fixed 7f14241b; overshoot is 0.0 everywhere,
+       and Reeds-Shepp lost the only measured defect behind it.** A four-unit squad wheel
        **smooth by all three**. A definition that only ever fires is not a definition.
      - **The passing case is as valuable as the failures:** it says the squad-level motion the lead asked about is already
        right, so nobody spends a round on it.
@@ -2035,3 +2047,39 @@ The kickoff prompt is one line; this section is the rest.
      - **arena's first fix was wrong and it says so: a hollow shell of four walls leaves the interior walkable — an
        enclosed, unreachable navmesh island inside every building.** The right answer is tiling the footprint with
        adjacent 4 m slabs. **Recorded because the wrong version is the one that looks obviously correct.**
+135. **The grain of aggregation decides whether you see the effect at all — and ours was one level too coarse.**
+     combat, correcting its own headline two hours after giving it to me:
+
+     ```
+     map    arm        vs condemned   vs law   vs syndicate   gangs overall
+     yard   baseline           60%      60%           70%            63%
+     yard   rig 14 m           40%       0%           40%            27%
+     pit    baseline           20%      30%           40%            30%
+     pit    rig 14 m           50%       0%           40%            30%
+     ```
+
+     **`gangs vs law` went 9/20 → 0/20 across both maps. Twenty counterbalanced matches, zero wins, p ≈ 2×10⁻⁶.**
+     **And on pit the per-faction number is 30% in BOTH arms — a flat zero** — because losing the law matchup outright
+     was offset by *gaining* the condemned one. **A per-faction table says "no effect on pit". The per-matchup table says
+     a matchup became unwinnable.**
+     - **The pooled number did not merely dilute the effect; it invented a different one.** *"−37 points to the gangs on
+       yard"* — which I relayed to the lead — **understates what happened to one matchup and asserts a magnitude that does
+       not generalise to the other map.**
+     - **combat's rule: read matchups, not factions.** And its own note: *"I built the tool to report per faction and it
+       was the wrong grain; that is on me and the tool should probably print both."*
+     - **This is lesson 118's sibling.** There, the untreated arms were the noise floor and reporting them was free. Here,
+       **the finer grain was already in the data and the report threw it away.** Whenever a number aggregates over
+       something, **ask what the aggregation could be cancelling** — a −30 and a +30 pool to zero and read as "no effect".
+     - **The honest sentence changed with it**, and combat wrote the replacement: not *"the truck costs the gangs a third
+       of their win rate"* but ***"the truck makes one matchup unwinnable on both maps, and we do not yet know whether
+       that is the size or a movement bug it exposes."*** **More alarming and more honest, and it does not prejudge the
+       fix.**
+136. **A big object magnifies whatever was already slightly wrong.** feel, chasing the 15 m shield bubble the orchestrator
+     noticed in a screenshot of combat's 14 m rig: **`ShieldEffect` started at ratio 1.0, so the first legitimate
+     `set_shield(0.0)` on a zero-shield unit read as "the shield just got knocked out"** — hit shimmer, crackle and a
+     `shield_down` sound **on every gang vehicle, every deployment, since the gangs shipped.** Roughly forty at once.
+     **The 14 m hull did not cause it. It made the shell a 15 m egg nobody could miss.**
+     - **That is an argument for shipping a large vehicle that has nothing to do with balance:** scale is a magnifying
+       glass over every effect keyed to hull size, and a defect that survived rounds of play became obvious in one frame.
+     - **And it was found because a human looked at a screenshot sent for a different purpose.** Eighth defect this round
+       caught by looking rather than by a test.
