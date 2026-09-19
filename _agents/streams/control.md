@@ -170,7 +170,12 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 **Merge candidate: `baf04ead`** (main `b70608d6` merged in, the new sim baseline) — full `make remote T=check` #20
 running; this line changes when it lands. **Decided before the result (orchestrator, lesson 106):** `baf04ead`
 predates main's `d8f26176` (garage/army-loop timeouts 60/120 → 600 s), so a *timeout* in `garage-smoke` or
-`army-loop-smoke` in #20 is not a finding about this branch; merge anyway and re-run on main. #19 on `9c889025` was RED on `test_control_scale` (2.33 ms frame vs 2.0, builder0:
+`army-loop-smoke` in #20 is not a finding about this branch; merge anyway and re-run on main.
+**After #20 merges (agreed with the orchestrator):** merge `main` first (nav's `c7da4dd8` moved the sim baseline;
+feel's `551cb2a4`), then resolve combat's `36e116c8` in `game/ui/radar.gd` if it has merged: take combat's inline
+`Arena.perimeter()` block in `_draw()`, keep `test_the_radar_outline_is_the_arenas_own_shape` pointed at it, delete
+`outline_points()`; read `visibility.origin` (combat's per-instance field origin) wherever control reads the field.
+`git merge-tree` showed `radar.gd` as the only conflict. Then re-check. #19 on `9c889025` was RED on `test_control_scale` (2.33 ms frame vs 2.0, builder0:
 load from concurrent checks — idle builder0 is ~0.65 ms) and was killed, since make stops at the failing target. Fix in
 `baf04ead`: the frame budget is a **ratio to a reference workload** timed interleaved with it (5.5–7.2 on the laptop at
 loads 3–8, budget 8.0, mutation-checked), click latency is the fastest of three, and the panel sorts once a frame.
