@@ -10,6 +10,9 @@ extends Node3D
 ##   spawn_zones: {green: {center [x, z], size [width, depth]}, rust: ...}  every spawn inside, clear of cover.
 ##   lanes: [{name, points [[x, z], ...] (green's end first), width}]    routes between the bases, for the AI.
 ##   regions: [{name, kind (ArenaKit.REGION_KINDS), position [x, z], radius}]  centre, open ground, cover clusters...
+##   shape: {kind (ArenaShape.KINDS: square, hexagon, octagon), wall_height_m?, edges?: [{spans: [{kind, to_m}]}]}
+##     (round 7) the perimeter. Read by control (camera cutaway) and feel (walls, stands, gates) through
+##     Arena.perimeter() / perimeter_edges(), once at load. Absent = a square, which is every layout today.
 ##   terrain: [{kind (ArenaTerrain.KINDS: water, pit, bridge), name, rect [centre_x, centre_z, width, depth]}]
 ##     (round 7) ground a unit cannot cross but can fire over. The floor is rebuilt as the arena MINUS every
 ##     water/pit and PLUS every bridge deck, so the hole in the navmesh is the impassability; a 0.9 m rim stops
@@ -285,6 +288,27 @@ static func spawn_spot(south: bool, slot: int) -> Variant:
 	return Vector3(spot[0], 0.0, spot[1])
 
 
+## Round 7, contract D: the wall's INNER FACE as a convex polygon, world x/z, counter-clockwise. Handed to control
+## and feel ONCE AT LOAD — control does its own ray-vs-polygon maths for the camera cutaway, feel builds walls,
+## stands and gates from it instead of assuming a square. A per-frame call across a stream boundary would be a
+## standing performance obligation and would make the arena's shape answerable to control's frame budget.
+static func perimeter(data: Dictionary = active) -> PackedVector2Array:
+	if data.is_empty():
+		return PackedVector2Array()
+	var shape: Dictionary = data.get("shape", {})
+	return ArenaShape.vertices(String(shape.get("kind", ArenaShape.DEFAULT_KIND)), float(data["half_size"]))
+
+
+## Every perimeter edge as {from, to, length_m, wall_height_m, spans: [{kind, from_m, to_m}]}. The spans say what
+## is behind each STRETCH of wall, because control's occlusion test asks a positional question — a base side is
+## stands, then the gate its army enters through, then stands again, and one value per edge cannot say that.
+## Always contiguous, always covering the whole edge, so a consumer never handles a gap.
+static func perimeter_edges(data: Dictionary = active) -> Array:
+	if data.is_empty():
+		return []
+	return ArenaShape.edges(data.get("shape", {}), float(data["half_size"]))
+
+
 ## X1 (round 6): a TEST FIXTURE, not a shipping arena -- `arenas/maze.json` is one. It loads with `--arena=<name>`
 ## like any layout, but nothing that presents the game to a player should offer it: it has no art pass, no balance,
 ## and the announcer has no recording of its name.
@@ -539,6 +563,9 @@ static func _validate_v2(data: Dictionary) -> String:
 				if absf(float(spot[0]) - float(zone["center"][0])) > float(zone["size"][0]) / 2.0 + SYMMETRY_TOLERANCE \
 						or absf(float(spot[1]) - float(zone["center"][1])) > float(zone["size"][1]) / 2.0 + SYMMETRY_TOLERANCE:
 					return "spawns.%s point %s is outside its spawn zone" % [side, spot]
+	var shape_error := ArenaShape.validate(data.get("shape", {}), float(data["half_size"]))
+	if shape_error != "":
+		return shape_error
 	var terrain: Variant = data.get("terrain", [])
 	if typeof(terrain) != TYPE_ARRAY:
 		return "'terrain' must be a list"

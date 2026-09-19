@@ -117,3 +117,79 @@ func test_a_bad_terrain_entry_is_refused() -> void:
 	assert_true(String(Arena.validate(lopsided)).contains("mirror"), "and a channel on one side only")
 	var unknown := _layout([{"kind": "lava", "name": "x", "rect": [0.0, 0.0, 10.0, 10.0]}])
 	assert_true(String(Arena.validate(unknown)).contains("unknown terrain kind"), "as is a kind we cannot build")
+
+
+## Round 7, contract D: the perimeter handed to control (camera cutaway) and feel (walls, stands, gates) once at
+## load. The spans exist because control's occlusion question is POSITIONAL -- feel's base side is stands, then the
+## gate its army enters through, then stands again, and one value per edge could not describe the very first
+## layout anyone tried to write with it.
+func test_every_layout_today_is_a_square_and_nothing_had_to_change() -> void:
+	for layout_name in Arena.layout_names():
+		var layout: Dictionary = Arena.load_layout(layout_name)["layout"]
+		var points := Arena.perimeter(layout)
+		assert_eq(points.size(), 4, "%s is a square until it says otherwise" % layout_name)
+		var edges := Arena.perimeter_edges(layout)
+		assert_eq(edges.size(), 4, "%s has four edges" % layout_name)
+		assert_eq(edges[0]["spans"].size(), 1, "%s: one span per edge by default" % layout_name)
+		assert_eq(String(edges[0]["spans"][0]["kind"]), "stands", "%s: stands behind all of it" % layout_name)
+
+
+func test_a_hexagon_is_the_shape_that_varies_most() -> void:
+	var apothem := Match.ARENA_HALF_SIZE
+	var width_at := func(kind: String, z: float) -> float:
+		var v := ArenaShape.vertices(kind, apothem)
+		var xs: Array = []
+		for i in v.size():
+			var a: Vector2 = v[i]
+			var b: Vector2 = v[(i + 1) % v.size()]
+			if (a.y - z) * (b.y - z) <= 0.0 and not is_equal_approx(a.y, b.y):
+				xs.append(a.x + (z - a.y) / (b.y - a.y) * (b.x - a.x))
+		xs.sort()
+		return float(xs[xs.size() - 1]) - float(xs[0]) if xs.size() >= 2 else 0.0
+	# The reason the hexagon was chosen over the octagon, kept as a gate so nobody "simplifies" the shape later
+	# without seeing what it costs: wide in the middle, pinched at the approaches.
+	var hex_mid: float = width_at.call("hexagon", 0.0)
+	var hex_near: float = width_at.call("hexagon", 60.0)
+	var oct_mid: float = width_at.call("octagon", 0.0)
+	assert_true(hex_mid > oct_mid * 1.1, "a hexagon gives more lateral room at midfield (%.0f m vs %.0f m)" % [hex_mid, oct_mid])
+	assert_true(hex_near < hex_mid * 0.85, "and pinches at the approaches (%.0f m vs %.0f m)" % [hex_near, hex_mid])
+
+
+func test_a_base_side_can_be_stands_then_gate_then_stands() -> void:
+	var apothem := Match.ARENA_HALF_SIZE
+	var side := ArenaShape.edge_length("hexagon", apothem)
+	var gate_from := side / 2.0 - 9.25
+	var gate_to := side / 2.0 + 9.25
+	var base_side := {"spans": [{"kind": "stands", "to_m": gate_from}, {"kind": "gate", "to_m": gate_to},
+			{"kind": "stands", "to_m": side}]}
+	var plain := {"spans": [{"kind": "stands", "to_m": side}]}
+	var shape := {"kind": "hexagon", "edges": [base_side, plain, plain, base_side, plain, plain]}
+	assert_eq(ArenaShape.validate(shape, apothem), "", "a base side with a gate in the middle validates")
+	var edges := ArenaShape.edges(shape, apothem)
+	assert_eq(edges[0]["spans"].size(), 3, "and reads back as three spans")
+	assert_eq(edges[0]["spans"][1]["kind"], "gate", "with the gate in the middle")
+	assert_near(float(edges[0]["spans"][1]["from_m"]), gate_from, 0.01, "carrying an explicit from_m")
+	# Contiguity is structural: spans are authored by where they END, so a gap is not expressible.
+	var cursor := 0.0
+	for span: Dictionary in edges[0]["spans"]:
+		assert_near(float(span["from_m"]), cursor, 0.01, "spans are contiguous by construction")
+		cursor = float(span["to_m"])
+	assert_near(cursor, side, 0.01, "and cover the whole edge")
+
+
+func test_an_asymmetric_perimeter_is_refused() -> void:
+	var apothem := Match.ARENA_HALF_SIZE
+	var side := ArenaShape.edge_length("hexagon", apothem)
+	var plain := {"spans": [{"kind": "stands", "to_m": side}]}
+	var gated := {"spans": [{"kind": "gate", "to_m": 20.0}, {"kind": "stands", "to_m": side}]}
+	# Rotating 180 degrees maps edge k onto edge k+3, so a gate on one base side and not the other is a gate only
+	# one army has. An asymmetric perimeter is an asymmetric navmesh bake, which is worth 64% of matches.
+	var lopsided := {"kind": "hexagon", "edges": [gated, plain, plain, plain, plain, plain]}
+	assert_true(String(ArenaShape.validate(lopsided, apothem)).contains("point-symmetric"),
+			"a gate on one side only is refused: %s" % ArenaShape.validate(lopsided, apothem))
+	var short := {"kind": "hexagon", "edges": [{"spans": [{"kind": "stands", "to_m": 10.0}]}, plain, plain,
+			{"spans": [{"kind": "stands", "to_m": 10.0}]}, plain, plain]}
+	assert_true(String(ArenaShape.validate(short, apothem)).contains("but the edge is"),
+			"and spans that do not cover the edge")
+	assert_true(String(ArenaShape.validate({"kind": "pentagon"}, apothem)).contains("unknown arena shape"),
+			"as is a shape whose bake we cannot mirror")

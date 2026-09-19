@@ -28,6 +28,12 @@ const PROPS := {
 	# A neon sign on a post: spectacle only.
 	"sign": {"size": [0.4, 6.0, 0.4], "cover": "none", "collides": false},
 }
+## **Adding a type here is not an additive change.** `test_every_kit_prop_type_has_a_visual_slot` requires a
+## `prop.<type>` slot in the theme for every entry, with no stand-in — so a new kind must land in the SAME COMMIT
+## as its slot and its scene, which means whoever owns the art adds both. Round 7: `block` (feel's cityscape kit,
+## agreed at 40 x 24 x 40 m, `cover: "hard"`) is waiting on that, deliberately, rather than being added here first
+## and breaking render's check for every stream.
+##
 ## Keys a prop may carry for its look (read by the visual's setup(prop)); they never affect gameplay or symmetry.
 const LOOK_KEYS := ["faction", "paint", "stencil", "rust", "doors", "channel", "sign", "color", "variant"]
 ## Region kinds the AI and the measurements understand (_agents/arenas.md defines each).
