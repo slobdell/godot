@@ -37,8 +37,9 @@ the nearest hull ahead** within 8 m (friend or enemy), else `"no_path"` when the
 goal, else `"terrain"`. `yielding` — giving way to a friend that asked (X4); `blocked_by` and `yield_to` name it.
 
 **The guarantee:** a unit with a destination arrives or reports `blocked` with a reason. It never stands still
-silently. (Round 5's brains declared a stalled move *complete* from 12 m away — `TankBrain.ORDER_STALL_ARRIVE`. That
-goes in its own measured commit once squad's precedence fixes are on main, at the orchestrator's request.)
+silently. Round 5's brains declared a stalled move *complete* from 12 m away (`TankBrain.ORDER_STALL_ARRIVE`); that was
+deleted at `c8c7a79d`, measured with `make nav-orders` (a unit "completing" 8 m short in a maze corridor had been the
+cause of the one unit that never arrived).
 
 **Determinism.** Everything a decision reads is per tick: stall counts in ticks (`_step` under a controller stride),
 `delta` = the fixed tick. The blocker scan walks `tanks_root` in scene order and keeps the nearest, strictly, so ties
@@ -65,7 +66,20 @@ it steers at a fixed corner instead (a carrot that slides with the hull never ge
 re-planned when the goal moves > 1 m, the hull is > 5 m off it, it has stalled for 2 s, or every 4 s as a safety net —
 not every second as in round 5: the navmesh is static, so a route only goes stale when the hull or the goal moves.
 
+## X8: factions by their gains
+
+`ControlGains.FACTIONS` overrides the default station-keeping gains per faction (the Condemned are the default): the
+Syndicate crisp (kp 1.5, kd 0.9), the gangs loose (kp 0.45, kd 0.05), the Law damped (kp 0.7, kd 1.2). The mover
+builds its regulator from the unit's faction. A goal re-issued unchanged after 0.35 s means the slot stopped, and
+feed-forward stops with it (before that fix every crew overshot a halting slot by ~3.2 m).
+
 ## Measuring
+
+`make nav-suite` runs arena's probe over arenas × sizes × traffic in parallel; `make nav-where` is one run that also
+names every unit that didn't arrive, where it is and what its Movement says; `make nav-orders` is the lead's own test
+WITH BRAINS (5 player squads ordered across one another through control's Orders), recording when each order
+completes and how far from its goal the unit really was. `--nav-off=…` switches single mechanisms off for an A/B
+(grace, minpace, pushidle, carrot, yield, unstick, repath; `r5sidestep` turns round 5's sidestep back on).
 
 `make nav-maze` (arena's, `tests/arena/maze_probe.gd`) is the acceptance instrument: it only watches positions, so it
 keeps meaning the same thing whatever nav rewrites. Note it drives plain `OrderController`s, not brains — round 5's
