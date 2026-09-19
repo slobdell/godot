@@ -121,10 +121,14 @@ func test_the_ui_stays_cheap_with_a_full_army_selected() -> void:
 	await _frames(2)
 	await f.key(KEY_A, false, true)
 	await _frames(2)
+	# Under orders, so the order marks (round 7) have every unit's order to read.
+	f.controls.order_selection("attack_move", {"to": [0.0, -40.0]})
+	await _frames(2)
 	var rounds := 30
 	var costs := {}
 	var work := {
 		"vision_state": func() -> void: f.controls.vision_state(),
+		"order_marks": func() -> void: f.controls.order_marks(),
 		"awareness": func() -> void: f.controls.awareness.update(0.016),
 		"edge_markers": func() -> void: f.markers.markers(),
 		"panel_summary": func() -> void: panel.summary(),

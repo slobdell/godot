@@ -1025,6 +1025,7 @@ func _draw() -> void:
 	_draw_health()
 	_draw_callouts()
 	_draw_facing()
+	_draw_order_marks()
 	if _pause_text != "" and get_tree().paused:
 		var font := CyberStyle.font()
 		var text_size := roundi(22.0 * CyberStyle.ui_scale(size))
@@ -1076,6 +1077,111 @@ func _draw_callouts() -> void:
 		var at: Vector2 = callout["at"] - Vector2(width / 2.0, 0.0)
 		draw_string_outline(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, 3, Color.BLACK)
 		draw_string(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, CyberStyle.YELLOW if word == "YIELDING" else GameTheme.ui["enemy"])
+
+
+## Round 7: orders you can see surviving the weave. nav and squad measured most of a unit's churn under an order as the
+## evasion the lead asked for (jinking, strafing inside one decision), which can read as a unit that forgot its order.
+## So for the selection, each order stays on screen until done: a ground ring at the ordered point in the verb's colour,
+## the task's own symbol above it (the card's and the preview's), a lead line from the group, and "2/3 there".
+## A squad on a task shows the TASK the player gave (Screen), not its leader's moves.
+const ORDER_ARRIVED_M := 8.0
+const ORDER_MARK_PX := 34.0
+const ORDER_VERB_NAMES := {"move": "MOVE", "attack_move": "ATTACK-MOVE", "attack": "ATTACK", "follow": "FOLLOW",
+		"hold": "HOLD", "screen": "SCREEN", "support_by_fire": "SUPPORT BY FIRE", "ambush": "AMBUSH"}
+
+
+## [{"verb", "point": Vector3, "units": int, "arrived": int, "from": Vector3 (the group's middle), "task": bool}] for
+## the selection. Runs every frame: one node lookup and one order read per unit (budgeted in test_control_scale).
+func order_marks() -> Array:
+	var result: Array = []
+	if game_match == null or orders == null or selection.units.is_empty():
+		return result
+	var element := selected_element()
+	if element != null and not element.task.is_empty() and element.task.has("to"):
+		var to: Array = element.task["to"]
+		var verb := String(element.task.get("verb", ""))
+		if verb == "move" and bool(element.task.get("drills", true)):
+			verb = "attack_move"  # a move task with drills is what the player asked for as attack-move
+		var mark := {"verb": verb, "point": Vector3(float(to[0]), 0.0, float(to[1])), "task": true}
+		for unit_name in element.members():
+			_count_into(mark, String(unit_name), orders.current(String(unit_name)))
+		result.append(_finish_mark(mark))
+		return result
+	var by_order := {}
+	var ids: Array = []
+	for unit_name in selection.units:
+		var order := orders.current(unit_name)
+		if not order.has("to"):
+			continue
+		var id := int(order.get("id", -1))
+		if not by_order.has(id):
+			ids.append(id)
+			by_order[id] = {"verb": String(order["verb"]), "point": Vector3(float(order["to"][0]), 0.0, float(order["to"][1])),
+					"task": false}
+		_count_into(by_order[id], unit_name, order)
+	ids.sort()
+	for id in ids:
+		result.append(_finish_mark(by_order[id]))
+	return result
+
+
+func _count_into(mark: Dictionary, unit_name: String, order: Dictionary) -> void:
+	var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+	if tank == null or not tank.is_alive():
+		return
+	var at := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+	mark["units"] = int(mark.get("units", 0)) + 1
+	mark["from"] = (mark.get("from", Vector3.ZERO) as Vector3) + at
+	var goal: Variant = Orders.goal_of(order, game_match) if not order.is_empty() else null
+	var target: Vector3 = goal if goal is Vector3 else mark["point"]
+	if order.is_empty() or at.distance_to(target) <= ORDER_ARRIVED_M:
+		mark["arrived"] = int(mark.get("arrived", 0)) + 1
+
+
+func _finish_mark(mark: Dictionary) -> Dictionary:
+	mark["units"] = int(mark.get("units", 0))
+	mark["arrived"] = int(mark.get("arrived", 0))
+	mark["from"] = (mark.get("from", Vector3.ZERO) as Vector3) / maxf(mark["units"], 1.0)
+	return mark
+
+
+## "SCREEN · 2/3 there · 40 m" - what the marker says under its symbol.
+func order_mark_label(mark: Dictionary) -> String:
+	var words := String(ORDER_VERB_NAMES.get(mark["verb"], String(mark["verb"]).to_upper()))
+	var left := (mark["from"] as Vector3).distance_to(mark["point"])
+	if int(mark["arrived"]) >= int(mark["units"]):
+		return "%s · there" % words
+	return "%s · %d/%d there · %d m" % [words, mark["arrived"], mark["units"], roundi(left)]
+
+
+func _draw_order_marks() -> void:
+	var font := CyberStyle.font()
+	var scale := CyberStyle.ui_scale(size)
+	var px := roundi(14.0 * scale)
+	var glyph_px := ORDER_MARK_PX * scale
+	for mark: Dictionary in order_marks():
+		var color := _order_color(String(mark["verb"]))
+		var at: Variant = _screen_point(mark["point"])
+		if at == null:
+			continue
+		_draw_ground_ring(mark["point"], 6.0, Color(color, 0.8), 2.0)
+		var from: Variant = _screen_point(mark["from"])
+		# Direct orders already have each unit's dashed line (_draw_waypoints); a squad task gets one from its middle.
+		if bool(mark.get("task", false)) and from != null and int(mark["arrived"]) < int(mark["units"]):
+			draw_line(from, at, Color(color, 0.35), 1.5)
+		# A pin: a stalk up from the ring to the task's symbol on a dark disc, readable over any ground at 21°.
+		var head := (at as Vector2) - Vector2(0.0, glyph_px * 1.6)
+		draw_line(at, head + Vector2(0.0, glyph_px * 0.5), Color(color, 0.7), 2.0)
+		draw_circle(head, glyph_px * 0.62, Color(0, 0, 0, 0.6))
+		draw_arc(head, glyph_px * 0.62, 0.0, TAU, 32, Color(color, 0.9), 1.5, true)
+		var verb := String(mark["verb"])
+		if CommandIcons.has_task_graphic(verb):
+			draw_texture_rect(CommandIcons.task_texture(verb), Rect2(head - Vector2.ONE * glyph_px * 0.42, Vector2.ONE * glyph_px * 0.84), false, color)
+		var label := order_mark_label(mark)
+		var text_size := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, px)
+		var plate := Rect2(head + Vector2(glyph_px * 0.8, -text_size.y * 0.5 - 3.0), text_size + Vector2(10.0, 6.0))
+		draw_rect(plate, Color(0, 0, 0, 0.6))
+		draw_string(font, plate.position + Vector2(5.0, 3.0 + font.get_ascent(px)), label, HORIZONTAL_ALIGNMENT_LEFT, -1, px, color)
 
 
 ## Round 7 (A): which way each selected vehicle points - a chevron on the ground ahead of its hull - and, for a gun that

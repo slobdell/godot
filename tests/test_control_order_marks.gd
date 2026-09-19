@@ -1,0 +1,35 @@
+extends TestCase
+## Round 7, from nav's and squad's measurements: most of a unit's churn under an order is the evasion the lead asked for,
+## and it may read to him as a unit that forgot its order. So the order stays on screen until it is done: a marker at
+## the ordered point with the task's own symbol, a lead line from the group, and how many have got there.
+
+const Fixture := preload("res://tests/support/control_fixture.gd")
+
+
+func test_an_order_stays_on_screen_until_the_squad_gets_there() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
+	assert_eq(f.controls.order_selection("attack_move", {"to": [0.0, -40.0]}), "", "the selection is sent somewhere")
+	var marks := f.controls.order_marks()
+	assert_eq(marks.size(), 1, "one marker for the one order")
+	var mark: Dictionary = marks[0]
+	assert_eq(mark["verb"], "attack_move", "it names the order")
+	assert_true((mark["point"] as Vector3).distance_to(Vector3(0, 0, -40)) < 1.0, "at the ordered point")
+	assert_eq(int(mark["units"]), 3, "for the three units carrying it")
+	assert_eq(int(mark["arrived"]), 0, "none there yet")
+	assert_true(String(f.controls.order_mark_label(mark)).begins_with("ATTACK-MOVE"), "labelled in the player's words (%s)" % f.controls.order_mark_label(mark))
+	# Two of them get there: the mark counts them, and the order is still shown for the third.
+	for unit_name in ["Green_Alpha_1", "Green_Alpha_2"]:
+		var goal: Vector3 = Orders.goal_of(f.orders.current(unit_name), f.game_match)
+		f.place(unit_name, goal)
+	assert_eq(int(f.controls.order_marks()[0]["arrived"]), 2, "two of three there")
+	assert_true(f.controls.order_mark_label(f.controls.order_marks()[0]).contains("2/3"), "and it says so")
+
+
+func test_nothing_selected_or_nothing_ordered_draws_nothing() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	assert_true(f.controls.order_marks().is_empty(), "no selection, no marks")
+	await f.select(["Green_Alpha_1"])
+	assert_true(f.controls.order_marks().is_empty(), "no order, no marks")
