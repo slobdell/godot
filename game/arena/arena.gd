@@ -38,9 +38,25 @@ extends Node3D
 signal navigation_ready
 
 const DEFAULT_LAYOUT := "foundry"
-## X6: the arenas `--arena=random` chooses from: only layouts that passed the swap-bases fairness control
-## (_agents/arenas.md). A choice is seeded, so every peer given the same --seed builds the same arena.
-const ROTATION := ["yard", "boulevard", "pit", "boneyard"]
+## X6: the arenas `--arena=random` chooses from: layouts that passed the swap-bases fairness control
+## (_agents/arenas.md) **and that the lead kept**. A choice is seeded, so every peer given the same --seed builds
+## the same arena.
+##
+## Narrowed to the two he kept (round 8, 2026-09-19). His verdict is recorded in `_agents/game_design.md`
+## *The lead's arena verdict*: **Pit KEEP, Yard KEEP, Boulevard CUT, Boneyard CUT**, confirmed in words as well as
+## buttons. Boulevard and boneyard stayed in this list for a full round after he cut them, so **half of every
+## `make skirmish` he played was a map he had already rejected** — `make skirmish` passes `--arena=random`, and
+## random read this line, not his verdict.
+##
+## **That is the whole reason this comment is long: the decision existed only in prose.** It sat in `game_design.md`
+## where every stream could read it and no code could, which is the failure this project keeps writing lessons
+## about. A verdict that never reaches a constant is a verdict the game does not have.
+##
+## The cut layouts are NOT deleted — they still load by name for tests, probes and comparisons, and boulevard is
+## still the ground several measurements were taken on. `DEFAULT_LAYOUT` stays `foundry` on purpose: **what the
+## suite runs on and what he plays do not have to be the same map**, and conflating them is how his verdict went
+## missing in the first place.
+const ROTATION := ["yard", "pit"]
 const LAYOUT_DIR := "res://arenas"
 ## Obstacle types with a built-in collision size [x, height, z] (meters, before rotation). Other types need "size".
 const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}
