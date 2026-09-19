@@ -35,6 +35,10 @@ the bar.
 learning*, below). *"Take full advantage of the academic knowledge"* means **find the established answer and implement it
 properly**, not build something clever. The failure mode to avoid is a bespoke solution to a solved problem.
 
+**The concrete roster lives in [algorithms.md](algorithms.md)** — every established technique, what we have, what we
+**owe**, the canonical reference for each, and the measured symptom it addresses. That file exists because the gaps were
+first named only in a message to one stream, which is the failure this project keeps writing lessons about.
+
 **And it does not suspend determinism** ([determinism.md](determinism.md)): replays, networked play and the sim baseline
 all require the same inputs to produce identical output, and `sin`/`cos` already differ across builds. **A "best
 algorithm" that cannot be made deterministic is not available to us** — which rules out learned policies and any
