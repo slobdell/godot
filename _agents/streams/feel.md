@@ -129,6 +129,25 @@ place, you do not place).
 
 ## Status
 
+### Resumed after the quota stop — current state (read this, then the handover below for detail)
+
+- **Green: `42a6bc5f`** (builder0 `make check`: 1138 passed, 0 failed) — unit scale, MG tracers (shell tracer
+  rebalanced to 0.7 so it stays over twice any bullet: the first check at 82f99c6e failed `test_fx_tank_shell` on that),
+  MG sound, announcer trail-off. Sent to the orchestrator.
+- `f7878bdd` (unchecked, small): music-smoke and announcer-record-smoke compare against a same-match control run
+  instead of the shared baseline (combat's report: they failed and blamed the music/booth whenever the baseline moved).
+- **Announcer, awaiting the lead's ear:** 10 clips in `build/announcer-cuts/` (booth-only and full mix, one pair per
+  interruption, 150 s real-pace match on builder0 with the fix). Waveforms: no silence after any cut, largest 100 ms
+  drop at a cut 4–9 dB (was a near-total drop in 0.08 s). Not reported fixed until he has listened.
+- **combat's `test_it_follows_a_mood_signal` full-suite failure does not reproduce on this tree** (passes in the green
+  full check; the 13-file prefix passes 82/0 on the laptop). Replied with a file-list bisect recipe.
+- **Arena shape settled: hexagon, flat side to each base** (arena's reasoning; the stands tile it: 6 modules of
+  23.07 m on a 139.7 m side). Owed when the stands are reshaped: **the stands' height profile as data beside the kit**
+  (control's cutaway reads it; stop them measuring `kit_stands`), and a **gate placement** (below).
+- Round 7 (next): a **cityscape arena kit** — the X4 skyline made playable: parameterised blocks, collision and visual
+  from one recipe; solid buildings in `navigation_source` on layer 1, low walls barricade-style, everything above eye
+  height scenery only; chamfered edges as the finish, decided together with arena's perimeter; budget per StaticBatcher.
+
 ### HANDOVER — read this first (2026-09-18, ~21:05, weekly quota about to stop this session for ~4 days)
 
 **Tree:** `stream/feel` is clean at `82f99c6e` (plus this Status commit). **Last green: `b00b8ff9`** (builder0 check,
