@@ -169,9 +169,12 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	var kept: Variant = state.get("anchor")
 	var holding: bool = kept is Vector3 and (kept as Vector3).distance_to(destination) < 0.5
 	var center: Vector3 = situation["center"]
+	var told: Variant = ElementTask.facing(state.get("task", {}))
 	if holding and state.get("heading") is Vector3 and String(state.get("formation", "")) != "":
 		plan["heading"] = state["heading"]
 		plan["formation"] = String(state["formation"])
+	elif told is Vector3:
+		plan["heading"] = told  # the player said which way: lay the formation facing it
 	else:
 		plan["heading"] = TacticsFormation.flat(destination - center) if center.distance_to(destination) > 2.0 \
 				else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
@@ -181,6 +184,10 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
 	_group(plan, slot_order(situation), String(plan["formation"]), destination, plan["heading"],
 			table.spacing(String(situation["terrain"])), "move")
+	if told is Vector3:
+		# A facing the player chose is everyone's facing, not the formation's all-round sectors.
+		for unit_name: String in plan["sectors"]:
+			plan["sectors"][unit_name] = 0.0
 
 
 ## Bounding overwatch: one half moves, the other covers it by fire, then they swap. A bound never goes

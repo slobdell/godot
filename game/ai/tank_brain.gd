@@ -1684,7 +1684,7 @@ func _act(s: Dictionary) -> void:
 			var goal: Vector3 = o["goal"]
 			why = TankBrain._join(why, "attack-move" if o["verb"] == "attack_move" else "ordered")
 			if _flat(my_position).distance_to(goal) <= _order_arrive():
-				_order_move({"type": "stop"})
+				_order_move(_face_intended_or({"type": "stop"}))
 			else:
 				_order_move(_move_to(goal, false, float(o["speed"]), _order_arrive()))
 			_order_weapon({"type": "fire_at_will"})
@@ -2045,7 +2045,7 @@ func _act(s: Dictionary) -> void:
 				var look: Vector3 = my_position + (s["squad"]["facing"] as Vector3) * 20.0
 				_order_move({"type": "face", "x": look.x, "z": look.z})
 			else:
-				_order_move({"type": "stop"})
+				_order_move(_face_intended_or({"type": "stop"}))
 			_order_weapon({"type": "fire_at_will"})
 
 
@@ -2243,6 +2243,44 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 
 
 ## Turn the hull toward the nearest visible enemy (front armor, and a fixed gun's aim), else `fallback`.
+## Round 6 (the lead: "I couldn't tell what direction they were facing"): the facing this unit was TOLD to hold — the
+## `facing` of its current K1 order, else the heading of the post its last order left it at (Orders.station: that
+## order's facing, or the way it travelled). null when nothing says. K1 has carried `facing` since round 5; until round 6
+## the brain never read it (OrderFeed passes verb, goal, target and speed only), so a unit told to face east faced north.
+func intended_facing() -> Variant:
+	if _order_source == null or tank == null:
+		return null
+	var unit_name := String(tank.name)
+	if _order_source.has_method("current"):
+		var raw: Variant = _order_source.call("current", unit_name)
+		if raw is Dictionary and not (raw as Dictionary).is_empty():
+			return TankBrain._direction_of((raw as Dictionary).get("facing"))
+	if _order_source.has_method("station"):
+		var post: Variant = _order_source.call("station", unit_name)
+		if post is Dictionary:
+			return TankBrain._direction_of((post as Dictionary).get("heading"))
+	return null
+
+
+## Turn to the intended facing if there is one, else `fallback`.
+func _face_intended_or(fallback: Dictionary) -> Dictionary:
+	var facing: Variant = intended_facing()
+	if facing == null:
+		return fallback
+	var look: Vector3 = _flat(tank.global_position) + (facing as Vector3) * 20.0
+	return {"type": "face", "x": look.x, "z": look.z}
+
+
+## [x, z] (or a Vector3) as a flat unit direction, or null.
+static func _direction_of(value: Variant) -> Variant:
+	var direction := Vector3.ZERO
+	if value is Vector3:
+		direction = Vector3((value as Vector3).x, 0.0, (value as Vector3).z)
+	elif value is Array and (value as Array).size() == 2:
+		direction = Vector3(float(value[0]), 0.0, float(value[1]))
+	return direction.normalized() if direction.length_squared() > 1e-6 else null
+
+
 static func _face_threat_or(s: Dictionary, fallback: Dictionary) -> Dictionary:
 	var my_position: Vector3 = s["self"]["position"]
 	var nearest: Variant = null
