@@ -262,6 +262,45 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Round 8 (nav, 2026-09-19) — read this first when resuming round 8
+
+The lead's verdict on round 7 was "it still sucks". The orchestrator set the order: (1) angular acceleration at the plant, plus
+the semi trucks "yawing in place"; then reproduce the lead's stall in a probe; then (3) flow fields as their own
+checkpoint, judged on a pre-registered metric that is not attack-move progress. (2) Reeds–Shepp for wheeled hulls comes in
+wherever it fits.
+
+**Done**
+- **Yaw ramp, `9f8c21e2`.** Tracks and hover reach their turn rate over `YAW_RAMP_SECONDS` = 0.25 s, or over
+  `hull_turn_accel_deg_s2` when a unit's catalog entry has one (`TankMotion._ramped_yaw`).
+  - `make nav-rotation-numbers` on builder0: the tank pivot now reaches 90% of its peak rate in 7 ticks (it was 1), so it
+    is smooth.
+  - The scout's K-turn still overshoots by 20.7°: robotic(b), left for Reeds–Shepp.
+- **Semi in isolation (`truck` case).** Told to face 90°, `gang_tank` turned 7° while it was within 1.5 m of its start,
+  and travelled 5.5 m. It does not yaw in place.
+- **Stall repro, `nav-fight-maps`, attack_move, arena's counters.** Oscillation was 5.3–6.6% on yard, boulevard, pit
+  and boneyard, with commitment on. That meets the pre-registered bar for "the back-and-forth is real" (≥ 5% on any
+  map), and it is churn, not terrain: `blocked_terrain` is about 0, and under plain move units progress about 90% of the
+  time. The lead has ruled (main `f5526594`): manoeuvring is smart, churn is not.
+- **In-place yaw in fights, gangs vs gangs (tree `9f8c21e2`, builder0, 120 s, seed 3).** This run is INVALID for semis:
+  the seed fielded `gang_hail` on both sides, so no `gang_tank` was on the field. On the units it did field, scouts
+  produced 185–262 events per map, 3–5× every other type. Laptop smoke on `2649d448`: most scout events are `wobble`.
+  - Fixes: `FIGHT_GREEN_ARMY`/`FIGHT_RUST_ARMY` pin the archetype (`2649d448`).
+  - `--require=`/`FIGHT_REQUIRE` refuses a run without the unit under test, and nav-fight-maps fails when any run
+    refuses (`485c2788`).
+  - The diagnostic split `turned` / `wobble` / `crept` is not part of the pre-registered count.
+
+**Pre-registered, written BEFORE the run: does commitment change scout wobble?** This asks whether the heading wobble is
+the same churn as the attack-move oscillation.
+- Run: gang_ram vs gang_pack, `FIGHT_REQUIRE=gang_tank`, the 4 maps, busy 0, seed 3, 120 s, builder0. One arm with
+  commit on, one with `NAV_FLAGS=--nav-off=commit`. Each arm is verified from its `NAV_FIGHT_ARM` line.
+- Metric: scout `wobble` events per scout alive-minute, per map, paired by map.
+- Rule:
+  - Commit on is ≥ 30% lower than commit off on ≥ 3 of the 4 maps: **same phenomenon.** Fix it with the churn.
+  - Within ±10% on all 4 maps: **not commitment-related.** Look at steering jitter in the wheeled controller.
+  - Anything else: inconclusive.
+- Semi verdict from the commit-on arm (the game as shipped): ≥ 1 pre-registered event per semi alive-minute on any map
+  means the lead's report reproduces; 0 on all maps means it does not reproduce in fights either.
+
 ### Round 7 report (nav, 2026-09-19) — read this first when resuming round 7
 
 **Green, merge here: `d963d9ad`** (builder0: `test` 1191/1 — the 1 is control's `test_radar`, a static leaked by
