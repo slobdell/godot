@@ -17,6 +17,8 @@ extends RefCounted
 ## Metres per cell, and the diagonal's cost in the sweep (√2, so diagonal travel isn't cheaper than it is).
 const CELL_M := 2.0
 const DIAGONAL := 1.4142135
+## How many goals' fields are kept before the cache is dropped.
+const MAX_FIELDS := 64
 ## Goals within this distance share a field (the whole point: one sweep for an army).
 const SAME_GOAL_M := CELL_M
 
@@ -45,6 +47,11 @@ static func for_goal(node: Node3D, goal: Vector3) -> FlowField:
 	var have: Variant = _fields.get(key)
 	if have is FlowField and (have as FlowField).goal.distance_to(goal) <= SAME_GOAL_M:
 		return have
+	# A sweep is only cheap when units SHARE goals. Thirty units with thirty goals is thirty sweeps, so the cache is
+	# capped and dropped wholesale rather than growing without bound; what that costs is condition 5 of the
+	# pre-registration (planning cost per tick), and it is the measurement this design is expected to be weakest on.
+	if _fields.size() >= MAX_FIELDS:
+		_fields.clear()
 	var field := FlowField.new()
 	field.goal = goal
 	field._sweep(key)
