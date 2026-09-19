@@ -1393,3 +1393,30 @@ The kickoff prompt is one line; this section is the rest.
     Two agents each held half of it. **A worker who has solved a process problem should assume the orchestrator has not**,
     and say so; and the orchestrator should ask *"has anyone already hit this?"* before issuing a reading rule, because in
     a star topology only the centre can connect two halves — and the centre is the one who was wrong.
+97. **The thing that moves the code to the machine is the thing that strips the identity of the code.** combat built the
+    mechanical guard for mismatched comparisons — `tools/run_conditions.py`, so `faction_matrix` and `engagement_report`
+    print `run: <machine> at <commit>` and record `{machine, commit, dirty}` in their json — and found while checking it
+    that **`tools/remote.sh` excludes `.git/` from its rsync.** So on **builder0, where nearly every measurement this
+    project quotes is taken, there is no repository to ask**, and a naive helper would have printed `commit: unknown`
+    exactly where it matters most. Fixed in `remote.sh` (orchestrator's file): the commit and dirty flag are captured
+    locally and exported into the remote environment, with the helper falling back to git when run locally.
+    - **`dirty` is the load-bearing field, not `commit`.** An rsync carries uncommitted changes, so on a dirty tree the
+      commit **does not identify what ran**. combat made the helper shout about it — the case most worth seeing and the
+      easiest to miss, since a dirty tree is the normal state of a working stream.
+    - **combat found it by checking whether the helper worked *remotely before* wiring it in**, not after. A guard that is
+      only exercised in the environment it was written in is untested where it is needed.
+    - **The general form: every transport boundary is a place where context is silently dropped** — rsync without `.git`,
+      a pipe that loses an exit code, a patch that loses the commit providing its symbols, a summary that loses which
+      targets ran. **Name what each boundary drops, and carry it explicitly across.**
+98. **Agreement reached from different premises looks identical to agreement, and it is the cheapest place to lose a
+    finding.** combat's mirror of *a worker who has solved a process problem should assume the orchestrator has not*:
+    > *"When an instruction matches what you already do, that is the moment to check whether it matches for the **same
+    > reason**. Mine matched your rule by coincidence — I had run the skipped targets because I distrusted the skip, not
+    > because I knew the abort position was invisible."*
+    combat had been running the masked targets by hand since that morning. My unsafe rule — *treat a single known failure
+    as green* — **produced the same behaviour from a false premise**, so there was nothing for combat to object to, and the
+    finding stayed put until control hit it independently. **Two agents each held half and the agreement hid the gap.**
+    - **When you find yourself agreeing with an instruction, state your reason, not your assent.** *"Yes, I already do
+      that, because X"* exposes a mismatched X; *"yes"* does not.
+    - This is the social form of lesson 47 (*a guarantee no test isolates*): **a shared conclusion with unshared reasoning
+      is a guarantee nobody is checking.**
