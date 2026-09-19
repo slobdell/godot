@@ -1156,7 +1156,11 @@ baseline that suite before attributing anything to a change (it is not in `check
 _Rewritten 2026-09-19 (second pass). Round 6's list is done; of the list written this morning, **1, 4 and the
 instrument work are done** and the two measurements remain._
 
-1. **The matrices, both maps, both arms — the only backlog item left with a number attached.** `ARENA=boulevard`
+_All backlog items are complete as of 2026-09-19: X1–X6, N7 and X7 (stretch). The list below is what round 8
+would pick up, not outstanding work._
+
+0. ~~**The matrices**~~ — **DONE**, see *X4 — RESULT*. ~~**X7**~~ — **DONE** from committed evidence, no run needed.
+1. **(superseded, kept for the method) The matrices, both maps, both arms.** `ARENA=boulevard`
    (open, 0.64) and `ARENA=yard` (closed, 0.20), each with and without `ABLATE=1`, then subtracted with
    **`make compare-arms`** rather than by eye. Report **per map and per faction, never pooled**; quote both maps or
    neither. The `gangs/scout` question is the same four runs: if the gangs collapse in the ablated arm, the
