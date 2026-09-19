@@ -11,7 +11,13 @@ extends RefCounted
 ##    "queue": false,                        shift: run after the unit's current orders (stop is never queued)
 ##    "formation": "auto" | Formations.NAMES,  how a group arranges itself (default auto: by role and situation)
 ##    "facing": [x, z],                      optional, move / attack_move / hold: which way to face once there (round 5,
-##                                           for doctrine's halts); the group still travels and forms up toward `to`
+##                                           for doctrine's halts); the group still travels and forms up toward `to`.
+##                                           ON A MOVE IT MEANS "ARRIVE ON THIS HEADING" (round 8, with nav and squad):
+##                                           a hull that pivots reads it as "face this once stopped" and the two agree,
+##                                           but a WHEELED hull cannot pivot, so its mover plans the arc into the last
+##                                           leg. One facing, read by each mover according to what it can do. If "get
+##                                           there soon" ever has to differ from "get there facing this way, even if it
+##                                           costs time", that becomes its own key here rather than a second meaning.
 ##    "slot": [right, back],                 optional, follow, ONE unit: its place in the target's frame (round 7, for
 ##                                           elements flowing into formation: a live sliding goal, see Orders.goal_of)
 ##    "source": "player" | "element" | ""}   who asked (optional): the response guarantee and the playtest's
