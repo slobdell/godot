@@ -127,12 +127,19 @@ def main():
     # how many times one PAINTED. Fielded with zero paints means the mechanism did not engage, so the number is not
     # about the mechanism and must not be quoted as though it were.
     unengaged = []
+    fielding_sides, paints = 0, 0
     for (faction, other), results in sorted(outcomes.items()):
-        for result in results:
+        # outcomes holds (result, first_is_green) PAIRS, not bare results -- and team 0 is Green, so which faction a
+        # team index refers to depends on that flag. Getting this wrong is what made the guard crash the tool.
+        for result, first_is_green in results:
             st = result.get("stats", {})
-            for team, side in enumerate((result.get("green", faction), result.get("rust", other))):
+            green_side, rust_side = (faction, other) if first_is_green else (other, faction)
+            for team, side in ((0, green_side), (1, rust_side)):
                 fielded = (st.get("designators_fielded") or [0, 0])[team]
                 painted = (st.get("designations") or [0, 0])[team]
+                if fielded:
+                    fielding_sides += 1
+                    paints += painted
                 if fielded and not painted:
                     unengaged.append(f"{side}: {fielded} designator(s) fielded, 0 paints")
     if unengaged:
@@ -148,6 +155,15 @@ def main():
             os.remove(args.json)
         return 2
     print(f"run: {run_conditions.header()}")
+    # Say what the control SAW, not only that it did not fire. A guard that is silent when it ran and silent when it
+    # never ran is indistinguishable from no guard, which is how the designator got measured twice without engaging.
+    # Zero fielding sides is legitimate when no designating faction is in `--factions`; it is NOT a pass, so it is
+    # printed as "not exercised" rather than left to look like one.
+    if fielding_sides:
+        print(f"positive control: {fielding_sides} side(s) fielded a designator, {paints} paints -- treatment engaged")
+    else:
+        print("positive control: NOT EXERCISED -- no side fielded a designator in this matrix "
+              "(expected when --factions excludes the syndicate, or when no drawn archetype carries one)")
     print(f"{len(jobs) - len(failures)} matches on {args.arena or 'foundry (default)'} at {args.budget} points, "
           f"{time.time() - started:.0f}s wall, "
           f"{args.jobs} jobs (each pairing counterbalanced: same seeds from both colours)")
