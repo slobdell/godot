@@ -85,6 +85,16 @@ scale-bench: import ## X5: sim cost per tick at SCALE_SIZES vehicles a side, wit
 # X4 (round 7): ABLATE=1 is the control arm -- every unit on its plain-role directive instead of its faction's.
 # The flag and the OUTPUT NAME are set from one variable on purpose: two arms writing one filename is how a control
 # silently overwrites its treatment and leaves a single file that looks like both runs.
+# The comparison step is where this stream's measurements have gone wrong, not the running step: a filtered arm
+# against a full one, a laptop arm against a builder0 one, and a control that differed from its treatment only in
+# the name of its file. `compare_arms` refuses those, and refuses the one nobody finds by reading output -- two
+# arms that are secretly the same arm, whose difference is a clean and entirely plausible null.
+match-pytest: ## The match tools' own tests: what compare_arms refuses to subtract, and why
+	$(PYTHON) -m unittest discover -s tools -p 'test_compare_arms.py'
+
+compare-arms: ## Two faction-matrix runs, subtracted per faction (TREATMENT=a.json CONTROL=b.json [FACTION=gangs])
+	$(PYTHON) tools/compare_arms.py --treatment $(TREATMENT) --control $(CONTROL) $(if $(FACTION),--faction $(FACTION))
+
 faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE=) -> build/faction-matrix.json
 	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),6) \
 		--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) $(if $(ARENA),--arena $(ARENA)) \
