@@ -447,9 +447,29 @@ stack first, then the layer that commands it, then how the player reads and issu
   ordered, 30 Hz, Jolt and all of CP4 — so **the directive bug is an unexcluded candidate, not a demonstrated cause, and
   neither is the mechanics story below.** combat has retracted its own attribution in `balance.md` at `0c1fb760`, in
   place, keeping the measurement and striking the cause. **Read the explanation below as one of two candidates.**
-  **What settles it is an ablation, not an argument** (lesson 25 — attribute a cost by *removing* the behaviour):
-  **delete the `gangs/scout` entry on the current build and re-run the matrix.** Collapse toward 23% means the directive
-  did the work; holding near 53% means the mechanics explanation survives. Scheduled after the per-map designator runs.
+  **⚠ ABLATION RUN, AND IT CANNOT ANSWER THE QUESTION — so both numbers are RETIRED rather than explained** (combat,
+  builder0 at `f745f48a`, n=30 per faction per arm, per map, never pooled; positive control fired in all four arms —
+  21 sides fielded a designator, 535/559/758/656 paints; `compare_arms` accepted both subtractions):
+
+  | faction | boulevard (0.64) | yard (0.20) | treated? |
+  |---|---|---|---|
+  | **gangs** | **+7 pts** | **+7 pts** | **yes — the only one** |
+  | law | −7 pts | −10 pts | no |
+  | condemned | +3 pts | +0 pts | no |
+  | syndicate | −3 pts | +3 pts | no |
+
+  **`gangs/scout` is the only faction-keyed entry in `Army.SQUADS`, so every other row measures what an UNTREATED faction
+  does between two arms — and law moved −10 points without being touched, larger than the gangs' +7.** The noise floor is
+  not an argument; it is in the table, measured by factions that received no treatment. SE of a difference of win rates at
+  n=30 is **12.9 points**.
+  **The direction is consistent** (the gangs are worse without their directive on both an open and a closed map) **and it
+  is an order of magnitude short of explaining 23% → 53%.** So **neither CP4 nor the `gangs/scout` fix is established as
+  the cause, and combat claims none of it.**
+  **Most likely the original comparison was never a comparison** — different builds and, on this project's own foundry
+  finding, plausibly different maps. **That is exactly the subtraction `compare_arms` now refuses and could not refuse
+  then.** Resolving ±7 points would need ~n=400 per faction per arm — about SEEDS=70 and four hours of builder0 — for an
+  effect smaller than any balance difference the lead would notice. **Decision: do not chase it. The two numbers are
+  retired.**
   **And the 23% itself was not a false number** — combat's correction, which is the sharper point: *a build in which 15
   assault vehicles sit at standoff spotting while the swarm dies really does win 23%.* **The error was treating a
   measurement of a configuration as a fact about a faction** — the same error as reading a foundry number as a property
@@ -935,7 +955,9 @@ fire, slide *along* the band when rounds come in, and never enter the 6 m ram ga
 | time inside the effective band | — | **91%** |
 
 **Seven times the shots.** The unit was previously spending most of its life driving rather than fighting, which is why it
-read as *dumb* rather than as *badly positioned*. `--nav-off=standoff` restores the old behaviour for A/B.
+read as *dumb* rather than as *badly positioned*. **⚠ `--nav-off=standoff` silently does nothing on `main`** (nav,
+2026-09-19) — a static-initialisation-order bug, fixed by resolving switches at read time. The measurements above were
+taken by assigning the style directly and are unaffected; only the command-line A/B was broken.
 
 **The design lesson, and it generalises past scouts:** *the unit whose weapon cannot turn must place its whole vehicle
 where the weapon needs to be, and then stop.* A fixed gun is a positioning problem, not an aiming one. Round 3's `run`
@@ -964,6 +986,21 @@ independently without either seeing the whole:**
 brain ignored it. **Three independent failures of one feature, none of which any test noticed**, because nothing asserted
 the *outcome* — that a unit told to face a direction ends up facing it. That is lesson 47's shape again: a guarantee no
 test isolates.
+
+**MEASURED AFTER THE FIX (nav, on squad's `bfcc2607`, builder0, yard, 30 player units in 5 squads each ordered to face
+90° off their direction of travel — same probe and same configuration as the "before"):**
+
+| units within 15° of the ordered facing | before | after |
+|---|---|---|
+| **MOVE + facing**, at +10 s | **2/30** | **27/30** (median **1.6°**; 20/30 already at +2 s, 24/30 at +5 s) |
+| **HOLD + facing**, at +10 s | **1/29** | **21/30** (median **5.5°**; 15/30 at +2 s, 18/30 at +5 s) |
+
+**For the lead, in one line: an ordered facing now actually happens, within seconds, for about 9 in 10 units on a move.**
+
+**The remaining tail is named rather than hidden:** move leaves 3 units off after 10 s (worst **136°**), hold leaves 9 off
+(worst **73°**). **Hold settles slower and less completely than move**, and nav's hypothesis is that **wheeled units cannot
+pivot** — a car rolls round at `WHEELS_MIN_THROTTLE` instead of turning on the spot — or that units are still settling onto
+their position. nav owns the execution of *face* and will diagnose the tail after the commitment A/B.
 
 **Why this matters beyond the complaint:** round 6 made facing *mechanically* real in four places — armour facing, the
 crossing-acquisition penalty, support-by-fire arcs, `UnitCommand.facing`. **All four were operating on a quantity the

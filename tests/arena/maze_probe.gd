@@ -96,6 +96,11 @@ func _run() -> void:
 ## run before the far side was reached.
 func _deploy(wanted: int) -> void:
 	var both_ways := OS.get_cmdline_user_args().has("--both-ways")
+	# A layout has a fixed number of spawn points (52 today) and `Arena.spawn_spot` wraps with `slot % size`, so
+	# asking for more units than that lands pairs on the same spot. Offset the surplus laterally by half a column
+	# so `--units=N` really does mean N distinct start points: the run should BE the experiment it names, rather
+	# than the probe refusing to run it.
+	var spots: int = (Arena.active.get("spawns", {}).get("green", []) as Array).size()
 	for i in wanted:
 		var team: int = Match.Team.RUST if both_ways and i % 2 == 1 else Match.Team.GREEN
 		var tank := game_match.spawn_tank("Cross_%d" % i, 0, team, "tank")
@@ -109,6 +114,12 @@ func _deploy(wanted: int) -> void:
 		controller.tanks_root = game_match.tanks
 		game_match.brains.add_child(controller)
 		controller.set_orders({"type": "move_to", "x": goal.x, "z": goal.z}, {"type": "hold_fire"})
+		if spots > 0 and tank.slot >= spots:
+			# Half a column (columns are 11 m apart), alternating, so an offset unit never lands on another spawn.
+			var wraps := int(tank.slot / spots)
+			tank.global_position += Vector3(5.5 * (1.0 if wraps % 2 == 1 else -1.0), 0.0, 0.0)
+			if tank.has_method("reset_physics_interpolation"):
+				tank.reset_physics_interpolation()
 		units.append(tank)
 		var key := String(tank.name)
 		goals[key] = goal
@@ -118,6 +129,75 @@ func _deploy(wanted: int) -> void:
 		route_m[key] = _path_length(Pathing.find_path(arena, tank.global_position, goal))
 	print("NAV_MAZE_DEPLOYED %d units on %s%s" % [units.size(), Arena.active.get("name", "?"),
 			" (both ways)" if both_ways else " (one way)"])
+	_positive_control(wanted, both_ways)
+
+
+## POSITIVE CONTROL: assert the run is the run we think it is, from INSIDE it.
+##
+## Every wrong number this stream published would have been caught by one of three assertions — the map is the one
+## named, the objectives are where the layout says, the armies are the size requested. A fixed measurement window
+## stops a metric being *gamed*; only an assertion inside the run catches the setup silently not being what you
+## asked for. (combat's idea, after two of its runs measured a different game than it thought and no check caught
+## either.)
+##
+## The case that proves it here is real and cost a published baseline: a layout has 52 spawn points and
+## `Arena.spawn_spot` wraps with `slot % size`, so `NAV_UNITS=60` put **eight pairs of hulls in eight positions**
+## and those never moved. Eight phantom stragglers in every 60-unit run, attributed to congestion, until nav found
+## it by asking WHICH units failed. `no two units start on top of each other` would have caught it on the first run.
+##
+## A failed control exits 1: a number from a run whose conditions were not met is worse than no number, because it
+## looks exactly like a real one.
+##
+## **A control states the condition it checked and what it therefore refuses to report. It does not explain why the
+## condition matters.** The first version of this one added "and those hulls cannot move, so every arrival number
+## below would be wrong" — a DIAGNOSIS the control cannot verify, and one that had gone stale a round earlier:
+## coincident hulls part by name since round 6 (`avoidance.gd`, "two hulls on the same spot"). It was true when it
+## was written and false when it was read. **A stale diagnosis in a failure message is worse than one in a
+## document, because it arrives at the moment someone is deciding what to do** — that sentence nearly had nav's
+## 60/60 arrival result held out of a merge as void.
+func _positive_control(wanted: int, both_ways: bool) -> void:
+	var problems: Array = []
+	var arena_name := String(Arena.active.get("name", ""))
+	var asked := _flag("arena", "maze")
+	if arena_name != asked:
+		problems.append("asked for arena '%s' and got '%s'" % [asked, arena_name])
+	if units.size() != wanted:
+		problems.append("asked for %d units and deployed %d (the layout may have fewer spawn slots)"
+				% [wanted, units.size()])
+	var coincident := 0
+	for i in units.size():
+		for j in range(i + 1, units.size()):
+			if units[i].global_position.distance_to(units[j].global_position) < 1.0:
+				coincident += 1
+	if coincident > 0:
+		problems.append("%d pairs of units started on top of each other: spawn slots wrapped, so this run is not "
+				% coincident + "the experiment named (%d distinct start points)" % wanted)
+	# Every unit must start somewhere it can drive from. Cheap, and it is the condition the surplus-unit offset
+	# above could plausibly break: shifting a hull half a column sideways could put it inside cover on a layout
+	# whose spawn zone is tighter than the maze's.
+	var map := arena.get_world_3d().navigation_map
+	var stranded := 0
+	for tank in units:
+		var at := tank.global_position
+		if Vector2(at.x, at.z).distance_to(_flat_of(NavigationServer3D.map_get_closest_point(map, at))) > 3.0:
+			stranded += 1
+	if stranded > 0:
+		problems.append("%d units started off the navmesh, so they cannot be given a route" % stranded)
+	var teams := {}
+	for tank in units:
+		teams[tank.team] = true
+	if both_ways and teams.size() < 2:
+		problems.append("--both-ways asked for head-on traffic and every unit is on one side")
+	if not both_ways and teams.size() > 1:
+		problems.append("one-way run has units on both sides")
+	if problems.is_empty():
+		print("NAV_MAZE_CONTROL ok: %s, %d units, %d side(s), no coincident spawns, all on the navmesh"
+				% [arena_name, units.size(), teams.size()])
+		return
+	for problem: String in problems:
+		push_error("nav-maze control FAILED: %s" % problem)
+	print("NAV_MAZE_CONTROL FAILED %s" % JSON.stringify(problems))
+	quit(1)
 
 
 func _sample() -> void:
@@ -200,6 +280,10 @@ func _report(elapsed: float) -> void:
 			file.close()
 			print("NAV_MAZE_JSON %s" % path)
 	quit(0)
+
+
+func _flat_of(a: Vector3) -> Vector2:
+	return Vector2(a.x, a.z)
 
 
 func _flat(a: Vector3, b: Vector3) -> float:

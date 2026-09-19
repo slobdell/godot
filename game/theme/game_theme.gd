@@ -42,6 +42,7 @@ const DEFAULT_SLOTS := {
 	# Render (round 5): arena's M2 kit props, each kind one MultiMesh (arena_kit/kit/kit_yard.gd). The wreck above now
 	# batches the approved husk too, fit to ArenaKit's 3.2 x 2.0 x 6.4 m box.
 	"prop.barricade": "res://game/theme/arena_kit/kit/prop_barricade.tscn",
+	"prop.block": "res://game/theme/arena_kit/city/prop_block.tscn",  # round 7: the city block (CityBlock)
 	"prop.floodlight": "res://game/theme/arena_kit/kit/prop_floodlight.tscn",
 	"prop.sign": "res://game/theme/arena_kit/kit/prop_sign.tscn",
 }

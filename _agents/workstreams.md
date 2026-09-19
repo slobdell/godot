@@ -105,7 +105,7 @@ presentation job is the arena as a place).
 
 | Contract | Owner, where | Consumers |
 |---|---|---|
-| **M4 Arena containment is a predicate, not a scalar** (added 2026-09-19; combat found it, arena owns it). `Arena.contains(point) -> bool` and `Arena.clamp_into(point) -> Vector3`, working for **every** shape including the existing square, so no caller knows what shape the arena is. **Why it exists:** `DRIVABLE_LIMIT` is used as a *square* clamp in six places — three `absf(x) > DRIVABLE_LIMIT or absf(z) > ...` checks in `arena.gd`'s validate, and `clampf` in `orders.gd`, `rts_controls.gd` and `army_layout.gd`. A regular hexagon of circumradius 139.7 m has an **inradius of 121.0**, so its boundary is 139.7 m toward a vertex and 121.0 m toward a flat edge, while **a square clamp at ±136 permits points 192 m from centre on the diagonal** — every one of those call sites would place an obstacle, clamp an order or lay out an army outside the playable arena, and `Arena.validate` would approve it. `DRIVABLE_LIMIT` survives only as the conservative **inscribed** bound: 121.0 − 4.0 clearance = **117**, which is barely different from today's 116. **⚠ Scaling it 116 → 136 in proportion with `ARENA_HALF_SIZE` makes the clamp about three times too permissive, not slightly.** `clamp_into` must document whether it returns the nearest boundary point or the ray-to-centre crossing — they differ sharply near a corner; nearest-boundary is what a player means by *"go as far that way as you can"*. The water and pit footprints belong behind the same predicate: a point inside a pit is not a point a player can be ordered into. | arena: `game/arena/` | combat (`orders.gd`, validate), control (`rts_controls.gd`), squad (`army_layout.gd`), nav |
+| **M4 Arena containment is a predicate, not a scalar** (added 2026-09-19; combat found it, arena owns it). `Arena.contains(point) -> bool` and `Arena.clamp_into(point) -> Vector3`, working for **every** shape including the existing square, so no caller knows what shape the arena is. **Why it exists:** `DRIVABLE_LIMIT` is used as a *square* clamp in six places — three `absf(x) > DRIVABLE_LIMIT or absf(z) > ...` checks in `arena.gd`'s validate, and `clampf` in `orders.gd`, `rts_controls.gd` and `army_layout.gd`. A regular hexagon of circumradius 139.7 m has an **inradius of 121.0**, so its boundary is 139.7 m toward a vertex and 121.0 m toward a flat edge, while **a square clamp at ±136 permits points 192 m from centre on the diagonal** — every one of those call sites would place an obstacle, clamp an order or lay out an army outside the playable arena, and `Arena.validate` would approve it. `DRIVABLE_LIMIT` survives only as the conservative **inscribed** bound: 121.0 − 4.0 clearance = **117**, which is barely different from today's 116. **⚠ Scaling it 116 → 136 in proportion with `ARENA_HALF_SIZE` makes the clamp about three times too permissive, not slightly.** `clamp_into` must document whether it returns the nearest boundary point or the ray-to-centre crossing — they differ sharply near a corner; nearest-boundary is what a player means by *"go as far that way as you can"*. The water and pit footprints belong behind the same predicate: a point inside a pit is not a point a player can be ordered into. | arena: `game/arena/` | **control** (`orders.gd`, `rts_controls.gd`, `radar.gd`), **arena** (`validate`), **squad** (`army_layout.gd`, `agent_bridge.gd`), **combat** (`match.gd` constants, `visibility_field.gd` ✅, `match_runner_mode.gd` bench spread — still a square clamp, harmless today, **unmigrated**), nav |
 
 ## Round 5's contracts (still in force)
 
@@ -158,6 +158,16 @@ presentation job is the arena as a place).
      whether they are last.
    - **It fails safe.** A stale committed hash turns `sim-baseline` red on `main`, and *"the simulation broke"* and
      *"the hash is old"* look identical from the outside. That ambiguity cost round 5 a day.
+   - **INERTNESS DOES NOT COMPOSE, and this is the deep reason the rule exists** (combat, 2026-09-19). *"'A is inert'
+     and 'B is inert' does not give 'A+B is inert', because A can be inert only in the absence of B."* Three streams
+     each measuring a green `sim-baseline` on their own branch **predicts nothing about `main` after merge** — each was
+     measured against a different baseline, on a different tree, alone. **A hash that differs from what the branches
+     implied is not evidence of a defect; it is the expected result of composing changes measured separately.** The
+     orchestrator treated one such gap as an anomaly and sent a stream a message implying its correct claim was wrong.
+   - **A change can be genuinely inert in BEHAVIOUR and not inert in the HASH.** arena's `_build_perimeter()` generates
+     the arena wall from the shape polygon instead of using boxes authored in the scene: geometrically identical walls,
+     **different collision bodies created in a different order, which is enough for Jolt.** Expect this from any change
+     to how the physics world is *built*, even one that changes nothing about how it behaves.
    - **Nothing local can catch the mistake.** The file is keyed per glibc; the laptop is **2.39** and there is no
      2.39 line, so `sim-baseline` **silently skips locally** — every stream can commit a stale hash and watch a green
      local check.
@@ -186,7 +196,13 @@ presentation job is the arena as a place).
    simulation"* and `music-smoke` announces *"the soundtrack changed the simulation"* — **both computing exactly the
    same hash `sim-baseline` computed, which is the proof they changed nothing.** They are feel's targets, so a feel
    agent would go hunting in audio code for a bug that does not exist. **If you see either of those messages, check
-   whether the three hashes agree before believing the accusation.** The underlying defect and its fix are in
+   whether the three hashes agree before believing the accusation.**
+   **The root defect named (combat, 2026-09-19, after both targets PASSED on a current baseline): those two targets ask a
+   DIFFERENTIAL question — "does the booth/soundtrack change the simulation?" — and implement it as an ABSOLUTE comparison
+   against a shared file.** So they misfire **every time the baseline moves, i.e. once a round by design**, and they have
+   been carried in feel's brief as broken for two rounds when nothing was ever wrong with the components. **The fix is to
+   make the comparison differential too: run the match twice in one invocation, with and without the subsystem, and
+   compare the two hashes to EACH OTHER.** A latent trap rather than a live failure — it blocks nothing. The underlying defect and its fix are in
    [orchestration.md](orchestration.md) lesson 65.
 2b. **The old text, for the rules it still carries:** the baseline (`tests/baselines/sim_state_hash.txt`, one hash per glibc version; builder0 canonical) changes
    only on purpose, recorded with `make remote T=sim-baseline-record`, in the same commit as the reason.

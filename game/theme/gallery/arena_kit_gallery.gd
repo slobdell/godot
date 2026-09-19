@@ -31,6 +31,13 @@ const YARD := [
 	# Giant screens behind the yard, turned to face it; the right one runs a second channel.
 	["ad_screen", -10.0, -36.0, 180.0, {}],
 	["ad_screen", 12.0, -34.0, 200.0, {"channel": "odds"}],
+	# Round 7: a city street (prop.block, CityBlock): blocks of different sizes and tiers either side of a 14 m road.
+	["block", 52.0, -40.0, 0.0, {"size": [30, 34, 22], "tiers": 3, "seed": 1}],
+	["block", 52.0, -10.0, 0.0, {"size": [30, 16, 26], "tiers": 1, "seed": 2}],
+	["block", 52.0, 18.0, 0.0, {"size": [30, 24, 18], "tiers": 2, "seed": 3}],
+	["block", 88.0, -38.0, 0.0, {"size": [26, 22, 26], "tiers": 2, "seed": 4}],
+	["block", 88.0, -6.0, 0.0, {"size": [26, 40, 24], "tiers": 3, "seed": 5}],
+	["block", 88.0, 22.0, 0.0, {"size": [26, 12, 20], "tiers": 1, "seed": 6}],
 ]
 ## view → [camera position, look-at point, fov (0 = orthographic, size in m)]
 const VIEWS := {
@@ -40,6 +47,9 @@ const VIEWS := {
 	"screens": [Vector3(-2.0, 2.2, -14.0), Vector3(-6.0, 12.0, -36.0), 62.0],
 	"gate": [Vector3(92.0, 9.0, 30.0), Vector3(126.0, 4.0, 0.0), 60.0],
 	"overview": [Vector3(0.0, 200.0, 0.0001), Vector3.ZERO, 0.0],
+	# Round 7: the city street at the lead's camera (21 degrees, 49 m, FOV 35) and from higher up.
+	"city": [Vector3(70.0, 17.6, 49.0), Vector3(70.0, 0.0, 3.0), 35.0],
+	"city_high": [Vector3(20.0, 60.0, 60.0), Vector3(70.0, 0.0, -10.0), 50.0],
 }
 
 var camera := Camera3D.new()

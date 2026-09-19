@@ -49,15 +49,31 @@ func test_a_slot_scene_stays_loaded_after_its_last_instance_is_freed() -> void:
 	## Feel (round 6, control's FIGHT-lag profile): a new-faction vehicle's hull slot first builds the Condemned dozer,
 	## then swaps in its own art. With no dozer left alive nothing held its model, the engine dropped it, and every
 	## such vehicle re-read the glb from disk: ~65-110 ms a spawn against 2 ms for a Condemned one.
+	## Timed against its own reference (control's survey, round 7): a forced read from disk of the same scene, fastest of
+	## three, against the cache hit, fastest of ten. One sample against an absolute 5 ms read 6-14x high on a loaded
+	## machine; a ratio of two measurements taken in the same run cancels machine speed and most load.
 	var previous := GameTheme.theme_name
 	GameTheme.use("cyberpunk")
+	var path: String = GameTheme.slots["tank.hull"]
 	var first := GameTheme.scene("tank.hull")
 	var node := first.instantiate()
 	node.free()
 	first = null
-	var t0 := Time.get_ticks_usec()
-	var again := GameTheme.scene("tank.hull")
-	var elapsed_ms := (Time.get_ticks_usec() - t0) / 1000.0
+	var from_disk := INF
+	for i in 3:
+		var t0 := Time.get_ticks_usec()
+		var fresh := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
+		from_disk = minf(from_disk, float(Time.get_ticks_usec() - t0))
+		fresh = null
+	var hit := INF
+	for i in 10:
+		# Nothing of ours may hold the scene between samples, or every sample after the first is a hit whatever
+		# GameTheme does (the first version of this timing passed with the cache switched off, for exactly that reason).
+		var t0 := Time.get_ticks_usec()
+		var again := GameTheme.scene("tank.hull")
+		hit = minf(hit, float(Time.get_ticks_usec() - t0))
+		assert_true(again != null and again.can_instantiate(), "the slot still resolves")
+		again = null
 	GameTheme.use(previous)
-	assert_true(again != null and again.can_instantiate(), "the slot still resolves")
-	assert_true(elapsed_ms < 5.0, "asking again is a cache hit, not a reload from disk (%.1f ms)" % elapsed_ms)
+	print("MEASURE slot_cache hit %.0f us, from disk %.0f us (%.3f)" % [hit, from_disk, hit / maxf(from_disk, 1.0)])
+	assert_true(hit < from_disk * 0.05, "asking again is a cache hit, not a reload (%.0f us against %.0f us from disk)" % [hit, from_disk])

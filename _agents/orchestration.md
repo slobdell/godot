@@ -1556,6 +1556,17 @@ The kickoff prompt is one line; this section is the rest.
      - **A pre-registered rule makes a null result reportable and a bad result unspinnable.** It also forces the *acceptance
        criteria* to be chosen while they can still be chosen fairly — nav's include *survivability must not get worse*,
        which is the criterion an author hoping for a churn win would quietly omit.
+     - **Pre-register a GUARD metric as well as a success metric — name what must NOT get worse.** nav's rule covered
+       churn and survivability; the thing that actually moved was a third, **attack-move "progressing" 44% → 41%**, and
+       the rule was silent on it. **A pre-registered rule protects only the metrics you thought of**, and the one that
+       moved was the one closest to the lead's own complaint. nav reported it unprompted, against its own result, which
+       is the only reason it is not lost — **but the practice should not depend on that.**
+     - **When the arms share seeds, the PAIRED read is the right one — and the unpaired read hides real effects.** nav's
+       attack-move progressing: unpaired, ON mean .409 (sd .026) against OFF .439 (sd .038), so the 3-point drop sits
+       **inside the arms' spread and looks like noise**. Paired per seed it is **−.046 −.012 −.032 −.005 −.052 — lower on
+       5/5, mean −2.9 points, sd 1.8.** **Real, and small.** Seeded A/Bs in this project always share seeds, so the
+       unpaired read is simply the wrong test; it converts a consistent small effect into "within noise", which is the
+       phrase lesson 106 warns absorbs inconvenient results.
      - **Say the noise threshold in advance too** ("beyond seed noise"), because *"within noise"* is the phrase that
        absorbs an inconvenient result after the fact.
      - **This is the practice for every A/B in this project from here.** It pairs with the positive control (lesson 101):
@@ -1566,3 +1577,196 @@ The kickoff prompt is one line; this section is the rest.
      shells at 60–70 m and weak against hitscan.** So a behaviour that pays for itself against one weapon class is being
      applied against all of them. **That is a falsifiable claim about where a cost is unjustified**, which is a far better
      starting point than "reduce the churn".
+107. **An absolute timing budget is a claim about the machine, not about the code — and in this project it is a claim about
+     other streams' activity.** control's `test_the_ui_stays_cheap_with_a_full_army_selected` asserted a 2.0 ms frame
+     budget and failed at **2.33 ms** on builder0. Idle builder0 is about **0.65 ms**; the laptop measures **1.80** and
+     **also tripped it at loads 4–8 (2.2–3.1 ms)**. **The old budget had 11% headroom**, so with six to nine concurrent
+     remote runs — the normal state of a round here — it was one busy afternoon away from failing at any time, for reasons
+     having nothing to do with the code under test.
+     **The fix is to remove the variable rather than tune against it:** control's frame time is now divided by a **fixed
+     reference workload timed interleaved with it**. Ratio 5.5–7.2 across loads 3–8, budget 8.0, and **mutation-checked —
+     +1 ms in `summary()` gives 9.7 and fails.**
+     - **A test whose result depends on a shared resource nobody owns fails in a way that looks like a code defect.** That
+       is the same shape as the stale sim baseline, and both cost this project a day.
+     - **The too-tight instrument was also hiding a real defect:** `summary()` sorted the selection **twice a frame**.
+       Because the test could not separate *"the UI is expensive"* from *"the machine is busy"*, nobody could act on it in
+       either direction. **An instrument nobody trusts is worse than none, because it also excuses what it should catch.**
+     - **Suspect every wall-clock assertion in the suite**, including generous-looking ones: `match-smoke`'s `speedup > 2`,
+       any per-tick budget, and latency tests. A fastest-of-N sample reduces noise but is **still absolute** — control
+       measured a **24 ms** excursion on ~4 ms of work, a 6× outlier.
+     - **Prefer a ratio, a count, or a comparison against a reference measured in the same run.** *"Every number carries
+       its machine"* (CLAUDE.md) is the reporting rule; this is its testing counterpart — **a number that must not depend
+       on the machine should not be measured in units the machine controls.**
+108. **A guard runs on the hot path of every future run, so it earns MORE end-to-end exercise than the thing it guards, not
+     less.** combat, reporting its own: **the positive control it added to `faction_matrix` crashed every run it had been
+     written to protect** (fixed at `9821cac7`), **and its refusal path called `main()` bare, so `return 2` exited 0 — a
+     refusal that reported success to `make`.**
+     **A guard that reports success when it refuses is the exact inversion of its purpose**, and it is the third instance
+     in one day of **an exit status belonging to the wrong thing**: `tail`'s status reaching the harness's task
+     notification; `make check` aborting at target two while printing `1135 passed, 1 failed`; and now a refusal returning
+     0. **`exit code 0` keeps arriving from somewhere other than the thing we asked about.**
+     - **Mutation-check every guard: make it fail on purpose and watch it fail.** Every guard that worked today was
+       mutation-checked — arena watched its `nav-maze` control fail, control watched its frame ratio fail at +1 ms, combat
+       watched `test_every_roster_role_can_be_put_in_a_squad` name the offending unit. **The ones that bit us are the ones
+       nobody watched fail.**
+     - **Exercise the refusal path, not only the pass path.** A guard has two outputs and the interesting one is the one
+       that stops a run. In Python, `sys.exit(main())` — never a bare `main()`.
+     - **We have been treating guards as if writing them were the work.** A guard is infrastructure: it is in front of
+       every measurement forever, so a defect in it is a defect in everything downstream.
+     - combat also scanned the other `tools/*.py` for the same shape and explained why `ai_ladder.py` and
+       `tactics_ladder.py` are false positives (numeric returns are scoring helpers, not error paths). **Saying why a grep
+       hit is not a hit is what turns a grep into a check.**
+109. **A rule whose trigger word is optional is a rule nobody can follow reliably.** The worker contract says *merge `main`
+     only at announced checkpoints*. I told all six streams *"merge `main` into your branch for the baseline"* — which
+     **was** the announcement — and combat then reported itself for a contract violation and offered to reset its branch.
+     **It had done exactly what I asked, in response to my own instruction, and could not tell that the instruction was an
+     authorisation** because I had not used the word.
+     **Third time in one day a stream was more careful than the orchestrator.** The fix is mine and it is mechanical: **say
+     "this is an announced checkpoint" in those words, and name the commit.** `b70608d6` is one.
+110. **A rule taught without its purpose gets applied where it does not fit — state what every proxy is a proxy FOR.**
+     feel's `check10` ran every target to completion: `1142 passed, 0 failed`, `sim-baseline passed`, every smoke through to
+     **`audio-check passed`** — and `audio-check` is the **last** target in `check`. Its wrapper then died before printing
+     `>> remote: make check exited N`, and feel concluded *"by the rule, that's no verdict"* and discarded a forty-minute
+     run on a saturated build machine.
+     **feel was right about the rule and the rule was wrong here.** *"Read the wrapper's own exit line"* is a **proxy** for
+     *did every target run, and did every target pass*. It exists because a piped exit code answers a different question.
+     **A complete target list ending in the final target's pass is stronger evidence than the exit line, not weaker** — the
+     exit line gives you a number, the target list tells you what happened.
+     - **This is lesson 99 turned on our own process: prefer identity to property.** The exit line is a property that
+       usually accompanies success; *"the last target passed"* is nearer the identity of green.
+     - **The orchestrator's error: I taught the proxy for months without teaching what it stood for.** A rule stated
+       without its purpose either lets something through or throws away good evidence, and there is no way for the person
+       following it to tell which case they are in. **Every rule in this file that is a proxy should name its target.**
+     - **It cost nothing here only because the run was on the wrong commit anyway** (`39dd5b2f` predates `cb171a98`, so it
+       did not cover the second backwards vehicle). **That is luck, not process.**
+111. **`make facing-audit` found four backwards-authored parts; the lead reported one.** The gang IFV (which he saw), the
+     **Syndicate lancer**, the **gang tank's barrel** and the **Law rocket pod** — all authored pointing backwards, three of
+     them never reported by anybody. **The argument for the audit was never "the lead complained"**; it was that **nobody
+     on this project can inspect 21 units by eye** (lesson 72), so the only alternative to an audit is waiting for him to
+     notice one at a time.
+     **And the audit itself lied on its first run**, which feel caught from the renders: *"the tank drives its own turret
+     back to rest, so the audit wasn't really showing 70°."* **An instrument that is asked for 70°, renders 0°, and labels
+     the picture 70° does not error — it produces a plausible artefact.** Fixed by holding the turret at the angle asked
+     for. **Fourth instrument defect found in one day**, and the fourth to be caught by someone looking at the output
+     rather than by a failure.
+112. **A constant in a test is a scale assumption, whenever the thing under test has a size.** combat, fixing arena's
+     `test_a_hexagon_is_the_shape_that_varies_most`: it probed the pinch ratio at a **hard-coded z = 60 m**. The ratio is
+     scale-invariant — hexagon 0.711, octagon 0.914 **at any bound** — but **60 m is a different fraction of a 140 m arena
+     than of a 120 m one**, so at the new bound it read 0.753 against a 0.75 bar and failed. **It detected nothing except
+     that the map had got bigger.** Fixed by probing at `bound * 0.5`, which reproduces the original numbers at every size.
+     **The test was measuring the right quantity and sampling it in the wrong units** — and it would have been read as
+     "the hexagon stopped being the shape that varies most", which is a design conclusion, from a change that was purely
+     dimensional. **Express every test coordinate as a fraction of the thing's own size**, not in metres, unless the metre
+     is the point.
+113. **A change that invalidates another stream's file should land atomically with it, not as N requests plus a known-broken
+     interval.** combat's `ARENA_HALF_SIZE` work made three readers wrong the moment the constant moved — `radar.gd`
+     (control's), `agent_bridge.gd` (squad's) and its own `visibility_field.gd`. **It moved them with the constant rather
+     than filing requests**, and said so unprompted, comment-tagged each *"owner, rewrite freely"*, and offered to revert
+     them into requests if preferred.
+     **That was the right call and the orchestrator's routing was the error.** I had already routed two of those same
+     lines to their owners, so squad and control were each about to write a conflicting version of a one-line fix.
+     **Nobody was wrong; I failed to tell combat that I had routed them.**
+     - **The rule: if your change makes someone else's file wrong, fix it in the same commit, flag it in your report, and
+       tag it for the owner.** The alternative is a window in which `main` is knowingly broken, which is worse than a
+       boundary crossing.
+     - **The orchestrator's rule: when routing a fix, say who else is touching that area.** In a star topology only the
+       centre knows, and the centre is the one that has to say it.
+     - **And the cross-cutting fix found a bug neither owner had:** `radar.gd` drew a square outline at ±`ARENA_HALF_SIZE`
+       — **20 m outside the wall on every map ever shipped**, invisible because a square drawn slightly too large around a
+       square arena still looks like a square arena. **The hexagon would have made a long-standing bug look like a new
+       one.**
+114. **"I cannot account for this process" is a reason to leave it alone, not a reason to include it.** combat, having
+     positively identified which PID belonged to its live gate run, **killed its neighbours anyway on the assumption that
+     anything older than the launch was stale — and one of them was the live chain.** Exit 143, gate lost, an hour gone.
+     **Age is not evidence of staleness here**: checks legitimately run 30–50 minutes, so "older than my launch" describes
+     most healthy runs on the machine.
+     **The underlying footgun is real and is nobody's mistake:** `remote.sh` dying locally does **not** stop the `make` it
+     started on builder0, so every killed or SIGTERMed run leaves a slot holder and a tree that the next `rsync --delete`
+     overwrites underneath it. **A wrapper that trapped its own exit and stopped the remote job would remove the entire
+     class** — round-8 work, deliberately not attempted mid-round, because `remote.sh` is the one tool all six streams
+     depend on. **Do not rewrite the shared build tool while six streams are mid-check**; that is the same error as
+     approving a change by evaluating the change and not its surroundings.
+115. **Guard the treatment, not just the setup — and the general form is per-COMPARISON, not per-run.** arena, applying
+     combat's positive control to its own `arena_series`: the assertion *"the match ran on the arena I asked for"* had
+     existed since round 5, because `Arena` falls back to `foundry` on a layout it cannot load. **What was missing is that
+     a fairness result is a *paired difference*, and a `--swap-bases` that silently failed to apply would leave two
+     identical arms and a perfectly plausible "no south advantage."**
+     **That is the answer we hope for, reached by the treatment never happening.**
+     - **An assertion about the stage is not an assertion about the experiment.** Which map, which build, which commit —
+       all necessary, none sufficient.
+     - combat's own guard *"asks whether the treatment engaged in ONE run, and it would pass happily on two arms that were
+       secretly the same arm."* **Neither tool checks that two arms actually differ, and that is the version worth
+       building**: a comparison must assert that its arms are distinguishable before it reports a difference between them.
+     - **Three distinct defects caught by this one idea in a single day, across three streams' instruments:** a treatment
+       arm with no treatment, a control arm with immobilised units, and a paired comparison whose pairing might not have
+       happened. **The third is the one nobody would find by inspection, because two identical arms produce a beautifully
+       clean null.**
+116. **Inertness does not compose.** combat, and it is the most useful sentence of the round: *"'A is inert' and 'B is
+     inert' does not give 'A+B is inert', because A can be inert only in the absence of B."*
+     Three streams each reported a green `sim-baseline` on their own branch. **`main`, after merging them, produced a hash
+     none of the branches implied.** I wrote that up as an anomaly and messaged a stream suggesting its "clean control"
+     claim might be wrong. **It was a correct claim about the tree it was measured on.** Each branch was measured against
+     a *different* baseline, on a *different* tree, *alone* — and none of those measurements is a prediction about the
+     composition.
+     - **A branch's green `sim-baseline` predicts nothing about `main` after merge.** That is *why* invariant 2 puts the
+       recording on `main` after the last merge; I had been following the rule without understanding it, which is why I
+       was willing to treat its consequence as a contradiction.
+     - **Same error as promoting a measurement to a property** (lessons 90, 93), in a new place: *"inert"* is a relation
+       between a change and a tree, not an attribute of the change.
+     - **And a change can be genuinely inert in BEHAVIOUR while not inert in the HASH** — arena's `_build_perimeter()`
+       generates the wall from a polygon instead of authored boxes: identical geometry, **different collision bodies in a
+       different creation order, which is enough for Jolt.** Expect it from any change to how the physics world is
+       *built*, not just how it behaves.
+     - **Orchestrator's error underneath it: I put a load-bearing fact — that the recorder rsynced before arena merged —
+       in the last paragraph of a commit message**, and combat reasoned from the merge order in the log instead. **A fact
+       that changes someone's conclusion goes first, not last.**
+117. **The arm-distinguishability guard caught, on its first run, the exact failure it was built for — and it would have
+     shipped a feature on a treatment that never happened.** nav's first commitment A/B came back with **both arms
+     byte-identical on all five seeds**: same churn (15.71/min), same losses, same shot counts. `--nav-off=commit` had
+     never applied. **Under nav's pre-registered rule — "if commitment cuts churn and survivability doesn't get worse, it
+     ships" — that reads as *no worse, ship*.** Nothing was reported from the run.
+     **Cause: a static-initialisation-order bug.** `CombatMotion.commit_on` was a `static var` initialised from
+     `Movement._off`; `Movement`, `TankBrain` and `CombatMotion` reference one another, **so the initialiser can run before
+     `Movement`'s statics are populated and see an empty switch list.** Fix: resolve switches at **read** time
+     (`Movement.switched_off()` parses on first use), keeping the existing API shape so squad's call sites are unchanged.
+     - **⚠ The same bug is already on `main` in `CombatMotion.fixed_style` (`2cae3bda`)**, where it is harmless only
+       because the default is the wanted one and every test pins it by assignment — **but `--nav-off=standoff` from the
+       command line silently does nothing.** `algorithms.md` and `game_design.md` both claimed that switch was available
+       for A/B; **both are now struck through.** The standoff *measurements* stand: they were taken by assigning the style
+       directly.
+     - **This is lesson 25's trap, which `verification.md` already warned about in nav's own words** — *"a switch that
+       silently does nothing makes 'no difference' meaningless — prove each switch moves some number first."* **The warning
+       existed, was written by the stream that then hit it, and was not enough**, because it asked for a one-time proof
+       when the failure is per-run. **Per-comparison, every run, or it does not count.**
+     - **nav's guard is the right shape: the probe prints the treatment read LIVE FROM THE CODE** (`commit=…,
+       fixed_style=…`) and the A/B target exits 1 if any seed's two arms print the same treatment line, or if every seed's
+       results are identical. **Read the treatment from the running system, never from the flag you passed** — combat's
+       formulation: *"a flag is what you asked for; `controls` in `MATCH_RESULT` is what happened."*
+     - **Two streams independently built the same guard within hours, and it paid for itself immediately in one of them.**
+       The generalisable claim is no longer theoretical: **of the first three comparisons this guard was applied to, one
+       was already broken.**
+118. **The untreated arms ARE the noise floor — measure it inside the run rather than arguing it from a formula.**
+     combat's `gangs/scout` ablation: **that entry is the only faction-keyed one in `Army.SQUADS`, so only the gangs were
+     treated and every other faction in the table is an untreated arm of the same experiment.**
+
+     | faction | boulevard | yard | treated? |
+     |---|---|---|---|
+     | **gangs** | **+7** | **+7** | **yes** |
+     | law | −7 | −10 | no |
+     | condemned | +3 | +0 | no |
+     | syndicate | −3 | +3 | no |
+
+     **Law moved −10 points without being touched — larger than the treated faction's +7.** combat's framing: *"the noise
+     floor is not an argument I am making; it is in the table, measured by factions that received no treatment."*
+     **That is worth more than the SE (12.9 points at n=30), because it is measured in the same run, on the same machine,
+     with the same workload** — it cannot be waved away as a modelling assumption, and it is legible to anyone reading the
+     table. **Whenever an experiment has untreated subjects, report them; they are a free control.**
+     - **And the conclusion was "cannot resolve", offered with a price:** ~n=400 per faction per arm, about SEEDS=70 and
+       **four hours of builder0**, for an effect smaller than any balance difference the lead would notice. **A costed
+       "cannot resolve" is a better deliverable than a fifth run with the same error bars**, and combat recommended
+       against spending on its own stream's most-cited result.
+     - **RETIRE a number that cannot be reconstructed rather than explaining it.** The gangs' 23% → 53% was this project's
+       most-cited result and the evidence for *"a balance problem dissolved by mechanics"*. The original comparison was
+       most likely **never a comparison** — different builds, and plausibly different maps. **That is precisely the
+       subtraction `compare_arms` now refuses and could not refuse then.** The principle it supported survives on the
+       sharper argument: *do not tune against numbers whose cause you have not established.*

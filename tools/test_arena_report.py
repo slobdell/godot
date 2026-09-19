@@ -157,6 +157,54 @@ class TestTheTwoReachesAskDifferentQuestions(unittest.TestCase):
                            "posting buys %.3f on open foundry and %.3f in the dense yard" % (gains["foundry"], gains["yard"]))
 
 
+class TestTheDecisionMetricSeesADilemmaAndItsAbsence(unittest.TestCase):
+    """Round 7: cost AND reward. The lead — *"there generally has to be some compelling reason to cross the bridge
+    to take some advantageous ground."* A route that is cheap and leads nowhere worth going is scenery."""
+
+    def decision(self, name, objectives=None):
+        p = Prepared(name)
+        layout = dict(p.layout)
+        if objectives is not None:
+            layout["objectives"] = objectives
+        watchers = ar.defending_positions(p.boxes, layout)
+        fields = ar.exposure_cost_field(p.grid, p.gn, p.blocked, p.n, watchers, ar.WATCHER_REACH_M)
+        return ar.decision_report(layout, p.boxes, p.blocked, p.n, p.grid, p.gn, fields["idle"], watchers)
+
+    def test_one_central_objective_offers_no_decision_at_all(self):
+        """Not a failure of the metric — the diagnosis. With one thing worth holding every route is the same
+        route, and no amount of terrain can change that. Every arena we ship is in this state."""
+        for name in ("yard", "foundry", "boulevard"):
+            d = self.decision(name)
+            self.assertEqual(d["objectives"], 1, "%s has one objective today" % name)
+            self.assertEqual(d["decision_spread"], 0.0,
+                             "%s: one objective can only produce one (cost, reward) point" % name)
+
+    def test_a_mirrored_pair_gives_each_side_a_home_and_a_contest(self):
+        """The case whose answer is known before running it: a mirrored pair puts one objective near green and its
+        twin near rust, so green should see one cheap and one contested — which is exactly the dilemma the
+        share-of-objectives scoring creates."""
+        pair = [{"name": "west depot", "position": [-70.0, -30.0], "radius": 14.0},
+                {"name": "east depot", "position": [70.0, 30.0], "radius": 14.0}]
+        d = self.decision("yard", pair)
+        quadrants = {r["objective"]: r["quadrant"] for r in d["routes"]}
+        self.assertEqual(quadrants["east depot"], "dominant", "the one on green's side is cheap: %s" % quadrants)
+        self.assertEqual(quadrants["west depot"], "the one we want",
+                         "the one on rust's side is contested and worth taking: %s" % quadrants)
+        self.assertGreater(d["decision_spread"], 0.2,
+                           "and the map therefore offers a real decision (spread %.2f)" % d["decision_spread"])
+
+    def test_two_objectives_at_the_same_distance_offer_no_contest(self):
+        """The guard against reading 'more objectives' as 'more decision'. Two objectives equidistant from both
+        bases are two ways to do the same thing."""
+        symmetric = [{"name": "north gate", "position": [0.0, 40.0], "radius": 14.0},
+                     {"name": "south gate", "position": [0.0, -40.0], "radius": 14.0}]
+        paired = self.decision("yard", symmetric)
+        d = self.decision("yard", [{"name": "east", "position": [40.0, 0.0], "radius": 14.0},
+                                   {"name": "west", "position": [-40.0, 0.0], "radius": 14.0}])
+        self.assertLess(d["decision_spread"], paired["decision_spread"] + 0.05,
+                        "objectives equidistant from both bases spread less than an offset pair")
+
+
 class TestTheFixtureIsNotTreatedAsAMap(unittest.TestCase):
     def test_the_maze_has_the_shortest_sightlines_of_anything_we_ship(self):
         maze = ar.longest_sightline(Prepared("maze").boxes)[0]
