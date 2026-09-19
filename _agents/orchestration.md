@@ -1897,3 +1897,106 @@ The kickoff prompt is one line; this section is the rest.
      - **nav's capture lied on its first run** — *"never turned" for every hull* — the packed-array value trap in its own
        logging, caught by a debug line showing the hulls had in fact turned. **Sixth instrument defect this round, and the
        sixth caught by someone looking at the output rather than by a failure.**
+126. **A constraint you cannot see will quietly redirect your effort onto the axis that is free — and the result satisfies
+     the brief while missing the point.** combat's words, and the best diagnosis of the round.
+     The lead asked for a semi *"at least 3 or 4 times the height of the scout"*. combat built **4.4 m against 1.4 m —
+     3.14×, inside the band** — and he still calls it tiny. **Because a top-down RTS camera foreshortens height and shows
+     FOOTPRINT**, and the rig's footprint is **16.8 m² against a tank's 8.6 — 1.95×.** A real tractor-trailer is
+     proportionally much *longer* (≈4.2× a car) than it is *taller* (≈2.7×); **ours is the inverse, so it reads as a cube
+     on wheels.**
+     **And 5.6 m of length was never a design choice. It is a ceiling nobody could see:** `SPAWN_ROW_SPACING` is 8.0 and
+     lengthways jitter is ±1.2, so **the longest hull that cannot overlap the row behind is exactly 8.0 − 2.4 = 5.6.**
+     Verified across foundry, yard and boulevard: 4 rows at z = 90/98/106/114, 13 columns, 52 slots — **26 m of depth for
+     three gaps.** So the truck could only grow upward, **and it did.**
+     - **The lesson is not "measure the right thing".** combat measured the thing it was asked for and got it right. **The
+       axis that carried the intent was locked by a constant in someone else's file that nobody was looking at.**
+     - **When a brief names one dimension, check whether the others are free before reporting success on it.** A number
+       satisfied on the only available axis is evidence about the constraint, not about the design.
+     - **Orchestrator's share: I framed this to feel and combat as "the measurement satisfied the number and missed the
+       intent", which reads as a judgement call made badly.** combat corrected it — *"I did not miss the intent by
+       choosing badly; the axis that carried it was locked"* — and the correction matters, because the first framing
+       would have had someone re-pick a number when the fix is a spawn grid.
+127. **Carrying the commit makes a measurement ATTRIBUTABLE; it does not make it CURRENT.** combat's retraction, and the
+     sharpest sentence of round 8. We adopted `run: <machine> at <commit>` in round 7 so that every number could be
+     attributed — **and I treated attribution as sufficient all day.**
+     combat measured gang armies deploying with **0.2 m between hull centres** and escalated it; I relayed it to squad as
+     top priority. **squad had already fixed it, in `f1c3afcb`, which was on `main`** — combat's merge base was forty
+     commits behind, where `ArmyLayout` still used a flat `MIN_SPACING_M := 5.0`. **A defect measured on a branch is a
+     statement about that branch, and we both stated it about the game.**
+     - **Before escalating a defect, check whether the file you are accusing has moved on `main`.**
+       `git log main -- <file>` costs ten seconds and neither of us spent it.
+     - **It is the mirror of invariant 2** — *a branch's green `sim-baseline` predicts nothing about `main`* — **which
+       combat wrote four hours earlier.** Lesson 98's shape again: **knowing a rule in one direction does not carry it
+       into the other.**
+     - **And the verification was invalid too, in the more instructive way.** combat copied `main`'s `army_layout.gd`
+       into its own tree and got **min 0.0 m, median 0.0 m** — every unit in one place. **A single file lifted from a tree
+       forty commits ahead is a Frankenstein build**: exactly the mismatched comparison `compare_arms` refuses, **assembled
+       by hand, because a tool only guards what it is pointed at.** combat discarded both numbers rather than reporting
+       the better one.
+128. **Finding the authoritative copy of a value is not the same as checking that the value still matters.** combat, on
+     its own spawn-grid analysis. It asked *which of two copies of the spawn geometry wins* — `make_arenas.py`'s baked
+     list or `Match`'s constants — **a good question, correctly answered.** It never asked **whether spawn positions
+     survive the frame.**
+     They do not: **`Match.load_doctrine()` ends with `ArmyLayout.deploy()`, which teleports every unit at tick 0** with
+     no physics step in between. **So "5.6 m is the ceiling, and it is exactly `SPAWN_ROW_SPACING − 2×SPAWN_JITTER_MAX_Z`"
+     is correct arithmetic about a value that constrains nothing anyone ever sees** — and a whole plan of non-uniform
+     rows, a wedge deployment and regenerated arena lists was built on it. **arena was told to hold; no work was lost.**
+     **This is a distinct failure from the copied-value one (lesson 66) and we did not have it.** A duplicated value asks
+     *which copy is true*; a **dead** value asks *whether either copy is read*. **Trace a constant to its consumer, not
+     just to its definitions** — and when the consumer is overwritten a line later, the constant is decoration.
+129. **The stream that owns the thing being guarded should own the assertion, because it is the one that will set the bar
+     high enough to fail.** combat's words, on its own guard letting through a regression it had caused.
+     combat wrote `tests/test_army_footprint.gd` and asserted only on the **small-army control**, leaving `gang_ram` as a
+     printed `MEASURE` line — **for the good reason that the bar was not its to set.** squad, taking the file over,
+     asserted on `gang_ram`, `gang_pack` and `law_line`.
+     **Then combat landed a 14 m rig and broke between-squad spacing: `gang_ram` min 3.7 → 0.4 m, median 6.8 → 2.7.** On
+     **combat's** branch that passed its own test; combat found it by reading the printed number. **On squad's copy it
+     would have failed.**
+     - **A guard written by someone who cannot set the bar will be set where it cannot fail.** That is not timidity, it is
+       the correct response to not owning the threshold — **which means the guard must be handed to whoever does own it,
+       not left where it was written.**
+     - **Corollary for the orchestrator: when a stream builds an instrument for another stream's property, route the
+       ASSERTION as deliberately as the code.** combat did this unprompted and told squad its version was the better guard.
+     - **And notice the shape: the author's own regression passed the author's own test.** This is lesson 108 (*a guard
+       earns more end-to-end exercise than the thing it guards*) from a new angle — **the guard was exercised and was
+       simply aimed too low**, which no amount of mutation-checking the guard itself would have revealed.
+130. **Verify the object, and then forget to ask whether the object is still in the question.** arena's framing, of a
+     failure it and combat made independently **on the same day, in different files**:
+     - **combat** verified *which of two copies of the spawn geometry wins* — correctly — and never asked **whether spawn
+       positions survive the frame.** They do not; `deploy()` teleports at tick 0.
+     - **arena** built a barrier fixture around **where units demonstrably pin**, and never asked **whether it was ground
+       the lead drives on.** It is not: `--arena=random` picks from yard, boulevard, pit, boneyard, and **the two maps
+       nobody had ever measured are the best of the four.**
+     **Both did careful, correct work on an object that had already fallen out of the question.** The check is one
+     sentence and neither of us said it: ***"if I am right about this, does it still matter?"***
+131. **A metric's owner must name what the metric is NOT responsible for, before anyone builds against it.** arena,
+     unprompted, on work assigned to a different stream:
+     > *"If `retasked` stays at 0.30–0.36, better paths can only recover the `blocked` + `slow` + `yielding` slice, which
+     > is **under 3 points on all four maps**. That is not an argument against flow fields; it is an argument that **the
+     > number they get judged on must not be the number that looks worst.**"*
+     **Flow fields measured on attack-move progress would have moved it by under 3 points and read as a failure** — for
+     an architecture change doing exactly what it was designed to do. **The stream that owns the instrument is the only
+     one positioned to say this, and it is worth more than the measurement itself.**
+     - **Pre-register the metric a change is responsible for, not just the threshold** (lesson 106's missing half).
+     - **And the orchestrator's error underneath it: I assigned flow fields as "the named answer to his loudest
+       complaint" from HIS SENTENCE, not from a measurement.** *Stuck behind barriers* sounds like pathing.
+       **`blocked_terrain` is 0.000–0.010 on every map he plays.** Sixth diagnosis-from-a-report today.
+     - **The unclosed gap, which arena refused to close by assertion: the lead described a TRAJECTORY — "moving back and
+       forth" — and we have TIME ALLOCATION.** Different quantities, and nothing connects them. arena's words:
+       *"I have where the time goes, not what the trajectory does… this is round 8's third chance to report a number past
+       what it measures, and I would rather flag it than take it."*
+132. **⚠ `origin/main` IS STALE BY HUNDREDS OF COMMITS, AND `git merge origin/main` SAYS "Already up to date".** Found by
+     combat, 2026-09-19: local `main` at `474abf53`, **`origin/main` at `b5cd8052` — 585 commits behind.**
+     **The lead pushes; the orchestrator never does.** So the remote tracking branch has not moved since well before
+     round 6, and **every merge from it is a silent no-op that looks exactly like success.** combat's first
+     `git merge origin/main` merged nothing and reported cleanly; it caught this only because its yard was still a 120 m
+     square with no objectives — i.e. **because it happened to be looking at the content.**
+     - **Merge the LOCAL branch: `git merge main`.** All worktrees share one repository, so the local ref is the truth.
+     - **Never reason about "what is on `main`" from `origin/main`** — that includes `git log origin/main`,
+       `git merge-base --is-ancestor <x> origin/main`, and anything a tool resolves as `main` by default.
+     - **This compounds every other staleness lesson today** (127: *attributable is not current*; 116: *inertness does not
+       compose*). A stream that merged `origin/main`, saw "Already up to date", and then measured a defect would be
+       reporting on a tree from three rounds ago **with perfect provenance headers attached.**
+     - **The general form: a no-op that reports success is indistinguishable from the work being done**, which is the
+       round's recurring shape — a skipped check, a truncated run, a switch that never applied, an arm compared with
+       itself.
