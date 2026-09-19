@@ -15,10 +15,15 @@ it holds what the session knew that the code does not say.
 
 ### The five-minute version of where this stands
 
-**Round 6 is complete and merged.** `main` was last green at **1130 passed, 0 failed** on builder0; the sim baseline is
-`glibc-2.43 b0df248dc0140639`, recorded once at the end by the orchestrator (invariant 2). Two merges landed after that
-green run (`control`'s camera work and trailing docs), so **re-run `make remote T=check` before trusting `main`** — budget
-30–50 minutes.
+**Round 6 is complete and merged.** The sim baseline is `glibc-2.43 b0df248dc0140639`, recorded once at the end by the
+orchestrator (invariant 2).
+
+**`main`'s state, stated precisely rather than claimed:** the last commit verified by a full `make remote T=check` was
+**1130 passed, 0 failed**. Everything merged after that point is **feel's audio-defaults fix, which was itself green at
+`b00b8ff9` (1130/0), plus documentation-only merges from all six streams.** No unverified code is on `main` — that was
+deliberate (see *UNMERGED WORK* below). So `main` is very probably green, and **nobody has proved it.** The quota ran out
+before a confirming run was worth the tokens. **First action when quota returns: `make remote T=check` on `main`**
+(30–50 minutes), *then* the unmerged branches.
 
 **What round 6 did:** movement you can trust (100% arrival on every configuration, up from 33/60 on a shipping map),
 one formation system instead of three, the player's units holding until ordered *by a rule rather than a coincidence*, a
