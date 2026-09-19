@@ -141,13 +141,22 @@ place, you do not place).
   length, box in the model's own proportions (`SizeLook.box_at_length`). After the fix (builder0, `14bdb039`, px tall /
   long; scout 86/194, tank 95/176): today 114/268; 10 m 202/486; 12 m 242/587; **14 m 281/689**.
 - **Agreed with combat: `gang_tank` [3.32, 5.24, 14.0], `gang_support` [3.39, 3.59, 7.0]** (boxes in the models'
-  proportions, so the art fills them exactly with no art change). combat's catalog change + deployment (longest hulls
-  in the front row) is with the orchestrator. **When it lands:** merge it, re-shoot `make size-look LENGTHS=14`, and land
-  the rig + tanker box-fill test with it.
+  proportions, so the art fills them exactly with no art change). **combat landed them on `stream/combat` `141955eb`**
+  (deployment measured clean: gang_ram 41 vehicles, 0 overlapping hulls). **Verified at his camera** on scratch branch
+  `feel-rig-check` (= stream/feel + 141955eb; builder0, yard; px long × tall): rig 681×258, tanker 285×182, tank 189×91,
+  scout 193×81. A gang_ram army (`SIZE_FLAGS="--player=cpu:gang_ram --player-faction=gangs --budget=6500"`) reads as a
+  convoy of semis with small escorts. Transient: the spawn recharge sweep wraps each rig in a 15 m shield egg for the
+  first seconds (gone by 12 s). **Owed:** `test_the_semis_fill_their_boxes` (feel-rig-check `26e1f26a`, mutation-checked)
+  lands once 141955eb is on main (or with it on this branch, if the orchestrator prefers).
 - **Roster-wide hitbox finding (combat's, C1, not this round):** every art unit's box disagrees with its drawn mesh (all
   19 more than 5% out on some axis; the rig +1.7 w +2.3 h, law_suppressor drawn 1.0 m taller than its box). Table sent
   to combat for `_agents/balance.md`; regenerate with `SizeLook.box_at_length(unit, hull_size[2])`. The every-unit
   box-fill test lands with that fix.
+- **Main's sim baseline is stale** (recorded before control's merge): my checks on `14bdb039` and `0abf074e` pass every
+  test (1221) and stop at `sim-baseline` (expected 53d4e0ac, got 668b7d49). A/B on builder0: the same tree without the
+  fit change gives the same 668b7d49, so the art is inert. The orchestrator re-records and announces the checkpoint.
+- **Music-director flake** (control's report): `set_state` asked the audio server whether the bed it had just started
+  was playing. Fixed `0abf074e` with a repro test; likely also combat's round-7 unreproduced mood-signal failure.
 - **Articulated trailer — costed, not started** (waits on nav's wheeled-yaw fix; see the message to the orchestrator):
   visual-only hinge ≈ 1 day, negligible runtime, sim untouched; the rigid 14 m collision box is the compromise.
 
