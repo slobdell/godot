@@ -16,6 +16,25 @@
 > below. When implementing any of these: fixed iteration counts, neighbours ordered by unit name, `dt` from the fixed
 > tick, never the wall clock.
 
+## What the engine already gives us (probed on our pinned Godot 4.7.2, 2026-09-19)
+
+**Asked by the lead — "are some of these available as Godot libraries we can just install?" The answer is better than
+libraries: several are already in the engine we ship, unused.** Probed with `ClassDB` rather than read from docs:
+
+| Engine feature | Status here | Note |
+|---|---|---|
+| **`PATH_POSTPROCESSING_CORRIDORFUNNEL`** on `NavigationPathQueryParameters3D` | **unused** | **This is the funnel algorithm, built in.** The "raw navmesh corners" problem is a *query parameter*, not 60 lines of our own. `PATH_POSTPROCESSING_EDGECENTERED` and `..._NONE` are the alternatives; we currently use `map_get_path(..., optimize=true)`, which is the old simplified call and does not expose this |
+| **`NavigationAgent3D` avoidance** (`avoidance_enabled`, `radius`, `avoidance_layers`/`mask`, **`avoidance_priority`**, `use_3d_avoidance`) | **unused — we wrote our own ORCA** | Godot's avoidance is RVO2 internally. **`avoidance_priority` is engine-side right-of-way**, which we also built by hand. Worth a deliberate comparison: ours is deterministic by construction and we know its cost; the engine's is C++ and maintained. **Do not swap without measuring both — but do not leave the comparison unmade either** |
+| **`NavigationObstacle3D`** | **unused, and deliberately** | dynamic obstacles have no consumer: nothing blocks drivable space mid-match, and the lead's destructible-cover design was chosen to avoid it (arena's X9 ruling). Kept here so nobody re-derives the question |
+| **`NavigationLink3D`** | **unused** | off-mesh connections — the natural expression of a **bridge**, a jump, or a tunnel. Relevant to arena's water/pits work |
+| **`PATH_METADATA_INCLUDE_*`** (types, RIDs, owners) | **unused** | per-point provenance on a returned path: which region/link each point came from. **This is how a caller can tell "the path ends at the goal" from "the path ends at the closest reachable point"** (lesson 76) without inferring it from distance |
+| `AStar3D`, `AStarGrid2D` | unused | general-purpose graph search, if a hand-rolled grid is ever wanted. The determinism note in `determinism.md` names "grid A\* or a baked integer graph" as the eventual replacement for `NavigationServer3D` |
+
+**The rule this suggests: prefer an engine feature to a hand-rolled one, and a hand-rolled one to a third-party addon.**
+Engine features are deterministic-by-version, maintained, and already shipped. **Third-party Godot addons are the worst
+option for simulation code** — unpinned float behaviour, no determinism guarantee, and an upstream we do not control. For
+*tools* (editor helpers, generators) an addon is fine; for anything inside the tick, it is not.
+
 ## Movement and pathfinding
 
 | Technique | Canonical reference | State | What it fixes |
@@ -24,7 +43,7 @@
 | **ORCA** (optimal reciprocal collision avoidance) | van den Berg et al., *Reciprocal n-body Collision Avoidance* (2011) | **have** — `game/ai/avoidance.gd`, round 6 | two units resolving a gap without mirroring each other forever. Took arrival from 33/60 to 60/60 in a hold-fire drive |
 | **PID control** | classical | **have** — `game/ai/pid.gd`, round 6; per-faction gains in `control_gains.gd` | station-keeping without oscillation. 0.35 m mean slot gap against 4.58 m for the old proportional law |
 | **Context steering** | Andrew Fray, *Context Behaviours* (GDC) | **have** — `game/ai/combat_motion.gd`, 16-direction interest/danger ring | movement while fighting |
-| **Funnel algorithm** (path smoothing, "Simple Stupid Funnel") | Mikko Mononen | **OWED** | waypoints are **raw navmesh corners**, so vehicles saw off turns. ~60 lines |
+| **Funnel algorithm** (path smoothing) | Mononen — **and shipped in the engine as `PATH_POSTPROCESSING_CORRIDORFUNNEL`** | **OWED, and cheaper than thought** | waypoints are **raw navmesh corners**, so vehicles saw off turns. ~60 lines |
 | **Reeds–Shepp paths** (Dubins with reverse) | Reeds & Shepp (1990) | **OWED** | `min_turn_radius_m` exists in the data (K3) and the planner ignores it. This is *the* classical answer to a car-like vehicle with a turning circle, and Reeds–Shepp is the version permitting reverse — the three-point-turn case. Listed as unbuilt since round 2 |
 | **Arrival with stopping distance, and a standoff** | Reynolds, *Steering Behaviors for Autonomous Characters* (1999) | **OWED** | **the lead's "scouts are just running directly into their targets and then they have to turn around"**. The standoff distance already exists in the data as the effective band (N5) |
 | **Flow fields / vector fields** | Supreme Commander 2, Planetary Annihilation; Emerson, *Crowd Pathfinding* | **OWED** | the crowding: **~23% of unit-time stalled at 52 units**, blocked by friends and terrain. One field per destination rather than N paths, so units share a congestion gradient instead of each defending its own line. **An architecture change** — it replaces per-unit path ownership, and touches the Movement API, `blocked_by` attribution and reachability. Lands as its own checkpoint with before/after on `make nav-fight` |
