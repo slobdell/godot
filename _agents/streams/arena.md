@@ -126,7 +126,13 @@ _Round 6, arena. Updated 2026-09-18._
 | X5 the arenas the lead will play | **Done, with him.** Page live at https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4 — the round-5 gate is finally open |
 | X6 destructible cover (stretch) | Not started, correctly — X3 is not done and nav's avoidance has not landed |
 
-**Green commit: `912f8713`** (merged). Earlier green: `5590c465`. Original text: — `make remote T=check`, runner `1018 passed, 0 failed`, wrapper
+**Everything through `d3a42267` is merged into `main`.** The last check on that tree was `1125 passed, 1 failed` —
+the one failure was `test_tactics_scenarios::test_an_element_ambushed_at_close_range_assaults_through_it`, which is
+**not this stream's**: my diff against `main` under `game/` and `tests/` is a single file the test runner never
+collects (`reach_probe.gd`, not `test_*.gd`), and `tests/tactics/` is byte-identical to `main`. The orchestrator
+verified that before merging. Cause, confirmed by nav's bisect and reproduced here twice: nav removed round 5's
+`_around_friends` sidestep, so a column no longer overtakes and the assault arrives 24 ticks later; squad widened
+the window. Earlier greens on this branch: `912f8713`, `5590c465`. — `make remote T=check`, runner `1018 passed, 0 failed`, wrapper
 `>> remote: make check exited 0`. Reported to the orchestrator. **`38c15f77` and `13add85d` are RED — do not merge
 either** (see *The mistake worth reading* below).
 
