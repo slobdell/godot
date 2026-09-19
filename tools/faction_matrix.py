@@ -120,6 +120,20 @@ def main():
     for row in sorted(rows, key=lambda r: -r["win_rate"]):
         print(f"{row['faction'] + ' vs ' + row['versus']:28} {row['win_rate']:6.0%} {row['matches']:8d} "
               f"{row['vehicles']:9.1f} {row['lost']:6.1f} {row['seconds']:7.1f}s {row['suppression']:7.3f}")
+    # PER FACTION, not just per pairing (arena asked, 2026-09-19): if one faction moves between two maps and nobody
+    # else does, that is an asymmetry -- a map paying one army more than another. If EVERY faction's spread widens on
+    # the open map, that is a property of the map itself. **Those two results look identical in a pairing table**,
+    # which is why this block exists.
+    totals = {}
+    for row in rows:
+        for side, won in ((row["faction"], row["win_rate"] * row["matches"]),
+                          (row["versus"], (1.0 - row["win_rate"]) * row["matches"])):
+            got, played = totals.get(side, (0.0, 0))
+            totals[side] = (got + won, played + row["matches"])
+    print(f"\n{'faction':16} {'record':>10} {'win%':>6}   (on {args.arena or 'foundry (default)'})")
+    for side in sorted(totals, key=lambda f: -totals[f][0] / max(totals[f][1], 1)):
+        won, played = totals[side]
+        print(f"{side:16} {round(won):5.0f}/{played:<4d} {won / max(played, 1):6.0%}")
     for failure in failures:
         print("  FAILED: " + failure)
     if args.json:
