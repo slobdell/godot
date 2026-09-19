@@ -28,6 +28,9 @@ const OFF_PATH_REPATH := 5.0
 ## X7: steer at a point this far along the route beyond the hull (metres); wheels at least this many turning radii.
 const PATH_LOOKAHEAD := 5.0
 const WHEELS_LOOKAHEAD_RADII := 1.2
+## settle_radius(): a car settles within this share of its turning radius, at most this far (metres).
+const WHEELS_SETTLE_RADII := 0.6
+const WHEELS_SETTLE_MAX := 6.0
 ## ...but only once the hull points within ~60° of its route; until then it steers at the next corner (see there).
 const CARROT_ALIGNED_COS := 0.5
 ## A car looks at most this many turning radii further along the route for a point it can drive forward onto.
@@ -110,6 +113,18 @@ static var avoidance_on := not OS.get_cmdline_user_args().has("--no-avoidance")
 ## changes SOMETHING before trusting an equal result. (2) Once a nav commit is merged, `main` is no longer the
 ## before-picture: bisect on named commits, not on "main vs my branch".
 static var _off := _parse_off()
+
+
+## Is mechanism `name` switched off (--nav-off=…)? Parses the command line on first use, so it is right whenever it is
+## asked — including from another class's code before Movement's own statics have been touched.
+static func switched_off(name: String) -> bool:
+	if _off.is_empty() and not _off_parsed:
+		_off = _parse_off()
+	_off_parsed = true
+	return _off.has(name)
+
+
+static var _off_parsed := false
 
 
 static func _parse_off() -> PackedStringArray:
@@ -204,6 +219,8 @@ var _progress_best := INF
 var _goal := Vector3.INF
 ## Round 7: does the current route end at the goal? (False = the navmesh can only get this unit near it.)
 var _reachable := true
+## The last Pathing.query for this route (its gaps go into Movement.state for anyone who needs the numbers).
+var _route_reading := {}
 var _arrive := 0.0
 var _remaining := 0.0
 var _blocker_left := 0
@@ -332,7 +349,8 @@ func reading() -> Dictionary:
 			points = _path.slice(_path_index)
 	return {"phase": phase, "eta_s": eta_s, "remaining_m": _remaining if phase != "arrived" else 0.0,
 			"path_points": points, "blocked_by": blocked_by if phase == "blocked" or phase == "yielding" else "",
-			"yield_to": yield_to, "reachable": _reachable, "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
+			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
+			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE)}
 
@@ -350,6 +368,17 @@ func reset() -> void:
 	_progress_goal = Vector3.INF
 	yield_to = ""  # a new order outranks giving way (K1 response guarantee)
 	_order_ticks = 0
+
+
+## How close a hull of `unit_id` can settle on a point: 0 for tracks and hover (they pivot), and for wheels
+## WHEELS_SETTLE_RADII of the minimum turning radius, at most WHEELS_SETTLE_MAX. The one place this is decided: an order
+## that asks for tighter is widened to it, and a decider asking "is it there?" should ask this (TankBrain's
+## _order_arrive states the same numbers today).
+static func settle_radius(unit_id: String) -> float:
+	if String(Units.stat(unit_id, "locomotion", "tracks")) != "wheels":
+		return 0.0
+	var radius := maxf(float(Units.stat(unit_id, "min_turn_radius_m", 0.0)), 0.5)
+	return minf(radius * WHEELS_SETTLE_RADII, WHEELS_SETTLE_MAX)
 
 
 ## Is this unit driving somewhere (anything but arrived)? Avoidance gives a still unit no share of the avoiding.
@@ -400,7 +429,10 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	if _off.has("r5sidestep"):
 		waypoint = _around_friends(around_fire)
 	var speed_factor := clampf(float(order.get("speed", 1.0)), 0.2, 1.0)
-	_arrive = clampf(float(order.get("arrive", OrderController.ARRIVE_RADIUS)), 0.5, 10.0)
+	# A car can't settle on a point much closer than a share of its turning circle without circling it (round 7: IFVs
+	# told to re-seat within 1.5 m hunted back and forth round their spot for 10 s and never turned to their facing).
+	_arrive = maxf(clampf(float(order.get("arrive", OrderController.ARRIVE_RADIUS)), 0.5, 10.0),
+			settle_radius(tank.unit_id) if wheel_radius() > 0.0 else 0.0)
 	var arrive := _arrive if around_fire == goal else 0.5
 	var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
 	_remaining = remaining
@@ -1021,10 +1053,15 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	if _repath_left <= 0.0 or _flat_distance(goal, _path_goal) > 1.0 or off_path or stalled:
 		_repath_left = 1.0 if _off.has("repath") else REPATH_SECONDS
 		_path_goal = goal
-		_path = Pathing.find_path(tank, here, goal)
 		# Round 7: reachability is "the route ENDS at the goal", never "a route came back" (lesson 76). NavigationServer
-		# answers an unreachable goal with a route to the nearest reachable point, which reads as success.
-		_reachable = _path.size() < 2 or _flat_distance(_path[_path.size() - 1], goal) <= NO_PATH_MARGIN
+		# answers an unreachable goal with a route to the nearest reachable point, which reads as success; Pathing.query
+		# says which it is. For a MOVE the question is also whether the unit can get within its arrive radius of the goal:
+		# a goal inside cover is on its island but NO_PATH_MARGIN+ off the mesh, so it is "no_path" for driving purposes.
+		var route := Pathing.query(tank, here, goal)
+		_path = route["points"]
+		_reachable = not bool(route["ready"]) or _path.size() < 2 \
+				or (bool(route["reachable"]) and float(route["goal_gap_m"]) <= NO_PATH_MARGIN)
+		_route_reading = route
 		_path_index = 1 if _path.size() >= 2 else _path.size()
 	if _path.size() < 2:
 		_path_index = _path.size()

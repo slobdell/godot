@@ -96,6 +96,13 @@ var awareness := ElementAwareness.new()
 var elements: Elements
 ## Round 6 X5: what nav's Movement says each unit is doing (yielding, blocked, its ETA). Silent until N1 is wired in.
 var movement := MovementReadout.new()
+## Round 7 (B): how much of the selection's reach the vision frame shows ahead of it: 0 = off, 1 = out to the selection's
+## covering range (`;` / `'` in play). The frame varies DISTANCE, not the lens: the lead's 35° telephoto is the look.
+var range_frame := 1.0
+const RANGE_FRAME_STEP := 0.25
+const RANGE_FRAME_MAX := 2.0
+## Round 7 (A): headings this far apart (mean resultant length below this) are a "mixed" selection with no facing.
+const FACING_AGREEMENT := 0.6
 ## Round 6 X7: each element's recent decisions, for "why did my element do that" (the card's doctrine line tooltip).
 var element_log := ElementLog.new()
 ## X2: the off-screen element chips and the alert strip (set by the mode).
@@ -240,12 +247,69 @@ func vision_state() -> Dictionary:
 				frame.append(at)
 				frame.append(middle * 2.0 - at)
 				break
+	# Round 7 (B), the lead: "tanks were shooting at enemies I couldn't even see ... make the field of view match the
+	# range of the vehicle or the max range of the selection". The view leans out toward what the selection can fight,
+	# in the direction it faces - as a LEAN (RtsCamera.order_pose: the units stay framed, the view leans as far toward
+	# the point as that allows), not as one more point to fit. Fitting it pulled the frame's centre forward and, with
+	# the auto camera's distance capped, dropped the squad off the bottom of the screen with the enemy in view (round
+	# 5's "focusing on the enemy", back again; shell-playtest caught it). An order's destination still wins the lean.
+	var destination: Variant = _element_destination(element, frame)
+	if destination == null and range_frame > 0.0 and not eyes.is_empty():
+		var ahead: Variant = selection_facing()
+		if ahead == null:
+			ahead = Match.team_frame(team)["forward"]
+		destination = middle + (ahead as Vector3) * selection_reach() * range_frame
 	var friendly: Array = []
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
 			friendly.append(tank)
-	return {"frame": frame, "destination": _element_destination(element, frame),
-			"region": VisionRegion.of(friendly)}
+	return {"frame": frame, "destination": destination, "region": VisionRegion.of(friendly)}
+
+
+## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective
+## range and its sight (Engagement.covering_range's rule, per selection instead of per roster). 0 with no units.
+func selection_reach() -> float:
+	var reach := 0.0
+	for unit_name in commanded_units():
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		reach = maxf(reach, minf(Engagement.effective_range(Weapons.profile(tank.weapon_id)), tank.sight_radius))
+	return reach
+
+
+## Round 7 (A): which way the commanded units mean to face, on the ground (unit Vector3), or null when there is nothing
+## to follow. In order: a squad's formation heading while it has a task; else each unit's ordered facing or travel
+## heading; else the hulls' own forward. Averaged as directions; a selection whose headings disagree (mean resultant
+## below FACING_AGREEMENT) is "mixed" and returns null, and the camera then keeps its yaw rather than snap somewhere.
+func selection_facing() -> Variant:
+	var units := commanded_units()
+	if units.is_empty() or game_match == null:
+		return null
+	var element := selected_element()
+	if element != null and not element.task.is_empty() and element.heading.length() > 0.1:
+		return Vector3(element.heading.x, 0.0, element.heading.z).normalized()
+	var sum := Vector3.ZERO
+	var count := 0
+	for unit_name in units:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		var order: Dictionary = orders.current(unit_name) if orders != null else {}
+		var way: Variant = order.get("facing", order.get("heading"))
+		var direction: Vector3
+		if way is Array and (way as Array).size() == 2:
+			direction = Vector3(float(way[0]), 0.0, float(way[1]))
+		else:
+			direction = -tank.global_basis.z  # forward is -Z (trip-up 2)
+		direction.y = 0.0
+		if direction.length() < 0.001:
+			continue
+		sum += direction.normalized()
+		count += 1
+	if count == 0 or sum.length() / float(count) < FACING_AGREEMENT:
+		return null
+	return sum.normalized()
 
 
 ## Where the element is headed (the nearest unit's current order goal), or null when it is going nowhere or the
@@ -567,10 +631,17 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_V:
 			if rig != null:
 				rig.set_auto_frame(not rig.auto_frame)
+		KEY_Y:
+			# Round 7 (A): the camera's yaw follows the selection's facing; Y turns that off and on.
+			if rig != null:
+				rig.yaw_follow = not rig.yaw_follow
+		KEY_SEMICOLON, KEY_APOSTROPHE:
+			# Round 7 (B): how far out the frame reaches toward the selection's weapon range (0 = off).
+			range_frame = clampf(range_frame + RANGE_FRAME_STEP * (1.0 if key.keycode == KEY_APOSTROPHE else -1.0), 0.0, RANGE_FRAME_MAX)
 		KEY_P:
 			# Print the pose and put it on the clipboard, so the lead can paste the camera he found back to us.
 			if rig != null:
-				var pose := rig.pose_text()
+				var pose := rig.pose_text() + " range_frame=%.2f" % range_frame
 				print(pose)
 				DisplayServer.clipboard_set(pose)
 				pose_copied.emit(pose)
@@ -862,7 +933,7 @@ func screen_to_world(screen: Vector2) -> Variant:
 	if hit == null:
 		return null
 	var point: Vector3 = hit
-	return Vector3(clampf(point.x, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT), 0.0, clampf(point.z, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT))
+	return Orders.clamp_to_arena(Vector3(point.x, 0.0, point.z))  # M4: the arena's shape, not a square
 
 
 # ---- X6: readability at close zoom --------------------------------------------------------------------------
@@ -928,8 +999,7 @@ func _acknowledge(command: Dictionary) -> void:
 	var at: Variant = null
 	var kind: String = command["verb"]
 	if command.has("to"):
-		at = Vector3(clampf(float(command["to"][0]), -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT), 0.0,
-				clampf(float(command["to"][1]), -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT))
+		at = Orders.clamp_to_arena(Vector3(float(command["to"][0]), 0.0, float(command["to"][1])))
 	elif command.has("target"):
 		var target := game_match.tanks.get_node_or_null(NodePath(String(command["target"]))) as Tank
 		if target != null:
@@ -953,6 +1023,8 @@ func _draw() -> void:
 	_draw_acks()
 	_draw_health()
 	_draw_callouts()
+	_draw_facing()
+	_draw_order_marks()
 	if _pause_text != "" and get_tree().paused:
 		var font := CyberStyle.font()
 		var text_size := roundi(22.0 * CyberStyle.ui_scale(size))
@@ -1004,6 +1076,160 @@ func _draw_callouts() -> void:
 		var at: Vector2 = callout["at"] - Vector2(width / 2.0, 0.0)
 		draw_string_outline(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, 3, Color.BLACK)
 		draw_string(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, CyberStyle.YELLOW if word == "YIELDING" else GameTheme.ui["enemy"])
+
+
+## Round 7: orders you can see surviving the weave. nav and squad measured most of a unit's churn under an order as the
+## evasion the lead asked for (jinking, strafing inside one decision), which can read as a unit that forgot its order.
+## So for the selection, each order stays on screen until done: a ground ring at the ordered point in the verb's colour,
+## the task's own symbol above it (the card's and the preview's), a lead line from the group, and "2/3 there".
+## A squad on a task shows the TASK the player gave (Screen), not its leader's moves.
+const ORDER_ARRIVED_M := 8.0
+const ORDER_MARK_PX := 34.0
+const ORDER_VERB_NAMES := {"move": "MOVE", "attack_move": "ATTACK-MOVE", "attack": "ATTACK", "follow": "FOLLOW",
+		"hold": "HOLD", "screen": "SCREEN", "support_by_fire": "SUPPORT BY FIRE", "ambush": "AMBUSH"}
+
+
+## [{"verb", "point": Vector3, "units": int, "arrived": int, "from": Vector3 (the group's middle), "task": bool}] for
+## the selection. Runs every frame: one node lookup and one order read per unit (budgeted in test_control_scale).
+func order_marks() -> Array:
+	var result: Array = []
+	if game_match == null or orders == null or selection.units.is_empty():
+		return result
+	var element := selected_element()
+	if element != null and not element.task.is_empty() and element.task.has("to"):
+		var to: Array = element.task["to"]
+		var verb := String(element.task.get("verb", ""))
+		if verb == "move" and bool(element.task.get("drills", true)):
+			verb = "attack_move"  # a move task with drills is what the player asked for as attack-move
+		var mark := {"verb": verb, "point": Vector3(float(to[0]), 0.0, float(to[1])), "task": true}
+		for unit_name in element.members():
+			_count_into(mark, String(unit_name), orders.current(String(unit_name)))
+		result.append(_finish_mark(mark))
+		return result
+	var by_order := {}
+	var ids: Array = []
+	for unit_name in selection.units:
+		var order := orders.current(unit_name)
+		if not order.has("to"):
+			continue
+		var id := int(order.get("id", -1))
+		if not by_order.has(id):
+			ids.append(id)
+			by_order[id] = {"verb": String(order["verb"]), "point": Vector3(float(order["to"][0]), 0.0, float(order["to"][1])),
+					"task": false}
+		_count_into(by_order[id], unit_name, order)
+	ids.sort()
+	for id in ids:
+		result.append(_finish_mark(by_order[id]))
+	return result
+
+
+func _count_into(mark: Dictionary, unit_name: String, order: Dictionary) -> void:
+	var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+	if tank == null or not tank.is_alive():
+		return
+	var at := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+	mark["units"] = int(mark.get("units", 0)) + 1
+	mark["from"] = (mark.get("from", Vector3.ZERO) as Vector3) + at
+	var goal: Variant = Orders.goal_of(order, game_match) if not order.is_empty() else null
+	var target: Vector3 = goal if goal is Vector3 else mark["point"]
+	if order.is_empty() or at.distance_to(target) <= ORDER_ARRIVED_M:
+		mark["arrived"] = int(mark.get("arrived", 0)) + 1
+
+
+func _finish_mark(mark: Dictionary) -> Dictionary:
+	mark["units"] = int(mark.get("units", 0))
+	mark["arrived"] = int(mark.get("arrived", 0))
+	mark["from"] = (mark.get("from", Vector3.ZERO) as Vector3) / maxf(mark["units"], 1.0)
+	return mark
+
+
+## "SCREEN · 2/3 there · 40 m" - what the marker says under its symbol.
+func order_mark_label(mark: Dictionary) -> String:
+	var words := String(ORDER_VERB_NAMES.get(mark["verb"], String(mark["verb"]).to_upper()))
+	var left := (mark["from"] as Vector3).distance_to(mark["point"])
+	if int(mark["arrived"]) >= int(mark["units"]):
+		return "%s · there" % words
+	return "%s · %d/%d there · %d m" % [words, mark["arrived"], mark["units"], roundi(left)]
+
+
+func _draw_order_marks() -> void:
+	var font := CyberStyle.font()
+	var scale := CyberStyle.ui_scale(size)
+	var px := roundi(14.0 * scale)
+	var glyph_px := ORDER_MARK_PX * scale
+	for mark: Dictionary in order_marks():
+		var color := _order_color(String(mark["verb"]))
+		var at: Variant = _screen_point(mark["point"])
+		if at == null:
+			continue
+		_draw_ground_ring(mark["point"], 6.0, Color(color, 0.8), 2.0)
+		var from: Variant = _screen_point(mark["from"])
+		# Direct orders already have each unit's dashed line (_draw_waypoints); a squad task gets one from its middle.
+		if bool(mark.get("task", false)) and from != null and int(mark["arrived"]) < int(mark["units"]):
+			draw_line(from, at, Color(color, 0.35), 1.5)
+		# A pin: a stalk up from the ring to the task's symbol on a dark disc, readable over any ground at 21°.
+		var head := (at as Vector2) - Vector2(0.0, glyph_px * 1.6)
+		draw_line(at, head + Vector2(0.0, glyph_px * 0.5), Color(color, 0.7), 2.0)
+		draw_circle(head, glyph_px * 0.62, Color(0, 0, 0, 0.6))
+		draw_arc(head, glyph_px * 0.62, 0.0, TAU, 32, Color(color, 0.9), 1.5, true)
+		var verb := String(mark["verb"])
+		if CommandIcons.has_task_graphic(verb):
+			draw_texture_rect(CommandIcons.task_texture(verb), Rect2(head - Vector2.ONE * glyph_px * 0.42, Vector2.ONE * glyph_px * 0.84), false, color)
+		var label := order_mark_label(mark)
+		var text_size := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, px)
+		var plate := Rect2(head + Vector2(glyph_px * 0.8, -text_size.y * 0.5 - 3.0), text_size + Vector2(10.0, 6.0))
+		draw_rect(plate, Color(0, 0, 0, 0.6))
+		draw_string(font, plate.position + Vector2(5.0, 3.0 + font.get_ascent(px)), label, HORIZONTAL_ALIGNMENT_LEFT, -1, px, color)
+
+
+## Round 7 (A): which way each selected vehicle points - a chevron on the ground ahead of its hull - and, for a gun that
+## cannot traverse all round, the edges of its fire arc. The lead: "has a good understanding of the orientation of the
+## vehicle, which should be an important thing (i.e. trying to emplace units in an ambush)".
+const FACING_ARROW_M := 7.0
+const ARC_SHOWN_M := 16.0
+
+
+func facing_marks() -> Array:
+	var result: Array = []
+	if game_match == null or camera == null:
+		return result
+	for unit_name in selection.units:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		var at := Shown.ground(tank)
+		var forward := -tank.global_basis.z
+		forward.y = 0.0
+		if forward.length() < 0.001:
+			continue
+		forward = forward.normalized()
+		var mark := {"unit": unit_name, "from": at, "to": at + forward * FACING_ARROW_M, "arc": []}
+		if tank.fire_arc_deg < 300.0:
+			var half := deg_to_rad(tank.fire_arc_deg / 2.0)
+			mark["arc"] = [at + forward.rotated(Vector3.UP, half) * ARC_SHOWN_M, at + forward.rotated(Vector3.UP, -half) * ARC_SHOWN_M]
+		result.append(mark)
+	return result
+
+
+func _draw_facing() -> void:
+	var color: Color = GameTheme.ui["friendly"]
+	for mark: Dictionary in facing_marks():
+		var a: Variant = _screen_point(mark["from"])
+		var b: Variant = _screen_point(mark["to"])
+		if a == null or b == null:
+			continue
+		var tip: Vector2 = b
+		var direction := (tip - (a as Vector2)).normalized()
+		if direction.length() < 0.5:
+			continue
+		var side := Vector2(-direction.y, direction.x)
+		draw_line(a, tip, Color(color, 0.85), 2.0)
+		draw_colored_polygon(PackedVector2Array([tip + direction * 7.0, tip + side * 5.0, tip - side * 5.0]), Color(color, 0.95))
+		for edge: Vector3 in mark["arc"]:
+			var e: Variant = _screen_point(edge)
+			if e != null:
+				draw_dashed_line(a, e, Color(color, 0.45), 1.5, 5.0)
 
 
 ## X6: a thin hull bar (and a shield sliver above it) over vehicles that are hurt or selected.

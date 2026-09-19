@@ -151,9 +151,54 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
+## Round 7 (2026-09-18/19, after the quota lift) — the orchestrator's brief: A, B, C1–C3, plus K1 and the perimeter
+
+| Item | State | Evidence |
+|---|---|---|
+| **A** yaw follows the selection's facing | done. Source: tasked element heading → order facing/heading → hull forward, averaged; mixed/none keeps yaw. 70°/s past a 12° deadband; manual yaw pauses it; **Y** toggles. Selected vehicles show a forward chevron (+ fire-arc edges for a fixed gun). Reads squad's now-honoured facing since `4cad7ef7` | `test_control_facing_camera` |
+| **B** frame out to the selection's weapon range | done. The selection's reach (largest `min(effective range, sight)`, via Engagement) ahead along its facing is the view's **lean** (`order_pose`), not a point to fit — fitting it dropped the squad off screen with the enemy in view (caught in shell-playtest, mutation-checked). `;` `'` factor. Auto camera capped at 100 m (`auto_frame_max_m`) | same |
+| **C1** vehicle renders as portraits | done. `UnitPortraits`: one real tank per type, dressed as in play, photographed offscreen, cached; role icons until ready/headless | builder0 shell-playtest frame |
+| **C2** animated task help | done. Hovering a task plays its posture loop in the tooltip: move, face, fire (always / on contact), ADVANCES / HOLDS HERE. **Geometry is squad's real planner** (`ElementPlan.preview`, on main) — a coil for Hold, interlocking sectors for Support by Fire. Stand-in only for Stop | `test_control_panel` |
+| **C3** two grammars told apart | done. Rows carry `then: click|now`; click buttons wear a pointer badge + inset border; tooltip says which | `test_control_panel` |
+| K1 `follow` + `slot` | done (squad's ask). One unit, the leader's frame, a sliding goal (≤ 0.52 m/tick at 90°/s) | `test_control_follow_slot` |
+| Perimeter cutaway | done against arena's `perimeter()`/`perimeter_edges()` (by name; square fallback) with positional spans | `test_rts_camera` hexagon test |
+| Portrait + railing fixes | nameplate hidden, hull fills the cell; railing (7 m) counts for the cut | builder0 frame |
+| Card help shows itself once | Screen's animated tooltip opens by itself in the first planning pause; any press dismisses it (`9c889025`) | `test_control_panel` |
+| Radar draws the arena's outline | the perimeter polygon, else the active layout's bound (`4f7371ef`) | `test_radar` |
+| **Order progress on screen** (orchestrator, from nav/squad churn: weaving must read as *en route*) | done (`53a2af87`). For the selection, each order — or the squad's task, not its leader's moves — keeps a **pin**: ground ring at the ordered point, a stalk to the task's own symbol (card/preview glyph) on a dark disc, and a plate reading `ATTACK-MOVE · 2/3 there · 37 m`. A squad task adds a lead line from its middle (direct orders already have each unit's dashed line). Looked at the lead's 21°/49 m/FOV 35 pose, 1280×720 (laptop): readable over the arena floor; the first draft (12 px text, 20 px glyph, no plate) was not. 0.17 ms/frame at 30 units under orders (laptop); the whole control frame 1.84–1.96 ms of 2.0 (laptop, ~2.75× faster on builder0). **Wants the lead's eye on a touchpad.** | `test_control_order_marks`, `test_control_scale` |
+
+**MERGED: `baf04ead` as main `fa859dce`.** Next candidate: `86a8744c` (main `fa859dce` merged in at `7105478c`; the rest
+of the ratio timing tests; the cutaway reads feel's `StandsProfile` by path when the build has it, hand measurement as
+fallback; the kit's front is 9.64 m from 4.2 m out, not the measured 7 m at 2.3 m, so one test case moved 30° → 40°).
+#21 on it: RED on `test_radar`'s outline test only (1191/1, builder0), the static-leak main fixed at `5cc17ee6`;
+smokes never ran. **Candidate now `c7f9cd4e`** (main through `5cc17ee6` merged at `af9e4f1e`, plus the same leak guarded
+in `test_rts_camera`, positive-controlled). **MERGE HERE: `c7f9cd4e` — #22 GREEN (builder0): `make check exited 0`,
+1193 passed / 0 failed, `sim-baseline passed: 253ecfdeed84bc4d`, every target through `audio-check passed`.** **Open:** look at the cutaway at the lead's pose once `StandsProfile` is on main (it cuts the front of the stands
+slightly more often near the wall) — **looked at, fine:** at 21° (49 m and 100 m) both profiles cut, vehicles by the
+wall are clear and the far stands keep their crowd; the profile only decides at steep far poses. **M4 done:**
+`Orders.clamp_to_arena` (shape inset by a 4 m hull clearance = exactly ±116 on the square, then `Arena.clamp_into`)
+replaces the four square clamps; when arena's `f295ff30` (exact `margin` in `ArenaShape.clamp_into`, fixing the corner
+bug control reported) is on main, pass the margin through instead of scaling the bound here. **Round 8 timing policy: done** — `make check` measures
+control's timing, `make control-timing` judges it (run on an idle builder0).
+Was: **MERGE HERE: `baf04ead` — #20 GREEN (builder0): `make check exited 0`, 1162 passed / 0 failed, `sim-baseline passed:
+e38fd65b6b6ead3f`, every target through `audio-check passed`** (main `b70608d6` merged in). After it, unchecked:
+`35c72304` (order/click/bars as ratios) and docs. **Decided before the result (orchestrator, lesson 106):** `baf04ead`
+predates main's `d8f26176` (garage/army-loop timeouts 60/120 → 600 s), so a *timeout* in `garage-smoke` or
+`army-loop-smoke` in #20 is not a finding about this branch; merge anyway and re-run on main.
+**After #20 merges (agreed with the orchestrator):** merge `main` first (nav's `c7da4dd8` moved the sim baseline;
+feel's `551cb2a4`), then resolve combat's `36e116c8` in `game/ui/radar.gd` if it has merged: take combat's inline
+`Arena.perimeter()` block in `_draw()`, keep `test_the_radar_outline_is_the_arenas_own_shape` pointed at it, delete
+`outline_points()`; read `visibility.origin` (combat's per-instance field origin) wherever control reads the field.
+`git merge-tree` showed `radar.gd` as the only conflict. Then re-check. #19 on `9c889025` was RED on `test_control_scale` (2.33 ms frame vs 2.0, builder0:
+load from concurrent checks — idle builder0 is ~0.65 ms) and was killed, since make stops at the failing target. Fix in
+`baf04ead`: the frame budget is a **ratio to a reference workload** timed interleaved with it (5.5–7.2 on the laptop at
+loads 3–8, budget 8.0, mutation-checked), click latency is the fastest of three, and the panel sorts once a frame.
+Superseded: `a1d92ad6` (#17: 1157/0 tests, sim-baseline failed on main's then-unrecorded hash). Not done: nothing from the brief; open: the
+preview's start row crosses on the way (cosmetic), feel's stands profile as data (control still measures kit_stands).
+
 **STATE AT PAUSE (2026-09-18, quota stop; resuming ~4 days later): everything is committed.** Last commit with code:
 `017fda42` (the lead's camera: 21°, FOV 35, 49 m, auto-framing on; the `-` `=` hints; squad-1 first frame; tests
-pin their lens). **Its `make remote T=check` (#14) was still running at the stop — result unknown: re-verify it.**
+pin their lens). **Its `make remote T=check` (#14) came back GREEN: 1085 passed, 0 failed (builder0). Merge here: `017fda42`.**
 It passed locally (camera 42, control 145, command 50, radar 7, touch 9, all 0 failed; laptop) and `make remote
 T=shell-playtest` exited 0 on it (builder0). **Last verified green: `2dbd985d`** (1082/0) and `ff28563d` (1084/0);
 `42d42fd2` and `eb2d7b74` were never fully checked (superseded). Nothing is mid-way: no feature started after

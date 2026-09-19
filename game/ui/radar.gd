@@ -88,6 +88,23 @@ func _flip() -> bool:
 	return Match.team_frame(team)["forward"] != Vector3.FORWARD
 
 
+## Round 7: the arena's real outline on the radar - its perimeter polygon when the layout has one (the camera's
+## RtsCamera.perimeter_poly, read from Arena.perimeter()), else the ACTIVE layout's square bound. It used to be a box at
+## Match.ARENA_HALF_SIZE, which becomes the largest bound any arena may have, not this one's: a 140 box round a 120 map,
+## and a square round a hexagon.
+func outline_points() -> PackedVector2Array:
+	var outline := PackedVector2Array()
+	if RtsCamera.perimeter_poly.size() >= 3:
+		for point in RtsCamera.perimeter_poly:
+			outline.append(world_to_radar(Vector3(point.x, 0, point.y)))
+		outline.append(outline[0])
+		return outline
+	var half := float(Arena.active.get("half_size", Match.ARENA_HALF_SIZE))
+	for corner in [Vector3(-1, 0, -1), Vector3(1, 0, -1), Vector3(1, 0, 1), Vector3(-1, 0, 1), Vector3(-1, 0, -1)]:
+		outline.append(world_to_radar(corner * half))
+	return outline
+
+
 func world_to_radar(world: Vector3) -> Vector2:
 	var p := Vector2(world.x, world.z)
 	if _flip():
@@ -284,17 +301,13 @@ func _draw() -> void:
 		if _flip():
 			field_rect = Rect2(corner_a, corner_b - corner_a)
 		draw_texture_rect(visibility.texture, field_rect, false, Color(0.55, 0.85, 0.7, 0.55))
-	# X3 (combat, round 7): the wall's real polygon, not a square off the constant. Two bugs in one line before:
-	# the constant is now the BOUND (140), so this drew an outline 20 m outside the wall of every shipped map, and
-	# it assumed four corners, so a hexagon would have been drawn as the square it is not. Arena.perimeter() is the
-	# inner face for whatever shape the layout is (contract D).
-	var perimeter := Arena.perimeter()
-	if not perimeter.is_empty():
-		var outline := PackedVector2Array()
-		for index in range(perimeter.size() + 1):
-			var corner := perimeter[index % perimeter.size()]
-			outline.append(world_to_radar(Vector3(corner.x, 0.0, corner.y)))
-		draw_polyline(outline, Color(0.6, 0.8, 0.9, 0.9), 1.5)
+	# X3 (combat, round 7) + 4f7371ef (control): the wall's real polygon, not a square off the constant. Two bugs in
+	# one line before: the constant is now the BOUND (140), so this drew an outline 20 m outside the wall of every
+	# shipped map, and it assumed four corners, so a hexagon would have been drawn as the square it is not.
+	# Resolved to control's outline_points() rather than combat's inline Arena.perimeter() loop: the two agree on the
+	# polygon case, and outline_points() ALSO falls back to the active layout's own bound when a layout has no
+	# perimeter, where the inline version draws nothing at all. It is also the seam test_radar calls directly.
+	draw_polyline(outline_points(), Color(0.6, 0.8, 0.9, 0.9), 1.5)
 	var prop_color := Color(0.75, 0.8, 0.85, 0.85)
 	var prop_colors := PackedColorArray([prop_color, prop_color, prop_color, prop_color])
 	for corners in obstacles:

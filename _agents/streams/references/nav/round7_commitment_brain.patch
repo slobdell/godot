@@ -1,0 +1,52 @@
+diff --git a/game/ai/tank_brain.gd b/game/ai/tank_brain.gd
+index 26832452..5fe1efbb 100644
+--- a/game/ai/tank_brain.gd
++++ b/game/ai/tank_brain.gd
+@@ -378,6 +378,9 @@ var _bait_seen := -1
+ var _motion_cache := {}
+ var _jink_tick := 0
+ var _run_phase := "run"
++## Round 7 (nav): the direction CombatMotion chose last plan, handed back so it can commit to it.
++var _motion_prev_index := -1
++var _motion_prev_reverse := false
+ 
+ 
+ func think(_delta: float) -> void:
+@@ -2121,7 +2124,7 @@ static func fire_band(weapon: Dictionary) -> float:
+ static func motion_style(unit_id: String) -> String:
+ 	var profile := Units.profile(unit_id)
+ 	if String(profile.get("mount", "turret")) == "fixed":
+-		return "run"
++		return CombatMotion.fixed_style  # round 7 (nav): "standoff" (shoot-and-scoot); "run" = round 3's attack runs
+ 	if float((profile.get("armor", {}) as Dictionary).get("front", 0.0)) >= ANGLE_FRONT_ARMOR:
+ 		return "angle"
+ 	return "strafe"
+@@ -2147,6 +2150,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
+ 		"strafe":
+ 			# Close in, jinks spoil a gunner's lead; at a long standoff they just look like rocking (a Lancer at 80 m).
+ 			jink_due = distance <= JINK_RANGE and tick >= _jink_tick + (think_offset * 37) % JINK_SPREAD_TICKS
++	# Round 7 (nav): a jink only buys anything against a gun with a flight time to lead (CombatMotion.jink_worth).
++	jink_due = jink_due and CombatMotion.jink_worth(String(contact.get("weapon", "")))
+ 	if jink_due:
+ 		_strafe_side = -_strafe_side
+ 		_jink_tick = tick + JINK_MIN_TICKS
+@@ -2215,11 +2220,19 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
+ 			return SuppressionFeed.beaten(fields, team, from, to)
+ 	_incoming_count = (s.get("incoming", []) as Array).size()
+ 	var clock := Time.get_ticks_usec() if OrderController.profiling else 0
++	request["previous_index"] = _motion_prev_index  # round 7 (nav): commitment to last plan's direction
++	request["previous_reverse"] = _motion_prev_reverse
+ 	var result := CombatMotion.choose(request)
++	_motion_prev_index = int(result.get("index", -1))
++	_motion_prev_reverse = bool(result.get("reverse", false))
+ 	if OrderController.profiling:
+ 		profile_parts["motion"] = int(profile_parts.get("motion", 0)) + Time.get_ticks_usec() - clock
+ 	if result.is_empty():
+ 		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
++	if result.get("hold", false):
++		why = TankBrain._join(why, "holding at standoff")
++		_motion_cache = {"tick": tick, "key": motion_key, "why": why, "order": {"type": "stop"}}
++		return _motion_cache["order"]
+ 	if result.get("dodging", false):
+ 		why = TankBrain._join(why, "dodging")
+ 	if result.get("beaten", false):

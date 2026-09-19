@@ -36,6 +36,8 @@ const SCREEN_TOE := deg_to_rad(30.0)
 const STANDS_ROWS := 9
 ## Side stands start this far from the gate (m along the short walls), clear of the barricades and ad screens.
 const SIDE_STANDS_FROM := 56.0
+## Behind the wall, before the stands begin (m). StandsProfile publishes the stands' heights from the same numbers.
+const GAP := StandsProfile.GAP
 
 var ground: ChunkedGround
 var crowd: CrowdSystem
@@ -46,6 +48,8 @@ var half := HALF
 var _flood_maps := {}
 ## The last layout setup() received (its floodlight props light the floor).
 var _layout := {}
+## Round 7: the layout's `shape` (ArenaShape). A non-square shape builds the venue from the perimeter polygon's edges.
+var _shape := {}
 
 
 func _ready() -> void:
@@ -65,13 +69,20 @@ func setup(layout: Dictionary) -> void:
 	_flood_maps.clear()
 	var wanted := float(layout.get("half_size", HALF - 1.0)) + 1.0
 	var ring := float((layout["control_point"] as Dictionary).get("radius", 16.0)) if layout.get("control_point") is Dictionary else 0.0
+	var shape_kind := String((layout.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND)) if layout.get("shape") is Dictionary else ArenaShape.DEFAULT_KIND
+	var sides := ArenaShape.sides(shape_kind)
+	# The wall's centre line along a flat side (for a square, `wanted`; for a polygon, its apothem plus the 1 m).
+	var apothem := wanted if sides == 4 else ArenaShape.circumradius(shape_kind, wanted - 1.0) * cos(PI / float(sides)) + 1.0
 	for variant in [[false, false], [true, false], [false, true]]:
 		var material := CyberMaterials.ground(variant[0], variant[1])
-		material.set_shader_parameter("band_inner", wanted - 13.0)
+		material.set_shader_parameter("band_inner", apothem - 13.0)
+		material.set_shader_parameter("band_sides", sides)
 		material.set_shader_parameter("ring_radius", ring)
 		material.set_shader_parameter("ring_width", 1.4 if ring > 0.0 else 0.0)
-	if not is_equal_approx(wanted, half):
+	var wanted_shape: Dictionary = layout.get("shape", {}) if layout.get("shape") is Dictionary else {}
+	if not is_equal_approx(wanted, half) or wanted_shape != _shape:
 		half = wanted
+		_shape = wanted_shape
 		_build_structures()
 	_apply_ground_quality()
 
@@ -84,12 +95,15 @@ func _build_structures() -> void:
 	structures = Node3D.new()
 	structures.name = "Structures"
 	add_child(structures)
-	_build_perimeter()
-	var inset := half - (HALF - TOWER_INSET)
-	for sx in [-1.0, 1.0]:
-		for sz in [-1.0, 1.0]:
-			_build_tower(Vector3(sx * inset, 0.0, sz * inset))
-	_build_venue()
+	if String(_shape.get("kind", ArenaShape.DEFAULT_KIND)) != ArenaShape.DEFAULT_KIND:
+		_build_polygon_venue()
+	else:
+		_build_perimeter()
+		var inset := half - (HALF - TOWER_INSET)
+		for sx in [-1.0, 1.0]:
+			for sz in [-1.0, 1.0]:
+				_build_tower(Vector3(sx * inset, 0.0, sz * inset))
+		_build_venue()
 	# Render X5: repeated kit models (stands, towers, gates) draw as one MultiMesh per mesh.
 	StaticInstancer.instance_repeats(structures)
 
@@ -148,6 +162,80 @@ func _build_venue() -> void:
 			screen.transform = Transform3D(Basis(Vector3.UP, side * PI / 2.0 - along * side * SCREEN_TOE),
 					Vector3(side * (half + WALL_THICK / 2.0 + 4.0), 0.0, along * minf(SCREEN_OFFSET, half * 0.45)))
 			structures.add_child(screen, true)
+
+
+## Round 7 (arena's contract D): the venue around a non-square perimeter, all of it from `ArenaShape.edges()`, the
+## same polygon the colliders and control's cutaway use. Each edge gets a wall; each `stands` span gets as many
+## grandstand modules as fit, centred; each `gate` span its gate, with an ad screen either side; each corner a
+## floodlight tower. The square keeps its hand-built venue above.
+func _build_polygon_venue() -> void:
+	var face := half - WALL_THICK / 2.0  # the wall's inner face (half is its centre line)
+	var edges := ArenaShape.edges(_shape, face)
+	var concrete := CyberMaterials.surface(Color(0.09, 0.09, 0.1), 0.7, 0.1)
+	var stands_scene := _kit("kit_stands")
+	var gate_scene := _kit("kit_gate")
+	var stands_size := Vector3.ZERO
+	if stands_scene != null:
+		var probe := stands_scene.instantiate() as Node3D
+		stands_size = _bounds(probe).size
+		probe.free()
+	var rows := []
+	var signs := []
+	var n := edges.size()
+	var overlap := WALL_THICK * tan(PI / float(n))  # walls meet at the corners without a gap
+	for edge: Dictionary in edges:
+		var a: Vector2 = edge["from"]
+		var b: Vector2 = edge["to"]
+		var along := (b - a).normalized()
+		var mid := (a + b) / 2.0
+		var outward := mid.normalized()
+		var yaw := atan2(outward.x, outward.y)  # a kit model's -Z (its front) turned to face the centre
+		# The wall: a box along the edge, its inner face on the polygon, with the neon rim on top.
+		var segment := Node3D.new()
+		segment.name = "Perimeter"
+		var centre := mid + outward * (WALL_THICK / 2.0)
+		segment.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(centre.x, 0.0, centre.y))
+		structures.add_child(segment, true)
+		var length := float(edge["length_m"]) + overlap
+		CyberMaterials.box(segment, Vector3(length, WALL_HEIGHT, WALL_THICK), Vector3(0, WALL_HEIGHT / 2.0, 0), concrete)
+		CyberMaterials.top_quad(segment, Vector2(length, 0.9), Vector3(0, WALL_HEIGHT + 0.36, 0),
+				CyberMaterials.neon(CyberMaterials.PURPLE, 0.9, 0.03))
+		CyberMaterials.box(segment, Vector3(length - 8.0, 0.18, 0.12), Vector3(0, WALL_HEIGHT - 0.35, -WALL_THICK / 2.0 - 0.07),
+				CyberMaterials.neon(CyberMaterials.PURPLE, 4.0, 0.05), false)
+		StaticBatcher.merge(segment)
+		for span: Dictionary in edge["spans"]:
+			var from_m := float(span["from_m"])
+			var to_m := float(span["to_m"])
+			var kind := String(span["kind"])
+			if kind == "stands" and stands_scene != null:
+				var count := int((to_m - from_m) / stands_size.x)
+				var start := from_m + ((to_m - from_m) - count * stands_size.x) / 2.0
+				for i in count:
+					var at := a + along * (start + stands_size.x * (i + 0.5)) + outward * (WALL_THICK + GAP + stands_size.z / 2.0)
+					var xform := Transform3D(Basis(Vector3.UP, yaw), Vector3(at.x, 0.0, at.y))
+					_add_stands(stands_scene, xform, stands_size, rows, signs, i % 3 == 1)
+			elif kind == "gate" and gate_scene != null:
+				var gate := gate_scene.instantiate() as Node3D
+				gate.name = "Gate"
+				var depth := _bounds(gate).size.z
+				var gate_at := a + along * ((from_m + to_m) / 2.0) + outward * (WALL_THICK + depth / 2.0)
+				gate.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(gate_at.x, 0.0, gate_at.y))
+				structures.add_child(gate, true)
+				for side in [-1.0, 1.0]:  # a screen either side of the gate, just outside the wall
+					var screen := AD_SCREEN.instantiate() as Node3D
+					screen.name = "AdScreen"
+					screen.set("channel_name", "arena" if side > 0.0 else "odds")
+					var screen_at: Vector2 = gate_at + along * side * ((to_m - from_m) / 2.0 + 5.0) + outward * 2.0
+					screen.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(screen_at.x, 0.0, screen_at.y))
+					structures.add_child(screen, true)
+		# A floodlight tower at the edge's first corner, pulled in toward the centre.
+		_build_tower(Vector3(a.x, 0.0, a.y) * ((a.length() - (HALF - TOWER_INSET)) / maxf(a.length(), 1.0)))
+	if not signs.is_empty():
+		structures.add_child(NeonSigns.build(signs))
+	if not rows.is_empty():
+		crowd = CrowdSystem.new()
+		structures.add_child(crowd)
+		crowd.seat_rows(rows)
 
 
 ## One grandstand module at `xform`: its crowd's seat rows go on `rows`, and (`with_sign`) a neon sign on its top rail,
