@@ -437,9 +437,7 @@ func _report(elapsed: float) -> void:
 			"retask_events_per_unit_minute": snappedf(retask_events / maxf(0.01, float(ordered_ticks) / SimClock.TICK_RATE / 60.0), 0.01),
 			"unreachable_route_unit_seconds": snappedf(float(unreachable_ticks) / SimClock.TICK_RATE, 0.1),
 			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
-			"inplace_detail": inplace_detail, "gear_detail": gear_detail,
-			"flow": {"on": FlowField.on(), "answered": FlowField.answered, "fell_back": FlowField.fell_back,
-					"fell_back_unswept": FlowField.fell_back_unswept}, "inplace_per_unit_minute": _inplace_rates(),
+			"inplace_detail": inplace_detail, "gear_detail": gear_detail, "inplace_per_unit_minute": _inplace_rates(),
 			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")],
 			"armies": [_flag("green-army", "cpu"), _flag("rust-army", "cpu")], "fielded": fielded, "busy_every_s": busy_every, "busy_orders": busy_orders}
 	print("NAV_FIGHT %s" % JSON.stringify(out))

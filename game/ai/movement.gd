@@ -131,7 +131,7 @@ static var _off_parsed := false
 ## and `switched_off()` would answer false for it forever: the A/B would run one treatment in both arms and come back a
 ## clean null (arena hit exactly that with `flow` on a tree that did not have it yet). So an unknown name is refused
 ## loudly instead. Add the name here in the same commit that adds the switch.
-const OFF_NAMES: Array[String] = ["backup", "carrot", "chord", "commit", "flow", "grace", "guard", "holdband",
+const OFF_NAMES: Array[String] = ["backup", "carrot", "chord", "commit", "grace", "guard", "holdband",
 		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
 
 
@@ -1049,29 +1049,6 @@ func _track_progress(goal: Vector3, drive_vector: Vector2, remaining: float) -> 
 		stalled_ticks += ctl._step
 
 
-## The route to `goal`, and the reachability reading that goes with it. Round 8 (nav): with `--nav-off=flow` the route
-## comes from the shared FlowField — one Dijkstra sweep per goal that every unit heading there reads — and A* is not
-## asked at all (asking both would double the planning cost the flow field exists to save). The field answers
-## reachability from its own sweep; the goal's gap to the navmesh is one server call. When the field says nothing here
-## (off its grid, walled in, or the goal unreachable) this falls back to Pathing.query, so nothing regresses to silence.
-func _plan(here: Vector3, goal: Vector3) -> Dictionary:
-	var tank := ctl.tank
-	if FlowField.on():
-		var field := FlowField.for_goal(tank, goal)
-		var points := field.walk(here)
-		if points.size() >= 2:
-			FlowField.answered += 1
-			var goal_gap := FlowField.goal_gap_m(tank, goal)
-			# A walk only exists when this hull's cell has a finite cost to the goal's, which IS reachability; a goal
-			# off the mesh has no cell of its own, the sweep never starts, and the fallback below answers instead.
-			return {"points": points, "ready": true, "reachable": true,
-					"goal_on_mesh": goal_gap <= Pathing.MESH_EPSILON, "end_gap_m": 0.0, "goal_gap_m": goal_gap}
-		else:
-			FlowField.fell_back += 1
-			FlowField.fell_back_unswept += 1 if not field.ready else 0
-	return Pathing.query(tank, here, goal)
-
-
 ## X7: the point to steer at now — a "carrot" PATH_LOOKAHEAD metres along the route beyond the hull's own place on it
 ## (pure pursuit along the polyline), or `goal` itself on the last stretch or with no path (navigation not baked yet).
 ## Steering at raw navmesh corners made a hull drive to each corner, pivot, and drive on; chasing a point that slides
@@ -1092,7 +1069,7 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		# answers an unreachable goal with a route to the nearest reachable point, which reads as success; Pathing.query
 		# says which it is. For a MOVE the question is also whether the unit can get within its arrive radius of the goal:
 		# a goal inside cover is on its island but NO_PATH_MARGIN+ off the mesh, so it is "no_path" for driving purposes.
-		var route := _plan(here, goal)
+		var route := Pathing.query(tank, here, goal)
 		_path = route["points"]
 		_reachable = not bool(route["ready"]) or _path.size() < 2 \
 				or (bool(route["reachable"]) and float(route["goal_gap_m"]) <= NO_PATH_MARGIN)

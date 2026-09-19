@@ -92,7 +92,7 @@ have it. Add the name to `OFF_NAMES` in the commit that adds the switch.
 
 | switch | turns off | what an A/B with it answers |
 |---|---|---|
-| `flow` | **turns ON** round 8's flow fields (FlowField; off by default until its checkpoint clears) | shared cost-to-goal routing vs per-unit A* |
+
 | `--no-avoidance` | ORCA (X3) | how much arrival and flow come from avoidance at all |
 | `--no-station-pid` | PID station-keeping (X6) | P-law chase vs regulated slot (0.35 vs 4.58 m, `test_station_keeping`) |
 | `grace` | the 10-tick K1 start window | whether K1's 3-tick response depends on it (it does: control's response test) |

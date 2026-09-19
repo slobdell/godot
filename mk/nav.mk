@@ -91,14 +91,3 @@ nav-fight-maps: import ## nav (round 8): nav-fight on every map --arena=random c
 				> $(BUILD_DIR)/nav-maps/$$map-busy$$busy.log 2>&1; echo ">> nav-fight-maps: $$map busy=$$busy done"' _ {}
 	@for f in $(BUILD_DIR)/nav-maps/*.log; do echo "$$(basename $$f .log) $$(grep -E '^NAV_FIGHT ' $$f | head -1 | cut -c1-40)"; done
 	@! grep -l "control FAILED" $(BUILD_DIR)/nav-maps/*.log || { echo ">> nav-fight-maps: a run REFUSED (its control failed): no numbers from it"; exit 1; }
-
-.PHONY: nav-flow-look
-nav-flow-look: import ## nav (round 8): a five-squad move on FLOW_ARENA filmed at the lead's pose, flow fields on AND off -> build/nav-flow-look/*.png (condition 7 of the flow-field pre-registration: a person looks). Needs a display: make remote T=nav-flow-look
-	@rm -rf $(BUILD_DIR)/nav-flow-look && mkdir -p $(BUILD_DIR)/nav-flow-look
-	@for arm in astar flow; do \
-		flags=""; [ $$arm = flow ] && flags="--nav-off=flow"; \
-		$(GODOT) --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/flow_look.gd -- \
-			--arena=$(or $(FLOW_ARENA),terminus) --seconds=$(or $(FLOW_SECONDS),30) --tag=$$arm \
-			--out=$(CURDIR)/$(BUILD_DIR)/nav-flow-look $$flags 2>&1 | grep -E "NAV_FLOW_LOOK|SCRIPT ERROR|ERROR" || true; \
-	done
-	@echo ">> nav-flow-look: LOOK at $(BUILD_DIR)/nav-flow-look/*.png -- astar_* against flow_* at the same second"
