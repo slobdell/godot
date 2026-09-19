@@ -242,3 +242,20 @@ that cwd.**
 - **An orphaned `slot.sh` ignores SIGTERM while sleeping in its wait loop and needs `kill -9`.**
 - **`slot.sh`'s `kill -0` ticket check made the dead ticket harmless** — a queue that prunes tickets by liveness survives
   exactly this, which is why it was rewritten that way.
+
+## ⚠ A worktree has no git-ignored asset masters, so a generation dry-run over-counts wildly (feel, 2026-09-19)
+
+**The announcer's recorded masters are git-ignored, so they exist only in the main checkout.** feel's first
+`announcer-generate` dry run from its worktree reported **"0 already recorded, 144 requests, ~17,018 credits"** — it
+could not see any existing clip, so it planned to **re-buy every line for all seven existing arenas.**
+
+**The real job was 18 clips, 2,125 characters, ~2,125 credits.** An **8× overspend**, and it would have looked like a
+normal run.
+
+- **Before any paid generation from a worktree, copy the masters in from the main checkout (read-only) and re-run the
+  dry run.** The plan should collapse to the new items only.
+- **Always dry-run paid generation and read the request count**, not just the credit estimate — *"144 requests"* was the
+  tell, not the number after it.
+- **This is the asset-pipeline form of lesson 132** (`origin/main` stale) and lesson 127 (*attributable is not current*):
+  **a worktree is not the repository, and anything git-ignored is invisible from it.** What differs here is that the
+  consequence is money rather than a wrong number.
