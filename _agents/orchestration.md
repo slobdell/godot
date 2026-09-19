@@ -943,3 +943,15 @@ The kickoff prompt is one line; this section is the rest.
       collidable prop — a wreck on two shipped layouts — and asserts it is *off* the mesh, for every layout, passing
       all along. **A passing test is a statement about the world that nobody is reading.** When a belief matters, grep
       the tests for it before grepping the code: a green assertion is cheaper evidence than an investigation.
+71. **After resolving a conflict, run `git status` before you commit — the index may already hold something you were
+    thinking about earlier.** Round 6's close: the orchestrator ran `cp build/sim_state_hash.txt tests/baselines/` and
+    `git add` it in the *same command* as a merge that then failed on a conflict. After resolving the conflict it staged
+    the one file it had fixed and committed — **sweeping the baseline record into a merge whose message says "docs
+    only".** The content was right; the message is now wrong, and a bisector chasing a simulation change through that
+    range will not find the baseline move where it is announced.
+    The fix was a follow-up commit stating exactly where the baseline landed, **not** an amend: rewriting a merge that
+    other worktrees may have seen is worse than an inaccurate message with a correction attached to it.
+    This is lesson/trip-up 16 and 70 in a third place (`git add -A`, then a `.tools` symlink, now a staged file
+    surviving a failed commit). The generalisation that finally covers all three: **the index is not empty just because
+    your last command failed.** A failed commit leaves everything staged, and the next `git add <one path>` adds to that
+    set rather than replacing it.
