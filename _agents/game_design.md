@@ -787,6 +787,30 @@ support-by-fire line alternated with `near_ambush` **every tick**, 128 orders in
 re-issues per window before fixing it. **Every one of those was thrash between a decider and an executor, and every one
 was invisible until something measured it.**
 
+**MEASURED (`make nav-fight`, builder0, yard, 120 s, seeds 3 and 7, 34 and 52 player units) — and it splits in two, which
+the orchestrator's hypothesis did not predict:**
+
+**(A) Under a plain MOVE — a right-click — re-tasking is ZERO and progress is 74–92%.** So the decision-layer thrash I
+predicted **does not happen on the order he presses most.** The remaining ~23% stalled at 52 units is **the movement layer
+itself**: blocked by a friend 6.7%, blocked by terrain 5.9%, yielding 4.2%, slow 4.7%, unreachable 1.6%. **That is his
+"stuck in places", it scales with crowding, and it is nav's to fix** — not a thrash problem, a mutual-blocking problem.
+
+**(B) Under ATTACK_MOVE, progress is about 45%**, and 29–47% of unit-time is spent driving somewhere *other than* the
+order — ENGAGE (290–430 unit-s), CLEAR_LANE, COVER_FIRE, FLANK — plus 2–10% halted with nothing engaged. The drive target
+jumps more than 8 m **46 times per unit-minute**; 54% of that is ENGAGE re-aiming within the same option, 11% FLANK
+re-aiming, and about a third are genuine option switches.
+
+**But (B) is partly correct behaviour, and this is the important caveat:** `attack_move` *means* "fight your way there".
+A unit that breaks off to engage is obeying. And nav flagged that the jump count is contaminated — **`CombatMotion`'s
+steer point is 12 m out, so any 45° jink moves it more than 8 m, and that jinking is what the lead asked for in round
+3.** A direction-reversal measure (A→B→A) is being added to separate thrash from evasion.
+
+**So the design question underneath his complaint may be a UX one:** the order he presses may not be the order he means.
+If *"move"* and *"attack-move"* differ by 30 points of progress-toward-the-goal, and nothing on screen says which one
+will fight on the way, then **"they aren't obeying me" is a reasonable reading of a unit correctly executing
+attack-move** — which is exactly his separate complaint that *"some of them seem to be actions that require a follow on
+click, and other seem to be buttons that are applied passively."*
+
 **What the round must therefore build first is an instrument, not an algorithm:** the arrival, stall and re-task
 measurements **in a real fight**, per unit, with the *reason* a unit is not making progress attributed — re-tasked,
 blocked, yielding, halted to shoot, no path. Until that exists, any algorithm is a guess, and this project has spent a
