@@ -189,3 +189,81 @@ func test_faction_directives_can_be_ablated_for_a_measurement() -> void:
 	assert_eq(Army.squad_key("law_tank"), "tank", "and so is every plain-role unit")
 	Army.faction_directives = true
 	assert_eq(Army.squad_key("gang_scout"), "gangs/scout", "and the switch goes back")
+
+
+func test_the_spawn_grid_says_how_big_a_vehicle_is_allowed_to_be() -> void:
+	# Round 8. The lead has called the gang semi tiny three times. It is 4.4 m TALL -- 3.14x the gang scout, inside
+	# the "3 or 4 times" he named -- and only 5.6 m long, and 5.6 is not a design choice: it is exactly
+	# SPAWN_ROW_SPACING (8.0) minus twice SPAWN_JITTER_MAX_Z (1.2), the longest hull that cannot overlap the row
+	# behind it. The truck could only grow upward, so it grew upward, and a top-down camera foreshortens height and
+	# shows FOOTPRINT. The catalog number that was free to move was the one the player cannot see.
+	#
+	# This test exists to make the ceiling VISIBLE. A constraint nobody can see will quietly redirect effort onto
+	# whichever axis is free, and the result satisfies the brief while missing the point -- which is what happened.
+	# Raising a vehicle's length past the grid now fails here, naming the constant to change, instead of silently
+	# stacking two hulls in one place at spawn.
+	# Measure the grid the game ACTUALLY spawns on, not the constants. `Arena.spawn_spot` returns the LAYOUT's baked
+	# spawn list whenever it has one, and every shipped layout does -- so Match.SPAWN_ROW_SPACING is a fallback that
+	# a real match never reaches, and `tools/make_arenas.py` keeps a SECOND copy of the pitch, mirrored by a comment
+	# that says "must mirror Match.SLOT_X / SPAWN_ROWS / SPAWN_ROW_SPACING". Asserting against the constant would
+	# guard the copy nobody uses and pass while the shipped layouts said something else. Same lesson as round 7's
+	# arms guard: assert against what the run will actually use.
+	var rows := _spawn_rows()
+	var length_ceiling := (rows[1] - rows[0]) - 2.0 * Match.SPAWN_JITTER_MAX_Z if rows.size() > 1 \
+			else Match.SPAWN_ROW_SPACING - 2.0 * Match.SPAWN_JITTER_MAX_Z
+	var column_spacing := _spawn_column_pitch()
+	var width_ceiling := column_spacing - 2.0 * Match.SPAWN_JITTER_MAX_X
+	var longest := 0.0
+	var too_long: Array[String] = []
+	var too_wide: Array[String] = []
+	for unit_id: String in Units.PROFILES:
+		var size: Array = Units.PROFILES[unit_id]["hull_size"]
+		longest = maxf(longest, float(size[2]))
+		if float(size[2]) > length_ceiling:
+			too_long.append("%s is %.1f m long" % [unit_id, size[2]])
+		if float(size[0]) > width_ceiling:
+			too_wide.append("%s is %.1f m wide" % [unit_id, size[0]])
+	assert_eq(too_long, [] as Array[String],
+			"no hull may be longer than SPAWN_ROW_SPACING - 2*SPAWN_JITTER_MAX_Z (%.1f m), or it overlaps the row behind it at spawn: %s"
+			% [length_ceiling, too_long])
+	assert_eq(too_wide, [] as Array[String],
+			"no hull may be wider than the column pitch - 2*SPAWN_JITTER_MAX_X (%.1f m): %s" % [width_ceiling, too_wide])
+	# And the back row must not push a hull through the perimeter. This is about the WALL, not DRIVABLE_LIMIT:
+	# DRIVABLE_LIMIT bounds a vehicle's CENTRE, so the longest hull's tail legitimately sits past it (114 + 2.8 =
+	# 116.8 against a limit of 116) and must still be inside the layout's own half_size.
+	var back_row: float = rows[rows.size() - 1]
+	var tail := back_row + longest / 2.0 + Match.SPAWN_JITTER_MAX_Z
+	var wall := float(Arena.active.get("half_size", Match.ARENA_HALF_SIZE))
+	assert_true(tail <= wall, "the back row's longest hull (tail at %.1f m) stays inside the wall at %.0f m" % [tail, wall])
+
+
+## The z of each spawn row in the LOADED layout, nearest first; the constants only if no layout is active.
+func _spawn_rows() -> Array[float]:
+	var found := {}
+	for spot: Array in Arena.active.get("spawns", {}).get("green", []):
+		found[snappedf(float(spot[1]), 0.01)] = true
+	var rows: Array[float] = []
+	for z: float in found:
+		rows.append(z)
+	if rows.is_empty():
+		for row in Match.SPAWN_ROWS:
+			rows.append(Match.BASE_Z + Match.SPAWN_ROW_SPACING * float(row))
+	rows.sort()
+	return rows
+
+
+## The smallest gap between adjacent spawn columns in the loaded layout (the tightest packing a hull must fit).
+func _spawn_column_pitch() -> float:
+	var found := {}
+	for spot: Array in Arena.active.get("spawns", {}).get("green", []):
+		found[snappedf(float(spot[0]), 0.01)] = true
+	var xs: Array[float] = []
+	for x: float in found:
+		xs.append(x)
+	if xs.size() < 2:
+		return absf(float(Match.SLOT_X[1]) - float(Match.SLOT_X[0]))
+	xs.sort()
+	var pitch := INF
+	for i in range(1, xs.size()):
+		pitch = minf(pitch, xs[i] - xs[i - 1])
+	return pitch
