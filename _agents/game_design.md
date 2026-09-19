@@ -1275,6 +1275,39 @@ spotters more than fighters, but there will be cases where its machine gun is us
 base resupply (rules stream may simplify if it doesn't add decisions), heat only where a unit's weapon uses
 it (the Lancer). **Drop:** components, heat sinks, ammo racks, per-hardpoint weapons.
 
+### MEASURED: the maps disagree more than the factions do (combat, 2026-09-19)
+
+**First balance picture ever taken on the maps the lead actually plays** — `yard` and `pit`, both hexagons at the 140 m
+bound with off-centre mirrored objectives. builder0, **n=30 per faction per map**, SEEDS=5, positive control engaged in
+both runs (844 and 668 paints), the 14 m rig deliberately reverted for the runs.
+
+| faction | yard | pit | swing |
+|---|---|---|---|
+| **gangs** | **63%** | **30%** | **+33 pts — the only significant difference in the table** |
+| condemned | 50% | 70% | −20 (1.6 SE) |
+| law | 43% | 43% | 0 |
+| syndicate | 43% | 57% | −13 (1.0 SE) |
+
+**The gangs are the strongest army on one of the two maps he plays and the weakest on the other, by the largest margin
+anyone here has measured.**
+
+**What this licenses: nothing about faction strength as a property.** *"The gangs are strong"* and *"the gangs are weak"*
+are **both supportable from this table by choosing a map.** That is exactly the error that cost two rounds and retired
+the 23% → 53% pair — **and the only reason it is visible now is that the tool takes `ARENA=` and prints it.**
+
+**What it does NOT license, stated before anyone reads it harder than it can bear:** at n=30 a gap needs **25 points** to
+clear 95%, and **gangs 63% on yard carries a CI of 45–81%.** **No within-map difference here is significant**, and combat
+claims neither that the gangs are overpowered on yard nor broken on pit. Resolving a 20-point within-map gap needs
+**n≈48 (SEEDS=8)**, about 60% more builder0 time per map — **not proposed, because the lead has deferred balance.**
+
+**And the comparison nobody may make: these are NOT comparable to the old yard numbers.** That yard was a 120 m square
+with one central objective; this one is a hexagon at 140 with two off-centre ones. **Same name, different map** —
+subtracting them is the subtraction `compare_arms` refuses.
+
+**The design consequence, which is the lead's to weigh and nobody else's:** if map choice swings a faction by 33 points
+while nothing else in the table moves at all, then **"is this faction balanced" is not a question with an answer** until
+the map pool is settled. **Balance follows map design here, not the other way round.**
+
 ## Factions (lead, 2026-09-15)
 
 The lead: *"So I think we're settled on the idea for factions. We want them, and we'll make them wildly different
