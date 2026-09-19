@@ -395,6 +395,14 @@ def field_points(blocked, n, step=EXPOSURE_STEP, half=None):
     # thing it exists to be independent of. 4 m in from the edge and 70% deep are the shipped proportions.
     reach = (half - 4.0) if half else DRIVABLE
     depth = (half * 0.7) if half else FIELD_Z
+    # ANCHOR THE LATTICE AT THE ORIGIN. `_exposure_at` looks a route's point up by rounding to a multiple of
+    # EXPOSURE_STEP, so the field's own keys must be multiples of it too. They were not once the window followed
+    # the layout: at half_size 140 the depth is 98, so z ran -98, -94, -90 … and EVERY lookup missed, returning
+    # the default 0.0. Exposure read 0.000 across both hexagonal maps -- a perfectly plausible number for a map
+    # full of containers, and completely wrong. A square's 84 happens to be a multiple of 4, which is why this
+    # never showed until an arena changed size.
+    reach = math.floor(reach / step) * step
+    depth = math.floor(depth / step) * step
     z = -depth
     while z <= depth:
         x = -reach
