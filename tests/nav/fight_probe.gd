@@ -212,6 +212,14 @@ func _busy_order() -> void:
 const GEAR_SPEED := 0.5
 var gear_sign := {}   # name -> -1 / 0 / 1
 var gear_flips := {}  # unit_id -> count
+var gear_detail := {} # unit_id -> {"phase:<x>": n, "reverse_order": n, "yielding": n}
+
+
+func _controller_of(tank: Tank) -> OrderController:
+	for node in game_match.brains.get_children():
+		if node is OrderController and (node as OrderController).tank == tank:
+			return node
+	return null
 
 
 func _sample_gear(tank: Tank) -> void:
@@ -222,6 +230,16 @@ func _sample_gear(tank: Tank) -> void:
 	var was := int(gear_sign.get(String(tank.name), 0))
 	if was != 0 and sign_now != was:
 		gear_flips[tank.unit_id] = int(gear_flips.get(tank.unit_id, 0)) + 1
+		# Where the flip came from: the mover's phase, and whether the order it is driving asks for reverse (a yield
+		# spot behind it, a retreat) rather than the brain's combat steering picking a reversing direction.
+		var detail: Dictionary = gear_detail.get(tank.unit_id, {})
+		var phase := "phase:" + String(Movement.state(tank).get("phase", "none"))
+		detail[phase] = int(detail.get(phase, 0)) + 1
+		var controller := _controller_of(tank)
+		var order: Dictionary = controller.move_order if controller != null else {}
+		detail["reverse_order"] = int(detail.get("reverse_order", 0)) + (1 if bool(order.get("reverse", false)) else 0)
+		detail["order:" + String(order.get("type", "none"))] = int(detail.get("order:" + String(order.get("type", "none")), 0)) + 1
+		gear_detail[tank.unit_id] = detail
 	gear_sign[String(tank.name)] = sign_now
 
 
@@ -419,7 +437,7 @@ func _report(elapsed: float) -> void:
 			"retask_events_per_unit_minute": snappedf(retask_events / maxf(0.01, float(ordered_ticks) / SimClock.TICK_RATE / 60.0), 0.01),
 			"unreachable_route_unit_seconds": snappedf(float(unreachable_ticks) / SimClock.TICK_RATE, 0.1),
 			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
-			"inplace_detail": inplace_detail, "inplace_per_unit_minute": _inplace_rates(),
+			"inplace_detail": inplace_detail, "gear_detail": gear_detail, "inplace_per_unit_minute": _inplace_rates(),
 			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")],
 			"armies": [_flag("green-army", "cpu"), _flag("rust-army", "cpu")], "fielded": fielded, "busy_every_s": busy_every, "busy_orders": busy_orders}
 	print("NAV_FIGHT %s" % JSON.stringify(out))
