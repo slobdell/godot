@@ -38,7 +38,7 @@ func lines() -> Array[String]:
 	result.append("CAMERA  pitch %d°   distance %d m   FOV %d°   yaw %d°   auto-frame %s" % [
 			roundi(RtsCamera.tilt_at(rig.pitch, distance)), roundi(distance), roundi(RtsCamera.fov),
 			roundi(rad_to_deg(rig.yaw)), "ON" if rig.auto_frame else "OFF"])
-	result.append("PgUp/PgDn tilt · wheel distance · [ ] FOV · , . turn · V auto-frame · P copy pose")
+	result.append("PgUp/PgDn tilt · wheel or - = distance · [ ] FOV · , . turn · V auto-frame · P copy pose")
 	if _copied_left > 0.0:
 		result.append("Copied: " + _copied)
 	return result

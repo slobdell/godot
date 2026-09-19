@@ -29,13 +29,12 @@ const MAX_DISTANCE := 260.0
 ## real complaint was that zooming out became a bird's-eye view; decoupling pitch from zoom fixed that and stands. The
 ## player can still tilt 8°-50° (Page Up/Down, ctrl+wheel). Do not lower the default again from a picture.
 const MIN_PITCH_DEG := 8.0
-## Round 6, later still: after the 45° revert the lead ran `make skirmish` again and it was "unplayable because of the
-## field of view", adding "the bird's eye view was better but then it also made it so tanks were shooting at enemies I
-## couldn't even see". So the defaults now start nearer the readable end (50°, auto-framing no closer than
-## VISION_FLOOR_M) and he finds the real pose himself with the live controls and the readout (P copies it). The
-## default is whatever he sends back - not a number any agent chose.
+## SETTLED FROM PLAY (round 6, 2026-09-18): the lead found the camera himself with the live controls and sent back
+## `CAMERA_POSE pitch=21 distance_m=49 fov=35 yaw=-0 zoom=0.365 auto_frame=on`. Low pitch, telephoto lens, 49 m out, the
+## vision camera left on. Two stills-pages and two agents had the lens backwards (see FOV_DEG). 21° is close to the 12°
+## he rejected: the pitch was never the problem, the lens was.
 const MAX_PITCH_DEG := 70.0
-const DEFAULT_PITCH_DEG := 50.0
+const DEFAULT_PITCH_DEG := 21.0
 ## Round 6, after playing the lead's 12°: a very low camera pulled back to frame a whole army (~150 m) showed the arena
 ## as a thin strip between sky and cut-away stands, with units as specks (shell-playtest, 50 s). So past FAR_TILT_FROM_M
 ## a soft floor lifts the tilt, from MIN_PITCH_DEG there to FAR_TILT_MAX_DEG at FAR_TILT_FULL_M. Up to that distance -
@@ -51,9 +50,15 @@ const OVERVIEW_PITCH_DEG := 77.0
 ## Tilt speed: degrees per second for held keys, degrees per wheel notch.
 const TILT_SPEED_DEG := 40.0
 const WHEEL_TILT_DEG := 3.0
-## The default field of view (was 55° before round 6). The live value is `fov`: `[` / `]` change it in play.
-const FOV_DEG := 60.0
-const MIN_FOV_DEG := 35.0
+## The default field of view: **35°, a telephoto - the lead's, from play.** DO NOT widen it toward 55-60° without him.
+## Two agents independently argued the wrong way: "a wider lens shows more of the fight" is sound and irrelevant. At a
+## low pitch a wide lens is a vista of horizon with tiny vehicles - that was "unplayable because of the field of view";
+## a telephoto crops to the action and makes the machines read large, without a close camera's loss of tactical read.
+## The stills pages could never have found this: a still rendered at a fixed FOV holds constant the one variable that
+## mattered. (Was 55° before round 6, 60° for most of it.) The live value is `fov`: `[` / `]` change it in play.
+const FOV_DEG := 35.0
+## He chose the floor of the range offered, so the range now goes below his pick.
+const MIN_FOV_DEG := 20.0
 const MAX_FOV_DEG := 90.0
 const FOV_STEP_DEG := 5.0
 ## Round 6, after two wrong answers from still frames: the lead finds the camera himself, in play. `fov` is live (one
@@ -101,7 +106,7 @@ const TRACK_ZOOM_SPEED := 0.35
 ## still scroll in from there, which costs them awareness and is their call).
 ## Round 6: in play at 45° the auto camera closed to ~29 m on a three-vehicle squad (shell-playtest), too close to see
 ## what the squad is shooting at. It no longer comes closer than VISION_FLOOR_M on its own; the wheel still can.
-const VISION_FLOOR_M := 45.0
+const VISION_FLOOR_M := 45.0  # confirmed by the lead's pose (auto-framing left on at 49 m)
 const VISION_MIN_ZOOM := 0.345  # RtsCamera.level_for(VISION_FLOOR_M)
 ## After the player last moved the camera, this many seconds of stillness give the element back to it.
 const HANDBACK_SECONDS := 2.5

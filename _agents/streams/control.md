@@ -151,6 +151,13 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
+**SETTLED (2026-09-18, night): the lead found the camera in play** with the live controls — `CAMERA_POSE pitch=21
+distance_m=49 fov=35 yaw=-0 zoom=0.365 auto_frame=on`. Now the default: 21°, FOV 35° (telephoto), 49 m, auto-framing
+on, first frame on squad 1. **The lens, not the pitch, was the problem** (tactical_map.md "Why a telephoto"): my FOV
+page argued "wider shows more" — the wrong way, sound and irrelevant. FOV range now 20°–90° (his pick was the floor
+again). `-` `=` added to the readout (he is on a touchpad). Tests that are about screen geometry pin round 5's lens
+(55°) as they pin its pitch. Start vehicle: 64.1 px at 1080p, 39.0 px at 1200×540 (laptop, headless projection).
+
 **THEN (2026-09-18, later): still unplayable at 45°** — *"it's unplayable because of the field of view right now"*.
 Stop choosing the number: **the lead finds the camera himself.** In `make skirmish`: a live **camera readout** (top
 left: pitch, distance, FOV, yaw, auto-frame), **[ ]** field of view (35°–90°), PgUp/PgDn tilt (8°–70°), wheel
