@@ -213,6 +213,13 @@ feel.
 
 ## Open questions and follow-ups (not scheduled)
 
+- **The unifying shape of round 7's best candidates, named by arena:** *the correct behaviour depends on what the
+  element is currently trying to do.* Round 6 made each layer correct **in general** — avoidance that keeps a column a
+  column, an objective at the centre, a formation that holds its geometry — and the residue in every case is that the
+  *right* answer changes with the element's current intent. Three items below are the same statement at different
+  scales: not overtaking is right for a column and wrong for a charge; a central objective is right for a brawl and
+  wrong for a game about flanking; a fixed slot is right for holding and wrong for forming up. **A round that made
+  behaviour context-dependent would be the natural successor to one that made it correct.**
 - **Should a battle drill override formation discipline?** Round 6's ORCA deliberately does **not** treat a friend
   moving the same way as a collision, so a column stays a column — which is right for formations and is why round 5's
   overtaking sidestep was removed (it also steered into walls unchecked). Attributed cost, measured by bisect: an
