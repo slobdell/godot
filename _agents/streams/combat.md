@@ -675,7 +675,41 @@ brief's target is *"a majority of direct-fire kills come from the flank or the r
 move during the fight"* — read `off_axis_kill_share` and `centroid_travel` for it rather than the hull-face split,
 since an oblique shot across a wide front counts as a "side" hit without anyone having flanked anything.
 
-### X5 — the duplicated Lancer (proposal, for the orchestrator to relay)
+### X5 — the Lancer: **the Syndicate drops `syn_lancer`** (proposal, 2026-09-18)
+
+Measured from the rosters, not argued from memory. Direct-fire **bands** by faction and slot:
+
+| slot | Condemned | gangs | Law | Syndicate |
+|---|---|---|---|---|
+| scout | 35 | 24 | 35 | **45** |
+| ifv | 45 | 28 | 45 | **55** |
+| tank | 45 | 36 | 62 | **104** |
+| **lancer** | **86** | — | — | **86** |
+
+**The Syndicate's Lancer is outranged by the Syndicate's own tank.** `syn_tank` covers **104 m**; `syn_lancer` covers
+86. It is a cheaper (340 against 470) but *shorter-ranged* duplicate of the role that faction already dominates — and
+the Syndicate holds the longest band in **every** slot, so nothing about a long-reach specialist is distinctive there.
+It competes with their tank instead of complementing it.
+
+**For the Condemned it is the opposite: the Lancer is the only thing that stretches their line.** Their next-longest
+direct-fire band is **45 m**, so the Lancer's 86 nearly doubles it, and it is their only answer to a Syndicate tank
+shooting effectively from 104 m. Remove it and the faction flattens into a single band.
+
+**The framing that makes this more than a roster tidy-up** (the orchestrator's, and it is the right one): the Lancer's
+86 m band is *why* `engaged_distance` sat at ~70 m in **every** configuration of the CP4 series, including the old
+world — an army-level average is set by its longest-reach unit. So "which faction keeps the Lancer" is really **which
+faction gets to distort its own engagement profile.**
+
+That argues the same way. In the Syndicate it would be the *second* distorter on top of a 104 m tank — the faction's
+profile is already stretched and the Lancer merely piles on. In the Condemned it is a **single** exception to an
+otherwise 45 m line, which is a *contrast inside the roster* rather than more of the same, and contrast is what makes
+a faction legible to a player. **A long-reach unit is only interesting in a faction whose other units are short.**
+
+**What the Syndicate loses, and why it is affordable:** a cheaper long-range option. They keep `syn_tank` (104 m
+band), `syn_artillery` (170 m reach) and `syn_scout` (45 m band, 135 m sight — already the best spotter in the game).
+The gap is a price point, not a capability.
+
+### (superseded) X5 — the duplicated Lancer
 
 **The Syndicate should lose `syn_lancer`; the Condemned keep `lancer`.** The reasoning is the engagement envelope
 itself. Post-CP4 the Syndicate already fields the longest reach in the game — `syn_tank`'s railgun covers **104 m**,
