@@ -30,6 +30,21 @@ def describe():
 
 
 def header(conditions=None):
-    """One line naming the machine and commit, with a loud marker when the tree was dirty."""
+    """One line naming the machine and commit, with a loud marker when the tree was dirty.
+
+    A dirty run is NOT refused. Measuring while you work is the normal case, and a tool that rejected it would be
+    worked around within a day. What is refused is the SILENCE: the gate belongs where a number gets promoted to a
+    citable fact, not where it gets taken. So a dirty run says so in its own header and in its own json, and the rule
+    that goes with it is one line:
+
+        **a run with dirty = true may be acted on, and may not be quoted.**
+
+    Quoting means a headline, a design document, anything the lead reads, or a row in
+    _agents/streams/references/. All of those promise reproducibility, and a dirty tree cannot supply the commit that
+    would deliver it. Re-run from a clean tree before it becomes a fact.
+    """
     c = conditions or describe()
-    return "%s at %s%s" % (c["machine"], c["commit"], "  **DIRTY TREE: the commit does not identify this run**" if c["dirty"] else "")
+    if not c["dirty"]:
+        return "%s at %s" % (c["machine"], c["commit"])
+    return "%s at %s  **DIRTY TREE: this commit does not identify the run -- usable, NOT quotable**" % (
+        c["machine"], c["commit"])

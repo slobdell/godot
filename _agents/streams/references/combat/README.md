@@ -21,6 +21,13 @@ unreliable and **cannot be re-derived from the saved output**. The knob is now `
 earned: **print every resolved knob into the output** — an artefact that does not carry the conditions that produced
 it cannot be audited later.
 
+**Before you add a row here: a run taken on a dirty tree may be acted on and may NOT be quoted.** Every instrument
+in `tools/` now prints `run: <machine> at <commit>` and records `{machine, commit, dirty}` in its json
+(`tools/run_conditions.py`). `dirty = true` means the rsync carried uncommitted changes, so **the commit does not
+identify what ran** and the row cannot deliver the reproducibility this directory exists to promise. Measure while
+you work — that is normal — but re-run from a clean tree before a number becomes a fact in `balance.md`, in
+`game_design.md`, or in front of the lead.
+
 **Reading them.** Compare like with like: `perf-scene` and `sim-profile` both run a *live battle*, so two runs
 diverge and equal vehicle counts are not equal fights. Only compare runs made as a pair on one machine with one
 build, which is why the A/B file is organised in pairs. And on an overloaded machine game time runs slower than wall
