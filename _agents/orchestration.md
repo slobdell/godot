@@ -1787,3 +1787,24 @@ The kickoff prompt is one line; this section is the rest.
      - **And it produces a visible change from a correctness fix:** the wall cutaway will now cut the front of the stands
        slightly more often near the wall, because it was **under-cutting** before. **Say that in advance**, or it arrives
        looking like a regression.
+120. **A leak probe is itself an experiment, and it needs a positive control: prove the leak could have been SEEN.**
+     control, fixing the same `RtsCamera.perimeter_poly` leak in its camera tests, reported that **its first two probes
+     "proved" nothing**:
+     - **one leaked a hexagon whose flats sit at exactly ±121** — the value the victim expected — **so the leak was
+       benign and the test passed for the wrong reason**;
+     - **one leaked in an earlier FILE, and the intervening tests' rigs reload `perimeter_poly` in `_ready`**, so the
+       leak was overwritten before it could do harm.
+     **Both produced a clean pass that would have been read as "no leak here."** The working probe leaks an **80 m
+     square immediately before the victim**: without the guard, 3 failures (*"rail 37.9 m beyond a 0.1 m near plane"*);
+     with it, 0.
+     **The rule: a leak probe must sit immediately before its victim, and its leaked value must differ in a way the
+     victim can see.** This is combat's positive control (lesson 101) applied to isolation testing — **assert that the
+     treatment engaged, where the treatment is the pollution.** Without it, a probe measures nothing and says "clean".
+     - **Same family as nav's "fails alone at file granularity"** (lesson recorded at `5cc17ee6`): **the granularity of
+       an isolation claim is part of the claim.** "Alone" and "clean" both need their scope stated.
+     - **Three streams have now hand-fixed instances of one shared-static leak** — control's camera tests, control's
+       radar test (fixed by the orchestrator), and nav's `test_navigation` navmesh readiness. **That is the argument for
+       moving the runner-level guard up from round 8:** assert the world is clean after each `teardown()` and **fail
+       naming the test that leaked**, so the next one is caught at source rather than diagnosed three times.
+     - **And control's hexagon cutaway test now RESTORES the previous perimeter rather than blanking it** — blanking is
+       itself a leak, just a quieter one.
