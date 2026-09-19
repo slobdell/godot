@@ -381,3 +381,17 @@ func test_water_is_not_somewhere_a_unit_can_be_ordered() -> void:
 	var pushed := Arena.clamp_into(Vector3(60.0, 0.0, 40.0), layout)
 	assert_true(Arena.contains(pushed, layout), "an order into the water clamps to dry land (%s)" % pushed)
 	assert_true(absf(pushed.z - 40.0) > 10.0, "by leaving the channel, not by sliding along it")
+
+
+## control calls contains/clamp_into on every mouse move, so the polygon is cached per shape rather than rebuilt.
+## A cache is only correct if it is keyed on everything that changes the answer.
+func test_the_perimeter_cache_is_keyed_on_shape_and_size() -> void:
+	var square := ArenaShape.vertices("square", 120.0)
+	var hexagon := ArenaShape.vertices("hexagon", 120.0)
+	var bigger := ArenaShape.vertices("square", 140.0)
+	assert_eq(square.size(), 4, "a square has four vertices")
+	assert_eq(hexagon.size(), 6, "and a hexagon six — the kind is part of the key")
+	assert_near(absf(bigger[0].x), 140.0, 0.05, "and the bound is too (%s)" % bigger[0])
+	assert_near(absf(square[0].x), 120.0, 0.05, "without disturbing the entry already cached")
+	# Same arguments must give the same answer, cached or not.
+	assert_eq(ArenaShape.vertices("square", 120.0), square, "a repeat call returns the same polygon")

@@ -63,7 +63,23 @@ static func sides(kind: String) -> int:
 ## `Arena.contains(110, 110)` started refusing a corner every existing arena owns. Scaling so the widest axis
 ## extent equals the bound reproduces today's square exactly (corners at bound·√2, sides at ±bound) and puts a
 ## flat-to-base hexagon's side vertices at ±bound on the x axis.
+## Cached per (kind, bound): `contains()` and `clamp_into()` are called on every mouse move for the cursor's ground
+## point, and rebuilding the polygon each time would allocate a PackedVector2Array per frame. The shape changes
+## once per match, so one entry is the steady state and the dictionary never grows past the shapes in use.
+static var _polygons := {}
+
+
 static func vertices(kind: String, bound: float) -> PackedVector2Array:
+	var key := "%s:%.3f" % [kind, bound]
+	var cached: Variant = _polygons.get(key)
+	if cached != null:
+		return cached
+	var built := _build_vertices(kind, bound)
+	_polygons[key] = built
+	return built
+
+
+static func _build_vertices(kind: String, bound: float) -> PackedVector2Array:
 	var n := sides(kind)
 	var widest := 0.0
 	for k in n:

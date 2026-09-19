@@ -330,7 +330,11 @@ static func spawn_spot(south: bool, slot: int) -> Variant:
 	return Vector3(spot[0], 0.0, spot[1])
 
 
-## Round 7: **is this point somewhere a unit can be?** The one predicate every clamp in the game should ask.
+## Round 7 (contract M4): **is this point somewhere a unit can be?** The one predicate every clamp should ask.
+##
+## Pure and static, `Vector3` in and out, allocation-free on the common path — control calls it on every mouse move
+## for the cursor's ground point. The perimeter polygon is cached per shape in `ArenaShape`, and a layout with no
+## terrain never touches an array.
 ##
 ## Today six call sites each carry a copy of the assumption *"the arena is a square"* — `DRIVABLE_LIMIT` used as
 ## `absf(x) > limit or absf(z) > limit`, and three `clampf` pairs. That is fine while the arena IS a square and
@@ -350,7 +354,9 @@ static func contains(point: Vector3, data: Dictionary = active) -> bool:
 	var flat := Vector2(point.x, point.z)
 	if not ArenaShape.contains(kind, bound, flat):
 		return false
-	for entry: Dictionary in data.get("terrain", []):
+	if not data.has("terrain"):
+		return true  # the common case, and `data.get("terrain", [])` would allocate an empty array to iterate
+	for entry: Dictionary in data["terrain"]:
 		if not ArenaTerrain.carves(String(entry["kind"])):
 			continue
 		if _in_footprint(entry, flat) and not _on_a_deck(data, flat):
@@ -366,7 +372,9 @@ static func clamp_into(point: Vector3, data: Dictionary = active) -> Vector3:
 	var bound := float(data.get("half_size", Match.ARENA_HALF_SIZE))
 	var kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
 	var flat := ArenaShape.clamp_into(kind, bound, Vector2(point.x, point.z))
-	for entry: Dictionary in data.get("terrain", []):
+	if not data.has("terrain"):
+		return Vector3(flat.x, point.y, flat.y)
+	for entry: Dictionary in data["terrain"]:
 		if not ArenaTerrain.carves(String(entry["kind"])) or not _in_footprint(entry, flat):
 			continue
 		if _on_a_deck(data, flat):
@@ -392,7 +400,9 @@ static func _in_footprint(entry: Dictionary, flat: Vector2) -> bool:
 
 
 static func _on_a_deck(data: Dictionary, flat: Vector2) -> bool:
-	for entry: Dictionary in data.get("terrain", []):
+	if not data.has("terrain"):
+		return false
+	for entry: Dictionary in data["terrain"]:
 		if ArenaTerrain.is_deck(String(entry["kind"])) and _in_footprint(entry, flat):
 			return true
 	return false
