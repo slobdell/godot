@@ -12,6 +12,9 @@ extends "res://game/theme/cyberpunk/cyber_vehicle.gd"
 @export var part := "hull"
 ## How strongly paint recolors the model's body (its grime and neon survive).
 @export_range(0.0, 1.0) var paint_strength := 0.45
+## A model generated facing +Z instead of the engine's -Z is turned round here (tools/assets/build_faction_parts.py
+## MODEL_YAW_DEG; round 7: the gang IFV drove backwards). Degrees about +Y.
+@export var model_yaw_deg := 0.0
 ## Hulls only: the engine loop this vehicle runs (EngineSystem; "" = silent).
 @export var engine_sound := "engine_diesel"
 
@@ -27,6 +30,7 @@ func _ready() -> void:
 	if model_scene != null:
 		model = model_scene.instantiate() as Node3D
 		model.name = "Model"
+		model.rotation.y = deg_to_rad(model_yaw_deg)
 		add_child(model)
 		_prepare_model()
 		bounds = _model_bounds()
