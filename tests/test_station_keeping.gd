@@ -12,15 +12,9 @@ const SLOT_SPEED := 5.0
 
 
 func _run(station: bool) -> Dictionary:
-	var arena: Arena = ARENA.instantiate()
-	arena.layout_name = "foundry"
-	add_to_tree(arena)
+	var arena := await ArenaFixture.build(self, "foundry")  # its OWN navmesh (tests/support/arena_fixture.gd)
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
-	for frame in SimClock.TICK_RATE:
-		if Pathing.is_ready(arena):
-			break
-		await tree.physics_frame
 	var tank := game_match.spawn_tank("Follower", 0, Match.Team.GREEN)
 	tank.global_position = START
 	tank.rotation.y = -PI / 2.0  # facing +x
@@ -68,15 +62,9 @@ func test_pid_keeps_station_on_a_moving_slot() -> void:
 ## X8: a slot that drives at SLOT_SPEED and then stops dead. Returns the tracking gap while it moves, how far the hull
 ## runs past the stopped slot (overshoot), and how long it takes to settle within 1 m of it.
 func _drive_and_stop(gains: Dictionary) -> Dictionary:
-	var arena: Arena = ARENA.instantiate()
-	arena.layout_name = "foundry"
-	add_to_tree(arena)
+	var arena := await ArenaFixture.build(self, "foundry")  # its OWN navmesh (tests/support/arena_fixture.gd)
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
-	for frame in SimClock.TICK_RATE:
-		if Pathing.is_ready(arena):
-			break
-		await tree.physics_frame
 	var tank := game_match.spawn_tank("Follower", 0, Match.Team.GREEN)
 	tank.global_position = START
 	tank.rotation.y = -PI / 2.0

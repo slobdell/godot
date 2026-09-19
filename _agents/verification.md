@@ -72,6 +72,20 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 - Markers printed by `main.gd`: `TANK_SQUAD_READY` (wired), `TANK_SQUAD_LISTENING` (server), `TANK_SQUAD_CONNECTED` / `TANK_SQUAD_SPAWNED` (client). `smoke.mjs` takes the marker to wait for as its 4th argument. **If you rename one, grep the Makefile and `tools/`.**
 - `tests/net/bot_client_check.gd` is a `SceneTree` script that waits for the server's TCP port, instantiates the *real* `main.tscn` (which reads the same `--connect`/`--demo` flags), and watches `Tanks/Tank_<my peer id>.sync_position`. It isn't named `test_*`, so `make test` doesn't pick it up. **The `NET_SMOKE_EXPECT` override exists to prove the check can fail:** `make net-smoke NET_SMOKE_EXPECT=3` must exit non-zero.
 
+## Attributing a behaviour's cost: switch it off (nav, round 7)
+
+The only honest way to say what one mechanism contributes is to **remove it and measure again**, never a
+per-mechanism ratio read off a combined run. nav keeps one switch per movement behaviour:
+`--nav-off=grace,minpace,pushidle,carrot,yield,unstick,repath,chord,guard,backup,standoff` (and `r5sidestep` turns a
+REMOVED round-5 behaviour back on), passed as `NAV_FLAGS=--nav-off=…` to `make nav-where` / `nav-fight`, or set
+`Movement._off` in a test. The table of what each isolates is in [navigation.md](navigation.md) *Measuring*.
+How it paid: a fix dropped head-on maze-60 from 60/60 to 27/60; one run per switch (guard off 57, chord off 48,
+backup off 34) named the culprit in an hour instead of a day of reasoning.
+
+Two traps, both hit: **a switch that silently does nothing** makes "no difference" meaningless — prove each switch
+moves some number first; and **once a branch is merged, `main` is no longer the before-picture** — bisect on named
+commits. And a regression can come from something **removed**, which no switch of added behaviour will find.
+
 ## Known flakes
 
 - **net-smoke: `ERROR: Condition "ready_state != STATE_OPEN" is true. Returning: FAILED` in the server log.** Seen on

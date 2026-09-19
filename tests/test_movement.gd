@@ -9,14 +9,10 @@ const LANE := Vector3(-100, 0, 20)
 
 
 func _setup() -> Array:
-	var arena: Node3D = ARENA.instantiate()
-	add_to_tree(arena)
+	# Its OWN navmesh, not the previous test's (tests/support/arena_fixture.gd explains the trap).
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
-	for frame in SimClock.TICK_RATE:
-		if Pathing.is_ready(arena):
-			break
-		await tree.physics_frame
 	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN)
 	tank.global_position = LANE
 	tank.rotation.y = 0.0
@@ -133,3 +129,56 @@ func test_asked_to_give_way_it_steps_off_the_line_and_resumes() -> void:
 	assert_eq(parked_orders.move_order["type"], "stop", "and its own order is still the one it had")
 	assert_true(not mover.ask("Mover", asker.global_position, Vector2(0, -1)),
 			"it never gives way twice in a row to the same unit")
+
+
+func test_an_unreachable_goal_says_so_instead_of_arriving() -> void:
+	# Lesson 76: the navmesh answers an unreachable goal with a route to the nearest reachable point. A goal inside a
+	# solid obstacle must read as blocked / no_path at the end of that route — never as arrived, never as driving on.
+	var arena := await ArenaFixture.build(self, "yard")  # its OWN navmesh, not the last test's (ArenaFixture header)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var inside: Variant = ArenaFixture.inside_cover(arena.layout)
+	assert_true(inside != null, "setup: yard has a solid prop to aim into")
+	var target: Vector3 = inside
+	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN)
+	var start := NavigationServer3D.map_get_closest_point(arena.get_world_3d().navigation_map, target + Vector3(0, 0, 25))
+	tank.global_position = Vector3(start.x, 0.0, start.z)
+	var orders := OrderController.new()
+	orders.tank = tank
+	orders.tanks_root = game_match.tanks
+	add_to_tree(orders)
+	orders.set_orders({"type": "move_to", "x": target.x, "z": target.z}, {"type": "hold_fire"})
+	var reading := {}
+	for frame in SimClock.TICK_RATE * 12:
+		await tree.physics_frame
+		reading = Movement.state(tank)
+		if reading["phase"] == "blocked":
+			break
+	assert_eq(reading.get("reachable"), false, "the route is known not to reach the goal (%s)" % reading)
+	assert_eq(reading.get("phase"), "blocked", "and at the end of it the unit says blocked, not arrived (%s)" % reading)
+	assert_eq(reading.get("blocked_by"), "no_path", "because there is no path there (%s)" % reading)
+
+
+func test_two_hulls_spawned_on_one_spot_separate_and_both_drive_off() -> void:
+	# An overfull spawn line or a respawn can put two hulls exactly on top of each other. In round 5 such pairs never
+	# moved at all (8 of them in every 60-unit maze run). Avoidance parts them by name, in opposite directions.
+	var setup: Array = await _setup()
+	var game_match: Match = setup[0]
+	var first: Tank = setup[1]
+	var first_orders: OrderController = setup[2]
+	var second := game_match.spawn_tank("Stacked", 1, Match.Team.GREEN)
+	second.global_position = first.global_position
+	second.rotation.y = first.rotation.y
+	var second_orders := OrderController.new()
+	second_orders.tank = second
+	second_orders.tanks_root = game_match.tanks
+	add_to_tree(second_orders)
+	var goal := LANE + Vector3(0, 0, -30)
+	first_orders.set_orders({"type": "move_to", "x": goal.x, "z": goal.z}, {"type": "hold_fire"})
+	second_orders.set_orders({"type": "move_to", "x": goal.x, "z": goal.z}, {"type": "hold_fire"})
+	await wait_physics_frames(SimClock.TICK_RATE * 4)
+	assert_true(first.global_position.distance_to(second.global_position) > 3.0,
+			"they came apart (%.1f m)" % first.global_position.distance_to(second.global_position))
+	for tank: Tank in [first, second]:
+		assert_true(tank.global_position.distance_to(LANE) > 6.0, "%s drove off (%.1f m from the start)" % [tank.name,
+				tank.global_position.distance_to(LANE)])
