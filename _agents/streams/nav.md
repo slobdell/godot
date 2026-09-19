@@ -66,7 +66,7 @@ The honest summary: **the path planner is fine and everything around it is thin.
   within **12 metres** of its goal declares the order complete. That is why a jammed horde looks like it "decided" to
   stop — units are reporting success from twelve metres away.
 - **No dynamic obstacles.** No `NavigationObstacle3D` anywhere; the bake never updates. Wrecks were deliberately moved
-  to layer 4 so they never block driving, precisely to dodge this.
+  to layer 4 so they never block driving, precisely to dodge this. **[FALSE — see the correction at the end of this brief.]**
 - `game/control/squad_orders_playtest.gd:13` already names *"moved, but piled up"* as an expected failure mode. It was
   known; nobody owned it.
 
@@ -225,7 +225,7 @@ if identical armies with different gains win equally often and look the same on 
 flavour text.
 
 **X9 (stretch) — dynamic obstacles.** `NavigationObstacle3D` for wrecks and destructible cover, so the navmesh stops
-being a startup-only snapshot. Coordinate with arena before changing what blocks driving: wrecks are on layer 4 *on
+being a startup-only snapshot. Coordinate with arena before changing what blocks driving. **[The layer-4 claim below is FALSE; see the correction at the end.]** wrecks are on layer 4 *on
 purpose*.
 
 ## How to verify
@@ -405,3 +405,8 @@ scenario, headless and with brains, is `make nav-orders` (numbers above).
   `tools/nav_suite.py`, `_agents/navigation.md`, `_agents/streams/references/nav/`.
 - Edits outside nav's paths: `game/ai/tank_brain.gd` — only `ORDER_STALL_ARRIVE` and its one use (agreed with the
   orchestrator). `tests/baselines/sim_state_hash.txt` is untouched (recorded by the orchestrator at the close).
+
+
+## Correction (2026-09-18)
+
+**CORRECTED 2026-09-18 (arena found it, nav verified it, the orchestrator had repeated it): wrecks are NOT on layer 4 and they DO block driving.** Only `tank.tscn` sets a collision layer anywhere; `Arena._build_obstacles()` makes a plain `StaticBody3D` on default **layer 1**, the `Obstacles` node carries the `navigation_source` group, and the bake parses layer-1 shapes in it — so the `wreck` **kit prop** is baked into the navmesh and blocks like any container. A destroyed *vehicle* leaves no body at all (`fire_sites.gd`, "Visual only"). Two different things share the name. The layer-4 line is an **unbuilt proposal** from `balance.md` ("a wreck *moves to* collision layer 4") that was restated as fact and carried for two rounds. **The suite had already proved it and nobody read it:** `ArenaFixture.inside_cover()` probes the widest collidable prop — a wreck on boneyard and yard — and asserts it is off the mesh, for every shipped layout, passing all along.

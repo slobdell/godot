@@ -213,6 +213,17 @@ feel.
 
 ## Open questions and follow-ups (not scheduled)
 
+- **Dynamic obstacles: deliberately none, and now with a reason rather than a default** (arena ruled, nav verified,
+  2026-09-18). **Nothing blocks drivable space mid-match, now or planned**, so a `NavigationObstacle3D` has no consumer.
+  The strong argument against building one is **fairness, not cost**: the navmesh is baked as the southern half plus its
+  180° rotation *as a second region*, because a normal bake is not point-symmetric — mirrored trips differed by up to
+  4.4 m and the south base won 64% of 140 matches (trip-up 21). **Any mid-match re-bake must reproduce that
+  construction or silently reintroduce the base bias**, with units standing on the mesh while it happens. And the lead's
+  approved destructible-cover design (*a stack collapses to a lower stack, never changing drivable space*) was chosen to
+  avoid exactly this, so X6 will not create a consumer either.
+  **If round 7 ever revisits the startup-only mesh, it must revisit `agent_max_climb` in the same breath** — both are
+  consequences of the same construction, and both need the swap-bases control re-run.
+
 - **The unifying shape of round 7's best candidates, named by arena:** *the correct behaviour depends on what the
   element is currently trying to do.* Round 6 made each layer correct **in general** — avoidance that keeps a column a
   column, an objective at the centre, a formation that holds its geometry — and the residue in every case is that the

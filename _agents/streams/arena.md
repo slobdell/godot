@@ -26,7 +26,7 @@
   routes took 4–5% of unit-time on dense layouts against 14% on foundry, and three streams independently landed on
   the same explanation — **a single central control point overrides every tactical choice**, so terrain has nothing to
   decide. combat separately measured median hit range at 39–43 m on *every* map. More props will not fix that.
-- Wrecks are on physics layer 4 **on purpose**, so they never block driving and the startup-only navmesh never goes
+- ~~Wrecks are on physics layer 4 **on purpose**, so they never block driving~~ **[FALSE — corrected 2026-09-18; see the note at the end of this brief.]** and the startup-only navmesh never goes
   stale. nav may want to change that (its X9); it is a conversation, not a unilateral change.
 
 ## Backlog (in order)
@@ -347,3 +347,8 @@ geometry, same code, opposite conclusion — the finding lived entirely in one c
 3. Authoring terrain (X4's second half) — but it should follow X3, since sunken lanes do not help a map whose only
    objective is at the centre. X5 (the arena page the lead is owed) is the better unblocked next job.
 
+
+
+## Correction (2026-09-18)
+
+**CORRECTED 2026-09-18 (arena found it, nav verified it, the orchestrator had repeated it): wrecks are NOT on layer 4 and they DO block driving.** Only `tank.tscn` sets a collision layer anywhere; `Arena._build_obstacles()` makes a plain `StaticBody3D` on default **layer 1**, the `Obstacles` node carries the `navigation_source` group, and the bake parses layer-1 shapes in it — so the `wreck` **kit prop** is baked into the navmesh and blocks like any container. A destroyed *vehicle* leaves no body at all (`fire_sites.gd`, "Visual only"). Two different things share the name. The layer-4 line is an **unbuilt proposal** from `balance.md` ("a wreck *moves to* collision layer 4") that was restated as fact and carried for two rounds. **The suite had already proved it and nobody read it:** `ArenaFixture.inside_cover()` probes the widest collidable prop — a wreck on boneyard and yard — and asserts it is off the mesh, for every shipped layout, passing all along.

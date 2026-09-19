@@ -923,3 +923,23 @@ The kickoff prompt is one line; this section is the rest.
       it) before you rely on it to exonerate anything.
     And the orchestrator's half: **when a stream hands you an exoneration, check that the control is still a control
     before relaying it.** The relay is where a plausible inference becomes another stream's afternoon.
+70. **A false premise in a brief propagates; a false instruction only costs one worker an afternoon.** Round 6, found
+    at the close: **"wrecks are on physics layer 4 on purpose, so they never block driving"** appeared in *two* stream
+    briefs and in the orchestrator's HANDOFF survey, and the orchestrator repeated it in a relay. **It is false.** Only
+    `tank.tscn` sets a collision layer anywhere; `Arena._build_obstacles()` makes a plain `StaticBody3D` on default
+    **layer 1**, the `Obstacles` node carries the `navigation_source` group, and the bake parses layer-1 shapes in it —
+    so the `wreck` **kit prop** is baked into the navmesh and blocks like any container. A destroyed **vehicle** leaves
+    no body at all. **Two different things share one name.** The claim traces to `balance.md`'s destructible-cover
+    proposal — *"a wreck **moves to** collision layer 4"*, future tense, never built — restated as present fact and
+    carried for two rounds.
+    Three instructions:
+    - **This is trip-up 24 with a worse blast radius.** There, a confident wrong *instruction* cost one worker half an
+      hour. Here the wrong belief was written into the briefs, so it was *inherited* by every agent who read them and
+      shaped what two streams did and did not attempt (nav nearly wrote off X9 on it). **Check a claim before you put
+      it in a brief, at the standard you would use before telling the lead.**
+    - **A proposal quoted out of a design doc becomes a fact.** When you lift a line from a design document into a
+      brief, carry its tense. If `balance.md` says a thing *would* move to layer 4, the brief must not say it *is*.
+    - **The suite had already proved it and nobody read the test.** `ArenaFixture.inside_cover()` probes the widest
+      collidable prop — a wreck on two shipped layouts — and asserts it is *off* the mesh, for every layout, passing
+      all along. **A passing test is a statement about the world that nobody is reading.** When a belief matters, grep
+      the tests for it before grepping the code: a green assertion is cheaper evidence than an investigation.

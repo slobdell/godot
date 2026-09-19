@@ -674,7 +674,7 @@ average. Judge that one after the same re-run.
 Today `Tank._set_alive(false)` disables the collision shape, so a wreck blocks nothing. Making a dead hull stop
 rounds is a genuinely good tactical layer at 30 a side, and the physics half is small:
 
-1. A wreck moves to **collision layer 4** instead of having its shape disabled (`Tank._set_alive`). Nothing masks
+1. **(PROPOSED, NOT BUILT — and this line was later restated as fact in two round-6 briefs and the HANDOFF survey; see orchestration.md lesson 70.)** A wreck moves to **collision layer 4** instead of having its shape disabled (`Tank._set_alive`). Nothing masks
    layer 4 for movement — a Tank's mask is 3 — so wrecks never block driving, which keeps them out of the navmesh
    problem entirely (the navmesh is baked once at startup).
 2. `Match.HIT_MASK` and `Shell.HIT_MASK` go from 3 to **7**, so shells and beams stop at a wreck.
