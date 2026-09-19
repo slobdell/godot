@@ -151,6 +151,13 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
+**REVERSED (2026-09-18, late): the lead played 12° and rejected it** — *"I was totally wrong about the camera, the
+game is unplayable now with low field of view."* Default pitch back to **45°** (round 5's start pose); FOV 60 kept (my
+judgement from scripted sessions: "low" reads as the pitch, and 60 shows more ground than 55, not less — one constant if
+he disagrees); pitch/zoom decoupling, the 8°–50° range, the cutaway and the far floor all stay. Phone bar back at 24 px
+(30.3 px measured). The reason is next to `DEFAULT_PITCH_DEG`: **a playability number, chosen from play, not a frame.**
+Everything below about 12° is history.
+
 **Report (2026-09-18, night).** **Green, merge here: `2dbd985d`** (`make remote T=check` 1082 passed, 0 failed,
 builder0) — main `0f559857` merged in, X4 re-landed, Ambush, X5 on nav's real Movement. Merged to `main` earlier:
 `758a45a8`, `aa7f3499` + `9ef6bbee`. (This Status edit is docs-only, on top of it.)

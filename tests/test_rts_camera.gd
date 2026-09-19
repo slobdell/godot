@@ -34,7 +34,11 @@ func test_zoom_sets_the_distance_and_never_the_tilt() -> void:
 	# ...and only past it does a soft floor lift a very low camera, so a whole-army view is ground, not a strip of
 	# arena between sky and cut-away stands (the lead's 12°, shell-playtest at 50 s). Never near round 5's top-down.
 	var far_tilt := rad_to_deg(asin(far.origin.y / far.origin.length()))
-	assert_near(far_tilt, RtsCamera.FAR_TILT_MAX_DEG, 0.01, "fully zoomed out, the floor is FAR_TILT_MAX_DEG")
+	assert_near(far_tilt, maxf(RtsCamera.DEFAULT_PITCH_DEG, RtsCamera.FAR_TILT_MAX_DEG), 0.01,
+			"fully zoomed out: the player's tilt or the far floor, whichever is higher")
+	var low_far := RtsCamera.pose_for(Vector3.ZERO, 0.0, 1.0, 12.0)
+	assert_near(rad_to_deg(asin(low_far.origin.y / low_far.origin.length())), RtsCamera.FAR_TILT_MAX_DEG, 0.01,
+			"a player who tilts to 12° still gets the far floor when fully zoomed out")
 	assert_true(far_tilt <= 45.0, "which is nowhere near a bird's eye view (%.0f°)" % far_tilt)
 	var steep_far := RtsCamera.pose_for(Vector3.ZERO, 0.0, 1.0, 48.0)
 	assert_near(rad_to_deg(asin(steep_far.origin.y / steep_far.origin.length())), 48.0, 0.01, "a steeper tilt is kept as it is")

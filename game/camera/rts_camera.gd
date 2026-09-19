@@ -20,15 +20,17 @@ extends Node
 
 const MIN_DISTANCE := 16.0
 const MAX_DISTANCE := 260.0
-## X3: the tilt the player can choose (degrees below the horizon), and where it starts. **The lead's pick, twice at the
-## floor of what he was offered** (round 6, 2026-09-18, the camera pages from `make camera-looks`): first "25° · 50 m ·
-## FOV 60°" (of 25/35/45/60), then "12° · 50 m · FOV 60°" (of 12/16/20/25). "Between StarCraft 2 and Twisted Metal"
-## sits much nearer Twisted Metal than anyone assumed; do NOT correct it upward because the tactical read is easier
-## from a conventional RTS pitch (game_design.md). The player can go a little lower (8°) and up to 50° (the StarCraft
-## end); O is the top-down map view.
+## X3: the tilt the player can choose (degrees below the horizon), and where it starts.
+## **The default is a PLAYABILITY number and must be chosen from a played session, not from a frame.** Round 6: the lead
+## picked 25°, then 12°, from camera pages of STILL frames of a frozen fight (the floor of the range both times), then
+## played `make skirmish` at 12° and rejected it: "I was totally wrong about the camera, the game is unplayable now with
+## low field of view." A still shows composition (and at 12° it is striking); it cannot show how much ground you can
+## read while commanding. So the default is back to ~45° - round 5's start pose, which he never complained about. His
+## real complaint was that zooming out became a bird's-eye view; decoupling pitch from zoom fixed that and stands. The
+## player can still tilt 8°-50° (Page Up/Down, ctrl+wheel). Do not lower the default again from a picture.
 const MIN_PITCH_DEG := 8.0
 const MAX_PITCH_DEG := 50.0
-const DEFAULT_PITCH_DEG := 12.0
+const DEFAULT_PITCH_DEG := 45.0
 ## Round 6, after playing the lead's 12°: a very low camera pulled back to frame a whole army (~150 m) showed the arena
 ## as a thin strip between sky and cut-away stands, with units as specks (shell-playtest, 50 s). So past FAR_TILT_FROM_M
 ## a soft floor lifts the tilt, from MIN_PITCH_DEG there to FAR_TILT_MAX_DEG at FAR_TILT_FULL_M. Up to that distance -
