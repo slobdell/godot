@@ -262,6 +262,35 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Round 7 A/B, pre-registered (written 2026-09-19 BEFORE the run)
+
+**Commitment in CombatMotion** (a bonus for last plan's direction; timer jinks only against projectile weapons) vs
+without (`--nav-off=commit`). `make nav-fight-ab AB_OFF=commit`: yard, CPU armies at 6500, seeds 1 3 5 7 9, 120 s,
+both arms from the same tree. **Churn** = motion jumps per unit-minute (drive target > 8 m, same option). **Survivability**
+= green units lost AND rust units lost (both sides: the exchange, not only our losses).
+**Rule:** if commitment cuts motion churn and green losses do not rise by more than the seed-to-seed spread of the
+"off" arm, and the exchange (rust lost / green lost) is not worse by more than that spread, it ships: the churn was not
+the price of not dying. If green losses rise beyond the spread, evasion is load-bearing, commitment does not ship, and
+the answer is legibility (control's), reported with the numbers.
+
+**Result (builder0, 2026-09-19; `references/nav/round7_commit_ab.json`).** The first run's arms were byte-identical: the
+switch never applied (a static initialiser read `Movement._off` before it was populated). Nothing was reported from
+it; switches are now read at call time and `nav-fight-ab` refuses identical arms. The re-run's arms differ (live
+`NAV_FIGHT_ARM commit=true/false`):
+
+| | commitment on | off (spread) |
+|---|---|---|
+| motion jumps / unit-minute | **15.6** (lower on 5/5 seeds) | 21.4 (±4.8) |
+| decision jumps / unit-minute | 6.8 | 6.8 |
+| green lost (of 34-52) | 1.4 | 1.6 (±0.8) |
+| rust lost | 1.2 | 0.8 |
+| attack-move progressing | 41% | 44% |
+
+**By the rule: it ships.** Churn down 27%, green losses not higher, exchange not worse. **Caveats I did not pre-register
+and report anyway:** survivability had little power (1-3 deaths a side in 120 s), and attack-move progress dipped 3
+points. The brain half (passing the previous direction back; timer jinks only against projectile weapons) is squad's
+file: `references/nav/round7_commitment_brain.patch`.
+
 ### Resuming this stream (written 2026-09-18 before a 4-day pause; read this first)
 
 **State:** backlog complete (X1–X8 done, X9 closed). Everything is merged or mergeable: code green at `34293b3b`

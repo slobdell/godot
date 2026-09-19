@@ -37,7 +37,34 @@ extends RefCounted
 
 const STYLES := ["strafe", "angle", "run", "standoff"]
 ## Round 7: the style a fixed gun fights with. `--nav-off=standoff` restores round 3's attack runs (for A/B).
-static var fixed_style := "run" if Movement._off.has("standoff") else "standoff"
+## Resolved at READ time, never in a static initialiser: one initialised from another class's static (Movement._off) can
+## run before that one is populated (Movement, TankBrain and CombatMotion reference each other), and then the switch
+## silently does nothing — round 7's first commitment A/B came back with two byte-identical arms for exactly that
+## reason. Assigning it (tests, squad's scenario) pins it; reading it otherwise follows --nav-off=standoff.
+static var _fixed_style_pinned := ""
+static var fixed_style: String:
+	get:
+		if _fixed_style_pinned != "":
+			return _fixed_style_pinned
+		return "run" if Movement.switched_off("standoff") else "standoff"
+	set(value):
+		_fixed_style_pinned = value
+## Round 7: commitment. The direction chosen at the last plan ("previous_index"/"previous_reverse" in the request) gets
+## this score bonus. `--nav-off=commit` switches it off (A/B: squad measured ~70% of attack-move target jumps as motion
+## inside one unchanged decision — ENGAGE re-planning its circle).
+## (Read at call time — see fixed_style.)
+static func commit_on() -> bool:
+	return not Movement.switched_off("commit")
+const COMMIT_BONUS := 0.35
+## ...and a fighter jinks on a timer (to spoil a gunner's lead) only against weapons with a flight time to lead:
+## `jink_worth(contact_weapon)`. Against hitscan the jink buys nothing and reads as dithering.
+static func jink_worth(weapon_id: String) -> bool:
+	if not commit_on():
+		return true
+	var kind: int = int(Weapons.profile(weapon_id).get("kind", Weapons.Kind.PROJECTILE))
+	return kind == Weapons.Kind.PROJECTILE or kind == Weapons.Kind.ARC
+
+
 ## Standoff: hold and shoot anywhere from this share of the band's outer edge out to the edge (a scout: 17.5-35 m).
 const STANDOFF_HOLD_SHARE := 0.5
 ## 16 directions around the compass (x, z), every 22.5°, as constants.
@@ -161,6 +188,8 @@ static func choose(request: Dictionary) -> Dictionary:
 	var leash: Dictionary = request.get("leash", {})
 	var leash_center := _flat(leash.get("center", Vector3.ZERO))
 	var leash_radius := float(leash.get("radius", 0.0))
+	var previous_index := int(request.get("previous_index", -1))
+	var previous_reverse := bool(request.get("previous_reverse", false))
 	var scored: Array = []
 	for i in RING.size():
 		var ring := Vector3(RING[i].x, 0.0, RING[i].y)
@@ -225,6 +254,11 @@ static func choose(request: Dictionary) -> Dictionary:
 				if _flat(friend).distance_to(end) < FRIEND_SPACING:
 					score -= PENALTY_CROWD
 					break
+			# Round 7: commitment (hysteresis, the standard cure for a utility argmax that flips between near-equals).
+			# The direction chosen last plan keeps a bonus, so a rival has to be clearly better to take over; a round
+			# actually on its way (PENALTY_HIT below) still outweighs it, so reactive dodging is untouched.
+			if commit_on() and i == previous_index and reverse == previous_reverse:
+				score += COMMIT_BONUS
 			var undodged := score
 			if not incoming.is_empty() and CombatMotion.would_be_hit(here, velocity_now,
 					ring * (float(request.get("reverse_speed", 0.0)) if reverse else float(request["speed"])), incoming,
