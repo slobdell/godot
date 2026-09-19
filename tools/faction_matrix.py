@@ -17,6 +17,10 @@ import argparse
 import concurrent.futures
 import itertools
 import json
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import run_conditions
 import subprocess
 import sys
 import time
@@ -28,10 +32,17 @@ SIM_HZ = os.environ.get("SIM_HZ", "60")
 FACTIONS = ["gangs", "condemned", "law", "syndicate"]
 
 
-def run_match(godot, green, rust, seed, budget, time_limit):
+def run_match(godot, green, rust, seed, budget, time_limit, arena="", controls=()):
+    # X5 (round 6): --arena, because this tool ran EVERY match on the default layout (foundry) and said so nowhere.
+    # That is fine for a like-for-like A/B and wrong for anything conditional on terrain: the Syndicate's designator
+    # pays off where sightlines are long and pays nothing in a close map, so a single-map number would be reported as
+    # a property of the faction when it is a property of foundry. Every row this tool prints is one map's answer.
     command = [godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--", "--match", "--elimination", "--control",
                f"--green-faction={green}", f"--rust-faction={rust}", f"--budget={budget}",
                f"--time-limit={time_limit}", "--score-limit=0", f"--seed={seed}"]
+    if arena:
+        command.append(f"--arena={arena}")
+    command.extend(controls)
     done = subprocess.run(command, capture_output=True, text=True, timeout=time_limit + 300)
     for line in done.stdout.splitlines():
         if line.startswith("MATCH_RESULT "):
@@ -79,10 +90,17 @@ def main():
     parser.add_argument("--jobs", type=int, default=2)
     parser.add_argument("--time-limit", type=int, default=180)
     parser.add_argument("--factions", default=",".join(FACTIONS))
+    parser.add_argument("--arena", default="", help="layout name; default runs the built-in default (foundry)")
+    # X4 (round 7): the ablation arm. The gangs' 23% -> 53% swing is unattributed because CP4 and the `gangs/scout`
+    # directive fix landed in one commit with no matrix between, so this runs the same matrix with every unit on its
+    # plain-role directive. It is a CONTROL: it belongs in a measurement, never in a number quoted as the game.
+    parser.add_argument("--no-faction-directives", action="store_true",
+                        help="control arm: every unit takes its plain-role directive (Army.faction_directives=false)")
     parser.add_argument("--json")
     args = parser.parse_args()
 
     factions = [f.strip() for f in args.factions.split(",") if f.strip()]
+    controls = ("--no-faction-directives",) if args.no_faction_directives else ()
     jobs = []
     for first, second in itertools.combinations(factions, 2):
         for seed in range(1, args.seeds + 1):
@@ -91,7 +109,8 @@ def main():
     started = time.time()
     outcomes, failures = {}, []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        futures = {pool.submit(run_match, args.godot, green, rust, seed, args.budget, args.time_limit):
+        futures = {pool.submit(run_match, args.godot, green, rust, seed, args.budget, args.time_limit, args.arena,
+                                controls):
                    (green, rust, seed, first_is_green) for green, rust, seed, first_is_green in jobs}
         for future in concurrent.futures.as_completed(futures):
             green, rust, seed, first_is_green = futures[future]
@@ -104,19 +123,109 @@ def main():
             outcomes.setdefault((faction, other), []).append((result, first_is_green))
 
     rows = [summarize(faction, other, results) for (faction, other), results in sorted(outcomes.items())]
-    print(f"{len(jobs) - len(failures)} matches at {args.budget} points, {time.time() - started:.0f}s wall, "
+    # Name the map in the output: every row is ONE map's answer, and a reader who does not know which will read a
+    # property of foundry as a property of the faction.
+    # POSITIVE CONTROL (adherence). A treatment arm with no treatment is a FAILED RUN, not a null result -- you do
+    # not report a drug trial without checking the patients took the drug. This project has produced two designator
+    # numbers that measured a different game: once the unit was silently dropped from every army, once it was fielded
+    # but classified as a line unit and pushed to the front. Neither was caught by any check; both were caught by a
+    # result looking slightly wrong, which only works when the confound happens to push the implausible way.
+    #
+    # The assertion needs no knowledge of any roster: the match reports how many designators each side FIELDED and
+    # how many times one PAINTED. Fielded with zero paints means the mechanism did not engage, so the number is not
+    # about the mechanism and must not be quoted as though it were.
+    # ADHERENCE, the other half of the positive control. The block below asks whether the TREATMENT engaged; this
+    # asks whether the ARM was the one requested. A flag that is silently dropped -- misspelled, eaten by a wrapper,
+    # not yet on the remote's checkout -- produces a control arm identical to the treatment arm, two files that
+    # differ only in their names, and a "no effect" conclusion that is really "I ran the same thing twice". That is
+    # the same failure as the data-only control that cost this stream most of round 6, in a form a tool can catch.
+    want = {"faction_directives": not args.no_faction_directives}
+    mismatched = sorted({f"{key}={got.get(key)} (asked for {value})"
+                         for _pairing, results in outcomes.items() for result, _green in results
+                         for got in [result.get("controls") or {}]
+                         for key, value in want.items() if got.get(key) != value})
+    if mismatched:
+        print("REFUSED: the runs did not carry the controls this invocation asked for -- both arms are the same arm:")
+        for line in mismatched[:5]:
+            print("  " + line)
+        if not any((result.get("controls") for _p, rs in outcomes.items() for result, _g in rs)):
+            print("  (MATCH_RESULT carried no `controls` at all: the build predates it, so no arm can be proven)")
+        if args.json and os.path.exists(args.json):
+            os.remove(args.json)
+        return 2
+
+    unengaged = []
+    fielding_sides, paints = 0, 0
+    for (faction, other), results in sorted(outcomes.items()):
+        # outcomes holds (result, first_is_green) PAIRS, not bare results -- and team 0 is Green, so which faction a
+        # team index refers to depends on that flag. Getting this wrong is what made the guard crash the tool.
+        for result, first_is_green in results:
+            st = result.get("stats", {})
+            green_side, rust_side = (faction, other) if first_is_green else (other, faction)
+            for team, side in ((0, green_side), (1, rust_side)):
+                fielded = (st.get("designators_fielded") or [0, 0])[team]
+                painted = (st.get("designations") or [0, 0])[team]
+                if fielded:
+                    fielding_sides += 1
+                    paints += painted
+                if fielded and not painted:
+                    unengaged.append(f"{side}: {fielded} designator(s) fielded, 0 paints")
+    if unengaged:
+        print("REFUSED: the treatment never engaged in %d match(es) -- this is a failed run, not a result:"
+              % len(unengaged))
+        for line in sorted(set(unengaged))[:5]:
+            print("  " + line)
+        # Refuse to PERSIST, not merely to print (arena's improvement on this, after the same construction caught
+        # eight immobilised unit-pairs in make nav-maze on its first run). A printed refusal can be scrolled past;
+        # an absent file cannot be cited, copied into references/, or picked up by whoever greps for the newest json.
+        # The failure mode being defended against is a refused run becoming a number six weeks later.
+        if args.json and os.path.exists(args.json):
+            os.remove(args.json)
+        return 2
+    print(f"run: {run_conditions.header()}")
+    print("arm: %s" % ("CONTROL -- plain-role directives (--no-faction-directives)" if args.no_faction_directives
+                       else "normal play -- faction directives ON"))
+    # Say what the control SAW, not only that it did not fire. A guard that is silent when it ran and silent when it
+    # never ran is indistinguishable from no guard, which is how the designator got measured twice without engaging.
+    # Zero fielding sides is legitimate when no designating faction is in `--factions`; it is NOT a pass, so it is
+    # printed as "not exercised" rather than left to look like one.
+    if fielding_sides:
+        print(f"positive control: {fielding_sides} side(s) fielded a designator, {paints} paints -- treatment engaged")
+    else:
+        print("positive control: NOT EXERCISED -- no side fielded a designator in this matrix "
+              "(expected when --factions excludes the syndicate, or when no drawn archetype carries one)")
+    print(f"{len(jobs) - len(failures)} matches on {args.arena or 'foundry (default)'} at {args.budget} points, "
+          f"{time.time() - started:.0f}s wall, "
           f"{args.jobs} jobs (each pairing counterbalanced: same seeds from both colours)")
     print(f"{'pairing':28} {'win%':>6} {'matches':>8} {'vehicles':>9} {'lost':>6} {'length':>8} {'suppr':>7}")
     for row in sorted(rows, key=lambda r: -r["win_rate"]):
         print(f"{row['faction'] + ' vs ' + row['versus']:28} {row['win_rate']:6.0%} {row['matches']:8d} "
               f"{row['vehicles']:9.1f} {row['lost']:6.1f} {row['seconds']:7.1f}s {row['suppression']:7.3f}")
+    # PER FACTION, not just per pairing (arena asked, 2026-09-19): if one faction moves between two maps and nobody
+    # else does, that is an asymmetry -- a map paying one army more than another. If EVERY faction's spread widens on
+    # the open map, that is a property of the map itself. **Those two results look identical in a pairing table**,
+    # which is why this block exists.
+    totals = {}
+    for row in rows:
+        for side, won in ((row["faction"], row["win_rate"] * row["matches"]),
+                          (row["versus"], (1.0 - row["win_rate"]) * row["matches"])):
+            got, played = totals.get(side, (0.0, 0))
+            totals[side] = (got + won, played + row["matches"])
+    print(f"\n{'faction':16} {'record':>10} {'win%':>6}   (on {args.arena or 'foundry (default)'})")
+    for side in sorted(totals, key=lambda f: -totals[f][0] / max(totals[f][1], 1)):
+        won, played = totals[side]
+        print(f"{side:16} {round(won):5.0f}/{played:<4d} {won / max(played, 1):6.0%}")
     for failure in failures:
         print("  FAILED: " + failure)
     if args.json:
         with open(args.json, "w") as handle:
-            json.dump({"args": vars(args), "rows": rows, "failures": failures}, handle, indent=2)
+            json.dump({"run": run_conditions.describe(), "args": vars(args), "rows": rows, "failures": failures}, handle, indent=2)
     sys.exit(1 if failures else 0)
 
 
 if __name__ == "__main__":
-    main()
+    # sys.exit(main()), not a bare main(): the refusal paths `return 2`, and a bare call throws that away and exits 0.
+    # A guard that reports SUCCESS to every caller -- make, a wrapper script, a shell `&&` -- is worse than no guard,
+    # because the refusal scrolls past while the pipeline goes green. Found by reading to the bottom of the file
+    # after the same block had already shipped broken once.
+    sys.exit(main())

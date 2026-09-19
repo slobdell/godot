@@ -45,6 +45,17 @@ var controls: RtsControls
 var _command_rects := {}  # id -> Rect2 (local)
 ## X2: the button under the mouse ("" = none), for its tooltip.
 var _hovered := ""
+## Round 7 (C2): the preview loop's clock (UI time, runs while paused) and where the last tooltip put its preview.
+var _preview_clock := 0.0
+## Round 7: during the planning pause the card opens one button's help by itself, once per session, so a player learns
+## that hovering explains a button without being told (the lead did not know what "Screen" was, and pressed buttons to
+## find out). His first click or key closes it. `intro_requires_pause` is for tests, which cannot pause their own tree.
+const INTRO_BUTTON := "screen"
+static var intro_done := false
+var intro_requires_pause := true
+var _intro := ""
+var _preview_rect := Rect2()
+const PREVIEW_HEIGHT := 170.0
 var _portrait_rects := {}  # portrait key -> Rect2 (local)
 ## X4: unit name -> Tank for this pass. One node lookup per unit instead of one per question, which at 30+
 ## selected was the panel's whole cost (a sort comparator asking for a role does two lookups per comparison).
@@ -56,7 +67,11 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_preview_clock += delta
+	if not intro_done and _intro == "" and visible and not _command_rects.is_empty() and controls != null \
+			and not controls.selection.is_empty() and (get_tree().paused or not intro_requires_pause):
+		_intro = INTRO_BUTTON if _command_rects.has(INTRO_BUTTON) else String(COMMANDS[0][0])
 	_layout()
 	visible = controls != null and not controls.selection.is_empty()
 	queue_redraw()
@@ -107,15 +122,15 @@ func _layout() -> void:
 
 ## X4: one entry per portrait: every unit below GROUP_ABOVE, one per type above it.
 ## [{"key", "role", "health", "shield", "count", "label"}] - `key` is what _portrait_rects and clicks use.
-func portrait_entries() -> Array:
-	var units := _sorted_units()
+func portrait_entries(sorted: Array[String] = []) -> Array:
+	var units := sorted if not sorted.is_empty() else _sorted_units()
 	if units.size() <= GROUP_ABOVE:
 		var singles: Array = []
 		for unit_name in units:
 			var tank := _tank(unit_name)
 			if tank == null:
 				continue
-			singles.append({"key": unit_name, "role": CommandIcons.role_of(tank), "count": 1, "label": "",
+			singles.append({"key": unit_name, "role": CommandIcons.role_of(tank), "count": 1, "label": "", "unit_id": tank.unit_id,
 					"health": float(tank.health) / maxf(tank.max_health, 1.0),
 					"shield": tank.shield / tank.max_shield if tank.max_shield > 0.0 else 0.0})
 		return singles
@@ -127,7 +142,7 @@ func portrait_entries() -> Array:
 			continue
 		var id := tank.unit_id
 		if not by_type.has(id):
-			by_type[id] = {"key": "type:%s" % id, "role": CommandIcons.role_of(tank), "count": 0, "health": 0.0,
+			by_type[id] = {"key": "type:%s" % id, "role": CommandIcons.role_of(tank), "count": 0, "health": 0.0, "unit_id": id,
 					"shield": 0.0, "label": String(Units.stat(id, "display_name", id))}
 			order.append(id)
 		var entry: Dictionary = by_type[id]
@@ -198,6 +213,7 @@ func summary() -> Dictionary:
 		if command[0] == "formation":
 			label = "Formation: %s" % String(controls.formation).capitalize()
 		result["commands"].append({"id": command[0], "label": label, "hotkey": command[2],
+				"then": String(TaskPalette.row(command[0]).get("then", "now")),
 				"line": String(TaskPalette.row(command[0]).get("line", "")),
 				"enabled": commandable and (is_element or not ELEMENT_ONLY.has(command[0]))})
 	if controls.selection.inspected != "":
@@ -213,7 +229,7 @@ func summary() -> Dictionary:
 		result["orders"] = result["card"]["orders"]
 		return result
 	result["mode"] = "group"
-	result["portraits"] = portrait_entries()
+	result["portraits"] = portrait_entries(units)  # sorted once (it was sorted twice a frame)
 	for portrait: Dictionary in result["portraits"]:
 		portrait["unit"] = String(portrait["key"]) if int(portrait["count"]) == 1 else ""
 	result["count"] = units.size()
@@ -250,6 +266,7 @@ func _card(unit_name: String) -> Dictionary:
 		return {}
 	var weapon := Weapons.profile(tank.weapon_id)
 	return {"name": String(Units.stat(tank.unit_id, "display_name", tank.unit_id)), "role": CommandIcons.role_of(tank),
+			"unit_id": tank.unit_id,
 			"hull": "Hull %d / %d" % [tank.health, tank.max_health],
 			"shield": "Shield %d / %d" % [roundi(tank.shield), roundi(tank.max_shield)],
 			"health": float(tank.health) / maxf(tank.max_health, 1.0),
@@ -314,6 +331,8 @@ func press_command(id: String) -> void:
 ## X2: the tooltip for the button under the mouse: {"id", "title", "line"} or {}. X7: over the doctrine line, the
 ## element's recent decisions instead: {"id": "doctrine", "title", "line": "", "lines": [...]}.
 func tooltip() -> Dictionary:
+	if _hovered == "" and _intro != "" and visible:
+		return _tooltip_for(_intro)
 	if _hovered == "" or not visible:
 		return {}
 	if _hovered == "doctrine":
@@ -324,14 +343,31 @@ func tooltip() -> Dictionary:
 		if recent.is_empty():
 			return {}
 		return {"id": "doctrine", "title": "%s: why it did that" % element.element_name, "line": "", "lines": recent}
-	var row := TaskPalette.row(_hovered)
-	var title := String(row.get("name", _hovered))
+	return _tooltip_for(_hovered)
+
+
+func _tooltip_for(id: String) -> Dictionary:
+	var row := TaskPalette.row(id)
+	var title := String(row.get("name", id))
 	if String(row.get("hotkey", "")) != "":
 		title += "  [%s]" % row["hotkey"]
+	# Round 7 (C3): which grammar this button is.
+	title += "  -  then click where" if String(row.get("then", "now")) == "click" else "  -  happens at once"
 	var line := String(row.get("line", ""))
-	if ELEMENT_ONLY.has(_hovered) and controls != null and not controls.can_task():
+	if ELEMENT_ONLY.has(id) and controls != null and not controls.can_task():
 		line += " Select a whole squad (1-5) first."
-	return {"id": _hovered, "title": title, "line": line}
+	return {"id": id, "title": title, "line": line}
+
+
+## The intro tooltip closes on the player's first click or key, anywhere, and never returns (it only watches input).
+func _input(event: InputEvent) -> void:
+	if _intro == "":
+		return
+	var pressed := (event is InputEventMouseButton and (event as InputEventMouseButton).pressed) \
+			or (event is InputEventKey and (event as InputEventKey).pressed)
+	if pressed:
+		_intro = ""
+		intro_done = true
 
 
 func _notification(what: int) -> void:
@@ -410,7 +446,13 @@ func _draw() -> void:
 					continue
 				batch.fill(cell, Color(CyberStyle.CARD, 0.95))
 				batch.outline(cell, Color(friendly, 0.35), 1.0)
-				batch.icon(portrait["role"], cell.get_center() - Vector2(0, cell.size.y * 0.1), cell.size.y * 0.5, friendly)
+				# Round 7 (C1): the vehicle itself when its render is ready, the role icon until then.
+				var render := UnitPortraits.texture(String(portrait.get("unit_id", "")), get_tree())
+				if render != null:
+					var side := minf(cell.size.x, cell.size.y) * 1.0
+					batch.texture(render, Rect2(cell.get_center() - Vector2(side, side * 1.08) / 2.0, Vector2(side, side)), Color.WHITE)
+				else:
+					batch.icon(portrait["role"], cell.get_center() - Vector2(0, cell.size.y * 0.1), cell.size.y * 0.5, friendly)
 				var bar_height := clampf(cell.size.y * 0.1, 5.0 * s, 12.0 * s)
 				_bars(batch, Rect2(cell.position + Vector2(4, cell.size.y - bar_height - 4.0), Vector2(cell.size.x - 8, bar_height)),
 						float(portrait["health"]), float(portrait["shield"]), friendly, enemy)
@@ -430,7 +472,11 @@ func _draw() -> void:
 			var icon := size.y - PAD * s * 2.0 - FOOTER * s
 			var icon_rect := Rect2(PAD * s, PAD * s, icon, icon)
 			batch.fill(icon_rect, Color(CyberStyle.CARD, 0.95))
-			batch.icon(card["role"], icon_rect.get_center(), icon * 0.6, color)
+			var card_render := UnitPortraits.texture(String(card.get("unit_id", "")), get_tree())
+			if card_render != null:
+				batch.texture(card_render, icon_rect, Color.WHITE)
+			else:
+				batch.icon(card["role"], icon_rect.get_center(), icon * 0.6, color)
 			var x := icon_rect.end.x + PAD * s * 2.0
 			var line := 24.0 * s
 			_text(batch, font, Vector2(x, PAD * s + line * 0.9), ("ENEMY " if card["enemy"] else "") + String(card["name"]).to_upper(), 22.0 * s, color)
@@ -452,6 +498,13 @@ func _draw() -> void:
 		var armed: bool = controls.mode == command["id"]
 		batch.fill(button, Color(CyberStyle.CARD, 0.95 if enabled else 0.5))
 		batch.outline(button, Color(CyberStyle.YELLOW if armed else CyberStyle.CYAN, 0.9 if enabled else 0.2), 2.0 if armed else 1.0)
+		# Round 7 (C3): a button that waits for a click wears a pointer in its corner (and a second, inset border); one
+		# that acts at once does not. The lead: "if I click the attack button will they do something or do I need to
+		# direct them?"
+		if String(command["then"]) == "click":
+			batch.outline(button.grow(-3.0 * s), Color(CyberStyle.CYAN, 0.35 if enabled else 0.1), 1.0)
+			var corner := Rect2(Vector2(button.end.x - button.size.y * 0.3, button.position.y + 3.0 * s), Vector2.ONE * button.size.y * 0.26)
+			batch.texture(CommandIcons.pointer_texture(), corner, Color(CyberStyle.YELLOW, 0.95 if enabled else 0.3))
 		var ink := Color(CyberStyle.TEXT, 1.0 if enabled else 0.3)
 		_text(batch, font, button.position + Vector2(4.0 * s, 15.0 * s), command["hotkey"], 13.0 * s, Color(CyberStyle.YELLOW, 0.9 if enabled else 0.3))
 		# X2: the symbol is the primary read; the doctrinal name sits under it.
@@ -466,9 +519,13 @@ func _draw() -> void:
 			batch.texture(CommandIcons.task_texture(command["id"]), glyph, tint)
 		_label(batch, font, button, label, 14.0 * s, ink)
 	var tip := tooltip()
+	_preview_rect = Rect2()
 	if not tip.is_empty():
 		_tooltip(batch, font, doctrine_rect() if tip["id"] == "doctrine" else _command_rects[tip["id"]], tip, s)
 	batch.flush(self)
+	# Round 7 (C2): the posture this button leaves the squad in, animated, on top of the tooltip box.
+	if _preview_rect.has_area():
+		TaskPreview.draw(self, _preview_rect, String(tip["id"]), _preview_clock, GameTheme.ui["friendly"], GameTheme.ui["enemy"])
 
 
 ## X2: the name under a button's symbol - one line if it fits, else two ("Support / by Fire"), shrinking only if a
@@ -501,10 +558,13 @@ func _tooltip(batch: DrawBatch, font: Font, button: Rect2, tip: Dictionary, s: f
 		lines.append(extra)
 	if tip.has("lines"):
 		width = 520.0 * s
-	var height := (title_px + 8.0 * s) + lines.size() * line_px * 1.3 + 10.0 * s
+	var preview := 0.0 if TaskPreview.posture(String(tip["id"])).is_empty() else PREVIEW_HEIGHT * s
+	var height := (title_px + 8.0 * s) + lines.size() * line_px * 1.3 + 10.0 * s + preview
 	var box := Rect2(Vector2(clampf(button.get_center().x - width / 2.0, -position.x + 4.0, size.x - width), -height - 6.0 * s),
 			Vector2(width, height))
 	batch.fill(box, Color(CyberStyle.HUD_BACKGROUND, 0.97))
+	if preview > 0.0:
+		_preview_rect = Rect2(box.position.x + 8.0 * s, box.end.y - preview - 2.0 * s, box.size.x - 16.0 * s, preview - 6.0 * s)
 	batch.outline(box, Color(CyberStyle.YELLOW, 0.8), 1.5)
 	batch.text(font, box.position + Vector2(8.0 * s, 6.0 * s + title_px), String(tip["title"]), title_px, CyberStyle.YELLOW)
 	for i in lines.size():

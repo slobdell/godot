@@ -1,0 +1,18 @@
+diff --git a/game/ai/tank_brain.gd b/game/ai/tank_brain.gd
+index 2f01322f..fd973f86 100644
+--- a/game/ai/tank_brain.gd
++++ b/game/ai/tank_brain.gd
+@@ -2014,11 +2014,11 @@ func _act(s: Dictionary) -> void:
+ 			_order_move(_move_to(squad["slot"], squad["reverse"], squad["pace"]))
+ 			_order_weapon({"type": "fire_at_will"})
+ 		"HOLD" when s.get("order") != null and s["order"]["verb"] == "hold" \
+-				and _flat(my_position).distance_to(s["order"]["goal"]) > HOLD_TOLERANCE:
++				and _flat(my_position).distance_to(s["order"]["goal"]) > maxf(HOLD_TOLERANCE, Movement.settle_radius(tank.unit_id) + 1.0):
+ 			# Pushed off the spot (or ordered to hold somewhere else): back onto it, front toward trouble.
+ 			var spot: Vector3 = s["order"]["goal"]
+ 			why = TankBrain._join(why, "holding")
+-			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0, 1.0, 1.5))
++			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0, 1.0, maxf(1.5, Movement.settle_radius(tank.unit_id))))
+ 			_order_weapon({"type": "fire_at_will"})
+ 		"HOLD":
+ 			var nearest_visible: Variant = null

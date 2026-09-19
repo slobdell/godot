@@ -182,3 +182,20 @@ func test_two_hulls_spawned_on_one_spot_separate_and_both_drive_off() -> void:
 	for tank: Tank in [first, second]:
 		assert_true(tank.global_position.distance_to(LANE) > 6.0, "%s drove off (%.1f m from the start)" % [tank.name,
 				tank.global_position.distance_to(LANE)])
+
+
+func test_pathing_query_says_whether_a_route_gets_there() -> void:
+	# Lesson 76: reachability is the route ending at the goal, not a route coming back. Pathing.query reports it, and
+	# reports the gaps rather than comparing them against a tolerance of the caller's choosing.
+	var arena := await ArenaFixture.build(self, "yard")
+	var open_from := NavigationServer3D.map_get_closest_point(arena.get_world_3d().navigation_map, Vector3(-40, 0, 90))
+	var open_to := NavigationServer3D.map_get_closest_point(arena.get_world_3d().navigation_map, Vector3(40, 0, -90))
+	var open := Pathing.query(arena, open_from, open_to)
+	assert_true(bool(open["ready"]) and bool(open["reachable"]) and bool(open["goal_on_mesh"]),
+			"across open ground: reachable and on the mesh (%s)" % [open])
+	assert_near(float(open["end_gap_m"]), 0.0, Pathing.MESH_EPSILON, "no gap at the end")
+	var inside: Vector3 = ArenaFixture.inside_cover(arena.layout)
+	var into_cover := Pathing.query(arena, open_from, inside)
+	assert_true(not bool(into_cover["goal_on_mesh"]), "a goal inside a container is off the mesh (%s)" % [into_cover])
+	assert_true(float(into_cover["goal_gap_m"]) > 1.0, "by more than a metre (%.2f m)" % float(into_cover["goal_gap_m"]))
+	assert_true(bool(into_cover["reachable"]), "but the route still ends at its nearest drivable point (%s)" % [into_cover])

@@ -72,6 +72,54 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 - Markers printed by `main.gd`: `TANK_SQUAD_READY` (wired), `TANK_SQUAD_LISTENING` (server), `TANK_SQUAD_CONNECTED` / `TANK_SQUAD_SPAWNED` (client). `smoke.mjs` takes the marker to wait for as its 4th argument. **If you rename one, grep the Makefile and `tools/`.**
 - `tests/net/bot_client_check.gd` is a `SceneTree` script that waits for the server's TCP port, instantiates the *real* `main.tscn` (which reads the same `--connect`/`--demo` flags), and watches `Tanks/Tank_<my peer id>.sync_position`. It isn't named `test_*`, so `make test` doesn't pick it up. **The `NET_SMOKE_EXPECT` override exists to prove the check can fail:** `make net-smoke NET_SMOKE_EXPECT=3` must exit non-zero.
 
+## Timing in tests: measure in `make check`, judge elsewhere (policy, 2026-09-19)
+
+**`make check` does not gate on how long something takes.** It is the thing six to nine agents run at once on builder0
+(an i5-1345U: 2 hyperthreaded P-cores + 8 E-cores, 12 threads) and on the shared laptop, so a wall-clock assertion there
+is a claim about *other streams' activity*, and when it fails it looks like a code defect. Found by control, ruled by
+the orchestrator:
+
+- **The evidence.** `test_control_scale`'s frame budget (absolute 2.0 ms, 11% headroom over the idle laptop's 1.80) went
+  red in #19 on builder0 at **2.33 ms, where idle builder0 is ~0.65 ms** (`9c889025`), and on the laptop at load 4–8
+  (2.2–3.1 ms). One bare click-to-order sample read **24 ms for ~4 ms of work** (laptop, load 7.8).
+- **A ratio fixes a busy machine, not a full one.** Timing the work interleaved with a fixed reference workload
+  (`control_fixture.gd`: `reference_work`, `fastest_ms`) and budgeting their ratio cancels core type (P vs E) and
+  throughput: the control frame held at 18.8–20.2 reference workloads across loads (laptop, `35c72304`), and +1 ms of work
+  still fails it (30.2 against 26). **But with 7 CPU burners on the laptop's 8 threads the order path went from 3 ms to
+  42 ms (~14×) as the fastest of 10 samples, while the reference only doubled**: a slice of engine work also waits on
+  engine worker threads, and a single-threaded GDScript yardstick can't see those starve.
+
+**The rule:**
+1. **In `make check`, timing is a printed measurement (`MEASURE ...`), never an assertion.** Prefer a ratio to a
+   reference over raw milliseconds even as a measurement: it compares across machines.
+2. **Timing verdicts belong to a separate target run on purpose on an uncontended builder0**, with `sim-profile`
+   (`mk/match.mk`) as the precedent.
+3. **A timing check that must stay a gate asserts its own precondition and REFUSES** (*"not judged: reference workload
+   2.1× nominal, machine too loaded"*), and the summary counts it as not judged, **never as a pass**. A silent skip is
+   lesson 91.
+4. **Liveness timeouts are not budgets.** A timeout catches a hang, and a hang doesn't care whether it's 120 s or 600 s:
+   make them generous (`garage-smoke`/`army-loop-smoke`: 60/120 → 600 s at `d8f26176`; they ran 10 s and 18 s on the
+   laptop, only ~6× headroom against a measured 14× starvation, and a timeout failure reads as a deadlock).
+5. **A bound with 30× headroom is a smoke check, not a budget; label it as one.** `match-smoke`'s `speedup > 2`
+   (58–84× on builder0) and `test_visibility`'s 200 ms refresh (3.2–5.9 ms on builder0) can't flake and can't catch a
+   regression. Either give them a real budget in the timing target, or say in the message that they are sanity bounds.
+6. **One sample is the most exposed shape.** Take the fastest of N, and use the test's own natural reference where it has
+   one (a cache hit against the same test's cold load).
+
+**When a grep for timing turns up a hit, say why it isn't one.** From the 2026-09-19 survey: tick counts
+(`test_control_response`, `test_responsiveness`) are sim time; `test_combat`'s respawn waits on the same `SceneTree` timer
+the game uses (`match.gd`), so both sides move together; a camera test that waits wall-clock for a rotation driven by the
+same process delta is consistent. Those are not exposed.
+
+**Status:** **control complies** — its four timing budgets (frame, order, click, health bars) print `TIMING NOT JUDGED
+(make control-timing judges): …` in `make check`, tagged `[OVER BUDGET]` when they would have failed, and assert only under
+`make control-timing` (`TANK_SQUAD_JUDGE_TIMING=1`, `mk/command.mk`); the pattern is `Fixture.judge_timing` in
+`tests/support/control_fixture.gd`. Positive control: +1 ms in the panel's `summary()` fails `control-timing` and leaves
+`make check` green with the tag. Other streams' timing assertions are still gates (the survey above). `test_theme_factions.gd:63` (cache hit < 5 ms,
+one sample) is routed to feel.
+
+||||||| baf04ead
+
 ## Attributing a behaviour's cost: switch it off (nav, round 7)
 
 The only honest way to say what one mechanism contributes is to **remove it and measure again**, never a
@@ -132,6 +180,42 @@ units so it is. A warning is the invisible-skip failure in another costume.
 Idea from combat, after two of its designator runs measured a different game than it thought and no check caught
 either.
 
+### And the layer above it: a comparison must prove its arms differ (combat, round 7)
+
+A positive control asks *did the treatment engage in this run*. It passes happily on **two arms that are secretly
+the same arm** — and that is not a hypothetical, because arena hit the identical gap the same day in its
+`--swap-bases` fairness tool: it had asserted *which arena*, while the thing that could silently fail was *whether
+the swap applied*. **An assertion about the stage is not an assertion about the experiment.**
+
+**This is what a broken comparison looks like.** It is `tools/compare_arms.py` with its arm-distinguishability
+check removed — the mutation test for that guard:
+
+```
+faction             treatment      control     delta
+gangs                   70% n=20         35% n=20       +0 pts
+law                     35% n=20         35% n=20       +0 pts
+syndicate               45% n=20         45% n=20       +0 pts
+```
+
+Clean, symmetric, well-powered, and completely empty: **the answer you were hoping for, reached by the treatment
+never having happened.** Nobody reading that suspects anything, which is why the guard has to be mechanical.
+`make compare-arms` refuses four things — the same file twice; a different commit, machine, or a dirty tree; a
+different arena, budget, seeds, time limit or faction list; and identical arms.
+
+Two rules fell out of building it:
+
+- **A guard that fires on the good case teaches its user to ignore it.** The output path is *supposed* to differ
+  between two arms, so requiring it to match would refuse every correct comparison.
+- **Assert against what the RUN emitted, not what the caller passed.** A flag is what you asked for;
+  `MATCH_RESULT`'s `controls` is what happened. `compare_arms` compares recorded `args`, so a flag that was
+  accepted, recorded and then silently inert still looks fine to it. **Per comparison, against emitted state, is
+  the version still unbuilt** — the honest edge of all three guards.
+
+**And guards get mutation-checked like anything else — more, not less.** A guard sits on the hot path of every
+future run, and this round shipped one that crashed every run it was added to protect and another whose refusal
+`return 2` was discarded by a bare `main()` call, so it **exited 0 and reported success to make**. Watch the guard
+fail before you trust it.
+
 ## Known flakes
 
 - **net-smoke: `ERROR: Condition "ready_state != STATE_OPEN" is true. Returning: FAILED` in the server log.** Seen on
@@ -169,3 +253,48 @@ either.
 - `web-net-smoke`'s screenshot timing depends on the bot's drive time; if the bot isn't in frame, the check still passes (it only asserts boot + spawn). Look at the picture.
 - Latency and jitter are *injected* (`--relay-latency`, `--relay-jitter`) on localhost; no real cellular link or phone has been measured yet.
 - No input-injection tests yet (keyboard/mouse → `PlayerController`). `ScriptedController` covers the command path; the input map mapping itself is untested.
+
+## Why two tests failed depending on what ran before them (2026-09-19)
+
+**`tests/run_tests.gd` runs every test file in ONE process, sharing one `SceneTree` and every autoload.** The loop is:
+
+```gdscript
+var case: TestCase = script.new()
+case.tree = self          # the SAME SceneTree for every case, all run long
+await case.call(method_name)
+case.teardown()           # isolation is whatever this happens to do
+```
+
+**So isolation is honour-system, per case, and everything in an autoload survives the whole run** — `Pathing`'s baked
+navmesh, `Arena.active`, `Units.tuning`, `GameTheme.slots`, and any node a teardown forgot. **A test's result is therefore
+a function of the order the suite happens to run in, and that order changes whenever anyone adds a file.**
+
+**Two round-7 failures, both in files whose owners had not seen them, both exposed by an unrelated timing change:**
+
+| failure | what it read that the previous test left |
+|---|---|
+| `test_navigation::test_path_goes_around_a_wall` — path goes straight through the wall | `_setup` waits for **`Pathing.is_ready`** — *any* navmesh — so after another test bakes a different arena it paths against **that** mesh. Lesson 87: a readiness check on a property, not an identity. `TacticsLab.navigation_is_this_arenas()` is the fix |
+| `test_units_roster::test_the_catalog_is_where_stats_come_from` — muzzle y **0.26** against catalog **1.12** | the assertion read `turret.GLOBAL_position.y`, so it claimed **both** *the catalog sets the muzzle above the hull* (deterministic) **and** *the hull has settled one physics frame after spawn* (physics, and whatever state the previous test left). The scout was sitting **0.86 m low** |
+
+**`Units.tuning` was the first suspect and was innocent** — it tunes shields, damage and armour, never a muzzle height,
+and clears both dictionaries at the end of its body.
+
+### Two rules from it
+
+1. **One assertion, one claim** (combat). *"A conflated assertion cannot tell you which of its claims broke — the failure
+   gets attributed to whatever changed most recently."* That is precisely how this arrived as a guess about a static in a
+   third stream's file. **If a claim needs the physics world to have settled, say so and give it the frames.**
+2. **Wait on identity, never on a symptom** (arena, lesson 87). *"Every previous fix of mine made the property more
+   specific; only identity ends it."*
+
+### The root cause is NOT fixed, and both fixes above only hide it
+
+**Something earlier in a full run leaves the world in a state where a tank has not settled after one physics frame.**
+combat flagged this rather than claiming closure: its fix makes the symptom invisible to that test. **If nav's navmesh
+case has the same root — a test reading world state a previous test left — finding it is worth more than either fix.**
+
+**Proposed for round 8, NOT now** (`run_tests.gd` is shared and six streams have checks in flight; breaking the runner
+mid-round would stop everybody): **after each `teardown()`, the runner asserts the world is clean** — no leftover tanks in
+the tree, `Arena.active` cleared, `Units.tuning` empty, no baked navmesh — and **FAILS naming the test that leaked**,
+rather than letting the next test inherit it. **A guard, not a documented discipline: today proved that a warning written
+by the stream that later hit it was not enough** (lesson 117).

@@ -182,12 +182,52 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	plan["technique"] = "traveling"
 	plan["arrived"] = center.distance_to(destination) <= ARRIVE_M
 	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
+	# Sent once means SEATED once: when everyone has been sent to their final slot (the flow joined, or no flow) the
+	# seating stands. A CPU crew fights from within its slot's leash and drifts ~10 m off it; left to "saves real
+	# driving", the seating re-shuffled around the drift and re-ordered idle units (round 7: the CPU five-squad test).
+	var joined: bool = not FLOW_ENABLED or bool(state.get("flow_joined", false))
 	_group(plan, slot_order(situation), String(plan["formation"]), destination, plan["heading"],
-			table.spacing(String(situation["terrain"])), "move")
+			table.spacing(String(situation["terrain"])), "move", "", false, holding and joined)
 	if told is Vector3:
 		# A facing the player chose is everyone's facing, not the formation's all-round sectors.
 		for unit_name: String in plan["sectors"]:
 			plan["sectors"][unit_name] = 0.0
+	_flow(plan, situation, state)
+
+
+## Round 7: the element FLOWS into formation on the way, not only at the end (the lead's "formula to form up", its
+## visible half). The leader drives to its own slot; every other member follows the leader at its slot's offset from the
+## leader's (K1 `follow` with a `slot`, in the leader's frame): its goal slides with the leader every tick, so nav's PID
+## keeps station on it. Within FLOW_JOIN_M of its slot the leader is nearly there, and everyone is sent to their fixed
+## final slot once (so the element goes quiet on arrival, X4). FLOW_ENABLED is the A/B switch.
+static var FLOW_ENABLED := true
+const FLOW_JOIN_M := 15.0
+
+
+static func _flow(plan: Dictionary, situation: Dictionary, state: Dictionary) -> void:
+	var leader := String(plan.get("leader", ""))
+	# Once the element has joined its final slots for this task it never flows again: a leader fighting near its slot
+	# drifts in and out of FLOW_JOIN_M, and toggling follow <-> move would re-order everyone (the CPU five-squad test
+	# caught 6 idle orders). A new task clears it (Element.assign).
+	plan["flow_joined"] = bool(state.get("flow_joined", false))
+	if not FLOW_ENABLED or plan["flow_joined"] or leader == "" or not (plan["seats"] as Dictionary).has(leader):
+		return
+	var at := {}
+	for member: Dictionary in situation.get("members", []):
+		at[String(member["name"])] = member["position"]
+	if not at.has(leader) or (at[leader] as Vector3).distance_to(plan["slots"][leader]) <= FLOW_JOIN_M:
+		plan["flow_joined"] = true
+		return
+	var heading: Vector3 = plan["heading"]
+	var right := Vector3(-heading.z, 0.0, heading.x)
+	var lead_slot: Vector3 = plan["slots"][leader]
+	for unit_name: String in plan["slots"]:
+		if unit_name == leader:
+			continue
+		# The final slot relative to the leader's, as [right, back] in the formation's frame (the follow frame).
+		var offset: Vector3 = (plan["slots"][unit_name] as Vector3) - lead_slot
+		plan["orders"][unit_name] = {"verb": "follow", "to": null, "target": leader,
+				"slot": [offset.dot(right), -offset.dot(heading)]}
 
 
 ## Bounding overwatch: one half moves, the other covers it by fire, then they swap. A bound never goes
@@ -570,13 +610,14 @@ static func _hold(plan: Dictionary, members: Array, situation: Dictionary, facin
 ## leader keeps the point, armour goes where the fire comes from, nobody's path crosses another's, and last
 ## update's seating stands unless a new one saves real driving).
 ## `halt` puts every crew on its sector of fire instead of the direction of travel.
+## `fixed` keeps last update's seating whatever it costs (a plain move standing on its spot).
 static func _group(plan: Dictionary, members: Array, formation: String, anchor: Vector3, heading: Vector3,
-		spacing: float, verb: String, target := "", halt := false) -> void:
+		spacing: float, verb: String, target := "", halt := false, fixed := false) -> void:
 	if members.is_empty():
 		return
 	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing,
 			{"leader": String(plan.get("leader", "")), "policy": "exposure",
-			"previous": _previous_seating(plan, members, formation)})
+			"previous": _previous_seating(plan, members, formation), "fixed": fixed})
 	for entry in placed:
 		var name := String(entry["unit"])
 		var spot: Vector3 = entry["to"]

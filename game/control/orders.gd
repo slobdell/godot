@@ -54,6 +54,31 @@ var _next_id := 1
 var _stations := {}
 
 
+## Contract M4: how far inside the wall's inner face a hull may be sent. The old square clamp was the wall (120) minus
+## this, Match.DRIVABLE_LIMIT = 116, so on a square arena `clamp_to_arena` is exactly the old clamp.
+const WALL_CLEARANCE_M := 4.0
+## Contract M4: the nearest place a hull can be sent, for any arena shape - arena's nearest-boundary clamp (control's
+## choice: clicking past the wall puts the unit against the wall nearest the click) WALL_CLEARANCE_M inside the wall,
+## then out of water and pits by arena's own Arena.clamp_into. Replaces clampf(..., DRIVABLE_LIMIT), which on a hexagon
+## admits points 164 m out on the diagonal. No layout (a bare test world): the old square clamp.
+static func clamp_to_arena(point: Vector3) -> Vector3:
+	var data: Dictionary = Arena.active
+	if data.is_empty():
+		return Vector3(clampf(point.x, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT), point.y,
+				clampf(point.z, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT))
+	var kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+	var bound := float(data.get("half_size", Match.ARENA_HALF_SIZE))
+	# The polygon inset by the clearance is the same regular polygon scaled by 1 - clearance / apothem, so clamp to that
+	# copy. NOT ArenaShape.clamp_into's `margin`: near a corner it projects onto the corner and pushes along one edge's
+	# normal, leaving the point on the neighbouring edge with no clearance ((130, 130) -> (116, 120) on the square), and
+	# clamping again returns the same point.
+	var sides := ArenaShape.sides(kind)
+	var apothem := ArenaShape.circumradius(kind, bound) * cos(PI / float(sides))
+	var inset := bound * maxf(1.0 - WALL_CLEARANCE_M / maxf(apothem, 0.001), 0.0)
+	var flat := ArenaShape.clamp_into(kind, inset, Vector2(point.x, point.z))
+	return Arena.clamp_into(Vector3(flat.x, point.y, flat.y), data)
+
+
 func _init(p_match: Match = null) -> void:
 	game_match = p_match
 
@@ -121,12 +146,14 @@ func issue(command: Variant, team: int = -1) -> String:
 			"formation": String(command.get("formation", UnitCommand.AUTO)), "issued_tick": _tick(),
 			"source": String(command.get("source", ""))}
 	if command.has("to"):
-		base["to"] = [clampf(float(command["to"][0]), -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT),
-				clampf(float(command["to"][1]), -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT)]
+		var to := Orders.clamp_to_arena(Vector3(float(command["to"][0]), 0.0, float(command["to"][1])))
+		base["to"] = [to.x, to.z]
 	if target != null:
 		base["target"] = String(target.name)
 	if command.has("facing"):
 		base["facing"] = command["facing"]
+	if command.has("slot"):
+		base["slot"] = [float(command["slot"][0]), float(command["slot"][1])]
 	var per_unit := _resolve_group(base, names, queued)
 	for unit_name: String in names:
 		var order: Dictionary = per_unit[unit_name]
@@ -278,6 +305,9 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 	elif verb == "follow":
 		slots = GroupFormation.follow_slots(tanks)
 		formation = "rows" if tanks.size() > 1 else "single"
+		# Round 7 (K1): an element's follower names its own place in the leader's frame.
+		if base.has("slot") and names.size() == 1:
+			slots = {names[0]: Vector2(float(base["slot"][0]), float(base["slot"][1]))}
 	var facing: Array = []
 	if base.has("facing"):
 		var direction := Vector2(float(base["facing"][0]), float(base["facing"][1])).normalized()
@@ -293,8 +323,8 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 			order["slot"] = [slot.x, slot.y]
 		if anchor != null:
 			var goal := Formations.to_world(anchor, heading, slots[unit_name])
-			order["goal"] = [clampf(goal.x, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT),
-					clampf(goal.z, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT)]
+			goal = Orders.clamp_to_arena(goal)
+			order["goal"] = [goal.x, goal.z]
 			order["heading"] = [heading.x, heading.z]
 		elif verb == "hold":
 			order["goal"] = [tanks[i].global_position.x, tanks[i].global_position.z]

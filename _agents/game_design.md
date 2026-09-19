@@ -424,6 +424,19 @@ stack first, then the layer that commands it, then how the player reads and issu
   middle. arena's sentence, which is the round's sharpest statement of the risk:
   > *"If N7 lands and objectives stay central, the gates will have made flanking pay in a game that still gives no
   > reason to flank."*
+  **⚠ TWO CORRECTIONS to how this gets summarised (combat, X7, 2026-09-19, from
+  `references/combat/n5-engagement-envelope-2026-09-18.json`, builder0 at `fa4e7077`, n=15 per arm against the TRUE
+  round-5 control):**
+  1. **Quote the STRICT measure, 25.7% → 45.5%, which is what "off-axis kills" above already is.** A looser hull-face
+     measure reads **68.6%**, and it flatters us: **an oblique shot across a wide front registers as a "side" hit without
+     anyone having flanked anything.** So the honest claim is *"flank and rear kills rose from a quarter to just short of
+     half"*, **not "a majority of kills are now flanking"**. Rear kills alone 11.2% → 20.8%.
+  2. **N5 did NOT make the battle more mobile, and the natural summary saying so is FALSE.** Centroid travel moved
+     236.8 → 248.1 m, about **5%, inside the noise of a 15-match arm** — **the armies moved this much before the
+     engagement envelope existed.** So the flanking gain is **a change in how kills happen within an engagement at the
+     same amount of movement**, not more manoeuvre. combat flagged this unprompted because *"it is the kind of thing that
+     gets repeated once written."*
+
   The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
   changes should compound rather than merely coexist.
 - **THE GANGS' 23% IS GONE — 53%, joint best, and nobody tuned them** (60 matches, 5 seeds per pairing,
@@ -447,9 +460,29 @@ stack first, then the layer that commands it, then how the player reads and issu
   ordered, 30 Hz, Jolt and all of CP4 — so **the directive bug is an unexcluded candidate, not a demonstrated cause, and
   neither is the mechanics story below.** combat has retracted its own attribution in `balance.md` at `0c1fb760`, in
   place, keeping the measurement and striking the cause. **Read the explanation below as one of two candidates.**
-  **What settles it is an ablation, not an argument** (lesson 25 — attribute a cost by *removing* the behaviour):
-  **delete the `gangs/scout` entry on the current build and re-run the matrix.** Collapse toward 23% means the directive
-  did the work; holding near 53% means the mechanics explanation survives. Scheduled after the per-map designator runs.
+  **⚠ ABLATION RUN, AND IT CANNOT ANSWER THE QUESTION — so both numbers are RETIRED rather than explained** (combat,
+  builder0 at `f745f48a`, n=30 per faction per arm, per map, never pooled; positive control fired in all four arms —
+  21 sides fielded a designator, 535/559/758/656 paints; `compare_arms` accepted both subtractions):
+
+  | faction | boulevard (0.64) | yard (0.20) | treated? |
+  |---|---|---|---|
+  | **gangs** | **+7 pts** | **+7 pts** | **yes — the only one** |
+  | law | −7 pts | −10 pts | no |
+  | condemned | +3 pts | +0 pts | no |
+  | syndicate | −3 pts | +3 pts | no |
+
+  **`gangs/scout` is the only faction-keyed entry in `Army.SQUADS`, so every other row measures what an UNTREATED faction
+  does between two arms — and law moved −10 points without being touched, larger than the gangs' +7.** The noise floor is
+  not an argument; it is in the table, measured by factions that received no treatment. SE of a difference of win rates at
+  n=30 is **12.9 points**.
+  **The direction is consistent** (the gangs are worse without their directive on both an open and a closed map) **and it
+  is an order of magnitude short of explaining 23% → 53%.** So **neither CP4 nor the `gangs/scout` fix is established as
+  the cause, and combat claims none of it.**
+  **Most likely the original comparison was never a comparison** — different builds and, on this project's own foundry
+  finding, plausibly different maps. **That is exactly the subtraction `compare_arms` now refuses and could not refuse
+  then.** Resolving ±7 points would need ~n=400 per faction per arm — about SEEDS=70 and four hours of builder0 — for an
+  effect smaller than any balance difference the lead would notice. **Decision: do not chase it. The two numbers are
+  retired.**
   **And the 23% itself was not a false number** — combat's correction, which is the sharper point: *a build in which 15
   assault vehicles sit at standoff spotting while the swarm dies really does win 23%.* **The error was treating a
   measurement of a configuration as a fact about a faction** — the same error as reading a foundry number as a property
@@ -785,6 +818,50 @@ wants cannot be produced by geometry alone.** It needs something worth taking th
   non-zero *and* combat's falsification test shows unit-time actually spent on the expensive route. Either alone is
   decoration.
 
+**FIRST MAPS ABOVE ZERO (arena, 2026-09-19).** A mirrored objective pair authored on both maps the lead kept:
+
+| arena | decision spread | `centre_sees_share` |
+|---|---|---|
+| **yard** | **0.00 → 0.35** | 0.20 (unchanged) |
+| **pit** | **0.00 → 0.26** | 0.30 (unchanged) |
+
+**Each pair gives a side one objective it holds cheaply and one it must contest** — which is the lead's *"compelling
+reason to cross the bridge"* expressed as geometry plus reward rather than geometry alone.
+
+**And `centre_sees_share` did not move on either map, which is what should happen:** objectives change what is *worth
+reaching*, not what can be *seen*. **Two axes behaving independently is the first evidence that splitting them was the
+right model** — openness and reason are separate design knobs, and a map can now be tuned on one without disturbing the
+other.
+
+**SHIPPED AND VERIFIED (arena, 2026-09-19). Both maps the lead kept are now HEXAGONS at the 140 m bound, and both pose
+a question:**
+
+| | shape | `centre_sees_share` | decision spread |
+|---|---|---|---|
+| **yard** | hexagon @ 140 | 0.20 | **0.43** |
+| **pit** | hexagon @ 140 | 0.30 | **0.42** |
+
+**A real 120 s match on each: zero `Objectives` errors (was 35,336), zero `ERROR` lines of any kind, winner declared.**
+
+**⚠ AND DECISION SPREAD IS NOT A QUANTITY TO MAXIMISE.** pit needed re-tuning rather than re-enabling: coordinates chosen
+for the 240 m square gave **0.13** in the hexagon, because the arena grew and the distances that made one objective
+contested stopped being asymmetric. A placement sweep:
+
+```
+z = -30 -> 0.13      z = -50 -> 0.42      z = -60 -> 0.63      z = -70 -> 0.96
+```
+
+**0.96 is not a better map.** It means one objective is nearly free and the other nearly impossible — **a formality
+rather than a choice** — and at z = −70 it sits in the base's approach funnel, **which is the boulevard failure this
+project already wrote a placement rule against.** Both shipping pairs sit near **0.4**, and the reasoning is in
+`objective_pair`'s docstring so the next author does not read the number as a score to beat.
+
+**⚠ HELD BACK, NOT SHIPPED.** A real match on the paired yard fired squad's `Objectives` guard **35,336 times**: *"the
+arena declares an objective other than the single central zone; squad's deciders still read `Match.CONTROL_CENTER`."*
+**The match completed and produced a winner while the deciders competed for the wrong ground throughout** — degraded,
+not fatal, which is the worse of the two. **The pairs land when squad migrates `game/tactics/objectives.gd` onto N7's
+instance API**; the coordinates and measured effect sit in `make_arenas.py` as a one-line re-enable.
+
 **The metric needed no build slot and no other stream**, which is worth noting for its own sake: the most important
 design finding of the day came from writing down a number nobody had asked for.
 
@@ -848,6 +925,48 @@ What follows for map authoring, and these are testable claims rather than taste:
    funnelling crossings onto bridges are the reason-half and the risk-half of the same change, and measuring either
    alone will under-read it — exactly as combat's series under-read N5 until its control disabled the gates as well as
    the bands (lesson 62).
+
+## Round 8 direction: the lead's playtest of round 7 (2026-09-19, late)
+
+> *"ok I just did a quick game and I can see there are improvements but it still sucks. First, the gang tanks are still
+> tiny (the intent for the semi trucks is that they're huge - we'll worry about evening up factions later). And on the
+> navigation from, they still generally don't do what I command them. On the navigation from, units are still just
+> getting stuck behind basic barriers where they seem to just move back and forth indefinitely trying to get unstuck. I
+> also don't know how easy this is to do or if we should shelve it for later but the gang semi trucks don't actually
+> behave like a semi truck with a truck and a trailer - both components just move together. I can also see that the semi
+> trucks are yawing in place (should be impossible, they're not a tracker vehicle). ANother obvious problem right now in
+> make skirmish is that not all units belong to a squad. There seem to be orphaned units that don't get selected at all
+> when I cycle through the numbers on my keyboard (1, 2, 3, 4...). I'm also testin just telling a group of units to
+> attack a single unit, but they don't obey and instead they shoot at whatever they were already shooting at. Also, of
+> the algorithms we identified earlier, which ones are actually implemented now?"*
+
+**"It still sucks" is the headline and everything below is subordinate to it.** Round 7 merged seventeen branches and he
+still cannot command his units. **Improvements he can see did not change the verdict.**
+
+### The eight items, with what is already known about each
+
+1. **THE SEMI IS STILL TINY, AND SIZE IS NOT A BALANCE QUESTION.** *"the intent for the semi trucks is that they're huge
+   — we'll worry about evening up factions later."* combat measured 4.4 m against the scout's 1.4 m — **3.14×, inside the
+   3–4× band he named in round 6** — and he says it is still wrong. **So the measurement satisfied the number he gave and
+   not the intent behind it.** He has now explicitly removed balance as a constraint on this. **Do not defend 3.14× with
+   the round-6 quote; make it huge.**
+2. **"They still generally don't do what I command them."** The round's central claim, unmoved by facing (2/30 → 27/30),
+   the standoff, the order pins and commitment.
+3. **UNITS STUCK BEHIND BASIC BARRIERS, "moving back and forth indefinitely trying to get unstuck."** nav measured
+   blocked-by-terrain to **zero** in `nav-fight`; he sees it in `make skirmish`. **The instrument and the game disagree,
+   and the game is right** — this is lesson 23's shape: a number taken in a configuration the player does not get.
+4. **The semi is not articulated** — tractor and trailer move as one body. He explicitly offers to shelve it: *"I don't
+   know how easy this is to do or if we should shelve it for later."*
+5. **⚠ THE SEMI YAWS IN PLACE, "should be impossible, they're not a tracker vehicle."** This is a *class* bug and nav has
+   already measured its neighbour: `TankMotion.step_in_place` pivots a hull about its own centre, **which nav called
+   "right for tracks"** — and it is applied to wheeled hulls too. **A wheeled vehicle must not rotate without translating.**
+6. **ORPHANED UNITS: not every unit belongs to a squad**, so cycling 1–4 never selects them. **A player cannot command
+   what he cannot select**, which makes this a direct cause of item 2.
+7. **A GROUP ORDERED TO ATTACK ONE UNIT KEEPS SHOOTING WHAT IT WAS ALREADY SHOOTING.** An explicit target order is the
+   most direct command in the game and it is being ignored. **Round 6's `test_a_move_order_beats_every_brain_state` has a
+   sibling that does not exist for attack.**
+8. **"Of the algorithms we identified earlier, which ones are actually implemented now?"** — answered from
+   [algorithms.md](algorithms.md), which is the file that exists to answer exactly this.
 
 ### THE ROUND'S HEADLINE: the units are still not smart enough (lead, 2026-09-19)
 
@@ -966,6 +1085,21 @@ independently without either seeing the whole:**
 brain ignored it. **Three independent failures of one feature, none of which any test noticed**, because nothing asserted
 the *outcome* — that a unit told to face a direction ends up facing it. That is lesson 47's shape again: a guarantee no
 test isolates.
+
+**MEASURED AFTER THE FIX (nav, on squad's `bfcc2607`, builder0, yard, 30 player units in 5 squads each ordered to face
+90° off their direction of travel — same probe and same configuration as the "before"):**
+
+| units within 15° of the ordered facing | before | after |
+|---|---|---|
+| **MOVE + facing**, at +10 s | **2/30** | **27/30** (median **1.6°**; 20/30 already at +2 s, 24/30 at +5 s) |
+| **HOLD + facing**, at +10 s | **1/29** | **21/30** (median **5.5°**; 15/30 at +2 s, 18/30 at +5 s) |
+
+**For the lead, in one line: an ordered facing now actually happens, within seconds, for about 9 in 10 units on a move.**
+
+**The remaining tail is named rather than hidden:** move leaves 3 units off after 10 s (worst **136°**), hold leaves 9 off
+(worst **73°**). **Hold settles slower and less completely than move**, and nav's hypothesis is that **wheeled units cannot
+pivot** — a car rolls round at `WHEELS_MIN_THROTTLE` instead of turning on the spot — or that units are still settling onto
+their position. nav owns the execution of *face* and will diagnose the tail after the commitment A/B.
 
 **Why this matters beyond the complaint:** round 6 made facing *mechanically* real in four places — armour facing, the
 crossing-acquisition penalty, support-by-fire arcs, `UnitCommand.facing`. **All four were operating on a quantity the

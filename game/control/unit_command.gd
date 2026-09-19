@@ -12,6 +12,8 @@ extends RefCounted
 ##    "formation": "auto" | Formations.NAMES,  how a group arranges itself (default auto: by role and situation)
 ##    "facing": [x, z],                      optional, move / attack_move / hold: which way to face once there (round 5,
 ##                                           for doctrine's halts); the group still travels and forms up toward `to`
+##    "slot": [right, back],                 optional, follow, ONE unit: its place in the target's frame (round 7, for
+##                                           elements flowing into formation: a live sliding goal, see Orders.goal_of)
 ##    "source": "player" | "element" | ""}   who asked (optional): the response guarantee and the playtest's
 ##                                           measurements are about the player's orders, not a leader's
 ##
@@ -21,7 +23,7 @@ extends RefCounted
 const VERBS := ["move", "attack", "attack_move", "follow", "hold", "stop"]
 const NEEDS_TO := ["move", "attack_move"]
 const NEEDS_TARGET := ["attack", "follow"]
-const KEYS := ["units", "verb", "to", "target", "queue", "formation", "source", "facing"]
+const KEYS := ["units", "verb", "to", "target", "queue", "formation", "source", "facing", "slot"]
 const TAKES_FACING := ["move", "attack_move", "hold"]
 const SOURCES := ["player", "element", ""]
 const AUTO := "auto"
@@ -73,6 +75,14 @@ static func validate(command: Variant) -> String:
 		if typeof(facing) != TYPE_ARRAY or (facing as Array).size() != 2 or not _finite(facing[0]) or not _finite(facing[1]) \
 				or Vector2(float(facing[0]), float(facing[1])).length() < 0.001:
 			return "'facing' must be a direction [x, z] that isn't zero"
+	if command.has("slot"):
+		var slot: Variant = command["slot"]
+		if verb != "follow":
+			return "'slot' only goes with follow"
+		if typeof(command.get("units")) == TYPE_ARRAY and (command["units"] as Array).size() != 1:
+			return "'slot' is one unit's place: give it to one unit"
+		if typeof(slot) != TYPE_ARRAY or (slot as Array).size() != 2 or not _finite(slot[0]) or not _finite(slot[1]):
+			return "'slot' must be [right, back] in meters"
 	if command.has("source") and not SOURCES.has(command["source"]):
 		return "'source' must be one of %s" % ", ".join(SOURCES.map(func(s: String) -> String: return "'%s'" % s))
 	return ""

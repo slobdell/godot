@@ -24,6 +24,46 @@ func _init(p_test: TestCase) -> void:
 	test = p_test
 
 
+## The yardstick for timing budgets (round 7): a fixed piece of GDScript work of the UI's kind (dictionary writes, vector
+## maths), timed next to the work under test. A loaded machine - builder0 runs six to nine checks at once in a round -
+## slows both, so a budget stated as a multiple of it means the same on any machine at any load; a real regression
+## slows only the work. Time each with `fastest_ms`, interleaved.
+static func reference_work() -> void:
+	var seen := {}
+	for i in 600:
+		seen[i % 64] = Vector3(float(i), 0.0, -float(i)).length() + float(i)
+
+
+## Policy (verification.md, "Timing in tests"): `make check` MEASURES timing and never judges it - six to nine checks
+## share builder0, and a fully oversubscribed CPU inflated the order path 14x against a 2x reference. `make
+## control-timing` (TANK_SQUAD_JUDGE_TIMING=1), run on purpose on an idle builder0, is where these budgets assert.
+static func judging_timing() -> bool:
+	return OS.get_environment("TANK_SQUAD_JUDGE_TIMING") == "1"
+
+
+## Assert a timing budget when judging; otherwise print it as a measurement, marked NOT JUDGED (and whether it would
+## have failed), so a timing line in make check is never mistaken for a pass.
+static func judge_timing(test: TestCase, within: bool, message: String) -> void:
+	if judging_timing():
+		test.assert_true(within, message)
+	else:
+		print("TIMING NOT JUDGED (make control-timing judges): %s%s" % [message, "" if within else "  [OVER BUDGET]"])
+
+
+## The fastest of `rounds` calls of `work` and of the reference, interleaved: [work_ms, reference_ms].
+static func fastest_ms(work: Callable, rounds: int) -> Array[float]:
+	var best := INF
+	var reference := INF
+	for i in rounds:
+		var started := Time.get_ticks_usec()
+		reference_work()
+		reference = minf(reference, (Time.get_ticks_usec() - started) / 1000.0)
+		started = Time.get_ticks_usec()
+		work.call()
+		best = minf(best, (Time.get_ticks_usec() - started) / 1000.0)
+	return [best, reference]
+
+
 ## Build everything; `executor` = false leaves units to their brains (pure input tests).
 func build(with_executor := true) -> void:
 	var tree := test.tree
@@ -69,6 +109,7 @@ func build(with_executor := true) -> void:
 	controls.camera = camera
 	controls.rig = rig
 	controls.reveal_all = true  # no visibility field here: every enemy counts as seen
+	controls.range_frame = 0.0  # round 7's range framing is tested on its own (test_control_facing_camera)
 	test.add_to_tree(controls)
 	markers = EdgeMarkers.new()
 	markers.controls = controls

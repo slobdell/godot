@@ -92,3 +92,33 @@ func test_a_full_refresh_is_cheap_enough() -> void:
 	var ms := (Time.get_ticks_usec() - started) / 1000.0
 	print("MEASURE g1_visibility_refresh 5 viewers %.1f ms (spread over %d ticks in play)" % [ms, VisibilityField.REFRESH_TICKS])
 	assert_true(ms < 200.0, "a full 5-tank refresh stays well under a frame budget spread over %d ticks (%.1f ms)" % [VisibilityField.REFRESH_TICKS, ms])
+
+
+func test_the_field_sizes_to_the_loaded_arena_not_to_the_bound() -> void:
+	# X3 (round 7): Match.ARENA_HALF_SIZE became a BOUND (140) rather than a size, so anything that sizes itself
+	# from it now covers the largest arena that could ever load instead of the one that did. For the fog field that
+	# is not a correctness bug -- brains never read it -- it is a silent cost: a 120 m map would carry a 280 x 280
+	# grid, 36% more cells filled and uploaded every refresh, every one of the extra cells outside the walls.
+	#
+	# This is the test that would have failed before the change, and it is written against the RATIO rather than
+	# against 120 or 140, so it keeps meaning the same thing the next time either number moves.
+	var saved := Arena.active
+	var loaded := Arena.load_layout("foundry")
+	assert_true(loaded.has("layout"), "foundry loads")
+	Arena.active = loaded["layout"]
+	var half := float(Arena.active["half_size"])
+	assert_true(half < Match.ARENA_HALF_SIZE, "the fixture is a layout SMALLER than the bound (%.0f < %.0f)"
+			% [half, Match.ARENA_HALF_SIZE])
+
+	var game_match := _setup()
+	var field := _field(game_match)
+	await wait_physics_frames(1)
+	assert_eq(field.cells, ceili(half * 2.0 / VisibilityField.CELL_SIZE),
+			"the grid spans the LOADED arena, not the bound")
+	assert_near(field.origin.x, -half, 0.01, "and cell (0,0) starts at the layout's own edge...")
+	assert_near(field.origin.y, -half, 0.01, "...on both axes")
+	# The corners must still map inside the grid, or the saving would have come out of the playable area.
+	var corner := field.world_to_cell(Vector3(half - 1.0, 0.0, half - 1.0))
+	assert_true(corner.x >= 0 and corner.x < field.cells and corner.y >= 0 and corner.y < field.cells,
+			"a point just inside the far corner is still a cell in the grid (%s of %d)" % [corner, field.cells])
+	Arena.active = saved

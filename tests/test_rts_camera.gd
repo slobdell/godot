@@ -245,6 +245,19 @@ func test_tilt_is_its_own_axis() -> void:
 ## the grandstand, and the railing and crowd hide the squad (seen in `make shell-playtest` at 50 s). The camera cuts
 ## away whatever stands between it and the wall: its near plane sits just short of where the wall meets the floor.
 func test_a_camera_past_the_wall_cuts_away_the_stands_between() -> void:
+	# The SQUARE fallback (`half`): clear the perimeter statics, which any rig set up on an arena that publishes a
+	# perimeter (arena, round 7) leaves filled for the rest of the run - test_radar's outline test went red on exactly
+	# this (main 5cc17ee6).
+	var saved_poly := RtsCamera.perimeter_poly
+	var saved_edges := RtsCamera.perimeter_edge_data
+	RtsCamera.perimeter_poly = PackedVector2Array()
+	RtsCamera.perimeter_edge_data = []
+	_the_square_cutaway()
+	RtsCamera.perimeter_poly = saved_poly
+	RtsCamera.perimeter_edge_data = saved_edges
+
+
+func _the_square_cutaway() -> void:
 	var half := 121.0
 	# In the middle of the arena, nothing to cut: the default near plane.
 	assert_eq(RtsCamera.cutaway_near(Vector3.ZERO, 0.0, 50.0, 25.0, half), RtsCamera.NEAR_DEFAULT, "mid-arena: no cutaway")
@@ -281,8 +294,10 @@ func test_a_camera_past_the_wall_cuts_away_the_stands_between() -> void:
 	assert_true(among.origin.z > half + 2.0 and among.origin.z < half + 24.0, "setup: the camera is in the stands (%.1f)" % among.origin.z)
 	assert_true(RtsCamera.cutaway_near(close, 0.0, 46.0, 12.0, half) > RtsCamera.NEAR_DEFAULT, "a camera among the seats cuts them")
 	# From far out and high up the stands hide nothing: they stay (with their crowd) instead of a black void.
+	# 40°, not 30°: at 30° feel's StandsProfile (the kit itself: 9.64 m from 4.2 m out) rises 0.4 m into the sight line
+	# to a vehicle 4 m inside the wall. The hand measurement (7 m at 2.3 m) had put the front of the stands too low.
 	var mid := Vector3(0, 0, 60.0)
-	assert_eq(RtsCamera.cutaway_near(mid, 0.0, 150.0, 30.0, half), RtsCamera.NEAR_DEFAULT,
+	assert_eq(RtsCamera.cutaway_near(mid, 0.0, 150.0, 40.0, half), RtsCamera.NEAR_DEFAULT,
 			"a high camera beyond the stands keeps them as foreground")
 	assert_true(RtsCamera.cutaway_near(mid, 0.0, 150.0, 12.0, half) > RtsCamera.NEAR_DEFAULT,
 			"a low one looking through them cuts them")
@@ -312,3 +327,68 @@ func test_the_camera_can_be_found_by_hand_and_copied() -> void:
 	assert_true(readout.lines()[0].contains("FOV %d°" % roundi(RtsCamera.MIN_FOV_DEG)), "the readout shows the live values (%s)" % readout.lines()[0])
 	assert_true(readout.lines()[1].contains("P copy pose"), "and the keys")
 	RtsCamera.fov = RtsCamera.FOV_DEG  # a static: leave it as the other tests expect
+
+
+## Round 7: with the arena's own perimeter (arena's Arena.perimeter / perimeter_edges), the cutaway crosses that polygon,
+## and the span of wall it crosses says what stands behind it.
+func _hexagon(apothem: float) -> PackedVector2Array:
+	# Flat sides north and south (vertices at k*60°: the edge from 60° to 120° is flat across +z).
+	var radius := apothem / cos(PI / 6.0)
+	var poly := PackedVector2Array()
+	for k in 6:
+		var angle := deg_to_rad(60.0 * k)
+		poly.append(Vector2(cos(angle), sin(angle)) * radius)
+	return poly
+
+
+func test_the_cutaway_follows_the_arenas_own_perimeter() -> void:
+	var poly := _hexagon(121.0)
+	var edges: Array = []
+	for i in poly.size():
+		var length := poly[i].distance_to(poly[(i + 1) % poly.size()])
+		edges.append({"wall_height_m": 3.0, "spans": [{"kind": "stands", "from_m": 0.0, "to_m": length}]})
+	# The south side (the edge crossing +z at its middle) has a stretch with nothing behind it in the middle.
+	var south := -1
+	for i in poly.size():
+		var mid := (poly[i] + poly[(i + 1) % poly.size()]) / 2.0
+		if mid.y > 100.0:
+			south = i
+	var length := poly[south].distance_to(poly[(south + 1) % poly.size()])
+	edges[south]["spans"] = [{"kind": "stands", "from_m": 0.0, "to_m": length / 2.0 - 10.0},
+			{"kind": "none", "from_m": length / 2.0 - 10.0, "to_m": length / 2.0 + 10.0},
+			{"kind": "stands", "from_m": length / 2.0 + 10.0, "to_m": length}]
+	var saved_poly := RtsCamera.perimeter_poly
+	var saved_edges := RtsCamera.perimeter_edge_data
+	RtsCamera.perimeter_poly = poly
+	RtsCamera.perimeter_edge_data = edges
+	var hit := RtsCamera.perimeter_crossing(Vector2(0, 60), Vector2(0, 1))
+	assert_near(float(hit["reach"]), 61.0, 0.01, "looking south from z=60, the wall is 61 m away (apothem 121)")
+	assert_eq(String(hit["kind"]), "none", "through the middle of the south side, nothing stands behind it")
+	var aside := RtsCamera.perimeter_crossing(Vector2(-40, 60), Vector2(0, 1))
+	assert_eq(String(aside["kind"]), "stands", "40 m to the side, the stands do")
+	# A low camera near the south wall: cut where the stands are; where only the wall is, the plane still clears it.
+	var focus_stands := Vector3(-40, 0, 111)
+	var near_stands := RtsCamera.cutaway_near(focus_stands, 0.0, 50.0, 21.0, 999.0)
+	assert_true(near_stands > RtsCamera.NEAR_DEFAULT, "behind the stands the camera cuts them (near %.1f)" % near_stands)
+	# A diagonal side: the polygon, not a square, decides where the wall is.
+	var diagonal := RtsCamera.perimeter_crossing(Vector2.ZERO, Vector2(1, 1).normalized())
+	assert_true(float(diagonal["reach"]) < 121.0 * sqrt(2.0) - 1.0, "a diagonal wall is nearer than the square's corner (%.0f m)" % diagonal["reach"])
+	RtsCamera.perimeter_poly = saved_poly  # restore, not blank: whatever the run had is the next test's business
+	RtsCamera.perimeter_edge_data = saved_edges
+
+
+## Round 7: the cutaway reads the stands from feel's StandsProfile (computed from the kit the dressing places) when the
+## build has it, and falls back to the hand measurement only when it does not (lesson 66: a derived value copied).
+func test_the_cutaway_reads_the_stands_from_the_venue_itself() -> void:
+	RtsCamera._stands = []
+	var profile := RtsCamera.stands_profile()
+	if ResourceLoader.exists(RtsCamera.STANDS_PROFILE_SCRIPT):
+		var derived: PackedVector2Array = (load(RtsCamera.STANDS_PROFILE_SCRIPT) as Script).call("points")
+		assert_eq(profile, Array(derived), "the camera uses the profile derived from the kit")
+	else:
+		assert_eq(profile, RtsCamera.STANDS_PROFILE, "without StandsProfile, the hand measurement")
+	assert_eq(profile[0], Vector2(2.0, 3.0), "either way it starts at the wall's top")
+	var tallest := 0.0
+	for point: Vector2 in profile:
+		tallest = maxf(tallest, point.y)
+	assert_near(tallest, 15.7, 0.3, "and reaches the grandstand's 15.7 m")

@@ -73,3 +73,71 @@ func test_brains_go_take_a_center_they_dont_hold() -> void:
 	assert_eq(TankBrain.label(TankBrain.decide(s, {})["choice"]), "CONTEST", "ours but I'm outside: come hold it")
 	s["control"] = null
 	assert_eq(TankBrain.label(TankBrain.decide(s, {})["choice"]), "ADVANCE", "without a control point, nothing changes")
+
+
+# ---- N7 (round 6): the match is fought over the LAYOUT's objectives ----------------------
+# Why this contract exists, from CP4's decomposition: the gates (sight, acquisition) moved kill distance -11 m and
+# off-axis kills +17 points where the effective bands moved them -3 m and +2 -- and a SINGLE CENTRAL objective is the
+# terrain-level version of the same problem, because it collapses the space in which acquisition and flanking can
+# matter at all. The 45% off-axis kills were measured *despite* one central control point on every map.
+
+func _two_objectives(game_match: Match, apart: float) -> void:
+	game_match.objectives = [
+		{"name": "west", "position": Vector3(-apart, 0.0, 0.0), "radius": 16.0, "owner": -1, "progress": 0.0},
+		{"name": "east", "position": Vector3(apart, 0.0, 0.0), "radius": 16.0, "owner": -1, "progress": 0.0}]
+
+
+func test_a_layout_without_objectives_still_gets_the_one_central_zone() -> void:
+	# The read-through's whole claim: no shipped arena changes. `--control` is a MATCH flag, not a layout property,
+	# so a layout that declares nothing must still get exactly the zone this file used to hard-code.
+	var game_match := _setup()
+	await wait_physics_frames(2)
+	assert_eq(game_match.objectives.size(), 1, "exactly one objective")
+	assert_eq(game_match.objectives[0]["position"], Match.CONTROL_CENTER, "at the arena centre")
+	assert_near(float(game_match.objectives[0]["radius"]), Match.CONTROL_RADIUS, 0.001, "at the hard-coded radius")
+
+
+func test_the_scalars_are_a_view_of_the_primary_objective_not_a_copy() -> void:
+	# A copy is what broke this file when N7 landed: the tick overwrote a poked value and the match never ended.
+	var game_match := _setup()
+	await wait_physics_frames(2)
+	game_match.control_owner = Match.Team.RUST
+	assert_eq(game_match.objectives[0]["owner"], Match.Team.RUST, "writing the scalar writes the objective")
+	game_match.objectives[0]["progress"] = -1.0
+	assert_near(game_match.control_progress, -1.0, 0.001, "and reading the scalar reads the objective")
+
+
+func test_each_objective_is_captured_on_its_own() -> void:
+	var game_match := _setup()
+	await wait_physics_frames(2)
+	_two_objectives(game_match, 60.0)
+	game_match.spawn_tank("Green_1", 0, Match.Team.GREEN).global_position = Vector3(-60, 0, 0)
+	game_match.spawn_tank("Rust_1", 0, Match.Team.RUST).global_position = Vector3(60, 0, 0)
+	await wait_physics_frames(SimClock.TICK_RATE * (Match.CONTROL_CAPTURE_SECONDS + 1.0))
+	assert_eq(game_match.objectives[0]["owner"], Match.Team.GREEN, "Green took the one it is standing on")
+	assert_eq(game_match.objectives[1]["owner"], Match.Team.RUST, "Rust took the other, at the same time")
+	assert_eq(game_match.control_owner, Match.Team.GREEN, "the scalar still reports the primary objective")
+
+
+func test_holding_half_the_objectives_scores_at_half_the_rate() -> void:
+	# The rule that makes N7 a read-through rather than a balance change: score by the SHARE held, so holding them
+	# all scores at exactly the pre-N7 rate and at N=1 it reduces to the old accumulation exactly.
+	var both := _setup()
+	await wait_physics_frames(2)
+	_two_objectives(both, 60.0)
+	for objective in both.objectives:
+		# Owner AND progress: an owner with no progress is inconsistent, and the tick correctly clears it back to
+		# neutral on the next update ("pushed back past neutral"). Holding means the capture bar is full.
+		objective["owner"] = Match.Team.GREEN
+		objective["progress"] = 1.0
+	var half := _setup()
+	await wait_physics_frames(2)
+	_two_objectives(half, 60.0)
+	half.objectives[0]["owner"] = Match.Team.GREEN
+	half.objectives[0]["progress"] = 1.0
+	var ticks := SimClock.TICK_RATE * 6
+	await wait_physics_frames(ticks)
+	assert_true(both.control_score[Match.Team.GREEN] > 0, "holding both scores (%d)" % both.control_score[Match.Team.GREEN])
+	assert_near(float(half.control_score[Match.Team.GREEN]), float(both.control_score[Match.Team.GREEN]) / 2.0, 1.01,
+			"holding one of two scores at half the rate (%d against %d)"
+			% [half.control_score[Match.Team.GREEN], both.control_score[Match.Team.GREEN]])
