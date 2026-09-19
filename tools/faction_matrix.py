@@ -140,6 +140,12 @@ def main():
               % len(unengaged))
         for line in sorted(set(unengaged))[:5]:
             print("  " + line)
+        # Refuse to PERSIST, not merely to print (arena's improvement on this, after the same construction caught
+        # eight immobilised unit-pairs in make nav-maze on its first run). A printed refusal can be scrolled past;
+        # an absent file cannot be cited, copied into references/, or picked up by whoever greps for the newest json.
+        # The failure mode being defended against is a refused run becoming a number six weeks later.
+        if args.json and os.path.exists(args.json):
+            os.remove(args.json)
         return 2
     print(f"run: {run_conditions.header()}")
     print(f"{len(jobs) - len(failures)} matches on {args.arena or 'foundry (default)'} at {args.budget} points, "
