@@ -1235,3 +1235,34 @@ The kickoff prompt is one line; this section is the rest.
       *"That phrasing was mine and it was persuasive, which is part of why I should have checked it harder."* **When a
       recommendation arrives with a good line in it, that is the moment to ask for the measurement** — the line is
       evidence about the writer's fluency, not about the world. I relayed it to feel inside a minute.
+89. **A scalar bound is a hidden claim about shape, and it survives the shape changing.** Round 7: the arena became a
+    hexagon, `ARENA_HALF_SIZE` went 120 → 140, and the break was none of the constants anyone listed. combat found it:
+    **`DRIVABLE_LIMIT` is used as a *square* clamp in six places** — `absf(x) > LIMIT or absf(z) > LIMIT` three times in
+    `arena.gd`'s validate, and `clampf` in `orders.gd`, `rts_controls.gd` and `army_layout.gd`. A hexagon of circumradius
+    139.7 m has an **inradius of 121.0**, and **a square clamp at ±136 permits points 192 m from centre on the diagonal.**
+    Every one of those sites would have placed an obstacle, clamped an order or laid out an army outside the playable
+    arena, **and the validator would have approved it.**
+    combat's statement of it is the one to keep: *"the container question is 'how big is the arena' and has a clean
+    answer; the contents question is 'is this point inside it' and no longer has a scalar answer at all."*
+    - **Six call sites each held a private copy of the assumption "the arena is a square."** That is lesson 66 with a
+      *shape* as the duplicated value instead of a number, and it is why the fix is a contract (M4
+      `Arena.contains`/`clamp_into`) owned by the stream that owns the shape — not six corrected clamps.
+    - **⚠ The proportional-scaling trap, and I would have walked into it.** The safe inscribed limit for a 139.7 m
+      hexagon is **117**, barely different from today's 116. Scaling 116 → 136 alongside `ARENA_HALF_SIZE` makes the
+      clamp **three times too permissive rather than slightly.** *When a constant's units are metres, "scale it with the
+      thing it came from" is only right if the thing it came from kept its shape.*
+    - Second time in one day that a proportional scaling would have been wrong, both mine to catch.
+90. **A tool that cannot express a configuration produces numbers that silently claim generality.** combat, unprompted:
+    `faction_matrix.py` passed **no `--arena`**, so **every faction number this project has ever quoted — the gangs at
+    53%, the heights null, the designator run — is a *foundry* number, and nothing in the tool's output said so.** Fixed
+    at `c2b27516`: it takes `ARENA=`, names the map in its header, and writes a per-arena file; `balance.md`'s rows are
+    relabelled *"on foundry"*.
+    **The numbers are not wrong, and that is what makes this subtle.** Every arm of every A/B ran on the same ground, so
+    each comparison is sound. **They become unsound the moment an effect is conditional on terrain** — which the
+    designator's is, since acquisition speed pays off where sightlines are long. A result that is valid as a difference
+    was being read as a property of a faction.
+    - **Every instrument must print the configuration it ran in**, not just its result. This is the measurement half of
+      *every number carries its commit and its machine*: it also carries its map, its seed count, and its unit count.
+    - **The deeper point is combat's:** *"that is the per-map breakdown you asked for, and I could not have produced it an
+      hour ago because the tool could not express the question."* **When a question cannot be asked, its answer defaults
+      to whatever the tool happens to do** — and nobody notices, because there is no error, only an unmarked default.
