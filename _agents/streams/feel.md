@@ -163,17 +163,25 @@ place, you do not place).
   VIEWS=venue SHAPE=hexagon` on builder0 — band inside the walls on all six sides.
 - **Facade v3** (`831268ea`): window grid everywhere, grime streaks, per-block bay width, pale chamfer/bevel edges.
   Frames for the lead via the orchestrator (`build/city-review/`). **Lead gate:** street-level detail waits on that.
-- **Green: `7776d70e`** (builder0 `make remote T=check`: `make check exited 0`, 1179 passed, 0 failed, `sim-baseline passed: 253ecfdeed84bc4d`) — all of the above plus `9e44977f`. Sent to the orchestrator. Check on `39215ff6` (crowd pilot, X7's four) running.
+- **Green: `7776d70e`** (builder0 `make remote T=check`: `make check exited 0`, 1179 passed, 0 failed, `sim-baseline passed: 253ecfdeed84bc4d`) — all of the above plus `9e44977f`. Sent to the orchestrator. `39215ff6` (crowd pilot, X7's four) also green: 1179 passed, `make check exited 0`. Check on `3ee35c71` running.
 - **Crowd source material — pilot made, not heard** (`9f74b824`, 250 credits): `crowd_bed` → `crowd_murmur` (19 s loop)
   and `crowd_roar` → `crowd_cheer`, prompts as drafted under *Waiting on the lead*. The bed swelled 8 dB over its length
   (asked for constant); CrowdVoice sets the murmur's level from the match, so the new `layer.level_s` gain rider holds
   it steady (0.5 dB std over 0.5 s windows) and a 1 s `seam_s` hides the splice. Both takes are dark (−27 dB at 4 kHz
   against the mids: a crowd across a bowl), the opposite of the synthesised murmur's hiss. Loudness matched to the
-  synthesised takes, so the tuned mix levels stand; in-game crowd-meter pass queued on builder0. Pipeline fix on the
+  synthesised takes — **but that was wrong in game**: paired second by second against a `--sfx-synth` control (builder0,
+  yard, gangs v law, seed 3, 90 s, real pace), the Crowd bus sat a median 5.3 dB under the crowd X3 was tuned with
+  (the loudness match weights frequencies and rates the dark bed louder than the bus meter does). **+5 dB on both
+  crowd sources (`3ee35c71`) → median 1.2 dB under the tuned level** (IQR −5.0…+1.6; the crowd answers different
+  moments in each run). Mix −17.4 LUFS, true peak −2.4 dBFS, 0 clipped. Logs: `build/crowd-listen/pass_*.log`.
+  The +5 dB exposed a limiter-order bug: the seam crossfade ran after the limiter (bed at +1.5 dBFS); it now runs
+  before levelling (test). Re-layering the whole set then refused the shipped **flamethrower loop** (it dipped 15–18 dB
+  for 0.8 s every 3 s — the plasma loop's fault, made before round 6's hole guard): re-prompted for one unbroken jet,
+  2 takes × 4 s, 80 credits, 3.2 dB range and no holes. Pipeline fix on the
   way: a loop named after its sound (`crowd_murmur`) imported QOA; the recipe now says which sounds loop.
 - **X7's remaining four generated** (`55addee2`, 166 credits): pulse cannon, guided missiles, energy hit, sonic
   emitter, from round 5's physical-event recipes. Measured: no tonal content above ~390 Hz in any take (a hum, not a
-  ray-gun zap). Balance 111,000 credits.
+  ray-gun zap). Balance 110,920 credits after the flamethrower re-roll.
 - **Listening files for the lead** (laptop, `build/`): `crowd-listen/crowd_old_then_new.mp3` (old murmur 12 s + old
   cheer, then the new bed 24 s — twice round its loop, so the seam is in it — + the new roar) and
   `x7-listen/energy_four_new.mp3` (3 pulse, 3 missile, 3 energy-hit takes, then 6 s of the sonic loop).
