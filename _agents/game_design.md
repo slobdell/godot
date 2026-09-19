@@ -427,7 +427,13 @@ stack first, then the layer that commands it, then how the player reads and issu
   The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
   changes should compound rather than merely coexist.
 - **THE GANGS' 23% IS GONE — 53%, joint best, and nobody tuned them** (60 matches, 5 seeds per pairing,
-  counterbalanced, builder0 `1333cc73`):
+  counterbalanced, builder0 `1333cc73`).
+  **⚠ SCOPE, added 2026-09-19: every number in this table is a *foundry* number.** `faction_matrix.py` passed no
+  `--arena` and nothing in its output said which map it ran on, so the whole faction history of this project was measured
+  on one layout. Fixed at `c2b27516` — the tool now takes `ARENA=`, names the map in its header, and writes a per-arena
+  file. **The comparisons remain sound, because every arm ran on the same ground**; what is *not* established is that any
+  of these win rates is a property of a faction rather than of a faction on foundry. **Re-read every row below as "on
+  foundry".** Lesson 90:
 
   | faction | win% | was (pre-CP4) |
   |---|---|---|
