@@ -7,6 +7,8 @@ extends RefCounted
 ##   {"verb": "move" | "attack" | "screen" | "support_by_fire" | "ambush" | "hold",
 ##    "to": [x, z],        world meters: required for move, screen, support_by_fire and ambush; optional for hold
 ##    "target": "Rust_1",  an enemy unit: required for attack, optional for support_by_fire
+##    "facing": [x, z],    optional: which way the element faces when it gets there (a plain move or a hold); the
+##                         screen, support-by-fire and ambush tasks face their point by their own geometry
 ##    "drills": false}     optional (default true): false = a plain move. The element travels formed up and its crews
 ##                         shoot what they meet, but the leader runs NO contact drill (no react to contact, no flank,
 ##                         no assault): the player said where, not how to fight (round 6, X4: right-click to a squad)
@@ -23,7 +25,7 @@ extends RefCounted
 const VERBS := ["move", "attack", "screen", "support_by_fire", "ambush", "hold"]
 const NEEDS_TO := ["move", "screen", "support_by_fire", "ambush"]
 const NEEDS_TARGET := ["attack"]
-const KEYS := ["verb", "to", "target", "drills"]
+const KEYS := ["verb", "to", "target", "drills", "facing"]
 
 
 ## "" when `task` is well formed, else a human-readable reason (a typo from a script or an LLM fails loudly).
@@ -47,6 +49,11 @@ static func validate(task: Variant) -> String:
 			return "'target' must be a unit name"
 	elif NEEDS_TARGET.has(verb):
 		return "'%s' needs a 'target' unit" % verb
+	if task.has("facing"):
+		var facing: Variant = task["facing"]
+		if typeof(facing) != TYPE_ARRAY or (facing as Array).size() != 2 or not _finite(facing[0]) or not _finite(facing[1]) \
+				or Vector2(float(facing[0]), float(facing[1])).length() < 1e-6:
+			return "'facing' must be a non-zero [x, z] direction"
 	if task.has("drills") and typeof(task["drills"]) != TYPE_BOOL:
 		return "'drills' must be true or false"
 	return ""
@@ -55,6 +62,13 @@ static func validate(task: Variant) -> String:
 ## Whether the leader may run contact drills on this task (false for a plain move).
 static func runs_drills(task: Dictionary) -> bool:
 	return bool(task.get("drills", true))
+
+
+## The task's `facing` as a flat unit direction, or null.
+static func facing(task: Dictionary) -> Variant:
+	if not task.has("facing"):
+		return null
+	return Vector3(float(task["facing"][0]), 0.0, float(task["facing"][1])).normalized()
 
 
 static func make(verb: String, extra: Dictionary = {}) -> Dictionary:

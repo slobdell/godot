@@ -22,6 +22,7 @@ extends GameMode
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ##   --camera-frame=close|default|wide  how much of the screen the commanded element fills (X3 dial)
 ##   --alert-lines=1..3  unseen alerts shown at once above the group chips (X3 dial; default 1)
+##   --camera-readout=off  hide the live camera values (round 6: on, so the lead can find the camera; P copies the pose)
 ##   --hints=off|fresh  no control hints (X6; they retire themselves as each control is used), or all of them, remembering nothing
 ##   --squad-orders-test=DIR  the lead's sequence: order every squad in turn, then where each unit actually ends up
 ##   --response-test=DIR  click → order → ack → first visible movement, in ms, at this army size (ResponsePlaytest)
@@ -39,8 +40,8 @@ extends GameMode
 
 const SCRIPT_BREAK_CONTACT_SECONDS := 30.0
 ## The closest the RTS camera starts (0 = close behind a tank, 1 = high over the arena); it frames the army.
-## Round 6: the lead's pick on the camera page was 50 m out; RtsCamera.level_for(50.0) = 0.373 (was 0.36, 48 m).
-const START_ZOOM := 0.373
+## Round 6: the lead's pose from play is 49 m out (zoom 0.365; round 5 was 0.36, 48 m).
+const START_ZOOM := 0.365
 ## The camera starts looking this far ahead of the player's base (tanks sit in the lower third).
 const START_AHEAD := 25.0
 const SCRIPT_FOLLOW_ZOOM := 0.42
@@ -256,9 +257,14 @@ func _start_match() -> void:
 	rig.yaw = 0.0 if frame["forward"] == Vector3.FORWARD else PI
 	# C5: start where the vehicles read as vehicles: frame the whole army and the ground just ahead of it,
 	# never higher than needed (--zoom=0..1 overrides, for screenshots and tuning).
+	# Round 6: the first frame is the one the lead plays - squad 1 (the group the planning pause selects), not the whole
+	# army. At his 35° telephoto, fitting thirty vehicles climbed to ~110 m and the vision camera then swooped in.
 	var army: Array = []
 	var middle := Vector3.ZERO
+	var first: Array = Array(game_match.team_squads(Match.Team.GREEN)[0].roster) if not game_match.team_squads(Match.Team.GREEN).is_empty() else []
 	for tank in game_match.sorted_team_tanks(Match.Team.GREEN):
+		if not first.is_empty() and not first.has(String(tank.name)):
+			continue
 		army.append(tank.global_position)
 		middle += tank.global_position
 	army.append(middle / maxf(army.size(), 1.0) + (frame["forward"] as Vector3) * START_AHEAD)
@@ -369,6 +375,13 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		rig.vision_inset = SkirmishMode.camera_frame_inset(flags)
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
+	# Round 6: the camera's live values and keys, so the lead can find the camera in play (P copies the pose).
+	if flags.text("camera-readout", "on") != "off" and not (flags.has("scripted") or SkirmishMode.spectated(flags)):
+		var readout := CameraReadout.new()
+		readout.name = "CameraReadout"
+		readout.rig = rig
+		controls.add_child(readout)
+		controls.pose_copied.connect(readout.copied)
 	if flags.has("squad-orders-test"):
 		var squads := SquadOrdersPlaytest.new()
 		squads.name = "SquadOrdersPlaytest"

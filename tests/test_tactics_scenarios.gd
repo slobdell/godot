@@ -7,7 +7,12 @@ extends TestCase
 func test_an_element_ambushed_at_close_range_assaults_through_it() -> void:
 	# The lead: "if a unit gets ambushed, the standard operating procedure is to face the direction of the
 	# ambush and charge forward."
-	var result: Dictionary = await TacticsScenarios.near_ambush(self, 18.0)
+	# 22 s, the scenario's own default. The check used 18 until round 6, when the element came through at 18.5 s: nav
+	# bisected it (00c99bf4, CP4 before nav: 531 ticks = 17.7 s; 7cce78af, nav's merge: 555 = 18.5 s; every nav mechanism
+	# off at once: still 555; round 5's _around_friends sidestep back on alone: 531). The cause is the removal of that
+	# overtaking sidestep — followers no longer pass a friend in the same lane, so the column stays a column and reaches
+	# the far side 0.8 s later. The assault itself is unchanged (~12.7 s). Not slack: a deliberate behaviour change.
+	var result: Dictionary = await TacticsScenarios.near_ambush(self)
 	var drills: Array = result["drills"]
 	assert_true(drills.has("near_ambush"), "the element recognises a near ambush (ran %s)" % [drills])
 	assert_true(drills.has("assault_through"), "and assaults through it (ran %s)" % [drills])
@@ -75,6 +80,8 @@ func test_an_ambush_holds_its_fire_until_the_kill_zone_is_full() -> void:
 	assert_eq(int(result["shots_before"]), 0, "not one shot before it was in the kill zone")
 	assert_true(int(result["sprung_tick"]) >= int(result["entered_tick"]), "sprung when it arrived, not before")
 	assert_true(int(result["shots_after"]) > 0, "and then every gun fired")
+	# The lead: facing matters "for trying to emplace units in an ambush".
+	assert_true(int(result["facing_zone"]) >= 3, "the ambush points at its kill zone (%d of 4 facing it)" % result["facing_zone"])
 
 
 func test_an_attack_closes_into_its_band_and_every_gun_fights() -> void:

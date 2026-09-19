@@ -23,7 +23,8 @@ const ZOOMS := [0.08, 0.2, 0.35, 0.5, 0.7, 0.9]
 ## Control X3 took pitch off the zoom slider. The lead picked 25 degrees, 50 m, FOV 60 (2026-09-18) and keeps a 22-50
 ## degree tilt; 15 is here because he picked the floor of the range he was offered. [pitch degrees, distance m].
 ## Then he settled on 12 degrees, 50 m (2026-09-18).
-const LOW_POSES := [[12.0, 50.0], [12.0, 70.0], [15.0, 50.0], [25.0, 50.0], [25.0, 90.0], [35.0, 60.0], [35.0, 120.0],
+## An optional third value is the field of view (else LOW_FOV_DEG): the lead's settled camera is 21 degrees, 49 m, FOV 35.
+const LOW_POSES := [[21.0, 49.0, 35.0], [12.0, 50.0], [12.0, 70.0], [15.0, 50.0], [25.0, 50.0], [25.0, 90.0], [35.0, 60.0], [35.0, 120.0],
 		[50.0, 80.0], [50.0, 160.0]]
 ## The low poses' field of view (the lead's pick); the zoom-slider poses keep RtsCamera's own.
 const LOW_FOV_DEG := 60.0
@@ -91,13 +92,15 @@ func _run() -> void:
 			else:
 				_save(_grab(), pose)
 		for low: Array in LOW_POSES:
-			var pose := "%s-p%02d-d%03d" % ["ahead" if turn == 0.0 else "behind", int(low[0]), int(low[1])]
+			var fov: float = low[2] if low.size() > 2 else LOW_FOV_DEG
+			var pose := "%s-p%02d-d%03d%s" % ["ahead" if turn == 0.0 else "behind", int(low[0]), int(low[1]),
+					"-f%02d" % int(fov) if low.size() > 2 else ""]
 			if not _wanted(pose):
 				continue
 			# Control's own pose and cutaway (lesson 53: an approximation of another stream's system measures the
 			# approximation; round 6's first 12 degree frame showed a grandstand fascia the game never draws).
 			_camera.global_transform = RtsCamera.pose_at(focus, heading + turn, low[1], low[0])
-			_camera.fov = LOW_FOV_DEG
+			_camera.fov = fov
 			_camera.near = RtsCamera.cutaway_near(focus, heading + turn, low[1], low[0], RtsCamera.perimeter_half())
 			await _frames(PAUSE_FRAMES)
 			if crowd != null:

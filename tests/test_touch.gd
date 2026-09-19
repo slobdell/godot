@@ -17,6 +17,7 @@ func _setup(screen := Vector2i(1200, 540)) -> Array:
 	add_to_tree(camera)
 	camera.make_current()
 	var rig := RtsCamera.new()
+	RtsCamera.fov = 55.0  # round 5's lens: these tests are about screen geometry, written for it (the default is the lead's 35° telephoto)
 	rig.camera = camera
 	rig.edge_pan = false
 	rig.focus = Vector3(0, 0, 70)

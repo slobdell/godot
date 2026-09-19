@@ -4,7 +4,135 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-18. **Round 5 is closed and merged; round 6 is planned and launching.**_
+_Last updated: 2026-09-19. **Round 7 is mid-flight with all six streams active. Nothing is merged yet this round.**_
+
+## ⚠ READ THIS FIRST: round 7, mid-flight, nothing merged
+
+**The quota banner that used to be here is gone — the lead upgraded his plan and the 4-day stop never happened.** All six
+streams are running and every one of them has real work on its branch. **`main` is at round 6 plus documentation.**
+
+**The single most important process fact right now: I hold no green hash from any stream.** Every branch below is real
+work and none of it has been check-verified on the commit that would be merged. Two streams told me so unprompted when
+asked — arena (*"seven commits verified locally only; that is not a check and I know it"*) and combat (*"I will not round
+up"*) — which is the behaviour the process wants. **Do not merge a branch tip. Merge the commit whose check went green**
+(lesson 63), and after today's episodes, **verify `git show HEAD:<path>` rather than the file on disk** (lesson 83).
+
+### What round 7 is about
+
+**Legibility, not capability.** The lead's verdict after round 6 closed: *"we're still generally in an unplayable state
+because of the camera right now and getting adequate command of our units (I couldn't tell what direction they were
+facing)."* His round-7 direction is recorded verbatim in [game_design.md](_agents/game_design.md) — read it before any
+brief. **The headline is *"the vehicles are still just too dumb… research and implement whatever pathing algorithms or
+decision weighing algorithms necessary to make these units look and feel smart."***
+
+### The work in flight, by stream — what it is and what is blocking it
+
+| Stream | Branch tip | What is on it | Blocking |
+|---|---|---|---|
+| **nav** | `ab93d85b` + **uncommitted** | **The round's best result: the scout standoff.** Also the per-hull-slack fix that restored head-on maze from 27/60 to 60/60 | **The `CombatMotion` standoff exists only in nav's working tree.** squad cannot compile against it. Asked for an immediate commit, standoff and slack fix kept separate |
+| **squad** | `df769246` | Brain-side facing fix (`bbfb6592`); army start retuned after looking at a 34-a-side render — five wedges read as one clump, now compact blocks in one rank with fronts aligned | Waiting on nav's standoff to land on `main`; will land the brain hooks and the inverted test *the same hour* |
+| **control** | `a1d92ad6` | **The popover help the lead asked about by name**, yaw-follow camera, vehicle portraits, click badges, follow+slot, perimeter cutaway | Check #17 running. One ask outstanding: **one tooltip should open by itself during the planning pause** — an animation only on hover is invisible to the player who did not know what `screen` meant |
+| **arena** | `50fa214a` | Water, pits and bridges **as data**; the perimeter as a polygon with per-edge spans; the hexagon chosen and measured | Check running. **No map has been rebuilt yet** — Pit and Yard untouched, which is the part the lead will actually see |
+| **combat** | `d6e28e27` | Height spread (**War Rig 3.14× the scout**); N7 acquisition; **the Syndicate designator** | Check to be run on the final tip. Faction matrix re-running as a paired comparison against 53/53/50/43 |
+| **feel** | `ec10d9f5` | `make facing-audit`; the gang IFV fixed **in the part generator's data**; a second backwards vehicle nobody had reported (Syndicate lancer, `cb171a98`) | Cutting the baked guns out of three hulls — **gang tank, Syndicate IFV, Law artillery** |
+
+### THE MERGE QUEUE, in order, with the reason for each position
+
+**Every position below is "at the commit whose check went green", never a branch tip.** Run `make remote T=check` on
+`main` after each sim-changing merge, and read the wrapper's own `>> remote: make check exited <N>` line.
+
+| # | Branch, commit | Why here | Risk |
+|---|---|---|---|
+| **1** | **control `a1d92ad6`** | **The lead asked for this work by name** and believes it may be lost. It is HUD, camera and preview only — **no simulation change, so it cannot move the sim baseline.** Verified with `git show a1d92ad6:<path>` across eleven patterns | lowest |
+| **2** | **feel**, at its green hash | **The gang IFV driving backwards has been reported by the lead three times.** Art only — *the simulation never reads the model* — so it is nearly free to land, and it is the complaint with the worst report-to-fix ratio in the project | lowest |
+| **3** | **control's self-revealing help** (the commit after `a1d92ad6`) | Deliberately not held for #1: builder0's queue is the bottleneck, so it rides the next check rather than delaying the popover work | lowest |
+| **4** | **nav `2cae3bda` (standoff) and/or squad**, whichever is green first | **squad has merged `2cae3bda` into its own branch**, so squad's check covers the standoff *and* the two brain hooks together — stronger than either alone. Whichever green hash arrives first brings the standoff to `main` | sim-changing |
+| **5** | **nav `8ad2c606`** — in-fight unsticking, per-hull chord slack | Separate commit on purpose: if its maze validation is bad, the standoff is unaffected and lands without it | sim-changing |
+| **6** | **combat**, designator + heights + N7 | Sim-changing and self-contained. **Must land before #7**, because arena's hexagon needs combat's extent change, which combat is holding until this is merged | sim-changing |
+| **7** | **combat's extent change** — `ARENA_HALF_SIZE` 120 → 140, `DRIVABLE_LIMIT` → **117** (not 136) | Its own check, deliberately: one check must not cover both the designator and the extent, or a failure cannot be attributed | sim-changing |
+| **8** | **arena** — hexagon at 139.7 m, contract **M4** `Arena.contains`/`clamp_into`, water/pits/bridges | Last because it depends on #7's constants, and because the M4 predicate is what makes the hexagon *safe* — merging the shape without the predicate ships a square clamp on a hexagonal arena | highest |
+| **9** | **The sim baseline** — recorded by the orchestrator, on `main`, once | **Invariant 2.** Only after #8. Three separate merges above change the simulation | — |
+
+**If a check comes back red, the branch does not move and the queue does not stall behind it** — skip to the next
+position. Nothing in 1–3 depends on anything else.
+
+### Decisions I made this round, so nobody re-derives them
+
+1. **The Syndicate lancer stays, re-roled as a designator.** combat proposed deleting it on a clean comparison (the
+   Syndicate's own tank reaches 104 m against the lancer's 86) and then **caught its own mistake while implementing it**:
+   the lancer was that faction's *only* special, so deleting it would have left them the one faction with no identity
+   beyond the core four. The fix takes (2)'s design content at (1)'s art cost — the chassis exists and is
+   concept-approved, so **no Meshy credits** (88 remain, and new models are the lead's gate). Built at `d6e28e27`: it
+   paints the nearest enemy **its team** can see, and its whole side acquires that contact in **a quarter** of the usual
+   time for 1.5 s. **It touches acquisition and nothing else**, with a test asserting it changes neither spread nor
+   armour, because *a special that grants +x% damage is a stat multiplier wearing a costume*. **N7's acquisition gate is
+   what made this special possible** — before the gate, "your side acquires faster" described a mechanic that did not exist.
+2. **feel cuts the existing meshes rather than regenerating them.** Separating an already-approved model's gun into its
+   own part is not new art generation, so it is not a Meshy gate. **Regenerating would spend credits to lose the
+   silhouette the lead already approved.**
+3. **Bridges are ordinary drivable ground, not `NavigationLink3D`.** I pointed arena at links; arena answered with a
+   measurement instead of an argument — the deck is restored floor in `navigation_source`, the ordinary bake covers it,
+   and crossing measures at **1.00× the straight line**. nav has been told not to build bridge traversal; **a second
+   mechanism for one behaviour is how we get a bug nobody can locate.**
+4. **`Pathing` will carry reachability explicitly.** Three callers currently each guess at it — arena with a magic 4 m
+   tolerance, `Movement` with its own version, nav with a third. Shape agreed with nav:
+   `Pathing.query(from, to) -> {points, reachable, goal_on_mesh, end_gap_m}`. **`reachable` and `goal_on_mesh` are
+   different questions** and water makes both reachable: a goal in a pit is not on the mesh, a goal across a destroyed
+   bridge is on the mesh and unreachable.
+
+5. **The arena becomes a hexagon at `ARENA_HALF_SIZE` 140, not 120.** A square keeps its full width to the wall; a
+   hexagon narrows, **and the spawn block sits exactly where it narrows.** At today's 120 m bound only **48 of 104 spawn
+   points** are inside the arena; **139.7 m is the smallest clean-tiling hexagon that holds them**, which is the number
+   feel's 23.07 m wall module already implied. So `ARENA_HALF_SIZE` 120 → 140, `DRIVABLE_LIMIT` 116 → ~136, plus radar,
+   fog and the sim baseline — **scoped with combat, which owns the constant, and to be built only after its designator
+   check is green**, so one check does not cover two unrelated changes. **The area cost is 12%, not the 35% first
+   reported, and the approach does not shorten at all**: the spawn rows sit at z = ±90…114 in either shape, so base-to-base
+   is unchanged by construction. That removes the worry that a smaller arena would compound with the lead's *"ranges are
+   too long"* complaint.
+
+### Two things I got wrong this round, both now corrected in place
+
+- **The funnel algorithm was never missing.** `algorithms.md` listed `PATH_POSTPROCESSING_CORRIDORFUNNEL` as unused and
+  funnel smoothing as OWED. nav established that **`map_get_path(..., optimize=true)`, which `Pathing` already calls,
+  *is* the corridor funnel.** We have had it since round 1. The row also carried a wrong *diagnosis* — "raw navmesh
+  corners" — when the real cause of sawed-off turns was **steering at the corners**, fixed by round 6's carrot. I had
+  probed `ClassDB` for the constant's *existence* and reported it as *non-use*. Lesson 85, and the rows are struck
+  through rather than deleted so nobody re-derives them.
+- **"The lead did not object" is not a decision.** I relayed combat's proposed lancer deletion to feel as settled, before
+  it was implemented, and described feel's real orientation fix as wasted work. Lesson 82. **A stream's status is the
+  hash; a design decision's status is the test that passes with it in place.**
+
+### The four things a fresh orchestrator should not have to rediscover
+
+1. **No agent on this project can play the game** (lesson 72). Everything we call playtesting is scripted input plus
+   screenshots. Feel-questions — camera, order legibility, audio presence — can only be answered by the lead. **The
+   pattern that finally worked was giving him live in-game controls and one key that prints a pasteable line** (the
+   camera took four attempts from still images and one from live controls). Build the instrument, hand it over, let the
+   design come out of him using it.
+2. **Ask the lead to object, not to adjudicate** (lesson 79). Three questions were returned with *"I don't understand the
+   question."* **Converting a stream's trade-off into a recommendation is part of the relay, not an optional courtesy.**
+3. **`centre_sees_share` predicts the lead's map taste.** He cut the four most open arenas and kept the two least open,
+   with the numbers in front of him but no way to sort by them. It is now a **design target (<0.30)** for new maps rather
+   than a description — its job is to stop us building a fifth map he would cut. **One caveat added this round: the
+   designator means a faction can now acquire faster than another, so open-middle maps are no longer symmetric.**
+4. **The standard of work, set 2026-09-19.** The lead: *"We want to use the best algorithms, no matter how difficult they
+   might be to implement… it's all well established industry knowledge."* **When a good-enough approach and a known-best
+   approach differ, take the known-best one.** "The simple version passes the test" is explicitly not the bar. It does
+   **not** license inventing a technique where a standard one exists, and it does **not** suspend determinism.
+   The roster is [`_agents/algorithms.md`](_agents/algorithms.md): what we **have** (navmesh A\*, ORCA, PID, context
+   steering, the funnel, arrival-with-standoff), what we **owe** (Reeds–Shepp for turn radius, flow fields, hierarchical
+   pathfinding, hysteresis in utility scoring, MPC lookahead), and what is **rejected with reasons** (RL for steering —
+   determinism). Each row carries its canonical reference and the measured symptom it addresses. **Rows are hypotheses
+   until confirmed by the stream that owns the code** — see the funnel, above.
+
+### The sim baseline: do not record one yet
+
+`main`'s recorded baseline is `glibc-2.43 b0df248dc0140639` from round 6. **Three simulation-changing merges are
+outstanding** — nav's standoff (how units move), combat's designator (when units fire), squad's brain fix (where they
+point). **Invariant 2: the baseline is recorded once, by the orchestrator, on `main`, after the last
+simulation-changing merge.** A baseline test failing on a stream branch right now is expected and is not a finding.
+
+---
 
 ## Current state (main)
 
@@ -212,6 +340,47 @@ feel.
 7. **Carried over:** rotate the Meshy API key; the round-2 questions in `streams/archive/round2/`.
 
 ## Open questions and follow-ups (not scheduled)
+
+- **Dynamic obstacles: deliberately none, and now with a reason rather than a default** (arena ruled, nav verified,
+  2026-09-18). **Nothing blocks drivable space mid-match, now or planned**, so a `NavigationObstacle3D` has no consumer.
+  The strong argument against building one is **fairness, not cost**: the navmesh is baked as the southern half plus its
+  180° rotation *as a second region*, because a normal bake is not point-symmetric — mirrored trips differed by up to
+  4.4 m and the south base won 64% of 140 matches (trip-up 21). **Any mid-match re-bake must reproduce that
+  construction or silently reintroduce the base bias**, with units standing on the mesh while it happens. And the lead's
+  approved destructible-cover design (*a stack collapses to a lower stack, never changing drivable space*) was chosen to
+  avoid exactly this, so X6 will not create a consumer either.
+  **If round 7 ever revisits the startup-only mesh, it must revisit `agent_max_climb` in the same breath** — both are
+  consequences of the same construction, and both need the swap-bases control re-run.
+
+- **The unifying shape of round 7's best candidates, named by arena:** *the correct behaviour depends on what the
+  element is currently trying to do.* Round 6 made each layer correct **in general** — avoidance that keeps a column a
+  column, an objective at the centre, a formation that holds its geometry — and the residue in every case is that the
+  *right* answer changes with the element's current intent. Three items below are the same statement at different
+  scales: not overtaking is right for a column and wrong for a charge; a central objective is right for a brawl and
+  wrong for a game about flanking; a fixed slot is right for holding and wrong for forming up. **A round that made
+  behaviour context-dependent would be the natural successor to one that made it correct.**
+- **Should a battle drill override formation discipline?** Round 6's ORCA deliberately does **not** treat a friend
+  moving the same way as a collision, so a column stays a column — which is right for formations and is why round 5's
+  overtaking sidestep was removed (it also steered into walls unchecked). Attributed cost, measured by bisect: an
+  assault-through an ambush now takes **18.5 s against 17.7 s**, because the quick units no longer pass the slow ones.
+  **0.8 s is not worth re-adding overtaking for** — it would risk nav's 33/60 → 60/60 arrival result. But *a charge is
+  the one case where you might want the fast units through rather than the column preserved*, and the lead would notice
+  it as *"my fast units got stuck behind the slow ones during a charge"*. Round-7 question: do drills get to suspend
+  formation discipline, and which ones?
+- **The lead's PID request is half-delivered, and the missing half is the visible half.** nav's N6 regulates any
+  `move_to` whose goal *slides* — a squad follower's leader-anchored slot is such a goal, so **squad station-keeping is
+  PID-controlled and measured (0.35 m mean gap against 4.58 m for the old proportional law)**. squad deliberately added
+  **no second regulator**, which is right. But **element slots are fixed per leg or per click**, so the PID never
+  engages for elements: an element still *snaps* to its formation geometry rather than **flowing** into it. The lead's
+  own words were *"no matter where they might be currently, there's a formula to form up"* and *"a PID loop would
+  conceptually be useful for a unit trying to get back in his formation"* — the second is delivered for squads and not
+  for elements. **Making elements flow into formation is the next build on top of N6**, and it is the piece most likely
+  to make the formations *look* as good as they now measure. A round-7 candidate, and cheap now that the regulator
+  exists.
+- **Per-faction PID gains** (nav's X8, not started): the lead asked for it by name — *"we might even be able to
+  differentiate units of different factions by PID values"* — the Syndicate crisp, the gangs loose. `control_gains.gd`
+  exists and the defaults are stable, so this is now a data exercise. It must be **measured** rather than shipped as
+  flavour: if identical armies with different gains win equally often and look the same on screen, say so.
 
 - **A texture leak on `main` that `make check` cannot see** (found by control on the merged tree at `2fa58c01`,
   laptop, windowed): `make shell-playtest` fails its clean-console gate with two `ERROR: Texture with GL ID of

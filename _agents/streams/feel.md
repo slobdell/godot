@@ -129,6 +129,74 @@ place, you do not place).
 
 ## Status
 
+### HANDOVER — read this first (2026-09-18, ~21:05, weekly quota about to stop this session for ~4 days)
+
+**Tree:** `stream/feel` is clean at `82f99c6e` (plus this Status commit). **Last green: `b00b8ff9`** (builder0 check,
+1130 passed). A full `make remote T=check` on `82f99c6e` was **started ~21:03 on builder0 (`~/tank_squad/godot-feel`)
+and its result was not read before the stop**: re-run `make remote T=check` first thing; do not assume green.
+Commits since `b00b8ff9`, all tested locally (their test files pass), none check-verified:
+
+1. **`2586c7a6` unit scale from `hull_size` — done.** Cause: `tank.gd:238` (combat's) does not scale a unit's hull when
+   it has its own art, so every new-faction model showed at Meshy's 3–4 m (gang_tank drew 3.6 m of 5.6 m, smaller than a
+   scout, while its collision box was full size). Fix in `dozer_part._fit_to_hull()`: every part takes one uniform scale
+   = hull_size length / the hull model's natural length (`FactionArt.hull_length`), turret/weapon parts undo the turret
+   node's scale and rise with the roof. Test `tests/test_theme_unit_scale.gd` (mutation-checked: fails without).
+   **Findings for combat (data, not edited):** several models' proportions disagree with `hull_size` width — gang_tank
+   (the semi) model is 1:4 wide:long, hull_size 3.0×5.6, so its hit box is wider than it looks after scaling; law_suppressor
+   model 1.2×2.4 vs hull 2.6×4.4. Measured table: `build/bench/scale_bench.gd` output (natural model size vs hull_size,
+   laptop headless) — rerun it with `.tools/godot-*/Godot* --headless --path . --script res://build/bench/scale_bench.gd`
+   (build/ is ignored: copy the script out of build/ if it is gone; it is ~30 lines). Muzzle heights (`muzzle_height`,
+   combat's) were set for the unscaled models: shots may now leave from inside a taller hull — look, and ask combat.
+2. **`d2076221` machine-gun tracers — done, looked at.** A scout's 10/s at HITSCAN_SPEED 180 m/s left one thin dash on
+   screen. `TracerSystem.STYLES.stream` now has its own speed 90 m/s, tail 8 m, width 0.32, intensity 2.4 (burst raised
+   too, stays fatter). `fx-shots SHOWCASE=scout_stream` on builder0: 3 tracers in the air gun→target. Test
+   `tests/test_fx_mg_tracers.gd`.
+3. **`0999d755` + `53b3a84a` machine-gun sound — done, measured, NOT heard by a human.** New ElevenLabs loops (physical-
+   event prompts): mg_stream 4 takes × 4 s, twin_mg_stream 3 takes (twin_mg had borrowed the single gun's loop),
+   plasma_stream re-rolled 3 takes (see below). Spend: 111,816 → 111,416 (410 credits, in the ledger). Gunners get a
+   random take each (`GunfireLoops.use_streams(streams, takes)`; SfxSystem exposed only take 1 for loops). Gun loops
+   left the Bed bus (5:1 duck by every impact) for a `Gunfire` bus (2:1 dip). **Measured at real pace** (builder0, yard,
+   gangs v law, 90 s, `--crowd-meter` now prints `gunfire_db`/`gunfire_world_db` averaged only while a gun sounds):
+   before the level change MGs sat a median **15 dB under the mix while firing**; after `VOLUME_DB` −6 → **+2** (at
+   `53b3a84a`) a median **4.7 dB under**. Listening sample for the lead: `build/crowd-listen/machine_guns_full_mix.mp3`
+   (made at `0999d755`, i.e. BEFORE the +8 dB — regenerate with `make remote T="audio-pass PASS_SECONDS=90 ARENA=yard"`
+   and copy build/audio/pass.mp3). Also found and fixed: GunfireLoops voices were created before their bus existed and
+   fell back to Master (now `SfxSystem.ensure_world_bus()` first).
+   **Pipeline guard (`tools/audio/sfx_layer.py`):** loops are now onset/tail-trimmed and never ship a hole: the longest
+   unbroken stretch (no dip > 0.25 s) loops, refused under 1.2 s. It caught the Syndicate's round-5 `plasma_loop_1.wav`:
+   **750 ms of silence every 2.2 s** (a stuttering gun, plausibly part of "cartoonish"); refused → re-generated.
+   Python tests in `tools/audio/test_sfx_pipeline.py` (`make audio-pytest`, 18 pass).
+4. **`82f99c6e` announcer overlap — diagnosed and fixed, NOT heard by a human.** The lead: "The announcers cut each
+   others' audio off" / "the other announcer only stops speaking after they've been interrupted".
+   **Trace** (builder0, real pace, `audio-pass PASS_SECONDS=150 ARENA=yard`, voiced booth, 31 lines; trace lines
+   `ANNOUNCER_CLIPPED` / `ANNOUNCER_CUT` from `announcer_voice.gd`): **no overruns at all** (the director's durations
+   come from real clip lengths via `AnnouncerLibrary.line_seconds`), **every clip was a deliberate director interruption**
+   (`AnnouncerDirector._interrupt`, priority ≥ INTERRUPT_MIN, sets the incumbent's end to max(now, t+0.4); the booth then
+   calls `voice.cut()`, which faded it out in 0.08 s — mid-word). Lost audio: PA `pa.correct.01` 7.66 s, caller
+   `caller.hit.04` 1.40 s, colour `color.banter.24` 2.83 s (then clipped again by `caller.kill.60`).
+   **Fix:** `AnnouncerVoice` has two players; an interrupted voice ducks 5 dB and fades over `TRAIL_S` 0.8 s on its own
+   player while the interrupting line starts on the other (brief natural overlap, then only the challenger). The director
+   is unchanged (its stale-drop already exists: `stale_at`). Test `tests/audio/test_audio_announcer_overlap.gd`.
+   **Not verified by ear.** Next step: record a real match (`audio-pass`), listen at every `ANNOUNCER_CUT` line's
+   timestamp; if interruptions are too frequent, the director's `INTERRUPT_MIN` / `INTERRUPT_LINE_CHANCE` are the knobs.
+5. **Gang IFV "drives backwards" — NOT started beyond reading.** The lead: "the gang's IFV drives backwards".
+   Established by reading code: the simulation never reads the model (armour faces, muzzle, turret come from the Tank
+   body, forward −Z), so **this is art only, not a balance bug** — but muzzle flashes will appear at the model's rear.
+   Vehicle galleries were rendered for all three factions to audit orientation (builder0, `vehicle-gallery
+   FACTION=<f>`, outputs `build/screenshots/vehicle-gallery-<faction>.png` in `~/tank_squad_feel_look/godot-feel` on
+   builder0) but **not yet looked at**. Next step: look at them; for any reversed model add a per-part yaw correction
+   (e.g. an exported `model_yaw_deg` on `dozer_part.gd`, set 180 in `game/theme/factions/gangs/parts/ifv_*.tscn`),
+   check the turret/weapon parts of the same unit too, and audit every faction, not just the one he noticed.
+6. **Not started (queued by the orchestrator):** the crowd beds (text drafted below; the lead's standing approval now
+   covers ElevenLabs sound effects — "generate generously, pilot, listen, ship"); chamfered arena edges (cheap, mine);
+   the arena *shape* change is a round-7 contract change — do not start it.
+
+**Open findings for others:** camera at the lead's settled pose (21°, 49 m, FOV 35) shows **0 far-stand seats facing
+the enemy** (telephoto's top edge is 3.5° below the horizon; the stands' top rows are ~1.5° below at 220 m): the crowd
+appears only near walls or when the camera turns — geometry of his camera, not fixable by crowd work. builder0's
+shell-playtest reports `ok=false` in every variant from control's faction-click checks (not mine).
+
+
 _Last updated 2026-09-18 by the feel worker._
 
 ### Plan (backlog order; one line of reason where I chose)
@@ -187,6 +255,8 @@ weak-spot hit and roar a kill. Listen: `build/crowd-listen/*.mp3`. Look: `make r
 2. **Round 5's Syndicate pilot** (X7): do the three energy weapons sound right, and record the other four (~120)?
 
 ### Green commits (merge here)
+- **`3040ccd9`** — `make remote T=check` on builder0: **1081 passed, 0 failed, `make check exited 0`**; shell-playtest on
+  builder0: 0 leak lines, 0 ERROR lines. The sky leak fix and the ground under the near wall.
 - **`dae54f8f`** — `make remote T=check` on builder0: **1066 passed, 0 failed, `make check exited 0`**. Everything since
   `e817194a`: X3 real-pace levels, vsync-off audio-pass, X4 sky/skyline/side stands/screens, X5 LoadingVoice, X6
   baseline, X8 cheer, crowd-look on control's camera. Commits after it are Status/docs only.
@@ -238,6 +308,27 @@ not).
   cutaway, not the game — control's real rule cuts it. crowd-look now calls `RtsCamera.pose_at`/`cutaway_near`
   itself; lesson 53.)
 - Not yet: the ad screens' legibility from the playing angle.
+
+### After the merge: the sky's texture leak and the void under the near wall (fixed, `3040ccd9`)
+- **Leak (mine).** control's `make shell-playtest` (not in `check`) ended with `Texture with GL ID … leaked 5460 bytes`
+  ×2 after my X4 merged. 5,460 bytes = one 32×32 RGBA mip chain: the Environment `Sky`'s radiance maps. Confirmed on
+  builder0 by toggling only the sky (leak with it, none without). Fix: no `Sky` resource at all; the night sky is an
+  unshaded dome mesh (`NightSky`). Verified: no leak lines with the fix. (builder0's shell-playtest also reports
+  `ok=false` from control's faction-click checks in every variant, with or without my changes.)
+- **Void (mine).** control's cutaway near plane clips every real surface between a camera past the wall and the
+  wall, so no mesh can fill that band: it showed the dome's below-horizon colour, which ACES crushed to pure (0,0,0).
+  Proved with a red debug colour. The dome now draws the city's ground where each ray meets y = 0 (a floodlit
+  concourse, streets, sodium lamps), shared through `city_ground.gdshaderinc` with a new `CityGround` plane out to the
+  skyline for cameras that see past the stands.
+
+### "The audio is defaulted to off" (the lead's playtest; fixed, `b00b8ff9`)
+The music director and the booth read a missing `--music`/`--announcer` as OFF, and only `make skirmish`/`audio-pass`
+passed them: the title's SKIRMISH, the garage's FIGHT and a bare launch came up with no booth (so no match mood for
+the crowd), no announcer and no music. `AudioDefaults`: a windowed launch sounds unless told otherwise; headless,
+`--mute` and the title's backdrop fight stay silent. `make audio-launch-smoke` (needs a display) drives title →
+SKIRMISH → faction menu → FIGHT with no audio flags: fails on the old code, passes on the fix (builder0).
+**Unexplained:** silence through `make skirmish` itself does not reproduce (its flags survive FIGHT). Asked how he
+launched.
 
 ### X5 — the loading screen's voice (done on my side, `1badf779`)
 `LoadingVoice`: murmur fades up at FIGHT, a roar as the lights come up, hands over to the match's crowd. **Request to

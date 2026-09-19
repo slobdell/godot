@@ -128,8 +128,9 @@ const ATTACK_MOVE_FIGHT := 0.5
 const ATTACK_MOVE_REACH_MARGIN := 10.0
 ## A move or attack-move counts as done within this distance of the unit's slot (meters)...
 const ORDER_ARRIVE := 3.5
-## ...or this close, when it has made no progress for STALL_TICKS (a crowded slot, a slot against a wall).
-const ORDER_STALL_ARRIVE := 12.0
+## (Round 6, nav: there is no "close enough after a stall" any more. Round 5 completed a stalled move from up to 12 m away,
+## which is what made a jammed horde look like it had decided to stop. An order completes when the unit arrives; a unit
+## that cannot says so through Movement.state() — phase "blocked", and what blocks it — and keeps trying.)
 ## ...and for wheeled units within this share of their turning radius (see _order_arrive), at most WHEELS_ARRIVE_MAX.
 const WHEELS_ARRIVE_RADII := 0.6
 const WHEELS_ARRIVE_MAX := 6.0
@@ -576,8 +577,8 @@ func _update_order_progress() -> void:
 			# An attack-move is done when it's there and nothing is left to shoot (control's rule).
 			var fighting: bool = order["verb"] == "attack_move" and engaged_target != ""
 			var arrive := _order_arrive()
-			if not fighting and (distance <= arrive or (stalled_ticks >= STALL_TICKS and distance <= ORDER_STALL_ARRIVE)):
-				_finish_order(goal if distance <= arrive else here)
+			if not fighting and distance <= arrive:
+				_finish_order(goal)
 		"stop":
 			# Stopped, and stopped for a moment (a unit that had barely started moving would finish at once).
 			if tank.estimated_velocity.length() < STOPPED_SPEED and game_match.tick - int(order["issued_tick"]) >= STOP_SETTLE_TICKS:
@@ -1423,8 +1424,8 @@ func build_situation() -> Dictionary:
 		"resupply": Match.resupply_center(team),
 		"enemy_base": Match.spawn_position(1 - team, 0),
 		"memory_ticks": Match.CONTACT_MEMORY_TICKS,
-		"control": {"center": Match.CONTROL_CENTER, "radius": Match.CONTROL_RADIUS, "owner": game_match.control_owner}
-				if game_match.control_point else null,
+		"control": {"center": Objectives.center(game_match), "radius": Objectives.radius(game_match),
+				"owner": Objectives.owner(game_match)} if Objectives.active(game_match) else null,
 		"order": order_context,
 		"element": element if not element.is_empty() else null,
 		"cooldowns": cooldowns,
@@ -1683,7 +1684,7 @@ func _act(s: Dictionary) -> void:
 			var goal: Vector3 = o["goal"]
 			why = TankBrain._join(why, "attack-move" if o["verb"] == "attack_move" else "ordered")
 			if _flat(my_position).distance_to(goal) <= _order_arrive():
-				_order_move({"type": "stop"})
+				_order_move(_face_intended_or({"type": "stop"}))
 			else:
 				_order_move(_move_to(goal, false, float(o["speed"]), _order_arrive()))
 			_order_weapon({"type": "fire_at_will"})
@@ -2038,8 +2039,14 @@ func _act(s: Dictionary) -> void:
 			if watch == null and sector.get("facing") != null:
 				watch = my_position + (sector["facing"] as Vector3) * 20.0  # nothing in sight: keep watching my arc
 				why = TankBrain._join(why, "covering its sector")
+			# Nothing to watch: the facing the unit was TOLD (its K1 order's, else its post's) beats a doctrine squad's
+			# default, which beats standing still. (An element's sector already came first above; a unit the player
+			# ordered directly is detached from its element and has no sector.)
+			var told: Variant = intended_facing()
 			if watch != null:
 				_order_move({"type": "face", "x": watch.x, "z": watch.z})
+			elif told != null:
+				_order_move(_face_intended_or({"type": "stop"}))
 			elif s.get("squad") != null:
 				var look: Vector3 = my_position + (s["squad"]["facing"] as Vector3) * 20.0
 				_order_move({"type": "face", "x": look.x, "z": look.z})
@@ -2242,6 +2249,44 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 
 
 ## Turn the hull toward the nearest visible enemy (front armor, and a fixed gun's aim), else `fallback`.
+## Round 6 (the lead: "I couldn't tell what direction they were facing"): the facing this unit was TOLD to hold — the
+## `facing` of its current K1 order, else the heading of the post its last order left it at (Orders.station: that
+## order's facing, or the way it travelled). null when nothing says. K1 has carried `facing` since round 5; until round 6
+## the brain never read it (OrderFeed passes verb, goal, target and speed only), so a unit told to face east faced north.
+func intended_facing() -> Variant:
+	if _order_source == null or tank == null:
+		return null
+	var unit_name := String(tank.name)
+	if _order_source.has_method("current"):
+		var raw: Variant = _order_source.call("current", unit_name)
+		if raw is Dictionary and not (raw as Dictionary).is_empty():
+			return TankBrain._direction_of((raw as Dictionary).get("facing"))
+	if _order_source.has_method("station"):
+		var post: Variant = _order_source.call("station", unit_name)
+		if post is Dictionary:
+			return TankBrain._direction_of((post as Dictionary).get("heading"))
+	return null
+
+
+## Turn to the intended facing if there is one, else `fallback`.
+func _face_intended_or(fallback: Dictionary) -> Dictionary:
+	var facing: Variant = intended_facing()
+	if facing == null:
+		return fallback
+	var look: Vector3 = _flat(tank.global_position) + (facing as Vector3) * 20.0
+	return {"type": "face", "x": look.x, "z": look.z}
+
+
+## [x, z] (or a Vector3) as a flat unit direction, or null.
+static func _direction_of(value: Variant) -> Variant:
+	var direction := Vector3.ZERO
+	if value is Vector3:
+		direction = Vector3((value as Vector3).x, 0.0, (value as Vector3).z)
+	elif value is Array and (value as Array).size() == 2:
+		direction = Vector3(float(value[0]), 0.0, float(value[1]))
+	return direction.normalized() if direction.length_squared() > 1e-6 else null
+
+
 static func _face_threat_or(s: Dictionary, fallback: Dictionary) -> Dictionary:
 	var my_position: Vector3 = s["self"]["position"]
 	var nearest: Variant = null

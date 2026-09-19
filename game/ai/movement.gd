@@ -93,7 +93,12 @@ const FIRE_LEG_MIN_TICKS := maxi(1, SimClock.TICK_RATE / 4)
 
 ## X3: ORCA local avoidance on (the kill switch is for measuring the difference, `--no-avoidance`).
 static var avoidance_on := not OS.get_cmdline_user_args().has("--no-avoidance")
-## Measuring only: `--nav-off=grace,minpace,pushidle,carrot` switches single mechanisms off for an A/B (nav-where).
+## Measuring only: `--nav-off=grace,minpace,pushidle,carrot,yield,unstick,repath` switches single mechanisms off for an A/B
+## (nav-where), and `r5sidestep` switches round 5's single-friend sidestep back ON (it overtakes a friend ahead in the lane).
+## TWO TRAPS, both hit in round 6 (_agents/navigation.md "Measuring"): (1) a switch that silently does nothing makes
+## your A/B a comparison of a thing with itself — the first `carrot` switch was broken exactly so; prove each switch
+## changes SOMETHING before trusting an equal result. (2) Once a nav commit is merged, `main` is no longer the
+## before-picture: bisect on named commits, not on "main vs my branch".
 static var _off := _parse_off()
 
 
@@ -153,6 +158,9 @@ const STATION_RANGE := 14.0
 const STATION_MIN_SPEED := 0.5
 ## ...and stops counting as moving when it has not changed for this long.
 const STATION_STALE_SECONDS := 1.0
+## ...or at once when it is re-issued unchanged after this long (a stopped slot; brains re-issue several times a second,
+## and an anchor that only updates now and then must not read as stopping between updates).
+const STATION_STOPPED_SECONDS := 0.35
 ## Steer at where the goal will be this far ahead (seconds), so the hull points along the formation's travel.
 const STATION_LEAD_SECONDS := 0.6
 
@@ -195,6 +203,8 @@ var _ask_left := 0
 var _goal_velocity := Vector2.ZERO
 var _goal_seen := Vector3.INF
 var _goal_changed_at := 0
+## The order was (re)issued since the last tick: an unchanged goal re-issued means the goal has stopped.
+var _reissued := false
 var _ticks := 0
 ## Ticks since the current order (or interruption) began.
 var _order_ticks := 0
@@ -341,6 +351,7 @@ func bind() -> void:
 ## Forget the route (a new move order): the next drive() repaths at once.
 func new_order() -> void:
 	_repath_left = 0.0
+	_reissued = true
 
 
 ## The move order isn't a move_to (stop, face, drive, or a dead hull): nothing to report but "arrived".
@@ -370,6 +381,8 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	var around_fire := _around_fire(routed, goal, order)
 	lap = OrderController._lap("move.fire", lap)
 	var waypoint := around_fire
+	if _off.has("r5sidestep"):
+		waypoint = _around_friends(around_fire)
 	var speed_factor := clampf(float(order.get("speed", 1.0)), 0.2, 1.0)
 	_arrive = clampf(float(order.get("arrive", OrderController.ARRIVE_RADIUS)), 0.5, 10.0)
 	var arrive := _arrive if around_fire == goal else 0.5
@@ -428,6 +441,8 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 ## travel is a new order, not motion.
 func _track_goal(goal: Vector3) -> void:
 	_ticks += ctl._step
+	var reissued := _reissued
+	_reissued = false
 	if _goal_seen == Vector3.INF:
 		_goal_seen = goal
 		_goal_changed_at = _ticks
@@ -440,7 +455,9 @@ func _track_goal(goal: Vector3) -> void:
 		_goal_velocity = Vector2.ZERO if velocity.length() > 2.0 * ctl.tank.max_forward_speed else velocity
 		_goal_seen = goal
 		_goal_changed_at = _ticks
-	elif seconds > STATION_STALE_SECONDS:
+	elif seconds > STATION_STALE_SECONDS or (reissued and seconds > STATION_STOPPED_SECONDS):
+		# Re-issued where it already was: the slot has stopped. Feed-forward must stop with it at once, or a crew runs
+		# ~3 m past a halting formation on a stale speed (measured, X8: 3.2 m for every gain set before this).
 		_goal_velocity = Vector2.ZERO
 
 
@@ -629,6 +646,8 @@ static func _distance_to_ray(point: Vector3, origin: Vector3, direction: Vector2
 ## one with less of its route left gives way (it has less to lose), and the unit name breaks a tie — so the two never
 ## both wait and never both go.
 func _negotiate(goal: Vector3, direct: bool, still_only := false) -> void:
+	if _off.has("yield"):
+		return
 	var tank := ctl.tank
 	var name := _hull_ahead(goal, direct)
 	if name == "":
@@ -852,6 +871,59 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
 	return [point, keep]
 
 
+## Measuring only (`--nav-off=r5sidestep` turns it ON): round 5's local avoidance, kept to attribute differences.
+## Local avoidance: a friend parked in the way within AVOID_LOOKAHEAD meters (within AVOID_WIDTH of the line to the
+## waypoint) is passed beside, AVOID_CLEARANCE meters off its center on the side the line already leans to. Navmesh paths
+## ignore units, move_and_slide stops a hull against another, and wheels can't pivot round one (a wheeled IFV looped its
+## unstick routine against a parked tank for 8 s). Brains only (they share the per-tick tank table).
+func _around_friends(waypoint: Vector3) -> Vector3:
+	const AVOID_LOOKAHEAD := 10.0
+	const AVOID_WIDTH := 3.2
+	const AVOID_CLEARANCE := 5.0
+	var brain := ctl as TankBrain
+	if brain == null or brain.game_match == null:
+		return waypoint
+	var tank := ctl.tank
+	var here_x := tank.global_position.x
+	var here_z := tank.global_position.z
+	var to_x := waypoint.x - here_x
+	var to_z := waypoint.z - here_z
+	var distance := sqrt(to_x * to_x + to_z * to_z)
+	if distance < 1.0:
+		return waypoint
+	var dir_x := to_x / distance
+	var dir_z := to_z / distance
+	var nearest := minf(distance + AVOID_WIDTH, AVOID_LOOKAHEAD)
+	var detour := waypoint
+	# X2: the tick's shared living-ally table (positions already extracted; every controller runs before any tank
+	# moves, so these are this tick's positions), and a squared-distance reject before any of the lane math. At 60
+	# units this loop was the single biggest cost of executing orders.
+	var my_name := String(tank.name)
+	var reach_squared := nearest * nearest + AVOID_WIDTH * AVOID_WIDTH
+	# Round-5 X1: typed columns instead of a dictionary per ally (same tanks, same order, same float values).
+	var columns := AiTickCache.ally_columns(brain.game_match, tank.team)
+	var xs: PackedFloat32Array = columns[0]
+	var zs: PackedFloat32Array = columns[1]
+	var names: PackedStringArray = columns[2]
+	for i in xs.size():
+		var position := Vector3(xs[i], 0.0, zs[i])
+		var dx := position.x - here_x
+		var dz := position.z - here_z
+		if dx * dx + dz * dz >= reach_squared or names[i] == my_name:
+			continue
+		var along := dx * dir_x + dz * dir_z
+		if along <= 0.0 or along >= nearest:
+			continue
+		var lateral := dx * dir_z - dz * dir_x
+		if absf(lateral) >= AVOID_WIDTH:
+			continue
+		nearest = along
+		# Pass on the side away from it (ties: its right).
+		var clearance := AVOID_CLEARANCE if lateral >= 0.0 else -AVOID_CLEARANCE
+		detour = Vector3(position.x - dir_z * clearance, 0.0, position.z + dir_x * clearance)
+	return detour
+
+
 ## The minimum turning radius when this unit rolls on wheels (K3 `locomotion` "wheels", `min_turn_radius_m`), else 0.
 func wheel_radius() -> float:
 	var tank := ctl.tank
@@ -892,7 +964,7 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	var off_path := _path.size() >= 2 and _off_path(here) > OFF_PATH_REPATH
 	var stalled := stalled_ticks > 0 and stalled_ticks % int(BLOCKED_SECONDS * SimClock.TICK_RATE) == 0
 	if _repath_left <= 0.0 or _flat_distance(goal, _path_goal) > 1.0 or off_path or stalled:
-		_repath_left = REPATH_SECONDS
+		_repath_left = 1.0 if _off.has("repath") else REPATH_SECONDS
 		_path_goal = goal
 		_path = Pathing.find_path(tank, here, goal)
 		_path_index = 1 if _path.size() >= 2 else _path.size()
@@ -918,7 +990,7 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
 	var toward := Vector2(_path[_path_index].x - here.x, _path[_path_index].z - here.z)
 	if _off.has("carrot"):
-		return Vector3(_path[_path_index].x, 0.0, _path[_path_index].z)
+		return _corner_waypoint(goal)
 	if toward.length_squared() > 0.01 and forward.normalized().dot(toward.normalized()) < CARROT_ALIGNED_COS:
 		for i in range(_path_index, _path.size()):
 			if _flat_distance(_path[i], here) >= look and (wheel_radius() <= 0.0 or _ahead_of_wheels(_path[i])):
@@ -948,6 +1020,18 @@ func _along_route(from: Vector2, distance: float) -> Vector3:
 		left -= leg
 		at = corner
 	return Vector3.INF
+
+## Measuring only (`--nav-off=carrot`): round 5's path following, exactly — steer at the next raw corner, moving on
+## within 2.5 m of it (cars: 0.8 turning radii).
+func _corner_waypoint(goal: Vector3) -> Vector3:
+	var here := ctl.tank.global_position
+	var reach := maxf(2.5, wheel_radius() * 0.8)
+	while _path_index < _path.size() and _flat_distance(here, _path[_path_index]) < reach:
+		_path_index += 1
+	if _path_index >= _path.size():
+		return goal
+	return Vector3(_path[_path_index].x, 0.0, _path[_path_index].z)
+
 
 ## Flat distance from `here` to the route near where the hull is on it.
 func _off_path(here: Vector3) -> float:
@@ -995,7 +1079,7 @@ func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			# (a column, a crowd) would just be rammed, and then two units are stuck instead of one — right-of-way
 			# sorts that case out instead.
 			var backing := 1.0 if order.get("reverse", false) else -1.0
-			_unstick_pivot = _hull_within(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing,
+			_unstick_pivot = not _off.has("unstick") and _hull_within(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing,
 					UNSTICK_CLEARANCE)
 			if not _unstick_pivot or wheel_radius() <= 0.0:
 				_unstick_left = UNSTICK_SECONDS  # wheels can't pivot: with a friend behind they wait for right-of-way

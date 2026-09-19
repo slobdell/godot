@@ -1,0 +1,62 @@
+extends TestCase
+## Feel (round 6; the lead: "Our semi truck for the gang that was supposed to be a huge tank is tiny compared to the
+## other vehicles ... Scouts are small, the IFVs are bigger, the tanks bigger than that (everything drawn to scale)").
+## hull_size (C1) is the size of a unit; the art must draw it.
+
+
+func _spawn(unit_id: String) -> Tank:
+	var tank: Tank = (load("res://game/tank/tank.tscn") as PackedScene).instantiate()
+	tank.unit_id = unit_id
+	tank.simulate = false
+	add_to_tree(tank)
+	return tank
+
+
+## The drawn hull's length (m) along the tank's -Z, from the visual's meshes in tank space.
+func _drawn_length(tank: Tank) -> float:
+	var hull: Node = tank.get_node("HullVisual")
+	var models := hull.find_children("Model", "Node3D", true, false)
+	if not models.is_empty():
+		hull = models[0]  # the model only: a shielded unit's shield shell is bigger than its hull
+	var result := AABB()
+	var first := true
+	for child in hull.find_children("*", "MeshInstance3D", true, false):
+		var instance := child as MeshInstance3D
+		if instance.mesh == null or not instance.is_visible_in_tree() or instance.mesh.get_surface_count() == 0:
+			continue
+		var box := (tank.global_transform.affine_inverse() * instance.global_transform) * instance.mesh.get_aabb()
+		result = box if first else result.merge(box)
+		first = false
+	return result.size.z
+
+
+func test_every_faction_draws_its_units_at_their_hull_size() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	for faction in ["gangs", "law", "syndicate"]:
+		var lengths := {}
+		for unit_id in Units.roster(faction):
+			if not GameTheme.slots.has("unit.%s.hull" % unit_id):
+				continue
+			var tank := _spawn(unit_id)
+			await wait_physics_frames(1)
+			var drawn := _drawn_length(tank)
+			var wanted := float(Units.stat(unit_id, "hull_size")[2])
+			assert_near(drawn, wanted, wanted * 0.05, "%s draws its %.1f m hull (drew %.2f m)" % [unit_id, wanted, drawn])
+			lengths[Units.role_of(unit_id)] = drawn
+			tank.queue_free()
+		if lengths.has("scout") and lengths.has("tank"):
+			assert_true(lengths["scout"] < lengths["tank"], "%s: the scout is smaller than the tank %s" % [faction, lengths])
+	GameTheme.use(previous)
+
+
+func test_a_turret_scales_with_its_hull() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var tank := _spawn("gang_tank")  # the semi: its model was 3.6 m of a 5.6 m hull
+	await wait_physics_frames(2)
+	GameTheme.use(previous)
+	var fit := float(Units.stat("gang_tank", "hull_size")[2]) / FactionArt.hull_length("gang_tank")
+	for part in tank.get_node("Turret").find_children("Model", "Node3D", true, false):
+		var total := (tank.global_transform.affine_inverse() * (part as Node3D).global_transform).basis.get_scale().x
+		assert_near(total, fit, 0.01, "the turret part takes the hull's scale (%.2f)" % total)

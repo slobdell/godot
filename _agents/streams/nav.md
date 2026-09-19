@@ -67,6 +67,9 @@ The honest summary: **the path planner is fine and everything around it is thin.
   stop — units are reporting success from twelve metres away.
 - **No dynamic obstacles.** No `NavigationObstacle3D` anywhere; the bake never updates. Wrecks were deliberately moved
   to layer 4 so they never block driving, precisely to dodge this.
+  **Correction (arena, verified by nav 2026-09-18): the layer-4 claim is false.** Only `tank.tscn` sets a collision
+  layer; the `wreck` kit prop is a plain layer-1 `StaticBody3D`, baked into the navmesh and blocking like a container,
+  and a destroyed vehicle leaves no body at all (`game/theme/fx/fire_sites.gd`: visual only).
 - `game/control/squad_orders_playtest.gd:13` already names *"moved, but piled up"* as an expected failure mode. It was
   known; nobody owned it.
 
@@ -259,18 +262,61 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Resuming this stream (written 2026-09-18 before a 4-day pause; read this first)
+
+**State:** backlog complete (X1–X8 done, X9 closed). Everything is merged or mergeable: code green at `34293b3b`
+(builder0, 1127/0), tip `4bbb957c`+ docs only. Worktree clean. Nothing is in flight. **Do not** restart anything below
+without re-measuring first — every number here is tied to a commit.
+
+**Where the knowledge lives:** architecture and every constant's reason in `_agents/navigation.md` (read its
+*Measuring* section: the switches table and the two traps). Saved measurements in `_agents/streams/references/nav/`
+(`nav_suite_30e3250d_baseline.json` = round-5 movement; `nav_suite_1923059c.json` = after X3/X4/X7 + K1 fix).
+
+**The K1 start window — three decisions, each measured** (`movement.gd` `_avoid`):
+1. For `AVOID_GRACE_TICKS` = 10 ticks after a *new destination* (goal jump > 3 m; a sliding slot doesn't count) the
+   hull steers along its route and avoidance only sets throttle. Why: with avoidance steering from tick 0, control's
+   `test_units_respond_within_three_ticks…` took 4 ticks (133 ms) against K1's 100 ms = 3 ticks.
+2. Inside that window, a crowded-but-not-reversed way is driven at ≥ 15% (`AVOID_MIN_PACE`), so an order always
+   *visibly* starts (the test also accepts "driving at it", which needs throttle > 0).
+3. The 15% floor applies **only** in the window: left on permanently it cost 20 s at the tail of head-on maze-60
+   (`nav-where`, 300 s: 182.5 → 162.8 s last arrival; builder0, tree of `1923059c`'s parent).
+And for wheels, any steering point must be forward-reachable (outside both turning circles): found by control's
+right-click test (an IFV three-point-turned for a second on a 40° bend with a 1.2-radius carrot).
+
+**Every headline number, with provenance (all builder0):**
+- Arrivals, `make nav-suite` (hold-fire, 180 s, 1 seed, all `tank`): round 5 at `30e3250d` 15/30, 35, 0 (head-on),
+  34, 33, 40 of 60 → X3+X4+X6 at `e291a35a` and again at `1923059c`: 30/30 and 60/60 on every config.
+- PID: `test_station_keeping`, slot at 5 m/s re-issued every 4 ticks: mean gap 0.35 m PID vs 4.58 m P-law at
+  `e291a35a` (0.13 m after later fixes); X8 faction table at the commit "nav X8" (`test_station_keeping` MEASURE lines).
+- 12 m lie: `make nav-orders` before `c3e4102e` / after `c8c7a79d` (table below).
+- Cost: `make ai-perf` 60 brains, `move` part 1119 µs (`30e3250d`) → 1688 µs (`1923059c`).
+- Near-ambush attribution: `near_ambush(30 s)` through_tick 531 at `00c99bf4`, 555 at `7cce78af`; 531 again on nav's
+  tree with `--nav-off=r5sidestep`.
+
+**Suspected, not proved** (don't treat as findings):
+- Head-on single-lane traffic resolves one unit at a time; a *column-level* yield (the whole queue backs as one) would
+  probably cut head-on maze t90 (~144 s) toward one-way (~120 s). Untested.
+- The K1 window likely costs a little flow in open ground (yard one-way t90 47 s at `e291a35a` → 55 s at `1923059c`),
+  but that pair also differs by X7 changes; not isolated.
+- ORCA's 2 s horizon and hull radius (mean half-extent + 0.25 m) were never tuned; they were the first reasonable
+  values and the suite went 100% on them. Tuning could buy flow; it could also break head-on.
+- Wheeled units in crowds were only checked through control's tests and the IFV debug trace; nav-suite uses tanks
+  (tracks) only. A wheels-only suite run has never been done.
+- X8 almost certainly does not change win rates; never measured.
+
 ### Where it stands (updated as I go)
 
 | Item | State |
 |---|---|
-| **X1 / CP1** Movement seam | **Merged to main** (`30e3250d` → `f03a795c`). Gunnery split waits for CP4 on main (agreed). `ORDER_STALL_ARRIVE` deletion waits for squad's precedence fixes, as its own measured commit (orchestrator's ruling). |
+| **X1 / CP1** Movement seam | **Merged to main** (`30e3250d` → `f03a795c`). **The 12 m lie is deleted** (`c8c7a79d`, measured below). **Gunnery split done** after CP4 (`game/ai/gunnery.gd`, combat's file, combat's seam); cutting its envelope call turns exactly combat's three wiring tests red (22 rule tests stay green). `ORDER_STALL_ARRIVE` deletion waits for squad's precedence fixes, as its own measured commit (orchestrator's ruling). |
 | **X2** measure the jam | `make nav-suite` (arena's probe × configs, parallel on builder0) + `make nav-where` (who didn't arrive, where, and what their Movement says). Baseline saved: `references/nav/nav_suite_30e3250d_baseline.json`. |
 | **X3** ORCA | Done: `game/ai/avoidance.gd`. |
 | **X4** right-of-way | Done: ask / give way in `movement.gd`, visible as `phase: yielding`. |
 | **X5** maze gate | **Met on one seed at 180 s except head-on maze** (see numbers); five seeds are identical by construction (below). Not wired into `make check`: a suite run is ~10 min. |
 | **X6** PID | Done for station-keeping (`pid.gd`, `control_gains.gd`): 0.35 m mean gap vs 4.58 m for the P law. Speed matching is the same loop; turret lay not attempted (combat's turret already has a rate limit, which is the dominant dynamics). |
 | **X7** path quality | Done: carrot along the route, cars look until they can drive onto the point, re-plan on change. |
-| X8, X9 | Not started. |
+| **X8** factions by gains | Done as data (`ControlGains.FACTIONS`), measured on movement; win rates not measured (below). Found and fixed a stopped-slot overshoot first. |
+| X9 dynamic obstacles | **Closed: no consumer, and arena would refuse one.** Wreck props are static, baked and blocking; destroyed vehicles leave no body; the approved destructible cover collapses to a lower stack without changing drivable space. A mid-match re-bake would also have to reproduce the south-half-plus-mirror construction or reintroduce the 64% base bias (trip-up 21). `NavigationObstacle3D` would duplicate ORCA. |
 
 ### Numbers (builder0, `make nav-suite`, hold-fire, 180 s; arrived of N)
 
@@ -283,8 +329,35 @@ and a stuck unit that reported success from 12 m away. That is what this stream 
 | yard-60 head-on | 33 | **60** (t90 37 s) |
 | foundry-60 | 40 | **60** (t90 38 s) |
 
+At `1923059c` (after the K1 and wheels fixes): the same 60/60 and 30/30 everywhere; t90 maze-60 120 s, head-on 144 s,
+yard 55 s / 42 s, foundry 40 s. **Cost** (`make ai-perf`, 60 brains): the `move` part 1119 → 1688 usec per tick
+(+0.57 ms), inside the brief's ~1 ms.
+
 Caveats: one seed (the probe has no randomness, so five seeds are five copies; defaulting to 1 is the honest
 setting), all `tank` units, hold-fire, no brains (the probe drives plain `OrderController`s).
+
+### The 12 m lie, measured (`make nav-orders`: 5 player squads × 6 with brains, ordered across one another; builder0)
+
+| | yard | foundry | maze |
+|---|---|---|---|
+| before (`c3e4102e`) | 30/30, t100 27.3 s, 0 far | 30/30, 21.4 s, 0 far | 29/30 in 90 s: 1 completed 8.1 m short, 1 never (blocked 90 m out) |
+| after (`c8c7a79d`) | same | same | **30/30, t100 73.2 s, 0 far** |
+
+The unit that "completed" 8 m short was parked in a corridor, and it was what the never-arriving unit was stuck
+behind. The lie wasn't only a false report; it made jams.
+
+### X8: factions by their gains (builder0, `test_station_keeping`, the same tank hull, a slot at 5 m/s that stops)
+
+| crew | tracking gap | overshoot when the slot stops | settle |
+|---|---|---|---|
+| default (Condemned) | 0.20 m | 1.89 m | 3.2 s |
+| Syndicate — crisp | **0.09 m** | 1.68 m | 3.1 s |
+| gangs — loose | 0.81 m | **2.55 m** | 3.2 s |
+| Law — damped | 1.00 m | **1.55 m** | 3.1 s |
+
+Before these, every gain set overshot a stopping slot by ~3.2 m: the slot's speed estimate stayed stale for a second
+and feed-forward pushed the crew past. Fixed (a goal re-issued unchanged means it stopped). **Honest limit:** this
+changes how a formation moves and halts; nothing here shows it changes who wins, and I would not expect it to.
 
 ### Findings worth relaying
 
@@ -293,8 +366,52 @@ setting), all `tank` units, hold-fire, no brains (the probe drives plain `OrderC
 - **Five seeds of the probe are one sample.** Check that the thing you vary actually varies before running a series.
 - **Blind unsticking rams friends.** The round-5 routine reversed whatever was behind; in a column that makes two stuck
   units out of one. It now backs off only with room, and tracks pivot instead.
+- **Removing a mechanism can be the regression.** Squad's near-ambush assault got 0.8 s slower on nav's merge with
+  every added mechanism switched off; the cause was the *removed* round-5 sidestep, which overtook a friend in the
+  same lane. ORCA doesn't overtake (a friend moving your way isn't a collision). squad restored its own 22 s window.
 - **Cars and short lookaheads don't mix.** Any steering point inside a car's turning circle is a three-point turn; the
   carrot, the avoiding point and the give-way spot all have to be forward-reachable.
+
+### Report (nav, 2026-09-18)
+
+**Green, merge here: `34293b3b`** (builder0 `make check`: 1127 passed, 0 failed, all smokes; `5b8e0df7` and this Status on
+top are docs only). **The sim baseline moves and is deliberately not recorded here** (orchestrator's ruling); on this
+tree it was `glibc-2.43 b0df248dc0140639`. Earlier merges to main: CP1 at `30e3250d`, X3–X7 at `1923059c`.
+
+Looked at like a player: `make remote T=control-scale-shots` (34 a side, foundry, 1920×1080, builder0, 18:36): squad 1
+moves out as a spaced column, squad 2 threads out of the parked line without disturbing it, no piling. The lead's own
+scenario, headless and with brains, is `make nav-orders` (numbers above).
+
+### What to playtest (the lead)
+
+- `make skirmish`: box-select squads and send them in different directions at once, through each other, and through
+  a gap. What to look for: nobody sits jammed behind a friend; a friend in the way pulls aside (it reads as *giving
+  way*, not as avoiding); a new order still starts moving instantly; squads keep their places on the move and stop
+  in them without sailing past.
+- `make skirmish ARENA=maze` if you want the torture test (it isn't a shipping map).
+- Headless, no window: `make remote T=nav-suite`, `make remote T=nav-orders`, `make remote T="nav-where ARENA=maze NAV_BOTH=1"`.
+
+### Questions for the lead
+
+- **Faction feel by control law (X8)** is in as data: Syndicate crisp, gangs loose and overshooting, Law damped.
+  It changes how formations move and halt, not who wins. Keep, exaggerate, or drop?
+
+### Known issues
+
+- Head-on traffic in the maze's single 3 m corridor resolves (60/60) but slowly: t90 ~144 s against 120 s one-way.
+  Right-of-way decides one unit at a time; a platoon-level "whole column waits" would be faster.
+- Hulls can still touch: ORCA picks a velocity, the tank's turn rate and acceleration only approximately follow it.
+  `move_and_slide` keeps them solid, and that's by design (vehicles are vehicles).
+- `yard` one-way t90 55 s against 47 s at `e291a35a`. The K1 start window trades a little flow for the 3-tick
+  response. Not chased further.
+
+### Next steps
+
+- **If round 7 revisits the startup-only navmesh, revisit `agent_max_climb` with it** (arena): both follow from "a
+  snapshot baked in two mirrored halves"; that constant caps authored slopes at ~20° (`make slope-probe`), and raising
+  it needs the same swap-bases fairness control a dynamic mesh would.
+- A column-level right-of-way (a whole queue yields as one) for single-lane head-on traffic.
+- Wire `nav-suite`'s maze-60 head-on into a nightly target rather than `make check` (~10 min on builder0).
 
 ### Plan (in order)
 
@@ -321,11 +438,15 @@ setting), all `tank` units, hold-fire, no brains (the probe drives plain `OrderC
 
 ### Requests to other streams
 
+- **arena** (X9): answered. Nothing stops blocking mid-match, now or planned; X9 is closed (see the table).
 - **arena**: `tests/arena/maze_probe.gd` drives plain `OrderController`s, so round 5's brains-only `_around_friends`
   never ran in your baseline. Not a problem now (N1 avoidance is on for every controller) — just a note for reading
   the old numbers.
 
 ### Merge notes
 
-- New files: `game/ai/{movement,avoidance}.gd`, `tests/test_{movement,avoidance}.gd`, `mk/nav.mk`,
-  `tools/nav_suite.py`, `_agents/navigation.md`.
+- New files: `game/ai/{movement,avoidance,pid,control_gains,gunnery}.gd` (**gunnery.gd is combat's**),
+  `tests/test_{movement,avoidance,pid,station_keeping}.gd`, `tests/nav/{nav_probe,order_probe}.gd`, `mk/nav.mk`,
+  `tools/nav_suite.py`, `_agents/navigation.md`, `_agents/streams/references/nav/`.
+- Edits outside nav's paths: `game/ai/tank_brain.gd` — only `ORDER_STALL_ARRIVE` and its one use (agreed with the
+  orchestrator). `tests/baselines/sim_state_hash.txt` is untouched (recorded by the orchestrator at the close).

@@ -1,0 +1,230 @@
+{
+ "args": {
+  "godot": ".tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64",
+  "pairs": "condemned:condemned,gangs:law,condemned:syndicate",
+  "seeds": 3,
+  "first_seed": 1,
+  "jobs": 8,
+  "budget": 5200,
+  "time_limit": 240,
+  "arena": "",
+  "tune": "",
+  "json": "build/engagement-variants.json",
+  "variants": "tools/matchup_variants/engagement_bands.json"
+ },
+ "variants": {
+  "shipped (preferred_max)": "assault_gun.effective_range=62,autocannon.effective_range=45,cannon.effective_range=45,laser.effective_range=86,machine_gun.effective_range=35,pulse_cannon.effective_range=55,pulse_repeater.effective_range=45,railgun.effective_range=104,scrap_cannon.effective_range=36,spear_gun.effective_range=24,twin_mg.effective_range=28",
+  "ROUND 5 (bands at reach, no acquisition, no crossing)": {
+   "tune": "assault_gun.effective_range=80,autocannon.effective_range=60,cannon.effective_range=70,laser.effective_range=90,machine_gun.effective_range=45,pulse_cannon.effective_range=70,pulse_repeater.effective_range=55,railgun.effective_range=110,scrap_cannon.effective_range=50,spear_gun.effective_range=30,twin_mg.effective_range=35",
+   "flags": [
+    "--no-acquisition",
+    "--no-crossing"
+   ]
+  },
+  "discipline off only (bands at reach)": "assault_gun.effective_range=80,autocannon.effective_range=60,cannon.effective_range=70,laser.effective_range=90,machine_gun.effective_range=45,pulse_cannon.effective_range=70,pulse_repeater.effective_range=55,railgun.effective_range=110,scrap_cannon.effective_range=50,spear_gun.effective_range=30,twin_mg.effective_range=35",
+  "0.65 of reach": "assault_gun.effective_range=52,autocannon.effective_range=39,cannon.effective_range=45.5,laser.effective_range=58.5,machine_gun.effective_range=29.25,pulse_cannon.effective_range=45.5,pulse_repeater.effective_range=35.75,railgun.effective_range=71.5,scrap_cannon.effective_range=32.5,spear_gun.effective_range=19.5,twin_mg.effective_range=22.75",
+  "0.55 of reach": "assault_gun.effective_range=44,autocannon.effective_range=33,cannon.effective_range=38.5,laser.effective_range=49.5,machine_gun.effective_range=24.75,pulse_cannon.effective_range=38.5,pulse_repeater.effective_range=30.25,railgun.effective_range=60.5,scrap_cannon.effective_range=27.5,spear_gun.effective_range=16.5,twin_mg.effective_range=19.25"
+ },
+ "summaries": {
+  "shipped (preferred_max)": {
+   "matches": 15,
+   "duration_s": 99.30666666666666,
+   "contact_s": 5.066666666666666,
+   "separation_at_contact_m": 100.55333333333333,
+   "engaged_distance_m": 59.55333333333333,
+   "kill_distance_m": 39.6,
+   "shots_per_unit_minute": 15.212,
+   "direct_contact_s": 5.4,
+   "engaged_distance_direct_m": 59.20666666666667,
+   "static_share": 0.0,
+   "held_line_share": 0.09606666666666668,
+   "net_advance_m": 89.64,
+   "off_axis_kill_share": 0.4549333333333333,
+   "behind_line_kill_share": 0.08466666666666667,
+   "centroid_travel_m": 248.06,
+   "kills": {
+    "front": 178,
+    "side": 271,
+    "rear": 118,
+    "indirect": 43
+   },
+   "flank_rear_kill_share": 0.6860670194003528,
+   "rear_kill_share": 0.20811287477954143,
+   "indirect_kill_share": 0.07049180327868852,
+   "unit_seconds_near_cover": 0.08873333333333333,
+   "shots_near_cover": 0.06726666666666667,
+   "deaths_near_cover": 0.081,
+   "killers_near_cover": 0.07133333333333333,
+   "reasons": {
+    "control": 4,
+    "elimination": 11
+   },
+   "wins": {
+    "law": 4,
+    "condemned": 6,
+    "gangs": 2,
+    "syndicate": 3
+   }
+  },
+  "ROUND 5 (bands at reach, no acquisition, no crossing)": {
+   "matches": 15,
+   "duration_s": 91.38666666666667,
+   "contact_s": 4.266666666666667,
+   "separation_at_contact_m": 108.37333333333332,
+   "engaged_distance_m": 72.44666666666667,
+   "kill_distance_m": 54.42666666666666,
+   "shots_per_unit_minute": 17.825333333333333,
+   "direct_contact_s": 4.333333333333333,
+   "engaged_distance_direct_m": 71.91333333333334,
+   "static_share": 0.016733333333333333,
+   "held_line_share": 0.10693333333333334,
+   "net_advance_m": 96.71333333333334,
+   "off_axis_kill_share": 0.2568666666666667,
+   "behind_line_kill_share": 0.021666666666666667,
+   "centroid_travel_m": 236.79333333333335,
+   "kills": {
+    "front": 254,
+    "side": 251,
+    "rear": 64,
+    "indirect": 58
+   },
+   "flank_rear_kill_share": 0.5536028119507909,
+   "rear_kill_share": 0.11247803163444639,
+   "indirect_kill_share": 0.09250398724082935,
+   "unit_seconds_near_cover": 0.1008,
+   "shots_near_cover": 0.09766666666666667,
+   "deaths_near_cover": 0.1028,
+   "killers_near_cover": 0.0668,
+   "reasons": {
+    "control": 2,
+    "elimination": 13
+   },
+   "wins": {
+    "condemned": 6,
+    "law": 4,
+    "gangs": 2,
+    "syndicate": 3
+   }
+  },
+  "discipline off only (bands at reach)": {
+   "matches": 15,
+   "duration_s": 100.77333333333333,
+   "contact_s": 5.0,
+   "separation_at_contact_m": 101.45333333333333,
+   "engaged_distance_m": 67.55333333333333,
+   "kill_distance_m": 42.559999999999995,
+   "shots_per_unit_minute": 16.934666666666665,
+   "direct_contact_s": 5.4,
+   "engaged_distance_direct_m": 66.94,
+   "static_share": 0.01813333333333333,
+   "held_line_share": 0.11193333333333334,
+   "net_advance_m": 77.77333333333334,
+   "off_axis_kill_share": 0.42860000000000004,
+   "behind_line_kill_share": 0.08893333333333334,
+   "centroid_travel_m": 259.70666666666665,
+   "kills": {
+    "front": 216,
+    "side": 255,
+    "rear": 120,
+    "indirect": 32
+   },
+   "flank_rear_kill_share": 0.6345177664974619,
+   "rear_kill_share": 0.20304568527918782,
+   "indirect_kill_share": 0.051364365971107544,
+   "unit_seconds_near_cover": 0.09826666666666667,
+   "shots_near_cover": 0.08406666666666666,
+   "deaths_near_cover": 0.10606666666666667,
+   "killers_near_cover": 0.08793333333333334,
+   "reasons": {
+    "control": 4,
+    "elimination": 11
+   },
+   "wins": {
+    "condemned": 6,
+    "gangs": 3,
+    "law": 3,
+    "syndicate": 3
+   }
+  },
+  "0.65 of reach": {
+   "matches": 15,
+   "duration_s": 108.80666666666666,
+   "contact_s": 5.066666666666666,
+   "separation_at_contact_m": 100.36,
+   "engaged_distance_m": 63.46,
+   "kill_distance_m": 39.580000000000005,
+   "shots_per_unit_minute": 13.471333333333332,
+   "direct_contact_s": 5.466666666666667,
+   "engaged_distance_direct_m": 62.31333333333334,
+   "static_share": 0.0038666666666666667,
+   "held_line_share": 0.08633333333333333,
+   "net_advance_m": 87.47333333333333,
+   "off_axis_kill_share": 0.466,
+   "behind_line_kill_share": 0.10333333333333333,
+   "centroid_travel_m": 285.51000000000005,
+   "kills": {
+    "front": 185,
+    "side": 248,
+    "rear": 135,
+    "indirect": 46
+   },
+   "flank_rear_kill_share": 0.6742957746478874,
+   "rear_kill_share": 0.23767605633802816,
+   "indirect_kill_share": 0.0749185667752443,
+   "unit_seconds_near_cover": 0.09266666666666667,
+   "shots_near_cover": 0.07653333333333333,
+   "deaths_near_cover": 0.0794,
+   "killers_near_cover": 0.07233333333333333,
+   "reasons": {
+    "control": 5,
+    "elimination": 10
+   },
+   "wins": {
+    "condemned": 6,
+    "law": 3,
+    "gangs": 3,
+    "syndicate": 3
+   }
+  },
+  "0.55 of reach": {
+   "matches": 15,
+   "duration_s": 109.51333333333334,
+   "contact_s": 5.066666666666666,
+   "separation_at_contact_m": 100.35333333333332,
+   "engaged_distance_m": 59.46666666666667,
+   "kill_distance_m": 34.32,
+   "shots_per_unit_minute": 11.434666666666667,
+   "direct_contact_s": 5.666666666666667,
+   "engaged_distance_direct_m": 58.2,
+   "static_share": 0.012066666666666667,
+   "held_line_share": 0.11773333333333333,
+   "net_advance_m": 83.55333333333333,
+   "off_axis_kill_share": 0.4903333333333333,
+   "behind_line_kill_share": 0.11393333333333334,
+   "centroid_travel_m": 272.15,
+   "kills": {
+    "front": 196,
+    "side": 249,
+    "rear": 122,
+    "indirect": 36
+   },
+   "flank_rear_kill_share": 0.654320987654321,
+   "rear_kill_share": 0.21516754850088182,
+   "indirect_kill_share": 0.05970149253731343,
+   "unit_seconds_near_cover": 0.09013333333333334,
+   "shots_near_cover": 0.08093333333333333,
+   "deaths_near_cover": 0.075,
+   "killers_near_cover": 0.06373333333333334,
+   "reasons": {
+    "control": 5,
+    "elimination": 10
+   },
+   "wins": {
+    "condemned": 6,
+    "law": 4,
+    "gangs": 2,
+    "syndicate": 3
+   }
+  }
+ }
+}

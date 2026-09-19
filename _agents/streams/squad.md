@@ -148,6 +148,34 @@ Nothing blocking. The task palette (N4) goes to him through control's page, not 
 
 _Updated 2026-09-18 by the squad worker._
 
+### Resume here (written 2026-09-18 before a 4-day pause; read first)
+
+**State:** everything is merged to main; the last green hash is `e683d0d3` (builder0, 1126 passed). The tree is clean.
+**Do not start** X6's baseline, X8, or anything on PID: all three are parked on others (X6 on CP4-on-main plus the
+orchestrator's sim-baseline record; X8 on N7; PID is done by nav's N6, see the X3 row).
+
+What is hardest to rediscover, and where it now lives:
+1. **The dither metric reported DOUBLE the real rate** from the 30 Hz move until `1fc83daf` (it divided by a hard-coded
+   3600 ticks). Real x3 rates, same seed: pre-CP4 5.8, CP4 raw 7.8, CP4 + fix 6.2-6.3 per unit-minute, bar 12: nothing
+   was ever over the bar, but CP4 did add 31% more switches, which the brain fix removed (count 21 → 16). **Any older
+   dither number is doubled; never compare it with a post-fix one.** Warning is also in `scenario_motion.gd`.
+2. **The discovery bridge fed its decider half the real elapsed time and stepped at double the cadence** from the 30 Hz
+   move until `1fc83daf`/`5521f741`. The one recorded discovery finding (`pin_and_flank`) predates the move and is
+   unaffected; logs produced in between are not comparable. Warning is in `unit_ai.md` ("Clock warning").
+3. **The player-hold rule is a rule in `TankBrain._order_move`, not a range comparison.** The old guarantee was a
+   coincidence (an outranging heuristic returned "stop"). The test asserts the mechanism (0 move ticks while holding)
+   with a CPU control that must move; both explanations are next to the test and the rule.
+4. **Support by fire has no near-ambush distance floor, on purpose**: it would put the line outside the band. The
+   precedence (SBF task above near ambush) is the invariant; the reasoning is next to `ElementPlan.SBF_STANDOFF`.
+5. **Unproven, worth a look:** (a) a unit shot at by an enemy it cannot see stands still after one react-to-contact;
+   (b) with elements on, ~1 order per unit-second remains from leg re-issues (the `make squad-coherence` smoke, one
+   laptop seed, pre-CP4); (c) two of control's five-squad units ended 36-39 m from their slots (maybe stuck: nav's
+   `Movement.state` can say); (d) `near_ambush` often ends without `assault_through` in the coherence probe; that
+   is probably its 0.5 s sampling missing a short assault, not a bug; (e) should a charge let fast units overtake a
+   column (round 7, orchestrator's note)?
+6. **Measurements only in `build/`, not committed:** the `make squad-coherence` smoke runs (laptop, 1 seed, 60 s,
+   pre-CP4; indicative only, quoted in Known issues). Everything else quoted here is in commit messages and this Status.
+
 ### Plan and progress (smallest foundation first)
 
 | Item | State |
@@ -157,7 +185,7 @@ _Updated 2026-09-18 by the squad worker._
 | **X5** attack / hold postures (+ herringbone ↔ react-to-contact flip fix) | `16d23375` |
 | **X4** a plain move keeps the squad | **done**: `4d734b1e` (47/45 → 0/0 idle orders, five-squad repro); control's windowed five-squad A/B on the merged tree: **0 idle commands** with X4 on — re-landed as `2fa58c01` |
 | **X2** standable slots | in CP3 (`SlotGround` over the navmesh's closest point) |
-| **X3** form-up ETA + pacing | ETA is nav's `Movement.eta` since CP1 (`0f2d5840`, refreshed 1 Hz; pace = own ETA / slowest ETA); **PID station-keeping waits on nav's N6** |
+| **X3** form-up ETA + pacing | **done**: ETA is nav's `Movement.eta` since CP1 (`0f2d5840`, refreshed 1 Hz; pace = own ETA / slowest ETA). **PID station-keeping is nav's N6 at the wheel** (on main): any `move_to` whose goal slides is PID-regulated (0.35 m mean gap vs 4.58 m, nav's `test_station_keeping`); a squad follower's leader-anchored slot (`KEEP_SLOT`) is such a goal, so squad feeds it and deliberately adds no regulator of its own |
 | **X6** `make squad-coherence` | probe + runner in CP3; attribution + two thrash fixes `824aa258`; **baseline waits for CP4 on main** |
 | **X7** covered flanks + ambush task | `a8048028` |
 | **CP4 pairing** (fire band, dither, cover timing, suppression threshold) | `1fc83daf`, `5521f741` |
@@ -218,6 +246,11 @@ line 0.5 m deep centred 2.8 m off its point; a plain move ends 0.3 m from the cl
 
 ### Known issues
 
+- `test_an_element_ambushed_at_close_range_assaults_through_it` is red on main at `84265bad` (the element gets through
+  at 18.5 s against an 18 s window). **Parked on the orchestrator's instruction:** nav is A/B-ing its path carrot
+  against it; if the cause is CP4's acquisition slowing the kills, the window is squad's to re-derive — and whether a
+  12.7 s assault-through is too slow for the drill is the question to ask first.
+
 - control's five-squad windowed run (merged tree, seed 3) shows two outliers 36-39 m from their current slots with X4
   on (mean 6.7 m over 15 element units). Not chased yet: likely stuck or fighting units — nav's `Movement.state`
   can now say which.
@@ -257,9 +290,8 @@ _None yet._
 
 ### Merge notes (shared / other streams' files)
 
-- **Green, merge here: `0f2d5840`** — builder0 `make check exited 0`, 1081 passed, sim baseline 8ebbed52 intact
-  (includes merged main with CP1). On top: `d4a855c9` two scenario thresholds derived from the band (test-only, filtered
-  runs pass) and Status.
+- **Green, merge here: `14361035`** (the tip when checked) — builder0 `make check exited 0`, 1081 passed, 0 failed, sim
+  baseline 8ebbed52 intact. Includes merged main (CP1), X3 on nav's ETA, and the two band-derived scenario thresholds.
 - `game/control/group_formation.gd` (control's, a recorded exception): adapter over TacticsFormation, same API.
 - `game/ai/tank_brain.gd` conflicts with combat's proposal `5478fa61` in exactly two lines: **take squad's**
   (`TankBrain.fire_band`, the same expression as `Engagement.effective_range`).
@@ -282,8 +314,12 @@ _None yet._
 
 1. After nav's N1 merges: `FormUp.eta` → `Movement.eta` (one line; guard the `{}` a hull nothing drives returns;
    0.85 × top speed is optimistic, don't assert on it), and `SlotGround.standable` onto a nav query if nav adds one.
-2. After N6: PID station-keeping in a slot (the lead's named use case).
-3. After CP4 on main: publish the X6 baseline (`make remote T="squad-coherence SEEDS=6"`, both brains-only and
+2. PID station-keeping: done by nav (N6, see the X3 row). An element's slots are fixed per leg or per click, so the PID
+   engages for squad followers on a moving leader, not for element legs; if the lead wants elements to "flow" into
+   formation rather than step leg to leg, that is the next thing to build on it.
+3. CP4 is MEASURED (combat's series: kill distance 54 → 40 m; the sight/acquisition gates did most of it, the bands
+   little) but its code is **not on main** (orchestrator's correction, 2026-09-18). **Wait for CP4 on main, then the
+   orchestrator's sim-baseline record, then** publish the X6 baseline (`make remote T="squad-coherence SEEDS=6"`, both brains-only and
    `--*-elements`), and chase what remains (leg re-issues, ~1 order per unit-second with elements).
 4. A unit shot at by a gun it cannot see stands still (Known issues) — a react-to-contact scenario.
 5. X8 (stretch): the army layer; arena's measurement says weight support-by-fire by terrain (+0.127 posting value on

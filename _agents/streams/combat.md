@@ -127,6 +127,65 @@ writing first. Also: `game/control/` `game/ui/` `game/camera/` (control's), `are
 
 _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
+### IF YOU ARE A FRESH AGENT, READ THESE SIX THINGS
+
+_Written 2026-09-18 against an imminent context loss. CP4 is **merged and green at `f0f89e52`**; nothing is in flight._
+
+**1. The decomposition inverts what this round spent its effort on.** N5 has three gates (sight, acquisition, fire
+discipline) plus X6's crossing penalty. Measured over 75 matches against a true round-5 control:
+
+| | kill distance | engaged | off-axis kills |
+|---|---|---|---|
+| **sight + acquisition + crossing** | **−11 m** | −4 m | **+17 pts** |
+| fire discipline (the bands) | −3 m | −8 m | +2 pts |
+
+**Tune acquisition first, bands second.** The *bands* absorbed nearly all of the round's design argument — the
+`preferred_max` decision, the 0.65-versus-0.55 sweep, a long exchange with squad about standoffs — and they are the
+smaller contributor to both headline numbers.
+
+**Why it stayed invisible for most of the round, which is the reusable part:** my first control tuned
+`effective_range` back to `range` and called it "the old world". It was not. Sight, acquisition and crossing are
+**code**, and `--variants` only tunes **data**, so they were present in *both* arms and the comparison measured fire
+discipline alone. **A data-only control is not a "before" when the change spans data and code.** I built the control
+out of the knobs that happened to be reachable rather than out of what the question needed; it looked like a control
+for hours. Sample size would not have caught it.
+
+**2. The retraction, and why it was right even though the number was nearly correct.** I reported *"the fight is
+decided 28% closer"* from **two matches on one mirror**. I retracted it. The true figure against a proper control is
+**26%** — almost exactly what I withdrew. **Retracting was still correct:** against the control actually in use at the
+time, the honest figure was **7%**. *A number that lands near the truth from the wrong comparison on an inadequate
+sample is a coincidence, not a result.* The lesson a reader might otherwise draw — "trust the small sample, it was
+nearly right" — is wrong and would cost someone a round. Also retracted and **still** retracted: *"fire goes up, so his
+complaint was never about volume"*. Fire goes **down**, 17.8 → 15.2.
+
+**3. `matchup-search` silently ran at `--units 60` for its whole history.** `mk/ai.mk` defaults `UNITS ?= 60`, make
+variables are one global namespace, and `mk/match.mk` used the bare name — so every run passed `--units 60` whatever
+the caller asked, **and the tool never recorded the value it used.** Round-3 `matchup-search` conclusions in
+[../balance.md](../balance.md) that assumed a non-default unit count are unreliable and **cannot be re-derived**.
+Fixed to `SEARCH_UNITS`. General rule: **print every resolved knob into the output.**
+
+**4. Three targets fail on a stale sim baseline and two of them blame the wrong component** —
+`announcer-record-smoke` says *"the booth changed the simulation"* and `music-smoke` says *"the soundtrack changed
+the simulation"*, **while computing exactly the hash `sim-baseline` computed**, which is the proof they changed
+nothing. **These are feel's targets and the fix is unbuilt:** run the match twice in one invocation, with and without
+the subsystem, and compare the two hashes *to each other*. A differential question must not be implemented as an
+absolute comparison against a shared file. Invariant 2 guarantees the baseline moves once a round, so this misfires
+every round until fixed.
+
+**5. N7 is the strongest candidate for the next round's first item** — see *N7* below for the full argument. In one
+line: the gates matter more than the bands, and **a central objective is the terrain-level version of the same
+problem** — it collapses the space in which acquisition and flanking can matter at all, and the **45% off-axis kills
+were achieved *despite* one central control point on every map.** arena's half is landed and tested; combat's half is
+a pure read-through of `Arena.objectives_of`. Score **proportional to the share of objectives held**, because at N=1
+that reduces exactly to today's behaviour.
+
+**6. The evidence is committed, not in `build/`.**
+[references/combat/n5-engagement-envelope-2026-09-18.json](references/combat/n5-engagement-envelope-2026-09-18.json)
+is the 75-match series with its conditions in the README row. **The sim baseline is NOT combat's to record**
+(invariant 2) — N5 moves it to `91db23888123f642` on glibc-2.43 and the orchestrator records it once at the end.
+
+---
+
 ### Read this first
 
 **CP4 is done, measured, and merged with all three checkpoints.** On `c765275f` (nav CP1 + squad CP3 + arena CP2 +
@@ -513,6 +572,63 @@ of pattern that invites a story, and it should not get one: total attempts are 0
 any change, and **the real finding underneath is round 5's** — dodging has *never* fired at either tick rate (254 of
 254 candidate directions scored "would still be hit"). A behaviour that does not fire cannot regress. That is a live
 open issue with no owner, not a CP4 consequence.
+
+### CP4 is green at `f0f89e52`, and the stale baseline accuses three innocent components
+
+**Verified on builder0:** lint, **1111 passed / 0 failed**, net/combat/broker/relay/lobby/match smokes, determinism,
+garage-smoke, army-loop-smoke, announcer-variance and transcripts. I ran every target `make check`'s first failure
+*skipped* by hand, because **make stops at the first error and a check that skips is not a check that passes** — four
+targets never ran on the first attempt and reporting that as green would have been a partial green with a confident
+label.
+
+**Three targets fail, all on one stale hash** — computed `91db23888123f642`, baseline `8ebbed52fbff0723` (squad's
+pre-CP4 record). Per invariant 2 combat does **not** record it; the orchestrator does, once, at the end.
+
+```
+sim-baseline            FAILED: expected 8ebbed52… got 91db2388…
+announcer-record-smoke  FAILED: the booth changed the simulation      (91db2388…, baseline 8ebbed52…)
+music-smoke             FAILED: the soundtrack changed the simulation (91db2388…, baseline 8ebbed52…)
+```
+
+**The booth did not change the simulation. The soundtrack did not change the simulation.** Both computed *exactly*
+the hash `sim-baseline` computed, which is the proof they changed nothing — and each still announces a specific,
+false accusation against its own subsystem. They are feel's targets, so a feel agent would go hunting in the audio
+code for a bug that does not exist.
+
+**The defect: a differential question implemented as an absolute comparison.** Both targets want to answer *"does
+this subsystem perturb the simulation?"* — a question about the difference between two runs — but they answer it by
+comparing one run to the **global baseline file**, so they fail whenever anything else legitimately moves it. Invariant
+2 now guarantees that happens once a round. **The fix (feel's, `mk/announcer.mk:118` and `mk/audio.mk:34`): run the
+match twice in one invocation, with and without, and compare the two hashes to each other.** That tests the claim, is
+immune to the baseline moving, and needs no coordination with invariant 2 at all.
+
+**And a gap in invariant 2 itself:** it says the orchestrator records the baseline once at the end. It does not say
+that **until then three targets are red and two of them lie about why.**
+
+### N7 — why it compounds with N5 rather than merely following it
+
+**Taken on (2026-09-18), and the case for doing it in round 6 rather than deferring it comes out of the series.**
+arena's half is landed and tested: `Arena.objectives_of(Arena.active)`, mirrored pairs enforced, and every shipped
+layout still reporting exactly the single central zone `Match` hard-codes. My half is a pure read-through —
+`CONTROL_CENTER`/`CONTROL_RADIUS` become per-objective state.
+
+**The argument:** the decomposition says the **gates** matter more than the bands — making a crew find and hold a
+target is what moved where fights are decided (−11 m) and who dies from the flank (+17 points), while the bands mostly
+pulled the armies closer. **An objective that funnels every fight into the middle is the terrain-level version of the
+same problem: it collapses the space in which acquisition and flanking can matter at all.** The 45% off-axis kills
+measured above were achieved *despite* one central control point on every map. Moving objectives off the centre line
+should **compound** with N5, not sit beside it — which is why this is round 6 work and not round 7's.
+
+**The one design decision it needs, and the rule that settles it.** With N objectives, what scores? Independent
+scoring doubles the pace at N=2; a majority rule makes control wins rare and pushes every match to elimination.
+**Score proportional to the share held** — `ticks += INTEL_EVERY_TICKS * held_by_team / total_objectives` — because
+**at N=1 it reduces exactly to today's behaviour**, which is what makes the change a genuine read-through rather than
+a balance change wearing one's clothes. Holding both mirrored objectives scores at the old rate; holding one scores at
+half; splitting your force to take both is rewarded, which is the decision the contract exists to create.
+
+**Sequencing:** CP4's merge first, always. N7 must not delay it by a minute — squad's X6 baseline, arena's X3 and
+nav's `gunnery.gd` split are all waiting on CP4 being on `main`. And **N7 may move the sim baseline again**; per
+invariant 2 combat does not record it, and the N7 report must say whether it moves.
 
 ### X7 (stretch) — the event half is already done; what is left is one number
 

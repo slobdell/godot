@@ -34,7 +34,7 @@ func _ready() -> void:
 	AudioServer.add_bus_effect(AudioServer.get_bus_index("Master"), _effect)
 	_effect.set_recording_active(true)
 	_started_ms = Time.get_ticks_msec()
-	print("AUDIO_RECORD started: %.0f s to %s (driver %s)" % [seconds, path, AudioServer.get_driver_name()])
+	print("AUDIO_RECORD started: %.0f s to %s (driver %s) ticks_ms=%d" % [seconds, path, AudioServer.get_driver_name(), _started_ms])
 
 
 ## Wall-clock seconds, because that is what the recording holds (a slow frame still records its whole duration).

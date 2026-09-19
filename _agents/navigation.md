@@ -16,7 +16,7 @@
         │    ├─ right-of-way   ask / give way, peer to peer (in movement.gd)
         │    ├─ Pid            station-keeping on a moving goal (game/ai/pid.gd, gains in control_gains.gd)
         │    └─ Steering       heading error → throttle, turn (tracks; wheels by pure pursuit)
-        └─ firing half                      combat         moves to game/ai/gunnery.gd after CP4 lands on main
+        └─ Gunnery (game/ai/gunnery.gd)     combat         when a gun may speak (N5); apply(cmd, seconds) after Movement
    Tank._drive → TankMotion (the plant) → move_and_slide
 ```
 
@@ -37,8 +37,9 @@ the nearest hull ahead** within 8 m (friend or enemy), else `"no_path"` when the
 goal, else `"terrain"`. `yielding` — giving way to a friend that asked (X4); `blocked_by` and `yield_to` name it.
 
 **The guarantee:** a unit with a destination arrives or reports `blocked` with a reason. It never stands still
-silently. (Round 5's brains declared a stalled move *complete* from 12 m away — `TankBrain.ORDER_STALL_ARRIVE`. That
-goes in its own measured commit once squad's precedence fixes are on main, at the orchestrator's request.)
+silently. Round 5's brains declared a stalled move *complete* from 12 m away (`TankBrain.ORDER_STALL_ARRIVE`); that was
+deleted at `c8c7a79d`, measured with `make nav-orders` (a unit "completing" 8 m short in a maze corridor had been the
+cause of the one unit that never arrived).
 
 **Determinism.** Everything a decision reads is per tick: stall counts in ticks (`_step` under a controller stride),
 `delta` = the fixed tick. The blocker scan walks `tanks_root` in scene order and keeps the nearest, strictly, so ties
@@ -51,7 +52,8 @@ go to the first in that order — which is the same on every run of one build. N
 | `game/ai/movement.gd` | N1, and the per-unit mover: `_next_waypoint` (repath every 1 s or when the goal moves 1 m), `_around_fire` (step round a beaten zone), `_avoid` (ORCA), right-of-way (`_negotiate`, `ask`, `right_of_way`), `_keep_station` (PID), `unstick` (blind reverse), progress and phase. |
 | `game/ai/avoidance.gd` | ORCA (RVO2's linear programs, ported), the per-tick neighbour table (grid-hashed, one per tick for the whole match), hull radii. |
 | `game/ai/pid.gd`, `game/ai/control_gains.gd` | N6: the regulator and its gains as data (per-faction overrides are X8). |
-| `game/ai/order_controller.gd` | The composer: orders, reflexes, the controller stride, and (until the gunnery split) the firing half. Keeps `stalled_ticks`, `_wheel_radius()`, `FIRE_LOOKAHEAD` as forwarders for the brains and tests that read them. |
+| `game/ai/order_controller.gd` | The composer: orders, reflexes, the controller stride; one `Movement` and one `Gunnery` per controller. Forwards `stalled_ticks`, `_wheel_radius()`, `FIRE_LOOKAHEAD` (Movement) and `engaged_target`, `watch_point`, `spotter`, `engagement_lay`, `ticks_since_fire`, `lane_blocked_ticks`, `lane_blocker`, `hold_for_friends`, `_nearest_shootable()` (Gunnery) for the brains, bridge, HUD and tests that read them there. |
+| `game/ai/gunnery.gd` | **combat's**: the firing rules, split out of the controller at CP4. Reads the controller for `tank`, `tanks_root`, `weapon_order`, `move_order`; handed seconds, not ticks. combat's three wiring tests in `test_combat_envelope.gd` go red if its call is cut (checked at the split). |
 | `game/ai/pathing.gd` | `find_path`, `is_ready`. |
 | `game/ai/steering.gd` | The P controller for tracks and pure pursuit for wheels. |
 
@@ -64,7 +66,47 @@ it steers at a fixed corner instead (a carrot that slides with the hull never ge
 re-planned when the goal moves > 1 m, the hull is > 5 m off it, it has stalled for 2 s, or every 4 s as a safety net —
 not every second as in round 5: the navmesh is static, so a route only goes stale when the hull or the goal moves.
 
+## X8: factions by their gains
+
+`ControlGains.FACTIONS` overrides the default station-keeping gains per faction (the Condemned are the default): the
+Syndicate crisp (kp 1.5, kd 0.9), the gangs loose (kp 0.45, kd 0.05), the Law damped (kp 0.7, kd 1.2). The mover
+builds its regulator from the unit's faction. A goal re-issued unchanged after 0.35 s means the slot stopped, and
+feed-forward stops with it (before that fix every crew overshot a halting slot by ~3.2 m).
+
 ## Measuring
+
+`make nav-suite` runs arena's probe over arenas × sizes × traffic in parallel; `make nav-where` is one run that also
+names every unit that didn't arrive, where it is and what its Movement says; `make nav-orders` is the lead's own test
+WITH BRAINS (5 player squads ordered across one another through control's Orders), recording when each order
+completes and how far from its goal the unit really was. `--nav-off=…` switches single mechanisms off for an A/B
+(grace, minpace, pushidle, carrot, yield, unstick, repath; `r5sidestep` turns round 5's sidestep back on).
+
+### The measuring switches, and what each one proves
+
+`--nav-off=a,b` on any run (`make nav-where NAV_FLAGS=--nav-off=…`; in a test, set `Movement._off`,
+`Movement.avoidance_on`, `Movement.station_on` directly and restore them). Each isolates one decision:
+
+| switch | turns off | what an A/B with it answers |
+|---|---|---|
+| `--no-avoidance` | ORCA (X3) | how much arrival and flow come from avoidance at all |
+| `--no-station-pid` | PID station-keeping (X6) | P-law chase vs regulated slot (0.35 vs 4.58 m, `test_station_keeping`) |
+| `grace` | the 10-tick K1 start window | whether K1's 3-tick response depends on it (it does: control's response test) |
+| `minpace` | the 15% creep floor in that window | tail cost of creeping (on outside the window: head-on maze t100 182 → 163 s) |
+| `pushidle` | asking a parked friend at once | whether pushing idle units helps (180 vs 182 s: marginal) |
+| `yield` | right-of-way (X4) entirely | how much of a jam resolves by negotiation |
+| `unstick` | the "room behind" check (old blind reverse) | whether ramming friends in columns matters |
+| `repath` | X7's re-plan policy (back to every 1 s) | cost/benefit of re-planning |
+| `carrot` | X7's pure-pursuit carrot (round 5's exact corner-following) | path smoothing's effect |
+| `r5sidestep` | **turns ON** round 5's single-friend sidestep | the one thing X3 REMOVED; it alone restored squad's near-ambush timing (555 → 531 ticks) |
+
+**Two traps, both hit this round — read before trusting an A/B:**
+1. **A switch that silently does nothing gives you "no difference" for free.** The first `carrot` switch returned the
+   wrong point (0/60 arrived — broken), and an equal result from a switch you haven't seen change *anything* proves
+   nothing. Check each switch moves some number before reading an equal result as "not this mechanism".
+2. **The moment a nav commit is merged, `main` stops being your control.** I told the orchestrator a failure "happens
+   on main too, so it isn't nav" — main already contained my merge. Bisect on named commits (`00c99bf4` before nav,
+   `7cce78af` nav's merge), never on "main vs my branch". And the cause turned out to be something *removed*, which no
+   switch of added mechanisms can find — hence `r5sidestep`.
 
 `make nav-maze` (arena's, `tests/arena/maze_probe.gd`) is the acceptance instrument: it only watches positions, so it
 keeps meaning the same thing whatever nav rewrites. Note it drives plain `OrderController`s, not brains — round 5's
@@ -125,6 +167,9 @@ measuring switches (read once from the command line).
 | `30e3250d` (= round-5 behaviour) | builder0 | `make nav-suite`, hold-fire, 180 s | arrived: maze-30 15/30, maze-60 35/60, maze-60 head-on **0/60**, yard-60 34/60, yard-60 head-on 33/60, foundry-60 40/60 (`references/nav/nav_suite_30e3250d_baseline.json`). Five seeds were identical: the probe has no randomness. |
 | `e291a35a` (X3+X4+X6) | builder0 | same | **60/60 everywhere, 30/30 on maze-30**; t90 maze-60 129 s, head-on 145 s, yard 47 s, foundry 38 s |
 | `e291a35a` | builder0 | `test_station_keeping` | a slot at 5 m/s: mean gap 0.35 m (PID) vs 4.58 m (P law) |
+
+| `30e3250d` vs `1923059c` | builder0 | `make ai-perf` (60 brains fighting, `--profile-parts`) | `move` part 1119 → **1688 usec per tick** (+0.57 ms: ORCA, right-of-way, carrot); AI band per living unit 150.4 → 165.9 usec. Different battles (21 vs 19 alive at the end), so the per-part number is the comparable one. |
+| `1923059c` | builder0 | `make nav-suite` | 60/60 on maze-60 (t90 120 s), maze-60 head-on (144 s), yard-60 (55 s), yard-60 head-on (42 s), foundry-60 (40 s); maze-30 30/30 (74 s) |
 
 The probe spawns 60 units on 52 spawn points, so 8 pairs start on top of each other; at `30e3250d` those pairs never
 moved at all. That is part of the baseline's failure, and a real case (respawns can overlap too).

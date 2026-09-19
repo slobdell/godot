@@ -35,6 +35,9 @@ var _last_state := ""
 var _meter := false
 var _meter_clock := 0.0
 var _meter_sums := Vector3.ZERO
+var _gun_sum := 0.0
+var _gun_frames := 0
+var _gun_world := 0.0
 
 
 func _init() -> void:
@@ -115,14 +118,25 @@ func _measure(delta: float, reading: MatchMood) -> void:
 		return
 	_meter_sums += Vector3(maxf(AudioServer.get_bus_peak_volume_left_db(crowd, 0) + AudioServer.get_bus_volume_db(world), -80.0),
 			maxf(AudioServer.get_bus_peak_volume_left_db(world, 0), -80.0), 1.0)
+	var guns := AudioServer.get_bus_index(SfxSystem.GUNFIRE_BUS)
+	if guns >= 0:  # round 6: the machine guns' loops, on the same scale (the meter is the mix's, not only the crowd's)
+		var gun_db := AudioServer.get_bus_peak_volume_left_db(guns, 0) + AudioServer.get_bus_volume_db(world)
+		if gun_db > -70.0:  # only while a gun is sounding: silence between bursts is not "quiet guns"
+			_gun_sum += gun_db
+			_gun_frames += 1
+			_gun_world += maxf(AudioServer.get_bus_peak_volume_left_db(world, 0), -80.0)
 	_meter_clock += delta
 	if _meter_clock < 1.0:
 		return
 	print("CROWD_METER " + JSON.stringify({"sim_s": snappedf(float(Engine.get_physics_frames()) / Engine.physics_ticks_per_second, 0.1), "crowd_db": snappedf(_meter_sums.x / _meter_sums.z, 0.1),
 			"world_db": snappedf(_meter_sums.y / _meter_sums.z, 0.1), "excitement": snappedf(excitement, 0.01),
-			"state": reading.state if reading != null else ""}))
+			"state": reading.state if reading != null else "", "gunfire_db": snappedf(_gun_sum / _gun_frames, 0.1) if _gun_frames > 0 else -80.0,
+			"gunfire_world_db": snappedf(_gun_world / _gun_frames, 0.1) if _gun_frames > 0 else -80.0}))
 	_meter_clock = 0.0
 	_meter_sums = Vector3.ZERO
+	_gun_sum = 0.0
+	_gun_frames = 0
+	_gun_world = 0.0
 
 
 func _roar(volume_db: float, pitch := 1.0) -> void:
