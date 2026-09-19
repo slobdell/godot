@@ -182,7 +182,21 @@ that reduces exactly to today's behaviour.
 **6. The evidence is committed, not in `build/`.**
 [references/combat/n5-engagement-envelope-2026-09-18.json](references/combat/n5-engagement-envelope-2026-09-18.json)
 is the 75-match series with its conditions in the README row. **The sim baseline is NOT combat's to record**
-(invariant 2) — N5 moves it to `91db23888123f642` on glibc-2.43 and the orchestrator records it once at the end.
+(invariant 2) — N5 moves it and the orchestrator records it once at the end.
+
+**And now the reason, which round 7 supplied and which the rule needs** (2026-09-19): *inertness does not compose.*
+"A is inert" and "B is inert" does **not** give "A+B is inert", because A can be inert only in the absence of B —
+arena's new `_build_perimeter()` builds the wall from the shape's polygon instead of the authored boxes, which is
+geometrically identical and creates different physics bodies in a different order, and that is enough for Jolt.
+So **three green `sim-baseline` runs on three branches predict nothing about `main` after merge**, and a hash that
+disagrees with them is not an anomaly — it is the expected result of composing changes each measured alone. The
+only baseline that means anything is the one measured on `main` after the last merge, which is exactly what
+invariant 2 says; the rule without this reasoning invites the shortcut of trusting a branch's green.
+
+Corollary that cost this stream an hour today: **a commit's position in the log does not tell you what a queued
+job measured.** `253ecfdeed84bc4d` was recorded from a tree captured before arena merged, though arena's merge sits
+earlier in the log — so a baseline commit should state the hash of the **tree it measured**, not the commit it was
+launched after.
 
 ---
 
