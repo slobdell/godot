@@ -106,6 +106,8 @@ func build(with_executor := true) -> void:
 	controls = RtsControls.new()
 	controls.game_match = game_match
 	controls.orders = orders
+	if executor != null:
+		controls.engaged_of = executor.engaged_target_of  # round 8: what each gun is really on
 	controls.camera = camera
 	controls.rig = rig
 	controls.reveal_all = true  # no visibility field here: every enemy counts as seen
@@ -168,6 +170,8 @@ func build_scale(per_side: int) -> void:
 	controls = RtsControls.new()
 	controls.game_match = game_match
 	controls.orders = orders
+	if executor != null:
+		controls.engaged_of = executor.engaged_target_of  # round 8: what each gun is really on
 	controls.camera = camera
 	controls.rig = rig
 	controls.reveal_all = true
