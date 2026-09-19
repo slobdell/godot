@@ -1739,3 +1739,28 @@ The kickoff prompt is one line; this section is the rest.
      - **Two streams independently built the same guard within hours, and it paid for itself immediately in one of them.**
        The generalisable claim is no longer theoretical: **of the first three comparisons this guard was applied to, one
        was already broken.**
+118. **The untreated arms ARE the noise floor — measure it inside the run rather than arguing it from a formula.**
+     combat's `gangs/scout` ablation: **that entry is the only faction-keyed one in `Army.SQUADS`, so only the gangs were
+     treated and every other faction in the table is an untreated arm of the same experiment.**
+
+     | faction | boulevard | yard | treated? |
+     |---|---|---|---|
+     | **gangs** | **+7** | **+7** | **yes** |
+     | law | −7 | −10 | no |
+     | condemned | +3 | +0 | no |
+     | syndicate | −3 | +3 | no |
+
+     **Law moved −10 points without being touched — larger than the treated faction's +7.** combat's framing: *"the noise
+     floor is not an argument I am making; it is in the table, measured by factions that received no treatment."*
+     **That is worth more than the SE (12.9 points at n=30), because it is measured in the same run, on the same machine,
+     with the same workload** — it cannot be waved away as a modelling assumption, and it is legible to anyone reading the
+     table. **Whenever an experiment has untreated subjects, report them; they are a free control.**
+     - **And the conclusion was "cannot resolve", offered with a price:** ~n=400 per faction per arm, about SEEDS=70 and
+       **four hours of builder0**, for an effect smaller than any balance difference the lead would notice. **A costed
+       "cannot resolve" is a better deliverable than a fifth run with the same error bars**, and combat recommended
+       against spending on its own stream's most-cited result.
+     - **RETIRE a number that cannot be reconstructed rather than explaining it.** The gangs' 23% → 53% was this project's
+       most-cited result and the evidence for *"a balance problem dissolved by mechanics"*. The original comparison was
+       most likely **never a comparison** — different builds, and plausibly different maps. **That is precisely the
+       subtraction `compare_arms` now refuses and could not refuse then.** The principle it supported survives on the
+       sharper argument: *do not tune against numbers whose cause you have not established.*
