@@ -1,0 +1,132 @@
+# Round 7 contract proposal: impassable ground, bridges, objectives, and the arena's shape
+
+**From arena to the orchestrator, for review before any of it is built.** Three streams start against this rather
+than after it. Nothing here is committed to `main` as behaviour yet — it is the shape of the change.
+
+Two of the four items are **measured, not proposed**: the water mechanism and the navmesh slope ceiling both have
+probes and saved results in this directory. The shape change is the one carrying real unknowns, and it is last on
+purpose.
+
+---
+
+## A. Layout schema: `terrain` (new key) — arena owns, feel dresses, nav consumes
+
+The lead: *"We need water or pits — these would be elements that units could not cross but they could still fire
+over. Useful for setting up kill zones. i.e. we could have a map that required crossing some bridges to get to the
+other side."*
+
+**This is geometry, not a mechanic** ([water-carve-2026-09-19.json](water-carve-2026-09-19.json)): navigation bakes
+from collision shapes in the `navigation_source` group, sight is a physics ray at 1.3 m. Ground absent from the
+bake is unwalkable and carries nothing to block a ray.
+
+```jsonc
+"terrain": [
+  {"kind": "water",  "footprint": [x, z, width, depth], "rotation_deg": 0},
+  {"kind": "pit",    "footprint": [x, z, width, depth]},
+  {"kind": "bridge", "footprint": [x, z, width, depth], "over": "<terrain name>"}
+]
+```
+
+**What `Arena` builds from it** (all inside `game/arena/`, no other stream's code):
+
+| Piece | Group | Layer | Why |
+|---|---|---|---|
+| Ground, **minus** every `water`/`pit` footprint, **plus** every `bridge` | `navigation_source` | 1 | the hole in the navmesh *is* the impassability |
+| A **0.9 m rim** around each footprint, **cut where a bridge crosses** | *not* a navigation source | 1 | stops a hull, not an eye or a gun — `barricade` semantics, already in the kit |
+| A deep floor under each footprint | *not* a navigation source | 1 | belt and braces: nothing leaves the world if a hull is ever shoved in |
+
+**The rim cut is not optional.** The first bridge run in the probe reported a crossing blocked by its own safety
+rail. A bridge is a hole in the water *and* a hole in the rim.
+
+**What other streams need from it:**
+- **feel** — `terrain.<kind>` visual slots, same pattern as `prop.<type>`. A `water` needs a surface at ~0.2 m
+  below the rim and a pit needs a floor; both are cosmetic and neither is a navigation source. **Your cityscape
+  block kit wants the same footprint rules:** a block that blocks driving goes in `navigation_source` on layer 1;
+  a block that is only scenery goes in neither.
+- **nav** — nothing. The mesh is still baked once at startup, still as one half plus its 180° mirror, and a
+  carved hole is just mesh that was never there. Confirmed: the water run's route is genuinely unreachable and the
+  bridge run's is 1.00× the straight line.
+- **combat** — nothing, unless a pit should damage what falls in. The rim means nothing falls in, so I propose
+  **no damage** and no new rule.
+
+**Validation** (`Arena.validate()`): every footprint point-symmetric like everything else; a `bridge` must overlap
+the terrain it names; and **a bridge's deck must be at least one navmesh corridor wide after the 2 m agent radius**
+— the maze's tight gate is the precedent, 7 m physical gives 3 m drivable.
+
+---
+
+## B. Objectives off the centre line (X3) — arena owns the data, combat owns the read
+
+**Landed and tested last round**, waiting only on combat's N7 read-through: `objectives: [{name, position, radius}]`
+with `Arena.objectives_of()`, validated so off-centre objectives come in **mirrored pairs** (a lone one is owned by
+whichever base is nearer). A layout with no `objectives` list reports exactly the single central zone `Match`
+hard-codes, asserted for every shipped layout — **so combat's change cannot move any existing arena.**
+
+What combat still owes: read `Arena.objectives_of(Arena.active)` instead of `Match.CONTROL_CENTER` /
+`CONTROL_RADIUS`, and hold a per-objective owner instead of one scalar.
+
+---
+
+## C. The measurement problem, which is mine to solve and is the interesting one
+
+The lead: *"Clearly crossing a bridge is risky, so you don't want a simple map with 2 sides connecting two bridges.
+There generally has to be some compelling reason to cross the bridge to take some advantageous ground."*
+
+**Terrain creates risk. Objectives create reason. Neither works alone, and the prize goes where the risk is.**
+
+**My X2 metric scores a route by what it costs and never by what it reaches**, which is why it keeps reporting that
+every arena already offers a cheap flank while the game plays as one brawl. *A route that is cheap and leads
+nowhere worth going is scenery.* A round-7 metric needs a term for the value at the end of the route — roughly,
+**what does this route let me reach, and what does reaching it deny the enemy?** — and until it has one, **A and B
+cannot be evaluated separately**: a bridge measured without an objective beyond it will read as a pointless detour,
+and an off-centre objective measured without terrain will read as a longer walk.
+
+So **A, B and C are one job and should be briefed as one**, which I think is what you already concluded.
+
+---
+
+## D. The arena's shape — the only item with real unknowns
+
+The lead: *"Our environment is very clearly a simple square… the arena could also take on octagon or hexagon-like
+shapes."* Agreed with your call not to take the cheap option: a chamfered square reads as a square with its corners
+cut, and the moment to change the shape is while the maps are being rebuilt anyway.
+
+**What makes this a contract and not an art task — three couplings, all verified in code:**
+
+1. **`Arena.validate()` pins `half_size` to `Match.ARENA_HALF_SIZE`** (`arena.gd:351`), with the reason in its own
+   error text: *"the perimeter, radar, and fog are sized for it."* Three systems read that one number. A non-square
+   arena needs a shape descriptor those three can consume, not just a different number.
+2. **`RtsCamera`'s wall cutaway measures distance to the perimeter *square*** (`rts_camera.gd:231-241`,
+   `perimeter_half()`). At the lead's 21° pitch the camera sits *past* the wall and this is what stops the wall
+   filling his screen. **This is control's, and it is load-bearing at exactly the camera angle he chose.**
+3. **The navmesh is baked as the southern half plus its 180° rotation** because a whole-arena bake is not
+   point-symmetric — mirrored trips differed by up to 4.4 m and the south base won 64% of 140 matches. **An octagon
+   and a hexagon both contain a 180° rotation, so the construction survives**; `filter_baking_aabb` and
+   `SEAM_BORDER` are currently written for a rectangle and the **seam is the part needing care**.
+
+**Proposed contract:** the layout gains `"shape": {"kind": "square"|"octagon"|"hexagon", "half_size": 120}`, and
+`Arena` exposes **`Arena.perimeter_distance(point, heading) -> float`** plus `Arena.contains(point) -> bool` as the
+single source of truth for "how far to the wall". Control's cutaway, the radar outline and the fog all call it
+instead of assuming a square. Default `square`, so **every existing layout and every current caller is unchanged
+until it opts in.**
+
+**What I need before building it:** control's agreement that `perimeter_distance()` is the right seam for the
+cutaway, and feel's for the perimeter art. **Do not let me start D before both have said yes** — the whole point of
+sending this early is that they build against it rather than after it.
+
+---
+
+## Order and what I will do next
+
+**A → B+C → D**, as you set. Concretely:
+
+1. **Rebuild Pit and Yard** — the two he kept — to the `centre_sees_share` target (<0.30), using A where it earns
+   its place. *"All the maps need to be higher quality regardless."*
+2. **A** as the primitive, with the probe promoted to a real test.
+3. **C**, because B cannot be measured without it.
+4. **D** only once control and feel have agreed the seam.
+
+**One question for the lead when he is next about, which I will not guess at:** *"the octagon of shipping
+containers"* does not map unmistakably onto Pit or Yard in the data — Pit is a ring of containers around the
+control point, Yard is container walls base to base. His buttons are the record (KEEP Pit, KEEP Yard), so nothing
+is blocked; but if he meant a third thing by that phrase, the rebuild target changes.
