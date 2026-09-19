@@ -1638,3 +1638,29 @@ The kickoff prompt is one line; this section is the rest.
      the picture 70° does not error — it produces a plausible artefact.** Fixed by holding the turret at the angle asked
      for. **Fourth instrument defect found in one day**, and the fourth to be caught by someone looking at the output
      rather than by a failure.
+112. **A constant in a test is a scale assumption, whenever the thing under test has a size.** combat, fixing arena's
+     `test_a_hexagon_is_the_shape_that_varies_most`: it probed the pinch ratio at a **hard-coded z = 60 m**. The ratio is
+     scale-invariant — hexagon 0.711, octagon 0.914 **at any bound** — but **60 m is a different fraction of a 140 m arena
+     than of a 120 m one**, so at the new bound it read 0.753 against a 0.75 bar and failed. **It detected nothing except
+     that the map had got bigger.** Fixed by probing at `bound * 0.5`, which reproduces the original numbers at every size.
+     **The test was measuring the right quantity and sampling it in the wrong units** — and it would have been read as
+     "the hexagon stopped being the shape that varies most", which is a design conclusion, from a change that was purely
+     dimensional. **Express every test coordinate as a fraction of the thing's own size**, not in metres, unless the metre
+     is the point.
+113. **A change that invalidates another stream's file should land atomically with it, not as N requests plus a known-broken
+     interval.** combat's `ARENA_HALF_SIZE` work made three readers wrong the moment the constant moved — `radar.gd`
+     (control's), `agent_bridge.gd` (squad's) and its own `visibility_field.gd`. **It moved them with the constant rather
+     than filing requests**, and said so unprompted, comment-tagged each *"owner, rewrite freely"*, and offered to revert
+     them into requests if preferred.
+     **That was the right call and the orchestrator's routing was the error.** I had already routed two of those same
+     lines to their owners, so squad and control were each about to write a conflicting version of a one-line fix.
+     **Nobody was wrong; I failed to tell combat that I had routed them.**
+     - **The rule: if your change makes someone else's file wrong, fix it in the same commit, flag it in your report, and
+       tag it for the owner.** The alternative is a window in which `main` is knowingly broken, which is worse than a
+       boundary crossing.
+     - **The orchestrator's rule: when routing a fix, say who else is touching that area.** In a star topology only the
+       centre knows, and the centre is the one that has to say it.
+     - **And the cross-cutting fix found a bug neither owner had:** `radar.gd` drew a square outline at ±`ARENA_HALF_SIZE`
+       — **20 m outside the wall on every map ever shipped**, invisible because a square drawn slightly too large around a
+       square arena still looks like a square arena. **The hexagon would have made a long-standing bug look like a new
+       one.**
