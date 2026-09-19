@@ -83,6 +83,63 @@ and an off-centre objective measured without terrain will read as a longer walk.
 
 So **A, B and C are one job and should be briefed as one**, which I think is what you already concluded.
 
+### The metric: classify routes by cost AND reward, in four quadrants
+
+A single score would hide the thing the lead is describing. Two axes:
+
+- **COST** — what X2 already measures: exposure along the route (at the catalog's idle/posted reaches) and the
+  detour over the direct line.
+- **REWARD** — new, and only computable now that objectives are data: **what does arriving here let me hold or
+  deny?** For a route's far end, the share of the map's objective value it commands — being inside an objective's
+  radius, or covering it at `Engagement.covering_range()` so the enemy cannot sit in it.
+
+| | low reward | high reward |
+|---|---|---|
+| **low cost** | **scenery** — a cheap route to nowhere. *Every arena we ship is full of these, and X2 has been reporting them as flanks.* | **dominant** — free and decisive. A design bug: there is no decision to make |
+| **high cost** | **trap** — risk with no prize | **the one we want** — *"a compelling reason to cross the bridge to take some advantageous ground"* |
+
+**A map's quality is how much of its route space sits in the bottom-right quadrant**, and that is the number to
+report per arena instead of today's exposure figure. It encodes the lead's principle directly: terrain supplies the
+cost axis, objectives supply the reward axis, and **a map scoring zero in that quadrant has no tactical decisions in
+it however much cover it owns.**
+
+**Why the scoring rule makes this sharper than it would have been:** combat's N7 scores the **share** of objectives
+held per tick, so a mirrored pair means **holding both scores at the old rate and holding one scores at half.**
+Splitting the force is supposed to be tempting. So reward is not a property of one position — **it is a property of
+a position given what the other side is doing**, and the pair is the mechanism that makes "advantageous ground"
+mean something.
+
+### What I need from combat, which I cannot build alone
+
+Geometry can predict which quadrant a route is in. It cannot tell me whether anyone actually goes there — and the
+whole failure of X2 was believing a prediction nobody checked against play. **Three match-side measures, all of
+which combat already has the instruments for:**
+
+1. **Where kills happen relative to objectives** — distance from each kill to the nearest objective zone. If fights
+   still cluster at the map's centroid when the objectives are off-centre, the placement has not worked and no
+   amount of geometry will say so.
+2. **Unit-time on routes classified "high cost, high reward"** — do units actually take the route the map says is
+   the interesting one? This is the direct falsification test for the quadrant model.
+3. **Objective hold pattern over a match** — per side, how often it holds both / one / neither of a pair. **This is
+   the test of whether splitting is really tempting**, and it is the one number that says whether the pair is a
+   dilemma or a formality.
+
+I will hand combat the route classification per arena as data (route polyline, cost, reward, quadrant) so its
+probe can attribute unit-time without re-deriving my geometry.
+
+### Placement rules for objectives, decided before the shape rather than after
+
+The hexagon is **pinched to 210 m at the approaches** and objectives are now real, so the caveat I filed is live:
+
+1. **No objective inside a base's approach funnel.** In the hexagon that is the pinch; in any shape it is the
+   region whose approaches do not offer a genuine alternative.
+2. **The test, and it is measurable rather than a feel:** an objective needs **at least two approach corridors
+   that do not share their final leg**, with **materially different exposure**. One corridor is a funnel and
+   identical exposure is a false choice — that is the boulevard failure restated as a rule, and I will add it to
+   `make arena-report` so a layout cannot quietly acquire it.
+3. **A mirrored pair should not be placed so that taking both is strictly easier than taking one** — otherwise the
+   dilemma the scoring creates is decorative.
+
 ---
 
 ## D. The arena's shape — the only item with real unknowns
