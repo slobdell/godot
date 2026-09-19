@@ -357,7 +357,23 @@ first honest measurement.**
 | law | 15/30 | **50%** | 63% |
 | syndicate | 13/30 | **43%** | 47% |
 
-**The road gangs went from 23% to 53% — joint best — and nobody tuned them.** The spread across all four factions
+> **ATTRIBUTION RETRACTED (2026-09-19).** I reported this as the engagement envelope's doing. **It is not supported.**
+> The 23% was measured in `f1b0ee9e` (2026-09-16) — **the same commit that added the `gangs/scout` directive entry**,
+> because that run is what found the bug. Round 5's X3 and X6 were both *"Not started"*, so **no faction matrix ran
+> between that fix and mine.** The 23% is a *pre-fix* number and the 53% is a *post-fix* one, with two rounds of
+> other changes in between (the `ready_to_fire` tick, armies holding until ordered, 30 Hz, Jolt, CP4).
+>
+> The directive bug is at least as good an explanation, and the table's own comment says so: without its own entry
+> the gangs' rat rods took the Condemned scout's *"spotters first"* directive, so **15 assault vehicles sat at
+> standoff spotting while the swarm died, and the faction won 10–30% of everything.** That is the 23%, described in
+> the codebase, a day before it was measured.
+>
+> **The difference is real; the cause is not established.** The ablation that would settle it is cheap and is the
+> one this project already knows to run (lesson 25 — attribute a cost to a behaviour by *removing* it): delete the
+> `gangs/scout` entry on the current build and re-run the matrix. If the gangs collapse, the directive was the cause
+> and CP4 gets no credit.
+
+**The road gangs went from 23% to 53%** — joint best — **and nobody tuned them.** The spread across all four factions
 collapsed from **47 points (23–70) to 10 points (43–53)**. Two defects were fixed in round 4 and neither moved it;
 what moved it was the engagement envelope, the brain's range reasoning and suppression all landing together.
 
