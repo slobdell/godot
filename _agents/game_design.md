@@ -393,6 +393,32 @@ stack first, then the layer that commands it, then how the player reads and issu
   > reason to flank."*
   The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
   changes should compound rather than merely coexist.
+- **THE GANGS' 23% IS GONE — 53%, joint best, and nobody tuned them** (60 matches, 5 seeds per pairing,
+  counterbalanced, builder0 `1333cc73`):
+
+  | faction | win% | was (pre-CP4) |
+  |---|---|---|
+  | condemned | **53%** | 70% |
+  | **gangs** | **53%** | **23%** |
+  | law | **50%** | 63% |
+  | syndicate | **43%** | 47% |
+
+  **The spread across all four factions collapsed from 47 points (23–70) to 10 points (43–53).** Two defects were fixed
+  in round 4 and neither moved it; what moved it was the engagement envelope, the brain's range reasoning and suppression
+  landing together. **A balance problem dissolved by mechanics** — which is exactly what the stream was holding out for
+  when it refused to tune against numbers taken mid-flight, twice, across two rounds.
+  **Why it is believable rather than lucky:** the gangs field **43 vehicles to the Syndicate's 25**. A cheap swarm is
+  precisely the army that suffers most when anything can be shot at maximum range the instant it is seen, and gains most
+  when fire only counts up close. N5's decomposition said the *gates* do the heavy lifting, and **a 43-vehicle army
+  closing under an acquisition delay is the shape that benefits.** The mechanism predicts the direction of the result.
+  **What does NOT survive, stated firmly because it is the same trap the 23% was:** each pairing is **10 matches**, so a
+  95% interval is roughly **±30 points** and **every cell in that table is statistically indistinguishable from 50%.**
+  The 47-point spread collapsing is visible at any sample size; a 10-point spread is not. **The Syndicate's 43% is not a
+  finding** — it is the lowest cell, inside the noise. **It must not become the next 23%**, which cost two rounds of
+  deferred tuning precisely by being carried forward as a fact. If anyone wants to act on the Syndicate, the answer is
+  more seeds, not a stat change.
+  **The old 23/70/63/47 line is retired wherever it appears** — it describes a game that no longer exists and it is
+  quoted in several places.
 - **0.55 of reach is confirmed as the overshoot**: lowest fire rate, longest matches, fewest eliminations of any arm.
   A fight the player cannot close. The shipped bands are nowhere near it.
 - **Superseded, kept for the method:** an earlier n = 15 pass
