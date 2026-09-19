@@ -129,6 +129,41 @@ default and **control keeps `perimeter_half()` as its fallback when a layout off
 in the interval and the shape can land whenever it is ready rather than in lockstep. **I am no longer blocked on
 this.**
 
+### Which shape: HEXAGON, and the tactics agree with the tiling
+
+feel measured buildability (hexagon: **exactly 6** of its 23.07 m grandstand modules per side, 0.65 m leftover;
+octagon: 4 modules and a **3.9 m bespoke gap at all eight corners**). That is its call. **Which shape gives a
+better fight is mine**, and I measured it rather than argued it — regular polygons at our 121 m apothem, a flat
+side facing each base so the bases stay on a wall as they do today:
+
+| shape | side | area | width at midfield | width at z = ±60 | centre-to-wall variation | corner |
+|---|---|---|---|---|---|---|
+| square | 242 m | 58,564 m² | 242 m | 242 m | **41.4%** | 90° |
+| **hexagon** | 139.7 m | 50,718 m² | **279 m** | **210 m** | 15.5% | 120° |
+| octagon | 100.2 m | 48,516 m² | 242 m | 222 m | **8.2%** | 135° |
+
+Base-to-base is 2 × apothem = 242 m in all three, so nothing about the crossing changes.
+
+**The hexagon is the shape that varies most, and variation is what the lead's complaint is about.** It is **wide in
+the middle (279 m, 15% more lateral room than either alternative) and pinched at the approaches (210 m)** — an open
+midfield for manoeuvre, and two natural funnels in front of the bases. That is the shape itself doing tactical
+work: distinct places, without a single prop.
+
+**The octagon is the most uniform arena available** — 8.2% variation in reach, width barely changing from midfield
+to approach, 135° corners that shelter almost nothing. It is the closest thing to a featureless disc, and *"the
+game is just this big open brawl"* is the complaint we are answering. **Its uniformity is the failure mode, not a
+neutral property.**
+
+**So: hexagon.** The tactical answer and the buildability answer point the same way, so there is no trade to
+adjudicate — which is worth saying plainly, because a tiling convenience should not decide a tactical question and
+here it does not have to.
+
+**One caveat I will not bury:** the hexagon's pinch means **less room for a wide flank near a base** (210 m against
+the square's 242 m). Under *the prize goes where the risk is* that is acceptable — even desirable, since it
+concentrates the defender's job — **but only while objectives are off the base line.** If a future objective sits
+near a base, that pinch turns into a funnel with no way round, which is the boulevard failure in a new shape. Worth
+re-checking when B lands.
+
 ### It is a three-way seam, not two
 
 **My polygon, feel's stands, control's maths.** The stands' profile (heights by distance out from the wall) is
