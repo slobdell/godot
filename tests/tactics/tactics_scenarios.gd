@@ -439,6 +439,7 @@ static func ambush(case: TestCase, wait_s := 10.0, seconds := 24.0) -> Dictionar
 	var alpha := lab.element(names, "Alpha")
 	await lab.start()
 	var shots := {"before": 0, "after": 0}
+	var waiting := {"facing": 0}
 	var entered := {"tick": -1}
 	var on_fired := func(event: Dictionary) -> void:
 		if names.has(String(event.get("shooter", ""))):
@@ -453,10 +454,15 @@ static func ambush(case: TestCase, wait_s := 10.0, seconds := 24.0) -> Dictionar
 		if int(entered["tick"]) < 0 and Vector2(walker.global_position.x - zone.x, walker.global_position.z - zone.z).length() \
 				<= Drills.KILL_ZONE_M:
 			entered["tick"] = tick
+			# The posture the ambush was waiting in, the moment the enemy walks into it: how many hulls point at the zone.
+			for unit_name: String in names:
+				var tank := lab.tank_of(unit_name)
+				if TacticsFormation.flat(-tank.global_basis.z).dot(TacticsFormation.flat(zone - tank.global_position)) > 0.8:
+					waiting["facing"] = int(waiting["facing"]) + 1
 		if sprung < 0 and alpha.drill == "spring_ambush":
 			sprung = tick
 	lab.game_match.weapon_fired.disconnect(on_fired)
-	var result := {"drills": Array(lab.drills_of(alpha)), "shots_before": int(shots["before"]),
+	var result := {"facing_zone": int(waiting["facing"]), "drills": Array(lab.drills_of(alpha)), "shots_before": int(shots["before"]),
 			"shots_after": int(shots["after"]), "entered_tick": int(entered["tick"]), "sprung_tick": sprung,
 			"formation": alpha.formation}
 	lab.dispose()

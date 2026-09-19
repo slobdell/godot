@@ -7,7 +7,7 @@ extends RefCounted
 const LAYERS := ["guns", "impacts", "engines", "crowd", "booth", "music", "ui"]
 ## Which layer each SfxSystem sound belongs to (anything not listed is an impact).
 const SOUND_LAYER := {
-	"cannon_shot": "guns", "tank_boom": "guns", "autocannon_shot": "guns", "mg_round": "guns", "mg_loop": "guns",
+	"cannon_shot": "guns", "tank_boom": "guns", "autocannon_shot": "guns", "mg_round": "guns", "mg_loop": "guns", "twin_mg_loop": "guns",
 	"mortar_launch": "guns", "laser_pulse": "guns", "flame_loop": "guns", "shell_whine": "guns",
 	"railgun_shot": "guns", "energy_beam": "guns", "plasma_loop": "guns", "pulse_shot": "guns",
 	"missile_launch": "guns", "sonic_loop": "guns", "energy_hit": "impacts",

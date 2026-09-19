@@ -9,7 +9,9 @@ const VOICES := 4
 ## A gunner counts as still firing this long after its last round (longer than the gap between rounds).
 const HOLD_SECONDS := 0.16
 const SOUND := "mg_loop"
-const VOLUME_DB := -9.0
+## Round 6: -9 -> +2 dB. Metered in a real-pace match (builder0, 0999d755, yard, gangs v law), while a gun sounds the
+## loops sat a median 15 dB under the whole mix even after leaving the Bed duck: the lead's "missing machine guns".
+const VOLUME_DB := 2.0
 
 ## FxWorld copies SfxSystem's --mute onto this; --audio-solo for another layer keeps it silent regardless.
 var muted := false:
@@ -29,6 +31,7 @@ var _loops := {}
 func _init() -> void:
 	name = "GunfireLoops"
 	_rng.seed = 11
+	SfxSystem.ensure_world_bus()  # a player given a bus that doesn't exist yet plays on Master, past every limiter
 	for i in VOICES:
 		var voice := AudioStreamPlayer3D.new()
 		voice.name = "Gunfire%d" % i
@@ -36,24 +39,44 @@ func _init() -> void:
 		voice.unit_size = 45.0
 		voice.max_distance = 500.0
 		voice.volume_db = VOLUME_DB
-		voice.bus = SfxSystem.BED_BUS
+		voice.bus = SfxSystem.GUNFIRE_BUS  # round 6: off the 5:1 Bed duck (sfx_system.gd)
 		add_child(voice)
 		_voices.append(voice)
 		_assigned.append("")
 
 
-## Looping copies of every stream weapon's sound (SfxWeapons), so a voice can play whichever its gunner fires.
-func use_streams(streams: Dictionary) -> void:
+## Looping copies of every stream weapon's sound (SfxWeapons), so a voice can play whichever its gunner fires. With
+## `takes` (SfxSystem.takes) every recorded take of a loop is kept, and each gunner gets one at random: round 6 shipped
+## four machine-gun loops, and with only the first a whole firing line streamed the same four seconds.
+func use_streams(streams: Dictionary, takes: Dictionary = {}) -> void:
 	for key in [SOUND] + SfxWeapons.named_sounds():
-		var source := streams.get(key) as AudioStreamWAV
-		if source == null:
-			continue
-		var loop := source.duplicate() as AudioStreamWAV
-		loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		loop.loop_end = SfxSystem.loop_frames(loop)
-		_loops[key] = loop
+		var sources: Array = []
+		for take in takes.get(key, []):
+			if take is AudioStreamWAV:
+				sources.append(take)
+		if sources.is_empty() and streams.get(key) is AudioStreamWAV:
+			sources.append(streams[key])
+		var loops: Array = []
+		for source: AudioStreamWAV in sources:
+			var loop := source.duplicate() as AudioStreamWAV
+			loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
+			loop.loop_end = SfxSystem.loop_frames(loop)
+			loops.append(loop)
+		if not loops.is_empty():
+			_loops[key] = loops
 	for voice in _voices:
-		voice.stream = _loops.get(SOUND)
+		voice.stream = _loop_for(SOUND)
+
+
+## One of `sound`'s loops, at random (null when it has none).
+func _loop_for(sound: String) -> AudioStream:
+	var loops: Array = _loops.get(sound, [])
+	return loops[_rng.randi() % loops.size()] if not loops.is_empty() else null
+
+
+## How many takes `sound` loops between (for tests).
+func loop_count(sound: String) -> int:
+	return (_loops.get(sound, []) as Array).size()
 
 
 ## A round left `key`'s gun at `position`. `sound` is the loop it streams (SfxWeapons: a plasma repeater is not a
@@ -101,7 +124,7 @@ func update(listener: Vector3, now: float) -> void:
 		if index < 0:
 			index = _assigned.find("")
 			_assigned[index] = key
-			var loop: AudioStream = _loops.get(String(_gunners[key].get("sound", SOUND)))
+			var loop: AudioStream = _loop_for(String(_gunners[key].get("sound", SOUND)))
 			if loop != null:
 				_voices[index].stream = loop
 			if not muted and _voices[index].stream != null and _voices[index].is_inside_tree():

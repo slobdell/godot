@@ -17,6 +17,39 @@ against, and avoids shooting its friends, because **friendly fire is real**. You
 cover each other's weaknesses, like StarCraft's rock-paper-scissors, and by commanding squads better than your
 opponent. Winning earns **credits** that unlock more unit types and bigger budgets.
 
+## Standard of work (lead, 2026-09-19) — read before choosing an approach
+
+> *"We should absolutely adopt and use these classical techniques, and I should have been more clear about this. We want
+> to build this game to high standards. This isn't me just throwing something together. We want to make the highest
+> quality software possible, and that means taking full advantage of the academic knowledge on each of these topics. For
+> gaming I assume it's pretty established what the 'Best' algorithms are. We want to use the best algorithms, no matter
+> how difficult they might be to implement (but I don't think any of them are difficult per se because it's all well
+> established industry knowledge)."*
+
+**This settles a question no stream had been told the answer to: when a good-enough approach and a known-best approach
+differ, take the known-best one.** Difficulty is not a reason to decline. Nor is "the simple version passes the test" —
+several round-6 fixes were the cheapest thing that satisfied a measurement, and the lead has now said plainly that is not
+the bar.
+
+**What it does not license:** inventing a technique where a standard one exists, or reaching for novelty (see *machine
+learning*, below). *"Take full advantage of the academic knowledge"* means **find the established answer and implement it
+properly**, not build something clever. The failure mode to avoid is a bespoke solution to a solved problem.
+
+**The concrete roster lives in [algorithms.md](algorithms.md)** — every established technique, what we have, what we
+**owe**, the canonical reference for each, and the measured symptom it addresses. That file exists because the gaps were
+first named only in a message to one stream, which is the failure this project keeps writing lessons about.
+
+**And it does not suspend determinism** ([determinism.md](determinism.md)): replays, networked play and the sim baseline
+all require the same inputs to produce identical output, and `sin`/`cos` already differ across builds. **A "best
+algorithm" that cannot be made deterministic is not available to us** — which rules out learned policies and any
+floating-point method whose evaluation order we do not control. It does not rule out any of the classical techniques
+below.
+
+**On machine learning, asked and answered (2026-09-19):** it exists for navigation and it is the wrong tool here. The
+determinism requirement is the hard blocker; beyond that, the problems being hit are missing *numbers* and missing
+*standard techniques*, not missing models — RL would learn a standoff distance we can simply write down. Where ML earns
+its place in games is army-level strategy (AlphaStar-style) and animation, neither of which is the current problem.
+
 ## Pillars (use these to settle design arguments)
 
 1. **For die-hard players.** Depth over dopamine. No pay-to-win, no premium currency, no shortcuts for sale,
@@ -393,6 +426,32 @@ stack first, then the layer that commands it, then how the player reads and issu
   > reason to flank."*
   The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
   changes should compound rather than merely coexist.
+- **THE GANGS' 23% IS GONE — 53%, joint best, and nobody tuned them** (60 matches, 5 seeds per pairing,
+  counterbalanced, builder0 `1333cc73`):
+
+  | faction | win% | was (pre-CP4) |
+  |---|---|---|
+  | condemned | **53%** | 70% |
+  | **gangs** | **53%** | **23%** |
+  | law | **50%** | 63% |
+  | syndicate | **43%** | 47% |
+
+  **The spread across all four factions collapsed from 47 points (23–70) to 10 points (43–53).** Two defects were fixed
+  in round 4 and neither moved it; what moved it was the engagement envelope, the brain's range reasoning and suppression
+  landing together. **A balance problem dissolved by mechanics** — which is exactly what the stream was holding out for
+  when it refused to tune against numbers taken mid-flight, twice, across two rounds.
+  **Why it is believable rather than lucky:** the gangs field **43 vehicles to the Syndicate's 25**. A cheap swarm is
+  precisely the army that suffers most when anything can be shot at maximum range the instant it is seen, and gains most
+  when fire only counts up close. N5's decomposition said the *gates* do the heavy lifting, and **a 43-vehicle army
+  closing under an acquisition delay is the shape that benefits.** The mechanism predicts the direction of the result.
+  **What does NOT survive, stated firmly because it is the same trap the 23% was:** each pairing is **10 matches**, so a
+  95% interval is roughly **±30 points** and **every cell in that table is statistically indistinguishable from 50%.**
+  The 47-point spread collapsing is visible at any sample size; a 10-point spread is not. **The Syndicate's 43% is not a
+  finding** — it is the lowest cell, inside the noise. **It must not become the next 23%**, which cost two rounds of
+  deferred tuning precisely by being carried forward as a fact. If anyone wants to act on the Syndicate, the answer is
+  more seeds, not a stat change.
+  **The old 23/70/63/47 line is retired wherever it appears** — it describes a game that no longer exists and it is
+  quoted in several places.
 - **0.55 of reach is confirmed as the overshoot**: lowest fire rate, longest matches, fewest eliminations of any arm.
   A fight the player cannot close. The shipped bands are nowhere near it.
 - **Superseded, kept for the method:** an earlier n = 15 pass
@@ -692,12 +751,32 @@ Both are the same defect: **the map offers no reason to be somewhere risky.** So
 > other — the prize goes where the risk is.**
 
 What follows for map authoring, and these are testable claims rather than taste:
-0. **The measurement we have scores only half of this, and arena flagged it.** Its X2 exposure analysis scores a route
+0. **THE METRIC: cost and reward as two axes, not one score** (arena, 2026-09-19, `b2f54bd1`). Cost is what the
+   existing analysis measures — exposure, detour. **Reward is newly computable now that objectives are data:** *what does
+   arriving here let me hold or deny?*
+
+   | | low reward | high reward |
+   |---|---|---|
+   | **low cost** | **scenery** — *and every arena we ship is full of these, which the old metric has been calling flanks* | **dominant** — free and decisive; a design bug |
+   | **high cost** | **trap** | **the one we want** — the lead's own words about the bridge |
+
+   **A map's quality is how much of its route space sits bottom-right.** That replaces the bare exposure figure in
+   `arena-report`.
+   **And the share-of-objectives scoring sharpens it:** reward is not a property of a position, it is a property of a
+   position *given what the other side is doing*. Holding both of a mirrored pair at full rate and one at half is what
+   makes *"advantageous ground"* a quantity rather than a mood.
+   **The model comes with its own falsification test, chosen before five maps were built on it:** measure **unit-time on
+   routes classified high-cost/high-reward.** If units do not take the route the map says is interesting, **the model is
+   wrong** — and that is the thing to learn before the maps exist, not after.
+   **Placement rules, recorded so a hexagon cannot quietly acquire the boulevard failure:** no objective inside a base's
+   approach funnel, and the test is **at least two approach corridors that do not share their final leg and differ
+   materially in exposure** — one corridor is a funnel, and identical exposure is a false choice.
+1. **The measurement we had scored only half of this, and arena flagged it.** Its X2 exposure analysis scores a route
    by **what it costs** (exposure, detour) and never by **what it reaches**. So it reports that every map already offers
    cheap covered flanks — 1.0–1.1× detour everywhere — when the lead's framing says the cheapness is the *symptom*:
    **a route that is cheap and leads nowhere worth going is not a tactical option, it is scenery.** Any round-7 metric
    for this needs a term for *what is at the end of the route*, or it will keep reporting that the maps are already fine.
-1. **An objective must sit on ground you have to cross something to reach**, or the crossing is decoration. arena's
+2. **An objective must sit on ground you have to cross something to reach**, or the crossing is decoration. arena's
    measurement — covered flanking routes already cost only a **1.0–1.1× detour** on every map and nobody takes them —
    is exactly this: the routes are cheap and lead nowhere worth going.
 2. **Contested ground must be *better* than your own safe ground**, or a rational player never leaves. Symmetric safe
@@ -740,6 +819,30 @@ and common: round 4's drills stole the element from each other *every tick* so n
 support-by-fire line alternated with `near_ambush` **every tick**, 128 orders in 10 s; and squad's own X4 found 47 idle
 re-issues per window before fixing it. **Every one of those was thrash between a decider and an executor, and every one
 was invisible until something measured it.**
+
+**MEASURED (`make nav-fight`, builder0, yard, 120 s, seeds 3 and 7, 34 and 52 player units) — and it splits in two, which
+the orchestrator's hypothesis did not predict:**
+
+**(A) Under a plain MOVE — a right-click — re-tasking is ZERO and progress is 74–92%.** So the decision-layer thrash I
+predicted **does not happen on the order he presses most.** The remaining ~23% stalled at 52 units is **the movement layer
+itself**: blocked by a friend 6.7%, blocked by terrain 5.9%, yielding 4.2%, slow 4.7%, unreachable 1.6%. **That is his
+"stuck in places", it scales with crowding, and it is nav's to fix** — not a thrash problem, a mutual-blocking problem.
+
+**(B) Under ATTACK_MOVE, progress is about 45%**, and 29–47% of unit-time is spent driving somewhere *other than* the
+order — ENGAGE (290–430 unit-s), CLEAR_LANE, COVER_FIRE, FLANK — plus 2–10% halted with nothing engaged. The drive target
+jumps more than 8 m **46 times per unit-minute**; 54% of that is ENGAGE re-aiming within the same option, 11% FLANK
+re-aiming, and about a third are genuine option switches.
+
+**But (B) is partly correct behaviour, and this is the important caveat:** `attack_move` *means* "fight your way there".
+A unit that breaks off to engage is obeying. And nav flagged that the jump count is contaminated — **`CombatMotion`'s
+steer point is 12 m out, so any 45° jink moves it more than 8 m, and that jinking is what the lead asked for in round
+3.** A direction-reversal measure (A→B→A) is being added to separate thrash from evasion.
+
+**So the design question underneath his complaint may be a UX one:** the order he presses may not be the order he means.
+If *"move"* and *"attack-move"* differ by 30 points of progress-toward-the-goal, and nothing on screen says which one
+will fight on the way, then **"they aren't obeying me" is a reasonable reading of a unit correctly executing
+attack-move** — which is exactly his separate complaint that *"some of them seem to be actions that require a follow on
+click, and other seem to be buttons that are applied passively."*
 
 **What the round must therefore build first is an instrument, not an algorithm:** the arrival, stall and re-task
 measurements **in a real fight**, per unit, with the *reason* a unit is not making progress attributed — re-tasked,
