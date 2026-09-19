@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/theme/arena_kit/city/city_block.gd" id="1_block"]
+
+[node name="PropBlock" type="Node3D"]
+script = ExtResource("1_block")

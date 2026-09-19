@@ -182,6 +182,9 @@ func state() -> Dictionary:
 			"task": task.duplicate(true), "formation": formation, "technique": technique, "drill": drill,
 			"reason": reason, "slots": slots.duplicate(), "sectors": sectors.duplicate(), "pace": paces.duplicate(),
 			"form_up_eta": form_up_eta(),
+			# The element's intended facing and where its formation stands (round 6): the geometry control's facing
+			# indicator and preview draw, rather than an illustration of it.
+			"heading": [heading.x, heading.z], "anchor": [anchor.x, anchor.z] if anchor is Vector3 else null,
 			"detached": _detached.keys(), "events": events}
 
 

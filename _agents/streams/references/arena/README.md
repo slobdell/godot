@@ -36,6 +36,28 @@ you wait, not the result.
 | `nav-maze-60-both-2026-09-18.json` | 60 vehicles, **head-on** (half from each base), The Maze | **23 of 60 arrived**; t50 **never**; all 60 stalled; 39% travelled | `make nav-maze NAV_UNITS=60 NAV_BOTH=1` |
 | `nav-yard-60-both-2026-09-18.json` | 60 vehicles, **head-on**, yard — the control | **35 of 60 arrived**; t50 37 s; 30 of 60 stalled; 93% travelled | `make nav-maze NAV_UNITS=60 NAV_BOTH=1 ARENA=yard` |
 
+## Water, pits and bridges (round 7)
+
+`water-carve-2026-09-19.json` and `water-carve-bridge-2026-09-19.json` — `make water-probe [BRIDGE=1]` on the
+laptop at `0e902fed`. **The lead's water is geometry, not a new mechanic, and this is the proof:**
+
+| | carved off navmesh | eye-level ray crosses | hull crosses | route reachable |
+|---|---|---|---|---|
+| water | **yes** (10.1 m) | **yes** | **no** (stopped at the rim, did not fall through the world) | **no** (path ends 38 m short) |
+| water + bridge | **yes**, beside the deck | **yes** | **yes** | **yes**, 1.00× — the bridge is on the direct line |
+
+**Water = ground removed from the `navigation_source` bake + a 0.9 m rim that is NOT a navigation source.** The rim
+is `barricade` semantics, already in the kit and already documented as stopping a hull but not an eye or a gun.
+**A bridge = a strip of ground restored, AND a matching gap in the rim.**
+
+**Two things this probe caught that would have shipped broken:**
+1. **The rim blocks the bridge** unless it is cut where the deck crosses. The first bridge run reported a crossing
+   blocked by its own safety rail.
+2. **`Pathing.find_path` to an unreachable goal returns a path to the closest reachable point** — a non-empty path
+   that reads as success. The first run reported `reachable: true` with an 8 m route for a 46 m trip across a
+   channel spanning the whole arena. Reachability is *"the path ends at the goal"*, never *"a path came back"*.
+   (Third time this shape has bitten this stream; see the slope probe below.)
+
 ## The slope probe
 
 `slopes-2026-09-18.json` — `make slope-probe` on the laptop at `775b9ce2`. Navmesh coverage over a ramp and how much

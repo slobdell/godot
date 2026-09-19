@@ -11,3 +11,5 @@ Every paid sound-effect run, appended by tools/audio/sfx_generate.py. Lead gate 
 | 2026-09-17 | ElevenLabs | eleven_text_to_sound_v2 | 2 | 1.5 | 15 | 112004 → 111989 | 15 | re-roll of near-silent takes |
 | 2026-09-17 | ElevenLabs | eleven_text_to_sound_v2 | 2 | 1.5 | 15 | 111989 → 111974 | 15 | re-roll of near-silent takes |
 | 2026-09-17 | ElevenLabs | eleven_text_to_sound_v2 | 7 | 15.8 | 158 | 111974 → 111868 | 106 | Syndicate energy pilot: railgun, energy beam, plasma stream (physical-event prompts) |
+| 2026-09-18 | ElevenLabs | eleven_text_to_sound_v2 | 7 | 28.0 | 280 | 111816 → 111536 | 280 |  |
+| 2026-09-18 | ElevenLabs | eleven_text_to_sound_v2 | 3 | 12.0 | 120 | 111536 → 111416 | 120 |  |

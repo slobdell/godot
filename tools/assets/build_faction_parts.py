@@ -12,6 +12,15 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 FACTIONS = ["gangs", "law", "syndicate"]
 ROLES = ["scout", "ifv", "tank", "artillery", "special"]
 PARTS = {"hull": "hull", "turret": "turret", "weapon": "cannon"}
+## Models generated facing +Z instead of the engine's -Z (trip-up 2): the wrapper turns them round (dozer_part.gd
+## `model_yaw_deg`). Round 7, the lead three times: "the gang's IFV drives backwards". Found and checked with
+## `make facing-audit`, which shows every unit side-on with its forward marked.
+MODEL_YAW_DEG = {
+    ("gangs", "ifv", "hull"): 180.0,
+    # Found by the audit, not reported: the approved concept (assets/review/images/syndicate_special_b.jpg) has the
+    # pointed nose and the emitter's lens leading; the model had both trailing.
+    ("syndicate", "special", "hull"): 180.0,
+}
 
 TEMPLATE = """[gd_scene format=3]
 
@@ -22,7 +31,7 @@ TEMPLATE = """[gd_scene format=3]
 script = ExtResource("1_part")
 model_scene = ExtResource("2_model")
 part = "{wrapper_part}"
-"""
+{extra}"""
 
 
 def main() -> None:
@@ -39,7 +48,10 @@ def main() -> None:
                         target.unlink()
                     continue
                 name = "".join(word.capitalize() for word in f"{faction}_{role}_{part}".split("_"))
-                target.write_text(TEMPLATE.format(faction=faction, role=role, part=part, name=name, wrapper_part=wrapper_part))
+                yaw = MODEL_YAW_DEG.get((faction, role, part), 0.0)
+                extra = "model_yaw_deg = %s\n" % repr(float(yaw)) if yaw else ""
+                target.write_text(TEMPLATE.format(faction=faction, role=role, part=part, name=name, wrapper_part=wrapper_part,
+                                                  extra=extra))
                 written += 1
     print(f"faction parts: {written} wrapper scenes")
 

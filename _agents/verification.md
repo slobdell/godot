@@ -43,7 +43,7 @@ snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/
 
 **Command playtest:** `make command-playtest` taps each squad's chip, orders it off screen through the radar, and checks the camera (tracking starts, the squad is on screen within 4 s, the view never exceeds the tracking speed, zoom stays in the model view); `make command-playtest-shots` does the same in a 1200×540 window and saves frames plus a UI tour to `build/command-playtest/`. Run after any change to the tactical map, radar, or camera, and look at the frames.
 
-**Look & feel checks** (need a display; look at every PNG): `make fx-bench` (effect costs per trick; compare against the tier budgets in streams/references/fx_tricks.md), `make vehicle-gallery` (slot methods driven with fake values), `make hud-gallery` and `make title-shot` (desktop + phone aspect), and the real game with `--skirmish --hud-demo --screenshot=…` (the tactical camera is the hard case for arena art). Headless tests cover the pooling/budget logic (`tests/test_fx_systems.gd`), banner lifecycle (`test_hud_widgets.gd`), and vehicle slot contracts (`test_theme_vehicles.gd`).
+**Look & feel checks** (need a display; look at every PNG): `make fx-bench` (effect costs per trick; compare against the tier budgets in streams/references/fx_tricks.md), `make vehicle-gallery` (slot methods driven with fake values), **`make facing-audit`** (every faction unit side-on with the engine's forward marked: run it after any new or re-imported vehicle art — round 7 found the gang IFV and the Syndicate lancer driving backwards, and the lead had only noticed one of them; "nobody has complained" is not evidence the art is right), `make hud-gallery` and `make title-shot` (desktop + phone aspect), and the real game with `--skirmish --hud-demo --screenshot=…` (the tactical camera is the hard case for arena art). Headless tests cover the pooling/budget logic (`tests/test_fx_systems.gd`), banner lifecycle (`test_hud_widgets.gd`), and vehicle slot contracts (`test_theme_vehicles.gd`).
 
 **Experiments** (`make matches …`) are not pass/fail checks, but any change to the map, spawning, navigation, or combat rules should re-run the fairness control: `python3 tools/match_series.py --godot <godot> --runs 60 --green 2 --rust 2` and again with `--extra=--swap-bases`. Win rates should stay near 50/50 ([squad_ai_design.md](squad_ai_design.md) "Fairness").
 
@@ -86,6 +86,52 @@ Two traps, both hit: **a switch that silently does nothing** makes "no differenc
 moves some number first; and **once a branch is merged, `main` is no longer the before-picture** — bisect on named
 commits. And a regression can come from something **removed**, which no switch of added behaviour will find.
 
+## Positive controls: assert the run is the run you think it is, from inside it
+
+**Every measurement script asserts its own conditions before it reports a number, and exits non-zero if they are
+not met.** Not around the run — *inside* it, where the setup actually is.
+
+**The reason, and it is the whole argument:** the arena stream produced six wrong numbers in one day, and **three
+assertions would have caught every one of them** —
+
+1. **the map is the one named** (every faction-matrix number this project has quoted was a *foundry* number, and
+   the tool said so nowhere);
+2. **the objectives are where the layout says** (a CPU competing for the wrong ground looks completely functional);
+3. **the armies are the size requested** (`NAV_UNITS=60` on a layout with 52 spawn points put **eight pairs of
+   hulls in eight positions**; those hulls cannot move, and their failures were published as congestion).
+
+A stream that can say *"three assertions would have caught every wrong number I produced today"* has an unusually
+strong case for spending an hour on assertions rather than features.
+
+**Why this is not the same as a careful measurement window.** Arena's `centre_sees_share` is measured over a fixed
+extent so the number cannot be **gamed** by a layout declaring itself bigger. That is worth doing and it is not
+enough: **it still does not assert that the thing you think you are measuring is present in the run.** A fixed
+window survives a hostile layout; only an assertion inside the run survives someone changing the setup — including
+a future agent who has never read any of this.
+
+**The shape to copy** (`tests/arena/maze_probe.gd`, `_positive_control`): check what the run depends on, print one
+`*_CONTROL ok: …` line naming the conditions when they hold, and on failure `push_error` each problem and
+**exit 1 before writing any output**. A number from a run whose conditions were not met is worse than no number,
+because **it looks exactly like a real one**.
+
+**A control states the condition it checked and what it therefore refuses to report. It does not explain why the
+condition matters.** The first version of arena's said *"…spawn slots wrapped, and those hulls cannot move, so
+every arrival number below would be wrong"* — a **diagnosis the control cannot verify**, and one that had gone
+stale a round earlier: coincident hulls have parted by name since round 6. It was true when written and false when
+read, and **a stale diagnosis in a failure message is worse than one in a document, because it arrives at the
+moment someone is deciding what to do** — that sentence nearly had nav's 60/60 arrival result held out of a merge
+as void. The replacement says only what is permanently true:
+
+> `8 pairs of units started on top of each other: spawn slots wrapped, so this run is not the experiment named
+> (60 distinct start points). No number written.`
+
+**And when a control fires on your own setup, fix the cause rather than downgrading the assertion to a warning.**
+`NAV_UNITS=60` on a 52-slot layout genuinely was not the experiment it named; the probe now offsets the surplus
+units so it is. A warning is the invisible-skip failure in another costume.
+
+Idea from combat, after two of its designator runs measured a different game than it thought and no check caught
+either.
+
 ## Known flakes
 
 - **net-smoke: `ERROR: Condition "ready_state != STATE_OPEN" is true. Returning: FAILED` in the server log.** Seen on
@@ -123,3 +169,48 @@ commits. And a regression can come from something **removed**, which no switch o
 - `web-net-smoke`'s screenshot timing depends on the bot's drive time; if the bot isn't in frame, the check still passes (it only asserts boot + spawn). Look at the picture.
 - Latency and jitter are *injected* (`--relay-latency`, `--relay-jitter`) on localhost; no real cellular link or phone has been measured yet.
 - No input-injection tests yet (keyboard/mouse → `PlayerController`). `ScriptedController` covers the command path; the input map mapping itself is untested.
+
+## Why two tests failed depending on what ran before them (2026-09-19)
+
+**`tests/run_tests.gd` runs every test file in ONE process, sharing one `SceneTree` and every autoload.** The loop is:
+
+```gdscript
+var case: TestCase = script.new()
+case.tree = self          # the SAME SceneTree for every case, all run long
+await case.call(method_name)
+case.teardown()           # isolation is whatever this happens to do
+```
+
+**So isolation is honour-system, per case, and everything in an autoload survives the whole run** — `Pathing`'s baked
+navmesh, `Arena.active`, `Units.tuning`, `GameTheme.slots`, and any node a teardown forgot. **A test's result is therefore
+a function of the order the suite happens to run in, and that order changes whenever anyone adds a file.**
+
+**Two round-7 failures, both in files whose owners had not seen them, both exposed by an unrelated timing change:**
+
+| failure | what it read that the previous test left |
+|---|---|
+| `test_navigation::test_path_goes_around_a_wall` — path goes straight through the wall | `_setup` waits for **`Pathing.is_ready`** — *any* navmesh — so after another test bakes a different arena it paths against **that** mesh. Lesson 87: a readiness check on a property, not an identity. `TacticsLab.navigation_is_this_arenas()` is the fix |
+| `test_units_roster::test_the_catalog_is_where_stats_come_from` — muzzle y **0.26** against catalog **1.12** | the assertion read `turret.GLOBAL_position.y`, so it claimed **both** *the catalog sets the muzzle above the hull* (deterministic) **and** *the hull has settled one physics frame after spawn* (physics, and whatever state the previous test left). The scout was sitting **0.86 m low** |
+
+**`Units.tuning` was the first suspect and was innocent** — it tunes shields, damage and armour, never a muzzle height,
+and clears both dictionaries at the end of its body.
+
+### Two rules from it
+
+1. **One assertion, one claim** (combat). *"A conflated assertion cannot tell you which of its claims broke — the failure
+   gets attributed to whatever changed most recently."* That is precisely how this arrived as a guess about a static in a
+   third stream's file. **If a claim needs the physics world to have settled, say so and give it the frames.**
+2. **Wait on identity, never on a symptom** (arena, lesson 87). *"Every previous fix of mine made the property more
+   specific; only identity ends it."*
+
+### The root cause is NOT fixed, and both fixes above only hide it
+
+**Something earlier in a full run leaves the world in a state where a tank has not settled after one physics frame.**
+combat flagged this rather than claiming closure: its fix makes the symptom invisible to that test. **If nav's navmesh
+case has the same root — a test reading world state a previous test left — finding it is worth more than either fix.**
+
+**Proposed for round 8, NOT now** (`run_tests.gd` is shared and six streams have checks in flight; breaking the runner
+mid-round would stop everybody): **after each `teardown()`, the runner asserts the world is clean** — no leftover tanks in
+the tree, `Arena.active` cleared, `Units.tuning` empty, no baked navmesh — and **FAILS naming the test that leaked**,
+rather than letting the next test inherit it. **A guard, not a documented discipline: today proved that a warning written
+by the stream that later hit it was not enough** (lesson 117).

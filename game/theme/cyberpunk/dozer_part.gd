@@ -12,6 +12,9 @@ extends "res://game/theme/cyberpunk/cyber_vehicle.gd"
 @export var part := "hull"
 ## How strongly paint recolors the model's body (its grime and neon survive).
 @export_range(0.0, 1.0) var paint_strength := 0.45
+## A model generated facing +Z instead of the engine's -Z is turned round here (tools/assets/build_faction_parts.py
+## MODEL_YAW_DEG; round 7: the gang IFV drove backwards). Degrees about +Y.
+@export var model_yaw_deg := 0.0
 ## Hulls only: the engine loop this vehicle runs (EngineSystem; "" = silent).
 @export var engine_sound := "engine_diesel"
 
@@ -27,9 +30,16 @@ func _ready() -> void:
 	if model_scene != null:
 		model = model_scene.instantiate() as Node3D
 		model.name = "Model"
+		model.rotation.y = deg_to_rad(model_yaw_deg)
 		add_child(model)
 		_prepare_model()
+		if part == "hull":
+			_cut_gun()
+		elif part == "turret" and _tank() != null and not FactionArt.gun_cut(String(_tank().get("unit_id"))).is_empty():
+			model.visible = false  # the nub that stood in for a turret: the real gun is cut out of the hull
 		bounds = _model_bounds()
+		if part == "hull":
+			_fit_to_hull()
 		skinned = UnitSkin.apply(model)
 	if part == "hull":
 		shield = ShieldEffect.new(bounds.size + Vector3(0.6, 0.7, 0.8))
@@ -47,6 +57,116 @@ func _ready() -> void:
 	if mesh_instance.mesh == null or mesh_instance.mesh.get_surface_count() == 0:
 		mesh_instance.visible = false
 	_apply_skin()
+	if part != "hull" and model != null:
+		_fit_to_hull.call_deferred()  # after the tank has placed and scaled its turret
+	set_process(gun_pivot != null)  # only a hull with a cut gun has anything to do per frame
+
+
+## Round 6 (feel; the lead: "our semi truck for the gang that was supposed to be a huge tank is tiny ... everything
+## drawn to scale"). The new factions' models were generated at 3-4 m whatever the unit, and a unit with its own hull
+## art is not scaled by the tank, so the gang's 5.6 m semi drew smaller than a scout while its collision box (from
+## hull_size) was full size. Every part of a unit now takes one uniform scale: the unit's hull_size length over its hull
+## model's natural length (FactionArt.hull_length). Uniform, so a truck stays truck-shaped; where a model's proportions
+## disagree with hull_size, that is a finding for combat's data, not something to stretch away. Turret and weapon parts
+## undo the scale the tank already gave their parent and rise with the hull's roof. Outside a Tank (the galleries)
+## nothing changes.
+func _fit_to_hull() -> void:
+	var tank := _tank()
+	if tank == null or model == null or not is_instance_valid(model):
+		return
+	var unit_id := String(tank.get("unit_id"))
+	var natural := bounds.size.z if part == "hull" else FactionArt.hull_length(unit_id)
+	var size: Variant = Units.stat(unit_id, "hull_size")
+	if natural <= 0.01 or not (size is Array):
+		return
+	var fit := float(size[2]) / natural
+	var inherited := _scale_below(tank)
+	model.scale = Vector3.ONE * (fit / inherited)
+	if part != "hull":
+		# The turret pivot was placed for the model's natural roof; the roof is now `fit` times as high.
+		var pivot := _height_below(tank)
+		model.position.y += (fit - 1.0) * pivot / inherited
+	if part == "hull":
+		bounds = _model_bounds()
+
+
+## Round 7: a hull whose gun was generated into its mesh (FactionArt.GUN_CUTS) gives the gun to a pivot of its own,
+## which follows the tank's turret yaw every frame. The hull and gun keep the approved model's exact geometry.
+var gun_pivot: Node3D
+var _gun_rest_yaw := 0.0
+
+
+func _cut_gun() -> void:
+	var tank := _tank()
+	if tank == null:
+		return
+	var cut := FactionArt.gun_cut(String(tank.get("unit_id")))
+	if cut.is_empty():
+		return
+	var box: AABB = cut["box"]
+	var pivot: Vector3 = cut["pivot"]
+	_gun_rest_yaw = deg_to_rad(float(cut.get("rest_yaw_deg", 0.0)))
+	gun_pivot = Node3D.new()
+	gun_pivot.name = "GunPivot"
+	gun_pivot.position = pivot
+	model.add_child(gun_pivot)
+	for node in model.find_children("*", "MeshInstance3D", true, false):
+		var instance := node as MeshInstance3D
+		if instance.mesh == null or gun_pivot.is_ancestor_of(instance):
+			continue
+		var to_model := _relative_to(instance, model)
+		var pieces := FactionArt.split_mesh(instance.mesh, to_model, box)
+		if pieces[1] == null:
+			continue
+		instance.mesh = pieces[0]
+		instance.visible = pieces[0] != null
+		var gun := MeshInstance3D.new()
+		gun.name = "Gun"
+		gun.mesh = pieces[1]
+		# The gun's own frame: its pivot at the origin, then turned to point ahead at rest.
+		gun.transform = Transform3D(Basis(Vector3.UP, _gun_rest_yaw), Vector3.ZERO) * Transform3D(Basis(), -pivot) * to_model
+		gun_pivot.add_child(gun)
+
+
+func _process(_delta: float) -> void:
+	if gun_pivot != null:
+		var tank := _tank()
+		var turret: Variant = tank.get("turret") if tank != null else null
+		if turret is Node3D:
+			gun_pivot.rotation.y = (turret as Node3D).rotation.y
+
+
+func _relative_to(node: Node3D, ancestor: Node3D) -> Transform3D:
+	var result := Transform3D.IDENTITY
+	var current: Node = node
+	while current != null and current != ancestor:
+		if current is Node3D:
+			result = (current as Node3D).transform * result
+		current = current.get_parent()
+	return result
+
+
+func _tank() -> Node3D:
+	var node := get_parent()
+	while node != null and not (node is Tank):
+		node = node.get_parent()
+	return node as Node3D
+
+
+## The uniform scale the nodes between this part and the tank apply (the tank scales its turret per hull class).
+func _scale_below(tank: Node3D) -> float:
+	var result := 1.0
+	var node := get_parent()
+	while node != null and node != tank:
+		if node is Node3D:
+			result *= (node as Node3D).scale.x
+		node = node.get_parent()
+	return maxf(result, 0.001)
+
+
+## This part's height above the tank's origin, in tank space.
+func _height_below(tank: Node3D) -> float:
+	return (tank.global_transform.affine_inverse() * global_transform).origin.y
 
 
 ## Subclasses change the instantiated model before it is measured and skinned (artillery_part.gd cuts its legs loose).

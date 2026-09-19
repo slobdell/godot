@@ -1,0 +1,29 @@
+{
+	"bridge": false,
+	"channel_depth_m": 26.0,
+	"channel_z": 40.0,
+	"hull": {
+		"crossed": false,
+		"ended_at": [
+			0.0,
+			0.0,
+			56.0
+		],
+		"fell_through_world": false,
+		"lowest_y": 0.0
+	},
+	"navmesh_gap": {
+		"carved": true,
+		"centre_off_mesh_m": 10.1
+	},
+	"route": {
+		"detour": 0.17,
+		"navmesh_m": 8.0,
+		"path_ends_short_by_m": 38.0,
+		"reachable": false,
+		"straight_m": 46.0
+	},
+	"sight": {
+		"eye_ray_crosses": true
+	}
+}
