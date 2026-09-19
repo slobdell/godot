@@ -943,6 +943,38 @@ What follows for map authoring, and these are testable claims rather than taste:
 **"It still sucks" is the headline and everything below is subordinate to it.** Round 7 merged seventeen branches and he
 still cannot command his units. **Improvements he can see did not change the verdict.**
 
+### MEASURED ON MAIN: the back-and-forth is real, it is churn, and it is gear-shuffling (nav, 2026-09-19)
+
+**His complaint:** *"units are still just getting stuck behind basic barriers where they seem to just move back and forth
+indefinitely trying to get unstuck."*
+
+**Pre-registered before the run** (oscillating = **≥ 8 m of travel in 4 s with net displacement under a quarter of it**,
+relative to the ORDER's goal, not the brain's target; **≥ 5% on any map means real churn**). Tree `aa984edd` with `main`
+merged and no nav changes on top; builder0; `STALL_VERB=attack_move`; seed 3; 120 s; Condemned vs Condemned. **Arm read
+live from the code on every run: `commit=true, fixed_style=standoff, off=[]`.**
+
+| map | oscillating | no_progress | attack-move progressing |
+|---|---|---|---|
+| yard | **7.2%** | 0.426 | 0.44 |
+| boneyard | **6.6%** | 0.477 | 0.43 |
+| pit | **5.8%** | 0.425 | 0.468 |
+| boulevard | **5.3%** | 0.470 | 0.419 |
+
+**All four ≥ 5%, so by the rule fixed in advance the answer is YES.** The sentence for him, nav's:
+> *"About 6% of the time an attack-moving unit is driving back and forth: ≥ 8 m of travel in 4 s for less than a quarter
+> of it in net progress. On every map, on the game you play."*
+
+**⚠ AND IT IS NOT TERRAIN.** `blocked_terrain` is **0.000–0.010** on every one of these maps. **The fix was never
+pathing** — the orchestrator assigned flow fields to this complaint and would have spent a round on the wrong layer.
+
+**THE MECHANISM, and it makes the semi complaint and this one ONE BUG:** of 11 scout in-place-yaw events, **all were in
+phase `driving`, none creeping, and 7 of 11 had forward AND reverse above 0.5 m/s in the same 2-second window.**
+**The units are gear-shuffling** — `CombatMotion`'s context steering picking a forward direction, then a reverse one.
+
+**So *"the semi trucks are yawing in place"* and *"moving back and forth indefinitely"* are the same churn seen from two
+angles: heading and position.** A vehicle alternating forward and reverse rotates without translating *and* travels
+without progressing. **One fix should move both**, and the `--nav-off=commit` A/B is pre-registered to test exactly that.
+
 ### Two decisions from the lead (2026-09-19, answering queued gates)
 
 > *"a 4s slower march for a tidier traversal is better, yes. For the attack mechanics - **making the units appear smart
