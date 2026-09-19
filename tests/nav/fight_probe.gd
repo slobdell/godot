@@ -132,6 +132,14 @@ func _run() -> void:
 		push_error("nav-fight control FAILED: armies of %d and %d units" % [green.size(), rust])
 		quit(1)
 		return
+	# --require=<unit_id>[,<unit_id>]: the unit types the run is ABOUT must be on the field, or it refuses before any number
+	# exists (round 8: a semi in-place-yaw run whose seed fielded no semis; a treatment arm without the treatment is a
+	# failed run, not a null result — lesson 101).
+	for required in _flag("require", "").split(",", false):
+		if int(fielded.get(required, 0)) == 0:
+			push_error("nav-fight control FAILED: --require=%s but none fielded (fielded %s)" % [required, fielded])
+			quit(1)
+			return
 	var stacked := 0
 	var all: Array = game_match.tanks.get_children()
 	for i in all.size():
