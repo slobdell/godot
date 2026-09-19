@@ -162,6 +162,8 @@ _Updated 2026-09-18 by the squad worker._
 | **Element flow** (the lead: formation on the way) | `ElementPlan._flow`: while the leader is > 15 m from its slot, the others FOLLOW it at their slot offset (K1 follow-with-slot); leader paced to its laggards. Joins the final slots once per task (`flow_joined`; toggling re-ordered a CPU army 6x). A/B (laptop, 1 seed, `element_transit`): transit gap 9.0 vs 11.4 m, worst off-slot at arrival 2.9 vs 6.5 m, but arrival 17.4 vs 13.1 s. **Lead gate:** is ~4 s slower worth a tidier march? `ElementPlan.FLOW_ENABLED` turns it off. |
 | **Seats fixed on the spot** (`3a0590e1`) | a plain move that has joined its final slots keeps its seating whatever drift costs (`TacticsFormation.seat` `fixed`): CPU five-squad idle orders 4-6 → 0 (laptop) |
 | nav's commitment hooks (`bf51acf0`) | previous direction into `CombatMotion.choose`, `jink_worth`; a held idle unit's refused move faces its told facing (nav's move+facing misses) — no test reproduces that case here; nav's `nav-facing` probe is the check |
+| **Attack-move progress dip** (orchestrator's question) | not commitment: `nav-fight-ab AB_OFF=commit` (builder0, `c06e53e0`, yard, seeds 1/3/5/7/9) attack_move progressing on/off .453/.461, .461/.431, .451/.442, .359/.351, .433/.407 — mean .431 vs .418, better on 4 of 5; motion jumps −30-40%. My "orbit at right angles" hypothesis is not supported; the 44→41 dip came from something else between the two measurements |
+| **ai-scenarios 5 → 0 failures** (`2879d17e`) | see Known issues |
 | nav's hold-settle patch | waits on `d963d9ad` (`Movement.settle_radius`) reaching main (lesson 86) |
 | X6 baseline | the sim baseline is recorded on main (`b70608d6`); my branch moves it again (brain changes) — not recorded here (invariant 2) |
 
@@ -290,8 +292,9 @@ line 0.5 m deep centred 2.8 m off its point; a plain move ends 0.3 m from the cl
 - `scenario_dodge_rate` finds 0 dodge attempts on CP4 + my fix (raw CP4: 4 of 488 inbound ticks; pre-CP4: 22). A
   4-event sample; combat's X6 (crossing targets harder to acquire) flips the same test. Dodging was already found in
   round 5 to almost never pay. Not in `make check`.
-- `ai-scenarios` has 6 failures that pre-date this round (scenario_cp2 ×3, fire_discipline, matchups, squad focus);
-  the orchestrator is committing an expected-pass baseline for the suite (lesson 42).
+- `ai-scenarios`: triaged to 0 failures in round 7 (`2879d17e`; laptop 45 passed, 2 pending). Three were brain bugs
+  (orbit dropped on a momentary loss of sight; SUPPRESS over a winnable ENGAGE; dug-in artillery turning its hull),
+  one a 60 Hz tick bar, one a withdrawn claim (scout vs Lancer, now PENDING). Still not in `make check` (lesson 42).
 
 ### Questions for the lead
 
