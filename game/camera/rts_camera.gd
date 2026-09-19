@@ -75,7 +75,26 @@ const WALL_HEIGHT_M := 3.0
 ## 0.3 m past the 2 m wall); if the venue changes shape, these follow it.
 ## The front point includes the railing above the first seats (7 m): at 5 m the railing still crossed the back row of a
 ## squad parked by the wall (shell-playtest at 78 m, round 7).
+## FALLBACK ONLY since feel published StandsProfile (c97520a9): `stands_profile()` reads the profile computed from the
+## kit the dressing places, which moves when the venue does (the hexagon's venue builds modules per edge); this hand
+## measurement is lesson 66, a derived value copied. feel's test asserts StandsProfile reproduces these four points.
 const STANDS_PROFILE := [Vector2(2.0, 3.0), Vector2(2.3, 7.0), Vector2(12.3, 11.0), Vector2(22.2, 15.7)]
+const STANDS_PROFILE_SCRIPT := "res://game/theme/arena_kit/stands_profile.gd"
+static var _stands: Array = []
+
+
+## The stands' profile for the cutaway: feel's StandsProfile.points() when this build has it (looked up by path, as it
+## may not have merged yet), else STANDS_PROFILE. Read once: StandsProfile caches, and the venue is fixed for a match.
+static func stands_profile() -> Array:
+	if not _stands.is_empty():
+		return _stands
+	_stands = STANDS_PROFILE.duplicate()
+	if ResourceLoader.exists(STANDS_PROFILE_SCRIPT):
+		var script := load(STANDS_PROFILE_SCRIPT) as Script
+		var points: Variant = script.call("points") if script != null else null
+		if points is PackedVector2Array and (points as PackedVector2Array).size() >= 2:
+			_stands = Array(points)
+	return _stands
 ## Whether the stands hide the arena is judged for a vehicle this far inside the wall, this high.
 const OCCLUSION_PROBE := Vector2(4.0, 1.0)
 ## A camera less than this far behind the stands' back still counts as among them (their back rail and lights).
@@ -286,7 +305,7 @@ static func cutaway_near(at: Vector3, heading: float, distance: float, pitch_deg
 	var back := Vector3(sin(heading), 0.0, cos(heading))  # from the focus toward the camera, on the ground
 	var reach := INF  # how far from the focus, along `back`, the wall's inner face is
 	var wall_height := WALL_HEIGHT_M
-	var profile: Array = STANDS_PROFILE
+	var profile: Array = stands_profile()
 	if perimeter_poly.size() >= 3:
 		# Round 7: the arena's own perimeter (arena's Arena.perimeter / perimeter_edges), any convex polygon. The span
 		# of wall the sight line crosses says what stands behind it: stands and gates use the stands profile, "none"

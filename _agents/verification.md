@@ -72,6 +72,51 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 - Markers printed by `main.gd`: `TANK_SQUAD_READY` (wired), `TANK_SQUAD_LISTENING` (server), `TANK_SQUAD_CONNECTED` / `TANK_SQUAD_SPAWNED` (client). `smoke.mjs` takes the marker to wait for as its 4th argument. **If you rename one, grep the Makefile and `tools/`.**
 - `tests/net/bot_client_check.gd` is a `SceneTree` script that waits for the server's TCP port, instantiates the *real* `main.tscn` (which reads the same `--connect`/`--demo` flags), and watches `Tanks/Tank_<my peer id>.sync_position`. It isn't named `test_*`, so `make test` doesn't pick it up. **The `NET_SMOKE_EXPECT` override exists to prove the check can fail:** `make net-smoke NET_SMOKE_EXPECT=3` must exit non-zero.
 
+## Timing in tests: measure in `make check`, judge elsewhere (policy, 2026-09-19)
+
+**`make check` does not gate on how long something takes.** It is the thing six to nine agents run at once on builder0
+(an i5-1345U: 2 hyperthreaded P-cores + 8 E-cores, 12 threads) and on the shared laptop, so a wall-clock assertion there
+is a claim about *other streams' activity*, and when it fails it looks like a code defect. Found by control, ruled by
+the orchestrator:
+
+- **The evidence.** `test_control_scale`'s frame budget (absolute 2.0 ms, 11% headroom over the idle laptop's 1.80) went
+  red in #19 on builder0 at **2.33 ms, where idle builder0 is ~0.65 ms** (`9c889025`), and on the laptop at load 4–8
+  (2.2–3.1 ms). One bare click-to-order sample read **24 ms for ~4 ms of work** (laptop, load 7.8).
+- **A ratio fixes a busy machine, not a full one.** Timing the work interleaved with a fixed reference workload
+  (`control_fixture.gd`: `reference_work`, `fastest_ms`) and budgeting their ratio cancels core type (P vs E) and
+  throughput: the control frame held at 18.8–20.2 reference workloads across loads (laptop, `35c72304`), and +1 ms of work
+  still fails it (30.2 against 26). **But with 7 CPU burners on the laptop's 8 threads the order path went from 3 ms to
+  42 ms (~14×) as the fastest of 10 samples, while the reference only doubled**: a slice of engine work also waits on
+  engine worker threads, and a single-threaded GDScript yardstick can't see those starve.
+
+**The rule:**
+1. **In `make check`, timing is a printed measurement (`MEASURE ...`), never an assertion.** Prefer a ratio to a
+   reference over raw milliseconds even as a measurement: it compares across machines.
+2. **Timing verdicts belong to a separate target run on purpose on an uncontended builder0**, with `sim-profile`
+   (`mk/match.mk`) as the precedent.
+3. **A timing check that must stay a gate asserts its own precondition and REFUSES** (*"not judged: reference workload
+   2.1× nominal, machine too loaded"*), and the summary counts it as not judged, **never as a pass**. A silent skip is
+   lesson 91.
+4. **Liveness timeouts are not budgets.** A timeout catches a hang, and a hang doesn't care whether it's 120 s or 600 s:
+   make them generous (`garage-smoke`/`army-loop-smoke`: 60/120 → 600 s at `d8f26176`; they ran 10 s and 18 s on the
+   laptop, only ~6× headroom against a measured 14× starvation, and a timeout failure reads as a deadlock).
+5. **A bound with 30× headroom is a smoke check, not a budget; label it as one.** `match-smoke`'s `speedup > 2`
+   (58–84× on builder0) and `test_visibility`'s 200 ms refresh (3.2–5.9 ms on builder0) can't flake and can't catch a
+   regression. Either give them a real budget in the timing target, or say in the message that they are sanity bounds.
+6. **One sample is the most exposed shape.** Take the fastest of N, and use the test's own natural reference where it has
+   one (a cache hit against the same test's cold load).
+
+**When a grep for timing turns up a hit, say why it isn't one.** From the 2026-09-19 survey: tick counts
+(`test_control_response`, `test_responsiveness`) are sim time; `test_combat`'s respawn waits on the same `SceneTree` timer
+the game uses (`match.gd`), so both sides move together; a camera test that waits wall-clock for a rotation driven by the
+same process delta is consistent. Those are not exposed.
+
+**Status (round 7):** control's timing tests are ratios but still assert (converting them to measurements plus the timing
+target is round-8 work: it touches `mk/core.mk` and other streams' tests). `test_theme_factions.gd:63` (cache hit < 5 ms,
+one sample) is routed to feel.
+
+||||||| baf04ead
+
 ## Attributing a behaviour's cost: switch it off (nav, round 7)
 
 The only honest way to say what one mechanism contributes is to **remove it and measure again**, never a

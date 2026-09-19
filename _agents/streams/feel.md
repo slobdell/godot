@@ -129,6 +129,33 @@ place, you do not place).
 
 ## Status
 
+### Round 7 so far (2026-09-19) — the lead's visible defects first
+
+- **Green and merged: `ec10d9f5`** (builder0: 1142 passed; `sim-baseline passed: b0df248dc0140639` on a tree without
+  squad's facing change — a clean proof the orientation fixes are inert; combat confirmed by construction that art
+  cannot reach the hash: it samples tanks, colliders come from `hull_size`, art fills child slots).
+- **Backwards vehicles:** the gang IFV (`f0e63800`, reported 3x) and the **Syndicate lancer** (`cb171a98`, never
+  reported; its approved concept `syndicate_special_b` has the nose and emitter leading). Fixed by
+  `MODEL_YAW_DEG` in `tools/assets/build_faction_parts.py` → `dozer_part.model_yaw_deg`. **`make facing-audit`**
+  renders every unit side-on with its forward marked (`TURRET=deg` holds the turret); in `verification.md`. All other
+  19 units checked correct, and every separate weapon part points -Z.
+- **Guns baked into hulls (`4437d482`):** the gang tank and the Law artillery had the gun in the hull mesh and a nub
+  as the turret part. `FactionArt.GUN_CUTS` cuts it out at runtime (box in model space, cached) onto a pivot that
+  follows the turret; both guns were modelled pointing backwards, so `rest_yaw_deg` 180. **Not the Syndicate IFV**:
+  its roof gun is its real turret part — an early render taken while the tank drove its turret home misled me, and a
+  cut I added there hid the real gun (removed). Gunnery never affected. Approved models kept exactly (no Meshy).
+  **Visual confirmation at 70° pending** (the render queued on builder0).
+- **Gallery reads `hull_size` from `Units`** (`8459f4af`, combat's report); the slot-cache timing test is now a
+  mutation-checked ratio (`b61f5a26`).
+- **Round-7 cityscape:** `prop.block` / `CityBlock` (chamfered, beveled, setbacks above the shopfronts; shares the
+  skyline's windows; 2 draws) and the kit type `block` (40×24×40, hard) landed together (`fe5abaeb`, `4ab85b61`).
+  Facade v2 (visible window grid, lighter concrete, pale chamfer edges) not yet looked at after the shader fix.
+- **Arena shape:** hexagon, circumradius 139.7 m, `ARENA_HALF_SIZE` 140, module **23.07 m, six per side**; my gates
+  in the middle of each base side (18.5 m gate + screens + 2 modules each flank); edge schema `spans`. Owed: reshape
+  the stands to `Arena.perimeter()` and publish their height profile as data for control.
+- **Pending / next:** the check on `dcdbcfa9` (merged main: baseline `253ecfdeed84bc4d`); the stands reshape; the
+  hull fit weighing height (combat's taller catalog: the semi is 4.4 m); the block facade look.
+
 ### Resumed after the quota stop — current state (read this, then the handover below for detail)
 
 - **Green: `42a6bc5f`** (builder0 `make check`: 1138 passed, 0 failed) — unit scale, MG tracers (shell tracer

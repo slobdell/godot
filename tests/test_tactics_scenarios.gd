@@ -121,3 +121,23 @@ func test_a_cpu_army_under_the_same_orders_is_not_re_ordered_for_fighting_from_i
 	assert_true(int(result["idle_orders"]) <= 2, "the leaders leave them to it (%d orders in the last 10 s)" % result["idle_orders"])
 	for off: float in result["anchor_off_m"]:
 		assert_true(off < 0.5, "every formation stands on the spot it was sent to (anchor %.1f m off)" % off)
+
+
+func test_attack_move_decisions_measured() -> void:
+	# Round 7: a measurement first (the bar comes after the fix, from what it measures).
+	var result: Dictionary = await TacticsScenarios.attack_move_decisions(self)
+	print("MEASURE attack_move_decisions %s" % result)
+	assert_true(float(result["unit_minutes"]) > 3.0, "setup: six units fought for most of a minute")
+
+
+func test_an_element_flows_in_formation_on_the_way() -> void:
+	# The lead: "a formula to form up" — the visible half is holding the shape while travelling, not only at the end.
+	var flowing: Dictionary = await TacticsScenarios.element_transit(self, true)
+	var snapping: Dictionary = await TacticsScenarios.element_transit(self, false)
+	print("MEASURE element_transit flow %s; without %s" % [flowing, snapping])
+	assert_true(float(flowing["transit_gap_m"]) < float(snapping["transit_gap_m"]),
+			"on the way, members hold their places around the leader better (%.1f m vs %.1f m)"
+			% [flowing["transit_gap_m"], snapping["transit_gap_m"]])
+	assert_true(float(flowing["arrived_s"]) > 0.0, "and it still gets there (%.1f s)" % flowing["arrived_s"])
+	assert_true(float(flowing["worst_off_slot_m"]) <= 8.0, "formed up on the spot (worst %.1f m)" % flowing["worst_off_slot_m"])
+	assert_true(int(flowing["orders_last_10s"]) <= 2, "and quiet after (%d orders in the last 10 s)" % flowing["orders_last_10s"])

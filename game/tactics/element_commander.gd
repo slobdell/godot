@@ -277,10 +277,12 @@ func _contacts() -> Array:
 	return contacts
 
 
-## Where the team is going when nothing is known: the control point if there is one, else the enemy's ground.
+## Where the team is going when nothing is known: the objective to go for from our base (the nearest we do not hold,
+## else the nearest we do) if there are objectives, else the enemy's ground.
 func _objective() -> Vector3:
-	if Objectives.active(game_match):
-		return Objectives.center(game_match)
+	var target := Objectives.goal(game_match, team, Match.spawn_position(team, 0))
+	if not target.is_empty():
+		return target["position"]
 	return Match.spawn_position(1 - team, 0) * 0.75
 
 

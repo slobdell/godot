@@ -1,3 +1,4 @@
+class_name ArenaKitGallery
 extends Node3D
 ## Arena kit gallery (`make arena-kit-gallery`, assets X1/X2): a container yard (20 ft and 40 ft, stacks of 1–3, open
 ## doors, each faction's paint and stencils) and giant ad screens on two channels under the cyberpunk arena's night lighting, placed through the real
@@ -47,10 +48,28 @@ const VIEWS := {
 	"screens": [Vector3(-2.0, 2.2, -14.0), Vector3(-6.0, 12.0, -36.0), 62.0],
 	"gate": [Vector3(92.0, 9.0, 30.0), Vector3(126.0, 4.0, 0.0), 60.0],
 	"overview": [Vector3(0.0, 200.0, 0.0001), Vector3.ZERO, 0.0],
+	# Round 7: the whole venue from high and oblique (for SHAPE=hexagon).
+	"venue": [Vector3(0.0, 150.0, 230.0), Vector3(0.0, 0.0, -10.0), 55.0],
 	# Round 7: the city street at the lead's camera (21 degrees, 49 m, FOV 35) and from higher up.
 	"city": [Vector3(70.0, 17.6, 49.0), Vector3(70.0, 0.0, 3.0), 35.0],
 	"city_high": [Vector3(20.0, 60.0, 60.0), Vector3(70.0, 0.0, -10.0), 50.0],
 }
+
+## Round 7: a shaped perimeter for the gallery, with feel's agreed gates in the middle of each base side (the edge
+## facing each base) and stands everywhere else.
+static func venue_shape(kind: String, apothem: float) -> Dictionary:
+	var edges := ArenaShape.edges({"kind": kind}, apothem)
+	var authored := []
+	for edge: Dictionary in edges:
+		var length := float(edge["length_m"])
+		var mid: Vector2 = ((edge["from"] as Vector2) + (edge["to"] as Vector2)) / 2.0
+		if absf(mid.x) < 1.0:  # the side facing a base
+			authored.append({"spans": [{"kind": "stands", "to_m": length / 2.0 - 15.0}, {"kind": "gate", "to_m": length / 2.0 + 15.0},
+					{"kind": "stands", "to_m": length}]})
+		else:
+			authored.append({"spans": [{"kind": "stands", "to_m": length}]})
+	return {"kind": kind, "edges": authored}
+
 
 var camera := Camera3D.new()
 var _flags: LaunchFlags
@@ -64,6 +83,9 @@ func _ready() -> void:
 		var slot := VisualSlot.new()
 		slot.slot = slot_name
 		add_child(slot)
+		if slot_name == "arena.dressing" and _flags.has("gallery-shape"):
+			slot.invoke("setup", [{"name": "gallery", "half_size": 120.0, "obstacles": [],
+					"shape": ArenaKitGallery.venue_shape(_flags.text("gallery-shape"), 120.0)}])
 	var yard := Node3D.new()
 	yard.name = "Yard"
 	add_child(yard)

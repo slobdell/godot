@@ -1808,3 +1808,55 @@ The kickoff prompt is one line; this section is the rest.
        naming the test that leaked**, so the next one is caught at source rather than diagnosed three times.
      - **And control's hexagon cutaway test now RESTORES the previous perimeter rather than blanking it** — blanking is
        itself a leak, just a quieter one.
+121. **A known-problems list decays faster than code, and nothing re-verifies it.** combat's summary of round 7, and it is
+     the finding I would hand the next round ahead of any result: **three separate "known broken" items turned out to be
+     measurement artefacts.**
+     - **`announcer-record-smoke` / `music-smoke`** — carried in feel's brief as broken for **two rounds**. They pass on a
+       current baseline. They ask a *differential* question and implement it as an *absolute* comparison against a shared
+       file, so they misfire once a round by design. **Nothing was ever wrong with the booth or the soundtrack.**
+     - **The gangs' 23%** — treated as a faction balance problem across two rounds, then as a mechanics triumph when it
+       "dissolved" to 53%. The ablation says neither is established, and **both numbers are retired.**
+     - **combat's own dither alarm** — same shape, found in its own stream.
+     **Each was recorded in a document with enough confidence to be believed, and each cost someone real time before
+     anyone checked it.** Add the funnel algorithm we had listed as OWED and had been running since round 1 (lesson 85),
+     and it is four.
+     **The lesson is not "measure more".** Code has tests; a claim in a doc has nothing. **A brief's "known problems"
+     section is the least-verified, most-quoted text in this project** — it is written once, read every round, and
+     re-checked never. Two practices follow:
+     - **Re-verify a known-problem before acting on it, not after.** The check is usually one command, and three of the
+       four above collapsed the first time anyone ran it.
+     - **Date every entry and name what would retire it.** *"Fails since <hash>; retire when X passes"* — an entry that
+       cannot be retired by evidence will not be.
+122. **"Degraded, not fatal" is the worse of the two, and a guard that names its own fix turns a day into a minute.**
+     arena pointed a real match at the first arena ever to carry off-centre objectives, and squad's `Objectives` guard
+     fired **35,336 times** — *"the arena declares an objective other than the single central zone; squad's deciders still
+     read `Match.CONTROL_CENTER`. Move `game/tactics/objectives.gd` onto N7's instance API."*
+     **The match completed and produced a winner** while every decider competed for the wrong ground for its entire
+     duration. **Without the guard, arena would have shipped a layout that plays, looks fine, is wrong — and whose results
+     would have gone into a series.** That is lesson 77 (*a CPU competing for the wrong ground looks completely
+     functional*) compiled into the code instead of remembered.
+     - **A failure that stops the run announces itself. A failure that degrades the run does not**, and it contaminates
+       every number taken downstream of it. **Prefer a loud guard to a graceful fallback wherever "wrong" and "working"
+       are indistinguishable from outside.**
+     - **The error string names the FILE and the FIX, so a stream that owns neither diagnosed it in one run without
+       reading the other's code.** arena's words: *"that guard is the best thing anyone built this round."* **An error
+       message is an interface between streams — write it for the person who will read it, who is not you.**
+     - **And it fired on the first layout anyone pointed it at**, which is the strongest possible validation: it was
+       written for a hazard that had not yet occurred, and the hazard occurred exactly as described.
+123. **A clamp and its containment test are one contract, and ours disagreed with itself.** control migrated its four
+     square clamps onto M4 and found **`ArenaShape.clamp_into`'s margin put corner points on the NEIGHBOURING edge with
+     no clearance** — `(130,130) → (116,120)`. arena fixed it at `f295ff30` **and found a second bug behind it:
+     `clamp_into` returned points its own `contains` rejected.**
+     **A function that places a point inside a shape and a function that tests whether a point is inside it are two
+     halves of one claim.** When they disagree, every caller is in an unwinnable position: **clamp then check fails, and
+     check then clamp loops.** Neither bug is visible from either function alone — only from using them together, which
+     is what a consumer does and an author usually does not.
+     - **The property worth asserting is the round trip: `contains(clamp_into(p))` for every `p`**, including far outside,
+       on corners, and on the diagonal. That is one test and it catches both bugs.
+     - **The bugs surfaced because a consumer migrated onto the contract**, not because arena re-read its own code.
+       **M4 was reviewed by combat, written by arena, and specified by the orchestrator; none of that found it.** Contract
+       bugs are found by the first real caller — **so land a contract with a consumer, not before one.**
+     - control measured the old behaviour it replaced: **the square box admitted points 164 m out on the diagonal**, and
+       the new clamp keeps all 24 test bearings inside the wall while reproducing **exactly the old ±116 on a square,
+       corners included.** *Reproducing the old behaviour exactly where it was right* is what makes a replacement
+       trustworthy.

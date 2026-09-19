@@ -42,8 +42,9 @@ func _state(task: Dictionary, extra: Dictionary = {}) -> Dictionary:
 ## The state the element carries into its next update (what Element._take keeps).
 static func _carry(state: Dictionary, plan: Dictionary) -> Dictionary:
 	var next := state.duplicate()
-	for key in ["anchor", "heading", "bounding", "arrived", "seats"]:
-		next[key] = plan[key]
+	for key in ["anchor", "heading", "bounding", "arrived", "seats", "flow_joined"]:
+		if plan.has(key):
+			next[key] = plan[key]
 	next["drill"] = plan["drill"]
 	return next
 
@@ -141,9 +142,41 @@ func test_a_plain_move_runs_no_drill_even_under_fire() -> void:
 	var plan := ElementPlan.build(_situation(enemy), _state(task), table)
 	assert_eq(plan["drill"], "", "no react to contact, no ambush drill")
 	for unit: String in plan["orders"]:
-		assert_eq(plan["orders"][unit]["verb"], "move", "%s keeps driving to its slot" % unit)
+		# The leader drives to its slot; the others FOLLOW the leader at their slot's offset (round 7 flow): both are
+		# "keep going to your place", neither is a drill.
+		var order: Dictionary = plan["orders"][unit]
+		assert_true(String(order["verb"]) in ["move", "follow"], "%s keeps going to its place (%s)" % [unit, order["verb"]])
+		if String(order["verb"]) == "follow":
+			assert_true(order.has("slot") and String(order["target"]) == String(plan["leader"]),
+					"%s follows its leader at a slot" % unit)
 	var with_drills := ElementPlan.build(_situation(enemy), _state({"verb": "move", "to": [0, -100]}), table)
 	assert_true(with_drills["drill"] != "", "the same contact on an attack-move task does start a drill (%s)" % with_drills["drill"])
+
+
+func test_a_plain_move_standing_on_its_spot_keeps_its_seating() -> void:
+	# Round 7: sent once means seated once. CPU crews fight from within their slot's leash and drift off it; a seating
+	# that re-shuffled around the drift re-ordered idle units (the CPU five-squad test, 4-6 orders in its idle window).
+	var table := _table()
+	var destination := Vector3(0, 0, -100)
+	var task := {"verb": "move", "to": [destination.x, destination.z], "drills": false}
+	var drifted := func(plan: Dictionary, swap := true) -> Dictionary:
+		# Green_2 and Green_3 have drifted onto each other's slots while fighting (swap = false: all on their own).
+		var situation := _situation([], destination)
+		for member: Dictionary in situation["members"]:
+			var name := String(member["name"])
+			var other: String = {"Green_2": "Green_3", "Green_3": "Green_2"}.get(name, name) if swap else name
+			member["position"] = plan["slots"][other]
+		return situation
+	var sent := ElementPlan.build(_situation([], destination), _state(task), table)
+	var first := ElementPlan.build(drifted.call(sent, false), _carry(_state(task), sent), table)
+	assert_true(bool(first.get("flow_joined", false)), "setup: on the spot, the flow has joined its final slots")
+	var standing := ElementPlan.build(drifted.call(first), _carry(_state(task), first), table)
+	assert_eq(standing["seats"], first["seats"], "the seating stands: each crew is sent back to its own slot")
+	# The mechanism, not a coincidence: the same drift before the element has joined its slots does re-seat.
+	var joining := _carry(_state(task), first)
+	joining["flow_joined"] = false
+	var still_flowing := ElementPlan.build(drifted.call(first), joining, table)
+	assert_true(still_flowing["seats"] != first["seats"], "control: an element still forming up re-seats to save driving")
 
 
 func test_closing_up_is_judged_in_time_not_metres() -> void:

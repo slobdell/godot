@@ -424,6 +424,19 @@ stack first, then the layer that commands it, then how the player reads and issu
   middle. arena's sentence, which is the round's sharpest statement of the risk:
   > *"If N7 lands and objectives stay central, the gates will have made flanking pay in a game that still gives no
   > reason to flank."*
+  **⚠ TWO CORRECTIONS to how this gets summarised (combat, X7, 2026-09-19, from
+  `references/combat/n5-engagement-envelope-2026-09-18.json`, builder0 at `fa4e7077`, n=15 per arm against the TRUE
+  round-5 control):**
+  1. **Quote the STRICT measure, 25.7% → 45.5%, which is what "off-axis kills" above already is.** A looser hull-face
+     measure reads **68.6%**, and it flatters us: **an oblique shot across a wide front registers as a "side" hit without
+     anyone having flanked anything.** So the honest claim is *"flank and rear kills rose from a quarter to just short of
+     half"*, **not "a majority of kills are now flanking"**. Rear kills alone 11.2% → 20.8%.
+  2. **N5 did NOT make the battle more mobile, and the natural summary saying so is FALSE.** Centroid travel moved
+     236.8 → 248.1 m, about **5%, inside the noise of a 15-match arm** — **the armies moved this much before the
+     engagement envelope existed.** So the flanking gain is **a change in how kills happen within an engagement at the
+     same amount of movement**, not more manoeuvre. combat flagged this unprompted because *"it is the kind of thing that
+     gets repeated once written."*
+
   The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
   changes should compound rather than merely coexist.
 - **THE GANGS' 23% IS GONE — 53%, joint best, and nobody tuned them** (60 matches, 5 seeds per pairing,
@@ -804,6 +817,27 @@ wants cannot be produced by geometry alone.** It needs something worth taking th
 - **It gives the bridge work an acceptance test rather than a look.** A bridge is doing its job when `spread` is
   non-zero *and* combat's falsification test shows unit-time actually spent on the expensive route. Either alone is
   decoration.
+
+**FIRST MAPS ABOVE ZERO (arena, 2026-09-19).** A mirrored objective pair authored on both maps the lead kept:
+
+| arena | decision spread | `centre_sees_share` |
+|---|---|---|
+| **yard** | **0.00 → 0.35** | 0.20 (unchanged) |
+| **pit** | **0.00 → 0.26** | 0.30 (unchanged) |
+
+**Each pair gives a side one objective it holds cheaply and one it must contest** — which is the lead's *"compelling
+reason to cross the bridge"* expressed as geometry plus reward rather than geometry alone.
+
+**And `centre_sees_share` did not move on either map, which is what should happen:** objectives change what is *worth
+reaching*, not what can be *seen*. **Two axes behaving independently is the first evidence that splitting them was the
+right model** — openness and reason are separate design knobs, and a map can now be tuned on one without disturbing the
+other.
+
+**⚠ HELD BACK, NOT SHIPPED.** A real match on the paired yard fired squad's `Objectives` guard **35,336 times**: *"the
+arena declares an objective other than the single central zone; squad's deciders still read `Match.CONTROL_CENTER`."*
+**The match completed and produced a winner while the deciders competed for the wrong ground throughout** — degraded,
+not fatal, which is the worse of the two. **The pairs land when squad migrates `game/tactics/objectives.gd` onto N7's
+instance API**; the coordinates and measured effect sit in `make_arenas.py` as a one-line re-enable.
 
 **The metric needed no build slot and no other stream**, which is worth noting for its own sake: the most important
 design finding of the day came from writing down a number nobody had asked for.
