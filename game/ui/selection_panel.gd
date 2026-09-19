@@ -47,6 +47,13 @@ var _command_rects := {}  # id -> Rect2 (local)
 var _hovered := ""
 ## Round 7 (C2): the preview loop's clock (UI time, runs while paused) and where the last tooltip put its preview.
 var _preview_clock := 0.0
+## Round 7: during the planning pause the card opens one button's help by itself, once per session, so a player learns
+## that hovering explains a button without being told (the lead did not know what "Screen" was, and pressed buttons to
+## find out). His first click or key closes it. `intro_requires_pause` is for tests, which cannot pause their own tree.
+const INTRO_BUTTON := "screen"
+static var intro_done := false
+var intro_requires_pause := true
+var _intro := ""
 var _preview_rect := Rect2()
 const PREVIEW_HEIGHT := 170.0
 var _portrait_rects := {}  # portrait key -> Rect2 (local)
@@ -62,6 +69,9 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_preview_clock += delta
+	if not intro_done and _intro == "" and visible and not _command_rects.is_empty() and controls != null \
+			and not controls.selection.is_empty() and (get_tree().paused or not intro_requires_pause):
+		_intro = INTRO_BUTTON if _command_rects.has(INTRO_BUTTON) else String(COMMANDS[0][0])
 	_layout()
 	visible = controls != null and not controls.selection.is_empty()
 	queue_redraw()
@@ -321,6 +331,8 @@ func press_command(id: String) -> void:
 ## X2: the tooltip for the button under the mouse: {"id", "title", "line"} or {}. X7: over the doctrine line, the
 ## element's recent decisions instead: {"id": "doctrine", "title", "line": "", "lines": [...]}.
 func tooltip() -> Dictionary:
+	if _hovered == "" and _intro != "" and visible:
+		return _tooltip_for(_intro)
 	if _hovered == "" or not visible:
 		return {}
 	if _hovered == "doctrine":
@@ -331,16 +343,31 @@ func tooltip() -> Dictionary:
 		if recent.is_empty():
 			return {}
 		return {"id": "doctrine", "title": "%s: why it did that" % element.element_name, "line": "", "lines": recent}
-	var row := TaskPalette.row(_hovered)
-	var title := String(row.get("name", _hovered))
+	return _tooltip_for(_hovered)
+
+
+func _tooltip_for(id: String) -> Dictionary:
+	var row := TaskPalette.row(id)
+	var title := String(row.get("name", id))
 	if String(row.get("hotkey", "")) != "":
 		title += "  [%s]" % row["hotkey"]
 	# Round 7 (C3): which grammar this button is.
 	title += "  -  then click where" if String(row.get("then", "now")) == "click" else "  -  happens at once"
 	var line := String(row.get("line", ""))
-	if ELEMENT_ONLY.has(_hovered) and controls != null and not controls.can_task():
+	if ELEMENT_ONLY.has(id) and controls != null and not controls.can_task():
 		line += " Select a whole squad (1-5) first."
-	return {"id": _hovered, "title": title, "line": line}
+	return {"id": id, "title": title, "line": line}
+
+
+## The intro tooltip closes on the player's first click or key, anywhere, and never returns (it only watches input).
+func _input(event: InputEvent) -> void:
+	if _intro == "":
+		return
+	var pressed := (event is InputEventMouseButton and (event as InputEventMouseButton).pressed) \
+			or (event is InputEventKey and (event as InputEventKey).pressed)
+	if pressed:
+		_intro = ""
+		intro_done = true
 
 
 func _notification(what: int) -> void:

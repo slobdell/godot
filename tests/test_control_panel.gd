@@ -238,3 +238,29 @@ func test_a_task_button_previews_the_posture_it_leaves_the_squad_in() -> void:
 	await tree.process_frame
 	await tree.process_frame
 	assert_true(panel._preview_rect.has_area(), "the hovered button's tooltip carries a preview")
+
+
+## Round 7: the animated help only appears on hover, which is invisible to a player who does not know it is there (the
+## lead looked at "Screen" and did not know what it was). During the planning pause the card opens the Screen tooltip by
+## itself, once; his first click or key closes it and it never returns.
+func test_the_card_shows_its_help_once_by_itself() -> void:
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var panel: SelectionPanel = setup[1]
+	SelectionPanel.intro_done = false
+	panel.intro_requires_pause = false  # the test cannot pause the tree it runs in; the game shows it in planning
+	# The planning pause selects squad 1 for the player with no input (recall_group); select() would click, and a click
+	# is exactly what closes the intro.
+	f.controls.selection.set_units(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"] as Array[String])
+	await tree.process_frame
+	await tree.process_frame
+	assert_eq(panel.tooltip().get("id", ""), "screen", "without any hover, the card shows what Screen does")
+	await tree.process_frame
+	assert_true(panel._preview_rect.has_area(), "with its animation")
+	await f.key(KEY_H)
+	await tree.process_frame
+	assert_true(panel.tooltip().is_empty(), "the first key press closes it")
+	await tree.process_frame
+	await tree.process_frame
+	assert_true(panel.tooltip().is_empty(), "and it does not come back")
+	SelectionPanel.intro_done = true

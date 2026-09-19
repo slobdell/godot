@@ -151,6 +151,22 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
+## Round 7 (2026-09-18/19, after the quota lift) — the orchestrator's brief: A, B, C1–C3, plus K1 and the perimeter
+
+| Item | State | Evidence |
+|---|---|---|
+| **A** yaw follows the selection's facing | done. Source: tasked element heading → order facing/heading → hull forward, averaged; mixed/none keeps yaw. 70°/s past a 12° deadband; manual yaw pauses it; **Y** toggles. Selected vehicles show a forward chevron (+ fire-arc edges for a fixed gun). Reads squad's now-honoured facing since `4cad7ef7` | `test_control_facing_camera` |
+| **B** frame out to the selection's weapon range | done. The selection's reach (largest `min(effective range, sight)`, via Engagement) ahead along its facing is the view's **lean** (`order_pose`), not a point to fit — fitting it dropped the squad off screen with the enemy in view (caught in shell-playtest, mutation-checked). `;` `'` factor. Auto camera capped at 100 m (`auto_frame_max_m`) | same |
+| **C1** vehicle renders as portraits | done. `UnitPortraits`: one real tank per type, dressed as in play, photographed offscreen, cached; role icons until ready/headless | builder0 shell-playtest frame |
+| **C2** animated task help | done. Hovering a task plays its posture loop in the tooltip: move, face, fire (always / on contact), ADVANCES / HOLDS HERE. **Geometry is squad's real planner** (`ElementPlan.preview`, on main) — a coil for Hold, interlocking sectors for Support by Fire. Stand-in only for Stop | `test_control_panel` |
+| **C3** two grammars told apart | done. Rows carry `then: click|now`; click buttons wear a pointer badge + inset border; tooltip says which | `test_control_panel` |
+| K1 `follow` + `slot` | done (squad's ask). One unit, the leader's frame, a sliding goal (≤ 0.52 m/tick at 90°/s) | `test_control_follow_slot` |
+| Perimeter cutaway | done against arena's `perimeter()`/`perimeter_edges()` (by name; square fallback) with positional spans | `test_rts_camera` hexagon test |
+| Portrait + railing fixes | nameplate hidden, hull fills the cell; railing (7 m) counts for the cut | builder0 frame |
+
+**Merge here when #17 is green:** `a1d92ad6` (main `bd7ebae6` merged in). Not done: nothing from the brief; open: the
+preview's start row crosses on the way (cosmetic), feel's stands profile as data (control still measures kit_stands).
+
 **STATE AT PAUSE (2026-09-18, quota stop; resuming ~4 days later): everything is committed.** Last commit with code:
 `017fda42` (the lead's camera: 21°, FOV 35, 49 m, auto-framing on; the `-` `=` hints; squad-1 first frame; tests
 pin their lens). **Its `make remote T=check` (#14) came back GREEN: 1085 passed, 0 failed (builder0). Merge here: `017fda42`.**
