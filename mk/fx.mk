@@ -81,6 +81,14 @@ crowd-look: import ## Feel X1: can a player see the crowd? A real skirmish shot 
 		2>&1 | tee $(BUILD_DIR)/crowd-look/log.txt | grep -E '^CROWD_LOOK|SCRIPT ERROR|^SKIRMISH_CAMERA' || true
 	@grep -q CROWD_LOOK_DONE $(BUILD_DIR)/crowd-look/log.txt
 
+SIZE_RES ?= 1920x1080
+size-look: import ## Round 8: the War Rig beside a scout and a tank at the lead's camera (21 deg, 49 m, FOV 35), once per candidate length → build/size-look/rig_<m>.png, SIZE_LOOK lines (needs a display; LENGTHS=5.6,10,12, ARENA=)
+	rm -rf $(BUILD_DIR)/size-look && mkdir -p $(BUILD_DIR)/size-look
+	timeout 300 $(GODOT) --path . --resolution $(SIZE_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
+		$(if $(ARENA),--arena=$(ARENA)) --size-look=$(CURDIR)/$(BUILD_DIR)/size-look $(if $(LENGTHS),--size-look-lengths=$(LENGTHS)) \
+		2>&1 | tee $(BUILD_DIR)/size-look/log.txt | grep -E '^SIZE_LOOK|SCRIPT ERROR' || true
+	@grep -q SIZE_LOOK_DONE $(BUILD_DIR)/size-look/log.txt
+
 facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg)
 	rm -rf $(BUILD_DIR)/facing && mkdir -p $(BUILD_DIR)/facing
 	timeout 300 $(GODOT) --path . --resolution 960x540 --script res://game/theme/gallery/facing_audit.gd -- \
