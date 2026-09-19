@@ -416,7 +416,31 @@ He chose from control's page (https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL 
 every pose): **pitch 25° · 50 m out · FOV 60°**, no note. Applied as `DEFAULT_PITCH_DEG 25`, `FOV_DEG 60` (was 55),
 start 50 m out; the player tilts freely 22°–50°, and `O` is the deliberate 77° top-down.
 
-**FINAL, 2026-09-18 18:01 UTC — he went lower again: `pitch 12° · 50 m · FOV 60°`.** Asked a second time on a page
+**REVERSED IN PLAY, 2026-09-18, and this supersedes everything below: the lead played `make skirmish` at 12° and
+said the game is UNPLAYABLE.** His words: *"I was totally wrong about the camera, the game is unplayable now with low
+field of view."* **The default pitch goes back to ~45°. 12° remains reachable in the player's range; it is not the
+default and must not be restored as one.**
+
+**Why the wrong answer was produced, because the mechanism matters more than the number.** He was asked to choose from
+a page of **still frames of a frozen fight** — and a still frame cannot show playability. It shows *composition*, and at
+12° the composition is genuinely striking: that is why he picked the floor of the range twice, and why control and feel
+both reported independently that it looked excellent. What a still cannot show is how much ground you can read while
+commanding, how the horizon eats the screen when you need to decide where to send a squad, or what panning feels like.
+**He evaluated a photograph and then had to play a game.** The orchestrator designed that question and put no played
+sequence in front of him, so the failure is in the question, not in his answer.
+
+**What survives, and it is the actual win:** his original complaint was that *zooming out turned into a bird's-eye
+view*. **Decoupling pitch from zoom fixed that**, and it is untouched by this reversal — as are the wall cutaway and
+the far-range tilt floor. A 45° default with an independent tilt axis is a strictly better camera than round 5's, which
+is what he asked for. The 12° default was an over-correction produced by a bad question.
+
+**The rule for next time: a playability choice is made from a played session, never from a frame.** If a decision is
+about how something *feels to operate*, the artefact put in front of him must move — a recording, a short clip, or him
+driving it himself. Stills are for looks.
+
+---
+
+**Superseded (kept for the record): he went lower twice on stills — `pitch 12° · 50 m · FOV 60°`.** Asked a second time on a page
 offering 12/16/20/25°, he took **the floor of that grid too** (`picks/lead` on
 https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7, no note). Two pages, two floors: this settles the long-open
 question of where *"somewhere in the middle between StarCraft 2 and Twisted Metal"* actually sits, and the answer is
