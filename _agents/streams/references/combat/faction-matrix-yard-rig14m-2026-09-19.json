@@ -1,0 +1,87 @@
+{
+  "run": {
+    "machine": "builder0",
+    "commit": "141955eb",
+    "dirty": false
+  },
+  "args": {
+    "godot": ".tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64",
+    "budget": 5200,
+    "seeds": 5,
+    "jobs": 8,
+    "time_limit": 150,
+    "factions": "gangs,condemned,law,syndicate",
+    "arena": "yard",
+    "no_faction_directives": false,
+    "json": "build/faction-matrix-yard.json"
+  },
+  "rows": [
+    {
+      "faction": "condemned",
+      "versus": "law",
+      "matches": 10,
+      "win_rate": 0.6,
+      "draws": 0,
+      "vehicles": 32.6,
+      "lost": 21.1,
+      "seconds": 145.4,
+      "suppression": 0.064
+    },
+    {
+      "faction": "condemned",
+      "versus": "syndicate",
+      "matches": 10,
+      "win_rate": 0.6,
+      "draws": 0,
+      "vehicles": 32.6,
+      "lost": 22.0,
+      "seconds": 141.3,
+      "suppression": 0.024
+    },
+    {
+      "faction": "gangs",
+      "versus": "condemned",
+      "matches": 10,
+      "win_rate": 0.4,
+      "draws": 0,
+      "vehicles": 43.0,
+      "lost": 33.5,
+      "seconds": 133.4,
+      "suppression": 0.039
+    },
+    {
+      "faction": "gangs",
+      "versus": "law",
+      "matches": 10,
+      "win_rate": 0.0,
+      "draws": 0,
+      "vehicles": 43.0,
+      "lost": 40.0,
+      "seconds": 119.1,
+      "suppression": 0.077
+    },
+    {
+      "faction": "gangs",
+      "versus": "syndicate",
+      "matches": 10,
+      "win_rate": 0.4,
+      "draws": 0,
+      "vehicles": 43.0,
+      "lost": 34.0,
+      "seconds": 122.7,
+      "suppression": 0.018
+    },
+    {
+      "faction": "law",
+      "versus": "syndicate",
+      "matches": 10,
+      "win_rate": 0.4,
+      "draws": 0,
+      "vehicles": 24.8,
+      "lost": 20.2,
+      "seconds": 125.6,
+      "suppression": 0.028
+    }
+  ],
+  "failures": []
+}
