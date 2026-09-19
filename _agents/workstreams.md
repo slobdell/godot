@@ -196,7 +196,13 @@ presentation job is the arena as a place).
    simulation"* and `music-smoke` announces *"the soundtrack changed the simulation"* — **both computing exactly the
    same hash `sim-baseline` computed, which is the proof they changed nothing.** They are feel's targets, so a feel
    agent would go hunting in audio code for a bug that does not exist. **If you see either of those messages, check
-   whether the three hashes agree before believing the accusation.** The underlying defect and its fix are in
+   whether the three hashes agree before believing the accusation.**
+   **The root defect named (combat, 2026-09-19, after both targets PASSED on a current baseline): those two targets ask a
+   DIFFERENTIAL question — "does the booth/soundtrack change the simulation?" — and implement it as an ABSOLUTE comparison
+   against a shared file.** So they misfire **every time the baseline moves, i.e. once a round by design**, and they have
+   been carried in feel's brief as broken for two rounds when nothing was ever wrong with the components. **The fix is to
+   make the comparison differential too: run the match twice in one invocation, with and without the subsystem, and
+   compare the two hashes to EACH OTHER.** A latent trap rather than a live failure — it blocks nothing. The underlying defect and its fix are in
    [orchestration.md](orchestration.md) lesson 65.
 2b. **The old text, for the rules it still carries:** the baseline (`tests/baselines/sim_state_hash.txt`, one hash per glibc version; builder0 canonical) changes
    only on purpose, recorded with `make remote T=sim-baseline-record`, in the same commit as the reason.
