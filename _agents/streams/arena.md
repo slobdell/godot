@@ -97,9 +97,37 @@ coordinate with nav — anything that changes what blocks driving touches the na
 `game/ai/**` (nav's and squad's), `game/control/` `game/ui/` `game/camera/` (control's), `game/units/` `game/combat/`
 `game/match/` (combat's), `game/theme/**` (feel's — including how your props are *dressed*; you place, feel dresses).
 
+## The lead's answer (2026-09-18, from the review page's own store)
+
+**Asked keep / fix / cut / play-it-first per map, he cut four and kept two.** Read back from `answers/arenas` on
+https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4 :
+
+| Arena | centre sees | His call |
+|---|---|---|
+| **Boulevard** | 0.64 | **CUT** |
+| **Foundry** (its card covered the **Furnace**) | 0.56 | **CUT** |
+| **Boneyard** | 0.40 | **CUT** |
+| **Scrapyard** | 0.29 | **CUT** |
+| Pit | 0.30 | **KEEP** |
+| Yard | 0.20 | **KEEP** |
+
+No notes given. **The four most open maps are exactly the four he cut** — centre-visibility predicted his answer
+better than anything else measured, though scrapyard (0.29) and pit (0.30) are nearly tied and he split them, so it
+is not a pure function of the metric.
+
+**Do not delete anything on this alone.** Two reasons, both for the orchestrator to put to him:
+1. Taken literally it removes **five of seven** shipping arenas. The page invited "cut" as a real answer but never
+   said "you are about to remove most of the game's maps"; he may have meant that, or may have meant "not worth
+   fixing, prioritise accordingly".
+2. **Foundry is `Arena.DEFAULT_LAYOUT`** — every headless run, the sim baseline and most tests use it. Cutting it
+   is an infrastructure change that moves the baseline, not a content change.
+
+If he confirms, X5's remaining scope collapses: *"make every shipping arena worth landing on"* becomes *"make two
+good ones"*, and X3's objective work only has to serve pit and yard.
+
 ## Waiting on the lead
 
-1. **Which arena is fun** — **the page is live and with him: https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4**
+1. ~~**Which arena is fun**~~ — **answered above.** The page itself is still live — **the page is live and with him: https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4**
    (**version 3**: the first two had no controls at all — the four answers were printed as a *sentence* that looks
    like a control and is not one. He said so: *"doesn't have buttons I can click to give feedback"*. Now radio
    buttons, a summary he copies, and a notes box; no database, because the pick is the whole payload. **Verify an

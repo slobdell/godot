@@ -132,30 +132,82 @@ VERDICTS = {
              "round costs almost nothing — but so broken up that posting a squad to watch a lane buys little.", "good"),
 }
 
-## Plain DOM, no library, no storage. The summary is rebuilt from the radios on every change, so what he copies is
-## always what the page shows -- there is no second source of truth to drift. The clipboard write is wrapped because
-## it throws in some sandboxed frames; when it does, the textarea is selected instead so "copy" still means
-## something. The page works with JavaScript broken too: the radios are real inputs and he can describe his picks.
+## Plain DOM, no library. A pick is STORED the moment it is made, and the page says so.
+##
+## The stateless version of this page lost the lead's answers: he pressed every button and left without copying,
+## because pressing the last radio *felt like finishing*. A Copy button after that reads as optional. The rule
+## (orchestration lesson 75): **stateless is right when the human's goal ends in taking the value away; persist
+## when their goal ends in having answered.** People stop when their task feels done, not when ours does. The test
+## for any collection page is the abandonment path -- **what reaches us if they close the tab right now?**
+##
+## So `db` holds the answers and the Copy button is now a convenience rather than the mechanism. Everything still
+## works without it: `claude.use("db")` resolving null is an ordinary outcome, and then the page says plainly that
+## nothing is being saved and to copy instead. The status line is not decoration -- it is the only way he can tell
+## whether a press survived, which is exactly what he could not tell last time.
 SCRIPT = """
 (function () {
   var LABELS = %s;
   var ANSWERS = {keep: "KEEP", fix: "FIX", cut: "CUT", play: "PLAY IT FIRST"};
   var summary = document.getElementById("summary");
   var note = document.getElementById("note");
+  var statusEl = document.getElementById("status");
+  var state = {votes: {}, note: ""};
+  var ref = null, saving = false, again = false;
+
   function build() {
     var lines = ["Tank Squad arenas \u2014 my answers", ""];
     Object.keys(LABELS).forEach(function (name) {
-      var picked = document.querySelector('input[name="vote-' + name + '"]:checked');
-      lines.push("- " + LABELS[name] + ": " + (picked ? ANSWERS[picked.value] : "\u2014"));
+      lines.push("- " + LABELS[name] + ": " + (ANSWERS[state.votes[name]] || "\u2014"));
     });
-    var extra = (note && note.value || "").trim();
-    if (extra) { lines.push("", "Notes: " + extra); }
-    summary.value = lines.join("\n");
+    if (state.note) { lines.push("", "Notes: " + state.note); }
+    summary.value = lines.join("\\n");
   }
+
+  function say(kind, text) { statusEl.textContent = text; statusEl.className = "status " + kind; }
+
+  function paint() {
+    Object.keys(LABELS).forEach(function (name) {
+      var pick = state.votes[name];
+      if (!pick) { return; }
+      var el = document.getElementById("v-" + name + "-" + pick);
+      if (el) { el.checked = true; }
+    });
+    if (state.note && note && !note.value) { note.value = state.note; }
+    build();
+  }
+
+  function save() {
+    if (!ref) { return; }
+    if (saving) { again = true; return; }
+    saving = true;
+    say("saving", "Saving\u2026");
+    ref.set({votes: state.votes, note: state.note, updatedAt: new Date().toISOString()}).then(function () {
+      saving = false;
+      say("ok", "Saved. You can close this page \u2014 we have your answers.");
+      if (again) { again = false; save(); }
+    }, function (e) {
+      saving = false; again = false;
+      say("warn", "Not saved (" + (e && e.code ? e.code : "error") + "). Please copy your answers and send them back.");
+    });
+  }
+
+  var noteTimer = null;
   document.addEventListener("change", function (e) {
-    if (e.target && e.target.type === "radio") { build(); }
+    if (!e.target || e.target.type !== "radio") { return; }
+    var name = e.target.name.replace(/^vote-/, "");
+    state.votes[name] = e.target.value;
+    build();
+    save();
   });
-  if (note) { note.addEventListener("input", build); }
+  if (note) {
+    note.addEventListener("input", function () {
+      state.note = note.value.trim();
+      build();
+      clearTimeout(noteTimer);
+      noteTimer = setTimeout(save, 900);
+    });
+  }
+
   var copy = document.getElementById("copy");
   var said = document.getElementById("copied");
   copy.addEventListener("click", function () {
@@ -164,17 +216,43 @@ SCRIPT = """
     var done = function () { said.hidden = false; setTimeout(function () { said.hidden = true; }, 2500); };
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(summary.value).then(done, function () { said.textContent = "Selected \u2014 press Ctrl/Cmd+C."; done(); });
+        navigator.clipboard.writeText(summary.value).then(done, function () {
+          said.textContent = "Selected \u2014 press Ctrl/Cmd+C."; done();
+        });
         return;
       }
       document.execCommand("copy");
       done();
-    } catch (err) {
-      said.textContent = "Selected \u2014 press Ctrl/Cmd+C.";
-      done();
-    }
+    } catch (err) { said.textContent = "Selected \u2014 press Ctrl/Cmd+C."; done(); }
   });
+
   build();
+  say("checking", "Checking whether your answers can be saved\u2026");
+  var claude = window.claude;
+  if (!claude || !claude.use) {
+    say("warn", "Your answers are NOT being saved here \u2014 please copy them and send them back.");
+    return;
+  }
+  claude.use("db").then(function (db) {
+    if (!db) {
+      say("warn", "Your answers are NOT being saved here \u2014 please copy them and send them back.");
+      return;
+    }
+    ref = db.doc("answers/arenas");
+    ref.get().then(function (snap) {
+      var body = snap && snap.exists ? snap.data() : null;
+      if (body) {
+        state.votes = body.votes && typeof body.votes === "object" ? body.votes : {};
+        state.note = typeof body.note === "string" ? body.note : "";
+        paint();
+        say("ok", "Your earlier answers are here. Change anything and it saves itself.");
+      } else {
+        say("ready", "Your answers save themselves as you pick.");
+      }
+    }, function () { say("ready", "Your answers save themselves as you pick."); });
+  }, function () {
+    say("warn", "Your answers are NOT being saved here \u2014 please copy them and send them back.");
+  });
 })();
 """
 
@@ -232,6 +310,11 @@ button { background:var(--good); color:#0b1a15; border:0; border-radius:8px; pad
 button:hover { filter:brightness(1.08); }
 button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
 #copied { color:var(--good); font-size:.9rem; }
+.status { font-size:.95rem; margin:0 0 10px; padding:9px 12px; border-radius:8px; border:1px solid var(--line); }
+.status.ok { color:var(--good); border-color:rgba(78,201,160,.45); background:rgba(78,201,160,.10); }
+.status.ready { color:var(--good); border-color:rgba(78,201,160,.35); }
+.status.saving, .status.checking { color:var(--dim); }
+.status.warn { color:var(--bad); border-color:rgba(226,104,95,.45); background:rgba(226,104,95,.10); }
 .notes { display:block; color:var(--dim); font-size:.88rem; margin:16px 0 6px; }
 footer { color:var(--dim); font-size:.9rem; border-top:1px solid var(--line); padding-top:18px; margin-top:8px; }
 code { background:#0d0f15; padding:1px 5px; border-radius:4px; font-size:.9em; }
@@ -311,7 +394,8 @@ nothing a flank can take. <b>Boulevard is the worst, and it is first.</b></div>
 %s
 <section class="answers" id="answers">
 <h2>Your answers</h2>
-<p class="sub">This fills in as you choose. Copy it and send it back — that is the whole loop.</p>
+<p class="status checking" id="status">Checking whether your answers can be saved…</p>
+<p class="sub">This fills in as you choose. Copying it is optional — it is here in case you want to send it on.</p>
 <textarea id="summary" rows="10" readonly aria-label="Your answers, ready to copy"></textarea>
 <div class="row"><button id="copy" type="button">Copy my answers</button><span id="copied" hidden>Copied.</span></div>
 <label class="notes" for="note">Anything else worth saying (optional)</label>
