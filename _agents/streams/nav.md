@@ -289,6 +289,23 @@ wherever it fits.
     refuses (`485c2788`).
   - The diagnostic split `turned` / `wobble` / `crept` is not part of the pre-registered count.
 
+**The headline, re-measured on main.** Tree `aa984edd` (main `f5526594` merged, no nav changes on top), builder0,
+attack_move, Condemned vs Condemned, seed 3, 120 s. Arm read live: commit=true, standoff.
+
+| map | oscillating | units that ever oscillated |
+|---|---|---|
+| yard | 7.2% | 28 |
+| boneyard | 6.6% | 27 |
+| pit | 5.8% | 25 |
+| boulevard | 5.3% | 28 |
+
+The pre-registered answer is **YES, the churn is real**, on all 4 maps, and it touches nearly every unit rather than a
+few stuck ones.
+
+**Local diagnosis (laptop, `3018e993`, 20 s, gang_ram vs gang_pack).** All 11 scout in-place events happened while
+`driving`, none while creeping, and 7 of 11 had both forward and reverse gear above 0.5 m/s in the window. That looks
+like context steering alternating between forward and reverse directions.
+
 **Pre-registered, written BEFORE the run: does commitment change scout wobble?** This asks whether the heading wobble is
 the same churn as the attack-move oscillation.
 - Run: gang_ram vs gang_pack, `FIGHT_REQUIRE=gang_tank`, the 4 maps, busy 0, seed 3, 120 s, builder0. One arm with
