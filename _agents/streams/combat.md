@@ -127,9 +127,21 @@ writing first. Also: `game/control/` `game/ui/` `game/camera/` (control's), `are
 
 _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
-### IF YOU ARE A FRESH AGENT, READ THESE SIX THINGS
+### IF YOU ARE A FRESH AGENT, START HERE (round 7, 2026-09-19)
 
-_Written 2026-09-18 against an imminent context loss. CP4 is **merged and green at `f0f89e52`**; nothing is in flight._
+**Round 7 in one paragraph.** X4 (the gangs' unattributed 23% → 53% swing) and X3 (the arena bound) are **built**;
+N7 and CP4 shipped in round 6. The round's real output turned out to be **instruments rather than features** —
+`compare_arms`, the positive control, the arm-adherence refusal — because three separate measurements this stream
+quoted were measuring something other than what they claimed. **The one backlog item still carrying a number is the
+four matrix runs** (`make faction-matrix-arms ARENAS="boulevard yard"`); everything else is done, blocked or stretch.
+See *Next steps* and *The instruments, and what each one can and cannot prove* — read the second one before you
+quote any number, because reaching for the wrong guard is how each of these got past a check.
+
+**`main` is merged in at `c6a5c550`** (baseline `253ecfdeed84bc4d`), including arena's `877dc34a`. `DRIVABLE_LIMIT`
+is **116 and that is deliberate** — do not "finish the job" by moving it to 117; the reasoning is under *X3*.
+
+_The six items below were written 2026-09-18 against an imminent context loss. They are all still true and item 4
+is the one most likely to have gone stale — check the current baseline before believing it._
 
 **1. The decomposition inverts what this round spent its effort on.** N5 has three gates (sight, acquisition, fire
 discipline) plus X6's crossing penalty. Measured over 75 matches against a true round-5 control:
