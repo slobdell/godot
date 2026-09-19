@@ -82,10 +82,14 @@ scale-bench: import ## X5: sim cost per tick at SCALE_SIZES vehicles a side, wit
 # ARENA= names the layout. WITHOUT it every match runs on foundry, which is fine for a like-for-like A/B and wrong
 # for anything conditional on terrain -- the Syndicate's designator pays off where sightlines are long and pays
 # nothing in a close map, so a single-map number would be read as a property of the faction.
-faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA=) -> build/faction-matrix.json
+# X4 (round 7): ABLATE=1 is the control arm -- every unit on its plain-role directive instead of its faction's.
+# The flag and the OUTPUT NAME are set from one variable on purpose: two arms writing one filename is how a control
+# silently overwrites its treatment and leaves a single file that looks like both runs.
+faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE=) -> build/faction-matrix.json
 	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),6) \
 		--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) $(if $(ARENA),--arena $(ARENA)) \
-		--json $(BUILD_DIR)/faction-matrix$(if $(ARENA),-$(ARENA)).json
+		$(if $(ABLATE),--no-faction-directives) \
+		--json $(BUILD_DIR)/faction-matrix$(if $(ARENA),-$(ARENA))$(if $(ABLATE),-plainroles).json
 
 faction-shots: import ## L3/X5: screenshots of a full-scale faction battle from above (GREEN_FACTION= RUST_FACTION= DELAY=45) -> build/screenshots/faction-*.png (needs a display)
 	mkdir -p $(BUILD_DIR)/screenshots

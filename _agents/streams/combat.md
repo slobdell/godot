@@ -860,6 +860,41 @@ line, and removing it there would flatten the faction into one band. Dropping `s
 only case of two units sharing a weapon (`laser`), which is what made the duplication visible in the first place.
 Not blocking: both still exist until the lead rules.
 
+### X4's ablation: how to settle who earned the gangs' 23% → 53% (`f7c0d712`)
+
+**Nothing may credit CP4 with that swing until this runs.** The directive fix and the engagement envelope landed in
+the same commit and no matrix ran between them, so the 30 points are shared between two changes by an accident of
+sequencing. The ablation separates them:
+
+```bash
+# Both arms, both maps. ARENA is not optional: a faction number without a map is a foundry number (see below).
+make remote T="faction-matrix SEEDS=5 TIME=150 JOBS=8 ARENA=boulevard"            # normal play
+make remote T="faction-matrix SEEDS=5 TIME=150 JOBS=8 ARENA=boulevard ABLATE=1"  # the control arm
+# ...and the same pair on `yard`, because boulevard is open (0.64) and yard is closed (0.20).
+```
+
+Read it as: **gangs' win rate, arm A minus arm B, per map.** If the gangs collapse without their own directive, the
+directive earned the swing and combat earned none of it. If they hold, CP4 has a claim — *and still only on the maps
+it was measured on.*
+
+Three properties of the arm, each there because of a specific way this stream has been wrong before:
+
+- **`Army.faction_directives` is a flag, not an edit of `SQUADS`.** A hand-edit leaves the tree modified, so the arm
+  is invisible in the output, `run_conditions` marks the run dirty, and the number surfaces weeks later with no way
+  to tell which arm made it.
+- **`MATCH_RESULT` carries `controls`** — `{acquisition, crossing, faction_directives}`. Print every resolved knob;
+  `matchup-search` spent its entire history at `--units 60` and recorded it nowhere.
+- **`ABLATE=1` sets the flag *and* the output filename** (`build/faction-matrix-<arena>-plainroles.json`) from one
+  make variable. Two arms writing one filename is how a control silently overwrites its treatment and leaves a
+  single file that reads as both runs.
+- **`faction_matrix` refuses a run whose `controls` are not what was asked for.** The positive control asks whether
+  the *treatment* engaged; this asks whether the *arm* was the one requested. A dropped flag gives two files that
+  differ only in their names and a "no effect" that is really *I ran the same thing twice* — round 6's data-only
+  control, in the one form a tool can catch.
+
+**The static is reset on every run, not only when the flag is present.** A control that leaks into the next run in
+the same process makes both arms read as the ablated one, which is the silent version of this whole problem.
+
 ### The CP4 series: exact commands, in order
 
 **Do not run any of this until the brain-range pair is green** — on a build where units halt at 61 m it measures a
