@@ -415,6 +415,27 @@ arrivals unchanged at 30/30, AND `make check` green — plus the barriers fixtur
 Reverting means the switch is deleted along with the code, not left in: a mechanism nobody reaches is how round 7's
 commitment ended up being measured twice for nothing.
 
+**Flow fields: first runs, and an instrument failure (builder0, tree `279f8a98`).**
+- `nav-maze` does not pass `NAV_FLAGS` to its probe (`mk/arena.mk:53`), so BOTH maze arms ran the same treatment and came
+  back byte-identical (terminus no_progress 0.030 twice; barriers 0.541 twice). Those numbers are a positive-control
+  failure, not a null. arena has been asked to add the flag and an ARM header to the probe.
+- The fight half did have distinct arms (`off=[]` vs `off=["flow"]`, read live). Terminus, 45 a side, seed 3, 120 s:
+
+| | flow off | flow on |
+|---|---|---|
+| move: progressing | 0.545 | 0.579 |
+| move: stuck (blocked+slow+yielding) | 0.415 | 0.373 |
+| of which blocked_no_path | 0.160 | **0.219** |
+| attack_move oscillating | 0.060 | 0.045 |
+
+  One map, one seed, so it decides nothing. The `blocked_no_path` rise is the thing to explain before anything else:
+  the field should fall back to A* whenever it cannot answer, so it should not be able to report MORE goals as
+  unreachable than A* does.
+- **Baseline settled with arena:** `NAV_BOTH=1 NAV_UNITS=60 NAV_TIME=180` on terminus (`8fda01a8`), on builder0. Arena's
+  0.091 was one-way/30 on the laptop; my 0.030 was both-ways/30. Density dominates: both-ways at 60 gives 0.153.
+- **Arena's spare finding, taken:** one-way at 60 units is the only maze configuration whose `oscillating` (0.012) is
+  above noise (0.001–0.002). Crowding one direction is where the lead's complaint lives.
+
 ### Round 7 report (nav, 2026-09-19) — read this first when resuming round 7
 
 **Green, merge here: `d963d9ad`** (builder0: `test` 1191/1 — the 1 is control's `test_radar`, a static leaked by
