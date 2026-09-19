@@ -70,9 +70,6 @@ const SQUADS := {
 	# L3 (round 4): the two roles the new factions added. Both stay behind the line of contact.
 	"suppressor": {"name": "Sirens", "directive": {"role": "assault", "caution": 0.7}},
 	"support": {"name": "Wrenches", "directive": {"role": "support", "caution": 0.9}},
-	# X5 (round 6): the Syndicate's designator. It paints what its TEAM can see, so it never needs its own line to
-	# the enemy and belongs well behind the line of contact -- its job is tempo for everyone else, not its own gun.
-	"designator": {"name": "Spotters", "directive": {"role": "support", "caution": 0.85}},
 }
 
 

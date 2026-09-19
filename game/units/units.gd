@@ -741,7 +741,9 @@ const PROFILES := {
 	},
 	"syn_lancer": {
 		"display_name": "Spotter Platform",
-		"role": "designator",
+		# The ROLE stays `lancer` -- it is the faction's long-reach slot, and game_design.md is explicit that "the
+		# role is shared across factions, the vehicle is not". What differs is a CAPABILITY, below.
+		"role": "lancer",
 		"faction": "syndicate",
 		# X5 (2026-09-18): this WAS the Syndicate's second Lancer, and it was outranged by its own faction's tank --
 		# an 86 m band against the railgun's 104, a cheaper but shorter duplicate of a role the Syndicate already
@@ -782,6 +784,16 @@ const PROFILES := {
 		"armor": {"front": 3.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["tank"],
 		"weak_vs": ["scout", "ifv"],
+		# X5 (round 6): this unit DESIGNATES. It paints the nearest enemy its team can see and every crew on its side
+		# then acquires that contact in a quarter of the usual time (Engagement.DESIGNATED_ACQUIRE_SCALE).
+		#
+		# A capability flag rather than a new role, and that distinction cost a night to learn. `role` is a TAXONOMY
+		# that at least eight places key off -- Units.ROLES, Army.SQUADS, SquadTactics.FRAGILE_ROLES,
+		# TacticsFormation.PROTECTED_ROLES, CpuCommander's line/support split, ElementSituation, ArmyCatalog.ROLE_LABELS
+		# and the command icons -- across four streams, and none of them reference a single registry. Inventing a role
+		# silently dropped this unit from every army (Army.squads_for iterates the TABLE, not the units) and then
+		# failed the catalog's known-role check. A capability is read by exactly the systems that care about it.
+		"designates": true,
 	},
 }
 

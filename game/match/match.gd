@@ -772,7 +772,7 @@ func _update_control() -> void:
 ## so a designator that dies stops helping within DESIGNATE_SECONDS instead of instantly or forever.
 func _paint_designated() -> void:
 	for tank in _sorted_tanks():
-		if not tank.is_alive() or Units.role_of(tank.unit_id) != "designator":
+		if not tank.is_alive() or not bool(Units.stat(tank.unit_id, "designates", false)):
 			continue
 		var best: Tank = null
 		var best_distance := tank.sight_radius

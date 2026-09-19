@@ -438,12 +438,17 @@ func test_the_paint_changes_TEMPO_and_not_damage_or_accuracy() -> void:
 			"and does not help a round through armour")
 
 
-func test_the_syndicate_still_fills_five_roles_after_the_re_role() -> void:
-	# The hole that stopped the removal: every other faction has a special beyond the four core roles, and deleting
-	# this unit left the Syndicate with none.
+func test_designation_is_a_capability_not_a_role() -> void:
+	# The distinction that cost a night. `role` is a TAXONOMY at least eight places key off, across four streams,
+	# none of them referencing a single registry -- so inventing a "designator" role silently dropped the unit from
+	# every army (Army.squads_for iterates the table, not the units) and then failed the catalog's known-role check.
+	# A capability is read only by the systems that care about it.
+	assert_true(Units.ROLES.has(Units.role_of("syn_lancer")), "its role is one the rest of the game knows")
+	assert_true(bool(Units.stat("syn_lancer", "designates", false)), "and designation rides on a capability flag")
+	assert_true(not bool(Units.stat("tank", "designates", false)), "which ordinary units do not carry")
 	var roles := {}
 	for unit_id in Units.roster("syndicate"):
 		roles[Units.role_of(unit_id)] = true
 	for role in ["scout", "tank", "ifv", "artillery"]:
 		assert_true(roles.has(role), "the syndicate still fields a %s" % role)
-	assert_true(roles.has("designator"), "and its special is now the designator (%s)" % [roles.keys()])
+	assert_true(roles.size() >= 5, "and still has a special beyond the core four (%s)" % [roles.keys()])
