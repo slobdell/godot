@@ -330,6 +330,74 @@ static func spawn_spot(south: bool, slot: int) -> Variant:
 	return Vector3(spot[0], 0.0, spot[1])
 
 
+## Round 7: **is this point somewhere a unit can be?** The one predicate every clamp in the game should ask.
+##
+## Today six call sites each carry a copy of the assumption *"the arena is a square"* — `DRIVABLE_LIMIT` used as
+## `absf(x) > limit or absf(z) > limit`, and three `clampf` pairs. That is fine while the arena IS a square and
+## silently wrong the moment it is not: **a hexagon of circumradius 139.7 reaches 139.7 m toward a vertex but only
+## 121.0 m toward a flat edge, so a square clamp at ±136 admits points 192 m out on the diagonal.** The container
+## question ("how big is the arena") still has a scalar answer; the contents question ("is this point inside it")
+## does not, and has not since the shape stopped being a square.
+##
+## It answers for the SQUARE too, deliberately: a predicate that only applies to the new shape leaves the old
+## assumption live in the code. And it knows about water and pits, because a point inside a pit is not a point a
+## unit can be ordered into either — that was a different check in a different place until now.
+static func contains(point: Vector3, data: Dictionary = active) -> bool:
+	if data.is_empty():
+		return true
+	var bound := float(data.get("half_size", Match.ARENA_HALF_SIZE))
+	var kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+	var flat := Vector2(point.x, point.z)
+	if not ArenaShape.contains(kind, bound, flat):
+		return false
+	for entry: Dictionary in data.get("terrain", []):
+		if not ArenaTerrain.carves(String(entry["kind"])):
+			continue
+		if _in_footprint(entry, flat) and not _on_a_deck(data, flat):
+			return false
+	return true
+
+
+## The nearest point a unit could be, for clamping an order. Nearest point on the boundary rather than along the
+## ray to the centre: clicking past the wall should put the unit against the wall nearest the click.
+static func clamp_into(point: Vector3, data: Dictionary = active) -> Vector3:
+	if data.is_empty() or contains(point, data):
+		return point
+	var bound := float(data.get("half_size", Match.ARENA_HALF_SIZE))
+	var kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+	var flat := ArenaShape.clamp_into(kind, bound, Vector2(point.x, point.z))
+	for entry: Dictionary in data.get("terrain", []):
+		if not ArenaTerrain.carves(String(entry["kind"])) or not _in_footprint(entry, flat):
+			continue
+		if _on_a_deck(data, flat):
+			continue
+		var box := ArenaTerrain.bounds(entry)
+		# Out of the water by its nearest side.
+		var options := [Vector2(box[0] - 1.0, flat.y), Vector2(box[2] + 1.0, flat.y),
+				Vector2(flat.x, box[1] - 1.0), Vector2(flat.x, box[3] + 1.0)]
+		var best := flat
+		var best_distance := INF
+		for option: Vector2 in options:
+			var distance := flat.distance_to(option)
+			if distance < best_distance and ArenaShape.contains(kind, bound, option):
+				best_distance = distance
+				best = option
+		flat = best
+	return Vector3(flat.x, point.y, flat.y)
+
+
+static func _in_footprint(entry: Dictionary, flat: Vector2) -> bool:
+	var box := ArenaTerrain.bounds(entry)
+	return flat.x > box[0] and flat.x < box[2] and flat.y > box[1] and flat.y < box[3]
+
+
+static func _on_a_deck(data: Dictionary, flat: Vector2) -> bool:
+	for entry: Dictionary in data.get("terrain", []):
+		if ArenaTerrain.is_deck(String(entry["kind"])) and _in_footprint(entry, flat):
+			return true
+	return false
+
+
 ## Round 7, contract D: the wall's INNER FACE as a convex polygon, world x/z, counter-clockwise. Handed to control
 ## and feel ONCE AT LOAD — control does its own ray-vs-polygon maths for the camera cutaway, feel builds walls,
 ## stands and gates from it instead of assuming a square. A per-frame call across a stream boundary would be a
@@ -608,6 +676,22 @@ static func _validate_v2(data: Dictionary) -> String:
 	var shape_error := ArenaShape.validate(data.get("shape", {}), float(data["half_size"]))
 	if shape_error != "":
 		return shape_error
+	# EVERYTHING THE LAYOUT PLACES MUST FIT INSIDE THE SHAPE. A square keeps its full width all the way to the
+	# wall; a hexagon narrows, and the spawn block lives exactly where it narrows — a hexagon inscribed in the old
+	# 120 m bound held only 48 of foundry's 104 spawn points, and nothing would have said so until units appeared
+	# inside a wall. A constraint that lives in the contents does not show up when you look at the container, so it
+	# is checked here rather than remembered.
+	var shape_kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+	if shape_kind != ArenaShape.DEFAULT_KIND:
+		var bound := float(data["half_size"])
+		for side in ["green", "rust"]:
+			for spot: Array in data["spawns"][side]:
+				if not ArenaShape.contains(shape_kind, bound, Vector2(spot[0], spot[1]), SPAWN_CLEARANCE):
+					return "spawns.%s point %s is outside the %s (its flat side is %.1f m out; the arena needs a bigger half_size or the spawns need moving)" \
+							% [side, spot, shape_kind, bound * cos(PI / float(ArenaShape.sides(shape_kind)))]
+		for obstacle: Dictionary in data["obstacles"]:
+			if not ArenaShape.contains(shape_kind, bound, Vector2(obstacle["position"][0], obstacle["position"][1])):
+				return "obstacle %s at %s is outside the %s" % [obstacle["type"], obstacle["position"], shape_kind]
 	var terrain: Variant = data.get("terrain", [])
 	if typeof(terrain) != TYPE_ARRAY:
 		return "'terrain' must be a list"

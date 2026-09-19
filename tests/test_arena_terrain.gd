@@ -208,32 +208,85 @@ func _hexagon(extra: Dictionary = {}) -> Dictionary:
 	return layout
 
 
+## A hexagon layout that VALIDATES at today's bound, by pulling the spawn block inside the shape. The bound is due
+## to grow to 140 m (combat owns `ARENA_HALF_SIZE`), at which point foundry's own spawns fit and this shrinking
+## becomes unnecessary — but the bake tests below are about the MESH, not about where armies stand, and they
+## should not be blocked on another stream's constant.
+func _playable_hexagon() -> Dictionary:
+	var layout := _hexagon()
+	var bound := float(layout["half_size"])
+	for side in ["green", "rust"]:
+		var moved: Array = []
+		for spot: Array in layout["spawns"][side]:
+			var flat := Vector2(spot[0], spot[1])
+			while not ArenaShape.contains("hexagon", bound, flat, Arena.SPAWN_CLEARANCE + 1.0):
+				flat *= 0.97
+			moved.append([snappedf(flat.x, 0.01), snappedf(flat.y, 0.01)])
+		layout["spawns"][side] = moved
+	# Point symmetry must survive the shrink, or validate() refuses it for a different reason than the one we mean.
+	for i in layout["spawns"]["green"].size():
+		var green: Array = layout["spawns"]["green"][i]
+		layout["spawns"]["rust"][i] = [-green[0], -green[1]]
+	return layout
+
+
+## THE GATE for the mistake that nearly shipped: a hexagon inscribed in the old 120 m bound held only 48 of
+## foundry's 104 spawn points, because a square keeps its full width to the wall and a hexagon does not. Nothing
+## would have reported it — units would simply have appeared inside a wall. It is a validation rule now, so it
+## cannot be reintroduced by anyone choosing a shape without checking what has to fit in it.
+func test_a_shape_that_cannot_hold_its_armies_is_refused() -> void:
+	var layout := _hexagon()
+	var bound := float(layout["half_size"])
+	var outside := 0
+	for spot: Array in layout["spawns"]["green"]:
+		if not ArenaShape.contains("hexagon", bound, Vector2(spot[0], spot[1]), Arena.SPAWN_CLEARANCE):
+			outside += 1
+	if outside > 0:
+		# Today's bound is too small for a hexagon, and validate() must say so rather than build it.
+		assert_true(String(Arena.validate(layout)).contains("outside the hexagon"),
+				"%d of %d spawn points fall outside, so the layout is refused: %s"
+				% [outside, layout["spawns"]["green"].size(), Arena.validate(layout)])
+	else:
+		assert_eq(Arena.validate(layout), "", "the bound is big enough now, so a hexagon validates")
+	# Either way the rule itself must bite: a spawn pushed out past the flat side is always refused.
+	var broken: Dictionary = layout.duplicate(true)
+	var flat := bound * cos(PI / 6.0)
+	broken["spawns"]["green"][0] = [0.0, flat + 20.0]
+	broken["spawns"]["rust"][0] = [0.0, -(flat + 20.0)]
+	assert_true(String(Arena.validate(broken)).contains("outside the hexagon"),
+			"a spawn beyond the flat side is refused: %s" % Arena.validate(broken))
+
+
 func test_a_shape_must_fit_inside_the_arena_bound() -> void:
 	# A regular polygon's VERTICES sit further out than its flat sides. Built with apothem = half_size a hexagon
 	# would reach 138.6 m on the x axis, outside a radar and fog sized for |x| <= 120 — so ArenaShape builds to the
 	# BOUND instead (circumradius = half_size), and the flat sides come in to 103.9 m. That costs area, which is a
 	# real constraint worth stating: the hexagon is 37,412 m2 against the square's 57,600.
-	var layout := _hexagon()
-	assert_eq(Arena.validate(layout), "", "a hexagon inside the bound validates")
+	assert_eq(Arena.validate(_playable_hexagon()), "", "a hexagon whose spawns fit inside it validates")
 	# The bound is a SQUARE EXTENT, not a radius: the radar and the fog are sized for |x| and |z| <= half_size, and
 	# today's square arena already has corners 164 m from the centre. So what a new shape must respect is that no
 	# point exceeds half_size on either axis — which for a hexagon means its vertices, at half_size on the x axis.
 	for point: Vector2 in ArenaShape.vertices("hexagon", Match.ARENA_HALF_SIZE):
 		assert_true(absf(point.x) <= Match.ARENA_HALF_SIZE + 0.05 and absf(point.y) <= Match.ARENA_HALF_SIZE + 0.05,
 				"vertex %s is inside the arena's |x|,|z| <= %.0f bound" % [point, Match.ARENA_HALF_SIZE])
+	# And the bound must mean the SAME THING for a square: today's arena, walls at +-half_size, corners beyond.
+	var square := ArenaShape.vertices("square", Match.ARENA_HALF_SIZE)
+	for point: Vector2 in square:
+		assert_near(absf(point.x), Match.ARENA_HALF_SIZE, 0.05, "a square's walls stay at +-half_size")
+		assert_near(absf(point.y), Match.ARENA_HALF_SIZE, 0.05, "on both axes, exactly as they are today")
 
 
 func test_a_hexagon_bakes_a_navmesh_that_reaches_its_walls_and_connects_its_bases() -> void:
-	var arena := await ArenaFixture.build_layout(self, _hexagon())
+	var arena := await ArenaFixture.build_layout(self, _playable_hexagon())
 	var map := arena.get_world_3d().navigation_map
 	var apothem := Match.ARENA_HALF_SIZE
 	var on_mesh := func(p: Vector3) -> bool:
 		return NavigationServer3D.map_get_closest_point(map, p).distance_to(p) < 3.0
 	# The widest points of a flat-side-to-base hexagon are its left and right vertices, well outside a square's
 	# reach: if the mesh stops at +-120 the walls were built but the floor was not extended to meet them.
-	var radius := apothem / cos(PI / 6.0)
-	assert_true(on_mesh.call(Vector3(radius - 8.0, 0.0, 0.0)), "the mesh reaches the east vertex (%.0f m out)" % radius)
-	assert_true(on_mesh.call(Vector3(-(radius - 8.0), 0.0, 0.0)), "and the west one")
+	# `bound` means the widest axis reach, so a flat-to-base hexagon's side vertices sit at half_size on x.
+	assert_true(on_mesh.call(Vector3(apothem - 8.0, 0.0, 0.0)), "the mesh reaches the east vertex (%.0f m out)" % apothem)
+	assert_true(on_mesh.call(Vector3(-(apothem - 8.0), 0.0, 0.0)), "and the west one")
 	# NOT asserting that the mesh stops at the wall: it never has. The ground is a 320 m slab and the bake covers
 	# it, so on foundry today the navmesh is still 0.5 m away at x = 155 — 35 m outside the wall. Units cannot
 	# reach it because the walls enclose them, and the hexagon behaves exactly the same way. An assertion here
@@ -245,7 +298,7 @@ func test_a_hexagon_bakes_a_navmesh_that_reaches_its_walls_and_connects_its_base
 
 
 func test_a_hexagons_bake_is_still_symmetric() -> void:
-	var arena := await ArenaFixture.build_layout(self, _hexagon())
+	var arena := await ArenaFixture.build_layout(self, _playable_hexagon())
 	var length := func(path: PackedVector3Array) -> float:
 		var total := 0.0
 		for i in range(1, path.size()):
@@ -294,3 +347,37 @@ func test_the_two_impossible_orders_water_creates() -> void:
 			"the far bank IS on the mesh (goal_on_mesh: true)")
 	assert_true(not ArenaFixture.route_arrives(Pathing.find_path(arena, bank, far_bank), far_bank),
 			"but with no bridge there is no way round (reachable: false)")
+
+
+## Arena.contains / clamp_into: the one predicate every clamp should ask. Six call sites in the game each carry a
+## copy of "the arena is a square" — DRIVABLE_LIMIT used as absf(x) > limit, and three clampf pairs — which is fine
+## while it IS a square and silently wrong the moment it is not.
+func test_the_predicate_answers_for_a_square_too() -> void:
+	var square: Dictionary = Arena.load_layout("foundry")["layout"]
+	assert_true(Arena.contains(Vector3(0, 0, 0), square), "the middle is inside")
+	assert_true(Arena.contains(Vector3(110, 0, 110), square), "and so is a corner, which a square really does own")
+	assert_true(not Arena.contains(Vector3(200, 0, 0), square), "well outside is not")
+	var pulled := Arena.clamp_into(Vector3(400, 0, 0), square)
+	assert_true(Arena.contains(pulled, square), "a point far outside clamps to somewhere inside")
+	assert_near(pulled.z, 0.0, 1.0, "and to the NEAREST boundary point, not toward the centre")
+
+
+func test_a_hexagon_denies_the_diagonal_a_square_clamp_would_allow() -> void:
+	var hexagon := _playable_hexagon()
+	var bound := float(hexagon["half_size"])
+	# The whole reason this predicate exists: a hexagon reaches `bound` toward a vertex and only bound*cos(30°)
+	# toward a flat side, so a square clamp lets a unit stand outside the arena on the diagonal.
+	var flat_reach := bound * cos(PI / 6.0)
+	var beyond_the_flat := Vector3(0.0, 0.0, flat_reach + 10.0)
+	assert_true(absf(beyond_the_flat.z) < bound, "this point passes a square clamp at the same bound")
+	assert_true(not Arena.contains(beyond_the_flat, hexagon), "but the hexagon does not contain it")
+	assert_true(Arena.contains(Arena.clamp_into(beyond_the_flat, hexagon), hexagon), "and clamping fixes it")
+
+
+func test_water_is_not_somewhere_a_unit_can_be_ordered() -> void:
+	var layout := _layout([CHANNEL, CHANNEL_MIRROR, DECK, DECK_MIRROR])
+	assert_true(not Arena.contains(Vector3(60.0, 0.0, 40.0), layout), "a point in the channel is not inside")
+	assert_true(Arena.contains(Vector3(0.0, 0.0, 40.0), layout), "but the bridge deck over it is")
+	var pushed := Arena.clamp_into(Vector3(60.0, 0.0, 40.0), layout)
+	assert_true(Arena.contains(pushed, layout), "an order into the water clamps to dry land (%s)" % pushed)
+	assert_true(absf(pushed.z - 40.0) > 10.0, "by leaving the channel, not by sliding along it")

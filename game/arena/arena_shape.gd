@@ -55,13 +55,20 @@ static func sides(kind: String) -> int:
 ##
 ## Oriented with a FLAT SIDE facing each base, so the bases stay on a wall as they always have. A vertex-to-base
 ## hexagon would invert the shape's character — pinched middle, wide approaches — and put each spawn in a corner.
-## `apothem` here is the arena's BOUND (half_size), and the polygon is built to fit INSIDE it: the circumradius is
-## the bound and the flat sides come in to `bound * cos(PI/n)`. Built the other way round — apothem = half_size —
-## a hexagon's corners reach 1.155 x half_size, which is 138.6 m against a radar and a fog sized for 120 m, so a
-## unit in a corner would be off the map's own instruments. Fitting inside is what keeps every other system true.
-static func vertices(kind: String, apothem: float) -> PackedVector2Array:
+## `bound` is `half_size`, and it means **the arena's widest reach along an axis** — the same thing for every
+## shape, which is what lets the radar, the fog and `ThreatField` keep sizing from one number.
+##
+## That mapping is not the same as "circumradius" or "apothem", and saying so cost me a bug: built with the
+## circumradius equal to the bound, a SQUARE came out with half-width 85 m instead of 120 and
+## `Arena.contains(110, 110)` started refusing a corner every existing arena owns. Scaling so the widest axis
+## extent equals the bound reproduces today's square exactly (corners at bound·√2, sides at ±bound) and puts a
+## flat-to-base hexagon's side vertices at ±bound on the x axis.
+static func vertices(kind: String, bound: float) -> PackedVector2Array:
 	var n := sides(kind)
-	var radius := apothem
+	var widest := 0.0
+	for k in n:
+		widest = maxf(widest, absf(sin(TAU * float(k) / float(n) + PI / float(n))))
+	var radius := bound / maxf(widest, 0.0001)
 	var out := PackedVector2Array()
 	for k in n:
 		var a := TAU * float(k) / float(n) + PI / float(n)
@@ -69,9 +76,19 @@ static func vertices(kind: String, apothem: float) -> PackedVector2Array:
 	return out
 
 
-## The side length of the polygon `vertices()` builds: the chord of a circle of radius `apothem` (the bound).
-static func edge_length(kind: String, apothem: float) -> float:
-	return 2.0 * apothem * sin(PI / float(sides(kind)))
+## The circumradius the polygon is actually built at, for callers that need the real reach (the perimeter builder,
+## and anything asking "how far out does a corner go").
+static func circumradius(kind: String, bound: float) -> float:
+	var n := sides(kind)
+	var widest := 0.0
+	for k in n:
+		widest = maxf(widest, absf(sin(TAU * float(k) / float(n) + PI / float(n))))
+	return bound / maxf(widest, 0.0001)
+
+
+## The side length of the polygon `vertices()` builds.
+static func edge_length(kind: String, bound: float) -> float:
+	return 2.0 * circumradius(kind, bound) * sin(PI / float(sides(kind)))
 
 
 ## Every edge as {from, to, length_m, wall_height_m, spans: [{kind, from_m, to_m}]}, spans running along the edge
@@ -96,6 +113,43 @@ static func edges(shape: Dictionary, apothem: float) -> Array:
 		out.append({"from": points[i], "to": points[(i + 1) % points.size()], "length_m": length,
 				"wall_height_m": height, "spans": spans})
 	return out
+
+
+## Is `point` inside the shape? Convex, so a point is inside when it is on the inner side of every edge.
+static func contains(kind: String, bound: float, point: Vector2, margin := 0.0) -> bool:
+	var v := vertices(kind, bound)
+	for i in v.size():
+		var a: Vector2 = v[i]
+		var b: Vector2 = v[(i + 1) % v.size()]
+		var edge := b - a
+		# vertices() is counter-clockwise in x/z, so the interior is to the RIGHT of each edge in this basis.
+		if edge.x * (point.y - a.y) - edge.y * (point.x - a.x) > -margin * edge.length():
+			return false
+	return true
+
+
+## The nearest point on or inside the shape. **Nearest point on the boundary, not "along the ray to the centre"** —
+## for an order clamp that is what a player means: clicking past the wall should put the unit against the wall
+## nearest the click, not drag it toward the middle. Say so here because the next caller will assume the other one.
+static func clamp_into(kind: String, bound: float, point: Vector2, margin := 0.0) -> Vector2:
+	if contains(kind, bound, point, margin):
+		return point
+	var v := vertices(kind, bound)
+	var best := point
+	var best_distance := INF
+	for i in v.size():
+		var a: Vector2 = v[i]
+		var b: Vector2 = v[(i + 1) % v.size()]
+		var edge := b - a
+		var t := clampf((point - a).dot(edge) / maxf(edge.length_squared(), 0.0001), 0.0, 1.0)
+		# Pull in by `margin` along the inward normal so a clamped point is inside, not exactly on the line.
+		var inward := Vector2(edge.y, -edge.x).normalized()
+		var on_edge := a + edge * t + inward * margin
+		var distance := point.distance_to(on_edge)
+		if distance < best_distance:
+			best_distance = distance
+			best = on_edge
+	return best
 
 
 ## "" when the shape is well formed, else why not. Point symmetry is the whole reason this is checked at all: an
