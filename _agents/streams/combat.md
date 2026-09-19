@@ -675,6 +675,37 @@ brief's target is *"a majority of direct-fire kills come from the flank or the r
 move during the fight"* — read `off_axis_kill_share` and `centroid_travel` for it rather than the hull-face split,
 since an oblique shot across a wide front counts as a "side" hit without anyone having flanked anything.
 
+### The pair-measurement with arena: design agreed, not yet buildable
+
+arena has a route model (cost × reward → scenery / dominant / trap / **interesting**) and designed the test that
+could kill it before building five maps on it: **do units actually take the routes the map calls interesting?**
+combat measures the unit-time; arena hands over the classification as data (polyline, cost, reward, quadrant) so
+there are not two implementations of the same geometry drifting apart.
+
+**A null result is ambiguous three ways, and each needs its own control.** *"Units did not take the interesting
+route"* can mean:
+
+| | cause | how to tell |
+|---|---|---|
+| **a** | the route is genuinely unattractive — **arena's model is wrong**, the finding the test exists to produce | free arm: units never enter it |
+| **b** | units **cannot execute it** (mis-path, blocked, no route) | **commanded arm** |
+| **c** | units were **dragged off it by a fight** | nav's `retasked:<option>` bucket |
+
+**(c) is nav's finding and I had not thought of it:** under `attack_move`, units re-task their drive target **46
+times per unit-minute** (builder0, yard, seed 7), **54% of that from ENGAGE re-aiming its combat hops**. So a free-arm
+unit that "does not take the route" may simply have been pulled into a fight. **Order the commanded arm with a plain
+`move`** — 0 re-tasks measured — or it measures the fight rather than the route.
+
+**The arrival check is nav's, not mine** (`Movement.state(tank)` per tick). Since `ab93d85b`, `phase == "arrived"`
+means within the order's arrive radius of the **goal**, never the route's end; a route stopping more than 3 m short
+(NavigationServer's "nearest reachable point" answer) reports `reachable: false` and `blocked` / `no_path`. So the
+caveat I raised is already handled — and I will still check flat distance to the scripted waypoint, because belt and
+braces costs nothing and a second opinion on "did it get there" is the one place I want redundancy rather than reuse.
+
+**A refinement arena should have before it reads any result:** *entering a route and then fighting on it **is** taking
+it.* The metric is **unit-time on the route**, not completion — a map whose interesting route is where the fights
+happen is the map working, not failing. Only *never entering* is declining it.
+
 ### X5 — the Lancer: **the Syndicate drops `syn_lancer`** (proposal, 2026-09-18)
 
 Measured from the rosters, not argued from memory. Direct-fire **bands** by faction and slot:
