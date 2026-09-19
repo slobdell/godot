@@ -97,9 +97,66 @@ coordinate with nav — anything that changes what blocks driving touches the na
 `game/ai/**` (nav's and squad's), `game/control/` `game/ui/` `game/camera/` (control's), `game/units/` `game/combat/`
 `game/match/` (combat's), `game/theme/**` (feel's — including how your props are *dressed*; you place, feel dresses).
 
+## Resume here (written at the round-6 quota stop, 2026-09-18)
+
+**Branch merged, tree clean, nothing in flight.** The durable knowledge is in
+[../arenas.md](../arenas.md) — *Designing a new map: start here* and *Why the navmesh is baked as one half plus a
+mirror* — deliberately there rather than only here, because a map author reads that file and not a stream's Status.
+
+**The three things that would hurt most to lose:**
+1. **`centre_sees_share` predicted the lead's verdict and is therefore a design target, not a description.** Aim
+   below ~0.30; above ~0.50 he has rejected it twice. Pure geometry, cannot go stale, one `make arena-report` to
+   check before anyone models a prop.
+2. **X2 scores what a route costs and never what it reaches**, so it reports cheap flanks on maps that play as a
+   brawl. A cheap route to nowhere is scenery. The objective work and the terrain work are one job.
+3. **The 60-unit nav-maze baselines are superseded** (nav's spawn-coincidence fix — 52 spawn points, `slot %
+   size` wrapped 8 pairs onto each other); **the 30-unit row is not** (30 < 52). See
+   [references/arena/README.md](references/arena/README.md).
+
+**Two knobs, both deliberate:** `WATCHER_REACH_M` is read from the catalog (`make arena-reach` → `Engagement.
+covering_range()`), `--reach` overrides; `agent_max_climb` is **untouched on purpose** — raising it lifts the ~20°
+terrain ceiling but re-bakes every arena's mirrored-half mesh and needs the swap-bases control re-run.
+
+**Not started, on instruction:** the octagon/hexagon shape change, bridges/water, and X3.
+
+## The lead's answer (2026-09-18, from the review page's own store)
+
+**Asked keep / fix / cut / play-it-first per map, he cut four and kept two.** Read back from `answers/arenas` on
+https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4 :
+
+| Arena | centre sees | His call |
+|---|---|---|
+| **Boulevard** | 0.64 | **CUT** |
+| **Foundry** (its card covered the **Furnace**) | 0.56 | **CUT** |
+| **Boneyard** | 0.40 | **CUT** |
+| **Scrapyard** | 0.29 | **CUT** |
+| Pit | 0.30 | **KEEP** |
+| Yard | 0.20 | **KEEP** |
+
+No notes given. **The four most open maps are exactly the four he cut** — centre-visibility predicted his answer
+better than anything else measured, though scrapyard (0.29) and pit (0.30) are nearly tied and he split them, so it
+is not a pure function of the metric.
+
+**Confirmed in words as well as buttons:** *"the only two maps worth keeping were the last one and the one with the
+octagon of shipping containers. All the maps need to be higher quality regardless."* **Nothing is being deleted** —
+the four are *do-not-invest*, and Foundry stays `DEFAULT_LAYOUT` until he rules on that infrastructure change.
+The original caveats, which he has now answered:
+1. Taken literally it removes **five of seven** shipping arenas. The page invited "cut" as a real answer but never
+   said "you are about to remove most of the game's maps"; he may have meant that, or may have meant "not worth
+   fixing, prioritise accordingly".
+2. **Foundry is `Arena.DEFAULT_LAYOUT`** — every headless run, the sim baseline and most tests use it. Cutting it
+   is an infrastructure change that moves the baseline, not a content change.
+
+If he confirms, X5's remaining scope collapses: *"make every shipping arena worth landing on"* becomes *"make two
+good ones"*, and X3's objective work only has to serve pit and yard.
+
 ## Waiting on the lead
 
-1. **Which arena is fun** — **the page is live and with him: https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4**
+1. ~~**Which arena is fun**~~ — **answered above.** The page itself is still live — **the page is live and with him: https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4**
+   (**version 3**: the first two had no controls at all — the four answers were printed as a *sentence* that looks
+   like a control and is not one. He said so: *"doesn't have buttons I can click to give feedback"*. Now radio
+   buttons, a summary he copies, and a notes box; no database, because the pick is the whole payload. **Verify an
+   interaction by performing it — reading the HTML you wrote cannot tell you the words do nothing.**)
    (`make arena-page` rebuilds it; republish that URL to update it). Six cards, worst first, each asking
    *keep it · fix it · cut it · I'd rather just play it first*. A link rather than a path under `build/` on purpose:
    lesson 12's failure was review pages nobody could open.
@@ -305,6 +362,22 @@ adjusted, because nav's before/after is on a fixed tree.
 **What I should have done:** I treated the tail as more of the headline. A stable minority failing the same way is a
 defect, not variance, and nav found it by asking *which* units failed rather than how many. Left in a baseline it
 would have flattered every later fix by 8 units a run.
+
+### X2's limitation, found by the lead (2026-09-18)
+
+> *"Clearly crossing a bridge is risky, so you don't want a simple map with 2 sides connecting two bridges. There
+> generally has to be some compelling reason to cross the bridge to take some advantageous ground."*
+
+**Terrain creates risk, objectives create reason, neither works alone, and the prize goes where the risk is.** That
+reframes my own headline. I measured *"covered routes cost a 1.0–1.1× detour on every map and nobody takes them"*
+and read it as "flanking is cheap and unused". His framing says the cheapness is the symptom: **a route that is
+cheap and leads nowhere worth going is not a tactical option, it is scenery.**
+
+So **X2's analysis measures only half the thing.** It scores a route by what it *costs* — exposure, detour — and
+never by what it *reaches*. That is why it reports that every arena already offers an affordable flank while the
+game plays as a brawl: both statements are true and the metric cannot see the contradiction. Any round-7 version
+needs a term for the value at the end of the route, and **X3 and the bridge/water work are one job** — measuring
+either alone will under-read it.
 
 ### X9 / dynamic obstacles: keep the navmesh a startup snapshot (arena's ruling, 2026-09-18)
 

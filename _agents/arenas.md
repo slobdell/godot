@@ -7,6 +7,12 @@
 
 ## Start here
 
+> **Making or changing a map?** Read *Designing a new map: start here* below first — it carries the lead's verdict
+> on all seven arenas, the one number that predicted it, and the two measures that will mislead you.
+> **Changing the arena's SHAPE** (he wants an octagon or hexagon)? Read *Why the navmesh is baked as one half plus
+> a mirror* as well. It is not an art task.
+
+
 - **What maps are:** `arenas/<name>.json` layouts (schema v2: kit `props`, `spawn_zones`, `lanes`, `regions`), authored
   as half a layout plus its 180° mirror in `tools/make_arenas.py`, validated and built by `game/arena/arena.gd` from
   the physical truth of each prop in `game/arena/arena_kit.gd`.
@@ -111,6 +117,84 @@ much as the map. The same seeds on several arenas are the same army pairings rep
 | **Flank use** | Share of unit-seconds inside flank lanes | > 0 in every arena; high where flanks are meant to matter |
 | **Time hidden** | Share of unit-seconds not visible to any enemy | Higher in dense arenas |
 | **Match shape** | Duration, first contact time, share decided by the control point | Different per arena, and never a stalemate by default |
+
+## Designing a new map: start here (round 6's verdict, 2026-09-18)
+
+**The lead judged all seven arenas and kept two.** His words: *"the only two maps worth keeping were the last one
+and the one with the octagon of shipping containers. All the maps need to be higher quality regardless."*
+
+| Arena | Share of the field its centre can see | His call |
+|---|---|---|
+| Boulevard | **0.64** | cut |
+| Foundry (and Furnace) | **0.56** | cut |
+| Boneyard | **0.40** | cut |
+| Scrapyard | **0.29** | cut |
+| **Pit** | 0.30 | **keep** |
+| **Yard** | 0.20 | **keep** |
+
+**He cut the four most open maps and kept two of the three least open — with those numbers on the page in front of
+him and no way to sort by them.** He was not reading the metric; he arrived at it.
+
+> ### So `centre_sees_share` is a DESIGN TARGET, not a description.
+> **Aim below ~0.30 for any new map. Above ~0.50 the lead has already rejected it twice.**
+> It is the single most predictive number this stream has, it is pure geometry (no weapons, no balance, nothing
+> that can go stale when a band moves), and it costs one `make arena-report` to check before anyone models a prop.
+
+**Nothing is being deleted.** The four are *do-not-invest*; Foundry stays `Arena.DEFAULT_LAYOUT` (every headless
+run, the sim baseline and most tests use it) until the lead rules deliberately on that infrastructure change.
+
+### The measure that will mislead you
+
+`centre_sees_share` is the reliable one. **The exposure and route numbers below are only half a metric**, and the
+lead's own words are what exposed it:
+
+> *"Clearly crossing a bridge is risky, so you don't want a simple map with 2 sides connecting two bridges. There
+> generally has to be some compelling reason to cross the bridge to take some advantageous ground."*
+
+**Terrain creates risk; objectives create reason; neither works alone; the prize goes where the risk is.**
+
+X2 scores a route by **what it costs** — exposure, detour — and never by **what it reaches**. That is why it
+reports an affordable flank on every arena (1.0–1.1× detour) while the game plays as one brawl: *a route that is
+cheap and leads nowhere worth going is not a tactical option, it is scenery.* Both statements are true and the
+metric cannot see the contradiction. **Do not read "this map already offers cheap flanks" as "this map is fine."**
+Any round-7 version needs a term for the value at the end of the route, and the objective work and the terrain work
+are **one job** — measuring either alone under-reads it.
+
+## Why the navmesh is baked as one half plus a mirror (read before changing the arena's SHAPE)
+
+The lead wants an **octagonal or hexagonal arena**, and said plainly he does not know what this construction is. It
+is load-bearing for fairness, so here it is in plain language.
+
+**The problem.** Godot bakes a navigation mesh by carving walkable ground into polygons. That carving depends on
+the order it walks the geometry, so **baking a perfectly symmetrical arena does not give you a symmetrical mesh**:
+one side ends up with slightly different polygon edges from the other. Paths follow polygon edges, so the same trip
+measured from the north and from the south came out **up to 4.4 m different** — and the south base won **64% of
+140 bot matches**. A map that is fair on paper was not fair in play, and nothing in the layout was wrong.
+
+**The fix** (`Arena._bake()`): bake **only the southern half** (z ≥ 0), then add **the same mesh rotated 180°** as a
+second navigation region. Both halves are now the same polygons by construction, not by luck, so a route and its
+mirror are identical to the millimetre. `SEAM_BORDER` (2.5 m) is extra bake margin past z = 0 so the agent radius
+does not shrink the half-mesh where it meets its twin.
+
+**What this means for a shape change.** An octagon and a hexagon both contain a 180° rotation, so **the
+construction survives** — point symmetry is the only property it needs, and `Arena.validate()` already enforces
+that for every layout. **The seam is the part needing care:** the half must be cut along a line through the centre
+that the shape maps onto itself under 180°, and `filter_baking_aabb` plus `SEAM_BORDER` are currently written for
+a rectangle. Do not "just change the perimeter" and re-bake whole — **that silently reintroduces the 64% bias, and
+the swap-bases fairness control is the only thing that would catch it** ([verification.md](verification.md),
+invariant 4). Run it on any shape change.
+
+### Other things that assume the arena is a square
+
+Found while answering the shape question. A shape change is **not an art task**:
+
+- **`Arena.validate()` refuses any layout whose `half_size` is not `Match.ARENA_HALF_SIZE`** (`arena.gd:351`), with
+  the reason in its own error text: *"the perimeter, radar, and fog are sized for it."* Three systems read that one
+  number.
+- **`RtsCamera` computes the wall cutaway from the distance to the perimeter *square*** (`rts_camera.gd:231-241`,
+  `perimeter_half()`). At the lead's low 21° pitch the camera sits *past* the wall, and this is what stops the wall
+  filling the screen. A non-square perimeter needs a distance-to-edge that matches the new shape, or the cutaway
+  cuts in the wrong place — visibly, at exactly the camera angle he chose.
 
 ## Can this map host an ambush? (X2, round 6; `make arena-report`)
 
