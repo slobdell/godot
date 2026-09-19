@@ -56,7 +56,11 @@ const DEFAULT_LAYOUT := "foundry"
 ## still the ground several measurements were taken on. `DEFAULT_LAYOUT` stays `foundry` on purpose: **what the
 ## suite runs on and what he plays do not have to be the same map**, and conflating them is how his verdict went
 ## missing in the first place.
-const ROTATION := ["yard", "pit"]
+## **terminus is here on the orchestrator's instruction after the round-8 render was looked at, and it is the one
+## entry the lead has NOT judged.** yard and pit are his verdict; the cityscape is the map he asked for twice and
+## has never seen. It goes in so that he meets it — a map nobody plays is the failure this whole round was about —
+## and it comes straight back out if he says no, which is one line and a test expectation.
+const ROTATION := ["yard", "pit", "terminus"]
 const LAYOUT_DIR := "res://arenas"
 ## Obstacle types with a built-in collision size [x, height, z] (meters, before rotation). Other types need "size".
 const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}

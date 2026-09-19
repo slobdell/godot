@@ -440,9 +440,11 @@ could not run at all (no arena, no navmesh); a bad result is a finding for nav, 
 
 ## Shipped arenas
 
-Pick one with `--arena=<name>`; `--arena=random` picks a seeded arena from `Arena.ROTATION` (**yard and pit** —
-narrowed in round 8 to the two the lead kept; boulevard and boneyard were CUT on the review page and the rotation
-kept dealing them for a full round), and `make skirmish` does that by default. **Invariants:** Arena owns the roll (launchers pass `random` through and read
+Pick one with `--arena=<name>`; `--arena=random` picks a seeded arena from `Arena.ROTATION` (**yard, pit and
+terminus** — narrowed in round 8 to the two the lead kept, boulevard and boneyard were CUT on the review page and
+the rotation kept dealing them for a full round; **terminus is the one entry he has not ruled on**, added after its
+render was reviewed so that he actually meets the cityscape he asked for twice), and `make skirmish` does that by
+default. **Invariants:** Arena owns the roll (launchers pass `random` through and read
 `Arena.active["name"]` back, which is always the resolved name); the roll comes from `--seed`, so every launcher that
 shows or records a seed passes it; and **the loader refuses `random`: only `Arena.resolve_name` understands it**. That
 separation is what keeps "unknown names fail loudly" true while random stays the default. Don't make the loader
@@ -706,3 +708,22 @@ reproduce his loudest complaint.
 30 of 30 units cross it. `no_progress` **0.091** against yard 0.050, pit 0.028, boneyard 0.005 — and well under the
 barrier fixture's 0.192. **Streets are corridors and corridors are where units queue**, so this is the honest test
 bed for flow fields: ground where the number is not already at the floor, on a map he can actually play.
+
+### What the Terminus actually looks like (round 8, `make remote T="arena-shots ARENAS=terminus"`)
+
+**Looked at before it went into the rotation**, because every number above is a proxy for a question only a picture
+answers. `build/screenshots/arena-terminus-{overview,skirmish}.png`.
+
+**It reads as the venue.** At the player's pose the towers stand well above the hulls, the chamfered corners and
+neon base trim catch light, and the stands, crowd and neon barrier sit behind them — the constraint the lead set
+(*"match the theme and consistency of our gladiator environment"*) is met, and the street kit (containers,
+barricades, wrecks, screens) is the same kit as every other arena, which is what does most of that work. The
+streets read as streets from inside one, and the minimap reads as a city grid on a hexagon.
+
+**Two things a human should still rule on, recorded rather than fixed:**
+
+1. **It is dark.** Near-black towers lit by their windows: atmospheric and right for the genre, but the street
+   surface is dimmer than yard's, and tactical legibility at a glance is a taste question, not a measurement.
+2. **Street level is plain** — flat window grids where a tank actually drives, no balconies, signs or awnings.
+   **This is feel's own open question and he has not answered it.** Shipping it plain is deliberate: a cityscape he
+   can play beats a detailed one he has never seen, which is the entire lesson of round 8.
