@@ -39,7 +39,12 @@
   provisionally; it is back at 24. If a camera change pushes phones under the bar, give touch its own framing (a
   closer start or its own pitch) — never lower the bar (`tests/test_command_readability.gd`).
 
-- **The camera assumes a SQUARE arena (read before changing the arena's shape).** `RtsCamera.cutaway_near` finds where
+- ~~**The camera assumes a SQUARE arena**~~ **Handled (round 7):** the cutaway crosses arena's own perimeter when the
+  build has it (`Arena.perimeter()` / `perimeter_edges()`, looked up by name; `RtsCamera.load_perimeter`), and the span
+  of wall the sight line crosses decides what stands behind it (`stands`/`gate`: the stands profile; `none`: the wall
+  only). The square (`perimeter_half`) remains the fallback. `STANDS_PROFILE` is still control's measurement of feel's
+  straight stands: when feel publishes the reshaped stands' height profile as data, read it instead. (history:)
+  **The camera assumed a SQUARE arena.** `RtsCamera.cutaway_near` finds where
   the camera's sight line crosses the wall by intersecting it with the perimeter *square* (`perimeter_half()`: the
   layout's `half_size` + 1 m), and judges occlusion against `STANDS_PROFILE`, measured from feel's straight
   `kit_stands` (15.7 m high, 19.9 m deep, 0.3 m past a 2 m wall; `WALL_HEIGHT_M` 3 m). An octagonal or hexagonal arena
