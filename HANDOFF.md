@@ -213,6 +213,21 @@ feel.
 
 ## Open questions and follow-ups (not scheduled)
 
+- **The lead's PID request is half-delivered, and the missing half is the visible half.** nav's N6 regulates any
+  `move_to` whose goal *slides* — a squad follower's leader-anchored slot is such a goal, so **squad station-keeping is
+  PID-controlled and measured (0.35 m mean gap against 4.58 m for the old proportional law)**. squad deliberately added
+  **no second regulator**, which is right. But **element slots are fixed per leg or per click**, so the PID never
+  engages for elements: an element still *snaps* to its formation geometry rather than **flowing** into it. The lead's
+  own words were *"no matter where they might be currently, there's a formula to form up"* and *"a PID loop would
+  conceptually be useful for a unit trying to get back in his formation"* — the second is delivered for squads and not
+  for elements. **Making elements flow into formation is the next build on top of N6**, and it is the piece most likely
+  to make the formations *look* as good as they now measure. A round-7 candidate, and cheap now that the regulator
+  exists.
+- **Per-faction PID gains** (nav's X8, not started): the lead asked for it by name — *"we might even be able to
+  differentiate units of different factions by PID values"* — the Syndicate crisp, the gangs loose. `control_gains.gd`
+  exists and the defaults are stable, so this is now a data exercise. It must be **measured** rather than shipped as
+  flavour: if identical armies with different gains win equally often and look the same on screen, say so.
+
 - **A texture leak on `main` that `make check` cannot see** (found by control on the merged tree at `2fa58c01`,
   laptop, windowed): `make shell-playtest` fails its clean-console gate with two `ERROR: Texture with GL ID of
   142/143: leaked 5460 bytes` lines, absent in all seven pre-merge runs. Likely feel's `night_sky`/skyline shaders or
