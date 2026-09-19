@@ -622,6 +622,42 @@ wrong way about.
     A map where crossing is funnelled onto bridges makes *position* matter without needing the objective to move —
     it is arena's X3 argument achieved with geometry instead of rules, and the two should compound.
 
+### The principle behind all of it: terrain makes risk, objectives make reason (lead, 2026-09-18)
+
+> *"On the bridge note, what I'm thinking though is that clearly crossing a bridge is risky, so you don't want a simple
+> map with 2 sides connecting two bridges. There generally has to be some compelling reason to cross the bridge to take
+> some advantageous ground."*
+
+**This is the design rule the round-6 findings were circling, and it settles what arena's X3 is actually for.** Note
+that the two failures it describes are the *same* failure inverted:
+
+- **A central objective** makes every fight collapse into the middle, so terrain has nothing to decide. Measured three
+  ways this round: flanking routes used 4–5% of unit-time on dense layouts, median hit range 39–43 m on *every* map
+  regardless of shape, and doctrine winning at squad scale but losing at 30 a side *with a control point*.
+- **A bridge with nothing beyond it** makes every fight collapse onto your own side. Both armies hold safe ground,
+  crossing is pure downside, and the map is a wall with a decoration on it.
+
+Both are the same defect: **the map offers no reason to be somewhere risky.** So:
+
+> **Terrain creates risk. Objectives create reason. Neither works alone, and they must be placed in relation to each
+> other — the prize goes where the risk is.**
+
+What follows for map authoring, and these are testable claims rather than taste:
+1. **An objective must sit on ground you have to cross something to reach**, or the crossing is decoration. arena's
+   measurement — covered flanking routes already cost only a **1.0–1.1× detour** on every map and nobody takes them —
+   is exactly this: the routes are cheap and lead nowhere worth going.
+2. **Contested ground must be *better* than your own safe ground**, or a rational player never leaves. Symmetric safe
+   ground plus a symmetric objective in the middle is the current map and it produces the brawl he has complained about
+   twice.
+3. **A kill zone is only a decision if the defender gives something up to hold it.** If overwatching the bridge is free,
+   it is not a choice. arena has the instrument for this already: posting an element buys **+0.077 on open foundry
+   against +0.017 in the dense yard** — so what an overwatch position is *worth* is already measurable per map, and a
+   good bridge map should show a large gap.
+4. **Therefore arena's X3 and the bridge work are one job, not two.** Moving the objective off the centre line and
+   funnelling crossings onto bridges are the reason-half and the risk-half of the same change, and measuring either
+   alone will under-read it — exactly as combat's series under-read N5 until its control disabled the gates as well as
+   the bands (lesson 62).
+
 ### Two defects to fix, not design
 
 8. **Some vehicles point backwards at start-up** (seen with the gangs).
