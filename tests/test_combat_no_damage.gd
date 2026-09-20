@@ -13,6 +13,9 @@ const MATCH := preload("res://game/match/match.tscn")
 
 
 func teardown() -> void:
+	# ERASED, not cleared: `Units.tuning` is a process-wide static and `clear()` would take every other test's
+	# knobs with it. The static is reset too, since a test may set it directly.
+	Units.tuning.erase("no_damage")
 	Armor.no_damage = false
 
 
@@ -33,14 +36,23 @@ func test_a_hit_takes_health_normally_and_none_under_the_switch() -> void:
 	assert_true(hurt < full + tank.max_shield, "setup: the hit lands normally (%d)" % hurt)
 
 	assert_eq(Units.apply_tuning("match.no_damage=1"), "", "the switch is selectable")
-	assert_true(Armor.no_damage, "and selected")
+	# ⚠ `apply_tuning` RETURNING "" SAYS THE SPEC PARSED AND NOTHING MORE, and this line used to read the raw
+	# `Armor.no_damage` static, which is the instruction that was issued rather than the state the code consults.
+	# feel's bench proved the difference the hard way on builder0: `--tune=match.no_damage=1` was on the command
+	# line verbatim, `apply_tuning` returned "" with no error, and `Armor.no_damage` read FALSE in 13 of 13 phases
+	# while the census walked 90 -> 77 with units dying. Accepted, silent, and never reached the predicate -- the
+	# knob was written into another class's static at load time and undone by that class's own initialiser.
+	#
+	# feel's rule, which is the general form: **an arm assertion must read the state the code under test consults,
+	# not the instruction that was issued.** `no_damage_on()` is what `Tank.take_hit` gates on; the eight killing
+	# hits below are the behavioural proof that neither reading can fake.
+	assert_true(Armor.no_damage_on(), "and selected, read the way `Tank.take_hit` reads it")
 	var before := tank.health + tank.shield
 	for shot in 8:
 		tank.take_hit(500.0, 1.0, 1.0)
 	assert_eq(tank.health + tank.shield, before, "eight killing hits take nothing under the switch")
 	assert_true(tank.is_alive(), "and the unit is still alive, so nothing respawns")
-	Units.tuning.clear()
-	Armor.no_damage = false
+	Units.tuning.erase("no_damage")
 
 
 func test_an_unknown_match_knob_is_refused_rather_than_ignored() -> void:
