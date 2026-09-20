@@ -92,6 +92,8 @@ func run() -> void:
 			var at := Vector3(middle.x, 0.0, middle.y) - Vector3(outward.x, 0.0, outward.y) * 20.0
 			frames.append(await _shoot("wall%d" % k, at, atan2(outward.x, outward.y), 49.0, RtsCamera.DEFAULT_PITCH_DEG,
 					RtsCamera.FOV_DEG, {"row": "arena", "label": "behind wall %d" % k}))
+	if grid == "alleys":
+		frames.append_array(await _alley_frames())
 	for level: float in (WELDED_LEVELS if grid == "full" and show_today else []):
 		var distance := RtsCamera.distance_for(level)
 		var pitch := RtsCamera.welded_pitch(level)
@@ -118,6 +120,110 @@ func run() -> void:
 	print("CAMERA_LOOKS_DONE ok=%s frames=%d contact=%s at=%.1fs dir=%s" % [str(frames.size() > 0).to_lower(), frames.size(),
 			str(contact).to_lower(), _clock, out_dir])
 	get_tree().quit(0)
+
+
+## Round 9, the lead on the Terminus: *"the camera often ends up inside a building and we can't see what's going on
+## inside the alleyways."* Each pose is shot TWICE from the same spot - as asked for, and as `RtsCamera.clear_pose`
+## leaves it - so the page is a before/after and not a claim. Poses are picked from the layout's own lanes (its
+## streets), at the yaw where the fault actually happens, and one street where it does not, as the control.
+const ALLEY_PAIRS := 5
+## His pose. Nothing here is shot at 12 degrees: that is the camera he played and rejected.
+const ALLEY_PITCH := RtsCamera.DEFAULT_PITCH_DEG
+const ALLEY_DISTANCE := 49.0
+
+## How close a building has to be to count as one wall of the alley you are standing in.
+const ALLEY_WALL_M := 26.0
+## Step along a lane when looking for a spot. Lane VERTICES are turn points, several of which sit in open ground at
+## the arena edge; the interesting places are between them.
+const ALLEY_STEP_M := 12.0
+## At most this many spots from any one lane, so five frames are five streets and not five points on the avenue.
+const ALLEY_PER_LANE := 2
+
+
+## Is this ground point actually in an alley - a street with a building close on at least two sides? A point on the
+## avenue where it crosses open ground is not, and shooting five of those was the first version's mistake.
+static func _in_an_alley(at: Vector3, data: Dictionary) -> bool:
+	var near := 0
+	for obstacle: Dictionary in data.get("obstacles", []):
+		var size := Arena.obstacle_size(obstacle)
+		if size.y < BlockCutaway.MIN_HEIGHT_M:
+			continue
+		var centre := Vector2(float(obstacle["position"][0]), float(obstacle["position"][1]))
+		if ArenaKit.distance_to_footprint(Vector2(at.x, at.z), centre, size, float(obstacle.get("rotation_deg", 0.0))) <= ALLEY_WALL_M:
+			near += 1
+	return near >= 2
+
+
+func _alley_frames() -> Array:
+	var frames: Array = []
+	var data: Dictionary = Arena.active
+	var spots: Array = []
+	var clear_spot: Variant = null
+	for lane: Dictionary in Arena.lanes_of(data):
+		# `Arena.lanes_of` hands back a PackedVector3Array of ground points, NOT the layout's [x, z] pairs.
+		var points: PackedVector3Array = lane["points"]
+		var from_lane := 0
+		for i in maxi(points.size() - 1, 0):
+			var a: Vector3 = points[i]
+			var b: Vector3 = points[i + 1]
+			var steps := maxi(1, int(a.distance_to(b) / ALLEY_STEP_M))
+			for k in steps:
+				if from_lane >= ALLEY_PER_LANE or spots.size() >= ALLEY_PAIRS:
+					break
+				var at := a.lerp(b, float(k) / float(steps))
+				if RtsCamera.roof_over(at + Vector3.UP * 1.5, data) >= 0.0:
+					continue  # inside a building: no vehicle stands here, so no camera looks from here
+				if not CameraLooks._in_an_alley(at, data):
+					if clear_spot == null:
+						clear_spot = [at, 0.0, "%s, open ground (control)" % lane["name"]]
+					continue
+				for step in 8:
+					var yaw := TAU * float(step) / 8.0
+					if RtsCamera.roof_over(RtsCamera.pose_at(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH).origin, data) >= 0.0:
+						spots.append([at, yaw, String(lane["name"])])
+						from_lane += 1
+						break
+	if clear_spot != null:
+		spots.append(clear_spot)
+	# The cutaway must be OFF for the "as asked" frame and ON for the "forced out" one, or both frames show the
+	# building already hidden and the pair proves nothing. (It did, in the first run: the two frames were identical
+	# and neither showed the fault he reported.)
+	var cutaway := get_tree().root.find_child("BlockCutaway", true, false) as BlockCutaway
+	for i in spots.size():
+		var at: Vector3 = spots[i][0]
+		var yaw: float = spots[i][1]
+		var where: String = spots[i][2]
+		var asked := RtsCamera.pose_at(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH).origin
+		var inside := RtsCamera.roof_over(asked, data) >= 0.0
+		var clear := RtsCamera.clear_pose(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH, data)
+		var after := RtsCamera.pose_at(at, yaw, float(clear["distance"]), float(clear["pitch_deg"])).origin
+		# The second half of his sentence: outside the solid, but is the alley in view? A sight line from the camera
+		# to the ground point it is aimed at, against the same boxes.
+		var walled_before := RtsCamera.sight_blocked(asked, at + Vector3.UP * 1.5, data)
+		var walled_after := RtsCamera.sight_blocked(after, at + Vector3.UP * 1.5, data)
+		var label := "%s — %s" % [where, "inside a block" if inside else "in the open (control)"]
+		if cutaway != null:
+			cutaway.set_process(false)
+			cutaway.restore()
+			await get_tree().process_frame
+		frames.append(await _shoot("alley%d_asked" % i, at, yaw, ALLEY_DISTANCE, ALLEY_PITCH,
+				RtsCamera.FOV_DEG, {"row": "alley %d" % i, "label": "as asked, nothing cut: " + label,
+				"inside_a_solid": inside, "buildings_in_the_sight_line": walled_before}))
+		if cutaway != null:
+			cutaway.set_process(true)
+			await get_tree().process_frame
+		var shot := await _shoot("alley%d_clear" % i, at, yaw, float(clear["distance"]), float(clear["pitch_deg"]),
+				RtsCamera.FOV_DEG, {"row": "alley %d" % i,
+				"label": "forced out and cut: lifted %.1f deg, boom %.0f m" % [float(clear["lifted_deg"]), float(clear["distance"])],
+				"inside_a_solid": RtsCamera.roof_over(after, data) >= 0.0,
+				# The GEOMETRY still has a building on the sight line; the point is that it is no longer DRAWN.
+				"buildings_in_the_sight_line": walled_after,
+				"lifted_deg": snappedf(float(clear["lifted_deg"]), 0.1)})
+		# AFTER the shot, not inside its argument list: `_shoot` is what moves the camera, so reading `cut_blocks()`
+		# while building its arguments samples the PREVIOUS pose and reports `[]` for a frame that really did cut.
+		shot["cut"] = cutaway.cut_blocks() if cutaway != null else []
+		frames.append(shot)
+	return frames
 
 
 func _shoot(shot_name: String, focus: Vector3, heading: float, distance: float, pitch: float, fov: float,
@@ -224,6 +330,27 @@ static func page(meta: Dictionary) -> String:
 	html.append("<p>One frozen moment of a 30-a-side fight (arena <b>%s</b>, %s), photographed from every pose. Only the camera changes. Pick the frame closest to \"between StarCraft 2 and Twisted Metal\" - its label is all the game needs.</p>"
 			% [meta.get("arena", "?"), "%.0f s after the first shot" % (float(meta.get("seconds_in", 0.0)) - float(meta.get("first_shot_s", 0.0)))
 				if bool(meta.get("contact", false)) else "no shot fired yet"])
+	var alleys: Array = frames.filter(func(f: Dictionary) -> bool: return String(f.get("row", "")).begins_with("alley "))
+	if not alleys.is_empty():
+		html.append("<h2>The camera inside a building (the Terminus)</h2>")
+		html.append("<p>You: <i>\"the camera often ends up inside a building and we can't see what's going on inside the alleyways. We need to make it so the camera is forced outside the solid for these cases.\"</i> Each pair is the SAME spot and the SAME yaw at your pose (21°, FOV 35, 49 m): left as asked for, right as the camera now places itself. It lifts over the roof rather than pulling in - pulling in would collapse the 49 m boom to about 11 m, below the zoom floor, and the far side of the street would still wall the alley.</p>")
+		var rows := {}
+		for frame: Dictionary in alleys:
+			(rows.get_or_add(String(frame["row"]), []) as Array).append(frame)
+		var row_names := rows.keys()
+		row_names.sort()
+		for row_name: String in row_names:
+			html.append("<div class=\"row\">")
+			for frame: Dictionary in rows[row_name]:
+				var flags := PackedStringArray()
+				if bool(frame.get("inside_a_solid", false)):
+					flags.append("INSIDE A BUILDING")
+				if bool(frame.get("buildings_in_the_sight_line", false)):
+					flags.append("a building on the sight line")
+				html.append("<figure><img loading=\"lazy\" src=\"%s\" alt=\"\"><figcaption><b>%s</b> · pitch %.0f° · %.0f m out%s</figcaption></figure>"
+						% [frame["file"], String(frame.get("label", frame["file"])), float(frame["pitch"]), float(frame["distance"]),
+						(" · <b>" + " · ".join(flags) + "</b>") if flags.size() > 0 else ""])
+			html.append("</div>")
 	html.append("<h2>What you played in round 5</h2><p>Zooming out also tilted the camera toward top-down (25° to 82°): the same slider did both.</p><div class=\"row\">")
 	for frame: Dictionary in frames:
 		if frame.get("row", "") == "today":

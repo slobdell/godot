@@ -44,8 +44,15 @@ func test_support_by_fire_forms_a_firing_line_at_a_standoff_and_fires_from_it() 
 	var floor_m := maxf(standoff, ElementPlan.SBF_MIN_STANDOFF_M) - ElementPlan.FACE_LEAD - 3.0
 	assert_true(float(result["closest_m"]) >= floor_m, "nobody advances onto the point (closest %.0f m, line at %.0f m)"
 			% [result["closest_m"], standoff])
-	assert_true(float(result["frontage_m"]) >= 24.0, "abreast: a line %.0f m wide" % result["frontage_m"])
-	assert_true(float(result["depth_m"]) <= 16.0, "not a column (%.0f m deep)" % result["depth_m"])
+	# Derived, not written down (lesson 112: a constant in a test is a scale assumption, and a formation has a size).
+	# Four tanks abreast span three pitches; the bar is most of that, so the assertion is "abreast" and not "exactly
+	# this wide". Depth is bounded by ONE pitch, which is what separates a line from a column at any hull size — the
+	# resize grows both numbers together and neither literal would have.
+	var pitch := TacticsFormation.pitch([{"unit": "tank"}], DoctrineTable.SPACING_DEFAULTS["open"])
+	assert_true(float(result["frontage_m"]) >= pitch.x * 1.7,
+			"abreast: a line %.0f m wide at a %.1f m pitch" % [result["frontage_m"], pitch.x])
+	assert_true(float(result["depth_m"]) <= pitch.y + TacticsFormation.HULL_CLEAR_M,
+			"not a column (%.0f m deep at a %.1f m pitch)" % [result["depth_m"], pitch.y])
 	for distance: float in result["to_point_m"]:
 		assert_true(distance <= standoff + 12.0, "every gun is within reach of the point (%.0f m)" % distance)
 	assert_true(int(result["facing_point"]) >= 3, "the line faces the point (%d of 4)" % result["facing_point"])

@@ -31,7 +31,12 @@ const FOV_DEG := 35.0
 ## agent will read the number and not the mechanism, so: these pitches are the pitches, not the floor's.
 const PITCHES := [21.0, 45.0]
 const MILESTONES := [0.0, 10.0, 25.0, 45.0, 70.0, 100.0]  # degrees through the corner
-const REVERSE_M := [3.0, 8.0, 16.0, 30.0]  # metres backed up, for the creep case
+const REVERSE_M := [4.0, 9.0, 18.0]  # metres backed up, for the creep case
+## The jackknife is shot from ABOVE, and only once. At the lead's 21 degrees a hard fold puts the trailer broadside
+## between the camera and the cab: the frame then shows a tanker with no truck in it, which is the opposite of what
+## it is for. A fold is an angle in the ground plane, so it reads from above and nowhere else. Labelled a diagnostic;
+## the JUDGEMENT frames are the corner strip at his own pose.
+const REVERSE_PITCH_DEG := 60.0
 ## A hard frame budget per milestone. This machine draws 60 vehicles at 1080p on an Intel UHD 620, so a corner that
 ## is 300 frames of real driving is minutes of wall clock, and the first run of this bench was killed by its own
 ## timeout mid-strip with no frames on disk and nothing in the log to say why. A budget turns that into a short
@@ -95,13 +100,35 @@ func _run() -> void:
 	if file != null:
 		file.store_string(JSON.stringify(live, "  "))
 		file.close()
+	_expected.append("live.json")
 	if rig_camera != null:
 		rig_camera.process_mode = Node.PROCESS_MODE_DISABLED
 	_camera.current = true
-	for pitch: float in PITCHES:
-		await _shoot_corner(scene, heading, pitch)
-	print("RIG_HINGE_DONE")
+	for i in PITCHES.size():
+		await _shoot_corner(scene, heading, float(PITCHES[i]), i == 0)
+	# Every file the report names must exist, checked rather than claimed. The strips are written LAST, after the
+	# final frame, so between the last RIG_HINGE line and this one the directory is genuinely incomplete -- and the
+	# orchestrator looked in exactly that window and reasonably concluded they were never written. A report that
+	# names a path owes a check that the path is there (orchestration lesson 154's shape).
+	var missing := _missing_files()
+	if missing.is_empty():
+		print("RIG_HINGE_DONE files=%d in %s" % [_expected.size(), out_dir])
+	else:
+		push_error("rig-hinge: the report names %d file(s) that were not written: %s" % [missing.size(), ", ".join(missing)])
+		print("RIG_HINGE_FAILED missing=%s" % ", ".join(missing))
 	get_tree().quit()
+
+
+## Files this run said it wrote, in report order.
+var _expected: PackedStringArray = []
+
+
+func _missing_files() -> PackedStringArray:
+	var missing := PackedStringArray()
+	for name in _expected:
+		if not FileAccess.file_exists(out_dir.path_join(name)):
+			missing.append(name)
+	return missing
 
 
 ## The largest hinge angle on the field, frame by frame, while the match plays. No posing: if this reports zeros the
@@ -140,7 +167,7 @@ func _watch_live(scene: Node) -> Dictionary:
 
 
 ## One rig driven round a constant-radius corner with the match paused, shot at each milestone of the turn.
-func _shoot_corner(scene: Node, heading: float, pitch: float) -> void:
+func _shoot_corner(scene: Node, heading: float, pitch: float, with_reverse: bool) -> void:
 	var where := _clear_ground(scene)
 	var tank := (load("res://game/tank/tank.tscn") as PackedScene).instantiate() as Node3D
 	tank.set("unit_id", RIG)
@@ -179,6 +206,7 @@ func _shoot_corner(scene: Node, heading: float, pitch: float) -> void:
 		var bend := rad_to_deg(float(cornering.call("articulation"))) if cornering != null else 0.0
 		var shot_name := "corner_%d_%d.png" % [int(pitch), int(milestone)]
 		image.save_png(out_dir.path_join(shot_name))
+		_expected.append(shot_name)
 		shots.append(image)
 		report.append({"turn_deg": milestone, "hinge_deg": snappedf(bend, 0.1), "frame": shot_name})
 		print("RIG_HINGE_STEP pitch=%d corner=%d hinge=%.1f" % [int(pitch), int(milestone), bend])
@@ -187,7 +215,7 @@ func _shoot_corner(scene: Node, heading: float, pitch: float) -> void:
 	var backed := 0.0
 	var from := tank.global_position
 	var yaw := tank.rotation.y
-	for milestone: float in REVERSE_M:
+	for milestone: float in (REVERSE_M if with_reverse else []):
 		var budget := MAX_STEP_FRAMES
 		while backed < milestone and budget > 0:
 			await get_tree().process_frame
@@ -195,25 +223,29 @@ func _shoot_corner(scene: Node, heading: float, pitch: float) -> void:
 			backed += speed * 0.5 * maxf(get_process_delta_time(), 0.001)
 			_place_reverse(tank, from, yaw, minf(backed, milestone))
 		_place_reverse(tank, from, yaw, milestone)
-		_camera.global_transform = RtsCamera.pose_at(tank.global_position, heading, DISTANCE_M, pitch)
+		_camera.global_transform = RtsCamera.pose_at(tank.global_position, heading, DISTANCE_M, REVERSE_PITCH_DEG)
 		for i in 3:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		var image := get_viewport().get_texture().get_image()
 		var hull := _hull_of(tank)
 		var bend := rad_to_deg(float(hull.call("articulation"))) if hull != null else 0.0
-		var shot_name := "reverse_%d_%d.png" % [int(pitch), int(milestone)]
+		var shot_name := "reverse_%d_%d.png" % [int(REVERSE_PITCH_DEG), int(milestone)]
 		image.save_png(out_dir.path_join(shot_name))
+		_expected.append(shot_name)
 		reverse_shots.append(image)
 		reverse_report.append({"reversed_m": milestone, "hinge_deg": snappedf(bend, 0.1), "frame": shot_name})
-		print("RIG_HINGE_STEP pitch=%d reverse=%d hinge=%.1f" % [int(pitch), int(milestone), bend])
+		print("RIG_HINGE_STEP pitch=%d reverse=%d hinge=%.1f" % [int(REVERSE_PITCH_DEG), int(milestone), bend])
 	for layer: CanvasLayer in hidden:
 		layer.visible = true
 	get_tree().paused = false
 	tank.queue_free()
 	await get_tree().process_frame
 	_save_strip(shots, out_dir.path_join("strip_%d.png" % int(pitch)))
-	_save_strip(reverse_shots, out_dir.path_join("strip_reverse_%d.png" % int(pitch)))
+	_expected.append("strip_%d.png" % int(pitch))
+	if not reverse_shots.is_empty():
+		_save_strip(reverse_shots, out_dir.path_join("strip_reverse_%d.png" % int(REVERSE_PITCH_DEG)))
+		_expected.append("strip_reverse_%d.png" % int(REVERSE_PITCH_DEG))
 	print("RIG_HINGE " + JSON.stringify({"pitch_deg": pitch, "distance_m": DISTANCE_M, "fov_deg": FOV_DEG,
 			"radius_m": radius, "speed_mps": speed, "corner": report, "reverse": reverse_report}))
 

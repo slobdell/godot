@@ -13,10 +13,12 @@ func _keep_alive(f: Fixture, unit_name: String) -> void:
 	f.tank(unit_name).health = 1_000_000
 
 
+## `seconds` of the SIMULATION's time, not the wall clock (lesson 158, found by nav in
+## test_control_facing_camera: a wall-clock budget spun on `await tree.process_frame` measures how many frames a
+## loaded machine delivers, and it flaked about one run in three with seven streams live). What these tests wait for
+## is `_unmet`'s grace timer, which counts physics ticks, so a tick count is both exact and machine-independent.
 func _wait_s(seconds: float) -> void:
-	var until := Time.get_ticks_msec() + int(seconds * 1000.0)
-	while Time.get_ticks_msec() < until:
-		await tree.process_frame
+	await wait_physics_frames(maxi(1, roundi(seconds * SimClock.TICK_RATE)))
 
 
 func test_a_unit_shooting_something_else_says_so() -> void:

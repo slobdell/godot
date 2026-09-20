@@ -1852,6 +1852,16 @@ layer reads as coming from somewhere.
 **Owner:** arena (placement, the primitive build) with feel on the livery and the screen's look. Small enough to ride
 round 9 beside the A3 cover tables rather than displacing anything.
 
+**BUILT AND MEASURED (feel, round 9, 2026-09-20 `5ae7e531`, laptop):** primitives, no Meshy, no collision, on the ad
+channel (kills replay on it for free), tier-aware. **The lead will NOT see it at his default pose, and the reason is
+geometry, not art:** the frame's top edge sits at `FOV/2 − pitch` above the horizon, which at 21°/FOV 35 is **3.5° below
+it — the sky is not on screen at all**, and to fit over the arena even at his lowest tilt (8°) it would have to fly below
+42 m on a map with 40 m blocks. Decided overnight: it moved out to **radius 560 m, altitude 56 m** over the *city*
+(inside the skyline's 640 m); measured 768 samples: **12.5% of frames at 8–12° tilt, 105–108 px on screen, 0% at 17°
+and above.** `build/airship-look/airship_widest.png` has it top-left against the lit city, half out of frame — his phrase.
+**His call in the morning:** keep it as a thing he sees only when he tilts down, or make it a presentation element
+(title, results, replay) where the camera can look up. Both are one constant.
+
 ## Round 9 direction: the lead's two feedback items (2026-09-19, evening)
 
 Given while asking the orchestrator to prepare round 9. His words, verbatim:
@@ -2007,7 +2017,17 @@ run on the roof parapet only, dimmer than the windows; venue palette (magenta, c
 warnings, no cool white.** The full-outline look stays as a named patch variant so the lead can compare both in the
 morning — his words were *"lit edges breathe and glow"* and he gets to see it. **The rule that matters for play:** the
 arena floor and the vehicles must stay the brightest read in the frame (in the first frames the building edges were the
-brightest pixels and the fight the darkest); `show-frames` now measures it and refuses a strip where the periphery wins. Stills cannot show a cue (a chase is
+brightest pixels and the fight the darkest); `show-frames` now measures it and refuses a strip where the periphery wins. **Then the three-arm strip (show
+`924b2506`, 04:50) showed the inversion is the Terminus, not the light show:** the BEFORE arm with no show at all already
+has the block band brighter than the fight ring in 22 of 30 frames at his 21° pose over dark asphalt. An absolute gate
+would have blocked the merge for a property of the venue. The bar is now relative — the show must not make the
+ring/band ratio worse than the same frame with the show off, tolerance 3% against ±1.5% noise — and **the parapet
+default moves it −2.6% to +7.4%, mostly positive: lit interiors make the fight marginally easier to read.** feel's
+"brightest pixels are the edges" was a maximum on the outline variant, not this mean; frames now report both. **Diagnosed (feel, 05:20): the Terminus is the only arena with `block` props — eight 40 m lit towers INSIDE the fight at
+r = 40 and 69 m — and has half of pit's floodlights at the same size, both out at r = 128 on the centre line. The venue
+got brighter and the floor did not. Fix requested from scale (the layout is the one owner of arena brightness; feel
+refused to compensate in its materials): two floodlights at the street intersections among the blocks.** Found only
+because show reported a no-show control arm beside its treated one. Stills cannot show a cue (a chase is
 motion; last-stand caught at a strobe trough reads dimmer than idle), so short clips per cue and a before frame from the
 no-show arm follow. The kill ripple did not read in its frame (likely no headroom above the battle cue's 0.96) and is
 unproven until shot against lull. Cost: 15 uniform writes per frame idle, 16 on a kill, 25 in the victory sweep, driving

@@ -354,7 +354,24 @@ waiter's log kept naming a job that had ended. The lock dies with the process; t
 that then exits, a killed shell, a dropped ssh), the remote `make` keeps running on builder0, holds a slot, scrolls a
 thousand PASS lines — and there is no line at the end, so by the rules the result does not exist. And you cannot
 re-launch into `~/tank_squad/godot-<stream>` while the orphan is reading it (trip-up 66). **Launch pattern that
-survives:** `setsid nohup make remote T=check > log 2>&1 &` from a shell that stays alive, or run it as the tracked
-command itself. **Before any re-run:** `ssh builder0 "ps -eo pid,etimes,args | grep '[s]lot.sh'"`, `readlink
+survives (squad's third launch of one check, after losing two):** `setsid nohup make remote T=check > log 2>&1 &`
+— its own process group, a log with a completion marker (`echo CHECK_EXIT=$? >> log` after the make) — so neither a
+parent shell exiting nor a signal aimed at somebody's process group can take the wrapper. Then read the wrapper line
+from the log. **Before any re-run:** `ssh builder0 "ps -eo pid,etimes,args | grep '[s]lot.sh'"`, `readlink
 /proc/<pid>/cwd` to find only yours, kill by explicit PID walking `pgrep -P` (never by pattern, trip-up 19), confirm
 no survivors, then launch.
+
+## ⚠ A process-pattern kill is machine-wide: seven checkouts run the same commands (metrics, 2026-09-20 04:39)
+
+metrics meant to stop one orphaned run of its own and ran a kill loop over `ps | grep -E '[r]emote.sh check$'`.
+Seven processes matched; two were its own. It killed the local wrappers of control's and squad's remote checks (combat's was reported dead and was not — a
+read-only name match misled the report the same way) — the runs kept executing on builder0 (lesson 15) but their `>> remote: make check exited <N>` lines and
+copy-backs were gone. **Every kill filters by `readlink /proc/<pid>/cwd` against the worktree first and prints what it
+is about to kill** (trip-up 79, now from the other side). Recovery when it happens to you: wait for your folder to leave
+`/tmp/tank_squad_slots/*.owner` on the box, read the verdict from `~/tank_squad/godot-<stream>/build/check/*.log` there,
+rsync `build/` back by hand, and report the hash as "verdict read from the box's log, no wrapper line".
+
+**A pattern-based process search is unsafe read-only as well as destructive.** `pgrep -f "Godot_v4.7.2"` matched the
+shell running the search (its own command line contains the string, and its cwd passes a cwd filter), so it reported
+a "lingering" process that was itself — a phantom that looks exactly like the leak you were hunting. Use self-excluding
+patterns (`grep '[G]odot'`), or `pgrep -x` on the binary, and confirm by cwd (squad, 2026-09-20, third time in one night).
