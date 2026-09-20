@@ -339,6 +339,11 @@ and the standing rule became *run a local lint before naming any hash green*. **
 positives, that replacement gate is broken too** — and its recipe treats any line matching `Parse Error|SCRIPT
 ERROR` as a failure, filtering only `depended scripts`. Both lines above pass that filter.
 
+**nav's own lint, completed: `lint local: 531 files, 8 known baselined lines`** — exactly metrics' count, across
+the same 5 files (`game/tank/tank.gd`, `game/theme/factions/faction_art.gd`, `game/theme/visual_slot.gd`,
+`tests/test_assets_factions.gd`, `tests/test_theme_factions.gd`). **No line outside the baseline**, so this branch
+adds nothing to it.
+
 **SETTLED by metrics, and nav had two things wrong** (2026-09-20). metrics swept the whole tree after a complete
 import with nothing else touching `.godot`:
 
@@ -830,6 +835,12 @@ are derived from hull WIDTH or an avoidance radius, which is why a "wide enough"
    mesh `AVOID_MESH_PROBE` (3 m) ahead is refused and the unit slows instead. Inside a corridor **nearly every**
    avoiding velocity leaves the mesh, so a queued hull slows behind its neighbour indefinitely rather than resolving.
    **Counter: `Avoidance.deflected` against `solved`.**
+
+**The fix shape for hypothesis 2, pre-approved by the orchestrator before the run** (so the measurement is not
+searching for a fix it has already decided on): *inside a corridor narrower than the clearance sum, right-of-way
+falls back to **strict file order** — the unit ahead never yields to the one behind — rather than refusing the ask.*
+The orchestrator's framing is worth keeping: *"a refused ask makes the asker yield" is a load-bearing coincidence
+that works in the open field and becomes a wall in single file.*
 
 **Why it waits, as the orchestrator asked me to state rather than assume:**
 - It is a **behaviour change on the default path** in the most load-bearing code nav owns (the guard, right-of-way,
