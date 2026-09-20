@@ -2712,6 +2712,14 @@ The kickoff prompt is one line; this section is the rest.
     bound, |cost| < ~0.8 ms, not a mean. And the roster question closed the same way: post-CP2 on a quiet box is
     6.40 ms against pre-CP2's 6.43, so 19.87 was load; the "145k primitives" sentence was a single-run artefact
     (the quiet run had 180,780 with fewer vehicles): **a counter immune to load is not immune to sampling.**
+    **The third run (feel, load 0.1–0.6, six cycles, warm-up dropped): NOT USABLE again, and now with the cause
+    sized.** Frame cost regressed on the vehicle census across all 13 phases: **0.677 ms per vehicle, r = 0.92**; the
+    census walked 90 → 72 during the run, so the confound alone is +0.7 to +3.4 ms across the kept cycles against a
+    trailer effect whose mean was +0.01 ms and whose spread was 6.39 ms. A monotone drift is not noise and more
+    cycles do not average it out; a quiet box does not touch it (the spread got worse on the quieter run). The
+    remedy is a frozen scene: a damage-off tune (combat's, a simulation switch) that the bench *requires* rather than
+    caveats. Until then the record says "the War Rig's frame cost is not yet measured", not a number with an
+    asterisk. **Before quoting any layer cost: the census per phase is printed and did not move.**
 180. **A guard that counts at teardown measures a pending removal, and it will convict the innocent with the same
     confidence as a real leak.** Round 9's teardown guard (scale, `3f6c1650`) named three tests for leaving two
     navigation regions each; `NavigationServer3D` drops regions on the frame *after* `free()` ([2, 0, 0, 0] over
