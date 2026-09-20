@@ -61,17 +61,21 @@ func test_its_screens_join_the_existing_channel_rather_than_opening_one() -> voi
 
 
 func test_it_is_absent_on_LOW_where_its_draws_cannot_be_spared() -> void:
+	# The dressing has no class_name -- it is reached through its scene -- so this instantiates the scene the game
+	# instantiates. (`make lint` caught the class_name assumption; remote lint would not have, per lesson 157.)
 	var previous := FxQuality.tier()
-	var dressing := ArenaDressing.new()
+	var scene := load("res://game/theme/cyberpunk/arena_dressing.tscn") as PackedScene
+	assert_true(scene != null, "the cyberpunk dressing scene loads")
+	var dressing := scene.instantiate() as Node3D
 	add_to_tree(dressing)
 	FxQuality.set_tier(FxQuality.Tier.LOW)
 	dressing.call("_build_airship")
-	assert_eq(dressing.airship, null, "no airship on LOW (the web build and phones)")
+	assert_eq(dressing.get("airship"), null, "no airship on LOW (the web build and phones)")
 	FxQuality.set_tier(FxQuality.Tier.HIGH)
 	dressing.call("_build_airship")
-	assert_true(dressing.airship != null, "and one on HIGH")
+	assert_true(dressing.get("airship") != null, "and one on HIGH")
 	# The player can change tier mid-match, so the airship follows rather than being decided once at build time.
 	FxQuality.set_tier(FxQuality.Tier.LOW)
 	dressing.call("_build_airship")
-	assert_eq(dressing.airship, null, "and it goes away again when the tier drops")
+	assert_eq(dressing.get("airship"), null, "and it goes away again when the tier drops")
 	FxQuality.set_tier(previous)
