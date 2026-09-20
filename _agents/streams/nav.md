@@ -673,6 +673,34 @@ detail**, and the distinction is exactly the sort that turns into an over-claim 
 diverge and the totals move with them. Every number above is from **one** run and is internally consistent; none of
 them is a before/after against a different run.
 
+### AMENDMENT to the arrival-arc A/B, written BEFORE terminus reports and before any arm is run
+
+The pre-registered design — **four maps, seed 3, 120 s** — is unrunnable: three of its four maps have no headroom,
+and its map set was not the one the game deals. An amendment declared after seeing results is worthless, so this is
+declared now, with terminus's headroom still unknown and no A/B arm yet run.
+
+**What changes, and it is one thing: the axis of replication.** The design drew its power from four maps at one
+seed. The map axis has collapsed to at most two, so it is replaced by the **seed** axis:
+
+- **Maps:** those of `Arena.ROTATION` (`yard`, `pit`, `terminus`) whose control arm has **non-zero
+  `off_mesh_fit.none`**. On today's evidence that is `yard`, plus `terminus` if its run (queued now) shows headroom.
+  `pit` is already refused (533 off-mesh gates, 0 blocked). **A map is included by its control arm's headroom and by
+  nothing else** — this rule is what the pre-registration already said, applied to a set that has shrunk.
+- **Seeds:** `FIGHT_SEEDS = 1 3 5 7 9` per map, via `nav-fight-ab ARENA=<map> AB_OFF=a4`, whose own control refuses
+  a run whose two arms shared a treatment or came back identical (round 7's byte-identical A/B is why that check
+  exists).
+- **Unchanged:** 120 s, `--budget=6500`, the facing-carrying probe, `FIGHT_BUSY_LEVELS=0`.
+
+**Everything else in the original pre-registration stands verbatim** — the primaries (per-wheeled-type
+`net_over_path` ↑, `oscillating_share` ↓), the guard (attack-move `progressing` must not fall more than 10 % on 2+
+maps; **with fewer maps this becomes "on any map"**, which is stricter, not looser), and above all the positive
+control: **report `a4_rescued_blocked` against `off_mesh_fit.none`, never the aggregate `aimed`.**
+
+**What this amendment costs, stated now.** Seeds are not maps. Five seeds on one map measure how A4 does on *yard's
+geometry* under different fights; they cannot tell us it generalises, and the original four-map design was chosen
+precisely because it could. **The result will be a single-geometry result whatever its confidence interval**, and
+nav will report it that way. The generalisation question moves to arena/scale, where it belongs.
+
 ### ⚠ A4'S HEADROOM EXISTS ON ONE MAP IN FOUR — the pre-registered A/B is REFUSED on three of them
 
 Control arm (A4 off — the default path), `8c7f60c0`, **laptop**, `nav-fight-maps`, seed 3, `FIGHT_BUSY_LEVELS=0`,
