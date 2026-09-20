@@ -852,10 +852,24 @@ inert on the default path**, exactly as it was this morning. It becomes live onl
 the yaw constraint also on, and nav's test asserts the constrained behaviour under an explicit arm rather than
 leaning on a default that has now **flipped twice in one day**.
 
-**The earlier enable, for the record:** it works — nav's diagnosis applied (compare the candidate pose against the
-current one rather than against legality) — and recovers **59 % of the illegal yaw**: 28.5° → **11.6°**, footprint
-9.6 m → **6.1 m** in a 4.8 m corridor, with `giveups 0 → 1` making nav's row briefly live. Those numbers stand as a
-measurement of what the rule does; what failed is what it costs elsewhere. The fix was nav's diagnosis applied —
+**The earlier enable, corrected 2026-09-21 — the improvement is LARGER than was claimed, and nav's own fixture is
+what exposed the error.** combat's "before" column all day (28.5°, 9.6 m) was **not** the unconstrained hull; it
+was taken in an arm that was not "constraint off" (likely the slack-0.02 build). Once `apply-on-first-read` made
+`yaw_fit=0` actually reach the predicate, nav's wedged test went red with:
+
+    10.42 m of path, 44.0° of yaw, giveups 0, 4.42 m net drift, footprint needs 12.1 m in 4.8 m
+
+**bit-identical to nav's original round-9 measurement of the unconstrained hull.** So the corrected result is
+**44.0° → 11.6°, footprint 12.1 m → 6.1 m: 74 % of the illegal yaw removed**, not 59 %. The residual is unchanged
+at **1.27 m against the 1.8 m bar** and still binding, the squad result is untouched, and the reversal to
+default-off stands on the one-line source bisect.
+
+**Why nav's fixture could serve as the anchor, and it is the reusable part:** it is **deterministic** and it
+**asserts its own positive control** (`path > 1.0`, the hull really is wedged) before reading anything out. So a
+number from it in round 9 and a number from it today are comparable, and the mismatch located the error in
+someone else's column rather than in the comparison. **A measurement you can reproduce exactly is an anchor; one
+you cannot is just a number** — and combat's before-column went unchallenged all day precisely because nothing
+anchored it. The fix was nav's diagnosis applied —
 compare the candidate pose against the **current** one rather than against legality — and it recovers **59 % of the
 illegal yaw**: 28.5° → **11.6°**, footprint 9.6 m → **6.1 m** in a 4.8 m corridor.
 
