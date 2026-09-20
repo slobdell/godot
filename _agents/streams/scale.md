@@ -451,6 +451,42 @@ made): at the round-9 roster the grid does **not** hold the biggest hull. Adjace
 **All ten layouts regenerated** (`make arenas`); `make arena-test` 75/75, `tools/test_arena*.py` 19/19,
 `--filter=match` 72/72, all on the laptop.
 
+### 4. Clearance for the new roster (P6) — measured
+
+`make nav-maze NAV_UNITS=30 ARENA=maze NAV_TIME=180 SEED=1 NAV_BOTH=1`, builder0, same seed both arms, 30 units
+head-on through the maze's defile. The probe spawns `Units.DEFAULT` — the Condemned `tank` — so this is the unit
+that went **3.60 → 8.62 m**.
+
+| | BEFORE (`9f864474`) | AFTER (`97b383eb`) | × |
+|---|---|---|---|
+| arrived | 30 / 30 | 30 / 30 | 1.00 |
+| off_navmesh | 0 | 0 | — |
+| t50 | 78.03 s | 120.17 s | 1.54 |
+| t90 | 95.73 s | 159.40 s | 1.67 |
+| **t100** | **104.10 s** | **165.87 s** | **1.59** |
+| **stuck_events** | **341** | **678** | **1.99** |
+| crawl | 319.2 unit-s (0.133) | 675.3 unit-s (0.185) | 2.12 |
+| no_progress | 859.9 unit-s (0.359) | 1682.4 unit-s (0.462) | 1.96 |
+| **oscillating** | **10.5 unit-s (0.004), 14 units** | **132.3 unit-s (0.036), 27 units** | **12.60** |
+| distance travelled | 11785.3 m | 11636.9 m | 0.99 |
+| progress made | 5837.2 m | 5650.1 m | 0.97 |
+
+**Nobody fails to arrive, and nobody is pushed off the navmesh.** What changes is how long it takes and how much
+of it is spent stopped: **the same ground covered** (distance ×0.99, progress ×0.97) in **59% more time**, with
+**twice the stuck events** and **twelve times the oscillating seconds**, spread over 27 of 30 units instead of 14.
+
+**⚠ THE CONFOUND, named rather than buried: the two arms differ by more than hull length.** The "before" arm is
+`main`'s tree, which the brief asked for — so it also carries the **old spawn grid** (4 rows of 13 vs 3 rows of
+19) and the old baked spawn lists. `maze_probe` spawns through that grid and orders each unit to the 180° mirror
+of **its own spawn point**, so the two arms start in different places and drive to different goals. The result is
+real and it is large, but **it is not attributable to hull length alone from these two runs.** A third arm with
+only `units.gd` and `tank.gd` reverted — the new grid, the old roster — isolates it, costs one builder0 slot, and
+is queued behind the CP2 check.
+
+**No conclusion about the mechanism from me** (nav's request, and their three pre-registered hypotheses for the
+defile are all dead). What I will say is what the numbers say: the pathology is **time and stopping**, not
+reachability.
+
 ### 5. A3: hull-chord cover over directional summed-area tables — done
 
 **REPLACES centre-point cover registration** (Invariant 0c: a brief that adopts a catalogue row must name what it
