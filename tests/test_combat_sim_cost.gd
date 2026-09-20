@@ -19,10 +19,9 @@ func _pair(units: Array) -> Array:
 			"army loads")
 	for brain in game_match.brains.get_children():
 		brain.queue_free()
-	var tanks := game_match.sorted_team_tanks(Match.Team.GREEN)
-	for tank in tanks:
-		tank.set_meta("keep", true)
-	return [game_match, tanks]
+	# (A `keep` meta was set on each tank here and nothing in the repo ever read it -- removed rather than left as
+	# a thing the next reader has to go and check. `teardown()` frees the match, which owns them.)
+	return [game_match, game_match.sorted_team_tanks(Match.Team.GREEN)]
 
 
 func _drive_all(tanks: Array, throttle: float, ticks: int) -> void:
@@ -48,7 +47,25 @@ func test_a_parked_hull_stays_exactly_still_and_drives_off_when_told() -> void:
 				% [unit, tank.global_position.distance_to(parked_at)])
 		# CP1: hulls move in floating mode (no floor queries); they must still sit on the ground, not creep off it.
 		assert_near(tank.global_position.y, 0.0, 0.05, "%s stays on the ground while driving" % unit)
-		teardown()
+		# ⚠ `await`, AND THE REASON IS WORTH THE THREE LINES, because this read as a physics leak for two rounds.
+		# `teardown()` ends in `await drain_navigation()`. Called WITHOUT `await` -- which is how this loop was
+		# written -- it frees the nodes, clears `_owned_nodes`, and then DETACHES a coroutine that sits in a
+		# 120-frame wait while this loop builds the NEXT unit's arena. That stale drain then counts the regions of
+		# an arena that is alive and in use, gives up, and appends "left 2 navigation region(s) on the map" against
+		# THIS test. Two detached drains plus the runner's own is why the failure arrived twice.
+		#
+		# There was never a holder. `free()` released everything at every boundary; the guard was reporting the
+		# test's own next fixture. Measured after the `await`, all three units: arena invalid, match invalid,
+		# **regions 0, bodies 0** -- asserted below rather than printed, so a real holder would fail here in future
+		# instead of landing on whatever test runs next.
+		var game_match: Match = setup[0]
+		var arena: Node = game_match.get_meta("arena")
+		await teardown()
+		assert_true(not is_instance_valid(arena) and not is_instance_valid(game_match),
+				"%s: the fixture is gone at the boundary" % unit)
+		assert_eq(NavigationServer3D.map_get_regions(tree.root.world_3d.navigation_map).size(), 0,
+				"%s: and so are its navigation regions, before the next unit bakes" % unit)
+		assert_eq(int(_world_left_behind()["bodies"]), 0, "%s: and its physics bodies" % unit)
 
 
 func test_a_parked_hull_still_blocks_a_hull_driving_into_it() -> void:
