@@ -2699,7 +2699,12 @@ The kickoff prompt is one line; this section is the rest.
     the failure message named neither. **The mechanism, at last (combat's per-tick trace, 18:45): the model asked
     for zero lateral velocity, the body moved 1.53 m, velocity came back untouched, no slide collision: penetration
     recovery out of something on the VEHICLE layer, which the neighbour probe could not see because it asked the
-    world mask.** And the sharper form of this lesson (metrics): **the shard count is derived from free memory at
+    world mask.** **And then the body was named (combat's collider probe): on tick 1 the physics server's transforms
+    are a PERMUTATION of the spawn slots, up to 90 m from the nodes (physics interpolation with positions set before
+    the node enters the tree), so the solver resolved a scrambled layout and recovered bodies out of overlaps that
+    existed only in its copy; every first-tick number taken this round was taken after that shove.** Eight
+    diagnoses, one bug, and the instrument that ended it printed the node's transform beside the server's for the
+    same body. And the sharper form of this lesson (metrics): **the shard count is derived from free memory at
     launch, so the schedule, and this test's verdict, is a function of how busy the box was when the check started**
     (5 shards fail, 6 pass, same code). Pin `TEST_SHARDS` when reproducing and print it beside any claim.
 
