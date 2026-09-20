@@ -186,7 +186,42 @@ frames. **Behind the walls, diagonals included: looked at, clean** — `make cam
 of half the perimeter (180° symmetric) at the lead's 21°/49 m/FOV 35, focus 20 m inside the edge, camera out beyond
 it; on the yard hexagon all three (two diagonals) cut the wall and stands and keep the floor to the bottom of the frame.
 
-**ROUND 8 MERGE HERE: `1b3da573` — #27 GREEN (builder0): `make check exited 0`, 1233 passed / 0 failed, `sim-baseline
+**ROUND 8 CLOSED. Merged into main as part of `1b3da573`** (verified: `git merge-base --is-ancestor 1b3da573 main`).
+**MERGE HERE NEXT: `3c488882` — #29 GREEN (builder0): `make check exited 0`, 1261 passed / 0 failed, `sim-baseline
+passed: 0cb238bf366e141f`, every target through `audio-check passed`.** It covers (beyond `1b3da573`): `39a61b86` (camera-looks "behind wall" frames), `8326e1eb` +
+`3c488882` (`facing` on a move = arrive on this heading, nav/squad's contract, documented at the key and in
+`orders.gd`), `17c1235e` (merge of main `22eda2f3`: nav's wheeled arrival, squad's facing half). Status commits after `3c488882`
+(`f4f0e2bc`, `27619e69`, this one) landed after #29's sync and are docs only.
+Local after that merge (laptop): control 183/0, camera 52/0, command 77/0, test_r 98/0.
+
+**Next round — A6 (research_catalog.md, control + feel, contract first with nav and combat):** the lead's "they don't
+obey" is a motion-LEGIBILITY problem, not only a readout one — under attack-move units spend 30–36% of their time
+driving somewhere other than where he sent them, correctly, because they are fighting. feel owns the motion, control
+owns the readout; the bar is joint (opposing-tangent time under 10% with no fall in exchange ratio). The nearest thing
+already built is `facing` on a move: the hull's orientation carrying the order's intent.
+
+**Round 9, control's, found at round-8 close: THE ARRIVE-FACING ARC HAS NO CALLER IN THE LEAD'S GAME.** `facing` on a
+move is issued in exactly one place — `game/ui/tactical_map.gd:269`, the **touch map's** right-drag (press =
+destination, drag = facing). That map is behind `--touch-map`; the lead plays `RtsControls`, which only ever READS
+`facing` (rts_controls.gd:307). Squad sets it for holds and stations. So nav's `_arrive_facing` cannot fire in play,
+which is why its A/B read `gates aimed 0, refused 0` in both arms. **Fix (control's): the desktop right-click gains the
+touch map's grammar — press = destination, drag = the heading to arrive on** — with a test asserting
+`orders.current(unit)["facing"]` after a drag so the next A/B has a live arm by construction, and a look at the lead's
+pose (a facing drag must not read as a box-select; the pin should show the heading it will arrive on).
+
+**Round 9, Invariant 0 (the orchestrator's): `RtsCamera.VISION_FRAME_BOTTOM` should READ the command card's geometry,
+not mirror it.** The derivation it mirrors, at 1920×1080: the card (`SelectionPanel.HEIGHT` 200) plus the group chips
+put the HUD's top edge at y 778, i.e. (778 − 540) / 540 = **0.44** of the half-height below centre; the constant is
+**0.40**, the extra leaving room for the hulls themselves above the card. So a camera bound is a copy of a UI height in
+another file — if feel or control changes the card, the lean silently goes back to hiding squads behind it. Both files
+are control's, so this is ours to fix: have the camera ask for the HUD's reserved bottom fraction.
+
+**Housekeeping (2026-09-19):** a backgrounded Godot from Sep 18 10:12 was still running 34 h later against this
+worktree, plus ten waiter loops from checks #6/#17. All killed. **A hung headless Godot holds its checkout's `.godot`
+import cache**; two Godots in ONE checkout produce phantom "tracked file does not exist" and cascading false
+`Nonexistent function` errors (seen in the main checkout with two concurrent `make lint` loops, not this worktree).
+
+**Round 8 detail: `1b3da573` — #27 GREEN (builder0): `make check exited 0`, 1233 passed / 0 failed, `sim-baseline
 passed: 668b7d490607439b`, every target through `audio-check passed`** (main `0ae1b223` merged; contains every round-8
 item above). After it, unchecked: `39a61b86` (camera-looks wall frames) and docs. **Round 8 is done for control.**
 Before it, `3c1c224e` (waited for main's new sim line). #26 on `4ebe47a7`: 1228/0 tests,
