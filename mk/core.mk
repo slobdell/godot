@@ -287,7 +287,37 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 			TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel; \
 		then status=0; else status=$$?; fi; \
 	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)" >&2; \
+	$(MAKE) --no-print-directory check-hashes >&2 || true; \
 	exit $$status
+
+# The hash verdict, in ONE comparable line. It exists because `determinism`'s own line truncates its JSON at 120
+# characters, so its state_hash never reached a log -- and `build/determinism_1.json`, the only carrier, is
+# overwritten by the next run. CP3 could therefore show `sim-baseline` bit-identical between the serial and the
+# parallel check but could only INFER it for `determinism`. A verdict you cannot compare after the fact is not
+# much of a verdict.
+#
+# It also answers the other half: when gameplay moves the baseline on purpose, recording it is two hand-run
+# commands and this prints them, with the machine, rather than leaving it to memory (Invariant 2).
+.PHONY: check-hashes
+check-hashes: ## The sim hashes from the last run, in one comparable line (both hashes, the machine, what moved)
+	@# ⚠ NOT-RUN is tested FIRST below. Written the other way round, absent data ("-" equals "-") reads as
+	@# "baseline unmoved" -- a zero that means "no data", in the very line added to stop a verdict being
+	@# uncomparable. It printed exactly that on its first run. Same family as `lint` reporting "all scripts
+	@# parse" over zero files, and as `arc_live=0.0s` for an unpublished field.
+	@det=$$($(PYTHON) -c "import json;print(json.load(open('$(BUILD_DIR)/determinism_1.json'))['state_hash'])" 2>/dev/null || echo "-"); \
+	if [ -r $(BUILD_DIR)/sim_baseline.txt ]; then \
+		set -- $$(cat $(BUILD_DIR)/sim_baseline.txt); key=$$1; actual=$$2; expected=$$3; \
+	else key="-"; actual="-"; expected="-"; fi; \
+	if [ "$$actual" = "-" ]; then verdict="NOT RUN"; \
+	elif [ "$$expected" = "none" ]; then verdict="NO BASELINE for $$key on this machine"; \
+	elif [ "$$actual" = "$$expected" ]; then verdict="baseline unmoved"; \
+	else verdict="MOVED: $$expected -> $$actual"; fi; \
+	printf '>> check: hashes on %s | sim-baseline %s (%s) | determinism %s\n' \
+		"$$(hostname)" "$$actual" "$$verdict" "$$det"; \
+	if [ "$$verdict" != "$${verdict#MOVED}" ]; then \
+		echo "   to adopt the move (only if gameplay changed ON PURPOSE -- the orchestrator records it, Invariant 2):"; \
+		echo "     make remote T=sim-baseline-record && cp build/sim_state_hash.txt tests/baselines/"; \
+	fi
 
 .PHONY: check-parallel $(_CHECK_WRAPPED)
 check-parallel: $(_CHECK_WRAPPED) ## (internal) check's targets for `make -j`; run `make check`, not this
@@ -383,6 +413,7 @@ sim-baseline: import ## The simulation matches the recorded baseline hash for th
 	actual=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
 		--green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json \
 		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
+	mkdir -p $(BUILD_DIR); printf '%s %s %s\n' "$$key" "$$actual" "$${expected:-none}" > $(BUILD_DIR)/sim_baseline.txt; \
 	if [ -z "$$expected" ]; then echo "sim-baseline SKIPPED: no baseline for $$key (got $$actual). The canonical one is builder0's (make remote T=check); see _agents/determinism.md"; \
 	elif [ "$$actual" = "$$expected" ]; then echo "sim-baseline passed: $$actual ($$key)"; \
 	else echo "sim-baseline FAILED: expected $$expected for $$key, got $$actual. If gameplay changed on purpose, run make remote T=sim-baseline-record, copy build/sim_state_hash.txt over tests/baselines/, and commit"; exit 1; fi
