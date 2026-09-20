@@ -428,6 +428,19 @@ Nothing.
 | `tests/nav/fight_probe.gd` | +6 lines (preload + one `TRAJECTORY.install`) | S3 emitter, pre-granted at launch; nav reviews at merge |
 | `game/modes/match_runner_mode.gd` | +7 lines (preload + one `TRAJECTORY.install`) | S3 emitter, pre-granted at launch; combat has reviewed and asked to keep it |
 
-**Timeouts raised: none so far.** Any raise will be a row here with target, before, after and the measurement.
+**Timeouts: none raised, and the margins are why** (serial measurement against the limit already in the recipe):
+
+| target | measured | its limit | margin |
+|---|---|---|---|
+| combat-smoke | 19 s | client `--timeout=60` | **3.2×** (the tightest in `check`) |
+| relay-smoke | 11 s | client `--timeout=60` | 5.5× |
+| net-smoke | 4 s | client `--timeout=35..90` | 9×+ |
+| army-loop-smoke | 24 s | `timeout 600` | 25× |
+| garage-smoke | 7 s | `timeout 600` | 86× |
+
+Any raise will be a row here with target, before, after and the measurement that justified it. **Also checked:**
+`mk/core.mk:55-57` warns that a `timeout` on a *wrapper* reaps the parent and leaves Godot children running — every
+`timeout N` in `mk/*.mk` wraps the Godot process (or the exported server binary) **directly**, so there is nothing
+of that shape to replace. Audited, not assumed.
 
 **Branch to delete at round close:** `tmp/metrics-r8-control` (every commit on it says NOT FOR MERGE).
