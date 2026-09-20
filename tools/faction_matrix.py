@@ -18,6 +18,7 @@ import concurrent.futures
 import itertools
 import json
 import os
+import re
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import run_conditions
@@ -29,7 +30,28 @@ import os
 # The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
 SIM_HZ = os.environ.get("SIM_HZ", "60")
 
-FACTIONS = ["gangs", "condemned", "law", "syndicate"]
+def _factions_from_catalog():
+    """The faction list, READ from `Units.FACTIONS` rather than copied beside it.
+
+    This was a copied table: `["gangs", "condemned", "law", "syndicate"]`, hard-coded here. Add a faction to the
+    catalog and every matrix would quietly run without it -- no error, just a smaller table that looks complete.
+    That is the worst shape of the copied-table bug this project keeps finding (feel's ROSTER, make_arenas.py
+    mirroring the spawn grid, arena_report.KIT missing `block`): the ones that hurt are where the copy WINS or
+    where the original is SILENTLY ABSENT, because both fail without a symptom.
+
+    It raises rather than falling back to a hard-coded list on purpose. A fallback would restore the exact bug the
+    moment the parse broke, and would do it silently -- which is how a guard becomes decoration.
+    """
+    source = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "game", "units", "units.gd")
+    with open(source) as handle:
+        found = re.search(r"const FACTIONS\s*:=\s*\[([^\]]*)\]", handle.read())
+    if not found:
+        raise SystemExit("faction_matrix: cannot find `const FACTIONS` in game/units/units.gd -- the catalog moved, "
+                         "and guessing the faction list is how a matrix silently runs without one of them")
+    return [name.strip().strip('"') for name in found.group(1).split(",") if name.strip()]
+
+
+FACTIONS = _factions_from_catalog()
 
 
 def run_match(godot, green, rust, seed, budget, time_limit, arena="", controls=()):
