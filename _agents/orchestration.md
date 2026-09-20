@@ -2901,3 +2901,10 @@ The kickoff prompt is one line; this section is the rest.
     `$(date)` resetting `$?`. Rules: a filter that matches no tests is a failure; the two characters no layer can
     carry are refused by name, saying which layer would have eaten them; and a fix to how a value crosses layers is
     tested by asserting what arrived at the far end, not what was sent.
+    **The canonical instance (metrics, 18:25):** annotating `main-checked` made `git rev-parse --short main-checked`
+    return the TAG OBJECT's id, so round-status printed a commit id nobody could look up beside distances and
+    BASE columns that were all correct, because `merge-base` and `rev-list` peel a tag implicitly and `rev-parse`
+    does not; `^{commit}` throughout. **In every instance the code was correct about the thing it was looking at
+    and wrong about what it was looking at**, and the numbers agreeing beside the wrong label is what makes a
+    reader trust the label. Corollary: the tests could not have caught it, because their fixture used a
+    lightweight tag, built before the thing it models existed; a fixture is rebuilt when the modelled thing changes.
