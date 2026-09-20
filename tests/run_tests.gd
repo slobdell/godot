@@ -108,7 +108,7 @@ func _run() -> void:
 			# AWAITED: `teardown()` drains the navigation map, and that needs frames. Un-awaited it would return at
 			# once and drain after the NEXT test had started -- a hook that looks wired up and does nothing.
 			await case.teardown()
-			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings)
+			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings, case.expected_errors)
 			total_engine_errors += int(engine["errors"])
 			total_engine_warnings += int(engine["warnings"])
 			var engine_failures: PackedStringArray = engine["failures"]
