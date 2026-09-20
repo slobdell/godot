@@ -180,6 +180,25 @@ case A6 exists for.
   obeying. On `facing_arc`, **never** on `facing_ordered`: an order carries its facing from the moment it is
   issued, so excluding on that would excuse the whole drive to the gate.
 
+### Pooling several maps into one figure (`--pool`)
+
+    python3 tools/metrics/run_metrics.py "build/metrics/*.jsonl.gz" --team 0 --order-verb attack_move --pool
+
+Prints the per-file rows as usual and then **one pooled row**, so a rotation figure across yard / pit / terminus
+is one command rather than four and a calculator.
+
+**Pooled by TICKS, never by averaging the per-file fractions.** A mean would weight a 30 s log the same as a
+120 s one, which is how a rotation number ends up dominated by its shortest map. A 10 s log at 90% pooled with a
+190 s log at 10% is **14%**, not 50%, and there is a test that says so.
+
+Three things it refuses to do:
+- **Launder a missing column.** A quantity that is `null` in *any* file is `null` in the pool — one log without
+  the corridor column makes the pooled off-corridor fraction unpublishable, exactly as it does for that log alone.
+- **Hide a disagreeing map.** The per-file rows stay above the pooled one, so a map that differs from the pool is
+  visible rather than averaged away.
+- **Pool across trees or machines silently.** Mixed commits or machines print a ⚠ REFUSE TO QUOTE THIS banner
+  naming them (CLAUDE.md rule 4; the laptop is ~2.75× slower than builder0).
+
 ## Hull turn between events (`--switches`)
 
 Not a fifth metric — a read the log already supports, added for combat's A2 question and available to anyone.

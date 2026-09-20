@@ -1165,5 +1165,75 @@ class FixtureTest(unittest.TestCase):
         self.assertEqual(set(make_fixtures.FIXTURES), covered)
 
 
+class PoolTest(unittest.TestCase):
+    """Pooling several logs into one figure — nav's rotation number across yard/pit/terminus."""
+
+    def row(self, arena, osc, under_way, ticks=30, commit="c", machine="m",
+            off=None, active_ticks=0, inactive=0, cusps=0, agent_min=1.0):
+        return {
+            "arena": arena, "commit": commit, "machine": machine, "tick_rate": ticks,
+            "samples": 100, "units": 10,
+            "all": {
+                "oscillating_share": osc, "under_way_seconds": under_way, "cusps": cusps,
+                "agent_minutes": agent_min, "off_corridor_fraction": off,
+                "corridor_active_ticks": active_ticks, "corridor_inactive_ticks": inactive,
+                "corridor_below_speed_ticks": 0, "corridor_ordered_arc_ticks": 0,
+            },
+        }
+
+    def test_it_weights_by_TICKS_not_by_averaging_fractions(self):
+        """The whole point. A 10 s log at 90% and a 190 s log at 10% is 14%, not 50% -- and a mean of fractions
+        would let the shortest map dominate the rotation figure."""
+        rows = [self.row("short", 0.90, 10.0), self.row("long", 0.10, 190.0)]
+        pooled = metrics.pool(rows)["pooled"]
+        self.assertAlmostEqual(pooled["oscillating_share"], (0.90 * 10 + 0.10 * 190) / 200.0, places=3)
+        self.assertNotAlmostEqual(pooled["oscillating_share"], 0.50, places=2)
+
+    def test_the_four_stored_replays_pool_to_their_hand_computed_value(self):
+        rows = [self.row("yard", 0.0716, 1480.7), self.row("boneyard", 0.0665, 1520.3),
+                self.row("pit", 0.0581, 1298.8), self.row("boulevard", 0.0530, 1407.4)]
+        expected = sum(o * w for o, w in ((0.0716, 1480.7), (0.0665, 1520.3),
+                                          (0.0581, 1298.8), (0.0530, 1407.4))) / 5707.2
+        self.assertAlmostEqual(metrics.pool(rows)["pooled"]["oscillating_share"], expected, places=3)
+
+    def test_a_None_in_ANY_file_keeps_the_pool_None(self):
+        """One log without the corridor column makes the POOLED fraction unpublishable, exactly as it does for
+        that log alone. Pooling must not launder a missing column into a number."""
+        rows = [self.row("a", 0.05, 100.0, off=0.30, active_ticks=1000),
+                self.row("b", 0.05, 100.0, off=None, active_ticks=0)]
+        pooled = metrics.pool(rows)["pooled"]
+        self.assertIsNone(pooled["off_corridor_fraction"])
+        self.assertIsNone(pooled["corridor_active_fraction"])
+
+    def test_it_pools_off_corridor_by_active_ticks_when_every_file_has_it(self):
+        rows = [self.row("a", 0.0, 10.0, off=0.80, active_ticks=100, inactive=0),
+                self.row("b", 0.0, 10.0, off=0.10, active_ticks=900, inactive=0)]
+        pooled = metrics.pool(rows)["pooled"]
+        self.assertAlmostEqual(pooled["off_corridor_fraction"], (0.80 * 100 + 0.10 * 900) / 1000.0, places=3)
+        self.assertAlmostEqual(pooled["corridor_active_fraction"], 1.0, places=6)
+
+    def test_mixed_commits_or_machines_are_FLAGGED(self):
+        """CLAUDE.md rule 4. Pooling across trees or machines is almost always a mistake, and the laptop is
+        ~2.75x slower, so a pooled wall-clock-sensitive figure across both is not one measurement."""
+        self.assertTrue(metrics.pool([self.row("a", 0.1, 10.0, commit="aaa"),
+                                      self.row("b", 0.1, 10.0, commit="bbb")])["mixed_commits"])
+        self.assertTrue(metrics.pool([self.row("a", 0.1, 10.0, machine="laptop"),
+                                      self.row("b", 0.1, 10.0, machine="builder0")])["mixed_machines"])
+        clean = metrics.pool([self.row("a", 0.1, 10.0), self.row("b", 0.1, 10.0)])
+        self.assertFalse(clean["mixed_commits"])
+        self.assertFalse(clean["mixed_machines"])
+
+    def test_the_cli_refuses_to_pool_a_single_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "one.jsonl")
+            header = Header(commit="c", machine="m", tick_rate=TICK_RATE, producer="synthetic")
+            trajlog.write_log(path, header, [
+                make_sample(t, float(t), speed=6.0) for t in range(metrics.SPARC_WINDOW_SAMPLES)])
+            captured = io.StringIO()
+            with contextlib.redirect_stdout(captured):
+                status = run_metrics.main([path, "--pool"])
+            self.assertEqual(status, 1)
+
+
 if __name__ == "__main__":
     unittest.main()

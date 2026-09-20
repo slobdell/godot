@@ -128,6 +128,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("logs", nargs="+", help="trajectory logs (.jsonl or .jsonl.gz); globs are expanded")
     parser.add_argument("--json", dest="json_out", default="", help="also write the whole report here, as JSON")
+    parser.add_argument("--pool", action="store_true",
+                        help="also print ONE pooled row over all the logs, weighted by ticks -- nav's rotation "
+                             "figure across several maps in one command. The per-file lines are kept.")
     parser.add_argument("--switches", default="",
                         help="a JSON file {unit name: [tick, ...]} of decision events; also reports the hull TURN "
                              "between consecutive events per unit type (combat's A2 bearing read)")
@@ -183,6 +186,34 @@ def main(argv=None):
             row["turns"] = metrics.turn_report(log, events)
         rows.append(row)
         print_report(row, sys.stdout)
+    if args.pool:
+        if len(rows) < 2:
+            print("metrics: REFUSED --pool over %d log(s): pooling one file is the file." % len(rows),
+                  file=sys.stderr)
+            return 1
+        pooled = metrics.pool(rows)
+        p = pooled["pooled"]
+        print("")
+        print("POOLED over %d logs (%s): %s" % (
+            pooled["files"], ", ".join(str(a) for a in pooled["arenas"]),
+            "commit %s, %s" % (pooled["commits"][0], pooled["machines"][0])))
+        if pooled["mixed_commits"] or pooled["mixed_machines"]:
+            print("  ⚠ REFUSE TO QUOTE THIS: pooled across %s%s%s. Numbers from different trees or different"
+                  % ("commits " + ",".join(pooled["commits"]) if pooled["mixed_commits"] else "",
+                     " and " if pooled["mixed_commits"] and pooled["mixed_machines"] else "",
+                     "machines " + ",".join(pooled["machines"]) if pooled["mixed_machines"] else ""))
+            print("    machines are not one measurement (CLAUDE.md rule 4; the laptop is ~2.75x slower).")
+        print("  weighted by TICKS, not by averaging the per-file fractions -- a mean would weight a 30 s log")
+        print("  the same as a 120 s one. Per-file rows above; a map that disagrees with the pool is visible there.")
+        print("  oscillating_share %s over %s s under way | cusps %d (%s/agent-min)" % (
+            _fmt(p["oscillating_share"], 4, 6).strip(), p["under_way_seconds"], p["cusps"],
+            _fmt(p["cusps_per_agent_minute"], 2, 5).strip()))
+        print("  off_corridor %s (active %s over %d ticks)" % (
+            "null" if p["off_corridor_fraction"] is None else "%.4f" % p["off_corridor_fraction"],
+            "null" if p["corridor_active_fraction"] is None else "%.4f" % p["corridor_active_fraction"],
+            p["corridor_active_ticks"]))
+        rows.append({"pooled": pooled})
+
     if args.json_out:
         with open(args.json_out, "w", encoding="utf-8") as handle:
             json.dump(rows, handle, indent=2, sort_keys=True)
