@@ -2886,3 +2886,11 @@ The kickoff prompt is one line; this section is the rest.
     assumptions and checks them first, or degrades with a sentence (`NOT AVAILABLE: <path> is not a git repository`)
     rather than failing fifteen assertions for one absent thing; and a tool that must run on two machines runs its
     tests on both before it ships.
+192. **A fix aimed at one layer is defeated by a layer above it that was never in the picture.** Round 9, metrics:
+    `make test FILTER="a|b"` reached the shell unquoted and ran neither suite (exit 127); quoting it through would
+    have matched nothing and exited 0 with `0 passed, 0 failed`, a green run of zero tests, worse than the crash;
+    and `FILTER=$HOME` arrived at the runner as `OME` because make expands `$` before any shell sees it, found by a
+    test that recorded the runner's argv, not by reading. Same family as the pipeline reporting `tail`'s status and
+    `$(date)` resetting `$?`. Rules: a filter that matches no tests is a failure; the two characters no layer can
+    carry are refused by name, saying which layer would have eaten them; and a fix to how a value crosses layers is
+    tested by asserting what arrived at the far end, not what was sent.
