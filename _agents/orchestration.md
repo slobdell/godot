@@ -3025,3 +3025,22 @@ The kickoff prompt is one line; this section is the rest.
     round was a measurement of the wrong thing; this one was a measurement of the right thing on a tree where the
     answer was temporarily false, and the item it undermined was written from it. When a defect is fixed, every
     number taken in its presence is re-taken before the item built on it is closed.
+199. **A correlation across five points, one of them different in a way you did not list, is not a mechanism.**
+    (combat, closing round 9.) Diagonal-derived spawn spacing was going into round 10 as THE fix for the plant
+    constraint's freeze, on squad's separating-axis reading of four crews (the across gap was under the diagonal,
+    so the turn was refused). Combat pre-registered the refutation (`Green_Charlie_3` at 3.19 m across, near the
+    ~3.3 m a turn needs, should refuse least) and ran the ranking: 0.06 m refused 1260 continuous ticks, 3.19 m
+    refused 1135, and the one crew that seated (`Alpha_4`, 128 ticks) sat at a TIGHT 0.26 m; what set it apart was
+    that Alpha was ordered first. The gap predicts nothing in either direction; the freeze is permanent (the
+    refusal counter never resets for over a thousand ticks, nav's N1 breach at army scale); and the only surviving
+    variable is timing. Three readings died in one table: vehicle-as-wall, no-room-for-the-diagonal, and combat's
+    own settle-tick and second-cause stories. The rule: before a correlation becomes a round's fix, rank it against
+    the case that would refute it, and say what ELSE differs between the points that fit and the one that does not.
+    The candidate still goes into the brief, with the table beside it and the predicate question first.
+    **Same day, the tenth "null that confirms the setup" (feel's hinge bench, then combat):** `--tune=match.no_damage=1`
+    on the match runner's own command line was accepted, `apply_tuning` returned no error, and `Armor.no_damage` read
+    false in 13 of 13 phases while the census walked 90 → 77. Both entry points to the knob were broken and only
+    the environment one had been measured; the fix covered the second by its shape, not by a test. feel's sentence
+    is the whole family: **"accepted with no error" carries no information about whether the knob does anything.**
+    Had the census not moved on a quiet phase, the run would have read as the freeze working; the bench's refusal
+    to report was the only thing between the broken knob and a published number, for the second time in a day.
