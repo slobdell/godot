@@ -330,7 +330,37 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
   is a property of the method and not of the code. Either subtract those files by name or move them aside for the
   run. Same shape as a control that is not actually the control.
 
-### PAUSED 2026-09-20 ~03:20 (the lead's session limit; the orchestrator called it). Where this is, exactly.
+### Where this ended (2026-09-20 ~04:20). Every backlog item is done or blocked on another stream.
+
+| Item | State |
+|---|---|
+| 1. desktop right-drag facing | **merged to `main` as CP2c** (`e27f0681`), `lint local: 531 files, 5 known baselined, 0 others` |
+| 2. S4 signature + C-1 corridor + C-2/C-3 attribution | **done.** C-2's words stay silent until nav ships `legibility: {active, why}` — that is the correct output, not a stub |
+| 3. camera inside a block, and the block in the sight line | **done and approved on the lead's behalf**, frames looked at by control and the orchestrator |
+| 4. the view after CP2 | **blocked: CP2 (scale's roster) is not on `main` yet.** The moment it is: `git merge main`, then `camera-looks` + `control-playtest-shots` and the list in the backlog item |
+| 5. `shell-playtest` console gate | **done**: baseline recorded from a clean run, `make check-display` green |
+| 6. stretch (`ungrouped=N` on the default path) | not started; waits on squad's A10 |
+
+**The last hash:** `ffd09b0e` (`main` merged in, CP1's metrics and its working lint included). Its
+`make remote T=check` is the one to quote; **`449b0344` came back 1279/1** and that failure is fixed in `9d4fd9ea`.
+
+**What tonight cost, and what it bought, in one line each — these are the five that were worth the time:**
+
+1. **A pure falsifier said 518 → 0 while the feature cut nothing at all in a real match.** `BlockCutaway`'s root was
+   wired before the arena built its bodies. Only the frames showed it. *The gap between "the algorithm is right" and
+   "the feature works" is not closed by any amount of geometry testing.*
+2. **A before/after where both halves were "after".** The cutaway ran during the "as asked" frame too, so the pair
+   was nearly identical and showed no fault. *A comparison has to be built so the control arm can fail.*
+3. **`git checkout <sha> -- .` does not reproduce that commit's lint.** Later files stay on disk and error against
+   the older sources they now mismatch.
+4. **`Arena._ready` takes its layout from `layout_name`/`--arena`, never `Arena.active`.** A test that sets `active`
+   builds the DEFAULT arena, runs green on the wrong map, and blames the thing under test.
+5. **A wall-clock budget in a behaviour test measures the machine** (lesson 158; three of mine removed).
+
+**The pattern under all five:** each was a measurement that answered a slightly different question than the one
+asked, and each looked like a pass. Two were caught by pictures, one by builder0, two by another stream.
+
+### PAUSED 2026-09-20 ~03:20 (superseded by the section above; kept for the record)
 
 **Everything is committed and the working tree is clean at `bd69de5f`.** There is no half-applied state to
 reconstruct: items 1, 2 (C-1/C-2/C-3), 3 (both halves) and 5 are written, tested and committed, and `e27f0681` is
