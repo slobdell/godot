@@ -445,6 +445,9 @@ before/after **stills** of the same frozen frame are nearly identical. The parap
 edge; the windows breathe around roughly today's mean. Measured over 36 frames, the block band's mean luminance
 changes between show-off and show-on by a **median −0.39%** — noise.
 
+**Give him the CLIPS first and the stills as supporting evidence** (feel). A still cannot show breathing, so a strip
+of two near-identical frames understates the result; the cue clips are the deliverable.
+
 **What is left is motion, and that is not nothing** — it is the whole idle, it is what the cue clips show, and it is
 what the lead asked for when he said *"making the lit edges breathe"*. But it does mean the other half of his
 sentence, *"bring these figures to life"*, is currently answered by **breathing rather than by looking different**,
@@ -454,7 +457,7 @@ and a strip of two near-identical stills is an honest picture of that.
 
 | dial | now | what it does |
 |---|---|---|
-| `show.channels.windows.ceiling` (`arenas/terminus.json`) | 1.10 (was 1.35) | how hard the buildings breathe. The gate says what raising it costs the fight |
+| **the window band's WIDTH** — `floor` *and* `ceiling` together (`arenas/terminus.json`) | `[0.80, 1.10]`, a 30% swing, was `[0.70, 1.35]`, a 65% swing | **this is the dial, and "turn it up" is the wrong one.** What reads as *alive* is contrast, not level (feel). Widening the band at the same mean — say `[0.70, 1.20]` — restores most of the life without making the city brighter; raising the ceiling alone just brightens the periphery and walks straight back into the readability gate |
 | `show_edge_energy` (`city_block.gdshader`) | 0.8 | the parapet's brightness |
 | `"style": "outline"` on the `city_block`/`edge` patch entry | `parapet` | the full-silhouette look, already shot in `build/show/outline/`; feel argues against it on art-direction grounds and he may want it anyway |
 
