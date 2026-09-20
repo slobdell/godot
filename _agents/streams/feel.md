@@ -227,6 +227,32 @@ zero on a teleport so a respawn cannot draw a streak from the wreck, and derives
 the model's world scale — **so it survives CP2 without an edit**. The gun rides the trailer: its pivot is reparented
 under the trailer's and the turret's lay is taken back out, so gunnery is unaffected.
 
+### X2 — the hinge measured in a real match and on a known corner (`72a06181`, laptop, Intel UHD 620)
+
+**In a live skirmish** (`--player=cpu:gang_ram --player-faction=gangs --budget=6500`, `foundry`, seed 3; **32 rigs,
+864 rig-frames**, sampled per rig per frame, not as a maximum over the field):
+
+| | |
+|---|---|
+| mean articulation | **4.1°** |
+| peak | 50.4° |
+| rig-frames past 30° | **1.7%** |
+| rig-frames at the 65° clamp | **0.0%** |
+
+That is the answer to metrics' warning (*"56% of all reversals in a fight are the wheeled creep, so the trailer will
+jackknife often"*). It does jackknife — a peak of 50° in six seconds of deployment — but it **lives near straight**
+and never pins at the clamp, so the fleet does not read as permanently folded. **The first version of this
+measurement reported only the maximum over all 32 rigs, which one vehicle pins and which cannot tell "the fleet is
+folded in half" from "one rig is reversing out of a corner".** Fixed before it was reported.
+
+**On a known corner** (radius 26 m, 9 m/s, trailer wheelbase 5.06 world m), degrees of articulation by degrees
+through the turn: `0 → −6.3 → −9.4 → −10.3 → −10.5 → −10.5`. The closed form for steady-state off-tracking is
+`asin(L / R) = asin(5.06 / 26) =` **11.2°**, and it settles at **10.5°** by a quarter of the way round — the deficit
+is the approach transient. **The law is right end to end, not just in the unit test.**
+
+**Reversing** (the creep case, from the corner's end pose with the kink still in it): `−18.7°` at 3 m, `−47.2°` at
+8 m, **clamped at −65° by 16 m** and held. It diverges, which is what jackknifing is, and the clamp catches it.
+
 **Owed on X2:** `build/rig-hinge/` frames for the lead, `make remote T=sim-baseline` on the branch
 (pre-registered: the hash does not move), and `make perf-scene` before/after with a gangs army (M1).
 
