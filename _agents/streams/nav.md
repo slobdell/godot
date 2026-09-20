@@ -799,7 +799,34 @@ rather than on a synthetic one. **Do not flip its default** — on today's plant
 stays green, correctly.** `test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided` returns
 **bit-identical** numbers with the constraint on or off (19.71 m of path, 28.5° of yaw, 3.12 m net drift), verified
 by combat with their own contact gate disabled. **The assertion written to go red has not gone red, and combat
-reported that rather than papering it.** **SUPERSEDED 2026-09-21: it works now and is ENABLED** (`986f8921`, combat). The fix was nav's diagnosis applied —
+reported that rather than papering it.** **⚠ REVERSED AGAIN, and this is the current state: the constraint's default is back OFF, so nav's face row is
+INERT ON THE DEFAULT PATH once more.** It was live for about an hour. combat's bisect, one line, one machine:
+
+| point | off slot | worst gap per squad |
+|---|---|---|
+| `bd618dd4` constraint **off** | **0 of 30** | Alpha 3.8, Bravo 4.4, Charlie 6.6, Delta 22.4, Echo 4.5 m |
+| `986f8921` constraint **on** | **12 of 30** | Alpha 2.9, Bravo **89.5**, Charlie **87.6**, Delta **86.5**, Echo **91.1** m |
+
+`986f8921` over its parent is `yaw_fit_enabled := false` → `true` **and nothing else**. Four of five squads end
+~90 m from their slots. **No corridor win is worth squads being unable to form up**, and nav agreed with the
+reversal without reservation — having endorsed the enable earlier on evidence that turned out to be confounded.
+
+**The mechanism is nav's vehicle-as-wall reading and it now has its confirming case:** hulls seating into a
+formation are nosed against squadmates, `test_move` uses `collision_mask = 3`, a squadmate counts as a wall, the
+arrival yaw is refused and the crew never seats. **Alpha survives because it is ordered first, into open ground,
+before the others crowd in.** Labelled **inferred, not measured** until the `yaw_vehicle_contact` counter and
+squad's roster print name the same units — and nav has proposed a one-run causal test that needs no new
+instrumentation: **order the squads with a delay between them.** Vehicle-as-wall predicts all five seat.
+
+**So the row's status, stated plainly rather than left reading as live:** the face recovery is **built, opt-in, and
+inert on the default path**, exactly as it was this morning. It becomes live only under `--nav-off=facegiveup` with
+the yaw constraint also on, and nav's test asserts the constrained behaviour under an explicit arm rather than
+leaning on a default that has now **flipped twice in one day**.
+
+**The earlier enable, for the record:** it works — nav's diagnosis applied (compare the candidate pose against the
+current one rather than against legality) — and recovers **59 % of the illegal yaw**: 28.5° → **11.6°**, footprint
+9.6 m → **6.1 m** in a 4.8 m corridor, with `giveups 0 → 1` making nav's row briefly live. Those numbers stand as a
+measurement of what the rule does; what failed is what it costs elsewhere. The fix was nav's diagnosis applied —
 compare the candidate pose against the **current** one rather than against legality — and it recovers **59 % of the
 illegal yaw**: 28.5° → **11.6°**, footprint 9.6 m → **6.1 m** in a 4.8 m corridor.
 
