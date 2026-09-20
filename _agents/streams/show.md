@@ -351,82 +351,82 @@ patches, cues — is data.
    `game/theme/fx/shaders/city_block.gdshader`, and the GDScript side calls the value `seed01`. Checked against
    feel's own commit rather than argued. feel confirmed.
 
-### NEXT STEP, in order, for whoever picks this up
+### NEXT STEP, in order
 
-_Paused 2026-09-20 ~02:55 at the orchestrator's instruction (the lead's session limit; builder0 down). **The tree is
-clean and every commit below is a deliberate one — there is no WIP.** Last commit `36ca7552`._
+_Last updated 2026-09-20 ~05:15. Last commit `9b029840`. **Items 1-6 are built; item 7 (stretch) is not started.**_
 
-1. **`make remote T=show-frames`** — ~6 minutes. This is the lead gate and everything else can wait behind it.
-   The strip lands in `build/show/` (19 frames for terminus, 11 for yard: three idle moments + one per cue +
-   a kill mid-ripple, at the wide pose, a close pose and the Terminus street). **Check the timestamps before
-   relaying it** (`ls -la --time-style=+%H:%M build/show/`) — the previous attempt half-copied and the wrapper
-   said so; a half-strip is exactly the artefact that gets read as a whole one.
-2. **`make remote T=show-perf-pair`** — the paired `--no-show` control, both runs in one slot. Report the PAIRED
-   delta with its spread, not absolutes.
-3. **`make remote T=check`** on the last commit, and name the hash that went green.
-4. **The ground fixture** (*Decided overnight* #8): the last item, and it lands with its own paired `perf-scene`.
+1. **`make remote T="show-frames show-clips show-perf-layer"`** — in flight at `9b029840`. It produces the lead
+   gate (the strip), the cue clips, and the one perf number that survives a contended machine. **Check the
+   timestamps and the frame count before relaying anything out of `build/show/`** — one earlier attempt copied back
+   15 of 30 frames when builder0 dropped, and the wrapper said so.
+2. **`make remote T=check`**, and name the hash that went green.
+3. **The ground fixture** (*Decided overnight* #8), with its own paired measurement.
+4. **The rest of item 7's stretch**: the airship's screen on an ad channel (feel builds the airship; the show
+   patches it), a fixture that is neither building nor wall, a `show` view in `arena-kit-gallery`.
 
-A local `make check` was started at 02:48 on `685df1f2` and queued behind two other streams; if it finished, its
-log is the fallback for step 3 — but it covers `685df1f2`, not the two doc commits after it.
+### Where it stands
 
-### Blocked / pending
+| item | state |
+|---|---|
+| 1. `_agents/lighting.md` before code | **done**, reviewed by feel and control; their answers and the reasons are in it |
+| 2. The channel engine | **done** |
+| 3. First fixtures (blocks, perimeter rim) | **done**, re-shaped after feel reviewed the frames (see *The strip changed the design*) |
+| 4. Patches as data | **done** (`terminus`, `yard`, `make show-report`) |
+| 5. Cues from the match | **done** (7 state cues + the kill ripple) |
+| 6. Signage, pools, tower beams | **done** |
+| 7. Stretch | **not started** |
 
-**Everything outstanding is behind one thing: builder0 went off the network at ~02:47** (`ssh: No route to host`,
-100% packet loss, confirmed over three attempts). It is every stream's build machine; the orchestrator has told all
-eight to hold remote runs.
+**Local, laptop, `9b029840`:** `--filter=show` **79 passed, 0 failed** (43 test methods, every one confirmed
+present in the run output rather than assumed — trip-up 73); arena 79/0, fx 111/0, theme 39/0, crowd 16/0.
+**`make lint` (CP1's real lint): `all 548 scripts parse (-P4, 8 known artefacts baselined)`.**
+**CP1 merged clean** (`git merge main`, no conflicts) and both arena patches survived it.
 
-1. **THE LEAD GATE — the frame strip. Shot once, found to be wrong, and being re-shot.** The first run produced
-   **30 frames, terminus and yard, at his pose, `shader errors 0`** — and reading their own reported channel values
-   showed the three "idle breathe" frames were taken with the **FIGHT cue still running** (it holds 5 s from arena
-   load; the warmup is 3), each one printing `"mood":"fight"`. The lead would have judged the ambience by looking at
-   the loudest cue in the book. Fixed at `685df1f2`; the re-run is ~6 minutes whenever the machine is back.
-   *The first strip was also only half copied back — `rsync` died mid-transfer with the machine and the wrapper
-   correctly said `local build/ is STALE`. 15 of 30 frames had arrived. The partial set was deleted rather than
-   kept, because a half-strip is exactly the artefact that gets read as a whole one.*
-2. **The paired perf control.** `make show-perf-pair` runs `perf-scene` with `--no-show` and then without it, back to
-   back **in one slot** — same binary, same import cache, same machine, minutes apart. Written and committed;
-   never run.
-3. **A full `make remote T=check`.** Running **locally** instead while builder0 is down (started 02:48 at
-   `685df1f2`); it is the gating artefact and the laptop can produce it, slower.
-4. **The ground fixture** — designed, deliberately not built. See *Decided overnight* #8.
+### The strip changed the design, which is why it went out the night it existed
 
-### Measurements
+The first frames went to the orchestrator and to feel immediately. **feel's review changed what ships**, and the
+change is smaller than what it replaced:
 
-**BEFORE, builder0 (Mesa Intel Iris Xe RPL-U), branch point `e3501ef9`, terminus, 1920×1080, seed 3:**
-`all_avg 15.56 ms`, `all_gpu 6.27 ms`, `all_p95 27.45 ms`, holds 30 fps at **53 vehicles**, arena layer
-**1.42 ms GPU**, **instance-uniform errors 0**, other engine errors 0.
+- **The edge emission was an outline, and a dimmer outline is still an outline.** `show_edge` is added on the
+  bevel/chamfer branch and **that branch is the silhouette** — `art_direction.md` :56's named failure. The default
+  is now the **roof parapet only**; the breathing that carries a block is `show_window` and `show_shop`, which is
+  light *inside* things. The full outline survives as the **`outline` style** so the lead can compare against his
+  own words.
+- **Cool white and red are barred.** Cool white is not in the venue palette and reads as architectural LED — it was
+  the brightest thing in the first strip. **Red is a *signal* in this game**, so spending it on trim spends a colour
+  that means something is wrong. The palette is magenta/cyan/amber, picked per block from the seed already in
+  `COLOR.g`.
+- **The hierarchy is a gate.** `show_edge_energy` 2.2 → 0.8, the `edges` ceiling 1.00 → 0.55 (under the window
+  grid's floor of 0.70), and `make show-frames` now fails if the show makes the fight harder to read.
 
-**AFTER, builder0, `e5c8678f`, same arena, resolution and seed:** `all_avg 26.69 ms`, `all_gpu 8.25 ms`,
-`all_p95 43.36 ms`, holds 30 fps at 33 vehicles, arena layer 4.07 ms GPU, **instance-uniform errors 0**, other
-engine errors 0.
+### Measurements, and two of them are negative results
 
-**⚠ DO NOT READ A DELTA FROM THOSE TWO ROWS. The machine was not the same machine.** builder0 went from 4
-concurrent heavy runs to 8+ between them. The tell is that **every layer cost roughly tripled, including layers the
-show does not touch**: `no_hud` 0.43 → 2.14 ms GPU (×5), `no_pool_lights` 0.39 → 3.47 (×9), `no_underglow`
-0.55 → 1.41 (×2.6). A lighting change that made the HUD five times more expensive would be a remarkable lighting
-change.
+**What is solid:**
 
-**What IS honest, because it is a count rather than a time** (median over the 17 all-phase samples in each run):
+| | |
+|---|---|
+| **Shader errors** | **0**, on every strip, on a real GL context. Headless compiles no shaders, so this is the only proof the `#include`, the `pow` clamp and five sets of `show_*` uniforms work |
+| **Real lights added** | **0** — median 4 vs 4, identical ranges, across a paired run |
+| **Draw calls added** | none detectable — 269 vs 264 on heavily overlapping ranges; and structurally, a test forbids `MeshInstance3D`, `MultiMesh` and `Light3D` anywhere under `game/theme/show/` |
+| **Instance-uniform errors** | **0** in every run |
+| **Per-frame cost** | **15 writes idle, 16 during a kill, 25 during the victory sweep** on the Terminus — 7 patch entries over 13 driven materials. O(driven materials), never O(instances): the same 15 writes drive eight buildings, every window on them, six rim edges, every sign and every floodlight pool |
+| **Readability** | 28 of 30 frames within ±3%, **mostly positive (up to +4.2%)** — the show makes the fight marginally *easier* to read, because the window grid lifts interiors rather than silhouette |
 
-| | BEFORE `e3501ef9` | AFTER `e5c8678f` | reading |
-|---|---|---|---|
-| **real lights** | **4** (1–5) | **4** (1–5) | **identical: zero added real lights** |
-| **instance-uniform errors** | **0** | **0** | the shader-instance ceiling did not move |
-| **other engine errors** | **0** | **0** | **the five fixture shaders compile on a real GL context** |
-| draw calls | 260 (197–324) | 273 (218–322) | +13 on heavily overlapping ranges — fight variance, not geometry |
-| GPU ms | 6.1 | 6.5 | +0.4 ms **while the CPU side went +62% under load: an upper bound, not a measurement** |
+**⚠ THE FRAME-TIME COST IS STILL NOT MEASURED, and the reason is a result in itself.** Three attempts, three
+different ways of being wrong (see `lighting.md` §8b): a before/after an hour apart (machine load tripled *every*
+layer, including ones the show does not touch); the paired runs the orchestrator proposed (**the show-ON arm came
+out 43% faster** — impossible, therefore a measurement of the noise); and the luminance pair across two processes
+(the frames ride a live skirmish, so the vehicles are elsewhere). **The instrument now exists** —
+`make show-perf-layer`, a `no_show` phase measured *within* one `perf-scene` run seconds apart — and it is in the
+run on the box. Until it lands, the only honest statement is the bound from the counts: no geometry, no lights,
+zero errors, 15 uniform writes a frame.
 
-The GPU row is the informative one. The show is a GPU-side change; GPU median moved **6%** while `avg_ms` median
-moved **62%**. On a machine that much busier, +0.4 ms GPU is a ceiling on the cost rather than the cost.
+### Questions for the lead
 
-**Frames, builder0, `cb167f69`, 1920×1080, terminus and yard:** 30 rendered, **`shader errors 0` on both arenas.**
-That is the claim headless could never make — headless Godot uses a dummy renderer and compiles no shaders, so until
-this run every "the defaults reproduce today's look" statement rested on parse checks and on a test that reads the
-uniform *declarations*. The `#include`, the `pow` clamp and five sets of `show_*` uniforms are real.
-
-**Local, laptop, `685df1f2`:** 74 passed, 0 failed on `--filter=show` — **43 test methods, every one confirmed
-present in the run output rather than assumed** (trip-up 73). arena 79/0, fx 111/0, theme 39/0, crowd 16/0. All
-touched files parse-checked clean, none of them in metrics' baselined set of 8 known lines.
+1. **Is it beautiful?** The strip and the clips are how it gets asked, and his answer should steer items 5-6's
+   intensity rather than another round of guessing.
+2. **The outline or the parapet?** feel argues the parapet, in the art direction's own terms, and I agree with it.
+   But his words were *"making the lit edges breathe and glow"*, so both are shot and he decides. One value.
+3. **The strobe on `last_stand`** is the one place in the venue a strobe is allowed. Keep, or too much?
 
 ### Requests to other streams
 
