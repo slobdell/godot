@@ -97,6 +97,14 @@ These are not craft. A change that breaks one of them is wrong even if it looks 
     channel count — a seven-channel set failed the yard's four.
 11. **A cue may run a channel faster than a patch may declare one.** Rule 10 governs the *idle*, not a stab of
     strobe: a `last_stand` at a 1.6 s period is the point. The floor is 0.8 s, under which it reads as a fault.
+12. **Every visual claim about the show is a PAIR, shot on one frozen frame with `driving` toggled — so the check
+    can only ever blame the show for what the show actually changed.** This is not a measurement convenience, it
+    is what makes the check *fair*, and it has already earned it twice: the Terminus's brightest feature is feel's
+    neon band at shop-window height, which is present in **both** halves and therefore cancels. An **absolute**
+    check charges that band to the light show, and the response to it is to dim windows to compensate for a strip
+    the show does not own — which is exactly what the first version of the readability gate asked for when it
+    failed 22 of 30 frames with no show in them at all. **If you find yourself tuning one of these dials to fix
+    something that is in the show-off half too, the check is wrong, not the dial.**
 
 ---
 
@@ -298,6 +306,7 @@ Two writers to one perceived quantity look like flicker nobody can reproduce. Ea
 | quantity | owner | everyone else |
 |---|---|---|
 | **The arena-wide ground wash** | **the show director.** | `AdBroadcast.light_color()` stays the **screens' own local spill** and the director **reads** it as one input. The show never writes the spill; `AdBroadcast` never writes the wash. |
+| **The floor's READABILITY — how well lit the fight is** | **scale's lamps, in `terminus.json`** | **the show modulates what is already lit; the `pools` channel is not the floor's baseline.** Ruled by the orchestrator, 2026-09-20, after feel found that the Terminus's shop-height bands out-compete the fight by *placement* rather than palette. The `pools` channel is the nearest knob and it is the wrong one: if the show lights the floor, the show's dials start gating whether the fight is legible, and a look decision becomes a play decision. |
 | Emission and channel values on any `show_*` uniform | **the show** | control never writes a `show_*` uniform |
 | A block's **alpha / visibility** (the camera-inside-a-block cutaway) | **control** | **the show never writes alpha, visibility, or the cutaway's own uniform.** Ruled by the orchestrator, 2026-09-20 |
 | The **look at channel level 1.0** — every material's base colours, roughness, energies | **feel** | the show is additive only: a hook a material exposes, never a restyle |
