@@ -104,7 +104,7 @@ lint-cache-probe: import ## Does `--check-only` see the f1128ef5 ternary error, 
 	restore() { [ -f "$$saved" ] && mv -f "$$saved" "$$real"; [ -f "$$moved" ] && mv -f "$$moved" "$$cache"; return 0; }; \
 	trap restore EXIT INT TERM; \
 	run() { $(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1 \
-		| grep -E "Parse Error|SCRIPT ERROR|Compile Error" | head -3; }; \
+		| { grep -E "Parse Error|SCRIPT ERROR|Compile Error" || true; } | head -3; }; \
 	echo ">> probe on $$(hostname), commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}"; \
 	echo ""; \
 	echo "0. POSITIVE CONTROL -- a blatant syntax error at the same res:// location:"; \
