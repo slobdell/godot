@@ -183,11 +183,24 @@ func drain_navigation() -> void:
 		if NavigationServer3D.map_get_regions(map).is_empty():
 			return
 		await tree.physics_frame
-	var left := NavigationServer3D.map_get_regions(map).size()
+	# CONTAINMENT. The budget expiring means a node somewhere still OWNS these regions -- `test_combat_sim_cost`
+	# holds an arena past teardown and its two regions survive all 120 frames. Without this, the next test bakes
+	# over them and one leaking test becomes 22 failures in a shard, all carrying the 284-edge-error warning and
+	# none of them the culprit. So: detach the leftovers, name them, and let the LEAKING test fail alone.
+	#
+	# `region_set_map(rid, RID())` and NOT `free_rid`: the leak is a live node still holding the arena, and that
+	# node owns these RIDs. Freeing a RID out from under its owner is a crash waiting for the next frame; detaching
+	# it from the map is enough, because the map is the only thing the next bake collides with.
+	var leftovers := NavigationServer3D.map_get_regions(map)
+	var left := leftovers.size()
 	if left > 0:
-		failures.append(("left %d navigation region(s) on the map after %d frames (4 s). The next test will bake into "
-				+ "them and the engine's 'more than 2 edges tried to occupy the same map rasterization space' will "
-				+ "be charged to whichever test is running when it lands - which will not be this one.")
+		for rid: RID in leftovers:
+			NavigationServer3D.region_set_map(rid, RID())
+		print("TEST_DRAIN: detached %d leaked navigation region(s) so the rest of the shard survives" % left)
+		failures.append(("left %d navigation region(s) on the map after %d frames (4 s) - a node here still OWNS "
+				+ "them. They have been detached from the map so the next test does not bake over them, but THIS "
+				+ "test is the leak: free every node it adds. Undetached, the engine's 'more than 2 edges tried to "
+				+ "occupy the same map rasterization space' would be charged to whichever test ran next.")
 				% [left, DRAIN_FRAMES])
 
 
