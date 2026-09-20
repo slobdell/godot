@@ -198,7 +198,19 @@ rest of the round runs behind it.
 - **X7 — the airship: BUILT** (`567a8007`); its orbit numbers are provisional until `make airship-look` says
   whether the lead can ever actually see it.
 
-### ✅ GREEN, and the S2 guarantee delivered: `7a706911` (builder0)
+### ✅ GREEN, and the S2 guarantee delivered: `7a706911` (builder0) — with one honest caveat about the artefacts
+
+**The wrapper's own line: `>> remote: make check exited 0`.** But it continues `(build/ copied back: FAILED)` and
+remote.sh then exits 4 on its own policy — *"nothing local proves what the run did"*. **That is the copy-back guard,
+not a suite failure**, and the distinction is the one `remote_builds.md` exists to make: rsync died with **exit 255**,
+which is ssh, and **builder0 went off the network at ~03:15** (confirmed independently: `No route to host`, 100%
+packet loss, and the orchestrator's own check died the same way).
+
+So, precisely: **the numbers below were read from the run's streamed stdout while it was still connected, not from
+copied artefacts.** The artefacts are on builder0 and did not come back. **Local `build/` is therefore NOT this
+run's and no number may be cited from it** — with one verified exception: `build/rig-hinge/` was produced *locally*
+at 01:09–01:10, and nothing in `build/` was written after 03:00 (checked with `find -newermt`), so the lead's frames
+are untouched by the failed copy.
 
 **`sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)` — exactly main's hash, unchanged**, with **1,273 passed,
 0 failed** (main's suite is 1,252; the trailer's 12 and the airship's 5 are the difference). **This is contract S2
