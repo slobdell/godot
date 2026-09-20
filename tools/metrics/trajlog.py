@@ -37,7 +37,7 @@ REQUIRED_FLOAT = [
 # log carries is the producer's choice, so a harness that can answer three of them is not forced to fake a fourth.
 # (Per-column rather than per-group since 2026-09-20: `facing_ordered` arrived after logs had already been written
 # with the other three, and refusing those logs to keep one rule simple would have thrown away the round's control.)
-OPTIONAL_BOOL = ["order_reverse", "creeping", "facing_ordered"]
+OPTIONAL_BOOL = ["order_reverse", "creeping", "facing_ordered", "facing_arc"]
 OPTIONAL_STR = ["phase"]
 
 REQUIRED_FIELDS = (
@@ -95,10 +95,14 @@ class Sample:
     order_reverse: Optional[bool] = None
     phase: Optional[str] = None
     creeping: Optional[bool] = None
-    ## The unit is flying an ordered arrival facing. Its arc is off-corridor BY CONSTRUCTION, and that is the unit
-    ## OBEYING, not a pathology (control + the orchestrator, 2026-09-20). Anything that scores "off corridor" or
-    ## "opposing tangent" counts these ticks as ordered and reports them BESIDE the fraction, never inside it.
+    ## The unit's current move ORDER carries an arrival facing. Order-level, and true for the whole journey.
     facing_ordered: Optional[bool] = None
+    ## The arrival ARC is active on this tick: the unit is being steered to an approach gate so it can come onto
+    ## the ordered heading. THIS is the flag that means "off corridor by construction, and that is obedience"
+    ## (control + the orchestrator, 2026-09-20). It is deliberately not the same field as `facing_ordered`: an
+    ## order carries its facing from the moment it is issued, so treating the whole journey as obedience would
+    ## launder every real reversal on the way there -- the opposite mistake, and the worse one.
+    facing_arc: Optional[bool] = None
 
     @property
     def ordered(self) -> bool:

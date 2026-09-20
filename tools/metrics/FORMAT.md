@@ -68,10 +68,37 @@ Unknown extra header keys are kept and passed through. They are documentation, n
 | `goal_x`, `goal_z` | float **or null** | the goal of the order the unit currently holds. Both null together when it holds no order |
 | `order_verb` | str **or null** | `move`, `attack_move`, `hold`, … Null when it holds no order |
 | `element` | int **or null** | element id, or null when it belongs to none |
-| `slot_x`, `slot_z` | float **or null** | its assigned slot in its element's formation. Both null together when it has none |
+| `slot_x`, `slot_z` | float **or null** | **the slot its leader ASSIGNED this tick, deformation included** (`Element.slots`) — *not* a shape reconstructed from a formation name. See below. Both null together when it has none |
 
 `null` is a value, not an absence: the **key must be present**. A sample missing `goal_x` is refused; a sample with
 `"goal_x": null` is a unit under no orders.
+
+#### `slot_x` / `slot_z` is the leader's INTENT, and that is what makes the residual fair
+
+The affine formation residual is measured against whatever you log here, so what you log decides what the metric
+means. **Log the slot the leader assigned on this tick** — `Element.slots[unit]`, or `place()`'s `offset` if you
+prefer the element frame (the fit absorbs any rigid change of frame, so the two give the same number). **Do not
+reconstruct a nominal shape from the formation name.**
+
+squad's A8 narrows a formation to fit a corridor with a *file morph* that is deliberately **not affine**: a wedge
+has pairs of slots at the same depth, and no 2×2 can separate two points that differ only across the heading while
+squeezing that axis toward zero — at the limit they land on top of each other, which is why a literal affine
+reading of "a wedge becomes a column" would stand hulls inside each other in the narrowest corridors. If the
+reference were the nominal wedge, an element that had **correctly** filed through a defile — every unit exactly on
+the slot its leader gave it — would read as a large residual: a false positive on the one manoeuvre A8 exists to
+produce. Against the commanded slot, every deformation the leader ordered is free, affine or not, and the residual
+measures only departure from the element's own intent.
+
+Two consequences, both reported rather than hidden:
+
+- **An element in single file has collinear slots.** The affine *coefficients* are then ambiguous but the residual
+  is not, so the fit is an orthogonal projection and such elements are still measured — a unit standing out of the
+  file is seen. `make metrics` prints the reference `rank` (3 a real shape, 2 a file, 1 every slot in one place),
+  because a small residual at rank 2 means something different from a small residual at rank 3.
+- **Elements of three or fewer are refused, never reported as 0.000.** Three points determine a 2-D affine map
+  exactly, so their residual is identically zero. They appear under `too_small`. (Attrition produces them, so a
+  falsifier needs its own answer there — squad's is geometric: zero crossings and zero rank inversions, which
+  hold from two members upward.)
 
 ### Optional in every sample — each one all-or-nothing
 

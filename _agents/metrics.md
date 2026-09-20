@@ -125,9 +125,20 @@ positions and report the residual RMS in metres.
 spread out, or been squeezed through a corridor is still *in formation*; it goes positive only when a unit has left
 its slot in a way the shared deformation does not explain — which is the thing a player actually sees.
 
+**The reference is the slot the leader ASSIGNED that tick** (`Element.slots`), never a shape reconstructed from a
+formation name — see FORMAT.md. squad's A8 files a formation through a corridor with a morph that is deliberately
+not affine, and against a nominal shape an element that had *correctly* filed would read as a large residual: a
+false positive on the one manoeuvre A8 exists to produce. Against the commanded slot, every deformation the leader
+ordered is free and only departure from the element's own intent is measured.
+
 Reported only for elements of **four or more members**: a 2-D affine fit has 6 parameters and 3 points determine it
 exactly, so a 3-unit element's residual is identically zero and would read as a perfect formation. Smaller elements
 are counted under `refused_too_small`, never reported as 0.000.
+
+The fit is an **orthogonal projection**, not a 3×3 solve, so an element filed into single file — whose slots are
+collinear and whose affine coefficients are therefore ambiguous — is still measured rather than refused. The
+report carries the reference `rank` (3 a real shape, 2 a file, 1 every slot in one place) so a reader knows why a
+residual is small.
 
 Known answer: on the unit square, displacing one vertex by *d* leaves every vertex out by *d*/4, so the RMS is *d*/4
 — the brief's 3 m is **0.750 m**.

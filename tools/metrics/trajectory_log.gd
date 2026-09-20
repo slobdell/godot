@@ -155,22 +155,38 @@ func _write(tank: Tank, tick: int) -> void:
 			tank.global_position.x, tank.global_position.z, _unwrapped(tank, key), speed]
 		+ '"gear":%d,"goal_x":%s,"goal_z":%s,"order_verb":%s,"element":%s,"slot_x":%s,"slot_z":%s,' \
 		% [signi(int(signf(speed))) if absf(speed) >= GEAR_SPEED else 0, goal_x, goal_z, verb, element, slot_x, slot_z]
-		+ '"order_reverse":%s,"phase":%s,"creeping":%s,"facing_ordered":%s}' \
+		+ '"order_reverse":%s,"phase":%s,"creeping":%s,"facing_ordered":%s,"facing_arc":%s}' \
 		% ["true" if bool(move.get("reverse", false)) else "false",
 			JSON.stringify(String(reading.get("phase", "none"))), "true" if creeping else "false",
-			"true" if _facing_ordered(move) else "false"]
+			"true" if _facing_ordered(move) else "false", _facing_arc(reading)]
 	)
 	_lines += 1
 	if _buffer.size() >= FLUSH_EVERY:
 		_flush()
 
 
-## Is this unit flying an ORDERED arrival facing? Its arc is then off-corridor by construction, and that is the
-## unit obeying, not a pathology (FORMAT.md, ruled 2026-09-20 with control). Read from the move order's own
-## `facing` key -- control's right-drag puts it there, and it is absent on every order that did not ask for one,
-## so this is false for the whole world that existed before right-drag shipped.
+## Does this unit's ORDER carry an arrival facing? One key end to end, confirmed by nav 2026-09-20:
+## `UnitCommand.make(..., {"facing": [x, z]})` -> `Orders` copies it onto the order -> `TankBrain._arrive_facing`
+## copies it onto the `move_to` -> `Movement._approach_gate` reads `order["facing"]`.
+## ORDER-LEVEL: true from the moment the order is issued, for the whole journey.
 func _facing_ordered(move: Dictionary) -> bool:
 	return move.has("facing") and move.get("facing") != null
+
+
+## Is the arrival ARC live on THIS tick -- is the unit being steered at an approach gate so it can come onto the
+## ordered heading? That, and not `_facing_ordered`, is what "off corridor by construction, and that is obedience"
+## means (FORMAT.md, ruled 2026-09-20 with control).
+##
+## `Movement._approach_gate` computes it per tick and keeps it nowhere, and `game/ai/movement.gd` is nav's file,
+## so this reads an OPTIONAL `facing_arc` key from `Movement.state(tank)` and emits `null` until nav publishes it.
+## Null, deliberately, and never `false`: a column that quietly says "no arc" on every tick is exactly how a
+## falsifier ends up charging A6 for obedience while looking like it had the data. `make metrics` refuses to
+## publish an off-corridor verdict from a log whose arcs are null.
+func _facing_arc(reading: Dictionary) -> String:
+	var live: Variant = reading.get("facing_arc")
+	if live == null:
+		return "null"
+	return "true" if bool(live) else "false"
 
 
 ## The heading, ACCUMULATED and never re-wrapped. Round 8's 20.7 degree "overshoot" was a wrap bug

@@ -436,30 +436,43 @@ class CuspDensityTest(unittest.TestCase):
         self.assertEqual(out.unclassified, 1)
         self.assertEqual(out.ordered + out.creep + out.unexplained, 0)
 
-    def test_an_ordered_arrival_facing_is_ORDERED_and_never_unexplained(self):
+    def test_a_LIVE_arrival_arc_is_ORDERED_and_never_unexplained(self):
         """control + the orchestrator, 2026-09-20: a unit flying an ordered arrival facing is off-corridor BY
         CONSTRUCTION, and that is the unit OBEYING. A reversal inside that arc must land in `ordered`, because
         `unexplained` is the bucket A6's falsifier reads -- charging it for the obedience control just shipped
         would fail the contract for doing the right thing."""
         xs = [0.0, 4.0, 8.0, 6.0, 4.0]
-        samples = track(xs, order_reverse=False, phase="none", creeping=False, facing_ordered=False)
-        plain = cusp_density(samples, TICK_RATE)
+        kw = dict(order_reverse=False, phase="none", creeping=False, facing_ordered=False, facing_arc=False)
+        plain = cusp_density(track(xs, **kw), TICK_RATE)
         self.assertEqual((plain.cusps, plain.unexplained, plain.ordered), (1, 1, 0))
+        samples = track(xs, **kw)
         for s in samples:
-            s.facing_ordered = True
+            s.facing_arc = True
         arc = cusp_density(samples, TICK_RATE)
         self.assertEqual((arc.cusps, arc.unexplained, arc.ordered), (1, 0, 1))
 
-    def test_ordered_facing_ticks_are_reported_BESIDE_the_counts_not_inside_them(self):
-        # It is a separate tally, not a subtraction from anything: a reader must be able to see how much of the
-        # run was under an ordered facing and judge a fraction for themselves.
-        xs = [0.0, 4.0, 8.0, 6.0, 4.0, 8.0]
-        samples = track(xs, order_reverse=False, phase="none", creeping=False, facing_ordered=False)
-        for s in samples[2:]:
-            s.facing_ordered = True
+    def test_an_order_that_merely_CARRIES_a_facing_excuses_nothing(self):
+        """The other direction of the same mistake, and the harder one to catch. An order carries its facing from
+        the moment it is issued, so treating `facing_ordered` as obedience would excuse every real reversal on the
+        long drive to the gate -- a metric that stops seeing the thing it exists to see."""
+        xs = [0.0, 4.0, 8.0, 6.0, 4.0]
+        samples = track(xs, order_reverse=False, phase="none", creeping=False,
+                        facing_ordered=True, facing_arc=False)
         out = cusp_density(samples, TICK_RATE)
-        self.assertEqual(out.facing_ordered_ticks, 4)
+        self.assertEqual((out.cusps, out.unexplained, out.ordered), (1, 1, 0))
+
+    def test_both_facing_tallies_are_reported_BESIDE_the_counts_not_inside_them(self):
+        # Separate tallies, not subtractions from anything: a reader must be able to see how much of the run was
+        # under an order carrying a facing, how much had the arc live, and judge a fraction for themselves.
+        xs = [0.0, 4.0, 8.0, 6.0, 4.0, 8.0]
+        samples = track(xs, order_reverse=False, phase="none", creeping=False,
+                        facing_ordered=True, facing_arc=False)
+        for s in samples[4:]:
+            s.facing_arc = True
+        out = cusp_density(samples, TICK_RATE)
         self.assertEqual(out.ticks, 6)
+        self.assertEqual(out.facing_ordered_ticks, 6)
+        self.assertEqual(out.facing_arc_ticks, 2)
 
     def test_with_the_cause_columns_the_cusps_are_split(self):
         xs = [0.0, 4.0, 8.0, 6.0, 4.0, 8.0, 12.0]
@@ -720,16 +733,59 @@ class AffineFormationResidualTest(unittest.TestCase):
         actual[0] = (base[0][0] + 3.0, base[0][1])
         self.assertAlmostEqual(affine_residual_rms(SQUARE, actual), 0.75, places=9)
 
+    def test_the_reference_is_the_LEADER_S_SLOT_so_a_NON_AFFINE_deformation_is_free(self):
+        """squad, 2026-09-20: A8 narrows a formation to fit a corridor with a *file morph* that is deliberately
+        NOT affine -- no 2x2 can separate two slots at the same depth while squeezing that axis toward zero, so
+        "a wedge becomes a column" is false for an affine map. If the residual's reference were the nominal shape,
+        a wedge that had correctly filed through a defile -- every unit exactly where its leader put it -- would
+        read as a large residual: a false positive on the one manoeuvre A8 exists to produce.
+
+        It does not, because the reference is whatever the producer logged in `slot_x`/`slot_z`, and that is
+        `Element.slots` -- the slot the leader ASSIGNED this tick, deformation included. The residual measures
+        departure from the element's own intent, and every deformation the leader commanded is free, affine or
+        not. This test is the guarantee squad asked for."""
+        wedge = WEDGE[:5]
+        # The file morph: the pairs that shared a depth in the wedge are pulled apart ALONG the heading while the
+        # shape closes ACROSS it, until the element is in single file.
+        filed = [(0.0, -3.0 * i) for i in range(5)]
+        # No affine map takes the wedge to that file -- confirm the fit genuinely cannot reproduce it.
+        self.assertGreater(affine_residual_rms(wedge, filed), 0.5)
+        # And confirm that is irrelevant, because the reference is the COMMANDED slot and the units are on it.
+        self.assertAlmostEqual(affine_residual_rms(filed, filed), 0.0, places=9)
+        # A unit 3 m out of the file is still measured, in the middle of that same non-affine deformation --
+        # which is only true because the fit is an orthogonal projection: a file's slots are COLLINEAR, and the
+        # normal-equations solve this replaced refused them outright.
+        strayed = list(filed)
+        strayed[0] = (filed[0][0] + 3.0, filed[0][1])
+        self.assertGreater(affine_residual_rms(filed, strayed), 0.5)
+        self.assertEqual(metrics.reference_rank(filed), 2)
+        self.assertEqual(metrics.reference_rank(wedge), 3)
+
     def test_three_members_are_refused_because_three_points_fit_exactly(self):
         with self.assertRaises(ValueError) as caught:
             affine_residual_rms(WEDGE[:3], [(9.0, 9.0), (1.0, 2.0), (3.0, 4.0)])
         self.assertIn("3 points determine it exactly", str(caught.exception))
 
-    def test_collinear_slots_are_refused_not_fitted(self):
+    def test_a_single_FILE_still_measures_departure_across_the_line(self):
+        """A8's headline manoeuvre files an element into a line, and a line's slots are COLLINEAR. The affine
+        COEFFICIENTS are then ambiguous, but the residual is not, so refusing these elements would blind the
+        metric exactly where squad needs it. Rank 2 is reported so a reader knows why."""
         line = [(0.0, 0.0), (1.0, 0.0), (2.0, 0.0), (3.0, 0.0)]
-        with self.assertRaises(ValueError) as caught:
-            affine_residual_rms(line, [(0.0, 0.0), (1.0, 1.0), (2.0, 0.0), (3.0, 1.0)])
-        self.assertIn("degenerate", str(caught.exception))
+        self.assertEqual(metrics.reference_rank(line), 2)
+        self.assertAlmostEqual(affine_residual_rms(line, line), 0.0, places=12)
+        # Sliding along the line is free (it is a scale, which is affine); stepping off it is not.
+        self.assertAlmostEqual(
+            affine_residual_rms(line, [(0.0, 0.0), (2.0, 0.0), (4.0, 0.0), (6.0, 0.0)]), 0.0, places=12)
+        self.assertGreater(affine_residual_rms(line, [(0.0, 0.0), (1.0, 3.0), (2.0, 0.0), (3.0, 0.0)]), 0.5)
+
+    def test_slots_all_in_one_place_measure_the_spread_around_it(self):
+        """Rank 1. Still not a refusal: if the leader put every slot in one spot, how far the element is from
+        being in one spot is exactly the question, and it is the spread about the mean."""
+        point = [(5.0, 5.0)] * 4
+        self.assertEqual(metrics.reference_rank(point), 1)
+        self.assertAlmostEqual(affine_residual_rms(point, point), 0.0, places=12)
+        spread = [(5.0, 6.0), (5.0, 4.0), (6.0, 5.0), (4.0, 5.0)]
+        self.assertAlmostEqual(affine_residual_rms(point, spread), 1.0, places=12)
 
     def test_it_is_reported_per_element_from_a_log(self):
         lines = [trajlog.header_line("c", "m", TICK_RATE, "synthetic")]
@@ -754,6 +810,7 @@ class AffineFormationResidualTest(unittest.TestCase):
         out = metrics.formation_residual_by_element(log)
         self.assertAlmostEqual(out[7].mean, 0.75, places=12)
         self.assertEqual(out[7].ticks, 3)
+        self.assertEqual(out[7].min_rank, 3)
         self.assertEqual(out[8].ticks, 0)
         self.assertEqual(out[8].refused_too_small, 3)
         self.assertIsNone(out[8].mean)

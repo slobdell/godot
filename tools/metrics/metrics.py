@@ -224,10 +224,13 @@ class CuspSummary:
     unexplained: int = 0
     unclassified: int = 0
     ticks: int = 0
-    ## Ticks flown under an ordered arrival facing. Reported BESIDE every fraction, never inside it: an arrival arc
-    ## at the end of a dragged move is off-corridor by construction and is the unit OBEYING (control + the
-    ## orchestrator, 2026-09-20). A statistic that charges A6's falsifier for obedience is the wrong statistic.
+    ## Ticks under an ORDER that carries a facing, and -- separately -- ticks on which the arrival ARC was live.
+    ## Both reported BESIDE every fraction, never inside it: an arrival arc is off-corridor by construction and is
+    ## the unit OBEYING (control + the orchestrator, 2026-09-20), while an order that merely carries a facing says
+    ## nothing about the tick in front of you. A statistic that charges A6's falsifier for obedience is wrong; one
+    ## that excuses a whole journey because it ends in an arc is wrong in the other direction and harder to catch.
     facing_ordered_ticks: int = 0
+    facing_arc_ticks: int = 0
     tick_rate: int = 30
 
     @property
@@ -246,6 +249,7 @@ class CuspSummary:
         self.unclassified += other.unclassified
         self.ticks += other.ticks
         self.facing_ordered_ticks += other.facing_ordered_ticks
+        self.facing_arc_ticks += other.facing_arc_ticks
         self.tick_rate = other.tick_rate or self.tick_rate
 
 
@@ -269,6 +273,9 @@ def signed_speed(previous: Sample, current: Sample, dt: float) -> float:
 def cusp_density(samples: Sequence[Sample], tick_rate: int) -> CuspSummary:
     out = CuspSummary(tick_rate=tick_rate)
     out.ticks = len(samples)
+    # Per-TICK tallies, over every sample: a cusp needs a pair of samples, but "was the arc live" does not.
+    out.facing_ordered_ticks = sum(1 for s in samples if s.facing_ordered)
+    out.facing_arc_ticks = sum(1 for s in samples if s.facing_arc)
     dt = 1.0 / float(tick_rate)
     last_sign = 0
     for i in range(1, len(samples)):
@@ -276,8 +283,6 @@ def cusp_density(samples: Sequence[Sample], tick_rate: int) -> CuspSummary:
         if current.tick != previous.tick + 1:
             last_sign = 0
             continue
-        if current.facing_ordered:
-            out.facing_ordered_ticks += 1
         speed = signed_speed(previous, current, dt)
         if abs(speed) < CUSP_SPEED_MPS:
             continue  # below the floor: a stationary unit's jitter is not a cusp
@@ -288,12 +293,14 @@ def cusp_density(samples: Sequence[Sample], tick_rate: int) -> CuspSummary:
                 current.order_reverse is None
                 and current.phase is None
                 and current.creeping is None
-                and current.facing_ordered is None
+                and current.facing_arc is None
             ):
                 out.unclassified += 1
-            elif current.order_reverse or current.facing_ordered:
-                # An ordered arrival facing is an ORDER. A reversal inside its arc is the unit doing as it was
-                # told, and it must never land in `unexplained` -- that is the bucket a falsifier reads.
+            elif current.order_reverse or current.facing_arc:
+                # A live arrival arc is the unit doing as it was told, so a reversal inside it must never land in
+                # `unexplained` -- that is the bucket a falsifier reads. Note `facing_arc`, NOT `facing_ordered`:
+                # an order carries its facing from the moment it is issued, and excusing the whole journey would
+                # hide every real reversal on the way to the gate.
                 out.ordered += 1
             elif current.creeping:
                 out.creep += 1
@@ -458,55 +465,73 @@ def sparc_over_log(
 
 
 def affine_residual_rms(nominal: Sequence[Tuple[float, float]], actual: Sequence[Tuple[float, float]]) -> float:
-    """RMS residual of the best affine map from the nominal slot geometry onto the actual positions (Zhao 2018).
+    """RMS residual of the best affine map from the reference slot geometry onto the actual positions (Zhao 2018).
 
-    Exactly zero for any translation, rotation, scale or shear of the nominal shape — an element that has wheeled,
+    Exactly zero for any translation, rotation, scale or shear of the reference — an element that has wheeled,
     spread out or been squeezed by a corridor is still IN formation. Positive only when a unit has left its slot
     in a way the shared deformation does not explain, which is the thing a player sees.
 
-    Least squares in closed form: each output coordinate is an ordinary regression on [nx, nz, 1], solved by
-    Gaussian elimination on the 3x3 normal equations.
+    **The reference is whatever the producer logged in `slot_x`/`slot_z`: the slot the leader ASSIGNED this tick,
+    deformation included** (`Element.slots`), and never a shape reconstructed from a formation name. squad's A8
+    narrows a formation with a *file morph* that is deliberately NOT affine — no 2x2 can separate two slots at the
+    same depth while squeezing that axis toward zero, so "a wedge becomes a column" is impossible for an affine
+    map. With the nominal shape as reference, a wedge that had correctly filed through a defile would read as a
+    large residual: a false positive on the one manoeuvre A8 exists to produce. Against the commanded slot, every
+    deformation the leader ordered is free, affine or not.
+
+    Solved by ORTHOGONAL PROJECTION (modified Gram-Schmidt on [nx, nz, 1]) rather than by the 3x3 normal
+    equations. The two agree wherever the reference is well conditioned, but the projection is also defined when
+    it is not — and the case that matters is A8's headline manoeuvre: **an element filed into single file has
+    COLLINEAR slots**, which makes the coefficients ambiguous while leaving the residual perfectly well defined.
+    The earlier solve refused those elements outright, which would have blinded the metric exactly when squad
+    most needs it. A unit standing out of the file is still measured.
     """
     m = len(nominal)
     if m != len(actual):
-        raise ValueError("%d nominal slots against %d actual positions" % (m, len(actual)))
+        raise ValueError("%d reference slots against %d actual positions" % (m, len(actual)))
     if m < FORMATION_MIN_MEMBERS:
         raise ValueError(
             "an affine fit needs %d members to leave a residual (3 points determine it exactly), got %d"
             % (FORMATION_MIN_MEMBERS, m)
         )
-    basis = [(nx, nz, 1.0) for nx, nz in nominal]
-    # Normal equations: (B^T B) c = B^T y, one solve per output coordinate.
-    ata = [[sum(basis[i][r] * basis[i][c] for i in range(m)) for c in range(3)] for r in range(3)]
+    columns = [[nx for nx, _ in nominal], [nz for _, nz in nominal], [1.0] * m]
+    ortho: List[List[float]] = []
+    for column in columns:
+        vector = list(column)
+        original = math.sqrt(sum(v * v for v in vector))
+        for basis in ortho:
+            scale = sum(v * b for v, b in zip(vector, basis))
+            vector = [v - scale * b for v, b in zip(vector, basis)]
+        length = math.sqrt(sum(v * v for v in vector))
+        # Dependent on what came before (a collinear or coincident reference): drop it. Relative to the column's
+        # own magnitude, so a formation measured in metres and one measured in centimetres decide the same way.
+        if length > 1e-9 * max(original, 1.0):
+            ortho.append([v / length for v in vector])
     residual_sq = 0.0
-    solutions = []
     for axis in (0, 1):
-        atb = [sum(basis[i][r] * actual[i][axis] for i in range(m)) for r in range(3)]
-        solutions.append(_solve3(ata, atb))
-    for i in range(m):
-        for axis in (0, 1):
-            coefficients = solutions[axis]
-            predicted = sum(coefficients[r] * basis[i][r] for r in range(3))
-            residual_sq += (actual[i][axis] - predicted) ** 2
+        residual = [point[axis] for point in actual]
+        for basis in ortho:
+            scale = sum(r * b for r, b in zip(residual, basis))
+            residual = [r - scale * b for r, b in zip(residual, basis)]
+        residual_sq += sum(r * r for r in residual)
     return math.sqrt(residual_sq / m)
 
 
-def _solve3(matrix: Sequence[Sequence[float]], rhs: Sequence[float]) -> List[float]:
-    """Gaussian elimination with partial pivoting on a 3x3 system. Raises when the nominal shape is degenerate
-    (all slots collinear), rather than returning a fit that means nothing."""
-    a = [list(matrix[r]) + [rhs[r]] for r in range(3)]
-    for col in range(3):
-        pivot = max(range(col, 3), key=lambda r: abs(a[r][col]))
-        if abs(a[pivot][col]) < 1e-12:
-            raise ValueError("the nominal slot geometry is degenerate (collinear or coincident slots)")
-        a[col], a[pivot] = a[pivot], a[col]
-        for r in range(3):
-            if r == col:
-                continue
-            factor = a[r][col] / a[col][col]
-            for c in range(col, 4):
-                a[r][c] -= factor * a[col][c]
-    return [a[r][3] / a[r][r] for r in range(3)]
+def reference_rank(nominal: Sequence[Tuple[float, float]]) -> int:
+    """How many independent directions the reference slot geometry spans: 3 for a real shape, 2 for an element
+    filed into a line, 1 for slots all in one place. Reported so a reader can see WHY a residual is small."""
+    columns = [[nx for nx, _ in nominal], [nz for _, nz in nominal], [1.0] * len(nominal)]
+    ortho: List[List[float]] = []
+    for column in columns:
+        vector = list(column)
+        original = math.sqrt(sum(v * v for v in vector))
+        for basis in ortho:
+            scale = sum(v * b for v, b in zip(vector, basis))
+            vector = [v - scale * b for v, b in zip(vector, basis)]
+        length = math.sqrt(sum(v * v for v in vector))
+        if length > 1e-9 * max(original, 1.0):
+            ortho.append([v / length for v in vector])
+    return len(ortho)
 
 
 @dataclass
@@ -516,7 +541,9 @@ class FormationSummary:
     values: List[float] = field(default_factory=list)
     members_seen: int = 0
     refused_too_small: int = 0
-    refused_degenerate: int = 0
+    ## The lowest reference rank seen: 3 is a real shape, 2 an element filed into a line, 1 slots all in one
+    ## place. A small residual at rank 2 means something different from a small residual at rank 3.
+    min_rank: int = 3
 
     @property
     def mean(self) -> Optional[float]:
@@ -528,7 +555,7 @@ class FormationSummary:
         self.values.extend(other.values)
         self.members_seen = max(self.members_seen, other.members_seen)
         self.refused_too_small += other.refused_too_small
-        self.refused_degenerate += other.refused_degenerate
+        self.min_rank = min(self.min_rank, other.min_rank)
 
 
 def formation_residual_by_element(log: TrajectoryLog) -> Dict[int, FormationSummary]:
@@ -549,11 +576,8 @@ def formation_residual_by_element(log: TrajectoryLog) -> Dict[int, FormationSumm
         members.sort(key=lambda s: s.unit)
         nominal = [(s.slot_x, s.slot_z) for s in members]
         actual = [(s.x, s.z) for s in members]
-        try:
-            value = affine_residual_rms(nominal, actual)
-        except ValueError:
-            summary.refused_degenerate += 1
-            continue
+        value = affine_residual_rms(nominal, actual)
+        summary.min_rank = min(summary.min_rank, reference_rank(nominal))
         summary.ticks += 1
         summary.total += value
         summary.values.append(value)
@@ -613,6 +637,7 @@ def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, ob
             "cusps_unexplained": row.cusps.unexplained,
             "cusps_unclassified": row.cusps.unclassified,
             "facing_ordered_seconds": _round(row.cusps.facing_ordered_ticks / float(log.header.tick_rate), 1),
+            "facing_arc_seconds": _round(row.cusps.facing_arc_ticks / float(log.header.tick_rate), 1),
             "agent_minutes": _round(row.cusps.agent_minutes, 2),
             "sparc_mean": _round(row.sparc.mean, 4),
             "sparc_windows": row.sparc.windows,
@@ -658,7 +683,7 @@ def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, ob
                 "ticks": summary.ticks,
                 "members": summary.members_seen,
                 "refused_too_small": summary.refused_too_small,
-                "refused_degenerate": summary.refused_degenerate,
+                "reference_rank": summary.min_rank,
             }
             for element, summary in sorted(elements.items())
         },
