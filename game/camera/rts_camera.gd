@@ -145,6 +145,14 @@ const VISION_FRAME_LIFT := 0.16
 ## below centre (squad's control-scale-shots frame) - and a symmetric bound (VISION_FRAME_INSET, 0.78) let the lean
 ## toward the reach park the selected squad underneath them. 0.40 leaves room for the hulls above the card.
 const VISION_FRAME_BOTTOM := 0.40
+## Round 9, discharging round 8's Invariant 0 debt: **the bound is READ from the HUD, not copied from it.** 0.40 above
+## was measured off a frame once ("their top is at y 778") and then lived in the camera as a number that could not
+## know when the card changed. Deriving it from the panel's own constants is not good enough either: at 1920x1080
+## those constants now put the chips' top at y 832, not 778, so a formula would have been confidently wrong in a
+## second way. This asks the laid-out NODES where they actually are, every time, so it cannot drift from what is
+## drawn whatever anyone does to the card. Invalid = the constant above, which is what a build with no HUD gets.
+## Returns the topmost screen y that the command card and its chips cover.
+var hud_bottom := Callable()
 ## L4 zoom-out cap: at least this much of the screen's ground must be ground the force can see…
 const VISION_SEEN_FRACTION := 0.7
 ## …sampled on this grid of screen points, …
@@ -657,6 +665,18 @@ func _update_yaw_follow(delta: float) -> void:
 	yaw = wrapf(yaw + clampf(gap, -step, step), -PI, PI)
 
 
+## How far below the screen's centre a lean may put the squad, as a fraction of the half-height: derived from where
+## the HUD is actually laid out, or VISION_FRAME_BOTTOM when there is no HUD to ask.
+func frame_bottom() -> float:
+	if not hud_bottom.is_valid() or camera == null or camera.get_viewport() == null:
+		return VISION_FRAME_BOTTOM
+	var height: float = camera.get_viewport().get_visible_rect().size.y
+	var top: float = hud_bottom.call()
+	if height <= 0.0 or top <= 0.0:
+		return VISION_FRAME_BOTTOM
+	return clampf((top - height * 0.5) / (height * 0.5), 0.0, VISION_FRAME_INSET)
+
+
 ## The yaw that looks along `direction` on the ground (0 looks north, -Z; positive turns left: trip-up 2).
 static func yaw_facing(direction: Vector3) -> float:
 	return atan2(-direction.x, -direction.z)
@@ -881,7 +901,7 @@ func _update_tracking() -> void:
 	var goal: Array
 	if _track == Track.ORDER and points.size() >= 2:
 		goal = RtsCamera.order_pose(points.slice(0, points.size() - 1), points.back(), yaw, _aspect(), _track_floor_zoom,
-				FRAME_INSET, pitch)
+				FRAME_INSET, pitch, frame_bottom())
 	else:
 		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, FRAME_INSET, pitch)
 	focus = goal[0]
@@ -891,8 +911,11 @@ func _update_tracking() -> void:
 ## [focus, zoom] for order tracking: `units` and `destination` together when that fits under TRACK_MAX_ZOOM
 ## (or the player's own zoom, if higher); otherwise the units stay framed at that zoom and the view leans as
 ## far toward the destination as it can while keeping them all on screen. Pure, for tests.
+## `bottom` is how far below centre a lean may put the squad; the caller passes `frame_bottom()`, which reads the
+## HUD. It stays a PARAMETER so this helper is still pure and testable (the file's convention), rather than the
+## static reaching into instance state.
 static func order_pose(units: Array, destination: Vector3, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM,
-		inset := FRAME_INSET, pitch_deg := DEFAULT_PITCH_DEG) -> Array:
+		inset := FRAME_INSET, pitch_deg := DEFAULT_PITCH_DEG, bottom := VISION_FRAME_BOTTOM) -> Array:
 	var both := RtsCamera.frame_pose(units + [destination], heading, aspect, floor_zoom, inset, pitch_deg)
 	var ceiling := maxf(TRACK_MAX_ZOOM, floor_zoom)
 	if float(both[1]) <= ceiling:
@@ -915,7 +938,7 @@ static func order_pose(units: Array, destination: Vector3, heading: float, aspec
 	for i in 12:
 		var mid := (low + high) / 2.0
 		if RtsCamera.shows_all(corners, start + toward * mid, heading, level, aspect, inset, pitch_deg,
-				minf(inset, VISION_FRAME_BOTTOM)):
+				minf(inset, bottom)):
 			low = mid
 		else:
 			high = mid
@@ -963,7 +986,8 @@ func _update_vision_tracking() -> void:
 	var destination: Variant = _vision_state.get("destination")
 	var goal: Array
 	if destination is Vector3:
-		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch)
+		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch,
+				frame_bottom())
 	else:
 		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch)
 	zoom = minf(minf(float(goal[1]), vision_zoom), RtsCamera.level_for(auto_frame_max_m))
