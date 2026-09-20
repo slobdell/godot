@@ -167,7 +167,43 @@ directly.
 
 ## Status
 
-> ## ⚠ ITEM 4 IS NOT DONE, AND THERE ARE NO NEW FRAMES. READ THIS BEFORE THE FRAME PATHS BELOW.
+> ## ITEM 4, PART DONE: THE HUD ON THE RESIZED ROSTER. TWO FINDINGS, ONE IS YOURS TO RULE ON.
+>
+> **Frames, shot LOCALLY at 08:28 while builder0 was down** (it dropped mid-sweep; `camera-looks` is still owed):
+>
+> ```
+> build/control-playtest/1920x1080/8_whole_army.png     <- the one to look at
+> build/control-playtest/1920x1080/*.png                 (12 frames, and 1280x720 beside it)
+> ```
+>
+> **FINDING 1 — the selection rings have become a cloverleaf, and this is your call.** A ring's radius is
+> `max(hull.x, hull.z) * 0.75`. The Condemned tank went **3.60 m → 8.62 m long** but is still **2.40 m wide**, so
+> its ring went from **5.4 m across to 12.9 m** — for a vehicle you could park two abreast inside it. In
+> `8_whole_army.png` three neighbouring units' rings visibly intersect and you cannot tell which ring belongs to
+> which vehicle. **It is not a bug, it is a constant that was right for a 3.6 m hull**, and the fix is a design
+> choice rather than a number: (a) bound the hull's own circumscribing circle instead of its longest axis
+> (`hypot(x,z)/2`, which gives 4.47 m for the tank against today's 6.47) — cheapest, still overlaps at formation
+> spacing; (b) an **oriented** marker (an ellipse or a rounded box along the hull) that bounds a long narrow
+> vehicle tightly — the honest answer for a roster spanning 2.93–14.0 m, and a real change to the marker mesh;
+> (c) leave it. **I did not change it blind:** at 08:45 with one display I could not have re-shot and LOOKED at a
+> new constant before you read this, and a ring I have not seen is exactly what this stream has spent the night
+> refusing to hand over.
+>
+> **FINDING 2 — a facing drag on a WHOLE SQUAD lost its heading, and that is mine, not CP2's.** The playtest I
+> added for item 1 ran for the first time here and failed: `drag_px 127`, a good ground direction, and
+> `facing: []` on the order. A whole-element move goes down the **task** path, and `RtsControls.assign_task` copied
+> only `to` and `target` into the task — so the lead's commonest order, a squad with a drawn heading, silently
+> became a plain move. **Control's half is fixed** (the task now carries `facing`); **the last mile is squad's** —
+> the element layer has a facing channel (`element.gd:493`) but nothing reads `task["facing"]` yet, so the per-unit
+> orders will not carry it until squad wires it. The playtest now reports **which half** failed
+> (`facing_drag_reaches_the_task`). My unit tests missed it because they all order single units or pairs that are
+> not elements, and those take the direct path.
+>
+> **Still owed:** `REMOTE_SLOTS=6 make remote T=camera-looks` the moment builder0 answers, and the rest of the
+> checklist under *Still owed* below (radar blips across a 2.93–14.0 m spread, the cutaway against the 6.18 m
+> Sonic Emitter, `MIN_DISTANCE` 16 m against the 14 m War Rig, the card lean derived rather than copied).
+
+> ## ⚠ (superseded by the section above) ITEM 4 IS NOT DONE, AND THERE ARE NO NEW FRAMES.
 >
 > **CP2 is merged and on this branch** (`914dc7d3`, the roster really is resized: tank hull **8.62 m**, Sonic
 > Emitter **6.18 m** tall, Rat Rod **2.93 m**). The post-CP2 camera sweep **started and did not finish**:
