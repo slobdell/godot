@@ -314,31 +314,65 @@ run**, so commit, machine, seed and load are not confounds between them; under-w
 points across two independent implementations). `oscillating_units` is NOT — one unit on yard flips between 27 and
 28 with a ±1-sample change in window length while the share holds.
 
-#### T1 (item 5): what is measured, decided and built
+#### T1 (item 5): the measurement reframed the work
 
-- **(a) the BEFORE.** `make check-timed` runs the same targets in the same order one at a time, recording
-  per-target wall-clock and peak RSS plus the machine, its cores, MemAvailable, load and how many other Godot
-  processes were already up. `CHECK_TARGETS` is now ONE variable used by both `check` and `check-timed`, so a
-  target cannot be measured and not run. Running on builder0 now.
-- **(b) the dependency map**, read out of the recipes and written into `mk/core.mk` beside the code it justifies.
-  Four constraints and no more: `import` (the only `.godot` writer, a shared prerequisite so `-j` builds it once);
-  `SMOKE_NET_PORT` {net-smoke, combat-smoke}; `SMOKE_BROKER_PORT` {relay-smoke, lobby-smoke};
-  `user://garage_scratch/my_army.json` {garage-smoke, army-loop-smoke}. Deliberately *not* constraints, with the
-  reason: the sim hash (separate processes on a fixed tick hash identically — and CP3 proves it rather than
-  assuming it) and `build/` logs (every target writes its own named file).
-- **(c) the schedule.** `check` hands the list to one sub-make with `-j$(CHECK_JOBS) -Otarget`; the three
-  exclusion groups are order-only prerequisites between `_cp-*` wrappers, so the chains live in `check`'s own
-  block and `make combat-smoke` does not silently start running net-smoke for every caller forever. `CHECK_JOBS`
-  and `LINT_JOBS` are **derived** from `tools/slot.sh --jobs <mb-per-job>`, which reads MemAvailable and nproc and
-  keeps a quarter back — never hard-coded (lesson 148), and living in slot.sh because "how much can this machine
-  take" is one fact with one owner.
-- **`lint` now fans out, and this is the biggest single win.** Two things measured first, because the lint lock
-  reads like a ban on any concurrency here and is not: (1) `--check-only` **never writes `.godot`** — snapshotted
-  all 911 cache files, five passes, zero change; the exclusive writer is `import`, and re-reading the incident,
-  the second `make lint` ran `import` FIRST, which is what corrupted the first lint's reads. (2) Serial and `-P6`
-  give **byte-identical findings** — 24 files, 35 s → 11 s, and then repeated with a deliberately broken file so
-  the comparison was not an empty one (lesson 147). At 1.82 s of Godot start-up × 531 files, serial lint was ~16
-  minutes on the laptop. The lock stays: a second `make lint` still runs `import` underneath the first.
+**`test` is 2388 s of a 2584 s check — 92% of it.** Full serial profile, builder0, `c21d0256`, 12 cores,
+12.4 GB available, load 0.42, 5 other Godot processes (`build/check/timings.tsv`, copied into references):
+
+| target | s | peak RSS |
+|---|---|---|
+| **test** | **2388** | 427 MB |
+| announcer-check | 80 | 252 MB |
+| audio-check | 30 | **919 MB** (the ceiling) |
+| army-loop-smoke | 24 | 272 MB |
+| combat-smoke | 19 | 250 MB |
+| determinism / relay-smoke | 11 each | 257 / 249 MB |
+| garage-smoke | 7 | 266 MB |
+| net-smoke / sim-baseline | 4 each | 250 / 273 MB |
+| broker-smoke / lobby / match-smoke / match-pytest | 0–2 each | 17–86 MB |
+| **TOTAL** | **2584** | |
+
+**Round 8's framing was aimed at the wrong thing.** *"The targets in check are largely independent, run them
+concurrently"* saves under 3 minutes out of 43. **The suite is the check.** So `tests/run_tests.gd` gained
+`--shard=I/N` (round-robin over the sorted discovery order; unsharded is byte-identical including its final line;
+shards print `SHARD i/n: …` and never the bare line, so a sharded run still has exactly one `N passed, M failed` —
+the total, summed by the recipe, which refuses if fewer than N shards reported).
+
+**Budgets from the measurement, not from round 8's "~735 MB a Godot run"** (more than twice too pessimistic):
+CHECK_JOBS 2200 → 1000 MB a target; LINT_JOBS 250 MB (a `--check-only` peaks at 200–205 MB, not 735 — it parses
+and exits without building a world); TEST_SHARDS 500 MB. All three via `tools/slot.sh --jobs`, which now divides
+the **memory** budget by the live slot count — after T1 a check is 6–8 processes, so raising slots and the inner
+fan-out together is how a 95%-idle box goes straight to OOM. Cores are deliberately *not* divided: this work is
+latency-bound, which is the finding.
+
+**`REMOTE_SLOTS` 6 → 3, deliberately fewer**, with the measured table in `remote.sh`. Throughput is the same at
+any slot count; **latency per check scales with it**, and latency is what eight streams wait on. Six slots would
+also land the check *on* the ≥50% bar rather than clearing it.
+
+**Two bugs found by measuring, both shipped fixed:**
+- **`lint` checked ZERO files on builder0, for everyone, and said "all scripts parse".** `git ls-files` cannot
+  answer there (`remote.sh` excludes `.git/`; in a worktree the `.git` *pointer file* travels and its gitdir does
+  not), and a failing command substitution in a `for` word list does not trip `set -e`. **Every green that rested
+  only on `make remote T=check` was not parse-checked.** Now: a `find` fallback (verified to return the identical
+  531 files), an empty list is a loud failure, and the success line carries the count.
+- **`make lint` on `main` is red**, for 5 files / 8 lines, *all* `--check-only` isolation artefacts — verified to
+  survive a completed `make import` and a serial re-check, so not the cache symptom the lock guards. Two
+  mechanisms: a scene cannot resolve the script currently under check (`tank.tscn` names `tank.gd` and
+  `visual_slot.gd`), and a `class_name` static reads as missing when the global is unregistered (`Units.roster`,
+  the exact case `mk/core.mk` records costing an evening). Fixed with `tests/baselines/lint_expected.txt` — a
+  finding not in it fails; one that stops occurring is reported so the list can be tightened; every line carries
+  its reason. **Green on builder0 in 94 s.**
+
+**Measured and deliberately deferred:** `make test` passes no `--fixed-fps`, so the suite advances physics at
+wall-clock 30 Hz and mostly *waits*. Ten seconds of simulated time: **15.4 s without, 6.9 s with** — ~5× on the
+simulated portion, on top of sharding. Not in CP3: sharding cannot change a test's *result* and this can, and two
+speed-ups in one commit make a regression in either invisible. Its own checkpoint, written up in
+`references/round9/metrics/t1-fixed-fps-followup.md` with the control (1261/0 unsharded at `c21d0256`).
+
+**Also built, deliberately not yet in `CHECK_TARGETS`:** `ai-scenarios-check` (lesson 159), gated on a *change* in
+the passed/failed/pending counts rather than on outcome, so the laptop-speed perf case does not redden the gate
+while a new script error does. It joins `check` in its own commit *after* CP3's runs — adding a target between the
+before and after would confound the falsifier.
 
 ### Decisions taken since the plan
 
