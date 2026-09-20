@@ -42,6 +42,10 @@ const REPATH_SECONDS := 4.0
 ##      corners ahead" is 28.7 m and the hull drifts past it in 3.2 s — it fired EARLIER than the cadence it was
 ##      replacing. `a1_tube_skips` 0 again. Measured, not reasoned: see the probe numbers in the brief.
 const TUBE_RADIUS_IS := "the off-path corridor (OFF_PATH_REPATH)"
+## ...and the same argument for the GOAL's own drift, which is where the re-plans actually are. A sliding goal is
+## re-planned when it has moved this share of the remaining route, never less than this many metres.
+const GOAL_TUBE_SHARE := 0.1
+const GOAL_TUBE_MIN := 2.0
 ## ...and at once when the hull is this far off its route (flat metres).
 const OFF_PATH_REPATH := 5.0
 ## X7: steer at a point this far along the route beyond the hull (metres); wheels at least this many turning radii.
@@ -1330,14 +1334,28 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	# unit that is doing exactly what it was told. nav already knows the difference — `_track_goal` estimates
 	# `_goal_velocity` for station-keeping (X6) and `drive()` uses NEW_GOAL_JUMP to tell "a new destination" from "a
 	# slot sliding along" — and `_next_waypoint` was the one place that did not ask.
-	var goal_moved := _flat_distance(goal, _path_goal) > 1.0
-	var sliding := goal_moved and _goal_velocity.length() >= STATION_MIN_SPEED \
-			and _flat_distance(goal, _path_goal) <= NEW_GOAL_JUMP
+	var goal_shift := _flat_distance(goal, _path_goal)
+	# A goal that is SLIDING (a follower keeping station on its leader, a slot riding its anchor) gets a tolerance
+	# that scales with how far there is left to go, instead of a flat metre. Measured: **47% of all re-plans in a
+	# fight were this** — nav re-planning an entire route because a goal it is already regulating moved 1 m. A 1 m
+	# shift on an 80 m route changes nothing about the route; on a 5 m route it changes everything, which is why the
+	# tolerance is a SHARE and not a bigger constant. This is A1's own argument applied to the other state variable,
+	# and it is behind A1's switch because it is A1's mechanism.
+	#
+	# Latency is untouched: a re-order makes the goal JUMP, `_track_goal` refuses a jump as motion (it rejects
+	# anything above twice top speed), so `_goal_velocity` falls below STATION_MIN_SPEED and the flat 1 m rule
+	# applies — which is what the latency test asserts.
+	var sliding := _goal_velocity.length() >= STATION_MIN_SPEED
+	var tolerance := 1.0
+	if sliding and a1_on():
+		tolerance = maxf(GOAL_TUBE_MIN, GOAL_TUBE_SHARE * _remaining)
+	var goal_moved := goal_shift > tolerance
 	var event := goal_moved or off_path or stalled
 	if drifted or event:
 		a1_replans += 1
 		if goal_moved:
-			a1_by_cause["goal_slid" if sliding else "goal_jumped"] = int(a1_by_cause.get("goal_slid" if sliding else "goal_jumped", 0)) + 1
+			var key := "goal_slid" if sliding else "goal_jumped"
+			a1_by_cause[key] = int(a1_by_cause.get(key, 0)) + 1
 		elif off_path:
 			a1_by_cause["off_path"] = int(a1_by_cause.get("off_path", 0)) + 1
 		elif stalled:
