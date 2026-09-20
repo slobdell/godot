@@ -17,6 +17,13 @@
 #   NOT RUN  never started -- skipped because something it was ordered after failed (lint gates everything;
 #            the three exclusion pairs gate each other)
 #
+# CHECK_VERDICT_CONTEXT is appended to the summary line. It exists because `test_match_spawns_and_results`
+# was measured passing at 6 shards and failing at 5, with identical game and test code -- and `TEST_SHARDS`
+# is derived per run from free memory, so the schedule, and that test's verdict, is partly a property of how
+# busy the box was at launch (2026-09-20, lesson 178's sharper form). The number that decides the schedule
+# therefore has to travel with the verdict: a reader comparing two runs must be able to see, from the line
+# they quote, whether the two are comparable at all.
+#
 # Exit 0 only when every target passed.
 set -uo pipefail
 
@@ -40,11 +47,13 @@ for t in "$@"; do
 done
 
 # Only the interesting rows, unless everything passed -- a wall of PASS buries the one line that matters.
+ctx=${CHECK_VERDICT_CONTEXT:-}
+[ -n "$ctx" ] && ctx="  [$ctx]"
 if [ "$failed" -eq 0 ] && [ "$notrun" -eq 0 ]; then
-	printf '>> check: %d targets, all passed\n' "$passed"
+	printf '>> check: %d targets, all passed%s\n' "$passed" "$ctx"
 	exit 0
 fi
-printf '>> check: %d passed, %d FAILED, %d NOT RUN\n' "$passed" "$failed" "$notrun"
+printf '>> check: %d passed, %d FAILED, %d NOT RUN%s\n' "$passed" "$failed" "$notrun" "$ctx"
 printf '%s' "$lines" | grep -v '   PASS  '
 [ -n "$fail_list" ]   && printf '>> check: failed: %s\n' "${fail_list# }"
 if [ -n "$notrun_list" ]; then

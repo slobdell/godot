@@ -59,5 +59,19 @@ grep -q '1 targets, all passed' <<<"$out" && ok "done wins over a missing starte
 bash "$cv" >/dev/null 2>&1;            [ $? = 2 ] && ok "no arguments: exit 2" || bad "no arguments: exit 2"
 bash "$cv" "$tmp/check" >/dev/null 2>&1; [ $? = 2 ] && ok "no targets: exit 2, rather than passing over an empty list" || bad "no targets: exit 2"
 
+# ---- the schedule travels with the verdict -------------------------------------------------------
+# `test_match_spawns_and_results` passed at 6 shards and failed at 5 with identical code, and TEST_SHARDS is
+# derived per run from free memory. So a reader comparing two verdict lines must be able to see from the
+# lines themselves whether the two runs are comparable.
+setup; done_ lint; started test
+out=$(CHECK_VERDICT_CONTEXT="test x5, lint -P6, 3 at once, builder0" verdict lint test)
+grep -q 'FAILED.*\[test x5, lint -P6, 3 at once, builder0\]' <<<"$out" \
+	&& ok "a failing verdict carries the schedule it ran under" || bad "failing verdict carries the schedule" "$out"
+setup; done_ lint; done_ test
+out=$(CHECK_VERDICT_CONTEXT="test x6" verdict lint test)
+grep -q 'all passed  \[test x6\]' <<<"$out" && ok "a passing verdict carries it too" || bad "passing verdict carries it" "$out"
+out=$(verdict lint test)
+grep -q '\[' <<<"$out" && bad "no context means no empty brackets" || ok "no context means no empty brackets"
+
 printf '\ncheck-verdict: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
