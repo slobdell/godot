@@ -74,9 +74,28 @@ func test_the_grid_fills_the_front_row_before_the_rows_behind_it() -> void:
 		assert_eq(spot.z, Match.BASE_Z, "slot %d stands in the front row" % slot)
 	assert_true(Match.spawn_position(Match.Team.GREEN, columns).z > Match.BASE_Z,
 			"the next slot starts the second row, behind the first")
-	assert_eq(Match.spawn_position(Match.Team.RUST, columns + 1), -Match.spawn_position(Match.Team.GREEN, columns + 1),
-			"Rust's grid mirrors Green's")
+	# The mirror is point symmetry ON THE FLOOR PLANE. `SPAWN_LIFT_M` is a constant lift on BOTH sides, so negating a
+	# spawn point would flip it below the floor -- the mirror is asserted in x/z and the lift separately.
+	var green_deep := Match.spawn_position(Match.Team.GREEN, columns + 1)
+	var rust_deep := Match.spawn_position(Match.Team.RUST, columns + 1)
+	assert_eq(Vector2(rust_deep.x, rust_deep.z), -Vector2(green_deep.x, green_deep.z), "Rust's grid mirrors Green's")
+	# `assert_near`, not `assert_eq`: Vector3 stores 32-bit floats, so the component reads back 0.05000000074506 and a
+	# double literal will never equal it. Comparing a stored float to a source constant always needs a tolerance.
+	assert_near(green_deep.y, Match.SPAWN_LIFT_M, 1e-6, "and both sides stand the same distance clear of the floor")
+	assert_near(rust_deep.y, Match.SPAWN_LIFT_M, 1e-6, "and both sides stand the same distance clear of the floor")
 	assert_true(Match.SPAWN_SLOTS >= Army.MAX_ARMY_UNITS, "and there is a slot for every vehicle an army may field")
+
+
+## Round 9: a body created at exactly y = 0.0 makes a degenerate ground contact, and whether Jolt resolves it cleanly
+## depends on solver state left by earlier bodies — scale measured three units ejected 1.5 m THROUGH the floor at
+## spawn, reproducing only after other bodies had been created and destroyed. Every spawn point now stands clear of
+## the floor, and it comes from ONE constant so the grid path and the arena-layout path cannot drift apart.
+func test_every_spawn_point_stands_clear_of_the_floor() -> void:
+	assert_true(Match.SPAWN_LIFT_M > 0.0, "the lift is a real distance, not a comment")
+	for team in [Match.Team.GREEN, Match.Team.RUST]:
+		for slot in [0, 1, Match.SLOT_X.size(), Match.SPAWN_SLOTS - 1]:
+			assert_near(Match.spawn_position(team, slot).y, Match.SPAWN_LIFT_M, 1e-6,
+					"team %d slot %d spawns clear of the floor" % [team, slot])
 
 
 func test_the_result_carries_what_progression_needs() -> void:

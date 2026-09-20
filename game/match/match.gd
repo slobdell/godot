@@ -76,6 +76,17 @@ const BASE_Z := 90.0
 const SLOT_X := [0.0, -11.0, 11.0, -22.0, 22.0, -33.0, 33.0, -44.0, 44.0, -55.0, 55.0, -66.0, 66.0]
 const SPAWN_ROWS := 4
 const SPAWN_ROW_SPACING := 8.0
+## Round 9: hulls spawn this far ABOVE the floor rather than exactly on it. A body created at exactly y = 0.0 makes a
+## degenerate ground contact -- zero penetration, a contact normal Jolt has to guess at -- and whether it resolves
+## cleanly depends on the solver's internal state left by bodies created and destroyed earlier in the match. Measured
+## by scale: three units ejected **1.5 m through the floor at spawn**, which is a real game bug and not only a flaky
+## test, and it reproduces only after earlier bodies have come and gone. A body that starts a few centimetres clear
+## has an unambiguous contact to resolve and simply settles.
+##
+## It is a lift, not a hover: 5 cm is far below the ride height of every hull in the roster and nothing reads spawn y.
+## `Match._jittered` adds 0.0 on y and squad's `ArmyLayout.deploy` re-seats with `tank.global_position.y`, so both the
+## initial spawn and every respawn inherit this from here and there is exactly one number.
+const SPAWN_LIFT_M := 0.05
 const SPAWN_SLOTS := 52
 ## Spawn jitter never moves a unit more than this sideways or along z (the column gap and row spacing minus a hull
 ## plus clearance, halved): a jittered 2.6 x 4 m hull must still stand clear of every neighbour.
@@ -483,10 +494,11 @@ static func spawn_position(team: int, slot: int) -> Vector3:
 	var south := (team == Team.GREEN) != swap_bases
 	var from_layout: Variant = Arena.spawn_spot(south, slot)
 	if from_layout != null:
-		return from_layout
+		# Lifted here rather than in `Arena.spawn_spot`, so BOTH sources of a spawn point get it from one place.
+		return Vector3((from_layout as Vector3).x, SPAWN_LIFT_M, (from_layout as Vector3).z)
 	var x: float = SLOT_X[slot % SLOT_X.size()]
 	var z := BASE_Z + SPAWN_ROW_SPACING * ((slot / SLOT_X.size()) % SPAWN_ROWS)
-	return Vector3(x if south else -x, 0.0, z if south else -z)
+	return Vector3(x if south else -x, SPAWN_LIFT_M, z if south else -z)
 
 
 ## Green starts in the south facing north (−Z); Rust in the north facing south.
