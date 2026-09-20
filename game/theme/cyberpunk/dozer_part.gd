@@ -35,6 +35,7 @@ func _ready() -> void:
 		_prepare_model()
 		if part == "hull":
 			_cut_gun()
+			_cut_trailer()
 		elif part == "turret" and _tank() != null and not FactionArt.gun_cut(String(_tank().get("unit_id"))).is_empty():
 			model.visible = false  # the nub that stood in for a turret: the real gun is cut out of the hull
 		bounds = _model_bounds()
@@ -59,7 +60,7 @@ func _ready() -> void:
 	_apply_skin()
 	if part != "hull" and model != null:
 		_fit_to_hull.call_deferred()  # after the tank has placed and scaled its turret
-	set_process(gun_pivot != null)  # only a hull with a cut gun has anything to do per frame
+	set_process(gun_pivot != null or trailer_pivot != null)  # only a cut gun or a trailer has anything to do per frame
 
 
 ## Round 6 (feel; the lead: "our semi truck for the gang that was supposed to be a huge tank is tiny ... everything
@@ -130,12 +131,118 @@ func _cut_gun() -> void:
 		gun_pivot.add_child(gun)
 
 
-func _process(_delta: float) -> void:
+## Round 9, contract S2 (the lead, twice: "the semi trucks ... are still one long box itself of a truck / trailer
+## combination"). The trailer is cut out of the approved hull mesh at the fifth wheel exactly the way the gun is
+## (FactionArt.TRAILER_CUTS) and yawed per frame by tractor-trailer kinematics. The tractor is still the whole
+## simulated body and the collider is still the one hull_size box: this file never touches the simulation.
+var trailer_pivot: Node3D
+var _trailer_wheelbase := 0.0  # model space; scaled to world by the hull's fit on first use
+var _trailer_wheelbase_world := 0.0
+var _trailer_limit := 0.0
+var _trailer_yaw := 0.0  # the trailer's heading in WORLD yaw, integrated per drawn frame
+var _trailer_drawn := Vector3.ZERO
+var _trailer_started := false
+
+
+func _cut_trailer() -> void:
+	var tank := _tank()
+	if tank == null:
+		return
+	var cut := FactionArt.trailer_cut(String(tank.get("unit_id")))
+	if cut.is_empty():
+		return
+	var boxes: Array = cut["boxes"]
+	var pivot: Vector3 = cut["pivot"]
+	_trailer_wheelbase = float(cut.get("wheelbase", 1.0))
+	_trailer_limit = deg_to_rad(float(cut.get("jackknife_deg", 60.0)))
+	trailer_pivot = Node3D.new()
+	trailer_pivot.name = "TrailerPivot"
+	trailer_pivot.position = pivot
+	model.add_child(trailer_pivot)
+	for node in model.find_children("*", "MeshInstance3D", true, false):
+		var instance := node as MeshInstance3D
+		if instance.mesh == null or trailer_pivot.is_ancestor_of(instance):
+			continue
+		if gun_pivot != null and gun_pivot.is_ancestor_of(instance):
+			continue  # the gun came out first and rides the trailer as a whole (below)
+		var to_model := _relative_to(instance, model)
+		var pieces := FactionArt.split_mesh_boxes(instance.mesh, to_model, boxes)
+		if pieces[1] == null:
+			continue
+		instance.mesh = pieces[0]
+		instance.visible = pieces[0] != null
+		var trailer := MeshInstance3D.new()
+		trailer.name = "Trailer"
+		trailer.mesh = pieces[1]
+		# The trailer's own frame: the fifth wheel at the origin, geometry unmoved at zero articulation.
+		trailer.transform = Transform3D(Basis(), -pivot) * to_model
+		trailer_pivot.add_child(trailer)
+	if gun_pivot != null:
+		# The gun is mounted on the tanker, aft of the fifth wheel. Left on the hull it would hold the tractor's
+		# heading while the trailer swung out from under it.
+		model.remove_child(gun_pivot)
+		trailer_pivot.add_child(gun_pivot)
+		gun_pivot.position -= pivot
+
+
+## The hinge, integrated from the DRAWN pose and the FRAME's delta -- never the physics tick. The simulation runs at
+## 30 Hz with physics interpolation on (project.godot), so the pose a frame draws is not the pose the tank last
+## simulated, and a trailer integrated from the tick would swim against the tractor it is bolted to.
+func _drive_trailer(delta: float) -> void:
+	var tank := _tank()
+	if tank == null or delta <= 0.0:
+		return
+	var drawn: Transform3D = tank.get_global_transform_interpolated()
+	# The hull's yaw about +Y. Forward is -Z and Basis(UP, yaw) sends +Z to (sin yaw, 0, cos yaw), so the yaw of the
+	# drawn pose reads straight off that column (orientation.md trip-up 2).
+	var heading := atan2(drawn.basis.z.x, drawn.basis.z.z)
+	if _trailer_wheelbase_world <= 0.0:
+		_trailer_wheelbase_world = _trailer_wheelbase * maxf(model.global_transform.basis.get_scale().x, 0.01)
+	if not _trailer_started:
+		_trailer_started = true
+		_trailer_yaw = heading
+		_trailer_drawn = drawn.origin
+		_set_articulation(0.0)
+		return
+	var step := drawn.origin - _trailer_drawn
+	_trailer_drawn = drawn.origin
+	# A spawn or a respawn is a teleport -- Tank calls reset_physics_interpolation at both -- and a hinge that
+	# integrated across one would draw the trailer as a streak from where the wreck was. Snap instead.
+	var reach := (absf(float(tank.get("max_forward_speed"))) + 1.0) * delta * 3.0 + 0.5
+	if step.length() > reach:
+		_trailer_yaw = heading
+		_set_articulation(0.0)
+		return
+	var forward := Vector3(-drawn.basis.z.x, 0.0, -drawn.basis.z.z)
+	if forward.length_squared() < 0.0001:
+		return
+	var speed := Vector3(step.x, 0.0, step.z).dot(forward.normalized()) / delta
+	_trailer_yaw = FactionArt.trailer_follow(_trailer_yaw, heading, speed, _trailer_wheelbase_world, delta, _trailer_limit)
+	_set_articulation(wrapf(_trailer_yaw - heading, -PI, PI))
+
+
+## `angle` is the trailer's yaw relative to the TRACTOR; the pivot lives under the model, which may itself be turned
+## (model_yaw_deg), so that turn comes back out here.
+func _set_articulation(angle: float) -> void:
+	if trailer_pivot != null:
+		trailer_pivot.rotation.y = angle - model.rotation.y
+
+
+## The trailer's yaw relative to the tractor, radians. For tests and frames.
+func articulation() -> float:
+	return 0.0 if trailer_pivot == null else wrapf(trailer_pivot.rotation.y + model.rotation.y, -PI, PI)
+
+
+func _process(delta: float) -> void:
+	if trailer_pivot != null:
+		_drive_trailer(delta)
 	if gun_pivot != null:
 		var tank := _tank()
 		var turret: Variant = tank.get("turret") if tank != null else null
 		if turret is Node3D:
-			gun_pivot.rotation.y = (turret as Node3D).rotation.y
+			# Under the trailer the gun inherits its swing, so the turret's lay is taken back out: the gun points
+			# where gunnery aims it whatever the trailer is doing.
+			gun_pivot.rotation.y = (turret as Node3D).rotation.y - (trailer_pivot.rotation.y if trailer_pivot != null else 0.0)
 
 
 func _relative_to(node: Node3D, ancestor: Node3D) -> Transform3D:

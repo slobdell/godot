@@ -4,11 +4,19 @@ An agent can't watch the game, so "it compiles" is not "it works". Before
 calling a task done, run every row that applies to what you touched, and **look
 at the screenshots** (Claude can read PNGs). Report failures as failures.
 
+> ⚠ **`lint` checked ZERO files on builder0 until 2026-09-20, and said "all scripts parse".** It built its list
+> with `git ls-files`, and `tools/remote.sh` does not rsync `.git/` — so on builder0 git answered *"fatal: not a
+> git repository"*, the loop ran zero times, and the target exited 0. A failing command substitution in a `for`
+> word list does not trip `set -e`, so nothing said so. **Every "green" that rests only on `make remote T=check`
+> from before that date was not parse-checked.** Fixed in `mk/core.mk`: a `find` fallback (verified to return the
+> identical 531 files), an empty list is now a loud failure, and the success line carries the count. **Read the
+> count.** "all scripts parse" is true of zero scripts; "all 531 scripts parse" is not.
+
 ## The ladder
 
 | # | Check | Command | Needs | Proves | Run when |
 |---|---|---|---|---|---|
-| 0 | Lint | `make lint` | nothing | Every script parses (shows the real compile error instead of cascading "Nonexistent function 'new'") | always, first |
+| 0 | Lint | `make lint` | nothing | Every script parses (shows the real compile error instead of cascading "Nonexistent function 'new'"). **Reads its count: `lint: all 531 scripts parse`.** See the warning below | always, first |
 | 1 | Unit tests | `make test` | nothing | Pure logic (`TankMotion`, `TankCommand`, armor/lead/steering, **TankBrain.decide golden cases**, directives, doctrines) | always |
 | 2 | Integration tests | `make test` (same runner) | nothing | Real scenes + real physics frames: commands actually move tanks | always |
 | 3 | Desktop render | `make screenshot` → **Read `build/screenshots/demo.png`** | a display | The scene renders: lighting, meshes, camera framing, turret direction | any visual/scene change |

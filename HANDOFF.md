@@ -8,24 +8,45 @@ _Last updated: 2026-09-19 (evening). **Round 9 is LAUNCHED: seven streams briefe
 
 ## Round 9 is LAUNCHED (2026-09-19 evening). Start here.
 
-**Seven streams — metrics, scale, nav, combat, squad, feel, control** — each with a brief in `_agents/streams/<stream>.md`
+**Eight streams — metrics, scale, nav, combat, squad, feel, control, and (added 2026-09-20) show** — each with a brief in `_agents/streams/<stream>.md`
 and a worktree at `~/projects/godot-<stream>`. The split, checkpoints (CP1 A12 metrics, CP2 the resized roster, CP3
 parallel `check`), ownership carve-outs and the four new contracts S1–S4 are in
 [`_agents/workstreams.md`](_agents/workstreams.md) *Round 9: the seven streams*. The lead's two feedback items and the
 sizing rule are in [`_agents/game_design.md`](_agents/game_design.md) *Round 9 direction*.
 
 **Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`), the
-same text for all seven:
+same text for all eight (show at `~/projects/godot-show`, OFFSET 8; it runs every Godot process on builder0 because the laptop had ~2.2 GB free with seven live):
 
 > /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
 
-**Orchestrator duties this round:** the full `make remote T=check` on `main` at `f49aa08a` was started at launch (main
-was merged unverified at round 8's close; read its result from the `>> remote: make check exited <N>` line); merge CP1
+**`main` IS GREEN at `f49aa08a`** (builder0, 2026-09-20 00:27: `>> remote: make check exited 0`, `1261 passed, 0 failed`,
+`sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)`). Round 8's unverified merge is now verified; every commit since is
+docs only. **Orchestrator duties this round:** merge CP1
 (metrics' A12) and CP2 (scale's roster) the day they are announced and tell every stream to `git merge main`; record
 the sim baseline in the same session as CP2 (it moves); put scale's side-by-side roster frame and feel's rig-hinge frames
 in front of the lead the day they exist; get feel's `_agents/legibility.md` signed by control and nav before anyone
 writes A6 motion code; review nav's A7 priority table against combat's and feel's contracts before nav codes it; relay
-negative results between streams. Final integration order: metrics → scale → nav → combat → squad → control → feel.
+negative results between streams. Final integration order: metrics → scale → nav → combat → squad → control → feel → show. **Overnight 01:45:** all eight agents busy; nothing merged yet. **CP2b (squad `6e0c9968`) is HELD** — its drift scenario errors on a stub without `pitch`, invisible to `check` because `ai-scenarios` is not in it (lesson 159; metrics adds it behind a count baseline for CP3). nav: A4's positive control 403/403; A1 is a negative result, the real driver was re-planning against a sliding station (47% of re-plans), fixed. scale has A3 built (`3dcab48b`). feel has the airship built (`567a8007`). control's facing drag and camera lift built. **Round-wide trap found 02:00 (show, verified in `tools/make_arenas.py`): `arenas/*.json` are GENERATED and the generator drops any key it does not know — a hand-edited layout loses the edit on the next `make arenas`, silently. Ruled: the generator preserves an allowlist of hand-authored keys (`show`) and `Arena.validate()` rejects unknown top-level keys; scale owns both.** **MERGED 03:05: CP2c, control's right-drag facing at `e27f0681` (builder0 1269/0, exited 0) → `main` `260dddc7`; check on main running.** **MERGED 03:10: stream/nav at `5c8f08b3`** (builder0 1290/0, exited 0, sim-baseline UNCHANGED at `04414f5d6a6dfa7c`: A7/A11/A1/A4 all opt-in, 29 new tests) → `main` `08a8c378`; **NOT covered by the check running behind CP2c** (asked builder0: its tree has no `clothoid.gd`), so a second check on main is chained to start when that one's wrapper line lands. **MERGED 03:30: stream/feel at `7a706911`** (the articulated War Rig, S2; builder0 1273/0, exited 0, baseline UNCHANGED, read from streamed stdout) → `main` `8147bddc`. **builder0 came back at 03:25 (ZeroTier link; ~35 min outage; no remote jobs survived the drop; the check on main restarted at 03:25).** ~~⚠ builder0 went OFF THE NETWORK at ~03:15~~ (it went off at ~02:50 (ZeroTier link; the laptop's internet is fine): the check on main behind CP2c died with ssh 255 mid-run, so **`main` at `8147bddc` (CP2c + nav + feel) is NOT yet covered by a check** — it runs the moment the box returns (polled every 5 min). Every stream is holding remote runs and working locally. **CP2's blocker is diagnosed and fixed (scale `e5d71ba2`, 03:50):** the 104.9 m unit was a *respawned* enemy-killed unit sitting on its own new spawn slot with no order; the old grid passed by geometric luck. The test now excludes destroyed units, as its sibling already did. CP2 waits only on scale's remote check and hash. **`main` VERIFIED GREEN at `ba1c22c8` (CP2c + nav + feel; builder0 04:12: exited 0, 1310 passed, 0 failed, sim-baseline 04414f5d6a6dfa7c unchanged; note that run's lint was still the vacuous one — CP1's own check at `ae9c65e1` covered the same code with the working lint).** **MERGED 04:00: CP1, metrics at `ae9c65e1`** (builder0 1310/0, exited 0, 16 targets, baseline UNCHANGED across CP2c + nav + feel) → `main`. Since ae9c65e1 already contained the three earlier merges, main's code is exactly the tree that passed. **Every stream merges main now.** The working lint is live (an empty file list fails; `tests/baselines/lint_expected.txt` carries the 8 known artefacts). T1 measured at 6 slots: 1776 s vs 2693 s serial = 34%, **missing the 50% bar because six slots starve the inner fan-out (CHECK_JOBS=1, 2 shards)**; the shipped configuration is 3 slots (CHECK_JOBS=3, 6 shards), series running. **MERGED 04:20: stream/nav at `3b01f5b7`** (wedged detector, forced gains, A1 monotonicity guard, face recovery; builder0 1295/0, exited 0, baseline unchanged) → `main` `e1a9895c`, **VERIFIED GREEN** (builder0 04:35: exited 0, 1315 passed, 0 failed, 16 targets, sim-baseline 04414f5d6a6dfa7c unchanged; the sharded check took **990 s** against the 2693 s serial baseline on a box running six other jobs). **MERGED 05:05: stream/control at `6813908d`** (checked at `ffd09b0e`: the camera lift + occlusion cutaway on the Terminus, the corridor readout, the console gate; 16/16 targets, verdict read from the box's markers after metrics' kill took the wrapper) → `main` `f005dd37`, **VERIFIED GREEN** (builder0 05:14: exited 0, 1327 passed, 0 failed, 16 targets, 791 s sharded). **MERGED 05:15: stream/nav at `c6222a5c`** (A4's A/B: default stays off on measurement; the rotation-read map set; A11 cannot act without A7, arm guard; builder0 1316/0, exited 0, baseline unchanged) → `main`; needs the next main check (one is running on `f005dd37`). **Live checkpoints as of 2026-09-20:** CP1 (A12 format stable, positive control passed, merge hash pending), CP2 (roster resized on `stream/scale`, line-up frame for the lead pending), CP2b (squad's attacking-element leash), CP2c (control's right-drag facing, green locally), CP3 (T1 in progress). Contracts S5 (one commitment term, two seams) and S6 (the light show) were added mid-round; the lead's lighting and camera items are in `game_design.md` *Round 9 addition*.
+
+**In front of the lead (2026-09-20 01:15):** feel's **rig-hinge frames** — the War Rig articulated at the fifth wheel
+(corner at 45°, the same corner at his pose, the reverse jackknife), sent as three strips built from
+`~/projects/godot-feel/build/rig-hinge/` (stream/feel `7a706911`, laptop). Numbers beside them: live match, 32 rigs,
+1,440 rig-frames, mean articulation 6.1°, 4.9% past 30°, 1.2% at the 65° clamp; the closed form `asin(5.06/12) = 24.9°`
+at the rig's 12 m turning circle, reached 22.7° on the corner. **Caveat he should know:** the collider is still the
+one 14 m box (S2), so a shell can pass through empty air inside a fold this round. Awaiting his look.
+
+**In front of the lead (2026-09-20 02:55): the roster line-up at real relative scale** (`lineup_pose.png` at his pose,
+`lineup_factions.png` all 21 by faction; builder0, `stream/scale` ~`8fc9a2a8`, K = 0.707). **Approved on his behalf
+overnight**: the rig reads as a semi beside a car, the Condemned tank as a bus (8.6 m; on screen 281 × 135 px against
+round 8's 199 × 100, the rig 734 × 279). Defects noted for one more render: labels collide in the factions frame and
+its near row clips. He can overrule the look or K in the morning. **The gap-widening ruling was withdrawn** (scale's
+first corridor measure was wrong; the corrected one shows no pinch on any rotation map: yard 18.0 m, terminus 11.5 m,
+maze 7.0 m = its authored `MAZE_TIGHT_GAP`).
+
+**In front of the lead (04:05): the Terminus alley pair** (`~/projects/godot-control/build/terminus-alleys/index.html`,
+six pairs; `alley4_asked` = the camera inside a wall, `alley4_clear` = a squad in the street with rings, facades intact;
+`alley5` is the open-ground control where nothing is cut). Lift + occlusion cutaway, control `c97d4d5f`, laptop, windowed
+at his pose. Approved overnight; item 3 of control's brief is done on the hash its check names.
 
 **One question for the lead, with a recommendation:** the roster is being scaled *rig-relative* (the world's vehicles
 at K ≈ 0.7 of real size, so the 14 m rig he ruled on stays and the bus, garbage truck, APC and assault gun grow
@@ -43,7 +64,7 @@ worktree for round 9.
   both readings agreeing**, covering the two hash-moving changes: squad's brain and start positions, and combat's
   **widened match** — which is why it moved so far. The old match fielded five `tank` hulls and was blind to 5 of 6
   mutations; the new one fields every locomotion × mount combination.
-- **⚠ `main` IS NOT COVERED BY A GREEN CHECK.** combat was merged unverified **on the lead's explicit call** (*"checking
+- ~~**⚠ `main` IS NOT COVERED BY A GREEN CHECK.**~~ **Verified green at `f49aa08a` on 2026-09-20 (see the round-9 section above).** Was: combat was merged unverified **on the lead's explicit call** (*"checking
   in a dirty codebase is ok, let's just get everything merged so we can hit a milestone"*), so the round could close
   and the environment be reset. Its blast radius is bounded and was verified, not assumed:
   `git diff --name-only main...stream/combat -- game/` returns **nothing**. **The first task of round 9 is one full

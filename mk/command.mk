@@ -112,6 +112,35 @@ shell-playtest: import ## Title → SKIRMISH → faction menu → planning → a
 	test -z "$$errors" || { echo ">> the console is not clean:"; echo "$$errors" | sort | uniq -c | sort -rn | head -20; exit 1; }
 	@echo "clean console: $(SHELL_PLAYTEST_DIR)/run.log"
 
+## Round 9 (control item 5): the console state of a real player session, as a COMMITTED BASELINE that fails on CHANGE.
+## Lesson 42 - do not add a red suite to the gate - is why `shell-playtest` was never in `check`, and `main` went green
+## at 2fa58c01 carrying two "Texture with GL ID ... leaked 5460 bytes" lines it would have caught. The honest first step
+## is to record what the console does today and fail when it MOVES, in either direction: a fault that stopped happening
+## is news too (something was fixed, or a step of the playtest silently stopped running).
+SHELL_CONSOLE_BASELINE := tests/baselines/shell_console.txt
+
+## The compare lives in `check-display`, NOT in `shell-playtest`. `shell-playtest` is the instrument every stream
+## reaches for by hand, and a missing or stale baseline must never be the reason someone's playtest goes red; the
+## GATE is the thing that owns the baseline. It also means the baseline can be regenerated from a plain
+## `make remote T=shell-playtest` without the gate refusing the run that is producing it.
+
+shell-console-baseline: ## Rewrite tests/baselines/shell_console.txt from the last shell-playtest run (deliberate: say in the commit why each line moved)
+	$(PYTHON) tools/shell_console.py write $(SHELL_PLAYTEST_DIR)/run.log $(SHELL_CONSOLE_BASELINE)
+
+## This one needs no display and belongs in `check` proper, beside `match-pytest`. `mk/core.mk`'s `check` line is
+## shared and metrics is rewriting it for T1, so it is REQUESTED rather than taken: until it lands there, it runs as a
+## prerequisite of check-display. Merge note.
+shell-console-pytest: ## The console baseline tool's own tests (a guard nobody has run end to end is not a guard)
+	cd tools && $(PYTHON) -m unittest test_shell_console
+
+## Round 9: the checks that NEED A DISPLAY, as their own bundle. Deliberately NOT in `check`'s target list (metrics'
+## T1 owns that): a display-only target inside `check` either fails every local run or no-ops without a display, and a
+## target that passes for the wrong reason is exactly what lesson 42 is about. `make remote T=check-display` runs it on
+## builder0, where tools/remote.sh provides Xwayland (trip-up 65).
+check-display: shell-console-pytest shell-playtest ## Everything that needs a display: the shell playtest and its console baseline (run it with make remote T=check-display)
+	$(PYTHON) tools/shell_console.py compare $(SHELL_PLAYTEST_DIR)/run.log $(SHELL_CONSOLE_BASELINE)
+	@echo "check-display passed. Now LOOK at $(SHELL_PLAYTEST_DIR)/*.png"
+
 ## Control X4 (CP1: the HUD ≤ 130 draw calls and ≤ 1 ms of _process at 60 vehicles), measured per widget.
 HUD_COST_RES ?= 1920x1080
 HUD_COST_FLAGS ?=
@@ -172,6 +201,20 @@ camera-looks: import ## Photograph one frozen fight from a grid of pitch x dista
 		| tee $(CAMERA_LOOKS_DIR)/run.log | grep -E 'CAMERA_LOOKS|SCRIPT ERROR|^ERROR' || true
 	grep -q 'CAMERA_LOOKS_DONE ok=true' $(CAMERA_LOOKS_DIR)/run.log
 	@echo "Now LOOK at $(CAMERA_LOOKS_DIR)/index.html"
+
+## Round 9, the lead on the Terminus: "the camera often ends up inside a building and we can't see what's going on
+## inside the alleyways." Every pose shot TWICE from the same spot - as asked for, and as RtsCamera.clear_pose leaves
+## it - at HIS pose (21 deg, FOV 35, 49 m). Never at 12 deg: that is the camera he played and rejected.
+ALLEYS_DIR := $(BUILD_DIR)/terminus-alleys
+ALLEYS_ARENA ?= terminus
+
+terminus-alleys: import ## Round 9: the camera forced outside a city block, before and after, in the Terminus alleys at the lead's pose -> build/terminus-alleys/index.html (needs a display: make remote T=terminus-alleys)
+	rm -rf $(ALLEYS_DIR) && mkdir -p $(ALLEYS_DIR)/arenas && touch $(BUILD_DIR)/.gdignore
+	timeout 420 $(GODOT) --path . --resolution 1920x1080 -- $(CAMERA_LOOKS_FLAGS) --arena=$(ALLEYS_ARENA) \
+		--camera-looks-grid=alleys --camera-looks=$(CURDIR)/$(ALLEYS_DIR) 2>&1 \
+		| tee $(ALLEYS_DIR)/run.log | grep -E 'CAMERA_LOOKS|SCRIPT ERROR|^ERROR' || true
+	grep -q 'CAMERA_LOOKS_DONE ok=true' $(ALLEYS_DIR)/run.log
+	@echo "Now LOOK at $(ALLEYS_DIR)/index.html"
 
 ## Control X4: what spawning a 30-a-side army costs per vehicle (FIGHT's stall). SPAWN_THEME=default compares the box art.
 spawn-cost: import ## Headless: ms per spawned vehicle, first of each type vs the rest, per faction army

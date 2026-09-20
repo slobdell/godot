@@ -839,7 +839,7 @@ The kickoff prompt is one line; this section is the rest.
     predict the same observation, **stop looking harder at the observation and find the cheap test that separates
     them** (cf. lesson 54 — a probe consistently measuring a bridge, broken open by implausibility rather than by
     repetition).
-65. **A differential question implemented as an absolute comparison produces a confident false accusation.** Round 6,
+65. **FIXED IN ROUND 6 — READ THIS FIRST (verified by feel, round 9, 2026-09-20 `32c18aea`).** `announcer-record-smoke` and `music-smoke` now run a control match in the same invocation and compare the two hashes to each other; they never open the baseline file. feel proved it four ways (a stale baseline line reddens `sim-baseline` and leaves both smokes green; a skewed seed makes `music-smoke` name the soundtrack). **This lesson cost a round-9 backlog slot because it still read as current: when a round fixes what a lesson describes, the lesson is amended in the same commit or gets a "fixed in round N" line at its head.** *Original text:* **A differential question implemented as an absolute comparison produces a confident false accusation.** Round 6,
     found by combat while verifying CP4: with the sim baseline legitimately stale, **three** targets failed on the same
     pair of hashes — and only one of them said anything true.
     ```
@@ -2083,7 +2083,8 @@ The kickoff prompt is one line; this section is the rest.
        glass over every effect keyed to hull size, and a defect that survived rounds of play became obvious in one frame.
      - **And it was found because a human looked at a screenshot sent for a different purpose.** Eighth defect this round
        caught by looking rather than by a test.
-137. **⚠ THE SIM BASELINE ONLY FIELDS TANKS. "sim-baseline passed" means "a tank-vs-tank match on foundry is unchanged",
+137. **⚠ SUPERSEDED IN ROUND 8 — READ THIS LINE FIRST.** combat widened the baseline match at round 8's close (`sim_baseline_green.json`: `tank, gang_tank, scout, artillery, syn_scout` vs `law_tank, tank, gang_scout, ifv, syn_scout`, the War Rig included *because it is the longest hull and the one whose box most recently changed*). **The warning below is history**: the baseline now sees wheeled hulls, the rig, fixed mounts and hover. Round 9, squad pre-registered "the hash will not move" on the strength of this lesson's headline and was wrong — its brief quoted the widened match two paragraphs above the sentence it relied on. **A lesson written as a standing warning outlives the thing it warned about and still reads as current, because warnings do.** When a lesson's premise is fixed, write the supersession INTO the lesson, at the top.
+     *Original text:* **THE SIM BASELINE ONLY FIELDS TANKS. "sim-baseline passed" means "a tank-vs-tank match on foundry is unchanged",
      and we have been reading it as "gameplay is unchanged".**
      Three predictions that it would move failed in one day, and I chased the third:
      ```
@@ -2422,3 +2423,206 @@ The kickoff prompt is one line; this section is the rest.
     the fix was `git merge --ff-only main` in each; `tools/worktree.sh` now does that itself and refuses loudly when a
     branch carries unmerged commits. **After creating worktrees, read the `VS MAIN` column before handing out the
     kickoff prompt** — `0/0` on every row is the launch condition.
+153. **A saturating cost is harmless as one addend and blind as a priority level, because inside a level it only ever
+    competes with itself.** Round 9, nav's first run of A7: the pre-registered falsifier test — *a gun held 36 m outside
+    its slot must slide back rather than stand still* — **failed on the fix that exists to eliminate that stall.**
+    `PENALTY_LEASH` clamps at `LEASH_FALLOFF` (10 m) past the slot radius. As a *penalty* summed with other terms that
+    was fine: the other terms still separated the candidates. Promoted to a *level*, a unit far outside its slot has
+    every candidate clamped to the same 1.0, the level ranks nothing, hands a fully tied set down, and the preference
+    level keeps the unit where it is. **Every cost that becomes a level must be monotone in the thing it prices over the
+    whole range it can see.** Two of nav's other level costs needed re-checking for the same reason. This is catalogue
+    Part 2's warning one layer down — a term correct in a weighted sum is not thereby correct in a lexicographic
+    ordering — and squad (A8–A10) and combat (A2) are converting weighted terms this round too.
+    **combat's sharpening, the same day, which found a second instance:** a saturation destroys ranking only when it
+    clamps the quantity being *ranked*. A capped *penalty* subtracted from every candidate is an equal offset and
+    preserves order; nav's leash clamped the thing that *was* the level. But `maxf(score − penalty, 0.0)` — a floor on
+    the score — ties every under-water candidate at 0.0 and the argmax falls through to **array order**, an arbitrary
+    decision with no relation to the fight, reachable for a heavy hull mid-switch. Removed; scores may go negative, and
+    a test asserts two candidates beyond the cap still rank. **Ask of every clamp: is it on the price, or on the thing
+    being compared?**
+    **nav's corollary, the same afternoon, which cost a red duel:** *making a cost monotone changes what its tolerance
+    means.* The monotone arc cost kept `TOLERANCE` 0.25 and the duel's front hits fell 100% → 75%, because
+    `(1 − dot)/2` reaches 0.25 at 60° where the old floored form reached it at 41°. Fixing a saturation without
+    re-deriving the tolerance beside it quietly loosens the level. Three instances in one day — nav's leash clamp, nav's
+    `_front_share` floor, combat's score floor — and combat's framing names the family: **the ranked set was already
+    destroyed before the ranking ran.**
+    **And the round's second load-bearing accident (lesson 50's shape):** A7 passed every scenario but squad's slot
+    drift (15.4 → 42.1 m). An attacking element's members carry no leash (`element_slot()` returns null for `bound`
+    and `maneuver`), so under the old blend `range` and `continuity` compromised *by accident* to 15.4 m, and strict
+    priority removed the accident. nav parked A7 behind its switch rather than tune the tolerance, and put the
+    decision — do attacking members carry a task region? — to its owner, squad.
+154. **A run that exits 0 with the expected numbers can still have done none of the thing you asked for.** Round 9,
+    metrics' first positive-control run reproduced round 8's four oscillation percentages exactly and **wrote no
+    trajectory log at all** — at `aa984edd` the `nav-fight-maps` target had no `$(NAV_FLAGS)` pass-through, so the
+    `--trajectory=PATH` flag never reached the probe. The numbers were right because the probe was unchanged; the
+    instrument under test had simply not run. **Before reading a control's numbers, check that the artefact the new
+    tool was supposed to produce exists and is non-empty.** Sibling of lesson 27 (verify the edit reached the build).
+155. **Provenance stamps must read the environment the remote wrapper actually provides.** The trajectory emitter's
+    header said `commit=unknown` on builder0 because `tools/remote.sh` excludes `.git/` from the sync and exports
+    `TANK_SQUAD_COMMIT` instead — and says so in its own comment. Any new tool that stamps a commit reads that variable
+    first and falls back to `git rev-parse`. A number with `commit=unknown` beside it is lesson 10's failure by a new
+    road.
+156. **A probe can print entirely true numbers about a question it cannot answer, when the thing under test was
+    selected by something nobody read back.** Round 9, two instances in one day. combat's arm counter ran clean on yard
+    seed 3 and **the War Rig was never on the field** — the seeded CPU draft drew `gang_hail`, so the pre-registered
+    rig-vs-rat-rod claim was unanswerable and nothing said so. metrics' first control run reproduced round 8's numbers
+    and **wrote no log** because the flag never reached the probe (lesson 154). Same shape: an input that decides what
+    the run measures (which roster, which flags, which arena) was chosen upstream and never echoed. **Fixes that
+    generalise:** name the archetype rather than seeding a draft; a probe **refuses** a run whose `--require=` unit or
+    artefact is absent; and every resolved knob is printed into the output (lesson 44) so a wrong selection is visible
+    in the artefact, not only in the conclusion.
+157. **A gate that cannot find its inputs must FAIL, not pass — and three instances in one round say this shape is
+    common.** Round 9, metrics, found while timing T1: **`make remote T=check` has never parse-checked a file.** `lint`
+    lists files with `git ls-files`, `tools/remote.sh` excludes `.git/` from the sync (and a worktree's `.git` is a
+    pointer file to a gitdir that never travels), so on builder0 git answers *"not a git repository"*, the `for` loop
+    over a failed command substitution iterates zero files without tripping `set -e`, and the recipe printed
+    **"lint: all scripts parse"** — true of zero scripts — with exit 0. Local `make check` linted properly, so parse
+    errors were caught only by whoever ran locally; **every "this commit is green" that rested on the remote check was
+    not parse-checked**, and `main` was merged on that basis. Fix (with CP1): fall back to `find` when git cannot
+    answer (verified: the same 531 files), **fail loudly on an empty list**, and print the count in the success line.
+    The shape, seen three times this round: arena's four bare test functions `unittest discover` never collected;
+    metrics' control run that exited 0 having never written the log (lesson 154); and this. **The absence of work must
+    never read as the success of work: every gate prints how many things it checked, and zero is red.**
+158. **If the thing under test advances on `delta`, the test owns the clock.** Round 9, found by nav at the branch
+    point and fixed by control: `test_the_camera_turns_to_face_where_the_selection_faces` spun on `await
+    tree.process_frame` until **3000 ms of wall clock**, so on a loaded laptop it flaked one run in three, and nav spent
+    two bisection experiments hunting a regression that did not exist. A wall-clock budget in a behaviour test is a
+    measurement of the machine (`verification.md` already forbids judging timing in `check`). Fix: take the rig off
+    the tree's process loop and step it at a fixed delta — the same 2 s of simulated time on any machine at any load;
+    6/6 three runs in a row with seven streams live. **T1 makes a loaded machine the normal case**, so every remaining
+    `await`-until-wall-clock in a behaviour test is a flake waiting to happen; grep for them before CP3.
+159. **The suite that certifies a commit green does not run the scenarios the round's verdicts are read from.** Round 9,
+    nav, cherry-picking squad's leash commit `6e0c9968` (1270 passed on builder0) to measure the A7 drift: the drift
+    scenario **errors out** — `Invalid access to property 'pitch' on StubElement` at `scenario_elements.gd:80` — because
+    the commit taught the scenario to read `element.pitch` and the scenario is staged with `StubElements`, which has no
+    `pitch`. `make check` cannot see it: **`ai-scenarios` is not in `check`** (`mk/core.mk:85`), so squad's two
+    acceptance scenarios, combat's two, the base-of-fire scenario gating the level-0 leash and the drift scenario gating
+    A7's default — every behaviour assertion this round prefers over a ladder (lesson 150) — is outside the gate. "Green"
+    has meant "green except the scenarios" all round. Lesson 157's shape a second time in one night. **Fix (lesson 42's
+    honest form, given to metrics for CP3): put `ai-scenarios` in `check` behind a committed expected pass/fail/pending
+    count, failing on a CHANGE in the count, so the one pre-existing laptop-speed failure does not turn the gate red and
+    a new script error does.** And a stream that changes a scenario runs `make ai-scenarios` before naming a hash.
+    **squad's own account, worth keeping in its words:** it HAD baselined `ai-scenarios` (44/1/2) as its brief said —
+    *"what I did not do was re-run it after editing a scenario file. The baseline was treated as a fact to cite rather
+    than as an instrument to re-use, and a baseline you never compare against is just a number in a document. The
+    value of a baseline is the second reading."* The fix (`b2f4a77d`) is also instructive: `StubElement.pitch` is a
+    **property** derived from the same formula the real element uses, not a captured field — scenarios stage an
+    element in two steps, and a captured value would have been stale *quietly*, passing the scenario while measuring
+    a leash the real element does not have. Worse than the crash.
+160. **Three small guards from show's first night, each cheap and each general.** (a) **`FxWorld.spectacle` is not a
+    kill signal**: it fires 0.15 on a near miss, 0.3 on a hit, 0.5 on a weak spot and 1.0 only on a kill, and five
+    consumers ride it — anything new wired to it without reading `weight` fires several times a second in a 30-a-side
+    fight. (b) **A bank of "pairwise incommensurate" periods needs a validator, not an eye**: show's first two banks
+    were 4:3 within 1% and 5:4 within two parts in a thousand, caught only because the check tests p/q for p, q ≤ 5 —
+    at ≤ 4 the second sailed through. Any stream scattering periods or phases (audio, feel) should steal it. (c) **A
+    "never do X" guard must scan code, not prose**: show's never-read-the-wall-clock test failed on its own comment
+    saying "never `Time.get_ticks_*`". Strip comments and string literals before grepping.
+161. **A derived limit is only as good as the caller that overrides it.** Round 9, the lead, awake at 02:00: *"you say
+    the bottleneck is machines but builder0 is totally unsaturated."* He was right. `tools/slot.sh` derives its slot
+    count from available RAM (lesson 148) — and `tools/remote.sh` **exported a hard-coded `TANK_SQUAD_SLOTS=3`** to
+    builder0 on every run, so the derivation never applied where it mattered. Measured: load 0.4 on 12 threads, 11.6 GB
+    available, three checks resident at ~1 GB each, a queue behind them. Raised to 6 (`5715ab75`); metrics' T1 memory
+    table decides whether 8 holds. **When you add a derived default, grep for every caller that sets the same variable
+    explicitly** — an explicit value upstream silently wins, and the queue looks like a slow machine.
+162. **Sanity-check one value before circulating ten — and the orchestrator must check one before ruling.** Round 9,
+    02:30: scale's new `corridor_widths` reported the direct route pinching below the widest hull on 8 of 10 maps;
+    the orchestrator ruled within minutes that every map's gaps would widen. scale retracted it twenty minutes later:
+    the measure was **twice the distance to the nearest obstacle**, a corridor width only with something on both
+    sides; yard's 4.72 m "pinch" was a route hugging one wreck with 20 m of open ground behind it. **A measure that
+    flags everything is usually measuring the wrong thing** — plausible on every map is the tell, not the reassurance
+    (lesson 34: a new instrument is checked against a case whose answer you know before its first number leaves the
+    stream). And lesson 26 for the orchestrator: a ruling is a relay to the lead with authority attached; ask what one
+    value looks like in the world before acting on a table of them.
+163. **Noticing a missing guarantee and writing it down is not the same as having it.** Round 9, in nav's words, at
+    squad's request, because it covers the most of the night's mistakes across every stream. nav told squad in prose
+    that A1's nav half *"could in principle re-plan more in some regime and nothing asserts it cannot"*, and treated
+    having said it as covering it. squad said *write that assertion*. It failed on the first run: `drifted =
+    _path.size() < 2` was evaluated **independent of `cadence_due`**, so a hull with no route re-planned on ticks where
+    the thing A1 replaces would not have — **A1 doing more of what it exists to reduce, behind a switch that is off by
+    default, so nobody would ever have seen it.** squad's version is broader: four instrument defects in one night, and
+    *every one was findable from something already written down* — the brief named the `ai-scenarios` trap by number
+    and the commit still broke a scenario; the widened baseline was quoted two paragraphs above the stale lesson it
+    reasoned from. **In every case: the note, not the check.** Two practices to put beside it: **ask the machine what
+    it holds** (`ssh builder0 "grep -c <symbol> <file>"` names the tree a verdict belongs to in one query; rsync
+    timestamps versus commit times is how round 8 mis-identified one), and **check an instrument's headroom in the
+    control arm before running the treatment** (`stuck_units` pinned 30/30 in both arms carried no signal;
+    `oscillating` at 0.004 moved twelve-fold) — *an instrument at the end of its range is indistinguishable from one
+    that is not connected.* All three are one rule at different distances: **when a fact is one query away, query it**,
+    instead of an inference that is right most of the time, which fails silently and only when it matters.
+164. **A flag that silences a suite is worse than one that breaks it — the break is visible.** Round 9, squad: with
+    `DEFORM_ENABLED := false` (A8 switched off on its measurement), `fit_to_corridor` returns the identity, so a sweep
+    asserting *"hulls stay clear at every corridor width"* was asserting that an **undeformed** formation is clear —
+    which X1 already guarantees unconditionally. Three of five surviving tests passed without testing anything while
+    the Status said A8's invariants were *"asserted over a sweep"*; two others broke, which is the only reason the three
+    quiet ones were found. Fix: **a test suite for a switched-off mechanism switches it on for itself** (and restores the
+    flag in teardown), so the geometry is asserted whether or not the mechanism ships on. Sibling of lesson 23 (a
+    behaviour behind a flag has not shipped) on the test side: a test behind a flag has not tested.
+    **Third coat, the same night (squad, A10):** the perturbation test reported *"spurious 0 of 384 assignments changed
+    for a 0.5 m nudge"* — and its `_nudged()` added **the same vector to every member**, a rigid translation that leaves
+    the members' geometry relative to each other untouched, so the auction had nothing to re-seat. Station-keeping
+    error is members drifting *independently*, which is what four other tests exercise, and the tip went red on
+    exactly those four (two of them in control's file). **A test whose input cannot move the thing it measures reports
+    zero and looks like proof. A "0 of N" result is evidence only once the instrument has been shown to produce a
+    non-zero at all** — nav's non-vacuity guard for the tube, applied to a measurement instead of an assertion.
+    **Fourth coat (squad, A10 stood down):** the rigid perturbation was NOT what hid the four failures — independent
+    jitter still reports 0 of 512. What hid them: *every test exercised tiers only in cases where the tie-break could
+    not matter.* The instrument was on and could move; it never visited the case. And the failure itself was a
+    load-bearing coincidence: "heavies in front" had never been a cost, only the Hungarian's tie order (lesson 50).
+165. **A lesson describing a defect that has since been fixed is worse than no lesson — it sends a stream to rebuild
+    something that works.** Round 9: lesson 65 (the two smokes comparing against the baseline file) had been fixed in
+    round 6, and feel's brief budgeted a build item on the strength of it; lesson 137 (the baseline only fields tanks)
+    had been superseded in round 8 and squad pre-registered a wrong prediction on it. Both now carry the supersession at
+    their head. **Convention from here: the commit that fixes what a lesson describes amends the lesson**, and a fresh
+    reader of this file reads the first line of a lesson as its current truth. Also learned on the way: `make
+    sim-baseline` does not skip on the laptop by nature — only because `sim_state_hash.txt` has no `glibc-2.39` line;
+    add one and the laptop self-checks (it produced `5dbb0689ddffc1c0`), though builder0's line stays canonical.
+166. **A headroom pre-check needs the same run length as the experiment — a short control arm is itself an instrument
+    at the end of its range.** Round 9, nav: at 45 s boneyard showed **zero** off-mesh arrival gates; at the
+    pre-registered 120 s it showed **408**. Refusing the map on the short run would have published "boneyard has no
+    off-mesh gates", which is false. The same check then scoped a claim honestly: A4's "43% of off-mesh gates need a
+    curve" was yard alone; across four maps it is ~20% and 0% on three, so the A/B runs on the cluttered maps only and
+    says so — and the map set itself was wrong: the pre-registration said *"the four maps `--arena=random` can deal"*,
+    but `random` deals from `Arena.ROTATION` (three maps), so the screen held two maps the player never sees and omitted
+    one they do; **a pre-registered set is checked against the code that deals it, not typed from a Makefile default** — and when the terminus was added the picture *reversed*: 55% of its off-mesh gates are blocked, the highest of any map, so the wrong set was not noise but bias with a direction, pointing at killing a row that earns its place on two of the three maps he plays. **A pre-registration names its population by reading it from the code** (`nav-fight-maps` now reads `Arena.ROTATION` and prints strays and omissions).
+    Also: `nav-fight-maps` opens with `rm -rf build/nav-maps`, so a re-run destroys the previous run's logs — copy first.
+    And control's version the same hour: `BlockCutaway` cut **nothing in a real match** while its pure
+    falsifier read 518 → 0 — `obstacles_root` was wired before the arena had built its bodies, so `_process` returned
+    early forever; only a node-level test in the real tree, and looking at the frames, closed the distance between
+    "the algorithm is right" and "the feature works" (lesson 23's shape, one layer down).
+167. **Round 9's motion switches are opt-in and inverted: `--nav-off=a4` ENABLES A4.** So `nav-fight-ab`'s arm named
+    `off` is the TREATMENT and the arm named `on` is the CONTROL. The target's own guard catches an inert switch (both
+    arms identical, or sharing a treatment line) but cannot catch a human reading the filenames the obvious way. Label
+    arms by treatment in every write-up, never by the flag's name (nav, 2026-09-20).
+168. **A process list filtered by NAME is not filtered by WORKTREE.** Eight checkouts on this laptop run the same
+    binary, the same script paths and the same make targets, so a `pgrep -f` / `ps | grep` match says almost nothing
+    about *whose* process it is. **Read `/proc/<pid>/cwd` before you act on a match** — before killing it, and before
+    concluding anything from it. metrics, 04:39: stopping one orphaned run of its own, killed the local `make remote
+    T=check` wrappers of control and squad (and reported combat's dead when it was alive: the read-only name match
+    misled the damage report twice while cleaning up the first mistake) (their builder0 runs survived, lesson 15; their
+    reporting lines did not). control, 03:10: walked a `--check-only` child's tree upward without checking cwd and
+    concluded a foreign check was running in its own worktree; it was combat's, and an hour went into a false premise.
+    The trap under the trap: **`pgrep -f <pattern>` matches your own command line containing the pattern**, so "is my
+    script still running?" answers yes either way — filter by cwd, or check for the artefact the process produces.
+    **And the guidance on lost wrapper lines:** re-run rather than reconstruct stays the default, *except* that reading
+    the box's own `build/check/*.log` with its provenance stated is a primary artefact, not a reconstruction —
+    `check passed: N targets` cannot print under `make -j` without `-k` unless all N succeeded, so the count exposes an
+    early abort more precisely than an exit code; check the log's timestamp first, it persists between runs.
+169. **Shader `TIME` keeps advancing while the game is paused, so two captures of "the same" frozen scene differ before
+    anything else does.** Round 9, show: a luminance gate comparing show-on against show-off on a paused tree had a
+    guessed noise floor, and two frames sat outside it for reasons nobody could attribute — the neon flicker's 12.5 Hz
+    dropouts, the crowd and the ad screens are all elsewhere a frame later. The run now shoots a **null** (the same
+    half twice, changing nothing) and takes its bar from that measurement (`max(3%, 2 × the null's p95)`), printing the
+    null's median, p95 and worst so the bar is never a mystery. **Any frame comparison gate measures its own null
+    first.** Same night, same stream, lesson 27 again: a string replacement that did not match shipped as "done" in a
+    commit message and a report; the edit now asserts on the way in and checks on the way out.
+170. **A "waiting on" line is a claim with a date on it, and an undated one goes stale silently.** Round 9: control's
+    Status said *blocked on nav's `legibility.why` key* and nav's said *blocked on control's S4 signature* for hours,
+    with the work done on both sides and the signature already given. Neither re-read the contract; the orchestrator
+    broke it by reading both Statuses in one sitting. **Every *waiting on* line carries the date it was written and
+    what would discharge it, and a tick re-reads the pairs.**
+171. **A switched row and its arm field are ONE change.** nav added `a4` to `NAV_FIGHT_ARM` two hours after landing A4
+    (the arm was provable only from the `off=` list), then landed A6 with the identical omission, in the file whose own
+    comment explains why the field matters — found only by running the counter in a fight. The commit that adds a
+    switch adds its arm line, its counter, and the "could it act?" denominator (`a6_asked 1087, a6_no_corridor 1087,
+    a6_nose_narrowed 0`: reached a thousand times, able to act zero times — without the denominator that reads as "does
+    nothing" instead of "never had its input").

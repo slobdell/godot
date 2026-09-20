@@ -10,13 +10,32 @@ func test_faction_slots_have_contracts_fitted_to_the_role() -> void:
 			for part in ["hull", "turret", "weapon"]:
 				assert_true(AssetContracts.has("unit.%s.%s.%s" % [faction, role, part]), "unit.%s.%s.%s has a contract" % [faction, role, part])
 	var condemned_twin: String = AssetContracts.ROLE_UNITS["tank"]
-	assert_eq(AssetContracts.get_contract("unit.gangs.tank.hull")["guide"], AssetContracts.UNITS[condemned_twin]["hull_size"],
+	assert_eq(AssetContracts.get_contract("unit.gangs.tank.hull")["guide"], AssetContracts.unit_info(condemned_twin)["hull_size"],
 			"a faction's tank-class hull fits the Condemned tank's box")
 	assert_eq(AssetContracts.unit_pivot("law.scout"), AssetContracts.unit_pivot("scout"), "and its turret sits where the scout's does")
 	assert_eq(AssetContracts.get_contract("unit.syndicate.ifv.hull")["file"], "unit_syndicate_ifv_hull", "files are named by slot")
 	assert_eq(AssetContracts.unit_of("unit.pirates.tank.hull"), "", "unknown factions have no slots")
 	assert_eq(AssetContracts.unit_of("unit.gangs.boat.hull"), "", "unknown roles have no slots")
 	assert_eq(AssetContracts.unit_of("unit.ifv.hull"), "ifv", "today's roster slots still resolve")
+
+
+func test_the_pipeline_sizes_art_from_the_CATALOG_and_not_a_copy_of_it() -> void:
+	## Round 9 (scale's finding, Invariant 0): AssetContracts used to carry its own hull_size and muzzle_height and
+	## had already drifted from Units.PROFILES with nothing tying them together -- inert for gameplay, but every model
+	## generated after the roster resize would have been normalised to the stale numbers in silence.
+	## This is the mutation check: every one of these heights was 1.6 in the old frozen table, so that table fails
+	## this test as written, and the resize cannot drift away from the pipeline again.
+	for unit_id in AssetContracts.UNITS:
+		var catalog: Variant = Units.stat(unit_id, "hull_size")
+		var info := AssetContracts.unit_info(unit_id)
+		assert_eq(info["hull_size"], Vector3(float(catalog[0]), float(catalog[1]), float(catalog[2])),
+				"%s's contract box IS its catalog box" % unit_id)
+		assert_near(float(info["muzzle_height"]), float(Units.stat(unit_id, "muzzle_height", -1.0)), 0.0001,
+				"%s's contract muzzle IS its catalog muzzle" % unit_id)
+		assert_eq(AssetContracts.get_contract("unit.%s.hull" % unit_id)["guide"], info["hull_size"],
+				"and the contract the pipeline enforces is built from it")
+	assert_eq(AssetContracts.STANDARD_HULL, AssetContracts.unit_info("tank")["hull_size"],
+			"the turret-scale reference is the catalog's tank, not a frozen 2.4 x 1.6 x 3.6")
 
 
 func test_the_condemned_fill_every_role_from_todays_roster() -> void:

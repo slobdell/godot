@@ -181,4 +181,184 @@ cannot spare). Pre-register the sim hash unchanged; if it moves, it is the same 
 
 ## Status
 
-Not started (brief written 2026-09-19 evening by the orchestrator).
+### Plan (feel, 2026-09-20)
+
+**Order changed at the top, with a reason: X3 first, then X1 → X2 → X6 → X5 → X4 (after CP2) → X7.** X3 is a page,
+it costs no build, and *two other streams are blocked on it* — nav cannot write A7 code and control cannot write the
+readout until it is signed. Everything else in the backlog is mine alone. So the blocking doc goes first and the
+rest of the round runs behind it.
+
+- **X3 — `_agents/legibility.md`: DONE. SIGNED by feel, nav and control (2026-09-20). A6 motion code is unblocked.**
+- **X1 — the trailer cut: DONE** (`4a8c1843`), 10 tests, every number measured off the mesh.
+- **X2 — the hinge: code and tests DONE** (`4a8c1843`); **the lead's frames are owed** (`make rig-hinge`).
+- **X8 — the pipeline's private copy of the roster (scale's finding, Invariant 0): DONE**, mutation-checked.
+- **X6 — the two smoke targets: ESTABLISHED, and the premise is wrong.** Both are ALREADY differential; see below.
+- **X5 — the lead's poses.** Next, and the brief's camera is wrong: see *The 12° correction*.
+- **X4 — the every-unit box-fill test.** Blocked on CP2 by design.
+- **X7 — the airship.** Stretch, last.
+
+### ⚠ The 12° correction (control, 2026-09-20) — it invalidates a line in this brief
+
+This brief, `legibility.md`'s first draft and my X5 item all said *"the lead's 12° and 35° poses"*. **That is wrong
+twice.** 12° is the camera he played and **rejected** — *"I was totally wrong about the camera, the game is
+unplayable now with low field of view"* — and "35°" in that phrase is an **FOV**, not a second pitch. **His pose is
+one pose: pitch 21°, FOV 35°, 49 m, auto-frame on.** Fixed in `legibility.md` §6 and in `make rig-hinge`, whose
+second frame is 45° and is labelled in the source as a detail view, never as his. **X5 is shot at 21°/FOV 35/49 m,
+plus a low pose to hunt the void — the low pose is a diagnostic, not a judgement.**
+
+### X1 + X2 — the rig bends at the fifth wheel (`4a8c1843`, 10 tests, laptop)
+
+**The cut is not a plane, and that is the finding.** The tanker's front cap overhangs the tractor's drive tandem, so
+no single box separates them: a plane at the fifth wheel takes the drive wheels with the trailer, and a plane aft of
+them leaves 1.8 world metres of barrel rigid on the tractor. The cut is a **union of boxes** — everything aft of the
+tandem's rear wheels, plus the barrel *above* those wheels — so `FactionArt.split_mesh` grew a `split_mesh_boxes`
+beside it and the old single-box call is a wrapper. `GUN_CUTS` is untouched.
+
+**The jackknife limit is measured, not chosen.** A test voxelises everything forward of the tanker's cap (cab,
+stacks, hood, plow, fuel tank), swings the trailer a degree at a time and reports the last clean angle: **90°** —
+because the trailer's overhang ahead of the pivot is only 0.25 model m, so it very nearly pivots in place. **The
+limit is therefore not geometry-bound**, and 65° is a physical choice (the brief's 65–70°) with 25° of proved
+clearance. What the test deliberately does *not* guard: the cut faces at the fifth wheel are coincident, because the
+rig is one mesh and the chassis rails run through the cut, so a few centimetres of rail overlap at any angle —
+invisible under the barrel and between the wheels, the same accepted cost as the collider (S2).
+
+**The hinge** reads the **drawn** pose and the **frame's** delta (the sim is 30 Hz with interpolation on), snaps to
+zero on a teleport so a respawn cannot draw a streak from the wreck, and derives its wheelbase in world metres from
+the model's world scale — **so it survives CP2 without an edit**. The gun rides the trailer: its pivot is reparented
+under the trailer's and the turret's lay is taken back out, so gunnery is unaffected.
+
+### X2 — the hinge measured in a real match and on a known corner (`72a06181`, laptop, Intel UHD 620)
+
+**In a live skirmish** (`--player=cpu:gang_ram --player-faction=gangs --budget=6500`, `foundry`, seed 3; **32 rigs,
+864 rig-frames**, sampled per rig per frame, not as a maximum over the field):
+
+| | |
+|---|---|
+| mean articulation | **4.1°** |
+| peak | 50.4° |
+| rig-frames past 30° | **1.7%** |
+| rig-frames at the 65° clamp | **0.0%** |
+
+That is the answer to metrics' warning (*"56% of all reversals in a fight are the wheeled creep, so the trailer will
+jackknife often"*). It does jackknife — a peak of 50° in six seconds of deployment — but it **lives near straight**
+and never pins at the clamp, so the fleet does not read as permanently folded. **The first version of this
+measurement reported only the maximum over all 32 rigs, which one vehicle pins and which cannot tell "the fleet is
+folded in half" from "one rig is reversing out of a corner".** Fixed before it was reported.
+
+**On a known corner** (radius 26 m, 9 m/s, trailer wheelbase 5.06 world m), degrees of articulation by degrees
+through the turn: `0 → −6.3 → −9.4 → −10.3 → −10.5 → −10.5`. The closed form for steady-state off-tracking is
+`asin(L / R) = asin(5.06 / 26) =` **11.2°**, and it settles at **10.5°** by a quarter of the way round — the deficit
+is the approach transient. **The law is right end to end, not just in the unit test.**
+
+**Reversing** (the creep case, from the corner's end pose with the kink still in it): `−18.7°` at 3 m, `−47.2°` at
+8 m, **clamped at −65° by 16 m** and held. It diverges, which is what jackknifing is, and the clamp catches it.
+
+**Owed on X2:** `build/rig-hinge/` frames for the lead, `make remote T=sim-baseline` on the branch
+(pre-registered: the hash does not move), and `make perf-scene` before/after with a gangs army (M1).
+
+### X8 — the asset pipeline had its own copy of the roster (scale's finding; Invariant 0)
+
+`assets/pipeline/asset_contracts.gd` `UNITS` carried its own `hull_size` and `muzzle_height` for five units, with no
+test tying it to `Units.PROFILES`, and **it had already drifted**: the tank 1.6 m tall there against 2.4 m in the
+catalog, the IFV 1.6 against 3.0, artillery 1.6 against 2.8, the Lancer 1.6 against 2.2 — only the scout agreed.
+Inert for gameplay, and **exactly the thing that would have normalised every model generated after CP2 to the old
+toy sizes, silently.** `UNITS` is now an id list; the numbers come from the catalog on every call, and
+`STANDARD_HULL` (the turret-scale reference) with them. **The mutation check is free and real: every one of those
+heights was 1.6 in the old table, so the old table fails the new test as written.**
+
+### S6 (show) — where the lighting hook belongs in my materials, recorded before the agent starts
+
+The orchestrator granted `show` additive carve-outs in `CityBlock`'s emission, `arena_dressing.gd`'s perimeter rim,
+`NeonSigns`, the floodlight pools and `CyberMaterials.neon()`. Asked for an opinion on a per-instance custom-data
+slot versus a material uniform: **both, and they are not interchangeable.**
+
+- **Per-instance custom data on the MultiMesh** for anything that differs *between instances* — individual windows
+  breathing, block edges pulsing out of phase. It is how the crowd is already driven, it costs no draw call and no
+  light, and a uniform cannot express it at all. A `show` that reaches for a uniform here ends up adding a second
+  MultiMesh to get the variation back, which breaks its own zero-draw-call rule.
+- **A material uniform** for anything *global* — the rim's colour and level, a pool's intensity, the arena wash. One
+  write a frame.
+- **The rule:** differs between instances → custom data; one number for the whole fixture → uniform; never add a
+  MultiMesh or a light to get variation a custom-data channel could have carried.
+
+**And the constraint `show` must know before it designs:** `AdBroadcast`'s ad channel **already** drives the ground
+wash from each ad's average colour, so an arena-wide light cue is a *second writer to the same perceived quantity*.
+Those need one owner or they will fight, and the fight will read as flicker neither stream can reproduce. Also: the
+instance-uniform ceiling is real and `make perf-scene` already counts *"Too many instances using shader instance
+variables"* as a first-class number — read that counter, not only the frame time.
+
+### Two traps that cost me time today, both worth a lesson
+
+**1. A non-simulating `Tank` is a REPLICA, and setting its transform does nothing.** With `simulate=false` the tank
+eases its own position and yaw toward `sync_position` / `sync_yaw` every rendered frame (`tank.gd:456-465`). Set the
+transform alone and it is undone inside the frame — so my hinge, which integrates the *drawn* motion, integrated a
+drift toward the origin and reported **0.0° at every milestone of a corner that visibly happened**. The law had unit
+tests and every one of them passed; what was broken was everything between the law and the tank. `facing_audit.gd`
+already hit this with `sync_turret_yaw` and says so in a comment — **which I read, and did not generalise.** There is
+now an end-to-end test that drives a rig round a real corner in a real node tree, because that is the only kind of
+test that could have caught it.
+
+**2. Killing a `make` leaves `tools/slot.sh` holding a machine-wide slot, and the stale `.owner` file makes a dead
+holder look alive in every other agent's log.** I started a second `make lint` while my first was still running (the
+in-checkout flock correctly refused it), then killed the wrong process in the chain: the `make` died, its `slot.sh`
+wrapper lived, and it held one of the laptop's two slots — with nothing running inside it — until I noticed. Every
+other stream's queue was behind it. **Kill the `slot.sh` wrapper, not the `make` inside it**, then check
+`/tmp/tank_squad_slots/` and remove a stale `slot<N>.owner` by hand: the lock releases with the process but the
+owner file does not, so the banner every waiter prints keeps naming a job that ended. Reported to the orchestrator
+for `_agents/remote_builds.md`, which is not mine. *(And the better habit, which builder0's idle 12 cores make
+obvious: `make remote T=...` rather than queueing locally behind six other agents.)*
+
+### X6 — established first, and the premise is wrong: both targets are ALREADY differential
+
+The brief and orchestration **lesson 65** say `announcer-record-smoke` and `music-smoke` answer a differential
+question against the shared baseline file. **Read the recipes: they do not, and have not since round 6.** Both run a
+**control match in the same invocation** (`expected=$(... no --music=on / no --announcer-record ...)`) and compare
+`actual` against `expected`; the baseline file is never opened. `mk/audio.mk:31-34` and `mk/announcer.mk:115-118`
+carry the round-6 comment explaining the fix. The only residue is a dead `key="control"` assignment in both recipes.
+
+**So X6 is not a build job.** What remains: the two experiments the brief asks for — run them on a tree with a
+deliberately staled baseline (they must still pass, proving the file is not consulted) and prove the comparison can
+go red — then delete the dead variable and **correct lesson 65**, which is the orchestrator's file. *(Recorded for
+the round: a lesson that describes a defect fixed two rounds ago sends a stream to rebuild it.)*
+
+### X3 — the A6 contract (S4): written, feel signed, nav reviewed
+
+`_agents/legibility.md` at **`4ec341d2`**. nav asked for one decision and got it.
+
+**feel confirms nav's level 3** (above formation, below the weapon band). A6 does not outrank the standoff band:
+its own falsifier bars trading exchange ratio for a tidy line; for the 3 hull-fixed units a law above the band would
+point the gun mount down the corridor and stop them shooting; and for turreted hulls the conflict is nearly empty,
+since level 2 constrains the *radial* component and leaves the tangential free.
+
+**The one change asked of A7's table — and the reason the page is worth more than a one-line brief: the falsifier is
+measured on VELOCITY, not on heading.** A6-a (the nose clause) cannot move P7 on its own, because a turreted hull's
+nose is already free of its gun and its velocity is chosen at levels 1, 2 and 5. So A6 also claims what level 3's
+null space currently gives away — *the sign of the arc*: when both shoulders serve the band equally, take the one
+that advances along the corridor. Level 3's remaining null space is speed alone. Circling is untouched; the
+*shoulder* is claimed. One cell in nav's table, and the difference between A6 mattering and A6 being cosmetic.
+
+Also settled in the page: the corridor is N1's `path_points` current leg with exactly one publisher; composition
+with the arc/armour task written per style (`strafe` 10 units, `angle` 8, `standoff` 3, `run` exempt as an A/B
+control); an inactive law must not read as a broken one (lesson 149), so active ticks are flagged with a reason and
+the falsifier is computed over them with the active fraction reported beside it; Invariant 0c answered as
+*"replaces nothing"* and then argued rather than asserted.
+
+### The rig, measured (X1's input; `9f864474`, laptop, `make assets-profile`)
+
+`unit_gangs_tank_hull.glb` is a long-nose tractor with a plow and a **tanker** trailer, natural 0.85 × 1.35 × 3.60 m,
+forward −Z, fit to the 14.0 m box = **3.889**. In model space:
+
+| feature | model z | world z (× 3.889) |
+|---|---|---|
+| plow tip (front) | −1.80 | −7.00 |
+| steer axle | −1.13 | −4.39 |
+| cab rear wall | −0.19 | −0.74 |
+| **gap: zero triangles in the body band (y 0.40–1.12)** | −0.19 … −0.01 | 0.70 m of air |
+| tanker front cap | −0.01 | −0.04 |
+| drive tandem axles | +0.19, +0.39 | +0.74, +1.52 |
+| trailer bogie | +1.55 | +6.03 |
+| tanker rear | +1.80 | +7.00 |
+
+New tool in the same commit: **`make assets-profile IN=… [AXIS= SLICES= BOX= CLIP=1 RENDER=1]`** — a slice table
+(triangles, height, width per slice) plus a **ruled orthographic side view whose pixels are metres**. A perspective
+turnaround cannot be read as a number, and the cut box has to be read off the mesh.

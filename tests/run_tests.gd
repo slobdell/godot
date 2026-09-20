@@ -47,7 +47,25 @@ func _run() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--filter="):
 			filter = arg.trim_prefix("--filter=")
-	for path in _discover(TEST_ROOT):
+	# T1 (metrics, round 9): --shard=I/N runs only every Nth file, so `make check` can run the suite across
+	# several processes instead of one. Round-robin over the SORTED discovery order, so the assignment is
+	# deterministic and every shard gets a mix of cheap and expensive files rather than one shard getting all of
+	# `tests/ai_scenarios/`. Absent, everything below behaves exactly as it always has -- including the final
+	# line, which stays the bare `N passed, M failed` an unsharded run has always printed.
+	var shard := -1
+	var shards := 1
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--shard="):
+			var parts := arg.trim_prefix("--shard=").split("/")
+			if parts.size() == 2:
+				shard = int(parts[0])
+				shards = maxi(1, int(parts[1]))
+	var discovered := _discover(TEST_ROOT)
+	var mine := PackedStringArray()
+	for index in discovered.size():
+		if shard < 0 or index % shards == shard:
+			mine.append(discovered[index])
+	for path in mine:
 		var script: GDScript = load(path)
 		# A file that doesn't compile loads as null, and one whose parse failed has no test methods: both used to be
 		# skipped silently, so a broken test file read as "everything passed" (ai, 2026-09-16).
@@ -89,7 +107,13 @@ func _run() -> void:
 				print("  FAIL  ", label)
 				for failure in case.failures:
 					print("          ", failure)
-	print("\n%d passed, %d failed" % [passed, failed])
+	# A shard prints a DISTINCT line and never the bare one, so that in a sharded run there is exactly one
+	# `N passed, M failed` in the output -- the total, printed by the make recipe after it adds the shards up.
+	# The orchestrator reads that line and nothing else (lesson 28); several of them would be worse than none.
+	if shard >= 0:
+		print("\nSHARD %d/%d: %d files, %d passed, %d failed" % [shard, shards, mine.size(), passed, failed])
+	else:
+		print("\n%d passed, %d failed" % [passed, failed])
 	quit(1 if failed > 0 else 0)
 
 
