@@ -122,9 +122,18 @@ not outlines on everything"*. I agree with feel. **You may not, and it is one wo
 
 ## What it costs
 
-**Under half a millisecond of GPU per frame**, no extra draw calls and no extra lights — the show rides surfaces the
-venue was already drawing. Roughly 1.5% of your frame budget at 30 fps. *(Measured on the build machine; being
-re-measured on the resized roster, since that landed after the first number.)*
+**No extra draw calls and no extra lights.** The show does not add anything to the scene — it rides surfaces the
+venue was already drawing, and changes fifteen numbers a frame. That part is structural, not a measurement: the
+code is forbidden from creating geometry or a light, and a test enforces it.
+
+**The frame cost is small enough that we cannot currently measure it.** Last night, before the roster resize, it
+came out at **0.22 ms of GPU — about 1.5% of a frame.** Since the bigger vehicles landed, two attempts this morning
+gave **+1.5 ms and −0.65 ms**: they straddle zero, which means the thing is smaller than the measuring error rather
+than that it got cheaper. The build machine is running eight streams' test suites at once and is too busy to see
+something this small.
+
+**So: no worse than before, and probably the same 1.5%** — being re-measured on a quiet machine, and the real figure
+will replace this paragraph rather than sit beside it.
 
 **And a check you did not ask for but should know exists:** every frame we shoot is measured for whether the venue
 out-competes the fight for your eye, against the same frame with the show switched off. **If the lights win, the
