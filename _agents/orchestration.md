@@ -2289,3 +2289,54 @@ The kickoff prompt is one line; this section is the rest.
    solved problem in the literature. **Fluency in a brief tracks what we already understand**, and the sections we
    wrote most confidently are the sections where an outside opinion was worth least. Before sending a brief, list the
    lead's open complaints and check each one appears **as a question**, not as background.
+
+146. **A timeout kills the wrapper, not the work — and then you launch a second copy onto the live first one.**
+   `_agents/remote_builds.md` already records this for `make remote`: a foreground run SIGTERMed by the harness keeps
+   running on builder0. The orchestrator did not think to apply it to a **local** command. A `timeout 300 make lint`
+   was reaped at 300 s, its Godot children survived, a second `make lint` was launched into the same checkout, and the
+   two shared one `.godot` import cache.
+   **The symptom looks exactly like a broken tree and nothing about it says "contention":** `Parse Error:
+   [ext_resource] referenced non-existent resource` for files that are **tracked and present**, then cascading
+   `SCRIPT ERROR: Nonexistent function 'roster'` for a method defined at `game/units/units.gd:866`. The orchestrator
+   told the lead `main` was red, **and asked a stream whether its worktree was to blame for a mess the orchestrator
+   had made.** control settled it by filtering `pgrep` on cwd and finding both offending pids in the main checkout.
+   Three rules out of one evening:
+   - **"I killed it" is not a reason to believe nothing is running.** Check for survivors before relaunching anything.
+   - **A cwd-filtered kill loop matches its own shell** — this one exited 144 by TERMing itself, which is the second
+     time that trap has been paid.
+   - **Fix it in the tool, not in the habit.** `mk/core.mk`'s `lint` now takes `flock -n` and **refuses** a second run
+     in one checkout rather than queueing, because a second lint is always a mistake and never a wait. Proven red
+     before being trusted: hold the lock, run it, confirm the refusal and exit 1, confirm it stops firing on release.
+
+147. **A positive control is the only thing that separates "harmless" from "never ran", and nav's caught one the same
+   night the blind baseline did.** nav's facing-arc A/B came back with **every figure identical between arms to three
+   decimals** — net/path, oscillating, both order buckets, `blocked_friend`, on all four maps. That is the shape of a
+   clean null, and it would have been reported as *"the facing pair is harmless"*. The counter nav had added for
+   exactly this purpose said otherwise: **`gates aimed 0, gates refused 0` in BOTH arms.** The arc never executed, so
+   nothing was ever compared.
+   **Cause:** squad's `_arrive_facing` attaches a facing only when `intended_facing()` is non-null, which needs the
+   order to carry one; `nav-fight` issues `move` with no facing and a CPU fight never sets one.
+   **So the honest claim is narrow, and the wording matters:** *"measured to never execute in a CPU fight; untested
+   under player facings"* — **not** "measured inert". nav asked for precisely that distinction in `HANDOFF.md` and was
+   right to. The cases where it does fire — a player drag-order carrying a facing, and a squad told to hold one for an
+   ambush — are exactly the cases the lead looks at, so round 9's probe must issue orders that carry a facing or it
+   re-measures nothing.
+   **This and lesson 143's blind baseline are one lesson with two instances:** an instrument that cannot detect the
+   treatment produces a green indistinguishable from a real null. We already had *"prove a guard can go red before
+   trusting it."* **The same rule applies to every A/B and every baseline: prove the arm is distinguishable before
+   believing the comparison.** An arm-engagement counter costs four lines and is the difference between a finding and
+   a fiction.
+
+148. **A capacity constant is wrong in both directions the moment it outlives its machine.** `tools/slot.sh` capped
+   heavy runs at 2, sized by a comment reading *"2026-09-14: 8 cores, 7.6 GB RAM"*. Five days later the lead saw
+   builder0 idle across 12 cores and asked whether to raise concurrency. Measured: **builder0 has 12 cores and 11.9 GB
+   available; the laptop has 8 cores and 2.4 GB available**, because six agent sessions hold the rest. At ~735 MB a
+   run, **raising a global default would have starved builder0 anyway while pushing the laptop into OOM.**
+   The fix is not a bigger number, it is **Invariant 0 applied to a constant**: the default is now derived from
+   `/proc/meminfo` at 2.5 GB a slot, clamped to [2, 4], so the laptop keeps 2 and builder0 takes 4 and neither can go
+   stale when the hardware changes again. Mutation-checked in both directions on both machines, plus the
+   unreadable-`/proc` fallback and the explicit-override path.
+   **And the knob the question was reaching for was the wrong one.** 12 cores sat idle because **a `make check` is
+   mostly ONE single-threaded Godot grinding ticks for 30-50 minutes.** More slots shortens the QUEUE; only
+   parallelism *inside* a check shortens the RUN. Recorded in the script so the next person asking "why is it idle"
+   gets the answer instead of the number.

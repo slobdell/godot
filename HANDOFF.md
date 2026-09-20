@@ -350,6 +350,24 @@ feel.
   Steam build, arena announcer audio, and the paused netcode, garage and progression streams.
 - **Disk:** the laptop is at 95%. `assets/incoming/` alone is 968 MB of raw generated art.
 
+## Two claims on `main` that are weaker than their commit messages say
+
+Both are the orchestrator's, both were caught by streams on 2026-09-19, and both are the same failure: **an
+instrument that could not have detected the treatment.**
+
+- **`6a8aaa8c` says the facing pair does not move the sim baseline.** It was measured against the old `sim-baseline`
+  match, which combat then showed was **blind to 5 of 6 mutations** — wheeled turn rate, fixed-mount fire arc, hover
+  speed, the rig's hull box and a turret traverse all left the hash unchanged, and only the tracked case registered.
+  Arrival-on-heading on a wheeled hull is plausibly inside that blind set. Re-run against combat's widened match
+  (`db837581`).
+- **The facing arc is not "measured inert".** nav's A/B returned every figure identical between arms to three
+  decimals across four maps — and its own arm-engagement counter read **`gates aimed 0, gates refused 0` in BOTH
+  arms.** The arc never executed. `_arrive_facing` attaches a facing only when the order carries one, and `nav-fight`
+  issues `move` without one, so a CPU fight never triggers it. **Write it as "measured to never execute in a CPU
+  fight; untested under player facings"** — the cases where it does fire, a player drag-order with a facing and a
+  squad holding one for an ambush, are exactly the cases the lead looks at. Round 9's probe must issue orders that
+  carry a facing or it re-measures nothing.
+
 ## The round-9 backlog is already written
 
 **[`_agents/research_catalog.md`](_agents/research_catalog.md)** is the curated output of an external research review
