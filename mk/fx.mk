@@ -106,10 +106,29 @@ rig-hinge: import ## Feel X2, S2: the War Rig bending at the fifth wheel -- its 
 # the instrumented arm 43% FASTER than the control, i.e. noise swamping any real difference. perf-scene already
 # alternates `all` and a layer seconds apart for every other layer; the trailer gets the same treatment.
 perf-trailer-ab: import ## M1: what the War Rig's hinge costs a frame, measured WITHIN one run (the no_trailer layer against the `all` phases either side)
+	@printf '>> perf-trailer-ab BEFORE: load %s | %s other godot\n' \
+		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"
 	@$(MAKE) --no-print-directory perf-scene PERF_NAME=perf-trailer PERF_LAYERS=no_trailer \
 		PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs"
-	@echo "M1 budget: a locked 30 fps at 1080p with 30 a side = 33.3 ms. Read the layer cost against that, not against zero."
-	@grep -E '^PERF_SCENE_LAYERS' $(BUILD_DIR)/perf-trailer.log || true
+	@printf '>> perf-trailer-ab AFTER:  load %s | %s other godot\n' \
+		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"
+	@$(PYTHON) -c "import json;\
+d=json.load(open('$(BUILD_DIR)/perf-trailer.json'));\
+ph=d['phases']; su=d['summary'];\
+alls=[p['avg_ms'] for p in ph if p['phase']=='all'];\
+off=[p['avg_ms'] for p in ph if p['phase']=='no_trailer'];\
+noise=(max(alls)-min(alls)) if len(alls)>1 else float('nan');\
+cost=su.get('layer_cost_ms',{}).get('no_trailer',float('nan'));\
+gpu=su.get('layer_cost_gpu_ms',{}).get('no_trailer',float('nan'));\
+draws=su.get('layer_draw_calls',{}).get('no_trailer',float('nan'));\
+print();\
+print('PERF_TRAILER_AB phase      avg_ms   p95_ms   p99_ms  draws');\
+[print('PERF_TRAILER_AB %-10s %7.2f %8.2f %8.2f %6d' % (p['phase'], p['avg_ms'], p['p95_ms'], p['p99_ms'], p['draw_calls'])) for p in ph];\
+print();\
+print('PERF_TRAILER_AB hinge cost: %+.2f ms CPU, %+.2f ms GPU, %+.1f draw calls' % (cost, gpu, draws));\
+print('PERF_TRAILER_AB NOISE FLOOR: the repeated all phases spread %.2f ms (%s)' % (noise, ', '.join('%.2f' % a for a in alls)));\
+print('PERF_TRAILER_AB VERDICT: %s' % ('USABLE -- the cost is larger than the spread between identical phases' if abs(cost) > noise else 'NOT USABLE -- the cost is INSIDE the spread between identical phases; this is noise, do not quote it'));\
+print('PERF_TRAILER_AB M1 budget is 33.3 ms (a locked 30 fps at 1080p, 30 a side). Read the cost against that, not against zero.')"
 
 AIRSHIP_RES ?= 1920x1080
 airship-look: import ## Feel X7: is the Syndicate airship EVER in the lead's field of view? Sweeps every camera yaw x the whole orbit at his pose and reports the fraction -> build/airship-look/ (needs a display; AIRSHIP_FLAGS=, ARENA=)
