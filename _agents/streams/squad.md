@@ -707,6 +707,67 @@ neither is a tonight-sized change. Turning A8 on again is one constant, and the 
   put on the record *before* running it: what makes a wheeled hull late is its turning circle and its gear changes,
   which are nav's A7/A11 subjects. **A9 is not the fix for a wheeled squad and I am not claiming it is.**
 
+### X4 (A10) is built, and its falsifier is met — after a FOURTH instrument defect, this one in my own test
+
+`TacticsFormation.seat()`'s Hungarian solver is replaced by a **deterministic integer auction** (Bertsekas) with an
+**incumbent bonus**, and **both hysteresis patches are deleted**: `STABLE_MARGIN` and round 8's `fixed` flag, the
+latter along with its plumbing through `ElementPlan._group` and its caller. The four determinism properties the
+catalogue chose auction for are honoured: pure integer utilities (scaled by 10⁴), a fixed ε, a hard bid cap, and bids
+taken in member order, which is unit-name order. **Lesson 153 is respected explicitly: nothing in the utility is
+clamped**, because a saturated driving term would tie two slots for a far unit and the tie order would silently decide
+the formation. `_hungarian` is kept as the reference the auction is tested against and is called by nothing in the
+game.
+
+| pre-registered quantity | before A10 | after A10 | bar |
+|---|---|---|---|
+| spurious re-assignments under a 0.5 m nudge | 0 of 512 | **0 of 512** | 0 |
+| crossing driving paths on a formation transition | 0 of 96 | **0 of 96** | 0 |
+
+**The fourth instrument defect, and it is the one I am least comfortable about because I wrote the test.** My first
+version of the crossings measurement passed the previous seating across a formation change by hand, and reported **8
+crossings before A10 and 47 after** — a regression that would have got A10 reverted. **Both numbers measure a
+configuration the game cannot produce:** `ElementPlan._previous_seating` returns `{}` whenever the formation name or
+the member count differs from the one the seating was recorded under, so **a formation transition always re-solves
+from scratch** and there is no incumbency to cause a crossing. With the test corrected to what the contract actually
+does, both solvers read 0 and the interesting quantity was never crossings at all.
+**Which means the honest reading of the "8 crossings" I reported earlier in this Status is: that number never
+existed.** It is struck, not revised.
+
+**What the corrected measurement did find, and it is a real A10 defect that is now fixed:** at `AUCTION_BIDS_PER_UNIT`
+= 8 the auction hit its cap often enough to fall through to the greedy completion and produce **6 spurious
+re-assignments in 512** under a half-metre nudge, where Hungarian + `STABLE_MARGIN` produced 0. That is an
+**approximation artefact, not a property of the incumbent bonus** — at half a spacing per unit the bonus is far too
+strong for a half-metre nudge to overcome. The cap is 64 now; the work is trivial for an element of 3–8 and the
+artefact stops showing.
+
+**A10's other falsifier — the CPU five-squad idle-order count the `fixed` flag was added for (round 7: 4–6 → 0) — must
+still be 0 without the flag.** `test_tactics_scenarios::test_a_cpu_army_under_the_same_orders_is_not_re_ordered_for_fighting_from_its_slots`
+is that assertion and it is running; the result belongs beside A10's hash and A10 is not committed until it is in.
+
+### STRUCK: "the defile finding is roster-wide". It is not — scale's corridor table was retracted
+
+I recorded a scale table here showing eight of ten maps failing a widest-hull fit test after CP2, and built an argument
+on it about the A8 follow-on's priority. **scale has retracted that table: its measure was twice the distance to the
+nearest obstacle, which is not a passable width** — yard's reported "4.72 m pinch" is a corridor about 23 m wide. **No
+maps are changing and no map-wide squeeze has been demonstrated.** The paragraph is struck rather than revised,
+because there is nothing in it left standing.
+
+**What does stand is only what I measured myself**, and it is narrower than I let it become: on the maze — a test
+fixture nobody plays — a Condemned `artillery` at its **current** 2.6 m width, with about 2.1 m of slack in a 5.0 m
+navigable corridor, **never arrived in 70 s while four squadmates used the same gap.** One vehicle, one defile, one
+configuration, deterministic. That is an existence proof of a fit-or-yield failure and nothing more.
+
+**And the cause is now nav's, with a named mechanism rather than my speculation:** nav has three instrumented
+candidates, the leading one being **right-of-way asking for 4.55 m of lateral clearance inside a 5 m corridor, with
+the refused asker yielding** — which explains a queue that never drains without any hull being too wide for anything.
+My inference that this was a *width* problem about to be made worse by CP2 was wrong, and it was wrong in the
+direction I should be most suspicious of: it made my own measurement sound more important than it was.
+
+**Lesson for my own reporting, not anyone else's:** I relayed a number from another stream into my brief and reasoned
+from it inside the same hour. The rule this project already has (lesson 26 — *a relayed number becomes a fact: ask the
+sample size before passing it on*) applies to the measure as well as the sample: **ask what the number is the width
+OF.** I did not, and the honest version of my own finding was available without it.
+
 ### What is NOT done, and the exact commands to do it
 
 Written plainly rather than implied, because the round's headline claims rest on measurements I have not been able to

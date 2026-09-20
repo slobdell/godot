@@ -195,12 +195,12 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	plan["corridor_m"] = INF
 	plan["arrived"] = center.distance_to(destination) <= ARRIVE_M
 	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
-	# Sent once means SEATED once: when everyone has been sent to their final slot (the flow joined, or no flow) the
-	# seating stands. A CPU crew fights from within its slot's leash and drifts ~10 m off it; left to "saves real
-	# driving", the seating re-shuffled around the drift and re-ordered idle units (round 7: the CPU five-squad test).
-	var joined: bool = not FLOW_ENABLED or bool(state.get("flow_joined", false))
+	# Sent once means SEATED once. A CPU crew fights from within its slot's leash and drifts ~10 m off it, and under
+	# "keep the seating that saves real driving" it re-shuffled around the drift and re-ordered idle units (round 7:
+	# the CPU five-squad test). Round 9 (X4): A10's incumbent bonus is what holds it now — drift smaller than the
+	# bonus cannot move anybody — so this no longer asks for a flag.
 	_group(plan, slot_order(situation), String(plan["formation"]), destination, plan["heading"],
-			table.spacing(String(situation["terrain"])), "move", "", false, holding and joined)
+			table.spacing(String(situation["terrain"])), "move", "")
 	if told is Vector3:
 		# A facing the player chose is everyone's facing, not the formation's all-round sectors.
 		for unit_name: String in plan["sectors"]:
@@ -698,14 +698,16 @@ static func _hold(plan: Dictionary, members: Array, situation: Dictionary, facin
 ## leader keeps the point, armour goes where the fire comes from, nobody's path crosses another's, and last
 ## update's seating stands unless a new one saves real driving).
 ## `halt` puts every crew on its sector of fire instead of the direction of travel.
-## `fixed` keeps last update's seating whatever it costs (a plain move standing on its spot).
+## (Round 9, X4: there was a `fixed` flag here that kept last update's seating whatever it costs. A10's incumbent
+## bonus is the principled form of it, so the flag is gone; if a caller ever seems to need it again, that is a bug in
+## the bonus and not a reason to bring it back.)
 static func _group(plan: Dictionary, members: Array, formation: String, anchor: Vector3, heading: Vector3,
-		spacing: float, verb: String, target := "", halt := false, fixed := false) -> void:
+		spacing: float, verb: String, target := "", halt := false) -> void:
 	if members.is_empty():
 		return
 	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing,
 			{"leader": String(plan.get("leader", "")), "policy": "exposure",
-			"previous": _previous_seating(plan, members, formation), "fixed": fixed,
+			"previous": _previous_seating(plan, members, formation),
 			# X5: a halt's crews face their sectors of fire, so place() gives each entry that facing rather than the
 			# direction of travel, and the order carries it.
 			"halt": halt,
