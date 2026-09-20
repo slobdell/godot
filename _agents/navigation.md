@@ -6,6 +6,24 @@
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
 ## Round 9: the desired-velocity layer, and what replaces what
+### Lesson 153 has a MEASUREMENT twin: a saturated instrument reports nothing (scale, 2026-09-20)
+
+nav's lesson 153 is *a term that merely saturates as one addend goes blind when it is promoted to a priority level,
+because inside a level a cost only competes with itself.* scale's maze table is the same fact about **instruments**:
+
+    BEFORE -> AFTER      stuck_units   30 -> 30   (pinned; saturated before the change)
+                         oscillating_units 14 -> 27, oscillating_unit_seconds 10.5 -> 132.3 (x12.6)
+
+**`stuck_units` was already at its ceiling in both arms, so it carries no signal at all; `oscillating` sat near its
+floor (share 0.004) and moved by an order of magnitude.** Same run, same pathology, and one of the two instruments
+could not have reported it whatever happened.
+
+**The rule for choosing an instrument, which is cheap and nav had not written down:** *check its HEADROOM in the
+control arm before you run the treatment.* A counter already at 0 % or 100 % before you change anything will still
+be there afterwards. That is the same shape as a tolerance that admits everything, a lint that parse-checks zero
+files, and a `--nav-off` name nothing reads — **an instrument at the end of its range is indistinguishable from an
+instrument that is not connected.**
+
 ### The cheapest instrument check nav has, learned from scale (2026-09-20)
 
 **Before trusting a measure, find something already in the repo that knows the answer.** scale's corridor table
