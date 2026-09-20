@@ -847,18 +847,24 @@ that works in the open field and becomes a wall in single file.*
   ORCA), and this round has spent itself establishing that those do not ship unmeasured.
 - The measurement needs a **cleared window**: `make squad-defile` plus the three counters across both arms, and
   builder0 has had 4–6 runs queued all night.
-- It is **size-dependent**, so anything measured now has to be retaken after CP2 — and CP2d moves the corridors too,
-  which makes now the *worst* moment to take a before-number.
+- ~~It is size-dependent and CP2d moves the corridors.~~ **VOID — CP2d is withdrawn and the corridors are not
+  moving.** The orchestrator's ruling: take it the moment a builder0 window opens, on the maze as squad staged it,
+  with the three pre-registered counters. **The only remaining reason to wait is the window itself.**
 
 **What is NOT a reason it waits:** A11's default. The two are independent — this is `Movement` and right-of-way, not
 `CombatMotion`'s candidate set — and if a window opens before A11's duel instrument exists, this should be taken
 first, because it has a named unit, a deterministic repro (`make squad-defile`) and three pre-identified counters.
 
-**And scale's table says it is not a fixture problem:** 8 of 10 maps are tighter than the post-CP2 widest hull, and
-**the maze is the third-tightest, not an outlier** — foundry, furnace, scrapyard, boneyard and barriers are all at or
-below it, and they ship. scale measures clear ground against obstacle footprints; nav measures what the router
-believes after the bake takes 2.0 m off each side. **The gap between those two numbers is precisely what one agent
-radius for a 5× footprint range gets wrong**, and it is now a per-map table rather than one anecdote.
+**⚠ RETRACTED (2026-09-20): scale withdrew its corridor table and nav had already written it in here.** The
+"8 of 10 maps tighter than the widest hull" figure measured **twice the distance to the nearest obstacle**, which is
+not a corridor width — yard's "4.72 m pinch" is a ~23 m span past a single wreck. **The corridors are not moving,
+CP2d is withdrawn, and nothing about map geometry is established.** nav quoted the table within minutes of receiving
+it, which is the same reflex as quoting a partial lint run: a number arrived from a stream that owns it, so it went
+in unexamined. *A number's owner is not its evidence.*
+
+**What still stands is the only thing that ever needed to: squad's empirical failure.** A 2.6 m hull with 2.1 m of
+slack did not get through a defile four squadmates used, in 70 s, with a deterministic repro. That was always the
+case worth answering and it never depended on the table.
 
 ### OWNED AND UNFIXED: a tracked hull reversing 5.6 m mid-leg, reproducible in one test (scale's trace, 2026-09-20)
 
