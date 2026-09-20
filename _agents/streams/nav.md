@@ -575,9 +575,12 @@ on by default and the frames look wrong at his pose, that is his call and he get
    the fight finishing three times faster, with both hulls moving markedly more, is. Behaviour question, not a
    tolerance.
 3. **N3 (A1) only after 1 and 2** — its own adopted sequencing says it needs a stable decision layer beneath it.
-4. **N4 (A4)** — motivation now measured, not inherited: 70% of gate refusals are `off_mesh`. The diagnostic added
-   this round buckets each one by the longest approach that *would* have fitted, which separates "a shorter run-in
-   recovers it" from "no straight run-in exists at any length" — and only the second is A4's case.
+4. **N4 (A4)** — motivation now measured, not inherited: 70% of gate refusals are `off_mesh`, and the diagnostic
+   splits them **474 recoverable by a shorter run-in / 361 reachable by no straight line at any length**.
+   **⚠ The positive control is pre-registered by the orchestrator and it is the whole point:** report how many of
+   **exactly those 361** the clothoid reaches, **not** the aggregate `aimed` count — otherwise the 474 leak into the
+   number and the cheap fix takes credit for the expensive one's territory. The two are A/B'd separately and never
+   shipped together.
 5. **N5 (A6)** after control's CP2c hash: build the corridor publisher, `legibility: {active, why}`, the inactive
    flag and the arc's `facing_ordered` tick flag **in one commit**, because three are only checkable with the fourth.
 
