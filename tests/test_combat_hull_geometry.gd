@@ -21,6 +21,16 @@ func _rig() -> Array:
 	return Units.stat(RIG, "hull_size")
 
 
+## The DISC is the default until the series says otherwise, so every test of the box has to select it -- which is
+## itself worth asserting, because a test that silently measured the default would be testing the geometry it was
+## written to replace and saying nothing about it.
+func _use_the_box() -> void:
+	assert_eq(Units.apply_tuning("match.hull_disc=0"), "", "the box arm is selectable")
+	assert_true(Units.hull_reach_along(_rig(), NORTH, EAST) < 2.0, "and selected (abeam reach is the half-width)")
+
+
+## Restored on EVERY exit, including a failing one: `Units.tuning` is a static and a test that dies holding the box
+## would hand the default to whatever runs next -- the leak-into-the-next-test shape that cost this round two shards.
 func teardown() -> void:
 	Units.tuning.erase("hull_disc")
 
@@ -28,6 +38,7 @@ func teardown() -> void:
 ## The orchestrator's two cases, hand-computed from `hull_size` and depending on no series: a shell passing 3 m
 ## beside a War Rig's flank is not a friendly-fire risk; one passing 1 m is. Half-width is 1.66 m.
 func test_a_shell_three_metres_off_a_rigs_flank_is_clear_and_one_metre_is_not() -> void:
+	_use_the_box()
 	var rig := _rig()
 	# The rig faces north; the shot runs north past its flank, offset east by the stated distance.
 	for pair in [[3.0, true], [1.0, false]]:
@@ -46,6 +57,7 @@ func test_a_shell_three_metres_off_a_rigs_flank_is_clear_and_one_metre_is_not() 
 ## The disc's error, stated as the two numbers that bound it: abeam it is more than four times the truth, end-on it
 ## is nearly exact. A test that only checked one angle would report a constant factor and miss the mechanism.
 func test_the_discs_error_is_a_function_of_the_angle_not_a_constant() -> void:
+	_use_the_box()
 	var rig := _rig()
 	var disc := Vector2(float(rig[0]), float(rig[2])).length() / 2.0
 	var abeam := Units.hull_reach_along(rig, NORTH, EAST)     # across the hull: the half-WIDTH
@@ -61,16 +73,17 @@ func test_the_discs_error_is_a_function_of_the_angle_not_a_constant() -> void:
 ## The arm has to be distinguishable or the series measures one build twice (lesson 117): the SAME query must return
 ## the box under the default and the disc under the knob, and the knob gates BOTH axes because squad's longitudinal
 ## test goes through `hull_reach_along` too.
-func test_the_disc_arm_is_selectable_and_gates_both_axes() -> void:
+func test_the_box_arm_is_selectable_and_gates_both_axes() -> void:
 	var rig := _rig()
-	var box_abeam := Units.hull_reach_along(rig, NORTH, EAST)
-	var box_gap := Units.hull_distance_to_line(rig, NORTH, Vector3.ZERO, Vector3(3.0, 0, 60), NORTH)
-	assert_eq(Units.apply_tuning("match.hull_disc=1"), "", "the disc arm is selectable")
+	# The DEFAULT is the disc; the knob selects the box. Both are read here so the arms are shown to differ.
 	var disc_abeam := Units.hull_reach_along(rig, NORTH, EAST)
 	var disc_gap := Units.hull_distance_to_line(rig, NORTH, Vector3.ZERO, Vector3(3.0, 0, 60), NORTH)
-	print("MEASURE hull_box_arm abeam reach %.2f -> %.2f; 3 m flank gap %.2f -> %.2f" % [
-			box_abeam, disc_abeam, box_gap, disc_gap])
-	assert_true(disc_abeam > box_abeam * 4.0, "the knob restores the disc on the longitudinal axis (squad's)")
+	_use_the_box()
+	var box_abeam := Units.hull_reach_along(rig, NORTH, EAST)
+	var box_gap := Units.hull_distance_to_line(rig, NORTH, Vector3.ZERO, Vector3(3.0, 0, 60), NORTH)
+	print("MEASURE hull_box_arm default disc -> knob box: abeam reach %.2f -> %.2f; 3 m flank gap %.2f -> %.2f" % [
+			disc_abeam, box_abeam, disc_gap, box_gap])
+	assert_true(disc_abeam > box_abeam * 4.0, "the knob selects the box on the longitudinal axis (squad's)")
 	assert_true(box_gap > 0.0 and disc_gap == 0.0,
 			"and on the lateral one: a shell 3 m off the flank is clear as a box and a risk as a disc")
 	Units.tuning.erase("hull_disc")
@@ -78,6 +91,7 @@ func test_the_disc_arm_is_selectable_and_gates_both_axes() -> void:
 
 ## Rotating the hull rotates the box with it: the disc cannot express this and that is the whole point.
 func test_the_box_turns_with_the_hull() -> void:
+	_use_the_box()
 	var rig := _rig()
 	# The same shot, against a rig facing along it and across it.
 	var across := Units.hull_distance_to_line(rig, NORTH, Vector3.ZERO, Vector3(3.0, 0, 60), NORTH)
@@ -107,6 +121,7 @@ func test_no_consumer_computes_a_hull_radius_of_its_own() -> void:
 ## The cached-pair entry points must agree with the ones that take `hull_size`, or squad's per-tick path and mine
 ## would answer the same question differently -- which is the two-implementations failure the helper exists to avoid.
 func test_the_cached_pair_agrees_with_the_hull_size_form() -> void:
+	_use_the_box()
 	var rig := _rig()
 	var half := Units.hull_half_extents(rig)
 	for degrees in [0.0, 23.0, 45.0, 90.0, 137.0, 180.0]:
@@ -116,7 +131,7 @@ func test_the_cached_pair_agrees_with_the_hull_size_form() -> void:
 		assert_near(Units.hull_distance_of(half, NORTH, Vector3.ZERO, Vector3(3.0, 0, 60), axis),
 				Units.hull_distance_to_line(rig, NORTH, Vector3.ZERO, Vector3(3.0, 0, 60), axis), 1e-6,
 				"distance agrees at %.0f deg" % degrees)
-	assert_eq(Units.apply_tuning("match.hull_disc=1"), "", "and under the knob too")
+	Units.tuning.erase("hull_disc")  # back to the default disc
 	assert_near(Units.hull_reach_of(half, NORTH, EAST), Units.hull_reach_along(rig, NORTH, EAST), 1e-6,
 			"the disc is half.length(), which is Vector2(w, l).length() / 2 -- the same number by either route")
 	Units.tuning.erase("hull_disc")

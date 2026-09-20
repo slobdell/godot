@@ -1073,7 +1073,14 @@ static func hull_reach_along(hull_size: Array, hull_forward: Vector3, direction:
 ## restores is `half.length()`, which is `Vector2(width, length).length() / 2` -- the same number, so the arm is
 ## identical whichever entry point a caller uses.
 static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vector3) -> float:
-	if tuning.get("hull_disc", 0.0) > 0.0:
+	# THE DISC IS THE DEFAULT, and that is a deliberate hold rather than an opinion about which is right. The box is
+	# a geometry CORRECTION -- the disc is wrong by a factor varying 4.3x abeam to 1.03x end-on -- but this round's
+	# rule is that a behaviour changes default only on measurement, and the box's falsifier (the gangs-vs-law series,
+	# both arms from one build) has not run. `--tune=match.hull_disc=0` selects the box and is the treatment arm.
+	# When the series says the box is no worse on every cell, the default flips in the same commit as the result,
+	# with its builder0 baseline hash recorded once. Measured on this laptop (glibc-2.39), the two arms are NOT the
+	# same simulation: sim-baseline match, seed 3 -- box `debb895da1fa288f`, disc `906d9c3df0c8e656`.
+	if tuning.get("hull_disc", 1.0) > 0.0:
 		return half.length()
 	var forward := Vector2(hull_forward.x, hull_forward.z)
 	forward = forward.normalized() if forward.length_squared() > 0.0001 else Vector2(0.0, -1.0)
