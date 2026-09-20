@@ -45,40 +45,30 @@ metrics-check: metrics-pytest metrics-fixtures ## Everything this stream verifie
 #
 # The count file, like the lint baseline and unlike sim_state_hash.txt, is NOT machine-keyed -- but the perf case
 # IS machine-sensitive, so the file records which machine the counts came from and the target says so on failure.
+#
+# ---- Only the NON-PENDING counts are gated (2026-09-20, found by combat on a pristine tree) --------------------
+#
+# The gate's first run on `main` failed `scenario_dodge_rate`, and the finding was wrong -- not about that
+# scenario, about the BASELINE. That scenario has never passed on merit: its own header says "KNOWN-FAILING
+# since CP4 ... Not in make check", dodging has never really fired, and which variant collects the few attempts
+# reshuffles with any change. It happened to pass at `1cb2fda9`, so a coin landed heads at the exact moment the
+# baseline was recorded and the gate inherited a 2% pass as its expectation. **A baseline records whatever was
+# true the instant it was taken, including luck** -- which is why it now carries the commit and the machine, and
+# why a scenario whose failure is KNOWN belongs in `const PENDING` where a tool can read it, not in prose.
+#
+# So: `passed` and `failed` are the gate. `pending` and `unexpectedly_passing` are REPORTED and never fail it --
+# a PENDING scenario is one we expect to fail, and one that passes by luck must not redden eight streams'
+# checks. The report is not silence: a move there prints, because a pending behaviour that starts working is
+# news worth promoting, just not news worth failing a gate over (lesson 42).
 AI_SCENARIOS_BASELINE := tests/baselines/ai_scenarios_count.txt
 
 .PHONY: ai-scenarios-check ai-scenarios-record
 
-ai-scenarios-check: import ## The AI behaviour scenarios, gated on a CHANGE in the passed/failed/pending counts
+ai-scenarios-check: import ## The AI behaviour scenarios, gated on a CHANGE in the non-pending counts
 	@mkdir -p $(BUILD_DIR)
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
 		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || true
-	@line=$$(grep -E '^scenarios: ' $(BUILD_DIR)/ai-scenarios.log | tail -1); \
-	if [ -z "$$line" ]; then \
-		echo "ai-scenarios-check FAILED: the runner printed no summary line at all."; \
-		echo "  That is a crashed or refused run, not a clean one -- the last 20 lines:"; \
-		tail -20 $(BUILD_DIR)/ai-scenarios.log | sed 's/^/    /'; \
-		exit 1; \
-	fi; \
-	counts=$$(echo "$$line" | grep -oE '[0-9]+' | paste -sd,); \
-	expected=$$(grep -v '^#' $(AI_SCENARIOS_BASELINE) 2>/dev/null | grep -v '^$$' | head -1 | cut -d' ' -f1); \
-	if [ -z "$$expected" ]; then \
-		echo "ai-scenarios-check FAILED: no baseline in $(AI_SCENARIOS_BASELINE)."; \
-		echo "  Record one with: make ai-scenarios-record   (counts now: $$counts)"; \
-		exit 1; \
-	fi; \
-	if [ "$$counts" != "$$expected" ]; then \
-		echo "ai-scenarios-check FAILED: the counts CHANGED."; \
-		echo "  expected (passed,failed,pending,unexpectedly_passing): $$expected"; \
-		echo "  got:                                                   $$counts"; \
-		echo "  baseline was recorded on: $$(grep -E '^# machine:' $(AI_SCENARIOS_BASELINE) | cut -d' ' -f3-)"; \
-		echo "  this machine: $$(hostname)"; \
-		echo "  $$line"; \
-		grep -E '^  (FAIL|UNEXPECTED PASS)' $(BUILD_DIR)/ai-scenarios.log | sed 's/^/    /' | head -20; \
-		echo "  If the change is intended, re-record with 'make ai-scenarios-record' and say why in the commit."; \
-		exit 1; \
-	fi; \
-	echo "ai-scenarios-check: $$line (unchanged against $(AI_SCENARIOS_BASELINE))"
+	@$(METRICS_DIR)/ai_scenarios_gate.sh check $(BUILD_DIR)/ai-scenarios.log $(AI_SCENARIOS_BASELINE)
 
 # Writes to build/ rather than straight into tests/baselines/, exactly like `sim-baseline-record`: `make remote`
 # copies build/ back AND NOTHING ELSE, so a target that writes into the repo records the number onto builder0 and
@@ -86,17 +76,5 @@ ai-scenarios-check: import ## The AI behaviour scenarios, gated on a CHANGE in t
 ai-scenarios-record: import ## Record this machine's ai-scenarios counts to build/ (then copy over the baseline)
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
 		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || true
-	@line=$$(grep -E '^scenarios: ' $(BUILD_DIR)/ai-scenarios.log | tail -1); \
-	test -n "$$line" || { echo "no summary line; refusing to record nothing"; exit 1; }; \
-	counts=$$(echo "$$line" | grep -oE '[0-9]+' | paste -sd,); \
-	{ echo "# ai-scenarios counts: passed,failed,pending,unexpectedly_passing"; \
-	  echo "# ai-scenarios-check fails when these CHANGE, not when a scenario fails: one perf case is"; \
-	  echo "# laptop-speed-sensitive and would redden the gate for a reason that is not a defect (lesson 42),"; \
-	  echo "# while a new script error moves \`failed\` and is caught (lesson 159)."; \
-	  echo "# machine: $$(hostname)"; \
-	  echo "# commit:  $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"; \
-	  echo "# line:    $$line"; \
-	  echo "$$counts"; } > $(BUILD_DIR)/ai_scenarios_count.txt; \
-	cat $(BUILD_DIR)/ai_scenarios_count.txt; \
-	echo "recorded $$counts on $$(hostname) in $(BUILD_DIR)/ai_scenarios_count.txt"; \
-	echo "  cp $(BUILD_DIR)/ai_scenarios_count.txt $(AI_SCENARIOS_BASELINE)   # and say WHY in the commit"
+	@$(METRICS_DIR)/ai_scenarios_gate.sh record $(BUILD_DIR)/ai-scenarios.log $(BUILD_DIR)/ai_scenarios_count.txt
+	@echo "  cp $(BUILD_DIR)/ai_scenarios_count.txt $(AI_SCENARIOS_BASELINE)   # and say WHY in the commit"
