@@ -336,6 +336,18 @@ nominal shape is pulled toward single file with ranks splitting apart *along* th
 *across* it, then scaled per axis. The file's target order is the shape's own depth order, not the slot index (a vee
 has slots ahead of its leader). Every slot keeps its index, so zero crossings and zero rank inversions hold by
 construction; the test sweeps 15 corridor widths × 11 shapes × 5 squads × 3 spacings.
+**MEASURED AND SWITCHED OFF (squad, 2026-09-20, laptop, `make squad-defile`, the maze's 11 m gap = 5.0 m of navmesh,
+five Condemned wheeled vehicles, forced wedge, 70 s, `DEFORM_ENABLED` the only difference):** deform ON — arrived
+**0/5**, not through the gap, crossings 6, inversions 21; deform OFF — arrived **4/5**, through, crossings 1,
+inversions 20. The deformation is the difference between getting through and not, and it moves crossings the wrong
+way. `TacticsFormation.DEFORM_ENABLED := false` (one constant, the whole revert path). One configuration, not three
+seeds — seeds 3/5/7 were byte-identical because the scenario has no enemies (lesson 22). **What survives:** every
+geometric invariant holds by construction over 15 widths × 11 shapes × 5 squads × 3 spacings. **The structural
+finding, reached by squad and nav independently within an hour:** a formation-level intent (a deformation, a leash)
+lives in a slot layout that the layer actually moving the hull cannot see — nav measured `CombatMotion` deciding under
+a tenth of a hull's ticks with `Movement` driving the rest and knowing no leash at all. **A8 also never applied to a
+plain right-click move** (the plain-move path sets the corridor to INF), so the lead's commonest order could never
+have got it. Next-round candidate: intent reaches `Movement`'s goal selection.
 **Falsifier:** zero slot crossings / rank inversions during defile passage, and post-defile recovery time **−60%**.
 The lead has already ruled on the trade this needs: *"a 4s slower march for a tidier traversal is better, yes."*
 
@@ -354,6 +366,12 @@ moving leaves 40%). An odd element therefore leaves a **permanent base of fire**
 most static — indirect-fire and long-reach roles first) and bounds the rest in two equal teams; even elements alternate
 halves; a pair alternates singles; a single vehicle does not bound. Doctrinal, and it meets the bar by construction.
 The measured minimum stationary share is still reported.
+**MEASURED (squad, 2026-09-20, laptop, same gap, forced wedge + `bounding_overwatch`):** stationary share
+**0.60 on both arms** (the 3-of-5 the base-of-fire ruling predicts), `bounding_ticks` in the thousands so the phase
+machine ran. **Arrival dispersion: tracked 1.23 s, wheeled 41.4 s.** Co-arrival paces off top speed and route ETA
+and reads no locomotion; what makes a wheeled hull late is its turning circle and gear changes — nav's subjects, and
+metrics' CP1 finding reproduced by an independent instrument. **Every faction but the Condemned is wheeled or hover,
+so on the vehicles the lead fields A9 mostly cannot make a squad arrive together, for reasons below the squad layer.**
 **Falsifier:** inter-element arrival dispersion at an objective line drops from **> 12 s to < 1 s**, and **≥ 50% of
 squad firepower is stationary at every tick** of an advance.
 
