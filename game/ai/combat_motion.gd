@@ -766,6 +766,90 @@ static func _facing(hull: Vector3, toward: Vector3, floored: bool) -> float:
 	return maxf(0.0, dot) if floored else (1.0 + dot) * 0.5
 
 
+# ---- A11: dynamic-window arcs in place of the direction ring (round 9, nav) -----------------------------------------
+# Catalogue row A11 (Fox, Burgard & Thrun 1997). The ring scores 16 DIRECTIONS, some of which the plant cannot take
+# this tick; the lead's "moving back and forth indefinitely" and a heavy hull "hunting toward" a heading are what that
+# looks like from his camera. A11 scores a fixed lattice of (speed, yaw-rate) pairs the plant CAN reach, as
+# constant-curvature arcs over a ~2 s lookahead.
+#
+# **Replaces** `RING` and the `wheels` / `min_cos` chord test — both are candidate generation, so A11 replaces the
+# candidate set for BOTH choosers, and the blended scorer can score a lattice as happily as a ring. That keeps A11
+# measurable on its own rather than riding on A7 (which is parked behind its own switch).
+#
+# The honest consequence, stated because it is the interesting one: **the wheeled creep becomes a candidate the
+# scorer SEES rather than a reflex the plant takes.** A stopped car is offered no turning arc at all, because
+# `yaw = |speed| * turn / radius` will not produce one. Whether `WHEEL_CREEP_THROTTLE` survives is then a finding.
+
+## A fixed 9 x 9 grid, row-major, speeds outer. Fixed count and fixed order: determinism guideline 4.
+const DWA_SPEEDS := 9
+const DWA_YAWS := 9
+## How far ahead an arc is judged (seconds). The ring judged 1.2 s clamped to 5-14 m; an arc can afford longer because
+## it is a trajectory rather than a direction, and 2 s is the catalogue's figure.
+const DWA_HORIZON := 2.0
+## Below this speed (m/s) a wheeled hull is treated as stopped: `yaw = |speed| * turn / radius` gives it nothing.
+const DWA_ROLLING := 0.2
+
+## Measurement only (lesson 147): lattices built, cells offered, and — separately, because it says whether the window
+## was computed from the hull's REAL yaw or from an assumed one — plans whose request carried a live `yaw_rate`.
+static var dwa_lattices := 0
+static var dwa_candidates_reachable := 0
+static var dwa_with_live_yaw := 0
+
+
+## A11 is OPT-IN (`--nav-off=a11` turns it ON), on the same footing as A7: round 9's new rows land behind their switch
+## until their behaviour scenarios pass, and the switch is then the A/B arm rather than a leftover.
+static func a11_on() -> bool:
+	return Movement.switched_off("a11")
+
+
+## The (speed, yaw-rate) pairs `TankMotion.step_in_place` actually produces from `state` in ONE tick, as a fixed
+## lattice. **Generated in COMMAND space and evaluated through the plant**, not derived from a restatement of the
+## plant's rules: a fixed 9 x 9 grid of (throttle, turn), one `TankMotion.step` each, and the resulting (speed,
+## yaw_rate) IS the cell. Nothing here models the plant, so nothing here can drift from it.
+##
+## That choice was forced by the measurement, and it is the most interesting thing A11 found. The first version
+## inverted the plant by hand — pick a speed, solve for the throttle — and it was wrong for wheels in a way the
+## project already knows about: **the multi-point creep hijacks the throttle** whenever `|throttle| <
+## WHEEL_CREEP_THROTTLE * |turn|`, so a whole region of command space does not produce the motion it asks for. The
+## hand-inverted lattice promised 3.53 m/s and the plant delivered 4.30, because the creep took the wheel.
+##
+## Evaluating the plant makes that region **honest instead of invisible**: the creep's legs appear as cells with
+## their real speed and yaw, so the scorer sees a K-turn as one option among 81 and prices it, which is exactly what
+## the brief asks for — *the creep is a candidate the scorer sees, not a reflex the plant takes*. Whether
+## `WHEEL_CREEP_THROTTLE` survives is then a finding rather than a decision.
+static func dynamic_window(state: Dictionary) -> Array:
+	var dt := SimClock.TICK_SECONDS
+	var cells: Array = []
+	for i in DWA_SPEEDS:
+		var throttle := float(i) / float(DWA_SPEEDS - 1) * 2.0 - 1.0  # -1 .. +1, the middle cell exactly 0
+		for j in DWA_YAWS:
+			var turn := float(j) / float(DWA_YAWS - 1) * 2.0 - 1.0
+			# `step` duplicates, so the live state's creep bookkeeping is never advanced by a hypothetical.
+			var driven := TankMotion.step(state, throttle, turn, dt)
+			var forward: Vector3 = state["forward"]
+			var turned: Vector3 = driven["forward"]
+			# The yaw this tick, as a signed rate: the small-angle cross product of the two headings over dt.
+			var yaw_rate := (forward.x * turned.z - forward.z * turned.x) / dt
+			cells.append({"speed": float(driven["speed"]), "yaw_rate": yaw_rate, "throttle": throttle, "turn": turn})
+	return cells
+
+
+## One constant-curvature arc: where a hull at `here` facing `forward` ends up after DWA_HORIZON seconds holding
+## (speed, yaw_rate), and which way it points when it gets there. Closed form, no per-tick integration: a circle of
+## radius v/w, or a straight line when w is ~0. Two square roots and a normalise, no trig (determinism guideline 4).
+static func arc_end(here: Vector3, forward: Vector3, speed: float, yaw_rate: float, seconds: float) -> Array:
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	var theta := yaw_rate * seconds
+	var heading := TankMotion.turn_heading(forward, theta) if absf(theta) > 0.000001 else forward
+	if absf(yaw_rate) < 0.000001:
+		return [here + forward * (speed * seconds), heading]
+	# Exact arc offset in the hull's own frame: (r*sin theta) forward + (r*(1 - cos theta)) right, r = v / w.
+	var r := speed / yaw_rate
+	var sin_t := sin(theta)
+	var cos_t := cos(theta)
+	return [here + forward * (r * sin_t) + right * (r * (1.0 - cos_t)), heading]
+
+
 ## Whether a unit at `here` moving at `now` that sets out on `planned` passes within HIT_RADIUS of any incoming round
 ## before it arrives (plus a little: rounds arrive early when the unit drives toward them). Driving model: the current
 ## velocity holds while the hull turns onto the new heading (`turn_seconds`), then ramps toward `planned` at
