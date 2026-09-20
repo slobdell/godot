@@ -465,6 +465,48 @@ intersecting, never moving at all, looks identical to a nudged one.** That is a 
 exposed, not a movement change. Ask the probe to print the **spawn** position beside the current one — if they are
 equal, no motion occurred and every movement-layer candidate is eliminated at once.
 
+### PRE-REGISTERED, before any arm is run: the CLEARANCE row's falsifier
+
+Written with the code committed (`826e4852`, `04fec00b`, `04f472ca`) and **not one number measured**, so the bars
+cannot be chosen to fit them.
+
+**The claim under test.** CP2 left **14 of 21 units** needing more clearance than the navmesh bakes (`gang_tank`
+4.58 m against a 2.0 m bake; median 2.50 m). An oversized hull that cuts a mesh-hugging shortcut is driving on a
+certificate that only ever covered its width. **Stopping those shortcuts should reduce wedging for the oversized
+classes, and it must not cost the hulls that fit anything at all.**
+
+**Arms, on ONE commit** (metrics' cross-commit banner caught nav reporting a two-commit series as one; the
+procedural rule is *do not commit between runs of a series*): control = default path, treatment =
+`--nav-off=clearance`. `Arena.ROTATION` — yard, pit, terminus — seed 3, 120 s, `--trajectory=` on both arms.
+
+**Arm proof first (lesson 147), or the run is refused, not reported.** `route_arms()` must show
+`clearance_chords > 0` **and** `clearance_refused > 0` in the treatment and **`clearance_refused == 0`** in the
+control. `--nav-off=a11` ran one treatment in two arms tonight and returned byte-identical results with every part
+working; this is the check that would have caught it.
+
+**Primaries, per hull class with sample sizes** — read from A12, never from nav's own counters, since the whole
+point is an independent instrument:
+
+| metric | direction for the OVERSIZED classes | why |
+|---|---|---|
+| `stuck` / `oscillating_share` | **down** | the row exists to stop oversized hulls wedging on corners the mesh said were clear |
+| `net_over_path` | **up, or unchanged** | fewer failed corner attempts should mean less doubling back |
+| `cusps` per agent-minute | **down** | a cusp is a reversal, and a wedged hull reverses |
+
+**THE GUARD, and it is the one nav expects to bite:** refusing shortcuts makes routes longer. **Attack-move
+`progressing` must not fall more than 10 % on any map**, and `off_corridor` (A6's quantity, baseline **0.320**
+pooled) **must not rise**. A4 bought its gate and spent the fight; this row must not buy clearance and spend the
+same thing.
+
+**And the guard that matters more, stated as a bar rather than a hope: the hulls that FIT must be unchanged.**
+`scout`, `gang_scout` and every class whose shortfall is negative must show **no metric moving by more than noise**,
+because the rule is not supposed to touch them. A row that improved the heavies by slowing everyone down is a
+regression wearing a fix's clothes, and that is the result nav considers most likely.
+
+**What this A/B cannot establish, said now.** It measures one seed per map. If the primaries move, the next
+question is whether they move for the *reason* claimed — fewer refused corners — and that needs the per-class
+`clearance_refused` correlated against the per-class stuck delta, which is a second run, not this one.
+
 ### ✅ P7's BASELINE, MEASURED BY A12 — and it corroborates round 8's band from a different instrument
 
 **⚠ PROVENANCE, corrected by metrics' cross-commit banner: these runs span TWO commits.** yard and pit were
