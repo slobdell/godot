@@ -259,3 +259,43 @@ normal run.
 - **This is the asset-pipeline form of lesson 132** (`origin/main` stale) and lesson 127 (*attributable is not current*):
   **a worktree is not the repository, and anything git-ignored is invisible from it.** What differs here is that the
   consequence is money rather than a wrong number.
+
+## A transport failure is not a test failure, and it leaves `build/` lying (2026-09-19)
+
+**`>> remote: make ... exited 255` is ssh, not the suite.** combat hit this mid-run: `Timeout, server builder0 not
+responding`, then `No route to host`. The runner had printed **`590 passed, 0 failed`** before the machine left.
+**No test failed. The machine did.** Also seen: **`exited 3, "cannot reach"`** when the host is down at launch
+(arena) — likewise not a check result.
+
+**And the dangerous part, which the wrapper says out loud and is easy to skim past:**
+
+    >> remote: FAILED to copy build/ back (rsync exit 255); local build/ is STALE, not this run's
+
+**After a 255, `build/` holds a PREVIOUS run's artefacts.** A stream that reads a number out of `build/` after a
+transport failure gets a real, plausible number **from the wrong tree**. That is the worst shape of wrong available:
+not missing, not obviously broken — plausible.
+
+**Never assemble a check from two attempts.** combat's framing, kept verbatim because it is the cleanest statement of
+the rule anyone has made here: *"590 from one attempt and the rest from another is not a check, it is two fragments
+that never saw the same tree."*
+
+**And this is why `sim-baseline-record` is read TWICE.** combat's reason is better than "confirm it repeats": with a
+machine that has been flapping, **one reading cannot distinguish "this is the new hash" from "this run was
+disturbed". Two agreeing readings can — and a disagreement is information about builder0 rather than about the
+match.**
+
+## A cold `make import` exceeds the slot timeout (2026-09-19)
+
+**`slot.sh` kills any command at `TANK_SQUAD_SLOT_TIMEOUT`, default 5400 s — and a cold import on the laptop takes
+longer than that.** Deleting `.godot` forces a re-import of ~968 MB of assets; on the 8-core laptop with ~2.4 GB
+available it was killed at 90 minutes with `Error 124`, and `lint` then failed with `exited 2` **while reporting zero
+script failures** — because its prerequisite had been killed, not because anything was wrong with the code.
+
+**This matters most to anyone resetting the environment**, which is exactly when a cold import happens:
+
+    TANK_SQUAD_SLOT_TIMEOUT=14400 make import
+
+**And do not reach for `rm -rf .godot` as a remedy.** The symptom that provoked it — `Parse Error: referenced
+non-existent resource` for tracked, present files, cascading into false `Nonexistent function` errors — is **two
+lints sharing one import cache**, now prevented by the `flock` on `make lint`. Clearing `.godot/imported` is the
+widest scope that is ever warranted; the full delete costs 90+ minutes and fixes nothing the lock does not.
