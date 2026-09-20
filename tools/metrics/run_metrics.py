@@ -143,9 +143,14 @@ def main(argv=None):
         if args.switches:
             with open(args.switches, encoding="utf-8") as handle:
                 events = json.load(handle)
-            if not isinstance(events, dict):
-                print("metrics: REFUSED %s: expected an object {unit: [tick, ...]}" % args.switches,
-                      file=sys.stderr)
+            # Two shapes accepted: the bare map, and a wrapper that keeps the ticks beside whatever the producer
+            # recorded about each event. combat writes the second so a pair cannot be assembled from two runs --
+            # a good enough reason that it should not need a second file format to be read.
+            if isinstance(events, dict) and isinstance(events.get("switches"), dict):
+                events = events["switches"]
+            if not isinstance(events, dict) or not all(isinstance(v, list) for v in events.values()):
+                print("metrics: REFUSED %s: expected {unit: [tick, ...]}, or {\"switches\": {unit: [tick, ...]}}"
+                      % args.switches, file=sys.stderr)
                 return 1
             row["turns"] = metrics.turn_report(log, events)
         rows.append(row)

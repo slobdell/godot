@@ -13,6 +13,7 @@ number comes from.
 
 from __future__ import annotations
 
+import contextlib
 import gzip
 import io
 import json
@@ -861,6 +862,29 @@ class TurnBetweenEventsTest(unittest.TestCase):
         a, _ = metrics.turns_between_events(samples, [100, 10, 40, 10])
         b, _ = metrics.turns_between_events(samples, [10, 40, 100])
         self.assertEqual(a, b)
+
+    def test_the_cli_accepts_a_bare_map_or_a_wrapper_with_the_events_beside_it(self):
+        import json as _json
+        import tempfile as _tempfile
+        import run_metrics
+        with _tempfile.TemporaryDirectory() as tmp:
+            bare = os.path.join(tmp, "bare.json")
+            wrapped = os.path.join(tmp, "wrapped.json")
+            with open(bare, "w") as handle:
+                _json.dump({"U1": [1, 2]}, handle)
+            with open(wrapped, "w") as handle:
+                _json.dump({"switches": {"U1": [1, 2]},
+                            "events": [{"tick": 1, "angle_deg": 137.4}]}, handle)
+            log_path = os.path.join(tmp, "run.jsonl")
+            header = Header(commit="c", machine="m", tick_rate=TICK_RATE, producer="synthetic")
+            trajlog.write_log(log_path, header, [
+                make_sample(t, float(t), speed=6.0) for t in range(metrics.SPARC_WINDOW_SAMPLES)])
+            for path in (bare, wrapped):
+                captured = io.StringIO()
+                with contextlib.redirect_stdout(captured):
+                    status = run_metrics.main([log_path, "--switches", path])
+                self.assertEqual(status, 0, path)
+                self.assertIn("hull TURN between consecutive events", captured.getvalue(), path)
 
     def test_the_report_splits_by_unit_type_and_flags_a_mismatched_arm(self):
         lines = [trajlog.header_line("c", "m", TICK_RATE, "synthetic")]
