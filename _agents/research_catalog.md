@@ -291,6 +291,14 @@ Express a formation as a nominal shape plus a per-squad affine transform, then c
 longitudinally as a function of corridor width — so a wedge becomes a column through a defile and re-expands after,
 **continuously and without dissolving**. **Replaces** rigid slot offsets held by PID.
 **Determinism:** closed-form 2×2 matrix algebra.
+**⚠ CORRECTED IN ROUND 9 (squad, 2026-09-20): a pure affine map CANNOT turn a wedge into a column.** A wedge has
+slot pairs at the same depth differing only across the heading; no 2×2 separates two such points while squeezing that
+axis toward zero — at the limit they land on top of each other, so a literal implementation stands hulls inside each
+other in exactly the narrowest corridors. The shipped form is a **shape morph plus a diagonal matrix and a shear**: the
+nominal shape is pulled toward single file with ranks splitting apart *along* the heading before the shape closes
+*across* it, then scaled per axis. The file's target order is the shape's own depth order, not the slot index (a vee
+has slots ahead of its leader). Every slot keeps its index, so zero crossings and zero rank inversions hold by
+construction; the test sweeps 15 corridor widths × 11 shapes × 5 squads × 3 spacings.
 **Falsifier:** zero slot crossings / rank inversions during defile passage, and post-defile recovery time **−60%**.
 The lead has already ruled on the trade this needs: *"a 4s slower march for a tidier traversal is better, yes."*
 
@@ -304,6 +312,11 @@ overwatch while the other advances, alternating every 5–8 s.
 legible to a spectator"* — and he has already approved the mechanic: *"making the units appear smart is better, so
 flanking and maneuvering is fine."*
 **Determinism:** tick-count phase synchronisation.
+**Ruled in round 9 (2026-09-20):** two alternating halves of an odd-sized element cannot keep ≥ 50% stationary (3 of 5
+moving leaves 40%). An odd element therefore leaves a **permanent base of fire** (the unit whose firepower is worth
+most static — indirect-fire and long-reach roles first) and bounds the rest in two equal teams; even elements alternate
+halves; a pair alternates singles; a single vehicle does not bound. Doctrinal, and it meets the bar by construction.
+The measured minimum stationary share is still reported.
 **Falsifier:** inter-element arrival dispersion at an objective line drops from **> 12 s to < 1 s**, and **≥ 50% of
 squad firepower is stationary at every tick** of an advance.
 
