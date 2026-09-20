@@ -1929,6 +1929,16 @@ rig in round 8); the navmesh's single agent radius (P6: one radius for a 5× foo
 telephoto (control); and the sim baseline, which moves and is recorded once by the orchestrator. **Nobody publishes a
 size-dependent number measured across CP2.**
 
+**Decided overnight (2026-09-20 02:30, orchestrator on the lead's behalf, reversible in one constant): the kit's gaps
+widen to the widest hull plus 1 m.** After the resize the widest hull is the Condemned artillery with outriggers,
+**4.74 m** from its own mesh (was 3.39 m), and scale's `arena-report` shows the tightest point on the direct base-to-base
+route is narrower than that on **8 of 10 maps** (yard 4.72 m, boneyard 4.36, barriers 4.31); squad had already seen the
+artillery fail the maze's defile at its *old* width. The width stays — it is the proportional truth he asked for. The
+maps were authored for 4 m hulls, and *units that do not arrive* is his loudest complaint, so the gap widens (a
+constant in `tools/make_arenas.py`, derived from `Units` at generation time), the fairness control re-runs, and the
+WATCH line becomes an assertion. The pre-widening table is preserved in the round-9 references. The alternative, a
+per-hull-class navmesh radius, is catalogue C2 and a round of its own. **He can overrule this in the morning.**
+
 **The lead sees the roster before it ships:** the scale stream renders all 21 vehicles side by side at the new scale
 in one frame (the rig and a Condemned tank as references, the same camera as the gallery) and puts it on a review page.
 It is the one subjective check that counts; the numbers are derived and need no approval.
