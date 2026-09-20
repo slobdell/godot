@@ -31,10 +31,15 @@ const FOV_DEG := 35.0
 const PITCHES := [21.0, 45.0]
 const MILESTONES := [0.0, 10.0, 25.0, 45.0, 70.0, 100.0]  # degrees through the corner
 const REVERSE_M := [3.0, 8.0, 16.0, 30.0]  # metres backed up, for the creep case
+## A hard frame budget per milestone. This machine draws 60 vehicles at 1080p on an Intel UHD 620, so a corner that
+## is 300 frames of real driving is minutes of wall clock, and the first run of this bench was killed by its own
+## timeout mid-strip with no frames on disk and nothing in the log to say why. A budget turns that into a short
+## milestone and a printed number instead of a hang.
+const MAX_STEP_FRAMES := 400
 
 var out_dir := ""
 var warmup := 6.0
-var live_seconds := 8.0
+var live_seconds := 6.0
 var radius := 26.0
 var speed := 9.0
 var _camera := Camera3D.new()
@@ -98,28 +103,35 @@ func _run() -> void:
 ## hinge is not reaching the game, whatever the corner frames look like.
 func _watch_live(scene: Node) -> Dictionary:
 	var parts := RigHinge.rigs_in(scene)
-	var samples := PackedFloat32Array()
+	var limit := float(FactionArt.trailer_cut(RIG).get("jackknife_deg", 0.0))
+	# PER RIG PER FRAME, not the maximum over the field. The first run reported only the peak over 32 rigs, which one
+	# jackknifing vehicle pins at the clamp and which says nothing about what the rest are doing -- and "the fleet is
+	# folded in half" and "one rig is reversing out of a corner" are very different findings.
+	var total := 0.0
+	var samples := 0
+	var frames := 0
+	var peak := 0.0
+	var over_30 := 0
+	var at_limit := 0
 	var until := Time.get_ticks_msec() + int(live_seconds * 1000.0)
 	while Time.get_ticks_msec() < until:
 		await get_tree().process_frame
-		var peak := 0.0
+		frames += 1
 		for part: Node in parts:
-			if is_instance_valid(part) and part.is_inside_tree():
-				peak = maxf(peak, absf(rad_to_deg(float(part.call("articulation")))))
-		if not parts.is_empty():
-			samples.append(peak)
-	var total := 0.0
-	var high := 0.0
-	var low := 180.0
-	for value in samples:
-		total += value
-		high = maxf(high, value)
-		low = minf(low, value)
-	return {"rigs": parts.size(), "frames": samples.size(),
-			"peak_deg": snappedf(high, 0.1) if samples.size() > 0 else 0.0,
-			"mean_peak_deg": snappedf(total / maxi(samples.size(), 1), 0.1),
-			"min_peak_deg": snappedf(low, 0.1) if samples.size() > 0 else 0.0,
-			"limit_deg": float(FactionArt.trailer_cut(RIG).get("jackknife_deg", 0.0))}
+			if not (is_instance_valid(part) and part.is_inside_tree()):
+				continue
+			var bend := absf(rad_to_deg(float(part.call("articulation"))))
+			total += bend
+			samples += 1
+			peak = maxf(peak, bend)
+			if bend >= 30.0:
+				over_30 += 1
+			if bend >= limit - 0.5:
+				at_limit += 1
+	return {"rigs": parts.size(), "frames": frames, "rig_frames": samples, "limit_deg": limit,
+			"mean_deg": snappedf(total / maxi(samples, 1), 0.1), "peak_deg": snappedf(peak, 0.1),
+			"over_30_pct": snappedf(100.0 * over_30 / maxf(samples, 1), 0.1),
+			"at_limit_pct": snappedf(100.0 * at_limit / maxf(samples, 1), 0.1)}
 
 
 ## One rig driven round a constant-radius corner with the match paused, shot at each milestone of the turn.
@@ -145,10 +157,12 @@ func _shoot_corner(scene: Node, heading: float, pitch: float) -> void:
 	for milestone: float in MILESTONES:
 		# The corner: a left-hand arc of `radius`, entered heading along the camera's right so the whole rig is
 		# side-on to him at the start and swings through the frame.
-		while turned < milestone:
+		var budget := MAX_STEP_FRAMES
+		while turned < milestone and budget > 0:
 			await get_tree().process_frame
+			budget -= 1
 			var delta := get_process_delta_time()
-			turned += rad_to_deg(speed * delta / maxf(radius, 1.0))
+			turned += rad_to_deg(speed * maxf(delta, 0.001) / maxf(radius, 1.0))
 			_place(tank, where, heading, minf(turned, milestone))
 		_place(tank, where, heading, milestone)
 		_camera.global_transform = RtsCamera.pose_at(tank.global_position, heading, DISTANCE_M, pitch)
@@ -162,15 +176,18 @@ func _shoot_corner(scene: Node, heading: float, pitch: float) -> void:
 		image.save_png(out_dir.path_join(shot_name))
 		shots.append(image)
 		report.append({"turn_deg": milestone, "hinge_deg": snappedf(bend, 0.1), "frame": shot_name})
+		print("RIG_HINGE_STEP pitch=%d corner=%d hinge=%.1f" % [int(pitch), int(milestone), bend])
 	# The creep case: back it up in a straight line from a kinked start and let the law diverge, which is what a
 	# jackknife IS. Same camera, same rig, so the two strips are comparable.
 	var backed := 0.0
 	var from := tank.global_position
 	var yaw := tank.rotation.y
 	for milestone: float in REVERSE_M:
-		while backed < milestone:
+		var budget := MAX_STEP_FRAMES
+		while backed < milestone and budget > 0:
 			await get_tree().process_frame
-			backed += speed * 0.5 * get_process_delta_time()
+			budget -= 1
+			backed += speed * 0.5 * maxf(get_process_delta_time(), 0.001)
 			_place_reverse(tank, from, yaw, minf(backed, milestone))
 		_place_reverse(tank, from, yaw, milestone)
 		_camera.global_transform = RtsCamera.pose_at(tank.global_position, heading, DISTANCE_M, pitch)
@@ -184,6 +201,7 @@ func _shoot_corner(scene: Node, heading: float, pitch: float) -> void:
 		image.save_png(out_dir.path_join(shot_name))
 		reverse_shots.append(image)
 		reverse_report.append({"reversed_m": milestone, "hinge_deg": snappedf(bend, 0.1), "frame": shot_name})
+		print("RIG_HINGE_STEP pitch=%d reverse=%d hinge=%.1f" % [int(pitch), int(milestone), bend])
 	for layer: CanvasLayer in hidden:
 		layer.visible = true
 	get_tree().paused = false
