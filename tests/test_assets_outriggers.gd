@@ -104,3 +104,46 @@ func test_a_real_battery_lowers_its_legs_as_combat_deploys_it() -> void:
 		await tree.process_frame
 	assert_near(gun.deploy_ratio, 1.0, 0.001, "combat deployed it")
 	assert_near((legs[0] as MeshInstance3D).position.y, 0.0, 0.01, "and the jacks are down on the ground")
+
+
+func test_the_carrier_is_measured_stowed_because_that_is_the_pose_it_is_shot_at_in() -> void:
+	## X4 (round 9). `hull_size` IS the collider, and the crane carrier is shot at while it MOVES -- stowed. Its
+	## model is authored with the legs DOWN ("the approved concept's pose"), so measuring the raw model gave the
+	## deployed silhouette: 4.74 m wide against the 2.90 m it actually drives at, i.e. 1.84 m of invisible armour on
+	## a moving vehicle and shells stopping in empty air beside it. `driving_bounds` measures it stowed, with the
+	## part's own cut and its own `offset(side, 0)` so it cannot drift from what `set_deployed(0)` draws.
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var part := GameTheme.scene("unit.artillery.hull").instantiate()
+	var packed: PackedScene = part.get("model_scene")
+	assert_true(packed != null, "the crane carrier has a model")
+	var model := packed.instantiate() as Node3D
+	var authored := FactionArt.natural_bounds(model).size
+	var driving: Vector3 = part.driving_bounds(model).size
+	model.free()
+	part.free()
+	GameTheme.use(previous)
+	assert_true(driving.x < authored.x * 0.85,
+			"stowed is narrower than the authored deployed pose (%.2f m against %.2f m)" % [driving.x, authored.x])
+	assert_near(driving.z, authored.z, authored.z * 0.02, "and the LENGTH does not move: only the legs did")
+	print("DRIVING_BOUNDS artillery authored %.2f x %.2f x %.2f -> driving %.2f x %.2f x %.2f"
+			% [authored.x, authored.y, authored.z, driving.x, driving.y, driving.z])
+
+
+func test_a_part_with_no_moving_geometry_measures_its_model_unchanged() -> void:
+	## The override must not become a second way of measuring every unit: everything without a rig answers with the
+	## model's own bounds, which is what the roster has always used.
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	for unit_id in ["gang_tank", "law_tank", "syn_tank"]:
+		var part := GameTheme.scene("unit.%s.hull" % unit_id).instantiate()
+		var packed: PackedScene = part.get("model_scene")
+		if packed == null:
+			part.free()
+			continue
+		var model := packed.instantiate() as Node3D
+		assert_eq(part.driving_bounds(model).size, FactionArt.natural_bounds(model).size,
+				"%s has no moving geometry, so driving bounds are just its bounds" % unit_id)
+		model.free()
+		part.free()
+	GameTheme.use(previous)

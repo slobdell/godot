@@ -103,7 +103,11 @@ static func natural_size(unit_id: String) -> Vector3:
 	var result := Vector3.ZERO
 	if packed != null:
 		var model := packed.instantiate() as Node3D
-		result = FactionArt.natural_bounds(model).size
+		# DRIVING bounds, not the model's authored pose: `hull_size` is the collider and a unit is shot at while it
+		# moves. Almost every part answers with the model's own bounds; the artillery answers with its outriggers
+		# stowed (X4, round 9 -- authored down, it measured 4.74 m against the 2.90 m it drives at).
+		result = (part.driving_bounds(model) if part.has_method("driving_bounds") \
+				else FactionArt.natural_bounds(model)).size
 		model.free()
 	part.free()
 	return result
