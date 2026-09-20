@@ -2533,3 +2533,19 @@ The kickoff prompt is one line; this section is the rest.
     (lesson 34: a new instrument is checked against a case whose answer you know before its first number leaves the
     stream). And lesson 26 for the orchestrator: a ruling is a relay to the lead with authority attached; ask what one
     value looks like in the world before acting on a table of them.
+163. **Noticing a missing guarantee and writing it down is not the same as having it.** Round 9, in nav's words, at
+    squad's request, because it covers the most of the night's mistakes across every stream. nav told squad in prose
+    that A1's nav half *"could in principle re-plan more in some regime and nothing asserts it cannot"*, and treated
+    having said it as covering it. squad said *write that assertion*. It failed on the first run: `drifted =
+    _path.size() < 2` was evaluated **independent of `cadence_due`**, so a hull with no route re-planned on ticks where
+    the thing A1 replaces would not have — **A1 doing more of what it exists to reduce, behind a switch that is off by
+    default, so nobody would ever have seen it.** squad's version is broader: four instrument defects in one night, and
+    *every one was findable from something already written down* — the brief named the `ai-scenarios` trap by number
+    and the commit still broke a scenario; the widened baseline was quoted two paragraphs above the stale lesson it
+    reasoned from. **In every case: the note, not the check.** Two practices to put beside it: **ask the machine what
+    it holds** (`ssh builder0 "grep -c <symbol> <file>"` names the tree a verdict belongs to in one query; rsync
+    timestamps versus commit times is how round 8 mis-identified one), and **check an instrument's headroom in the
+    control arm before running the treatment** (`stuck_units` pinned 30/30 in both arms carried no signal;
+    `oscillating` at 0.004 moved twelve-fold) — *an instrument at the end of its range is indistinguishable from one
+    that is not connected.* All three are one rule at different distances: **when a fact is one query away, query it**,
+    instead of an inference that is right most of the time, which fails silently and only when it matters.
