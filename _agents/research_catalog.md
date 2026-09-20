@@ -400,6 +400,14 @@ we have.
 unit name, and warm-startable — all four are determinism properties we need and Hungarian's float-tolerance variants
 are not.
 **Determinism:** integer utilities scaled by 10⁴, fixed ε, fixed cap.
+**MET (squad, 2026-09-20, laptop, `4741c723`):** spurious re-assignments under a 0.5 m nudge **0 of 512**; crossing
+driving paths on a formation change **0 of 96**; five-squad idle orders **0 and 0** (round 7's 4–6, without the `fixed`
+flag that achieved it). `STABLE_MARGIN` and `fixed` deleted, plumbing included; `_hungarian` kept only as the test
+reference. Two numbers were measured rather than chosen and both started wrong: the bid cap at 8 fell through to the
+greedy completion and produced 6 spurious re-assignments (an approximation artefact), and the incumbent bonus at 0.5
+spacings (7 m) was outbid by a CPU slot drift measured at 9.3 m — **a hysteresis term has to exceed the noise it exists
+to resist**; now one full spacing (14 m). Lesson 153 honoured: nothing in the utility is clamped. The first crossings
+measurement (8 before, 47 after) measured a configuration the game cannot produce and is struck, not revised.
 **Falsifier:** zero path-crossing slot assignments on a formation transition; spurious re-assignments under a small
 perturbation reach **0%**.
 
