@@ -86,3 +86,26 @@ grid-fairness: import ## Item 3: the SPAWN GRID's swap-bases control, 2v2 bots (
 spawn-probe: import ## Why a full army spawns inside geometry: positions + the bodies hit (ARENA=foundry PROBE_FLAGS=--pollute=X|--pollute-free=X)
 	$(GODOT) --headless --path . --script res://tests/scale/spawn_block_probe.gd -- \
 		$(if $(ARENA),--arena=$(ARENA)) $(PROBE_FLAGS) 2>&1 | grep -E '^SPAWN_PROBE|SCRIPT ERROR' || true
+
+.PHONY: lamp-frames
+
+# The acceptance test for the Terminus lamps (round 9, feel's finding): the floor has to read, and the vehicles have
+# to read ON it, at the pose the lead plays at. Shot as a PAIR -- `--no-show` and then with the show -- because the
+# show MODULATES what is already lit and its `pools` channel is not the floor's baseline (ruled with show). A frame
+# that looks lit only with the show on has not fixed anything; the lamps are the baseline and the show is the gloss.
+# Same seed and the same delay for both arms, so the only difference between the two images is the show.
+lamp-frames: import ## The Terminus lamp pair at the player's camera, show OFF then ON (ARENA=terminus DELAY=20) -> build/lamps/
+	rm -rf $(BUILD_DIR)/lamps && mkdir -p $(BUILD_DIR)/lamps
+	for arm in off on; do \
+		if [ $$arm = off ]; then flags=--no-show; else flags=; fi; \
+		$(GODOT) --path . --resolution 1920x1080 -- --skirmish --scripted --seed=3 --mute \
+			--arena=$(or $(ARENA),terminus) $$flags --screenshot-delay=$(or $(DELAY),20) \
+			--screenshot=$(CURDIR)/$(BUILD_DIR)/lamps/terminus-show-$$arm.png 2>&1 \
+			| grep -E "ERROR|SCRIPT ERROR" || true; \
+	done
+	@# BOTH arms or nothing: the first version used `flags=$$([ $$arm = off ] && echo ...)`, whose exit status is 1
+	@# when the test is false, so under errexit the `on` arm was skipped -- and the target still produced a plausible
+	@# single frame. A pair with one side missing is not a pair, and this is what says so.
+	@test -s $(BUILD_DIR)/lamps/terminus-show-off.png || { echo "lamp-frames: the show-OFF frame is missing"; exit 1; }
+	@test -s $(BUILD_DIR)/lamps/terminus-show-on.png || { echo "lamp-frames: the show-ON frame is missing"; exit 1; }
+	@ls -la $(BUILD_DIR)/lamps/*.png

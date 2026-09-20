@@ -619,7 +619,13 @@ def block(x, z, rot=0, **look):
 terminus = [
     block(40, 0, tiers=3, neon="cyan", seed=11),
     block(100, 0, tiers=2, setback=1, neon="magenta", seed=23),
-    block(30, 62, tiers=4, neon="magenta", seed=37),
+    # tiers=3, not 4: `CityBlock.setup` clamps to `clampi(..., 1, 3)`, so this block has been BUILT at 3 since
+    # it was authored and the 4 was silently discarded (feel, round 9, found while measuring roofs). Dropped to
+    # what actually ships rather than raising the kit's ceiling: taller blocks here would change sightlines and
+    # cover on the one map with block props near the centre, which is a gameplay change wearing an art change's
+    # clothes and nobody has asked for it. If 4 is ever wanted, it needs the kit extended AND A3 cover
+    # re-measured, on the lead's word.
+    block(30, 62, tiers=3, neon="magenta", seed=37),
     block(-30, 62, tiers=2, setback=1, neon="cyan", seed=41),
 ]
 terminus += [

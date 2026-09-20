@@ -279,6 +279,93 @@ sides; if it did not, say that the resize is not the variable.
 
 _Updated 2026-09-20 (post-merge), worktree `godot-scale`, branch `stream/scale`._
 
+### PRE-REGISTERED, written before reading the check on the merged tip
+
+The hold is lifted: main's quiet check on `49ed1fb3` read **1535 passed, 1 failed**, `sim-baseline 1e90f69e5d6fcc46`
+unmoved, and **zero** physics-body, region or edge-error reports — nav's **sealed `_teardown()`** frees and drains
+whether or not an override calls `super`, so combat's leaking `test_tank_yaw_fit` no longer leaks into its neighbour.
+
+**What I expect from `b6e24892` + `4119d0e2` merged onto that, recorded so it can be wrong:**
+
+1. **`test_theme_factions` at 44 bodies: GONE.** High confidence. Forty-four bodies is an army's worth and it was
+   never that file's — it was combat's foundry, observed by whichever test followed it in the shard. The seal removes
+   the holder, so the residue never reaches the observer. **This is the two-candidate message's hedge being settled
+   in favour of the *other* candidate, which is the outcome that justifies the hedge.**
+2. **`test_combat_sim_profile` at 1 body: probably gone, lower confidence.** The seal frees `_owned_nodes` regardless
+   of an override, so a body added through `add_to_tree` is now freed whatever that test does. **It survives only if
+   the body was never owned** — added outside `add_to_tree`, or created by the engine — in which case it is a **real
+   one-body leak** and goes to combat by name.
+3. **Main's two known reds may still appear** (the spawn settle assertion, which combat's `Tank.place()` clears next,
+   and the engine-deck scenario). Neither is mine.
+
+**If (1) does not hold, my reading of the 44 bodies was wrong** and `test_theme_factions` owns a leak of its own.
+
+## ROUND-10 HANDOVER — what is open, and what a fresh agent must not rediscover
+
+**The backlog is complete.** Items 1–5 done and merged; item 3's fairness control genuinely run rather than
+substituted for (`grid-fairness`, south **52.9% ± 4.6%** over 119 decisive matches, 0.64 SE from even, against the
+recorded 51% and the 64% bias the mirrored bake replaced). Stretch item 6 is the only unstarted brief item, and its
+**"before" is already extracted and committed**: the round-8 rig-14 m arm, `gangs vs law` **0% on both maps**, at
+`141955eb` (yard) and `c042bb81` (pit), 10 matches per matchup per map. Reproduce with
+`make remote T="faction-matrix ARENA=yard SEEDS=5 TIME=150 JOBS=8"`, then `ARENA=pit`.
+
+**1. `hull_size`'s consumer list has open sites.** The list is in
+[workstreams.md](../workstreams.md) *"What reads `hull_size`"* — 42 call sites, one line each, with a pointer from
+`units.gd`'s schema comment. **Open, not closed:**
+- **Three sites model a hull as a DISC of its box diagonal** (`match.gd:1383`, `match.gd:1450`,
+  `ai/incoming_fire.gd:101`, the last caching it per `unit_id`). `gang_tank` is treated as a **14.4 m-wide circle**
+  against a real 3.32 m width — **4.3×**. Routed to combat as an oriented box, with the `gangs vs law` series
+  pre-registered as the falsifier. **Pending.**
+- **A seventh site with a stale fallback: `ai/avoidance.gd:54`**, `Units.stat(unit_id, "hull_size", [2.4, 1.6, 3.8])`
+  — a **pre-CP2** default, alongside the same literal at `ai/movement.gd:708` and `:1700` and `[2.6, 1.8, 4.0]` at
+  `tactics/army_layout.gd:302`. Routed to nav and squad to read `Units.DEFAULT` loudly. **Pending.** *A fallback no
+  shipped unit can reach is indistinguishable from a correct one, which is why nothing caught these.*
+
+**2. The two no-mesh units await art, and that is the real fix.** `tank` and `burner` have no `model_scene`, so
+`box_at_length` cannot derive their width and height and they keep the pre-CP2 `2.40 × 2.40`. **`lineup_factions.png`
+shows them as the only two vehicles in the roster that do not read as vehicles** — long, low slabs sharing one
+silhouette, against the IFV at 7.5 m which reads as a bus *because it has its own art*. **One hull mesh each is on the
+lead's gate list with the frames.** It fixes the silhouette **and** retires the no-mesh branch of the box contract,
+collapsing `test_every_box_is_its_meshs_proportions_at_that_length` back to covering all twenty-one.
+
+**3. The reference-derived width is kept in the table, deliberately.** `adcdec13` derived `tank` `[1.83, 2.23, 8.62]`
+and `burner` `[1.80, 2.26, 6.89]` from their cited vehicles × K — cited, tested, self-consistent on three axes — and
+**`696d6490` reverted it on the picture**, because more correct and worse-looking were the same change here. **Both
+numbers stay in the table** so the next agent does not re-derive it and re-learn the same thing. It becomes right the
+day the art lands.
+
+**4. The disc/box knob's series is pending** (see 1). The falsifier is already named: if the gangs' penalty tracks the
+disc error, that is a candidate mechanism for `gangs vs law` 9/20 → 0/20, which has been open since round 8 —
+**and this stream measured that the Green deficit is NOT hull size** (`green_win_rate` **0.278 on both arenas**,
+identical to round 5's pre-CP2 25–28%).
+
+**5. ROUND 10, MINE: the spawn grid spaces by WIDTH where turning needs the HALF-DIAGONAL.** On combat's tree with
+the settle tick — hulls starting where they were placed rather than after the 1.5 m shove — **four crews overlap at
+spawn** (across gaps **−1.36, −0.02, −0.01, −0.77 m**), and **the off-slot crews of the five-squads test never
+departed: their first turn was refused in the press.** That last symptom is what makes it a defect rather than a
+tidiness argument — it is what a player would report.
+
+**The grid half is mine, beside squad's slot half: the same arithmetic at two sites.**
+
+**Why my own measurements said "clear" and were not wrong.** `test_spawn_isolation.gd:56-58` captures `placed[tank]`
+**immediately after `load_doctrine` returns, before any `await`** — zero physics frames, so the shove cannot be in
+those numbers on any tree. What they compute is **AABB separation**, `max(|Δx| − (w₁+w₂)/2, |Δz| − (l₁+l₂)/2)`, which
+answers *"do these boxes intersect where they stand?"* — and correctly. **The turning envelope is a different
+question**, and nothing in my measurement said which one it was answering. *A correct number against the wrong
+question reads exactly like a right answer.*
+
+**⚠ AND THE SAME NUMBER IS WRONG IN ONE PLACE AND RIGHT IN ANOTHER — whoever fixes one must not "fix" the other.**
+The turning half-diagonals (**tank 4.47 m, `gang_tank` 7.19 m** against half-widths of **1.20** and **1.66**) are
+*exactly* the disc radii flagged as a **4.3× error** at `match.gd:1383`, `match.gd:1450` and `ai/incoming_fire.gd:101`.
+A disc of the box diagonal **badly overstates where a hull is** — so friendly-fire refuses safe shots — and
+**correctly states the room a hull needs to turn** — so spacing by width under-provisions it. **One number, two
+sites, opposite errors.** This belongs in the consumer list beside both entries.
+
+**5b. Owed to other streams, small:** `CityBlock.resolves()` into `Arena.validate()` once `a33638b8` is on main
+(feel's predicate, so a misspelt neon colour is one loud line at read time instead of eight silent warnings per
+build), and feel's committed-arena `tiers` sweep, which goes green on this data now that Terminus asks for 3.
+
+
 ### The fairness controls after CP2 — the split beside the aggregate
 
 **CP2 is green at `7542df28` (1395 passed, 0 failed) and merged to `main` at `86463527`.** These are the controls
@@ -529,6 +616,66 @@ tests were innocent (`AiScenario.dispose()` already frees properly), the grants 
 guard's own advice — *"build arenas through ArenaFixture"* — was withdrawn as wrong: the fixture solves the *consumer*
 side, waiting for your own regions before measuring, and does nothing about regions outstanding at teardown.
 
+**ITS FIRST CATCH IS NOT YET ESTABLISHED, AND I RECORDED IT AS ONE TOO EARLY.** The record, in order: **three false
+reds** (the region half, measuring a settling window), **narrowed to bodies**, **two silent full-suite runs** (1487
+and 1488 tests), then a red on combat's check —
+`test_combat_sim_cost::test_a_parked_hull_stays_exactly_still_and_drives_off_when_told` leaving **1 physics body (was
+0 before this test)**.
+
+**I wrote that up as a true positive on one report. It is not confirmed:** combat's test does **not** reproduce it
+alone (2 passed / 0 failed filtered) and fails only in the shard that carried the navmesh cascade — **so the catch may
+be the cascade's shadow rather than combat's leak.** Unresolved, and stated as unresolved.
+
+**That I made this mistake here, of all places, is the point worth keeping.** I spent the morning insisting that a
+green proves nothing until the arm is distinguishable, retracted my own region guard for measuring a transient, and
+then accepted a single red as a confirmed catch because it was *my* instrument and the result was flattering. **A
+guard's first agreement with you is exactly when to check it hardest.**
+
+**What the narrowing argument still shows, independent of this catch:** the first version was wrong in a way that
+would have sent three streams to fix nothing, and the difference between the two versions was one question — *does
+this measurement have a settling window?* Regions do; bodies do not. That reasoning stands whether or not this
+particular red survives.
+
+**TWO DEFECTS feel found while the guard was blaming them, both real, and the second retracts a claim I have made
+repeatedly:**
+
+1. **The guard cannot convict the first test in a process.** `_world_baseline` is a static starting at **−1**, and the
+   check is gated on `_world_baseline >= 0`, so the first test to run **absorbs its own leak silently** — and a file
+   run alone can *never* be convicted. **That is a "cannot fail" hole in the guard I wrote to catch things that cannot
+   fail**, and it is the second one of mine today. Fix: take the baseline at **process start**, before any test.
+2. **"It fails the test that leaked, not the victim" is only true for synchronous `free()`.** A test that
+   `queue_free()`s an arena has it actually freed *frames later*, so the count rises during a **later** test and the
+   guard names **the first observer of the residue, not the leaker**. I asserted the opposite in the code comment, in
+   the commit message and in this Status, as the guard's whole justification. **Retracted**: it names the leaker only
+   when the leak is synchronous. Fix: print the **previous test's name** beside the riser so the reader gets both
+   candidates.
+
+**AND THE STRICTER BASELINE FOUND THE DAY'S CASCADE, indirectly, on its first run.** With the baseline taken at
+process start, the guard reported `left 44 physics bodies in the world (was 1 before this test)` — and 44 bodies is
+an army's worth, not a stray. **It is a whole foundry**: combat's `test_tank_yaw_fit` on main has a **teardown
+override that never calls `super`**, leaking 44 bodies and 4 regions. That live holder is why nav's region drain
+could not drain — *"the drain is not draining"* was the symptom; a test holding an arena open was the cause — and it
+is why **every check on every tree today showed the cascade**.
+
+**The two-candidate message was right to hedge.** It named `test_theme_factions.gd` *or* `test_tank_command.gd`,
+and the truth is a third file's foundry observed by whichever test followed it in that shard. **A guard that samples
+residue can only ever name observers, and saying so in the failure line is the difference between a clue and a
+misdirection** — the previous wording would have sent someone to audit an innocent file.
+
+**So the record on this guard, honestly: wrong about regions, retracted on its first "catch" (the `sim_cost` red was
+the drain budget on a loaded box), and then genuinely useful once narrowed and once its baseline was taken early.**
+Not a triumph, and not nothing — and the fix that made it useful was the one feel found by being wrongly blamed.
+
+**Landing: HELD on this branch (ruled (b)).** `b6e24892` is redder by design and would be read as part of the
+cascade. combat's `super` fix lands with the settle tick as a single hash, then a main check; `b6e24892` and the
+handover merge on the next **quiet** check, where its findings read as findings. **If `test_theme_factions` or
+`test_combat_sim_profile` still rise on that quiet check, they are real and go to feel and combat by name.**
+
+**Owed on the guard** (queued, low priority): name the leftover body in the failure line — **node path, class, and its
+owner test if the tree can tell** — and state **which frame the count was sampled on**. "left 1 physics bodies" costs
+a reproduction run to learn whose body it was, which is the same "names the symptom, not the thing" defect as the
+spawn test reporting *"inside a wall or crate"* about the ground.
+
 **What landed is the claim I can defend: bodies only.** A `CollisionObject3D` at teardown has no transient window. It
 reports a **lower bound** on leakers (high-water mark: once the count rises, a later test leaking below it is not
 blamed), and it fails **the test that leaked**, not the next one to run — which is the whole point, since this class of
@@ -607,6 +754,94 @@ to a mesh, and these two have no mesh, so **they pass by absence** — the same 
 and my own overlap script over zero obstacles. Two of twenty-one units sit outside the contract that would catch a bad
 box, and nothing said so until the table's own `no mesh` column was read. **That column is the only thing standing
 between "derived" and "assumed" for these two, which is why it is printed on every run.**
+
+### The spawn step: what my probe could and could not see (combat's correction)
+
+**combat's trace settles the mechanism: the 1.5 m lateral step IS `move_and_slide`'s penetration recovery** —
+`wanted.x = 0`, `moved.x = 1.53`, velocity untouched, no slide collision — so the pair is spawned overlapping
+something on the **vehicle layer** outboard of each.
+
+**And the correction to my instrument is the part to keep: `SPAWN_ISO_BLOCKED` probed `Perception.WORLD_MASK`, on
+which another vehicle is not visible.** So "no contacts" from that probe never meant "nothing is touching it"; it
+meant "nothing *on the world mask* is touching it". **A collision query is only ever an answer about its mask**, and
+mine was the mask for walls and terrain, asked about a vehicle-vehicle overlap. That is the same family as
+`pgrep -f godot` matching a command line and a search for `position =` missing a mover that is a function call: the
+query succeeds, returns a confident answer, and the thing looked for was never in its domain.
+
+**RESOLVED, and the answer is the deepest version of this round's pattern: there were two worlds.** combat printed
+each body's **node** transform beside the **physics server's** on tick 1 and they differ by up to **90.7 m** — a
+*permutation of the spawn slots*, with `S2_3`'s body standing in `S6_1`'s slot across the map. From tick 2 they agree
+exactly. **So every placement, gap and AABB measurement I took was correct about the scene, and the solver was
+resolving a scrambled copy of it.** Suspect: physics interpolation with positions set before the node enters the
+tree; combat is testing `force_update_transform` in `Tank._ready`.
+
+**Which is why the tension below could not be reconciled, and why it was right to record it rather than explain it
+away.** Every observation was true — no unit overlapped *in the scene*, recovery really did fire *in the server* —
+and they were incompatible only because both of us assumed one world. **A disagreement between two correct
+measurements is evidence about the system, not about the measurements**, and the thing to do with it is write it down
+and stop, which cost one paragraph and saved a fifth wrong hypothesis.
+
+**The tension as it stood (kept for the record):** My neighbour print is
+*arithmetic*, not a physics query — it compares placed coordinates against `hull_size` boxes — and it is therefore
+mask-independent. It reported the nearest unit to `Green_S2_2` at **2.21 m clear** (`Green_S2_4`, separated in z:
+|Δz| = 10.62 against half-lengths summing to 8.41), with only three units inside 12 m and **every gap positive**. So
+at *placement coordinates* no unit overlaps it. If recovery is pushing it off a vehicle, that body is either not one
+of the 90 at its placed position, or its collider is not its `hull_size` at that instant. **combat's probe — each
+hull's own collider on its own mask, printing the body — answers it; I am not guessing past my data.**
+
+### metrics: a test's verdict can track the shard count
+
+**5 shards fail, 6 shards pass, same code.** The count is derived from free memory at launch, so it varies with what
+else is on the box. **Any reproduction pins `TEST_SHARDS` and prints it** — this stream has pinned it since the T1
+sharding bug, and this is the second distinct way the schedule has decided a result today (the first was file
+distribution changing which tests share a process).
+
+### The Terminus lamps: done, verified by both of us, and the sentence that must travel with them
+
+`make lamp-frames` → `build/lamps/terminus-show-off.png` and `terminus-show-on.png`, builder0, `exited 0`.
+
+**The result is the comparison, not either frame: the lit floor is present in BOTH.** With the show **off** there is
+lit asphalt, readable hazard chevrons, the container reading as an object rather than a silhouette, and two lamp posts
+standing in frame as physical fixtures. The show-on frame is nearly identical — it moves band intensities and a few
+window tints and does essentially nothing to the asphalt. **So the lamps are the baseline and the `pools` channel is
+the gloss, verified rather than asserted.** feel reviewed both independently and reached the same reading.
+
+**It reads as LIT, not lit-up.** Pools are local and fall off into dark; nothing is on a grid. feel's point about
+*why*: the visible posts **explain** the light rather than just supplying it, which is most of what makes it read
+improvised rather than municipal. Their objection is withdrawn.
+
+**⚠ KEEP THIS SENTENCE WITH THE FRAMES WHENEVER THEY MOVE** (feel's ask, and it is the bit that stops someone
+"tidying" the lamps later): the six lamps are **point-symmetric TRUE, bilaterally symmetric FALSE**, verified
+mechanically. The 180° rotational symmetry is what keeps the swap-bases control valid and the half-plus-mirror
+navmesh bake honest; the *absence* of bilateral symmetry is what stops them reading as a municipal lattice. **Putting
+them on a tidy grid would silently break the first while fixing nothing.**
+
+**Not solved, and not dressed up:** the neon bands are still the brightest thing in frame, and vehicles away from the
+pools are dark hulls carried by their UI rings. *"The fight out-reads the buildings"* is **better, not solved**, and
+both of us expect this to move feel's 22-of-30 rather than clear it. **More lamps would fix the floor twice and the
+vehicles never** — the remaining gap is hull albedo/rim, which is feel's, already a round-10 item.
+
+**feel corrected their own earlier report to the orchestrator**, and it is worth knowing why: they had said *"at his
+own pose the lamps are not in shot at all"*, which was true of their frames because `crowd-look` frames the player's
+army, which at t=0 sits at the rim ~72 m from the nearest lamp. **They were measuring the spawn, not the pose.** The
+honest statement is *"at his pose AT SPAWN there are no lamps; in play there are"*. Shooting the **play camera**
+rather than a synthetic pose was the right call — `RTSCamera.DEFAULT_PITCH_DEG := 21.0`, so the pitch is his by
+construction — and a strict pixel A/B against a spawn-framed before-frame would have bought precision about the wrong
+50 metres.
+
+### Two process failures of mine, recorded because both produced confident false statements
+
+1. **A trailing `echo` announced a launch that never happened.** `git add -A && git commit … && nohup make remote …`
+   short-circuited when the commit found nothing to commit, so the run never started — and my separate
+   `echo "grid-fairness launched"` printed anyway. **I reported a run as started that was not**, and only caught it by
+   checking the process list. The same `&&` shape as the lamp target's `flags=$(… && echo …)`, which silently dropped
+   the show-ON arm, and as feel's test batch. **Four costumes in one day; the constant is that the failure prints
+   something plausible.**
+2. **`git add -A` swept a code change into two Status commits.** `mk/scale.mk`'s `lamp-frames` target landed inside
+   `9ae1a465` and `402ff578`, both titled "Status: …". `git log -- mk/scale.mk` now attributes a target to messages
+   about a spawn probe and a leak guard. **Not rewritten** (the history is shared and the content is right), but
+   recorded here so the provenance is findable — and the lesson is to `git add` the paths I mean rather than `-A`
+   when a scratch edit may be sitting in the tree.
 
 ### Queued, in order, behind the current work (recorded so none of it is rediscovered)
 

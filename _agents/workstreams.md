@@ -615,6 +615,20 @@ So the AI treats a War Rig as a **14.4 m-wide circle** for friendly-fire avoidan
 CP2 the worst case was 2× and the error was centimetres; now it is metres. **Not fixed here and not this stream's
 files** — recorded so it is a decision rather than a discovery.
 
+**⚠ ONE NUMBER, TWO SITES, OPPOSITE ERRORS — whoever fixes the disc sites must NOT "fix" the turning envelope the
+same way.** The half-diagonal above is *also* the room a hull needs to **turn**, and there it is the **right**
+number: on a tree where hulls start where they were placed, four crews overlap at spawn (−1.36, −0.02, −0.01,
+−0.77 m) and the off-slot crews of the five-squads test never depart — their first turn refused in the press —
+because **the spawn grid and the formation both space by WIDTH**. So:
+
+| the same `Vector2(w, l).length() / 2` | at `match.gd:1383`, `match.gd:1450`, `incoming_fire.gd:101` | at the spawn grid and `TacticsFormation` |
+|---|---|---|
+| **overstates where a hull IS** | friendly-fire refuses safe shots; shells read as threats they are not | — |
+| **correctly states the room to TURN** | — | spacing by width under-provisions it, and a hull cannot make its first turn |
+
+**Fix the first by using an oriented box; fix the second by spacing on the half-diagonal.** Doing either
+substitution at the other site makes it worse.
+
 **⚠ AND THE STALE FALLBACKS:** `[2.4, 1.6, 3.8]` (three sites) and `[2.6, 1.8, 4.0]` are **pre-CP2 sizes** that apply
 silently when a `unit_id` is unknown. They cannot be reached by a shipped unit today, which is exactly why nothing
 catches them — a fallback that never fires is indistinguishable from a correct one.
