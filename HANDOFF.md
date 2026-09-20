@@ -50,7 +50,9 @@ spot it can see instead of a fixed 30 m offset that the bigger hulls put behind 
    still and lives in motion. The coloured horizontal bands in every frame are feel's round-7 shopfront neon, not the
    show. **Three dials, all data:** `show.channels.windows.ceiling` (1.10; the gate says what raising it costs the
    fight), `show_edge_energy` (0.8, parapet only), `"style": "outline"` (the full-silhouette look feel argues against).
-5. **The resized roster under your camera** (control, shot locally at 08:28):
+5. **The resized roster under your camera** (control; `camera-looks` on builder0 at 08:59, `index.html` with 28 grid
+   frames and all ten arenas at your pose; `build/camera-looks/arenas/yard/default.jpg` shows the ring finding on ONE
+   unit: the tank sits in a circle about twice its own length; and the local shot at 08:28):
    `~/projects/godot-control/build/control-playtest/1920x1080/8_whole_army.png`. **Two findings, one is your call:**
    the selection rings are now a cloverleaf, because a ring's radius is 0.75 × the longer hull side and the 8.62 m
    tank's ring is 12.9 m across; options costed at the top of control's Status (circumscribing-circle bound, an
