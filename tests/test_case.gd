@@ -28,6 +28,17 @@ func expect_warning(pattern: String) -> void:
 	expected_warnings.append(pattern)
 
 
+## The same for a `push_error`, which is what a LOUD REFUSAL path emits. Without this, a refusal that correctly
+## errors cannot be tested at all: the runner fails any test that logs an engine error, so the only testable
+## refusals would be the quiet ones — precisely backwards. Declared before the call that should raise it, and a
+## pattern that never arrives fails the test, so this cannot be used to silence an error that stopped happening.
+var expected_errors: PackedStringArray = []
+
+
+func expect_error(pattern: String) -> void:
+	expected_errors.append(pattern)
+
+
 ## Reconcile one test's collected engine messages against the warnings it declared.
 ##
 ## Returns {"errors": int, "warnings": int, "failures": PackedStringArray, "texts": PackedStringArray}.
@@ -39,6 +50,7 @@ func expect_warning(pattern: String) -> void:
 ## Static, and separate from the runner, so every branch can be driven from a test with synthetic input --
 ## including the one branch a real test cannot stage, an expectation that never arrives.
 static func reconcile_engine_messages(entries: Array, expected: PackedStringArray,
+		expected_err: PackedStringArray = PackedStringArray(),
 		allowed: PackedStringArray = PackedStringArray()) -> Dictionary:
 	var errors := 0
 	var warnings := 0
@@ -47,12 +59,15 @@ static func reconcile_engine_messages(entries: Array, expected: PackedStringArra
 	var charged: PackedStringArray = []
 	var matched_allow: PackedStringArray = []
 	var outstanding := expected.duplicate()
+	var outstanding_err := expected_err.duplicate()
 	for entry: Dictionary in entries:
 		var text: String = entry.get("text", "")
-		# A message the test did not cause and cannot control, allowed BY NAME in
-		# tests/baselines/engine_expected.txt. Checked before anything else: it is not the test's to own, so
-		# it is neither charged to it nor counted against it -- but it is counted, and named, because an
-		# exemption that is silent cannot be told from a run in which nothing happened.
+		# A message the test did not CAUSE and cannot control, allowed by name in
+		# tests/baselines/engine_expected.txt. Checked before the declarations below, and before the type is
+		# looked at: `expect_warning`/`expect_error` belong to the test that causes a message, and whether
+		# the engine types a job-system saturation as a warning or an error is the engine's business.
+		# Neither charged nor counted against the test -- but counted and named, because an exemption that
+		# is silent cannot be told from a run in which nothing happened.
 		var allow_index := _first_match(allowed, text)
 		if allow_index >= 0:
 			allowed_seen += 1
@@ -68,20 +83,23 @@ static func reconcile_engine_messages(entries: Array, expected: PackedStringArra
 			charged.append(text)
 			failures.append("engine warning: " + text)
 		else:
+			var index_err := _first_match(outstanding_err, text)
+			if index_err >= 0:
+				outstanding_err.remove_at(index_err)
+				continue
 			errors += 1
 			charged.append(text)
 			failures.append("engine error: " + text)
 	for pattern: String in outstanding:
 		failures.append('expect_warning("%s") was declared and no matching warning arrived' % pattern)
+	for pattern: String in outstanding_err:
+		failures.append('expect_error("%s") was declared and no matching error arrived' % pattern)
 	if errors + warnings > 0:
 		failures.insert(0, "%d engine errors, %d engine warnings" % [errors, warnings])
 	return {"errors": errors, "warnings": warnings, "failures": failures, "texts": charged,
 			"allowed_seen": allowed_seen, "allow_matched": matched_allow}
 
 
-## The first outstanding pattern that matches, or -1. An EMPTY pattern matches nothing: `contains("")` is
-## true for every string, so an accidental `expect_warning("")` would swallow the first warning of every
-## kind -- a blanket exemption that reads like a specific one.
 static func _first_match(patterns: PackedStringArray, text: String) -> int:
 	for index in patterns.size():
 		var pattern := patterns[index]
@@ -149,6 +167,51 @@ func _count_bodies(node: Node) -> int:
 	return n
 
 
+## Wait until the world's navigation map holds no regions, so the NEXT test starts on an empty map however it built
+## its arena. `ArenaFixture` drains before it instantiates, but **20+ test files call `ARENA.instantiate()` directly**
+## and never reach that path — so the fixture's drain is a belt and this is the braces.
+##
+## Why it must live here and be awaited: `free()` is **synchronous**, and `NavigationServer3D` drops the freed
+## arena's regions when it next **syncs**, a frame or two later. A test boundary is not a synchronisation point, so
+## the next test bakes into the previous one's geometry — two full arenas of edges in one rasterization space, which
+## the engine reports as *"more than 2 edges tried to occupy the same map rasterization space"* and `run_tests.gd`
+## then charges to **whatever test is running when the warning lands**. combat lost 14 of 18 in one shard that way,
+## with the warning standing beside a test that builds no arena at all; nav saw 4 of the same errors from building
+## terminus twice inside one test.
+##
+## **EMPTY, not "back to the count we started with".** scale's drain probe printed `before=2 with_arena=2` — equal,
+## so a baseline guard is satisfied having waited for nothing, and that `before=2` **was** the previous test's
+## regions mid-drain. "Stops changing" fails too: a drain spanning two syncs reads `2, 2` as settled while both
+## samples are pre-drain. Zero is the resting state and the only predicate with no false-satisfied case.
+## 4 s of frames, not the 30 nav first wrote. scale measured the drain completing by **frame 1** on an idle box, so
+## 30 looked generous — and on builder0 under five parallel shards it was not: `test_combat_sim_cost` reported
+## "left 2 navigation region(s)" while **the same run produced ZERO edge errors**, which is the proof that the
+## regions did drain and only the bound was short. A guard whose budget is tighter than the thing it measures
+## reports a leak that is not there, which is scale's own question about their teardown guard — *"is the guard
+## crying wolf?"* — arriving at nav from the other side one day later.
+##
+## The budget costs nothing in the normal case: the loop returns the moment the map is empty, which is almost always
+## the first frame. It is only spent when something genuinely lingers, and then it is spent once.
+const DRAIN_FRAMES := 120
+
+
+func drain_navigation() -> void:
+	var viewport := tree.root as Viewport
+	if viewport == null or viewport.world_3d == null:
+		return
+	var map := viewport.world_3d.navigation_map
+	for frame in DRAIN_FRAMES:
+		if NavigationServer3D.map_get_regions(map).is_empty():
+			return
+		await tree.physics_frame
+	var left := NavigationServer3D.map_get_regions(map).size()
+	if left > 0:
+		failures.append(("left %d navigation region(s) on the map after %d frames (4 s). The next test will bake into "
+				+ "them and the engine's 'more than 2 edges tried to occupy the same map rasterization space' will "
+				+ "be charged to whichever test is running when it lands - which will not be this one.")
+				% [left, DRAIN_FRAMES])
+
+
 func teardown() -> void:
 	for node in _owned_nodes:
 		if is_instance_valid(node):
@@ -162,3 +225,8 @@ func teardown() -> void:
 				+ "them and may fail instead of this one: free every node you add, and if a helper builds the arena, "
 				+ "free it there.") % [total, _world_baseline])
 	_world_baseline = maxi(_world_baseline, total)
+	# LAST, and awaited by the runner: leave the navigation map empty so the next test cannot bake into this one's
+	# regions. Placed after the body guard so that guard's timing is unchanged, and after `free()` so there is
+	# something to drain. Every test gets this without asking, which is the point -- 20+ files instantiate the arena
+	# scene directly and would never call it themselves.
+	await drain_navigation()

@@ -97,16 +97,25 @@ const SLOT_X := [0.0, -7.5, 7.5, -15.0, 15.0, -22.5, 22.5, -30.0, 30.0, -37.5, 3
 const SPAWN_ROWS := 3
 const SPAWN_ROW_SPACING := 12.0
 const SPAWN_SLOTS := 57
-## Round 9: hulls spawn this far ABOVE the floor rather than exactly on it. A body created at exactly y = 0.0 makes a
-## degenerate ground contact -- zero penetration, a contact normal Jolt has to guess at -- and whether it resolves
-## cleanly depends on the solver's internal state left by bodies created and destroyed earlier in the match. Measured
-## by scale: three units ejected **1.5 m through the floor at spawn**, which is a real game bug and not only a flaky
-## test, and it reproduces only after earlier bodies have come and gone. A body that starts a few centimetres clear
-## has an unambiguous contact to resolve and simply settles.
+## Round 9: how far above the floor a spawn point sits. **It is 0.0, and the reason it exists at all is narrower than
+## the reason it was introduced** -- that history is worth one paragraph, because the original rationale is written as
+## fact in commit `0682a366` and is wrong.
 ##
-## It is a lift, not a hover: 5 cm is far below the ride height of every hull in the roster and nothing reads spawn y.
-## `Match._jittered` adds 0.0 on y and squad's `ArmyLayout.deploy` re-seats with `tank.global_position.y`, so both the
-## initial spawn and every respawn inherit this from here and there is exactly one number.
+## It was ruled at 0.05 m to cure what looked like a degenerate ground contact: three units in a full faction army
+## were found 1.5 m BELOW the floor, and the story was that a body created at exactly y = 0.0 gives the solver a
+## contact with zero penetration and no reliable normal. **That story is dead.** Measured frame by frame: the units
+## are at -1.475 after one physics frame, **-0.190 after two, -0.042 after three**, and their collider boxes are
+## exact. It is `move_and_slide`'s depenetration recovering normally over about three frames; the test was reading
+## the worst instant of a settle and calling it a spawn position. Lifting changed the recovery's first frame by
+## 0.032 m and nothing else -- the same three units were below the floor at 0.05 AND at 0.0, same workload.
+##
+## **WHAT SURVIVES, and it is the whole justification for the constant: a spawn point has TWO sources** -- this grid
+## and a layout's own `spawns` list via `Arena.spawn_spot` -- **and they must not drift apart.** Both read this, in
+## `spawn_position`, which is the only place either can be changed. That is worth a named constant even at zero.
+##
+## If it is ever set non-zero, check who writes y LAST before believing it reaches anything: `Match._jittered` adds
+## 0.0 on y, but squad's `ArmyLayout.deploy` writes the full placement, so a doctrine army takes the layout's y and
+## not this one. Two streams implemented the same ruling in two places in round 9 and only one could have an effect.
 const SPAWN_LIFT_M := 0.0
 ## Spawn jitter never moves a unit more than this sideways or along z: the column pitch (7.5) and the row spacing
 ## (12.0), each minus the bare-spawn hull (2.40 x 8.62 m) and minus ArmyLayout.HULL_CLEAR_M (2.0), halved. It came
@@ -1381,25 +1390,39 @@ func friendlies_in_line_of_fire(shooter: Tank, aim_point: Vector3) -> Array[Tank
 			continue
 		var spot := Vector2(friend.global_position.x, friend.global_position.z)
 		var size: Array = Units.stat(friend.unit_id, "hull_size")
-		var radius := Vector2(float(size[0]), float(size[2])).length() / 2.0
+		# ROUND 9: the hull is an ORIENTED BOX, not a disc. One `Vector2(w, l).length() / 2` used to serve all four
+		# tests below, on four different axes. For a War Rig that disc is 7.19 m against a 1.66 m half-width, and the
+		# error varies 4.3x abeam to 1.03x end-on -- so the gun declined shots ACROSS a friendly rig, which is the
+		# shot a gang pack with a rig in the middle most wants. `Units.hull_reach_along` projects the real box on
+		# whichever axis each test needs, and `--tune=match.hull_disc=1` restores the old disc inside it.
+		var friend_forward := -friend.global_basis.z
 		var risky := false
 		match int(weapon["kind"]):
 			Weapons.Kind.ARC:
 				var distance := clampf(to_aim.length(), float(weapon["min_range"]), float(weapon["range"]))
 				var landing := flat_origin + direction * distance
 				var sigma := arc_scatter(weapon, distance, true)
-				risky = spot.distance_to(landing) <= float(weapon["splash_radius"]) + radius + LINE_OF_FIRE_SIGMAS * sigma
+				# Toward the landing POINT: the hull's reach along the line from that point to the hull.
+				var toward_landing := Vector3(spot.x - landing.x, 0.0, spot.y - landing.y)
+				risky = spot.distance_to(landing) <= float(weapon["splash_radius"]) \
+						+ Units.hull_reach_along(size, friend_forward, toward_landing) + LINE_OF_FIRE_SIGMAS * sigma
 			Weapons.Kind.CONE:
+				var toward_muzzle := friend.global_position - origin
 				risky = Weapons.in_cone(origin, Vector3(direction.x, 0.0, direction.y), friend.global_position,
-						float(weapon["range"]) + radius, float(weapon["cone_deg"]))
+						float(weapon["range"]) + Units.hull_reach_along(size, friend_forward, toward_muzzle),
+						float(weapon["cone_deg"]))
 			_:
+				var flat_direction := Vector3(direction.x, 0.0, direction.y)
 				var reach := minf(to_aim.length() + LINE_OF_FIRE_OVERSHOOT, float(weapon["range"]) + Shell.RANGE_MARGIN)
 				var along := (spot - flat_origin).dot(direction)
-				if along > 0.0 and along <= reach + radius:
-					var across := absf((spot - flat_origin).cross(direction))
+				# LONGITUDINAL: could a shot with `reach` left travel far enough to touch this hull at all.
+				if along > 0.0 and along <= reach + Units.hull_reach_along(size, friend_forward, flat_direction):
 					var moving := clampf(absf(shooter.speed()) / maxf(shooter.max_forward_speed, 0.1), 0.0, 1.0)
 					var spread := tan(shot_spread(weapon, moving, shooter.suppression) * LINE_OF_FIRE_SIGMAS) * along
-					risky = across <= radius + spread
+					# LATERAL: hull_distance_to_line has already taken the hull's own extent off, so what remains to
+					# compare against is the spread alone.
+					risky = Units.hull_distance_to_line(size, friend_forward, friend.global_position,
+							Vector3(flat_origin.x, 0.0, flat_origin.y), flat_direction) <= spread
 		if risky:
 			at_risk.append(friend)
 			distances[friend] = spot.distance_to(flat_origin)
@@ -1439,7 +1462,7 @@ const INCOMING_MARGIN := 1.0
 
 ## K2, for dodging: rounds in flight that will reach `unit` if it holds still, soonest first. Each is {position,
 ## velocity (m/s), eta_ticks, damage_estimate (shield + hull points at its current shield), projectile_id, weapon}.
-## Shells count when their straight path passes within the hull's half-diagonal + INCOMING_MARGIN before they burn
+## Shells count when their straight path passes within INCOMING_MARGIN of the hull's OWN ORIENTED BOX before they burn
 ## out; lobbed rounds when they will land within their splash of it. Anyone's rounds but the unit's own (friendly
 ## fire is real). Walls are ignored: pure geometry (dot and cross products, no engine queries).
 func incoming_projectiles(unit: Tank) -> Array:
@@ -1447,8 +1470,7 @@ func incoming_projectiles(unit: Tank) -> Array:
 	if unit == null or not unit.is_alive():
 		return threats
 	var here := Vector2(unit.global_position.x, unit.global_position.z)
-	var size: Array = Units.stat(unit.unit_id, "hull_size")
-	var radius := Vector2(float(size[0]), float(size[2])).length() / 2.0
+	var half := Units.hull_half_extents(Units.stat(unit.unit_id, "hull_size"))
 	var forward := -unit.global_basis.z
 	for node in shells.get_children():
 		var shell := node as Shell
@@ -1458,14 +1480,18 @@ func incoming_projectiles(unit: Tank) -> Array:
 		var direction := Vector2(shell.direction.x, shell.direction.z).normalized()
 		var offset := here - from
 		var along := offset.dot(direction)
-		if along <= 0.0 or along > shell.remaining_range() + radius:
+		var flat_direction := Vector3(direction.x, 0.0, direction.y)
+		# ROUND 9: the box, not the half-diagonal (see the friendly-fire note above and Units.hull_reach_along).
+		if along <= 0.0 or along > shell.remaining_range() + Units.hull_reach_of(half, forward, flat_direction):
 			continue
-		if absf(direction.cross(offset)) > radius + INCOMING_MARGIN:
+		if Units.hull_distance_of(half, forward, unit.global_position,
+				Vector3(from.x, 0.0, from.y), flat_direction) > INCOMING_MARGIN:
 			continue
 		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
 		var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
 		threats.append({"position": shell.global_position, "velocity": shell.direction * shell.speed,
-				"eta_ticks": ceili(maxf(0.0, along - radius) / shell.speed * SimClock.TICK_RATE), "projectile_id": shell.projectile_id,
+				"eta_ticks": ceili(maxf(0.0, along - Units.hull_reach_of(half, forward, flat_direction))
+						/ shell.speed * SimClock.TICK_RATE), "projectile_id": shell.projectile_id,
 				"weapon": shooter.weapon_id if shooter != null else Weapons.DEFAULT,
 				"damage_estimate": _damage_estimate(unit, float(weapon["damage"]), weapon, shell.direction, false)})
 	for flying: Dictionary in _rounds:
@@ -1475,7 +1501,10 @@ func incoming_projectiles(unit: Tank) -> Array:
 		var landing: Vector3 = flying["to"]
 		var distance := here.distance_to(Vector2(landing.x, landing.z))
 		var splash := float(weapon["splash_radius"])
-		if distance > splash + radius:
+		# Toward the landing POINT: an arcing round comes down somewhere, so the hull's reach is measured along the
+		# line from that point to the hull rather than along any travel direction.
+		if distance > splash + Units.hull_reach_of(half, forward,
+				Vector3(unit.global_position.x - landing.x, 0.0, unit.global_position.z - landing.z)):
 			continue
 		var from: Vector3 = flying["from"]
 		var flight := maxi(1, int(flying["land_tick"]) - int(flying["fire_tick"]))
@@ -1501,6 +1530,31 @@ func _damage_estimate(unit: Tank, raw: float, weapon: Dictionary, direction: Vec
 	return split.x + split.y
 
 
+## The engine-deck diagnostic's row (see `Armor.deck_probe`). Three columns and no verdict:
+##   travel_deg   the angle between the victim's hull forward and the shell's travel -- what Armor.is_weak_spot tests
+##                (it fires under WEAK_SPOT_ARC_DEG, 25 deg)
+##   bearing_deg  where the SHOOTER stands relative to the victim's nose: 180 is dead astern. A shell can arrive
+##                inside the cone from a shooter that is not behind (a crossing shot), so the two are not the same
+##                question and conflating them is how this lands on the wrong owner.
+##   range_m      shooter to victim
+func _print_deck_row(victim: Tank, forward: Vector3, direction: Vector3, weak: bool, face: String,
+		shooter: String, weapon: Dictionary) -> void:
+	var flat_forward := Vector3(forward.x, 0.0, forward.z).normalized()
+	var travel := Vector3(direction.x, 0.0, direction.z).normalized()
+	var shooter_tank := tanks_by_name().get(shooter) as Tank
+	var bearing_deg := -1.0
+	var range_m := -1.0
+	if shooter_tank != null:
+		var to_shooter := shooter_tank.global_position - victim.global_position
+		range_m = Vector3(to_shooter.x, 0.0, to_shooter.z).length()
+		bearing_deg = rad_to_deg(flat_forward.angle_to(Vector3(to_shooter.x, 0.0, to_shooter.z).normalized()))
+	print("DECK_HIT " + JSON.stringify({"victim": victim.unit_id, "shooter_unit":
+			"" if shooter_tank == null else shooter_tank.unit_id, "weapon": String(weapon.get("id", "")),
+			"travel_deg": snappedf(rad_to_deg(flat_forward.angle_to(travel)), 0.1),
+			"bearing_deg": snappedf(bearing_deg, 0.1), "range_m": snappedf(range_m, 0.1),
+			"face": face, "weak_spot": weak, "arc_deg": Armor.WEAK_SPOT_ARC_DEG}))
+
+
 ## R2: the fraction of a hit's hull damage that gets through `unit_id`'s armor on `face`.
 static func armor_multiplier(weapon: Dictionary, unit_id: String, face: String) -> float:
 	return Armor.penetration_multiplier(float(weapon.get("penetration", 0.0)), Units.armor(unit_id, face))
@@ -1521,6 +1575,8 @@ func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: V
 	if weapon["kind"] == Weapons.Kind.ARC:
 		face = "side"  # indirect rounds come down on top: no face is the strong one
 	var weak := is_weak_spot_hit(weapon, forward, direction)
+	if Armor.deck_probe and victim.team != team:
+		_print_deck_row(victim, forward, direction, weak, face, shooter, weapon)
 	var through_armor := weak_spot_multiplier(weapon, victim.unit_id) if weak else armor_multiplier(weapon, victim.unit_id, face)
 	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]), through_armor)
 	result["face"] = face

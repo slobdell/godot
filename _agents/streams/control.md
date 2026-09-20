@@ -167,6 +167,26 @@ directly.
 
 ## Status
 
+> ## WHAT THE RESIZE CHANGED FOR YOU, AND THE ONE THING STILL TO DECIDE
+>
+> Making the vehicles their real relative sizes was worth it, and it broke four things that were quietly sized for
+> a 3.6 m hull. Three are fixed. **Two of the four were wrong at your own camera**, not at some extreme.
+>
+> | What you will see | Look at |
+> |---|---|
+> | **The marker under a vehicle is now shaped like the vehicle** — a capsule along the hull instead of a circle round its longest side. A tank's circle had grown to 12.9 m across, wide enough to park two tanks abreast in, and a squad's markers overlapped into a blob you could not read a unit out of. The marker now also shows which way a vehicle points. | `build/ring-before-after/before_circles.png` vs `after_shaped.png` |
+> | **A vehicle parked against the arena wall is no longer sliced in half** when you tilt the camera down. The wall cut-away was placed at the wall's top edge (3 m) — fine when the tallest vehicle was 1.6 m, wrong now that the Sonic Emitter is 6.18 m. At 50° it was cutting 1.57 m off the top of it. | it is geometry, not a frame: `-1.57 m → +0.20 m` worst across your whole tilt range |
+> | **The camera stops cutting squads off at the edge of the screen.** It framed where vehicles *stood*, never how big they are, so a column of War Rigs ran off the screen **at your own 21° camera** while the camera believed it had them all. | `-16.3 px → +12.4 px` at your pose |
+> | **A radar blip is sized to the vehicle it stands for** — rat rod smallest, rig biggest — instead of every vehicle being the same dot. | `build/control-playtest/1920x1080/8_whole_army.png` (bottom right) |
+>
+> **Still yours to decide** (below): whether the marker should be a tighter circle, the shaped capsule now shipped,
+> or left alone — and note the whole-squad facing drag is half-built, described under it.
+>
+> **One thing we have NOT fixed, so you know before you find it:** at the very lowest camera tilt (8°, the floor of
+> the range), a column of vehicles longer than about 70 m still runs off the screen. That is not the resize — it is
+> the camera's fitting maths going wrong when the ground is nearly edge-on, and it was true before. Measured and
+> recorded rather than quietly rounded off.
+
 > ## TWO CALLS FOR YOU, WITH THE PICTURES. Neither is broken; both are choices the resize forced.
 >
 > ### 1. The ring under your vehicles is now wider than the vehicle is long. Which do you want?
@@ -340,6 +360,34 @@ in my own worktree from it; metrics killed three streams' wrappers from the same
 - **Look at** `build/terminus-alleys/index.html` (six pairs, your pose, left as asked / right as fixed).
 - `make remote T=control-playtest-shots` and `T=camera-looks` for the HUD and the camera grid;
   `make remote T=check-display` for the console gate.
+
+### If you change the selection marker, check the SHADER PARAMETERS, not the mesh
+
+Round 9 turned the marker from an annulus mesh scaled uniformly into **one unit quad per kind with a
+signed-distance capsule in the fragment shader** (`selection_markers.gd`), and **two guarantees moved with it**.
+Both had tests that went on passing for the wrong reason, or failed for a reason that was not a regression:
+
+- **depth testing** was `StandardMaterial3D.no_depth_test`; it is now the absence of `depth_test_disabled` in the
+  shader's `render_mode`. (*A vehicle must cover its own marker.*)
+- **friend and foe differ by SHAPE, not only colour** — an accessibility property — was a dashed *mesh* with fewer
+  vertices; it is now the material's `dashes` parameter. A vertex count now compares **6 against 6** and cannot see
+  it at all.
+
+**Neither property changed. Both assertions had to move.** If you touch the marker again, the question to ask of
+every ring test is *where does this guarantee live now* — and the answer is a shader parameter or a `render_mode`,
+not a mesh or a material flag. The second of the two was caught by `make remote T=check`, not locally: it lives in
+`test_command_readability.gd`, which is not one of the files you would think to run after editing the markers.
+
+### One pose is not a range
+
+I reported the wall-cutaway checklist entry as **"answered: clear"** from a single check at the lead's pose (21°),
+where a 6.18 m hull parked against the wall clears the near plane by **+0.22 m**. Swept across the tilt range he
+can actually reach, it is **−1.57 m at 50°** — the top 1.57 m of that vehicle cut away. The fix brings the worst
+case across 8–70° to **+0.20 m**.
+
+**The analysis was not wrong, it was narrow**, and it read as a clean answer — which is what made it dangerous.
+Anything checked at one pose, one seed, one arena or one hull is checked at one point of a range the player moves
+through freely, and a checklist entry is not answered until the range is.
 
 ### Decisions
 

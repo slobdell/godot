@@ -69,3 +69,32 @@ func test_a_dragged_order_puts_its_heading_on_the_pin() -> void:
 			"pointing the way he dragged, got %s" % [mark["facing"]])
 	assert_true(f.controls.describe({"units": ["Green_Alpha_1"], "verb": "move", "facing": [0.0, -1.0]}).ends_with("facing N"),
 			"and the HUD says which way in plain compass: %s" % f.controls.describe({"units": ["Green_Alpha_1"], "verb": "move", "facing": [0.0, -1.0]}))
+
+
+## The pin draws what the CREWS WERE TOLD, not what the task holds. squad's 23b1d1a7 gives a dragged heading to the
+## element's LEADER and leaves followers on a plain follow, so a pin mirroring the task would show an arrow for a
+## turn the squad is not going to make -- which the lead would read as his units ignoring him, the exact complaint
+## the facing drag exists to answer.
+func test_the_squad_pin_only_claims_a_heading_every_crew_was_given() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	f.controls.elements = Elements.install(f.game_match, f.orders)
+	var element := f.controls.elements.form(["Green_Bravo_1", "Green_Bravo_2"], "Bravo")
+	element.assign({"verb": "move", "to": [30.0, 10.0], "facing": [0.0, -1.0], "drills": false})
+	f.controls.groups.save(2, ["Green_Bravo_1", "Green_Bravo_2"])
+	await f.select(["Green_Bravo_1", "Green_Bravo_2"])
+	assert_true(not f.controls.order_marks().is_empty(), "setup: the squad's task has a pin")
+	# The task holds a heading, but no crew has been told one: the pin must NOT claim it.
+	assert_true(not (f.controls.order_marks()[0] as Dictionary).has("facing"),
+			"a heading on the task that no crew was given is not drawn (%s)" % [f.controls.order_marks()[0]])
+	# squad's 23b1d1a7 shape: the LEADER has it, the follower does not. Still not a squad heading.
+	assert_eq(f.orders.issue({"units": ["Green_Bravo_1"], "verb": "move", "to": [30.0, 10.0],
+			"facing": [0.0, -1.0], "source": "player"}), "", "the leader is given the heading")
+	assert_true(not (f.controls.order_marks()[0] as Dictionary).has("facing"),
+			"one crew out of two is not the squad arriving on a heading")
+	# Every crew told the same heading: now the pin may claim it, and does so with no further change here.
+	assert_eq(f.orders.issue({"units": ["Green_Bravo_1", "Green_Bravo_2"], "verb": "move", "to": [30.0, 10.0],
+			"facing": [0.0, -1.0], "source": "player"}), "", "both crews are given it")
+	var mark: Dictionary = f.controls.order_marks()[0]
+	assert_true(mark.has("facing"), "with every crew told, the pin draws the heading (%s)" % [mark])
+	assert_true((mark["facing"] as Vector3).distance_to(Vector3(0, 0, -1)) < 0.08, "and it is the one they were given")

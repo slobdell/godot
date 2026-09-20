@@ -253,6 +253,7 @@ func vision_state() -> Dictionary:
 		return {}
 	var element: Array[String] = commanded_units()
 	var frame: Array = []
+	var pad := 0.0
 	var eyes: Array = []
 	var middle := Vector3.ZERO
 	for unit_name in element:
@@ -261,6 +262,11 @@ func vision_state() -> Dictionary:
 			frame.append(Shown.ground(tank))
 			middle += frame[-1]
 			eyes.append(tank)
+			# ROUND 9 (CP2): how much hull hangs off the point it stands on. The camera frames POSITIONS, so a
+			# vehicle's own size was never part of the bounds - 1.8 m of slop on a 3.60 m hull, and up to 7 m on the
+			# 14 m rig. Published beside the frame rather than folded into it, because `frame` is a list of
+			# positions that several other things read as one entry per vehicle.
+			pad = maxf(pad, Shown.half_hull(tank))
 	middle /= maxf(frame.size(), 1.0)
 	# Contacts the element can see widen the frame, but only symmetrically about the element: each one is framed
 	# together with its mirror image, so the frame stays centred on your own vehicles. Framing contacts as they are
@@ -292,7 +298,7 @@ func vision_state() -> Dictionary:
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
 			friendly.append(tank)
-	return {"frame": frame, "destination": destination, "region": VisionRegion.of(friendly)}
+	return {"frame": frame, "pad_m": pad, "destination": destination, "region": VisionRegion.of(friendly)}
 
 
 ## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective
@@ -1346,7 +1352,15 @@ func order_marks() -> Array:
 		if verb == "move" and bool(element.task.get("drills", true)):
 			verb = "attack_move"  # a move task with drills is what the player asked for as attack-move
 		var mark := {"verb": verb, "point": Vector3(float(to[0]), 0.0, float(to[1])), "task": true}  # a task with a place
-		_mark_facing(mark, element.task)
+		# The pin draws what the CREWS WERE TOLD, not what the task holds. Mirroring the task was a promise the game
+		# could not keep: a facing drag on a whole squad put the heading on the element and the members' orders never
+		# carried it, so the pin showed an arrow for a turn that was never going to happen - and the lead would have
+		# read that as his units ignoring him, which is the exact complaint this feature exists to answer.
+		# Unanimity, deliberately: the arrow claims "the SQUAD arrives on this heading", so one crew holding it is
+		# not enough. squad's 23b1d1a7 gives the leader the heading and leaves followers on a plain follow; under
+		# that commit this correctly stays silent, and it starts drawing by itself the day every crew carries it
+		# (squad's option 3) with no further change here. Derive, never mirror (Invariant 0).
+		_mark_facing(mark, _element_facing(element))
 		for unit_name in element.members():
 			_count_into(mark, String(unit_name), orders.current(String(unit_name)))
 		result.append(_finish_mark(mark))
@@ -1378,6 +1392,27 @@ func order_marks() -> Array:
 ## Round 9: the heading the player DREW with a right drag, on the pin that stands for the order. `_draw_facing` shows
 ## where a selected hull points NOW; this is where it is being told to point when it gets there, and the two are
 ## different claims. An order with no facing leaves the key absent, so a pin never invents a heading.
+## The heading EVERY living crew of this element has actually been given, as a `{"facing": [x, z]}` for `_mark_facing`,
+## or {} when they have not all been told the same one. Empty is the honest answer whenever the squad as a whole is
+## not going to arrive on a single heading.
+func _element_facing(element: Element) -> Dictionary:
+	var agreed: Array = []
+	var crews := 0
+	for unit_name in element.members():
+		var tank := game_match.tanks.get_node_or_null(NodePath(String(unit_name))) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		crews += 1
+		var way: Array = (orders.current(String(unit_name)) as Dictionary).get("facing", [])
+		if way.size() != 2:
+			return {}
+		if agreed.is_empty():
+			agreed = way
+		elif Vector2(float(agreed[0]), float(agreed[1])).dot(Vector2(float(way[0]), float(way[1]))) < 0.99:
+			return {}  # they were told different headings: the squad has no single one to draw
+	return {"facing": agreed} if crews > 0 and agreed.size() == 2 else {}
+
+
 func _mark_facing(mark: Dictionary, order: Dictionary) -> void:
 	var way: Array = order.get("facing", [])
 	if way.size() != 2:

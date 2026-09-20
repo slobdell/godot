@@ -10,7 +10,10 @@ extends RefCounted
 ## attached: a barrel placed by its turret (options.attach): only the muzzle point and cross-section are enforced.
 ## placed: a unit turret/weapon kept where the generator put it (options.place): size and anchor aren't enforced;
 ## a weapon reports how far its visible tip is from the gameplay muzzle (a warning).
-static func check_report(report: Dictionary, slot: String, raise := 0.0, attached := false, placed := {}) -> Dictionary:
+## `driving` is the model measured in the pose the unit is SHOT AT in (`DozerPart.driving_bounds`), or zero when the
+## caller has no part to ask. It matters only for refitted unit hulls, and only for the one part whose geometry moves.
+static func check_report(report: Dictionary, slot: String, raise := 0.0, attached := false, placed := {},
+		driving := Vector3.ZERO) -> Dictionary:
 	var errors := PackedStringArray()
 	var warnings := PackedStringArray()
 	var contract := AssetContracts.get_contract(slot)
@@ -58,12 +61,18 @@ static func check_report(report: Dictionary, slot: String, raise := 0.0, attache
 			#
 			# The absolute checks stay for slots that are NOT refitted: props, arena kit, turrets, weapons.
 			if AssetContracts.unit_of(slot) != "" and slot.ends_with(".hull"):
-				var aspect := Vector2(size.x / maxf(size.z, 0.001), size.y / maxf(size.z, 0.001))
+				# ROUND 9, second half: measure the pose the box is measured in. `SizeLook.natural_size` asks the
+				# part for `driving_bounds` -- the artillery's outriggers STOWED -- so a contract that refits from
+				# the model's authored bounds compares a deployed-pose mesh against a driving-pose box and
+				# disagrees by exactly the 1.84 m the catalogue just removed. `driving` is the same measurement
+				# the roster uses, taken from the part named in this theme's own manifest.
+				var shape := driving if driving.z > 0.01 else size
+				var aspect := Vector2(shape.x / maxf(shape.z, 0.001), shape.y / maxf(shape.z, 0.001))
 				var want := Vector2(guide.x / maxf(guide.z, 0.001), guide.y / maxf(guide.z, 0.001))
 				if absf(aspect.x - want.x) > want.x * AssetContracts.SHAPE_TOLERANCE \
 						or absf(aspect.y - want.y) > want.y * AssetContracts.SHAPE_TOLERANCE:
 					errors.append("shape %s does not match the slot's %s: refitted by length it would draw %.2f x %.2f x %.2f"
-							% [_v(size), _v(guide), size.x * guide.z / size.z, size.y * guide.z / size.z, guide.z])
+							% [_v(shape), _v(guide), shape.x * guide.z / shape.z, shape.y * guide.z / shape.z, guide.z])
 			else:
 				if size.x > max_size.x * (1 + tolerance) or size.y > max_size.y * (1 + tolerance) or size.z > max_size.z * (1 + tolerance):
 					errors.append("size %s exceeds the slot's %s" % [_v(size), _v(max_size)])
@@ -135,6 +144,30 @@ static func check_report(report: Dictionary, slot: String, raise := 0.0, attache
 
 
 ## Checks every slot in one generated theme. Returns {errors, warnings, lines} (lines = the report).
+## The model as its PART would draw it while driving. Zero when no part poses this slot, or when the part does not
+## override `driving_bounds` -- which is every part except the crane carrier, whose outriggers are authored DOWN
+## (deployed) and slide in to drive.
+##
+## The part is NOT the scene the manifest names. A generated theme's `scene` is the mesh carrier
+## (`assets/runtime/generated_visual.gd`) -- it holds the GLB and has no pose. The node that decides how the mesh
+## stands while the unit drives is the shipping theme's part (`ArtilleryPart` et al), so that is the table we ask.
+## Looking this up through `GameTheme.scene()` instead would read whichever theme happens to be active, and during
+## an asset check that can be the candidate theme -- that is, the mesh carrier again, and a silent zero.
+static func driving_size(slot: String, model: Node3D) -> Vector3:
+	var scene_path := String(GameTheme.CYBERPUNK_SLOTS.get(slot, ""))
+	if scene_path == "" or not ResourceLoader.exists(scene_path):
+		return Vector3.ZERO
+	var packed := load(scene_path) as PackedScene
+	if packed == null:
+		return Vector3.ZERO
+	var part := packed.instantiate()
+	var result := Vector3.ZERO
+	if part.has_method("driving_bounds"):
+		result = (part.call("driving_bounds", model) as AABB).size
+	part.free()
+	return result
+
+
 static func check_theme(theme: String) -> Dictionary:
 	var errors := PackedStringArray()
 	var warnings := PackedStringArray()
@@ -166,9 +199,11 @@ static func check_theme(theme: String) -> Dictionary:
 			errors.append("%s: unreadable %s" % [prefix, glb_path])
 			continue
 		var report := AssetInspector.inspect(model)
+		var driving := AssetChecker.driving_size(String(slot), model)
 		model.free()
 		var options: Dictionary = entry.get("options", {})
-		var result := check_report(report, slot, float(options.get("raise", 0.0)), options.has("attach"), options.get("place", {}))
+		var result := check_report(report, slot, float(options.get("raise", 0.0)), options.has("attach"),
+				options.get("place", {}), driving)
 		var aabb: AABB = report["aabb"]
 		lines.append("%s: %d tris, %.2f × %.2f × %.2f m, %d materials, %.0f KB textures%s" % [prefix, report["tris"],
 				aabb.size.x, aabb.size.y, aabb.size.z, report["materials"].size(), report["texture_bytes"] / 1024.0,

@@ -135,7 +135,7 @@ func test_an_allowed_message_does_not_fail_the_test() -> void:
 	## For messages a test did NOT cause and cannot control -- a leak from elsewhere, an engine job system
 	## saturating under load. `expect_warning` is the wrong tool: it belongs to the test that causes one.
 	var result := TestCase.reconcile_engine_messages([_entry("Jolt job system exceeded (a.cpp:1 in f)", true)],
-			PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
+			PackedStringArray(), PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
 	var failures: PackedStringArray = result["failures"]
 	assert_eq(failures.size(), 0, "allowed, so not a failure")
 	assert_eq(int(result["warnings"]), 0, "and not counted against the run")
@@ -144,14 +144,14 @@ func test_an_allowed_message_does_not_fail_the_test() -> void:
 
 func test_an_allowed_message_is_not_charged_to_the_test_it_landed_on() -> void:
 	var result := TestCase.reconcile_engine_messages([_entry("Jolt job system exceeded (a.cpp:1 in f)", true)],
-			PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
+			PackedStringArray(), PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
 	var texts: PackedStringArray = result["texts"]
 	assert_eq(texts.size(), 0, "it is not this test's, so it is not a victim of it either")
 
 
 func test_an_allowed_pattern_reports_that_it_matched() -> void:
 	var result := TestCase.reconcile_engine_messages([_entry("Jolt job system exceeded (a.cpp:1 in f)", true)],
-			PackedStringArray(), PackedStringArray(["Jolt job system exceeded", "never happens"]))
+			PackedStringArray(), PackedStringArray(), PackedStringArray(["Jolt job system exceeded", "never happens"]))
 	var used: PackedStringArray = result["allow_matched"]
 	assert_eq(used.size(), 1, "only the one that matched")
 	assert_eq(used[0], "Jolt job system exceeded", "and it is named, so the unused one can be tightened away")
@@ -161,7 +161,7 @@ func test_an_allowed_pattern_covers_an_ERROR_too() -> void:
 	## Whether an engine message arrives typed as a warning or an error is the engine's business, and a
 	## message a test cannot control is not the test's fault either way.
 	var result := TestCase.reconcile_engine_messages([_entry("Jolt job system exceeded (a.cpp:1 in f)", false)],
-			PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
+			PackedStringArray(), PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
 	var failures: PackedStringArray = result["failures"]
 	assert_eq(failures.size(), 0, "allowed by name, whatever its type")
 	assert_eq(int(result["errors"]), 0, "and not counted as an error")
@@ -169,7 +169,7 @@ func test_an_allowed_pattern_covers_an_ERROR_too() -> void:
 
 func test_an_unrelated_message_is_still_a_failure_with_an_allowlist_present() -> void:
 	var result := TestCase.reconcile_engine_messages([_entry("something else entirely (a.gd:1 in f)", true)],
-			PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
+			PackedStringArray(), PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
 	assert_eq(int(result["warnings"]), 1, "the allowlist exempts what it names and nothing more")
 
 
@@ -177,7 +177,7 @@ func test_an_empty_allow_pattern_exempts_nothing() -> void:
 	## `contains("")` is true of every string, so one blank line would exempt the first message of every
 	## kind -- a blanket exemption that reads like a specific one.
 	var result := TestCase.reconcile_engine_messages([_entry("anything at all (a.gd:1 in f)", true)],
-			PackedStringArray(), PackedStringArray([""]))
+			PackedStringArray(), PackedStringArray(), PackedStringArray([""]))
 	assert_eq(int(result["warnings"]), 1, "still a failure")
 	assert_eq(int(result["allowed_seen"]), 0, "and nothing was allowed")
 
