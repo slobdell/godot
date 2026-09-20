@@ -100,6 +100,15 @@ rig-hinge: import ## Feel X2, S2: the War Rig bending at the fifth wheel -- its 
 	@echo "Now LOOK at $(BUILD_DIR)/rig-hinge/strip_*.png -- the strips are written LAST, after every frame."
 	@ls $(BUILD_DIR)/rig-hinge/strip_*.png
 
+AIRSHIP_RES ?= 1920x1080
+airship-look: import ## Feel X7: is the Syndicate airship EVER in the lead's field of view? Sweeps every camera yaw x the whole orbit at his pose and reports the fraction -> build/airship-look/ (needs a display; AIRSHIP_FLAGS=, ARENA=)
+	rm -rf $(BUILD_DIR)/airship-look && mkdir -p $(BUILD_DIR)/airship-look
+	timeout 900 $(GODOT) --path . --resolution $(AIRSHIP_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
+		$(if $(ARENA),--arena=$(ARENA)) --airship-look=$(CURDIR)/$(BUILD_DIR)/airship-look $(AIRSHIP_FLAGS) \
+		2>&1 | tee $(BUILD_DIR)/airship-look/log.txt | grep -E '^AIRSHIP_LOOK|SCRIPT ERROR' || true
+	@grep -q AIRSHIP_LOOK_DONE $(BUILD_DIR)/airship-look/log.txt || { grep -E 'AIRSHIP_LOOK_FAILED|SCRIPT ERROR' $(BUILD_DIR)/airship-look/log.txt; echo "airship-look FAILED"; exit 1; }
+	@ls $(BUILD_DIR)/airship-look/*.png
+
 facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg)
 	rm -rf $(BUILD_DIR)/facing && mkdir -p $(BUILD_DIR)/facing
 	timeout 300 $(GODOT) --path . --resolution 960x540 --script res://game/theme/gallery/facing_audit.gd -- \

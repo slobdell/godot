@@ -145,6 +145,8 @@ func _init() -> void:
 		add_child(SizeLook.new())
 	if LaunchFlags.from_environment().has("rig-hinge"):
 		add_child(RigHinge.new())
+	if LaunchFlags.from_environment().has("airship-look"):
+		add_child(AirshipLook.new())
 
 
 func _ready() -> void:
