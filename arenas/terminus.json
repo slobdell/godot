@@ -60,7 +60,7 @@
     62.0
    ],
    "rotation_deg": 0.0,
-   "tiers": 4,
+   "tiers": 3,
    "neon": "magenta",
    "seed": 37
   },
@@ -71,7 +71,7 @@
     -62.0
    ],
    "rotation_deg": 180.0,
-   "tiers": 4,
+   "tiers": 3,
    "neon": "magenta",
    "seed": 37
   },
