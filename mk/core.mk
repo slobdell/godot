@@ -152,7 +152,14 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 # `--shard=i/N --filter=__no_such_test__` reports each shard's share in about five seconds without running a
 # single test. At N = 2, 3, 5 and 6 the shard file counts sum to **187** -- exactly the unsharded discovery count.
 # Nothing is dropped and nothing is run twice, at any shard count. (metrics, 2026-09-20, laptop.)
-TEST_SHARDS ?= $(shell tools/slot.sh --jobs 500 $$(( $$(nproc) / 2 )))
+# `:=`, NOT `?=`. `?=` creates a RECURSIVELY EXPANDED variable, so `$(shell ...)` re-runs on every reference --
+# and this one is referenced three times in the recipe below (the `seq` that launches the shards, the `xargs -P`,
+# and the count the guard verifies against). `slot.sh --jobs` reads free memory, so on a shared box the three
+# answers differ: scale's CP2 check launched TWO shards, both reported, 1395 passed, and then verified against
+# THREE -- so my own guard fired on a run in which every test had passed. Found by scale, 2026-09-20; trip-up
+# 67's family, where make evaluates a variable differently from how the author read it.
+# The `$(if ...)` keeps `?=`'s "leave an existing value alone" while running the shell exactly once per make.
+TEST_SHARDS := $(if $(TEST_SHARDS),$(TEST_SHARDS),$(shell tools/slot.sh --jobs 500 $$(( $$(nproc) / 2 ))))
 
 test: import ## Run the headless test suite (FILTER=substring to run a subset; TEST_SHARDS=1 forces one process)
 	@if [ -n "$(FILTER)" ] || [ "$(TEST_SHARDS)" -le 1 ]; then \
@@ -236,8 +243,11 @@ CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-
 # (seen on builder0, 2026-09-20). The guard was never wrong -- it compares against the value its own loop used --
 # but a header that disagrees with its run is exactly the kind of thing that costs an hour later, so `check`
 # passes its OWN values down to the sub-make and the whole check uses one evaluation.
-CHECK_JOBS ?= $(shell tools/slot.sh --jobs 1000)
-LINT_JOBS  ?= $(shell tools/slot.sh --jobs 250 $$(( $$(nproc) / 2 )))
+# `:=` for the same reason as TEST_SHARDS above -- see that note. Each is referenced more than once (the header
+# line, the -j, the value handed to the sub-make), and a header that disagrees with the run it describes is how
+# an hour goes missing later.
+CHECK_JOBS := $(if $(CHECK_JOBS),$(CHECK_JOBS),$(shell tools/slot.sh --jobs 1000))
+LINT_JOBS  := $(if $(LINT_JOBS),$(LINT_JOBS),$(shell tools/slot.sh --jobs 250 $$(( $$(nproc) / 2 ))))
 _CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
 
 # The heartbeat (lesson 48). `-Otarget` holds each target's output until that target finishes, which is what
