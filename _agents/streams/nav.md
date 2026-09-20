@@ -327,6 +327,38 @@ consults it, and turning it off changed scout wobble by −14% to +19%. The rema
   argmax's stickiness and the next suspect is the re-plan rate itself (`TankBrain.MOTION_REPLAN_TICKS` and the incoming
   count in its key — squad's file, so a request rather than a change).
 
+### Round 9's catalogue rows, and the order I recommended (nav, 2026-09-19)
+
+Four ADOPT rows are nav's: A1 (event-triggered replanning), A4 (clothoid primitives with priced cusps), A7 (null-space
+priority projection), A11 (dynamic-window arcs replacing the context-steering ring). A1, A7 and A11 touch the same code
+path, so Invariant 0c sequences them. My recommendation to the orchestrator, from what round 8 measured:
+
+**A7 → A11 → A1 → A4.**
+- **A7 first, alone.** Round 8's clearest finding is a cancellation failure: a standoff HOLD returns index −1 and never
+  consults the commitment bonus, so we shipped a term that was never in the code path and measured it twice for nothing.
+  That IS "opposing goals cancel to zero", and priority projection makes it structurally impossible. Its falsifier is
+  already measurable here (`travelled`, arena's stall counters).
+- **A11 second:** it replaces the ring A7 has just re-plumbed. The other order means fitting priority projection to a
+  scoring structure we are about to delete. Round 8's gear flips (9–19 per unit-minute) are the independent evidence.
+- **A1 third:** cadence is worth the most on paper (70% of churn) and is the likeliest to look like a win while hiding a
+  regression — the hold-hysteresis A/B is the cautionary case, churn down 6–22% and still a fail. Its latency falsifier
+  needs a stable decision layer underneath.
+- **A4 last:** clothoids are a primitive and the arc chooser consumes them. The round-8 arrival arc is their natural
+  first consumer (it drives a straight approach today; a clothoid is the honest version).
+- **Caution against my own recommendation:** A7 replaces additive blending, which is CombatMotion's entire weight table
+  — standoff, commitment, armour toward threats, all lead-approved behaviour. Its brief must name which become
+  priorities and which become null-space tasks BEFORE any code, or round 7 gets re-litigated by accident.
+
+**This layer's declaration for Invariant 0c.** nav owns the desired-velocity layer (`movement.gd`, `combat_motion.gd`,
+`steering.gd`, `tank_motion.gd`). It assumes ABOVE: squad hands down goals and, since round 8, a `facing`. It assumes
+BELOW: the plant honours (throttle, turn) with a bounded yaw rate. Replaces: A7 → the additive blend; A11 → the
+16-direction ring; A1 → the fixed repath and re-aim cadence; A4 → the straight approach inside the arrival arc. None of
+the four adds alongside.
+
+**Reeds–Shepp stays parked, and Part 1 §5 gives a better reason than mine:** it is curvature-discontinuous, so the plant
+expresses every join as the visible correction the lead complains about. My reason was only that its evidence was an
+angle-wrap bug in my own reporter.
+
 ### Round 8 wrap-up (nav, 2026-09-19 evening) — hand-over facts
 
 **GREEN HASH: `5367c395`.** Read from the wrapper: `>> remote: make check exited 0 (build/ copied back)` with
