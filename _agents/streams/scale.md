@@ -628,9 +628,15 @@ between "derived" and "assumed" for these two, which is why it is printed on eve
    whoever reads that result: the **median** unit is already under-served, not just the tail, so wedging would not be a
    rare event.
 
-**An observation from show for the record, not an alarm:** the same 6500 budget buys **68 vehicles at 191k primitives
-before CP2 and 64–68 at 145k after** (terminus, `PERF_NAME=show-layer`). **The resize went through simpler meshes, not
-more geometry** — the hulls grew in metres while the primitive count fell by a quarter.
+**What the resize cost, from show, on a quiet builder0: nothing measurable.** Post-CP2 frame cost **6.40 ms GPU**
+against pre-CP2's **6.43 ms**. Hulls grew from a 2.8–5.0 m band to 2.93–14.0 m and the frame did not notice.
+
+> **RETRACTED, and kept visible because the retraction is the useful part.** I recorded from show that the same 6500
+> budget bought *"68 vehicles at 191k primitives before CP2 and 64–68 at 145k after"*, and concluded **"the resize went
+> through simpler meshes, not more geometry"**. show re-ran on a quiet box and measured **180,780 primitives with fewer
+> vehicles**, so the 145k was **one run's sample on a loaded box, not a property of the roster**, and my tidy conclusion
+> was drawn from noise. **A number that arrives with a ready-made explanation is the one to re-measure** — the
+> explanation is what made it feel like a finding instead of a sample. Nothing in this stream depended on it.
 
 ### Decided: the Condemned artillery's box binds the DRIVING pose (one number owed)
 
