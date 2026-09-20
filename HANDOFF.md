@@ -35,7 +35,7 @@ spot it can see instead of a fixed 30 m offset that the bigger hulls put behind 
 
 ### What you should look at (all sent to you overnight; paths on this laptop)
 
-0. **The show's four dials, in your terms: `_agents/show_dials.md`** (merged 10:30). Watch the two clips before the
+0. **Terminus at your camera, 10:20:** `~/projects/godot-feel/build/terminus-luminance/terminus_pitch21_fov35_49m_default-camera.png` (sent to you). The bands now read the cyan and magenta the layout asks for (the palette fix confirmed in-game) and are still the brightest thing on screen; the vehicles are dark slabs held up by the UI rings. feel's diagnosis: light the floor (Terminus: two floodlights at the perimeter where pit has four, eight towers inside the fight), do not dim the bands. Lamps among the blocks in `terminus.json` are queued for scale behind the red test. **The show's four dials, in your terms: `_agents/show_dials.md`** (merged 10:30). Watch the two clips before the
    stills. It leads with the correction: the knob you will reach for is brightness and the one that reads as *alive*
    is the band's width. Two calls are posed as yours (roofline vs full outline; whether the `last_stand` strobe
    survives) with feel's and show's argument stated so you can overrule knowingly. Adding a cue is ten lines of JSON
@@ -147,7 +147,7 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
   nav; not started so that tonight's baseline move has one named cause.
 - **nav:** P7's A12 baseline: **the rotation landed (`c025bc6b`, builder0): yard 0.304, pit 0.321, terminus 0.331, pooled 0.320 weighted by active ticks, all inside the pre-registered 30–36 %; the spread of three points across maps that treated A4 oppositely (806 blocked gates vs zero) says the pathology is in the movement layer, not a map, so A6 is a roster-wide row.** Active fraction 0.595–0.738 travels beside it (A6 row in the catalogue). One arena per remote call: `nav-fight-maps` threads one `NAV_FLAGS` so three maps would clobber one `--trajectory` path, and `build/` is wiped per target, so copy each log out first. Then per-hull-class agent radius after CP2.
 - **squad:** A10 resumes at `c0f22597` once the deleted `fixed` flag's guarantee is preserved; the tube's five-seed gate.
-- **control:** item 4 (the post-CP2 camera sweep) the moment CP2 is on `main`; the contact-pip fix for scale.
+- **control:** item 4's green hash (frames landed at f007423e, check running); then **four more fixture-less arena tests found at 10:50** (`test_control_orders`, `test_control_group_moves`, the shared `tests/support/control_fixture.gd`, and `test_control_response`, which asserts K1's 100 ms guarantee with six routing references): control takes them with their own green, `test_control_response` first, and says whether the response figure moved on the fixed tree.
 - **feel:** X4 after CP2; the hinge's frame cost when the box is quiet; the Terminus brightness (diagnosed, scale's fix).
 - **metrics:** CP3's table; `ai-scenarios` into `check` behind its count baseline; the corridor columns' consumer.
 - **show:** item 7 (stretch) not started.
