@@ -103,7 +103,7 @@ lint-cache-probe: import ## Does `--check-only` see the f1128ef5 ternary error, 
 	cache=.godot/global_script_class_cache.cfg; moved=$(BUILD_DIR)/lint-probe/class_cache.saved; \
 	restore() { [ -f "$$saved" ] && mv -f "$$saved" "$$real"; [ -f "$$moved" ] && mv -f "$$moved" "$$cache"; return 0; }; \
 	trap restore EXIT INT TERM; \
-	run() { $(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1 \
+	run() { { $(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1 || true; } \
 		| { grep -E "Parse Error|SCRIPT ERROR|Compile Error" || true; } | head -3; }; \
 	echo ">> probe on $$(hostname), commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}"; \
 	echo ""; \
