@@ -467,7 +467,13 @@ ordered-unit-minute** because the arms diverge (`green_lost` 1/2 against 2/3). y
 | `goal_jumped` | 426 | 389 |
 | `off_path` / `stalled` | 32 / 22 | 15 / 26 |
 
-**−21.5 %.** The falsifier is **−60 %**, so **A1 still fails it and stays opt-in.** The cadence contributes all of
+**−21.5 %.** The falsifier is **−60 %**, so **A1 still fails it and stays opt-in.**
+
+**RE-MEASURED after the monotonicity fix (2026-09-20), because the fix changed `drifted` and this figure had already
+been published to squad: identical.** A1 ON 1706 re-plans / 71.8 per ordered-unit-minute, A1 OFF 2041 / 91.5, same
+cause split to the unit. The reasoning was that paths are rarely empty in a fight so the fix rarely bites — **which
+was right, and is now known rather than inferred.** *Silently moving the ground under a figure already given to
+someone is worse than re-running it.* The cadence contributes all of
 its 230 and the sliding-goal tolerance takes 1381 → 1226 (−11 %).
 
 **The sliding-goal tolerance helps less than it should, and the reason is worth knowing before anyone tunes it:**
