@@ -15,7 +15,9 @@ extends Node
 ## being asked whether it is beautiful, and a strip of only the slow breathe answers half the question.
 ##
 ## Flags: --show-look=<abs dir>  --show-look-times=0,8.1,16.3  --show-look-warmup=S (3)
-##        --show-look-cues=fight,battle,last_stand,victory
+##        --show-look-cues=fight,battle,last_stand,victory  --show-look-ripples=0.25,0.55,1.1
+##        --show-style=outline (the variant)   --no-show (the BEFORE arm: no patch, every fixture at its identity)
+##        --show-look-clip=<cue> --show-look-clip-frames=60 --show-look-clip-step=0.1 (a sequence, for ffmpeg)
 
 const PITCH_DEG := 21.0
 const DISTANCE_M := 49.0
@@ -46,6 +48,15 @@ var times: Array = [0.0, 8.1, 16.3]
 ## The cues worth a frame. `fight` is the moment the loading screen drops; `battle` and `victory` are the two the
 ## lead is most likely to judge the idea on.
 var cues: Array = ["fight", "battle", "last_stand", "victory"]
+## Wavefront ages for the kill ripple, in seconds. Shot against the IDLE rather than against `battle`: the first
+## strip took the ripple under the battle cue, where the edge channel is already near its ceiling and there is no
+## headroom left to ripple into, and the frame was indistinguishable from `cue_battle`.
+var ripples: Array = [0.25, 0.55, 1.1]
+## A cue to shoot as a SEQUENCE instead of a strip: stills cannot show a chase, a sweep or a strobe, because those
+## are motion. Empty means shoot the strip.
+var clip_cue := ""
+var clip_frames := 60
+var clip_step := 0.1
 var warmup := 3.0
 var _camera := Camera3D.new()
 
@@ -65,6 +76,12 @@ func _ready() -> void:
 	var wanted := flags.text("show-look-cues")
 	if wanted != "":
 		cues = Array(wanted.split(",", false))
+	var ages := flags.text("show-look-ripples")
+	if ages != "":
+		ripples = Array(ages.split(",", false)).map(func(v: String) -> float: return float(v))
+	clip_cue = flags.text("show-look-clip")
+	clip_frames = int(flags.text("show-look-clip-frames", str(clip_frames)))
+	clip_step = float(flags.text("show-look-clip-step", str(clip_step)))
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	_camera.name = "ShowLookCamera"
 	_camera.fov = FOV_DEG
@@ -87,6 +104,9 @@ func _run() -> void:
 	if FOCUS_POINTS.has(arena):
 		poses["street"] = [FOCUS_POINTS[arena], CLOSE_M]
 	get_tree().paused = true
+	if clip_cue != "":
+		await _shoot_clip(show, arena, heading)
+		return
 	# THE IDLE FRAMES MUST BE THE IDLE. The FIGHT cue holds for 5 s after the arena loads and the warmup is 3, so
 	# without this the first strip shot three frames of FIGHT and labelled them the slow breathe -- the lead would
 	# have judged the ambience by looking at the loudest cue in the book.
@@ -125,6 +145,36 @@ func _run() -> void:
 			show.settle_into(&"lull", CUE_T)
 	get_tree().paused = false
 	print("SHOW_LOOK_DONE arena=%s frames=%d" % [arena, poses.size() * times.size() + cue_frames])
+	get_tree().quit()
+
+
+## A cue as a SEQUENCE, at the wide pose: `clip_frames` frames `clip_step` seconds apart, numbered for ffmpeg.
+## This is the only honest way to show a chase, a sweep or a strobe -- a still of a strobe at its trough simply
+## reads as "dimmer", which is the opposite of the impression it gives in motion.
+func _shoot_clip(show: Show, arena: String, heading: float) -> void:
+	if show == null:
+		print("SHOW_LOOK_DONE arena=%s frames=0" % arena)
+		get_tree().quit()
+		return
+	var dir := out_dir.path_join("clips")
+	DirAccess.make_dir_recursive_absolute(dir)
+	_camera.global_transform = RtsCamera.pose_at(Vector3.ZERO, heading, DISTANCE_M, PITCH_DEG)
+	show.settle_into(StringName(clip_cue), CUE_T)
+	var t := CUE_T
+	for i in clip_frames:
+		if clip_cue == "kill" and i == 0:
+			show.settle_into(ShowCues.IDLE_STATE, t)
+			show.fire_event(Vector3(28.0, 0.0, 16.0), 1.0)
+		show.now = t
+		show.apply(t, clip_step)
+		t += clip_step
+		for _f in 2:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png(dir.path_join("%s_%s_%03d.png" % [arena, clip_cue, i]))
+	print("SHOW_LOOK_CLIP " + JSON.stringify({"arena": arena, "cue": clip_cue, "frames": clip_frames,
+			"step_s": clip_step, "fps": snappedf(1.0 / maxf(clip_step, 0.001), 0.1)}))
+	print("SHOW_LOOK_DONE arena=%s frames=%d" % [arena, clip_frames])
 	get_tree().quit()
 
 

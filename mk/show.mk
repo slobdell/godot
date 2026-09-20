@@ -18,27 +18,58 @@ SHOW_CUES ?= fight,battle,last_stand,victory
 # EDGES read must therefore have it off, or the block may simply not be there (control, 2026-09-20).
 SHOW_FLAGS ?= --block-cutaway=off
 
-show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49 m), idle + one frame per cue + a kill mid-ripple, per arena -> build/show/ (needs a display: make remote T=show-frames)
+show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49 m) -- BEFORE (no show), the default parapet look, and the outline variant; idle + one frame per cue + the kill ripple at three ages -> build/show/ (needs a display: make remote T=show-frames)
 	rm -rf $(BUILD_DIR)/show && mkdir -p $(BUILD_DIR)/show
-	for arena in $(SHOW_ARENAS); do \
-		timeout 300 $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
-			--no-pick-faction --cinematic --mute --arena=$$arena \
-			--show-look=$(CURDIR)/$(BUILD_DIR)/show --show-look-times=$(SHOW_TIMES) --show-look-cues=$(SHOW_CUES) \
-			$(SHOW_FLAGS) \
-			2>&1 | tee $(BUILD_DIR)/show/$$arena.log | grep -E '^SHOW_LOOK|SCRIPT ERROR|shader' || true; \
-		grep -q SHOW_LOOK_DONE $(BUILD_DIR)/show/$$arena.log || { echo "show-frames: $$arena never finished"; exit 1; }; \
-		echo "show-frames $$arena: shader errors $$(grep -ci 'shader.*error\|error.*shader' $(BUILD_DIR)/show/$$arena.log || true)"; \
+	@# Three arms of the SAME arena, seed and pose, so his comparison is frames rather than a frame and a memory:
+	@#   before/  -- --no-show: no patch loaded, every fixture at its identity = the branch-point look
+	@#   (root)   -- the default: the roof parapet, venue palette, under the window grid
+	@#   outline/ -- the variant feel argued against and the lead may still want; exempt from the luminance gate
+	for arm in before default outline; do \
+		for arena in $(SHOW_ARENAS); do \
+			case $$arm in \
+				before)  extra="--no-show"; sub="before";; \
+				outline) extra="--show-style=outline"; sub="outline";; \
+				*)       extra=""; sub=".";; \
+			esac; \
+			mkdir -p $(BUILD_DIR)/show/$$sub; \
+			timeout 420 $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+				--no-pick-faction --cinematic --mute --arena=$$arena $$extra \
+				--show-look=$(CURDIR)/$(BUILD_DIR)/show/$$sub --show-look-times=$(SHOW_TIMES) \
+				--show-look-cues=$(SHOW_CUES) $(SHOW_FLAGS) \
+				2>&1 | tee $(BUILD_DIR)/show/$$sub/$$arena.log | grep -E '^SHOW_LOOK |SCRIPT ERROR' || true; \
+			grep -q SHOW_LOOK_DONE $(BUILD_DIR)/show/$$sub/$$arena.log || { echo "show-frames: $$arm/$$arena never finished"; exit 1; }; \
+			echo "show-frames $$arm/$$arena: shader errors $$(grep -ci 'shader.*error\|error.*shader' $(BUILD_DIR)/show/$$sub/$$arena.log || true)"; \
+		done; \
 	done
+	@echo "show-frames: $$(find $(BUILD_DIR)/show -name '*.png' | wc -l) frames in $(BUILD_DIR)/show"
 	@# THE BRIGHTNESS HIERARCHY IS A GATE, not a note (feel, 2026-09-20; art_direction.md :72). If the block band
-	@# out-reads the fight ring in any frame, the venue is competing with the game and the strip does not ship.
+	@# out-reads the fight ring in any DEFAULT-style frame, the venue is competing with the game and this fails.
 	@python3 tools/show_luma_gate.py $(BUILD_DIR)/show
-	@echo "show-frames: $$(ls $(BUILD_DIR)/show/*.png 2>/dev/null | wc -l) frames in $(BUILD_DIR)/show"
 
-# The paired control (orchestration.md lesson 22: a control that cancels the cause, not more seeds). Both runs are
-# the SAME binary, the same import cache and the same machine, minutes apart in one slot, so contention -- which
-# drifts slowly -- is common to both and the PAIRED delta survives a loaded builder0 that an absolute number does
-# not. `--no-show` makes Show.get_instance() return null: nothing registers, every material keeps its shader
-# defaults, and those defaults are the identity.
+# A cue is MOTION. A still of a chase is a still of a bank of lights, and a still of a strobe at its trough reads
+# as "dimmer", which is the opposite of the impression it gives. 720p because motion is the subject.
+CLIP_RES ?= 1280x720
+CLIP_CUES ?= lull battle last_stand victory kill
+CLIP_FRAMES ?= 60
+CLIP_STEP ?= 0.1
+CLIP_ARENA ?= terminus
+
+show-clips: import ## S6: each cue as a 6 s clip at 10 fps from the lead's pose -> build/show/clips/*.mp4 (needs a display and ffmpeg: make remote T=show-clips)
+	rm -rf $(BUILD_DIR)/show/clips && mkdir -p $(BUILD_DIR)/show/clips
+	for cue in $(CLIP_CUES); do \
+		timeout 420 $(GODOT) --path . --resolution $(CLIP_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+			--no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) \
+			--show-look=$(CURDIR)/$(BUILD_DIR)/show --show-look-clip=$$cue \
+			--show-look-clip-frames=$(CLIP_FRAMES) --show-look-clip-step=$(CLIP_STEP) \
+			2>&1 | tee $(BUILD_DIR)/show/clips/$$cue.log | grep -E '^SHOW_LOOK_CLIP|SCRIPT ERROR' || true; \
+		grep -q SHOW_LOOK_DONE $(BUILD_DIR)/show/clips/$$cue.log || { echo "show-clips: $$cue never finished"; exit 1; }; \
+		ffmpeg -y -loglevel error -framerate $$(python3 -c "print(1.0/$(CLIP_STEP))") \
+			-i $(BUILD_DIR)/show/clips/$(CLIP_ARENA)_$${cue}_%03d.png \
+			-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/show/clips/$(CLIP_ARENA)_$$cue.mp4; \
+		rm -f $(BUILD_DIR)/show/clips/$(CLIP_ARENA)_$${cue}_*.png; \
+	done
+	@echo "show-clips: $$(ls $(BUILD_DIR)/show/clips/*.mp4 2>/dev/null | wc -l) clips in $(BUILD_DIR)/show/clips"
+
 show-perf-pair: import ## S6: perf-scene with the show off then on, back to back in one slot -> build/show-off.json, build/show-on.json
 	$(MAKE) perf-scene PERF_NAME=show-off PERF_RES=$(SHOW_RES) PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS)) --no-show"
 	$(MAKE) perf-scene PERF_NAME=show-on  PERF_RES=$(SHOW_RES) PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS))"

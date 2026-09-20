@@ -120,7 +120,8 @@ static func get_instance() -> Show:
 	# registers and every material keeps its shader defaults -- which ARE the identity -- so the venue renders
 	# exactly as it did before the show existed, on the same binary, the same import cache and the same machine.
 	# That is what makes `make perf-scene PERF_FLAGS="--no-show"` a paired control rather than another run.
-	if LaunchFlags.from_environment().has("no-show"):
+	var flags := LaunchFlags.from_environment()
+	if flags.has("no-show") and not flags.has("show-look"):
 		return null
 	if is_instance_valid(_instance) and not _instance.is_queued_for_deletion():
 		return _instance
@@ -147,6 +148,14 @@ func _ensure_cues() -> void:
 ## construction is always patched against that arena and never against the one before it.
 func follow_active_arena() -> void:
 	if not follows_active_arena:
+		return
+	# `--no-show` with `--show-look`: the Show exists only to host the frame tool, and loads no patch. Every fixture
+	# keeps its identity, so the frames ARE the branch-point look -- which is how the lead gets a before and an
+	# after of the same arena, the same seed and the same pose rather than one frame and a memory.
+	if LaunchFlags.from_environment().has("no-show"):
+		_arena = str(Arena.active.get("name", ""))
+		channels.clear()
+		bindings.clear()
 		return
 	# The cue book must exist BEFORE the first fixture registers, not at _ready(): the venue is built while the show
 	# is still a deferred add_child, so a book loaded in _ready() arrives after the arena has already been patched
