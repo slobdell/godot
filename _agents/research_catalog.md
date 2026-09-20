@@ -433,9 +433,12 @@ codebase** — it was an artefact of the Hungarian's tie order (the tier cost is
 vehicle), and it survived every round until the auction broke ties differently. Lesson 50's load-bearing coincidence,
 in the seating. A correct cost exists (`c0f22597`: a normalised tier mismatch whose coefficient never vanishes — the
 "symmetric-looking" form moved the blind spot to the median tier — plus a deadband for station drift bracketed by two
-measured distances, 1.34 and 3.8 spacings), one test short: a swapped seating arrives as *input* through
-`ElementPlan`'s `previous_seats` bookkeeping, which the deleted hysteresis patches had been masking. **A10's first job
-next round is that bookkeeping, before the cost.** The branch ships X1, X5, A8-off and A9 without A10. And the
+measured distances, 1.34 and 3.8 spacings), one test short — **and that failure is Invariant 0c, not bookkeeping** (squad's correction, 05:00): A10 deleted the
+`fixed` flag, whose guarantee is written in `_group`'s own comment (*keeps last update's seating whatever it costs — a
+plain move standing on its spot*), and neither the incumbent bonus nor a distance deadband reproduces an unconditional
+guarantee; the test drifts two crews 1.34 spacings onto each other's slots on purpose. A named mechanism was replaced
+without preserving what it guaranteed. **A10's first job next round: keep `fixed` for the on-the-spot case (or make the
+deadband unconditional when the anchor has not moved), then the cost.** The branch ships X1, X5, A8-off and A9 without A10. And the
 fourth coat of lesson 164: the perturbation test was not what hid this — *every test exercised tiers only where the
 tie-break could not matter*: the instrument never visited the case.
 **Falsifier:** zero path-crossing slot assignments on a formation transition; spurious re-assignments under a small
