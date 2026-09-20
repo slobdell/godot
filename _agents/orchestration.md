@@ -2416,3 +2416,9 @@ The kickoff prompt is one line; this section is the rest.
    defensible was not diligence but the merge commit saying so in capitals, naming the lead's decision, and bounding
    the blast radius with a verified `git diff -- game/` returning nothing. **An honest unverified merge is worth more
    than a check nobody had time to run.**
+152. **`make worktree` on a REUSED branch checks out that branch's old tip, not `main`.** Round 9's launch: five of
+    seven worktrees came up 16–169 commits behind `main`, without the round's docs — lesson 1's failure by a new road,
+    and invisible until `make worktrees` printed the behind/ahead column. Every stream branch had been fully merged, so
+    the fix was `git merge --ff-only main` in each; `tools/worktree.sh` now does that itself and refuses loudly when a
+    branch carries unmerged commits. **After creating worktrees, read the `VS MAIN` column before handing out the
+    kickoff prompt** — `0/0` on every row is the launch condition.

@@ -29,6 +29,14 @@ case "$cmd" in
     branch="stream/$stream"
     if git -C "$main_root" show-ref --verify --quiet "refs/heads/$branch"; then
       git -C "$main_root" worktree add "$dir" "$branch"
+      # A reused branch checks out at its OLD tip, without the round's docs (round 9 launch: five of seven
+      # worktrees started 16-169 commits behind main). Fast-forward when the branch is fully merged; refuse
+      # loudly when it is not, because then someone has unmerged work to look at first.
+      if git -C "$dir" merge --ff-only -q main 2>/dev/null; then
+        echo ">> $branch fast-forwarded to main ($(git -C "$dir" rev-parse --short HEAD))"
+      else
+        echo "!! $branch has commits not on main; NOT fast-forwarded. Merge or archive them before starting an agent." >&2
+      fi
     else
       git -C "$main_root" worktree add "$dir" -b "$branch"
     fi
