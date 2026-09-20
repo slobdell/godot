@@ -192,6 +192,16 @@ func test_a_unit_without_a_trailer_is_untouched() -> void:
 
 # ---- helpers ------------------------------------------------------------------------------
 
+## Drive a NON-simulating tank. It is a replica: every rendered frame it eases its own position and yaw toward
+## sync_position / sync_yaw (tank.gd), so setting the transform alone is undone within the frame -- and the hinge
+## then integrates a drift toward the origin instead of the drive. This is exactly how the first run of
+## `make rig-hinge` produced 0.0 degrees at every milestone of a corner that visibly happened.
+func _drive(tank: Node3D, at: Vector3, yaw: float) -> void:
+	tank.set("sync_position", at)
+	tank.set("sync_yaw", yaw)
+	tank.global_position = at
+	tank.rotation.y = yaw
+
 func _cell(point: Vector3) -> Vector3i:
 	return Vector3i(floori(point.x / VOXEL), floori(point.y / VOXEL), floori(point.z / VOXEL))
 
@@ -244,3 +254,40 @@ func _centroids(model: Node3D) -> Array[Vector3]:
 			for t in range(0, indices.size() - 2, 3):
 				result.append(to_model * ((verts[indices[t]] + verts[indices[t + 1]] + verts[indices[t + 2]]) / 3.0))
 	return result
+
+
+func test_a_driven_rig_bends_in_the_real_node_tree_and_settles_on_a_straight() -> void:
+	## X2's end-to-end check: not the law in isolation but the part, in a tree, reading a tank's drawn pose. This is
+	## the one that catches the wiring -- a hinge that is perfect arithmetic and never sees the tank reads zero.
+	var hull := _hull_part(RIG)
+	assert_true(hull != null and hull.get("trailer_pivot") != null, "the rig has a hinge to drive")
+	if hull == null or hull.get("trailer_pivot") == null:
+		return
+	var tank := hull
+	while tank != null and not (tank is Tank):
+		tank = tank.get_parent()
+	var wheelbase: float = float(FactionArt.trailer_cut(RIG)["wheelbase"]) \
+			* (hull.get("model") as Node3D).global_transform.basis.get_scale().x
+	var radius := 26.0
+	var speed := 9.0
+	var turned := 0.0
+	var at := Vector3.ZERO
+	var centre := Vector3.LEFT * radius
+	_drive(tank as Node3D, at, 0.0)
+	await tree.process_frame
+	await tree.process_frame  # the first frame is the spawn teleport: the hinge snaps straight, by design
+	for step in 240:
+		await tree.process_frame
+		turned += speed * tree.root.get_process_delta_time() / radius
+		_drive(tank as Node3D, centre + (at - centre).rotated(Vector3.UP, turned), turned)
+	var bend := absf(rad_to_deg(float(hull.call("articulation"))))
+	var expected := rad_to_deg(asin(minf(wheelbase / radius, 1.0)))
+	assert_true(bend > 1.0, "a rig driven round a corner actually bends (%.1f deg, wheelbase %.2f m)" % [bend, wheelbase])
+	assert_near(bend, expected, 4.0, "and bends by about the off-tracking angle (%.1f deg expected)" % expected)
+	at = (tank as Node3D).global_position
+	for step in 240:  # then straighten out
+		await tree.process_frame
+		at += Vector3.FORWARD.rotated(Vector3.UP, turned) * speed * tree.root.get_process_delta_time()
+		_drive(tank as Node3D, at, turned)
+	assert_true(absf(rad_to_deg(float(hull.call("articulation")))) < 1.5,
+			"and pulls back into line on a straight (%.1f deg)" % rad_to_deg(float(hull.call("articulation"))))

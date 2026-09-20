@@ -30,6 +30,7 @@ const FOV_DEG := 35.0
 ## agent will read the number and not the mechanism, so: these pitches are the pitches, not the floor's.
 const PITCHES := [21.0, 45.0]
 const MILESTONES := [0.0, 10.0, 25.0, 45.0, 70.0, 100.0]  # degrees through the corner
+const REVERSE_M := [3.0, 8.0, 16.0, 30.0]  # metres backed up, for the creep case
 
 var out_dir := ""
 var warmup := 6.0
@@ -133,10 +134,14 @@ func _shoot_corner(scene: Node, heading: float, pitch: float) -> void:
 	# The rest of the match holds still; the rig and its hinge keep running, so the bend is integrated from real
 	# frame deltas and a real speed, not posed.
 	tank.process_mode = Node.PROCESS_MODE_ALWAYS
+	_place(tank, where, heading, 0.0)
 	get_tree().paused = true
+	var hidden := _hud_layers(scene)
 	var turned := 0.0
 	var shots := []
 	var report := []
+	var reverse_shots := []
+	var reverse_report := []
 	for milestone: float in MILESTONES:
 		# The corner: a left-hand arc of `radius`, entered heading along the camera's right so the whole rig is
 		# side-on to him at the start and swings through the frame.
@@ -151,17 +156,43 @@ func _shoot_corner(scene: Node, heading: float, pitch: float) -> void:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		var image := get_viewport().get_texture().get_image()
-		var bend := rad_to_deg(float(_hull_of(tank).call("articulation"))) if _hull_of(tank) != null else 0.0
+		var cornering := _hull_of(tank)
+		var bend := rad_to_deg(float(cornering.call("articulation"))) if cornering != null else 0.0
 		var shot_name := "corner_%d_%d.png" % [int(pitch), int(milestone)]
 		image.save_png(out_dir.path_join(shot_name))
 		shots.append(image)
 		report.append({"turn_deg": milestone, "hinge_deg": snappedf(bend, 0.1), "frame": shot_name})
+	# The creep case: back it up in a straight line from a kinked start and let the law diverge, which is what a
+	# jackknife IS. Same camera, same rig, so the two strips are comparable.
+	var backed := 0.0
+	var from := tank.global_position
+	var yaw := tank.rotation.y
+	for milestone: float in REVERSE_M:
+		while backed < milestone:
+			await get_tree().process_frame
+			backed += speed * 0.5 * get_process_delta_time()
+			_place_reverse(tank, from, yaw, minf(backed, milestone))
+		_place_reverse(tank, from, yaw, milestone)
+		_camera.global_transform = RtsCamera.pose_at(tank.global_position, heading, DISTANCE_M, pitch)
+		for i in 3:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		var image := get_viewport().get_texture().get_image()
+		var hull := _hull_of(tank)
+		var bend := rad_to_deg(float(hull.call("articulation"))) if hull != null else 0.0
+		var shot_name := "reverse_%d_%d.png" % [int(pitch), int(milestone)]
+		image.save_png(out_dir.path_join(shot_name))
+		reverse_shots.append(image)
+		reverse_report.append({"reversed_m": milestone, "hinge_deg": snappedf(bend, 0.1), "frame": shot_name})
+	for layer: CanvasLayer in hidden:
+		layer.visible = true
 	get_tree().paused = false
 	tank.queue_free()
 	await get_tree().process_frame
 	_save_strip(shots, out_dir.path_join("strip_%d.png" % int(pitch)))
+	_save_strip(reverse_shots, out_dir.path_join("strip_reverse_%d.png" % int(pitch)))
 	print("RIG_HINGE " + JSON.stringify({"pitch_deg": pitch, "distance_m": DISTANCE_M, "fov_deg": FOV_DEG,
-			"radius_m": radius, "speed_mps": speed, "shots": report}))
+			"radius_m": radius, "speed_mps": speed, "corner": report, "reverse": reverse_report}))
 
 
 ## The rig `turn` degrees into a left-hand arc of `radius` that starts at `where` heading across the camera.
@@ -172,7 +203,27 @@ func _place(tank: Node3D, where: Vector3, heading: float, turn: float) -> void:
 	var centre := where + left * radius
 	var at := centre + (where - centre).rotated(Vector3.UP, turned)
 	at.y = where.y
-	tank.global_transform = Transform3D(Basis(Vector3.UP, entry + turned), at)
+	_pose(tank, at, entry + turned)
+
+
+## The rig reversed `back` metres along its own heading FROM WHERE THE CORNER ENDED -- no teleport, so the lag the
+## corner built is still in the hinge when the reverse starts. That matters: reversing from a dead-straight hinge is
+## an unstable equilibrium and would never diverge, which would have made this frame a lie.
+## The case metrics asked for: 56% of all reversals in a fight are the wheeled creep, so in today's game the rig
+## jackknifes far more often than it corners, and a review frame that only shows a clean corner shows the rare case.
+func _place_reverse(tank: Node3D, from: Vector3, yaw: float, back: float) -> void:
+	_pose(tank, from - Vector3.FORWARD.rotated(Vector3.UP, yaw) * back, yaw)  # FORWARD is the nose: minus is reverse
+
+
+## Put a NON-SIMULATING tank somewhere. It is a replica: every rendered frame it eases its own position and yaw
+## toward `sync_position` / `sync_yaw` (tank.gd), so setting the transform alone is undone within a frame and the
+## hinge reads a drift to the origin instead of the drive. This cost the first run of this bench: rigs 0 in the live
+## sample and 0.0 degrees at every milestone of a corner that visibly happened.
+func _pose(tank: Node3D, at: Vector3, yaw: float) -> void:
+	tank.set("sync_position", at)
+	tank.set("sync_yaw", yaw)
+	tank.global_position = at
+	tank.rotation.y = yaw
 
 
 func _hull_of(tank: Node3D) -> Node:
@@ -182,7 +233,9 @@ func _hull_of(tank: Node3D) -> Node:
 	return null
 
 
-## Somewhere with room for the corner: the player's deployment, pushed clear of it.
+## Somewhere with room for the corner: the player's deployment pushed OUTWARD, away from the arena centre, so the
+## corner sweeps across open ground behind the army instead of through the middle of it. (First run: the rig was
+## parked inside its own deployment and the frames were 40 vehicles and a HUD with the rig off the edge.)
 func _clear_ground(scene: Node) -> Vector3:
 	var army := scene.find_children("*", "Tank", true, false).filter(
 			func(t: Node) -> bool: return int(t.get("team")) == 0 and t.is_inside_tree()) if scene != null else []
@@ -192,7 +245,21 @@ func _clear_ground(scene: Node) -> Vector3:
 	if not army.is_empty():
 		centre /= army.size()
 	centre.y = 0.0
-	return centre
+	var outward := centre.normalized() if centre.length() > 1.0 else Vector3.BACK
+	return centre + outward * (radius + 22.0)
+
+
+## The HUD, hidden while the corner is shot and put back afterwards. These frames are an ART review -- the question
+## is whether the rig reads as a truck and a trailer -- and a command card over the bottom third answers a different
+## one. The live sample and the match behind the rig are untouched.
+func _hud_layers(scene: Node) -> Array:
+	var hidden := []
+	for node in (scene.get_tree().root.find_children("*", "CanvasLayer", true, false) if scene != null else []):
+		var layer := node as CanvasLayer
+		if layer.visible:
+			layer.visible = false
+			hidden.append(layer)
+	return hidden
 
 
 ## The milestones side by side in one image, so the bend is read as a sequence rather than six files.

@@ -94,7 +94,7 @@ rig-hinge: import ## Feel X2, S2: the War Rig bending at the fifth wheel -- its 
 	rm -rf $(BUILD_DIR)/rig-hinge && mkdir -p $(BUILD_DIR)/rig-hinge
 	timeout 420 $(GODOT) --path . --resolution $(RIG_HINGE_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
 		$(if $(ARENA),--arena=$(ARENA)) --rig-hinge=$(CURDIR)/$(BUILD_DIR)/rig-hinge \
-		$(or $(RIG_HINGE_FLAGS),--player-faction=gangs --budget=6500) \
+		$(or $(RIG_HINGE_FLAGS),--player=cpu:gang_ram --player-faction=gangs --budget=6500) \
 		2>&1 | tee $(BUILD_DIR)/rig-hinge/log.txt | grep -E '^RIG_HINGE|SCRIPT ERROR' || true
 	@grep -q RIG_HINGE_DONE $(BUILD_DIR)/rig-hinge/log.txt
 
