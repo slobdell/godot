@@ -2877,7 +2877,11 @@ The kickoff prompt is one line; this section is the rest.
     among the abandoned and a merge was blind to the one number that gates it. The fix is `-k` *plus* a three-state
     verdict (PASS / FAIL / NOT RUN) printed from the markers, because with `-k` alone a reader still learns of a
     skipped target only by noticing absent output. Read a check as passed / failed / abandoned from its markers,
-    never from what happened to print. Measured the same afternoon: the keep-going check completed 16 of 18
+    never from what happened to print. **And the attribution half (metrics, 19:50): the runner fails a test on any
+    engine warning it did not declare, which is right and loud; but twenty-two red tests sharing one message are
+    one defect and twenty-one victims, so the runner groups engine messages that failed more than one test and
+    names the first carrier ("the tests after it are probably downstream, not guilty"); a test that declared its
+    warning with `expect_warning` is never in that group.** Measured the same afternoon: the keep-going check completed 16 of 18
     targets through two failures where the old one completed 10, and its summary agreed with the markers exactly.
     **And the lint half of the same day (metrics `b839495c`):** a tree the runtime could not compile had passed lint
     in one worktree and failed it in another; the hypothesis "a per-file check cannot see a cross-file type error"
