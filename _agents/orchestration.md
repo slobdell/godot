@@ -2557,6 +2557,13 @@ The kickoff prompt is one line; this section is the rest.
     quiet ones were found. Fix: **a test suite for a switched-off mechanism switches it on for itself** (and restores the
     flag in teardown), so the geometry is asserted whether or not the mechanism ships on. Sibling of lesson 23 (a
     behaviour behind a flag has not shipped) on the test side: a test behind a flag has not tested.
+    **Third coat, the same night (squad, A10):** the perturbation test reported *"spurious 0 of 384 assignments changed
+    for a 0.5 m nudge"* — and its `_nudged()` added **the same vector to every member**, a rigid translation that leaves
+    the members' geometry relative to each other untouched, so the auction had nothing to re-seat. Station-keeping
+    error is members drifting *independently*, which is what four other tests exercise, and the tip went red on
+    exactly those four (two of them in control's file). **A test whose input cannot move the thing it measures reports
+    zero and looks like proof. A "0 of N" result is evidence only once the instrument has been shown to produce a
+    non-zero at all** — nav's non-vacuity guard for the tube, applied to a measurement instead of an assertion.
 165. **A lesson describing a defect that has since been fixed is worse than no lesson — it sends a stream to rebuild
     something that works.** Round 9: lesson 65 (the two smokes comparing against the baseline file) had been fixed in
     round 6, and feel's brief budgeted a build item on the strength of it; lesson 137 (the baseline only fields tanks)
