@@ -190,5 +190,5 @@ func test_frame_points_on_screen_after_snapping() -> void:
 
 
 func teardown() -> void:
+	# The hook restores the viewport and nothing else: `_teardown()` frees and drains after it, sealed.
 	tree.root.size = Vector2i(1280, 720)
-	super.teardown()
