@@ -2846,7 +2846,12 @@ The kickoff prompt is one line; this section is the rest.
     time bought two match-seconds. Fixes: aim at the densest cluster, poll the match for contact with the clock as
     a cap, and require 12 px of *drawn mesh* per counted vehicle. **A gate is only as good as the statistic's
     ability to distinguish the two cases it exists to separate; a frustum count is geometry, the question was
-    pixels.**
+    pixels.** Then a tenth (show): framing the densest cluster put the camera inside a block, because the frame
+    tools called `RtsCamera.pose_at` directly and never control's `clear_pose()` (the lift the lead's own
+    complaint bought); fixed, and every capture now prints the pitch it actually used and `lifted_deg`, because a
+    frame that had to lift to 30° is a fair pair but is not the 21° he plays at, and a label that quietly stops
+    being true is the same disease as the frustum count. Five defects in one pair, each invisible until the one
+    before it was fixed: **stop predicting that the next one is the last, and look at every frame before it travels.**
 186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
     Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
     the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
