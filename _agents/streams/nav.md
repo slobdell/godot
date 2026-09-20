@@ -327,6 +327,30 @@ consults it, and turning it off changed scout wobble by −14% to +19%. The rema
   argmax's stickiness and the next suspect is the re-plan rate itself (`TankBrain.MOTION_REPLAN_TICKS` and the incoming
   count in its key — squad's file, so a request rather than a change).
 
+### Round 8 wrap-up (nav, 2026-09-19 evening) — hand-over facts
+
+**GREEN HASH: `5367c395`.** Read from the wrapper: `>> remote: make check exited 0 (build/ copied back)` with
+`1261 passed, 0 failed` and `sim-baseline passed: 0cb238bf366e141f (glibc-2.43)` in the same log. The rsync for that run
+started between `5367c395` (17:27:29) and `c1dd3d75` (17:28:47), so the checked tree is exactly `5367c395`.
+
+**Verified at the green hash:** everything up to and including `5367c395` — the yaw ramp, the hold-hysteresis switch,
+the flow-field revert, the `--nav-off` unknown-name refusal, the rotation-capture unwrap, control's split facing test,
+the workstreams contract entry, and the arrive-on-heading arc with its five tests.
+
+**Landed AFTER the green hash (10 commits, `c1dd3d75`..`b4f04126`), not covered by it:**
+- Docs only: `c1dd3d75`, `7eae19b4`, `e66d56f7`, `f6f42127`, `47836038`, `0edd5550`, `ecdade39`, `b4f04126`.
+- Probe only: `bf72d8f0` (`--empty` in the rotation capture), `c4faf1e2` (`travelled` in nav-fight).
+- **Touches `game/ai/movement.gd`: `2038a40a`** — two static counters (`gates_aimed`, `gates_refused`) and no
+  behaviour change. Parse-checked and `make test FILTER=wheeled_arrival` 5/5 locally, but **not** remote-checked.
+- `make remote T=lint` was green ("lint: all scripts parse", exit 0) at `47836038`, so `ecdade39`, `2038a40a` and
+  `b4f04126` postdate even the lint.
+
+**Blocked on builder0 (down: `No route to host` on port 22, not just ICMP):**
+1. The facing-arc measurement (arms `2038a40a` vs `777574e5`), pre-registered above.
+2. Re-checking the three post-green commits that are not docs.
+3. The commitment-strength A/B (`COMMIT_BONUS` 0.35 → 0.7), pre-registered above.
+4. The terminus maze half of any future checkpoint, which needs arena's `f7bff357` and a 60-unit both-ways baseline.
+
 ### Round 8 report (nav, 2026-09-19) — the short version
 
 What the round answered, in the order the orchestrator set it:
