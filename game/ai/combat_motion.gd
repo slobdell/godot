@@ -426,6 +426,7 @@ static func reset_arms() -> void:
 	a7_holds_scored = 0
 	a7_holds_won = 0
 	a7_region_rejected = 0
+	a7_leash_radius = 0.0
 	dwa_lattices = 0
 	dwa_candidates_reachable = 0
 	dwa_with_live_state = 0
@@ -433,7 +434,7 @@ static func reset_arms() -> void:
 
 static func arm_report() -> Dictionary:
 	return {"a7_projected": a7_projected, "a7_holds_scored": a7_holds_scored, "a7_holds_won": a7_holds_won,
-			"a7_region_rejected": a7_region_rejected, "a11_lattices": dwa_lattices,
+			"a7_region_rejected": a7_region_rejected, "a7_leash_radius": a7_leash_radius, "a11_lattices": dwa_lattices,
 			"dwa_candidates_reachable": dwa_candidates_reachable, "a11_with_live_state": dwa_with_live_state}
 
 
@@ -507,6 +508,8 @@ static func choose_projected(request: Dictionary) -> Dictionary:
 	# rather than frozen when something pushes it out* — falling out of the structure rather than being special-cased.
 	# The radius is the one that ARRIVES (squad derives it per formation from member hulls: `max(pitch, SLOT_LEASH)`,
 	# ~16 m for a squad of War Rigs and growing at CP2), never `SLOT_LEASH` read as a constant here.
+	if leash_radius > 0.0:
+		a7_leash_radius = leash_radius
 	var leash_binds := leash_radius > 0.0
 	## How far outside its leash the hull is right now: 0 or less while it is in its slot's cell. A candidate may
 	## never make this worse (level 0 above), so a unit outside its slot always closes on it, whatever it is fighting.
@@ -838,6 +841,9 @@ static var dwa_with_live_state := 0
 ## Level 0's task region (squad asked for this by name): candidates rejected for leaving, or worsening, the leash.
 ## "Level 0 engaged" is exactly the kind of claim round 8 proved should never be taken on trust.
 static var a7_region_rejected := 0
+## The leash radius as it ARRIVED in the request (squad's pin: 14.0 m exactly on the drift scenario). Read from the
+## request, never from `SLOT_LEASH`, so a pitch-plumbing bug shows up as a number rather than as a silent default.
+static var a7_leash_radius := 0.0
 
 
 ## A11 is OPT-IN (`--nav-off=a11` turns it ON), on the same footing as A7: round 9's new rows land behind their switch
