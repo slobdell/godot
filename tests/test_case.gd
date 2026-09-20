@@ -38,14 +38,27 @@ func expect_warning(pattern: String) -> void:
 ##
 ## Static, and separate from the runner, so every branch can be driven from a test with synthetic input --
 ## including the one branch a real test cannot stage, an expectation that never arrives.
-static func reconcile_engine_messages(entries: Array, expected: PackedStringArray) -> Dictionary:
+static func reconcile_engine_messages(entries: Array, expected: PackedStringArray,
+		allowed: PackedStringArray = PackedStringArray()) -> Dictionary:
 	var errors := 0
 	var warnings := 0
+	var allowed_seen := 0
 	var failures: PackedStringArray = []
 	var charged: PackedStringArray = []
+	var matched_allow: PackedStringArray = []
 	var outstanding := expected.duplicate()
 	for entry: Dictionary in entries:
 		var text: String = entry.get("text", "")
+		# A message the test did not cause and cannot control, allowed BY NAME in
+		# tests/baselines/engine_expected.txt. Checked before anything else: it is not the test's to own, so
+		# it is neither charged to it nor counted against it -- but it is counted, and named, because an
+		# exemption that is silent cannot be told from a run in which nothing happened.
+		var allow_index := _first_match(allowed, text)
+		if allow_index >= 0:
+			allowed_seen += 1
+			if not matched_allow.has(allowed[allow_index]):
+				matched_allow.append(allowed[allow_index])
+			continue
 		if bool(entry.get("warning", false)):
 			var index := _first_match(outstanding, text)
 			if index >= 0:
@@ -62,7 +75,8 @@ static func reconcile_engine_messages(entries: Array, expected: PackedStringArra
 		failures.append('expect_warning("%s") was declared and no matching warning arrived' % pattern)
 	if errors + warnings > 0:
 		failures.insert(0, "%d engine errors, %d engine warnings" % [errors, warnings])
-	return {"errors": errors, "warnings": warnings, "failures": failures, "texts": charged}
+	return {"errors": errors, "warnings": warnings, "failures": failures, "texts": charged,
+			"allowed_seen": allowed_seen, "allow_matched": matched_allow}
 
 
 ## The first outstanding pattern that matches, or -1. An EMPTY pattern matches nothing: `contains("")` is

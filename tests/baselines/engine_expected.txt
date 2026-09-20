@@ -1,0 +1,22 @@
+# Engine messages that must NOT fail the test they land on, each with its reason.
+#
+# The test runner fails a test on any engine error or warning, and that rule is right: a message on a path a
+# test drives is a defect in that path until someone says otherwise. `TestCase.expect_warning()` is how a
+# test says otherwise about a message IT CAUSES. This file is for the other kind: messages a test cannot
+# control and did not cause, which land on whichever test happens to be running.
+#
+# THE COST OF THIS FILE IS THAT IT IS A BLANKET EXEMPTION. Every line is one message nobody will be told
+# about again, so:
+#
+#   * each line carries the REASON it is not a defect, in the comment above it, or it should not be here;
+#   * a line that no longer occurs is REPORTED after every run, so the list is tightened rather than grown;
+#   * matching is a substring, or a glob when the pattern contains `*` or `?`. An EMPTY line matches
+#     nothing -- `contains("")` is true of every string, and a blanket exemption that reads like a specific
+#     one is worse than no exemption at all;
+#   * allowed messages are still COUNTED and printed ("N expected engine messages seen"), because an
+#     exemption that is silent is indistinguishable from a run in which nothing happened.
+#
+# There is no entry here yet. The first candidate is a Jolt job-system saturation message that failed a
+# scenario whose own assertions all passed on a loaded builder0 (2026-09-20); it is deliberately NOT added
+# until the error_type probe says what kind of message it actually is, because "it looked like a warning"
+# is how the wrong thing gets exempted.

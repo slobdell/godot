@@ -89,3 +89,7 @@ ai-scenarios-record: import ## Record this machine's ai-scenarios counts to buil
 		exit 2; }
 	@$(METRICS_DIR)/ai_scenarios_gate.sh record $(BUILD_DIR)/ai-scenarios.log $(BUILD_DIR)/ai_scenarios_count.txt
 	@echo "  cp $(BUILD_DIR)/ai_scenarios_count.txt $(AI_SCENARIOS_BASELINE)   # and say WHY in the commit"
+
+.PHONY: error-type-probe
+error-type-probe: import ## What integer a Logger receives per message kind (the Jolt WARNING charged as an error)
+	@$(GODOT) --headless --path . --script res://tests/probes/error_type_probe.gd 2>&1 | grep -E "^PROBE_|WARNING:|ERROR:" | head -40
