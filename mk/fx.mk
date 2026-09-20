@@ -90,11 +90,11 @@ size-look: import ## Round 8: the War Rig beside a scout and a tank at the lead'
 	@grep -q SIZE_LOOK_DONE $(BUILD_DIR)/size-look/log.txt
 
 RIG_HINGE_RES ?= 1920x1080
-rig-hinge: import ## Feel X2, S2: the War Rig bending at the fifth wheel -- its hinge in a LIVE match, then a corner shot at the lead's poses (21 deg and 12 deg, 49 m, FOV 35) -> build/rig-hinge/ (needs a display; RIG_HINGE_FLAGS=, ARENA=)
+rig-hinge: import ## Feel X2, S2: the War Rig bending at the fifth wheel -- its hinge in a LIVE match, then a corner shot at the lead's pose (21 deg, FOV 35, 49 m) and from 45 deg for detail -> build/rig-hinge/ (needs a display; RIG_HINGE_FLAGS=, ARENA=)
 	rm -rf $(BUILD_DIR)/rig-hinge && mkdir -p $(BUILD_DIR)/rig-hinge
 	timeout 420 $(GODOT) --path . --resolution $(RIG_HINGE_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
 		$(if $(ARENA),--arena=$(ARENA)) --rig-hinge=$(CURDIR)/$(BUILD_DIR)/rig-hinge \
-		$(or $(RIG_HINGE_FLAGS),--player=cpu:gang_ram --player-faction=gangs --budget=6500) \
+		$(or $(RIG_HINGE_FLAGS),--player-faction=gangs --budget=6500) \
 		2>&1 | tee $(BUILD_DIR)/rig-hinge/log.txt | grep -E '^RIG_HINGE|SCRIPT ERROR' || true
 	@grep -q RIG_HINGE_DONE $(BUILD_DIR)/rig-hinge/log.txt
 
