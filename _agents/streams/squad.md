@@ -231,45 +231,137 @@ lead's 4 s allowance is exceeded, that is a question for him, recorded here with
 
 **In progress** (started 2026-09-20, worktree `godot-squad`, branch `stream/squad`, from `9f864474` = `main`).
 
+### For the lead, first thing
+
+**Four things went in, one came out, and one number is worth your eye more than the rest.**
+
+What a squad does differently this morning:
+
+- **Vehicles stop parking inside each other.** A formation's slot spacing is now worked out from the hulls of the
+  vehicles standing in it, per axis — as wide as the widest vehicle abreast, as long as the longest nose to tail, plus
+  2 m. The War Rig is the one that needed it: it is 14 m long against a 14 m doctrine spacing, so a column of rigs was
+  authored bumper to bumper. **This changes the deploy layout and the spawn grid**, and it moved the determinism
+  baseline (that is expected and the orchestrator re-records it).
+- **A halted squad faces outward.** At a halt or on station, each crew now takes the sector of fire the formation gave
+  it instead of pointing the way it was driving. Before this, a squad that stopped kept staring at where it had been
+  going.
+- **Bounding overwatch is a real two-phase machine.** One team moves while the other is stopped with guns up, then
+  they swap. It is no longer "everyone advances and some happen to shoot".
+- **Squads arrive together.** Slow vehicles set the pace, counted in sim ticks rather than wall-clock so it stays
+  deterministic.
+
+**The number I would look at: a wheeled squad takes 41.4 s to gather at the far side of a defile; a tracked one takes
+1.23 s.** Same order, same gap, same seed — the only difference is wheels versus tracks (laptop, `make squad-defile`,
+the maze's 11 m gap). Two independent instruments now say the same thing about wheels, mine and metrics', which is why
+I trust it enough to put in front of you. It is a **feel** problem, not a crash, and it is the kind of thing only you
+can rule on: a wheeled squad squeezing through a gap looks like it is shuffling and embarrassed. My guess is it wants
+a doctrine answer (file through deliberately, in order) rather than a physics tweak, but that is a judgement call and
+it is yours.
+
+**What did NOT ship, deliberately:**
+
+- **A10, the new seating solver.** It broke four tests, two of them in another stream's file, and I stood it down rather
+  than ship it or hold the other four rows behind it. The cause is worth one line because it is a nice one: *"heavies at
+  the front, artillery behind" was never actually written down as a rule in this code.* It was a side effect of which
+  solver we happened to use, and it held for months by luck. The new solver made different-but-equally-good choices and
+  the illusion broke. It is now written down as a real rule, in a commit ready to pick up next round.
+- **A8, formations squeezing to fit a corridor.** Built, tested, and **switched off** because it measured *worse* than
+  not doing it. It is behind a switch with its own tests, not deleted, and the reason it cannot work yet is that the
+  layer doing nine ticks in ten has no idea a formation exists. Next round's first job.
+- **The brain's "don't re-think while nothing has changed" rule.** Built, switched off, and I could not honestly
+  measure it: the probe I built for it has no enemies in it, so the counter reads zero in both arms. It stays off until
+  a probe that actually fights produces a before and after. I would rather hand you an off switch than a number I do
+  not believe.
+
+**Please playtest these three, because a human is the only check that counts here:**
+
+1. Order a squad through the maze's narrow gap. It should open out to hull spacing and come through without anybody
+   swapping places. (It will **not** narrow into a column — that is A8, which is off.)
+2. Order a bounding advance across open ground. At every moment, half the squad should be stopped and shooting.
+3. Drive a squad of War Rigs. They should look roomy now, almost too roomy — if 2 m of clearance looks wrong to you,
+   that constant is one line (`HULL_CLEAR_M`) and it is the sort of thing you said you would fine-tune.
+
+**One question for you when you have a moment**, recorded rather than guessed: a bounding advance is slower than a
+straight move by design. You allowed 4 s of "drill cost" in an earlier round. I have not measured A9's cost against
+that allowance yet, so I do not know if it fits, and the honest answer is that I ran out of night before I got to it.
+
+**Numbers that were wrong and are struck, not quietly fixed:** three tonight, all mine or relayed by me — a prediction
+that the hull change would not move the determinism baseline (it did), a claim that eight of ten maps had impassable
+corridors (another stream retracted their measurement, and mine agreed with their corrected one), and a seating
+measurement that described a configuration the game cannot produce. They are struck in place below with the reason,
+because the reasons turned out to be more useful than the numbers.
+
 ### Read this first if you are picking this up cold
 
-**PAUSED 2026-09-20 ~03:05 on the orchestrator's instruction** (the lead's session limit is at 93% and resets at
-03:20; builder0 is off the network anyway). Waiting for its "RESUME" after 03:25. Nothing below needs rediscovering.
+**Round 9 shipped X1, X5, A8 (off) and A9. A10 is stood down at `02762b8d` and resumes from `c0f22597`.**
 
-- **The branch tip is `c0191beb`, ten commits, and every one of them is local-only green** except where a table below
-  names a builder0 result. `make check` has **not** been run on the tip: builder0 went down mid-round, and rule 4 says
-  a number without its machine is not a number. **Do not hand the tip over as green.**
-- **`ce4bd8ca` is the merge candidate the orchestrator is waiting for** — nothing of mine before it merges, because
-  `ce4bd8ca` is the commit that fixed the A8 suite that its own switch-off had silenced (lesson 164 on `main`). The
-  agreed handover is: **one `make remote T=check` on the tip, plus the five post-`sim-baseline` targets as their own
-  list** (`garage-smoke army-loop-smoke announcer-check audio-check match-pytest`, because `sim-baseline` fails
-  deliberately and would mask everything after it), and the orchestrator merges at **both wrapper lines**.
-- **`sim-baseline` is EXPECTED RED** on this branch, twice over: X1's hull floor moves the hash
-  (`04414f5d6a6dfa7c` → `d4c049819a5833d3`, builder0-confirmed) and A10 changes seating. That is a baseline to
-  re-record, not a failure — the orchestrator owns the re-record (Invariant 2).
-- **Before any remote run, check builder0 for my own surviving `slot.sh` processes** and clear them by PID. Never by
-  pattern: I killed my own watchers three times tonight with `pkill -f` (trip-up 19 / lesson 79), which is how a
-  `make check` dies at exit 144 and looks like a test failure.
-- **Any commit that touches a scenario file carries an `ai-scenarios` count beside its hash.** `ai-scenarios` is NOT
-  in `check` (lesson 42/159), so a green `check` cannot see a scenario break — this is how `6e0c9968` shipped a
-  `StubElement` with no `pitch` and nav found it by cherry-picking, not me.
-- **A8 (`DEFORM_ENABLED`) and A1's brain half (`TUBE_ENABLED`) both ship OFF**, on evidence, and each suite switches
-  its own flag on for itself. A8 measured worse than off; the tube's flip is not yet gated (next step below).
+- **The tip is `02762b8d`.** It reverts A10 (`4741c723`) and the fix to A10's cost (`c0f22597`), on the orchestrator's
+  05:30 time-box, because the other four rows each stand on their own evidence and should not wait behind one test.
+  **Cherry-pick `c0f22597` to resume**: the revert was clean in code, the only conflict was this brief.
+- **A10's first job next round is not its cost — it is the mechanism A10 deleted without replacing.** The one test
+  still red under `c0f22597` is `test_tactics_tasks::test_a_plain_move_standing_on_its_spot_keeps_its_seating`, and the
+  cause is **Invariant 0c**: A10 removed the `fixed` flag, whose entire job is spelled out in `_group`'s own doc
+  comment — *"`fixed` keeps last update's seating whatever it costs (a plain move standing on its spot)"* — and neither
+  the incumbent bonus nor the ON_STATION deadband reproduces that guarantee. `fixed` is unconditional; a deadband is a
+  distance, and the test drifts two crews a full 1.34 spacings onto each other's slots deliberately.
+  **So: either keep `fixed` as the on-the-spot case and let the auction handle the rest, or make the deadband
+  unconditional when the anchor has not moved** (`_same_anchor` already exists in `element.gd`). Instrumented evidence
+  that it is not the solver: **every `seat()` call returns its `held` unchanged**, and the wrong seating arrives as
+  INPUT at the -48 and -4 anchors, so nothing in the cost or the auction produced it.
+  I first reported this as "the `previous_seats` bookkeeping", which was the right neighbourhood and the wrong thing:
+  the bookkeeping is fine, the guarantee was dropped.
+- **A8 (`DEFORM_ENABLED`) and A1's brain half (`TUBE_ENABLED`) ship OFF**, on evidence, and each suite switches its own
+  flag on for itself (lesson 164). A8 measured worse than off. The tube has no fight instrument yet: see below.
+- **`sim-baseline` moves on this branch** (X1's hull floor changes the War Rig's pitch; builder0 confirmed
+  `04414f5d6a6dfa7c` → `d4c049819a5833d3` at `6e0c9968`). The orchestrator records the new hash after merging
+  (Invariant 2). It is a baseline to re-record, not a failure.
+- **`ai-scenarios` is NOT in `check`** (lesson 42/159), so any commit touching a scenario file must carry an
+  `ai-scenarios` count beside its hash. This is how `6e0c9968` shipped a `StubElement` with no `pitch`.
+- **Clear builder0's stale slots BY PID, never by pattern.** `pgrep -f slot.sh` matches your own ssh command line, and
+  three `make check` lines in `ps` are byte-identical across streams — identify by `readlink /proc/<pid>/cwd`. I killed
+  my own watchers three times this round (trip-up 19 / lesson 79).
+- **A remote run whose local wrapper dies keeps running as an orphan**, holds its slot, and can never produce the
+  `>> remote: make check exited <N>` line that a merge depends on. Absence of that line means NO RESULT, not a failure,
+  however many PASSes scrolled past. Kill the orphan by PID before re-running, because you cannot rsync into a
+  directory a suite is reading.
 
-### The exact next step, in order, when RESUME arrives
+### What A10 taught, and it is the round's finding
 
-1. **Ask builder0 what it is holding** before trusting a sync (`ssh` + `grep -c` for a symbol the tip has and the
-   previous tree does not) and clear my own stale slots by PID. Hold the tree still while a check is in flight — I
-   spent a run tonight unable to name which tree it had measured.
-2. **`make remote T=check` on `c0191beb`**, then the five post-`sim-baseline` targets as their own list. Report **both
-   wrapper lines** plus `lint local: 535 files, 5 of the 8 known baselined lines`. That is the handover.
-3. **Then, and only then, the tube's A/B.** `squad-defile TUBE=on|off` **cannot** gate the flip: both arms read
-   `redecides=0 skips=0` because the maze run has no enemies and `_combat_move` is never reached (headroom checked,
-   `c0191beb`). It does show the tube is inert outside contact — arrived 2, gaps 1, inversions 39, identical both
-   arms. **The flip needs a probe that fights:** `tests/tactics/decision_probe.gd` (`make squad-decisions`, yard,
-   seed 3) already resolves brains at line 119, so it wants the same two lines the defile probe got — a `--tube` flag
-   and `redecide_counts()` summed over the same population in both arms. **Until that number exists, `TUBE_ENABLED`
-   stays false.** Not nav's split: that measures two different populations, which nav and I established separately.
+**"Heavies in front, artillery behind" was never a cost in this codebase.** It was the Hungarian's tie order among
+equal-cost optima, and it survived every round until A10 broke ties differently. Measured three ways before any fix was
+written: as shipped, 2 control failures; with the incumbent bonus removed, still 2; **with the reference solver and the
+bonus intact, 0**. Both solvers return optimal assignments — the old one merely picked the doctrine-correct optimum.
+
+The cost term was half a rule: `TIER_COST * member_tier * (deepest - slot_tier)` charges a fragile vehicle for standing
+forward, and **the toughest vehicle is tier 0, so the term is identically zero for it across every slot.** Nothing
+pulled a heavy to the point. The fix is a normalised tier MISMATCH, and it took two tries, the failed one being the
+more useful: `m*(D-s) + (M-m)*s` looks symmetric but its s-coefficient is `(M - 2m)`, **zero at the MEDIAN tier**, so it
+moved the blind spot from the toughest vehicle to the scout, which then tied with the artillery and failed on an
+equality. A mismatch has no such tier. Guarded to say nothing for a single-tier element, because normalising one tier to
+0 against slots ranked 0..1 sends every identical vehicle after the most exposed slot at 10,000x any distance.
+
+**The incumbent bonus and drift are two mechanisms, and conflating them is why no single constant worked.** 1.0 spacings
+held a seating that sent two units across each other (A10's own falsifier); 0.5 could not hold station against 9.3 m of
+measured drift. Drift is now a deadband — a crew within `ON_STATION_SPACINGS` of the slot it holds is costed FROM that
+slot — and 1.5 is bracketed by two measured distances rather than guessed: a crew drifted onto a neighbour's slot is
+**1.34 spacings** out and must keep its seating; a genuinely wrong seating is **3.8 spacings** out and must be dropped.
+
+**Why my own tests said it was safe, which is the part that generalises.** Three instrument defects, and the one that
+mattered is the narrowest:
+1. The perturbation test moved every member by **one shared vector** — a rigid translation that leaves the members'
+   geometry relative to each other untouched. Fixed to independent per-member jitter. **It still reports 0 of 512, so
+   this was not what hid the bug.**
+2. The solver-equivalence test built the padded rows the way I *meant* them (`_PINNED` on real slots) rather than the
+   way `seat()` builds them (`0.0` everywhere), so it compared the two solvers on the matrix I intended. **An
+   instrument that encodes the fix cannot see the defect.**
+3. And the one that actually hid it: **every test I wrote exercised tiers only in cases where the tie-break could not
+   matter.** The suite was live, green, and never visited the case. That is lesson 164's fourth coat, and it is not
+   "the instrument was switched off" — it is "the instrument never went there".
+
+Corollary worth keeping: the padded-row indifference is **not** a solver bug. 0 of 72 matrices worse than the
+reference; the brute-force reproduction was 1 case at 0.05 m, which is exactly one `AUCTION_EPSILON`. The contract was
+right and my assertion was too strict — an epsilon-auction promises within `n x epsilon`, so that is the property to
+assert.
 
 ### Plan (ordered, smallest foundation first)
 
