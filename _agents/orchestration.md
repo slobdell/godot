@@ -2802,6 +2802,11 @@ The kickoff prompt is one line; this section is the rest.
       asserts its subject before reading the number (lesson 184).
     Beside lesson 182: an `&&` chain that reports "the rest passed" is the same disease in a third costume, **a run
     that never happened, counted as a pass.** See also nav's note in `navigation.md` (the same shape in routing).
+    **Sixth instance, in the other direction (feel, 16:15):** the faction matrix's pooled gangs number on pit read
+    30 % before and 30 % after while the unwinnable 0/20 cell went to 20 %, because the rig paid ten points in each
+    of its two playable matchups to buy it back; the default summary would have said nothing happened. The pooled
+    statistic hid an improvement this time, so the failure is not pessimism: **the summary answers a question nobody
+    asked.**
     **Fifth instance (show, 14:10):** every frame and clip the show stream produced, including the readability
     gate's "fight ring" window, was a five-a-side skirmish at the 950-point default with a 3 s warm-up, so the army
     was still 86 m from the ring the camera pointed at: the gate measured bare asphalt, and "the show makes the fight
