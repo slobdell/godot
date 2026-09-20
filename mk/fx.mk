@@ -105,6 +105,14 @@ rig-hinge: import ## Feel X2, S2: the War Rig bending at the fifth wheel -- its 
 # slot and diffed them -- which show then showed to be worthless on a loaded box: its own back-to-back pair reported
 # the instrumented arm 43% FASTER than the control, i.e. noise swamping any real difference. perf-scene already
 # alternates `all` and a layer seconds apart for every other layer; the trailer gets the same treatment.
+# THE TWO GUARDS ARE NOT EQUALLY STRONG, and it matters which one you trust.
+#   `no_damage` per phase is the ARM ASSERTION: it reads `Armor.no_damage`, the same static `Tank.take_hit` gates
+#   on, so it proves the freeze TOOK. It caught combat's initialisation-order bug -- the knob was accepted with no
+#   error and never reached the predicate (2026-09-20, 13 of 13 phases false while the census walked 90 -> 77).
+#   A constant census is NECESSARY BUT NOT SUFFICIENT: it can be satisfied by causes that have nothing to do with
+#   this knob. combat's yaw constraint, if ever switched on, freezes most of an army at spawn (1100+ continuous
+#   refused ticks, crews never departing) -- the census would sit perfectly still and the scene would not be a
+#   battle at all. So never read a flat census as evidence the freeze worked; read the flag.
 perf-trailer-ab: import ## M1: what the War Rig's hinge costs a frame, measured WITHIN one run (the no_trailer layer against the `all` phases either side)
 	@printf '>> perf-trailer-ab BEFORE: load %s | %s other godot\n' \
 		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"
