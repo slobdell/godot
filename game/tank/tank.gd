@@ -227,21 +227,53 @@ func apply_unit() -> void:
 const MUZZLE_ABOVE_PIVOT := 0.05
 
 
+## ROUND 9 (scale, contract S1) -- EDITED IN game/tank/, WHICH IS NOT SCALE'S FILE. Two mirrors lived here and both
+## were of the "copy wins quietly" kind Invariant 0 is about, and both had to go before the roster could be resized:
+##
+## 1. **An early return whenever a unit's box equalled `Units.PROFILES[DEFAULT].hull_size`.** DEFAULT *is* "tank", so
+##    that branch fired for the Condemned tank and for nothing else: its collider came from tank.tscn's authored
+##    BoxShape3D (2.4 x **1.6** x 3.6) while the catalog said 2.4 x **2.4** x 3.6, and had done since round 2. The
+##    scene silently WON for the one unit `sim-baseline` fields (lesson 137), and no amount of editing `hull_size`
+##    would have moved it -- the lead's "bus-tanks" would simply not have resized.
+## 2. **The shared hull art was fitted against the DEFAULT UNIT'S CATALOG BOX**, on the unwritten assumption that the
+##    box equalled the `tank.hull` mesh (it does not: the mesh is 2.18 x 2.30 x 3.85). The moment the Condemned tank
+##    stopped being 3.6 m long, every unit without its own art would have been drawn at the wrong size, silently.
+##    The fit now reads the MESH's own bounds, so `hull_size` is what is drawn for these units too.
+##
+## Pre-registered: this moves the sim baseline (the Condemned tank's collider grows 0.8 m in height), and CP2 moves
+## it anyway. combat and feel own this file and review the diff at merge.
 func _apply_hull_size(size_list: Variant, own_hull_art := false) -> void:
 	var size := Vector3(size_list[0], size_list[1], size_list[2])
 	turret.position.y = muzzle_height - MUZZLE_ABOVE_PIVOT
-	var standard: Array = Units.PROFILES[Units.DEFAULT]["hull_size"]
-	if size.is_equal_approx(Vector3(standard[0], standard[1], standard[2])):
-		return
 	# Scene sub-resources are shared by every instance (trip-up 13): resize a copy.
 	var box := BoxShape3D.new()
 	box.size = size
 	_collision.shape = box
 	_collision.position.y = size.y / 2.0
-	var ratio := Vector3(size.x / float(standard[0]), size.y / float(standard[1]), size.z / float(standard[2]))
+	var standard := shared_hull_size()
+	var ratio := Vector3(size.x / standard.x, size.y / standard.y, size.z / standard.z)
 	if not own_hull_art:
 		_hull_visual.scale = ratio
 	turret.scale = Vector3.ONE * minf(ratio.x, ratio.z)
+
+
+## The shared hull art's own size in metres (the theme's `tank.hull` scene, unscaled). Measured once per theme: the
+## scene is a handful of nodes and every vehicle without its own art asks for it.
+static var _shared_hull: Dictionary = {}
+
+
+static func shared_hull_size() -> Vector3:
+	if not _shared_hull.has(GameTheme.theme_name):
+		var packed := GameTheme.scene("tank.hull")
+		var measured := Vector3(2.4, 1.6, 3.6)
+		if packed != null:
+			var node := packed.instantiate() as Node3D
+			var bounds := FactionArt.natural_bounds(node)
+			if bounds.size.z > 0.01:
+				measured = bounds.size
+			node.free()
+		_shared_hull[GameTheme.theme_name] = measured
+	return _shared_hull[GameTheme.theme_name]
 
 
 ## Swap the weapon (the unit's own at spawn; tests use it to try a weapon on a standard hull).

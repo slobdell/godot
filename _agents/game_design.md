@@ -2027,7 +2027,29 @@ default moves it −2.6% to +7.4%, mostly positive: lit interiors make the fight
 r = 40 and 69 m — and has half of pit's floodlights at the same size, both out at r = 128 on the centre line. The venue
 got brighter and the floor did not. Fix requested from scale (the layout is the one owner of arena brightness; feel
 refused to compensate in its materials): two floodlights at the street intersections among the blocks.** Found only
-because show reported a no-show control arm beside its treated one. Stills cannot show a cue (a chase is
+because show reported a no-show control arm beside its treated one.
+
+**The cost, measured with the instrument that works (show `96e10e82`, builder0, terminus 1080p seed 3, the `no_show`
+layer toggled within one run seconds apart): GPU +0.22 ms, draw calls +2.25, against the run's own 7.69 ms GPU; the CPU
+figure came out −2.0 ms, i.e. inside the method's noise, so the honest reading is under half a millisecond of GPU and
+nothing measurable on CPU. On the laptop's GPU (~2.3× slower) that is ~0.5 ms of a 33.3 ms budget: about 1.5% of frame
+time for the whole venue light show.** The luminance gate passes 36 of 36 frames against a measured null (median 0.5%,
+p95 1.3%, bar 3%), at the cost of one look decision: the window band was narrowed from [0.70, 1.35] to [0.80, 1.10]
+because the channel's peak frame was −7.3% against the fight ring, so the buildings breathe less hard at the top than
+he asked for; it is one number (`show.channels.windows.ceiling` in `arenas/terminus.json`) and the gate says what raising
+it costs the fight. Five 6 s clips (lull, battle, last stand, victory, kill) are in `build/show/clips/`.
+
+**Read the stills knowing this (show, 06:35):** the coloured horizontal lines on every block in *both* arms are
+**feel's round-7 shopfront neon band** (`CityBlock` surface 1, ~4 m up), not the show — they were on the Terminus he
+called retro. The show-off arm is genuinely off (the band's luminance differs by a median −0.39%, noise). **Between
+feel's dark-chamfer default and the readability gate, the default patch is now conservative to the point of being
+almost invisible in a still: the venue *breathes* rather than *looks different*, and the clips are the evidence, not
+the strip.** Three dials for him, all data, none code: `show.channels.windows.ceiling` (1.10, was 1.35 — how hard the
+buildings breathe; the gate says what raising it costs the fight), `show_edge_energy` (0.8, parapet only), and
+`"style": "outline"` (the full-silhouette look, rendered in `build/show/outline/`, which feel argues against). **A
+latent bug found on the way (feel's file, one line):** `CityBlock.neon_color()` honours only colours beginning with
+`#`, so `arenas/terminus.json`'s `"neon": "cyan"` on four blocks and `"magenta"` on four are all silently ignored and
+the bands come out random amber/white/red/violet instead of the cyan and magenta the layout chose. Stills cannot show a cue (a chase is
 motion; last-stand caught at a strobe trough reads dimmer than idle), so short clips per cue and a before frame from the
 no-show arm follow. The kill ripple did not read in its frame (likely no headroom above the battle cue's 0.96) and is
 unproven until shot against lull. Cost: 15 uniform writes per frame idle, 16 on a kill, 25 in the victory sweep, driving

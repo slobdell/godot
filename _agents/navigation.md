@@ -41,7 +41,39 @@ undone: **when a fact about the world is one query away, query it.** Both habits
 inference that is right most of the time — which is the worst kind, because it fails silently and only when it
 matters.
 
-### Lesson 158: before building a recovery, check the PLANT can produce the failure you are recovering from (nav, 2026-09-20)
+### A positive control proves the mechanism FIRES, not that the row is worth shipping (nav, 2026-09-20)
+
+A4 was measured twice and the two measurements point opposite ways:
+
+    positive control   yard: 423/423, 403/403, 233/233, 180/180, 729/729 blocked gates rescued -- 100% every seed
+    the fight          yard seed 3 attack-move progressing -14.4%, seed 5 -12.8%   <- the two WORST breaches
+                       terminus, where A4 rescues 0-13%, breaches once and by less
+
+**The map where the mechanism works perfectly is the map where it hurts most.** A4 buys the gate and spends the
+fight: it finds a navmesh-valid curved entry for every blocked gate on yard and the hulls that take those entries
+fight measurably worse. Had the row been judged on its positive control alone — and 403 of 403 is a compelling
+number to be judged on — it would have shipped.
+
+**The rule: a positive control needs a COST bar pre-registered beside it, and the cost bar has to measure the thing
+the feature exists to serve.** nav's did: *"routing to a gate costs distance, and if it costs fighting it is not
+worth it"*, written before A4 was built. That sentence is the whole reason this round did not ship a row that
+reaches 100% of its targets.
+
+**The corollary that is easy to miss:** because the cost rises with how often the mechanism engages, **a weak arm can
+look safe**. terminus engages A4 rarely and breaches once; yard engages it constantly and breaches twice as hard. A
+row screened only on maps where it barely fires will pass its guard and then fail in the field on the map it was
+built for. **Check the guard hardest where the treatment is strongest**, which is the opposite of where a
+headroom check sends you.
+
+**On the numbering:** nav minted "Lesson 158" for the entry below without checking the register, which is a shared
+global sequence in [orchestration.md](orchestration.md) that only the orchestrator assigns. The number is dropped
+rather than kept: both nav entries above are titled and unnumbered, and the two lessons nav *did* earn a number for
+this round are **lesson 170** (*a "waiting-on" line is a claim with a date on it — nav and control each blocked on
+the other for hours with both halves already done*) and **lesson 171** (*a switched row and its arm field are one
+change, not two — nav shipped `a4` and then `a6` without their `NAV_FIGHT_ARM` fields, twice in one night*).
+Recorded rather than quietly renumbered, because a lesson about drift that itself drifted is worth the line.
+
+### Before building a recovery, check the PLANT can produce the failure you are recovering from (nav, 2026-09-20)
 
 nav built a recovery for a `face` order that never comes round, measured it, and found it **inert** — not because the
 detector was wrong but because **the failure mode does not exist in this simulation**. `tank.gd` assigns
@@ -433,6 +465,26 @@ retreating one is better at level 3's own cost by more than the tolerance — so
 a tidy line. Inside level 3, feel's per-style composition applies: `strafe` is A6-a alone (armour is already demoted
 to level 5 for turrets by nav's style table), `angle` is armour first with A6-a in its null space, `standoff` is
 armour/lay first then A6-a's 75° forward-oblique bound, and `run` is untouched.
+
+**BUILT at `e2fbd1aa`** (opt-in, `--nav-off=a6`), exactly as composed above, with three things worth carrying
+forward from writing it:
+
+- **A6-a's cost is monotone OUTSIDE the bound and flat INSIDE it**, and that is the correct shape rather than
+  lesson 153's bug. A floor that makes a level rank nothing is the leash defect; a floor that expresses a **bound**
+  is what a bound *means*. Candidates meeting the bound tie, and that tie is the null space A6-b then works in.
+- **`TOLERANCE["arc"]` is INHERITED, not derived.** A6 reuses level 3's existing 0.125 because nav had no
+  measurement to set its own, and inventing one would be a constant chosen before its experiment. It is the first
+  thing to measure once the corridor reaches the decision.
+- **The law is inert until `request["corridor"]` arrives from `tank_brain.gd`** (squad's file — `choose()` takes a
+  request with no unit handle, so nav's velocity layer cannot fetch its own mover's corridor). `a6_no_corridor ==
+  a6_asked` in `arm_report()` says so from inside the run.
+
+**And the falsifier is not nav's to compute.** §7: *"Measured with A12 and nothing else"*, because it is a
+trajectory-space statistic and one implementation is the point. nav nearly built a second counter for it and
+stopped at that sentence. **A12 cannot compute it today**: the trajectory log carries `goal_x/goal_z` but not the
+corridor tangent, and §2 rules out the straight line to the goal as the definition — which is wrong in exactly
+A6's cases, since a hull rounding a corner has a tangent along the leg while the goal bearing points through a
+wall. Requested of metrics as two floats per sample.
 
 **Two assumptions the page makes about this layer, both checked rather than agreed:**
 

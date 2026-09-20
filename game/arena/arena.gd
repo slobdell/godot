@@ -88,8 +88,18 @@ static func _placeable(data: Dictionary, x: float, z: float) -> bool:
 const HALF_EXTENT := Match.ARENA_HALF_SIZE + 40.0
 ## Mirror pairs must match to this many meters (and degrees).
 const SYMMETRY_TOLERANCE := 0.01
+## Every top-level key a layout may carry. Anything else is a typo, and `validate()` refuses it rather than
+## loading a layout that silently means something other than what it says. `show` is the arena light show's
+## channel/patch data (round 9): additive, optional, and preserved across `make arenas` by
+## `tools/make_arenas.PRESERVED_KEYS`.
+const LAYOUT_KEYS := ["name", "note", "title", "schema", "half_size", "shape", "fixture", "obstacles", "props",
+		"terrain", "hazards", "lanes", "regions", "objectives", "spawns", "spawn_zones", "control_point", "show"]
 ## A spawn point must be this far from every obstacle's footprint: the widest spawn jitter plus half a hull.
-const SPAWN_CLEARANCE := Match.SPAWN_JITTER_MAX_X + 2.5
+## Round 9 (scale): the margin is a named constant so `tools/make_arenas.py` can READ both halves of this sum
+## instead of carrying "6.0" in a default argument, which is what it did -- a mirror of a derived value, which
+## quietly became wrong the moment the jitter moved (Invariant 0).
+const SPAWN_CLEARANCE_MARGIN := 2.5
+const SPAWN_CLEARANCE := Match.SPAWN_JITTER_MAX_X + SPAWN_CLEARANCE_MARGIN
 
 ## The layout the most recent Arena built. Match reads its spawns (static: spawn positions are static queries).
 static var active: Dictionary = {}
@@ -131,12 +141,49 @@ func _ready() -> void:
 	var dressing := get_node_or_null("Dressing") as VisualSlot
 	if dressing != null:
 		dressing.invoke("setup", [layout])
+	cover = null  # A3: built on the first query, not here -- see `cover_tables()`
 	_bake()
 
 
 func _exit_tree() -> void:
 	if is_same(active, layout):
 		active = {}  # no stale spawns or hazards for a match that runs without an arena
+		cover = null
+
+
+## A3 (round 9, scale): the hull-chord cover tables for the arena that was built last, or `null` until something
+## asks for them. Static for the reason `active` is -- cover is a static query about static geometry, and combat
+## asks it from `TacticalQuery` and from `EngagementStats`, where there is no Arena node to hand.
+##
+## **BUILT LAZILY, ON THE FIRST QUERY**, and that is a deliberate choice rather than an optimisation reflex: FIGHT's
+## load time is a number the lead noticed (round 6 took it from 7.6 s to 1.4 s), and `make check` builds an arena in
+## dozens of tests that will never ask about cover. A stream that adds to a load time the lead complained about,
+## for a query most runs never make, has spent his budget on nothing.
+static var cover: CoverTables = null
+
+
+## The tables for the arena that was built last, building them if this is the first ask.
+static func cover_tables() -> CoverTables:
+	if cover == null and not active.is_empty():
+		cover = CoverTables.build(active)
+	return cover
+
+
+## **A3's query.** The fraction of a hull's own centreline chord that is occluded from `viewer`: 0.0 fully exposed,
+## 1.0 fully covered, the same work at 2.93 m and at 14.0 m. **REPLACES centre-point cover registration**, whose
+## step function at 12.19 m (yard 0.99 up to `container_40`'s length and 0.00 above it) is an artefact of sampling
+## the hull's centre, not of the maps -- game_design.md *Ruling: the War Rig stays at 14 m*.
+##
+##   `viewer`   where the threat is looking from       `point`    the hull's centre
+##   `heading`  the hull's forward, flat               `length`   metres (`hull_size[2]`)
+##
+## Returns 0.0, never garbage and never an error, for a hull off the table or on an arena with no tables: it is
+## called per candidate point, per query, per unit. What it approximates, and by how much, is in `CoverTables` --
+## and the cost has TWO terms, one a constant fraction of hull length and one a constant in metres, so the query is
+## least precise on the SHORTEST hull (`CoverTables.worst_case_error`).
+static func cover_fraction(viewer: Vector3, point: Vector3, heading: Vector3, length: float) -> float:
+	var tables := cover_tables()
+	return tables.cover_fraction(viewer, point, heading, length) if tables != null else 0.0
 
 
 func _bake() -> void:
@@ -650,6 +697,18 @@ static func load_layout(name: String) -> Dictionary:
 static func validate(data: Variant) -> String:
 	if typeof(data) != TYPE_DICTIONARY or typeof(data.get("name")) != TYPE_STRING:
 		return "a layout is an object with a string 'name'"
+	# ROUND 9 (scale, at show's request and the orchestrator's ruling): an unknown top-level key is a REFUSAL, not
+	# something to ignore. Until now `"shwo": {...}` loaded as a static arena with no complaint anywhere -- and the
+	# arena light show's `show` key is preserved across `make arenas` by an allowlist in `tools/make_arenas.py`, so
+	# a typo would have survived regeneration forever as dead data that looks like a working arena. A guard-shaped
+	# hole rather than a bug, which is why it was worth more than validating the patch's interior.
+	#
+	# `show`'s CONTENTS stay a build-time concern (`make show-report`): `Arena` is read by `Match`, so it is on the
+	# simulation side, and a layout failing to LOAD because of something in `game/theme/` would invert the standing
+	# rule that art must never change the simulation.
+	for key: String in data:
+		if not LAYOUT_KEYS.has(key):
+			return "unknown top-level key '%s' (a layout has %s)" % [key, ", ".join(LAYOUT_KEYS)]
 	# `ARENA_HALF_SIZE` is a MAXIMUM BOUND, not a required size (round 7). It was forced equal, which meant raising
 	# it to make room for a hexagon would have grown every existing square map from 240 x 240 to 280 x 280 — a 36%
 	# area increase to Pit and Yard, the two maps the lead kept, as a side effect of a shape change nobody asked to

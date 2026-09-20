@@ -42,6 +42,11 @@ func _run() -> void:
 	time_limit = float(_flag("time-limit", "120"))
 	var seed_value := int(_flag("seed", "3"))
 	var budget := int(_flag("budget", "6500"))
+	# A1's brain half (round 9): this is the probe that FIGHTS, so it is the only place the tube's value can be
+	# measured. `make squad-defile TUBE=` cannot do it -- the maze run has no enemies, `_combat_move` is never
+	# reached, and both arms there read redecides=0 skips=0. Set before any brain exists, so no brain ever sees a
+	# mid-run flip.
+	TankBrain.TUBE_ENABLED = _flag("tube", "off") == "on"
 	var arena: Arena = ARENA.instantiate()
 	arena.layout_name = _flag("arena", "yard")
 	root.add_child(arena)
@@ -80,6 +85,7 @@ func _run() -> void:
 	while game_match.tick - fight_from < int(time_limit * 0.6 * SimClock.TICK_RATE):
 		_sample()
 		await physics_frame
+	var tube := _tube_counts()
 	var minutes := maxf(float(counts["unit_ticks"]) / (SimClock.TICK_RATE * 60.0), 0.01)
 	print("DECISION_PROBE " + JSON.stringify({"seed": seed_value, "arena": Arena.active.get("name", "?"),
 			"unit_minutes": snappedf(minutes, 0.01),
@@ -87,8 +93,46 @@ func _run() -> void:
 			"jumps_motion_per_unit_min": snappedf(counts["jumps_motion"] / minutes, 0.1),
 			"switches_per_unit_min": snappedf(counts["switches"] / minutes, 0.1),
 			"reversals_per_unit_min": snappedf(counts["reversals"] / minutes, 0.1),
-			"motion_jumps_by_option": motion_by_option, "top_reversals": CoherenceProbe.top(reversal_pairs, 8)}))
+			"motion_jumps_by_option": motion_by_option, "top_reversals": CoherenceProbe.top(reversal_pairs, 8),
+			"tube": "on" if TankBrain.TUBE_ENABLED else "off",
+			"redecides": tube["redecides"], "skips": tube["skips"],
+			"redecides_per_unit_min": snappedf(tube["redecides"] / minutes, 0.1),
+			"held_share": snappedf(tube["held_share"], 0.001),
+			"brains": tube["brains"], "green_alive": _alive(Match.Team.GREEN),
+			"rust_alive": _alive(Match.Team.RUST)}))
 	quit(0)
+
+
+## `TankBrain.redecide_counts()` summed over every GREEN brain -- and over the ROSTER, not the survivors. The two arms
+## must sum the same population or the comparison is nav's mistake and mine: two different denominators read as an
+## effect. `green` is built at spawn from a seeded army, so it is identical in both arms whatever the fight does; a
+## brain that died, or never fought, contributes its zeros rather than dropping out.
+##
+## `held_share` is the fraction of motion decisions the rule declined to re-take. It is the quantity the tube exists to
+## raise, and it is bounded, so the two arms are comparable even though their fights diverge.
+func _tube_counts() -> Dictionary:
+	var redecides := 0
+	var skips := 0
+	var brains := 0
+	for tank in green:
+		var brain := game_match.brains.get_node_or_null(NodePath("Brain_" + String(tank.name))) as TankBrain
+		if brain == null:
+			continue
+		brains += 1
+		var counted := brain.redecide_counts()
+		redecides += int(counted["redecides"])
+		skips += int(counted["skips"])
+	var total := redecides + skips
+	return {"redecides": redecides, "skips": skips, "brains": brains,
+			"held_share": (float(skips) / float(total)) if total > 0 else 0.0}
+
+
+func _alive(team: int) -> int:
+	var alive := 0
+	for tank: Tank in game_match.tanks.get_children():
+		if tank.team == team and tank.is_alive():
+			alive += 1
+	return alive
 
 
 ## Every GREEN squad to a lane point `depth` of the way toward the enemy base (nav-fight's orders, exactly).

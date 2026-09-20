@@ -30,26 +30,42 @@ const IDLE_THINK_HZ := 10.0 / 3.0
 const LOD_RADIUS := 130.0
 ## "In reach" for the fight rate: either gun's range plus this (meters).
 const FIGHT_MARGIN := 15.0
-## The current choice gets this multiplier, so near-equal options don't flip-flop. Round 8 (the lead: "they seem to just
-## move back and forth indefinitely"): 1.35 halves the churn (`make squad-decisions`, laptop, yard, seeds 1/3/7:
-## switches/reversals per unit-min 18.1/0.30 at 1.15, 12.7/0.17 at 1.35, 12.1/0.27 at 1.60) and a 48-match ladder said
-## "does not lose" — but two BEHAVIOUR scenarios say it does: a squad stops concentrating its fire (focus share 69% vs
-## brains-alone 69%, i.e. squad tactics buy nothing) and a scout stops working onto engine decks (41 hits/23 on the deck
-## → 3/0), because a crew that sticks harder no longer switches onto its squad's focus or into an orbit. A ladder cannot
-## see either. So the default stays 1.15 and the lever lives on as variant `x5c`; the churn fix has to come from
-## somewhere that does not cost target choice.
+## RETIRED AS THE DEFAULT by A2 (round 9, combat): the flat multiplier the current choice used to get, so near-equal
+## options didn't flip-flop. One number cannot serve a roster whose hulls differ by 5x in length and 4x in turret speed,
+## and round 8 proved the cost of pushing it: at 1.35 it halved the churn (`make squad-decisions`, laptop, yard, seeds
+## 1/3/7: switches/reversals per unit-min 18.1/0.30 at 1.15, 12.7/0.17 at 1.35, 12.1/0.27 at 1.60) and a 48-match ladder
+## said "does not lose" — but two BEHAVIOUR scenarios said it does: a squad stopped concentrating its fire (focus share
+## 69% vs brains-alone 69%, i.e. squad tactics bought nothing) and a scout stopped working onto engine decks (41 hits/23
+## on the deck → 3/0), because a crew that sticks harder no longer switches onto its squad's focus or into an orbit. A
+## ladder cannot see either. The replacement is `SwitchingCost`: the same commitment derived from each vehicle's own
+## braking and slew, so it scales across the roster instead of being tuned. This value survives as the flat ARM —
+## it is the DEFAULT again as of round 9 (the five-arm table: it suppresses about twice the churn A2's cost does), now
+## WITHOUT the dwell timer, which the same table showed was inert. `--tune=switch.cost=1` selects A2 instead, and
+## variant `x5c` still selects 1.35 — so both mechanisms are arms of one build and neither needs a checkout.
 const COMMIT_BONUS := 1.15
+## How far CLEAR_LANE outranks the fight it serves, ON TOP of whatever commitment that fight receives. It used to be
+## written `COMMIT_BONUS * 1.15`: one 1.15 cancelling the commitment bonus on the fight it competes with, and one that
+## is the genuine edge. Round 9 split those apart — the cancelling factor is now read from the ACTIVE ARM at the call
+## site (the flat bonus, or 1.0 under A2, where CLEAR_LANE is exempt from the switching cost because stepping aside to
+## shoot the target you are already engaging is not a change of mind) and this constant is the genuine edge alone.
+## Collapsing the two again is how the flat arm ended up giving CLEAR_LANE a net advantage of exactly 1.0.
+const CLEAR_LANE_EDGE := 1.15
 ## A crew being suppressed stays worth suppressing down to this fraction of the pin threshold (hysteresis on `pinned`).
 const PIN_HOLD_FRACTION := 0.75
 ## N5 (CP4): the longest a peek from cover is held waiting for the gunner's lay (Engagement.ACQUIRE_FAR_SECONDS is 1.6 s).
 const PEEK_COMMIT_TICKS := SimClock.TICK_RATE * 2
-## ...and it's kept at least this long unless something is EMERGENCY_MARGIN× better.
+## RETIRED (round 9, combat): the dwell timer that held a committed choice at least this long unless something was
+## EMERGENCY_MARGIN× better. No longer consulted anywhere. Measured over five arms × three seeds: the flat bonus with
+## the timer and the flat bonus alone differ by −11% to +6% on switches and ±0.2 on reversals — inside the seed
+## spread. It was credited for two rounds with work the multiplier was doing. Kept as a named constant only because
+## `tests/test_brain_decide.gd` reads it to place a `since` tick outside the old window.
 const MIN_COMMIT_TICKS := SimClock.TICK_RATE * 3 / 4
 ## Round 7 (make squad-decisions): the thrash shape is A -> B -> A — going straight back to what it just left (mostly a
 ## target flip inside ENGAGE, and ENGAGE <-> SUPPRESS / CLEAR_LANE). For REVISIT_S after leaving an option+target,
 ## returning to it scores REVISIT_FACTOR: it has to be clearly better, not a hair better. Seconds off the fixed tick.
 const REVISIT_S := 3.0
 const REVISIT_FACTOR := 0.85
+## RETIRED with MIN_COMMIT_TICKS (round 9): the margin by which a challenger had to beat a dwell-held choice.
 const EMERGENCY_MARGIN := 1.6
 ## Contacts older than this are investigated rather than engaged.
 const CONTACT_FRESH_TICKS := SimClock.TICK_RATE * 2
@@ -343,6 +359,9 @@ var think_offset := 0
 var choice := {}
 ## Top scored options from the last think: [{"option", "target", "score"}], best first.
 var ranked: Array = []
+## A2's arm counter (X1), filled only while `SwitchingCost.probing` is on: what the switching cost was asked and what
+## it charged on this brain's last think. Read by `make switch-arm`; empty and free in play.
+var switch_probe: Dictionary = {}
 ## The squad order_serial this brain last acted on.
 var _order_serial := 0
 ## How often this brain thinks right now, in thinks per second (think LOD), the tick it is next due, and the fraction of
@@ -519,6 +538,8 @@ func think(_delta: float) -> void:
 		profile_parts["decide"] = int(profile_parts.get("decide", 0)) + Time.get_ticks_usec() - clock
 		clock = Time.get_ticks_usec()
 	ranked = decision["ranked"]
+	if decision.has("switch"):
+		switch_probe = decision["switch"]
 	var best: Dictionary = decision["choice"]
 	var same: bool = best["option"] == choice.get("option") and best["target"] == choice.get("target")
 	if not same and not choice.is_empty():
@@ -1066,13 +1087,18 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	for pair in orbits:
 		candidates.append({"option": "ORBIT", "target": pair[0], "score": float(pair[1])})
 	# CLEAR_LANE (A4): my gun is ready and aimed but a friend is in the way: step aside to a spot with a clear
-	# line to the target instead of waiting (or shooting through it). Above the fight it serves, even when
-	# that fight is committed (×COMMIT_BONUS).
+	# line to the target instead of waiting (or shooting through it). It must out-rank the fight it serves AFTER that
+	# fight has received whatever commitment the active arm gives it — so it carries the arm's own bonus as well as
+	# its edge. Getting this wrong is not subtle: with the flat arm restored and only the edge applied, CLEAR_LANE's
+	# NET advantage over a committed ENGAGE is exactly 1.0 and the manoeuvre never happens
+	# (`test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane`: 0 shots, first shot at tick -1).
 	if features.get("hold_for_friends", true) and int(me.get("lane_blocked_ticks", 0)) >= LANE_BLOCKED_TICKS \
 			and current.get("target", "") != "":
+		var served := 1.0 if SwitchingCost.cost_arm() else float(features.get("commit_bonus", COMMIT_BONUS))
 		for pair in engages:
 			if pair[0] == current["target"]:
-				candidates.append({"option": "CLEAR_LANE", "target": pair[0], "score": float(maxf(float(pair[1]) * fight_scale, 0.3) * COMMIT_BONUS * 1.15)})
+				candidates.append({"option": "CLEAR_LANE", "target": pair[0],
+						"score": float(maxf(float(pair[1]) * fight_scale, 0.3) * served * CLEAR_LANE_EDGE)})
 	if is_artillery:
 		for c in contacts:
 			if not c["visible"]:
@@ -1198,27 +1224,68 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			if FIGHT_OPTIONS.has(candidate["option"]) and candidate["option"] == left["option"] \
 					and candidate["target"] == left["target"]:
 				candidate["score"] *= REVISIT_FACTOR
-	# Commitment: favor the current choice; keep it through MIN_COMMIT_TICKS unless beaten decisively.
+	# Commitment. TWO arms live here, and the default is the flat one (orchestrator, 2026-09-20):
+	#   DEFAULT — COMMIT_BONUS, a flat multiplier on the current choice, with its dwell timer RETIRED. Round 9's
+	#     five-arm table says the timer was inert and the multiplier was doing all the work.
+	#   `--tune=switch.cost=1` — A2 (contract S5): a switch pays what it destroys. Every candidate that would change
+	#     this crew's fight is charged the physical work that change throws away — the velocity it must shed, the time
+	#     to lay the gun on the new bearing, and the acquisition abandoned on the old target — all from the vehicle's
+	#     own Units.PROFILES entry (SwitchingCost). A rat rod swapping targets 10° apart pays nearly nothing; a 14 m
+	#     war rig shedding 12 m/s through 140° pays a lot, with no per-class constant: the 5× roster prices itself.
+	#     It is a PRICE and never a veto (capped), so a decisively better option always wins.
+	#   A2 is off by default because it suppresses about half the churn the flat bonus does, and whether its extra
+	#     switches are genuine re-targeting or the wheeled creep waits on metrics' A12 cusp split. One constant either
+	#     way. What A2 has already proved is that it costs nothing: both behaviour scenarios that broke the 1.35 knee
+	#     are unchanged on it, which the flat bonus at 1.35 could not manage.
 	var committed: Dictionary = {}
 	# An order the tank isn't carrying out yet outranks commitment to anything but itself or survival.
 	var order_pending := keep_slot > 0.0 and not ["KEEP_SLOT", "RETREAT"].has(current.get("option", ""))
-	var commit_bonus := float(features.get("commit_bonus", COMMIT_BONUS))  # hoisted: decide() runs per brain per think
-	for candidate in candidates:
-		if order_pending:
-			break
-		if not current.is_empty() and candidate["option"] == current["option"] and candidate["target"] == current["target"]:
-			candidate["score"] *= commit_bonus
-			committed = candidate
+	# X1's counter needs the scores as they stood BEFORE commitment touched them, so it can report how often the term
+	# actually changed the decision — the only honest answer to "is this an arm". Snapshotted only while probing.
+	var unpriced: Array = []
+	if SwitchingCost.probing:
+		for candidate in candidates:
+			unpriced.append(float(candidate["score"]))
+	# The DEFAULT is the flat bonus (orchestrator, 2026-09-20, on round 9's five-arm table): it suppresses roughly
+	# twice the churn A2's cost does, and whether A2's extra switches are re-targeting or the wheeled creep waits on
+	# metrics' cusp split. `--tune=switch.cost=1` selects A2; `commit_bonus` in a variant still drives x5c's 1.35.
+	var flat_bonus := 0.0 if SwitchingCost.cost_arm() else float(features.get("commit_bonus", COMMIT_BONUS))
+	var switch_ctx := {}
+	if not order_pending and not current.is_empty():
+		if flat_bonus > 0.0:
+			for candidate in candidates:
+				if candidate["option"] == current["option"] and candidate["target"] == current["target"]:
+					candidate["score"] *= flat_bonus
+					committed = candidate
+		else:
+			switch_ctx = SwitchingCost.context(s, current)
+			for candidate in candidates:
+				if candidate["option"] == current["option"] and candidate["target"] == current["target"]:
+					committed = candidate
+				elif not SwitchingCost.never_charged(String(candidate["option"])):
+					# NOT clamped at zero (lesson 153): a floor is a saturation, and two candidates both priced below it
+					# would tie at 0.0 and be decided by their order in the array. The price is a plain subtraction, so
+					# the ranking stays meaningful however expensive the switch. Nothing downstream reads a raw score
+					# except `_top`, which only sorts.
+					candidate["score"] = float(candidate["score"]) \
+							- SwitchingCost.penalty(switch_ctx, String(candidate["option"]), String(candidate["target"]))
 	var best: Dictionary = candidates[0]
 	for candidate in candidates:
 		if candidate["score"] > best["score"]:
 			best = candidate
-	if not committed.is_empty() and committed != best and int(s["tick"]) - int(current["since"]) < MIN_COMMIT_TICKS \
-			and committed["score"] > 0.0 and best["score"] < committed["score"] * EMERGENCY_MARGIN:
-		best = committed
+	# THE DWELL TIMER IS RETIRED (round 9). It used to hold the committed choice through MIN_COMMIT_TICKS unless beaten
+	# by EMERGENCY_MARGIN. Measured over five arms x three seeds (`make switch-arms`, yard, seeds 1/3/7): the flat
+	# bonus WITH the timer and the flat bonus ALONE differ by -11% to +6% on switches and +-0.2 on reversals, inside
+	# the seed spread. Every bit of commitment this brain had was the multiplier; the timer was credited for two rounds
+	# with work it was not doing, and P3's "a veto stores the pressure up" was inferred from a switch-and-switch-back
+	# count rather than seen. Retiring it is free, and it is one less mechanism between a player's order and a crew.
 
-	return {"choice": {"option": best["option"], "target": best["target"]},
+	var decision := {"choice": {"option": best["option"], "target": best["target"]},
 			"ranked": TankBrain._top(candidates, 3)}
+	if SwitchingCost.probing:  # X1's arm counter (`make switch-arm`); off in play, so a match pays nothing for it
+		decision["switch"] = SwitchingCost.probe(switch_ctx, s, current, best, candidates, unpriced,
+				flat_bonus, order_pending)
+	return decision
 
 
 ## K1: keep only the options the order's verb allows (ORDER_OPTIONS) and add the ones that carry it out. A move,
@@ -2398,6 +2465,22 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	# individual fields, so A11 synthesised a state with `yaw_rate` 0 and gave a hull already turning a window as if
 	# it were standing still. `state_of` carries the real yaw rate (round 8 made it state), plus braking and grip.
 	request["motion"] = TankMotion.state_of(tank)
+	# For nav's A6 (contract S4, level 3 of A7's priority table, nav asked): the ORDERED CORRIDOR'S TANGENT, which
+	# only this layer can supply. `CombatMotion.choose(request)` is handed a Dictionary with no unit handle at all --
+	# position, forward, velocity, style, phase, leash -- so the layer that decides cannot look up its own mover's
+	# corridor. Same seam as nav's "the leash is not in the route path": the layer that decides is not the layer that
+	# moves.
+	#
+	# The null is PASSED THROUGH deliberately and must stay that way. S4 makes "no leg yet" an inactive case with a
+	# name; a Vector3.ZERO would be an unreadable corridor wearing a readable one's clothes, and A6 would hold hulls
+	# to a tangent that means nothing. `Dictionary.get` returns null for a key that is not there, so this is also
+	# inert -- and honest about being inert -- until nav's `corridor` field reaches main.
+	#
+	# Cost note, since this is the hot path: it sits BELOW `_hold_motion_plan`'s early return, so it is one
+	# `Movement.state` per RE-DECIDE, not one per tick. (nav's note said this reuses the reading that `phase` comes
+	# from; it does not -- `request["phase"]` is `_run_phase`, this brain's own strafe/run phase, and nothing in this
+	# request came from `Movement.state` before now.)
+	request["corridor"] = Movement.state(tank).get("corridor")
 	# X3 (L2): and don't manoeuvre through a beaten zone.
 	var fields := _suppression_fields(game_match) if s.get("features", {}).get("avoid_beaten", true) else null
 	if fields != null:
