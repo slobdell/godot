@@ -97,9 +97,18 @@ func test_an_oversized_hull_refuses_the_shortcut_and_a_small_one_keeps_it() -> v
 	big.global_position = Vector3(-100, 0, 40)
 	var small := game_match.spawn_tank("Scout", 1, Match.Team.GREEN, "scout")
 	small.global_position = Vector3(-90, 0, 40)
-	await tree.physics_frame
-	var big_slack := Movement.of(big)._chord_slack() if Movement.of(big) != null else NAN
-	var small_slack := Movement.of(small)._chord_slack() if Movement.of(small) != null else NAN
+	# `Movement.of()` is null until the hull is DRIVEN -- there is no mover before an order. nav's first cut read
+	# the slack straight after spawning and got NAN from its own fallback, with `chords 0` beside it saying the rule
+	# had never been consulted. The counter reported the broken setup correctly; the test did not check it.
+	_drive(game_match, big)
+	_drive(game_match, small)
+	for frame in 3:
+		await tree.physics_frame
+	var big_mover := Movement.of(big)
+	var small_mover := Movement.of(small)
+	assert_true(big_mover != null and small_mover != null, "both hulls have movers, or the slack below is a fallback")
+	var big_slack := big_mover._chord_slack()
+	var small_slack := small_mover._chord_slack()
 	Movement._off = was
 	Movement._off_parsed = true
 	print("MEASURE clearance_routing: gang_tank chord slack %.2f m, scout %.2f m (chords %d, refused %d)" % [
@@ -128,9 +137,12 @@ func test_the_switch_off_reproduces_the_old_slack() -> void:
 	add_to_tree(game_match)
 	var big := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
 	big.global_position = Vector3(-100, 0, 40)
-	await tree.physics_frame
+	_drive(game_match, big)
+	for frame in 3:
+		await tree.physics_frame
 	var mover := Movement.of(big)
-	var slack := mover._chord_slack() if mover != null else NAN
+	assert_true(mover != null, "the hull has a mover, or the slack below is a fallback rather than a measurement")
+	var slack := mover._chord_slack()
 	var size: Variant = Units.stat("gang_tank", "hull_size", [2.4, 1.6, 3.8])
 	var expected := maxf(Movement.CHORD_SLACK,
 			Movement.NAV_AGENT_RADIUS - float(size[0]) / 2.0 - Movement.CHORD_MARGIN)
@@ -138,3 +150,13 @@ func test_the_switch_off_reproduces_the_old_slack() -> void:
 	Movement._off_parsed = true
 	assert_true(absf(slack - expected) < 0.001,
 			"default path is byte-identical to the pre-row formula (%.3f vs %.3f)" % [slack, expected])
+
+
+## A hull has no `Movement` mover until it is driven, so every test that reads one orders a move first.
+func _drive(game_match: Match, tank: Tank) -> void:
+	var ctl := OrderController.new()
+	ctl.tank = tank
+	ctl.tanks_root = game_match.tanks
+	add_to_tree(ctl)
+	assert_eq(ctl.set_orders({"type": "move_to", "x": tank.global_position.x + 40.0, "z": tank.global_position.z},
+			{"type": "hold_fire"}), "", "ordered %s to drive" % tank.name)
