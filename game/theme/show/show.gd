@@ -35,8 +35,15 @@ const SPREAD_UNIFORM := &"show_spread"
 ## spread. Today one fixture has one: the city blocks' edge run is the roof `parapet` (the default, a horizontal
 ## line that reads as a building) or the full `outline` (every vertical chamfer too, which reads as a wireframe --
 ## art_direction.md :56's named anti-pattern, kept so the lead can compare against his own words).
+## A style is the WHOLE look, not just the mask. `outline` restores the energy it was built at (2.2) as well as
+## lighting the chamfers, because "outline" has always meant the look feel objected to -- and shot at the parapet's
+## 0.8 the two arms came out within 1.8% of each other on every frame, inside the 1.3% measurement null. A
+## comparison the lead cannot see is not a comparison.
 const STYLES := {
-	&"city_block": {&"parapet": {&"show_chamfer_gain": 0.0}, &"outline": {&"show_chamfer_gain": 1.0}},
+	&"city_block": {
+		&"parapet": {&"show_chamfer_gain": 0.0, &"show_edge_energy": 0.8},
+		&"outline": {&"show_chamfer_gain": 1.0, &"show_edge_energy": 2.2},
+	},
 }
 ## A K5 event rippling outward from where it happened: (world x, world z, the wavefront's radius in metres, gain).
 ## Gain 0 is "no event", which is what every fixture holds until a kill. The crowd's `event_position` pattern.
