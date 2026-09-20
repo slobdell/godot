@@ -431,10 +431,29 @@ question against the shared baseline file. **Read the recipes: they do not, and 
 `actual` against `expected`; the baseline file is never opened. `mk/audio.mk:31-34` and `mk/announcer.mk:115-118`
 carry the round-6 comment explaining the fix. The only residue is a dead `key="control"` assignment in both recipes.
 
-**So X6 is not a build job.** What remains: the two experiments the brief asks for — run them on a tree with a
-deliberately staled baseline (they must still pass, proving the file is not consulted) and prove the comparison can
-go red — then delete the dead variable and **correct lesson 65**, which is the orchestrator's file. *(Recorded for
-the round: a lesson that describes a defect fixed two rounds ago sends a stream to rebuild it.)*
+**So X6 was not a build job — and both experiments are now RUN, on the laptop, 2026-09-20.** Reading the recipe said
+they were already differential; a guard nobody has seen fail is not known to work (Invariant 0), so both halves were
+proved:
+
+| experiment | prediction | result |
+|---|---|---|
+| **1a** stale `glibc-2.39 deadbeef…` line added for this machine → `make sim-baseline` | **red** (the file is live here) | `sim-baseline FAILED: expected deadbeefdeadbeef for glibc-2.39, got 5dbb0689ddffc1c0`, **exit 2** ✓ |
+| **1b** same stale file → `make music-smoke` | **green** (never opens it) | `music-smoke passed: … hash 41e00136e74693d2 (matches the same match without the music)`, **exit 0** ✓ |
+| **1c** same stale file → `make announcer-record-smoke` | **green** (same) | `announcer-record-smoke passed: hash 41e00136e74693d2 (matches the same match without the booth)`, **exit 0** ✓ |
+| **2** instrumented run's seed skewed to 4 so the hashes must differ → `make music-smoke` | **red**, naming the subsystem | `music-smoke FAILED: the soundtrack changed the simulation (7c9c59aaefc5c30e, without it 41e00136e74693d2)`, **exit 2** ✓ |
+
+**Four predictions, four confirmations.** Both targets are differential, neither consults the baseline file, and the
+comparison is live rather than merely silent. Both files were restored by the script and `git status` confirms it.
+
+**Landed:** the dead `key="control"` is gone from both recipes, and both now carry the experiment beside them, so the
+next agent reads the proof rather than the two-round-old claim. **Owed to the orchestrator: lesson 65 is wrong and is
+their file.** *(The round's real lesson: a lesson describing a defect fixed two rounds ago sends a stream to rebuild
+it — this brief budgeted X6 as a build item and it was a reading item plus four matches.)*
+
+**One incidental finding:** the brief says `sim-baseline` "silently skips" on the laptop. It skips only because there
+is **no line for `glibc-2.39`**; add one and it runs and compares normally (it produced `5dbb0689ddffc1c0` here). The
+laptop can self-check against itself, it simply has no recorded value — worth knowing before anyone concludes the
+target cannot run off builder0.
 
 ### X3 — the A6 contract (S4): written, feel signed, nav reviewed
 
