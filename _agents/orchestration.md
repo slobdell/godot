@@ -2439,3 +2439,14 @@ The kickoff prompt is one line; this section is the rest.
     decision with no relation to the fight, reachable for a heavy hull mid-switch. Removed; scores may go negative, and
     a test asserts two candidates beyond the cap still rank. **Ask of every clamp: is it on the price, or on the thing
     being compared?**
+    **nav's corollary, the same afternoon, which cost a red duel:** *making a cost monotone changes what its tolerance
+    means.* The monotone arc cost kept `TOLERANCE` 0.25 and the duel's front hits fell 100% → 75%, because
+    `(1 − dot)/2` reaches 0.25 at 60° where the old floored form reached it at 41°. Fixing a saturation without
+    re-deriving the tolerance beside it quietly loosens the level. Three instances in one day — nav's leash clamp, nav's
+    `_front_share` floor, combat's score floor — and combat's framing names the family: **the ranked set was already
+    destroyed before the ranking ran.**
+    **And the round's second load-bearing accident (lesson 50's shape):** A7 passed every scenario but squad's slot
+    drift (15.4 → 42.1 m). An attacking element's members carry no leash (`element_slot()` returns null for `bound`
+    and `maneuver`), so under the old blend `range` and `continuity` compromised *by accident* to 15.4 m, and strict
+    priority removed the accident. nav parked A7 behind its switch rather than tune the tolerance, and put the
+    decision — do attacking members carry a task region? — to its owner, squad.
