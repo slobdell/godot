@@ -624,74 +624,10 @@ const PROTECTED_PENALTY := 100.0
 const TIER_TOLERANCE := 0.5
 ## The role rule outranks travel: breaking it once costs more than any amount of driving could.
 const TIER_COST := 100000.0
+## A seating is kept from one update to the next unless a new one saves at least this fraction of the spacing, in
+## total meters driven: the N2 guarantee that a unit does not swap slots with its neighbour every tick.
+const STABLE_MARGIN := 0.5
 const _PINNED := 1.0e9
-
-# ---- A10: the seating solver (round 9, X4) --------------------------------------------------------------
-#
-# Rounds 6-8 seated an element with the Hungarian method plus TWO hysteresis patches bolted on afterwards:
-# `STABLE_MARGIN` (keep last update's seating unless a new one saves half a spacing of driving, summed over the whole
-# element) and round 8's `fixed` flag (keep it whatever it costs — added because a CPU crew fighting inside its slot's
-# leash drifts ~10 m and the seating re-shuffled around the drift, re-ordering idle units). Both were symptoms of one
-# thing: the solver had no notion that **the seat a unit already holds is worth something to it**. A10 puts that in
-# the utilities where it belongs, and both patches are DELETED rather than layered under it.
-#
-# Why an auction rather than Hungarian with a regularisation term — four determinism properties we need, and which
-# float-tolerance Hungarian variants do not have: pure integer arithmetic (no float reduction order, no tolerance
-# test); a hard bid cap, so the work is fixed and never a convergence test; a bid order by unit name, so ties break
-# the same way on every peer; and the previous seating entering as a first-class term rather than as a patch.
-#
-# **Lesson 153 is why nothing in the utility is clamped.** nav's `PENALTY_LEASH` saturated 10 m past its radius:
-# harmless as one addend in a weighted sum, fatal as a priority level, because every far candidate tied at the
-# ceiling and nothing ranked. An auction utility is exactly that kind of load-bearing number — a clamped driving term
-# would tie two slots for a far unit and the bid queue's tie order (unit name) would silently decide the formation.
-# So the driving term is monotone over the whole range it can see.
-
-## Costs become integers at this scale: 10^4 per metre is 0.1 mm of resolution, and an arena-sized cost with the tier
-## term stays far inside 64-bit.
-const UTILITY_SCALE := 10000
-## The auction's epsilon: how much a bid must beat the runner-up by, in the same integer units. 5 cm of driving —
-## small enough that the assignment is within `members x epsilon` (a quarter of a metre) of optimal, large enough to
-## bound the bidding.
-const AUCTION_EPSILON := 500
-## The hard cap: this many bids per member, then the rest are seated greedily by name. Fixed work, never a
-## convergence test (determinism.md). MEASURED, not guessed: at 8 the auction hit the cap and fell to the greedy
-## completion often enough to produce 6 spurious re-assignments in 512 under a half-metre nudge, where the Hungarian
-## solver it replaces produced 0 — an approximation artefact, not a property of the incumbent bonus, which at half a
-## spacing per unit is far too strong for a nudge to overcome. The work is trivial (this many bids x n slots of
-## integer arithmetic, for an element of 3-8), so the cap is set where the approximation stops showing.
-const AUCTION_BIDS_PER_UNIT := 64
-## What the seat a unit already holds is worth to it, in spacings. This is the PRINCIPLED form of both patches it
-## replaces: a re-solve cannot swap two units for a marginal gain, because each would have to give up this much, which
-## is why round 8's "hold this seating whatever it costs" flag is no longer needed.
-##
-## ONE FULL SPACING, AND THE SIZE IS MEASURED RATHER THAN INHERITED. It started at 0.5 — the same magnitude as the
-## `STABLE_MARGIN` it replaces — and that was the wrong number for a reason that was already written down: round 7
-## added the `fixed` flag because **a CPU crew fighting inside its slot's leash drifts ~10 m off it**, and
-## `test_tactics_scenarios`' five-squad CPU fight measures that drift at a **9.3 m mean** on this tree. Half a spacing
-## is 7 m at the open spacing, so the drift could outbid the bonus, and the idle-order count the flag was added to
-## zero came back as **1** (from round 7's 4-6 → 0). A hysteresis term has to exceed the noise it exists to resist, and
-## the noise here was measured a round ago: one full spacing is 14 m against a 9.3 m drift.
-##
-## It is bounded the other way by the thing it must NOT resist: a formation transition, which moves slots by tens of
-## metres AND clears the incumbency outright (`ElementPlan._previous_seating` returns {} when the shape or the count
-## changes), so no bonus of any size can make a shape change sticky.
-const INCUMBENT_SPACINGS := 0.5
-## A unit this far (in spacings) from the slot it already holds counts as STANDING IN IT for costing purposes.
-##
-## This is the drift deadband, and it is what the incumbent bonus was doing badly. A vehicle holding station wanders --
-## the measured CPU error is 9.3 m -- and that wander changes its distance to every slot, so the cheapest seating
-## flickers and every flicker re-issues an order. A bonus big enough to outbid 9.3 m of flicker (1.0 spacing, 14 m) is
-## also big enough to hold a seating that sends two units across each other, which is A10's own falsifier: that is the
-## trade `test_formation_slots::test_nobody_swaps_slots_tick_to_tick` failed on. Treating a unit inside its leash as
-## being AT its slot removes the flicker at its source instead of outbidding it, which leaves the bonus free to be
-## small enough that no crossing can survive it. Same abstraction as `TankBrain.slot_leash`.
-## Bracketed by measurement, not chosen: a crew that has drifted as far as a NEIGHBOURING slot is 1.34 spacings from
-## its own (wedge of four, adjacent slots 18.8 m apart at 14 m spacing) and must keep its seating -- that is round 7's
-## "sent once means seated once", and `test_tactics_tasks::test_a_plain_move_standing_on_its_spot_keeps_its_seating`
-## drifts two crews onto each other's slots to say so. A seating that is genuinely wrong puts a unit 3.8 spacings from
-## the slot it holds (46 m at 12 m spacing in `test_formation_slots::test_nobody_swaps_slots_tick_to_tick`) and must be
-## dropped. 1.5 sits between them with room on both sides.
-const ON_STATION_SPACINGS := 1.5
 
 
 ## Who stands where. `members` are {"name", "position"?: Vector3, "unit"?, "role"?}; `offsets` the slots (in the
@@ -708,9 +644,9 @@ const ON_STATION_SPACINGS := 1.5
 ##   3. Within that, the least total driving. A minimum-total-distance matching never has two paths crossing (if
 ##      two did, swapping their ends would be shorter), so a unit keeps its relative place: the vehicle on the
 ##      left takes a slot on the left.
-##   4. `previous` ({name: index}, the last seating) is worth INCUMBENT_SPACINGS × spacing of driving to the unit
-##      holding it (A10's incumbent bonus), so no unit swaps slots with its neighbour for a marginal gain. It is a
-##      term in the utility, not a rule applied afterwards: there is no separate "keep it whatever it costs" flag.
+##   4. `previous` ({name: index}, the last seating) is kept unless the new one saves STABLE_MARGIN × spacing of
+##      driving: no slot swapping from one tick to the next.
+##      With `"fixed": true` the previous seating is kept whatever it costs (a formation standing on its final spot).
 static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO, heading := Vector3.FORWARD,
 		opts := {}) -> Dictionary:
 	var count := members.size()
@@ -731,19 +667,12 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 	var deepest := 0
 	for tier: int in slot_tier:
 		deepest = maxi(deepest, tier)
-	var most_fragile := 0
-	for tier: int in member_tier:
-		most_fragile = maxi(most_fragile, tier)
 	var pin := false
 	for member: Dictionary in members:
 		pin = pin or (leader != "" and String(member.get("name", "")) == leader)
 	var world: Array[Vector3] = []
 	for slot in offsets:
 		world.append(to_world(anchor, heading, slot))
-	# The seating we are already holding, resolved BEFORE the costs, because being on station changes them.
-	var previous: Dictionary = opts.get("previous", {})
-	var held := previous if _valid_seating(previous, members, offsets.size()) else {}
-	var on_station := ON_STATION_SPACINGS * spacing
 	# Square cost matrix: members (padded with empty seats) by slots (padded with nowhere).
 	var cost: Array = []
 	for i in slot_count:
@@ -757,61 +686,31 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 			var value := 0.0
 			if member.has("position"):
 				var at: Vector3 = member["position"]
-				var seat_held: int = int(held.get(String(member.get("name", "")), -1))
-				# On station in the slot it already holds: cost it from the slot, not from where it has drifted to.
-				if seat_held >= 0 and seat_held < world.size() \
-						and Vector2(at.x - world[seat_held].x, at.z - world[seat_held].z).length() <= on_station:
-					at = world[seat_held]
 				value = Vector2(at.x - world[j].x, at.z - world[j].z).length()
-			# THE ROLE RULE: stand in the slot whose exposure rank matches your toughness rank. Tiers are normalised
-			# to 0..1 on both sides and the cost is the MISMATCH, so it is minimised exactly when the tiers line up
-			# -- toughest in the most exposed slot, most fragile in the most sheltered -- and it is strictly
-			# increasing in how far out of order a vehicle stands.
-			#
-			# Two earlier forms of this term both had a tier that the cost could not see, and each one let doctrine's
-			# ordering survive only as an accident of the solver's tie-breaking:
-			#   `m * (D - s)` alone charges a fragile vehicle for standing forward, but it is identically ZERO for
-			#   the toughest vehicle (m = 0), so nothing pulls a heavy to the point. That is what shipped, and
-			#   `test_control_group_moves`'s role tests went red the moment A10 changed how ties break.
-			#   `m * (D - s) + (M - m) * s` adds the other half, but its s-coefficient is (M - 2m), which is zero at
-			#   m = M/2: the MIDDLE tier goes indifferent instead of the top one. With tank/ifv/scout/lancer/artillery
-			#   that is exactly the scout, which then shared the rear rank with the artillery and failed
-			#   "the artillery stays behind the scout" on an equality.
-			# A mismatch has no such tier: the coefficient of s never vanishes, because the quantity IS the distance
-			# between the two ranks.
-			# And it says NOTHING when there is no ordering to express. An element of one toughness tier (every
-			# scattered-tanks test in the suite, and any single-vehicle-type squad in the game) has no heavies and no
-			# fragiles, so the mismatch must vanish and leave the seating to driving distance. Normalising a single
-			# tier to 0 while the slots still rank 0..1 would instead send every identical vehicle after the most
-			# exposed slot, with a cost ten thousand times any distance -- which broke `paths_never_cross`,
-			# `the_seating_is_the_least_driving` and four more the first time I wrote this.
-			if most_fragile > 0 and deepest > 0:
-				var member_rank := float(member_tier[i]) / float(most_fragile)
-				var slot_rank := float(slot_tier[j]) / float(deepest)
-				value += TIER_COST * absf(member_rank - slot_rank)
+			# Fragile vehicles (a high tier) are paid for standing anywhere but the most sheltered slots.
+			value += TIER_COST * float(member_tier[i]) * float(deepest - int(slot_tier[j]))
 			if pin:
 				var is_leader := String(member.get("name", "")) == leader
 				if is_leader != (j == 0):
 					value += _PINNED
 			row[j] = value
 		cost.append(row)
-	# A10: costs become integer utilities (bigger is better), with the incumbent bonus as a term rather than a patch.
-	var incumbent := INCUMBENT_SPACINGS * spacing
-	var utility: Array = []
-	for i in slot_count:
-		var row := PackedInt64Array()
-		row.resize(slot_count)
-		var mine: int = int(held.get(String(members[i]["name"]), -1)) if i < count else -1
-		for j in slot_count:
-			var value := -(cost[i] as PackedFloat64Array)[j]
-			if j == mine:
-				value += incumbent
-			row[j] = int(round(value * UTILITY_SCALE))
-		utility.append(row)
-	var best := _auction(utility)
+	var best := _hungarian(cost)
+	var chosen := {}
+	var best_cost := 0.0
 	for i in count:
-		result[String(members[i]["name"])] = best[i]
-	return result
+		chosen[String(members[i]["name"])] = best[i]
+		best_cost += (cost[i] as PackedFloat64Array)[best[i]]
+	var previous: Dictionary = opts.get("previous", {})
+	if _valid_seating(previous, members, offsets.size()):
+		var previous_cost := 0.0
+		for i in count:
+			previous_cost += (cost[i] as PackedFloat64Array)[int(previous[String(members[i]["name"])])]
+		if bool(opts.get("fixed", false)) or previous_cost <= best_cost + STABLE_MARGIN * spacing:
+			for i in count:
+				result[String(members[i]["name"])] = int(previous[String(members[i]["name"])])
+			return result
+	return chosen
 
 
 ## How exposed a slot is: how far out of the middle of the shape it sits, and how far toward the front.
@@ -868,86 +767,8 @@ static func _dense_rank(values: Array, descending: bool) -> Array:
 	return tiers
 
 
-## A10: maximum-utility assignment by integer auction (Bertsekas 1988). `utility[i][j]` is what slot j is worth to
-## bidder i, as an integer. Returns bidder -> slot.
-##
-## Each round the lowest-numbered unassigned bidder takes the slot with the best net value (utility minus the slot's
-## current price) and raises that price by how much it beat the runner-up, plus AUCTION_EPSILON; whoever held the
-## slot is displaced and bids again. Ties go to the LOWER slot index, and bidders are taken in index order — which is
-## members' order, which `slot_order`/`place` keep by unit name — so two peers reach the same seating from the same
-## inputs. Only integer + and − are used, so no float reduction order can differ between them.
-##
-## Bounded: at most AUCTION_BIDS_PER_UNIT bids per bidder, and whatever is still unassigned when the cap is reached is
-## seated greedily (best remaining slot, bidders in index order). A cap that is reached is not a failure — it is a
-## slightly worse assignment, deterministically arrived at — and with epsilon-complementary slackness the completed
-## answer is within `n x AUCTION_EPSILON` of optimal, a quarter of a metre of driving for a five-vehicle element.
-static func _auction(utility: Array) -> PackedInt32Array:
-	var n := utility.size()
-	var seat_of := PackedInt32Array()
-	var owner := PackedInt32Array()
-	var price := PackedInt64Array()
-	seat_of.resize(n)
-	owner.resize(n)
-	price.resize(n)
-	seat_of.fill(-1)
-	owner.fill(-1)
-	price.fill(0)
-	if n == 0:
-		return seat_of
-	var bids := 0
-	var cap := n * AUCTION_BIDS_PER_UNIT
-	while bids < cap:
-		var bidder := -1
-		for i in n:
-			if seat_of[i] < 0:
-				bidder = i
-				break
-		if bidder < 0:
-			return seat_of
-		var row: PackedInt64Array = utility[bidder]
-		var best := 0
-		for j in range(1, n):
-			if row[j] - price[j] > row[best] - price[best]:
-				best = j
-		var best_net: int = row[best] - price[best]
-		var second_net: int = best_net
-		if n > 1:
-			var found := false
-			for j in n:
-				if j == best:
-					continue
-				var net: int = row[j] - price[j]
-				if not found or net > second_net:
-					second_net = net
-					found = true
-		price[best] += (best_net - second_net) + AUCTION_EPSILON
-		var displaced := owner[best]
-		if displaced >= 0:
-			seat_of[displaced] = -1
-		owner[best] = bidder
-		seat_of[bidder] = best
-		bids += 1
-	# The cap was reached: finish deterministically rather than leave anybody without a slot.
-	for i in n:
-		if seat_of[i] >= 0:
-			continue
-		var row: PackedInt64Array = utility[i]
-		var pick := -1
-		for j in n:
-			if owner[j] >= 0:
-				continue
-			if pick < 0 or row[j] > row[pick]:
-				pick = j
-		if pick < 0:
-			continue
-		owner[pick] = i
-		seat_of[i] = pick
-	return seat_of
-
-
 ## Minimum-cost assignment on a square matrix (the Hungarian method, O(n³); n is a group, at most an army).
 ## Returns row -> column. Deterministic: only + and −, ties go to the lower index.
-## Kept as the REFERENCE the auction is tested against (`test_tactics_seating`), and called by nothing in the game.
 static func _hungarian(cost: Array) -> PackedInt32Array:
 	var n := cost.size()
 	var u := PackedFloat64Array()
