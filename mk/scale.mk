@@ -86,3 +86,21 @@ grid-fairness: import ## Item 3: the SPAWN GRID's swap-bases control, 2v2 bots (
 spawn-probe: import ## Why a full army spawns inside geometry: positions + the bodies hit (ARENA=foundry PROBE_FLAGS=--pollute=X|--pollute-free=X)
 	$(GODOT) --headless --path . --script res://tests/scale/spawn_block_probe.gd -- \
 		$(if $(ARENA),--arena=$(ARENA)) $(PROBE_FLAGS) 2>&1 | grep -E '^SPAWN_PROBE|SCRIPT ERROR' || true
+
+.PHONY: lamp-frames
+
+# The acceptance test for the Terminus lamps (round 9, feel's finding): the floor has to read, and the vehicles have
+# to read ON it, at the pose the lead plays at. Shot as a PAIR -- `--no-show` and then with the show -- because the
+# show MODULATES what is already lit and its `pools` channel is not the floor's baseline (ruled with show). A frame
+# that looks lit only with the show on has not fixed anything; the lamps are the baseline and the show is the gloss.
+# Same seed and the same delay for both arms, so the only difference between the two images is the show.
+lamp-frames: import ## The Terminus lamp pair at the player's camera, show OFF then ON (ARENA=terminus DELAY=20) -> build/lamps/
+	rm -rf $(BUILD_DIR)/lamps && mkdir -p $(BUILD_DIR)/lamps
+	for arm in off on; do \
+		flags=$$([ $$arm = off ] && echo "--no-show"); \
+		$(GODOT) --path . --resolution 1920x1080 -- --skirmish --scripted --seed=3 --mute \
+			--arena=$(or $(ARENA),terminus) $$flags --screenshot-delay=$(or $(DELAY),20) \
+			--screenshot=$(CURDIR)/$(BUILD_DIR)/lamps/terminus-show-$$arm.png 2>&1 \
+			| grep -E "ERROR|SCRIPT ERROR" || true; \
+	done
+	@ls -la $(BUILD_DIR)/lamps/*.png

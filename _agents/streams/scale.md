@@ -633,6 +633,34 @@ and my own overlap script over zero obstacles. Two of twenty-one units sit outsi
 box, and nothing said so until the table's own `no mesh` column was read. **That column is the only thing standing
 between "derived" and "assumed" for these two, which is why it is printed on every run.**
 
+### The spawn step: what my probe could and could not see (combat's correction)
+
+**combat's trace settles the mechanism: the 1.5 m lateral step IS `move_and_slide`'s penetration recovery** —
+`wanted.x = 0`, `moved.x = 1.53`, velocity untouched, no slide collision — so the pair is spawned overlapping
+something on the **vehicle layer** outboard of each.
+
+**And the correction to my instrument is the part to keep: `SPAWN_ISO_BLOCKED` probed `Perception.WORLD_MASK`, on
+which another vehicle is not visible.** So "no contacts" from that probe never meant "nothing is touching it"; it
+meant "nothing *on the world mask* is touching it". **A collision query is only ever an answer about its mask**, and
+mine was the mask for walls and terrain, asked about a vehicle-vehicle overlap. That is the same family as
+`pgrep -f godot` matching a command line and a search for `position =` missing a mover that is a function call: the
+query succeeds, returns a confident answer, and the thing looked for was never in its domain.
+
+**One tension I record rather than resolve, because it is mine and it does not fit yet.** My neighbour print is
+*arithmetic*, not a physics query — it compares placed coordinates against `hull_size` boxes — and it is therefore
+mask-independent. It reported the nearest unit to `Green_S2_2` at **2.21 m clear** (`Green_S2_4`, separated in z:
+|Δz| = 10.62 against half-lengths summing to 8.41), with only three units inside 12 m and **every gap positive**. So
+at *placement coordinates* no unit overlaps it. If recovery is pushing it off a vehicle, that body is either not one
+of the 90 at its placed position, or its collider is not its `hull_size` at that instant. **combat's probe — each
+hull's own collider on its own mask, printing the body — answers it; I am not guessing past my data.**
+
+### metrics: a test's verdict can track the shard count
+
+**5 shards fail, 6 shards pass, same code.** The count is derived from free memory at launch, so it varies with what
+else is on the box. **Any reproduction pins `TEST_SHARDS` and prints it** — this stream has pinned it since the T1
+sharding bug, and this is the second distinct way the schedule has decided a result today (the first was file
+distribution changing which tests share a process).
+
 ### Queued, in order, behind the current work (recorded so none of it is rediscovered)
 
 1. **The guard + the three fixture-less arena tests** — landing as its own commit, **no baseline move**.
