@@ -11,9 +11,12 @@ extends TestCase
 ## leaves -- network players and legacy bots, driving `Units.DEFAULT`. Sizing the grid for the roster's 14 m rig
 ## would be guarding a holding position nothing occupies (combat's finding, round 8).
 ##
-## For the record, and deliberately NOT asserted: at the round-9 roster the grid does NOT hold the biggest hull.
-## Adjacent columns leave 7.5 - 2x1.5 - 4.74 = -0.24 m for the Condemned artillery's width, and adjacent rows leave
-## 12.0 - 2x0.6 - 14.0 = -3.2 m for the War Rig's length. Both are fine because of `deploy()`, and both would be
+## For the record, and deliberately NOT asserted: at the round-9 roster the grid does NOT hold the longest hull.
+## Adjacent rows leave 12.0 - 2x0.6 - 14.0 = -3.2 m for the War Rig's length. **Width is now fine**: the widest hull is
+## `syn_artillery` at 4.07 m, leaving 7.5 - 2x1.5 - 4.07 = +0.43 m between adjacent columns. It read as -0.24 m until
+## the Condemned artillery's box was re-derived in the DRIVING pose (4.74 -> 2.90 m): that 4.74 was its outriggers
+## measured DEPLOYED, a pose it only holds while parked, so **the roster's "widest hull" was an artefact of a pose and
+## it had already propagated into this file's reasoning.** Both are fine because of `deploy()`, and both would be
 ## findings the day `deploy()` stopped running -- which is what `test_a_doctrine_army_is_never_left_standing_on_the_grid`
 ## is for.
 
