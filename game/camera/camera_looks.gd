@@ -131,28 +131,64 @@ const ALLEY_PAIRS := 5
 const ALLEY_PITCH := RtsCamera.DEFAULT_PITCH_DEG
 const ALLEY_DISTANCE := 49.0
 
+## How close a building has to be to count as one wall of the alley you are standing in.
+const ALLEY_WALL_M := 26.0
+## Step along a lane when looking for a spot. Lane VERTICES are turn points, several of which sit in open ground at
+## the arena edge; the interesting places are between them.
+const ALLEY_STEP_M := 12.0
+## At most this many spots from any one lane, so five frames are five streets and not five points on the avenue.
+const ALLEY_PER_LANE := 2
+
+
+## Is this ground point actually in an alley - a street with a building close on at least two sides? A point on the
+## avenue where it crosses open ground is not, and shooting five of those was the first version's mistake.
+static func _in_an_alley(at: Vector3, data: Dictionary) -> bool:
+	var near := 0
+	for obstacle: Dictionary in data.get("obstacles", []):
+		var size := Arena.obstacle_size(obstacle)
+		if size.y < BlockCutaway.MIN_HEIGHT_M:
+			continue
+		var centre := Vector2(float(obstacle["position"][0]), float(obstacle["position"][1]))
+		if ArenaKit.distance_to_footprint(Vector2(at.x, at.z), centre, size, float(obstacle.get("rotation_deg", 0.0))) <= ALLEY_WALL_M:
+			near += 1
+	return near >= 2
+
+
 func _alley_frames() -> Array:
 	var frames: Array = []
 	var data: Dictionary = Arena.active
 	var spots: Array = []
 	var clear_spot: Variant = null
 	for lane: Dictionary in Arena.lanes_of(data):
-		for point: Array in lane["points"]:
-			var at := Vector3(float(point[0]), 0.0, float(point[1]))
-			var worst: Variant = null
-			for step in 8:
-				var yaw := TAU * float(step) / 8.0
-				if RtsCamera.roof_over(RtsCamera.pose_at(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH).origin, data) >= 0.0:
-					worst = yaw
+		# `Arena.lanes_of` hands back a PackedVector3Array of ground points, NOT the layout's [x, z] pairs.
+		var points: PackedVector3Array = lane["points"]
+		var from_lane := 0
+		for i in maxi(points.size() - 1, 0):
+			var a: Vector3 = points[i]
+			var b: Vector3 = points[i + 1]
+			var steps := maxi(1, int(a.distance_to(b) / ALLEY_STEP_M))
+			for k in steps:
+				if from_lane >= ALLEY_PER_LANE or spots.size() >= ALLEY_PAIRS:
 					break
-			if worst == null:
-				if clear_spot == null:
-					clear_spot = [at, 0.0, String(lane["name"])]
-				continue
-			if spots.size() < ALLEY_PAIRS:
-				spots.append([at, float(worst), String(lane["name"])])
+				var at := a.lerp(b, float(k) / float(steps))
+				if RtsCamera.roof_over(at + Vector3.UP * 1.5, data) >= 0.0:
+					continue  # inside a building: no vehicle stands here, so no camera looks from here
+				if not CameraLooks._in_an_alley(at, data):
+					if clear_spot == null:
+						clear_spot = [at, 0.0, "%s, open ground (control)" % lane["name"]]
+					continue
+				for step in 8:
+					var yaw := TAU * float(step) / 8.0
+					if RtsCamera.roof_over(RtsCamera.pose_at(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH).origin, data) >= 0.0:
+						spots.append([at, yaw, String(lane["name"])])
+						from_lane += 1
+						break
 	if clear_spot != null:
 		spots.append(clear_spot)
+	# The cutaway must be OFF for the "as asked" frame and ON for the "forced out" one, or both frames show the
+	# building already hidden and the pair proves nothing. (It did, in the first run: the two frames were identical
+	# and neither showed the fault he reported.)
+	var cutaway := get_tree().root.find_child("BlockCutaway", true, false) as BlockCutaway
 	for i in spots.size():
 		var at: Vector3 = spots[i][0]
 		var yaw: float = spots[i][1]
@@ -166,14 +202,27 @@ func _alley_frames() -> Array:
 		var walled_before := RtsCamera.sight_blocked(asked, at + Vector3.UP * 1.5, data)
 		var walled_after := RtsCamera.sight_blocked(after, at + Vector3.UP * 1.5, data)
 		var label := "%s — %s" % [where, "inside a block" if inside else "in the open (control)"]
+		if cutaway != null:
+			cutaway.set_process(false)
+			cutaway.restore()
+			await get_tree().process_frame
 		frames.append(await _shoot("alley%d_asked" % i, at, yaw, ALLEY_DISTANCE, ALLEY_PITCH,
-				RtsCamera.FOV_DEG, {"row": "alley %d" % i, "label": "as asked: " + label,
-				"inside_a_solid": inside, "sight_blocked": walled_before}))
-		frames.append(await _shoot("alley%d_clear" % i, at, yaw, float(clear["distance"]), float(clear["pitch_deg"]),
+				RtsCamera.FOV_DEG, {"row": "alley %d" % i, "label": "as asked, nothing cut: " + label,
+				"inside_a_solid": inside, "buildings_in_the_sight_line": walled_before}))
+		if cutaway != null:
+			cutaway.set_process(true)
+			await get_tree().process_frame
+		var shot := await _shoot("alley%d_clear" % i, at, yaw, float(clear["distance"]), float(clear["pitch_deg"]),
 				RtsCamera.FOV_DEG, {"row": "alley %d" % i,
-				"label": "forced out: lifted %.1f deg, boom %.0f m" % [float(clear["lifted_deg"]), float(clear["distance"])],
-				"inside_a_solid": RtsCamera.roof_over(after, data) >= 0.0, "sight_blocked": walled_after,
-				"lifted_deg": snappedf(float(clear["lifted_deg"]), 0.1)}))
+				"label": "forced out and cut: lifted %.1f deg, boom %.0f m" % [float(clear["lifted_deg"]), float(clear["distance"])],
+				"inside_a_solid": RtsCamera.roof_over(after, data) >= 0.0,
+				# The GEOMETRY still has a building on the sight line; the point is that it is no longer DRAWN.
+				"buildings_in_the_sight_line": walled_after,
+				"lifted_deg": snappedf(float(clear["lifted_deg"]), 0.1)})
+		# AFTER the shot, not inside its argument list: `_shoot` is what moves the camera, so reading `cut_blocks()`
+		# while building its arguments samples the PREVIOUS pose and reports `[]` for a frame that really did cut.
+		shot["cut"] = cutaway.cut_blocks() if cutaway != null else []
+		frames.append(shot)
 	return frames
 
 
@@ -296,8 +345,8 @@ static func page(meta: Dictionary) -> String:
 				var flags := PackedStringArray()
 				if bool(frame.get("inside_a_solid", false)):
 					flags.append("INSIDE A BUILDING")
-				if bool(frame.get("sight_blocked", false)):
-					flags.append("alley behind a wall")
+				if bool(frame.get("buildings_in_the_sight_line", false)):
+					flags.append("a building on the sight line")
 				html.append("<figure><img loading=\"lazy\" src=\"%s\" alt=\"\"><figcaption><b>%s</b> · pitch %.0f° · %.0f m out%s</figcaption></figure>"
 						% [frame["file"], String(frame.get("label", frame["file"])), float(frame["pitch"]), float(frame["distance"]),
 						(" · <b>" + " · ".join(flags) + "</b>") if flags.size() > 0 else ""])

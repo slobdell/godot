@@ -234,3 +234,64 @@ func test_only_buildings_are_cut_and_only_when_they_are_in_the_way() -> void:
 			"a building beside the sight line is left alone")
 	assert_true(not RtsCamera.segment_hits_box(camera_at, aim, Vector3(0.0, tall.y / 2.0, 90.0), tall / 2.0, 0.0),
 			"and one BEHIND the camera is left alone: the test is the segment, not the ray")
+
+
+## `BlockCutaway` on the real arena node tree, not on the pure maths. The maths was green while the thing itself cut
+## nothing in a real run (`cut: []` on every alley frame), which is the whole reason this test exists: the boxes it
+## reads come from CollisionShape3D children of each body, and a wrong node name or a missed shape is invisible to
+## `segment_hits_box`.
+func test_the_cutaway_finds_the_arenas_buildings_and_hides_the_one_in_the_way() -> void:
+	# `Arena._ready` picks its layout from `layout_name` or --arena, NOT from `Arena.active`: setting `active` and
+	# instantiating gets you the DEFAULT arena, which has no city blocks at all (the first version of this test
+	# measured "0 buildings" on the foundry and blamed the cutaway).
+	var arena := preload("res://game/arena/arena.tscn").instantiate()
+	arena.layout_name = TERMINUS
+	add_to_tree(arena)
+	await wait_physics_frames(2)
+	assert_eq(String(Arena.active.get("name", "")), TERMINUS, "setup: the arena really built the Terminus")
+	var obstacles := arena.get_node_or_null("Obstacles") as Node3D
+	assert_true(obstacles != null and obstacles.get_child_count() > 0,
+			"setup: the Terminus builds obstacle bodies (%s)" % [obstacles.get_child_count() if obstacles != null else -1])
+	var camera := Camera3D.new()
+	add_to_tree(camera)
+	var cutaway := BlockCutaway.new()
+	cutaway.camera = camera
+	cutaway.obstacles_root = obstacles
+	add_to_tree(cutaway)
+	# `_gather` runs in `_process`, not on ready: read `_solids` before a process frame has happened and it is empty.
+	# (It was, and the first version of this test called that a cutaway failure.)
+	await tree.process_frame
+	await tree.process_frame
+	var solids: Array = cutaway._solids
+	print("MEASURE block_cutaway_gather ", JSON.stringify({"bodies": obstacles.get_child_count(), "buildings": solids.size()}))
+	assert_true(solids.size() >= 8, "it finds the Terminus's city blocks as buildings (%d of %d bodies)" % [
+			solids.size(), obstacles.get_child_count()])
+	# Stand in a street with a building between the camera and the aim point, at his pose, and look.
+	var data: Dictionary = Arena.active
+	var found := false
+	for at: Vector3 in _street_points(data):
+		for step in 8:
+			var yaw := TAU * float(step) / 8.0
+			var clear := RtsCamera.clear_pose(at, yaw, HIS_DISTANCE, HIS_PITCH, data)
+			var eye := RtsCamera.pose_at(at, yaw, float(clear["distance"]), float(clear["pitch_deg"]))
+			if not RtsCamera.sight_blocked(eye.origin, at + Vector3.UP * BlockCutaway.AIM_HEIGHT_M, data, BlockCutaway.MIN_HEIGHT_M):
+				continue
+			camera.global_transform = eye
+			await tree.process_frame
+			await tree.process_frame
+			var cut := cutaway.cut_blocks()
+			print("MEASURE block_cutaway_one_pose ", JSON.stringify({"at": [at.x, at.z], "yaw_deg": snappedf(rad_to_deg(yaw), 1.0),
+					"cut": cut, "aim": str(cutaway.aim_point())}))
+			assert_true(cut.size() > 0, "a building on the sight line is cut (%s)" % [cut])
+			for solid: Dictionary in solids:
+				var body: Node3D = solid["body"]
+				var visual: Node3D = solid["visual"]
+				if cut.has(String(body.name)):
+					assert_true(not visual.visible, "%s is the one in the way, so it is not drawn" % body.name)
+				else:
+					assert_true(visual.visible, "%s is not in the way, so it is still drawn" % body.name)
+			found = true
+			break
+		if found:
+			break
+	assert_true(found, "setup: some street on the Terminus has a building on the sight line at his pose")

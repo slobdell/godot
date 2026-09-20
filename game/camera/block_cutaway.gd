@@ -54,8 +54,17 @@ func cut_blocks() -> Array[String]:
 
 
 func _process(_delta: float) -> void:
-	if camera == null or obstacles_root == null or not is_instance_valid(obstacles_root):
+	if camera == null:
 		return
+	if obstacles_root == null or not is_instance_valid(obstacles_root):
+		# The arena may not have built its bodies when this node was wired up, and a match can swap arenas under it.
+		# Finding the root lazily is the difference between cutting nothing forever and cutting from the first frame
+		# the buildings exist: the live run reported `cut: []` on every frame for exactly this reason while the same
+		# code cut correctly in a test that wired it after the arena was ready.
+		obstacles_root = get_tree().root.find_child("Obstacles", true, false) as Node3D
+		_built_for = -1
+		if obstacles_root == null:
+			return
 	if obstacles_root.get_child_count() != _built_for:
 		_gather()
 	var aim: Variant = aim_point()
