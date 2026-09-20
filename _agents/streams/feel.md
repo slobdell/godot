@@ -230,28 +230,35 @@ under the trailer's and the turret's lay is taken back out, so gunnery is unaffe
 ### X2 — the hinge measured in a real match and on a known corner (`72a06181`, laptop, Intel UHD 620)
 
 **In a live skirmish** (`--player=cpu:gang_ram --player-faction=gangs --budget=6500`, `foundry`, seed 3; **32 rigs,
-864 rig-frames**, sampled per rig per frame, not as a maximum over the field):
+1,440 rig-frames**, sampled per rig per frame, not as a maximum over the field):
 
 | | |
 |---|---|
-| mean articulation | **4.1°** |
-| peak | 50.4° |
-| rig-frames past 30° | **1.7%** |
-| rig-frames at the 65° clamp | **0.0%** |
+| mean articulation | **6.1°** |
+| peak | 65.0° (one rig, at the clamp) |
+| rig-frames past 30° | **4.9%** |
+| rig-frames at the 65° clamp | **1.2%** |
 
 That is the answer to metrics' warning (*"56% of all reversals in a fight are the wheeled creep, so the trailer will
-jackknife often"*). It does jackknife — a peak of 50° in six seconds of deployment — but it **lives near straight**
-and never pins at the clamp, so the fleet does not read as permanently folded. **The first version of this
+jackknife often"*). **It does jackknife, and metrics was right to warn**: one rig in 32 reaches the clamp within six
+seconds and 4.9% of rig-frames are past 30°. But the fleet **lives near straight** — a mean of 6° — so it reads as
+the occasional truck folding out of a reverse, not as a fleet of broken vehicles. **The first version of this
 measurement reported only the maximum over all 32 rigs, which one vehicle pins and which cannot tell "the fleet is
 folded in half" from "one rig is reversing out of a corner".** Fixed before it was reported.
 
-**On a known corner** (radius 26 m, 9 m/s, trailer wheelbase 5.06 world m), degrees of articulation by degrees
-through the turn: `0 → −6.3 → −9.4 → −10.3 → −10.5 → −10.5`. The closed form for steady-state off-tracking is
-`asin(L / R) = asin(5.06 / 26) =` **11.2°**, and it settles at **10.5°** by a quarter of the way round — the deficit
-is the approach transient. **The law is right end to end, not just in the unit test.**
+**On a known corner** — **the rig's own minimum turn radius, 12 m** (read from `min_turn_radius_m`, so it follows the
+roster through CP2), 9 m/s, trailer wheelbase 5.06 world m. Degrees of articulation by degrees through the turn:
+`0 → −7.7 → −14.7 → −19.1 → −21.5 → −22.7`. The closed form for steady-state off-tracking is
+`asin(L / R) = asin(5.06 / 12) =` **24.9°**, and it settles at **22.7°** — the deficit is the approach transient.
+**The law is right end to end, not just in the unit test.**
 
-**Reversing** (the creep case, from the corner's end pose with the kink still in it): `−18.7°` at 3 m, `−47.2°` at
-8 m, **clamped at −65° by 16 m** and held. It diverges, which is what jackknifing is, and the clamp catches it.
+*(The first corner was shot at 26 m, which is physically correct and visually nothing: `asin(L/R)` there is 11° and
+the frame showed a bend the lead would have had to be TOLD was there. 12 m is not a staged number — it is the worst
+bend the game will ever draw under power.)*
+
+**Reversing** (the creep case, from the corner's end pose with the kink still in it, so the divergence has something
+to grow from — reversing from a dead-straight hinge is an unstable equilibrium and a frame shot that way would have
+been a lie): `−47.3°` at 4 m, **clamped at −65° by 9 m** and held. It diverges, which is what jackknifing is.
 
 **Owed on X2:** `build/rig-hinge/` frames for the lead, `make remote T=sim-baseline` on the branch
 (pre-registered: the hash does not move), and `make perf-scene` before/after with a gangs army (M1).
