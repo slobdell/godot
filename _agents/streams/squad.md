@@ -1268,6 +1268,20 @@ cannot act is not a control, it is a broken instrument, and its zero looks exact
 3. **A10 from `c0f22597`**, whose first job is the `fixed` flag's unconditional guarantee, not the cost.
 4. **The tube's five-seed gate**, reading nav's per-hull shortfall if it fails on the heavy classes.
 5. **A9's cost against the lead's 4 s drill allowance** — still the one item simply unstarted.
+6. **`ArmyLayout._hull`'s silent pre-CP2 fallbacks, made loud.** Ten minutes, queued after option 3, and the message
+   that raised it needs three corrections before anyone acts on it:
+   - **It is not line 302** (that is `STAND_CLEAR_M`); it is `_hull`, which my own edits pushed down the file. Cite the
+     function, not the line.
+   - **There are TWO fallbacks, not one.** `if not Units.exists(unit_id): return Vector2(2.6, 4.0)` for an unknown id,
+     and `Units.stat(unit_id, "hull_size", [2.6, 1.8, 4.0])` for a KNOWN id whose profile has no `hull_size`. Both are
+     silent and both are pre-CP2. Making only the first loud would leave the second.
+   - **`Units.DEFAULT` is `"tank"`, a unit id, not a size**, so "read its live size" means
+     `Units.stat(Units.DEFAULT, "hull_size")`.
+   **And the magnitude is worth knowing before calling this cosmetic: `tank`'s live hull is `[2.40, 2.40, 8.62]`, so the
+   fallback understates the default hull's LENGTH by 4.6 m — less than half.** In a deploy layout that is slots pitched
+   for a 4 m vehicle holding 8.6 m vehicles, nose into tail, which is precisely the failure X1 was built to prevent and
+   precisely the hull (`gang_tank`'s 8.62 m relative) that binds every doctrine spacing. So a silent fallback here does
+   not merely mis-size one unknown unit; it reproduces the pre-X1 bug for it.
 
 ### Round 10 starts here: the ordered list, and the one rule that earned its place
 
