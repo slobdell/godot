@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-20 08:52. **Round 9's overnight run: sixteen branches and all three checkpoints merged. `main` is RED on ONE test at `b008a277` (a composition the resize exposed; scale's probe names the mechanism, owner to follow); the last fully green `main` is `0808834e`. Read the morning summary first.**_
+_Last updated: 2026-09-20 08:52. **Round 9's overnight run: sixteen branches and all three checkpoints merged. `main` is RED on ONE test at `b008a277` (a test-isolation leak the sharded schedule exposed and the resize made fatal; scale is fixing it); the last fully green `main` is `0808834e`. Read the morning summary first.**_
 
 ## ☀ THE MORNING AFTER ROUND 9's NIGHT — read this first (2026-09-20, written 07:00, updated at each tick)
 
@@ -85,10 +85,13 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
   bool, A6 behind its opt-in switch; the baseline unmoved by its merge), so **what remains in the window is
   `tank_brain.gd` (+133: squad's corridor field and tube plumbing, combat's switching-cost seam) — OR no motion at
   all: a unit that spawns ALREADY intersecting looks identical to one nudged on tick one**, which would be a
-  placement-margin failure CP2 exposed (scale's). scale's probe prints spawn vs current position (and a 90-unit tick-one motion count) to tell the two apart. **No new RNG
-  draw exists anywhere in the window**, so if placement changed, its input was something else (scene-tree order from show's
-  mounted nodes is the remaining candidate); if it did not, the mechanism is tick-one motion in `tank_brain.gd` and the
-  **resize consumed the margin it used to have** — a shared composition, not any one stream's defect. **The resize did not create it; it consumed the margin that hid it** (the contact-pip
+  placement-margin failure CP2 exposed (scale's). **MEASURED (scale, 09:15): it is a TEST-ISOLATION LEAK, not anyone's code.** Worst tick-one displacement across 90 units
+  is 1.8 cm (settling); the test **passes alone** (`FILTER=a_full_faction_army`: 1/0, exit 0) and fails only when
+  `test_arena_layouts` (which stands up scrapyard) runs before it in the same process — scrapyard's bodies still in the
+  physics space while the army deploys on foundry (the tell: two hulls of one squad within half a metre). The merge
+  added test files, the shards redistributed, and the polluter landed ahead of the victim: **the schedule changed, not
+  the code** (lesson 178, lesson 36's shape). The resize made it fatal. **scale owns the fix** (arena tests free
+  deterministically; the shared TestCase counts leftover bodies at test start and names the leaker). **The resize did not create it; it consumed the margin that hid it** (the contact-pip
   finding's shape). scale's `make spawn-probe` names each flagged unit's position and the body it intersects and runs
   after its fairness series (~09:05); nav answers from that. Also found: the test's first assertion compares
   `Match.SPAWN_SLOTS` with a constant defined AS `Match.SPAWN_SLOTS` and cannot fail (combat's/squad's file).

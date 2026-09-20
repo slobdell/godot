@@ -2670,3 +2670,13 @@ The kickoff prompt is one line; this section is the rest.
     wrong reason, an assertion at a moment the thing could not be observed), caught only by the stream's own
     anti-vacuity guard. *"I am reliable at demanding an arm can exercise its mechanism and unreliable at checking it
     when the change feels too small to deserve the ceremony."* The ceremony is for the small ones.
+178. **A sharded suite changes which tests share a process, and a test that leaks into the engine's globals goes red on
+    schedule, not on code.** Round 9's last red: `test_a_full_faction_army_a_side_spawns_clear_of_itself` passed alone,
+    passed on two green trees, and failed on `main` only when `test_arena_layouts` (which stands up scrapyard) ran
+    before it in the same process — scrapyard's bodies still in the physics space while the army deployed on foundry,
+    compressing the formation (two hulls of one squad within half a metre) and putting three units "inside a wall".
+    The merge added test files, the shards redistributed, and the polluter landed ahead of the victim. Four correct
+    eliminations of code changes missed it because the variable was the schedule. Lesson 36 with physics bodies instead
+    of the navmesh, and the resize made it fatal (an 8.62 m hull no longer fits between phantom obstacles a 3.60 m one
+    slipped past). Fix: arena tests free their arena deterministically, and the shared TestCase counts leftover bodies
+    at test start and names the leaker. **When a green test goes red with no relevant diff, ask what ran before it.**
