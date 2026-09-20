@@ -466,6 +466,35 @@ intersecting, never moving at all, looks identical to a nudged one.** That is a 
 exposed, not a movement change. Ask the probe to print the **spawn** position beside the current one — if they are
 equal, no motion occurred and every movement-layer candidate is eliminated at once.
 
+### WHY THE DRAIN AND THE SEALED TEARDOWN MATTER — combat's argument, which is better than nav's was
+
+nav justified this work as *"one leaking test becomes a shard of noise in which the culprit is indistinguishable
+from its victims."* **That is about failures, and it is the weaker case.** combat's is about **passes**, and it is
+the one to use (2026-09-21, their finding, their words):
+
+> **a leak does not only fail the next test — it silently changes what the next test MEASURES**
+
+**The evidence is their own wall fixture, dated to the minute.** Two perfectly ordered clusters, no interleaving,
+either side of a single commit — the one where `test_tank_yaw_fit`'s teardown override finally called
+`await super.teardown()`:
+
+    before the fix   rig at (2.869822, …)  offered 14  applied 0     x3 runs
+    after the fix    rig at (2.785599, …)  offered 16  applied 3     x3 runs
+
+**The 8 cm is the size of the leak.** Before it was fixed, the first test's arena, match and hulls were still in the
+world when the second ran, and the rig landed against that residue instead of the wall. **The fixture never failed.**
+It ran green, printed a plausible MEASURE line, and measured a different world than its author believed — for as
+long as the leak existed. Nothing was red; nothing looked wrong; the number was simply about something else.
+
+**That is strictly worse than noise, and it is the argument for the sealed `_teardown()`.** combat's fix was to
+*remember* `await super.teardown()`. Under the sealing, an override **does not need to call super at all** — the
+runner owns free-then-drain and `teardown()` is a synchronous hook that frees — so the bug that moved that rig
+becomes **structurally impossible rather than remembered**. nav made a weaker case for the same change.
+
+**And the reading error underneath is the round's, for the fourth time:** four data points across three commits,
+read as one population. Same shape as nav's 45 s headroom pass, nav's two-commit P7 series that metrics' banner
+caught, and the roster lines. **A measurement carries its commit, or it is not a measurement.**
+
 ### ⚠ `build/` LIES IN BOTH DIRECTIONS — a measurement artefact there is never safe
 
 Two separate hazards bit nav in one night, from opposite sides:
@@ -799,7 +828,78 @@ rather than on a synthetic one. **Do not flip its default** — on today's plant
 stays green, correctly.** `test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided` returns
 **bit-identical** numbers with the constraint on or off (19.71 m of path, 28.5° of yaw, 3.12 m net drift), verified
 by combat with their own contact gate disabled. **The assertion written to go red has not gone red, and combat
-reported that rather than papering it.** **SUPERSEDED 2026-09-21: it works now and is ENABLED** (`986f8921`, combat). The fix was nav's diagnosis applied —
+reported that rather than papering it.** **⚠ REVERSED AGAIN, and this is the current state: the constraint's default is back OFF, so nav's face row is
+INERT ON THE DEFAULT PATH once more.** It was live for about an hour. combat's bisect, one line, one machine:
+
+| point | off slot | worst gap per squad |
+|---|---|---|
+| `bd618dd4` constraint **off** | **0 of 30** | Alpha 3.8, Bravo 4.4, Charlie 6.6, Delta 22.4, Echo 4.5 m |
+| `986f8921` constraint **on** | **12 of 30** | Alpha 2.9, Bravo **89.5**, Charlie **87.6**, Delta **86.5**, Echo **91.1** m |
+
+`986f8921` over its parent is `yaw_fit_enabled := false` → `true` **and nothing else**. Four of five squads end
+~90 m from their slots. **No corridor win is worth squads being unable to form up**, and nav agreed with the
+reversal without reservation — having endorsed the enable earlier on evidence that turned out to be confounded.
+
+**⚠ NAV'S VEHICLE-AS-WALL READING IS WRONG. The replacement is squad's, and it is the SAME ERROR nav found in its
+own clearance row this morning.**
+
+nav argued twice that the **predicate** was at fault — that `collision_mask = 3` made a squadmate count as a wall
+and the arrival yaw was refused in error. It is not. squad's roster on the separating axis (`165ef0cc`): the crews
+are **clear while parallel** (gaps 1.12–4.28 m, none overlapping), but an 8.62 × 2.40 m hull **yawing sweeps to its
+half-diagonal, 4.47 m**, so it needs ~3.27 m beside it to turn while `HULL_CLEAR_M` leaves **2.0** — a tank short
+by **1.27 m**, a `gang_tank` by **3.53 m**. **The plant is correctly refusing a rotation there is no room for.**
+
+**Formation spacing is derived from hull WIDTH; rotation needs the DIAGONAL.** The deficit grows with length, and
+CP2 made it bite.
+
+**And that is nav's own clearance-row error, in another file, pointing the other way:**
+
+| | wrong pairing | licensed motion of each |
+|---|---|---|
+| nav's clearance row | `radius_of` (w+l)/4 **rotational sweep** vs navmesh bake **lateral clearance** | turning-in-place vs driving-down-a-corridor |
+| squad's formation | `HULL_CLEAR_M` **width** vs the yaw's **half-diagonal** | driving-straight vs turning-in-place |
+
+**Same class, opposite direction, both exposed by the resize.** Which gives the rule both of them needed:
+***a clearance number must state which motion it licenses.*** Width licenses driving straight; the half-diagonal
+licenses rotating in place; `(w + l) / 4` licenses a swept turn. **Mixing them is the bug**, and it is invisible
+while hulls are small enough that every number is generous.
+
+**What survives of nav's reading, as a checkable claim rather than a face-saver:** the *prediction* that off-slot
+failures track **crowding at the moment of seating** rather than hull type or map position holds under diagonal
+spacing too — both are about what is adjacent when a hull seats — and the staggered-order test still discriminates
+them. The **mechanism** nav proposed was wrong; the correlation it rested on fitted more than one cause, which is
+why it survived two arguments.
+
+**The original reading, kept for the record:** hulls seating into a
+formation are nosed against squadmates, `test_move` uses `collision_mask = 3`, a squadmate counts as a wall, the
+arrival yaw is refused and the crew never seats. **Alpha survives because it is ordered first, into open ground,
+before the others crowd in.** Labelled **inferred, not measured** until the `yaw_vehicle_contact` counter and
+squad's roster print name the same units — and nav has proposed a one-run causal test that needs no new
+instrumentation: **order the squads with a delay between them.** Vehicle-as-wall predicts all five seat.
+
+**So the row's status, stated plainly rather than left reading as live:** the face recovery is **built, opt-in, and
+inert on the default path**, exactly as it was this morning. It becomes live only under `--nav-off=facegiveup` with
+the yaw constraint also on, and nav's test asserts the constrained behaviour under an explicit arm rather than
+leaning on a default that has now **flipped twice in one day**.
+
+**The earlier enable, corrected 2026-09-21 — the improvement is LARGER than was claimed, and nav's own fixture is
+what exposed the error.** combat's "before" column all day (28.5°, 9.6 m) was **not** the unconstrained hull; it
+was taken in an arm that was not "constraint off" (likely the slack-0.02 build). Once `apply-on-first-read` made
+`yaw_fit=0` actually reach the predicate, nav's wedged test went red with:
+
+    10.42 m of path, 44.0° of yaw, giveups 0, 4.42 m net drift, footprint needs 12.1 m in 4.8 m
+
+**bit-identical to nav's original round-9 measurement of the unconstrained hull.** So the corrected result is
+**44.0° → 11.6°, footprint 12.1 m → 6.1 m: 74 % of the illegal yaw removed**, not 59 %. The residual is unchanged
+at **1.27 m against the 1.8 m bar** and still binding, the squad result is untouched, and the reversal to
+default-off stands on the one-line source bisect.
+
+**Why nav's fixture could serve as the anchor, and it is the reusable part:** it is **deterministic** and it
+**asserts its own positive control** (`path > 1.0`, the hull really is wedged) before reading anything out. So a
+number from it in round 9 and a number from it today are comparable, and the mismatch located the error in
+someone else's column rather than in the comparison. **A measurement you can reproduce exactly is an anchor; one
+you cannot is just a number** — and combat's before-column went unchallenged all day precisely because nothing
+anchored it. The fix was nav's diagnosis applied —
 compare the candidate pose against the **current** one rather than against legality — and it recovers **59 % of the
 illegal yaw**: 28.5° → **11.6°**, footprint 9.6 m → **6.1 m** in a 4.8 m corridor.
 
