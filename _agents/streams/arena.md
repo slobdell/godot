@@ -352,8 +352,24 @@ tree the rig is still **5.6 m**, so it is a forecast, not a live defect, and the
 | `make audio-check` | passed | laptop |
 | `make announcer-audit` / `-variance` | passed | laptop |
 
-**⚠ THERE IS NO GREEN HASH FOR ANY ROUND-8 ARENA COMMIT, and none of the above is one.** Stated exactly, because
-a pass-count without an exit line is the thing the contract warns against:
+### ✅ GREEN: `83df0301`
+
+    1261 passed, 0 failed
+    sim-baseline passed: 0cb238bf366e141f (glibc-2.43)
+    >> remote: make check exited 0 (build/ copied back)
+
+**On builder0, the wrapper's own exit line and the runner's counts**, no `make: ***` in the log. `tools/remote.sh`
+captures `git rev-parse --short HEAD` before the rsync and the tree was clean, so the commit identifies what ran
+(no `DIRTY`). **This covers all eleven commits ahead of `main`**, `4515bb4b` included — verified with
+`git merge-base --is-ancestor`, after I told the orchestrator the reverse and had to correct it.
+
+**Nothing in those eleven commits caused either earlier red.** What follows is kept because the reasoning is the
+point, not the history:
+
+---
+
+**⚠ Before that run there was NO green hash for any round-8 arena commit.** Stated exactly, because a pass-count
+without an exit line is the thing the contract warns against:
 
 | remote check | covered | runner | wrapper |
 |---|---|---|---|
