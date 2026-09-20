@@ -240,6 +240,27 @@ toy sizes, silently.** `UNITS` is now an id list; the numbers come from the cata
 `STANDARD_HULL` (the turret-scale reference) with them. **The mutation check is free and real: every one of those
 heights was 1.6 in the old table, so the old table fails the new test as written.**
 
+### S6 (show) — where the lighting hook belongs in my materials, recorded before the agent starts
+
+The orchestrator granted `show` additive carve-outs in `CityBlock`'s emission, `arena_dressing.gd`'s perimeter rim,
+`NeonSigns`, the floodlight pools and `CyberMaterials.neon()`. Asked for an opinion on a per-instance custom-data
+slot versus a material uniform: **both, and they are not interchangeable.**
+
+- **Per-instance custom data on the MultiMesh** for anything that differs *between instances* — individual windows
+  breathing, block edges pulsing out of phase. It is how the crowd is already driven, it costs no draw call and no
+  light, and a uniform cannot express it at all. A `show` that reaches for a uniform here ends up adding a second
+  MultiMesh to get the variation back, which breaks its own zero-draw-call rule.
+- **A material uniform** for anything *global* — the rim's colour and level, a pool's intensity, the arena wash. One
+  write a frame.
+- **The rule:** differs between instances → custom data; one number for the whole fixture → uniform; never add a
+  MultiMesh or a light to get variation a custom-data channel could have carried.
+
+**And the constraint `show` must know before it designs:** `AdBroadcast`'s ad channel **already** drives the ground
+wash from each ad's average colour, so an arena-wide light cue is a *second writer to the same perceived quantity*.
+Those need one owner or they will fight, and the fight will read as flicker neither stream can reproduce. Also: the
+instance-uniform ceiling is real and `make perf-scene` already counts *"Too many instances using shader instance
+variables"* as a first-class number — read that counter, not only the frame time.
+
 ### Two traps that cost me time today, both worth a lesson
 
 **1. A non-simulating `Tank` is a REPLICA, and setting its transform does nothing.** With `simulate=false` the tank
