@@ -2709,3 +2709,10 @@ The kickoff prompt is one line; this section is the rest.
     regions. Rules: a guard's claim is only as strong as the settling behaviour of what it counts, measured; land a
     guard *with* the fixes for what it finds, never route the fixes first; and when a new instrument convicts three
     unrelated tests at once, suspect the instrument before the tests.
+181. **A difference between two arms proves the arms differ, never why.** Round 9's spawn lift: combat's 5 cm arm
+    moved the frame-1 sink by +0.032 m and combat read it as "the lift reached deployed units"; it was the
+    depenetration recovery's sensitivity to the contact. Earlier the same night a 47 % sliding-goal share was read as
+    a mechanism when it was a selection. The delta is the licence to look for the mechanism, not the mechanism. And
+    two streams implementing one ruling in two places produced one arm that could not act (squad's layout discarded
+    its own y) and one that acted for the wrong reason: **one constant, one home, one arm that exercises it, before
+    anyone reads a number off it.**
