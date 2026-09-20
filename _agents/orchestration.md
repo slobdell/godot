@@ -2631,3 +2631,61 @@ The kickoff prompt is one line; this section is the rest.
     feel had deliberately kept the old assertion with a comment saying the replacement was scale's to make inside the
     CP2 commit. The rule assumes both sides were trying to change the file. When one side's version carries a note
     deferring to the other, the deferred-to version wins, and the note travels with it.
+173. **Absent is not null, and `get(key, null)` erases the difference.** Round 9, three streams in one night: nav
+    publishes `corridor` as *null* for "no leg this tick" and absent for "the key has not shipped"; control read it
+    with `get("corridor", null)`, so on exactly the ticks nav said there was nothing to derive, control's readout fell
+    through and **derived a tangent anyway** — inside a function whose own comment says an unreadable corridor must
+    not look like a readable one. metrics hit the same shape one level deeper in its emitter (a "no data" that wore a
+    present column, its own commit says). Read a nullable field with `has()` first; a publisher that sends null is
+    only honest if every reader can see the key is there. Sibling of lesson 157 (an empty list must not read as a
+    pass) and of lesson 164 (an instrument that cannot see the case reports zero).
+174. **A rule you are enforcing on another stream is worth running against your own files first.** Round 9, feel: three
+    hours after ruling that show's parapet must never be red (a signal colour) or cool white (not in the palette), feel
+    found `CityBlock.neon_color()` honouring only `#`-colours, so the Terminus's eight blocks had worn **red and a
+    near-white** from a seeded random fallback for a whole round — the layout asked for cyan and magenta and every
+    name was silently ignored. It survived because a *seeded* random pick in answer to a deliberate name looks exactly
+    like a deliberate choice. Unresolvable names are now loud (`637ad4de`); the hard rejection belongs in
+    `Arena.validate()`. Sibling of lesson 157: a fallback that produces a plausible answer is worse than one that fails.
+175. **A safety property that has never been exercised is fiction, and the third run is what exercises it.** Round 9,
+    metrics, CP3's three-run falsifier: runs 1 and 3 (CHECK_JOBS 2) passed; run 2 derived CHECK_JOBS 3 and `lobby-smoke`
+    and `relay-smoke` started a broker on the same port in the first minute. The exclusion groups written to prevent
+    exactly that were inert: `_cp-lobby-smoke: lobby-smoke | _cp-relay-smoke` orders the *wrapper* after the other
+    wrapper, but `lobby-smoke` is a normal prerequisite of that same wrapper and make builds it concurrently — **the
+    order-only edge constrained the bookkeeping, not the work.** Fixed by giving each wrapper no normal prerequisite and
+    invoking its target from its own recipe, verified from make's database. Two runs would have shipped it. The
+    falsifier was not met and was not presented as met; the runs restarted on the fix.
+176. **A `$(shell …)` in a recursively expanded make variable runs again on every reference — and if it reads something
+    that moves, one run gets several answers.** Round 9, scale's CP2 check: `TEST_SHARDS ?= $(shell tools/slot.sh --jobs
+    …)` reads free memory; it is referenced to launch the shards, to fan them out, and to verify how many reported.
+    The run launched 2 shards, both reported 1395/0, and the verification compared against 3 — the guard fired on
+    itself, and a green suite exited 2. Trip-up 67's family: make evaluates a variable differently from how the author
+    read it. Derive once with `:=`, print the value the run actually used in its own header, and verify against that
+    value, never against a fresh evaluation. **The nastier version of "the thing under test is not the thing
+    described": here the instrument and the subject disagreed about how many there were.**
+177. **The change that feels too small for the ceremony is the common case, not the exotic one.** Round 9's last hour,
+    squad, a "one-line" fix to a facing drag on a whole squad: the peer's premise (nothing reads `task["facing"]`) was
+    wrong — it was read, and the heading was thrown away one line later by `entry["facing"] if halt else null` — so
+    implementing what was described would have fixed nothing; then three process slips on the same small item (a
+    verification launched in the same command as an edit that had aborted, a test whose negative arm passed for the
+    wrong reason, an assertion at a moment the thing could not be observed), caught only by the stream's own
+    anti-vacuity guard. *"I am reliable at demanding an arm can exercise its mechanism and unreliable at checking it
+    when the change feels too small to deserve the ceremony."* The ceremony is for the small ones.
+178. **A sharded suite changes which tests share a process, and a test that leaks into the engine's globals goes red on
+    schedule, not on code.** Round 9's last red: `test_a_full_faction_army_a_side_spawns_clear_of_itself` passed alone,
+    passed on two green trees, and failed on `main` only when `test_arena_layouts` (which stands up scrapyard) ran
+    before it in the same process — scrapyard's bodies still in the physics space while the army deployed on foundry,
+    compressing the formation (two hulls of one squad within half a metre) and putting three units "inside a wall".
+    The merge added test files, the shards redistributed, and the polluter landed ahead of the victim. Four correct
+    eliminations of code changes missed it because the variable was the schedule. Lesson 36 with physics bodies instead
+    of the navmesh, and the resize made it fatal (an 8.62 m hull no longer fits between phantom obstacles a 3.60 m one
+    slipped past). **Then measured to the coordinate (scale `3f6c1650`): nothing leaked.** `free()` takes an arena's
+    bodies 38 → 0 in the same call, the granted teardown guard never fires, and both orderings place all 90 units at
+    identical coordinates. **Units are placed at exactly y = 0.0, a degenerate zero-penetration ground contact, and
+    which way Jolt resolves it depends on the engine's internal state after earlier bodies were created and
+    destroyed: three units are ejected ~1.5 m DOWN through `Arena/Ground`.** Round 8's sim-hash lesson with spawn
+    positions instead of a hash, and a real game bug, not only a test one. Ruled: spawn a few centimetres above the
+    ground at both spawn sites (`ArmyLayout.deploy`, `Match.spawn_position`), assert *placement* rather than the
+    post-physics position, and name the body hit in the failure message — "inside a wall or crate" when the body was
+    the ground cost a morning. Three wrong eliminations (RNG divergence, tank_brain, leaked bodies) stand beside the
+    answer. **When a green test goes red with no relevant diff, ask what ran before it — then measure the mechanism
+    before assigning it.**

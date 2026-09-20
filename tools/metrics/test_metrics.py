@@ -24,6 +24,7 @@ import unittest
 
 import make_fixtures
 import metrics
+import run_metrics
 import trajlog
 from metrics import (
     affine_residual_rms,
@@ -818,6 +819,106 @@ class AffineFormationResidualTest(unittest.TestCase):
 
 
 # ==================================================================================================
+# A6's falsifier: time driving AGAINST the corridor (legibility.md §7)
+# ==================================================================================================
+
+
+class CorridorTest(unittest.TestCase):
+    EAST = (1.0, 0.0)
+
+    def drive(self, dx, corridor=EAST, ticks=30, **kw):
+        """A unit stepping `dx` metres east per tick under attack_move, with `corridor` as its tangent."""
+        out = []
+        for i in range(ticks):
+            out.append(make_sample(
+                i, x=i * dx, goal_x=1000.0, goal_z=0.0, order_verb="attack_move",
+                corridor_x=(corridor[0] if corridor else None),
+                corridor_z=(corridor[1] if corridor else None), **kw))
+        return out
+
+    def test_driving_ALONG_the_corridor_opposes_nothing(self):
+        out = metrics.corridor_opposition(self.drive(0.5), TICK_RATE, has_corridor=True)
+        self.assertEqual(out.opposing, 0)
+        self.assertEqual(out.active, 29)
+        self.assertAlmostEqual(out.fraction, 0.0, places=9)
+        self.assertAlmostEqual(out.active_fraction, 1.0, places=9)
+
+    def test_driving_BACKWARDS_along_it_opposes_every_tick(self):
+        out = metrics.corridor_opposition(self.drive(-0.5), TICK_RATE, has_corridor=True)
+        self.assertEqual(out.opposing, 29)
+        self.assertAlmostEqual(out.fraction, 1.0, places=9)
+
+    def test_the_tangent_is_the_LEG_not_the_bearing_to_the_goal(self):
+        """legibility.md §2: the corridor is the path nav is driving, NOT the straight line to the goal. A hull
+        rounding a corner drives along the leg while the goal bearing points through a wall -- so a statistic
+        built on the goal bearing would be wrong in exactly the cases A6 exists for. This asserts the metric
+        follows the LEG: the same motion is compliant against one tangent and opposing against another."""
+        north = (0.0, 1.0)
+        along = metrics.corridor_opposition(self.drive(0.5, corridor=self.EAST), TICK_RATE, has_corridor=True)
+        across = metrics.corridor_opposition(self.drive(0.5, corridor=north), TICK_RATE, has_corridor=True)
+        back = metrics.corridor_opposition(self.drive(0.5, corridor=(-1.0, 0.0)), TICK_RATE, has_corridor=True)
+        self.assertAlmostEqual(along.fraction, 0.0, places=9)
+        self.assertAlmostEqual(across.fraction, 0.0, places=9)   # perpendicular is not OPPOSING
+        self.assertAlmostEqual(back.fraction, 1.0, places=9)
+
+    def test_no_corridor_KEY_is_no_data_and_refuses_a_verdict(self):
+        samples = self.drive(0.5, corridor=None)
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=False)
+        self.assertIsNone(out.fraction)
+        self.assertIsNone(out.active_fraction)
+        self.assertEqual(out.known, 0)
+
+    def test_a_NULL_corridor_is_INACTIVE_and_named_not_absent(self):
+        """§5 makes "no path yet" an inactive case with a name, and §7 reports the active fraction beside the
+        falsifier -- because a law that improves by switching itself off more often is not a pass."""
+        samples = self.drive(0.5, corridor=None)
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=True)
+        self.assertEqual(out.inactive, 29)
+        self.assertEqual(out.active, 0)
+        self.assertAlmostEqual(out.fraction, 0.0, places=9)        # nothing opposed, over nothing active
+        self.assertAlmostEqual(out.active_fraction, 0.0, places=9)  # and THAT is the number that exposes it
+
+    def test_the_active_fraction_catches_a_law_that_switched_itself_off(self):
+        # Half the ticks lose their leg. The fraction stays perfect; the ACTIVE fraction halves and tells you.
+        samples = self.drive(-0.5)
+        for s in samples[15:]:
+            s.corridor_x = None
+            s.corridor_z = None
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=True)
+        self.assertAlmostEqual(out.fraction, 1.0, places=9)
+        self.assertLess(out.active_fraction, 0.55)
+        self.assertGreater(out.active_fraction, 0.45)
+
+    def test_an_ordered_ARC_is_excluded_and_reported_beside(self):
+        samples = self.drive(-0.5, facing_arc=True)
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=True)
+        self.assertEqual(out.ordered_arc, 29)
+        self.assertEqual(out.active, 0)
+        self.assertEqual(out.opposing, 0)
+
+    def test_facing_ordered_alone_does_NOT_excuse_a_tick(self):
+        """The distinction that matters: an order carries its facing from the moment it is issued, so excluding
+        on `facing_ordered` would excuse the whole drive to the gate -- hiding exactly what A6 is measured on."""
+        samples = self.drive(-0.5, facing_ordered=True, facing_arc=False)
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=True)
+        self.assertEqual(out.ordered_arc, 0)
+        self.assertAlmostEqual(out.fraction, 1.0, places=9)
+
+    def test_a_stopped_hull_opposes_nothing(self):
+        out = metrics.corridor_opposition(self.drive(0.001), TICK_RATE, has_corridor=True)
+        self.assertEqual(out.active, 0)
+        self.assertEqual(out.below_speed, 29)
+
+    def test_only_the_named_order_verb_counts(self):
+        samples = self.drive(-0.5)
+        for s in samples:
+            s.order_verb = "move"
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=True, order_verb="attack_move")
+        self.assertEqual(out.known, 0)
+        self.assertIsNone(out.fraction)
+
+
+# ==================================================================================================
 # Hull turn between events (combat's A2 bearing read)
 # ==================================================================================================
 
@@ -956,6 +1057,50 @@ class ReportTest(unittest.TestCase):
         self.assertEqual(out["teams"], [0, 1])
         # The enemy contributes to neither side of the oscillating share: it has no goal, so it is never under way.
         self.assertEqual(out["all"]["under_way_seconds"], round(width / float(TICK_RATE), 1))
+
+    def test_a_column_PRESENT_BUT_ALL_NULL_reports_null_too(self):
+        """The half my first fix missed, and the half nav actually hit. My emitter writes `"facing_arc": null`
+        until nav's Movement publishes it, so the COLUMN IS PRESENT and every value is null -- keying off the
+        column name alone still reported 0.0 s. That is no data wearing a present column."""
+        log = self.build(with_cause=True)      # every optional column present, every facing value None
+        out = report(log)
+        self.assertIn("facing_arc", log.columns)          # the column IS there ...
+        self.assertIsNone(out["all"]["facing_arc_seconds"])  # ... and it still reports null
+        captured = io.StringIO()
+        run_metrics.print_report(out, captured)
+        self.assertIn("arc_live=null", captured.getvalue())
+        self.assertIn("NOTE: no `facing_arc` DATA", captured.getvalue())
+
+    def test_a_REAL_zero_is_reported_as_a_zero(self):
+        """And the converse, which matters as much: once a producer says `false` even once, 0.0 s is a
+        measurement. nav's tracked hulls are exactly this -- 0.0 s of arc because `_approach_gate` returns
+        immediately at wheel_radius 0 -- and that zero must not read as an absent field."""
+        lines = [trajlog.header_line("c", "m", TICK_RATE, "synthetic")]
+        width = metrics.SPARC_WINDOW_SAMPLES
+        for tick in range(width):
+            lines.append(trajlog.sample_line(make_sample(
+                tick, float(tick), speed=30.0, unit="T1", unit_id="tank",
+                order_reverse=False, phase="none", creeping=False,
+                facing_ordered=False, facing_arc=False), with_cause=True))
+        out = report(read_lines(lines, "<f>"))
+        self.assertEqual(out["all"]["facing_arc_seconds"], 0.0)
+        captured = io.StringIO()
+        run_metrics.print_report(out, captured)
+        self.assertIn("arc_live=0.0s", captured.getvalue())
+        self.assertNotIn("arc_live=null", captured.getvalue())
+        self.assertNotIn("NOTE: no `facing_arc` DATA", captured.getvalue())
+
+    def test_an_ABSENT_facing_column_reports_null_and_never_a_zero(self):
+        """nav, 2026-09-20: a log written before `facing_arc` was published printed `arc_live=0.0s` in BOTH arms
+        of an A/B -- which reads exactly like a measurement of behaviour and was an unpublished field. A zero
+        that means "no data" is the one thing this tool exists to refuse, and it was in the renderer."""
+        out = report(self.build())                      # no optional columns at all
+        self.assertIsNone(out["all"]["facing_arc_seconds"])
+        self.assertIsNone(out["all"]["facing_ordered_seconds"])
+        captured = io.StringIO()
+        run_metrics.print_report(out, captured)
+        self.assertIn("arc_live=null", captured.getvalue())
+        self.assertNotIn("arc_live=0.0s", captured.getvalue())
 
     def test_it_says_whether_the_cause_columns_were_there(self):
         self.assertFalse(report(self.build())["cause_columns"])

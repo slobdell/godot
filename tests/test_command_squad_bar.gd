@@ -112,7 +112,32 @@ func test_contact_pip_when_an_enemy_is_in_sight() -> void:
 	assert_true(not chip.summary()["contact"], "no contact at the start")
 	var enemy := game_match.spawn_tank("Rust_Probe_1", 0, Match.Team.RUST)
 	var lead := game_match.tanks.get_node("Green_Alpha_1") as Tank
-	enemy.global_position = lead.global_position + Vector3(0, 0, -30)
+	# PUT IT SOMEWHERE THE LEAD CAN ACTUALLY SEE, rather than at a fixed offset. This test is about the CHIP'S PIP,
+	# not about perception or about the foundry's furniture, so it should not be able to fail because of either.
+	#
+	# It used to place the enemy 30 m due north, which on the foundry put it inside the crate at (-12, 56) - by five
+	# centimetres, with a 3.6 m hull, which the physics solver tolerated. At CP2 that hull became 8.62 m, the overlap
+	# became 2.56 m, and the solver resolved it by **shoving the body 1.48 m under the floor** in a single tick.
+	# `Perception.has_line_of_sight` casts at EYE_HEIGHT 1.3 m, so the ray ran from y 1.301 to y -0.176 - into the
+	# ground - and the pip could never light. (Measured by scale on builder0, e7ebb372.) So the test was never
+	# really clear of that crate; it was passing on 5 cm of margin, and any resize or new arena would have ended it.
+	# A shorter fixed offset would rot exactly the same way, so there is no fixed offset here at all.
+	var placed := Vector3.ZERO
+	for bearing in 12:
+		for reach: float in [24.0, 32.0, 40.0]:
+			var spot := lead.global_position + Vector3(sin(TAU * bearing / 12.0), 0.0, -cos(TAU * bearing / 12.0)) * reach
+			enemy.global_position = Vector3(spot.x, lead.global_position.y, spot.z)
+			enemy.reset_physics_interpolation()  # teleport: interpolation must not leave it at its old spot
+			await wait_physics_frames(2)
+			# Not pushed out of the world by something it was placed inside, and really in sight.
+			if absf(enemy.global_position.y - lead.global_position.y) < 0.5 and Perception.has_line_of_sight(lead, enemy):
+				placed = enemy.global_position
+				break
+		if placed != Vector3.ZERO:
+			break
+	assert_true(placed != Vector3.ZERO, "setup: somewhere within sight of Alpha that is not inside the scenery")
+	assert_true(placed.distance_to(lead.global_position) <= lead.sight_radius,
+			"setup: and inside its sight radius (%.0f m of %.0f)" % [placed.distance_to(lead.global_position), lead.sight_radius])
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS + 1)
 	assert_true(chip.summary()["contact"], "an enemy in sight of Alpha lights the contact pip")
 

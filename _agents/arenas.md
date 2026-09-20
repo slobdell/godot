@@ -728,7 +728,42 @@ streets read as streets from inside one, and the minimap reads as a city grid on
    **This is feel's own open question and he has not answered it.** Shipping it plain is deliberate: a cityscape he
    can play beats a detailed one he has never seen, which is the entire lesson of round 8.
 
-## Can a map hide the longest hull? (round 8; `make arena-report` prints it)
+## Can a map hide the longest hull? (round 8) — **ANSWERED AND REPLACED in round 9 (A3)**
+
+> **READ THIS FIRST.** Everything in this section below the next three paragraphs is the *old* measure, kept because
+> it is the record of what was wrong and because it is still printed beside the new one for one round (lesson 49:
+> report the split alongside, never instead of). **It is no longer how the game decides whether a hull is covered.**
+>
+> **The cliff was in the QUERY, not in the maps**, exactly as the lead's ruling said (game_design.md *Ruling: the War
+> Rig stays at 14 m*). Catalogue row **A3** replaced centre-point registration with the fraction of a hull's own
+> centreline chord that is occluded from a watcher: `Arena.cover_fraction(viewer, point, heading, length)`, built on
+> directional summed-area tables in `game/arena/cover_tables.gd`. Two array lookups and a subtraction, **the same
+> work at 2.93 m as at 14.0 m**, integer arithmetic throughout. `make arena-cover` prints it.
+>
+> **The falsifier the catalogue pre-registered is met.** Mean occluded chord fraction over the contested field,
+> watcher on the far side, by hull length (laptop, round 9):
+>
+> | hull length | 2.93 m | 6 m | 8.62 m | 12 m | 12.19 m | 12.5 m | 14 m |
+> |---|---|---|---|---|---|---|---|
+> | **yard** | 0.32 | 0.29 | 0.29 | 0.29 | 0.29 | 0.29 | **0.29** |
+> | **pit** | 0.31 | 0.38 | 0.34 | 0.36 | 0.36 | 0.36 | **0.36** |
+> | **terminus** | 0.76 | 0.76 | 0.77 | 0.77 | 0.77 | 0.77 | **0.77** |
+>
+> **Flat.** Where the old measure put yard at 0.99 for a 12.19 m hull and **0.00** for a 12.5 m one, the new one puts
+> a 14 m hull within 0.03 of a 12 m one. `tests/test_arena_cover_tables.gd` asserts that on every shipped map, and
+> carries the old rule's cliff in the same file as the positive control (lesson 147: a treatment that cannot be
+> distinguished from its control proves nothing).
+>
+> **What it costs, because combat's thresholds sit on it.** Two terms, reported apart by
+> `CoverTables.worst_case_error()`: an **angular** term, `1 − cos(22.5°) ≈ 7.6%` of hull length, constant as a
+> fraction; and a **grid** term of one 2 m cell, constant in **metres**. So the query is **least precise on the
+> SHORTEST hull**, not the longest — the opposite of the intuition, and where a threshold will be tightest.
+>
+> **The standing rule below — do not add a long prop to yard or pit — still holds**, and now for a better reason
+> than before: the maps never needed one.
+
+### The old measure, for the record (round 8; `make arena-report` still prints it, labelled SUPERSEDED)
+
 
 combat, 2026-09-19: the arena kit's longest prop is `container_40` at **12.19 m**, and the War Rig became **14.0 m**.
 A hull longer than anything on the map has nowhere to hide — and **cover fails silently**: *"the rig still drives to

@@ -367,14 +367,22 @@ class TestTheToolAgreesWithTheGameItModels(unittest.TestCase):
                                  "reach": ar.hull_cover_reach(yard, boxes, hulls[longest]),
                                  "longest_prop_m": 12.19}}
         notes = ar.openness_notes(report)
+        # Round 9 (A3): the note no longer says "hide the longest hull" -- that sentence was TRUE under
+        # centre-point registration and is FALSE under `Arena.cover_fraction`, so it was rewritten rather than
+        # deleted (the lead's ruling: a WATCH line that is confidently wrong is worse than silence). This guard
+        # keys on the reach reaching the reader, not on a form of words, so rewording it again cannot kill it.
+        def flagged(report_dict):
+            return [n for n in ar.openness_notes(report_dict) if "longest hull" in n]
+
         if report["hull_cover"]["reach"] < 0.01:
-            assert any("hide the longest hull" in n for n in notes), \
-                "reach is %.2f and the reader is told nothing: %s" % (report["hull_cover"]["reach"], notes)
+            hit = flagged(report)
+            assert hit, "reach is %.2f and the reader is told nothing: %s" % (report["hull_cover"]["reach"], notes)
+            assert "SUPERSEDED" in hit[0], "and the reader is told which definition produced it: %s" % hit[0]
+            assert "arena-cover" in hit[0], "and where the live figure comes from: %s" % hit[0]
         # And the same report with a hull everything can hide must stay quiet.
         report["hull_cover"] = dict(report["hull_cover"], longest_hull_m=4.0,
                                     reach=ar.hull_cover_reach(yard, boxes, 4.0))
-        assert not any("hide the longest hull" in n for n in ar.openness_notes(report)), \
-            "a 4 m hull hides fine on yard and must not be flagged"
+        assert not flagged(report), "a 4 m hull hides fine on yard and must not be flagged"
 
     def test_hull_lengths_are_read_from_the_game_not_copied(self):
         """If this file carried its own table of hull sizes it would be a third copy to keep in step, and the rig's
