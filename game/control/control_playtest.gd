@@ -228,18 +228,33 @@ func _facing_drag() -> void:
 	# (mine), or the element's leader not passing it to its members' orders (squad's).
 	var element := controls.selected_element()
 	var on_the_task: Array = (element.task.get("facing", []) if element != null else []) as Array
-	var aimed := way.size() == 2 and drawn != Vector3.ZERO \
-			and Vector2(float(way[0]), float(way[1])).dot(Vector2(drawn.x, drawn.z)) > 0.99
+	# CONTROL'S HALF is that the heading the hand drew reaches the ORDER: onto the element's task, and onto the pin.
+	# It is deliberately NOT "the crews' move orders carry it" any more. squad's 4cff69b6 gives each crew the
+	# heading as a `hold` WHEN IT ARRIVES, so during the drive the per-unit orders carry none - two runs of this
+	# playtest disagreed about that before the contract was understood. Whether the hulls end up on the heading is
+	# squad's falsifier (tracked 1.4 deg and 16.2 deg, wheeled 41.4 deg and 28.5 deg, the wheeled half nav's).
+	var aimed := on_the_task.size() == 2 and drawn != Vector3.ZERO \
+			and Vector2(float(on_the_task[0]), float(on_the_task[1])).dot(Vector2(drawn.x, drawn.z)) > 0.99
+	# The pin claims "the SQUAD arrives on this heading", so it waits for every crew to have been given it
+	# (RtsControls._element_facing). The element's leader issues its members' orders on ITS next tick, not in the
+	# frame of the click, so sample both: one frame after the release, and again once the orders have settled.
+	# Reporting both is the point - "the pin is not drawn" and "the pin is not drawn YET" are different faults.
+	var pinned_at_once := false
+	for mark: Dictionary in controls.order_marks():
+		pinned_at_once = pinned_at_once or mark.has("facing")
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
 	var pinned := false
 	for mark: Dictionary in controls.order_marks():
 		pinned = pinned or mark.has("facing")
-	_checks["facing_drag_orders_a_heading"] = aimed
+	_checks["facing_drag_orders_the_heading_drawn"] = aimed
 	_checks["facing_drag_shows_on_the_pin"] = pinned
 	_checks["facing_drag_reaches_the_task"] = element == null or on_the_task.size() == 2
 	_step("facing_drag", {"as_task": element != null, "facing_on_the_task": on_the_task,
 			"units": members, "press": [roundi(from.x), roundi(from.y)], "release": [roundi(to.x), roundi(to.y)],
 			"drag_px": roundi(from.distance_to(to)), "drawn": [snappedf(drawn.x, 0.01), snappedf(drawn.z, 0.01)],
-			"facing": way, "on_the_pin": pinned, "summary": controls.describe({"units": members, "verb": "move", "facing": way})})
+			"facing_on_the_crews_orders": way, "on_the_pin": pinned, "on_the_pin_at_once": pinned_at_once, "summary": controls.describe({"units": members, "verb": "move", "facing": way})})
 	await get_tree().create_timer(1.2).timeout
 	await _capture("9_facing_drag_ordered")
 

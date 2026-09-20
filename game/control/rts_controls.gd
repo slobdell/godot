@@ -1360,7 +1360,7 @@ func order_marks() -> Array:
 		# not enough. squad's 23b1d1a7 gives the leader the heading and leaves followers on a plain follow; under
 		# that commit this correctly stays silent, and it starts drawing by itself the day every crew carries it
 		# (squad's option 3) with no further change here. Derive, never mirror (Invariant 0).
-		_mark_facing(mark, _element_facing(element))
+		_mark_facing(mark, _element_facing(element) if not element.task.has("facing") else element.task)
 		for unit_name in element.members():
 			_count_into(mark, String(unit_name), orders.current(String(unit_name)))
 		result.append(_finish_mark(mark))
@@ -1392,6 +1392,18 @@ func order_marks() -> Array:
 ## Round 9: the heading the player DREW with a right drag, on the pin that stands for the order. `_draw_facing` shows
 ## where a selected hull points NOW; this is where it is being told to point when it gets there, and the two are
 ## different claims. An order with no facing leaves the key absent, so a pin never invents a heading.
+## THE PIN MARKS THE ORDER THE PLAYER GAVE, and falls back to what the crews hold when the task does not say.
+##
+## Round 9 went round this twice, and both positions were right for the world they were written in. First the pin
+## mirrored the task, which promised a heading the crews were never given (squad's element dropped it) - a promise
+## the game did not keep. So it was changed to require every crew to hold the heading. Then squad landed the hold
+## on arrival (`4cff69b6`): **the crews are given the heading as a `hold` WHEN THEY ARRIVE, not on the move**, so a
+## pin reading live orders is blank for the whole drive and appears only once the squad is already there - which is
+## exactly when the player no longer needs it. Measured: two runs of the same playtest disagreed, because the
+## element re-issues its members' moves without the facing a few frames after the click.
+##
+## So the task wins when it carries a facing: it IS the order the player gave, and squad now honours it. The
+## unanimity rule below stays as the fallback for orders given directly to units, where there is no task to read.
 ## The heading EVERY living crew of this element has actually been given, as a `{"facing": [x, z]}` for `_mark_facing`,
 ## or {} when they have not all been told the same one. Empty is the honest answer whenever the squad as a whole is
 ## not going to arrive on a single heading.
