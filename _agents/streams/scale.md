@@ -279,6 +279,50 @@ sides; if it did not, say that the resize is not the variable.
 
 _Updated 2026-09-20 (post-merge), worktree `godot-scale`, branch `stream/scale`._
 
+## ROUND-10 HANDOVER — what is open, and what a fresh agent must not rediscover
+
+**The backlog is complete.** Items 1–5 done and merged; item 3's fairness control genuinely run rather than
+substituted for (`grid-fairness`, south **52.9% ± 4.6%** over 119 decisive matches, 0.64 SE from even, against the
+recorded 51% and the 64% bias the mirrored bake replaced). Stretch item 6 is the only unstarted brief item, and its
+**"before" is already extracted and committed**: the round-8 rig-14 m arm, `gangs vs law` **0% on both maps**, at
+`141955eb` (yard) and `c042bb81` (pit), 10 matches per matchup per map. Reproduce with
+`make remote T="faction-matrix ARENA=yard SEEDS=5 TIME=150 JOBS=8"`, then `ARENA=pit`.
+
+**1. `hull_size`'s consumer list has open sites.** The list is in
+[workstreams.md](../workstreams.md) *"What reads `hull_size`"* — 42 call sites, one line each, with a pointer from
+`units.gd`'s schema comment. **Open, not closed:**
+- **Three sites model a hull as a DISC of its box diagonal** (`match.gd:1383`, `match.gd:1450`,
+  `ai/incoming_fire.gd:101`, the last caching it per `unit_id`). `gang_tank` is treated as a **14.4 m-wide circle**
+  against a real 3.32 m width — **4.3×**. Routed to combat as an oriented box, with the `gangs vs law` series
+  pre-registered as the falsifier. **Pending.**
+- **A seventh site with a stale fallback: `ai/avoidance.gd:54`**, `Units.stat(unit_id, "hull_size", [2.4, 1.6, 3.8])`
+  — a **pre-CP2** default, alongside the same literal at `ai/movement.gd:708` and `:1700` and `[2.6, 1.8, 4.0]` at
+  `tactics/army_layout.gd:302`. Routed to nav and squad to read `Units.DEFAULT` loudly. **Pending.** *A fallback no
+  shipped unit can reach is indistinguishable from a correct one, which is why nothing caught these.*
+
+**2. The two no-mesh units await art, and that is the real fix.** `tank` and `burner` have no `model_scene`, so
+`box_at_length` cannot derive their width and height and they keep the pre-CP2 `2.40 × 2.40`. **`lineup_factions.png`
+shows them as the only two vehicles in the roster that do not read as vehicles** — long, low slabs sharing one
+silhouette, against the IFV at 7.5 m which reads as a bus *because it has its own art*. **One hull mesh each is on the
+lead's gate list with the frames.** It fixes the silhouette **and** retires the no-mesh branch of the box contract,
+collapsing `test_every_box_is_its_meshs_proportions_at_that_length` back to covering all twenty-one.
+
+**3. The reference-derived width is kept in the table, deliberately.** `adcdec13` derived `tank` `[1.83, 2.23, 8.62]`
+and `burner` `[1.80, 2.26, 6.89]` from their cited vehicles × K — cited, tested, self-consistent on three axes — and
+**`696d6490` reverted it on the picture**, because more correct and worse-looking were the same change here. **Both
+numbers stay in the table** so the next agent does not re-derive it and re-learn the same thing. It becomes right the
+day the art lands.
+
+**4. The disc/box knob's series is pending** (see 1). The falsifier is already named: if the gangs' penalty tracks the
+disc error, that is a candidate mechanism for `gangs vs law` 9/20 → 0/20, which has been open since round 8 —
+**and this stream measured that the Green deficit is NOT hull size** (`green_win_rate` **0.278 on both arenas**,
+identical to round 5's pre-CP2 25–28%).
+
+**5. Owed to other streams, small:** `CityBlock.resolves()` into `Arena.validate()` once `a33638b8` is on main
+(feel's predicate, so a misspelt neon colour is one loud line at read time instead of eight silent warnings per
+build), and feel's committed-arena `tiers` sweep, which goes green on this data now that Terminus asks for 3.
+
+
 ### The fairness controls after CP2 — the split beside the aggregate
 
 **CP2 is green at `7542df28` (1395 passed, 0 failed) and merged to `main` at `86463527`.** These are the controls
