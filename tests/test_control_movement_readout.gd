@@ -143,9 +143,10 @@ func test_the_readout_names_the_cause_and_never_invents_one() -> void:
 		# Right-of-way took the nose. The callout band over the hull already says YIELDING; C-3 gives one fact one
 		# channel, so this line stays quiet.
 		"Green_Alpha_3": {"phase": "yielding", "legibility": {"active": false, "why": "yielding"}},
-		# "Nothing nav owns is shaping the nose" -- most ticks on today's blend. Not a cause, and a line on every
-		# unit on every tick is the 30-messages failure C-3 exists to prevent.
-		"Green_Bravo_1": {"phase": "driving", "legibility": {"active": false, "why": "override"}},
+		# No nav-owned motion law exists to run -- nav's answer on most ticks today. The ABSENCE of a cause, and a
+		# line on every unit every tick is the 30-messages failure C-3 exists to prevent. (nav split this out of
+		# `override` after this readout caught the name meaning two different things.)
+		"Green_Bravo_1": {"phase": "driving", "legibility": {"active": false, "why": "no_law"}},
 		# A level that took the nose, once A6 exists for it to outrank. Wired now so the words are already shipped.
 		"Green_Bravo_2": {"phase": "driving", "legibility": {"active": false, "why": "band"}},
 	}
@@ -158,7 +159,15 @@ func test_the_readout_names_the_cause_and_never_invents_one() -> void:
 			"right-of-way is the callout band's fact, and one fact gets one channel")
 	assert_eq(readout.callout("Green_Alpha_3"), "YIELDING", "and that band still says it")
 	assert_eq(readout.legibility_line("Green_Bravo_1"), "",
-			"`override` means NOTHING nav owns is shaping the nose - most ticks today. A line every tick on every unit is not attribution")
+			"`no_law` is the ABSENCE of a cause - most ticks today - and a line every tick on every unit is not attribution")
+	# And the name nav reserved for the real thing does speak, because it can now only mean the real thing.
+	states["Green_Bravo_1"] = {"phase": "driving", "legibility": {"active": false, "why": "override"}}
+	assert_eq(readout.legibility_line("Green_Bravo_1"), "a higher priority has the wheel",
+			"`override` now means a law RAN and something outranked it, which is worth telling him")
+	# Everything the callout band already speaks stays out of this line: one fact, one channel.
+	for quiet: String in ["yielding", "blocked", "no_path", "no_order"]:
+		states["Green_Bravo_1"] = {"phase": "driving", "legibility": {"active": false, "why": quiet}}
+		assert_eq(readout.legibility_line("Green_Bravo_1"), "", "`%s` is spoken elsewhere or not at all" % quiet)
 	assert_eq(readout.legibility_line("Green_Bravo_2"), "holding its range", "a level that took the nose names itself")
 	# The half that matters most: control NEVER INVENTS A CAUSE. A build whose nav publishes no legibility at all -
 	# which is every build before nav's N5 - is silent, not "unknown".
@@ -174,8 +183,32 @@ func test_the_readout_names_the_cause_and_never_invents_one() -> void:
 	# Every name in the vocabulary is one nav can actually publish: a word for a reason that cannot arrive is dead
 	# code that reads like a feature.
 	for why: String in MovementReadout.LEGIBILITY_WORDS:
-		assert_true(why in ["arrival_arc", "survival", "band", "armour"],
+		assert_true(why in ["arrival_arc", "override", "survival", "band", "armour"],
 				"%s is not in nav's closed set (Movement.LEGIBILITY_WHY)" % why)
+
+
+## S4 §2, "one definition, one publisher": nav publishes the corridor tangent now, so control must READ it and not
+## derive a second interpretation of `path_points`. A readout that disagreed with the falsifier about which way the
+## corridor ran would be worse than one that said nothing.
+func test_the_corridor_tangent_is_navs_and_not_a_second_opinion() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var here := f.tank("Green_Bravo_1").global_position
+	var route := PackedVector3Array([Vector3(10, 0, 20), Vector3(30, 0, 0)])
+	var states := {"Green_Bravo_1": {"phase": "driving", "path_points": route, "corridor": Vector3(0, 0, -1)}}
+	var readout := f.controls.movement
+	readout.provider = func(unit_name: String) -> Dictionary: return states.get(unit_name, {})
+	assert_eq(readout.corridor_tangent("Green_Bravo_1", here), Vector3(0, 0, -1),
+			"nav's published tangent wins over anything derivable from path_points here")
+	# nav answering "no leg" is null, never Vector3.ZERO -- an unreadable corridor must not look like a readable one.
+	states["Green_Bravo_1"] = {"phase": "blocked", "path_points": route, "corridor": null}
+	assert_eq(readout.corridor_tangent("Green_Bravo_1", here), Vector3.ZERO,
+			"nav saying 'no leg' is honoured even though path_points would have given an answer")
+	# A build older than nav's commit publishes no `corridor` at all: derive, rather than go blind.
+	states["Green_Bravo_1"] = {"phase": "driving", "path_points": route}
+	var derived := readout.corridor_tangent("Green_Bravo_1", here)
+	assert_true(derived.length() > 0.9 and derived.distance_to((Vector3(10, 0, 20) - Vector3(here.x, 0.0, here.z)).normalized()) < 0.01,
+			"with no published corridor the current leg is derived, so the drawing still works (%s)" % [derived])
 
 
 ## C-3's channel rule, end to end: the cause reaches "why did my element do that" and NOTHING ELSE. The order pin is
