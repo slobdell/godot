@@ -259,6 +259,12 @@ not have. That file is combat's; they have confirmed it, and it is their next it
 **It gets worse at CP2**, because the sweep this ignores scales with length × sin(yaw) and most of the roster is
 about to get longer.
 
+**One caveat about a bar, because it is the kind of thing that quietly decides a row.** A6's falsifier is written as
+*"off-corridor time 30–36 % → under 10 %"*. **That 30–36 % has never been measured by the instrument that will
+judge it.** It is round 8's figure from a different tool; A12 is what §7 requires, A12 could not compute it at all
+until tonight (the trajectory log had no corridor column), and the baseline is still **owed** rather than taken. A
+bar phrased that confidently should rest on the instrument that will read it, and this one does not yet.
+
 **What nav would spend the next round on, in order.** (1) **The seam**: the layer that decides a hull's motion is
 not the layer that moves it, which is why the leash did nothing, why A6 cannot see its corridor, and why the
 legibility readout cannot name a cause. Everything above trips on it. (2) **A6's falsifier**, once squad's field and
