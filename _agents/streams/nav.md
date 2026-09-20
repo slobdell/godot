@@ -262,6 +262,170 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Nav's next work: a long hull's clearance (raised by combat, 2026-09-19)
+
+Two gaps, both mine, found while explaining the War Rig's shuffle:
+1. **Clearance ignores length.** `_chord_slack()` = max(0.3, 2.0 − width/2 − 0.2) uses the hull's WIDTH, and the navmesh
+   is baked with `agent_radius` 2.0 for every unit whatever its size. A 14 m hull's rear sweeps well outside the line
+   its centre follows, so a gap the routing calls passable is one the rig's tail catches. The sweeping dimension is
+   half-LENGTH at a corner, not half-width.
+2. **A `face` order has no recovery.** `Movement`'s unstick only runs for a MOVE. Under a face order a wheeled hull
+   creeps until the order changes, however little ground it is covering.
+
+Combat's evidence that this costs more than looks: the 14 m rig took `gangs vs law` from 9/20 to 0/20 (p ≈ 2e-6), with
+the highest suppression figures in their table. A hull that covers 0.5 m in 4 s is a stationary target whatever its
+speedometer says. They are testing `static_share` against hull length, pre-registered at `b16b8d78`.
+
+### BLOCKED (2026-09-19, evening): builder0 is unreachable
+
+The facing-arc measurement below is queued and cannot run: builder0 answers `No route to host` (100% packet loss to
+10.115.229.237 over the ZeroTier interface `ztktis7se4`, which is up on this machine at 10.115.229.242). It stayed down
+for an hour of polling. `zerotier-cli` needs a password here, so diagnosing the tunnel is the lead's, not mine.
+
+Both arms are pinned to commits and the run is reproducible as soon as it is back:
+`make remote T="nav-fight-maps FIGHT_BUSY_LEVELS=0"` on `2038a40a` (no facing populated) and on `777574e5`
+(`stream/nav` + squad's `ea55c624`), reading `travelled`, `gates` and the `move`/`attack_move` buckets.
+
+Also seen in the failed rsync, worth someone's attention: **builder0's root filesystem is at 91%** (102G of 119G, 11G
+free).
+
+### PRE-REGISTERED before the run: what squad's `facing` does once the arc actually fires
+
+squad populated `facing` (`ea55c624`) on MOVE and KEEP_SLOT orders, so the arrive-on-heading gate now fires in real
+fights instead of only in my tests. The two halves were checked separately and never together, and the combination
+changes wheeled ROUTING (a car aims at a gate 2.5 turning radii short of its goal), so it is measured before the lead
+sees it.
+
+- **Arms, both on builder0, same seed, same maps:** `stream/nav` tip (the arc present, `facing` never set, so the gate
+  never fires) against `measure/facing-arc` (`stream/nav` + `ea55c624`). The only difference is squad's commit.
+- **Runs:** `nav-fight-maps`, the 4 maps, busy 0, seed 3, 120 s.
+- **Primary:** per-wheeled-type `net_over_path` and `oscillating_share` from `travelled`. The arc is supposed to raise
+  the first and lower the second: a car that arrives on heading does not creep round afterwards.
+- **Secondary:** the `move` verb's `progressing` share, and `blocked_*` — a gate placed badly would show as a detour or
+  a refusal, not as a crash.
+- **Guard:** `attack_move` `progressing` must not fall by more than 10% on 2 or more maps. Routing to a gate costs
+  distance; if it costs fighting, it is not worth it.
+- **Reading it:** better or flat on the primaries and inside the guard → say so and leave it on. Primaries flat and the
+  guard tripped → tell squad to stop populating `facing` on KEEP_SLOT (the packed-slot case, where the gate is refused
+  most anyway) and keep it on player moves. Primaries WORSE → the gate is wrong in traffic and I take it back to tests.
+
+### Next experiment, PRE-REGISTERED before it runs: how sticky should a combat plan be?
+
+The churn the lead complains about is a direction that keeps changing. Commitment exists for that
+(`CombatMotion.COMMIT_BONUS` = 0.35) and round 8 showed it is weaker than it looks: a HOLD returns index −1 and never
+consults it, and turning it off changed scout wobble by −14% to +19%. The remaining nav-side lever is its size.
+
+- **Change:** `COMMIT_BONUS` 0.35 → 0.7, nothing else. Off arm is `--nav-off=commit` as today; the on arm is the new
+  value. Arms verified from `NAV_FIGHT_ARM`.
+- **Run:** builder0, terminus, 45 a side, `STALL_VERB=attack_move`, busy 0, 120 s, seeds 3, 5 and 7, paired by seed.
+- **Primary metric:** `oscillating_share` among attack-moving units (0.060, 0.037, 0.040 on those seeds today).
+- **Win:** ≥ 20% lower on at least 2 of the 3 seeds, and not higher on any.
+- **Guard, with power this time:** shots fired, both sides (about 2600 and 2900 a run). The guard FAILS if shots fall
+  more than 15% on any seed — a unit that commits to a direction it should have left is a unit not shooting. Units lost
+  are reported but not used: 2–5 a run has no power, which is the mistake the hold A/B's guard made.
+- **If it misses:** the value goes back to 0.35 and the finding is recorded, because the churn is then not in the
+  argmax's stickiness and the next suspect is the re-plan rate itself (`TankBrain.MOTION_REPLAN_TICKS` and the incoming
+  count in its key — squad's file, so a request rather than a change).
+
+### Round 9's catalogue rows, and the order I recommended (nav, 2026-09-19)
+
+Four ADOPT rows are nav's: A1 (event-triggered replanning), A4 (clothoid primitives with priced cusps), A7 (null-space
+priority projection), A11 (dynamic-window arcs replacing the context-steering ring). A1, A7 and A11 touch the same code
+path, so Invariant 0c sequences them. My recommendation to the orchestrator, from what round 8 measured:
+
+**A7 → A11 → A1 → A4.**
+- **A7 first, alone.** Round 8's clearest finding is a cancellation failure: a standoff HOLD returns index −1 and never
+  consults the commitment bonus, so we shipped a term that was never in the code path and measured it twice for nothing.
+  That IS "opposing goals cancel to zero", and priority projection makes it structurally impossible. Its falsifier is
+  already measurable here (`travelled`, arena's stall counters).
+- **A11 second:** it replaces the ring A7 has just re-plumbed. The other order means fitting priority projection to a
+  scoring structure we are about to delete. Round 8's gear flips (9–19 per unit-minute) are the independent evidence.
+- **A1 third:** cadence is worth the most on paper (70% of churn) and is the likeliest to look like a win while hiding a
+  regression — the hold-hysteresis A/B is the cautionary case, churn down 6–22% and still a fail. Its latency falsifier
+  needs a stable decision layer underneath.
+- **A4 last:** clothoids are a primitive and the arc chooser consumes them. The round-8 arrival arc is their natural
+  first consumer (it drives a straight approach today; a clothoid is the honest version).
+- **Caution against my own recommendation:** A7 replaces additive blending, which is CombatMotion's entire weight table
+  — standoff, commitment, armour toward threats, all lead-approved behaviour. Its brief must name which become
+  priorities and which become null-space tasks BEFORE any code, or round 7 gets re-litigated by accident.
+
+**This layer's declaration for Invariant 0c.** nav owns the desired-velocity layer (`movement.gd`, `combat_motion.gd`,
+`steering.gd`, `tank_motion.gd`). It assumes ABOVE: squad hands down goals and, since round 8, a `facing`. It assumes
+BELOW: the plant honours (throttle, turn) with a bounded yaw rate. Replaces: A7 → the additive blend; A11 → the
+16-direction ring; A1 → the fixed repath and re-aim cadence; A4 → the straight approach inside the arrival arc. None of
+the four adds alongside.
+
+**Reeds–Shepp stays parked, and Part 1 §5 gives a better reason than mine:** it is curvature-discontinuous, so the plant
+expresses every join as the visible correction the lead complains about. My reason was only that its evidence was an
+angle-wrap bug in my own reporter.
+
+### Two machine facts that postdate every number above (2026-09-19, late)
+
+- **builder0 runs 4 heavy slots now, not 2.** Every timing figure in this brief (`t100_s`, crossings, arrival seconds)
+  was taken at 2 slots. Shares and ratios are unaffected; times are not comparable across the change. See the new
+  section in [verification.md](../verification.md) for which of nav's numbers survive concurrency and which do not.
+- **`make lint` refuses to run twice in one checkout** (`flock -n`). The phantom "tracked file does not exist" errors
+  seen earlier were two lint runs sharing one `.godot`, not this worktree.
+
+### Round 8 wrap-up (nav, 2026-09-19 evening) — hand-over facts
+
+**GREEN HASH: `5367c395`.** Read from the wrapper: `>> remote: make check exited 0 (build/ copied back)` with
+`1261 passed, 0 failed` and `sim-baseline passed: 0cb238bf366e141f (glibc-2.43)` in the same log.
+
+> **What that baseline line does NOT mean (combat, 2026-09-19).** The OLD `sim-baseline` match is blind to 5 of 6
+> mutations combat tried: wheeled turn rate, fixed-mount fire arc, hover speed, the rig's hull box and turret traverse
+> all left the hash unchanged; only the tracked case registered. Wheeled turn rate is close to exactly what the
+> arrive-on-heading arc touches. So `sim-baseline passed` says the hash did not move, NOT that the arc leaves the sim
+> alone — **the instrument could not have seen it.** The 1261 tests are the real evidence, and the arc's own five are
+> direct. combat's widened match is `db837581` (unmerged; it moves the baseline by construction). **Do not carry "the
+> facing pair is inert" forward as established** — the orchestrator drew that against the blind match and is amending
+> it (`6a8aaa8c`). The rule is the one we already had for guards: **a green from an instrument that cannot detect the
+> treatment is indistinguishable from a green that means the treatment is harmless.** Prove it can go red. The rsync for that run
+started between `5367c395` (17:27:29) and `c1dd3d75` (17:28:47), so the checked tree is exactly `5367c395`.
+
+**Verified at the green hash:** everything up to and including `5367c395` — the yaw ramp, the hold-hysteresis switch,
+the flow-field revert, the `--nav-off` unknown-name refusal, the rotation-capture unwrap, control's split facing test,
+the workstreams contract entry, and the arrive-on-heading arc with its five tests.
+
+**Landed AFTER the green hash (10 commits, `c1dd3d75`..`b4f04126`), not covered by it:**
+- Docs only: `c1dd3d75`, `7eae19b4`, `e66d56f7`, `f6f42127`, `47836038`, `0edd5550`, `ecdade39`, `b4f04126`.
+- Probe only: `bf72d8f0` (`--empty` in the rotation capture), `c4faf1e2` (`travelled` in nav-fight).
+- **Touches `game/ai/movement.gd`: `2038a40a`** — two static counters (`gates_aimed`, `gates_refused`) and no
+  behaviour change. Parse-checked and `make test FILTER=wheeled_arrival` 5/5 locally, but **not** remote-checked.
+- `make remote T=lint` was green ("lint: all scripts parse", exit 0) at `47836038`, so `ecdade39`, `2038a40a` and
+  `b4f04126` postdate even the lint.
+
+**The facing-arc A/B DID run (builder0 returned at 21:0x) and it is a POSITIVE-CONTROL FAILURE, not a null.**
+Arms `a35cf487` (no facing populated) and `777574e5` (+ squad's `ea55c624`), 4 maps, seed 3, both `exited 0`. Every
+figure is identical between arms to three decimals — and the counter added for exactly this says why: **`gates aimed 0`
+and `gates refused 0` in BOTH arms.** The arc never ran, so nothing was compared.
+Cause, read from the code rather than guessed: squad's `_arrive_facing` only attaches a facing when
+`intended_facing()` is non-null, which needs the K1 order to carry one or `Orders.station` to hold a heading. `nav-fight`
+issues `UnitCommand.make(names, "move", {"to": …})` with no facing, and a CPU fight never sets one. **So the pair is
+genuinely inert in a CPU fight — for a narrow reason, not a general one — and remains UNTESTED where it does fire: a
+player's drag-order with a facing, and a squad told to hold one (the lead's ambush case).**
+Round 9's version of this measurement needs the probe to issue orders WITH a facing; otherwise it re-measures nothing.
+
+**Spec for that measurement, agreed with squad (2026-09-19), to build when the merge chain clears:**
+- The probe issues a move carrying an explicit `facing`, AND a formation hold, so both the player path and squad's
+  KEEP_SLOT path are exercised. squad's own `tests/test_facing.gd` covers the K1 path in isolation; this is the fight.
+- The gate counter splits three ways, not two: **offered** (a wheeled hull got an order with a facing), **aimed** (a gate
+  was routed to) and **refused** — because "never offered" and "offered and refused" are the two things this round's
+  null could not tell apart, and only the counter can.
+- Refusals break down by REASON: gate off the navmesh, hull already on the approach, gate already reached. squad's
+  prediction is specifically that an element's 6.5 m assembly spacing refuses most slot gates against my ~17 m approach
+  for an IFV; that prediction is falsifiable only if the reason is recorded.
+- Primaries stay as pre-registered: per-wheeled-type `net_over_path` and `oscillating_share`, with the attack_move
+  progressing guard.
+
+**Still blocked / queued behind the merge chain:**
+1. The facing-arc measurement re-done with facings in the issued orders, against combat's widened baseline.
+2. Re-checking the three post-green commits that are not docs.
+3. ~~The commitment-strength A/B (`COMMIT_BONUS` 0.35 → 0.7)~~ **probably moot**: catalogue A2 replaces the flat bonus
+   with a state-dependent cost, so the A/B would locate a constant we intend to delete. Do not spend a slot without
+   asking the orchestrator first.
+4. The terminus maze half of any future checkpoint, which needs arena's `f7bff357` and a 60-unit both-ways baseline.
+
 ### Round 8 report (nav, 2026-09-19) — the short version
 
 What the round answered, in the order the orchestrator set it:
@@ -286,6 +450,50 @@ unknown mechanism name.
 
 Owed next, in order: the wheeled arrive-on-heading arc (contract agreed with squad: a move order may carry `facing`),
 then the terminus oscillation at 45 a side (0.060 — the first number the size of the lead's complaint).
+
+### The War Rig's pivot is length-driven (builder0, `81f87186`, `nav-rotation-numbers ROT_CASES=truck`)
+
+Only `hull_size` changed between these, restored after each run:
+
+| hull_size | in-place turn (within 1.5 m of its start) | farthest wander |
+|---|---|---|
+| 3.0, 4.4, 5.6 (the size the lead complained about) | 7° | 5.5 m |
+| 2.84, 4.49, 12.0 | 23° | 3.9 m |
+| 3.32, 5.24, 14.0 (shipped) | 26° | 3.5 m |
+
+The 5.6 m control re-run on today's tree still reads 7°, so the change is combat's size change and nothing else this
+round. Going back to 12 m recovers 3° of a 19° move, so it does not undo the lead's complaint.
+
+**The mechanism is terrain contact, not the motion model** (combat caught my first explanation, which was wrong:
+`hull_size` never reaches `TankMotion`, so at a fixed radius the centre's path per degree cannot depend on length).
+`--empty` re-runs the same case with every prop removed. Laptop, `81f87186`, one machine for all six cells:
+
+| hull_size | on yard | on bare ground |
+|---|---|---|
+| 3.0, 4.4, 5.6 | 7°, wander 5.5 m | 7°, wander 6.7 m |
+| 2.84, 4.49, 12.0 | 23°, 3.9 m | 7°, 6.7 m |
+| 3.32, 5.24, 14.0 | 26°, 3.5 m | 7°, 6.7 m |
+
+On bare ground every length is identical. So a long rig does not pivot, and it is not jammed either — a tick-by-tick
+dump settles what it actually does:
+
+    t=0.5 heading  -3.9  model_speed  3.50  moved 0.31
+    t=1.0 heading  -7.9  model_speed -0.47  moved 0.40
+    t=1.5 heading -11.0  model_speed  3.10  moved 0.40
+    t=2.0 heading -14.3  model_speed -0.80  moved 0.46
+
+The hull IS rolling — the model's speed and the real speed agree, so nothing is stuck — and it is the creep K-turn's
+legs alternating forward and reverse. **On yard the legs cancel: 25° of heading for 0.5 m of net displacement. On bare
+ground the same legs drift the hull 6.7 m away, so the detector never counts it.** The longer the hull, the sooner a leg
+meets scenery, which is why the yard column rises with length while the bare column does not move at all.
+
+So the honest statement: a long rig shuffles round on the spot when there is something to bump against, by a mechanism
+that is legitimate physics for a car and looks exactly like the pivot the lead says is impossible. The laptop reproduced
+builder0's yard numbers exactly.
+
+What it means for the fix: neither length nor `min_turn_radius_m` is the lever. A big hull needs either to stop
+commanding yaw while it is against something, or not to be asked to turn on the spot at all (squad's change, and the
+arrive-on-heading arc).
 
 ### The 14 m War Rig, measured (builder0, `81f87186`, `make nav-rotation-numbers`)
 
@@ -587,6 +795,24 @@ it; switches are now read at call time and `nav-fight-ab` refuses identical arms
 and report anyway:** survivability had little power (1-3 deaths a side in 120 s), and attack-move progress dipped 3
 points. The brain half (passing the previous direction back; timer jinks only against projectile weapons) is squad's
 file: `references/nav/round7_commitment_brain.patch`.
+
+### Resuming this stream after round 8 (written 2026-09-19)
+
+**State:** round 8's backlog is done (the yaw ramp, the semi question, the stall repro, hold hysteresis, the gear-flip
+diagnosis, flow fields reverted as a null, Reeds-Shepp parked with its evidence retracted). Green at `81f87186` on
+builder0 (1256/0, `>> remote: make check exited 0`), with the sim baseline patched-and-restored locally — the orchestrator
+records `glibc-2.43 668b7d49 -> 0cb238bf`, not me.
+
+**The arc is green too:** `5367c395` on builder0, `>> remote: make check exited 0`, 1261/0, `sim-baseline passed:
+0cb238bf366e141f`. Commits after it are probes and docs, and the tip passes `make remote T=lint`. Nothing is in flight.
+
+**Next, in the order I would take them:**
+1. A long hull's clearance and the missing recovery under a `face` order (the section above; combat's evidence).
+2. The commitment-strength A/B, pre-registered above (`COMMIT_BONUS` 0.35 -> 0.7).
+3. Tighten control's wheeled facing bound back to the tracked one once squad populates `facing` (they own that half).
+
+**The habit that paid this round:** write the decision rule, the guard and the revert condition down BEFORE the run, and
+run three seeds. The first seed of the flow-field A/B said -10% and the round would have shipped a null on it.
 
 ### Resuming this stream (written 2026-09-18 before a 4-day pause; read this first)
 

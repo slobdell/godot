@@ -212,6 +212,10 @@ func _busy_order() -> void:
 const GEAR_SPEED := 0.5
 var gear_sign := {}   # name -> -1 / 0 / 1
 var gear_flips := {}  # unit_id -> count
+## unit_id -> {path_m, net_m, windows, oscillating}: how far a hull of this type travels against how far it GETS,
+## summed over the same 4 s windows the oscillation counter uses. `net_m / path_m` near 1 is driving somewhere;
+## near 0 is shuffling.
+var travelled := {}
 var gear_detail := {} # unit_id -> {"phase:<x>": n, "reverse_order": n, "yielding": n}
 
 
@@ -293,6 +297,18 @@ func _sample_inplace() -> void:
 				rev = rev or float(sample[3]) < -0.5
 			detail["shuffled"] = int(detail.get("shuffled", 0)) + (1 if fwd and rev else 0)
 			inplace_detail[tank.unit_id] = detail
+
+
+## travelled, as shares: how much of each type's path length turns into net displacement, and what share of its 4 s
+## windows counted as oscillating.
+func _travel_report() -> Dictionary:
+	var out := {}
+	for unit_id: String in travelled:
+		var travel: Dictionary = travelled[unit_id]
+		var path := float(travel["path_m"])
+		out[unit_id] = {"path_m": snappedf(path, 0.1), "net_over_path": snappedf(float(travel["net_m"]) / maxf(path, 0.01), 0.001),
+				"windows": travel["windows"], "oscillating_share": snappedf(float(travel["oscillating"]) / maxf(float(travel["windows"]), 1.0), 0.001)}
+	return out
 
 
 func _inplace_rates() -> Dictionary:
@@ -437,7 +453,8 @@ func _report(elapsed: float) -> void:
 			"retask_events_per_unit_minute": snappedf(retask_events / maxf(0.01, float(ordered_ticks) / SimClock.TICK_RATE / 60.0), 0.01),
 			"unreachable_route_unit_seconds": snappedf(float(unreachable_ticks) / SimClock.TICK_RATE, 0.1),
 			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
-			"inplace_detail": inplace_detail, "gear_detail": gear_detail, "inplace_per_unit_minute": _inplace_rates(),
+			"inplace_detail": inplace_detail, "gear_detail": gear_detail, "travelled": _travel_report(),
+			"gates": {"aimed": Movement.gates_aimed, "refused": Movement.gates_refused}, "inplace_per_unit_minute": _inplace_rates(),
 			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")],
 			"armies": [_flag("green-army", "cpu"), _flag("rust-army", "cpu")], "fielded": fielded, "busy_every_s": busy_every, "busy_orders": busy_orders}
 	print("NAV_FIGHT %s" % JSON.stringify(out))
@@ -504,8 +521,18 @@ func _sample_stall(unit: Node3D, key: String, goal: Vector3) -> void:
 		path += _flat(history[i - 1], history[i])
 	if path < OSCILLATE_PATH_M:
 		return  # not moving enough to be "moving back and forth"; that is the blocked case, counted separately
+	# Per unit TYPE as well as per unit (round 8, combat's request): "did THIS vehicle go anywhere", which is the one
+	# shape that separates a shuffling hull (long path, no net), a stuck one (neither) and a merely bigger target
+	# (both intact). An army-level mean cannot see it: vehicles shuffling forward and back cancel in the average.
+	var unit_id := String(unit.get("unit_id"))
+	var travel: Dictionary = travelled.get(unit_id, {"path_m": 0.0, "net_m": 0.0, "windows": 0, "oscillating": 0})
+	travel["path_m"] = float(travel["path_m"]) + path
+	travel["net_m"] = float(travel["net_m"]) + _flat(history[0], history[history.size() - 1])
+	travel["windows"] = int(travel["windows"]) + 1
 	if _flat(history[0], history[history.size() - 1]) / path < OSCILLATE_RATIO:
 		oscillating_ticks[key] = int(oscillating_ticks.get(key, 0)) + 1
+		travel["oscillating"] = int(travel["oscillating"]) + 1
+	travelled[unit_id] = travel
 
 
 ## A re-order invalidates both windows: the unit is now chasing something else, and neither "did it get closer"
