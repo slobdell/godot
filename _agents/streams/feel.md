@@ -457,54 +457,25 @@ compose.
 outlier in kind, only in degree. **Read matchups, not factions** (combat's own round-8 lesson: pooling hid this
 completely on `pit`, where the gangs' rate was 30% in both arms while one matchup had become unwinnable).
 
-### ⏹ STANDING BY (05:45). Everything in the backlog is done or owed; here is the exact next step
+### ⏹ WAITING (10:40) on two calls that are not mine. Everything else is done.
 
-**No process of mine is running on either machine, and no local Godot runs at all until morning** (orchestrator:
-the laptop was at 245 MB free with nine sessions live). The slot I was holding is released and its `.owner` file
-removed.
+**Nothing of mine is running on either machine; tree clean; zero behind `main`.**
 
-**`main` is merged into `stream/feel`** — clean, zero behind, clean tree. **The merged tree is NOT verified on my
-branch**: three of four post-merge test files had passed when I stopped the run for the memory call and the fourth
-had not reported, so **do not read the last green (`5ae7e531`) as covering the merge.** X4's remote check will be
-the first pass over it, which is the right place for it.
+| waiting on | who | what happens then |
+|---|---|---|
+| **scale's `b3c36498` reaching `main`** (its check started 10:37) | orchestrator merges at the wrapper line | **Three reds clear at once**: my `test_theme_unit_scale` box-fill, scale's `test_units_scale` proportions, both the same artillery cause. I re-run both files — **run, not inferred**. The baseline moves once, `2d5215a8a0a59ded → 1e90f69e5d6fcc46`, recorded twice. |
+| **the quiet window** (builder0 was load 20.89, six checks) | orchestrator calls it; I go first | The three runs in the block above: the hinge cost, the check on `a33638b8`, the 20/20 re-measure. |
 
-**Two items left, both waiting on someone else's clock:**
+**Owed to scale, accepted:** an eye on the Terminus floodlight frame before the lead sees it (they put **eight**
+lamps inside the block grid at `dc28822f`, authored in `make_arenas.py` since `props` is generated). I judge it
+**at his pose with the show OFF**, because the floor's baseline is mine and the 22-of-30 luminance question is a
+property of the map rather than of the light show. **What I am watching for is not "too dim" but eight pools
+reading as a regular lattice** — a salvaged city that lights its streets in a neat grid reads municipal rather
+than improvised. If it does, the note back is **fewer-and-brighter with one or two dark corners**, not dimmer.
 
-1. **X4 — the every-unit box-fill test — the moment CP2 lands.** If CP2 misses its window tonight this is the
-   first thing after the lead's morning merge, so here it is as commands rather than a description.
-
-   **The seed is alive and verified reachable (checked 06:55):** branch **`feel-rig-check`**, commit
-   **`26e1f26a`**, one file, `tests/test_theme_unit_scale.gd`, 14 lines. Read it with
-   `git show 26e1f26a -- tests/`. It asserts, for `gang_tank` and `gang_support` only, that the **drawn** mesh
-   matches `hull_size` on every axis within 5%.
-
-   ```bash
-   cd ~/projects/godot-feel
-   git merge main                      # LOCAL main, never origin/main; no remote run of mine in flight
-   git show 26e1f26a -- tests/         # the seed, to generalise from
-   # generalise: every unit with art, not the two semis; keep the 5% and the per-axis message
-   REMOTE_SLOTS=6 make remote T="test FILTER=unit_scale"
-   REMOTE_SLOTS=6 make remote T=check  # the merge candidate, and 637ad4de rides it
-   ```
-
-   **The division of labour, and it is the whole point of the item:** scale **derives** the numbers
-   (`hull_size` = `SizeLook.box_at_length(unit, reference × K)`); I check **the art is not distorted by them**.
-   `_fit_to_hull` scales uniformly by length, so width and height come out as the mesh's own proportions — **a unit
-   whose mesh cannot fill its new box is a finding handed back to scale, never something to stretch away.** Expect
-   it to pass by construction after CP2, because `box_at_length` makes the box the mesh's proportions; **a failure
-   is therefore interesting**, and it will be one of the units that kept its box for want of an approved mesh.
-
-   Then look, do not just count: `make vehicle-gallery`, `make roster-lineup` (scale's lineup view in my
-   `size_look.gd`), and one real match at his pose. **All of it on builder0.**
-2. **The M1 hinge cost, when builder0 is quiet.** `make remote T=perf-trailer-ab` with more `PERF_CYCLES`. The
-   number from the loaded box (13.36 ms) is **noise and must not be quoted**: the same capture reported
-   `layer_cost_gpu_ms −0.58` — no measurable GPU cost, which is what 6 extra draw calls should look like — against
-   `all_avg_ms 61.42` / `p95 92.11` and `holds_30fps_at_vehicles: 0`. Within-run toggling fixed the between-runs
-   noise; it cannot fix contention that varies over seconds.
-
-**Two process traps I hit tonight, both now in `remote_builds.md`:** a killed `make` leaves its `slot.sh` wrapper
-holding a machine-wide slot with nothing inside it, and the `.owner` file survives the process so a dead holder
-looks alive in every waiter's log; and **PPID is not an ownership test** — all nine sessions share one parent, so
+**Still owed and nobody is blocked on it:** the Terminus roof dressing (a frame before a triangle), and the
+`ErrorCollector` warning/error conflation, which is metrics' now — until it lands, **no production path a test
+exercises may `push_warning`**, and that sentence is going into `verification.md`.
 ownership is `readlink /proc/<pid>/cwd`, and a slot's real holder is `fuser` on its `.lock`, never the `.owner`.
 ### X7 — the sweep said 0.0% everywhere, and that changed the design (builder0, `e82ecd1a`)
 
