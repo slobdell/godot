@@ -663,6 +663,33 @@ measurable for the first time. **Re-run the benefit measurement then; do not del
 **What stays shipped:** the recovery, opt-in and unchanged, with its guard now holding on the hardest case available
 rather than on a synthetic one. **Do not flip its default** — on today's plant it can only ever subtract.
 
+**UPDATE (2026-09-21): combat built the plant fix to nav's spec at `4cb9b9c6` and IT DOES NOT WORK — nav's test
+stays green, correctly.** `test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided` returns
+**bit-identical** numbers with the constraint on or off (19.71 m of path, 28.5° of yaw, 3.12 m net drift), verified
+by combat with their own contact gate disabled. **The assertion written to go red has not gone red, and combat
+reported that rather than papering it.** Shipped off by default (`Tank.yaw_fit_enabled = false`), so nothing of
+nav's moves.
+
+**Why, and it is a tension worth carrying into round 10.** `move_and_slide` **depenetrates every tick**, so at the
+top of each tick the hull is legal where it stands and the next small rotation adds no measurable penetration. The
+yaw is illegal **cumulatively** — 28.5° needs 9.6 m of a 4.8 m corridor — and legal at **every increment**. And the
+obvious alternative is worse, measured: testing the **absolute pose** froze a wedged rig solid, **30 offers, 30
+refusals, 0.0° swept** — N1's breach exactly, and the thing nav's `refusals_offered`/`refusals_applied` requirement
+was written to catch.
+
+**nav's read, sent to combat: both failures are ONE bug — lesson 153 in a boolean.** The absolute test is a
+**saturating predicate**: for a wedged rig every candidate overlaps *including the pose it already occupies*, so it
+ranks nothing and refuses everything. Same shape as `_front_share()`'s floor and squad's leash clamp. **The fix is
+the same: compare the candidate against the CURRENT pose, not against legality** — refuse a yaw that is *worse*,
+permit one that is not, including while still overlapping. The rig then cannot screw deeper into the wall but can
+always unwind out of it, and **the cumulative violation never has to be detected at all**, because no increment is
+allowed to add to it. It also survives depenetration, since both poses are queried at the same instant and the
+push is common-mode.
+
+**So per-tick is the right granularity; it was the wrong comparison.** And where genuinely no non-worsening yaw
+exists — a hull boxed on every side — freezing *is* correct, and **that** is the state to detect and report. That
+is nav's `face` recovery's condition, and it is the first thing that would make that inert row fire.
+
 **AGREED WITH COMBAT (2026-09-20): the constraint goes in the PLANT, not in A7's feasibility mask.** The argument
 that decided it is this round's own null — *THE LEASH IS NOT IN THE ROUTE PATH*: **the layer holding a constraint
 must be the layer moving the hull**, and `CombatMotion` decides on under a tenth of a hull's ticks. Conclusively, a
