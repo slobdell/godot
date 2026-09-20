@@ -93,16 +93,19 @@ must move into `Movement`'s goal selection. squad: A8's deformation, measured, m
 without it, because a slot layout is the wrong place to express intent the mover cannot see — and it never applied
 to a plain right-click move at all. **Same seam, from both ends, within an hour.** Not a tonight-sized change; it is
 the first candidate for round 10, ahead of retrying either row.
-**And the defile failure that survives CP2d's gap widening (nav, 02:30):** the Condemned artillery failed the maze's
-defile at 2.6 m wide with 2.1 m of slack while four squadmates used the corridor. Three instrumented candidates, all
-derived from hull width or an avoidance radius: (1) the chord guard `_chord_slack()` is 0.5 m at 2.6 m wide and
-clamps to its 0.3 m floor at 4.74 m, pulling the carrot back past every bend (`guard_rescues`); **(2) right-of-way
-needs `radius_of(me) + radius_of(other) + 0.75` = 4.55 m of lateral clearance for two artillery in a 5.0 m corridor
-— impossible by construction — and a refused ask makes the ASKER yield, so in single file the unit that should go
-forward backs off with nowhere to go** (`asks_refused`, `yields_started`; nav's leading hypothesis and the
-signature squad saw); (3) ORCA's off-mesh refusal degrades to a permanent slow in a corridor (`deflected` vs
-`solved`). Measured first when a builder0 window opens (CP2d is WITHDRAWN — scale's corridor table measured the wrong quantity), before A11's default; accepted fix shape if (2)
-holds: in a corridor narrower than the clearance sum, right-of-way falls back to strict file order.
+**The defile failure, MEASURED (nav, 02:50, squad's tree and configuration, maze, wheeled, seed 3, 70 s; reproduces
+squad's result exactly — artillery never arrives, dispersion 41.4 s):** three hypotheses were pre-registered with their
+signatures before the run, and two died. Chord guard starving wide hulls: `guard_rescues` **1** all run — dead.
+Right-of-way impossible in a 5 m corridor (4.55 m of clearance needed; nav's and the orchestrator's favourite): `asks_refused`
+**0**, `yields_started` **0** — dead, **because nobody ever asks**: right-of-way triggers on stall or on being held below
+the ask pace, and a unit ORCA is deflecting is neither. **ORCA: `orca_deflected` 1330 of `orca_solved` 2172 — 61% —
+alive.** The hull sits in a regime no recovery mechanism recognises: not stalled (it moves), not blocked (it
+progresses a little), not slow enough to ask; every safety net watches for a different symptom. Two consequences: the
+pre-approved "strict file order" fix would fix a deadlock that is not happening and is withdrawn; the real question is
+why ORCA's deflected velocity does not resolve in a corridor — whether the navmesh refusal (`AVOID_MESH_PROBE`) should
+return a slower but legal velocity instead of falling back to the route at reduced pace — and **something must notice
+the regime** (61% deflection with no arrival in 70 s trips nothing). The method is the finding: signatures written
+before the run killed the two stories their authors believed.
 
 ### Standing rules for round 9 (in addition to *The standing rules for this round* below)
 
