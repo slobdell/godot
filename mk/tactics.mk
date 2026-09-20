@@ -54,10 +54,10 @@ squad-decisions: import ## Round 7: split attack-move's "re-task events" (drive 
 		--arena=$(or $(ARENA),yard) --seed=$(or $(SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(BUDGET),6500) \
 		2>&1 | grep -E "DECISION_PROBE|SCRIPT ERROR|ERROR" || true
 
-squad-defile: import ## Round 9 X2/X3 (A8/A9): an element through the maze's 11 m gap -- crossings, rank inversions, post-defile recovery, arrival dispersion, stationary share. ARM=wheeled|tracked DEFORM=on|off SEED=3 DEFILE_SECONDS=40. The control arm is LOCOMOTION, not faction (metrics CP1: the shuffle is a wheels property), so both arms are Condemned.
+squad-defile: import ## Round 9 X2/X3/A1: an element through the maze's 11 m gap -- crossings, rank inversions, post-defile recovery, arrival dispersion, stationary share, and brain re-decides. ARM=wheeled|tracked DEFORM=on|off TUBE=on|off SEED=3 DEFILE_SECONDS=40. The control arm is LOCOMOTION, not faction (metrics CP1: the shuffle is a wheels property), so both arms are Condemned.
 	@echo ">> squad-defile: ARM=$(or $(ARM),wheeled) DEFORM=$(or $(DEFORM),on) SEED=$(or $(SEED),3) TECHNIQUE=$(TECHNIQUE)"
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/defile_probe.gd -- \
 		--arm=$(or $(ARM),wheeled) --deform=$(or $(DEFORM),on) --seed=$(or $(SEED),3) \
 		--seconds=$(or $(DEFILE_SECONDS),40) $(if $(TECHNIQUE),--technique=$(TECHNIQUE)) \
-		--formation=$(or $(FORMATION),wedge) \
+		--formation=$(or $(FORMATION),wedge) --tube=$(or $(TUBE),off) \
 		2>&1 | grep -E "DEFILE_PROBE|SCRIPT ERROR|ERROR" || true

@@ -67,6 +67,42 @@ func test_the_tube_only_ever_holds_a_plan_longer_never_shorter() -> void:
 			"inside the cadence the plan stands even when the target has left the tube")
 
 
+func test_over_a_whole_drive_the_tube_never_re_decides_more_and_does_hold_something() -> void:
+	# The range version of the property above, plus nav's non-vacuity guard. Driving the same unchanged world past the
+	# cadence many times over, the tube must take NO MORE decisions than the cadence would -- and it must take FEWER
+	# at least once, or "never more" is satisfied by a tube that never holds anything at all.
+	#
+	# nav wrote exactly this assertion for A1's nav half on my suggestion and it failed immediately: its drift
+	# condition was independent of the cadence being due, so the tube could re-plan MORE in the regime where a unit
+	# had no route yet -- invisible, because the switch is off by default. That is the regression a flag hides, and
+	# a single-point assertion like the one above would not have caught it in my layer either.
+	var ticks := TankBrain.TUBE_MAX_TICKS + TankBrain.MOTION_REPLAN_TICKS * 3
+	var counts := {}
+	for tube: bool in [false, true]:
+		var brain := _brain(tube)
+		var decisions := 0
+		var skips := 0
+		var last_plan := -1
+		for tick in ticks:
+			if last_plan >= 0 and brain._hold_motion_plan("k", tick, Vector3.ZERO, _contact(Vector3(40, 0, 0))):
+				skips += 1
+				continue
+			decisions += 1
+			last_plan = tick
+			_plan(brain, "k", tick, Vector3.ZERO, Vector3(40, 0, 0))
+		counts[tube] = {"decisions": decisions, "skips": skips}
+	print("MEASURE brain_tube over %d ticks, world unchanged: cadence %s, tube %s" % [ticks, counts[false], counts[true]])
+	assert_true(int(counts[true]["decisions"]) <= int(counts[false]["decisions"]),
+			"the tube never takes more decisions than the cadence it replaces (%s vs %s)" \
+			% [counts[true]["decisions"], counts[false]["decisions"]])
+	assert_true(int(counts[true]["decisions"]) < int(counts[false]["decisions"]),
+			"and it takes fewer at least once, so `never more` is not satisfied vacuously (%s vs %s)" \
+			% [counts[true]["decisions"], counts[false]["decisions"]])
+	assert_true(int(counts[true]["skips"]) > int(counts[false]["skips"]),
+			"which shows up as it holding plans the cadence would have dropped (%s vs %s skips)" \
+			% [counts[true]["skips"], counts[false]["skips"]])
+
+
 func test_the_tube_holds_a_plan_while_nothing_has_moved_and_drops_it_when_something_has() -> void:
 	var brain := _brain(true)
 	var past_cadence := TankBrain.MOTION_REPLAN_TICKS + 2

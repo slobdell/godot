@@ -31,6 +31,12 @@ extends SceneTree
 ## dissolving. So the default here is `wedge`, and the report carries the formation and its natural frontage so no
 ## number can be read without knowing which case it came from.
 ##
+## `--tube=on` turns A1's brain-half state-error tube on (`TankBrain.TUBE_ENABLED`) and the report carries
+## `redecides` and `skips` summed over the element's brains, so the flip is gated on a counted before/after in the
+## layer the tube actually lives in. nav's A1 split counts ROUTE re-plans in `Movement._next_waypoint`; this counts
+## BRAIN re-decides. Different layers, different populations — nav's sliding-goal fix does not touch this one, which is
+## why its number cannot gate this flag.
+##
 ##   DEFILE_PROBE {"arm": ..., "deform": ..., "seed": ..., "crossings": ..., ...}
 
 ## The maze band the element is sent through, and the gap in it. Band z = 10, containers at x = -44 and -22, so the
@@ -69,6 +75,7 @@ func _run_probe() -> void:
 	var seconds := float(_flag("seconds", "40"))
 	var technique := _flag("technique", "")
 	var formation := _flag("formation", "wedge")
+	TankBrain.TUBE_ENABLED = _flag("tube", "off") == "on"
 	if not ARMS.has(arm):
 		print("DEFILE_PROBE_ERROR unknown arm %s (have %s)" % [arm, ARMS.keys()])
 		quit(1)
@@ -211,7 +218,9 @@ func _run(arm: String, deform: bool, seed_value: int, seconds: float, technique:
 
 	off_slot.sort()
 	var report := {
-		"arm": arm, "deform": "on" if deform else "off", "technique": technique if technique != "" else "traveling",
+		"arm": arm, "deform": "on" if deform else "off", "tube": "on" if TankBrain.TUBE_ENABLED else "off",
+		"redecides": _redecides(game_match, names), "skips": _skips(game_match, names),
+		"technique": technique if technique != "" else "traveling",
 		"formation": element.formation, "asked_formation": formation,
 		"natural_frontage_m": snappedf(TacticsFormation.frontage(element.formation, names.size(),
 				element.pitch.x), 0.1),
@@ -236,6 +245,25 @@ func _run(arm: String, deform: bool, seed_value: int, seconds: float, technique:
 	}
 	lab.dispose()
 	return report
+
+
+## A1: motion decisions taken and skipped, summed over the element's own brains. A brain that never fought produces
+## zeros rather than being left out, so the two arms always sum over the same population.
+static func _redecides(game_match: Match, names: Array) -> int:
+	return _counter(game_match, names, "redecides")
+
+
+static func _skips(game_match: Match, names: Array) -> int:
+	return _counter(game_match, names, "skips")
+
+
+static func _counter(game_match: Match, names: Array, key: String) -> int:
+	var total := 0
+	for unit_name: Variant in names:
+		var brain := game_match.brains.get_node_or_null("Brain_" + String(unit_name)) as TankBrain
+		if brain != null:
+			total += int((brain.redecide_counts() as Dictionary).get(key, 0))
+	return total
 
 
 static func _total(tally: Dictionary) -> int:
