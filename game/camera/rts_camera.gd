@@ -805,11 +805,18 @@ func frame(points: Array, instant := false, floor_zoom := FRAME_MIN_ZOOM) -> voi
 
 
 ## [focus, zoom] that frames `points` (Vector3 on the ground) from `heading`. Pure, for tests.
+## `pad_m` is how far the things being framed reach from the points given - half a hull. The framing has always
+## built its bounds from POSITIONS, which was 1.8 m of slop on a 3.60 m hull and is up to 7 m on the 14 m rig:
+## measured, five rigs in column at the low camera were ACCEPTED by the auto frame and still put a hull corner
+## 16.3 px off the screen. Padding the bounds is contained; folding corners into `points` would change what several
+## other readers take `frame` to mean (one entry per vehicle).
 static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM, inset := FRAME_INSET,
-		pitch_deg := DEFAULT_PITCH_DEG) -> Array:
+		pitch_deg := DEFAULT_PITCH_DEG, pad_m := 0.0) -> Array:
 	var bounds := AABB(Vector3(points[0].x, 0.0, points[0].z), Vector3.ZERO)
 	for p in points:
 		bounds = bounds.expand(Vector3(p.x, 0.0, p.z))
+	if pad_m > 0.0:
+		bounds = bounds.grow(pad_m)
 	var center := bounds.get_center()
 	center.y = 0.0
 	center.x = clampf(center.x, -FOCUS_LIMIT, FOCUS_LIMIT)
@@ -1026,7 +1033,8 @@ func _update_vision_tracking() -> void:
 		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch,
 				frame_bottom())
 	else:
-		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch)
+		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch,
+				float(_vision_state.get("pad_m", 0.0)))
 	zoom = minf(minf(float(goal[1]), vision_zoom), RtsCamera.level_for(auto_frame_max_m))
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
 
