@@ -2158,3 +2158,32 @@ The kickoff prompt is one line; this section is the rest.
        convincing wrong answer available.
      - **And filming both arms before deleting** leaves a picture of what shared-gradient routing looks like for whoever
        tries it next. **A null is cheaper to re-derive than to re-discover.**
+140. **A wrong mechanism attached to a right number is more durable than a wrong number.** combat, on nav's pivot table:
+
+     ```
+     hull_size                      in-place turn      farthest wander
+     3.0, 4.4, 5.6   (old)              7 deg               5.5 m
+     2.84, 4.49, 12.0                  23 deg               3.9 m
+     3.32, 5.24, 14.0 (shipped)        26 deg               3.5 m
+     ```
+
+     **The numbers are sound** — and nav ran the OLD 5.6 m size on today's tree as a control, which is what rules out
+     *"something else landed this round"*. **The explanation offered with them cannot be true:** nav attributed it to the
+     creep legs moving a longer hull's centre less, and **`hull_size` never reaches `TankMotion`.** `state_for()` builds
+     the motion state from locomotion, the two speeds, `hull_turn_rate_deg`, acceleration, braking, `min_turn_radius_m`
+     and `lateral_grip` — **no length, no box** — and `step_in_place` references neither. **At a fixed radius the centre's
+     path per degree is identical at 5.6 m and 14 m; the model cannot tell the hulls apart.**
+     **combat's candidate, with the test that separates it:** the probe runs on **`yard`**, and **`hull_size` IS the
+     collision box.** A 14 m box sweeping a 12 m circle **hits scenery a 5.6 m box passes clean**; a blocked hull
+     translates less while the controller keeps commanding yaw — **exactly the signature of turn rising and wander falling
+     monotonically with length.** One run on clear ground separates them.
+     **If that is right, the number means *"a long hull gets stuck on terrain and pivots while stuck"*, not *"a long hull
+     pivots"*** — map-dependent, worse on the city map, absent on open ground. **Same number, different meaning, different
+     fix.**
+     - **combat's reason for raising it is the lesson:** *"a mechanism that cannot be true gets quoted as fact later, and
+       this one was about to be recorded next to a number I will be citing."* **A retracted number gets struck through; a
+       wrong explanation travels attached to a correct one and is never re-checked.**
+     - **Check a mechanism against the code that would have to implement it.** combat did not argue from plausibility —
+       it named the function, listed what it reads, and observed that length is not in the list.
+     - **This is the fourth time today combat has brought evidence against its own position**, and the second time a
+       stream has corrected a mechanism I or another stream invented from intuition rather than from the source.
