@@ -154,6 +154,16 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
 
 ### The round's structural finding, and what round 10 should spend itself on
 
+**A second structural consequence of the resize, measured by nav at 10:35 (`c025bc6b`, post-CP2 roster):** the navmesh
+is baked for a 2.0 m agent (`arena.tscn`, mirrored by `NAV_AGENT_RADIUS`) and **14 of 21 units now have an avoidance
+radius above it** (median 2.50 m, `gang_tank` 4.58 m = 2.3× the bake, `gang_scout` 1.36 m). The mesh certifies
+corridors the largest hulls cannot physically use, a plausible contributor to the wedging nav chased all round, and it
+arrived with CP2, not with any nav change. **Ruled (10:40):** nav's routing reads the bake radius from the arena and
+consults each hull's shortfall (refuse or widen) rather than discovering it by wedging; the bake stays 2.0 this round
+(4.58 would close every alley for the two thirds that fit); per-class meshes are round 10 money only if nav's
+falsifier says so. **Your call, recorded:** should the largest hulls simply not route through alleys narrower than
+their clearance (heavies use streets)? nav can measure the cost of not deciding; it cannot decide it.
+
 **Intent does not reach the layer that moves the hull.** nav measured `CombatMotion` deciding under a tenth of a hull's
 ticks with `Movement` driving the rest and knowing no leash; squad found A8's deformation fails a defile because a slot
 layout is the wrong place for intent the mover cannot see; the maze defile failure survived three pre-registered
