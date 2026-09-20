@@ -1066,10 +1066,18 @@ const APPROACH_MAX := 20.0
 const APPROACH_ALIGNED_COS := 0.85
 
 
+## Measuring only: how many plans aimed at a gate, and how many were offered a facing but kept the goal (the gate was
+## refused: off the navmesh, already on the approach, or reached). An arrival arc that never fires looks exactly like one
+## that does nothing, and the A/B against squad's `facing` needs to tell those apart from inside the run.
+static var gates_aimed := 0
+static var gates_refused := 0
+
+
 func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	var radius := wheel_radius()
 	if radius <= 0.0 or not order.has("facing"):
 		return goal
+	gates_refused += 1  # provisionally: undone below if a gate is actually aimed at
 	var facing: Variant = order["facing"]
 	if not (facing is Array) or (facing as Array).size() < 2:
 		return goal
@@ -1090,6 +1098,8 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	var nearest := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, gate)
 	if _flat_distance(nearest, gate) > MESH_GATE_SLACK:
 		return goal  # the approach would start inside a wall: arrive however the route arrives
+	gates_refused -= 1
+	gates_aimed += 1
 	return gate
 
 
