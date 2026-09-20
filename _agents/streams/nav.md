@@ -262,6 +262,209 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Round 8 (nav, 2026-09-19) — read this first when resuming round 8
+
+The lead's verdict on round 7 was "it still sucks". The orchestrator set the order: (1) angular acceleration at the plant, plus
+the semi trucks "yawing in place"; then reproduce the lead's stall in a probe; then (3) flow fields as their own
+checkpoint, judged on a pre-registered metric that is not attack-move progress. (2) Reeds–Shepp for wheeled hulls comes in
+wherever it fits.
+
+**Done**
+- **Yaw ramp, `9f8c21e2`.** Tracks and hover reach their turn rate over `YAW_RAMP_SECONDS` = 0.25 s, or over
+  `hull_turn_accel_deg_s2` when a unit's catalog entry has one (`TankMotion._ramped_yaw`).
+  - `make nav-rotation-numbers` on builder0: the tank pivot now reaches 90% of its peak rate in 7 ticks (it was 1), so it
+    is smooth.
+  - ~~The scout's K-turn still overshoots by 20.7°~~ **Retracted: that was a bug in the instrument.** The car turns
+    201° in one smooth arc and its heading never reverses; `_report` wrapped 201° to −159° and called the difference an
+    overshoot. Fixed with an unwrapped heading sum. Laptop, `nav-rotation-numbers` after the fix: pivot, car and wheel
+    are all smooth with 0.0° overshoot. The truck turns 62° of its 90° face in 12 s and is still turning when the case
+    ends (the "last tick 37%" is the cut-off, not a snap). **With no overshoot there is no measured defect for
+    Reeds–Shepp to fix, so (2) is parked.**
+- **Semi in isolation (`truck` case).** Told to face 90°, `gang_tank` turned 7° while it was within 1.5 m of its start,
+  and travelled 5.5 m. It does not yaw in place.
+- **Stall repro, `nav-fight-maps`, attack_move, arena's counters.** Oscillation was 5.3–6.6% on yard, boulevard, pit
+  and boneyard, with commitment on. That meets the pre-registered bar for "the back-and-forth is real" (≥ 5% on any
+  map), and it is churn, not terrain: `blocked_terrain` is about 0, and under plain move units progress about 90% of the
+  time. The lead has ruled (main `f5526594`): manoeuvring is smart, churn is not.
+- **In-place yaw in fights, gangs vs gangs (tree `9f8c21e2`, builder0, 120 s, seed 3).** This run is INVALID for semis:
+  the seed fielded `gang_hail` on both sides, so no `gang_tank` was on the field. On the units it did field, scouts
+  produced 185–262 events per map, 3–5× every other type. Laptop smoke on `2649d448`: most scout events are `wobble`.
+  - Fixes: `FIGHT_GREEN_ARMY`/`FIGHT_RUST_ARMY` pin the archetype (`2649d448`).
+  - `--require=`/`FIGHT_REQUIRE` refuses a run without the unit under test, and nav-fight-maps fails when any run
+    refuses (`485c2788`).
+  - The diagnostic split `turned` / `wobble` / `crept` is not part of the pre-registered count.
+
+**The headline, re-measured on main.** Tree `aa984edd` (main `f5526594` merged, no nav changes on top), builder0,
+attack_move, Condemned vs Condemned, seed 3, 120 s. Arm read live: commit=true, standoff.
+
+| map | oscillating | units that ever oscillated |
+|---|---|---|
+| yard | 7.2% | 28 |
+| boneyard | 6.6% | 27 |
+| pit | 5.8% | 25 |
+| boulevard | 5.3% | 28 |
+
+The pre-registered answer is **YES, the churn is real**, on all 4 maps, and it touches nearly every unit rather than a
+few stuck ones.
+
+**Local diagnosis (laptop, `3018e993`, 20 s, gang_ram vs gang_pack).** All 11 scout in-place events happened while
+`driving`, none while creeping, and 7 of 11 had both forward and reverse gear above 0.5 m/s in the window. That looks
+like context steering alternating between forward and reverse directions.
+
+**Pre-registered, written BEFORE the run: does commitment change scout wobble?** This asks whether the heading wobble is
+the same churn as the attack-move oscillation.
+- Run: gang_ram vs gang_pack, `FIGHT_REQUIRE=gang_tank`, the 4 maps, busy 0, seed 3, 120 s, builder0. One arm with
+  commit on, one with `NAV_FLAGS=--nav-off=commit`. Each arm is verified from its `NAV_FIGHT_ARM` line.
+- Metric: scout `wobble` events per scout alive-minute, per map, paired by map.
+- Rule:
+  - Commit on is ≥ 30% lower than commit off on ≥ 3 of the 4 maps: **same phenomenon.** Fix it with the churn.
+  - Within ±10% on all 4 maps: **not commitment-related.** Look at steering jitter in the wheeled controller.
+  - Anything else: inconclusive.
+- Semi verdict from the commit-on arm (the game as shipped): ≥ 1 pre-registered event per semi alive-minute on any map
+  means the lead's report reproduces; 0 on all maps means it does not reproduce in fights either.
+
+**Results of the commit/wobble A/B (builder0, `3018e993`).** The FIGHT_REQUIRE control passed: 23 semis and 26 scouts
+fielded on every map.
+- **Semi: does NOT reproduce.** 0.11–0.74 in-place events per semi-minute (yard 0.74, 15 of its 30 events in phase
+  `blocked`). That is 5–30× below scouts (3.4–3.7), IFVs (2.8–3.6) and supports (1.3–2.1).
+- **Scout wobble, commit on vs off:** boneyard +19%, boulevard −14%, pit −4%, yard −6%. By the pre-registered rule
+  that is **inconclusive**.
+- Reading the code explains it. A standoff HOLD returns index −1, so the hold **never consults commitment**
+  ("commitment did not help" and "commitment was not consulted" look identical from outside). `standoff_holds` had no
+  hysteresis, and about 40% of scout events happen while holding (`arrived`).
+- squad reports that player semis spend 85% of ticks under a face order. That counts the ORDER; this counts the
+  ROTATION. Semis are told to pivot and mostly can't.
+
+**Hold hysteresis (round 8), pre-registered BEFORE its run.**
+- `CombatMotion.standoff_holds`: a gun already holding keeps holding up to `HOLD_SLACK_M` = 3 m past either edge of its
+  band, and only a round that would hit it breaks the hold. `--nav-off=holdband` switches it off. Tests are in
+  `test_ai_combat_motion`.
+- Runs: builder0, one tree, seed 3, 120 s, busy 0, the 4 maps, holdband on vs `--nav-off=holdband`, each arm verified
+  from `NAV_FIGHT_ARM holdband=`:
+  - (G) gang_ram vs gang_pack with FIGHT_REQUIRE=gang_tank;
+  - (C) Condemned, STALL_VERB=attack_move.
+- Primary: scout in-place events per scout alive-minute (the pre-registered count), from (G), paired by map.
+- Secondary: attack_move `oscillating_share`, from (C).
+- **Win:** scout events ≥ 20% lower with holdband on, on ≥ 3 of 4 maps, AND (C) oscillation not higher with it on, on
+  ≥ 3 of 4 maps.
+- **Kills guard** (a unit that holds when it should move dies; churn down with kills down is not a win): units lost,
+  both sides, per run. The guard FAILS if the holdband arm is > 20% lower than off in ≥ 2 of the 8 paired runs, or
+  > 20% higher in ≥ 2 of them. Either way the fight changed character and needs a look before shipping.
+- Anything else is inconclusive. It then ships only with the lead's say-so.
+
+**Hold hysteresis A/B: result (builder0; runs rsynced from 7c4ec608 to 7f14241b, identical fight and sim code).**
+
+Arms read live, holdband=true vs false. Figures are on vs off.
+
+| map | (G) scout events/min | (G) units lost | (C) oscillation |
+|---|---|---|---|
+| boneyard | 2.84 vs 3.62, **−22%** | 3 vs 4 | 6.6% vs 6.6% |
+| boulevard | 2.72 vs 3.38, −19.5% | 2 vs 5 | 5.3% vs 5.3% |
+| pit | 3.17 vs 3.43, −8% | 2 vs 3 | 5.8% vs 5.8% |
+| yard | 3.44 vs 3.67, −6% | 2 vs 5 | 8.3% vs 7.2% |
+
+- Primary: 1 of 4 maps reached ≥ 20% lower. Secondary: oscillation was not higher on 3 of 4.
+- The **kills guard tripped**: 4 of 8 runs had > 20% fewer lost. The counts are 2–5 units out of 90 in 120 s, so the guard
+  has almost no power here. But the rule was fixed in advance.
+- **Verdict: not a win.** Hysteresis is now **opt-in** (`--nav-off=holdband` turns it ON, like `r5sidestep`), so the
+  default game is round 7's hold. The direction is consistently downward (scout −6% to −22% on all four maps), so it is
+  worth the lead's eye, not dropping.
+- Also noticed: (C) Condemned oscillation came out identical to the third decimal on 3 of 4 maps between arms.
+  Condemned fights rarely hit a standoff hold. The churn in the headline is not in the hold path.
+
+### Flow fields (round 8, item 3) — PRE-REGISTERED before a line of it is written
+
+**What it is.** One cost-to-goal field per shared goal, built by a Dijkstra sweep over the navmesh polygons and read as
+a gradient, instead of every unit owning an A* route to the same place. Per-unit A* stays for singletons and for every
+reachability answer. `--nav-off=flow` switches it off, and it stays **OFF by default until it clears the bar below**.
+
+**Instruments, never pooled** (arena's ruling, and its ceiling argument):
+- `terminus` (arena `8fda01a8`, quoted with that commit: the lead has not ruled on the map): the realistic one.
+  `no_progress` 0.091, 30/30 arriving, a 51.5 s crossing against a 120 s limit, so there is headroom to move.
+- The barriers fixture (`make nav-maze`): the sensitivity detector, built ground, `no_progress` 0.192.
+
+**Metrics, both under a PLAIN MOVE, never attack-move progress** (it cannot move more than about 3 points from better
+pathing, so it would read a working change as a failure):
+- Primary: `stuck_share` = the share of ordered unit-seconds in `blocked_*` + `slow` + `yielding`, from
+  `nav-fight`'s `by_verb["move"]` buckets.
+- Secondary: arena's `no_progress_share`, and arrivals (`arrived` of N) which must not fall.
+- Power: both are unit-second shares over ~1400 under-way seconds a run, not 2–5 deaths. The kills guard is not used
+  here; its A/B last time tripped on noise.
+
+**Ship it only if, on terminus:** `stuck_share` ≥ 20% lower (relative), AND `no_progress_share` ≥ 20% lower, AND
+arrivals unchanged at 30/30, AND `make check` green — plus the barriers fixture moving the same way (≥ 20% lower
+`no_progress`). Both instruments are reported separately, with commit and machine.
+
+**REVERT it (and record the round as a null) if ANY of these:**
+1. terminus `no_progress_share` improves by less than 10% relative, or `stuck_share` by less than 10%;
+2. arrivals fall anywhere (terminus, barriers, `nav-suite`, the head-on maze);
+3. the two instruments disagree in SIGN (one better, one worse): that means the change is map-shaped, not a fix;
+4. any Movement contract answer changes: `reachable` for an unreachable goal, `blocked_by` attribution, or
+   `route_end_gap_m`/`goal_gap_m` (the N1 tests own this and must stay green);
+5. planning cost per tick on builder0 rises more than 25% against the same commit with `--nav-off=flow`;
+6. `make determinism` or the nav-suite arrivals move at all.
+
+7. **The look.** A five-squad move on terminus, captured at the lead's pose (pitch 21, 49 m, FOV 35) with the switch
+   on and off, and LOOKED at. Revert if the group reads as a crowd rather than as squads. Flow fields make units share
+   a congestion gradient, which is the point and is also how a formation turns into a herd; the lead has just paid 4
+   seconds of arrival time for a tidier march, so `stuck_share` would score that trade as a win while undoing what he
+   bought. No threshold is pre-registered for this, only that a human looks and writes down what they see. (Every
+   instrument defect this round was found by somebody looking at output, not by a test going red; conditions 1–6 are
+   all numbers.)
+
+Reverting means the switch is deleted along with the code, not left in: a mechanism nobody reaches is how round 7's
+commitment ended up being measured twice for nothing.
+
+**Flow fields: first runs, and an instrument failure (builder0, tree `279f8a98`).**
+- `nav-maze` does not pass `NAV_FLAGS` to its probe (`mk/arena.mk:53`), so BOTH maze arms ran the same treatment and came
+  back byte-identical (terminus no_progress 0.030 twice; barriers 0.541 twice). Those numbers are a positive-control
+  failure, not a null. arena has been asked to add the flag and an ARM header to the probe.
+- The fight half did have distinct arms (`off=[]` vs `off=["flow"]`, read live). Terminus, 45 a side, seed 3, 120 s:
+
+| | flow off | flow on |
+|---|---|---|
+| move: progressing | 0.545 | 0.579 |
+| move: stuck (blocked+slow+yielding) | 0.415 | 0.373 |
+| of which blocked_no_path | 0.160 | **0.219** |
+| attack_move oscillating | 0.060 | 0.045 |
+
+  One map, one seed, so it decides nothing. The `blocked_no_path` rise is the thing to explain before anything else:
+  the field should fall back to A* whenever it cannot answer, so it should not be able to report MORE goals as
+  unreachable than A* does.
+- **Baseline settled with arena:** `NAV_BOTH=1 NAV_UNITS=60 NAV_TIME=180` on terminus (`8fda01a8`), on builder0. Arena's
+  0.091 was one-way/30 on the laptop; my 0.030 was both-ways/30. Density dominates: both-ways at 60 gives 0.153.
+- **Arena's spare finding, taken:** one-way at 60 units is the only maze configuration whose `oscillating` (0.012) is
+  above noise (0.001–0.002). Crowding one direction is where the lead's complaint lives.
+
+**Flow fields, the verdict: REVERTED, a null (builder0, tree `654b1c5d`, terminus, 45 a side, 120 s, three seeds,
+arms read live from `NAV_FIGHT_ARM`).**
+
+| seed | stuck_share off → on | oscillating off → on | no_progress off → on | field answered / fell back |
+|---|---|---|---|---|
+| 3 | 0.415 → 0.373 (−10%) | 0.060 → 0.045 | 0.451 → 0.470 | 2948 / 919 |
+| 5 | 0.365 → 0.362 (−1%) | 0.037 → 0.037 | 0.403 → 0.374 | 4019 / 1149 |
+| 7 | 0.372 → 0.405 (**+9%**) | 0.040 → 0.039 | 0.428 → 0.447 | 3228 / 1417 |
+
+Mean stuck_share ≈ −1%, and no_progress is flat to slightly worse. Pre-registered condition 1 — "revert if terminus
+`no_progress` improves by less than 10% relative, or `stuck_share` by less than 10%" — fires. The one seed that looked
+good (seed 3, −10%) is the seed I ran first, which is exactly why the rule was written for three.
+
+Also worth keeping: the field answered about 70-75% of route plans and fell back to A* for the rest, so this is not a
+mechanism that failed to run — it ran, and it did not help. A grid of 2 m cells over a street map gives routes A* was
+already giving; what a flow field buys is CPU when an army shares one goal, and a fight's goals are per-unit.
+
+**Condition 7 (the look) could NOT be evaluated, and that is an instrument defect of mine, not a pass.** `nav-flow-look`
+filmed both arms on terminus at the lead's pose (pitch 21, 122 m) and the frames are unusable: at that pitch a city map
+of 40 m blocks hides almost every vehicle behind a building, and the unit nameplates cover what is left. Whoever films a
+march on terminus next needs a steeper pitch (45-55 degrees), the nameplates off, and the camera framed on the army
+rather than parked at a distance. The decision above rests on condition 1 alone, which is enough on its own; if the
+numbers had been a pass I would have had to re-shoot before shipping.
+
+Deleted with the code, per the pre-registration: `game/ai/flow_field.gd`, `Movement._plan`'s flow branch, the `flow`
+entry in `OFF_NAMES`, `tests/test_flow_field.gd`, the `flow` block in the fight probe, and `make nav-flow-look`.
+**Kept:** the `--nav-off` unknown-name refusal (`Movement.OFF_NAMES`), which this work produced and which is worth more
+than the field was.
+
 ### Round 7 report (nav, 2026-09-19) — read this first when resuming round 7
 
 **Green, merge here: `d963d9ad`** (builder0: `test` 1191/1 — the 1 is control's `test_radar`, a static leaked by
@@ -299,7 +502,25 @@ on its end (the round-6 carrot pinned hulls exactly there); a moving squad threa
 shoving it. **Limit:** stills can't show how a hull ROTATES (pivots, three-point turns), which is what the telephoto
 makes visible; judging that needs motion (a short capture), not done.
 
-**Not done / owed:** motion capture of hull rotation at the lead's pose; flow fields (the root fix for crowding; an architecture change, explicitly not this round);
+**Rotation at the lead's pose** (`make remote T=nav-rotation`, builder0, tree of `d12dd70a` + the capture tool; pitch
+21, 49 m, FOV 35). "Robotic" was pre-registered in `tests/nav/rotation_capture.gd`'s header before the first run:
+(a) 0 → ≥90% of peak angular rate, or back, within one tick; (b) overshoot, or a last tick > 30% of peak; (c) rotating
+about a point it isn't driving around (frames).
+
+| shape | (a) start / stop | (b) overshoot, last tick | (c) frames | verdict |
+|---|---|---|---|---|
+| tank pivot on `face` (118°) | **instant start** (90% of peak in 1 tick); stop decays over 31 ticks | 0.0°, 4% | pivots about its own centre (right for tracks) | **robotic (a)** |
+| scout K-turn to a point behind it (159°) | 21 ticks up, 25 down | ~~overshoots 20.7°~~ 0.0° (round 8: the 20.7° was the measurement wrapping 201° to −159°) | drives a real arc | smooth |
+| squad of 4 wheeling onto a facing (89°) | 4 ticks up, 28 down | 0.0°, 4% | in place, together | smooth |
+
+What each would take, NOT started (orchestrator: the capture decides, the lead's next playtest decides whether):
+(a) is the plant — `TankMotion.step_in_place` sets yaw rate = turn × max rate with no angular acceleration, so every
+pivot starts at full rate; the textbook fix is an angular-acceleration limit in the plant (a rate PID on heading in
+`face` would only mask it from one caller). (b) is the car's arrival — it reaches its point still turning at speed;
+Reeds-Shepp (plan the K-turn to end on the heading) or an arrival that brakes the yaw. Raw series and verdict lines:
+`references/nav/round7_rotation_capture.txt`.
+
+**Not done / owed:** flow fields (the root fix for crowding; an architecture change, explicitly not this round);
 Reeds-Shepp paths for cars; faction-gain screenshots at the lead's 21° pose; the idle ADVANCE+stop facing miss (squad).
 
 ### Round 7 A/B, pre-registered (written 2026-09-19 BEFORE the run)

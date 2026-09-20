@@ -61,6 +61,10 @@ static func state_of(tank: Tank) -> Dictionary:
 	state["max_forward_speed"] = tank.max_forward_speed
 	state["max_reverse_speed"] = tank.max_reverse_speed
 	state["hull_turn_rate_deg"] = rad_to_deg(tank.hull_turn_rate)
+	# Round 8: the yaw rate is state now (it ramps), so a prediction starts from the hull's actual turn, not from rest.
+	var live: Variant = tank.get("_motion")
+	if live is Dictionary:
+		state["yaw_rate"] = float((live as Dictionary).get("yaw_rate", 0.0))
 	return state
 
 
@@ -141,7 +145,7 @@ static func step_in_place(state: Dictionary, throttle: float, turn: float, delta
 		speed = along
 		velocity = forward * along + right * sideways
 	elif String(state["locomotion"]) == "hover":
-		forward = turn_heading(forward, turn_c * max_rate * delta)
+		forward = turn_heading(forward, _ramped_yaw(state, turn_c * max_rate, max_rate, delta) * delta)
 		var right := Vector3(-forward.z, 0.0, forward.x)
 		var carried: Vector3 = state["velocity"]
 		var along := next_speed_braking(carried.dot(forward), throttle_c, float(state["max_forward_speed"]),
@@ -153,7 +157,7 @@ static func step_in_place(state: Dictionary, throttle: float, turn: float, delta
 		speed = along
 		velocity = forward * along + right * sideways
 	else:
-		forward = turn_heading(forward, turn_c * max_rate * delta)
+		forward = turn_heading(forward, _ramped_yaw(state, turn_c * max_rate, max_rate, delta) * delta)
 		speed = next_speed_braking(speed, throttle_c, float(state["max_forward_speed"]), float(state["max_reverse_speed"]),
 				float(state["acceleration_mps2"]), float(state["braking_mps2"]), delta)
 		velocity = forward * speed
@@ -161,6 +165,23 @@ static func step_in_place(state: Dictionary, throttle: float, turn: float, delta
 	state["speed"] = speed
 	state["velocity"] = Vector3(velocity.x, 0.0, velocity.z)
 	state["position"] = (state["position"] as Vector3) + velocity * delta
+
+
+## Round 8 (nav): a hull's yaw rate can't jump. Tracks and hover used to go from standing still to full turn rate in
+## one tick (measured at the lead's camera: 90% of peak in 1 tick on a 118-degree pivot — "robotic"). The rate now moves
+## toward the commanded one at an angular acceleration: `hull_turn_accel_deg_s2` from the catalog when a unit has one,
+## else the full rate reached in YAW_RAMP_SECONDS. Wheels don't need it: their yaw is speed / radius, and speed already
+## ramps. State key: yaw_rate (rad/s, carried tick to tick).
+const YAW_RAMP_SECONDS := 0.25
+
+
+static func _ramped_yaw(state: Dictionary, wanted: float, max_rate: float, delta: float) -> float:
+	var accel := deg_to_rad(float(state.get("hull_turn_accel_deg_s2", 0.0)))
+	if accel <= 0.0:
+		accel = max_rate / YAW_RAMP_SECONDS
+	var rate := move_toward(float(state.get("yaw_rate", 0.0)), wanted, accel * delta)
+	state["yaw_rate"] = rate
+	return rate
 
 
 ## `forward` (a flat unit vector) turned clockwise seen from above (to the RIGHT) by `radians` (negative = left).

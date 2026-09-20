@@ -129,6 +129,37 @@ place, you do not place).
 
 ## Status
 
+### Round 8 (2026-09-19) — "the gang tanks are still tiny" (the lead, third time)
+
+- **Why it was still tiny (two causes, both measured):** (1) the art is fitted uniformly by LENGTH and the War Rig
+  model is slim (natural 0.85 × 1.35 × 3.6), so combat's 4.4 m box height never reached the screen: it drew
+  1.33 × 2.09 × 5.6. (2) My round-7 gun cut made the fit measure the hull after its baked gun was turned to rest, so the
+  overhang counted as hull and the rig and Law artillery drew at ~80% (fixed `14bdb039`, test mutation-checked). At the
+  lead's camera (21°, 49 m, FOV 35, real skirmish, builder0) today's rig was **91 px tall, shorter than the Condemned
+  tank's 103 px**.
+- **`make size-look`** (`SizeLook`, `--size-look`): the rig beside a scout and a tank at his pose, once per candidate
+  length, box in the model's own proportions (`SizeLook.box_at_length`). After the fix (builder0, `14bdb039`, px tall /
+  long; scout 86/194, tank 95/176): today 114/268; 10 m 202/486; 12 m 242/587; **14 m 281/689**.
+- **Agreed with combat: `gang_tank` [3.32, 5.24, 14.0], `gang_support` [3.39, 3.59, 7.0]** (boxes in the models'
+  proportions, so the art fills them exactly with no art change). **combat landed them on `stream/combat` `141955eb`**
+  (deployment measured clean: gang_ram 41 vehicles, 0 overlapping hulls). **Verified at his camera** on scratch branch
+  `feel-rig-check` (= stream/feel + 141955eb; builder0, yard; px long × tall): rig 681×258, tanker 285×182, tank 189×91,
+  scout 193×81. A gang_ram army (`SIZE_FLAGS="--player=cpu:gang_ram --player-faction=gangs --budget=6500"`) reads as a
+  convoy of semis with small escorts. Transient: the spawn recharge sweep wraps each rig in a 15 m shield egg for the
+  first seconds (gone by 12 s). **Owed:** `test_the_semis_fill_their_boxes` (feel-rig-check `26e1f26a`, mutation-checked)
+  lands once 141955eb is on main (or with it on this branch, if the orchestrator prefers).
+- **Roster-wide hitbox finding (combat's, C1, not this round):** every art unit's box disagrees with its drawn mesh (all
+  19 more than 5% out on some axis; the rig +1.7 w +2.3 h, law_suppressor drawn 1.0 m taller than its box). Table sent
+  to combat for `_agents/balance.md`; regenerate with `SizeLook.box_at_length(unit, hull_size[2])`. The every-unit
+  box-fill test lands with that fix.
+- **Main's sim baseline is stale** (recorded before control's merge): my checks on `14bdb039` and `0abf074e` pass every
+  test (1221) and stop at `sim-baseline` (expected 53d4e0ac, got 668b7d49). A/B on builder0: the same tree without the
+  fit change gives the same 668b7d49, so the art is inert. The orchestrator re-records and announces the checkpoint.
+- **Music-director flake** (control's report): `set_state` asked the audio server whether the bed it had just started
+  was playing. Fixed `0abf074e` with a repro test; likely also combat's round-7 unreproduced mood-signal failure.
+- **Articulated trailer — costed, not started** (waits on nav's wheeled-yaw fix; see the message to the orchestrator):
+  visual-only hinge ≈ 1 day, negligible runtime, sim untouched; the rigid 14 m collision box is the compromise.
+
 ### Round 7 so far (2026-09-19) — the lead's visible defects first
 
 - **Green and merged: `ec10d9f5`** (builder0: 1142 passed; `sim-baseline passed: b0df248dc0140639` on a tree without
@@ -163,17 +194,25 @@ place, you do not place).
   VIEWS=venue SHAPE=hexagon` on builder0 — band inside the walls on all six sides.
 - **Facade v3** (`831268ea`): window grid everywhere, grime streaks, per-block bay width, pale chamfer/bevel edges.
   Frames for the lead via the orchestrator (`build/city-review/`). **Lead gate:** street-level detail waits on that.
-- **Green: `7776d70e`** (builder0 `make remote T=check`: `make check exited 0`, 1179 passed, 0 failed, `sim-baseline passed: 253ecfdeed84bc4d`) — all of the above plus `9e44977f`. Sent to the orchestrator. Check on `39215ff6` (crowd pilot, X7's four) running.
+- **Green: `7776d70e`** (builder0 `make remote T=check`: `make check exited 0`, 1179 passed, 0 failed, `sim-baseline passed: 253ecfdeed84bc4d`) — all of the above plus `9e44977f`. Sent to the orchestrator. `39215ff6` (crowd pilot, X7's four) also green: 1179 passed, `make check exited 0`. **Green: `3ee35c71`** (builder0: 1179 passed, 0 failed, `make check exited 0`, baseline `253ecfdeed84bc4d`) — sent to the orchestrator; supersedes `7776d70e`.
 - **Crowd source material — pilot made, not heard** (`9f74b824`, 250 credits): `crowd_bed` → `crowd_murmur` (19 s loop)
   and `crowd_roar` → `crowd_cheer`, prompts as drafted under *Waiting on the lead*. The bed swelled 8 dB over its length
   (asked for constant); CrowdVoice sets the murmur's level from the match, so the new `layer.level_s` gain rider holds
   it steady (0.5 dB std over 0.5 s windows) and a 1 s `seam_s` hides the splice. Both takes are dark (−27 dB at 4 kHz
   against the mids: a crowd across a bowl), the opposite of the synthesised murmur's hiss. Loudness matched to the
-  synthesised takes, so the tuned mix levels stand; in-game crowd-meter pass queued on builder0. Pipeline fix on the
+  synthesised takes — **but that was wrong in game**: paired second by second against a `--sfx-synth` control (builder0,
+  yard, gangs v law, seed 3, 90 s, real pace), the Crowd bus sat a median 5.3 dB under the crowd X3 was tuned with
+  (the loudness match weights frequencies and rates the dark bed louder than the bus meter does). **+5 dB on both
+  crowd sources (`3ee35c71`) → median 1.2 dB under the tuned level** (IQR −5.0…+1.6; the crowd answers different
+  moments in each run). Mix −17.4 LUFS, true peak −2.4 dBFS, 0 clipped. Logs: `build/crowd-listen/pass_*.log`.
+  The +5 dB exposed a limiter-order bug: the seam crossfade ran after the limiter (bed at +1.5 dBFS); it now runs
+  before levelling (test). Re-layering the whole set then refused the shipped **flamethrower loop** (it dipped 15–18 dB
+  for 0.8 s every 3 s — the plasma loop's fault, made before round 6's hole guard): re-prompted for one unbroken jet,
+  2 takes × 4 s, 80 credits, 3.2 dB range and no holes. Pipeline fix on the
   way: a loop named after its sound (`crowd_murmur`) imported QOA; the recipe now says which sounds loop.
 - **X7's remaining four generated** (`55addee2`, 166 credits): pulse cannon, guided missiles, energy hit, sonic
   emitter, from round 5's physical-event recipes. Measured: no tonal content above ~390 Hz in any take (a hum, not a
-  ray-gun zap). Balance 111,000 credits.
+  ray-gun zap). Balance 110,920 credits after the flamethrower re-roll.
 - **Listening files for the lead** (laptop, `build/`): `crowd-listen/crowd_old_then_new.mp3` (old murmur 12 s + old
   cheer, then the new bed 24 s — twice round its loop, so the seam is in it — + the new roar) and
   `x7-listen/energy_four_new.mp3` (3 pulse, 3 missile, 3 energy-hit takes, then 6 s of the sonic loop).
@@ -331,6 +370,8 @@ weak-spot hit and roar a kill. Listen: `build/crowd-listen/*.mp3`. Look: `make r
    frightening now, not cartoonish?
 
 ### Green commits (merge here)
+- **`3ee35c71`** — builder0: **1179 passed, 0 failed, `make check exited 0`**, baseline `253ecfdeed84bc4d`. Crowd source
+  material at the tuned level, X7's four, the flamethrower re-roll, the loop limiter order. Latest; merge this one.
 - **`7776d70e`** — builder0: **1179 passed, 0 failed, `make check exited 0`**, baseline `253ecfdeed84bc4d`. Polygon venue,
   StandsProfile, hazard band, facade v3, facing-audit turret hold.
 - **`3040ccd9`** — `make remote T=check` on builder0: **1081 passed, 0 failed, `make check exited 0`**; shell-playtest on

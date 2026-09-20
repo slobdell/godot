@@ -106,7 +106,7 @@ const FIRE_LEG_MIN_TICKS := maxi(1, SimClock.TICK_RATE / 4)
 
 ## X3: ORCA local avoidance on (the kill switch is for measuring the difference, `--no-avoidance`).
 static var avoidance_on := not OS.get_cmdline_user_args().has("--no-avoidance")
-## Measuring only: `--nav-off=grace,minpace,pushidle,carrot,yield,unstick,repath,chord,guard,backup` switches single mechanisms off for an A/B
+## Measuring only: `--nav-off=grace,minpace,pushidle,carrot,yield,unstick,repath,chord,guard,backup,standoff,commit,holdband` switches single mechanisms off for an A/B
 ## (nav-where), and `r5sidestep` switches round 5's single-friend sidestep back ON (it overtakes a friend ahead in the lane).
 ## TWO TRAPS, both hit in round 6 (_agents/navigation.md "Measuring"): (1) a switch that silently does nothing makes
 ## your A/B a comparison of a thing with itself — the first `carrot` switch was broken exactly so; prove each switch
@@ -127,10 +127,22 @@ static func switched_off(name: String) -> bool:
 static var _off_parsed := false
 
 
+## Every mechanism name anything asks about. A name that is not here is a typo or a mechanism that no longer exists,
+## and `switched_off()` would answer false for it forever: the A/B would run one treatment in both arms and come back a
+## clean null (arena hit exactly that with `flow` on a tree that did not have it yet). So an unknown name is refused
+## loudly instead. Add the name here in the same commit that adds the switch.
+const OFF_NAMES: Array[String] = ["backup", "carrot", "chord", "commit", "grace", "guard", "holdband",
+		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
+
+
 static func _parse_off() -> PackedStringArray:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--nav-off="):
-			return arg.trim_prefix("--nav-off=").split(",")
+			var names := arg.trim_prefix("--nav-off=").split(",")
+			for name: String in names:
+				if not OFF_NAMES.has(name):
+					push_error("--nav-off=%s: no such mechanism (have %s). A name nothing reads switches nothing off, and the A/B would look like a null." % [name, ", ".join(OFF_NAMES)])
+			return names
 	return PackedStringArray()
 ## Look this far along an avoiding velocity when steering by it (metres, at most the distance to the waypoint).
 const AVOID_STEER_MIN := 3.0

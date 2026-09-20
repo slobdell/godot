@@ -2083,3 +2083,78 @@ The kickoff prompt is one line; this section is the rest.
        glass over every effect keyed to hull size, and a defect that survived rounds of play became obvious in one frame.
      - **And it was found because a human looked at a screenshot sent for a different purpose.** Eighth defect this round
        caught by looking rather than by a test.
+137. **⚠ THE SIM BASELINE ONLY FIELDS TANKS. "sim-baseline passed" means "a tank-vs-tank match on foundry is unchanged",
+     and we have been reading it as "gameplay is unchanged".**
+     Three predictions that it would move failed in one day, and I chased the third:
+     ```
+     sim-baseline: --match --elimination
+       --green-doctrine=anvil_hammer --rust-doctrine=individuals
+       --time-limit=40 --seed=3       (foundry, DEFAULT_LAYOUT)
+
+     anvil_hammer   ['tank']
+     individuals    ['tank']
+     ```
+     **Both doctrines are all-tank.** So the canary has **no gang vehicles, no wheeled hulls, no scouts, IFVs, artillery
+     or support**, one map, 40 seconds.
+     - **combat's 14 m rig did not move it** — `gang_tank` and `gang_support` are not in the match.
+     - **squad's wheeled-turret face→stop did not move it** — there are no wheeled hulls in the match.
+     - **combat's `ARENA_HALF_SIZE` 120 → 140 did not move it** — foundry declares its own `half_size`.
+     Each time the predicting stream was reasoning correctly about its own change and **wrongly about what the instrument
+     covers** — and so was I, three times.
+     **The consequence is bigger than three wrong predictions.** `sim-baseline`'s stated purpose is *"art must never
+     change gameplay"*. **feel has twice proved its art inert by passing it. That proof holds for TANKS** and says nothing
+     about the nineteen other units feel has been re-cutting, re-orienting and re-sizing.
+     - **A green `sim-baseline` is a much weaker guarantee than its name suggests.** Treat it as a determinism canary on
+       one narrow configuration, not as coverage.
+     - **Round-9 candidate: widen the baseline match** to field at least one hull of every `locomotion` and `mount`
+       combination, on more than one map. **It is cheap — it is one match — and it is currently blind to most of the
+       game.**
+     - **And the general form, which this project keeps meeting: a guarantee is only as broad as the configuration it is
+       measured in** (lesson 23's family). **The name of a check is not its scope.**
+138. **A veto stores the change up; only changing the SCORE changes the decision.** squad built combat's principled floor
+     — *a crew may not swap to a different target faster than `Engagement.acquire_seconds` for the new contact* — measured
+     it, and **reverted it, because it lost its own A/B.**
+
+     | per unit-minute (yard, seeds 1/3/7) | floor ON | floor OFF |
+     |---|---|---|
+     | option switches | 19.5 | **18.1** |
+     | **reversals** | **0.67** | **0.30** |
+
+     **Worse on switches and more than double the reversals, on every seed.** squad's reading, which is the lesson:
+
+     > *"Holding a crew on a target after its score has decayed doesn't prevent the swap, it **delays** it — and the longer
+     > the delay the bigger the gap when it finally breaks, so it comes back as a **reversal**. A floor that forbids the
+     > change without changing what's being compared just **stores the change up**."*
+
+     **A veto is not a preference.** It suppresses the *expression* of a decision the scoring still wants, and the
+     pressure accumulates — so the behaviour it produces is worse than the one it was suppressing, in exactly the metric
+     that matters. **If you want a unit to stay, make staying worth more; do not forbid leaving.**
+     - **That is what `COMMIT_BONUS` already is**, and squad's proposed next experiment is the honest one: tune the
+       existing score term with the same probe, rather than add a second mechanism beside it.
+     - **combat's principle may still be right; this shape of it is wrong.** Worth separating, because *"the acquisition
+       time is the natural floor for re-aiming"* survives the result that *"vetoing swaps below that floor makes things
+       worse"*.
+     - **Second revert of the round after measurement, and both were cheap because they were measured before shipping**
+       — nav's gear-change cost (aimed at the wrong third of the flips) and this. **The expensive version is the one we
+       did earlier: ship, measure twice, then discover the mechanism was never reached.**
+139. **An algorithm's canonical use case has to match the problem you actually have.** nav built flow fields behind a
+     switch, measured them on terminus at 45 a side over three seeds, and **reverted them by the rule it had written
+     first.** `stuck_share` off → on: **−10%, −1%, +9%. Mean ≈ −1%.**
+     **The mechanism worked** — the field answered **70–75% of route plans**, falling back to A\* for the rest — **and it
+     did not help.** nav's explanation is the reusable part: **a flow field buys CPU when an ARMY SHARES ONE GOAL, and a
+     fight's goals are PER UNIT.** A 2 m grid over a street map returns the routes A\* already returns.
+     **I assigned this as *"the named answer to his loudest complaint"* — from his sentence, not from a measurement.**
+     *Stuck behind barriers* sounds like pathing; it was churn, and `blocked_terrain` was 0.000–0.010 all along.
+     - **⚠ THE SEED THAT LOOKED GOOD WAS THE ONE RUN FIRST.** Seed 3 alone reads as a −10% win, and nav says it *"would
+       have reported it as promising if the rule had not said three seeds."* **That is the entire value of fixing the
+       sample size in advance** — the first result is the one you form an opinion on, and it is the one most likely to be
+       reported.
+     - **Deleted with its switch**, as pre-registered. *"A mechanism nobody reaches is how commitment got measured twice
+       for nothing."*
+     - **The guard it produced outlasts it, and is worth more than the feature would have been:** `--nav-off` now
+       **refuses an unknown mechanism name** (`Movement.OFF_NAMES`). **arena had already hit the failure it prevents** —
+       running an A/B with `--nav-off=flow` on a tree that had no flow fields, and getting **a clean null with a
+       correct-looking arm header.** A switch that silently accepts a name it does not implement produces the most
+       convincing wrong answer available.
+     - **And filming both arms before deleting** leaves a picture of what shared-gradient routing looks like for whoever
+       tries it next. **A null is cheaper to re-derive than to re-discover.**
