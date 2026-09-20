@@ -262,6 +262,20 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Nav's next work: a long hull's clearance (raised by combat, 2026-09-19)
+
+Two gaps, both mine, found while explaining the War Rig's shuffle:
+1. **Clearance ignores length.** `_chord_slack()` = max(0.3, 2.0 − width/2 − 0.2) uses the hull's WIDTH, and the navmesh
+   is baked with `agent_radius` 2.0 for every unit whatever its size. A 14 m hull's rear sweeps well outside the line
+   its centre follows, so a gap the routing calls passable is one the rig's tail catches. The sweeping dimension is
+   half-LENGTH at a corner, not half-width.
+2. **A `face` order has no recovery.** `Movement`'s unstick only runs for a MOVE. Under a face order a wheeled hull
+   creeps until the order changes, however little ground it is covering.
+
+Combat's evidence that this costs more than looks: the 14 m rig took `gangs vs law` from 9/20 to 0/20 (p ≈ 2e-6), with
+the highest suppression figures in their table. A hull that covers 0.5 m in 4 s is a stationary target whatever its
+speedometer says. They are testing `static_share` against hull length, pre-registered at `b16b8d78`.
+
 ### Next experiment, PRE-REGISTERED before it runs: how sticky should a combat plan be?
 
 The churn the lead complains about is a direction that keeps changing. Commitment exists for that
