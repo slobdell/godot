@@ -167,6 +167,26 @@ directly.
 
 ## Status
 
+> ## WHAT THE RESIZE CHANGED FOR YOU, AND THE ONE THING STILL TO DECIDE
+>
+> Making the vehicles their real relative sizes was worth it, and it broke four things that were quietly sized for
+> a 3.6 m hull. Three are fixed. **Two of the four were wrong at your own camera**, not at some extreme.
+>
+> | What you will see | Look at |
+> |---|---|
+> | **The marker under a vehicle is now shaped like the vehicle** — a capsule along the hull instead of a circle round its longest side. A tank's circle had grown to 12.9 m across, wide enough to park two tanks abreast in, and a squad's markers overlapped into a blob you could not read a unit out of. The marker now also shows which way a vehicle points. | `build/ring-before-after/before_circles.png` vs `after_shaped.png` |
+> | **A vehicle parked against the arena wall is no longer sliced in half** when you tilt the camera down. The wall cut-away was placed at the wall's top edge (3 m) — fine when the tallest vehicle was 1.6 m, wrong now that the Sonic Emitter is 6.18 m. At 50° it was cutting 1.57 m off the top of it. | it is geometry, not a frame: `-1.57 m → +0.20 m` worst across your whole tilt range |
+> | **The camera stops cutting squads off at the edge of the screen.** It framed where vehicles *stood*, never how big they are, so a column of War Rigs ran off the screen **at your own 21° camera** while the camera believed it had them all. | `-16.3 px → +12.4 px` at your pose |
+> | **A radar blip is sized to the vehicle it stands for** — rat rod smallest, rig biggest — instead of every vehicle being the same dot. | `build/control-playtest/1920x1080/8_whole_army.png` (bottom right) |
+>
+> **Still yours to decide** (below): whether the marker should be a tighter circle, the shaped capsule now shipped,
+> or left alone — and note the whole-squad facing drag is half-built, described under it.
+>
+> **One thing we have NOT fixed, so you know before you find it:** at the very lowest camera tilt (8°, the floor of
+> the range), a column of vehicles longer than about 70 m still runs off the screen. That is not the resize — it is
+> the camera's fitting maths going wrong when the ground is nearly edge-on, and it was true before. Measured and
+> recorded rather than quietly rounded off.
+
 > ## TWO CALLS FOR YOU, WITH THE PICTURES. Neither is broken; both are choices the resize forced.
 >
 > ### 1. The ring under your vehicles is now wider than the vehicle is long. Which do you want?
