@@ -121,13 +121,20 @@ func _run() -> void:
 			total_engine_warnings += int(engine["warnings"])
 			var engine_failures: PackedStringArray = engine["failures"]
 			case.failures.append_array(engine_failures)
-			var label_now := "%s::%s" % [path.get_file().get_basename(), method_name]
-			for text: String in PackedStringArray(engine["texts"]):
-				if not charged_by_text.has(text):
-					charged_by_text[text] = [0, label_now]
-				var row: Array = charged_by_text[text]
-				row[0] = int(row[0]) + 1
 			var label := "%s::%s" % [path.get_file().get_basename(), method_name]
+			for text: String in PackedStringArray(engine["texts"]):
+				# COUNT TESTS, NOT OCCURRENCES. A test that emits the same warning twice is one victim, not
+				# two, and the first version of this counted occurrences while calling them tests: it
+				# reported "2 tests" for `test_theme_city_block`, which drives the same bad colour name
+				# twice on purpose and is a single test. Caught by this feature's own first real output
+				# (builder0, 59927de9) -- a count whose name does not match what it counts, in the commit
+				# about attribution. Tests run in order within a shard, so the last label is enough.
+				if not charged_by_text.has(text):
+					charged_by_text[text] = [0, label, ""]
+				var row: Array = charged_by_text[text]
+				if String(row[2]) != label:
+					row[0] = int(row[0]) + 1
+					row[2] = label
 			if case.failures.is_empty():
 				passed += 1
 				print("  PASS  ", label)
