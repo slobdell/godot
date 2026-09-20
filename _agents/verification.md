@@ -84,6 +84,16 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 
 ## How the checks work (so you can extend them)
 
+- **`check` keeps going after a failure, and reports THREE states per target: PASS, FAIL and NOT RUN.** It used
+  to stop at the first failure, so two combat checks in a row produced no `sim-baseline` reading at all — the
+  number every merge is gated on went missing behind an unrelated shard failure, and nothing said so, because a
+  target that never ran looks exactly like one that passed. **A NOT RUN target is not a passing one**: it was
+  skipped because something it is ordered after failed. `lint` gates every other target (a file that does not
+  parse makes them all fail describing the symptom, not the cause), and the three port/path exclusion pairs gate
+  each other. The cost is accepted deliberately: a check with a failure now takes its full wall-clock, because
+  the reason to run one is to learn what is wrong, and stopping at the first thing means learning one thing per
+  forty minutes.
+
 - `tests/run_tests.gd` is a `SceneTree` script run with `--headless --script`. It discovers tests, awaits each (so tests can wait on physics frames), and calls `quit(1)` on failure, so `make test` fails CI-style. `make test FILTER=combat` runs tests whose `file::method` contains the text.
 - **Any engine or script error during a test fails that test.** The runner registers a `Logger` (`OS.add_logger`, Godot 4.5+) that collects errors. Without it, a script error aborted a test function silently and the test printed PASS.
 - `--screenshot=<abs path>` is handled in `game/main.gd`: wait 3 s, `await RenderingServer.frame_post_draw`, save the viewport image, quit. It requires a real renderer, so not `--headless`.
