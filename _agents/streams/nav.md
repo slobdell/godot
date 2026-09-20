@@ -467,7 +467,14 @@ equal, no motion occurred and every movement-layer candidate is eliminated at on
 
 ### ✅ P7's BASELINE, MEASURED BY A12 — and it corroborates round 8's band from a different instrument
 
-**`c025bc6b`, builder0, yard seed 3, 120 s, the pure default path** (`NAV_FIGHT_ARM` reads
+**⚠ PROVENANCE, corrected by metrics' cross-commit banner: these runs span TWO commits.** yard and pit were
+produced at **`c025bc6b`**, terminus at **`5369bd13`** — nav committed a Status file between runs and then reported
+all three under one hash. The diff between them is **one Status file and nothing else**, so the pooled number
+stands and the A6 row names both commits; but the attribution was wrong when nav gave it, and *"every number you
+report carries its commit"* is the rule nav has spent the round holding other people to. **The lesson for the next
+measurement is procedural: do not commit between runs of one series** — metrics' banner caught it, nav did not.
+
+**`c025bc6b` / `5369bd13`, builder0, seed 3, 120 s, the pure default path** (`NAV_FIGHT_ARM` reads
 `a1=false a4=false a6=false a7=false a11=false off=[]`), read with `--order-verb attack_move --team 0`:
 
     ALL   off_corridor=0.304 (active 0.631, 28472 ticks; inactive 11592, slow 3250, ordered_arc 1811)
