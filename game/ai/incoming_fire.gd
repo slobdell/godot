@@ -79,7 +79,7 @@ static func count_for(game_match: Node, unit: Node3D) -> int:
 ## own round, ahead of the round within its remaining range plus my hull, passing within the hull's half-diagonal plus
 ## Match.INCOMING_MARGIN) followed by for_unit's (HORIZON_TICKS, DANGER_RADIUS), over the tick's shared shell columns.
 ## Must count exactly what for_unit(...).size() counts: tests/test_ai_perf_equivalence.gd holds it to that.
-static var _radius_by_unit := {}
+static var _hull_by_unit := {}
 
 
 static func _count_in_flight(game_match: Match, unit: Tank) -> int:
@@ -96,24 +96,35 @@ static func _count_in_flight(game_match: Match, unit: Tank) -> int:
 	var vzs: PackedFloat32Array = shells["vz"]
 	var reach: PackedFloat64Array = shells["reach"]
 	var shooters: PackedStringArray = shells["shooter"]
-	var radius: float = _radius_by_unit.get(unit.unit_id, -1.0)
-	if radius < 0.0:
-		var size: Array = Units.stat(unit.unit_id, "hull_size")
-		radius = Vector2(float(size[0]), float(size[2])).length() / 2.0
-		_radius_by_unit[unit.unit_id] = radius
+	# ROUND 9 (combat, in squad's file by squad's own offer -- review and take, replace or revert): the cached
+	# `radius` was `Vector2(w, l).length() / 2`, a DISC, and it was used on BOTH axes below -- once to extend a
+	# shell's reach along its travel, once as the perpendicular limit. For a War Rig (3.32 x 14.00 m) that disc is
+	# 7.19 m against a 1.66 m half-width, and the error is not a constant: 4.3x abeam, 1.03x end-on. So the crew
+	# over-reported shells crossing its flank and under-reported nothing, which is the shape that makes a gang pack
+	# with a rig in the middle the worst case. Both axes now go through `Units.hull_reach_along`, which is the same
+	# projection `Match` uses, so one flag (`--tune=match.hull_disc=1`) flips every consumer and both axes together.
+	#
+	# The cache holds the (half width, half length) PAIR instead of one radius: `PROFILES` is never written and
+	# `hull_size` is authored, so id -> hull is a process constant.
+	var half: Vector2 = _hull_by_unit.get(unit.unit_id, Vector2.ZERO)
+	if half == Vector2.ZERO:
+		half = Units.hull_half_extents(Units.stat(unit.unit_id, "hull_size"))
+		_hull_by_unit[unit.unit_id] = half
+	var forward := -unit.global_basis.z
 	var name := String(unit.name)
 	var here_x := unit.global_position.x
 	var here_z := unit.global_position.z
-	var side_limit := radius + Match.INCOMING_MARGIN
 	var count := 0
 	for i in xs.size():
 		# Match.incoming_projectiles, in Vector2 math on the same float values.
 		var offset := Vector2(here_x, here_z) - Vector2(xs[i], zs[i])
 		var direction := Vector2(dir_x[i], dir_z[i])
 		var along := offset.dot(direction)
-		if along <= 0.0 or along > reach[i] + radius:
+		var flat_direction := Vector3(direction.x, 0.0, direction.y)
+		if along <= 0.0 or along > reach[i] + Units.hull_reach_of(half, forward, flat_direction):
 			continue
-		if absf(direction.cross(offset)) > side_limit or shooters[i] == name:
+		if shooters[i] == name or Units.hull_distance_of(half, forward, unit.global_position,
+				Vector3(xs[i], 0.0, zs[i]), flat_direction) > Match.INCOMING_MARGIN:
 			continue
 		# for_unit's own filter, on the round's flat velocity.
 		var flat := Vector3(vxs[i], 0.0, vzs[i])
