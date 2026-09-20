@@ -2689,3 +2689,14 @@ The kickoff prompt is one line; this section is the rest.
     the ground cost a morning. Three wrong eliminations (RNG divergence, tank_brain, leaked bodies) stand beside the
     answer. **When a green test goes red with no relevant diff, ask what ran before it — then measure the mechanism
     before assigning it.**
+179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
+    morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
+    read +1.50 ms with two cycles and −0.65 ms with six, on builder0 at load 14–21 with 67 Godot processes and five
+    checks resident; each phase's own spread was ~5 ms against an effect under 1.5. Raising the cycle count fixes
+    *sampling* noise, the error from looking too few times at a stable quantity; it does nothing when the quantity
+    itself drifts with the machine's load between one phase and the next: **more samples of a drifting quantity
+    describe the drift more confidently.** Within-run pairing (lesson 175's cross-run failure) bounds *when* the two
+    halves are measured, not *how quiet* the box is while they are: necessary, not sufficient. So timing runs (hinge
+    cost, show cost) go in a **quiet window** the orchestrator calls after the checks drain, one stream at a time, and
+    every timing number carries the load average and the per-phase spread beside it or it is not quoted. Screenshots
+    and seed-deterministic series are only *slowed* by load and can run through it.
