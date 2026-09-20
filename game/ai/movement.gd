@@ -440,20 +440,46 @@ static func eta(unit: Node, to: Vector3) -> float:
 ##                               ticks are flagged by nav's emitter and counted as ordered, never charged to A6's
 ##                               fraction."* Without it A12 would bill obedience to A6.
 ##   `yielding`                  X4 right-of-way: the nose is where giving way put it, not where any law wants it.
-##   `override`                  nothing nav owns is shaping the nose this tick. On the default blend this is the
-##                               ONLY answer most ticks, which is correct and is documented rather than hidden.
+##   `no_law`                    **no nav-owned motion law exists to run.** A6 is not built, so on the default blend
+##                               this is the answer on most ticks. It is the ABSENCE of a cause, not a cause, and
+##                               control renders it as nothing.
+##   `override`                  **reserved, and nothing publishes it yet:** a nav-owned law RAN and something
+##                               outranked it without naming itself. Split from `no_law` after control pointed out
+##                               that nav had quietly changed this name's meaning between two messages -- it began
+##                               as "something took the nose, unnamed" and became "nothing is shaping the nose",
+##                               which are different claims and only the first is attribution. Rendering the second
+##                               would have put "no law is running" on thirty units at once and called it an
+##                               explanation: C-3's 30-messages failure wearing an explanation's clothes.
 ##
 ## `active` is **false until A6 exists**, deliberately. It means *"a nav-owned motion law is shaping the nose"*, and
 ## no such law is built: A6-a and A6-b are the next commit. A key that reported `active: true` for the route tangent
 ## would hand control a readout that lights up for behaviour nobody implemented.
-const LEGIBILITY_WHY := [&"band", &"survival", &"armour", &"arrival_arc", &"yielding", &"override"]
+## `_agents/legibility.md` §5 assigns the inactive flag AND its reason to nav — *"all five cases are things
+## `Movement` already knows, so the flag and its reason come out of the same reading as the corridor"* — and warns
+## why: *"An inactive law must never look like a broken law. Round 8 shipped a facing feature that could not fire at
+## all on the lead's control scheme (lesson 149) and it read as 'the feature does nothing' rather than 'the feature
+## is off.'"* So the set carries the structural reasons as well as the level that took the nose.
+##
+## **Two of §5's five cases are NOT here, and their absence is deliberate rather than an oversight:** `run_style`
+## (the A/B control) and `reflex` (a dodge or a reverse owning the heading for a tick) are **`CombatMotion`'s
+## knowledge, not the mover's**, and there is no channel from that layer to this one — the same seam as *THE LEASH
+## IS NOT IN THE ROUTE PATH*. They land with A6-a/A6-b on the A7 arm, where the level and the decision are in one
+## place. Until then this key never claims to know them, rather than guessing `override`.
+const LEGIBILITY_WHY := [&"band", &"survival", &"armour", &"arrival_arc", &"yielding", &"override",
+		&"no_law", &"no_order", &"blocked", &"no_path"]
 
 
 ## The pair control's readout reads. Kept to the closed set above, and refused loudly otherwise.
 func legibility() -> Dictionary:
-	var why := &"override"
-	if phase == "yielding":
+	var why := &"no_law"
+	if phase == "blocked":
+		why = &"blocked"                      # §5: no fallback and no guessed corridor
+	elif phase == "yielding":
 		why = &"yielding"
+	elif phase == "arrived" or _goal == Vector3.INF:
+		why = &"no_order"                     # §5: holding, or the task is complete
+	elif corridor() == null:
+		why = &"no_path"                      # §5: no path yet -- the straight-line fallback
 	elif arc_live:
 		why = &"arrival_arc"
 	# A6 is not built, so nothing nav owns is shaping the nose: `active` stays false and says so.
@@ -462,6 +488,31 @@ func legibility() -> Dictionary:
 		push_error("legibility why=%s is outside the closed set %s: control's readout renders an unknown reason as "
 				% [why, LEGIBILITY_WHY] + "nothing, which is a silent readout that looks like a working one.")
 	return out
+
+
+## S4 (`_agents/legibility.md` §2): the ordered corridor's TANGENT, which nav promised to publish at N5 *"on the
+## principle that one publisher should mean one INTERPRETATION, not one array that three streams each project onto
+## slightly differently"*. The law, control's readout and the falsifier all read this rather than each deriving a
+## tangent from `path_points`.
+##
+## It is the **current leg's** direction, flattened and normalised — from the previous waypoint to the next, which
+## is the segment the unit's projection lies on. On the first leg there is no previous waypoint, so the leg starts
+## where the hull is. **`null` when there is no leg at all**, never a zero vector and never a guess: §5 makes "no
+## path yet" an inactive case with a name, and a `Vector3.ZERO` tangent would be an unreadable corridor that looks
+## like a readable one.
+func corridor() -> Variant:
+	# Gated on the SAME condition `reading()` uses to empty `path_points`, not on a similar-looking one. `idle()`
+	# does not clear `_path`, so a corridor keyed only on the path index would publish a tangent for a leg whose
+	# `path_points` is already empty -- this key disagreeing with the array it is the interpretation OF, which is
+	# the exact failure §2 asks nav to prevent by publishing it at all.
+	if phase == "arrived" or _path_index >= _path.size() or ctl.tank == null:
+		return null
+	var to: Vector3 = _path[_path_index]
+	var from: Vector3 = _path[_path_index - 1] if _path_index >= 1 else ctl.tank.global_position
+	var leg := Vector3(to.x - from.x, 0.0, to.z - from.z)
+	if leg.length_squared() < 0.0001:
+		return null
+	return leg.normalized()
 
 
 ## S3 (metrics' contract, `tools/metrics/FORMAT.md`): is the arrival ARC live on THIS tick — is the hull being
@@ -488,7 +539,7 @@ func reading() -> Dictionary:
 			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
 			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
-			"facing_arc": arc_live, "legibility": legibility(),
+			"facing_arc": arc_live, "legibility": legibility(), "corridor": corridor(),
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan, "wedged": wedged,
 			"wedge_moved_m": wedge_moved_m, "wedge_hull_m": wedge_hull_m,
 			"wedge_ratio": wedge_moved_m / maxf(wedge_hull_m, 0.1)}
