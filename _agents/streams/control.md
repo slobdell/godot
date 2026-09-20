@@ -169,18 +169,26 @@ directly.
 
 > ## ITEM 4, PART DONE: THE HUD ON THE RESIZED ROSTER. TWO FINDINGS, ONE IS YOURS TO RULE ON.
 >
-> **Frames, shot LOCALLY at 08:28 while builder0 was down** (it dropped mid-sweep; `camera-looks` is still owed):
+> **THE FRAMES (item 4 is now shot; `camera-looks` landed at 08:59, `exited 0`, copy-back verified):**
 >
 > ```
-> build/control-playtest/1920x1080/8_whole_army.png     <- the one to look at
-> build/control-playtest/1920x1080/*.png                 (12 frames, and 1280x720 beside it)
+> build/camera-looks/index.html                       the page: 28 grid frames + all ten arenas at his pose
+> build/camera-looks/arenas/yard/default.jpg          his pose, resized roster, one ring on one tank
+> build/control-playtest/1920x1080/8_whole_army.png   the cloverleaf: three rings at once
+> build/control-playtest/1920x1080/*.png              12 frames (and 1280x720 beside it)
 > ```
+>
+> `control-playtest-shots` was shot **locally at 08:28 while builder0 was down**; `camera-looks` ran on **builder0
+> at 08:59** once it returned. Both are on the **resized** roster (`914dc7d3`). The earlier `camera-looks` attempt
+> `exited 255` (ssh) with a failed copy-back and produced nothing here — this one exited 0, and its `index.html`
+> timestamp was checked before anything was read out of it.
 >
 > **FINDING 1 — the selection rings have become a cloverleaf, and this is your call.** A ring's radius is
 > `max(hull.x, hull.z) * 0.75`. The Condemned tank went **3.60 m → 8.62 m long** but is still **2.40 m wide**, so
 > its ring went from **5.4 m across to 12.9 m** — for a vehicle you could park two abreast inside it. In
 > `8_whole_army.png` three neighbouring units' rings visibly intersect and you cannot tell which ring belongs to
-> which vehicle. **It is not a bug, it is a constant that was right for a 3.6 m hull**, and the fix is a design
+> which vehicle; `arenas/yard/default.jpg` shows the same thing on a SINGLE unit, where the ring is about **twice
+> the hull's own length**. **It is not a bug, it is a constant that was right for a 3.6 m hull**, and the fix is a design
 > choice rather than a number: (a) bound the hull's own circumscribing circle instead of its longest axis
 > (`hypot(x,z)/2`, which gives 4.47 m for the tank against today's 6.47) — cheapest, still overlaps at formation
 > spacing; (b) an **oriented** marker (an ellipse or a rounded box along the hull) that bounds a long narrow
