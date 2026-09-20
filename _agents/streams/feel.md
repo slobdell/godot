@@ -299,6 +299,29 @@ isolation artefacts). **The local lint earned its keep on its first run**: of te
 guard, `--no-trailer`, the airship, the `spectacle` weight table, the tier fix and the test fix — is **unverified**
 and needs a second check. Merge `7a706911`, or wait for the second check; do not merge the tip on this one's word.
 
+### The Terminus has been wearing the wrong colours for a round (show found it; fixed `637ad4de`)
+
+`CityBlock.neon_color()` honoured only strings beginning with `#`, so every colour **name** a layout used fell
+through to a random pick from the **signage** palette. `arenas/terminus.json` asks for `"cyan"` on four blocks and
+`"magenta"` on four — **all eight were ignored.**
+
+**And `NeonSigns.COLORS` is `[amber, warm white, RED, violet]`**, so the bug was putting **red and a near-white** on
+eight buildings on the lead's city map: the exact two colours I ruled out for show's parapet three hours earlier,
+on the grounds that red is a *signal* in this game (beacons, alarms) and cool white is not in the palette. **I laid
+down a rule about architectural colour while my own file was breaking it eight times.**
+
+**The half worth remembering is not "honour names", it is the fallback.** A *seeded* random pick in answer to a
+name someone typed on purpose **looks exactly like a deliberate choice**, which is how this survived a whole round
+of people looking at that map. An unresolvable name is now loud and deterministic; a block that asks for nothing
+still gets seeded variety, which was always the intent. The tests read what `terminus.json` actually asks for
+rather than remembering it, and assert the result is **not** a signage-palette pick. The hard rejection belongs in
+`Arena.validate()` beside the other unknown-key checks — arena's file, scale's this round, flagged to them.
+
+**Frame provenance, for whoever assembles the lead's summary:** every Terminus frame shot before `637ad4de` — all
+of show's — has the old accidental palette. **Mine are unaffected:** `build/rig-hinge/` is `foundry`,
+`build/airship-look/` is `foundry`, and `build/shell-playtest/` is `pit`. None of the three needs that caveat.
+**Not yet verified**: no local Godot runs tonight, so the fix rides the next builder0 check.
+
 ### The X8/CP2 composition, and my ruling on it (2026-09-20, scale's find)
 
 **My `AssetContracts` change and scale's resize are each correct alone and RED together** — 14 slot-contract
