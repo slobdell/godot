@@ -366,7 +366,16 @@ const PROFILES := {
 		"cost": 175,
 		"unlock_tier": 0,
 		# The biggest hull in the game: it screens half a squad (X3) and it is impossible to miss.
-		"hull_size": [3.0, 4.4, 5.6],
+		# ROUND 8, the lead (third time of asking): "the gang tanks are still tiny -- the intent for the semi trucks
+		# is that they're huge". These are feel's numbers, not mine, measured with SizeLook.box_at_length() from the
+		# approved model's own proportions -- so the box matches what is DRAWN. Do not round them to something tidier:
+		# hull_size IS the collider, and a box that does not match the mesh means shells hitting empty air.
+		#
+		# Why the old [3.0, 4.4, 5.6] read as tiny at 3.14x the gang scout's height: art is fitted by LENGTH so the
+		# approved model is never distorted, so a 4.4 m box drew a 2.09 m truck. At the lead's camera the rig
+		# rendered 114 px tall against a Condemned tank's 95 -- the "huge" semi was barely taller on screen than a
+		# regular tank. Length is what makes a semi, and length was the axis the spawn grid appeared to cap.
+		"hull_size": [3.32, 5.24, 14.0],
 		"max_health": 420,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -428,7 +437,9 @@ const PROFILES := {
 		"blurb": "Crews hanging off a fuel bowser, mending whatever is next to them. Carries a hose, and it is not for you.",
 		"cost": 130,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 3.6, 5.0],
+		# Round 8: a rigid tanker truck with a semi cab, not an articulated rig -- feel's measurement, filling the
+		# 3.6 m height it already had. Same rule: the box is the mesh's proportions at the chosen length.
+		"hull_size": [3.39, 3.59, 7.0],
 		"max_health": 260,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,

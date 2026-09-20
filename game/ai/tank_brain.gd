@@ -138,9 +138,7 @@ const ORDER_ARRIVE := 3.5
 ## (Round 6, nav: there is no "close enough after a stall" any more. Round 5 completed a stalled move from up to 12 m away,
 ## which is what made a jammed horde look like it had decided to stop. An order completes when the unit arrives; a unit
 ## that cannot says so through Movement.state() — phase "blocked", and what blocks it — and keeps trying.)
-## ...and for wheeled units within this share of their turning radius (see _order_arrive), at most WHEELS_ARRIVE_MAX.
-const WHEELS_ARRIVE_RADII := 0.6
-const WHEELS_ARRIVE_MAX := 6.0
+## ...and for wheeled units within Movement.settle_radius (see _order_arrive).
 ## A stop order is done once the unit is slower than this (m/s).
 const STOPPED_SPEED := 0.5
 ## ...no sooner than this many ticks after it was issued.
@@ -338,6 +336,8 @@ var _peek_tick := -1
 ## Lesson 47: the in-place alternative for a held player unit this think (face the nearest threat, or stop), whether it
 ## counts as under fire, and how many move orders the hold rule has refused (tests assert the MECHANISM with this).
 var _held_face := {"type": "stop"}
+## Round 8: face orders turned into a stop because the turret carries the aim (turret_carries_aim), for tests and probes.
+var faces_declined := 0
 var _held_under_fire := false
 var held_moves_refused := 0
 ## Round 7: the option+target this brain last LEFT, and when ({} = none): decide() makes flipping straight back harder.
@@ -714,11 +714,11 @@ static func _flat(point: Vector3) -> Vector3:
 	return Vector3(point.x, 0.0, point.z)
 
 
-## How close counts as arrived for a move order: ORDER_ARRIVE, or for wheels WHEELS_ARRIVE_RADII of the turning radius (a
-## car can't settle on a point much closer than that without circling it), at most WHEELS_ARRIVE_MAX.
+## How close counts as arrived for a move order: ORDER_ARRIVE, or for wheels Movement.settle_radius (a car can't settle on
+## a point much closer than that without circling it).
 func _order_arrive() -> float:
-	var radius := _wheel_radius()
-	return ORDER_ARRIVE if radius <= 0.0 else clampf(radius * WHEELS_ARRIVE_RADII, ORDER_ARRIVE, WHEELS_ARRIVE_MAX)
+	# The wheeled number lives in one place (nav's Movement.settle_radius, round 7): 0 for tracks and hover.
+	return maxf(ORDER_ARRIVE, Movement.settle_radius(tank.unit_id))
 
 
 ## How often this brain should think right now (think LOD): the fight rate when either gun can reach the nearest
@@ -1184,7 +1184,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 
 ## K1: keep only the options the order's verb allows (ORDER_OPTIONS) and add the ones that carry it out. A move,
 ## hold, or follow is absolute; an attack fights only its target (any way the brain likes) and chases it when it's
-## out of sight; an attack-move drives on unless a fight on the way outscores ATTACK_MOVE_WEIGHT; an idle unit fights
+## out of sight; an attack-move drives on unless a fight on the way outscores ATTACK_MOVE_WEIGHT (only its named target,
+## when it has one); an idle unit fights
 ## around its post (the situation's objective) and never roams off to scout, contest, or resupply.
 static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: bool, out_of_ammo: bool) -> Array:
 	var verb: String = o["verb"]
@@ -1218,6 +1219,11 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 					if not critical:
 						continue
 					candidate["score"] = 0.99
+				elif target != "" and candidate["target"] != "" and candidate["target"] != target:
+					# Round 8: an attack-move that names a target (an element maneuvering onto the one its task names)
+					# fights that one and drives past the rest: the lead's "they shoot whatever they were already
+					# shooting at" was the maneuver half of a drill picking fights on the way.
+					continue
 				elif candidate["target"] in in_reach:
 					candidate["score"] = ATTACK_MOVE_FIGHT + float(candidate["score"])  # met on the way: fight it
 			"idle":
@@ -1742,8 +1748,13 @@ func _act(s: Dictionary) -> void:
 			if _flat(my_position).distance_to(goal) <= _order_arrive():
 				_order_move(_face_intended_or({"type": "stop"}))
 			else:
-				_order_move(_move_to(goal, false, float(o["speed"]), _order_arrive()))
-			_order_weapon({"type": "fire_at_will"})
+				_order_move(_arrive_facing(_move_to(goal, false, float(o["speed"]), _order_arrive())))
+			# Round 8: a move that names a target (a crew its leader swings round onto the ordered target) lays its gun on
+			# that one while it drives, not on whatever is nearest; fire at will when it can't bear.
+			if String(o.get("target", "")) != "":
+				_order_weapon({"type": "target", "name": String(o["target"]), "fallback": true})
+			else:
+				_order_weapon({"type": "fire_at_will"})
 		"PURSUE":
 			var o: Dictionary = s["order"]
 			why = TankBrain._join(why, "ordered, closing in")
@@ -2072,14 +2083,14 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "fire_at_will"})
 		"KEEP_SLOT":
 			var squad: Dictionary = s["squad"]
-			_order_move(_move_to(squad["slot"], squad["reverse"], squad["pace"]))
+			_order_move(_arrive_facing(_move_to(squad["slot"], squad["reverse"], squad["pace"])))
 			_order_weapon({"type": "fire_at_will"})
 		"HOLD" when s.get("order") != null and s["order"]["verb"] == "hold" \
-				and _flat(my_position).distance_to(s["order"]["goal"]) > HOLD_TOLERANCE:
+				and _flat(my_position).distance_to(s["order"]["goal"]) > maxf(HOLD_TOLERANCE, Movement.settle_radius(tank.unit_id) + 1.0):
 			# Pushed off the spot (or ordered to hold somewhere else): back onto it, front toward trouble.
 			var spot: Vector3 = s["order"]["goal"]
 			why = TankBrain._join(why, "holding")
-			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0, 1.0, 1.5))
+			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0, 1.0, maxf(1.5, Movement.settle_radius(tank.unit_id))))
 			_order_weapon({"type": "fire_at_will"})
 		"HOLD":
 			var nearest_visible: Variant = null
@@ -2350,7 +2361,7 @@ func _face_intended_or(fallback: Dictionary) -> Dictionary:
 	if facing == null:
 		return fallback
 	var look: Vector3 = _flat(tank.global_position) + (facing as Vector3) * 20.0
-	return {"type": "face", "x": look.x, "z": look.z}
+	return {"type": "face", "x": look.x, "z": look.z, "told": true}
 
 
 ## [x, z] (or a Vector3) as a flat unit direction, or null.
@@ -2456,6 +2467,19 @@ static func _move_to(point: Vector3, reverse := false, speed := 1.0, arrive := O
 	return order
 
 
+## Round 8 (nav's contract, workstreams.md ba2c9adf): a move that ENDS somewhere the unit should be pointing a
+## particular way carries it, so a wheeled hull rolls onto that heading on its last leg instead of arriving 45 degrees
+## off and creeping round its spot (nav measured 6 s of shuffle on an IFV). Tracked and hover hulls ignore it and pivot
+## as they always have, so this only ever adds the arc for hulls that cannot pivot.
+func _arrive_facing(order: Dictionary) -> Dictionary:
+	var facing: Variant = intended_facing()
+	if facing == null or String(order.get("type", "")) != "move_to":
+		return order
+	order = order.duplicate()
+	order["facing"] = [(facing as Vector3).x, (facing as Vector3).z]
+	return order
+
+
 ## Whether a unit holding a player's post may start moving for `option`: back to its post (REGROUP/HOLD), with its
 ## element (KEEP_SLOT), or — under fire — into cover or away (TAKE_COVER, COVER_FIRE, RETREAT, RECHARGE, RESUPPLY, and any
 ## escape the brain marks `to_safety`). Never for a fight of its own choosing.
@@ -2480,6 +2504,18 @@ func _within_post(point: Vector3, lead := PLAYER_POST_LEASH) -> Vector3:
 
 
 ## Re-issuing an identical order would reset path following every think; skip near-duplicates.
+## Round 8: a wheeled hull with a turret — its gun aims without the hull, and the hull cannot pivot (TankBrain._order_move).
+static func turret_carries_aim(unit_id: String) -> bool:
+	if not _turret_wheels.has(unit_id):
+		_turret_wheels[unit_id] = Units.exists(unit_id) \
+				and String(Units.stat(unit_id, "locomotion", "tracks")) == "wheels" \
+				and String(Units.profile(unit_id).get("mount", "turret")) == "turret"
+	return bool(_turret_wheels[unit_id])
+
+
+static var _turret_wheels := {}
+
+
 func _order_move(order: Dictionary) -> void:
 	# The player's units hold until ordered (round-5 ruling; product constraint #4). A unit holding the post the player
 	# left it at may shoot, turn and — under fire — take cover or escape, and it goes back to its post; it may NOT start
@@ -2490,6 +2526,16 @@ func _order_move(order: Dictionary) -> void:
 			String(choice.get("option", "")), _held_under_fire, bool(order.get("to_safety", false))):
 		held_moves_refused += 1
 		order = _held_face
+
+	# Round 8 (the lead: "the semi trucks are yawing in place (should be impossible, they're not a tracker vehicle)"): a
+	# wheeled hull can only turn on the spot by creeping forward and back (TankMotion's multi-point turn), and the brain
+	# asked it to constantly: a held unit's refused advance became a turn toward the threat, 85% of the ticks of the
+	# player's rigs and tankers with an enemy in sight (squad's probe, round 8). A hull whose gun turns on its own has no
+	# reason to: it stops and the turret carries the aim, as a real truck does. A facing the PLAYER gave ("told") is one
+	# turn that settles, and is still honoured; a fixed gun's hull IS its aim, so it still faces.
+	if String(order.get("type", "")) == "face" and not bool(order.get("told", false)) and turret_carries_aim(tank.unit_id):
+		faces_declined += 1
+		order = {"type": "stop"}
 
 	# The player's post leashes everything this unit decides for itself. An escape (cover, breaking contact) gets a
 	# longer lead but not a free one: a unit that runs all the way home has left the ground the player gave it, which is

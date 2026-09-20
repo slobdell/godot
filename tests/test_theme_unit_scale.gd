@@ -14,6 +14,20 @@ func _spawn(unit_id: String) -> Tank:
 
 ## The drawn hull's length (m) along the tank's -Z, from the visual's meshes in tank space.
 func _drawn_length(tank: Tank) -> float:
+	return _drawn_size(tank).z
+
+
+func _under_gun_pivot(node: Node) -> bool:
+	var current := node.get_parent()
+	while current != null:
+		if current.name == "GunPivot":
+			return true
+		current = current.get_parent()
+	return false
+
+
+## The drawn hull's extent (m) in tank space: width, height, length.
+func _drawn_size(tank: Tank) -> Vector3:
 	var hull: Node = tank.get_node("HullVisual")
 	var models := hull.find_children("Model", "Node3D", true, false)
 	if not models.is_empty():
@@ -24,10 +38,27 @@ func _drawn_length(tank: Tank) -> float:
 		var instance := child as MeshInstance3D
 		if instance.mesh == null or not instance.is_visible_in_tree() or instance.mesh.get_surface_count() == 0:
 			continue
+		if _under_gun_pivot(instance):
+			continue  # a gun cut out of the hull turns with the turret and may overhang the box; the hull is what fits it
 		var box := (tank.global_transform.affine_inverse() * instance.global_transform) * instance.mesh.get_aabb()
 		result = box if first else result.merge(box)
 		first = false
-	return result.size.z
+	return result.size
+
+
+## Round 8 (the lead, the third time: "the gang tanks are still tiny"): the War Rig's box was raised to 4.4 m tall and
+## the art, fitted by length, still drew it 2.09 m tall: shorter on screen than the Condemned tank. A box in the model's
+## own proportions (SizeLook.box_at_length, the numbers agreed with combat) is filled on every axis, not just length.
+func test_a_box_in_the_models_proportions_is_filled_on_every_axis() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var box: Array = SizeLook.box_at_length("gang_tank", 12.0)
+	Units.tuning["gang_tank.hull_size"] = box
+	var drawn := _drawn_size(_spawn("gang_tank"))
+	Units.tuning.erase("gang_tank.hull_size")
+	GameTheme.use(previous)
+	for axis in 3:
+		assert_near(drawn[axis], float(box[axis]), float(box[axis]) * 0.05, "axis %d: drawn %s, box %s" % [axis, drawn, box])
 
 
 func test_every_faction_draws_its_units_at_their_hull_size() -> void:

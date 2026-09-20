@@ -440,8 +440,11 @@ could not run at all (no arena, no navmesh); a bad result is a finding for nav, 
 
 ## Shipped arenas
 
-Pick one with `--arena=<name>`; `--arena=random` picks a seeded arena from `Arena.ROTATION` (yard, boulevard, pit,
-boneyard), and `make skirmish` does that by default. **Invariants:** Arena owns the roll (launchers pass `random` through and read
+Pick one with `--arena=<name>`; `--arena=random` picks a seeded arena from `Arena.ROTATION` (**yard, pit and
+terminus** — narrowed in round 8 to the two the lead kept, boulevard and boneyard were CUT on the review page and
+the rotation kept dealing them for a full round; **terminus is the one entry he has not ruled on**, added after its
+render was reviewed so that he actually meets the cityscape he asked for twice), and `make skirmish` does that by
+default. **Invariants:** Arena owns the roll (launchers pass `random` through and read
 `Arena.active["name"]` back, which is always the resolved name); the roll comes from `--seed`, so every launcher that
 shows or records a seed passes it; and **the loader refuses `random`: only `Arena.resolve_name` understands it**. That
 separation is what keeps "unknown names fail loudly" true while random stays the default. Don't make the loader
@@ -452,9 +455,10 @@ forgiving. Headless runs, tests and the sim baseline keep `foundry`
 | Arena | Character | The fight it wants |
 |---|---|---|
 | **yard** (the Container Yard) | Six staggered container walls base to base, alleys that never line up, a walled plaza | Dense lanes and short sightlines: fights at corners and alley mouths; whoever scouts the next lane gets the ambush. Scouts, IFVs, burners |
-| **boulevard** (the Boulevard) | Three avenues with low barricade medians, a roundabout of screens, walled service roads on the flanks | Long fire lanes broken by screens, kiosks and wrecks: spot first, cross the avenues under cover. Artillery and long guns |
 | **pit** (the Pit) | A ring of stacked containers around the control point with four gates; open ground outside | A control-point brawl behind walls: hold a gate and own the approach; inside is knife range |
-| **boneyard** (the Boneyard) | Wrecks and tipped containers at odd angles, no pattern of shape, symmetric in value | Local fights that read differently every match; small elements and spotting win |
+| **terminus** (the Terminus) | Eight neon-edged city blocks on the 140 m hexagon, 20 m streets, a plaza at the crossroads, a ring road across each half | Sightlines end at the next corner: a flank is a street away and an ambush is a doorway. Scouts and IFVs own the grid; artillery has to be walked into it |
+| boneyard (the Boneyard) | Wrecks and tipped containers at odd angles, no pattern of shape, symmetric in value | **CUT by the lead.** Loads by name; `random` never deals it |
+| boulevard (the Boulevard) | Three avenues with low barricade medians, a roundabout of screens | **CUT by the lead.** Loads by name; `random` never deals it |
 | foundry | Round 1's arena (v1), the default for headless runs | Mid-range with a little cover: the baseline the others are compared to |
 | scrapyard | Round 2's dense layout (v1) | Short fights at corners |
 | furnace | Foundry plus fire pits (v1) | Route around the pits |
@@ -637,3 +641,89 @@ every series, so no faction yet fights at the ranges where a map's long sightlin
 range work lands: syndicate vs condemned on boulevard vs yard; gangs vs law on the pit (the gates as chokepoints vs a
 swarm).
 
+
+## The Terminus, and the trap that kept the city blocks off every map (round 8)
+
+feel built `block` (40 x 24 x 40, `prop.block`/CityBlock) in round 7 — chamfered corners, bevelled roof edges, neon
+borders, three facade passes — and it was merged, correct and **placed by not one layout.** The lead asked twice for
+sci-fi blocks and then asked what happened to them. Placing eight of them found out why.
+
+### The navmesh baker silently ignores large boxes
+
+Same arena, same obstacle type, same 3 m height, **footprint the only variable.** Distance from the box centre to
+the nearest navmesh after baking (`make test FILTER=arena` will not tell you this; it was measured with a probe):
+
+| footprint | 4 m | 8 m | 12 m | 18 m | 26 m | 40 m |
+|---|---|---|---|---|---|---|
+| distance to navmesh | **4.0 m** (a hole, correct) | 0.5 m | 0.5 m | 0.5 m | 0.5 m | 0.5 m |
+
+0.5 m is the ground surface. **From 8 m upward the box produces no hole and no rooftop — it contributes nothing.**
+The collision body is built correctly in every case (verified at runtime: right size, layer 1, not disabled,
+parented under a node in `navigation_source`), and neither `border_size` nor `filter_baking_aabb` changes the
+result at any value tried.
+
+**Why nobody had hit it.** Every obstacle this project owned is thin on at least one axis — `wall` is 18 x 1.5,
+`container_40` is 12.19 x 2.44, `crate` is 4.5 x 4.5, and a stack only grows upward. **The first object with a
+genuinely large footprint was the city block**, and it failed on the first attempt to use it.
+
+**Why it could not be shipped around.** Physics and navigation read the same body. A solid block would stop hulls
+that the navmesh insists they can drive straight through — *"stuck behind basic barriers... moving back and
+forth"*, manufactured on purpose, at the size of a building.
+
+### The fix: tile a large footprint, do not hollow it
+
+`Arena._obstacle_shapes()` builds one box when either horizontal axis is under `SOLID_FOOTPRINT_M` (6 m), and
+otherwise **adjacent slabs `SHELL_THICKNESS` (4 m) deep covering the whole footprint.** Each slab is thin on one
+axis, which is the only property the baker needs.
+
+**A hollow shell of four walls was tried first and is wrong**: it carves the walls and leaves the interior
+walkable — an enclosed, unreachable navmesh island inside every building, which the AI's position queries would
+still see. Cover, radar and `arena_report.py` are untouched: they read the layout's single box, and only the
+collision is built in pieces.
+
+### What the map is, measured
+
+A hexagon at the 140 m bound like the two he kept. Eight blocks, 20 m streets (16 m drivable after the 2 m agent
+radius eats both kerbs), a 40 m plaza at the crossroads, a ring road across each half.
+
+| | terminus | yard | pit |
+|---|---|---|---|
+| `centre_sees_share` (target < 0.30) | **0.13** | 0.20 | 0.30 |
+| longest sightline | **196 m** | 216 m | 276 m |
+| mean view | **50.2 m** | 54.3 m | 81.8 m |
+| views over 120 m | **0.07** | 0.12 | 0.28 |
+| `decision_spread` (target ~0.4) | **0.41** | 0.43 | 0.42 |
+| drivable share | 0.44 | 0.51 | 0.55 |
+
+**The geometry is the hexagon's, not a preference.** A 40 m block, a street and another 40 m block need 80 m plus
+the street, and there are only 84 m from the centre line to where spawn clearance begins — **so two rows of blocks
+per half do not fit at any street width**, which is why the plan is a cross rather than a grid.
+
+**No alley is under 20 m, deliberately.** The maze proves 7 m physical gives 3 m drivable and single-file; this is
+a map the lead plays, not a fixture, and with flow fields unstarted a near-impassable alley would be choosing to
+reproduce his loudest complaint.
+
+### It is the first shipping map that moves the stall measure
+
+30 of 30 units cross it. `no_progress` **0.091** against yard 0.050, pit 0.028, boneyard 0.005 — and well under the
+barrier fixture's 0.192. **Streets are corridors and corridors are where units queue**, so this is the honest test
+bed for flow fields: ground where the number is not already at the floor, on a map he can actually play.
+
+### What the Terminus actually looks like (round 8, `make remote T="arena-shots ARENAS=terminus"`)
+
+**Looked at before it went into the rotation**, because every number above is a proxy for a question only a picture
+answers. `build/screenshots/arena-terminus-{overview,skirmish}.png`.
+
+**It reads as the venue.** At the player's pose the towers stand well above the hulls, the chamfered corners and
+neon base trim catch light, and the stands, crowd and neon barrier sit behind them — the constraint the lead set
+(*"match the theme and consistency of our gladiator environment"*) is met, and the street kit (containers,
+barricades, wrecks, screens) is the same kit as every other arena, which is what does most of that work. The
+streets read as streets from inside one, and the minimap reads as a city grid on a hexagon.
+
+**Two things a human should still rule on, recorded rather than fixed:**
+
+1. **It is dark.** Near-black towers lit by their windows: atmospheric and right for the genre, but the street
+   surface is dimmer than yard's, and tactical legibility at a glance is a taste question, not a measurement.
+2. **Street level is plain** — flat window grids where a tank actually drives, no balconies, signs or awnings.
+   **This is feel's own open question and he has not answered it.** Shipping it plain is deliberate: a cityscape he
+   can play beats a detailed one he has never seen, which is the entire lesson of round 8.

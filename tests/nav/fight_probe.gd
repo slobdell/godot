@@ -43,6 +43,30 @@ var order_count := 0
 var issued_tick := 0
 var time_limit := 120.0
 var phase_two_done := false
+## --busy=N: like a player, a new move order to one squad every N seconds (seeded, so reproducible). 0 = off.
+var busy_every := 0.0
+var busy_rng := RandomNumberGenerator.new()
+var busy_next := 0.0
+var busy_orders := 0
+var stall_verb := ""
+## Round 8, pre-registered before its first run (the lead: "the semi trucks are yawing in place (should be impossible,
+## they're not a tracker vehicle)"): an IN-PLACE YAW is a WHEELED hull, alive, whose heading changes by >= 30 degrees over
+## a 2 s window while its centre moves < 1.5 m over the same window. Counted per unit type, whatever its orders (the
+## lead watched the whole battlefield, not only ordered units). NAV_FIGHT reports inplace_yaw_events by unit type.
+const INPLACE_WINDOW_S := 2.0
+const INPLACE_DEG := 30.0
+const INPLACE_M := 1.5
+var inplace_trail := {}   # name -> Array of [x, z, heading_deg]
+var inplace_events := {}  # unit_id -> count
+var inplace_cooldown := {} # name -> ticks left (one event per window, not one per tick)
+## Diagnostics beside the pre-registered count (added after its first run; they don't change what counts as an event):
+## per unit type, the wheeled unit-seconds alive (so events become a rate), and each event split by its NET heading change
+## over the window — "turned" (net >= 30 degrees: a real rotation near one spot, e.g. a K-turn) or "wobble" (the summed
+## |change| reached 30 but the hull ended within 30 degrees of where it started: steering jitter) — and by path length
+## ("crept" when the centre travelled >= 1.5 m along its trail while ending < 1.5 m away: shuffling back and forth).
+var inplace_alive_ticks := {}  # unit_id -> ticks alive
+var fielded := {}  # unit_id -> count at the start, both sides
+var inplace_detail := {}  # unit_id -> {turned, wobble, crept}
 
 
 func _initialize() -> void:
@@ -58,7 +82,10 @@ func _flag(name: String, fallback: String) -> String:
 
 func _run() -> void:
 	time_limit = float(_flag("time-limit", "120"))
+	busy_every = float(_flag("busy", "0"))
+	stall_verb = _flag("stall-verb", "")
 	var seed_value := int(_flag("seed", "3"))
+	busy_rng.seed = seed_value * 7919 + 17
 	var budget := int(_flag("budget", "6500"))
 	var arena: Arena = ARENA.instantiate()
 	arena.layout_name = _flag("arena", "yard")
@@ -73,7 +100,11 @@ func _run() -> void:
 			break
 		await physics_frame
 	for team: int in [Match.Team.GREEN, Match.Team.RUST]:
-		var loaded := Army.load_army("cpu", seed_value + team, budget)
+		var faction := _flag("green-faction" if team == Match.Team.GREEN else "rust-faction", "")
+		# --green-army=cpu:<archetype> pins the archetype (the seed picks one otherwise: seed 3 fielded gang_hail on both
+		# sides, so round 8's first gang run never had a semi on the field).
+		var army := _flag("green-army" if team == Match.Team.GREEN else "rust-army", "cpu")
+		var loaded := Army.load_army(army, seed_value + team, budget, faction)
 		var error: String = loaded.get("error", "")
 		if error == "":
 			error = game_match.load_doctrine(team, loaded["doctrine"])
@@ -87,6 +118,7 @@ func _run() -> void:
 	for tank: Tank in game_match.tanks.get_children():
 		if tank.team == Match.Team.GREEN:
 			green.append(tank)
+		fielded[tank.unit_id] = int(fielded.get(tank.unit_id, 0)) + 1
 	# The run's own conditions, checked before any number is produced (arena's positive control, round 7): a number from
 	# a run whose conditions weren't met looks exactly like a real one.
 	if String(Arena.active.get("name", "")) != _flag("arena", "yard"):
@@ -100,6 +132,14 @@ func _run() -> void:
 		push_error("nav-fight control FAILED: armies of %d and %d units" % [green.size(), rust])
 		quit(1)
 		return
+	# --require=<unit_id>[,<unit_id>]: the unit types the run is ABOUT must be on the field, or it refuses before any number
+	# exists (round 8: a semi in-place-yaw run whose seed fielded no semis; a treatment arm without the treatment is a
+	# failed run, not a null result — lesson 101).
+	for required in _flag("require", "").split(",", false):
+		if int(fielded.get(required, 0)) == 0:
+			push_error("nav-fight control FAILED: --require=%s but none fielded (fielded %s)" % [required, fielded])
+			quit(1)
+			return
 	var stacked := 0
 	var all: Array = game_match.tanks.get_children()
 	for i in all.size():
@@ -109,8 +149,8 @@ func _run() -> void:
 	# Stacked starts separate (Avoidance parts coincident hulls by name), so this is reported, not fatal.
 	# The treatment, read live from the code under test (not from the flag passed): an A/B arm is only an arm if this
 	# differs between them.
-	print("NAV_FIGHT_ARM commit=%s fixed_style=%s avoidance=%s station=%s off=%s" % [CombatMotion.commit_on(),
-			CombatMotion.fixed_style, Movement.avoidance_on, Movement.station_on, Movement._off])
+	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s avoidance=%s station=%s off=%s" % [CombatMotion.commit_on(),
+			CombatMotion.hold_band_on(), CombatMotion.fixed_style, Movement.avoidance_on, Movement.station_on, Movement._off])
 	print("NAV_FIGHT_CONTROL arena %s, green %d, rust %d, %d pairs start on top of each other" % [
 			Arena.active.get("name", "?"), green.size(), rust, stacked])
 	for frame in SimClock.TICK_RATE:
@@ -145,11 +185,135 @@ func _order_squads(depth: float) -> void:
 			order_count += (squads[keys[i]] as Array).size()
 
 
+## A player's habit: pick one living squad and send it somewhere else on the field (a plain move — a right-click).
+func _busy_order() -> void:
+	var squads := {}
+	for tank in green:
+		if tank.is_alive():
+			var parts := String(tank.name).split("_")
+			var squad := parts[1] if parts.size() >= 3 else "?"
+			if not squads.has(squad):
+				squads[squad] = []
+			(squads[squad] as Array).append(String(tank.name))
+	if squads.is_empty():
+		return
+	var keys := squads.keys()
+	keys.sort()
+	var pick: String = keys[busy_rng.randi_range(0, keys.size() - 1)]
+	var half := float(Arena.active.get("half_size", 120.0)) * 0.7
+	var to := [busy_rng.randf_range(-half, half), busy_rng.randf_range(-half, half)]
+	if orders.issue(UnitCommand.make(squads[pick], "move", {"to": to})) == "":
+		busy_orders += 1
+
+
+## Round 8: gear flips. A wheeled hull changing between forward and reverse above GEAR_SPEED must brake through zero
+## first, which is what the "shuffle" in an in-place-yaw event looks like. Counted per unit type per alive-minute, for
+## every wheeled unit whatever its orders. Diagnostic: nothing is pre-registered on it yet.
+const GEAR_SPEED := 0.5
+var gear_sign := {}   # name -> -1 / 0 / 1
+var gear_flips := {}  # unit_id -> count
+var gear_detail := {} # unit_id -> {"phase:<x>": n, "reverse_order": n, "yielding": n}
+
+
+func _controller_of(tank: Tank) -> OrderController:
+	for node in game_match.brains.get_children():
+		if node is OrderController and (node as OrderController).tank == tank:
+			return node
+	return null
+
+
+func _sample_gear(tank: Tank) -> void:
+	var speed := tank.speed()
+	if absf(speed) < GEAR_SPEED:
+		return
+	var sign_now := signi(int(signf(speed)))
+	var was := int(gear_sign.get(String(tank.name), 0))
+	if was != 0 and sign_now != was:
+		gear_flips[tank.unit_id] = int(gear_flips.get(tank.unit_id, 0)) + 1
+		# Where the flip came from: the mover's phase, and whether the order it is driving asks for reverse (a yield
+		# spot behind it, a retreat) rather than the brain's combat steering picking a reversing direction.
+		var detail: Dictionary = gear_detail.get(tank.unit_id, {})
+		var phase := "phase:" + String(Movement.state(tank).get("phase", "none"))
+		detail[phase] = int(detail.get(phase, 0)) + 1
+		var controller := _controller_of(tank)
+		var order: Dictionary = controller.move_order if controller != null else {}
+		detail["reverse_order"] = int(detail.get("reverse_order", 0)) + (1 if bool(order.get("reverse", false)) else 0)
+		detail["order:" + String(order.get("type", "none"))] = int(detail.get("order:" + String(order.get("type", "none")), 0)) + 1
+		gear_detail[tank.unit_id] = detail
+	gear_sign[String(tank.name)] = sign_now
+
+
+func _sample_inplace() -> void:
+	var span := int(INPLACE_WINDOW_S * SimClock.TICK_RATE)
+	for tank: Tank in game_match.tanks.get_children():
+		if not tank.is_alive() or String(Units.stat(tank.unit_id, "locomotion", "tracks")) != "wheels":
+			inplace_trail.erase(String(tank.name))
+			continue
+		var key := String(tank.name)
+		inplace_alive_ticks[tank.unit_id] = int(inplace_alive_ticks.get(tank.unit_id, 0)) + 1
+		_sample_gear(tank)
+		var forward := -tank.global_basis.z
+		var trail: Array = inplace_trail.get(key, [])
+		trail.append([tank.global_position.x, tank.global_position.z, rad_to_deg(atan2(-forward.x, -forward.z)), tank.speed()])
+		if trail.size() > span:
+			trail.remove_at(0)
+		inplace_trail[key] = trail
+		var cool := int(inplace_cooldown.get(key, 0))
+		if cool > 0:
+			inplace_cooldown[key] = cool - 1
+			continue
+		if trail.size() < span:
+			continue
+		var turned := 0.0
+		for i in range(1, trail.size()):
+			turned += absf(wrapf(float(trail[i][2]) - float(trail[i - 1][2]), -180.0, 180.0))
+		var net := Vector2(float(trail[-1][0]) - float(trail[0][0]), float(trail[-1][1]) - float(trail[0][1])).length()
+		if turned >= INPLACE_DEG and net < INPLACE_M:
+			inplace_events[tank.unit_id] = int(inplace_events.get(tank.unit_id, 0)) + 1
+			inplace_cooldown[key] = span
+			var travelled := 0.0
+			for i in range(1, trail.size()):
+				travelled += Vector2(float(trail[i][0]) - float(trail[i - 1][0]), float(trail[i][1]) - float(trail[i - 1][1])).length()
+			var detail: Dictionary = inplace_detail.get(tank.unit_id, {"turned": 0, "wobble": 0, "crept": 0})
+			var net_turn := absf(wrapf(float(trail[-1][2]) - float(trail[0][2]), -180.0, 180.0))
+			detail["turned" if net_turn >= INPLACE_DEG else "wobble"] += 1
+			detail["crept"] += 1 if travelled >= INPLACE_M else 0
+			# Where the event happened: the mover's phase ("none" = no Movement order, e.g. a brain steering it directly)
+			# and whether the plant was in its wheeled creep (K-turn legs) at that tick.
+			var phase := "phase:" + String(Movement.state(tank).get("phase", "none"))
+			detail[phase] = int(detail.get(phase, 0)) + 1
+			var motion: Variant = tank.get("_motion")
+			var creeping := motion is Dictionary and int((motion as Dictionary).get("creep_dir", 0)) != 0
+			detail["creeping"] = int(detail.get("creeping", 0)) + (1 if creeping else 0)
+			# Gear changes in the window: forward and reverse both above 0.5 m/s (a car shuffling back and forth).
+			var fwd := false
+			var rev := false
+			for sample: Array in trail:
+				fwd = fwd or float(sample[3]) > 0.5
+				rev = rev or float(sample[3]) < -0.5
+			detail["shuffled"] = int(detail.get("shuffled", 0)) + (1 if fwd and rev else 0)
+			inplace_detail[tank.unit_id] = detail
+
+
+func _inplace_rates() -> Dictionary:
+	var rates := {}
+	for unit_id: String in inplace_alive_ticks:
+		var minutes := float(inplace_alive_ticks[unit_id]) / SimClock.TICK_RATE / 60.0
+		rates[unit_id] = {"events_per_unit_minute": snappedf(int(inplace_events.get(unit_id, 0)) / maxf(minutes, 0.01), 0.01),
+				"gear_flips_per_unit_minute": snappedf(int(gear_flips.get(unit_id, 0)) / maxf(minutes, 0.01), 0.01),
+				"alive_unit_minutes": snappedf(minutes, 0.1)}
+	return rates
+
+
 func _sample() -> void:
+	_sample_inplace()
 	var elapsed := float(game_match.tick - issued_tick) / float(SimClock.TICK_RATE)
 	if not phase_two_done and elapsed >= time_limit * 0.4:
 		phase_two_done = true
 		_order_squads(0.85)  # then attack-move onward: the fight
+	if busy_every > 0.0 and elapsed >= busy_next:
+		busy_next = elapsed + busy_every
+		_busy_order()
 	var dt := 1.0 / float(SimClock.TICK_RATE)
 	var dump := OS.get_cmdline_user_args().has("--where") and (game_match.tick - issued_tick) % (SimClock.TICK_RATE * 6) == 0 \
 			and not phase_two_done
@@ -186,6 +350,10 @@ func _sample() -> void:
 			unreachable_ticks += 1
 		var closing := (float(last_distance.get(key, distance)) - distance) / dt
 		last_distance[key] = distance
+		# --stall-verb=<verb>: arena's counters sample only units under that verb (round 8: does an ATTACK-MOVING unit
+		# go back and forth? The counters' goal is the ORDER's goal, so this is the trajectory against what was asked).
+		if distance > AT_GOAL_M and (stall_verb == "" or String(orders.current(key).get("verb", "")) == stall_verb):
+			_sample_stall(tank, key, goal)
 		var reason := ""
 		if distance <= AT_GOAL_M:
 			reason = "at_goal"
@@ -267,6 +435,117 @@ func _report(elapsed: float) -> void:
 			"unit_seconds": seconds, "share": share, "retasked_by_option_unit_seconds": retasked_as,
 			"retask_events": retask_events, "retask_cause": retask_cause, "halted_by_option_unit_seconds": halted_opt, "by_verb": verbs,
 			"retask_events_per_unit_minute": snappedf(retask_events / maxf(0.01, float(ordered_ticks) / SimClock.TICK_RATE / 60.0), 0.01),
-			"unreachable_route_unit_seconds": snappedf(float(unreachable_ticks) / SimClock.TICK_RATE, 0.1)}
+			"unreachable_route_unit_seconds": snappedf(float(unreachable_ticks) / SimClock.TICK_RATE, 0.1),
+			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
+			"inplace_detail": inplace_detail, "gear_detail": gear_detail, "inplace_per_unit_minute": _inplace_rates(),
+			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")],
+			"armies": [_flag("green-army", "cpu"), _flag("rust-army", "cpu")], "fielded": fielded, "busy_every_s": busy_every, "busy_orders": busy_orders}
 	print("NAV_FIGHT %s" % JSON.stringify(out))
 	quit(0)
+
+# ---- arena's three pre-registered stall counters, pasted VERBATIM from
+# _agents/streams/references/arena/stall_counters_for_fight_probe.gd.txt (arena c0aa421f); definitions frozen in
+# _agents/streams/references/arena/stuck_preregistration.md. Identical here so both probes report the same quantity.
+# Note on re-orders: _note_goal() resets the windows when the goal jumps (> 3 m), so a re-order is never scored as
+# no-progress; if under_way_seconds collapses, the orders are coming faster than the measure can see.
+## Window over which "is it getting anywhere" is asked. Long enough to contain a full back-and-forth, short enough
+## that a unit rounding a corner does not look like one.
+const WINDOW_S := 4.0
+## `oscillating`: over the window, this much path travelled...
+const OSCILLATE_PATH_M := 8.0
+## ...while net displacement is under this share of it. A ratio, not a distance: a unit crossing the map slowly
+## still has net ≈ path; a unit shuffling has net ≈ 0 with path large. Scale-free, so no retuning per unit type.
+const OSCILLATE_RATIO := 0.25
+## `no_progress`: distance to the goal improved by less than this over the window.
+## The gap-coverer. `crawl` catches a unit too SLOW to be going anywhere (< 0.5 m/s); `oscillating` catches one
+## travelling far enough to be obviously shuffling (>= 8 m). A unit creeping back and forth at 1–2 m/s is NEITHER
+## — too fast to crawl, too little path to oscillate — and that is what being pinned at a barrier end looks like.
+const PROGRESS_M := 2.0
+## A goal that jumps further than this is a different goal: reset the window rather than score across it.
+const GOAL_MOVED_M := 3.0
+
+var trail := {}            # key -> Array[Vector3], the position window
+var goal_trail := {}       # key -> Array[float], distance-to-goal over the window
+var last_goal := {}        # key -> Vector3, to detect a re-order
+var oscillating_ticks := {}
+var no_progress_ticks := {}
+var crawl_ticks := 0
+var under_way_ticks := 0   # denominator: ticks where a unit HOLDS AN ORDER and has not arrived
+
+
+## Call once per unit per tick, only while the unit is under orders and has not arrived.
+## `goal` is the unit's CURRENT goal this tick.
+func _sample_stall(unit: Node3D, key: String, goal: Vector3) -> void:
+	under_way_ticks += 1
+	if unit.speed() < 0.5:   # CRAWL_SPEED
+		crawl_ticks += 1
+	_note_goal(key, goal)
+	var span := int(WINDOW_S * SimClock.TICK_RATE)
+
+	# no_progress: distance to the goal over the window, reset on a re-order.
+	var goals: Array = goal_trail.get(key, [])
+	goals.append(_flat(unit.global_position, goal))
+	if goals.size() > span:
+		goals.remove_at(0)
+	goal_trail[key] = goals
+	if goals.size() == span and float(goals[0]) - float(goals[goals.size() - 1]) < PROGRESS_M:
+		no_progress_ticks[key] = int(no_progress_ticks.get(key, 0)) + 1
+
+	# oscillating: path length vs net displacement over the same window.
+	var history: Array = trail.get(key, [])
+	history.append(unit.global_position)
+	if history.size() > span:
+		history.remove_at(0)
+	trail[key] = history
+	if history.size() < span:
+		return
+	var path := 0.0
+	for i in range(1, history.size()):
+		path += _flat(history[i - 1], history[i])
+	if path < OSCILLATE_PATH_M:
+		return  # not moving enough to be "moving back and forth"; that is the blocked case, counted separately
+	if _flat(history[0], history[history.size() - 1]) / path < OSCILLATE_RATIO:
+		oscillating_ticks[key] = int(oscillating_ticks.get(key, 0)) + 1
+
+
+## A re-order invalidates both windows: the unit is now chasing something else, and neither "did it get closer"
+## nor "did it go anywhere" is answerable across the change.
+func _note_goal(key: String, goal: Vector3) -> void:
+	var previous: Variant = last_goal.get(key)
+	if previous != null and _flat(previous, goal) > GOAL_MOVED_M:
+		goal_trail.erase(key)
+		trail.erase(key)
+	last_goal[key] = goal
+
+
+## Flat distance. x/z only — measuring in 3D made a ramp read as travel and cost me a published number once.
+func _flat(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## Shares are of UNDER-WAY ticks, never of wall-clock or of all ticks: a parked unit standing still is not stuck,
+## and including it silently divides the interesting number down.
+func _stall_report() -> Dictionary:
+	return {
+		"crawl_share": snappedf(float(crawl_ticks) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"oscillating_share": snappedf(float(_total(oscillating_ticks)) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"oscillating_units": _with_any(oscillating_ticks),
+		"no_progress_share": snappedf(float(_total(no_progress_ticks)) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"no_progress_units": _with_any(no_progress_ticks),
+		"under_way_seconds": snappedf(float(under_way_ticks) / float(SimClock.TICK_RATE), 0.1),
+	}
+
+
+func _total(ticks: Dictionary) -> int:
+	var sum := 0
+	for value in ticks.values():
+		sum += int(value)
+	return sum
+
+
+func _with_any(ticks: Dictionary) -> int:
+	var count := 0
+	for value in ticks.values():
+		if int(value) > 0:
+			count += 1
+	return count

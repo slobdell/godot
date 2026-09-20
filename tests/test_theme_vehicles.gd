@@ -140,6 +140,18 @@ func test_shield_events_show_then_hide_the_shell() -> void:
 	assert_true(shield.visible and shield.state()["recharge"] > 0.0, "a rising shield shows the recharge sweep")
 
 
+## Round 8 (combat: every gang unit has max_shield 0): the shell started at a full ratio, so a shieldless unit's first
+## update (ratio 0) read as its shield being knocked out: every gang vehicle crackled and played "shield_down" at spawn,
+## and a 14 m War Rig made the crackle a 15 m egg. The first update is where the shield starts, not an event.
+func test_a_unit_without_a_shield_never_shows_one() -> void:
+	var hull := _part("tank.hull")
+	var shield := hull.get_node("Shield") as ShieldEffect
+	for frame in 5:
+		hull.call("set_shield", 0.0)
+	assert_true(not shield.visible, "no shield: nothing crackles at spawn (state %s)" % shield.state())
+	assert_eq(shield.state()["down"], 0.0, "and no shield-down event")
+
+
 func test_laser_parts_and_beams_follow_the_gameplay_contract() -> void:
 	var laser := _part("weapon.laser")
 	for method in ["set_team_color", "setup", "set_firing", "set_heat"]:

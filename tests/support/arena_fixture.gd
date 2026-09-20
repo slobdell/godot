@@ -21,12 +21,22 @@ const ARENA := preload("res://game/arena/arena.tscn")
 
 ## An arena of `layout_name`, in the tree, with its own navigation synced. Fails the test and returns the arena
 ## anyway if it never syncs, so the caller's assertions report the real problem rather than a cascade of nulls.
-static func build(test: TestCase, layout_name: String, seconds := 2.0) -> Arena:
+## `seconds` is a PATIENCE budget, not a correctness threshold. What proves the arena is ready is the predicate in
+## `_ready_arena` — this arena's own regions on the map, and a point inside its cover off the mesh — and that
+## predicate is unchanged. The timeout only bounds how long we wait for it, and the loop breaks the moment it holds.
+##
+## Raised 2.0 -> 5.0 in round 8, when the cityscape (8 city blocks at 40 x 40 plus 42 props on a 140 m hexagon)
+## became the first layout whose navmesh does not finish baking in two seconds headless. **The evidence that this
+## is bake TIME and not a broken layout, gathered before touching the number:** `make nav-maze ARENA=terminus`
+## crosses the map — 7 of 10 units arrive inside a 30 s window with `no_progress` at 0.002 — so the mesh bakes,
+## connects both bases, and carries traffic. A timeout raised without that evidence would be a test tuned until it
+## passed, which is the failure mode this fixture exists to prevent.
+static func build(test: TestCase, layout_name: String, seconds := 5.0) -> Arena:
 	return await _ready_arena(test, layout_name, {}, seconds)
 
 
 ## The same wait, for a layout built in the test rather than shipped in arenas/.
-static func build_layout(test: TestCase, layout: Dictionary, seconds := 2.0) -> Arena:
+static func build_layout(test: TestCase, layout: Dictionary, seconds := 5.0) -> Arena:
 	return await _ready_arena(test, String(layout.get("name", "layout")), layout, seconds)
 
 

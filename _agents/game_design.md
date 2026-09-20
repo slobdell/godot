@@ -943,6 +943,74 @@ What follows for map authoring, and these are testable claims rather than taste:
 **"It still sucks" is the headline and everything below is subordinate to it.** Round 7 merged seventeen branches and he
 still cannot command his units. **Improvements he can see did not change the verdict.**
 
+### MEASURED ON MAIN: the back-and-forth is real, it is churn, and it is gear-shuffling (nav, 2026-09-19)
+
+**His complaint:** *"units are still just getting stuck behind basic barriers where they seem to just move back and forth
+indefinitely trying to get unstuck."*
+
+**Pre-registered before the run** (oscillating = **≥ 8 m of travel in 4 s with net displacement under a quarter of it**,
+relative to the ORDER's goal, not the brain's target; **≥ 5% on any map means real churn**). Tree `aa984edd` with `main`
+merged and no nav changes on top; builder0; `STALL_VERB=attack_move`; seed 3; 120 s; Condemned vs Condemned. **Arm read
+live from the code on every run: `commit=true, fixed_style=standoff, off=[]`.**
+
+| map | oscillating | no_progress | attack-move progressing |
+|---|---|---|---|
+| yard | **7.2%** | 0.426 | 0.44 |
+| boneyard | **6.6%** | 0.477 | 0.43 |
+| pit | **5.8%** | 0.425 | 0.468 |
+| boulevard | **5.3%** | 0.470 | 0.419 |
+
+**All four ≥ 5%, so by the rule fixed in advance the answer is YES.** The sentence for him, nav's:
+> *"About 6% of the time an attack-moving unit is driving back and forth: ≥ 8 m of travel in 4 s for less than a quarter
+> of it in net progress. On every map, on the game you play."*
+
+**⚠ AND IT IS NOT TERRAIN.** `blocked_terrain` is **0.000–0.010** on every one of these maps. **The fix was never
+pathing** — the orchestrator assigned flow fields to this complaint and would have spent a round on the wrong layer.
+
+**THE MECHANISM, and it makes the semi complaint and this one ONE BUG:** of 11 scout in-place-yaw events, **all were in
+phase `driving`, none creeping, and 7 of 11 had forward AND reverse above 0.5 m/s in the same 2-second window.**
+**The units are gear-shuffling** — `CombatMotion`'s context steering picking a forward direction, then a reverse one.
+
+**So *"the semi trucks are yawing in place"* and *"moving back and forth indefinitely"* are the same churn seen from two
+angles: heading and position.** A vehicle alternating forward and reverse rotates without translating *and* travels
+without progressing. **One fix should move both**, and the `--nav-off=commit` A/B is pre-registered to test exactly that.
+
+### MEASURED: cover is a STEP FUNCTION at 12.19 m, so 12 m vs 14 m is binary (arena, 2026-09-19)
+
+**Share of the contested field within 45 m of a prop long enough to hide a hull of each length.** Best case by
+construction — a box's screening length is its longest horizontal side, so this assumes the hull is parked along it and
+the shooter is square to it. **A hull that fails here cannot be hidden at all.**
+
+| hull length | 6 m | 7 m | **12.19 m** | **12.5 m** | 14 m |
+|---|---|---|---|---|---|
+| **yard** | 0.99 | 0.99 | **0.99** | **0.00** | **0.00** |
+| **pit** | 0.85 | 0.48 | 0.46 | **0.00** | **0.00** |
+| **terminus** | 0.98 | 0.95 | **0.91** | **0.91** | **0.91** |
+| boneyard | 1.00 | 0.92 | 0.85 | 0.33 | 0.33 |
+
+**The cliff is at 12.19 m — the shipping container's own length — and it is a step, not a gradient.** yard covers
+**0.99 up to 12.19 m and 0.00 at 12.5 m.**
+
+**So the lead's open question is not "how huge do I want it, and what does cover cost": it is binary.**
+- **At 12 m the rig hides on 99% of yard, using props already on the map, with no map change at all.**
+- **At 14 m it hides nowhere on either map he kept.**
+- **The Terminus holds 0.91 at ANY hull length**, because its city blocks are 40 m. **It is the only map he plays that
+  covers a 14 m rig.**
+
+**⚠ AND THIS ARRIVED WITH THE ARENA KIT.** `foundry` and `scrapyard` cover a 14 m hull fine — the **legacy v1 `wall`
+obstacle is 18 m**. The v2 kit that replaced it **tops out at 12.19 m**. **The two maps he kept are exactly the two v2
+maps with zero long props**, so the regression is invisible precisely where it matters most.
+
+**It is a FORECAST, not a current defect:** on arena's tree `gang_tank` is still 5.6 m, and the check **reads
+`game/units/units.gd` rather than copying it**, so it flips itself the moment 14 m lands with nobody needing to remember.
+
+**No long prop has been added to yard or pit, deliberately** — they are maps he kept and ruled on, and **if he rules 12 m
+the problem disappears with no map change at all.** If he rules 14 m, a jackknifed trailer or a container *wall* reads as
+the same venue and wants feel's eye.
+
+**And this does NOT explain `gangs vs law` 9/20 → 0/20.** combat's arms show `unit_seconds_near_cover` flat and
+`deaths_near_cover` **falling**, which is the opposite of what *dying while exposed at cover* predicts.
+
 ### Two decisions from the lead (2026-09-19, answering queued gates)
 
 > *"a 4s slower march for a tidier traversal is better, yes. For the attack mechanics - **making the units appear smart

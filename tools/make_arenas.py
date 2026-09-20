@@ -522,3 +522,94 @@ write_v2("barriers", "The Barrier Line (stall test fixture)",
          "that is where nav's round-7 pins happened.",
          barriers, fixture=True, control_radius=10.0,
          regions=[region("the gauntlet", "chokepoint", 0.0, 38.0, 12.0)])
+
+
+# The Terminus: the cityscape (round 8). The lead asked twice -- *"could we formulate some cool-looking sci-fi
+# 'buildings' or blocks... completely rendered using primitive types... with the cyberpunk neon borders"*, then
+# *"a cityscape type map would be good, but I would just need to get it to match the theme and consistency of our
+# gladiator environment."* feel built `block` (40 x 24 x 40, theme prop.block) and its visual slot in round 7, and
+# for a full round NOT ONE LAYOUT PLACED ONE. The capability existed and the player never met it; this file is
+# where that gap closes.
+#
+# **It is an arena with streets, not a city.** The constraint he added is the binding one: it has to read as the
+# same venue. So it keeps everything that makes the others his -- the hexagon at the 140 m bound, the container
+# kit, barricades, wrecks, floodlights on the vertices, the screens facing each base -- and adds blocks as the
+# thing that shapes the ground.
+#
+# WHY THE BLOCKS SIT WHERE THEY DO, since the hexagon does most of the deciding. The wall runs |x| <= 140 -
+# 0.577|z|, so the field narrows hard toward the bases: at midfield a block corner may reach x = 128, but at
+# z = 82 only 92.7. Every position below was checked corner-by-corner against that line with a 2 m margin, not
+# eyeballed -- yard's round-7 lesson, where a container column at x = 115 went through the wall at z = 47.
+#
+# The arithmetic that fixes the grid: a 40 m block, a street, and another 40 m block need 80 m plus the street,
+# and there is only 84 m from the centre line to where spawn clearance begins (the front spawn row is z = 90 and
+# SPAWN_CLEARANCE is 6 m). **So two rows of blocks per half do not fit, at any street width.** The map is
+# therefore a band ON the centre line and one band per half, which is why the plan below is a cross rather than a
+# grid -- the shape is the hexagon's, not a preference.
+#
+# Streets are 20 m. That is 16 m of drivable navmesh once the 2 m agent radius has eaten both kerbs: two or three
+# vehicles abreast, wide enough to be a route and narrow enough to be a queue. **No alley is under 20 m on
+# purpose.** The maze proves 7 m physical gives 3 m drivable and single-file, and this is a map the lead plays,
+# not a fixture -- with nav's flow fields unstarted, shipping him a deliberately near-impassable alley would be
+# choosing to reproduce his loudest complaint.
+def block(x, z, rot=0, **look):
+    """One city block: ArenaKit 'block', 40 x 24 x 40, cover hard. `tiers`, `setback`, `neon` and `seed` are
+    LOOK_KEYS -- they change the silhouette above the shopfronts and never the footprint or the symmetry."""
+    return prop("block", x, z, rot, **look)
+
+
+# Authored on the south/centre half; mirrored_props() supplies the north. Corners checked against the wall.
+#   z = 0 band:   x = +-40  (spans 20..60)   and  x = +-100 (spans 80..120)
+#   z = +-62 band: x = +-30 (spans 10..50)
+# which leaves: a 40 m central plaza at the origin, a 20 m avenue straight up the middle between the mid-band
+# blocks, 20 m streets between the z = 0 blocks, and a 22 m ring road across each half at z ~ 20..42.
+terminus = [
+    block(40, 0, tiers=3, neon="cyan", seed=11),
+    block(100, 0, tiers=2, setback=1, neon="magenta", seed=23),
+    block(30, 62, tiers=4, neon="magenta", seed=37),
+    block(-30, 62, tiers=2, setback=1, neon="cyan", seed=41),
+]
+terminus += [
+    # Street furniture, so a 20 m street is a fight and not a corridor: containers set back against the kerbs,
+    # barricades at the mouths, wrecks where a lane opens out. Every one is the same kit as the other arenas --
+    # that is the consistency he asked for, and it is why this reads as the venue rather than as a city level.
+    c40(-70, 8, 0, 1, faction="law"), c40(70, -8, 0, 1, faction="gangs"),
+    c20(-70, 30, 90, 2, faction="condemned"), c20(70, 30, 90, 1),
+    c20(0, 30, 0, 1, faction="syndicate"), c40(0, -34, 0, 2, faction="mixed"),
+    wreck(-16, 24, 20), wreck(18, -26, 200), wreck(62, 36, 75),
+    barricade(-10, 42, 0), barricade(10, 42, 0), barricade(-64, 62, 90),
+    c20(-88, 62, 0, 2, faction="law"), c20(88, 74, 0, 1, faction="condemned"),
+    # The form-up line in front of each base, as every other arena has.
+    # z = 80, not 84: the authoring clearance check refused 84 at 4.8 m from the spawn point at
+    # [-44, 90] (SPAWN_CLEARANCE is 6.0). Caught before the file was written, which is the point of it.
+    c20(-42, 80, 0, 1), c20(0, 80, 0, 1, faction="condemned", doors="open"), c20(42, 80, 0, 1),
+    # Floodlights on the hexagon's east/west vertices; screens facing each base; a sign on the base-side corner.
+    floodlight(-128, 0), # x = -76, hemmed in from both sides: the hexagon wall is at |x| = 82.2 at this z, and the spawn
+    # lattice reaches x = -66, so a screen fits only in the 6 m of clearance between them.
+    screen(-76, 100, 180, "arena"), screen(76, 96, 180, "faction"),
+    sign(-64, 108, 180, "arena"),
+]
+
+write_v2("terminus", "The Terminus",
+         "A block city dropped into the arena: 20 m streets between sheer neon-edged towers, a plaza at the "
+         "crossroads and a ring road across each half. Sightlines end at the next corner, so a flank is a street "
+         "away and an ambush is a doorway. Scouts and IFVs own the grid; artillery has to be walked into it.",
+         terminus,
+         shape={"kind": "hexagon"}, half_size=140.0,
+         # The mirrored pair sits where the ring road crosses the west street, behind the enemy's near blocks:
+         # reachable, but you must leave the plaza and cross a street to hold it.
+         #
+         # **Placement swept, not guessed, and the target is 0.4 rather than "as high as possible."** My first
+         # instinct, (-72, -34), scored 0.52 -- which is not a better map, it is one objective nearly free and the
+         # other nearly impossible. Ten placements were measured; (-75, -26) gives **0.406**, which puts this map
+         # in the same family as the two he kept (yard 0.43, pit 0.42) rather than in boulevard's.
+         objectives=objective_pair("the west ring", -75.0, -26.0, 15.0),
+         lanes=[lane("the avenue", [(0, 90), (0, 42), (0, 0), (0, -42), (0, -90)], 18) | {"self_mirror": True},
+                lane("west street", [(-70, 90), (-70, 20), (-70, -20), (-70, -90)], 18),
+                lane("the ring road", [(-110, 30), (0, 30), (110, 30)], 20)],
+         regions=[region("the plaza", "centre", 0, 0, 18),
+                  region("avenue mouth", "chokepoint", 0, 42, 8),
+                  region("west crossing", "chokepoint", -70, 0, 9),
+                  region("ring road west", "flank", -80, 30, 16),
+                  region("south approach", "open_ground", 0, 92, 20),
+                  region("tower corner", "overlook", -52, 40, 7)])

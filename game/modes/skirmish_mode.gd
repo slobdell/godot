@@ -178,7 +178,10 @@ func _start_match() -> void:
 		if error == "":
 			print("SKIRMISH_ARMY %s %s%s: %s" % [Match.TEAM_NAMES[team], lineups[team],
 					" (%s)" % faction if faction != "" else "", Army.describe(loaded["doctrine"])])
-			error = game_match.load_doctrine(team, loaded["doctrine"])
+			# Round 8 (squad, control approved): the player's army in at most five squads, so every vehicle is on a number key.
+			var doctrine: Dictionary = SquadConsolidation.for_player(loaded["doctrine"]) if team == Match.Team.GREEN \
+					else loaded["doctrine"]
+			error = game_match.load_doctrine(team, doctrine)
 			LoadingScreen.mark("army_%d_spawned" % team)
 		if error != "":
 			push_error(error)
