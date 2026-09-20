@@ -155,3 +155,36 @@ func _slab(body: StaticBody3D, at: Vector3, size: Vector3) -> void:
 	shape.shape = box
 	shape.position = at
 	body.add_child(shape)
+
+
+## S3: `facing_arc` must be PUBLISHED, and must be live only while the hull is actually being steered at a gate.
+## metrics' emitter writes `null` until nav publishes this key, and a null column made `make metrics` print
+## `arc_live=0.0s` in both arms of nav's own A4 A/B — a zero that reads like a measurement of behaviour and was an
+## unpublished field. The guard that matters is the CLEAR: a stale `true` becomes arc seconds the hull never spent.
+func test_the_arrival_arc_publishes_whether_it_is_live() -> void:
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var tank := game_match.spawn_tank("Arcer", 0, Match.Team.GREEN, "ifv")
+	tank.global_position = Vector3(-100, 0, 40)
+	tank.rotation.y = 0.0
+	var ctl := OrderController.new()
+	ctl.tank = tank
+	ctl.tanks_root = game_match.tanks
+	add_to_tree(ctl)
+	# A wheeled hull sent somewhere with an ordered facing: the gate is what it steers at first.
+	assert_eq(ctl.set_orders({"type": "move_to", "x": -60.0, "z": 40.0, "facing": [1.0, 0.0]},
+			{"type": "hold_fire"}), "", "told to arrive facing east")
+	await tree.physics_frame  # `Movement.of` has no mover until the hull is driven, and `state` is {} until then
+	assert_true(Movement.state(tank).has("facing_arc"), "the key is published at all (metrics reads it as optional)")
+	var seen_live := false
+	for frame in int(SimClock.TICK_RATE * 6):
+		await tree.physics_frame
+		if bool(Movement.state(tank).get("facing_arc", false)):
+			seen_live = true
+			break
+	assert_true(seen_live, "the arc reports itself LIVE while the hull is steered at the gate")
+	# ...and stops reporting live the moment the mover is no longer driving.
+	Movement.of(tank).idle()
+	assert_true(not bool(Movement.state(tank).get("facing_arc", true)),
+			"and is cleared by idle(), so it can never be counted as arc seconds the hull did not spend")

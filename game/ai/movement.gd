@@ -426,6 +426,18 @@ static func eta(unit: Node, to: Vector3) -> float:
 # ---- Per unit (the composer calls these) ----------------------------------------------------------------------------
 
 ## The N1 reading for this unit.
+## S3 (metrics' contract, `tools/metrics/FORMAT.md`): is the arrival ARC live on THIS tick — is the hull being
+## steered at an approach gate so it can come onto the ordered heading? metrics' emitter reads this as an OPTIONAL
+## key and writes `null` until nav publishes it, deliberately never `false`, *"because a column that quietly says
+## 'no arc' on every tick is exactly how a falsifier ends up charging A6 for obedience while looking like it had the
+## data"*. Until this commit it WAS null, and `make metrics` printed `arc_live=0.0s` in both arms of nav's own A4
+## A/B — a zero that reads like a measurement and was an unpublished field.
+##
+## Set every tick the mover steps (`drive`) and cleared by `idle()`, so it can never go stale: a hull that stopped
+## driving is not on an arc, and a stale `true` would be counted as arc seconds it never spent.
+var arc_live := false
+
+
 func reading() -> Dictionary:
 	var eta_s := -1.0
 	var points := PackedVector3Array()
@@ -438,6 +450,7 @@ func reading() -> Dictionary:
 			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
 			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
+			"facing_arc": arc_live,
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan, "wedged": wedged,
 			"wedge_moved_m": wedge_moved_m, "wedge_hull_m": wedge_hull_m,
 			"wedge_ratio": wedge_moved_m / maxf(wedge_hull_m, 0.1)}
@@ -490,6 +503,7 @@ func new_order() -> void:
 ## The move order isn't a move_to (stop, face, drive, or a dead hull): nothing to report but "arrived".
 func idle() -> void:
 	yield_to = ""
+	arc_live = false
 	stalled_ticks = 0
 	phase = "arrived"
 	blocked_by = ""
@@ -512,6 +526,9 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# Round 8: a wheeled hull that was told which way to face arrives ALREADY facing it, by driving the last stretch
 	# along that heading, instead of arriving and then creeping round for ~6 s (measured: an IFV 45 degrees off).
 	var aim := _approach_gate(goal, order)
+	# The gate is offset from the goal by at least APPROACH_MIN, so "a gate was aimed" and "the goal came back
+	# unchanged" cannot be confused. This is the one place that knows, and it used to keep it nowhere.
+	arc_live = aim != goal
 	var routed := aim if direct else _next_waypoint(aim, delta)
 	lap = OrderController._lap("move.path", lap)
 	var around_fire := _around_fire(routed, goal, order)
