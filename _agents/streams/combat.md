@@ -607,6 +607,20 @@ It is the same error as **reading a filtered run as readiness** (lesson 45), whi
 the same day: *a subset that agrees with the story is not the measurement.* Read the aggregate line before
 theorising from the detail lines, and when a test prints both, **quote the aggregate**.
 
+**AND IT GOT WORSE BEFORE IT GOT BETTER — the sharper form.** Those three roster lines were not a sample of the
+failing test at all: they belong to `test_..._leash`, which runs immediately after it. The failing test's output
+**ends at its FAIL line**; everything below is the next test's. The arithmetic proves it — the leash line reports
+*"3 living units a mean 3.9 m from their slot"* and the three entries are 4, 3 and 5 m, mean 4.0.
+
+Sent to squad, they produced a clean and well-argued diagnosis (*"Bravo's crews are seated in Echo's formation"*)
+from posts belonging to a different scenario, and the explanation **fit beautifully** because two unrelated layouts
+happened to line up. **The rapid-succession test prints no per-unit roster at all**; its aggregate cannot tell
+"seated in another squad's slots" from "never moved" from "sent nowhere".
+
+*When a quoted detail cannot produce the reported failure, check whether it belongs to the same measurement at
+all.* The cause was grepping for a string instead of reading the block — `grep -E "from the slot it was sent to"`
+spans every test in the log, and a log is not a record per test unless something says where one ends.
+
 (Unrelated to the arms: both arms produce the **byte-identical** MEASURE line, which is a stronger exoneration of
 `match.yaw_fit` than the matching counts were.)
 
