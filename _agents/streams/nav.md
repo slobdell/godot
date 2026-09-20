@@ -611,6 +611,46 @@ hand-written inverse of the plant cannot see it (the first lattice promised 3.53
 and **the window is over the CONTROL PERIOD, not one tick** — a one-tick window offered a tracked hull 21° of heading
 change over a 2 s arc when it can swing 160°.
 
+### ⚠ THE LEASH IS NOT IN THE ROUTE PATH — why A7's drift did not improve, measured four ways
+
+squad's leash now reaches attacking roles (`6e0c9968` + `b2f4a77d`, cherry-picked for measurement only and dropped
+again). Everything squad predicted holds, and the drift **still fails**:
+
+| | A7 arm | default (blend) arm |
+|---|---|---|
+| in-slot drift (bar **16.0 m**, now derived from the element's pitch) | **41.1 m** ✗ | **15.4 m** ✓ |
+| in-slot shots (bar 6) | 5 | 10 |
+| `a7_leash_radius` **as it arrived** | **14.0 m** — squad's pin exactly | — |
+| `a7_region_rejected` | **1477** over **176** plans | — |
+
+**So the region engaged hard and the drift did not move. Four checks, in order, and each killed a hypothesis:**
+
+1. **Is the leash arriving?** Yes — 14.0 m, read from the request, exactly squad's prediction.
+2. **Is level 0 engaging?** Yes — 1477 candidates rejected across 176 plans, ~8 per plan. *No counter, no drift
+   number* was the rule; the counter is there, so the number counts.
+3. **Is the scenario measuring drift from a stale anchor?** **No.** Instrumented `slot_track` shows the slots never
+   move: `start (-98, 0, 20)` → `now (-98, 0, 20)` at the end. The 41.1 m is real distance from a stationary slot.
+4. **Is the rule too weak — a ratchet rather than a convergence guarantee?** It *was* (it admitted
+   `excess == leash_now`, so a unit pushed out could orbit at whatever excess it reached) and that is now fixed to
+   require a strictly closer candidate — **and the result is BYTE-IDENTICAL**: 41.1 / 30.7 / 9.9,
+   `a7_region_rejected` 1477, `a7_projected` 176. **Changing the rule changed nothing at all.**
+
+**Which is the finding: `a7_projected` is 176 plans against ~1800 unit-ticks (3 units × 20 s × 30 Hz).**
+`CombatMotion` decides under a tenth of the hull's ticks in this scenario. **The other nine tenths are `Movement`
+driving an ordered move — and `Movement` has no notion of a leash at all.** The formation region exists only in the
+combat-motion path.
+
+**So A7's level 0 is not the lever, and neither is any tolerance.** The leash is a *task region* and it is
+represented in one of the two code paths that move a hull. Until `Movement` knows about it, a unit will walk out of
+its slot whenever it is routing rather than fighting, in either arm — the blend only looks better here because its
+weapon term is weaker, not because it respects the region.
+
+**That is nav's to fix and it is not a tonight-sized change**, so it is written down rather than attempted: the
+region belongs in `Movement`'s goal selection (where `_around_fire`, the carrot and the station PID already
+compose), not only in `CombatMotion`'s candidate filter. The strict-return rule is kept because it is *correct* —
+"do not get worse" is not "come back" — and is labelled **measured inert in this scenario** so nobody credits it
+with a fix it did not make.
+
 ### ⚠ N1b: A7 is BUILT, MEASURED, and NOT SHIPPED ON — the headline, so nobody reads past it
 
 **`--nav-off=a7` turns A7 ON. The default is the additive blend, and the default path reproduces the pristine

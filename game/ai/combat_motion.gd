@@ -583,7 +583,16 @@ static func choose_projected(request: Dictionary) -> Dictionary:
 		# A7 was quietly buying the band with it.
 		if leash_binds:
 			var excess := leash_center.distance_to(end) - leash_radius
-			if excess > maxf(0.0, leash_now):
+			# Inside the region: stay inside. OUTSIDE it: get STRICTLY closer, not merely no further away.
+			#
+			# The first version admitted `excess == leash_now`, which is a ratchet rather than a convergence
+			# guarantee — it stops a unit drifting further out and lets it orbit at whatever excess it reached.
+			# Measured: with squad's leash live and the region engaging hard (1477 candidates rejected over 176
+			# plans, radius arriving at exactly 14.0 m), a hull still ended **41.1 m** from a slot that never moved
+			# (`slot_track`: start (-98, 0, 20), still (-98, 0, 20) at the end). "Do not get worse" is not "come
+			# back", and level 4 cannot supply the difference because the weapon level has already narrowed the set.
+			var reject := excess >= leash_now if leash_now > 0.0 else excess > 0.0
+			if reject:
 				a7_region_rejected += 1
 				continue
 		live.append(c)
