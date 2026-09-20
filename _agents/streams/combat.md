@@ -589,6 +589,44 @@ and is queued separately rather than folded into the held series. Squad also cau
 `--tune=match.hull_disc=1` flips every consumer: that is the **pre-inversion** sense, `=0` is the treatment arm,
 and the comment would have had the series run **with two identical arms**.
 
+### THE GANGS-VS-LAW SERIES — PRE-REGISTERED BEFORE THE RUNS (X5, and the hull-geometry row's falsifier)
+
+**The claim under test:** the disc over-states a hull's lateral reach (a War Rig's disc is 7.19 m against a true
+half-width of **1.66 m**, a factor of 4.3 abeam and near-exact end-on), so the AI refuses **shots across a rig** —
+exactly the shot a gang pack travelling with a rig in the middle wants to take. Whether that is the lead's
+unexplained `gangs vs law` **9/20 → 0/20** is what the series decides and nothing before it may assert.
+
+**THE NULL IS PRE-REGISTERED AND IS THE LIKELIER OUTCOME:** a box arm that does **not** move the gangs-vs-law cell
+is **evidence AGAINST the disc being the cause**, and gets written up as such rather than as "inconclusive, needs
+more seeds".
+
+**Read PER CELL, never pooled.** feel's re-measurement is the *before*, and it is the reason: pooled pit was
+**unmoved at 30%** while the cells moved **0%→20% (pit)** and **0%→50% (yard)**. Pooling hides exactly the effect
+the series exists to find.
+
+**The commands, and the trap in them.** `faction-matrix` names its output `…-tuned.json` whenever `TUNE` is set —
+**the same filename for both arms** — so a naive two-run series **overwrites the control with the treatment and
+then compares a file with itself**, which reads as a perfect null. Copy between runs:
+
+    make faction-matrix ARENA=yard TUNE=match.hull_disc=1 SEEDS=6 TIME=180 JOBS=2   # CONTROL: the disc
+    cp build/faction-matrix-yard-tuned.json build/series/yard-disc.json
+    make faction-matrix ARENA=yard TUNE=match.hull_disc=0 SEEDS=6 TIME=180 JOBS=2   # TREATMENT: the box
+    cp build/faction-matrix-yard-tuned.json build/series/yard-box.json
+    make compare-arms TREATMENT=build/series/yard-box.json CONTROL=build/series/yard-disc.json \
+        COMPARE_FACTION=gangs BUILD_ARM="hull box (match.hull_disc=0) vs disc"
+
+⚠ **The control is run with `TUNE=match.hull_disc=1`, not with no `TUNE` at all.** `=1` is the default's value, so
+it changes nothing — but it puts both arms down the same `apply_tuning` path, and a control that skips the code
+the treatment runs is not a control. (`=1` being the no-op and `=0` the treatment is the **post-inversion** sense;
+a comment promising the opposite was caught by squad and would have run the series **with two identical arms**.)
+
+**Say the machine beside every number** — laptop ≈ 2.75× builder0 — and **say the load**, because the box is
+contended and a timed 180 s match on a loaded box is not the same measurement as on an idle one.
+
+**Scope is deliberate, not "whatever was found first":** six migrated sites move with the knob; the **seventh**
+(`Avoidance.radius_of`, `(w + l) / 4`) does **not** and is excluded on purpose — its error runs the opposite way
+end-on and it wants its own falsifier.
+
 ### THE EXACT NEXT STEP, in order
 
 1. **Read the running check's result from the wrapper's own `>> remote: make check exited <N>` line and the
