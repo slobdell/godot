@@ -128,17 +128,47 @@ func test_b_victim_deploys_a_full_army_and_reports_what_it_sees() -> void:
 	# recovery moved the body; if the delta is ~0 while the position changed, some line ASSIGNED the position. With
 	# `velocity.y = 0.0` and `MOTION_MODE_FLOATING` there is no third option. Sampled per frame for a few frames, so
 	# the frame it jumps in is visible rather than inferred from a single before/after pair.
+	# The FULL vector, not y alone. squad measured the widest pair abreast -- artillery 2.90 and lancer 2.76, placed
+	# 5.02 m apart -- settling to 3.15 m, i.e. ~0.9 m each TOWARD each other in the same step that sank three units.
+	# That direction is the puzzle: depenetration pushes bodies APART, so two hulls converging cannot be recovery from
+	# each other. Either it is recovery from the GROUND with a lateral component, or something else moves them. So
+	# print position, delta, velocity, floor state AND every slide collision's normal and collider per frame -- the
+	# normal is what says which surface the solver thought it was escaping.
 	var watch: Array = []
 	for tank: Tank in tanks:
-		if ["Green_S5_1", "Rust_S5_1", "Rust_S8_1", "Green_S0_1", "Green_S1_1"].has(String(tank.name)):
+		if ["Green_S5_1", "Rust_S5_1", "Rust_S8_1", "Green_S0_1", "Green_S2_2", "Green_S2_3"].has(String(tank.name)):
 			watch.append(tank)
-	for frame in 3:
+	for tank: Tank in watch:
+		var a: Dictionary = aabb.get(tank, {})
+		print("SPAWN_ISO_PLACED %-12s unit=%-10s at %s  box_h=%s local_y=%s bottom=%s top=%s"
+				% [tank.name, tank.unit_id, placed[tank], a.get("box_h", "?"), a.get("local_y", "?"),
+				a.get("bottom", "?"), a.get("top", "?")])
+	for frame in 4:
 		await wait_physics_frames(1)
 		for tank: Tank in watch:
 			var body := tank as CharacterBody3D
-			print("SPAWN_ISO_WRITER f%d %-12s unit=%-10s y=%+.6f delta=%s vel=%s floor=%s" % [frame + 1, tank.name,
-					tank.unit_id, tank.global_position.y, body.get_position_delta(), body.velocity,
-					str(body.is_on_floor())])
+			var contacts: Array = []
+			for i in body.get_slide_collision_count():
+				var hit := body.get_slide_collision(i)
+				var other: Object = hit.get_collider()
+				var who := String((other as Node).name) if other is Node else str(other)
+				contacts.append("%s n=%s depth=%.4f" % [who, hit.get_normal(), hit.get_depth()])
+			print("SPAWN_ISO_WRITER f%d %-12s unit=%-10s at %s delta=%s vel=%s floor=%s contacts[%d] %s"
+					% [frame + 1, tank.name, tank.unit_id, tank.global_position, body.get_position_delta(),
+					body.velocity, str(body.is_on_floor()), contacts.size(), ", ".join(contacts)])
+	# The pair squad measured, as a distance rather than two positions, so the convergence is one number.
+	var pair: Array = watch.filter(func(t: Tank) -> bool:
+			return String(t.name) == "Green_S2_2" or String(t.name) == "Green_S2_3")
+	if pair.size() == 2:
+		var a0: Vector3 = placed[pair[0]]
+		var b0: Vector3 = placed[pair[1]]
+		print("SPAWN_ISO_PAIR %s/%s placed %.3f m apart -> now %.3f m apart (%.3f m of convergence)"
+				% [pair[0].name, pair[1].name, Vector2(a0.x, a0.z).distance_to(Vector2(b0.x, b0.z)),
+				Vector2((pair[0] as Tank).global_position.x, (pair[0] as Tank).global_position.z).distance_to(
+						Vector2((pair[1] as Tank).global_position.x, (pair[1] as Tank).global_position.z)),
+				Vector2(a0.x, a0.z).distance_to(Vector2(b0.x, b0.z))
+						- Vector2((pair[0] as Tank).global_position.x, (pair[0] as Tank).global_position.z)
+						.distance_to(Vector2((pair[1] as Tank).global_position.x, (pair[1] as Tank).global_position.z))])
 
 	var space := (tanks[0] as Tank).get_world_3d().direct_space_state
 	var blocked: Array = []
