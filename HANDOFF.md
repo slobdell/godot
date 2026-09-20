@@ -29,8 +29,9 @@ decision, and finished, validated work. Every decision below is reversible in on
 | show | `e1823e68` | **the arena as a light show**: fixtures, channels, patches, cues; Terminus and yard patched; ~1.5% of frame time, zero added lights | 1420/0, baseline unmoved |
 
 **NOT merged at 07:00: CP2, scale's resized roster.** Built and verified to 1392 passed / 3 failed on `e7ebb372`; two of
-the three since fixed, the third (a contact-pip test in control's file) handed to control at 07:05; a green check and
-the swap-bases fairness control are owed. **If it did not land by the time you read this, it is the first merge of
+the three since fixed, the third (a contact-pip test in control's file) fixed by control at 07:00 (`e36d61c7`: the test now picks a
+spot it can see instead of a fixed 30 m offset that the bigger hulls put behind a prop) and committed by scale at
+`7542df28`; **scale's full check on it started 07:01 and lands ~07:40**; the swap-bases fairness control is owed. **If it did not land by the time you read this, it is the first merge of
 your morning, and control's item 4 and feel's X4 (the post-resize camera and art sweeps) follow it.** **CP3 (metrics' three-slot series and the `REMOTE_SLOTS=3` default):** the check is 63–66% faster than serial (2820 s → ~930 s) with bit-identical hashes, **but its own three-run flake criterion caught a latent race** (the exclusion groups that keep two smokes off one port were inert: lesson 175); fixed at `fe7599f5`, the three runs restarted at 07:10 and land ~08:00. Not merged until they do.
 
 ### What you should look at (all sent to you overnight; paths on this laptop)
