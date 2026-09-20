@@ -417,6 +417,37 @@ frames at pitch 21°, 49 m, FOV 35, and a human. *"For anything subjective, a hu
 A4's headroom. An instrument at the end of its range is indistinguishable from one that is not connected, and nav
 has not yet established headroom for this one across four maps (only on yard, where it was 403).
 
+### MORNING: main is red on a foundry spawn-clearance test — nav's window changes are CLEARED, from the code
+
+`main` at `b008a277` fails `test_match_spawns_and_results::test_a_full_faction_army_a_side_spawns_clear_of_itself`
+(foundry, three units inside a `hull_size + 1.0 m` probe, one physics frame after `load_doctrine` places the army).
+It passed on scale's `7542df28` and on pre-CP2 `0808834e`. The orchestrator asked which nav **default-path** change
+could nudge a hull on the first tick. **The answer is none, and three of the five candidates are not in the window.**
+
+1. **The window holds four nav commits, all from tonight** — `e3363d46` (`facing_arc`), `53861455` (legibility key),
+   `16444beb` (corridor), `e2fbd1aa` (A6). **The sliding-goal fix, the face recovery and the wedged detector all
+   predate `7542df28`**, so they were in the tree that passed.
+2. **Every non-comment line of the +115 in `movement.gd`** is a constant (`OFF_NAMES`, `LEGIBILITY_WHY`), a pure
+   read function (`legibility()`, `corridor()` — they read `phase`/`_goal`/`_path` and mutate nothing), or
+   `arc_live`. **Nothing writes `cmd`, throttle, turn, position, velocity, `_path`, `_goal` or any steering term.**
+3. **`arc_live` is write-only with respect to behaviour:** assigned in `idle()` and `drive()`, read only inside
+   `legibility()` and in `reading()`'s dictionary. No decision consults it.
+4. **The +82 in `combat_motion.gd` is all A6**, wholly inside `if a6_on() and style != "run" and live.size() > 1`;
+   `a6_on()` is opt-in and off.
+5. **The one way added keys could matter, checked not assumed:** a consumer branching on the reading's *shape*.
+   **8 call sites, none** using `.size()`/`.keys()`/`.hash()`/`.values()`/`.is_empty()` or whole-dict comparison.
+6. **Measured, not just read: `d6a1f454` reports `sim-baseline d4c049819a5833d3` unchanged** — `main`'s current
+   value. A nav change perturbing hull motion would have to survive a hash of simulation state.
+
+**What remains in the window is `tank_brain.gd` (+133), which is squad's** — stated as what is unaccounted for, not
+as a diagnosis; nav has not read it.
+
+**The hypothesis nav would test first, because it fits the symptom better than a nudge:** the probe fires *one frame
+after placement*, and the resize left units under a metre from foundry's geometry. **A unit that spawns already
+intersecting, never moving at all, looks identical to a nudged one.** That is a placement-margin failure CP2
+exposed, not a movement change. Ask the probe to print the **spawn** position beside the current one — if they are
+equal, no motion occurred and every movement-layer candidate is eliminated at once.
+
 ### OWED, not done: P7's control-arm baseline through A12
 
 **What it is:** the off-corridor velocity fraction on **today's default path**, measured by `make metrics` — A6's
