@@ -211,6 +211,36 @@ seeing the number" is exactly the shape that needs the timeline attached.**
 - **bigger target:** `moved` and `push` hold; the damage shows in losses, suppression and kill distance.
 - **neither:** nothing moves but the matchup still collapses, and I have no mechanism and will say so.
 
+### THE COVER ON THE MAP IS SIZED FOR A 4 m VEHICLE (structural, 2026-09-19)
+
+**Certain, and independent of any of my statistics.** Yard's cover is 58 × `container_40` (**12.19 m**), 40 ×
+`container_20` (6.06 m), 6 wrecks (6.4 m), plus barricades and an ad screen. **The longest single prop on the map
+is 12.19 m. The War Rig is 14.0 m.**
+
+| hull | length | prop types long enough to hide it |
+|---|---|---|
+| gang_scout | 2.8 m | 5 of 6 |
+| gang_ifv | 3.6 m | 5 of 6 |
+| gang_artillery | 4.2 m | 5 of 6 |
+| gang_support | 7.0 m | 2 of 6 |
+| **gang_tank (the rig)** | **14.0 m** | **0 of 6 — nothing on the map is long enough** |
+
+**Every other gang vehicle can hide behind a single container. The rig cannot hide behind anything.** Containers
+stack (`max_stack` 3) but that is height, not length.
+
+**This is the THIRD system found this round that was sized for a ~4 m vehicle** — after the spawn grid (pitch 8.0 m
+minus jitter) and `ArmyLayout`'s spacing ("hulls are ~4 m long"). Each was invisible until a 14 m hull met it.
+**The pattern is worth more than any of the three: a vehicle far outside the range a system was built for does not
+fail loudly, it just stops getting the benefit everyone else gets** — and in this case the benefit is cover.
+
+**What it does NOT establish.** My engagement arms show `unit_seconds_near_cover` flat (0.300 → 0.306) and
+`deaths_near_cover` **falling** (0.411 → 0.332) — the rig reaches cover as often, and a smaller share of deaths
+happen there. If the rig were dying *while exposed at* cover I would expect that share to **rise**, so the numbers
+do not simply confirm the story. They are also **pairing-level** (both armies pooled) at n=6, so they cannot
+attribute a death to a faction, let alone to a hull. **I am not claiming this explains `gangs vs law`.** It is a
+structural consequence of the size that is true whether or not it explains anything, and it is the first candidate
+I would test with a metric that can attribute.
+
 **RESULT: INCONCLUSIVE, and the prediction is not met. I am not claiming a mechanism.** Both arms, builder0,
 `gangs:law` on yard, n=6, same seeds, build declared as the arm:
 
