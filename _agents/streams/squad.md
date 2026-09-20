@@ -231,6 +231,47 @@ lead's 4 s allowance is exceeded, that is a question for him, recorded here with
 
 **In progress** (started 2026-09-20, worktree `godot-squad`, branch `stream/squad`, from `9f864474` = `main`).
 
+### ROUND 10 STARTS HERE (the lead's own summary is the next section down)
+
+**Five items, in the order I would take them. The first is the only one that is a design question rather than work.**
+
+**1. Formation spacing comes from hull WIDTH; rotation needs the DIAGONAL.** Nothing in this codebase accounts for a hull
+turning in place. `hull_floor` is width + `HULL_CLEAR_M`, leaving 2.0 m of lateral air; a yawing hull sweeps to its
+half-diagonal and needs `half_diagonal - half_width` beside it — **3.27 m for a `tank` (short by 1.27) and 5.53 m for a
+War Rig (short by 3.53)**. The deficit grows with LENGTH while the spacing is set by WIDTH, which is why CP2's resize
+made a latent error start failing tests. Measured across five formed-up squads: across gaps 4.28 / 2.98 / 1.12 / 2.39 /
+4.06 m, four of five below what a `tank` needs, **not one pair overlapping** — clear while parallel and unable to rotate.
+Full table and the three trades are in the section of the same name. **Do not choose from the code:** put a squad on the
+field, order a new heading, and decide whether hulls clipping while they dress looks acceptable. That is the lead's.
+
+**2. The wheeled-hull facing is nav's now, with my numbers.** A dragged heading reaches every crew as a standing `hold`
+(`d29115ae`), and the ORDER is asserted because that is what this layer controls. The hulls then end at **tank 1.4 /
+16.2 degrees against ifv 41.4 / 28.5** — a wheeled hull cannot neutral-steer, so its heading is whatever its last travel
+left it on. Ruled: a held wheeled hull manoeuvres to an ordered facing above a stated error; nav owns the how and the
+cost. **If the plant refuses low-speed yaw, that ruling and the constraint collide** — see item 1, since the refusal may
+be geometrically correct.
+
+**3. `ArmyLayout._is_clear` ignores each placed vehicle's own forward.** `taken` holds `[position, width, length]` and the
+test projects onto the DEPLOY frame's axes, which is sound while every hull shares that frame (true within a team; 180°
+preserves width and length). It is **wrong for an arena whose two spawn zones are not exactly opposed**, where the teams'
+forwards differ by something other than 180° and a rotated footprint is compared as if axis-aligned. Latent, with a named
+trigger, caused nothing measured.
+
+**4. Delta's margin is item 1's first symptom, not a separate oddity.** `test_five_squads_ordered_in_quick_succession`
+puts Delta's worst crew at **22.2–22.4 m against a 36 m threshold** — 62% of the budget, on main, with combat's constraint
+absent, while the other four squads sit at 3–7 m. A squad whose crews are 1–4 m apart laterally while carrying 8.62 m
+hulls cannot dress its formation. It PASSES, so it is not urgent; it will start failing for whatever lands next and be
+blamed on it. The worst crew in every squad now prints on every run (`12cd41df`), so the margin is visible in a green run.
+
+**5. `test_tactics_deform`'s `super.teardown()` — blocked on nav's sealing.** A `-> void` override calling a base that
+awaits detaches it silently. nav seals the drain into a `_teardown()` the runner awaits; my override then stops calling
+super. Nothing to do until that merges, and nothing is wrong today.
+
+**Carried, and pre-registered so it can fail:** combat's `Tank.place(spot, yaw)` should make `match_spawns` green — **zero
+units firing the drift detector, the settle completing in one or two frames with a millimetre last step, all four pairs
+clearing**. Measured against `0d5bd0d4`'s log. **If even one unit still moves, the tick-1 permutation was not the whole
+cause.** That red is deliberate and stands until then.
+
 ### For the lead, first thing
 
 **Four things went in, one came out, and one number is worth your eye more than the rest.**
