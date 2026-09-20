@@ -2422,3 +2422,13 @@ The kickoff prompt is one line; this section is the rest.
     the fix was `git merge --ff-only main` in each; `tools/worktree.sh` now does that itself and refuses loudly when a
     branch carries unmerged commits. **After creating worktrees, read the `VS MAIN` column before handing out the
     kickoff prompt** — `0/0` on every row is the launch condition.
+153. **A saturating cost is harmless as one addend and blind as a priority level, because inside a level it only ever
+    competes with itself.** Round 9, nav's first run of A7: the pre-registered falsifier test — *a gun held 36 m outside
+    its slot must slide back rather than stand still* — **failed on the fix that exists to eliminate that stall.**
+    `PENALTY_LEASH` clamps at `LEASH_FALLOFF` (10 m) past the slot radius. As a *penalty* summed with other terms that
+    was fine: the other terms still separated the candidates. Promoted to a *level*, a unit far outside its slot has
+    every candidate clamped to the same 1.0, the level ranks nothing, hands a fully tied set down, and the preference
+    level keeps the unit where it is. **Every cost that becomes a level must be monotone in the thing it prices over the
+    whole range it can see.** Two of nav's other level costs needed re-checking for the same reason. This is catalogue
+    Part 2's warning one layer down — a term correct in a weighted sum is not thereby correct in a lexicographic
+    ordering — and squad (A8–A10) and combat (A2) are converting weighted terms this round too.
