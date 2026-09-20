@@ -373,9 +373,17 @@ tests/test_control_panel.gd:143         teardown()      <- mid-test, not an over
 ```
 
 **Because the override is declared `-> void`, the runner's `await` returns immediately, the navigation drain
-detaches, and these viewport-resizing tests have skipped it since it existed.** nav is sealing the drain into a
-`_teardown()` the runner awaits, with the overridable hook synchronous; **when that lands, these four stop calling
-super**, and `test_control_panel`'s mid-test call becomes an awaited helper or goes. Nothing to do until then.
+detaches, and these viewport-resizing tests have skipped it since it existed.** nav has sealed the drain into a
+`_teardown()` the runner awaits, with the overridable hook synchronous (`c3df6d4a`, riding nav's next check). **The
+three overrides and the mid-test call need DIFFERENT fixes:**
+
+- `test_command_readability:141`, `test_touch:177`, `test_command_camera:194` — **just drop `super.teardown()`**.
+  Their own viewport restore keeps its place, because the hook runs *before* the freeing.
+- `test_control_panel:143` — **`await free_owned()`**, now public and the supported way to clear the world part-way
+  through a test. A bare `teardown()` there would run only the synchronous hook and **free nothing**, which is the
+  same trap one layer along: a call that looks like it tears down and does not.
+
+Nothing to do until nav's merges.
 
 **It is the same class as the rest of this round, in a new costume:** `await` on a `-> void` function is a
 statement that looks like it waits and does not. A lint over zero files, a `get()` that turns *absent* into *null*,
