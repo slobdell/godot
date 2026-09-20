@@ -422,8 +422,16 @@ behaviour change from this branch.** No re-record needed.
 **Which tree that is was confirmed by ASKING builder0**, not inferred from rsync timing — its `movement.gd` carries
 A1's counters and **no `wedged`**, which pins it to `5c8f08b3` exactly.
 
-**A second check runs on the tip `0f14cb2b`**, covering what postdates the green one: the `wedged` detector, X6's
-forced gains, and A1's monotonicity fix.
+**The tip `0f14cb2b` is UNVERIFIED, not red.** Its check died with **exit 255** — *transport, not the suite*
+(`remote_builds.md`: a 255 is ssh) — when builder0 left the network at ~03:15. The wrapper said
+`make check exited 255 (build/ copied back: FAILED)`, so **`build/` holds a PREVIOUS run's artefacts and nothing in
+it may be analysed or shown to anyone.** Re-run when builder0 returns, and before starting it check
+`ssh builder0 "ps -eo pid,args | grep '[s]lot.sh'"` for this folder — a dropped run's remote `make` may still be
+executing on the box, and two runs in one folder clobber each other.
+
+**Also seen in that log and worth someone's attention: builder0's root filesystem is at 91 % (102 G of 119 G, 11 G
+free).** The same figure was flagged at the end of round 8. A failed copy-back on a full disk is how round 8's
+`build/` came to hold three-hour-old artefacts that nearly reached a conclusion.
 
 ~~**The tree the remote check is running against is `acd25a0b`.**~~ *(superseded: that run's wrapper died mid-check
 with no verdict line, and was replaced by the run above.)* Everything committed after it is
