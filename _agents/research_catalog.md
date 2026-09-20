@@ -453,6 +453,14 @@ constant-curvature arcs over a ~2 s lookahead, with a gear-continuity bonus. **R
 interest/danger ring, which scores *directions* the vehicle may be unable to take — the ring is why a heavy hull
 picks a heading it then has to hunt toward.
 **Determinism:** fixed grid, row-major.
+**MEASURED (nav, 05:10, laptop, five duels pooled): `--nav-off=a11` alone is a NO-OP** — every `a11_on()` sits
+inside `choose_projected`, which runs only when A7 is on, so the earlier duel question was asked on an arm that
+could not act (byte-identical arms with the flag honestly printing `a11=true`: the switch worked, the arm did not).
+With the right arms, **A7+A11 vs A7 alone: duel 20.0 → 6.3 s, shots/s 0.27 → 0.57, damage/s 18.9 → 51.5, damage per
+shot 70 → 91; front hits 84% (21/25) → 67% (10/15), Fisher p = 0.26.** A11 more than doubles the exchange tempo; whether
+that is lethality or blundering is undecided because a 6.3 s duel cannot produce enough hits. Needs many seeds or a
+scenario that does not end at the first death. A test now fails if A11 ever escapes `choose_projected`; the duel
+scenario's `shots >= 6` fails a faster fight for being faster and becomes a rate (squad's file).
 **Falsifier:** angular-acceleration saturation events in close quarters reach zero; steering oscillation **−60%**.
 **Note the overlap with A7 and A1** — all three touch the same code path. Part 2 applies: they are sequenced, not
 parallel.
