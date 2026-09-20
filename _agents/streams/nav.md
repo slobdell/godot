@@ -328,9 +328,22 @@ round. Going back to 12 m recovers 3° of a 19° move, so it does not undo the l
 | 2.84, 4.49, 12.0 | 23°, 3.9 m | 7°, 6.7 m |
 | 3.32, 5.24, 14.0 | 26°, 3.5 m | 7°, 6.7 m |
 
-On bare ground every length is identical. So a long rig does not pivot: **it catches scenery with a collider the short
-one cleared, and goes on yawing while it is stuck.** That is a property of the hull AND the map together — worse on the
-city map than in the open, and absent from an empty arena. The laptop reproduced builder0's yard numbers exactly.
+On bare ground every length is identical. So a long rig does not pivot, and it is not jammed either — a tick-by-tick
+dump settles what it actually does:
+
+    t=0.5 heading  -3.9  model_speed  3.50  moved 0.31
+    t=1.0 heading  -7.9  model_speed -0.47  moved 0.40
+    t=1.5 heading -11.0  model_speed  3.10  moved 0.40
+    t=2.0 heading -14.3  model_speed -0.80  moved 0.46
+
+The hull IS rolling — the model's speed and the real speed agree, so nothing is stuck — and it is the creep K-turn's
+legs alternating forward and reverse. **On yard the legs cancel: 25° of heading for 0.5 m of net displacement. On bare
+ground the same legs drift the hull 6.7 m away, so the detector never counts it.** The longer the hull, the sooner a leg
+meets scenery, which is why the yard column rises with length while the bare column does not move at all.
+
+So the honest statement: a long rig shuffles round on the spot when there is something to bump against, by a mechanism
+that is legitimate physics for a car and looks exactly like the pivot the lead says is impossible. The laptop reproduced
+builder0's yard numbers exactly.
 
 What it means for the fix: neither length nor `min_turn_radius_m` is the lever. A big hull needs either to stop
 commanding yaw while it is against something, or not to be asked to turn on the spot at all (squad's change, and the
