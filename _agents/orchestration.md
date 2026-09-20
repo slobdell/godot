@@ -2524,3 +2524,12 @@ The kickoff prompt is one line; this section is the rest.
     available, three checks resident at ~1 GB each, a queue behind them. Raised to 6 (`5715ab75`); metrics' T1 memory
     table decides whether 8 holds. **When you add a derived default, grep for every caller that sets the same variable
     explicitly** — an explicit value upstream silently wins, and the queue looks like a slow machine.
+162. **Sanity-check one value before circulating ten — and the orchestrator must check one before ruling.** Round 9,
+    02:30: scale's new `corridor_widths` reported the direct route pinching below the widest hull on 8 of 10 maps;
+    the orchestrator ruled within minutes that every map's gaps would widen. scale retracted it twenty minutes later:
+    the measure was **twice the distance to the nearest obstacle**, a corridor width only with something on both
+    sides; yard's 4.72 m "pinch" was a route hugging one wreck with 20 m of open ground behind it. **A measure that
+    flags everything is usually measuring the wrong thing** — plausible on every map is the tell, not the reassurance
+    (lesson 34: a new instrument is checked against a case whose answer you know before its first number leaves the
+    stream). And lesson 26 for the orchestrator: a ruling is a relay to the lead with authority attached; ask what one
+    value looks like in the world before acting on a table of them.

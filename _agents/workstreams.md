@@ -101,7 +101,7 @@ needs `radius_of(me) + radius_of(other) + 0.75` = 4.55 m of lateral clearance fo
 — impossible by construction — and a refused ask makes the ASKER yield, so in single file the unit that should go
 forward backs off with nowhere to go** (`asks_refused`, `yields_started`; nav's leading hypothesis and the
 signature squad saw); (3) ORCA's off-mesh refusal degrades to a permanent slow in a corridor (`deflected` vs
-`solved`). Measured first when a builder0 window opens after CP2d, before A11's default; accepted fix shape if (2)
+`solved`). Measured first when a builder0 window opens (CP2d is WITHDRAWN — scale's corridor table measured the wrong quantity), before A11's default; accepted fix shape if (2)
 holds: in a corridor narrower than the clearance sum, right-of-way falls back to strict file order.
 
 ### Standing rules for round 9 (in addition to *The standing rules for this round* below)

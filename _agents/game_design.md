@@ -1929,15 +1929,15 @@ rig in round 8); the navmesh's single agent radius (P6: one radius for a 5× foo
 telephoto (control); and the sim baseline, which moves and is recorded once by the orchestrator. **Nobody publishes a
 size-dependent number measured across CP2.**
 
-**Decided overnight (2026-09-20 02:30, orchestrator on the lead's behalf, reversible in one constant): the kit's gaps
-widen to the widest hull plus 1 m.** After the resize the widest hull is the Condemned artillery with outriggers,
-**4.74 m** from its own mesh (was 3.39 m), and scale's `arena-report` shows the tightest point on the direct base-to-base
-route is narrower than that on **8 of 10 maps** (yard 4.72 m, boneyard 4.36, barriers 4.31); squad had already seen the
-artillery fail the maze's defile at its *old* width. The width stays — it is the proportional truth he asked for. The
-maps were authored for 4 m hulls, and *units that do not arrive* is his loudest complaint, so the gap widens (a
-constant in `tools/make_arenas.py`, derived from `Units` at generation time), the fairness control re-runs, and the
-WATCH line becomes an assertion. The pre-widening table is preserved in the round-9 references. The alternative, a
-per-hull-class navmesh radius, is catalogue C2 and a round of its own. **He can overrule this in the morning.**
+**WITHDRAWN (2026-09-20 02:40): the gap-widening ruling.** For twenty minutes the record said the kit's gaps would widen
+to the widest hull plus 1 m, because scale's `arena-report` showed the direct route pinching below the 4.74 m artillery
+on 8 of 10 maps. **The measure was wrong**: it returned twice the distance to the *nearest* obstacle, which equals a
+corridor width only with an obstacle on both sides; yard's reported 4.72 m "pinch" is a route hugging one wreck with
+20 m of clear ground behind it — the real span is ~23 m. The orchestrator ruled on it within minutes without checking
+one value. **The maps are not changing on that evidence.** What stands: the resize lands as is; squad's artillery did
+fail one defile on the maze fixture at its old width, and that is nav's plant/right-of-way question, not geometry.
+scale's corrected measure (march perpendicular to travel both ways until something tall is hit) reports when it lands;
+if a real pinch exists the question is re-put with the right number.
 
 **The lead sees the roster before it ships:** the scale stream renders all 21 vehicles side by side at the new scale
 in one frame (the rig and a Condemned tank as references, the same camera as the gallery) and puts it on a review page.
