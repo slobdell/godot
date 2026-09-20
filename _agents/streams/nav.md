@@ -285,7 +285,12 @@ deliberately NOT re-recorded: nothing on the default path moves it.
 
 builder0, the tree at `9f864474` (= `main`). The baseline line matches the recorded value, unmodified.
 
-**This branch's tip (`acd25a0b`) is NOT yet covered by a remote check** — it is synced and **queued on builder0
+**The tree the remote check is running against is `acd25a0b`.** Everything committed after it is
+**`_agents/streams/nav.md` only** — verified with `git diff --name-only acd25a0b..HEAD` — so when that check returns,
+**`acd25a0b` is the green hash for every line of code on this branch**, and the commits above it are documentation.
+Name `acd25a0b` when merging code; do not name the tip unless a later check covers it.
+
+**That tree is NOT yet covered by a remote check** — it is synced and **queued on builder0
 behind three other streams' checks** (control 49 min, metrics 67 min, squad 51 min at enqueue; builder0 runs 3
 slots). Do not read the branch as green until the wrapper's own `>> remote: make check exited <N>` line says so.
 *(`>> waiting for a heavy-run slot` is printed on enqueue and never retracted — being granted one is a later line in
