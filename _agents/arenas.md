@@ -727,3 +727,44 @@ streets read as streets from inside one, and the minimap reads as a city grid on
 2. **Street level is plain** — flat window grids where a tank actually drives, no balconies, signs or awnings.
    **This is feel's own open question and he has not answered it.** Shipping it plain is deliberate: a cityscape he
    can play beats a detailed one he has never seen, which is the entire lesson of round 8.
+
+## Can a map hide the longest hull? (round 8; `make arena-report` prints it)
+
+combat, 2026-09-19: the arena kit's longest prop is `container_40` at **12.19 m**, and the War Rig became **14.0 m**.
+A hull longer than anything on the map has nowhere to hide — and **cover fails silently**: *"the rig still drives to
+cover, still counts as near cover, and simply is not covered."*
+
+Share of the contested field within `TERRAIN_RADIUS` (45 m) of a prop long enough. **Best case by construction** — a
+box's screening length is its longest horizontal side, so this assumes the hull is parked along it and the shooter is
+square to it. A hull that fails here cannot be hidden at all.
+
+| hull length | 6 m | 7 m | **12.19 m** | **12.5 m** | 14 m |
+|---|---|---|---|---|---|
+| **yard** | 0.99 | 0.99 | **0.99** | **0.00** | **0.00** |
+| **pit** | 0.85 | 0.48 | 0.46 | **0.00** | **0.00** |
+| **terminus** | 0.98 | 0.95 | **0.91** | **0.91** | **0.91** |
+| boneyard | 1.00 | 0.92 | 0.85 | 0.33 | 0.33 |
+| foundry / scrapyard (v1) | — | — | fine | fine | **fine** |
+
+**It is a STEP at 12.19 m, not a slope**, which is what makes it decision-useful: the rig's length is *binary* for
+cover. combat's framing — the lead's question stops being *"how much balance is huge worth"* and becomes **"do you
+want a truck that can take cover or one that cannot"**, which is answerable by looking.
+
+**The regression arrived WITH the kit.** foundry and scrapyard handle a 14 m hull because the legacy v1 `wall` is
+18 m; the kit that replaced it tops out at 12.19 m. **The two maps he kept are exactly the two v2 maps with no long
+props**, so it is invisible precisely where it matters most. The general shape, worth more than this instance:
+**replacing a prop set silently changed what the world can hide, and nothing in the layout schema records
+"longest screening dimension" as a property anyone can check.** `make arena-report`'s `WATCH` line is that check,
+and it prints on every run rather than on request.
+
+### ⚠ Do NOT add a long prop to yard or pit before the lead rules
+
+Not caution — the evidence is worth more than the fix, and both of us reached this independently:
+
+1. **At 12 m the problem disappears with no map change at all**, so a map change now may be spent on a length that
+   does not survive the week — and yard and pit are maps he **kept**.
+2. **Adding a 14 m prop destroys the cleanest evidence he has.** The moment yard can hide a 14 m hull, the **0.00**
+   that makes the choice obvious is gone.
+
+If he rules 14 m: a jackknifed trailer, a rail car, or a container **wall** (rather than a stack — stacking adds
+height, not length) reads as the same venue. feel sees it before it ships.
