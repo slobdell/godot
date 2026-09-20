@@ -803,6 +803,52 @@ friend 0.
 `run` (the A/B control for round 7's standoff), and it does not change `COMMIT_BONUS`'s value — combat's A2 replaces
 that expression at level 5 under contract S5.
 
+### THE QUESTION THAT SURVIVES THE WIDENING: why did a 2.6 m hull with 2.1 m of slack fail the defile?
+
+The orchestrator's framing is right — scale widening the kit's gaps to `widest_hull + 1.0 m` (CP2d) does not answer
+this, because the Condemned artillery failed the maze defile **at its pre-CP2 2.6 m width**, with four squadmates
+using the same corridor, never arriving in 70 s. **That is a plant/avoidance question and it is nav's.**
+
+**Three candidate mechanisms, each with its arithmetic and the counter that already exists to test it.** All three
+are derived from hull WIDTH or an avoidance radius, which is why a "wide enough" corridor does not settle it:
+
+1. **The chord guard starves exactly the hulls that need room.** `_chord_slack()` is
+   `max(0.3, NAV_AGENT_RADIUS − width/2 − 0.2)`. At 2.6 m wide that is **0.5 m**; at CP2's 4.74 m it is
+   `2.0 − 2.37 − 0.2 = −0.57`, clamped to the **0.3 m floor**. The guard samples the straight line to the carrot at
+   0.5 and 1.0 of its length and pulls the carrot back to 0.6/0.3 of the lookahead when it reads off-mesh. In a
+   corridor with ~1.2 m either side, a carrot past a bend cuts the corner and fails that test **repeatedly**, and a
+   hull that keeps pulling its carrot back never commits to the corridor. **Counter: `guard_rescues`.**
+   *(And the round-8 finding bites here too: the sweeping dimension at a corner is half-LENGTH, not half-width.)*
+2. **⚠ Right-of-way cannot be satisfied inside a defile, and its failure path makes the asker yield.** A yield spot
+   must clear the asker's line by `radius_of(me) + radius_of(other) + YIELD_LINE_MARGIN`. `Avoidance.radius_of` is
+   `(width + length)/4 + 0.25`, so for the artillery (2.6 × 4.0) that is **1.9 m**, and two of them plus 0.75 is
+   **4.55 m of lateral clearance required — in a 5.0 m corridor.** Impossible by construction. Every ask is refused,
+   and *"refused asks make the asker give way itself"* — so in single file **the unit that should go forward backs
+   off instead, and has nowhere to back off to.** That matches the observed signature exactly: strict ordering, tail
+   never arrives. **Counters: `asks_refused`, `yields_started`.** This is nav's leading hypothesis.
+3. **ORCA's navmesh refusal degrades to a permanent slow.** An avoiding velocity that would put the hull off the
+   mesh `AVOID_MESH_PROBE` (3 m) ahead is refused and the unit slows instead. Inside a corridor **nearly every**
+   avoiding velocity leaves the mesh, so a queued hull slows behind its neighbour indefinitely rather than resolving.
+   **Counter: `Avoidance.deflected` against `solved`.**
+
+**Why it waits, as the orchestrator asked me to state rather than assume:**
+- It is a **behaviour change on the default path** in the most load-bearing code nav owns (the guard, right-of-way,
+  ORCA), and this round has spent itself establishing that those do not ship unmeasured.
+- The measurement needs a **cleared window**: `make squad-defile` plus the three counters across both arms, and
+  builder0 has had 4–6 runs queued all night.
+- It is **size-dependent**, so anything measured now has to be retaken after CP2 — and CP2d moves the corridors too,
+  which makes now the *worst* moment to take a before-number.
+
+**What is NOT a reason it waits:** A11's default. The two are independent — this is `Movement` and right-of-way, not
+`CombatMotion`'s candidate set — and if a window opens before A11's duel instrument exists, this should be taken
+first, because it has a named unit, a deterministic repro (`make squad-defile`) and three pre-identified counters.
+
+**And scale's table says it is not a fixture problem:** 8 of 10 maps are tighter than the post-CP2 widest hull, and
+**the maze is the third-tightest, not an outlier** — foundry, furnace, scrapyard, boneyard and barriers are all at or
+below it, and they ship. scale measures clear ground against obstacle footprints; nav measures what the router
+believes after the bake takes 2.0 m off each side. **The gap between those two numbers is precisely what one agent
+radius for a 5× footprint range gets wrong**, and it is now a per-map table rather than one anecdote.
+
 ### OWNED AND UNFIXED: a tracked hull reversing 5.6 m mid-leg, reproducible in one test (scale's trace, 2026-09-20)
 
 scale sent this from `test_control_group_moves::test_the_group_faces_its_direction_of_travel_on_arrival` — three
