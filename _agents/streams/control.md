@@ -167,6 +167,41 @@ directly.
 
 ## Status
 
+> ## TWO CALLS FOR YOU, WITH THE PICTURES. Neither is broken; both are choices the resize forced.
+>
+> ### 1. The ring under your vehicles is now wider than the vehicle is long. Which do you want?
+>
+> **Look at** `build/camera-looks/arenas/yard/default.jpg` (one tank, one ring) and
+> `build/control-playtest/1920x1080/8_whole_army.png` (three rings at once).
+>
+> Your tanks got longer — the Condemned tank went from about the length of a car to **8.6 m, the length of a bus** —
+> but they did not get wider. The selection ring is drawn from whichever is bigger, so it grew with the length and
+> is now **a circle you could park two tanks abreast inside**. On one vehicle it looks loose. On a squad the rings
+> overlap into a cloverleaf and you cannot tell which ring belongs to which vehicle, which is the thing rings exist
+> to tell you.
+>
+> - **(a) Tighter circle.** One number. The ring shrinks to just contain the hull (about a third smaller). Cheapest,
+>   and on a squad in close formation they will still touch.
+> - **(b) A ring shaped like the vehicle** — an oval or a rounded rectangle lying along the hull. This is the honest
+>   answer now that your roster runs from a 2.9 m rat rod to a 14 m rig, and it is the only option that stops a
+>   squad's rings overlapping. It is real work on the marker, not a constant.
+> - **(c) Leave it.** Loose rings, and you live with the cloverleaf when a squad is packed.
+>
+> **My recommendation: (b).** You said the resize made the game *"much cooler and awesome"*; the rings are the one
+> piece of UI that got worse in exchange, and (a) only halves the problem.
+>
+> ### 2. When you drag a heading for a whole squad, the squad does not turn to it yet.
+>
+> Right-drag now means *"go there, and be facing that way when you arrive"*. It works when you have picked
+> vehicles individually. **When you have a whole squad selected — your commonest order — the heading currently
+> stops at the squad leader and does not reach the vehicles.** The pin shows the heading you drew, so the screen is
+> telling you it took; the vehicles have not been told.
+>
+> **This is half-built, not broken, and the missing half is one line in squad's code** (the element passes the
+> task's facing down to its members). Nothing for you to decide unless you would rather it waited for the whole
+> thing before you play with it. Flagged because the pin promises something the vehicles do not yet do, and a
+> promise the game does not keep is worse than a feature that is obviously absent.
+
 > ## ITEM 4, PART DONE: THE HUD ON THE RESIZED ROSTER. TWO FINDINGS, ONE IS YOURS TO RULE ON.
 >
 > **THE FRAMES (item 4 is now shot; `camera-looks` landed at 08:59, `exited 0`, copy-back verified):**
