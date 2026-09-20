@@ -840,7 +840,37 @@ INERT ON THE DEFAULT PATH once more.** It was live for about an hour. combat's b
 ~90 m from their slots. **No corridor win is worth squads being unable to form up**, and nav agreed with the
 reversal without reservation — having endorsed the enable earlier on evidence that turned out to be confounded.
 
-**The mechanism is nav's vehicle-as-wall reading and it now has its confirming case:** hulls seating into a
+**⚠ NAV'S VEHICLE-AS-WALL READING IS WRONG. The replacement is squad's, and it is the SAME ERROR nav found in its
+own clearance row this morning.**
+
+nav argued twice that the **predicate** was at fault — that `collision_mask = 3` made a squadmate count as a wall
+and the arrival yaw was refused in error. It is not. squad's roster on the separating axis (`165ef0cc`): the crews
+are **clear while parallel** (gaps 1.12–4.28 m, none overlapping), but an 8.62 × 2.40 m hull **yawing sweeps to its
+half-diagonal, 4.47 m**, so it needs ~3.27 m beside it to turn while `HULL_CLEAR_M` leaves **2.0** — a tank short
+by **1.27 m**, a `gang_tank` by **3.53 m**. **The plant is correctly refusing a rotation there is no room for.**
+
+**Formation spacing is derived from hull WIDTH; rotation needs the DIAGONAL.** The deficit grows with length, and
+CP2 made it bite.
+
+**And that is nav's own clearance-row error, in another file, pointing the other way:**
+
+| | wrong pairing | licensed motion of each |
+|---|---|---|
+| nav's clearance row | `radius_of` (w+l)/4 **rotational sweep** vs navmesh bake **lateral clearance** | turning-in-place vs driving-down-a-corridor |
+| squad's formation | `HULL_CLEAR_M` **width** vs the yaw's **half-diagonal** | driving-straight vs turning-in-place |
+
+**Same class, opposite direction, both exposed by the resize.** Which gives the rule both of them needed:
+***a clearance number must state which motion it licenses.*** Width licenses driving straight; the half-diagonal
+licenses rotating in place; `(w + l) / 4` licenses a swept turn. **Mixing them is the bug**, and it is invisible
+while hulls are small enough that every number is generous.
+
+**What survives of nav's reading, as a checkable claim rather than a face-saver:** the *prediction* that off-slot
+failures track **crowding at the moment of seating** rather than hull type or map position holds under diagonal
+spacing too — both are about what is adjacent when a hull seats — and the staggered-order test still discriminates
+them. The **mechanism** nav proposed was wrong; the correlation it rested on fitted more than one cause, which is
+why it survived two arguments.
+
+**The original reading, kept for the record:** hulls seating into a
 formation are nosed against squadmates, `test_move` uses `collision_mask = 3`, a squadmate counts as a wall, the
 arrival yaw is refused and the crew never seats. **Alpha survives because it is ordered first, into open ground,
 before the others crowd in.** Labelled **inferred, not measured** until the `yaw_vehicle_contact` counter and
