@@ -221,70 +221,24 @@ is the orchestrator's call, not his.)
 
 ## Status
 
-> ### ⏸ PAUSED 2026-09-20 ~02:50 (orchestrator's call: the lead's session limit, and builder0 is off the network).
-> **Tree is clean and every commit below is committed. Branch tip `2937e095` on `stream/metrics`.**
+> ### ✅ CP1 MERGED (`ae9c65e1`). CP3's falsifier MET at `0f811c1c` — ready to merge.
+> **Green commit: `0f811c1c`** (`>> remote: make check exited 0`, three consecutive runs). Commits above it are
+> **documentation only** (`git diff 0f811c1c..HEAD` touches `_agents/` and nothing else).
 >
-> **Where this stands in one line each:**
-> - **CP1 (A12) is COMPLETE and accepted** — the positive control reproduces round 8's finding to within 0.05
->   points against a ±0.5 bar. **It needs only a green `make remote T=check` for its merge hash.** The
->   orchestrator has agreed to merge it on that hash, front of the queue.
-> - **T1's before is MEASURED and safe** (`2693 s` over 16 targets, builder0, `2fd84d69`; `test` alone 2387 s).
->   The mechanism is built and ten of its properties are verified without the build machine (see
->   `references/round9/metrics/t1-cp3.md`).
-> - **CP3's three-run series is VOID and must be restarted whole.** builder0 dropped (`No route to host`) while
->   run 1 was still *queued*, so it executed nothing; runs 2 and 3 failed in 3 s each. Nothing partial is counted.
+> | run | wall-clock | vs serial 2820 s | jobs × shards | tests | sim-baseline |
+> |---|---|---|---|---|---|
+> | serial (a) | 2820 s | — | 1 × 1 | 1310 / 0 | `04414f5d6a6dfa7c` |
+> | parallel 1 | **837 s** | **−70.3%** | 2 × 5 | 1310 / 0 | `04414f5d6a6dfa7c` |
+> | parallel 2 | **882 s** | **−68.7%** | 3 × 6 | 1310 / 0 | `04414f5d6a6dfa7c` |
+> | parallel 3 | **882 s** | **−68.7%** | 3 × 6 | 1310 / 0 | `04414f5d6a6dfa7c` |
 >
-> **⚠ The exact next step, in order, when builder0 returns:**
-> 1. **Check for my own orphaned processes on the box first** — `ssh builder0 'pgrep -fa "godot-metrics"'` and
->    `ls /tmp/tank_squad_slots/`. A dropped ssh leaves the remote `make` alive; mine was only queued so it should
->    have left a ticket at most, and tonight's `slot.sh` fix removes that on TERM.
-> 2. **Do not trust local `build/`** — the failed rsync said so explicitly: *"local build/ is STALE, not this
->    run's"*. Check timestamps before reading anything from it.
-> 3. Re-run the series on **one frozen commit**: `/tmp/claude-1000/series.sh` (three sequential
->    `make remote T=check`, logging to `build/metrics/t1-parallel-{1,2,3}.log`). **Do not edit any file while it
->    runs** — each `make remote` rsyncs the working tree, so an edit would change what runs 2 and 3 measure.
-> 4. Fill the results table in `references/round9/metrics/t1-cp3.md`, send the orchestrator **CP1's hash from the
->    wrapper's own `>> remote: make check exited <N>` line**, then announce CP3.
+> Full evidence, both denominators, the ordering proofs and the two bugs the series caught:
+> `references/round9/metrics/t1-cp3.md`.
 >
-> Nothing is blocked on the lead. Nothing is half-edited.
-
-
-**In progress** (2026-09-20). Worktree `godot-metrics`, branch `stream/metrics`, started at `9f864474` (= `main`).
-
-### The plan (worker contract step 2), smallest foundation first
-
-| # | Step | Deliverable |
-|---|---|---|
-| 1a | The log format and its reader | `tools/metrics/FORMAT.md`, `tools/metrics/trajlog.py`, round-trip + refusal tests |
-| 1b | The reference emitter | `tools/metrics/trajectory_log.gd` (mine) + a hook in nav's `fight_probe.gd` and combat's `match_runner_mode.gd` |
-| 2 | The four metrics, known-answer tested | `tools/metrics/metrics.py`, `tools/metrics/test_metrics.py`, `make metrics-pytest` |
-| 3 | The positive control | re-run of round 8's configuration at `aa984edd` on builder0, written to `_agents/streams/references/round9/metrics/` |
-| 4 | `make metrics` + `_agents/metrics.md`, then **announce CP1** | `mk/metrics.mk`, `_agents/metrics.md` |
-| 5 | T1: parallelise `check` (measure → map → schedule → timeouts → falsifier → retire), then **announce CP3** | `check-timed`, `check-parallel` in `mk/core.mk` |
-| 6–7 | Stretch: a progress heartbeat for `check`; the offline-objective note | |
-
-### Decisions taken where the brief left a choice
-
-1. **Two readings of displacement efficiency, both shipped.** The *general* metric is every unit, every contiguous
-   4 s window, ungated — a distribution. The *`oscillating` special case* re-implements round 8's gating exactly
-   (only ticks under orders with flat distance-to-goal > 8 m; trail reset when the goal jumps > 3 m; numerator =
-   full windows with path >= 8 m and ratio < 0.25; **denominator = all under-way ticks**, including those whose
-   window is not yet full). *Why:* the round-8 share cannot be reproduced without that denominator, and the
-   continuous metric is worthless if it is silently gated the same way. Both are printed side by side.
-2. **Cusp sign from position + logged heading, never from `gear`.** Signed speed `s = sign(v · h) * |v|` with a
-   0.5 m/s floor (`GEAR_SPEED`, so it is comparable with round 8's gear-flip counter). *Why:* it sees a reversal
-   the controller never labelled, which is the whole point of a trajectory-space metric.
-3. **SPARC on `|speed|`, not on signed speed.** *Why:* the DC term normalises the spectrum, and a shuffling hull's
-   signed mean passes through zero, which would make the metric explode on exactly the case we care about.
-   Reversals are cusp density's job; each metric has one job.
-4. **SPARC is a fixed 128-sample window, zero-padded to a fixed 1024-point FFT, with a fixed cutoff of 20 rad/s** —
-   not the reference's adaptive cutoff. *Why:* the brief requires a number that is identical across machines; an
-   adaptive cutoff makes the answer depend on a threshold crossing. Pure-Python radix-2 FFT, **no numpy**, so the
-   tool has no dependency `make check` does not already have.
-5. **Affine residual is reported only for elements with >= 4 members.** *Why:* a 2-D affine fit has 6 parameters and
-   3 points determine it exactly, so a 3-unit element's residual is identically zero and would read as "perfect".
-6. **`.jsonl` plain, `.jsonl.gz` accepted by the reader.** The emitter writes plain (Godot's compression is not
-   gzip); a big log is gzipped after the run.
+> **Owed, in order:** (1) `ai-scenarios-check` into `CHECK_TARGETS` — the target and its baseline
+> (45/0/2/0, builder0) are committed, it is out of `check` only so it could not confound the falsifier;
+> (2) `determinism`'s verdict line is truncated at 120 chars so its hash never reaches the log — a verdict that
+> cannot be compared after the fact; (3) nav's A6 control-arm logs, to be read once they emit `corridor`.
 
 ### Done
 
