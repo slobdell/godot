@@ -174,6 +174,14 @@ func legibility_line(unit_name: String) -> String:
 	var reading := legibility(unit_name)
 	if reading.is_empty() or bool(reading.get("active", false)):
 		return ""
+	# **If the callout band over the hull is already speaking, this line says nothing.** C-3's rule is one fact one
+	# channel, and here it also stops an outright contradiction: nav measured a hull on the A4 arm holding
+	# `arrival_arc` for 45 s, ending 9.8 m short and 147 degrees off the ordered heading. The band correctly calls
+	# that STUCK; rendering "arriving on the heading you drew" beside it would be the screen telling the player two
+	# opposite things, and the wrong one would be the encouraging one - it says WAIT for a unit that is not coming.
+	# This is a general rule and not an A4 special case: whatever the band has to say outranks an explanation.
+	if callout(unit_name) != "":
+		return ""
 	var why := String(reading.get("why", ""))
 	# A reason this build does not know renders as NOTHING, not as a guess. nav refuses anything outside its closed
 	# set with push_error, so an unknown `why` here means the sets have drifted - and a wrong cause is worse than

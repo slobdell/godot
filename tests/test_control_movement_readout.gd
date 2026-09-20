@@ -258,3 +258,31 @@ func test_the_cause_reaches_the_element_log_and_not_the_order_pin() -> void:
 	for mark: Dictionary in f.controls.order_marks():
 		assert_eq(int(mark.get("refusing", 0)), 0,
 				"the cause never turns a pin red: that is the refusal channel (%s)" % [mark])
+
+
+## nav, from building the arrival-heading test N4 said was missing: on the A4 arm a hull on a blocked corridor can
+## hold `arrival_arc` for 45 s and end 9.8 m short, 147 degrees off the ordered heading. "Arriving on the heading you
+## drew" is the ONE live reason this readout renders, and on that arm the arriving part does not happen - so the
+## line would tell the player to WAIT for a unit that is not coming, while the band beside it correctly says STUCK.
+## Whatever the callout band has to say outranks an explanation.
+func test_the_band_outranks_the_explanation_so_the_screen_never_says_two_opposite_things() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var states := {
+		# On an ordered-facing approach and making progress: the explanation is welcome.
+		"Green_Alpha_1": {"phase": "driving", "stalled_s": 0.0, "legibility": {"active": false, "why": "arrival_arc"}},
+		# The same reason, on a hull that has stopped getting anywhere: the band says STUCK and this line shuts up.
+		"Green_Alpha_2": {"phase": "driving", "stalled_s": 6.0, "legibility": {"active": false, "why": "arrival_arc"}},
+		# And when nav cannot proceed at all, likewise.
+		"Green_Alpha_3": {"phase": "blocked", "blocked_by": "no_path", "legibility": {"active": false, "why": "arrival_arc"}},
+	}
+	var readout := f.controls.movement
+	readout.provider = func(unit_name: String) -> Dictionary: return states.get(unit_name, {})
+	assert_eq(readout.legibility_line("Green_Alpha_1"), "arriving on the heading you drew",
+			"a unit really arriving on its ordered heading is explained")
+	assert_eq(readout.callout("Green_Alpha_1"), "", "and the band has nothing to say about it")
+	assert_eq(readout.callout("Green_Alpha_2"), "STUCK", "a hull going nowhere is STUCK")
+	assert_eq(readout.legibility_line("Green_Alpha_2"), "",
+			"and it is NOT also told it is arriving: the encouraging line would be the wrong one")
+	assert_eq(readout.callout("Green_Alpha_3"), "BLOCKED", "a hull that cannot proceed is BLOCKED")
+	assert_eq(readout.legibility_line("Green_Alpha_3"), "", "and not simultaneously arriving")
