@@ -363,6 +363,19 @@ holds it. **Kill the `slot.sh` wrapper, not the `make` inside it** (`ps -eo pid,
 `readlink /proc/<pid>/cwd` to confirm it is yours, trip-up 79) — that advice was right, it just could not work.
 And the habit that would have avoided the whole thing: builder0 sat at load 0.64 on 12 cores. Heavy runs go there.
 
+## ⚠ A test of `slot.sh` that runs inside `check` is a test of nothing (metrics, 2026-09-20)
+
+`slot.sh` short-circuits to `exec "$@"` when `TANK_SQUAD_SLOT` is set — correct, because a nested make must not
+queue behind the slot it is already inside — and `check` runs inside a slot and exports it. So a suite that
+exercises acquiring, holding and releasing slots **exercises nothing** there, and says so as six failures rather
+than as a skip. Unset `TANK_SQUAD_SLOT` (and `TANK_SQUAD_SLOTS`, `TANK_SQUAD_SLOT_DIR`, `TANK_SQUAD_EXCLUSIVE`)
+for the children; the real slot stays held either way.
+
+**And never assert after a fixed sleep.** `sleep 1.2` before checking that a window is up is a property of an idle
+laptop, not of the code: builder0 runs `check` with four test shards and a fanned-out lint beside it. Poll for the
+condition instead — faster when idle, correct when loaded. Both of these passed here and failed there, which is the
+whole reason the suites are in `check` and not run by hand.
+
 ## A timing run holds the box, and says afterwards whether it held (`--quiet`, metrics, 2026-09-20)
 
 A frame-time measurement needs a quiet machine (lesson 179), and *waiting* for one does not give you one: another

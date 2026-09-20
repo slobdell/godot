@@ -263,7 +263,26 @@ is the orchestrator's call, not his.)
 > `test_theme_city_block::test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll` — **that
 > last one I cannot find written down anywhere and it may be new.**
 
-> ### Waiting on the box (held quiet for feel and show). Four commits verified locally, none checked.
+> ### Backlog and both stretch items COMPLETE. Last check `dd6f84ca`: exit 2, and the red was mine.
+> builder0, `1499 passed, 3 failed`, 1000 s, 4 shards over 214 files, `sim-baseline 1e90f69e5d6fcc46`
+> (unmoved), `determinism 253adefeec657df1`. **Both new features proved themselves in it:**
+> `ai-scenarios-check: 42 passed, 2 failed, 3 pending, 0 unexpectedly passing (non-pending counts 42,2
+> unchanged)` — green, the coin out of the gate, the two live regressions still visible to scale; and
+> `engine: 0 errors, 2 warnings`, with `test_theme_city_block` reading `0 engine errors, 2 engine warnings`
+> and naming both — the exact case `expect_warning` exists for.
+>
+> **The red was `shell-tools-test`, and it is this round's lesson pointing at me.** Six of twelve slot tests
+> and one quiet-window test passed on an idle laptop and failed on the box: `slot.sh` short-circuits when
+> `TANK_SQUAD_SLOT` is set, and `check` runs inside a slot, so every slot assertion exercised nothing; and my
+> fixed sleeps were a property of an idle machine. Fixed at `bf2686ac` (unset the slot vars, poll instead of
+> sleep). **A guard exercised only where it is easy passes for the wrong reason** — and I only found out
+> because I put the suite in `check` rather than running it by hand.
+>
+> Not mine, `git diff main...HEAD -- game/` empty: `test_match_spawns_and_results` (the y=0 spawn contact)
+> and `test_assets_pipeline::test_committed_generated_themes_meet_their_contracts`, which I have not seen
+> documented anywhere.
+
+> ### Earlier: waiting on the box (held quiet for feel and show).
 > `bac84a6f`'s check, for the record: builder0, `>> remote: make check exited 2`, **1481 passed / 4 failed**,
 > 993 s, 5 shards over 212 files — the same seven failures as `fbf2af95`, reproduced exactly. **`make
 > check-hashes` printed on real data for the first time**, which closes CP3's one inferred criterion:
