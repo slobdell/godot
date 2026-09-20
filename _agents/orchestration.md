@@ -192,6 +192,11 @@ The kickoff prompt is one line; this section is the rest.
 
 ## Lessons (add to this list every round)
 
+**Round 9's one sentence, above the list (feel, 2026-09-20): "accepted with no error" carries no information about
+whether the knob does anything.** An arm assertion reads the state the code CONSULTS, not the instruction that was
+issued; eleven measurements were retracted in one day because the thing under test was never selected and the null
+looked like a measurement. Lessons 181, 195, 196, 199 are the instances.
+
 1. Create worktrees **after** committing the round's docs (round 1: workers started without the new HANDOFF).
 2. A stream that depends on another's foundation needs an explicit checkpoint, or it builds against stubs all round
    (round 2: checkpoint 1 was never called; integration adapted army's stub and ai's scenarios at the end).
