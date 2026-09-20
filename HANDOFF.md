@@ -35,6 +35,14 @@ negative results between streams. Final integration order: metrics → scale →
 at the rig's 12 m turning circle, reached 22.7° on the corner. **Caveat he should know:** the collider is still the
 one 14 m box (S2), so a shell can pass through empty air inside a fold this round. Awaiting his look.
 
+**In front of the lead (2026-09-20 02:55): the roster line-up at real relative scale** (`lineup_pose.png` at his pose,
+`lineup_factions.png` all 21 by faction; builder0, `stream/scale` ~`8fc9a2a8`, K = 0.707). **Approved on his behalf
+overnight**: the rig reads as a semi beside a car, the Condemned tank as a bus (8.6 m; on screen 281 × 135 px against
+round 8's 199 × 100, the rig 734 × 279). Defects noted for one more render: labels collide in the factions frame and
+its near row clips. He can overrule the look or K in the morning. **The gap-widening ruling was withdrawn** (scale's
+first corridor measure was wrong; the corrected one shows no pinch on any rotation map: yard 18.0 m, terminus 11.5 m,
+maze 7.0 m = its authored `MAZE_TIGHT_GAP`).
+
 **One question for the lead, with a recommendation:** the roster is being scaled *rig-relative* (the world's vehicles
 at K ≈ 0.7 of real size, so the 14 m rig he ruled on stays and the bus, garbage truck, APC and assault gun grow
 1.5–2×). The alternative is *real metres*, which puts the rig at 18–21 m and roughly doubles apparent crowding on
