@@ -315,6 +315,27 @@ doesn't come back without its orders."* The failing test now connects `Match.tan
 reports the count, **and asserts at most three were destroyed** — so the exclusion can never hide a massacre and
 turn a wipe-out into a green run.
 
+### Merging `main` (CP1) — two traps, one of which I walked into
+
+**`git merge main` at `402606ce`.** CP1 (metrics' A12 + the working lint), plus control's facing, nav's
+A7/A11/A1/A4 and feel's articulated rig. The roster survived: tank 8.62 m, all 21 carrying a `scale_reference`.
+
+**⚠ MERGE ONLY WHEN NO REMOTE RUN OF YOURS IS IN FLIGHT.** `main` rewrites `tools/remote.sh` and `tools/slot.sh`,
+and a wrapper part-way through executing them can read a rewritten script. **I merged with a `roster-lineup`
+queued on builder0, so that render is VOID and was killed and re-queued.** Nothing of mine was executing on the
+box (it was still waiting for a slot), so there was no orphan to clean up — but that was luck, not care.
+
+**And it is `git merge main`, never `git merge origin/main`:** nothing is pushed tonight, so `origin/main` is
+behind and merging it brings nothing, with a clean exit that looks like success.
+
+**THE ONE CONFLICT, and the house rule pointed the wrong way.** `tests/test_fx_light_rounds.gd` collided. The rule
+is *the owner's version wins in its paths* — but feel had deliberately **kept the old assertion** and left a
+comment saying the replacement was scale's to make inside the CP2 commit, so the two branches would not both edit
+the line. **Taking theirs would have shipped a red test**: a window calibrated on a 3.80 m IFV against a hull that
+is now 7.54 m. Resolved by combining — feel's note explaining the deferral, my derived window.
+**The conflict rule assumes both sides were trying to change the file; it does not cover an owner who has
+explicitly deferred.**
+
 ### Where it stands
 
 **Backlog 1, 2, 3, 4 and 5 are complete. Stretch item 6 is not started.** CP2 is unblocked on the look and waits
