@@ -207,6 +207,18 @@ def openness_notes(report):
             out.append("SUPERSEDED MEASURE: under CENTRE-POINT registration, only %.2f of the field is within %.0f m "
                        "of cover long enough for the longest hull (%s, %.1f m). Run `make arena-cover` for what the "
                        "game actually asks." % (reach, TERRAIN_RADIUS, name, length))
+    # S1/round 9 (squad's finding): the tightest point on the base-to-base route against the roster's widest hull.
+    # A WATCH line and NOT a failing test, deliberately: whether a map should be widened or an agent radius should
+    # vary by hull class is a decision nobody has made, and a check that fails on an open question is an advocate
+    # rather than an instrument (Invariant 0b).
+    corridor = report.get("corridor")
+    if corridor and corridor["narrowest_m"] < corridor["widest_hull_m"] + 1.0:
+        out.append("the tightest point on the base-to-base route is %.2f m of clear ground at [%.0f, %.0f], and the "
+                   "roster's widest hull (%s) is %.2f m: only %d of %d hulls pass there with a metre to spare. A "
+                   "wide vehicle either files through or does not arrive at all."
+                   % (corridor["narrowest_m"], corridor["narrowest_at"][0], corridor["narrowest_at"][1],
+                      corridor["widest_hull"], corridor["widest_hull_m"], corridor["hulls_that_fit"],
+                      corridor["hulls"]))
     if report["ambush"]["centre_sees_share"] < 0.10:
         out.append("centre_sees %.3f is very low: check the middle is a place you can fight FROM, not just a place "
                    "nothing reaches." % report["ambush"]["centre_sees_share"])
@@ -324,6 +336,31 @@ def occupancy(boxes):
             for idx in (g * n + e, g * n + n - 1 - e, e * n + g, (n - 1 - e) * n + g):
                 blocked[idx] = 1
     return blocked, n
+
+
+def corridor_widths(boxes, path, step=4):
+    """The clear width (m) at each point along `path`: twice the distance to the nearest obstacle footprint.
+
+    ROUND 9 (scale), at squad's request. squad measured the Condemned `artillery` failing to cross the maze's
+    defile **at its pre-CP2 2.6 m width** -- four squadmates used the same corridor in the same run and it never
+    arrived in 70 s -- and S1 takes that hull to **4.74 m** (an artillery piece with deployed outriggers, which is
+    the proportional truth the lead asked for). Whether a 4.74 m vehicle can traverse a 5.0 m navmesh corridor is
+    nav's question; whether the maps a player actually plays have corridors that tight is this tool's.
+
+    It is the shape of number that "reads fine per-arena and only fails when two tables are put side by side":
+    every map's narrowest gap looked reasonable on its own, and nothing compared it with the roster.
+
+    Measured against the obstacles' own footprints, NOT the agent-inflated grid, so it is the real geometry --
+    what the navmesh then does with it is a separate question with a separate radius.
+    """
+    if not path:
+        return []
+    out = []
+    for i in range(0, len(path), step):
+        x, z = path[i]
+        clear = min((b.distance(x, z) for b in boxes if b.h >= EYE_HEIGHT), default=HALF)
+        out.append((round(x, 1), round(z, 1), round(2.0 * clear, 2)))
+    return out
 
 
 def route(blocked, n, a, b):
@@ -923,6 +960,20 @@ def analyze(layout):
     report["longest_sightline_at"] = [[round(v, 1) for v in p] for p in where] if where else None
     direct = route(blocked, n, green_front, rust_front)
     report["base_to_base_m"] = round(length(direct), 1) if direct else None
+    # S1/round 9: the tightest place on the route a whole army has to file through, against the roster's widest
+    # hull. Both halves READ from their owners -- the corridor from the layout's own obstacles, the hull from
+    # `game/units/units.gd` via `tools/units_catalog.py` -- so neither can go stale behind a comment.
+    widths = corridor_widths(boxes, direct)
+    if widths:
+        tightest = min(widths, key=lambda w: w[2])
+        hulls = units_catalog.load()
+        widest_id = max(hulls, key=lambda u: hulls[u]["hull_size"][0])
+        report["corridor"] = {
+            "narrowest_m": tightest[2], "narrowest_at": [tightest[0], tightest[1]],
+            "widest_hull": widest_id, "widest_hull_m": round(float(hulls[widest_id]["hull_size"][0]), 2),
+            "hulls_that_fit": sum(1 for u in hulls if float(hulls[u]["hull_size"][0]) + 1.0 <= tightest[2]),
+            "hulls": len(hulls),
+        }
     to_centre = route(blocked, n, green_front, (0.0, 0.0))
     report["base_to_centre_m"] = round(length(to_centre), 1) if to_centre else None
     # Watchers: the enemy's covered positions, approximated by points 4 m outside hard cover on the north half.

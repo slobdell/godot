@@ -495,6 +495,47 @@ length)`. A prefix sum of occlusion along a heading is not a distance transform,
 these tables. I will say yes or no with a reason rather than half-build it; combat keeps the point sample and
 renames it honestly in the meantime.
 
+### ⚠ A CP2 CONSEQUENCE THE LEAD SHOULD RULE ON: the widest hull no longer fits 8 of 10 maps
+
+**Found by squad, generalised by me, and it is the one consequence of the resize I would not ship silently.**
+
+squad measured the Condemned `artillery` **failing to cross the maze's defile at its PRE-CP2 2.6 m width** — four
+squadmates used the same corridor in the same run and it never arrived in 70 s — and asked whether the maps a
+player actually plays are dimensioned like the maze. They are. `make arena-report` now prints the tightest point
+on the base-to-base route against the roster's widest hull (`corridor_widths`, laptop, this commit):
+
+| map | tightest clear ground | slack at the old widest hull (3.39 m) | slack at the new one (4.74 m) | hulls that pass with 1 m spare |
+|---|---|---|---|---|
+| boulevard | 5.60 m | +2.21 | **+0.86** | 20/21 |
+| pit | 4.97 m | +1.58 | **+0.23** | 19/21 |
+| terminus | 4.84 m | +1.45 | **+0.10** | 19/21 |
+| **yard** | 4.72 m | +1.33 | **−0.02** | 19/21 |
+| foundry / furnace / scrapyard | 4.50 m | +1.11 | **−0.24** | 18/21 |
+| maze | 4.41 m | +1.02 | **−0.33** | 18/21 |
+| boneyard | 4.36 m | +0.97 | **−0.38** | 18/21 |
+| barriers | 4.31 m | +0.92 | **−0.43** | 16/21 |
+
+**The corridors did not move — they are static geometry.** What moved is the widest hull, 3.39 m → 4.74 m (the
+Condemned `artillery` with its outriggers deployed, from its own mesh). Every map had at least 0.92 m of slack
+before; **eight of ten are now negative, including yard, which the lead kept.**
+
+**What this measure is and is not.** It is the narrowest point on the *direct* A\* route, measured against the
+obstacles' own footprints rather than the agent-inflated navmesh. A unit may detour — the route optimiser finds
+alternatives — so "negative" means "the direct route has a pinch narrower than the hull", not "cannot reach the
+far base". Combined with squad's empirical result (it never arrived, at a width with 2.1 m of slack) I would not
+bet on the detour.
+
+**Three separable questions, and only the first is mine:**
+1. **Is the width right?** Yes, and I am not changing it. An artillery piece with deployed outriggers being the
+   widest thing on the field is the proportional truth the lead asked for, and `hull_size` IS the collider.
+2. **Can a 4.74 m vehicle traverse a 5.0 m navmesh corridor?** nav's — it is their round-8 clearance question
+   (one `NAV_AGENT_RADIUS` of 2.0 m for what is now a 5× footprint range). The bake takes 2.0 m off each side, so
+   a 4.74 m hull has ~13 cm a side in the maze's 5.0 m navigable gap.
+3. **Should the maps be widened?** The lead's, and **`make arena-report` prints it as a WATCH line rather than a
+   failing test** (Invariant 0b: a check that fails on a question nobody has ruled on is an advocate, not an
+   instrument). Widening the kit's gaps is one authoring change in `tools/make_arenas.py`, which is mine, and I
+   have not made it.
+
 ### Decisions (with reasons)
 
 - **The two units with no `unit.<id>.hull` art** — `tank` and `burner`, wearing the shared dozer — **take a length
