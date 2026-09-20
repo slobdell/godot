@@ -16,7 +16,20 @@
 #   * allowed messages are still COUNTED and printed ("N expected engine messages seen"), because an
 #     exemption that is silent is indistinguishable from a run in which nothing happened.
 #
-# There is no entry here yet. The first candidate is a Jolt job-system saturation message that failed a
-# scenario whose own assertions all passed on a loaded builder0 (2026-09-20); it is deliberately NOT added
-# until the error_type probe says what kind of message it actually is, because "it looked like a warning"
-# is how the wrong thing gets exempted.
+# -- Jolt's job system saturating while the box is busy --
+#
+# `scenario_stride::test_the_half_rate_controller_still_dodges` failed on builder0 on 2026-09-20 with every
+# one of its own assertions passing (ifv 8% vs 4%, tank 0% vs 3%, bar "no more than 10 points worse"). It
+# failed only because this message landed on it, while five other streams were running.
+#
+# The message says of itself that it RECOVERS -- "Waiting for jobs to become available..." -- so it reports
+# load, not a defect, and no test can control how busy the box is. It is a physics-engine thread-pool
+# condition, not a game one.
+#
+# WHAT THE PROBE ESTABLISHED, and what it did not (`make remote T=error-type-probe`, builder0): the enum is
+# error=0 warning=1 script=2 shader=3, `push_warning` arrives as 1, and this check is therefore correct for
+# GDScript warnings. But the probe could NOT reproduce a C++-side warning, so why this message -- which
+# Godot's own console prints as `WARNING:` -- reaches the runner as a non-warning is STILL OPEN. It is
+# allowed here by its text, which is deliberately independent of that question; the runner now prints the
+# numeric type with every engine error, so the next occurrence answers it rather than costing another probe.
+Jolt Physics job system exceeded the maximum number of jobs

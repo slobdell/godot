@@ -131,6 +131,22 @@ func test_a_clean_test_is_charged_with_nothing() -> void:
 	assert_eq(texts.size(), 0, "nothing charged")
 
 
+func test_an_error_prints_its_numeric_type_when_it_is_known() -> void:
+	## "engine error" is a CLASSIFICATION, and this one has already been surprising once: a message Godot's
+	## console printed as `WARNING:` reached the runner as a non-warning. The number makes the next
+	## occurrence answer for itself instead of costing another probe.
+	var entry := {"text": "odd (a.cpp:1 in f)", "warning": false, "type": 2}
+	var result := TestCase.reconcile_engine_messages([entry], PackedStringArray())
+	var failures: PackedStringArray = result["failures"]
+	assert_true(failures[1].begins_with("engine error (type 2): "), "the type is named")
+
+
+func test_an_error_without_a_known_type_says_nothing_it_cannot_support() -> void:
+	var result := TestCase.reconcile_engine_messages([_entry("odd (a.gd:1 in f)", false)], PackedStringArray())
+	var failures: PackedStringArray = result["failures"]
+	assert_true(failures[1].begins_with("engine error: "), "no type, no claim about one")
+
+
 func test_an_allowed_message_does_not_fail_the_test() -> void:
 	## For messages a test did NOT cause and cannot control -- a leak from elsewhere, an engine job system
 	## saturating under load. `expect_warning` is the wrong tool: it belongs to the test that causes one.

@@ -29,6 +29,13 @@ class ErrorCollector extends Logger:
 		_mutex.lock()
 		entries.append({
 			"warning": error_type == Logger.ERROR_TYPE_WARNING,
+			# The raw type, carried so a message that is classified surprisingly says so itself. A Jolt
+			# job-system message that Godot's console printed as `WARNING:` reached this check as a
+			# non-warning and failed a test (builder0, 2026-09-20); a probe confirmed the enum
+			# (error=0 warning=1 script=2 shader=3) and that `push_warning` arrives as 1, but could not
+			# reproduce a C++-side warning, so WHY that message is not a 1 is still open. Printing the
+			# number means the next occurrence answers it instead of costing another probe.
+			"type": error_type,
 			"text": "%s (%s:%d in %s)" % [rationale if rationale != "" else code, file, line, function],
 		})
 		_mutex.unlock()

@@ -89,7 +89,10 @@ static func reconcile_engine_messages(entries: Array, expected: PackedStringArra
 				continue
 			errors += 1
 			charged.append(text)
-			failures.append("engine error: " + text)
+			# The numeric type is printed when it is known, because "engine error" is a CLASSIFICATION and
+			# this one has already been surprising once (a console `WARNING:` arriving as a non-warning).
+			var kind := "engine error" if not entry.has("type") else "engine error (type %d)" % int(entry["type"])
+			failures.append(kind + ": " + text)
 	for pattern: String in outstanding:
 		failures.append('expect_warning("%s") was declared and no matching warning arrived' % pattern)
 	for pattern: String in outstanding_err:
