@@ -80,12 +80,36 @@ nav-rotation-numbers: import ## nav: nav-rotation's measurements only, headless 
 # (arena.gd:63, :613) -- THREE maps. This default holds two the player never sees (boulevard, boneyard) and omits one
 # they do (terminus). It is left as-is deliberately: round 8's numbers were measured on this set and changing it
 # silently would break every comparison against them. Pass FIGHT_MAPS explicitly for a rotation run:
-#     make nav-fight-maps FIGHT_MAPS="yard pit terminus"
+#     make nav-fight-maps FIGHT_MAPS=rotation
+#
+# ROTATION is READ FROM THE CODE, never re-typed here: a second copy of the list is a second thing to drift, and the
+# drift is exactly what went wrong. `FIGHT_MAPS=rotation` expands to it, and any run whose set is not a subset of it
+# prints a loud line into its own output naming the strays.
+#
+# Deliberately a WARNING and not a refusal (the orchestrator asked for a refusal; this is nav's answer and the reason
+# is on the record). Refusing would make round 8's numbers unreproducible -- they were measured on the default set --
+# and would refuse the off-rotation runs that established A4 has no headroom on boulevard and boneyard, which is a
+# real result. Silently re-defaulting to the rotation would break every comparison against round 8 instead. A line in
+# the run's own log is what a pre-registration copies from, so that is where the correction belongs.
+FIGHT_ROTATION := $(shell sed -n 's/^const ROTATION := \[\(.*\)\]/\1/p' game/arena/arena.gd | tr -d '"' | tr ',' ' ')
 FIGHT_MAPS ?= yard boulevard pit boneyard
+ifeq ($(strip $(FIGHT_MAPS)),rotation)
+override FIGHT_MAPS := $(FIGHT_ROTATION)
+endif
+# Every map asked for that the game would never deal, and every map it deals that is not being run.
+FIGHT_STRAYS := $(filter-out $(FIGHT_ROTATION),$(FIGHT_MAPS))
+FIGHT_MISSING := $(filter-out $(FIGHT_MAPS),$(FIGHT_ROTATION))
 FIGHT_BUSY_LEVELS ?= 0 4
 
 .PHONY: nav-fight-maps
 nav-fight-maps: import ## nav (round 8): nav-fight on each of FIGHT_MAPS (NOT the rotation -- see the note above the default) x scripted/busy player (FIGHT_BUSY_LEVELS seconds between re-orders; 0 = scripted), with arena's pre-registered stall counters -> build/nav-maps/*.log, one line per run naming the arena
+	@echo ">> nav-fight-maps: maps [$(FIGHT_MAPS)]; Arena.ROTATION is [$(FIGHT_ROTATION)]"
+ifneq ($(FIGHT_STRAYS),)
+	@echo ">> nav-fight-maps: WARNING - [$(FIGHT_STRAYS)] are NOT in Arena.ROTATION, so --arena=random never deals them. A result on them is a result about a map the lead does not play."
+endif
+ifneq ($(FIGHT_MISSING),)
+	@echo ">> nav-fight-maps: WARNING - [$(FIGHT_MISSING)] ARE in Arena.ROTATION and are NOT being run. Use FIGHT_MAPS=rotation for the set the game deals."
+endif
 	@rm -rf $(BUILD_DIR)/nav-maps && mkdir -p $(BUILD_DIR)/nav-maps
 	@for map in $(FIGHT_MAPS); do for busy in $(FIGHT_BUSY_LEVELS); do echo "$$map:$$busy"; done; done | \
 		xargs -P $(NAV_JOBS) -I{} sh -c 'map=$${1%%:*}; busy=$${1##*:}; \
