@@ -190,6 +190,7 @@ cannot spare). Pre-register the sim hash unchanged; if it moves, it is the same 
 | the same, four faction rows | `build/roster-lineup/lineup_factions.png` | — |
 | **The War Rig bending** | `build/rig-hinge/strip_45.png` (reads best), `strip_21.png` (his pose), `strip_reverse_60.png` (jackknife) | 45° / **his** / 60° |
 | **The Syndicate airship** | `build/airship-look/airship_widest.png` | 8° tilt — **he cannot see it at 21°**, see §2 |
+| **The Terminus out-reading its own fight** | `build/terminus-luminance/terminus_pitch21_fov35_49m_default-camera.png` | **his** — the evidence for the 22/30 finding |
 
 **My look at the resize (the one subjective check I owe on CP2): it works.** `lineup_pose.png` runs Rat Rod **2.9 m**
 → War Rig **14.0 m** and the rig **dominates** — visibly five times the rat rod and clearly larger than the
@@ -519,6 +520,21 @@ a taste one: `art_direction.md` has always required the arena be *"lit well enou
 **The levers are all mine:** the floodlight pools (`arena_dressing.gd` `_glow_multimesh`, `FLOODLIGHTS`), the floor's
 albedo (`arena_ground*.gdshader`, and the Terminus is asphalt-dark), and the facades' base brightness
 (`city_block.gdshader`, the storey `glow` and shopfront `glow` at channel identity).
+
+**AND NOW SHOT, at his pose:** `build/terminus-luminance/terminus_pitch21_fov35_49m_default-camera.png`. The
+brightest things in the frame are the **bands on the buildings** — a near-white cyan run along the left block and a
+magenta one on the right — with the window grids behind them. **The vehicles are dark slabs**, legible mainly
+because the selection rings around them are UI rather than lighting. Take the rings away and the fight is the
+hardest thing in the frame to find. That is the 22-of-30 number as a picture.
+
+**Incidentally confirmed by the same frame: the neon fix works in the real game.** Those bands read **cyan and
+magenta** — the colours `terminus.json` asks for — where before `637ad4de` they were a random draw from the
+signage palette (amber, warm white, red, violet). First visual confirmation, unplanned, from a frame shot for a
+different question.
+
+**And it sharpens my note to show:** the bands are correct in colour now and **still** the brightest thing on
+screen, so it is the **placement** — a lit run at shopfront height on surface 1, facing the arena — that
+out-competes the fight, not the palette. Dimming them is not the fix; lighting the floor is.
 
 **DIAGNOSED 2026-09-20, and the mechanism is specific rather than "the map is dark".** Counted across every layout:
 
