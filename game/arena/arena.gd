@@ -88,6 +88,12 @@ static func _placeable(data: Dictionary, x: float, z: float) -> bool:
 const HALF_EXTENT := Match.ARENA_HALF_SIZE + 40.0
 ## Mirror pairs must match to this many meters (and degrees).
 const SYMMETRY_TOLERANCE := 0.01
+## Every top-level key a layout may carry. Anything else is a typo, and `validate()` refuses it rather than
+## loading a layout that silently means something other than what it says. `show` is the arena light show's
+## channel/patch data (round 9): additive, optional, and preserved across `make arenas` by
+## `tools/make_arenas.PRESERVED_KEYS`.
+const LAYOUT_KEYS := ["name", "note", "title", "schema", "half_size", "shape", "fixture", "obstacles", "props",
+		"terrain", "hazards", "lanes", "regions", "objectives", "spawns", "spawn_zones", "control_point", "show"]
 ## A spawn point must be this far from every obstacle's footprint: the widest spawn jitter plus half a hull.
 ## Round 9 (scale): the margin is a named constant so `tools/make_arenas.py` can READ both halves of this sum
 ## instead of carrying "6.0" in a default argument, which is what it did -- a mirror of a derived value, which
@@ -691,6 +697,18 @@ static func load_layout(name: String) -> Dictionary:
 static func validate(data: Variant) -> String:
 	if typeof(data) != TYPE_DICTIONARY or typeof(data.get("name")) != TYPE_STRING:
 		return "a layout is an object with a string 'name'"
+	# ROUND 9 (scale, at show's request and the orchestrator's ruling): an unknown top-level key is a REFUSAL, not
+	# something to ignore. Until now `"shwo": {...}` loaded as a static arena with no complaint anywhere -- and the
+	# arena light show's `show` key is preserved across `make arenas` by an allowlist in `tools/make_arenas.py`, so
+	# a typo would have survived regeneration forever as dead data that looks like a working arena. A guard-shaped
+	# hole rather than a bug, which is why it was worth more than validating the patch's interior.
+	#
+	# `show`'s CONTENTS stay a build-time concern (`make show-report`): `Arena` is read by `Match`, so it is on the
+	# simulation side, and a layout failing to LOAD because of something in `game/theme/` would invert the standing
+	# rule that art must never change the simulation.
+	for key: String in data:
+		if not LAYOUT_KEYS.has(key):
+			return "unknown top-level key '%s' (a layout has %s)" % [key, ", ".join(LAYOUT_KEYS)]
 	# `ARENA_HALF_SIZE` is a MAXIMUM BOUND, not a required size (round 7). It was forced equal, which meant raising
 	# it to make room for a hexagon would have grown every existing square map from 240 x 240 to 280 x 280 — a 36%
 	# area increase to Pit and Yard, the two maps the lead kept, as a side effect of a shape change nobody asked to

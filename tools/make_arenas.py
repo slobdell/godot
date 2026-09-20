@@ -67,11 +67,39 @@ def pit(x, z, radius=7.0, dps=30.0):
     return {"type": "fire_pit", "position": [float(x), float(z)], "radius": radius, "damage_per_second": dps}
 
 
+## Top-level keys that are AUTHORED BESIDE the generated layout and must survive regeneration.
+##
+## `arenas/*.json` are generated, not hand-authored: both writers build a fresh dict and dump the whole file, so
+## any key this generator does not know about is DELETED on the next `make arenas`. `show` (the arena light show's
+## channel/patch data, round 9) is tuning the lead will change several times after he sees the first frames --
+## putting it in this file would make every tweak a cross-stream request, and putting it in a sibling file would
+## need a loader to go looking for it. So the generator does not learn what a channel is; it only refuses to throw
+## one away, and it says which keys it carried.
+##
+## What this gives up: a MISSPELLED key survives regeneration forever as dead data. `Arena.validate()` closes that
+## by rejecting unknown top-level keys, with these in its allowed set.
+PRESERVED_KEYS = ("show",)
+
+
+def _keep(name, layout):
+    """Carry `PRESERVED_KEYS` over from the layout already on disk, and report what was carried."""
+    path = os.path.join(OUT, name + ".json")
+    if not os.path.exists(path):
+        return
+    with open(path) as f:
+        old = json.load(f)
+    for key in PRESERVED_KEYS:
+        if key in old:
+            layout[key] = old[key]
+            print("ARENA_KEPT %s: %s (authored beside the generator, not by it)" % (name, key))
+
+
 def write(name, note, half, control_radius=16.0, hazards=()):
     layout = {"name": name, "note": note, "half_size": 120.0, "obstacles": mirrored(half),
               "spawns": spawns(), "control_point": {"radius": control_radius}}
     if hazards:
         layout["hazards"] = mirrored(list(hazards))
+    _keep(name, layout)
     with open(os.path.join(OUT, name + ".json"), "w") as f:
         f.write(json.dumps(layout, indent=1) + "\n")
 
@@ -212,6 +240,7 @@ def write_v2(name, title, fight, props, lanes=(), regions=(), obstacles=(), cont
         layout["objectives"] = list(objectives)
     if shape:
         layout["shape"] = shape
+    _keep(name, layout)
     check_spawn_clearance(layout)
     with open(os.path.join(OUT, name + ".json"), "w") as f:
         f.write(json.dumps(layout, indent=1) + "\n")

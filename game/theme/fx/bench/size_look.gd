@@ -44,6 +44,14 @@ const LINEUP_ROW_GAP_M := 7.0
 const LINEUP_PITCH_DEG := 26.0
 ## Margin around a framed lineup, as a fraction of what it has to fit.
 const LINEUP_MARGIN := 1.12
+## How far outward of the camera's focus the lineup is parked. The first run put it inside the player's own
+## deployment: forty vehicles, arena props, selection rings and order beams behind and across every label, and the
+## frame answered a different question (feel hit the same thing with the rig-hinge frames). The lineup now stands
+## on open ground beside the army, with the HUD and the order markers hidden for the capture -- these frames ask
+## whether the roster reads at the right relative size, and a command card over the bottom third does not.
+const LINEUP_OFFSET_M := 120.0
+## Labels alternate between these heights above a hull, so neighbours in a dense row do not overprint.
+const LABEL_TIERS := [1.0, 2.1]
 
 var out_dir := ""
 var lengths: Array = [5.6, 10.0, 12.0]
@@ -216,6 +224,41 @@ func _on_screen(tank: Node3D) -> Dictionary:
 # no approval; the LOOK is the one subjective check that counts (game_design.md *Round 9 direction*).
 # ------------------------------------------------------------------------------------------------------------------
 
+## Hide everything that is answering a different question: the HUD (command card, task palette, radar, tooltips,
+## the skirmish banner) and the order feedback's ground markers, waypoint beams and selection pulses. Returns the
+## callables that put them back, so a run that renders a lineup does not leave a headless match blind.
+func _quieten(scene: Node) -> Array:
+	var restore: Array = []
+	if scene == null:
+		return restore
+	# EVERY CanvasLayer under the scene, found by CLASS rather than by name or by a property on Main. The first
+	# attempt read `Main.hud` and tested `hud is CanvasItem`; `Hud extends CanvasLayer`, and **a CanvasLayer is not
+	# a CanvasItem**, so the test was quietly false and the whole HUD -- command card, task palette, radar,
+	# tooltips, banner -- sat over the frame anyway. A capability test that silently means "no" is the same shape as
+	# every mirror this stream has found this round.
+	var layers: Array = scene.find_children("*", "CanvasLayer", true, false)
+	if scene is CanvasLayer:
+		layers.append(scene)
+	for node: Node in layers:
+		var layer := node as CanvasLayer
+		if layer.visible:
+			layer.visible = false
+			restore.append(func() -> void: layer.visible = true)
+	# And the 3D order and selection feedback: ground markers, waypoint beams, selection rings. Two separate
+	# drawers -- feel's `FxWorld.order_feedback` and control's `SelectionMarkers` -- so both are looked for.
+	var marked: Array = scene.find_children("*", "SelectionMarkers", true, false)
+	var fx := FxWorld.get_instance()
+	if fx != null and fx.order_feedback != null:
+		marked.append(fx.order_feedback)
+	for node: Node in marked:
+		var drawn := node as Node3D
+		if drawn != null and drawn.visible:
+			drawn.visible = false
+			restore.append(func() -> void: drawn.visible = true)
+	print("SIZE_LOOK_QUIET %d canvas layers, %d marker layers" % [layers.size(), marked.size()])
+	return restore
+
+
 ## Every unit, faction by faction, each faction's vehicles shortest first.
 func _roster_by_faction() -> Array:
 	var rows: Array = []
@@ -230,9 +273,14 @@ func _roster_by_faction() -> Array:
 
 func _lineup(scene: Node, focus: Vector3, heading: float) -> void:
 	var by_faction := _roster_by_faction()
+	var restore := _quieten(scene)
+	# Out on open ground beside the deployment, across the camera's view.
+	var stage := focus + Vector3.RIGHT.rotated(Vector3.UP, heading) * 0.0 \
+			+ Vector3.FORWARD.rotated(Vector3.UP, heading) * -LINEUP_OFFSET_M
+	stage.y = focus.y
 
 	# 1. Four rows, one per faction: is each faction's own roster sensible?
-	await _shoot_rows(scene, focus, heading, by_faction, "lineup_factions.png", "factions")
+	await _shoot_rows(scene, stage, heading, by_faction, "lineup_factions.png", "factions")
 
 	# 2. One row, every unit, the two references the round is anchored on at the ends. The Condemned tank is what
 	#    "tiny" was measured against in round 8 and the War Rig is what he ruled at 14 m, so the frame reads
@@ -243,10 +291,12 @@ func _lineup(scene: Node, focus: Vector3, heading: float) -> void:
 			if unit_id != "tank" and unit_id != RIG:
 				single.append(unit_id)
 	single.append(RIG)
-	await _shoot_rows(scene, focus, heading, [single], "lineup_row.png", "row")
+	await _shoot_rows(scene, stage, heading, [single], "lineup_row.png", "row")
 
 	# 3. His own pose, over the size spread. Directly comparable with round 8's rig frames.
-	await _shoot_rows(scene, focus, heading, [SPREAD], "lineup_pose.png", "pose", DISTANCE_M, PITCH_DEG)
+	await _shoot_rows(scene, stage, heading, [SPREAD], "lineup_pose.png", "pose", DISTANCE_M, PITCH_DEG)
+	for restorer: Callable in restore:
+		restorer.call()
 
 
 ## Park `rows` (a list of rows of unit ids) on the ground around `focus`, frame them, shoot one PNG, tidy up.
@@ -288,8 +338,8 @@ func _shoot_rows(scene: Node, focus: Vector3, heading: float, rows: Array, file:
 
 	if distance < 0.0:
 		distance = _distance_to_fit(total_width, total_depth, pitch)
-	for tank: Node3D in parked:
-		_label(tank, distance)
+	for i in parked.size():
+		_label(parked[i] as Node3D, distance, i)
 	_camera.global_transform = RtsCamera.pose_at(focus, heading, distance, pitch)
 	get_tree().paused = true
 	for i in 6:
@@ -321,7 +371,7 @@ func _park_one(scene: Node, unit_id: String, centre: Vector3, heading: float) ->
 
 ## The name and the hull length, over the vehicle, sized for the camera that is about to see it (a label authored in
 ## metres is invisible from 300 m and fills the frame from 40).
-func _label(tank: Node3D, distance: float) -> void:
+func _label(tank: Node3D, distance: float, index := 0) -> void:
 	var unit_id := String(tank.get("unit_id"))
 	var box: Array = Units.stat(unit_id, "hull_size")
 	var label := Label3D.new()
@@ -333,7 +383,9 @@ func _label(tank: Node3D, distance: float) -> void:
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test = true
 	label.pixel_size = (distance / 60.0) / 64.0
-	label.position = Vector3(0.0, float(box[1]) + distance / 70.0, 0.0)
+	# Two tiers, alternating along the row: a dense row of short names still overprints on one tier.
+	var tier: float = LABEL_TIERS[index % LABEL_TIERS.size()]
+	label.position = Vector3(0.0, float(box[1]) + tier * distance / 70.0, 0.0)
 	tank.add_child(label)
 
 
