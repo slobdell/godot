@@ -304,3 +304,41 @@ printed rather than folded into a zero:
 
 A log shorter than one window is **refused outright**: a metric over less than one window is not a smaller number,
 it is no number.
+
+## Which of these may be an OPTIMISER's objective, and which are diagnostics only
+
+Catalogue **C7** wants a scalar per niche, and `game_design.md`'s *Ruling: offline compute* is the warning: an
+optimiser pointed at a bad objective succeeds at the wrong thing, quickly and convincingly. No optimiser runs this
+round; this is the note that has to exist before one does.
+
+**The short answer: none of the four is fit to be a sole objective.** Each has a degenerate optimum that is a worse
+game, and in every case the optimum is *easier to reach* than the behaviour we actually want — which is the
+property that makes a bad objective dangerous rather than merely useless.
+
+| metric | its degenerate optimum — what an optimiser would actually produce |
+|---|---|
+| displacement efficiency | **straight lines through walls.** A perfect 1.0 is a unit that ignores the obstacle it should route around. It is refused for a stationary unit (`zero_path`), so the cheat is not standing still — it is not deviating. |
+| SPARC | **units that never change speed.** SPARC scores the smoothness of the speed profile, so a constant creep is flawless. The optimum is a convoy that neither accelerates out of danger nor slows for a corner. |
+| signed cusp density | **whatever the map already gives you** — see below. |
+| affine formation residual | **rigid formations that ignore terrain.** A perfect 0.0 is an element holding its shape through a defile it should have deformed to pass, which is the exact failure A8 was switched off for. |
+| off-corridor fraction | **a corridor that is never active.** Already known and already guarded: §7 requires the active fraction beside it and the renderer refuses to print one without the other. That guard exists because this one is trivially gameable, and it generalises — every row above wants the same treatment. |
+
+**Signed cusp density is the one to rule out on measurement, not on argument.** Across yard and terminus, with no
+treatment applied at all, it moves **43.10 → 69.14 per agent-minute** — 60% — while SPARC over the same two logs is
+**−2.013 on both, to three decimals**. An objective that swings 60% with the arena is mostly measuring the arena: an
+optimiser scored on a rotation would learn the map mix. It stays a **diagnostic**, and a good one — it is what
+localised the shuffler to the wheeled hull — but a diagnostic is read by a person who knows what else changed.
+
+**What an objective would have to look like.** A pair, not a scalar: a *shape* term (displacement efficiency, or
+SPARC) **constrained** by an outcome the shape cheat destroys — arrival, or time-to-arrival. Every degenerate
+optimum above is reached by giving up arrival, so arrival is the constraint that closes all of them at once. The
+pairing is the same discipline as `off_corridor` + `active`, and for the same reason: **a law that improves its own
+number by doing less of the thing is not a pass.**
+
+Two more constraints on whoever builds it:
+
+- **Pre-register the bar before the run, against the control arm above**, not against zero. The control arm is
+  whole-roster, both armies, builder0, and it is in this file.
+- **A scalar with no sample size is not a score.** Every row here carries its windows, its refusals and its ticks,
+  and an objective that drops them cannot be audited after the fact — which is how a 2% coin became a gate's
+  expectation this round.
