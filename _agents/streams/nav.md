@@ -664,6 +664,23 @@ and report anyway:** survivability had little power (1-3 deaths a side in 120 s)
 points. The brain half (passing the previous direction back; timer jinks only against projectile weapons) is squad's
 file: `references/nav/round7_commitment_brain.patch`.
 
+### Resuming this stream after round 8 (written 2026-09-19)
+
+**State:** round 8's backlog is done (the yaw ramp, the semi question, the stall repro, hold hysteresis, the gear-flip
+diagnosis, flow fields reverted as a null, Reeds-Shepp parked with its evidence retracted). Green at `81f87186` on
+builder0 (1256/0, `>> remote: make check exited 0`), with the sim baseline patched-and-restored locally — the orchestrator
+records `glibc-2.43 668b7d49 -> 0cb238bf`, not me.
+
+**In flight when this was written:** a check on the arrive-on-heading arc (`5367c395`).
+
+**Next, in the order I would take them:**
+1. A long hull's clearance and the missing recovery under a `face` order (the section above; combat's evidence).
+2. The commitment-strength A/B, pre-registered above (`COMMIT_BONUS` 0.35 -> 0.7).
+3. Tighten control's wheeled facing bound back to the tracked one once squad populates `facing` (they own that half).
+
+**The habit that paid this round:** write the decision rule, the guard and the revert condition down BEFORE the run, and
+run three seeds. The first seed of the flow-field A/B said -10% and the round would have shipped a null on it.
+
 ### Resuming this stream (written 2026-09-18 before a 4-day pause; read this first)
 
 **State:** backlog complete (X1–X8 done, X9 closed). Everything is merged or mergeable: code green at `34293b3b`
