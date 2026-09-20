@@ -75,7 +75,7 @@ ai-scenarios-check: import ## The AI behaviour scenarios, gated on a CHANGE in t
 		echo "  this machine: $$(hostname)"; \
 		echo "  $$line"; \
 		grep -E '^  (FAIL|UNEXPECTED PASS)' $(BUILD_DIR)/ai-scenarios.log | sed 's/^/    /' | head -20; \
-		echo "  If the change is intended, re-record with `make ai-scenarios-record` and say why in the commit."; \
+		echo "  If the change is intended, re-record with 'make ai-scenarios-record' and say why in the commit."; \
 		exit 1; \
 	fi; \
 	echo "ai-scenarios-check: $$line (unchanged against $(AI_SCENARIOS_BASELINE))"
@@ -90,7 +90,7 @@ ai-scenarios-record: import ## Record this machine's ai-scenarios counts to buil
 	test -n "$$line" || { echo "no summary line; refusing to record nothing"; exit 1; }; \
 	counts=$$(echo "$$line" | grep -oE '[0-9]+' | paste -sd,); \
 	{ echo "# ai-scenarios counts: passed,failed,pending,unexpectedly_passing"; \
-	  echo "# `make ai-scenarios-check` fails when these CHANGE, not when a scenario fails: one perf case is"; \
+	  echo "# ai-scenarios-check fails when these CHANGE, not when a scenario fails: one perf case is"; \
 	  echo "# laptop-speed-sensitive and would redden the gate for a reason that is not a defect (lesson 42),"; \
 	  echo "# while a new script error moves \`failed\` and is caught (lesson 159)."; \
 	  echo "# machine: $$(hostname)"; \
