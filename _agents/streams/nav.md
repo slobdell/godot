@@ -246,18 +246,20 @@ before shipping.*
 | **N1a** A7's priority table | **done**, reviewed by combat and feel, both reviews folded in, contract **S5** adopted from it |
 | **N1b** A7 in code | **built, measured, opt-in.** Waiting on squad's leash commit to re-measure and flip |
 | **N2** A11 dynamic window | **built, measured, opt-in.** One open behaviour question (the duel's 6.3 s) |
-| **N3** A1 event-triggered replanning | **not started, and deliberately** — see below |
-| **N4** A4 clothoids | **not started**; its motivation is now *measured* rather than inherited (70% of gate refusals are `off_mesh`) |
+| **N3** A1 event-triggered replanning | **built, measured, opt-in — and a NEGATIVE result that relocates P1.** The cadence is ~3 % of re-plans in a fight; A1 fails its own falsifier there and passes only in isolation |
+| **N4** A4 clothoids | **built, measured, opt-in — and it passes its pre-registered positive control: 403 of 403** blocked-corridor gates reached by a curved approach |
 | **N5** A6 | **blocked on S4**: nav has signed, feel authored, control signs with two requirements; its shopping list is collected below |
 | stretch: `NavigationAgent3D` vs our ORCA | **done** — compared, not swapped, with the verdict and what would change it |
 
-**Why N3 is not started, on the brief's own reasoning rather than on the clock.** The sequencing argument nav made
-and `workstreams.md` adopted says A1 goes third because *"its latency falsifier needs a stable decision layer
-underneath it"*, and it is *"the row most likely to look like a win while hiding a regression"*. **A7 and A11 are
-both parked pending measurement decisions, so that layer is not stable.** Building A1 on top of two switched-off
-rows would mean measuring a cadence against a decision layer that is about to change — which is how round 7 spent a
-round measuring a term that was never in the code path. The precondition is a fact about the branch, not a
-preference.
+**Correction to an earlier claim in this Status: nav said N3 was blocked on a stable decision layer. That was
+wrong.** A1's target is `Movement._next_waypoint`'s route cadence, which is independent of `CombatMotion` entirely;
+only the *second* half of A1 — the brain's `MOTION_REPLAN_TICKS` — sits on top of A7/A11, and that half is squad's
+file and a request rather than a change. With both new rows opt-in the default decision layer is the unchanged
+round 3–8 blend. A1 was built the same night the mistake was spotted.
+
+**All four rows are now built, measured and opt-in, and not one of them is on the default path.** That is the
+report: `main` takes no behaviour change from this branch, the sim baseline does not move, and every row carries the
+number that decided its default.
 
 **The single most useful measurement of the round**, because it turns a zero into a mechanism: the arrival arc fired
 **5168 times** in a 45 s fight where round 8 measured **`gates aimed 0` in both arms of an A/B** and could not tell a
