@@ -2593,3 +2593,16 @@ The kickoff prompt is one line; this section is the rest.
     `off` is the TREATMENT and the arm named `on` is the CONTROL. The target's own guard catches an inert switch (both
     arms identical, or sharing a treatment line) but cannot catch a human reading the filenames the obvious way. Label
     arms by treatment in every write-up, never by the flag's name (nav, 2026-09-20).
+168. **A process list filtered by NAME is not filtered by WORKTREE.** Eight checkouts on this laptop run the same
+    binary, the same script paths and the same make targets, so a `pgrep -f` / `ps | grep` match says almost nothing
+    about *whose* process it is. **Read `/proc/<pid>/cwd` before you act on a match** — before killing it, and before
+    concluding anything from it. metrics, 04:39: stopping one orphaned run of its own, killed every local `make remote
+    T=check` on the machine — control's, combat's and squad's included (their builder0 runs survived, lesson 15; their
+    reporting lines did not). control, 03:10: walked a `--check-only` child's tree upward without checking cwd and
+    concluded a foreign check was running in its own worktree; it was combat's, and an hour went into a false premise.
+    The trap under the trap: **`pgrep -f <pattern>` matches your own command line containing the pattern**, so "is my
+    script still running?" answers yes either way — filter by cwd, or check for the artefact the process produces.
+    **And the guidance on lost wrapper lines:** re-run rather than reconstruct stays the default, *except* that reading
+    the box's own `build/check/*.log` with its provenance stated is a primary artefact, not a reconstruction —
+    `check passed: N targets` cannot print under `make -j` without `-k` unless all N succeeded, so the count exposes an
+    early abort more precisely than an exit code; check the log's timestamp first, it persists between runs.
