@@ -399,6 +399,38 @@ proves it. **Nothing about cost or benefit is read from them**, which is the *"a
 different fights"* mistake round 5 paid for. The re-plan counts above are direct per-tick counters and are immune to
 that; the behaviour numbers are not, and are reported only to show the arms diverged.
 
+### N4/A4 RESULT: the clothoid fan reaches **403 of 403** gates no straight run-in could reach
+
+`nav-fight`, yard, seed 3, 45 s, laptop, one seed, `--nav-off=a4`, tree at `4d72d0e2`+A4. **The positive control the
+orchestrator pre-registered is `a4_rescued_blocked` — gates that fit at NO straight length — never the aggregate:**
+
+    off_mesh_fit   none 403      fits_at_75 714
+    a4             a4_rescued_blocked 403   a4_curved_gates 577   a4_refused_curvature 0
+    gates          offered 6819 = aimed 5876 + refused 943   (off_mesh 540, reached 364, on_approach 39)
+
+**403 of 403.** Every gate whose approach corridor was blocked at every straight length was reached by a curved
+approach. The other 174 of the 577 curved gates were ones a shorter run-in could also have fixed — **counted
+separately and never added to the 403**, which is the whole point of the pre-registration.
+
+**What this claim is, exactly, and what it is not.** It is: *the clothoid fan finds a navmesh-valid approach entry
+for every blocked-corridor gate in this run.* It is **not** *"the arrival arc now works for those 403"* — landing the
+gate on the navmesh is a routing question, and whether the hull then arrives **on the ordered heading** from a curved
+entry is a separate one that only the straight case has tests for today. **That is N4's next piece of work, not a
+detail**, and the distinction is exactly the sort that turns into an over-claim if it is not written down now.
+
+**Two things in the numbers that need saying rather than celebrating:**
+- **`a4_refused_curvature` is 0**, so the "a hull cannot drive a curve tighter than its turning circle" guard never
+  bit in this run. That is plausible — the fan is ordered straightest-first and a gentle entry usually lands before
+  a steep one is tried — but *a guard that never fires is a guard nobody has tested in the field*. Its unit test
+  proves it fires; this run does not.
+- **The fan's first entry is a zero-curvature clothoid, i.e. the straight gate that was just refused**, so one of
+  the nine candidates is always a known failure. Harmless and cheap, but it means "the fan found one" really means
+  "one of eight found one".
+
+**Not comparable across runs:** `offered` 6819 here against 6364 earlier. A4 changes where units drive, so the fights
+diverge and the totals move with them. Every number above is from **one** run and is internally consistent; none of
+them is a before/after against a different run.
+
 ### N4 GROUNDWORK, measured: 43% of off-mesh gates have NO straight run-in at any length — that is A4's case
 
 Laptop, `57b8e89b`, `nav-fight` yard seed 3, 45 s, default path (deterministic — `offered` and `aimed` reproduce the

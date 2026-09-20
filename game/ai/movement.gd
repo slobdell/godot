@@ -154,7 +154,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a7", "a11", "backup", "carrot", "chord", "commit", "grace", "guard", "holdband",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a7", "a11", "backup", "carrot", "chord", "commit", "grace", "guard", "holdband",
 		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
 
 
@@ -214,6 +214,11 @@ const YIELD_SPOTS: Array[Vector2] = [Vector2(0, 5), Vector2(3, 6), Vector2(-3, 6
 static var a1_replans := 0
 static var a1_cadence_due := 0
 static var a1_tube_skips := 0
+## ...split by what actually caused it: `cadence`, `goal_jumped` (a real new destination), `goal_slid` (a goal moving
+## smoothly under a unit keeping station on it — a re-plan nav should probably not be doing at all), `off_path`,
+## `stalled`. A1 measured that ~97% of re-plans are events rather than the cadence; this says WHICH events, which is
+## the difference between a finding and a shrug.
+static var a1_by_cause := {}
 
 
 ## A1 is OPT-IN (`--nav-off=a1` turns it ON), on the same footing as A7 and A11: round 9's new rows land behind their
@@ -223,13 +228,15 @@ static func a1_on() -> bool:
 
 
 static func route_arms() -> Dictionary:
-	return {"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips}
+	return {"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
+			"by_cause": a1_by_cause.duplicate()}
 
 
 static func reset_route_arms() -> void:
 	a1_replans = 0
 	a1_cadence_due = 0
 	a1_tube_skips = 0
+	a1_by_cause = {}
 
 
 ## Measurement only: give-ways begun, asks refused for lack of room, and units that gave way themselves.
@@ -1132,7 +1139,8 @@ static var gate_refusals := {}
 ## The counter, as one reading (nav-fight reports this; the tests diff it).
 static func gate_report() -> Dictionary:
 	return {"offered": gates_offered, "aimed": gates_aimed, "refused": gates_refused,
-			"refusals": gate_refusals.duplicate(), "off_mesh_fit": gate_off_mesh_fit.duplicate()}
+			"refusals": gate_refusals.duplicate(), "off_mesh_fit": gate_off_mesh_fit.duplicate(),
+			"a4": a4_report()}
 
 
 ## Tests only: zero the gate counters so one case's numbers are its own.
@@ -1142,6 +1150,9 @@ static func reset_gates() -> void:
 	gates_refused = 0
 	gate_refusals = {}
 	gate_off_mesh_fit = {}
+	a4_curved_gates = 0
+	a4_rescued_blocked = 0
+	a4_refused_curvature = 0
 
 
 ## Count a refusal and keep the goal: the route aims at the goal itself, as it did before round 8.
@@ -1175,10 +1186,21 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	if to_goal.length() <= length and forward.dot(direction) >= APPROACH_ALIGNED_COS:
 		# Already on the approach, pointing the right way: don't drive backwards to a gate behind me.
 		return _gate_refused("on_approach", goal)
-	var nearest := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, gate)
+	var map: RID = tank.get_world_3d().navigation_map
+	var nearest := NavigationServer3D.map_get_closest_point(map, gate)
 	if _flat_distance(nearest, gate) > MESH_GATE_SLACK:
-		# The approach would start inside a wall: arrive however the route arrives.
-		_note_off_mesh(goal, direction, length, tank)
+		# The straight approach would start inside a wall. Classify the failure first — a shorter run-in and a curve
+		# fix DIFFERENT failures and must never be credited to each other — then, with A4 on, try curving.
+		var kind := _off_mesh_kind(goal, direction, length, map)
+		_note_off_mesh(kind)
+		if a4_on():
+			var curved := _curved_gate(goal, direction, length, radius, map)
+			if curved != Vector3.INF:
+				a4_curved_gates += 1
+				if kind == "":
+					a4_rescued_blocked += 1  # no straight run-in reached this one at ANY length
+				gates_aimed += 1
+				return curved
 		return _gate_refused("off_mesh", goal)
 	gates_aimed += 1
 	return gate
@@ -1201,15 +1223,64 @@ const OFF_MESH_PROBES: Array[float] = [0.75, 0.5, 0.25]
 static var gate_off_mesh_fit := {}
 
 
-static func _note_off_mesh(goal: Vector3, direction: Vector2, length: float, tank: Node3D) -> void:
-	var map: RID = tank.get_world_3d().navigation_map
+## Which kind of off-mesh failure this is: the longest straight run-in that WOULD have fitted, or "" for none at all.
+static func _off_mesh_kind(goal: Vector3, direction: Vector2, length: float, map: RID) -> String:
 	for share: float in OFF_MESH_PROBES:
 		var shorter := Vector3(goal.x - direction.x * length * share, 0.0, goal.z - direction.y * length * share)
 		if _flat_distance(NavigationServer3D.map_get_closest_point(map, shorter), shorter) <= MESH_GATE_SLACK:
-			var key := "fits_at_%d" % int(share * 100.0)
-			gate_off_mesh_fit[key] = int(gate_off_mesh_fit.get(key, 0)) + 1
-			return
-	gate_off_mesh_fit["none"] = int(gate_off_mesh_fit.get("none", 0)) + 1
+			return "fits_at_%d" % int(share * 100.0)
+	return ""
+
+
+static func _note_off_mesh(kind: String) -> void:
+	var key := kind if kind != "" else "none"
+	gate_off_mesh_fit[key] = int(gate_off_mesh_fit.get(key, 0)) + 1
+
+
+## A4 (catalogue row A4): a CURVED approach. The straight gate is pinned to the goal's heading axis, which is why
+## **361 of 835 off-mesh gates fit at no length at all** — the corridor behind the goal is blocked and no straight
+## line reaches them. A clothoid leaves that axis while still arriving on the ordered heading, so it can enter from
+## ground the straight run-in cannot occupy.
+##
+## A fixed fan, straightest first, ties to the lower index: deterministic, no search. Each entry is how much heading
+## the approach curves through; 0 is exactly today's straight gate, so the fan is a superset of current behaviour.
+const A4_FAN: Array[float] = [0.0, 15.0, -15.0, 30.0, -30.0, 45.0, -45.0, 60.0, -60.0]
+## Measurement, and the orchestrator's pre-registered positive control: `a4_rescued_blocked` counts ONLY gates that
+## no straight run-in could reach at any length. The aggregate would let the 474 that a shorter run-in recovers leak
+## into the clothoid's number and take credit for territory it did not win.
+static var a4_curved_gates := 0
+static var a4_rescued_blocked := 0
+static var a4_refused_curvature := 0
+
+
+static func a4_on() -> bool:
+	return switched_off("a4")
+
+
+static func a4_report() -> Dictionary:
+	return {"a4_curved_gates": a4_curved_gates, "a4_rescued_blocked": a4_rescued_blocked,
+			"a4_refused_curvature": a4_refused_curvature}
+
+
+## A gate the hull can actually drive to and arrive on `direction` from, curving rather than running in straight.
+## Returns `Vector3.INF` when no candidate in the fan lands on the navmesh.
+static func _curved_gate(goal: Vector3, direction: Vector2, length: float, radius: float, map: RID) -> Vector3:
+	# The approach frame: `direction` is the heading to arrive on, so the gate lies BACK along it, and `across` is to
+	# its left. A clothoid that curves through `angle` ends up `offset.y` off the axis at `offset.x` back from here.
+	var left := Vector2(-direction.y, direction.x)
+	for degrees: float in A4_FAN:
+		var angle := deg_to_rad(degrees)
+		var sharpness := Clothoid.sharpness_for(angle, length)
+		# A curve tighter than the hull's turning circle is not a candidate — it is the ring's mistake in a new shape.
+		if radius > 0.0 and Clothoid.peak_curvature(sharpness, length) > 1.0 / radius:
+			a4_refused_curvature += 1
+			continue
+		var offset := Clothoid.offset(sharpness, length)
+		var gate := Vector3(goal.x - direction.x * offset.x + left.x * offset.y, 0.0,
+				goal.z - direction.y * offset.x + left.y * offset.y)
+		if _flat_distance(NavigationServer3D.map_get_closest_point(map, gate), gate) <= MESH_GATE_SLACK:
+			return gate
+	return Vector3.INF
 
 
 ## How close counts as "at the gate" (metres): a car's settle radius, never less than this.
@@ -1253,9 +1324,26 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		drifted = _path.size() < 2
 		if cadence_due and not drifted:
 			a1_tube_skips += 1
-	var event := _flat_distance(goal, _path_goal) > 1.0 or off_path or stalled
+	# Split by CAUSE, because "an event re-planned it" is not actionable and the four causes have four different
+	# owners. squad raised the one that matters: a member on a K1 `follow` has a goal that slides with its leader
+	# EVERY TICK by design, so a flat "the goal moved 1 m" test re-plans a whole route several times a second for a
+	# unit that is doing exactly what it was told. nav already knows the difference — `_track_goal` estimates
+	# `_goal_velocity` for station-keeping (X6) and `drive()` uses NEW_GOAL_JUMP to tell "a new destination" from "a
+	# slot sliding along" — and `_next_waypoint` was the one place that did not ask.
+	var goal_moved := _flat_distance(goal, _path_goal) > 1.0
+	var sliding := goal_moved and _goal_velocity.length() >= STATION_MIN_SPEED \
+			and _flat_distance(goal, _path_goal) <= NEW_GOAL_JUMP
+	var event := goal_moved or off_path or stalled
 	if drifted or event:
 		a1_replans += 1
+		if goal_moved:
+			a1_by_cause["goal_slid" if sliding else "goal_jumped"] = int(a1_by_cause.get("goal_slid" if sliding else "goal_jumped", 0)) + 1
+		elif off_path:
+			a1_by_cause["off_path"] = int(a1_by_cause.get("off_path", 0)) + 1
+		elif stalled:
+			a1_by_cause["stalled"] = int(a1_by_cause.get("stalled", 0)) + 1
+		else:
+			a1_by_cause["cadence"] = int(a1_by_cause.get("cadence", 0)) + 1
 		_repath_left = 1.0 if _off.has("repath") else REPATH_SECONDS
 		_path_goal = goal
 		# Round 7: reachability is "the route ENDS at the goal", never "a route came back" (lesson 76). NavigationServer
