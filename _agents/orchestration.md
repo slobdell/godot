@@ -2579,7 +2579,7 @@ The kickoff prompt is one line; this section is the rest.
     curve" was yard alone; across four maps it is ~20% and 0% on three, so the A/B runs on the cluttered maps only and
     says so — and the map set itself was wrong: the pre-registration said *"the four maps `--arena=random` can deal"*,
     but `random` deals from `Arena.ROTATION` (three maps), so the screen held two maps the player never sees and omitted
-    one they do; **a pre-registered set is checked against the code that deals it, not typed from a Makefile default.**
+    one they do; **a pre-registered set is checked against the code that deals it, not typed from a Makefile default** — and when the terminus was added the picture *reversed*: 55% of its off-mesh gates are blocked, the highest of any map, so the wrong set was not noise but bias with a direction, pointing at killing a row that earns its place on two of the three maps he plays. **A pre-registration names its population by reading it from the code** (`nav-fight-maps` now reads `Arena.ROTATION` and prints strays and omissions).
     Also: `nav-fight-maps` opens with `rm -rf build/nav-maps`, so a re-run destroys the previous run's logs — copy first.
     And control's version the same hour: `BlockCutaway` cut **nothing in a real match** while its pure
     falsifier read 518 → 0 — `obstacles_root` was wired before the arena had built its bodies, so `_process` returned

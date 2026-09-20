@@ -290,9 +290,14 @@ for unmeasured heading error and needs its own A/B — and **361 (43%) fit at no
 blocked, and no straight gate reaches them at any length.** **CORRECTED 04:10 (nav):** at the pre-registered 120 s the yard figure is **26%, not 43%** (430 blocked of 1,641
 off-mesh; the recoverable class grows faster with run length), **14%** across four maps, and **0% on boulevard, pit and
 boneyard** — two of which the player never sees: nav's map set was `FIGHT_MAPS`' default, not `Arena.ROTATION`
-(`yard, pit, terminus`), so it screened two unplayed maps and omitted one played one. The A/B runs on yard plus terminus
-if terminus has headroom; if not, **A4's case is one map in three that the lead plays**, which is the sentence he
-should hear rather than a percentage. Default stays off until the A/B says otherwise. **Rule before anyone builds it:** the
+(`yard, pit, terminus`), so it screened two unplayed maps and omitted one played one. **Then terminus reported (nav `28653da1`, laptop, 120 s, seed 3) and REVERSED the picture: terminus 806 blocked of
+1,468 off-mesh gates (55%), yard 430 of 1,641 (26%), pit 0 — 34% across the rotation, and terminus produces nearly
+twice yard's blocked gates**, because 20 m streets between sheer blocks are exactly the corridor a straight run-in
+cannot enter off-axis. **The sentence for the lead: the clothoid earns its place on two of the three maps he plays,
+and most on the Terminus.** The A/B runs on terminus and yard; pit is refused by nav's own rule. The screened set had
+been *bias with a direction*: it held two maps he never sees and omitted the map where A4 is strongest, and pointed
+at killing the row. `nav-fight-maps` now reads `Arena.ROTATION` from the code and prints strays and omissions.
+Default stays off until the A/B says otherwise. **Rule before anyone builds it:** the
 shorter run-in and the clothoid fix *different* failures and are never shipped together or credited to each other
 (round 7's shape: ship, measure twice, find the mechanism was never reached).
 **POSITIVE CONTROL PASSED (nav, 2026-09-20, laptop, provisional pre-CP1): 403 of 403** blocked-corridor gates — the
