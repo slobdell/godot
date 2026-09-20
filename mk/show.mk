@@ -56,6 +56,14 @@ CLIP_RES ?= 1280x720
 CLIP_CUES ?= lull battle last_stand victory kill
 CLIP_FRAMES ?= 60
 CLIP_STEP ?= 0.1
+# THE STROBE CLIPS RUN AT 30 fps, NOT 10, AND THE REASON IS ALIASING RATHER THAN POLISH. `last_stand` strobes at
+# sharpness 40 over a 1.6 s period, so the stab is above half brightness for 8.4% of the cycle -- 0.134 s. At the
+# 10 fps the other clips use, ~1.3 frames land inside a stab and almost never at its peak, so the clip samples
+# mostly the gaps: the strobe-on and strobe-off arms came back with the same swing (1.9% vs 1.6% over the whole
+# frame) because the clip could not see the thing being compared. At 30 fps ~4 frames land in each stab, which is
+# also what the player sees, since the game targets 30.
+STROBE_CLIP_STEP ?= 0.0333
+STROBE_CLIP_FRAMES ?= 180
 CLIP_ARENA ?= terminus
 
 # The lead has exactly two open look questions, and each needs the kind of evidence that can actually answer it:
@@ -78,10 +86,10 @@ show-decisions: import ## S6: the two calls that are the lead's -- roofline vs o
 		timeout 420 $(GODOT) --path . --resolution $(CLIP_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
 			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) $$extra \
 			--show-look=$(CURDIR)/$(BUILD_DIR)/show/decisions --show-look-clip=last_stand \
-			--show-look-clip-frames=$(CLIP_FRAMES) --show-look-clip-step=$(CLIP_STEP) \
+			--show-look-clip-frames=$(STROBE_CLIP_FRAMES) --show-look-clip-step=$(STROBE_CLIP_STEP) \
 			2>&1 | tee $(BUILD_DIR)/show/decisions/strobe_$$arm.log | grep -E '^SHOW_LOOK_CLIP|SCRIPT ERROR' || true; \
 		grep -q SHOW_LOOK_DONE $(BUILD_DIR)/show/decisions/strobe_$$arm.log || { echo "show-decisions: strobe/$$arm did not finish"; exit 1; }; \
-		ffmpeg -y -loglevel error -framerate $$(python3 -c "print(1.0/$(CLIP_STEP))") \
+		ffmpeg -y -loglevel error -framerate $$(python3 -c "print(1.0/$(STROBE_CLIP_STEP))") \
 			-i $(BUILD_DIR)/show/decisions/clips/$(CLIP_ARENA)_last_stand_%03d.png \
 			-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/show/decisions/strobe_$$arm.mp4; \
 		rm -f $(BUILD_DIR)/show/decisions/clips/$(CLIP_ARENA)_last_stand_*.png; \
