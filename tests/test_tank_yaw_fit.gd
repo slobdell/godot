@@ -50,8 +50,20 @@ func _enable() -> void:
 ## RESTORED, not zeroed: `yaw_fit_enabled` is a static, so a teardown that wrote `false` would hand the OLD default to
 ## every test that ran after this file in the shard -- the leak-into-the-next-test shape that cost this round two
 ## shards. It goes back to whatever it was.
+##
+## ⚠ AND IT `await`s ITS SUPER, which the first version of this override did not call AT ALL. That is not a style
+## point: `TestCase.teardown()` is what frees `_owned_nodes` and drains the navigation map, so an override that
+## replaces it silently leaks everything the test built. This file builds a FOUNDRY arena and a match, and on
+## `396be191`'s check it ran immediately before `test_theme_city_block`, which was then charged with **44 physics
+## bodies and 4 navigation regions it never created** and became the head of a 47-test cascade. The guard names the
+## first OBSERVER of a residue, not its author; this file was the author.
+##
+## `await super.teardown()`, not `super.teardown()`: the super ends in `await drain_navigation()`, so an override
+## declared `-> void` that does not await it returns to the runner immediately and detaches the drain -- the same
+## defect, one step less obvious, and it is in four other files in this suite.
 func teardown() -> void:
 	Tank.yaw_fit_enabled = _was_fitting
+	await super.teardown()
 
 
 func _world() -> Match:
