@@ -19,7 +19,8 @@ extends RefCounted
 ##    "slot"?: [right, back] meters in the group's frame (this unit's place in the formation),
 ##    "source": who asked for it ("player", "element", or ""): the response guarantee is about the player's,
 ##    "heading"?: [x, z] (the group's direction of travel, and its facing on arrival unless "facing" says otherwise),
-##    "facing"?: [x, z] (normalised; from the command: which way to face once there, and the station's heading),
+##    "facing"?: [x, z] (normalised; from the command. On a MOVE it means ARRIVE ON THIS HEADING - a hull that pivots
+##      turns once stopped, a wheeled one plans the arc into its last leg (nav, round 8) - and it is the station's heading),
 ##    "goal"?: [x, z] (this unit's own destination: to + slot; for follow, see goal_position()),
 ##    "pace_mps"?: float (the group's slowest member's top speed)}
 ##   pace_factor(unit_name) -> float           arrive together: the fraction of its top speed a unit drives at now

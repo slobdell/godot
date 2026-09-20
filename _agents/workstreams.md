@@ -179,6 +179,64 @@ it asks first.**
 
 ## Invariants every stream must keep
 
+0. **A value with a single owner is READ, not mirrored. Where it must be mirrored, the mirror FAILS LOUDLY — or it is
+   not a mirror, it is a second source of truth.** (arena + combat, adopted as house policy 2026-09-19 after **five
+   instances in five streams in two days**.)
+
+   | the copy | how it failed |
+   |---|---|
+   | feel's copied `ROSTER` table | drifted from the catalog |
+   | `make_arenas.py` mirroring `Match.SLOT_X` / `SPAWN_ROWS` / `SPAWN_ROW_SPACING` behind a comment saying *"must mirror"* | **the copy WON** — baked spawn lists beat the constants, so changing a constant changed nothing in a real match |
+   | `arena_report.KIT` mirroring `ArenaKit.PROPS` | **the original was ABSENT** — `block` was missing, so the cityscape could not be authored |
+   | hull sizes | read rather than copied, and **re-answered themselves** the moment the 14 m rig landed |
+   | `faction_matrix.py`'s hard-coded `FACTIONS = [...]` | **adding a faction would have produced a smaller table that looked complete** |
+
+   **The second clause is the one that bites.** Everyone already agrees copies are bad; the copies that *hurt* are the
+   ones that fail **without a symptom** — where the copy silently **wins**, or where the original is silently **absent**.
+   **A copy that disagrees loudly is an annoyance. A copy that disagrees quietly is a wrong number with evidence
+   attached.**
+
+   Three clauses that are part of the rule, not craft around it:
+   - **A reader must NOT fall back to a hard-coded list when the parse fails. Raise.** A fallback restores the exact bug
+     silently the moment the parse breaks — that is how a guard becomes decoration.
+   - **Mutation-check the reader BOTH directions:** add a value and confirm the tool picks it up; rename the source and
+     confirm it refuses. Otherwise the reader is no better than the copy it replaced and you will not find out until it
+     matters.
+   - **Prove a guard can go red before trusting it.** arena shipped **two guards that could not fire** in one session —
+     four tests `unittest discover` never collected because they were bare functions, and a `WATCH` line whose value its
+     own `_`-prefix convention stripped before the notes were built. **Both were green by absence, and both were found
+     because a COUNT did not move, not because anything failed.**
+
+0b. **A check must not encode a decision nobody has made.** arena declined to make the hull-cover finding a failing test:
+   a red `make check` would be the tooling taking a position on a question the lead has not ruled on, **and would force
+   the very fix two streams had agreed to hold.** It prints loudly on every report, stays out of `check`, and **becomes
+   an assertion the day he rules.** **A tool that fails on an open question is an advocate, not an instrument.**
+
+0c. **A technique adopted in one stream is checked against the techniques adopted in the others BEFORE either merges —
+   and a brief that adopts one must name what it REPLACES.** Adopted 2026-09-19 from the external research review
+   ([`research_catalog.md`](research_catalog.md) Part 2), which audited its own proposals against each other and found
+   that **a majority of combinations of individually-valid techniques violate a cross-layer invariant.**
+
+   The examples are ours and they are concrete:
+   - A **space-time reservation** scheme assumes an agent executes the plan it committed to. An **event-triggered
+     replanner** assumes it may abandon one at any tick. Each is correct alone. Together, one agent reserves a corridor
+     slot and the other never arrives to use it. *(This pairing is why catalogue C8 is held out of round 9 while A1 is
+     in it.)*
+   - **Null-space priority projection** guarantees safety dominates formation-keeping. **Additive context steering**
+     guarantees the opposite, by summing them. Adopt both and you get neither.
+
+   **This is lesson 116 — *inertness does not compose* — in the design layer rather than the test layer**, and it is a
+   hazard aimed squarely at how this project works: **five or six streams adopting techniques independently, in
+   parallel worktrees, from one shared catalogue.** That is the organisational structure most likely to produce exactly
+   this failure, and **no worker is positioned to see it. The orchestrator is.** So:
+   - A brief that adopts a catalogue row states **the layer it owns**, **what it assumes the layers above and below
+     will do**, and **which already-adopted mechanism it replaces**.
+   - **"Replaces: nothing" is the answer to interrogate**, not the answer to accept. *Replacing* is safe; *adding
+     alongside* is where two correct techniques fight.
+   - Rows that touch the same code path are **sequenced, not parallelised**. A1, A7 and A11 all rewrite how a desired
+     velocity is chosen; they do not go to three streams in one round.
+
+
 1. **`make remote T=check` passes before merging** (lint, tests, network + relay + lobby smoke, combat, match,
    determinism, sim baseline, garage smoke). Paused areas keep their tests green.
 2. **The sim baseline is recorded ONCE, by the orchestrator, on `main`, after the last simulation-changing merge of

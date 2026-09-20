@@ -1,14 +1,36 @@
 #!/usr/bin/env bash
 # Run a command while holding one of N machine-wide "heavy run" slots.
 #
-# Several worktree agents share one machine (2026-09-14: 8 cores, 7.6 GB RAM; one Godot test run
-# peaks at ~735 MB). Without a limit, five agents running `make check` at once run out of memory.
-# The root Makefile routes every non-interactive goal through this script, so parallel agents
-# queue instead of crashing each other. Use it directly for heavy commands run outside make:
+# Several worktree agents share one machine, and one Godot test run peaks at ~735 MB. Without a
+# limit, five agents running `make check` at once run out of memory. The root Makefile routes every
+# non-interactive goal through this script, so parallel agents queue instead of crashing each other.
+# Use it directly for heavy commands run outside make:
 #
 #     tools/slot.sh python3 tools/match_series.py ...
 #
-# Knobs (environment): TANK_SQUAD_SLOTS (default 2), TANK_SQUAD_SLOT_TIMEOUT (seconds, default 5400).
+# THE SLOT COUNT IS DERIVED FROM THE MACHINE, NOT HARD-CODED (2026-09-19). It used to default to a
+# flat 2, sized for "8 cores, 7.6 GB RAM" -- a note written 2026-09-14 and already stale, because
+# the two machines this runs on are not the same machine:
+#
+#     laptop     8 cores, 2.4 GB AVAILABLE (7.6 GB total, most of it held by six agent sessions)
+#     builder0  12 cores, 11.9 GB available
+#
+# At ~735 MB a run, the laptop can barely hold three and builder0 can hold a dozen. **A flat default
+# is therefore wrong in BOTH directions at once** -- the lead asked to raise concurrency after seeing
+# builder0 98% idle across 12 cores, and raising a global constant would have starved builder0 anyway
+# while pushing the laptop into OOM. So the default now reads what the machine actually has, which is
+# Invariant 0 applied to a constant: a value with a single owner is READ, not mirrored. The owner here
+# is `/proc/meminfo`, and it cannot go stale when the hardware changes again.
+#
+# Budget: 2.5 GB per slot, capped at 4. The cap is not RAM, it is the FAN-OUT INSIDE a slot -- heavy
+# targets run `xargs -P 6`, so one slot can already hold ~4.4 GB of Godot. Four such targets at once
+# would exceed any of our machines. **Raising the cap above 4 requires capping that inner -P first**,
+# and the real win is elsewhere: a `make check` is mostly ONE single-threaded Godot grinding ticks for
+# 30-50 minutes, which is why 12 cores sit idle during it. More slots shortens the QUEUE; only inner
+# parallelism shortens the RUN.
+#
+# Knobs (environment): TANK_SQUAD_SLOTS (overrides the derived value), TANK_SQUAD_SLOT_TIMEOUT
+# (seconds, default 5400).
 # A command that exceeds the timeout is killed, so one hung run can't starve every agent overnight.
 #
 # The queue is FIFO, and it says so out loud (both added 2026-09-18, found by combat: a pilot run
@@ -33,7 +55,19 @@ if [ -n "${TANK_SQUAD_SLOT:-}" ]; then
 	exec "$@"  # already inside a slot (nested make)
 fi
 
-slots=${TANK_SQUAD_SLOTS:-2}
+# Derived from available RAM at ~2.5 GB a slot, clamped to [2, 4]. Falls back to 2 if MemAvailable
+# cannot be read, because a machine we cannot measure gets the conservative answer, never the loud one.
+default_slots() {
+	local avail_mb
+	avail_mb=$(awk '/^MemAvailable:/ {print int($2 / 1024); exit}' /proc/meminfo 2>/dev/null)
+	[ -n "${avail_mb:-}" ] || { echo 2; return; }
+	local n=$((avail_mb / 2500))
+	[ "$n" -lt 2 ] && n=2
+	[ "$n" -gt 4 ] && n=4
+	echo "$n"
+}
+
+slots=${TANK_SQUAD_SLOTS:-$(default_slots)}
 limit=${TANK_SQUAD_SLOT_TIMEOUT:-5400}
 dir=${TANK_SQUAD_SLOT_DIR:-/tmp/tank_squad_slots}   # overridable so the queue can be tested in isolation
 mkdir -p "$dir"
