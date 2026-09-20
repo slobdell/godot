@@ -2700,3 +2700,13 @@ The kickoff prompt is one line; this section is the rest.
     cost, show cost) go in a **quiet window** the orchestrator calls after the checks drain, one stream at a time, and
     every timing number carries the load average and the per-phase spread beside it or it is not quoted. Screenshots
     and seed-deterministic series are only *slowed* by load and can run through it.
+180. **A teardown guard that names the polluter finds leaks on its first full run, and they are not the class you were
+    chasing.** Round 9's guard (scale, `3f6c1650`) was granted to catch leaked physics bodies; it found none, and
+    instead named three tests that leave **navigation regions** behind because they build an arena without
+    `ArenaFixture` — the exact failure `ArenaFixture`'s own docstring had warned about for rounds: the next
+    routing-dependent test's `is_ready()` answers for the OLD map and every path is a straight line through the new
+    arena's walls, silently, looking like flakiness or the victim's bug. Two rules: **a guard must fail, not warn**
+    (a warning nobody is forced to read is how this survived), and **land the guard with the fixes for what it finds**
+    so `main` never goes red on other streams' files; the orchestrator grants the one-line changes. And state the
+    guard's limits beside it: a high-water mark blames the first riser only, and it counts what corrupts another
+    test's world, not everything that leaks.
