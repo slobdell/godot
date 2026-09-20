@@ -1042,8 +1042,17 @@ static func hull_distance_to_line(hull_size: Array, hull_forward: Vector3, hull_
 	along = along.normalized() if along.length_squared() > 0.0001 else Vector2(0.0, -1.0)
 	var normal := Vector2(-along.y, along.x)
 	var offset := Vector2(hull_origin.x - line_origin.x, hull_origin.z - line_origin.z)
-	return maxf(absf(offset.dot(normal))
-			- hull_reach_along(hull_size, hull_forward, Vector3(normal.x, 0.0, normal.y)), 0.0)
+	return hull_distance_of(hull_half_extents(hull_size), hull_forward, hull_origin, line_origin, line_direction)
+
+
+## `hull_distance_to_line` from the cached half-extents (see `hull_reach_of`).
+static func hull_distance_of(half: Vector2, hull_forward: Vector3, hull_origin: Vector3,
+		line_origin: Vector3, line_direction: Vector3) -> float:
+	var along := Vector2(line_direction.x, line_direction.z)
+	along = along.normalized() if along.length_squared() > 0.0001 else Vector2(0.0, -1.0)
+	var normal := Vector2(-along.y, along.x)
+	var offset := Vector2(hull_origin.x - line_origin.x, hull_origin.z - line_origin.z)
+	return maxf(absf(offset.dot(normal)) - hull_reach_of(half, hull_forward, Vector3(normal.x, 0.0, normal.y)), 0.0)
 
 
 ## How far a hull reaches from its own centre along `direction` -- its half-extent projected on that axis. THE SAME
@@ -1056,14 +1065,21 @@ static func hull_distance_to_line(hull_size: Array, hull_forward: Vector3, hull_
 ## `half_width * |d . right| + half_length * |d . forward|`. Four multiplies, two adds, no branches, no trig.
 ## `--tune=match.hull_disc=1` restores the pre-round-9 disc here, so BOTH consumers and BOTH axes flip together.
 static func hull_reach_along(hull_size: Array, hull_forward: Vector3, direction: Vector3) -> float:
+	return hull_reach_of(hull_half_extents(hull_size), hull_forward, direction)
+
+
+## The same projection taking the CACHED (half width, half length) pair, for callers on a per-tick path that must not
+## re-read `Units.stat` every call (squad's `IncomingFire` runs this per unit per shell per tick). The disc the knob
+## restores is `half.length()`, which is `Vector2(width, length).length() / 2` -- the same number, so the arm is
+## identical whichever entry point a caller uses.
+static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vector3) -> float:
 	if tuning.get("hull_disc", 0.0) > 0.0:
-		return Vector2(float(hull_size[0]), float(hull_size[2])).length() / 2.0
+		return half.length()
 	var forward := Vector2(hull_forward.x, hull_forward.z)
 	forward = forward.normalized() if forward.length_squared() > 0.0001 else Vector2(0.0, -1.0)
 	var axis := Vector2(direction.x, direction.z)
 	axis = axis.normalized() if axis.length_squared() > 0.0001 else Vector2(0.0, -1.0)
 	var right := Vector2(-forward.y, forward.x)
-	var half := hull_half_extents(hull_size)
 	return half.x * absf(axis.dot(right)) + half.y * absf(axis.dot(forward))
 
 

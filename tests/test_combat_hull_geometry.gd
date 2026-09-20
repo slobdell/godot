@@ -85,3 +85,38 @@ func test_the_box_turns_with_the_hull() -> void:
 	print("MEASURE hull_box same shot, rig abeam: gap %.2f m; rig end-on: gap %.2f m" % [across, along])
 	assert_true(across > 0.0, "3 m off the flank of a 3.32 m-wide hull clears it")
 	assert_eq(along, 0.0, "but the same 3 m is inside a 14 m hull pointed along the shot")
+
+
+## squad's guard, and it is here rather than in a comment because "did we migrate all three?" is otherwise answered
+## from memory at the moment someone is keen to see a number. The series that tests the disc-vs-box mechanism is only
+## readable if EVERY consumer flips with the flag: a site still computing its own radius ignores the knob entirely,
+## so a half-migrated tree measures a hull that is a box for one question and a disc for another, and the result
+## looks clean while meaning nothing.
+func test_no_consumer_computes_a_hull_radius_of_its_own() -> void:
+	for path in ["res://game/match/match.gd", "res://game/ai/incoming_fire.gd"]:
+		var text := FileAccess.get_file_as_string(path)
+		assert_true(not text.is_empty(), "read %s" % path)
+		for line in text.split("\n"):
+			var code := line.strip_edges()
+			if code.begins_with("#") or code.begins_with("##"):
+				continue  # the notes explaining the migration name the old expression on purpose
+			assert_true(not code.contains("hull_size\")).length()") and not code.contains("size[2])).length()"),
+					"%s still derives a hull radius itself instead of calling Units.hull_reach_of: %s" % [path, code])
+
+
+## The cached-pair entry points must agree with the ones that take `hull_size`, or squad's per-tick path and mine
+## would answer the same question differently -- which is the two-implementations failure the helper exists to avoid.
+func test_the_cached_pair_agrees_with_the_hull_size_form() -> void:
+	var rig := _rig()
+	var half := Units.hull_half_extents(rig)
+	for degrees in [0.0, 23.0, 45.0, 90.0, 137.0, 180.0]:
+		var axis := Vector3(sin(deg_to_rad(degrees)), 0.0, -cos(deg_to_rad(degrees)))
+		assert_near(Units.hull_reach_of(half, NORTH, axis), Units.hull_reach_along(rig, NORTH, axis), 1e-6,
+				"reach agrees at %.0f deg" % degrees)
+		assert_near(Units.hull_distance_of(half, NORTH, Vector3.ZERO, Vector3(3.0, 0, 60), axis),
+				Units.hull_distance_to_line(rig, NORTH, Vector3.ZERO, Vector3(3.0, 0, 60), axis), 1e-6,
+				"distance agrees at %.0f deg" % degrees)
+	assert_eq(Units.apply_tuning("match.hull_disc=1"), "", "and under the knob too")
+	assert_near(Units.hull_reach_of(half, NORTH, EAST), Units.hull_reach_along(rig, NORTH, EAST), 1e-6,
+			"the disc is half.length(), which is Vector2(w, l).length() / 2 -- the same number by either route")
+	Units.tuning.erase("hull_disc")
