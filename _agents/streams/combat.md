@@ -238,6 +238,34 @@ it is his call whether that is a size question or a stats question, and this rou
 _Last updated 2026-09-20 03:2x (worker, `stream/combat` at `0ba8d2c9`). **PAUSED** on the orchestrator's call
 (lead session limit; builder0 down). Resume on its "RESUME" message._
 
+## ⚠ CORRECTION: the spawn-lift rationale in commit `0682a366` is WRONG
+
+Commits are immutable, so the correction lives here. `0682a366`'s message, and the comment block it added to
+`match.gd`, assert as fact that a body created at exactly y = 0.0 makes a degenerate ground contact and that three
+units were **ejected** 1.5 m through the floor. **That mechanism is dead.** Measured frame by frame (scale):
+**−1.475 after one physics frame, −0.190 after two, −0.042 after three**, colliders exact. It is `move_and_slide`'s
+depenetration recovering normally; `test_a_full_faction_army_a_side_spawns_clear_of_itself` did
+`wait_physics_frames(1)` and asserted clearance, so it **read the worst instant of a settle and called it a spawn
+position.** Squad owns that test and the settle fix (sample until settled, largest per-frame delta < 1 cm, capped at
+ten frames, frame count in the failure).
+
+**What survives is narrower and is the whole reason the constant stays at 0.0:** a spawn point has **two sources** —
+the grid and a layout's own `spawns` list via `Arena.spawn_spot` — and they must not drift apart. Both read
+`SPAWN_LIFT_M` in `spawn_position`, the only place either can change. The comment in `match.gd` now says this and
+nothing more.
+
+**Two of my own readings were wrong on the way, and both are the same error.** I reported the lift as the cause
+"by experiment, not argument" — that experiment compared `FILTER=spawn` at 0.05 (other tests first) against
+`FILTER=test_a_full_faction_army` at 0.0 (alone): **two workloads**, and the bug's defining property is dependence on
+state left by earlier bodies, so running it alone destroyed the condition that produces it. Then I read the +0.032 m
+difference between arms as the lift reaching deployed units; it was the recovery's sensitivity to the contact.
+**A difference proves the arms differ, never why** (now a lesson).
+
+**What the episode did leave, and it is worth more than the constant:** the clearance test used to fail with
+*"no unit spawns inside a wall or crate"* — an assertion message that pre-supposes its own diagnosis. It now names
+the body, and the answer was neither: `hit Ground (StaticBody3D) at y = −1.44`. An hour of wall-and-crate hypotheses
+ended in one run.
+
 ## THE REPORT (round 9, combat) — read this first
 
 **Merged green at `55b0de58`**: `1393 passed, 0 failed`, `>> remote: make check exited 2 (build/ copied back)`,

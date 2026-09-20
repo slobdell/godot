@@ -152,8 +152,22 @@ runs real time and it is the machine the lead plays on.
 
 builder0 (glibc 2.43) and the laptop (glibc 2.39) produce different `make sim-baseline` hashes from the same binary
 (system math library differences; [determinism.md](determinism.md)). The baseline file holds one line per glibc
-version; builder0's is canonical. When gameplay changes on purpose: `make remote T=sim-baseline-record`, then
-`cp build/sim_state_hash.txt tests/baselines/` and commit.
+version; builder0's is canonical. When gameplay changes on purpose:
+
+    make sim-baseline-adopt      # reads TWICE on builder0, refuses a disagreement, merges, prints the message
+
+**Do not `cp build/sim_state_hash.txt tests/baselines/`.** That file holds ONE line — the recording machine's — so
+the copy does not make other machines' baselines stale, it **deletes** them. It is invisible while only builder0 is
+baselined; the first time the laptop or a second builder has a line, adopting on either removes the other, and the
+next check there reports `sim-baseline SKIPPED: no baseline for glibc-x.yz`. A skip, not a failure, so nobody
+chases it. `sim-baseline-adopt` merges the one key's line and keeps the rest, with provenance per line.
+
+**It reads twice and refuses a disagreement, and that is the point of it.** A hash that does not reproduce on its
+own machine is not a baseline, it is a coin — adopt either number and every check everywhere compares against
+whatever non-determinism produced it. (`ai_scenarios_count.txt` made exactly that mistake this round: its `45,0,2,0`
+was recorded in the one run of about fifty in which a known-failing scenario happened to pass.) The read itself is
+one definition, `SIM_HASH_READ`, shared by the check, the recorder and the adopter, so the number adopted cannot
+come from a slightly different run than the number verified.
 
 ## Paid generation does not take a slot
 
@@ -230,6 +244,21 @@ relaunching, or two runs will `rsync --delete` into the same builder0 folder —
 A backgrounded `make remote T=check ... | tail -30` on `main` finished and the harness announced
 **`completed (exit code 0)`**. The wrapper's own line in the log said **`>> remote: make check exited 2`**, and
 `sim-baseline` had failed. **The notification was reporting `tail`'s exit status, not `make`'s.**
+
+**The same family, in a wrapper script rather than a pipeline (metrics, 2026-09-20):**
+
+    make remote T=check > log 2>&1
+    echo ">>> $(date +%H:%M:%S) wrapper exit $?"      # always prints 0
+
+**The command substitution runs first and resets `$?`.** That line sat in the chained check scripts and
+reported `wrapper exit 0` for a run that exited 2. Nothing downstream was wrong, because every number quoted
+was read from the wrapper's own `>> remote: make check exited <N>` line as CLAUDE.md rule 2 requires — which
+is exactly why that rule is worded the way it is. Capture the status into a variable on its own line, before
+anything else runs:
+
+    make remote T=check > log 2>&1
+    rc=$?
+    echo ">>> $(date +%H:%M:%S) wrapper exit $rc"
 
 **So the rule *never read a build result through a pipe* has a second face: the completion notification is downstream of
 your pipeline too.** It is more dangerous than a piped `echo $?`, because it arrives from the *tooling* rather than from a
@@ -363,6 +392,19 @@ holds it. **Kill the `slot.sh` wrapper, not the `make` inside it** (`ps -eo pid,
 `readlink /proc/<pid>/cwd` to confirm it is yours, trip-up 79) — that advice was right, it just could not work.
 And the habit that would have avoided the whole thing: builder0 sat at load 0.64 on 12 cores. Heavy runs go there.
 
+## ⚠ A test of `slot.sh` that runs inside `check` is a test of nothing (metrics, 2026-09-20)
+
+`slot.sh` short-circuits to `exec "$@"` when `TANK_SQUAD_SLOT` is set — correct, because a nested make must not
+queue behind the slot it is already inside — and `check` runs inside a slot and exports it. So a suite that
+exercises acquiring, holding and releasing slots **exercises nothing** there, and says so as six failures rather
+than as a skip. Unset `TANK_SQUAD_SLOT` (and `TANK_SQUAD_SLOTS`, `TANK_SQUAD_SLOT_DIR`, `TANK_SQUAD_EXCLUSIVE`)
+for the children; the real slot stays held either way.
+
+**And never assert after a fixed sleep.** `sleep 1.2` before checking that a window is up is a property of an idle
+laptop, not of the code: builder0 runs `check` with four test shards and a fanned-out lint beside it. Poll for the
+condition instead — faster when idle, correct when loaded. Both of these passed here and failed there, which is the
+whole reason the suites are in `check` and not run by hand.
+
 ## A timing run holds the box, and says afterwards whether it held (`--quiet`, metrics, 2026-09-20)
 
 A frame-time measurement needs a quiet machine (lesson 179), and *waiting* for one does not give you one: another
@@ -445,6 +487,20 @@ between runs.
 builder0 ten minutes after its wrapper died (the make, slot.sh, arena_series.py and two headless matches); the next
 `make remote` from that worktree would have rsynced `--delete` under it. Kill the whole tree by cwd-verified PID
 before relaunching (scale, 2026-09-20 08:45).
+
+## ⚠ `.SHELLFLAGS := -eu -o pipefail`, so "found nothing" aborts a recipe (metrics, 2026-09-20)
+
+The Makefile runs every recipe under `-eu -o pipefail`. Two consequences bite any probe or diagnostic whose
+**clean** outcome is silence, and they killed one of mine twice before it produced a line:
+
+- `something | grep -E '...'` returns non-zero when grep matches nothing, and `pipefail` propagates it;
+- a tool whose job is to fail on bad input — `godot --check-only` on a file with a syntax error — exits
+  non-zero itself, and `pipefail` propagates that too, *even though that outcome is the one you wanted*.
+
+Guard the whole pipeline, not just the grep: `{ cmd ... || true; } | { grep ... || true; } | head -3`. A
+count wants the same treatment (`n=$(grep -c . file || true)`). **`make lint` is not affected**: its per-file
+check runs under `xargs`' own `sh -c`, which does not inherit `.SHELLFLAGS` — worth knowing, because it
+means the same pipeline behaves differently in the two halves of one Makefile.
 
 ## trip-up 66 is now enforced, not remembered (`tools/remote_guard.sh`, metrics, 2026-09-20)
 

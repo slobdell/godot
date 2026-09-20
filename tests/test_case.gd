@@ -143,7 +143,16 @@ func _count_bodies(node: Node) -> int:
 ## so a baseline guard is satisfied having waited for nothing, and that `before=2` **was** the previous test's
 ## regions mid-drain. "Stops changing" fails too: a drain spanning two syncs reads `2, 2` as settled while both
 ## samples are pre-drain. Zero is the resting state and the only predicate with no false-satisfied case.
-const DRAIN_FRAMES := 30
+## 4 s of frames, not the 30 nav first wrote. scale measured the drain completing by **frame 1** on an idle box, so
+## 30 looked generous — and on builder0 under five parallel shards it was not: `test_combat_sim_cost` reported
+## "left 2 navigation region(s)" while **the same run produced ZERO edge errors**, which is the proof that the
+## regions did drain and only the bound was short. A guard whose budget is tighter than the thing it measures
+## reports a leak that is not there, which is scale's own question about their teardown guard — *"is the guard
+## crying wolf?"* — arriving at nav from the other side one day later.
+##
+## The budget costs nothing in the normal case: the loop returns the moment the map is empty, which is almost always
+## the first frame. It is only spent when something genuinely lingers, and then it is spent once.
+const DRAIN_FRAMES := 120
 
 
 func drain_navigation() -> void:
@@ -157,7 +166,7 @@ func drain_navigation() -> void:
 		await tree.physics_frame
 	var left := NavigationServer3D.map_get_regions(map).size()
 	if left > 0:
-		failures.append(("left %d navigation region(s) on the map after %d frames. The next test will bake into "
+		failures.append(("left %d navigation region(s) on the map after %d frames (4 s). The next test will bake into "
 				+ "them and the engine's 'more than 2 edges tried to occupy the same map rasterization space' will "
 				+ "be charged to whichever test is running when it lands - which will not be this one.")
 				% [left, DRAIN_FRAMES])
