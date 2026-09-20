@@ -352,7 +352,18 @@ tree the rig is still **5.6 m**, so it is a forecast, not a live defect, and the
 | `make audio-check` | passed | laptop |
 | `make announcer-audit` / `-variance` | passed | laptop |
 
-**⚠ THERE IS NO GREEN HASH FOR THIS WORK, and none of the above is one.** `builder0` has been unreachable since the
+**⚠ THERE IS NO GREEN HASH FOR ANY ROUND-8 ARENA COMMIT, and none of the above is one.** Stated exactly, because
+a pass-count without an exit line is the thing the contract warns against:
+
+| remote check | covered | runner | wrapper |
+|---|---|---|---|
+| on `8fda01a8` | the cityscape + carve fix | `1219 passed, 0 failed` | **`exited 2`** — `sim-baseline FAILED` (stale baseline, two recordings behind; not my change, proved by a same-machine A/B) |
+| on `94ca59bc` | + the rotation | `1238 passed, 0 failed`, `sim-baseline passed` | **`exited 2`** — `announcer-pytest`: terminus had no spoken name |
+| on `cff53fcf` | — | — | **`exited 3`, "cannot reach"** — builder0 down. **Not a check result.** |
+
+**Both failures are now resolved** (the baseline was re-recorded on `main`; feel recorded the 18 clips and
+`announcer-pytest` is 58/58 here). **But that is an inference, not a verified green**, and both checked commits
+are now on `main` — so **not one of the commits still ahead of `main` has ever been in a remote check.** `builder0` has been unreachable since the
 network outage — `ssh: connect to host builder0 port 22: No route to host`, confirmed from combat's session too, so
 it is the machine and not this worktree. What is therefore **unverified**: `net-smoke`, `relay-smoke`,
 `lobby-smoke`, `broker-test`, `combat-smoke`, `match-smoke`, `determinism`, `garage-smoke`, `army-loop-smoke` and
