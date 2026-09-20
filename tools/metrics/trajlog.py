@@ -39,11 +39,14 @@ REQUIRED_FLOAT = [
 # with the other three, and refusing those logs to keep one rule simple would have thrown away the round's control.)
 OPTIONAL_BOOL = ["order_reverse", "creeping", "facing_ordered", "facing_arc"]
 OPTIONAL_STR = ["phase"]
+## Paired floats, both null together. The unit tangent of the path leg nav is CURRENTLY DRIVING --
+## not the straight line to the goal, which is the one thing `legibility.md` §2 rules out.
+OPTIONAL_FLOAT = ["corridor_x", "corridor_z"]
 
 REQUIRED_FIELDS = (
     [n for n, _ in REQUIRED_INT] + [n for n, _ in REQUIRED_STR] + [n for n, _ in REQUIRED_FLOAT]
 )
-OPTIONAL_FIELDS = OPTIONAL_BOOL + OPTIONAL_STR
+OPTIONAL_FIELDS = OPTIONAL_BOOL + OPTIONAL_STR + OPTIONAL_FLOAT
 
 REQUIRED_HEADER = ["format", "version", "commit", "machine", "tick_rate", "producer"]
 
@@ -97,6 +100,14 @@ class Sample:
     creeping: Optional[bool] = None
     ## The unit's current move ORDER carries an arrival facing. Order-level, and true for the whole journey.
     facing_ordered: Optional[bool] = None
+    ## The unit tangent of the path leg nav is CURRENTLY DRIVING, flattened -- `Movement.state(unit)["corridor"]`.
+    ## **Null is a NAMED CASE, not an absence:** `legibility.md` §5 makes "no path yet" an *inactive* tick, and §7
+    ## computes A6's falsifier over active ticks only **with the active fraction reported beside it**, because a
+    ## falsifier that improves by the law switching itself off more often is not a pass. The columns are absent
+    ## entirely from a build whose `Movement.state()` has no such key -- which is a third state again, and the
+    ## reason the emitter reads it with `has()` rather than `get(..., null)` (control hit that within minutes).
+    corridor_x: Optional[float] = None
+    corridor_z: Optional[float] = None
     ## The arrival ARC is active on this tick: the unit is being steered to an approach gate so it can come onto
     ## the ordered heading. THIS is the flag that means "off corridor by construction, and that is obedience"
     ## (control + the orchestrator, 2026-09-20). It is deliberately not the same field as `facing_ordered`: an
@@ -254,8 +265,16 @@ def parse_sample(row: Dict[str, Any], path: str, line_no: int, expect_cause: Opt
             if row[key] is not None and not isinstance(row[key], bool):
                 _die(path, line_no, "field %r is %r, expected a boolean or null" % (key, row[key]))
             values[key] = row[key]
+        elif key in OPTIONAL_FLOAT:
+            values[key] = _number(path, line_no, row, key, True)
         else:
             values[key] = _text(path, line_no, row, key, True)
+    if "corridor_x" in present or "corridor_z" in present:
+        if not {"corridor_x", "corridor_z"} <= present:
+            _die(path, line_no, "corridor_x and corridor_z must appear together")
+        if (values.get("corridor_x") is None) != (values.get("corridor_z") is None):
+            _die(path, line_no, "corridor_x and corridor_z must be null together (got %r and %r)"
+                 % (values.get("corridor_x"), values.get("corridor_z")))
     return Sample(**values)
 
 

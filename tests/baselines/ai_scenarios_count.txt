@@ -1,0 +1,8 @@
+# ai-scenarios counts: passed,failed,pending,unexpectedly_passing
+# ai-scenarios-check fails when these CHANGE, not when a scenario fails: one perf case is
+# laptop-speed-sensitive and would redden the gate for a reason that is not a defect (lesson 42),
+# while a new script error moves `failed` and is caught (lesson 159).
+# machine: builder0
+# commit:  1cb2fda9
+# line:    scenarios: 45 passed, 0 failed, 2 pending, 0 unexpectedly passing
+45,0,2,0
