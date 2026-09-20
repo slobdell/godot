@@ -17,6 +17,9 @@ const RIPPLE_SECONDS := 0.5
 var _material := ShaderMaterial.new()
 
 var ratio := 1.0
+## The first update is where the shield starts, not an event: a unit without one (every gang vehicle, max_shield 0)
+## sends 0 from its first frame, and read against the full ratio above it crackled "shield down" at every spawn.
+var _started := false
 var _hit := 0.0
 var _down := 0.0
 var _recharge_left := 0.0
@@ -50,6 +53,11 @@ func set_tint(color: Color) -> void:
 
 func set_shield(new_ratio: float) -> void:
 	new_ratio = clampf(new_ratio, 0.0, 1.0)
+	if not _started:
+		_started = true
+		ratio = new_ratio
+		_material.set_shader_parameter("strength", ratio)
+		return
 	if new_ratio < ratio - 0.0001:
 		_hit = 1.0
 		var fx := FxWorld.existing()

@@ -83,11 +83,16 @@ completes and how far from its goal the unit really was. `--nav-off=…` switche
 
 ### The measuring switches, and what each one proves
 
+**An unknown name is refused** (`Movement.OFF_NAMES`, round 8): a switch nothing reads switches nothing off, and the
+A/B then comes back a clean null with a correct-looking arm header. arena hit that with `flow` on a tree that did not
+have it. Add the name to `OFF_NAMES` in the commit that adds the switch.
+
 `--nav-off=a,b` on any run (`make nav-where NAV_FLAGS=--nav-off=…`; in a test, set `Movement._off`,
 `Movement.avoidance_on`, `Movement.station_on` directly and restore them). Each isolates one decision:
 
 | switch | turns off | what an A/B with it answers |
 |---|---|---|
+
 | `--no-avoidance` | ORCA (X3) | how much arrival and flow come from avoidance at all |
 | `--no-station-pid` | PID station-keeping (X6) | P-law chase vs regulated slot (0.35 vs 4.58 m, `test_station_keeping`) |
 | `grace` | the 10-tick K1 start window | whether K1's 3-tick response depends on it (it does: control's response test) |
@@ -97,6 +102,8 @@ completes and how far from its goal the unit really was. `--nav-off=…` switche
 | `unstick` | the "room behind" check (old blind reverse) | whether ramming friends in columns matters |
 | `repath` | X7's re-plan policy (back to every 1 s) | cost/benefit of re-planning |
 | `carrot` | X7's pure-pursuit carrot (round 5's exact corner-following) | path smoothing's effect |
+| `standoff` / `commit` | round 7's standoff style / CombatMotion commitment | fixed-gun behaviour; re-aim churn (read live from `NAV_FIGHT_ARM`) |
+| `holdband` | **turns ON** round 8's standoff-hold hysteresis (HOLD_SLACK_M, hit-only break; off by default: its A/B missed) | whether hold ↔ move flips are the wheeled "yaw in place" |
 | `r5sidestep` | **turns ON** round 5's single-friend sidestep | the one thing X3 REMOVED; it alone restored squad's near-ambush timing (555 → 531 ticks) |
 
 **Two traps, both hit this round — read before trusting an A/B:**

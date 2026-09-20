@@ -19,3 +19,18 @@ readings): loudness, true peak and clipping describe exactly what was recorded. 
 how *dense* the battle was — how often impacts land, how the impact ducking overlaps itself, how often music layers
 change. Round 5 noted "game time runs ~10x slower than wall time" and left the cause open; this is the cause.
 The laptop was never affected: it has a live display.
+
+## Generating announcer clips from a worktree (feel, round 8) — two traps, one of which cost 18 masters
+
+`assets/announcer/masters/` is git-ignored, so **a worktree has none**. Two consequences, both found the hard way:
+
+1. **A dry run from a worktree reports every request unrecorded.** `make announcer-generate ONLY=<ids>` printed
+   "144 requests, ~17,018 credits" where the real job was 18 requests and ~2,125: it could not see the seven arenas
+   already recorded. An approved run from there would have re-bought them all, 8x over. **Read the REQUEST COUNT, not
+   the credit estimate** ("Already recorded (skipped on a real run): N requests"), and copy the masters in first:
+   `cp -r --update=none ~/projects/godot/assets/announcer/masters assets/announcer/`.
+2. **Copy the NEW masters back before deleting the copy.** The generator writes each new master beside the old ones.
+   Deleting `assets/announcer/masters` after a run (194 MB the remote sync would carry every time) deleted the 18
+   Terminus masters with it. The clips shipped and are verified, so nothing is broken today, but those 18 cannot be
+   re-cut if the cutting or normalisation changes: that would need re-recording (~1,630 credits). The order is
+   **copy in → generate → `cp -r --update=none assets/announcer/masters ~/projects/godot/assets/announcer/` → delete**.

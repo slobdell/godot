@@ -392,3 +392,27 @@ func test_the_cutaway_reads_the_stands_from_the_venue_itself() -> void:
 	for point: Vector2 in profile:
 		tallest = maxf(tallest, point.y)
 	assert_near(tallest, 15.7, 0.3, "and reaches the grandstand's 15.7 m")
+
+
+## Round 8 (squad's scale playtest, 1920x1080): leaning toward a far point put the selected squad under the command card -
+## the lean was bounded by a symmetric 0.78 of the half-height below centre, and the card starts at 0.44. The lean now
+## stops with the squad no lower than VISION_FRAME_BOTTOM.
+func test_a_long_lean_keeps_the_squad_above_the_command_card() -> void:
+	var saved_fov := RtsCamera.fov
+	RtsCamera.fov = RtsCamera.FOV_DEG
+	var units := [Vector3(-8, 0, 60), Vector3(0, 0, 60), Vector3(8, 0, 60), Vector3(-8, 0, 66), Vector3(8, 0, 66)]
+	var pose := RtsCamera.order_pose(units, Vector3(0, 0, -150), 0.0, 16.0 / 9.0, RtsCamera.FRAME_MIN_ZOOM,
+			RtsCamera.VISION_FRAME_INSET, RtsCamera.DEFAULT_PITCH_DEG)
+	var view := RtsCamera.pose_for(pose[0], 0.0, pose[1], RtsCamera.DEFAULT_PITCH_DEG).affine_inverse()
+	var half := tan(deg_to_rad(RtsCamera.fov) / 2.0)
+	var lowest := 0.0
+	for p: Vector3 in units:
+		var c: Vector3 = view * p
+		lowest = maxf(lowest, -(c.y / -c.z) / half)  # how far below the centre, in half-heights
+	assert_true(lowest <= RtsCamera.VISION_FRAME_BOTTOM + 0.01,
+			"the squad sits no lower than %.2f of the half-height (%.2f); the card starts at 0.44" % [RtsCamera.VISION_FRAME_BOTTOM, lowest])
+	var squad_only: Array = RtsCamera.frame_pose(units, 0.0, 16.0 / 9.0, RtsCamera.FRAME_MIN_ZOOM, RtsCamera.VISION_FRAME_INSET,
+			RtsCamera.DEFAULT_PITCH_DEG)
+	assert_true((pose[0] as Vector3).z < (squad_only[0] as Vector3).z - 5.0,
+			"and the view still leans toward the destination (focus z %.1f vs %.1f framing the squad alone)" % [(pose[0] as Vector3).z, (squad_only[0] as Vector3).z])
+	RtsCamera.fov = saved_fov

@@ -75,7 +75,9 @@ func _fit_to_hull() -> void:
 	if tank == null or model == null or not is_instance_valid(model):
 		return
 	var unit_id := String(tank.get("unit_id"))
-	var natural := bounds.size.z if part == "hull" else FactionArt.hull_length(unit_id)
+	# The approved model's own length, before a baked gun is cut out and turned to its rest (FactionArt.GUN_CUTS): measured
+	# after, the War Rig's gun poked past its nose and the whole truck drew at 80% of its box (round 8's finding).
+	var natural := FactionArt.hull_length(unit_id)
 	var size: Variant = Units.stat(unit_id, "hull_size")
 	if natural <= 0.01 or not (size is Array):
 		return

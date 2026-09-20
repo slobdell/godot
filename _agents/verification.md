@@ -106,6 +106,13 @@ the orchestrator:
 6. **One sample is the most exposed shape.** Take the fastest of N, and use the test's own natural reference where it has
    one (a cache hit against the same test's cold load).
 
+**A verdict over time in a live fixture is a race by construction.** control's "an order not carried out is called out
+after 2 s" tests stubbed what each gun was on, but the fixture's own brains kept fighting, killed the target inside the
+grace, and the order died with it: 1 run in 4 went red, confirmed by printing the target's health (0) in the failure
+message. Freeze what the verdict depends on (a durable target, `_keep_alive` in `test_control_order_refused.gd`), or
+build without the brains — and when a timed test flakes, print the world's state in its failure message before
+theorising.
+
 **When a grep for timing turns up a hit, say why it isn't one.** From the 2026-09-19 survey: tick counts
 (`test_control_response`, `test_responsiveness`) are sim time; `test_combat`'s respawn waits on the same `SceneTree` timer
 the game uses (`match.gd`), so both sides move together; a camera test that waits wall-clock for a rotation driven by the
@@ -298,3 +305,15 @@ mid-round would stop everybody): **after each `teardown()`, the runner asserts t
 the tree, `Arena.active` cleared, `Units.tuning` empty, no baked navmesh — and **FAILS naming the test that leaked**,
 rather than letting the next test inherit it. **A guard, not a documented discipline: today proved that a warning written
 by the stream that later hit it was not enough** (lesson 117).
+
+## Filming a march for a human to judge (nav, round 8)
+
+A capture meant to answer "does this group read as squads or as a herd?" has its own failure mode, and it is silent: the
+frames come back, the target exits 0, and nothing in them shows the thing being judged. `nav-flow-look` on terminus at
+the lead's own camera (pitch 21, 122 m) put the camera at street level among 40 m city blocks, which hid nearly every
+vehicle, and the unit nameplates covered the rest. Before quoting a look as evidence:
+
+- pitch 45-55 degrees on a map with tall cover (the lead's 21 degrees is for watching ONE hull turn, not a formation);
+- nameplates off, or the shot is labels;
+- frame the camera on the army's middle and keep it there as the army moves;
+- look at a frame from the middle of the march, not only the first and last.

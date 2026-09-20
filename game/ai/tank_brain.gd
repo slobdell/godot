@@ -336,6 +336,8 @@ var _peek_tick := -1
 ## Lesson 47: the in-place alternative for a held player unit this think (face the nearest threat, or stop), whether it
 ## counts as under fire, and how many move orders the hold rule has refused (tests assert the MECHANISM with this).
 var _held_face := {"type": "stop"}
+## Round 8: face orders turned into a stop because the turret carries the aim (turret_carries_aim), for tests and probes.
+var faces_declined := 0
 var _held_under_fire := false
 var held_moves_refused := 0
 ## Round 7: the option+target this brain last LEFT, and when ({} = none): decide() makes flipping straight back harder.
@@ -1746,7 +1748,7 @@ func _act(s: Dictionary) -> void:
 			if _flat(my_position).distance_to(goal) <= _order_arrive():
 				_order_move(_face_intended_or({"type": "stop"}))
 			else:
-				_order_move(_move_to(goal, false, float(o["speed"]), _order_arrive()))
+				_order_move(_arrive_facing(_move_to(goal, false, float(o["speed"]), _order_arrive())))
 			# Round 8: a move that names a target (a crew its leader swings round onto the ordered target) lays its gun on
 			# that one while it drives, not on whatever is nearest; fire at will when it can't bear.
 			if String(o.get("target", "")) != "":
@@ -2081,7 +2083,7 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "fire_at_will"})
 		"KEEP_SLOT":
 			var squad: Dictionary = s["squad"]
-			_order_move(_move_to(squad["slot"], squad["reverse"], squad["pace"]))
+			_order_move(_arrive_facing(_move_to(squad["slot"], squad["reverse"], squad["pace"])))
 			_order_weapon({"type": "fire_at_will"})
 		"HOLD" when s.get("order") != null and s["order"]["verb"] == "hold" \
 				and _flat(my_position).distance_to(s["order"]["goal"]) > maxf(HOLD_TOLERANCE, Movement.settle_radius(tank.unit_id) + 1.0):
@@ -2359,7 +2361,7 @@ func _face_intended_or(fallback: Dictionary) -> Dictionary:
 	if facing == null:
 		return fallback
 	var look: Vector3 = _flat(tank.global_position) + (facing as Vector3) * 20.0
-	return {"type": "face", "x": look.x, "z": look.z}
+	return {"type": "face", "x": look.x, "z": look.z, "told": true}
 
 
 ## [x, z] (or a Vector3) as a flat unit direction, or null.
@@ -2465,6 +2467,19 @@ static func _move_to(point: Vector3, reverse := false, speed := 1.0, arrive := O
 	return order
 
 
+## Round 8 (nav's contract, workstreams.md ba2c9adf): a move that ENDS somewhere the unit should be pointing a
+## particular way carries it, so a wheeled hull rolls onto that heading on its last leg instead of arriving 45 degrees
+## off and creeping round its spot (nav measured 6 s of shuffle on an IFV). Tracked and hover hulls ignore it and pivot
+## as they always have, so this only ever adds the arc for hulls that cannot pivot.
+func _arrive_facing(order: Dictionary) -> Dictionary:
+	var facing: Variant = intended_facing()
+	if facing == null or String(order.get("type", "")) != "move_to":
+		return order
+	order = order.duplicate()
+	order["facing"] = [(facing as Vector3).x, (facing as Vector3).z]
+	return order
+
+
 ## Whether a unit holding a player's post may start moving for `option`: back to its post (REGROUP/HOLD), with its
 ## element (KEEP_SLOT), or — under fire — into cover or away (TAKE_COVER, COVER_FIRE, RETREAT, RECHARGE, RESUPPLY, and any
 ## escape the brain marks `to_safety`). Never for a fight of its own choosing.
@@ -2489,6 +2504,18 @@ func _within_post(point: Vector3, lead := PLAYER_POST_LEASH) -> Vector3:
 
 
 ## Re-issuing an identical order would reset path following every think; skip near-duplicates.
+## Round 8: a wheeled hull with a turret — its gun aims without the hull, and the hull cannot pivot (TankBrain._order_move).
+static func turret_carries_aim(unit_id: String) -> bool:
+	if not _turret_wheels.has(unit_id):
+		_turret_wheels[unit_id] = Units.exists(unit_id) \
+				and String(Units.stat(unit_id, "locomotion", "tracks")) == "wheels" \
+				and String(Units.profile(unit_id).get("mount", "turret")) == "turret"
+	return bool(_turret_wheels[unit_id])
+
+
+static var _turret_wheels := {}
+
+
 func _order_move(order: Dictionary) -> void:
 	# The player's units hold until ordered (round-5 ruling; product constraint #4). A unit holding the post the player
 	# left it at may shoot, turn and — under fire — take cover or escape, and it goes back to its post; it may NOT start
@@ -2499,6 +2526,16 @@ func _order_move(order: Dictionary) -> void:
 			String(choice.get("option", "")), _held_under_fire, bool(order.get("to_safety", false))):
 		held_moves_refused += 1
 		order = _held_face
+
+	# Round 8 (the lead: "the semi trucks are yawing in place (should be impossible, they're not a tracker vehicle)"): a
+	# wheeled hull can only turn on the spot by creeping forward and back (TankMotion's multi-point turn), and the brain
+	# asked it to constantly: a held unit's refused advance became a turn toward the threat, 85% of the ticks of the
+	# player's rigs and tankers with an enemy in sight (squad's probe, round 8). A hull whose gun turns on its own has no
+	# reason to: it stops and the turret carries the aim, as a real truck does. A facing the PLAYER gave ("told") is one
+	# turn that settles, and is still honoured; a fixed gun's hull IS its aim, so it still faces.
+	if String(order.get("type", "")) == "face" and not bool(order.get("told", false)) and turret_carries_aim(tank.unit_id):
+		faces_declined += 1
+		order = {"type": "stop"}
 
 	# The player's post leashes everything this unit decides for itself. An escape (cover, breaking contact) gets a
 	# longer lead but not a free one: a unit that runs all the way home has left the ground the player gave it, which is

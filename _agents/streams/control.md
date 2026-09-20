@@ -167,7 +167,30 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | Radar draws the arena's outline | the perimeter polygon, else the active layout's bound (`4f7371ef`) | `test_radar` |
 | **Order progress on screen** (orchestrator, from nav/squad churn: weaving must read as *en route*) | done (`53a2af87`). For the selection, each order — or the squad's task, not its leader's moves — keeps a **pin**: ground ring at the ordered point, a stalk to the task's own symbol (card/preview glyph) on a dark disc, and a plate reading `ATTACK-MOVE · 2/3 there · 37 m`. A squad task adds a lead line from its middle (direct orders already have each unit's dashed line). Looked at the lead's 21°/49 m/FOV 35 pose, 1280×720 (laptop): readable over the arena floor; the first draft (12 px text, 20 px glyph, no plate) was not. 0.17 ms/frame at 30 units under orders (laptop); the whole control frame 1.84–1.96 ms of 2.0 (laptop, ~2.75× faster on builder0). **Wants the lead's eye on a touchpad.** | `test_control_order_marks`, `test_control_scale` |
 
-**MERGED: `baf04ead` as main `fa859dce`.** Next candidate: `86a8744c` (main `fa859dce` merged in at `7105478c`; the rest
+## Round 8 (2026-09-19, the lead: "it still sucks", "they still generally don't do what I command them")
+
+| Item | State | Evidence |
+|---|---|---|
+| **Orphaned units** (selection side): *"orphaned units that don't get selected at all when I cycle through the numbers"* | done (`ee9a434c`). `from_squads` seeded groups 1–5 while faction armies field 6–10 squads: condemned 6, law 4, gangs 17 vehicles on no key (laptop, 5200). Now up to 9 keys, squads past 9 fold into their family (Guns4 → Guns), else the last. squad consolidates the player's army to ≤5 (`90bd2212`, its line in `_start_match`); this is the belt. The skirmish prints `CONTROL_GROUPS ... ungrouped=N ... engaged_of=wired` | `test_control_every_unit_on_a_key`; 0 ungrouped for all four factions |
+| **An ignored order is visible** (*"they don't obey and instead they shoot at whatever they were already shooting at"*) | done (next commit). What each gun is really on (`OrderExecutor.engaged_target_of`: its controller, else its brain) is held against the player's intent (a unit's attack order, else its squad's attack TASK: number key + right-click, the lead's gesture). Attack pins count `ATTACK · 1/3 on target · 2 NOT COMPLYING` and turn red; after 2 s a unit carries a plated callout: `FIRING ON IFV`, `CAN'T SEE TARGET` or `NOT FIRING` (closing to range is compliance). Looked at at 21°/49 m/FOV 35, 1280×720 (laptop): readable after a plate; the text is small at that size (lead's eye). 0.117 ms/frame; control frame 20.7–21.4 of 26 references | `test_control_order_refused` (4, one through the real executor; mutation: without the task path the squad case shows nothing) |
+| **Refused on the spot** | done (`9a91d14e`). Five refusals (task without a whole element, move task with nowhere to go, follow without a friendly) returned their reason to nobody; now `_refuse` emits `command_issued` and the HUD posts "Can't: …". **Overridden later: not built, on evidence** — no code path replaces a player-sourced order (`element.gd` skips units whose current order is the player's; nothing else issues to the player's units), and if one appeared, the gun-vs-intent callouts would show its effect | `test_control_order_refused` (5) |
+
+| Attack pin wording (squad's, adopted by the orchestrator) | done (`648563f8`): `ATTACK · 2/4 on target · 1 moving round · 1 NOT COMPLYING` — "moving round" = the member's order names the target and its gun is on nothing else | `test_control_order_refused` (6, 5/5 runs) |
+| Drift heuristic for move/attack-move tasks | **declined by the orchestrator, on evidence**: under attack-move units spend 30–36% of their time off their order by design (arena's measurement), so a "not obeying" light would fire a third of the time and teach him to ignore the HUD. A predicate needs a measurement of normal first | — |
+
+| Scale playtest regression (squad, after its consolidation) | done (`3c1c224e`): with nothing selected the vision camera framed the whole army (can't fit 100 m at 35°) → now group 1; and the lean toward the reach parked the selected squad UNDER the command card (symmetric 0.78 bound vs the card at 0.44 of the half-height) → `VISION_FRAME_BOTTOM` 0.40. Playtest with squad's 90bd2212: ok=true, group 1 at y 586–653 vs card ~778 | `test_rts_camera::test_a_long_lean_keeps_the_squad_above_the_command_card` (fails on the old camera: 0.49) |
+
+**Round 8 candidate: `3c1c224e`** (next check, after main records a new sim line). #26 on `4ebe47a7`: 1228/0 tests,
+then `sim-baseline FAILED` (expected `53d4e0ac`, got `668b7d49`) — **main's line is stale, not this branch:** the same
+command on the laptop gives one hash (`34507d95`, glibc 2.39) for main `28eb403f`, this branch, and this branch with the
+pre-M4 `orders.gd`; and clean main `28eb403f` on builder0 gives `668b7d49` too (control's scratch run). The orchestrator
+records the line. Before it, **`4ebe47a7`** (main 28eb403f merged) — #26 running. #25 on `9dc17901` was not a verdict: feel's
+`test_a_new_state_waits_for_a_bar_line` failed on builder0 (audio-driver timing; reported to feel), so make stopped at
+`test`. **Round 8 is otherwise done for control.**
+
+**Previous: `9cb4a86d` — #24 GREEN (builder0): `make check exited 0`, 1213 passed / 0 failed, `sim-baseline passed:
+253ecfdeed84bc4d`, every target through `audio-check passed`** (M4 clamps + the timing policy on top of merged `c7f9cd4e`).
+**MERGED: `baf04ead` as main `fa859dce`; `c7f9cd4e` as `b500a2db`.** Next candidate: `86a8744c` (main `fa859dce` merged in at `7105478c`; the rest
 of the ratio timing tests; the cutaway reads feel's `StandsProfile` by path when the build has it, hand measurement as
 fallback; the kit's front is 9.64 m from 4.2 m out, not the measured 7 m at 2.3 m, so one test case moved 30° → 40°).
 #21 on it: RED on `test_radar`'s outline test only (1191/1, builder0), the static-leak main fixed at `5cc17ee6`;

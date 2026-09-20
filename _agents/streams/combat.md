@@ -127,6 +127,230 @@ writing first. Also: `game/control/` `game/ui/` `game/camera/` (control's), `are
 
 _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
+### `ENGAGE hop` — the cadence question, and a falsifiable prediction (thinking only, 2026-09-19)
+
+arena measured **30–36% of `attack_move` time spent driving somewhere other than the order**, `blocked_terrain`
+0.000–0.010, and **about three quarters of the re-tasking is `ENGAGE hop`** — the same option re-aiming, a
+destination change **every ~1.3 s**. nav is measuring whether that produces visible oscillation (pre-registered:
+≥5% of under-way time on any of his maps = real, <1% on all four = not). **Nothing is built until that lands.**
+
+**The design question is genuinely combat's, and N5 already answers most of it.** `attack_move` means *fight your
+way there*, so re-aiming is obedience, not disobedience — the defect, if there is one, is **cadence**. And the
+engagement envelope already defines the only principled floor: **a crew that switches target restarts acquisition**
+(`Lay.engage` zeroes `progress` on a new target), and acquisition costs **0.3 s at arm's length to 1.6 s at the
+edge of vision**, ×0.55 for a scout, ×2 under suppression. So:
+
+> **Re-targeting faster than `acquire_seconds` cannot produce fire. It can only produce motion.**
+
+At ~1.3 s between hops, a crew at anything past close range never finishes a lay. **The brain is issuing orders the
+gunner cannot cash.**
+
+**THE PREDICTION, which makes this falsifiable before anyone writes code.** If `ENGAGE hop` is real churn rather
+than obedience, then under `attack_move` the re-task rate and the *fire* rate must move in opposite directions:
+**`shots_per_unit_minute` should be depressed while re-tasking is high**, and units should show a high ratio of
+*time held on a contact* to *shots taken*. If instead fire rate is healthy at 45 re-aims a unit-minute, the hops are
+tracking a genuinely changing picture and the right answer is to leave it alone. **Both metrics already exist**
+(`make engagement`, `shots_per_unit_minute` from round 6) so this costs a run, not a feature.
+
+**If it is real, the fix I would propose** — and it is a consequence of the envelope rather than a new tuning knob:
+a brain under a player's order **holds a chosen target for at least the time it would take to acquire and fire it**,
+breaking early only when the target dies, leaves line of sight, or is displaced by a contact better by some margin
+(the same hysteresis shape as `RELEASE_FACTOR`). That makes the cadence fall out of `acquire_seconds` per unit and
+per range — a scout re-aims quickly because it acquires quickly — instead of adding a constant nobody can defend.
+
+**It touches squad** (the brain chooses) **and combat** (the envelope says what a choice costs), so it is a contract
+conversation before it is code.
+
+### THE 14 m RIG'S COST: one matchup, not one faction (2026-09-19)
+
+Treatment vs the baseline taken with the rig reverted, both maps, `make compare-arms` with the build declared as
+the arm, positive control engaged in all four runs. **Per matchup, because per faction hides it:**
+
+| map | arm | gangs vs condemned | **vs law** | vs syndicate | gangs overall |
+|---|---|---|---|---|---|
+| yard | baseline | 60% | **60%** | 70% | 63% |
+| yard | **rig 14 m** | 40% | **0%** | 40% | **27%** |
+| pit | baseline | 20% | **30%** | 40% | 30% |
+| pit | **rig 14 m** | 50% | **0%** | 40% | **30%** |
+
+**THE FINDING: `gangs vs law` went from 9/20 to 0/20 across both maps.** Twenty counterbalanced matches, no wins,
+two-sided p ≈ **2×10⁻⁶**. Nothing else survives both maps — vs condemned the rig *helps* on pit (+30) and hurts on
+yard (−20), which is what a map-dependent nothing looks like.
+
+**AND POOLING HID IT COMPLETELY ON PIT.** The gangs' overall rate there is **30% in both arms** — a flat zero —
+because losing the law matchup outright was offset by gaining the condemned one. A per-faction table says "no
+effect on pit"; the per-matchup table says one matchup became unwinnable. **The yard headline I first reported
+(−37 points to the gangs) is the same effect seen through a pooled number, and it understates what happened on
+one matchup while inventing a size that does not generalise.** Read matchups, not factions.
+
+**Mechanism, stated as a hypothesis with the evidence it rests on:** law is the suppression faction (Sonic Emitter,
+Gas Rocket Truck). In both maps' law matchups the suppression on the loser is the **highest figure in the table**
+(0.077 yard, 0.078 pit) and gang losses are near-total (**40.0 and 40.7 of 43 vehicles**). A 14 m hull is a far
+larger target for splash and for the near-miss rounds that drive suppression. **Not established** — the rival
+explanation is the wheeled creep (`TankMotion`'s designed multi-point turn: alternating 0.5 s forward/reverse legs
+whenever throttle falls below `WHEEL_CREEP_THROTTLE × |turn|`), which a big hull in a packed formation meets far
+more often, and a unit shuffling under fire dies without needing to be a bigger target. **The two differ at the
+trajectory level, which nav's counters can already measure.**
+
+**Nobody is proposing to shrink the truck over this.** The lead asked for it three times; feel measured 14 m as the
+length that reads *huge* (281 px against a tank's 95) and **12 m as the length that first reads unmistakably as a
+semi** (242 px) — so 12 m is a real option if someone wants to buy part of the cost back, and that is the lead's
+call against his own word "huge", not mine.
+
+### THE BALANCE PICTURE ON THE MAPS HE ACTUALLY PLAYS (2026-09-19)
+
+**Every faction number this project has ever quoted was measured on `foundry`** — a square, one central objective,
+`centre_sees_share` 0.56, **and a map the lead cut.** `Arena.ROTATION` became `["yard", "pit"]` at `474abf53`, and
+both are now **hexagons at the 140 m bound with off-centre mirrored objective pairs** (decision spread 0.43 and
+0.42, where every map read 0.00 two days ago). So these are the first faction numbers taken on the ground the
+player stands on. builder0, n=30 per faction per map, SEEDS=5, the positive control engaged in both runs.
+
+| faction | yard | pit | swing | significant? |
+|---|---|---|---|---|
+| **gangs** | **63%** | **30%** | **+33 pts (2.6 SE)** | **YES** |
+| condemned | 50% | 70% | −20 (1.6 SE) | no |
+| law | 43% | 43% | 0 | no |
+| syndicate | 43% | 57% | −13 (1.0 SE) | no |
+
+**THE FINDING IS THAT THE MAPS DISAGREE MORE THAN THE FACTIONS DO.** The gangs' 33-point swing between the two
+maps he plays is **the only difference in the whole table that clears the noise** — at n=30 a gap needs 25 points,
+and every within-map spread is under it. The gangs are the strongest army on one of his two maps and the weakest
+on the other, by the largest margin anyone has measured.
+
+**What this licenses:** nothing about faction strength as a property. *"The gangs are strong"* and *"the gangs are
+weak"* are both supportable from this table by choosing a map, which is exactly the error that cost two rounds and
+retired the 23% → 53% numbers. **A faction win rate without a map is not a number.**
+
+**What it does NOT license, and I am saying so before anyone reads it harder than it can bear:** no within-map
+difference here is significant. Gangs 63% on yard has a 95% CI of **45–81%**; condemned 70% on pit is **52–88%**.
+Resolving a 20-point within-map gap needs **n≈48 (SEEDS=8)**, about 60% more builder0 time per map.
+
+**Do not tune any of this.** The lead has deferred balance explicitly (*"we'll worry about evening up factions
+later"*). This is the baseline the 14 m rig gets measured against once squad's deployment fix lands, and the reason
+it was taken **with the rig reverted** (`44d87a28`, restored immediately after): an army deploying with 0.4 m gaps
+is not a balance baseline.
+
+**Both runs are comparable:** `git diff --name-only 44d87a28 d24f2ea1` is one markdown file. Checked rather than
+assumed, because the two `run:` headers name different commits and that is exactly what a mismatched comparison
+looks like from the outside.
+
+### ROUND 8 (2026-09-19) — the semi, and the bug found on the way to it
+
+**The lead, third time of asking:** *"the gang tanks are still tiny (the intent for the semi trucks is that they're
+huge - we'll worry about evening up factions later)"*. **Balance is explicitly deferred on this: measure what the
+size does and report it, do not tune against it.**
+
+**Why 3.14× the scout still read as tiny — two causes, neither of them the number I picked.**
+
+1. **We grew it on the axis the camera hides.** War Rig `[3.0 w, 4.4 h, 5.6 l]`: height 3.14× the gang scout
+   (inside the "3 or 4 times" he named in round 6) but footprint only 1.95× a tank's, and a top-down camera
+   foreshortens height and shows footprint.
+2. **Worse: the height was never drawn.** feel fits art by LENGTH so the approved model is never distorted, so a
+   4.4 m box drew a **2.09 m** truck. At the lead's pose the rig renders **114 px tall against a Condemned tank's
+   95** — the "huge" semi is barely taller on screen than a regular tank. **The catalog number I was free to
+   choose was height, and I chose it well; the axis that carried the intent was not mine and was not drawn.**
+
+**feel's number, measured at the lead's camera: `gang_tank` `[3.32, 5.24, 14.0]`** (281 px, ~3× a tank) and
+**`gang_support` `[3.39, 3.59, 7.0]`**. Its full box-vs-mesh table is in the round-8 messages; **every art-bearing
+unit's collider disagrees with its mesh**, worst `gang_tank` (+1.67 w, +2.31 h — shells that visibly clear the roof
+hit it) and `law_suppressor` **inverted** (drawn 0.96 m taller than its box — visible hits pass through). That is a
+hit-registration bug, not a look bug, and `hull_size` IS the collider (C1). The orchestrator has ruled it in scope.
+
+**WHERE IT STANDS (2026-09-19, branch at `2141904b`, `main` merged at the `85c774d0` checkpoint).**
+
+**The sizes are landed and the branch is NOT mergeable on that commit.** `gang_tank` `[3.32, 5.24, 14.0]` and
+`gang_support` `[3.39, 3.59, 7.0]` are in; the army could not stand in them; squad has fixed the cause on
+`stream/squad` at **`9a736f15`**. Sequence from here: squad lands on `main` → orchestrator announces → **merge, then
+re-run `make test FILTER=army_footprint` with the rig as landed**, and only if it is clean, ping feel to re-shoot at
+the lead's camera and report the per-map effect **without tuning it** (balance is deferred by the lead, deployment
+is not).
+
+| gang_ram, laptop seed 1 @5200 | vehicles | min | median |
+|---|---|---|---|
+| merged tree, before the size change | 41 | 3.7 m | 6.8 m |
+| **with the 14 m rig** | 41 | **0.4 m** | 2.7 m |
+| squad's fix + these sizes (squad's tree) | 41 | **4.3 m, 0 overlaps** | — |
+
+**My diagnosis of that regression was WRONG and squad's is right — worth keeping because of the shape.** I reported
+*"inter-squad placement does not keep up"* and reasoned about `GAP_SPACINGS`. The real causes: **ranks stacked by
+slot-centre depth while a 14 m hull overhangs 7 m each way**, and **ranks clamped at the drivable back edge stacking
+onto each other** (that was the 0.4 m cross-squad pair at z≈114). Neither is about gaps between squads. **The named
+pair was data and it was useful; the mechanism was a guess wearing its confidence**, and it would have sent squad to
+the wrong function. What I should have sent was the pair, the z, and *"I do not know why yet"*.
+
+**And the guard lesson, which cost nothing only because squad was more demanding than me:** I left the gang_ram
+assertion out of my own probe and printed it as a `MEASURE` line, for the good reason that the bar was not mine to
+set. The effect was that **the regression I introduced passed my own test** and I caught it by reading a number.
+squad asserted on gang_ram, gang_pack and law_line when it landed the file, and its version would have failed
+immediately. **The stream that owns the thing being guarded should own the assertion, because it is the one that
+will set the bar high enough to fail.**
+
+**⚠ THE SPAWN GRID DOES NOT CONSTRAIN VEHICLE SIZE, AND I SPENT an hour believing it did.** `SPAWN_ROW_SPACING`
+(8.0) − 2×`SPAWN_JITTER_MAX_Z` (1.2) = **exactly 5.6**, the War Rig's length, which looks like the smoking gun.
+It is not: `load_doctrine` ends with `ArmyLayout.deploy()`, which **teleports every unit at tick 0 before any
+physics step**, so a spawn slot is overwritten before two hulls can coexist in a simulated frame. I asked *which of
+two copies of the spawn geometry wins* — a good question, correctly answered — and never asked *whether spawn
+positions survive the frame*. **Finding the authoritative copy of a value is not the same as checking that the value
+still matters.**
+
+**⚠ RETRACTED THE SAME DAY — the table below is REAL BUT STALE, and is kept only as a worked example of how.**
+It was measured on this branch at `787d8632`, where `ArmyLayout` is `ASSEMBLY_SPACING_M := 8.0` over a flat
+`MIN_SPACING_M := 5.0`. **squad's `f1c3afcb` — "army start spacing derived from each squad's longest hull" — is on
+`main` and is not in this tree** (merge base `c6a5c550`). So I reported a defect squad had already fixed, and
+recommended to them the fix they had already written. **I carried the commit on the number, which is the rule, and
+the rule was not enough: carrying the commit makes a number ATTRIBUTABLE, it does not make it CURRENT.** A defect
+measured on a branch is a statement about that branch; I stated it about the game.
+
+**The check against `main` was invalid too, so there is no replacement number here.** Copying `main`'s
+`army_layout.gd` into this tree and re-running gave min 0.0 m and **median 0.0 m** for both armies — not a result,
+every unit in one place. One file from a tree ~40 commits ahead is a Frankenstein build: the mismatched comparison
+`compare_arms` exists to refuse, assembled by hand. Both of its numbers are discarded. **squad has been asked to run
+`tests/test_army_footprint.gd` on its own tree**, which is where the answer lives.
+
+**The stale table (laptop at `787d8632`, pre-`f1c3afcb`), nearest-neighbour centre-to-centre after deploy:**
+
+| army | vehicles | min | median |
+|---|---|---|---|
+| **gang_ram** | 41 | **0.2 m** | 4.6 m (a 5.0 m tanker with **0.9 m** of room) |
+| gang_pack | 45 | 0.8 m | 4.6 m |
+| law_line | 24 | 2.3 m | 3.7 m |
+| **syndicate_standoff** (control) | 18 | **7.4 m** | 8.3 m |
+
+On that tree a gang army stood with about four metres of hull interpenetration, and the 18-vehicle control got
+7.4 m from the same code — so on **that** tree the defect was `ArmyLayout` compressing a rank to fit the zone with
+no reference to hull length. **squad's `f1c3afcb` does exactly what I was about to recommend**, so the likeliest
+reading is that this was fixed before I measured it.
+
+**What survives the retraction, and it is the useful half:**
+
+- **`tests/test_army_footprint.gd` is a real instrument** and worth keeping whatever the answer: it measures the
+  geometry that actually constrains vehicle size, and it is the regression guard for a 14 m rig.
+- **The spawn grid still does not constrain vehicle size.** That correction stands on its own — `deploy()`
+  teleports at tick 0 regardless of anyone's spacing constants.
+- **The size question is no longer blocked.** squad reports assembly spacing is now `max(6.5 m, longest hull + 2 m)`,
+  so a 14 m rig gives a gang squad ~16 m between vehicles and a wider frontage, which squad will re-check on sight.
+- **Not landing the assertion was right for a second reason I did not have at the time:** had I landed it, my branch
+  would now carry a failing test asserting a defect that main has already fixed.
+
+### GREEN AND READY TO MERGE: `80bcd085`
+
+`>> remote: make ... exited 0` on builder0, **1187 passed, 0 failed**, plus `match-pytest` **Ran 11 tests — OK**.
+Working tree clean at that hash and unchanged since the sync, so the verdict is that commit's and not an
+unlabelled tree's.
+
+**The fourteen targets:** lint, test, net-smoke, combat-smoke, broker-test, relay-smoke, lobby-smoke, match-smoke,
+determinism, garage-smoke, army-loop-smoke, announcer-check, audio-check, match-pytest. **`sim-baseline` is
+excluded** — invariant 2, and see *why invariant 2 is right* below: a branch's green baseline predicts nothing
+about `main` after merge, so recording it here would be worse than not running it.
+
+**This branch contains arena's `877dc34a`** (a real merge at `0da3f015`, authorised by the orchestrator) and
+`main` at the `96368bf6` checkpoint (baseline `253ecfdeed84bc4d`) via `c6a5c550`. **It does NOT contain the four
+branches merged after that**, deliberately: control owns the `radar.gd` resolution against my X3 block and should
+take it on its own post-merge re-check rather than have me sit on both sides of it.
+
+**One shared-file edit to know about:** `mk/core.mk` (`ac3f331f`) appends `match-pytest` to `check` — 3 ms, and
+appended rather than inserted because `check` aborts at the first failing target.
+
 ### IF YOU ARE A FRESH AGENT, START HERE (round 7, 2026-09-19)
 
 **Round 7 in one paragraph.** X4 (the gangs' unattributed 23% → 53% swing) and X3 (the arena bound) are **built**;
@@ -746,7 +970,34 @@ half; splitting your force to take both is rewarded, which is the decision the c
 nav's `gunnery.gd` split are all waiting on CP4 being on `main`. And **N7 may move the sim baseline again**; per
 invariant 2 combat does not record it, and the N7 report must say whether it moves.
 
-### X7 (stretch) — the event half is already done; what is left is one number
+### X7 — ANSWERED (2026-09-19) from evidence already committed, no new run
+
+Read out of [references/combat/n5-engagement-envelope-2026-09-18.json](references/combat/n5-engagement-envelope-2026-09-18.json)
+(builder0 at `fa4e7077`, n=15 per arm). **The brief's target was two claims and they have different answers:**
+
+| | round 5 (true control) | **shipped** | |
+|---|---|---|---|
+| flank + rear kill share | 55.4% | **68.6%** | **a majority — target met** |
+| off-axis kill share (the strict measure) | 25.7% | **45.5%** | **not a majority — but nearly doubled** |
+| rear kill share | 11.2% | **20.8%** | nearly doubled |
+| **centroid travel** | 236.8 m | **248.1 m** | **+5% — essentially unchanged** |
+
+**1. "A majority of direct-fire kills come from the flank or the rear": YES by the hull-face measure (68.6%), NO by
+the stricter one (45.5%).** Quote the strict one. An oblique shot across a wide front registers as a "side" hit
+without anyone having flanked anything, which is why `off_axis_kill_share` exists — and by it the game is just
+short of half, having risen from a quarter.
+
+**2. "The armies' centres of mass move during the fight": YES, and N5 did not cause it.** Centroid travel is
+236.8 → 248.1 m, about 5%, which is inside the noise of a 15-match arm. **The armies moved this much before the
+engagement envelope existed.** So the flanking gain is *not* the armies manoeuvring more — it is a change in **how
+kills happen within an engagement**, at the same amount of movement. That is worth knowing before anyone credits
+N5 with making the battle more mobile: it did not. It made the shooting more directional.
+
+**Caveat, stated because this stream has been bitten by exactly this:** these are round-6 arms at `fa4e7077`, not
+the current tip, and the control is the true round-5 arm (`--no-acquisition --no-crossing` *plus* bands at reach),
+not the discipline-off-only arm. Read the fourth row of that file, not the third.
+
+### (superseded) X7 (stretch) — the event half is already done; what is left is one number
 
 Checked rather than assumed. `projectile_impact` already carries `weak_spot` (K2), feel's `game/theme/fx/k2_events.gd`
 already reads it, and there is a dedicated `weak_spot_hit` sound layer with two variants. **So "feel draws the cue;
@@ -1110,7 +1361,11 @@ baseline that suite before attributing anything to a change (it is not in `check
 _Rewritten 2026-09-19 (second pass). Round 6's list is done; of the list written this morning, **1, 4 and the
 instrument work are done** and the two measurements remain._
 
-1. **The matrices, both maps, both arms — the only backlog item left with a number attached.** `ARENA=boulevard`
+_All backlog items are complete as of 2026-09-19: X1–X6, N7 and X7 (stretch). The list below is what round 8
+would pick up, not outstanding work._
+
+0. ~~**The matrices**~~ — **DONE**, see *X4 — RESULT*. ~~**X7**~~ — **DONE** from committed evidence, no run needed.
+1. **(superseded, kept for the method) The matrices, both maps, both arms.** `ARENA=boulevard`
    (open, 0.64) and `ARENA=yard` (closed, 0.20), each with and without `ABLATE=1`, then subtracted with
    **`make compare-arms`** rather than by eye. Report **per map and per faction, never pooled**; quote both maps or
    neither. The `gangs/scout` question is the same four runs: if the gangs collapse in the ablated arm, the

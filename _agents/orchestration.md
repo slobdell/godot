@@ -1556,6 +1556,16 @@ The kickoff prompt is one line; this section is the rest.
      - **A pre-registered rule makes a null result reportable and a bad result unspinnable.** It also forces the *acceptance
        criteria* to be chosen while they can still be chosen fairly — nav's include *survivability must not get worse*,
        which is the criterion an author hoping for a churn win would quietly omit.
+     - **A rule you honour when it costs you is the only kind that works.** nav's hold-hysteresis A/B came back **down on
+       all four maps** — scout in-place events −22%, −19.5%, −8%, −6% — **which is a real effect and it misses the
+       pre-registered bar of ≥20% on ≥3 maps.** nav shipped it **opt-in** rather than arguing the direction was
+       consistent. **And the kills guard tripped** (>20% fewer losses on 4 of 8 runs), with nav noting the guard has
+       almost no power — **2–5 deaths out of 90 units in 120 s** — and adding: *"it was fixed in advance, and I'm not
+       arguing with it after the fact."* **That sentence is the whole value of pre-registering.**
+     - **⚠ But a guard with no power is the 34×-headroom problem again** (lesson 107): **a threshold that cannot
+       meaningfully fail is not protecting anything**, and one that trips on 2-vs-5 deaths is noise wearing a rule's
+       clothes. **nav named the fix itself — more deaths per run, via a longer `NAV_TIME`.** **Check a guard's power when
+       you pre-register it, not after it fires.**
      - **Pre-register a GUARD metric as well as a success metric — name what must NOT get worse.** nav's rule covered
        churn and survivability; the thing that actually moved was a third, **attack-move "progressing" 44% → 41%**, and
        the rule was silent on it. **A pre-registered rule protects only the metrics you thought of**, and the one that
@@ -1890,7 +1900,9 @@ The kickoff prompt is one line; this section is the rest.
        **before its first run**: (a) angular rate 0 → ≥90% of peak, or ≥90% → 0, **within one tick**; (b) overshoot, or a
        last tick > 30% of peak; (c) rotating about a point it is not driving around.
      - **Two of three shapes failed and one passed, each for a nameable reason** — a tank pivot robotic by (a); a scout's
-       K-turn robotic by (b), **overshooting its final heading by 20.7°, arriving still turning**; a four-unit squad wheel
+       K-turn ~~robotic by (b), overshooting its final heading by 20.7°~~ — **RETRACTED: an angle-wrap bug in the
+       reporter, `wrapf(last - first)` on a 201° arc that never reversed. Fixed 7f14241b; overshoot is 0.0 everywhere,
+       and Reeds-Shepp lost the only measured defect behind it.** A four-unit squad wheel
        **smooth by all three**. A definition that only ever fires is not a definition.
      - **The passing case is as valuable as the failures:** it says the squad-level motion the lead asked about is already
        right, so nobody spends a round on it.
@@ -2035,3 +2047,190 @@ The kickoff prompt is one line; this section is the rest.
      - **arena's first fix was wrong and it says so: a hollow shell of four walls leaves the interior walkable — an
        enclosed, unreachable navmesh island inside every building.** The right answer is tiling the footprint with
        adjacent 4 m slabs. **Recorded because the wrong version is the one that looks obviously correct.**
+135. **The grain of aggregation decides whether you see the effect at all — and ours was one level too coarse.**
+     combat, correcting its own headline two hours after giving it to me:
+
+     ```
+     map    arm        vs condemned   vs law   vs syndicate   gangs overall
+     yard   baseline           60%      60%           70%            63%
+     yard   rig 14 m           40%       0%           40%            27%
+     pit    baseline           20%      30%           40%            30%
+     pit    rig 14 m           50%       0%           40%            30%
+     ```
+
+     **`gangs vs law` went 9/20 → 0/20 across both maps. Twenty counterbalanced matches, zero wins, p ≈ 2×10⁻⁶.**
+     **And on pit the per-faction number is 30% in BOTH arms — a flat zero** — because losing the law matchup outright
+     was offset by *gaining* the condemned one. **A per-faction table says "no effect on pit". The per-matchup table says
+     a matchup became unwinnable.**
+     - **The pooled number did not merely dilute the effect; it invented a different one.** *"−37 points to the gangs on
+       yard"* — which I relayed to the lead — **understates what happened to one matchup and asserts a magnitude that does
+       not generalise to the other map.**
+     - **combat's rule: read matchups, not factions.** And its own note: *"I built the tool to report per faction and it
+       was the wrong grain; that is on me and the tool should probably print both."*
+     - **This is lesson 118's sibling.** There, the untreated arms were the noise floor and reporting them was free. Here,
+       **the finer grain was already in the data and the report threw it away.** Whenever a number aggregates over
+       something, **ask what the aggregation could be cancelling** — a −30 and a +30 pool to zero and read as "no effect".
+     - **The honest sentence changed with it**, and combat wrote the replacement: not *"the truck costs the gangs a third
+       of their win rate"* but ***"the truck makes one matchup unwinnable on both maps, and we do not yet know whether
+       that is the size or a movement bug it exposes."*** **More alarming and more honest, and it does not prejudge the
+       fix.**
+136. **A big object magnifies whatever was already slightly wrong.** feel, chasing the 15 m shield bubble the orchestrator
+     noticed in a screenshot of combat's 14 m rig: **`ShieldEffect` started at ratio 1.0, so the first legitimate
+     `set_shield(0.0)` on a zero-shield unit read as "the shield just got knocked out"** — hit shimmer, crackle and a
+     `shield_down` sound **on every gang vehicle, every deployment, since the gangs shipped.** Roughly forty at once.
+     **The 14 m hull did not cause it. It made the shell a 15 m egg nobody could miss.**
+     - **That is an argument for shipping a large vehicle that has nothing to do with balance:** scale is a magnifying
+       glass over every effect keyed to hull size, and a defect that survived rounds of play became obvious in one frame.
+     - **And it was found because a human looked at a screenshot sent for a different purpose.** Eighth defect this round
+       caught by looking rather than by a test.
+137. **⚠ THE SIM BASELINE ONLY FIELDS TANKS. "sim-baseline passed" means "a tank-vs-tank match on foundry is unchanged",
+     and we have been reading it as "gameplay is unchanged".**
+     Three predictions that it would move failed in one day, and I chased the third:
+     ```
+     sim-baseline: --match --elimination
+       --green-doctrine=anvil_hammer --rust-doctrine=individuals
+       --time-limit=40 --seed=3       (foundry, DEFAULT_LAYOUT)
+
+     anvil_hammer   ['tank']
+     individuals    ['tank']
+     ```
+     **Both doctrines are all-tank.** So the canary has **no gang vehicles, no wheeled hulls, no scouts, IFVs, artillery
+     or support**, one map, 40 seconds.
+     - **combat's 14 m rig did not move it** — `gang_tank` and `gang_support` are not in the match.
+     - **squad's wheeled-turret face→stop did not move it** — there are no wheeled hulls in the match.
+     - **combat's `ARENA_HALF_SIZE` 120 → 140 did not move it** — foundry declares its own `half_size`.
+     Each time the predicting stream was reasoning correctly about its own change and **wrongly about what the instrument
+     covers** — and so was I, three times.
+     **The consequence is bigger than three wrong predictions.** `sim-baseline`'s stated purpose is *"art must never
+     change gameplay"*. **feel has twice proved its art inert by passing it. That proof holds for TANKS** and says nothing
+     about the nineteen other units feel has been re-cutting, re-orienting and re-sizing.
+     - **A green `sim-baseline` is a much weaker guarantee than its name suggests.** Treat it as a determinism canary on
+       one narrow configuration, not as coverage.
+     - **Round-9 candidate: widen the baseline match** to field at least one hull of every `locomotion` and `mount`
+       combination, on more than one map. **It is cheap — it is one match — and it is currently blind to most of the
+       game.**
+     - **And the general form, which this project keeps meeting: a guarantee is only as broad as the configuration it is
+       measured in** (lesson 23's family). **The name of a check is not its scope.**
+138. **A veto stores the change up; only changing the SCORE changes the decision.** squad built combat's principled floor
+     — *a crew may not swap to a different target faster than `Engagement.acquire_seconds` for the new contact* — measured
+     it, and **reverted it, because it lost its own A/B.**
+
+     | per unit-minute (yard, seeds 1/3/7) | floor ON | floor OFF |
+     |---|---|---|
+     | option switches | 19.5 | **18.1** |
+     | **reversals** | **0.67** | **0.30** |
+
+     **Worse on switches and more than double the reversals, on every seed.** squad's reading, which is the lesson:
+
+     > *"Holding a crew on a target after its score has decayed doesn't prevent the swap, it **delays** it — and the longer
+     > the delay the bigger the gap when it finally breaks, so it comes back as a **reversal**. A floor that forbids the
+     > change without changing what's being compared just **stores the change up**."*
+
+     **A veto is not a preference.** It suppresses the *expression* of a decision the scoring still wants, and the
+     pressure accumulates — so the behaviour it produces is worse than the one it was suppressing, in exactly the metric
+     that matters. **If you want a unit to stay, make staying worth more; do not forbid leaving.**
+     - **That is what `COMMIT_BONUS` already is**, and squad's proposed next experiment is the honest one: tune the
+       existing score term with the same probe, rather than add a second mechanism beside it.
+     - **combat's principle may still be right; this shape of it is wrong.** Worth separating, because *"the acquisition
+       time is the natural floor for re-aiming"* survives the result that *"vetoing swaps below that floor makes things
+       worse"*.
+     - **Second revert of the round after measurement, and both were cheap because they were measured before shipping**
+       — nav's gear-change cost (aimed at the wrong third of the flips) and this. **The expensive version is the one we
+       did earlier: ship, measure twice, then discover the mechanism was never reached.**
+139. **An algorithm's canonical use case has to match the problem you actually have.** nav built flow fields behind a
+     switch, measured them on terminus at 45 a side over three seeds, and **reverted them by the rule it had written
+     first.** `stuck_share` off → on: **−10%, −1%, +9%. Mean ≈ −1%.**
+     **The mechanism worked** — the field answered **70–75% of route plans**, falling back to A\* for the rest — **and it
+     did not help.** nav's explanation is the reusable part: **a flow field buys CPU when an ARMY SHARES ONE GOAL, and a
+     fight's goals are PER UNIT.** A 2 m grid over a street map returns the routes A\* already returns.
+     **I assigned this as *"the named answer to his loudest complaint"* — from his sentence, not from a measurement.**
+     *Stuck behind barriers* sounds like pathing; it was churn, and `blocked_terrain` was 0.000–0.010 all along.
+     - **⚠ THE SEED THAT LOOKED GOOD WAS THE ONE RUN FIRST.** Seed 3 alone reads as a −10% win, and nav says it *"would
+       have reported it as promising if the rule had not said three seeds."* **That is the entire value of fixing the
+       sample size in advance** — the first result is the one you form an opinion on, and it is the one most likely to be
+       reported.
+     - **Deleted with its switch**, as pre-registered. *"A mechanism nobody reaches is how commitment got measured twice
+       for nothing."*
+     - **The guard it produced outlasts it, and is worth more than the feature would have been:** `--nav-off` now
+       **refuses an unknown mechanism name** (`Movement.OFF_NAMES`). **arena had already hit the failure it prevents** —
+       running an A/B with `--nav-off=flow` on a tree that had no flow fields, and getting **a clean null with a
+       correct-looking arm header.** A switch that silently accepts a name it does not implement produces the most
+       convincing wrong answer available.
+     - **And filming both arms before deleting** leaves a picture of what shared-gradient routing looks like for whoever
+       tries it next. **A null is cheaper to re-derive than to re-discover.**
+140. **A wrong mechanism attached to a right number is more durable than a wrong number.** combat, on nav's pivot table:
+
+     ```
+     hull_size                      in-place turn      farthest wander
+     3.0, 4.4, 5.6   (old)              7 deg               5.5 m
+     2.84, 4.49, 12.0                  23 deg               3.9 m
+     3.32, 5.24, 14.0 (shipped)        26 deg               3.5 m
+     ```
+
+     **The numbers are sound** — and nav ran the OLD 5.6 m size on today's tree as a control, which is what rules out
+     *"something else landed this round"*. **The explanation offered with them cannot be true:** nav attributed it to the
+     creep legs moving a longer hull's centre less, and **`hull_size` never reaches `TankMotion`.** `state_for()` builds
+     the motion state from locomotion, the two speeds, `hull_turn_rate_deg`, acceleration, braking, `min_turn_radius_m`
+     and `lateral_grip` — **no length, no box** — and `step_in_place` references neither. **At a fixed radius the centre's
+     path per degree is identical at 5.6 m and 14 m; the model cannot tell the hulls apart.**
+     **combat's candidate, with the test that separates it:** the probe runs on **`yard`**, and **`hull_size` IS the
+     collision box.** A 14 m box sweeping a 12 m circle **hits scenery a 5.6 m box passes clean**; a blocked hull
+     translates less while the controller keeps commanding yaw — **exactly the signature of turn rising and wander falling
+     monotonically with length.** One run on clear ground separates them.
+     **If that is right, the number means *"a long hull gets stuck on terrain and pivots while stuck"*, not *"a long hull
+     pivots"*** — map-dependent, worse on the city map, absent on open ground. **Same number, different meaning, different
+     fix.**
+     - **combat's reason for raising it is the lesson:** *"a mechanism that cannot be true gets quoted as fact later, and
+       this one was about to be recorded next to a number I will be citing."* **A retracted number gets struck through; a
+       wrong explanation travels attached to a correct one and is never re-checked.**
+     - **Check a mechanism against the code that would have to implement it.** combat did not argue from plausibility —
+       it named the function, listed what it reads, and observed that length is not in the list.
+     - **This is the fourth time today combat has brought evidence against its own position**, and the second time a
+       stream has corrected a mechanism I or another stream invented from intuition rather than from the source.
+141. **A vehicle far outside the range a system was built for does not fail loudly — it quietly stops getting the benefit
+     everyone else gets.** combat, and this is the third instance this round of one pattern:
+
+     | system | sized for | how it failed |
+     |---|---|---|
+     | the spawn grid | ~4 m (8.0 m pitch − jitter → 5.6 m ceiling) | **loudly** — hulls overlapped, fixed in hours |
+     | `ArmyLayout` spacing | ~4 m (*"hulls are ~4 m long"*, in the comment) | **loudly** — 18 overlaps, fixed in hours |
+     | **cover** | ~4 m props | **SILENTLY** |
+
+     **yard's cover: 58 × `container_40` (12.19 m), 40 × `container_20` (6.06 m), 6 wrecks (6.4 m), barricades.**
+
+     | hull | length | prop types long enough to hide it |
+     |---|---|---|
+     | gang_scout | 2.8 m | 5 of 6 |
+     | gang_ifv | 3.6 m | 5 of 6 |
+     | gang_support | 7.0 m | 2 of 6 |
+     | **gang_tank (the rig)** | **14.0 m** | **0 of 6** |
+
+     **The longest prop on the map is 12.19 m. Nothing can hide a 14 m hull.** Containers stack three high, which adds
+     height, not length.
+     **And cover fails silently: the rig still drives to cover, still counts as *near cover*, and simply is not covered.**
+     That is the whole lesson — **the two systems that failed visibly were fixed within hours; this one would never have
+     announced itself.**
+     - **When a value moves far outside its designed range, enumerate what else was sized for the old range.** combat found
+       the third instance by asking that question rather than by hitting a failure.
+     - **⚠ AND COMBAT IS NOT CLAIMING IT EXPLAINS THE MATCHUP**, which is the discipline worth copying: its own arms show
+       `unit_seconds_near_cover` **flat** (0.300 → 0.306) and `deaths_near_cover` **falling** (0.411 → 0.332). **If the rig
+       were dying while exposed at cover, that share should rise.** So the structural fact is certain and **the story
+       built on it is not evidenced.**
+     - **`gangs vs law` 9/20 → 0/20 remains unexplained.** Shuffling is now evidenced *against* (the rig converts 0.95 of
+       its path into net displacement — the **least** shuffling gang type; the scout is the shuffler at 0.68). Splash is
+       evidenced against (**indirect kills halved, 8.4% → 3.7%**). **"Bigger target" survives by elimination rather than by
+       evidence, which is not the same thing**, and combat said so rather than letting it become the answer.
+142. **`unittest discover` silently ignores bare `def test_...()` functions — four tests "passed" by not existing.**
+     arena's own-goal, reported unprompted: `make arena-pytest` is `unittest discover`, which collects **`TestCase`
+     subclasses only**. Four module-level test functions it added were **never collected**, and **the suite reported the
+     same 14 tests before and after.**
+     **It caught this because the COUNT did not move**, then verified the fix by **breaking the kit table and watching the
+     right test go red.**
+     - **arena's own framing, which is the keeper:** *"A test that cannot fail is worse than no test: it is a green light
+       wired to nothing — and I shipped four of them while spending the day telling other streams to prove their arms
+       differ."*
+     - **Watch the test COUNT, not just the pass/fail line.** It is the only signal that distinguishes *"my new tests
+       passed"* from *"my new tests were not run"* — the same distinction as lesson 91's invisible skip and lesson 95's
+       truncated check. **Three different mechanisms, one symptom: a green result that covers less than it appears to.**
+     - **And the fix is always the same: make it fail on purpose and watch.** Every guard that worked this round was
+       mutation-checked; every one that failed us was not.
