@@ -212,6 +212,30 @@ it asks first.**
    the very fix two streams had agreed to hold.** It prints loudly on every report, stays out of `check`, and **becomes
    an assertion the day he rules.** **A tool that fails on an open question is an advocate, not an instrument.**
 
+0c. **A technique adopted in one stream is checked against the techniques adopted in the others BEFORE either merges —
+   and a brief that adopts one must name what it REPLACES.** Adopted 2026-09-19 from the external research review
+   ([`research_catalog.md`](research_catalog.md) Part 2), which audited its own proposals against each other and found
+   that **a majority of combinations of individually-valid techniques violate a cross-layer invariant.**
+
+   The examples are ours and they are concrete:
+   - A **space-time reservation** scheme assumes an agent executes the plan it committed to. An **event-triggered
+     replanner** assumes it may abandon one at any tick. Each is correct alone. Together, one agent reserves a corridor
+     slot and the other never arrives to use it. *(This pairing is why catalogue C8 is held out of round 9 while A1 is
+     in it.)*
+   - **Null-space priority projection** guarantees safety dominates formation-keeping. **Additive context steering**
+     guarantees the opposite, by summing them. Adopt both and you get neither.
+
+   **This is lesson 116 — *inertness does not compose* — in the design layer rather than the test layer**, and it is a
+   hazard aimed squarely at how this project works: **five or six streams adopting techniques independently, in
+   parallel worktrees, from one shared catalogue.** That is the organisational structure most likely to produce exactly
+   this failure, and **no worker is positioned to see it. The orchestrator is.** So:
+   - A brief that adopts a catalogue row states **the layer it owns**, **what it assumes the layers above and below
+     will do**, and **which already-adopted mechanism it replaces**.
+   - **"Replaces: nothing" is the answer to interrogate**, not the answer to accept. *Replacing* is safe; *adding
+     alongside* is where two correct techniques fight.
+   - Rows that touch the same code path are **sequenced, not parallelised**. A1, A7 and A11 all rewrite how a desired
+     velocity is chosen; they do not go to three streams in one round.
+
 
 1. **`make remote T=check` passes before merging** (lint, tests, network + relay + lobby smoke, combat, match,
    determinism, sim baseline, garage smoke). Paused areas keep their tests green.

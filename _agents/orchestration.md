@@ -2268,3 +2268,24 @@ The kickoff prompt is one line; this section is the rest.
      - **⚠ Consequence to expect: `sim-baseline` will now fail for real changes it used to wave through.** The next few
        *"the baseline moved"* reports are likely to be **correct**, and should be read as the instrument working rather
        than as a regression.
+
+144. **A rejection outlives the premise it was built on.** `algorithms.md` rejected learned policies with *"determinism
+   is the blocker: a learned policy is a large pile of floats evaluated in an order we do not control."* Two external
+   reviews, independently, pointed out that **the floats are a choice.** An offline-trained network exported as `int8`
+   weights with `int32` accumulators is bit-exact — integer addition is associative, there is no rounding mode, no
+   libm. The real blocker was **floats inside the tick**, which is a narrower rule that forbids much less.
+   **The lesson is not about machine learning.** It is that we wrote down a *conclusion* (*"no learned policies"*) in
+   the place where the *reason* should have gone, and then the conclusion kept being true-looking after the reason
+   stopped holding. **A rejection is a claim with a mechanism, and the mechanism is the part that can be checked.** This
+   is lesson 140 (*a wrong mechanism outlives a wrong number*) pointed at our own documentation instead of at a
+   measurement — and it cost a lead decision, because he ruled on the question with the wrong reason in front of him.
+   **When recording a rejection, write the mechanism first and the verdict second.** Then re-deriving it is cheap and
+   re-examining it is possible.
+
+145. **Ask an outside reviewer the question you are embarrassed to be unsure about, not the question you can describe
+   well.** The brief that produced this catalogue was strong on everything we had measured and silent on the one thing
+   the lead had complained about most recently: it described hull *length* thoroughly and **never said the word
+   "articulated"** — so neither reviewer addressed the tractor-trailer moving as one rigid body, which is a thoroughly
+   solved problem in the literature. **Fluency in a brief tracks what we already understand**, and the sections we
+   wrote most confidently are the sections where an outside opinion was worth least. Before sending a brief, list the
+   lead's open complaints and check each one appears **as a question**, not as background.

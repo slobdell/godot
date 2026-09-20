@@ -1679,3 +1679,46 @@ color, never player names. Lines in other languages later from the same text lib
 - **The AI Commander:** an optional LLM opponent that issues the same SquadCommands. Bring-your-own Gemini key
   first, then on-device Gemini Nano on Android (the plan and its rules are in vision.md).
 - Replays and spectating (recording works over the relay today).
+
+## The external research review (2026-09-19)
+
+The lead asked for a research brief to be written for an external planning system, then sent it to two of them and
+brought both replies back. **His words, verbatim:**
+
+> *"Basically what I'd like to do next is for you to formulate a prompt for an external agentic system; assume there's
+> sort of a proprietary boundary between the 2 of you but you're otherwise free to speak about strictly abstract and
+> research concepts. This system is optimized to produce design strategies and additional input outside of what you
+> might have already considered. So I'd like for you to be able to express the intent of our game, or simulation in
+> completely abstract / research oriented terms, outlining what our system is currently composed of, the general intent
+> of creating extremely intelligent simulations based on state of the art computer science principles, with the
+> constraints we have in place (i.e. deterministic simulation). We basically want to outline the intent that if
+> [the genre's gold standard] is a gold standard, we want to exceed that standard in terms of making our AI vehicles
+> intelligent individually and coherent in high-level unit structures. A crucial consideration for this planner is to
+> known that we can take advantage of AI as much as necessary for offline simulation formulation. This also includes
+> thins for navigation, waypointing, splining, and whatever else I'm missing. We would ask this remote agent to return
+> as many design and algorithmic changes that would be useful for this endeavor."*
+
+And on what to do with the two replies:
+
+> *"I want you to do 2 things: First, distill and curate the feedback from both responses as it applies to our game and
+> ensure this is rigorously documented inside our own codebase. Then I want you to create a final markdown doc in
+> ~/Desktop/final.md that basically re-articulates the data to a human audience (me) - you would explain what
+> approaches we're going to incorporate and what it means in pragmatic terms."*
+
+**Where it lives:** the brief and both verbatim replies are in [`research/`](research/); the curation — 50 techniques
+proposed, 12 adopted, every rejection given its reason — is [`research_catalog.md`](research_catalog.md). The lead's
+own copy of the readable summary is `~/Desktop/final.md`.
+
+**Two design points this raised that are HIS to rule on, not ours:**
+
+1. **Our blanket rejection of learned policies was built on a wrong premise.** He asked and answered the RL question
+   earlier the same day, and the answer recorded in `algorithms.md` was *"determinism is the blocker."* Both external
+   reviews independently pointed out that the float part is a choice: a network trained offline and exported as integer
+   weights is bit-exact, because integer addition is associative and there is no libm. **The blocker was never
+   "learning", it was floats inside the tick.** Our recommendation is still to decline — a frozen net's failure mode
+   cannot be read, and decision trees buy the same trade with a printable artefact — but the premise he decided on was
+   wrong and he should get to decide again on the right one.
+2. **The 12 m-vs-14 m War Rig question should be withdrawn.** Cover reads 0.99 at 12.19 m and 0.00 at 12.5 m because we
+   sample the hull's **centre point**; the step function is an artefact of the query, not of the arena. There is an
+   O(1) exact answer that costs the same at 2.8 m and 14 m. **Keep the rig at 14 m because it looks right, and fix the
+   query** (catalogue A3).

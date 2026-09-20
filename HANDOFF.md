@@ -350,6 +350,23 @@ feel.
   Steam build, arena announcer audio, and the paused netcode, garage and progression streams.
 - **Disk:** the laptop is at 95%. `assets/incoming/` alone is 968 MB of raw generated art.
 
+## The round-9 backlog is already written
+
+**[`_agents/research_catalog.md`](_agents/research_catalog.md)** is the curated output of an external research review
+the lead commissioned on 2026-09-19 (two independent services, one abstract brief, both replies kept verbatim in
+`_agents/research/`). **50 techniques proposed, 12 adopted with a pre-registered falsifier each, every rejection given
+its reason.** Eight of the twelve were named by *both* services independently, which is the strongest signal in it.
+
+Read it before briefing a stream, and note three things it changed:
+- **`algorithms.md`'s rejection of learned policies was built on a wrong premise** and now says so. A lead decision.
+- **Invariant 0c** in `workstreams.md`: a technique adopted in one stream is checked against the others *before* either
+  merges, and a brief that adopts one must name what it **replaces**. Two correct techniques can compose into neither.
+- **Round 8's flow-field null does not refuse catalogue A5** (anisotropic exposure-metric routing). Different object,
+  and the roster row says so.
+
+Also: the sources contain mid-sentence truncation, and Service A's audit counts and Elo figures are **unverifiable
+assertions about a codebase it has never seen — never quote the digits.**
+
 ## Starting the next round
 
 The pattern, the kickoff prompt, and the checklists are in [`_agents/orchestration.md`](_agents/orchestration.md).
