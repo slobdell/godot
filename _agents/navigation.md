@@ -463,6 +463,26 @@ a tidy line. Inside level 3, feel's per-style composition applies: `strafe` is A
 to level 5 for turrets by nav's style table), `angle` is armour first with A6-a in its null space, `standoff` is
 armour/lay first then A6-a's 75° forward-oblique bound, and `run` is untouched.
 
+**BUILT at `e2fbd1aa`** (opt-in, `--nav-off=a6`), exactly as composed above, with three things worth carrying
+forward from writing it:
+
+- **A6-a's cost is monotone OUTSIDE the bound and flat INSIDE it**, and that is the correct shape rather than
+  lesson 153's bug. A floor that makes a level rank nothing is the leash defect; a floor that expresses a **bound**
+  is what a bound *means*. Candidates meeting the bound tie, and that tie is the null space A6-b then works in.
+- **`TOLERANCE["arc"]` is INHERITED, not derived.** A6 reuses level 3's existing 0.125 because nav had no
+  measurement to set its own, and inventing one would be a constant chosen before its experiment. It is the first
+  thing to measure once the corridor reaches the decision.
+- **The law is inert until `request["corridor"]` arrives from `tank_brain.gd`** (squad's file — `choose()` takes a
+  request with no unit handle, so nav's velocity layer cannot fetch its own mover's corridor). `a6_no_corridor ==
+  a6_asked` in `arm_report()` says so from inside the run.
+
+**And the falsifier is not nav's to compute.** §7: *"Measured with A12 and nothing else"*, because it is a
+trajectory-space statistic and one implementation is the point. nav nearly built a second counter for it and
+stopped at that sentence. **A12 cannot compute it today**: the trajectory log carries `goal_x/goal_z` but not the
+corridor tangent, and §2 rules out the straight line to the goal as the definition — which is wrong in exactly
+A6's cases, since a hull rounding a corner has a tangent along the leg while the goal bearing points through a
+wall. Requested of metrics as two floats per sample.
+
 **Two assumptions the page makes about this layer, both checked rather than agreed:**
 
 1. **The corridor is N1's `path_points` current leg, one publisher.** True today and better than feel knows:
