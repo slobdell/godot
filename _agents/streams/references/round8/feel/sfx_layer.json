@@ -1,0 +1,28 @@
+[
+ {
+  "sound": "flame_loop",
+  "take": 1,
+  "master": "flamethrower_roar_1.fe915accf4.mp3",
+  "seconds": 3.97,
+  "loudness_db": -12.8,
+  "target_db": -12.8,
+  "peak_db": -3.09,
+  "synth": "flame_loop.wav",
+  "seam_jump": 0.1,
+  "file": "flame_loop_1.wav",
+  "bytes": 350198
+ },
+ {
+  "sound": "flame_loop",
+  "take": 2,
+  "master": "flamethrower_roar_2.6ed12aea80.mp3",
+  "seconds": 3.97,
+  "loudness_db": -12.8,
+  "target_db": -12.8,
+  "peak_db": -1.2,
+  "synth": "flame_loop.wav",
+  "seam_jump": 0.29,
+  "file": "flame_loop_2.wav",
+  "bytes": 350198
+ }
+]

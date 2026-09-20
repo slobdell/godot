@@ -1,0 +1,355 @@
+{
+  "arena": "yard",
+  "arena_note": "Dense lanes and short sightlines: fights happen at corners and alley mouths, a flank is one wall away, and whoever scouts the next lane first gets the ambush. Scouts, IFVs and burners shine; long guns can't see.",
+  "arena_title": "The Container Yard",
+  "arenas": [
+    {
+      "arena": "yard",
+      "arena_note": "Dense lanes and short sightlines: fights happen at corners and alley mouths, a flank is one wall away, and whoever scouts the next lane first gets the ambush. Scouts, IFVs and burners shine; long guns can't see.",
+      "arena_title": "The Container Yard",
+      "arenas": [],
+      "contact": true,
+      "distances": [
+        28.0,
+        50.0,
+        90.0
+      ],
+      "first_shot_s": 8.5,
+      "focus": [
+        56.8,
+        35.4
+      ],
+      "fovs": [
+        45.0,
+        60.0
+      ],
+      "frames": [
+        {
+          "distance": 47.6,
+          "file": "arenas/yard/round5.jpg",
+          "fov": 35.0,
+          "height": 34.0,
+          "label": "round 5's start",
+          "pitch": 45.52,
+          "row": "arena"
+        },
+        {
+          "distance": 47.6,
+          "file": "arenas/yard/default.jpg",
+          "fov": 35.0,
+          "height": 17.1,
+          "label": "new default",
+          "pitch": 21.0,
+          "row": "arena"
+        },
+        {
+          "distance": 222.5,
+          "file": "arenas/yard/overview.jpg",
+          "fov": 35.0,
+          "height": 216.8,
+          "label": "overview (O)",
+          "pitch": 77.0,
+          "row": "arena"
+        },
+        {
+          "distance": 49.0,
+          "file": "arenas/yard/wall0.jpg",
+          "fov": 35.0,
+          "height": 17.6,
+          "label": "behind wall 0",
+          "pitch": 21.0,
+          "row": "arena"
+        },
+        {
+          "distance": 49.0,
+          "file": "arenas/yard/wall1.jpg",
+          "fov": 35.0,
+          "height": 17.6,
+          "label": "behind wall 1",
+          "pitch": 21.0,
+          "row": "arena"
+        },
+        {
+          "distance": 49.0,
+          "file": "arenas/yard/wall2.jpg",
+          "fov": 35.0,
+          "height": 17.6,
+          "label": "behind wall 2",
+          "pitch": 21.0,
+          "row": "arena"
+        }
+      ],
+      "heading_deg": 15.7,
+      "pitches": [
+        25.0,
+        35.0,
+        45.0,
+        60.0
+      ],
+      "seconds_in": 14.5,
+      "seed": 3.0,
+      "window": [
+        1854.0,
+        1011.0
+      ]
+    }
+  ],
+  "contact": true,
+  "distances": [
+    28.0,
+    50.0,
+    90.0
+  ],
+  "first_shot_s": 8.5,
+  "focus": [
+    56.8,
+    35.4
+  ],
+  "fovs": [
+    45.0,
+    60.0
+  ],
+  "frames": [
+    {
+      "distance": 25.8,
+      "file": "today_z20.jpg",
+      "fov": 35.0,
+      "height": 15.3,
+      "pitch": 36.4,
+      "row": "today",
+      "zoom": 0.2
+    },
+    {
+      "distance": 47.6,
+      "file": "today_z36.jpg",
+      "fov": 35.0,
+      "height": 34.0,
+      "pitch": 45.52,
+      "row": "today",
+      "zoom": 0.36
+    },
+    {
+      "distance": 89.8,
+      "file": "today_z55.jpg",
+      "fov": 35.0,
+      "height": 74.8,
+      "pitch": 56.35,
+      "row": "today",
+      "zoom": 0.55
+    },
+    {
+      "distance": 153.3,
+      "file": "today_z75.jpg",
+      "fov": 35.0,
+      "height": 141.8,
+      "pitch": 67.75,
+      "row": "today",
+      "zoom": 0.75
+    },
+    {
+      "distance": 28.0,
+      "file": "p25_d028_f45.jpg",
+      "fov": 45.0,
+      "height": 11.8,
+      "pitch": 25.0,
+      "row": "grid"
+    },
+    {
+      "distance": 50.0,
+      "file": "p25_d050_f45.jpg",
+      "fov": 45.0,
+      "height": 21.1,
+      "pitch": 25.0,
+      "row": "grid"
+    },
+    {
+      "distance": 90.0,
+      "file": "p25_d090_f45.jpg",
+      "fov": 45.0,
+      "height": 38.0,
+      "pitch": 25.0,
+      "row": "grid"
+    },
+    {
+      "distance": 28.0,
+      "file": "p35_d028_f45.jpg",
+      "fov": 45.0,
+      "height": 16.1,
+      "pitch": 35.0,
+      "row": "grid"
+    },
+    {
+      "distance": 50.0,
+      "file": "p35_d050_f45.jpg",
+      "fov": 45.0,
+      "height": 28.7,
+      "pitch": 35.0,
+      "row": "grid"
+    },
+    {
+      "distance": 90.0,
+      "file": "p35_d090_f45.jpg",
+      "fov": 45.0,
+      "height": 51.6,
+      "pitch": 35.0,
+      "row": "grid"
+    },
+    {
+      "distance": 28.0,
+      "file": "p45_d028_f45.jpg",
+      "fov": 45.0,
+      "height": 19.8,
+      "pitch": 45.0,
+      "row": "grid"
+    },
+    {
+      "distance": 50.0,
+      "file": "p45_d050_f45.jpg",
+      "fov": 45.0,
+      "height": 35.4,
+      "pitch": 45.0,
+      "row": "grid"
+    },
+    {
+      "distance": 90.0,
+      "file": "p45_d090_f45.jpg",
+      "fov": 45.0,
+      "height": 63.6,
+      "pitch": 45.0,
+      "row": "grid"
+    },
+    {
+      "distance": 28.0,
+      "file": "p60_d028_f45.jpg",
+      "fov": 45.0,
+      "height": 24.2,
+      "pitch": 60.0,
+      "row": "grid"
+    },
+    {
+      "distance": 50.0,
+      "file": "p60_d050_f45.jpg",
+      "fov": 45.0,
+      "height": 43.3,
+      "pitch": 60.0,
+      "row": "grid"
+    },
+    {
+      "distance": 90.0,
+      "file": "p60_d090_f45.jpg",
+      "fov": 45.0,
+      "height": 77.9,
+      "pitch": 60.0,
+      "row": "grid"
+    },
+    {
+      "distance": 28.0,
+      "file": "p25_d028_f60.jpg",
+      "fov": 60.0,
+      "height": 11.8,
+      "pitch": 25.0,
+      "row": "grid"
+    },
+    {
+      "distance": 50.0,
+      "file": "p25_d050_f60.jpg",
+      "fov": 60.0,
+      "height": 21.1,
+      "pitch": 25.0,
+      "row": "grid"
+    },
+    {
+      "distance": 90.0,
+      "file": "p25_d090_f60.jpg",
+      "fov": 60.0,
+      "height": 38.0,
+      "pitch": 25.0,
+      "row": "grid"
+    },
+    {
+      "distance": 28.0,
+      "file": "p35_d028_f60.jpg",
+      "fov": 60.0,
+      "height": 16.1,
+      "pitch": 35.0,
+      "row": "grid"
+    },
+    {
+      "distance": 50.0,
+      "file": "p35_d050_f60.jpg",
+      "fov": 60.0,
+      "height": 28.7,
+      "pitch": 35.0,
+      "row": "grid"
+    },
+    {
+      "distance": 90.0,
+      "file": "p35_d090_f60.jpg",
+      "fov": 60.0,
+      "height": 51.6,
+      "pitch": 35.0,
+      "row": "grid"
+    },
+    {
+      "distance": 28.0,
+      "file": "p45_d028_f60.jpg",
+      "fov": 60.0,
+      "height": 19.8,
+      "pitch": 45.0,
+      "row": "grid"
+    },
+    {
+      "distance": 50.0,
+      "file": "p45_d050_f60.jpg",
+      "fov": 60.0,
+      "height": 35.4,
+      "pitch": 45.0,
+      "row": "grid"
+    },
+    {
+      "distance": 90.0,
+      "file": "p45_d090_f60.jpg",
+      "fov": 60.0,
+      "height": 63.6,
+      "pitch": 45.0,
+      "row": "grid"
+    },
+    {
+      "distance": 28.0,
+      "file": "p60_d028_f60.jpg",
+      "fov": 60.0,
+      "height": 24.2,
+      "pitch": 60.0,
+      "row": "grid"
+    },
+    {
+      "distance": 50.0,
+      "file": "p60_d050_f60.jpg",
+      "fov": 60.0,
+      "height": 43.3,
+      "pitch": 60.0,
+      "row": "grid"
+    },
+    {
+      "distance": 90.0,
+      "file": "p60_d090_f60.jpg",
+      "fov": 60.0,
+      "height": 77.9,
+      "pitch": 60.0,
+      "row": "grid"
+    }
+  ],
+  "heading_deg": 15.7,
+  "pitches": [
+    25.0,
+    35.0,
+    45.0,
+    60.0
+  ],
+  "seconds_in": 14.5,
+  "seed": 3,
+  "window": [
+    1854.0,
+    1011.0
+  ]
+}

@@ -1,0 +1,50 @@
+{
+	"arena": "maze",
+	"arrived": 36,
+	"arrived_fraction": 0.6,
+	"crawl_share": 0.0,
+	"crawl_unit_seconds": 2.2,
+	"distance_m": 24516.5,
+	"off_navmesh": 0,
+	"progress_m": 12134.6,
+	"seconds": 180.0,
+	"stuck_events": 1128,
+	"stuck_units": 60,
+	"t100_s": -1.0,
+	"t50_s": 55.63,
+	"t90_s": -1.0,
+	"time_limit_s": 180.0,
+	"units": 60,
+	"worst": [
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 50.2,
+			"stuck_events": 45,
+			"unit": "Cross_12"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 49.0,
+			"stuck_events": 41,
+			"unit": "Cross_51"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 48.8,
+			"stuck_events": 44,
+			"unit": "Cross_25"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 48.5,
+			"stuck_events": 43,
+			"unit": "Cross_38"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 42.6,
+			"stuck_events": 42,
+			"unit": "Cross_36"
+		}
+	]
+}

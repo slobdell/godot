@@ -1,0 +1,57 @@
+{
+	"arena": "boulevard",
+	"arrived": 30,
+	"arrived_fraction": 1.0,
+	"both_ways": false,
+	"crawl_share": 0.011,
+	"crawl_unit_seconds": 9.0,
+	"distance_m": 6322.7,
+	"no_progress_share": 0.007,
+	"no_progress_unit_seconds": 5.2,
+	"no_progress_units": 3,
+	"off_navmesh": 0,
+	"oscillating_share": 0.001,
+	"oscillating_unit_seconds": 0.4,
+	"oscillating_units": 1,
+	"progress_m": 6093.8,
+	"seconds": 34.93,
+	"stuck_events": 2,
+	"stuck_units": 2,
+	"t100_s": 34.93,
+	"t50_s": 25.9,
+	"t90_s": 30.47,
+	"time_limit_s": 60.0,
+	"units": 30,
+	"worst": [
+		{
+			"arrived_s": 34.93,
+			"remaining_m": 7.7,
+			"stuck_events": 1,
+			"unit": "Cross_28"
+		},
+		{
+			"arrived_s": 24.33,
+			"remaining_m": 5.8,
+			"stuck_events": 0,
+			"unit": "Cross_0"
+		},
+		{
+			"arrived_s": 25.8,
+			"remaining_m": 2.9,
+			"stuck_events": 0,
+			"unit": "Cross_7"
+		},
+		{
+			"arrived_s": 24.97,
+			"remaining_m": 2.7,
+			"stuck_events": 0,
+			"unit": "Cross_14"
+		},
+		{
+			"arrived_s": 29.6,
+			"remaining_m": 2.5,
+			"stuck_events": 0,
+			"unit": "Cross_29"
+		}
+	]
+}

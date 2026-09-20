@@ -1,0 +1,51 @@
+{
+	"arena": "foundry",
+	"arrived": 60,
+	"arrived_fraction": 1.0,
+	"both_ways": false,
+	"crawl_share": 0.021,
+	"crawl_unit_seconds": 36.8,
+	"distance_m": 13316.1,
+	"off_navmesh": 0,
+	"progress_m": 12741.7,
+	"seconds": 44.13,
+	"stuck_events": 17,
+	"stuck_units": 10,
+	"t100_s": 44.13,
+	"t50_s": 28.37,
+	"t90_s": 36.33,
+	"time_limit_s": 180.0,
+	"units": 60,
+	"worst": [
+		{
+			"arrived_s": 30.0,
+			"remaining_m": 13.9,
+			"stuck_events": 0,
+			"unit": "Cross_57"
+		},
+		{
+			"arrived_s": 44.13,
+			"remaining_m": 7.9,
+			"stuck_events": 3,
+			"unit": "Cross_27"
+		},
+		{
+			"arrived_s": 27.17,
+			"remaining_m": 7.8,
+			"stuck_events": 0,
+			"unit": "Cross_13"
+		},
+		{
+			"arrived_s": 34.3,
+			"remaining_m": 5.2,
+			"stuck_events": 0,
+			"unit": "Cross_7"
+		},
+		{
+			"arrived_s": 26.9,
+			"remaining_m": 3.0,
+			"stuck_events": 0,
+			"unit": "Cross_59"
+		}
+	]
+}

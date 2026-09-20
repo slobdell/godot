@@ -1,0 +1,1364 @@
+[
+ {
+  "name": "boneyard",
+  "features": 70,
+  "hard": 64,
+  "low": 6,
+  "longest_sightline_m": 216.0,
+  "mean_view_m": 60.4,
+  "views_over_120m": 0.13,
+  "longest_sightline_at": [
+   [
+    65.3,
+    69.3
+   ],
+   [
+    -87.4,
+    -83.4
+   ]
+  ],
+  "base_to_base_m": 185.0,
+  "base_to_centre_m": 92.5,
+  "direct_route_exposure": 0.76,
+  "terrain_along_direct_route": {
+   "open": 0,
+   "lanes": 0,
+   "dense": 19
+  },
+  "lanes": [
+   {
+    "name": "centre",
+    "reachable": true,
+    "length_m": 189.1,
+    "exposure": 0.74,
+    "longest_uncovered_m": 18.4
+   },
+   {
+    "name": "centre (far)",
+    "reachable": true,
+    "length_m": 189.1,
+    "exposure": 0.76,
+    "longest_uncovered_m": 16.4
+   },
+   {
+    "name": "west",
+    "reachable": true,
+    "length_m": 190.8,
+    "exposure": 0.72,
+    "longest_uncovered_m": 28.3
+   },
+   {
+    "name": "west (far)",
+    "reachable": true,
+    "length_m": 190.8,
+    "exposure": 0.72,
+    "longest_uncovered_m": 24.1
+   }
+  ],
+  "cover_groups": 64,
+  "doctrine_terrain_share": {
+   "open": 0.0,
+   "lanes": 0.1,
+   "dense": 0.9
+  },
+  "doctrine_terrain_share_hard_only": {
+   "open": 0.0,
+   "lanes": 0.1,
+   "dense": 0.9
+  },
+  "doctrine_terrain_share_grouped": {
+   "open": 0.0,
+   "lanes": 0.1,
+   "dense": 0.9
+  },
+  "open_ground_share": 0.4,
+  "drivable_share": 0.48,
+  "ambush": {
+   "centre_sees_share": 0.42,
+   "centre_sees_share_full": 0.42,
+   "centre_eye_at": [
+    0.5,
+    0.5
+   ],
+   "defending_positions": 24,
+   "approach_routes": [
+    {
+     "route": "direct",
+     "reachable": true,
+     "length_m": 185.0,
+     "exposure": 0.069,
+     "hidden_from_centre_m": 14.2,
+     "exposure_idle": 0.069,
+     "exposure_posted": 0.118,
+     "posting_gain": 0.049
+    },
+    {
+     "route": "flanking",
+     "reachable": true,
+     "length_m": 185.0,
+     "exposure": 0.069,
+     "hidden_from_centre_m": 14.2,
+     "exposure_idle": 0.069,
+     "exposure_posted": 0.118,
+     "posting_gain": 0.049
+    },
+    {
+     "route": "covered",
+     "reachable": true,
+     "length_m": 195.1,
+     "exposure": 0.045,
+     "hidden_from_centre_m": 14.2,
+     "exposure_idle": 0.045,
+     "exposure_posted": 0.098,
+     "posting_gain": 0.053
+    }
+   ],
+   "flank_gain": 0.024,
+   "flank_detour": 1.05,
+   "overwatch": [
+    {
+     "at": [
+      0.0,
+      -16.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.07
+    },
+    {
+     "at": [
+      0.0,
+      16.0
+     ],
+     "dominates": 0.61,
+     "covers_idle": 0.45,
+     "covers_posted": 0.61,
+     "commands_idle": 0.93,
+     "commands_posted": 0.95,
+     "hidden_approach": 0.08
+    },
+    {
+     "at": [
+      0.0,
+      48.0
+     ],
+     "dominates": 0.58,
+     "covers_idle": 0.48,
+     "covers_posted": 0.58,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.27
+    }
+   ],
+   "decision": {
+    "objectives": 1,
+    "routes": [
+     {
+      "objective": "control point",
+      "reachable": true,
+      "length_m": 92.5,
+      "enemy_length_m": 102.4,
+      "contest": 0.475,
+      "exposure": 0.008,
+      "cost": 0.025,
+      "reward": 1.0,
+      "quadrant": "dominant"
+     }
+    ],
+    "decision_spread": 0.0
+   }
+  },
+  "plot": "build/arenas/boneyard.png"
+ },
+ {
+  "name": "boulevard",
+  "features": 72,
+  "hard": 44,
+  "low": 28,
+  "longest_sightline_m": 236.0,
+  "mean_view_m": 72.1,
+  "views_over_120m": 0.21,
+  "longest_sightline_at": [
+   [
+    59.4,
+    83.4
+   ],
+   [
+    -107.4,
+    -83.4
+   ]
+  ],
+  "base_to_base_m": 185.0,
+  "base_to_centre_m": 95.0,
+  "direct_route_exposure": 0.87,
+  "terrain_along_direct_route": {
+   "open": 0,
+   "lanes": 2,
+   "dense": 17
+  },
+  "lanes": [
+   {
+    "name": "centre avenue",
+    "reachable": true,
+    "length_m": 189.9,
+    "exposure": 0.85,
+    "longest_uncovered_m": 47.4
+   },
+   {
+    "name": "centre avenue (far)",
+    "reachable": true,
+    "length_m": 189.9,
+    "exposure": 0.85,
+    "longest_uncovered_m": 47.4
+   },
+   {
+    "name": "west avenue",
+    "reachable": true,
+    "length_m": 190.4,
+    "exposure": 0.66,
+    "longest_uncovered_m": 33.2
+   },
+   {
+    "name": "west avenue (far)",
+    "reachable": true,
+    "length_m": 190.4,
+    "exposure": 0.66,
+    "longest_uncovered_m": 32.0
+   },
+   {
+    "name": "west service road",
+    "reachable": true,
+    "length_m": 186.6,
+    "exposure": 0.54,
+    "longest_uncovered_m": 16.2
+   },
+   {
+    "name": "west service road (far)",
+    "reachable": true,
+    "length_m": 187.5,
+    "exposure": 0.59,
+    "longest_uncovered_m": 47.2
+   }
+  ],
+  "cover_groups": 34,
+  "doctrine_terrain_share": {
+   "open": 0.01,
+   "lanes": 0.06,
+   "dense": 0.92
+  },
+  "doctrine_terrain_share_hard_only": {
+   "open": 0.02,
+   "lanes": 0.36,
+   "dense": 0.62
+  },
+  "doctrine_terrain_share_grouped": {
+   "open": 0.02,
+   "lanes": 0.52,
+   "dense": 0.46
+  },
+  "open_ground_share": 0.47,
+  "drivable_share": 0.49,
+  "ambush": {
+   "centre_sees_share": 0.611,
+   "centre_sees_share_full": 0.611,
+   "centre_eye_at": [
+    0.5,
+    0.5
+   ],
+   "defending_positions": 24,
+   "approach_routes": [
+    {
+     "route": "direct",
+     "reachable": true,
+     "length_m": 185.0,
+     "exposure": 0.07,
+     "hidden_from_centre_m": 42.5,
+     "exposure_idle": 0.07,
+     "exposure_posted": 0.137,
+     "posting_gain": 0.067
+    },
+    {
+     "route": "flanking",
+     "reachable": true,
+     "length_m": 185.0,
+     "exposure": 0.069,
+     "hidden_from_centre_m": 57.9,
+     "exposure_idle": 0.069,
+     "exposure_posted": 0.133,
+     "posting_gain": 0.064
+    },
+    {
+     "route": "covered",
+     "reachable": true,
+     "length_m": 185.0,
+     "exposure": 0.069,
+     "hidden_from_centre_m": 49.9,
+     "exposure_idle": 0.069,
+     "exposure_posted": 0.133,
+     "posting_gain": 0.064
+    }
+   ],
+   "flank_gain": 0.001,
+   "flank_detour": 1.0,
+   "overwatch": [
+    {
+     "at": [
+      8.0,
+      -32.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.07
+    },
+    {
+     "at": [
+      8.0,
+      32.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.06
+    },
+    {
+     "at": [
+      24.0,
+      0.0
+     ],
+     "dominates": 0.61,
+     "covers_idle": 0.42,
+     "covers_posted": 0.61,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.19
+    }
+   ],
+   "decision": {
+    "objectives": 1,
+    "routes": [
+     {
+      "objective": "control point",
+      "reachable": true,
+      "length_m": 95.0,
+      "enemy_length_m": 95.0,
+      "contest": 0.5,
+      "exposure": 0.0,
+      "cost": 0.0,
+      "reward": 1.0,
+      "quadrant": "dominant"
+     }
+    ],
+    "decision_spread": 0.0
+   }
+  },
+  "plot": "build/arenas/boulevard.png"
+ },
+ {
+  "name": "foundry",
+  "features": 19,
+  "hard": 19,
+  "low": 0,
+  "longest_sightline_m": 236.0,
+  "mean_view_m": 78.0,
+  "views_over_120m": 0.22,
+  "longest_sightline_at": [
+   [
+    53.4,
+    83.4
+   ],
+   [
+    -113.4,
+    -83.4
+   ]
+  ],
+  "base_to_base_m": 183.3,
+  "base_to_centre_m": 86.0,
+  "direct_route_exposure": 0.63,
+  "terrain_along_direct_route": {
+   "open": 0,
+   "lanes": 11,
+   "dense": 8
+  },
+  "lanes": [],
+  "cover_groups": 19,
+  "doctrine_terrain_share": {
+   "open": 0.23,
+   "lanes": 0.61,
+   "dense": 0.16
+  },
+  "doctrine_terrain_share_hard_only": {
+   "open": 0.23,
+   "lanes": 0.61,
+   "dense": 0.16
+  },
+  "doctrine_terrain_share_grouped": {
+   "open": 0.23,
+   "lanes": 0.61,
+   "dense": 0.16
+  },
+  "open_ground_share": 0.68,
+  "drivable_share": 0.51,
+  "ambush": {
+   "centre_sees_share": 0.569,
+   "centre_sees_share_full": 0.569,
+   "centre_eye_at": [
+    0.5,
+    4.5
+   ],
+   "defending_positions": 22,
+   "approach_routes": [
+    {
+     "route": "direct",
+     "reachable": true,
+     "length_m": 183.3,
+     "exposure": 0.118,
+     "hidden_from_centre_m": 88.9,
+     "exposure_idle": 0.118,
+     "exposure_posted": 0.195,
+     "posting_gain": 0.077
+    },
+    {
+     "route": "flanking",
+     "reachable": true,
+     "length_m": 185.0,
+     "exposure": 0.086,
+     "hidden_from_centre_m": 86.1,
+     "exposure_idle": 0.086,
+     "exposure_posted": 0.155,
+     "posting_gain": 0.069
+    },
+    {
+     "route": "covered",
+     "reachable": true,
+     "length_m": 195.5,
+     "exposure": 0.07,
+     "hidden_from_centre_m": 70.5,
+     "exposure_idle": 0.07,
+     "exposure_posted": 0.126,
+     "posting_gain": 0.056
+    }
+   ],
+   "flank_gain": 0.048,
+   "flank_detour": 1.07,
+   "overwatch": [
+    {
+     "at": [
+      8.0,
+      0.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.07
+    },
+    {
+     "at": [
+      24.0,
+      24.0
+     ],
+     "dominates": 0.61,
+     "covers_idle": 0.42,
+     "covers_posted": 0.61,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.19
+    },
+    {
+     "at": [
+      -24.0,
+      -16.0
+     ],
+     "dominates": 0.55,
+     "covers_idle": 0.35,
+     "covers_posted": 0.55,
+     "commands_idle": 0.92,
+     "commands_posted": 0.94,
+     "hidden_approach": 0.13
+    }
+   ],
+   "decision": {
+    "objectives": 1,
+    "routes": [
+     {
+      "objective": "control point",
+      "reachable": true,
+      "length_m": 86.0,
+      "enemy_length_m": 105.8,
+      "contest": 0.448,
+      "exposure": 0.007,
+      "cost": 0.022,
+      "reward": 1.0,
+      "quadrant": "dominant"
+     }
+    ],
+    "decision_spread": 0.0
+   }
+  },
+  "plot": "build/arenas/foundry.png"
+ },
+ {
+  "name": "furnace",
+  "features": 19,
+  "hard": 19,
+  "low": 0,
+  "longest_sightline_m": 236.0,
+  "mean_view_m": 78.0,
+  "views_over_120m": 0.22,
+  "longest_sightline_at": [
+   [
+    53.4,
+    83.4
+   ],
+   [
+    -113.4,
+    -83.4
+   ]
+  ],
+  "base_to_base_m": 183.3,
+  "base_to_centre_m": 86.0,
+  "direct_route_exposure": 0.63,
+  "terrain_along_direct_route": {
+   "open": 0,
+   "lanes": 11,
+   "dense": 8
+  },
+  "lanes": [],
+  "cover_groups": 19,
+  "doctrine_terrain_share": {
+   "open": 0.23,
+   "lanes": 0.61,
+   "dense": 0.16
+  },
+  "doctrine_terrain_share_hard_only": {
+   "open": 0.23,
+   "lanes": 0.61,
+   "dense": 0.16
+  },
+  "doctrine_terrain_share_grouped": {
+   "open": 0.23,
+   "lanes": 0.61,
+   "dense": 0.16
+  },
+  "open_ground_share": 0.68,
+  "drivable_share": 0.51,
+  "ambush": {
+   "centre_sees_share": 0.569,
+   "centre_sees_share_full": 0.569,
+   "centre_eye_at": [
+    0.5,
+    4.5
+   ],
+   "defending_positions": 22,
+   "approach_routes": [
+    {
+     "route": "direct",
+     "reachable": true,
+     "length_m": 183.3,
+     "exposure": 0.118,
+     "hidden_from_centre_m": 88.9,
+     "exposure_idle": 0.118,
+     "exposure_posted": 0.195,
+     "posting_gain": 0.077
+    },
+    {
+     "route": "flanking",
+     "reachable": true,
+     "length_m": 185.0,
+     "exposure": 0.086,
+     "hidden_from_centre_m": 86.1,
+     "exposure_idle": 0.086,
+     "exposure_posted": 0.155,
+     "posting_gain": 0.069
+    },
+    {
+     "route": "covered",
+     "reachable": true,
+     "length_m": 195.5,
+     "exposure": 0.07,
+     "hidden_from_centre_m": 70.5,
+     "exposure_idle": 0.07,
+     "exposure_posted": 0.126,
+     "posting_gain": 0.056
+    }
+   ],
+   "flank_gain": 0.048,
+   "flank_detour": 1.07,
+   "overwatch": [
+    {
+     "at": [
+      8.0,
+      0.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.07
+    },
+    {
+     "at": [
+      24.0,
+      24.0
+     ],
+     "dominates": 0.61,
+     "covers_idle": 0.42,
+     "covers_posted": 0.61,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.19
+    },
+    {
+     "at": [
+      -24.0,
+      -16.0
+     ],
+     "dominates": 0.55,
+     "covers_idle": 0.35,
+     "covers_posted": 0.55,
+     "commands_idle": 0.92,
+     "commands_posted": 0.94,
+     "hidden_approach": 0.13
+    }
+   ],
+   "decision": {
+    "objectives": 1,
+    "routes": [
+     {
+      "objective": "control point",
+      "reachable": true,
+      "length_m": 86.0,
+      "enemy_length_m": 105.8,
+      "contest": 0.448,
+      "exposure": 0.007,
+      "cost": 0.022,
+      "reward": 1.0,
+      "quadrant": "dominant"
+     }
+    ],
+    "decision_spread": 0.0
+   }
+  },
+  "plot": "build/arenas/furnace.png"
+ },
+ {
+  "name": "maze",
+  "features": 152,
+  "hard": 152,
+  "low": 0,
+  "longest_sightline_m": 52.0,
+  "mean_view_m": 29.6,
+  "views_over_120m": 0.05,
+  "longest_sightline_at": [
+   [
+    -73.5,
+    8.5
+   ],
+   [
+    -110.3,
+    -28.3
+   ]
+  ],
+  "base_to_base_m": 399.6,
+  "base_to_centre_m": 200.4,
+  "direct_route_exposure": 0.38,
+  "terrain_along_direct_route": {
+   "open": 0,
+   "lanes": 0,
+   "dense": 35
+  },
+  "lanes": [
+   {
+    "name": "west serpentine",
+    "reachable": true,
+    "length_m": 500.0,
+    "exposure": 0.35,
+    "longest_uncovered_m": 4.0
+   },
+   {
+    "name": "west serpentine (far)",
+    "reachable": true,
+    "length_m": 500.0,
+    "exposure": 0.35,
+    "longest_uncovered_m": 4.0
+   },
+   {
+    "name": "east serpentine",
+    "reachable": true,
+    "length_m": 666.0,
+    "exposure": 0.26,
+    "longest_uncovered_m": 3.0
+   },
+   {
+    "name": "east serpentine (far)",
+    "reachable": true,
+    "length_m": 666.0,
+    "exposure": 0.26,
+    "longest_uncovered_m": 3.0
+   }
+  ],
+  "cover_groups": 24,
+  "doctrine_terrain_share": {
+   "open": 0.0,
+   "lanes": 0.0,
+   "dense": 1.0
+  },
+  "doctrine_terrain_share_hard_only": {
+   "open": 0.0,
+   "lanes": 0.0,
+   "dense": 1.0
+  },
+  "doctrine_terrain_share_grouped": {
+   "open": 0.0,
+   "lanes": 0.32,
+   "dense": 0.68
+  },
+  "open_ground_share": 0.32,
+  "drivable_share": 0.42,
+  "ambush": {
+   "centre_sees_share": 0.148,
+   "centre_sees_share_full": 0.148,
+   "centre_eye_at": [
+    0.5,
+    0.5
+   ],
+   "defending_positions": 24,
+   "approach_routes": [
+    {
+     "route": "direct",
+     "reachable": true,
+     "length_m": 399.6,
+     "exposure": 0.036,
+     "hidden_from_centre_m": 160.5,
+     "exposure_idle": 0.036,
+     "exposure_posted": 0.047,
+     "posting_gain": 0.011
+    },
+    {
+     "route": "flanking",
+     "reachable": true,
+     "length_m": 399.6,
+     "exposure": 0.025,
+     "hidden_from_centre_m": 134.1,
+     "exposure_idle": 0.025,
+     "exposure_posted": 0.034,
+     "posting_gain": 0.009
+    },
+    {
+     "route": "covered",
+     "reachable": true,
+     "length_m": 408.1,
+     "exposure": 0.021,
+     "hidden_from_centre_m": 135.3,
+     "exposure_idle": 0.021,
+     "exposure_posted": 0.028,
+     "posting_gain": 0.007
+    }
+   ],
+   "flank_gain": 0.015,
+   "flank_detour": 1.02,
+   "overwatch": [
+    {
+     "at": [
+      32.0,
+      -8.0
+     ],
+     "dominates": 0.3,
+     "covers_idle": 0.25,
+     "covers_posted": 0.3,
+     "commands_idle": 0.64,
+     "commands_posted": 0.63,
+     "hidden_approach": 0.8
+    },
+    {
+     "at": [
+      16.0,
+      -48.0
+     ],
+     "dominates": 0.25,
+     "covers_idle": 0.23,
+     "covers_posted": 0.25,
+     "commands_idle": 0.52,
+     "commands_posted": 0.44,
+     "hidden_approach": 0.55
+    },
+    {
+     "at": [
+      -80.0,
+      40.0
+     ],
+     "dominates": 0.25,
+     "covers_idle": 0.16,
+     "covers_posted": 0.25,
+     "commands_idle": 1.0,
+     "commands_posted": 0.93,
+     "hidden_approach": 0.82
+    }
+   ],
+   "decision": {
+    "objectives": 1,
+    "routes": [
+     {
+      "objective": "control point",
+      "reachable": true,
+      "length_m": 200.4,
+      "enemy_length_m": 204.2,
+      "contest": 0.495,
+      "exposure": 0.0,
+      "cost": 0.0,
+      "reward": 1.0,
+      "quadrant": "dominant"
+     }
+    ],
+    "decision_spread": 0.0
+   }
+  },
+  "plot": "build/arenas/maze.png"
+ },
+ {
+  "name": "pit",
+  "features": 54,
+  "hard": 50,
+  "low": 4,
+  "longest_sightline_m": 276.0,
+  "mean_view_m": 81.8,
+  "views_over_120m": 0.28,
+  "longest_sightline_at": [
+   [
+    59.6,
+    97.6
+   ],
+   [
+    -135.6,
+    -97.6
+   ]
+  ],
+  "base_to_base_m": 185.0,
+  "base_to_centre_m": 95.0,
+  "direct_route_exposure": 0.72,
+  "terrain_along_direct_route": {
+   "open": 0,
+   "lanes": 2,
+   "dense": 17
+  },
+  "lanes": [
+   {
+    "name": "south gate",
+    "reachable": true,
+    "length_m": 198.2,
+    "exposure": 0.72,
+    "longest_uncovered_m": 19.7
+   },
+   {
+    "name": "west gate",
+    "reachable": true,
+    "length_m": 312.0,
+    "exposure": 0.79,
+    "longest_uncovered_m": 25.4
+   },
+   {
+    "name": "west flank",
+    "reachable": true,
+    "length_m": 208.2,
+    "exposure": 0.67,
+    "longest_uncovered_m": 77.4
+   },
+   {
+    "name": "west flank (far)",
+    "reachable": true,
+    "length_m": 208.2,
+    "exposure": 0.78,
+    "longest_uncovered_m": 73.3
+   }
+  ],
+  "cover_groups": 38,
+  "doctrine_terrain_share": {
+   "open": 0.17,
+   "lanes": 0.4,
+   "dense": 0.43
+  },
+  "doctrine_terrain_share_hard_only": {
+   "open": 0.17,
+   "lanes": 0.42,
+   "dense": 0.4
+  },
+  "doctrine_terrain_share_grouped": {
+   "open": 0.17,
+   "lanes": 0.47,
+   "dense": 0.36
+  },
+  "open_ground_share": 0.63,
+  "drivable_share": 0.55,
+  "ambush": {
+   "centre_sees_share": 0.296,
+   "centre_sees_share_full": 0.274,
+   "centre_eye_at": [
+    0.5,
+    0.5
+   ],
+   "defending_positions": 24,
+   "approach_routes": [
+    {
+     "route": "direct",
+     "reachable": true,
+     "length_m": 185.0,
+     "exposure": 0.102,
+     "hidden_from_centre_m": 40.1,
+     "exposure_idle": 0.102,
+     "exposure_posted": 0.147,
+     "posting_gain": 0.045
+    },
+    {
+     "route": "flanking",
+     "reachable": true,
+     "length_m": 185.8,
+     "exposure": 0.09,
+     "hidden_from_centre_m": 40.1,
+     "exposure_idle": 0.09,
+     "exposure_posted": 0.14,
+     "posting_gain": 0.05
+    },
+    {
+     "route": "covered",
+     "reachable": true,
+     "length_m": 186.6,
+     "exposure": 0.088,
+     "hidden_from_centre_m": 40.1,
+     "exposure_idle": 0.088,
+     "exposure_posted": 0.138,
+     "posting_gain": 0.05
+    }
+   ],
+   "flank_gain": 0.014,
+   "flank_detour": 1.01,
+   "overwatch": [
+    {
+     "at": [
+      8.0,
+      -24.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.38
+    },
+    {
+     "at": [
+      8.0,
+      24.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.25
+    },
+    {
+     "at": [
+      8.0,
+      -56.0
+     ],
+     "dominates": 0.48,
+     "covers_idle": 0.42,
+     "covers_posted": 0.48,
+     "commands_idle": 0.93,
+     "commands_posted": 0.94,
+     "hidden_approach": 0.21
+    }
+   ],
+   "decision": {
+    "objectives": 2,
+    "routes": [
+     {
+      "objective": "the west yard",
+      "reachable": true,
+      "length_m": 170.7,
+      "enemy_length_m": 119.1,
+      "contest": 0.589,
+      "exposure": 0.022,
+      "cost": 0.423,
+      "reward": 0.5,
+      "quadrant": "the one we want"
+     },
+     {
+      "objective": "the west yard (far)",
+      "reachable": true,
+      "length_m": 91.4,
+      "enemy_length_m": 175.3,
+      "contest": 0.343,
+      "exposure": 0.0,
+      "cost": 0.0,
+      "reward": 0.5,
+      "quadrant": "dominant"
+     }
+    ],
+    "decision_spread": 0.423
+   }
+  },
+  "plot": "build/arenas/pit.png"
+ },
+ {
+  "name": "scrapyard",
+  "features": 36,
+  "hard": 36,
+  "low": 0,
+  "longest_sightline_m": 198.0,
+  "mean_view_m": 62.5,
+  "views_over_120m": 0.13,
+  "longest_sightline_at": [
+   [
+    -1.5,
+    83.6
+   ],
+   [
+    -115.1,
+    -78.6
+   ]
+  ],
+  "base_to_base_m": 191.6,
+  "base_to_centre_m": 99.1,
+  "direct_route_exposure": 0.67,
+  "terrain_along_direct_route": {
+   "open": 2,
+   "lanes": 4,
+   "dense": 13
+  },
+  "lanes": [],
+  "cover_groups": 36,
+  "doctrine_terrain_share": {
+   "open": 0.02,
+   "lanes": 0.48,
+   "dense": 0.5
+  },
+  "doctrine_terrain_share_hard_only": {
+   "open": 0.02,
+   "lanes": 0.48,
+   "dense": 0.5
+  },
+  "doctrine_terrain_share_grouped": {
+   "open": 0.02,
+   "lanes": 0.48,
+   "dense": 0.5
+  },
+  "open_ground_share": 0.58,
+  "drivable_share": 0.49,
+  "ambush": {
+   "centre_sees_share": 0.297,
+   "centre_sees_share_full": 0.297,
+   "centre_eye_at": [
+    0.5,
+    0.5
+   ],
+   "defending_positions": 24,
+   "approach_routes": [
+    {
+     "route": "direct",
+     "reachable": true,
+     "length_m": 191.6,
+     "exposure": 0.081,
+     "hidden_from_centre_m": 19.5,
+     "exposure_idle": 0.081,
+     "exposure_posted": 0.12,
+     "posting_gain": 0.039
+    },
+    {
+     "route": "flanking",
+     "reachable": true,
+     "length_m": 191.6,
+     "exposure": 0.081,
+     "hidden_from_centre_m": 19.8,
+     "exposure_idle": 0.081,
+     "exposure_posted": 0.121,
+     "posting_gain": 0.04
+    },
+    {
+     "route": "covered",
+     "reachable": true,
+     "length_m": 203.4,
+     "exposure": 0.06,
+     "hidden_from_centre_m": 23.9,
+     "exposure_idle": 0.06,
+     "exposure_posted": 0.101,
+     "posting_gain": 0.041
+    }
+   ],
+   "flank_gain": 0.021,
+   "flank_detour": 1.06,
+   "overwatch": [
+    {
+     "at": [
+      16.0,
+      -16.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.33
+    },
+    {
+     "at": [
+      24.0,
+      8.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.44
+    },
+    {
+     "at": [
+      16.0,
+      40.0
+     ],
+     "dominates": 0.55,
+     "covers_idle": 0.45,
+     "covers_posted": 0.55,
+     "commands_idle": 1.0,
+     "commands_posted": 0.89,
+     "hidden_approach": 0.31
+    }
+   ],
+   "decision": {
+    "objectives": 1,
+    "routes": [
+     {
+      "objective": "control point",
+      "reachable": true,
+      "length_m": 99.1,
+      "enemy_length_m": 107.8,
+      "contest": 0.479,
+      "exposure": 0.0,
+      "cost": 0.0,
+      "reward": 1.0,
+      "quadrant": "dominant"
+     }
+    ],
+    "decision_spread": 0.0
+   }
+  },
+  "plot": "build/arenas/scrapyard.png"
+ },
+ {
+  "name": "yard",
+  "features": 112,
+  "hard": 108,
+  "low": 4,
+  "longest_sightline_m": 216.0,
+  "mean_view_m": 54.3,
+  "views_over_120m": 0.12,
+  "longest_sightline_at": [
+   [
+    -113.6,
+    97.9
+   ],
+   [
+    -22.4,
+    -97.9
+   ]
+  ],
+  "base_to_base_m": 189.9,
+  "base_to_centre_m": 95.0,
+  "direct_route_exposure": 0.61,
+  "terrain_along_direct_route": {
+   "open": 0,
+   "lanes": 0,
+   "dense": 19
+  },
+  "lanes": [
+   {
+    "name": "centre",
+    "reachable": true,
+    "length_m": 189.9,
+    "exposure": 0.61,
+    "longest_uncovered_m": 34.4
+   },
+   {
+    "name": "inner west",
+    "reachable": true,
+    "length_m": 191.6,
+    "exposure": 0.61,
+    "longest_uncovered_m": 18.5
+   },
+   {
+    "name": "inner west (far)",
+    "reachable": true,
+    "length_m": 192.4,
+    "exposure": 0.61,
+    "longest_uncovered_m": 10.2
+   },
+   {
+    "name": "outer west",
+    "reachable": true,
+    "length_m": 186.6,
+    "exposure": 0.63,
+    "longest_uncovered_m": 54.2
+   },
+   {
+    "name": "outer west (far)",
+    "reachable": true,
+    "length_m": 187.5,
+    "exposure": 0.61,
+    "longest_uncovered_m": 53.0
+   },
+   {
+    "name": "far west",
+    "reachable": true,
+    "length_m": 190.8,
+    "exposure": 0.54,
+    "longest_uncovered_m": 15.1
+   },
+   {
+    "name": "far west (far)",
+    "reachable": true,
+    "length_m": 191.6,
+    "exposure": 0.43,
+    "longest_uncovered_m": 26.3
+   }
+  ],
+  "cover_groups": 56,
+  "doctrine_terrain_share": {
+   "open": 0.03,
+   "lanes": 0.07,
+   "dense": 0.89
+  },
+  "doctrine_terrain_share_hard_only": {
+   "open": 0.03,
+   "lanes": 0.08,
+   "dense": 0.89
+  },
+  "doctrine_terrain_share_grouped": {
+   "open": 0.05,
+   "lanes": 0.25,
+   "dense": 0.71
+  },
+  "open_ground_share": 0.53,
+  "drivable_share": 0.51,
+  "ambush": {
+   "centre_sees_share": 0.203,
+   "centre_sees_share_full": 0.163,
+   "centre_eye_at": [
+    0.5,
+    0.5
+   ],
+   "defending_positions": 24,
+   "approach_routes": [
+    {
+     "route": "direct",
+     "reachable": true,
+     "length_m": 189.9,
+     "exposure": 0.044,
+     "hidden_from_centre_m": 49.3,
+     "exposure_idle": 0.044,
+     "exposure_posted": 0.06,
+     "posting_gain": 0.016
+    },
+    {
+     "route": "flanking",
+     "reachable": true,
+     "length_m": 196.9,
+     "exposure": 0.022,
+     "hidden_from_centre_m": 49.3,
+     "exposure_idle": 0.022,
+     "exposure_posted": 0.045,
+     "posting_gain": 0.023
+    },
+    {
+     "route": "covered",
+     "reachable": true,
+     "length_m": 199.3,
+     "exposure": 0.02,
+     "hidden_from_centre_m": 49.3,
+     "exposure_idle": 0.02,
+     "exposure_posted": 0.043,
+     "posting_gain": 0.023
+    }
+   ],
+   "flank_gain": 0.024,
+   "flank_detour": 1.05,
+   "overwatch": [
+    {
+     "at": [
+      0.0,
+      -24.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.6
+    },
+    {
+     "at": [
+      0.0,
+      24.0
+     ],
+     "dominates": 0.65,
+     "covers_idle": 0.48,
+     "covers_posted": 0.65,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.6
+    },
+    {
+     "at": [
+      -8.0,
+      -80.0
+     ],
+     "dominates": 0.39,
+     "covers_idle": 0.29,
+     "covers_posted": 0.39,
+     "commands_idle": 1.0,
+     "commands_posted": 1.0,
+     "hidden_approach": 0.17
+    }
+   ],
+   "decision": {
+    "objectives": 2,
+    "routes": [
+     {
+      "objective": "the west depot",
+      "reachable": true,
+      "length_m": 151.7,
+      "enemy_length_m": 99.3,
+      "contest": 0.604,
+      "exposure": 0.004,
+      "cost": 0.43,
+      "reward": 0.5,
+      "quadrant": "the one we want"
+     },
+     {
+      "objective": "the west depot (far)",
+      "reachable": true,
+      "length_m": 93.4,
+      "enemy_length_m": 178.3,
+      "contest": 0.344,
+      "exposure": 0.0,
+      "cost": 0.0,
+      "reward": 0.5,
+      "quadrant": "dominant"
+     }
+    ],
+    "decision_spread": 0.43
+   }
+  },
+  "plot": "build/arenas/yard.png"
+ }
+]

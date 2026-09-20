@@ -1,0 +1,108 @@
+{
+  "all": {
+    "canvas_draw_calls": 86.0,
+    "draw_calls": 197.625,
+    "frames": 8,
+    "label": "all",
+    "process_ms": 1000.96975
+  },
+  "hud_canvas_draw_calls": 86.0,
+  "hud_process_ms": 0.4,
+  "screen": [
+    1920.0,
+    1080.0
+  ],
+  "vehicles": 68,
+  "widgets": [
+    {
+      "canvas_draw_calls": 86,
+      "draw_calls": 87,
+      "process_ms": -0.05,
+      "widget": "whole_hud"
+    },
+    {
+      "canvas_draw_calls": 72,
+      "draw_calls": 73,
+      "process_ms": 0.17,
+      "widget": "tactical_map_children"
+    },
+    {
+      "canvas_draw_calls": 5,
+      "draw_calls": 6,
+      "process_ms": 0.19,
+      "widget": "HudSkin"
+    },
+    {
+      "canvas_draw_calls": 4,
+      "draw_calls": 5,
+      "process_ms": 0.31,
+      "widget": "Status"
+    },
+    {
+      "canvas_draw_calls": 4,
+      "draw_calls": 5,
+      "process_ms": 0.27,
+      "widget": "Scoreboard"
+    },
+    {
+      "canvas_draw_calls": 0,
+      "draw_calls": 1,
+      "process_ms": -0.1,
+      "widget": "Banner"
+    },
+    {
+      "canvas_draw_calls": 0,
+      "draw_calls": 1,
+      "process_ms": 0.21,
+      "widget": "CyberMessages"
+    },
+    {
+      "canvas_draw_calls": 0,
+      "draw_calls": 1,
+      "process_ms": 0.37,
+      "widget": "CaptionLine"
+    },
+    {
+      "canvas_draw_calls": 0,
+      "draw_calls": 1,
+      "process_ms": 0.28,
+      "widget": "Overlay"
+    },
+    {
+      "canvas_draw_calls": 20,
+      "draw_calls": 21,
+      "process_ms": 0.13,
+      "widget": "Radar"
+    },
+    {
+      "canvas_draw_calls": 33,
+      "draw_calls": 34,
+      "process_ms": 0.22,
+      "widget": "SelectionPanel"
+    },
+    {
+      "canvas_draw_calls": 8,
+      "draw_calls": 9,
+      "process_ms": 0.31,
+      "widget": "GroupBar"
+    },
+    {
+      "canvas_draw_calls": 5,
+      "draw_calls": 6,
+      "process_ms": 0.34,
+      "widget": "EdgeMarkers"
+    },
+    {
+      "canvas_draw_calls": 7,
+      "draw_calls": 8,
+      "process_ms": 0.1,
+      "widget": "ControlHints"
+    },
+    {
+      "canvas_draw_calls": 0,
+      "draw_calls": 3,
+      "process_ms": 0.26,
+      "widget": "selection_markers_3d"
+    }
+  ]
+}

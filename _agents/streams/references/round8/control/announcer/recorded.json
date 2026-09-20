@@ -1,0 +1,718 @@
+{
+  "cues": [
+    {
+      "_priority": 90,
+      "act": "welcome",
+      "cut": false,
+      "end": 7.3,
+      "event_t": 0.03,
+      "intensity": 2,
+      "line_id": "pa.welcome.09",
+      "moment": "intro",
+      "reason": "intro: foundry: 10 units on the floor → pa welcome",
+      "slots": {},
+      "speaker": "pa",
+      "t": 0.1,
+      "team": "",
+      "text": "Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.",
+      "variant_key": ""
+    },
+    {
+      "_priority": 50,
+      "act": "hype",
+      "cut": true,
+      "end": 8.5,
+      "event_t": 0.03,
+      "full_seconds": 4.86,
+      "intensity": 2,
+      "line_id": "caller.intro.16",
+      "moment": "intro",
+      "reason": "intro: foundry: 10 units on the floor → caller hype",
+      "slots": {},
+      "speaker": "caller",
+      "t": 7.6,
+      "team": "",
+      "text": "Oh, this is going to be good. I can feel it in my chest already!",
+      "variant_key": ""
+    },
+    {
+      "_priority": 70,
+      "act": "analysis",
+      "cut": false,
+      "end": 12.84,
+      "event_t": 8.53,
+      "intensity": 2,
+      "line_id": "color.teach.arty01",
+      "moment": "contact",
+      "reason": "contact: green tank opens fire on a tank → color analysis [any]",
+      "slots": {},
+      "speaker": "color",
+      "t": 8.6,
+      "team": "green",
+      "text": "Artillery doesn't kill you. It moves you somewhere that does.",
+      "variant_key": ""
+    },
+    {
+      "_priority": 65,
+      "act": "call",
+      "cut": false,
+      "end": 17.04,
+      "event_t": 9.77,
+      "intensity": 3,
+      "line_id": "caller.kill.66",
+      "moment": "kill",
+      "reason": "kill: 2 kills in 0.4 s, latest: green tank destroys a rust tank → caller call [flurry]",
+      "slots": {},
+      "speaker": "caller",
+      "t": 13.8,
+      "team": "green",
+      "text": "It is chaos down there! I can't even keep up!",
+      "variant_key": ""
+    },
+    {
+      "_priority": 65,
+      "act": "call",
+      "cut": false,
+      "end": 21.24,
+      "event_t": 14.43,
+      "intensity": 3,
+      "line_id": "caller.kill.24",
+      "moment": "kill",
+      "reason": "kill: 2 kills in 0.4 s, latest: green tank destroys a rust tank → caller call [killer_tank]",
+      "slots": {
+        "victim_unit": "tank"
+      },
+      "speaker": "caller",
+      "t": 18.0,
+      "team": "green",
+      "text": "The tank round lands, and the tank just comes apart!",
+      "variant_key": "tank"
+    },
+    {
+      "_priority": 60,
+      "act": "roast",
+      "cut": false,
+      "end": 28.44,
+      "event_t": 21.53,
+      "intensity": 2,
+      "line_id": "color.kill.09",
+      "moment": "kill",
+      "reason": "kill: green tank destroys a rust tank → color roast",
+      "slots": {
+        "other_faction": "condemned"
+      },
+      "speaker": "color",
+      "t": 22.2,
+      "team": "green",
+      "text": "The Condemned were in the open for too long. You saw it coming from here.",
+      "variant_key": "condemned"
+    },
+    {
+      "_priority": 85,
+      "act": "call",
+      "cut": false,
+      "end": 31.14,
+      "event_t": 26.77,
+      "intensity": 3,
+      "line_id": "caller.kill.12",
+      "moment": "kill",
+      "reason": "kill: green tank destroys a rust tank → caller call",
+      "slots": {
+        "victim_unit": "tank"
+      },
+      "speaker": "caller",
+      "t": 28.8,
+      "team": "green",
+      "text": "Oh, they blew that tank wide open!",
+      "variant_key": "tank"
+    },
+    {
+      "_priority": 45,
+      "act": "notice",
+      "cut": true,
+      "end": 34.7,
+      "event_t": 26.77,
+      "full_seconds": 6.96,
+      "intensity": 3,
+      "line_id": "pa.correct.02",
+      "moment": "kill",
+      "reason": "kill: green tank destroys a rust tank → pa notice [after_caller]",
+      "slots": {},
+      "speaker": "pa",
+      "t": 31.5,
+      "team": "green",
+      "text": "Lovely call, Joseph. For our younger viewers, conduct of that kind is lawful only within the painted lines.",
+      "variant_key": ""
+    },
+    {
+      "_priority": 115,
+      "act": "call",
+      "cut": false,
+      "end": 36.72,
+      "event_t": 34.73,
+      "intensity": 3,
+      "line_id": "caller.kill.61",
+      "moment": "kill",
+      "reason": "kill: green tank destroys a rust tank → caller call [final_kill]",
+      "slots": {
+        "other_faction_attr": "condemned"
+      },
+      "speaker": "caller",
+      "t": 34.8,
+      "team": "green",
+      "text": "The last Condemned vehicle goes down!",
+      "variant_key": "condemned"
+    },
+    {
+      "_priority": 100,
+      "act": "call",
+      "cut": false,
+      "end": 40.64,
+      "event_t": 34.77,
+      "intensity": 3,
+      "line_id": "caller.result.04",
+      "moment": "result",
+      "reason": "result: green wins by elimination after 34 s → caller call [win_elimination]",
+      "slots": {
+        "faction": "condemned"
+      },
+      "speaker": "caller",
+      "t": 37.1,
+      "team": "green",
+      "text": "And the Condemned are the last army standing! The Condemned win!",
+      "variant_key": "condemned"
+    },
+    {
+      "_priority": 60,
+      "act": "analysis",
+      "cut": false,
+      "end": 47.12,
+      "event_t": 34.77,
+      "intensity": 3,
+      "line_id": "color.result.14",
+      "moment": "result",
+      "reason": "result: green wins by elimination after 34 s → color analysis",
+      "slots": {},
+      "speaker": "color",
+      "t": 41.0,
+      "team": "green",
+      "text": "That is what it looks like when everybody does their job and nobody gets clever.",
+      "variant_key": ""
+    },
+    {
+      "_priority": 1,
+      "act": "result",
+      "cut": false,
+      "end": 55.54,
+      "event_t": 34.77,
+      "intensity": 1,
+      "line_id": "pa.result.03",
+      "moment": "outro",
+      "reason": "outro: sign-off → pa result",
+      "slots": {
+        "faction": "condemned"
+      },
+      "speaker": "pa",
+      "t": 48.1,
+      "team": "green",
+      "text": "That concludes tonight's match. Congratulations to the Condemned. On behalf of the Syndicate, good night, and please drive safely.",
+      "variant_key": "condemned"
+    }
+  ],
+  "decisions": [
+    {
+      "t": 8.5,
+      "text": "interrupt intro for contact (green tank opens fire on a tank)"
+    },
+    {
+      "t": 13.2,
+      "text": "skip big_hit (rust tank hits a tank, 56% hull left): stale after 4.1 s"
+    },
+    {
+      "t": 13.2,
+      "text": "skip big_hit (green tank hits a tank, 56% hull left): stale after 4.1 s"
+    },
+    {
+      "t": 13.2,
+      "text": "merge 2 kills into one call"
+    },
+    {
+      "t": 17.4,
+      "text": "skip big_hit (rust tank hits a tank, 38% hull left): stale after 5.6 s"
+    },
+    {
+      "t": 17.4,
+      "text": "skip squad_wiped (green loses squad Hammer): stale after 3.4 s"
+    },
+    {
+      "t": 17.4,
+      "text": "skip big_hit (green tank hits a tank, 56% hull left): stale after 3.0 s"
+    },
+    {
+      "t": 17.4,
+      "text": "merge 2 kills into one call"
+    },
+    {
+      "t": 21.5,
+      "text": "interrupt kill for kill (green tank destroys a rust tank)"
+    },
+    {
+      "t": 21.6,
+      "text": "skip big_hit (rust tank hits a tank, 38% hull left): stale after 5.1 s"
+    },
+    {
+      "t": 28.8,
+      "text": "skip big_hit (green tank hits a tank, 38% hull left): stale after 8.5 s"
+    },
+    {
+      "t": 28.8,
+      "text": "skip big_hit (rust tank hits a tank, 56% hull left): stale after 7.2 s"
+    },
+    {
+      "t": 28.8,
+      "text": "skip big_hit (green tank hits a tank, 47% hull left): stale after 4.4 s"
+    },
+    {
+      "t": 34.7,
+      "text": "interrupt kill for kill (green tank destroys a rust tank)"
+    }
+  ],
+  "events": [
+    {
+      "arena": "foundry",
+      "budget": 1000.0,
+      "control_point": false,
+      "t": 0.03,
+      "teams": [
+        {
+          "faction": "condemned",
+          "team": "green",
+          "units": [
+            {
+              "id": "Green_Anvil_1",
+              "squad": "Anvil",
+              "unit": "tank"
+            },
+            {
+              "id": "Green_Anvil_2",
+              "squad": "Anvil",
+              "unit": "tank"
+            },
+            {
+              "id": "Green_Anvil_3",
+              "squad": "Anvil",
+              "unit": "tank"
+            },
+            {
+              "id": "Green_Hammer_1",
+              "squad": "Hammer",
+              "unit": "tank"
+            },
+            {
+              "id": "Green_Hammer_2",
+              "squad": "Hammer",
+              "unit": "tank"
+            }
+          ]
+        },
+        {
+          "faction": "condemned",
+          "team": "rust",
+          "units": [
+            {
+              "id": "Rust_All_1",
+              "squad": "All",
+              "unit": "tank"
+            },
+            {
+              "id": "Rust_All_2",
+              "squad": "All",
+              "unit": "tank"
+            },
+            {
+              "id": "Rust_All_3",
+              "squad": "All",
+              "unit": "tank"
+            },
+            {
+              "id": "Rust_All_4",
+              "squad": "All",
+              "unit": "tank"
+            },
+            {
+              "id": "Rust_All_5",
+              "squad": "All",
+              "unit": "tank"
+            }
+          ]
+        }
+      ],
+      "tick": 1.0,
+      "type": "match_start"
+    },
+    {
+      "army_health": {
+        "green": 1.0,
+        "rust": 1.0
+      },
+      "t": 5.03,
+      "tick": 151.0,
+      "type": "momentum",
+      "units_left": {
+        "green": 5.0,
+        "rust": 5.0
+      }
+    },
+    {
+      "t": 8.53,
+      "target_id": "Rust_All_2",
+      "target_unit": "tank",
+      "team": "green",
+      "tick": 256.0,
+      "type": "first_contact",
+      "unit": "tank",
+      "unit_id": "Green_Anvil_2"
+    },
+    {
+      "amount": 0.44,
+      "critical": true,
+      "hull": 0.56,
+      "shield": 0.0,
+      "shooter": "Rust_All_2",
+      "shooter_unit": "tank",
+      "t": 9.1,
+      "tick": 273.0,
+      "type": "damage",
+      "victim": "Green_Hammer_1",
+      "victim_unit": "tank"
+    },
+    {
+      "amount": 0.44,
+      "critical": true,
+      "hull": 0.56,
+      "shield": 0.0,
+      "shooter": "Green_Hammer_1",
+      "shooter_unit": "tank",
+      "t": 9.13,
+      "tick": 274.0,
+      "type": "damage",
+      "victim": "Rust_All_1",
+      "victim_unit": "tank"
+    },
+    {
+      "cause": "weapon",
+      "friendly": false,
+      "killer": "Rust_All_4",
+      "killer_team": "rust",
+      "killer_unit": "tank",
+      "t": 9.37,
+      "tick": 281.0,
+      "type": "unit_destroyed",
+      "victim": "Green_Hammer_1",
+      "victim_team": "green",
+      "victim_unit": "tank"
+    },
+    {
+      "cause": "weapon",
+      "friendly": false,
+      "killer": "Green_Anvil_3",
+      "killer_team": "green",
+      "killer_unit": "tank",
+      "t": 9.77,
+      "tick": 293.0,
+      "type": "unit_destroyed",
+      "victim": "Rust_All_1",
+      "victim_team": "rust",
+      "victim_unit": "tank"
+    },
+    {
+      "army_health": {
+        "green": 0.8,
+        "rust": 0.8
+      },
+      "t": 10.03,
+      "tick": 301.0,
+      "type": "momentum",
+      "units_left": {
+        "green": 4.0,
+        "rust": 4.0
+      }
+    },
+    {
+      "amount": 0.533,
+      "critical": true,
+      "hull": 0.38,
+      "shield": 0.0,
+      "shooter": "Rust_All_2",
+      "shooter_unit": "tank",
+      "t": 11.77,
+      "tick": 353.0,
+      "type": "damage",
+      "victim": "Green_Hammer_2",
+      "victim_unit": "tank"
+    },
+    {
+      "cause": "weapon",
+      "friendly": false,
+      "killer": "Rust_All_2",
+      "killer_team": "rust",
+      "killer_unit": "tank",
+      "t": 14.0,
+      "tick": 420.0,
+      "type": "unit_destroyed",
+      "victim": "Green_Hammer_2",
+      "victim_team": "green",
+      "victim_unit": "tank"
+    },
+    {
+      "squad": "Hammer",
+      "t": 14.0,
+      "team": "green",
+      "tick": 420.0,
+      "type": "squad_wiped",
+      "units_lost": 2.0
+    },
+    {
+      "amount": 0.44,
+      "critical": true,
+      "hull": 0.56,
+      "shield": 0.0,
+      "shooter": "Green_Anvil_3",
+      "shooter_unit": "tank",
+      "t": 14.37,
+      "tick": 431.0,
+      "type": "damage",
+      "victim": "Rust_All_2",
+      "victim_unit": "tank"
+    },
+    {
+      "cause": "weapon",
+      "friendly": false,
+      "killer": "Green_Anvil_2",
+      "killer_team": "green",
+      "killer_unit": "tank",
+      "t": 14.43,
+      "tick": 433.0,
+      "type": "unit_destroyed",
+      "victim": "Rust_All_2",
+      "victim_team": "rust",
+      "victim_unit": "tank"
+    },
+    {
+      "army_health": {
+        "green": 0.6,
+        "rust": 0.583
+      },
+      "t": 15.03,
+      "tick": 451.0,
+      "type": "momentum",
+      "units_left": {
+        "green": 3.0,
+        "rust": 3.0
+      }
+    },
+    {
+      "amount": 0.533,
+      "critical": true,
+      "hull": 0.38,
+      "shield": 0.0,
+      "shooter": "Rust_All_3",
+      "shooter_unit": "tank",
+      "t": 16.5,
+      "tick": 495.0,
+      "type": "damage",
+      "victim": "Green_Anvil_1",
+      "victim_unit": "tank"
+    },
+    {
+      "army_health": {
+        "green": 0.476,
+        "rust": 0.565
+      },
+      "t": 20.03,
+      "tick": 601.0,
+      "type": "momentum",
+      "units_left": {
+        "green": 3.0,
+        "rust": 3.0
+      }
+    },
+    {
+      "amount": 0.533,
+      "critical": true,
+      "hull": 0.38,
+      "shield": 0.0,
+      "shooter": "Green_Anvil_3",
+      "shooter_unit": "tank",
+      "t": 20.27,
+      "tick": 608.0,
+      "type": "damage",
+      "victim": "Rust_All_5",
+      "victim_unit": "tank"
+    },
+    {
+      "cause": "weapon",
+      "friendly": false,
+      "killer": "Green_Anvil_1",
+      "killer_team": "green",
+      "killer_unit": "tank",
+      "t": 21.53,
+      "tick": 646.0,
+      "type": "unit_destroyed",
+      "victim": "Rust_All_5",
+      "victim_team": "rust",
+      "victim_unit": "tank"
+    },
+    {
+      "amount": 0.44,
+      "critical": true,
+      "hull": 0.56,
+      "shield": 0.0,
+      "shooter": "Rust_All_3",
+      "shooter_unit": "tank",
+      "t": 21.57,
+      "tick": 647.0,
+      "type": "damage",
+      "victim": "Green_Anvil_3",
+      "victim_unit": "tank"
+    },
+    {
+      "amount": 0.44,
+      "critical": true,
+      "hull": 0.473,
+      "shield": 0.0,
+      "shooter": "Green_Anvil_3",
+      "shooter_unit": "tank",
+      "t": 24.43,
+      "tick": 733.0,
+      "type": "damage",
+      "victim": "Rust_All_3",
+      "victim_unit": "tank"
+    },
+    {
+      "army_health": {
+        "green": 0.388,
+        "rust": 0.295
+      },
+      "t": 25.03,
+      "tick": 751.0,
+      "type": "momentum",
+      "units_left": {
+        "green": 3.0,
+        "rust": 2.0
+      }
+    },
+    {
+      "cause": "weapon",
+      "friendly": false,
+      "killer": "Green_Anvil_3",
+      "killer_team": "green",
+      "killer_unit": "tank",
+      "t": 26.77,
+      "tick": 803.0,
+      "type": "unit_destroyed",
+      "victim": "Rust_All_3",
+      "victim_team": "rust",
+      "victim_unit": "tank"
+    },
+    {
+      "amount": 0.44,
+      "critical": true,
+      "hull": 0.56,
+      "shield": 0.0,
+      "shooter": "Green_Anvil_3",
+      "shooter_unit": "tank",
+      "t": 29.63,
+      "tick": 889.0,
+      "type": "damage",
+      "victim": "Rust_All_4",
+      "victim_unit": "tank"
+    },
+    {
+      "army_health": {
+        "green": 0.371,
+        "rust": 0.112
+      },
+      "t": 30.03,
+      "tick": 901.0,
+      "type": "momentum",
+      "units_left": {
+        "green": 3.0,
+        "rust": 1.0
+      }
+    },
+    {
+      "amount": 0.533,
+      "critical": true,
+      "hull": 0.027,
+      "shield": 0.0,
+      "shooter": "Green_Anvil_3",
+      "shooter_unit": "tank",
+      "t": 32.37,
+      "tick": 971.0,
+      "type": "damage",
+      "victim": "Rust_All_4",
+      "victim_unit": "tank"
+    },
+    {
+      "cause": "weapon",
+      "friendly": false,
+      "killer": "Green_Anvil_2",
+      "killer_team": "green",
+      "killer_unit": "tank",
+      "t": 34.73,
+      "tick": 1042.0,
+      "type": "unit_destroyed",
+      "victim": "Rust_All_4",
+      "victim_team": "rust",
+      "victim_unit": "tank"
+    },
+    {
+      "squad": "All",
+      "t": 34.73,
+      "team": "rust",
+      "tick": 1042.0,
+      "type": "squad_wiped",
+      "units_lost": 5.0
+    },
+    {
+      "duration_seconds": 34.8,
+      "kills_by_unit": {
+        "green": {
+          "tank": 5.0
+        },
+        "rust": {
+          "tank": 2.0
+        }
+      },
+      "reason": "elimination",
+      "t": 34.77,
+      "tick": 1043.0,
+      "type": "match_end",
+      "units_left": {
+        "green": 3.0,
+        "rust": 0.0
+      },
+      "winner": "green"
+    }
+  ],
+  "fixture": "recorded",
+  "seed": 1,
+  "speakers": {
+    "caller": {
+      "name": "Caller",
+      "role": "play-by-play: authentic fight-night hype, played straight",
+      "voice": "JR1"
+    },
+    "color": {
+      "name": "The Veteran",
+      "role": "color: a former arena champion; deep, slow, dry, the expert",
+      "voice": "veteran"
+    },
+    "pa": {
+      "name": "Celeste Vance",
+      "role": "arena PA and sponsor reads: a polished host; one detail slightly off, never a joke",
+      "voice": "corporate2"
+    }
+  }
+}

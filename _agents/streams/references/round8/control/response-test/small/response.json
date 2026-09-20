@@ -1,0 +1,69 @@
+{
+  "samples": [
+    {
+      "ack_ms": 1000.558,
+      "frame_ms": 1000.558,
+      "input_ms": 0.611999999999171,
+      "move_ms_median": -1.0,
+      "move_ms_slowest": -1.0,
+      "moved_of": [
+        0,
+        5
+      ],
+      "order": 1,
+      "order_ms": 0.585999999999331,
+      "units": 5
+    },
+    {
+      "ack_ms": 1000.576,
+      "frame_ms": 1000.576,
+      "input_ms": 0.476999999998952,
+      "move_ms_median": -1.0,
+      "move_ms_slowest": -1.0,
+      "moved_of": [
+        0,
+        5
+      ],
+      "order": 3,
+      "order_ms": 0.453000000001339,
+      "units": 5
+    },
+    {
+      "ack_ms": 1000.834,
+      "frame_ms": 1000.834,
+      "input_ms": 0.538999999997031,
+      "move_ms_median": -1.0,
+      "move_ms_slowest": -1.0,
+      "moved_of": [
+        0,
+        5
+      ],
+      "order": 5,
+      "order_ms": 0.511999999998807,
+      "units": 5
+    }
+  ],
+  "summary": {
+    "ack_ms": {
+      "median": 1000.6,
+      "worst": 1000.8
+    },
+    "frame_ms": {
+      "median": 1000.6,
+      "worst": 1000.8
+    },
+    "input_ms": {
+      "median": 0.5,
+      "worst": 0.6
+    },
+    "move_ms_median": {},
+    "move_ms_slowest": {},
+    "order_ms": {
+      "median": 0.5,
+      "worst": 0.6
+    },
+    "orders": 3,
+    "response_ms_contract": 100.0,
+    "vehicles": 11
+  }
+}

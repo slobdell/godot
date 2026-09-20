@@ -1,0 +1,90 @@
+{
+  "arena": "yard",
+  "arena_note": "Dense lanes and short sightlines: fights happen at corners and alley mouths, a flank is one wall away, and whoever scouts the next lane first gets the ambush. Scouts, IFVs and burners shine; long guns can't see.",
+  "arena_title": "The Container Yard",
+  "arenas": [],
+  "contact": true,
+  "distances": [
+    28.0,
+    50.0,
+    90.0
+  ],
+  "first_shot_s": 8.5,
+  "focus": [
+    56.8,
+    35.4
+  ],
+  "fovs": [
+    45.0,
+    60.0
+  ],
+  "frames": [
+    {
+      "distance": 47.6,
+      "file": "round5.jpg",
+      "fov": 35.0,
+      "height": 34.0,
+      "label": "round 5's start",
+      "pitch": 45.52,
+      "row": "arena"
+    },
+    {
+      "distance": 47.6,
+      "file": "default.jpg",
+      "fov": 35.0,
+      "height": 17.1,
+      "label": "new default",
+      "pitch": 21.0,
+      "row": "arena"
+    },
+    {
+      "distance": 222.5,
+      "file": "overview.jpg",
+      "fov": 35.0,
+      "height": 216.8,
+      "label": "overview (O)",
+      "pitch": 77.0,
+      "row": "arena"
+    },
+    {
+      "distance": 49.0,
+      "file": "wall0.jpg",
+      "fov": 35.0,
+      "height": 17.6,
+      "label": "behind wall 0",
+      "pitch": 21.0,
+      "row": "arena"
+    },
+    {
+      "distance": 49.0,
+      "file": "wall1.jpg",
+      "fov": 35.0,
+      "height": 17.6,
+      "label": "behind wall 1",
+      "pitch": 21.0,
+      "row": "arena"
+    },
+    {
+      "distance": 49.0,
+      "file": "wall2.jpg",
+      "fov": 35.0,
+      "height": 17.6,
+      "label": "behind wall 2",
+      "pitch": 21.0,
+      "row": "arena"
+    }
+  ],
+  "heading_deg": 15.7,
+  "pitches": [
+    25.0,
+    35.0,
+    45.0,
+    60.0
+  ],
+  "seconds_in": 14.5,
+  "seed": 3,
+  "window": [
+    1854.0,
+    1011.0
+  ]
+}

@@ -1,0 +1,57 @@
+{
+	"arena": "boneyard",
+	"arrived": 30,
+	"arrived_fraction": 1.0,
+	"both_ways": false,
+	"crawl_share": 0.007,
+	"crawl_unit_seconds": 5.4,
+	"distance_m": 6394.6,
+	"no_progress_share": 0.005,
+	"no_progress_unit_seconds": 3.8,
+	"no_progress_units": 1,
+	"off_navmesh": 0,
+	"oscillating_share": 0.001,
+	"oscillating_unit_seconds": 0.7,
+	"oscillating_units": 1,
+	"progress_m": 6098.1,
+	"seconds": 32.93,
+	"stuck_events": 1,
+	"stuck_units": 1,
+	"t100_s": 32.93,
+	"t50_s": 26.47,
+	"t90_s": 30.83,
+	"time_limit_s": 60.0,
+	"units": 30,
+	"worst": [
+		{
+			"arrived_s": 32.93,
+			"remaining_m": 7.9,
+			"stuck_events": 0,
+			"unit": "Cross_20"
+		},
+		{
+			"arrived_s": 32.33,
+			"remaining_m": 4.0,
+			"stuck_events": 1,
+			"unit": "Cross_26"
+		},
+		{
+			"arrived_s": 23.53,
+			"remaining_m": 2.8,
+			"stuck_events": 0,
+			"unit": "Cross_6"
+		},
+		{
+			"arrived_s": 30.13,
+			"remaining_m": 2.5,
+			"stuck_events": 0,
+			"unit": "Cross_29"
+		},
+		{
+			"arrived_s": 27.23,
+			"remaining_m": 2.5,
+			"stuck_events": 0,
+			"unit": "Cross_28"
+		}
+	]
+}

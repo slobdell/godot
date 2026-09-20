@@ -1,0 +1,8250 @@
+{
+ "config": {
+  "faction": "condemned",
+  "green_faction": "",
+  "rust_faction": "",
+  "budget": 5200,
+  "time_limit": 180,
+  "seeds": 18
+ },
+ "arenas": {
+  "boneyard": {
+   "matches": 36,
+   "south_win_rate": 0.472,
+   "draws": 0,
+   "reasons": {
+    "control": 15,
+    "elimination": 21
+   },
+   "duration_s": 108.35,
+   "first_hit_s": 7.1,
+   "range_median_m": 40.1,
+   "range_p90_m": 67.65,
+   "flank_share": 0.053,
+   "hidden_share": 0.48,
+   "south_advantage": -0.04,
+   "south_advantage_se": 0.033,
+   "pairs": 18,
+   "winner_flips": 1,
+   "green_margin": -0.29,
+   "green_win_rate": 0.306
+  }
+ },
+ "failures": [],
+ "wall_seconds": 652.6,
+ "runs": {
+  "boneyard": [
+   {
+    "arena": "boneyard",
+    "seed": 1,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5200,
+      "rust": 5100
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "duration_seconds": 122.1,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 2,
+       "tank": 6
+      },
+      "rust": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 6,
+       "tank": 5
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 6,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 2,
+       "tank": 6
+      }
+     },
+     "real_seconds": 49.92,
+     "reason": "control",
+     "score": {
+      "green": 8,
+      "rust": 27
+     },
+     "seed": 1,
+     "sim_seconds": 122.1,
+     "speedup": 2.4,
+     "state_hash": "8f9fa32b6432ce4f",
+     "stats": {
+      "damage": [
+       3430,
+       5760
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.029,
+       "centroid_travel": [
+        386.2,
+        190.2
+       ],
+       "combat_seconds": 92,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.143,
+       "engaged_distance_median": 76.5,
+       "flank_rear_kill_share": 0.483,
+       "held_line_share": 0.087,
+       "kill_distance_median": 58.0,
+       "kill_distance_p25": 44.3,
+       "kill_distance_p75": 70.6,
+       "kills": {
+        "front": 15,
+        "indirect": 6,
+        "rear": 1,
+        "side": 13
+       },
+       "kills_by_cover_shooters_share": 0.171,
+       "net_advance": [
+        125.8,
+        36.5
+       ],
+       "off_axis_kill_share": 0.2,
+       "samples": 122,
+       "separation_at_contact": 110.0,
+       "shots_near_cover_share": 0.185,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.213
+      },
+      "first_kill_seconds": 7.6,
+      "first_shot_seconds": 6.3,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       18.8999996185303,
+       102.599998474121
+      ],
+      "friendly_hits": [
+       1,
+       6
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       93,
+       199
+      ],
+      "gun_ready_samples": [
+       306,
+       204
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       190,
+       211
+      ],
+      "hits_by_face": {
+       "front": 259,
+       "rear": 5,
+       "side": 137
+      },
+      "kills": [
+       8,
+       27
+      ],
+      "laser_damage": [
+       0,
+       383
+      ],
+      "mortar_damage": [
+       2780,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 5672,
+        "CLEAR_LANE": 42,
+        "CONTEST": 952,
+        "COVER_FIRE": 152,
+        "ENGAGE": 597,
+        "RECHARGE": 33,
+        "REGROUP": 516,
+        "RETREAT": 264,
+        "SHADOW": 514,
+        "SPOT": 9052,
+        "SUPPRESS": 127,
+        "TAKE_COVER": 77
+       },
+       {
+        "ADVANCE": 119,
+        "CLEAR_LANE": 3206,
+        "CONTEST": 7412,
+        "COVER_FIRE": 722,
+        "ENGAGE": 6710,
+        "FLANK": 21,
+        "HOLD": 62,
+        "INVESTIGATE": 1858,
+        "RECHARGE": 235,
+        "REGROUP": 2662,
+        "RESUPPLY": 31,
+        "RETREAT": 1743,
+        "SUPPRESS": 1151,
+        "TAKE_COVER": 254
+       }
+      ],
+      "pinned_samples": [
+       187,
+       1194
+      ],
+      "shells_resupplied": [
+       42,
+       0
+      ],
+      "shield_damage": [
+       4172.85068666935,
+       3141.94999718666
+      ],
+      "shots": [
+       267,
+       337
+      ],
+      "suppression_samples": [
+       36068,
+       52419
+      ],
+      "suppression_total": [
+       650.130546479578,
+       2077.4548152906
+      ],
+      "weak_spot_hits": [
+       0,
+       3
+      ]
+     },
+     "tanks": {
+      "green": 31,
+      "rust": 27
+     },
+     "tick": 7326,
+     "units_left": {
+      "green": 4,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 8
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.071,
+     "hidden_share": 0.608,
+     "hits": 408,
+     "range_mean_m": 41.5,
+     "range_median_m": 38.6,
+     "range_p90_m": 75.8,
+     "reason": "control",
+     "sim_seconds": 122.1,
+     "swap_bases": true,
+     "unit_seconds": 2980,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 1,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5200,
+      "rust": 5100
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "duration_seconds": 114.7,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1,
+       "tank": 7
+      },
+      "rust": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 9,
+       "tank": 5
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 9,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 2,
+       "tank": 7
+      }
+     },
+     "real_seconds": 50.24,
+     "reason": "control",
+     "score": {
+      "green": 8,
+      "rust": 30
+     },
+     "seed": 1,
+     "sim_seconds": 114.7,
+     "speedup": 2.3,
+     "state_hash": "80f65003eeb1eedf",
+     "stats": {
+      "damage": [
+       4200,
+       6065
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        302.5,
+        156.6
+       ],
+       "combat_seconds": 95,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.237,
+       "engaged_distance_median": 77.7,
+       "flank_rear_kill_share": 0.29,
+       "held_line_share": 0.189,
+       "kill_distance_median": 46.0,
+       "kill_distance_p25": 32.5,
+       "kill_distance_p75": 62.3,
+       "kills": {
+        "front": 22,
+        "indirect": 7,
+        "rear": 1,
+        "side": 8
+       },
+       "kills_by_cover_shooters_share": 0.079,
+       "net_advance": [
+        -36.6,
+        77.8
+       ],
+       "off_axis_kill_share": 0.132,
+       "samples": 114,
+       "separation_at_contact": 105.5,
+       "shots_near_cover_share": 0.269,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.192
+      },
+      "first_kill_seconds": 9.3,
+      "first_shot_seconds": 6.7,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       81.1915645599365,
+       56.8999996185303
+      ],
+      "friendly_hits": [
+       3,
+       4
+      ],
+      "friendly_kills": [
+       0,
+       1
+      ],
+      "gun_idle_samples": [
+       77,
+       179
+      ],
+      "gun_ready_samples": [
+       303,
+       180
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       185,
+       218
+      ],
+      "hits_by_face": {
+       "front": 202,
+       "rear": 2,
+       "side": 199
+      },
+      "kills": [
+       8,
+       30
+      ],
+      "laser_damage": [
+       6,
+       545
+      ],
+      "mortar_damage": [
+       2808,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 6812,
+        "CLEAR_LANE": 71,
+        "CONTEST": 829,
+        "COVER_FIRE": 112,
+        "ENGAGE": 658,
+        "RECHARGE": 157,
+        "REGROUP": 449,
+        "RETREAT": 98,
+        "SHADOW": 371,
+        "SPOT": 9830,
+        "SUPPRESS": 202,
+        "TAKE_COVER": 57
+       },
+       {
+        "ADVANCE": 43,
+        "CLEAR_LANE": 3328,
+        "CONTEST": 5473,
+        "COVER_FIRE": 875,
+        "ENGAGE": 6037,
+        "FLANK": 18,
+        "INVESTIGATE": 1379,
+        "RECHARGE": 339,
+        "REGROUP": 2271,
+        "RESUPPLY": 377,
+        "RETREAT": 1357,
+        "SUPPRESS": 1546,
+        "TAKE_COVER": 344
+       }
+      ],
+      "pinned_samples": [
+       190,
+       1496
+      ],
+      "shells_resupplied": [
+       43,
+       0
+      ],
+      "shield_damage": [
+       6293.40245914459,
+       3190.37510299683
+      ],
+      "shots": [
+       271,
+       361
+      ],
+      "suppression_samples": [
+       39365,
+       46823
+      ],
+      "suppression_total": [
+       691.231691304508,
+       2830.14305944552
+      ],
+      "weak_spot_hits": [
+       0,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 31,
+      "rust": 27
+     },
+     "tick": 6882,
+     "units_left": {
+      "green": 1,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 9
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.058,
+     "hidden_share": 0.513,
+     "hits": 410,
+     "range_mean_m": 51.9,
+     "range_median_m": 48.0,
+     "range_p90_m": 85.9,
+     "reason": "control",
+     "sim_seconds": 114.7,
+     "swap_bases": false,
+     "unit_seconds": 2783,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 2,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5170,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 86,
+      "rust": 0
+     },
+     "duration_seconds": 128.3,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 2,
+       "tank": 1
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 2,
+       "tank": 2
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 28
+      }
+     },
+     "real_seconds": 75.81,
+     "reason": "elimination",
+     "score": {
+      "green": 42,
+      "rust": 3
+     },
+     "seed": 2,
+     "sim_seconds": 128.3,
+     "speedup": 1.7,
+     "state_hash": "cbfddc288bb03437",
+     "stats": {
+      "damage": [
+       6944,
+       1069
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        218.1,
+        265.5
+       ],
+       "combat_seconds": 106,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.156,
+       "engaged_distance_median": 79.4,
+       "flank_rear_kill_share": 0.622,
+       "held_line_share": 0.142,
+       "kill_distance_median": 51.1,
+       "kill_distance_p25": 39.5,
+       "kill_distance_p75": 64.4,
+       "kills": {
+        "front": 17,
+        "indirect": 0,
+        "rear": 5,
+        "side": 23
+       },
+       "kills_by_cover_shooters_share": 0.156,
+       "net_advance": [
+        110.7,
+        -44.1
+       ],
+       "off_axis_kill_share": 0.178,
+       "samples": 128,
+       "separation_at_contact": 95.4,
+       "shots_near_cover_share": 0.227,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.222
+      },
+      "first_kill_seconds": 9.0,
+      "first_shot_seconds": 6.4,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       320.799999237061,
+       93.7999992370605
+      ],
+      "friendly_hits": [
+       5,
+       5
+      ],
+      "friendly_kills": [
+       1,
+       0
+      ],
+      "gun_idle_samples": [
+       151,
+       183
+      ],
+      "gun_ready_samples": [
+       153,
+       188
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       504,
+       422
+      ],
+      "hits_by_face": {
+       "front": 569,
+       "rear": 30,
+       "side": 327
+      },
+      "kills": [
+       42,
+       3
+      ],
+      "laser_damage": [
+       1074,
+       0
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 1987,
+        "CONTEST": 3499,
+        "COVER_FIRE": 901,
+        "ENGAGE": 8414,
+        "FLANK": 7,
+        "HOLD": 33,
+        "INVESTIGATE": 521,
+        "RECHARGE": 305,
+        "REGROUP": 1137,
+        "RETREAT": 127,
+        "SPOT": 21779,
+        "SUPPRESS": 1837,
+        "TAKE_COVER": 179
+       },
+       {
+        "CLEAR_LANE": 434,
+        "CONTEST": 1452,
+        "COVER_FIRE": 20,
+        "ENGAGE": 1824,
+        "RECHARGE": 42,
+        "REGROUP": 40,
+        "RETREAT": 517,
+        "SPOT": 23991,
+        "SUPPRESS": 383,
+        "TAKE_COVER": 219
+       }
+      ],
+      "pinned_samples": [
+       563,
+       631
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4862.54999446869,
+       1481.2899992466
+      ],
+      "shots": [
+       805,
+       615
+      ],
+      "suppression_samples": [
+       81544,
+       57938
+      ],
+      "suppression_total": [
+       1064.66004859149,
+       1506.14518395001
+      ],
+      "weak_spot_hits": [
+       2,
+       11
+      ]
+     },
+     "tanks": {
+      "green": 35,
+      "rust": 42
+     },
+     "tick": 7697,
+     "units_left": {
+      "green": 31,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 4,
+      "rust": 42
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.103,
+     "hidden_share": 0.442,
+     "hits": 936,
+     "range_mean_m": 40.1,
+     "range_median_m": 39.3,
+     "range_p90_m": 57.8,
+     "reason": "elimination",
+     "sim_seconds": 128.3,
+     "swap_bases": false,
+     "unit_seconds": 5180,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 3,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5200,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 0
+     },
+     "duration_seconds": 108.0,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 26
+      },
+      "rust": {
+       "ifv": 2
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 2
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 26
+      }
+     },
+     "real_seconds": 65.53,
+     "reason": "control",
+     "score": {
+      "green": 40,
+      "rust": 2
+     },
+     "seed": 3,
+     "sim_seconds": 108.0,
+     "speedup": 1.6,
+     "state_hash": "a51b038354bc78b8",
+     "stats": {
+      "damage": [
+       6759,
+       723
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        155.7,
+        302.3
+       ],
+       "combat_seconds": 95,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.238,
+       "engaged_distance_median": 79.7,
+       "flank_rear_kill_share": 0.441,
+       "held_line_share": 0.189,
+       "kill_distance_median": 49.0,
+       "kill_distance_p25": 39.6,
+       "kill_distance_p75": 62.1,
+       "kills": {
+        "front": 19,
+        "indirect": 8,
+        "rear": 1,
+        "side": 14
+       },
+       "kills_by_cover_shooters_share": 0.214,
+       "net_advance": [
+        91.0,
+        -3.0
+       ],
+       "off_axis_kill_share": 0.381,
+       "samples": 108,
+       "separation_at_contact": 113.6,
+       "shots_near_cover_share": 0.214,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.208
+      },
+      "first_kill_seconds": 7.4,
+      "first_shot_seconds": 6.3,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       126.099998474121,
+       115.5
+      ],
+      "friendly_hits": [
+       8,
+       9
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       133,
+       140
+      ],
+      "gun_ready_samples": [
+       257,
+       146
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       480,
+       352
+      ],
+      "hits_by_face": {
+       "front": 451,
+       "rear": 9,
+       "side": 372
+      },
+      "kills": [
+       40,
+       2
+      ],
+      "laser_damage": [
+       0,
+       46
+      ],
+      "mortar_damage": [
+       1753,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 8290,
+        "CLEAR_LANE": 828,
+        "CONTEST": 1818,
+        "COVER_FIRE": 599,
+        "ENGAGE": 5506,
+        "FLANK": 7,
+        "HOLD": 20,
+        "INVESTIGATE": 18,
+        "RECHARGE": 7,
+        "REGROUP": 1551,
+        "RETREAT": 249,
+        "SHADOW": 1392,
+        "SPOT": 10795,
+        "SUPPRESS": 656,
+        "TAKE_COVER": 72
+       },
+       {
+        "CLEAR_LANE": 199,
+        "CONTEST": 1448,
+        "COVER_FIRE": 7,
+        "ENGAGE": 1355,
+        "RECHARGE": 55,
+        "REGROUP": 162,
+        "RETREAT": 162,
+        "SPOT": 22869,
+        "SUPPRESS": 362,
+        "TAKE_COVER": 198
+       }
+      ],
+      "pinned_samples": [
+       369,
+       1126
+      ],
+      "shells_resupplied": [
+       32,
+       0
+      ],
+      "shield_damage": [
+       4819.42965531349,
+       996.66999745369
+      ],
+      "shots": [
+       736,
+       560
+      ],
+      "suppression_samples": [
+       63678,
+       53713
+      ],
+      "suppression_total": [
+       871.84823203852,
+       2065.92866688987
+      ],
+      "weak_spot_hits": [
+       2,
+       4
+      ]
+     },
+     "tanks": {
+      "green": 31,
+      "rust": 42
+     },
+     "tick": 6480,
+     "units_left": {
+      "green": 29,
+      "rust": 2
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 40
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.055,
+     "hidden_share": 0.487,
+     "hits": 849,
+     "range_mean_m": 39.0,
+     "range_median_m": 36.3,
+     "range_p90_m": 53.9,
+     "reason": "control",
+     "sim_seconds": 108.0,
+     "swap_bases": false,
+     "unit_seconds": 3622,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 2,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5170,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 10
+     },
+     "duration_seconds": 136.1,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 27
+      },
+      "rust": {
+       "ifv": 1
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 2
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 27
+      }
+     },
+     "real_seconds": 76.11,
+     "reason": "control",
+     "score": {
+      "green": 41,
+      "rust": 1
+     },
+     "seed": 2,
+     "sim_seconds": 136.1,
+     "speedup": 1.8,
+     "state_hash": "2cb926c27ca8f5c5",
+     "stats": {
+      "damage": [
+       7044,
+       662
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        193.3,
+        428.3
+       ],
+       "combat_seconds": 106,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.143,
+       "engaged_distance_median": 79.2,
+       "flank_rear_kill_share": 0.5,
+       "held_line_share": 0.17,
+       "kill_distance_median": 50.4,
+       "kill_distance_p25": 39.6,
+       "kill_distance_p75": 62.5,
+       "kills": {
+        "front": 21,
+        "indirect": 0,
+        "rear": 0,
+        "side": 21
+       },
+       "kills_by_cover_shooters_share": 0.143,
+       "net_advance": [
+        75.3,
+        -56.3
+       ],
+       "off_axis_kill_share": 0.5,
+       "samples": 136,
+       "separation_at_contact": 94.1,
+       "shots_near_cover_share": 0.242,
+       "static_share": 0.066,
+       "unit_seconds_near_cover_share": 0.201
+      },
+      "first_kill_seconds": 8.8,
+      "first_shot_seconds": 6.4,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       313.25,
+       0.0
+      ],
+      "friendly_hits": [
+       4,
+       0
+      ],
+      "friendly_kills": [
+       1,
+       0
+      ],
+      "gun_idle_samples": [
+       171,
+       122
+      ],
+      "gun_ready_samples": [
+       175,
+       126
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       426,
+       434
+      ],
+      "hits_by_face": {
+       "front": 550,
+       "rear": 15,
+       "side": 295
+      },
+      "kills": [
+       41,
+       1
+      ],
+      "laser_damage": [
+       859,
+       0
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 1335,
+        "CONTEST": 7956,
+        "COVER_FIRE": 1070,
+        "ENGAGE": 7659,
+        "HOLD": 299,
+        "INVESTIGATE": 303,
+        "RECHARGE": 102,
+        "REGROUP": 901,
+        "RETREAT": 950,
+        "SPOT": 23114,
+        "SUPPRESS": 1421,
+        "TAKE_COVER": 100
+       },
+       {
+        "CLEAR_LANE": 197,
+        "CONTEST": 1621,
+        "ENGAGE": 1628,
+        "FLANK": 15,
+        "INVESTIGATE": 8,
+        "RECHARGE": 43,
+        "REGROUP": 94,
+        "RETREAT": 244,
+        "SPOT": 21146,
+        "SUPPRESS": 456,
+        "TAKE_COVER": 218
+       }
+      ],
+      "pinned_samples": [
+       381,
+       442
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4519.33332681656,
+       1420.1499915123
+      ],
+      "shots": [
+       632,
+       651
+      ],
+      "suppression_samples": [
+       90482,
+       51434
+      ],
+      "suppression_total": [
+       992.545463172221,
+       1274.19954936411
+      ],
+      "weak_spot_hits": [
+       0,
+       1
+      ]
+     },
+     "tanks": {
+      "green": 35,
+      "rust": 42
+     },
+     "tick": 8166,
+     "units_left": {
+      "green": 33,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 41
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.9,
+     "flank_share": 0.05,
+     "hidden_share": 0.492,
+     "hits": 864,
+     "range_mean_m": 39.6,
+     "range_median_m": 37.4,
+     "range_p90_m": 57.5,
+     "reason": "control",
+     "sim_seconds": 136.1,
+     "swap_bases": true,
+     "unit_seconds": 5479,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 3,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5200,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 75,
+      "rust": 0
+     },
+     "duration_seconds": 101.6,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 2
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 2
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 28
+      }
+     },
+     "real_seconds": 62.64,
+     "reason": "elimination",
+     "score": {
+      "green": 42,
+      "rust": 2
+     },
+     "seed": 3,
+     "sim_seconds": 101.6,
+     "speedup": 1.6,
+     "state_hash": "1056dce4a9f2bae7",
+     "stats": {
+      "damage": [
+       6951,
+       573
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        135.2,
+        342.2
+       ],
+       "combat_seconds": 92,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.182,
+       "engaged_distance_median": 77.7,
+       "flank_rear_kill_share": 0.605,
+       "held_line_share": 0.109,
+       "kill_distance_median": 52.8,
+       "kill_distance_p25": 37.1,
+       "kill_distance_p75": 62.8,
+       "kills": {
+        "front": 15,
+        "indirect": 6,
+        "rear": 4,
+        "side": 19
+       },
+       "kills_by_cover_shooters_share": 0.205,
+       "net_advance": [
+        90.6,
+        -62.8
+       ],
+       "off_axis_kill_share": 0.318,
+       "samples": 101,
+       "separation_at_contact": 110.1,
+       "shots_near_cover_share": 0.214,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.203
+      },
+      "first_kill_seconds": 7.9,
+      "first_shot_seconds": 6.3,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       312.989577293396,
+       158.690001010895
+      ],
+      "friendly_hits": [
+       10,
+       10
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       160,
+       108
+      ],
+      "gun_ready_samples": [
+       275,
+       112
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       449,
+       341
+      ],
+      "hits_by_face": {
+       "front": 455,
+       "rear": 22,
+       "side": 313
+      },
+      "kills": [
+       42,
+       2
+      ],
+      "laser_damage": [
+       2,
+       6
+      ],
+      "mortar_damage": [
+       1218,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 8510,
+        "CLEAR_LANE": 725,
+        "CONTEST": 946,
+        "COVER_FIRE": 773,
+        "ENGAGE": 5889,
+        "INVESTIGATE": 119,
+        "RECHARGE": 7,
+        "REGROUP": 1477,
+        "RETREAT": 79,
+        "SHADOW": 505,
+        "SPOT": 10104,
+        "SUPPRESS": 697,
+        "TAKE_COVER": 28
+       },
+       {
+        "CLEAR_LANE": 153,
+        "CONTEST": 1573,
+        "COVER_FIRE": 12,
+        "ENGAGE": 1632,
+        "FLANK": 23,
+        "INVESTIGATE": 7,
+        "RECHARGE": 14,
+        "REGROUP": 74,
+        "RETREAT": 473,
+        "SPOT": 19710,
+        "SUPPRESS": 229,
+        "TAKE_COVER": 218
+       }
+      ],
+      "pinned_samples": [
+       237,
+       895
+      ],
+      "shells_resupplied": [
+       30,
+       0
+      ],
+      "shield_damage": [
+       4367.50847947598,
+       983.116324901581
+      ],
+      "shots": [
+       688,
+       545
+      ],
+      "suppression_samples": [
+       59778,
+       48317
+      ],
+      "suppression_total": [
+       771.333910808774,
+       1640.04341849218
+      ],
+      "weak_spot_hits": [
+       7,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 31,
+      "rust": 42
+     },
+     "tick": 6096,
+     "units_left": {
+      "green": 29,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 42
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.6,
+     "flank_share": 0.05,
+     "hidden_share": 0.457,
+     "hits": 810,
+     "range_mean_m": 38.6,
+     "range_median_m": 36.6,
+     "range_p90_m": 54.5,
+     "reason": "elimination",
+     "sim_seconds": 101.6,
+     "swap_bases": true,
+     "unit_seconds": 3578,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 4,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5190,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 21
+     },
+     "duration_seconds": 53.1,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 2,
+       "tank": 6
+      },
+      "rust": {
+       "burner": 12,
+       "ifv": 5,
+       "lancer": 4,
+       "tank": 5
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "burner": 12,
+       "ifv": 5,
+       "lancer": 4,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 2,
+       "tank": 6
+      }
+     },
+     "real_seconds": 24.96,
+     "reason": "elimination",
+     "score": {
+      "green": 8,
+      "rust": 26
+     },
+     "seed": 4,
+     "sim_seconds": 53.1,
+     "speedup": 2.1,
+     "state_hash": "a0022960f8860614",
+     "stats": {
+      "damage": [
+       2751,
+       6040
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        169.4,
+        76.0
+       ],
+       "combat_seconds": 46,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.235,
+       "engaged_distance_median": 47.3,
+       "flank_rear_kill_share": 0.676,
+       "held_line_share": 0.13,
+       "kill_distance_median": 40.0,
+       "kill_distance_p25": 24.1,
+       "kill_distance_p75": 52.8,
+       "kills": {
+        "front": 11,
+        "indirect": 0,
+        "rear": 1,
+        "side": 22
+       },
+       "kills_by_cover_shooters_share": 0.265,
+       "net_advance": [
+        -4.4,
+        43.2
+       ],
+       "off_axis_kill_share": 0.382,
+       "samples": 53,
+       "separation_at_contact": 93.5,
+       "shots_near_cover_share": 0.186,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.233
+      },
+      "first_kill_seconds": 8.7,
+      "first_shot_seconds": 6.5,
+      "flame_damage": [
+       1373,
+       0
+      ],
+      "friendly_damage": [
+       0.0,
+       67.7999992370605
+      ],
+      "friendly_hits": [
+       0,
+       4
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       80,
+       337
+      ],
+      "gun_ready_samples": [
+       107,
+       340
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       158,
+       192
+      ],
+      "hits_by_face": {
+       "front": 203,
+       "rear": 6,
+       "side": 141
+      },
+      "kills": [
+       8,
+       26
+      ],
+      "laser_damage": [
+       692,
+       256
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 405,
+        "CONTEST": 2256,
+        "COVER_FIRE": 101,
+        "ENGAGE": 2511,
+        "RECHARGE": 58,
+        "REGROUP": 141,
+        "RETREAT": 177,
+        "SUPPRESS": 1066,
+        "TAKE_COVER": 17
+       },
+       {
+        "CLEAR_LANE": 1797,
+        "CONTEST": 2151,
+        "COVER_FIRE": 1293,
+        "ENGAGE": 4195,
+        "INVESTIGATE": 7,
+        "RECHARGE": 91,
+        "REGROUP": 519,
+        "RESUPPLY": 36,
+        "RETREAT": 208,
+        "SUPPRESS": 1725,
+        "TAKE_COVER": 71
+       }
+      ],
+      "pinned_samples": [
+       325,
+       345
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       2558.82499873638,
+       3047.35000610352
+      ],
+      "shots": [
+       231,
+       286
+      ],
+      "suppression_samples": [
+       13527,
+       24250
+      ],
+      "suppression_total": [
+       688.658124565315,
+       874.919976123809
+      ],
+      "weak_spot_hits": [
+       4,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 26,
+      "rust": 27
+     },
+     "tick": 3185,
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 8
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.002,
+     "hidden_share": 0.403,
+     "hits": 354,
+     "range_mean_m": 42.6,
+     "range_median_m": 39.8,
+     "range_p90_m": 73.9,
+     "reason": "elimination",
+     "sim_seconds": 53.1,
+     "swap_bases": false,
+     "unit_seconds": 1775,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 4,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5190,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 10,
+      "rust": 7
+     },
+     "duration_seconds": 43.4,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1,
+       "tank": 2
+      },
+      "rust": {
+       "burner": 12,
+       "ifv": 5,
+       "lancer": 4,
+       "tank": 5
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "burner": 12,
+       "ifv": 5,
+       "lancer": 4,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 1,
+       "tank": 2
+      }
+     },
+     "real_seconds": 21.95,
+     "reason": "elimination",
+     "score": {
+      "green": 3,
+      "rust": 26
+     },
+     "seed": 4,
+     "sim_seconds": 43.4,
+     "speedup": 2.0,
+     "state_hash": "94ae19d95d032b25",
+     "stats": {
+      "damage": [
+       1456,
+       6018
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        129.7,
+        58.0
+       ],
+       "combat_seconds": 37,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.31,
+       "engaged_distance_median": 53.2,
+       "flank_rear_kill_share": 0.655,
+       "held_line_share": 0.27,
+       "kill_distance_median": 40.7,
+       "kill_distance_p25": 31.4,
+       "kill_distance_p75": 53.9,
+       "kills": {
+        "front": 10,
+        "indirect": 0,
+        "rear": 1,
+        "side": 18
+       },
+       "kills_by_cover_shooters_share": 0.414,
+       "net_advance": [
+        -33.5,
+        48.5
+       ],
+       "off_axis_kill_share": 0.172,
+       "samples": 43,
+       "separation_at_contact": 90.5,
+       "shots_near_cover_share": 0.421,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.308
+      },
+      "first_kill_seconds": 7.4,
+      "first_shot_seconds": 6.4,
+      "flame_damage": [
+       223,
+       0
+      ],
+      "friendly_damage": [
+       22.0,
+       126.39999961853
+      ],
+      "friendly_hits": [
+       1,
+       8
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       71,
+       225
+      ],
+      "gun_ready_samples": [
+       79,
+       229
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       114,
+       149
+      ],
+      "hits_by_face": {
+       "front": 155,
+       "rear": 9,
+       "side": 99
+      },
+      "kills": [
+       3,
+       26
+      ],
+      "laser_damage": [
+       583,
+       224
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 312,
+        "CONTEST": 2442,
+        "ENGAGE": 1958,
+        "FLANK": 11,
+        "RECHARGE": 46,
+        "REGROUP": 200,
+        "RETREAT": 66,
+        "SUPPRESS": 783,
+        "TAKE_COVER": 50
+       },
+       {
+        "ADVANCE": 7,
+        "CLEAR_LANE": 1336,
+        "CONTEST": 2369,
+        "COVER_FIRE": 1189,
+        "ENGAGE": 4000,
+        "FLANK": 27,
+        "RECHARGE": 177,
+        "REGROUP": 579,
+        "RETREAT": 213,
+        "SUPPRESS": 1213,
+        "TAKE_COVER": 31
+       }
+      ],
+      "pinned_samples": [
+       271,
+       113
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1434.72500741482,
+       3044.25000190735
+      ],
+      "shots": [
+       150,
+       247
+      ],
+      "suppression_samples": [
+       11801,
+       22347
+      ],
+      "suppression_total": [
+       511.149369452971,
+       464.618373198346
+      ],
+      "weak_spot_hits": [
+       5,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 26,
+      "rust": 27
+     },
+     "tick": 2602,
+     "units_left": {
+      "green": 0,
+      "rust": 24
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 3
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.003,
+     "hidden_share": 0.433,
+     "hits": 272,
+     "range_mean_m": 46.2,
+     "range_median_m": 47.6,
+     "range_p90_m": 71.8,
+     "reason": "elimination",
+     "sim_seconds": 43.4,
+     "swap_bases": true,
+     "unit_seconds": 1597,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 5,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5190,
+      "rust": 5120
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 70
+     },
+     "duration_seconds": 89.6,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 3
+      },
+      "rust": {
+       "ifv": 5,
+       "lancer": 6,
+       "scout": 19,
+       "tank": 5
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 19,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 3
+      }
+     },
+     "real_seconds": 46.95,
+     "reason": "elimination",
+     "score": {
+      "green": 3,
+      "rust": 35
+     },
+     "seed": 5,
+     "sim_seconds": 89.6,
+     "speedup": 1.9,
+     "state_hash": "b27decae3478f538",
+     "stats": {
+      "damage": [
+       1015,
+       6492
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.026,
+       "centroid_travel": [
+        286.8,
+        155.3
+       ],
+       "combat_seconds": 81,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.158,
+       "engaged_distance_median": 76.9,
+       "flank_rear_kill_share": 0.528,
+       "held_line_share": 0.012,
+       "kill_distance_median": 55.7,
+       "kill_distance_p25": 48.4,
+       "kill_distance_p75": 62.9,
+       "kills": {
+        "front": 17,
+        "indirect": 2,
+        "rear": 2,
+        "side": 17
+       },
+       "kills_by_cover_shooters_share": 0.132,
+       "net_advance": [
+        -6.4,
+        94.3
+       ],
+       "off_axis_kill_share": 0.237,
+       "samples": 89,
+       "separation_at_contact": 102.5,
+       "shots_near_cover_share": 0.2,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.19
+      },
+      "first_kill_seconds": 7.7,
+      "first_shot_seconds": 6.3,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       291.650001525879,
+       0.0
+      ],
+      "friendly_hits": [
+       1,
+       0
+      ],
+      "friendly_kills": [
+       1,
+       0
+      ],
+      "gun_idle_samples": [
+       129,
+       120
+      ],
+      "gun_ready_samples": [
+       130,
+       146
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       251,
+       320
+      ],
+      "hits_by_face": {
+       "front": 363,
+       "rear": 4,
+       "side": 204
+      },
+      "kills": [
+       3,
+       35
+      ],
+      "laser_damage": [
+       682,
+       271
+      ],
+      "mortar_damage": [
+       0,
+       378
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 125,
+        "CONTEST": 1601,
+        "COVER_FIRE": 16,
+        "ENGAGE": 961,
+        "RECHARGE": 16,
+        "REGROUP": 111,
+        "RETREAT": 150,
+        "SPOT": 11597,
+        "SUPPRESS": 1445,
+        "TAKE_COVER": 294
+       },
+       {
+        "BOMBARD": 3091,
+        "CLEAR_LANE": 2684,
+        "CONTEST": 2352,
+        "COVER_FIRE": 816,
+        "ENGAGE": 7883,
+        "INVESTIGATE": 447,
+        "RECHARGE": 128,
+        "REGROUP": 1111,
+        "RETREAT": 401,
+        "SHADOW": 213,
+        "SPOT": 3578,
+        "SUPPRESS": 1051,
+        "TAKE_COVER": 18
+       }
+      ],
+      "pinned_samples": [
+       361,
+       81
+      ],
+      "shells_resupplied": [
+       0,
+       9
+      ],
+      "shield_damage": [
+       1630.76000165939,
+       4554.16044153273
+      ],
+      "shots": [
+       378,
+       473
+      ],
+      "suppression_samples": [
+       32712,
+       47606
+      ],
+      "suppression_total": [
+       1015.80184478852,
+       532.045171035702
+      ],
+      "weak_spot_hits": [
+       0,
+       4
+      ]
+     },
+     "tanks": {
+      "green": 36,
+      "rust": 29
+     },
+     "tick": 5376,
+     "units_left": {
+      "green": 0,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 3
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.049,
+     "hidden_share": 0.444,
+     "hits": 572,
+     "range_mean_m": 43.5,
+     "range_median_m": 41.6,
+     "range_p90_m": 68.9,
+     "reason": "elimination",
+     "sim_seconds": 89.6,
+     "swap_bases": false,
+     "unit_seconds": 2735,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 5,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5190,
+      "rust": 5120
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "duration_seconds": 109.2,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 6,
+       "tank": 2
+      },
+      "rust": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 5
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 6,
+       "tank": 2
+      }
+     },
+     "real_seconds": 51.45,
+     "reason": "control",
+     "score": {
+      "green": 8,
+      "rust": 34
+     },
+     "seed": 5,
+     "sim_seconds": 109.2,
+     "speedup": 2.1,
+     "state_hash": "dfcfc13e12fb92e6",
+     "stats": {
+      "damage": [
+       2745,
+       6543
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.024,
+       "centroid_travel": [
+        380.0,
+        163.9
+       ],
+       "combat_seconds": 83,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.143,
+       "engaged_distance_median": 79.7,
+       "flank_rear_kill_share": 0.5,
+       "held_line_share": 0.096,
+       "kill_distance_median": 47.3,
+       "kill_distance_p25": 38.0,
+       "kill_distance_p75": 60.0,
+       "kills": {
+        "front": 20,
+        "indirect": 2,
+        "rear": 3,
+        "side": 17
+       },
+       "kills_by_cover_shooters_share": 0.214,
+       "net_advance": [
+        -52.8,
+        86.8
+       ],
+       "off_axis_kill_share": 0.476,
+       "samples": 109,
+       "separation_at_contact": 101.2,
+       "shots_near_cover_share": 0.245,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.193
+      },
+      "first_kill_seconds": 8.5,
+      "first_shot_seconds": 6.5,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       59.3999996185303,
+       235.599996566772
+      ],
+      "friendly_hits": [
+       5,
+       15
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       113,
+       159
+      ],
+      "gun_ready_samples": [
+       116,
+       201
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       259,
+       210
+      ],
+      "hits_by_face": {
+       "front": 296,
+       "rear": 7,
+       "side": 166
+      },
+      "kills": [
+       8,
+       34
+      ],
+      "laser_damage": [
+       847,
+       78
+      ],
+      "mortar_damage": [
+       0,
+       589
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 181,
+        "CONTEST": 1687,
+        "COVER_FIRE": 129,
+        "ENGAGE": 1548,
+        "FLANK": 20,
+        "INVESTIGATE": 8,
+        "RECHARGE": 117,
+        "REGROUP": 205,
+        "RETREAT": 292,
+        "SPOT": 15001,
+        "SUPPRESS": 1735,
+        "TAKE_COVER": 129
+       },
+       {
+        "BOMBARD": 3807,
+        "CLEAR_LANE": 2030,
+        "CONTEST": 3967,
+        "COVER_FIRE": 672,
+        "ENGAGE": 4997,
+        "FLANK": 23,
+        "INVESTIGATE": 780,
+        "RECHARGE": 230,
+        "REGROUP": 1656,
+        "RETREAT": 832,
+        "SHADOW": 405,
+        "SPOT": 4362,
+        "SUPPRESS": 1042,
+        "TAKE_COVER": 15
+       }
+      ],
+      "pinned_samples": [
+       504,
+       86
+      ],
+      "shells_resupplied": [
+       0,
+       11
+      ],
+      "shield_damage": [
+       2117.55999898911,
+       4096.83333492279
+      ],
+      "shots": [
+       427,
+       354
+      ],
+      "suppression_samples": [
+       42183,
+       49699
+      ],
+      "suppression_total": [
+       941.663631625658,
+       700.955875763045
+      ],
+      "weak_spot_hits": [
+       0,
+       5
+      ]
+     },
+     "tanks": {
+      "green": 36,
+      "rust": 29
+     },
+     "tick": 6552,
+     "units_left": {
+      "green": 2,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 34,
+      "rust": 8
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.5,
+     "flank_share": 0.043,
+     "hidden_share": 0.516,
+     "hits": 489,
+     "range_mean_m": 41.8,
+     "range_median_m": 38.8,
+     "range_p90_m": 69.6,
+     "reason": "control",
+     "sim_seconds": 109.2,
+     "swap_bases": true,
+     "unit_seconds": 3035,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 6,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5130
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 84
+     },
+     "duration_seconds": 107.8,
+     "kills_by_unit": {
+      "green": {},
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 1
+      }
+     },
+     "real_seconds": 68.92,
+     "reason": "elimination",
+     "score": {
+      "green": 0,
+      "rust": 41
+     },
+     "seed": 6,
+     "sim_seconds": 107.8,
+     "speedup": 1.6,
+     "state_hash": "5070694be53f7d12",
+     "stats": {
+      "damage": [
+       672,
+       6930
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        411.8,
+        140.7
+       ],
+       "combat_seconds": 95,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.073,
+       "engaged_distance_median": 78.4,
+       "flank_rear_kill_share": 0.61,
+       "held_line_share": 0.253,
+       "kill_distance_median": 43.8,
+       "kill_distance_p25": 32.7,
+       "kill_distance_p75": 59.3,
+       "kills": {
+        "front": 16,
+        "indirect": 0,
+        "rear": 4,
+        "side": 21
+       },
+       "kills_by_cover_shooters_share": 0.244,
+       "net_advance": [
+        -59.0,
+        78.1
+       ],
+       "off_axis_kill_share": 0.244,
+       "samples": 107,
+       "separation_at_contact": 92.4,
+       "shots_near_cover_share": 0.257,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.22
+      },
+      "first_kill_seconds": 7.5,
+      "first_shot_seconds": 6.3,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       114.44000005722,
+       256.89999961853
+      ],
+      "friendly_hits": [
+       9,
+       5
+      ],
+      "friendly_kills": [
+       1,
+       1
+      ],
+      "gun_idle_samples": [
+       209,
+       152
+      ],
+      "gun_ready_samples": [
+       221,
+       158
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       505,
+       516
+      ],
+      "hits_by_face": {
+       "front": 627,
+       "rear": 26,
+       "side": 368
+      },
+      "kills": [
+       0,
+       41
+      ],
+      "laser_damage": [
+       20,
+       629
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 96,
+        "CONTEST": 1629,
+        "ENGAGE": 1450,
+        "FLANK": 41,
+        "RECHARGE": 94,
+        "RETREAT": 386,
+        "SPOT": 20478,
+        "SUPPRESS": 608,
+        "TAKE_COVER": 423
+       },
+       {
+        "CLEAR_LANE": 1616,
+        "CONTEST": 3823,
+        "COVER_FIRE": 771,
+        "ENGAGE": 7227,
+        "FLANK": 12,
+        "INVESTIGATE": 520,
+        "RECHARGE": 240,
+        "REGROUP": 1164,
+        "RESUPPLY": 18,
+        "RETREAT": 1084,
+        "SPOT": 19241,
+        "SUPPRESS": 1158,
+        "TAKE_COVER": 42
+       }
+      ],
+      "pinned_samples": [
+       417,
+       358
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1593.31999015808,
+       4856.0433164835
+      ],
+      "shots": [
+       867,
+       712
+      ],
+      "suppression_samples": [
+       50516,
+       73923
+      ],
+      "suppression_total": [
+       1763.44352326855,
+       1099.40806646036
+      ],
+      "weak_spot_hits": [
+       3,
+       6
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 35
+     },
+     "tick": 6466,
+     "units_left": {
+      "green": 0,
+      "rust": 34
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.201,
+     "hidden_share": 0.485,
+     "hits": 1035,
+     "range_mean_m": 35.8,
+     "range_median_m": 35.7,
+     "range_p90_m": 54.0,
+     "reason": "elimination",
+     "sim_seconds": 107.8,
+     "swap_bases": false,
+     "unit_seconds": 4650,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 7,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "duration_seconds": 115.4,
+     "kills_by_unit": {
+      "green": {},
+      "rust": {
+       "ifv": 14,
+       "scout": 15
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 15
+      },
+      "rust": {
+       "ifv": 1
+      }
+     },
+     "real_seconds": 61.72,
+     "reason": "control",
+     "score": {
+      "green": 0,
+      "rust": 29
+     },
+     "seed": 7,
+     "sim_seconds": 115.4,
+     "speedup": 1.9,
+     "state_hash": "b90e1d0c280d040f",
+     "stats": {
+      "damage": [
+       355,
+       5227
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        213.1,
+        139.6
+       ],
+       "combat_seconds": 72,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.207,
+       "engaged_distance_median": 79.1,
+       "flank_rear_kill_share": 0.448,
+       "held_line_share": 0.125,
+       "kill_distance_median": 63.6,
+       "kill_distance_p25": 53.9,
+       "kill_distance_p75": 68.9,
+       "kills": {
+        "front": 16,
+        "indirect": 0,
+        "rear": 1,
+        "side": 12
+       },
+       "kills_by_cover_shooters_share": 0.276,
+       "net_advance": [
+        -65.1,
+        82.7
+       ],
+       "off_axis_kill_share": 0.172,
+       "samples": 115,
+       "separation_at_contact": 91.0,
+       "shots_near_cover_share": 0.246,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.161
+      },
+      "first_kill_seconds": 8.8,
+      "first_shot_seconds": 6.6,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       85.8999996185303,
+       548.5
+      ],
+      "friendly_hits": [
+       4,
+       3
+      ],
+      "friendly_kills": [
+       0,
+       1
+      ],
+      "gun_idle_samples": [
+       52,
+       153
+      ],
+      "gun_ready_samples": [
+       53,
+       154
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       170,
+       170
+      ],
+      "hits_by_face": {
+       "front": 233,
+       "rear": 8,
+       "side": 99
+      },
+      "kills": [
+       0,
+       29
+      ],
+      "laser_damage": [
+       0,
+       564
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 153,
+        "CONTEST": 1326,
+        "ENGAGE": 834,
+        "FLANK": 19,
+        "RECHARGE": 60,
+        "REGROUP": 8,
+        "RETREAT": 65,
+        "SPOT": 25016,
+        "SUPPRESS": 129,
+        "TAKE_COVER": 221
+       },
+       {
+        "ADVANCE": 686,
+        "CLEAR_LANE": 2715,
+        "CONTEST": 14543,
+        "COVER_FIRE": 843,
+        "ENGAGE": 7353,
+        "FLANK": 9,
+        "INVESTIGATE": 1662,
+        "RECHARGE": 166,
+        "REGROUP": 1329,
+        "SUPPRESS": 1363,
+        "TAKE_COVER": 165
+       }
+      ],
+      "pinned_samples": [
+       299,
+       168
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1036.87999463081,
+       3262.23333382607
+      ],
+      "shots": [
+       227,
+       281
+      ],
+      "suppression_samples": [
+       55760,
+       61708
+      ],
+      "suppression_total": [
+       718.571676120933,
+       655.989841884735
+      ],
+      "weak_spot_hits": [
+       2,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 27
+     },
+     "tick": 6924,
+     "units_left": {
+      "green": 13,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 1
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.059,
+     "hidden_share": 0.465,
+     "hits": 347,
+     "range_mean_m": 47.5,
+     "range_median_m": 47.6,
+     "range_p90_m": 76.7,
+     "reason": "control",
+     "sim_seconds": 115.4,
+     "swap_bases": false,
+     "unit_seconds": 4126,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 6,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5130
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "duration_seconds": 129.0,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 3
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 27
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 27
+      },
+      "rust": {
+       "ifv": 3
+      }
+     },
+     "real_seconds": 70.55,
+     "reason": "control",
+     "score": {
+      "green": 3,
+      "rust": 41
+     },
+     "seed": 6,
+     "sim_seconds": 129.0,
+     "speedup": 1.8,
+     "state_hash": "3e0438dd57c57e6b",
+     "stats": {
+      "damage": [
+       815,
+       6877
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        500.0,
+        258.2
+       ],
+       "combat_seconds": 93,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.159,
+       "engaged_distance_median": 78.8,
+       "flank_rear_kill_share": 0.545,
+       "held_line_share": 0.215,
+       "kill_distance_median": 45.9,
+       "kill_distance_p25": 35.6,
+       "kill_distance_p75": 58.8,
+       "kills": {
+        "front": 20,
+        "indirect": 0,
+        "rear": 3,
+        "side": 21
+       },
+       "kills_by_cover_shooters_share": 0.25,
+       "net_advance": [
+        153.4,
+        32.6
+       ],
+       "off_axis_kill_share": 0.386,
+       "samples": 129,
+       "separation_at_contact": 94.7,
+       "shots_near_cover_share": 0.222,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.264
+      },
+      "first_kill_seconds": 7.3,
+      "first_shot_seconds": 6.3,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       66.8999996185303,
+       70.1999988555908
+      ],
+      "friendly_hits": [
+       5,
+       4
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       99,
+       199
+      ],
+      "gun_ready_samples": [
+       104,
+       202
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       358,
+       384
+      ],
+      "hits_by_face": {
+       "front": 413,
+       "rear": 16,
+       "side": 313
+      },
+      "kills": [
+       3,
+       41
+      ],
+      "laser_damage": [
+       0,
+       827
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 79,
+        "CONTEST": 1697,
+        "COVER_FIRE": 43,
+        "ENGAGE": 1608,
+        "RECHARGE": 17,
+        "RETREAT": 231,
+        "SPOT": 20468,
+        "SUPPRESS": 181,
+        "TAKE_COVER": 152
+       },
+       {
+        "CLEAR_LANE": 1038,
+        "CONTEST": 4733,
+        "COVER_FIRE": 1038,
+        "ENGAGE": 7842,
+        "FLANK": 38,
+        "INVESTIGATE": 87,
+        "RECHARGE": 7,
+        "REGROUP": 2249,
+        "RETREAT": 46,
+        "SPOT": 23155,
+        "SUPPRESS": 1559,
+        "TAKE_COVER": 21
+       }
+      ],
+      "pinned_samples": [
+       351,
+       198
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1300.78999567032,
+       4583.3666601181
+      ],
+      "shots": [
+       538,
+       559
+      ],
+      "suppression_samples": [
+       49058,
+       83684
+      ],
+      "suppression_total": [
+       1286.81922470277,
+       789.700996531267
+      ],
+      "weak_spot_hits": [
+       3,
+       6
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 35
+     },
+     "tick": 7740,
+     "units_left": {
+      "green": 1,
+      "rust": 32
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 3
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.073,
+     "hidden_share": 0.455,
+     "hits": 751,
+     "range_mean_m": 40.1,
+     "range_median_m": 38.5,
+     "range_p90_m": 60.4,
+     "reason": "control",
+     "sim_seconds": 129.0,
+     "swap_bases": true,
+     "unit_seconds": 5358,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 7,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "duration_seconds": 112.5,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 22
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 22
+      },
+      "rust": {
+       "ifv": 1
+      }
+     },
+     "real_seconds": 55.9,
+     "reason": "control",
+     "score": {
+      "green": 1,
+      "rust": 36
+     },
+     "seed": 7,
+     "sim_seconds": 112.5,
+     "speedup": 2.0,
+     "state_hash": "92fcdf876706088a",
+     "stats": {
+      "damage": [
+       279,
+       6160
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        249.0,
+        130.6
+       ],
+       "combat_seconds": 57,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.135,
+       "engaged_distance_median": 81.7,
+       "flank_rear_kill_share": 0.324,
+       "held_line_share": 0.158,
+       "kill_distance_median": 56.0,
+       "kill_distance_p25": 45.3,
+       "kill_distance_p75": 63.9,
+       "kills": {
+        "front": 25,
+        "indirect": 0,
+        "rear": 0,
+        "side": 12
+       },
+       "kills_by_cover_shooters_share": 0.324,
+       "net_advance": [
+        -49.4,
+        72.2
+       ],
+       "off_axis_kill_share": 0.297,
+       "samples": 112,
+       "separation_at_contact": 93.0,
+       "shots_near_cover_share": 0.293,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.174
+      },
+      "first_kill_seconds": 7.3,
+      "first_shot_seconds": 6.4,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       56.6999988555908,
+       13.5
+      ],
+      "friendly_hits": [
+       3,
+       1
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       47,
+       188
+      ],
+      "gun_ready_samples": [
+       52,
+       190
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       218,
+       127
+      ],
+      "hits_by_face": {
+       "front": 258,
+       "rear": 11,
+       "side": 76
+      },
+      "kills": [
+       1,
+       36
+      ],
+      "laser_damage": [
+       0,
+       76
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 100,
+        "CONTEST": 1284,
+        "ENGAGE": 895,
+        "RECHARGE": 97,
+        "REGROUP": 51,
+        "RETREAT": 9,
+        "SPOT": 22691,
+        "SUPPRESS": 384,
+        "TAKE_COVER": 45
+       },
+       {
+        "ADVANCE": 286,
+        "CLEAR_LANE": 2727,
+        "CONTEST": 14110,
+        "COVER_FIRE": 996,
+        "ENGAGE": 6808,
+        "FLANK": 4,
+        "HOLD": 132,
+        "INVESTIGATE": 1156,
+        "RECHARGE": 7,
+        "REGROUP": 2205,
+        "RETREAT": 11,
+        "SUPPRESS": 928,
+        "TAKE_COVER": 69
+       }
+      ],
+      "pinned_samples": [
+       141,
+       249
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1067.31999278069,
+       3392.44999885559
+      ],
+      "shots": [
+       340,
+       202
+      ],
+      "suppression_samples": [
+       51217,
+       58919
+      ],
+      "suppression_total": [
+       462.724012659057,
+       672.500060618033
+      ],
+      "weak_spot_hits": [
+       3,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 27
+     },
+     "tick": 6750,
+     "units_left": {
+      "green": 6,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 1
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.026,
+     "hidden_share": 0.475,
+     "hits": 349,
+     "range_mean_m": 40.7,
+     "range_median_m": 38.1,
+     "range_p90_m": 62.0,
+     "reason": "control",
+     "sim_seconds": 112.5,
+     "swap_bases": true,
+     "unit_seconds": 3789,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 8,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5160,
+      "rust": 5140
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 82
+     },
+     "duration_seconds": 108.4,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 3,
+       "tank": 3
+      },
+      "rust": {
+       "artillery": 10,
+       "ifv": 5,
+       "scout": 11,
+       "tank": 5
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 10,
+       "ifv": 5,
+       "scout": 11,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 4,
+       "tank": 3
+      }
+     },
+     "real_seconds": 45.53,
+     "reason": "elimination",
+     "score": {
+      "green": 6,
+      "rust": 31
+     },
+     "seed": 8,
+     "sim_seconds": 108.4,
+     "speedup": 2.4,
+     "state_hash": "a7bc383133fc9cdd",
+     "stats": {
+      "damage": [
+       1715,
+       6140
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.027,
+       "centroid_travel": [
+        270.6,
+        150.9
+       ],
+       "combat_seconds": 83,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.162,
+       "engaged_distance_median": 80.0,
+       "flank_rear_kill_share": 0.576,
+       "held_line_share": 0.157,
+       "kill_distance_median": 50.5,
+       "kill_distance_p25": 37.1,
+       "kill_distance_p75": 61.7,
+       "kills": {
+        "front": 14,
+        "indirect": 4,
+        "rear": 1,
+        "side": 18
+       },
+       "kills_by_cover_shooters_share": 0.054,
+       "net_advance": [
+        -52.5,
+        82.6
+       ],
+       "off_axis_kill_share": 0.216,
+       "samples": 108,
+       "separation_at_contact": 117.7,
+       "shots_near_cover_share": 0.261,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.174
+      },
+      "first_kill_seconds": 7.7,
+      "first_shot_seconds": 6.1,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       32.3999996185303,
+       399.517974853516
+      ],
+      "friendly_hits": [
+       2,
+       2
+      ],
+      "friendly_kills": [
+       0,
+       1
+      ],
+      "gun_idle_samples": [
+       174,
+       185
+      ],
+      "gun_ready_samples": [
+       335,
+       233
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       183,
+       298
+      ],
+      "hits_by_face": {
+       "front": 264,
+       "rear": 24,
+       "side": 193
+      },
+      "kills": [
+       6,
+       31
+      ],
+      "laser_damage": [
+       0,
+       232
+      ],
+      "mortar_damage": [
+       1027,
+       163
+      ],
+      "options": [
+       {
+        "BOMBARD": 4768,
+        "CLEAR_LANE": 39,
+        "CONTEST": 746,
+        "COVER_FIRE": 26,
+        "ENGAGE": 759,
+        "RECHARGE": 34,
+        "REGROUP": 234,
+        "RETREAT": 54,
+        "SHADOW": 248,
+        "SPOT": 8563,
+        "SUPPRESS": 237,
+        "TAKE_COVER": 83
+       },
+       {
+        "BOMBARD": 4022,
+        "CLEAR_LANE": 1080,
+        "CONTEST": 6674,
+        "COVER_FIRE": 509,
+        "ENGAGE": 5667,
+        "FLANK": 15,
+        "HOLD": 6,
+        "INVESTIGATE": 438,
+        "RECHARGE": 126,
+        "REGROUP": 1820,
+        "RESUPPLY": 2,
+        "RETREAT": 74,
+        "SHADOW": 695,
+        "SPOT": 3527,
+        "SUPPRESS": 882,
+        "TAKE_COVER": 138
+       }
+      ],
+      "pinned_samples": [
+       438,
+       564
+      ],
+      "shells_resupplied": [
+       24,
+       10
+      ],
+      "shield_damage": [
+       2752.80019879341,
+       3368.3677213192
+      ],
+      "shots": [
+       267,
+       446
+      ],
+      "suppression_samples": [
+       31659,
+       51423
+      ],
+      "suppression_total": [
+       897.88460676497,
+       1191.88507139172
+      ],
+      "weak_spot_hits": [
+       2,
+       12
+      ]
+     },
+     "tanks": {
+      "green": 31,
+      "rust": 29
+     },
+     "tick": 6507,
+     "units_left": {
+      "green": 0,
+      "rust": 22
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 7
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.1,
+     "flank_share": 0.083,
+     "hidden_share": 0.651,
+     "hits": 485,
+     "range_mean_m": 38.3,
+     "range_median_m": 34.4,
+     "range_p90_m": 66.4,
+     "reason": "elimination",
+     "sim_seconds": 108.4,
+     "swap_bases": true,
+     "unit_seconds": 2597,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 8,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5160,
+      "rust": 5140
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 76
+     },
+     "duration_seconds": 113.1,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 5,
+       "tank": 3
+      },
+      "rust": {
+       "artillery": 10,
+       "ifv": 5,
+       "scout": 11,
+       "tank": 5
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 10,
+       "ifv": 5,
+       "scout": 11,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 5,
+       "tank": 3
+      }
+     },
+     "real_seconds": 48.76,
+     "reason": "elimination",
+     "score": {
+      "green": 8,
+      "rust": 31
+     },
+     "seed": 8,
+     "sim_seconds": 113.1,
+     "speedup": 2.3,
+     "state_hash": "a43299483e4bc7c0",
+     "stats": {
+      "damage": [
+       2551,
+       6032
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        275.0,
+        158.0
+       ],
+       "combat_seconds": 93,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.128,
+       "engaged_distance_median": 81.3,
+       "flank_rear_kill_share": 0.486,
+       "held_line_share": 0.258,
+       "kill_distance_median": 43.6,
+       "kill_distance_p25": 36.1,
+       "kill_distance_p75": 55.7,
+       "kills": {
+        "front": 18,
+        "indirect": 4,
+        "rear": 2,
+        "side": 15
+       },
+       "kills_by_cover_shooters_share": 0.282,
+       "net_advance": [
+        -57.5,
+        70.3
+       ],
+       "off_axis_kill_share": 0.436,
+       "samples": 113,
+       "separation_at_contact": 115.7,
+       "shots_near_cover_share": 0.169,
+       "static_share": 0.011,
+       "unit_seconds_near_cover_share": 0.175
+      },
+      "first_kill_seconds": 8.3,
+      "first_shot_seconds": 6.4,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       214.502154827118,
+       164.910329818726
+      ],
+      "friendly_hits": [
+       7,
+       2
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       238,
+       191
+      ],
+      "gun_ready_samples": [
+       428,
+       271
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       280,
+       402
+      ],
+      "hits_by_face": {
+       "front": 350,
+       "rear": 49,
+       "side": 283
+      },
+      "kills": [
+       8,
+       31
+      ],
+      "laser_damage": [
+       84,
+       479
+      ],
+      "mortar_damage": [
+       1159,
+       794
+      ],
+      "options": [
+       {
+        "BOMBARD": 5154,
+        "CLEAR_LANE": 104,
+        "CONTEST": 708,
+        "COVER_FIRE": 160,
+        "ENGAGE": 610,
+        "RECHARGE": 72,
+        "REGROUP": 419,
+        "RETREAT": 92,
+        "SHADOW": 295,
+        "SPOT": 9529,
+        "SUPPRESS": 141,
+        "TAKE_COVER": 191
+       },
+       {
+        "BOMBARD": 4455,
+        "CLEAR_LANE": 854,
+        "CONTEST": 5705,
+        "COVER_FIRE": 623,
+        "ENGAGE": 4984,
+        "FLANK": 26,
+        "HOLD": 3,
+        "INVESTIGATE": 29,
+        "RECHARGE": 223,
+        "REGROUP": 1728,
+        "RETREAT": 1303,
+        "SHADOW": 651,
+        "SPOT": 3586,
+        "SUPPRESS": 1361,
+        "TAKE_COVER": 179
+       }
+      ],
+      "pinned_samples": [
+       722,
+       894
+      ],
+      "shells_resupplied": [
+       33,
+       11
+      ],
+      "shield_damage": [
+       3843.1928164959,
+       3383.06019192934
+      ],
+      "shots": [
+       429,
+       650
+      ],
+      "suppression_samples": [
+       35026,
+       51495
+      ],
+      "suppression_total": [
+       1455.94641814355,
+       1649.14161576833
+      ],
+      "weak_spot_hits": [
+       3,
+       12
+      ]
+     },
+     "tanks": {
+      "green": 31,
+      "rust": 29
+     },
+     "tick": 6785,
+     "units_left": {
+      "green": 0,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 8
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.046,
+     "hidden_share": 0.598,
+     "hits": 691,
+     "range_mean_m": 39.5,
+     "range_median_m": 35.9,
+     "range_p90_m": 64.9,
+     "reason": "elimination",
+     "sim_seconds": 113.1,
+     "swap_bases": false,
+     "unit_seconds": 2622,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 9,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5150,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 23,
+      "rust": 3
+     },
+     "duration_seconds": 72.1,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 5,
+       "tank": 14
+      },
+      "rust": {
+       "ifv": 5,
+       "lancer": 6,
+       "tank": 16
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 5,
+       "lancer": 6,
+       "tank": 16
+      },
+      "rust": {
+       "ifv": 5,
+       "tank": 14
+      }
+     },
+     "real_seconds": 30.68,
+     "reason": "elimination",
+     "score": {
+      "green": 19,
+      "rust": 27
+     },
+     "seed": 9,
+     "sim_seconds": 72.1,
+     "speedup": 2.3,
+     "state_hash": "21f82a072dbfaa82",
+     "stats": {
+      "damage": [
+       6035,
+       7100
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        143.2,
+        91.2
+       ],
+       "combat_seconds": 66,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.217,
+       "engaged_distance_median": 48.8,
+       "flank_rear_kill_share": 0.587,
+       "held_line_share": 0.348,
+       "kill_distance_median": 45.9,
+       "kill_distance_p25": 36.1,
+       "kill_distance_p75": 57.3,
+       "kills": {
+        "front": 19,
+        "indirect": 0,
+        "rear": 5,
+        "side": 22
+       },
+       "kills_by_cover_shooters_share": 0.326,
+       "net_advance": [
+        -3.3,
+        26.9
+       ],
+       "off_axis_kill_share": 0.196,
+       "samples": 72,
+       "separation_at_contact": 93.9,
+       "shots_near_cover_share": 0.273,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.272
+      },
+      "first_kill_seconds": 7.7,
+      "first_shot_seconds": 6.6,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       18.8999996185303,
+       416.75
+      ],
+      "friendly_hits": [
+       1,
+       8
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       260,
+       213
+      ],
+      "gun_ready_samples": [
+       263,
+       216
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       227,
+       252
+      ],
+      "hits_by_face": {
+       "front": 299,
+       "rear": 13,
+       "side": 167
+      },
+      "kills": [
+       19,
+       27
+      ],
+      "laser_damage": [
+       881,
+       944
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 9,
+        "CLEAR_LANE": 1041,
+        "CONTEST": 2148,
+        "COVER_FIRE": 977,
+        "ENGAGE": 2649,
+        "RECHARGE": 299,
+        "REGROUP": 188,
+        "RESUPPLY": 8,
+        "RETREAT": 654,
+        "SUPPRESS": 2056,
+        "TAKE_COVER": 91
+       },
+       {
+        "CLEAR_LANE": 652,
+        "CONTEST": 2446,
+        "COVER_FIRE": 1207,
+        "ENGAGE": 2690,
+        "FLANK": 8,
+        "RECHARGE": 169,
+        "REGROUP": 302,
+        "RESUPPLY": 20,
+        "RETREAT": 1137,
+        "SUPPRESS": 2246,
+        "TAKE_COVER": 81
+       }
+      ],
+      "pinned_samples": [
+       454,
+       458
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4755.83334761858,
+       5473.23334026337
+      ],
+      "shots": [
+       321,
+       394
+      ],
+      "suppression_samples": [
+       20305,
+       21961
+      ],
+      "suppression_total": [
+       976.837927307862,
+       1052.77401117977
+      ],
+      "weak_spot_hits": [
+       0,
+       3
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 27
+     },
+     "tick": 4327,
+     "units_left": {
+      "green": 0,
+      "rust": 8
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 19
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.002,
+     "hidden_share": 0.418,
+     "hits": 488,
+     "range_mean_m": 50.2,
+     "range_median_m": 49.7,
+     "range_p90_m": 76.1,
+     "reason": "elimination",
+     "sim_seconds": 72.1,
+     "swap_bases": false,
+     "unit_seconds": 2000,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 9,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5150,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 4,
+      "rust": 21
+     },
+     "duration_seconds": 55.6,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 5,
+       "lancer": 5,
+       "tank": 17
+      },
+      "rust": {
+       "ifv": 3,
+       "tank": 9
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 3,
+       "tank": 9
+      },
+      "rust": {
+       "ifv": 5,
+       "lancer": 5,
+       "tank": 17
+      }
+     },
+     "real_seconds": 26.38,
+     "reason": "elimination",
+     "score": {
+      "green": 27,
+      "rust": 12
+     },
+     "seed": 9,
+     "sim_seconds": 55.6,
+     "speedup": 2.1,
+     "state_hash": "afc42e367957f589",
+     "stats": {
+      "damage": [
+       7155,
+       4361
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        71.2,
+        131.8
+       ],
+       "combat_seconds": 49,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.256,
+       "engaged_distance_median": 48.3,
+       "flank_rear_kill_share": 0.59,
+       "held_line_share": 0.265,
+       "kill_distance_median": 41.7,
+       "kill_distance_p25": 35.7,
+       "kill_distance_p75": 47.4,
+       "kills": {
+        "front": 16,
+        "indirect": 0,
+        "rear": 2,
+        "side": 21
+       },
+       "kills_by_cover_shooters_share": 0.282,
+       "net_advance": [
+        41.6,
+        -12.2
+       ],
+       "off_axis_kill_share": 0.205,
+       "samples": 55,
+       "separation_at_contact": 92.3,
+       "shots_near_cover_share": 0.221,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.236
+      },
+      "first_kill_seconds": 8.9,
+      "first_shot_seconds": 6.9,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       65.2999992370605,
+       58.5
+      ],
+      "friendly_hits": [
+       3,
+       4
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       267,
+       189
+      ],
+      "gun_ready_samples": [
+       274,
+       191
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       206,
+       231
+      ],
+      "hits_by_face": {
+       "front": 282,
+       "rear": 6,
+       "side": 149
+      },
+      "kills": [
+       27,
+       12
+      ],
+      "laser_damage": [
+       599,
+       747
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 1181,
+        "CONTEST": 2445,
+        "COVER_FIRE": 1088,
+        "ENGAGE": 3506,
+        "FLANK": 10,
+        "INVESTIGATE": 6,
+        "RECHARGE": 288,
+        "REGROUP": 277,
+        "RETREAT": 861,
+        "SUPPRESS": 1700,
+        "TAKE_COVER": 30
+       },
+       {
+        "CLEAR_LANE": 646,
+        "CONTEST": 1951,
+        "COVER_FIRE": 416,
+        "ENGAGE": 2699,
+        "RECHARGE": 215,
+        "REGROUP": 321,
+        "RETREAT": 114,
+        "SUPPRESS": 1727,
+        "TAKE_COVER": 40
+       }
+      ],
+      "pinned_samples": [
+       315,
+       307
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4033.75000095367,
+       3508.76667165756
+      ],
+      "shots": [
+       325,
+       327
+      ],
+      "suppression_samples": [
+       22861,
+       16310
+      ],
+      "suppression_total": [
+       933.862841011993,
+       780.325197729723
+      ],
+      "weak_spot_hits": [
+       1,
+       1
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 27
+     },
+     "tick": 3335,
+     "units_left": {
+      "green": 15,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 12,
+      "rust": 27
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.01,
+     "hidden_share": 0.392,
+     "hits": 444,
+     "range_mean_m": 47.0,
+     "range_median_m": 42.7,
+     "range_p90_m": 77.9,
+     "reason": "elimination",
+     "sim_seconds": 55.6,
+     "swap_bases": true,
+     "unit_seconds": 1828,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 10,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5170,
+      "rust": 5140
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 86
+     },
+     "duration_seconds": 121.2,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 7,
+       "tank": 5
+      },
+      "rust": {
+       "ifv": 6,
+       "lancer": 5,
+       "scout": 17,
+       "tank": 6
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 6
+      },
+      "rust": {
+       "ifv": 7,
+       "tank": 5
+      }
+     },
+     "real_seconds": 49.67,
+     "reason": "elimination",
+     "score": {
+      "green": 12,
+      "rust": 34
+     },
+     "seed": 10,
+     "sim_seconds": 121.2,
+     "speedup": 2.4,
+     "state_hash": "06309d56d953ae88",
+     "stats": {
+      "damage": [
+       3304,
+       6500
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.022,
+       "centroid_travel": [
+        464.2,
+        195.9
+       ],
+       "combat_seconds": 95,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.261,
+       "engaged_distance_median": 79.6,
+       "flank_rear_kill_share": 0.591,
+       "held_line_share": 0.179,
+       "kill_distance_median": 50.3,
+       "kill_distance_p25": 39.3,
+       "kill_distance_p75": 65.3,
+       "kills": {
+        "front": 18,
+        "indirect": 2,
+        "rear": 2,
+        "side": 24
+       },
+       "kills_by_cover_shooters_share": 0.348,
+       "net_advance": [
+        99.7,
+        47.3
+       ],
+       "off_axis_kill_share": 0.37,
+       "samples": 121,
+       "separation_at_contact": 102.6,
+       "shots_near_cover_share": 0.339,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.219
+      },
+      "first_kill_seconds": 8.2,
+      "first_shot_seconds": 6.6,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       320.0,
+       13.5
+      ],
+      "friendly_hits": [
+       1,
+       1
+      ],
+      "friendly_kills": [
+       1,
+       0
+      ],
+      "gun_idle_samples": [
+       148,
+       136
+      ],
+      "gun_ready_samples": [
+       151,
+       227
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       255,
+       315
+      ],
+      "hits_by_face": {
+       "front": 332,
+       "rear": 14,
+       "side": 224
+      },
+      "kills": [
+       12,
+       34
+      ],
+      "laser_damage": [
+       1158,
+       846
+      ],
+      "mortar_damage": [
+       0,
+       305
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 209,
+        "CONTEST": 1718,
+        "COVER_FIRE": 576,
+        "ENGAGE": 1888,
+        "INVESTIGATE": 1,
+        "RECHARGE": 119,
+        "REGROUP": 76,
+        "RETREAT": 95,
+        "SPOT": 13087,
+        "SUPPRESS": 1052,
+        "TAKE_COVER": 135
+       },
+       {
+        "ADVANCE": 9,
+        "BOMBARD": 4924,
+        "CLEAR_LANE": 412,
+        "CONTEST": 2576,
+        "COVER_FIRE": 430,
+        "ENGAGE": 5222,
+        "HOLD": 24,
+        "INVESTIGATE": 409,
+        "RECHARGE": 97,
+        "REGROUP": 1724,
+        "RESUPPLY": 15,
+        "RETREAT": 594,
+        "SHADOW": 727,
+        "SPOT": 4816,
+        "SUPPRESS": 1354,
+        "TAKE_COVER": 29
+       }
+      ],
+      "pinned_samples": [
+       596,
+       128
+      ],
+      "shells_resupplied": [
+       0,
+       18
+      ],
+      "shield_damage": [
+       1917.44999957085,
+       4439.92205548286
+      ],
+      "shots": [
+       363,
+       490
+      ],
+      "suppression_samples": [
+       37987,
+       46787
+      ],
+      "suppression_total": [
+       1156.19384053931,
+       567.422093156081
+      ],
+      "weak_spot_hits": [
+       0,
+       6
+      ]
+     },
+     "tanks": {
+      "green": 35,
+      "rust": 29
+     },
+     "tick": 7273,
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 12
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.074,
+     "hidden_share": 0.574,
+     "hits": 572,
+     "range_mean_m": 46.5,
+     "range_median_m": 43.6,
+     "range_p90_m": 72.5,
+     "reason": "elimination",
+     "sim_seconds": 121.2,
+     "swap_bases": false,
+     "unit_seconds": 3068,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 10,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5170,
+      "rust": 5140
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 80
+     },
+     "duration_seconds": 99.2,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 4,
+       "tank": 4
+      },
+      "rust": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 6
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 6,
+       "lancer": 6,
+       "scout": 17,
+       "tank": 6
+      },
+      "rust": {
+       "ifv": 4,
+       "tank": 5
+      }
+     },
+     "real_seconds": 49.88,
+     "reason": "elimination",
+     "score": {
+      "green": 8,
+      "rust": 35
+     },
+     "seed": 10,
+     "sim_seconds": 99.2,
+     "speedup": 2.0,
+     "state_hash": "8ceb55315b558c63",
+     "stats": {
+      "damage": [
+       2741,
+       6700
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        376.0,
+        155.6
+       ],
+       "combat_seconds": 89,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.209,
+       "engaged_distance_median": 78.3,
+       "flank_rear_kill_share": 0.634,
+       "held_line_share": 0.101,
+       "kill_distance_median": 47.6,
+       "kill_distance_p25": 33.0,
+       "kill_distance_p75": 63.2,
+       "kills": {
+        "front": 15,
+        "indirect": 2,
+        "rear": 1,
+        "side": 25
+       },
+       "kills_by_cover_shooters_share": 0.209,
+       "net_advance": [
+        32.0,
+        86.6
+       ],
+       "off_axis_kill_share": 0.465,
+       "samples": 99,
+       "separation_at_contact": 103.0,
+       "shots_near_cover_share": 0.253,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.236
+      },
+      "first_kill_seconds": 8.5,
+      "first_shot_seconds": 6.5,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       49.0,
+       516.699998855591
+      ],
+      "friendly_hits": [
+       4,
+       11
+      ],
+      "friendly_kills": [
+       0,
+       1
+      ],
+      "gun_idle_samples": [
+       93,
+       161
+      ],
+      "gun_ready_samples": [
+       96,
+       215
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       254,
+       410
+      ],
+      "hits_by_face": {
+       "front": 383,
+       "rear": 6,
+       "side": 275
+      },
+      "kills": [
+       8,
+       35
+      ],
+      "laser_damage": [
+       603,
+       640
+      ],
+      "mortar_damage": [
+       0,
+       511
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 263,
+        "CONTEST": 1691,
+        "COVER_FIRE": 226,
+        "ENGAGE": 1606,
+        "RECHARGE": 93,
+        "REGROUP": 208,
+        "RETREAT": 241,
+        "SPOT": 13318,
+        "SUPPRESS": 1559,
+        "TAKE_COVER": 270
+       },
+       {
+        "BOMBARD": 4193,
+        "CLEAR_LANE": 1141,
+        "CONTEST": 2111,
+        "COVER_FIRE": 522,
+        "ENGAGE": 4880,
+        "FLANK": 3,
+        "INVESTIGATE": 379,
+        "RECHARGE": 234,
+        "REGROUP": 1587,
+        "RESUPPLY": 12,
+        "RETREAT": 514,
+        "SHADOW": 318,
+        "SPOT": 3909,
+        "SUPPRESS": 1764,
+        "TAKE_COVER": 26
+       }
+      ],
+      "pinned_samples": [
+       858,
+       113
+      ],
+      "shells_resupplied": [
+       0,
+       16
+      ],
+      "shield_damage": [
+       2581.2166659832,
+       4255.35141915083
+      ],
+      "shots": [
+       412,
+       640
+      ],
+      "suppression_samples": [
+       39028,
+       43243
+      ],
+      "suppression_total": [
+       1465.25383628222,
+       680.866842750012
+      ],
+      "weak_spot_hits": [
+       0,
+       2
+      ]
+     },
+     "tanks": {
+      "green": 35,
+      "rust": 29
+     },
+     "tick": 5952,
+     "units_left": {
+      "green": 0,
+      "rust": 20
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 9
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.07,
+     "hidden_share": 0.505,
+     "hits": 679,
+     "range_mean_m": 44.9,
+     "range_median_m": 44.2,
+     "range_p90_m": 71.0,
+     "reason": "elimination",
+     "sim_seconds": 99.2,
+     "swap_bases": true,
+     "unit_seconds": 2748,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 11,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5150,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 0
+     },
+     "duration_seconds": 118.5,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 23
+      },
+      "rust": {
+       "ifv": 1
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 1
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 23
+      }
+     },
+     "real_seconds": 61.47,
+     "reason": "control",
+     "score": {
+      "green": 37,
+      "rust": 1
+     },
+     "seed": 11,
+     "sim_seconds": 118.5,
+     "speedup": 1.9,
+     "state_hash": "d27484e042c6deaa",
+     "stats": {
+      "damage": [
+       6298,
+       558
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.053,
+       "centroid_travel": [
+        244.8,
+        326.8
+       ],
+       "combat_seconds": 77,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.289,
+       "engaged_distance_median": 76.8,
+       "flank_rear_kill_share": 0.553,
+       "held_line_share": 0.091,
+       "kill_distance_median": 55.5,
+       "kill_distance_p25": 40.4,
+       "kill_distance_p75": 64.9,
+       "kills": {
+        "front": 17,
+        "indirect": 0,
+        "rear": 3,
+        "side": 18
+       },
+       "kills_by_cover_shooters_share": 0.263,
+       "net_advance": [
+        52.7,
+        -41.1
+       ],
+       "off_axis_kill_share": 0.368,
+       "samples": 118,
+       "separation_at_contact": 91.5,
+       "shots_near_cover_share": 0.227,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.193
+      },
+      "first_kill_seconds": 7.5,
+      "first_shot_seconds": 6.5,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       183.599998474121,
+       11.0
+      ],
+      "friendly_hits": [
+       12,
+       1
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       256,
+       52
+      ],
+      "gun_ready_samples": [
+       257,
+       53
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       278,
+       230
+      ],
+      "hits_by_face": {
+       "front": 280,
+       "rear": 4,
+       "side": 224
+      },
+      "kills": [
+       37,
+       1
+      ],
+      "laser_damage": [
+       753,
+       0
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 183,
+        "CLEAR_LANE": 5168,
+        "CONTEST": 8680,
+        "COVER_FIRE": 883,
+        "ENGAGE": 10675,
+        "FLANK": 34,
+        "INVESTIGATE": 1354,
+        "REGROUP": 1746,
+        "RETREAT": 402,
+        "SUPPRESS": 1696,
+        "TAKE_COVER": 73
+       },
+       {
+        "CLEAR_LANE": 119,
+        "CONTEST": 1218,
+        "COVER_FIRE": 67,
+        "ENGAGE": 1077,
+        "RECHARGE": 50,
+        "REGROUP": 30,
+        "RETREAT": 63,
+        "SPOT": 19879,
+        "SUPPRESS": 128,
+        "TAKE_COVER": 121
+       }
+      ],
+      "pinned_samples": [
+       318,
+       514
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3774.15000462532,
+       1081.24999547005
+      ],
+      "shots": [
+       491,
+       275
+      ],
+      "suppression_samples": [
+       61842,
+       45588
+      ],
+      "suppression_total": [
+       690.341767212985,
+       938.575739520706
+      ],
+      "weak_spot_hits": [
+       2,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 42
+     },
+     "tick": 7110,
+     "units_left": {
+      "green": 26,
+      "rust": 5
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 37
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.062,
+     "hidden_share": 0.502,
+     "hits": 521,
+     "range_mean_m": 43.7,
+     "range_median_m": 44.7,
+     "range_p90_m": 69.2,
+     "reason": "control",
+     "sim_seconds": 118.5,
+     "swap_bases": false,
+     "unit_seconds": 3967,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 11,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5150,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 50,
+      "rust": 0
+     },
+     "duration_seconds": 74.2,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 28
+      },
+      "rust": {
+       "tank": 1
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "tank": 1
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 28
+      }
+     },
+     "real_seconds": 44.33,
+     "reason": "elimination",
+     "score": {
+      "green": 42,
+      "rust": 1
+     },
+     "seed": 11,
+     "sim_seconds": 74.2,
+     "speedup": 1.7,
+     "state_hash": "4d71114bed3059e4",
+     "stats": {
+      "damage": [
+       7000,
+       400
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.023,
+       "centroid_travel": [
+        128.7,
+        364.4
+       ],
+       "combat_seconds": 66,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.233,
+       "engaged_distance_median": 73.3,
+       "flank_rear_kill_share": 0.581,
+       "held_line_share": 0.0,
+       "kill_distance_median": 53.8,
+       "kill_distance_p25": 38.7,
+       "kill_distance_p75": 63.1,
+       "kills": {
+        "front": 18,
+        "indirect": 0,
+        "rear": 0,
+        "side": 25
+       },
+       "kills_by_cover_shooters_share": 0.256,
+       "net_advance": [
+        118.6,
+        -71.3
+       ],
+       "off_axis_kill_share": 0.209,
+       "samples": 74,
+       "separation_at_contact": 90.1,
+       "shots_near_cover_share": 0.236,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.201
+      },
+      "first_kill_seconds": 7.5,
+      "first_shot_seconds": 6.7,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       59.3999996185303,
+       27.0
+      ],
+      "friendly_hits": [
+       4,
+       2
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       172,
+       100
+      ],
+      "gun_ready_samples": [
+       176,
+       102
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       268,
+       241
+      ],
+      "hits_by_face": {
+       "front": 308,
+       "rear": 7,
+       "side": 194
+      },
+      "kills": [
+       42,
+       1
+      ],
+      "laser_damage": [
+       518,
+       3
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 2792,
+        "CONTEST": 3235,
+        "COVER_FIRE": 712,
+        "ENGAGE": 8817,
+        "FLANK": 10,
+        "INVESTIGATE": 1340,
+        "RECHARGE": 7,
+        "REGROUP": 1292,
+        "RETREAT": 12,
+        "SUPPRESS": 1099,
+        "TAKE_COVER": 116
+       },
+       {
+        "CLEAR_LANE": 54,
+        "CONTEST": 1350,
+        "ENGAGE": 986,
+        "FLANK": 37,
+        "RECHARGE": 120,
+        "REGROUP": 70,
+        "RETREAT": 57,
+        "SPOT": 14696,
+        "SUPPRESS": 250,
+        "TAKE_COVER": 121
+       }
+      ],
+      "pinned_samples": [
+       350,
+       443
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       4162.79999732971,
+       1253.59666013718
+      ],
+      "shots": [
+       389,
+       322
+      ],
+      "suppression_samples": [
+       38944,
+       35569
+      ],
+      "suppression_total": [
+       727.062528552696,
+       976.470240958808
+      ],
+      "weak_spot_hits": [
+       0,
+       1
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 42
+     },
+     "tick": 4451,
+     "units_left": {
+      "green": 26,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.062,
+     "hidden_share": 0.44,
+     "hits": 515,
+     "range_mean_m": 41.3,
+     "range_median_m": 39.5,
+     "range_p90_m": 59.5,
+     "reason": "elimination",
+     "sim_seconds": 74.2,
+     "swap_bases": true,
+     "unit_seconds": 2677,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 12,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5100,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 61,
+      "rust": 0
+     },
+     "duration_seconds": 80.8,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 1
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 1
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 28
+      }
+     },
+     "real_seconds": 48.28,
+     "reason": "elimination",
+     "score": {
+      "green": 42,
+      "rust": 1
+     },
+     "seed": 12,
+     "sim_seconds": 80.8,
+     "speedup": 1.7,
+     "state_hash": "3ab327e39bc61f4b",
+     "stats": {
+      "damage": [
+       7012,
+       407
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        123.6,
+        346.1
+       ],
+       "combat_seconds": 71,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.163,
+       "engaged_distance_median": 71.9,
+       "flank_rear_kill_share": 0.512,
+       "held_line_share": 0.0,
+       "kill_distance_median": 50.9,
+       "kill_distance_p25": 39.2,
+       "kill_distance_p75": 62.4,
+       "kills": {
+        "front": 21,
+        "indirect": 0,
+        "rear": 2,
+        "side": 20
+       },
+       "kills_by_cover_shooters_share": 0.279,
+       "net_advance": [
+        108.1,
+        -65.8
+       ],
+       "off_axis_kill_share": 0.256,
+       "samples": 80,
+       "separation_at_contact": 91.0,
+       "shots_near_cover_share": 0.231,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.218
+      },
+      "first_kill_seconds": 7.6,
+      "first_shot_seconds": 6.3,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       140.599998474121,
+       64.7999992370605
+      ],
+      "friendly_hits": [
+       9,
+       4
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       253,
+       76
+      ],
+      "gun_ready_samples": [
+       258,
+       81
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       267,
+       263
+      ],
+      "hits_by_face": {
+       "front": 347,
+       "rear": 10,
+       "side": 173
+      },
+      "kills": [
+       42,
+       1
+      ],
+      "laser_damage": [
+       50,
+       3
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 3641,
+        "CONTEST": 4078,
+        "COVER_FIRE": 1209,
+        "ENGAGE": 8571,
+        "FLANK": 10,
+        "INVESTIGATE": 1060,
+        "RECHARGE": 114,
+        "REGROUP": 1187,
+        "RETREAT": 48,
+        "SUPPRESS": 1236,
+        "TAKE_COVER": 23
+       },
+       {
+        "CLEAR_LANE": 69,
+        "CONTEST": 1712,
+        "COVER_FIRE": 13,
+        "ENGAGE": 1353,
+        "FLANK": 36,
+        "RECHARGE": 61,
+        "RETREAT": 35,
+        "SPOT": 15983,
+        "SUPPRESS": 150,
+        "TAKE_COVER": 89
+       }
+      ],
+      "pinned_samples": [
+       237,
+       494
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3915.69999504089,
+       1169.25332522392
+      ],
+      "shots": [
+       426,
+       359
+      ],
+      "suppression_samples": [
+       42435,
+       39088
+      ],
+      "suppression_total": [
+       809.896729740566,
+       1020.0230109771
+      ],
+      "weak_spot_hits": [
+       1,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 42
+     },
+     "tick": 4847,
+     "units_left": {
+      "green": 26,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.032,
+     "hidden_share": 0.404,
+     "hits": 543,
+     "range_mean_m": 35.8,
+     "range_median_m": 37.3,
+     "range_p90_m": 54.4,
+     "reason": "elimination",
+     "sim_seconds": 80.8,
+     "swap_bases": false,
+     "unit_seconds": 2936,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 13,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 54
+     },
+     "duration_seconds": 87.5,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 3,
+       "tank": 7
+      },
+      "rust": {
+       "artillery": 4,
+       "ifv": 9,
+       "lancer": 4,
+       "scout": 5,
+       "tank": 8
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 4,
+       "ifv": 9,
+       "lancer": 4,
+       "scout": 5,
+       "tank": 8
+      },
+      "rust": {
+       "ifv": 3,
+       "tank": 7
+      }
+     },
+     "real_seconds": 39.92,
+     "reason": "elimination",
+     "score": {
+      "green": 10,
+      "rust": 30
+     },
+     "seed": 13,
+     "sim_seconds": 87.5,
+     "speedup": 2.2,
+     "state_hash": "69fc3457ee26b2bb",
+     "stats": {
+      "damage": [
+       3407,
+       6680
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.025,
+       "centroid_travel": [
+        327.8,
+        119.1
+       ],
+       "combat_seconds": 75,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.3,
+       "engaged_distance_median": 74.6,
+       "flank_rear_kill_share": 0.459,
+       "held_line_share": 0.173,
+       "kill_distance_median": 47.6,
+       "kill_distance_p25": 34.3,
+       "kill_distance_p75": 63.2,
+       "kills": {
+        "front": 20,
+        "indirect": 3,
+        "rear": 2,
+        "side": 15
+       },
+       "kills_by_cover_shooters_share": 0.2,
+       "net_advance": [
+        -55.8,
+        70.7
+       ],
+       "off_axis_kill_share": 0.225,
+       "samples": 87,
+       "separation_at_contact": 99.9,
+       "shots_near_cover_share": 0.273,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.229
+      },
+      "first_kill_seconds": 8.5,
+      "first_shot_seconds": 6.6,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       18.8999996185303,
+       72.8999996185303
+      ],
+      "friendly_hits": [
+       1,
+       5
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       139,
+       275
+      ],
+      "gun_ready_samples": [
+       229,
+       278
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       263,
+       297
+      ],
+      "hits_by_face": {
+       "front": 350,
+       "rear": 18,
+       "side": 192
+      },
+      "kills": [
+       10,
+       30
+      ],
+      "laser_damage": [
+       656,
+       553
+      ],
+      "mortar_damage": [
+       661,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 2368,
+        "CLEAR_LANE": 260,
+        "CONTEST": 1757,
+        "COVER_FIRE": 154,
+        "ENGAGE": 1795,
+        "RECHARGE": 115,
+        "REGROUP": 139,
+        "RETREAT": 352,
+        "SHADOW": 211,
+        "SPOT": 3923,
+        "SUPPRESS": 1076,
+        "TAKE_COVER": 71
+       },
+       {
+        "CLEAR_LANE": 1868,
+        "CONTEST": 4135,
+        "COVER_FIRE": 753,
+        "ENGAGE": 6223,
+        "HOLD": 6,
+        "INVESTIGATE": 880,
+        "RECHARGE": 207,
+        "REGROUP": 1163,
+        "RETREAT": 669,
+        "SUPPRESS": 1510,
+        "TAKE_COVER": 74
+       }
+      ],
+      "pinned_samples": [
+       384,
+       455
+      ],
+      "shells_resupplied": [
+       21,
+       0
+      ],
+      "shield_damage": [
+       3060.74436283112,
+       4073.11666363478
+      ],
+      "shots": [
+       371,
+       443
+      ],
+      "suppression_samples": [
+       24517,
+       35035
+      ],
+      "suppression_total": [
+       1017.79069114826,
+       1195.3611823491
+      ],
+      "weak_spot_hits": [
+       4,
+       4
+      ]
+     },
+     "tanks": {
+      "green": 30,
+      "rust": 27
+     },
+     "tick": 5248,
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 10
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.6,
+     "flank_share": 0.021,
+     "hidden_share": 0.467,
+     "hits": 566,
+     "range_mean_m": 42.7,
+     "range_median_m": 40.9,
+     "range_p90_m": 65.9,
+     "reason": "elimination",
+     "sim_seconds": 87.5,
+     "swap_bases": false,
+     "unit_seconds": 2290,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 12,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5100,
+      "rust": 5180
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 0
+     },
+     "duration_seconds": 113.3,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 24
+      },
+      "rust": {}
+     },
+     "losses_by_unit": {
+      "green": {},
+      "rust": {
+       "ifv": 14,
+       "scout": 24
+      }
+     },
+     "real_seconds": 57.36,
+     "reason": "control",
+     "score": {
+      "green": 38,
+      "rust": 0
+     },
+     "seed": 12,
+     "sim_seconds": 113.3,
+     "speedup": 2.0,
+     "state_hash": "659b83973ef24aa0",
+     "stats": {
+      "damage": [
+       6486,
+       554
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        172.1,
+        332.2
+       ],
+       "combat_seconds": 67,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.211,
+       "engaged_distance_median": 74.4,
+       "flank_rear_kill_share": 0.421,
+       "held_line_share": 0.06,
+       "kill_distance_median": 55.1,
+       "kill_distance_p25": 43.9,
+       "kill_distance_p75": 62.2,
+       "kills": {
+        "front": 22,
+        "indirect": 0,
+        "rear": 1,
+        "side": 15
+       },
+       "kills_by_cover_shooters_share": 0.237,
+       "net_advance": [
+        55.6,
+        -75.3
+       ],
+       "off_axis_kill_share": 0.184,
+       "samples": 113,
+       "separation_at_contact": 88.9,
+       "shots_near_cover_share": 0.354,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.198
+      },
+      "first_kill_seconds": 7.6,
+      "first_shot_seconds": 6.6,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       104.900001525879,
+       0.0
+      ],
+      "friendly_hits": [
+       6,
+       0
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       248,
+       46
+      ],
+      "gun_ready_samples": [
+       250,
+       47
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       216,
+       255
+      ],
+      "hits_by_face": {
+       "front": 301,
+       "rear": 30,
+       "side": 140
+      },
+      "kills": [
+       38,
+       0
+      ],
+      "laser_damage": [
+       272,
+       4
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "ADVANCE": 538,
+        "CLEAR_LANE": 3035,
+        "CONTEST": 11947,
+        "COVER_FIRE": 1163,
+        "ENGAGE": 8062,
+        "FLANK": 16,
+        "HOLD": 15,
+        "INVESTIGATE": 1689,
+        "RECHARGE": 28,
+        "REGROUP": 2206,
+        "RETREAT": 201,
+        "SUPPRESS": 1569,
+        "TAKE_COVER": 95
+       },
+       {
+        "CLEAR_LANE": 184,
+        "CONTEST": 1420,
+        "ENGAGE": 1256,
+        "RECHARGE": 51,
+        "RETREAT": 73,
+        "SPOT": 15460,
+        "SUPPRESS": 106,
+        "TAKE_COVER": 88
+       }
+      ],
+      "pinned_samples": [
+       193,
+       324
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       3550.90000629425,
+       1470.00999116898
+      ],
+      "shots": [
+       380,
+       357
+      ],
+      "suppression_samples": [
+       61182,
+       37367
+      ],
+      "suppression_total": [
+       915.36520900032,
+       824.135376705025
+      ],
+      "weak_spot_hits": [
+       7,
+       8
+      ]
+     },
+     "tanks": {
+      "green": 27,
+      "rust": 42
+     },
+     "tick": 6798,
+     "units_left": {
+      "green": 27,
+      "rust": 4
+     },
+     "units_lost": {
+      "green": 0,
+      "rust": 38
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.024,
+     "hidden_share": 0.52,
+     "hits": 477,
+     "range_mean_m": 42.5,
+     "range_median_m": 41.5,
+     "range_p90_m": 58.8,
+     "reason": "control",
+     "sim_seconds": 113.3,
+     "swap_bases": true,
+     "unit_seconds": 4089,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 13,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 86
+     },
+     "duration_seconds": 111.1,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 2,
+       "tank": 7
+      },
+      "rust": {
+       "artillery": 4,
+       "ifv": 9,
+       "lancer": 4,
+       "scout": 5,
+       "tank": 8
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 4,
+       "ifv": 9,
+       "lancer": 4,
+       "scout": 5,
+       "tank": 8
+      },
+      "rust": {
+       "ifv": 2,
+       "tank": 7
+      }
+     },
+     "real_seconds": 45.59,
+     "reason": "elimination",
+     "score": {
+      "green": 9,
+      "rust": 30
+     },
+     "seed": 13,
+     "sim_seconds": 111.1,
+     "speedup": 2.4,
+     "state_hash": "22a6e1f2ac7a01e5",
+     "stats": {
+      "damage": [
+       3722,
+       6680
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        417.8,
+        179.4
+       ],
+       "combat_seconds": 72,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.41,
+       "engaged_distance_median": 73.9,
+       "flank_rear_kill_share": 0.595,
+       "held_line_share": 0.278,
+       "kill_distance_median": 50.7,
+       "kill_distance_p25": 40.5,
+       "kill_distance_p75": 60.4,
+       "kills": {
+        "front": 15,
+        "indirect": 2,
+        "rear": 2,
+        "side": 20
+       },
+       "kills_by_cover_shooters_share": 0.282,
+       "net_advance": [
+        166.5,
+        40.4
+       ],
+       "off_axis_kill_share": 0.179,
+       "samples": 111,
+       "separation_at_contact": 101.4,
+       "shots_near_cover_share": 0.257,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.208
+      },
+      "first_kill_seconds": 8.2,
+      "first_shot_seconds": 6.7,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       0.0,
+       178.599998474121
+      ],
+      "friendly_hits": [
+       0,
+       12
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       110,
+       204
+      ],
+      "gun_ready_samples": [
+       187,
+       205
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       206,
+       208
+      ],
+      "hits_by_face": {
+       "front": 232,
+       "rear": 15,
+       "side": 167
+      },
+      "kills": [
+       9,
+       30
+      ],
+      "laser_damage": [
+       731,
+       308
+      ],
+      "mortar_damage": [
+       547,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 1933,
+        "CLEAR_LANE": 124,
+        "CONTEST": 1600,
+        "COVER_FIRE": 345,
+        "ENGAGE": 1520,
+        "RECHARGE": 222,
+        "REGROUP": 97,
+        "RETREAT": 200,
+        "SHADOW": 219,
+        "SPOT": 4643,
+        "SUPPRESS": 1066,
+        "TAKE_COVER": 68
+       },
+       {
+        "CLEAR_LANE": 2342,
+        "CONTEST": 4667,
+        "COVER_FIRE": 1212,
+        "ENGAGE": 6600,
+        "FLANK": 30,
+        "HOLD": 72,
+        "INVESTIGATE": 1021,
+        "RECHARGE": 230,
+        "REGROUP": 2336,
+        "RETREAT": 1746,
+        "SUPPRESS": 1747,
+        "TAKE_COVER": 153
+       }
+      ],
+      "pinned_samples": [
+       420,
+       649
+      ],
+      "shells_resupplied": [
+       19,
+       0
+      ],
+      "shield_damage": [
+       4241.6612405777,
+       4118.13333272934
+      ],
+      "shots": [
+       284,
+       361
+      ],
+      "suppression_samples": [
+       24148,
+       44372
+      ],
+      "suppression_total": [
+       802.960657329117,
+       1390.89033882256
+      ],
+      "weak_spot_hits": [
+       3,
+       2
+      ]
+     },
+     "tanks": {
+      "green": 30,
+      "rust": 27
+     },
+     "tick": 6664,
+     "units_left": {
+      "green": 0,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 9
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.105,
+     "hidden_share": 0.534,
+     "hits": 426,
+     "range_mean_m": 47.4,
+     "range_median_m": 47.5,
+     "range_p90_m": 76.4,
+     "reason": "elimination",
+     "sim_seconds": 111.1,
+     "swap_bases": true,
+     "unit_seconds": 2802,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 14,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5120
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 74
+     },
+     "duration_seconds": 99.6,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 2
+      },
+      "rust": {
+       "ifv": 13,
+       "scout": 28
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 2
+      }
+     },
+     "real_seconds": 58.29,
+     "reason": "elimination",
+     "score": {
+      "green": 2,
+      "rust": 41
+     },
+     "seed": 14,
+     "sim_seconds": 99.6,
+     "speedup": 1.7,
+     "state_hash": "9bb63666a7d3315c",
+     "stats": {
+      "damage": [
+       750,
+       7004
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        295.2,
+        175.2
+       ],
+       "combat_seconds": 81,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.233,
+       "engaged_distance_median": 77.5,
+       "flank_rear_kill_share": 0.675,
+       "held_line_share": 0.173,
+       "kill_distance_median": 60.1,
+       "kill_distance_p25": 39.3,
+       "kill_distance_p75": 67.6,
+       "kills": {
+        "front": 13,
+        "indirect": 3,
+        "rear": 6,
+        "side": 21
+       },
+       "kills_by_cover_shooters_share": 0.209,
+       "net_advance": [
+        -62.8,
+        82.3
+       ],
+       "off_axis_kill_share": 0.419,
+       "samples": 99,
+       "separation_at_contact": 106.7,
+       "shots_near_cover_share": 0.244,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.206
+      },
+      "first_kill_seconds": 7.3,
+      "first_shot_seconds": 6.4,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       123.599998474121,
+       89.2000026702881
+      ],
+      "friendly_hits": [
+       7,
+       4
+      ],
+      "friendly_kills": [
+       1,
+       0
+      ],
+      "gun_idle_samples": [
+       96,
+       179
+      ],
+      "gun_ready_samples": [
+       97,
+       230
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       245,
+       406
+      ],
+      "hits_by_face": {
+       "front": 344,
+       "rear": 43,
+       "side": 264
+      },
+      "kills": [
+       2,
+       41
+      ],
+      "laser_damage": [
+       0,
+       610
+      ],
+      "mortar_damage": [
+       0,
+       648
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 65,
+        "CONTEST": 1561,
+        "ENGAGE": 1386,
+        "FLANK": 7,
+        "RECHARGE": 25,
+        "REGROUP": 30,
+        "RETREAT": 139,
+        "SPOT": 18174,
+        "SUPPRESS": 179,
+        "TAKE_COVER": 64
+       },
+       {
+        "BOMBARD": 3233,
+        "CLEAR_LANE": 1448,
+        "CONTEST": 5249,
+        "COVER_FIRE": 589,
+        "ENGAGE": 8144,
+        "FLANK": 4,
+        "HOLD": 54,
+        "INVESTIGATE": 444,
+        "RECHARGE": 184,
+        "REGROUP": 2263,
+        "RETREAT": 27,
+        "SHADOW": 309,
+        "SPOT": 3977,
+        "SUPPRESS": 1050,
+        "TAKE_COVER": 188
+       }
+      ],
+      "pinned_samples": [
+       497,
+       261
+      ],
+      "shells_resupplied": [
+       0,
+       8
+      ],
+      "shield_damage": [
+       1060.30666041374,
+       4193.41571426392
+      ],
+      "shots": [
+       339,
+       614
+      ],
+      "suppression_samples": [
+       43360,
+       54393
+      ],
+      "suppression_total": [
+       1361.80406969521,
+       717.994727890965
+      ],
+      "weak_spot_hits": [
+       7,
+       13
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 29
+     },
+     "tick": 5975,
+     "units_left": {
+      "green": 0,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 2
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.058,
+     "hidden_share": 0.517,
+     "hits": 662,
+     "range_mean_m": 41.9,
+     "range_median_m": 40.4,
+     "range_p90_m": 62.2,
+     "reason": "elimination",
+     "sim_seconds": 99.6,
+     "swap_bases": false,
+     "unit_seconds": 3261,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 14,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5120
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 53
+     },
+     "duration_seconds": 85.2,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 1
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 28
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 1
+      }
+     },
+     "real_seconds": 52.89,
+     "reason": "elimination",
+     "score": {
+      "green": 1,
+      "rust": 42
+     },
+     "seed": 14,
+     "sim_seconds": 85.2,
+     "speedup": 1.6,
+     "state_hash": "8148d59aae1523c4",
+     "stats": {
+      "damage": [
+       481,
+       6989
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        206.9,
+        133.2
+       ],
+       "combat_seconds": 74,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.163,
+       "engaged_distance_median": 77.2,
+       "flank_rear_kill_share": 0.605,
+       "held_line_share": 0.054,
+       "kill_distance_median": 52.2,
+       "kill_distance_p25": 40.2,
+       "kill_distance_p75": 63.8,
+       "kills": {
+        "front": 17,
+        "indirect": 0,
+        "rear": 0,
+        "side": 26
+       },
+       "kills_by_cover_shooters_share": 0.256,
+       "net_advance": [
+        -61.7,
+        107.4
+       ],
+       "off_axis_kill_share": 0.14,
+       "samples": 85,
+       "separation_at_contact": 96.2,
+       "shots_near_cover_share": 0.265,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.224
+      },
+      "first_kill_seconds": 9.1,
+      "first_shot_seconds": 6.2,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       11.0,
+       13.5
+      ],
+      "friendly_hits": [
+       1,
+       1
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       70,
+       170
+      ],
+      "gun_ready_samples": [
+       73,
+       211
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       257,
+       356
+      ],
+      "hits_by_face": {
+       "front": 362,
+       "rear": 4,
+       "side": 247
+      },
+      "kills": [
+       1,
+       42
+      ],
+      "laser_damage": [
+       0,
+       376
+      ],
+      "mortar_damage": [
+       0,
+       156
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 119,
+        "CONTEST": 1335,
+        "ENGAGE": 1290,
+        "RECHARGE": 13,
+        "RETREAT": 40,
+        "SPOT": 16505,
+        "SUPPRESS": 124,
+        "TAKE_COVER": 116
+       },
+       {
+        "BOMBARD": 2674,
+        "CLEAR_LANE": 2026,
+        "CONTEST": 4241,
+        "COVER_FIRE": 659,
+        "ENGAGE": 7088,
+        "FLANK": 8,
+        "INVESTIGATE": 482,
+        "RECHARGE": 142,
+        "REGROUP": 1402,
+        "RETREAT": 23,
+        "SHADOW": 411,
+        "SPOT": 3405,
+        "SUPPRESS": 1350,
+        "TAKE_COVER": 88
+       }
+      ],
+      "pinned_samples": [
+       547,
+       419
+      ],
+      "shells_resupplied": [
+       0,
+       9
+      ],
+      "shield_damage": [
+       897.089994907379,
+       4363.40723800659
+      ],
+      "shots": [
+       360,
+       571
+      ],
+      "suppression_samples": [
+       39188,
+       48039
+      ],
+      "suppression_total": [
+       1202.13149083094,
+       673.574698681389
+      ],
+      "weak_spot_hits": [
+       0,
+       2
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 29
+     },
+     "tick": 5112,
+     "units_left": {
+      "green": 0,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.03,
+     "hidden_share": 0.46,
+     "hits": 615,
+     "range_mean_m": 41.5,
+     "range_median_m": 40.7,
+     "range_p90_m": 56.6,
+     "reason": "elimination",
+     "sim_seconds": 85.2,
+     "swap_bases": true,
+     "unit_seconds": 3062,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 15,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5160
+     },
+     "budget": 5200,
+     "control": {
+      "green": 12,
+      "rust": 53
+     },
+     "duration_seconds": 118.2,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 3,
+       "tank": 1
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 28
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 28
+      },
+      "rust": {
+       "ifv": 3,
+       "tank": 1
+      }
+     },
+     "real_seconds": 70.95,
+     "reason": "elimination",
+     "score": {
+      "green": 4,
+      "rust": 42
+     },
+     "seed": 15,
+     "sim_seconds": 118.2,
+     "speedup": 1.7,
+     "state_hash": "e9f2b26c3a1797cd",
+     "stats": {
+      "damage": [
+       1116,
+       6965
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.022,
+       "centroid_travel": [
+        274.4,
+        171.9
+       ],
+       "combat_seconds": 104,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.304,
+       "engaged_distance_median": 80.0,
+       "flank_rear_kill_share": 0.541,
+       "held_line_share": 0.346,
+       "kill_distance_median": 51.3,
+       "kill_distance_p25": 42.8,
+       "kill_distance_p75": 67.0,
+       "kills": {
+        "front": 17,
+        "indirect": 9,
+        "rear": 0,
+        "side": 20
+       },
+       "kills_by_cover_shooters_share": 0.196,
+       "net_advance": [
+        -67.3,
+        97.4
+       ],
+       "off_axis_kill_share": 0.196,
+       "samples": 118,
+       "separation_at_contact": 108.7,
+       "shots_near_cover_share": 0.248,
+       "static_share": 0.048,
+       "unit_seconds_near_cover_share": 0.23
+      },
+      "first_kill_seconds": 7.8,
+      "first_shot_seconds": 6.5,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       60.0,
+       181.549999237061
+      ],
+      "friendly_hits": [
+       4,
+       10
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       83,
+       171
+      ],
+      "gun_ready_samples": [
+       98,
+       317
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       489,
+       342
+      ],
+      "hits_by_face": {
+       "front": 475,
+       "rear": 12,
+       "side": 344
+      },
+      "kills": [
+       4,
+       42
+      ],
+      "laser_damage": [
+       0,
+       0
+      ],
+      "mortar_damage": [
+       0,
+       1800
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 198,
+        "CONTEST": 1354,
+        "ENGAGE": 1934,
+        "FLANK": 26,
+        "INVESTIGATE": 9,
+        "RECHARGE": 73,
+        "RETREAT": 130,
+        "SPOT": 24337,
+        "SUPPRESS": 753,
+        "TAKE_COVER": 281
+       },
+       {
+        "BOMBARD": 10210,
+        "CLEAR_LANE": 582,
+        "CONTEST": 1292,
+        "COVER_FIRE": 668,
+        "ENGAGE": 4581,
+        "INVESTIGATE": 6,
+        "RECHARGE": 69,
+        "REGROUP": 1198,
+        "RETREAT": 146,
+        "SHADOW": 550,
+        "SPOT": 12979,
+        "SUPPRESS": 533,
+        "TAKE_COVER": 43
+       }
+      ],
+      "pinned_samples": [
+       937,
+       675
+      ],
+      "shells_resupplied": [
+       0,
+       58
+      ],
+      "shield_damage": [
+       1589.4099946022,
+       4945.36830067635
+      ],
+      "shots": [
+       671,
+       573
+      ],
+      "suppression_samples": [
+       58287,
+       65782
+      ],
+      "suppression_total": [
+       1876.87853825911,
+       1274.85848554945
+      ],
+      "weak_spot_hits": [
+       5,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 31
+     },
+     "tick": 7090,
+     "units_left": {
+      "green": 0,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 4
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.9,
+     "flank_share": 0.084,
+     "hidden_share": 0.554,
+     "hits": 845,
+     "range_mean_m": 39.5,
+     "range_median_m": 36.8,
+     "range_p90_m": 54.5,
+     "reason": "elimination",
+     "sim_seconds": 118.2,
+     "swap_bases": false,
+     "unit_seconds": 4415,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 16,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "duration_seconds": 108.3,
+     "kills_by_unit": {
+      "green": {},
+      "rust": {
+       "ifv": 14,
+       "scout": 20
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 20
+      },
+      "rust": {}
+     },
+     "real_seconds": 55.45,
+     "reason": "control",
+     "score": {
+      "green": 0,
+      "rust": 34
+     },
+     "seed": 16,
+     "sim_seconds": 108.3,
+     "speedup": 2.0,
+     "state_hash": "6b100fb28dd5c850",
+     "stats": {
+      "damage": [
+       254,
+       5880
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.029,
+       "centroid_travel": [
+        208.5,
+        156.7
+       ],
+       "combat_seconds": 76,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.176,
+       "engaged_distance_median": 82.2,
+       "flank_rear_kill_share": 0.441,
+       "held_line_share": 0.132,
+       "kill_distance_median": 59.1,
+       "kill_distance_p25": 40.5,
+       "kill_distance_p75": 67.1,
+       "kills": {
+        "front": 19,
+        "indirect": 0,
+        "rear": 0,
+        "side": 15
+       },
+       "kills_by_cover_shooters_share": 0.235,
+       "net_advance": [
+        -51.0,
+        82.1
+       ],
+       "off_axis_kill_share": 0.382,
+       "samples": 108,
+       "separation_at_contact": 90.7,
+       "shots_near_cover_share": 0.249,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.196
+      },
+      "first_kill_seconds": 7.8,
+      "first_shot_seconds": 6.2,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       37.7999992370605,
+       338.699998855591
+      ],
+      "friendly_hits": [
+       2,
+       4
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       30,
+       196
+      ],
+      "gun_ready_samples": [
+       30,
+       197
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       187,
+       129
+      ],
+      "hits_by_face": {
+       "front": 214,
+       "rear": 1,
+       "side": 101
+      },
+      "kills": [
+       0,
+       34
+      ],
+      "laser_damage": [
+       0,
+       400
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 76,
+        "CONTEST": 1351,
+        "ENGAGE": 1193,
+        "FLANK": 7,
+        "RECHARGE": 40,
+        "REGROUP": 63,
+        "RETREAT": 24,
+        "SPOT": 22013,
+        "SUPPRESS": 66,
+        "TAKE_COVER": 56
+       },
+       {
+        "ADVANCE": 77,
+        "CLEAR_LANE": 5126,
+        "CONTEST": 10532,
+        "COVER_FIRE": 852,
+        "ENGAGE": 9149,
+        "FLANK": 4,
+        "INVESTIGATE": 859,
+        "RECHARGE": 60,
+        "REGROUP": 1534,
+        "SUPPRESS": 974,
+        "TAKE_COVER": 54
+       }
+      ],
+      "pinned_samples": [
+       215,
+       400
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1131.92999434471,
+       3157.34999847412
+      ],
+      "shots": [
+       233,
+       229
+      ],
+      "suppression_samples": [
+       49873,
+       58482
+      ],
+      "suppression_total": [
+       581.153402967956,
+       793.518856566028
+      ],
+      "weak_spot_hits": [
+       0,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 27
+     },
+     "tick": 6498,
+     "units_left": {
+      "green": 8,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 34,
+      "rust": 0
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.7,
+     "flank_share": 0.099,
+     "hidden_share": 0.519,
+     "hits": 322,
+     "range_mean_m": 43.4,
+     "range_median_m": 41.3,
+     "range_p90_m": 74.5,
+     "reason": "control",
+     "sim_seconds": 108.3,
+     "swap_bases": false,
+     "unit_seconds": 4041,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 15,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5160
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "duration_seconds": 106.8,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 2
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 26
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 26
+      },
+      "rust": {
+       "ifv": 2
+      }
+     },
+     "real_seconds": 63.55,
+     "reason": "control",
+     "score": {
+      "green": 2,
+      "rust": 40
+     },
+     "seed": 15,
+     "sim_seconds": 106.8,
+     "speedup": 1.7,
+     "state_hash": "58302c65819344ad",
+     "stats": {
+      "damage": [
+       890,
+       6791
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.048,
+       "centroid_travel": [
+        310.5,
+        144.3
+       ],
+       "combat_seconds": 97,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.31,
+       "engaged_distance_median": 78.6,
+       "flank_rear_kill_share": 0.568,
+       "held_line_share": 0.186,
+       "kill_distance_median": 44.6,
+       "kill_distance_p25": 35.3,
+       "kill_distance_p75": 54.9,
+       "kills": {
+        "front": 16,
+        "indirect": 5,
+        "rear": 1,
+        "side": 20
+       },
+       "kills_by_cover_shooters_share": 0.262,
+       "net_advance": [
+        69.9,
+        76.4
+       ],
+       "off_axis_kill_share": 0.381,
+       "samples": 106,
+       "separation_at_contact": 108.2,
+       "shots_near_cover_share": 0.203,
+       "static_share": 0.052,
+       "unit_seconds_near_cover_share": 0.204
+      },
+      "first_kill_seconds": 9.2,
+      "first_shot_seconds": 6.4,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       58.5,
+       37.0
+      ],
+      "friendly_hits": [
+       4,
+       3
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       103,
+       203
+      ],
+      "gun_ready_samples": [
+       109,
+       406
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       368,
+       427
+      ],
+      "hits_by_face": {
+       "front": 507,
+       "rear": 15,
+       "side": 273
+      },
+      "kills": [
+       2,
+       40
+      ],
+      "laser_damage": [
+       1,
+       0
+      ],
+      "mortar_damage": [
+       0,
+       1126
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 105,
+        "CONTEST": 1570,
+        "ENGAGE": 2426,
+        "RECHARGE": 79,
+        "REGROUP": 26,
+        "RETREAT": 596,
+        "SPOT": 19872,
+        "SUPPRESS": 338,
+        "TAKE_COVER": 279
+       },
+       {
+        "BOMBARD": 9165,
+        "CLEAR_LANE": 646,
+        "CONTEST": 750,
+        "COVER_FIRE": 766,
+        "ENGAGE": 5232,
+        "FLANK": 17,
+        "INVESTIGATE": 175,
+        "RECHARGE": 231,
+        "REGROUP": 1223,
+        "RETREAT": 29,
+        "SHADOW": 532,
+        "SPOT": 11736,
+        "SUPPRESS": 697,
+        "TAKE_COVER": 104
+       }
+      ],
+      "pinned_samples": [
+       904,
+       439
+      ],
+      "shells_resupplied": [
+       0,
+       30
+      ],
+      "shield_damage": [
+       1333.87999415398,
+       4745.97450637817
+      ],
+      "shots": [
+       543,
+       666
+      ],
+      "suppression_samples": [
+       50684,
+       62648
+      ],
+      "suppression_total": [
+       1831.73784801654,
+       1049.84114552623
+      ],
+      "weak_spot_hits": [
+       1,
+       2
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 31
+     },
+     "tick": 6408,
+     "units_left": {
+      "green": 2,
+      "rust": 29
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 2
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.097,
+     "hidden_share": 0.413,
+     "hits": 802,
+     "range_mean_m": 39.3,
+     "range_median_m": 37.7,
+     "range_p90_m": 53.8,
+     "reason": "control",
+     "sim_seconds": 106.8,
+     "swap_bases": true,
+     "unit_seconds": 3730,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 16,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5180,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "duration_seconds": 123.2,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 2
+      },
+      "rust": {
+       "ifv": 14,
+       "scout": 17
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "ifv": 14,
+       "scout": 17
+      },
+      "rust": {
+       "ifv": 2
+      }
+     },
+     "real_seconds": 58.81,
+     "reason": "control",
+     "score": {
+      "green": 2,
+      "rust": 31
+     },
+     "seed": 16,
+     "sim_seconds": 123.2,
+     "speedup": 2.1,
+     "state_hash": "9d947dcc91fa6e5f",
+     "stats": {
+      "damage": [
+       537,
+       5586
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        227.2,
+        133.7
+       ],
+       "combat_seconds": 67,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.273,
+       "engaged_distance_median": 80.0,
+       "flank_rear_kill_share": 0.333,
+       "held_line_share": 0.194,
+       "kill_distance_median": 53.0,
+       "kill_distance_p25": 39.8,
+       "kill_distance_p75": 61.5,
+       "kills": {
+        "front": 22,
+        "indirect": 0,
+        "rear": 0,
+        "side": 11
+       },
+       "kills_by_cover_shooters_share": 0.273,
+       "net_advance": [
+        -63.6,
+        63.8
+       ],
+       "off_axis_kill_share": 0.273,
+       "samples": 123,
+       "separation_at_contact": 92.0,
+       "shots_near_cover_share": 0.305,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.151
+      },
+      "first_kill_seconds": 7.9,
+      "first_shot_seconds": 6.4,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       18.8999996185303,
+       13.5
+      ],
+      "friendly_hits": [
+       1,
+       1
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       23,
+       267
+      ],
+      "gun_ready_samples": [
+       24,
+       268
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       247,
+       126
+      ],
+      "hits_by_face": {
+       "front": 238,
+       "rear": 1,
+       "side": 134
+      },
+      "kills": [
+       2,
+       31
+      ],
+      "laser_damage": [
+       0,
+       222
+      ],
+      "mortar_damage": [
+       0,
+       0
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 111,
+        "CONTEST": 1302,
+        "ENGAGE": 1183,
+        "RECHARGE": 61,
+        "REGROUP": 50,
+        "RETREAT": 73,
+        "SPOT": 24980,
+        "SUPPRESS": 155,
+        "TAKE_COVER": 54
+       },
+       {
+        "ADVANCE": 504,
+        "CLEAR_LANE": 3945,
+        "CONTEST": 15195,
+        "COVER_FIRE": 1200,
+        "ENGAGE": 6658,
+        "FLANK": 5,
+        "INVESTIGATE": 1296,
+        "RECHARGE": 24,
+        "REGROUP": 1012,
+        "RETREAT": 68,
+        "SUPPRESS": 1234,
+        "TAKE_COVER": 47
+       }
+      ],
+      "pinned_samples": [
+       243,
+       331
+      ],
+      "shells_resupplied": [
+       0,
+       0
+      ],
+      "shield_damage": [
+       1461.34999227524,
+       3090.60000705719
+      ],
+      "shots": [
+       308,
+       213
+      ],
+      "suppression_samples": [
+       56032,
+       62417
+      ],
+      "suppression_total": [
+       533.397140013324,
+       822.499963676047
+      ],
+      "weak_spot_hits": [
+       0,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 42,
+      "rust": 27
+     },
+     "tick": 7392,
+     "units_left": {
+      "green": 11,
+      "rust": 25
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 2
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.073,
+     "hidden_share": 0.437,
+     "hits": 375,
+     "range_mean_m": 41.4,
+     "range_median_m": 39.4,
+     "range_p90_m": 65.6,
+     "reason": "control",
+     "sim_seconds": 123.2,
+     "swap_bases": true,
+     "unit_seconds": 4438,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 17,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5060,
+      "rust": 5200
+     },
+     "budget": 5200,
+     "control": {
+      "green": 73,
+      "rust": 0
+     },
+     "duration_seconds": 96.8,
+     "kills_by_unit": {
+      "green": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 10,
+       "tank": 5
+      },
+      "rust": {
+       "burner": 10,
+       "ifv": 4
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "burner": 11,
+       "ifv": 4
+      },
+      "rust": {
+       "artillery": 10,
+       "ifv": 6,
+       "scout": 10,
+       "tank": 5
+      }
+     },
+     "real_seconds": 36.36,
+     "reason": "elimination",
+     "score": {
+      "green": 31,
+      "rust": 14
+     },
+     "seed": 17,
+     "sim_seconds": 96.8,
+     "speedup": 2.7,
+     "state_hash": "0cefa4ab31839708",
+     "stats": {
+      "damage": [
+       6175,
+       3518
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.044,
+       "centroid_travel": [
+        195.4,
+        269.9
+       ],
+       "combat_seconds": 73,
+       "contact_second": 5,
+       "deaths_near_cover_share": 0.133,
+       "engaged_distance_median": 71.8,
+       "flank_rear_kill_share": 0.487,
+       "held_line_share": 0.068,
+       "kill_distance_median": 40.0,
+       "kill_distance_p25": 26.4,
+       "kill_distance_p75": 61.8,
+       "kills": {
+        "front": 20,
+        "indirect": 6,
+        "rear": 2,
+        "side": 17
+       },
+       "kills_by_cover_shooters_share": 0.133,
+       "net_advance": [
+        92.4,
+        -55.2
+       ],
+       "off_axis_kill_share": 0.356,
+       "samples": 96,
+       "separation_at_contact": 115.8,
+       "shots_near_cover_share": 0.195,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.175
+      },
+      "first_kill_seconds": 9.2,
+      "first_shot_seconds": 5.1,
+      "flame_damage": [
+       1884,
+       0
+      ],
+      "friendly_damage": [
+       309.659996032715,
+       63.8999996185303
+      ],
+      "friendly_hits": [
+       5,
+       6
+      ],
+      "friendly_kills": [
+       1,
+       0
+      ],
+      "gun_idle_samples": [
+       116,
+       198
+      ],
+      "gun_ready_samples": [
+       156,
+       386
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       162,
+       241
+      ],
+      "hits_by_face": {
+       "front": 218,
+       "rear": 7,
+       "side": 178
+      },
+      "kills": [
+       31,
+       14
+      ],
+      "laser_damage": [
+       423,
+       25
+      ],
+      "mortar_damage": [
+       0,
+       1609
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 778,
+        "CONTEST": 3245,
+        "COVER_FIRE": 615,
+        "ENGAGE": 4780,
+        "FLANK": 10,
+        "HOLD": 51,
+        "INVESTIGATE": 713,
+        "RECHARGE": 166,
+        "REGROUP": 1223,
+        "RETREAT": 828,
+        "SUPPRESS": 1379,
+        "TAKE_COVER": 156
+       },
+       {
+        "BOMBARD": 4898,
+        "CLEAR_LANE": 289,
+        "CONTEST": 855,
+        "COVER_FIRE": 207,
+        "ENGAGE": 1166,
+        "RECHARGE": 29,
+        "REGROUP": 547,
+        "RETREAT": 75,
+        "SHADOW": 431,
+        "SPOT": 7999,
+        "SUPPRESS": 185,
+        "TAKE_COVER": 73
+       }
+      ],
+      "pinned_samples": [
+       512,
+       558
+      ],
+      "shells_resupplied": [
+       0,
+       29
+      ],
+      "shield_damage": [
+       3093.75000345707,
+       2864.97858226299
+      ],
+      "shots": [
+       240,
+       371
+      ],
+      "suppression_samples": [
+       27943,
+       33568
+      ],
+      "suppression_total": [
+       1009.09721380683,
+       897.862670042691
+      ],
+      "weak_spot_hits": [
+       2,
+       2
+      ]
+     },
+     "tanks": {
+      "green": 25,
+      "rust": 31
+     },
+     "tick": 5810,
+     "units_left": {
+      "green": 10,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 15,
+      "rust": 31
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 5.2,
+     "flank_share": 0.043,
+     "hidden_share": 0.467,
+     "hits": 414,
+     "range_mean_m": 38.0,
+     "range_median_m": 32.3,
+     "range_p90_m": 70.9,
+     "reason": "elimination",
+     "sim_seconds": 96.8,
+     "swap_bases": true,
+     "unit_seconds": 1706,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 17,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5060,
+      "rust": 5200
+     },
+     "budget": 5200,
+     "control": {
+      "green": 90,
+      "rust": 0
+     },
+     "duration_seconds": 122.0,
+     "kills_by_unit": {
+      "green": {
+       "artillery": 5,
+       "ifv": 6,
+       "scout": 3,
+       "tank": 5
+      },
+      "rust": {
+       "burner": 11,
+       "ifv": 4,
+       "lancer": 4,
+       "tank": 4
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "burner": 11,
+       "ifv": 4,
+       "lancer": 4,
+       "tank": 4
+      },
+      "rust": {
+       "artillery": 5,
+       "ifv": 6,
+       "scout": 3,
+       "tank": 5
+      }
+     },
+     "real_seconds": 43.45,
+     "reason": "control",
+     "score": {
+      "green": 19,
+      "rust": 23
+     },
+     "seed": 17,
+     "sim_seconds": 122.0,
+     "speedup": 2.8,
+     "state_hash": "95d600fc19713291",
+     "stats": {
+      "damage": [
+       4400,
+       5792
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        264.9,
+        145.8
+       ],
+       "combat_seconds": 103,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.167,
+       "engaged_distance_median": 79.5,
+       "flank_rear_kill_share": 0.56,
+       "held_line_share": 0.214,
+       "kill_distance_median": 62.2,
+       "kill_distance_p25": 22.8,
+       "kill_distance_p75": 81.9,
+       "kills": {
+        "front": 11,
+        "indirect": 17,
+        "rear": 3,
+        "side": 11
+       },
+       "kills_by_cover_shooters_share": 0.262,
+       "net_advance": [
+        22.1,
+        -25.6
+       ],
+       "off_axis_kill_share": 0.214,
+       "samples": 122,
+       "separation_at_contact": 108.4,
+       "shots_near_cover_share": 0.271,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.163
+      },
+      "first_kill_seconds": 10.1,
+      "first_shot_seconds": 6.4,
+      "flame_damage": [
+       1494,
+       0
+      ],
+      "friendly_damage": [
+       26.2874997854233,
+       85.6000003814697
+      ],
+      "friendly_hits": [
+       1,
+       5
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       101,
+       160
+      ],
+      "gun_ready_samples": [
+       135,
+       471
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       173,
+       195
+      ],
+      "hits_by_face": {
+       "front": 218,
+       "rear": 7,
+       "side": 143
+      },
+      "kills": [
+       19,
+       23
+      ],
+      "laser_damage": [
+       1101,
+       0
+      ],
+      "mortar_damage": [
+       0,
+       4083
+      ],
+      "options": [
+       {
+        "CLEAR_LANE": 848,
+        "CONTEST": 2883,
+        "COVER_FIRE": 102,
+        "ENGAGE": 4102,
+        "FLANK": 21,
+        "INVESTIGATE": 1314,
+        "RECHARGE": 156,
+        "REGROUP": 910,
+        "RESUPPLY": 229,
+        "RETREAT": 2134,
+        "SUPPRESS": 1021,
+        "TAKE_COVER": 477
+       },
+       {
+        "BOMBARD": 8548,
+        "CLEAR_LANE": 161,
+        "CONTEST": 933,
+        "COVER_FIRE": 124,
+        "ENGAGE": 838,
+        "RECHARGE": 189,
+        "REGROUP": 660,
+        "RETREAT": 431,
+        "SHADOW": 372,
+        "SPOT": 10389,
+        "SUPPRESS": 360,
+        "TAKE_COVER": 124
+       }
+      ],
+      "pinned_samples": [
+       1434,
+       416
+      ],
+      "shells_resupplied": [
+       0,
+       43
+      ],
+      "shield_damage": [
+       2588.91666257381,
+       4582.41969060898
+      ],
+      "shots": [
+       256,
+       265
+      ],
+      "suppression_samples": [
+       28453,
+       46310
+      ],
+      "suppression_total": [
+       1972.32996608919,
+       863.302078821906
+      ],
+      "weak_spot_hits": [
+       1,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 25,
+      "rust": 31
+     },
+     "tick": 7320,
+     "units_left": {
+      "green": 2,
+      "rust": 12
+     },
+     "units_lost": {
+      "green": 23,
+      "rust": 19
+     },
+     "winner": "Green"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 6.7,
+     "flank_share": 0.033,
+     "hidden_share": 0.467,
+     "hits": 374,
+     "range_mean_m": 51.4,
+     "range_median_m": 49.8,
+     "range_p90_m": 85.1,
+     "reason": "control",
+     "sim_seconds": 122.0,
+     "swap_bases": false,
+     "unit_seconds": 1890,
+     "winner": "Green"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 18,
+    "swap": false,
+    "result": {
+     "army_cost": {
+      "green": 5120,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 90
+     },
+     "duration_seconds": 117.8,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 3,
+       "tank": 7
+      },
+      "rust": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "tank": 9
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "tank": 9
+      },
+      "rust": {
+       "ifv": 3,
+       "tank": 7
+      }
+     },
+     "real_seconds": 33.43,
+     "reason": "control",
+     "score": {
+      "green": 10,
+      "rust": 25
+     },
+     "seed": 18,
+     "sim_seconds": 117.8,
+     "speedup": 3.5,
+     "state_hash": "5f3b05a991e91095",
+     "stats": {
+      "damage": [
+       3831,
+       6060
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        163.1,
+        121.6
+       ],
+       "combat_seconds": 49,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.429,
+       "engaged_distance_median": 60.3,
+       "flank_rear_kill_share": 0.545,
+       "held_line_share": 0.163,
+       "kill_distance_median": 47.9,
+       "kill_distance_p25": 36.2,
+       "kill_distance_p75": 63.3,
+       "kills": {
+        "front": 15,
+        "indirect": 2,
+        "rear": 1,
+        "side": 17
+       },
+       "kills_by_cover_shooters_share": 0.343,
+       "net_advance": [
+        -27.6,
+        37.5
+       ],
+       "off_axis_kill_share": 0.2,
+       "samples": 117,
+       "separation_at_contact": 100.1,
+       "shots_near_cover_share": 0.315,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.222
+      },
+      "first_kill_seconds": 12.4,
+      "first_shot_seconds": 6.8,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       13.5,
+       13.5
+      ],
+      "friendly_hits": [
+       1,
+       1
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       181,
+       184
+      ],
+      "gun_ready_samples": [
+       248,
+       189
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       212,
+       259
+      ],
+      "hits_by_face": {
+       "front": 299,
+       "rear": 7,
+       "side": 165
+      },
+      "kills": [
+       10,
+       25
+      ],
+      "laser_damage": [
+       500,
+       376
+      ],
+      "mortar_damage": [
+       539,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 2135,
+        "CLEAR_LANE": 402,
+        "CONTEST": 1572,
+        "COVER_FIRE": 369,
+        "ENGAGE": 1542,
+        "RECHARGE": 164,
+        "REGROUP": 344,
+        "RETREAT": 297,
+        "SHADOW": 135,
+        "SPOT": 4706,
+        "SUPPRESS": 854,
+        "TAKE_COVER": 94
+       },
+       {
+        "ADVANCE": 213,
+        "CLEAR_LANE": 1501,
+        "CONTEST": 9052,
+        "COVER_FIRE": 769,
+        "ENGAGE": 4353,
+        "FLANK": 15,
+        "INVESTIGATE": 460,
+        "RECHARGE": 225,
+        "REGROUP": 1861,
+        "RESUPPLY": 1246,
+        "RETREAT": 1140,
+        "SUPPRESS": 1501,
+        "TAKE_COVER": 125
+       }
+      ],
+      "pinned_samples": [
+       415,
+       573
+      ],
+      "shells_resupplied": [
+       15,
+       0
+      ],
+      "shield_damage": [
+       3317.81433296204,
+       3716.89999771118
+      ],
+      "shots": [
+       270,
+       390
+      ],
+      "suppression_samples": [
+       25297,
+       44963
+      ],
+      "suppression_total": [
+       944.901918067394,
+       1302.87748653044
+      ],
+      "weak_spot_hits": [
+       0,
+       1
+      ]
+     },
+     "tanks": {
+      "green": 29,
+      "rust": 27
+     },
+     "tick": 7068,
+     "units_left": {
+      "green": 4,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 25,
+      "rust": 10
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.026,
+     "hidden_share": 0.532,
+     "hits": 473,
+     "range_mean_m": 44.1,
+     "range_median_m": 43.2,
+     "range_p90_m": 70.8,
+     "reason": "control",
+     "sim_seconds": 117.8,
+     "swap_bases": false,
+     "unit_seconds": 2821,
+     "winner": "Rust"
+    }
+   },
+   {
+    "arena": "boneyard",
+    "seed": 18,
+    "swap": true,
+    "result": {
+     "army_cost": {
+      "green": 5120,
+      "rust": 5150
+     },
+     "budget": 5200,
+     "control": {
+      "green": 0,
+      "rust": 72
+     },
+     "duration_seconds": 90.3,
+     "kills_by_unit": {
+      "green": {
+       "ifv": 2,
+       "tank": 6
+      },
+      "rust": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "scout": 4,
+       "tank": 9
+      }
+     },
+     "losses_by_unit": {
+      "green": {
+       "artillery": 4,
+       "ifv": 8,
+       "lancer": 4,
+       "scout": 4,
+       "tank": 9
+      },
+      "rust": {
+       "ifv": 2,
+       "tank": 6
+      }
+     },
+     "real_seconds": 24.77,
+     "reason": "elimination",
+     "score": {
+      "green": 8,
+      "rust": 29
+     },
+     "seed": 18,
+     "sim_seconds": 90.3,
+     "speedup": 3.6,
+     "state_hash": "133e70bad40bfb49",
+     "stats": {
+      "damage": [
+       2882,
+       6620
+      ],
+      "engagement": {
+       "behind_line_kill_share": 0.0,
+       "centroid_travel": [
+        346.0,
+        138.1
+       ],
+       "combat_seconds": 64,
+       "contact_second": 6,
+       "deaths_near_cover_share": 0.297,
+       "engaged_distance_median": 73.5,
+       "flank_rear_kill_share": 0.543,
+       "held_line_share": 0.219,
+       "kill_distance_median": 46.9,
+       "kill_distance_p25": 41.1,
+       "kill_distance_p75": 60.3,
+       "kills": {
+        "front": 16,
+        "indirect": 2,
+        "rear": 2,
+        "side": 17
+       },
+       "kills_by_cover_shooters_share": 0.162,
+       "net_advance": [
+        -32.5,
+        59.8
+       ],
+       "off_axis_kill_share": 0.108,
+       "samples": 90,
+       "separation_at_contact": 101.0,
+       "shots_near_cover_share": 0.275,
+       "static_share": 0.0,
+       "unit_seconds_near_cover_share": 0.211
+      },
+      "first_kill_seconds": 8.9,
+      "first_shot_seconds": 6.8,
+      "flame_damage": [
+       0,
+       0
+      ],
+      "friendly_damage": [
+       32.3999996185303,
+       56.6999988555908
+      ],
+      "friendly_hits": [
+       2,
+       3
+      ],
+      "friendly_kills": [
+       0,
+       0
+      ],
+      "gun_idle_samples": [
+       133,
+       200
+      ],
+      "gun_ready_samples": [
+       209,
+       204
+      ],
+      "hazard_damage": [
+       0.0,
+       0.0
+      ],
+      "hazard_kills": [
+       0,
+       0
+      ],
+      "hits": [
+       219,
+       185
+      ],
+      "hits_by_face": {
+       "front": 212,
+       "rear": 17,
+       "side": 175
+      },
+      "kills": [
+       8,
+       29
+      ],
+      "laser_damage": [
+       349,
+       450
+      ],
+      "mortar_damage": [
+       519,
+       0
+      ],
+      "options": [
+       {
+        "BOMBARD": 2126,
+        "CLEAR_LANE": 383,
+        "CONTEST": 1584,
+        "COVER_FIRE": 204,
+        "ENGAGE": 1620,
+        "RECHARGE": 73,
+        "REGROUP": 166,
+        "RETREAT": 130,
+        "SHADOW": 175,
+        "SPOT": 3084,
+        "SUPPRESS": 1208,
+        "TAKE_COVER": 79
+       },
+       {
+        "ADVANCE": 67,
+        "CLEAR_LANE": 1865,
+        "CONTEST": 7123,
+        "COVER_FIRE": 1082,
+        "ENGAGE": 4812,
+        "FLANK": 8,
+        "HOLD": 48,
+        "INVESTIGATE": 444,
+        "RECHARGE": 196,
+        "REGROUP": 1369,
+        "RETREAT": 119,
+        "SUPPRESS": 1802,
+        "TAKE_COVER": 188
+       }
+      ],
+      "pinned_samples": [
+       366,
+       647
+      ],
+      "shells_resupplied": [
+       23,
+       0
+      ],
+      "shield_damage": [
+       4234.16376018524,
+       3560.30000591278
+      ],
+      "shots": [
+       341,
+       302
+      ],
+      "suppression_samples": [
+       21738,
+       38303
+      ],
+      "suppression_total": [
+       806.74019768459,
+       1550.28370122472
+      ],
+      "weak_spot_hits": [
+       7,
+       0
+      ]
+     },
+     "tanks": {
+      "green": 29,
+      "rust": 27
+     },
+     "tick": 5416,
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 8
+     },
+     "winner": "Rust"
+    },
+    "probe": {
+     "arena": "boneyard",
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.023,
+     "hidden_share": 0.495,
+     "hits": 409,
+     "range_mean_m": 48.9,
+     "range_median_m": 43.8,
+     "range_p90_m": 77.2,
+     "reason": "elimination",
+     "sim_seconds": 90.3,
+     "swap_bases": true,
+     "unit_seconds": 2465,
+     "winner": "Rust"
+    }
+   }
+  ]
+ }
+}

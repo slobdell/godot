@@ -1,0 +1,203 @@
+{
+ "conditions": {
+  "commit": "16d23375+dirty",
+  "machine": "flightdeck",
+  "sim_hz": "30",
+  "workload": "condemned v law, budget 5200, control point, elimination, 60 s limit, extra '--green-elements --rust-elements'",
+  "seeds": [
+   1
+  ],
+  "sample_size": "1 matches"
+ },
+ "summary": {
+  "green": {
+   "idle_in_contact_share": {
+    "mean": 0.175,
+    "min": 0.175,
+    "max": 0.175
+   },
+   "off_slot_share": {
+    "mean": 0.372,
+    "min": 0.372,
+    "max": 0.372
+   },
+   "stale_order_share": {
+    "mean": 0.0,
+    "min": 0.0,
+    "max": 0.0
+   },
+   "orders_per_unit_min": {
+    "mean": 55.03,
+    "min": 55.03,
+    "max": 55.03
+   },
+   "drill_switches_per_element_min": {
+    "mean": 11.46,
+    "min": 11.46,
+    "max": 11.46
+   }
+  },
+  "rust": {
+   "idle_in_contact_share": {
+    "mean": 0.107,
+    "min": 0.107,
+    "max": 0.107
+   },
+   "off_slot_share": {
+    "mean": 0.343,
+    "min": 0.343,
+    "max": 0.343
+   },
+   "stale_order_share": {
+    "mean": 0.0,
+    "min": 0.0,
+    "max": 0.0
+   },
+   "orders_per_unit_min": {
+    "mean": 31.88,
+    "min": 31.88,
+    "max": 31.88
+   },
+   "drill_switches_per_element_min": {
+    "mean": 8.08,
+    "min": 8.08,
+    "max": 8.08
+   }
+  }
+ },
+ "matches": [
+  {
+   "green": {
+    "drill_switches_per_element_min": 11.46,
+    "element_minutes": 5.33,
+    "idle_in_contact_s": 243.0,
+    "idle_in_contact_share": 0.175,
+    "off_slot_s": 517.0,
+    "off_slot_share": 0.372,
+    "orders_per_unit_min": 55.03,
+    "stale_order_s": 0.0,
+    "stale_order_share": 0.0,
+    "top_orders": [
+     [
+      "attack_move/element",
+      537
+     ],
+     [
+      "move/element",
+      518
+     ],
+     [
+      "hold/element",
+      110
+     ],
+     [
+      "attack/element",
+      109
+     ]
+    ],
+    "top_transitions": [
+     [
+      "->near_ambush",
+      19
+     ],
+     [
+      "near_ambush>-",
+      16
+     ],
+     [
+      "->react_to_contact",
+      6
+     ],
+     [
+      "->support_by_fire",
+      4
+     ],
+     [
+      "near_ambush>assault_through",
+      4
+     ],
+     [
+      "react_to_contact>-",
+      4
+     ],
+     [
+      "support_by_fire>-",
+      3
+     ],
+     [
+      "assault_through>-",
+      2
+     ]
+    ],
+    "unit_minutes": 23.15
+   },
+   "rust": {
+    "drill_switches_per_element_min": 8.08,
+    "element_minutes": 4.83,
+    "idle_in_contact_s": 98.5,
+    "idle_in_contact_share": 0.107,
+    "off_slot_s": 317.0,
+    "off_slot_share": 0.343,
+    "orders_per_unit_min": 31.88,
+    "stale_order_s": 0.0,
+    "stale_order_share": 0.0,
+    "top_orders": [
+     [
+      "move/element",
+      227
+     ],
+     [
+      "attack_move/element",
+      154
+     ],
+     [
+      "attack/element",
+      59
+     ],
+     [
+      "hold/element",
+      51
+     ]
+    ],
+    "top_transitions": [
+     [
+      "->react_to_contact",
+      8
+     ],
+     [
+      "->near_ambush",
+      7
+     ],
+     [
+      "near_ambush>-",
+      7
+     ],
+     [
+      "react_to_contact>-",
+      6
+     ],
+     [
+      "->support_by_fire",
+      4
+     ],
+     [
+      "react_to_contact>far_ambush",
+      2
+     ],
+     [
+      "assault_through>far_ambush",
+      1
+     ],
+     [
+      "near_ambush>assault_through",
+      1
+     ]
+    ],
+    "unit_minutes": 15.4
+   },
+   "sim_seconds": 60.0,
+   "seed": 1,
+   "winner": "Rust"
+  }
+ ]
+}

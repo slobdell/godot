@@ -1,0 +1,63 @@
+{
+	"arena": "terminus",
+	"arm": {
+		"avoidance": true,
+		"commit": true,
+		"off": [],
+		"station": true
+	},
+	"arrived": 3,
+	"arrived_fraction": 0.3,
+	"both_ways": false,
+	"crawl_share": 0.004,
+	"crawl_unit_seconds": 0.9,
+	"distance_m": 2171.6,
+	"no_progress_share": 0.0,
+	"no_progress_unit_seconds": 0.0,
+	"no_progress_units": 0,
+	"off_navmesh": 0,
+	"oscillating_share": 0.0,
+	"oscillating_unit_seconds": 0.0,
+	"oscillating_units": 0,
+	"progress_m": 1679.4,
+	"seconds": 25.0,
+	"stuck_events": 0,
+	"stuck_units": 0,
+	"t100_s": -1.0,
+	"t50_s": -1.0,
+	"t90_s": -1.0,
+	"time_limit_s": 25.0,
+	"units": 10,
+	"worst": [
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 46.7,
+			"stuck_events": 0,
+			"unit": "Cross_9"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 38.4,
+			"stuck_events": 0,
+			"unit": "Cross_7"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 37.5,
+			"stuck_events": 0,
+			"unit": "Cross_8"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 27.7,
+			"stuck_events": 0,
+			"unit": "Cross_6"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 26.8,
+			"stuck_events": 0,
+			"unit": "Cross_5"
+		}
+	]
+}

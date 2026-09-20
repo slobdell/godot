@@ -1,0 +1,681 @@
+{
+  "summary": {
+    "cross_talk": [],
+    "element_slot_m": {
+      "mean": 10.6,
+      "units": 18,
+      "worst": 76
+    },
+    "from_the_given_slot_m": {
+      "alive": 18,
+      "mean": 9.8,
+      "of": 21,
+      "worst": 56.0
+    },
+    "issues_while_idle": {
+      "acknowledgement_cues": 0,
+      "by_source": {},
+      "by_verb": {},
+      "changes_per_second": 1.2,
+      "commands": 0,
+      "cues_from_the_players_clicks": 4,
+      "first": [],
+      "order_changes": 7,
+      "seconds": 6.0,
+      "step": "issues_while_idle",
+      "unit_orders": 0
+    },
+    "later_seconds": 20.0,
+    "settle_seconds": 6.0,
+    "squads": 5,
+    "units": 21,
+    "verdicts": {
+      "arrived_and_stayed": 18,
+      "still_travelling": 3
+    }
+  },
+  "units": [
+    {
+      "alive": true,
+      "at": [
+        -51,
+        116
+      ],
+      "element_slot_m": 6,
+      "from_goal_m": 3,
+      "from_start_m": 57,
+      "later_at": [
+        -51,
+        116
+      ],
+      "later_element_slot_m": 6,
+      "later_from_goal_m": 3,
+      "later_from_start_m": 57,
+      "order": "",
+      "order_source": "",
+      "sent_to": [
+        -54,
+        116
+      ],
+      "squad": 1,
+      "started_at": [
+        0,
+        90
+      ],
+      "station_m": 3,
+      "unit": "Green_Guns_1",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -27,
+        109
+      ],
+      "element_slot_m": 1,
+      "from_goal_m": 3,
+      "from_start_m": 24,
+      "later_at": [
+        -27,
+        109
+      ],
+      "later_element_slot_m": 1,
+      "later_from_goal_m": 3,
+      "later_from_start_m": 24,
+      "order": "",
+      "order_source": "",
+      "sent_to": [
+        -29,
+        110
+      ],
+      "squad": 1,
+      "started_at": [
+        -11,
+        90
+      ],
+      "station_m": 3,
+      "unit": "Green_Guns_2",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -19,
+        103
+      ],
+      "element_slot_m": 1,
+      "from_goal_m": 3,
+      "from_start_m": 32,
+      "later_at": [
+        -19,
+        103
+      ],
+      "later_element_slot_m": 1,
+      "later_from_goal_m": 3,
+      "later_from_start_m": 32,
+      "order": "",
+      "order_source": "",
+      "sent_to": [
+        -21,
+        105
+      ],
+      "squad": 1,
+      "started_at": [
+        11,
+        90
+      ],
+      "station_m": 3,
+      "unit": "Green_Guns_3",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -44,
+        113
+      ],
+      "element_slot_m": 4,
+      "from_goal_m": 3,
+      "from_start_m": 32,
+      "later_at": [
+        -44,
+        113
+      ],
+      "later_element_slot_m": 4,
+      "later_from_goal_m": 3,
+      "later_from_start_m": 32,
+      "order": "",
+      "order_source": "",
+      "sent_to": [
+        -45,
+        116
+      ],
+      "squad": 1,
+      "started_at": [
+        -22,
+        90
+      ],
+      "station_m": 3,
+      "unit": "Green_Guns_4",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -34,
+        115
+      ],
+      "element_slot_m": 3,
+      "from_goal_m": 3,
+      "from_start_m": 62,
+      "later_at": [
+        -34,
+        115
+      ],
+      "later_element_slot_m": 3,
+      "later_from_goal_m": 3,
+      "later_from_start_m": 62,
+      "order": "",
+      "order_source": "",
+      "sent_to": [
+        -37,
+        116
+      ],
+      "squad": 1,
+      "started_at": [
+        22,
+        90
+      ],
+      "station_m": 3,
+      "unit": "Green_Guns_5",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -57,
+        31
+      ],
+      "element_slot_m": 158,
+      "from_goal_m": 158,
+      "from_start_m": 63,
+      "later_at": [
+        -104,
+        -87
+      ],
+      "later_element_slot_m": 32,
+      "later_from_goal_m": 32,
+      "later_from_start_m": 190,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        -116,
+        -116
+      ],
+      "squad": 2,
+      "started_at": [
+        -33,
+        89
+      ],
+      "station_m": -1,
+      "unit": "Green_Guns2_1",
+      "verdict": "still_travelling"
+    },
+    {
+      "alive": true,
+      "at": [
+        -6,
+        36
+      ],
+      "element_slot_m": 178,
+      "from_goal_m": 178,
+      "from_start_m": 65,
+      "later_at": null,
+      "later_element_slot_m": -1,
+      "later_from_goal_m": -1,
+      "later_from_start_m": -1,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        -111,
+        -107
+      ],
+      "squad": 2,
+      "started_at": [
+        33,
+        89
+      ],
+      "station_m": -1,
+      "unit": "Green_Guns2_2",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -61,
+        36
+      ],
+      "element_slot_m": 142,
+      "from_goal_m": 142,
+      "from_start_m": 56,
+      "later_at": [
+        -94,
+        -43
+      ],
+      "later_element_slot_m": 76,
+      "later_from_goal_m": 56,
+      "later_from_start_m": 142,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        -107,
+        -98
+      ],
+      "squad": 2,
+      "started_at": [
+        -44,
+        89
+      ],
+      "station_m": -1,
+      "unit": "Green_Guns2_3",
+      "verdict": "still_travelling"
+    },
+    {
+      "alive": true,
+      "at": [
+        5,
+        33
+      ],
+      "element_slot_m": 192,
+      "from_goal_m": 192,
+      "from_start_m": 69,
+      "later_at": null,
+      "later_element_slot_m": -1,
+      "later_from_goal_m": -1,
+      "later_from_start_m": -1,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        -116,
+        -116
+      ],
+      "squad": 2,
+      "started_at": [
+        44,
+        89
+      ],
+      "station_m": -1,
+      "unit": "Green_Guns2_4",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -66,
+        31
+      ],
+      "element_slot_m": 155,
+      "from_goal_m": 155,
+      "from_start_m": 60,
+      "later_at": [
+        -106,
+        -78
+      ],
+      "later_element_slot_m": 28,
+      "later_from_goal_m": 39,
+      "later_from_start_m": 175,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        -116,
+        -116
+      ],
+      "squad": 2,
+      "started_at": [
+        -55,
+        89
+      ],
+      "station_m": -1,
+      "unit": "Green_Guns2_5",
+      "verdict": "still_travelling"
+    },
+    {
+      "alive": true,
+      "at": [
+        0,
+        110
+      ],
+      "element_slot_m": 13,
+      "from_goal_m": 13,
+      "from_start_m": 59,
+      "later_at": [
+        -9,
+        113
+      ],
+      "later_element_slot_m": 4,
+      "later_from_goal_m": 4,
+      "later_from_start_m": 68,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        -11,
+        116
+      ],
+      "squad": 3,
+      "started_at": [
+        55,
+        90
+      ],
+      "station_m": -1,
+      "unit": "Green_Guns3_1",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -20,
+        108
+      ],
+      "element_slot_m": 16,
+      "from_goal_m": 16,
+      "from_start_m": 49,
+      "later_at": [
+        -10,
+        117
+      ],
+      "later_element_slot_m": 4,
+      "later_from_goal_m": 4,
+      "later_from_start_m": 62,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        -6,
+        116
+      ],
+      "squad": 3,
+      "started_at": [
+        -66,
+        90
+      ],
+      "station_m": -1,
+      "unit": "Green_Guns3_2",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        17,
+        92
+      ],
+      "element_slot_m": 9,
+      "from_goal_m": 9,
+      "from_start_m": 49,
+      "later_at": [
+        11,
+        93
+      ],
+      "later_element_slot_m": 3,
+      "later_from_goal_m": 3,
+      "later_from_start_m": 55,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        8,
+        94
+      ],
+      "squad": 3,
+      "started_at": [
+        66,
+        90
+      ],
+      "station_m": -1,
+      "unit": "Green_Guns3_3",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        3,
+        102
+      ],
+      "element_slot_m": 3,
+      "from_goal_m": 3,
+      "from_start_m": 5,
+      "later_at": [
+        3,
+        102
+      ],
+      "later_element_slot_m": 3,
+      "later_from_goal_m": 3,
+      "later_from_start_m": 5,
+      "order": "",
+      "order_source": "",
+      "sent_to": [
+        3,
+        105
+      ],
+      "squad": 3,
+      "started_at": [
+        0,
+        98
+      ],
+      "station_m": 3,
+      "unit": "Green_Guns3_4",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -3,
+        114
+      ],
+      "element_slot_m": 3,
+      "from_goal_m": 3,
+      "from_start_m": 18,
+      "later_at": [
+        -3,
+        114
+      ],
+      "later_element_slot_m": 3,
+      "later_from_goal_m": 3,
+      "later_from_start_m": 18,
+      "order": "",
+      "order_source": "",
+      "sent_to": [
+        -2,
+        116
+      ],
+      "squad": 3,
+      "started_at": [
+        -11,
+        98
+      ],
+      "station_m": 3,
+      "unit": "Green_Guns3_5",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        21,
+        39
+      ],
+      "element_slot_m": 158,
+      "from_goal_m": 158,
+      "from_start_m": 59,
+      "later_at": null,
+      "later_element_slot_m": -1,
+      "later_from_goal_m": -1,
+      "later_from_start_m": -1,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        89,
+        -104
+      ],
+      "squad": 4,
+      "started_at": [
+        11,
+        98
+      ],
+      "station_m": -1,
+      "unit": "Green_Guns4_1",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -25,
+        104
+      ],
+      "element_slot_m": 60,
+      "from_goal_m": 60,
+      "from_start_m": 7,
+      "later_at": [
+        35,
+        111
+      ],
+      "later_element_slot_m": 6,
+      "later_from_goal_m": 5,
+      "later_from_start_m": 59,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        34,
+        116
+      ],
+      "squad": 5,
+      "started_at": [
+        -22,
+        99
+      ],
+      "station_m": -1,
+      "unit": "Green_Hunters_1",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        21,
+        95
+      ],
+      "element_slot_m": 21,
+      "from_goal_m": 21,
+      "from_start_m": 3,
+      "later_at": [
+        20,
+        115
+      ],
+      "later_element_slot_m": 3,
+      "later_from_goal_m": 3,
+      "later_from_start_m": 18,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        17,
+        116
+      ],
+      "squad": 5,
+      "started_at": [
+        22,
+        97
+      ],
+      "station_m": -1,
+      "unit": "Green_Hunters_2",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -29,
+        97
+      ],
+      "element_slot_m": 31,
+      "from_goal_m": 31,
+      "from_start_m": 4,
+      "later_at": [
+        1,
+        106
+      ],
+      "later_element_slot_m": 5,
+      "later_from_goal_m": 1,
+      "later_from_start_m": 35,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        1,
+        105
+      ],
+      "squad": 5,
+      "started_at": [
+        -33,
+        99
+      ],
+      "station_m": -1,
+      "unit": "Green_Hunters_3",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        32,
+        95
+      ],
+      "element_slot_m": 22,
+      "from_goal_m": 22,
+      "from_start_m": 3,
+      "later_at": [
+        23,
+        116
+      ],
+      "later_element_slot_m": 4,
+      "later_from_goal_m": 3,
+      "later_from_start_m": 21,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        26,
+        116
+      ],
+      "squad": 5,
+      "started_at": [
+        33,
+        97
+      ],
+      "station_m": -1,
+      "unit": "Green_Hunters_4",
+      "verdict": "arrived_and_stayed"
+    },
+    {
+      "alive": true,
+      "at": [
+        -29,
+        101
+      ],
+      "element_slot_m": 40,
+      "from_goal_m": 40,
+      "from_start_m": 15,
+      "later_at": [
+        11,
+        106
+      ],
+      "later_element_slot_m": 5,
+      "later_from_goal_m": 5,
+      "later_from_start_m": 56,
+      "order": "move",
+      "order_source": "element",
+      "sent_to": [
+        9,
+        110
+      ],
+      "squad": 5,
+      "started_at": [
+        -44,
+        99
+      ],
+      "station_m": -1,
+      "unit": "Green_Hunters_5",
+      "verdict": "arrived_and_stayed"
+    }
+  ]
+}
