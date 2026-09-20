@@ -265,13 +265,26 @@ _CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
 # starved queue as "builder0 is slow" for exactly that reason (tools/slot.sh's own note). So a side process
 # reports every minute, on stderr, unbuffered: how long, how many done, and WHICH targets are still outstanding.
 # It reads marker files the wrappers touch, so it cannot disagree with what make actually finished.
+# ---- `check` KEEPS GOING, and reports every target's verdict (2026-09-20) ----------------------
+# It used to hand its list to one `make -j` without `-k`, so the first failure stopped the rest from
+# starting. Two combat checks in a row therefore produced **no `sim-baseline` reading at all**: the one
+# number that gates every merge went missing behind an unrelated shard failure, and nothing in the log said
+# so -- a target that never ran looked exactly like one that passed.
+#
+# The cost is real and deliberate: a check with a failure now takes its full wall-clock instead of stopping
+# early. That is the right trade, because the reason to run a check is to learn what is wrong, and stopping
+# at the first thing means learning one thing per forty minutes.
+#
+# `lint` is the exception and stays FIRST (an order-only edge from every other wrapper): a parse error makes
+# every Godot target below fail describing the symptom rather than the cause. Its dependents then come back
+# NOT RUN, which `check_verdict.sh` reports as its own state -- not as a pass, and not as a failure.
 check: ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
 	@printf '>> check: %s targets, up to %s at once (lint -P%s, test x%s) on %s | commit %s | load %s | MemAvailable %s MB | %s other godot\n' \
 		"$(words $(CHECK_TARGETS))" "$(CHECK_JOBS)" "$(LINT_JOBS)" "$(TEST_SHARDS)" "$$(hostname)" \
 		"$$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})" \
 		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(awk '/MemAvailable/{print int($$2/1024)}' /proc/meminfo)" \
 		"$$(pgrep -c -f 'Godot_v' || echo 0)"
-	@rm -rf $(BUILD_DIR)/check/done && mkdir -p $(BUILD_DIR)/check/done
+	@rm -rf $(BUILD_DIR)/check/done $(BUILD_DIR)/check/started && mkdir -p $(BUILD_DIR)/check/done $(BUILD_DIR)/check/started
 	@$(MAKE) --no-print-directory import
 	@started=$$(date +%s); \
 	( while sleep 60; do \
@@ -286,11 +299,11 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 			"$$(( elapsed / 60 ))" "$$(( elapsed % 60 ))" "$$count" "$(words $(CHECK_TARGETS))" "$$left" >&2; \
 	done ) & heartbeat=$$!; \
 	trap 'kill $$heartbeat 2>/dev/null' EXIT INT TERM; \
-	if $(MAKE) --no-print-directory -j$(CHECK_JOBS) -Otarget \
-			TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel; \
-		then status=0; else status=$$?; fi; \
+	$(MAKE) --no-print-directory -k -j$(CHECK_JOBS) -Otarget \
+		TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel || true; \
 	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)" >&2; \
 	$(MAKE) --no-print-directory check-hashes >&2 || true; \
+	if tools/check_verdict.sh $(BUILD_DIR)/check $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
 	exit $$status
 
 # The hash verdict, in ONE comparable line. It exists because `determinism`'s own line truncates its JSON at 120
@@ -339,7 +352,13 @@ check-parallel: $(_CHECK_WRAPPED) ## (internal) check's targets for `make -j`; r
 # Now each wrapper has NO normal prerequisite and invokes its target from its own recipe, so the order-only edge
 # constrains the work itself. `-o import` because `check` has already built it and 16 sub-makes must not each
 # redo it (that would also put 16 writers on the .godot cache, which is the one thing lint's lock is about).
-$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @$$(MAKE) --no-print-directory -o import $(t) && mkdir -p $$(BUILD_DIR)/check/done && touch $$(BUILD_DIR)/check/done/$(t)))
+$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @mkdir -p $$(BUILD_DIR)/check/started $$(BUILD_DIR)/check/done && touch $$(BUILD_DIR)/check/started/$(t) && $$(MAKE) --no-print-directory -o import $(t) && touch $$(BUILD_DIR)/check/done/$(t)))
+
+# LINT GATES EVERY OTHER TARGET. A file that does not parse makes every Godot target below fail in a way
+# that describes the symptom and not the cause, and reading sixteen of those to find one parse error is
+# how an hour goes. Ordered, not merged into the batch, so `-k` skips the rest rather than running them
+# into the same wall -- and they come back NOT RUN, which is not the same as passing.
+$(foreach t,$(filter-out lint,$(CHECK_TARGETS)),$(eval _cp-$(t): | _cp-lint))
 
 # The three exclusion groups, as order-only prerequisites between the wrappers.
 _cp-combat-smoke:    | _cp-net-smoke
