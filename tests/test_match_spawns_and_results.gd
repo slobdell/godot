@@ -108,8 +108,31 @@ func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
 		var delta: float = (tank.global_position - (placed[tank] as Vector3)).length()
 		if delta > PLACEMENT_DRIFT_M:
 			moved.append("%s moved %.2f m from %s to %s" % [tank.name, delta, placed[tank], tank.global_position])
-	assert_eq(moved, [], "no hull is moved off its placement once settled (%d frame(s), last step %.4f m)" \
-			% [frames, worst_step])
+	# THE RED CARRIES ITS OWN DIAGNOSIS. A pair that was clear at placement and is not clear now needs four numbers to
+	# say WHY, or the next reader re-derives them: what the half-metre rule requires for those two hulls, how far apart
+	# they were placed, how far apart they ended, and which way each one went. The displacement VECTORS are the
+	# discriminator: convergent along the row says something squeezed the pair; parallel says both were carried; radial
+	# from one spot says a third body pushed them.
+	var squeezed: Array = []
+	for i in tanks.size():
+		for j in range(i + 1, tanks.size()):
+			var a: Tank = tanks[i]
+			var b: Tank = tanks[j]
+			var size_a: Array = Units.stat(a.unit_id, "hull_size")
+			var size_b: Array = Units.stat(b.unit_id, "hull_size")
+			var box_a := Rect2(a.global_position.x - size_a[0] / 2.0, a.global_position.z - size_a[2] / 2.0,
+					size_a[0], size_a[2])
+			var box_b := Rect2(b.global_position.x - size_b[0] / 2.0, b.global_position.z - size_b[2] / 2.0,
+					size_b[0], size_b[2])
+			if not box_a.grow(0.5).intersects(box_b):
+				continue
+			var was: float = ((placed[a] as Vector3) - (placed[b] as Vector3)).length()
+			var now: float = (a.global_position - b.global_position).length()
+			squeezed.append("%s(%.2f wide)/%s(%.2f wide) need %.2f m, placed %.2f m, settled %.2f m; moved %s and %s" \
+					% [a.name, size_a[0], b.name, size_b[0], (float(size_a[0]) + float(size_b[0])) / 2.0 + 0.5,
+					was, now, a.global_position - (placed[a] as Vector3), b.global_position - (placed[b] as Vector3)])
+	assert_eq(moved, [], "no hull is moved off its placement once settled (%d frame(s), last step %.4f m)%s" \
+			% [frames, worst_step, "" if squeezed.is_empty() else "; pairs no longer clear: " + ", ".join(squeezed)])
 	var space := (tanks[0] as Tank).get_world_3d().direct_space_state
 	# POSITIVE CONTROL, because an empty result from an unready space is indistinguishable from a clear spawn and would
 	# pass this assertion for the worst possible reason. A box over the whole arena must hit SOMETHING on WORLD_MASK.
