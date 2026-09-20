@@ -260,12 +260,140 @@ is the orchestrator's call, not his.)
 
 ### Done
 
-_(nothing yet)_
+**CP1 (A12) is complete and its acceptance is met. T1 is measured and built; its falsifier run is in flight.**
+
+| # | item | state |
+|---|---|---|
+| 1a | the log format + reader | **done** — `tools/metrics/FORMAT.md`, `trajlog.py` |
+| 1b | the reference emitter + both hooks | **done** — `trajectory_log.gd`, nav's probe (+6 lines), combat's runner (+7) |
+| 2 | the four metrics, known-answer tested | **done** — `metrics.py`, 91 tests, every answer derived on paper |
+| 3 | the positive control | **done and PASSED** — see below |
+| 4 | `make metrics` + `_agents/metrics.md` + announce CP1 | **done**; announced to the orchestrator and every stream |
+| 5 | T1 parallelise `check` | (a) measuring now, (b)–(d) built, (e) falsifier run next |
+| 6 | stretch: progress heartbeat | not started |
+| 7 | stretch: offline objective note | **done** — in `_agents/metrics.md` |
+
+#### The positive control (item 3) — the bar is met by a factor of ten
+
+Re-ran round 8's recorded configuration at the recorded commit on the recorded machine: builder0, tree `1422acd9`
+(= `aa984edd` + the emitter and a one-token `NAV_FLAGS` pass-through, throwaway branch `tmp/metrics-r8-control`,
+**not for merge**, the orchestrator will delete it at round close), `nav-fight-maps`, attack_move, Condemned vs
+Condemned, seed 3, 120 s, busy 0, budget 6500. Arm proven live before any number was read: `NAV_FIGHT_ARM
+commit=true fixed_style=standoff avoidance=true station=true off=[]`, matching the archived brief.
+
+| map | round 8 published | the probe, this run | A12's tool, this run | delta |
+|---|---|---|---|---|
+| yard | 7.2% | 7.2% | **7.16%** | −0.04 pt |
+| boneyard | 6.6% | 6.6% | **6.65%** | +0.05 pt |
+| pit | 5.8% | 5.8% | **5.81%** | +0.01 pt |
+| boulevard | 5.3% | 5.3% | **5.30%** | +0.00 pt |
+
+Bar was ±0.5 points per map with the ordering preserved. The probe's counter and my tool come from the **same
+run**, so commit, machine, seed and load are not confounds between them; under-way denominators agree to 0.08%
+(one frame). Replays (4 × 5 MB gzipped), reports and each run's `NAV_FIGHT` line are in
+`_agents/streams/references/round9/metrics/`, with the reproduce line run from the stored paths to prove it runs.
+
+**What the continuous metric says that the threshold could not** (yard, GREEN, attack_move):
+
+| unit_id | units | eff mean | eff p10 | oscillating | cusps/agent-min | SPARC |
+|---|---|---|---|---|---|---|
+| ifv | 7 | 0.624 | 0.250 | 12.1% | 35.8 | −2.23 |
+| lancer | 6 | 0.619 | 0.216 | 9.4% | 34.8 | −2.10 |
+| tank | 21 | 0.798 | 0.388 | 4.9% | 7.4 | −1.94 |
+
+1. **The shuffler is the WHEELED hull, not the light one.** This roster fields no scout, yet reproduces round 8's
+   A8 shape exactly — so it is a locomotion effect. squad has re-aimed A8/A9's measurement design on it and nav
+   has taken it for A11's lattice.
+2. **56% of all reversals are the wheeled creep, and they are now named** (665 creep / 234 ordered / 293
+   unexplained of 1,192). `tank` produces **zero** creep cusps. Round 8's gear-flip counter read the controller's
+   labels and had to call a third unexplained; cusp density reads the motion.
+3. **The threshold understates it ~4×**: a tenth of every wheeled unit's windows sit at or below 0.25 efficiency.
+4. **27,500 tank windows refused, not scored** (station-holding hulls that never moved).
+
+**Which statistic is robust, recorded so nobody pre-registers on the wrong one:** the oscillating SHARE is (0.05
+points across two independent implementations). `oscillating_units` is NOT — one unit on yard flips between 27 and
+28 with a ±1-sample change in window length while the share holds.
+
+#### T1 (item 5): what is measured, decided and built
+
+- **(a) the BEFORE.** `make check-timed` runs the same targets in the same order one at a time, recording
+  per-target wall-clock and peak RSS plus the machine, its cores, MemAvailable, load and how many other Godot
+  processes were already up. `CHECK_TARGETS` is now ONE variable used by both `check` and `check-timed`, so a
+  target cannot be measured and not run. Running on builder0 now.
+- **(b) the dependency map**, read out of the recipes and written into `mk/core.mk` beside the code it justifies.
+  Four constraints and no more: `import` (the only `.godot` writer, a shared prerequisite so `-j` builds it once);
+  `SMOKE_NET_PORT` {net-smoke, combat-smoke}; `SMOKE_BROKER_PORT` {relay-smoke, lobby-smoke};
+  `user://garage_scratch/my_army.json` {garage-smoke, army-loop-smoke}. Deliberately *not* constraints, with the
+  reason: the sim hash (separate processes on a fixed tick hash identically — and CP3 proves it rather than
+  assuming it) and `build/` logs (every target writes its own named file).
+- **(c) the schedule.** `check` hands the list to one sub-make with `-j$(CHECK_JOBS) -Otarget`; the three
+  exclusion groups are order-only prerequisites between `_cp-*` wrappers, so the chains live in `check`'s own
+  block and `make combat-smoke` does not silently start running net-smoke for every caller forever. `CHECK_JOBS`
+  and `LINT_JOBS` are **derived** from `tools/slot.sh --jobs <mb-per-job>`, which reads MemAvailable and nproc and
+  keeps a quarter back — never hard-coded (lesson 148), and living in slot.sh because "how much can this machine
+  take" is one fact with one owner.
+- **`lint` now fans out, and this is the biggest single win.** Two things measured first, because the lint lock
+  reads like a ban on any concurrency here and is not: (1) `--check-only` **never writes `.godot`** — snapshotted
+  all 911 cache files, five passes, zero change; the exclusive writer is `import`, and re-reading the incident,
+  the second `make lint` ran `import` FIRST, which is what corrupted the first lint's reads. (2) Serial and `-P6`
+  give **byte-identical findings** — 24 files, 35 s → 11 s, and then repeated with a deliberately broken file so
+  the comparison was not an empty one (lesson 147). At 1.82 s of Godot start-up × 531 files, serial lint was ~16
+  minutes on the laptop. The lock stays: a second `make lint` still runs `import` underneath the first.
+
+### Decisions taken since the plan
+
+7. **The emitter samples on `physics_frame`, not in `_physics_process`.** Every probe in the repo samples there,
+   and `_physics_process` reads each hull *after* it moved this frame — a one-tick offset against the very
+   counters the log exists to be comparable with.
+8. **The emitter reads `TANK_SQUAD_COMMIT` before asking git.** `remote.sh` excludes `.git/` and exports it
+   instead; without this the header said `commit=unknown` on builder0, the machine nearly every number we quote
+   comes from.
+9. **The optional columns are all-or-nothing PER COLUMN, not per set** — so `facing_arc` could be added without
+   refusing the logs already written without it.
+10. **`facing_arc`, not `facing_ordered`, is what classifies a cusp as ordered.** An order carries its facing from
+    the moment it is issued, so treating that as obedience would excuse every real reversal on the drive to the
+    gate — the opposite of control's concern and the harder error to catch. `facing_arc` is emitted as **null**
+    until nav publishes it from `Movement.state()`, never `false`.
+11. **The affine residual is fitted by orthogonal projection, not a 3×3 solve.** squad's A8 files an element into
+    single file, whose slots are collinear: the old solve refused those elements outright, blinding the metric on
+    A8's headline manoeuvre. The reference rank (3 shape / 2 file / 1 one spot) is reported beside every residual.
+12. **`slot_x`/`slot_z` is the slot the LEADER ASSIGNED that tick**, never a reconstructed nominal shape — written
+    into FORMAT.md as a requirement on producers, because against a nominal shape an element that had *correctly*
+    filed through a defile would read as a large residual.
 
 ### Questions for the lead
 
-Nothing. (The brief's *Waiting on the lead* is empty and nothing has changed that.)
+Nothing.
 
 ### Requests to other streams
 
-_(none yet — the two emitter hooks are pre-granted in `workstreams.md`; nav and combat review them at merge.)_
+- **nav:** publish `facing_arc` (is the arrival arc live this tick) from `Movement.state(tank)` —
+  `_approach_gate` computes it per tick and keeps it nowhere, and `game/ai/movement.gd` is nav's file. My emitter
+  already reads the key and emits null until it appears; `make metrics` refuses an off-corridor verdict from a log
+  whose arcs are null. **Nothing else is needed: the `facing` key nav confirmed is already read.**
+- **squad:** the `decision_probe` hook is theirs to add once CP1 is on `main` (a preload of a missing path is a
+  parse error, so it cannot land before the merge). Recorded in their Status as waiting on me.
+
+### Known issues
+
+- **`oscillating_units` is a fragile statistic** (above). The share is not; quote the share.
+- **No producer emits element slots by default.** `nav-fight` installs Elements and nothing forms them; the match
+  runner needs `--green-elements --rust-elements`. The affine residual therefore reads "no element/slot columns in
+  this log" rather than 0.000 on a default run. Told to squad and combat.
+- **My own trip-up 66:** I relaunched `make remote` while the first was still syncing, and two `rsync --delete`
+  into one directory deleted each other's temp files. Both stopped by PID, one restarted. *A `pgrep | head -5`
+  that shows other streams' runs is not evidence that yours is dead.*
+
+### Merge notes (shared files)
+
+| file | change | why |
+|---|---|---|
+| `Makefile` | `LIGHT_GOALS` gains `metrics metrics-pytest metrics-fixtures metrics-check`; `.PHONY` gains `check-timed` | the metrics tools are pure Python and run in 0.5 s; queueing them behind a 40-minute check is the waste that list exists to prevent |
+| `mk/core.mk` | `CHECK_TARGETS` variable; `check` calls one sub-make with `-j -Otarget`; new `check-parallel`, `_cp-*` wrappers and three order-only chains; new `check-timed`; `lint` fans out with `xargs -P $(LINT_JOBS)` | T1. `check` expands to the same target list it always did (verified by printing the variable against the old line) |
+| `tools/slot.sh` | a `--jobs <mb-per-job> [max]` subcommand ahead of the normal path | derive concurrency from the machine, one owner for the fact. Behaviour without the flag is byte-identical |
+| `tests/nav/fight_probe.gd` | +6 lines (preload + one `TRAJECTORY.install`) | S3 emitter, pre-granted at launch; nav reviews at merge |
+| `game/modes/match_runner_mode.gd` | +7 lines (preload + one `TRAJECTORY.install`) | S3 emitter, pre-granted at launch; combat has reviewed and asked to keep it |
+
+**Timeouts raised: none so far.** Any raise will be a row here with target, before, after and the measurement.
+
+**Branch to delete at round close:** `tmp/metrics-r8-control` (every commit on it says NOT FOR MERGE).
