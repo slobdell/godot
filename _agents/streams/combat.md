@@ -479,6 +479,34 @@ reading is that this was fixed before I measured it.
 - **Not landing the assertion was right for a second reason I did not have at the time:** had I landed it, my branch
   would now carry a failing test asserting a defect that main has already fixed.
 
+### ⚠ THE BLIND BASELINE RETROACTIVELY WEAKENS EVERY "INERT" CONCLUSION OF ROUND 8
+
+**The widening is not only a fix going forward. It invalidates reasoning already done.** The old `sim-baseline`
+was blind to **5 of 6** mutations — wheeled hull turn rate, fixed-mount fire arc, hover speed, the rig's hull box,
+a turret traverse — and saw only the tracked case. So **every conclusion of the form "the baseline did not move,
+therefore this change is inert" that was drawn against the old match this round is weaker than it looked**, and how
+much weaker depends entirely on whether the change touched a hull the match actually spawned.
+
+**Named instances, so nobody has to rediscover them:**
+
+- **`6a8aaa8c`, the facing pair "does not move the sim baseline" — the orchestrator's own commit.** The facing
+  contract is about **arrival heading on wheeled hulls**, and wheeled hulls are *inside* the blind set. That
+  conclusion is not necessarily wrong; it is **unsupported by the evidence given for it.**
+- **feel's art proved inert twice by passing this check.** That proof holds for `tank` and says nothing about the
+  nineteen other units re-cut this round.
+- **My own four failed predictions** (the 14 m rig, `ARENA_HALF_SIZE`, squad's wheeled-turret fix, the facing
+  contract) were each read at the time as "my change was inert". **Only the `ARENA_HALF_SIZE` one was genuinely
+  inert** — that constant became a bound and foundry declares its own `half_size`. The other three were invisible,
+  not absent.
+
+**The general form, which is the part worth carrying:** *a negative result is only as strong as the instrument's
+reach, and nobody checks the reach of an instrument that keeps agreeing with them.* The baseline agreed with four
+predictions in a row and each stream took the agreement as confirmation. **It was the fourth failure in a row that
+made anyone read the doctrine files** — and the check had been narrow since it was written.
+
+**What to do with it:** re-run anything whose inertness mattered against the **widened** baseline once builder0 is
+back. Nothing needs re-deciding on a laptop.
+
 ### ROUND 8 CLOSE — what is verified, what is not, and the evidence for each
 
 **VERIFIED, with the wrapper's own exit line** (the only thing that counts):
