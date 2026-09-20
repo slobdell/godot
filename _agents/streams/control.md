@@ -167,6 +167,83 @@ directly.
 
 ## Status
 
+> ## THE BRANCH WAS RED BEFORE ROUND 9'S WORK STARTED, AND ONLY A FULL CHECK FOUND IT
+>
+> `make remote T=check` at `78aa496d`: wrapper `>> remote: make check exited 2`, runner **1501 passed, 33 failed**.
+> **Not green, not handed over as green.** The 33 split into 32 + 1.
+>
+> **The 32 are one cascade.** All carry the same message — `left 4 navigation region(s) on the map after 120
+> frames` — from the leaked-region guard in `tests/test_case.gd`, which says in its own text that it charges
+> whichever test runs *next*. Whole files go red together (all of `test_theme_trailer`, `test_units_catalog`,
+> `test_wheeled_arrival`, plus `test_combat_sim_cost`, `test_combat_suppression_bite`,
+> `test_match_spawns_and_results`). The orchestrator found the author: combat's `test_tank_yaw_fit` had a
+> `teardown()` override that never called super and leaked a foundry arena (44 bodies, 4 regions); it has been on
+> main since `53cc42e3` and has been charged to feel, scale, control and combat in turn. **Nothing here is owed on
+> those 32** — two arms are in flight, nav's sealed `_teardown()` (`49ed1fb3`) and combat's `await
+> super.teardown()` (`26754ef1`).
+>
+> **The 1 was control's, and older than the round.** `test_control_order_marks`' pin test failed in isolation too.
+> `ac4df0d7` asserted the pin draws what the CREWS were told and never what the task holds; `2cca6bea` reversed
+> that rule in `rts_controls.gd` and **did not run the file that asserted the old one**. `2cca6bea` was this
+> session's starting tip, so the branch carried a red test through all of round 9's drawing work. (Control's
+> branch only — `2cca6bea` is not on main, and main's copy of that test passes.) Rewritten at `19d87f5c` **to the
+> contract, not bent to the code**: the task's heading is drawn because since squad's `4cff69b6` it is the order
+> deferred, and the unanimity rule is kept, still asserted on the path it still governs — orders given directly to
+> units, where there is no task to read. `make test FILTER=control_order_marks`: **5 passed, 0 failed**.
+>
+> **The rule this cost, and it is the round's theme again: when a commit reverses a rule, run the file that
+> asserted the old one.** Every filtered run I leaned on all round was green and none of them touched that file.
+> A filtered run is a claim about the files it named and nothing else.
+>
+> **Prediction, written before the merge check is read.** On the post-merge tip: all 32 gone, control's pin test
+> green, 0 failed. Watching two things rather than assuming them — (a) if only combat's arm is on main, the leak
+> is fixed at its source but any *other* override that skips super is still live, so expect a smaller cascade
+> rather than none; (b) **the four teardown edits below are themselves overrides that stop calling super.** Under
+> nav's seal that is correct, but it is the same shape that caused this, so if the cascade reappears near
+> `test_command_readability`, `test_touch`, `test_command_camera` or `test_control_panel`, those edits are the
+> first suspect and not nav's seal.
+>
+> **Sequence agreed with the orchestrator, to spend one check and not two:** wait for word that both arms are on
+> main → `git merge main` → the four teardown edits under the seal → one check on that tip, which is the one that
+> merges.
+
+
+> ## CP2c, THIRD FRAME: THE ORDERED HEADING NOW READS. WHAT THE FIRST TWO ATTEMPTS BOTH GOT WRONG.
+>
+> **The frames** (`78aa496d`, builder0, shot 14:48): `build/control-playtest/{1920x1080,1280x720}/9_facing_drag_ordered.png`
+> and `..._drawing.png`. Two nested chevrons run out of the destination ring along the heading. They read at both
+> sizes. **One thing left for your eye:** the chevrons cross the pin's head disc and, at 720p, the left edge of the
+> `MOVE · 0/3 there · 24 m` plate. Crowded, not hidden. If you want it cleaner the fix is to lean the pin's head
+> away from the heading it carries so the two stop stacking — say the word and it is a small change.
+>
+> **Why this took three goes, because the reason generalises.** The heading was first a line with an arrowhead. It
+> vanished into the pin's own stalk. I replaced it with chevrons — and they vanished the same way. The frame says
+> why: **arms fixed at ±2.6 m span 96 px at 21°, while the nose stands off only 15 px.** A 96:15 "V" is a
+> horizontal tick, and it lies along screen-vertical, which is exactly where the stalk is whenever the heading
+> points away from the camera. The stalk was also drawn *after* it, painting over what nose there was.
+>
+> So the shape is now specified **on the screen** and the ground that produces it is **solved for, per pin, per
+> pose**: the nose must stand off the arms by half their span. At 21°/49 m that buys **4.62 m** of ground pointing
+> away against **2.20 m** across — the shape is the constant and the ground pays for it. This is invariant 0
+> applied to a drawing: derive the metres from the pose, never mirror a number that happened to read once. A dark
+> backing stroke carries it over the stalk it must still cross.
+>
+> **What no test caught, twice.** Both failed attempts passed every assertion that asked *"does a facing reach the
+> pin"* — which was all of them. `test_the_pin_chevron_reads_as_an_arrow_and_not_a_tick` now asserts the
+> **property** (nose stand-off ≥ half the span, at the lead's pose, for a heading pointing away, toward and
+> across) rather than the pixels. That is the fifth entry this round in the same column: *a measurement that is
+> true but reads as a stronger claim than it makes*. "The facing is on the pin" was true all along and never meant
+> "the player can see it".
+>
+> **Also:** the frames only settled this because I cropped and magnified them (`convert -crop … -resize 200%`)
+> instead of judging a 1920-wide screenshot at thumbnail size. Twice this round I reported "I cannot tell" on a
+> frame that a crop would have answered. Do that first.
+>
+> `make test FILTER=control_facing_drag` on builder0 at `78aa496d`: **8 passed, 0 failed**.
+> Still blocked: the teardown edits wait on nav's sealing merge — `free_owned()` does not exist in this worktree
+> yet, so `tests/test_case.gd:194` is still `teardown()` and the four call sites stay as they are.
+
+
 > ## WHAT THE RESIZE CHANGED FOR YOU, AND THE ONE THING STILL TO DECIDE
 >
 > Making the vehicles their real relative sizes was worth it, and it broke four things that were quietly sized for
@@ -360,6 +437,37 @@ in my own worktree from it; metrics killed three streams' wrappers from the same
 - **Look at** `build/terminus-alleys/index.html` (six pairs, your pose, left as asked / right as fixed).
 - `make remote T=control-playtest-shots` and `T=camera-looks` for the HUD and the camera grid;
   `make remote T=check-display` for the console gate.
+
+### Owed: four teardowns that have silently skipped the navigation drain (waiting on nav)
+
+combat's grep, confirmed here. Four control test files override `teardown()` and call the base:
+
+```
+tests/test_command_readability.gd:141   super.teardown()
+tests/test_touch.gd:177                 super.teardown()
+tests/test_command_camera.gd:194        super.teardown()
+tests/test_control_panel.gd:143         teardown()      <- mid-test, not an override
+```
+
+**Because the override is declared `-> void`, the runner's `await` returns immediately, the navigation drain
+detaches, and these viewport-resizing tests have skipped it since it existed.** nav has sealed the drain into a
+`_teardown()` the runner awaits, with the overridable hook synchronous (`c3df6d4a`, riding nav's next check). **The
+three overrides and the mid-test call need DIFFERENT fixes:**
+
+- `test_command_readability:141`, `test_touch:177`, `test_command_camera:194` — **just drop `super.teardown()`**.
+  Their own viewport restore keeps its place, because the hook runs *before* the freeing.
+- `test_control_panel:143` — **`free_owned()`, with NO `await`.** It is public now and the supported way to clear
+  the world part-way through a test. **It is synchronous by design** — nothing inside it yields, so no caller can
+  leave it half-run by forgetting to wait — and `await`ing it would raise Godot's `REDUNDANT_AWAIT` and fail lint.
+  A bare `teardown()` there would run only the synchronous hook and **free nothing**.
+
+Nothing to do until nav's merges.
+
+**It is the same class as the rest of this round, in a new costume:** `await` on a `-> void` function is a
+statement that looks like it waits and does not. A lint over zero files, a `get()` that turns *absent* into *null*,
+a baseline describing an older world, a before-frame shot with the fix running — **every one of them true, and read
+as a stronger claim than it made.** That is the thing to be suspicious of in this codebase, more than any
+particular bug.
 
 ### If you change the selection marker, check the SHADER PARAMETERS, not the mesh
 

@@ -137,5 +137,5 @@ func test_ui_scale_makes_everything_bigger_and_still_fits_a_phone() -> void:
 
 
 func teardown() -> void:
+	# The hook restores the viewport and nothing else: `_teardown()` frees and drains after it, sealed.
 	tree.root.size = Vector2i(1280, 720)
-	super.teardown()
