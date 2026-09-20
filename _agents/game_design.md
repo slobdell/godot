@@ -1748,3 +1748,55 @@ Consequences now settled, so nobody re-opens them:
   and the mechanism is unknown. Shuffling is evidenced against (the rig converts **0.95** of path to net displacement,
   the *best* of any gang type; the gang **scout** is the shuffler at 0.68). Splash is evidenced against (indirect
   kills 8.4% → 3.7%). *"Bigger target"* survives by elimination, which is not evidence.
+
+### Ruling: offline compute is unlimited; what SHIPS must be readable (2026-09-19)
+
+The lead, after asking the practical questions the orchestrator had skipped — *"Is there an opportunity to train some
+lightweight integer model somewhere? The only thing is that I don't want this game to require a big GPU or something,
+and I can't invest a bunch of money into training a model (i.e. how much would $50 of GCP resources get me?) — or
+perhaps I can buy some cheap GPU or maybe builder0 even has a nice enough GPU"* — ruled:
+
+> *"yes that sounds like a good decision"*
+
+on the proposal: **the offline budget is open; the shipped artefact must be something a human can read.**
+
+**What this permits:** frozen **lookup tables** from offline parameter search, and **decision trees** distilled from an
+expensive offline planner (catalogue **C6**, **C7**). Both are computed by arbitrarily expensive offline work, both
+ship as a small frozen artefact, both are bit-exact at runtime, and **both can be printed and read** — which is the
+property the ruling turns on.
+
+**What stays shut, for now:** neural-network policies, including integer-quantised ones. **Not because determinism
+forbids them** — see the premise correction below — but because a frozen net is an artefact whose failure mode cannot
+be read, and this project's standing preference is *a smaller mechanism whose failure mode is understood over a larger
+one that is merely better on average*. Revisit only if a pathology appears that a table or a tree cannot express.
+
+**The premise correction that made the re-decision necessary.** Earlier the same day the orchestrator told him
+determinism was the blocker for learned policies. **It was not.** Integer arithmetic is associative, has no rounding
+mode and no libm, so an offline-trained network exported as integer weights is bit-exact across platforms. **The
+blocker was never "learning" — it was floats inside the tick.** He had ruled on the wrong reason, which is why the
+question was re-put. Runtime learning remains impossible and that part is unchanged: anything that changes itself while
+the match runs breaks replay, lockstep and the baseline.
+
+**The hardware answers, measured rather than assumed, because two of his three worries were misdirected:**
+- **The game will never need a GPU.** Inference on a shipped artefact is integer multiply-add — order **0.6 µs per
+  vehicle per tick**, well under 1% of one core for 90 vehicles at 30 Hz. A GPU is involved in *making* the numbers,
+  never in *using* them. Nothing here raises the player's hardware requirement.
+- **A cheap GPU would be the wrong purchase.** The networks in question are ~6,000 parameters and train in seconds;
+  the expense is **generating experience by running our own simulation**, which is CPU-bound Godot headless at a fixed
+  30 Hz. A GPU does not speed that up at all.
+- **builder0 has no discrete GPU** — Intel Iris Xe integrated, and its CPU is an **i5-1345U, a 15 W thin-laptop part**
+  (10 cores / 12 threads). That is why `make check` takes 30–50 minutes. For running matches overnight it is fine:
+  ~120 thread-hours a night, free.
+- **$50 of GCP spot CPU ≈ 3,000–5,000 core-hours** (a 32-vCPU spot VM at roughly $0.30–0.50/hr — verify before
+  spending), which is **25–40 nights of builder0 bought in an afternoon**. That is the correct *next* purchase if
+  offline tuning pays off. **Not a GPU.** It costs engineering effort rather than money: our sim would need packaging
+  to run there.
+
+**Nothing has been spent, and the first step costs nothing:** offline parameter search on builder0 overnight (C7),
+which directly attacks the measured problem that *three separate subsystems were implicitly sized for a ~4 m hull*.
+
+**⚠ The prerequisite, and it is not negotiable:** offline optimisation means telling a machine *"find the parameters
+that maximise this number"*, and **our numbers are exactly what we discovered were measuring the wrong thing** — time
+spent oscillating, while his complaint was about the shape of the motion. **Catalogue A12 (the trajectory-space metric
+suite) lands before any offline search runs.** An optimiser pointed at a bad objective does not fail; it succeeds at
+the wrong thing, faster than we can notice.

@@ -59,11 +59,26 @@ via distillation into fixed-point decision trees (Verwer & Zhang 2019).
 **The corrected statement is:** *runtime learning is blocked by determinism; a frozen, integer-quantised artefact
 trained offline is not.* The blocker was never "learning", it was **floats inside the tick**.
 
-This is not ours to decide. The lead asked and answered the RL question on 2026-09-19 on a premise that was partly
-wrong, and the design pillars are his. **Queued for him** — framed in `~/Desktop/final.md` — with our recommendation:
-*accept the corrected premise, and still do not start here.* A frozen net is an opaque artefact whose failure mode we
-cannot read, and this project's own rule is *"prefer a smaller mechanism whose failure mode is understood over a
-larger one that is merely better on average."* Decision trees (below) buy most of the same thing and can be printed.
+This was not ours to decide. The lead asked and answered the RL question on 2026-09-19 on a premise that was partly
+wrong, and the design pillars are his, so it went back to him.
+
+**✅ RULED, 2026-09-19 — "yes that sounds like a good decision"** ([game_design.md](game_design.md) *Ruling: offline
+compute is unlimited; what SHIPS must be readable*). The shape of it:
+
+- **Open:** arbitrarily expensive offline computation, **provided the artefact that ships can be read by a human.**
+  That admits **C7** (frozen lookup tables from offline parameter search) and **C6** (decision trees distilled from an
+  expensive offline planner) — both now first-class, not speculative.
+- **Shut, for now:** neural-network policies, integer-quantised included. Not on determinism grounds; on
+  *legibility* grounds. Revisit only if a pathology appears that a table or a tree cannot express.
+- **Shut permanently:** runtime learning. That is the part determinism genuinely forbids.
+- **⚠ Prerequisite on both C6 and C7: A12 ships first.** Offline optimisation means naming a number to maximise, and
+  A12 exists precisely because the numbers we had were measuring the wrong thing. **An optimiser pointed at a bad
+  objective does not fail — it succeeds at the wrong thing, faster than we can notice.**
+- **No money spent, and no hardware needed.** The game never requires a GPU (integer inference, ~0.6 µs per vehicle
+  per tick); a GPU would be the wrong purchase anyway, because the cost is **running our own simulation**, which is
+  CPU-bound. builder0 has no discrete GPU and is a 15 W i5-1345U, which is adequate for overnight match generation
+  (~120 thread-hours a night, free). If offline tuning pays off, the correct next purchase is **~3,000–5,000
+  spot-CPU core-hours for about $50**, not a GPU.
 
 ### 2. The flow-field null is explained, and the *right* shared structure is a different object
 
