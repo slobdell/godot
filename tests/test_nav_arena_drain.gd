@@ -55,3 +55,23 @@ func test_a_second_arena_does_not_bake_into_the_first() -> void:
 			strangers += 1
 	assert_eq(strangers, 0,
 			"no region from the freed arena is still on the map (%d strangers of %d)" % [strangers, after.size()])
+
+
+## The RAW path: a test that instantiates the arena scene directly, as 20+ files do, never touches `ArenaFixture`
+## and so never reaches its drain. `TestCase.drain_navigation()` is the braces for that, and this is its guard.
+func test_a_raw_instantiated_arena_leaves_an_empty_map() -> void:
+	var map := (tree.root as Viewport).world_3d.navigation_map
+	var arena: Arena = preload("res://game/arena/arena.tscn").instantiate()
+	arena.layout_name = Arena.DEFAULT_LAYOUT
+	add_to_tree(arena)
+	for frame in 60:
+		await tree.physics_frame
+		if not NavigationServer3D.map_get_regions(map).is_empty():
+			break
+	var with_arena := NavigationServer3D.map_get_regions(map).size()
+	assert_true(with_arena > 0, "POSITIVE CONTROL: the raw-instantiated arena reached the map (%d)" % with_arena)
+	arena.free()
+	_owned_nodes.erase(arena)
+	await drain_navigation()
+	assert_eq(NavigationServer3D.map_get_regions(map).size(), 0,
+			"drain_navigation() leaves the map empty for the next test, whichever way this one built its arena")
