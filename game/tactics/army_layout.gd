@@ -50,6 +50,12 @@ const HULL_CLEAR_M := TacticsFormation.HULL_CLEAR_M
 ## Five centimetres would be enough to make that contact non-degenerate, and far less than the settle a hull does on
 ## its suspension anyway, so nothing would visibly hover.
 ##
+## **RETRACTED, and read this before citing the number below.** Until the write in `deploy` was fixed, this constant
+## was INERT: that line kept `tank.global_position.y` (whatever `Match.spawn_position` had set, 0.0) and discarded the
+## layout's y, so 0.05 and 0.0 gave byte-identical results here and my "0.05 passes on my branch" told us nothing about
+## the lift. The arm could not exercise the mechanism. The same defect this round found four times in other people's
+## instruments, in my own code, reported as evidence.
+##
 ## **It is 0.0 for now, and that is a ruling rather than a conclusion.** combat measured 0.05 on its MERGED tree
 ## (its branch + CP2 + main) and `test_a_full_faction_army_a_side_spawns_clear_of_itself` fails there with three units
 ## (Green_S5_1, Rust_S5_1, Rust_S8_1) reported inside a wall or crate, passing again at 0.0. **On this branch 0.05
@@ -271,7 +277,13 @@ static func deploy(game_match: Match, team: int) -> void:
 		var hull := _hull(tank.unit_id)
 		var spot := _clear_spot(tank, laid[unit_name]["position"], hull, forward, taken)
 		taken.append([spot, hull.x, hull.y])
-		tank.global_position = Vector3(spot.x, tank.global_position.y, spot.z)
+		# The layout's y is USED, not discarded. This line read `Vector3(spot.x, tank.global_position.y, spot.z)`,
+		# which kept whatever y the tank already had from `Match.spawn_position` and threw the layout's away -- so
+		# `SPAWN_LIFT_M` was inert and 0.05 produced byte-identical results to 0.0 on this branch. I reported that
+		# green as evidence about the lift; it was evidence about nothing, because the lift was never in the arm.
+		# `_clear_spot` preserves y (so does `SlotGround.standable`, which returns `Vector3(closest.x, point.y,
+		# closest.z)`), so `spot.y` is the lift the layout asked for.
+		tank.global_position = spot
 		tank.rotation.y = yaw
 		tank.reset_physics_interpolation()
 	# A doctrine squad that starts "in formation" holds at its commander's spawn point: move that hold with it.

@@ -30,6 +30,20 @@ func _full_army() -> Dictionary:
 	return army
 
 
+## How far a hull may be from its placement ONCE SETTLED. Between scale's two measured regimes: the normal settle is
+## 1.8 cm across 90 units, a Jolt ejection through the ground is 1.5 m.
+const PLACEMENT_DRIFT_M := 0.25
+## Settled = the largest per-frame movement across the whole army is under this, or SETTLE_MAX_FRAMES have passed.
+##
+## **Sampling at frame 1 would fire on three units by construction**, which is why this exists. scale traced the
+## y-writer to `move_and_slide`'s DEPENETRATION RECOVERY with velocity exactly zero: `get_position_delta` carries the
+## whole -1.475 m in frame 1, then -0.190 at frame 2 and -0.042 at frame 3, while a unit that happens to pass gets
+## +0.87 mm out of the identical contact. So the first frame is the transient, not the outcome, and an assertion taken
+## there measures the recovery rather than the placement holding.
+const SETTLE_STEP_M := 0.01
+const SETTLE_MAX_FRAMES := 10
+
+
 func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
 	# X5 (round 4): the grid has to hold a faction army, not five squads of five.
 	#
@@ -67,7 +81,35 @@ func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
 	assert_eq(overlaps, [], "no two hulls are PLACED within half a meter of each other")
 	# The obstacle probe reads static world geometry, so it needs the space stepped once -- but it probes each unit's
 	# PLACEMENT, captured above, not wherever the body has since been pushed.
-	await wait_physics_frames(1)
+	# Settle first, then measure: step until the army stops moving, and report how many frames it took so a slow
+	# settle is visible rather than merely tolerated.
+	var previous := {}
+	for tank: Tank in tanks:
+		previous[tank] = tank.global_position
+	var frames := 0
+	var worst_step := 0.0
+	for f in SETTLE_MAX_FRAMES:
+		await wait_physics_frames(1)
+		frames += 1
+		worst_step = 0.0
+		for tank: Tank in tanks:
+			var now: Vector3 = tank.global_position
+			worst_step = maxf(worst_step, (now - (previous[tank] as Vector3)).length())
+			previous[tank] = now
+		if worst_step < SETTLE_STEP_M:
+			break
+	# THE WRITER DETECTOR. A green on the two assertions above is not evidence that nothing moves a hull off its
+	# placement -- scale saw this test pass at a 71/71/71 shard layout and fail at 69/68/68, so the quantity is still
+	# sensitive to engine state. This says so directly instead of letting it surface as "inside a wall": scale measured
+	# the normal first-frame settle at 1.8 cm across 90 units and a Jolt ejection at 1.5 m, so 0.25 m separates them
+	# with two orders of margin either side, and the delta is named so the next reader does not have to instrument it.
+	var moved: Array = []
+	for tank: Tank in tanks:
+		var delta: float = (tank.global_position - (placed[tank] as Vector3)).length()
+		if delta > PLACEMENT_DRIFT_M:
+			moved.append("%s moved %.2f m from %s to %s" % [tank.name, delta, placed[tank], tank.global_position])
+	assert_eq(moved, [], "no hull is moved off its placement once settled (%d frame(s), last step %.4f m)" \
+			% [frames, worst_step])
 	var space := (tanks[0] as Tank).get_world_3d().direct_space_state
 	# POSITIVE CONTROL, because an empty result from an unready space is indistinguishable from a clear spawn and would
 	# pass this assertion for the worst possible reason. A box over the whole arena must hit SOMETHING on WORLD_MASK.
