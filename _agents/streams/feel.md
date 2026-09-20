@@ -276,6 +276,27 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 | The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
 
+**Handed to squad, 2026-09-20: `spawns_clear_of_itself` is not flaky, it samples one frame early.** The test had
+been read as a shard-schedule flake (green at 71/71/71, red at 69/68/68, same code). It reproduces on the laptop at
+`--shard=3/5` with a pair list byte-identical to builder0's — `Green_S2_2/S2_3`, `Green_S4_1/S4_3` and the Rust
+twins — so it is deterministic, not random. Overlap count by physics frame (probe run against the same army and
+seed, then deleted; nothing committed):
+
+| frame | 0 (placement) | 1 | 2 | 3 | 5 | 10 | 20 |
+|---|---|---|---|---|---|---|---|
+| overlaps | 0 | 0 | **4** | 4 | 4 | 4 | 3 |
+
+**Placement is clean; the first couple of physics steps create the overlap**, and the test reads after one physics
+frame — the last clean instant. So the ruled fix ("sample after settling, capped at ten frames") samples where all
+four still are and will not turn it green. The overlap itself looks like a CP2 consequence: the pairs converge to a
+stable lateral pitch of **3.15 m** while the assertion needs `(2.90 + 2.76)/2 + 0.5 = 3.33 m` — short by ~0.18 m,
+every time, and every failing pair is two of the three widest hulls abreast (artillery 2.90, ifv 2.86, lancer 2.76;
+the scout at 1.81 never appears). Points at the wedge's lateral slot pitch against the widened roster. **Squad's
+file and squad's call — not touched here.** The one-frame-margin mechanism was handed over as a hypothesis, not a
+proof: what the sampled instant actually is under a shard was not instrumented.
+
+*Lesson 185's shape a fourth time: "flaky" was a true description that stopped the search.*
+
 **S1 record — the Condemned artillery's box, 2.90 m wide, agreed by three independent routes.** S1 requires the
 numbers to be *derived and checked, not mirrored* (Invariant 0), and a single derivation that agrees with itself is
 exactly what that rule is aimed at. The box was measured in the pose the unit is shot at in (stowed, outriggers in)
