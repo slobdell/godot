@@ -221,4 +221,51 @@ is the orchestrator's call, not his.)
 
 ## Status
 
-- **Not started.** (2026-09-19, brief written by the orchestrator.)
+**In progress** (2026-09-20). Worktree `godot-metrics`, branch `stream/metrics`, started at `9f864474` (= `main`).
+
+### The plan (worker contract step 2), smallest foundation first
+
+| # | Step | Deliverable |
+|---|---|---|
+| 1a | The log format and its reader | `tools/metrics/FORMAT.md`, `tools/metrics/trajlog.py`, round-trip + refusal tests |
+| 1b | The reference emitter | `tools/metrics/trajectory_log.gd` (mine) + a hook in nav's `fight_probe.gd` and combat's `match_runner_mode.gd` |
+| 2 | The four metrics, known-answer tested | `tools/metrics/metrics.py`, `tools/metrics/test_metrics.py`, `make metrics-pytest` |
+| 3 | The positive control | re-run of round 8's configuration at `aa984edd` on builder0, written to `_agents/streams/references/round9/metrics/` |
+| 4 | `make metrics` + `_agents/metrics.md`, then **announce CP1** | `mk/metrics.mk`, `_agents/metrics.md` |
+| 5 | T1: parallelise `check` (measure → map → schedule → timeouts → falsifier → retire), then **announce CP3** | `check-timed`, `check-parallel` in `mk/core.mk` |
+| 6–7 | Stretch: a progress heartbeat for `check`; the offline-objective note | |
+
+### Decisions taken where the brief left a choice
+
+1. **Two readings of displacement efficiency, both shipped.** The *general* metric is every unit, every contiguous
+   4 s window, ungated — a distribution. The *`oscillating` special case* re-implements round 8's gating exactly
+   (only ticks under orders with flat distance-to-goal > 8 m; trail reset when the goal jumps > 3 m; numerator =
+   full windows with path >= 8 m and ratio < 0.25; **denominator = all under-way ticks**, including those whose
+   window is not yet full). *Why:* the round-8 share cannot be reproduced without that denominator, and the
+   continuous metric is worthless if it is silently gated the same way. Both are printed side by side.
+2. **Cusp sign from position + logged heading, never from `gear`.** Signed speed `s = sign(v · h) * |v|` with a
+   0.5 m/s floor (`GEAR_SPEED`, so it is comparable with round 8's gear-flip counter). *Why:* it sees a reversal
+   the controller never labelled, which is the whole point of a trajectory-space metric.
+3. **SPARC on `|speed|`, not on signed speed.** *Why:* the DC term normalises the spectrum, and a shuffling hull's
+   signed mean passes through zero, which would make the metric explode on exactly the case we care about.
+   Reversals are cusp density's job; each metric has one job.
+4. **SPARC is a fixed 128-sample window, zero-padded to a fixed 1024-point FFT, with a fixed cutoff of 20 rad/s** —
+   not the reference's adaptive cutoff. *Why:* the brief requires a number that is identical across machines; an
+   adaptive cutoff makes the answer depend on a threshold crossing. Pure-Python radix-2 FFT, **no numpy**, so the
+   tool has no dependency `make check` does not already have.
+5. **Affine residual is reported only for elements with >= 4 members.** *Why:* a 2-D affine fit has 6 parameters and
+   3 points determine it exactly, so a 3-unit element's residual is identically zero and would read as "perfect".
+6. **`.jsonl` plain, `.jsonl.gz` accepted by the reader.** The emitter writes plain (Godot's compression is not
+   gzip); a big log is gzipped after the run.
+
+### Done
+
+_(nothing yet)_
+
+### Questions for the lead
+
+Nothing. (The brief's *Waiting on the lead* is empty and nothing has changed that.)
+
+### Requests to other streams
+
+_(none yet — the two emitter hooks are pre-granted in `workstreams.md`; nav and combat review them at merge.)_
