@@ -100,6 +100,20 @@ rig-hinge: import ## Feel X2, S2: the War Rig bending at the fifth wheel -- its 
 	@echo "Now LOOK at $(BUILD_DIR)/rig-hinge/strip_*.png -- the strips are written LAST, after every frame."
 	@ls $(BUILD_DIR)/rig-hinge/strip_*.png
 
+.PHONY: perf-trailer-ab
+perf-trailer-ab: import ## M1: what the War Rig's hinge costs a frame -- the SAME gangs army with and without the trailer, in one tree, one invocation
+	@$(MAKE) --no-print-directory perf-scene PERF_NAME=perf-gangs-off \
+		PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs --no-trailer"
+	@$(MAKE) --no-print-directory perf-scene PERF_NAME=perf-gangs-on \
+		PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs"
+	@$(PYTHON) -c "import json;\
+off=json.load(open('$(BUILD_DIR)/perf-gangs-off.json'))['phases'];\
+on=json.load(open('$(BUILD_DIR)/perf-gangs-on.json'))['phases'];\
+rows=[(a['phase'],a,b) for a,b in zip(off,on)];\
+print('PERF_TRAILER_AB phase        off_avg  on_avg   d_ms   off_p95  on_p95   off_draws on_draws d_draws  veh');\
+[print('PERF_TRAILER_AB %-12s %7.2f %7.2f %+6.2f %8.2f %8.2f %9d %8d %+7d %4d' % (n, a['avg_ms'], b['avg_ms'], b['avg_ms']-a['avg_ms'], a['p95_ms'], b['p95_ms'], a['draw_calls'], b['draw_calls'], b['draw_calls']-a['draw_calls'], b['vehicles'])) for n,a,b in rows]"
+	@echo "M1 budget: a locked 30 fps at 1080p with 30 a side = 33.3 ms. Read d_ms against that, not against zero."
+
 AIRSHIP_RES ?= 1920x1080
 airship-look: import ## Feel X7: is the Syndicate airship EVER in the lead's field of view? Sweeps every camera yaw x the whole orbit at his pose and reports the fraction -> build/airship-look/ (needs a display; AIRSHIP_FLAGS=, ARENA=)
 	rm -rf $(BUILD_DIR)/airship-look && mkdir -p $(BUILD_DIR)/airship-look
