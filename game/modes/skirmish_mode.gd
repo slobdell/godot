@@ -275,6 +275,16 @@ func _start_match() -> void:
 	if flags.has("zoom"):
 		rig.zoom = clampf(float(flags.text("zoom")), 0.0, 1.0)
 	main.add_child(rig)
+	# Round 9, the second half of the lead's Terminus item: the building BETWEEN the camera and what it is looking at
+	# is not drawn. `RtsCamera.clear_pose` (in the rig) keeps the camera out of buildings; this keeps buildings out of
+	# the sight line. Only solids at least BlockCutaway.MIN_HEIGHT_M tall are ever cut - cover is information, and
+	# hiding it would hide why a unit stopped where it did. `--block-cutaway=off` draws the city whole.
+	if flags.text("block-cutaway", "on") != "off":
+		var cutaway := BlockCutaway.new()
+		cutaway.name = "BlockCutaway"
+		cutaway.camera = main.camera
+		cutaway.obstacles_root = main.arena.get_node_or_null("Obstacles") as Node3D
+		main.add_child(cutaway)
 	print("SKIRMISH_CAMERA focus=(%.0f, %.0f) zoom=%.2f vehicles=%d" % [rig.focus.x, rig.focus.z, rig.zoom, army.size() - 1])
 	var announcer := MatchAnnouncer.new()
 	announcer.name = "Announcer"
