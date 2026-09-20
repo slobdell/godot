@@ -197,6 +197,11 @@ it is a *cadence* problem, and this is the smallest mechanism that addresses it 
 threshold. It also directly answers open question 2 from the brief (*is there a principled re-decide cadence?*) with
 "yes, derived, not tuned".
 **Determinism:** integer squared-norm comparison. No state.
+**MEASURED IN ROUND 9 (nav, 2026-09-20, provisional pre-CP1): a negative result that relocates P1.** The fixed
+route cadence (`REPATH_SECONDS`) accounts for **~3% of re-plans** in a fight, so A1's tube on the route replanner
+cannot move P1. The cause split then found the real driver: **968 of 2,059 re-plans (47%) were nav re-planning against
+a goal it was already regulating** — a follower's station sliding ~1 m — fixed with a tolerance that scales with the
+remaining route (out of squad's `following` observation). The brain's `MOTION_REPLAN_TICKS` half remains squad's.
 **Falsifier:** intra-decision re-plan rate drops **≥ 60%** (theirs: ≥ 80%) *and* path-tracking error stays within
 **0.15 m** *and* reaction latency to a new contact stays **≤ 2 ticks**. If churn falls but latency rises, this is
 stubbornness wearing a hat and it reverts.
@@ -272,6 +277,9 @@ blocked, and no straight gate reaches them at any length.** That 43% is A4's ter
 configuration the lead plays rather than argued from curvature continuity. **Rule before anyone builds it:** the
 shorter run-in and the clothoid fix *different* failures and are never shipped together or credited to each other
 (round 7's shape: ship, measure twice, find the mechanism was never reached).
+**POSITIVE CONTROL PASSED (nav, 2026-09-20, laptop, provisional pre-CP1): 403 of 403** blocked-corridor gates — the
+class no straight run-in reaches at any length — are reached by a curved clothoid entry, reported as that class only
+and never as the aggregate aimed count, so the run-in half cannot leak into it.
 **Falsifier:** signed cusp density below **1.5 per agent-minute** with **zero unexplained cusps** (currently 9–19,
 a third unexplained), and peak steering rate never saturates on a nominal traverse.
 

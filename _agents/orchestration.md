@@ -2491,3 +2491,14 @@ The kickoff prompt is one line; this section is the rest.
     the tree's process loop and step it at a fixed delta — the same 2 s of simulated time on any machine at any load;
     6/6 three runs in a row with seven streams live. **T1 makes a loaded machine the normal case**, so every remaining
     `await`-until-wall-clock in a behaviour test is a flake waiting to happen; grep for them before CP3.
+159. **The suite that certifies a commit green does not run the scenarios the round's verdicts are read from.** Round 9,
+    nav, cherry-picking squad's leash commit `6e0c9968` (1270 passed on builder0) to measure the A7 drift: the drift
+    scenario **errors out** — `Invalid access to property 'pitch' on StubElement` at `scenario_elements.gd:80` — because
+    the commit taught the scenario to read `element.pitch` and the scenario is staged with `StubElements`, which has no
+    `pitch`. `make check` cannot see it: **`ai-scenarios` is not in `check`** (`mk/core.mk:85`), so squad's two
+    acceptance scenarios, combat's two, the base-of-fire scenario gating the level-0 leash and the drift scenario gating
+    A7's default — every behaviour assertion this round prefers over a ladder (lesson 150) — is outside the gate. "Green"
+    has meant "green except the scenarios" all round. Lesson 157's shape a second time in one night. **Fix (lesson 42's
+    honest form, given to metrics for CP3): put `ai-scenarios` in `check` behind a committed expected pass/fail/pending
+    count, failing on a CHANGE in the count, so the one pre-existing laptop-speed failure does not turn the gate red and
+    a new script error does.** And a stream that changes a scenario runs `make ai-scenarios` before naming a hash.
