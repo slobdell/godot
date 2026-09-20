@@ -402,6 +402,21 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
     word for a reason that can never arrive cannot sit here looking like a feature.
   - An unknown `why` renders as nothing, never a guess and never a raw key. nav's `push_error` catches drift on
     their side, this catches it on mine.
+- **The A4 finding, and why the readout changed for an arm that is switched off.** nav measured a hull on the A4
+  arm holding `arrival_arc` for **45 s, ending 9.8 m short and 147° off** the ordered heading (the straight arm is
+  home in 4.3 s from the same start). *"Arriving on the heading you drew"* is the one live reason this readout
+  renders, so on that arm it would tell the player to **wait for a unit that is not coming** while the band beside
+  it correctly said STUCK — two opposite things on screen, with the encouraging one wrong. **The callout band now
+  outranks the explanation**: if the band has anything to say about a hull, the legibility line says nothing. A
+  general rule, not an A4 special case; it covers STUCK, BLOCKED and YIELDING at once. Fixed while A4 is off
+  because the flaw is in the readout's wording, not in the arm — lesson 149's converse: a behaviour behind a flag
+  can still mislead the day the flag goes on.
+- **nav's hashes, so C-2 lights up when they reach `main`:** `3f8cb7b1` (the key), `16444beb` (the corridor tangent
+  and the `no_law`/`override` split), `e2fbd1aa` (A6 behind `--nav-off=a6`), `1a616345` (the arm in `NAV_FIGHT_ARM`).
+  **Expect A6 inactive on every unit after that merge and do not call it a wiring fault** — nav measured A6 reached
+  1087 times and able to act **0** times (`a6_asked 1087, a6_no_corridor 1087, a6_nose_narrowed 0`), because
+  `CombatMotion.choose()` has no unit handle until squad passes `request["corridor"]`. `band`/`survival`/`armour`
+  start arriving with squad's merge, with no change needed here.
 - **A "blocked on X" line is a claim with a date on it.** My Status said *blocked on nav's key* for hours while the
   readout sat built; nav's said *A6 blocked on S4* while the signature had been given. Neither of us re-read the
   contract and the orchestrator spotted it. Both sides were done and both were waiting.
