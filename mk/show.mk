@@ -73,7 +73,9 @@ show-clips: import ## S6: each cue as a 6 s clip at 10 fps from the lead's pose 
 show-perf-layer: import ## S6: the show's cost measured WITHIN one perf-scene run (--perf-layers=no_show), so both halves see the same machine -- the only instrument that survives a contended builder0
 	$(MAKE) perf-scene PERF_NAME=show-layer PERF_RES=$(SHOW_RES) PERF_LAYERS=no_show \
 		PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS))"
-	@python3 -c "import json;d=json.load(open('$(BUILD_DIR)/show-layer.json'));l=d.get('layers',d);print('SHOW_LAYER_COST', json.dumps({k:v for k,v in l.items() if 'no_show' in str(k) or k.startswith('all')})[:400])" || true
+	@grep PERF_SCENE_LAYERS $(BUILD_DIR)/show-layer.log | python3 -c "import sys,json;d=json.loads(sys.stdin.read().split(' ',1)[1]);print('SHOW_LAYER_COST gpu_ms=%s  cpu_ms=%s  draw_calls=%s  (against all_gpu %s, all_avg %s)' % (d['layer_cost_gpu_ms'].get('no_show'), d['layer_cost_ms'].get('no_show'), d['layer_draw_calls'].get('no_show'), d['all_gpu_ms'], d['all_avg_ms']))" || true
+	@echo "   A negative or tiny CPU figure is the method's own noise, not a speed-up: layer_costs() is the mean of"
+	@echo "   the 'all' phases either side minus the layer's phase, over PERF_CYCLES cycles. Raise PERF_CYCLES to tighten it."
 
 show-perf-pair: import ## S6: perf-scene with the show off then on, back to back in one slot -> build/show-off.json, build/show-on.json
 	$(MAKE) perf-scene PERF_NAME=show-off PERF_RES=$(SHOW_RES) PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS)) --no-show"
