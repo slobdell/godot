@@ -179,9 +179,52 @@ case A6 exists for.
   (0.631 / 0.595 / 0.738). So the pathology is roster-wide but A6's *opportunity* to act on it is
   map-dependent — a distinction invisible in the fraction alone (nav, 2026-09-20).
 - **`inactive`** — nav published the key and said *no leg right now*. A named case (§5), not an absence.
-- **`ordered_arc`** — excluded because an ordered arrival arc is off-corridor **by construction** and is the unit
-  obeying. On `facing_arc`, **never** on `facing_ordered`: an order carries its facing from the moment it is
-  issued, so excluding on that would excuse the whole drive to the gate.
+
+#### The control arm A6 has to beat, read off nav's P7 logs (metrics, 2026-09-20)
+
+Whole roster, both armies, builder0. **Read the logs from nav's scratchpad copies, not from `build/`** —
+see the note below; the pooled figure reproduces exactly from them.
+
+| map | commit | off_corridor | active | eff_mean | eff_p10 | osc_share | net/path | cusp/min | sparc |
+|---|---|---|---|---|---|---|---|---|---|
+| yard | `c025bc6b` | 0.304 | 0.631 | 0.681 | 0.220 | 0.044 | 0.815 | 43.10 | **−2.013** |
+| pit | `c025bc6b` | 0.321 | 0.595 | — | — | — | — | — | — |
+| terminus | `5369bd13` | 0.331 | 0.738 | 0.660 | 0.210 | 0.052 | 0.799 | 69.14 | **−2.013** |
+| **pooled** | | **0.3203** | **0.6622** | | | 0.0430 | | 47.02 | |
+
+Pooled over 96,054 active ticks, tick-weighted; the mean of the per-file fractions is 0.3187.
+**The two commits differ by one Status file and nothing else** (`git diff --stat 5369bd13 c025bc6b`:
+`_agents/streams/nav.md`, 28 lines), so the rows are comparable. That is the mixed-commit banner working as
+intended: it flagged the mixture, printed the command that settles it, and the command settled it — the
+reader verified rather than assumed.
+
+**Pick the discriminator by what the map does NOT change.** `cusp/min` swings 60% between yard and terminus
+(43 → 69) with no treatment applied at all, so a treatment effect smaller than that is unreadable against
+it. `sparc` is **−2.013 on both**, to three decimals, across maps whose cusp densities differ by half. For
+an A/B on one map either will do; for a claim that survives the rotation, **SPARC is the sensitive one and
+cusp density is mostly measuring the arena**. A6's pre-registration reads SPARC and the off-corridor pair.
+
+#### ⚠ Read these logs from nav's scratchpad copies, not from `build/`
+
+`build/metrics/p7-pit.jsonl` on the laptop has **one flipped bit** — line 143,873 of 273,578, `0x78` (`x`)
+→ `0xf8`, breaking the `"slot_x"` key in a 101 MB log. nav kept copies out of `build/` right after each run
+and every line of all three parses; the two pit files are **the same length to the byte** and differ in
+that one byte. The pooled 0.3203 reproduces exactly from the clean copies, so nothing above is in doubt.
+
+**Two separate problems, and they call for different responses.** The `build/` copy's mtime never changed,
+so no later rsync rewrote it: the bytes changed under a file nobody touched, on this laptop, at rest or in
+the read path. That is not the same as nav's other finding — that `remote.sh`'s copy-back has no `--delete`,
+so `build/` accumulates artefacts across runs and **a stale file announces nothing**: plausible name,
+plausible size, no marker saying which run wrote it. Both are real; this file is an instance of the first.
+
+**The loud failure was the lucky case.** That bit landed in a key name, so the reader refuses the file. Had
+it landed in a digit it would have read as a perfectly valid coordinate and quietly moved a number. There
+are no per-line checksums in the format, so **the reader can never be where this is caught** — which is why
+the check is on the files (`remote.sh` verifies a sha256 manifest the box writes) and not on the format.
+
+`trajlog` refuses a bad byte with its file, its line, the byte and its neighbourhood, and says *re-run the
+producer, do not patch the file*: patching the one visible byte would leave any invisible ones and bless the
+file. It used to escape as a bare `UnicodeDecodeError` naming a codec and an offset into a buffer.
 
 ### Pooling several maps into one figure (`--pool`)
 
@@ -261,3 +304,41 @@ printed rather than folded into a zero:
 
 A log shorter than one window is **refused outright**: a metric over less than one window is not a smaller number,
 it is no number.
+
+## Which of these may be an OPTIMISER's objective, and which are diagnostics only
+
+Catalogue **C7** wants a scalar per niche, and `game_design.md`'s *Ruling: offline compute* is the warning: an
+optimiser pointed at a bad objective succeeds at the wrong thing, quickly and convincingly. No optimiser runs this
+round; this is the note that has to exist before one does.
+
+**The short answer: none of the four is fit to be a sole objective.** Each has a degenerate optimum that is a worse
+game, and in every case the optimum is *easier to reach* than the behaviour we actually want — which is the
+property that makes a bad objective dangerous rather than merely useless.
+
+| metric | its degenerate optimum — what an optimiser would actually produce |
+|---|---|
+| displacement efficiency | **straight lines through walls.** A perfect 1.0 is a unit that ignores the obstacle it should route around. It is refused for a stationary unit (`zero_path`), so the cheat is not standing still — it is not deviating. |
+| SPARC | **units that never change speed.** SPARC scores the smoothness of the speed profile, so a constant creep is flawless. The optimum is a convoy that neither accelerates out of danger nor slows for a corner. |
+| signed cusp density | **whatever the map already gives you** — see below. |
+| affine formation residual | **rigid formations that ignore terrain.** A perfect 0.0 is an element holding its shape through a defile it should have deformed to pass, which is the exact failure A8 was switched off for. |
+| off-corridor fraction | **a corridor that is never active.** Already known and already guarded: §7 requires the active fraction beside it and the renderer refuses to print one without the other. That guard exists because this one is trivially gameable, and it generalises — every row above wants the same treatment. |
+
+**Signed cusp density is the one to rule out on measurement, not on argument.** Across yard and terminus, with no
+treatment applied at all, it moves **43.10 → 69.14 per agent-minute** — 60% — while SPARC over the same two logs is
+**−2.013 on both, to three decimals**. An objective that swings 60% with the arena is mostly measuring the arena: an
+optimiser scored on a rotation would learn the map mix. It stays a **diagnostic**, and a good one — it is what
+localised the shuffler to the wheeled hull — but a diagnostic is read by a person who knows what else changed.
+
+**What an objective would have to look like.** A pair, not a scalar: a *shape* term (displacement efficiency, or
+SPARC) **constrained** by an outcome the shape cheat destroys — arrival, or time-to-arrival. Every degenerate
+optimum above is reached by giving up arrival, so arrival is the constraint that closes all of them at once. The
+pairing is the same discipline as `off_corridor` + `active`, and for the same reason: **a law that improves its own
+number by doing less of the thing is not a pass.**
+
+Two more constraints on whoever builds it:
+
+- **Pre-register the bar before the run, against the control arm above**, not against zero. The control arm is
+  whole-roster, both armies, builder0, and it is in this file.
+- **A scalar with no sample size is not a score.** Every row here carries its windows, its refusals and its ticks,
+  and an objective that drops them cannot be audited after the fact — which is how a 2% coin became a gate's
+  expectation this round.

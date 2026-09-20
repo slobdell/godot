@@ -235,10 +235,103 @@ is the orchestrator's call, not his.)
 > Full evidence, both denominators, the ordering proofs and the two bugs the series caught:
 > `references/round9/metrics/t1-cp3.md`.
 >
-> **Owed, in order:** (1) `ai-scenarios-check` into `CHECK_TARGETS` — the target and its baseline
-> (45/0/2/0, builder0) are committed, it is out of `check` only so it could not confound the falsifier;
-> (2) `determinism`'s verdict line is truncated at 120 chars so its hash never reaches the log — a verdict that
-> cannot be compared after the fact; (3) nav's A6 control-arm logs, to be read once they emit `corridor`.
+> **Owed, in order:** ~~(1) `ai-scenarios-check` into `CHECK_TARGETS`~~ (`fbf2af95`); ~~(2) `determinism`'s
+> truncated verdict line~~ (`c6cafa42`, `make check-hashes`); (3) nav's A6 control-arm logs, to be read once
+> they emit `corridor`.
+
+> ### ⚠ 2026-09-20 10:32 — MY BRANCH IS NOT GREEN, AND NEITHER IS `main`. THE FAILURES ARE NOT MINE.
+> Check on `fbf2af95`, builder0, 1011 s: **exit 2, 1481 passed / 4 failed, plus `ai-scenarios-check`.**
+> `git diff --stat main...HEAD -- game/ tests/` is **empty** — this branch differs from `main` only in
+> `tools/metrics/`, `mk/core.mk`, `Makefile`, `tools/remote*.sh` and `_agents/`. Every failure below is
+> `main`'s; `fbf2af95` only made three of them visible. Reported to the orchestrator 10:50.
+>
+> **`ai-scenarios-check` 45,0,2,0 → 42,3,2,0 on its first run inside `check` — lesson 159, paid off:**
+>
+> | scenario | measured |
+> |---|---|
+> | `dodge_rate::who_dodges_and_how_often_they_try` | **dodging has stopped.** ifv and tank × 3 seeds: 431–514 ticks with a round inbound, **0 dodging, 0%, every hull, every seed** |
+> | `cp2::a_scout_works_onto_a_tanks_engine_deck` | the scout fights fine (13 hits / 14 shots) and **0 of 13 land on the deck**. Its `x3m` control arm fired **nothing at all** (0 shots) |
+> | `suppression::holding_the_aim_point…` | held 0.29 / density 1.02 / 161 rounds vs tracking 0.12 / 0.28 / 6 — ordering right, margin below its bar |
+>
+> Window `1cb2fda9..main` holds combat's `55b0de58` (dwell timer retired, A2), feel's `d8a107b5` (collider
+> measured stowed) and `1dc2302f` (the 5 cm spawn lift). **Guess, labelled as one:** rows 2–3 are
+> geometry-shaped and HANDOFF says the boxes are mid-handover, so scale's re-derivation may clear them; row 1
+> is not geometry-shaped and I would not expect it to.
+>
+> Also red, all `main`'s: `test_theme_unit_scale`, `test_units_scale` (the box handover, documented),
+> `test_match_spawns_and_results` (the y=0 spawn contact, ruled but not landed), and
+> `test_theme_city_block::test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll` — **that
+> last one I cannot find written down anywhere and it may be new.**
+
+> ### Waiting on the box (held quiet for feel and show). Four commits verified locally, none checked.
+> `bac84a6f`'s check, for the record: builder0, `>> remote: make check exited 2`, **1481 passed / 4 failed**,
+> 993 s, 5 shards over 212 files — the same seven failures as `fbf2af95`, reproduced exactly. **`make
+> check-hashes` printed on real data for the first time**, which closes CP3's one inferred criterion:
+> `>> check: hashes on builder0 | sim-baseline 2d5215a8a0a59ded (baseline unmoved) | determinism
+> 253adefeec657df1` — `determinism`'s state_hash had never reached a log at all.
+>
+> | commit | what | verified |
+> |---|---|---|
+> | `e3a91460` | `make remote` refuses to rsync over a live run of its own | **on builder0**, against a live 27-process check |
+> | `cc58b4ad` | the ai-scenarios gate, on the non-pending counts | 20 fixture tests; **baseline not yet re-recorded**, so the gate stays red |
+> | `305878b3` | engine warnings told apart from errors; `expect_warning` | **not parsed** — GDScript, no local Godot runs |
+> | `0826d823` | `--quiet`: a timing run holds the box and judges its own window | 76 shell tests; remote script rendered and parse-checked |
+>
+> **Three defects found by tests for features that had not shipped yet**, two of them pre-existing and
+> shared:
+> 1. **`slot.sh` could not release its slot when killed.** bash defers a trap until the foreground command
+>    finishes, so `kill` on a slot holder did nothing until the work finished by itself. This is the whole
+>    of remote_builds.md's stale-`.owner` entry, which had been written up as an operator mistake; the
+>    entry is rewritten. Work now runs in the background under an interruptible `wait`.
+> 2. **Killing a slot holder left its work running** — the slot came back while the Godot under it did not.
+>    Now killed as a tree, walked by parent, never by pattern.
+> 3. **My own `QUIET WINDOW` verdict printed HELD for a file with zero samples.** `grep -cv X || echo 0`
+>    fires its fallback exactly when the count is zero, so the variable became `0\n0`, the integer test
+>    errored, and the guard was skipped. The round's recurring defect, inside the code written to prevent
+>    it, defaulting to the reassuring answer.
+>
+> **A6's control arm is read — the last owed item — and the pooled figure stands.** From nav's scratchpad
+> copies (**not** from `build/`, see below): yard 0.304/0.631, pit 0.321/0.595, terminus 0.331/0.738,
+> **pooled 0.3203 (active 0.6622) over 96,054 active ticks — reproduces the earlier figure exactly.**
+>
+> | map | commit | off_corridor | active | eff_mean | cusp/min | sparc |
+> |---|---|---|---|---|---|---|
+> | yard | `c025bc6b` | 0.304 | 0.631 | 0.681 | 43.10 | **−2.013** |
+> | terminus | `5369bd13` | 0.331 | 0.738 | 0.660 | 69.14 | **−2.013** |
+>
+> **`cusp/min` swings 60% between the two maps with no treatment applied; `sparc` is identical to three
+> decimals.** A claim meant to survive the rotation should be pre-registered against SPARC and the
+> off-corridor pair — cusp density is mostly measuring the arena. The two commits differ by one Status file
+> and no code, which the mixed-commit banner flagged and its own printed command settled.
+>
+> **One flipped bit, and I got its cause wrong the first time.** `build/metrics/p7-pit.jsonl` on this laptop
+> has `0x78` `x` → `0xf8` at line 143,873 of 273,578; nav's copy is clean and the same length to the byte. I
+> reported the file as unusable and the pooled figure as unreproducible; **both were wrong** — nav kept
+> copies out of `build/`. And the mechanism is not the stale-artefact story it looked like: the `build/`
+> copy's **mtime never changed**, so no rsync rewrote it. The byte changed under a file nobody touched, on
+> this laptop. The transfer is exonerated for this one; the stale-`build/` problem nav found is real and
+> **separate**, and this file is not an instance of it.
+>
+> Both are now guarded anyway: the copy-back mirrors the run (`--delete`, with `*.log` protected so a live
+> redirect is never unlinked) and verifies a sha256 manifest the box writes. That localises the next flip;
+> it does not prevent one. **The loud failure was the lucky case** — in a digit instead of a key name it
+> would have read as a valid coordinate, and no per-line checksum exists to catch that.
+
+> **Corrected by combat, and it was my error to make:** I reported `scenario_dodge_rate` to the orchestrator
+> as a regression without opening the file, whose own header says KNOWN-FAILING since CP4 and "Not in make
+> check". The gate had inherited a ~2% coin as its expectation. A baseline records whatever was true the
+> instant it was taken, **including luck**.
+
+> ### `e3a91460` — `make remote` refuses to rsync over a live run of its own (trip-up 66, enforced)
+> Requested by the orchestrator after it voided nav's check on `96bbf38e` and scale's 62-minute fairness run
+> in one morning. **Verified against the live box:** `tools/remote.sh --status` listed my own running
+> 27-process check out of `/proc` with start times, and `tools/remote.sh metrics-pytest` refused it (exit 9,
+> *"nothing was synced and nothing was run"*) — the old script would have destroyed that run.
+> **/proc decides; the marker is printed, never believed** — a second `.owner` file would have been the
+> stale-`.owner` bug again, locking a stream out of the box until a human deleted a file. Only the launch
+> window (rsync started, no process yet) trusts a file, bounded by `REMOTE_CLAIM_TTL=300` under a `flock`.
+> Fails open, loudly. `REMOTE_FORCE=1` prints the run it destroys. 36 known-answer tests, ~1 s, no Godot,
+> now `CHECK_TARGETS` #18. Its own check is chained behind the `bac84a6f` one.
 
 ### Done
 
