@@ -338,6 +338,31 @@ tree the rig is still **5.6 m**, so it is a forecast, not a live defect, and the
    `make check`. **`arena-pytest` is deliberately not in `make check` at all** — my own note says so. Nothing
    masked it; `make arena-test` is the gate, my brief requires it on every layout change, and I did not run it.
 
+### What is verified, and what is NOT (2026-09-19, end of round 8)
+
+**Branch tip `1858c167`**, on top of `main` merged at the checkpoint (`1c1d30b1`, baseline `glibc-2.43
+0cb238bf366e141f`).
+
+| Ran | Result | Where |
+|---|---|---|
+| `make test` (full Godot suite) | **1261 passed, 0 failed** | laptop |
+| `make arena-pytest` | 19 passed | laptop |
+| `make announcer-pytest` | 58 passed | laptop |
+| `make match-pytest` | 11 passed | laptop |
+| `make audio-check` | passed | laptop |
+| `make announcer-audit` / `-variance` | passed | laptop |
+
+**⚠ THERE IS NO GREEN HASH FOR THIS WORK, and none of the above is one.** `builder0` has been unreachable since the
+network outage — `ssh: connect to host builder0 port 22: No route to host`, confirmed from combat's session too, so
+it is the machine and not this worktree. What is therefore **unverified**: `net-smoke`, `relay-smoke`,
+`lobby-smoke`, `broker-test`, `combat-smoke`, `match-smoke`, `determinism`, `garage-smoke`, `army-loop-smoke` and
+**`sim-baseline`** — which cannot be checked here at all, because the baseline is keyed by glibc version and this
+laptop's libm is not builder0's.
+
+**The first thing to do when builder0 returns: `make remote T=check`, and report it from the wrapper's own
+`>> remote: make check exited <N>` line plus the runner's `N passed, M failed`.** Note the wrapper distinguishes
+an unreachable host (**exit 3, "cannot reach"**) from a failing check — do not read one as the other.
+
 **Questions for the lead** (not blocking; recorded per the worker contract):
 
 1. **The Terminus is in the rotation and he has not ruled on it.** It is the one entry in `Arena.ROTATION` that is
