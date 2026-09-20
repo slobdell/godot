@@ -387,3 +387,8 @@ it, so a `git merge` cannot rewrite a running wrapper (demonstrated: an unpinned
 three other grounds: sub-makes re-read `mk/*.mk` (every `_cp-*` wrapper of the parallel check spawns one), a second
 `make remote` rsyncs into a directory a suite is reading (trip-up 66), and Godot loads `.gd`/`.tscn` lazily. Merge
 between runs.
+
+**An orphan blocks its own worktree's queue, not just a slot.** scale's dropped `arena-series` was still executing on
+builder0 ten minutes after its wrapper died (the make, slot.sh, arena_series.py and two headless matches); the next
+`make remote` from that worktree would have rsynced `--delete` under it. Kill the whole tree by cwd-verified PID
+before relaunching (scale, 2026-09-20 08:45).
