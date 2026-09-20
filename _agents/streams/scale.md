@@ -304,7 +304,26 @@ pooling mistake again, so each is labelled by the population it actually exercis
 > ```
 >
 > One `make remote` per worktree at a time, so they go in that order, and **read each result from the wrapper's own
-> `>> remote: make <target> exited <N>` line**, never a pipe. The second command runs the swap-applied positive
+> `>> remote: make <target> exited <N>` line**, never a pipe.
+>
+> **⚠ AND CHECK FOR AN ORPHAN FIRST — the dropped run left its whole self running on builder0.** The box came back at
+> 08:31 and ten minutes after my wrapper had died at 255 the remote side was still going: `make arena-series`, its
+> `slot.sh`, `arena_series.py --jobs 2` and **two headless matches**, all with a cwd in `~/tank_squad/godot-scale`,
+> holding a heavy-run slot. Found by cwd, terminated by explicit PID (parents and children), then verified no survivor
+> — **never `pkill -f`**, which matches your own shell (trip-up 19, hit twice this round).
+>
+> **The part trip-up 68 does not say, and it is the expensive part: an orphan blocks its own worktree's queue.** The
+> next `make remote` rsyncs with `--delete`, so launching the second command would have rewritten the tree underneath
+> a running `arena_series.py` — the same hazard as the merge trap, arriving from the other direction. So an orphan is
+> not merely a wasted slot you can ignore while you get on with the next thing; **it must be cleared before anything
+> else runs in that worktree.**
+>
+> I killed it rather than letting it finish, which was the close call: it was ten minutes into the right run on the
+> right clean tree, so finishing it and fetching the JSON by hand was tempting. It was at `--jobs 2` (slot.sh had
+> divided the memory budget while three other worktrees held slots) with ~35 minutes left, a relaunch on the quiet box
+> costs ten minutes of lost work, and it was blocking `grid-fairness` regardless. **On the relaunch I let slot.sh pick
+> the job count rather than forcing `JOBS=8` to hit the 09:00 read** — that division is what makes the wrapper unable
+> to OOM the box, and overriding a safety guard to meet a reporting deadline is the wrong trade. The second command runs the swap-applied positive
 > control (`test FILTER=spawn_grid`) in the same invocation as the series it guards, deliberately: a win rate from
 > two arms means nothing until that test is green.
 
