@@ -2686,7 +2686,14 @@ The kickoff prompt is one line; this section is the rest.
     a 5 cm spawn lift moved the frame-1 value by 0.032 m and fixed nothing (the constant stays, wired, at 0.0), and
     squad's "the lift passes on my branch" was a layout write that discarded its own y. **Draw the curve before you
     name the writer, and name the body hit in every failure message: "inside a wall or crate" when the body was the
-    ground cost the morning.**
+    ground cost the morning.** **And then a seventh, the real one (feel, 14:30, a shard-3/5 repro on the laptop with
+    a byte-identical pair list to builder0): placement is clean at frames 0 and 1, four overlapping pairs appear at
+    frame 2 and stay (4 at frame 10, 3 at 20), every failing pair is two of the three widest hulls abreast, and they
+    converge to a lateral pitch of 3.15 m where the half-metre rule needs 3.33 m.** The wedge's lateral slot pitch
+    did not follow the widened roster; the test sampled one frame before the defect appears, so anything nudging the
+    sampled instant saw it, and **"flaky" was a true description that stopped the search. A true label that ends
+    inquiry costs as much as a false one.** The sink was real and transient; the overlap was real and permanent;
+    the failure message named neither.
 
 179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
     morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
