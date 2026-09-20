@@ -211,6 +211,37 @@ seeing the number" is exactly the shape that needs the timeline attached.**
 - **bigger target:** `moved` and `push` hold; the damage shows in losses, suppression and kill distance.
 - **neither:** nothing moves but the matchup still collapses, and I have no mechanism and will say so.
 
+### THE COVER CLIFF IS AT 12.19 m, AND IT IS A STEP (arena's measurement, 2026-09-19)
+
+arena measured what my structural note only asserted: **the share of the contested field within 45 m of a prop long
+enough to hide a hull of each length.** Best case by construction — it assumes the hull is parked along the prop's
+longest side and the shooter is square to it — so **a hull that fails here cannot be hidden at all.**
+
+| hull length | 6 m | 7 m | **12.19 m** | **12.5 m** | 14 m |
+|---|---|---|---|---|---|
+| **yard** | 0.99 | 0.99 | **0.99** | **0.00** | **0.00** |
+| **pit** | 0.85 | 0.48 | 0.46 | **0.00** | **0.00** |
+| terminus | 0.98 | 0.95 | 0.91 | 0.91 | 0.91 |
+| boneyard | 1.00 | 0.92 | 0.85 | 0.33 | 0.33 |
+
+**The cliff is `container_40`'s own length and it is a STEP, not a slope.** So the rig's length is **binary for
+cover**: at 12 m it hides on 99% of yard with props already on the map; at 14 m it hides **nowhere on either map the
+lead kept**. That makes 12-vs-14 answerable as geometry rather than as an opinion about balance.
+
+**And a second finding neither of us went looking for: this arrived with the ARENA KIT.** foundry and scrapyard
+handle a 14 m hull because the legacy v1 `wall` obstacle is **18 m**; the kit that replaced it tops out at 12.19 m.
+**The two maps he kept are exactly the two v2 maps with no long props**, so the regression is invisible precisely
+where it matters most. `make arena-report` now prints a `WATCH` line for it on every run.
+
+**arena has NOT added a long prop to yard or pit**, deliberately: they are maps the lead ruled on, the rig's length
+is still open, and at 12 m the problem disappears with no map change at all. If 14 m stands, a jackknifed trailer
+or a container *wall* reads as the same venue.
+
+**Still not an explanation of `gangs vs law` 9/20 → 0/20**, and arena held that caution rather than dropping it: my
+arms show `unit_seconds_near_cover` flat and `deaths_near_cover` **falling**, which is the opposite of what "dying
+while exposed at cover" predicts. **If this table gets quoted as the cause, the numbers that contradict it are
+above.**
+
 ### THE COVER ON THE MAP IS SIZED FOR A 4 m VEHICLE (structural, 2026-09-19)
 
 **Certain, and independent of any of my statistics.** Yard's cover is 58 × `container_40` (**12.19 m**), 40 ×
