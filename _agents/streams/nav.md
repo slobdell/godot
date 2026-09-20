@@ -729,6 +729,44 @@ detail**, and the distinction is exactly the sort that turns into an over-claim 
 diverge and the totals move with them. Every number above is from **one** run and is internally consistent; none of
 them is a before/after against a different run.
 
+### ⚠⚠ TERMINUS REVERSES IT: A4's case is real on TWO of the three maps in rotation, and terminus is its BEST
+
+**The map nav's set omitted is the map that most supports the row nav was about to call niche.** Control arm (A4
+off), `28653da1`, **laptop**, seed 3, `FIGHT_BUSY_LEVELS=0`, 120 s — `Arena.ROTATION`, the set `--arena=random`
+actually deals:
+
+| map | offered | aimed | off_mesh | `fits_at_75` | **`none`** | **`none` share of off-mesh** |
+|---|---|---|---|---|---|---|
+| **terminus** | 17184 | 12784 | 1468 | 662 | **806** | **55 %** |
+| **yard** | 12237 | 9127 | 1641 | 1211 | **430** | **26 %** |
+| pit | 10603 | 8562 | 533 | 533 | **0** | 0 % |
+| | | | **3642** | | **1236** | **34 % across the rotation** |
+
+**terminus produces nearly twice yard's blocked gates and the highest share of any map measured.** Its note says
+why: *"a block city dropped into the arena: 20 m streets between sheer neon-edged towers"* — 8 `block` props, and a
+20 m street is a corridor a straight run-in cannot enter off-axis. This is A4's designed case, on the map the lead
+plays.
+
+**So the sentence for the lead is not the one that was being drafted.** It is **"the clothoid earns its place on two
+of the three maps you play, and most on terminus"** — not *"one map in three"*. The A/B runs on **terminus and
+yard**; `pit` is refused by nav's own rule (533 off-mesh gates, 0 blocked).
+
+**⚠ THE PROCESS FAILURE IS THE PART TO KEEP, because it was not a random error — it was a BIASED one.** nav screened
+`FIGHT_MAPS`' default (`yard boulevard pit boneyard`) believing it was *"the four maps `--arena=random` can deal"*.
+It is not. That set contained **two maps the lead never sees** and **omitted the one map where A4 is strongest**.
+The resulting picture — 1 map in 4, 14 % — pointed at *kill the row*. The true picture — 2 maps in 3, 34 % — points
+the other way. **A wrong map set did not add noise; it pushed the conclusion in one direction**, and nav was three
+paragraphs into writing that conclusion up when the orchestrator caught it.
+
+**The rule this earns:** *a pre-registration must name its population by reading it from the code, not by writing
+down what you believe the code says.* `mk/nav.mk` now reads `Arena.ROTATION` out of `arena.gd` and prints the set
+beside it on every run, naming strays and omissions (`b8e68830`), so the next pre-registration cannot copy a wrong
+set out of a stale comment. **The fix belongs in the tool, not in the resolve to be careful.**
+
+**What is NOT corrected by this.** The two corrections to the 43 % figure stand exactly as written — it was still
+yard-only and still a 45 s figure. What changes is only the conclusion drawn from the map spread, and the
+conclusion was drawn from a set that was wrong.
+
 ### AMENDMENT to the arrival-arc A/B, written BEFORE terminus reports and before any arm is run
 
 The pre-registered design — **four maps, seed 3, 120 s** — is unrunnable: three of its four maps have no headroom,
@@ -739,8 +777,9 @@ declared now, with terminus's headroom still unknown and no A/B arm yet run.
 seed. The map axis has collapsed to at most two, so it is replaced by the **seed** axis:
 
 - **Maps:** those of `Arena.ROTATION` (`yard`, `pit`, `terminus`) whose control arm has **non-zero
-  `off_mesh_fit.none`**. On today's evidence that is `yard`, plus `terminus` if its run (queued now) shows headroom.
-  `pit` is already refused (533 off-mesh gates, 0 blocked). **A map is included by its control arm's headroom and by
+  `off_mesh_fit.none`**. **RESOLVED after the amendment was written: `terminus` (806 blocked, 55 %) and `yard`
+  (430, 26 %). `pit` is refused (533 off-mesh gates, 0 blocked).** The rule was fixed before the numbers; the set
+  fell out of it. **A map is included by its control arm's headroom and by
   nothing else** — this rule is what the pre-registration already said, applied to a set that has shrunk.
 - **Seeds:** `FIGHT_SEEDS = 1 3 5 7 9` per map, via `nav-fight-ab ARENA=<map> AB_OFF=a4`, whose own control refuses
   a run whose two arms shared a treatment or came back identical (round 7's byte-identical A/B is why that check
