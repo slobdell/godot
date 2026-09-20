@@ -2017,7 +2017,11 @@ camera inside a building; 0 after; worst lift 11.0°; nothing pulled in.** **But
 fixed by it** (control, measured the same night): over those 703 poses the sight line from the camera to the ground it
 aims at was blocked by a building in **700 before and 518 after — a 26% reduction.** 518 cameras are correctly outside
 every solid and still looking at the side of one. **The occlusion cutaway is still owed, and the alley frames decide
-it; 703 → 0 must not be read as the item finished.** Mutation-checked; an arena with no cityscape
+it; 703 → 0 must not be read as the item finished.** **Built the same night (control, `bd69de5f`, laptop):** the block
+between camera and aim point is hidden (`visible = false` on its visual slot — no alpha, no uniform, no emission, collision
+untouched, its cue keeps running underneath), and **the alley behind a wall goes 518 → 0** over the same 703 poses.
+Caveat to report with it: every one of the 518 was a *building*, so the 6 m "buildings only, never cover" threshold
+cost nothing on the Terminus and is untested on an arena with tall cover. Alley frames at his pose follow. Mutation-checked; an arena with no cityscape
 is provably untouched. Because this is the second place the camera overrides his tilt (after the far-range floor), it
 reports `lifted_deg` and is flagged to him rather than hidden. Frames at his pose in the alleys follow. **He can
 overrule this in the morning**: a push-in variant is the same test with a different resolver.
