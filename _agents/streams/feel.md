@@ -271,6 +271,31 @@ in the sky can be drawn there at any altitude or distance. If the sweep confirms
 field of view"* is **false at his camera and true only at the bottom of his tilt range** (he can reach 8°), and the
 airship's `ORBIT_RADIUS` / `ORBIT_ALTITUDE` are provisional until he rules.
 
+### Owed at round close, not started: roof dressing on the Terminus (show's question, feel's geometry)
+
+**Why it is a question now:** control's `RtsCamera.clear_pose()` lifts the camera over a roof rather than shortening
+the boom (703 of 4328 poses were inside a building before, 0 after), so **roofs are on screen far more often on the
+Terminus than when the blocks were built** — and a block's top cap is the least-dressed surface in the game. With
+show's chamfers dark, the parapet run is a *roofline*; it is not roof *dressing*.
+
+**My answer, recorded so it is not re-derived: yes it wants something, and a FRAME BEFORE A TRIANGLE.** Building on
+the strength of "roofs are visible more often now" is round 7's failure exactly — ship, measure twice, discover the
+mechanism was never reached. First one frame from `clear_pose()`'s lifted camera looking down on a Terminus roof,
+then a decision. Then, in order:
+
+1. **Surface treatment, zero draw calls, and it is the doc-correct answer rather than merely the cheap one.** The cap
+   is already surface 0 and already tagged (`COLOR.r >= 0.75`), so tar-seam patching, water staining, grime pooling
+   and a vent grid are all **texture in the existing shader**. `art_direction.md` calls the city salvaged and
+   lived-in, which is a *surface* property at least as much as a silhouette one: a roof reading as tar and rust and
+   standing water is more in-world than a roof with three boxes on it.
+2. **Only if it still wants geometry: a MultiMesh scattered by the block seed** — vent housing, water tank, aerial
+   mast — **one draw per prop type across every block and every tier**, the trick `ContainerYard` already uses.
+   Never per-block meshes.
+
+**A cost nobody had priced:** `CityBlock.build()` caps **every tier**, not just the top (`city_block.gd:109-112`), so
+a tiered block is three or four horizontal surfaces. Whatever the treatment is, it is paid for several times a block
+— which argues harder for (1) going first.
+
 ### Decided overnight (the lead asleep; orchestrator's standing instruction, 2026-09-20)
 
 1. **The corner in `make rig-hinge` is shot at the rig's own minimum turn radius (12 m), not a wide one.** A wide
