@@ -549,6 +549,20 @@ would have sent three streams to fix nothing, and the difference between the two
 this measurement have a settling window?* Regions do; bodies do not. That reasoning stands whether or not this
 particular red survives.
 
+**TWO DEFECTS feel found while the guard was blaming them, both real, and the second retracts a claim I have made
+repeatedly:**
+
+1. **The guard cannot convict the first test in a process.** `_world_baseline` is a static starting at **−1**, and the
+   check is gated on `_world_baseline >= 0`, so the first test to run **absorbs its own leak silently** — and a file
+   run alone can *never* be convicted. **That is a "cannot fail" hole in the guard I wrote to catch things that cannot
+   fail**, and it is the second one of mine today. Fix: take the baseline at **process start**, before any test.
+2. **"It fails the test that leaked, not the victim" is only true for synchronous `free()`.** A test that
+   `queue_free()`s an arena has it actually freed *frames later*, so the count rises during a **later** test and the
+   guard names **the first observer of the residue, not the leaker**. I asserted the opposite in the code comment, in
+   the commit message and in this Status, as the guard's whole justification. **Retracted**: it names the leaker only
+   when the leak is synchronous. Fix: print the **previous test's name** beside the riser so the reader gets both
+   candidates.
+
 **Owed on the guard** (queued, low priority): name the leftover body in the failure line — **node path, class, and its
 owner test if the tree can tell** — and state **which frame the count was sampled on**. "left 1 physics bodies" costs
 a reproduction run to learn whose body it was, which is the same "names the symptom, not the thing" defect as the
