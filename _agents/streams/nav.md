@@ -233,23 +233,29 @@ fast-forwarded at worktree creation). A baseline `make remote T=check` was start
 
 ### REPORT — read this first (nav, round 9, 2026-09-20)
 
-**Nothing nav built this round is on the default path, and that is the report, not an apology.** Two catalogue rows
-were built, verified against the plant, measured against pre-registered behaviour scenarios, and left behind their
-switches with what they cost written down. `main` takes **no behaviour change** from this branch: the sim baseline
-does not move, and the default path reproduces the pristine scenario numbers exactly. That is round 8's shape on
-purpose — *three things were built, measured and thrown away, and all three were cheap because they were measured
-before shipping.*
+**✅ GREEN: `5c8f08b3` — `make check exited 0`, 1290 passed 0 failed, `sim-baseline passed: 04414f5d6a6dfa7c`
+(builder0). `lint local: 531 files, 8 known baselined lines`. Merged to `main`.** A second check covers the tip.
+
+**Nothing nav built this round is on the default path, and that is the report, not an apology.** **All four**
+catalogue rows were built, verified against the plant, measured against pre-registered falsifiers, and left behind
+their switches with what they cost written down. **Three of the four FAIL a bar and say so; one passes.** `main`
+takes **no behaviour change**: the sim baseline did not move *on builder0*, and the default path reproduces the
+pristine scenario numbers exactly. That is round 8's shape on purpose — *three things were built, measured and
+thrown away, and all three were cheap because they were measured before shipping.*
 
 | Item | State |
 |---|---|
 | **N0** ground rules, gate counter, facings in the probe | **done and shipped** — the only behaviour-affecting work that is on by default, and it is instrumentation |
 | **N1a** A7's priority table | **done**, reviewed by combat and feel, both reviews folded in, contract **S5** adopted from it |
-| **N1b** A7 in code | **built, measured, opt-in.** Waiting on squad's leash commit to re-measure and flip |
+| **N1b** A7 in code | **built, measured, opt-in.** squad's leash was measured and **did not fix the drift** — the region engages (1477 rejections, radius 14.0 m) and `CombatMotion` decides under a tenth of a hull's ticks. See *THE LEASH IS NOT IN THE ROUTE PATH* |
 | **N2** A11 dynamic window | **built, measured, opt-in.** One open behaviour question (the duel's 6.3 s) |
 | **N3** A1 event-triggered replanning | **built, measured, opt-in — and a NEGATIVE result that relocates P1.** The cadence is ~3 % of re-plans in a fight; A1 fails its own falsifier there and passes only in isolation |
 | **N4** A4 clothoids | **built, measured, opt-in — and it passes its pre-registered positive control: 403 of 403** blocked-corridor gates reached by a curved approach |
 | **N5** A6 | **blocked on S4**: nav has signed, feel authored, control signs with two requirements; its shopping list is collected below |
 | stretch: `NavigationAgent3D` vs our ORCA | **done** — compared, not swapped, with the verdict and what would change it |
+| stretch: the `face` order's missing recovery | **not built, designed** — behaviour on the default path, so it goes behind a switch and gets measured |
+| **the defile** (squad's artillery) | **measured; all three pre-registered hypotheses DEAD and the cause unknown.** The corridor fix was built on the orchestrator's instruction, failed its falsifier, and was reverted as a null. `wedged` now names the regime |
+| **X6** forced gains (squad's ask, the lead's) | **done** — `ControlGains.forced` / `--gains=<faction>`, so an identical army can be driven two ways |
 
 **Correction to an earlier claim in this Status: nav said N3 was blocked on a stable decision layer. That was
 wrong.** A1's target is `Movement._next_waypoint`'s route cadence, which is independent of `CombatMotion` entirely;
@@ -273,7 +279,9 @@ with the live treatment and report `arms` counters, so an arm that did not engag
 
 **Merge notes (shared files):** `game/ai/combat_motion.gd`, `game/ai/movement.gd`, `tests/nav/fight_probe.gd`
 (metrics' S3 emitter hook is expected here at CP1 — I review it at merge), `_agents/navigation.md`,
-`_agents/streams/nav.md`. **No file outside nav's ownership was touched.** `tests/baselines/sim_state_hash.txt` is
+`_agents/streams/nav.md`. **No file outside nav's ownership is touched *now*** — two of squad's were committed by accident during the defile
+measurement (`git add -A` after a cross-stream checkout) and removed; every changed path was then diffed against
+`main` to verify it, rather than assumed. `tests/baselines/sim_state_hash.txt` is
 deliberately NOT re-recorded: nothing on the default path moves it.
 
 ### Decided overnight (the lead asleep; most reversible option taken, recorded per the orchestrator's rule)
