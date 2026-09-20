@@ -341,6 +341,34 @@ in my own worktree from it; metrics killed three streams' wrappers from the same
 - `make remote T=control-playtest-shots` and `T=camera-looks` for the HUD and the camera grid;
   `make remote T=check-display` for the console gate.
 
+### If you change the selection marker, check the SHADER PARAMETERS, not the mesh
+
+Round 9 turned the marker from an annulus mesh scaled uniformly into **one unit quad per kind with a
+signed-distance capsule in the fragment shader** (`selection_markers.gd`), and **two guarantees moved with it**.
+Both had tests that went on passing for the wrong reason, or failed for a reason that was not a regression:
+
+- **depth testing** was `StandardMaterial3D.no_depth_test`; it is now the absence of `depth_test_disabled` in the
+  shader's `render_mode`. (*A vehicle must cover its own marker.*)
+- **friend and foe differ by SHAPE, not only colour** — an accessibility property — was a dashed *mesh* with fewer
+  vertices; it is now the material's `dashes` parameter. A vertex count now compares **6 against 6** and cannot see
+  it at all.
+
+**Neither property changed. Both assertions had to move.** If you touch the marker again, the question to ask of
+every ring test is *where does this guarantee live now* — and the answer is a shader parameter or a `render_mode`,
+not a mesh or a material flag. The second of the two was caught by `make remote T=check`, not locally: it lives in
+`test_command_readability.gd`, which is not one of the files you would think to run after editing the markers.
+
+### One pose is not a range
+
+I reported the wall-cutaway checklist entry as **"answered: clear"** from a single check at the lead's pose (21°),
+where a 6.18 m hull parked against the wall clears the near plane by **+0.22 m**. Swept across the tilt range he
+can actually reach, it is **−1.57 m at 50°** — the top 1.57 m of that vehicle cut away. The fix brings the worst
+case across 8–70° to **+0.20 m**.
+
+**The analysis was not wrong, it was narrow**, and it read as a clean answer — which is what made it dangerous.
+Anything checked at one pose, one seed, one arena or one hull is checked at one point of a range the player moves
+through freely, and a checklist entry is not answered until the range is.
+
 ### Decisions
 
 - **The facing-drag threshold is in PIXELS (18 px), not metres.** This is the one real decision in item 1 and the
