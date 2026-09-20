@@ -525,7 +525,12 @@ static func bake_radius(unit: Node) -> float:
 		# being even that the moment two arenas can be alive at once, which is exactly the state that produced
 		# combat's 284 edge errors. Matching `get_navigation_map()` against the hull's own map means a region
 		# belonging to some other world can never answer for this hull.
-		var my_map := unit.get_world_3d().navigation_map if unit is Node3D else RID()
+		# Typed explicitly: `unit` is a `Node`, so a ternary on `unit.get_world_3d()` has no inferrable type and
+		# GDScript refuses it at parse time — which is what broke the lint on the unverified merge of bffdea0f.
+		var my_map := RID()
+		var spatial := unit as Node3D
+		if spatial != null:
+			my_map = spatial.get_world_3d().navigation_map
 		for node in unit.get_tree().get_root().find_children("*", "NavigationRegion3D", true, false):
 			var region := node as NavigationRegion3D
 			if region == null or region.navigation_mesh == null:

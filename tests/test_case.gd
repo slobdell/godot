@@ -127,6 +127,42 @@ func _count_bodies(node: Node) -> int:
 	return n
 
 
+## Wait until the world's navigation map holds no regions, so the NEXT test starts on an empty map however it built
+## its arena. `ArenaFixture` drains before it instantiates, but **20+ test files call `ARENA.instantiate()` directly**
+## and never reach that path — so the fixture's drain is a belt and this is the braces.
+##
+## Why it must live here and be awaited: `free()` is **synchronous**, and `NavigationServer3D` drops the freed
+## arena's regions when it next **syncs**, a frame or two later. A test boundary is not a synchronisation point, so
+## the next test bakes into the previous one's geometry — two full arenas of edges in one rasterization space, which
+## the engine reports as *"more than 2 edges tried to occupy the same map rasterization space"* and `run_tests.gd`
+## then charges to **whatever test is running when the warning lands**. combat lost 14 of 18 in one shard that way,
+## with the warning standing beside a test that builds no arena at all; nav saw 4 of the same errors from building
+## terminus twice inside one test.
+##
+## **EMPTY, not "back to the count we started with".** scale's drain probe printed `before=2 with_arena=2` — equal,
+## so a baseline guard is satisfied having waited for nothing, and that `before=2` **was** the previous test's
+## regions mid-drain. "Stops changing" fails too: a drain spanning two syncs reads `2, 2` as settled while both
+## samples are pre-drain. Zero is the resting state and the only predicate with no false-satisfied case.
+const DRAIN_FRAMES := 30
+
+
+func drain_navigation() -> void:
+	var viewport := tree.root as Viewport
+	if viewport == null or viewport.world_3d == null:
+		return
+	var map := viewport.world_3d.navigation_map
+	for frame in DRAIN_FRAMES:
+		if NavigationServer3D.map_get_regions(map).is_empty():
+			return
+		await tree.physics_frame
+	var left := NavigationServer3D.map_get_regions(map).size()
+	if left > 0:
+		failures.append(("left %d navigation region(s) on the map after %d frames. The next test will bake into "
+				+ "them and the engine's 'more than 2 edges tried to occupy the same map rasterization space' will "
+				+ "be charged to whichever test is running when it lands - which will not be this one.")
+				% [left, DRAIN_FRAMES])
+
+
 func teardown() -> void:
 	for node in _owned_nodes:
 		if is_instance_valid(node):
@@ -140,3 +176,8 @@ func teardown() -> void:
 				+ "them and may fail instead of this one: free every node you add, and if a helper builds the arena, "
 				+ "free it there.") % [total, _world_baseline])
 	_world_baseline = maxi(_world_baseline, total)
+	# LAST, and awaited by the runner: leave the navigation map empty so the next test cannot bake into this one's
+	# regions. Placed after the body guard so that guard's timing is unchanged, and after `free()` so there is
+	# something to drain. Every test gets this without asking, which is the point -- 20+ files instantiate the arena
+	# scene directly and would never call it themselves.
+	await drain_navigation()

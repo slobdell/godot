@@ -512,6 +512,50 @@ refuses, the rule is touching hulls it has no business touching — which is the
 most likely one. A count assertion would have passed a rule that refused everything, provided it refused exactly
 the expected number of times.
 
+### ⚠⚠⚠ CLEARANCE A/B: **FAILS ITS GUARDS.** Default stays off — and the AGGREGATE would have called it a pass
+
+yard, seed 3, 120 s, `af0bcefc` tree, both arms on one rsynced tree. **Arm proof first, as pre-registered:**
+
+    control    off=[]              clearance_chords 0        clearance_refused 0
+    treatment  off=["clearance"]   clearance_chords 485697   clearance_refused 441606   (90.9 % refused)
+
+**Both guards breached, and a primary fell:**
+
+| | control | treatment | |
+|---|---|---|---|
+| attack-move **`progressing`** | 0.407 | **0.263** | **−35.4 %**, bar was −10 % → **BREACHED** |
+| attack-move **`slow`** | 0.02 | **0.388** | **19×** — the hulls are crawling |
+| **`off_corridor`** (ifv) | 0.373 | **0.429** | must not rise → **BREACHED** |
+| **`net_over_path`** ifv / lancer | 0.766 / 0.769 | **0.683 / 0.692** | primary, wanted **up** → **fell ~10 %** |
+| active fraction (ifv) | 0.664 | **0.176** | the denominator collapsed |
+
+**⚠ THE AGGREGATE SAYS THE OPPOSITE, AND IT IS THE WHOLE LESSON.** The `ALL` row improves on *every* primary —
+`eff_mean` 0.768→0.784, `eff_p10` 0.306→0.326, `osc_share` 0.066→**0.035**, `cusps/min` 19.29→**11.83**,
+`net/path` 0.754→0.762. **Reported as the aggregate, this row ships.** It is an artifact: **you cannot oscillate if
+you are not going anywhere.** Oscillation halved and cusps fell 39 % because **38.8 % of ticks are now below the
+creep threshold** and excluded. The apparent improvement *is* the pathology.
+
+**Two pre-registered decisions are what caught it**, and neither was obvious when written: **per hull class**
+(the aggregate is carried by `tank`, 21 of 34 units, the only class that improves — ifv and lancer both fall), and
+**the active fraction beside every fraction** (0.664 → 0.176 says plainly that the remaining ticks are a different,
+much smaller population).
+
+**And the third: 90.9 % of consultations refused.** nav pre-registered *"if every consultation refuses, the rule is
+touching hulls it has no business touching"* as the most likely failure. It is not literally every — but at 91 %
+with `slow` at 19× and `progressing` down a third, the refusal is not selecting oversized hulls out of tight
+corners; **it is stopping the army.** `refused < chords` passed as a unit test and was nowhere near strict enough
+as a field bar.
+
+**Verdict: `--nav-off=clearance` stays OFF, on measurement.** The *finding* underneath — 14 of 21 units need more
+clearance than the mesh bakes — stands and is untouched by this. What fails is **this response to it**: refusing
+mesh-hugging shortcuts buys clearance and spends the fight, which is the same trade A4 made and the same guard that
+caught it.
+
+**Scope, stated plainly: ONE MAP.** The pre-registration asked for the rotation and builder0's queue did not allow
+it (treatment/yard waited ~25 minutes for a slot). pit and terminus are **not** run. A −35.4 % guard breach on the
+primary map would have to be reversed on both to change the verdict, which is not a reason to skip them — it is a
+reason the verdict is *provisional on the rotation* while the default stays off, which costs nothing.
+
 ### PRE-REGISTERED, before any arm is run: the CLEARANCE row's falsifier
 
 Written with the code committed (`826e4852`, `04fec00b`, `04f472ca`) and **not one number measured**, so the bars
