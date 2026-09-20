@@ -2973,4 +2973,10 @@ The kickoff prompt is one line; this section is the rest.
     was in it. Rules: a knob lives where its consumer reads it, never as a foreign static written at class load; a
     knob's own test flips it and asserts the mechanism's output changed; and a test that selects an arm asserts
     the arm is live before the behaviour (nav's rule, now in verification.md). The person who shipped the knob had
-    just written the previous eight instances of this family into the brief.
+    just written the previous eight instances of this family into the brief. **It is round 7's bug recurring:
+    `game/ai/combat_motion.gd:40` documents the same clobber between Movement, TankBrain and CombatMotion ("the
+    switch silently does nothing; two byte-identical arms") and nav's files carry three working fixes (a getter
+    resolving at read time with a pinned static for tests; a switch parsed lazily on first use; `ControlGains.forced()`
+    read at call time with `push_error` for an unknown name). Copy the last: a misspelled knob and a clobbered knob
+    otherwise fail identically. And two depths of arm check: a flag read proves the static survived; a behavioural
+    check (something only true if the branch ran) proves the branch executed.**
