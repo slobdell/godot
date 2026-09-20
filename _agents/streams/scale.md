@@ -262,11 +262,32 @@ sides; if it did not, say that the resize is not the variable.
 
 ## Status
 
-_Updated 2026-09-20 (early), worktree `godot-scale`, branch `stream/scale`._
+_Updated 2026-09-20 (overnight), worktree `godot-scale`, branch `stream/scale`._
 
-**Backlog 1–3 are done and green locally; backlog 4 (clearance, then the CP2 announcement) is next.** CP2 is NOT
-announced: the brief says it announces once the line-up frame has been *sent*, and the frame is built but not yet
-rendered (builder0 is busy with this branch's own `make remote T=check`; one remote run per worktree, trip-up 66).
+### Decided overnight (the lead was asleep; the orchestrator ruled where a ruling was needed)
+
+1. **CP2 lands as it is.** Every hull length is derived from a cited reference vehicle times one factor; nothing was
+   tuned to make a number look better. The look was approved on his behalf from `lineup_pose.png`.
+2. **K = 14.00 / 19.80 = 0.707071**, anchored on the War Rig at the 14.0 m he ruled, its reference a standard US
+   tractor + 42 ft DOT-406 petroleum tanker. If he prefers real metres it is **one constant** — `Units.RIG_LENGTH_M`
+   — plus `make roster-scale` and a rewrite of 21 values from the table.
+3. **The Syndicate's hover platforms are referenced BY ROLE** (no road ancestry), consistently, stated on every row.
+   **`law_tank` is a Centauro B1 8×8 (7.85 m), not a Stryker MGS (6.95 m)** — at 6.95 the Law's *tank* would be
+   shorter than its own 6×6 MRAP.
+4. **Three files outside this stream were edited**, each granted explicitly and each reviewed by its owner:
+   `game/tank/tank.gd` (two silent mirrors that the resize could not land over), and one test each in control's and
+   feel's files (size-dependent literals re-timed with the measurement beside them).
+5. **A map-widening change (CP2d) was ruled and then withdrawn**, because the measurement behind it was mine and it
+   was wrong. See *The maps' corridors vs the roster* below. **The maps are fine.**
+6. **Still open for him, nothing blocked on it:** whether the Condemned `artillery` should carry its outriggers in
+   its collider at 4.74 m wide (feel's call, round 10, and they have said so for the record), and whether a
+   per-hull-class navmesh radius is wanted (nav's, catalogue C2).
+
+### Where it stands
+
+**Backlog 1, 2, 3, 4 and 5 are complete. Stretch item 6 is not started.** CP2 is unblocked on the look and waits
+only on the green hash: `make remote T=check` is running on `1a298f3d`, and the local `make lint` that lesson 157
+requires is running beside it. **No commit is claimed green until both lines exist.**
 
 ### The plan, in the order it was worked
 
