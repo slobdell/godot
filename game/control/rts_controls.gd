@@ -524,6 +524,15 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		task["to"] = [float(extra["to"][0]), float(extra["to"][1])]
 	if extra.has("target"):
 		task["target"] = String(extra["target"])
+	# Round 9: the heading the player DREW with a right-drag reaches the element's leader. Without this a facing
+	# drag on a WHOLE SQUAD - the lead's commonest order - silently lost its heading here, because a whole-element
+	# move goes down the task path and this dictionary only ever copied `to` and `target`. control's unit tests
+	# never caught it: they order single units and pairs that are not elements, so they all took the direct path.
+	# **The last mile is squad's**: the element layer has a facing channel (`element.gd:493`) but nothing reads
+	# `task["facing"]` yet, so today this puts the heading where squad can find it and the per-unit orders do not
+	# carry it until they do.
+	if extra.has("facing"):
+		task["facing"] = extra["facing"]
 	if task["verb"] == "move" and not task.has("to"):
 		return _refuse("a move task needs somewhere to go")
 	if verb == "move":

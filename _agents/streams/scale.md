@@ -259,10 +259,373 @@ sides; if it did not, say that the resize is not the variable.
 - **nav:** `Movement.NAV_AGENT_RADIUS` mirrors the bake — propose it read `Arena`'s value.
 - **feel:** a 21-unit line-up mode in `SizeLook`, if you cannot build it in your own paths.
 - **control:** the camera, HUD, selection boxes and radar at his pose against the new sizes.
+- **metrics: LANDED — the merge trap is now impossible, not documented.** `tools/remote.sh` re-execs from a private
+  copy and unlinks it immediately (`pinned=$(mktemp …)`, `TANK_SQUAD_PINNED_SELF=… exec bash "$pinned"`), with the
+  reasoning in its own comment: *"the kernel keeps the text alive for this process through its open fd, and nobody —
+  not even git — can reach it by name to change it."* That is better than the copy-to-/tmp I proposed, because
+  unlinking closes the window where the copy itself could be edited. **The ⚠ below is retired**: a `git merge` can no
+  longer rewrite a wrapper mid-flight, so the hand-check it demanded is no longer the thing standing between us and a
+  lost run. *(Original request kept below for the record of what it cost to learn.)*
+- ~~**metrics (or whoever owns `tools/remote.sh`): make the merge trap impossible instead of documented.**~~ I lost a
+  render to it (a wrapper part-way through `tools/remote.sh`/`slot.sh` when `git merge main` rewrote them under it),
+  and the brief now carries a ⚠ telling every future agent to check by hand. While merging today I noticed metrics
+  running `bash /tmp/remote.sh.AIzYCv check` — **a copy of the wrapper in `/tmp`**, which is exactly the defence, and
+  it is *not* in the tree, so metrics invented it per-invocation in their own session. Proposal: `make remote` copies
+  the wrapper (and `slot.sh`) to a temp path and execs that, so a merge can never rewrite a script mid-flight. That
+  turns a hand-checked rule into a property, and retires the ⚠ and half of trip-ups 66/68. **One of us should land it
+  rather than both keep working around it.**
 
 ## Status
 
-_Updated 2026-09-20 (overnight), worktree `godot-scale`, branch `stream/scale`._
+_Updated 2026-09-20 (post-merge), worktree `godot-scale`, branch `stream/scale`._
+
+### The fairness controls after CP2 — the split beside the aggregate
+
+**CP2 is green at `7542df28` (1395 passed, 0 failed) and merged to `main` at `86463527`.** These are the controls
+run on the merged tree, and they are **two different experiments**. Reporting them pooled would be the round-8
+pooling mistake again, so each is labelled by the population it actually exercises:
+
+> ### ⚠ BOTH FAIRNESS CONTROLS ARE OWED — builder0 went off the network mid-run
+>
+> **Nothing of mine is red; there is simply no number yet.** The `arena-series` run started on builder0 at 08:21 and
+> the box dropped off at ~08:27. From my own log, which is the only thing that counts (lesson 28):
+>
+> ```
+> ssh: connect to host builder0 port 22: No route to host
+> >> remote: FAILED to copy build/ back (rsync exit 255); local build/ is STALE, not this run's
+> >> remote: make arena-series ARENAS=... SEEDS=18 OUT=fairness-cp2 exited 255 (build/ copied back: FAILED)
+> ```
+>
+> `ssh builder0 uptime` still answers `No route to host` at 08:28. **`exited 255` is transport, not a result** — the
+> matches were mid-flight, no summary was written, and the copy-back failed, so anything in `build/` is a previous
+> run's. I checked: `build/fairness-cp2.json` does not exist and there is no `grid-fairness` or `faction-matrix` file
+> in `build/` to be mistaken for one. **Do not quote a fairness number from this tree until one of these runs
+> finishes.**
+>
+> **Run these two when `ssh builder0 uptime` answers.** Both are long; **neither is a laptop job** (the laptop is
+> ~2.75× slower and has the memory guard, and these are 180 and 120 matches):
+>
+> ```
+> make remote T="arena-series ARENAS=yard,boulevard,pit,boneyard,foundry SEEDS=18 OUT=fairness-cp2"
+> make remote T="test FILTER=spawn_grid grid-fairness"
+> ```
+>
+> One `make remote` per worktree at a time, so they go in that order, and **read each result from the wrapper's own
+> `>> remote: make <target> exited <N>` line**, never a pipe.
+>
+> **⚠ AND CHECK FOR AN ORPHAN FIRST — the dropped run left its whole self running on builder0.** The box came back at
+> 08:31 and ten minutes after my wrapper had died at 255 the remote side was still going: `make arena-series`, its
+> `slot.sh`, `arena_series.py --jobs 2` and **two headless matches**, all with a cwd in `~/tank_squad/godot-scale`,
+> holding a heavy-run slot. Found by cwd, terminated by explicit PID (parents and children), then verified no survivor
+> — **never `pkill -f`**, which matches your own shell (trip-up 19, hit twice this round).
+>
+> **The part trip-up 68 does not say, and it is the expensive part: an orphan blocks its own worktree's queue.** The
+> next `make remote` rsyncs with `--delete`, so launching the second command would have rewritten the tree underneath
+> a running `arena_series.py` — the same hazard as the merge trap, arriving from the other direction. So an orphan is
+> not merely a wasted slot you can ignore while you get on with the next thing; **it must be cleared before anything
+> else runs in that worktree.**
+>
+> I killed it rather than letting it finish, which was the close call: it was ten minutes into the right run on the
+> right clean tree, so finishing it and fetching the JSON by hand was tempting. It was at `--jobs 2` (slot.sh had
+> divided the memory budget while three other worktrees held slots) with ~35 minutes left, a relaunch on the quiet box
+> costs ten minutes of lost work, and it was blocking `grid-fairness` regardless. **On the relaunch I let slot.sh pick
+> the job count rather than forcing `JOBS=8` to hit the 09:00 read** — that division is what makes the wrapper unable
+> to OOM the box, and overriding a safety guard to meet a reporting deadline is the wrong trade. The second command runs the swap-applied positive
+> control (`test FILTER=spawn_grid`) in the same invocation as the series it guards, deliberately: a win rate from
+> two arms means nothing until that test is green.
+
+| control | what it plays | what it can see | result |
+|---|---|---|---|
+| `make arena-series` (5 arenas × 18 seeds × 2) | **faction armies** | the arena and its navmesh | **OWED** — died at 255 (transport) |
+| `make grid-fairness` (2v2 bots, 60 seeds × 2) | **the spawn grid** | the grid I changed in item 3 | **OWED** — never got a slot |
+
+### main's one red test: all three candidates eliminated from the repository alone
+
+**`test_match_spawns_and_results::test_a_full_faction_army_a_side_spawns_clear_of_itself`** fails on main's tip
+(`b008a277`, 1478 passed / 1 failed) with `[Green_S5_1, Rust_S5_1, Rust_S8_1]` "inside a wall or crate". Green on my
+branch (`7542df28`, 1395/0) and green on pre-CP2 main (`0808834e`, 1454/0), so it is a composition. **Assigned to me,
+and the diagnosis needed no machine time.**
+
+**It is not a new test meeting CP2 for the first time** — that was the cheaper explanation and it is wrong. The test
+arrived in `d916dc29`, which **is** an ancestor of both `7542df28` and `0808834e`, so it ran and passed against the
+resized roster *and* against pre-CP2 main. Only the combination is red.
+
+**My HEAD already holds main's version of every file that could matter**, which is what makes elimination possible:
+`git diff HEAD main -- arenas/ game/arena/ game/match/match.gd game/tactics/ game/units/units.gd` is **empty**. So the
+red reproduces here, and the cause lies wholly inside `7542df28..HEAD`. Over that window:
+
+| candidate | verdict | the evidence |
+|---|---|---|
+| show's arena JSON keys | **ruled out** | only `terminus.json` and `yard.json` changed; **the test runs on foundry** (`Arena.DEFAULT_LAYOUT`, no `layout_name` set and no `--arena` in a test run) and `arenas/foundry.json` is **untouched** |
+| squad's X1 pitch in `ArmyLayout` | **ruled out** | **`game/tactics/` does not appear in the diff at all** — the code placing all 45 units did not change |
+| combat's `units.gd` | **ruled out** | the +9 lines are a `--tune` parser branch for `switch.<knob>`; inert unless a run passes `--tune switch.*`, and the test passes none |
+| theme/dressing (checked for completeness) | **ruled out** | `arena_dressing.gd`, `kit_yard.gd`, `city_block.gd` all changed and the arena scene has a `Dressing` node, but their diffs contain no `StaticBody`/`CollisionShape`/`BoxShape`/`collision`. The whole merge diff also has **no** `collision_layer`/`collision_mask`/`WORLD_MASK` change, so the probe is not hitting a body that changed layer |
+
+**And what remained after all four eliminations — nav's three AI files — was also wrong.** I sent it as the live
+suspect and it is not. The answer is not a code change at all, in anyone's stream.
+
+**SOLVED, and read off the output rather than inferred. Units are placed at exactly `y = 0.0`, resting on the ground
+at ZERO penetration.** That is a degenerate contact, and which way it resolves depends on the physics engine's
+internal state, which depends on how many bodies the process created and destroyed earlier. After an arena test has
+built and dropped a 38-body arena, the solver ejects three units **~1.5 m DOWNWARD through `Arena/Ground`**:
+
+```
+SPAWN_ISO_BLOCKED Green_S5_1 unit=tank      placed (-52.235, 0.0,  97.07) -> now (-52.235, -1.475,  98.589) moved 2.118 m :: Arena/Ground
+SPAWN_ISO_BLOCKED Rust_S5_1  unit=tank      placed ( 52.235, 0.0, -97.07) -> now ( 51.603, -1.475, -97.074) moved 1.605 m :: Arena/Ground
+SPAWN_ISO_BLOCKED Rust_S8_1  unit=artillery placed (-38.755, 0.0, -97.07) -> now (-38.755, -1.733, -97.077) moved 1.733 m :: Arena/Ground
+```
+
+**The same three units as main, every time.** And note the gap between what the test says and what is true: it reports
+*"no unit spawns inside a wall or crate"* and the body they intersect is **the ground** — they are under the floor.
+**A failure message that named the body it hit would have saved the morning.** That is the cheapest lesson here and it
+is not specific to this test.
+
+**This is round 8's sim-hash lesson with spawn positions instead of a hash: identical geometry, different body
+creation order, different Jolt answer.** The victim alone and the victim after the polluter see an identical world —
+`active=foundry`, `obstacles=19`, `bodies=111`, `units=90` — and place all 90 units at **identical coordinates**. Only
+the engine's internal state differs.
+
+**The eight measurements, because the wrong turns are worth as much as the answer:**
+
+| run | result | what it killed or established |
+|---|---|---|
+| `test FILTER=a_full_faction_army` | 1 passed, 0 failed | **passes alone** |
+| `test FILTER=match_spawns` | 4 passed, 1 failed | fails with `test_arena_layouts` first |
+| `test FILTER=army` | passes | bisects the polluter to that one file |
+| `make spawn-probe` | blocked=0 of 90, worst motion **0.018 m** | standalone is clean; tick-one motion is settling, so **nav is exonerated** |
+| `spawn-probe --pollute=scrapyard` | blocked=**16**, named scrapyard walls at z=±70 | a stale arena *can* produce the symptom |
+| `spawn-probe --pollute-free=scrapyard` | bodies **38 → 0 immediately**; blocked=0 | **`free()` is deterministic — my stale-bodies hypothesis is refuted** |
+| TestCase teardown leak guard | never fires | **nothing leaks** bodies or navigation regions |
+| in-harness reproduction (`test_spawn_isolation.gd`) | the same three units, repeatably | the difference is the harness path, not the pollution |
+
+**I was wrong twice on the way and both refutations are kept beside the answer.** I proposed **RNG stream divergence**
+(there is no new random draw anywhere in `game/` in the window — the orchestrator confirmed zero hits independently)
+and **stale physics bodies** (`free()` is immediate). A third self-inflicted error is worth recording too: my own
+Python overlap check reported *"obstacle overlap: NONE"* while having parsed **0 obstacles with a size**, because
+foundry's obstacles carry only `type` and `position` and sizes are resolved in GDScript. **A vacuous check of my own,
+in the middle of a round whose whole lesson is vacuous checks.**
+
+**SCALE'S HALF IS CLEAN, and now says so deterministically.** At CP2 hull sizes a full 45-unit army a side is *placed*
+with **0 overlapping pairs and a closest-pair gap of 1.040 m**, measured **before any physics step** so it cannot move
+with test order:
+
+```
+SPAWN_ISO_PLACEMENT closest pair gap 1.040 m; 0 overlapping pairs at placement
+```
+
+**The resize did not outgrow the assembly.** That is committed as a real assertion rather than left as an inference
+from someone else's red.
+
+**What this stream deliberately does NOT assert (Invariant 0b).** The fix is either to place units a few centimetres
+above the ground so the contact is not degenerate (`ArmyLayout.deploy` writes `y = 0.0`; `Match.spawn_position`
+returns `y = 0.0`) or to settle more than one frame before measuring. Both are outside these paths, so the test prints
+a `SPAWN_ISO_WATCH` line. **Recommended to squad: the y-offset** — it removes the degeneracy at the source and makes
+every future spawn measurement order-independent, where settling longer only hides it behind a larger frame count.
+The owner should also move the test's own two assertions to placement: **both** of them are taken after a physics
+frame, including the hull-overlap one, which is why both moved with test order.
+
+**A vacuous guard in that test, found on the way and not the bug.** Its first line is
+`assert_true(Match.SPAWN_SLOTS >= Doctrine.MAX_UNITS)`, and `Doctrine.MAX_UNITS := Match.SPAWN_SLOTS` — **it compares
+my constant with itself and cannot fail.** It reads as protecting the grid and protects nothing: the same family as the
+baked-spawn guard that compared the constants with themselves. Not my file; reported, not edited.
+
+### The round's recurring shape: things that succeeded in a way indistinguishable from working
+
+Not "something broke". **Every expensive thing this round was something that reported success while doing nothing**,
+and the instances are now numerous enough to be a pattern rather than a run of bad luck. Four, across two streams:
+
+| what looked fine | what it actually did |
+|---|---|
+| `_quieten()` in the line-up render | `hud is CanvasItem` was quietly **false** (`Hud extends CanvasLayer`), so nothing was hidden — two unusable renders |
+| the baked-spawn-list guard | `Arena.load_layout` returns `{"layout": …}`, so it compared the constants **with themselves** |
+| a stale `slot.sh` `.owner` after a cleanup | the slot goes on blocking **every** worktree's queue while the cleanup looks finished |
+| `AssetContracts.ROLE_UNITS` | a round-3 stand-in that was **only** wrong once hulls differed — green on both branches, red on the merge |
+
+feel adds the vacuous lint (`--check-only` reporting "all scripts parse" over **zero files**), the seeded random colour
+that looked like a design choice, and A6's heading law that would have passed its own review while moving nothing.
+
+**The operational rule this earns: a check that cannot fail is worse than a missing check, because a missing check is
+visible.** Hence the discipline this stream now applies without being asked — mutation-check every reader in both
+directions, and prove the arm is distinguishable before believing the result. The swap-bases guard added today is that
+rule applied to the fairness apparatus itself: `arena_series.py` verified the flag was *reported*, which cannot see
+`spawn_position` ceasing to consult it, and that failure yields two identical arms and a perfectly plausible
+"no base advantage" from a treatment that never happened.
+
+### A derived roster is interrogable; a typed one is inert
+
+**The better argument for S1's "derived, not typed", and it was found by accident.** feel reported the artillery's mesh
+height as `1.38` and `1.38 × 2.0500 = 2.829` disagreed with the committed `2.82`, so I asked whether the height had
+moved. It was settled **without either of us running anything**, by inverting the function that produced the number:
+`box_at_length` computes `snappedf(natural.y × k, 0.01)`, so
+
+```
+snapped == 2.82  <=>  natural.y × 2.0500 ∈ [2.815, 2.825)  <=>  natural.y ∈ [1.373171, 1.378049)
+```
+
+`1.38` was a `%.2f` print, the geometry does not move, and the committed 2.82 will reproduce. **A hand-typed 2.82
+could not have answered that question at all** — the only route would have been to occupy builder0.
+
+So the rule has a second payoff nobody designed: **a derived value carries information about the mesh it came from, and
+can be interrogated after the fact.** That is a stronger argument than drift, because drift is a risk you are asked to
+take on faith while interrogability is a capability that can be demonstrated on demand.
+
+**And the same exchange shows the failure mode of stating a bound you did not derive.** feel's five sample rows were
+each correct, but the interval summarising them — `[1.3750, 1.3784]` — was eyeballed from the rows rather than inverted
+from the function, so it excluded valid values at one end and admitted an invalid one at the other (`1.3784 × 2.05`
+snaps to **2.83**). **Four decimals is a claim about method.** Stated as "somewhere around 1.375–1.378" it would have
+been honest; stated to four decimals it looked derived, and the right response was to invert it rather than take it.
+
+### The spawn settle curve — the reference for anyone who ever sees a vehicle pop at spawn
+
+**Units are placed at exactly `y = 0.0` with their collider bottom exactly at the origin, and the ground's top is
+exactly `y = 0`.** That contact has zero penetration, and `move_and_slide`'s depenetration recovery resolves it either
+way. Measured on a full 45-unit army a side, foundry, `seed_spawns(9, 6.0)`:
+
+| frame | Green_S5_1 (tank) | its `get_position_delta()` | a passing unit of the same class |
+|---|---|---|---|
+| 1 | **−1.475051** | `(0.0, −1.475051, 1.519325)` | `(0.0, +0.00087, 0.0)` — up 0.87 mm |
+| 2 | −0.190296 | `(0.0, +1.284755, 0.0)` | +0.000113 |
+| 3 | **−0.041655** | `(−0.000031, +0.148641, 0.000031)` | +0.000015 |
+
+`velocity` is **exactly zero** throughout and `motion_mode` is `MOTION_MODE_FLOATING`, so nothing fell and nothing was
+assigned: the delta carries the whole drop, which means **`move_and_slide` recovered the body**. Most units get the
+benign form — pushed *up* by under a millimetre. A few get it downward, and **they climb back out: −1.475 → −0.190 →
+−0.042 by frame 3.**
+
+**So a spawn pop is a settle, not a bug, and it is transient.** If the lead ever sees a vehicle dip at spawn, this is
+it, and the numbers above are the reference. **What is NOT acceptable is measuring it at frame 1** — which is what
+main's red spawn test did, and what made the result depend on test order (the engine's internal state decides which
+way a zero-penetration contact resolves, and that state depends on how many bodies the process made and destroyed
+earlier).
+
+**Ruled (orchestrator): no spawn `y` change — the constant stays `0.0` and wired.** A y-offset only changes which way
+the contact resolves; combat's 5 cm control moved the frame-1 value by **0.032 m** and fixed nothing. The fix is
+test-side: **assert placement, which is deterministic, and sample any physics assertion after settling.**
+
+**And my collider is exonerated by direct measurement**, so the round-9 `_apply_hull_size` rewrite has no defect here:
+
+```
+SPAWN_ISO_AABB Green_S0_1 tank      origin_y=0.0000 local_y=1.2000 box_h=2.4000 -> bottom=+0.0000 top=+2.4000
+SPAWN_ISO_AABB Green_S0_4 artillery origin_y=0.0000 local_y=1.4100 box_h=2.8200 -> bottom=+0.0000 top=+2.8200
+SPAWN_ISO_GROUND Arena/Ground box (320,1,320) centred y=-0.5000 -> top=+0.0000 bottom=-1.0000
+```
+
+Every bottom exactly at the origin, every `local_y` exactly `h/2`, every `box_h` the catalogue height. **The "implied
+2.9 m and 3.5 m hulls" were an artefact of reading the sink depth as a half-height** — there is no second height.
+
+### The teardown guard: narrowed to bodies, after it was wrong about regions
+
+The first version counted **navigation regions** as well and failed three tests in control's, squad's and combat's
+files. **It was wrong, and the measurement that shows it took one run:**
+
+```
+SPAWN_ISO_REGIONS before=2 with_arena=2 then after free: [2, 0, 0, 0]   (frames 0,1,2,3)
+```
+
+`free()` takes an arena's **bodies** to 0 in the same call, but the server drops its **regions on the next frame**, and
+`teardown()` is synchronous so it can only sample frame 0 — where a correctly-freed arena still shows its regions.
+**A guard that fails inside a settling window is the same defect as the test it was written to explain.** The three
+tests were innocent (`AiScenario.dispose()` already frees properly), the grants on their files lapsed unused, and the
+guard's own advice — *"build arenas through ArenaFixture"* — was withdrawn as wrong: the fixture solves the *consumer*
+side, waiting for your own regions before measuring, and does nothing about regions outstanding at teardown.
+
+**What landed is the claim I can defend: bodies only.** A `CollisionObject3D` at teardown has no transient window. It
+reports a **lower bound** on leakers (high-water mark: once the count rises, a later test leaking below it is not
+blamed), and it fails **the test that leaked**, not the next one to run — which is the whole point, since this class of
+bug always appears as the victim's failure.
+
+**The lesson I would keep above either fix:** I built an instrument, it produced three confident reds in other people's
+files, and it was measuring a transient. **Checking it before acting on it cost one run; not checking it would have
+sent three streams to fix nothing** — and my own overlap script had already printed a vacuous "overlap: NONE" the same
+morning. In a round whose recurring failure is checks that cannot fail, the checks I write are not exempt.
+
+### Queued, in order, behind the current work (recorded so none of it is rediscovered)
+
+1. **The guard + the three fixture-less arena tests** — landing as its own commit, **no baseline move**.
+2. **The artillery box + whatever the collider/writer hunt finds** — one commit, one baseline record, both causes named.
+3. **Fairness on yard and pit** (the two arenas in `Arena.ROTATION`, both with rows in arenas.md's recorded table).
+4. **Terminus lamps among the blocks** (feel's ask, forwarded to the lead). Terminus has **two** floodlights at r=128
+   against pit's **four plus eight 40 m towers inside the fight**, so at his pose the neon bands — now correctly cyan
+   and magenta — are still the brightest thing on screen and the vehicles read as dark slabs. **Light the floor; do not
+   dim the bands.** Ruled with show: the floor's baseline lighting is **mine** in `terminus.json` (the show *modulates*
+   what is already lit; its `pools` channel is not the floor's baseline), so the lamps must be judged **with the show
+   off as well as on**, at 21° / FOV 35 / 49 m, and **the vehicles must read without the UI rings.** A frame at that
+   pose is the acceptance test.
+5. **P6 / the navmesh bake radius, pre-registered so the trigger is not invented after the fact.** nav measured that
+   **14 of 21 units' avoidance radius `((w+l)/4 + margin)` exceeds `arena.tscn`'s 2.0 m bake** — median **2.50 m**,
+   `gang_tank` **4.58 m**, `gang_scout` 1.36 m. Ruled: **the bake stays 2.0 this round** and nav's routing consults each
+   hull's shortfall. `arena.tscn`'s bake is mine, so **if the yard/pit fairness runs show the largest hulls wedging in
+   alleys, 2.0 is the number that changes — as a baseline move, and not before nav's falsifier reports.** Note for
+   whoever reads that result: the **median** unit is already under-served, not just the tail, so wedging would not be a
+   rare event.
+
+**An observation from show for the record, not an alarm:** the same 6500 budget buys **68 vehicles at 191k primitives
+before CP2 and 64–68 at 145k after** (terminus, `PERF_NAME=show-layer`). **The resize went through simpler meshes, not
+more geometry** — the hulls grew in metres while the primitive count fell by a quarter.
+
+### Decided: the Condemned artillery's box binds the DRIVING pose (one number owed)
+
+feel's X4 box-fill sweep found **18 of 19 units pass and one fails for a real reason**:
+
+```
+UNIT_BOX_FILL 19 units, worst artillery axis 0 at 38.9%
+artillery axis 0: drawn 2.90 m against a 4.74 m box (39% out)
+```
+
+**`artillery` is the only unit with an `OutriggerRig`**, whose legs are posed by `set_deployed(ratio)` — 0 stowed for
+driving, 1 jacks down — and per `slot_contracts.md` the model's **authored pose is deployed**. So
+`SizeLook.box_at_length` measured the union AABB **with the legs down** (4.74 m wide) while `Tank` drives it **stowed
+at 2.90 m**. Since **`hull_size` IS the collider**, that artillery drives with a collider **63% wider than the
+vehicle you can see**, and shells stop in empty air beside it.
+
+**Ruled (mine — it is my number): the box binds the driving pose.** A collider must match the silhouette that is
+being shot at, and this one is stowed every moment it is shot at on the move. The precedent decides it the same way:
+the War Rig's jackknife already puts thin geometry outside the box part of the time and the project accepted that. The
+alternative pays a real cost during the behaviour that matters to buy correctness for the behaviour that does not.
+
+**A second reason visible only from this stream: the 4.74 m had already propagated.** This brief records "adjacent
+columns leave 7.5 − 2×1.5 − 4.74 = −0.24 m for the Condemned artillery's width" as the reason the grid does not hold
+the widest hull. At 2.90 m that reads **+1.60 m** and the negative disappears. **The roster's widest hull was an
+artefact of a pose**, and it had already reached a second stream's reasoning.
+
+**The number is deliberately NOT typed in yet.** Every width and height here is `box_at_length`'s own output (S1:
+*derived, not typed*); hand-entering 2.90 from a message is the exact mirror that drifts the first time the mesh
+moves. Sequence: **feel** makes the measurement take the driving pose (stow the legs, or drop `LEG_BOXES` from the
+union — their files), then **I** re-run `make roster-scale` and commit the derived box. The length 8.20 m does not
+move; only the width and whatever height the legs inflated.
+
+**⚠ That edit moves the sim baseline a SECOND time.** A collider change is a simulation change, and CP2's baseline was
+recorded on `main` at the merge. It will need another `sim-baseline-record` from the orchestrator; the commit will say
+so rather than let it surface as a mystery red in someone else's check. Both of us are blocked on builder0 being back.
+
+**Why two, and why the obvious one is the wrong one.** A faction army *never stands on the spawn grid*:
+`Match.load_doctrine` ends in `ArmyLayout.deploy()`, which re-lays every unit by its own hull size at tick 0,
+synchronously, before any physics step. So `arena-series` — the control the brief names, and the one with a recorded
+baseline to sit beside — measures whether the **arena** is still fair under the resized roster, and is structurally
+blind to the grid. What lives on the grid is what `Match.spawn_tank` puts there and leaves: network players and
+legacy bots. So **item 3's answer is the bot series**, which is also verification.md's own prescription
+(`--runs 60 --green 2 --rust 2`, with and without `--swap-bases`) and the E0 configuration that recorded **51%**
+after the mirrored half-bake retired the 64% south bias (trip-up 21). It is now `make grid-fairness` in `mk/scale.mk`
+so it is a command rather than a recollection.
+
+**The baseline `arena-series` is compared against** (arenas.md, 18 pairs, builder0): yard **−0.04 ± 0.05**,
+boulevard **+0.01 ± 0.02**, pit **+0.03 ± 0.04**, boneyard **−0.05 ± 0.03**, foundry **−0.00 ± 0.02** — paired south
+advantage in surviving share. Same five arenas and `SEEDS=18`, so this is like-for-like rather than a fresh number
+with nothing beside it. **The win rate is the wrong instrument here** and is kept only for reference: each team's
+army is seeded separately and army strength decides most matches, so a swap flipped the winner in only 5 of 72 runs
+in round 5, in both directions. The paired surviving-share margin is the measure.
+
+**A guard the project did not have, and the fairness apparatus rests on it.** Every fairness number ever published
+here depends on `--swap-bases` actually moving the teams, and **nothing asserted that it does.**
+`tools/arena_series.py:41` checks that the match *reported* `swap_bases`, which is the right guard for "did the flag
+reach the run" and blind to the failure that matters more: **if `Match.spawn_position` stopped consulting the flag,
+the probe would still report `swap_bases=true` while both arms spawned in identical places** — two identical arms, a
+perfectly plausible "no base advantage", and the answer we hope for reached by the treatment never happening. That is
+verification.md's broken-comparison table exactly. `test_swapping_the_bases_actually_moves_where_a_team_spawns`
+(`tests/test_spawn_grid.gd`) now asserts the **geometry** moves, on **both** paths — the constants *and* every
+layout's baked list, because `spawn_position` consults `Arena.spawn_spot` first and a flag honoured by only one of
+them is a half-applied treatment — and that swapped Green takes the slot normal Rust stood on. `match_series.py` has
+no swap guard of its own, so this test *is* the positive control for the bot series.
 
 ### Decided overnight (the lead was asleep; the orchestrator ruled where a ruling was needed)
 
@@ -376,18 +739,68 @@ run is INCONCLUSIVE, not green** — naming the mechanism is not the same as hav
 
 ### Where it stands
 
-**Backlog 1, 2, 3, 4 and 5 are complete. Stretch item 6 is not started.** CP2 is unblocked on the look and waits
-only on the green hash: `make remote T=check` is running on `1a298f3d`, and the local `make lint` that lesson 157
-requires is running beside it. **No commit is claimed green until both lines exist.**
+**Backlog 1, 2, 3, 4 and 5 are complete. CP2 is green, announced, and MERGED. Stretch item 6 is not started.**
+
+**The green line, on `7542df28`, builder0, `TEST_SHARDS=3` pinned:**
+
+```
+>> remote: make check TEST_SHARDS=3 exited 2 (build/ copied back)
+1395 passed, 0 failed
+```
+
+Shards `0/3` 561, `1/3` 440, `2/3` 394 — 69 + 68 + 68 files, 1351 s total. **The sharding labels are right now,
+so T1's guard is no longer firing on itself** (the `?=` bug is still metrics' to land; until it does, every sharded
+check needs `TEST_SHARDS` pinned explicitly or it launches 2 shards and verifies against 3).
+
+**`exited 2` is one target, and it is the pre-registered one.** `determinism passed`; the whole log greps clean for
+`FAILED`/`Error`/`***` except:
+
+```
+sim-baseline FAILED: expected d4c049819a5833d3 for glibc-2.43, got bdf1686a0ce5a750
+```
+
+**The sim baseline moves and is deliberately NOT recorded here** (Invariant 2). CP2 rewrites all 21 colliders and
+the spawn grid, and colliders and spawn positions *are* the simulation, so a moved hash is the consequence, not a
+regression. The orchestrator recorded it on `main` with the merge — and flagged that the recorded value will differ
+from `bdf1686a0ce5a750` because combat's timer retirement is in that tree too, which is why a stream must not
+record it from its own branch.
+
+The branch tip at announcement was `ddb16592`, Status-only: `git diff --stat 7542df28 ddb16592` is one file,
+`_agents/streams/scale.md`, +38 lines. Same code tree, so the hash stood.
+
+**The merge's one composition test, and it passed on real data.** `main` brought a new top-level key into
+`arenas/yard.json` and `arenas/terminus.json`: **`show`** (98 and 58 lines of another stream's lighting). Both of my
+arena contracts had to accept it or CP2 and that work would have been mutually destructive — `Arena.validate()`
+rejects unknown top-level keys, so the layouts would have refused to load, and `tools/make_arenas.py` rewrites these
+files, so a regeneration would have silently deleted the lighting. Checked rather than assumed, on the merged tree:
+
+```
+ARENA_KEPT yard: show (authored beside the generator, not by it)
+ARENA_KEPT terminus: show (authored beside the generator, not by it)
+```
+
+and `git diff --stat -- arenas/` after a full `python3 tools/make_arenas.py arenas` is **empty** — the generator
+reproduces all ten layouts byte-for-byte, lighting intact. This is the *good* outcome of the hazard that produced
+this round's asset-contract failure: `show` was in `LAYOUT_KEYS` and in `PRESERVED_KEYS` **before** there was
+anything to preserve, so the two streams composed instead of colliding. **The contract was written for a key that did
+not exist yet, and that is the only reason this cost nothing.**
+
+**Merged to `main` by the orchestrator** at `86463527` ("Merge stream/scale at ddb16592 (CP2, checked at
+7542df28)"), then `git merge main` back into this branch to run the post-merge controls on the tree that actually
+ships. No remote run of mine was in flight at either merge (checked, not assumed — see the trap below).
 
 ### The plan, in the order it was worked
 
 1. the reference table, derived and asserted (S1) — **done**, `b7055602`
-2. apply it, and render the frame the lead judges — **numbers applied** in `b7055602`; **frame built, not yet rendered**
-3. the spawn grid, from the roster's largest hull — **done**, committed with this Status
-4. clearance for the new roster (P6), then announce CP2 — **waiting on a builder0 slot**
+2. apply it, and render the frame the lead judges — **done**; numbers in `b7055602`, frames rendered at `0e809a09`
+   and **sent** (the CP2 gate), three cosmetic defects named below rather than hidden
+3. the spawn grid, from the roster's largest hull — **done**, `eecc940b` and its predecessors
+4. clearance for the new roster (P6), then **CP2 announced** — **done**, green on `7542df28`, merged at `86463527`
 5. **A3** hull-chord cover over directional summed-area tables — **done**, built to combat's spec
-6. stretch: the 9/20 → 0/20 re-measured — not started
+6. stretch: the 9/20 → 0/20 re-measured — **not started**; the post-merge fairness control comes first (below)
+
+**Post-merge, in flight or owed:** the swap-bases fairness control on the merged tree (the orchestrator's 08:0x
+request — running), then the factions re-render, then item 6.
 
 ### 1. The reference table (S1) — done
 
@@ -406,7 +819,7 @@ mesh's box, MISMATCH). Hull length in metres, today → new:
 | condemned | scout | 3.00 | **3.04** | Dakar-class rally-raid buggy (Prodrive Hunter T1+), 4.30 m |
 | condemned | tank | 3.60 | **8.62** | Type D school bus, 40 ft (Blue Bird All American), 12.19 m — *the lead's own example* |
 | condemned | ifv | 3.80 | **7.54** | Type C school / prisoner-transport bus, 35 ft, 10.67 m |
-| condemned | artillery | 4.00 | **8.20** | four-axle all-terrain crane carrier (Liebherr LTM 1070-4.2), 11.60 m |
+| condemned | artillery | 4.00 | **8.20** | four-axle all-terrain crane carrier (Liebherr LTM 1070-4.2), 11.60 m — *width re-derived 4.74 → 2.90 in the driving pose* |
 | condemned | lancer | 3.80 | **6.46** | utility line truck, 30 ft (International 4300 + Altec boom), 9.14 m |
 | condemned | burner | 3.80 | **6.89** | pumper fire engine, 32 ft (Pierce Enforcer), 9.75 m |
 | gangs | gang_scout | 2.80 | **2.93** | 1932 Ford Model B hot rod, 4.14 m |

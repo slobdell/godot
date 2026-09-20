@@ -243,7 +243,7 @@ const PROFILES := {
 		"blurb": "Crane carrier with a mortar battery. Shells what teammates spot; helpless up close.",
 		"cost": 220,
 		"unlock_tier": 1,
-		"hull_size": [4.74, 2.82, 8.20],
+		"hull_size": [2.90, 2.82, 8.20],
 		# S1 (round 9): The crane carrier the mortar rack is bolted to; the art is a four-axle flatbed.
 		"scale_reference": {"vehicle": "Four-axle all-terrain crane carrier (Liebherr LTM 1070-4.2)",
 				"length_m": 11.60, "source": "Liebherr LTM 1070-4.2 datasheet, overall length"},
