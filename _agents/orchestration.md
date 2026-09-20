@@ -2823,6 +2823,15 @@ The kickoff prompt is one line; this section is the rest.
     rim; the nearest of the six new lamps was 72 m out of shot, and the floor looking identical to the baseline
     would have read as "the lamps do nothing". Arena-lighting verdicts come from a bench that frames the arena
     centre (`crowd-look`, show off). **Before reading a frame, check the subject is in it.**
+    **Ninth, and the worst (show, 17:15): the gate written against "the frame is empty" was given a statistic
+    that cannot observe emptiness.** `vehicles_in_frame` counted positions inside a 1200 m frustum, so a speck at
+    90 m counted the same as a hull filling a third of the picture, and it reported 19 for a frame with no hull
+    drawn; the camera had been aimed at the centroid of two facing armies, which on a symmetric map is the exact
+    centre and the emptiest place on it; and a 20 s wall-clock warm-up on builder0's vsync'd window at ~1/10 real
+    time bought two match-seconds. Fixes: aim at the densest cluster, poll the match for contact with the clock as
+    a cap, and require 12 px of *drawn mesh* per counted vehicle. **A gate is only as good as the statistic's
+    ability to distinguish the two cases it exists to separate; a frustum count is geometry, the question was
+    pixels.**
 186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
     Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
     the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
