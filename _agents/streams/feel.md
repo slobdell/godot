@@ -299,6 +299,35 @@ isolation artefacts). **The local lint earned its keep on its first run**: of te
 guard, `--no-trailer`, the airship, the `spectacle` weight table, the tier fix and the test fix — is **unverified**
 and needs a second check. Merge `7a706911`, or wait for the second check; do not merge the tip on this one's word.
 
+### The X8/CP2 composition, and my ruling on it (2026-09-20, scale's find)
+
+**My `AssetContracts` change and scale's resize are each correct alone and RED together** — 14 slot-contract
+failures on the merged tree (`test_assets_pipeline::test_committed_generated_themes_meet_their_contracts`,
+builder0 `e7ebb372`). I made the pipeline read `Units.PROFILES` on every call, which scale asked for and which was
+right; scale then made `hull_size` 1.7–2.4× bigger. The slot size is derived from `hull_size`, the committed art
+was normalised to the OLD sizes, so *"too small for the slot"* fires on every unit whose hull grew. **My branch was
+green because it had the old roster; scale's was green because it had the old contract table.**
+
+**scale's lesson, and it is better than either of our fixes: INERTNESS DOES NOT COMPOSE.** Neither of us could have
+found this alone, and it is the cleanest instance of Invariant 2's own warning the round has produced.
+
+**My ruling: the shape check, not the size check — and NOT simply retiring the rule.**
+
+- scale is right that the absolute check measures nothing now: `_fit_to_hull` scales every part by
+  `hull_size[2] / FactionArt.hull_length()`, so a model at 48% of its slot draws at **100%** of it.
+- **But retiring it leaves newly generated art ungated, which is the one thing the pipeline is for.** scale's
+  `test_every_box_is_its_meshs_proportions_at_that_length` covers every unit **in the catalog**; a fresh `.glb` is
+  not in the catalog yet, and `assets-check` is the gate it passes on the way there.
+- **So the rule changes question rather than disappearing: not "is this the right size" but "is this the right
+  SHAPE".** The fit is uniform by length, so a mesh whose aspect disagrees with its box over- or under-fills in
+  width and height — and `hull_size` **is** the collider, so that is a shell through empty air. It is my own
+  round-8 roster-wide finding, asserted at the gate from the other side.
+
+**Granted to scale to land inside CP2** (my file; I review at merge), with the code written out and a
+`SHAPE_TOLERANCE` of 6% justified by `box_at_length`'s own 0.01 m rounding — **and the instruction that a unit which
+still fails is a real finding, not something to widen the tolerance for.** A tolerance chosen to make the red go
+away is not a tolerance.
+
 ### ⏹ STANDING BY (05:45). Everything in the backlog is done or owed; here is the exact next step
 
 **No process of mine is running on either machine, and no local Godot runs at all until morning** (orchestrator:
