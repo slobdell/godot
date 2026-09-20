@@ -299,48 +299,35 @@ isolation artefacts). **The local lint earned its keep on its first run**: of te
 guard, `--no-trailer`, the airship, the `spectacle` weight table, the tier fix and the test fix — is **unverified**
 and needs a second check. Merge `7a706911`, or wait for the second check; do not merge the tip on this one's word.
 
-### ⏸ PAUSED 03:20 (orchestrator: the lead's session limit). WHERE I AM, AND THE EXACT NEXT STEP
+### ⏹ STANDING BY (05:45). Everything in the backlog is done or owed; here is the exact next step
 
-**Nothing is mid-flight and nothing is uncommitted.** The local batch was still queued behind another stream's
-`make check` when I stopped it, so no work was lost: I killed the `slot.sh` wrapper (not the `make` inside it),
-verified no `slot<N>.owner` and no wait-ticket of mine remains in `/tmp/tank_squad_slots/`, and the working tree is
-clean. Branch tip: see the last commit below.
+**No process of mine is running on either machine, and no local Godot runs at all until morning** (orchestrator:
+the laptop was at 245 MB free with nine sessions live). The slot I was holding is released and its `.owner` file
+removed.
 
-**`7a706911` is MERGED TO MAIN** — X1, X2's code, X3 and X8 are shipped. **The tip is ELEVEN commits past it and
-is covered by no check**: the file-existence guard, `--no-trailer`, the airship and `airship-look`, the `spectacle`
-weight table, the airship's tier fix, the `ArenaDressing` test fix, and Status commits.
+**`main` is merged into `stream/feel`** — clean, zero behind, clean tree. **The merged tree is NOT verified on my
+branch**: three of four post-merge test files had passed when I stopped the run for the memory call and the fourth
+had not reported, so **do not read the last green (`5ae7e531`) as covering the merge.** X4's remote check will be
+the first pass over it, which is the right place for it.
 
-**THE EXACT NEXT STEP, in order, when RESUME arrives:**
+**Two items left, both waiting on someone else's clock:**
 
-1. **Only after the orchestrator says builder0 is up**, and after checking builder0 for an orphaned `slot.sh` of
-   mine from the run that died at 03:15: `REMOTE_SLOTS=6 make remote T=check` on the tip. That is the one thing
-   standing between eleven commits and a merge.
-2. **Recover the stranded artefacts** — a plain
-   `rsync -az builder0:~/tank_squad/godot-feel/build/ build/` brings back `7a706911`'s run output. **No re-run is
-   needed**; only the copy failed. Until then **no number may be cited from local `build/`**, except
-   `build/rig-hinge/`, which was made locally and which I verified the failed rsync never touched.
-3. **The local batch, re-queued as one sequential slot** (all four are laptop-only; none can go to builder0
-   usefully while the queue there is the bottleneck):
-   `make perf-scene PERF_NAME=perf-gangs-off PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs --no-trailer"`,
-   then the same with `PERF_NAME=perf-gangs-on` and no `--no-trailer` (**M1: the hinge's frame cost, A/B in one
-   tree**), then `make airship-look`, then `make shell-playtest` (**X5's leak lines**).
-4. **`make airship-look`: check the frames DIFFER before reading anything into them.** A stale X cookie makes Godot
-   fall back to Wayland, which stops redrawing a hidden window, so every capture after the first silently repeats
-   the first (`remote_builds.md`, and the comment at `tools/remote.sh:62`). For a sweep whose entire output is
-   frames that are *supposed* to differ, that failure is indistinguishable from a result.
-5. **X6's two experiments** — the script is written and ready at
-   `<scratchpad>/x6.sh`: stale the baseline for this machine's glibc and confirm `sim-baseline` goes red while both
-   smokes stay green (they do not consult the file), then skew the instrumented run's seed and confirm `music-smoke`
-   goes red (the comparison is live). Then delete the dead `key="control"` in both recipes and correct **lesson 65**,
-   which is the orchestrator's file.
-6. **X4** stays blocked on CP2 by design.
+1. **X4 — the every-unit box-fill test — the moment CP2 lands** (the orchestrator pings). The seed is
+   `test_the_semis_fill_their_boxes` on the local branch `feel-rig-check` at `26e1f26a`, generalised to every unit
+   with art: drawn box against `hull_size` within tolerance, mutation-checked against a deliberately wrong box.
+   **scale derives the numbers; I check the art is not distorted** — `_fit_to_hull` is uniform by length, so a mesh
+   that cannot fill its new box is a finding handed back to scale, never something to stretch away. Then look at
+   `make vehicle-gallery`, `make roster-lineup` and one real match at his pose. **Run it on builder0.**
+2. **The M1 hinge cost, when builder0 is quiet.** `make remote T=perf-trailer-ab` with more `PERF_CYCLES`. The
+   number from the loaded box (13.36 ms) is **noise and must not be quoted**: the same capture reported
+   `layer_cost_gpu_ms −0.58` — no measurable GPU cost, which is what 6 extra draw calls should look like — against
+   `all_avg_ms 61.42` / `p95 92.11` and `holds_30fps_at_vehicles: 0`. Within-run toggling fixed the between-runs
+   noise; it cannot fix contention that varies over seconds.
 
-**The open question I expect to answer with (3) and (4), and which is a design question for the lead rather than a
-bug:** at his pose the top of the frame sits at `pitch - FOV/2` = 21 - 17.5 = **3.5° BELOW the horizon**, so nothing
-in the sky can be drawn there at any altitude or distance. If the sweep confirms it, *"sometimes visible in the
-field of view"* is **false at his camera and true only at the bottom of his tilt range** (he can reach 8°), and the
-airship's `ORBIT_RADIUS` / `ORBIT_ALTITUDE` are provisional until he rules.
-
+**Two process traps I hit tonight, both now in `remote_builds.md`:** a killed `make` leaves its `slot.sh` wrapper
+holding a machine-wide slot with nothing inside it, and the `.owner` file survives the process so a dead holder
+looks alive in every waiter's log; and **PPID is not an ownership test** — all nine sessions share one parent, so
+ownership is `readlink /proc/<pid>/cwd`, and a slot's real holder is `fuser` on its `.lock`, never the `.owner`.
 ### X7 — the sweep said 0.0% everywhere, and that changed the design (builder0, `e82ecd1a`)
 
 **Before — radius 118 m, altitude 74 m: `visible_pct 0.0` over 768 samples, at EVERY reachable tilt.** Not rare.
