@@ -249,7 +249,7 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 | The hinge's frame cost (M1) | **Not reportable yet.** GPU cost indistinguishable from zero; the CPU number came off a machine running eight other jobs and is noise. Re-runs on a quiet box. |
 | The Terminus lighting | Diagnosed and handed to the stream that owns the map file |
 | Roof dressing on the Terminus | Your new camera shows roofs far more often; they are undressed. A frame first, then surface treatment |
-| Every-unit hitbox check (X4) | Waiting on the roster resize, by design |
+| Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
 
 
 ### Plan (feel, 2026-09-20)
@@ -298,6 +298,36 @@ isolation artefacts). **The local lint earned its keep on its first run**: of te
 **⚠ The tip has moved past the green hash.** `7a706911` is what builder0 ran; everything after it — the file-existence
 guard, `--no-trailer`, the airship, the `spectacle` weight table, the tier fix and the test fix — is **unverified**
 and needs a second check. Merge `7a706911`, or wait for the second check; do not merge the tip on this one's word.
+
+### X4 — ran once and found one unit: the artillery's collider is its DEPLOYED pose (`f1859075`)
+
+```
+UNIT_BOX_FILL 19 units, worst artillery axis 0 at 38.9%
+artillery axis 0: drawn 2.90 m against a 4.74 m box (39% out)
+```
+
+**18 of 19 pass**, so scale's resize is right everywhere else and this is not a resize mistake — it is a
+measurement that could not have known better.
+
+**The mechanism.** `artillery` is the only unit with an `OutriggerRig` (`artillery_part.gd`): four legs cut loose
+from the hull and posed by `set_deployed(ratio)`, **0 = stowed for driving, 1 = jacks down**. Per
+`slot_contracts.md` the model's **authored pose is deployed**, so `SizeLook.box_at_length` measured the union AABB
+**with the legs down** (4.74 m wide) while `Tank` drives it **stowed** (2.90 m).
+
+**Why it is not cosmetic: `hull_size` IS the collider.** While that artillery drives — most of the time, and all of
+the time it is shot at on the move — **its collider is 63% wider than the vehicle you can see.** Shells stop in
+empty air beside it.
+
+**Recommendation (scale's number, scale's call): bind the box to the DRIVING pose.** A deployed leg overhanging the
+collider is the same accepted cost as the War Rig's jackknife, and far less wrong than 1.84 m of permanent
+invisible armour on a moving vehicle.
+
+**The honest half, about my own test:** a unit with two silhouettes cannot match one box in both poses, so **no box
+makes this test pass in both states.** It checks the driving pose deliberately. If scale rules the other way, **my
+test changes, not their number** — and the exception gets the measurement attached rather than a widened tolerance.
+
+**Confirmed in passing:** `syn_artillery`'s 4.07 m width, which scale flagged as arguable, **passes** the
+drawn-vs-box check — its missile wings really are that wide. A look question for the lead, not a defect.
 
 ### The Terminus has been wearing the wrong colours for a round (show found it; fixed `637ad4de`)
 
