@@ -1012,6 +1012,41 @@ worse than a slow one, because a flake costs a re-run plus a false investigation
 overturned it. **A one-run control is not a control**, and the rule about stating the sample size applies to the
 runs you use to rule something out, not only to the numbers you publish.
 
+### CP2c IS LIVE: control's right-drag facing, and exactly what nav's arrival-arc A/B may assume
+
+control's `e27f0681` is green on builder0 (`>> remote: make check exited 0`, **1269 passed, 0 failed**, checked
+against that commit with nothing moved since) and merges to `main` as **CP2c**. **Run the arrival-arc A/B against
+`main` once it lands, never against `stream/control`.**
+
+**The arm splits cleanly, and these are the guarantees nav may rely on:**
+- A right **press-drag-release on ground** puts `"facing": [x, z]` (normalised) on the `move` command; `Orders`
+  normalises it into every per-unit order exactly as it already did for squad's `intended_facing`. **Nothing below
+  `RtsControls` changed**, so `_arrive_facing` receives the shape it always expected from a caller that now exists.
+- A right **click leaves the key ABSENT** — not empty, not zero — so **`order.has("facing")` is a sound arm test**
+  and every order issued by anything else is in the control arm by construction.
+- A press on an **enemy** is an attack, drag or no drag, and carries no facing. **Attacks are in neither arm.**
+- The gesture threshold is **18 px on screen, not metres** — at the lead's pose an 18 px drag spans ~0.3 m near the
+  bottom of the frame and ~40 m near the top. The *direction* is exact at either end (an exact screen ray projected
+  onto the ground plane), **so the facing nav receives is not noisier near the camera.**
+- `Orders._same_order` treats a differing facing as a different order **for `source == "player"` only**, so machine
+  re-issues are untouched and **nothing in nav's churn or idle-command numbers moves because of CP2c.**
+
+**The consequence for the A/B design, and it is control's point not nav's:** since a facing only ever arrives from a
+deliberate drag, **the treated arm is not "all moves" — it is "moves the player drew a heading on".** `nav-fight`
+sets `facing` on its own orders explicitly and refuses a run where none did, which is the right guard and is now
+satisfiable rather than theoretical.
+
+**`facing_ordered` is confirmed on both sides:** metrics reads the move order's own `facing` key, nav's probe uses
+that same key end to end (`UnitCommand` → `Orders` → `_arrive_facing` → `_approach_gate`), so the column is filled
+from the quantity it claims to describe. **A silently-false column would be worse than a missing one**, which is why
+it is stated here rather than assumed.
+
+**And control has built to nav's `why` table already:** `MovementReadout.legibility_line()` maps the closed set onto
+words already on screen (`survival` → *"under fire"*, `band` → *"holding its range"*, `armour` → *"front toward the
+threat"*), **degrades to one line for `override`** — which is what the default path says while A7 is off — and is
+**silent, not "unknown"**, on any build whose nav publishes no `legibility` key, with a test asserting exactly that.
+**Nothing of control's goes red when N5 lands, and nothing of control's invents a cause before it does.**
+
 ### N5's shopping list, collected from the S4 signatures (build it all in one commit, after control's hash)
 
 Nothing of A6 is in code and nothing will be until the page carries three signatures. nav has signed; control has
