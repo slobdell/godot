@@ -71,11 +71,21 @@ grep -qE '^  ai-scenarios    [0-9]+,[0-9]+,[0-9]+,[0-9]+  \(gated: [0-9]+,[0-9]+
 	&& ok "renders the ai-scenarios counts AND which two are gated" || bad "renders ai-scenarios counts" "$out"
 grep -q 'this stream' <<<"$out" && bad "no placeholder text leaked" || ok "no placeholder text leaked"
 
-# It must never write anything.
-before=$(cd "$(dirname "$rs")/.." && git status --porcelain | sort | md5sum)
-bash "$rs" --no-remote >/dev/null 2>&1
-after=$(cd "$(dirname "$rs")/.." && git status --porcelain | sort | md5sum)
-[ "$before" = "$after" ] && ok "read-only: the working tree is untouched" || bad "read-only: the working tree is untouched"
+# IT MUST NEVER WRITE ANYTHING, and this is asserted without git. The first version compared
+# `git status --porcelain` before and after, which on the BUILD BOX compared two identical failures --
+# there is no `.git` there, so it passed vacuously in the one place the assertion matters, and printed
+# `fatal: not a git repository` twice into the check log for good measure (lesson 147, from the other end:
+# an empty comparison proves nothing). A file-set snapshot works everywhere and is stronger.
+snap() { ( cd "$1" && find . -printf '%p %s %T@\n' 2>/dev/null | sort ); }
+mkdir -p "$tmp/ro/tests/baselines"
+printf 'glibc-2.43 abc\n' > "$tmp/ro/tests/baselines/sim_state_hash.txt"
+printf '42,2,3,0\n' > "$tmp/ro/tests/baselines/ai_scenarios_count.txt"
+before=$(snap "$tmp/ro")
+( cd "$tmp/ro" && bash "$rs" --no-remote ) >/dev/null 2>&1
+after=$(snap "$tmp/ro")
+[ -n "$before" ] && ok "read-only: (setup) the snapshot is not empty" || bad "read-only: the snapshot is not empty"
+[ "$before" = "$after" ] && ok "read-only: not one file created, changed or touched" \
+	|| bad "read-only: not one file created, changed or touched" "$(diff <(echo "$before") <(echo "$after") | head -4)"
 
 bash "$rs" --wat >/dev/null 2>&1; [ $? = 2 ] && ok "an unknown flag is refused" || bad "an unknown flag is refused"
 

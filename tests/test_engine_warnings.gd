@@ -131,6 +131,79 @@ func test_a_clean_test_is_charged_with_nothing() -> void:
 	assert_eq(texts.size(), 0, "nothing charged")
 
 
+func test_an_error_prints_its_numeric_type_when_it_is_known() -> void:
+	## "engine error" is a CLASSIFICATION, and this one has already been surprising once: a message Godot's
+	## console printed as `WARNING:` reached the runner as a non-warning. The number makes the next
+	## occurrence answer for itself instead of costing another probe.
+	var entry := {"text": "odd (a.cpp:1 in f)", "warning": false, "type": 2}
+	var result := TestCase.reconcile_engine_messages([entry], PackedStringArray())
+	var failures: PackedStringArray = result["failures"]
+	assert_true(failures[1].begins_with("engine error (type 2): "), "the type is named")
+
+
+func test_an_error_without_a_known_type_says_nothing_it_cannot_support() -> void:
+	var result := TestCase.reconcile_engine_messages([_entry("odd (a.gd:1 in f)", false)], PackedStringArray())
+	var failures: PackedStringArray = result["failures"]
+	assert_true(failures[1].begins_with("engine error: "), "no type, no claim about one")
+
+
+func test_an_allowed_message_does_not_fail_the_test() -> void:
+	## For messages a test did NOT cause and cannot control -- a leak from elsewhere, an engine job system
+	## saturating under load. `expect_warning` is the wrong tool: it belongs to the test that causes one.
+	var result := TestCase.reconcile_engine_messages([_entry("Jolt job system exceeded (a.cpp:1 in f)", true)],
+			PackedStringArray(), PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
+	var failures: PackedStringArray = result["failures"]
+	assert_eq(failures.size(), 0, "allowed, so not a failure")
+	assert_eq(int(result["warnings"]), 0, "and not counted against the run")
+	assert_eq(int(result["allowed_seen"]), 1, "but COUNTED as allowed -- a silent exemption is not one")
+
+
+func test_an_allowed_message_is_not_charged_to_the_test_it_landed_on() -> void:
+	var result := TestCase.reconcile_engine_messages([_entry("Jolt job system exceeded (a.cpp:1 in f)", true)],
+			PackedStringArray(), PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
+	var texts: PackedStringArray = result["texts"]
+	assert_eq(texts.size(), 0, "it is not this test's, so it is not a victim of it either")
+
+
+func test_an_allowed_pattern_reports_that_it_matched() -> void:
+	var result := TestCase.reconcile_engine_messages([_entry("Jolt job system exceeded (a.cpp:1 in f)", true)],
+			PackedStringArray(), PackedStringArray(), PackedStringArray(["Jolt job system exceeded", "never happens"]))
+	var used: PackedStringArray = result["allow_matched"]
+	assert_eq(used.size(), 1, "only the one that matched")
+	assert_eq(used[0], "Jolt job system exceeded", "and it is named, so the unused one can be tightened away")
+
+
+func test_an_allowed_pattern_covers_an_ERROR_too() -> void:
+	## Whether an engine message arrives typed as a warning or an error is the engine's business, and a
+	## message a test cannot control is not the test's fault either way.
+	var result := TestCase.reconcile_engine_messages([_entry("Jolt job system exceeded (a.cpp:1 in f)", false)],
+			PackedStringArray(), PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
+	var failures: PackedStringArray = result["failures"]
+	assert_eq(failures.size(), 0, "allowed by name, whatever its type")
+	assert_eq(int(result["errors"]), 0, "and not counted as an error")
+
+
+func test_an_unrelated_message_is_still_a_failure_with_an_allowlist_present() -> void:
+	var result := TestCase.reconcile_engine_messages([_entry("something else entirely (a.gd:1 in f)", true)],
+			PackedStringArray(), PackedStringArray(), PackedStringArray(["Jolt job system exceeded"]))
+	assert_eq(int(result["warnings"]), 1, "the allowlist exempts what it names and nothing more")
+
+
+func test_an_empty_allow_pattern_exempts_nothing() -> void:
+	## `contains("")` is true of every string, so one blank line would exempt the first message of every
+	## kind -- a blanket exemption that reads like a specific one.
+	var result := TestCase.reconcile_engine_messages([_entry("anything at all (a.gd:1 in f)", true)],
+			PackedStringArray(), PackedStringArray(), PackedStringArray([""]))
+	assert_eq(int(result["warnings"]), 1, "still a failure")
+	assert_eq(int(result["allowed_seen"]), 0, "and nothing was allowed")
+
+
+func test_no_allowlist_behaves_exactly_as_before() -> void:
+	var result := TestCase.reconcile_engine_messages([_entry("odd (a.gd:1 in f)", true)], PackedStringArray())
+	assert_eq(int(result["warnings"]), 1, "warnings still fail by default")
+	assert_eq(int(result["allowed_seen"]), 0, "nothing allowed")
+
+
 func test_a_real_warning_declared_by_a_real_test_passes_end_to_end() -> void:
 	## Everything above drives the reconciler directly. This one goes through the engine: the warning below
 	## is raised for real, collected by the runner's Logger, and consumed by the declaration. If any link in

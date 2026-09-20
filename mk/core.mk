@@ -599,7 +599,28 @@ backup-install: ## Install and start the 30-minute systemd user timer that runs 
 	@systemctl --user list-timers tank-squad-backup.timer --no-pager
 
 # ---- Remote builds on builder0 (tools/remote.sh; _agents/remote_builds.md) --------------------------------
+# `$(T)` is deliberately WORD-SPLIT -- `T="test FILTER=combat"` is two arguments and must stay two. That
+# means it cannot carry shell metacharacters: they reach the recipe's own shell, which is how
+# `T='ai-scenarios-record REASON=... (held > 3x chased)'` died on `syntax error near unexpected token ('`
+# before `remote.sh` ran at all. Refused by name, with the way to do it instead, rather than handed to a
+# shell to fail confusingly (the same rule as `make test FILTER=`).
+# A literal `)` cannot be written inside `$(findstring ...)` -- it closes the call -- so both parens come
+# from variables. Found by the refusal failing to parse, which is the right way round.
+_lparen := (
+_rparen := )
+# A FLAG, not the characters themselves. The first version set `_T_BAD` to whatever it found, and then
+# `test -z "$(_T_BAD)"` interpolated a backtick into a double-quoted shell word -- the guard against shell
+# metacharacters, feeding one to a shell. Each test contributes a bare `X` instead.
+_T_BAD := $(if $(findstring $(_lparen),$(value T)),X)$(if $(findstring $(_rparen),$(value T)),X)$(if $(findstring ',$(value T)),X)$(if $(findstring ",$(value T)),X)$(if $(findstring ;,$(value T)),X)$(if $(findstring &,$(value T)),X)$(if $(findstring |,$(value T)),X)$(if $(findstring `,$(value T)),X)$(if $(findstring $$,$(value T)),X)
 remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="test FILTER=combat"
+	@# FIRST, before anything interpolates $(T) into a shell word: `test -n "$(T)"` is itself broken by a
+	@# backtick or a double quote inside T, so the guard has to run before the usage check, not after.
+	@test -z "$(_T_BAD)" || { \
+		echo "make remote: T may not contain ( ) ' \" ; & | \` or \$$ -- T is word-split into arguments, so"; \
+		echo "             those reach this recipe's shell and fail there, before remote.sh runs."; \
+		echo "             Call it directly instead, one quoted argument per make argument:"; \
+		echo "               tools/remote.sh <target> 'VAR=value with spaces and anything else'"; \
+		exit 2; }
 	@test -n "$(T)" || { echo 'usage: make remote T="check"'; exit 2; }
 	tools/remote.sh $(T)
 

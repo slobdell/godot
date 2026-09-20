@@ -32,7 +32,7 @@ fresh() { G="$tmp/slots"; rm -rf "$G"; mkdir -p "$G"; rm -f "$tmp"/flag.*; }
 wait_for() { local i=0; while [ "$i" -lt "${2:-150}" ]; do eval "$1" && return 0; sleep 0.1; i=$((i + 1)); done; return 1; }
 window_up() { [ -n "$(ls "$G"/slot*.owner 2>/dev/null)" ]; }
 window_full() { [ "$(ls "$G"/slot*.owner 2>/dev/null | wc -l)" = 3 ]; }
-run_excl() { TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" "$@"; }
+run_excl() { TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_SLOT_CEILING=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" "$@"; }
 run_norm() { TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 bash "$slot" "$@"; }
 
 # ---- 1. an exclusive run holds EVERY slot while it runs -------------------------------------------
@@ -53,7 +53,7 @@ grep -q "EXCLUSIVE (quiet window)" "$tmp/owner" 2>/dev/null && ok "exclusive: th
 
 # ---- 4. THE PROPERTY THAT MATTERS: nothing else starts while it is up -------------------------------
 fresh
-TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" sleep 8 >/dev/null 2>&1 &
+TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_SLOT_CEILING=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" sleep 8 >/dev/null 2>&1 &
 kids+=($!)
 wait_for window_full || bad "exclusive: (setup) the window opened within 15s"
 timeout 2 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 bash '$slot' touch '$tmp/flag.intruder'" >/dev/null 2>&1
@@ -91,7 +91,7 @@ fresh
 # reason. Run it as a simple command so $! is the script itself, which is also the pid remote_builds.md
 # tells you to kill ("the slot.sh wrapper, not the make inside it").
 rm -f "$tmp/workpid"
-TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" \
+TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_SLOT_CEILING=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" \
 	bash -c "echo \$\$ > '$tmp/workpid'; exec sleep 30" >/dev/null 2>&1 &
 excl_pid=$!; kids+=("$excl_pid")
 wait_for window_full || bad "exclusive: (setup) the window was up" "no owner files after 15s"
@@ -126,6 +126,24 @@ run_norm bash -c "ls '$G'/slot*.owner 2>/dev/null | wc -l > '$tmp/n1'" >/dev/nul
 [ "$(cat "$tmp/n1" 2>/dev/null)" = 1 ] && ok "ordinary run: still takes exactly one slot" \
 	|| bad "ordinary run: still takes exactly one slot" "took $(cat "$tmp/n1" 2>/dev/null)"
 [ -z "$(ls "$G"/slot*.owner 2>/dev/null)" ] && ok "ordinary run: still releases it" || bad "ordinary run: still releases it"
+
+# ---- THE ILLUSION OF EXCLUSIVITY: a stream launched with MORE slots than we take ------------------
+# Measured on builder0: a quiet-window run acquired "all 3" slots while three other runs carried on in
+# slots 4-6, because a run configured for 3 never tries for slot4. An exclusive run takes 1..CEILING.
+fresh
+TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_SLOT_CEILING=6 TANK_SQUAD_EXCLUSIVE=1 \
+	bash "$slot" bash -c "ls '$G'/slot*.owner 2>/dev/null | wc -l > '$tmp/n6'" >/dev/null 2>&1
+[ "$(cat "$tmp/n6" 2>/dev/null)" = 6 ] && ok "exclusive takes the CEILING, not its own slot count" \
+	|| bad "exclusive takes the ceiling" "held $(cat "$tmp/n6" 2>/dev/null) of 6"
+
+fresh
+TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_SLOT_CEILING=6 TANK_SQUAD_EXCLUSIVE=1 \
+	bash "$slot" sleep 6 >/dev/null 2>&1 &
+kids+=($!)
+wait_for '[ "$(ls "$G"/slot*.owner 2>/dev/null | wc -l)" = 6 ]' || bad "exclusive: (setup) six slots held"
+timeout 2 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=6 bash '$slot' touch '$tmp/flag.six'" >/dev/null 2>&1
+[ ! -e "$tmp/flag.six" ] && ok "a SIX-slot launcher cannot start during a six-slot window" \
+	|| bad "a six-slot launcher cannot start during the window"
 
 printf '\nslot-exclusive: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

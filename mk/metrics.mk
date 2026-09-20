@@ -61,6 +61,12 @@ metrics-check: metrics-pytest metrics-fixtures ## Everything this stream verifie
 # checks. The report is not silence: a move there prints, because a pending behaviour that starts working is
 # news worth promoting, just not news worth failing a gate over (lesson 42).
 AI_SCENARIOS_BASELINE := tests/baselines/ai_scenarios_count.txt
+# REASON reaches the recorder through the ENVIRONMENT, unexpanded, and never through a shell word.
+# Quoting it into the recipe failed the same two ways `FILTER` did and one worse: a `'` broke the recipe
+# outright (`Unterminated quoted string`), and `$` was eaten by MAKE before any shell saw it (`$HOME` ->
+# `OME`). `export ... := $(value REASON)` hands the literal text to the child's environment, so quotes,
+# backticks, dollars and semicolons all arrive as typed. Verified against all five before it shipped.
+export AI_SCENARIOS_REASON := $(value REASON)
 
 .PHONY: ai-scenarios-check ai-scenarios-record
 
@@ -76,5 +82,14 @@ ai-scenarios-check: import ## The AI behaviour scenarios, gated on a CHANGE in t
 ai-scenarios-record: import ## Record this machine's ai-scenarios counts to build/ (then copy over the baseline)
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
 		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || true
+	@test -n "$(value REASON)" || { \
+		echo "ai-scenarios-record: REASON= is required -- what moved the counts, and why it is correct."; \
+		echo "  A baseline that records a number without its cause is how this gate inherited a 2% coin."; \
+		echo '  e.g. make remote T='"'"'ai-scenarios-record REASON="suppression bar became a separation (combat 364d77f2)"'"'"; \
+		exit 2; }
 	@$(METRICS_DIR)/ai_scenarios_gate.sh record $(BUILD_DIR)/ai-scenarios.log $(BUILD_DIR)/ai_scenarios_count.txt
 	@echo "  cp $(BUILD_DIR)/ai_scenarios_count.txt $(AI_SCENARIOS_BASELINE)   # and say WHY in the commit"
+
+.PHONY: error-type-probe
+error-type-probe: import ## What integer a Logger receives per message kind (the Jolt WARNING charged as an error)
+	@$(GODOT) --headless --path . --script res://tests/probes/error_type_probe.gd 2>&1 | grep -E "^PROBE_|WARNING:|ERROR:" | head -40

@@ -136,15 +136,66 @@ class TestAbsenceIsNotAMeasurement(GateCase):
         self.assertEqual(rc, 0, out)
 
 
+class TestRecordNeedsAReason(GateCase):
+    """`45,0,2,0` was a 2% coin and the file did not say what had been true when it was taken."""
+
+    def _record(self, reason=None, out_name="out.txt"):
+        import os as _os
+        with tempfile.TemporaryDirectory() as d:
+            log = Path(d) / "log"
+            out_file = Path(d) / out_name
+            log.write_text(summary(43, 1, 3, 0))
+            env = dict(_os.environ)
+            env.pop("AI_SCENARIOS_REASON", None)
+            if reason is not None:
+                env["AI_SCENARIOS_REASON"] = reason
+            proc = subprocess.run(["bash", str(GATE), "record", str(log), str(out_file)],
+                                  capture_output=True, text=True, env=env)
+            return proc, out_file.read_text() if out_file.exists() else None
+
+    def test_no_reason_is_refused(self):
+        proc, written = self._record()
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("no reason", proc.stdout + proc.stderr)
+
+    def test_a_refused_record_writes_nothing(self):
+        """`{ ... } > file` truncates before the first echo, so the check has to come earlier."""
+        proc, written = self._record()
+        self.assertIsNone(written, "a refused record must not leave a file behind")
+
+    def test_the_refusal_shows_the_counts_it_would_have_written(self):
+        proc, _ = self._record()
+        self.assertIn("43,1,3,0", proc.stdout + proc.stderr)
+
+    def test_a_reason_is_written_into_the_file(self):
+        proc, written = self._record(reason="suppression bar became a separation (combat 364d77f2)")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("# reason:  suppression bar became a separation (combat 364d77f2)", written)
+
+    def test_the_recorded_file_is_still_accepted_by_check(self):
+        import os as _os
+        with tempfile.TemporaryDirectory() as d:
+            log = Path(d) / "log"
+            out_file = Path(d) / "out.txt"
+            log.write_text(summary(43, 1, 3, 0))
+            env = dict(_os.environ, AI_SCENARIOS_REASON="because")
+            subprocess.run(["bash", str(GATE), "record", str(log), str(out_file)],
+                           capture_output=True, text=True, env=env, check=True)
+            proc = subprocess.run(["bash", str(GATE), "check", str(log), str(out_file)],
+                                  capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
 class TestRecord(GateCase):
     def test_record_writes_the_counts_and_the_provenance(self):
         with tempfile.TemporaryDirectory() as d:
             log = Path(d) / "log"
             out_file = Path(d) / "out.txt"
             log.write_text(summary(42, 2, 3, 0))
+            import os as _os
             proc = subprocess.run(
                 ["bash", str(GATE), "record", str(log), str(out_file), "deadbeef"],
-                capture_output=True, text=True,
+                capture_output=True, text=True, env=dict(_os.environ, AI_SCENARIOS_REASON="a reason"),
             )
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
             written = out_file.read_text()
@@ -159,8 +210,10 @@ class TestRecord(GateCase):
             log = Path(d) / "log"
             out_file = Path(d) / "out.txt"
             log.write_text(summary(42, 2, 3, 0))
+            import os as _os
             subprocess.run(["bash", str(GATE), "record", str(log), str(out_file)],
-                           capture_output=True, text=True, check=True)
+                           capture_output=True, text=True, check=True,
+                           env=dict(_os.environ, AI_SCENARIOS_REASON="a reason"))
             proc = subprocess.run(["bash", str(GATE), "check", str(log), str(out_file)],
                                   capture_output=True, text=True)
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
@@ -170,8 +223,10 @@ class TestRecord(GateCase):
             log = Path(d) / "log"
             out_file = Path(d) / "out.txt"
             log.write_text("crashed\n")
+            import os as _os
             proc = subprocess.run(["bash", str(GATE), "record", str(log), str(out_file)],
-                                  capture_output=True, text=True)
+                                  capture_output=True, text=True,
+                                  env=dict(_os.environ, AI_SCENARIOS_REASON="a reason"))
             self.assertEqual(proc.returncode, 1)
             self.assertFalse(out_file.exists(), "a refused record must not write a file")
 

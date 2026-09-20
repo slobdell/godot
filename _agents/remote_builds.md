@@ -488,6 +488,27 @@ builder0 ten minutes after its wrapper died (the make, slot.sh, arena_series.py 
 `make remote` from that worktree would have rsynced `--delete` under it. Kill the whole tree by cwd-verified PID
 before relaunching (scale, 2026-09-20 08:45).
 
+## ⚠ MAKE expands a recipe word before any shell sees it, so shell quoting cannot save you (metrics, 2026-09-20)
+
+Passing a user-supplied string into a recipe — `FILTER`, `REASON`, a label, a filter expression — the obvious
+defence is to quote it for the shell. **That defends against the wrong layer.** Twice today, tested with hostile
+values rather than discovered in use:
+
+    make test FILTER="a|b"    -> the pipe reached a shell: exit 127, neither suite run
+    FILTER='$HOME'            -> arrived as OME            (make expanded `$H`, then the shell saw the rest)
+    REASON="it's calibrated"  -> /bin/sh: Syntax error: Unterminated quoted string   (a ' broke the RECIPE)
+
+Three characters behave differently from each other and none of them is fixed by adding quotes: `$` is eaten by
+**make**, `'` cannot be carried **through** single quotes, and `|`, backticks and `;` are the shell's problem and
+are the only ones quoting actually solves.
+
+**Use the environment for anything a human types.** `export VAR := $(value NAME)` hands the literal text to the
+child's environment: quotes, dollars, backticks and semicolons all arrive as typed, and nothing re-reads them.
+Reserve shell words for values you generate yourself. Where a value must be a shell word, refuse the characters
+that cannot survive **by name** — `make test` refuses `'` and `$` and says which of the two ate what — because a
+filter that silently becomes a **different** filter is worse than one that is rejected, and worse than a crash:
+`FILTER="a|b"` quoted-but-unfixed would have matched nothing and reported a green run of zero tests.
+
 ## ⚠ `.SHELLFLAGS := -eu -o pipefail`, so "found nothing" aborts a recipe (metrics, 2026-09-20)
 
 The Makefile runs every recipe under `-eu -o pipefail`. Two consequences bite any probe or diagnostic whose

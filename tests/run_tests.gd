@@ -10,6 +10,7 @@ extends SceneTree
 ## error logged while a test runs also fails that test. For the same reason a file that fails to load, or that has no
 ## test_ methods at all (what a parse error leaves behind), is reported as a failure instead of being skipped.
 
+const ALLOWLIST := "res://tests/baselines/engine_expected.txt"
 const TEST_ROOT := "res://tests"
 
 
@@ -28,6 +29,13 @@ class ErrorCollector extends Logger:
 		_mutex.lock()
 		entries.append({
 			"warning": error_type == Logger.ERROR_TYPE_WARNING,
+			# The raw type, carried so a message that is classified surprisingly says so itself. A Jolt
+			# job-system message that Godot's console printed as `WARNING:` reached this check as a
+			# non-warning and failed a test (builder0, 2026-09-20); a probe confirmed the enum
+			# (error=0 warning=1 script=2 shader=3) and that `push_warning` arrives as 1, but could not
+			# reproduce a C++-side warning, so WHY that message is not a 1 is still open. Printing the
+			# number means the next occurrence answers it instead of costing another probe.
+			"type": error_type,
 			"text": "%s (%s:%d in %s)" % [rationale if rationale != "" else code, file, line, function],
 		})
 		_mutex.unlock()
@@ -53,6 +61,9 @@ func _run() -> void:
 	var total_engine_errors := 0
 	var total_engine_warnings := 0
 	var charged_by_text := {}
+	var allowed := _read_allowlist()
+	var allowed_total := 0
+	var allow_used := {}
 	# `make test FILTER=bot` passes --filter=bot: run only tests whose "file::method" contains it.
 	# `|` separates ALTERNATIVES -- FILTER="bot|relay" runs tests matching either. It is not a regex, and
 	# saying so matters: `make test FILTER="a|b"` used to reach a shell unquoted and exit 127 without running
@@ -120,7 +131,11 @@ func _run() -> void:
 			# by review -- five files called it un-awaited and four silently skipped the drain for as long as it
 			# existed. `TestCase.teardown()` is now a synchronous hook that `_teardown()` calls.
 			await case._teardown()
-			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings, case.expected_errors)
+			var engine: Dictionary = TestCase.reconcile_engine_messages(
+					errors.take(), case.expected_warnings, case.expected_errors, allowed)
+			allowed_total += int(engine["allowed_seen"])
+			for pattern: String in PackedStringArray(engine["allow_matched"]):
+				allow_used[pattern] = true
 			total_engine_errors += int(engine["errors"])
 			total_engine_warnings += int(engine["warnings"])
 			var engine_failures: PackedStringArray = engine["failures"]
@@ -166,6 +181,21 @@ func _run() -> void:
 			print("  %d tests: %s" % [int(entry[0]), String(entry[2])])
 			print("      first seen in %s -- the tests after it are probably downstream, not guilty." % [String(entry[1])])
 
+	# An exemption that is silent cannot be told from a run in which nothing happened, so the allowlist
+	# reports both halves: what it absorbed, and which of its lines no longer occur. The second is how the
+	# list gets SHORTER -- a blanket exemption nobody revisits is the cost of having this file at all.
+	if not allowed.is_empty():
+		print("\nexpected engine messages: %d seen, from %d allowed pattern(s) in %s"
+				% [allowed_total, allowed.size(), ALLOWLIST])
+		var unused: PackedStringArray = []
+		for pattern: String in allowed:
+			if not allow_used.has(pattern):
+				unused.append(pattern)
+		if not unused.is_empty():
+			print("  %d pattern(s) matched nothing this run -- tighten %s:" % [unused.size(), ALLOWLIST])
+			for pattern: String in unused:
+				print("      %s" % pattern)
+
 	# The engine tally goes on its OWN line, never inside the summary the orchestrator reads (lesson 28). The
 	# make recipe sums the sharded ones the same way it sums the rest.
 	if shard >= 0:
@@ -193,6 +223,20 @@ static func _matches(label: String, parts: PackedStringArray) -> bool:
 		if label.contains(part):
 			return true
 	return false
+
+
+## Engine messages allowed by name, one pattern per line, `#` comments. Absent or empty is not an error:
+## the allowlist is an exception mechanism, and a project with no exceptions is the goal, not a fault.
+func _read_allowlist() -> PackedStringArray:
+	var patterns: PackedStringArray = []
+	var file := FileAccess.open(ALLOWLIST, FileAccess.READ)
+	if file == null:
+		return patterns
+	while not file.eof_reached():
+		var line := file.get_line().strip_edges()
+		if line != "" and not line.begins_with("#"):
+			patterns.append(line)
+	return patterns
 
 
 func _discover(dir_path: String) -> PackedStringArray:
