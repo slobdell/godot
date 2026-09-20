@@ -448,6 +448,56 @@ when the basis is coupled to a collision test. nav will re-run its benefit measu
 nothing because the hull never stalls, it passes through the wall it is stalled against) becomes measurable for the
 first time.
 
+### ⚠ THE ROUND'S SECOND FINDING: every match's first physics tick has run against the wrong world
+
+**A hull that is teleported and then driven in the same frame is driven against the world it left.** Found chasing
+scale's "1.5 m lateral step in one tick from rest", which three rounds of measurement had blamed on the spawner's
+spacing, then the motion model's lateral term, then the hull geometry. **All three were innocent.**
+
+`ArmyLayout.deploy` wrote `global_position` and called `reset_physics_interpolation()` — which fixes what is DRAWN
+and says nothing about what is THERE. `PhysicsServer3D` commands queue until the step and `_physics_process` runs
+before the step applies them.
+
+| measured on a full 90-unit army, laptop | before | after |
+|---|---|---|
+| hulls whose physics body was elsewhere on tick 1 | **90 of 90**, 56–110 m | 0 |
+| worst node-vs-body distance | **139.41 m** | **0.02 m** |
+| the two hulls that overlapped in that other layout | shoved **1.5281 m** / **1.5018 m** | 0.0000 m |
+| a placed pair 5.432 m apart, after tick 1 | 3.154 m (2.279 m of convergence) | **5.432 m (0.000)** |
+| `SPAWN_ISO_PLACEMENT` | `gap 2.210 m, 0 overlapping pairs` | unchanged — **the placement was always right** |
+
+**Why it hid since round 1:** the pre-deploy grid is *itself* a valid non-overlapping layout, so in the world the
+solver was actually using, almost nothing overlapped. And the shove arrives through `move_and_slide`'s penetration
+recovery, which **moves a body without touching `velocity` and reports no slide collision** — so the row reads
+`wanted.x = 0.000`, `moved.x = 1.5281`, `contacts[0]`. No velocity to blame, no contact to point at.
+
+**THE REMEDY IS A TICK, NOT A FLUSH, and three flushes were measured to do nothing**: `force_update_transform()` at
+`_ready` (too early — the hull is still at its spawn slot), the same call after deploy's write, and an explicit
+`PhysicsServer3D.body_set_state(..., BODY_STATE_TRANSFORM, ...)`. A read-back on the **next line** after that last
+one still returned the old transform. All three are one queued command spelled three ways. **None of them is kept
+in the code**; they are in `place()`'s docstring as negatives, because a no-op that looks like a fix teaches the
+next reader a wrong model of the engine.
+
+`Tank.place(at, yaw)` writes the transform, `sync_position`/`sync_yaw`, resets the interpolation, and sets
+`_placed_settle` so the next `_drive` returns before `move_and_slide` and drops `_motion`. `ArmyLayout.deploy` and
+`Tank.respawn` both go through it. Two bugs die with it: the shove, and the landmine where `sync_position` was
+written only by `_tick`, so a replicated hull advertised its **spawn** position until its first tick.
+
+**Guarded in the same commit** (nav's find): `Units.stat` ended in `PROFILES[unit_id].get(key, fallback)`, so an
+unknown id raised on the INDEX and **the fallback was unreachable by construction** — every call site passing one
+read as protection that did not exist. It now checks `PROFILES.has` first and returns the fallback (or
+`Units.DEFAULT`'s value). ⚠ It **warns** rather than errors, deliberately: the runner fails a test on any engine
+error and has no `expect_error` to declare a deliberate one, so a `push_error` would make the guard untestable —
+which is the same unreachable-protection defect one level up. **`expect_error` in `tests/test_case.gd` is the
+missing facility** and is not this stream's file; "the path that must error" is untestable project-wide until
+someone adds it.
+
+**The instrument is kept**: `Tank.drive_trace`, armed from the environment so no other stream's test needs editing
+—`DRIVE_TRACE=Green_S2_2,Green_S2_3 make test FILTER=spawn_isolation`. It prints, per traced hull per tick, the
+velocity handed to `move_and_slide` **and what that velocity would move in that delta**, beside what the body
+actually did. **That pairing is what exonerated `tank_motion.gd` without opening it**, and it is the general lesson:
+*print what was asked for beside what happened, or a measurement cannot tell a wrong answer from a wrong question.*
+
 ### THE EXACT NEXT STEP, in order
 
 1. **Read the running check's result from the wrapper's own `>> remote: make check exited <N>` line and the
