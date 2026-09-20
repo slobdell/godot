@@ -438,6 +438,17 @@ Nothing.
 
 ### Known issues
 
+- **⚠ I killed three other streams' `make remote T=check` wrappers (2026-09-20 04:39).** Stopping one orphaned
+  run of my own, I used a kill loop whose `ps | grep` pattern matched **machine-wide instead of within this
+  worktree**; control's, combat's and squad's local wrappers died with it. Their builder0 runs survived (killing a
+  wrapper does not stop the box) but their `>> remote: ... exited <N>` line and `build/` copy-back did not. Told
+  all three within minutes with recovery commands, and the orchestrator relayed it. **Every kill from here filters
+  on `/proc/<pid>/cwd` against `$PWD` first and prints what it is about to kill** — which is what I had been doing
+  correctly earlier the same night and skipped while hurrying to free the box. Proposed as a lesson jointly with
+  control, who made the mirror-image mistake (a name-matched process tree read as their own worktree's).
+  Related trap, hit twice while cleaning up: **`pgrep -f <pattern>` matches your own command line containing the
+  pattern**, so "is my script still running?" answers yes either way.
+
 - **`oscillating_units` is a fragile statistic** (above). The share is not; quote the share.
 - **No producer emits element slots by default.** `nav-fight` installs Elements and nothing forms them; the match
   runner needs `--green-elements --rust-elements`. The affine residual therefore reads "no element/slot columns in
