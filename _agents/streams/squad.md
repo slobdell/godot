@@ -293,10 +293,17 @@ because the reasons turned out to be more useful than the numbers.
 
 ### Read this first if you are picking this up cold
 
-**Round 9 shipped X1, X5, A8 (off) and A9. A10 is stood down at `02762b8d` and resumes from `c0f22597`.**
+**Round 9 shipped X1, X5, A8 (off) and A9. A10 is stood down and resumes from `c0f22597`. ROUND CLOSED.**
 
-- **The tip is `02762b8d`.** It reverts A10 (`4741c723`) and the fix to A10's cost (`c0f22597`), on the orchestrator's
-  05:30 time-box, because the other four rows each stand on their own evidence and should not wait behind one test.
+- **`974f194a` is MERGED to main**, verified at `02762b8d`: `>> remote: make check exited 2 (build/ copied back)`,
+  **1297 passed, 0 failed**, the sole failure being the pre-registered `sim-baseline` move, plus the five
+  post-`sim-baseline` targets **exited 0** as their own list. The two commits between `02762b8d` and `974f194a` are this
+  file and nothing else.
+- **The branch continues at `1a797642`** for round 10: main merged in, A1's tube measured in a fight (below), and
+  nav's A6 corridor field. That hash has its own check; read its result from this file's A1 section or the round-10
+  notes, not from this line.
+- **A10's stand-down is `02762b8d`**, reverting `4741c723` and `c0f22597`, on the orchestrator's time-box, because the
+  other four rows each stand on their own evidence and should not wait behind one test.
   **Cherry-pick `c0f22597` to resume**: the revert was clean in code, the only conflict was this brief.
 - **A10's first job next round is not its cost — it is the mechanism A10 deleted without replacing.** The one test
   still red under `c0f22597` is `test_tactics_tasks::test_a_plain_move_standing_on_its_spot_keeps_its_seating`, and the
@@ -1138,6 +1145,38 @@ beside its hash or it does not travel.
 without A7, so switching A11 off in a default build measures nothing and reads as "A11 does not help". Same trap as
 `squad-defile TUBE=` reading `redecides=0` in both arms because the maze has no enemies: an arm in which the mechanism
 cannot act is not a control, it is a broken instrument, and its zero looks exactly like a result.
+
+### Round 10 starts here: the ordered list, and the one rule that earned its place
+
+**In order, because each depends on the one before:**
+
+1. **A10's `fixed` guarantee, then A10's cost.** Cherry-pick `c0f22597`; the cost is already right (normalised tier
+   mismatch, guarded for single-tier elements) and the only red test is the one whose mechanism A10 deleted. Two named
+   options in the head block. **Do not re-derive the cost** — it took three forms and the failed two are written down.
+2. **A8 off the switch, or off the branch.** `DEFORM_ENABLED` measured worse than off, and nav and I reached the same
+   diagnosis independently from opposite ends: `Movement`, which runs nine ticks in ten, has no notion of a formation.
+   A8 and A9 are both formation-level intents in a layer that cannot enforce them. Either that channel gets built or
+   A8 should be deleted rather than left behind a switch forever.
+3. **The tube's five-seed gate** (pre-registered above). It is a measurement, not a decision: run it and read it.
+4. **The duel bar to a rate**, with an `ai-scenarios` count beside its hash. Written out verbatim above.
+5. **A9's cost against the lead's 4 s drill allowance** — never measured, and the only backlog item that is simply
+   unstarted rather than blocked or ruled on.
+
+**The rule this round earned, and it is not about seating.** Five measurements across two streams were zeros produced
+by arms in which the mechanism could not act: my `squad-defile TUBE=` (no enemies, so `_combat_move` is never reached),
+nav's unpublished `facing_arc`, nav's `off_mesh_fit.none`, nav's `--nav-off=a11` (A11 cannot act without A7, so it ran
+one treatment in two arms), and nav's A6 test reading a key `choose()` does not return (both arms read the fallback and
+it passed on 0.000 against 0.000 — a vacuous comparison inside the test written to catch vacuous comparisons). Every
+one was green. Every one looked like a result.
+
+> **Before believing a control arm, prove the mechanism could have acted in it.** A "0 of N" is evidence only once the
+> instrument has been shown able to produce a non-zero at all.
+
+The cheap form of that proof is a positive control inside the run — nav's `a6_asked` / `a6_no_corridor` pair, which
+says from inside the report that the field has not arrived — and it is cheaper than any of the five were to find.
+**And the corollary, which cost this round a red tip:** a suite can be fully live, fully green, and still never visit
+the case. A10's tests exercised tiers only where the tie-break could not matter, so they could not see that "heavies in
+front" was never a cost at all.
 
 ### Requests to other streams
 
