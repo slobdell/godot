@@ -221,6 +221,34 @@ is the orchestrator's call, not his.)
 
 ## Status
 
+> ### ⏸ PAUSED 2026-09-20 ~02:50 (orchestrator's call: the lead's session limit, and builder0 is off the network).
+> **Tree is clean and every commit below is committed. Branch tip `2937e095` on `stream/metrics`.**
+>
+> **Where this stands in one line each:**
+> - **CP1 (A12) is COMPLETE and accepted** — the positive control reproduces round 8's finding to within 0.05
+>   points against a ±0.5 bar. **It needs only a green `make remote T=check` for its merge hash.** The
+>   orchestrator has agreed to merge it on that hash, front of the queue.
+> - **T1's before is MEASURED and safe** (`2693 s` over 16 targets, builder0, `2fd84d69`; `test` alone 2387 s).
+>   The mechanism is built and ten of its properties are verified without the build machine (see
+>   `references/round9/metrics/t1-cp3.md`).
+> - **CP3's three-run series is VOID and must be restarted whole.** builder0 dropped (`No route to host`) while
+>   run 1 was still *queued*, so it executed nothing; runs 2 and 3 failed in 3 s each. Nothing partial is counted.
+>
+> **⚠ The exact next step, in order, when builder0 returns:**
+> 1. **Check for my own orphaned processes on the box first** — `ssh builder0 'pgrep -fa "godot-metrics"'` and
+>    `ls /tmp/tank_squad_slots/`. A dropped ssh leaves the remote `make` alive; mine was only queued so it should
+>    have left a ticket at most, and tonight's `slot.sh` fix removes that on TERM.
+> 2. **Do not trust local `build/`** — the failed rsync said so explicitly: *"local build/ is STALE, not this
+>    run's"*. Check timestamps before reading anything from it.
+> 3. Re-run the series on **one frozen commit**: `/tmp/claude-1000/series.sh` (three sequential
+>    `make remote T=check`, logging to `build/metrics/t1-parallel-{1,2,3}.log`). **Do not edit any file while it
+>    runs** — each `make remote` rsyncs the working tree, so an edit would change what runs 2 and 3 measure.
+> 4. Fill the results table in `references/round9/metrics/t1-cp3.md`, send the orchestrator **CP1's hash from the
+>    wrapper's own `>> remote: make check exited <N>` line**, then announce CP3.
+>
+> Nothing is blocked on the lead. Nothing is half-edited.
+
+
 **In progress** (2026-09-20). Worktree `godot-metrics`, branch `stream/metrics`, started at `9f864474` (= `main`).
 
 ### The plan (worker contract step 2), smallest foundation first
