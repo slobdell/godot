@@ -10,22 +10,51 @@ extends SceneTree
 const ROOT := "res://tests/ai_scenarios"
 
 
+## THIS RUNNER HAD ITS OWN COPY, and the copy was the old one: it ignored `_error_type` and labelled every
+## message "engine error". That is why a Jolt job-system message Godot's console printed as `WARNING:`
+## failed `scenario_stride` as an ERROR on a loaded builder0 (2026-09-20) -- not a classification subtlety
+## in the engine, which a probe had already exonerated, but a duplicate implementation fixed in one place.
+##
+## Two runners, one rule, and they drifted in every way they could: warnings told apart from errors,
+## `expect_warning`, `expect_error`, the engine-message allowlist and nav's awaited `teardown()` all existed
+## in `tests/run_tests.gd` and none of them here. It now shares `TestCase.reconcile_engine_messages`.
 class ErrorCollector extends Logger:
-	var messages: PackedStringArray = []
+	var entries: Array[Dictionary] = []
 	var _mutex := Mutex.new()
 
 	func _log_error(function: String, file: String, line: int, code: String, rationale: String,
-			_editor_notify: bool, _error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
+			_editor_notify: bool, error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
 		_mutex.lock()
-		messages.append("%s (%s:%d in %s)" % [rationale if rationale != "" else code, file, line, function])
+		entries.append({
+			"warning": error_type == Logger.ERROR_TYPE_WARNING,
+			"type": error_type,
+			"text": "%s (%s:%d in %s)" % [rationale if rationale != "" else code, file, line, function],
+		})
 		_mutex.unlock()
 
-	func take() -> PackedStringArray:
+	func take() -> Array[Dictionary]:
 		_mutex.lock()
-		var taken := messages
-		messages = PackedStringArray()
+		var taken := entries
+		entries = []
 		_mutex.unlock()
 		return taken
+
+
+const ALLOWLIST := "res://tests/baselines/engine_expected.txt"
+
+
+## Engine messages allowed by name; the same file `tests/run_tests.gd` reads, because one rule with two
+## files is how these two runners drifted apart in the first place.
+func _read_allowlist() -> PackedStringArray:
+	var patterns: PackedStringArray = []
+	var file := FileAccess.open(ALLOWLIST, FileAccess.READ)
+	if file == null:
+		return patterns
+	while not file.eof_reached():
+		var line := file.get_line().strip_edges()
+		if line != "" and not line.begins_with("#"):
+			patterns.append(line)
+	return patterns
 
 
 func _initialize() -> void:
@@ -35,6 +64,8 @@ func _initialize() -> void:
 func _run() -> void:
 	var errors := ErrorCollector.new()
 	OS.add_logger(errors)
+	var allowed := _read_allowlist()
+	var allowed_total := 0
 	var filter := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--filter="):
@@ -67,9 +98,14 @@ func _run() -> void:
 			errors.take()
 			var started := Time.get_ticks_msec()
 			await case.call(method_name)
-			case.teardown()
-			for message in errors.take():
-				case.failures.append("engine error: " + message)
+			# AWAITED, as in tests/run_tests.gd: `teardown()` drains the navigation map and that needs
+			# frames; un-awaited it drains after the NEXT scenario has started.
+			await case.teardown()
+			var engine: Dictionary = TestCase.reconcile_engine_messages(
+					errors.take(), case.expected_warnings, case.expected_errors, allowed)
+			var engine_failures: PackedStringArray = engine["failures"]
+			case.failures.append_array(engine_failures)
+			allowed_total += int(engine["allowed_seen"])
 			var seconds := (Time.get_ticks_msec() - started) / 1000.0
 			var is_pending := pending.has(method_name)
 			if case.failures.is_empty():
@@ -80,6 +116,10 @@ func _run() -> void:
 				print("  %s  %s (%.1fs)" % ["PENDING" if is_pending else "FAIL", label, seconds])
 				for failure in case.failures:
 					print("          ", failure)
+	# On its OWN line, never inside the summary the gate parses (that line's four numbers ARE the gate).
+	if not allowed.is_empty():
+		print("\nexpected engine messages: %d seen, from %d allowed pattern(s) in %s"
+				% [allowed_total, allowed.size(), ALLOWLIST])
 	print("\nscenarios: %d passed, %d failed, %d pending, %d unexpectedly passing" % [counts["passed"], counts["failed"],
 			counts["pending"], counts["unexpected"]])
 	quit(1 if counts["failed"] + counts["unexpected"] > 0 else 0)
