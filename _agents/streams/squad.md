@@ -1119,6 +1119,41 @@ is still on `stream/nav` at `16444beb` — so it passes `null`, which contract S
 `a6_no_corridor == a6_asked` will keep reading 1087/1087 until their field reaches main, and their test asserts that
 state explicitly, so the inert case is a documented pass rather than a silent one.
 
+### The facing drag on a whole squad: fixed for the crew that has a move order, OPEN for the followers
+
+**Fixed and verified** (builder0, `test FILTER=tactics_elements` **exited 0, 7 passed 0 failed**): a facing the player
+drags on a whole squad now reaches the per-unit order. It was **my own X5 line** that dropped it —
+`_order(..., entry["facing"] if halt else null)` gave a crew a facing only at a halt, on the grounds that a moving
+crew's heading is the direction of travel and nav derives that itself. **True of every heading doctrine chooses, false
+of the one the player chooses.** `told` now threads through `_group` and is null on every doctrine-chosen heading, so
+nav keeps deriving those exactly as before.
+
+**Correction to the report that raised it**, because it would have sent the next agent to the wrong file: it said
+`element.gd:493` has a facing channel but *"nothing reads `task["facing"]`"*. `ElementTask.facing()` exists and
+`element_plan.gd:181` reads it — the facing already reached `plan["heading"]` and zeroed the sectors, so the formation
+was laid facing where he dragged. Only the ORDERS threw it away. A second read would have changed nothing.
+
+**STILL OPEN, and it is a design question rather than a line:** does a FOLLOWER end up on the dragged heading? While
+the element flows into formation, `_flow` replaces every follower's order with `{"verb": "follow", "target": leader,
+"slot": [...]}` — no destination — and a facing on that would be an arrival heading for a moving target, so it
+deliberately carries none. The follower gets a facing-carrying `move` only once `flow_joined` is set, and
+**`flow_joined` fires when the LEADER reaches its own slot, which is essentially arrival**. Measured evidence that this
+window is too narrow to rely on: asserting 8 s into a 20 m move found **no orders at all** (`expected 2, got 0`) —
+they had completed. So there may be no tick on which a follower holds the dragged facing.
+
+**Three ways to settle it, in the order I would try them:**
+1. Let a `follow` order carry the element's ordered facing, and have nav apply it only on the follower's own arrival.
+2. Set `flow_joined` when the leader is within one SPACING of its slot rather than `FLOW_JOIN_M`, widening the window
+   deliberately.
+3. Re-issue the final `move` orders once on arrival, which is one order per crew per task and cannot thrash.
+**Do not guess between them from the code** — put a squad on the field, drag a facing, and look at where the followers
+end up pointing. It is the lead's commonest order and a human can see the answer in two seconds.
+
+**What the tests now assert**, so nobody reads them as covering more than they do: the leader's `move` carries the
+dragged facing; a follower's `follow` carries none; both crews are ordered (`moving + following == 2`, so neither arm
+can pass on an empty list); and with no facing on the task NO order carries one, which stops this fix from quietly
+becoming "a facing on every order".
+
 ### Owed to nav, recorded and deliberately NOT done tonight
 
 **1. `scenario_motion.gd:57` punishes a faster fight for being faster.** The assertion is
