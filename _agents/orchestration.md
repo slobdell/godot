@@ -2812,7 +2812,13 @@ The kickoff prompt is one line; this section is the rest.
     was still 86 m from the ring the camera pointed at: the gate measured bare asphalt, and "the show makes the fight
     up to +4.2 % easier to read" was withdrawn. The fix is the same shape: `--budget` and warm-up matched to the perf
     tool, the camera at the army's centroid, and every capture reports `vehicles_in_frame` with a gate that fails
-    an empty frame *before* the luminance gate runs.
+    an empty frame *before* the luminance gate runs. Re-shot on a real army (21 tanks, 7 IFVs, 6 lancers, 11–23
+    vehicles in frame): the show's effect on readability is scattered around zero; the +4.2 % was bare ground.
+    **Seventh instance, the same afternoon:** the strobe clips at 10 fps sampled the gaps between flashes
+    (`last_stand` strobes at sharpness 40 over 1.6 s; the stab is above half its span for 0.134 s, 1.3 frames at
+    10 fps), so on-vs-off read as the same swing twice and the strobe looked like it did not read. 30 fps, four
+    frames per stab, what the player sees. **An arm that cannot be shown to differ from its control looks exactly
+    like a null result; before believing the null, ask whether the instrument could have seen the difference.**
 186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
     Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
     the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
