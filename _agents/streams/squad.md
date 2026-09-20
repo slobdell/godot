@@ -148,6 +148,20 @@ Nothing blocking. The task palette (N4) goes to him through control's page, not 
 
 _Updated 2026-09-18 by the squad worker._
 
+### Round 9 plan: the three research rows that are squad's (A8, A9, A10)
+
+Invariant 0c: each names what it REPLACES, in this tree, by file.
+
+| Row | Replaces (named) | First measurement, before any building |
+|---|---|---|
+| **A8** affine / complex-Laplacian deformable formations | `TacticsFormation.group_offsets()`'s rigid offsets scaled by ONE spacing, and `ElementPlan._scale_for`'s "shrink the whole rank to fit" — a uniform scale is the degenerate affine transform, so this generalises code that already exists rather than sitting beside it. Prior art in-tree to build on, not duplicate: `ArmyLayout`'s round-8 anisotropic pitch (width across, length along) is a fixed 2×2 diagonal transform; A8 makes it continuous and corridor-driven | count slot crossings and rank inversions through a defile TODAY (yard's bridge, pit's gaps), so the falsifier's "zero crossings, −60% recovery" has a before |
+| **A9** time-synchronised co-arrival + explicit two-phase bounding | `Element.form_up_eta()` pacing and `_pace_leader_for_flow` (FLOW_LAG_SLACK_M / FALLOFF / MIN_PACE), which pace toward the laggard by a heuristic rather than to a computed bottleneck arrival; and the IMPLICIT bounding in `ElementPlan._plan_movement`'s `bounding_overwatch` technique (halves swap by leg, with no phase state and no guarantee anyone is stationary) | inter-element arrival dispersion at an objective line, and share of squad firepower stationary per tick, both on today's code. The bar is > 12 s → < 1 s and ≥ 50% stationary |
+| **A10** deterministic auction assignment with an incumbent bonus | `TacticsFormation.seat()`'s Hungarian-style matching AND its two hysteresis patches: `STABLE_MARGIN × spacing` and round 8's `fixed` flag (`_group(..., fixed)`, added because seating re-shuffled around CPU drift). Both are symptoms of the thing A10 replaces; if A10 lands, the `fixed` flag should go with it | spurious re-assignments under a small perturbation, and path-crossing assignments on a formation change, on today's seat() |
+
+**Aim the work at the right hulls** (combat measured, round 8): under orders the 14 m War Rig converts **0.95** of path to net displacement and oscillates in **0.9%** of windows — the best of any gang type — while the gang **scout** is the shuffler at **0.68** and **13.3%**. A8/A9 work that assumes the big hulls are the coherence problem is aimed backwards.
+
+**Composition hazard, from nav (round 8, benign here but worth stating):** my `move_to` `facing` and nav's arrival arc are each inert alone and only compose on main — nav's counter read `aimed 0 / refused 0` because a CPU fight never sets a facing. Neither stream can test the pair on its own branch. Round 9 measures it with orders that carry a facing (player path) and a formation hold (KEEP_SLOT), with refusals recorded BY REASON so my "6.5 m assembly spacing refuses most slot gates" prediction is falsifiable.
+
 ### Round 8 (2026-09-19): the lead played round 7 — "they still generally don't do what I command them"
 
 | Item | State |
