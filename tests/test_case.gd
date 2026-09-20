@@ -6,7 +6,18 @@ extends RefCounted
 ## of aborting, so one run reports everything that is wrong. Nodes added with
 ## `add_to_tree()` are freed after the test.
 
-var tree: SceneTree
+## `run_tests.gd` assigns this before it calls the test body, which makes the setter the one hook that runs BEFORE any
+## test in the process. The leak baseline is taken there, so the FIRST test can be convicted too -- until round 9 the
+## baseline was taken at the first teardown, so test one absorbed its own leak silently and a file run alone could
+## never be convicted. A guard with a case it cannot fail on is the defect this guard exists to catch (feel found it).
+var _tree: SceneTree
+var tree: SceneTree:
+	get:
+		return _tree
+	set(value):
+		_tree = value
+		if _world_baseline < 0 and value != null:
+			_world_baseline = int(_world_left_behind()["bodies"])
 var failures: PackedStringArray = []
 var expected_warnings: PackedStringArray = []
 var _owned_nodes: Array[Node] = []
@@ -114,6 +125,8 @@ func wait_physics_frames(count: int) -> void:
 ## this case was a spawn test measuring a depenetration recovery at frame 1 that resolves by frame 3. Bodies have no
 ## such window, so bodies are the only claim this makes.
 static var _world_baseline := -1
+## The file whose teardown ran last, so a riser can name the predecessor as well as the observer.
+static var _previous_file := ""
 
 
 func _world_left_behind() -> Dictionary:
@@ -180,11 +193,21 @@ func teardown() -> void:
 	var total: int = int(_world_left_behind()["bodies"])
 	# A high-water mark, so this reports a LOWER BOUND on leakers: once the count has risen, a later test leaking
 	# below that mark is not blamed. Deliberate -- the alternative is blaming a test for someone else's residue.
+	#
+	# AND IT NAMES TWO CANDIDATES, NOT ONE. "It fails the test that leaked, not the victim" is true only for a
+	# SYNCHRONOUS free(). A test that `queue_free()`s an arena has it freed frames later, so the count rises during a
+	# LATER test and this names the first OBSERVER of the residue. That claim was this guard's whole justification and
+	# it was overstated (feel, round 9). So the previous test's file is printed beside the riser: the leaker is one of
+	# the two, and the reader should not have to run a reproduction to learn which.
 	if _world_baseline >= 0 and total > _world_baseline:
-		failures.append(("left %d physics bodies in the world (was %d before this test). Whatever runs next will see "
-				+ "them and may fail instead of this one: free every node you add, and if a helper builds the arena, "
-				+ "free it there.") % [total, _world_baseline])
+		var mine := String(get_script().resource_path).get_file()
+		var blame := mine if _previous_file.is_empty() or _previous_file == mine \
+				else "%s, or %s if it queue_free()d" % [mine, _previous_file]
+		failures.append(("left %d physics bodies in the world (was %d before this test; sampled at teardown, after "
+				+ "free()). Suspect: %s. Whatever runs next will see them and may fail instead: free every node you "
+				+ "add, and if a helper builds the arena, free it there.") % [total, _world_baseline, blame])
 	_world_baseline = maxi(_world_baseline, total)
+	_previous_file = String(get_script().resource_path).get_file()
 	# LAST, and awaited by the runner: leave the navigation map empty so the next test cannot bake into this one's
 	# regions. Placed after the body guard so that guard's timing is unchanged, and after `free()` so there is
 	# something to drain. Every test gets this without asking, which is the point -- 20+ files instantiate the arena
