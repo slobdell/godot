@@ -1932,3 +1932,66 @@ size-dependent number measured across CP2.**
 **The lead sees the roster before it ships:** the scale stream renders all 21 vehicles side by side at the new scale
 in one frame (the rig and a Condemned tank as references, the same camera as the gallery) and puts it on a review page.
 It is the one subjective check that counts; the numbers are derived and need no approval.
+
+## Round 9 addition: the arena as a light show, and the camera inside the Terminus blocks (2026-09-20, the lead)
+
+Enqueued mid-round, with `/tmp/widget2.md` (the breathing-conductors HUD spec) as the reference for *how* — bake the
+expensive part once, animate only a scalar. His words, verbatim:
+
+> *"The point is not the widget itself, it's the concept of creating efficient graphics effects in an efficient manner
+> (i.e. we can get away with nice effects that bring the arena to life without costing much in terms of frame rate).
+> Basically the new Terminus map is AWESOME and really cool. But it also looks pretty retro for a game. We could easily
+> bring these figures to life by making the lit edges breathe and glow. These were also set up as looking like city
+> buildings, but since this is an arena theme, we can also fade in and out different lights on those buildings. But if
+> we want to make this really cool, rather than just randomly having breathing lights, we should immerse ourselves in
+> this whole arena sporting event, and ideally we could create lighting patterns that were consistent with an
+> entertainment event (i.e. imagine light shows in Las Vegas). Similarly, the arena edges right now are just a dull neon
+> purple. Those could easily have a breathing effect as well."*
+
+> *"One more feedback item that also wasn't accounted for: In the Terminus map it's highlighting another problem where
+> the camera often ends up inside a building and we can't see what's going on inside the alleyways. We need to make it so
+> the camera is forced outside the solid for these cases."*
+
+> *"Note that for the buildings I'm obviously talking about the Terminus case, but in theory these blocks should be
+> highly re-usable, so the point is that we'd want abstract modules for creating light effects. You're better than me at
+> identifying what those abstractions are exactly, but if our whole theme is a sporting / entertainment arena then we
+> could probably account for all sorts of abstractions for creating lighting effects (i.e. stadiums also have spotlights
+> and signage all along the rafters, we might be able to later add lighting effects to things like roads or bridges,
+> etc. I would give the guidance to make it beautiful, with the idea that we can easily create desirable lighting
+> effects at low compute cost using whatever programming tricks we can."*
+
+### The abstractions (the orchestrator's answer to "you're better than me at identifying what those are")
+
+Stage lighting already has the vocabulary, and it maps onto what the renderer can do cheaply:
+
+- **Fixture.** Anything emissive that can be driven: a block's lit edges, its window grid, the perimeter neon rim, a
+  floodlight pool, a sign, a spotlight beam; later a road stripe or a bridge. A fixture is **not a light** — it is an
+  emissive surface on an existing mesh or MultiMesh instance, driven through per-instance custom data or a material
+  uniform. Adding a fixture adds **zero draw calls and zero real lights** (M1's budget; `fx_tricks.md`).
+- **Channel.** A named, time-varying scalar or colour computed **once per frame on the CPU** and pushed as one uniform
+  or one instance-data write: breathe (period, phase — incommensurate across fixtures so the ensemble never syncs, the
+  widget spec's rule), chase, strobe, sweep (direction, speed), colour cycle. A show has tens of channels, never one per
+  fixture.
+- **Patch.** Which fixtures listen to which channels, **in data** per arena (the layout JSON's dressing or a show file
+  beside it), so the Terminus, the yard and a future bridge are patched without code.
+- **Cue.** A programme of channel settings bound to **match state** — L5's `MatchMood` (`lull`, `skirmish`, `battle`,
+  `last_stand`, `victory`, `defeat`) and K5 events (FIGHT: house lights down, spots up; a kill: a ripple across the
+  blocks; last stand: everything strobing at the losing base; victory: a sweep to the winner's colour). **This is what
+  makes it an entertainment event rather than random breathing.** Idle is the slow breathe; the cues are the show.
+- **The efficiency rule, from the widget spec:** *bake the expensive part once, animate only a scalar.* Glow halos
+  (signs, beams, edge bloom) are pre-rendered sprites or emissive geometry, never a per-frame blur; the breathing lives
+  in the modulation value. No `OmniLight3D`/`SpotLight3D` added by the show.
+- **Visual only.** The show reads the match and never writes it; it runs on frame time, not the tick (nothing in the
+  simulation may depend on it); pre-registered: the sim hash does not move.
+
+**The bar is his: "make it beautiful."** Frames at his pose (21°, FOV 35, 49 m) on the Terminus and the yard, before
+and after, plus `make perf-scene` numbers on builder0 showing the locked 30 fps at 1080p with 30 a side still holds.
+He judges the look; the frame time is the check.
+
+### The camera inside a block (control)
+
+His words above. The venue already has a wall cutaway (control's, the perimeter); the blocks are `StaticBody3D` boxes
+from the kit. control decides the mechanism — pushing the camera to the nearest point outside the solid along the view
+ray, or a cutaway of the block between camera and focus, or both — and proves it with frames on the Terminus at his
+pose, in the alleys, with the case that hides the alley when the camera is pushed out shown and handled. Recorded for
+control's backlog; the running worker adds it to its own brief.
