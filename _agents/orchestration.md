@@ -2696,7 +2696,22 @@ The kickoff prompt is one line; this section is the rest.
     one frame before the movement, so anything nudging the sampled instant saw it, and **"flaky" was a true
     description that stopped the search. A true label that ends
     inquiry costs as much as a false one.** The sink was real and transient; the overlap was real and permanent;
-    the failure message named neither.
+    the failure message named neither. **The mechanism, at last (combat's per-tick trace, 18:45): the model asked
+    for zero lateral velocity, the body moved 1.53 m, velocity came back untouched, no slide collision: penetration
+    recovery out of something on the VEHICLE layer, which the neighbour probe could not see because it asked the
+    world mask.** **And then the body was named (combat's collider probe): on tick 1 the physics server's transforms
+    are a PERMUTATION of the spawn slots, up to 90 m from the nodes (physics interpolation with positions set before
+    the node enters the tree), so the solver resolved a scrambled layout and recovered bodies out of overlaps that
+    existed only in its copy; every first-tick number taken this round was taken after that shove.** Eight
+    diagnoses, one bug, and the instrument that ended it printed the node's transform beside the server's for the
+    same body. **Then the read-back print (combat): `body_set_state` followed by `body_get_state` on the next line
+    returned the OLD transform, because PhysicsServer3D commands queue until the step; nothing a teleport can call
+    reaches the space before the next tick, and three remedies that were three spellings of one queued command
+    produced three bit-identical runs, which should have been read as "the instrument, not the remedy" one
+    negative earlier. A hull teleported and driven in the same frame is driven against the pre-teleport world.
+    The remedy is a tick, not a flush.** And the sharper form of this lesson (metrics): **the shard count is derived from free memory at
+    launch, so the schedule, and this test's verdict, is a function of how busy the box was when the check started**
+    (5 shards fail, 6 pass, same code). Pin `TEST_SHARDS` when reproducing and print it beside any claim.
 
 179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
     morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
@@ -2812,7 +2827,26 @@ The kickoff prompt is one line; this section is the rest.
     was still 86 m from the ring the camera pointed at: the gate measured bare asphalt, and "the show makes the fight
     up to +4.2 % easier to read" was withdrawn. The fix is the same shape: `--budget` and warm-up matched to the perf
     tool, the camera at the army's centroid, and every capture reports `vehicles_in_frame` with a gate that fails
-    an empty frame *before* the luminance gate runs.
+    an empty frame *before* the luminance gate runs. Re-shot on a real army (21 tanks, 7 IFVs, 6 lancers, 11–23
+    vehicles in frame): the show's effect on readability is scattered around zero; the +4.2 % was bare ground.
+    **Seventh instance, the same afternoon:** the strobe clips at 10 fps sampled the gaps between flashes
+    (`last_stand` strobes at sharpness 40 over 1.6 s; the stab is above half its span for 0.134 s, 1.3 frames at
+    10 fps), so on-vs-off read as the same swing twice and the strobe looked like it did not read. 30 fps, four
+    frames per stab, what the player sees. **An arm that cannot be shown to differ from its control looks exactly
+    like a null result; before believing the null, ask whether the instrument could have seen the difference.**
+    **Eighth (feel, 17:05):** the lamp-verdict frame was shot with `size-look`, which frames the spawn at the arena's
+    rim; the nearest of the six new lamps was 72 m out of shot, and the floor looking identical to the baseline
+    would have read as "the lamps do nothing". Arena-lighting verdicts come from a bench that frames the arena
+    centre (`crowd-look`, show off). **Before reading a frame, check the subject is in it.**
+    **Ninth, and the worst (show, 17:15): the gate written against "the frame is empty" was given a statistic
+    that cannot observe emptiness.** `vehicles_in_frame` counted positions inside a 1200 m frustum, so a speck at
+    90 m counted the same as a hull filling a third of the picture, and it reported 19 for a frame with no hull
+    drawn; the camera had been aimed at the centroid of two facing armies, which on a symmetric map is the exact
+    centre and the emptiest place on it; and a 20 s wall-clock warm-up on builder0's vsync'd window at ~1/10 real
+    time bought two match-seconds. Fixes: aim at the densest cluster, poll the match for contact with the clock as
+    a cap, and require 12 px of *drawn mesh* per counted vehicle. **A gate is only as good as the statistic's
+    ability to distinguish the two cases it exists to separate; a frustum count is geometry, the question was
+    pixels.**
 186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
     Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
     the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
@@ -2843,4 +2877,49 @@ The kickoff prompt is one line; this section is the rest.
     among the abandoned and a merge was blind to the one number that gates it. The fix is `-k` *plus* a three-state
     verdict (PASS / FAIL / NOT RUN) printed from the markers, because with `-k` alone a reader still learns of a
     skipped target only by noticing absent output. Read a check as passed / failed / abandoned from its markers,
-    never from what happened to print.
+    never from what happened to print. Measured the same afternoon: the keep-going check completed 16 of 18
+    targets through two failures where the old one completed 10, and its summary agreed with the markers exactly.
+    **And the lint half of the same day (metrics `b839495c`):** a tree the runtime could not compile had passed lint
+    in one worktree and failed it in another; the hypothesis "a per-file check cannot see a cross-file type error"
+    was tested with four arms on builder0 (a positive control, the twelve-line self-contained ternary, the real file
+    with and without the class-name cache) and was wrong: the checker sees the class in every arm, so the green run
+    simply never checked the file. Closed as three silent-pass holes (empty output, a signal death, a blind run) plus
+    a liveness probe that plants a fresh error every run. **A gate that can pass by not looking needs a probe that
+    proves it looked, and a hypothesis about a gate is tested with a positive control before a fix is built on it.**
+190. **`git merge main` carries no signal about whether main was green at that commit.** Round 9's afternoon: control
+    merged main twice at a mid-repair moment (a stale baseline file, then a parse error from an unverified merge) and
+    each cost a builder0 slot to discover. Rule: the orchestrator keeps a local tag `main-checked` on the last main
+    tip whose own check ran (the tag means "checked, reds known", never "green": say so in the first clause wherever
+    it is mentioned, because `main-checked` reads like `main-good` at a glance), moved only after a main check with
+    its known reds written in HANDOFF; a stream that
+    wants a known state merges the tag, one that wants the newest merges HEAD and accepts the risk. And beside
+    lesson 157: the repaired lint's first real catch on the gate was a parse error in a file nobody on the
+    reporting stream had touched, which is exactly what a gate is for.
+    The tag is ANNOTATED with the runner's line and the reds (`git tag -af main-checked <sha> -m "<line>"`): a
+    lightweight tag has no message, and a tool that reads one gets the commit's subject back and prints it where a
+    verdict belongs. **The dangerous absence is not the blank one, it is the one that has something plausible to
+    say** (metrics, five instances in one day: lint over zero files, check-hashes on absent data, a blank quiet
+    window reading HELD, `0 passed, 0 failed` exiting 0, a commit subject standing in for a check verdict).
+191. **A test that asserts something about its environment it never checked is green where it is easy and red on
+    the machine it exists to protect.** Round 9's shell suites, three times in one afternoon: they assumed no slot
+    variable was set (inside `check` one always is), assumed an idle box (fixed sleeps against a builder running four
+    shards), and assumed a `.git` directory (the launch rsync excludes it). Each was green on the laptop and red on
+    builder0, and each surfaced only because the suites were in `check`. Rule: a test names its environmental
+    assumptions and checks them first, or degrades with a sentence (`NOT AVAILABLE: <path> is not a git repository`)
+    rather than failing fifteen assertions for one absent thing; and a tool that must run on two machines runs its
+    tests on both before it ships.
+192. **A fix aimed at one layer is defeated by a layer above it that was never in the picture.** Round 9, metrics:
+    `make test FILTER="a|b"` reached the shell unquoted and ran neither suite (exit 127); quoting it through would
+    have matched nothing and exited 0 with `0 passed, 0 failed`, a green run of zero tests, worse than the crash;
+    and `FILTER=$HOME` arrived at the runner as `OME` because make expands `$` before any shell sees it, found by a
+    test that recorded the runner's argv, not by reading. Same family as the pipeline reporting `tail`'s status and
+    `$(date)` resetting `$?`. Rules: a filter that matches no tests is a failure; the two characters no layer can
+    carry are refused by name, saying which layer would have eaten them; and a fix to how a value crosses layers is
+    tested by asserting what arrived at the far end, not what was sent.
+    **The canonical instance (metrics, 18:25):** annotating `main-checked` made `git rev-parse --short main-checked`
+    return the TAG OBJECT's id, so round-status printed a commit id nobody could look up beside distances and
+    BASE columns that were all correct, because `merge-base` and `rev-list` peel a tag implicitly and `rev-parse`
+    does not; `^{commit}` throughout. **In every instance the code was correct about the thing it was looking at
+    and wrong about what it was looking at**, and the numbers agreeing beside the wrong label is what makes a
+    reader trust the label. Corollary: the tests could not have caught it, because their fixture used a
+    lightweight tag, built before the thing it models existed; a fixture is rebuilt when the modelled thing changes.

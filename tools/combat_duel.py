@@ -67,6 +67,10 @@ def main():
     completed = subprocess.run(command, capture_output=True, text=True, timeout=args.time_limit + 240)
     events, result = [], None
     for line in completed.stdout.splitlines():
+        # Round 9: pass the engine-deck diagnostic through untouched (--tune=probe.deck=1). It is one line per enemy
+        # hit and `make deck-angles` aggregates it; without this the rows are swallowed with the rest of stdout.
+        if line.startswith("DECK_HIT "):
+            print(line)
         if line.startswith("COMBAT_EVENT "):
             events.append(json.loads(line[len("COMBAT_EVENT "):]))
         elif line.startswith("MATCH_RESULT "):

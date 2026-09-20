@@ -1,0 +1,12 @@
+extends Node
+## A minimal, SELF-CONTAINED reproduction of the error that passed `make lint` and failed at runtime on
+## `f1128ef5`: `Parse Error: Cannot infer the type of "my_map" variable because the value doesn't have a
+## set type` (`game/ai/movement.gd:528` at `bffdea0f`).
+##
+## Nothing here depends on the project: `Node`, `Node3D` and `RID` are engine types, and `unit` is declared
+## `Node` exactly as `bake_radius` declared it. So if `--check-only` can see this class of error at all, it
+## must report this file -- and if it reports this but did not report `movement.gd` in the run that went
+## green, the checker did not check that file, which is a different defect from the one we assumed.
+static func bake_radius(unit: Node) -> float:
+	var my_map := unit.get_world_3d().navigation_map if unit is Node3D else RID()
+	return 1.0 if my_map.is_valid() else 0.0

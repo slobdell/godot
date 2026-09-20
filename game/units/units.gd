@@ -11,7 +11,10 @@ extends RefCounted
 ##
 ## Keys (all required unless marked optional):
 ##   display_name, role (ROLES), blurb (one line for the army UI), cost (points), unlock_tier (0 = starter)
-##   hull_size [w, h, l] meters (the collision box; S1: derived, see scale_reference and SCALE_K below),
+##   hull_size [w, h, l] meters (the collision box; S1: derived, see scale_reference and SCALE_K below).
+##     **42 call sites read this and it is not a display number** -- what each one assumes is listed in
+##     _agents/workstreams.md "What reads hull_size". Round 9's resize landed in three places nobody was
+##     looking; read that list before changing a size.
 ##   S1 (round 9) optional scale_reference {vehicle: String, length_m: float, source: String} -- the real-world
 ##     vehicle this unit is drawn as, its cited length, and where that length comes from. hull_size[2] is
 ##     length_m x SCALE_K and hull_size[0]/[1] are the approved mesh's proportions at that length
@@ -1018,6 +1021,83 @@ static func with_role(role: String) -> PackedStringArray:
 	return result
 
 
+## How close a straight shot passes to a hull: the flat distance from the infinite line (`line_origin`,
+## `line_direction`) to the hull's OWN ORIENTED FOOTPRINT, and 0.0 when the line crosses it.
+##
+## ROUND 9, and it replaces a disc. Three consumers modelled a hull as a circle of radius
+## `Vector2(width, length).length() / 2` -- `Match` friendly-fire risk, `Match.incoming_projectiles` (whose docstring
+## says "within the hull's half-diagonal") and squad's `IncomingFire`. For a War Rig (3.32 x 14.00 m) that disc is
+## **7.19 m** against a real half-width of **1.66 m**. The error is NOT a constant: abeam it is 4.3x, end-on the disc
+## is 7.19 against a true 7.00 and almost exact. So the AI does not refuse every shot -- it refuses the ones ACROSS a
+## rig, which is exactly the shot a gang pack travelling with a rig in the middle wants to take. That is a candidate
+## mechanism for the lead's unexplained `gangs vs law` 9/20 -> 0/20, and it is UNTESTED until the series says so.
+##
+## The maths is a separating axis and it is exact for a line against a box: only the line's own normal can separate
+## them, so the hull's extent toward the line is `half_width * |n.x| + half_length * |n.z|` in the hull's frame.
+## Four multiplies, two adds, no branches, no trig, deterministic.
+##
+## `--tune=match.hull_disc=1` restores the disc inside `hull_reach_along`, which BOTH this and squad's longitudinal
+## test go through, so every consumer and both axes flip together and a series arm measures the whole change rather
+## than the two thirds of it that live in combat's files.
+static func hull_distance_to_line(hull_size: Array, hull_forward: Vector3, hull_origin: Vector3,
+		line_origin: Vector3, line_direction: Vector3) -> float:
+	var along := Vector2(line_direction.x, line_direction.z)
+	along = along.normalized() if along.length_squared() > 0.0001 else Vector2(0.0, -1.0)
+	var normal := Vector2(-along.y, along.x)
+	var offset := Vector2(hull_origin.x - line_origin.x, hull_origin.z - line_origin.z)
+	return hull_distance_of(hull_half_extents(hull_size), hull_forward, hull_origin, line_origin, line_direction)
+
+
+## `hull_distance_to_line` from the cached half-extents (see `hull_reach_of`).
+static func hull_distance_of(half: Vector2, hull_forward: Vector3, hull_origin: Vector3,
+		line_origin: Vector3, line_direction: Vector3) -> float:
+	var along := Vector2(line_direction.x, line_direction.z)
+	along = along.normalized() if along.length_squared() > 0.0001 else Vector2(0.0, -1.0)
+	var normal := Vector2(-along.y, along.x)
+	var offset := Vector2(hull_origin.x - line_origin.x, hull_origin.z - line_origin.z)
+	return maxf(absf(offset.dot(normal)) - hull_reach_of(half, hull_forward, Vector3(normal.x, 0.0, normal.y)), 0.0)
+
+
+## How far a hull reaches from its own centre along `direction` -- its half-extent projected on that axis. THE SAME
+## PROJECTION `hull_distance_to_line` uses, exposed because squad's `IncomingFire` needs it on the OTHER axis: it
+## tests the hull's reach along the shell's TRAVEL to decide whether a round with `reach` metres left could touch the
+## hull at all, and it used the same disc radius for that as for the perpendicular test. Both are the same bug on
+## two axes, and both must move together or someone tightening one will not know the other exists.
+##
+## Exact for a box, because only one axis can separate a box from a line or a point along a direction:
+## `half_width * |d . right| + half_length * |d . forward|`. Four multiplies, two adds, no branches, no trig.
+## `--tune=match.hull_disc=1` restores the pre-round-9 disc here, so BOTH consumers and BOTH axes flip together.
+static func hull_reach_along(hull_size: Array, hull_forward: Vector3, direction: Vector3) -> float:
+	return hull_reach_of(hull_half_extents(hull_size), hull_forward, direction)
+
+
+## The same projection taking the CACHED (half width, half length) pair, for callers on a per-tick path that must not
+## re-read `Units.stat` every call (squad's `IncomingFire` runs this per unit per shell per tick). The disc the knob
+## restores is `half.length()`, which is `Vector2(width, length).length() / 2` -- the same number, so the arm is
+## identical whichever entry point a caller uses.
+static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vector3) -> float:
+	# THE DISC IS THE DEFAULT, and that is a deliberate hold rather than an opinion about which is right. The box is
+	# a geometry CORRECTION -- the disc is wrong by a factor varying 4.3x abeam to 1.03x end-on -- but this round's
+	# rule is that a behaviour changes default only on measurement, and the box's falsifier (the gangs-vs-law series,
+	# both arms from one build) has not run. `--tune=match.hull_disc=0` selects the box and is the treatment arm.
+	# When the series says the box is no worse on every cell, the default flips in the same commit as the result,
+	# with its builder0 baseline hash recorded once. Measured on this laptop (glibc-2.39), the two arms are NOT the
+	# same simulation: sim-baseline match, seed 3 -- box `debb895da1fa288f`, disc `906d9c3df0c8e656`.
+	if tuning.get("hull_disc", 1.0) > 0.0:
+		return half.length()
+	var forward := Vector2(hull_forward.x, hull_forward.z)
+	forward = forward.normalized() if forward.length_squared() > 0.0001 else Vector2(0.0, -1.0)
+	var axis := Vector2(direction.x, direction.z)
+	axis = axis.normalized() if axis.length_squared() > 0.0001 else Vector2(0.0, -1.0)
+	var right := Vector2(-forward.y, forward.x)
+	return half.x * absf(axis.dot(right)) + half.y * absf(axis.dot(forward))
+
+
+## (half width, half length) of a hull, the pair a caller should cache per unit id instead of one radius.
+static func hull_half_extents(hull_size: Array) -> Vector2:
+	return Vector2(float(hull_size[0]) * 0.5, float(hull_size[2]) * 0.5)
+
+
 ## A unit's role ("" for an unknown id).
 static func role_of(unit_id: String) -> String:
 	return String(PROFILES.get(unit_id, {}).get("role", ""))
@@ -1049,6 +1129,19 @@ static func apply_tuning(spec: String) -> String:
 		var path := parts[0].split(".")
 		if parts.size() != 2 or path.size() < 2 or path.size() > 3 or not parts[1].is_valid_float():
 			return "tune: expected owner.key=number, got '%s'" % pair
+		if path[0] == "match":
+			if path.size() != 2 or not ["no_damage", "hull_disc"].has(path[1]):
+				return "tune: no match knob '%s' (have match.no_damage, match.hull_disc)" % parts[0]
+			if path[1] == "no_damage":
+				Armor.no_damage = float(parts[1]) > 0.0
+			else:
+				tuning["hull_disc"] = float(parts[1])
+			continue
+		if path[0] == "probe":
+			if path.size() != 2 or path[1] != "deck":
+				return "tune: no probe '%s' (have probe.deck)" % parts[0]
+			Armor.deck_probe = float(parts[1]) > 0.0
+			continue
 		if path[0] == "switch":
 			if path.size() != 2 or not SwitchingCost.TUNABLE.has(path[1]):
 				return "tune: no switching-cost knob '%s'" % parts[0]

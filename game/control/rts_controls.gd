@@ -253,6 +253,7 @@ func vision_state() -> Dictionary:
 		return {}
 	var element: Array[String] = commanded_units()
 	var frame: Array = []
+	var pad := 0.0
 	var eyes: Array = []
 	var middle := Vector3.ZERO
 	for unit_name in element:
@@ -261,6 +262,11 @@ func vision_state() -> Dictionary:
 			frame.append(Shown.ground(tank))
 			middle += frame[-1]
 			eyes.append(tank)
+			# ROUND 9 (CP2): how much hull hangs off the point it stands on. The camera frames POSITIONS, so a
+			# vehicle's own size was never part of the bounds - 1.8 m of slop on a 3.60 m hull, and up to 7 m on the
+			# 14 m rig. Published beside the frame rather than folded into it, because `frame` is a list of
+			# positions that several other things read as one entry per vehicle.
+			pad = maxf(pad, Shown.half_hull(tank))
 	middle /= maxf(frame.size(), 1.0)
 	# Contacts the element can see widen the frame, but only symmetrically about the element: each one is framed
 	# together with its mirror image, so the frame stays centred on your own vehicles. Framing contacts as they are
@@ -292,7 +298,7 @@ func vision_state() -> Dictionary:
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
 			friendly.append(tank)
-	return {"frame": frame, "destination": destination, "region": VisionRegion.of(friendly)}
+	return {"frame": frame, "pad_m": pad, "destination": destination, "region": VisionRegion.of(friendly)}
 
 
 ## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective

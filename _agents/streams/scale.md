@@ -539,6 +539,75 @@ files, and it was measuring a transient. **Checking it before acting on it cost 
 sent three streams to fix nothing** — and my own overlap script had already printed a vacuous "overlap: NONE" the same
 morning. In a round whose recurring failure is checks that cannot fail, the checks I write are not exempt.
 
+### The no-mesh derivation was built, measured, and REVERTED on the picture
+
+**It exists in history at `adcdec13` and was reverted deliberately, not abandoned.** The reasoning still stands; the
+*look* did not, and the look is the thing the lead judges.
+
+**What was built:** `width_m` and `height_m` in `scale_reference`, so the two art-less units derive all three
+dimensions from their cited vehicle × K instead of inheriting the pre-CP2 box, plus a test asserting exactly that and
+asserting it checked exactly 2 units. The lengths reproduced exactly (8.62, 6.89), confirming one derivation on all
+three axes.
+
+| unit | reference (published) | kept | was derived |
+|---|---|---|---|
+| `tank` | Type D bus, 12.19 × 2.59 × 3.15 m | **`[2.40, 2.40, 8.62]`** | `[1.83, 2.23, 8.62]` |
+| `burner` | Pierce pumper, 9.75 × 2.54 × 3.20 m | **`[2.40, 2.40, 6.89]`** | `[1.80, 2.26, 6.89]` |
+
+**Why it was reverted — from `lineup_factions.png`, after looking at it.** The Tank (8.6 m) and the Burner (6.9 m) are
+**the only two vehicles in the roster that do not read as vehicles**: long, low, dark slabs sharing one silhouette at
+two lengths, no visible wheels or body, closer to flatbed rail cars than to a prison-bus dozer and a fire engine.
+Every other unit reads as its name. **The comparison that settles it is inside the same faction: the IFV at 7.5 m
+reads as a bus far better than the Tank at 8.6 m — because the IFV has its own art and the Tank does not.**
+
+**So the diagnosis is the missing mesh, and the derivation made it worse.** Both wear the shared dozer hull stretched
+by `_fit_to_hull`, so they were never going to look like their references; going 2.40 → 1.83 wide and 2.40 → 2.23 tall
+made an already-wrong silhouette flatter. **The number was defensible and the picture was not.**
+
+**Decided (orchestrator, on the lead's behalf, recorded as overridable):** the two keep `2.40 × 2.40` until they have
+art; the box contract keeps its no-mesh branch until then; **no third baseline move today**; and combat's
+screening-bar re-derive is **cancelled**, because the width that broke it is no longer in the tree.
+
+**On the lead's gate list, with the frames: one hull mesh each for `tank` and `burner`** (paid generation). That fixes
+the silhouette *and* retires the no-mesh branch, collapsing both arms of the box contract back into one rule.
+
+**The lesson, and it is the one I would keep from the whole round:** the derivation was correct, cited, tested,
+self-consistent on three axes, and agreed with two independent measurements — **and it was still the wrong change,
+because none of that is a claim about how it looks.** Every check I built could only ever have said yes. **The frame
+is not a formality at the end of the work; it is the only instrument that could have caught this**, which is exactly
+why the brief makes the lead's look the gate and why item 2 renders one.
+
+### Superseded by the revert above: two units are outside the contract that catches bad boxes
+
+`roster-scale` prints **`no mesh`** for exactly two of the twenty-one:
+
+```
+tank    condemned  Type D school bus, 40 ft (Blue Bird All American)  12.19  8.62  [2.40, 2.40, 8.62]  no mesh
+burner  condemned  Pumper fire engine, 32 ft (Pierce Enforcer)         9.75  6.89  [2.40, 2.40, 6.89]  no mesh
+```
+
+`SizeLook.natural_size` returns zero without a `model_scene`, so `box_at_length` hands today's width and height back
+unchanged. **That is the brief's rule, followed on purpose** — *"those units get a length from the rule and keep their
+width/height ratio from today's box… Do not invent proportions."* Nothing here is a defect.
+
+**But the consequence lands on the unit the lead pointed at.** He named the *bus-tanks*. `tank` is `Units.DEFAULT`, it
+wears the shared hull art, and it is one of the two the rule could not derive — so it is **8.62 m long and still
+2.40 m wide and 2.40 m tall**, inherited from the old boxy `2.4 × 2.4 × 3.6`. A Type D school bus is ~2.6 m wide and
+**~3.1 m tall**: the reference says *bus*, the box says *long low slab*, at **3.6:1 instead of a bus's 4.7:1** and
+0.7 m short in height.
+
+**Not reopened here, deliberately.** I looked at `lineup_pose.png` and judged that it reads as a bus rather than a
+dozer, and he has that frame on the review page; a look he is about to rule on is not mine to relitigate. If he wants
+true bus proportions it is either **art for those two units** (feel's, a later round) or a **hand-chosen width/height
+from the cited reference** — and the second is exactly what "do not invent proportions" forbids me, so it needs his
+word.
+
+**The part that generalises: this class is invisible to every check we have.** feel's drawn-vs-box test compares a box
+to a mesh, and these two have no mesh, so **they pass by absence** — the same shape as the vacuous lint over zero files
+and my own overlap script over zero obstacles. Two of twenty-one units sit outside the contract that would catch a bad
+box, and nothing said so until the table's own `no mesh` column was read. **That column is the only thing standing
+between "derived" and "assumed" for these two, which is why it is printed on every run.**
+
 ### Queued, in order, behind the current work (recorded so none of it is rediscovered)
 
 1. **The guard + the three fixture-less arena tests** — landing as its own commit, **no baseline move**.
@@ -551,6 +620,15 @@ morning. In a round whose recurring failure is checks that cannot fail, the chec
    what is already lit; its `pools` channel is not the floor's baseline), so the lamps must be judged **with the show
    off as well as on**, at 21° / FOV 35 / 49 m, and **the vehicles must read without the UI rings.** A frame at that
    pose is the acceptance test.
+   **Two constraints found while reading, before any work:** (a) **the lamps go in `tools/make_arenas.py`, not in
+   `terminus.json`.** `props` is generated, and only `show` is in `PRESERVED_KEYS` — a lamp hand-added to the JSON is
+   silently deleted by the next `make arenas`, which is exactly the Invariant 0 trap this stream spent round 9 removing.
+   (b) The current two floodlights are **one** `floodlight(-128, 0)` plus its 180° mirror, i.e. both on the hexagon's
+   east/west vertices at r=128, **outside the fight entirely** — so this is not "add more of the same", it is the first
+   light inside the block grid. The grid's geometry gives the candidates: a 40 m plaza at the origin, a 20 m avenue up
+   the middle between the `x = ±30, z = ±62` blocks, 20 m streets at `x ≈ 60..80` between the `z = 0` blocks, and a
+   22 m ring road across each half at `z ≈ 20..42`. Intersections at `(0, 30)` and `(±70, 30)` already carry
+   containers, so a lamp there must not fight the clearance check that already refused `z = 84` for a container.
 5. **P6 / the navmesh bake radius, pre-registered so the trigger is not invented after the fact.** nav measured that
    **14 of 21 units' avoidance radius `((w+l)/4 + margin)` exceeds `arena.tscn`'s 2.0 m bake** — median **2.50 m**,
    `gang_tank` **4.58 m**, `gang_scout` 1.36 m. Ruled: **the bake stays 2.0 this round** and nav's routing consults each
@@ -559,9 +637,15 @@ morning. In a round whose recurring failure is checks that cannot fail, the chec
    whoever reads that result: the **median** unit is already under-served, not just the tail, so wedging would not be a
    rare event.
 
-**An observation from show for the record, not an alarm:** the same 6500 budget buys **68 vehicles at 191k primitives
-before CP2 and 64–68 at 145k after** (terminus, `PERF_NAME=show-layer`). **The resize went through simpler meshes, not
-more geometry** — the hulls grew in metres while the primitive count fell by a quarter.
+**What the resize cost, from show, on a quiet builder0: nothing measurable.** Post-CP2 frame cost **6.40 ms GPU**
+against pre-CP2's **6.43 ms**. Hulls grew from a 2.8–5.0 m band to 2.93–14.0 m and the frame did not notice.
+
+> **RETRACTED, and kept visible because the retraction is the useful part.** I recorded from show that the same 6500
+> budget bought *"68 vehicles at 191k primitives before CP2 and 64–68 at 145k after"*, and concluded **"the resize went
+> through simpler meshes, not more geometry"**. show re-ran on a quiet box and measured **180,780 primitives with fewer
+> vehicles**, so the 145k was **one run's sample on a loaded box, not a property of the roster**, and my tidy conclusion
+> was drawn from noise. **A number that arrives with a ready-made explanation is the one to re-measure** — the
+> explanation is what made it feel like a finding instead of a sample. Nothing in this stream depended on it.
 
 ### Decided: the Condemned artillery's box binds the DRIVING pose (one number owed)
 
