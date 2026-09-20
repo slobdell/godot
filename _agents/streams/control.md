@@ -167,23 +167,73 @@ directly.
 
 ## Status
 
-_Round 9, control stream. Branch `stream/control`, started from `main` at `9f864474` (2026-09-20)._
+> **Round 9, control. Finished 2026-09-20 ~05:00.** Branch `stream/control`; **`ffd09b0e` is the checked hash**
+> (builder0, **16 of 16 check targets**, verdict read from the box's own markers — metrics' kill took my wrapper
+> line, `mk/core.mk:250` clears the marker directory at the start and `:274` writes a marker only on success, so
+> 16 fresh markers is a sound green). `e27f0681` went to `main` earlier as **CP2c**.
 
-### Plan (order, with reasons)
+### What you can now do that you could not
 
-1. **Item 1, desktop right-drag facing** — the only item with no dependency, and the prerequisite for nav's
-   arrival-arc A/B (which currently measures zero in both arms). Tests first, then the state machine, then the pin.
-   **Done; green hash below.**
-2. **Item 2, S4** — the signature first (it is a gate on three streams), then the parts of the readout that do not
-   need nav's new field. **Signed by all three 2026-09-20.** C-1 (the corridor drawn, current leg at full weight) is
-   built; C-2's attribution waits on nav's `legibility.why` key, and no verdict before CP1.
-3. **Item 3, the camera inside a Terminus block** — a new lead item from play, which outranks a scheduled re-check.
-   Independent of CP2 (blocks do not resize), so it can be built before it; the frames go out after CP2 if it has
-   landed, else with the roster named in the README.
-4. **Item 5, `shell-playtest`'s console gate behind a committed baseline** — independent of both checkpoints; the ask
-   went to metrics early and is answered (`check-display` as its own bundle, not in `CHECK_TARGETS`).
-5. **Item 4, the view after CP2** — blocked until scale's roster merges. Nothing published before it.
-6. **Item 6 (stretch)** — after squad's A10.
+| Your words | What shipped |
+|---|---|
+| *"I couldn't tell what direction they were facing"* — and round 8 found your controls never **sent** a facing | **Right-DRAG the ground: "go there, and be facing that way when you get there."** Press picks the spot exactly as before; drag past 18 px and the drag's direction becomes the order's heading. Until now **nothing in the game you play had ever sent one**, so nav's arrive-on-heading arc had no caller and its A/B measured zero in both arms |
+| *"the camera often ends up inside a building… we can't see what's going on inside the alleyways"* | **703 of 4328 camera poses on the Terminus were inside a building. Now 0** — it lifts over the roof (21° → 32°) instead of yanking in, keeping 41.5 m of view. And **the building between the camera and what you are looking at is not drawn**: sight line blocked **518 → 0** |
+| *"they still generally don't do what I command them"* | The groundwork, not the fix: the **ordered corridor** is drawn with its current leg at full weight, and when a unit leaves it deliberately the cause goes in *"why did my element do that"* — never on the order pin, which stays the refusal channel. **The words are silent until nav ships its cause field**, deliberately: a guessed reason is confidently wrong exactly when you are watching |
+| (unasked) the console you see when you play | `make shell-playtest` now has a **committed baseline that fails on change**. A real run came back **18/18 checks and zero error lines**, so the baseline is empty and the gate is stricter than the allow-list it replaced |
+
+### Done, with measurements
+
+- **Right-drag facing** — `tests/test_control_facing_drag.gd`, 7 tests through the real input pipeline. Mutation
+  check: deleting the facing assignment fails 4 of 7. The pin grows a ground arrow for the ordered heading and the
+  HUD says *"3 units: move facing NE"*. A live preview follows the pointer while the button is down.
+- **Camera out of solids** — 4328 poses (every open ground point × 8 yaws) at your pose: **703 inside a building →
+  0**, worst lift **11.0°**, nothing pulled in, the yard provably untouched. Mutation-checked.
+- **The building in the sight line** — over those same 703: **700 blocked before, 518 after the lift, 0 after the
+  cutaway**. Every one of the 518 was a building, so the "cover" headroom in the bar went unused.
+- **Frames, looked at** (`build/terminus-alleys/index.html`, local): the *before* frame is your complaint exactly —
+  the bottom 70% of the screen is the flat dark inside of a wall. The *after* is a legible street with a whole squad
+  and their selection rings, facades and neon intact at the sides, no half-cut geometry. The open-ground control
+  frame cuts nothing and lifts 0.0°, which is the check that the fix does the specific thing and not a general one.
+- **S4 legibility** — signed by feel, nav and control. The corridor's current leg is drawn; an inactive law draws
+  nothing rather than a guessed corridor.
+- **Console gate** — `tools/shell_console.py`, 5 green tests, `make check-display`.
+- **Three wall-clock test budgets removed** (lesson 158) — they were measuring the machine, not the code.
+
+### The five measurements that were lying, and what caught each
+
+**This is the part worth a successor's time. Every one looked like a pass.**
+
+1. **A falsifier read 518 → 0 while the feature cut nothing at all in a real match.** `BlockCutaway`'s root was wired
+   before the arena had built its bodies, so it returned early forever. **Caught by looking at the frames.** No
+   amount of geometry testing closes the gap between *the algorithm is right* and *the feature works*.
+2. **A before/after where both halves were "after"** — the cutaway ran during the control frame too, so the pair was
+   nearly identical and showed no fault. **Caught by looking at the frames.** A comparison must be built so the
+   control arm *can* fail.
+3. **`git checkout <sha> -- .` does not reproduce that commit's lint** — files added in later commits stay on disk
+   and error against the older sources they now mismatch. **Caught by reading the errors instead of counting them.**
+4. **`Arena._ready` takes its layout from `layout_name`/`--arena`, never `Arena.active`** — a test that sets `active`
+   silently builds the DEFAULT arena, runs green on the wrong map, and blames the thing under test. **Caught by a
+   number that was too small** (19 bodies, then 48).
+5. **A wall-clock budget in a behaviour test measures the machine.** **Caught by nav**, who ran the branch point
+   three times instead of once; a single control run had already convinced them my branch was at fault.
+
+Two more from the same family: **a dedup that held only under one frame ordering** (caught by builder0, not by the
+laptop), and **a process list filtered by name is not filtered by worktree** — `pgrep -f` even matches your own
+command line, which turns *"is it still running?"* into yes whatever the truth is. I diagnosed a foreign `make check`
+in my own worktree from it; metrics killed three streams' wrappers from the same root cause.
+
+### What to playtest (exact commands)
+
+- `make skirmish` → FIGHT. **Right-DRAG on the ground** with units selected: a ring appears on the destination and an
+  arrow follows your pointer; release and the pin grows an arrow for the heading, with *"N units: move facing NE"* on
+  the HUD. A plain right-click is unchanged. Right-press on an **enemy** still attacks instantly, drag or no drag.
+  **Shift** queues. An armed order (A/F/M/E/R/B) still cancels on right-press, and that press is spent.
+- `make skirmish --arena=terminus` — drive a squad into the streets. The camera should never end up inside a
+  building, and a building between you and your units should simply not be drawn. `--block-cutaway=off` draws the
+  city whole for comparison.
+- **Look at** `build/terminus-alleys/index.html` (six pairs, your pose, left as asked / right as fixed).
+- `make remote T=control-playtest-shots` and `T=camera-looks` for the HUD and the camera grid;
+  `make remote T=check-display` for the console gate.
 
 ### Decisions
 
@@ -217,26 +267,6 @@ _Round 9, control stream. Branch `stream/control`, started from `main` at `9f864
   emplacement gesture arguably wants the *line* laid out across the kill zone, but that changes the geometry of every
   facing-carrying order including squad's, and item 1's job is to make the arm live, not to re-shape formations.
   Recorded as a question, below.
-
-### Progress
-
-| Item | State | Evidence |
-|---|---|---|
-| 1. Desktop right-drag facing | **built, green on the control suite (187 passed) and on the full local `make test`**; `make remote T=check` next | `tests/test_control_facing_drag.gd` (7, through `Viewport.push_input`), `test_control_order_marks::test_a_dragged_order_puts_its_heading_on_the_pin` |
-| 1. the pin | done: a move pin drawn from a facing drag grows a ground arrow in the order's colour (`_draw_ordered_facing`), and the HUD line names it in compass ("3 units: move facing NE") | `order_marks()[i]["facing"]`, `describe()` |
-| 1. the live preview | done: while the right button is down, a ring on the destination and, past the threshold, an arrow following the pointer — a player cannot learn a gesture he cannot see | `_draw_facing_drag` |
-| 1. frames | **not yet** — `make remote T=control-playtest-shots` with a drag added to `control_playtest.gd` | — |
-| 2. S4 signature | **signed by all three 2026-09-20**; feel took C-1–C-4 into §6 verbatim and the arrival-arc warning into §7 as a pre-registered exclusion | `git show 4ec341d2:_agents/legibility.md` |
-| 2. C-1 the corridor drawn | done: the **current leg** at full weight, the rest faint; `{}` when nav has no path, and an inactive law draws nothing | `MovementReadout.corridor` / `corridor_tangent`, `test_control_movement_readout` |
-| 2. C-2/C-3 the attribution | **built against nav's contract shape, silent until nav publishes it** — which is the correct output, not a stub. Vocabulary degrades to one word because nav has stated `why` can only be `override` while A7 is off | `MovementReadout.legibility_line`, `RtsControls.legibility_notes`, `ElementLog.note` |
-| 3a. camera forced outside a Terminus block | **built, green locally, mutation-checked**; frames owed | `tests/test_control_camera_solids.gd`, `RtsCamera.clear_pose` / `roof_over` |
-| 3b. the building in the sight line is not drawn | **built**; the pre-registered bar is sight line blocked **518 → under 50** | `BlockCutaway`, `RtsCamera.segment_hits_box`, `test_cutting_the_building_in_the_way_clears_the_alley` |
-| 4. the view after CP2 | blocked on CP2 | — |
-| 5. `shell-playtest` into `check` | **built**: `tools/shell_console.py` (a committed baseline that fails on CHANGE, in either direction), `make check-display`, `make shell-console-baseline`, `make shell-console-pytest` (5 tests, green). **baseline recorded and committed, and it is EMPTY** — a real run produced 18/18 checks and **zero** console lines, so the gate is now stricter than the allow-list it replaces | `tests/baselines/shell_console.txt`, `tools/test_shell_console.py`, `mk/command.mk` |
-| (unasked) `test_control_facing_camera` wall-clock flake | **fixed**: the test owns its clock | 6/6 on three consecutive loaded runs |
-
-**What the mutation check says:** deleting the `facing` assignment in `right_click_order` fails 4 of the 7 new tests
-(the brief asks only that (a) fail).
 
 ### S4: control's signature on `_agents/legibility.md` (2026-09-20)
 
@@ -317,90 +347,15 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
   6/6 on three consecutive runs with seven streams live. **The rule, worth a round lesson before CP3 makes a loaded
   machine normal: if the thing under test advances on `delta`, the test owns the clock.**
 
-### Verification notes, and one method that was WRONG
+### Questions for you
 
-- **Windowed local runs were authorised** (orchestrator, 2026-09-20 ~03:15, builder0 off the network, the lead
-  asleep): `terminus-alleys` and the `shell_console` baseline may run on the laptop's own display (`DISPLAY=:0`)
-  instead of `make remote`. Trip-up 32 says say when a windowed run is coming — **neither had started when the pause
-  came.** One run each when work resumes, then leave the display alone.
-- **`git checkout <sha> -- .` does NOT reproduce that commit's lint.** I put the tree at `e27f0681` to lint exactly
-  that commit, reasoning that files added in *later* commits would only add extra checks. **They add FALSE ones:**
-  `block_cutaway.gd` and `test_control_camera_solids.gd` were still on disk and call statics (`segment_hits_box`,
-  `roof_over`, `clear_pose`) that `rts_camera.gd` does not have *at that commit*, so each reports a parse error that
-  is a property of the method and not of the code. Either subtract those files by name or move them aside for the
-  run. Same shape as a control that is not actually the control.
-
-### Where this ended (2026-09-20 ~04:20). Every backlog item is done or blocked on another stream.
-
-| Item | State |
-|---|---|
-| 1. desktop right-drag facing | **merged to `main` as CP2c** (`e27f0681`), `lint local: 531 files, 5 known baselined, 0 others` |
-| 2. S4 signature + C-1 corridor + C-2/C-3 attribution | **done.** C-2's words stay silent until nav ships `legibility: {active, why}` — that is the correct output, not a stub |
-| 3. camera inside a block, and the block in the sight line | **done and approved on the lead's behalf**, frames looked at by control and the orchestrator |
-| 4. the view after CP2 | **blocked: CP2 (scale's roster) is not on `main` yet.** The moment it is: `git merge main`, then `camera-looks` + `control-playtest-shots` and the list in the backlog item |
-| 5. `shell-playtest` console gate | **done**: baseline recorded from a clean run, `make check-display` green |
-| 6. stretch (`ungrouped=N` on the default path) | not started; waits on squad's A10 |
-
-**The last hash:** `ffd09b0e` (`main` merged in, CP1's metrics and its working lint included). Its
-`make remote T=check` is the one to quote; **`449b0344` came back 1279/1** and that failure is fixed in `9d4fd9ea`.
-
-**What tonight cost, and what it bought, in one line each — these are the five that were worth the time:**
-
-1. **A pure falsifier said 518 → 0 while the feature cut nothing at all in a real match.** `BlockCutaway`'s root was
-   wired before the arena built its bodies. Only the frames showed it. *The gap between "the algorithm is right" and
-   "the feature works" is not closed by any amount of geometry testing.*
-2. **A before/after where both halves were "after".** The cutaway ran during the "as asked" frame too, so the pair
-   was nearly identical and showed no fault. *A comparison has to be built so the control arm can fail.*
-3. **`git checkout <sha> -- .` does not reproduce that commit's lint.** Later files stay on disk and error against
-   the older sources they now mismatch.
-4. **`Arena._ready` takes its layout from `layout_name`/`--arena`, never `Arena.active`.** A test that sets `active`
-   builds the DEFAULT arena, runs green on the wrong map, and blames the thing under test.
-5. **A wall-clock budget in a behaviour test measures the machine** (lesson 158; three of mine removed).
-
-**The pattern under all five:** each was a measurement that answered a slightly different question than the one
-asked, and each looked like a pass. Two were caught by pictures, one by builder0, two by another stream.
-
-### PAUSED 2026-09-20 ~03:20 (superseded by the section above; kept for the record)
-
-**Everything is committed and the working tree is clean at `bd69de5f`.** There is no half-applied state to
-reconstruct: items 1, 2 (C-1/C-2/C-3), 3 (both halves) and 5 are written, tested and committed, and `e27f0681` is
-already merged to `main` as CP2c.
-
-**Three things are owed, all machine-bound, none of them thinking:**
-
-1. **`lint local` on `e27f0681` — STARTED, KILLED, NO RESULT.** It had reached roughly 40 of 533 files when the
-   pause came and was stopped cleanly with its Godot children. **No number from it may be quoted.** Redo it with the
-   method fixed (above).
-2. **`make terminus-alleys`** — the deliverable that decides whether item 3 *reads*, as opposed to whether its
-   numbers are right. Then **look at `build/terminus-alleys/index.html`**, and send show (`godot-show-b0`) a copy:
-   they asked, and the same frames judge whether the block edges read at street level.
-3. ~~`make shell-playtest`, then `make shell-console-baseline`~~ **DONE** (windowed, local, 04:0x): the console is
-   clean — 18/18 checks and **zero** ERROR/WARNING/SCRIPT ERROR lines, so the baseline is empty on purpose and
-   `make check-display` reports `unchanged (0 classes, 0 lines)`. **Finding worth acting on later:** the two
-   patterns `mk/command.mk` still excludes by hand (`ObjectDB instances were leaked at exit`, `MultiMesh
-   interpolation is being triggered`) **did not occur either**, so that allow-list is currently dead weight; leave
-   it in case another machine or driver still produces them, and delete it if a few more runs stay clean.
-
-**Then:** `make remote T=check REMOTE_SLOTS=6` on `bd69de5f` — only after the orchestrator says builder0 is up, and
-after checking the box for an orphaned `slot.sh` of this stream's.
-
-**(Retracted, and worth keeping as the mistake rather than deleting.)** This Status briefly warned that a foreign
-`make check` was running *in this worktree*. **It was not.** The orchestrator checked by **cwd** and found pid
-4145492's `slot.sh` child running in `godot-combat` (02:48:27) and a second in `godot-show` (02:48:52) — both
-legitimate merge-gate runs started before the pause. My error: I walked the parent chain up from a Godot
-`--check-only` process **without checking its cwd**, after earlier cwd sweeps had returned hits that were my own
-`pgrep` command line matching its own pattern. **A process list filtered by NAME is not filtered by WORKTREE**, and
-on this laptop seven checkouts run the same binary. Check `/proc/<pid>/cwd`, and write the pattern so it cannot
-match the sweep itself. The `.lint.lock` contention I saw was the **shared laptop heavy-run slot**, not this
-checkout's lock — so "a lint here will hang" was also wrong; it queues, as designed.
-
-### Questions for the lead
-
-- **Should a dragged facing also orient the formation?** Today "move here facing north" lays the squad out along its
-  *travel* direction and each unit arrives on the ordered heading. The alternative is to lay the line out *across*
-  the drawn heading, which is what an ambush emplacement wants. It is a few lines in `Orders._resolve_group`, and it
-  changes the shape of every facing-carrying order (squad's included), so it is not being done blind. Frames rather
-  than a question if it comes up.
+- **Should a dragged facing also orient the formation?** Today *"move here facing north"* lays the squad out along
+  its **travel** direction and each unit arrives on the ordered heading. The alternative lays the line **across** the
+  drawn heading, which is what an ambush emplacement wants. It is a few lines, and it changes the shape of every
+  facing-carrying order including squad's, so it is not being done blind.
+- **The camera lifting itself over a roof is the second place it overrides your tilt** (after the far-range floor).
+  It reports how far it lifted. Keep it, or would you rather it pulled in and stayed at your angle? The frames show
+  why I chose the lift: pulling in collapses the 49 m boom to about 11 m.
 
 ### Merge notes (shared files, and files another stream owns)
 
@@ -423,24 +378,48 @@ checkout's lock — so "a lint here will hang" was also wrong; it queues, as des
 - **Nothing is written on a city block** — no uniform, no instance parameter, no visibility, no alpha. control's row
   on `_agents/lighting.md`'s reserved list reads *nothing reserved*.
 
-### Next steps (in order, for whoever picks this up)
+### Still owed
 
-1. **Send the orchestrator `e27f0681` with both lines** — the wrapper's `>> remote: make check exited <N>` and the
-   runner's `N passed, M failed` — plus `lint local: N files, 8 known baselined lines` (lesson 157: `make remote`
-   never parse-checked anything, because `lint` lists files with `git ls-files` and `.git` is not synced). The
-   test target came back **1269 passed, 0 failed** on builder0; the exit line was still in the copy-back queue.
-2. **`REMOTE_SLOTS=6` on every remote run** until this branch merges `main` — `tools/remote.sh` hard-coded 3 slots
-   while builder0 sat at load 0.4, and `main` now defaults to 6. Do not `git merge main` for it: CP2 has not been
-   announced, and the brief says merge only at announced checkpoints.
-3. **`make remote T=terminus-alleys REMOTE_SLOTS=6`** — item 3's frames, and the thing the orchestrator asked to see
-   tonight. Then LOOK at `build/terminus-alleys/index.html`: each pair is the same spot and yaw at his pose, left as
-   asked, right as the camera now places itself, labelled `INSIDE A BUILDING` / `alley behind a wall`. **show
-   (`godot-show-b0`) asked for a copy whatever the verdict** — the same frames judge whether the block edges read at
-   street level, and it saves them a builder0 slot.
-4. **`make remote T=shell-playtest REMOTE_SLOTS=6`**, then `make shell-console-baseline`, then commit
-   `tests/baselines/shell_console.txt` saying what each line is. Until that file exists `check-display` refuses.
-5. **A second `make remote T=check`** on the branch tip: everything after `e27f0681` is unverified by a check of its
-   own.
+- **Item 4, the post-CP2 camera sweep: NOT DONE, and it is the only backlog item outstanding.** It needs scale's
+  resized roster on `main`. When it lands: `git merge main`, then `make remote T=camera-looks` and
+  `T=control-playtest-shots` at your pose, and check selection rings, the command card's lean
+  (`VISION_FRAME_BOTTOM`, to be derived from the card rather than copied), radar blips against 8–14 m hulls, the
+  wall cutaway against a taller hull, `MIN_DISTANCE` 16 m against a War Rig, and the auto-frame with a wider squad.
+  **Nothing here is published before CP2** — a frame of the old roster is a frame of a game you will not play again.
+- **Item 6 (stretch)** — stood down to next round with squad's A10.
+- **C-2 is UNBLOCKED and built to nav's real set** (`Movement.LEGIBILITY_WHY`, `stream/nav` at `3f8cb7b1`); the
+  words arrive when nav's commit reaches `main`. Two of nav's reasons render as **nothing**, both deliberately:
+  - **`override` is silent.** nav's wording shifted between the two messages — from *"the honest single word"* when
+    nothing bound the nose, to ***"nothing nav owns is shaping the nose"***. The second is the **absence** of a
+    cause, and by nav's own table it is **most ticks on the default blend**; a line on every off-corridor unit every
+    tick is the 30-messages failure C-3 exists to prevent, dressed as an explanation. It gets words the day A6
+    exists and `override` can only mean *a law ran and something outranked it*.
+  - **`yielding` is silent** because `MovementReadout.CALLOUTS` already floats **YIELDING** over that hull. C-3: one
+    fact, one channel.
+  - **`arrival_arc` → *"arriving on the heading you drew"*** is the one live reason a player sees today, and it
+    exists because of item 1. `band`/`survival`/`armour` are wired with their shipped words and light up when nav
+    can publish them — a test asserts **every word in the vocabulary names a reason nav can actually publish**, so a
+    word for a reason that can never arrive cannot sit here looking like a feature.
+  - An unknown `why` renders as nothing, never a guess and never a raw key. nav's `push_error` catches drift on
+    their side, this catches it on mine.
+- **The A4 finding, and why the readout changed for an arm that is switched off.** nav measured a hull on the A4
+  arm holding `arrival_arc` for **45 s, ending 9.8 m short and 147° off** the ordered heading (the straight arm is
+  home in 4.3 s from the same start). *"Arriving on the heading you drew"* is the one live reason this readout
+  renders, so on that arm it would tell the player to **wait for a unit that is not coming** while the band beside
+  it correctly said STUCK — two opposite things on screen, with the encouraging one wrong. **The callout band now
+  outranks the explanation**: if the band has anything to say about a hull, the legibility line says nothing. A
+  general rule, not an A4 special case; it covers STUCK, BLOCKED and YIELDING at once. Fixed while A4 is off
+  because the flaw is in the readout's wording, not in the arm — lesson 149's converse: a behaviour behind a flag
+  can still mislead the day the flag goes on.
+- **nav's hashes, so C-2 lights up when they reach `main`:** `3f8cb7b1` (the key), `16444beb` (the corridor tangent
+  and the `no_law`/`override` split), `e2fbd1aa` (A6 behind `--nav-off=a6`), `1a616345` (the arm in `NAV_FIGHT_ARM`).
+  **Expect A6 inactive on every unit after that merge and do not call it a wiring fault** — nav measured A6 reached
+  1087 times and able to act **0** times (`a6_asked 1087, a6_no_corridor 1087, a6_nose_narrowed 0`), because
+  `CombatMotion.choose()` has no unit handle until squad passes `request["corridor"]`. `band`/`survival`/`armour`
+  start arriving with squad's merge, with no change needed here.
+- **A "blocked on X" line is a claim with a date on it.** My Status said *blocked on nav's key* for hours while the
+  readout sat built; nav's said *A6 blocked on S4* while the signature had been given. Neither of us re-read the
+  contract and the orchestrator spotted it. Both sides were done and both were waiting.
 
 ### Requests to other streams
 

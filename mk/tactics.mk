@@ -48,10 +48,11 @@ squad-coherence: import ## Round-6 X6: legibility as numbers (idle in contact, d
 		--green $(or $(GREEN_FACTION),condemned) --rust $(or $(RUST_FACTION),law) --time-limit $(or $(TIME),180) \
 		$(if $(EXTRA),--extra="$(EXTRA)") --json $(BUILD_DIR)/squad-coherence.json
 
-squad-decisions: import ## Round 7: split attack-move's "re-task events" (drive target jumping > 8 m, nav-fight's measure) into decisions (option/target changed) vs motion inside one decision, and count A->B->A reversals, in nav-fight's own fight (ARENA=yard SEED=3 NAV_TIME=120 BUDGET=6500)
+squad-decisions: import ## Round 7: split attack-move's "re-task events" (drive target jumping > 8 m, nav-fight's measure) into decisions (option/target changed) vs motion inside one decision, and count A->B->A reversals, in nav-fight's own fight, and A1's brain half measured where it can be measured: TUBE=on|off reports redecides/skips/held_share over the GREEN roster (ARENA=yard SEED=3 NAV_TIME=120 BUDGET=6500)
 	@echo ">> squad-decisions: ARENA=$(or $(ARENA),yard) SEED=$(or $(SEED),3) NAV_TIME=$(or $(NAV_TIME),120)"
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/decision_probe.gd -- \
 		--arena=$(or $(ARENA),yard) --seed=$(or $(SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(BUDGET),6500) \
+		--tube=$(or $(TUBE),off) \
 		2>&1 | grep -E "DECISION_PROBE|SCRIPT ERROR|ERROR" || true
 
 squad-defile: import ## Round 9 X2/X3/A1: an element through the maze's 11 m gap -- crossings, rank inversions, post-defile recovery, arrival dispersion, stationary share, and brain re-decides. ARM=wheeled|tracked DEFORM=on|off TUBE=on|off SEED=3 DEFILE_SECONDS=40. The control arm is LOCOMOTION, not faction (metrics CP1: the shuffle is a wheels property), so both arms are Condemned.

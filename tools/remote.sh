@@ -43,6 +43,23 @@
 # (`_agents/streams/references/round9/metrics/t1-builder0-idle.txt`).
 set -uo pipefail
 
+# ---- Pin this script against a mid-run rewrite -------------------------------------------------
+# `git merge` / `git checkout` rewrite a working-tree file IN PLACE -- same inode, verified -- and bash reads a
+# script LAZILY, from a file offset. So a merge landing while this is running makes it jump into the middle of
+# the NEW text. Demonstrated rather than assumed: a running script printed its line 1, then "command not found"
+# from the replacement's line 2, then executed the replacement's lines 3-5; its own lines 3 and 4 never ran.
+#
+# That is not hypothetical here. Every stream is being told to merge `main` between runs, and `main` carries this
+# file -- so a merge lands on a wrapper that may be holding a slot for forty minutes. Re-exec from a private copy
+# and unlink it immediately: the kernel keeps the text alive for this process through its open fd, and nobody --
+# not even git -- can reach it by name to change it.
+if [ -z "${TANK_SQUAD_PINNED_SELF:-}" ]; then
+	pinned=$(mktemp -t "$(basename "$0").XXXXXX") || exit 1
+	cat "$0" > "$pinned" && chmod +x "$pinned" || { rm -f "$pinned"; exit 1; }
+	TANK_SQUAD_PINNED_SELF="$pinned" exec bash "$pinned" "$@"
+fi
+rm -f "$TANK_SQUAD_PINNED_SELF"
+
 host=${REMOTE_HOST:-slobdell@builder0}
 root=${REMOTE_ROOT:-tank_squad}
 slots=${REMOTE_SLOTS:-3}

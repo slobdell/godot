@@ -432,10 +432,46 @@ static func reset_arms() -> void:
 	dwa_with_live_state = 0
 
 
+## ---- A6 (contract S4, `_agents/legibility.md`): the motion law, at LEVEL 3 -----------------------------------------
+##
+## A6-a, the NOSE clause: a turreted hull with an active corridor keeps its nose within 25 deg of the tangent and lets
+## the turret fight; a hull-fixed hull is held only to a 75 deg forward-oblique bound, because its hull IS its gun
+## mount. A6-b, the SHOULDER clause: when both shoulders serve the band equally, take the one whose velocity has a
+## non-negative projection on the tangent — *"A6-b is the clause that moves the falsifier"*, because the falsifier is
+## measured on velocity and a turreted hull's nose is already free of its gun.
+##
+## Binding is by MOUNT, never by a unit id list. `TankBrain.motion_style` derives style FROM mount — fixed ->
+## standoff/run, turret + front armour >= 6 -> angle, else strafe — so hull-fixed is exactly {standoff, run} by
+## definition rather than by roster coincidence, and a test asserts that so a roster change cannot quietly rebind it.
+## `run` is the A/B control and A6 never applies to it: *"a control that is also rewritten is not a control"*.
+const A6_NOSE_DEG := 25.0
+const A6_OBLIQUE_DEG := 75.0
+## Costs are the same `(1 - dot) / 2` form level 3 already uses, so a bound is a cost threshold in the same units.
+static func _a6_bound(deg: float) -> float:
+	return (1.0 - cos(deg_to_rad(deg))) / 2.0
+
+
+## OPT-IN like every round-9 row: `--nav-off=a6` turns it ON.
+static func a6_on() -> bool:
+	return Movement.switched_off("a6")
+
+
+## Arm counters (lesson 147). `a6_no_corridor` is the one that matters: A6 needs `request["corridor"]`, which
+## `tank_brain.gd` (squad's file) must pass, and until it does **A6 is a mechanism that cannot fire**. That is this
+## round's recurring failure, so it is counted rather than trusted — if `a6_no_corridor` equals `a6_asked`, the field
+## has not arrived and any A6 number is a null by construction, not a result.
+static var a6_asked := 0
+static var a6_no_corridor := 0
+static var a6_nose_narrowed := 0
+static var a6_shoulder_narrowed := 0
+
+
 static func arm_report() -> Dictionary:
 	return {"a7_projected": a7_projected, "a7_holds_scored": a7_holds_scored, "a7_holds_won": a7_holds_won,
 			"a7_region_rejected": a7_region_rejected, "a7_leash_radius": a7_leash_radius, "a11_lattices": dwa_lattices,
-			"dwa_candidates_reachable": dwa_candidates_reachable, "a11_with_live_state": dwa_with_live_state}
+			"dwa_candidates_reachable": dwa_candidates_reachable, "a11_with_live_state": dwa_with_live_state,
+			"a6_asked": a6_asked, "a6_no_corridor": a6_no_corridor, "a6_nose_narrowed": a6_nose_narrowed,
+			"a6_shoulder_narrowed": a6_shoulder_narrowed}
 
 
 ## Keep every candidate within `tolerance` of the best cost. Ties and near-ties survive together: that IS the null
@@ -694,6 +730,50 @@ static func choose_projected(request: Dictionary) -> Dictionary:
 		for c: int in live:
 			arc[c] = 1.0 - _front_share(cands[c], target_at, threats, armor_weight, false)
 		live = _keep_within(live, arc, float(TOLERANCE["arc"]))
+
+	# A6 joins level 3, AFTER the armour task, which is the composition `legibility.md` §4 writes down rather than
+	# leaves to be discovered: `strafe` has no armour task here (it is demoted to level 5) so A6-a gets the full set;
+	# `angle` and `standoff` run armour first and A6-a holds only inside what that leaves. `run` is the A/B control
+	# and is excluded — a control that is also rewritten is not a control.
+	if a6_on() and style != "run" and live.size() > 1:
+		a6_asked += 1
+		var tangent: Variant = request.get("corridor")
+		if not (tangent is Vector3):
+			# §5: no corridor means the law is INACTIVE, with no fallback and no guessed tangent. Counted, because
+			# until squad passes the field this branch is every tick and an uncounted A6 would read as "A6 does
+			# nothing" rather than "A6 never ran" — round 8's `gates aimed 0` in a new place.
+			a6_no_corridor += 1
+		else:
+			var t: Vector3 = tangent
+			# A6-a. Hull-fixed is exactly {standoff, run} because motion_style derives style FROM mount; `run` is
+			# already excluded above, so `standoff` is the hull-fixed case here.
+			var bound := _a6_bound(A6_OBLIQUE_DEG if style == "standoff" else A6_NOSE_DEG)
+			var nose: Array = []
+			nose.resize(cands.size())
+			for c: int in live:
+				# Monotone over the whole half-turn outside the bound, flat inside it (lesson 153): candidates that
+				# satisfy the bound TIE, and that tie is the null space handed to A6-b and then to level 4.
+				var hull: Vector3 = (cands[c] as Array)[3]
+				nose[c] = maxf(0.0, (1.0 - hull.dot(t)) / 2.0 - bound)
+			var before := live.size()
+			live = _keep_within(live, nose, float(TOLERANCE["arc"]))
+			if live.size() < before:
+				a6_nose_narrowed += 1
+			# A6-b, the clause that moves the falsifier. Inside what is left, prefer the shoulder whose VELOCITY
+			# advances along the corridor. Banded, not dictatorial: a unit is never wedged into a worse arc for the
+			# sake of a tidy line. A hold candidate does not travel, so it ties at 0 and is never pushed off a hold.
+			if live.size() > 1:
+				var shoulder: Array = []
+				shoulder.resize(cands.size())
+				for c: int in live:
+					var entry: Array = cands[c]
+					var step := (entry[2] as Vector3) - here
+					step.y = 0.0
+					shoulder[c] = 0.0 if step.length_squared() < 0.0001 else maxf(0.0, -step.normalized().dot(t))
+				var before_b := live.size()
+				live = _keep_within(live, shoulder, float(TOLERANCE["arc"]))
+				if live.size() < before_b:
+					a6_shoulder_narrowed += 1
 
 	# ---- LEVEL 4: FORMATION. The slot leash and crowding — below safety, which is the inversion A7 exists to fix. -----
 	if (leash_radius > 0.0 or not friends.is_empty()) and live.size() > 1:

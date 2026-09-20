@@ -26,6 +26,31 @@ def _fmt(value, digits=3, width=9):
     return ("%.*f" % (digits, value)).rjust(width)
 
 
+def _facing(cells):
+    """`null` when the column is absent, a number when it is there. Never a bare 0.0 for missing data: a log
+    written before `facing_arc` existed printed `arc_live=0.0s` in both arms of an A/B, which reads as a
+    measurement of behaviour (nav, 2026-09-20)."""
+    bits = []
+    for label, key in (("ordered_facing", "facing_ordered_seconds"), ("arc_live", "facing_arc_seconds")):
+        value = cells[key]
+        if value is None:
+            bits.append("%s=null" % label)        # no data: absent, or present and every value null
+        else:
+            bits.append("%s=%.1fs" % (label, value))   # a real measurement, INCLUDING a real 0.0
+    return (" " + " ".join(bits)) if bits else ""
+
+
+def _corridor(cells):
+    """A6's falsifier, with its active fraction welded to it. `null` when the producer's build has no corridor
+    key: the fraction cannot be computed and no verdict may be published from that log."""
+    if cells["off_corridor_fraction"] is None:
+        return " off_corridor=null"
+    return (" off_corridor=%.3f (active %.3f, %d ticks; inactive %d, slow %d, ordered_arc %d)"
+            % (cells["off_corridor_fraction"], cells["corridor_active_fraction"],
+               cells["corridor_active_ticks"], cells["corridor_inactive_ticks"],
+               cells["corridor_below_speed_ticks"], cells["corridor_ordered_arc_ticks"]))
+
+
 def print_report(row, handle):
     head = row["by_unit_id"]
     write = handle.write
@@ -36,8 +61,11 @@ def print_report(row, handle):
     if row["oscillating_order_verb"]:
         write("        `osc_share` counts only ticks under order_verb=%s (fight_probe.gd's --stall-verb).\n"
               % row["oscillating_order_verb"])
-    if "facing_arc" not in row["columns"]:
-        write("        NOTE: no `facing_arc` column. A LIVE arrival arc is off-corridor by construction and is the\n"
+    # Keyed on whether any arc value was actually KNOWN, not on the column name: the column can be present and
+    # every value null, which is the case nav's pre-publication logs are in.
+    if row["all"]["facing_arc_seconds"] is None:
+        write("        NOTE: no `facing_arc` DATA (the column is absent, or present and null throughout). A LIVE\n"
+              "        arrival arc is off-corridor by construction and is the\n"
               "        unit obeying, not a pathology -- and `facing_ordered` is not a substitute: an order carries\n"
               "        its facing for the whole journey. Without `facing_arc`, no off-corridor verdict may be\n"
               "        published from this log (FORMAT.md).\n")
@@ -45,9 +73,11 @@ def print_report(row, handle):
         write("        NOTE: this log has no cause columns, so every cusp is reported as unclassified "
               "(FORMAT.md: order_reverse / phase / creeping).\n")
     if len(row["teams"]) > 1:
-        write("        NOTE: this log holds BOTH armies. Only the ordered side has goals, so `osc_share` and\n"
-              "        `net/path` are already over ordered ticks alone, but `units` counts everyone: read\n"
-              "        `ordered` beside it, or pass --team.\n")
+        write("        NOTE: this log holds BOTH armies, and the two kinds of statistic behave DIFFERENTLY.\n"
+              "        GATED on orders and so unaffected: osc_share, osc_units, net/path, under_way.\n"
+              "        UNGATED and therefore DILUTED by the unordered side: eff_mean, eff_p10, cusp/min, sparc.\n"
+              "        Pass --team to compare the ungated ones. (nav read eff_mean 0.717 unfiltered against\n"
+              "        0.833 for the ordered side alone, from the same log -- while net/path was identical.)\n")
     write("  %-16s %5s %7s %9s %9s %9s %9s %9s %9s %7s %9s\n" % (
         "unit_id", "units", "ordered", "eff_mean", "eff_p10", "osc_share", "osc_units", "net/path", "cusp/min",
         "cusps", "sparc"))
@@ -68,9 +98,7 @@ def print_report(row, handle):
                   cells["cusps_unclassified"], cells["efficiency_refused_zero_path"],
                   cells["sparc_refused_parked"], cells["sparc_refused_short"],
                   # Beside the fractions, never inside them.
-                  (" ordered_facing=%.1fs arc_live=%.1fs"
-                   % (cells["facing_ordered_seconds"], cells["facing_arc_seconds"]))
-                  if cells["facing_ordered_seconds"] or cells["facing_arc_seconds"] else ""))
+                  _facing(cells) + _corridor(cells)))
     turns = row.get("turns")
     if turns:
         write("  hull TURN between consecutive events (degrees; the HULL's own rotation, not a bearing to any\n"

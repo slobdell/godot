@@ -152,7 +152,14 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 # `--shard=i/N --filter=__no_such_test__` reports each shard's share in about five seconds without running a
 # single test. At N = 2, 3, 5 and 6 the shard file counts sum to **187** -- exactly the unsharded discovery count.
 # Nothing is dropped and nothing is run twice, at any shard count. (metrics, 2026-09-20, laptop.)
-TEST_SHARDS ?= $(shell tools/slot.sh --jobs 500 $$(( $$(nproc) / 2 )))
+# `:=`, NOT `?=`. `?=` creates a RECURSIVELY EXPANDED variable, so `$(shell ...)` re-runs on every reference --
+# and this one is referenced three times in the recipe below (the `seq` that launches the shards, the `xargs -P`,
+# and the count the guard verifies against). `slot.sh --jobs` reads free memory, so on a shared box the three
+# answers differ: scale's CP2 check launched TWO shards, both reported, 1395 passed, and then verified against
+# THREE -- so my own guard fired on a run in which every test had passed. Found by scale, 2026-09-20; trip-up
+# 67's family, where make evaluates a variable differently from how the author read it.
+# The `$(if ...)` keeps `?=`'s "leave an existing value alone" while running the shell exactly once per make.
+TEST_SHARDS := $(if $(TEST_SHARDS),$(TEST_SHARDS),$(shell tools/slot.sh --jobs 500 $$(( $$(nproc) / 2 ))))
 
 test: import ## Run the headless test suite (FILTER=substring to run a subset; TEST_SHARDS=1 forces one process)
 	@if [ -n "$(FILTER)" ] || [ "$(TEST_SHARDS)" -le 1 ]; then \
@@ -231,8 +238,16 @@ CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-
 #               RUNNING match costs -- it parses and exits without ever building a world). 250 MB with a
 #               half-the-cores cap, because lint runs CONCURRENTLY with up to CHECK_JOBS other targets and the
 #               two budgets share one machine.
-CHECK_JOBS ?= $(shell tools/slot.sh --jobs 1000)
-LINT_JOBS  ?= $(shell tools/slot.sh --jobs 250 $$(( $$(nproc) / 2 )))
+# ⚠ All three are `$(shell ...)`, so they are RE-DERIVED in every make invocation -- and `check` runs a sub-make.
+# MemAvailable moves between the two evaluations, so the header printed `test x3` while the run did `2 shards`
+# (seen on builder0, 2026-09-20). The guard was never wrong -- it compares against the value its own loop used --
+# but a header that disagrees with its run is exactly the kind of thing that costs an hour later, so `check`
+# passes its OWN values down to the sub-make and the whole check uses one evaluation.
+# `:=` for the same reason as TEST_SHARDS above -- see that note. Each is referenced more than once (the header
+# line, the -j, the value handed to the sub-make), and a header that disagrees with the run it describes is how
+# an hour goes missing later.
+CHECK_JOBS := $(if $(CHECK_JOBS),$(CHECK_JOBS),$(shell tools/slot.sh --jobs 1000))
+LINT_JOBS  := $(if $(LINT_JOBS),$(LINT_JOBS),$(shell tools/slot.sh --jobs 250 $$(( $$(nproc) / 2 ))))
 _CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
 
 # The heartbeat (lesson 48). `-Otarget` holds each target's output until that target finishes, which is what
@@ -248,6 +263,7 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(awk '/MemAvailable/{print int($$2/1024)}' /proc/meminfo)" \
 		"$$(pgrep -c -f 'Godot_v' || echo 0)"
 	@rm -rf $(BUILD_DIR)/check/done && mkdir -p $(BUILD_DIR)/check/done
+	@$(MAKE) --no-print-directory import
 	@started=$$(date +%s); \
 	( while sleep 60; do \
 		left=""; count=0; \
@@ -261,7 +277,9 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 			"$$(( elapsed / 60 ))" "$$(( elapsed % 60 ))" "$$count" "$(words $(CHECK_TARGETS))" "$$left" >&2; \
 	done ) & heartbeat=$$!; \
 	trap 'kill $$heartbeat 2>/dev/null' EXIT INT TERM; \
-	if $(MAKE) --no-print-directory -j$(CHECK_JOBS) -Otarget check-parallel; then status=0; else status=$$?; fi; \
+	if $(MAKE) --no-print-directory -j$(CHECK_JOBS) -Otarget \
+			TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel; \
+		then status=0; else status=$$?; fi; \
 	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)" >&2; \
 	exit $$status
 
@@ -269,9 +287,20 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 check-parallel: $(_CHECK_WRAPPED) ## (internal) check's targets for `make -j`; run `make check`, not this
 	@echo "check passed: $(words $(CHECK_TARGETS)) targets"
 
-# Each wrapper depends on its real target and leaves a marker the heartbeat counts. The marker is written by the
-# wrapper rather than by the target itself so that nothing about running a target on its own changes.
-$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): $(t) ; @mkdir -p $$(BUILD_DIR)/check/done && touch $$(BUILD_DIR)/check/done/$(t)))
+# ⚠ THE WRAPPER RUNS THE TARGET; IT DOES NOT DEPEND ON IT. That distinction is the whole exclusion mechanism,
+# and getting it wrong made the groups INERT -- found by CP3's own flake criterion on 2026-09-20, which is the
+# best argument for that criterion I can offer.
+#
+# The wrappers used to read `_cp-lobby-smoke: lobby-smoke | _cp-relay-smoke`. An order-only prerequisite orders
+# `_cp-relay-smoke` before **the wrapper** -- but `lobby-smoke` is a NORMAL prerequisite of that same wrapper,
+# and make is free to build both prerequisites CONCURRENTLY. So the real work raced anyway: both targets started
+# a broker on $(SMOKE_BROKER_PORT) and lobby-smoke died. It only showed at CHECK_JOBS=3; two runs of the same
+# series at CHECK_JOBS=2 passed without ever exercising it.
+#
+# Now each wrapper has NO normal prerequisite and invokes its target from its own recipe, so the order-only edge
+# constrains the work itself. `-o import` because `check` has already built it and 16 sub-makes must not each
+# redo it (that would also put 16 writers on the .godot cache, which is the one thing lint's lock is about).
+$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @$$(MAKE) --no-print-directory -o import $(t) && mkdir -p $$(BUILD_DIR)/check/done && touch $$(BUILD_DIR)/check/done/$(t)))
 
 # The three exclusion groups, as order-only prerequisites between the wrappers.
 _cp-combat-smoke:    | _cp-net-smoke

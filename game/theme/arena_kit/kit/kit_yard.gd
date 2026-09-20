@@ -76,11 +76,23 @@ func entries_of(kind: String) -> Array:
 	return _entries.values().filter(func(e: Array) -> bool: return e[0] == kind)
 
 
-## INSTANCE_CUSTOM per kind: a sign's atlas row and flicker seed (neon_sign.gdshader), a pool's intensity (splat.gdshader).
+## S6 (the arena light show): the kit's signs and pools are the same fixtures as the venue's, on the same shaders,
+## so they join the same banks. One MultiMesh per kind means one uniform write drives every one of them; a no-op on
+## a headless peer, where there is no show.
+static func _patch_show(selector: StringName, material: Object) -> void:
+	var show := Show.get_instance()
+	if show != null:
+		show.add_fixture(selector, material)
+
+
+## INSTANCE_CUSTOM per kind: a sign's atlas row and flicker seed (neon_sign.gdshader), a pool's intensity
+## (splat.gdshader). The remaining lane is that instance's phase in the arena light show (S6), on the golden angle
+## so neighbours never land on the same beat: `.a` for a sign, `.y` for a pool.
 static func custom_data(kind: String, data: Color, index: int) -> Color:
+	var phase := fposmod(float(index) * 0.6180339887, 1.0)
 	if kind == "sign":
-		return Color((data.a + 0.01) / SIGN_CELLS.size(), index * 0.137, 0, 0)
-	return Color(data.a, 0, 0, 0)
+		return Color((data.a + 0.01) / SIGN_CELLS.size(), index * 0.137, 0, phase)
+	return Color(data.a, phase, 0, 0)
 
 
 static func sign_cell(sign_name: String) -> int:
@@ -145,6 +157,7 @@ func _new_draw(kind: String) -> MultiMeshInstance3D:
 			material.set_shader_parameter("atlas", SIGN_ATLAS)
 			material.set_shader_parameter("cells", float(SIGN_CELLS.size()))
 			quad.material = material
+			_patch_show(&"signs", material)
 			multimesh.mesh = quad
 			multimesh.use_colors = true
 			multimesh.use_custom_data = true
@@ -157,6 +170,7 @@ func _new_draw(kind: String) -> MultiMeshInstance3D:
 			var splat := ShaderMaterial.new()
 			splat.shader = TracerSystem.SPLAT_SHADER
 			mesh.surface_set_material(0, splat)
+			_patch_show(&"pools", splat)
 			multimesh.mesh = mesh
 			multimesh.use_colors = true
 			multimesh.use_custom_data = true

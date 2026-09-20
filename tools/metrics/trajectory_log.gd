@@ -145,20 +145,40 @@ func _write(tank: Tank, tick: int) -> void:
 				slot_x = "%.3f" % (slot as Vector3).x
 				slot_z = "%.3f" % (slot as Vector3).z
 	var reading := Movement.state(tank)
+	# ⚠ has(), NEVER get("corridor", null). The default-argument form cannot tell "nav answered null" (there is
+	# no leg to drive right now -- a NAMED, inactive case) from "this build has no such key" (no data at all),
+	# so a consumer falls through to its fallback on exactly the ticks where nav said there is no leg. control
+	# hit that within minutes of adopting the key. It is the same absent-versus-empty distinction that had this
+	# file's own `arc_live` reporting 0.0 s for a field nobody had published.
+	var corridor_x := "null"
+	var corridor_z := "null"
+	var corridor_columns := reading.has("corridor")
+	if corridor_columns:
+		var corridor: Variant = reading["corridor"]
+		if corridor is Vector3:
+			corridor_x = "%.6f" % (corridor as Vector3).x
+			corridor_z = "%.6f" % (corridor as Vector3).z
 	var brain := game_match.brains.get_node_or_null(NodePath("Brain_" + key)) as TankBrain
 	var move: Dictionary = brain.move_order if brain != null else {}
 	var motion: Variant = tank.get("_motion")
 	var creeping := motion is Dictionary and int((motion as Dictionary).get("creep_dir", 0)) != 0
+	# The corridor columns are emitted ONLY when the build publishes the key, so their ABSENCE is a third
+	# state the reader can see: absent = no data and no verdict may be published; null = inactive (nav says
+	# there is no leg right now, a named case); a value = active and scored.
+	var corridor_fields := ""
+	if corridor_columns:
+		corridor_fields = ',"corridor_x":%s,"corridor_z":%s' % [corridor_x, corridor_z]
 	_buffer.append(
 		'{"tick":%d,"unit":%s,"unit_id":%s,"team":%d,"x":%.3f,"z":%.3f,"heading_rad":%.5f,"speed_mps":%.4f,' \
 		% [tick, JSON.stringify(key), JSON.stringify(String(tank.unit_id)), tank.team,
 			tank.global_position.x, tank.global_position.z, _unwrapped(tank, key), speed]
 		+ '"gear":%d,"goal_x":%s,"goal_z":%s,"order_verb":%s,"element":%s,"slot_x":%s,"slot_z":%s,' \
 		% [signi(int(signf(speed))) if absf(speed) >= GEAR_SPEED else 0, goal_x, goal_z, verb, element, slot_x, slot_z]
-		+ '"order_reverse":%s,"phase":%s,"creeping":%s,"facing_ordered":%s,"facing_arc":%s}' \
+		+ '"order_reverse":%s,"phase":%s,"creeping":%s,"facing_ordered":%s,"facing_arc":%s' \
 		% ["true" if bool(move.get("reverse", false)) else "false",
 			JSON.stringify(String(reading.get("phase", "none"))), "true" if creeping else "false",
 			"true" if _facing_ordered(move) else "false", _facing_arc(reading)]
+		+ corridor_fields + '}'
 	)
 	_lines += 1
 	if _buffer.size() >= FLUSH_EVERY:

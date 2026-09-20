@@ -73,7 +73,21 @@ func test_v1_armies_are_rejected_with_reasons() -> void:
 	assert_true(full["squads"].size() > Doctrine.PLAYER_MAX_SQUADS,
 			"a full army needs more squads than the garage offers a player")
 	assert_true(Doctrine.parse(full).has("doctrine"), "armies grow to %d units" % Doctrine.MAX_UNITS)
-	full["squads"].append({"name": "S_extra", "units": [{"unit": "scout"}]})
+	# ROUND 9 (scale, CP2): the extra vehicle goes into a squad that HAS ROOM, not into a new squad.
+	#
+	# It used to be a new squad, and that made this assertion depend on which cap binds first -- an arithmetic
+	# coincidence rather than the thing being tested. `MAX_UNITS` is `Match.SPAWN_SLOTS`, which went 52 -> 57 when
+	# the spawn grid was rebuilt for the resized roster (3 rows of 19 instead of 4 rows of 13). At 52, a full army
+	# is 11 squads of 5 and a 12th squad still fits under `MAX_SQUADS` (12), so the SPAWN cap refused it. At 57 it
+	# is 12 squads, so a 13th trips the SQUAD cap first and the error says "an army needs 1 to 12 squads" -- true,
+	# and not what this line is about.
+	var roomy := -1
+	for i in full["squads"].size():
+		if (full["squads"][i]["units"] as Array).size() < Doctrine.MAX_SQUAD_UNITS:
+			roomy = i
+			break
+	assert_true(roomy >= 0, "a full army leaves a squad with room in it (else this cannot test the spawn cap)")
+	(full["squads"][roomy]["units"] as Array).append({"unit": "scout"})
 	assert_true(String(Doctrine.parse(full).get("error", "")).contains("spawn points"),
 			"but not past what the arena can spawn")
 	assert_eq(Units.cost_of({"unit": "ifv"}), int(Units.PROFILES["ifv"]["cost"]), "a unit costs its type's points")

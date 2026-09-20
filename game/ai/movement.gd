@@ -173,7 +173,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a7", "a11", "backup", "carrot", "chord", "commit", "facegiveup", "grace", "guard", "holdband",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "commit", "facegiveup", "grace", "guard", "holdband",
 		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
 
 
@@ -426,6 +426,114 @@ static func eta(unit: Node, to: Vector3) -> float:
 # ---- Per unit (the composer calls these) ----------------------------------------------------------------------------
 
 ## The N1 reading for this unit.
+## S4 (contract, `_agents/workstreams.md`): **control signed A6 with exactly one condition on nav** — that
+## `Movement.state(unit)` carry `{"active": bool, "why": StringName}` *"so the readout names which level took the
+## nose rather than inferring it from geometry"*. control's C-2 readout has been **built and silent** waiting for
+## this key while nav waited on control's signature, which control gave hours earlier. Shipping the key breaks that.
+##
+## **`why` is a CLOSED SET**, refused loudly if something publishes outside it — the same rule as `OFF_NAMES`, and
+## for the same reason: a `why` the readout does not know renders as nothing, which is a silent readout that looks
+## like a working one.
+##   `band` `survival` `armour`   A7's levels, once A6-a/A6-b exist to lose to them. **Nothing publishes these yet.**
+##   `arrival_arc`               the hull is on an ordered-facing approach gate. **S4 requires this case by name:**
+##                               *"an arrival arc under an ordered facing is off-corridor by construction — those
+##                               ticks are flagged by nav's emitter and counted as ordered, never charged to A6's
+##                               fraction."* Without it A12 would bill obedience to A6.
+##   `yielding`                  X4 right-of-way: the nose is where giving way put it, not where any law wants it.
+##   `no_law`                    **no nav-owned motion law exists to run.** A6 is not built, so on the default blend
+##                               this is the answer on most ticks. It is the ABSENCE of a cause, not a cause, and
+##                               control renders it as nothing.
+##   `override`                  **reserved, and nothing publishes it yet:** a nav-owned law RAN and something
+##                               outranked it without naming itself. Split from `no_law` after control pointed out
+##                               that nav had quietly changed this name's meaning between two messages -- it began
+##                               as "something took the nose, unnamed" and became "nothing is shaping the nose",
+##                               which are different claims and only the first is attribution. Rendering the second
+##                               would have put "no law is running" on thirty units at once and called it an
+##                               explanation: C-3's 30-messages failure wearing an explanation's clothes.
+##
+## `active` is **false until A6 exists**, deliberately. It means *"a nav-owned motion law is shaping the nose"*, and
+## no such law is built: A6-a and A6-b are the next commit. A key that reported `active: true` for the route tangent
+## would hand control a readout that lights up for behaviour nobody implemented.
+## `_agents/legibility.md` §5 assigns the inactive flag AND its reason to nav — *"all five cases are things
+## `Movement` already knows, so the flag and its reason come out of the same reading as the corridor"* — and warns
+## why: *"An inactive law must never look like a broken law. Round 8 shipped a facing feature that could not fire at
+## all on the lead's control scheme (lesson 149) and it read as 'the feature does nothing' rather than 'the feature
+## is off.'"* So the set carries the structural reasons as well as the level that took the nose.
+##
+## **Two of §5's five cases are NOT here, and their absence is deliberate rather than an oversight:** `run_style`
+## (the A/B control) and `reflex` (a dodge or a reverse owning the heading for a tick) are **`CombatMotion`'s
+## knowledge, not the mover's**, and there is no channel from that layer to this one — the same seam as *THE LEASH
+## IS NOT IN THE ROUTE PATH*. They land with A6-a/A6-b on the A7 arm, where the level and the decision are in one
+## place. Until then this key never claims to know them, rather than guessing `override`.
+const LEGIBILITY_WHY := [&"band", &"survival", &"armour", &"arrival_arc", &"yielding", &"override",
+		&"no_law", &"no_order", &"blocked", &"no_path"]
+
+
+## The pair control's readout reads. Kept to the closed set above, and refused loudly otherwise.
+func legibility() -> Dictionary:
+	var why := &"no_law"
+	if phase == "blocked":
+		why = &"blocked"                      # §5: no fallback and no guessed corridor
+	elif phase == "yielding":
+		why = &"yielding"
+	elif phase == "arrived" or _goal == Vector3.INF:
+		why = &"no_order"                     # §5: holding, or the task is complete
+	elif corridor() == null:
+		why = &"no_path"                      # §5: no path yet -- the straight-line fallback
+	elif arc_live:
+		why = &"arrival_arc"
+	# A6 is not built, so nothing nav owns is shaping the nose: `active` stays false and says so.
+	var out := {"active": false, "why": why}
+	if not LEGIBILITY_WHY.has(why):
+		push_error("legibility why=%s is outside the closed set %s: control's readout renders an unknown reason as "
+				% [why, LEGIBILITY_WHY] + "nothing, which is a silent readout that looks like a working one.")
+	return out
+
+
+## S4 (`_agents/legibility.md` §2): the ordered corridor's TANGENT, which nav promised to publish at N5 *"on the
+## principle that one publisher should mean one INTERPRETATION, not one array that three streams each project onto
+## slightly differently"*. The law, control's readout and the falsifier all read this rather than each deriving a
+## tangent from `path_points`.
+##
+## It is the **current leg's** direction, flattened and normalised — from the previous waypoint to the next, which
+## is the segment the unit's projection lies on. On the first leg there is no previous waypoint, so the leg starts
+## where the hull is. **`null` when there is no leg at all**, never a zero vector and never a guess: §5 makes "no
+## path yet" an inactive case with a name, and a `Vector3.ZERO` tangent would be an unreadable corridor that looks
+## like a readable one.
+##
+## **READING IT: use `has("corridor")`, never `get("corridor", null)`.** The default-argument form cannot tell *"nav
+## answered null"* from *"this build has no such key"*, so a consumer written that way falls through to its own
+## fallback on **exactly the ticks where nav said there is no leg** — reinstating the second publisher on the only
+## ticks where the two could disagree. control hit this within minutes of adopting the key and reported it
+## (2026-09-20); it is the same absent-versus-empty distinction that makes a right-drag leave `facing` *absent*
+## rather than empty. Sending `null` only works if the reader uses `has`.
+func corridor() -> Variant:
+	# Gated on the SAME condition `reading()` uses to empty `path_points`, not on a similar-looking one. `idle()`
+	# does not clear `_path`, so a corridor keyed only on the path index would publish a tangent for a leg whose
+	# `path_points` is already empty -- this key disagreeing with the array it is the interpretation OF, which is
+	# the exact failure §2 asks nav to prevent by publishing it at all.
+	if phase == "arrived" or _path_index >= _path.size() or ctl.tank == null:
+		return null
+	var to: Vector3 = _path[_path_index]
+	var from: Vector3 = _path[_path_index - 1] if _path_index >= 1 else ctl.tank.global_position
+	var leg := Vector3(to.x - from.x, 0.0, to.z - from.z)
+	if leg.length_squared() < 0.0001:
+		return null
+	return leg.normalized()
+
+
+## S3 (metrics' contract, `tools/metrics/FORMAT.md`): is the arrival ARC live on THIS tick — is the hull being
+## steered at an approach gate so it can come onto the ordered heading? metrics' emitter reads this as an OPTIONAL
+## key and writes `null` until nav publishes it, deliberately never `false`, *"because a column that quietly says
+## 'no arc' on every tick is exactly how a falsifier ends up charging A6 for obedience while looking like it had the
+## data"*. Until this commit it WAS null, and `make metrics` printed `arc_live=0.0s` in both arms of nav's own A4
+## A/B — a zero that reads like a measurement and was an unpublished field.
+##
+## Set every tick the mover steps (`drive`) and cleared by `idle()`, so it can never go stale: a hull that stopped
+## driving is not on an arc, and a stale `true` would be counted as arc seconds it never spent.
+var arc_live := false
+
+
 func reading() -> Dictionary:
 	var eta_s := -1.0
 	var points := PackedVector3Array()
@@ -438,6 +546,7 @@ func reading() -> Dictionary:
 			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
 			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
+			"facing_arc": arc_live, "legibility": legibility(), "corridor": corridor(),
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan, "wedged": wedged,
 			"wedge_moved_m": wedge_moved_m, "wedge_hull_m": wedge_hull_m,
 			"wedge_ratio": wedge_moved_m / maxf(wedge_hull_m, 0.1)}
@@ -490,6 +599,7 @@ func new_order() -> void:
 ## The move order isn't a move_to (stop, face, drive, or a dead hull): nothing to report but "arrived".
 func idle() -> void:
 	yield_to = ""
+	arc_live = false
 	stalled_ticks = 0
 	phase = "arrived"
 	blocked_by = ""
@@ -512,6 +622,9 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# Round 8: a wheeled hull that was told which way to face arrives ALREADY facing it, by driving the last stretch
 	# along that heading, instead of arriving and then creeping round for ~6 s (measured: an IFV 45 degrees off).
 	var aim := _approach_gate(goal, order)
+	# The gate is offset from the goal by at least APPROACH_MIN, so "a gate was aimed" and "the goal came back
+	# unchanged" cannot be confused. This is the one place that knows, and it used to keep it nowhere.
+	arc_live = aim != goal
 	var routed := aim if direct else _next_waypoint(aim, delta)
 	lap = OrderController._lap("move.path", lap)
 	var around_fire := _around_fire(routed, goal, order)

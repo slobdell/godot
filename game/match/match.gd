@@ -67,15 +67,36 @@ const ARENA_HALF_SIZE := 140.0
 const DRIVABLE_LIMIT := 116.0
 const BASE_Z := 90.0
 ## Spawn grid. Slot 0 is the middle of the front row, then out to the flanks, then the rows behind it,
-## SPAWN_ROW_SPACING apart toward the team's own wall. 11 m columns and 6 m rows keep even a jittered 2.6 x 4 m
-## hull clear of its neighbours (SPAWN_JITTER_MAX_X).
-## X5 (round 4): 27 slots (5 squads x 5) -> 52, because a faction army at Units.BASELINE_BUDGET is ~30 vehicles and
-## the gangs' swarm is more (Army.MAX_ARMY_UNITS). 13 columns reach +-66 m and the fourth row sits at z = 114, so a
-## jittered hull still stays inside DRIVABLE_LIMIT; the arena layouts' spawn lists are regenerated to match
-## (tools/make_arenas.py). The front row stays at BASE_Z, so spawn distance and pace are unchanged.
-const SLOT_X := [0.0, -11.0, 11.0, -22.0, 22.0, -33.0, 33.0, -44.0, 44.0, -55.0, 55.0, -66.0, 66.0]
-const SPAWN_ROWS := 4
-const SPAWN_ROW_SPACING := 8.0
+## SPAWN_ROW_SPACING apart toward the team's own wall.
+##
+## WHAT THIS GRID HAS TO HOLD, and it is less than it looks (combat, round 8; re-measured by scale in round 9 and
+## now guarded by `tests/test_spawn_grid.gd` rather than believed): **only what is placed ON it and left there,
+## which is `Units.DEFAULT`.** `Match.spawn_tank` defaults to it and its callers are network players and legacy
+## bots. A doctrine army never stands here -- `load_doctrine` ends with `ArmyLayout.deploy()`, which re-lays every
+## unit by its own hull size at tick 0, synchronously, before any physics step. So the grid is sized for the
+## bare-spawn unit plus clearance, and the real ceiling on vehicle size is the spacing an army STANDS at
+## (tests/test_army_footprint.gd), not this.
+##
+## ROUND 9 (scale, S1): `Units.DEFAULT` went from 3.6 m to 8.62 m, which is longer than the old 8 m rows. Rather
+## than push the grid deeper -- there is nowhere to go, the back row was already at z = 114 against a DRIVABLE_LIMIT
+## of 116 -- it became SHALLOWER AND WIDER: 3 rows 12 m apart (z = 90, 102, 114: the same extent as before, so
+## spawn distance and pace are unchanged) and 19 columns 7.5 m apart reaching +-67.5 m. 57 slots, comfortably over
+## Army.MAX_ARMY_UNITS (45).
+##
+## WHY +-67.5 AND NOT WIDER, since the spawn zone every layout authors is 150 m across: `make arenas` refused
+## +-72 m. The Terminus has an ad screen at x = 76, z = 100, and a column at 72 stood 1.3 m from its footprint
+## against a required 4.3. The authoring check found it, which is the second time this round that a guard has
+## earned its place by saying no.
+##
+## THE ARENA LAYOUTS' SPAWN LISTS ARE BAKED AND THEY WIN: `Match.spawn_position` consults `Arena.spawn_spot` first
+## and only falls back to these constants. `tools/make_arenas.py` used to carry its own copy of this table behind a
+## comment saying "must mirror"; it now READS these three constants (Invariant 0), so `make arenas` cannot
+## regenerate a grid that disagrees with them.
+const SLOT_X := [0.0, -7.5, 7.5, -15.0, 15.0, -22.5, 22.5, -30.0, 30.0, -37.5, 37.5, -45.0, 45.0,
+		-52.5, 52.5, -60.0, 60.0, -67.5, 67.5]
+const SPAWN_ROWS := 3
+const SPAWN_ROW_SPACING := 12.0
+const SPAWN_SLOTS := 57
 ## Round 9: hulls spawn this far ABOVE the floor rather than exactly on it. A body created at exactly y = 0.0 makes a
 ## degenerate ground contact -- zero penetration, a contact normal Jolt has to guess at -- and whether it resolves
 ## cleanly depends on the solver's internal state left by bodies created and destroyed earlier in the match. Measured
@@ -87,11 +108,12 @@ const SPAWN_ROW_SPACING := 8.0
 ## `Match._jittered` adds 0.0 on y and squad's `ArmyLayout.deploy` re-seats with `tank.global_position.y`, so both the
 ## initial spawn and every respawn inherit this from here and there is exactly one number.
 const SPAWN_LIFT_M := 0.05
-const SPAWN_SLOTS := 52
-## Spawn jitter never moves a unit more than this sideways or along z (the column gap and row spacing minus a hull
-## plus clearance, halved): a jittered 2.6 x 4 m hull must still stand clear of every neighbour.
-const SPAWN_JITTER_MAX_X := 3.5
-const SPAWN_JITTER_MAX_Z := 1.2
+## Spawn jitter never moves a unit more than this sideways or along z: the column pitch (7.5) and the row spacing
+## (12.0), each minus the bare-spawn hull (2.40 x 8.62 m) and minus ArmyLayout.HULL_CLEAR_M (2.0), halved. It came
+## down with the grid's pitch -- a bare spawn now scatters +-1.5 m across and +-0.6 m along instead of +-3.5 / +-1.2.
+## A doctrine army's scatter is unaffected: ArmyLayout lays it out itself, by hull size, at tick 0.
+const SPAWN_JITTER_MAX_X := 1.5
+const SPAWN_JITTER_MAX_Z := 0.6
 
 ## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
 static var swap_bases := false

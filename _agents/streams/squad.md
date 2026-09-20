@@ -293,10 +293,17 @@ because the reasons turned out to be more useful than the numbers.
 
 ### Read this first if you are picking this up cold
 
-**Round 9 shipped X1, X5, A8 (off) and A9. A10 is stood down at `02762b8d` and resumes from `c0f22597`.**
+**Round 9 shipped X1, X5, A8 (off) and A9. A10 is stood down and resumes from `c0f22597`. ROUND CLOSED.**
 
-- **The tip is `02762b8d`.** It reverts A10 (`4741c723`) and the fix to A10's cost (`c0f22597`), on the orchestrator's
-  05:30 time-box, because the other four rows each stand on their own evidence and should not wait behind one test.
+- **`974f194a` is MERGED to main**, verified at `02762b8d`: `>> remote: make check exited 2 (build/ copied back)`,
+  **1297 passed, 0 failed**, the sole failure being the pre-registered `sim-baseline` move, plus the five
+  post-`sim-baseline` targets **exited 0** as their own list. The two commits between `02762b8d` and `974f194a` are this
+  file and nothing else.
+- **The branch continues at `1a797642`** for round 10: main merged in, A1's tube measured in a fight (below), and
+  nav's A6 corridor field. That hash has its own check; read its result from this file's A1 section or the round-10
+  notes, not from this line.
+- **A10's stand-down is `02762b8d`**, reverting `4741c723` and `c0f22597`, on the orchestrator's time-box, because the
+  other four rows each stand on their own evidence and should not wait behind one test.
   **Cherry-pick `c0f22597` to resume**: the revert was clean in code, the only conflict was this brief.
 - **A10's first job next round is not its cost — it is the mechanism A10 deleted without replacing.** The one test
   still red under `c0f22597` is `test_tactics_tasks::test_a_plain_move_standing_on_its_spot_keeps_its_seating`, and the
@@ -1068,6 +1075,50 @@ structural properties are asserted by tests; what is missing is the behaviour in
    done remotely and they are the part worth doing first.
 6. **X6 (per-faction PID gains), the stretch item.** Not started. It needs CP1 on `main` and a merged tree.
 
+### A1's brain half: the tube MEASURED in a fight, and it stays off on a number rather than for want of one
+
+`make squad-decisions TUBE=on|off SEED=3 NAV_TIME=120`, laptop, on the merged tree (main at `c41faaff` + this branch,
+so **against nav's `combat_motion` and `clothoid`, not the planner they replaced**). Both arms sum `redecide_counts()`
+over the same 34 GREEN brains — the roster, not the survivors, because the two fights diverge and survivors would be
+two different denominators reading as an effect.
+
+| | TUBE=off | TUBE=on | change |
+|---|---|---|---|
+| re-decides | 5514 | 2076 | **-62.3%** |
+| re-decides per unit-minute | 204.5 | 74.7 | -63.5% |
+| held share | 0.457 | 0.811 | +0.354 |
+| `jumps_motion` per unit-min | 20.9 | 17.3 | **-17.2%** |
+| `jumps_decision` per unit-min | 10.5 | 11.7 | +11.4% |
+| switches per unit-min | 20.5 | 20.5 | **0.0** |
+| reversals per unit-min | 0.4 | 0.4 | 0.0 |
+| GREEN alive of 34 | **33** | **29** | **-4** |
+| RUST alive | 41 | 41 | 0 |
+
+**What it confirms.** The tube does what the row claims, and it is confirmed by an instrument built a round earlier for
+another purpose: `jumps_motion` counts drive-target jumps with the SAME option and target — motion-internal re-planning
+— and it falls 17.2% without being told to. That was pre-registered before the run precisely so a moving counter could
+not be mistaken for a moving game. **And the latency guarantee holds in the fight, not just in the unit test:**
+switches per unit-minute are 20.5 in both arms to the decimal, reversals 0.4 in both. The tube lengthens the life of a
+plan for an unchanged world and does not blunt the reaction to a changed one.
+
+**Why it still ships OFF, and this is a measured reason rather than a missing instrument.** GREEN finishes with
+**29 of 34 alive against 33 of 34** — the tube's arm lost five vehicles where the cadence lost one, on identical
+armies, arena, seed and orders, with RUST untouched at 41 both ways. That is one seed and deaths are the noisiest thing
+in this sim, so it is not proof of harm; it is exactly the size of signal that must not be flipped past. `held_share`
+0.46 → 0.81 says the tube is holding plans through a lot of fighting, and a held plan is a plan made against a world
+four times more stale than before.
+
+**The gate for next round, pre-registered here:** the same A/B over **>= 5 seeds**, reporting GREEN losses and the
+exchange ratio beside the re-decide counts. Flip only if losses are flat within seed noise. If they are not, the tube
+wants a shorter `TUBE_MAX_TICKS` (currently 2 s) or a tighter `TUBE_TARGET_M` before it is worth anything — cheaper
+thinking bought with worse fighting is not the trade A1 was for.
+
+**Also on the branch now:** nav's A6 field (`request["corridor"] = Movement.state(tank).get("corridor")`). Verified
+inert on this tree — `grep -c '"corridor"' game/ai/movement.gd` is **0** even after merging main, because nav's field
+is still on `stream/nav` at `16444beb` — so it passes `null`, which contract S4 §5 makes a named inactive case. nav's
+`a6_no_corridor == a6_asked` will keep reading 1087/1087 until their field reaches main, and their test asserts that
+state explicitly, so the inert case is a documented pass rather than a silent one.
+
 ### Owed to nav, recorded and deliberately NOT done tonight
 
 **1. `scenario_motion.gd:57` punishes a faster fight for being faster.** The assertion is
@@ -1094,6 +1145,38 @@ beside its hash or it does not travel.
 without A7, so switching A11 off in a default build measures nothing and reads as "A11 does not help". Same trap as
 `squad-defile TUBE=` reading `redecides=0` in both arms because the maze has no enemies: an arm in which the mechanism
 cannot act is not a control, it is a broken instrument, and its zero looks exactly like a result.
+
+### Round 10 starts here: the ordered list, and the one rule that earned its place
+
+**In order, because each depends on the one before:**
+
+1. **A10's `fixed` guarantee, then A10's cost.** Cherry-pick `c0f22597`; the cost is already right (normalised tier
+   mismatch, guarded for single-tier elements) and the only red test is the one whose mechanism A10 deleted. Two named
+   options in the head block. **Do not re-derive the cost** — it took three forms and the failed two are written down.
+2. **A8 off the switch, or off the branch.** `DEFORM_ENABLED` measured worse than off, and nav and I reached the same
+   diagnosis independently from opposite ends: `Movement`, which runs nine ticks in ten, has no notion of a formation.
+   A8 and A9 are both formation-level intents in a layer that cannot enforce them. Either that channel gets built or
+   A8 should be deleted rather than left behind a switch forever.
+3. **The tube's five-seed gate** (pre-registered above). It is a measurement, not a decision: run it and read it.
+4. **The duel bar to a rate**, with an `ai-scenarios` count beside its hash. Written out verbatim above.
+5. **A9's cost against the lead's 4 s drill allowance** — never measured, and the only backlog item that is simply
+   unstarted rather than blocked or ruled on.
+
+**The rule this round earned, and it is not about seating.** Five measurements across two streams were zeros produced
+by arms in which the mechanism could not act: my `squad-defile TUBE=` (no enemies, so `_combat_move` is never reached),
+nav's unpublished `facing_arc`, nav's `off_mesh_fit.none`, nav's `--nav-off=a11` (A11 cannot act without A7, so it ran
+one treatment in two arms), and nav's A6 test reading a key `choose()` does not return (both arms read the fallback and
+it passed on 0.000 against 0.000 — a vacuous comparison inside the test written to catch vacuous comparisons). Every
+one was green. Every one looked like a result.
+
+> **Before believing a control arm, prove the mechanism could have acted in it.** A "0 of N" is evidence only once the
+> instrument has been shown able to produce a non-zero at all.
+
+The cheap form of that proof is a positive control inside the run — nav's `a6_asked` / `a6_no_corridor` pair, which
+says from inside the report that the field has not arrived — and it is cheaper than any of the five were to find.
+**And the corollary, which cost this round a red tip:** a suite can be fully live, fully green, and still never visit
+the case. A10's tests exercised tiers only where the tie-break could not matter, so they could not see that "heavies in
+front" was never a cost at all.
 
 ### Requests to other streams
 
