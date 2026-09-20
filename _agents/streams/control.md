@@ -142,4 +142,108 @@ directly.
 
 ## Status
 
-_Not started. Round 9, control stream; `main` at `f49aa08a` when this brief was written (2026-09-19)._
+_Round 9, control stream. Branch `stream/control`, started from `main` at `9f864474` (2026-09-20)._
+
+### Plan (order, with reasons)
+
+1. **Item 1, desktop right-drag facing** — the only item with no dependency, and the prerequisite for nav's
+   arrival-arc A/B (which currently measures zero in both arms). Tests first, then the state machine, then the pin.
+2. **Item 4, `shell-playtest`'s console gate behind a committed baseline** — independent of both checkpoints, and it
+   needs a word with metrics before `mk/core.mk`'s `check` line is touched, so the ask goes out early.
+3. **Item 2, S4** — my half of the signature (the readout spec) can be written now; the code waits for feel's page and
+   nav's signature. **No A6 readout code until all three have signed.**
+4. **Item 3, the view after CP2** — blocked until scale's roster merges. Nothing published before it.
+5. **Item 5 (stretch)** — after squad's A10.
+
+### Decisions
+
+- **The facing-drag threshold is in PIXELS (18 px), not metres.** This is the one real decision in item 1 and the
+  brief left it open. The touch map uses 4.0 m because a top-down map has one scale; the play camera does not. At the
+  lead's pose (21°, FOV 35, 49 m) an 18 px drag spans **~0.3 m near the bottom of the frame and ~40 m near the top** —
+  a hundredfold. A threshold in metres makes the same hand movement a facing near the horizon and a *silent plain
+  move* near the bottom, which is the one outcome the brief says the gesture must never have. The gesture is made by
+  a hand on a screen, so the threshold is the hand's; the metres only have to be non-degenerate
+  (`FACING_DRAG_MIN_M` 0.05), and the **direction is exact at either end of the screen** (it is the projection of an
+  exact screen ray onto the ground plane). `test_control_facing_drag.gd::test_the_same_hand_gesture_means_the_same_
+  thing_anywhere_on_his_screen` pins it at his pose. 18 px = 3× the left button's jitter guard: a wrong facing costs
+  a manoeuvre, a wrong box costs nothing.
+- **An enemy under the right press is attacked on the PRESS, drag or no drag.** An attack takes its heading from its
+  target, so there is nothing for a drag to say — and deferring would add release latency to the commonest urgent
+  order (K1). Only a press on **ground** starts a facing drag.
+- **A drag while an order is armed does nothing; the cancelling press is spent.** The brief asked for this to be
+  decided and written down either way (`_agents/tactical_map.md` v7). The player's hand is mid-cancel, not
+  mid-order, and an order he did not mean is worse than a gesture he has to repeat.
+- **A release with no ground under it falls back to the last ground the drag crossed** (dragging up past the horizon),
+  rather than refusing. The heading the player drew is still the one that got there, and a refusal would also lose the
+  move he asked for. The facing is computed from **unclamped** ground points (`ground_under`), because clamping a
+  direction's far end to a wall bends the heading — or, drawn outward next to a wall, collapses it onto the
+  destination and loses it. Destinations still go through `screen_to_world`, which clamps as it always did.
+- **A differing `facing` makes it a different order — for the player's orders only** (`Orders._same_order`, shared
+  file, in merge notes). Right-clicking a spot and then right-dragging *the same spot* to correct the heading was
+  being dropped as a repeat: the one case where the new gesture would look ignored. Element leaders re-issue from a
+  heading that drifts as the element turns, so machine re-issues keep today's dedup exactly and round 8's
+  idle-command numbers cannot move.
+- **The formation heading stays the travel direction, not the ordered facing** (`Orders._resolve_group`). An
+  emplacement gesture arguably wants the *line* laid out across the kill zone, but that changes the geometry of every
+  facing-carrying order including squad's, and item 1's job is to make the arm live, not to re-shape formations.
+  Recorded as a question, below.
+
+### Progress
+
+| Item | State | Evidence |
+|---|---|---|
+| 1. Desktop right-drag facing | **built, green on the control suite (187 passed) and on the full local `make test`**; `make remote T=check` next | `tests/test_control_facing_drag.gd` (7, through `Viewport.push_input`), `test_control_order_marks::test_a_dragged_order_puts_its_heading_on_the_pin` |
+| 1. the pin | done: a move pin drawn from a facing drag grows a ground arrow in the order's colour (`_draw_ordered_facing`), and the HUD line names it in compass ("3 units: move facing NE") | `order_marks()[i]["facing"]`, `describe()` |
+| 1. the live preview | done: while the right button is down, a ring on the destination and, past the threshold, an arrow following the pointer — a player cannot learn a gesture he cannot see | `_draw_facing_drag` |
+| 1. frames | **not yet** — `make remote T=control-playtest-shots` with a drag added to `control_playtest.gd` | — |
+| 2. S4 signature | **signed 2026-09-20**, conditional on C-2 below; sent to feel (`godot-feel-e4`) and the orchestrator. **No A6 readout code until nav signs too.** | `git show 4ec341d2:_agents/legibility.md` |
+| 3. the view after CP2 | blocked on CP2 | — |
+| 4. `shell-playtest` into `check` | not started | — |
+
+**What the mutation check says:** deleting the `facing` assignment in `right_click_order` fails 4 of the 7 new tests
+(the brief asks only that (a) fail).
+
+### S4: control's signature on `_agents/legibility.md` (2026-09-20)
+
+Read at `4ec341d2` on `stream/feel`. **control signs §6 as the readout, subject to C-2.** Sent to feel and the
+orchestrator; the page is feel's file, so this copy is the record on this branch.
+
+- **Correction to §6.1.** "the lead's 12° and 35° poses" is not his pose. He played 12° and rejected it: *"I was
+  totally wrong about the camera, the game is unplayable now with low field of view."* His pose is **pitch 21°,
+  FOV 35°, 49 m, auto-frame on**. Frames will be shot there and across the tilt range he can reach (8°–70°).
+- **C-1, the corridor drawn.** Most of it exists: `_draw_waypoints` already draws `movement.route(unit)` (N1
+  `path_points`, one publisher, never recomputed) faint under the order line. Two changes, no new widget: draw it for
+  the selected **element**, and draw the **current leg** at full weight with the rest faint.
+- **C-2, attribution — the blocking ask on nav.** §5's `active` boolean cannot say *which* level took the nose, and
+  control will not infer the cause from geometry: a guessed attribution is confidently wrong on exactly the ticks the
+  player is watching. Asked for one key in `Movement.state(unit)`:
+  `"legibility": {"active": bool, "why": StringName}`, `why` in a closed set
+  `"" | no_order | no_path | blocked | reflex | style_run | band | survival | armour`. The last three are the level
+  1/2/3 overrides; control maps them onto words already on screen (*holding range*, *taking fire*, *front toward the
+  threat*) through `ElementLog` and adds no vocabulary. **Without `why`, §6.2 does not get built.**
+- **C-3, "this is the plan" vs "this is a refusal" never share a channel.** A refusal already owns one: the pin turns
+  red and its label says NOT COMPLYING. So a deliberate off-corridor leg is *the corridor still drawn, the pin still
+  the order's colour, and one `ElementLog` line naming the cause* — it never touches the pin's colour, never adds a
+  hull callout, and never posts a HUD message (30 units off-corridor at once is 30 messages). The hull callout band
+  (`MovementReadout`: YIELDING / BLOCKED / STUCK) stays reserved for *nav cannot proceed*; A6 is a unit that **is**
+  proceeding.
+- **C-4.** No button, no stance, no toggle. Nothing new on the command card.
+- **A warning raised with it, new from this round:** **an arrival arc is off-corridor by construction** at the end of
+  every dragged move — that is the unit obeying an explicit order. Now that facings are orderable on the desktop,
+  A12 will charge A6's falsifier for exactly the obedience item 1 just shipped, unless the arc's ticks are excluded
+  from the off-corridor fraction or counted as ordered. Relayed to feel and the orchestrator for nav and metrics.
+
+### Questions for the lead
+
+- **Should a dragged facing also orient the formation?** Today "move here facing north" lays the squad out along its
+  *travel* direction and each unit arrives on the ordered heading. The alternative is to lay the line out *across*
+  the drawn heading, which is what an ambush emplacement wants. It is a few lines in `Orders._resolve_group`, and it
+  changes the shape of every facing-carrying order (squad's included), so it is not being done blind. Frames rather
+  than a question if it comes up.
+
+### Requests to other streams
+
+- **nav:** the `"legibility": {"active", "why"}` key in `Movement.state(unit)` (C-2 above) — §6.2 is blocked on it.
+  And: mark the arrival arc's ticks so A12 can exclude them (see the warning above).
+- **metrics:** split the last `arrive_radius` of a final leg out of the off-corridor statistic, or count it as
+  ordered. An obeyed facing must not read as illegible motion.
