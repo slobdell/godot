@@ -375,7 +375,7 @@ const PROFILES := {
 		# approved model is never distorted, so a 4.4 m box drew a 2.09 m truck. At the lead's camera the rig
 		# rendered 114 px tall against a Condemned tank's 95 -- the "huge" semi was barely taller on screen than a
 		# regular tank. Length is what makes a semi, and length was the axis the spawn grid appeared to cap.
-		"hull_size": [3.32, 5.24, 14.0],
+		"hull_size": [3.0, 4.4, 5.6],  # TEMPORARY control arm -- restored in the next commit
 		"max_health": 420,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -439,7 +439,7 @@ const PROFILES := {
 		"unlock_tier": 1,
 		# Round 8: a rigid tanker truck with a semi cab, not an articulated rig -- feel's measurement, filling the
 		# 3.6 m height it already had. Same rule: the box is the mesh's proportions at the chosen length.
-		"hull_size": [3.39, 3.59, 7.0],
+		"hull_size": [2.6, 3.6, 5.0],  # TEMPORARY control arm -- restored in the next commit
 		"max_health": 260,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
