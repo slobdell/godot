@@ -78,6 +78,9 @@ const CLUSTER_RADIUS_M := 40.0
 ## about a tank at 120 m -- small, but unmistakably a vehicle rather than a speck.
 const MIN_VEHICLE_PX := 12.0
 var _camera := Camera3D.new()
+## The pitch the last capture actually used. `clear_pose` lifts over a roof when it has to, so a frame that is not
+## at 21 degrees has to say so rather than be presented as the lead's pose when it is not.
+var _pose_pitch := PITCH_DEG
 
 
 func _init() -> void:
@@ -139,7 +142,7 @@ func _run() -> void:
 	for pose_name: String in poses:
 		var focus: Vector3 = poses[pose_name][0]
 		var distance: float = poses[pose_name][1]
-		_camera.global_transform = RtsCamera.pose_at(focus, heading, distance, PITCH_DEG)
+		_camera.global_transform = _clear_pose(focus, heading, distance)
 		for t: float in times:
 			var writes := 0
 			if show != null:
@@ -153,7 +156,7 @@ func _run() -> void:
 			if pose_name == "close":
 				continue  # the cues are a venue-wide effect; two poses is enough to read them
 			var focus: Vector3 = poses[pose_name][0]
-			_camera.global_transform = RtsCamera.pose_at(focus, heading, float(poses[pose_name][1]), PITCH_DEG)
+			_camera.global_transform = _clear_pose(focus, heading, float(poses[pose_name][1]))
 			for cue: String in cues:
 				show.settle_into(StringName(cue), CUE_T)
 				show.now = CUE_T
@@ -186,7 +189,7 @@ func _shoot_clip(show: Show, arena: String, heading: float) -> void:
 		return
 	var dir := out_dir.path_join("clips")
 	DirAccess.make_dir_recursive_absolute(dir)
-	_camera.global_transform = RtsCamera.pose_at(_army_centre(get_tree().current_scene), heading, DISTANCE_M, PITCH_DEG)
+	_camera.global_transform = _clear_pose(_army_centre(get_tree().current_scene), heading, DISTANCE_M)
 	var band_track: Array = []
 	var full_track: Array = []
 	show.settle_into(StringName(clip_cue), CUE_T)
@@ -271,7 +274,8 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 	var band := _luma(image, BAND_WINDOW)
 	print("SHOW_LOOK " + JSON.stringify({
 		"arena": arena, "pose": pose_name, "label": label, "t": t, "file": file, "style": style,
-		"pitch_deg": PITCH_DEG, "fov_deg": FOV_DEG, "distance_m": distance,
+		"pitch_deg": snappedf(_pose_pitch, 0.1), "lifted_deg": snappedf(_pose_pitch - PITCH_DEG, 0.1),
+		"fov_deg": FOV_DEG, "distance_m": distance,
 		"focus": [focus.x, focus.z], "writes": writes,
 		"mood": str(show.mood_state) if show != null else "", "channels": _levels(show, t),
 		"luma_ring": snappedf(ring.x, 0.0001), "luma_band": snappedf(band.x, 0.0001),
@@ -324,6 +328,17 @@ func _swing(track: Array) -> Vector3:
 		hi = maxf(hi, float(value))
 		total += float(value)
 	return Vector3(lo, hi, (hi - lo) / maxf(total / float(track.size()), 1e-6) * 100.0)
+
+
+## The lead's pose, lifted out of any solid it would otherwise be inside -- control's own `clear_pose`, which
+## exists for exactly this (round 9: "the camera often ends up inside a building"). The frame tools ran
+## `pose_at` directly and framed the inside of a block whenever the fight happened to be up against one, which on
+## the Terminus is most of the time. `--block-cutaway=off` cannot help here and must not: the blocks have to stay
+## drawn for the edge comparison, so the camera is what moves.
+func _clear_pose(at: Vector3, heading: float, distance: float) -> Transform3D:
+	var clear := RtsCamera.clear_pose(at, heading, distance, PITCH_DEG)
+	_pose_pitch = float(clear["pitch_deg"])
+	return RtsCamera.pose_at(at, heading, float(clear["distance"]), _pose_pitch)
 
 
 ## Wait until the two sides are actually fighting, polling the match rather than a clock. Returns the wall seconds
