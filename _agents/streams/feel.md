@@ -405,6 +405,38 @@ found this alone, and it is the cleanest instance of Invariant 2's own warning t
 still fails is a real finding, not something to widen the tolerance for.** A tolerance chosen to make the red go
 away is not a tolerance.
 
+### READY TO RUN the moment the orchestrator calls the quiet window (three runs, in this order)
+
+**Why they wait: two of the three are TIMING or BEHAVIOUR measurements, and builder0 was at load 20.89 with 67
+Godot processes and six resident checks when I checked.** A screenshot is slowed by contention; a frame-time
+number is *destroyed* by it, and the load is exactly the signal you are trying to see past.
+
+```bash
+# 1. M1: the hinge's frame cost. Self-judging now -- it prints the spread between the repeated `all` phases
+#    (the same condition measured seconds apart, i.e. the noise floor) and says USABLE or NOT USABLE.
+REMOTE_SLOTS=6 make remote T=perf-trailer-ab
+
+# 2. The merge candidate, taken in the same window rather than adding a check to a busy box.
+REMOTE_SLOTS=6 make remote T=check
+
+# 3. The round-8 re-measure, on the RESIZED roster. Same arms as the original or it is not a re-measure.
+REMOTE_SLOTS=6 make remote T="faction-matrix ARENA=pit  SEEDS=5 TIME=150 BUDGET=5200 JOBS=8"
+REMOTE_SLOTS=6 make remote T="faction-matrix ARENA=yard SEEDS=5 TIME=150 BUDGET=5200 JOBS=8"
+```
+
+**The arms for (3) are not invented — they are read out of the original run's own JSON**
+(`_agents/streams/references/combat/faction-matrix-pit-rig14m-2026-09-19.json`, whose `args` block records
+`budget 5200, seeds 5, jobs 8, time_limit 150, factions gangs,condemned,law,syndicate, no_faction_directives
+false`, taken on **builder0 at `c042bb81`, dirty false**). `--seeds 5` is **5 × 2 bases × 2 colours = the twenty
+counterbalanced matches** the 9/20 and 0/20 were counted from. **A re-measure whose arms differ from the original
+is not a re-measure**, and this is the round where two streams already found that inertness and green-ness do not
+compose.
+
+**What the question actually is now, and it is not the round-8 question.** The 0/20 was the 14 m rig against a
+**toy roster** — everything else was 2.8–5.0 m. After CP2 the whole roster grew, so the rig is no longer an
+outlier in kind, only in degree. **Read matchups, not factions** (combat's own round-8 lesson: pooling hid this
+completely on `pit`, where the gangs' rate was 30% in both arms while one matchup had become unwinnable).
+
 ### ⏹ STANDING BY (05:45). Everything in the backlog is done or owed; here is the exact next step
 
 **No process of mine is running on either machine, and no local Godot runs at all until morning** (orchestrator:
