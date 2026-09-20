@@ -167,6 +167,42 @@ directly.
 
 ## Status
 
+> ## CP2c, THIRD FRAME: THE ORDERED HEADING NOW READS. WHAT THE FIRST TWO ATTEMPTS BOTH GOT WRONG.
+>
+> **The frames** (`78aa496d`, builder0, shot 14:48): `build/control-playtest/{1920x1080,1280x720}/9_facing_drag_ordered.png`
+> and `..._drawing.png`. Two nested chevrons run out of the destination ring along the heading. They read at both
+> sizes. **One thing left for your eye:** the chevrons cross the pin's head disc and, at 720p, the left edge of the
+> `MOVE · 0/3 there · 24 m` plate. Crowded, not hidden. If you want it cleaner the fix is to lean the pin's head
+> away from the heading it carries so the two stop stacking — say the word and it is a small change.
+>
+> **Why this took three goes, because the reason generalises.** The heading was first a line with an arrowhead. It
+> vanished into the pin's own stalk. I replaced it with chevrons — and they vanished the same way. The frame says
+> why: **arms fixed at ±2.6 m span 96 px at 21°, while the nose stands off only 15 px.** A 96:15 "V" is a
+> horizontal tick, and it lies along screen-vertical, which is exactly where the stalk is whenever the heading
+> points away from the camera. The stalk was also drawn *after* it, painting over what nose there was.
+>
+> So the shape is now specified **on the screen** and the ground that produces it is **solved for, per pin, per
+> pose**: the nose must stand off the arms by half their span. At 21°/49 m that buys **4.62 m** of ground pointing
+> away against **2.20 m** across — the shape is the constant and the ground pays for it. This is invariant 0
+> applied to a drawing: derive the metres from the pose, never mirror a number that happened to read once. A dark
+> backing stroke carries it over the stalk it must still cross.
+>
+> **What no test caught, twice.** Both failed attempts passed every assertion that asked *"does a facing reach the
+> pin"* — which was all of them. `test_the_pin_chevron_reads_as_an_arrow_and_not_a_tick` now asserts the
+> **property** (nose stand-off ≥ half the span, at the lead's pose, for a heading pointing away, toward and
+> across) rather than the pixels. That is the fifth entry this round in the same column: *a measurement that is
+> true but reads as a stronger claim than it makes*. "The facing is on the pin" was true all along and never meant
+> "the player can see it".
+>
+> **Also:** the frames only settled this because I cropped and magnified them (`convert -crop … -resize 200%`)
+> instead of judging a 1920-wide screenshot at thumbnail size. Twice this round I reported "I cannot tell" on a
+> frame that a crop would have answered. Do that first.
+>
+> `make test FILTER=control_facing_drag` on builder0 at `78aa496d`: **8 passed, 0 failed**.
+> Still blocked: the teardown edits wait on nav's sealing merge — `free_owned()` does not exist in this worktree
+> yet, so `tests/test_case.gd:194` is still `teardown()` and the four call sites stay as they are.
+
+
 > ## WHAT THE RESIZE CHANGED FOR YOU, AND THE ONE THING STILL TO DECIDE
 >
 > Making the vehicles their real relative sizes was worth it, and it broke four things that were quietly sized for
