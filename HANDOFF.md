@@ -140,7 +140,7 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
 - **combat:** **the hull-rotation plant defect**: a hull's position is collision-resolved and its rotation is not, so
   hulls rotate through scenery; this is your round-8 "semi yawing in place", and CP2 makes it worse. Spec agreed with
   nav; not started so that tonight's baseline move has one named cause.
-- **nav:** P7's A12 baseline (exact invocation written); per-hull-class agent radius after CP2.
+- **nav:** P7's A12 baseline: **yard landed (`c025bc6b`, builder0): off_corridor 0.304, inside the pre-registered 30–36 %, active fraction 0.631** (both numbers travel together; A6 row in the catalogue); pit and terminus running, then the pooled rotation figure. One arena per remote call: `nav-fight-maps` threads one `NAV_FLAGS` so three maps would clobber one `--trajectory` path, and `build/` is wiped per target, so copy each log out first. Then per-hull-class agent radius after CP2.
 - **squad:** A10 resumes at `c0f22597` once the deleted `fixed` flag's guarantee is preserved; the tube's five-seed gate.
 - **control:** item 4 (the post-CP2 camera sweep) the moment CP2 is on `main`; the contact-pip fix for scale.
 - **feel:** X4 after CP2; the hinge's frame cost when the box is quiet; the Terminus brightness (diagnosed, scale's fix).
