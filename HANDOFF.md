@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-20 12:30. **Round 9's overnight run: sixteen branches and all three checkpoints merged; the morning has merged ten more (feel's stow, show's dials and rules, metrics' gate, control's item 4 and calls page, combat's spawn constant, scale's artillery box). `main` at `87566cf7` is RED on THREE tests and TWO ai-scenarios, every one owned: the foundry spawn transient (squad's settle fix, checking at the release), the city-block unknown-colour test and the asset contract's refit path (both feel's, one tip, checking at the release), and the two scenario rows (engine deck: the scout never gets past the tank's side, scale runs the size discriminator; suppression margin: re-run after the box). **The sim baseline is owed a record: `1e90f69e5d6fcc46` expected, twice, after the quiet window.** The last fully green `main` is `0808834e`. Read the morning summary first; the red-test paragraph under "Where it stood" is the full history with six retracted diagnoses.**_
+_Last updated: 2026-09-20 12:30. **Round 9's overnight run: sixteen branches and all three checkpoints merged; the morning has merged ten more (feel's stow, show's dials and rules, metrics' gate, control's item 4 and calls page, combat's spawn constant, scale's artillery box). `main` at `87566cf7` is RED on THREE tests and TWO ai-scenarios, every one owned: the foundry spawn transient (squad's settle fix, checking at the release), the city-block unknown-colour test and the asset contract's refit path (both feel's, one tip, checking at the release), and the two scenario rows (engine deck: the scout never gets past the tank's side, scale runs the size discriminator; suppression margin: re-run after the box). **SIM BASELINE RECORDED: `glibc-2.43 1e90f69e5d6fcc46` (builder0, 11:01 and 11:03, agreeing, exactly scale's prediction; the fourth move of the round, one cause).** The last fully green `main` is `0808834e`. Read the morning summary first; the red-test paragraph under "Where it stood" is the full history with six retracted diagnoses.**_
 
 ## ☀ THE MORNING AFTER ROUND 9's NIGHT — read this first (2026-09-20, written 07:00, updated at each tick)
 
@@ -32,7 +32,7 @@ decision, and finished, validated work. Every decision below is reversible in on
 | show | `dd3c90f2`…`96a6a62a` | **the four dials in your terms** (`_agents/show_dials.md`), the add-a-cue recipe, rule 12 (every visual claim is a pair), the floor-ownership row | docs only |
 | metrics | `9553be18` (`bac84a6f`) | **`ai-scenarios` into `check`** (count-gated; its first run exposed the three scenario rows below), the sim-hash verdict line (`make check-hashes`: determinism's hash reaches a log for the first time, `253adefeec657df1`), `--pool` with the mixed-commit banner | 1481/4, exit 2: the four reds are main's (diff under game/ and tests/ empty) |
 | control | `e51516a1` (`822bd8a7`) | **item 4: the camera sweep and HUD on the resized roster**, the contact-pip test picks a visible spot, your two calls written in your terms | 1479/0 on `f007423e`, exit 2 only on a stale baseline file (its run produced main's recorded hash) |
-| scale | `87566cf7` (`b3c36498`) | **the Condemned artillery box derived in the stowed pose (4.74 → 2.90 m wide; the only unit that moved)**, the spawn-isolation test, the bodies-only teardown guard (silent across 1487 tests) | 1487/2 (`TEST_SHARDS=3`), exit 2: **sim-baseline moved once for this one cause, `2d5215a8a0a59ded → 1e90f69e5d6fcc46`, record pending the quiet window**; the two reds are feel's (asset contract refits from authored bounds; city-block push_warning fixed at a33638b8, unmerged) |
+| scale | `87566cf7` (`b3c36498`) | **the Condemned artillery box derived in the stowed pose (4.74 → 2.90 m wide; the only unit that moved)**, the spawn-isolation test, the bodies-only teardown guard (silent across 1487 tests) | 1487/2 (`TEST_SHARDS=3`), exit 2: **sim-baseline moved once for this one cause, `2d5215a8a0a59ded → 1e90f69e5d6fcc46`, RECORDED twice at 11:03, agreeing**; the two reds are feel's (asset contract refits from authored bounds; city-block push_warning fixed at a33638b8, unmerged) |
 | combat | `53c759d6` (`3d0d4e39`) | **`SPAWN_LIFT_M` landed at 0.0** with one constant for both spawn sources and the named-body diagnostic that ended the red-test argument | 1483/3, exit 2: the three are main's reds; sim-baseline unreached |
 
 **MERGED 08:10: CP2, scale's resized roster, at `ddb16592` (checked at `7542df28`: 1395 passed, 0 failed, exit 2 = the pre-registered sim-baseline move only). THE ROSTER IS LIVE ON `main`.** **SIM BASELINE RECORDED: `glibc-2.43 2d5215a8a0a59ded`** (builder0 08:15, twice, agreeing; the third move of the night; it differs from scale's branch prediction because combat's move composes with it). A main check on the full tip started 08:16; control's item 4 and feel's X4 were started at 08:10. Its history: verified to 1392 passed / 3 failed on `e7ebb372`; two of
@@ -137,6 +137,13 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
   sharded check.
 
 ### What is unverified, stated plainly
+
+**A hardware note for you (12:45, corrected 13:00):** the laptop's `build/metrics/p7-pit.jsonl` (a 101 MB trajectory log
+copied back from builder0 at 10:11) has one changed byte at line 143,873 inside the key `slot_x`. nav's copy of the
+same log, taken out of `build/` right after the run and validated line by line, is intact, so the byte changed ON
+THIS LAPTOP after the copy, while the stale file sat in `build/` across later runs (`remote.sh` copies back without
+`--delete`; metrics is adding `--delete` and a checksum). One event; it landed in a key name, so the reader refused
+the file; in a digit it would have silently moved a number. Whether this laptop's memory deserves a look is your call.
 
 - **`main` at `0808834e` is VERIFIED GREEN** (builder0 07:38: exited 0, **1454 passed, 0 failed**, 16 targets, sim-baseline
   `32831dc99cdaf5ca`): that tip holds every merge in the table above and the recorded baseline. Only docs commits
