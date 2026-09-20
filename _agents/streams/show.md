@@ -351,6 +351,24 @@ patches, cues — is data.
    `game/theme/fx/shaders/city_block.gdshader`, and the GDScript side calls the value `seed01`. Checked against
    feel's own commit rather than argued. feel confirmed.
 
+### NEXT STEP, in order, for whoever picks this up
+
+_Paused 2026-09-20 ~02:55 at the orchestrator's instruction (the lead's session limit; builder0 down). **The tree is
+clean and every commit below is a deliberate one — there is no WIP.** Last commit `36ca7552`._
+
+1. **`make remote T=show-frames`** — ~6 minutes. This is the lead gate and everything else can wait behind it.
+   The strip lands in `build/show/` (19 frames for terminus, 11 for yard: three idle moments + one per cue +
+   a kill mid-ripple, at the wide pose, a close pose and the Terminus street). **Check the timestamps before
+   relaying it** (`ls -la --time-style=+%H:%M build/show/`) — the previous attempt half-copied and the wrapper
+   said so; a half-strip is exactly the artefact that gets read as a whole one.
+2. **`make remote T=show-perf-pair`** — the paired `--no-show` control, both runs in one slot. Report the PAIRED
+   delta with its spread, not absolutes.
+3. **`make remote T=check`** on the last commit, and name the hash that went green.
+4. **The ground fixture** (*Decided overnight* #8): the last item, and it lands with its own paired `perf-scene`.
+
+A local `make check` was started at 02:48 on `685df1f2` and queued behind two other streams; if it finished, its
+log is the fallback for step 3 — but it covers `685df1f2`, not the two doc commits after it.
+
 ### Blocked / pending
 
 **Everything outstanding is behind one thing: builder0 went off the network at ~02:47** (`ssh: No route to host`,
