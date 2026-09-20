@@ -14,12 +14,14 @@
 #   4. copy build/ back (logs, screenshots, reports; not the big exports) and exit with make's status
 #
 # Knobs (environment or local.mk): REMOTE_HOST (default slobdell@builder0), REMOTE_ROOT (default tank_squad),
-# REMOTE_SLOTS (default 3). Rendering targets use builder0's logged-in desktop session (DISPLAY :0).
+# REMOTE_SLOTS (default 6 since 2026-09-20: builder0 sat at load 0.4 on 12 threads with 11.6 GB available while three
+# full checks ran, ~1 GB each -- the old 3 was the round's bottleneck, not the machine; metrics' T1 measures whether 8
+# holds). Rendering targets use builder0's logged-in desktop session (DISPLAY :0).
 set -uo pipefail
 
 host=${REMOTE_HOST:-slobdell@builder0}
 root=${REMOTE_ROOT:-tank_squad}
-slots=${REMOTE_SLOTS:-3}
+slots=${REMOTE_SLOTS:-6}
 node_version=v22.14.0
 repo_root="$(git rev-parse --show-toplevel)"
 name="$(basename "$repo_root")"
