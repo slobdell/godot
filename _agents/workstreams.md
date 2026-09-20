@@ -102,6 +102,88 @@ presentation job is the arena as a place).
 | **N7 Objectives are the arena's, not a constant** (added 2026-09-18, arena proposing, combat scheduling). `Match` hard-codes `CONTROL_CENTER := Vector3.ZERO` and `CONTROL_RADIUS := 16.0`, and a layout's `control_point` reaches only the *dressing* — **an arena cannot move its own objective today; the field is decorative.** arena has landed its half: `arenas/` gains `objectives: [{name, position, radius}]` with `Arena.objectives_of()`, validated so off-centre objectives come in **mirrored pairs** (a lone one is owned by whichever base is nearer, preserving the fairness invariant), and a layout with no `objectives` list reports exactly the single central zone `Match` already hard-codes — asserted for every shipped layout. **combat's half is a pure read-through with no behaviour change on any existing arena:** read `Arena.objectives_of(Arena.active)` instead of the two constants, and hold a per-objective owner instead of one scalar. It is combat's to schedule; arena's X3 (objectives off the centre line) is blocked on it *and* on CP4. | arena: `arenas/`, `game/arena/` → combat: `game/match/` | squad (what to take), feel (dressing) |
 | **N6 PID as the house control law.** `Pid` (a small, deterministic, tick-based regulator: gains, integral clamp, derivative on measurement, reset) used where there is a continuous error to regulate — slot station-keeping, speed matching, turret lay — and **not** where the problem is discrete choice. Gains live in **data**, per faction, so the lead's idea that factions differ by their gains is reachable: the Syndicate crisp, the gangs loose. Default gains ship stable first; per-faction gains are a stretch. | nav: `game/ai/{pid,control_gains}.gd` | squad (station-keeping), control (camera smoothing), feel (none) |
 
+## Round 9 goal (2026-09-19): the research catalogue, sequenced — and the metrics BEFORE the mechanisms
+
+**Read [`research_catalog.md`](research_catalog.md) first.** It is the backlog: 12 ADOPT rows, each with a canonical
+reference, what it replaces, an owner and a **pre-registered falsifier**. This section is only the *split and the
+order*, which the catalogue deliberately does not fix.
+
+**A12 (the trajectory-space metric suite) LANDS FIRST, and it is the orchestrator's, not a stream's.** Everything below
+is judged against it, and round 8 proved twice over why:
+- **We measured time-allocation while his complaint was about the shape of the motion.** A unit that jerks for 0.5 s
+  costs almost nothing in "6% of travel time" and ruins the next fifteen seconds of watching.
+- **squad's churn lever is the proof** (lesson 150): `commit_bonus` 1.35 halved the churn metric, passed a 48-match
+  ladder, and cost a squad its fire concentration and a scout its engine-deck targeting (41/23 → 3/0). **The metric
+  improved while the behaviour degraded.** A12's own acceptance is that it reproduces the round-8 oscillation finding
+  from the same replays — *a metric that cannot see a pathology we already found is the wrong metric.*
+
+### The split
+
+| Stream | Round 9 | Order and why |
+|---|---|---|
+| **orchestrator** | **A12 metrics suite** | Windowed displacement efficiency (the 8 m/2 m signature measured directly), signed cusp density, spectral arc length, affine formation residual. **Before anything else ships.** |
+| **nav** | **A7 → A11 → A1 → A4** | **This order is nav's, adopted over the orchestrator's A1-first proposal — see below.** |
+| **combat** | **A2**, then A3's consumer | A2 replaces the flat `commit_bonus` (**1.15** on main; 1.35 reverted) with a state-dependent switching cost. **Its falsifier is inherited, not invented: squad's two behaviour scenarios** — fire concentration and the scout's engine decks — because that is exactly what the crude version cost |
+| **arena** | **A3's summed-area tables**, + the **Syndicate airship** | A3 retires the 12.19 m cover cliff at any hull length. **The `make arena-report` WATCH line must be revised in the same commit as the tables** or it becomes a confident false alarm. Airship: primitives, no Meshy, no collision body ([game_design.md](game_design.md)) |
+| **squad** | **A8 → A9 → A10** | squad's own plan names what each REPLACES **by file** — A8 replaces `TacticsFormation.group_offsets` and `ElementPlan._scale_for`; A9 replaces `Element.form_up_eta` and `_pace_leader_for_flow`; **A10 replaces `TacticsFormation.seat()`'s Hungarian matching AND BOTH its hysteresis patches** (`STABLE_MARGIN` and round 8's `fixed` flag, which is deleted with it, not layered on). **Aim A8/A9 at LIGHT hulls:** the scout is the shuffler (0.68 net/path, 13.3% oscillating), not the rig (0.95, 0.9%) |
+| **feel + control** | **A6 legibility — as a CONTRACT first** | See below; this one does not start as code |
+
+### nav's sequencing, adopted over the orchestrator's — and the argument, because the argument is the artefact
+
+The orchestrator proposed A1 (cadence) then A4 (clothoids). **nav argued A7 → A11 → A1 → A4 and was right.** Recorded
+here rather than left in a message, because the reasoning is what a fresh orchestrator needs:
+
+1. **A7 (null-space priority projection) first, alone.** It is the only architectural row, and **everything else is
+   priced wrongly until it lands.** Round 8's clearest finding is a cancellation failure: *standoff HOLD returns index
+   −1 and never consults the commitment bonus*, so we shipped a term that was never in the code path and measured it
+   twice for nothing. That IS "opposing goals cancel to zero", which priority projection makes structurally
+   impossible. Its falsifier is also already measurable with nav's `travelled` counter and arena's stall counters.
+2. **A11 (dynamic-window arcs) second, because it replaces the ring A7 has just re-plumbed.** The other order means
+   fitting priority projection to a scoring structure we are about to delete.
+3. **A1 (event-triggered replanning) third.** Worth the most on paper (70% of churn) but **the row most likely to look
+   like a win while hiding a regression** — nav's hold-hysteresis A/B is the cautionary case: churn down 6–22% and it
+   still failed its bar. A1's latency falsifier (≤ 2 ticks to a new contact) needs a stable decision layer beneath it.
+4. **A4 (clothoids) last, after A11.** Clothoids are a primitive; the thing that consumes them is the arc chooser.
+   Landing them first writes them into the ring we are removing. Round 8's arrival arc is the natural first consumer.
+
+**⚠ nav's caution against its own recommendation, which is the part to brief hardest:** A7 replaces additive blending,
+and **that is also what `CombatMotion`'s entire weight table is.** Those weights encode behaviour the lead has already
+approved — standoff, commitment, armour toward threats. *"Six multiply-adds"* badly understates the blast radius.
+**A7's brief must name which of those become priorities and which become null-space tasks BEFORE any code**, reviewed
+against combat's and feel's contracts. That is where round 7's approved behaviour either survives or quietly does not.
+
+**nav's Invariant 0c declaration, for reuse as the template:** *it owns the desired-velocity layer (`movement.gd`,
+`combat_motion.gd`, `steering.gd`, `tank_motion.gd`); it assumes above it that squad hands down goals and a `facing`,
+and below it that the plant honours (throttle, turn) with a bounded yaw rate; A7 replaces its additive blend, A11 its
+direction ring, A1 its fixed repath/re-aim cadence, A4 the straight approach in its arrival arc.* **None of the four
+adds alongside.** That is the answer Invariant 0c is looking for.
+
+### A6 is a contract before it is code — feel, control and nav together
+
+feel raised this and it is right: **the motion code is nav's and combat's, not feel's**, so A6 cannot be three parallel
+adoptions. It starts as one written contract — feel owns the motion law, control owns the readout, nav owns the layer
+it executes in — and **control's prerequisite lands first**, because of lesson 149:
+
+**The arrive-on-heading arc cannot fire in the game the lead plays.** A `facing` enters a move from exactly one place,
+`game/ui/tactical_map.gd:269`, the touch map's right-drag, and the touch map is behind `--touch-map`. His desktop
+`RtsControls` only ever *reads* `facing`. **So control's first round-9 commit gives the desktop right-click the touch
+map's grammar** (press = destination, drag = the facing to arrive on) **with a test asserting
+`orders.current(unit)["facing"]` after a real drag — so the next A/B has a live arm BY CONSTRUCTION.** An arm you have
+to remember to check will eventually not be checked. And note: even then, `nav-fight` issuing a plain `move` measures
+nothing — **the live cases are a player drag and a squad hold. Do not re-measure zero twice.**
+
+### The standing rules for this round
+
+- **Invariant 0c governs.** A brief that adopts a catalogue row names what it **replaces**; *"nothing"* is the answer
+  the orchestrator interrogates. Rows touching one code path are **sequenced, not parallelised**.
+- **Pair every outcome ladder with a behaviour assertion**, and prefer the behaviour assertion when they disagree
+  (lesson 150). A ladder is a safety net against making things worse, never evidence of having made things better.
+- **Prove the arm is distinguishable before believing any comparison** (lesson 147). An arm-engagement counter costs
+  four lines and is the difference between a finding and a fiction.
+- **Play the default path** before reporting anything as shipped (lesson 149).
+- **Never quote the external reviews' audit counts or Elo figures.** They are unverifiable assertions about a codebase
+  neither service has seen. The reasoning stands on its own; the digits do not.
+
 ## Round 8 goal (2026-09-19): the owed algorithms, and the eight things he listed
 
 **The lead: *"it still sucks"*, and *"my expectation was that you would have gotten all this working while I was away."***
