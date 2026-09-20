@@ -2220,3 +2220,17 @@ The kickoff prompt is one line; this section is the rest.
        its path into net displacement — the **least** shuffling gang type; the scout is the shuffler at 0.68). Splash is
        evidenced against (**indirect kills halved, 8.4% → 3.7%**). **"Bigger target" survives by elimination rather than by
        evidence, which is not the same thing**, and combat said so rather than letting it become the answer.
+142. **`unittest discover` silently ignores bare `def test_...()` functions — four tests "passed" by not existing.**
+     arena's own-goal, reported unprompted: `make arena-pytest` is `unittest discover`, which collects **`TestCase`
+     subclasses only**. Four module-level test functions it added were **never collected**, and **the suite reported the
+     same 14 tests before and after.**
+     **It caught this because the COUNT did not move**, then verified the fix by **breaking the kit table and watching the
+     right test go red.**
+     - **arena's own framing, which is the keeper:** *"A test that cannot fail is worse than no test: it is a green light
+       wired to nothing — and I shipped four of them while spending the day telling other streams to prove their arms
+       differ."*
+     - **Watch the test COUNT, not just the pass/fail line.** It is the only signal that distinguishes *"my new tests
+       passed"* from *"my new tests were not run"* — the same distinction as lesson 91's invisible skip and lesson 95's
+       truncated check. **Three different mechanisms, one symptom: a green result that covers less than it appears to.**
+     - **And the fix is always the same: make it fail on purpose and watch.** Every guard that worked this round was
+       mutation-checked; every one that failed us was not.

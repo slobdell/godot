@@ -975,6 +975,42 @@ phase `driving`, none creeping, and 7 of 11 had forward AND reverse above 0.5 m/
 angles: heading and position.** A vehicle alternating forward and reverse rotates without translating *and* travels
 without progressing. **One fix should move both**, and the `--nav-off=commit` A/B is pre-registered to test exactly that.
 
+### MEASURED: cover is a STEP FUNCTION at 12.19 m, so 12 m vs 14 m is binary (arena, 2026-09-19)
+
+**Share of the contested field within 45 m of a prop long enough to hide a hull of each length.** Best case by
+construction — a box's screening length is its longest horizontal side, so this assumes the hull is parked along it and
+the shooter is square to it. **A hull that fails here cannot be hidden at all.**
+
+| hull length | 6 m | 7 m | **12.19 m** | **12.5 m** | 14 m |
+|---|---|---|---|---|---|
+| **yard** | 0.99 | 0.99 | **0.99** | **0.00** | **0.00** |
+| **pit** | 0.85 | 0.48 | 0.46 | **0.00** | **0.00** |
+| **terminus** | 0.98 | 0.95 | **0.91** | **0.91** | **0.91** |
+| boneyard | 1.00 | 0.92 | 0.85 | 0.33 | 0.33 |
+
+**The cliff is at 12.19 m — the shipping container's own length — and it is a step, not a gradient.** yard covers
+**0.99 up to 12.19 m and 0.00 at 12.5 m.**
+
+**So the lead's open question is not "how huge do I want it, and what does cover cost": it is binary.**
+- **At 12 m the rig hides on 99% of yard, using props already on the map, with no map change at all.**
+- **At 14 m it hides nowhere on either map he kept.**
+- **The Terminus holds 0.91 at ANY hull length**, because its city blocks are 40 m. **It is the only map he plays that
+  covers a 14 m rig.**
+
+**⚠ AND THIS ARRIVED WITH THE ARENA KIT.** `foundry` and `scrapyard` cover a 14 m hull fine — the **legacy v1 `wall`
+obstacle is 18 m**. The v2 kit that replaced it **tops out at 12.19 m**. **The two maps he kept are exactly the two v2
+maps with zero long props**, so the regression is invisible precisely where it matters most.
+
+**It is a FORECAST, not a current defect:** on arena's tree `gang_tank` is still 5.6 m, and the check **reads
+`game/units/units.gd` rather than copying it**, so it flips itself the moment 14 m lands with nobody needing to remember.
+
+**No long prop has been added to yard or pit, deliberately** — they are maps he kept and ruled on, and **if he rules 12 m
+the problem disappears with no map change at all.** If he rules 14 m, a jackknifed trailer or a container *wall* reads as
+the same venue and wants feel's eye.
+
+**And this does NOT explain `gangs vs law` 9/20 → 0/20.** combat's arms show `unit_seconds_near_cover` flat and
+`deaths_near_cover` **falling**, which is the opposite of what *dying while exposed at cover* predicts.
+
 ### Two decisions from the lead (2026-09-19, answering queued gates)
 
 > *"a 4s slower march for a tidier traversal is better, yes. For the attack mechanics - **making the units appear smart
