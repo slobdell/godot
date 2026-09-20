@@ -262,5 +262,222 @@ at for everything visible; every number with commit and machine.
 
 ## Status
 
-**Not started** (brief written 2026-09-20 by the orchestrator; `main` at `a1c2ab24`, the eighth stream, added
-mid-round at the lead's request).
+_2026-09-20, overnight. Branch `stream/show`, `main` merged clean twice (CP1, then squad's baseline).
+**Items 1-6 of the backlog are done; item 7 (stretch) is not started.**_
+
+---
+
+## FOR THE LEAD, FIRST
+
+**Watch the clips before the stills.** `build/show/clips/` — five 6-second clips of the Terminus at your pose:
+`terminus_lull`, `terminus_battle`, `terminus_last_stand`, `terminus_victory`, `terminus_kill`. **The stills
+understate it**, because what the show does is *breathe*, and a still cannot show breathing. Then
+`build/show/terminus_wide_cue_battle.png` against `build/show/before/terminus_wide_cue_battle.png` — the same
+frozen moment with the show off and on.
+
+**What it costs: about 1.5% of a frame.** +0.22 ms of GPU on builder0 against that run's 7.69 ms, nothing
+measurable on the CPU, **zero added draw calls and zero added lights**. Scaled to your laptop, roughly half a
+millisecond out of a 33 ms budget. That is the answer to *"nice effects that bring the arena to life without
+costing much in terms of frame rate"*.
+
+**What you are looking at.** Every block's roofline carries a thin lit run in one of the venue's colours, picked
+per building; the windows and shopfronts breathe, each window on its own clock; the perimeter rim breathes instead
+of sitting at a flat purple; the signs, the floodlight pools and the tower beams are on their own channels. All of
+it is driven by **15 uniform writes a frame** — the same 15 whether there are eight buildings or eighty.
+
+**Three honest caveats, in order of how much they should bother you:**
+
+1. **The buildings breathe; they do not look different.** Between feel's judgement (see below) and a readability
+   gate, the default is conservative enough that a *still* barely changes. That is a deliberate position, not a
+   limit of the machinery, and **you have the dial**.
+2. **The dial is the band's WIDTH, not its ceiling.** The windows currently swing 30% (`[0.80, 1.10]` in
+   `arenas/terminus.json`); they used to swing 65%. What reads as *alive* is contrast, not brightness — widening to
+   `[0.70, 1.20]` gives most of the life back without making the city brighter. **"Turn it up" is the wrong dial**:
+   raising the ceiling alone brightens the periphery and costs you the fight's readability, which is measured.
+3. **There is a second look you have not chosen between.** `build/show/outline/` has the same frames with **every
+   vertical corner lit**, which is closer to your *"making the lit edges breathe and glow"*. feel argues against it
+   in art-direction terms — the corner IS the silhouette, so lighting it draws an outline on everything, which
+   `art_direction.md` names as a failure — and I agree with feel. **You decide; it is one word in the layout file.**
+
+**Frames and clips were shot at `96e10e82`, before feel's `637ad4de`**, which changes the Terminus's block-band
+colours (they currently wear an accidental palette; see *Provenance*). Don't read that colour change as the show.
+
+**Three questions:** Is it beautiful? Outline or parapet? Is the `last_stand` strobe — the one strobe in the venue
+— too much?
+
+---
+
+## The engineering
+
+### Where it stands
+
+| item | state |
+|---|---|
+| 1. `_agents/lighting.md` before code | **done**, reviewed by feel and control; their answers and reasons are in it |
+| 2. The channel engine | **done** |
+| 3. First fixtures (blocks, perimeter rim) | **done**, re-shaped after feel reviewed the frames |
+| 4. Patches as data | **done** (`terminus`, `yard`, `make show-report`) |
+| 5. Cues from the match | **done** (7 state cues + the kill ripple) |
+| 6. Signage, pools, tower beams | **done** |
+| 7. Stretch | **not started** |
+
+### The design, in one paragraph
+
+A channel packs into **one `vec4`** — `(floor, span, clock, sharpness)` — and **one function**,
+`show_value(chan, phase) = chan.x + chan.y * pow(max(0.5 + 0.5*sin(chan.z + phase), 1e-4), chan.w)`, lives in
+`game/theme/fx/shaders/show.gdshaderinc` and, identically, in `ShowChannel.level_at()`; a test asserts the two
+bodies are the same line, so the headless tests keep describing what the player sees. **`phase` is per-instance and
+never comes from the CPU**: a block's seed in `COLOR.g`, the rim's angle in world space, a sign's
+`INSTANCE_CUSTOM.a`, a pool's `.y`, a tower's lamp angle. Everything else — programmes, patches, cues — is data.
+
+### NEXT STEP, in order
+
+1. **The hash for the merge** — `make remote T=check` at `e1823e68` is the last thing running.
+2. **The ground fixture** (*Decided overnight* #8), with its own paired measurement.
+3. **The rest of item 7**: the airship's screen on an ad channel, a fixture that is neither building nor wall, a
+   `show` view in `arena-kit-gallery`.
+4. **feel's roof question**, which feel is holding as a round-close item: with the chamfers dark the parapet is the
+   only edge left, and control's camera lift puts roofs on screen far more often. feel wants a frame from the
+   lifted camera before any geometry, and surface treatment (tar, grime, a vent grid — texture in the existing
+   shader) before a MultiMesh. **Do not wait on it**: the parapet at 0.55 under the windows' 0.80 stays correct
+   with a bare cap and stays correct if the cap later gets grime.
+
+### Decided overnight (the lead asleep; most reversible option taken, reason recorded)
+
+1. **The `Show` mounts itself** under the scene tree root (`FxWorld`'s pattern) and follows `Arena.active`, so it
+   needs no edit to any file feel owns.
+2. **The show never grows a second `MatchMood`** — lazy booth lookup by `CrowdVoice.BOOTH_GROUP`, cached, copes
+   with null (feel's condition). With no booth the show runs its idle and the kill ripple still fires; the state
+   cues are live in the game the lead plays, because a windowed launch attaches the booth by default.
+3. **The show director owns the arena-wide wash and reads `AdBroadcast.light_color()` as an input, never writes
+   it.** One writer per perceived quantity.
+4. **The victory sweep is the only team-coloured cue**, and takes the *winner's* colour rather than a hex.
+5. **The kill ripple is kills only** (`weight >= 1.0`).
+6. **`export_presets.cfg` gains `game/theme/show/*.json`** so the cue book ships in the web and server exports.
+7. **The parapet, not the outline** — feel's call, adopted; the outline survives as a named variant.
+8. **The ground fixture was designed and deliberately NOT shipped.** It is the best remaining one — the hazard band
+   and centre ring *are* the "road stripe or kerb line" the lead named — but the ground plane is the largest
+   fragment area in the game, its include is shared by three shader variants, and builder0 went off the network
+   before a paired measurement could be run. **Shipping the one fixture that cannot be measured, on the night the
+   measuring machine died, is the exact mistake rule 3 exists to prevent.**
+
+### Measurements
+
+| claim | evidence |
+|---|---|
+| **Frame cost** | `no_show` layer, measured **within one run**: **+0.22 ms GPU, +2.25 draw calls** against that run's `all_gpu` 7.69 ms. The same run's CPU figure came out **−2.0 ms** — impossible as a cost, so that is the method's own noise, and the honest reading is **"under half a millisecond of GPU, nothing measurable on CPU"** |
+| **Real lights added** | **0** — median 4 vs 4, identical ranges |
+| **Draw calls added** | none detectable; and structurally a test forbids `MeshInstance3D`, `MultiMesh` and `Light3D` anywhere under `game/theme/show/` |
+| **Instance-uniform errors** | **0** in every run |
+| **Shaders compile** | `shader errors 0` on every strip, on a real GL context — headless compiles no shaders, so this is the only proof |
+| **Per-frame cost** | **15 writes idle, 16 during a kill, 25 during the victory sweep** on the Terminus: 7 patch entries over 13 driven materials. **O(driven materials), never O(instances)** |
+| **Readability** | **36 of 36 frames pass**, most positive, against a measured null of 0.5% median / 1.3% p95 |
+| **Lint** | `all 560 scripts parse (-P4, 8 known artefacts baselined)`, remote at `e1823e68` |
+| **Tests** | `--filter=show` 79 passed 0 failed; 43 methods, every one confirmed present in the output (trip-up 73) |
+
+### What this found, and none of it was visible by eye
+
+1. **⚠ `FxWorld.spectacle` is NOT a kill signal — it fires on every hit.** `fx_world.gd:319` emits 0.15 for a near
+   miss; `weapon_fx.gd:278` 0.3 for a plain hit and `:378` 0.5 for a weak spot. Only a kill is 1.0. Four subsystems
+   already ride that bus and feel's airship puts a 64 m screen on the same ad channel. **Anything new wired to it
+   must read `weight`.**
+2. **A "pairwise incommensurate" period bank is much harder to write than it looks.** The first attempt was 4:3 to
+   within 1%; the second, written to fix the first, was 5:4 to within two parts in a thousand — and passed a check
+   that tested `p/q` for `p, q ≤ 4`. Periods are a global bank; **phases are per arena**, because the spread bar
+   tightens as an arena patches fewer channels.
+3. **A "never do X" guard must scan code, not prose.** The test asserting the show never reads the wall clock
+   failed on `show.gd`'s own comment saying *"never `Time.get_ticks_*`"*.
+4. **A cue's first frame was a real tear.** The clock offset came from the live channel, which does not exist on
+   the frame a cue starts — 0.4 rad of jump at t = 40 s, at exactly the moment a cue begins.
+5. **The FIGHT cue could never fire.** The Show mounts with a *deferred* `add_child`, so the venue is built before
+   `_ready()` runs, and the cue book was loaded in `_ready()`.
+6. **⚠ TWO RUNS ARE NOT THE SAME RUN, three times in one night** (`lighting.md` §8b): a perf before/after an hour
+   apart (machine load tripled *every* layer, including ones the show does not touch); the paired runs in one slot
+   (**the show-ON arm came out 43% faster** — impossible, therefore noise); and the luminance pair across two
+   processes (the frames ride a live skirmish, so the vehicles are elsewhere; the same frames swung 5 points
+   between runs of one commit). **The fix is identical in all three: get A and B from one run.**
+7. **A gate that fails the branch point is not a gate.** The readability rule shipped first as an absolute and
+   failed **22 of 30 frames with no show in them at all**.
+8. **⚠ `arenas/*.json` are GENERATED** (`tools/make_arenas.py` builds a fresh dict and overwrites), so a hand-edited
+   key is silently deleted on the next `make arenas` — and a dropped lighting patch produces a *static arena*,
+   which looks exactly like a working one. Guarded by a test asserting the patched set is exactly
+   `["terminus", "yard"]`.
+9. **A latent bug in `city_block.gd`**, found while proving the off arm was off: `neon_color()` only honoured
+   colours beginning with `#`, so all eight of the Terminus's named block colours were ignored and the map wore the
+   signage palette — including the two colours feel had just ruled out for the parapet. **Fixed by feel at
+   `637ad4de`.**
+10. **I reported one fix as shipped when it was not.** A `str.replace` moving the kill ripple onto the idle
+    silently did not match, with no assertion on it, and I said so in a commit message and to the orchestrator. Two
+    strips were shot before it was caught. **An edit that claims to change behaviour must fail loudly when it
+    changes nothing.**
+
+### The strip changed the design, which is why it went out the night it existed
+
+feel's review of the first frames changed what ships, and the change is *smaller* than what it replaced:
+
+- **The edge emission was an outline, and a dimmer outline is still an outline.** `show_edge` is added on the
+  bevel/chamfer branch and **that branch is the silhouette**. The default is now the **roof parapet only**; the
+  breathing that carries a block is `show_window` and `show_shop`, which is light *inside* things.
+- **Cool white and red are barred.** Cool white is not in the venue palette and reads as architectural LED; **red
+  is a signal in this game**, so spending it on trim spends a colour that means something is wrong.
+- **The hierarchy is a gate.** `make show-frames` fails if the show makes the fight harder to read than the same
+  frozen frame with the show off.
+
+### The readability gate forced one look decision
+
+35 of 36 frames passed; the one failure was repeatable and diagnosable — `terminus/wide/t0_0` at **−7.3%** against
+a **0.5% median / 1.3% p95** null. `t0_0` is the idle at `t = 0`, where each channel's clock equals its phase, and
+the windows' phase of 1.48 rad puts the sine at 0.998: **that frame is the brightest the buildings ever get.** The
+gate found the worst case, which is what it is for. The windows went `[0.70, 1.35]` → `[0.80, 1.10]`.
+
+**This is a look decision a gate forced**, and the lead's section above says so and names the dial.
+
+### Proved on request: the `--no-show` arm really is off
+
+The orchestrator saw lit coloured lines on the blocks in the show-off arm and asked whether the "additive hook,
+never a restyle" promise had broken. It had not: those are feel's **`NEON_BAND`**, a second surface on every
+`CityBlock` at shopfront height since round 7. **The proof is the pair's own numbers**, with both failure
+predictions stated in advance: if the identity leaked the band would be *equal* between arms; if the parapet were
+lit only in the on arm it would be consistently *higher*. It is neither — **median −0.39%, range −3.7% to +2.4%,
+scattered both ways**, against a 1.3% null.
+
+### Provenance of the frames and clips
+
+**Everything in `build/show/` was shot at `96e10e82`, before feel's `637ad4de`**, which changes the Terminus's
+block-band colours. The show's own effect is unaffected (surface 1 is not ours), but **do not compare these frames
+against a Terminus rendered after that commit** and read the colour change as the light show.
+
+### Requests to other streams
+
+- **feel** — answered all four hooks, landed the `CyberMaterials.neon()` fixture tag, and made the calls that
+  shaped this: the parapet over the outline, the barred colours, kills-only, pools on a uniform, the airship's
+  navigation lights left steady, and the settle-window warning on the perf phase. **Still to review at merge:** the
+  five fixture shaders and that the level-1.0 look is unchanged.
+- **scale** — the `show` key's schema, and (ruled) the generator preserves an allowlist of hand-authored keys while
+  `Arena.validate()` rejects unknown top-level ones.
+- **control** — **nothing reserved.** Its block cutaway is per-block *visibility*
+  (`BlockCutaway.cut_blocks()`), never a uniform. Two constraints taken: roofs are on screen far more often, and
+  `cutaway_near()` can clip the near wall away at every spawn, so the rim must not be the fixture that carries
+  match start — the FIGHT cue lifts the blocks, beams and signs too, and a test holds that.
+
+### What to playtest
+
+```
+make skirmish --arena=terminus                  # the show is live by default
+make remote T=show-frames                       # the strip + the readability gate
+make remote T=show-clips                        # the cues, as motion
+make remote T=show-perf-layer                   # the cost, measured within one run
+make show-report ARENA=terminus                 # every knob the patch resolved to
+```
+
+### Merge notes (shared-file edits)
+
+- `export_presets.cfg`: `game/theme/show/*.json` appended to all three `include_filter`s.
+- `mk/show.mk` is new and needs no `Makefile` edit (`include mk/*.mk` already).
+- `game/theme/fx/bench/perf_scene.gd` (feel's shared M1 harness): **one additive match arm**, `no_show`, and
+  deliberately **not** in the default `LAYERS` list — a test asserts it stays off, because adding a phase would
+  lengthen every other stream's runs and change their `PERF_SCENE_LAYERS` shape.
+- `arenas/terminus.json`, `arenas/yard.json`: an additive top-level `show` key only.
+- Additive `show_*` uniforms in five of feel's shaders and a registration call in four of its scripts, all inside
+  the granted carve-outs, all defaulting to today's look, all asserted by tests that parse the uniform
+  declarations rather than trusting the author.

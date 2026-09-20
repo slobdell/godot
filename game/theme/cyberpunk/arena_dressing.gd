@@ -218,9 +218,9 @@ func _build_polygon_venue() -> void:
 		var length := float(edge["length_m"]) + overlap
 		CyberMaterials.box(segment, Vector3(length, WALL_HEIGHT, WALL_THICK), Vector3(0, WALL_HEIGHT / 2.0, 0), concrete)
 		CyberMaterials.top_quad(segment, Vector2(length, 0.9), Vector3(0, WALL_HEIGHT + 0.36, 0),
-				CyberMaterials.neon(CyberMaterials.PURPLE, 0.9, 0.03))
+				rim_material(CyberMaterials.PURPLE, 0.9, 0.03))
 		CyberMaterials.box(segment, Vector3(length - 8.0, 0.18, 0.12), Vector3(0, WALL_HEIGHT - 0.35, -WALL_THICK / 2.0 - 0.07),
-				CyberMaterials.neon(CyberMaterials.PURPLE, 4.0, 0.05), false)
+				rim_material(CyberMaterials.PURPLE, 4.0, 0.05), false)
 		StaticBatcher.merge(segment)
 		for span: Dictionary in edge["spans"]:
 			var from_m := float(span["from_m"])
@@ -508,15 +508,15 @@ func _build_perimeter() -> void:
 		# A light bar along the rim top: the arena's glowing outline from the tactical camera.
 		var rim_size := Vector2(extent.x, 0.9) if extent.x > extent.z else Vector2(0.9, extent.z)
 		CyberMaterials.top_quad(segment, rim_size, center + Vector3(0, WALL_HEIGHT + 0.36, 0),
-				CyberMaterials.neon(neon_color, 0.9, 0.03))
+				rim_material(neon_color, 0.9, 0.03))
 		# The light bar runs along the inner face, just under the rim.
 		var along_x := extent.x > extent.z
 		var bar_size := Vector3(extent.x - 8.0, 0.18, 0.12) if along_x else Vector3(0.12, 0.18, extent.z - 8.0)
 		var face := Vector3(0, 0, inward * (WALL_THICK / 2.0 + 0.07)) if along_x else Vector3(inward * (WALL_THICK / 2.0 + 0.07), 0, 0)
 		CyberMaterials.box(segment, bar_size, center + face + Vector3(0, WALL_HEIGHT - 0.35, 0),
-				CyberMaterials.neon(neon_color, 4.0, 0.05), false)
+				rim_material(neon_color, 4.0, 0.05), false)
 		CyberMaterials.box(segment, bar_size * Vector3(1, 0.4, 1), center + face + Vector3(0, 0.5, 0),
-				CyberMaterials.neon(neon_color, 2.0, 0.3), false)
+				rim_material(neon_color, 2.0, 0.3), false)
 		StaticBatcher.merge(segment)
 		# Painted glow pools on the floor along the bar (one batched draw for all of them).
 		var length := extent.x if along_x else extent.z
@@ -569,7 +569,7 @@ func _build_tower(base: Vector3) -> void:
 	cone.cap_top = false
 	cone.cap_bottom = false
 	cone.radial_segments = 16
-	cone.material = CyberMaterials.beam(Color(0.55, 0.8, 1.0), 0.14)
+	cone.material = beam_material(Color(0.55, 0.8, 1.0), 0.14)
 	var beam := MeshInstance3D.new()
 	beam.name = "Beam"
 	beam.mesh = cone
@@ -595,6 +595,37 @@ func _build_tower(base: Vector3) -> void:
 	structures.add_child(pool)
 
 
+## S6: a floodlight tower's fake volumetric beam. `CyberMaterials.beam()` caches on (colour, energy) exactly as
+## `neon()` does on its triple, and this is its ONLY caller in the game -- so the cache cannot hand this material to
+## anything else today, and `tests/test_show_fixtures.gd` fails if a second caller appears. The four corner towers
+## share it, so one uniform write drives every beam in the venue; the per-tower phase is the lamp's angle round the
+## venue, read in beam_cone.gdshader, so they rise in sequence rather than together.
+static func beam_material(color: Color, energy: float) -> ShaderMaterial:
+	var material := CyberMaterials.beam(color, energy)
+	var show := Show.get_instance()
+	if show != null:
+		show.add_fixture(&"beams", material)
+	return material
+
+
+## S6 (the arena light show, `_agents/lighting.md`): the perimeter neon the lead called "a dull neon purple".
+## Every edge of the venue -- six on a hexagon, four on a rectangle -- shares ONE cached material per (colour,
+## energy, flicker), so registering it here drives the whole ring with two uniform writes a frame, adds no draw
+## call and does not disturb StaticBatcher's merge. The per-edge phase is the edge's ANGLE in world space, read in
+## neon.gdshader, so a sweep travels round the venue in order.
+##
+## The rim materials are `CyberMaterials.neon()`'s cache entries, shared with any prop that asks for the same
+## triple. Nothing collides today (feel checked the callers, 2026-09-20) and `tests/test_show_fixtures.gd` holds
+## that; feel has landed a `fixture` tag on the cache key (stream/feel 02e30ac0) which makes it structural instead
+## of checked, and this call takes it the moment that merges.
+static func rim_material(color: Color, energy: float, flicker: float) -> ShaderMaterial:
+	var material := CyberMaterials.neon(color, energy, flicker)
+	var show := Show.get_instance()
+	if show != null:
+		show.add_fixture(&"rim", material)
+	return material
+
+
 ## Static additive glow quads (reuses the projectile splat shader: radial falloff × color).
 static func _glow_multimesh(transforms: Array, colors: Array) -> MultiMesh:
 	var plane := PlaneMesh.new()
@@ -613,5 +644,13 @@ static func _glow_multimesh(transforms: Array, colors: Array) -> MultiMesh:
 	for i in transforms.size():
 		multimesh.set_instance_transform(i, transforms[i])
 		multimesh.set_instance_color(i, colors[i])
-		multimesh.set_instance_custom_data(i, Color(1, 0, 0, 0))
+		# .x is the pool's intensity (splat.gdshader). .y is its phase in the arena light show (S6), on the golden
+		# angle -- a projectile splat leaves it at 0, which is every splat in phase, i.e. exactly today.
+		multimesh.set_instance_custom_data(i, Color(1, fposmod(float(i) * 0.6180339887, 1.0), 0, 0))
+	# S6: every pool in this MultiMesh shares one material, and the show drives it with one uniform write. A
+	# uniform rather than instance colour, which already carries the per-pool tint (feel, 2026-09-20): rewriting a
+	# buffer every frame to say one number is the wrong trade at zero draw calls.
+	var show := Show.get_instance()
+	if show != null:
+		show.add_fixture(&"pools", material)
 	return multimesh
