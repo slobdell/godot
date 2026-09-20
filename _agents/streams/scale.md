@@ -318,7 +318,29 @@ disc error, that is a candidate mechanism for `gangs vs law` 9/20 → 0/20, whic
 **and this stream measured that the Green deficit is NOT hull size** (`green_win_rate` **0.278 on both arenas**,
 identical to round 5's pre-CP2 25–28%).
 
-**5. Owed to other streams, small:** `CityBlock.resolves()` into `Arena.validate()` once `a33638b8` is on main
+**5. ROUND 10, MINE: the spawn grid spaces by WIDTH where turning needs the HALF-DIAGONAL.** On combat's tree with
+the settle tick — hulls starting where they were placed rather than after the 1.5 m shove — **four crews overlap at
+spawn** (across gaps **−1.36, −0.02, −0.01, −0.77 m**), and **the off-slot crews of the five-squads test never
+departed: their first turn was refused in the press.** That last symptom is what makes it a defect rather than a
+tidiness argument — it is what a player would report.
+
+**The grid half is mine, beside squad's slot half: the same arithmetic at two sites.**
+
+**Why my own measurements said "clear" and were not wrong.** `test_spawn_isolation.gd:56-58` captures `placed[tank]`
+**immediately after `load_doctrine` returns, before any `await`** — zero physics frames, so the shove cannot be in
+those numbers on any tree. What they compute is **AABB separation**, `max(|Δx| − (w₁+w₂)/2, |Δz| − (l₁+l₂)/2)`, which
+answers *"do these boxes intersect where they stand?"* — and correctly. **The turning envelope is a different
+question**, and nothing in my measurement said which one it was answering. *A correct number against the wrong
+question reads exactly like a right answer.*
+
+**⚠ AND THE SAME NUMBER IS WRONG IN ONE PLACE AND RIGHT IN ANOTHER — whoever fixes one must not "fix" the other.**
+The turning half-diagonals (**tank 4.47 m, `gang_tank` 7.19 m** against half-widths of **1.20** and **1.66**) are
+*exactly* the disc radii flagged as a **4.3× error** at `match.gd:1383`, `match.gd:1450` and `ai/incoming_fire.gd:101`.
+A disc of the box diagonal **badly overstates where a hull is** — so friendly-fire refuses safe shots — and
+**correctly states the room a hull needs to turn** — so spacing by width under-provisions it. **One number, two
+sites, opposite errors.** This belongs in the consumer list beside both entries.
+
+**5b. Owed to other streams, small:** `CityBlock.resolves()` into `Arena.validate()` once `a33638b8` is on main
 (feel's predicate, so a misspelt neon colour is one loud line at read time instead of eight silent warnings per
 build), and feel's committed-arena `tiers` sweep, which goes green on this data now that Terminus asks for 3.
 
