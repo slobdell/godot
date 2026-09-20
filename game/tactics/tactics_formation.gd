@@ -65,7 +65,7 @@ const RING_RADIUS := 2.4
 # A doctrine's spacing (open 14 / lanes 11 / dense 8 m) is a TACTICAL number: how dispersed the element wants to
 # be. It says nothing about how big its vehicles are, so a 14 m War Rig at 8 m "dense" spacing stands inside the
 # rig in front of it, and the scale stream's resize (CP2) puts the whole mid-roster in the same position. The floor
-# below sits UNDER the doctrine number -- it never reduces it -- and it is ANISOTROPIC, because side by side a
+# below sits UNDER the doctrine number — it never reduces it — and it is ANISOTROPIC, because side by side a
 # vehicle needs its WIDTH clear and nose to tail its LENGTH: a column of rigs needs length between slots and a line
 # of rigs needs width. That is the same rule `ArmyLayout._shape_of` applies at deploy, hoisted to where slots are
 # laid so every formation in the game gets it (ArmyLayout now calls it rather than keeping its own copy).
@@ -112,9 +112,9 @@ static func pitch(members: Array, spacing := DEFAULT_SPACING) -> Vector2:
 
 ## `group_offsets()` with a per-axis pitch: the shape at the ALONG pitch with the across axis scaled by the ratio.
 ## Exact, because every shape here is homogeneous of degree 1 in its spacing (`ArmyLayout` has always relied on
-## it), and with an isotropic pitch it IS group_offsets(), on the same code path, bit for bit -- which is why a
+## it), and with an isotropic pitch it IS group_offsets(), on the same code path, bit for bit — which is why a
 ## formation whose hull floor does not bind is laid out exactly as before.
-## This is the degenerate DIAGONAL 2x2 transform that A8 will generalise to a continuous affine one.
+## This is the degenerate DIAGONAL 2x2 transform that X2 (catalogue A8) generalises to a continuous affine one.
 static func offsets_at(formation: String, count: int, pitch_v: Vector2) -> Array[Vector2]:
 	var raw := group_offsets(formation, count, pitch_v.y)
 	if pitch_v.y <= 0.0 or is_equal_approx(pitch_v.x, pitch_v.y):
@@ -126,10 +126,225 @@ static func offsets_at(formation: String, count: int, pitch_v: Vector2) -> Array
 	return result
 
 
+# ---- A8: the affine deformation (round 9, X2) -----------------------------------------------------------
+#
+# A formation is a NOMINAL SHAPE plus a per-element transform. X1's per-axis pitch is the diagonal case of it; A8
+# makes it continuous in the CORRIDOR WIDTH, so a wedge narrows to fit a defile and re-expands after it, without
+# dissolving, without changing formation, and without re-seating anybody.
+#
+# WHY THIS IS A SHAPE MORPH PLUS A DIAGONAL MATRIX, AND NOT A 2x2 ALONE. A wedge has PAIRS OF SLOTS AT THE SAME
+# DEPTH (slot 1 at -0.9s, slot 2 at +0.9s, both at y = s). No 2x2 can separate two points that differ only across
+# the heading while squeezing that axis toward zero: at the limit they land on top of each other. So "a wedge
+# becomes a column" is FALSE for an affine map alone, and a design that assumed otherwise would ship a formation
+# that stands its own hulls inside each other in the narrowest corridors — the exact failure X1 exists to prevent.
+# What IS continuous, closed-form and crossing-free is two terms applied in order:
+#
+#   1. FILE (`file`): the nominal shape is pulled toward single file. Depth first, then width — the ranks split
+#      apart along the heading BEFORE the shape closes across it, because splitting is what makes closing safe.
+#   2. PITCH: the result is scaled per axis, elongated along the heading as it is compressed across it (X1's
+#      diagonal 2x2), and sheared by whatever the caller's heading change needs.
+#
+# Neither term can cross a path or invert a rank. The file's target order is the nominal shape's OWN DEPTH ORDER
+# (`_depth_ranks`), not the slot index — a vee has slots AHEAD of its leader, and filing those to `(0, index)`
+# would drive slot 1 from in front of the leader to behind it, which is a rank inversion and is precisely what
+# A8's falsifier forbids. Filing to the shape's own depth order means every pair's depth difference keeps its sign
+# at every value of `file`, so the order along the heading is preserved throughout the deformation.
+#
+# The clearance rule is X1's and it is a HARD post-condition, not an aspiration: `fit_to_corridor` will not return
+# a deformation whose hull boxes are closer than HULL_CLEAR_M. Where the corridor is narrower than the tightest
+# clear deformation, it says so (`fits: false`) rather than overlapping the hulls — a formation that does not fit a
+# defile is information for the element, not a licence to stack vehicles.
+
+## The narrowest a formation is squeezed across the heading, as a share of its natural frontage. Below this there is
+## nothing left to squeeze and the shape is a file.
+const MIN_SQUEEZE := 0.05
+## A formation compressed across the heading lengthens along it — the dispersion it gives up sideways it takes back
+## in depth — but NEVER PAST ITS OWN FOOTPRINT: the deformed shape may not be longer than the nominal one was at its
+## widest. MEASURED, not chosen. With a flat 2.5x cap a five-vehicle wedge filing through the maze's 5 m corridor
+## became ~80 m deep, its tail slot 80 m behind the anchor, and `ElementPlan._cohesive` — which gates the next leg on
+## every member being within the doctrine's cohesion TIME of its slot — then never passed. The element paralysed
+## itself: **1 of 5 arrived and it never got through the gap, against 4 of 5 with the deformation off** (maze, wheeled
+## Condemned squad, seed 3, 70 s, laptop). That is lesson 17 in a new place — a gate above a behaviour that cancels it
+## every tick — and the elongation was the thing feeding the gate. Bounding the deformed depth by the nominal shape's
+## own largest extent keeps "deform, don't dissolve" literally true: the element ends up in a different shape, not in
+## a longer place than it already occupied.
+const MAX_ELONGATION := 2.5
+## Clear ground kept between the outermost hull and each wall of the corridor.
+const CORRIDOR_MARGIN_M := 1.0
+## The guard: if the deformation the corridor asks for would put hulls inside each other (a shape whose geometry the
+## two-phase policy does not cover), the squeeze is relaxed back toward the nominal shape through this many fixed
+## steps and the first clear one is used. Fixed work, no tolerance loop, same answer on every machine.
+const FIT_RELAX_STEPS := 8
+## A8's A/B switch — and A8 SHIPS OFF, because the measurement it was built for says it makes the traverse worse.
+##
+## `make squad-defile`, the maze's 11 m gap (5.0 m of navmesh once the 2.0 m agent radius comes off each side), a
+## five-vehicle wheeled Condemned squad in a forced wedge, 70 s, laptop, `DEFORM_ENABLED` the only thing changed:
+##
+##     deform=on    arrived 0/5   got through the gap: NO    crossings 6   inversions 21   file 1.0
+##     deform=off   arrived 4/5   got through the gap: yes   crossings 1   inversions 20   file 0.0
+##
+## **The deformation is the difference between getting through and not getting through.** Filing the wedge to fit the
+## corridor leaves the element unable to advance its leg at all, and it takes the crossings UP (6 against 1) rather
+## than to the zero its falsifier promised. One configuration, not five seeds: the three seeds I ran returned
+## byte-identical numbers, because this scenario has no enemies and hand-placed units, so the seed varies nothing
+## (lesson 22 — repeating a measurement across a variant that does not vary is one sample, not three). It is a
+## deterministic difference in a deterministic system, which is why one sample is enough to switch it off and not
+## enough to explain it.
+##
+## **What the geometry still guarantees, and it is not nothing:** every invariant A8 pre-registered holds by
+## construction and is asserted over a sweep in `tests/test_tactics_deform.gd` — hulls never overlap at any corridor
+## width, the depth order never inverts, the frontage is monotone with no snap. The geometry is right. What is wrong
+## is that a slot layout is the wrong place to express it.
+##
+## **The named follow-on, and nav reached the same structural conclusion independently the same night.** A8 deforms
+## the SLOTS, and slots are consumed by `ElementPlan`'s leg machinery (`_advance` gates the next leg on `_cohesive`)
+## and then by nav's `Movement`. nav measured that `CombatMotion` decides under a tenth of a hull's ticks in a fight
+## and that `Movement` — which drives the other nine tenths — has no notion of a formation leash at all; its
+## conclusion was that the region belongs in `Movement`'s goal selection. **The same is true of this deformation.**
+## Both are formation-level intents that the layer actually moving the hull cannot see, and both need to land there
+## rather than in the layer that publishes slots.
+##
+## Turning it on is one constant, and the A/B above is the thing to re-run after that seam exists.
+static var DEFORM_ENABLED := false
+
+
+## A8: how a formation of `members` fits a corridor `corridor_m` wide across its heading.
+## Returns {"pitch": Vector2, "file": float, "shear": float, "corridor_m": float, "squeeze": float, "fits": bool}.
+## Continuous and monotone in `corridor_m`; `fits` is false when even the tightest CLEAR deformation is wider than
+## the corridor. With an unknown corridor (INF or <= 0) the answer is the IDENTITY — X1's pitch, no morph — because
+## a formation must never be worse than today for the lack of a number.
+static func fit_to_corridor(members: Array, formation: String, count: int, spacing: float, corridor_m: float,
+		shear := 0.0) -> Dictionary:
+	var pitch_v := pitch(members, spacing)
+	var slots := maxi(count, members.size())
+	var hull := hull_extent(members)
+	var nominal := group_offsets(formation, slots, 1.0)
+	var natural := _extent(nominal, true)
+	var open := {"pitch": pitch_v, "file": 0.0, "shear": shear, "corridor_m": corridor_m, "squeeze": 1.0,
+			"fits": true}
+	if not DEFORM_ENABLED or not is_finite(corridor_m) or corridor_m <= 0.0 or natural <= 0.0 or slots < 2 \
+			or hull == NO_HULL:
+		return open
+	# The share of its natural frontage that fits between the walls, hulls and margins included.
+	var room := corridor_m - hull.x - 2.0 * CORRIDOR_MARGIN_M
+	var want := clampf(room / (natural * pitch_v.x), MIN_SQUEEZE, 1.0)
+	if want >= 1.0:
+		return open
+	# The tightest squeeze the NOMINAL shape survives: a pair of slots that no depth difference separates has to be
+	# held apart across the heading, and that is one division per pair. Closed form, one pass.
+	var split := _split_share(nominal, hull, pitch_v)
+	# The footprint cap, as an ALONG-AXIS PITCH: the deformed shape's depth may reach the nominal shape's largest
+	# extent (its frontage for a wide shape, its depth for a deep one) and no further. `slots - 1` is how many pitches
+	# deep a full file is.
+	var largest := maxf(_extent(nominal, true) * pitch_v.x, _extent(nominal, false) * pitch_v.y)
+	var depth_cap := largest / float(maxi(slots - 1, 1))
+	var best := open
+	for step in FIT_RELAX_STEPS + 1:
+		# Relax from what the corridor asked for back toward the nominal shape, and take the first CLEAR answer.
+		var share := clampf(want + (1.0 - want) * float(step) / float(FIT_RELAX_STEPS), MIN_SQUEEZE, 1.0)
+		var fit := _deformation(share, split, pitch_v, shear, corridor_m, depth_cap)
+		best = fit
+		if _clear_enough(offsets_deformed(formation, slots, fit), hull):
+			break  # the tightest CLEAR deformation; the last step is the nominal shape, which X1 guarantees is clear
+	var frontage_m := _extent(offsets_deformed(formation, slots, best), true) + hull.x \
+			+ 2.0 * CORRIDOR_MARGIN_M
+	best["fits"] = frontage_m <= corridor_m + 0.001
+	return best
+
+
+## The deformation for a frontage `share` (0..1 of the shape's natural frontage): squeeze across, elongate along,
+## and file the ranks apart as it goes. `split` is the share below which the nominal shape's own width can no longer
+## hold its hulls apart, so the file is COMPLETE exactly there — which is what makes `file` continuous, 0 in the
+## open, and 1 by the time the squeeze would otherwise start stacking vehicles side by side.
+## The frontage is `natural x pitch.x x share` at every value of `share` (filing moves depth, not width), so it is
+## strictly monotone in the corridor width: narrower is always narrower, with no snap anywhere.
+static func _deformation(share: float, split: float, pitch_v: Vector2, shear: float, corridor_m: float,
+		depth_cap: float = INF) -> Dictionary:
+	var squeeze := maxf(share, split)
+	# Elongate along the heading as the shape is squeezed across it, but never past the footprint cap, and never
+	# below X1's hull floor (which `pitch_v.y` already is): a deformation may change an element's shape, not put it
+	# in a longer place than it started.
+	var along := pitch_v.y * clampf(1.0 / squeeze, 1.0, MAX_ELONGATION)
+	return {"pitch": Vector2(pitch_v.x * share, clampf(along, pitch_v.y, maxf(depth_cap, pitch_v.y))),
+			"file": clampf((1.0 - share) / maxf(1.0 - split, 1e-6), 0.0, 1.0),
+			"shear": shear, "corridor_m": corridor_m, "squeeze": share, "fits": true}
+
+
+## The frontage share below which the nominal shape can no longer keep its hulls clear by width alone: the largest,
+## over every pair of slots that no depth difference separates, of the share that pair needs across the heading.
+## Pairs the shape already separates along the heading never bind, whatever the squeeze.
+static func _split_share(nominal: Array[Vector2], hull: Vector2, pitch_v: Vector2) -> float:
+	var need := hull.x + HULL_CLEAR_M
+	var worst := 0.0
+	for i in nominal.size():
+		for j in range(i + 1, nominal.size()):
+			var apart: Vector2 = (nominal[i] - nominal[j]).abs()
+			if apart.y * pitch_v.y - hull.y >= HULL_CLEAR_M:
+				continue  # separated along the heading: the squeeze cannot bring these two together
+			if apart.x <= 1e-6:
+				return 1.0  # two slots at the same place in the nominal shape: only the file can part them
+			worst = maxf(worst, need / (apart.x * pitch_v.x))
+	return clampf(worst, MIN_SQUEEZE, 1.0)
+
+
+## Whether every pair of hull boxes in `slots` is at least HULL_CLEAR_M apart (the separating-axis rule).
+static func _clear_enough(slots: Array[Vector2], hull: Vector2) -> bool:
+	for i in slots.size():
+		for j in range(i + 1, slots.size()):
+			var apart: Vector2 = (slots[i] - slots[j]).abs()
+			if maxf(apart.x - hull.x, apart.y - hull.y) < HULL_CLEAR_M - 0.001:
+				return false
+	return true
+
+
+## The nominal shape's own depth order: slot index -> its place from front to back (ties by index). The file's
+## target order, so filing never reorders the element along its heading.
+static func _depth_ranks(nominal: Array[Vector2]) -> PackedInt32Array:
+	var order: Array = range(nominal.size())
+	order.sort_custom(func(a: int, b: int) -> bool:
+		var ya: float = nominal[a].y
+		var yb: float = nominal[b].y
+		return ya < yb if absf(ya - yb) > 1e-9 else a < b)
+	var ranks := PackedInt32Array()
+	ranks.resize(nominal.size())
+	for place in order.size():
+		ranks[int(order[place])] = place
+	return ranks
+
+
+## The nominal shape pulled `file` of the way toward single file, DEPTH FIRST: the ranks split apart along the
+## heading over the first half of the morph, and the shape closes across it over the second. Slot i keeps its index
+## and ends at (0, its depth rank), so nobody changes slot and nobody overtakes anybody.
+static func _filed(nominal: Array[Vector2], file: float) -> Array[Vector2]:
+	if file <= 0.0:
+		return nominal
+	var ranks := _depth_ranks(nominal)
+	var deep := clampf(file, 0.0, 1.0)
+	var result: Array[Vector2] = []
+	for i in nominal.size():
+		result.append(Vector2(nominal[i].x, lerpf(nominal[i].y, float(ranks[i]), deep)))
+	return result
+
+
+## The slots of a deformed formation: the nominal shape, filed, then scaled per axis and sheared.
+## `fit` is fit_to_corridor()'s answer; with `file` 0 and no shear this IS offsets_at(), on the same code path.
+static func offsets_deformed(formation: String, count: int, fit: Dictionary) -> Array[Vector2]:
+	var pitch_v: Vector2 = fit.get("pitch", Vector2(DEFAULT_SPACING, DEFAULT_SPACING))
+	var file := float(fit.get("file", 0.0))
+	var shear := float(fit.get("shear", 0.0))
+	if file <= 0.0 and is_zero_approx(shear):
+		return offsets_at(formation, count, pitch_v)
+	var shaped := _filed(group_offsets(formation, count, 1.0), file)
+	var result: Array[Vector2] = []
+	for slot in shaped:
+		result.append(Vector2(slot.x * pitch_v.x + slot.y * shear, slot.y * pitch_v.y))
+	return result
+
+
 ## Clear ground between the two closest HULL BOXES of a formation of `members` (meters; negative = overlapping).
 ## Every slot holds the biggest hull in the squad, so the answer is the conservative bound and does not depend on
-## who is seated where. Boxes are axis-aligned with the heading, so a pair is clear when EITHER axis separates it --
-## side by side needs width, nose to tail needs length -- and the pair's clearance is that separating axis's gap.
+## who is seated where. Boxes are axis-aligned with the heading, so a pair is clear when EITHER axis separates it —
+## side by side needs width, nose to tail needs length — and the pair's clearance is that separating axis's gap.
 ## INF for a single vehicle or members with no known hull (nothing to keep clear of).
 static func closest_boxes(members: Array, formation: String, spacing := DEFAULT_SPACING) -> float:
 	var hull := hull_extent(members)
@@ -623,7 +838,9 @@ static func _hungarian(cost: Array) -> PackedInt32Array:
 ##    "policy"?, "halt"?}
 ## `count` is how many slots the shape has (default: one per member; more leaves places free for stragglers).
 ## Returns one entry per member, in slot order: {"unit", "to", "facing", "role", "index", "offset", "sector",
-## "pitch"} -- "pitch" being the per-axis spacing X1 resolved the slots to (Vector2(across, along)).
+## "pitch", "file", "fits"} — "pitch" being the per-axis spacing X1 resolved the slots to (Vector2(across, along)),
+## "file" how far X2 (A8) pulled the shape toward single file for its corridor, and "fits" whether it fits at all.
+## opts may carry "corridor_m" (the drivable width across the heading; absent = open) and "shear".
 ## Recompute it as the anchor moves, passing the last seating as "previous": the seating is stable.
 static func slots(element: Variant, anchor: Vector3, heading: Vector3, count := -1) -> Array[Dictionary]:
 	var group: Dictionary = element.call("formation_group") if element is Object else element
@@ -643,9 +860,13 @@ static func place(members: Array, formation: String, anchor: Vector3, heading: V
 	if members.is_empty():
 		return result
 	var count := maxi(int(opts.get("count", -1)), members.size())
-	# X1: the doctrine's spacing, raised per axis to what these hulls physically fit in.
-	var pitch_v := pitch(members, spacing)
-	var raw := offsets_at(formation, count, pitch_v)
+	# X1: the doctrine's spacing, raised per axis to what these hulls physically fit in. X2 (A8): and deformed to
+	# fit the corridor the element is driving through, when one was measured ("corridor_m"; absent = the open field,
+	# and the identity). "shear" is the caller's heading change, if it has one.
+	var fit := fit_to_corridor(members, formation, count, spacing,
+			float(opts.get("corridor_m", INF)), float(opts.get("shear", 0.0)))
+	var pitch_v: Vector2 = fit["pitch"]
+	var raw := offsets_deformed(formation, count, fit)
 	var shape: Array[Vector2] = centered(raw) if bool(opts.get("centered", true)) else raw
 	var sector_list := sectors(formation if NAMES.has(formation) else "line", count)
 	var seat_opts := opts.duplicate()
@@ -665,7 +886,8 @@ static func place(members: Array, formation: String, anchor: Vector3, heading: V
 		var unit := String(member.get("unit", ""))
 		result.append({"unit": String(member["name"]), "to": to_world(anchor, forward, shape[index]),
 				"facing": facing, "role": String(member.get("role", Units.role_of(unit) if unit != "" else "")),
-				"index": index, "offset": shape[index], "sector": sector, "pitch": pitch_v})
+				"index": index, "offset": shape[index], "sector": sector, "pitch": pitch_v,
+				"file": float(fit["file"]), "fits": bool(fit["fits"])})
 	return result
 
 

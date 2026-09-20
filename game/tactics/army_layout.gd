@@ -27,7 +27,17 @@ const BACK_MARGIN_M := 4.0
 const ASSEMBLY_SPACING_M := 6.5
 ## ...but never less than the squad's longest hull plus clear ground (vehicle sizes vary 3x between factions: a gang
 ## War Rig is far longer than a scout), and the same for the packing floor. Round 9 (X1): that floor is
-## `TacticsFormation.hull_floor` — one derivation for the assembly and for every moving formation.
+## `TacticsFormation.hull_floor` — one derivation for the assembly and for every moving formation, and the clearance
+## under it has ONE owner, which is `TacticsFormation.HULL_CLEAR_M`.
+##
+## DO NOT DELETE THIS NAME without checking who reads it (round 9: I deleted it, and scale caught it). It is read
+## outside this stream and, worse, read TRANSITIVELY with nothing naming the chain: the spawn grid's column pitch and
+## row spacing are the bare-spawn hull plus this clearance (`tests/test_spawn_grid.gd` asserts against it), and
+## `Match.SPAWN_JITTER_MAX_X` is the pitch minus a hull minus this — which makes `Arena.SPAWN_CLEARANCE`, the
+## obstacle clearance every arena layout is authored against, depend on it through two files. It is a read-through
+## rather than a second copy (Invariant 0), and the plan is for those readers to name the owner directly and for this
+## line to go then.
+const HULL_CLEAR_M := TacticsFormation.HULL_CLEAR_M
 ## A widened rank keeps this far off the drivable floor's side edges.
 const SIDE_MARGIN_M := 6.0
 ## Clear ground between one rank of squads and the next (a hull is ~4 m long).

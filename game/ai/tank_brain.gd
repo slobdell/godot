@@ -2327,6 +2327,11 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	if slot != null:
 		request["leash"] = {"center": slot, "radius": TankBrain.slot_leash(s.get("element"))}
 		why = TankBrain._join(why, "in its slot")
+	# For nav's A11 (round 9, additive, nav asked): the hull's LIVE motion state. The lattice of (speed, yaw-rate)
+	# pairs a plant can reach has to be built from what the hull is actually doing; this request was assembled from
+	# individual fields, so A11 synthesised a state with `yaw_rate` 0 and gave a hull already turning a window as if
+	# it were standing still. `state_of` carries the real yaw rate (round 8 made it state), plus braking and grip.
+	request["motion"] = TankMotion.state_of(tank)
 	# X3 (L2): and don't manoeuvre through a beaten zone.
 	var fields := _suppression_fields(game_match) if s.get("features", {}).get("avoid_beaten", true) else null
 	if fields != null:

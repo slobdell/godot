@@ -85,6 +85,55 @@ Two consequences worth knowing:
   for those is the ground it told them to cover (a bound's next anchor, a manoeuvre element's flank), so bounding them
   to it converges them rather than caging them.
 
+### A formation deforms to fit its corridor (round 9, X2, catalogue A8)
+
+A formation is a nominal shape **plus a per-element deformation**, continuous in the width of the corridor it is
+driving through, so a wedge narrows to fit a defile and re-expands after it — without dissolving, without changing
+formation, and without re-seating anybody. `TacticsFormation.fit_to_corridor` is the whole policy and
+`offsets_deformed` applies it.
+
+**It is not a 2×2 alone, and that is a design finding worth keeping.** A wedge has pairs of slots at the *same depth*
+(slot 1 at −0.9 s, slot 2 at +0.9 s, both at y = s). No matrix can separate two points that differ only across the
+heading while squeezing that axis toward zero: at the limit they land on top of each other. "A wedge becomes a
+column" is therefore **false for an affine map**, and a version that assumed otherwise would stand its own hulls
+inside each other in the narrowest corridors — exactly what the hull floor above exists to prevent. What is
+continuous, closed-form and crossing-free is two terms, in order:
+
+1. **File** — the nominal shape is pulled toward single file, its ranks splitting apart *along* the heading before
+   the shape closes *across* it, because splitting is what makes closing safe. The file's target order is the shape's
+   **own depth order**, not the slot index: a vee has slots ahead of its leader, and filing those to `(0, index)`
+   would drive slot 1 from in front of the leader to behind it — a rank inversion, which is the thing A8's falsifier
+   forbids.
+2. **Pitch** — the result is scaled per axis (the diagonal 2×2 above), elongated along the heading as it is
+   compressed across it, and sheared by whatever the caller's heading change needs.
+
+Neither term can re-seat a unit or invert a rank, so *zero slot crossings and zero rank inversions* hold **by
+construction** rather than by measurement; `tests/test_tactics_deform.gd` sweeps corridor widths and asserts the
+hulls stay clear, the depth order never inverts, and the frontage is monotone with no snap. A corridor too narrow for
+even the tightest clear deformation returns `fits: false` — information for the element, not a licence to stack
+vehicles. **A halt does not deform**: it is standing in an area, not filing through a gap, and its all-round sectors
+are the point of it.
+
+**A8 SHIPS OFF** (`TacticsFormation.DEFORM_ENABLED := false`), and the reason is a measurement, not a doubt. Through
+the maze's gap (5.0 m of navmesh) a forced wedge of five wheeled Condemned hulls got **0 of 5** through with the
+deformation on and **4 of 5** with it off, and crossings went **up** (6 against 1) rather than to the zero the
+falsifier promised. One configuration, not a seed sweep — three seeds returned byte-identical numbers because that
+scenario has no enemies and hand-placed units, so the seed varies nothing. The geometry above is right and asserted;
+what is wrong is that **a slot layout is the wrong place to express a formation intent.** nav reached the same
+conclusion the same night from the other end: `CombatMotion` decides under a tenth of a hull's ticks and `Movement`,
+which drives the rest, has no notion of a formation leash at all. Both A8's deformation and A7's region belong in
+`Movement`'s goal selection, and that seam is round 10's first candidate. Turning A8 back on is one constant.
+
+Also worth knowing before anyone measures it again: **A8 never applied to a plain right-click move.** `_plan_form_up`
+sets the corridor to INF on purpose, because a plain move's slots are the formation that STANDS at the destination
+rather than a transit shape — so the lead's commonest order was never in scope. Deforming the FLOW offsets, which are
+the real transit shape of a plain move, is the follow-on.
+
+The corridor width itself is measured by `SlotGround.corridor_width` (the standable width across the heading,
+bisected off the navigation mesh, narrowest of three samples along the leg) because nav's `Movement.state()` does not
+report a clearance yet. `Element` takes one measurement per **leg**, not per update. Where the width is unknown the
+deformation is the identity, so a formation is never worse than today for the lack of a number.
+
 **Sectors of fire.** A formation is only half the answer; the other half is who watches what.
 `TacticsFormation.sectors()` assigns every slot an azimuth relative to the direction of travel (0 = ahead,
 + = right), 90° wide each, so neighbours interlock. `coverage()` is the share of the full circle the element
@@ -111,6 +160,40 @@ doctrinal "close up", and it is also what stops a fast scout from arriving alone
 **(Ours) Legs, not sliding destinations.** Movement runs as discrete legs (45 m traveling, 34 m traveling
 overwatch, 22 m bounding). Orders are re-issued only when a leg changes, because every new order resets what a
 brain was doing (round-3 lesson). The element therefore *flows* without its vehicles being nudged every tick.
+
+### Bounding overwatch is an explicit two-phase machine (round 9, X3, catalogue A9)
+
+Before round 9 bounding overwatch was a technique *name* and a boolean: `bounding` said which half had the current
+leg, the halves swapped the moment the movers closed up, and **nothing guaranteed that anybody was stationary** or
+that a phase lasted long enough for a spectator to see it. The lead's standing complaint is that
+base-of-fire-and-manoeuvre is not legible, and this is the row that buys it.
+
+`ElementPlan.bound_teams(ordered)` splits the element, and a phase runs between `BOUND_MIN_TICKS` (5 s) and
+`BOUND_MAX_TICKS` (8 s) — the minimum stops a shimmer when both teams close up at once, the maximum stops a team that
+never closes up from parking the element. `Element.state()` publishes
+`bound: {phase, since_tick, movers, overwatch, base, stationary_share}`, so control can draw the phase and the
+announcer can call it.
+
+**An odd-sized element leaves a permanent base of fire**, and the reason is worth keeping because it is a case of a
+falsifier's wording changing a design for the better. A9's bar is *"≥ 50% of squad firepower stationary at every
+tick"*, and two alternating halves of an odd-sized element cannot meet it: `split` gives ceil(n/2) and floor(n/2), so
+whichever phase moves the three-vehicle half of a five-vehicle squad leaves 2 of 5 = **40%** still, and swapping which
+half goes first only moves the 40% to the other phase. So a five-vehicle element bounds as **1 + 2 + 2**: a base that
+never bounds and two equal teams that alternate, which leaves **3 of 5 stationary in both phases**. That is what a
+platoon actually does — it leaves a support-by-fire element and bounds its sections — and the base is the vehicle
+worth most from a static position (the most protected role: artillery, then lancer, which are also the guns the
+element exists to protect and the ones that shoot worst on the move). A two-vehicle element alternates singles; a
+single vehicle does not bound, and the plan says so rather than pretending to.
+
+### Arriving together is one bottleneck, counted in ticks (round 9, X3)
+
+`FormUp.bottleneck_ticks(etas)` is the element's bottleneck arrival time in **ticks**, not seconds, so every member's
+pace is a ratio of two integers and cannot drift with float order (`determinism.md`). `FormUp.paces` paces every
+member — **the leader included** — by its share of it: the laggard drives flat out and the rest arrive with it. Round 7
+had a *second* rule for the same vehicle, `Element._pace_leader_for_flow`, which eased the leader off by how far the
+worst follower trailed its follow offset; it is deleted, because one bottleneck is what A9 is. The K1 100 ms response
+guarantee is untouched by construction: a member within `PACE_NEAR` of its slot drives flat out, so co-arrival slows
+the **cruise**, never the start.
 
 ## Selection rules: how a leader chooses
 
