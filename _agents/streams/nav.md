@@ -231,6 +231,49 @@ falsifier passes but the frames look wrong at his pose, that is his call — sen
 _nav worker, round 9, started 2026-09-19 evening on `stream/nav` at `9f864474` (= `main`'s tip; the branch was
 fast-forwarded at worktree creation). A baseline `make remote T=check` was started before any edit._
 
+### REPORT — read this first (nav, round 9, 2026-09-20)
+
+**Nothing nav built this round is on the default path, and that is the report, not an apology.** Two catalogue rows
+were built, verified against the plant, measured against pre-registered behaviour scenarios, and left behind their
+switches with what they cost written down. `main` takes **no behaviour change** from this branch: the sim baseline
+does not move, and the default path reproduces the pristine scenario numbers exactly. That is round 8's shape on
+purpose — *three things were built, measured and thrown away, and all three were cheap because they were measured
+before shipping.*
+
+| Item | State |
+|---|---|
+| **N0** ground rules, gate counter, facings in the probe | **done and shipped** — the only behaviour-affecting work that is on by default, and it is instrumentation |
+| **N1a** A7's priority table | **done**, reviewed by combat and feel, both reviews folded in, contract **S5** adopted from it |
+| **N1b** A7 in code | **built, measured, opt-in.** Waiting on squad's leash commit to re-measure and flip |
+| **N2** A11 dynamic window | **built, measured, opt-in.** One open behaviour question (the duel's 6.3 s) |
+| **N3** A1 event-triggered replanning | **not started, and deliberately** — see below |
+| **N4** A4 clothoids | **not started**; its motivation is now *measured* rather than inherited (70% of gate refusals are `off_mesh`) |
+| **N5** A6 | **blocked on S4**: nav has signed, feel authored, control signs with two requirements; its shopping list is collected below |
+| stretch: `NavigationAgent3D` vs our ORCA | **done** — compared, not swapped, with the verdict and what would change it |
+
+**Why N3 is not started, on the brief's own reasoning rather than on the clock.** The sequencing argument nav made
+and `workstreams.md` adopted says A1 goes third because *"its latency falsifier needs a stable decision layer
+underneath it"*, and it is *"the row most likely to look like a win while hiding a regression"*. **A7 and A11 are
+both parked pending measurement decisions, so that layer is not stable.** Building A1 on top of two switched-off
+rows would mean measuring a cadence against a decision layer that is about to change — which is how round 7 spent a
+round measuring a term that was never in the code path. The precondition is a fact about the branch, not a
+preference.
+
+**The single most useful measurement of the round**, because it turns a zero into a mechanism: the arrival arc fired
+**5168 times** in a 45 s fight where round 8 measured **`gates aimed 0` in both arms of an A/B** and could not tell a
+broken instrument from an inert mechanism. **70% of its refusals are `off_mesh`** — the gate lands inside geometry —
+which makes A4 (N4) a measured row rather than an inherited one, and disproves squad's round-8 prediction that
+element spacing would refuse most slot gates (`on_approach` is 49 of 6364, under 1%).
+
+**What to playtest** (the lead, when any of this is on — none of it is yet): `make skirmish` is unchanged by this
+branch. To see A7: `make nav-fight NAV_FLAGS=--nav-off=a7`; A7+A11: `--nav-off=a7,a11`. Both print `NAV_FIGHT_ARM`
+with the live treatment and report `arms` counters, so an arm that did not engage says so.
+
+**Merge notes (shared files):** `game/ai/combat_motion.gd`, `game/ai/movement.gd`, `tests/nav/fight_probe.gd`
+(metrics' S3 emitter hook is expected here at CP1 — I review it at merge), `_agents/navigation.md`,
+`_agents/streams/nav.md`. **No file outside nav's ownership was touched.** `tests/baselines/sim_state_hash.txt` is
+deliberately NOT re-recorded: nothing on the default path moves it.
+
 ### The plan (written first, N0)
 
 Smallest foundation first, and the brief's order is the order — it was argued in round 8 and adopted in
