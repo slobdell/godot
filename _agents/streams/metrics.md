@@ -290,11 +290,9 @@ is the orchestrator's call, not his.)
 >    errored, and the guard was skipped. The round's recurring defect, inside the code written to prevent
 >    it, defaulting to the reassuring answer.
 >
-> **A6's control arm is read (the last owed item), and one of nav's three logs is corrupt.**
-> `p7-pit.jsonl` carries a single flipped bit — line 143,873 of 273,578, `0x78` `x` → `0xf8` — so it is
-> refused and **the earlier pooled rotation figure 0.3203 is not reproducible from the files on disk**. The
-> loud failure is the lucky case: in a digit instead of a key name it would have read as a valid coordinate.
-> The format has no per-line checksum; that gap is written down, not filled. From the two usable logs:
+> **A6's control arm is read — the last owed item — and the pooled figure stands.** From nav's scratchpad
+> copies (**not** from `build/`, see below): yard 0.304/0.631, pit 0.321/0.595, terminus 0.331/0.738,
+> **pooled 0.3203 (active 0.6622) over 96,054 active ticks — reproduces the earlier figure exactly.**
 >
 > | map | commit | off_corridor | active | eff_mean | cusp/min | sparc |
 > |---|---|---|---|---|---|---|
@@ -305,6 +303,19 @@ is the orchestrator's call, not his.)
 > decimals.** A claim meant to survive the rotation should be pre-registered against SPARC and the
 > off-corridor pair — cusp density is mostly measuring the arena. The two commits differ by one Status file
 > and no code, which the mixed-commit banner flagged and its own printed command settled.
+>
+> **One flipped bit, and I got its cause wrong the first time.** `build/metrics/p7-pit.jsonl` on this laptop
+> has `0x78` `x` → `0xf8` at line 143,873 of 273,578; nav's copy is clean and the same length to the byte. I
+> reported the file as unusable and the pooled figure as unreproducible; **both were wrong** — nav kept
+> copies out of `build/`. And the mechanism is not the stale-artefact story it looked like: the `build/`
+> copy's **mtime never changed**, so no rsync rewrote it. The byte changed under a file nobody touched, on
+> this laptop. The transfer is exonerated for this one; the stale-`build/` problem nav found is real and
+> **separate**, and this file is not an instance of it.
+>
+> Both are now guarded anyway: the copy-back mirrors the run (`--delete`, with `*.log` protected so a live
+> redirect is never unlinked) and verifies a sha256 manifest the box writes. That localises the next flip;
+> it does not prevent one. **The loud failure was the lucky case** — in a digit instead of a key name it
+> would have read as a valid coordinate, and no per-line checksum exists to catch that.
 
 > **Corrected by combat, and it was my error to make:** I reported `scenario_dodge_rate` to the orchestrator
 > as a regression without opening the file, whose own header says KNOWN-FAILING since CP4 and "Not in make
