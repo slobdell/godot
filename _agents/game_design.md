@@ -1994,6 +1994,17 @@ Stage lighting already has the vocabulary, and it maps onto what the renderer ca
 - **Visual only.** The show reads the match and never writes it; it runs on frame time, not the tick (nothing in the
   simulation may depend on it); pre-registered: the sim hash does not move.
 
+**First frames (show, 2026-09-20 03:27, builder0, `685df1f2`; 30 frames, terminus and yard, `shader errors 0`, sent to the
+lead):** the block edges (chamfers, bevels, parapets) carry an emissive strip where they were a pale albedo, each block
+on its own clock; window grids vary per window; the rim breathes. **Decided overnight:** the direction is approved; the
+edges currently read as an outline on every building, some in cool white, which `art_direction.md` warns against, so a
+second variant ships beside it (edge energy −35%, colours from the venue neon palette per block, no cool white), feel
+picks the default in the materials' terms, the lead overrules in the morning. Stills cannot show a cue (a chase is
+motion; last-stand caught at a strobe trough reads dimmer than idle), so short clips per cue and a before frame from the
+no-show arm follow. The kill ripple did not read in its frame (likely no headroom above the battle cue's 0.96) and is
+unproven until shot against lull. Cost: 15 uniform writes per frame idle, 16 on a kill, 25 in the victory sweep, driving
+eight buildings, every window, six rim edges, every sign and floodlight — O(driven materials), not O(instances).
+
 **The bar is his: "make it beautiful."** Frames at his pose (21°, FOV 35, 49 m) on the Terminus and the yard, before
 and after, plus `make perf-scene` numbers on builder0 showing the locked 30 fps at 1080p with 30 a side still holds.
 He judges the look; the frame time is the check.
