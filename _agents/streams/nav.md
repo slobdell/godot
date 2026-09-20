@@ -262,6 +262,31 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Round 8 report (nav, 2026-09-19) — the short version
+
+What the round answered, in the order the orchestrator set it:
+1. **The yaw ramp shipped** (`9f8c21e2`): tracked and hover hulls reach their turn rate over 0.25 s. The tank pivot went
+   from 90% of peak in 1 tick to 7. It moves the sim baseline.
+2. **The semi does NOT yaw in place**, isolated or in a fight: 0.11–0.74 events per semi-minute against 3.4–3.7 for the
+   gang scout. What the lead saw doing it is the small gang cars around the trucks.
+3. **The lead's back-and-forth IS real**, measured on main (`aa984edd`): attack-move oscillation 5.3–7.2% on all four of
+   his maps, 25–28 units per map, not a few stuck ones. That is the headline of the round.
+4. **Commitment could not have cured it**, because a standoff HOLD returns index −1 and never consults the commitment
+   bonus. About 40% of the wheeled events happen while holding.
+5. **Hold hysteresis:** built, measured, missed its bar (scouts ≥20% lower on 1 of 4 maps), now opt-in
+   (`--nav-off=holdband` turns it ON).
+6. **Gear flips are three things, not one** (a reverse ORDER, a `face` order's creep K-turn, plain `move_to`), so a
+   single gear-change cost would tax all three to treat one. Built, measured as mis-aimed, reverted before shipping.
+7. **Flow fields: a measured null**, reverted with their switch.
+8. **Reeds–Shepp is parked**: the 20.7° "overshoot" that justified it was the measurement wrapping a 201° turn.
+
+Instruments this round gained (they outlast the features): archetype pinning and `FIGHT_REQUIRE` refusal in nav-fight,
+in-place-yaw counters with provenance, gear-flip counters, unwrapped rotation headings, and `--nav-off` refusing an
+unknown mechanism name.
+
+Owed next, in order: the wheeled arrive-on-heading arc (contract agreed with squad: a move order may carry `facing`),
+then the terminus oscillation at 45 a side (0.060 — the first number the size of the lead's complaint).
+
 ### Round 8 (nav, 2026-09-19) — read this first when resuming round 8
 
 The lead's verdict on round 7 was "it still sucks". The orchestrator set the order: (1) angular acceleration at the plant, plus
