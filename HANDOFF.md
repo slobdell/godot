@@ -35,6 +35,11 @@ spot it can see instead of a fixed 30 m offset that the bigger hulls put behind 
 
 ### What you should look at (all sent to you overnight; paths on this laptop)
 
+0. **The show's four dials, in your terms: `_agents/show_dials.md`** (merged 10:30). Watch the two clips before the
+   stills. It leads with the correction: the knob you will reach for is brightness and the one that reads as *alive*
+   is the band's width. Two calls are posed as yours (roofline vs full outline; whether the `last_stand` strobe
+   survives) with feel's and show's argument stated so you can overrule knowingly. Adding a cue is ten lines of JSON
+   and no code: `_agents/lighting.md` §4b.
 1. **The roster at real relative scale**: `~/projects/godot-scale/build/roster-lineup/lineup_pose.png` (your pose) and
    `lineup_factions.png`. K = 0.707, rig-anchored. **Overrule:** `Units.RIG_LENGTH_M` → 19.8 for real metres. feel's
    art review of the resize (08:40): it works, the rig dominates; two things for your eye, neither a defect: the
