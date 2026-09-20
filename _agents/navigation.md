@@ -41,6 +41,35 @@ undone: **when a fact about the world is one query away, query it.** Both habits
 inference that is right most of the time — which is the worst kind, because it fails silently and only when it
 matters.
 
+### Lesson (number to be assigned by the orchestrator — nav did not self-assign, see the note below): **a positive control proves the mechanism fires, not that the row is worth shipping**
+
+A4 was measured twice and the two measurements point opposite ways:
+
+    positive control   yard: 423/423, 403/403, 233/233, 180/180, 729/729 blocked gates rescued -- 100% every seed
+    the fight          yard seed 3 attack-move progressing -14.4%, seed 5 -12.8%   <- the two WORST breaches
+                       terminus, where A4 rescues 0-13%, breaches once and by less
+
+**The map where the mechanism works perfectly is the map where it hurts most.** A4 buys the gate and spends the
+fight: it finds a navmesh-valid curved entry for every blocked gate on yard and the hulls that take those entries
+fight measurably worse. Had the row been judged on its positive control alone — and 403 of 403 is a compelling
+number to be judged on — it would have shipped.
+
+**The rule: a positive control needs a COST bar pre-registered beside it, and the cost bar has to measure the thing
+the feature exists to serve.** nav's did: *"routing to a gate costs distance, and if it costs fighting it is not
+worth it"*, written before A4 was built. That sentence is the whole reason this round did not ship a row that
+reaches 100% of its targets.
+
+**The corollary that is easy to miss:** because the cost rises with how often the mechanism engages, **a weak arm can
+look safe**. terminus engages A4 rarely and breaches once; yard engages it constantly and breaches twice as hard. A
+row screened only on maps where it barely fires will pass its guard and then fail in the field on the map it was
+built for. **Check the guard hardest where the treatment is strongest**, which is the opposite of where a
+headroom check sends you.
+
+**On the numbering:** nav wrote "Lesson 158" below without checking the register, and the orchestrator has since
+assigned 159 and 167 to other streams. **158 may collide.** Lesson numbers are a shared, global sequence and a
+worker should not mint one — ask the orchestrator. Recorded here rather than quietly renumbered, because a lesson
+about drift that itself drifted is worth one line.
+
 ### Lesson 158: before building a recovery, check the PLANT can produce the failure you are recovering from (nav, 2026-09-20)
 
 nav built a recovery for a `face` order that never comes round, measured it, and found it **inert** — not because the
