@@ -198,8 +198,14 @@ test: import ## Run the headless test suite (FILTER=substring to run a subset; T
 # because it guards an instrument only arena reads. A12 is the opposite case: contract S3 makes EVERY stream's
 # falsifier this round read from `tools/metrics/` and no other tool, so its guards sit on the hot path of every
 # measurement anyone publishes -- and it costs 0.6 s.
+# `ai-scenarios-check` joins for lesson 159's reason: nav found squad's leash commit errors in a scenario that
+# `check` never ran. It is gated on a CHANGE in the passed/failed/pending counts rather than on outcome, so the
+# one laptop-speed-sensitive perf case cannot redden the gate while a new script error still does (mk/metrics.mk).
+# **It needs no exclusion edge, and that was checked rather than assumed:** `run_scenarios.gd` binds no port and
+# touches no `user://` path, and the target writes only `build/ai-scenarios.log`.
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
-                 sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest
+                 sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
+                 ai-scenarios-check
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #
