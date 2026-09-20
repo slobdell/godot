@@ -272,9 +272,26 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 |---|---|
 | The hinge's frame cost (M1) | **Not measured, and the quiet box did not fix it.** Two six-cycle runs on an *empty* builder0 both came back NOT USABLE. The cause is now sized: frame cost regresses on vehicle census at **0.677 ms per vehicle (r 0.921, r² 0.85)**, and the battle thins monotonically through the run (90 → 72), so census alone is worth +0.68…+3.38 ms per cycle against a total cost spread of 6.39 ms and a mean of +0.01 ms. **The confound is the size of the signal, and in one cycle larger than it** — and it is a drift, not noise, so more cycles will not average it away. Needs combat's census-freeze tune (damage off, no deaths, no respawns, default off); the bench will then *require* it and refuse to report when it is off. Do not quote a trailer number until then. |
 | The Terminus lighting | Diagnosed and handed to the stream that owns the map file |
-| Roof dressing on the Terminus | Your new camera shows roofs far more often; they are undressed. A frame first, then surface treatment |
+| Roof dressing on the Terminus | **Built and green at `df55fa1d`** (9/0). Seven seeded housings/ducts/tanks per roof, inside `_shrink(poly, 2.2)` so nothing overhangs the parapet. **Cost: no new draw call and no new material** — appended to the block's existing SurfaceTool, so a block is still the two surfaces its docstring promises; the test asserts the surface count rather than trusting it. The band is taken OUT of the authored height, not added on top, because the mesh must stay inside the collision box ("what blocks a hull and a shot is what you see"); total height unchanged. Frames below. |
 | The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
+
+**Two traps the roof dressing walked into, both caught before any frame was rendered.**
+
+1. **The plant needed its own shader band, not the roof's.** The roof branch shades *every* non-upward face as a lit
+   parapet edge (`bevel_face = world_normal.y < 0.9` → `edge` colour and `edge_mask = 1.0`). Tagged as roof, a duct
+   would have had **four glowing sides**. Hence `PART_CLUTTER` and a `part < 0.85` band between the shopfronts and
+   the roof.
+2. **The tag is 0.8, not the 0.75 I first wrote, and 0.75 would have failed silently.** Vertex colours may be 8-bit
+   and the clutter band sits above the shopfronts' `part < 0.75`: **0.75 quantises to 191/255 = 0.7490, below its
+   own band's floor**, so every duct on every roof would have shaded as a shopfront — and only in builds that
+   quantise, so it could have shipped looking fine here. 0.8 is 204/255 exactly. There is a test asserting the tag
+   survives the round trip, because this is not the kind of thing anyone rediscovers by looking.
+
+**And one invariant deliberately broken:** `tiers_of`'s last tier used to end at the block's authored height and a
+test asserted it. It now stops `ROOF_CLUTTER_H` short, because reserving the band is what keeps the mesh inside the
+collision box. Nothing outside this file and its tests reads `tiers_of` — checked, not assumed — and the invariant a
+reader actually cares about (a block is as tall as its layout says) is unchanged and asserted on the mesh AABB.
 
 **Terminus lamps (scale's six inside the grid, `fba3b298`): floor YES, vehicles NO.** Frames
 `build/crowd-look/ahead-p{21-d049-f35,35-d120,50-d160}.png`, `make remote T="crowd-look ARENA=terminus
