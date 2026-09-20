@@ -420,6 +420,15 @@ out 43% faster** — impossible, therefore a measurement of the noise); and the 
 run on the box. Until it lands, the only honest statement is the bound from the counts: no geometry, no lights,
 zero errors, 15 uniform writes a frame.
 
+### Provenance of the frames and clips
+
+**Everything in `build/show/` was shot at `96e10e82`, before feel's `637ad4de`.** That commit fixes
+`CityBlock.neon_color()` so named colours are honoured, which **changes the Terminus's block band colours** — the
+map in these frames wears the accidental signage palette (amber / warm white / red / violet), not the cyan and
+magenta its layout asks for. The show's own effect is unaffected: the bands are surface 1 and nothing here touches
+them. Not re-shot, deliberately — but **do not compare these frames against a Terminus rendered after `637ad4de`**
+and read the colour change as the light show.
+
 ### The readability gate forced one look decision, and it should not be buried
 
 The calibrated gate passed 35 of 36 frames, most of them **positive** (up to +6.0%: the show makes the fight
