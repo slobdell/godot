@@ -479,7 +479,41 @@ reading is that this was fixed before I measured it.
 - **Not landing the assertion was right for a second reason I did not have at the time:** had I landed it, my branch
   would now carry a failing test asserting a defect that main has already fixed.
 
-### ⚠ CURRENT STATE (2026-09-19, read this before quoting any hash)
+### ROUND 8 CLOSE — what is verified, what is not, and the evidence for each
+
+**VERIFIED, with the wrapper's own exit line** (the only thing that counts):
+
+| hash | targets | result | log |
+|---|---|---|---|
+| `2cf61f57` | 13 (no `sim-baseline`) | **exited 0**, 1181 passed / 0 failed | `gate4.log` |
+| `80bcd085` | 14 (+ `match-pytest`) | **exited 0**, 1187 passed / 0 failed | `gatefinal.log` |
+| `332033f1` | 14 | **exited 2** — 1250 passed / 0 failed, then `announcer-pytest` on `main`'s `terminus` | `gate_rig.log` |
+
+**NOT evidence, and named here so nobody mistakes them for it:** `gate.log` and `gate2.log` have **no exit line at
+all** — I killed both to relaunch on newer tips. `gate3.log` says `exited 143`: I killed that one by accident while
+clearing builder0 orphans. **A log without `>> remote: make ... exited <N>` is a run that was cut off, not a pass**,
+and three of my six gate logs are exactly that.
+
+**UNVERIFIED: everything after `332033f1`.** builder0 is down (`No route to host`), so it cannot be otherwise.
+**Combat should be carried into round 9 as unverified.**
+
+**What is actually unmerged:** 11 commits, of which **nine are docs or tooling**. Two touch `game/` and **cancel
+exactly** — `b84b9ff8` reverts the rig sizes for a control arm, `6c12ce00` restores them, and the diff between them
+is empty. **Against the merge base my only changed files are three:** `doctrines/sim_baseline_{green,rust}.json`
+and `mk/core.mk`. That is the widened baseline and nothing else.
+
+**The widened baseline moves the sim hash once, by construction** — it is a different match. **My local
+`5dbb0689ddffc1c0` must not be recorded:** this laptop is glibc-2.39, the baseline keys on libm, and recording a
+laptop hash would make the baseline wrong for builder0, the one machine that checks it. **Recording is the
+orchestrator's, from builder0** (invariant 2).
+
+**Round 9's first reading, not started:** `_agents/research_catalog.md` A2 (switched-system theory — a target switch
+should pay a cost proportional to the energy it destroys, which retires my flat 1.35 commitment bonus and explains
+why a hard veto made switch-and-switch-back *worse*: a timer delays a switch without pricing it, so the pressure
+discharges intact the moment it clears) and A3 (cover as a fraction of hull length occluded, which retires the
+12.19 m step).
+
+### ⚠ EARLIER STATE NOTE (2026-09-19)
 
 **`db837581` — the widened `sim-baseline` — is BUILT AND MUTATION-CHECKED LOCALLY, AND UNVERIFIED.** Not green.
 **builder0 is down** (`No route to host`, 100% packet loss, confirmed across sessions), so there is no remote
