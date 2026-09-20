@@ -167,6 +167,47 @@ directly.
 
 ## Status
 
+> ## THE BRANCH WAS RED BEFORE ROUND 9'S WORK STARTED, AND ONLY A FULL CHECK FOUND IT
+>
+> `make remote T=check` at `78aa496d`: wrapper `>> remote: make check exited 2`, runner **1501 passed, 33 failed**.
+> **Not green, not handed over as green.** The 33 split into 32 + 1.
+>
+> **The 32 are one cascade.** All carry the same message — `left 4 navigation region(s) on the map after 120
+> frames` — from the leaked-region guard in `tests/test_case.gd`, which says in its own text that it charges
+> whichever test runs *next*. Whole files go red together (all of `test_theme_trailer`, `test_units_catalog`,
+> `test_wheeled_arrival`, plus `test_combat_sim_cost`, `test_combat_suppression_bite`,
+> `test_match_spawns_and_results`). The orchestrator found the author: combat's `test_tank_yaw_fit` had a
+> `teardown()` override that never called super and leaked a foundry arena (44 bodies, 4 regions); it has been on
+> main since `53cc42e3` and has been charged to feel, scale, control and combat in turn. **Nothing here is owed on
+> those 32** — two arms are in flight, nav's sealed `_teardown()` (`49ed1fb3`) and combat's `await
+> super.teardown()` (`26754ef1`).
+>
+> **The 1 was control's, and older than the round.** `test_control_order_marks`' pin test failed in isolation too.
+> `ac4df0d7` asserted the pin draws what the CREWS were told and never what the task holds; `2cca6bea` reversed
+> that rule in `rts_controls.gd` and **did not run the file that asserted the old one**. `2cca6bea` was this
+> session's starting tip, so the branch carried a red test through all of round 9's drawing work. (Control's
+> branch only — `2cca6bea` is not on main, and main's copy of that test passes.) Rewritten at `19d87f5c` **to the
+> contract, not bent to the code**: the task's heading is drawn because since squad's `4cff69b6` it is the order
+> deferred, and the unanimity rule is kept, still asserted on the path it still governs — orders given directly to
+> units, where there is no task to read. `make test FILTER=control_order_marks`: **5 passed, 0 failed**.
+>
+> **The rule this cost, and it is the round's theme again: when a commit reverses a rule, run the file that
+> asserted the old one.** Every filtered run I leaned on all round was green and none of them touched that file.
+> A filtered run is a claim about the files it named and nothing else.
+>
+> **Prediction, written before the merge check is read.** On the post-merge tip: all 32 gone, control's pin test
+> green, 0 failed. Watching two things rather than assuming them — (a) if only combat's arm is on main, the leak
+> is fixed at its source but any *other* override that skips super is still live, so expect a smaller cascade
+> rather than none; (b) **the four teardown edits below are themselves overrides that stop calling super.** Under
+> nav's seal that is correct, but it is the same shape that caused this, so if the cascade reappears near
+> `test_command_readability`, `test_touch`, `test_command_camera` or `test_control_panel`, those edits are the
+> first suspect and not nav's seal.
+>
+> **Sequence agreed with the orchestrator, to spend one check and not two:** wait for word that both arms are on
+> main → `git merge main` → the four teardown edits under the seal → one check on that tip, which is the one that
+> merges.
+
+
 > ## CP2c, THIRD FRAME: THE ORDERED HEADING NOW READS. WHAT THE FIRST TWO ATTEMPTS BOTH GOT WRONG.
 >
 > **The frames** (`78aa496d`, builder0, shot 14:48): `build/control-playtest/{1920x1080,1280x720}/9_facing_drag_ordered.png`
