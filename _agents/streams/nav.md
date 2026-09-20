@@ -274,7 +274,7 @@ thrown away, and all three were cheap because they were measured before shipping
 | **N1b** A7 in code | **built, measured, opt-in.** squad's leash was measured and **did not fix the drift** — the region engages (1477 rejections, radius 14.0 m) and `CombatMotion` decides under a tenth of a hull's ticks. See *THE LEASH IS NOT IN THE ROUTE PATH* |
 | **N2** A11 dynamic window | **built, measured, opt-in.** One open behaviour question (the duel's 6.3 s) |
 | **N3** A1 event-triggered replanning | **built, measured, opt-in — and a NEGATIVE result that relocates P1.** The cadence is ~3 % of re-plans in a fight; A1 fails its own falsifier there and passes only in isolation |
-| **N4** A4 clothoids | **built, measured, opt-in.** Passes its positive control **on yard** — 403 of 403 blocked-corridor gates reached — **but yard is the only map of four with any blocked gates at all**, so the A/B is refused on three of them and A4's case is a property of cluttered maps, not of the game. See *A4'S HEADROOM EXISTS ON ONE MAP IN FOUR* |
+| **N4** A4 clothoids | **built, measured, opt-in — and its pre-registered A/B FAILS.** The positive control passes perfectly on yard (100 % of blocked gates, every seed) and barely on terminus (0–13 %), but `net_over_path` falls in 11 of 16 cells, `oscillating_share` rises in 9 of 16, and the attack-move guard is **breached on 3 of 10 seed-runs** — worst on yard, where A4 works best. **Default stays OFF on measurement.** See *A4 RESULT* |
 | **N5** A6 | **blocked on S4**: nav has signed, feel authored, control signs with two requirements; its shopping list is collected below |
 | stretch: `NavigationAgent3D` vs our ORCA | **done** — compared, not swapped, with the verdict and what would change it |
 | stretch: the `face` order's missing recovery | **built, measured, opt-in — a NEGATIVE result that relocates the defect to combat.** It is **inert**: a hull's rotation is never collision-resolved, so a hull under a `face` never stalls and the detector correctly never fires. combat has confirmed it and sequenced the plant fix. See *THE FACE RECOVERY IS INERT* |
@@ -742,6 +742,66 @@ detail**, and the distinction is exactly the sort that turns into an over-claim 
 **Not comparable across runs:** `offered` 6819 here against 6364 earlier. A4 changes where units drive, so the fights
 diverge and the totals move with them. Every number above is from **one** run and is internally consistent; none of
 them is a before/after against a different run.
+
+### ⚠⚠⚠ A4 RESULT: it passes its positive control on yard and **FAILS its pre-registered primaries and its guard**
+
+**The verdict is that A4's default stays OFF, now on measured grounds rather than on caution.** Run on the merged
+tree (`0d8587d6`), **laptop**, terminus and yard, seeds 1 3 5 7 9, 120 s, busy 0, `AB_OFF=a4`. `pit` refused for no
+headroom. Arms labelled by **treatment**, never by the flag name (lesson 167: `--nav-off=a4` *enables* A4, so the
+file `nav-fight-ab` calls `off` is the treatment).
+
+**The positive control — `a4_rescued_blocked` against `off_mesh_fit.none`, never the aggregate:**
+
+| seed | 1 | 3 | 5 | 7 | 9 |
+|---|---|---|---|---|---|
+| **yard** | 423/423 | 403/403 | 233/233 | 180/180 | 729/729 — **100 % on every seed** |
+| **terminus** | 457/14734 = **3.1 %** | 0/794 = **0 %** | 2568/19245 = **13.3 %** | 2504/20680 = **12.1 %** | 0/3060 = **0 %** |
+
+yard's seed 3 reproduces the earlier **403 of 403** exactly, which rules out a regression: **the difference between
+the maps is the maps.** `a4_refused_curvature` is **0 in all twenty runs**, so the turning-circle guard is not
+rejecting anything — the fan generates curves (729–5772 per run) and on terminus they simply do not land on the
+navmesh.
+
+**Why, structurally:** a clothoid works by *leaving the approach axis*, which needs lateral room. yard's blockages
+are rows of containers with lanes beside them and a curve swings around the end of one. terminus is *"20 m streets
+between sheer neon-edged towers"* — leaving the axis there means hitting a tower. **A4 solves "blocked corridor with
+room beside it" and cannot solve "blocked corridor in a narrow street".**
+
+**And here is the result that decides the default. The pre-registered primaries FAIL and the guard is BREACHED.**
+
+- **`net_over_path` (pre-registered ↑):** **down in 11 of 16** per-wheeled-type seed cells.
+- **`oscillating_share` (pre-registered ↓):** **up in 9 of 16**.
+- **Guard — attack-move `progressing` must not fall more than 10 % (the amendment tightened this to *any* map):
+  BREACHED on 3 of 10 seed-runs.** yard seed 3 **−14.4 %**, yard seed 5 **−12.8 %**, terminus seed 5 **−10.4 %**.
+
+**The pattern in that is the finding, not the averages: the better A4 works, the more it costs.** yard is where the
+mechanism succeeds completely (100 % of blocked gates rescued, every seed) and yard carries **both of the two worst
+guard breaches**. terminus, where A4 rescues 0–13 %, breaches once and by less. Routing to a curved gate buys the
+gate and spends the fight — which is **exactly what the guard was written to catch**: *"routing to a gate costs
+distance, and if it costs fighting it is not worth it."*
+
+**What is NOT claimed.** This does not say clothoids are the wrong primitive, and it does not retire the row. It says
+**this consumer** of them — the arrival arc aiming a gate — pays more in fighting than it wins in reached gates, on
+both maps in the rotation that have any blocked gates at all. The claim is also still only *"a navmesh-valid curved
+entry was found"*: whether a hull then **arrives on the ordered heading** from a curved entry has no test today, as
+the N4/A4 RESULT section has said since it was written. That remains N4's next piece of work and it is now **more**
+important, because a mechanism that hurts the fight while landing its gates may be failing at precisely that step.
+
+**Two defects in nav's own instrument, recorded because they bound how far these numbers can be pushed.**
+
+1. **`off_mesh_fit.none` counts EVENTS, not distinct gates.** A hull sitting off-mesh re-requests a gate every tick
+   and every refusal increments it. That is why terminus seed 5 shows **19 245** blocked gates in 120 s against seed
+   3's **794**. Numerator and denominator both scale with how long a hull stayed stuck, so the *rate* is sound
+   within one run and the **absolute counts are not comparable across runs**. yard is unaffected in practice
+   because rescued and blocked are equal there.
+2. **The seeds are not replicates.** Gates offered ranges **9077 → 57078** and the blocked share **0 % → 37 %**
+   across the ten runs. These are five different fights per map, not five samples of one, so **no mean across seeds
+   is reported here** — only the per-seed table and the count of breaches.
+
+**`NAV_FIGHT_ARM` prints `a1=`, `a7=`, `a11=` and no `a4=`** (`fight_probe.gd:167`). The arm is still provable from
+`off=["a4"]`, so these runs are sound, but the inconsistency is the same shape as the round-9 bug where the line
+printed the opposite arm. **Fixed after the A/B rather than during it**, because changing the probe mid-experiment
+would split provenance between the two maps for a print-only gain.
 
 ### ⚠⚠ TERMINUS REVERSES IT: A4's case is real on TWO of the three maps in rotation, and terminus is its BEST
 
