@@ -21,9 +21,19 @@ extends RefCounted
 ## `reset_physics_interpolation()` fixes what is DRAWN, not what is there. The solver spends its first frames
 ## resolving overlaps that exist only in its own copy of the world.
 ##
-## Keep this. The next person to doubt a placement will want the table, and the lesson it carries is that a scene
-## which has not come to rest reports positions that are a snapshot of something still moving -- `settled` and
-## `ran out of frames` are different conditions and must be reported as such.
+## Keep this. The next person to doubt a placement will want the table, and it carries two lessons that outlive the
+## bug:
+##
+## **A scene that has not come to rest reports positions that are a snapshot of something still moving.** `settled`
+## and `ran out of frames` are different conditions and must be reported as different ones, or a reader takes a
+## moving scene's numbers for a resting state.
+##
+## **THIS PROBE GOES QUIET ON A SMALL ARMY, AND THAT SILENCE IS NOT AN ANSWER.** Run it on two units and the
+## deltas are 0.000 in x with a gentle creep in z under power -- clean, and completely misleading. The permutation
+## needs a full army before the body/node mismatch produces overlaps big enough to resolve, so a small-army run
+## shows nothing *because the mechanism cannot act at that scale*, not because it is fixed. Reproduce with the
+## army the failing test uses (`Army.MAX_ARMY_UNITS` a side, both teams) before concluding anything from a clean
+## table. An instrument silenced by scale reads exactly like an instrument reporting good news.
 ##
 ## Usage, from a TestCase (`self` supplies `wait_physics_frames`):
 ##
