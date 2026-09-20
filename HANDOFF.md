@@ -137,7 +137,16 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
 
 ### Decisions made on your behalf (each reversible in one place)
 
-**The day's decisions (10:00–22:20), newest first; each has its measurement beside it above:**
+**The afternoon's decisions (13:00–16:30), newest first:**
+- **combat merges at its TIP `63155ffb` after one more check, not at `1db4893c`** (a red I could name: its own stale flag assertion). The sim-baseline move to `1ea332e7bc268d2a` is recorded on the merged tree with the settle tick as its one declared cause. Reversal: merge `1db4893c` at its lines instead and record then.
+- **Combat's pushback accepted: `test_combat_no_damage` keeps BOTH resets** (the static is the reader's fallback when no tune is set, so erasing only the key leaks true). My instruction to drop the static reset was wrong and is withdrawn.
+- **Metrics' quiet-window re-record is PARKED**; `ai_scenarios_count.txt` stays at `42,2,3,0` (stale for a written reason) until a natural gap tonight with the fixed slot ceiling (`149bcd5d`). Twelve held slots while four streams check was the wrong trade. Reversal: `TANK_SQUAD_EXCLUSIVE=1 make remote T=ai-scenarios-record REASON=...`.
+- **feel's tip `786898b3` merged WITHOUT its own check**, stated in the merge message (bench code `make check` never runs, executed on builder0 in the refusing run). Reversal: none needed; the next main check's lint parses it.
+- **No cherry-pick of combat's one-line fix ahead of its check** (the morning's unverified merge cost main 25 red minutes); nav's seal turned out to cover it anyway.
+- **Control and scale released to merge main and check once** on the strength of the 49ed1fb3 result, without waiting for combat's arm.
+- **Round 10's plant item re-ordered by combat's refutation**: the predicate question first, the ordering second, diagonal-derived spacing third as a candidate with the table beside it. The constraint stays OFF.
+
+**The day's decisions (10:00–22:20 — the 22:20 is 13:50, a typo carried forward), newest first; each has its measurement beside it above:**
 - **The hull-rotation plant constraint stays OFF** (reversed at 22:20 from my own 17:40 enable): with it on, four of five squads sit 87–91 m from their slots; it ships only if the world-only mask passes all four numbers. Flip: `Tank.yaw_fit_enabled`.
 - **The oriented-box hull geometry stays behind its knob, disc default**, until the gangs-vs-law series with feel's matrix as the before says otherwise. Flip: `match.hull_disc`.
 - **The two no-mesh units keep their old box** (2.40 × 2.40) after the lineup showed the reference-derived width made a slab flatter; **one hull mesh each is your paid-generation gate**.
@@ -212,6 +221,21 @@ with wrapper logs protected, and the habit becomes: wrapper logs go in the sessi
 - **show:** item 7 (stretch) not started.
 
 ### The round's structural finding, and what round 10 should spend itself on
+
+**Round 10's list, in the order I would brief it (each item's evidence is in the stream lines above and the lessons):**
+1. **The plant predicate** (combat): why a clear hull with 3.19 m of room accepts none of three candidate yaws for 1135 consecutive ticks; instrument each candidate's `_penetration` per collider per tick on `Charlie_3`; then the ORDERING (five_squads in the other four squad orders); then diagonal-derived spacing as a CANDIDATE. Constraint OFF throughout.
+2. **The spawn grid gives a hull room to turn** (scale): four crews overlap at spawn on the settle-tick tree; the grid is a second site for the half-diagonal arithmetic, and it is a true defect independent of item 1.
+3. **Every clearance constant names the motion it licenses** (nav/squad): `HULL_CLEAR_M`, the bake radius, `Avoidance.radius_of` (the seventh disc site, with its falsifier).
+4. **ORBIT radius reads hull length** (combat): the engine-deck scenario is red on main because length is the driver (0 → 22 deck hits at 3.6 m); the scenario re-records with that REASON.
+5. **The region guard records the count at SETUP** (metrics/nav): "arrived dirty" instead of "left 4", the observer as witness not accused; scale's bodies-guard fix is the model.
+6. **The gangs-vs-law series with `match.hull_disc` as the arm** (combat), feel's matrix (pit 20 %, yard 50 %) as the before, per cell; the box becomes default only on a result no worse on every cell.
+7. **Your paid gate: one hull mesh each for `tank` and `burner`** (the two units that do not read as vehicles).
+8. **Per-faction hull rim light** (feel), pair discipline; the single-variable lamp pair; the trailer's frame cost with a working freeze (three refusals so far).
+9. **Heavies-in-alleys: your call** (should hulls above the bake radius simply not route through alleys?); nav prices not deciding.
+10. **The show's two calls** (the decision pair and the luminance gate's one red), sent with the fifth run's frames.
+11. **Delta's margin; the `_is_clear` yaw gap; the held wheeled hull's facing threshold** (nav's pre-registered rows).
+12. **The load-order knob test pattern** (two child arms, differ-assertion first) becomes the template for every knob; the drain-between-scenarios question for the scenario count (`42,2,3,0` vs `41,3,3,0`).
+
 
 **A second structural consequence of the resize, measured by nav at 10:35 (`c025bc6b`, post-CP2 roster):** the navmesh
 is baked for a 2.0 m agent (`arena.tscn`, mirrored by `NAV_AGENT_RADIUS`) and **14 of 21 units now have an avoidance
