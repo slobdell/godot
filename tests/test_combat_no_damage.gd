@@ -12,11 +12,20 @@ extends TestCase
 const MATCH := preload("res://game/match/match.tscn")
 
 
+## ⚠ `await super.teardown()` IS THE LOAD-BEARING LINE HERE, and it was missing. `_tank()` calls
+## `add_to_tree(game_match)` -- a whole `Match` per test -- and an override that never reaches the base frees none
+## of it. Same defect as `test_tank_yaw_fit`'s, whose foundry arena cost feel 38 failures observed by a test that
+## created none of it, and whose residue silently moved a rig 8 cm and turned `applied 0` into `applied 3`. Found
+## by control, in a file I had edited an hour earlier without noticing.
+##
+## BOTH resets stay, and dropping the static would be a regression rather than a tidy-up: `Armor.no_damage_on()`
+## reads the tuning key FIRST and falls back to the static, so a key erased while the static is still true leaks
+## `true` into the next test through the fallback. The dictionary is erased by KEY, never cleared -- `Units.tuning`
+## is process-wide and `clear()` would take every other test's knobs with it.
 func teardown() -> void:
-	# ERASED, not cleared: `Units.tuning` is a process-wide static and `clear()` would take every other test's
-	# knobs with it. The static is reset too, since a test may set it directly.
 	Units.tuning.erase("no_damage")
 	Armor.no_damage = false
+	await super.teardown()
 
 
 func _tank() -> Tank:

@@ -31,8 +31,10 @@ func _use_the_box() -> void:
 
 ## Restored on EVERY exit, including a failing one: `Units.tuning` is a static and a test that dies holding the box
 ## would hand the default to whatever runs next -- the leak-into-the-next-test shape that cost this round two shards.
+## Reaches the base, for the same reason as its siblings: owning nothing today is not a property that stays true.
 func teardown() -> void:
 	Units.tuning.erase("hull_disc")
+	await super.teardown()
 
 
 ## The orchestrator's two cases, hand-computed from `hull_size` and depending on no series: a shell passing 3 m
