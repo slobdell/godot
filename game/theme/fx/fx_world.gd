@@ -10,7 +10,26 @@ extends Node3D
 
 ## Emitted when effect budgets change (FxQuality tier switch).
 signal quality_changed
-## Something the crowd should react to (art X5): weight 1 = a kill, ~0.15 = a hit. The arena's CrowdSystem listens.
+## Something worth reacting to (art X5). **THIS IS NOT A KILL SIGNAL** -- it fires on every hit, several times a
+## second in a 30-a-side fight -- so a consumer that ignores `weight` will fire several times a second too. Round 9
+## (show, the orchestrator): a new consumer read this line as "kills", which the old wording ("weight 1 = a kill,
+## ~0.15 = a hit") did not stop. Every emitter, and what every consumer does with it:
+##
+## | weight | emitted by | what it is |
+## |---|---|---|
+## | **1.0** | `fx_world.gd` (this file), `explode(big = true)` | a kill |
+## | **0.5** | `weapon_fx.gd:378` | a weak-spot hit |
+## | **0.3** | `weapon_fx.gd:278` | a plain hit |
+## | **0.15** | `fx_world.gd`, `explode(big = false)` | a small explosion |
+##
+## Consumers today, all of which gate: `CrowdVoice.react` (roar >= 0.9, cheer >= CHEER_WEIGHT, else the murmur
+## only), `CrowdSystem.react` (a ripple, and only if it beats the ripple already running), `AdBroadcast`
+## (`>= 0.9`: the ad glitches on kills alone -- which is also what makes the Syndicate airship's screens glitch,
+## since they share the channel's material), `LiveFeed` (`>= 0.3` to remember, `wants_replay` to replay).
+##
+## **If you add a consumer, gate it, and say in your own file which weights you take.** Four subsystems already
+## react to one bus; an ungated fifth is the difference between a venue that answers a kill and a venue that
+## strobes on every trade.
 signal spectacle(position: Vector3, weight: float)
 
 static var _instance: FxWorld
@@ -145,6 +164,8 @@ func _init() -> void:
 		add_child(SizeLook.new())
 	if LaunchFlags.from_environment().has("rig-hinge"):
 		add_child(RigHinge.new())
+	if LaunchFlags.from_environment().has("airship-look"):
+		add_child(AirshipLook.new())
 
 
 func _ready() -> void:

@@ -32,8 +32,13 @@ const ORANGE := Color("#FF6A00")
 static var _cache := {}
 
 
-static func neon(color: Color, energy := 3.0, flicker := 0.1) -> ShaderMaterial:
-	var key := "neon/%s/%s/%s" % [color.to_html(), energy, flicker]
+## `fixture` (round 9, S6): an optional tag that gives a caller its OWN cached material instead of the one every
+## other caller with the same colour, energy and flicker shares. Sharing is the default and stays the default --
+## it is what keeps the six perimeter edges one draw call -- but a fixture the show director writes uniforms on
+## must not silently drive an unrelated prop that happened to ask for the same three numbers. Callers that pass
+## nothing share exactly what they shared before.
+static func neon(color: Color, energy := 3.0, flicker := 0.1, fixture := &"") -> ShaderMaterial:
+	var key := "neon/%s/%s/%s/%s" % [color.to_html(), energy, flicker, fixture]
 	if not _cache.has(key):
 		var material := ShaderMaterial.new()
 		material.shader = NEON_SHADER

@@ -201,7 +201,15 @@ threshold. It also directly answers open question 2 from the brief (*is there a 
 route cadence (`REPATH_SECONDS`) accounts for **~3% of re-plans** in a fight, so A1's tube on the route replanner
 cannot move P1. The cause split then found the real driver: **968 of 2,059 re-plans (47%) were nav re-planning against
 a goal it was already regulating** — a follower's station sliding ~1 m — fixed with a tolerance that scales with the
-remaining route (out of squad's `following` observation). The brain's `MOTION_REPLAN_TICKS` half remains squad's.
+remaining route (out of squad's `following` observation). The brain's `MOTION_REPLAN_TICKS` half remains squad's — **measured (squad `1a797642`, 05:40, laptop, merged
+tree, `make squad-decisions TUBE=on|off`, seed 3, 120 s, yard, 34 GREEN brains):** re-decides 5514 → 2076
+(**−62.3%**, the bar met), motion-internal jumps −17.2% (an independent instrument, pre-registered), switches per
+unit-minute **20.5 in both arms to the decimal** and reversals 0.4 in both — the latency guarantee holds in a fight,
+not only in the unit test. **And it ships OFF:** GREEN finishes 29 of 34 against 33 of 34, RUST untouched at 41 both
+ways, one seed. Held share 0.46 → 0.81 means the tube holds plans against a world four times staler. Gate
+pre-registered in squad's brief: the same A/B over ≥ 5 seeds reporting GREEN losses and exchange ratio beside the
+counts; flip only if losses are flat within seed noise. *"The instrument that can finally see the mechanism is the
+one that tells you not to ship it."*
 **Falsifier:** intra-decision re-plan rate drops **≥ 60%** (theirs: ≥ 80%) *and* path-tracking error stays within
 **0.15 m** *and* reaction latency to a new contact stays **≤ 2 ticks**. If churn falls but latency rises, this is
 stubbornness wearing a hat and it reverts.
@@ -306,8 +314,13 @@ wheeled-type seed cells, `oscillating_share` up in 9 of 16, and the fight guard 
 on yard (−14.4%, −12.8%), **the map where the mechanism succeeds completely: the better A4 works, the more it costs.**
 Routing to a curved gate buys the gate and spends the fight. Bounds on the instrument: `off_mesh_fit.none` counts
 events not gates, and the seeds are not replicates (gates offered 9,077–57,078), so no mean across seeds is reported.
-This does not retire the primitive: it retires *this consumer* (the arrival arc aiming a gate). Whether a hull arrives
-on the ordered heading from a curved entry still has no test, and that is now the more important question. **Rule before anyone builds it:** the
+This does not retire the primitive: it retires *this consumer* (the arrival arc aiming a gate). **The missing test, built (nav `032953eb`, 06:00, terminus, one wheeled hull, a goal blocked at every straight
+length, both arms on one shared arena): the straight arm arrives in 4.3 s (61° heading error, 4.0 m short); the
+curved arm does NOT arrive in 45 s, ending 147° off and 9.8 m short.** A4 turns an arrival into a non-arrival with
+the hull nearly reversed. That re-reads the A/B's guard breaches: at least some of the "cost" is hulls not getting
+there — same direction, worse mechanism. The fixture finds its own blocked case and refuses a run where terminus
+offers none. (A first version built terminus once per arm, the navmesh failed to sync, and the number read 27 m; on
+one shared arena it is 9.8 m: a measurement on a degraded navmesh is not a measurement.) **Rule before anyone builds it:** the
 shorter run-in and the clothoid fix *different* failures and are never shipped together or credited to each other
 (round 7's shape: ship, measure twice, find the mechanism was never reached).
 **POSITIVE CONTROL PASSED (nav, 2026-09-20, laptop, provisional pre-CP1): 403 of 403** blocked-corridor gates — the

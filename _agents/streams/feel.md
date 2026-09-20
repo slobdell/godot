@@ -193,9 +193,236 @@ rest of the round runs behind it.
 - **X2 — the hinge: code and tests DONE** (`4a8c1843`); **the lead's frames are owed** (`make rig-hinge`).
 - **X8 — the pipeline's private copy of the roster (scale's finding, Invariant 0): DONE**, mutation-checked.
 - **X6 — the two smoke targets: ESTABLISHED, and the premise is wrong.** Both are ALREADY differential; see below.
-- **X5 — the lead's poses.** Next, and the brief's camera is wrong: see *The 12° correction*.
+- **X5 — the lead's poses: VERIFIED CLEAN.** Both round-8 fixes held through every merge since. See below.
 - **X4 — the every-unit box-fill test.** Blocked on CP2 by design.
-- **X7 — the airship.** Stretch, last.
+- **X7 — the airship: BUILT, MEASURED, and MOVED because the measurement said he could never see it.** See below.
+
+### ✅ GREEN, and the S2 guarantee delivered: `7a706911` (builder0) — with one honest caveat about the artefacts
+
+**The wrapper's own line: `>> remote: make check exited 0`.** But it continues `(build/ copied back: FAILED)` and
+remote.sh then exits 4 on its own policy — *"nothing local proves what the run did"*. **That is the copy-back guard,
+not a suite failure**, and the distinction is the one `remote_builds.md` exists to make: rsync died with **exit 255**,
+which is ssh, and **builder0 went off the network at ~03:15** (confirmed independently: `No route to host`, 100%
+packet loss, and the orchestrator's own check died the same way).
+
+So, precisely: **the numbers below were read from the run's streamed stdout while it was still connected, not from
+copied artefacts.** The artefacts are on builder0 and did not come back. **Local `build/` is therefore NOT this
+run's and no number may be cited from it** — with one verified exception: `build/rig-hinge/` was produced *locally*
+at 01:09–01:10, and nothing in `build/` was written after 03:00 (checked with `find -newermt`), so the lead's frames
+are untouched by the failed copy.
+
+**`sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)` — exactly main's hash, unchanged**, with **1,273 passed,
+0 failed** (main's suite is 1,252; the trailer's 12 and the airship's 5 are the difference). **This is contract S2
+delivered: the articulated trailer does not reach the simulation** — and it was *pre-registered as inert before it
+was built*, so it is a confirmed prediction rather than a discovered fact. That distinction is the whole reason art
+gets asserted rather than assumed here: round 8's `_build_perimeter()` moved the baseline with geometrically
+identical walls in a different body creation order (Invariant 2).
+
+**lint local: 531 files, 8 known baselined lines** (metrics' sweep on `main`: 5 files, 8 lines, all `--check-only`
+isolation artefacts). **The local lint earned its keep on its first run**: of ten lines it reported, two were mine —
+`tests/test_theme_airship.gd` referenced `ArenaDressing` as a class name, and `arena_dressing.gd` has **no**
+`class_name`; the game reaches it through its scene. Fixed at `1d3029d8`. Remote lint parse-checks **zero** files
+(lesson 157), so that test would have failed at run time in the full suite instead, half an hour and one queue away.
+
+**⚠ The tip has moved past the green hash.** `7a706911` is what builder0 ran; everything after it — the file-existence
+guard, `--no-trailer`, the airship, the `spectacle` weight table, the tier fix and the test fix — is **unverified**
+and needs a second check. Merge `7a706911`, or wait for the second check; do not merge the tip on this one's word.
+
+### ⏸ PAUSED 03:20 (orchestrator: the lead's session limit). WHERE I AM, AND THE EXACT NEXT STEP
+
+**Nothing is mid-flight and nothing is uncommitted.** The local batch was still queued behind another stream's
+`make check` when I stopped it, so no work was lost: I killed the `slot.sh` wrapper (not the `make` inside it),
+verified no `slot<N>.owner` and no wait-ticket of mine remains in `/tmp/tank_squad_slots/`, and the working tree is
+clean. Branch tip: see the last commit below.
+
+**`7a706911` is MERGED TO MAIN** — X1, X2's code, X3 and X8 are shipped. **The tip is ELEVEN commits past it and
+is covered by no check**: the file-existence guard, `--no-trailer`, the airship and `airship-look`, the `spectacle`
+weight table, the airship's tier fix, the `ArenaDressing` test fix, and Status commits.
+
+**THE EXACT NEXT STEP, in order, when RESUME arrives:**
+
+1. **Only after the orchestrator says builder0 is up**, and after checking builder0 for an orphaned `slot.sh` of
+   mine from the run that died at 03:15: `REMOTE_SLOTS=6 make remote T=check` on the tip. That is the one thing
+   standing between eleven commits and a merge.
+2. **Recover the stranded artefacts** — a plain
+   `rsync -az builder0:~/tank_squad/godot-feel/build/ build/` brings back `7a706911`'s run output. **No re-run is
+   needed**; only the copy failed. Until then **no number may be cited from local `build/`**, except
+   `build/rig-hinge/`, which was made locally and which I verified the failed rsync never touched.
+3. **The local batch, re-queued as one sequential slot** (all four are laptop-only; none can go to builder0
+   usefully while the queue there is the bottleneck):
+   `make perf-scene PERF_NAME=perf-gangs-off PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs --no-trailer"`,
+   then the same with `PERF_NAME=perf-gangs-on` and no `--no-trailer` (**M1: the hinge's frame cost, A/B in one
+   tree**), then `make airship-look`, then `make shell-playtest` (**X5's leak lines**).
+4. **`make airship-look`: check the frames DIFFER before reading anything into them.** A stale X cookie makes Godot
+   fall back to Wayland, which stops redrawing a hidden window, so every capture after the first silently repeats
+   the first (`remote_builds.md`, and the comment at `tools/remote.sh:62`). For a sweep whose entire output is
+   frames that are *supposed* to differ, that failure is indistinguishable from a result.
+5. **X6's two experiments** — the script is written and ready at
+   `<scratchpad>/x6.sh`: stale the baseline for this machine's glibc and confirm `sim-baseline` goes red while both
+   smokes stay green (they do not consult the file), then skew the instrumented run's seed and confirm `music-smoke`
+   goes red (the comparison is live). Then delete the dead `key="control"` in both recipes and correct **lesson 65**,
+   which is the orchestrator's file.
+6. **X4** stays blocked on CP2 by design.
+
+**The open question I expect to answer with (3) and (4), and which is a design question for the lead rather than a
+bug:** at his pose the top of the frame sits at `pitch - FOV/2` = 21 - 17.5 = **3.5° BELOW the horizon**, so nothing
+in the sky can be drawn there at any altitude or distance. If the sweep confirms it, *"sometimes visible in the
+field of view"* is **false at his camera and true only at the bottom of his tilt range** (he can reach 8°), and the
+airship's `ORBIT_RADIUS` / `ORBIT_ALTITUDE` are provisional until he rules.
+
+### X7 — the sweep said 0.0% everywhere, and that changed the design (builder0, `e82ecd1a`)
+
+**Before — radius 118 m, altitude 74 m: `visible_pct 0.0` over 768 samples, at EVERY reachable tilt.** Not rare.
+Never. The tool now prints why, which is one line of geometry: the frame's top edge sits at `FOV/2 - pitch` degrees
+above the horizon.
+
+| tilt | frame top | airship elevation | altitude that would have fitted |
+|---|---|---|---|
+| **21° (his)** | **−3.5°** — horizon off the top | 15.0–65.3° | **impossible at any altitude** |
+| 8° | +9.5° | 17.7–68.9° | below 42 m |
+| 12° | +5.5° | 16.9–67.8° | below 30 m |
+| 17° | +0.5° | 15.9–66.5° | below 16 m |
+
+**At his pose the sky is not on screen at all.** And at his lowest reachable tilt an airship over the arena would
+have had to fly below 42 m — on a map whose city blocks are 40 m tall. That is not hovering, it is landing.
+
+**After — radius 560 m, altitude 56 m (`CitySkyline.RADIUS` is 640 m, `RtsCamera` draws to 1200 m):**
+
+| tilt | seen | widest on screen |
+|---|---|---|
+| 8° | **12.5%** | **105 px** |
+| 12° | **12.5%** | **108 px** |
+| 17° and above | 0.0% | — |
+| **21° (his default)** | **0.0%** | — |
+
+**Looked at, not just counted:** `build/airship-look/airship_widest.png` has it top-left, silhouetted against the
+lit city, its ad screen showing the arena channel, half out of frame — which is the lead's phrase almost exactly.
+The three frames were checked to have **three different md5s** before anything was read into them, because a stale
+X cookie makes Godot fall back to Wayland and silently repeat the first capture (`remote_builds.md`), and for a
+sweep whose whole output is frames that should differ, that failure is indistinguishable from a result.
+
+**WHAT HE HAS TO RULE ON, and I am not pretending otherwise: he will not see it at his default 21°.** It is in
+frame only when he tilts down to 8–12°, and it is over the **city**, not over the arena. That trades his literal
+words for his own reference — Blade Runner's airship is over a city. **Both numbers are constants; overruling this
+is one line.** The alternative, if he wants it over the arena, is that it becomes a presentation element (title,
+results, replay) where the camera can look up.
+
+### X5 — the void and the sky leak: both still fixed (`make shell-playtest`, builder0, merged tree)
+
+**Zero leak lines and zero errors** through the whole shell — title → SKIRMISH → faction menu → planning → two
+minutes of battle, driven by real clicks (`grep -icE 'leak|orphan'` = **0**, `grep -cE '^ERROR|SCRIPT ERROR'` = **0**
+in `build/shell-playtest/run.log`). So the round-8 texture leak on the title → skirmish switch (the Environment
+`Sky`'s radiance mips, fixed by the unshaded `NightSky` dome) has survived every merge since.
+
+**And the void below the near wall is gone in the frames**, at the pose the readout itself confirms is his:
+`CAMERA pitch 21° distance 72 m FOV 35° auto-frame ON`. The cutaway is active — the near stands are cut and their
+crowd is drawn from behind — and the ground beneath them is continuous: structure and a lit strip, not a hole onto
+the skybox. Checked at deployment (`3_battle_03s.png`) and mid-fight (`3_battle_75s.png`) on `pit`.
+
+**The honest limit of this check:** `shell-playtest` shoots where the game puts the camera, which is inside the
+arena looking across. The harshest near-wall case is control's per-edge `camera-looks`, which parks the camera
+against each perimeter edge in turn; I did not run it, because it is a per-arena grid and the laptop is shared with
+seven streams. The brief asked for *"one frame each at [his pose] and `make shell-playtest`'s console for leak
+lines"*, and that is what this is.
+
+### ⚠ OWED, and it is a venue defect of mine, not the light show's: the Terminus fails the luminance rule
+
+**With NO light show at all — the branch-point look — the Terminus's block band is brighter than the fight ring in
+22 of 30 frames at the lead's 21° pose over dark asphalt** (show's three-arm strip, 2026-09-20). The parapet default
+then makes the ratio slightly *better* (−2.6% to +7.4%, mostly positive), **so the show is not the cause.** The rule
+I gave show — *the fight is the brightest read* — is violated by the map itself, and it is a playability rule, not
+a taste one: `art_direction.md` has always required the arena be *"lit well enough to read the fight"* on a phone.
+
+**The levers are all mine:** the floodlight pools (`arena_dressing.gd` `_glow_multimesh`, `FLOODLIGHTS`), the floor's
+albedo (`arena_ground*.gdshader`, and the Terminus is asphalt-dark), and the facades' base brightness
+(`city_block.gdshader`, the storey `glow` and shopfront `glow` at channel identity).
+
+**DIAGNOSED 2026-09-20, and the mechanism is specific rather than "the map is dark".** Counted across every layout:
+
+| arena | half | floodlights | blocks |
+|---|---|---|---|
+| pit | 140 | **4** | 0 |
+| **terminus** | 140 | **2** | **8** |
+| yard | 140 | 2 | 0 |
+| boneyard, boulevard | 120 | 4 | 0 |
+| foundry, furnace, scrapyard, maze, barriers | 120 | 0–0 | 0 |
+
+**The Terminus is the only arena with `block` props, and it has HALF the floodlights of `pit` at the same size.**
+Worse, the blocks are **inside the fighting area, not backdrop**: two sit at r = 40 m from the centre and four more
+at r = 69, on a 140 m half-size — eight 40 m towers with lit window grids standing among the fight. Its two
+floodlights are both at **r = 128**, out on the centre line at the far edges.
+
+**So the venue got brighter and the floor did not.** The map adds a large lit facade area right where the player is
+looking and lights the ground only from the perimeter. That is the whole of the 22-of-30 result.
+
+**The fix belongs in the layout, and `arenas/` is scale's this round — so it is a request, not my edit.**
+Recommendation: floodlights **among** the blocks (the street intersections between them), not more lamps on the
+centre line at r = 128. **I deliberately did NOT reach for the lever in my own files** — making the dressing
+compensate for a venue's own emissive would be a second hidden controller of arena brightness, which is exactly the
+"two writers to one perceived quantity" hazard I warned show about on the ground wash. One owner: the layout.
+
+Worth saying plainly for the lead: **this is a defect in the map he liked**, found only because show reported a
+`--no-show` control arm beside its own numbers. A measurement that only reported the treated arm would have blamed
+the light show.
+
+### Owed at round close, not started: roof dressing on the Terminus (show's question, feel's geometry)
+
+**Why it is a question now:** control's `RtsCamera.clear_pose()` lifts the camera over a roof rather than shortening
+the boom (703 of 4328 poses were inside a building before, 0 after), so **roofs are on screen far more often on the
+Terminus than when the blocks were built** — and a block's top cap is the least-dressed surface in the game. With
+show's chamfers dark, the parapet run is a *roofline*; it is not roof *dressing*.
+
+**My answer, recorded so it is not re-derived: yes it wants something, and a FRAME BEFORE A TRIANGLE.** Building on
+the strength of "roofs are visible more often now" is round 7's failure exactly — ship, measure twice, discover the
+mechanism was never reached. First one frame from `clear_pose()`'s lifted camera looking down on a Terminus roof,
+then a decision. Then, in order:
+
+1. **Surface treatment, zero draw calls, and it is the doc-correct answer rather than merely the cheap one.** The cap
+   is already surface 0 and already tagged (`COLOR.r >= 0.75`), so tar-seam patching, water staining, grime pooling
+   and a vent grid are all **texture in the existing shader**. `art_direction.md` calls the city salvaged and
+   lived-in, which is a *surface* property at least as much as a silhouette one: a roof reading as tar and rust and
+   standing water is more in-world than a roof with three boxes on it.
+2. **Only if it still wants geometry: a MultiMesh scattered by the block seed** — vent housing, water tank, aerial
+   mast — **one draw per prop type across every block and every tier**, the trick `ContainerYard` already uses.
+   Never per-block meshes.
+
+**A cost nobody had priced:** `CityBlock.build()` caps **every tier**, not just the top (`city_block.gd:109-112`), so
+a tiered block is three or four horizontal surfaces. Whatever the treatment is, it is paid for several times a block
+— which argues harder for (1) going first.
+
+### Decided overnight (the lead asleep; orchestrator's standing instruction, 2026-09-20)
+
+1. **The corner in `make rig-hinge` is shot at the rig's own minimum turn radius (12 m), not a wide one.** A wide
+   corner is physically correct and visually nothing — `asin(L/R)` at 26 m is 11° and the frame showed a bend he
+   would have had to be *told* was there. Most reversible option available: one catalog-read constant, overridable
+   with `--rig-hinge-radius=`.
+2. **The jackknife strip is shot from 60°, not his 21°**, and is labelled a diagnostic. At his pitch a hard fold
+   puts the trailer broadside between camera and cab and the frame becomes a tanker with no truck in it. The
+   *judgement* frames stay at his pose.
+3. **`--no-trailer` exists as an A/B switch** so the hinge's frame cost is measured in one tree rather than across
+   two checkouts on two days (round 5 lost hours to exactly that). Shape copied from nav's `--nav-off=`.
+4. **The airship's two navigation lights are steady, not strobing**, and `show` has been told: the Syndicate is the
+   faction that does not flicker, and a strobing airship would undo the one piece of art direction the lead named
+   ("pristine, no rust"). A programme that wants the airship puts the cue on its screens.
+5. **`CyberMaterials.neon()` gained an optional `fixture` tag** rather than granting `show` a carve-out for one line
+   in my file. Sharing stays the default, so the perimeter is still one material and one draw call.
+
+### X7 — the airship, and the question it has to answer before it is finished (`567a8007`)
+
+Built from primitives (ellipsoid envelope, tail cone, four fins, gondola, engine pods, two navigation lights, a
+screen a side), Syndicate ivory, **no collision body of any kind** (asserted by a test over five collision classes),
+drift from `Match.tick` and never the wall clock (asserted: one lap returns it to the same place, and every sampled
+tick is on the orbit at its altitude with the nose on the tangent), **absent on LOW** like the crowd. The screens
+join the existing `arena` `AdBroadcast` channel and share its material, so the eleventh screen in the arena costs
+one quad and no second 2D feed — and the airship replays the player's last kill because `LiveFeed` already does.
+
+**What is NOT yet established, and the reason the orbit's two constants are provisional: whether the lead can ever
+see it.** *"Sometimes visible in the field of view"* is precisely the class of claim that turns out false — round 8
+shipped a camera fix for the HUD hiding his own selection and a facing feature that could not fire on his control
+scheme at all. So `make airship-look` sweeps **every camera yaw a player can rotate to** against **the whole orbit**
+at his pose, projects the airship's bounds and reports the fraction of that grid where any of it is on screen.
+Too low and he never sees it; 100% and it is wallpaper. **The frames come after the number**, and `ORBIT_RADIUS`
+and `ORBIT_ALTITUDE` get set by what they say. Queued.
 
 ### ⚠ The 12° correction (control, 2026-09-20) — it invalidates a line in this brief
 
@@ -230,28 +457,35 @@ under the trailer's and the turret's lay is taken back out, so gunnery is unaffe
 ### X2 — the hinge measured in a real match and on a known corner (`72a06181`, laptop, Intel UHD 620)
 
 **In a live skirmish** (`--player=cpu:gang_ram --player-faction=gangs --budget=6500`, `foundry`, seed 3; **32 rigs,
-864 rig-frames**, sampled per rig per frame, not as a maximum over the field):
+1,440 rig-frames**, sampled per rig per frame, not as a maximum over the field):
 
 | | |
 |---|---|
-| mean articulation | **4.1°** |
-| peak | 50.4° |
-| rig-frames past 30° | **1.7%** |
-| rig-frames at the 65° clamp | **0.0%** |
+| mean articulation | **6.1°** |
+| peak | 65.0° (one rig, at the clamp) |
+| rig-frames past 30° | **4.9%** |
+| rig-frames at the 65° clamp | **1.2%** |
 
 That is the answer to metrics' warning (*"56% of all reversals in a fight are the wheeled creep, so the trailer will
-jackknife often"*). It does jackknife — a peak of 50° in six seconds of deployment — but it **lives near straight**
-and never pins at the clamp, so the fleet does not read as permanently folded. **The first version of this
+jackknife often"*). **It does jackknife, and metrics was right to warn**: one rig in 32 reaches the clamp within six
+seconds and 4.9% of rig-frames are past 30°. But the fleet **lives near straight** — a mean of 6° — so it reads as
+the occasional truck folding out of a reverse, not as a fleet of broken vehicles. **The first version of this
 measurement reported only the maximum over all 32 rigs, which one vehicle pins and which cannot tell "the fleet is
 folded in half" from "one rig is reversing out of a corner".** Fixed before it was reported.
 
-**On a known corner** (radius 26 m, 9 m/s, trailer wheelbase 5.06 world m), degrees of articulation by degrees
-through the turn: `0 → −6.3 → −9.4 → −10.3 → −10.5 → −10.5`. The closed form for steady-state off-tracking is
-`asin(L / R) = asin(5.06 / 26) =` **11.2°**, and it settles at **10.5°** by a quarter of the way round — the deficit
-is the approach transient. **The law is right end to end, not just in the unit test.**
+**On a known corner** — **the rig's own minimum turn radius, 12 m** (read from `min_turn_radius_m`, so it follows the
+roster through CP2), 9 m/s, trailer wheelbase 5.06 world m. Degrees of articulation by degrees through the turn:
+`0 → −7.7 → −14.7 → −19.1 → −21.5 → −22.7`. The closed form for steady-state off-tracking is
+`asin(L / R) = asin(5.06 / 12) =` **24.9°**, and it settles at **22.7°** — the deficit is the approach transient.
+**The law is right end to end, not just in the unit test.**
 
-**Reversing** (the creep case, from the corner's end pose with the kink still in it): `−18.7°` at 3 m, `−47.2°` at
-8 m, **clamped at −65° by 16 m** and held. It diverges, which is what jackknifing is, and the clamp catches it.
+*(The first corner was shot at 26 m, which is physically correct and visually nothing: `asin(L/R)` there is 11° and
+the frame showed a bend the lead would have had to be TOLD was there. 12 m is not a staged number — it is the worst
+bend the game will ever draw under power.)*
+
+**Reversing** (the creep case, from the corner's end pose with the kink still in it, so the divergence has something
+to grow from — reversing from a dead-straight hinge is an unstable equilibrium and a frame shot that way would have
+been a lie): `−47.3°` at 4 m, **clamped at −65° by 9 m** and held. It diverges, which is what jackknifing is.
 
 **Owed on X2:** `build/rig-hinge/` frames for the lead, `make remote T=sim-baseline` on the branch
 (pre-registered: the hash does not move), and `make perf-scene` before/after with a gangs army (M1).
@@ -316,10 +550,29 @@ question against the shared baseline file. **Read the recipes: they do not, and 
 `actual` against `expected`; the baseline file is never opened. `mk/audio.mk:31-34` and `mk/announcer.mk:115-118`
 carry the round-6 comment explaining the fix. The only residue is a dead `key="control"` assignment in both recipes.
 
-**So X6 is not a build job.** What remains: the two experiments the brief asks for — run them on a tree with a
-deliberately staled baseline (they must still pass, proving the file is not consulted) and prove the comparison can
-go red — then delete the dead variable and **correct lesson 65**, which is the orchestrator's file. *(Recorded for
-the round: a lesson that describes a defect fixed two rounds ago sends a stream to rebuild it.)*
+**So X6 was not a build job — and both experiments are now RUN, on the laptop, 2026-09-20.** Reading the recipe said
+they were already differential; a guard nobody has seen fail is not known to work (Invariant 0), so both halves were
+proved:
+
+| experiment | prediction | result |
+|---|---|---|
+| **1a** stale `glibc-2.39 deadbeef…` line added for this machine → `make sim-baseline` | **red** (the file is live here) | `sim-baseline FAILED: expected deadbeefdeadbeef for glibc-2.39, got 5dbb0689ddffc1c0`, **exit 2** ✓ |
+| **1b** same stale file → `make music-smoke` | **green** (never opens it) | `music-smoke passed: … hash 41e00136e74693d2 (matches the same match without the music)`, **exit 0** ✓ |
+| **1c** same stale file → `make announcer-record-smoke` | **green** (same) | `announcer-record-smoke passed: hash 41e00136e74693d2 (matches the same match without the booth)`, **exit 0** ✓ |
+| **2** instrumented run's seed skewed to 4 so the hashes must differ → `make music-smoke` | **red**, naming the subsystem | `music-smoke FAILED: the soundtrack changed the simulation (7c9c59aaefc5c30e, without it 41e00136e74693d2)`, **exit 2** ✓ |
+
+**Four predictions, four confirmations.** Both targets are differential, neither consults the baseline file, and the
+comparison is live rather than merely silent. Both files were restored by the script and `git status` confirms it.
+
+**Landed:** the dead `key="control"` is gone from both recipes, and both now carry the experiment beside them, so the
+next agent reads the proof rather than the two-round-old claim. **Owed to the orchestrator: lesson 65 is wrong and is
+their file.** *(The round's real lesson: a lesson describing a defect fixed two rounds ago sends a stream to rebuild
+it — this brief budgeted X6 as a build item and it was a reading item plus four matches.)*
+
+**One incidental finding:** the brief says `sim-baseline` "silently skips" on the laptop. It skips only because there
+is **no line for `glibc-2.39`**; add one and it runs and compares normally (it produced `5dbb0689ddffc1c0` here). The
+laptop can self-check against itself, it simply has no recorded value — worth knowing before anyone concludes the
+target cannot run off builder0.
 
 ### X3 — the A6 contract (S4): written, feel signed, nav reviewed
 

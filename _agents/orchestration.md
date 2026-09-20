@@ -2626,3 +2626,16 @@ The kickoff prompt is one line; this section is the rest.
     switch adds its arm line, its counter, and the "could it act?" denominator (`a6_asked 1087, a6_no_corridor 1087,
     a6_nose_narrowed 0`: reached a thousand times, able to act zero times — without the denominator that reads as "does
     nothing" instead of "never had its input").
+172. **"The owner's version wins in its paths" has no case for an owner who has explicitly deferred.** Round 9, scale
+    merging main: `tests/test_fx_light_rounds.gd` conflicted, and taking feel's side would have shipped a **red** test —
+    feel had deliberately kept the old assertion with a comment saying the replacement was scale's to make inside the
+    CP2 commit. The rule assumes both sides were trying to change the file. When one side's version carries a note
+    deferring to the other, the deferred-to version wins, and the note travels with it.
+173. **Absent is not null, and `get(key, null)` erases the difference.** Round 9, three streams in one night: nav
+    publishes `corridor` as *null* for "no leg this tick" and absent for "the key has not shipped"; control read it
+    with `get("corridor", null)`, so on exactly the ticks nav said there was nothing to derive, control's readout fell
+    through and **derived a tangent anyway** — inside a function whose own comment says an unreadable corridor must
+    not look like a readable one. metrics hit the same shape one level deeper in its emitter (a "no data" that wore a
+    present column, its own commit says). Read a nullable field with `has()` first; a publisher that sends null is
+    only honest if every reader can see the key is there. Sibling of lesson 157 (an empty list must not read as a
+    pass) and of lesson 164 (an instrument that cannot see the case reports zero).
