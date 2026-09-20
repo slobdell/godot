@@ -397,6 +397,35 @@ motivation for that row rather than an inherited one.
 `net_over_path` rises and `oscillating_share` falls is pre-registered in the brief (N4) and runs after CP1, read
 through A12.
 
+### A1, measured cleanly: **−21 % re-plans**, still short of its bar, and the dominant cause is now named
+
+One binary, `--nav-off=a1` against the default, same label definitions in both arms, **normalised per
+ordered-unit-minute** because the arms diverge (`green_lost` 1/2 against 2/3). yard, seed 3, 45 s, laptop, one seed.
+
+| | A1 ON | A1 OFF |
+|---|---|---|
+| **re-plans per ordered-unit-minute** | **71.8** | **91.5** |
+| total re-plans / ordered-unit-min | 1706 / 23.8 | 2041 / 22.3 |
+| `cadence` | **0** | 230 |
+| `goal_slid` | **1226** | 1381 |
+| `goal_jumped` | 426 | 389 |
+| `off_path` / `stalled` | 32 / 22 | 15 / 26 |
+
+**−21.5 %.** The falsifier is **−60 %**, so **A1 still fails it and stays opt-in.** The cadence contributes all of
+its 230 and the sliding-goal tolerance takes 1381 → 1226 (−11 %).
+
+**The sliding-goal tolerance helps less than it should, and the reason is worth knowing before anyone tunes it:**
+`GOAL_TUBE_SHARE` is 10 % of the **remaining route**, and in a fight units are close to their goals, so the share
+usually falls under the 2 m floor and `GOAL_TUBE_MIN` does most of the work — a floor only twice the old flat metre.
+Raising the floor is the obvious move and it is the wrong one: as a unit nears its goal a 1 m shift genuinely matters
+more, which is exactly why the tolerance scales. **The mechanism is right and the fight is the wrong shape for it.**
+
+**And the finding that actually matters: `goal_slid` is 72 % of re-plans with A1 on and 68 % with it off.** A goal
+that slides is the single dominant cause of route re-planning in a fight, by a wide margin, in both arms. squad's
+question is therefore the live one — **element flow or the player's own follow?** — and `flow_joined` being one-way
+means a late-run slide is probably *not* squad's. The owner-split instrument (`replan_owner`,
+`<cause>/<source>/<verb>`) exists for exactly this and **postdates these runs**; running it is the next step.
+
 ### A measurement mistake of nav's, recorded because it nearly became a number
 
 After fixing the sliding-goal threshold, nav re-ran the fight and compared the cause buckets to the previous run:
