@@ -487,9 +487,28 @@ claim as *"under 10 % of the fight"*. Whoever reads A6's falsifier must read bot
 charged to A6. And **`arc_live` is 164.3 s / 171.3 s for the wheeled hulls and 0.0 s for the tank**: a tracked hull
 is never offered an arc, so that zero is a measurement and not a gap.
 
-**Scope: one map, one seed.** pit and terminus are running to make it a rotation baseline rather than a yard one —
-the same mistake nav made with A4's "43 %" earlier tonight, avoided this time by saying so before the number
-travels.
+**THE ROTATION, complete — `Arena.ROTATION` at seed 3, 120 s, each run's own wrapper line `exited 0`:**
+
+| map | `off_corridor` | active fraction | active ticks |
+|---|---|---|---|
+| yard | 0.304 | 0.631 | 28472 |
+| pit | 0.321 | 0.595 | 25764 |
+| terminus | 0.331 | 0.738 | 41818 |
+| **POOLED** | **0.320** | — | **96054** |
+
+**All three maps sit inside the pre-registered 30–36 %, and the spread is 0.304–0.331** — far tighter than nav
+expected given how differently these maps behaved for A4 (terminus had 806 blocked gates to pit's zero). **The
+pathology A6 targets is a property of the movement layer, not of a map.** That is the strongest thing this baseline
+says, and it makes A6 a roster-wide row rather than a cluttered-map one — the opposite of where A4 landed.
+
+**Pooled WEIGHTED BY ACTIVE TICKS (0.320), not as a mean of the three fractions (0.319).** They agree to a
+thousandth here because the maps carry similar weight, so the choice changes nothing — but it is still the right
+statistic, and the day one map dominates it will stop agreeing. Averaging fractions with unequal denominators is
+the same error as averaging five small front shares in the A11 duel.
+
+**The active fraction moves more than the fraction does: 0.595 → 0.738.** A6 reaches **59–74 %** of ordered ticks
+depending on the map, so its *opportunity* is map-dependent even though the pathology is not. A falsifier read
+without it would compare unlike quantities across maps.
 
 
 
