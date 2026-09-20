@@ -233,6 +233,19 @@ fast-forwarded at worktree creation). A baseline `make remote T=check` was start
 
 ### REPORT — read this first (nav, round 9, 2026-09-20)
 
+**⏸ PAUSED at `27d01b1e` on the orchestrator's instruction (2026-09-20, ~03:15): the lead's session limit is at 93%
+and builder0 is off the network. The tree is clean — there is no work in progress to lose.** On RESUME, in order:
+
+1. **Re-run the check on the tip `0f14cb2b`.** Its last run died with **255 = transport**, which makes it
+   **unverified, not red** — do not report it as a failure. Before starting, confirm no run of mine is already alive:
+   `ssh builder0 "ps -eo pid,args | grep '[s]lot.sh'"`.
+2. **Finish the face recovery's measurement** — one print, both arms, described exactly in *THE FACE RECOVERY IS
+   BUILT BUT UNMEASURED*. It is local work and needs no builder0.
+3. **Merge `main` once the orchestrator confirms it green, then run the pre-registered arrival-arc A/B** (below,
+   unchanged): `--nav-off=a4` both arms, four maps, seed 3, 120 s; check `off_mesh_fit.none` headroom on all four
+   maps **first**; report `a4_rescued_blocked` against `off_mesh_fit.none` and **never** the aggregate.
+
+
 **✅ GREEN: `5c8f08b3` — `make check exited 0`, 1290 passed 0 failed, `sim-baseline passed: 04414f5d6a6dfa7c`
 (builder0). `lint local: 531 files, 8 known baselined lines`. Merged to `main`.** A second check covers the tip.
 
@@ -253,7 +266,7 @@ thrown away, and all three were cheap because they were measured before shipping
 | **N4** A4 clothoids | **built, measured, opt-in — and it passes its pre-registered positive control: 403 of 403** blocked-corridor gates reached by a curved approach |
 | **N5** A6 | **blocked on S4**: nav has signed, feel authored, control signs with two requirements; its shopping list is collected below |
 | stretch: `NavigationAgent3D` vs our ORCA | **done** — compared, not swapped, with the verdict and what would change it |
-| stretch: the `face` order's missing recovery | **not built, designed** — behaviour on the default path, so it goes behind a switch and gets measured |
+| stretch: the `face` order's missing recovery | **built behind `--nav-off=facegiveup`, 3 tests green at `27d01b1e` — and NOT YET MEASURED.** The A/B I ran cannot decide it; see *THE FACE RECOVERY IS BUILT BUT UNMEASURED* |
 | **the defile** (squad's artillery) | **measured; all three pre-registered hypotheses DEAD and the cause unknown.** The corridor fix was built on the orchestrator's instruction, failed its falsifier, and was reverted as a null. `wedged` now names the regime |
 | **X6** forced gains (squad's ask, the lead's) | **done** — `ControlGains.forced` / `--gains=<faction>`, so an identical army can be driven two ways |
 
@@ -337,7 +350,9 @@ has not yet established headroom for this one across four maps (only on yard, wh
    question `scenario_motion` was never built to answer; it needs something that measures the **exchange** rather
    than the survival time.
 4. **A6's four pieces in one commit** once control's CP2c lands (*N5's shopping list*).
-5. **The `face` order's missing recovery** (round 8's last open stretch item, still open, now with a design). Under
+5. **The `face` order's missing recovery** — **now BUILT (`27d01b1e`) and UNMEASURED.** The design below is what
+   landed; what is still open is the measurement, and the exact next step is in *THE FACE RECOVERY IS BUILT BUT
+   UNMEASURED* further down. The original statement of the problem, kept because it is the motivation: under
    a `face`, `order_controller.gd:347-352` commands a turn plus `WHEELS_MIN_THROTTLE` for a wheeled hull and the
    plant answers with the creep's alternating legs. **There is no recovery**: `Movement.unstick` runs only for a
    `move_to`, and the mover is `idle()` under a face. A hull wedged against scenery creeps for ever.
@@ -349,6 +364,52 @@ has not yet established headroom for this one across four maps (only on yard, wh
    **Behind its own switch, measured like every other row this round.**
 5. **A remote check covering tonight's work.** The one that has been running all night covers `acd25a0b`
    (N0 + A7 + A11). A1, A4 and the instruments postdate it.
+
+### THE FACE RECOVERY IS BUILT BUT UNMEASURED — and the A/B I ran cannot decide it (2026-09-20, paused here)
+
+**Built at `27d01b1e`**, behind `--nav-off=facegiveup` (opt-in, like every other row this round), in
+`game/ai/order_controller.gd`: under a `face`, accumulate turned degrees over a `FACE_STALL_SECONDS := 1.5` window;
+if the hull has turned less than `FACE_STALL_DEG := 3.0` in that window, stop commanding the wheeled creep
+(`cmd.throttle = 0.0`) instead of shuffling in place. `_same_face()` resets the window when a new facing is issued.
+**29 nav tests green locally**, including three new ones in `tests/test_nav_face_recovery.gd` — **the guard first**:
+a car with room to turn must still come round, i.e. the recovery must not brake a hull that is making progress.
+
+**What I then ran, and why it decides nothing.** A local rotation A/B, `rotation_capture.gd --no-frames
+--cases=truck,car`, one arm with the switch off and one on. **Both arms printed the identical line:**
+
+    NAV_ROTATION_INPLACE truck gang_tank (wheels, r=12 m): turned 26 deg while within 1.5 m of its start,
+    farthest 3.5 m -> ok
+
+The OFF arm reproduces round 8's figure exactly, so the harness is sound. **The two arms being byte-identical has
+two possible causes and this run cannot separate them**, which is the whole point of the rule this round adopted —
+*an instrument at the end of its range is indistinguishable from one that is not connected*:
+
+- **(a) the mechanism was reached and its threshold never tripped** — 26° over the 12 s case is ≈3.3° per 1.5 s
+  window, i.e. **just above `FACE_STALL_DEG`**. A creep that keeps inching round is not "stalled" by my definition,
+  so the recovery correctly does nothing, and the threshold is the thing that is wrong, not the mechanism.
+- **(b) the mechanism was never reached at all** — a null from code that did not run, round 8's `gates aimed 0` in
+  a new place.
+
+**A correction, recorded before it could become a number.** I first concluded (b) from the debug line
+`NAV_ROTATION_DEBUG Car t=1s ... move={"type": "move_to", ...}` and wrote that the rotation cases drive a `move_to`
+so the `face` path is never entered. **That is wrong, and it is the Car case.** `rotation_capture.gd:135` — the
+**truck** case, the one that produces the 26° line — issues `{"type": "face", ...}`. Only `_car()` (line 122) drives
+a `move_to`. **The instrument is connected**; which of (a) or (b) holds is still unknown, and (a) is now the likely
+one.
+
+**THE EXACT NEXT STEP** (this is why `face_checked` exists — it is the denominator, built so a zero in
+`face_giveups` is distinguishable from a mechanism nothing reached):
+
+1. Print `OrderController.face_checked` and `OrderController.face_giveups` from the truck case in
+   `rotation_capture.gd`, both arms. **`face_checked == 0` proves (b)** and the row is untested by this harness.
+   **`face_checked > 0` with `face_giveups == 0` proves (a)**, and the finding is that `FACE_STALL_DEG = 3.0` is
+   below the creep's own rate — the number to re-derive from the measured creep, not to tune until something moves.
+2. Only then report a result. **Until step 1 runs, this row is "built, not measured", and it must not be written up
+   as a null.** A null needs a denominator.
+
+Note for whoever picks this up: the threshold pair is deliberately conservative *because* the guard test exists —
+braking a hull that is turning fine is the failure that would reach the lead as "my tank won't turn", so if (a)
+holds, re-derive `FACE_STALL_DEG` from the measured creep rate and **re-run the guard test first**.
 
 ### ⚠ `make lint` is RED ON `main` ITSELF — 5 files, 8 lines, all `--check-only` artefacts, and lint is now a gate
 
