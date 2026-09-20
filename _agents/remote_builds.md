@@ -375,3 +375,8 @@ rsync `build/` back by hand, and report the hash as "verdict read from the box's
 shell running the search (its own command line contains the string, and its cwd passes a cwd filter), so it reported
 a "lingering" process that was itself — a phantom that looks exactly like the leak you were hunting. Use self-excluding
 patterns (`grep '[G]odot'`), or `pgrep -x` on the binary, and confirm by cwd (squad, 2026-09-20, third time in one night).
+
+**`ps` ancestry is not ownership either: all nine sessions hang off one parent (PPID 2113).** feel filtered by
+`ppid == 2113` as "mine" and the list held show's, squad's, scale's, control's and the orchestrator's runs. The
+ownership test is `readlink /proc/<pid>/cwd`; who really holds a slot is `fuser /tmp/tank_squad_slots/slot<N>.lock`,
+because an `.owner` file can be stale (feel, 2026-09-20 05:45).
