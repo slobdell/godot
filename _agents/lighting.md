@@ -97,6 +97,14 @@ These are not craft. A change that breaks one of them is wrong even if it looks 
     channel count — a seven-channel set failed the yard's four.
 11. **A cue may run a channel faster than a patch may declare one.** Rule 10 governs the *idle*, not a stab of
     strobe: a `last_stand` at a 1.6 s period is the point. The floor is 0.8 s, under which it reads as a fault.
+12. **Every visual claim about the show is a PAIR, shot on one frozen frame with `driving` toggled — so the check
+    can only ever blame the show for what the show actually changed.** This is not a measurement convenience, it
+    is what makes the check *fair*, and it has already earned it twice: the Terminus's brightest feature is feel's
+    neon band at shop-window height, which is present in **both** halves and therefore cancels. An **absolute**
+    check charges that band to the light show, and the response to it is to dim windows to compensate for a strip
+    the show does not own — which is exactly what the first version of the readability gate asked for when it
+    failed 22 of 30 frames with no show in them at all. **If you find yourself tuning one of these dials to fix
+    something that is in the show-off half too, the check is wrong, not the dial.**
 
 ---
 
@@ -298,6 +306,7 @@ Two writers to one perceived quantity look like flicker nobody can reproduce. Ea
 | quantity | owner | everyone else |
 |---|---|---|
 | **The arena-wide ground wash** | **the show director.** | `AdBroadcast.light_color()` stays the **screens' own local spill** and the director **reads** it as one input. The show never writes the spill; `AdBroadcast` never writes the wash. |
+| **The floor's READABILITY — how well lit the fight is** | **scale's lamps, in `terminus.json`** | **the show modulates what is already lit; the `pools` channel is not the floor's baseline.** Ruled by the orchestrator, 2026-09-20, after feel found that the Terminus's shop-height bands out-compete the fight by *placement* rather than palette. The `pools` channel is the nearest knob and it is the wrong one: if the show lights the floor, the show's dials start gating whether the fight is legible, and a look decision becomes a play decision. |
 | Emission and channel values on any `show_*` uniform | **the show** | control never writes a `show_*` uniform |
 | A block's **alpha / visibility** (the camera-inside-a-block cutaway) | **control** | **the show never writes alpha, visibility, or the cutaway's own uniform.** Ruled by the orchestrator, 2026-09-20 |
 | The **look at channel level 1.0** — every material's base colours, roughness, energies | **feel** | the show is additive only: a hook a material exposes, never a restyle |
@@ -615,6 +624,45 @@ is a figure that straddles zero and a paragraph that has to be written twice.
 
 **Report the load average beside the number, always.** A layer cost with no load beside it cannot be checked by the
 next reader, and on a shared builder that is most of what decides whether it means anything.
+
+### Read the counters in the same JSON before blaming the treatment
+
+`all_gpu` went **7.69 ms → 19.87 ms** between last night and the morning after CP2 merged, and the obvious reading —
+*"the resized roster costs 2.6× the GPU"* — was wrong, and refutable from data already in the same output:
+
+| run | vehicles | **primitives** | **draw calls** | GPU ms | avg ms |
+|---|---|---|---|---|---|
+| `96e10e82` (before CP2) | 68 | **191,206** | **291** | **6.43** | 23.44 |
+| `d8a107b5` (after CP2) | 68 | **145,093** | **259** | **20.05** | 99.68 |
+
+**The scene got 24% smaller in primitives and 11% smaller in draw calls, and took 3× the GPU time.** A GPU drawing
+less through fewer calls cannot take three times longer unless it is sharing the card — so this is a contended
+machine, not a heavier scene, and the counters say so from *inside* the run without needing the load average.
+
+**The general habit:** when a timing number moves, **check the counters beside it before believing the story that
+fits.** `primitives`, `draw_calls`, `objects` and `real_lights` are in every `PERF_SCENE` row, they cost nothing to
+read, and they are immune to the load that moved the timing. Here they inverted the conclusion in thirty seconds.
+
+**⚠ AND THEN I MADE THE MIRROR-IMAGE MISTAKE WITH THE SAME COUNTER, which is why this section has a second half.**
+Having used `primitives` to refute a timing story — correctly — I went on to make a *quantitative* claim from it:
+*"CP2 buys 68 vehicles at 145k primitives where it bought 68 at 191k."* **That was wrong.** A quiet-box run on the
+same post-CP2 tree reads **180,780 primitives with 63 vehicles** — within ~5% of the pre-CP2 191k, and *more*
+primitives with *fewer* vehicles.
+
+| run | vehicles | primitives | draw calls | GPU |
+|---|---|---|---|---|
+| pre-CP2, quiet-ish | 68 | 191,206 | 291 | **6.43** |
+| post-CP2, **load 21** | 68 | 145,093 | 259 | **20.05** |
+| post-CP2, **load 0.9** | 63 | **180,780** | 258 | **6.40** |
+
+**The timing conclusion held** — 6.40 against 6.43 confirms the 19.87 was load and nothing else. **The counter-based
+claim did not.**
+
+**So the rule has a second half: a counter being immune to LOAD does not make it immune to SAMPLING.** `primitives`
+moves with the state of the battle — how many units are alive, how many effects are live, what the camera can see
+— and a single run samples one moment of that. Use the counters to **refute a story whose direction is impossible**
+(less geometry cannot take three times longer); do **not** read a percentage off them from one run and hand it to
+another stream.
 
 ### A gate that fails the branch point is not a gate
 

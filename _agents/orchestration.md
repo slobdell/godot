@@ -2670,25 +2670,24 @@ The kickoff prompt is one line; this section is the rest.
     wrong reason, an assertion at a moment the thing could not be observed), caught only by the stream's own
     anti-vacuity guard. *"I am reliable at demanding an arm can exercise its mechanism and unreliable at checking it
     when the change feels too small to deserve the ceremony."* The ceremony is for the small ones.
-178. **A sharded suite changes which tests share a process, and a test that leaks into the engine's globals goes red on
-    schedule, not on code.** Round 9's last red: `test_a_full_faction_army_a_side_spawns_clear_of_itself` passed alone,
-    passed on two green trees, and failed on `main` only when `test_arena_layouts` (which stands up scrapyard) ran
-    before it in the same process — scrapyard's bodies still in the physics space while the army deployed on foundry,
-    compressing the formation (two hulls of one squad within half a metre) and putting three units "inside a wall".
-    The merge added test files, the shards redistributed, and the polluter landed ahead of the victim. Four correct
-    eliminations of code changes missed it because the variable was the schedule. Lesson 36 with physics bodies instead
-    of the navmesh, and the resize made it fatal (an 8.62 m hull no longer fits between phantom obstacles a 3.60 m one
-    slipped past). **Then measured to the coordinate (scale `3f6c1650`): nothing leaked.** `free()` takes an arena's
-    bodies 38 → 0 in the same call, the granted teardown guard never fires, and both orderings place all 90 units at
-    identical coordinates. **Units are placed at exactly y = 0.0, a degenerate zero-penetration ground contact, and
-    which way Jolt resolves it depends on the engine's internal state after earlier bodies were created and
-    destroyed: three units are ejected ~1.5 m DOWN through `Arena/Ground`.** Round 8's sim-hash lesson with spawn
-    positions instead of a hash, and a real game bug, not only a test one. Ruled: spawn a few centimetres above the
-    ground at both spawn sites (`ArmyLayout.deploy`, `Match.spawn_position`), assert *placement* rather than the
-    post-physics position, and name the body hit in the failure message — "inside a wall or crate" when the body was
-    the ground cost a morning. Three wrong eliminations (RNG divergence, tank_brain, leaked bodies) stand beside the
-    answer. **When a green test goes red with no relevant diff, ask what ran before it — then measure the mechanism
-    before assigning it.**
+178. **A green test that goes red on schedule is measuring a transient, and every hypothesis that names a culprit
+    before the settling curve is drawn will be wrong.** Round 9's last red, `test_a_full_faction_army_a_side_spawns_
+    clear_of_itself`, passed alone, passed at a 71/71/71 shard layout and failed at 69/68/68 on identical code. Six
+    diagnoses fell in one morning, each measured and each retracted: nav's code, `tank_brain`, RNG divergence, a
+    test-isolation leak of physics bodies (free() takes them 38 → 0 in the same call), a solver ejecting a degenerate
+    y = 0 contact (the body is a `CharacterBody3D`; nothing ejects it), a collider straddling the floor (every box
+    bottom is exactly at the origin at the catalogue height). **The mechanism (scale `3f6c1650`+): `move_and_slide`'s
+    depenetration recovery moves three resized hulls 1.475 m DOWN in frame 1 with velocity exactly zero, then they
+    climb back: −0.190 at frame 2, −0.042 at frame 3; a passing unit gets +0.87 mm from the identical contact.** The
+    test read at frame 1, the single worst instant of a settle that resolves by frame 3, and which units land on the
+    bad side depends on engine state left by earlier tests, so the schedule decided the verdict. Fix: assert on
+    *placement* (deterministic), and any physics-frame assertion samples after settling (largest per-frame delta
+    below 1 cm, capped), never at a fixed frame. Two side findings, both false leads, are kept beside the answer:
+    a 5 cm spawn lift moved the frame-1 value by 0.032 m and fixed nothing (the constant stays, wired, at 0.0), and
+    squad's "the lift passes on my branch" was a layout write that discarded its own y. **Draw the curve before you
+    name the writer, and name the body hit in every failure message: "inside a wall or crate" when the body was the
+    ground cost the morning.**
+
 179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
     morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
     read +1.50 ms with two cycles and −0.65 ms with six, on builder0 at load 14–21 with 67 Godot processes and five
@@ -2700,3 +2699,54 @@ The kickoff prompt is one line; this section is the rest.
     cost, show cost) go in a **quiet window** the orchestrator calls after the checks drain, one stream at a time, and
     every timing number carries the load average and the per-phase spread beside it or it is not quoted. Screenshots
     and seed-deterministic series are only *slowed* by load and can run through it.
+    **Addendum, the first quiet-window run (feel, load 0.4, 2 other Godots): still NOT USABLE.** The repeated `all`
+    phases went 36.5 → 31.3 → 29.8 ms, monotone: warm-up drift, not noise, which a `max − min` gate cannot tell apart;
+    the two cycles' bracketed costs disagreed in sign (+3.59, −0.44) and their mean (+1.57) hid it; and the draw count
+    moved 328 → 269 between phases because vehicles die during the sampled battle, so the phases were not the same
+    scene. A quiet box is necessary; the tool also needs a frozen census (damage off during the run, the count
+    printed per phase), a discarded warm-up, and a verdict from per-cycle costs agreeing in sign and magnitude.
+    **The second run (show, load 0.7–0.9, six cycles): the reusable numbers.** `all` GPU spread **1.64 ms** (stdev
+    0.64) and `no_show` **0.97 ms** on the quiet box against 4.86 / 5.13 ms at load 21: **a quiet builder0 is 3–5×
+    tighter, and a layer cost under ~1 ms is not readable on a busy one at all.** Even quiet, the six per-cycle deltas
+    declined monotonically as the battle thinned 68 → 55 vehicles (4 positive, 2 negative), so the honest result is a
+    bound, |cost| < ~0.8 ms, not a mean. And the roster question closed the same way: post-CP2 on a quiet box is
+    6.40 ms against pre-CP2's 6.43, so 19.87 was load; the "145k primitives" sentence was a single-run artefact
+    (the quiet run had 180,780 with fewer vehicles): **a counter immune to load is not immune to sampling.**
+180. **A guard that counts at teardown measures a pending removal, and it will convict the innocent with the same
+    confidence as a real leak.** Round 9's teardown guard (scale, `3f6c1650`) named three tests for leaving two
+    navigation regions each; `NavigationServer3D` drops regions on the frame *after* `free()` ([2, 0, 0, 0] over
+    frames 0–3), `TestCase.teardown()` counts synchronously at frame 0, so all three were innocent, and the
+    orchestrator had already granted one-line "fixes" in three streams' files before scale measured the drain
+    curve. Same morning, same suite, same shape as lesson 178: **a transient read at the wrong frame.** Physics
+    bodies have no such window (free() takes them to 0 in the same call), so the guard keeps that half and drops
+    regions. Rules: a guard's claim is only as strong as the settling behaviour of what it counts, measured; land a
+    guard *with* the fixes for what it finds, never route the fixes first; and when a new instrument convicts three
+    unrelated tests at once, suspect the instrument before the tests.
+181. **A difference between two arms proves the arms differ, never why.** Round 9's spawn lift: combat's 5 cm arm
+    moved the frame-1 sink by +0.032 m and combat read it as "the lift reached deployed units"; it was the
+    depenetration recovery's sensitivity to the contact. Earlier the same night a 47 % sliding-goal share was read as
+    a mechanism when it was a selection. The delta is the licence to look for the mechanism, not the mechanism. And
+    two streams implementing one ruling in two places produced one arm that could not act (squad's layout discarded
+    its own y) and one that acted for the wrong reason: **one constant, one home, one arm that exercises it, before
+    anyone reads a number off it.**
+182. **An `&&` chain of test runs reports the first failure and silence for the rest, and silence was read as green.**
+    Round 9: feel ran `make test FILTER=unit_scale && … city_block && … trailer && … airship`; `unit_scale` failed on
+    the artillery handover, the chain stopped, and the report said "the other three files passed" — `grep -c
+    city_block` on that log returns 0. The city-block test had never run and could not have passed as written
+    (`push_warning` on the path it exercises is an engine error to `ErrorCollector`), and it merged to `main` on
+    that sentence. Rule: **a claim that a file passed names that file's own `N passed, M failed` line from the log**,
+    and batches of filtered runs use `;` with a per-file summary, never `&&`. Same family as lesson 163 (read the
+    result line, not the exit code, not the absence of a complaint).
+183. **A readout that reports what was INTENDED rather than what was ISSUED will contradict the game exactly when
+    the player is watching.** Round 9: the squad-heading pin drew the arrow from the task (the intent), while the
+    crews had been given a follow order with no facing; control's fix derives the pin from the crews' own orders,
+    unanimously, so it starts drawing on the tick the promise becomes true and needs no follow-up edit. Fourth
+    member of one night's family beside lesson 173 (the lint parsing later files against older sources, the
+    "before" frame shot with the fix running, `get()` collapsing absent into null): **derive, never mirror**, and
+    the readout is a mirror if it can be true while the thing it reports is false.
+184. **An honest instrument is not enough if nothing asserts on it.** Round 9, nav's clearance tests: the arm counter
+    printed `chords 0` (the rule was never consulted) and the slack printed `nan` (a fallback), both correct, both
+    ignored by assertions that then failed for a different-looking reason; the cause was a mover that does not exist
+    until a hull is driven, the same mistake nav had made in the legibility test hours earlier. Beside lesson 171:
+    every positive control the run prints is also an assertion (`chords > 0`, `not is_nan(slack)`, "the mover
+    exists") *before* the number it guards is read, or the print is decoration.

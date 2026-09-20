@@ -167,6 +167,112 @@ directly.
 
 ## Status
 
+> ## TWO CALLS FOR YOU, WITH THE PICTURES. Neither is broken; both are choices the resize forced.
+>
+> ### 1. The ring under your vehicles is now wider than the vehicle is long. Which do you want?
+>
+> **Look at** `build/camera-looks/arenas/yard/default.jpg` (one tank, one ring) and
+> `build/control-playtest/1920x1080/8_whole_army.png` (three rings at once).
+>
+> Your tanks got longer — the Condemned tank went from about the length of a car to **8.6 m, the length of a bus** —
+> but they did not get wider. The selection ring is drawn from whichever is bigger, so it grew with the length and
+> is now **a circle you could park two tanks abreast inside**. On one vehicle it looks loose. On a squad the rings
+> overlap into a cloverleaf and you cannot tell which ring belongs to which vehicle, which is the thing rings exist
+> to tell you.
+>
+> - **(a) Tighter circle.** One number. The ring shrinks to just contain the hull (about a third smaller). Cheapest,
+>   and on a squad in close formation they will still touch.
+> - **(b) A ring shaped like the vehicle** — an oval or a rounded rectangle lying along the hull. This is the honest
+>   answer now that your roster runs from a 2.9 m rat rod to a 14 m rig, and it is the only option that stops a
+>   squad's rings overlapping. It is real work on the marker, not a constant.
+> - **(c) Leave it.** Loose rings, and you live with the cloverleaf when a squad is packed.
+>
+> **My recommendation: (b).** You said the resize made the game *"much cooler and awesome"*; the rings are the one
+> piece of UI that got worse in exchange, and (a) only halves the problem.
+>
+> ### 2. When you drag a heading for a whole squad, the squad does not turn to it yet.
+>
+> Right-drag now means *"go there, and be facing that way when you arrive"*. It works when you have picked
+> vehicles individually. **When you have a whole squad selected — your commonest order — the heading currently
+> stops at the squad leader and does not reach the vehicles.** The pin shows the heading you drew, so the screen is
+> telling you it took; the vehicles have not been told.
+>
+> **This is half-built, not broken, and the missing half is one line in squad's code** (the element passes the
+> task's facing down to its members). Nothing for you to decide unless you would rather it waited for the whole
+> thing before you play with it. Flagged because the pin promises something the vehicles do not yet do, and a
+> promise the game does not keep is worse than a feature that is obviously absent.
+
+> ## ITEM 4, PART DONE: THE HUD ON THE RESIZED ROSTER. TWO FINDINGS, ONE IS YOURS TO RULE ON.
+>
+> **THE FRAMES (item 4 is now shot; `camera-looks` landed at 08:59, `exited 0`, copy-back verified):**
+>
+> ```
+> build/camera-looks/index.html                       the page: 28 grid frames + all ten arenas at his pose
+> build/camera-looks/arenas/yard/default.jpg          his pose, resized roster, one ring on one tank
+> build/control-playtest/1920x1080/8_whole_army.png   the cloverleaf: three rings at once
+> build/control-playtest/1920x1080/*.png              12 frames (and 1280x720 beside it)
+> ```
+>
+> `control-playtest-shots` was shot **locally at 08:28 while builder0 was down**; `camera-looks` ran on **builder0
+> at 08:59** once it returned. Both are on the **resized** roster (`914dc7d3`). The earlier `camera-looks` attempt
+> `exited 255` (ssh) with a failed copy-back and produced nothing here — this one exited 0, and its `index.html`
+> timestamp was checked before anything was read out of it.
+>
+> **FINDING 1 — the selection rings have become a cloverleaf, and this is your call.** A ring's radius is
+> `max(hull.x, hull.z) * 0.75`. The Condemned tank went **3.60 m → 8.62 m long** but is still **2.40 m wide**, so
+> its ring went from **5.4 m across to 12.9 m** — for a vehicle you could park two abreast inside it. In
+> `8_whole_army.png` three neighbouring units' rings visibly intersect and you cannot tell which ring belongs to
+> which vehicle; `arenas/yard/default.jpg` shows the same thing on a SINGLE unit, where the ring is about **twice
+> the hull's own length**. **It is not a bug, it is a constant that was right for a 3.6 m hull**, and the fix is a design
+> choice rather than a number: (a) bound the hull's own circumscribing circle instead of its longest axis
+> (`hypot(x,z)/2`, which gives 4.47 m for the tank against today's 6.47) — cheapest, still overlaps at formation
+> spacing; (b) an **oriented** marker (an ellipse or a rounded box along the hull) that bounds a long narrow
+> vehicle tightly — the honest answer for a roster spanning 2.93–14.0 m, and a real change to the marker mesh;
+> (c) leave it. **I did not change it blind:** at 08:45 with one display I could not have re-shot and LOOKED at a
+> new constant before you read this, and a ring I have not seen is exactly what this stream has spent the night
+> refusing to hand over.
+>
+> **FINDING 2 — a facing drag on a WHOLE SQUAD lost its heading, and that is mine, not CP2's.** The playtest I
+> added for item 1 ran for the first time here and failed: `drag_px 127`, a good ground direction, and
+> `facing: []` on the order. A whole-element move goes down the **task** path, and `RtsControls.assign_task` copied
+> only `to` and `target` into the task — so the lead's commonest order, a squad with a drawn heading, silently
+> became a plain move. **Control's half is fixed** (the task now carries `facing`); **the last mile is squad's** —
+> the element layer has a facing channel (`element.gd:493`) but nothing reads `task["facing"]` yet, so the per-unit
+> orders will not carry it until squad wires it. The playtest now reports **which half** failed
+> (`facing_drag_reaches_the_task`). My unit tests missed it because they all order single units or pairs that are
+> not elements, and those take the direct path.
+>
+> **Still owed:** `REMOTE_SLOTS=6 make remote T=camera-looks` the moment builder0 answers, and the rest of the
+> checklist under *Still owed* below (radar blips across a 2.93–14.0 m spread, the cutaway against the 6.18 m
+> Sonic Emitter, `MIN_DISTANCE` 16 m against the 14 m War Rig, the card lean derived rather than copied).
+
+> ## ⚠ (superseded by the section above) ITEM 4 IS NOT DONE, AND THERE ARE NO NEW FRAMES.
+>
+> **CP2 is merged and on this branch** (`914dc7d3`, the roster really is resized: tank hull **8.62 m**, Sonic
+> Emitter **6.18 m** tall, Rat Rod **2.93 m**). The post-CP2 camera sweep **started and did not finish**:
+> `make remote T=camera-looks` came back **`exited 255`**, which is **ssh, not the suite**
+> (`_agents/remote_builds.md`), and **`build/ copied back: FAILED`**. builder0 has been unreachable since ~08:27
+> (`No route to host`). It had finished foundry and furnace on the box before the link dropped; **none of it reached
+> this laptop**, so `build/camera-looks/` here holds **an older run's frames and must not be read as CP2's**.
+>
+> **There are therefore NO frames of the resized roster.** The rule in this brief has not relaxed: *a frame of the
+> old roster is a frame of a game he will not play again*, and that applies to stale frames sitting in `build/` just
+> as much as to freshly shot ones.
+>
+> **The one command that finishes it, the moment builder0 answers:**
+>
+> ```bash
+> cd ~/projects/godot-control && git merge main      # already done: 914dc7d3
+> REMOTE_SLOTS=6 make remote T=camera-looks
+> REMOTE_SLOTS=6 make remote T=control-playtest-shots
+> ```
+>
+> Then read the frames against the checklist under *Still owed*, below, and put the paths here.
+>
+> **The frames that ARE real and worth looking at are the Terminus alleys**, shot locally at 04:02 on the
+> **pre-CP2** roster: `build/terminus-alleys/index.html`. They answer the camera-inside-a-building item, which does
+> not depend on hull size; they are not a substitute for the sweep.
+
 > **Round 9, control. Finished 2026-09-20 ~05:00.** Branch `stream/control`; **`ffd09b0e` is the checked hash**
 > (builder0, **16 of 16 check targets**, verdict read from the box's own markers — metrics' kill took my wrapper
 > line, `mk/core.mk:250` clears the marker directory at the start and `:274` writes a marker only on success, so
@@ -380,7 +486,33 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
 
 ### Still owed
 
-- **Item 4, the post-CP2 camera sweep: NOT DONE, and it is the only backlog item outstanding.** It needs scale's
+- **ITEM 4 IS OWED, AND HERE IS EXACTLY HOW TO RUN IT.** It needs scale's resized roster on `main` and nothing
+  else. It does not depend on anyone remembering anything:
+
+  ```bash
+  cd ~/projects/godot-control
+  git merge main                      # the LOCAL branch; origin/main is behind, nothing is pushed
+  REMOTE_SLOTS=6 make remote T=camera-looks CAMERA_LOOKS_ARENA=yard
+  REMOTE_SLOTS=6 make remote T=control-playtest-shots
+  REMOTE_SLOTS=6 make remote T=terminus-alleys        # the alley pairs again, on the new hulls
+  # then LOOK at: build/camera-looks/index.html, build/control-playtest/1920x1080/*.png,
+  #               build/terminus-alleys/index.html
+  ```
+
+  **Read each frame against this list** (all of it sized for a 3–5 m hull and now facing 2.93–14.0 m):
+  selection rings and boxes on a hull two to three times longer · the command card's lean
+  (`VISION_FRAME_BOTTOM` 0.40, **to be derived from the card's geometry rather than copied** — the round-8 Invariant 0
+  debt) · radar blips, which are a fixed 32 px texture and should read a hull's length class · the wall cutaway
+  against the **6.18 m Sonic Emitter**, the tallest hull · `MIN_DISTANCE` 16 m against the **14 m War Rig**, which
+  may now be inside it · the auto-frame and `VISION_FLOOR_M` 45 / `AUTO_FRAME_MAX_M` 100 against a physically wider
+  squad. Fix what the frames show, one commit each, and put the strip in `build/camera-looks/` with the commit and
+  machine in its README.
+
+  **The rule does not relax if the deadline moves: nothing here is published before CP2.** A frame of the old roster
+  is a frame of a game he will not play again, so if CP2 misses the night, the honest state for his morning is
+  *"item 4 not done, and here is the command"* — not a set of frames shot on the roster being replaced.
+
+- **(superseded, kept for the shape) Item 4, the post-CP2 camera sweep: NOT DONE.** It needs scale's
   resized roster on `main`. When it lands: `git merge main`, then `make remote T=camera-looks` and
   `T=control-playtest-shots` at your pose, and check selection rings, the command card's lean
   (`VISION_FRAME_BOTTOM`, to be derived from the card rather than copied), radar blips against 8–14 m hulls, the
