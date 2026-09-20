@@ -176,3 +176,8 @@ func teardown() -> void:
 				+ "them and may fail instead of this one: free every node you add, and if a helper builds the arena, "
 				+ "free it there.") % [total, _world_baseline])
 	_world_baseline = maxi(_world_baseline, total)
+	# LAST, and awaited by the runner: leave the navigation map empty so the next test cannot bake into this one's
+	# regions. Placed after the body guard so that guard's timing is unchanged, and after `free()` so there is
+	# something to drain. Every test gets this without asking, which is the point -- 20+ files instantiate the arena
+	# scene directly and would never call it themselves.
+	await drain_navigation()
