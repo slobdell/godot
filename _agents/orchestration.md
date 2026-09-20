@@ -839,7 +839,7 @@ The kickoff prompt is one line; this section is the rest.
     predict the same observation, **stop looking harder at the observation and find the cheap test that separates
     them** (cf. lesson 54 — a probe consistently measuring a bridge, broken open by implausibility rather than by
     repetition).
-65. **A differential question implemented as an absolute comparison produces a confident false accusation.** Round 6,
+65. **FIXED IN ROUND 6 — READ THIS FIRST (verified by feel, round 9, 2026-09-20 `32c18aea`).** `announcer-record-smoke` and `music-smoke` now run a control match in the same invocation and compare the two hashes to each other; they never open the baseline file. feel proved it four ways (a stale baseline line reddens `sim-baseline` and leaves both smokes green; a skewed seed makes `music-smoke` name the soundtrack). **This lesson cost a round-9 backlog slot because it still read as current: when a round fixes what a lesson describes, the lesson is amended in the same commit or gets a "fixed in round N" line at its head.** *Original text:* **A differential question implemented as an absolute comparison produces a confident false accusation.** Round 6,
     found by combat while verifying CP4: with the sim baseline legitimately stale, **three** targets failed on the same
     pair of hashes — and only one of them said anything true.
     ```
@@ -2557,3 +2557,11 @@ The kickoff prompt is one line; this section is the rest.
     quiet ones were found. Fix: **a test suite for a switched-off mechanism switches it on for itself** (and restores the
     flag in teardown), so the geometry is asserted whether or not the mechanism ships on. Sibling of lesson 23 (a
     behaviour behind a flag has not shipped) on the test side: a test behind a flag has not tested.
+165. **A lesson describing a defect that has since been fixed is worse than no lesson — it sends a stream to rebuild
+    something that works.** Round 9: lesson 65 (the two smokes comparing against the baseline file) had been fixed in
+    round 6, and feel's brief budgeted a build item on the strength of it; lesson 137 (the baseline only fields tanks)
+    had been superseded in round 8 and squad pre-registered a wrong prediction on it. Both now carry the supersession at
+    their head. **Convention from here: the commit that fixes what a lesson describes amends the lesson**, and a fresh
+    reader of this file reads the first line of a lesson as its current truth. Also learned on the way: `make
+    sim-baseline` does not skip on the laptop by nature — only because `sim_state_hash.txt` has no `glibc-2.39` line;
+    add one and the laptop self-checks (it produced `5dbb0689ddffc1c0`), though builder0's line stays canonical.
