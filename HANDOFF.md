@@ -43,6 +43,11 @@ its near row clips. He can overrule the look or K in the morning. **The gap-wide
 first corridor measure was wrong; the corrected one shows no pinch on any rotation map: yard 18.0 m, terminus 11.5 m,
 maze 7.0 m = its authored `MAZE_TIGHT_GAP`).
 
+**In front of the lead (04:05): the Terminus alley pair** (`~/projects/godot-control/build/terminus-alleys/index.html`,
+six pairs; `alley4_asked` = the camera inside a wall, `alley4_clear` = a squad in the street with rings, facades intact;
+`alley5` is the open-ground control where nothing is cut). Lift + occlusion cutaway, control `c97d4d5f`, laptop, windowed
+at his pose. Approved overnight; item 3 of control's brief is done on the hash its check names.
+
 **One question for the lead, with a recommendation:** the roster is being scaled *rig-relative* (the world's vehicles
 at K ≈ 0.7 of real size, so the 14 m rig he ruled on stays and the bus, garbage truck, APC and assault gun grow
 1.5–2×). The alternative is *real metres*, which puts the rig at 18–21 m and roughly doubles apparent crowding on
