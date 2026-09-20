@@ -205,7 +205,7 @@ test: import ## Run the headless test suite (FILTER=substring to run a subset; T
 # touches no `user://` path, and the target writes only `build/ai-scenarios.log`.
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
-                 ai-scenarios-check
+                 ai-scenarios-check remote-guard-test
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #
@@ -445,6 +445,16 @@ backup-install: ## Install and start the 30-minute systemd user timer that runs 
 remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="test FILTER=combat"
 	@test -n "$(T)" || { echo 'usage: make remote T="check"'; exit 2; }
 	tools/remote.sh $(T)
+
+remote-status: ## What is running in THIS worktree's folder on builder0 (read-only; ask before REMOTE_FORCE=1)
+	@tools/remote.sh --status
+
+# The guard that stops `make remote` rsyncing --delete over a run of your own that is still going. It is in
+# `check` because it is a guard, and every defect round 9 found -- in the exclusion groups, in the shard count,
+# in `lint`'s file list, in `check-hashes` -- was a guard nobody had ever exercised. This one costs ~1 s and
+# needs no Godot, no ports and no `user://` path, so it joins with no exclusion edge.
+remote-guard-test: ## The live-run guard's known-answer tests (no Godot, ~1 s)
+	@tools/test_remote_guard.sh
 
 # ---- Parallel workstreams (git worktrees; see _agents/workstreams.md) ---------------
 

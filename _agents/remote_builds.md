@@ -392,3 +392,26 @@ between runs.
 builder0 ten minutes after its wrapper died (the make, slot.sh, arena_series.py and two headless matches); the next
 `make remote` from that worktree would have rsynced `--delete` under it. Kill the whole tree by cwd-verified PID
 before relaunching (scale, 2026-09-20 08:45).
+
+## trip-up 66 is now enforced, not remembered (`tools/remote_guard.sh`, metrics, 2026-09-20)
+
+`remote.sh` refuses to launch when **this worktree's own folder on builder0 already has something running in it**,
+because the launch rsync is `--delete`: it replaces the tree the earlier run is reading, mid-run. Remembering that
+failed twice in one morning — nav's check on `96bbf38e` was voided and scale lost a 62-minute fairness run.
+
+    tools/remote.sh --status     # or: make remote-status -- what is live in YOUR folder, with start times
+    REMOTE_FORCE=1 make remote T=check    # launch anyway; prints the run it is about to destroy
+
+- **The refusal reads /proc, not a lock file.** A second `.owner` file would have been the stale-`.owner` bug again
+  (above): a marker naming a dead pid is indistinguishable from one naming a live pid, and it would lock a stream
+  out of the box until a human deleted a file. A run is live iff some process has its **cwd inside the run
+  directory** — which also covers the forty minutes a run can sit QUEUED in `slot.sh`, since it has already
+  `cd`-ed in. The marker beside the slot files is **printed, never believed**, and `--status` labels it STALE.
+- **The one exception is the launch window**, between "the rsync started" and "a process exists": that is a claim
+  with a TTL (`REMOTE_CLAIM_TTL`, 300 s), and check-and-claim is one `flock`ed step so two launches seconds apart
+  cannot both see an idle folder.
+- **It fails open, loudly.** If the guard itself cannot run, the launch proceeds with a `launching UNGUARDED`
+  warning — a guard that cannot run must not stop eight streams working, but it must not be silent either.
+- `make check` runs its 36 known-answer tests (`remote-guard-test`, ~1 s, no Godot). **That is the point**: every
+  defect round 9 found — the inert exclusion groups, the re-derived shard count, `lint`'s empty file list,
+  `check-hashes` reporting "unmoved" with no data — was a guard nobody had ever exercised.
