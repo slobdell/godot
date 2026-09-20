@@ -233,6 +233,49 @@ fast-forwarded at worktree creation). A baseline `make remote T=check` was start
 
 ### REPORT — read this first (nav, round 9, 2026-09-20)
 
+**Nav built five catalogue rows this round. Not one of them is on by default, and the sim baseline has not moved
+once. That is the report, not an apology** — every row carries the measurement that decided its default, and four of
+the five are negative results that cost a night each instead of a round each.
+
+**Nothing changes when you play.** `make skirmish` is byte-for-byte what it was. Every row below is behind a switch
+that is **off**, and **nav's rows do not move the simulation baseline**: it read `04414f5d6a6dfa7c` on every nav
+check tonight, unchanged across nav's `main` merge. *(`main`'s own baseline has since moved to
+`d4c049819a5833d3` with squad's merge — that is squad's change, not nav's, and nav's next check compares against
+the new value.)*
+
+| Row | What it was meant to do | What it actually does | Default |
+|---|---|---|---|
+| **A7** priority projection | replace the additive score with strict priorities | the leash engages (1477 rejections) and **does not fix the drift** — `CombatMotion` decides on under a tenth of a hull's ticks | **off** |
+| **A11** dynamic window | offer only arcs the plant can drive | **doubles the exchange tempo** (2.1× shots/s, 2.7× damage/s). Whether that is lethality or blundering is **not settled** (p = 0.26) | **off** |
+| **A1** event replanning | cut route churn | **−21.5 % re-plans in isolation**, but the cadence is only ~3 % of re-plans in a fight — it fixes the wrong thing | **off** |
+| **A4** clothoid approach | reach gates a straight run-in cannot | reaches **100 %** of them on yard — and **breaches the fight guard hardest where it works best**, and on terminus **never arrives at all** | **off** |
+| **A6** legibility | stop hulls driving backwards down their own corridor | built, both clauses, and **cannot fire yet**: it needs one field from squad's brain. Measured inert, not assumed inert | **off** |
+
+**The one thing a player would notice, and it is not ours to fix.** Your *"the semi trucks are yawing in place
+(should be impossible, they're not a tracker vehicle)"* has a cause: **a hull's rotation is never checked against
+scenery.** `tank.gd` sets the hull's facing directly and only its *movement* is collided, so a truck pinned against
+a wall keeps turning — through the wall. A 14 m semi in a 5 m corridor rotated 44°, needing 12.1 m of room it did
+not have. That file is combat's; they have confirmed it, and it is their next item after tonight's green hash.
+**It gets worse at CP2**, because the sweep this ignores scales with length × sin(yaw) and most of the roster is
+about to get longer.
+
+**What nav would spend the next round on, in order.** (1) **The seam**: the layer that decides a hull's motion is
+not the layer that moves it, which is why the leash did nothing, why A6 cannot see its corridor, and why the
+legibility readout cannot name a cause. Everything above trips on it. (2) **A6's falsifier**, once squad's field and
+metrics' log column land — it is the only row whose bar has not been tested. (3) **A4 stays off** unless the
+non-arrival is fixed, and probably stays off regardless.
+
+**Round 9's actual lesson, across four streams: six measurements looked like numbers and were not.** squad's defile
+tube read zero in both arms because the maze has no enemies; nav's `facing_arc` printed `0.0s` for a field nobody
+published; nav's blocked-gate denominator counted *events*, not gates (19245 against 794 for the same 120 s);
+`--nav-off=a11` ran one treatment in two arms; metrics' renderer counted *null* as *false*; and nav's own A6 test
+compared a key that does not exist and passed on 0.000 against 0.000 — **inside the test written to catch that.**
+Every one was caught, none reached a decision, and the phrase worth keeping is squad's: ***an arm in which the
+mechanism cannot act is not a control; its zero is indistinguishable from a result.***
+
+---
+
+
 **✅ GREEN ON THE TIP: `3b01f5b7` — `>> remote: make check exited 0 (build/ copied back)`, `1295 passed, 0 failed`,
 `lint: all scripts parse`, `sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)` — builder0.** The baseline hash is
 **identical** to `5c8f08b3`'s, so nothing on this branch moves it and every round-9 row is still opt-in. **This also
