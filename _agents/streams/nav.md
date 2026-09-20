@@ -398,6 +398,18 @@ genuinely inert in a CPU fight — for a narrow reason, not a general one — an
 player's drag-order with a facing, and a squad told to hold one (the lead's ambush case).**
 Round 9's version of this measurement needs the probe to issue orders WITH a facing; otherwise it re-measures nothing.
 
+**Spec for that measurement, agreed with squad (2026-09-19), to build when the merge chain clears:**
+- The probe issues a move carrying an explicit `facing`, AND a formation hold, so both the player path and squad's
+  KEEP_SLOT path are exercised. squad's own `tests/test_facing.gd` covers the K1 path in isolation; this is the fight.
+- The gate counter splits three ways, not two: **offered** (a wheeled hull got an order with a facing), **aimed** (a gate
+  was routed to) and **refused** — because "never offered" and "offered and refused" are the two things this round's
+  null could not tell apart, and only the counter can.
+- Refusals break down by REASON: gate off the navmesh, hull already on the approach, gate already reached. squad's
+  prediction is specifically that an element's 6.5 m assembly spacing refuses most slot gates against my ~17 m approach
+  for an IFV; that prediction is falsifiable only if the reason is recorded.
+- Primaries stay as pre-registered: per-wheeled-type `net_over_path` and `oscillating_share`, with the attack_move
+  progressing guard.
+
 **Still blocked / queued behind the merge chain:**
 1. The facing-arc measurement re-done with facings in the issued orders, against combat's widened baseline.
 2. Re-checking the three post-green commits that are not docs.
