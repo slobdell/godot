@@ -1,5 +1,7 @@
 class_name MatchRunnerMode
 extends GameMode
+
+const TRAJECTORY := preload("res://tools/metrics/trajectory_log.gd")
 ## Headless bots-vs-bots, faster than real time under Godot's --fixed-fps; prints
 ## MATCH_RESULT <json> and quits. Options: --green=N --rust=N (BotControllers) or
 ## --green-doctrine=PATH --rust-doctrine=PATH (or cpu / cpu:<archetype> with --budget), --score-limit=K --time-limit=SECONDS
@@ -101,6 +103,11 @@ func start() -> void:
 		_log_combat(game_match)
 	if flags.has("sim-profile"):
 		SimProfile.install(game_match)
+	# S3 (metrics, round 9): --trajectory=PATH writes the per-tick trajectory log `make metrics` reads. Off unless
+	# the flag is given; the writer is metrics' (tools/metrics/), and this file only turns it on.
+	TRAJECTORY.install(game_match, flags.text("trajectory"), "match-runner",
+			{"seed": seed_value, "budget": game_match.budget, "elimination": game_match.elimination,
+			"time_limit": flags.integer("time-limit", 300), "score_limit": flags.integer("score-limit", 5)})
 	var started_msec := Time.get_ticks_msec()
 	game_match.finished.connect(func(result: Dictionary) -> void:
 		var real_seconds := (Time.get_ticks_msec() - started_msec) / 1000.0

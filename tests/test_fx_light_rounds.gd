@@ -133,4 +133,9 @@ func test_a_real_scout_s_rounds_fly_to_where_the_rules_say_they_hit() -> void:
 	assert_eq(fx.weapons.last_family, "stream", "the rules' impact on the IFV uses the stream family")
 	fx.weapons.flush(fx.now)
 	var end := fx.tracers.round_end(fx.tracers.newest_round())
+	# SIZE-DEPENDENT LITERAL, and it is scale's to replace inside the CP2 commit (orchestrator's ruling, 2026-09-20),
+	# so the two branches do not both edit this line. The window is a 3.80 m IFV's numbers: the resize takes that hull
+	# to 7.54 m and the round then stops at its near face, z = -16.23, which this window calls "full range". What the
+	# test is FOR is that the tracer ends ON the vehicle rather than flying past it -- derive it from
+	# Units.stat("ifv", "hull_size") and it survives every resize after this one too.
 	assert_true(end.z > -21.5 and end.z < -17.0, "the tracer ends on the IFV the rules hit, not at full range (%s)" % end)
