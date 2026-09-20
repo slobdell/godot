@@ -361,6 +361,20 @@ measurable for the first time. **Re-run the benefit measurement then; do not del
 **What stays shipped:** the recovery, opt-in and unchanged, with its guard now holding on the hardest case available
 rather than on a synthetic one. **Do not flip its default** — on today's plant it can only ever subtract.
 
+**AGREED WITH COMBAT (2026-09-20): the constraint goes in the PLANT, not in A7's feasibility mask.** The argument
+that decided it is this round's own null — *THE LEASH IS NOT IN THE ROUTE PATH*: **the layer holding a constraint
+must be the layer moving the hull**, and `CombatMotion` decides on under a tenth of a hull's ticks. Conclusively, a
+`face` never reaches `CombatMotion` at all (`order_controller.gd` drives `Steering.drive_toward`, then
+`movement.idle()`), so a mask constraint would have missed the exact case that exposed the defect. Two requirements
+nav asked for and combat has taken as the *first* things they build: **`refusals_offered` / `refusals_applied`**
+counters, because a hull frozen in yaw by a spawn overlap breaks N1's guarantee and looks identical to a working
+refusal from outside; and **determinism by construction** — a fixed set of candidate angles in a fixed order, ties
+to the smaller yaw, no tolerance loop, one shape query at a candidate transform (A4's fan's rule, same reason).
+
+**That fix is also what makes this row live.** A refusal that keeps being applied to the same hull *is* the condition
+the detector was written for — so `face_giveups` should start firing the moment the plant refuses an impossible yaw,
+and the benefit measurement becomes possible for the first time. nav runs it against combat's fix when they land it.
+
 **The idea is NOT refuted — it is unreachable, and the distinction matters to whoever reads this next** (combat asked
 for it to be stated plainly so the next round does not re-derive the row from scratch). A `face` order genuinely has
 no recovery, and N1's guarantee — *"it never stands still silently"* — genuinely exempts it. The detector is correct
