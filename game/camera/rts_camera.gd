@@ -431,7 +431,44 @@ static func _cut(at: Vector3, heading: float, distance: float, pitch_deg: float,
 	var wall_foot := Vector3(at.x, 0.0, at.z) + back * reach
 	# The wall's top edge is nearer the camera than its foot by its height * sin(pitch): cut just past it.
 	var wall_top := wall_foot + Vector3.UP * wall_height
-	return maxf(NEAR_DEFAULT, (wall_top - pose.origin).dot(forward) + CUTAWAY_PAST_WALL_M)
+	var cut := (wall_top - pose.origin).dot(forward) + CUTAWAY_PAST_WALL_M
+	# ROUND 9 (CP2): NEVER CUT A VEHICLE TO GET AT THE WALL IT IS PARKED AGAINST.
+	#
+	# The wall is 3.0 m. The tallest hull used to be about 1.6 m, so a plane at the wall's top edge could not reach a
+	# vehicle. After the resize the Sonic Emitter is 6.18 m and the War Rig 5.24 m -- taller than the wall -- and the
+	# top of a hull parked against it is NEARER THE CAMERA than the wall's top edge, more so the steeper the tilt.
+	# Measured at the lead's own pose the margin was +0.22 m, which reads as safe; swept across the tilt range he can
+	# actually reach it goes to **-1.57 m at 50 degrees**, and the top of a 6.18 m vehicle is cut away.
+	#
+	# So the plane also stays behind a probe at the tallest hull's height on the wall's inner face. Leaving a sliver
+	# of wall drawn is a far cheaper mistake than slicing the vehicle the player is looking at.
+	# The probe stands where a hull ACTUALLY can: its centre is at least half its own footprint inside the wall, so
+	# probing at the wall's face would refuse cuts that can never clip anything. At the lead's 12-21 deg the hull top
+	# then sits BEHIND the wall cut and this changes nothing - which matters, because round 6 measured in a real
+	# playtest that leaving the 3 m wall drawn at 12 deg hides every vehicle parked against it. It only bites where
+	# the geometry says it must: steep tilts, where the wall hides little anyway.
+	var tall: Array = RtsCamera.tallest_hull()
+	var probe := wall_foot - back * float(tall[1]) + Vector3.UP * float(tall[0])
+	var guard := (probe - pose.origin).dot(forward) - CUTAWAY_PAST_WALL_M
+	return maxf(NEAR_DEFAULT, minf(cut, guard))
+
+
+## The tallest hull in the roster as [height, standoff]: how tall it is, and the closest its CENTRE can come to a wall
+## (half its smaller footprint axis - it cannot overlap the wall). Read from `Units` once and cached. Derived, never a
+## second table: the day a taller vehicle lands, the cutaway makes room for it with nothing to update here.
+static var _tallest: Array = []
+
+static func tallest_hull() -> Array:
+	if _tallest.is_empty():
+		var best := 0.0
+		var standoff := 0.0
+		for unit_id: String in Units.PROFILES:
+			var hull: Array = Units.stat(unit_id, "hull_size")
+			if hull.size() == 3 and float(hull[1]) > best:
+				best = float(hull[1])
+				standoff = minf(float(hull[0]), float(hull[2])) * 0.5
+		_tallest = [best, standoff]
+	return _tallest
 
 
 ## The arena perimeter's half size: the walls stand one metre outside the layout's half size (ArenaDressing.setup).
