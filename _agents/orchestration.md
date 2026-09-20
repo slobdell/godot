@@ -2549,3 +2549,11 @@ The kickoff prompt is one line; this section is the rest.
     `oscillating` at 0.004 moved twelve-fold) — *an instrument at the end of its range is indistinguishable from one
     that is not connected.* All three are one rule at different distances: **when a fact is one query away, query it**,
     instead of an inference that is right most of the time, which fails silently and only when it matters.
+164. **A flag that silences a suite is worse than one that breaks it — the break is visible.** Round 9, squad: with
+    `DEFORM_ENABLED := false` (A8 switched off on its measurement), `fit_to_corridor` returns the identity, so a sweep
+    asserting *"hulls stay clear at every corridor width"* was asserting that an **undeformed** formation is clear —
+    which X1 already guarantees unconditionally. Three of five surviving tests passed without testing anything while
+    the Status said A8's invariants were *"asserted over a sweep"*; two others broke, which is the only reason the three
+    quiet ones were found. Fix: **a test suite for a switched-off mechanism switches it on for itself** (and restores the
+    flag in teardown), so the geometry is asserted whether or not the mechanism ships on. Sibling of lesson 23 (a
+    behaviour behind a flag has not shipped) on the test side: a test behind a flag has not tested.
