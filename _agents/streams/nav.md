@@ -274,6 +274,36 @@ with the live treatment and report `arms` counters, so an arm that did not engag
 `_agents/streams/nav.md`. **No file outside nav's ownership was touched.** `tests/baselines/sim_state_hash.txt` is
 deliberately NOT re-recorded: nothing on the default path moves it.
 
+### Verification state — exactly what is proven, and by what
+
+**The branch point is GREEN, which answers HANDOFF's "the first task of round 9 is one full `make remote T=check` on
+`main`":**
+
+    >> remote: make check exited 0 (build/ copied back)
+    1261 passed, 0 failed
+    sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)
+
+builder0, the tree at `9f864474` (= `main`). The baseline line matches the recorded value, unmodified.
+
+**This branch's tip (`acd25a0b`) is NOT yet covered by a remote check** — it is synced and **queued on builder0
+behind three other streams' checks** (control 49 min, metrics 67 min, squad 51 min at enqueue; builder0 runs 3
+slots). Do not read the branch as green until the wrapper's own `>> remote: make check exited <N>` line says so.
+*(`>> waiting for a heavy-run slot` is printed on enqueue and never retracted — being granted one is a later line in
+the same log. Round 8 lost 50 minutes to misreading exactly that.)*
+
+**What IS proven locally, on this laptop, at the tip:**
+
+| Run | Result |
+|---|---|
+| `run_tests --filter=nav_` (A7's 6 + A11's 6 + a readout test) | **13 passed, 0 failed** |
+| `run_tests --filter=wheeled` | **11 passed, 0 failed** |
+| `scenario_motion`, default path | **4 passed, 0 failed** |
+| `scenario_elements`, default path | **5 passed, 0 failed**, reproducing the pristine numbers exactly (drift 15.4 m, shots 10; base-of-fire 5 then 4) |
+| `nav-fight`, default and `--nav-off=a7,a11` | both complete, arms distinguishable, gate identity holds |
+
+**The default path is byte-identical in behaviour to the branch point** — both new rows are opt-in — so the sim
+baseline does not move and `tests/baselines/sim_state_hash.txt` is deliberately not re-recorded.
+
 ### The plan (written first, N0)
 
 Smallest foundation first, and the brief's order is the order — it was argued in round 8 and adopted in
