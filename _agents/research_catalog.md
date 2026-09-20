@@ -243,6 +243,15 @@ Curvature linear in arc length, so steering rate is bounded and no join demands 
 See Part 1 §5.
 **Determinism:** Fresnel integrals from a fixed-size lookup table with fixed-order interpolation. **Not** a series
 evaluated to tolerance.
+**MEASURED IN ROUND 9 (nav, 2026-09-20, `nav-fight` yard seed 3, 45 s, default path, laptop `9c5c73ef`):** of 6,364
+arrival gates offered, 1,196 were refused, 835 of them `off_mesh`. Probing each refusal at shrinking run-in lengths
+splits that one number into two bugs: **474 (57%) would have fitted with a shorter run-in** — cheap but *not free*,
+since `APPROACH_RADII` 2.5 is a measured value and at 1.5 radii an IFV arrived 63° off, so 75% of it trades refusals
+for unmeasured heading error and needs its own A/B — and **361 (43%) fit at no length tried: the approach corridor is
+blocked, and no straight gate reaches them at any length.** That 43% is A4's territory, now counted in the
+configuration the lead plays rather than argued from curvature continuity. **Rule before anyone builds it:** the
+shorter run-in and the clothoid fix *different* failures and are never shipped together or credited to each other
+(round 7's shape: ship, measure twice, find the mechanism was never reached).
 **Falsifier:** signed cusp density below **1.5 per agent-minute** with **zero unexplained cusps** (currently 9–19,
 a third unexplained), and peak steering rate never saturates on a nominal traverse.
 
