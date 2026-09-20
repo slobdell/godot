@@ -188,3 +188,62 @@ func test_the_arrival_arc_publishes_whether_it_is_live() -> void:
 	Movement.of(tank).idle()
 	assert_true(not bool(Movement.state(tank).get("facing_arc", true)),
 			"and is cleared by idle(), so it can never be counted as arc seconds the hull did not spend")
+
+
+## S4: control signed A6 on one condition — that `Movement.state(unit)` carry `legibility: {active, why}` so their
+## readout names which level took the nose instead of inferring it from geometry. Their C-2 readout was built and
+## SILENT waiting for this key. These tests hold the shape control renders against, and the closed set, because a
+## `why` outside it renders as nothing and a silent readout looks exactly like a working one.
+func test_the_legibility_key_control_signed_for_is_published() -> void:
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var tank := game_match.spawn_tank("Legible", 0, Match.Team.GREEN, "ifv")
+	tank.global_position = Vector3(-100, 0, 40)
+	tank.rotation.y = 0.0
+	var ctl := OrderController.new()
+	ctl.tank = tank
+	ctl.tanks_root = game_match.tanks
+	add_to_tree(ctl)
+	assert_eq(ctl.set_orders({"type": "move_to", "x": -60.0, "z": 40.0, "facing": [1.0, 0.0]},
+			{"type": "hold_fire"}), "", "sent somewhere with an ordered facing")
+	await tree.physics_frame
+	var leg: Variant = Movement.state(tank).get("legibility")
+	assert_true(leg is Dictionary, "the key is published as a Dictionary")
+	var pair: Dictionary = leg
+	assert_true(pair.has("active") and pair["active"] is bool, "`active` is a bool")
+	assert_true(pair.has("why"), "`why` is present")
+	assert_true(Movement.LEGIBILITY_WHY.has(pair["why"]),
+			"`why` (%s) is in the closed set control renders: %s" % [pair["why"], Movement.LEGIBILITY_WHY])
+	# A6 is not built, so nothing nav owns shapes the nose. Asserting this keeps a later `active: true` honest:
+	# whoever flips it has to come through this test and say which law did it.
+	assert_true(not bool(pair["active"]),
+			"`active` is false until A6-a/A6-b exist - no nav-owned motion law is shaping the nose yet")
+
+
+## S4 names this case explicitly: an arrival arc under an ORDERED facing is off-corridor by construction, and those
+## ticks must be counted as ordered and never charged to A6's fraction. The readout can only do that if nav says so,
+## which is why `arrival_arc` is in the set rather than folded into `override`.
+func test_an_ordered_arrival_arc_names_itself_rather_than_looking_like_a6() -> void:
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var tank := game_match.spawn_tank("Arced", 0, Match.Team.GREEN, "ifv")
+	tank.global_position = Vector3(-100, 0, 40)
+	tank.rotation.y = 0.0
+	var ctl := OrderController.new()
+	ctl.tank = tank
+	ctl.tanks_root = game_match.tanks
+	add_to_tree(ctl)
+	assert_eq(ctl.set_orders({"type": "move_to", "x": -60.0, "z": 40.0, "facing": [1.0, 0.0]},
+			{"type": "hold_fire"}), "", "told to arrive facing east")
+	var named := false
+	for frame in int(SimClock.TICK_RATE * 6):
+		await tree.physics_frame
+		var pair: Dictionary = Movement.state(tank).get("legibility", {})
+		if pair.get("why") == &"arrival_arc":
+			named = true
+			assert_true(bool(Movement.state(tank).get("facing_arc", false)),
+					"and it agrees with `facing_arc` on the same tick - one fact, not two that can drift")
+			break
+	assert_true(named, "the arc names itself as `arrival_arc` while it is live, so A12 can exclude it from A6")

@@ -426,6 +426,44 @@ static func eta(unit: Node, to: Vector3) -> float:
 # ---- Per unit (the composer calls these) ----------------------------------------------------------------------------
 
 ## The N1 reading for this unit.
+## S4 (contract, `_agents/workstreams.md`): **control signed A6 with exactly one condition on nav** — that
+## `Movement.state(unit)` carry `{"active": bool, "why": StringName}` *"so the readout names which level took the
+## nose rather than inferring it from geometry"*. control's C-2 readout has been **built and silent** waiting for
+## this key while nav waited on control's signature, which control gave hours earlier. Shipping the key breaks that.
+##
+## **`why` is a CLOSED SET**, refused loudly if something publishes outside it — the same rule as `OFF_NAMES`, and
+## for the same reason: a `why` the readout does not know renders as nothing, which is a silent readout that looks
+## like a working one.
+##   `band` `survival` `armour`   A7's levels, once A6-a/A6-b exist to lose to them. **Nothing publishes these yet.**
+##   `arrival_arc`               the hull is on an ordered-facing approach gate. **S4 requires this case by name:**
+##                               *"an arrival arc under an ordered facing is off-corridor by construction — those
+##                               ticks are flagged by nav's emitter and counted as ordered, never charged to A6's
+##                               fraction."* Without it A12 would bill obedience to A6.
+##   `yielding`                  X4 right-of-way: the nose is where giving way put it, not where any law wants it.
+##   `override`                  nothing nav owns is shaping the nose this tick. On the default blend this is the
+##                               ONLY answer most ticks, which is correct and is documented rather than hidden.
+##
+## `active` is **false until A6 exists**, deliberately. It means *"a nav-owned motion law is shaping the nose"*, and
+## no such law is built: A6-a and A6-b are the next commit. A key that reported `active: true` for the route tangent
+## would hand control a readout that lights up for behaviour nobody implemented.
+const LEGIBILITY_WHY := [&"band", &"survival", &"armour", &"arrival_arc", &"yielding", &"override"]
+
+
+## The pair control's readout reads. Kept to the closed set above, and refused loudly otherwise.
+func legibility() -> Dictionary:
+	var why := &"override"
+	if phase == "yielding":
+		why = &"yielding"
+	elif arc_live:
+		why = &"arrival_arc"
+	# A6 is not built, so nothing nav owns is shaping the nose: `active` stays false and says so.
+	var out := {"active": false, "why": why}
+	if not LEGIBILITY_WHY.has(why):
+		push_error("legibility why=%s is outside the closed set %s: control's readout renders an unknown reason as "
+				% [why, LEGIBILITY_WHY] + "nothing, which is a silent readout that looks like a working one.")
+	return out
+
+
 ## S3 (metrics' contract, `tools/metrics/FORMAT.md`): is the arrival ARC live on THIS tick — is the hull being
 ## steered at an approach gate so it can come onto the ordered heading? metrics' emitter reads this as an OPTIONAL
 ## key and writes `null` until nav publishes it, deliberately never `false`, *"because a column that quietly says
@@ -450,7 +488,7 @@ func reading() -> Dictionary:
 			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
 			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
-			"facing_arc": arc_live,
+			"facing_arc": arc_live, "legibility": legibility(),
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan, "wedged": wedged,
 			"wedge_moved_m": wedge_moved_m, "wedge_hull_m": wedge_hull_m,
 			"wedge_ratio": wedge_moved_m / maxf(wedge_hull_m, 0.1)}

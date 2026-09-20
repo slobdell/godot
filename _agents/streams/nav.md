@@ -743,6 +743,42 @@ detail**, and the distinction is exactly the sort that turns into an over-claim 
 diverge and the totals move with them. Every number above is from **one** run and is internally consistent; none of
 them is a before/after against a different run.
 
+### N5/S4: the legibility key is SHIPPED — control's readout was built and silent waiting on nav
+
+**The deadlock was nav's.** `_agents/workstreams.md` S4: *"control signed 2026-09-20 with one condition on nav:
+`Movement.state(unit)` carries `legibility: {active, why}` … so the readout names which level took the nose rather
+than inferring it from geometry."* **control signed hours before nav noticed**, and nav's Status said A6 was
+"blocked on S4" the whole time, while control's C-2 readout sat built and silent waiting for this key. Broken by the
+orchestrator, not by either stream re-reading the contract. **Whoever writes "blocked on X" owes a check that X is
+still true** — a `Waiting on` line is a claim with a date on it, and this one had gone stale hours earlier.
+
+**`why` is a CLOSED SET, refused loudly** (`LEGIBILITY_WHY`, the `OFF_NAMES` rule): a `why` the readout does not know
+renders as nothing, and **a silent readout looks exactly like a working one**.
+
+| `why` | when |
+|---|---|
+| `band` `survival` `armour` | A7's levels, once A6-a/A6-b exist to lose to them. **Nothing publishes these yet.** |
+| **`arrival_arc`** | the hull is on an ordered-facing approach gate |
+| `yielding` | X4 right-of-way took the nose |
+| `override` | nothing nav owns is shaping the nose. **On the default blend this is most ticks, which is correct and documented rather than hidden** |
+
+**`arrival_arc` is in the set because S4 demands that case by name:** *"an arrival arc under an ordered facing is
+off-corridor by construction — those ticks are flagged by nav's emitter and counted as ordered, never charged to
+A6's fraction."* Without it **A12 would bill obedience to A6**. It is asserted to agree with `facing_arc` on the same
+tick, so the two cannot drift into two facts.
+
+**`active` is FALSE until A6 exists, and that is deliberate.** It means *"a nav-owned motion law is shaping the
+nose"*, and no such law is built — A6-a and A6-b are the next commit. A key reporting `active: true` for the route
+tangent would hand control a readout that lights up for behaviour nobody implemented, which is this round's
+recurring failure wearing a new hat. The test asserts the false, so whoever flips it must come through that test and
+name the law that did it.
+
+**Known limitation, stated rather than discovered later: `why` cannot name `band`/`survival`/`armour` yet, because
+there is no channel from `CombatMotion` to `Movement`.** `CombatMotion.choose()` takes a request with **no unit
+handle** and returns to `tank_brain.gd`, which is squad's file. That is the *same seam* as *THE LEASH IS NOT IN THE
+ROUTE PATH* — the layer that decides is not the layer that moves — and it is round 10's first candidate. A6-a/A6-b
+land on the A7 arm, where the decision and the level are in one place.
+
 ### ⚠⚠⚠ A4 RESULT: it passes its positive control on yard and **FAILS its pre-registered primaries and its guard**
 
 **The verdict is that A4's default stays OFF, now on measured grounds rather than on caution.** Run on the merged
@@ -799,6 +835,29 @@ had two defects this same night.** The decisive yard arms were re-run with `--tr
 **All three move the wrong way on both seeds**, and metrics' per-unit `ifv net/path` (0.873 → 0.849 on seed 3)
 matches nav's own probe counters to three decimals. Two instruments, one verdict. **A4's default stays off.**
 
+**metrics then read all four arms properly (GREEN only, `attack_move` ticks only) and the verdict is stronger than
+nav's own reading — TWELVE of twelve metrics worse, same direction:**
+
+| | s3 control | s3 **A4** | s5 control | s5 **A4** |
+|---|---|---|---|---|
+| efficiency mean | 0.833 | **0.792** ↓ | 0.627 | **0.616** ↓ |
+| **efficiency p10** | 0.439 | **0.335** ↓ | 0.261 | **0.216** ↓ |
+| oscillating share | 4.9 % | **5.7 %** ↑ | 6.3 % | **7.8 %** ↑ |
+| net / path | 0.811 | **0.756** ↓ | 0.760 | **0.693** ↓ |
+| cusps / agent-min | 7.44 | **9.90** ↑ | 37.94 | **38.49** ↑ |
+| SPARC | −1.893 | **−1.915** ↓ | −2.087 | **−2.132** ↓ |
+
+**The p10 moves most — −24 % on seed 3, −17 % on seed 5.** That is the pre-registered statistic and the one a player
+feels: A4 is not merely failing to help, it makes **the worst tenth of the motion materially worse**. The cusp rise
+is broad rather than one hull class (s3: ifv 9.09 → 13.69, lancer 11.00 → 12.93, tank 5.89 → 7.77).
+
+**And a property of the A12 numbers nav should have known before quoting them.** `osc_share`, `net/path` and
+`under_way` are **gated on orders**, so the 44 unordered RUST units cannot dilute them; `eff_mean`, `eff_p10`,
+`cusp/min` and `sparc` are **ungated**. Unfiltered `eff_mean` is 0.717 and GREEN-only it is **0.833 — from the same
+bytes**. Neither is wrong and the verdict is identical either way, but they are **not the same quantity**, and nav
+quoted the unfiltered one without saying so. metrics has rewritten the both-armies NOTE to name which numbers are
+safe unfiltered, with nav's reading as the worked example.
+
 **That run also caught a nav debt: `arc_live` was a FALSE ZERO.** `make metrics` printed `arc_live=0.0s` in **both
 arms**, which reads like a measurement of behaviour. It was not: metrics' emitter reads an optional `facing_arc` key
 off `Movement.state(tank)` and writes `null` *until nav publishes it*, and **nav never had**. Published at
@@ -806,6 +865,13 @@ off `Movement.state(tank)` and writes `null` *until nav publishes it*, and **nav
 `idle()`** so a stale `true` cannot become arc seconds a hull never spent. `arc_live` is now **135.7 s** where it was
 0.0 s, and it checks itself: ifv 63.7 s of 88.7 s ordered facing, lancer 72.0 s of 72.0 s, **tank 0.0 s of 256.3 s**
 — correct, because a tracked hull pivots and the gate is never offered to it. **That zero is now a measurement.**
+
+**Follow-on worth keeping: metrics' first fix for this was one level short, and nav's data is what exposed it.** They
+keyed it on whether the *column* was present — but their emitter writes `"facing_arc": null`, so in nav's four A4
+logs **the column IS present and every value in it is null**, and the fix still printed `0.0s` on the very data that
+prompted it. Now keyed on whether any value was ever *known*, with three tested states: column absent → `null`;
+column present and all null → `null` (nav's case); column present with a real `false` → **`0.0s`, a measurement**
+(nav's tank row). Caught only because they ran nav's files instead of trusting their own passing test.
 
 **Two defects in nav's own instrument, recorded because they bound how far these numbers can be pushed.**
 
