@@ -210,6 +210,12 @@ energy plus slew. **Replaces** the flat commitment bonus (**1.15** on `main`; 1.
 **Acceptance is not just the churn metric:** squad's two behaviour scenarios (fire concentration, and a scout's
 engine-deck targeting) must hold, because that is exactly what the 1.35 knee cost.
 **Determinism:** four multiplies and two adds, stateless.
+**⚠ CORRECTED IN ROUND 9 (combat, 2026-09-20): braking + slew is not the whole of what a weapon switch destroys.** A
+stationary turret swapping between two targets on the *same bearing* prices at exactly zero under the two catalogue
+terms, and squad's `test_brain_decide::test_commitment_prevents_flip_flopping` is precisely that case. The third thing
+a switch throws away is **the gun's lay** — N5's own acquisition gate (`Engagement.acquire_seconds`) invested in the
+target being abandoned. Added from `Engagement`'s constants, **backward-looking on purpose**: a crew laid on nothing
+pays nothing, so taking up a newly seen contact is never made slower and the ≤ 2-tick reaction criterion is untouched.
 **Falsifier:** genuine option-switch churn **−60%** and switch-and-switch-back within 4 s below **0.2/agent-min**,
 with reaction latency **≤ 2 ticks**. **Guard:** the arm must be distinguishable — assert the switching cost is
 non-zero and varies by hull class, or we are A/B-ing a build against itself (lesson 117).

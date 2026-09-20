@@ -2432,3 +2432,10 @@ The kickoff prompt is one line; this section is the rest.
     whole range it can see.** Two of nav's other level costs needed re-checking for the same reason. This is catalogue
     Part 2's warning one layer down — a term correct in a weighted sum is not thereby correct in a lexicographic
     ordering — and squad (A8–A10) and combat (A2) are converting weighted terms this round too.
+    **combat's sharpening, the same day, which found a second instance:** a saturation destroys ranking only when it
+    clamps the quantity being *ranked*. A capped *penalty* subtracted from every candidate is an equal offset and
+    preserves order; nav's leash clamped the thing that *was* the level. But `maxf(score − penalty, 0.0)` — a floor on
+    the score — ties every under-water candidate at 0.0 and the argmax falls through to **array order**, an arbitrary
+    decision with no relation to the fight, reachable for a heavy hull mid-switch. Removed; scores may go negative, and
+    a test asserts two candidates beyond the cap still rank. **Ask of every clamp: is it on the price, or on the thing
+    being compared?**
