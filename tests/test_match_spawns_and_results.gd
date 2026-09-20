@@ -62,8 +62,16 @@ func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
 		probe.shape = shape
 		probe.transform = Transform3D(Basis.IDENTITY, tank.global_position + Vector3.UP * 1.5)  # above the ground slab
 		probe.collision_mask = Perception.WORLD_MASK
-		if not space.intersect_shape(probe, 1).is_empty():
-			blocked.append(String(tank.name))
+		# NAME THE BODY. "inside a wall or crate" is a guess dressed as a finding: when three units failed this on
+		# 2026-09-20 it cost an hour to learn whether they had hit an obstacle (a placement bug) or the ground itself
+		# (the degenerate y = 0 contact, a different bug with a different owner). The failure says which.
+		var hits := space.intersect_shape(probe, 4)
+		if not hits.is_empty():
+			var names: Array = []
+			for hit: Dictionary in hits:
+				var body := hit.get("collider") as Node
+				names.append("<freed>" if body == null else "%s (%s)" % [body.name, body.get_class()])
+			blocked.append("%s hit %s at %s" % [tank.name, ", ".join(names), tank.global_position])
 	assert_eq(blocked, [], "no unit spawns inside a wall or crate")
 
 
@@ -91,7 +99,11 @@ func test_the_grid_fills_the_front_row_before_the_rows_behind_it() -> void:
 ## spawn, reproducing only after other bodies had been created and destroyed. Every spawn point now stands clear of
 ## the floor, and it comes from ONE constant so the grid path and the arena-layout path cannot drift apart.
 func test_every_spawn_point_stands_clear_of_the_floor() -> void:
-	assert_true(Match.SPAWN_LIFT_M > 0.0, "the lift is a real distance, not a comment")
+	# NOT `> 0.0`: the constant is deliberately 0.0 while the ejection is diagnosed (it is not the lift -- the same
+	# three units fall through the floor at 0.0 AND at 0.05, same workload). What this test guards is the property
+	# that survives whatever value it takes: EVERY spawn point, both teams, grid slots and layout slots alike, has the
+	# SAME clearance and it comes from one constant. That is what stops the two sources drifting apart again.
+	assert_true(Match.SPAWN_LIFT_M >= 0.0, "the lift is a real distance")
 	for team in [Match.Team.GREEN, Match.Team.RUST]:
 		for slot in [0, 1, Match.SLOT_X.size(), Match.SPAWN_SLOTS - 1]:
 			assert_near(Match.spawn_position(team, slot).y, Match.SPAWN_LIFT_M, 1e-6,

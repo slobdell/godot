@@ -107,7 +107,7 @@ const SPAWN_SLOTS := 57
 ## It is a lift, not a hover: 5 cm is far below the ride height of every hull in the roster and nothing reads spawn y.
 ## `Match._jittered` adds 0.0 on y and squad's `ArmyLayout.deploy` re-seats with `tank.global_position.y`, so both the
 ## initial spawn and every respawn inherit this from here and there is exactly one number.
-const SPAWN_LIFT_M := 0.05
+const SPAWN_LIFT_M := 0.0
 ## Spawn jitter never moves a unit more than this sideways or along z: the column pitch (7.5) and the row spacing
 ## (12.0), each minus the bare-spawn hull (2.40 x 8.62 m) and minus ArmyLayout.HULL_CLEAR_M (2.0), halved. It came
 ## down with the grid's pitch -- a bare spawn now scatters +-1.5 m across and +-0.6 m along instead of +-3.5 / +-1.2.
