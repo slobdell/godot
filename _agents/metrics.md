@@ -179,6 +179,43 @@ case A6 exists for.
   (0.631 / 0.595 / 0.738). So the pathology is roster-wide but A6's *opportunity* to act on it is
   map-dependent — a distinction invisible in the fraction alone (nav, 2026-09-20).
 - **`inactive`** — nav published the key and said *no leg right now*. A named case (§5), not an absence.
+
+#### The control arm A6 has to beat, read off nav's P7 logs (metrics, 2026-09-20)
+
+Whole roster, both armies, builder0. **Two of the three logs are usable** — see the corruption note below.
+
+| map | commit | off_corridor | active | eff_mean | eff_p10 | osc_share | net/path | cusp/min | sparc |
+|---|---|---|---|---|---|---|---|---|---|
+| yard | `c025bc6b` | 0.304 | 0.631 | 0.681 | 0.220 | 0.044 | 0.815 | 43.10 | **−2.013** |
+| terminus | `5369bd13` | 0.331 | 0.738 | 0.660 | 0.210 | 0.052 | 0.799 | 69.14 | **−2.013** |
+| pit | `c025bc6b` | — | — | — | — | — | — | — | — |
+
+**The two commits differ by one Status file and nothing else** (`git diff --stat 5369bd13 c025bc6b`:
+`_agents/streams/nav.md`, 28 lines), so the rows are comparable. That is the mixed-commit banner working as
+intended: it flagged the mixture, printed the command that settles it, and the command settled it — the
+reader verified rather than assumed.
+
+**Pick the discriminator by what the map does NOT change.** `cusp/min` swings 60% between these two maps
+(43 → 69) with no treatment applied at all, so a treatment effect smaller than that is unreadable against
+it. `sparc` is **−2.013 on both**, to three decimals, across maps whose cusp densities differ by half. For
+an A/B on one map either will do; for a claim that survives the rotation, **SPARC is the sensitive one and
+cusp density is mostly measuring the arena**.
+
+#### ⚠ `p7-pit.jsonl` is UNUSABLE: one flipped bit
+
+One byte in 273,578 lines — `0x78` (`x`) → `0xf8`, turning `"slot_x"` into a broken key at line 143,873 of a
+101 MB log written on builder0 and copied to the laptop. A single-bit flip, not a producer bug and not a
+format problem.
+
+**The loud failure is the lucky case.** That bit landed in a key name, so the reader refuses the file. Had it
+landed in a digit it would have read as a perfectly valid coordinate and quietly moved a number. Nothing in
+this toolchain would have caught it, and nothing yet does — a per-line checksum in the format would, and is
+not there. Until the log is re-produced, **no A6 figure may quote pit**, and the earlier pooled rotation
+figure (0.3203) is not reproducible from these files.
+
+`trajlog` now refuses a bad byte with its file, its line, the byte, and its neighbourhood, and says *re-run
+the producer, do not patch the file* — patching the one visible byte would leave any invisible ones and
+bless the file. It used to escape as a bare `UnicodeDecodeError` naming a codec and an offset into a buffer.
 - **`ordered_arc`** — excluded because an ordered arrival arc is off-corridor **by construction** and is the unit
   obeying. On `facing_arc`, **never** on `facing_ordered`: an order carries its facing from the moment it is
   issued, so excluding on that would excuse the whole drive to the gate.
