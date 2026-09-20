@@ -233,23 +233,53 @@ fast-forwarded at worktree creation). A baseline `make remote T=check` was start
 
 ### REPORT — read this first (nav, round 9, 2026-09-20)
 
-**Nothing nav built this round is on the default path, and that is the report, not an apology.** Two catalogue rows
-were built, verified against the plant, measured against pre-registered behaviour scenarios, and left behind their
-switches with what they cost written down. `main` takes **no behaviour change** from this branch: the sim baseline
-does not move, and the default path reproduces the pristine scenario numbers exactly. That is round 8's shape on
-purpose — *three things were built, measured and thrown away, and all three were cheap because they were measured
-before shipping.*
+**✅ GREEN ON THE TIP: `3b01f5b7` — `>> remote: make check exited 0 (build/ copied back)`, `1295 passed, 0 failed`,
+`lint: all scripts parse`, `sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)` — builder0.** The baseline hash is
+**identical** to `5c8f08b3`'s, so nothing on this branch moves it and every round-9 row is still opt-in. **This also
+closes `0f14cb2b`**, whose 255 was transport: it is an ancestor of the checked tip, so it was unverified rather than
+red, and it is now verified.
+
+**`main` merged at `0d866853`** — clean, no conflicts, 30/30 nav tests on the merged tree. Merged only once no
+remote run of nav's was in flight (main rewrites `tools/remote.sh` and `tools/slot.sh`, which a live wrapper would
+re-read); the two `make remote` processes alive at the time were metrics' and combat's, in their own worktrees.
+
+**Unverified by remote as of this line:** everything after `3b01f5b7` — the face-recovery measurement, the headroom
+work, the `mk/nav.mk` rotation guard, the front-page restoration and the merge. A check on the merged tip runs once
+the A/B is off the machine.
+
+**Running now:** the arrival-arc A/B, per the amendment below — **terminus and yard**, seeds 1 3 5 7 9, 120 s,
+busy 0. **`pit` is refused** (533 off-mesh gates, 0 blocked).
+
+**⚠ A TRAP IN `nav-fight-ab`, for anyone reading its logs: `--nav-off=a4` ENABLES A4.** The round-9 switches are
+opt-in and inverted, so the arm the target names **`off` is the TREATMENT** (A4 active) and the arm it names **`on`
+is the CONTROL** (A4 inactive). Results are labelled by treatment here, never by filename. The target's own control
+catches a switch that did nothing — it fails if both arms share a treatment line or return identical results, which
+is what round 7's byte-identical A/B bought — but nothing in it catches a human reading the filenames the obvious
+way.
+
+**✅ GREEN: `5c8f08b3` — `make check exited 0`, 1290 passed 0 failed, `sim-baseline passed: 04414f5d6a6dfa7c`
+(builder0). `lint local: 531 files, 8 known baselined lines`. Merged to `main`.** A second check covers the tip.
+
+**Nothing nav built this round is on the default path, and that is the report, not an apology.** **All four**
+catalogue rows were built, verified against the plant, measured against pre-registered falsifiers, and left behind
+their switches with what they cost written down. **Three of the four FAIL a bar and say so; one passes.** `main`
+takes **no behaviour change**: the sim baseline did not move *on builder0*, and the default path reproduces the
+pristine scenario numbers exactly. That is round 8's shape on purpose — *three things were built, measured and
+thrown away, and all three were cheap because they were measured before shipping.*
 
 | Item | State |
 |---|---|
 | **N0** ground rules, gate counter, facings in the probe | **done and shipped** — the only behaviour-affecting work that is on by default, and it is instrumentation |
 | **N1a** A7's priority table | **done**, reviewed by combat and feel, both reviews folded in, contract **S5** adopted from it |
-| **N1b** A7 in code | **built, measured, opt-in.** Waiting on squad's leash commit to re-measure and flip |
+| **N1b** A7 in code | **built, measured, opt-in.** squad's leash was measured and **did not fix the drift** — the region engages (1477 rejections, radius 14.0 m) and `CombatMotion` decides under a tenth of a hull's ticks. See *THE LEASH IS NOT IN THE ROUTE PATH* |
 | **N2** A11 dynamic window | **built, measured, opt-in.** One open behaviour question (the duel's 6.3 s) |
 | **N3** A1 event-triggered replanning | **built, measured, opt-in — and a NEGATIVE result that relocates P1.** The cadence is ~3 % of re-plans in a fight; A1 fails its own falsifier there and passes only in isolation |
-| **N4** A4 clothoids | **built, measured, opt-in — and it passes its pre-registered positive control: 403 of 403** blocked-corridor gates reached by a curved approach |
+| **N4** A4 clothoids | **built, measured, opt-in — and its pre-registered A/B FAILS.** The positive control passes perfectly on yard (100 % of blocked gates, every seed) and barely on terminus (0–13 %), but `net_over_path` falls in 11 of 16 cells, `oscillating_share` rises in 9 of 16, and the attack-move guard is **breached on 3 of 10 seed-runs** — worst on yard, where A4 works best. **Default stays OFF on measurement.** See *A4 RESULT* |
 | **N5** A6 | **blocked on S4**: nav has signed, feel authored, control signs with two requirements; its shopping list is collected below |
 | stretch: `NavigationAgent3D` vs our ORCA | **done** — compared, not swapped, with the verdict and what would change it |
+| stretch: the `face` order's missing recovery | **built, measured, opt-in — a NEGATIVE result that relocates the defect to combat.** It is **inert**: a hull's rotation is never collision-resolved, so a hull under a `face` never stalls and the detector correctly never fires. combat has confirmed it and sequenced the plant fix. See *THE FACE RECOVERY IS INERT* |
+| **the defile** (squad's artillery) | **measured; all three pre-registered hypotheses DEAD and the cause unknown.** The corridor fix was built on the orchestrator's instruction, failed its falsifier, and was reverted as a null. `wedged` now names the regime |
+| **X6** forced gains (squad's ask, the lead's) | **done** — `ControlGains.forced` / `--gains=<faction>`, so an identical army can be driven two ways |
 
 **Correction to an earlier claim in this Status: nav said N3 was blocked on a stable decision layer. That was
 wrong.** A1's target is `Movement._next_waypoint`'s route cadence, which is independent of `CombatMotion` entirely;
@@ -262,10 +292,15 @@ report: `main` takes no behaviour change from this branch, the sim baseline does
 number that decided its default.
 
 **The single most useful measurement of the round**, because it turns a zero into a mechanism: the arrival arc fired
-**5168 times** in a 45 s fight where round 8 measured **`gates aimed 0` in both arms of an A/B** and could not tell a
-broken instrument from an inert mechanism. **70% of its refusals are `off_mesh`** — the gate lands inside geometry —
+**5168 times** in a 45 s fight **on yard** where round 8 measured **`gates aimed 0` in both arms of an A/B** and could not tell a
+broken instrument from an inert mechanism. **On yard, 70% of its refusals are `off_mesh`** — the gate lands inside geometry —
 which makes A4 (N4) a measured row rather than an inherited one, and disproves squad's round-8 prediction that
 element spacing would refuse most slot gates (`on_approach` is 49 of 6364, under 1%).
+
+**⚠ SCOPE, from a four-map control arm at 120 s: every A4 number on this page is a YARD number.** yard is the only
+map measured that produces a gate no straight line can reach (430 of 1641 off-mesh gates); boulevard, pit and
+boneyard produce **408–533 off-mesh gates each and zero blocked ones**. The "43% of off-mesh gates" figure is
+corrected twice over — yard-only **and** a 45 s figure (26% on yard at 120 s, 14% across four maps).
 
 **What to playtest** (the lead, when any of this is on — none of it is yet): `make skirmish` is unchanged by this
 branch. To see A7: `make nav-fight NAV_FLAGS=--nav-off=a7`; A7+A11: `--nav-off=a7,a11`. Both print `NAV_FIGHT_ARM`
@@ -273,7 +308,9 @@ with the live treatment and report `arms` counters, so an arm that did not engag
 
 **Merge notes (shared files):** `game/ai/combat_motion.gd`, `game/ai/movement.gd`, `tests/nav/fight_probe.gd`
 (metrics' S3 emitter hook is expected here at CP1 — I review it at merge), `_agents/navigation.md`,
-`_agents/streams/nav.md`. **No file outside nav's ownership was touched.** `tests/baselines/sim_state_hash.txt` is
+`_agents/streams/nav.md`. **No file outside nav's ownership is touched *now*** — two of squad's were committed by accident during the defile
+measurement (`git add -A` after a cross-stream checkout) and removed; every changed path was then diffed against
+`main` to verify it, rather than assumed. `tests/baselines/sim_state_hash.txt` is
 deliberately NOT re-recorded: nothing on the default path moves it.
 
 ### Decided overnight (the lead asleep; most reversible option taken, recorded per the orchestrator's rule)
@@ -288,6 +325,34 @@ deliberately NOT re-recorded: nothing on the default path moves it.
 | **`goal_slid` is attributed by the PROBE, not by `Movement`** | nav owns why the router acted; control's `Orders` owns whose order it was. The alternative was the mover groping for the Match through `ctl.tanks_root`'s parent |
 | **No tolerance was moved to make a scenario pass** | Every failing row is reported failing. combat's ruling on `TOLERANCE["weapon"]` (leave it at 22.7 m) is the precedent: a constraint moves for a reason about the constraint, and the scenario is told afterwards |
 
+### PRE-REGISTERED, before the run: the arrival-arc A/B with live facings (N4)
+
+Written before `main` is merged, so the bars cannot be chosen after seeing the numbers.
+
+**Arms.** One binary, `--nav-off=a4` against the default, on the facing-carrying probe. `nav-fight-maps`, the four
+maps `--arena=random` can deal, `FIGHT_BUSY_LEVELS=0`, seed 3, 120 s. Both arms read `NAV_FIGHT_ARM` for the live
+treatment **and** the `a4` counters, so an arm that did not engage says so from inside the run (lesson 147).
+
+**The positive control, and it is the whole design** (the orchestrator's, pre-registered before A4 was built):
+**report `a4_rescued_blocked` against the `off_mesh_fit.none` bucket — gates no straight run-in could reach at any
+length — and NEVER the aggregate `aimed` count.** The 474-class gates a shorter run-in would also recover must not
+leak into the clothoid's number. A run where `none` is 0 is a run that could not have tested A4 and is refused, not
+reported.
+
+**Primaries, unchanged from round 8's pre-registration:** per-wheeled-type `net_over_path` ↑ and `oscillating_share`
+↓. **Guard:** attack-move `progressing` must not fall more than 10 % on 2 or more maps — routing to a gate costs
+distance, and if it costs fighting it is not worth it.
+
+**What this A/B canNOT establish, stated now so it is not claimed later.** The treated arm is *"moves that carry a
+facing"*, and in this probe those are **scripted**, not drawn. control's CP2c makes a *player* drag the live source,
+and a player is not in this harness. So the result describes the arc under orders that carry a heading — which is
+squad's hold path and a scripted move — and **says nothing about how it feels at the lead's pose.** That needs
+frames at pitch 21°, 49 m, FOV 35, and a human. *"For anything subjective, a human is the only check that counts."*
+
+**And one thing to check before believing any of it:** `off_mesh_fit.none` must be **non-zero in both arms** —
+A4's headroom. An instrument at the end of its range is indistinguishable from one that is not connected, and nav
+has not yet established headroom for this one across four maps (only on yard, where it was 403).
+
 ### Still open at hand-over, in the order the next agent should take them
 
 1. **The clean A1 A/B is running** — one binary, `--nav-off=a1` against the default, both arms sharing label
@@ -301,8 +366,145 @@ deliberately NOT re-recorded: nothing on the default path moves it.
    question `scenario_motion` was never built to answer; it needs something that measures the **exchange** rather
    than the survival time.
 4. **A6's four pieces in one commit** once control's CP2c lands (*N5's shopping list*).
+5. ~~**The `face` order's missing recovery**~~ — **CLOSED at `7850fbef` as a measured negative.** The recovery is
+   built and opt-in; it is **inert**, because a hull's rotation is never collision-resolved and so a hull under a
+   `face` never stalls. The defect it exposes is **combat's** (`game/tank/tank.gd`) and has been reported with the
+   repro. See *THE FACE RECOVERY IS INERT*. The original statement of the problem, kept because it is still the
+   motivation and because the diagnosis below turned out to be half right — the creep legs are real, the reason they
+   read as a pivot is not: under
+   a `face`, `order_controller.gd:347-352` commands a turn plus `WHEELS_MIN_THROTTLE` for a wheeled hull and the
+   plant answers with the creep's alternating legs. **There is no recovery**: `Movement.unstick` runs only for a
+   `move_to`, and the mover is `idle()` under a face. A hull wedged against scenery creeps for ever.
+   **This is the lead's complaint directly** — round 8 established that the War Rig's apparent pivot *is* the creep's
+   legs cancelling against scenery (26° within 1.5 m on yard, **7° on bare ground at every hull length**).
+   **Design:** track heading progress under a `face`; if the hull has not turned meaningfully for ~1.5 s, stop
+   commanding the creep instead of shuffling in place, and report it the way a blocked move is reported — *"it never
+   stands still silently"* is N1's guarantee and a face order is currently exempt from it.
+   **Behind its own switch, measured like every other row this round.**
 5. **A remote check covering tonight's work.** The one that has been running all night covers `acd25a0b`
    (N0 + A7 + A11). A1, A4 and the instruments postdate it.
+
+### THE FACE RECOVERY IS INERT — and the measurement names the cause: **rotation is never collision-resolved**
+
+**The row's pre-registered falsifier came back NEGATIVE with a cause, and that is the result.** Built at `27d01b1e`
+behind `--nav-off=facegiveup`; measured and closed at `7850fbef`. 30 nav tests pass locally.
+
+**What `face_checked` bought.** The first A/B gave two byte-identical arms, which is the shape of a null and the
+shape of dead code at the same time. The denominator separated them in one run:
+
+| case | windows checked | giveups | yaw |
+|---|---|---|---|
+| the rotation capture's truck — **the real yard case the lead complained about** | **7** | **0** | 26° in 12 s |
+| a 14 m semi in a 5 m corridor, told to face across it | **5** | **0** | **44°** in 8 s |
+
+The mechanism is **reached** and **correctly never fires**. Both counters tick in both arms — only the behaviour is
+gated — so one run of the off arm answers it.
+
+**The cause, as geometry.** A 14 m hull at 44° needs **12.1 m** of lateral room. The corridor is **4.8 m** wide and
+the hull is still 4.4 m from its centre. The basis was rotated **through the walls**. In `game/tank/tank.gd`,
+`_drive()` assigns `global_basis = Basis.looking_at(forward, Vector3.UP)` and the `move_and_slide()` below it
+resolves only translation: **translation is collided, rotation is not.**
+
+**So the recovery detects a condition that does not occur.** It fires when a hull under a `face` fails to turn; a
+pinned hull keeps yawing for as long as its creep wins it any legal translation at all. **A stall detector is the
+wrong instrument for a hull that never stalls.**
+
+**This states the lead's complaint more exactly than round 8 could.** *"The semi trucks are yawing in place (should
+be impossible, they're not a tracker vehicle)"* — round 8 read it as the creep's legs cancelling against props. The
+legs are real, but what makes it read as a **tracked pivot** is that the yaw is never refused. Round 8's
+"26° within 1.5 m on yard against 7° on bare ground" is not scenery causing more rotation: the metric is conditioned
+on staying inside 1.5 m, and scenery is what holds the hull inside that circle long enough to accumulate the angle.
+
+**In combat's favour, so the report is fair:** `tank.gd:437` already handles the *fully* pinned case —
+`_speed = estimated_velocity.dot(forward)` collapses wheeled speed to the post-slide reality and yaw rate is
+`|speed| / turning radius`, so a hull flat against a wall does stop yawing. The failure is the **partially** pinned
+hull, which converts small legal creeps into yaw the geometry cannot accommodate.
+
+**Ownership: `game/tank/` is COMBAT's** (`tank_motion.gd` excepted, which is nav's). nav **reported** it and did not
+touch the file. combat has the measurement and the repro.
+
+**The handle for whoever picks this up:** the third assertion in
+`tests/test_nav_face_recovery.gd::test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided` **goes RED when
+combat couples the basis to a collision test.** That is the signal the defect is fixed and this row's benefit becomes
+measurable for the first time. **Re-run the benefit measurement then; do not delete the test.**
+
+**What stays shipped:** the recovery, opt-in and unchanged, with its guard now holding on the hardest case available
+rather than on a synthetic one. **Do not flip its default** — on today's plant it can only ever subtract.
+
+**AGREED WITH COMBAT (2026-09-20): the constraint goes in the PLANT, not in A7's feasibility mask.** The argument
+that decided it is this round's own null — *THE LEASH IS NOT IN THE ROUTE PATH*: **the layer holding a constraint
+must be the layer moving the hull**, and `CombatMotion` decides on under a tenth of a hull's ticks. Conclusively, a
+`face` never reaches `CombatMotion` at all (`order_controller.gd` drives `Steering.drive_toward`, then
+`movement.idle()`), so a mask constraint would have missed the exact case that exposed the defect. Two requirements
+nav asked for and combat has taken as the *first* things they build: **`refusals_offered` / `refusals_applied`**
+counters, because a hull frozen in yaw by a spawn overlap breaks N1's guarantee and looks identical to a working
+refusal from outside; and **determinism by construction** — a fixed set of candidate angles in a fixed order, ties
+to the smaller yaw, no tolerance loop, one shape query at a candidate transform (A4's fan's rule, same reason).
+
+**That fix is also what makes this row live.** A refusal that keeps being applied to the same hull *is* the condition
+the detector was written for — so `face_giveups` should start firing the moment the plant refuses an impossible yaw,
+and the benefit measurement becomes possible for the first time. nav runs it against combat's fix when they land it.
+
+**The idea is NOT refuted — it is unreachable, and the distinction matters to whoever reads this next** (combat asked
+for it to be stated plainly so the next round does not re-derive the row from scratch). A `face` order genuinely has
+no recovery, and N1's guarantee — *"it never stands still silently"* — genuinely exempts it. The detector is correct
+and will start firing the moment the plant refuses an impossible yaw. **The row is blocked on combat's fix, not
+abandoned.** combat has confirmed the defect in the code, has sequenced it next after their green hash, and named
+CP2 as the reason it cannot wait: the lateral sweep this defect ignores scales with **length × sin(yaw)**, so the
+resize makes it strictly worse across most of the roster — including the bus, the garbage truck and the assault gun,
+which the lead asked to be resized *because he liked what the semi looked like*.
+
+**A correction of mine, recorded because it nearly became a number.** I first read `move={"type":"move_to"}` out of
+the capture's debug line and concluded the harness never enters the `face` path. That is the **Car** case
+(`rotation_capture.gd:122`); the **truck** case that prints the 26° line issues a `face` at `:135`. I had the right
+suspicion about the instrument and the wrong evidence for it, and the fix was to read the counter instead of the
+log line.
+
+### ⚠ `make lint` is RED ON `main` ITSELF — 5 files, 8 lines, all `--check-only` artefacts, and lint is now a gate
+
+Running a local `make lint` (required now that the remote one is known to parse-check zero files) is **red — on
+`main` as well as on this branch**. metrics' full sweep: **5 files, 8 lines, every one a `--check-only` isolation
+artefact**, not a defect. The two nav saw first (its own lint was still running, so this was a partial result):
+
+    game/tank/tank.gd: ERROR: res://game/tank/tank.tscn:12 - Parse Error: [ext_resource] referenced
+                       non-existent resource at: res://game/tank/tank.gd
+    game/theme/factions/faction_art.gd: SCRIPT ERROR: Invalid call. Nonexistent function 'roster' in base 'GDScript'
+
+**Neither is nav's and neither is real:**
+- **Both files are byte-identical to `main`.** This branch's diff is 16 files and every one is nav-owned
+  (`git diff --name-only 9f864474..HEAD`); neither of these is among them.
+- **`Units.roster` exists** — `game/units/units.gd:866` — and `faction_art.gd:37` calls it correctly. The error is
+  `--check-only` validating a script whose *other* class is not registered in that invocation.
+- **`tank.gd` exists** and `tank.tscn` references it **by path, not by UID**. The error is the same shape: a scene
+  loaded during a check-only of the very script it references.
+- **The remote `check` on this tree imports every scene and has run hundreds of tests.** A tree that could not load
+  `tank.tscn` would not get that far.
+
+**Why this matters beyond nav:** lesson 157 established that the remote `make lint` has never parse-checked a file,
+and the standing rule became *run a local lint before naming any hash green*. **If the local lint has false
+positives, that replacement gate is broken too** — and its recipe treats any line matching `Parse Error|SCRIPT
+ERROR` as a failure, filtering only `depended scripts`. Both lines above pass that filter.
+
+**nav's own lint, completed: `lint local: 531 files, 8 known baselined lines`** — exactly metrics' count, across
+the same 5 files (`game/tank/tank.gd`, `game/theme/factions/faction_art.gd`, `game/theme/visual_slot.gd`,
+`tests/test_assets_factions.gd`, `tests/test_theme_factions.gd`). **No line outside the baseline**, so this branch
+adds nothing to it.
+
+**SETTLED by metrics, and nav had two things wrong** (2026-09-20). metrics swept the whole tree after a complete
+import with nothing else touching `.godot`:
+
+- **It is the TREE, not a stale cache**, and it is **5 files / 8 lines**, not 2 — nav's lint was still running and
+  its 2 lines were a partial result reported as if complete. The re-import nav started to test the cache theory was
+  stopped.
+- **`main` is RED on exactly those lines.** nav wrote *"the orchestrator linted main green earlier, which points at
+  the cache"* — **that was nav putting a claim in the orchestrator's mouth.** Their lint was still queued. The
+  inference was reasonable and the attribution was not, and it is the same error as reading a scenario's name
+  instead of its output: nav reasoned from what it expected someone to have found rather than from what they said
+  they had found.
+
+**The gate, until CP1 merges:** CP1 ships `tests/baselines/lint_expected.txt` — a reason per line, a finding not in
+it fails, and a finding that *stops* occurring is reported. Until then the reporting form is
+**`lint local: 531 files, 8 known baselined lines`**, and **only lines outside those 8 count as red.**
 
 ### Verification state — exactly what is proven, and by what
 
@@ -315,7 +517,34 @@ deliberately NOT re-recorded: nothing on the default path moves it.
 
 builder0, the tree at `9f864474` (= `main`). The baseline line matches the recorded value, unmodified.
 
-**The tree the remote check is running against is `acd25a0b`.** Everything committed after it is
+**✅ GREEN HASH: `5c8f08b3`** (builder0, 2026-09-20):
+
+    >> remote: make check exited 0 (build/ copied back)
+    1290 passed, 0 failed
+    sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)
+
+**`lint local: 531 files, 8 known baselined lines`** — nothing outside metrics' baseline.
+
+**1290 against the branch point's 1261** is 29 new nav tests passing on builder0, and **the sim baseline did not
+move**, which verifies rather than asserts the round's central claim: **all four rows are opt-in and `main` takes no
+behaviour change from this branch.** No re-record needed.
+
+**Which tree that is was confirmed by ASKING builder0**, not inferred from rsync timing — its `movement.gd` carries
+A1's counters and **no `wedged`**, which pins it to `5c8f08b3` exactly.
+
+**The tip `0f14cb2b` is UNVERIFIED, not red.** Its check died with **exit 255** — *transport, not the suite*
+(`remote_builds.md`: a 255 is ssh) — when builder0 left the network at ~03:15. The wrapper said
+`make check exited 255 (build/ copied back: FAILED)`, so **`build/` holds a PREVIOUS run's artefacts and nothing in
+it may be analysed or shown to anyone.** Re-run when builder0 returns, and before starting it check
+`ssh builder0 "ps -eo pid,args | grep '[s]lot.sh'"` for this folder — a dropped run's remote `make` may still be
+executing on the box, and two runs in one folder clobber each other.
+
+**Also seen in that log and worth someone's attention: builder0's root filesystem is at 91 % (102 G of 119 G, 11 G
+free).** The same figure was flagged at the end of round 8. A failed copy-back on a full disk is how round 8's
+`build/` came to hold three-hour-old artefacts that nearly reached a conclusion.
+
+~~**The tree the remote check is running against is `acd25a0b`.**~~ *(superseded: that run's wrapper died mid-check
+with no verdict line, and was replaced by the run above.)* Everything committed after it is
 **`_agents/streams/nav.md` only** — verified with `git diff --name-only acd25a0b..HEAD` — so when that check returns,
 **`acd25a0b` is the green hash for every line of code on this branch**, and the commits above it are documentation.
 Name `acd25a0b` when merging code; do not name the tip unless a later check covers it.
@@ -411,7 +640,13 @@ ordered-unit-minute** because the arms diverge (`green_lost` 1/2 against 2/3). y
 | `goal_jumped` | 426 | 389 |
 | `off_path` / `stalled` | 32 / 22 | 15 / 26 |
 
-**−21.5 %.** The falsifier is **−60 %**, so **A1 still fails it and stays opt-in.** The cadence contributes all of
+**−21.5 %.** The falsifier is **−60 %**, so **A1 still fails it and stays opt-in.**
+
+**RE-MEASURED after the monotonicity fix (2026-09-20), because the fix changed `drifted` and this figure had already
+been published to squad: identical.** A1 ON 1706 re-plans / 71.8 per ordered-unit-minute, A1 OFF 2041 / 91.5, same
+cause split to the unit. The reasoning was that paths are rarely empty in a fight so the fix rarely bites — **which
+was right, and is now known rather than inferred.** *Silently moving the ground under a figure already given to
+someone is worse than re-running it.* The cadence contributes all of
 its 230 and the sliding-goal tolerance takes 1381 → 1226 (−11 %).
 
 **The sliding-goal tolerance helps less than it should, and the reason is worth knowing before anyone tunes it:**
@@ -508,7 +743,191 @@ detail**, and the distinction is exactly the sort that turns into an over-claim 
 diverge and the totals move with them. Every number above is from **one** run and is internally consistent; none of
 them is a before/after against a different run.
 
-### N4 GROUNDWORK, measured: 43% of off-mesh gates have NO straight run-in at any length — that is A4's case
+### ⚠⚠⚠ A4 RESULT: it passes its positive control on yard and **FAILS its pre-registered primaries and its guard**
+
+**The verdict is that A4's default stays OFF, now on measured grounds rather than on caution.** Run on the merged
+tree (`0d8587d6`), **laptop**, terminus and yard, seeds 1 3 5 7 9, 120 s, busy 0, `AB_OFF=a4`. `pit` refused for no
+headroom. Arms labelled by **treatment**, never by the flag name (lesson 167: `--nav-off=a4` *enables* A4, so the
+file `nav-fight-ab` calls `off` is the treatment).
+
+**The positive control — `a4_rescued_blocked` against `off_mesh_fit.none`, never the aggregate:**
+
+| seed | 1 | 3 | 5 | 7 | 9 |
+|---|---|---|---|---|---|
+| **yard** | 423/423 | 403/403 | 233/233 | 180/180 | 729/729 — **100 % on every seed** |
+| **terminus** | 457/14734 = **3.1 %** | 0/794 = **0 %** | 2568/19245 = **13.3 %** | 2504/20680 = **12.1 %** | 0/3060 = **0 %** |
+
+yard's seed 3 reproduces the earlier **403 of 403** exactly, which rules out a regression: **the difference between
+the maps is the maps.** `a4_refused_curvature` is **0 in all twenty runs**, so the turning-circle guard is not
+rejecting anything — the fan generates curves (729–5772 per run) and on terminus they simply do not land on the
+navmesh.
+
+**Why, structurally:** a clothoid works by *leaving the approach axis*, which needs lateral room. yard's blockages
+are rows of containers with lanes beside them and a curve swings around the end of one. terminus is *"20 m streets
+between sheer neon-edged towers"* — leaving the axis there means hitting a tower. **A4 solves "blocked corridor with
+room beside it" and cannot solve "blocked corridor in a narrow street".**
+
+**And here is the result that decides the default. The pre-registered primaries FAIL and the guard is BREACHED.**
+
+- **`net_over_path` (pre-registered ↑):** **down in 11 of 16** per-wheeled-type seed cells.
+- **`oscillating_share` (pre-registered ↓):** **up in 9 of 16**.
+- **Guard — attack-move `progressing` must not fall more than 10 % (the amendment tightened this to *any* map):
+  BREACHED on 3 of 10 seed-runs.** yard seed 3 **−14.4 %**, yard seed 5 **−12.8 %**, terminus seed 5 **−10.4 %**.
+
+**The pattern in that is the finding, not the averages: the better A4 works, the more it costs.** yard is where the
+mechanism succeeds completely (100 % of blocked gates rescued, every seed) and yard carries **both of the two worst
+guard breaches**. terminus, where A4 rescues 0–13 %, breaches once and by less. Routing to a curved gate buys the
+gate and spends the fight — which is **exactly what the guard was written to catch**: *"routing to a gate costs
+distance, and if it costs fighting it is not worth it."*
+
+**What is NOT claimed.** This does not say clothoids are the wrong primitive, and it does not retire the row. It says
+**this consumer** of them — the arrival arc aiming a gate — pays more in fighting than it wins in reached gates, on
+both maps in the rotation that have any blocked gates at all. The claim is also still only *"a navmesh-valid curved
+entry was found"*: whether a hull then **arrives on the ordered heading** from a curved entry has no test today, as
+the N4/A4 RESULT section has said since it was written. That remains N4's next piece of work and it is now **more**
+important, because a mechanism that hurts the fight while landing its gates may be failing at precisely that step.
+
+**Two defects in nav's own instrument, recorded because they bound how far these numbers can be pushed.**
+
+1. **`off_mesh_fit.none` counts EVENTS, not distinct gates.** A hull sitting off-mesh re-requests a gate every tick
+   and every refusal increments it. That is why terminus seed 5 shows **19 245** blocked gates in 120 s against seed
+   3's **794**. Numerator and denominator both scale with how long a hull stayed stuck, so the *rate* is sound
+   within one run and the **absolute counts are not comparable across runs**. yard is unaffected in practice
+   because rescued and blocked are equal there.
+2. **The seeds are not replicates.** Gates offered ranges **9077 → 57078** and the blocked share **0 % → 37 %**
+   across the ten runs. These are five different fights per map, not five samples of one, so **no mean across seeds
+   is reported here** — only the per-seed table and the count of breaches.
+
+**`NAV_FIGHT_ARM` prints `a1=`, `a7=`, `a11=` and no `a4=`** (`fight_probe.gd:167`). The arm is still provable from
+`off=["a4"]`, so these runs are sound, but the inconsistency is the same shape as the round-9 bug where the line
+printed the opposite arm. **Fixed after the A/B rather than during it**, because changing the probe mid-experiment
+would split provenance between the two maps for a print-only gain.
+
+### ⚠⚠ TERMINUS REVERSES IT: A4's case is real on TWO of the three maps in rotation, and terminus is its BEST
+
+**The map nav's set omitted is the map that most supports the row nav was about to call niche.** Control arm (A4
+off), `28653da1`, **laptop**, seed 3, `FIGHT_BUSY_LEVELS=0`, 120 s — `Arena.ROTATION`, the set `--arena=random`
+actually deals:
+
+| map | offered | aimed | off_mesh | `fits_at_75` | **`none`** | **`none` share of off-mesh** |
+|---|---|---|---|---|---|---|
+| **terminus** | 17184 | 12784 | 1468 | 662 | **806** | **55 %** |
+| **yard** | 12237 | 9127 | 1641 | 1211 | **430** | **26 %** |
+| pit | 10603 | 8562 | 533 | 533 | **0** | 0 % |
+| | | | **3642** | | **1236** | **34 % across the rotation** |
+
+**terminus produces nearly twice yard's blocked gates and the highest share of any map measured.** Its note says
+why: *"a block city dropped into the arena: 20 m streets between sheer neon-edged towers"* — 8 `block` props, and a
+20 m street is a corridor a straight run-in cannot enter off-axis. This is A4's designed case, on the map the lead
+plays.
+
+**So the sentence for the lead is not the one that was being drafted.** It is **"the clothoid earns its place on two
+of the three maps you play, and most on terminus"** — not *"one map in three"*. The A/B runs on **terminus and
+yard**; `pit` is refused by nav's own rule (533 off-mesh gates, 0 blocked).
+
+**⚠ THE PROCESS FAILURE IS THE PART TO KEEP, because it was not a random error — it was a BIASED one.** nav screened
+`FIGHT_MAPS`' default (`yard boulevard pit boneyard`) believing it was *"the four maps `--arena=random` can deal"*.
+It is not. That set contained **two maps the lead never sees** and **omitted the one map where A4 is strongest**.
+The resulting picture — 1 map in 4, 14 % — pointed at *kill the row*. The true picture — 2 maps in 3, 34 % — points
+the other way. **A wrong map set did not add noise; it pushed the conclusion in one direction**, and nav was three
+paragraphs into writing that conclusion up when the orchestrator caught it.
+
+**The rule this earns:** *a pre-registration must name its population by reading it from the code, not by writing
+down what you believe the code says.* `mk/nav.mk` now reads `Arena.ROTATION` out of `arena.gd` and prints the set
+beside it on every run, naming strays and omissions (`b8e68830`), so the next pre-registration cannot copy a wrong
+set out of a stale comment. **The fix belongs in the tool, not in the resolve to be careful.**
+
+**What is NOT corrected by this.** The two corrections to the 43 % figure stand exactly as written — it was still
+yard-only and still a 45 s figure. What changes is only the conclusion drawn from the map spread, and the
+conclusion was drawn from a set that was wrong.
+
+### AMENDMENT to the arrival-arc A/B, written BEFORE terminus reports and before any arm is run
+
+The pre-registered design — **four maps, seed 3, 120 s** — is unrunnable: three of its four maps have no headroom,
+and its map set was not the one the game deals. An amendment declared after seeing results is worthless, so this is
+declared now, with terminus's headroom still unknown and no A/B arm yet run.
+
+**What changes, and it is one thing: the axis of replication.** The design drew its power from four maps at one
+seed. The map axis has collapsed to at most two, so it is replaced by the **seed** axis:
+
+- **Maps:** those of `Arena.ROTATION` (`yard`, `pit`, `terminus`) whose control arm has **non-zero
+  `off_mesh_fit.none`**. **RESOLVED after the amendment was written: `terminus` (806 blocked, 55 %) and `yard`
+  (430, 26 %). `pit` is refused (533 off-mesh gates, 0 blocked).** The rule was fixed before the numbers; the set
+  fell out of it. **A map is included by its control arm's headroom and by
+  nothing else** — this rule is what the pre-registration already said, applied to a set that has shrunk.
+- **Seeds:** `FIGHT_SEEDS = 1 3 5 7 9` per map, via `nav-fight-ab ARENA=<map> AB_OFF=a4`, whose own control refuses
+  a run whose two arms shared a treatment or came back identical (round 7's byte-identical A/B is why that check
+  exists).
+- **Unchanged:** 120 s, `--budget=6500`, the facing-carrying probe, `FIGHT_BUSY_LEVELS=0`.
+
+**Everything else in the original pre-registration stands verbatim** — the primaries (per-wheeled-type
+`net_over_path` ↑, `oscillating_share` ↓), the guard (attack-move `progressing` must not fall more than 10 % on 2+
+maps; **with fewer maps this becomes "on any map"**, which is stricter, not looser), and above all the positive
+control: **report `a4_rescued_blocked` against `off_mesh_fit.none`, never the aggregate `aimed`.**
+
+**What this amendment costs, stated now.** Seeds are not maps. Five seeds on one map measure how A4 does on *yard's
+geometry* under different fights; they cannot tell us it generalises, and the original four-map design was chosen
+precisely because it could. **The result will be a single-geometry result whatever its confidence interval**, and
+nav will report it that way. The generalisation question moves to arena/scale, where it belongs.
+
+### ⚠ A4'S HEADROOM EXISTS ON ONE MAP IN FOUR — the pre-registered A/B is REFUSED on three of them
+
+Control arm (A4 off — the default path), `8c7f60c0`, **laptop**, `nav-fight-maps`, seed 3, `FIGHT_BUSY_LEVELS=0`,
+**120 s**, which is the pre-registered length:
+
+| map | offered | aimed | off_mesh | `fits_at_75` | **`none`** | `none` share |
+|---|---|---|---|---|---|---|
+| **yard** | 12237 | 9127 | 1641 | 1211 | **430** | **26 %** |
+| boulevard | 9877 | 8062 | 503 | 503 | **0** | 0 % |
+| pit | 10603 | 8562 | 533 | 533 | **0** | 0 % |
+| boneyard | 10165 | 8259 | 408 | 408 | **0** | 0 % |
+
+**nav's own pre-registration decides what happens next:** *"A run where `none` is 0 is a run that could not have
+tested A4 and is refused, not reported."* Three of the four arms are refused. **The honest A/B is yard-only**, and it
+must be reported as a single-map result with that scope stated.
+
+The other three maps are not quiet — they produce **408–533 off-mesh gates each** — and **not one of those gates
+needs a curve**. Every one is recoverable by trimming the run-in 25 %, which is the cheap fix A4 was supposed to be
+better than.
+
+**TWO CORRECTIONS TO A PUBLISHED NUMBER OF NAV'S.** The claim was *"43 % of off-mesh gates have NO straight run-in at
+any length — that is A4's case."* It is wrong twice:
+
+1. **It is yard-only.** Across four maps at 120 s it is **430 / 3085 = 14 %**, and **0 % on three of them**.
+2. **It is a 45 s figure.** On yard itself at the pre-registered 120 s the share is **26 %**, not 43 % — the
+   recoverable `fits_at_75` class grows faster with run length than the blocked class does.
+
+The measurement below was correctly labelled *yard seed 3, 45 s*; what was wrong was the heading generalising it and
+the front page repeating it. **A4's case is a property of cluttered maps, not of the game.**
+
+**The structural reason, as a correlation across four maps and not a proven cause.** yard is the container yard:
+**98 containers, 58 of them 40-foot** (12 m of straight wall each), against 26 / 38 / 28 on the others. Long walls in
+dense rows are what make a corridor no straight line can enter. boneyard, which produces zero, is the wreck map — 26
+wrecks, the most of any, and wrecks are short and scattered. **Whether yard is representative of where the game is
+going is arena's question, not nav's**, and it decides whether A4 is a core row or a niche one. If most shipped maps
+look like boneyard, A4 should be defaulted off on *that* basis rather than on its duel numbers.
+
+**A THIRD CORRECTION, and this one is to the pre-registration itself.** It says the arms run on *"the four maps
+`--arena=random` can deal"*. **`--arena=random` deals from `Arena.ROTATION`, which is `["yard", "pit", "terminus"]` —
+three maps, not four** (`arena.gd:63`, `:613`). `FIGHT_MAPS`'s default is `yard boulevard pit boneyard`, so the set
+nav screened contained **two maps the player never sees** (boulevard, boneyard) and **omitted terminus, which they
+do**. Caught by the orchestrator, not by nav. The Makefile comment on `nav-fight-maps` repeats the same wrong claim
+and should be fixed by whoever owns `mk/nav.mk` next — that is nav.
+
+**A HAZARD IN NAV'S OWN TARGET, for the next agent:** `nav-fight-maps` opens with `rm -rf $(BUILD_DIR)/nav-maps`, so
+**launching it again destroys the previous run's logs**. nav started the terminus run without copying first and only
+caught it because the run was still in its `import` step; both passes are now saved in the session scratchpad
+(`nav-maps-45s`, `nav-maps-120s-4map`). **Copy `build/nav-maps` before re-running the target.** The runs are seed 3
+and deterministic, so the numbers reproduce exactly in any case — but a number you have to re-earn is a number you
+will be tempted to quote from memory.
+
+**A NEAR-MISS, recorded because the process point is the valuable part.** nav first ran this pre-check at **45 s**,
+where boneyard showed **zero off-mesh gates at all**. At 120 s it shows **408**. Refusing boneyard on the short run
+would have published *"boneyard has no off-mesh gates"*, which is false. **A headroom pre-check needs the same run
+length as the experiment it is screening** — a short control arm is itself an instrument at the end of its range,
+which is scale's lesson-153 twin applied to the thing that screens FOR it.
+
+### N4 GROUNDWORK, measured (yard, 45 s): 43% of off-mesh gates had no straight run-in — **now superseded, see above**
 
 Laptop, `57b8e89b`, `nav-fight` yard seed 3, 45 s, default path (deterministic — `offered` and `aimed` reproduce the
 earlier run exactly):
@@ -610,6 +1029,23 @@ thing to look at when A11 resumes.** It is a behaviour question, not a tolerance
 hand-written inverse of the plant cannot see it (the first lattice promised 3.53 m/s and the plant delivered 4.30);
 and **the window is over the CONTROL PERIOD, not one tick** — a one-tick window offered a tracked hull 21° of heading
 change over a 2 s arc when it can swing 160°.
+
+### squad reached the same conclusion from the other end, which makes it round 10's first item
+
+nav found it by measuring: `CombatMotion` decides under a tenth of a hull's ticks, `Movement` drives the rest, and
+`Movement` has no leash. **squad found the same wall from A8's side**: their affine deformation, measured on the
+maze gap, made a wheeled wedge **FAIL a defile it passes without it — 0/5 arrived against 4/5** — and they switched
+it off, because *a slot layout is the wrong place to express intent the mover cannot see.*
+
+Two streams, two mechanisms, one conclusion: **the formation's intent has to reach `Movement`'s goal selection, not
+just the layer above it.** Recorded as round 10's first candidate rather than attempted by either of us at the end
+of a night.
+
+**And one case that is squarely nav's**, from squad's A9: co-arrival dispersion is **1.23 s for tracked hulls and
+41.4 s for wheeled**, same gap, same doctrine. Co-arrival paces off top speed and route ETA; what makes a wheeled
+hull late is its **turning circle and its gear changes** — A11's lattice and A4's curvature are exactly that
+territory, and squad is sending the per-vehicle arrival times and the name of the last vehicle so it is a named case
+rather than an aggregate.
 
 ### ⚠ THE LEASH IS NOT IN THE ROUTE PATH — why A7's drift did not improve, measured four ways
 
@@ -735,6 +1171,152 @@ friend 0.
 `run` (the A/B control for round 7's standoff), and it does not change `COMMIT_BONUS`'s value — combat's A2 replaces
 that expression at level 5 under contract S5.
 
+### ⚠ THE CORRIDOR FIX IS A MEASURED NULL — and hypothesis 3 was wrong too. All three are now dead.
+
+The orchestrator asked for it built tonight against a falsifier written first; nav raised the concern, it was
+reaffirmed, and it was built. **It fails its own falsifier outright and has been reverted with its switch**, which is
+round 8's precedent for a null (flow fields, the gear-change cost, the target-switch floor).
+
+Same defile, both arms, one binary (`--nav-off=corridor` against the default):
+
+| | corridor OFF | corridor ON |
+|---|---|---|
+| artillery arrives | **no** | **no** |
+| dispersion | 40.57 s | **40.57 s** |
+| every arrival time | ifv 43.77 / lancer 66.9 / burner 60.37 / scout 26.33 | **identical** |
+| `orca_deflected / orca_solved` | 1296 / 2249 | **1296 / 2249** |
+| `corridor_refusals` / `corridor_rescues` | **2** / 0 | 0 / **2** |
+
+**The mechanism fires TWICE in a 70 s run.** Every one of the orchestrator's pre-registered bars — the artillery
+arrives, dispersion drops, `deflected/solved` falls — is unmoved.
+
+**And that kills hypothesis 3 as nav stated it, which is the real correction.** nav read `Avoidance.deflected` at
+58 % as *"the navmesh refusal is firing constantly"*. It is not. **`deflected` counts ORCA SHAPING the velocity —
+its actual job — and does not count the refusal at all.** The refusal has its own count and it is **2**. Two
+quantities, one name, and nav built a mechanism on the wrong one. *A counter's name is not its definition.*
+
+**So all three pre-registered hypotheses are dead and the cause of the defile failure is still unknown.** That is
+the honest state, and it is a better one than a shipped fix that changes nothing.
+
+**What survives, and it is the half the orchestrator was right to insist on: the regime now has a name.**
+`wedged_units` = **8** in both arms — a mover whose avoidance shaped it on more than half of a 2 s window while its
+net displacement stayed under its own hull length. `Movement.state()` reports `wedged` as a **field, deliberately
+not a new `phase` value**, because consumers branch on `phase` and a new value there would silently change every one
+of those branches. **The mechanism was a null; the instrument fires.** Next investigation starts from a signal
+instead of from three stories.
+
+### DEFILE MEASURED: it is ORCA. Both of nav's favoured hypotheses are DEAD, including the orchestrator's bet
+
+**Run on squad's tree** (their `game/tactics/`, `tank_brain.gd`, `element_feed.gd` and probe taken for measurement
+only and dropped again; nav's four rows are all default-off, so this is *their* configuration), maze, wheeled,
+`--deform=off`, seed 3, 70 s, wedge + bounding overwatch, laptop. **It reproduces squad's observation exactly** —
+artillery never arrived, dispersion 41.4 s, 4 of 5 in, same per-vehicle times — so the counters describe the very
+failure they saw.
+
+    DEFILE_NAV  asks_refused=0  yields_started=0  guard_rescues=1  orca_solved=2172  orca_deflected=1330
+
+| hypothesis | pre-registered signature | result |
+|---|---|---|
+| **1. chord guard starves wide hulls** | `guard_rescues` high | **DEAD — 1 over the whole run** |
+| **2. right-of-way impossible in a defile** | `asks_refused` and `yields_started` high | **DEAD — both exactly 0. Right-of-way never engaged at all.** |
+| **3. ORCA deflection degrades to a permanent slow** | `deflected / solved` near 1 | **ALIVE — 1330 of 2172, 61 % of solved ticks deflected** |
+
+**Hypothesis 2 was nav's leading candidate and the orchestrator independently bet on it too. It is wrong, and the
+arithmetic that made it compelling was never the point:** the 4.55 m-of-clearance-in-a-5.0 m-corridor calculation is
+still true, and it *never matters*, because **nobody ever asks.** Right-of-way triggers on `stalled_ticks` or on
+being held below `AVOID_ASK_PACE` — and a unit that ORCA is deflecting is **neither stalled nor slow enough**: it
+keeps inching forward, so `stalled_ticks` resets, and its pace stays above the ask threshold.
+
+**That is the real shape of the failure, and it is worse than any of the three hypotheses:** the hull is in a regime
+**no recovery mechanism recognises.** Not stalled (it moves), not blocked (it progresses a little), not held back
+enough to ask for right of way. It simply never gets through, and every safety net nav has is watching for a
+different symptom. It is arena's *"gap-coverer"* problem — *"a unit creeping at 1–2 m/s is NEITHER: too fast to
+crawl, too little path to oscillate"* — in the movement layer rather than the counters.
+
+**Two consequences for whoever takes this:**
+- **The fix is not the one the orchestrator pre-approved** (strict file order inside a narrow corridor). That would
+  fix a deadlock which is not happening. The question is instead *why ORCA's deflected velocity does not resolve in
+  a corridor*, and whether the navmesh refusal (`AVOID_MESH_PROBE`) should yield a **slower but legal** velocity
+  rather than falling back to the route at reduced pace.
+- **Something must notice this regime.** A unit that is deflected for 61 % of its ticks and arrives nowhere in 70 s
+  should trip *something*. Nothing currently does.
+
+**Method note, because it is why this came out right:** the three signatures were written down *before* the run, and
+two of them killed the hypotheses their author believed most. Had the counters not been pre-registered, the 61 %
+would have been easy to narrate as confirmation of whichever story was told first.
+
+### THE QUESTION THAT SURVIVES THE WIDENING: why did a 2.6 m hull with 2.1 m of slack fail the defile?
+
+The orchestrator's framing is right — scale widening the kit's gaps to `widest_hull + 1.0 m` (CP2d) does not answer
+this, because the Condemned artillery failed the maze defile **at its pre-CP2 2.6 m width**, with four squadmates
+using the same corridor, never arriving in 70 s. **That is a plant/avoidance question and it is nav's.**
+
+**Three candidate mechanisms, each with its arithmetic and the counter that already exists to test it.** All three
+are derived from hull WIDTH or an avoidance radius, which is why a "wide enough" corridor does not settle it:
+
+1. **The chord guard starves exactly the hulls that need room.** `_chord_slack()` is
+   `max(0.3, NAV_AGENT_RADIUS − width/2 − 0.2)`. At 2.6 m wide that is **0.5 m**; at CP2's 4.74 m it is
+   `2.0 − 2.37 − 0.2 = −0.57`, clamped to the **0.3 m floor**. The guard samples the straight line to the carrot at
+   0.5 and 1.0 of its length and pulls the carrot back to 0.6/0.3 of the lookahead when it reads off-mesh. In a
+   corridor with ~1.2 m either side, a carrot past a bend cuts the corner and fails that test **repeatedly**, and a
+   hull that keeps pulling its carrot back never commits to the corridor. **Counter: `guard_rescues`.**
+   *(And the round-8 finding bites here too: the sweeping dimension at a corner is half-LENGTH, not half-width.)*
+2. **⚠ Right-of-way cannot be satisfied inside a defile, and its failure path makes the asker yield.** A yield spot
+   must clear the asker's line by `radius_of(me) + radius_of(other) + YIELD_LINE_MARGIN`. `Avoidance.radius_of` is
+   `(width + length)/4 + 0.25`, so for the artillery (2.6 × 4.0) that is **1.9 m**, and two of them plus 0.75 is
+   **4.55 m of lateral clearance required — in a 5.0 m corridor.** Impossible by construction. Every ask is refused,
+   and *"refused asks make the asker give way itself"* — so in single file **the unit that should go forward backs
+   off instead, and has nowhere to back off to.** That matches the observed signature exactly: strict ordering, tail
+   never arrives. **Counters: `asks_refused`, `yields_started`.** This is nav's leading hypothesis.
+3. **ORCA's navmesh refusal degrades to a permanent slow.** An avoiding velocity that would put the hull off the
+   mesh `AVOID_MESH_PROBE` (3 m) ahead is refused and the unit slows instead. Inside a corridor **nearly every**
+   avoiding velocity leaves the mesh, so a queued hull slows behind its neighbour indefinitely rather than resolving.
+   **Counter: `Avoidance.deflected` against `solved`.**
+
+**The fix shape for hypothesis 2, pre-approved by the orchestrator before the run** (so the measurement is not
+searching for a fix it has already decided on): *inside a corridor narrower than the clearance sum, right-of-way
+falls back to **strict file order** — the unit ahead never yields to the one behind — rather than refusing the ask.*
+The orchestrator's framing is worth keeping: *"a refused ask makes the asker yield" is a load-bearing coincidence
+that works in the open field and becomes a wall in single file.*
+
+**Why it waits, as the orchestrator asked me to state rather than assume:**
+- It is a **behaviour change on the default path** in the most load-bearing code nav owns (the guard, right-of-way,
+  ORCA), and this round has spent itself establishing that those do not ship unmeasured.
+- The measurement needs a **cleared window**: `make squad-defile` plus the three counters across both arms, and
+  builder0 has had 4–6 runs queued all night.
+- ~~It is size-dependent and CP2d moves the corridors.~~ **VOID — CP2d is withdrawn and the corridors are not
+  moving.** The orchestrator's ruling: take it the moment a builder0 window opens, on the maze as squad staged it,
+  with the three pre-registered counters. **The only remaining reason to wait is the window itself.**
+
+**What is NOT a reason it waits:** A11's default. The two are independent — this is `Movement` and right-of-way, not
+`CombatMotion`'s candidate set — and if a window opens before A11's duel instrument exists, this should be taken
+first, because it has a named unit, a deterministic repro (`make squad-defile`) and three pre-identified counters.
+
+**⚠ RETRACTED (2026-09-20): scale withdrew its corridor table and nav had already written it in here.** The
+"8 of 10 maps tighter than the widest hull" figure measured **twice the distance to the nearest obstacle**, which is
+not a corridor width — yard's "4.72 m pinch" is a ~23 m span past a single wreck. **The corridors are not moving,
+CP2d is withdrawn, and nothing about map geometry is established.** nav quoted the table within minutes of receiving
+it, which is the same reflex as quoting a partial lint run: a number arrived from a stream that owns it, so it went
+in unexamined. *A number's owner is not its evidence.*
+
+**What still stands is the only thing that ever needed to: squad's empirical failure.** A 2.6 m hull with 2.1 m of
+slack did not get through a defile four squadmates used, in 70 s, with a deterministic repro. That was always the
+case worth answering and it never depended on the table.
+
+**And the CORRECTED table (scale, `d0aeb5d8`) makes nav's clearance case stronger, not weaker.** Perpendicular free
+span on the base-to-base route, against the 4.74 m widest hull: foundry/furnace **62.5 m**, boulevard 59.0,
+boneyard 27.0, pit 19.0, yard 18.0, scrapyard 17.5, terminus 11.5, **maze 7.0**, barriers 5.5. **The physical
+geometry is generous everywhere — even the maze's deliberate defile is 7.0 m**, and the corrected measure validates
+against a constant somebody typed on purpose (`tools/make_arenas.py`'s `MAZE_TIGHT_GAP = 7.0`); the broken version
+called that same gap 4.41 m.
+
+**So every metre of the squeeze is the BAKE, not the map:** 7.0 m physical − 2.0 m of `NAV_AGENT_RADIUS` each side
+= **5.0 m navigable for a 4.74 m hull, 13 cm a side.** With the maps exonerated there is no competing explanation,
+and **nobody can answer it by widening a map** — which is a far tighter argument for a per-hull-class radius than
+"the maps are too tight" ever was. On the shipping rotation the bake takes 4.0 m off 11.5–19.0 m of span, leaving
+7.5–15.0 m navigable; on the maze fixture it leaves 3.0 m. **The rotation is comfortable and the fixture is not,
+which is the right shape for a fixture whose job is to be the hard case.**
+
 ### OWNED AND UNFIXED: a tracked hull reversing 5.6 m mid-leg, reproducible in one test (scale's trace, 2026-09-20)
 
 scale sent this from `test_control_group_moves::test_the_group_faces_its_direction_of_travel_on_arrival` — three
@@ -792,6 +1374,41 @@ worse than a slow one, because a flake costs a re-run plus a false investigation
 **one** passing run at the branch point against two failing runs on the branch. Three runs at the branch point
 overturned it. **A one-run control is not a control**, and the rule about stating the sample size applies to the
 runs you use to rule something out, not only to the numbers you publish.
+
+### CP2c IS LIVE: control's right-drag facing, and exactly what nav's arrival-arc A/B may assume
+
+control's `e27f0681` is green on builder0 (`>> remote: make check exited 0`, **1269 passed, 0 failed**, checked
+against that commit with nothing moved since) and merges to `main` as **CP2c**. **Run the arrival-arc A/B against
+`main` once it lands, never against `stream/control`.**
+
+**The arm splits cleanly, and these are the guarantees nav may rely on:**
+- A right **press-drag-release on ground** puts `"facing": [x, z]` (normalised) on the `move` command; `Orders`
+  normalises it into every per-unit order exactly as it already did for squad's `intended_facing`. **Nothing below
+  `RtsControls` changed**, so `_arrive_facing` receives the shape it always expected from a caller that now exists.
+- A right **click leaves the key ABSENT** — not empty, not zero — so **`order.has("facing")` is a sound arm test**
+  and every order issued by anything else is in the control arm by construction.
+- A press on an **enemy** is an attack, drag or no drag, and carries no facing. **Attacks are in neither arm.**
+- The gesture threshold is **18 px on screen, not metres** — at the lead's pose an 18 px drag spans ~0.3 m near the
+  bottom of the frame and ~40 m near the top. The *direction* is exact at either end (an exact screen ray projected
+  onto the ground plane), **so the facing nav receives is not noisier near the camera.**
+- `Orders._same_order` treats a differing facing as a different order **for `source == "player"` only**, so machine
+  re-issues are untouched and **nothing in nav's churn or idle-command numbers moves because of CP2c.**
+
+**The consequence for the A/B design, and it is control's point not nav's:** since a facing only ever arrives from a
+deliberate drag, **the treated arm is not "all moves" — it is "moves the player drew a heading on".** `nav-fight`
+sets `facing` on its own orders explicitly and refuses a run where none did, which is the right guard and is now
+satisfiable rather than theoretical.
+
+**`facing_ordered` is confirmed on both sides:** metrics reads the move order's own `facing` key, nav's probe uses
+that same key end to end (`UnitCommand` → `Orders` → `_arrive_facing` → `_approach_gate`), so the column is filled
+from the quantity it claims to describe. **A silently-false column would be worse than a missing one**, which is why
+it is stated here rather than assumed.
+
+**And control has built to nav's `why` table already:** `MovementReadout.legibility_line()` maps the closed set onto
+words already on screen (`survival` → *"under fire"*, `band` → *"holding its range"*, `armour` → *"front toward the
+threat"*), **degrades to one line for `override`** — which is what the default path says while A7 is off — and is
+**silent, not "unknown"**, on any build whose nav publishes no `legibility` key, with a test asserting exactly that.
+**Nothing of control's goes red when N5 lands, and nothing of control's invents a cause before it does.**
 
 ### N5's shopping list, collected from the S4 signatures (build it all in one commit, after control's hash)
 

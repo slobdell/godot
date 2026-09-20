@@ -2557,6 +2557,17 @@ The kickoff prompt is one line; this section is the rest.
     quiet ones were found. Fix: **a test suite for a switched-off mechanism switches it on for itself** (and restores the
     flag in teardown), so the geometry is asserted whether or not the mechanism ships on. Sibling of lesson 23 (a
     behaviour behind a flag has not shipped) on the test side: a test behind a flag has not tested.
+    **Third coat, the same night (squad, A10):** the perturbation test reported *"spurious 0 of 384 assignments changed
+    for a 0.5 m nudge"* — and its `_nudged()` added **the same vector to every member**, a rigid translation that leaves
+    the members' geometry relative to each other untouched, so the auction had nothing to re-seat. Station-keeping
+    error is members drifting *independently*, which is what four other tests exercise, and the tip went red on
+    exactly those four (two of them in control's file). **A test whose input cannot move the thing it measures reports
+    zero and looks like proof. A "0 of N" result is evidence only once the instrument has been shown to produce a
+    non-zero at all** — nav's non-vacuity guard for the tube, applied to a measurement instead of an assertion.
+    **Fourth coat (squad, A10 stood down):** the rigid perturbation was NOT what hid the four failures — independent
+    jitter still reports 0 of 512. What hid them: *every test exercised tiers only in cases where the tie-break could
+    not matter.* The instrument was on and could move; it never visited the case. And the failure itself was a
+    load-bearing coincidence: "heavies in front" had never been a cost, only the Hungarian's tie order (lesson 50).
 165. **A lesson describing a defect that has since been fixed is worse than no lesson — it sends a stream to rebuild
     something that works.** Round 9: lesson 65 (the two smokes comparing against the baseline file) had been fixed in
     round 6, and feel's brief budgeted a build item on the strength of it; lesson 137 (the baseline only fields tanks)
@@ -2565,3 +2576,53 @@ The kickoff prompt is one line; this section is the rest.
     reader of this file reads the first line of a lesson as its current truth. Also learned on the way: `make
     sim-baseline` does not skip on the laptop by nature — only because `sim_state_hash.txt` has no `glibc-2.39` line;
     add one and the laptop self-checks (it produced `5dbb0689ddffc1c0`), though builder0's line stays canonical.
+166. **A headroom pre-check needs the same run length as the experiment — a short control arm is itself an instrument
+    at the end of its range.** Round 9, nav: at 45 s boneyard showed **zero** off-mesh arrival gates; at the
+    pre-registered 120 s it showed **408**. Refusing the map on the short run would have published "boneyard has no
+    off-mesh gates", which is false. The same check then scoped a claim honestly: A4's "43% of off-mesh gates need a
+    curve" was yard alone; across four maps it is ~20% and 0% on three, so the A/B runs on the cluttered maps only and
+    says so — and the map set itself was wrong: the pre-registration said *"the four maps `--arena=random` can deal"*,
+    but `random` deals from `Arena.ROTATION` (three maps), so the screen held two maps the player never sees and omitted
+    one they do; **a pre-registered set is checked against the code that deals it, not typed from a Makefile default** — and when the terminus was added the picture *reversed*: 55% of its off-mesh gates are blocked, the highest of any map, so the wrong set was not noise but bias with a direction, pointing at killing a row that earns its place on two of the three maps he plays. **A pre-registration names its population by reading it from the code** (`nav-fight-maps` now reads `Arena.ROTATION` and prints strays and omissions).
+    Also: `nav-fight-maps` opens with `rm -rf build/nav-maps`, so a re-run destroys the previous run's logs — copy first.
+    And control's version the same hour: `BlockCutaway` cut **nothing in a real match** while its pure
+    falsifier read 518 → 0 — `obstacles_root` was wired before the arena had built its bodies, so `_process` returned
+    early forever; only a node-level test in the real tree, and looking at the frames, closed the distance between
+    "the algorithm is right" and "the feature works" (lesson 23's shape, one layer down).
+167. **Round 9's motion switches are opt-in and inverted: `--nav-off=a4` ENABLES A4.** So `nav-fight-ab`'s arm named
+    `off` is the TREATMENT and the arm named `on` is the CONTROL. The target's own guard catches an inert switch (both
+    arms identical, or sharing a treatment line) but cannot catch a human reading the filenames the obvious way. Label
+    arms by treatment in every write-up, never by the flag's name (nav, 2026-09-20).
+168. **A process list filtered by NAME is not filtered by WORKTREE.** Eight checkouts on this laptop run the same
+    binary, the same script paths and the same make targets, so a `pgrep -f` / `ps | grep` match says almost nothing
+    about *whose* process it is. **Read `/proc/<pid>/cwd` before you act on a match** — before killing it, and before
+    concluding anything from it. metrics, 04:39: stopping one orphaned run of its own, killed the local `make remote
+    T=check` wrappers of control and squad (and reported combat's dead when it was alive: the read-only name match
+    misled the damage report twice while cleaning up the first mistake) (their builder0 runs survived, lesson 15; their
+    reporting lines did not). control, 03:10: walked a `--check-only` child's tree upward without checking cwd and
+    concluded a foreign check was running in its own worktree; it was combat's, and an hour went into a false premise.
+    The trap under the trap: **`pgrep -f <pattern>` matches your own command line containing the pattern**, so "is my
+    script still running?" answers yes either way — filter by cwd, or check for the artefact the process produces.
+    **And the guidance on lost wrapper lines:** re-run rather than reconstruct stays the default, *except* that reading
+    the box's own `build/check/*.log` with its provenance stated is a primary artefact, not a reconstruction —
+    `check passed: N targets` cannot print under `make -j` without `-k` unless all N succeeded, so the count exposes an
+    early abort more precisely than an exit code; check the log's timestamp first, it persists between runs.
+169. **Shader `TIME` keeps advancing while the game is paused, so two captures of "the same" frozen scene differ before
+    anything else does.** Round 9, show: a luminance gate comparing show-on against show-off on a paused tree had a
+    guessed noise floor, and two frames sat outside it for reasons nobody could attribute — the neon flicker's 12.5 Hz
+    dropouts, the crowd and the ad screens are all elsewhere a frame later. The run now shoots a **null** (the same
+    half twice, changing nothing) and takes its bar from that measurement (`max(3%, 2 × the null's p95)`), printing the
+    null's median, p95 and worst so the bar is never a mystery. **Any frame comparison gate measures its own null
+    first.** Same night, same stream, lesson 27 again: a string replacement that did not match shipped as "done" in a
+    commit message and a report; the edit now asserts on the way in and checks on the way out.
+170. **A "waiting on" line is a claim with a date on it, and an undated one goes stale silently.** Round 9: control's
+    Status said *blocked on nav's `legibility.why` key* and nav's said *blocked on control's S4 signature* for hours,
+    with the work done on both sides and the signature already given. Neither re-read the contract; the orchestrator
+    broke it by reading both Statuses in one sitting. **Every *waiting on* line carries the date it was written and
+    what would discharge it, and a tick re-reads the pairs.**
+171. **A switched row and its arm field are ONE change.** nav added `a4` to `NAV_FIGHT_ARM` two hours after landing A4
+    (the arm was provable only from the `off=` list), then landed A6 with the identical omission, in the file whose own
+    comment explains why the field matters — found only by running the counter in a fight. The commit that adds a
+    switch adds its arm line, its counter, and the "could it act?" denominator (`a6_asked 1087, a6_no_corridor 1087,
+    a6_nose_narrowed 0`: reached a thousand times, able to act zero times — without the denominator that reads as "does
+    nothing" instead of "never had its input").

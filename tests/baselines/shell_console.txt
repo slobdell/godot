@@ -1,0 +1,14 @@
+# The console state `make shell-playtest` is expected to produce (tools/shell_console.py).
+# Failing on CHANGE, not on redness: every line here is a fault we have already seen and decided about.
+# Regenerate deliberately: make shell-console-baseline -- and say in the commit why each line moved.
+#
+# RECORDED FROM A REAL RUN AND IT IS EMPTY ON PURPOSE. `make shell-playtest` at c97d4d5f on the laptop
+# (windowed, 1920x1080, builder0 was down) produced SHELL_PLAYTEST_DONE ok=true, 18/18 checks, and **zero**
+# ERROR/WARNING/SCRIPT ERROR lines of any kind. So "the expected state" is genuinely nothing, and this gate is
+# therefore STRICTER than the allow-list it replaces: any console line at all is now a change.
+#
+# Worth knowing before anyone trusts that allow-list: the two patterns `mk/command.mk` still excludes by hand --
+# `ObjectDB instances were leaked at exit` and `MultiMesh interpolation is being triggered` -- **did not occur in
+# this run either**. They are kept in the recipe because they may still appear on another machine or driver, not
+# because they are expected here. If they never come back, the recipe's exclusions are dead weight and should go.
+

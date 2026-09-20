@@ -127,6 +127,21 @@ const FIRE_CHECK_TICKS := maxi(1, (SimClock.TICK_RATE + 10) / 20)  # ~20 Hz, rou
 ## thrashing on the spot inside the lane instead of crossing it (19 ticks in the beaten zone against a control's 16).
 const FIRE_LEG_MIN_TICKS := maxi(1, SimClock.TICK_RATE / 4)
 
+## THE REGIME NOTHING NOTICED (round 9). The maze defile found a hull that is **not stalled** (it inches forward, so
+## `stalled_ticks` resets), **not blocked** (it makes a little progress), and **not held back enough to ask for right
+## of way** (`asks_refused` and `yields_started` were both exactly **0** over a 70 s run) — and never arrives. Every
+## safety net nav has was watching for a different symptom, so this gives the regime a name and a number.
+##
+## `wedged` = over WEDGED_WINDOW this mover's avoidance shaped its velocity on more than WEDGED_SHARE of its ticks
+## **and** its net displacement is under its own hull length. Reported in `Movement.state()` as a FIELD, deliberately
+## **not as a new `phase` value**: consumers branch on `phase` (the fight probe's buckets, control's readout, tests)
+## and a new value there would silently change every one of those branches. A field is the reversible version.
+const WEDGED_WINDOW := SimClock.TICK_RATE * 2
+const WEDGED_SHARE := 0.5
+## Measurement only: movers that ENTERED the wedged regime (transitions, not ticks).
+static var wedged_units := 0
+
+
 ## X3: ORCA local avoidance on (the kill switch is for measuring the difference, `--no-avoidance`).
 static var avoidance_on := not OS.get_cmdline_user_args().has("--no-avoidance")
 ## Measuring only: `--nav-off=grace,minpace,pushidle,carrot,yield,unstick,repath,chord,guard,backup,standoff,commit,holdband` switches single mechanisms off for an A/B
@@ -158,7 +173,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a7", "a11", "backup", "carrot", "chord", "commit", "grace", "guard", "holdband",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a7", "a11", "backup", "carrot", "chord", "commit", "facegiveup", "grace", "guard", "holdband",
 		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
 
 
@@ -423,7 +438,9 @@ func reading() -> Dictionary:
 			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
 			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
-			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan}
+			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan, "wedged": wedged,
+			"wedge_moved_m": wedge_moved_m, "wedge_hull_m": wedge_hull_m,
+			"wedge_ratio": wedge_moved_m / maxf(wedge_hull_m, 0.1)}
 
 
 ## A new order: drop the unstick routine, the old path, the fire detour and the stall bookkeeping, so the new order
@@ -539,6 +556,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	cmd.turn = drive_vector.y
 	steer_to = waypoint
 	pace_now = pace
+	_note_wedge(tank.global_position, pace < 0.999)
 	if station_on and not direct and not order.get("reverse", false) and pace >= 0.99 and waypoint == goal \
 			and remaining <= STATION_RANGE and _goal_velocity.length() >= STATION_MIN_SPEED:
 		drive_vector = _keep_station(cmd, goal, delta)
@@ -558,6 +576,29 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	else:
 		_ask_left = 0
 	OrderController._lap("move.steer", lap)
+
+
+## Feed the wedged window one tick: was avoidance shaping this hull, and where is it now.
+func _note_wedge(here: Vector3, deflected: bool) -> void:
+	_deflect_window.append(deflected)
+	_wedge_trail.append(here)
+	if _deflect_window.size() > WEDGED_WINDOW:
+		_deflect_window.remove_at(0)
+		_wedge_trail.remove_at(0)
+	if _deflect_window.size() < WEDGED_WINDOW:
+		wedged = false
+		return
+	var hits := 0
+	for flag: bool in _deflect_window:
+		hits += 1 if flag else 0
+	var moved := _flat_distance(_wedge_trail[0], _wedge_trail[_wedge_trail.size() - 1])
+	var size: Variant = Units.stat(ctl.tank.unit_id, "hull_size", [2.4, 1.6, 3.8])
+	var was := wedged
+	wedge_moved_m = moved
+	wedge_hull_m = float(size[2])
+	wedged = float(hits) / float(WEDGED_WINDOW) > WEDGED_SHARE and moved < float(size[2])
+	if wedged and not was:
+		wedged_units += 1
 
 
 ## X6: how fast the goal is moving, from how far it moved between changes (brains re-issue a slot a few times a
@@ -1020,6 +1061,14 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
 	var probe := Vector3(here.x + direction.x * AVOID_MESH_PROBE, 0.0, here.z + direction.y * AVOID_MESH_PROBE)
 	if Pathing.enabled and Pathing.is_ready(tank):
 		var on_mesh := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, probe)
+		# ROUND 9, BUILT AND REVERTED AS A MEASURED NULL (round 8's precedent: a null comes out with its switch).
+		# The theory: in a corridor nearly every avoiding velocity leaves the mesh, so this fallback becomes a
+		# permanent slow — and the fix was to walk the velocity back toward the route until the probe accepts.
+		# **It fires TWICE in a 70 s defile run** (2 refusals against 2249 solved ticks), the rescue changed
+		# **nothing** (identical arrivals, identical 40.57 s dispersion, artillery still never arriving), so it went.
+		#
+		# The mistake behind the theory is the part worth keeping: `Avoidance.deflected` at 58% counts ORCA
+		# **shaping** the velocity, which is its job. It does **not** count this refusal. Two quantities, one name.
 		if _flat_distance(on_mesh, probe) > AVOID_MESH_SLACK:
 			return [waypoint, keep]
 	# Wheels steer by curvature: a point inside the turning circle is a three-point turn (backing up), so an avoiding
@@ -1303,6 +1352,20 @@ func _arrive_gate() -> float:
 ## radius), which is what lets a car take a corner it can actually make. The route is re-planned only when something
 ## changed — the goal moved, the hull is off it, it made no progress — or every REPATH_SECONDS as a safety net: the
 ## navmesh is static, so re-planning a route every second (round 5) bought nothing but cost.
+## The wedged window: whether avoidance shaped this mover on each of the last WEDGED_WINDOW ticks, and where it was.
+var _deflect_window: Array[bool] = []
+var _wedge_trail: Array[Vector3] = []
+var wedged := false
+## ...and the CONTINUOUS quantities behind the flag, published because the flag alone cannot be compared across a
+## roster change. scale caught this: `wedged`'s bar is **the mover's own hull length**, so it is size-dependent in its
+## DEFINITION rather than in its data — after CP2 an 8.62 m tank must fail to travel 8.62 m where at 3.60 m it only
+## had to fail 3.60 m, and the same physical behaviour scores differently. A drop in `wedged` counts across CP2 is
+## therefore not necessarily an improvement, and neither is a rise. Publishing the metres travelled, the hull length
+## and their ratio lets a consumer normalise it however it needs instead of trusting the boolean.
+var wedge_moved_m := 0.0
+var wedge_hull_m := 0.0
+
+
 ## A1: why this mover re-planned THIS tick, or "" — published so a harness that can see the K1 order (which nav
 ## cannot: the mover is handed a `move_to`, not the order that produced it) can attribute the cause to an owner.
 ## squad's point: a sliding goal can come from an element's flow OR from the player's own follow, and those are two
@@ -1333,7 +1396,14 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	if a1_on():
 		# Inside the tube = still on the route it was planned on. `off_path` below is that test, and it is an event,
 		# so the tube's only job here is to stop the CLOCK forcing a re-plan that cannot change the answer.
-		drifted = _path.size() < 2
+		#
+		# **`cadence_due and …`, NOT `…` alone. The tube may only ever hold a plan LONGER than the cadence would,
+		# never shorter** — it is allowed to skip a re-plan and never to add one. The first version read
+		# `drifted = _path.size() < 2` on its own, so a hull with no route yet re-planned on ticks where the cadence
+		# was not due and the blend would not have: **A1 could re-plan MORE than the thing it replaces.** That is the
+		# regression a flag hides, and it is exactly the guarantee squad wrote into the brain half's tests before
+		# nav thought to write it into this one. Monotone by construction now, and asserted.
+		drifted = cadence_due and _path.size() < 2
 		if cadence_due and not drifted:
 			a1_tube_skips += 1
 	# Split by CAUSE, because "an event re-planned it" is not actionable and the four causes have four different

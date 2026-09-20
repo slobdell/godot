@@ -66,9 +66,18 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 			"bounding": int(state.get("bounding", 0)), "arrived": bool(state.get("arrived", false)),
 			"orders": {}, "slots": {}, "sectors": {}, "seats": {},
 			"leader": String(situation.get("leader", "")), "previous_seats": state.get("seats", {}),
-			"route": [], "route_index": 0}
+			"route": [], "route_index": 0, "pitch": Vector2(TacticsFormation.DEFAULT_SPACING,
+			TacticsFormation.DEFAULT_SPACING), "corridor_m": float(situation.get("corridor_m", INF)), "file": 0.0,
+			# X3 (A9): only a bounding advance fills this; everything else says "not bounding" rather than leaving
+			# last update's phase standing (a stale phase would report firepower stationary that is driving).
+			"bound": {}}
 	if members.is_empty():
 		return plan
+	# X1: this element's TACTICAL pitch — the doctrine's number for the terrain, raised per axis to what its own
+	# hulls fit in. Published so control's readout, the coherence probe and a slot's leash read a real number rather
+	# than the one that was asked for or a constant. X2's corridor deformation is reported separately (`file`), so
+	# this stays the element's dispersion rather than whatever the narrowest gap squeezed it to.
+	plan["pitch"] = TacticsFormation.pitch(members, table.spacing(String(situation["terrain"])))
 
 	var drill := Drills.select(situation, state, table)
 	var pick := table.select({"task": String(task.get("verb", "hold")), "threat": String(situation["threat"]),
@@ -180,6 +189,10 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 				else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
 	plan["anchor"] = destination
 	plan["technique"] = "traveling"
+	# X2: these slots are where the element STANDS when it gets there — the shape the player saw when he clicked —
+	# not a shape filing through a gap, so the corridor does not deform them. The transit is `_flow`'s business, and
+	# deforming that is recorded as the follow-on rather than guessed at here.
+	plan["corridor_m"] = INF
 	plan["arrived"] = center.distance_to(destination) <= ARRIVE_M
 	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
 	# Sent once means SEATED once: when everyone has been sent to their final slot (the flow joined, or no flow) the
@@ -230,40 +243,98 @@ static func _flow(plan: Dictionary, situation: Dictionary, state: Dictionary) ->
 				"slot": [offset.dot(right), -offset.dot(heading)]}
 
 
-## Bounding overwatch: one half moves, the other covers it by fire, then they swap. A bound never goes
-## further than the overwatch can support by fire (table.legs.support_range_m).
+# ---- A9: bounding overwatch as an explicit two-phase machine (round 9, X3) ------------------------------
+#
+# Before round 9 "bounding overwatch" was a TECHNIQUE NAME and a boolean: `bounding` said which half of the element
+# had the current leg, the halves swapped whenever the movers closed up on their anchor, and NOTHING guaranteed that
+# anybody was stationary or that a phase lasted a legible length of time. A9 makes it a state machine with the
+# guarantee in it: at every tick at least half the element's guns are still, and a phase lasts 5-8 s so a spectator
+# can see the alternation rather than a shimmer.
+#
+# THE FALSIFIER'S WORDING IS WHY THE SHAPE CHANGED. A9 pre-registered ">= 50% of squad firepower stationary at every
+# tick", and two alternating halves of an ODD-sized element cannot meet it: `split` gives ceil(n/2) and floor(n/2),
+# so whichever phase moves the three-vehicle half of a five-vehicle squad leaves 2 of 5 = 40% still. Swapping which
+# half goes first only moves the 40% to the other phase. So an odd-sized element leaves a permanent BASE OF FIRE and
+# bounds the rest in two equal teams — 1 + 2 + 2 for a squad of five, 3 of 5 stationary in BOTH phases — which is
+# what a platoon actually does, and the falsifier is then met by construction rather than by a measurement that
+# happens to pass. (Orchestrator's ruling, 2026-09-20.) The base is the vehicle whose firepower is worth most from a
+# static position: the indirect-fire and long-reach roles, which are also the ones the element exists to protect and
+# the ones that shoot worst on the move.
+
+## A bounding phase lasts at least this long and at most this long (ticks): the catalogue's 5-8 s. The minimum stops
+## a shimmer when both teams close up fast; the maximum stops a team that never closes up from parking the element
+## (lesson 17: a gate above a behaviour must not be able to cancel it forever).
+const BOUND_MIN_TICKS := SimClock.TICK_RATE * 5
+const BOUND_MAX_TICKS := SimClock.TICK_RATE * 8
+
+
+## The teams a bounding element alternates, and the base of fire that never bounds.
+## Returns {"teams": [Array, Array], "base": Array}: two equal teams, plus the odd vehicle out when the element has
+## an odd number of them. A single vehicle does not bound (both teams empty); a pair alternates singles.
+static func bound_teams(ordered: Array) -> Dictionary:
+	if ordered.size() < 2:
+		return {"teams": [[], []], "base": ordered.duplicate()}
+	var rest: Array = ordered.duplicate()
+	var base: Array = []
+	if rest.size() % 2 == 1:
+		# The odd one out stays: the vehicle worth most standing still. `slot_order` already sorts leader first, then
+		# by ROLE_RANK, so the LAST of it is the most protected role (artillery, then lancer) -- the gun that is
+		# worth most from a static position and shoots worst on the move.
+		base.append(rest.pop_back())
+	var half := rest.size() / 2
+	return {"teams": [rest.slice(0, half), rest.slice(half)], "base": base}
+
+
+## Bounding overwatch: one team moves while the other (and the base of fire, if there is one) covers it, then they
+## swap. A bound never goes further than the overwatch can support by fire (table.legs.support_range_m).
 static func _plan_bounding(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
 		ordered: Array, destination: Vector3, heading: Vector3, spacing: float, order_verb: String) -> void:
-	var halves := split(ordered)
-	var bounding: int = clampi(int(state.get("bounding", 0)), 0, 1)
-	var movers: Array = halves[bounding]
-	var overwatch: Array = halves[1 - bounding]
-	if movers.is_empty() or overwatch.is_empty():
+	var split_up := bound_teams(ordered)
+	var teams: Array = split_up["teams"]
+	var base: Array = split_up["base"]
+	var tick := int(situation.get("tick", 0))
+	var was: Dictionary = state.get("bound", {})
+	var phase: int = clampi(int(was.get("phase", int(state.get("bounding", 0)))), 0, 1)
+	var since: int = int(was.get("since_tick", tick))
+	if (teams[0] as Array).is_empty() or (teams[1] as Array).is_empty():
+		# Nothing to alternate: the element travels as one, and says so rather than pretending to bound.
 		var anchor := _advance(plan, situation, state, table, situation["center"], destination, heading, ordered, spacing)
 		_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb)
+		plan["bound"] = {}
 		return
-	var mover_center := _center_of(movers)
-	var cover_center := _center_of(overwatch)
+	var movers: Array = teams[phase]
+	var overwatch: Array = (teams[1 - phase] as Array) + base
 	var anchor: Variant = state.get("anchor")
-	var bound := table.leg("bounding_m")
-	# The bound is over when the moving half has closed on its anchor: hand the move to the other half.
-	# (With no anchor yet this is the element's first bound, and the lead section takes it.)
-	var swap: bool = anchor != null and _cohesive(movers, anchor, String(plan["formation"]), heading, spacing, table)
+	var age := maxi(tick - since, 0)
+	# The phase is over when the moving team has closed up on its anchor AND the phase has run its minimum, or when
+	# it has run its maximum whatever the team is doing.
+	var closed: bool = anchor != null and _cohesive(movers, anchor, String(plan["formation"]), heading, spacing,
+			table, float(plan.get("corridor_m", INF)))
+	var swap: bool = (closed and age >= BOUND_MIN_TICKS) or age >= BOUND_MAX_TICKS
 	if anchor == null or swap:
 		if swap:
-			bounding = 1 - bounding
-			movers = halves[bounding]
-			overwatch = halves[1 - bounding]
-			mover_center = _center_of(movers)
-			cover_center = _center_of(overwatch)
-		var room := maxf(table.leg("support_range_m") - cover_center.distance_to(mover_center), 0.0)
-		var step := minf(minf(bound, room), mover_center.distance_to(destination))
-		anchor = clamp_to_arena(mover_center + heading * step)
-	plan["bounding"] = bounding
+			phase = 1 - phase
+			since = tick
+			movers = teams[phase]
+			overwatch = (teams[1 - phase] as Array) + base
+		var room := maxf(table.leg("support_range_m") - _center_of(overwatch).distance_to(_center_of(movers)), 0.0)
+		var step := minf(minf(table.leg("bounding_m"), room), _center_of(movers).distance_to(destination))
+		anchor = clamp_to_arena(_center_of(movers) + heading * step)
+	plan["bounding"] = phase
 	plan["anchor"] = anchor
 	_group(plan, movers, String(plan["formation"]), anchor, heading, spacing, order_verb)
-	# The overwatch half stays where it is, guns out, covering the bound.
+	# The covering team stays where it is, guns out, covering the bound. So does the base of fire, in both phases.
 	_hold(plan, overwatch, situation, heading, "overwatch")
+	plan["bound"] = {"phase": phase, "since_tick": since, "movers": _names_of(movers),
+			"overwatch": _names_of(overwatch), "base": _names_of(base),
+			"stationary_share": float(overwatch.size()) / float(maxi(ordered.size(), 1))}
+
+
+static func _names_of(members: Array) -> PackedStringArray:
+	var names: PackedStringArray = []
+	for member: Dictionary in members:
+		names.append(String(member["name"]))
+	return names
 
 
 ## A halt: all-round security. An element that has arrived is no longer on its movement task, so the table is
@@ -351,7 +422,9 @@ static func _line_positions(plan: Dictionary, situation: Dictionary, members: Ar
 		var name := String(member["name"])
 		var spot: Vector3 = plan["slots"][name]
 		if (member["position"] as Vector3).distance_to(spot) <= IN_POSITION_M:
-			_order(plan, name, "hold", spot, "")
+			# X5: a crew standing on a firing line keeps the sector it was put there to watch.
+			_order(plan, name, "hold", spot, "",
+					TacticsFormation.rotate(heading, deg_to_rad(float(plan["sectors"].get(name, 0.0)))))
 
 
 # ---- Battle drills -------------------------------------------------------------------------------------
@@ -540,7 +613,8 @@ static func _plan_break_contact(plan: Dictionary, situation: Dictionary, state: 
 		return
 	var mover_center := _center_of(movers)
 	var anchor: Variant = state.get("anchor")
-	var swap: bool = anchor != null and _cohesive(movers, anchor, "column", away, spacing, table)
+	var swap: bool = anchor != null and _cohesive(movers, anchor, "column", away, spacing, table,
+			float(plan.get("corridor_m", INF)))
 	if anchor == null or swap:
 		if swap:
 			bounding = 1 - bounding
@@ -615,7 +689,8 @@ static func _hold(plan: Dictionary, members: Array, situation: Dictionary, facin
 		if target != "" and (contact["position"] as Vector3).distance_to(position) <= float(member["range"]) * ENGAGE_RANGE_FACTOR:
 			_order(plan, name, "attack", null, target)
 		else:
-			_order(plan, name, "hold", null, "")
+			# X5: "guns toward `facing`" was the docstring and nothing in the order said it. Now it does.
+			_order(plan, name, "hold", null, "", facing)
 		plan["slots"][name] = position
 
 
@@ -630,9 +705,16 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		return
 	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing,
 			{"leader": String(plan.get("leader", "")), "policy": "exposure",
-			"previous": _previous_seating(plan, members, formation), "fixed": fixed})
+			"previous": _previous_seating(plan, members, formation), "fixed": fixed,
+			# X5: a halt's crews face their sectors of fire, so place() gives each entry that facing rather than the
+			# direction of travel, and the order carries it.
+			"halt": halt,
+			# X2 (A8): a MOVING formation deforms to the corridor it is driving through; a halt does not — it is
+			# standing in an area, not filing through a gap, and its all-round sectors are the point of it.
+			"corridor_m": INF if halt else float(plan.get("corridor_m", INF))})
 	for entry in placed:
 		var name := String(entry["unit"])
+		plan["file"] = maxf(float(plan.get("file", 0.0)), float(entry.get("file", 0.0)))
 		var spot: Vector3 = entry["to"]
 		if halt:
 			spot += TacticsFormation.rotate(heading, deg_to_rad(float(entry["sector"]))) * FACE_LEAD
@@ -640,7 +722,9 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		plan["slots"][name] = spot
 		plan["sectors"][name] = entry["sector"]
 		plan["seats"][name] = [formation, members.size(), int(entry["index"])]
-		_order(plan, name, verb, spot, target)
+		# X5: at a halt the crew's sector of fire IS the facing it is being given; on the move the order's facing is
+		# the direction of travel, which nav derives itself, so only a halt carries one.
+		_order(plan, name, verb, spot, target, entry["facing"] if halt else null)
 
 
 ## Last update's seating for these members in this shape, if they all had one ({} otherwise).
@@ -655,8 +739,16 @@ static func _previous_seating(plan: Dictionary, members: Array, formation: Strin
 	return result
 
 
-static func _order(plan: Dictionary, unit_name: String, verb: String, to: Variant, target: String) -> void:
-	plan["orders"][unit_name] = {"verb": verb, "to": to, "target": target}
+## `facing` (a flat direction, or null) is the heading the crew is to END UP on — X5: the only thing that makes the
+## pair of "squad sets a facing" and nav's arrival arc measurable in a real match. A halt, a hold and a firing line
+## all know which way their crews should look (their sector of fire, or the point they cover); before round 9 they
+## expressed it only by driving FACE_LEAD metres along the sector and hoping the hull ended up pointing there.
+static func _order(plan: Dictionary, unit_name: String, verb: String, to: Variant, target: String,
+		facing: Variant = null) -> void:
+	var order := {"verb": verb, "to": to, "target": target}
+	if facing is Vector3 and (facing as Vector3).length_squared() > 1e-6:
+		order["facing"] = TacticsFormation.flat(facing)
+	plan["orders"][unit_name] = order
 
 
 # ---- Legs, splits and geometry -------------------------------------------------------------------------
@@ -672,7 +764,8 @@ static func _advance(plan: Dictionary, situation: Dictionary, state: Dictionary,
 	var reached: bool = anchor == null or center.distance_to(anchor) <= LEG_ARRIVE \
 			or (destination - (anchor as Vector3)).dot(heading) < 0.0 \
 			or (anchor as Vector3).distance_to(destination) > center.distance_to(destination) + leg
-	if reached and _cohesive(keyed, anchor, String(plan["formation"]), heading, spacing, table):
+	if reached and _cohesive(keyed, anchor, String(plan["formation"]), heading, spacing, table,
+			float(plan.get("corridor_m", INF))):
 		anchor = clamp_to_arena(center + heading * minf(leg, center.distance_to(destination)))
 	elif anchor == null:
 		anchor = clamp_to_arena(center)
@@ -686,7 +779,7 @@ static func _advance(plan: Dictionary, situation: Dictionary, state: Dictionary,
 ## (Straight line over top speed: the plan is pure and cannot ask the navmesh. The element's published form-up ETA —
 ## Element.form_up_eta(), which paces the members — is nav's route-aware Movement.eta.)
 static func _cohesive(members: Array, anchor: Variant, formation: String, heading: Vector3, spacing: float,
-		table: DoctrineTable) -> bool:
+		table: DoctrineTable, corridor_m := INF) -> bool:
 	if anchor == null or members.is_empty():
 		return true
 	var slowest := INF
@@ -696,7 +789,11 @@ static func _cohesive(members: Array, anchor: Variant, formation: String, headin
 	var by_name := {}
 	for member: Dictionary in members:
 		by_name[String(member["name"])] = member
-	for entry in TacticsFormation.place(members, formation, anchor, heading, spacing, {"policy": "exposure"}):
+	# X2: against the DEFORMED slots, because those are the ones the orders were given to. Measured against the
+	# nominal shape, an element filing through a defile would never read as closed up and would never take its next
+	# leg — lesson 17 in a new place: a gate above a behaviour that cancels it every tick.
+	for entry in TacticsFormation.place(members, formation, anchor, heading, spacing,
+			{"policy": "exposure", "corridor_m": corridor_m}):
 		var member: Dictionary = by_name[String(entry["unit"])]
 		var seconds := (member["position"] as Vector3).distance_to(entry["to"]) / maxf(float(member.get("speed", 9.0)), 0.5)
 		if seconds > allowed_s:

@@ -201,7 +201,15 @@ threshold. It also directly answers open question 2 from the brief (*is there a 
 route cadence (`REPATH_SECONDS`) accounts for **~3% of re-plans** in a fight, so A1's tube on the route replanner
 cannot move P1. The cause split then found the real driver: **968 of 2,059 re-plans (47%) were nav re-planning against
 a goal it was already regulating** — a follower's station sliding ~1 m — fixed with a tolerance that scales with the
-remaining route (out of squad's `following` observation). The brain's `MOTION_REPLAN_TICKS` half remains squad's.
+remaining route (out of squad's `following` observation). The brain's `MOTION_REPLAN_TICKS` half remains squad's — **measured (squad `1a797642`, 05:40, laptop, merged
+tree, `make squad-decisions TUBE=on|off`, seed 3, 120 s, yard, 34 GREEN brains):** re-decides 5514 → 2076
+(**−62.3%**, the bar met), motion-internal jumps −17.2% (an independent instrument, pre-registered), switches per
+unit-minute **20.5 in both arms to the decimal** and reversals 0.4 in both — the latency guarantee holds in a fight,
+not only in the unit test. **And it ships OFF:** GREEN finishes 29 of 34 against 33 of 34, RUST untouched at 41 both
+ways, one seed. Held share 0.46 → 0.81 means the tube holds plans against a world four times staler. Gate
+pre-registered in squad's brief: the same A/B over ≥ 5 seeds reporting GREEN losses and exchange ratio beside the
+counts; flip only if losses are flat within seed noise. *"The instrument that can finally see the mechanism is the
+one that tells you not to ship it."*
 **Falsifier:** intra-decision re-plan rate drops **≥ 60%** (theirs: ≥ 80%) *and* path-tracking error stays within
 **0.15 m** *and* reaction latency to a new contact stays **≤ 2 ticks**. If churn falls but latency rises, this is
 stubbornness wearing a hat and it reverts.
@@ -287,8 +295,32 @@ arrival gates offered, 1,196 were refused, 835 of them `off_mesh`. Probing each 
 splits that one number into two bugs: **474 (57%) would have fitted with a shorter run-in** — cheap but *not free*,
 since `APPROACH_RADII` 2.5 is a measured value and at 1.5 radii an IFV arrived 63° off, so 75% of it trades refusals
 for unmeasured heading error and needs its own A/B — and **361 (43%) fit at no length tried: the approach corridor is
-blocked, and no straight gate reaches them at any length.** That 43% is A4's territory, now counted in the
-configuration the lead plays rather than argued from curvature continuity. **Rule before anyone builds it:** the
+blocked, and no straight gate reaches them at any length.** **CORRECTED 04:10 (nav):** at the pre-registered 120 s the yard figure is **26%, not 43%** (430 blocked of 1,641
+off-mesh; the recoverable class grows faster with run length), **14%** across four maps, and **0% on boulevard, pit and
+boneyard** — two of which the player never sees: nav's map set was `FIGHT_MAPS`' default, not `Arena.ROTATION`
+(`yard, pit, terminus`), so it screened two unplayed maps and omitted one played one. **Then terminus reported (nav `28653da1`, laptop, 120 s, seed 3) and REVERSED the picture: terminus 806 blocked of
+1,468 off-mesh gates (55%), yard 430 of 1,641 (26%), pit 0 — 34% across the rotation, and terminus produces nearly
+twice yard's blocked gates**, because 20 m streets between sheer blocks are exactly the corridor a straight run-in
+cannot enter off-axis. **The sentence for the lead: the clothoid earns its place on two of the three maps he plays,
+and most on the Terminus.** The A/B runs on terminus and yard; pit is refused by nav's own rule. The screened set had
+been *bias with a direction*: it held two maps he never sees and omitted the map where A4 is strongest, and pointed
+at killing the row. `nav-fight-maps` now reads `Arena.ROTATION` from the code and prints strays and omissions.
+**A/B RESULT (nav, 04:50, merged tree `0d8587d6`, laptop, terminus + yard, seeds 1 3 5 7 9, 120 s, arms labelled by
+treatment): A4 FAILS its pre-registered bars and the default stays OFF, on measurement.** Positive control: yard
+**100% of blocked gates reached on every seed** (423/423 … 729/729); terminus **0–13%** — the fan generates hundreds
+of curves per run and on terminus they do not land on the navmesh: a clothoid works by *leaving the approach axis*,
+which needs lateral room, and 20 m streets between sheer towers have none. The bars: `net_over_path` down in 11 of 16
+wheeled-type seed cells, `oscillating_share` up in 9 of 16, and the fight guard breached on 3 of 10 seed-runs — worst
+on yard (−14.4%, −12.8%), **the map where the mechanism succeeds completely: the better A4 works, the more it costs.**
+Routing to a curved gate buys the gate and spends the fight. Bounds on the instrument: `off_mesh_fit.none` counts
+events not gates, and the seeds are not replicates (gates offered 9,077–57,078), so no mean across seeds is reported.
+This does not retire the primitive: it retires *this consumer* (the arrival arc aiming a gate). **The missing test, built (nav `032953eb`, 06:00, terminus, one wheeled hull, a goal blocked at every straight
+length, both arms on one shared arena): the straight arm arrives in 4.3 s (61° heading error, 4.0 m short); the
+curved arm does NOT arrive in 45 s, ending 147° off and 9.8 m short.** A4 turns an arrival into a non-arrival with
+the hull nearly reversed. That re-reads the A/B's guard breaches: at least some of the "cost" is hulls not getting
+there — same direction, worse mechanism. The fixture finds its own blocked case and refuses a run where terminus
+offers none. (A first version built terminus once per arm, the navmesh failed to sync, and the number read 27 m; on
+one shared arena it is 9.8 m: a measurement on a degraded navmesh is not a measurement.) **Rule before anyone builds it:** the
 shorter run-in and the clothoid fix *different* failures and are never shipped together or credited to each other
 (round 7's shape: ship, measure twice, find the mechanism was never reached).
 **POSITIVE CONTROL PASSED (nav, 2026-09-20, laptop, provisional pre-CP1): 403 of 403** blocked-corridor gates — the
@@ -408,6 +440,20 @@ greedy completion and produced 6 spurious re-assignments (an approximation artef
 spacings (7 m) was outbid by a CPU slot drift measured at 9.3 m — **a hysteresis term has to exceed the noise it exists
 to resist**; now one full spacing (14 m). Lesson 153 honoured: nothing in the utility is clamped. The first crossings
 measurement (8 before, 47 after) measured a configuration the game cannot produce and is struck, not revised.
+**STOOD DOWN before merge (squad `02762b8d`, 04:40): the tip went red on four tests, and the cause was not the solver.**
+Both solvers return optimal assignments; "heavies in front, artillery behind" had **never been a cost term in this
+codebase** — it was an artefact of the Hungarian's tie order (the tier cost is identically zero for the toughest
+vehicle), and it survived every round until the auction broke ties differently. Lesson 50's load-bearing coincidence,
+in the seating. A correct cost exists (`c0f22597`: a normalised tier mismatch whose coefficient never vanishes — the
+"symmetric-looking" form moved the blind spot to the median tier — plus a deadband for station drift bracketed by two
+measured distances, 1.34 and 3.8 spacings), one test short — **and that failure is Invariant 0c, not bookkeeping** (squad's correction, 05:00): A10 deleted the
+`fixed` flag, whose guarantee is written in `_group`'s own comment (*keeps last update's seating whatever it costs — a
+plain move standing on its spot*), and neither the incumbent bonus nor a distance deadband reproduces an unconditional
+guarantee; the test drifts two crews 1.34 spacings onto each other's slots on purpose. A named mechanism was replaced
+without preserving what it guaranteed. **A10's first job next round: keep `fixed` for the on-the-spot case (or make the
+deadband unconditional when the anchor has not moved), then the cost.** The branch ships X1, X5, A8-off and A9 without A10. And the
+fourth coat of lesson 164: the perturbation test was not what hid this — *every test exercised tiers only where the
+tie-break could not matter*: the instrument never visited the case.
 **Falsifier:** zero path-crossing slot assignments on a formation transition; spurious re-assignments under a small
 perturbation reach **0%**.
 
@@ -420,6 +466,14 @@ constant-curvature arcs over a ~2 s lookahead, with a gear-continuity bonus. **R
 interest/danger ring, which scores *directions* the vehicle may be unable to take — the ring is why a heavy hull
 picks a heading it then has to hunt toward.
 **Determinism:** fixed grid, row-major.
+**MEASURED (nav, 05:10, laptop, five duels pooled): `--nav-off=a11` alone is a NO-OP** — every `a11_on()` sits
+inside `choose_projected`, which runs only when A7 is on, so the earlier duel question was asked on an arm that
+could not act (byte-identical arms with the flag honestly printing `a11=true`: the switch worked, the arm did not).
+With the right arms, **A7+A11 vs A7 alone: duel 20.0 → 6.3 s, shots/s 0.27 → 0.57, damage/s 18.9 → 51.5, damage per
+shot 70 → 91; front hits 84% (21/25) → 67% (10/15), Fisher p = 0.26.** A11 more than doubles the exchange tempo; whether
+that is lethality or blundering is undecided because a 6.3 s duel cannot produce enough hits. Needs many seeds or a
+scenario that does not end at the first death. A test now fails if A11 ever escapes `choose_projected`; the duel
+scenario's `shots >= 6` fails a faster fight for being faster and becomes a rate (squad's file).
 **Falsifier:** angular-acceleration saturation events in close quarters reach zero; steering oscillation **−60%**.
 **Note the overlap with A7 and A1** — all three touch the same code path. Part 2 applies: they are sequenced, not
 parallel.
