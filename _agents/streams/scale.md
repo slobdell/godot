@@ -308,18 +308,32 @@ tip. **Do not merge CP2 until this is understood.**
 - `git show 07f92087 -- game/` contains **only** the spawn constants, the `SPAWN_CLEARANCE_MARGIN` refactor and
   `size_look.gd` (not in the simulation). Plus all ten arenas' baked spawn lists.
 
-**The leading hypothesis, untested: CROSS-TEST COUPLING, not a simulation change.** Every commit in that range
-added a new `tests/test_*.gd` file (`test_spawn_grid.gd`, `test_arena_cover_tables.gd`,
-`test_arena_layout_keys.gd`), and `run_tests.gd` discovers files in **filesystem order, not alphabetical**. This
-project has documented cross-test coupling before — control's facing test *"passed alone and failed in file
-order"*. `test_spawn_grid.gd` in particular stands up **two full `Match` scenes with ~30-unit armies** and frees
-them. **A test of mine may be leaving state behind.**
+**✗ CROSS-TEST COUPLING IS RULED OUT.** The reproduction finished after the pause was called:
+`--filter=ai_player_orders` **alone** fails the same way, `3 passed, 1 failed`, with
+
+```
+worst gap per squad { "Alpha": 2.9, "Bravo": 5.8, "Charlie": 104.9, "Delta": 4.9, "Echo": 4.3 }
+```
+
+**Charlie is 104.9 m in BOTH runs — the remote full-suite run and the local filtered one, identical to 0.1 m.**
+So it is deterministic, it is not flaky, and it is not test-order state. It is a real change in the simulation.
+
+**And the shape of the numbers is the best clue available.** The other four squads move by ~1 m between the two
+runs (Alpha 3.2 → 2.9, Bravo 4.3 → 5.8, Delta 5.0 → 4.9, Echo 4.9 → 4.3) — the ordinary builder0-vs-laptop drift
+(different glibc, trip-up 63). **Charlie does not move at all.** A continuous cause would drift with everything
+else; a value identical across two machines points at something **categorical** — a unit that never gets an order,
+never leaves its start, or is placed somewhere fixed and wrong — rather than at a unit that drove and came up
+short. `_setup` puts unit index 12–17 (Charlie) at x = −18 … +12, z = 95; a unit that simply never moved would sit
+~85 m from a slot near (0, 10), and 104.9 m is further than that.
 
 **THE EXACT NEXT STEP, in order:**
-1. `--filter=ai_player_orders` **alone** (was running when work paused; result unknown).
-   **Passes alone → cross-test coupling. Fails alone → a real simulation change, and bisect `b7055602..4375a9ad`.**
-2. If it is coupling: run the full suite with my three new test files renamed so `run_tests.gd` cannot discover
-   them (the prefix must stop being `test_`), one at a time, to find which one.
+1. **Bisect `b7055602..4375a9ad`** with `--filter=ai_player_orders`. It reproduces **alone, deterministically, in
+   about three minutes**, so this is cheap: the three commits that touch anything the simulation reads are
+   `07f92087` (spawn constants + ten regenerated `spawns` lists), `3dcab48b` (A3: `Arena.cover` lazy, new
+   `CoverTables`) and `0e809a09` (`Arena.validate` rejecting unknown top-level keys). **Start with `07f92087`.**
+2. **Print where Charlie's offender actually is**, not just its gap — the test reports the worst gap per squad and
+   the three nearest-to-slot units, which is why the offender's own position is still unknown. One `print` of
+   its `global_position` and its slot separates "never moved" from "moved somewhere wrong".
 3. Fix, then `make lint` **clean on the final commit, with no other local Godot work in the same checkout** —
    the first lint of the night was corrupted exactly that way.
 4. Then `make remote T=check` for the CP2 hash.
