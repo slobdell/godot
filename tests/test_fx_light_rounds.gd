@@ -133,4 +133,10 @@ func test_a_real_scout_s_rounds_fly_to_where_the_rules_say_they_hit() -> void:
 	assert_eq(fx.weapons.last_family, "stream", "the rules' impact on the IFV uses the stream family")
 	fx.weapons.flush(fx.now)
 	var end := fx.tracers.round_end(fx.tracers.newest_round())
-	assert_true(end.z > -21.5 and end.z < -17.0, "the tracer ends on the IFV the rules hit, not at full range (%s)" % end)
+	# Derived from the catalog, not a literal (lesson 3, and scale's report at CP2): the window used to be the hard
+	# -21.5 .. -17.0 written around a 3.80 m IFV, and the resize takes that hull to 7.54 m, so the round now stops at
+	# a near face the old window called "full range". What the test is FOR is that the tracer ends on the vehicle
+	# rather than flying past it, and that survives any length.
+	var half := float(Units.stat("ifv", "hull_size")[2]) / 2.0
+	assert_true(end.z < victim.global_position.z + half + 0.5 and end.z > victim.global_position.z - half - 1.0,
+			"the tracer ends on the IFV the rules hit, not at full range (%s, hull %.2f m)" % [end, half * 2.0])

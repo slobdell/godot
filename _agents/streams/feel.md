@@ -240,6 +240,27 @@ toy sizes, silently.** `UNITS` is now an id list; the numbers come from the cata
 `STANDARD_HULL` (the turret-scale reference) with them. **The mutation check is free and real: every one of those
 heights was 1.6 in the old table, so the old table fails the new test as written.**
 
+### Two traps that cost me time today, both worth a lesson
+
+**1. A non-simulating `Tank` is a REPLICA, and setting its transform does nothing.** With `simulate=false` the tank
+eases its own position and yaw toward `sync_position` / `sync_yaw` every rendered frame (`tank.gd:456-465`). Set the
+transform alone and it is undone inside the frame — so my hinge, which integrates the *drawn* motion, integrated a
+drift toward the origin and reported **0.0° at every milestone of a corner that visibly happened**. The law had unit
+tests and every one of them passed; what was broken was everything between the law and the tank. `facing_audit.gd`
+already hit this with `sync_turret_yaw` and says so in a comment — **which I read, and did not generalise.** There is
+now an end-to-end test that drives a rig round a real corner in a real node tree, because that is the only kind of
+test that could have caught it.
+
+**2. Killing a `make` leaves `tools/slot.sh` holding a machine-wide slot, and the stale `.owner` file makes a dead
+holder look alive in every other agent's log.** I started a second `make lint` while my first was still running (the
+in-checkout flock correctly refused it), then killed the wrong process in the chain: the `make` died, its `slot.sh`
+wrapper lived, and it held one of the laptop's two slots — with nothing running inside it — until I noticed. Every
+other stream's queue was behind it. **Kill the `slot.sh` wrapper, not the `make` inside it**, then check
+`/tmp/tank_squad_slots/` and remove a stale `slot<N>.owner` by hand: the lock releases with the process but the
+owner file does not, so the banner every waiter prints keeps naming a job that ended. Reported to the orchestrator
+for `_agents/remote_builds.md`, which is not mine. *(And the better habit, which builder0's idle 12 cores make
+obvious: `make remote T=...` rather than queueing locally behind six other agents.)*
+
 ### X6 — established first, and the premise is wrong: both targets are ALREADY differential
 
 The brief and orchestration **lesson 65** say `announcer-record-smoke` and `music-smoke` answer a differential
