@@ -519,6 +519,9 @@ var yaw_refused_ticks := 0
 ## At 0.005 the residue is a hull with no non-worsening yaw available, which freezes VISIBLY (`yaw_refused_ticks`)
 ## rather than silently -- and that is the state nav's `face` recovery exists for. It fired for the first time in
 ## this configuration (`giveups 1`), having been inert all round.
+## `--tune=match.yaw_fit=1` turns it on from any harness, so it can be measured without editing this file -- the
+## same shape as `switch.cost` and `match.hull_disc`, and for the same reason: an arm that needs a code edit to
+## select is an arm nobody re-measures.
 static var yaw_fit_enabled := false
 
 

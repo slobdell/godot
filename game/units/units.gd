@@ -1130,12 +1130,15 @@ static func apply_tuning(spec: String) -> String:
 		if parts.size() != 2 or path.size() < 2 or path.size() > 3 or not parts[1].is_valid_float():
 			return "tune: expected owner.key=number, got '%s'" % pair
 		if path[0] == "match":
-			if path.size() != 2 or not ["no_damage", "hull_disc"].has(path[1]):
-				return "tune: no match knob '%s' (have match.no_damage, match.hull_disc)" % parts[0]
-			if path[1] == "no_damage":
-				Armor.no_damage = float(parts[1]) > 0.0
-			else:
-				tuning["hull_disc"] = float(parts[1])
+			if path.size() != 2 or not ["no_damage", "hull_disc", "yaw_fit"].has(path[1]):
+				return "tune: no match knob '%s' (have match.no_damage, match.hull_disc, match.yaw_fit)" % parts[0]
+			match path[1]:
+				"no_damage":
+					Armor.no_damage = float(parts[1]) > 0.0
+				"yaw_fit":
+					Tank.yaw_fit_enabled = float(parts[1]) > 0.0
+				_:
+					tuning["hull_disc"] = float(parts[1])
 			continue
 		if path[0] == "probe":
 			if path.size() != 2 or path[1] != "deck":
