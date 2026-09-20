@@ -262,6 +262,24 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Next experiment, PRE-REGISTERED before it runs: how sticky should a combat plan be?
+
+The churn the lead complains about is a direction that keeps changing. Commitment exists for that
+(`CombatMotion.COMMIT_BONUS` = 0.35) and round 8 showed it is weaker than it looks: a HOLD returns index −1 and never
+consults it, and turning it off changed scout wobble by −14% to +19%. The remaining nav-side lever is its size.
+
+- **Change:** `COMMIT_BONUS` 0.35 → 0.7, nothing else. Off arm is `--nav-off=commit` as today; the on arm is the new
+  value. Arms verified from `NAV_FIGHT_ARM`.
+- **Run:** builder0, terminus, 45 a side, `STALL_VERB=attack_move`, busy 0, 120 s, seeds 3, 5 and 7, paired by seed.
+- **Primary metric:** `oscillating_share` among attack-moving units (0.060, 0.037, 0.040 on those seeds today).
+- **Win:** ≥ 20% lower on at least 2 of the 3 seeds, and not higher on any.
+- **Guard, with power this time:** shots fired, both sides (about 2600 and 2900 a run). The guard FAILS if shots fall
+  more than 15% on any seed — a unit that commits to a direction it should have left is a unit not shooting. Units lost
+  are reported but not used: 2–5 a run has no power, which is the mistake the hold A/B's guard made.
+- **If it misses:** the value goes back to 0.35 and the finding is recorded, because the churn is then not in the
+  argmax's stickiness and the next suspect is the re-plan rate itself (`TankBrain.MOTION_REPLAN_TICKS` and the incoming
+  count in its key — squad's file, so a request rather than a change).
+
 ### Round 8 report (nav, 2026-09-19) — the short version
 
 What the round answered, in the order the orchestrator set it:
