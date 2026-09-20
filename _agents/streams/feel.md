@@ -405,6 +405,26 @@ found this alone, and it is the cleanest instance of Invariant 2's own warning t
 still fails is a real finding, not something to widen the tolerance for.** A tolerance chosen to make the red go
 away is not a tolerance.
 
+### What is actually verified on the merged tree (run, not inferred — 2026-09-20, laptop, filtered)
+
+**I claimed three files passed that had never executed**, so these were re-run **with `;` rather than `&&`, so each
+file reports its own line**:
+
+| file | result |
+|---|---|
+| `test_theme_trailer` | **12 passed, 0 failed** |
+| `test_theme_airship` | **5 passed, 0 failed** |
+| `test_assets_outriggers` | **6 passed, 0 failed** |
+| `test_theme_city_block` | **5 passed, 0 failed** (after `a33638b8`) |
+| `test_theme_unit_scale` | **1 failed** — the artillery handover red, expected |
+| `test_units_scale` (scale's) | **1 failed** — same artillery cause, `2.9 m` |
+
+**The lesson, in its general form:** an `&&` chain reports the first failure and **silence** for everything after
+it, and silence reads exactly like success at the bottom of a log. **A batch claim has to name each file's own
+passed/failed line.** I read one summary line, took it for four files, and told another stream three of them had
+passed — one of which was genuinely broken and merged on that claim. It is the round's recurring shape
+(*something that looked finished and was not*) arriving in my own reporting rather than in someone's code.
+
 ### READY TO RUN the moment the orchestrator calls the quiet window (three runs, in this order)
 
 **Why they wait: two of the three are TIMING or BEHAVIOUR measurements, and builder0 was at load 20.89 with 67
