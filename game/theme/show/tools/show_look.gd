@@ -77,10 +77,16 @@ const CLUSTER_RADIUS_M := 40.0
 ## A vehicle counts as "in frame" only if its drawn meshes are at least this tall on screen. At 1080p this is
 ## about a tank at 120 m -- small, but unmistakably a vehicle rather than a speck.
 const MIN_VEHICLE_PX := 12.0
+## Headings tried when the fight is behind a building. A heading is the one part of the pose a player changes
+## freely, so it is the right thing to move -- unlike the pitch, FOV and distance, which are his.
+const HEADING_STEPS := 12
 var _camera := Camera3D.new()
 ## The pitch the last capture actually used. `clear_pose` lifts over a roof when it has to, so a frame that is not
 ## at 21 degrees has to say so rather than be presented as the lead's pose when it is not.
 var _pose_pitch := PITCH_DEG
+## The heading the sweep settled on, and whether the fight was still behind a building when it gave up.
+var _pose_heading := 0.0
+var _pose_blocked := false
 
 
 func _init() -> void:
@@ -275,6 +281,7 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 	print("SHOW_LOOK " + JSON.stringify({
 		"arena": arena, "pose": pose_name, "label": label, "t": t, "file": file, "style": style,
 		"pitch_deg": snappedf(_pose_pitch, 0.1), "lifted_deg": snappedf(_pose_pitch - PITCH_DEG, 0.1),
+		"sight_blocked": _pose_blocked,
 		"fov_deg": FOV_DEG, "distance_m": distance,
 		"focus": [focus.x, focus.z], "writes": writes,
 		"mood": str(show.mood_state) if show != null else "", "channels": _levels(show, t),
@@ -336,9 +343,50 @@ func _swing(track: Array) -> Vector3:
 ## the Terminus is most of the time. `--block-cutaway=off` cannot help here and must not: the blocks have to stay
 ## drawn for the edge comparison, so the camera is what moves.
 func _clear_pose(at: Vector3, heading: float, distance: float) -> Transform3D:
+	var best := _look_from(at, heading, distance)
+	# `clear_pose` alone gets the camera OUT of a building; it does not stop it looking at the side of one, which
+	# is control's own second half ("703 poses inside a solid, 0 after; 518 sight lines still blocked"). On the
+	# Terminus the densest cluster is usually beside a block, so the first frame with a real fight in it was
+	# mostly a black wall. A heading is the one thing in the pose a player changes freely, so sweep it: take the
+	# first heading whose sight line to the fight is clear, preferring the one that sees the most of it.
+	var seen := _visible_from(best)
+	_pose_blocked = RtsCamera.sight_blocked(best.origin, at)
+	if _pose_blocked or seen < _tanks(get_tree().current_scene).size() / 4:
+		for step in HEADING_STEPS:
+			var candidate := _look_from(at, heading + TAU * float(step) / float(HEADING_STEPS), distance)
+			if RtsCamera.sight_blocked(candidate.origin, at):
+				continue
+			var count := _visible_from(candidate)
+			if not _pose_blocked and count <= seen:
+				continue
+			best = candidate
+			seen = count
+			_pose_blocked = false
+	_pose_heading = heading
+	_camera.global_transform = best
+	_pose_pitch = _pitch_of(best, at)
+	return best
+
+
+## One candidate pose: the lead's pitch, lifted out of any solid it would sit inside.
+func _look_from(at: Vector3, heading: float, distance: float) -> Transform3D:
 	var clear := RtsCamera.clear_pose(at, heading, distance, PITCH_DEG)
-	_pose_pitch = float(clear["pitch_deg"])
-	return RtsCamera.pose_at(at, heading, float(clear["distance"]), _pose_pitch)
+	return RtsCamera.pose_at(at, heading, float(clear["distance"]), float(clear["pitch_deg"]))
+
+
+## How many vehicles a candidate pose would actually draw. Set the camera, count, and let the caller keep or
+## discard it -- cheaper than rendering, and it is the number the frame will be judged on.
+func _visible_from(pose: Transform3D) -> int:
+	var was := _camera.global_transform
+	_camera.global_transform = pose
+	var count := _vehicles_in_frame(get_tree().current_scene)
+	_camera.global_transform = was
+	return count
+
+
+static func _pitch_of(pose: Transform3D, at: Vector3) -> float:
+	var boom := pose.origin - at
+	return rad_to_deg(atan2(boom.y, Vector2(boom.x, boom.z).length()))
 
 
 ## Wait until the two sides are actually fighting, polling the match rather than a clock. Returns the wall seconds
