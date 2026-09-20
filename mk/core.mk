@@ -76,11 +76,18 @@ clean: ## Remove build outputs and Godot's import cache
 distclean: clean ## Also remove the downloaded toolchain
 	rm -rf $(TOOLS_DIR)
 
+# The doctrines are sim_baseline_{green,rust}, NOT anvil_hammer/individuals, and the difference is the whole point:
+# those two field five `tank` hulls and nothing else -- one unit of twenty-one, one of the four locomotion x mount
+# combinations. "sim-baseline passed" therefore meant "a tank-vs-tank match on foundry is unchanged" while everyone
+# read it as "gameplay is unchanged", and four predictions that a change would move it failed for that one reason:
+# a 14 m wheeled rig, a wheeled-turret facing fix, an arena bound and a facing contract all touched hulls the match
+# never spawned. Most seriously, feel proved its art inert by passing this twice -- a proof that held for TANKS.
+# The replacement fields every locomotion x mount combination on both sides at the same 40 seconds and one map.
 sim-baseline: import ## The simulation matches the recorded baseline hash for this machine's libm (art must never change gameplay)
 	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
 	expected=$$(awk -v k="$$key" '$$1 == k {print $$2}' tests/baselines/sim_state_hash.txt); \
 	actual=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
-		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
+		--green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json \
 		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 	if [ -z "$$expected" ]; then echo "sim-baseline SKIPPED: no baseline for $$key (got $$actual). The canonical one is builder0's (make remote T=check); see _agents/determinism.md"; \
 	elif [ "$$actual" = "$$expected" ]; then echo "sim-baseline passed: $$actual ($$key)"; \
@@ -89,7 +96,7 @@ sim-baseline: import ## The simulation matches the recorded baseline hash for th
 sim-baseline-record: import ## Write this machine's sim baseline line to build/sim_state_hash.txt (copy it over tests/baselines/ when gameplay changed on purpose)
 	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
 	actual=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
-		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
+		--green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json \
 		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 	test -n "$$actual" || { echo "no MATCH_RESULT"; exit 1; }; \
 	mkdir -p $(BUILD_DIR); printf '%s %s\n' "$$key" "$$actual" > $(BUILD_DIR)/sim_state_hash.txt; \

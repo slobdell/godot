@@ -1,0 +1,50 @@
+{
+  "name": "Baseline Spectrum (Green)",
+  "note": "For `make sim-baseline` ONLY. Not a playable doctrine and not balanced -- its job is COVERAGE. The baseline is the canary for 'art must never change gameplay', and until round 8 it fielded five `tank` hulls and nothing else: one unit of twenty-one, one of the four locomotion x mount combinations. Four separate predictions that a change would move it failed for the same reason -- a 14 m wheeled rig, a wheeled-turret facing fix, an arena bound and a facing contract all touched hulls this match never spawned. Every unit here earns its place by covering something: tracks+turret (tank), wheels+fixed (scout), hover+turret (syn_scout), wheels+turret (artillery, gang_tank). gang_tank is deliberately included: it is the longest hull in the game and the one whose box most recently changed. Cost 915 of a 1000 budget.",
+  "squads": [
+    {
+      "name": "Line",
+      "directive": {
+        "role": "anchor",
+        "objective": {
+          "right": 0,
+          "forward": -12,
+          "radius": 10
+        },
+        "target_priority": "nearest"
+      },
+      "units": [
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "gang_tank"
+        },
+        {
+          "unit": "scout"
+        }
+      ]
+    },
+    {
+      "name": "Wing",
+      "directive": {
+        "role": "flanker",
+        "objective": {
+          "right": 40,
+          "forward": 5,
+          "radius": 10
+        },
+        "target_priority": "threatening_allies",
+        "cohesion": 0.7
+      },
+      "units": [
+        {
+          "unit": "artillery"
+        },
+        {
+          "unit": "syn_scout"
+        }
+      ]
+    }
+  ]
+}

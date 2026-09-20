@@ -1,0 +1,49 @@
+{
+  "name": "Baseline Spectrum (Rust)",
+  "note": "For `make sim-baseline` ONLY. See sim_baseline_green.json. Covers the same four locomotion x mount combinations from the other side with different weapons, so a change to one faction's hull or gun registers whichever colour it spawns as: wheels+turret (law_tank, ifv), wheels+fixed (gang_scout), hover+turret (syn_scout), tracks+turret (tank). Cost 890 of a 1000 budget.",
+  "squads": [
+    {
+      "name": "Guns",
+      "directive": {
+        "role": "anchor",
+        "objective": {
+          "right": 0,
+          "forward": -10,
+          "radius": 10
+        },
+        "target_priority": "nearest"
+      },
+      "units": [
+        {
+          "unit": "law_tank"
+        },
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "gang_scout"
+        }
+      ]
+    },
+    {
+      "name": "Eyes",
+      "directive": {
+        "role": "scout",
+        "objective": {
+          "right": -35,
+          "forward": 8,
+          "radius": 10
+        },
+        "target_priority": "nearest"
+      },
+      "units": [
+        {
+          "unit": "ifv"
+        },
+        {
+          "unit": "syn_scout"
+        }
+      ]
+    }
+  ]
+}
