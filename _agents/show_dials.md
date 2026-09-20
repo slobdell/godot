@@ -135,14 +135,20 @@ not outlines on everything"*. I agree with feel. **You may not, and it is one wo
 venue was already drawing, and changes fifteen numbers a frame. That part is structural, not a measurement: the
 code is forbidden from creating geometry or a light, and a test enforces it.
 
-**The frame cost is small enough that we cannot currently measure it.** Last night, before the roster resize, it
-came out at **0.22 ms of GPU — about 1.5% of a frame.** Since the bigger vehicles landed, two attempts this morning
-gave **+1.5 ms and −0.65 ms**: they straddle zero, which means the thing is smaller than the measuring error rather
-than that it got cheaper. The build machine is running eight streams' test suites at once and is too busy to see
-something this small.
+**The frame cost is too small to measure, and that is the finding.** On an empty build machine we switched the
+show off and on six times inside one run and timed each pair:
 
-**So: no worse than before, and probably the same 1.5%** — being re-measured on a quiet machine, and the real figure
-will replace this paragraph rather than sit beside it.
+| | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| cost of the show, ms | +0.28 | +0.49 | +0.78 | +0.06 | −0.46 | −0.77 |
+
+**Two of the six come out negative** — the show cannot make the game *faster*, so those are the measurement moving
+under us, not a result. **All six are inside ±0.8 ms, on frames that take 6.6 ms of graphics time.** So the honest
+statement is a ceiling rather than a figure: **whatever the light show costs, it is under about 0.8 ms and we
+cannot see it.** Roughly: **under 2.5% of your frame, and probably a good deal less.**
+
+*(Earlier drafts of this page said 0.22 ms and then 1.5%. Both were means of measurements like the ones above, and I
+had no business averaging numbers that disagree about their own sign.)*
 
 **And a check you did not ask for but should know exists:** every frame we shoot is measured for whether the venue
 out-competes the fight for your eye, against the same frame with the show switched off. **If the lights win, the

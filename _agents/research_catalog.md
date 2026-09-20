@@ -368,7 +368,13 @@ the active fraction beside the fraction, always:** A6 can act on 59–74 % of or
 is not, and "< 10 % over active ticks" is a weaker claim than "< 10 % of the fight"; the falsifier is read over the
 whole fight. Per hull on yard: ifv 0.373 (active 0.664), lancer 0.436 (0.407), tank 0.255 (0.692); `arc_live`
 164 s / 171 s wheeled, 0.0 s tracked (a measurement, not an absent field: a tracked hull is never offered an arc).
-The three logs (~100 MB each) are in nav's session scratchpad; the targets wipe `build/`.
+The three logs (~100 MB each) are in nav's session scratchpad; the targets wipe `build/`. **12:45: `p7-pit.jsonl`
+on the laptop has ONE FLIPPED BIT (line 143,873, `0x78 → 0xf8` inside the key `slot_x`; metrics' reader now refuses
+with file, line and byte), on a STALE copy in the laptop's `build/`; nav's copies taken out of `build/` after each run parse clean line by line and metrics re-pools from them.** The control arm
+from the two usable logs (whole roster, both armies): yard eff_mean 0.681, osc_share 0.044, net/path 0.815,
+cusp/min 43.10, SPARC −2.013; terminus 0.660, 0.052, 0.799, 69.14, SPARC −2.013. **Cusp density swings 60 % between
+maps with no treatment, so it mostly measures the arena; SPARC is −2.013 on both to three decimals. A6's
+pre-registration reads SPARC and the off-corridor pair, not cusp density.**
 
 ### A7. Null-space behavioural control — priority projection instead of weighted sums
 **[A]** · Antonelli, Arrichiello & Chiaverini (2008), *The Null-Space-Based Behavioral Control for Autonomous

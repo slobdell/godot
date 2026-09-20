@@ -643,9 +643,26 @@ machine, not a heavier scene, and the counters say so from *inside* the run with
 fits.** `primitives`, `draw_calls`, `objects` and `real_lights` are in every `PERF_SCENE` row, they cost nothing to
 read, and they are immune to the load that moved the timing. Here they inverted the conclusion in thirty seconds.
 
-**The real CP2 observation, which is the opposite of an alarm:** the same 6500 budget now buys **68 vehicles at
-145k primitives where it bought 68 at 191k** — bigger hulls, fewer primitives, consistent with the resize going
-through simpler approved meshes rather than more geometry.
+**⚠ AND THEN I MADE THE MIRROR-IMAGE MISTAKE WITH THE SAME COUNTER, which is why this section has a second half.**
+Having used `primitives` to refute a timing story — correctly — I went on to make a *quantitative* claim from it:
+*"CP2 buys 68 vehicles at 145k primitives where it bought 68 at 191k."* **That was wrong.** A quiet-box run on the
+same post-CP2 tree reads **180,780 primitives with 63 vehicles** — within ~5% of the pre-CP2 191k, and *more*
+primitives with *fewer* vehicles.
+
+| run | vehicles | primitives | draw calls | GPU |
+|---|---|---|---|---|
+| pre-CP2, quiet-ish | 68 | 191,206 | 291 | **6.43** |
+| post-CP2, **load 21** | 68 | 145,093 | 259 | **20.05** |
+| post-CP2, **load 0.9** | 63 | **180,780** | 258 | **6.40** |
+
+**The timing conclusion held** — 6.40 against 6.43 confirms the 19.87 was load and nothing else. **The counter-based
+claim did not.**
+
+**So the rule has a second half: a counter being immune to LOAD does not make it immune to SAMPLING.** `primitives`
+moves with the state of the battle — how many units are alive, how many effects are live, what the camera can see
+— and a single run samples one moment of that. Use the counters to **refute a story whose direction is impossible**
+(less geometry cannot take three times longer); do **not** read a percentage off them from one run and hand it to
+another stream.
 
 ### A gate that fails the branch point is not a gate
 
