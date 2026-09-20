@@ -52,5 +52,27 @@ helpline=$( cd "$repo" && make help 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | gr
 grep -q 'fails if it matches nothing' <<<"$helpline" && ok "the help line says what FILTER does" \
 	|| bad "the help line says what FILTER does" "$helpline"
 
+# ---- `make remote T=` is word-split, so it cannot carry metacharacters either ---------------------
+# `T='ai-scenarios-record REASON=... (held > 3x chased)'` died on `syntax error near unexpected token ('`
+# in the RECIPE's shell, before remote.sh ran. T must stay word-split (`T="test FILTER=combat"` is two
+# arguments), so the answer is to refuse by name and say what to do instead.
+rem() { ( cd "$repo" && TANK_SQUAD_SLOT=1 make --no-print-directory remote T="$1" 2>&1 ); }
+for bad in 'x A=(b)' "x A=it's" 'x A=a;b' 'x A=a|b' 'x A=`id`' 'x A=$HOME' 'x A=a&b' 'x A=a"b'; do
+	out=$(rem "$bad"); rc=$?
+	[ "$rc" = 2 ] && grep -q "may not contain" <<<"$out" \
+		|| bad "T is refused: $bad" "exit $rc: $(head -2 <<<"$out")"
+done
+ok "T containing ( ) ' \" ; & | \` or \$ is refused by name"
+out=$(rem 'x A=(b)')
+grep -q "tools/remote.sh <target>" <<<"$out" && ok "and the refusal says what to do instead" || bad "says what to do instead" "$out"
+grep -q "word-split" <<<"$out" && ok "and why T cannot simply be quoted" || bad "says why" "$out"
+
+# The ordinary form must still work, or this guard breaks every stream's launch.
+out=$( cd "$repo" && TANK_SQUAD_SLOT=1 make -n --no-print-directory remote T="test FILTER=combat" 2>&1 )
+grep -q "tools/remote.sh test FILTER=combat" <<<"$out" && ok "an ordinary T is unaffected and still splits" \
+	|| bad "ordinary T unaffected" "$out"
+out=$( cd "$repo" && TANK_SQUAD_SLOT=1 make -n --no-print-directory remote T="check" 2>&1 )
+grep -q "tools/remote.sh check" <<<"$out" && ok "T=check is unaffected" || bad "T=check unaffected" "$out"
+
 printf '\nfilter-gate: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
