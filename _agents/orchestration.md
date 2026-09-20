@@ -3013,3 +3013,10 @@ The kickoff prompt is one line; this section is the rest.
     states the room a hull needs to TURN (the spawn grid and the formation under-provisioned it); a measurement
     of where boxes stand answers "do they intersect", which is the wrong question for a vehicle that has to turn,
     and nothing in the measurement says so.
+198. **A bug that flatters the thing it breaks is the worst kind to measure around.** (squad, closing round 9.)
+    The tick-1 shove, a real defect, pushed spawned hulls apart before anyone read their spacing, so squad's roster
+    reported "not one pair overlapping" and scale's placement numbers reported clearance on trees where the shove
+    had done that work; on the tree with the settle tick, four crews overlap at spawn. Every other instance this
+    round was a measurement of the wrong thing; this one was a measurement of the right thing on a tree where the
+    answer was temporarily false, and the item it undermined was written from it. When a defect is fixed, every
+    number taken in its presence is re-taken before the item built on it is closed.
