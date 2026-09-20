@@ -253,6 +253,7 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(awk '/MemAvailable/{print int($$2/1024)}' /proc/meminfo)" \
 		"$$(pgrep -c -f 'Godot_v' || echo 0)"
 	@rm -rf $(BUILD_DIR)/check/done && mkdir -p $(BUILD_DIR)/check/done
+	@$(MAKE) --no-print-directory import
 	@started=$$(date +%s); \
 	( while sleep 60; do \
 		left=""; count=0; \
@@ -276,9 +277,20 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 check-parallel: $(_CHECK_WRAPPED) ## (internal) check's targets for `make -j`; run `make check`, not this
 	@echo "check passed: $(words $(CHECK_TARGETS)) targets"
 
-# Each wrapper depends on its real target and leaves a marker the heartbeat counts. The marker is written by the
-# wrapper rather than by the target itself so that nothing about running a target on its own changes.
-$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): $(t) ; @mkdir -p $$(BUILD_DIR)/check/done && touch $$(BUILD_DIR)/check/done/$(t)))
+# ⚠ THE WRAPPER RUNS THE TARGET; IT DOES NOT DEPEND ON IT. That distinction is the whole exclusion mechanism,
+# and getting it wrong made the groups INERT -- found by CP3's own flake criterion on 2026-09-20, which is the
+# best argument for that criterion I can offer.
+#
+# The wrappers used to read `_cp-lobby-smoke: lobby-smoke | _cp-relay-smoke`. An order-only prerequisite orders
+# `_cp-relay-smoke` before **the wrapper** -- but `lobby-smoke` is a NORMAL prerequisite of that same wrapper,
+# and make is free to build both prerequisites CONCURRENTLY. So the real work raced anyway: both targets started
+# a broker on $(SMOKE_BROKER_PORT) and lobby-smoke died. It only showed at CHECK_JOBS=3; two runs of the same
+# series at CHECK_JOBS=2 passed without ever exercising it.
+#
+# Now each wrapper has NO normal prerequisite and invokes its target from its own recipe, so the order-only edge
+# constrains the work itself. `-o import` because `check` has already built it and 16 sub-makes must not each
+# redo it (that would also put 16 writers on the .godot cache, which is the one thing lint's lock is about).
+$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @$$(MAKE) --no-print-directory -o import $(t) && mkdir -p $$(BUILD_DIR)/check/done && touch $$(BUILD_DIR)/check/done/$(t)))
 
 # The three exclusion groups, as order-only prerequisites between the wrappers.
 _cp-combat-smoke:    | _cp-net-smoke
