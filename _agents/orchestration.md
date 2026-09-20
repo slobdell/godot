@@ -2778,6 +2778,12 @@ The kickoff prompt is one line; this section is the rest.
       asserts its subject before reading the number (lesson 184).
     Beside lesson 182: an `&&` chain that reports "the rest passed" is the same disease in a third costume, **a run
     that never happened, counted as a pass.** See also nav's note in `navigation.md` (the same shape in routing).
+    **Fifth instance (show, 14:10):** every frame and clip the show stream produced, including the readability
+    gate's "fight ring" window, was a five-a-side skirmish at the 950-point default with a 3 s warm-up, so the army
+    was still 86 m from the ring the camera pointed at: the gate measured bare asphalt, and "the show makes the fight
+    up to +4.2 % easier to read" was withdrawn. The fix is the same shape: `--budget` and warm-up matched to the perf
+    tool, the camera at the army's centroid, and every capture reports `vehicles_in_frame` with a gate that fails
+    an empty frame *before* the luminance gate runs.
 186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
     Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
     the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
