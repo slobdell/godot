@@ -5,6 +5,163 @@
 > `NavigationServer3D` runs A* over the navigation polygons baked from the arena's collision at startup
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
+## Round 9: the desired-velocity layer, and what replaces what
+
+> Written at the start of round 9 (2026-09-19) and kept current as each row lands. The backlog rows are A7, A11, A1
+> and A4 in [research_catalog.md](research_catalog.md); the sequencing argument is in [workstreams.md](workstreams.md)
+> *Round 9 goal*; the brief is [streams/nav.md](streams/nav.md).
+
+**The Invariant 0c declaration, verbatim, because a round-9 row is only safe if it REPLACES something** (catalogue
+Part 2: *replacing is safe, adding alongside is where two techniques fight*):
+
+> nav owns the **desired-velocity layer** — `game/ai/movement.gd`, `game/ai/combat_motion.gd`, `game/ai/steering.gd`,
+> `game/tank/tank_motion.gd`. It assumes **above** it that squad hands down goals and, since round 8, a `facing`. It
+> assumes **below** it that the plant honours (throttle, turn) with a bounded yaw rate. **A7 replaces the additive
+> blend; A11 replaces the 16-direction ring; A1 replaces the fixed repath / re-aim cadence; A4 replaces the straight
+> approach inside the arrival arc. None of the four adds alongside.**
+
+| Row | Replaces, by file and function | Restored by | Arm counter |
+|---|---|---|---|
+| **A7** null-space priority projection | the additive score in `CombatMotion.choose` (`WEIGHTS`, the `PENALTY_*` terms, `COMMIT_BONUS`) **and** the PID station override's precedence over avoidance in `Movement.drive` | `--nav-off=a7` | `a7_projected` |
+| **A11** dynamic-window arcs | `CombatMotion.RING` and the `wheels` / `min_cos` chord test | `--nav-off=a11` | `dwa_candidates_reachable` |
+| **A1** state-error tube | the `REPATH_SECONDS` / off-path / stalled cadence in `Movement._next_waypoint` (and, by request to squad, `TankBrain.MOTION_REPLAN_TICKS`) | `--nav-off=a1` | `a1_tube_skips` |
+| **A4** clothoid primitives | the straight approach in `Movement._approach_gate` | `--nav-off=a4` | `a4_clothoids` |
+
+**Two rules this layer holds itself to all round**, both bought with round-8 time:
+
+1. **An arm counter, or it is not a comparison** (lesson 147). Round 8's facing A/B compared two arms in which the
+   treatment never executed once, and the only thing that said so was a counter added for exactly that. Every row
+   above ships its counter in its first commit, and `nav-fight` reports them all under `arms`.
+2. **`--nav-off=<row>` restores the OLD mechanism, it does not disable the new one into nothing.** An arm that is
+   "the new thing, switched off" is a third treatment, not a control.
+
+**Determinism, for every row:** no wall clock inside a decision (`dt` is the tick), neighbours ordered by name, a
+fixed iteration count, ties to the lower index. Fresnel integrals (A4) come from a fixed-size table with fixed-order
+interpolation, never a series evaluated to a tolerance.
+
+**Audited at the start of round 9, rather than assumed** (`movement.gd`, `combat_motion.gd`, `steering.gd`,
+`tank_motion.gd`, `avoidance.gd`, `pid.gd`): the layer reads the wall clock in exactly **one** place,
+`movement.gd:435`, and it is a profiling lap timer whose value reaches `OrderController._lap` and nothing else — no
+decision consumes it. There is no RNG anywhere in the layer. So the round starts from a clean determinism position
+and every new row has to keep it, rather than having to establish it first.
+
+### The arrival gate's three-way counter (round 9, N0)
+
+`gates_offered` / `gates_aimed` / `gates_refused`, with refusals split by reason (`off_mesh`, `on_approach`,
+`reached`, `no_facing`, `bad_facing`). Round 8 could not tell *"never offered a facing"* from *"offered one and
+refused the gate"*, and those are opposite findings: the first is an instrument failure, the second is a mechanism
+finding. `nav-fight` reports the split, and the round's A/Bs all issue at least one order carrying a `facing` (a
+squad hold, and a move with one) so the arrival path is a live arm **by construction** rather than by memory.
+
+### A7's priority table (N1a, nav, 2026-09-19) — REVIEW WANTED from combat and feel before any A7 code
+
+> **What this is.** Catalogue row **A7** replaces the additive score in `CombatMotion.choose` and the PID station
+> override's precedence over avoidance in `Movement.drive`. *"Six multiply-adds"* understates it: `CombatMotion.WEIGHTS`
+> is where round 7's approved behaviour lives — standoff and shoot-and-scoot, commitment, armour toward threats, the
+> leash, the dodge, don't-walk-into-a-wall-of-bullets. **Every one of those either survives in this table as a named
+> priority or quietly does not.** So the table is written, reviewed and argued before a line of A7 exists.
+>
+> **Reviewers:** combat (N5 engagement envelope, L2 suppression, A2's switching cost), feel (S4 legibility — the A6
+> motion law must appear here as a named priority, not as a new additive term). Route: the orchestrator.
+
+#### How the levels work, and the one honest caveat
+
+The textbook statement (Antonelli, Arrichiello & Chiaverini 2008) synthesises a velocity as
+`v = Σ_i (Π_{j<i} N_j) v_i`, each lower task projected into the null space `N_j = I − J_j⁺J_j` of the higher ones.
+**Our velocity set is discrete** — a 16-direction ring today, A11's reachable (speed, yaw-rate) lattice after N2 — so
+the projection is exercised as a **tolerance-banded lexicographic filter over candidates**, which is the same algebra
+applied to a finite set:
+
+    survivors := feasible candidates
+    for each level i, highest priority first:
+        if the level has no active task: continue          # it leaves the whole set free
+        c_i := cost of each survivor at level i
+        survivors := { c in survivors : c_i(c) <= min(c_i) + TOLERANCE[i] }
+    choose argmin of the last level's cost; ties by lower index
+
+`TOLERANCE[i]` **is** the null space of level *i*: 0 makes the level dictatorial, ∞ makes it a pure preference. Fixed
+level count, fixed candidate count, no convergence loop, ties by lower index — deterministic by construction.
+
+**The caveat, stated plainly so nobody is surprised at merge: A7 does not remove tuning, it restructures it.** Eight
+weights that traded off incommensurable quantities (metres of range against radians of turn) become five tolerances,
+each with units inside one level. That is a better-shaped problem, not a smaller one, and the honest claim for the
+round is *"opposing goals can no longer cancel to zero"*, never *"nothing is tuned any more"*.
+
+#### The levels
+
+| # | Level | What it is | Null space it leaves |
+|---|---|---|---|
+| **0** | **FEASIBILITY** (a mask, not a level) | reachable by the plant this tick; inside the arena; not crossing or ending in an obstacle | everything else. If the mask is empty the boxed-in fallback runs, exactly as today |
+| **1** | **SURVIVAL** | a round that would hit me; a route through a beaten zone | free whenever no candidate is safe — a unit boxed in by fire still goes somewhere |
+| **2** | **WEAPON** | the standoff band (radial), the ram guard, keeping the target in sight | **the whole tangential component** — which is why circling survives untouched |
+| **3** | **ARC / ARMOUR** | front toward threats; the angle style's side-on guard; **A6's motion law goes here, named** | the sign of the arc (either shoulder), and all speed |
+| **4** | **FORMATION** | the leash on the element slot; crowding; `Movement`'s PID station | everything inside the slot's cell |
+| **5** | **PREFERENCE** | tangent, side, flank, continuity, turn cost, reverse cost, commitment | — (argmin here decides) |
+
+**Level 5 keeps the additive weighted sum, deliberately.** A7 forbids summing *across* priority levels, not within
+one. Continuity, the turn cost and commitment go on working exactly as round 7 measured them; what changes is that
+they can no longer outvote a dodge or a standoff band.
+
+#### Every term in the code today, and what it becomes
+
+| Term (`combat_motion.gd`) | Today | Becomes | The lead-approved behaviour it encodes |
+|---|---|---|---|
+| `WEIGHTS[*]["range"]` (1.0 / 1.0 / 1.2 / 0.0) + `_band()` | additive | **Level 2**, as a constraint on the **radial** component only | Round 7 standoff / shoot-and-scoot: closest approach 3.0 → 27.7 m, shots 29 → 211. The project's largest measured behaviour win — it is a priority, not a preference |
+| `standoff_holds()` → `{"hold": true, "index": -1}` | an early return **before** the ring is scored | **Level 2's zero-radial solution, scored as a candidate like any other** | Round 7's "stop and shoot". **This is the round-8 cancellation failure being fixed**: a hold returns index −1 today and therefore never consults commitment, so we shipped and measured a term that was never in that code path |
+| `MIN_GAP`, `PENALTY_RAM` (1.2) | penalty | **Level 2** (the band's inner wall) | "Scouts are just running directly into their targets" |
+| `SIGHT_CHECKS` (6), `clear_line_coarse` | a post-hoc rescan of the best 6 | **Level 2's null-space preference** — it orders everything that ties on the band, not only the top 6 | "Circling out of view loses the fight" (the Lancer after CP2). Strictly better than today by construction |
+| `PENALTY_HIT` (3.0), `would_be_hit` | penalty | **Level 1** | X3 the dodge. **Now strictly dominant**; today 3.0 is large but finite and can in principle be outvoted |
+| `beaten` (L2) + `beaten_fallback` | last-resort filter | **Level 1**, with the same "free when nothing is safe" release | "Don't walk into a wall of bullets" — and the release keeps "a unit boxed in by fire has to go somewhere" |
+| `WEIGHTS[*]["armor"]`, `threats`, `MULTI_THREAT_ARMOR`, `BUSY_ARMOR` | additive 0.15–1.0 | **Level 3** for hull-fixed and heavy hulls; **null-space task (level 5)** for turreted hulls, whose gun does not need the hull | X3 "keep your front toward threats", and the busy-target flank |
+| `PENALTY_SIDE_ON` (1.5), `ANGLE_MASK_COS` | penalty, angle style only | **deleted as a constant**; it is level 3's expression for the `angle` style | Heavy hulls rocking along one angled heading instead of turning side-on |
+| `PENALTY_LEASH` (1.5), `LEASH_FALLOFF` | penalty | **Level 4** | X1 "fight from your place in the formation" |
+| `PENALTY_CROWD` (0.6), `FRIEND_SPACING` | penalty | **Level 4** | Mutual support without piling up |
+| `WEIGHTS[*]["tangent"]` | additive | **Level 5**, inside level 2's null space | Round 3's circling — the lead's "no intent of trying to circle your opponent" |
+| `WEIGHTS[*]["side"]`, `flank`, `BUSY_FLANK` | additive | **Level 5** | X3 the busy-target flank |
+| `WEIGHTS[*]["continuity"]`, `["turn"]`, `turn_seconds()` | additive | **Level 5** | "A pivot is time standing still, the easiest shot there is" |
+| `WEIGHTS[*]["reverse"]` | additive; **negative means never reverse** (`run`) | **Level 5**, priced — never a veto | P3: forbidding a switch more than doubled switch-and-switch-back. A reversal is priced, and A4 prices its cusp |
+| `COMMIT_BONUS` (0.35) | additive | **Level 5, UNCHANGED by A7** | Round 7 commitment. **See the composition hazard below — this term is also combat's A2 this round** |
+| `RING`, `wheels`/`min_cos` | the candidate set | **untouched by A7; A11 replaces them at N2** | — |
+| `HOLD_SLACK_M` / `--nav-off=holdband` | opt-in hysteresis | **unchanged**, still opt-in | Its A/B missed its bar in round 8; it is not smuggled in under A7 |
+| `fixed_style == "run"` | round 3's attack runs | **keeps the old additive blend, untouched** | It exists to be an A/B control (`--nav-off=standoff`). A control that is also rewritten is not a control |
+
+| Term (`movement.gd`) | Today | Becomes |
+|---|---|---|
+| `_avoid` (ORCA) vs `_keep_station` (PID) | the station PID runs **last** and overwrites the avoiding velocity (`movement.gd:483`) | **the priority inversion A7 exists to fix**: avoidance is Level 1, station is Level 4, and the station's correction is clamped into the avoidance-feasible set instead of applied on top of it |
+| `_around_fire` | pipeline stage | Level 1 |
+| `_next_waypoint` / `_approach_gate` | pipeline stage | Level 2 (the goal task); A4 replaces the gate's straight approach at N4 |
+| `_guard_steer`, the chord test | pipeline stage | Level 0 (feasibility) |
+
+#### By style, since a style stops being a weight vector
+
+| Style | Level order | Level 5 weights |
+|---|---|---|
+| `strafe` (turret) | 1 · 2 · 4 · 5, **armour demoted into 5** | tangent high — the turret aims independently of the hull |
+| `angle` (heavy tracked) | 1 · 2 · **3** · 4 · 5, armour promoted above formation | wider radial tolerance at level 2, so it rocks along one angled heading |
+| `standoff` (fixed gun) | 1 · 2 (with the hold as a candidate) · **3** · 4 · 5 | armour at level 3 because the hull *is* the gun mount |
+| `run` (A/B control) | — | the round-3 additive blend, unchanged |
+
+#### ⚠ Composition hazard, for the orchestrator: A7 and A2 both touch `COMMIT_BONUS` this round
+
+This is catalogue Part 2 happening in real time, in two streams, on one constant. **A7 relocates the commitment term
+into level 5 without changing its value; combat's A2 replaces the flat bonus with a state-dependent switching cost.**
+Those compose only if A2 lands as *the level-5 commitment term's new expression*. If A2 lands as an additional
+penalty somewhere else in the same scorer, we get the exact failure Part 2 predicts: two correct techniques, neither
+working. **nav's proposal: A2's switching cost IS level 5's commitment term, and nav adopts combat's expression
+verbatim rather than keeping a constant beside it.** Sequencing: A7 lands first and leaves the term in one named
+place, so A2 has one line to replace.
+
+#### What nav is asking each reviewer for
+
+- **combat:** does the level order above preserve N5's engagement envelope and L2's suppression behaviour? Two
+  specific predictions nav wants challenged: (1) making the dodge **strictly dominant** (level 1, not a −3.0 penalty)
+  will break units off under fire more decisively than today; (2) demoting armour to level 5 for turreted hulls is
+  right because the turret aims independently — but the scout's engine-deck behaviour (41/23) is exactly the kind of
+  thing that dies quietly to a change like that, so **run your two scenarios on nav's A7 commit rather than a copy**.
+- **feel:** A6's motion law (S4) is written into **level 3** above. Is a heading constraint at level 3 — above
+  formation, below the weapon band — where the legibility contract wants it? If the law should outrank the standoff
+  band, say so now: that is a one-line change here and a re-argument after the code exists.
+
 ## The layers
 
 ```

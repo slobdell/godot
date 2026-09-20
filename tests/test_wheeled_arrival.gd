@@ -71,3 +71,39 @@ func test_a_car_told_to_face_the_way_it_came_swings_round_on_the_approach() -> v
 	assert_eq((result[1] as Dictionary).get("phase"), "arrived", "it gets there (%s)" % result[1])
 	var back := (-tank.global_basis.z).dot(Vector3.BACK)
 	assert_true(back > 0.85, "facing back the way it came (dot %.2f)" % back)
+
+
+## Round 9 (nav, N0): the gate counter tells "never OFFERED a facing" from "offered one and REFUSED the gate".
+## Round 8's facing A/B came back with `gates aimed 0` in both arms and could not say which of those it was — the first
+## is a broken instrument, the second is a finding about the mechanism, and they read identically from outside.
+func _gates(unit_id: String, facing: Variant, seconds := 16.0) -> Dictionary:
+	Movement.reset_gates()
+	await _drive(unit_id, facing, seconds)
+	return Movement.gate_report()
+
+
+func test_a_wheeled_hull_with_a_facing_is_offered_the_gate_and_aims_at_one() -> void:
+	var gates: Dictionary = await _gates("ifv", Vector3.RIGHT)
+	assert_true(int(gates["offered"]) > 0, "a car told which way to face is offered the gate (%s)" % gates)
+	assert_true(int(gates["aimed"]) > 0, "and it routes to one at least once (%s)" % gates)
+	assert_eq(int(gates["offered"]), int(gates["aimed"]) + int(gates["refused"]),
+			"every offer is either aimed at or refused, never lost (%s)" % gates)
+
+
+func test_a_car_with_no_facing_is_never_offered_the_gate() -> void:
+	var gates: Dictionary = await _gates("ifv", null)
+	assert_eq(int(gates["offered"]), 0, "no facing in the order, nothing to offer (%s)" % gates)
+	assert_eq(int(gates["refused"]), 0, "and nothing is counted as a refusal either (%s)" % gates)
+
+
+func test_a_tracked_hull_is_never_offered_the_gate() -> void:
+	var gates: Dictionary = await _gates("tank", Vector3.RIGHT)
+	assert_eq(int(gates["offered"]), 0, "the approach arc is a car's problem: a tank pivots (%s)" % gates)
+
+
+func test_a_malformed_facing_is_refused_with_its_reason() -> void:
+	var gates: Dictionary = await _gates("ifv", Vector3.ZERO, 4.0)
+	assert_true(int(gates["offered"]) > 0, "the order carried a `facing` key, so it was offered (%s)" % gates)
+	assert_eq(int(gates["aimed"]), 0, "a zero direction names no heading (%s)" % gates)
+	assert_true(int((gates["refusals"] as Dictionary).get("bad_facing", 0)) > 0,
+			"and the refusal says WHY, not just that it happened (%s)" % gates)

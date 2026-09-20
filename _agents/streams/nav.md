@@ -228,5 +228,54 @@ falsifier passes but the frames look wrong at his pose, that is his call — sen
 
 ## Status
 
-_not started (brief written 2026-09-19 evening by the orchestrator; round 9 launched against `main` at `f49aa08a`,
-whose full check was running at the time — see HANDOFF for its result before you start)._
+_nav worker, round 9, started 2026-09-19 evening on `stream/nav` at `9f864474` (= `main`'s tip; the branch was
+fast-forwarded at worktree creation). A baseline `make remote T=check` was started before any edit._
+
+### The plan (written first, N0)
+
+Smallest foundation first, and the brief's order is the order — it was argued in round 8 and adopted in
+`workstreams.md` *Round 9 goal*, so it is not re-litigated here.
+
+| # | Item | What it is | Gate |
+|---|---|---|---|
+| **N0** | ground rules | this plan; the Invariant 0c declaration in `_agents/navigation.md`; **the three-way gate counter** (offered / aimed / refused-by-reason) and **facings in the probe's orders**, in one commit | — |
+| **N1a** | A7's priority table | one row per `CombatMotion.WEIGHTS` term and every penalty / leash / commit / hit / beaten / sight check: *priority level* or *null-space task* or *deleted*, and the lead-approved behaviour it encodes | **sent to the orchestrator for combat's and feel's review before any A7 code** |
+| **N1b** | A7 in code | rank-1 projection per level, `--nav-off=a7`, arm counter `a7_projected` | tests first |
+| **N2** | A11 arcs | 9×9 reachable (speed, yaw-rate) lattice replacing `RING` + the `min_cos` chord test, `--nav-off=a11`, arm counter `dwa_candidates_reachable` | after N1b |
+| **N3** | A1 tube | state-error tube replacing `REPATH_SECONDS` / off-path / stalled cadence, `--nav-off=a1`; **latency test written first** | after N2 |
+| **N4** | A4 clothoids | Fresnel from a fixed table, priced cusps, consumed by `_approach_gate` then A11, `--nav-off=a4` | after N2 |
+| **N5** | A6 as nav executes it | the motion law as a named level in A7's table | **blocked on S4** (`_agents/legibility.md` signed by feel, control, nav) |
+| stretch | clearance, `face` recovery, `NavigationAgent3D` comparison | | clearance waits on scale (CP2) |
+
+**Decisions taken where the brief left a choice** (one line each, the worker contract's rule 2):
+1. **The gate counter is three-way with reasons, and it lands before A7**, not with it. It is the instrument that
+   proved round 8's facing A/B was a positive-control failure; every A/B this round is read through it, so it is
+   foundation, not part of a treatment.
+2. **Every A/B arm counter is a static `int` on the class that owns the mechanism**, reported by `fight_probe` in the
+   `NAV_FIGHT` JSON under `arms`, exactly as `gates_aimed` / `gates_refused` are today. One shape for all four rows
+   means the A/B reader is the same code each time (lesson 147).
+3. **`--nav-off=<row>` restores the OLD mechanism, never disables the new one into nothing.** A7 off = the additive
+   blend; A11 off = the ring; A1 off = the fixed cadence; A4 off = the straight approach. An arm that is "the new
+   thing, broken" is not a control.
+4. **Provisional until CP1, re-run after CP2.** Every number below carries `provisional (pre-CP1)` until metrics'
+   A12 merges, and any size-dependent number is re-measured after scale's roster lands.
+
+### Questions for the lead
+
+None yet.
+
+### Requests to other streams
+
+- **squad** (via the orchestrator): nothing yet. `MOTION_REPLAN_TICKS` and the brain's `COMMIT_BONUS` 1.15 become a
+  request at **N3**, not before.
+- **combat, feel** (via the orchestrator): **N1a's priority table needs your review before A7 is written.** It is the
+  point where round 7's approved behaviour (standoff, shoot-and-scoot, commitment, armour toward threats, the leash,
+  the dodge, don't-walk-into-a-wall-of-bullets) either survives as a named priority or quietly does not.
+
+### Known issues carried in from round 8
+
+- The clearance gap (`_chord_slack()` uses WIDTH; one `NAV_AGENT_RADIUS` 2.0 for a 5× footprint range) — worse after
+  CP2 by construction, and coordinated with scale before `NAV_AGENT_RADIUS` is touched.
+- A `face` order has no unstick recovery under a wheeled hull.
+- The arrival arc has **never executed in a CPU fight** (`gates aimed 0` in both arms of its round-8 A/B). N0 fixes
+  the instrument; whether the arc does anything is then measurable for the first time.

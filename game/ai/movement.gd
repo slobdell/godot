@@ -1066,39 +1066,70 @@ const APPROACH_MAX := 20.0
 const APPROACH_ALIGNED_COS := 0.85
 
 
-## Measuring only: how many plans aimed at a gate, and how many were offered a facing but kept the goal (the gate was
-## refused: off the navmesh, already on the approach, or reached). An arrival arc that never fires looks exactly like one
-## that does nothing, and the A/B against squad's `facing` needs to tell those apart from inside the run.
+## Measuring only, and counted per PLAN TICK, not per order: how many wheeled plans were OFFERED a facing at all, how
+## many of those AIMED at a gate, and how many were REFUSED it (with the reason). An arrival arc that never fires looks
+## exactly like one that does nothing from outside, and round 8's facing A/B could not tell those apart: it read
+## `gates aimed 0, gates refused 0` in both arms, which turned out to mean *no order in a CPU fight carries a facing* —
+## an instrument failure, not a finding about the arc. `offered` is the number that distinguishes them, and
+## `offered == aimed + refused` always holds (a test asserts it).
+static var gates_offered := 0
 static var gates_aimed := 0
 static var gates_refused := 0
+## ...and why each refusal happened: "bad_facing", "reached", "on_approach", "off_mesh". squad predicted that an
+## element's 6.5 m assembly spacing refuses most slot gates against a ~17 m approach; that prediction is falsifiable
+## only because the reason is recorded.
+static var gate_refusals := {}
+
+
+## The counter, as one reading (nav-fight reports this; the tests diff it).
+static func gate_report() -> Dictionary:
+	return {"offered": gates_offered, "aimed": gates_aimed, "refused": gates_refused,
+			"refusals": gate_refusals.duplicate()}
+
+
+## Tests only: zero the gate counters so one case's numbers are its own.
+static func reset_gates() -> void:
+	gates_offered = 0
+	gates_aimed = 0
+	gates_refused = 0
+	gate_refusals = {}
+
+
+## Count a refusal and keep the goal: the route aims at the goal itself, as it did before round 8.
+static func _gate_refused(reason: String, goal: Vector3) -> Vector3:
+	gates_refused += 1
+	gate_refusals[reason] = int(gate_refusals.get(reason, 0)) + 1
+	return goal
 
 
 func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	var radius := wheel_radius()
 	if radius <= 0.0 or not order.has("facing"):
-		return goal
-	gates_refused += 1  # provisionally: undone below if a gate is actually aimed at
+		return goal  # not offered: a tracked or hover hull pivots, and an order with no facing asks for nothing
+	gates_offered += 1
 	var facing: Variant = order["facing"]
 	if not (facing is Array) or (facing as Array).size() < 2:
-		return goal
+		return _gate_refused("bad_facing", goal)
 	var direction := Vector2(float(facing[0]), float(facing[1]))
 	if direction.length_squared() < 0.0001:
-		return goal
+		return _gate_refused("bad_facing", goal)
 	direction = direction.normalized()
 	var length := clampf(radius * APPROACH_RADII, APPROACH_MIN, APPROACH_MAX)
 	var gate := Vector3(goal.x - direction.x * length, 0.0, goal.z - direction.y * length)
 	var tank := ctl.tank
 	var here := tank.global_position
 	if _flat_distance(here, gate) <= _arrive_gate():
-		return goal  # at the gate: the straight run onto the heading IS the rest of the move
+		# At the gate: the straight run onto the heading IS the rest of the move.
+		return _gate_refused("reached", goal)
 	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
 	var to_goal := Vector2(goal.x - here.x, goal.z - here.z)
 	if to_goal.length() <= length and forward.dot(direction) >= APPROACH_ALIGNED_COS:
-		return goal  # already on the approach, pointing the right way: don't drive backwards to a gate behind me
+		# Already on the approach, pointing the right way: don't drive backwards to a gate behind me.
+		return _gate_refused("on_approach", goal)
 	var nearest := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, gate)
 	if _flat_distance(nearest, gate) > MESH_GATE_SLACK:
-		return goal  # the approach would start inside a wall: arrive however the route arrives
-	gates_refused -= 1
+		# The approach would start inside a wall: arrive however the route arrives.
+		return _gate_refused("off_mesh", goal)
 	gates_aimed += 1
 	return gate
 
