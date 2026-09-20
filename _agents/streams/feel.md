@@ -276,6 +276,37 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 | The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
 
+**The round-8 re-measure on the resized roster: DONE, both arenas, and the answer is that the unwinnable matchup
+is gone.** Same arms as the originals, read out of each reference's own `args` block rather than re-invented
+(`budget 5200, seeds 5, jobs 8, time_limit 150, directives ON`); 60 matches per arena, each pairing counterbalanced.
+Run on builder0 at `933b4882`; references are `faction-matrix-{pit,yard}-rig14m-2026-09-19.json`.
+
+**Read the matchups, not the factions** — combat's round-8 lesson, and on `pit` it is the whole story:
+
+| | pit: round 8 → now | yard: round 8 → now |
+|---|---|---|
+| **gangs vs law** (the 0/20) | **0% → 20%** | **0% → 50%** |
+| gangs pooled | 30% → **30%** (unmoved) | 27% → **53%** |
+| gangs worst matchup | 0% → 20% | 0% → 50% |
+| gangs spread | 50 → 20 pts | 40 → 10 pts |
+
+**On `pit` the pooled gangs rate is 30% before and after — identical — while the matchup that was unwinnable is
+not any more.** That is exactly the pooling trap combat named in round 8 (there it hid a collapse; here it hides
+an improvement), and the default table the target prints is the pooled one. The rig bought its 0% cell back by
+paying ~10 points in each of its two playable matchups, which is why the average does not move.
+
+On `yard` the same change is large enough to show through the pooling: gangs go from the bottom faction to even.
+The lowest cell in the whole matrix went **0% → 20%** (pit) and **0% → 50%** (yard), and three of four factions'
+spreads narrowed on pit. **No matchup on either arena is unwinnable now**, which for a game about squad tactics is
+a better result than any movement in the pooled rates.
+
+**Two caveats, stated rather than left to be inferred.** Ten matches per cell means one match is 10 points, so the
+±10 and ±20 movements are one and two matches — noise-sized; only the +50, the 0→20, and gangs' pooled 27 → 53 are
+large enough to lean on. And the new runs list the factions as `condemned,gangs,law,syndicate` against the
+references' `gangs,condemned,law,syndicate` — the same set in a different order, which should not bias a
+counterbalanced pairing, but it is a difference from the reference arm and it is recorded rather than smoothed
+over. **This is a balance result and belongs to combat**, not to art; it is reported, not acted on.
+
 **Handed to squad, 2026-09-20: `spawns_clear_of_itself` is not flaky, it samples one frame early.** The test had
 been read as a shard-schedule flake (green at 71/71/71, red at 69/68/68, same code). It reproduces on the laptop at
 `--shard=3/5` with a pair list byte-identical to builder0's — `Green_S2_2/S2_3`, `Green_S4_1/S4_3` and the Rust
