@@ -2849,7 +2849,15 @@ The kickoff prompt is one line; this section is the rest.
     among the abandoned and a merge was blind to the one number that gates it. The fix is `-k` *plus* a three-state
     verdict (PASS / FAIL / NOT RUN) printed from the markers, because with `-k` alone a reader still learns of a
     skipped target only by noticing absent output. Read a check as passed / failed / abandoned from its markers,
-    never from what happened to print.
+    never from what happened to print. Measured the same afternoon: the keep-going check completed 16 of 18
+    targets through two failures where the old one completed 10, and its summary agreed with the markers exactly.
+    **And the lint half of the same day (metrics `b839495c`):** a tree the runtime could not compile had passed lint
+    in one worktree and failed it in another; the hypothesis "a per-file check cannot see a cross-file type error"
+    was tested with four arms on builder0 (a positive control, the twelve-line self-contained ternary, the real file
+    with and without the class-name cache) and was wrong: the checker sees the class in every arm, so the green run
+    simply never checked the file. Closed as three silent-pass holes (empty output, a signal death, a blind run) plus
+    a liveness probe that plants a fresh error every run. **A gate that can pass by not looking needs a probe that
+    proves it looked, and a hypothesis about a gate is tested with a positive control before a fix is built on it.**
 190. **`git merge main` carries no signal about whether main was green at that commit.** Round 9's afternoon: control
     merged main twice at a mid-repair moment (a stale baseline file, then a parse error from an unverified merge) and
     each cost a builder0 slot to discover. Rule: the orchestrator keeps a local tag `main-checked` on the last main
