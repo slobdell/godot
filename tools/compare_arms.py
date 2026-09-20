@@ -155,7 +155,8 @@ def main():
     args = parser.parse_args()
 
     treatment, control = load(args.treatment), load(args.control)
-    problems = refusals(treatment, control, (args.treatment, args.control), args.build_is_the_arm)
+    digests = (sha256(args.treatment), sha256(args.control))
+    problems = refusals(treatment, control, (args.treatment, args.control), args.build_is_the_arm, digests)
     if problems:
         print("REFUSED: these two runs cannot be subtracted from each other:")
         for line in problems:
@@ -165,7 +166,12 @@ def main():
     where = treatment["args"].get("arena") or "foundry (default)"
     print(f"run: {treatment.get('run', {}).get('commit', '?')} on {treatment.get('run', {}).get('machine', '?')}, "
           f"map {where}")
-    print(f"treatment: {args.treatment}\ncontrol:   {args.control}")
+    # Each arm's tree and knobs, beside its file. The two arms of a series are supposed to differ, and
+    # printing what they differ BY is the difference between a comparison and two numbers side by side --
+    # `faction-matrix` wrote both arms to one filename, and the report of a file compared with itself read
+    # exactly like a report of a change that did nothing.
+    print(f"treatment: {args.treatment}\n           {provenance(treatment)}  sha256 {digests[0][:16]}")
+    print(f"control:   {args.control}\n           {provenance(control)}  sha256 {digests[1][:16]}")
     if args.build_is_the_arm:
         print("the arm IS THE BUILD: %s  (%s -> %s)" % (args.build_is_the_arm,
               control.get("run", {}).get("commit"), treatment.get("run", {}).get("commit")))
