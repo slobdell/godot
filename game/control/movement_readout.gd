@@ -114,16 +114,27 @@ func corridor_tangent(unit_name: String, from: Vector3) -> Vector3:
 #              anything, and any level name would be invented.
 # So this vocabulary DEGRADES TO ONE WORD and must read correctly when it does.
 const LEGIBILITY_WORDS := {
-	# The level-1/2/3 overrides: a unit that breaks off FOR A REASON THE PLAYER CAN SEE is not disobedient.
+	# LIVE TODAY, and the only reason the player is told: the unit is swinging onto the heading he DREW with a
+	# right-drag. It is off the corridor by construction and it is obedience, which is precisely why S4 names it -
+	# folding it into `override` would show "no reason" for a nose that has a perfectly good one.
+	"arrival_arc": "arriving on the heading you drew",
+	# NOT LIVE YET. A7's levels, real the day A6-a/A6-b exist to lose to them (nav, `3f8cb7b1`): `CombatMotion.choose`
+	# takes no unit handle and returns into squad's `tank_brain.gd`, so the layer that picks the level cannot reach
+	# the layer that publishes state. Wired here so the day they arrive the words are already the shipped ones.
 	"survival": "under fire", "band": "holding its range", "armour": "front toward the threat",
-	"arc": "keeping its gun on", "formation": "holding its place",
-	# The honest single word for the blend, and what the default path will say until A7 is on by default.
-	"override": "a higher priority has the wheel",
 }
-## Reasons the law is inactive that are NOT an override and get NO line: either the law has nothing to say, or
-## something else on screen already says it. `blocked` and `no_path` belong to CALLOUTS (BLOCKED / STUCK) - C-3 keeps
-## that band for *nav cannot proceed*, and A6 is about a unit that IS proceeding.
-const LEGIBILITY_SILENT := ["", "no_order", "no_path", "blocked", "reflex", "style_run"]
+## Reasons that get NO line, each for its own reason - and two of them are the whole point of C-3.
+##
+## `yielding` is nav's right-of-way taking the nose, and **the callout band over the hull already says YIELDING**
+## (CALLOUTS, above). C-3's rule is that one fact gets one channel: saying it twice, in two vocabularies, is how a
+## player learns to read neither.
+##
+## `override` means, in nav's words, *"nothing nav owns is shaping the nose"* - **not** "a higher priority took it".
+## That is a materially different claim from the one this vocabulary was first written against, and it is most ticks
+## on today's default blend. A line on every unit on every tick, saying in effect "no law is running", is not
+## attribution: it is the 30-messages-at-once failure C-3 exists to prevent, dressed as an explanation. It stays
+## silent until A6 exists and `override` can only mean "a law ran and something outranked it".
+const LEGIBILITY_SILENT := ["", "override", "yielding", "no_order", "no_path", "blocked", "reflex", "style_run"]
 
 
 ## nav's legibility state for a unit, or {} when this build's nav does not publish one (every build before nav's N5).
@@ -141,9 +152,10 @@ func legibility_line(unit_name: String) -> String:
 	if reading.is_empty() or bool(reading.get("active", false)):
 		return ""
 	var why := String(reading.get("why", ""))
-	if why in LEGIBILITY_SILENT:
-		return ""
-	return String(LEGIBILITY_WORDS.get(why, LEGIBILITY_WORDS["override"]))
+	# A reason this build does not know renders as NOTHING, not as a guess. nav refuses anything outside its closed
+	# set with push_error, so an unknown `why` here means the sets have drifted - and a wrong cause is worse than
+	# none, because the player believes it.
+	return String(LEGIBILITY_WORDS.get(why, ""))
 
 
 ## One line for the unit card: "Blocked by Green_Alpha_2", "Giving way", "Arrives in 4 s", or "".

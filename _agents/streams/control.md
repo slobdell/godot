@@ -387,7 +387,24 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
   wall cutaway against a taller hull, `MIN_DISTANCE` 16 m against a War Rig, and the auto-frame with a wider squad.
   **Nothing here is published before CP2** — a frame of the old roster is a frame of a game you will not play again.
 - **Item 6 (stretch)** — stood down to next round with squad's A10.
-- **C-2's words stay silent until nav ships `legibility: {active, why}`.** That is the correct output, not a stub.
+- **C-2 is UNBLOCKED and built to nav's real set** (`Movement.LEGIBILITY_WHY`, `stream/nav` at `3f8cb7b1`); the
+  words arrive when nav's commit reaches `main`. Two of nav's reasons render as **nothing**, both deliberately:
+  - **`override` is silent.** nav's wording shifted between the two messages — from *"the honest single word"* when
+    nothing bound the nose, to ***"nothing nav owns is shaping the nose"***. The second is the **absence** of a
+    cause, and by nav's own table it is **most ticks on the default blend**; a line on every off-corridor unit every
+    tick is the 30-messages failure C-3 exists to prevent, dressed as an explanation. It gets words the day A6
+    exists and `override` can only mean *a law ran and something outranked it*.
+  - **`yielding` is silent** because `MovementReadout.CALLOUTS` already floats **YIELDING** over that hull. C-3: one
+    fact, one channel.
+  - **`arrival_arc` → *"arriving on the heading you drew"*** is the one live reason a player sees today, and it
+    exists because of item 1. `band`/`survival`/`armour` are wired with their shipped words and light up when nav
+    can publish them — a test asserts **every word in the vocabulary names a reason nav can actually publish**, so a
+    word for a reason that can never arrive cannot sit here looking like a feature.
+  - An unknown `why` renders as nothing, never a guess and never a raw key. nav's `push_error` catches drift on
+    their side, this catches it on mine.
+- **A "blocked on X" line is a claim with a date on it.** My Status said *blocked on nav's key* for hours while the
+  readout sat built; nav's said *A6 blocked on S4* while the signature had been given. Neither of us re-read the
+  contract and the orchestrator spotted it. Both sides were done and both were waiting.
 
 ### Requests to other streams
 
