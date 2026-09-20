@@ -351,10 +351,15 @@ already merged to `main` as CP2c.
 **Then:** `make remote T=check REMOTE_SLOTS=6` on `bd69de5f` — only after the orchestrator says builder0 is up, and
 after checking the box for an orphaned `slot.sh` of this stream's.
 
-**⚠ A `make check` is running in this worktree and it is NOT THIS SESSION'S.** `make check` (pid 4145492) →
-`tools/slot.sh` → `timeout 5400 make check`, parented to `systemd --user`. It was left alone: the worker contract
-says never kill processes you did not start. It holds this checkout's `.lint.lock` and a heavy-run slot, so **a
-`make lint` here will refuse or queue until it finishes** — the first thing to check if lint appears to hang.
+**(Retracted, and worth keeping as the mistake rather than deleting.)** This Status briefly warned that a foreign
+`make check` was running *in this worktree*. **It was not.** The orchestrator checked by **cwd** and found pid
+4145492's `slot.sh` child running in `godot-combat` (02:48:27) and a second in `godot-show` (02:48:52) — both
+legitimate merge-gate runs started before the pause. My error: I walked the parent chain up from a Godot
+`--check-only` process **without checking its cwd**, after earlier cwd sweeps had returned hits that were my own
+`pgrep` command line matching its own pattern. **A process list filtered by NAME is not filtered by WORKTREE**, and
+on this laptop seven checkouts run the same binary. Check `/proc/<pid>/cwd`, and write the pattern so it cannot
+match the sweep itself. The `.lint.lock` contention I saw was the **shared laptop heavy-run slot**, not this
+checkout's lock — so "a lint here will hang" was also wrong; it queues, as designed.
 
 ### Questions for the lead
 
