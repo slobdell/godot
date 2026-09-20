@@ -2942,6 +2942,11 @@ The kickoff prompt is one line; this section is the rest.
     passed their allowlist as what was now the other stream's `expected_err`, exercising the wrong parameter while
     still passing some assertions. The same shape as the tag object standing in for its commit: the code was
     correct about what it looked at and wrong about what it was looking at.
+    **And a second implementation drifts from every rule the first gains (metrics, 00:10):** the scenario runner
+    carried its own `ErrorCollector` that ignored `_error_type`, so a Jolt load WARNING reached the gate labelled
+    "engine error" and a probe was spent looking for an engine subtlety; the same runner lacked `expect_warning`,
+    `expect_error`, the allowlist and the awaited teardown that the test runner had gained that day. Unified: one
+    `reconcile_engine_messages`, one allowlist, one teardown. Two runners, one rule.
 193. **An API whose correct use cannot be told from its incorrect use at the call site is a signature problem, not a
     convention problem.** Round 9 (nav): `TestCase.teardown()` ended in `await drain_navigation()`, so a subclass
     override declared `func teardown() -> void` that called `super.teardown()` un-awaited was not a coroutine, the
