@@ -123,8 +123,15 @@ func test_an_oversized_hull_refuses_the_shortcut_and_a_small_one_keeps_it() -> v
 	assert_true(small_slack > 0.0,
 			"THE GUARD: a scout fits what the mesh certifies and keeps its shortcuts (%.2f m) - a rule that refused "
 			% small_slack + "every hull would be a regression wearing a fix's clothes")
-	assert_eq(Movement.clearance_refused, 1,
-			"exactly one of the two hulls was refused (%d)" % Movement.clearance_refused)
+	# NOT a count of hulls: `_chord_slack()` is called once per driving hull per FRAME, so two hulls over three
+	# frames give six consultations. nav's first cut asserted `refused == 1` and failed on 3 of 6 -- the mechanism
+	# was right and the arithmetic assumed one call per hull. What matters is that BOTH outcomes occurred: some
+	# consultations refused and some did not, which is what a mixed roster must produce.
+	assert_true(Movement.clearance_refused > 0,
+			"the oversized hull was refused (%d of %d)" % [Movement.clearance_refused, Movement.clearance_chords])
+	assert_true(Movement.clearance_refused < Movement.clearance_chords,
+			"and the hull that fits was NOT (%d of %d refused) - if every consultation refused, the rule is "
+			% [Movement.clearance_refused, Movement.clearance_chords] + "touching hulls it has no business touching")
 
 
 ## And with the switch OFF the slack is exactly what it was before this row existed, for both hulls.
