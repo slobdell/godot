@@ -15,8 +15,9 @@ extends Node
 ##    fight happened to be doing. The hinge itself is not posed -- it integrates from the drawn pose exactly as it
 ##    does in play (DozerPart._drive_trailer).
 ##
-## Flags: --rig-hinge=<abs dir>  --rig-hinge-warmup=S (6)  --rig-hinge-radius=M (26)  --rig-hinge-speed=M/S (9)
-##        --rig-hinge-live=S (8)
+## Flags: --rig-hinge=<abs dir>  --rig-hinge-warmup=S (6)  --rig-hinge-radius=M (the rig's own minimum turn radius)
+##        --rig-hinge-speed=M/S (9)
+##        --rig-hinge-live=S (6)
 
 const RIG := "gang_tank"
 const DISTANCE_M := 49.0
@@ -40,7 +41,11 @@ const MAX_STEP_FRAMES := 400
 var out_dir := ""
 var warmup := 6.0
 var live_seconds := 6.0
-var radius := 26.0
+## The TIGHTEST corner the rig can actually drive, read from its own catalog entry so it survives the CP2 resize.
+## A wide corner is physically correct and visually nothing: steady-state off-tracking is asin(L / R), so 26 m gives
+## 11 degrees and the review frame shows a bend the lead has to be told is there. At the rig's own 12 m minimum it
+## is 25 degrees, and that is not a staged number -- it is the worst bend the game will ever draw under power.
+var radius := 0.0
 var speed := 9.0
 var _camera := Camera3D.new()
 
@@ -55,7 +60,7 @@ func _ready() -> void:
 	out_dir = flags.text("rig-hinge")
 	warmup = float(flags.text("rig-hinge-warmup", str(warmup)))
 	live_seconds = float(flags.text("rig-hinge-live", str(live_seconds)))
-	radius = float(flags.text("rig-hinge-radius", str(radius)))
+	radius = float(flags.text("rig-hinge-radius", str(Units.stat(RIG, "min_turn_radius_m", 12.0))))
 	speed = float(flags.text("rig-hinge-speed", str(speed)))
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	_camera.name = "RigHingeCamera"
