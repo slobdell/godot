@@ -75,11 +75,17 @@ nav-rotation-numbers: import ## nav: nav-rotation's measurements only, headless 
 		--cases=$(ROT_CASES) $(NAV_FLAGS) 2>&1 | grep -E "NAV_ROTATION|SCRIPT ERROR|ERROR" || true
 
 # FIGHT_MAPS/FIGHT_BUSY_LEVELS, not ARENA/…: plain names collide with other mk files' globals (lesson 44).
+# Round 9 CORRECTION: this is NOT "every map --arena=random can pick", which is what this line used to claim and what
+# nav then wrote into a pre-registration. `--arena=random` deals from `Arena.ROTATION` = yard, pit, terminus
+# (arena.gd:63, :613) -- THREE maps. This default holds two the player never sees (boulevard, boneyard) and omits one
+# they do (terminus). It is left as-is deliberately: round 8's numbers were measured on this set and changing it
+# silently would break every comparison against them. Pass FIGHT_MAPS explicitly for a rotation run:
+#     make nav-fight-maps FIGHT_MAPS="yard pit terminus"
 FIGHT_MAPS ?= yard boulevard pit boneyard
 FIGHT_BUSY_LEVELS ?= 0 4
 
 .PHONY: nav-fight-maps
-nav-fight-maps: import ## nav (round 8): nav-fight on every map --arena=random can pick (FIGHT_MAPS) x scripted/busy player (FIGHT_BUSY_LEVELS seconds between re-orders; 0 = scripted), with arena's pre-registered stall counters -> build/nav-maps/*.log, one line per run naming the arena
+nav-fight-maps: import ## nav (round 8): nav-fight on each of FIGHT_MAPS (NOT the rotation -- see the note above the default) x scripted/busy player (FIGHT_BUSY_LEVELS seconds between re-orders; 0 = scripted), with arena's pre-registered stall counters -> build/nav-maps/*.log, one line per run naming the arena
 	@rm -rf $(BUILD_DIR)/nav-maps && mkdir -p $(BUILD_DIR)/nav-maps
 	@for map in $(FIGHT_MAPS); do for busy in $(FIGHT_BUSY_LEVELS); do echo "$$map:$$busy"; done; done | \
 		xargs -P $(NAV_JOBS) -I{} sh -c 'map=$${1%%:*}; busy=$${1##*:}; \
