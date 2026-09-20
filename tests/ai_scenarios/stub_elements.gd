@@ -66,6 +66,17 @@ class StubElement extends RefCounted:
 	var anchor := Vector3.ZERO
 	var heading := Vector3.FORWARD
 	var spacing := Formations.DEFAULT_SPACING
+
+	## X1 (round 9): the pitch this element's slots are laid at, Vector2(across the heading, along it) — the spacing
+	## above raised to what the members' own hulls fit in. The real `Element` computes it from its plan; the stub
+	## derives it from the same function, so a scenario reading `element.pitch` gets the same number either way and
+	## `TankBrain.slot_leash` is fed the same value the real element would feed it.
+	##
+	## It is a PROPERTY and not a field because the stub's members and spacing are set by the scenario after `form`,
+	## and a field captured at construction would be stale for every scenario that stages its element in two steps.
+	var pitch: Vector2:
+		get:
+			return TacticsFormation.pitch(_members_for_pitch(), spacing)
 	## Unit names currently moving (bounding, or the assaulting half of a support-by-fire); everyone else covers them.
 	var moving: PackedStringArray = []
 	## Sector of fire per unit (a flat direction), when the scenario wants a specific one.
@@ -114,7 +125,23 @@ class StubElement extends RefCounted:
 	## L1 read-only state, in the richest shape ElementFeed reads.
 	func state() -> Dictionary:
 		return {"id": id, "leader": leader, "members": members, "formation": formation, "technique": technique,
-				"drill": drill, "task": task, "reason": reason, "moving": moving, "slots": _slots()}
+				"drill": drill, "task": task, "reason": reason, "moving": moving, "slots": _slots(),
+				# X1: brains read the pitch through ElementFeed to size a slot's leash, so the stub publishes it too —
+				# a stub that omits it makes the leash read as the old flat constant and the scenario would measure a
+				# behaviour the real element does not have.
+				"pitch": [pitch.x, pitch.y]}
+
+
+	## The member data `TacticsFormation.pitch` needs: a unit id per member, read from the match when there is one.
+	## A member whose tank is gone contributes no hull, which is the same answer the real element gives.
+	func _members_for_pitch() -> Array:
+		var result: Array = []
+		for unit_name in members:
+			var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank \
+					if game_match != null and game_match.tanks != null else null
+			if tank != null:
+				result.append({"name": String(unit_name), "unit": tank.unit_id})
+		return result
 
 	func _slots() -> Dictionary:
 		var order := members.duplicate()

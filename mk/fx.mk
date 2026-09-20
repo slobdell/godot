@@ -96,7 +96,29 @@ rig-hinge: import ## Feel X2, S2: the War Rig bending at the fifth wheel -- its 
 		$(if $(ARENA),--arena=$(ARENA)) --rig-hinge=$(CURDIR)/$(BUILD_DIR)/rig-hinge \
 		$(or $(RIG_HINGE_FLAGS),--player=cpu:gang_ram --player-faction=gangs --budget=6500) \
 		2>&1 | tee $(BUILD_DIR)/rig-hinge/log.txt | grep -E '^RIG_HINGE|SCRIPT ERROR' || true
-	@grep -q RIG_HINGE_DONE $(BUILD_DIR)/rig-hinge/log.txt
+	@grep -q RIG_HINGE_DONE $(BUILD_DIR)/rig-hinge/log.txt || { grep -E 'RIG_HINGE_FAILED|SCRIPT ERROR' $(BUILD_DIR)/rig-hinge/log.txt; echo "rig-hinge FAILED"; exit 1; }
+	@echo "Now LOOK at $(BUILD_DIR)/rig-hinge/strip_*.png -- the strips are written LAST, after every frame."
+	@ls $(BUILD_DIR)/rig-hinge/strip_*.png
+
+.PHONY: perf-trailer-ab
+# WITHIN-RUN, and that is the whole point. The first version of this target ran two perf-scenes back to back in one
+# slot and diffed them -- which show then showed to be worthless on a loaded box: its own back-to-back pair reported
+# the instrumented arm 43% FASTER than the control, i.e. noise swamping any real difference. perf-scene already
+# alternates `all` and a layer seconds apart for every other layer; the trailer gets the same treatment.
+perf-trailer-ab: import ## M1: what the War Rig's hinge costs a frame, measured WITHIN one run (the no_trailer layer against the `all` phases either side)
+	@$(MAKE) --no-print-directory perf-scene PERF_NAME=perf-trailer PERF_LAYERS=no_trailer \
+		PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs"
+	@echo "M1 budget: a locked 30 fps at 1080p with 30 a side = 33.3 ms. Read the layer cost against that, not against zero."
+	@grep -E '^PERF_SCENE_LAYERS' $(BUILD_DIR)/perf-trailer.log || true
+
+AIRSHIP_RES ?= 1920x1080
+airship-look: import ## Feel X7: is the Syndicate airship EVER in the lead's field of view? Sweeps every camera yaw x the whole orbit at his pose and reports the fraction -> build/airship-look/ (needs a display; AIRSHIP_FLAGS=, ARENA=)
+	rm -rf $(BUILD_DIR)/airship-look && mkdir -p $(BUILD_DIR)/airship-look
+	timeout 900 $(GODOT) --path . --resolution $(AIRSHIP_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
+		$(if $(ARENA),--arena=$(ARENA)) --airship-look=$(CURDIR)/$(BUILD_DIR)/airship-look $(AIRSHIP_FLAGS) \
+		2>&1 | tee $(BUILD_DIR)/airship-look/log.txt | grep -E '^AIRSHIP_LOOK|SCRIPT ERROR' || true
+	@grep -q AIRSHIP_LOOK_DONE $(BUILD_DIR)/airship-look/log.txt || { grep -E 'AIRSHIP_LOOK_FAILED|SCRIPT ERROR' $(BUILD_DIR)/airship-look/log.txt; echo "airship-look FAILED"; exit 1; }
+	@ls $(BUILD_DIR)/airship-look/*.png
 
 facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg)
 	rm -rf $(BUILD_DIR)/facing && mkdir -p $(BUILD_DIR)/facing

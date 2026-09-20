@@ -291,12 +291,23 @@ func _process(delta: float) -> void:
 	_apply()
 
 
+## Round 9: how many degrees the camera lifted itself to get out of a building this frame (0 in the open). The
+## readout shows it, because this is the second place the camera overrides the player's tilt and the first one is
+## flagged to him too.
+var lifted_deg := 0.0
+
+
 func _apply() -> void:
 	if camera != null:
 		camera.fov = fov
-		camera.global_transform = RtsCamera.pose_for(_shown_focus, _shown_yaw, _shown_zoom, _shown_pitch)
 		var distance := RtsCamera.distance_for(_shown_zoom)
-		camera.near = RtsCamera.cutaway_near(_shown_focus, _shown_yaw, distance, RtsCamera.tilt_at(_shown_pitch, distance),
+		# The far-range floor is about how far the player ZOOMED OUT, so it is read from the asked-for distance, not
+		# from whatever the solid test leaves - otherwise a camera pulled in by a building would also un-tilt itself.
+		var tilt := RtsCamera.tilt_at(_shown_pitch, distance)
+		var clear := RtsCamera.clear_pose(_shown_focus, _shown_yaw, distance, tilt)
+		lifted_deg = float(clear["lifted_deg"])
+		camera.global_transform = RtsCamera.pose_at(_shown_focus, _shown_yaw, float(clear["distance"]), float(clear["pitch_deg"]))
+		camera.near = RtsCamera.cutaway_near(_shown_focus, _shown_yaw, float(clear["distance"]), float(clear["pitch_deg"]),
 				RtsCamera.perimeter_half())
 
 
@@ -436,9 +447,116 @@ static func tilt_at(pitch_deg: float, distance: float) -> float:
 
 ## The camera `distance` metres from `at`, `pitch_deg` below the horizon. `make camera-looks` poses with this directly.
 static func pose_at(at: Vector3, heading: float, distance: float, pitch_deg: float) -> Transform3D:
+	return Transform3D(Basis.IDENTITY, at + RtsCamera.boom(heading, distance, pitch_deg)).looking_at(at, Vector3.UP)
+
+
+## The vector from the focus to the camera: the boom. One definition, so the pose, the solid test and the cutaway
+## cannot drift apart.
+static func boom(heading: float, distance: float, pitch_deg: float) -> Vector3:
 	var tilt := deg_to_rad(clampf(pitch_deg, 1.0, 89.0))
-	var back := Vector3(0.0, sin(tilt), cos(tilt)).rotated(Vector3.UP, heading) * distance
-	return Transform3D(Basis.IDENTITY, at + back).looking_at(at, Vector3.UP)
+	return Vector3(0.0, sin(tilt), cos(tilt)).rotated(Vector3.UP, heading) * distance
+
+
+# ---- Round 9: the camera is never inside a building ---------------------------------------------------------
+#
+# The lead, on the Terminus: *"the camera often ends up inside a building and we can't see what's going on inside
+# the alleyways. We need to make it so the camera is forced outside the solid for these cases."*
+#
+# Why it happens, in numbers: at his pose (21 deg, 49 m) the camera sits **17.6 m up and 45.7 m back**. The Terminus
+# is 40 x 24 x 40 m blocks with 20 m streets, so a boom that long from a street crosses a block almost every time,
+# and 17.6 m is well under the 24 m roof. The camera is inside a building, and he is looking at the inside of a wall.
+#
+# TWO MECHANISMS WERE AVAILABLE AND THE NUMBERS DECIDED IT.
+#   * Shorten the boom until it exits the block (the classic third-person camera). With the focus mid-street the
+#     block's face is ~10 m away, so the boom collapses **49 m -> ~11 m** - below MIN_DISTANCE, a near-first-person
+#     view, and the OTHER side of the street still walls the alley. It fixes his sentence and not his problem.
+#   * **Lift the camera over the roof**, keeping the boom's length. Clearing a 24 m roof at a 49 m boom is
+#     **21 deg -> 32 deg**, still 41.5 m of horizontal reach, and it looks DOWN INTO the alley - which is the thing
+#     he said he could not see. It is also inside the tilt range he can reach by hand (8-70 deg).
+# So: lift first, and shorten only when even MAX_PITCH_DEG cannot clear the roof (a solid taller than the boom).
+#
+# This is the SECOND place the camera overrides the player's tilt, after the far-range floor, and round 6's rule is
+# that such a place is flagged to him rather than hidden: `lifted_deg` is what it did, and CameraReadout shows it.
+## How far above a roof the camera is put: enough that the near plane is outside the solid too.
+const SOLID_CLEAR_M := 2.0
+## Bounded refinement - lifting moves the camera horizontally as well, so it can arrive over a different block.
+const SOLID_PASSES := 6
+## When even the maximum tilt cannot clear a roof, the boom shortens instead, and never below this (a camera on top
+## of the focus shows nothing either).
+const SOLID_MIN_DISTANCE_M := 6.0
+
+## The height of the tallest solid whose footprint covers this point and whose roof is above it, or -1.0 when the
+## point is in the open. Reads the layout's own boxes (`Arena.active["obstacles"]`, which already folds in the kit
+## props a cityscape is built from), so it needs no physics and works headless. Pure, for tests.
+static func roof_over(point: Vector3, data: Dictionary = Arena.active) -> float:
+	var roof := -1.0
+	var flat := Vector2(point.x, point.z)
+	for obstacle: Dictionary in data.get("obstacles", []):
+		var size := Arena.obstacle_size(obstacle)
+		if point.y >= size.y or size.y <= roof:
+			continue
+		var centre := Vector2(float(obstacle["position"][0]), float(obstacle["position"][1]))
+		if ArenaKit.distance_to_footprint(flat, centre, size, float(obstacle.get("rotation_deg", 0.0))) <= 0.0:
+			roof = size.y
+	return roof
+
+
+## Whether the straight line from `a` to `b` passes through a solid: the second half of the lead's sentence, because
+## a camera that is outside every building can still be looking at the side of one. Slab test per box in the box's own
+## frame, restricted to the segment. Pure, for tests and for the alley frames.
+static func sight_blocked(a: Vector3, b: Vector3, data: Dictionary = Arena.active, min_height := 0.0) -> bool:
+	for obstacle: Dictionary in data.get("obstacles", []):
+		var size := Arena.obstacle_size(obstacle)
+		if size.y < min_height:
+			continue
+		var centre := Vector3(float(obstacle["position"][0]), size.y / 2.0, float(obstacle["position"][1]))
+		if RtsCamera.segment_hits_box(a, b, centre, size / 2.0, deg_to_rad(float(obstacle.get("rotation_deg", 0.0)))):
+			return true
+	return false
+
+
+## Does the SEGMENT a→b cross this box? Slab test in the box's own frame, clipped to the segment, so a box behind
+## either end is not in the way. `half` is the box's half extents, `yaw` its rotation about +Y. The one definition:
+## `sight_blocked` (the measurement) and `BlockCutaway` (what the player sees) must never disagree about it.
+static func segment_hits_box(a: Vector3, b: Vector3, centre: Vector3, half: Vector3, yaw: float) -> bool:
+	var start := (a - centre).rotated(Vector3.UP, -yaw)
+	var step := (b - a).rotated(Vector3.UP, -yaw)
+	var near := 0.0
+	var far := 1.0
+	for axis in 3:
+		if absf(step[axis]) < 1e-6:
+			if absf(start[axis]) > half[axis]:
+				return false
+			continue
+		var t0 := (-half[axis] - start[axis]) / step[axis]
+		var t1 := (half[axis] - start[axis]) / step[axis]
+		near = maxf(near, minf(t0, t1))
+		far = minf(far, maxf(t0, t1))
+	return near <= far
+
+
+## The pose to actually use: `{"distance", "pitch_deg", "lifted_deg"}`. Equal to what was asked for whenever the
+## camera is in the open, which is every arena without a cityscape and most of the Terminus. Pure, for tests.
+static func clear_pose(at: Vector3, heading: float, distance: float, pitch_deg: float,
+		data: Dictionary = Arena.active) -> Dictionary:
+	var tilt := pitch_deg
+	var reach := distance
+	for pass_index in SOLID_PASSES:
+		var roof := RtsCamera.roof_over(at + RtsCamera.boom(heading, reach, tilt), data)
+		if roof < 0.0:
+			return {"distance": reach, "pitch_deg": tilt, "lifted_deg": tilt - pitch_deg}
+		var needed := roof + SOLID_CLEAR_M
+		if needed < reach:
+			var lifted := rad_to_deg(asin(clampf(needed / reach, 0.0, 1.0)))
+			if lifted > tilt + 0.01 and lifted <= MAX_PITCH_DEG:
+				tilt = lifted
+				continue
+		# The roof is higher than the boom is long, or higher than the steepest tilt reaches: pull the camera in.
+		# One step per pass, so a stack of blocks resolves over the passes instead of jumping to the floor at once.
+		reach = maxf(SOLID_MIN_DISTANCE_M, reach * 0.6)
+		if is_equal_approx(reach, SOLID_MIN_DISTANCE_M):
+			break
+	return {"distance": reach, "pitch_deg": tilt, "lifted_deg": tilt - pitch_deg}
 
 
 ## How far out a zoom level puts the camera. Eased, so the middle of the range isn't all long distance.

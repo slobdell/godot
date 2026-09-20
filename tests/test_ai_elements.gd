@@ -87,15 +87,37 @@ func test_only_the_halves_that_shoot_are_held_in_place() -> void:
 		assert_true(not ElementFeed.is_firing_base({"role": role}), "%s is meant to be moving" % role)
 
 
-func test_the_unit_that_is_supposed_to_be_moving_is_not_leashed_to_its_slot() -> void:
+func test_every_element_member_fights_from_the_slot_it_was_given() -> void:
+	# Round 4 read this the other way round: `bound` and `maneuver` got NO slot, so "a unit told to cover ground is
+	# free to move" was delivered by the absence of a leash. Round 9 (X3) overturns that, on nav's A7 finding, and
+	# the round-4 intent is preserved by WHERE the slot is rather than by there being none: an element publishes a
+	# bounding team's slot at its next bound's anchor and a manoeuvre element's at the flank it was sent to, so the
+	# slot is the ground it was told to cover. nav's A7 bounds a candidate against that region with "inside it, and
+	# if you are outside do not get further outside", which makes a leash on a slot 40 m ahead a convergence
+	# guarantee rather than a cage.
+	#
+	# Why it had to change: under the blended steering the weapon band and the slot compromised to ~15 m of drift
+	# with no leash involved at all; under A7's strict priority the weapon level wins and the same element drifts
+	# 42 m -- every vehicle holding its own band, which is the lead's "just these 2 masses shooting at each other".
+	# The accident was doing load-bearing work (nav, 2026-09-20, `stream/nav` at b6d72f52).
 	var slot := Vector3(10, 0, 10)
-	for role: String in ["overwatch", "base_of_fire", ""]:
+	for role: String in ["overwatch", "base_of_fire", "bound", "maneuver", ""]:
 		assert_eq(TankBrain.element_slot({"element": {"role": role, "slot": slot}}), slot,
-				"a unit holding its place in the formation fights from its slot (%s)" % role)
-	for role: String in ["bound", "maneuver"]:
-		assert_eq(TankBrain.element_slot({"element": {"role": role, "slot": slot}}), null,
-				"a unit told to cover ground is free to move (%s)" % role)
+				"%s fights from the slot its element gave it" % role)
 	assert_eq(TankBrain.element_slot({}), null, "no element, no leash")
+	assert_eq(TankBrain.element_slot({"element": {"role": "bound"}}), null,
+			"an element that publishes no slot leashes nobody")
+
+
+func test_the_leash_radius_is_the_elements_own_spacing() -> void:
+	# X1: "one formation spacing" is a real per-element number now, so the leash grows with the hulls instead of
+	# staying at a constant written for a 4 m tank. It is never tighter than it was.
+	assert_near(TankBrain.slot_leash(null), TankBrain.SLOT_LEASH, 0.001, "nothing to read, nothing changes")
+	assert_near(TankBrain.slot_leash({"role": "bound"}), TankBrain.SLOT_LEASH, 0.001, "no pitch, no change")
+	assert_near(TankBrain.slot_leash({"pitch": Vector2(8.0, 9.0)}), TankBrain.SLOT_LEASH, 0.001,
+			"a tight formation does not tighten the leash below what it has always been")
+	assert_near(TankBrain.slot_leash({"pitch": Vector2(14.0, 22.0)}), 22.0, 0.001,
+			"a formation spaced by its hulls is leashed to that spacing, on its larger axis")
 
 
 func test_a_sector_of_fire_is_a_cone_around_my_facing() -> void:
