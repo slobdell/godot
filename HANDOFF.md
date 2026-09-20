@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-20 07:00. **Round 9's overnight run: twelve branches merged and verified; CP2 and CP3 pending. Read the morning summary first.**_
+_Last updated: 2026-09-20 08:30. **Round 9's overnight run: fifteen branches and all three checkpoints merged; `main` verified green at `0808834e`, CP2 + CP3 above it await one `main` check (builder0 dropped at 08:27). Read the morning summary first.**_
 
 ## ☀ THE MORNING AFTER ROUND 9's NIGHT — read this first (2026-09-20, written 07:00, updated at each tick)
 
@@ -49,6 +49,24 @@ spot it can see instead of a fixed 30 m offset that the bigger hulls put behind 
 5. **The airship**: `~/projects/godot-feel/build/airship-look/airship_widest.png`. **You will not see it at your
    default pose**: the sky is below the top of the frame at 21°. It lives over the city at 560 m and shows at 8–12° tilt.
    **Your call:** leave it, or make it a title/results element. One constant either way.
+
+### ⚠ Where it stood at 08:30, and what to run first
+
+**builder0 dropped off the network a second time at ~08:27** (the first outage was ~02:50–03:25). Every remote run in
+flight died with 255 (transport, not the suite): control's camera sweep, feel's X4 check, scale's fairness control,
+and the `main` check that would have covered CP2 and its baseline. **So:**
+
+- **The last `main` tip verified by its own check is `0808834e`** (1454/0, all thirteen merges before CP2).
+- **On `main` above it, merged on their own green branch checks but NOT yet covered by a `main` check:** CP2 (scale
+  `ddb16592`, checked at `7542df28`), the recorded baseline `2d5215a8a0a59ded`, and CP3 (metrics `0d4e5ef1`, checked
+  at `0f811c1c`). Each is green alone; the combination is the one thing unproven.
+- **The first command when the box answers `ssh builder0 uptime`:** `make remote T=check` from `~/projects/godot` on
+  `main` (read the `>> remote: make check exited <N>` line, never a pipe; a 255 is ssh). Then, in order:
+  control's `make remote T=camera-looks` and `T=control-playtest-shots` (item 4), feel's
+  `make remote T=check` on `f1859075` and `T=vehicle-gallery` (X4 + the neon fix), scale's fairness control.
+- **Frames of the resized roster under your camera:** control is shooting `control-playtest-shots` locally at 08:30
+  while the box is down (memory allowed it); the path is at the top of control's Status. Any `build/camera-looks/`
+  on the laptop is an OLDER run and must not be read as CP2's.
 
 ### Decisions made on your behalf (each reversible in one place)
 
