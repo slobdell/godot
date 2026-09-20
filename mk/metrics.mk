@@ -75,23 +75,28 @@ ai-scenarios-check: import ## The AI behaviour scenarios, gated on a CHANGE in t
 		echo "  this machine: $$(hostname)"; \
 		echo "  $$line"; \
 		grep -E '^  (FAIL|UNEXPECTED PASS)' $(BUILD_DIR)/ai-scenarios.log | sed 's/^/    /' | head -20; \
-		echo "  If the change is intended, re-record with `make ai-scenarios-record` and say why in the commit."; \
+		echo "  If the change is intended, re-record with 'make ai-scenarios-record' and say why in the commit."; \
 		exit 1; \
 	fi; \
 	echo "ai-scenarios-check: $$line (unchanged against $(AI_SCENARIOS_BASELINE))"
 
-ai-scenarios-record: import ## Write this machine's ai-scenarios counts to the baseline (say WHY in the commit)
+# Writes to build/ rather than straight into tests/baselines/, exactly like `sim-baseline-record`: `make remote`
+# copies build/ back AND NOTHING ELSE, so a target that writes into the repo records the number onto builder0 and
+# then loses it. The copy is one line and it is the reader's, so re-recording a gate is always deliberate.
+ai-scenarios-record: import ## Record this machine's ai-scenarios counts to build/ (then copy over the baseline)
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
 		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || true
 	@line=$$(grep -E '^scenarios: ' $(BUILD_DIR)/ai-scenarios.log | tail -1); \
 	test -n "$$line" || { echo "no summary line; refusing to record nothing"; exit 1; }; \
 	counts=$$(echo "$$line" | grep -oE '[0-9]+' | paste -sd,); \
 	{ echo "# ai-scenarios counts: passed,failed,pending,unexpectedly_passing"; \
-	  echo "# `make ai-scenarios-check` fails when these CHANGE, not when a scenario fails: one perf case is"; \
+	  echo "# ai-scenarios-check fails when these CHANGE, not when a scenario fails: one perf case is"; \
 	  echo "# laptop-speed-sensitive and would redden the gate for a reason that is not a defect (lesson 42),"; \
 	  echo "# while a new script error moves \`failed\` and is caught (lesson 159)."; \
 	  echo "# machine: $$(hostname)"; \
 	  echo "# commit:  $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"; \
 	  echo "# line:    $$line"; \
-	  echo "$$counts"; } > $(AI_SCENARIOS_BASELINE); \
-	echo "recorded $$counts in $(AI_SCENARIOS_BASELINE) on $$(hostname)"
+	  echo "$$counts"; } > $(BUILD_DIR)/ai_scenarios_count.txt; \
+	cat $(BUILD_DIR)/ai_scenarios_count.txt; \
+	echo "recorded $$counts on $$(hostname) in $(BUILD_DIR)/ai_scenarios_count.txt"; \
+	echo "  cp $(BUILD_DIR)/ai_scenarios_count.txt $(AI_SCENARIOS_BASELINE)   # and say WHY in the commit"

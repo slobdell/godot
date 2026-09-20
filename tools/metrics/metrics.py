@@ -231,6 +231,12 @@ class CuspSummary:
     ## that excuses a whole journey because it ends in an arc is wrong in the other direction and harder to catch.
     facing_ordered_ticks: int = 0
     facing_arc_ticks: int = 0
+    ## Ticks where the field carried a real bool rather than null. The COLUMN can be present and every value
+    ## null -- my emitter writes `"facing_arc": null` until nav's Movement publishes it -- and that is "no data"
+    ## wearing a present column. Counting only truthy values reported 0.0 s for it, which is the absence-as-a-
+    ## measurement bug one level in from where I first fixed it (nav, 2026-09-20).
+    facing_ordered_known: int = 0
+    facing_arc_known: int = 0
     tick_rate: int = 30
 
     @property
@@ -250,6 +256,8 @@ class CuspSummary:
         self.ticks += other.ticks
         self.facing_ordered_ticks += other.facing_ordered_ticks
         self.facing_arc_ticks += other.facing_arc_ticks
+        self.facing_ordered_known += other.facing_ordered_known
+        self.facing_arc_known += other.facing_arc_known
         self.tick_rate = other.tick_rate or self.tick_rate
 
 
@@ -276,6 +284,8 @@ def cusp_density(samples: Sequence[Sample], tick_rate: int) -> CuspSummary:
     # Per-TICK tallies, over every sample: a cusp needs a pair of samples, but "was the arc live" does not.
     out.facing_ordered_ticks = sum(1 for s in samples if s.facing_ordered)
     out.facing_arc_ticks = sum(1 for s in samples if s.facing_arc)
+    out.facing_ordered_known = sum(1 for s in samples if s.facing_ordered is not None)
+    out.facing_arc_known = sum(1 for s in samples if s.facing_arc is not None)
     dt = 1.0 / float(tick_rate)
     last_sign = 0
     for i in range(1, len(samples)):
@@ -584,6 +594,106 @@ def formation_residual_by_element(log: TrajectoryLog) -> Dict[int, FormationSumm
     return out
 
 
+# ---- A6's falsifier: time spent driving AGAINST the corridor ----------------------------------
+
+## A velocity below this is not "opposing" anything; it is a hull that has stopped.
+CORRIDOR_SPEED_MPS = 0.5
+
+
+@dataclass
+class CorridorSummary:
+    """`legibility.md` §7: the fraction of time a unit's velocity OPPOSES the corridor tangent, under
+    attack-move, **over active ticks, with the active fraction reported beside it**.
+
+    Three states, kept distinct, because collapsing any two of them is how this statistic lies:
+      * **no data** -- the producer's build has no `corridor` key at all. `fraction` is None and no verdict may
+        be published. (`known` stays 0.)
+      * **inactive** -- the key is there and null: nav says there is no leg to drive right now. A named case
+        (§5), counted in `inactive`, and NOT in the denominator of the fraction.
+      * **active** -- a real tangent. Only these are scored.
+
+    The active fraction is half the result, not a footnote: **a falsifier that improves because the law switched
+    itself off more often is not a pass.**
+    """
+
+    active: int = 0
+    opposing: int = 0
+    inactive: int = 0
+    below_speed: int = 0
+    known: int = 0
+    ## Ticks excluded because the unit was flying an ORDERED ARRIVAL ARC, which is off-corridor by construction
+    ## and is the unit obeying. Reported beside the fraction, never folded into it.
+    ordered_arc: int = 0
+
+    def merge(self, other: "CorridorSummary") -> None:
+        self.active += other.active
+        self.opposing += other.opposing
+        self.inactive += other.inactive
+        self.below_speed += other.below_speed
+        self.known += other.known
+        self.ordered_arc += other.ordered_arc
+
+    @property
+    def fraction(self) -> Optional[float]:
+        if not self.known:
+            return None          # no data: the column is absent from this build
+        return self.opposing / self.active if self.active else 0.0
+
+    @property
+    def active_fraction(self) -> Optional[float]:
+        """Active ticks over every tick the law COULD have applied to (active + inactive + too slow)."""
+        if not self.known:
+            return None
+        total = self.active + self.inactive + self.below_speed + self.ordered_arc
+        return self.active / total if total else 0.0
+
+
+def corridor_opposition(
+    samples: Sequence[Sample],
+    tick_rate: int,
+    has_corridor: bool,
+    order_verb: Optional[str] = "attack_move",
+) -> CorridorSummary:
+    """Velocity from consecutive positions, tangent from the log. Opposing = the velocity's component along the
+    corridor tangent is negative.
+
+    `has_corridor` is the LOG's column set, not a per-sample guess: a null `corridor_x` means *inactive* when the
+    column was emitted and *no data* when it was not, and nothing in the sample itself can tell those apart.
+    That is the same absent-versus-empty distinction that made `arc_live` print 0.0 s for an unpublished field,
+    so it is passed in rather than inferred.
+    """
+    out = CorridorSummary()
+    if not has_corridor:
+        return out                      # known stays 0: no data, and `fraction` will be None
+    dt = 1.0 / float(tick_rate)
+    for i in range(1, len(samples)):
+        previous, current = samples[i - 1], samples[i]
+        if current.tick != previous.tick + 1:
+            continue
+        if order_verb is not None and current.order_verb != order_verb:
+            continue
+        out.known += 1
+        if current.corridor_x is None:
+            out.inactive += 1           # nav published the key and said "no leg": a NAMED case (§5)
+            continue
+        vx = (current.x - previous.x) / dt
+        vz = (current.z - previous.z) / dt
+        if math.hypot(vx, vz) < CORRIDOR_SPEED_MPS:
+            out.below_speed += 1
+            continue
+        # An ordered arrival ARC is off-corridor BY CONSTRUCTION and is the unit obeying, so it is excluded and
+        # counted separately. `facing_arc`, NOT `facing_ordered`: an order carries its facing from the moment it
+        # is issued, so excluding on that would excuse the whole journey to the gate -- which would hide exactly
+        # the pathology A6's falsifier exists to find. (Ruled with control and the orchestrator, 2026-09-20.)
+        if current.facing_arc:
+            out.ordered_arc += 1
+            continue
+        out.active += 1
+        if vx * current.corridor_x + vz * current.corridor_z < 0.0:
+            out.opposing += 1
+    return out
+
+
 # ---- Hull turn between events (combat's A2 bearing read, 2026-09-20) --------------------------
 
 
@@ -691,6 +801,7 @@ class UnitTypeReport:
     oscillation: OscillationSummary = field(default_factory=OscillationSummary)
     cusps: CuspSummary = field(default_factory=CuspSummary)
     sparc: SparcSummary = field(default_factory=SparcSummary)
+    corridor: CorridorSummary = field(default_factory=CorridorSummary)
 
 
 def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, object]:
@@ -708,6 +819,8 @@ def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, ob
         row.oscillation.merge(oscillation(samples, span, order_verb))
         row.cusps.merge(cusp_density(samples, log.header.tick_rate))
         row.sparc.merge(sparc_over_log(samples, log.header.tick_rate))
+        row.corridor.merge(corridor_opposition(
+            samples, log.header.tick_rate, "corridor_x" in log.columns, order_verb or "attack_move"))
     elements = formation_residual_by_element(log)
 
     def unit_row(row: UnitTypeReport) -> Dict[str, object]:
@@ -729,13 +842,31 @@ def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, ob
             "cusps_creep": row.cusps.creep,
             "cusps_unexplained": row.cusps.unexplained,
             "cusps_unclassified": row.cusps.unclassified,
-            "facing_ordered_seconds": _round(row.cusps.facing_ordered_ticks / float(log.header.tick_rate), 1),
-            "facing_arc_seconds": _round(row.cusps.facing_arc_ticks / float(log.header.tick_rate), 1),
+            # None when there is NO DATA -- the column absent, or present and every value null -- and 0.0 only
+            # when the producer actually said "no arc this tick" at least once. nav hit the difference: a log
+            # from before `facing_arc` was published printed `arc_live=0.0s` in both arms of an A/B, which reads
+            # exactly like a measurement of behaviour and was an unpublished field. Note the column was PRESENT
+            # in those logs (my emitter writes `"facing_arc": null` until nav publishes it), so keying off the
+            # column name alone was not enough -- the first fix was one level short of the bug.
+            "facing_ordered_seconds": (
+                _round(row.cusps.facing_ordered_ticks / float(log.header.tick_rate), 1)
+                if row.cusps.facing_ordered_known else None),
+            "facing_arc_seconds": (
+                _round(row.cusps.facing_arc_ticks / float(log.header.tick_rate), 1)
+                if row.cusps.facing_arc_known else None),
             "agent_minutes": _round(row.cusps.agent_minutes, 2),
             "sparc_mean": _round(row.sparc.mean, 4),
             "sparc_windows": row.sparc.windows,
             "sparc_refused_parked": row.sparc.refused_parked,
             "sparc_refused_short": row.sparc.refused_short,
+            # A6's falsifier (legibility.md §7). None = no data; the active fraction travels WITH the fraction,
+            # because a law that switches itself off more often would otherwise look like an improvement.
+            "off_corridor_fraction": _round(row.corridor.fraction, 4),
+            "corridor_active_fraction": _round(row.corridor.active_fraction, 4),
+            "corridor_active_ticks": row.corridor.active,
+            "corridor_inactive_ticks": row.corridor.inactive,
+            "corridor_below_speed_ticks": row.corridor.below_speed,
+            "corridor_ordered_arc_ticks": row.corridor.ordered_arc,
         }
 
     whole = UnitTypeReport(unit_id="ALL")
@@ -746,6 +877,7 @@ def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, ob
         whole.oscillation.merge(row.oscillation)
         whole.cusps.merge(row.cusps)
         whole.sparc.merge(row.sparc)
+        whole.corridor.merge(row.corridor)
 
     return {
         "provenance": log.header.provenance(),

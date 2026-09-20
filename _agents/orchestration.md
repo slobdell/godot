@@ -2662,3 +2662,41 @@ The kickoff prompt is one line; this section is the rest.
     read it. Derive once with `:=`, print the value the run actually used in its own header, and verify against that
     value, never against a fresh evaluation. **The nastier version of "the thing under test is not the thing
     described": here the instrument and the subject disagreed about how many there were.**
+177. **The change that feels too small for the ceremony is the common case, not the exotic one.** Round 9's last hour,
+    squad, a "one-line" fix to a facing drag on a whole squad: the peer's premise (nothing reads `task["facing"]`) was
+    wrong — it was read, and the heading was thrown away one line later by `entry["facing"] if halt else null` — so
+    implementing what was described would have fixed nothing; then three process slips on the same small item (a
+    verification launched in the same command as an edit that had aborted, a test whose negative arm passed for the
+    wrong reason, an assertion at a moment the thing could not be observed), caught only by the stream's own
+    anti-vacuity guard. *"I am reliable at demanding an arm can exercise its mechanism and unreliable at checking it
+    when the change feels too small to deserve the ceremony."* The ceremony is for the small ones.
+178. **A sharded suite changes which tests share a process, and a test that leaks into the engine's globals goes red on
+    schedule, not on code.** Round 9's last red: `test_a_full_faction_army_a_side_spawns_clear_of_itself` passed alone,
+    passed on two green trees, and failed on `main` only when `test_arena_layouts` (which stands up scrapyard) ran
+    before it in the same process — scrapyard's bodies still in the physics space while the army deployed on foundry,
+    compressing the formation (two hulls of one squad within half a metre) and putting three units "inside a wall".
+    The merge added test files, the shards redistributed, and the polluter landed ahead of the victim. Four correct
+    eliminations of code changes missed it because the variable was the schedule. Lesson 36 with physics bodies instead
+    of the navmesh, and the resize made it fatal (an 8.62 m hull no longer fits between phantom obstacles a 3.60 m one
+    slipped past). **Then measured to the coordinate (scale `3f6c1650`): nothing leaked.** `free()` takes an arena's
+    bodies 38 → 0 in the same call, the granted teardown guard never fires, and both orderings place all 90 units at
+    identical coordinates. **Units are placed at exactly y = 0.0, a degenerate zero-penetration ground contact, and
+    which way Jolt resolves it depends on the engine's internal state after earlier bodies were created and
+    destroyed: three units are ejected ~1.5 m DOWN through `Arena/Ground`.** Round 8's sim-hash lesson with spawn
+    positions instead of a hash, and a real game bug, not only a test one. Ruled: spawn a few centimetres above the
+    ground at both spawn sites (`ArmyLayout.deploy`, `Match.spawn_position`), assert *placement* rather than the
+    post-physics position, and name the body hit in the failure message — "inside a wall or crate" when the body was
+    the ground cost a morning. Three wrong eliminations (RNG divergence, tank_brain, leaked bodies) stand beside the
+    answer. **When a green test goes red with no relevant diff, ask what ran before it — then measure the mechanism
+    before assigning it.**
+179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
+    morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
+    read +1.50 ms with two cycles and −0.65 ms with six, on builder0 at load 14–21 with 67 Godot processes and five
+    checks resident; each phase's own spread was ~5 ms against an effect under 1.5. Raising the cycle count fixes
+    *sampling* noise, the error from looking too few times at a stable quantity; it does nothing when the quantity
+    itself drifts with the machine's load between one phase and the next: **more samples of a drifting quantity
+    describe the drift more confidently.** Within-run pairing (lesson 175's cross-run failure) bounds *when* the two
+    halves are measured, not *how quiet* the box is while they are: necessary, not sufficient. So timing runs (hinge
+    cost, show cost) go in a **quiet window** the orchestrator calls after the checks drain, one stream at a time, and
+    every timing number carries the load average and the per-phase spread beside it or it is not quoted. Screenshots
+    and seed-deterministic series are only *slowed* by load and can run through it.

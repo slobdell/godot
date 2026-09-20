@@ -289,6 +289,18 @@ func _prepare_model() -> void:
 	pass
 
 
+## The bounds that decide this unit's COLLIDER: what the part draws **while driving**.
+##
+## `hull_size` is the collider (`units.gd`), and a unit is shot at while it moves — so the box has to match the
+## silhouette it presents then, not whatever pose its model happened to be authored in. For almost every part those
+## are the same thing and this is just the model's bounds. A part whose geometry CHANGES POSE overrides it.
+## X4 (round 9) found why this needs saying: the Condemned artillery is authored with its outriggers DOWN, so the
+## roster measured it 4.74 m wide against the 2.90 m it actually drives at — 1.84 m of invisible armour on a moving
+## vehicle, and shells stopping in empty air beside it.
+func driving_bounds(source: Node3D) -> AABB:
+	return FactionArt.natural_bounds(source)
+
+
 func set_team_color(color: Color) -> void:
 	super.set_team_color(color)
 	if shield != null:
