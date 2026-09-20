@@ -2790,3 +2790,11 @@ The kickoff prompt is one line; this section is the rest.
     (low camera: the wall is cut, as round 6 measured it must be; steep camera: the vehicle wins) and the worst
     margin across 8–70° is +0.20 m. A claim about a camera, a formation, or a roster is a claim over its range, and
     the report names the worst point in the range, not the pose that was to hand.
+187. **A static cache is a correctness bet on an invariant nobody wrote down.** Round 9: scale's teardown guard
+    counted navigation regions the engine had not yet dropped (the bet: "freed means gone"; it came due), and
+    squad's `incoming_fire` cache keys a hull's geometry on `unit_id` alone (the bet: "id → hull is constant for the
+    process", true today because `Units.PROFILES` is never written and `hull_size` is authored, not computed).
+    Squad's answer was the right one: check the invariant rather than guard against it, keep the cheap key, and
+    write the invariant *at the cache* with what would break it ("if a runtime hull scale ever lands, clear this per
+    scenario"). A guard that costs an allocation per call against a risk of zero is worse than a sentence; a bet
+    with no sentence is worse than both.
