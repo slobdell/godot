@@ -265,13 +265,122 @@ on **ground he never drives**. It is a *sensitivity fixture* — known-stalling 
 movement change helps — and it is **not** a reproduction of his complaint. The lesson is combat's, from the same
 day: *finding the authoritative copy of a value is not the same as checking the value still matters.*
 
-**Open, and it is the whole remaining gap:** his configuration has an enemy, his own orders, and units interacting.
-Nothing measured so far has any of those. `nav-fight` is the closest instrument and it is nav's file, so I run it
-rather than edit it.
+**That gap is now closed, and the answer was the verb.** `nav-fight` run unmodified on the same four maps:
+`blocked_terrain` is 0.000–0.010 everywhere, and the time that is not progressing is **`retasked` 0.298–0.364** —
+nav's own definition, *driving under a valid path toward a destination the brain chose, not the player's* — of
+which about three quarters are `ENGAGE hop`, a destination change every ~1.3 s. The by-verb split is the finding:
 
-**Questions for the lead** (not blocking; recorded per the worker contract): the hexagon maps (yard, pit) shipped
-and are measured, and he has not commented on them. He named eight round-8 items and no new map is among them, so
-I am not building one.
+| verb | `progressing` | `retasked` | re-tasks per unit-minute |
+|---|---|---|---|
+| **move** | **0.876 – 0.941** | 0.0 | 0.0 |
+| **attack_move** | **0.408 – 0.474** | 0.42 – 0.494 | 43.9 – 47.9 |
+
+**My crossing probe issues a plain move, which is literally the top row** — so every clean number I published this
+round was clean for a reason that had nothing to do with the maps. **The untested variable was never the terrain;
+it was the verb, and behind the verb, the brain.** `ENGAGE hop` is combat/AI ground and I have not gone near it.
+
+**What I refused to claim:** that a re-task *looks like* "back and forth". I have where the time goes, not what the
+trajectory does. That needs the oscillation counter inside the fight probe (extracted for nav at `c0aa421f`) or a
+human watching one match.
+
+### Round 8, second half: the things he could see
+
+| Commit | What |
+|---|---|
+| `de61d04e` | `--arena=random` deals only the maps he kept. His verdict had been in `game_design.md` for a round and had never reached a line of code, so half of every skirmish was a map he had cut |
+| `8fda01a8` | **The Terminus** — the cityscape, and the reason no map could place a city block |
+| `94ca59bc` | Into the rotation, after the render was looked at |
+
+**The navmesh baker silently ignores boxes larger than about 8 m on both horizontal axes** — no hole, no rooftop,
+nothing, while the collision body is built correctly and physics still stops hulls. Every obstacle this project
+owned is thin on at least one axis, so nothing had ever crossed the threshold; **feel's city block was the first,
+and the first person to place one would have found it did not work.** `Arena._obstacle_shapes()` tiles a large
+footprint with thin slabs. A hollow shell of four walls is the version that looks obviously right and is wrong: it
+leaves an unreachable navmesh island inside every building. Full measurement table in [../arenas.md](../arenas.md).
+
+**The map, measured and then looked at:** centre_sees 0.13 (yard 0.20, pit 0.30), decision spread 0.41 after
+sweeping ten placements, longest sightline 196 m — the shortest of the three. 30/30 cross it. **And it is the first
+shipping map that moves the stall measure: `no_progress` 0.091 against yard's 0.050**, which makes it the test bed
+flow fields have never had, on ground he plays.
+
+### Round 8, late: instruments, and three of my own mistakes
+
+| Commit | What |
+|---|---|
+| `f7bff357` | `nav-maze` passes `NAV_FLAGS`, and prints `NAV_MAZE_ARM` from the **live code**, not the flags given. nav's flow-field A/B had run the same treatment twice and come back byte-identical — a clean null with no symptom |
+| `daa6bb70` | A watch at the **closed** end of `centre_sees_share`, calibrated on the maps the lead has ruled on (terminus excluded, so it flags itself) |
+| `b5e52899` | **Can this map hide the longest hull?** Reads `game/units/units.gd` rather than copying it |
+| `172f6150` | A correction: see below |
+
+**The hull-cover cliff, and it is the number to give him.** Share of the field within 45 m of a prop long enough
+(best case — the box's longest horizontal side):
+
+| hull | 6 m | 7 m | **12.19 m** | **12.5 m** | 14 m |
+|---|---|---|---|---|---|
+| yard | 0.99 | 0.99 | **0.99** | **0.00** | 0.00 |
+| pit | 0.85 | 0.48 | 0.46 | **0.00** | 0.00 |
+| terminus | 0.98 | 0.95 | **0.91** | **0.91** | **0.91** |
+
+**A step at 12.19 m — `container_40`'s own length — not a gradient**, so "12 m or 14 m" for the War Rig is binary
+for cover, not stylistic. The Terminus covers it at any length (40 m blocks); yard and pit cover it nowhere. The
+v1 maps are fine because the legacy `wall` is 18 m, so **this regression arrived with the arena kit**. On this
+tree the rig is still **5.6 m**, so it is a forecast, not a live defect, and the check flips itself when 14 m lands.
+**No long prop added to yard or pit**: they are maps he kept, and at 12 m the problem disappears with no map change.
+
+**Three mistakes of mine this round, recorded because the pattern is the same each time:**
+
+1. **Four tests that never ran.** Added as module-level `def test_...()`; `make arena-pytest` is `unittest discover`,
+   which collects `TestCase` subclasses and silently ignores bare functions. The count stayed at 14 and they
+   "passed" by not existing. Now 18, and verified failable by breaking the kit table on purpose.
+2. **A guard calibrated on the thing it watches.** The closed-end watch first took its range over every shipping
+   map *including terminus*, so terminus defined the low end and could never trip it.
+3. **A tidier story than the truth.** I wrote that the stale objective test was hidden "three reds deep" in
+   `make check`. **`arena-pytest` is deliberately not in `make check` at all** — my own note says so. Nothing
+   masked it; `make arena-test` is the gate, my brief requires it on every layout change, and I did not run it.
+
+### What is verified, and what is NOT (2026-09-19, end of round 8)
+
+**Branch tip `1858c167`**, on top of `main` merged at the checkpoint (`1c1d30b1`, baseline `glibc-2.43
+0cb238bf366e141f`).
+
+| Ran | Result | Where |
+|---|---|---|
+| `make test` (full Godot suite) | **1261 passed, 0 failed** | laptop |
+| `make arena-pytest` | 19 passed | laptop |
+| `make announcer-pytest` | 58 passed | laptop |
+| `make match-pytest` | 11 passed | laptop |
+| `make audio-check` | passed | laptop |
+| `make announcer-audit` / `-variance` | passed | laptop |
+
+**⚠ THERE IS NO GREEN HASH FOR ANY ROUND-8 ARENA COMMIT, and none of the above is one.** Stated exactly, because
+a pass-count without an exit line is the thing the contract warns against:
+
+| remote check | covered | runner | wrapper |
+|---|---|---|---|
+| on `8fda01a8` | the cityscape + carve fix | `1219 passed, 0 failed` | **`exited 2`** — `sim-baseline FAILED` (stale baseline, two recordings behind; not my change, proved by a same-machine A/B) |
+| on `94ca59bc` | + the rotation | `1238 passed, 0 failed`, `sim-baseline passed` | **`exited 2`** — `announcer-pytest`: terminus had no spoken name |
+| on `cff53fcf` | — | — | **`exited 3`, "cannot reach"** — builder0 down. **Not a check result.** |
+
+**Both failures are now resolved** (the baseline was re-recorded on `main`; feel recorded the 18 clips and
+`announcer-pytest` is 58/58 here). **But that is an inference, not a verified green**, and both checked commits
+are now on `main` — so **not one of the commits still ahead of `main` has ever been in a remote check.** `builder0` has been unreachable since the
+network outage — `ssh: connect to host builder0 port 22: No route to host`, confirmed from combat's session too, so
+it is the machine and not this worktree. What is therefore **unverified**: `net-smoke`, `relay-smoke`,
+`lobby-smoke`, `broker-test`, `combat-smoke`, `match-smoke`, `determinism`, `garage-smoke`, `army-loop-smoke` and
+**`sim-baseline`** — which cannot be checked here at all, because the baseline is keyed by glibc version and this
+laptop's libm is not builder0's.
+
+**The first thing to do when builder0 returns: `make remote T=check`, and report it from the wrapper's own
+`>> remote: make check exited <N>` line plus the runner's `N passed, M failed`.** Note the wrapper distinguishes
+an unreachable host (**exit 3, "cannot reach"**) from a failing check — do not read one as the other.
+
+**Questions for the lead** (not blocking; recorded per the worker contract):
+
+1. **The Terminus is in the rotation and he has not ruled on it.** It is the one entry in `Arena.ROTATION` that is
+   not his verdict. Two things a human should judge: **it is dark** (near-black towers lit by their windows; the
+   street reads dimmer than yard's), and **street level is plain** — flat window grids where a tank drives, which
+   is feel's own open question, unanswered. Removing it is one line and one test expectation, both commented.
+2. **Is a hexagon what he wanted?** yard and pit shipped as hexagons and he has not commented either way.
 
 ---
 

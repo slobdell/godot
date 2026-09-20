@@ -210,6 +210,17 @@ func _positive_control(wanted: int, both_ways: bool) -> void:
 		problems.append("--both-ways asked for head-on traffic and every unit is on one side")
 	if not both_ways and teams.size() > 1:
 		problems.append("one-way run has units on both sides")
+	# THE ARM, read live from the code under test rather than from the flags this run was given. An A/B arm is only
+	# an arm if this line differs between the two runs.
+	#
+	# Round 8, nav: `nav-maze` did not pass `NAV_FLAGS` to the probe, so a flow-field A/B ran the SAME TREATMENT
+	# TWICE and came back byte-identical on both arms. That reads as "the change does nothing" — a null result, in
+	# the direction a sceptical engineer half expects, with no symptom at all. The Makefile now passes the flags;
+	# **this line is the part that makes the failure impossible to repeat**, because a null with identical arm
+	# headers is visibly not an experiment. Printing the flags back would not do it: the question is not what was
+	# passed, it is what the code is running.
+	print("NAV_MAZE_ARM avoidance=%s station=%s commit=%s off=%s" % [Movement.avoidance_on, Movement.station_on,
+			CombatMotion.commit_on(), Movement._off])
 	if problems.is_empty():
 		print("NAV_MAZE_CONTROL ok: %s, %d units, %d side(s), no coincident spawns, all on the navmesh"
 				% [arena_name, units.size(), teams.size()])
@@ -339,6 +350,10 @@ func _report(elapsed: float) -> void:
 		"no_progress_share": snappedf(float(_total(no_progress_ticks)) / maxf(1.0, float(under_way_ticks)), 0.001),
 		"no_progress_units": _with_any(no_progress_ticks),
 		"both_ways": OS.get_cmdline_user_args().has("--both-ways"),
+		# The arm, in the JSON as well as on stdout: a sweep that compares files rather than logs must still be
+		# able to see that its two arms were different runs.
+		"arm": {"avoidance": Movement.avoidance_on, "station": Movement.station_on,
+				"commit": CombatMotion.commit_on(), "off": Array(Movement._off)},
 		"time_limit_s": time_limit, "arrived": arrived_at.size(),
 		"arrived_fraction": snappedf(float(arrived_at.size()) / maxf(1.0, float(units.size())), 0.001),
 		"t50_s": at.call(0.5), "t90_s": at.call(0.9), "t100_s": at.call(1.0),
