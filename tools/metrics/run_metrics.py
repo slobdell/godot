@@ -26,6 +26,20 @@ def _fmt(value, digits=3, width=9):
     return ("%.*f" % (digits, value)).rjust(width)
 
 
+def _facing(cells):
+    """`null` when the column is absent, a number when it is there. Never a bare 0.0 for missing data: a log
+    written before `facing_arc` existed printed `arc_live=0.0s` in both arms of an A/B, which reads as a
+    measurement of behaviour (nav, 2026-09-20)."""
+    bits = []
+    for label, key in (("ordered_facing", "facing_ordered_seconds"), ("arc_live", "facing_arc_seconds")):
+        value = cells[key]
+        if value is None:
+            bits.append("%s=null" % label)
+        elif value:
+            bits.append("%s=%.1fs" % (label, value))
+    return (" " + " ".join(bits)) if bits else ""
+
+
 def print_report(row, handle):
     head = row["by_unit_id"]
     write = handle.write
@@ -68,9 +82,7 @@ def print_report(row, handle):
                   cells["cusps_unclassified"], cells["efficiency_refused_zero_path"],
                   cells["sparc_refused_parked"], cells["sparc_refused_short"],
                   # Beside the fractions, never inside them.
-                  (" ordered_facing=%.1fs arc_live=%.1fs"
-                   % (cells["facing_ordered_seconds"], cells["facing_arc_seconds"]))
-                  if cells["facing_ordered_seconds"] or cells["facing_arc_seconds"] else ""))
+                  _facing(cells)))
     turns = row.get("turns")
     if turns:
         write("  hull TURN between consecutive events (degrees; the HULL's own rotation, not a bearing to any\n"

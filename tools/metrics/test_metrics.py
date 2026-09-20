@@ -24,6 +24,7 @@ import unittest
 
 import make_fixtures
 import metrics
+import run_metrics
 import trajlog
 from metrics import (
     affine_residual_rms,
@@ -956,6 +957,26 @@ class ReportTest(unittest.TestCase):
         self.assertEqual(out["teams"], [0, 1])
         # The enemy contributes to neither side of the oscillating share: it has no goal, so it is never under way.
         self.assertEqual(out["all"]["under_way_seconds"], round(width / float(TICK_RATE), 1))
+
+    def test_an_ABSENT_facing_column_reports_null_and_never_a_zero(self):
+        """nav, 2026-09-20: a log written before `facing_arc` was published printed `arc_live=0.0s` in BOTH arms
+        of an A/B -- which reads exactly like a measurement of behaviour and was an unpublished field. A zero
+        that means "no data" is the one thing this tool exists to refuse, and it was in the renderer."""
+        out = report(self.build())                      # no optional columns at all
+        self.assertIsNone(out["all"]["facing_arc_seconds"])
+        self.assertIsNone(out["all"]["facing_ordered_seconds"])
+        captured = io.StringIO()
+        run_metrics.print_report(out, captured)
+        self.assertIn("arc_live=null", captured.getvalue())
+        self.assertNotIn("arc_live=0.0s", captured.getvalue())
+
+    def test_a_PRESENT_facing_column_with_no_arc_time_reports_a_real_zero(self):
+        # The other half: once the column exists, 0.0 s IS a measurement and must not read as absent.
+        out = report(self.build(with_cause=True))
+        self.assertEqual(out["all"]["facing_arc_seconds"], 0.0)
+        captured = io.StringIO()
+        run_metrics.print_report(out, captured)
+        self.assertNotIn("arc_live=null", captured.getvalue())
 
     def test_it_says_whether_the_cause_columns_were_there(self):
         self.assertFalse(report(self.build())["cause_columns"])

@@ -729,8 +729,17 @@ def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, ob
             "cusps_creep": row.cusps.creep,
             "cusps_unexplained": row.cusps.unexplained,
             "cusps_unclassified": row.cusps.unclassified,
-            "facing_ordered_seconds": _round(row.cusps.facing_ordered_ticks / float(log.header.tick_rate), 1),
-            "facing_arc_seconds": _round(row.cusps.facing_arc_ticks / float(log.header.tick_rate), 1),
+            # None when the COLUMN IS ABSENT, 0.0 only when the column is there and the unit spent no time in
+            # an arc. nav hit the difference: a log written before `facing_arc` was published printed
+            # `arc_live=0.0s` in both arms of an A/B, which reads exactly like a measurement of behaviour and
+            # was an unpublished field. A zero that means "no data" is the thing this whole tool exists to
+            # refuse (Invariant 0), and it was in the renderer.
+            "facing_ordered_seconds": (
+                _round(row.cusps.facing_ordered_ticks / float(log.header.tick_rate), 1)
+                if "facing_ordered" in log.columns else None),
+            "facing_arc_seconds": (
+                _round(row.cusps.facing_arc_ticks / float(log.header.tick_rate), 1)
+                if "facing_arc" in log.columns else None),
             "agent_minutes": _round(row.cusps.agent_minutes, 2),
             "sparc_mean": _round(row.sparc.mean, 4),
             "sparc_windows": row.sparc.windows,
