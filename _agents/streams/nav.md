@@ -276,6 +276,26 @@ Combat's evidence that this costs more than looks: the 14 m rig took `gangs vs l
 the highest suppression figures in their table. A hull that covers 0.5 m in 4 s is a stationary target whatever its
 speedometer says. They are testing `static_share` against hull length, pre-registered at `b16b8d78`.
 
+### PRE-REGISTERED before the run: what squad's `facing` does once the arc actually fires
+
+squad populated `facing` (`ea55c624`) on MOVE and KEEP_SLOT orders, so the arrive-on-heading gate now fires in real
+fights instead of only in my tests. The two halves were checked separately and never together, and the combination
+changes wheeled ROUTING (a car aims at a gate 2.5 turning radii short of its goal), so it is measured before the lead
+sees it.
+
+- **Arms, both on builder0, same seed, same maps:** `stream/nav` tip (the arc present, `facing` never set, so the gate
+  never fires) against `measure/facing-arc` (`stream/nav` + `ea55c624`). The only difference is squad's commit.
+- **Runs:** `nav-fight-maps`, the 4 maps, busy 0, seed 3, 120 s.
+- **Primary:** per-wheeled-type `net_over_path` and `oscillating_share` from `travelled`. The arc is supposed to raise
+  the first and lower the second: a car that arrives on heading does not creep round afterwards.
+- **Secondary:** the `move` verb's `progressing` share, and `blocked_*` — a gate placed badly would show as a detour or
+  a refusal, not as a crash.
+- **Guard:** `attack_move` `progressing` must not fall by more than 10% on 2 or more maps. Routing to a gate costs
+  distance; if it costs fighting, it is not worth it.
+- **Reading it:** better or flat on the primaries and inside the guard → say so and leave it on. Primaries flat and the
+  guard tripped → tell squad to stop populating `facing` on KEEP_SLOT (the packed-slot case, where the gate is refused
+  most anyway) and keep it on player moves. Primaries WORSE → the gate is wrong in traffic and I take it back to tests.
+
 ### Next experiment, PRE-REGISTERED before it runs: how sticky should a combat plan be?
 
 The churn the lead complains about is a direction that keeps changing. Commitment exists for that
