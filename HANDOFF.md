@@ -133,6 +133,17 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
 
 ### Decisions made on your behalf (each reversible in one place)
 
+**The day's decisions (10:00–22:20), newest first; each has its measurement beside it above:**
+- **The hull-rotation plant constraint stays OFF** (reversed at 22:20 from my own 17:40 enable): with it on, four of five squads sit 87–91 m from their slots; it ships only if the world-only mask passes all four numbers. Flip: `Tank.yaw_fit_enabled`.
+- **The oriented-box hull geometry stays behind its knob, disc default**, until the gangs-vs-law series with feel's matrix as the before says otherwise. Flip: `match.hull_disc`.
+- **The two no-mesh units keep their old box** (2.40 × 2.40) after the lineup showed the reference-derived width made a slab flatter; **one hull mesh each is your paid-generation gate**.
+- **The selection ring is hull-shaped** (frames with you). Flip: the marker shader.
+- **A dragged squad heading is a HOLD on arrival**; a held wheeled hull will manoeuvre to its facing above a threshold (nav, round 10).
+- **The Terminus floor is lit by scale's six irregular lamps**, not the show's pools; **units readable without the HUD is a separate ask** (rim light recommended, round 10).
+- **The clearance routing refusal stays OFF on measurement** (progress −35 %); the bake stays 2.0 m; heavies-in-alleys is your call.
+- **Warnings fail a test unless declared; a filter that matches nothing fails; a check keeps going and reports NOT RUN; `main-checked` is an annotated tag that is not green.**
+- **Show's readability claim is withdrawn** (the fight was never in the frame); endgame cues are reported, not judged.
+
 - **Sizing is rig-relative** (K = 14.0 / 19.8 = 0.707); Syndicate platforms referenced by role; `law_tank` is a
   Centauro 8×8. **Balance was not a constraint**, per your round-8 ruling.
 - **Articulation is visual** this round; the sim keeps one body and one box (S2).
