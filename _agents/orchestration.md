@@ -2852,6 +2852,11 @@ The kickoff prompt is one line; this section is the rest.
     frame that had to lift to 30° is a fair pair but is not the 21° he plays at, and a label that quietly stops
     being true is the same disease as the frustum count. Five defects in one pair, each invisible until the one
     before it was fixed: **stop predicting that the next one is the last, and look at every frame before it travels.**
+    **The closing form (feel, 22:15, the Terminus roof dressing):** the first version placed seven boxes on every
+    seed, kept two surfaces, stayed inside the collision box and passed every test, and at the lifted camera it was
+    shapes you had to look for, +25 % on tops and −28 % on sides of a roof that is itself nearly black. **A change
+    can satisfy every stated criterion and still not do the thing it was for, and nothing in a suite measures
+    legibility; the only instrument that catches it is looking at the picture.**
 186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
     Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
     the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
