@@ -356,8 +356,7 @@ own named cause.
 
 ## ⏸ WHERE THIS STREAM IS, AND THE EXACT NEXT STEP
 
-**Tip `0ba8d2c9`, working tree clean, nothing uncommitted.** Six commits, every one green on
-`make test FILTER=switch` at the time it was made:
+**Tip `396be191`** (`986f8921` + a merge of local `main` `b3f7ffae`), working tree clean.
 
 | commit | what |
 |---|---|
@@ -365,24 +364,53 @@ own named cause.
 | `b69d081b` | the seam in `tank_brain.gd` + the X1 arm counter + `make switch-arm` |
 | `c68b423e` | the lay term (A2's missing third term) + the lesson-153 floor fix |
 | `a1209857` | the stance floor gated as an arm + `option_share`/`transitions` + the `--require` refusal gate |
-| `1e328dfe` | Status: the duel regression |
-| **`0ba8d2c9`** | **the flat bonus becomes the default with its dwell timer RETIRED; A2 becomes the opt-in arm** |
+| `0ba8d2c9` | the flat bonus becomes the default with its dwell timer RETIRED; A2 becomes the opt-in arm |
+| `4cb9b9c6` | the yaw constraint, off by default and (as shipped) BLIND — see the slack correction below |
+| `1c445bda` | the oriented-box hull geometry behind `match.hull_disc`, DISC still the default |
+| `bd618dd4` | the yaw constraint becomes selectable from a harness: `--tune=match.yaw_fit=1` |
+| **`986f8921`** | **the yaw constraint ON by default + nav's test inverted onto the new behaviour** |
 
-**Verification standing at the pause:**
-- `make test FILTER=switch` — **25 passed, 0 failed** (laptop, `0ba8d2c9`).
-- `make test FILTER=brain_decide` — **18 passed, 0 failed**, including `test_commitment_prevents_flip_flopping`.
-- **lint local: 534 files, 2 error lines, both baselined** (`tank.gd` via `tank.tscn`'s ext_resource self-reference;
-  `faction_art.gd` via `Units.roster` under `--check-only`). **Neither is in a file this stream touched** — checked
-  by diffing `main...HEAD` against the lint output, not by eye. Lesson 157: a remote-green commit is NOT
-  parse-checked, so this local lint is the only parse evidence that exists for this tip.
-- `make remote T=check` **could not run**: builder0 unreachable, the wrapper failed at the sync step with
-  `cannot reach slobdell@builder0` / `Error 3`. It never reached the suite, so `build/` is not holding a previous
-  run's artefacts for this stream.
-- **A full local `make check` was started on `0ba8d2c9` and left running** at the pause; its log is at
-  `…/scratchpad/check-local.log`. It had not finished. **Do not read it as a verdict until it prints its own
-  totals.**
+**Verification standing:**
+- `make test FILTER=nav_face_recovery` — **8 passed, 0 failed** (laptop, `986f8921`).
+- `make test FILTER=tank_yaw_fit` — **2 passed, 0 failed** (laptop, `986f8921`).
+- `make test FILTER=switch` — 25 passed, 0 failed (laptop, `0ba8d2c9`).
+- `make remote T=check` on the merged tip `396be191` — **RUNNING on builder0 at the time of writing.** It must
+  reach `sim-baseline` now that nav's fixture drain is on main; the hash it prints is the round's **fifth** baseline
+  move and it is the orchestrator's to record (Invariant 2), not this branch's.
+- ⚠ **Do not read a filtered run as readiness (lesson 45)**, and do not read a remote-green commit as
+  parse-checked (lesson 157). `make test FILTER="a|b"` **exits 127 and runs NEITHER suite** — the recipe
+  interpolates the filter unquoted and the shell eats the pipe. Run one filter per invocation.
 
-### ⚠ A DEFECT IN THIS STREAM'S FILE, CONFIRMED AND SEQUENCED: hulls rotate through scenery
+### ✅ RESOLVED (PARTIALLY, AND THE REMAINDER IS NAMED) in `986f8921`: hulls rotate through scenery
+
+**Read the section below as the history of the finding; this paragraph is the outcome.** `Tank._fitting_forward`
+now refuses a yaw that increases the hull's penetration depth, trying 1.0 / 0.6 / 0.3 of the wanted step, and it is
+**ON by default** (`--tune=match.yaw_fit=0` restores the old behaviour). nav's wedged-semi corridor, laptop:
+
+| | before | after |
+|---|---|---|
+| yaw | 28.5° | **11.6°** (59% of the illegal rotation gone) |
+| footprint | 9.6 m | **6.1 m** in a 4.8 m corridor |
+| `face_giveups` | 0 | **1** — nav's recovery fires, having been inert all round |
+| open ground | 71.2° in 1 s | **71.2° in 1 s**, 1 offer, 0 applied — no cost where there is nothing to hit |
+
+**It is a PARTIAL fix and everything written about it says so.** 6.1 m in a 4.8 m corridor is ~**1.3 m** of hull
+still rotating through a wall. The predicate is per-tick and relative, `move_and_slide` depenetrates between ticks,
+so a rotation illegal cumulatively is legal at every increment; the exact form (slack `0.000`) fits the corridor
+(6.2°, 4.8 m) and **freezes a wedged rig for 30 ticks**, which is nav's N1 breach. No form both exact and
+non-freezing has been found. Because the sweep is `length × sin(yaw)`, **CP2's resize moves the residual across the
+roster and 1.3 m will not hold for every hull** — which is why nav's test asserts a bar on the EXCEEDANCE
+(`_last_span - 4.8 <= 1.8`, measured 1.27) with the figure in the message, rather than "the constraint works".
+
+**The lesson this cost, and it cost two rounds of wrong conclusions:** `PENETRATION_SLACK_M` was `0.02` while the
+whole per-tick signal is `0.0147 m` (a 0.119°/tick yaw moving a 14 m hull's tip). The constraint was present,
+correct in form, and **bit-identical to no constraint at all**. `4cb9b9c6`'s commit message claimed the per-tick
+form *could not work*; that claim is wrong and is corrected here. **A threshold must be measured against the
+quantity it has to discriminate**, or the mechanism reports a clean negative it never ran.
+
+nav granted the one test for the one change and reviews it at merge.
+
+### ⚠ THE FINDING, as it stood before the fix: hulls rotate through scenery
 
 Reported by nav (`7850fbef`, `tests/test_nav_face_recovery.gd`), **verified here in the code rather than taken on
 trust**: `game/tank/tank.gd:425` assigns `global_basis = Basis.looking_at(forward, Vector3.UP)` unconditionally and
@@ -422,38 +450,38 @@ first time.
 
 ### THE EXACT NEXT STEP, in order
 
-1. **Read `check-local.log`'s totals** (or re-run `make check` if it was killed). **`sim-baseline` is EXPECTED TO
-   FAIL**: retiring the dwell timer changes option choice and option choice is the simulation. The orchestrator
-   records the new hash (Invariant 2); this branch does not. Anything else red is this stream's and is fixed before
-   the hash is named.
-2. **When builder0 returns**, check for a stale `slot.sh` of this stream's on the box first, then
-   `REMOTE_SLOTS=6 make remote T=check`. Read the result from the wrapper's own `>> remote: make check exited <N>`
-   line and the runner's `N passed, M failed` — never a shell exit through a pipe, and **a 255 is transport, not the
-   suite** (after which `build/` holds a PREVIOUS run's artefacts).
-3. **Name the hash** as: `this commit is green, merge here: <sha>` + `lint local: 534 files, 2 baselined lines` +
-   **the sim-baseline-moves declaration**.
-4. **`make ai-perf` on builder0** (never the laptop — the perf scenario fails here on speed alone). Pre-registered:
-   A2 costs under 2% of `ai_usec_per_tick`. Note it is now the OPT-IN arm, so the default build's cost is the flat
-   bonus's, and the A2 figure needs `--tune=switch.cost=1`.
-5. **Send metrics the switch-event files** for the paired read (predicted `angle_deg` against the hull rotation
-   actually performed). Blocked until CP1 merges, because the `--trajectory` emitter lives on metrics' branch.
-6. **CP2 lands → X3**: `git merge main`, then re-take the sim baseline (orchestrator's), `make faction-matrix` on
-   yard and pit, the `gangs vs law` pair via `compare-arms`, and `make engagement` split direct/indirect. **Nothing
+1. **Read the running check's result from the wrapper's own `>> remote: make check exited <N>` line and the
+   runner's `N passed, M failed`** — never a shell exit through a pipe, and **a 255 is transport, not the suite**
+   (after which `build/` holds a PREVIOUS run's artefacts). Send the orchestrator: the tip, the two lines, the new
+   `sim-baseline` hash **declared as the round's fifth move with its cause** (the yaw constraint changes hull
+   headings and heading is the simulation), and the local lint as the only parse evidence.
+2. **The gangs-vs-law series** (X5's mechanism, and the hull-geometry row's falsifier). Both arms via
+   `match.hull_disc`; **feel's re-measured matrix is the BEFORE**; **per cell, not pooled** — feel's pooled pit
+   figure was unmoved at 30% while the cells moved 0%→20% (pit) and 0%→50% (yard), so pooling hides the effect the
+   series is for. **Pre-registered null: a box arm that does not move the gangs-vs-law cell is evidence AGAINST the
+   disc being the cause of the lead's 9/20 → 0/20, and gets written up as such.** Launch when this stream's remote
+   slot frees; **say the machine load beside the numbers** (the laptop is ~2.75× builder0, and the box is
+   contended).
+3. **`make ai-perf` on builder0** (never the laptop — the perf scenario fails here on speed alone). Pre-registered:
+   A2 costs under 2% of `ai_usec_per_tick`. It is the OPT-IN arm, so the default build's cost is the flat bonus's
+   and the A2 figure needs `--tune=switch.cost=1`.
+4. **Send metrics the switch-event files** for the paired read (predicted `angle_deg` against the hull rotation
+   actually performed). Blocked until CP1 merges — the `--trajectory` emitter lives on metrics' branch.
+5. **CP2 lands → X3**: `git merge main`, re-take the sim baseline (orchestrator's), `make faction-matrix` on yard
+   and pit, the `gangs vs law` pair via `compare-arms`, and `make engagement` split direct/indirect. **Nothing
    size-dependent is compared across CP2.** Two movements are pre-registered as NOT this stream's doing: the
    engine-deck scenario moves because scale's `_apply_hull_size` makes the Condemned tank 0.8 m taller, and the
    muzzle ceiling drop (1.30 → 1.14 m, 18 muzzles, floor set by the Rat Rod's own 1.24 m mesh) is a real ballistic
-   change that moves kill distances and cover columns for reasons unrelated to hull size.
-7. **X4**: migrate `TacticalQuery.hull_hidden` onto `Arena.cover_fraction` (built, positive control passed: the
+   change that moves kill distances and cover columns for reasons unrelated to hull size. **The yaw residual is now
+   a third**: it scales with `length × sin(yaw)`, so re-measure nav's corridor after CP2 and move
+   `RESIDUAL_BAR_M` with a stated number rather than letting the bar be met by luck.
+6. **X4**: migrate `TacticalQuery.hull_hidden` onto `Arena.cover_fraction` (built, positive control passed: the
    12.19 m step is gone and yard's 14 m figure is within 0.03 of its 12 m one), and **rename
    `EngagementStats.near_cover`** — it has never measured cover, it measures proximity to an obstacle footprint, so
    every "cover use" column in `make engagement` is really a "standing near a wall" column. **A3's falsifier is only
    half met and that must not be reported as fully met:** at 2.93 m the query's worst-case error is 0.759 (grid term
    `2.0/length`), so the honest claim is *"cover works for hulls the grid can resolve, and short hulls are where they
    already were"*.
-8. **X5 (stretch)**: the rig's unexplained `gangs vs law` 9/20 → 0/20 now has a better candidate than "bigger
-   target" — the roster-wide muzzle drop is a *mechanism*.
-9. **The hull-rotation defect above**, immediately after the green hash is named — it is this stream's file, it is
-   the lead's own complaint, and CP2 amplifies it.
 
 ### Requests to other streams, outstanding
 
