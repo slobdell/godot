@@ -584,6 +584,99 @@ def formation_residual_by_element(log: TrajectoryLog) -> Dict[int, FormationSumm
     return out
 
 
+# ---- Hull turn between events (combat's A2 bearing read, 2026-09-20) --------------------------
+
+
+def turns_between_events(
+    samples: Sequence[Sample], ticks: Sequence[int]
+) -> Tuple[List[float], int]:
+    """|Δ heading| in DEGREES between consecutive events, read off the unwrapped heading.
+
+    Combat's A2 hypothesis is that a physical switching cost lets through the switches a flat bonus blocked —
+    the cheap ones, at small bearing changes — while the expensive tail is unchanged or thinner. That is a
+    question about how far the hull actually TURNED between two decisions, and the log already answers it: the
+    heading is logged unwrapped, so a 201° turn reads as 201° and not as −159°. (Round 8's 20.7° "overshoot",
+    which justified a whole technique, was that wrap bug.)
+
+    **What this is and is not.** It is the hull's own rotation between two events. It is NOT the change in
+    bearing TO A TARGET: nothing in the trajectory log knows what a unit was shooting at. A unit that switched
+    between two targets while driving straight shows ~0 here, which is the honest answer to "did the hull have
+    to turn", not to "were the targets far apart".
+
+    Returns (turns in degrees, number of events that fell outside the unit's logged ticks).
+    """
+    by_tick = {sample.tick: sample for sample in samples}
+    ordered = sorted(set(ticks))
+    found = [by_tick[tick] for tick in ordered if tick in by_tick]
+    missed = len(ordered) - len(found)
+    turns = [
+        abs(math.degrees(found[i].heading_rad - found[i - 1].heading_rad)) for i in range(1, len(found))
+    ]
+    return turns, missed
+
+
+@dataclass
+class TurnSummary:
+    turns: List[float] = field(default_factory=list)
+    events: int = 0
+    missed: int = 0
+
+    def merge(self, other: "TurnSummary") -> None:
+        self.turns.extend(other.turns)
+        self.events += other.events
+        self.missed += other.missed
+
+    def quantile(self, q: float) -> Optional[float]:
+        if not self.turns:
+            return None
+        ordered = sorted(self.turns)
+        index = min(len(ordered) - 1, max(0, int(math.ceil(q * len(ordered))) - 1))
+        return ordered[index]
+
+    @property
+    def mean(self) -> Optional[float]:
+        return sum(self.turns) / len(self.turns) if self.turns else None
+
+    def share_under(self, degrees: float) -> Optional[float]:
+        if not self.turns:
+            return None
+        return sum(1 for turn in self.turns if turn < degrees) / len(self.turns)
+
+
+def turn_report(log: TrajectoryLog, events: Dict[str, Sequence[int]]) -> Dict[str, object]:
+    """`events`: {unit name: [tick, ...]}. Per unit type, the distribution of hull turn between them."""
+    by_type: Dict[str, TurnSummary] = {}
+    unknown = []
+    for unit, ticks in sorted(events.items()):
+        samples = log.units.get(unit)
+        if not samples:
+            unknown.append(unit)
+            continue
+        row = by_type.setdefault(samples[0].unit_id, TurnSummary())
+        turns, missed = turns_between_events(samples, ticks)
+        row.turns.extend(turns)
+        row.events += len(set(ticks))
+        row.missed += missed
+    return {
+        "unknown_units": unknown,
+        "by_unit_id": {
+            unit_id: {
+                "events": row.events,
+                "intervals": len(row.turns),
+                "events_outside_the_log": row.missed,
+                "turn_deg_mean": _round(row.mean, 1),
+                "turn_deg_p10": _round(row.quantile(0.10), 1),
+                "turn_deg_p50": _round(row.quantile(0.50), 1),
+                "turn_deg_p90": _round(row.quantile(0.90), 1),
+                "share_under_15_deg": _round(row.share_under(15.0), 3),
+                "share_under_45_deg": _round(row.share_under(45.0), 3),
+                "share_over_90_deg": _round(1.0 - row.share_under(90.0), 3) if row.turns else None,
+            }
+            for unit_id, row in sorted(by_type.items())
+        },
+    }
+
+
 # ---- The report --------------------------------------------------------------------------------
 
 

@@ -817,6 +817,69 @@ class AffineFormationResidualTest(unittest.TestCase):
 
 
 # ==================================================================================================
+# Hull turn between events (combat's A2 bearing read)
+# ==================================================================================================
+
+
+class TurnBetweenEventsTest(unittest.TestCase):
+    """The unwrapped heading pays for itself here: a 201 degree turn must read as 201, not as -159.
+    Round 8's 20.7 degree "overshoot", which justified a whole technique, was exactly that wrap bug."""
+
+    def turning(self, degrees_per_tick, ticks=200):
+        return [
+            make_sample(t, x=float(t), heading=FACING_X + math.radians(degrees_per_tick * t))
+            for t in range(ticks)
+        ]
+
+    def test_a_steady_turn_gives_the_turn_it_actually_made(self):
+        samples = self.turning(1.0)                       # 1 degree a tick
+        turns, missed = metrics.turns_between_events(samples, [10, 40, 100])
+        self.assertEqual(missed, 0)
+        self.assertAlmostEqual(turns[0], 30.0, places=6)
+        self.assertAlmostEqual(turns[1], 60.0, places=6)
+
+    def test_a_turn_past_180_degrees_is_not_wrapped(self):
+        # THE test. 201 degrees must read as 201. A wrapped heading would report 159.
+        samples = self.turning(1.0, ticks=260)
+        turns, _ = metrics.turns_between_events(samples, [0, 201])
+        self.assertAlmostEqual(turns[0], 201.0, places=6)
+
+    def test_driving_straight_between_two_events_is_zero(self):
+        # The honest answer to "did the hull have to turn" for a unit that switched targets while driving
+        # straight -- and NOT an answer to "were the targets far apart", which no trajectory log knows.
+        turns, _ = metrics.turns_between_events(track([float(i) for i in range(50)]), [5, 25, 45])
+        for turn in turns:
+            self.assertAlmostEqual(turn, 0.0, places=9)
+
+    def test_events_outside_the_log_are_counted_not_guessed(self):
+        turns, missed = metrics.turns_between_events(self.turning(1.0, ticks=50), [10, 20, 9999])
+        self.assertEqual(missed, 1)
+        self.assertEqual(len(turns), 1)
+
+    def test_events_are_deduplicated_and_sorted(self):
+        samples = self.turning(1.0)
+        a, _ = metrics.turns_between_events(samples, [100, 10, 40, 10])
+        b, _ = metrics.turns_between_events(samples, [10, 40, 100])
+        self.assertEqual(a, b)
+
+    def test_the_report_splits_by_unit_type_and_flags_a_mismatched_arm(self):
+        lines = [trajlog.header_line("c", "m", TICK_RATE, "synthetic")]
+        for t in range(60):
+            lines.append(trajlog.sample_line(make_sample(
+                t, float(t), unit="Tank_1", unit_id="tank", heading=FACING_X + math.radians(2.0 * t))))
+            lines.append(trajlog.sample_line(make_sample(
+                t, float(t), z=20.0, unit="Ifv_1", unit_id="ifv", heading=FACING_X)))
+        log = read_lines(lines, "<f>")
+        out = metrics.turn_report(log, {"Tank_1": [0, 10, 20], "Ifv_1": [0, 30], "Ghost_9": [0, 5]})
+        self.assertAlmostEqual(out["by_unit_id"]["tank"]["turn_deg_mean"], 20.0, places=1)
+        self.assertAlmostEqual(out["by_unit_id"]["ifv"]["turn_deg_mean"], 0.0, places=6)
+        self.assertEqual(out["by_unit_id"]["ifv"]["share_under_15_deg"], 1.0)
+        # A unit whose events are not in this log is named, not silently dropped: it usually means the events
+        # came from the other arm of an A/B.
+        self.assertEqual(out["unknown_units"], ["Ghost_9"])
+
+
+# ==================================================================================================
 # The report
 # ==================================================================================================
 

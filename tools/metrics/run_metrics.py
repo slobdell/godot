@@ -71,6 +71,20 @@ def print_report(row, handle):
                   (" ordered_facing=%.1fs arc_live=%.1fs"
                    % (cells["facing_ordered_seconds"], cells["facing_arc_seconds"]))
                   if cells["facing_ordered_seconds"] or cells["facing_arc_seconds"] else ""))
+    turns = row.get("turns")
+    if turns:
+        write("  hull TURN between consecutive events (degrees; the HULL's own rotation, not a bearing to any\n"
+              "  target -- nothing in a trajectory log knows what a unit was shooting at):\n")
+        write("  %-16s %8s %10s %9s %9s %9s %9s %9s\n" % (
+            "unit_id", "events", "intervals", "mean", "p10", "p50", "p90", "<15 deg"))
+        for unit_id, cells in turns["by_unit_id"].items():
+            write("  %-16s %8d %10d %s %s %s %s %s\n" % (
+                unit_id, cells["events"], cells["intervals"], _fmt(cells["turn_deg_mean"], 1),
+                _fmt(cells["turn_deg_p10"], 1), _fmt(cells["turn_deg_p50"], 1), _fmt(cells["turn_deg_p90"], 1),
+                _fmt(cells["share_under_15_deg"], 3)))
+        if turns["unknown_units"]:
+            write("  NOTE: %d event unit(s) are not in this log (%s...) -- wrong arm's events?\n" % (
+                len(turns["unknown_units"]), ", ".join(turns["unknown_units"][:3])))
     if row["by_element"]:
         write("  %-10s %12s %8s %8s %10s %6s\n" % (
             "element", "residual_rms", "ticks", "members", "too_small", "rank"))
@@ -86,6 +100,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("logs", nargs="+", help="trajectory logs (.jsonl or .jsonl.gz); globs are expanded")
     parser.add_argument("--json", dest="json_out", default="", help="also write the whole report here, as JSON")
+    parser.add_argument("--switches", default="",
+                        help="a JSON file {unit name: [tick, ...]} of decision events; also reports the hull TURN "
+                             "between consecutive events per unit type (combat's A2 bearing read)")
     parser.add_argument("--order-verb", default=None,
                         help="count the `oscillating` special case only under this order verb -- fight_probe.gd's "
                              "--stall-verb. Round 8's headline is attack_move")
@@ -123,6 +140,14 @@ def main(argv=None):
                       file=sys.stderr)
                 return 1
         row = metrics.report(log, args.order_verb)
+        if args.switches:
+            with open(args.switches, encoding="utf-8") as handle:
+                events = json.load(handle)
+            if not isinstance(events, dict):
+                print("metrics: REFUSED %s: expected an object {unit: [tick, ...]}" % args.switches,
+                      file=sys.stderr)
+                return 1
+            row["turns"] = metrics.turn_report(log, events)
         rows.append(row)
         print_report(row, sys.stdout)
     if args.json_out:

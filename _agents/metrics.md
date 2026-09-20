@@ -154,6 +154,24 @@ measured is the wrong metric.* The run, its pre-registered bar and its result ar
 ("From the same replays", in the catalogue, cannot be taken literally: the replays did not exist. The honest control
 is a re-run, and its provenance is written down as one.)
 
+## Hull turn between events (`--switches`)
+
+Not a fifth metric — a read the log already supports, added for combat's A2 question and available to anyone.
+
+```sh
+python3 tools/metrics/run_metrics.py run.jsonl --switches build/switch-events.json
+```
+
+`--switches` takes `{unit name: [tick, ...]}` and reports, per unit type, the distribution of **|Δ heading| in
+degrees between consecutive events** — the hull's own rotation between two decisions. It exists because
+`heading_rad` is logged **unwrapped**, so a 201° turn reads as 201° and not as −159°; round 8's 20.7° "overshoot",
+which justified parking a whole technique, was that wrap bug.
+
+**What it is not:** the change in bearing to a *target*. Nothing in a trajectory log knows what a unit was
+shooting at. A unit that switched between two targets while driving straight reads ~0°, which is the honest
+answer to *"did the hull have to turn"* and not to *"were the targets far apart"*. Units whose events are not in
+the log are named rather than dropped — that usually means the events came from the other arm of an A/B.
+
 ## Which of these is fit to be an optimiser objective (C7's prerequisite)
 
 Catalogue **C7** (offline quality-diversity tuning) needs a scalar to maximise per niche, and the ruling on offline
