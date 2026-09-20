@@ -2,7 +2,7 @@
 # The ai-scenarios gate: compare a run's summary line against the committed baseline.
 #
 #     ai_scenarios_gate.sh check  <log> <baseline>      # exit 0 pass, 1 fail; prints the verdict
-#     ai_scenarios_gate.sh record <log> <out> [commit]  # write a new baseline file
+#     AI_SCENARIOS_REASON="..." ai_scenarios_gate.sh record <log> <out> [commit]   # write a new baseline
 #
 # It lives in a script rather than in the make recipe it came from because **this gate has already been wrong
 # once** (2026-09-20): it inherited a 2% coin landing heads as its expectation and would have failed `main` at
@@ -36,6 +36,18 @@ fi
 counts=$(echo "$line" | grep -oE '[0-9]+' | paste -sd,)
 
 if [ "$mode" = record ]; then
+	# WHY the counts moved, IN THE FILE rather than only in a commit message. Checked before the redirect
+	# below, because `{ ... } > "$other"` truncates first and a refused record must damage nothing.
+	#
+	# A baseline that records a number without its cause is the shape this gate already failed once: `45,0,2,0`
+	# was a 2% coin, and nothing in the file said what had been true when it was taken. Re-recording is exactly
+	# the moment the reason is known, and the only moment it is cheap.
+	if [ -z "${AI_SCENARIOS_REASON:-}" ]; then
+		echo "REFUSED to record a baseline with no reason." >&2
+		echo "  Set AI_SCENARIOS_REASON to what moved the counts and why that is correct." >&2
+		echo "  Counts that would have been written: $counts" >&2
+		exit 2
+	fi
 	{
 		echo "# ai-scenarios counts: passed,failed,pending,unexpectedly_passing"
 		echo "# ONLY THE FIRST TWO ARE GATED. ai-scenarios-check fails when passed,failed CHANGE, not when a"
@@ -47,6 +59,7 @@ if [ "$mode" = record ]; then
 		echo "# machine: $(hostname 2>/dev/null || echo unknown)"
 		echo "# commit:  ${4:-${TANK_SQUAD_COMMIT:-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}}"
 		echo "# line:    $line"
+		echo "# reason:  $AI_SCENARIOS_REASON"
 		echo "$counts"
 	} > "$other"
 	cat "$other"
