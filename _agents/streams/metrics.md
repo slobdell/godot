@@ -221,6 +221,64 @@ is the orchestrator's call, not his.)
 
 ## Status
 
+> # ROUND 9 CLOSED. CP1 and CP3 met and merged; backlog, both stretch items and every orchestrator-queued
+> # item complete. Last merge `ec6fef46` (my `2746233b`). Working tree clean, nothing on builder0.
+>
+> **CP1 (A12) `ae9c65e1`** — the four trajectory metrics, contract S3, positive control reproduced round 8's
+> oscillation finding to within 0.05 points against a ±0.5 bar, and found that the shuffler is the WHEELED
+> hull, not the light one. **CP3 (T1) `0d4e5ef1`** — `check` parallel and sharded, 2820 s → 837/882/882 s
+> (−70%/−69%/−69%), three consecutive greens, hashes identical; `REMOTE_SLOTS` LOWERED to 3 on measurement.
+>
+> **The last check: `2746233b`, builder0** — `>> remote: make check exited 2`, `1548 passed, 1 failed`,
+> 5 shards over 219 files, 1123 s, `sim-baseline 1e90f69e5d6fcc46 (baseline unmoved) | determinism
+> 253adefeec657df1`, `16 passed, 2 FAILED, 0 NOT RUN [test x5, lint -P6, 2 at once, builder0]`, markers
+> agreeing, no cascade, **`engine: 0 errors, 0 warnings`**. The two reds are main's known pair.
+>
+> ### The one finding to carry into round 10
+> **Two AI scenarios were passing on a neighbour's leaked navigation state.** Four runs split exactly on
+> whether the drain completed between scenarios, not on the box:
+>
+> | tree | drain completed? | count | `artillery_stays_dug_in` + `base_of_fire_keeps_firing` |
+> |---|---|---|---|
+> | `4dba0b53` | **no** | `43,1,3,0` | PASS |
+> | `0870877f` ×2, `2746233b` | yes | `41,3,3,0` | FAIL |
+>
+> They fail in 0.6 s and 1.4 s, so not load. Routed: artillery → combat, base-of-fire → squad's round-10
+> brief. **`tests/baselines/ai_scenarios_count.txt` is still `42,2,3,0` and is the orchestrator's to
+> re-record from main once combat's tip lands** — two records an hour apart would each be true of a
+> different tree.
+>
+> ### What a fresh agent should know about this tooling
+> - `make round-status` — every worktree vs main, the box, the baselines, and whether each branch's base is
+>   covered by `main-checked`. `make remote-status` for one folder.
+> - `make remote` refuses to rsync over a live run of its own, verifies the copy-back by sha256, and mirrors
+>   (`--delete`, `*.log` protected). `--quiet` holds every slot and ends in `QUIET WINDOW: HELD | NOT USABLE`.
+> - `check` keeps going and reports PASS / FAIL / **NOT RUN** per target with the schedule it ran under.
+> - `lint` carries two liveness probes and fails if the checker reports nothing.
+> - `make sim-baseline-adopt` reads twice, refuses a disagreement, merges rather than overwriting.
+> - **Every gate refuses to record a baseline without a REASON**, and every shell tool has a `tools/test_*.sh`
+>   suite in `check` (231 tests) — `make shell-tools-test`.
+>
+> ### The two patterns worth more than any of it
+> **1. An absence that has something plausible to say.** `lint` over zero files, `check-hashes` on absent
+> data, a blank `QUIET WINDOW` reading HELD, `0 passed, 0 failed` exiting 0, a commit subject standing in
+> for a check verdict, a count of occurrences labelled "tests". The blank absence gets noticed; the
+> plausible one does not.
+>
+> **2. A fix at one layer defeated by a layer above it that was never in the picture.** make expanding `$`
+> before shell quoting (three times), a pipeline reporting `tail`'s status, `$(date)` resetting `$?`, a tag
+> object interposing between a ref and its commit, six call sites landing in the wrong parameter, and a
+> scenario runner still calling `teardown()` after the seal. **In every one the code was correct about the
+> thing it was looking at and wrong about what it was looking at.** The rule that follows: *after a
+> signature change, read every caller, not every conflict.* I wrote that down and then broke it an hour
+> later in a file I had just edited.
+>
+> **And the one that cost the most: three of my own test suites were green here and red on the box**
+> — `TANK_SQUAD_SLOT` set inside `check`, fixed sleeps on a loaded box, no `.git` on builder0. Every one
+> surfaced only because the suites run inside `check` rather than by hand. A guard exercised only where it
+> is easy passes for the wrong reason.
+
+
 > ### ✅ CP1 MERGED (`ae9c65e1`). CP3's falsifier MET at `0f811c1c` — ready to merge.
 > **Green commit: `0f811c1c`** (`>> remote: make check exited 0`, three consecutive runs). Commits above it are
 > **documentation only** (`git diff 0f811c1c..HEAD` touches `_agents/` and nothing else).
