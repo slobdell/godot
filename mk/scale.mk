@@ -77,3 +77,12 @@ grid-fairness: import ## Item 3: the SPAWN GRID's swap-bases control, 2v2 bots (
 			$$([ $$arm = swapped ] && echo "--extra=--swap-bases") \
 			| grep -E "matches|wins:" || exit 1; \
 	done
+
+.PHONY: spawn-probe
+
+# Diagnostic for main's red spawn test: says WHERE the flagged units are and WHAT they intersect, which the test
+# itself cannot (it reports names only). Reproduces the test's setup exactly -- foundry, seed_spawns(9, 6.0), a full
+# Army.MAX_ARMY_UNITS army a side.
+spawn-probe: import ## Why a full army spawns inside geometry: positions + the bodies hit (ARENA=foundry)
+	$(GODOT) --headless --path . --script res://tests/scale/spawn_block_probe.gd -- \
+		$(if $(ARENA),--arena=$(ARENA)) 2>&1 | grep -E '^SPAWN_PROBE|SCRIPT ERROR' || true

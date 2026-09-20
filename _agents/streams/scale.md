@@ -332,6 +332,46 @@ pooling mistake again, so each is labelled by the population it actually exercis
 | `make arena-series` (5 arenas × 18 seeds × 2) | **faction armies** | the arena and its navmesh | **OWED** — died at 255 (transport) |
 | `make grid-fairness` (2v2 bots, 60 seeds × 2) | **the spawn grid** | the grid I changed in item 3 | **OWED** — never got a slot |
 
+### main's one red test: all three candidates eliminated from the repository alone
+
+**`test_match_spawns_and_results::test_a_full_faction_army_a_side_spawns_clear_of_itself`** fails on main's tip
+(`b008a277`, 1478 passed / 1 failed) with `[Green_S5_1, Rust_S5_1, Rust_S8_1]` "inside a wall or crate". Green on my
+branch (`7542df28`, 1395/0) and green on pre-CP2 main (`0808834e`, 1454/0), so it is a composition. **Assigned to me,
+and the diagnosis needed no machine time.**
+
+**It is not a new test meeting CP2 for the first time** — that was the cheaper explanation and it is wrong. The test
+arrived in `d916dc29`, which **is** an ancestor of both `7542df28` and `0808834e`, so it ran and passed against the
+resized roster *and* against pre-CP2 main. Only the combination is red.
+
+**My HEAD already holds main's version of every file that could matter**, which is what makes elimination possible:
+`git diff HEAD main -- arenas/ game/arena/ game/match/match.gd game/tactics/ game/units/units.gd` is **empty**. So the
+red reproduces here, and the cause lies wholly inside `7542df28..HEAD`. Over that window:
+
+| candidate | verdict | the evidence |
+|---|---|---|
+| show's arena JSON keys | **ruled out** | only `terminus.json` and `yard.json` changed; **the test runs on foundry** (`Arena.DEFAULT_LAYOUT`, no `layout_name` set and no `--arena` in a test run) and `arenas/foundry.json` is **untouched** |
+| squad's X1 pitch in `ArmyLayout` | **ruled out** | **`game/tactics/` does not appear in the diff at all** — the code placing all 45 units did not change |
+| combat's `units.gd` | **ruled out** | the +9 lines are a `--tune` parser branch for `switch.<knob>`; inert unless a run passes `--tune switch.*`, and the test passes none |
+| theme/dressing (checked for completeness) | **ruled out** | `arena_dressing.gd`, `kit_yard.gd`, `city_block.gd` all changed and the arena scene has a `Dressing` node, but their diffs contain no `StaticBody`/`CollisionShape`/`BoxShape`/`collision`. The whole merge diff also has **no** `collision_layer`/`collision_mask`/`WORLD_MASK` change, so the probe is not hitting a body that changed layer |
+
+**What remains is nav: `movement.gd` (+115), `tank_brain.gd` (+133), `combat_motion.gd` (+82)** — the only behavioural
+change in the window. The test's structure makes them the live suspect: it places the army, then awaits **one physics
+frame** before probing, so anything acting on the first tick (a heading correction, the wheeled creep's reverse leg, an
+avoidance nudge) displaces units before the measurement.
+
+**And the shape is the contact pip again.** The probe box is `hull_size + 1.0`, so a unit sitting under a metre from
+foundry's geometry needs only a small first-tick displacement to cross. CP2 did not move these from clear to blocked
+any more than it did the pip: **a resize does not create these failures, it consumes the margin that was hiding them.**
+
+**Not yet established and deliberately not asserted:** which of nav's three files, and whether the displacement is
+brain-driven motion or a solver response. `make spawn-probe` (`tests/scale/spawn_block_probe.gd`) answers it in one
+run — the test names units but cannot say where they are or what they are in, and a fix chosen without that is a guess.
+
+**A vacuous guard in that test, found on the way and not the bug.** Its first line is
+`assert_true(Match.SPAWN_SLOTS >= Doctrine.MAX_UNITS)`, and `Doctrine.MAX_UNITS := Match.SPAWN_SLOTS` — **it compares
+my constant with itself and cannot fail.** It reads as protecting the grid and protects nothing: the same family as the
+baked-spawn guard that compared the constants with themselves. Not my file; reported, not edited.
+
 ### The round's recurring shape: things that succeeded in a way indistinguishable from working
 
 Not "something broke". **Every expensive thing this round was something that reported success while doing nothing**,
