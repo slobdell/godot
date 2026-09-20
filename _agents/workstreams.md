@@ -40,6 +40,10 @@ and feel first and the other three after CP1.** arena's paths are scale's this r
   spawn grid, cover, clearance and every size-dependent number. Lands **once, early**; every stream `git merge main`
   and re-runs anything size-dependent after it. **Nobody publishes a size-dependent number measured across CP2.**
   The lead sees the side-by-side frame before it merges (a look, not a number: the numbers are derived).
+- **CP2b — squad's attacking-element leash (added 2026-09-20).** `TankBrain.element_slot()` no longer returns null for
+  `bound`/`maneuver`, so every element member carries a leash to its published slot at `slot_leash(element)`; the
+  drift bar becomes `slot_leash(element) + 2.0`. nav's A7 cannot go on by default without it. Merged alone, early, the
+  day squad names its green hash; nav cherry-picks it for measurement only until then.
 - **CP3 — T1 parallel `check` (metrics).** Merged the moment it is green over three consecutive runs with a
   bit-identical sim hash; every stream benefits and every stream re-times its wall-clock assumptions after it.
 
