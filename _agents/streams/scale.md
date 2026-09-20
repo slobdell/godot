@@ -646,7 +646,20 @@ mine was the mask for walls and terrain, asked about a vehicle-vehicle overlap. 
 `pgrep -f godot` matching a command line and a search for `position =` missing a mover that is a function call: the
 query succeeds, returns a confident answer, and the thing looked for was never in its domain.
 
-**One tension I record rather than resolve, because it is mine and it does not fit yet.** My neighbour print is
+**RESOLVED, and the answer is the deepest version of this round's pattern: there were two worlds.** combat printed
+each body's **node** transform beside the **physics server's** on tick 1 and they differ by up to **90.7 m** — a
+*permutation of the spawn slots*, with `S2_3`'s body standing in `S6_1`'s slot across the map. From tick 2 they agree
+exactly. **So every placement, gap and AABB measurement I took was correct about the scene, and the solver was
+resolving a scrambled copy of it.** Suspect: physics interpolation with positions set before the node enters the
+tree; combat is testing `force_update_transform` in `Tank._ready`.
+
+**Which is why the tension below could not be reconciled, and why it was right to record it rather than explain it
+away.** Every observation was true — no unit overlapped *in the scene*, recovery really did fire *in the server* —
+and they were incompatible only because both of us assumed one world. **A disagreement between two correct
+measurements is evidence about the system, not about the measurements**, and the thing to do with it is write it down
+and stop, which cost one paragraph and saved a fifth wrong hypothesis.
+
+**The tension as it stood (kept for the record):** My neighbour print is
 *arithmetic*, not a physics query — it compares placed coordinates against `hull_size` boxes — and it is therefore
 mask-independent. It reported the nearest unit to `Green_S2_2` at **2.21 m clear** (`Green_S2_4`, separated in z:
 |Δz| = 10.62 against half-lengths summing to 8.41), with only three units inside 12 m and **every gap positive**. So
