@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-20 07:00. **Round 9's overnight run: twelve branches merged and verified; CP2 and CP3 pending. Read the morning summary first.**_
+_Last updated: 2026-09-20 11:25. **Round 9's overnight run: sixteen branches and all three checkpoints merged; the morning has merged nine more (feel's stow, show's dials and rules, metrics' gate). `main` at `424352f0` is RED on FOUR tests and THREE ai-scenarios, every one owned and in hand: the foundry spawn transient (squad's settle fix landing), the city-block unknown-colour test (feel, 637ad4de), the two artillery handover reds (green when scale's box lands, minutes away), and the scenarios the new gate exposed (dodging gone: combat bisecting; engine deck inert and suppression margin: scale, weak-spot markers vs `_apply_hull_size`). The last fully green `main` is `0808834e`. Read the morning summary first; the red-test paragraph under "Where it stood" is the full history with six retracted diagnoses.**_
 
 ## ☀ THE MORNING AFTER ROUND 9's NIGHT — read this first (2026-09-20, written 07:00, updated at each tick)
 
@@ -28,16 +28,24 @@ decision, and finished, validated work. Every decision below is reversible in on
 | combat | `55b0de58` | **the dwell timer retired on measurement** (inert for two rounds), **A2 opt-in** (weaker than the flat bonus on churn, costs nothing where 1.35 did), the CLEAR_LANE catch | 1393/0; **baseline moved → `32831dc99cdaf5ca`** (recorded twice at 07:10, agreeing) |
 | show | `e1823e68` | **the arena as a light show**: fixtures, channels, patches, cues; Terminus and yard patched; ~1.5% of frame time, zero added lights | 1420/0, baseline unmoved |
 
-**NOT merged at 07:00: CP2, scale's resized roster.** Built and verified to 1392 passed / 3 failed on `e7ebb372`; two of
-the three since fixed, the third (a contact-pip test in control's file) fixed by control at 07:00 (`e36d61c7`: the test now picks a
+**MERGED 08:10: CP2, scale's resized roster, at `ddb16592` (checked at `7542df28`: 1395 passed, 0 failed, exit 2 = the pre-registered sim-baseline move only). THE ROSTER IS LIVE ON `main`.** **SIM BASELINE RECORDED: `glibc-2.43 2d5215a8a0a59ded`** (builder0 08:15, twice, agreeing; the third move of the night; it differs from scale's branch prediction because combat's move composes with it). A main check on the full tip started 08:16; control's item 4 and feel's X4 were started at 08:10. Its history: verified to 1392 passed / 3 failed on `e7ebb372`; two of
+the three fixed by scale, the third (a contact-pip test in control's file) fixed by control at 07:00 (`e36d61c7`: the test now picks a
 spot it can see instead of a fixed 30 m offset that the bigger hulls put behind a prop) and committed by scale at
-`7542df28`; scale's full check on it at 07:01 came back **1395 passed, 0 failed across both shards and still exit 2**, because T1's shard count is a recursively expanded make variable that re-derived itself from free memory between launch (2 shards) and verification (3): lesson 176, the fix is routed to metrics. **Re-running with the count pinned (`TEST_SHARDS=3`), wrapper line ~08:05**; inconclusive, not green, until then. The swap-bases fairness control is owed. **If it did not land by the time you read this, it is the first merge of
-your morning, and control's item 4 and feel's X4 (the post-resize camera and art sweeps) follow it.** **CP3 (metrics' three-slot series and the `REMOTE_SLOTS=3` default):** the check is 63–66% faster than serial (2820 s → ~930 s) with bit-identical hashes, **but its own three-run flake criterion caught a latent race** (the exclusion groups that keep two smokes off one port were inert: lesson 175); fixed at `fe7599f5`, the three runs restarted at 07:10 and land ~08:00. Not merged until they do.
+`7542df28`; scale's full check on it at 07:01 came back **1395 passed, 0 failed across both shards and still exit 2**, because T1's shard count is a recursively expanded make variable that re-derived itself from free memory between launch (2 shards) and verification (3): lesson 176, the fix is routed to metrics. **Re-running with the count pinned (`TEST_SHARDS=3`), wrapper line ~08:05**; inconclusive, not green, until then. The swap-bases fairness control is owed. **Owed by scale on the merged tree: the swap-bases fairness control (running from 08:10) and the factions re-render.** **MERGED 08:25: CP3, metrics at `0d4e5ef1` (checked at `0f811c1c`): the parallel check is ~3.2× faster** (837 / 882 / 882 s against a like-for-like serial 2820 s, three consecutive greens, hashes identical) **and its own three-run rule caught a latent race in the mechanism before it shipped; two runs would have passed** (lessons 175, 176). `REMOTE_SLOTS=3` ships with the measured reason. Owed: `ai-scenarios-check` into the gate as its own commit; determinism's truncated verdict line.
 
 ### What you should look at (all sent to you overnight; paths on this laptop)
 
+0. **Terminus at your camera, 10:20:** `~/projects/godot-feel/build/terminus-luminance/terminus_pitch21_fov35_49m_default-camera.png` (sent to you). The bands now read the cyan and magenta the layout asks for (the palette fix confirmed in-game) and are still the brightest thing on screen; the vehicles are dark slabs held up by the UI rings. feel's diagnosis: light the floor (Terminus: two floodlights at the perimeter where pit has four, eight towers inside the fight), do not dim the bands. Lamps among the blocks in `terminus.json` are queued for scale behind the red test. **The show's four dials, in your terms: `_agents/show_dials.md`** (merged 10:30). Watch the two clips before the
+   stills. It leads with the correction: the knob you will reach for is brightness and the one that reads as *alive*
+   is the band's width. Two calls are posed as yours (roofline vs full outline; whether the `last_stand` strobe
+   survives) with feel's and show's argument stated so you can overrule knowingly. Adding a cue is ten lines of JSON
+   and no code: `_agents/lighting.md` §4b.
 1. **The roster at real relative scale**: `~/projects/godot-scale/build/roster-lineup/lineup_pose.png` (your pose) and
-   `lineup_factions.png`. K = 0.707, rig-anchored. **Overrule:** `Units.RIG_LENGTH_M` → 19.8 for real metres.
+   `lineup_factions.png`. K = 0.707, rig-anchored. **Overrule:** `Units.RIG_LENGTH_M` → 19.8 for real metres. feel's
+   art review of the resize (08:40): it works, the rig dominates; two things for your eye, neither a defect: the
+   Syndicate reads pristine white against everyone's rust (the ivory tower, intended), and **the Syndicate is fewer AND
+   smaller** — the whole faction sits under 5.5 m while three factions field 8 m and up. If that reads as the runt
+   rather than the surgical few, the thing to change is each unit's *reference vehicle*, not a number.
 2. **The War Rig bending**: `~/projects/godot-feel/build/rig-hinge/strip_45.png`, `strip_21.png` (your pose),
    `strip_reverse_60.png` (the jackknife). Hear it from us: the collider is still one box.
 3. **The camera in the Terminus alleys**: `~/projects/godot-control/build/terminus-alleys/index.html`; `alley4_asked`
@@ -47,9 +55,60 @@ your morning, and control's item 4 and feel's X4 (the post-resize camera and art
    still and lives in motion. The coloured horizontal bands in every frame are feel's round-7 shopfront neon, not the
    show. **Three dials, all data:** `show.channels.windows.ceiling` (1.10; the gate says what raising it costs the
    fight), `show_edge_energy` (0.8, parapet only), `"style": "outline"` (the full-silhouette look feel argues against).
-5. **The airship**: `~/projects/godot-feel/build/airship-look/airship_widest.png`. **You will not see it at your
+5. **The resized roster under your camera** (control; `camera-looks` on builder0 at 08:59, `index.html` with 28 grid
+   frames and all ten arenas at your pose; `build/camera-looks/arenas/yard/default.jpg` shows the ring finding on ONE
+   unit: the tank sits in a circle about twice its own length; and the local shot at 08:28):
+   `~/projects/godot-control/build/control-playtest/1920x1080/8_whole_army.png`. **Two findings, one is your call:**
+   the selection rings are now a cloverleaf, because a ring's radius is 0.75 × the longer hull side and the 8.62 m
+   tank's ring is 12.9 m across; options costed at the top of control's Status (circumscribing-circle bound, an
+   oriented marker along the hull, or leave it). And a facing drag on a WHOLE SQUAD lost its heading: **fixed for the leader on `stream/squad` at `23b1d1a7`**
+   (the cause was one line of squad's own, a facing only at a halt; verified 7/7 on a filtered run, NOT a full check —
+   merge it after one) — **but the followers still cannot carry it** (`_flow` gives them a `follow` with no destination
+   until the leader arrives, which is essentially arrival). Three fixes are in squad's brief in the order to try; **you
+   can see the answer in two seconds by dragging a facing and looking where the followers point**, which is why squad
+   did not pick one blind.
+6. **The airship**: `~/projects/godot-feel/build/airship-look/airship_widest.png`. **You will not see it at your
    default pose**: the sky is below the top of the frame at 21°. It lives over the city at 560 m and shows at 8–12° tilt.
    **Your call:** leave it, or make it a title/results element. One constant either way.
+
+### ⚠ Where it stood at 08:30, and what to run first
+
+**builder0 dropped off the network a second time at ~08:27** (the first outage was ~02:50–03:25). Every remote run in
+flight died with 255 (transport, not the suite): control's camera sweep, feel's X4 check, scale's fairness control,
+and the `main` check that would have covered CP2 and its baseline. **So:**
+
+- **The last `main` tip verified by its own check is `0808834e`** (1454/0, all thirteen merges before CP2).
+- **On `main` above it, merged on their own green branch checks but NOT yet covered by a `main` check:** CP2 (scale
+  `ddb16592`, checked at `7542df28`), the recorded baseline `2d5215a8a0a59ded`, and CP3 (metrics `0d4e5ef1`, checked
+  at `0f811c1c`). Each is green alone; the combination is the one thing unproven.
+- **The `main` check on the full tip `b008a277` (CP2 + CP3 + everything) came back at 08:48: `exited 2`, 1478 passed,
+  1 FAILED** — `test_match_spawns_and_results::test_a_full_faction_army_a_side_spawns_clear_of_itself`: three units
+  (`Green_S5_1`, `Rust_S5_1`, `Rust_S8_1`) spawn inside a wall or crate. **A composition failure:** it passed on
+  scale's branch (1395/0 at `7542df28`) and on `main` before CP2 (1454/0 at `0808834e`), so it is a composition. **scale eliminated from the repository alone (08:58):** the test runs on foundry, whose
+  layout is untouched; `game/tactics/` (ArmyLayout) is unchanged in the window; combat's `units.gd` lines are an inert
+  `--tune` parser; the dressing adds no bodies. nav then accounted for `movement.gd` and `combat_motion.gd` line by line (constants, pure reads, one write-only
+  bool, A6 behind its opt-in switch; the baseline unmoved by its merge), so **what remains in the window is
+  `tank_brain.gd` (+133: squad's corridor field and tube plumbing, combat's switching-cost seam) — OR no motion at
+  all: a unit that spawns ALREADY intersecting looks identical to one nudged on tick one**, which would be a
+  placement-margin failure CP2 exposed (scale's). **FINAL (scale, 11:05, measured): the writer is `move_and_slide`'s depenetration recovery — three resized hulls move 1.475 m DOWN in frame 1 with velocity exactly zero, then climb back (−0.190 at frame 2, −0.042 at frame 3; a passing unit gets +0.87 mm from the identical contact). The test read at frame 1, the worst instant of a settle that resolves by frame 3, and which units land on the bad side depends on engine state left by earlier tests, so the shard schedule decided the verdict (71/71/71 green, 69/68/68 red, same code). Every collider box bottom is exactly at the origin at the catalogue height (`_apply_hull_size` is correct); nothing leaked; no spawn y change is needed (a 5 cm lift moved the frame-1 value by 0.032 m and fixed nothing; the constant `ArmyLayout.SPAWN_LIFT_M` stays at 0.0, now actually wired). RULED: the clear-of-itself test asserts on placement, and any physics-frame assertion samples after settling (largest per-frame delta < 1 cm, capped at ten frames), squad's. The teardown guard's three "navigation-region leaks" were ALSO a transient (regions drain on the frame after free(); the guard counted at frame 0): retracted, the three grants lapsed unused, the guard keeps its bodies-only half. Six wrong diagnoses in one morning, all kept in lesson 178; the guard's in lesson 180.** **11:15: `main` is ALSO red on `test_theme_city_block::test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll` (verified on main at f40ebb24, laptop, filtered: 4 passed, 1 failed; feel's 637ad4de, feel is on it) and on the two artillery handover reds (`test_theme_unit_scale` box-fill, `test_units_scale` mesh proportions) until scale's box lands. 11:20: metrics' new `ai-scenarios-check` gate (merged at `bac84a6f`; its check exited 2 with only main's reds) exposed three scenario reds in the window `1cb2fda9..main` (builder0 both ends): (1) `scenario_dodge_rate` — RETRACTED as a regression within the hour: combat's pristine-tree baseline (`9f864474`, laptop) already had five of six rows at 0 dodges and the sixth at 9 of 451 ticks (a 2 % coin), the scenario's own header says "KNOWN-FAILING since CP4 … 254 of 254 … Not in make check", and the gate promoted it; metrics makes the gate honour the known-failing marker and re-records the count; **"fix dodging itself" is a round-10 item** (it has never fired); the hit-rate rise 85–90 → 90–98 % is most likely bigger hulls being bigger targets, which scale's fairness controls measure. (2) `scenario_cp2`: the scout lands 13 of 14 shots and 0 on the engine deck (23 of 45 on combat's pre-CP2 tree), and its no-weak-spots control arm fired NOTHING in every run including pristine (a control that never fires proves nothing). scale read `armor.gd`: the engine deck is a 25° cone about dead astern (`Armor.is_weak_spot`, two directions and a dot product, nothing that scales), so there is no marker to follow and it is UNEXPLAINED; live hypothesis: a scout orbiting a 3.6:1 slab (8.62 × 2.40 m, was ~square) never gets astern. combat prints, per shell, the hull-forward-vs-shell-travel angle at impact, the shooter's bearing and the range; each of three outcomes names a different owner. (3) `scenario_suppression`: held 0.29 / 1.02 / 161 rounds vs tracking 0.12 / 0.28 / 6, ordering right, margin below its bar; re-run after the box lands.** The 09:15 reading that follows was the step before. **10:45, scale's `3f6c1650` check (`exited 2`, 1479 passed, 3 failed, 71/71/71 shards): the clear-of-itself test PASSED on that schedule and failed at 69/68/68 on the same code, so a green on it is NOT evidence the fragility is gone; and the new teardown guard's three reds are all REAL LEAKS nobody knew about: `test_control_point`, `test_ai_player_holds_mechanism` and `test_combat_envelope` build arenas without `ArenaFixture` and leave 2 NAVIGATION REGIONS each behind, the class ArenaFixture's docstring warns of (the next routing test paths straight through walls against the old map, silently). Ruled: the guard lands WITH the three one-line fixes (scale granted the three test files for that change only), so main never goes red on them. The guard reports a lower bound (high-water mark) and counts only CollisionObject3D and navigation regions. 10:55, squad: `ArmyLayout.deploy`'s final write kept the tank's existing y and discarded the layout's, so the placement y was `Match.spawn_position`'s 0.0 everywhere and squad's earlier "0.05 passes on my branch" was never a measurement (struck); the write is fixed (`global_position = spot`, constant still 0.0) and a third assertion lands with it: no unit moves more than 0.25 m from its captured placement across the first physics frame, naming unit and delta. The −1.47 m is therefore written AFTER placement, in the first frame; scale's four-moment print names the writer.** Worst tick-one displacement across 90 units
+  is 1.8 cm (settling); the test **passes alone** (`FILTER=a_full_faction_army`: 1/0, exit 0) and fails only when
+  `test_arena_layouts` (which stands up scrapyard) runs before it in the same process — scrapyard's bodies still in the
+  physics space while the army deploys on foundry (the tell: two hulls of one squad within half a metre). The merge
+  added test files, the shards redistributed, and the polluter landed ahead of the victim: **the schedule changed, not
+  the code** (lesson 178, lesson 36's shape). The resize made it fatal. **scale owns the fix** (arena tests free
+  deterministically; the shared TestCase counts leftover bodies at test start and names the leaker). **The resize did not create it; it consumed the margin that hid it** (the contact-pip
+  finding's shape). scale's `make spawn-probe` names each flagged unit's position and the body it intersects and runs
+  after its fairness series (~09:05); nav answers from that. Also found: the test's first assertion compares
+  `Match.SPAWN_SLOTS` with a constant defined AS `Match.SPAWN_SLOTS` and cannot fail (combat's/squad's file).
+  Everything else in that run passed, including `sim-baseline` at `2d5215a8a0a59ded`. **So: `main` is RED on exactly
+  one test as you read this; the last fully green `main` is `0808834e`.** If scale has not reported, run
+  `make remote T=check` from `~/projects/godot` on
+  `main` (read the `>> remote: make check exited <N>` line, never a pipe; a 255 is ssh). Then, in order:
+  control's `make remote T=camera-looks` and `T=control-playtest-shots` (item 4), feel's
+  `make remote T=check` on `f1859075` and `T=vehicle-gallery` (X4 + the neon fix), scale's fairness control.
+- **Frames of the resized roster under your camera:** control is shooting `control-playtest-shots` locally at 08:30
+  while the box is down (memory allowed it); the path is at the top of control's Status. Any `build/camera-looks/`
+  on the laptop is an OLDER run and must not be read as CP2's.
 
 ### Decisions made on your behalf (each reversible in one place)
 
@@ -81,19 +140,29 @@ your morning, and control's item 4 and feel's X4 (the post-resize camera and art
 
 ### What each stream owes (each is at the head of its brief's Status, in your terms)
 
-- **scale:** a green check and the swap-bases fairness control for CP2; the factions re-render; feel's two Terminus
+- **scale:** the swap-bases fairness control (two commands at the top of its Status, labelled by population; died with builder0 at 08:27); **the Condemned artillery's collider was measured in its DEPLOYED pose** (outriggers down, 4.74 m wide) while it drives stowed at 2.90 m, so shells stop in empty air beside it: feel stows the legs in the measurement, scale re-derives the box (length unchanged), **and that is one more baseline move to record. THE FIRST ITEM OF YOUR MORNING, in this order (about an hour of box time):** (1) merge feel's `b4c01959` (the stow in the measurement; feel's box-fill test is deliberately RED until step 2 lands — that red is the handover, not a defect); (2) scale `git merge main`, `make roster-scale`, commits the derived box (length unchanged, width 4.74 → 2.90; a **certainty** of a baseline move, not a prediction), runs its check (red only on sim-baseline); (3) merge scale; (4) `make remote T=sim-baseline-record` twice, commit. Then feel's tip check and X4 are green together; the "roster's widest hull" of the night was that pose artefact. Then the factions re-render; feel's two Terminus
   floodlights (half the lamps of pit, eight lit towers inside the fight); the stretch 9/20 → 0/20 re-measure.
 - **combat:** **the hull-rotation plant defect**: a hull's position is collision-resolved and its rotation is not, so
   hulls rotate through scenery; this is your round-8 "semi yawing in place", and CP2 makes it worse. Spec agreed with
   nav; not started so that tonight's baseline move has one named cause.
-- **nav:** P7's A12 baseline (exact invocation written); per-hull-class agent radius after CP2.
+- **nav:** P7's A12 baseline: **the rotation landed (`c025bc6b`, builder0): yard 0.304, pit 0.321, terminus 0.331, pooled 0.320 weighted by active ticks, all inside the pre-registered 30–36 %; the spread of three points across maps that treated A4 oppositely (806 blocked gates vs zero) says the pathology is in the movement layer, not a map, so A6 is a roster-wide row.** Active fraction 0.595–0.738 travels beside it (A6 row in the catalogue). One arena per remote call: `nav-fight-maps` threads one `NAV_FLAGS` so three maps would clobber one `--trajectory` path, and `build/` is wiped per target, so copy each log out first. Then per-hull-class agent radius after CP2.
 - **squad:** A10 resumes at `c0f22597` once the deleted `fixed` flag's guarantee is preserved; the tube's five-seed gate.
-- **control:** item 4 (the post-CP2 camera sweep) the moment CP2 is on `main`; the contact-pip fix for scale.
+- **control:** item 4's green hash (frames landed at f007423e, check running); the "four more fixture-less tests" of 10:50 were RETRACTED at 11:05 (the guard counted a one-frame transient); and `test_control_response` was checked: it never routes and drives in open ground by constant, so K1's 100 ms figure could not have been flattered by a stale mesh; nothing owed there.
 - **feel:** X4 after CP2; the hinge's frame cost when the box is quiet; the Terminus brightness (diagnosed, scale's fix).
 - **metrics:** CP3's table; `ai-scenarios` into `check` behind its count baseline; the corridor columns' consumer.
 - **show:** item 7 (stretch) not started.
 
 ### The round's structural finding, and what round 10 should spend itself on
+
+**A second structural consequence of the resize, measured by nav at 10:35 (`c025bc6b`, post-CP2 roster):** the navmesh
+is baked for a 2.0 m agent (`arena.tscn`, mirrored by `NAV_AGENT_RADIUS`) and **14 of 21 units now have an avoidance
+radius above it** (median 2.50 m, `gang_tank` 4.58 m = 2.3× the bake, `gang_scout` 1.36 m). The mesh certifies
+corridors the largest hulls cannot physically use, a plausible contributor to the wedging nav chased all round, and it
+arrived with CP2, not with any nav change. **Ruled (10:40):** nav's routing reads the bake radius from the arena and
+consults each hull's shortfall (refuse or widen) rather than discovering it by wedging; the bake stays 2.0 this round
+(4.58 would close every alley for the two thirds that fit); per-class meshes are round 10 money only if nav's
+falsifier says so. **Your call, recorded:** should the largest hulls simply not route through alleys narrower than
+their clearance (heavies use streets)? nav can measure the cost of not deciding; it cannot decide it.
 
 **Intent does not reach the layer that moves the hull.** nav measured `CombatMotion` deciding under a tenth of a hull's
 ticks with `Movement` driving the rest and knowing no leash; squad found A8's deformation fails a defile because a slot

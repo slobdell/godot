@@ -2662,3 +2662,65 @@ The kickoff prompt is one line; this section is the rest.
     read it. Derive once with `:=`, print the value the run actually used in its own header, and verify against that
     value, never against a fresh evaluation. **The nastier version of "the thing under test is not the thing
     described": here the instrument and the subject disagreed about how many there were.**
+177. **The change that feels too small for the ceremony is the common case, not the exotic one.** Round 9's last hour,
+    squad, a "one-line" fix to a facing drag on a whole squad: the peer's premise (nothing reads `task["facing"]`) was
+    wrong — it was read, and the heading was thrown away one line later by `entry["facing"] if halt else null` — so
+    implementing what was described would have fixed nothing; then three process slips on the same small item (a
+    verification launched in the same command as an edit that had aborted, a test whose negative arm passed for the
+    wrong reason, an assertion at a moment the thing could not be observed), caught only by the stream's own
+    anti-vacuity guard. *"I am reliable at demanding an arm can exercise its mechanism and unreliable at checking it
+    when the change feels too small to deserve the ceremony."* The ceremony is for the small ones.
+178. **A green test that goes red on schedule is measuring a transient, and every hypothesis that names a culprit
+    before the settling curve is drawn will be wrong.** Round 9's last red, `test_a_full_faction_army_a_side_spawns_
+    clear_of_itself`, passed alone, passed at a 71/71/71 shard layout and failed at 69/68/68 on identical code. Six
+    diagnoses fell in one morning, each measured and each retracted: nav's code, `tank_brain`, RNG divergence, a
+    test-isolation leak of physics bodies (free() takes them 38 → 0 in the same call), a solver ejecting a degenerate
+    y = 0 contact (the body is a `CharacterBody3D`; nothing ejects it), a collider straddling the floor (every box
+    bottom is exactly at the origin at the catalogue height). **The mechanism (scale `3f6c1650`+): `move_and_slide`'s
+    depenetration recovery moves three resized hulls 1.475 m DOWN in frame 1 with velocity exactly zero, then they
+    climb back: −0.190 at frame 2, −0.042 at frame 3; a passing unit gets +0.87 mm from the identical contact.** The
+    test read at frame 1, the single worst instant of a settle that resolves by frame 3, and which units land on the
+    bad side depends on engine state left by earlier tests, so the schedule decided the verdict. Fix: assert on
+    *placement* (deterministic), and any physics-frame assertion samples after settling (largest per-frame delta
+    below 1 cm, capped), never at a fixed frame. Two side findings, both false leads, are kept beside the answer:
+    a 5 cm spawn lift moved the frame-1 value by 0.032 m and fixed nothing (the constant stays, wired, at 0.0), and
+    squad's "the lift passes on my branch" was a layout write that discarded its own y. **Draw the curve before you
+    name the writer, and name the body hit in every failure message: "inside a wall or crate" when the body was the
+    ground cost the morning.**
+
+179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
+    morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
+    read +1.50 ms with two cycles and −0.65 ms with six, on builder0 at load 14–21 with 67 Godot processes and five
+    checks resident; each phase's own spread was ~5 ms against an effect under 1.5. Raising the cycle count fixes
+    *sampling* noise, the error from looking too few times at a stable quantity; it does nothing when the quantity
+    itself drifts with the machine's load between one phase and the next: **more samples of a drifting quantity
+    describe the drift more confidently.** Within-run pairing (lesson 175's cross-run failure) bounds *when* the two
+    halves are measured, not *how quiet* the box is while they are: necessary, not sufficient. So timing runs (hinge
+    cost, show cost) go in a **quiet window** the orchestrator calls after the checks drain, one stream at a time, and
+    every timing number carries the load average and the per-phase spread beside it or it is not quoted. Screenshots
+    and seed-deterministic series are only *slowed* by load and can run through it.
+180. **A guard that counts at teardown measures a pending removal, and it will convict the innocent with the same
+    confidence as a real leak.** Round 9's teardown guard (scale, `3f6c1650`) named three tests for leaving two
+    navigation regions each; `NavigationServer3D` drops regions on the frame *after* `free()` ([2, 0, 0, 0] over
+    frames 0–3), `TestCase.teardown()` counts synchronously at frame 0, so all three were innocent, and the
+    orchestrator had already granted one-line "fixes" in three streams' files before scale measured the drain
+    curve. Same morning, same suite, same shape as lesson 178: **a transient read at the wrong frame.** Physics
+    bodies have no such window (free() takes them to 0 in the same call), so the guard keeps that half and drops
+    regions. Rules: a guard's claim is only as strong as the settling behaviour of what it counts, measured; land a
+    guard *with* the fixes for what it finds, never route the fixes first; and when a new instrument convicts three
+    unrelated tests at once, suspect the instrument before the tests.
+181. **A difference between two arms proves the arms differ, never why.** Round 9's spawn lift: combat's 5 cm arm
+    moved the frame-1 sink by +0.032 m and combat read it as "the lift reached deployed units"; it was the
+    depenetration recovery's sensitivity to the contact. Earlier the same night a 47 % sliding-goal share was read as
+    a mechanism when it was a selection. The delta is the licence to look for the mechanism, not the mechanism. And
+    two streams implementing one ruling in two places produced one arm that could not act (squad's layout discarded
+    its own y) and one that acted for the wrong reason: **one constant, one home, one arm that exercises it, before
+    anyone reads a number off it.**
+182. **An `&&` chain of test runs reports the first failure and silence for the rest, and silence was read as green.**
+    Round 9: feel ran `make test FILTER=unit_scale && … city_block && … trailer && … airship`; `unit_scale` failed on
+    the artillery handover, the chain stopped, and the report said "the other three files passed" — `grep -c
+    city_block` on that log returns 0. The city-block test had never run and could not have passed as written
+    (`push_warning` on the path it exercises is an engine error to `ErrorCollector`), and it merged to `main` on
+    that sentence. Rule: **a claim that a file passed names that file's own `N passed, M failed` line from the log**,
+    and batches of filtered runs use `;` with a per-file summary, never `&&`. Same family as lesson 163 (read the
+    result line, not the exit code, not the absence of a complaint).

@@ -115,7 +115,9 @@ existed with the other three.)
 | `order_reverse` | bool or null | the order asks for reverse (a yield spot behind it, a retreat) |
 | `phase` | str or null | `Movement.state(tank).phase` — `yielding`, `blocked`, `none`, … |
 | `creeping` | bool or null | the plant is in its wheeled creep (K-turn legs) |
-| `facing_ordered` | bool or null | **the unit is flying an ordered arrival facing** (see below) |
+| `facing_ordered` | bool or null | the unit's ORDER carries an arrival facing (order-level, true for the whole journey) |
+| `facing_arc` | bool or null | **the arrival ARC is live on this tick** (see below) |
+| `corridor_x`, `corridor_z` | float or null, **paired** | the unit tangent of the path leg nav is **currently driving** (`Movement.state(unit)["corridor"]`) — see below |
 
 Without the first three, every cusp is reported as `unclassified`, and `make metrics` says so rather than
 reporting a zero.
@@ -139,6 +141,38 @@ So:
 - **Any future off-corridor or opposing-tangent statistic obeys the same rule**, and `make metrics` refuses to let
   a log without this column masquerade as one that has it: it prints a NOTE saying no off-corridor verdict may be
   published from that log.
+
+#### `corridor_x` / `corridor_z`, and the three states that must not collapse
+
+A6's falsifier (`_agents/legibility.md` §7) is *"time fraction with velocity opposing the corridor tangent, under
+attack-move, over active ticks"* — **measured with A12 and nothing else**, because the quantity is trajectory-space
+and A12 exists so every stream reads it from one implementation. Velocity is derivable from consecutive samples;
+the tangent is not, so it is logged.
+
+**It is the leg, not the bearing to the goal.** §2: the corridor is *"the path nav is currently driving, not the
+straight line to the goal"*. A hull rounding a corner has a tangent along its leg while the goal bearing points
+through a wall — which is exactly the case A6 exists for, so a statistic built on `goal_x`/`goal_z` would be wrong
+precisely where it matters.
+
+**Three states, and the metric keeps them apart:**
+
+| state | in the log | what the metric does |
+|---|---|---|
+| **no data** | the columns are **absent** | `off_corridor=null`. **No verdict may be published.** |
+| **inactive** | present, **null** | nav says there is no leg right now — a *named* case (§5). Counted in `inactive`, excluded from the fraction's denominator |
+| **active** | present, a unit vector | scored |
+
+**Producers: read the key with `has()`, never `get("corridor", null)`.** The default-argument form cannot tell
+*"nav answered null"* from *"this build has no such key"*, so a consumer falls through to its fallback on exactly
+the ticks where nav said there is no leg (control hit this within minutes of adopting the key). The reference
+emitter omits the columns entirely when the key is absent, which is what makes the first row above visible.
+
+**The active fraction travels with the fraction, always.** §7 requires it and the report prints them together:
+*a falsifier that improves because the law switched itself off more often is not a pass.*
+
+**Ordered arrival arcs are excluded and counted separately** (`ordered_arc`), on `facing_arc` and never on
+`facing_ordered` — an order carries its facing from the moment it is issued, so excluding on that would excuse the
+whole drive to the gate and hide the pathology being measured.
 
 Producer: nav's `fight_probe.gd` emitter (nav has been asked for it). Until it lands, logs simply omit the column
 and the NOTE appears.

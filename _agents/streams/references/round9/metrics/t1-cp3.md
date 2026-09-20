@@ -79,4 +79,61 @@ check ever produced.
 
 ## Results
 
-_(the three-run table goes here: run, commit, machine, wall-clock, load, 1261, both hashes, flakes)_
+All on **builder0**. Serial baseline at `bfdc58b7`; the three parallel runs at `0f811c1c`, which differs from it
+**only in `mk/core.mk`** — `git diff bfdc58b7..0f811c1c -- game/ tests/` is empty, so the work compared is identical.
+
+| run | wall-clock | vs 2820 s | jobs | shards | tests | sim-baseline | load | other godot | result |
+|---|---|---|---|---|---|---|---|---|---|
+| **serial (a)** | **2820 s** | — | 1 | 1 | 1310 / 0 | `04414f5d6a6dfa7c` | 4.09 | 27 | green |
+| **parallel 1** | **837 s** | **−70.3%** | 2 | 5 | 1310 / 0 | `04414f5d6a6dfa7c` | 5.79 | 22 | green |
+| **parallel 2** | **882 s** | **−68.7%** | 3 | 6 | 1310 / 0 | `04414f5d6a6dfa7c` | 0.43 | 6 | green |
+| **parallel 3** | **882 s** | **−68.7%** | 3 | 6 | 1310 / 0 | `04414f5d6a6dfa7c` | 0.11 | 2 | green |
+
+Against the **fastest serial figure this check has ever produced** (2584 s — and that one did *less* work, its
+lint being the vacuous one), the drops are **67.6% / 65.9% / 65.9%**. Either denominator clears the ≥ 50% bar.
+
+### The three criteria, one at a time
+
+**1. Wall-clock drops ≥ 50% — MET** by either denominator, on all three runs.
+
+**2. Zero new flakes over three consecutive runs — MET at the second attempt, and the first attempt is the more
+valuable half.** An earlier series on `bfdc58b7` failed its run 2 because `lobby-smoke` and `relay-smoke` both
+started a broker on `$(SMOKE_BROKER_PORT)`. **That is the exact collision the exclusion groups existed to prevent,
+and they were inert:** `_cp-lobby-smoke: lobby-smoke | _cp-relay-smoke` orders `_cp-relay-smoke` before *the
+wrapper*, while `lobby-smoke` sat on the **normal** side, where make may build it concurrently. The ordering
+constrained the bookkeeping, not the work. It had never been exercised because `CHECK_JOBS` had always derived 1
+or 2; the one run that derived 3 hit it in its first minute. **Two runs would have shipped it.**
+
+**3. Hashes — `sim-baseline` measured identical; `determinism` passed everywhere but was not directly compared.**
+`sim-baseline` prints its hash, and `04414f5d6a6dfa7c` is identical in the serial run and all three parallel runs.
+`determinism` passed in all four, but **its verdict line is truncated at 120 characters**, so the hash never
+reaches the log; the only carrier is `build/determinism_1.json`, which every run overwrites — the serial run's
+value was gone before it could be compared. The trees are game-identical, so the values must agree, **but that is
+an inference and it is labelled as one.** The truncation is a defect in that target's reporting (a verdict that
+cannot be compared after the fact) and is on the follow-up list.
+
+### That the exclusion now works is SHOWN, not assumed
+
+A green exit is not evidence — the inert version exited green twice. Two independent proofs:
+
+- **Structural.** From make's own database: `_cp-lobby-smoke: | _cp-relay-smoke`, with **nothing on the normal
+  side**. Each wrapper now invokes its target from its own recipe, so the order-only edge constrains the work.
+- **Empirical.** Runs 2 and 3 derived **`CHECK_JOBS=3`** — the configuration that failed before — and passed, with
+  every pair correctly ordered in their logs (relay before lobby, net before combat, garage before army-loop).
+
+### What ships
+
+**`REMOTE_SLOTS=3`, deliberately fewer than the 6 it was raised to**, because after T1 a slot holds six to eight
+processes instead of one. The six-slot series is the evidence: 1776 s, 1822 s, 1323 s — at six slots a check is
+entitled to ~2 GB, derives **2** test shards, and lands at **34%**, *missing the bar*. At three slots it derives
+5–6 shards and clears it. Throughput is the same at any slot count; **latency per check is not**, and latency is
+what eight streams wait on.
+
+### A second bug the series caught, in the budgets themselves
+
+`TEST_SHARDS ?= $(shell ...)` is **recursively expanded**, so the shell re-ran at every reference — and the recipe
+references it three times (the `seq` that launches shards, the `xargs -P`, and the count the guard verifies
+against). `slot.sh --jobs` reads free memory, so the three answers differed on a shared box: scale's CP2 check
+launched **two** shards, both reported, 1395 passed, and then verified against **three** — so the
+refuse-if-a-shard-went-silent guard fired on a run in which nothing had gone wrong. Found by scale. Fixed with
+`:=` plus `$(if ...)`, which keeps "leave an existing value alone" while running the shell once per make.

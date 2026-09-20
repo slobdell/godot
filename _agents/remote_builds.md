@@ -380,3 +380,15 @@ patterns (`grep '[G]odot'`), or `pgrep -x` on the binary, and confirm by cwd (sq
 `ppid == 2113` as "mine" and the list held show's, squad's, scale's, control's and the orchestrator's runs. The
 ownership test is `readlink /proc/<pid>/cwd`; who really holds a slot is `fuser /tmp/tank_squad_slots/slot<N>.lock`,
 because an `.owner` file can be stale (feel, 2026-09-20 05:45).
+
+**The wrappers now pin themselves (metrics `92c77b90`):** `remote.sh` and `slot.sh` re-exec from a private copy and unlink
+it, so a `git merge` cannot rewrite a running wrapper (demonstrated: an unpinned script executed the replacement's lines
+3–5 mid-run; the pinned one did not). **This does NOT retire "do not merge while a run is in flight"**, which stands on
+three other grounds: sub-makes re-read `mk/*.mk` (every `_cp-*` wrapper of the parallel check spawns one), a second
+`make remote` rsyncs into a directory a suite is reading (trip-up 66), and Godot loads `.gd`/`.tscn` lazily. Merge
+between runs.
+
+**An orphan blocks its own worktree's queue, not just a slot.** scale's dropped `arena-series` was still executing on
+builder0 ten minutes after its wrapper died (the make, slot.sh, arena_series.py and two headless matches); the next
+`make remote` from that worktree would have rsynced `--delete` under it. Kill the whole tree by cwd-verified PID
+before relaunching (scale, 2026-09-20 08:45).

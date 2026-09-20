@@ -154,6 +154,56 @@ measured is the wrong metric.* The run, its pre-registered bar and its result ar
 ("From the same replays", in the catalogue, cannot be taken literally: the replays did not exist. The honest control
 is a re-run, and its provenance is written down as one.)
 
+## A6's falsifier: off-corridor fraction
+
+Not a fifth metric either — the statistic `_agents/legibility.md` §7 names, computed here because §7 says it is
+**measured with A12 and nothing else**: one quantity, one implementation, every stream reading the same number.
+
+> *Time fraction with velocity opposing the corridor tangent, under attack-move, over active ticks: 30–36% → under 10%.*
+
+Velocity comes from consecutive samples; the **corridor tangent is logged** (`corridor_x`/`corridor_z`), because
+it cannot be derived. It is the tangent of the **leg nav is currently driving**, never the bearing to the goal —
+a hull rounding a corner drives along its leg while the goal bearing points through a wall, which is exactly the
+case A6 exists for.
+
+**What the report prints, and why every part of it is there:**
+
+    off_corridor=0.312 (active 0.845, 12440 ticks; inactive 1980, slow 310, ordered_arc 122)
+
+- **`off_corridor`** — the fraction itself, over *active* ticks only. **`null` when the producer's build has no
+  corridor key**, and then no verdict may be published from that log.
+- **`active`** — the active fraction, and it is **half the result, not a footnote**: a law that improves its own
+  number by switching itself off more often is not a pass. §7 requires it beside the fraction; the renderer
+  cannot print one without the other. **P7's baseline shows why it is worth the space:** across yard / pit /
+  terminus the fraction barely moves (0.304 / 0.321 / 0.331) while the **active fraction moves far more**
+  (0.631 / 0.595 / 0.738). So the pathology is roster-wide but A6's *opportunity* to act on it is
+  map-dependent — a distinction invisible in the fraction alone (nav, 2026-09-20).
+- **`inactive`** — nav published the key and said *no leg right now*. A named case (§5), not an absence.
+- **`ordered_arc`** — excluded because an ordered arrival arc is off-corridor **by construction** and is the unit
+  obeying. On `facing_arc`, **never** on `facing_ordered`: an order carries its facing from the moment it is
+  issued, so excluding on that would excuse the whole drive to the gate.
+
+### Pooling several maps into one figure (`--pool`)
+
+    python3 tools/metrics/run_metrics.py "build/metrics/*.jsonl.gz" --team 0 --order-verb attack_move --pool
+
+Prints the per-file rows as usual and then **one pooled row**, so a rotation figure across yard / pit / terminus
+is one command rather than four and a calculator.
+
+**Pooled by TICKS, never by averaging the per-file fractions** — and the mean is printed *beside* the real
+figure so the weighting is visible rather than taken on trust. On P7 the two agree to a thousandth (0.3203 against
+0.3187) **only because the three maps carry similar weight**; on files that do not, the mean is quietly wrong. A mean would weight a 30 s log the same as a
+120 s one, which is how a rotation number ends up dominated by its shortest map. A 10 s log at 90% pooled with a
+190 s log at 10% is **14%**, not 50%, and there is a test that says so.
+
+Three things it refuses to do:
+- **Launder a missing column.** A quantity that is `null` in *any* file is `null` in the pool — one log without
+  the corridor column makes the pooled off-corridor fraction unpublishable, exactly as it does for that log alone.
+- **Hide a disagreeing map.** The per-file rows stay above the pooled one, so a map that differs from the pool is
+  visible rather than averaged away.
+- **Pool across trees or machines silently.** Mixed commits or machines print a ⚠ REFUSE TO QUOTE THIS banner
+  naming them (CLAUDE.md rule 4; the laptop is ~2.75× slower than builder0).
+
 ## Hull turn between events (`--switches`)
 
 Not a fifth metric — a read the log already supports, added for combat's A2 question and available to anyone.

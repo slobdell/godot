@@ -97,6 +97,14 @@ These are not craft. A change that breaks one of them is wrong even if it looks 
     channel count — a seven-channel set failed the yard's four.
 11. **A cue may run a channel faster than a patch may declare one.** Rule 10 governs the *idle*, not a stab of
     strobe: a `last_stand` at a 1.6 s period is the point. The floor is 0.8 s, under which it reads as a fault.
+12. **Every visual claim about the show is a PAIR, shot on one frozen frame with `driving` toggled — so the check
+    can only ever blame the show for what the show actually changed.** This is not a measurement convenience, it
+    is what makes the check *fair*, and it has already earned it twice: the Terminus's brightest feature is feel's
+    neon band at shop-window height, which is present in **both** halves and therefore cancels. An **absolute**
+    check charges that band to the light show, and the response to it is to dim windows to compensate for a strip
+    the show does not own — which is exactly what the first version of the readability gate asked for when it
+    failed 22 of 30 frames with no show in them at all. **If you find yourself tuning one of these dials to fix
+    something that is in the show-off half too, the check is wrong, not the dial.**
 
 ---
 
@@ -190,6 +198,107 @@ by reading the code.
 
 ---
 
+## 4b. Recipes: how to actually add one
+
+The lead asked for the abstractions by name, and §1–§4 are the abstractions. This section is the other half — **what
+you type.** Each recipe is the whole change; if you find yourself writing more than this, the thing you are adding
+probably is not a cue or a fixture.
+
+### Add a cue — ten lines, all of them data
+
+A cue is channel overrides bound to a mood state. It goes in `game/theme/show/cues.json`; **no code changes, no new
+file, and it applies to every arena that declares a channel by that name.** To make the venue surge when the match
+tips into `battle`:
+
+```json
+"battle": {
+  "attack": 1.2,
+  "release": 2.5,
+  "set": {
+    "rim":     {"programme": "chase",  "period": 5.5, "floor": 0.70, "ceiling": 1.25},
+    "edges":   {"programme": "sweep",  "period": 7.0, "floor": 0.30, "ceiling": 1.00},
+    "windows": {"period": 11.0}
+  }
+}
+```
+
+That is it. Things worth knowing before you write one:
+
+- **The key must be a `MatchMood` state** (`lull`, `skirmish`, `battle`, `last_stand`, `victory`, `defeat`) or the
+  pseudo-state `fight`. A typo is a **load error naming the states you could have meant**, not a cue that never
+  fires — which is the failure this validator exists to prevent.
+- **Anything you do not mention is left alone.** `{"period": 11.0}` changes the tempo and nothing else.
+- **You cannot escape the arena's floor and ceiling.** `ShowCues.blend()` clamps every override into the band the
+  patch declared, so no cue can take a core fixture dark or to full blast. Ask for `"ceiling": 9.0` and you get the
+  patch's ceiling.
+- **`attack` and `release` are seconds**, and they are why cues do not pop. A period change *retunes* the clock
+  rather than recomputing it, so a 24 s breathe becoming a 1.6 s strobe changes rate without tearing.
+- **A cue may run faster than a patch may** (down to 0.8 s): rule 10 governs the idle, not a stab of strobe.
+- **`"color": "winner"`** is the one team-coloured thing in the venue and resolves at runtime. A hex here would be a
+  venue colour and must obey §8b's bars: **no cool white, no red.**
+
+**An event cue** is the same shape under `"events"`, and its `min_weight` is load-bearing: `FxWorld.spectacle` fires
+on every *hit*, so `1.0` means kills only. See §8b.
+
+### Add a fixture — three steps, and step 1 is usually the only real work
+
+A fixture is any emissive surface already being drawn. **Adding one must not add a draw call, a mesh or a light** —
+if it does, it is not a fixture.
+
+**1. Give the shader the hook.** Include the one waveform and declare the uniforms with **identity defaults**, so
+the surface renders exactly as it does today until something patches it:
+
+```glsl
+#include "res://game/theme/fx/shaders/show.gdshaderinc"
+uniform vec4  show_level      = vec4(1.0, 0.0, 0.0, 1.0);   // SHOW_IDENTITY: a constant 1.0
+uniform float show_spread     = 0.0;                        // per-instance phase scale
+uniform vec3  show_color      : source_color = vec3(1.0);
+uniform float show_color_mix  = 0.0;
+
+// ...then multiply what the surface already emits:
+ALBEDO = mix(color, show_color, show_color_mix) * ... * show_value(show_level, phase);
+```
+
+**`phase` must come from data the mesh already carries** — a per-instance `INSTANCE_CUSTOM` lane, a vertex colour,
+or world position. Never a uniform per instance, and never a new MultiMesh to get variation (§2 rule 2). If you are
+*adding* a term rather than modulating one (as the blocks' parapet does), its identity is `SHOW_OFF`, not
+`SHOW_IDENTITY`, and it adds to `EMISSION` rather than multiplying.
+
+**2. Register the driven object — once per material, never once per instance:**
+
+```gdscript
+var show := Show.get_instance()   # null on a headless peer, and that is fine
+if show != null:
+    show.add_fixture(&"my_fixture", material)
+```
+
+**3. Patch it** in `arenas/<name>.json`, which is the only place a fixture is switched on:
+
+```json
+{"fixture": "my_fixture", "parameter": "level", "channel": "rim", "spread": 1.0}
+```
+
+Then `make show-report ARENA=<name>` prints what it resolved to, and `make show-frames` shoots it and **fails if it
+makes the fight harder to read**.
+
+### Add a new *parameter* (rarely)
+
+`level`, `edge`, `window` and `shop` cover a modulator and an additive term. A genuinely new one is a row in
+`Show.UNIFORMS`, a uniform named `show_<parameter>`, and a decision about its identity — and if it drives a surface
+that is lit **today**, add it to `Show.CORE_PARAMETERS` so the validator refuses a patch that would let it go dark.
+
+### What to do when it does not show up
+
+| symptom | first thing to check |
+|---|---|
+| nothing moves | is the fixture in the arena's `patch`? `make show-report ARENA=<name>` lists every binding |
+| nothing moves, and the report looks right | did anything call `add_fixture`? Headless returns a null `Show` by design |
+| it moves but every instance together | `spread` is 0, or the shader is not using its per-instance `phase` |
+| the cue never fires | the state name — a typo is a load error, so read the error rather than the frame |
+| it looks wrong and you cannot say why | `make show-frames` prints every channel's live value beside each frame (lesson 44) |
+
+---
+
 ## 5. Ownership: who writes what
 
 Two writers to one perceived quantity look like flicker nobody can reproduce. Each row below has exactly one writer.
@@ -197,6 +306,7 @@ Two writers to one perceived quantity look like flicker nobody can reproduce. Ea
 | quantity | owner | everyone else |
 |---|---|---|
 | **The arena-wide ground wash** | **the show director.** | `AdBroadcast.light_color()` stays the **screens' own local spill** and the director **reads** it as one input. The show never writes the spill; `AdBroadcast` never writes the wash. |
+| **The floor's READABILITY — how well lit the fight is** | **scale's lamps, in `terminus.json`** | **the show modulates what is already lit; the `pools` channel is not the floor's baseline.** Ruled by the orchestrator, 2026-09-20, after feel found that the Terminus's shop-height bands out-compete the fight by *placement* rather than palette. The `pools` channel is the nearest knob and it is the wrong one: if the show lights the floor, the show's dials start gating whether the fight is legible, and a look decision becomes a play decision. |
 | Emission and channel values on any `show_*` uniform | **the show** | control never writes a `show_*` uniform |
 | A block's **alpha / visibility** (the camera-inside-a-block cutaway) | **control** | **the show never writes alpha, visibility, or the cutaway's own uniform.** Ruled by the orchestrator, 2026-09-20 |
 | The **look at channel level 1.0** — every material's base colours, roughness, energies | **feel** | the show is additive only: a hook a material exposes, never a restyle |
@@ -487,6 +597,55 @@ different reason that looked like a result:
 instance-uniform error count, and whether the shaders compiled at all survive a bad machine completely. On the
 contaminated pair, real lights were identical and both error counts were zero — which is most of rule 3, proven, on
 a run whose milliseconds were worthless.
+
+### Within one run is necessary and not sufficient — and more samples do not fix a moving machine
+
+The `no_show` layer is the right instrument and it still failed on 2026-09-20 morning, which is worth writing down
+because the obvious next move is the wrong one.
+
+Re-measuring on the CP2 roster with builder0 at **load 21 on 12 cores, 67 Godot processes resident**:
+
+| attempt | reported `no_show` GPU cost |
+|---|---|
+| `PERF_CYCLES=2` (3 `all` phases, 2 `no_show`) | **+1.50 ms** |
+| `PERF_CYCLES=6` (7 `all`, 6 `no_show`) | **−0.65 ms** |
+
+**They straddle zero**, and each phase's own GPU spread was **~5 ms** against an effect that should be under 1.5.
+
+**Raising the cycle count did not help, and could not have.** More samples fix *sampling* noise — the error from
+having looked too few times at a **stable** quantity. On a box at load 21 the GPU's throughput is itself moving
+between one phase and the next, so more samples describe the drift more confidently and converge on nothing.
+
+**So the rule has a second half.** "Get A and B from one run" bounds *when* the two halves are measured; it does
+not bound *how quiet the machine is while they are*. Within-run is what stops a 43%-faster-when-slower result; it
+is not what turns a sub-millisecond effect into a number. **For an effect near the noise floor you need both: one
+run, and a quiet machine.** Ask the orchestrator for the window — it is six minutes of Godot, and the alternative
+is a figure that straddles zero and a paragraph that has to be written twice.
+
+**Report the load average beside the number, always.** A layer cost with no load beside it cannot be checked by the
+next reader, and on a shared builder that is most of what decides whether it means anything.
+
+### Read the counters in the same JSON before blaming the treatment
+
+`all_gpu` went **7.69 ms → 19.87 ms** between last night and the morning after CP2 merged, and the obvious reading —
+*"the resized roster costs 2.6× the GPU"* — was wrong, and refutable from data already in the same output:
+
+| run | vehicles | **primitives** | **draw calls** | GPU ms | avg ms |
+|---|---|---|---|---|---|
+| `96e10e82` (before CP2) | 68 | **191,206** | **291** | **6.43** | 23.44 |
+| `d8a107b5` (after CP2) | 68 | **145,093** | **259** | **20.05** | 99.68 |
+
+**The scene got 24% smaller in primitives and 11% smaller in draw calls, and took 3× the GPU time.** A GPU drawing
+less through fewer calls cannot take three times longer unless it is sharing the card — so this is a contended
+machine, not a heavier scene, and the counters say so from *inside* the run without needing the load average.
+
+**The general habit:** when a timing number moves, **check the counters beside it before believing the story that
+fits.** `primitives`, `draw_calls`, `objects` and `real_lights` are in every `PERF_SCENE` row, they cost nothing to
+read, and they are immune to the load that moved the timing. Here they inverted the conclusion in thirty seconds.
+
+**The real CP2 observation, which is the opposite of an alarm:** the same 6500 budget now buys **68 vehicles at
+145k primitives where it bought 68 at 191k** — bigger hulls, fewer primitives, consistent with the resize going
+through simpler approved meshes rather than more geometry.
 
 ### A gate that fails the branch point is not a gate
 

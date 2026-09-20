@@ -70,6 +70,17 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 - **Confirm a new combat/physics test can fail.** The first armor tests "passed" friendly-fire and wall-blocking checks only because *every* shell was flying over the tanks' collision boxes.
 - Prefer extracting math into a pure class (like `TankMotion`) over testing through nodes.
 - A test that can't fail is worse than none. When adding one, briefly break the code to confirm it goes red.
+- **No production path a test exercises may `push_warning`** (2026-09-20): `tests/run_tests.gd`'s `ErrorCollector`
+  records every `_log_error` regardless of `_error_type`, so a warning fails the test that provoked it. Put a
+  rejection where the input is *read* (once, e.g. `Arena.validate()`), not where it is *used* (per block, per frame).
+  metrics is making warnings a separate count with `expect_warning`; until that lands this is a hard rule.
+- **Physics-frame assertions sample after settling, never at a fixed frame** (2026-09-20, lesson 178): a spawned
+  hull can be pushed 1.475 m under the floor by `move_and_slide`'s depenetration in frame 1 and be back within
+  4 cm by frame 3; which units take the bad side depends on engine state left by earlier tests. Assert *placement*
+  for what placement guarantees; for the physical claim, wait until the largest per-frame delta is below 1 cm
+  (capped), and name the unit, the body it hit and the frame count in the failure message.
+- **Filtered runs in a batch use `;` with a per-file summary, never `&&`** (lesson 182): the chain stops at the
+  first red and the unrun files look green by silence. A pass claim names the file's own `N passed, M failed` line.
 
 ## How the checks work (so you can extend them)
 
