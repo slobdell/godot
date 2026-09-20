@@ -589,6 +589,27 @@ and is queued separately rather than folded into the held series. Squad also cau
 `--tune=match.hull_disc=1` flips every consumer: that is the **pre-inversion** sense, `=0` is the treatment arm,
 and the comment would have had the series run **with two identical arms**.
 
+### ⚠ A SAMPLE IS NOT A SUMMARY — the same misreading, twice in one day
+
+`test_ai_player_orders` prints a per-unit roster **and** a per-squad worst-gap line. This stream read three roster
+entries (`3 m`, `4 m`, `5 m`) and concluded the crews "were never told to finish the move". The summary line said
+something else entirely:
+
+    worst gap per squad { "Alpha": 2.9, "Bravo": 89.5, "Charlie": 87.6, "Delta": 86.5, "Echo": 91.1 };
+      12 of 30 units off their slot, 0 with no slot at all
+
+**Four of five squads have a unit ~90 m from its slot**, and the threshold the assertion uses is 36 m
+(`PLAYER_POST_LEASH 18.0 × ESCAPE_LEASH_FACTOR 2.0`). The roster prints *some* units; the line prints the
+**worst**. squad caught it by asking which of the file's two `assert_eq(..., 0, ...)` had fired instead of
+accepting the narrative — `0 with no slot at all` settled it in one field.
+
+It is the same error as **reading a filtered run as readiness** (lesson 45), which cost this stream an afternoon on
+the same day: *a subset that agrees with the story is not the measurement.* Read the aggregate line before
+theorising from the detail lines, and when a test prints both, **quote the aggregate**.
+
+(Unrelated to the arms: both arms produce the **byte-identical** MEASURE line, which is a stronger exoneration of
+`match.yaw_fit` than the matching counts were.)
+
 ### THE GANGS-VS-LAW SERIES — PRE-REGISTERED BEFORE THE RUNS (X5, and the hull-geometry row's falsifier)
 
 **The claim under test:** the disc over-states a hull's lateral reach (a War Rig's disc is 7.19 m against a true
