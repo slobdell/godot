@@ -1748,7 +1748,7 @@ func _act(s: Dictionary) -> void:
 			if _flat(my_position).distance_to(goal) <= _order_arrive():
 				_order_move(_face_intended_or({"type": "stop"}))
 			else:
-				_order_move(_move_to(goal, false, float(o["speed"]), _order_arrive()))
+				_order_move(_arrive_facing(_move_to(goal, false, float(o["speed"]), _order_arrive())))
 			# Round 8: a move that names a target (a crew its leader swings round onto the ordered target) lays its gun on
 			# that one while it drives, not on whatever is nearest; fire at will when it can't bear.
 			if String(o.get("target", "")) != "":
@@ -2083,7 +2083,7 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "fire_at_will"})
 		"KEEP_SLOT":
 			var squad: Dictionary = s["squad"]
-			_order_move(_move_to(squad["slot"], squad["reverse"], squad["pace"]))
+			_order_move(_arrive_facing(_move_to(squad["slot"], squad["reverse"], squad["pace"])))
 			_order_weapon({"type": "fire_at_will"})
 		"HOLD" when s.get("order") != null and s["order"]["verb"] == "hold" \
 				and _flat(my_position).distance_to(s["order"]["goal"]) > maxf(HOLD_TOLERANCE, Movement.settle_radius(tank.unit_id) + 1.0):
@@ -2464,6 +2464,19 @@ static func _move_to(point: Vector3, reverse := false, speed := 1.0, arrive := O
 		# cover is running through the beaten zone on purpose, and steering it sideways leaves it in the open
 		# (measured: it stopped hiding at all, `ai_hurt_to_cover` first hidden -1 where it used to be 195 ticks).
 		order["to_safety"] = true
+	return order
+
+
+## Round 8 (nav's contract, workstreams.md ba2c9adf): a move that ENDS somewhere the unit should be pointing a
+## particular way carries it, so a wheeled hull rolls onto that heading on its last leg instead of arriving 45 degrees
+## off and creeping round its spot (nav measured 6 s of shuffle on an IFV). Tracked and hover hulls ignore it and pivot
+## as they always have, so this only ever adds the arc for hulls that cannot pivot.
+func _arrive_facing(order: Dictionary) -> Dictionary:
+	var facing: Variant = intended_facing()
+	if facing == null or String(order.get("type", "")) != "move_to":
+		return order
+	order = order.duplicate()
+	order["facing"] = [(facing as Vector3).x, (facing as Vector3).z]
 	return order
 
 
