@@ -448,7 +448,26 @@ reading is that this was fixed before I measured it.
 - **Not landing the assertion was right for a second reason I did not have at the time:** had I landed it, my branch
   would now carry a failing test asserting a defect that main has already fixed.
 
-### GREEN AND READY TO MERGE: `80bcd085`
+### ⚠ CURRENT STATE (2026-09-19, read this before quoting any hash)
+
+**`db837581` — the widened `sim-baseline` — is BUILT AND MUTATION-CHECKED LOCALLY, AND UNVERIFIED.** Not green.
+**builder0 is down** (`No route to host`, 100% packet loss, confirmed across sessions), so there is no remote
+verification of anything right now: no check hashes, no baselines, no measurements.
+
+**It cannot be verified on this laptop even in principle.** `sim-baseline` keys on the machine's libm, the recorded
+baseline is builder0's **glibc-2.43**, and this laptop is **glibc-2.39** — so the target **SKIPS** here rather than
+passing or failing. *A check that skips is not a check that passes.* My local unmutated hash is
+`5dbb0689ddffc1c0`; **it is for reference only and must not be recorded** — recording a laptop hash would make the
+baseline wrong for the one machine that checks it.
+
+**What that leaves standing:** the mutation table below is a *local* result and does not need builder0 — it compares
+hashes to each other on one machine, which is exactly the comparison `compare_arms` was built to protect. The
+widening is sound; what is missing is the recorded hash, and **that recording is the orchestrator's** (invariant 2).
+
+**Everything earlier in this round IS on `main`** — the 14 m rig at `fc9e1393`, verified in the file. The section
+below is the round-7 hand-over and is kept for its target list, not as a claim about today.
+
+### (round 7) GREEN AND READY TO MERGE: `80bcd085`
 
 `>> remote: make ... exited 0` on builder0, **1187 passed, 0 failed**, plus `match-pytest` **Ran 11 tests — OK**.
 Working tree clean at that hash and unchanged since the sync, so the verdict is that commit's and not an
