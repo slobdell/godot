@@ -291,6 +291,39 @@ func _vec3_default(line: String) -> Vector3:
 	return Vector3(float(parts[0]), float(parts[1]), float(parts[2]))
 
 
+func test_turning_the_show_off_puts_every_fixture_back_to_todays_look() -> void:
+	# `driving = false` is the `no_show` perf layer, and it is the only instrument that works on a contended
+	# machine: both halves are measured seconds apart inside ONE run. It is only a control if the off half renders
+	# EXACTLY what the venue rendered before the show existed, so that is what this asserts.
+	var show := Show.new()
+	add_to_tree(show)
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://arenas/terminus.json"))
+	assert_eq(show.load_patch(data["show"], "terminus"), "", "the Terminus patch loads")
+	var facade := ShaderMaterial.new()
+	show.add_fixture(&"city_block", facade)
+	show.apply(9.0)
+	assert_true(facade.get_shader_parameter("show_window") != Show.identity_for(&"window"), "the show is driving")
+	show.driving = false
+	assert_eq(show.apply(9.0), 0, "an off show writes nothing at all")
+	for parameter in [&"level", &"edge", &"window", &"shop"]:
+		assert_eq(facade.get_shader_parameter(Show.UNIFORMS[parameter]), Show.identity_for(parameter),
+				"%s is back to the value that changes nothing" % parameter)
+	assert_near(float(facade.get_shader_parameter("show_color_mix")), 0.0, 0.0001, "and no colour override")
+	show.driving = true
+	assert_true(show.apply(9.0) > 0, "and it resumes")
+
+
+func test_the_perf_harness_can_ask_for_the_shows_own_layer() -> void:
+	# One additive match arm in feel's shared M1 harness, and deliberately NOT in its default LAYERS list: nothing
+	# changes for any other stream unless it asks with --perf-layers=no_show.
+	var source := FileAccess.get_file_as_string("res://game/theme/fx/bench/perf_scene.gd")
+	assert_true(source.contains("\"no_show\":"), "perf-scene knows the layer")
+	assert_true(source.contains("_override(show, \"driving\", false)"), "and it toggles the property, so it restores")
+	var listed := source.substr(source.find("const LAYERS"), 200)
+	assert_true(not listed.contains("no_show"),
+			"but it is not in the default list: adding a phase would lengthen every other stream's runs")
+
+
 func _fixture_shaders() -> PackedStringArray:
 	var out := PackedStringArray()
 	var stack := PackedStringArray(["res://game"])

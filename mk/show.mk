@@ -70,6 +70,11 @@ show-clips: import ## S6: each cue as a 6 s clip at 10 fps from the lead's pose 
 	done
 	@echo "show-clips: $$(ls $(BUILD_DIR)/show/clips/*.mp4 2>/dev/null | wc -l) clips in $(BUILD_DIR)/show/clips"
 
+show-perf-layer: import ## S6: the show's cost measured WITHIN one perf-scene run (--perf-layers=no_show), so both halves see the same machine -- the only instrument that survives a contended builder0
+	$(MAKE) perf-scene PERF_NAME=show-layer PERF_RES=$(SHOW_RES) PERF_LAYERS=no_show \
+		PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS))"
+	@python3 -c "import json;d=json.load(open('$(BUILD_DIR)/show-layer.json'));l=d.get('layers',d);print('SHOW_LAYER_COST', json.dumps({k:v for k,v in l.items() if 'no_show' in str(k) or k.startswith('all')})[:400])" || true
+
 show-perf-pair: import ## S6: perf-scene with the show off then on, back to back in one slot -> build/show-off.json, build/show-on.json
 	$(MAKE) perf-scene PERF_NAME=show-off PERF_RES=$(SHOW_RES) PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS)) --no-show"
 	$(MAKE) perf-scene PERF_NAME=show-on  PERF_RES=$(SHOW_RES) PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS))"

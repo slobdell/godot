@@ -47,6 +47,23 @@ const EVENT_UNIFORM := &"show_event"
 ## emission today, so its identity IS zero and a floor of zero is the look we ship without a patch.
 const CORE_PARAMETERS := [&"level", &"window", &"shop"]
 
+## Whether the show drives anything this frame. Turning it OFF writes every fixture back to its identity, so the
+## venue renders exactly as it did before the show existed; turning it back on resumes from the same clock.
+##
+## This exists to be a MEASUREMENT, and it is the only instrument that works on a contended machine: as the
+## `no_show` layer of `make perf-scene`, the with-show and without-show halves are measured SECONDS apart inside
+## one run, under identical load, instead of minutes or an hour apart under whatever else the builder was doing.
+## Two paired runs on 2026-09-20 put the show-on arm 43% FASTER than the show-off arm -- physically impossible as
+## an effect, and therefore a measurement of the noise rather than of the show.
+@export var driving := true:
+	set(value):
+		driving = value
+		if not value:
+			for selector: Variant in _fixtures:
+				for target: Object in _fixtures[selector]:
+					if is_instance_valid(target):
+						_write_identity(target)
+
 ## The show's own clock, in frame-time seconds. Never `Time.get_ticks_*`, never the physics tick.
 var now := 0.0
 ## name -> ShowChannel, from the arena's `show.channels`.
@@ -449,6 +466,9 @@ func settle_into(state: StringName, t: float) -> void:
 ## headless test drive the show without a clock. Returns the number of uniform writes it performed.
 func apply(t: float, delta := 0.0) -> int:
 	var writes := 0
+	if not driving:
+		writes_last_frame = 0
+		return 0
 	_advance_cue(t, delta)
 	for binding: Dictionary in bindings:
 		var channel: ShowChannel = _live.get(binding["channel"], channels[binding["channel"]])
