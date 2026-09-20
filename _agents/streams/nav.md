@@ -362,7 +362,17 @@ angle-wrap bug in my own reporter.
 ### Round 8 wrap-up (nav, 2026-09-19 evening) — hand-over facts
 
 **GREEN HASH: `5367c395`.** Read from the wrapper: `>> remote: make check exited 0 (build/ copied back)` with
-`1261 passed, 0 failed` and `sim-baseline passed: 0cb238bf366e141f (glibc-2.43)` in the same log. The rsync for that run
+`1261 passed, 0 failed` and `sim-baseline passed: 0cb238bf366e141f (glibc-2.43)` in the same log.
+
+> **What that baseline line does NOT mean (combat, 2026-09-19).** The OLD `sim-baseline` match is blind to 5 of 6
+> mutations combat tried: wheeled turn rate, fixed-mount fire arc, hover speed, the rig's hull box and turret traverse
+> all left the hash unchanged; only the tracked case registered. Wheeled turn rate is close to exactly what the
+> arrive-on-heading arc touches. So `sim-baseline passed` says the hash did not move, NOT that the arc leaves the sim
+> alone — **the instrument could not have seen it.** The 1261 tests are the real evidence, and the arc's own five are
+> direct. combat's widened match is `db837581` (unmerged; it moves the baseline by construction). **Do not carry "the
+> facing pair is inert" forward as established** — the orchestrator drew that against the blind match and is amending
+> it (`6a8aaa8c`). The rule is the one we already had for guards: **a green from an instrument that cannot detect the
+> treatment is indistinguishable from a green that means the treatment is harmless.** Prove it can go red. The rsync for that run
 started between `5367c395` (17:27:29) and `c1dd3d75` (17:28:47), so the checked tree is exactly `5367c395`.
 
 **Verified at the green hash:** everything up to and including `5367c395` — the yaw ramp, the hold-hysteresis switch,
@@ -377,10 +387,23 @@ the workstreams contract entry, and the arrive-on-heading arc with its five test
 - `make remote T=lint` was green ("lint: all scripts parse", exit 0) at `47836038`, so `ecdade39`, `2038a40a` and
   `b4f04126` postdate even the lint.
 
-**Blocked on builder0 (down: `No route to host` on port 22, not just ICMP):**
-1. The facing-arc measurement (arms `2038a40a` vs `777574e5`), pre-registered above.
+**The facing-arc A/B DID run (builder0 returned at 21:0x) and it is a POSITIVE-CONTROL FAILURE, not a null.**
+Arms `a35cf487` (no facing populated) and `777574e5` (+ squad's `ea55c624`), 4 maps, seed 3, both `exited 0`. Every
+figure is identical between arms to three decimals — and the counter added for exactly this says why: **`gates aimed 0`
+and `gates refused 0` in BOTH arms.** The arc never ran, so nothing was compared.
+Cause, read from the code rather than guessed: squad's `_arrive_facing` only attaches a facing when
+`intended_facing()` is non-null, which needs the K1 order to carry one or `Orders.station` to hold a heading. `nav-fight`
+issues `UnitCommand.make(names, "move", {"to": …})` with no facing, and a CPU fight never sets one. **So the pair is
+genuinely inert in a CPU fight — for a narrow reason, not a general one — and remains UNTESTED where it does fire: a
+player's drag-order with a facing, and a squad told to hold one (the lead's ambush case).**
+Round 9's version of this measurement needs the probe to issue orders WITH a facing; otherwise it re-measures nothing.
+
+**Still blocked / queued behind the merge chain:**
+1. The facing-arc measurement re-done with facings in the issued orders, against combat's widened baseline.
 2. Re-checking the three post-green commits that are not docs.
-3. The commitment-strength A/B (`COMMIT_BONUS` 0.35 → 0.7), pre-registered above.
+3. ~~The commitment-strength A/B (`COMMIT_BONUS` 0.35 → 0.7)~~ **probably moot**: catalogue A2 replaces the flat bonus
+   with a state-dependent cost, so the A/B would locate a constant we intend to delete. Do not spend a slot without
+   asking the orchestrator first.
 4. The terminus maze half of any future checkpoint, which needs arena's `f7bff357` and a 60-unit both-ways baseline.
 
 ### Round 8 report (nav, 2026-09-19) — the short version
