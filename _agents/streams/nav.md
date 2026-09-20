@@ -671,7 +671,8 @@ diagnosis, flow fields reverted as a null, Reeds-Shepp parked with its evidence 
 builder0 (1256/0, `>> remote: make check exited 0`), with the sim baseline patched-and-restored locally — the orchestrator
 records `glibc-2.43 668b7d49 -> 0cb238bf`, not me.
 
-**In flight when this was written:** a check on the arrive-on-heading arc (`5367c395`).
+**The arc is green too:** `5367c395` on builder0, `>> remote: make check exited 0`, 1261/0, `sim-baseline passed:
+0cb238bf366e141f`. Commits after it are probes and docs, and the tip passes `make remote T=lint`. Nothing is in flight.
 
 **Next, in the order I would take them:**
 1. A long hull's clearance and the missing recovery under a `face` order (the section above; combat's evidence).
