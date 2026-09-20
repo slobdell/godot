@@ -1,0 +1,23 @@
+T1 / CP3: the SERIAL reference the parallel check must reproduce bit-identically
+builder0, commit c21d0256, 2026-09-20, `make remote T=check-timed` (targets one at a time).
+
+  sim-baseline   04414f5d6a6dfa7c  (glibc-2.43)   <- and it matches main's recorded baseline
+  determinism    state_hash 133fd18a5285d64c, winner Green, score green 8 / rust 6
+  test           1261 passed, 0 failed  (UNSHARDED -- the control for sharding)
+  TOTAL          2584 s over 16 targets, of which `test` alone was 2388 s (92%)
+
+Per-target seconds and peak RSS: _agents/remote_builds.md (Measurements), and
+build/check/timings.tsv from `make check-timed`.
+
+WHY THESE THREE, and not the wall-clock:
+  * The hashes are the falsifier's safety clause. Separate processes on a fixed tick hash identically under any
+    load -- that is the CLAIM, and CP3 PROVES it rather than assuming it. If a parallel run's sim-baseline or
+    determinism hash differs from the line above, the parallel check is not the same check and the wall-clock is
+    irrelevant.
+  * 1261 is the control for SHARDING specifically. The shard union is the whole suite by construction
+    (assignment is `index % N`, and every index maps to exactly one shard), but "by construction" is what round 8
+    said about a commitment term that was never in the code path. The number is the proof.
+
+NOTE ON THE WALL-CLOCK: 2584 s was measured at load 0.42 with 5 other Godot processes -- a LIGHT machine. A second
+serial run under five concurrent streams' checks was substantially slower. The >= 50% falsifier is therefore read
+against 2584 s, the most FAVOURABLE figure the serial check ever produced, which is the conservative choice.

@@ -1,0 +1,21 @@
+T1 evidence: builder0 while THREE full `make remote T=check` runs are executing
+Sampled 2026-09-20 01:27-01:28 by metrics, from builder0 itself.
+Concurrent: godot-control (check, started 00:49), godot-squad (check, 00:50),
+            godot-metrics (check-timed, 01:07). All three holding heavy-run slots.
+
+  01:27:42 load=0.36 godot=4 cpu_idle=99.2%
+  01:27:53 load=0.46 godot=4 cpu_idle=97.6%
+  01:28:03 load=0.47 godot=4 cpu_idle=97.6%
+  01:28:13 load=0.40 godot=4 cpu_idle=89.9%
+  01:28:23 load=0.33 godot=4 cpu_idle=99.2%
+  01:28:34 load=0.34 godot=4 cpu_idle=94.5%
+  cores: 12
+
+So: three entire checks, run in parallel with each other, leave a 12-core machine
+90-99% IDLE with a load average under 0.5. The work is latency-bound on awaiting
+fixed-tick physics frames, not compute-bound -- which is why raising the SLOT count
+(more checks at once) barely helps and only inner parallelism shortens the run.
+
+Wall-clock of the two neighbouring serial checks at the time of sampling:
+  godot-control   38 min and still running
+  godot-squad     37 min and still running
