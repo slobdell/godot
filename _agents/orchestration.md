@@ -2758,3 +2758,23 @@ The kickoff prompt is one line; this section is the rest.
     until a hull is driven, the same mistake nav had made in the legibility test hours earlier. Beside lesson 171:
     every positive control the run prints is also an assertion (`chords > 0`, `not is_nan(slack)`, "the mover
     exists") *before* the number it guards is read, or the print is decoration.
+185. **A check that selects by pattern returns a true answer to a question you did not ask.** (Drafted by feel with
+    combat, round 9.) Four instances across three streams in one night, every one of which *passed its own test*:
+    feel read `PPID 2113` as proof a Godot process was its own (it is the shell supervisor, shared by every session on
+    the machine; feel nearly killed four streams' work); metrics killed by an unscoped pattern; combat's waiters
+    polled `pgrep -f "remote.sh check"`, which matches every worktree's wrapper *and the waiter's own `bash -c` line*,
+    reporting a finished run "alive" for twenty minutes and leaving three loops spinning at 5.5 h, 5.5 h and 10.7 h;
+    and combat's arm counter ran a clean, truthful measurement of a fight that **contained no War Rig**, because the
+    seeded draft chose the army and nobody read it back. None returned a wrong value; **they were wrong about
+    *whose*, and nothing in the output says whose**, so care cannot fix this class and review cannot catch it: the
+    broken version's output is byte-for-byte the shape of the working one. Two replacements, both of which transfer:
+    - **Wait on the artifact, not the process.** `until grep -qE '>> remote: make check exited' <per-run log>`: the
+      wrapper line appears only when *your* run finishes, and a fresh log per run means a stale line cannot be read
+      as a new one. Scoping the pattern (`readlink /proc/<pid>/cwd`, `fuser` on the slot `.lock`) is correct but only
+      repairs the call sites someone revisits: combat fixed one at 05:30 and went on writing new waiters with the
+      same idiom, because **the fix lived at a call site and the habit lived in the fingers.**
+    - **Make the probe refuse rather than report.** `--require=gang_tank` on the counter; the trailer bench refusing
+      to print a number without the damage-off tune. A measurement that can silently measure the wrong subject
+      asserts its subject before reading the number (lesson 184).
+    Beside lesson 182: an `&&` chain that reports "the rest passed" is the same disease in a third costume, **a run
+    that never happened, counted as a pass.** See also nav's note in `navigation.md` (the same shape in routing).
