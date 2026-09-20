@@ -2746,8 +2746,14 @@ The kickoff prompt is one line; this section is the rest.
     sync, poisoning whatever test is running then (14 of 18 failures in one shard, none related to navigation, the
     carrier standing next to a theme test in the log). The round-6 fixture waited for the *new* arena's polygons; it
     never waited for the *old* arena's regions to drain. Fix: wait on the map's region count returning to baseline
-    before instantiating, capped, named. Same measurement, two readings: the count was wrong as a leak and right as
-    a hazard.
+    until the map's region count is ZERO, capped, named; not "back to baseline", because the baseline sample
+    (`before=2`, equal to `with_arena=2`) was the previous test's regions mid-drain, so a baseline captured while the
+    hazard is present cannot detect the hazard, and not "two equal samples", because stability is not emptiness.
+    Same measurement, two readings: the count was wrong as a leak and right as a hazard. **And the sharper form
+    (combat): the round-6 docstring described the hazard correctly and the fix addressed half of it, the read side
+    (do not trust a stale map as ready), leaving the write side (do not add a second arena into it) untouched: the
+    docstring was right and the guard was narrower than the docstring.** 4 edge errors from two terminus arenas
+    inside one test; 284 from two full arenas across a test boundary; one bug.
 181. **A difference between two arms proves the arms differ, never why.** Round 9's spawn lift: combat's 5 cm arm
     moved the frame-1 sink by +0.032 m and combat read it as "the lift reached deployed units"; it was the
     depenetration recovery's sensitivity to the contact. Earlier the same night a 47 % sliding-goal share was read as
