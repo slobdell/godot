@@ -143,6 +143,8 @@ func _init() -> void:
 		add_child(CrowdLook.new())
 	if LaunchFlags.from_environment().has("size-look"):
 		add_child(SizeLook.new())
+	if LaunchFlags.from_environment().has("rig-hinge"):
+		add_child(RigHinge.new())
 
 
 func _ready() -> void:
