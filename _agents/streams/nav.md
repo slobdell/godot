@@ -617,10 +617,23 @@ checkable with the fourth:**
    `_path_index`, so `path_points[0]` IS the next waypoint and the current leg runs from the hull's projection onto
    it — but one publisher should mean one *interpretation*, not one array three streams each project onto slightly
    differently.
-2. **`"legibility": {"active": bool, "why": StringName}`** in `Movement.state(unit)`, `why` from a closed set
-   (`band`, `survival`, `armour`, …) naming **which level took the nose**. control will not infer cause from geometry
-   and will not build its readout without it. nav owns the level order, so nav owns this answer — nobody else can
-   produce it without re-deriving A7's filter.
+2. **`"legibility": {"active": bool, "why": StringName}`** in `Movement.state(unit)`, `why` naming **which level
+   took the nose**. control will not infer cause from geometry and will not build its readout without it.
+
+   **control's constraint, and nav's answer, because it is answerable today:** *"a coarse-but-true value beats a
+   precise-but-guessed one — `override` alone beats a confident `band` that was actually `survival`, because the
+   player reads these as words and a wrong cause is worse than a vague one."* Agreed, and the honest shape falls
+   straight out of A7's structure:
+
+   | arm | what `why` can truthfully be |
+   |---|---|
+   | **A7 on** | a real level name — `survival`, `band`, `arc`, `formation`, `preference`. `choose_projected` narrows one level at a time, so the level that last reduced the candidate set before the winner **is** the cause, recorded rather than inferred |
+   | **A7 off (today's default)** | **`override` and nothing finer.** The blend is a weighted sum: no term "bound" anything, every term contributed, and any level name nav returned would be invented |
+
+   **So the readout's precision is a function of which arm is running**, and control should expect `override` from
+   the default path until A7 is on by default. That is a fact about the blend, not a gap in the instrument — and it
+   is one more reason the two arms must stay distinguishable. feel puts whatever shape this lands in into
+   `legibility.md` rather than leaving it in three inboxes.
 3. **The inactive flag and its reason** (feel's §5): no order, `phase == "blocked"`, no path yet, a reflex owning the
    heading, or `run` style. The falsifier is computed over active ticks only with the active fraction beside it —
    *a number that improves because the law switched itself off more often is not a pass*, which is round 8's
