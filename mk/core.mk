@@ -135,6 +135,16 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 #
 # **FILTER forces the serial path**: a filtered run is short, and sharding it would make `make test FILTER=x`
 # report a total assembled from N processes for no gain.
+#
+# **What was CHECKED before sharding, because a shard race is the worst kind of flake** (it depends on which
+# files land together, so it moves when you add a test and reads as "flaky under load" -- lesson 4):
+#   * `user://` -- 17 references across 10 test files, and NO path is touched by more than one file. Sharding
+#     assigns whole FILES, so two shards can never write the same scratch save. (Verified by listing every
+#     `user://` literal in tests/ and grouping by path; the intersection is empty.)
+#   * ports -- no test under tests/ binds one. The network smokes that do are separate `check` targets, and they
+#     are in the port exclusion groups above.
+# A test that still turns out to depend on which shard it lands in is a TEST bug to report (lesson 36), not a
+# shard assignment to reshuffle around.
 TEST_SHARDS ?= $(shell tools/slot.sh --jobs 500 $$(( $$(nproc) / 2 )))
 
 test: import ## Run the headless test suite (FILTER=substring to run a subset; TEST_SHARDS=1 forces one process)
