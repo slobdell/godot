@@ -354,18 +354,68 @@ red reproduces here, and the cause lies wholly inside `7542df28..HEAD`. Over tha
 | combat's `units.gd` | **ruled out** | the +9 lines are a `--tune` parser branch for `switch.<knob>`; inert unless a run passes `--tune switch.*`, and the test passes none |
 | theme/dressing (checked for completeness) | **ruled out** | `arena_dressing.gd`, `kit_yard.gd`, `city_block.gd` all changed and the arena scene has a `Dressing` node, but their diffs contain no `StaticBody`/`CollisionShape`/`BoxShape`/`collision`. The whole merge diff also has **no** `collision_layer`/`collision_mask`/`WORLD_MASK` change, so the probe is not hitting a body that changed layer |
 
-**What remains is nav: `movement.gd` (+115), `tank_brain.gd` (+133), `combat_motion.gd` (+82)** — the only behavioural
-change in the window. The test's structure makes them the live suspect: it places the army, then awaits **one physics
-frame** before probing, so anything acting on the first tick (a heading correction, the wheeled creep's reverse leg, an
-avoidance nudge) displaces units before the measurement.
+**And what remained after all four eliminations — nav's three AI files — was also wrong.** I sent it as the live
+suspect and it is not. The answer is not a code change at all, in anyone's stream.
 
-**And the shape is the contact pip again.** The probe box is `hull_size + 1.0`, so a unit sitting under a metre from
-foundry's geometry needs only a small first-tick displacement to cross. CP2 did not move these from clear to blocked
-any more than it did the pip: **a resize does not create these failures, it consumes the margin that was hiding them.**
+**SOLVED, and read off the output rather than inferred. Units are placed at exactly `y = 0.0`, resting on the ground
+at ZERO penetration.** That is a degenerate contact, and which way it resolves depends on the physics engine's
+internal state, which depends on how many bodies the process created and destroyed earlier. After an arena test has
+built and dropped a 38-body arena, the solver ejects three units **~1.5 m DOWNWARD through `Arena/Ground`**:
 
-**Not yet established and deliberately not asserted:** which of nav's three files, and whether the displacement is
-brain-driven motion or a solver response. `make spawn-probe` (`tests/scale/spawn_block_probe.gd`) answers it in one
-run — the test names units but cannot say where they are or what they are in, and a fix chosen without that is a guess.
+```
+SPAWN_ISO_BLOCKED Green_S5_1 unit=tank      placed (-52.235, 0.0,  97.07) -> now (-52.235, -1.475,  98.589) moved 2.118 m :: Arena/Ground
+SPAWN_ISO_BLOCKED Rust_S5_1  unit=tank      placed ( 52.235, 0.0, -97.07) -> now ( 51.603, -1.475, -97.074) moved 1.605 m :: Arena/Ground
+SPAWN_ISO_BLOCKED Rust_S8_1  unit=artillery placed (-38.755, 0.0, -97.07) -> now (-38.755, -1.733, -97.077) moved 1.733 m :: Arena/Ground
+```
+
+**The same three units as main, every time.** And note the gap between what the test says and what is true: it reports
+*"no unit spawns inside a wall or crate"* and the body they intersect is **the ground** — they are under the floor.
+**A failure message that named the body it hit would have saved the morning.** That is the cheapest lesson here and it
+is not specific to this test.
+
+**This is round 8's sim-hash lesson with spawn positions instead of a hash: identical geometry, different body
+creation order, different Jolt answer.** The victim alone and the victim after the polluter see an identical world —
+`active=foundry`, `obstacles=19`, `bodies=111`, `units=90` — and place all 90 units at **identical coordinates**. Only
+the engine's internal state differs.
+
+**The eight measurements, because the wrong turns are worth as much as the answer:**
+
+| run | result | what it killed or established |
+|---|---|---|
+| `test FILTER=a_full_faction_army` | 1 passed, 0 failed | **passes alone** |
+| `test FILTER=match_spawns` | 4 passed, 1 failed | fails with `test_arena_layouts` first |
+| `test FILTER=army` | passes | bisects the polluter to that one file |
+| `make spawn-probe` | blocked=0 of 90, worst motion **0.018 m** | standalone is clean; tick-one motion is settling, so **nav is exonerated** |
+| `spawn-probe --pollute=scrapyard` | blocked=**16**, named scrapyard walls at z=±70 | a stale arena *can* produce the symptom |
+| `spawn-probe --pollute-free=scrapyard` | bodies **38 → 0 immediately**; blocked=0 | **`free()` is deterministic — my stale-bodies hypothesis is refuted** |
+| TestCase teardown leak guard | never fires | **nothing leaks** bodies or navigation regions |
+| in-harness reproduction (`test_spawn_isolation.gd`) | the same three units, repeatably | the difference is the harness path, not the pollution |
+
+**I was wrong twice on the way and both refutations are kept beside the answer.** I proposed **RNG stream divergence**
+(there is no new random draw anywhere in `game/` in the window — the orchestrator confirmed zero hits independently)
+and **stale physics bodies** (`free()` is immediate). A third self-inflicted error is worth recording too: my own
+Python overlap check reported *"obstacle overlap: NONE"* while having parsed **0 obstacles with a size**, because
+foundry's obstacles carry only `type` and `position` and sizes are resolved in GDScript. **A vacuous check of my own,
+in the middle of a round whose whole lesson is vacuous checks.**
+
+**SCALE'S HALF IS CLEAN, and now says so deterministically.** At CP2 hull sizes a full 45-unit army a side is *placed*
+with **0 overlapping pairs and a closest-pair gap of 1.040 m**, measured **before any physics step** so it cannot move
+with test order:
+
+```
+SPAWN_ISO_PLACEMENT closest pair gap 1.040 m; 0 overlapping pairs at placement
+```
+
+**The resize did not outgrow the assembly.** That is committed as a real assertion rather than left as an inference
+from someone else's red.
+
+**What this stream deliberately does NOT assert (Invariant 0b).** The fix is either to place units a few centimetres
+above the ground so the contact is not degenerate (`ArmyLayout.deploy` writes `y = 0.0`; `Match.spawn_position`
+returns `y = 0.0`) or to settle more than one frame before measuring. Both are outside these paths, so the test prints
+a `SPAWN_ISO_WATCH` line. **Recommended to squad: the y-offset** — it removes the degeneracy at the source and makes
+every future spawn measurement order-independent, where settling longer only hides it behind a larger frame count.
+The owner should also move the test's own two assertions to placement: **both** of them are taken after a physics
+frame, including the hull-overlap one, which is why both moved with test order.
 
 **A vacuous guard in that test, found on the way and not the bug.** Its first line is
 `assert_true(Match.SPAWN_SLOTS >= Doctrine.MAX_UNITS)`, and `Doctrine.MAX_UNITS := Match.SPAWN_SLOTS` — **it compares
