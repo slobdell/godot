@@ -465,7 +465,33 @@ intersecting, never moving at all, looks identical to a nudged one.** That is a 
 exposed, not a movement change. Ask the probe to print the **spawn** position beside the current one — if they are
 equal, no motion occurred and every movement-layer candidate is eliminated at once.
 
-### OWED, not done: P7's control-arm baseline through A12
+### ✅ P7's BASELINE, MEASURED BY A12 — and it corroborates round 8's band from a different instrument
+
+**`c025bc6b`, builder0, yard seed 3, 120 s, the pure default path** (`NAV_FIGHT_ARM` reads
+`a1=false a4=false a6=false a7=false a11=false off=[]`), read with `--order-verb attack_move --team 0`:
+
+    ALL   off_corridor=0.304 (active 0.631, 28472 ticks; inactive 11592, slow 3250, ordered_arc 1811)
+          ifv 0.373 (active 0.664)   lancer 0.436 (active 0.407)   tank 0.255 (active 0.692)
+
+**30.4 %, inside round 8's 30–36 %.** That band was round 8's figure from a *different tool*, and the caveat on the
+front page — *"the bar has never been measured by the instrument that will judge it"* — is now **answered rather
+than outstanding**: A12 puts the baseline where the bar assumed it. Taken while **A6 is inert**, so the mechanism
+cannot have influenced its own baseline, which is the only window in which that is true.
+
+**The active fraction is the half people will skip, and it is the more interesting number: 0.631.** A6 can act on
+**63 % of ordered ticks**; the rest are inactive (no leg, arrived, blocked) or excluded. So **a third of the
+pathology is out of A6's reach by construction**, and a bar of *"under 10 %"* over active ticks is not the same
+claim as *"under 10 % of the fight"*. Whoever reads A6's falsifier must read both numbers or they will overstate it.
+
+**`ordered_arc 1811`** ticks are excluded as obedience — the arrival-arc case S4 names, which would otherwise be
+charged to A6. And **`arc_live` is 164.3 s / 171.3 s for the wheeled hulls and 0.0 s for the tank**: a tracked hull
+is never offered an arc, so that zero is a measurement and not a gap.
+
+**Scope: one map, one seed.** pit and terminus are running to make it a rotation baseline rather than a yard one —
+the same mistake nav made with A4's "43 %" earlier tonight, avoided this time by saying so before the number
+travels.
+
+
 
 **What it is:** the off-corridor velocity fraction on **today's default path**, measured by `make metrics` — A6's
 falsifier bar is *"30–36% → under 10%, with no fall in exchange ratio"*, and **the 30–36% has never been measured
