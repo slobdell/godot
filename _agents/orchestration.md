@@ -3060,3 +3060,8 @@ The kickoff prompt is one line; this section is the rest.
     about the code. Rules: commit messages with any punctuation go through a heredoc or a file, never a double-quoted
     `-m`; read the message back before reporting the hash; and a count from grep is verified on the code before it
     travels, the same as any other number.
+    **Third instance of lesson 192's addendum, same day (metrics):** after nav sealed `_teardown()`, the scenario
+    runner's `case.teardown()` at `run_scenarios.gd:70` still compiled and still did something (the hook), so git
+    merged it clean and no conflict pointed at it; every AI scenario ran without the body guard and the drain until
+    metrics read the call sites. Two runners, one rule, and a signature change is followed by reading every caller,
+    not every conflict.
