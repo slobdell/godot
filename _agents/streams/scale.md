@@ -495,46 +495,62 @@ length)`. A prefix sum of occlusion along a heading is not a distance transform,
 these tables. I will say yes or no with a reason rather than half-build it; combat keeps the point sample and
 renames it honestly in the meantime.
 
-### ⚠ A CP2 CONSEQUENCE THE LEAD SHOULD RULE ON: the widest hull no longer fits 8 of 10 maps
+### The maps' corridors vs the roster — and ⚠ a wrong measurement I circulated and retracted
 
-**Found by squad, generalised by me, and it is the one consequence of the resize I would not ship silently.**
+**THE ANSWER: the maps are fine.** Perpendicular free span across the base-to-base route, against the roster's
+widest hull (the Condemned `artillery`, 4.74 m with its outriggers deployed). `make arena-report`, laptop, static
+geometry, machine-independent:
 
-squad measured the Condemned `artillery` **failing to cross the maze's defile at its PRE-CP2 2.6 m width** — four
-squadmates used the same corridor in the same run and it never arrived in 70 s — and asked whether the maps a
-player actually plays are dimensioned like the maze. They are. `make arena-report` now prints the tightest point
-on the base-to-base route against the roster's widest hull (`corridor_widths`, laptop, this commit):
+| map | tightest | slack | hulls passing with 1 m spare |
+|---|---|---|---|
+| foundry / furnace | 62.50 m | +57.76 | 21/21 |
+| boulevard | 59.00 m | +54.26 | 21/21 |
+| boneyard | 27.00 m | +22.26 | 21/21 |
+| pit | 19.00 m | +14.26 | 21/21 |
+| yard | 18.00 m | +13.26 | 21/21 |
+| scrapyard | 17.50 m | +12.76 | 21/21 |
+| terminus | 11.50 m | +6.76 | 21/21 |
+| maze | 7.00 m | +2.26 | 21/21 |
+| **barriers** | **5.50 m** | **+0.76** | **20/21** |
 
-| map | tightest clear ground | slack at the old widest hull (3.39 m) | slack at the new one (4.74 m) | hulls that pass with 1 m spare |
-|---|---|---|---|---|
-| boulevard | 5.60 m | +2.21 | **+0.86** | 20/21 |
-| pit | 4.97 m | +1.58 | **+0.23** | 19/21 |
-| terminus | 4.84 m | +1.45 | **+0.10** | 19/21 |
-| **yard** | 4.72 m | +1.33 | **−0.02** | 19/21 |
-| foundry / furnace / scrapyard | 4.50 m | +1.11 | **−0.24** | 18/21 |
-| maze | 4.41 m | +1.02 | **−0.33** | 18/21 |
-| boneyard | 4.36 m | +0.97 | **−0.38** | 18/21 |
-| barriers | 4.31 m | +0.92 | **−0.43** | 16/21 |
+**The measure validates itself against the authored geometry:** it reports the maze's tightest point as exactly
+**7.00 m**, and `tools/make_arenas.py` authors `MAZE_TIGHT_GAP = 7.0`. `barriers` is the only WATCH, it is 0.76 m
+of slack for the single widest hull, and it is not in `Arena.ROTATION`.
 
-**The corridors did not move — they are static geometry.** What moved is the widest hull, 3.39 m → 4.74 m (the
-Condemned `artillery` with its outriggers deployed, from its own mesh). Every map had at least 0.92 m of slack
-before; **eight of ten are now negative, including yard, which the lead kept.**
+**So squad's maze result is entirely the navmesh question, not a map question.** 7.0 m of physical gap minus
+`NAV_AGENT_RADIUS` 2.0 m each side leaves 5.0 m of navigable corridor for a 4.74 m hull — 13 cm a side. nav's,
+with squad's reproduction.
 
-**What this measure is and is not.** It is the narrowest point on the *direct* A\* route, measured against the
-obstacles' own footprints rather than the agent-inflated navmesh. A unit may detour — the route optimiser finds
-alternatives — so "negative" means "the direct route has a pinch narrower than the hull", not "cannot reach the
-far base". Combined with squad's empirical result (it never arrived, at a width with 2.1 m of slack) I would not
-bet on the detour.
+#### ⚠ The first version of this measurement was wrong, and I circulated it
 
-**Three separable questions, and only the first is mine:**
-1. **Is the width right?** Yes, and I am not changing it. An artillery piece with deployed outriggers being the
-   widest thing on the field is the proportional truth the lead asked for, and `hull_size` IS the collider.
-2. **Can a 4.74 m vehicle traverse a 5.0 m navmesh corridor?** nav's — it is their round-8 clearance question
-   (one `NAV_AGENT_RADIUS` of 2.0 m for what is now a 5× footprint range). The bake takes 2.0 m off each side, so
-   a 4.74 m hull has ~13 cm a side in the maze's 5.0 m navigable gap.
-3. **Should the maps be widened?** The lead's, and **`make arena-report` prints it as a WATCH line rather than a
-   failing test** (Invariant 0b: a check that fails on a question nobody has ruled on is an advocate, not an
-   instrument). Widening the kit's gaps is one authoring change in `tools/make_arenas.py`, which is mine, and I
-   have not made it.
+**It reported that 8 of 10 maps had a tightest point NARROWER than the widest hull.** It went to the orchestrator,
+squad and nav, and it produced a ruling to widen the kit's gaps (CP2d) before I caught it. Withdrawn; the ruling is
+withdrawn too (lesson 162).
+
+**What was wrong:** the function returned **twice the distance to the nearest obstacle**. That is the corridor
+width only when something blocks **both** sides. Where a route passes close to a *single* prop with open ground
+beyond, it means nothing. On yard, at the exact point I reported as 4.72 m:
+
+```
+nearest tall props to (4, 66):   2.71 m wreck at (9, 68);  the next is 11.78 m away
+free span across the route:      20.0 m one way, 3.0 m the other  ->  about 23 m
+```
+
+**I reported 4.72 m where there are 23**, and the corrected measure puts yard at 18.00 m.
+
+**The lesson, which is worth more than the number was:**
+- **A measure that flags EVERY map is usually measuring the wrong thing.** It was plausible on all ten, and
+  plausibility on all ten is the tell.
+- **I circulated ten numbers without sanity-checking one against the world.** One `print` of the nearest props at
+  one reported pinch would have ended it. And **there was a free positive control available all along** — the maze's
+  authored `MAZE_TIGHT_GAP = 7.0` — which the wrong version missed by 2.6 m and the right one hits exactly.
+- **I wrote the WATCH line's prose as if the quantity were established** (*"only 19 of 21 hulls pass there"*), which
+  made a wrong number legible and quotable. **It is the same failure shape this stream spent the round finding in
+  other people's code — the thing under test quietly not being the thing described — and `arena_report` has now had
+  two of mine in one night: the `[:13]` slice I fixed, and this one I introduced.**
+
+`corridor_widths()`'s docstring carries the wrong version's history, so the next person to touch it knows what it
+looked like when it lied.
 
 ### Decisions (with reasons)
 

@@ -338,28 +338,49 @@ def occupancy(boxes):
     return blocked, n
 
 
-def corridor_widths(boxes, path, step=4):
-    """The clear width (m) at each point along `path`: twice the distance to the nearest obstacle footprint.
+def corridor_widths(boxes, path, step=4, probe=0.5, reach=60.0):
+    """The passable width (m) ACROSS the route at each point: the free span perpendicular to the direction of travel.
 
     ROUND 9 (scale), at squad's request. squad measured the Condemned `artillery` failing to cross the maze's
-    defile **at its pre-CP2 2.6 m width** -- four squadmates used the same corridor in the same run and it never
-    arrived in 70 s -- and S1 takes that hull to **4.74 m** (an artillery piece with deployed outriggers, which is
-    the proportional truth the lead asked for). Whether a 4.74 m vehicle can traverse a 5.0 m navmesh corridor is
-    nav's question; whether the maps a player actually plays have corridors that tight is this tool's.
+    defile at its pre-CP2 2.6 m width -- four squadmates used the same corridor in the same run and it never
+    arrived in 70 s -- and asked whether the maps a player plays are dimensioned like the maze fixture.
 
-    It is the shape of number that "reads fine per-arena and only fails when two tables are put side by side":
-    every map's narrowest gap looked reasonable on its own, and nothing compared it with the roster.
+    ⚠ THE FIRST VERSION OF THIS FUNCTION WAS WRONG AND ITS TABLE WAS CIRCULATED. It returned **twice the distance
+    to the nearest obstacle**, which is the corridor width only when there is an obstacle on BOTH sides. On yard it
+    reported the tightest point as 4.72 m; the route there passes 2.71 m from a single wreck with **20 m of open
+    ground on the other side**, so the real span is 23 m. Every map looked like it had a pinch, and what was
+    actually being measured was "how close does the route pass to one prop" -- a quantity no vehicle cares about.
+    The lesson is the project's own: a confidently wrong instrument is worse than none, and it nearly bought a
+    map-widening change.
 
-    Measured against the obstacles' own footprints, NOT the agent-inflated grid, so it is the real geometry --
-    what the navmesh then does with it is a separate question with a separate radius.
+    So: march PERPENDICULAR to the direction of travel, both ways, until something tall is hit or `reach` is spent,
+    and sum. That is the gap a hull has to fit through. Measured against the obstacles' own footprints, not the
+    agent-inflated navmesh -- what the router then believes is a separate question with its own radius.
     """
-    if not path:
+    if not path or len(path) < 2:
         return []
+    tall = [b for b in boxes if b.h >= EYE_HEIGHT]
     out = []
     for i in range(0, len(path), step):
         x, z = path[i]
-        clear = min((b.distance(x, z) for b in boxes if b.h >= EYE_HEIGHT), default=HALF)
-        out.append((round(x, 1), round(z, 1), round(2.0 * clear, 2)))
+        ahead = path[min(i + 1, len(path) - 1)]
+        behind = path[max(i - 1, 0)]
+        dx, dz = ahead[0] - behind[0], ahead[1] - behind[1]
+        span = math.hypot(dx, dz)
+        if span < 1e-6:
+            continue
+        # The normal to the direction of travel.
+        nx, nz = -dz / span, dx / span
+        free = 0.0
+        for sign in (-1.0, 1.0):
+            reached = 0.0
+            while reached < reach:
+                reached += probe
+                px, pz = x + sign * nx * reached, z + sign * nz * reached
+                if any(b.distance(px, pz) <= 0.01 for b in tall):
+                    break
+            free += reached
+        out.append((round(x, 1), round(z, 1), round(free, 2)))
     return out
 
 
