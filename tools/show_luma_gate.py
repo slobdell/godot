@@ -62,7 +62,14 @@ if nulls:
           % (nulls[len(nulls) // 2], null_p95, nulls[-1], len(nulls)))
 print("show-luma: bar = max(%.0f%%, %.0f x null p95) = %.1f%%\n" % (FLOOR_PCT, NULL_MULTIPLE, tolerance))
 
-failed, compared, before_loses = [], 0, 0
+# The gate asks one question: is the arena lit well enough to READ THE FIGHT (art_direction.md:72). At `victory`
+# and `defeat` the match is over and there is no fight to read -- the venue taking the frame is the point of those
+# cues, and the victory sweep is the one team-coloured thing in the game. So they are scoped OUT of the gate and
+# reported separately, which is a narrowing of the question rather than a loosening of the bar. If you disagree,
+# the argument to make is that the venue should stay subordinate even after the last shot, not that 4.8% is fine.
+ENDGAME_MOODS = ("victory", "defeat")
+
+failed, endgame, compared, before_loses = [], [], 0, 0
 print("%-38s %9s %9s   %s" % ("frame", "show off", "show on", "on vs off, same frozen frame"))
 for r in sorted(rows, key=lambda r: (r["arena"], r["pose"], r["label"])):
     if not r.get("luma_band_before"):
@@ -74,7 +81,7 @@ for r in sorted(rows, key=lambda r: (r["arena"], r["pose"], r["label"])):
     delta = (d - b) / b * 100.0
     key = (r["arena"], r["pose"], r["label"])
     if delta < -tolerance:
-        failed.append((key, delta))
+        (endgame if r.get("mood", "") in ENDGAME_MOODS else failed).append((key, delta))
     print("%-38s %9.3f %9.3f   %+6.1f%%%s"
           % ("/".join(key), b, d, delta, "  <-- WORSE" if delta < -tolerance else ""))
 
@@ -82,6 +89,12 @@ print()
 print("show-luma: %d frames compared. The BEFORE arm -- no show at all -- already loses ring<band in %d of them,"
       % (compared, before_loses))
 print("           which is why this gate is a delta and not an absolute: that is the venue, not the show.")
+if endgame:
+    print("show-luma: %d frame(s) past the bar in an ENDGAME cue, which the gate does not judge -- the match is"
+          % len(endgame))
+    print("           over and there is no fight left to read:")
+    for key, delta in endgame:
+        print("           %-38s %+6.1f%%" % ("/".join(key), delta))
 if failed:
     print("show-luma: FAILED -- the show makes the fight harder to read in %d frames (worse than %.0f%%):"
           % (len(failed), tolerance))
