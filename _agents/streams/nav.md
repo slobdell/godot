@@ -338,10 +338,21 @@ and the standing rule became *run a local lint before naming any hash green*. **
 positives, that replacement gate is broken too** — and its recipe treats any line matching `Parse Error|SCRIPT
 ERROR` as a failure, filtering only `depended scripts`. Both lines above pass that filter.
 
-**What nav has NOT established:** whether this is a stale `.godot` in this worktree or reproduces on a clean `main`
-checkout. The orchestrator linted `main` green earlier, which points at the cache; a re-import and re-check was
-started to settle it. **Until it is settled, a red local lint on these two files is not evidence about anyone's
-branch**, and nav is not claiming its own lint green either way.
+**SETTLED by metrics, and nav had two things wrong** (2026-09-20). metrics swept the whole tree after a complete
+import with nothing else touching `.godot`:
+
+- **It is the TREE, not a stale cache**, and it is **5 files / 8 lines**, not 2 — nav's lint was still running and
+  its 2 lines were a partial result reported as if complete. The re-import nav started to test the cache theory was
+  stopped.
+- **`main` is RED on exactly those lines.** nav wrote *"the orchestrator linted main green earlier, which points at
+  the cache"* — **that was nav putting a claim in the orchestrator's mouth.** Their lint was still queued. The
+  inference was reasonable and the attribution was not, and it is the same error as reading a scenario's name
+  instead of its output: nav reasoned from what it expected someone to have found rather than from what they said
+  they had found.
+
+**The gate, until CP1 merges:** CP1 ships `tests/baselines/lint_expected.txt` — a reason per line, a finding not in
+it fails, and a finding that *stops* occurring is reported. Until then the reporting form is
+**`lint local: 531 files, 8 known baselined lines`**, and **only lines outside those 8 count as red.**
 
 ### Verification state — exactly what is proven, and by what
 
