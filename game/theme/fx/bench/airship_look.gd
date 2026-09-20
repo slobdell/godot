@@ -5,24 +5,31 @@ extends Node
 ## selection and a facing feature that could not fire on his control scheme at all. **"Visible in a screenshot taken
 ## deliberately" is not visible.** So this answers the question as a number before it answers it as a picture.
 ##
-## The method: park the real camera at HIS pose (pitch 21, FOV 35, 49 m, `RtsCamera.pose_at`) over the player's
-## army, then sweep **every camera yaw a player can rotate to** against **every point of the airship's orbit**, and
-## for each pair project the airship's bounds and ask whether any of it lands inside the viewport. That grid is the
-## honest reading of "sometimes": too low and he will never see it, 100% and it is wallpaper.
+## The method: park the real camera over the player's army and sweep **every tilt a player can reach** x **every
+## camera yaw** x **every point of the airship's orbit**, projecting the airship's bounds each time to ask whether
+## any of it lands inside the viewport. That grid is the honest reading of "sometimes": too low and he will never
+## see it, 100% and it is wallpaper. His own 21 deg is reported as its own row, because that is the number that
+## decides whether the feature exists for him or only for a screenshot.
 ##
 ## Then, and only then, frames: the widest sample, a mid sample, and one where it is off screen, so the number and
 ## the picture can be checked against each other.
 ##
-## Flags: --airship-look=<abs dir>  --airship-look-warmup=S (6)  --airship-look-yaws=N (12)  --airship-look-steps=N (24)
+## Flags: --airship-look=<abs dir>  --airship-look-warmup=S (6)  --airship-look-yaws=N (8)  --airship-look-steps=N (16)
 
 const PITCH_DEG := 21.0
+## The tilts a player can actually reach (control: 8-70), with his own 21 first. The sweep runs all of them because
+## the arithmetic says the answer changes sign inside this range: the top of the frame sits at
+## `pitch - FOV/2` degrees of depression, so at any pitch above 17.5 the horizon is OFF the top of the screen and
+## nothing in the sky can be drawn at all. If that is right, "sometimes visible" is false at his pose and true at
+## the bottom of his tilt range -- which is a finding, not a failure, and it is the whole reason this sweeps.
+const PITCHES := [21.0, 8.0, 12.0, 17.0, 30.0, 45.0]
 const DISTANCE_M := 49.0
 const FOV_DEG := 35.0
 
 var out_dir := ""
 var warmup := 6.0
-var yaws := 12
-var steps := 24
+var yaws := 8
+var steps := 16
 var _camera := Camera3D.new()
 
 
@@ -68,40 +75,48 @@ func _run() -> void:
 	var best := {"px_h": -1}
 	var mid := {}
 	var missed := {}
-	var per_yaw := []
-	for y in yaws:
-		var yaw := TAU * y / yaws
-		_camera.global_transform = RtsCamera.pose_at(focus, yaw, DISTANCE_M, PITCH_DEG)
-		await get_tree().process_frame
-		var hits := 0
-		for s in steps:
-			var tick := int(lap * s / steps)
-			airship.call("_place", tick)
+	var per_pitch := []
+	for pitch: float in PITCHES:
+		var pitch_seen := 0
+		var pitch_total := 0
+		var pitch_best := 0
+		for y in yaws:
+			var yaw := TAU * y / yaws
+			_camera.global_transform = RtsCamera.pose_at(focus, yaw, DISTANCE_M, pitch)
 			await get_tree().process_frame
-			var reading := _on_screen(airship)
-			total += 1
-			if reading["visible"]:
-				hits += 1
-				seen += 1
-				if int(reading["px_h"]) > int(best["px_h"]):
-					best = {"px_h": reading["px_h"], "px_w": reading["px_w"], "yaw": yaw, "tick": tick}
-			elif missed.is_empty():
-				missed = {"yaw": yaw, "tick": tick}
-			if mid.is_empty() and reading["visible"] and int(reading["px_h"]) > 8:
-				mid = {"yaw": yaw, "tick": tick}
-		per_yaw.append({"yaw_deg": roundi(rad_to_deg(yaw)), "seen_pct": snappedf(100.0 * hits / steps, 0.1)})
-	print("AIRSHIP_LOOK " + JSON.stringify({"pitch_deg": PITCH_DEG, "fov_deg": FOV_DEG, "distance_m": DISTANCE_M,
+			for s in steps:
+				var tick := int(lap * s / steps)
+				airship.call("_place", tick)
+				await get_tree().process_frame
+				var reading := _on_screen(airship)
+				total += 1
+				pitch_total += 1
+				if reading["visible"]:
+					pitch_seen += 1
+					seen += 1
+					pitch_best = maxi(pitch_best, int(reading["px_h"]))
+					if int(reading["px_h"]) > int(best["px_h"]):
+						best = {"px_h": reading["px_h"], "px_w": reading["px_w"], "yaw": yaw, "tick": tick, "pitch": pitch}
+					if mid.is_empty() and int(reading["px_h"]) > 8:
+						mid = {"yaw": yaw, "tick": tick, "pitch": pitch}
+				elif missed.is_empty():
+					missed = {"yaw": yaw, "tick": tick, "pitch": pitch}
+		per_pitch.append({"pitch_deg": pitch, "seen_pct": snappedf(100.0 * pitch_seen / maxi(pitch_total, 1), 0.1),
+				"widest_px_h": pitch_best, "horizon_in_frame": pitch < FOV_DEG / 2.0})
+		print("AIRSHIP_LOOK_PITCH %.0f seen=%.1f%% widest_px_h=%d" % [pitch,
+				100.0 * pitch_seen / maxi(pitch_total, 1), pitch_best])
+	print("AIRSHIP_LOOK " + JSON.stringify({"his_pitch_deg": PITCH_DEG, "fov_deg": FOV_DEG, "distance_m": DISTANCE_M,
 			"yaws": yaws, "orbit_steps": steps, "samples": total,
 			"visible_pct": snappedf(100.0 * seen / maxi(total, 1), 0.1),
 			"orbit_radius_m": SyndicateAirship.ORBIT_RADIUS, "orbit_altitude_m": SyndicateAirship.ORBIT_ALTITUDE,
-			"widest": best, "per_yaw": per_yaw}))
+			"widest": best, "per_pitch": per_pitch}))
 	var shots := {"widest": best, "mid": mid, "off_screen": missed}
 	var written := PackedStringArray()
 	for label in ["widest", "mid", "off_screen"]:
 		var shot: Dictionary = shots[label]
 		if shot.is_empty():
 			continue
-		_camera.global_transform = RtsCamera.pose_at(focus, float(shot["yaw"]), DISTANCE_M, PITCH_DEG)
+		_camera.global_transform = RtsCamera.pose_at(focus, float(shot["yaw"]), DISTANCE_M, float(shot.get("pitch", PITCH_DEG)))
 		airship.call("_place", int(shot["tick"]))
 		for i in 3:
 			await get_tree().process_frame
