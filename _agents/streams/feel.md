@@ -276,6 +276,37 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 | The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
 
+**Terminus lamps (scale's six inside the grid, `fba3b298`): floor YES, vehicles NO.** Frames
+`build/crowd-look/ahead-p{21-d049-f35,35-d120,50-d160}.png`, `make remote T="crowd-look ARENA=terminus
+CROWD_FLAGS=--no-show"` at `e9122334`.
+
+- **Does the floor read as improvised light? Yes.** Discrete warm pools with real falloff, hazard-striped rings at
+  their bases, genuinely dark asphalt between. Reads as work lights bolted up, not street lighting. **The
+  municipal-lattice objection is answered** — the pools sit at a corner, a ring road and a street, not on a
+  spacing.
+- **Do the vehicles read without the UI rings? No.** What carries a hull is its *own* neon — flank strips, hazard
+  chevrons — not the lamps. A dark hull between pools is near-invisible on the asphalt. **The lamps add
+  atmosphere, not legibility**, and legibility is a separate ask (more pools where units fight, or vehicle-side
+  contrast) that should be decided rather than hoped for as a side effect.
+- **At his own pose the lamps are not in shot at all.** 21°/FOV 35/49 m frames his army; at spawn that is ~72 m
+  from the nearest lamp. So the improvement is to mid-match play, not to the opening.
+
+**Two instrument lessons from this one, both mine:**
+
+1. **`size-look` cannot answer an arena-lighting question** and I nearly published a verdict from it. It always
+   frames the *player's army at spawn*, and every arena's spawns are at the rim while the dressing that matters is
+   in the middle — army centre `[-1.2, 94.2]`, nearest lamp **71.7 m** away, framed floor ~40–60 m across. The
+   render was clean, at the right pose, and the subject was not in it. Use `crowd-look ARENA=<x>
+   CROWD_FLAGS=--no-show`, which shoots the wide poses too. *(Ruled round-wide by the orchestrator.)*
+2. **A difference image against a show-ON frame is not a lamp A/B.** I built one and discarded it: my only
+   "before" was shot with the show on and the after with `--no-show`, so it conflated six lamps with the whole
+   light show being switched off — lighting.md rule 12's exact trap, walked into by reusing a frame that was not
+   the other half of a pair. **The floor verdict above therefore rests on the after-frames plus the 10:20
+   baseline, not on a clean A/B**; a true pair needs a pre-merge `--no-show` frame and is one render away.
+
+Also worth knowing for any future frame: **the bright cyan pools under units are UI rings, not light.** Cropped and
+zoomed they are saturated hard-edged annuli that tint the hull cyan. Do not read the HUD as pooling.
+
 **Terminus roof dressing: the frame first, and the frame settles it.** Frames at
 `build/crowd-look/ahead-p{21-d049-f35,35-d120,50-d160}.png` (builder0, `d91dd0e6`, `make crowd-look ARENA=terminus`
 — reused rather than writing a bench, since it already shoots every zoom plus the lead's 21°/FOV 35/49 m pose).
