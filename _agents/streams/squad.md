@@ -868,6 +868,28 @@ the flip safe rather than the part that makes it valuable:
 
 `make test FILTER=motion_tube`: **6 passed, 0 failed.**
 
+### The flag flip broke its own test suite, and made the rest of it vacuous
+
+**builder0 found two real failures in `d9a0e880`** — `test_a_wedge_files_through_a_defile_and_re_expands_after_it` and
+`test_a_formation_that_cannot_fit_says_so_instead_of_stacking_hulls` — and they are mine. **I set
+`DEFORM_ENABLED := false` and did not re-run the suite that exercises the thing the flag controls.** I had run
+`tactics_deform` (7 passed) *before* the flip and then re-ran only `tactics_seating` and `tactics_scenarios`.
+
+**The two failures are the smaller half of the problem. With the flag off, the rest of the file went VACUOUS.**
+`fit_to_corridor` returns the identity when the flag is off, so a sweep asserting *"hulls stay clear at every corridor
+width"* was asserting that an **undeformed** formation is clear — which X1 already guarantees unconditionally. Three of
+the five surviving tests were passing without testing anything, and my own Status said A8's invariants were "asserted
+over a sweep". **They were not being asserted at all.**
+
+Fixed: every test in the file calls `_a8()` first and `teardown()` restores the flag, so the suite asserts the
+geometry regardless of whether the mechanism ships on — because that geometry is what A8 will have when the
+intent-to-`Movement` seam is fixed, and it is what makes the invariants safe to rely on later. **7 passed, 0 failed**,
+and now they mean it.
+
+**The rule, and it is the third instance of the same shape tonight: a test suite for a switched-off mechanism must
+switch it on, or it tests nothing and reports that it passed.** A flag that silences a suite is worse than a flag that
+breaks it — the break is visible.
+
 ### Two rules from tonight that outlive this round
 
 **1. A flag or counter that is saturated or silent in BOTH arms is not a measurement, it is a constant — check its

@@ -17,8 +17,29 @@ extends TestCase
 ## Expectations come from `Units.PROFILES` and `DoctrineTable.SPACING_DEFAULTS`, never from metres written here, so
 ## CP2's resize changes no code in this file.
 
+## **These tests turn A8 ON for their own duration, and they have to.** `TacticsFormation.DEFORM_ENABLED` ships FALSE
+## because the deformation made a real traverse worse (`make squad-defile`: 0 of 5 arrived with it on against 4 of 5
+## with it off). But the GEOMETRY below is still the geometry A8 will have when that seam is fixed, and it is what
+## makes the invariants safe to rely on — so the suite asserts it regardless of whether the mechanism is switched on
+## in the game.
+##
+## This was not free advice: I flipped the flag and did not re-run this file. Two of these tests **failed on builder0**
+## and the rest went **vacuous** — with the flag off `fit_to_corridor` returns the identity, so a sweep that asserts
+## "hulls stay clear at every corridor width" was asserting that an undeformed formation is clear, which X1 already
+## guarantees. A test suite for a switched-off mechanism must switch it on, or it tests nothing and says it passed.
 const SHAPES := ["column", "wedge", "vee", "line", "echelon_left", "echelon_right", "coil", "swarm", "ring",
 		"rows", "block"]
+
+
+## Turn A8 on for this test. There is no `setup()` hook in `TestCase` — `run_tests.gd` calls the method and then
+## `teardown()` — so every test here calls this as its first line, and `teardown()` puts the flag back.
+func _a8() -> void:
+	TacticsFormation.DEFORM_ENABLED = true
+
+
+func teardown() -> void:
+	TacticsFormation.DEFORM_ENABLED = false
+	super.teardown()
 ## Corridor widths swept, in metres. From narrower than any vehicle to wider than any arena gap.
 const WIDTHS: Array[float] = [5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 14.0, 17.0, 20.0, 24.0, 28.0, 33.0, 40.0, 50.0, 70.0]
 
@@ -56,6 +77,7 @@ func _fit(members: Array, shape: String, width: float, spacing := -1.0) -> Dicti
 func test_an_unknown_corridor_is_the_identity() -> void:
 	# A formation must never be worse than today for the lack of a number: with no corridor measured the
 	# deformation is X1's pitch and nothing else, on the same code path, so the sim hash cannot move for it.
+	_a8()
 	var members := _squad("gangs")
 	var spacing := float(DoctrineTable.SPACING_DEFAULTS["open"])
 	for width in [INF, 0.0, -1.0]:
@@ -71,6 +93,7 @@ func test_an_unknown_corridor_is_the_identity() -> void:
 
 
 func test_a_wide_corridor_deforms_nothing() -> void:
+	_a8()
 	var members := _longest_squad()
 	var spacing := float(DoctrineTable.SPACING_DEFAULTS["open"])
 	for shape in SHAPES:
@@ -83,6 +106,7 @@ func test_a_wide_corridor_deforms_nothing() -> void:
 
 
 func test_hulls_stay_clear_at_every_corridor_width() -> void:
+	_a8()
 	var clear := TacticsFormation.HULL_CLEAR_M
 	var squads := {"longest": _longest_squad()}
 	for faction in Units.FACTIONS:
@@ -108,6 +132,7 @@ func test_hulls_stay_clear_at_every_corridor_width() -> void:
 func test_the_depth_order_never_inverts_as_the_corridor_narrows() -> void:
 	# The falsifier: zero rank inversions during defile passage. Slot i keeps its index throughout (the deformation
 	# does not re-seat), so an inversion can only be geometric — two slots swapping places along the heading.
+	_a8()
 	var members := _longest_squad()
 	for shape in SHAPES:
 		var nominal := TacticsFormation.group_offsets(shape, members.size(), 1.0)
@@ -126,6 +151,7 @@ func test_the_depth_order_never_inverts_as_the_corridor_narrows() -> void:
 
 
 func test_the_frontage_narrows_with_the_corridor_and_never_snaps() -> void:
+	_a8()
 	var members := _longest_squad()
 	for shape in SHAPES:
 		var last := -1.0
@@ -157,6 +183,7 @@ func test_the_frontage_narrows_with_the_corridor_and_never_snaps() -> void:
 func test_a_wedge_files_through_a_defile_and_re_expands_after_it() -> void:
 	# The behaviour A8 is for, stated as the lead would see it: the same five vehicles, the same formation, the same
 	# seating -- a wedge in the open, a file in the gap, a wedge again on the far side.
+	_a8()
 	var members := _longest_squad()
 	var spacing := float(DoctrineTable.SPACING_DEFAULTS["open"])
 	var open_fit := TacticsFormation.fit_to_corridor(members, "wedge", members.size(), spacing, INF)
@@ -182,6 +209,7 @@ func test_a_formation_that_cannot_fit_says_so_instead_of_stacking_hulls() -> voi
 	# A corridor narrower than one hull plus its clearance cannot hold the formation at all. The honest answer is
 	# "it does not fit", which is information the element can act on; overlapping the hulls to make the number look
 	# right is the failure X1 exists to prevent.
+	_a8()
 	var members := _longest_squad()
 	var hull := TacticsFormation.hull_extent(members)
 	var fit := _fit(members, "wedge", hull.x)
