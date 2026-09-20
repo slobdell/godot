@@ -30,7 +30,9 @@ const IDLE_THINK_HZ := 10.0 / 3.0
 const LOD_RADIUS := 130.0
 ## "In reach" for the fight rate: either gun's range plus this (meters).
 const FIGHT_MARGIN := 15.0
-## The current choice gets this multiplier, so near-equal options don't flip-flop...
+## The current choice gets this multiplier, so near-equal options don't flip-flop... (a variant may raise it:
+## `commit_bonus`, round 8's churn work — squad-decisions measured 1.35 at 12.7 switches and 0.17 reversals per
+## unit-minute against 1.15's 18.1 and 0.30, and it must win a ladder before it becomes the default.)
 const COMMIT_BONUS := 1.15
 ## A crew being suppressed stays worth suppressing down to this fraction of the pin threshold (hysteresis on `pinned`).
 const PIN_HOLD_FRACTION := 0.75
@@ -1168,7 +1170,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		if order_pending:
 			break
 		if not current.is_empty() and candidate["option"] == current["option"] and candidate["target"] == current["target"]:
-			candidate["score"] *= COMMIT_BONUS
+			candidate["score"] *= float(s.get("features", {}).get("commit_bonus", COMMIT_BONUS))
 			committed = candidate
 	var best: Dictionary = candidates[0]
 	for candidate in candidates:
