@@ -2646,3 +2646,11 @@ The kickoff prompt is one line; this section is the rest.
     name was silently ignored. It survived because a *seeded* random pick in answer to a deliberate name looks exactly
     like a deliberate choice. Unresolvable names are now loud (`637ad4de`); the hard rejection belongs in
     `Arena.validate()`. Sibling of lesson 157: a fallback that produces a plausible answer is worse than one that fails.
+175. **A safety property that has never been exercised is fiction, and the third run is what exercises it.** Round 9,
+    metrics, CP3's three-run falsifier: runs 1 and 3 (CHECK_JOBS 2) passed; run 2 derived CHECK_JOBS 3 and `lobby-smoke`
+    and `relay-smoke` started a broker on the same port in the first minute. The exclusion groups written to prevent
+    exactly that were inert: `_cp-lobby-smoke: lobby-smoke | _cp-relay-smoke` orders the *wrapper* after the other
+    wrapper, but `lobby-smoke` is a normal prerequisite of that same wrapper and make builds it concurrently — **the
+    order-only edge constrained the bookkeeping, not the work.** Fixed by giving each wrapper no normal prerequisite and
+    invoking its target from its own recipe, verified from make's database. Two runs would have shipped it. The
+    falsifier was not met and was not presented as met; the runs restarted on the fix.
