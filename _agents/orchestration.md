@@ -2699,6 +2699,12 @@ The kickoff prompt is one line; this section is the rest.
     cost, show cost) go in a **quiet window** the orchestrator calls after the checks drain, one stream at a time, and
     every timing number carries the load average and the per-phase spread beside it or it is not quoted. Screenshots
     and seed-deterministic series are only *slowed* by load and can run through it.
+    **Addendum, the first quiet-window run (feel, load 0.4, 2 other Godots): still NOT USABLE.** The repeated `all`
+    phases went 36.5 → 31.3 → 29.8 ms, monotone: warm-up drift, not noise, which a `max − min` gate cannot tell apart;
+    the two cycles' bracketed costs disagreed in sign (+3.59, −0.44) and their mean (+1.57) hid it; and the draw count
+    moved 328 → 269 between phases because vehicles die during the sampled battle, so the phases were not the same
+    scene. A quiet box is necessary; the tool also needs a frozen census (damage off during the run, the count
+    printed per phase), a discarded warm-up, and a verdict from per-cycle costs agreeing in sign and magnitude.
 180. **A guard that counts at teardown measures a pending removal, and it will convict the innocent with the same
     confidence as a real leak.** Round 9's teardown guard (scale, `3f6c1650`) named three tests for leaving two
     navigation regions each; `NavigationServer3D` drops regions on the frame *after* `free()` ([2, 0, 0, 0] over
