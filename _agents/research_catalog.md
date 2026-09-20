@@ -354,6 +354,15 @@ we have been treating it as a UI problem. **It is a motion planning problem**, a
 **Determinism:** dot-product weighting, closed form.
 **Falsifier:** time fraction with velocity opposing the corridor tangent under attack-move drops from **30–36%** to
 **< 10%**, *without* a fall in exchange ratio. If units look obedient and start dying, we bought the wrong thing.
+**Baseline measured by the judging instrument (nav `c025bc6b`, builder0, A12 `--order-verb attack_move --team 0`,
+yard, FIGHT_SEED=3, 120 s; one map, one seed — pit and terminus follow and the rotation figure replaces this line):**
+off_corridor **0.304** over all ordered ticks (28,472), inside the pre-registered 30–36 % that round 8 got from a
+different tool. Taken while A6 is inert, the only window where the mechanism cannot shape its own baseline. **Quote
+the active fraction beside it: 0.631.** A6 can act on 63 % of ordered ticks (inactive 11,592, slow 3,250, arrival-arc
+obedience 1,811 excluded per S4); a third of the pathology is out of A6's reach by construction, so "< 10 % over
+active ticks" is a weaker claim than "< 10 % of the fight" and the falsifier is read over the whole fight. Per hull:
+ifv 0.373 (active 0.664), lancer 0.436 (0.407), tank 0.255 (0.692); `arc_live` 164 s / 171 s wheeled, 0.0 s tracked
+(a measurement, not an absent field: a tracked hull is never offered an arc).
 
 ### A7. Null-space behavioural control — priority projection instead of weighted sums
 **[A]** · Antonelli, Arrichiello & Chiaverini (2008), *The Null-Space-Based Behavioral Control for Autonomous
