@@ -223,6 +223,11 @@ func _facing_drag() -> void:
 	if a != null and b != null:
 		drawn = ((b as Vector3) - (a as Vector3))
 		drawn = drawn.normalized() if drawn.length() > 0.001 else Vector3.ZERO
+	# WHICH HALF FAILED, not just that something did. A whole-element move goes down the task path, so the heading
+	# can be lost in two different places and they need different owners: control not putting it on the task
+	# (mine), or the element's leader not passing it to its members' orders (squad's).
+	var element := controls.selected_element()
+	var on_the_task: Array = (element.task.get("facing", []) if element != null else []) as Array
 	var aimed := way.size() == 2 and drawn != Vector3.ZERO \
 			and Vector2(float(way[0]), float(way[1])).dot(Vector2(drawn.x, drawn.z)) > 0.99
 	var pinned := false
@@ -230,7 +235,9 @@ func _facing_drag() -> void:
 		pinned = pinned or mark.has("facing")
 	_checks["facing_drag_orders_a_heading"] = aimed
 	_checks["facing_drag_shows_on_the_pin"] = pinned
-	_step("facing_drag", {"units": members, "press": [roundi(from.x), roundi(from.y)], "release": [roundi(to.x), roundi(to.y)],
+	_checks["facing_drag_reaches_the_task"] = element == null or on_the_task.size() == 2
+	_step("facing_drag", {"as_task": element != null, "facing_on_the_task": on_the_task,
+			"units": members, "press": [roundi(from.x), roundi(from.y)], "release": [roundi(to.x), roundi(to.y)],
 			"drag_px": roundi(from.distance_to(to)), "drawn": [snappedf(drawn.x, 0.01), snappedf(drawn.z, 0.01)],
 			"facing": way, "on_the_pin": pinned, "summary": controls.describe({"units": members, "verb": "move", "facing": way})})
 	await get_tree().create_timer(1.2).timeout

@@ -79,8 +79,14 @@ func test_scrapyard_builds_cover_features_and_symmetric_navigation() -> void:
 func test_match_spawns_come_from_the_layout() -> void:
 	var arena: Arena = await _arena("scrapyard")
 	var green: Array = arena.layout["spawns"]["green"]
-	assert_eq(Match.spawn_position(Match.Team.GREEN, 4), Vector3(green[4][0], 0.0, green[4][1]), "Green's slot 4 is the layout's")
-	assert_eq(Match.spawn_position(Match.Team.RUST, 4), -Match.spawn_position(Match.Team.GREEN, 4), "Rust's mirrors it")
+	# Round 9 (combat, `Match.SPAWN_LIFT_M`): a layout supplies x/z and the spawn stands a few cm clear of the floor,
+	# so the layout is checked on the plane and the mirror is point symmetry ON that plane — negating a lifted spawn
+	# would put Rust below the floor. The lift itself is asserted in test_match_spawns_and_results.
+	var from_layout := Match.spawn_position(Match.Team.GREEN, 4)
+	var mirrored := Match.spawn_position(Match.Team.RUST, 4)
+	assert_eq(Vector2(from_layout.x, from_layout.z), Vector2(green[4][0], green[4][1]), "Green's slot 4 is the layout's")
+	assert_eq(Vector2(mirrored.x, mirrored.z), -Vector2(from_layout.x, from_layout.z), "Rust's mirrors it")
+	assert_eq(mirrored.y, from_layout.y, "and both stand the same distance clear of the floor")
 
 
 func _path_length(path: PackedVector3Array) -> float:

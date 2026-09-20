@@ -354,7 +354,8 @@ we have been treating it as a UI problem. **It is a motion planning problem**, a
 **Determinism:** dot-product weighting, closed form.
 **Falsifier:** time fraction with velocity opposing the corridor tangent under attack-move drops from **30–36%** to
 **< 10%**, *without* a fall in exchange ratio. If units look obedient and start dying, we bought the wrong thing.
-**Baseline measured by the judging instrument (nav `c025bc6b`, builder0, A12 `--order-verb attack_move --team 0`,
+**Baseline measured by the judging instrument (nav `c025bc6b` for yard and pit, `5369bd13` for terminus — one Status
+file apart, verified by diff, and metrics' `--pool` banner caught it; builder0, A12 `--order-verb attack_move --team 0`,
 `Arena.ROTATION`, FIGHT_SEED=3, 120 s each, pure default path):** off_corridor yard **0.304** (active fraction 0.631,
 28,472 active ticks), pit **0.321** (0.595, 25,764), terminus **0.331** (0.738, 41,818); **pooled 0.320**, weighted by
 active ticks over 96,054 (a mean of the three fractions gives 0.319 today and diverges the day one map dominates, so
@@ -367,7 +368,13 @@ the active fraction beside the fraction, always:** A6 can act on 59–74 % of or
 is not, and "< 10 % over active ticks" is a weaker claim than "< 10 % of the fight"; the falsifier is read over the
 whole fight. Per hull on yard: ifv 0.373 (active 0.664), lancer 0.436 (0.407), tank 0.255 (0.692); `arc_live`
 164 s / 171 s wheeled, 0.0 s tracked (a measurement, not an absent field: a tracked hull is never offered an arc).
-The three logs (~100 MB each) are in nav's session scratchpad; the targets wipe `build/`.
+The three logs (~100 MB each) are in nav's session scratchpad; the targets wipe `build/`. **12:45: `p7-pit.jsonl`
+on the laptop has ONE FLIPPED BIT (line 143,873, `0x78 → 0xf8` inside the key `slot_x`; metrics' reader now refuses
+with file, line and byte), on a STALE copy in the laptop's `build/`; nav's copies taken out of `build/` after each run parse clean line by line and metrics re-pools from them.** The control arm
+from the two usable logs (whole roster, both armies): yard eff_mean 0.681, osc_share 0.044, net/path 0.815,
+cusp/min 43.10, SPARC −2.013; terminus 0.660, 0.052, 0.799, 69.14, SPARC −2.013. **Cusp density swings 60 % between
+maps with no treatment, so it mostly measures the arena; SPARC is −2.013 on both to three decimals. A6's
+pre-registration reads SPARC and the off-corridor pair, not cusp density.**
 
 ### A7. Null-space behavioural control — priority projection instead of weighted sums
 **[A]** · Antonelli, Arrichiello & Chiaverini (2008), *The Null-Space-Based Behavioral Control for Autonomous
