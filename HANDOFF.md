@@ -350,10 +350,27 @@ feel.
   Steam build, arena announcer audio, and the paused netcode, garage and progression streams.
 - **Disk:** the laptop is at 95%. `assets/incoming/` alone is 968 MB of raw generated art.
 
-## Two claims on `main` that are weaker than their commit messages say
+## Three claims on `main` that are weaker than their commit messages say
 
-Both are the orchestrator's, both were caught by streams on 2026-09-19, and both are the same failure: **an
-instrument that could not have detected the treatment.**
+All three are the orchestrator's, all three were caught by streams on 2026-09-19, and the first two are the same
+failure: **an instrument that could not have detected the treatment.** The third is worse.
+
+- **⚠ THE ARRIVE-ON-HEADING ARC CANNOT FIRE IN THE GAME THE LEAD PLAYS.** Round 8 reported *"cars arrive on heading"*
+  to him as shipped. Found by control, verified independently by the orchestrator in the code rather than relayed:
+  a `facing` is put into a move command in **exactly one place** — `game/ui/tactical_map.gd:269`, the **touch map's**
+  right-drag (*press = destination, drag = facing*) — and **the touch map is behind `--touch-map` /
+  `--command-playtest`** (`game/modes/skirmish_mode.gd:112`, `:301`). His desktop controls are `RtsControls`, which
+  only ever **reads** `facing` (`game/control/rts_controls.gd:307`, for camera yaw and the order pin) and **never
+  sends it**. squad sets one for holds and stations; **a player move never carries one.**
+  **So nav's `_arrive_facing` arc is not merely unmeasured — it is unreachable on the default path**, and its gate
+  counters reading `aimed 0, refused 0` in both A/B arms would read the same in a real match. This is the round
+  skill's own rule — *a behaviour behind a flag the default path never passes has not shipped; play the default
+  path* — broken again, and the orchestrator relayed it to the lead as a win instead of playing it.
+  **Round 9, control's fix, small and already scoped:** give the desktop right-click the same grammar the touch map
+  has (press = destination, drag = the facing to arrive on), with a test asserting `orders.current(unit)["facing"]`
+  after a drag **so the next A/B has a live arm by construction**, checked at the lead's pose so a facing drag cannot
+  read as a box-select. **And note for round 9's probe:** even after that lands, `nav-fight` issuing a plain `move`
+  still measures nothing. **The live cases are a player drag and a squad hold.** Do not re-measure zero twice.
 
 - **`6a8aaa8c` says the facing pair does not move the sim baseline.** It was measured against the old `sim-baseline`
   match, which combat then showed was **blind to 5 of 6 mutations** — wheeled turn rate, fixed-mount fire arc, hover

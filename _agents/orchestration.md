@@ -2358,3 +2358,19 @@ The kickoff prompt is one line; this section is the rest.
      theoretical.
    **Before raising a shared capacity knob, ask which recorded numbers it retires.** This one retired every
    wall-clock figure in one stream's brief, and the only reason we know is that the stream volunteered it.
+
+149. **"Unmeasured" and "unreachable" look identical from a green check, and the second one means the feature did not
+   ship.** Round 8 reported *"cars arrive on heading"* to the lead as delivered. nav's A/B then showed the arc never
+   executed (lesson 147). control went one step further and asked *why*, in the code rather than in the probe, and
+   found the answer is not the probe at all: a `facing` reaches a move command from **exactly one place**,
+   `game/ui/tactical_map.gd:269`, the **touch map's** right-drag — and the touch map lives behind `--touch-map` /
+   `--command-playtest`. The lead's desktop controls only ever **read** `facing`, never send it. **So the arc cannot
+   fire in the game he plays**, and the counters would read `aimed 0` in a real match exactly as they did in the A/B.
+   **The rule already existed** — *a behaviour behind a flag the default path never passes has not shipped; play the
+   default path* — and the orchestrator broke it by relaying a merge as a win **without once playing the default
+   path**. Three separate instruments (a green check, a clean A/B, and a documented contract on both sides) all
+   reported success, and none of them could see that nothing was connected.
+   **The distinction to hold: a test proves the code works when called. Only the default path proves something calls
+   it.** The cheap guard is control's, and it generalises: **assert the value arrives end to end** — a test on
+   `orders.current(unit)["facing"]` after the real input gesture — so the next A/B has a live arm *by construction*
+   rather than by hope. **An arm you have to remember to check will eventually not be checked.**
