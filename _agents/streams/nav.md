@@ -359,6 +359,14 @@ the four adds alongside.
 expresses every join as the visible correction the lead complains about. My reason was only that its evidence was an
 angle-wrap bug in my own reporter.
 
+### Two machine facts that postdate every number above (2026-09-19, late)
+
+- **builder0 runs 4 heavy slots now, not 2.** Every timing figure in this brief (`t100_s`, crossings, arrival seconds)
+  was taken at 2 slots. Shares and ratios are unaffected; times are not comparable across the change. See the new
+  section in [verification.md](../verification.md) for which of nav's numbers survive concurrency and which do not.
+- **`make lint` refuses to run twice in one checkout** (`flock -n`). The phantom "tracked file does not exist" errors
+  seen earlier were two lint runs sharing one `.godot`, not this worktree.
+
 ### Round 8 wrap-up (nav, 2026-09-19 evening) — hand-over facts
 
 **GREEN HASH: `5367c395`.** Read from the wrapper: `>> remote: make check exited 0 (build/ copied back)` with
