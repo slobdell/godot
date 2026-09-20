@@ -582,9 +582,16 @@ static var clearance_refused := 0
 ## `Units.DEFAULT`'s **current** box read from the roster rather than a number frozen in this file, so it cannot
 ## drift from the roster again the way the literal did.
 static func hull_box(unit_id: String) -> Array:
-	var size: Variant = Units.stat(unit_id, "hull_size", null)
-	if size is Array and (size as Array).size() >= 3:
-		return size
+	# `Units.PROFILES.has()` FIRST, and this is the sharper half of scale's finding. `Units.stat()` ends in
+	# `PROFILES[unit_id].get(key, fallback)` — so its `fallback` covers a **missing KEY**, never a **missing UNIT**:
+	# an unknown id raises *"Invalid access to property or key … on a base object of type 'Dictionary'"* before the
+	# fallback is ever consulted. So `Units.stat(id, "hull_size", [2.4, 1.6, 3.8])` was not a stale guard against a
+	# typo'd unit — **it was never a guard against one at all.** That literal only ever applied if a KNOWN unit
+	# lacked `hull_size`, which no unit does. The case everyone assumed it covered was unreachable.
+	if Units.PROFILES.has(unit_id):
+		var size: Variant = Units.stat(unit_id, "hull_size", null)
+		if size is Array and (size as Array).size() >= 3:
+			return size
 	push_error(("hull_size: no unit %s in the roster, so nav is measuring against %s's box. Every clearance, "
 			+ "chord and avoidance radius for this hull is now wrong — a misspelled id or a unit added before its "
 			+ "profile.") % [unit_id, Units.DEFAULT])

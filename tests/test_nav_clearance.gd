@@ -177,6 +177,9 @@ func _drive(game_match: Match, tank: Tank) -> void:
 func test_an_unknown_unit_id_errors_rather_than_measuring_a_pre_cp2_car() -> void:
 	expect_error("no unit not_a_unit_id in the roster")
 	var box := Movement.hull_box("not_a_unit_id")
+	# `Units.stat` would RAISE on this id rather than return a fallback, so `hull_box` must not call it at all for
+	# an unknown unit. That is the bug under the bug: the inline fallback never covered a missing unit.
+	assert_true(not Units.PROFILES.has("not_a_unit_id"), "POSITIVE CONTROL: the id really is unknown")
 	var fallback: Variant = Units.stat(Units.DEFAULT, "hull_size", [])
 	assert_true(box.size() >= 3, "a box comes back so the caller does not crash on a typo (%s)" % str(box))
 	assert_eq(box, fallback,
