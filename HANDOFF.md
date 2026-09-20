@@ -350,6 +350,30 @@ feel.
   Steam build, arena announcer audio, and the paused netcode, garage and progression streams.
 - **Disk:** the laptop is at 95%. `assets/incoming/` alone is 968 MB of raw generated art.
 
+## Round 8 is CLOSED (2026-09-19). Start here.
+
+**All six streams merged, worktrees removed, briefs archived to `_agents/streams/archive/round8/`.** `main` carries
+everything. The six `stream/*` branches are kept as history; `make worktree STREAM=<name> OFFSET=<n>` recreates a
+worktree for round 9.
+
+- **Sim baseline: `glibc-2.43 04414f5d6a6dfa7c`** (was `0cb238bf366e141f`). Recorded from builder0, **read twice with
+  both readings agreeing**, covering the two hash-moving changes: squad's brain and start positions, and combat's
+  **widened match** — which is why it moved so far. The old match fielded five `tank` hulls and was blind to 5 of 6
+  mutations; the new one fields every locomotion × mount combination.
+- **⚠ `main` IS NOT COVERED BY A GREEN CHECK.** combat was merged unverified **on the lead's explicit call** (*"checking
+  in a dirty codebase is ok, let's just get everything merged so we can hit a milestone"*), so the round could close
+  and the environment be reset. Its blast radius is bounded and was verified, not assumed:
+  `git diff --name-only main...stream/combat -- game/` returns **nothing**. **The first task of round 9 is one full
+  `make remote T=check` on `main`.**
+- **Round 9 is planned:** `_agents/workstreams.md` *Round 9 goal* has the split, the order, and the argument for the
+  order; `_agents/research_catalog.md` has the twelve adopted techniques with owners and falsifiers. **A12 (metrics)
+  and T1 (parallelise `check`) come before any mechanism.**
+- **Measurement provenance is preserved** in `_agents/streams/references/round8/` — 72 JSONs, the raw data behind
+  every number the archived briefs cite. **Cite from those with their commit and machine, not from a brief's prose.**
+- **Two traps for a fresh environment**, both in `_agents/remote_builds.md`: a cold `make import` exceeds `slot.sh`'s
+  5400 s cap and is killed (use `TANK_SQUAD_SLOT_TIMEOUT=14400`), and a remote run that exits **255** is ssh, not the
+  suite — after which `build/` holds a **previous run's** artefacts.
+
 ## Three claims on `main` that are weaker than their commit messages say
 
 All three are the orchestrator's, all three were caught by streams on 2026-09-19, and the first two are the same

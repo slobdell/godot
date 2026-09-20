@@ -2399,3 +2399,20 @@ The kickoff prompt is one line; this section is the rest.
      such regressions and a better-looking metric.** Read this lesson before pointing anything automated at a score.
    **And A2 inherits its falsifier from this:** squad's two scenarios are the ready-made acceptance test for the
    state-dependent switching cost, because they are precisely what the crude version cost.
+
+151. **The discipline this project keeps praising is cheap for a worker and expensive for the orchestrator, and a
+   lesson that ignores that reads as a virtue anyone can have.** arena's observation at round 8's close, and it is a
+   correction to how lessons 95/147/149 are written. arena twice declined to offer a green hash on checks that ran
+   1219 and 1238 tests clean, because both wrappers exited 2 — **and both failures were other people's to fix.**
+   Refusing cost arena one message. **The orchestrator was merging six streams against a moving baseline with the
+   build machine flapping and the lead waiting on a milestone, and that is where the identical discipline actually
+   hurts** — every refusal there is another hour, another slot, another round-trip to someone who has stopped.
+   **This is the same cost asymmetry as lesson 2's deferred baseline, pointed the other way.** There, the rule looked
+   cheap to the orchestrator because the cost fell on streams. Here, the rule looks cheap to streams because the cost
+   falls on the orchestrator. **A rule's difficulty is not a property of the rule; it is a property of who is being
+   asked to follow it, and when.**
+   The practical form: **when an orchestrator is under time pressure, the thing to protect is not "check everything"
+   — it is "label precisely what was not checked".** Round 8 closed with combat merged unverified, and what made that
+   defensible was not diligence but the merge commit saying so in capitals, naming the lead's decision, and bounding
+   the blast radius with a verified `git diff -- game/` returning nothing. **An honest unverified merge is worth more
+   than a check nobody had time to run.**
