@@ -463,6 +463,50 @@ caught at its trough reads as *"dimmer"*, which is the opposite of the impressio
 understated `last_stand` exactly that way. **Cues are shot as clips** (`make show-clips`: 60 frames 0.1 s apart,
 ffmpeg to a 6 s 10 fps mp4, 720p because motion is the subject); the strip shows the **fixtures**.
 
+### Two runs are not the same run — and it bit three different measurements in one night
+
+Every measurement this stream tried to make by **comparing two runs** was wrong, and each one was wrong for a
+different reason that looked like a result:
+
+| measurement | what "two runs" cost it |
+|---|---|
+| `perf-scene` before vs after, an hour apart | builder0 went from 4 concurrent heavy runs to 8+. **Every** layer cost roughly tripled, including layers the show does not touch (`no_hud` ×5). Delta unusable. |
+| `show-perf-pair`, both arms back to back in one slot | Contention swings *within* a slot. **The show-ON arm came out 43% faster than the show-OFF arm** — impossible as an effect, so a measurement of the noise. |
+| the luminance gate, a `--no-show` process against a normal one | These frames ride a **live skirmish**, so the vehicles are somewhere else in the other process. The same frames swung by **up to 5 percentage points** between two runs of one commit, and the "failure" it produced had the *outline* variant scoring better than the parapet — backwards, and the tell that it was noise. |
+
+**The fix is the same in all three: get A and B from ONE run.**
+
+- **Timing:** `make perf-scene` alternates `all` and a layer phase *seconds apart* and takes the mean of the `all`
+  phases either side. The show is the `no_show` layer (`Show.driving`), off the default `LAYERS` list so no other
+  stream's runs lengthen. feel adopted the same shape for the War Rig's hinge the same night, replacing a
+  back-to-back A/B that would have produced a number.
+- **Frames:** `ShowLook` toggles `driving` on the **paused** scene and captures twice, milliseconds apart — same
+  vehicles, same effects, same everything but the show.
+
+**And when the timing is unmeasurable anyway, counts are not.** Real lights, draw calls, `instance_buffer_pos`, the
+instance-uniform error count, and whether the shaders compiled at all survive a bad machine completely. On the
+contaminated pair, real lights were identical and both error counts were zero — which is most of rule 3, proven, on
+a run whose milliseconds were worthless.
+
+### A gate that fails the branch point is not a gate
+
+The luminance rule shipped first as an **absolute**: fail if the block band out-reads the fight ring. Run against a
+BEFORE arm it failed **22 of 30 frames with no show in them at all**. At the lead's 21° pose over dark asphalt the
+top of the frame is simply brighter than the middle, and it was before any of this existed.
+
+**So the bar is relative: the show must not make the ratio meaningfully worse than the same frozen frame with the
+show off.** Measured that way the parapet default moves it **−2.6% to +7.4%, mostly positive** — it makes the fight
+marginally *easier* to read, because the window grid lifts the interiors rather than the silhouette.
+
+Two cautions that outlive this round:
+
+- **Say which statistic you are gating.** feel's observation was *"the brightest pixels in the image are the
+  building edges"* — a **maximum**. The gate measures a **mean** over two windows. Both are reported per frame now;
+  a passing mean does not answer a claim about maxima.
+- **Check the control against itself before trusting a failure.** The first failing run had the *outline* variant
+  scoring better than the parapet. More lit silhouette cannot help the fight out-read the periphery, so the
+  measurement was wrong before the result was interesting.
+
 ### Shoot an event cue where it has headroom
 
 The first strip took the kill ripple under the `battle` cue, where the edge channel sits at **0.96 of a 1.00
