@@ -763,10 +763,110 @@ the refused asker yielding** — which explains a queue that never drains withou
 My inference that this was a *width* problem about to be made worse by CP2 was wrong, and it was wrong in the
 direction I should be most suspicious of: it made my own measurement sound more important than it was.
 
+**And the correction came with a positive control that validates MY instrument, which is worth more than the retraction
+cost.** scale's corrected measure puts the maze's tightest point at **exactly 7.00 m**, and `tools/make_arenas.py`
+authors `MAZE_TIGHT_GAP = 7.0` — so the corrected number reproduces the authored one. Subtract `NAV_AGENT_RADIUS` 2.0 m
+from each side and you get **5.0 m of navigable corridor**, which is **exactly what `SlotGround.corridor_width`
+measured off the baked navmesh**. Two independent instruments, one geometric and one off the mesh, agreeing to the
+decimal on a gap whose authored value is known. **That is the check my corridor probe needed and had not had** — after
+it had been wrong three times, it is now right against a known answer.
+
 **Lesson for my own reporting, not anyone else's:** I relayed a number from another stream into my brief and reasoned
 from it inside the same hour. The rule this project already has (lesson 26 — *a relayed number becomes a fact: ask the
 sample size before passing it on*) applies to the measure as well as the sample: **ask what the number is the width
 OF.** I did not, and the honest version of my own finding was available without it.
+
+### X6 (stretch): what is answerable tonight, and what needs a hook I do not own
+
+The lead asked for this by name — *"we might even be able to differentiate units of different factions by PID
+values"* — so it deserves a real answer rather than a shrug. `ControlGains.FACTIONS` already ships three tables, with
+an intent written beside each: the Syndicate crisp and twitchy (kp 1.5, kd 0.9), the gangs loose and overshooting
+(kp 0.45, kd 0.05), the Law damped and deliberate (kp 0.7, kd 1.2), and the Condemned as the reference default.
+
+**The regulator half is already answered and asserted**, in nav's `tests/test_station_keeping.gd`
+(`test_factions_keep_station_each_in_their_own_way`, `MEASURE station_faction`): the Syndicate sits tighter in its
+slot than the default, the gangs overshoot a stopping slot by more than 0.3 m over the default, and the Law never
+overshoots more than the reference. **So the gains are real at the loop.** That test drives one hull against a moving
+then stopping slot, which is the cleanest possible isolation of the regulator and the right way to establish that.
+
+**The two halves my brief actually asks about are NOT answerable from here tonight, and the reason is a seam rather
+than time:**
+
+1. *"Do they win equally often?"* needs a ladder — identical armies, gains the only difference — and that is
+   `make tactics-ladder`, hours of builder0, and the wrong use of a contended night.
+2. *"Does a spectator see a difference?"* needs metrics' spectral arc length and cusp density per faction, which
+   needs CP1 on `main`.
+
+**And both need something neither of them has: a way to hold the ARMY fixed while changing the gains.** Today the
+gains are selected by `Units.stat(unit_id, "faction")`, so "a gangs squad" and "a Law squad" differ in gains *and* in
+every stat the two factions differ by — which makes the comparison uninterpretable, and is exactly the confound
+lesson 23 is about (measure the configuration players get, and know which configuration you measured).
+**Request to nav:** a runtime override on `ControlGains` — a `static var override := {}` merged over
+`FACTIONS`/`DEFAULT`, or a `--gains=<faction>` launch flag — so one army can be driven by another faction's loop. It
+is two lines in `control_gains.gd`, it is nav's file, and **without it X6 cannot be measured at all, only asserted.**
+
+**My prediction, made before I ran it:** identical armies would win equally often, and a spectator would see the
+difference *only* in the gangs' overshoot, because that is the one gain set whose intent is a visible signature rather
+than a tighter one.
+
+**The regulator numbers, and the prediction is wrong in a specific way** (`MEASURE station_faction`, laptop, one hull
+driven against a moving then stopping slot):
+
+| gains | tracking gap | overshoot on stopping | settling |
+|---|---|---|---|
+| default (Condemned) | 0.20 m | 1.89 m | 3.23 s |
+| **syndicate** | **0.09 m** | 1.68 m | 3.23 s |
+| **gangs** | 0.81 m | **2.56 m** | 3.30 s |
+| **law** | **1.00 m** | **1.56 m** | 3.20 s |
+
+Every intent written beside the tables holds: the Syndicate sits **2.2× tighter** than the reference crew, the gangs
+overshoot a stopping slot by **+0.67 m** over it, and the Law overshoots **least of all four**. But the spread that
+matters is not the one I predicted: **the tracking gap spans 0.09 m to 1.00 m, an 11× range**, and the loosest tracker
+is the **Law**, not the gangs — which is the honest consequence of "damped and deliberate" (heavy D, light I: it never
+overshoots and it never quite closes). So **two of the three factions differ from the default visibly, in different
+ways**, rather than one.
+
+**Is 11× visible? Yes, and that is the answer for the lead.** A metre of station-keeping slop is a quarter of a hull
+length at today's sizes and about a fifth of the way to a neighbour's slot; two and a half metres of overshoot when
+stopping is most of a hull length past the mark. At his camera those are not subtle. **Settling time, though, is
+indistinguishable — 3.20 to 3.30 s across all four, a 3% spread — so nobody arrives faster, they arrive differently.**
+That is a good property: it means the gains are flavour without being a balance lever, which is exactly what he asked
+for and what `vision.md`'s no-pay-to-win pillar needs them to be.
+
+**What these numbers are NOT.** One hull, a synthetic slot, no enemies, no terrain, no formation. They establish that
+the loops differ and roughly how much. They do not establish that the difference survives a fight, that it is visible
+*in* a fight, or that it is balance-neutral in a match — and the second of those is metrics' spectral arc length after
+CP1, while the third needs the gains-override hook above before it can even be set up.
+
+### A1's brain half, built behind a switch with the default untouched
+
+`TankBrain._hold_motion_plan` now holds the two rules side by side, and `TUBE_ENABLED` (default **false**) chooses.
+The shipped rule is a **cadence** — same cache key, younger than `MOTION_REPLAN_TICKS` — which is a true argument
+about *time* that says nothing about whether anything moved. The **tube** is the same argument about *state*: hold the
+plan while neither the unit nor its target has left the neighbourhood it was computed in (`TUBE_TARGET_M` /
+`TUBE_SELF_M` 8 m, the same order as `Element.REISSUE_M`, because below that the 12 m steer point has not meaningfully
+moved), with a `TUBE_MAX_TICKS` ceiling so a held plan cannot become a stuck state.
+`redecide_counts()` returns `{redecides, skips}` per brain, so the flip is gated on a counted before/after.
+
+**Why the default is off, and it is evidence rather than caution.** nav's route half of A1 failed its own falsifier in
+a fight — the cadence skipped 2144 of 2222 firings and total re-plans moved **+0.9%** — and its cause split then
+attributed **968 of 2059** re-plans to `goal_slid`, a goal nav was already regulating. Until nav's fix for that is
+re-measured, **the share of re-planning reachable from this side is unknown**, and a mechanism whose falsifier cannot
+be evaluated does not ship on. The flip is one constant.
+
+**What the six tests assert is the part that must hold whatever the measurement says** — and it is the part that makes
+the flip safe rather than the part that makes it valuable:
+
+- the tube may only ever hold a plan **longer** than the cadence would, never shorter (inside the cadence it cannot
+  cause an extra re-decide, whatever the state has done — otherwise turning it on would make the brain think *more*);
+- **it can never delay a reaction to something new.** Everything a brain must react to instantly is in the cache key
+  — the target's name, the strafe side, the run phase, and the count of rounds on their way — and a key change refuses
+  the plan *before* the tube is consulted. A tube that swallowed a new contact would be the dwell timer this project
+  has already measured and rejected (round 8's acquire floor: switches 19.5 vs 18.1, reversals 0.67 vs 0.30, worse on
+  every seed);
+- and it has a ceiling, because a tube without one is lesson 17's shape.
+
+`make test FILTER=motion_tube`: **6 passed, 0 failed.**
 
 ### What is NOT done, and the exact commands to do it
 

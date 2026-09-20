@@ -194,6 +194,32 @@ const FLANK_WIDE_COS := 0.5
 const FLANK_WIDE_EXTRA := 20.0
 ## ...and re-plans the move at most this often (ticks) while nothing changed.
 const MOTION_REPLAN_TICKS := SimClock.TICK_RATE / 4
+
+# ---- A1's brain half: a state-error tube instead of a fixed cadence (round 9, behind a switch) -----------
+#
+# nav measured its own half of A1 and it FAILED its falsifier in a fight: the route cadence skipped 2144 of 2222
+# firings and total re-plans moved +0.9%, so nav's fixed `REPATH_SECONDS` is worth ~3% of re-planning. The re-plans are
+# EVENTS, and nav's cause split then attributed **968 of 2059 to `goal_slid`** — a goal nav was already regulating,
+# re-planned because it moved a metre. That is nav's bug and nav has fixed it.
+#
+# THIS is the brain's half of the same idea, and it is OFF by default deliberately. The cache key below includes the
+# INCOMING ROUND COUNT, so a unit under fire re-decides whenever a shell enters or leaves its list whether or not the
+# decision would change — the same shape of waste one layer up. A tube replaces "re-decide every N ticks unless the key
+# changed" with "re-decide when the state has actually left the neighbourhood the last decision was made in".
+#
+# WHY THE DEFAULT IS UNTOUCHED, and it is evidence rather than caution: until nav's `goal_slid` fix is re-measured, the
+# share of re-planning that is even reachable from this side is unknown. If `goal_slid` was most of it, a tube here
+# solves a problem that no longer exists — and I would be shipping a mechanism whose falsifier I cannot evaluate.
+# `MEASURE brain_redecides` gives the before/after, and the flip is this one constant.
+static var TUBE_ENABLED := false
+## The tube's radii: the decision is re-taken when the target has moved this far from where it was when the plan was
+## made, or when the unit itself has. 8 m is the same order as `Element.REISSUE_M` — below it the steer point (12 m
+## out) has not meaningfully moved, which is the same argument the cadence rests on, applied to state instead of time.
+const TUBE_TARGET_M := 8.0
+const TUBE_SELF_M := 8.0
+## The tube is never a licence to hold a plan forever: past this the decision is re-taken whatever the state (the
+## cadence's own safety net, kept, because a tube with no ceiling is a stuck state — lesson 17's shape).
+const TUBE_MAX_TICKS := SimClock.TICK_RATE * 2
 ## ...and a jink flips the circling side no sooner than JINK_MIN_TICKS after the last, and no later than
 ## JINK_MIN_TICKS + JINK_SPREAD_TICKS (per unit, so a group doesn't jink in step).
 const JINK_MIN_TICKS := SimClock.TICK_RATE * 3 / 2
@@ -393,6 +419,10 @@ var _baits := 0
 var _bait_seen := -1
 ## The last CombatMotion plan: {"tick", "key", "why", "order"} (reused for MOTION_REPLAN_TICKS).
 var _motion_cache := {}
+## A1 (brain half): how many motion decisions this unit took, and how many it was ABLE to skip, so the tube's value is
+## a measured before/after rather than an argument. Read by `TankBrain.redecide_counts()`.
+var _redecides := 0
+var _redecide_skips := 0
 var _jink_tick := 0
 var _run_phase := "run"
 ## Round 7 (nav): the direction CombatMotion chose last plan, handed back so it can commit to it.
@@ -1293,6 +1323,38 @@ static func slot_leash(element: Variant) -> float:
 ## the same element drifts 42 m — five vehicles each holding their own band, which is the lead's *"just these 2 masses
 ## shooting at each other"* in miniature. Holding a band is the right instinct for one vehicle and the wrong one for an
 ## element; the element's answer is that the band is chosen WITHIN the slot's region, which is what a formation is for.
+## Whether last tick's motion plan still stands. Two rules, and only one of them is on by default.
+##
+## The CADENCE (default): the same key, and less than MOTION_REPLAN_TICKS old. The steer point is 12 m out, so a 0.2 s
+## old plan still drives true — which is a true argument about TIME that says nothing about whether anything moved.
+##
+## The TUBE (A1's brain half, `TUBE_ENABLED`): the same key, and neither the unit nor its target has left the
+## neighbourhood the plan was computed in, and the plan is younger than TUBE_MAX_TICKS. It is the same argument made
+## about STATE: a plan computed 1.5 s ago for a target that has moved 2 m is a better plan than a fresh one computed
+## for a target that has moved 2 m, because they are the same plan and one of them cost an arc search.
+func _hold_motion_plan(motion_key: String, tick: int, my_position: Vector3, contact: Dictionary) -> bool:
+	if _motion_cache.is_empty() or String(_motion_cache["key"]) != motion_key:
+		return false
+	var age := tick - int(_motion_cache["tick"])
+	if not TUBE_ENABLED:
+		return age < MOTION_REPLAN_TICKS
+	if age >= TUBE_MAX_TICKS:
+		return false
+	if age < MOTION_REPLAN_TICKS:
+		return true  # inside the cadence: the tube can only ever hold a plan LONGER, never shorter
+	var was: Variant = _motion_cache.get("at")
+	var target_was: Variant = _motion_cache.get("target_at")
+	if not (was is Vector3) or not (target_was is Vector3):
+		return false
+	return _flat(was).distance_to(_flat(my_position)) <= TUBE_SELF_M \
+			and _flat(target_was).distance_to(_flat(contact["position"])) <= TUBE_TARGET_M
+
+
+## A1: {"redecides": n, "skips": n} for this brain, so the tube's effect is a counted before/after.
+func redecide_counts() -> Dictionary:
+	return {"redecides": _redecides, "skips": _redecide_skips}
+
+
 static func element_slot(s: Dictionary) -> Variant:
 	var context: Variant = s.get("element")
 	if context == null:
@@ -2305,10 +2367,14 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 			return {"type": "stop"}
 	# Re-plan every MOTION_REPLAN_TICKS unless something that changes the plan happened (a new round on its way, a
 	# jink, a run phase flip, another target): the steer point is 12 m out, so a 0.2 s old plan still drives true.
+	# The incoming count is in the key so a new round on its way re-decides. It is also why a unit under sustained fire
+	# re-decides on every shell that enters or leaves its list, which is what A1's tube is aimed at (see TUBE_ENABLED).
 	var motion_key := "%s|%d|%s|%d" % [contact["name"], _strafe_side, _run_phase, (s.get("incoming", []) as Array).size()]
-	if not _motion_cache.is_empty() and _motion_cache["key"] == motion_key and tick - int(_motion_cache["tick"]) < MOTION_REPLAN_TICKS:
+	if _hold_motion_plan(motion_key, tick, my_position, contact):
+		_redecide_skips += 1
 		why = _motion_cache["why"]
 		return _motion_cache["order"]
+	_redecides += 1
 	var cover_map := CoverMap.of(tank)
 	var request := {"position": my_position, "forward": me["forward"], "speed": tank.max_forward_speed,
 			"reverse_speed": tank.max_reverse_speed, "style": style,
@@ -2354,7 +2420,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		# mount onto what it engages) instead of driving at it — the lead's "scouts are just running directly into their
 		# targets and then they have to turn around to get a fix again".
 		why = TankBrain._join(why, "holding at standoff")
-		_motion_cache = {"tick": tick, "key": motion_key, "why": why, "order": {"type": "stop"}}
+		_motion_cache = {"tick": tick, "key": motion_key, "why": why, "order": {"type": "stop"},
+				"at": my_position, "target_at": contact["position"]}
 		return _motion_cache["order"]
 	if result.get("dodging", false):
 		why = TankBrain._join(why, "dodging")
@@ -2376,7 +2443,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	var speed := RUN_FIRING_SPEED if style == "run" and _run_phase == "run" and distance <= TankBrain.fire_band(weapon) \
 			and nose_on else 1.0
 	_motion_cache = {"tick": tick, "key": motion_key, "why": why,
-			"order": _move_to(result["point"], result["reverse"], speed, 1.0, true)}
+			"order": _move_to(result["point"], result["reverse"], speed, 1.0, true),
+			"at": my_position, "target_at": contact["position"]}
 	return _motion_cache["order"]
 
 
