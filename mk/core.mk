@@ -231,6 +231,11 @@ CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-
 #               RUNNING match costs -- it parses and exits without ever building a world). 250 MB with a
 #               half-the-cores cap, because lint runs CONCURRENTLY with up to CHECK_JOBS other targets and the
 #               two budgets share one machine.
+# ⚠ All three are `$(shell ...)`, so they are RE-DERIVED in every make invocation -- and `check` runs a sub-make.
+# MemAvailable moves between the two evaluations, so the header printed `test x3` while the run did `2 shards`
+# (seen on builder0, 2026-09-20). The guard was never wrong -- it compares against the value its own loop used --
+# but a header that disagrees with its run is exactly the kind of thing that costs an hour later, so `check`
+# passes its OWN values down to the sub-make and the whole check uses one evaluation.
 CHECK_JOBS ?= $(shell tools/slot.sh --jobs 1000)
 LINT_JOBS  ?= $(shell tools/slot.sh --jobs 250 $$(( $$(nproc) / 2 )))
 _CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
@@ -261,7 +266,9 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 			"$$(( elapsed / 60 ))" "$$(( elapsed % 60 ))" "$$count" "$(words $(CHECK_TARGETS))" "$$left" >&2; \
 	done ) & heartbeat=$$!; \
 	trap 'kill $$heartbeat 2>/dev/null' EXIT INT TERM; \
-	if $(MAKE) --no-print-directory -j$(CHECK_JOBS) -Otarget check-parallel; then status=0; else status=$$?; fi; \
+	if $(MAKE) --no-print-directory -j$(CHECK_JOBS) -Otarget \
+			TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel; \
+		then status=0; else status=$$?; fi; \
 	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)" >&2; \
 	exit $$status
 
