@@ -180,6 +180,77 @@ cannot spare). Pre-register the sim hash unchanged; if it moves, it is the same 
   frame before it ships, since "Syndicate-feel" is his to judge.
 
 ## Status
+### THE REPORT — read this first; everything below it is the working record
+
+**Round 9, feel. Green at `5ae7e531`** (builder0: `>> remote: make check exited 0`, `check passed: 16 targets`,
+**1,316 passed / 0 failed**, `sim-baseline passed: 04414f5d6a6dfa7c` — unchanged —, `lint: all 543 scripts parse,
+8 known artefacts baselined`). Merged to main. *(Squad's later merge moved the baseline to `d4c049819a5833d3`;
+mine was verified against the value that was current when it ran.)*
+
+#### 1. "The semi trucks are still one long box" — done, and you have the frames
+
+**The War Rig is a tractor and a trailer now, hinged at the fifth wheel.** It corners like a semi: the cab swings
+out ahead while the tanker cuts the corner inside it. It **jackknifes when it reverses**, because that is what a
+trailer does.
+
+- **In a live match** (32 rigs, 1,440 samples): mean bend **6.1°**, 4.9% of the time past 30°, 1.2% at the limit.
+  So it folds occasionally and **lives near straight** — the occasional truck backing out of a corner, not a fleet
+  of broken vehicles.
+- **On its own tightest turn** (12 m, its real turning circle): settles at **22.7°** against the textbook's
+  `asin(L/R) = 24.9°`. The law is right, not just plausible.
+- **Frames:** `build/rig-hinge/` — the corner at 45° (where the bend reads), the same corner at **your pose**, and
+  the jackknife from above.
+
+**⚠ One thing to know before you see it happen: the collision box is still the single 14 m box.** A shell can pass
+through empty air inside a fold this round. That was the agreed trade for not touching the simulation — and the
+simulation is **proved** untouched, not assumed: the hash is identical, and that was predicted in writing before
+the work started.
+
+#### 2. The Syndicate airship — built, and there is a decision for you
+
+It exists: envelope, fins, gondola, engine pods, a screen a side sharing the arena's ad channel, so **it replays
+your kills overhead**. Syndicate-clean, no rust. No collision. Absent on low-end.
+
+**But the measurement says you will not see it at your pose, and the reason is geometry, not tuning.** The top of
+your screen sits **3.5° below the horizon** at pitch 21° — *the sky is never on screen where you play*. Over 768
+samples at every tilt you can reach, the first version was visible **0.0%** of the time.
+
+**So I moved it out over the city** (560 m, in front of the skyline, inside the draw distance). Now: **visible 12.5%
+of the time at 8–12° of tilt, ~105 px on screen, still never at your default 21°.** The frame is
+`build/airship-look/airship_widest.png` — top-left, against the lit city, half out of frame.
+
+**Your call, and it is one line either way:** *(a)* leave it over the city, where you see it when you tilt down —
+which is Blade Runner's airship, over a city; or *(b)* accept it cannot hover over the arena in play, and use it on
+the title, results and replay screens where the camera can look up.
+
+#### 3. "They still don't do what I command" — the cause is now written down and agreed
+
+Three streams signed `_agents/legibility.md`. The claim: that complaint is **not disobedience, it is
+illegibility** — a unit circling correctly still spends a third of its time moving away from where you sent it.
+**Nothing has shipped yet**; the page is the contract that stops it being built wrong. The key finding was that the
+obvious version of the fix would have done nothing measurable, and nav said so plainly: it would have *"shipped a
+heading law, measured no change, and spent a round arguing about the tolerance."*
+
+#### 4. Found on the way, not asked for
+
+- **The Terminus is brighter than the fight.** On the city map, the buildings out-read the vehicles in **22 of 30
+  frames at your pose** — with the lighting show switched off entirely, so it is the map, not the show. Cause found:
+  it is the only arena with buildings *inside* the fighting area (eight 40 m towers, two of them 40 m from the
+  centre) and it has **half the floodlights of `pit`** at the same size. The fix is more light among the buildings.
+- **The asset pipeline had its own stale copy of every vehicle's size**, already disagreeing with the real one.
+  Harmless today; it would have made every model generated after the resize come out the wrong size, silently.
+- **Two of our own safety checks had been described as broken for two rounds** after they were fixed. Proved
+  working four different ways.
+
+#### 5. Owed
+
+| item | state |
+|---|---|
+| The hinge's frame cost (M1) | **Not reportable yet.** GPU cost indistinguishable from zero; the CPU number came off a machine running eight other jobs and is noise. Re-runs on a quiet box. |
+| The Terminus lighting | Diagnosed and handed to the stream that owns the map file |
+| Roof dressing on the Terminus | Your new camera shows roofs far more often; they are undressed. A frame first, then surface treatment |
+| Every-unit hitbox check (X4) | Waiting on the roster resize, by design |
+
 
 ### Plan (feel, 2026-09-20)
 
