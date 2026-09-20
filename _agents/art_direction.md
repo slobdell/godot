@@ -40,6 +40,22 @@ cartoon or toy-like.**
   not cartoonish.
 - **Heavy, readable silhouettes** from an RTS camera; a distinct turret or weapon on top; nothing that vanishes at 40 m.
 - **Neon lives behind or inside things** (light bars behind grilles, strips in seams), not outlines on everything.
+  **Architecture, and the luminance rule (round 9, S6; ruled 2026-09-20).** The same rule binds the *arena*, not just
+  the vehicles, and the show stream's first fixtures put it to the test: an emissive strip on a city block's
+  bevel/chamfer branch **is** the block's silhouette, so it can only ever draw an outline — the named Never in the
+  table below. Lowering its energy makes the anti-pattern quieter, not different. Where a building should glow:
+  - **the window grid and the shopfronts**, which are light *inside* things, so a block breathes as a lit interior
+    — the "Blade Runner night" this page already names;
+  - at most **one horizontal run on the roof parapet** (`part >= 0.75`), never the vertical chamfers. A horizontal
+    line along a roofline reads as a building; a line tracing every corner reads as a wireframe.
+  - **THE LUMINANCE RULE, and it is a playability rule, not a taste one: the fight is the brightest read.**
+    Architecture sits below the window grid, which sits below the fight. The first show frames inverted it — the
+    brightest pixels in the image were the building edges and the darkest were the arena floor and the vehicles —
+    and this page has always required the arena be *"lit well enough to read the fight"* on a phone.
+  - **Cool white is not in the palette** (magenta + cyan, plus red warning and amber beacon). It reads as
+    architectural LED and it is the one colour that makes a salvaged city look new.
+  - **Red is a signal, not trim.** Beacons, alarms and warning lights are red; long red architectural runs spend a
+    colour that means *something is wrong*.
 - **No text in generated images:** image generators garble it. Put logos, stencils, ad copy, and signage on as
   separate textures, decals, or font overlays. Readable text and fictional brands are welcome (ad screens, sponsor
   branding, stencils); real brands and real people never are.

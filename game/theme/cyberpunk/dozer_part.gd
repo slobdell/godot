@@ -233,8 +233,14 @@ func articulation() -> float:
 	return 0.0 if trailer_pivot == null else wrapf(trailer_pivot.rotation.y + model.rotation.y, -PI, PI)
 
 
+## Off, the hinge stops integrating and holds its current angle. `make perf-scene --perf-layers=no_trailer` toggles
+## it WITHIN a run, seconds apart, which is the only honest way to price it: show measured 43% between two
+## back-to-back paired runs in one slot on a loaded box, i.e. pure noise swamping any real difference.
+var hinge_enabled := true
+
+
 func _process(delta: float) -> void:
-	if trailer_pivot != null:
+	if trailer_pivot != null and hinge_enabled:
 		_drive_trailer(delta)
 	if gun_pivot != null:
 		var tank := _tank()

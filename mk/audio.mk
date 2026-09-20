@@ -32,10 +32,17 @@ music-import: audio-deps ## Import a Suno track: IN=~/Downloads/battle.mp3 STATE
 ## Round 6 (combat's report): the "did the music change the simulation" question is differential, so it is answered
 ## against a control run of the same match without the music, not against the shared baseline file, which moves on
 ## purpose whenever the simulation changes and then accused the soundtrack of breaking it.
+## **VERIFIED BY EXPERIMENT, round 9 (feel), because a lesson said otherwise for two rounds.** orchestration lesson
+## 65 and feel's round-9 brief both still described this target as asking the ABSOLUTE question against the shared
+## baseline file. It does not, and has not since round 6. Proved both ways on the laptop, 2026-09-20:
+##   * with a DELIBERATELY STALE baseline line for this machine's glibc, `sim-baseline` goes red (so the file is
+##     live here) and this target still PASSES -- it never opens the file;
+##   * with the instrumented run's seed skewed so the two hashes must differ, this target FAILS and names the
+##     subsystem -- so the comparison is live and can go red, not merely silent.
+## A guard nobody has seen fail is not known to work (Invariant 0), which is why both halves were run.
 music-smoke: import ## A real headless match with the music on: the beds change, and the simulation hash does not
 	@mkdir -p $(BUILD_DIR)/audio
-	@key="control"; \
-	expected=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
+	@expected=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
 		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
 		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
