@@ -1929,6 +1929,16 @@ rig in round 8); the navmesh's single agent radius (P6: one radius for a 5× foo
 telephoto (control); and the sim baseline, which moves and is recorded once by the orchestrator. **Nobody publishes a
 size-dependent number measured across CP2.**
 
+**WITHDRAWN (2026-09-20 02:40): the gap-widening ruling.** For twenty minutes the record said the kit's gaps would widen
+to the widest hull plus 1 m, because scale's `arena-report` showed the direct route pinching below the 4.74 m artillery
+on 8 of 10 maps. **The measure was wrong**: it returned twice the distance to the *nearest* obstacle, which equals a
+corridor width only with an obstacle on both sides; yard's reported 4.72 m "pinch" is a route hugging one wreck with
+20 m of clear ground behind it — the real span is ~23 m. The orchestrator ruled on it within minutes without checking
+one value. **The maps are not changing on that evidence.** What stands: the resize lands as is; squad's artillery did
+fail one defile on the maze fixture at its old width, and that is nav's plant/right-of-way question, not geometry.
+scale's corrected measure (march perpendicular to travel both ways until something tall is hit) reports when it lands;
+if a real pinch exists the question is re-put with the right number.
+
 **The lead sees the roster before it ships:** the scale stream renders all 21 vehicles side by side at the new scale
 in one frame (the rig and a Condemned tank as references, the same camera as the gallery) and puts it on a review page.
 It is the one subjective check that counts; the numbers are derived and need no approval.
@@ -2003,7 +2013,37 @@ first-person, and the far side of the street still walls the alley: that answers
 Lifting over the roof takes the pitch **21° → 32°**, keeps 41.5 m of horizontal reach, and looks *down into* the alley;
 it is inside the tilt range he can reach by hand (8°–70°), and only shortens the boom when even `MAX_PITCH_DEG` cannot
 clear a roof. Measured over every open ground point on the Terminus × 8 yaws at his pose: **703 of 4,328 poses had the
-camera inside a building; 0 after; worst lift 11.0°; nothing pulled in.** Mutation-checked; an arena with no cityscape
+camera inside a building; 0 after; worst lift 11.0°; nothing pulled in.** **But the second half of his sentence is not
+fixed by it** (control, measured the same night): over those 703 poses the sight line from the camera to the ground it
+aims at was blocked by a building in **700 before and 518 after — a 26% reduction.** 518 cameras are correctly outside
+every solid and still looking at the side of one. **The occlusion cutaway is still owed, and the alley frames decide
+it; 703 → 0 must not be read as the item finished.** **Built the same night (control, `bd69de5f`, laptop):** the block
+between camera and aim point is hidden (`visible = false` on its visual slot — no alpha, no uniform, no emission, collision
+untouched, its cue keeps running underneath), and **the alley behind a wall goes 518 → 0** over the same 703 poses.
+Caveat to report with it: every one of the 518 was a *building*, so the 6 m "buildings only, never cover" threshold
+cost nothing on the Terminus and is untested on an arena with tall cover. Alley frames at his pose follow. Mutation-checked; an arena with no cityscape
 is provably untouched. Because this is the second place the camera overrides his tilt (after the far-range floor), it
 reports `lifted_deg` and is flagged to him rather than hidden. Frames at his pose in the alleys follow. **He can
 overrule this in the morning**: a push-in variant is the same test with a different resolver.
+
+### MEASURED: the factions already drive differently enough to see, and none drives better (squad, 2026-09-20)
+
+The lead asked for it by name (*"we might even be able to differentiate units of different factions by PID values"*).
+One hull driven against a moving-then-stopping slot, laptop, `stream/squad` (X6):
+
+| gains | tracking gap | overshoot on stopping | settling |
+|---|---|---|---|
+| default | 0.20 m | 1.89 m | 3.23 s |
+| syndicate | 0.09 m | 1.68 m | 3.23 s |
+| gangs | 0.81 m | 2.56 m | 3.30 s |
+| law | 1.00 m | 1.56 m | 3.20 s |
+
+Every intent beside the tables holds: the Syndicate is 2.2× tighter than the reference crew, the gangs overshoot most,
+the Law overshoots least and — the surprise — tracks loosest, the honest consequence of *damped and deliberate*
+(heavy D, light I: never overshoots, never quite closes). The tracking gap spans **11×**; at his camera a metre of
+station slop is a quarter of a hull and 2.5 m of overshoot is most of a hull past the mark. **Settling time is 3.20–3.30 s
+for all four, a 3% spread: nobody arrives faster, they arrive differently** — flavour without a balance lever, which is
+what the no-pay-to-win pillar needs. **In one sentence for him: the factions already drive differently enough to see,
+and none of them drives better.** What this is not: one hull, a synthetic slot, no enemies or terrain; whether the
+difference reads *in a fight* and stays balance-neutral in a match is unmeasured, and cannot be measured until
+`ControlGains` takes a runtime override (nav's file, requested) so identical armies can be given different gains.

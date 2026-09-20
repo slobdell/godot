@@ -55,6 +55,13 @@ and feel first and the other three after CP1.** **An eighth stream, `show`, was 
   drag's ground direction becomes `facing` (pixels, not metres: at his pose 18 px is 0.3 m at the bottom of the frame
   and 40 m at the top); inside = a plain move with the key absent. Merged alone the day control names its green hash;
   it is the live arm for nav's arrival-arc A/B, which must not run before it.
+- **CP3 note (2026-09-20 02:20):** T1's profile says `test` is **92%** of a check (2388 of 2584 s, builder0 `c21d0256`), so
+  T1 is test sharding, not target concurrency. **After CP3 a slot holds six to eight processes, so CP3 sets
+  `REMOTE_SLOTS=3`, not 6 or 8** — same box saturation, half the latency per check (metrics' arithmetic: 3 slots → ~5
+  shards → ~10 min; 6 → ~2 shards → ~22 min); `tools/slot.sh --jobs` divides the *memory* budget by the live slot count
+  so the two knobs cannot multiply into an OOM. **A separate follow-up checkpoint after CP3:** `make test` passes no
+  `--fixed-fps`, so the suite waits on wall-clock 30 Hz physics — measured ~5× on simulated time; landed alone with
+  three consecutive runs because it can change a test's *result* where sharding cannot.
 - **CP3 — T1 parallel `check` (metrics).** Merged the moment it is green over three consecutive runs with a
   bit-identical sim hash; every stream benefits and every stream re-times its wall-clock assumptions after it.
 
@@ -86,6 +93,23 @@ must move into `Movement`'s goal selection. squad: A8's deformation, measured, m
 without it, because a slot layout is the wrong place to express intent the mover cannot see — and it never applied
 to a plain right-click move at all. **Same seam, from both ends, within an hour.** Not a tonight-sized change; it is
 the first candidate for round 10, ahead of retrying either row.
+**The defile failure, MEASURED (nav, 02:50, squad's tree and configuration, maze, wheeled, seed 3, 70 s; reproduces
+squad's result exactly — artillery never arrives, dispersion 41.4 s):** three hypotheses were pre-registered with their
+signatures before the run, and two died. Chord guard starving wide hulls: `guard_rescues` **1** all run — dead.
+Right-of-way impossible in a 5 m corridor (4.55 m of clearance needed; nav's and the orchestrator's favourite): `asks_refused`
+**0**, `yields_started` **0** — dead, **because nobody ever asks**: right-of-way triggers on stall or on being held below
+the ask pace, and a unit ORCA is deflecting is neither. **ORCA: `orca_deflected` 1330 of `orca_solved` 2172 — 61% —
+alive.** The hull sits in a regime no recovery mechanism recognises: not stalled (it moves), not blocked (it
+progresses a little), not slow enough to ask; every safety net watches for a different symptom. Two consequences: the
+pre-approved "strict file order" fix would fix a deadlock that is not happening and is withdrawn; the real question is
+why ORCA's deflected velocity does not resolve in a corridor — whether the navmesh refusal (`AVOID_MESH_PROBE`) should
+return a slower but legal velocity instead of falling back to the route at reduced pace — and **something must notice
+the regime** (61% deflection with no arrival in 70 s trips nothing). The method is the finding: signatures written
+before the run killed the two stories their authors believed. **Then the third died too (nav, 03:10):** the ORCA
+navmesh refusal fires twice in 70 s; making it return a slower-but-legal velocity changed nothing (identical arrivals,
+identical 40.57 s dispersion) and was reverted as a null. **All three pre-registered hypotheses are dead and the cause is
+unknown.** What survives is `wedged`, a `Movement` regime detector that fires 8 times in the run and gives the failure a
+name in the state machine, so the next investigation starts from a counter rather than a story.
 
 ### Standing rules for round 9 (in addition to *The standing rules for this round* below)
 

@@ -106,14 +106,22 @@ const CANDIDATES := {
 ## needs to fit `unit.<id>.hull/turret/weapon` (_agents/slot_contracts.md). The tank places per-unit art this way:
 ## the hull is not rescaled; the turret node sits at (0, muzzle_height − 0.05, 0.2) and is scaled by
 ## min(width, length) ratio to the standard tank hull (2.4 × 3.6); rounds leave 3.2 m ahead of it (× that scale).
-const UNITS := {
-	"scout": {"hull_size": Vector3(2.0, 1.4, 3.0), "muzzle_height": 1.12},
-	"tank": {"hull_size": Vector3(2.4, 1.6, 3.6), "muzzle_height": 1.27},
-	"ifv": {"hull_size": Vector3(2.4, 1.6, 3.8), "muzzle_height": 1.27},
-	"artillery": {"hull_size": Vector3(2.6, 1.6, 4.0), "muzzle_height": 1.27},
-	"lancer": {"hull_size": Vector3(2.4, 1.6, 3.8), "muzzle_height": 1.27},
-}
-const STANDARD_HULL := Vector3(2.4, 1.6, 3.6)
+## The roster units whose slots the pipeline enforces a contract for. **Ids only: the numbers are NOT here.**
+## Round 9 (scale's finding, Invariant 0): this used to be a table carrying its own copy of `hull_size` and
+## `muzzle_height`, with no test tying it to `Units.PROFILES` -- and it had already drifted (the tank 1.6 m tall here
+## against 2.4 m in the catalog, the IFV 1.6 against 3.0). Inert for gameplay, but every model generated after the
+## roster resize would have been normalised to the old toy sizes, silently. The catalog is the only source now.
+const UNITS := ["scout", "tank", "ifv", "artillery", "lancer"]
+## The hull the turret scale is measured against (`Tank._apply_hull_size`): the Condemned tank's, read from the
+## catalog like everything else.
+static var STANDARD_HULL: Vector3:
+	get: return hull_size_of("tank")
+
+
+## A unit's collision box from the catalog, as a Vector3.
+static func hull_size_of(unit_id: String) -> Vector3:
+	var size: Variant = Units.stat(unit_id, "hull_size")
+	return Vector3(float(size[0]), float(size[1]), float(size[2])) if size is Array else Vector3.ZERO
 const MUZZLE_ABOVE_PIVOT := 0.05
 const TURRET_Z := 0.2
 ## Generated units are taller than their collision box (a garbage truck is taller than wide); their hull art may rise
@@ -127,11 +135,13 @@ const FACTIONS := ["gangs", "law", "syndicate"]
 const ROLE_UNITS := {"scout": "scout", "ifv": "ifv", "tank": "tank", "artillery": "artillery", "special": "lancer"}
 
 
-## UNITS numbers for a roster unit ("ifv") or a faction role ("gangs.tank").
+## The catalog numbers for a roster unit ("ifv") or a faction role ("gangs.tank"), which fits the numbers of the
+## Condemned unit in the same role (K4). Read from `Units.PROFILES` every time -- never cached, never copied.
 static func unit_info(unit: String) -> Dictionary:
-	if UNITS.has(unit):
-		return UNITS[unit]
-	return UNITS[ROLE_UNITS[unit.get_slice(".", 1)]] if unit.contains(".") else {}
+	var unit_id: String = ROLE_UNITS.get(unit.get_slice(".", 1), "") if unit.contains(".") else unit
+	if unit_id == "" or not UNITS.has(unit_id):
+		return {}
+	return {"hull_size": hull_size_of(unit_id), "muzzle_height": float(Units.stat(unit_id, "muzzle_height", 1.27))}
 
 
 ## Where a unit's turret node sits in hull space, and its scale (both from Tank._apply_hull_size on stream/rules).

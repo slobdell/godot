@@ -2524,3 +2524,36 @@ The kickoff prompt is one line; this section is the rest.
     available, three checks resident at ~1 GB each, a queue behind them. Raised to 6 (`5715ab75`); metrics' T1 memory
     table decides whether 8 holds. **When you add a derived default, grep for every caller that sets the same variable
     explicitly** — an explicit value upstream silently wins, and the queue looks like a slow machine.
+162. **Sanity-check one value before circulating ten — and the orchestrator must check one before ruling.** Round 9,
+    02:30: scale's new `corridor_widths` reported the direct route pinching below the widest hull on 8 of 10 maps;
+    the orchestrator ruled within minutes that every map's gaps would widen. scale retracted it twenty minutes later:
+    the measure was **twice the distance to the nearest obstacle**, a corridor width only with something on both
+    sides; yard's 4.72 m "pinch" was a route hugging one wreck with 20 m of open ground behind it. **A measure that
+    flags everything is usually measuring the wrong thing** — plausible on every map is the tell, not the reassurance
+    (lesson 34: a new instrument is checked against a case whose answer you know before its first number leaves the
+    stream). And lesson 26 for the orchestrator: a ruling is a relay to the lead with authority attached; ask what one
+    value looks like in the world before acting on a table of them.
+163. **Noticing a missing guarantee and writing it down is not the same as having it.** Round 9, in nav's words, at
+    squad's request, because it covers the most of the night's mistakes across every stream. nav told squad in prose
+    that A1's nav half *"could in principle re-plan more in some regime and nothing asserts it cannot"*, and treated
+    having said it as covering it. squad said *write that assertion*. It failed on the first run: `drifted =
+    _path.size() < 2` was evaluated **independent of `cadence_due`**, so a hull with no route re-planned on ticks where
+    the thing A1 replaces would not have — **A1 doing more of what it exists to reduce, behind a switch that is off by
+    default, so nobody would ever have seen it.** squad's version is broader: four instrument defects in one night, and
+    *every one was findable from something already written down* — the brief named the `ai-scenarios` trap by number
+    and the commit still broke a scenario; the widened baseline was quoted two paragraphs above the stale lesson it
+    reasoned from. **In every case: the note, not the check.** Two practices to put beside it: **ask the machine what
+    it holds** (`ssh builder0 "grep -c <symbol> <file>"` names the tree a verdict belongs to in one query; rsync
+    timestamps versus commit times is how round 8 mis-identified one), and **check an instrument's headroom in the
+    control arm before running the treatment** (`stuck_units` pinned 30/30 in both arms carried no signal;
+    `oscillating` at 0.004 moved twelve-fold) — *an instrument at the end of its range is indistinguishable from one
+    that is not connected.* All three are one rule at different distances: **when a fact is one query away, query it**,
+    instead of an inference that is right most of the time, which fails silently and only when it matters.
+164. **A flag that silences a suite is worse than one that breaks it — the break is visible.** Round 9, squad: with
+    `DEFORM_ENABLED := false` (A8 switched off on its measurement), `fit_to_corridor` returns the identity, so a sweep
+    asserting *"hulls stay clear at every corridor width"* was asserting that an **undeformed** formation is clear —
+    which X1 already guarantees unconditionally. Three of five surviving tests passed without testing anything while
+    the Status said A8's invariants were *"asserted over a sweep"*; two others broke, which is the only reason the three
+    quiet ones were found. Fix: **a test suite for a switched-off mechanism switches it on for itself** (and restores the
+    flag in teardown), so the geometry is asserted whether or not the mechanism ships on. Sibling of lesson 23 (a
+    behaviour behind a flag has not shipped) on the test side: a test behind a flag has not tested.

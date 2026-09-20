@@ -127,6 +127,12 @@ assets-view: import ## Turnaround of a raw model before normalizing: IN=path.glb
 		$(CURDIR)/$(BUILD_DIR)/screenshots/view-$(basename $(notdir $(IN)))$(if $(SPLIT),-split).png $(if $(SPLIT),--split --forward=$(or $(FORWARD),+z)) \
 		| grep -E 'size|triangles|islands|labels|MODEL_VIEW'
 
+.PHONY: assets-profile
+assets-profile: import ## Slice a model along an axis (tris, height, width per slice) to author a cut box: IN=path.glb [AXIS=z SLICES=36 BOX=x0,y0,z0,x1,y1,z1 CLIP=1 (profile only what is in BOX) RENDER=1 (ruled side view, needs a display)]
+	@$(GODOT) $(if $(RENDER),--resolution 1800x700,--headless) --path . --script res://game/theme/gallery/mesh_profile.gd -- $(IN) \
+		$(if $(AXIS),--axis=$(AXIS)) $(if $(SLICES),--slices=$(SLICES)) $(if $(BOX),--box=$(BOX)) $(if $(CLIP),--clip) $(if $(RENDER),--render=$(CURDIR)/$(BUILD_DIR)/screenshots/profile-$(basename $(notdir $(IN))).png) 2>&1 \
+		| grep -vE '^Godot Engine|^$$' ; grep -q . /dev/null || true
+
 .PHONY: assets-roster
 assets-roster: ## Rebuild the round-2 unit roster theme (scout, IFV, artillery, Lancer) from its Meshy recipe
 	tools/assets/build_roster.sh
