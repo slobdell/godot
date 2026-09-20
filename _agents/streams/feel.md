@@ -193,7 +193,7 @@ rest of the round runs behind it.
 - **X2 — the hinge: code and tests DONE** (`4a8c1843`); **the lead's frames are owed** (`make rig-hinge`).
 - **X8 — the pipeline's private copy of the roster (scale's finding, Invariant 0): DONE**, mutation-checked.
 - **X6 — the two smoke targets: ESTABLISHED, and the premise is wrong.** Both are ALREADY differential; see below.
-- **X5 — the lead's poses.** Next, and the brief's camera is wrong: see *The 12° correction*.
+- **X5 — the lead's poses: VERIFIED CLEAN.** Both round-8 fixes held through every merge since. See below.
 - **X4 — the every-unit box-fill test.** Blocked on CP2 by design.
 - **X7 — the airship: BUILT** (`567a8007`); its orbit numbers are provisional until `make airship-look` says
   whether the lead can ever actually see it.
@@ -270,6 +270,24 @@ bug:** at his pose the top of the frame sits at `pitch - FOV/2` = 21 - 17.5 = **
 in the sky can be drawn there at any altitude or distance. If the sweep confirms it, *"sometimes visible in the
 field of view"* is **false at his camera and true only at the bottom of his tilt range** (he can reach 8°), and the
 airship's `ORBIT_RADIUS` / `ORBIT_ALTITUDE` are provisional until he rules.
+
+### X5 — the void and the sky leak: both still fixed (`make shell-playtest`, builder0, merged tree)
+
+**Zero leak lines and zero errors** through the whole shell — title → SKIRMISH → faction menu → planning → two
+minutes of battle, driven by real clicks (`grep -icE 'leak|orphan'` = **0**, `grep -cE '^ERROR|SCRIPT ERROR'` = **0**
+in `build/shell-playtest/run.log`). So the round-8 texture leak on the title → skirmish switch (the Environment
+`Sky`'s radiance mips, fixed by the unshaded `NightSky` dome) has survived every merge since.
+
+**And the void below the near wall is gone in the frames**, at the pose the readout itself confirms is his:
+`CAMERA pitch 21° distance 72 m FOV 35° auto-frame ON`. The cutaway is active — the near stands are cut and their
+crowd is drawn from behind — and the ground beneath them is continuous: structure and a lit strip, not a hole onto
+the skybox. Checked at deployment (`3_battle_03s.png`) and mid-fight (`3_battle_75s.png`) on `pit`.
+
+**The honest limit of this check:** `shell-playtest` shoots where the game puts the camera, which is inside the
+arena looking across. The harshest near-wall case is control's per-edge `camera-looks`, which parks the camera
+against each perimeter edge in turn; I did not run it, because it is a per-arena grid and the laptop is shared with
+seven streams. The brief asked for *"one frame each at [his pose] and `make shell-playtest`'s console for leak
+lines"*, and that is what this is.
 
 ### ⚠ OWED, and it is a venue defect of mine, not the light show's: the Terminus fails the luminance rule
 
