@@ -60,7 +60,8 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
 - **On `main` above it, merged on their own green branch checks but NOT yet covered by a `main` check:** CP2 (scale
   `ddb16592`, checked at `7542df28`), the recorded baseline `2d5215a8a0a59ded`, and CP3 (metrics `0d4e5ef1`, checked
   at `0f811c1c`). Each is green alone; the combination is the one thing unproven.
-- **The first command when the box answers `ssh builder0 uptime`:** `make remote T=check` from `~/projects/godot` on
+- **builder0 answered again at 08:31 and the `main` check on the full tip (`b008a277`+) was started at 08:32** (log in the
+  orchestrator's scratchpad; ~15 min). If it is not reported in this file when you read it, run `make remote T=check` from `~/projects/godot` on
   `main` (read the `>> remote: make check exited <N>` line, never a pipe; a 255 is ssh). Then, in order:
   control's `make remote T=camera-looks` and `T=control-playtest-shots` (item 4), feel's
   `make remote T=check` on `f1859075` and `T=vehicle-gallery` (X4 + the neon fix), scale's fairness control.
