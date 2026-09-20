@@ -238,6 +238,94 @@ it is his call whether that is a size question or a stats question, and this rou
 _Last updated 2026-09-20 03:2x (worker, `stream/combat` at `0ba8d2c9`). **PAUSED** on the orchestrator's call
 (lead session limit; builder0 down). Resume on its "RESUME" message._
 
+## THE REPORT (round 9, combat) — read this first
+
+**Merged green at `55b0de58`**: `1393 passed, 0 failed`, `>> remote: make check exited 2 (build/ copied back)`,
+`lint: all 556 scripts parse (-P5, 8 known artefacts baselined)`. **The exit 2 is `sim-baseline` and nothing else.**
+The baseline moves **`d4c049819a5833d3` → `32831dc99cdaf5ca`** (glibc-2.43, builder0) with **one named cause: the
+dwell timer is retired**, so option choice changes, and option choice is the simulation.
+
+### The two findings that cost nothing and changed what we believed
+
+**1. `main`'s dwell timer was doing nothing, and had been credited for two rounds.**
+`MIN_COMMIT_TICKS`/`EMERGENCY_MARGIN` held a committed choice steady unless something beat it by 1.6×. Measured over
+five arms × three seeds: the flat bonus **with** the timer and the flat bonus **alone** differ by **−11% to +6%** on
+switches and **±0.2** on reversals — inside the seed spread on every class. All of the commitment this brain had was
+the multiplier. P3's *"a veto stores the pressure up"* was **inferred** in round 8 from a doubled
+switch-and-switch-back count, never seen in a fight; measured directly, the timer is not doing the work. **Retiring it
+is free**, and it is one less mechanism between a player's order and a crew.
+
+**2. `CLEAR_LANE`'s advantage had silently become exactly 1.0 — a tank blocked by a friend never stepped aside.**
+`main` scored it `COMMIT_BONUS * 1.15`: **two factors doing different jobs**, one cancelling the commitment bonus on
+the fight it competes against, one the genuine edge. While A2 was the default I collapsed them to a single 1.15 —
+correctly, because the incumbent had no bonus to cancel. When the flat bonus went back to being the default, that
+reasoning **expired silently**: incumbent ×1.15 against CLEAR_LANE ×1.15 is a net advantage of exactly 1.0, so the
+manoeuvre could never win. `0 shots, first shot at tick -1`.
+**Four green `make test FILTER=switch` runs never saw it. The full check caught it on the first try** (lesson 45: a
+filtered run is not a readiness claim). Fixed by splitting the factors — the cancelling one now read from the active
+arm — and the scenario's MEASURE line is **identical to the pristine tree**.
+
+### A2, honestly: it costs nothing and it is not yet worth switching on
+
+**Built, tested, in the tree, and OFF** (`--tune=switch.cost=1`). A switch pays the physical work it destroys —
+braking energy, turret/hull slew, and the gun's lay — every term from the vehicle's own profile, no per-class knob.
+A 140° switch at speed costs the **War Rig 5.38 s** and the **rat rod 2.63 s** (×2.04): the 5× roster prices itself.
+
+- **It costs nothing where the last attempt cost everything.** Round 8's 1.35 knee broke two behaviour scenarios; A2
+  leaves both **unchanged** — fire concentration 100% vs 69%, engine deck **bit-identical** (`deck 23, hits 41`).
+- **But it suppresses about half the churn the flat bonus does** — +47% to +79% more switches than flat, −7% to −34%
+  fewer than no commitment at all. The brief's −60% bar is missed widely and in the wrong direction.
+- **The verdict is not mine to declare.** Whether A2's extra switches are genuine re-targeting or the wheeled creep is
+  answerable only by metrics' A12 cusp split, and `tank` decides it: tracked hulls produce **zero** creep cusps, so it
+  is the only class whose switches are unambiguously decisions — and it is the worst row (A2 gives it **1.3**
+  reversals/unit-min against **0.9** with no commitment at all). If `cusps_unexplained` tracks that, A2 stays off.
+
+**A correction to the catalogue, already recorded on its A2 row:** braking + slew is **not** all a weapon switch
+destroys. Priced as specified, a halted turret swapping between two targets on the *same bearing* pays exactly zero.
+The third term is the gun's **lay** (N5's gate 2), backward-looking on purpose so taking up a newly seen contact is
+never slowed. `test_commitment_prevents_flip_flopping` passes **only** because of it.
+
+### A defect in the plant, found by nav, confirmed here, owed
+
+**Hulls rotate through scenery.** `game/tank/tank.gd:425` assigns `global_basis = Basis.looking_at(...)`
+unconditionally; `:431` `move_and_slide()` resolves **translation only**. The yaw is never offered to physics.
+**Repro** (nav, `tests/test_nav_face_recovery.gd`): a 14 m `gang_tank` in a **4.8 m** corridor told to face across it
+— **10.42 m of path, 44.0° of yaw, net drift 4.42 m**. A 14 m hull through 44° needs **12.1 m** of lateral room.
+**This is the lead's own round-8 complaint, stated exactly**: *"the semi trucks are yawing in place (should be
+impossible, they're not a tracker vehicle)"* — a **partially** pinned wheeled hull yawing freely looks like a tracked
+pivot. **CP2 makes it worse**: the sweep scales with **length × sin(yaw)** and most of the roster grows 1.5–2×.
+**Spec settled with nav:** the constraint goes in the **plant**, not A7's feasibility mask (nav measured that seam —
+`CombatMotion` decides under a tenth of a hull's ticks, and the `face` path never reaches it at all). First pieces:
+`refusals_offered`/`refusals_applied` (a hull frozen by a spawn overlap must be distinguishable from a working
+refusal — it would break nav's N1 guarantee), and determinism by construction (fixed candidate angles, fixed order,
+ties to the smaller yaw). **Not built:** it is a second sim-moving change and it needs its own baseline move with its
+own named cause.
+
+### Owed
+
+1. **The hull-rotation plant fix** (above). nav's third assertion goes red when it lands — that is its acceptance —
+   and nav's `face`-recovery row, currently inert (`face_checked 7, giveups 0`: correct, reached, and measuring
+   nothing because the hull never stalls, it passes through the wall it is stalled against), becomes measurable.
+2. **The switch-event files to metrics** for the cusp split and the `angle_deg` pairing. They are **pre-merge** files
+   and labelled so. The pairing answers the one question that would condemn A2 outright: a large predicted bearing
+   with **no** hull rotation means it is charging a turreted hull for work it never does.
+3. **X3** (the resized roster, after CP2) and **X4** (A3's consumer). Both pre-registered; see below.
+4. **The duel's open regression**: A2 moves tanks out of circling-while-engaging into static hide/peek
+   (ENGAGE share 0.319 vs 0.523, COVER_FIRE 0.231 vs 0.094). Evidence recorded, mechanism not yet confirmed.
+
+### Merge notes (shared and out-of-path files)
+
+- **`tools/faction_matrix.py`** — combat's by history, outside the brief's listed paths. Added **one argument**:
+  `--tune`, passed through to the match, so a mechanism's ladder arm is the **same build** with a knob changed rather
+  than a different checkout. Without it every arm of a combat A/B was a separate build and *"does not lose"* could not
+  be said about one mechanism in isolation. No behaviour change when `--tune` is absent.
+- **`game/ai/tank_brain.gd`** (squad's) — the commitment seam, the `CLEAR_LANE` edge, the retired dwell block, and two
+  lines of arm telemetry. **For squad to take, replace or revert.**
+- **`tests/test_brain_decide.gd`** (squad's) — one line: its second commitment case now places `since` outside the
+  retired window, which turns it into the assertion that the **bonus**, not the timer, was covering the score gap.
+- **`game/units/units.gd`** — `Units.apply_tuning` gains a third owner, `switch.<knob>`. Never set in normal play.
+- **`mk/match.mk`** — `switch-arm`, `switch-arms`, and `TUNE=` on `faction-matrix`.
+
 ## ⏸ WHERE THIS STREAM IS, AND THE EXACT NEXT STEP
 
 **Tip `0ba8d2c9`, working tree clean, nothing uncommitted.** Six commits, every one green on
