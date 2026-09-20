@@ -41,6 +41,12 @@ and feel first and the other three after CP1.** **An eighth stream, `show`, was 
   spawn grid, cover, clearance and every size-dependent number. Lands **once, early**; every stream `git merge main`
   and re-runs anything size-dependent after it. **Nobody publishes a size-dependent number measured across CP2.**
   The lead sees the side-by-side frame before it merges (a look, not a number: the numbers are derived).
+  **Pre-registered before CP2 (2026-09-20):** combat's `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` WILL
+  move — the Condemned tank's collider grows 0.8 m in height — and nobody attributes that to A2 or A7. scale's check on
+  `b7055602` found exactly two failures, both size-dependent literals in other streams' tests (control's 12 s group-move
+  budget, feel's tracer window at −21.5…−17.0 written for a 3.8 m IFV); **ruled: scale lands both inside the CP2
+  commit in derived form, owners review at merge**, and scale greps every test for the same shape (a distance, window,
+  duration or budget derived once and then typed) and sends each stream its list before CP2 merges.
 - **CP2b — squad's attacking-element leash (added 2026-09-20).** `TankBrain.element_slot()` no longer returns null for
   `bound`/`maneuver`, so every element member carries a leash to its published slot at `slot_leash(element)`; the
   drift bar becomes `slot_leash(element) + 2.0`. nav's A7 cannot go on by default without it. Merged alone, early, the
