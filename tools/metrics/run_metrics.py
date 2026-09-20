@@ -33,6 +33,9 @@ def print_report(row, handle):
     write("        log=%s samples=%d units=%d window=%.1fs (%d ticks)  sparc_window=%d samples, nfft=%d, "
           "cutoff=%.0f rad/s\n" % (row["path"], row["samples"], row["units"], row["window_s"], row["window_ticks"],
                                    row["sparc_window_samples"], row["sparc_nfft"], row["sparc_cutoff_rad_s"]))
+    if row["oscillating_order_verb"]:
+        write("        `osc_share` counts only ticks under order_verb=%s (fight_probe.gd's --stall-verb).\n"
+              % row["oscillating_order_verb"])
     if not row["cause_columns"]:
         write("        NOTE: this log has no cause columns, so every cusp is reported as unclassified "
               "(FORMAT.md: order_reverse / phase / creeping).\n")
@@ -73,6 +76,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("logs", nargs="+", help="trajectory logs (.jsonl or .jsonl.gz); globs are expanded")
     parser.add_argument("--json", dest="json_out", default="", help="also write the whole report here, as JSON")
+    parser.add_argument("--order-verb", default=None,
+                        help="count the `oscillating` special case only under this order verb -- fight_probe.gd's "
+                             "--stall-verb. Round 8's headline is attack_move")
     parser.add_argument("--team", type=int, default=None,
                         help="report only this team's units (0 = GREEN, 1 = RUST); default: every unit in the log")
     args = parser.parse_args(argv)
@@ -106,7 +112,7 @@ def main(argv=None):
                 print("metrics: REFUSED %s: --team=%d matched no unit in this log" % (path, args.team),
                       file=sys.stderr)
                 return 1
-        row = metrics.report(log)
+        row = metrics.report(log, args.order_verb)
         rows.append(row)
         print_report(row, sys.stdout)
     if args.json_out:

@@ -314,6 +314,21 @@ class OscillationSpecialCaseTest(unittest.TestCase):
         self.assertEqual(out.under_way_ticks, 5)
         self.assertEqual(out.windows, 1)  # only the window that is wholly after the reset
 
+    def test_the_verb_filter_is_fight_probes_stall_verb(self):
+        # Round 8's headline counts ATTACK-MOVING units only. Without the filter the denominator gains every
+        # `move` tick and the share falls for free -- which would look like a metric that cannot reproduce it.
+        attacking = self.ordered([0.0, 5.0, 1.0, 6.0, 2.0])
+        for sample in attacking:
+            sample.order_verb = "attack_move"
+        moving = self.ordered([100.0, 101.0, 102.0, 103.0, 104.0], start_tick=10)
+        for sample in moving:
+            sample.order_verb = "move"
+        both = attacking + moving
+        self.assertEqual(oscillation(both, span=3).under_way_ticks, 10)
+        filtered = oscillation(both, span=3, order_verb="attack_move")
+        self.assertEqual(filtered.under_way_ticks, 5)
+        self.assertAlmostEqual(filtered.share, 3.0 / 5.0, places=12)
+
     def test_net_over_path_is_the_round_eight_travelled_quantity(self):
         out = oscillation(self.ordered([0.0, 5.0, 1.0, 6.0, 2.0]), span=3)
         # Three windows, each path 9 m and net 1 m.

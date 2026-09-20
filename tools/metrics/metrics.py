@@ -174,7 +174,10 @@ class OscillationSummary:
         self.units_that_ever_oscillated += other.units_that_ever_oscillated
 
 
-def oscillation(samples: Sequence[Sample], span: int) -> OscillationSummary:
+def oscillation(samples: Sequence[Sample], span: int, order_verb: Optional[str] = None) -> OscillationSummary:
+    """`order_verb` is `fight_probe.gd`'s `--stall-verb`: the counters sample only units under that verb, because
+    the window is measured against what was ASKED. Round 8's headline is `attack_move`, so reproducing it needs
+    the same filter -- without it the denominator gains every `move` tick and the share falls for free."""
     out = OscillationSummary()
     trail: List[Sample] = []
     last_goal: Optional[Tuple[float, float]] = None
@@ -182,6 +185,8 @@ def oscillation(samples: Sequence[Sample], span: int) -> OscillationSummary:
     for sample in samples:
         distance = sample.goal_distance()
         if distance is None or distance <= AT_GOAL_M:
+            continue
+        if order_verb is not None and sample.order_verb != order_verb:
             continue
         out.under_way_ticks += 1
         goal = (sample.goal_x, sample.goal_z)
@@ -557,7 +562,7 @@ class UnitTypeReport:
     sparc: SparcSummary = field(default_factory=SparcSummary)
 
 
-def report(log: TrajectoryLog) -> Dict[str, object]:
+def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, object]:
     """Every metric, per unit type and per element, with its window, its sample count and its unit count."""
     span = window_samples(log.header.tick_rate)
     by_type: Dict[str, UnitTypeReport] = {}
@@ -569,7 +574,7 @@ def report(log: TrajectoryLog) -> Dict[str, object]:
         row.units += 1
         row.units_ordered += 1 if any(s.ordered for s in samples) else 0
         row.efficiency.merge(displacement_efficiency(samples, span))
-        row.oscillation.merge(oscillation(samples, span))
+        row.oscillation.merge(oscillation(samples, span, order_verb))
         row.cusps.merge(cusp_density(samples, log.header.tick_rate))
         row.sparc.merge(sparc_over_log(samples, log.header.tick_rate))
     elements = formation_residual_by_element(log)
@@ -625,6 +630,7 @@ def report(log: TrajectoryLog) -> Dict[str, object]:
         "sparc_nfft": SPARC_NFFT,
         "sparc_cutoff_rad_s": SPARC_CUTOFF_RAD_S,
         "cause_columns": log.has_cause,
+        "oscillating_order_verb": order_verb,
         "samples": log.sample_count(),
         "units": len(log.units),
         "teams": sorted({s.team for samples in log.units.values() for s in samples[:1]}),

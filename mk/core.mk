@@ -82,7 +82,35 @@ test: import ## Run the headless test suite (FILTER=substring to run a subset)
 # Those guards sit on the hot path of every future measurement, and this round shipped two that had never been run
 # end to end -- one crashed every run it was added to protect, the other exited 0 while refusing. Appended rather
 # than inserted because `check` aborts at the first failing target, so anything added early hides everything after.
-check: lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
+# T1 (metrics, round 9). ONE list, used by `check` and by `check-timed`, so a target can never be measured and
+# not run (or run and not measured). Order is the serial order `check` has always used: `match-pytest` stays LAST
+# for the reason above.
+CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
+                 sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest
+
+check: $(CHECK_TARGETS) ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
+
+# T1 step (a): the BEFORE. Runs exactly the same targets, in the same order, one at a time, and records each one's
+# wall-clock and peak RSS -- plus the machine and the load it ran under, because a check on an idle builder0 and a
+# check with six streams live are different measurements (remote_builds.md: 6 min 40 s alone, ~50 min busy).
+# Without this the falsifier ("wall-clock drops by >= 50%") cannot be read at all.
+#
+# It keeps going after a failure and reports every target's status at the end: a measurement run that stops at the
+# first red tells you nothing about the twelve targets behind it.
+check-timed: import ## T1: run check's targets one at a time with per-target wall-clock and peak RSS -> build/check/timings.tsv
+	@mkdir -p $(BUILD_DIR)/check
+	@rm -f $(BUILD_DIR)/check/timings.tsv
+	@printf '# check-timed on %s, commit %s%s\n' "$$(hostname)" \
+		"$$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})" \
+		"$$([ -n "$$(git status --porcelain 2>/dev/null)" ] && echo ' (DIRTY)' || true)" \
+		| tee $(BUILD_DIR)/check/timings.tsv
+	@printf '# %s cores, MemAvailable %s kB, load %s, %s other godot processes\n' \
+		"$$(nproc)" "$$(awk '/MemAvailable/{print $$2}' /proc/meminfo)" \
+		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v' || echo 0)" \
+		| tee -a $(BUILD_DIR)/check/timings.tsv
+	@printf '# target\tseconds\tpeak_rss_kb\texit\n' >> $(BUILD_DIR)/check/timings.tsv
+	@started=$$(date +%s); failed=""; 	for target in $(CHECK_TARGETS); do 		start=$$(date +%s); 		if /usr/bin/time -v -o $(BUILD_DIR)/check/$$target.time 				$(MAKE) --no-print-directory $$target > $(BUILD_DIR)/check/$$target.log 2>&1; then 			status=0; 		else 			status=$$?; failed="$$failed $$target"; 		fi; 		seconds=$$(( $$(date +%s) - start )); 		rss=$$(sed -n 's/.*Maximum resident set size (kbytes): //p' $(BUILD_DIR)/check/$$target.time 2>/dev/null | head -1); 		rss=$${rss:-0}; 		printf '%s\t%d\t%s\t%d\n' "$$target" "$$seconds" "$$rss" "$$status" >> $(BUILD_DIR)/check/timings.tsv; 		printf '>> check-timed: %-18s %5ds  peak %6s MB  exit %d\n' "$$target" "$$seconds" "$$(( rss / 1024 ))" "$$status"; 	done; 	total=$$(( $$(date +%s) - started )); 	printf '# TOTAL\t%d\t\t\n' "$$total" >> $(BUILD_DIR)/check/timings.tsv; 	printf '>> check-timed: TOTAL %ds (%dm%02ds) over %d targets\n' "$$total" "$$(( total / 60 ))" "$$(( total %% 60 ))" "$$(words $(CHECK_TARGETS))"; 	sort -k2 -rn -t"$$(printf '\t')" $(BUILD_DIR)/check/timings.tsv | grep -v '^#' | head -6 \
+		| awk -F"\t" '{printf ">> check-timed: slowest %-18s %5ds\n", $$1, $$2}'; 	if [ -n "$$failed" ]; then echo ">> check-timed: FAILED:$$failed (the timings above are still valid)"; exit 1; fi
 
 check-all: check relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke web-relay-smoke web-host-smoke export-server ## check + desktop render + browser checks + server export
 	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --server=$(SMOKE_NET_PORT) --bots=2 2>&1 \

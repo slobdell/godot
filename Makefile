@@ -73,7 +73,7 @@ WEB_SMOKE_DEPS := $(WEB_SMOKE_DIR)/node_modules/.package-lock.json
 
 # Targets live in mk/*.mk, one file per workstream area, so parallel branches rarely
 # conflict here. Add new targets to your area's file (or a new mk/<area>.mk).
-.PHONY: help bootstrap doctor import lint sim-baseline sim-baseline-record check check-all worktree worktrees worktree-remove editor run skirmish demo test screenshot \
+.PHONY: help bootstrap doctor import lint sim-baseline sim-baseline-record check check-timed check-all worktree worktrees worktree-remove editor run skirmish demo test screenshot \
         match matches match-smoke determinism watch-match server client net-smoke combat-smoke agent-client agent-client-windowed agent-offline \
         export-web serve-web play web-smoke web-net-smoke export-server clean distclean
 
