@@ -95,6 +95,18 @@ func load_data(data: Dictionary, where := "cues") -> String:
 	return ""
 
 
+## Replace every `strobe` in the book with a breathe at `period`. The comparison arm for the lead's call on whether
+## the `last_stand` strobe -- the only one in the venue -- survives. Editing the loaded book rather than shipping a
+## second one keeps the two arms honest: everything else about the cues is identical by construction.
+func soften_strobes(period: float) -> void:
+	for state: Variant in states:
+		for channel: Variant in states[state]["set"]:
+			var override: Dictionary = states[state]["set"][channel]
+			if str(override.get("programme", "")) == "strobe":
+				override["programme"] = "breathe"
+				override["period"] = period
+
+
 ## The cue for a mood state, falling back to the idle one. Never null: an unlisted state is the idle breathe, which
 ## is the right answer and not an error.
 func for_state(state: StringName) -> Dictionary:

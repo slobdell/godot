@@ -54,6 +54,36 @@ CLIP_FRAMES ?= 60
 CLIP_STEP ?= 0.1
 CLIP_ARENA ?= terminus
 
+# The lead has exactly two open look questions, and each needs the kind of evidence that can actually answer it:
+#   * roofline vs full outline is a STATIC difference -> a frame pair
+#   * the last_stand strobe is MOTION -> a clip pair. A still of a strobe caught between flashes reads as "dimmer",
+#     which is the opposite of the impression it gives, so a frame pair here would misinform him (lighting.md 8b).
+show-decisions: import ## S6: the two calls that are the lead's -- roofline vs outline (frame pair) and the last_stand strobe on vs off (clip pair) -> build/show/decisions/
+	rm -rf $(BUILD_DIR)/show/decisions && mkdir -p $(BUILD_DIR)/show/decisions
+	@# 1. THE EDGES: one frame each, same arena, seed, pose and moment.
+	for style in parapet outline; do \
+		timeout 300 $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+			--no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) --show-style=$$style \
+			--show-look=$(CURDIR)/$(BUILD_DIR)/show/decisions --show-look-times=8.1 --show-look-cues=battle \
+			2>&1 | tee $(BUILD_DIR)/show/decisions/edges_$$style.log | grep -E '^SHOW_LOOK |SCRIPT ERROR' || true; \
+		grep -q SHOW_LOOK_DONE $(BUILD_DIR)/show/decisions/edges_$$style.log || { echo "show-decisions: edges/$$style did not finish"; exit 1; }; \
+	done
+	@# 2. THE STROBE: a clip each, because a still cannot show one.
+	for arm in on off; do \
+		[ $$arm = off ] && extra=--no-strobe || extra=; \
+		timeout 420 $(GODOT) --path . --resolution $(CLIP_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+			--no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) $$extra \
+			--show-look=$(CURDIR)/$(BUILD_DIR)/show/decisions --show-look-clip=last_stand \
+			--show-look-clip-frames=$(CLIP_FRAMES) --show-look-clip-step=$(CLIP_STEP) \
+			2>&1 | tee $(BUILD_DIR)/show/decisions/strobe_$$arm.log | grep -E '^SHOW_LOOK_CLIP|SCRIPT ERROR' || true; \
+		grep -q SHOW_LOOK_DONE $(BUILD_DIR)/show/decisions/strobe_$$arm.log || { echo "show-decisions: strobe/$$arm did not finish"; exit 1; }; \
+		ffmpeg -y -loglevel error -framerate $$(python3 -c "print(1.0/$(CLIP_STEP))") \
+			-i $(BUILD_DIR)/show/decisions/clips/$(CLIP_ARENA)_last_stand_%03d.png \
+			-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/show/decisions/strobe_$$arm.mp4; \
+		rm -f $(BUILD_DIR)/show/decisions/clips/$(CLIP_ARENA)_last_stand_*.png; \
+	done
+	@echo "show-decisions: $$(ls $(BUILD_DIR)/show/decisions/*.png 2>/dev/null | wc -l) frames, $$(ls $(BUILD_DIR)/show/decisions/*.mp4 2>/dev/null | wc -l) clips in $(BUILD_DIR)/show/decisions"
+
 show-clips: import ## S6: each cue as a 6 s clip at 10 fps from the lead's pose -> build/show/clips/*.mp4 (needs a display and ffmpeg: make remote T=show-clips)
 	rm -rf $(BUILD_DIR)/show/clips && mkdir -p $(BUILD_DIR)/show/clips
 	for cue in $(CLIP_CUES); do \
