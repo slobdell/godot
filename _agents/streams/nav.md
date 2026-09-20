@@ -359,6 +359,22 @@ the four adds alongside.
 expresses every join as the visible correction the lead complains about. My reason was only that its evidence was an
 angle-wrap bug in my own reporter.
 
+### FINAL green for round 8: `b0f35337` (2026-09-19, late)
+
+`0c839426` with main (`a2ffa167`) merged in, so the check covers nav's remainder and its composition with feel, control
+and arena. From the wrapper and the runner:
+
+    >> remote: make check exited 0 (build/ copied back)
+    1261 passed, 0 failed
+    sim-baseline passed: 0cb238bf366e141f (glibc-2.43)
+
+The baseline line matches main's recorded one and passed unmodified — no patch-and-restore was needed this time, and no
+re-record is needed for nav. `2038a40a`'s gate counters are verified, so they can be cited in round 9.
+
+**Still true, and the thing to carry:** the facing contract is now landed on all three sides (nav's arc, squad's
+population, control's documentation) and is **measured by nothing**. The A/B that would have tested it returned
+`gates aimed 0`. The probe-with-facings spec above is what closes that.
+
 ### Two machine facts that postdate every number above (2026-09-19, late)
 
 - **builder0 runs 4 heavy slots now, not 2.** Every timing figure in this brief (`t100_s`, crossings, arrival seconds)
