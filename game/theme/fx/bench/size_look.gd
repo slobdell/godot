@@ -15,7 +15,18 @@ extends Node
 ## (its drawn meshes' bounds projected) and its box; `rig_<length>.png` is the frame. Then `SIZE_LOOK_DONE` and quit.
 ## Visual only: the lineup's tanks don't simulate.
 ##
-## Flags: --size-look=<abs dir>  --size-look-lengths=5.6,10,12  --size-look-warmup=S (4)
+## ROUND 9 (scale, contract S1) added `--size-look-lineup`: the whole roster at real relative scale, in one frame,
+## for the lead to look at before CP2 merges. It reuses this file's camera, parking and on-screen measuring rather
+## than standing up a second renderer, and it calls `box_at_length` for nothing -- the catalog IS the boxes now.
+## Three frames, because one pose cannot answer both questions:
+##   lineup_factions.png  four rows, one per faction, each sorted by length -- "is my faction's roster sensible?"
+##   lineup_row.png       all 21 in a single row, the Condemned tank and the War Rig at the ends as the references
+##                        the round is anchored on, grouped by faction -- "does a semi look like a semi next to a car?"
+##   lineup_pose.png      HIS pose (21 deg, 49 m, FOV 35), the same one round 8 shot the rig at, over the size
+##                        spread -- the frame that is directly comparable with round 8's rig_14_0.png
+## Each vehicle is labelled with its name and its hull length. Visual only; nothing here simulates.
+##
+## Flags: --size-look=<abs dir>  --size-look-lengths=5.6,10,12  --size-look-warmup=S (4)  --size-look-lineup
 
 const PITCH_DEG := 21.0
 const DISTANCE_M := 49.0
@@ -23,6 +34,16 @@ const FOV_DEG := 35.0
 const RIG := "gang_tank"
 const LINEUP := ["scout", "gang_scout", "gang_support", RIG, "tank"]
 const GAP_M := 4.0
+
+## S1: the size spread, smallest to largest, for the frame shot at the lead's own pose.
+const SPREAD := ["gang_scout", "law_scout", "gang_ifv", "syn_tank", "tank", RIG]
+## Gap between vehicles in a lineup row, and between rows, as a fraction of the longest hull in that row.
+const LINEUP_GAP_M := 3.0
+const LINEUP_ROW_GAP_M := 7.0
+## A wide pose still looks down from above, but not so steeply that lengths foreshorten away.
+const LINEUP_PITCH_DEG := 26.0
+## Margin around a framed lineup, as a fraction of what it has to fit.
+const LINEUP_MARGIN := 1.12
 
 var out_dir := ""
 var lengths: Array = [5.6, 10.0, 12.0]
@@ -83,6 +104,11 @@ func _run() -> void:
 	if rig != null:
 		rig.process_mode = Node.PROCESS_MODE_DISABLED
 	_camera.current = true
+	if LaunchFlags.from_environment().has("size-look-lineup"):
+		await _lineup(scene, focus, heading)
+		print("SIZE_LOOK_DONE")
+		get_tree().quit()
+		return
 	var army := _army(scene)
 	if not army.is_empty():
 		# Framed on the rigs when the army has any (the question is what they do to their squad), else on the army.
@@ -183,3 +209,143 @@ func _on_screen(tank: Node3D) -> Dictionary:
 			hi = hi.max(p)
 	var size := (hi - lo) if hi.x > lo.x else Vector2.ZERO
 	return {"px_w": roundi(size.x), "px_h": roundi(size.y), "box": Units.stat(String(tank.get("unit_id")), "hull_size")}
+
+
+# ------------------------------------------------------------------------------------------------------------------
+# S1 (round 9, scale): the roster at real relative scale, for the lead to look at. The numbers are derived and need
+# no approval; the LOOK is the one subjective check that counts (game_design.md *Round 9 direction*).
+# ------------------------------------------------------------------------------------------------------------------
+
+## Every unit, faction by faction, each faction's vehicles shortest first.
+func _roster_by_faction() -> Array:
+	var rows: Array = []
+	for faction: String in Units.FACTIONS:
+		var ids: Array = Array(Units.roster(faction))
+		ids.sort_custom(func(a: String, b: String) -> bool:
+			return float(Units.stat(a, "hull_size")[2]) < float(Units.stat(b, "hull_size")[2]))
+		if not ids.is_empty():
+			rows.append(ids)
+	return rows
+
+
+func _lineup(scene: Node, focus: Vector3, heading: float) -> void:
+	var by_faction := _roster_by_faction()
+
+	# 1. Four rows, one per faction: is each faction's own roster sensible?
+	await _shoot_rows(scene, focus, heading, by_faction, "lineup_factions.png", "factions")
+
+	# 2. One row, every unit, the two references the round is anchored on at the ends. The Condemned tank is what
+	#    "tiny" was measured against in round 8 and the War Rig is what he ruled at 14 m, so the frame reads
+	#    left to right from the thing he called a tank to the thing he called huge.
+	var single: Array = ["tank"]
+	for row: Array in by_faction:
+		for unit_id: String in row:
+			if unit_id != "tank" and unit_id != RIG:
+				single.append(unit_id)
+	single.append(RIG)
+	await _shoot_rows(scene, focus, heading, [single], "lineup_row.png", "row")
+
+	# 3. His own pose, over the size spread. Directly comparable with round 8's rig frames.
+	await _shoot_rows(scene, focus, heading, [SPREAD], "lineup_pose.png", "pose", DISTANCE_M, PITCH_DEG)
+
+
+## Park `rows` (a list of rows of unit ids) on the ground around `focus`, frame them, shoot one PNG, tidy up.
+## `distance`/`pitch` default to a pose computed to FIT what was parked; pass them to force the lead's own pose.
+func _shoot_rows(scene: Node, focus: Vector3, heading: float, rows: Array, file: String, tag: String,
+		distance := -1.0, pitch := LINEUP_PITCH_DEG) -> void:
+	var across := Vector3.RIGHT.rotated(Vector3.UP, heading)
+	var deeper := Vector3.FORWARD.rotated(Vector3.UP, heading)
+	var widths: Array = []
+	var depths: Array = []
+	for row: Array in rows:
+		var width := 0.0
+		var deepest := 0.0
+		for unit_id: String in row:
+			var box: Array = Units.stat(unit_id, "hull_size")
+			width += float(box[2]) + LINEUP_GAP_M
+			deepest = maxf(deepest, float(box[0]))
+		widths.append(width - LINEUP_GAP_M)
+		depths.append(deepest)
+	var total_width: float = widths.max()
+	var total_depth := 0.0
+	for depth: float in depths:
+		total_depth += depth + LINEUP_ROW_GAP_M
+	total_depth -= LINEUP_ROW_GAP_M
+
+	# The rows are centred on `focus` in both axes, so the camera can simply look at it.
+	var parked: Array = []
+	var at_depth := -total_depth / 2.0
+	for r in rows.size():
+		var row: Array = rows[r]
+		var at := -float(widths[r]) / 2.0
+		for unit_id: String in row:
+			var box: Array = Units.stat(unit_id, "hull_size")
+			var centre: Vector3 = focus + across * (at + float(box[2]) / 2.0) + deeper * (at_depth + float(depths[r]) / 2.0)
+			centre.y = focus.y
+			parked.append(_park_one(scene, unit_id, centre, heading))
+			at += float(box[2]) + LINEUP_GAP_M
+		at_depth += float(depths[r]) + LINEUP_ROW_GAP_M
+
+	if distance < 0.0:
+		distance = _distance_to_fit(total_width, total_depth, pitch)
+	for tank: Node3D in parked:
+		_label(tank, distance)
+	_camera.global_transform = RtsCamera.pose_at(focus, heading, distance, pitch)
+	get_tree().paused = true
+	for i in 6:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(out_dir.path_join(file))
+	var report := {"frame": file, "pitch_deg": pitch, "distance_m": snappedf(distance, 0.1),
+			"span_m": snappedf(total_width, 0.1), "units": {}}
+	for tank: Node3D in parked:
+		report["units"][String(tank.get("unit_id"))] = _on_screen(tank)
+	print("SIZE_LOOK_LINEUP " + JSON.stringify(report))
+	get_tree().paused = false
+	for tank: Node3D in parked:
+		tank.queue_free()
+	await get_tree().process_frame
+
+
+## One vehicle, side-on to the camera (nose along `across`, as `_park` does), not simulating.
+func _park_one(scene: Node, unit_id: String, centre: Vector3, heading: float) -> Node3D:
+	var tank := (load("res://game/tank/tank.tscn") as PackedScene).instantiate() as Node3D
+	tank.set("unit_id", unit_id)
+	tank.set("simulate", false)
+	scene.add_child(tank)
+	tank.global_transform = Transform3D(Basis(Vector3.UP, heading - PI / 2.0), centre)
+	for label in tank.find_children("*", "Label3D", true, false):
+		(label as Node3D).visible = false
+	return tank
+
+
+## The name and the hull length, over the vehicle, sized for the camera that is about to see it (a label authored in
+## metres is invisible from 300 m and fills the frame from 40).
+func _label(tank: Node3D, distance: float) -> void:
+	var unit_id := String(tank.get("unit_id"))
+	var box: Array = Units.stat(unit_id, "hull_size")
+	var label := Label3D.new()
+	label.text = "%s\n%.1f m" % [Units.stat(unit_id, "display_name"), float(box[2])]
+	label.font_size = 64
+	label.outline_size = 18
+	label.modulate = Color(1, 1, 1)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.pixel_size = (distance / 60.0) / 64.0
+	label.position = Vector3(0.0, float(box[1]) + distance / 70.0, 0.0)
+	tank.add_child(label)
+
+
+## How far back the camera has to sit, at `pitch`, for `width` across and `depth` deep to fit in the viewport.
+## Godot's `fov` is the VERTICAL field of view, so the horizontal one depends on the aspect the run was given.
+func _distance_to_fit(width: float, depth: float, pitch: float) -> float:
+	var viewport := get_viewport().get_visible_rect().size
+	var aspect: float = maxf(viewport.x, 1.0) / maxf(viewport.y, 1.0)
+	var half_v := deg_to_rad(FOV_DEG) / 2.0
+	var half_h := atan(tan(half_v) * aspect)
+	# Depth is foreshortened by the pitch: what the camera has to fit vertically is the rows' projected extent.
+	var projected := depth * sin(deg_to_rad(pitch))
+	var for_width := (width * LINEUP_MARGIN / 2.0) / tan(half_h)
+	var for_depth := (projected * LINEUP_MARGIN / 2.0) / tan(half_v)
+	return maxf(maxf(for_width, for_depth), DISTANCE_M)

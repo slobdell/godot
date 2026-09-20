@@ -535,11 +535,24 @@ def visible_share(grid, gn, origin, points):
     return seen / len(points)
 
 
+def front_row(layout, side):
+    """The spawn points nearest the centre line: the row an army actually forms up on.
+
+    Round 9 (scale): this used to be a slice of the first 13 spawn points, 13 being `Match.SLOT_X.size()` at the
+    time -- a mirror of the grid's column count, hidden in a slice, with nothing naming it. When the grid went from
+    13 columns x 4 rows to 19 x 3, the slice quietly took two thirds of the front row instead of all of it, and the
+    only symptom was the route optimiser's monotonicity test wobbling by 0.001. Read the row off the points.
+    """
+    points = [tuple(pt) for pt in layout["spawns"][side]]
+    nearest = min(abs(z) for _, z in points)
+    return [(x, z) for x, z in points if abs(abs(z) - nearest) < 0.01]
+
+
 def defending_positions(boxes, layout):
     """The enemy's covered firing positions: 4 m out from each piece of hard cover on the north half, plus its front
     spawn row. Subsampled evenly to WATCHER_SAMPLE so the pass stays cheap and stable."""
     spots = [(b.x, b.z - (b.d / 2 + 4.0)) for b in boxes if b.h >= EYE_HEIGHT and b.z < -10.0]
-    spots += [tuple(p) for p in layout["spawns"]["rust"][:13]]
+    spots += front_row(layout, "rust")
     spots.sort()
     if len(spots) <= WATCHER_SAMPLE:
         return spots
@@ -899,7 +912,7 @@ def analyze(layout):
     report["base_to_centre_m"] = round(length(to_centre), 1) if to_centre else None
     # Watchers: the enemy's covered positions, approximated by points 4 m outside hard cover on the north half.
     watchers = [(b.x, b.z - (b.d / 2 + 4.0)) for b in boxes if b.h >= EYE_HEIGHT and b.z < -10.0]
-    watchers += [tuple(p) for p in layout["spawns"]["rust"][:13]]
+    watchers += front_row(layout, "rust")
     report["direct_route_exposure"] = round(exposure(boxes, direct, watchers), 2) if direct else None
     classes = {"open": 0, "lanes": 0, "dense": 0}
     for p in (direct or [])[::10]:

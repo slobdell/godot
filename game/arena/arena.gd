@@ -89,7 +89,11 @@ const HALF_EXTENT := Match.ARENA_HALF_SIZE + 40.0
 ## Mirror pairs must match to this many meters (and degrees).
 const SYMMETRY_TOLERANCE := 0.01
 ## A spawn point must be this far from every obstacle's footprint: the widest spawn jitter plus half a hull.
-const SPAWN_CLEARANCE := Match.SPAWN_JITTER_MAX_X + 2.5
+## Round 9 (scale): the margin is a named constant so `tools/make_arenas.py` can READ both halves of this sum
+## instead of carrying "6.0" in a default argument, which is what it did -- a mirror of a derived value, which
+## quietly became wrong the moment the jitter moved (Invariant 0).
+const SPAWN_CLEARANCE_MARGIN := 2.5
+const SPAWN_CLEARANCE := Match.SPAWN_JITTER_MAX_X + SPAWN_CLEARANCE_MARGIN
 
 ## The layout the most recent Arena built. Match reads its spawns (static: spawn positions are static queries).
 static var active: Dictionary = {}

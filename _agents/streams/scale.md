@@ -262,4 +262,241 @@ sides; if it did not, say that the resize is not the variable.
 
 ## Status
 
-**Not started.**
+_Updated 2026-09-20 (early), worktree `godot-scale`, branch `stream/scale`._
+
+**Backlog 1–3 are done and green locally; backlog 4 (clearance, then the CP2 announcement) is next.** CP2 is NOT
+announced: the brief says it announces once the line-up frame has been *sent*, and the frame is built but not yet
+rendered (builder0 is busy with this branch's own `make remote T=check`; one remote run per worktree, trip-up 66).
+
+### The plan, in the order it was worked
+
+1. the reference table, derived and asserted (S1) — **done**, `b7055602`
+2. apply it, and render the frame the lead judges — **numbers applied** in `b7055602`; **frame built, not yet rendered**
+3. the spawn grid, from the roster's largest hull — **done**, committed with this Status
+4. clearance for the new roster (P6), then announce CP2 — **next**
+5. A3 hull-chord cover over directional summed-area tables — not started; combat has sent its consumer spec (below)
+6. stretch: the 9/20 → 0/20 re-measured — not started
+
+### 1. The reference table (S1) — done
+
+**K is fixed: `Units.SCALE_K` = 14.00 / 19.80 = 0.707071.** The anchor is `gang_tank` at the 14.0 m the lead ruled;
+its reference is a standard US tractor + 42 ft DOT-406 petroleum tanker semi-trailer at **19.80 m** (65 ft, the
+standard legal configuration), so the world is drawn at **70.7% of real size** — inside the 0.67–0.78 the
+orchestrator expected. `SCALE_K` is *derived*, never typed: `Units._derive_scale_k()` reads the rig's
+`scale_reference` and returns `NAN` loudly if it is ever removed, so every derived length fails rather than
+defaulting to something plausible.
+
+`make roster-scale` prints the whole table (reference vehicle, cited source, K, target length, box today, the
+mesh's box, MISMATCH). Hull length in metres, today → new:
+
+| faction | unit | today | new | reference vehicle |
+|---|---|---|---|---|
+| condemned | scout | 3.00 | **3.04** | Dakar-class rally-raid buggy (Prodrive Hunter T1+), 4.30 m |
+| condemned | tank | 3.60 | **8.62** | Type D school bus, 40 ft (Blue Bird All American), 12.19 m — *the lead's own example* |
+| condemned | ifv | 3.80 | **7.54** | Type C school / prisoner-transport bus, 35 ft, 10.67 m |
+| condemned | artillery | 4.00 | **8.20** | four-axle all-terrain crane carrier (Liebherr LTM 1070-4.2), 11.60 m |
+| condemned | lancer | 3.80 | **6.46** | utility line truck, 30 ft (International 4300 + Altec boom), 9.14 m |
+| condemned | burner | 3.80 | **6.89** | pumper fire engine, 32 ft (Pierce Enforcer), 9.75 m |
+| gangs | gang_scout | 2.80 | **2.93** | 1932 Ford Model B hot rod, 4.14 m |
+| gangs | gang_ifv | 3.60 | **3.44** | 1955 Chevrolet 3100 half-ton pickup, 4.87 m |
+| gangs | gang_tank | 14.00 | **14.00** | tractor + 42 ft DOT-406 tanker semi-trailer, 19.80 m — **the anchor** |
+| gangs | gang_artillery | 4.20 | **6.89** | heavy-duty tow wrecker on a 6x4 chassis, 9.75 m |
+| gangs | gang_support | 7.00 | **6.58** | rigid 3,000 gal fuel bowser (Freightliner M2 106), 9.30 m |
+| law | law_scout | 3.40 | **3.80** | Ford Crown Victoria Police Interceptor, 5.38 m |
+| law | law_ifv | 4.20 | **5.01** | Force Protection Cougar 6x6 MRAP, 7.08 m |
+| law | law_tank | 4.60 | **5.55** | Centauro B1 8x8 assault gun (hull, gun excluded), 7.85 m |
+| law | law_artillery | 4.40 | **4.95** | M142 HIMARS on an FMTV 6x6 chassis, 7.00 m |
+| law | law_suppressor | 4.40 | **6.86** | riot-control water cannon (Wasserwerfer 10000, MAN 6x6), 9.70 m |
+| syndicate | syn_scout | 3.20 | **4.04** | *by role*: wheeled recon vehicle, Fennek LGS, 5.71 m |
+| syndicate | syn_ifv | 4.60 | **4.63** | *by role*: infantry fighting vehicle, CV90 hull, 6.55 m |
+| syndicate | syn_tank | 5.00 | **5.44** | *by role*: main battle tank hull, Leopard 2A7, gun excluded, 7.70 m |
+| syndicate | syn_artillery | 4.40 | **4.93** | *by role*: rocket artillery, M270 MLRS, 6.97 m |
+| syndicate | syn_lancer | 4.40 | **4.04** | *by role*: sensor/designator vehicle, Fennek with the BAA mast, 5.71 m |
+
+**The two judgment calls, both put to the orchestrator and both approved (2026-09-20):**
+- **The Syndicate hover platforms have no road ancestry** — game_design.md names them by shape (teardrop, supercar,
+  limousine), not by a vehicle they were converted from — so each is referenced to the real vehicle that fills the
+  **same role**, consistently across the faction, and every row says so in its own `scale_reference.vehicle`.
+- **`law_tank` is the Centauro B1 8x8 (7.85 m), not the Stryker MGS (6.95 m).** game_design.md says "Stryker-style",
+  but at 6.95 m the Law's *tank* would be **shorter than its own Cougar 6x6 MRAP** (7.08 m). The blurb is "an 8x8
+  with a real gun", which is what a Centauro is.
+
+**The spread the lead asked for now exists.** Before: two vehicles over 5 m and nineteen between 2.8 and 5.0. After:
+**2.93 m to 14.0 m with the middle filled in** — a school bus is 8.6 m next to a 2.9 m hot rod and a 14 m semi.
+
+### 2. The numbers applied — done, and two mirrors had to go first
+
+Widths and heights are now **the approved mesh's own proportions at the derived length** (`SizeLook.box_at_length`),
+so `hull_size` is what is drawn. That discharges feel's round-8 roster-wide finding **by construction**.
+
+**Recorded "before" (`9f864474`, laptop), so the treatment is known to be distinguishable (lesson 147):** running
+the new tests against HEAD's numbers with the references in place failed **20 of 21** on length (only `gang_tank`,
+the anchor, passed) and **17 of 19** on the box (only `gang_tank` and `gang_support`, which round 8 had already
+fixed), by up to **106%** on an axis — `syn_artillery` was 2.60 m wide against its mesh's 3.64 m.
+
+⚠ **I EDITED `game/tank/tank.gd`, which is not this stream's file** (granted retroactively by the orchestrator;
+combat has seen the detail and does not object; combat reviews it at CP2). Two mirrors, both the silent kind, and
+the resize could not land over either:
+
+- **`Tank._apply_hull_size` returned early whenever a unit's box equalled `Units.PROFILES[DEFAULT].hull_size`.**
+  `DEFAULT` *is* `"tank"`, so that branch fired for the Condemned tank and for nothing else: its collider came from
+  `tank.tscn`'s authored `BoxShape3D` (2.4 x **1.6** x 3.6) while the catalog has said 2.4 x **2.4** x 3.6 since
+  round 2. **The scene silently WON for the one unit `sim-baseline` fields** (lesson 137), and no edit to
+  `hull_size` would have moved it — the lead's bus-tanks would simply not have resized.
+- **The shared hull art was fitted against that same catalog entry rather than against the mesh it draws**
+  (2.18 x 2.30 x 3.85 m). The moment the Condemned tank stopped being 3.6 m long, every unit without its own art
+  would have been drawn at the wrong size, in silence. Measured on the reverted code: a 6.89 m box drew **2.88 m**.
+
+**Consequence to expect, named so nobody re-derives it: the Condemned tank's collider grows 0.8 m in height.** That
+is a correctness fix, not a tune, and it is a real combat change (a taller target). combat has already flagged that
+`scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` reads that hull's hit distribution with six hits of
+margin, and **expects it to move** — so that when it does, nobody attributes it to A2 or A7.
+
+Both mirrors now have a regression test, each mutation-checked by surgically restoring the old behaviour and
+watching it go red: `test_the_default_units_collider_comes_from_the_catalog_not_from_the_scene` and
+`test_a_unit_wearing_the_shared_hull_art_is_drawn_at_its_own_box` (`tests/test_units_scale.gd`).
+
+**Muzzles came down roster-wide.** The shortest hull is now the Rat Rod's own mesh at **1.24 m** instead of a
+hand-held 1.40 m floor, so the ceiling (`MUZZLE_CLEARANCE` under the shortest hull) fell **1.30 → 1.14 m** and the
+**18 muzzles above it came down to it**. Rounds fly flat at muzzle height, so this is a real ballistic change and
+it is pre-registered, not incidental.
+
+**THE SIM BASELINE MOVES and is deliberately NOT recorded here** (Invariant 2). On the laptop `sim-baseline`
+silently skips — glibc 2.39 has no line — so a green local check proves nothing about the hash.
+
+### 3. The spawn grid — done, and it needed less than the brief expected
+
+**Test first, and the first thing the tests established is what the grid actually has to hold.** `ArmyLayout.deploy()`
+re-lays every unit by its own hull size at the end of `Match.load_doctrine`, **synchronously, before any physics
+step**, so a doctrine army never stands on this grid. What stays here is what `Match.spawn_tank` puts here and
+leaves: network players and legacy bots, driving `Units.DEFAULT`. That was combat's round-8 finding, carried as a
+comment; it is now a guard —
+`test_a_doctrine_army_is_never_left_standing_on_the_grid` spawns a real gangs and a real Condemned army at
+`Units.BASELINE_BUDGET` and asserts no two hulls overlap at tick 0.
+
+**What changed:** `Units.DEFAULT` went 3.6 → 8.62 m, longer than the old 8 m rows, and combat's existing
+`test_the_spawn_grid_holds_the_unit_a_bare_spawn_drives` went red on it. There is nowhere deeper to go (the back
+row was already at z = 114 against `DRIVABLE_LIMIT` 116), so the grid became **shallower and wider**:
+
+| | before | after |
+|---|---|---|
+| `SLOT_X` | 13 columns, 11 m pitch, ±66 m | **19 columns, 7.5 m pitch, ±67.5 m** |
+| `SPAWN_ROWS` × `SPAWN_ROW_SPACING` | 4 × 8.0 m (z = 90, 98, 106, 114) | **3 × 12.0 m (z = 90, 102, 114)** |
+| `SPAWN_SLOTS` | 52 | **57** (`Army.MAX_ARMY_UNITS` is 45) |
+| jitter x / z | ±3.5 / ±1.2 m | **±1.5 / ±0.6 m** |
+
+**The front row stays at `BASE_Z` = 90 and the back row stays at z = 114, so spawn distance, depth and pace are
+unchanged.** The jitter fell out of the pitch: column pitch and row spacing, each minus the bare-spawn hull
+(2.40 × 8.62 m) and minus squad's `ArmyLayout.HULL_CLEAR_M` (2.0), halved. A doctrine army's scatter is unaffected
+(`ArmyLayout` lays it out itself).
+
+**Why ±67.5 and not wider:** `make arenas` **refused ±72 m**. The Terminus has an ad screen at (76, 100) and a
+column at 72 stood 1.3 m from its footprint against a required 4.3. The authoring check earned its place.
+
+**For the record and deliberately NOT asserted** (Invariant 0b — a check must not encode a decision nobody has
+made): at the round-9 roster the grid does **not** hold the biggest hull. Adjacent columns leave
+7.5 − 2×1.5 − 4.74 = **−0.24 m** for the Condemned artillery's width; adjacent rows leave 12.0 − 2×0.6 − 14.0 =
+**−3.2 m** for the War Rig's length. Both are harmless *because* of `deploy()`, and both become findings the day
+`deploy()` stops running first — which is exactly what the new guard watches.
+
+**Three mirrors killed on the way**, all of them in this stream's paths and all three mutation-checked:
+
+1. **`tools/make_arenas.py` carried its own copy of `SLOT_X` / `SPAWN_ROWS` / `SPAWN_ROW_SPACING`** behind a comment
+   saying *"must mirror"*. It is the worst row in Invariant 0's table because **the copy WON** — `Arena.spawn_spot`
+   is consulted before the constants, so the baked lists beat them. It now READS them
+   (`tools/gdscript_source.py`), and `test_every_layouts_baked_spawn_list_is_the_grid_the_constants_describe`
+   checks every shipped map against the constants. **That guard was green by absence when first written**
+   (`Arena.load_layout` returns `{"layout": …}`, not the layout, so it was comparing the constants with
+   themselves); it was caught by mutation-checking it, and it fires now.
+2. **`make_arenas.check_spawn_clearance(layout, clearance=6.0)`** mirrored `Arena.SPAWN_CLEARANCE`, which is
+   `Match.SPAWN_JITTER_MAX_X + 2.5`. The margin is now a named constant (`Arena.SPAWN_CLEARANCE_MARGIN`) and the
+   tool reads **both halves** from where they are defined.
+3. **`arena_report.py` sliced `layout["spawns"]["rust"][:13]`** in two places — 13 being `Match.SLOT_X.size()` at
+   the time, a mirror hidden in a slice with nothing naming it. At 19 columns the slice quietly took two thirds of
+   the front row, and the only symptom was the route optimiser's monotonicity test wobbling by 0.001. It reads the
+   front row off the points now (`arena_report.front_row`).
+
+**All ten layouts regenerated** (`make arenas`); `make arena-test` 75/75, `tools/test_arena*.py` 19/19,
+`--filter=match` 72/72, all on the laptop.
+
+### Decisions (with reasons)
+
+- **The two units with no `unit.<id>.hull` art** — `tank` and `burner`, wearing the shared dozer — **take a length
+  from the rule and keep the width and height the catalog already had.** Nothing has measured a proportion for
+  them and inventing one is opinion, not sizing. `Tank` stretches the shared art to the box on every axis, so what
+  is drawn still matches `hull_size`. `test_only_the_two_known_units_have_no_art_of_their_own` pins the list in
+  both directions.
+- **Appendages are inside the box, because the rule says the box is what is drawn.** Three units grew far more on
+  a cross-axis than in length, and they are the art's own proportions, not a choice: `law_suppressor` is now
+  **6.18 m tall** (the horn tower really is about as tall as that truck is long in the approved concept), the
+  Condemned `artillery` is **4.74 m wide** (deployed outriggers) and `syn_artillery` **4.07 m wide** (missile
+  wings). They are flagged here and they are what the lead will see in the line-up. Trimming them would be sizing
+  by opinion, which the rule forbids; if anyone wants appendages excluded from the collider that is an extension of
+  `FactionArt.GUN_CUTS` and it is feel's, next round.
+- **Muzzles: `min(today's, ceiling)`, not scaled.** No muzzle in the catalog was ever measured from a mesh (they
+  are 1.05 / 1.12 / 1.20 / 1.27, i.e. a shared barrel height), so there is nothing to re-derive per unit; the only
+  real constraint is the roster-wide ceiling, and every muzzle above it came down to it.
+- **`tools/gdscript_source.py` is the one Python reader for GDScript constants**, with `units_catalog.py` a thin
+  facade over it. Three tools were about to grow three regexes.
+
+### Questions for the lead
+
+- **None blocking.** The one open question — rig-relative K vs real metres — is the orchestrator's to carry. It is
+  now genuinely one number: `Units.RIG_LENGTH_M` 14.0 → 19.80 in `units.gd`, then `make roster-scale` and rewrite
+  the 21 `hull_size` values from the table. Everything else re-derives.
+- **The look** (backlog item 2) is his, and CP2 waits for the frame to be *sent*, not approved.
+
+### Requests to other streams
+
+- **combat** — reviews the `units.gd` / `match.gd` / `tank.gd` diff at merge (already briefed, no objection).
+  Expect `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` to move: that hull's collider is 0.8 m taller.
+- **combat, A3 consumer spec received (2026-09-20)** and it is what item 5 will be built to:
+  `cover_fraction(viewer: Vector3, point: Vector3, heading: Vector3, length: float) -> float` — heading as a flat
+  `Vector3`, not radians; the worst-case quantisation error at K = 8 headings reported **as a fraction of hull
+  length**; determinism asserted in a test (integer prefix sums, no float reduction order); `0.0` rather than
+  garbage, and no error spam, when the hull straddles a table edge or leaves the arena. Second, cheaper-if-free
+  entry point: `hull_footprint_clearance(point, heading, length) -> float`. Combat also reports that
+  `EngagementStats.near_cover` **has never measured cover** — it measures proximity to an obstacle footprint — and
+  owns renaming it; the viewer question is theirs, the hull-aware primitive is mine.
+- **feel** — `assets/pipeline/asset_contracts.gd` `UNITS` carries its own copy of `hull_size` and `muzzle_height`
+  for five units and **already disagreed** with the catalog before this round (it has `tank` h = 1.6). It is the art
+  pipeline's normalization contract, so it is inert for gameplay, but **any new art generated after CP2 would be
+  normalized to the old 3.6–4.0 m sizes**, and no test ties it to `Units.PROFILES`, so nothing will say so. Routed
+  via the orchestrator.
+- **squad** — formation and assembly spacing re-measure after CP2. `army_layout.gd` reads `hull_size` and the
+  roster's widest hull is now **4.74 m** and longest **14.0 m**; `deep_floor = longest + HULL_CLEAR_M` will grow.
+- **nav** — `Movement.NAV_AGENT_RADIUS` still mirrors the bake at 2.0 m for a footprint range that has grown.
+  Proposal unchanged: read it from `Arena`. Numbers come with item 4.
+- **control** — the camera, HUD, selection boxes and radar at his pose against the new sizes, after CP2.
+
+### Known issues
+
+- **`make check` has not yet gone green on builder0 for this branch.** A full `make remote T=check` on `b7055602`
+  (the roster resize, before the spawn-grid commit) was still running when this Status was written. **No readiness
+  claim is made until the wrapper's own `>> remote: make check exited <N>` line and the runner's
+  `N passed, 0 failed` say so, unpiped** (lesson 28).
+- The line-up frame is built (`make roster-lineup`, three frames) but **not rendered**: it needs a display, so it
+  needs builder0, and this worktree already has a `make remote` in flight (trip-up 66).
+
+### What to playtest (exact commands)
+
+```
+make roster-scale                         # the table: reference vehicle, K, target length, box, mesh box
+make remote T=roster-lineup               # the three line-up frames -> build/roster-lineup/lineup_*.png
+make remote T=facing-audit                # every unit side-on at the new scale -> build/facing/<unit>.png
+make skirmish --player-faction=condemned  # the bus-tanks, at his camera
+```
+
+### Merge notes (shared-file edits)
+
+- **`game/tank/tank.gd`** — `_apply_hull_size` only (the early return removed; the shared-art fit now reads the
+  mesh) plus the new `Tank.shared_hull_size()`. Not this stream's file; granted, and combat reviews it.
+- **`game/units/units.gd`** — the carved-out keys only: `hull_size` and `muzzle_height` values, the new
+  `scale_reference` key on all 21 profiles, `RIG_UNIT` / `RIG_LENGTH_M` / `SCALE_K` / `_derive_scale_k` /
+  `target_length_m`, and the schema comment. **No costs, speeds, armor, weapons or turn rates were touched.**
+- **`game/match/match.gd`** — the three spawn constants and the two jitter bounds they derive, in one commit, with
+  the derivation written beside them. Nothing else.
+- **`game/arena/arena.gd`** — `SPAWN_CLEARANCE_MARGIN` extracted so `make_arenas.py` can read it. This stream's file.
+- **`game/theme/fx/bench/size_look.gd`** — additive `--size-look-lineup` mode (granted at launch; feel reviews).
+- **`arenas/*.json`** — all ten regenerated by `make arenas`; only the `spawns` lists changed.
+

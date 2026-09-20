@@ -118,3 +118,70 @@ func test_the_roster_reads_as_vehicles_of_different_kinds() -> void:
 		assert_true(scout < tank, "%s: the scout (%.2f m) is shorter than the tank (%.2f m)" % [faction, scout, tank])
 	assert_true(float(lengths["gang_tank"]) / float(lengths["gang_scout"]) > 4.0,
 			"the War Rig is more than four Rat Rods long (%.2f / %.2f)" % [lengths["gang_tank"], lengths["gang_scout"]])
+
+
+# ------------------------------------------------------------------------------------------------------------------
+# The two mirrors `Tank._apply_hull_size` used to carry (round 9, scale). Both were the kind that fail WITHOUT a
+# symptom, so both get a test that can only pass by reading the real source -- and each is mutation-checked by
+# moving that source and watching the answer move (Invariant 0: check the reader in both directions).
+# ------------------------------------------------------------------------------------------------------------------
+
+func _spawn(unit_id: String) -> Node3D:
+	var tank: Node3D = (load("res://game/tank/tank.tscn") as PackedScene).instantiate()
+	tank.set("unit_id", unit_id)
+	tank.set("simulate", false)
+	add_to_tree(tank)
+	return tank
+
+
+func _collider(tank: Node3D) -> Vector3:
+	return ((tank.get_node("Collision") as CollisionShape3D).shape as BoxShape3D).size
+
+
+## MIRROR 1. `_apply_hull_size` used to return early whenever a unit's box equalled `Units.PROFILES[DEFAULT]`'s,
+## which is the Condemned tank's own entry -- so that unit alone kept tank.tscn's authored BoxShape3D (2.4 x 1.6 x
+## 3.6) while the catalog said 2.4 x 2.4 x 3.6, and had since round 2. The scene WON, silently, for the one unit
+## `sim-baseline` fields. Nothing about a box equalling another box may skip the catalog again.
+func test_the_default_units_collider_comes_from_the_catalog_not_from_the_scene() -> void:
+	var catalog: Array = Units.stat(Units.DEFAULT, "hull_size")
+	var box := _collider(_spawn(Units.DEFAULT))
+	assert_near(box.x, float(catalog[0]), 0.011, "%s's collider width is the catalog's" % Units.DEFAULT)
+	assert_near(box.y, float(catalog[1]), 0.011, "%s's collider HEIGHT is the catalog's, not tank.tscn's" % Units.DEFAULT)
+	assert_near(box.z, float(catalog[2]), 0.011, "%s's collider length is the catalog's" % Units.DEFAULT)
+	# Mutation check: move the catalog entry and the collider must move with it. Without this the assertion above
+	# would also pass on a build that happened to author the same box in the scene -- green by coincidence.
+	Units.tuning[Units.DEFAULT + ".hull_size"] = [3.0, 1.9, 9.5]
+	var moved := _collider(_spawn(Units.DEFAULT))
+	Units.tuning.erase(Units.DEFAULT + ".hull_size")
+	assert_near(moved.y, 1.9, 0.011, "the collider follows the catalog (height)")
+	assert_near(moved.z, 9.5, 0.011, "the collider follows the catalog (length)")
+	# And the same box on a DIFFERENT unit, which is the shape the old early return actually keyed on.
+	Units.tuning["burner.hull_size"] = catalog.duplicate()
+	var twin := _collider(_spawn("burner"))
+	Units.tuning.erase("burner.hull_size")
+	assert_near(twin.y, float(catalog[1]), 0.011,
+			"a unit whose box equals the DEFAULT profile's still gets that box as its collider")
+
+
+## MIRROR 2. The shared hull art (`tank.hull`, worn by every unit with no `unit.<id>.hull` of its own) was fitted
+## against the DEFAULT UNIT'S CATALOG BOX on the unwritten assumption that the two were equal. They never were --
+## the mesh is 2.18 x 2.30 x 3.85 against a 2.4 x 2.4 x 3.6 entry -- and the moment the Condemned tank stopped being
+## 3.6 m long, every unit wearing that art would have been drawn at the wrong size in silence. It now fits to the
+## mesh, so `hull_size` is what is DRAWN for these units too.
+func test_a_unit_wearing_the_shared_hull_art_is_drawn_at_its_own_box() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var shared := Tank.shared_hull_size()
+	assert_true(shared.z > 0.01, "the shared hull art measures as something (%s)" % shared)
+	assert_true(absf(shared.z - float(Units.PROFILES[Units.DEFAULT]["hull_size"][2])) > 0.05,
+			"and it is NOT the DEFAULT unit's catalog length -- which is why assuming they were equal was a mirror")
+	for box: Array in [[2.4, 2.4, 6.89], [3.1, 2.0, 11.0]]:
+		Units.tuning["burner.hull_size"] = box
+		var tank := _spawn("burner")
+		await wait_physics_frames(2)
+		var drawn: Vector3 = (tank.get_node("HullVisual") as Node3D).scale * shared
+		Units.tuning.erase("burner.hull_size")
+		for axis in 3:
+			assert_near(drawn[axis], float(box[axis]), 0.02,
+					"a shared-art hull is drawn at its box on axis %d (box %s, drew %s)" % [axis, box, drawn])
+	GameTheme.use(previous)

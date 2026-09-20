@@ -22,3 +22,17 @@ roster-scale: roster-boxes ## S1: the whole roster as a table -- reference vehic
 # stream reads, and the contract itself is guarded by tests/test_units_scale.gd, which IS in check.
 roster-pytest: ## The roster tools' own tests: the catalog reader, and that it refuses rather than falls back
 	$(PYTHON) -m unittest discover -s tools -p 'test_roster*.py'
+
+.PHONY: roster-lineup
+
+LINEUP_RES ?= 1920x1080
+# The lead's look before CP2 merges (backlog item 2). Needs a display: `make remote T=roster-lineup`. It rides a real
+# skirmish, like `size-look` does, so the vehicles stand on the arena floor under the game's own lighting rather than
+# in a gallery -- round 8's lesson was that a gallery answered a question he had not asked.
+roster-lineup: import ## S1: every vehicle at the new scale, side by side, labelled -> build/roster-lineup/lineup_*.png (needs a display; ARENA=, LINEUP_FLAGS=)
+	rm -rf $(BUILD_DIR)/roster-lineup && mkdir -p $(BUILD_DIR)/roster-lineup
+	timeout 420 $(GODOT) --path . --resolution $(LINEUP_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
+		$(if $(ARENA),--arena=$(ARENA)) --size-look=$(CURDIR)/$(BUILD_DIR)/roster-lineup --size-look-lineup $(LINEUP_FLAGS) \
+		2>&1 | tee $(BUILD_DIR)/roster-lineup/log.txt | grep -E '^SIZE_LOOK|SCRIPT ERROR' || true
+	@grep -q SIZE_LOOK_DONE $(BUILD_DIR)/roster-lineup/log.txt
+	@ls $(BUILD_DIR)/roster-lineup/*.png

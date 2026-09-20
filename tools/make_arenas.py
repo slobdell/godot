@@ -6,18 +6,41 @@ construction (Arena.validate checks it). The design vocabulary and each arena's 
 Usage: python3 tools/make_arenas.py arenas   (or `make arenas`; then `make arena-report` and `make test FILTER=arena`)"""
 import json, math, sys, os
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import gdscript_source
+
 OUT = sys.argv[1]
-# Must mirror Match.SLOT_X / SPAWN_ROWS / SPAWN_ROW_SPACING (X5, round 4: 65 slots a side for faction-sized armies).
-COLUMNS = [0.0, -11.0, 11.0, -22.0, 22.0, -33.0, 33.0, -44.0, 44.0, -55.0, 55.0, -66.0, 66.0]
+
+# ROUND 9 (scale): these used to be a COPY of Match.SLOT_X / SPAWN_ROWS / SPAWN_ROW_SPACING, kept in step by a
+# comment saying "must mirror". It is the worst row in Invariant 0's table because THE COPY WON: `Arena.spawn_spot`
+# is consulted before the constants, so the baked lists here beat them and changing a constant changed nothing in a
+# real match. They are read now, and `make arenas` is the only thing that writes a spawn list.
+MATCH_GD = gdscript_source.GAME / "match" / "match.gd"
+ARENA_GD = gdscript_source.GAME / "arena" / "arena.gd"
 
 
-def spawns(base_z=90.0, rows=4, row_spacing=8.0):
+def spawns():
+    """Every spawn point for both sides, laid out exactly as `Match.spawn_position` lays out its fallback."""
+    columns = gdscript_source.const(MATCH_GD, "SLOT_X")
+    rows = int(gdscript_source.const(MATCH_GD, "SPAWN_ROWS"))
+    row_spacing = gdscript_source.const_float(MATCH_GD, "SPAWN_ROW_SPACING")
+    base_z = gdscript_source.const_float(MATCH_GD, "BASE_Z")
+    slots = int(gdscript_source.const(MATCH_GD, "SPAWN_SLOTS"))
     green = []
     for row in range(rows):
-        for x in COLUMNS:
-            green.append([x, base_z + row * row_spacing])
+        for x in columns:
+            green.append([float(x), base_z + row * row_spacing])
+    if len(green) < slots:
+        sys.exit("make_arenas: %d columns x %d rows is %d spawn points, fewer than Match.SPAWN_SLOTS (%d)"
+                 % (len(columns), rows, len(green), slots))
     rust = [[-x if x else 0.0, -z] for x, z in green]
     return {"green": green, "rust": rust}
+
+
+def spawn_clearance():
+    """`Arena.SPAWN_CLEARANCE`, both halves of it read from where they are defined."""
+    return (gdscript_source.const_float(MATCH_GD, "SPAWN_JITTER_MAX_X")
+            + gdscript_source.const_float(ARENA_GD, "SPAWN_CLEARANCE_MARGIN"))
 
 
 def mirrored(half):
@@ -194,10 +217,11 @@ def write_v2(name, title, fight, props, lanes=(), regions=(), obstacles=(), cont
         f.write(json.dumps(layout, indent=1) + "\n")
 
 
-def check_spawn_clearance(layout, clearance=6.0):
+def check_spawn_clearance(layout, clearance=None):
     """Arena.SPAWN_CLEARANCE, checked at authoring time so a bad layout never gets written."""
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import arena_report
+    if clearance is None:
+        clearance = spawn_clearance()
     for box in arena_report.boxes_of(layout):
         for side in ("green", "rust"):
             for x, z in layout["spawns"][side]:
