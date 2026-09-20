@@ -25,9 +25,9 @@ const BACK_MARGIN_M := 4.0
 ## An army waiting for orders stands in an ASSEMBLY area, tighter than it moves: a squad starts at most this far between
 ## vehicles (hulls are ~4 m long), and opens out to its own spacing when it is ordered to move. The start view frames it.
 const ASSEMBLY_SPACING_M := 6.5
-## ...but never less than the squad's longest hull plus this much clear ground (vehicle sizes vary 3x between factions:
-## a gang War Rig is far longer than a scout), and the same for the packing floor.
-const HULL_CLEAR_M := 2.0
+## ...but never less than the squad's longest hull plus clear ground (vehicle sizes vary 3x between factions: a gang
+## War Rig is far longer than a scout), and the same for the packing floor. Round 9 (X1): that floor is
+## `TacticsFormation.hull_floor` — one derivation for the assembly and for every moving formation.
 ## A widened rank keeps this far off the drivable floor's side edges.
 const SIDE_MARGIN_M := 6.0
 ## Clear ground between one rank of squads and the next (a hull is ~4 m long).
@@ -119,15 +119,15 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 		for item: Dictionary in row["placed"]:
 			var shape: Dictionary = item["shape"]
 			var spacing: float = item["spacing"]
-			var stretch: float = float(item["deep_pitch"]) / spacing
 			# place() centres a shape on its centroid: step back from the line by how far its front slot is ahead of that.
 			var anchor: Vector3 = line - forward * float(shape["front"]) * float(item["deep_pitch"]) \
 					+ right * (left + float(item["width"]) * 0.5)
 			left += float(item["width"])
+			# The along-axis stretch this used to apply by hand IS place()'s X1 pitch: spacing across, the hull's
+			# length floor along (item["deep_pitch"] is max(spacing, deep_floor), which is what pitch() resolves to).
 			for entry in TacticsFormation.place(shape["members"], shape["formation"], anchor, forward, spacing,
 					{"policy": "front", "leader": shape["leader"]}):
-				var local: Vector3 = (entry["to"] as Vector3) - anchor
-				var at: Vector3 = anchor + right * local.dot(right) + forward * local.dot(forward) * stretch
+				var at: Vector3 = entry["to"]
 				var limit := Match.DRIVABLE_LIMIT - 2.0
 				at = Vector3(clampf(at.x, -limit, limit), 0.0, clampf(at.z, -limit, limit))
 				result[String(entry["unit"])] = {"position": at, "facing": forward, "squad": shape["name"],
@@ -151,17 +151,14 @@ static func _shape_of(squad: Dictionary) -> Dictionary:
 	var ahead := 0.0
 	for slot in raw:
 		ahead = maxf(ahead, -slot.y)
-	var longest := 0.0
-	var widest := 0.0
-	for member: Dictionary in members:
-		var unit := String(member.get("unit", ""))
-		if Units.exists(unit):
-			var hull: Array = Units.stat(unit, "hull_size", [2.6, 1.8, 4.0])
-			longest = maxf(longest, maxf(float(hull[0]), float(hull[2])))
-			widest = maxf(widest, minf(float(hull[0]), float(hull[2])))
 	# Side by side a vehicle needs its width clear, nose to tail its length (everyone faces the enemy at the start).
-	var floor_m := maxf(MIN_SPACING_M, widest + HULL_CLEAR_M)
-	return {"front": ahead, "floor": floor_m, "deep_floor": longest + HULL_CLEAR_M, "hull": longest,
+	# ONE derivation, two callers (round 9, X1): the floor itself is TacticsFormation's, so the assembly and the
+	# moving formation can never disagree about what a hull needs. This file keeps only its own assembly policy
+	# (MIN_SPACING_M and ASSEMBLY_SPACING_M) on top of it.
+	var hull_floor := TacticsFormation.hull_floor(members)
+	var longest := TacticsFormation.hull_extent(members).y
+	var floor_m := maxf(MIN_SPACING_M, hull_floor.x)
+	return {"front": ahead, "floor": floor_m, "deep_floor": hull_floor.y, "hull": longest,
 			"name": String(squad["name"]), "members": members, "formation": shape,
 			"leader": String(squad.get("leader", "")),
 			"spacing": maxf(minf(float(squad.get("spacing", TacticsFormation.DEFAULT_SPACING)), ASSEMBLY_SPACING_M), floor_m),

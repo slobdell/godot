@@ -56,6 +56,35 @@ control, and how much of us can one shell or one burst reach? Each row's *fronta
 | **Herringbone** | A halt in a lane or column: the middle vehicles alternate 90° left and right, clearing the route and watching both flanks while the lead watches ahead and the tail behind | All round | Easy | 13 × 38 m | `herringbone` |
 | **Coil** | A halt in the open: a ring, guns out, 360° security | All round | Easy | ~24 × 24 m | `coil` |
 
+### Spacing is a doctrine number with a hull floor under it (round 9, X1)
+
+A doctrine's spacing (`DoctrineTable.SPACING_DEFAULTS`: open 14 / lanes 11 / dense 8 m) is a **tactical** number —
+how dispersed the element wants to be — and it says nothing about how big its vehicles are. A 14 m War Rig at 8 m
+"dense" spacing stands inside the rig in front of it, and the round-9 resize puts the whole mid-roster in the same
+position. So every formation is laid out at a **pitch**, `TacticsFormation.pitch(members, spacing)`, which is the
+doctrine's number raised per axis to what the members' own hulls fit in:
+
+- **across the heading** the widest member's width plus `HULL_CLEAR_M`, because side by side a vehicle needs its width;
+- **along the heading** the longest member's length plus the same, because nose to tail it needs its length.
+
+The pitch is therefore **anisotropic**: a column of rigs needs length between slots and a line of rigs needs width.
+The floor never *reduces* the doctrine's number, and for every squad whose hulls fit inside it — today, everything but
+the War Rig — the slots are laid out exactly as they were before, on the same code path. That is why X1 does not move
+the sim baseline: its match fields only `tank` hulls, whose floor never binds.
+
+Two consequences worth knowing:
+
+- **The clearance rule is the separating axis, not centre distance.** Two hull boxes along one heading are clear when
+  *either* axis separates them by `HULL_CLEAR_M`. `TacticsFormation.closest_boxes` measures that, and
+  `tests/test_tactics_hull_spacing.gd` asserts it for every shipped shape × every faction's squad × every terrain
+  spacing, with the expectations read from `Units.PROFILES` so the resize cannot invalidate them.
+- **"One formation spacing" is now a real number.** `TankBrain.slot_leash(element)` is the element's own pitch rather
+  than the flat 14 m `SLOT_LEASH` that used to approximate it, and `ArmyLayout` calls the same floor at deploy instead
+  of keeping its own copy. The leash is what nav's A7 priority table bounds every candidate against at level 0, and
+  **every** element member carries one now, including the `bound` and `maneuver` roles: the slot an element publishes
+  for those is the ground it told them to cover (a bound's next anchor, a manoeuvre element's flank), so bounding them
+  to it converges them rather than caging them.
+
 **Sectors of fire.** A formation is only half the answer; the other half is who watches what.
 `TacticsFormation.sectors()` assigns every slot an azimuth relative to the direction of travel (0 = ahead,
 + = right), 90° wide each, so neighbours interlock. `coverage()` is the share of the full circle the element

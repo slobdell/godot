@@ -298,7 +298,8 @@ const SUPPRESS_REAIM := 7.0
 ## ...or after this long (ticks), so the fire follows a walking target without following a jinking one.
 const SUPPRESS_REAIM_TICKS := SimClock.TICK_RATE * 3 / 2
 ## L1 elements (round-4 X1): a unit fighting from a formation slot manoeuvres inside this far of it (meters). About
-## one formation spacing: room to circle, jink and take an angle without leaving the formation.
+## one formation spacing: room to circle, jink and take an angle without leaving the formation. Round 9 (X1) made
+## "one formation spacing" a real per-element number rather than an approximation of one — see slot_leash().
 const SLOT_LEASH := 14.0
 ## ...and engages inside its sector of fire first (ElementFeed.SECTOR_COS).
 const SECTOR_COS := ElementFeed.SECTOR_COS
@@ -1261,9 +1262,40 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 
 ## X1: the formation slot this unit should fight from, or null when it has no element, no slot, or is the half that
 ## is meant to be covering ground (a bounding or assaulting unit moves; the rest hold their place in the formation).
+## How far from its slot a unit fighting from a formation may manoeuvre (meters): ONE formation spacing, which since
+## round 9 (X1) is the element's own resolved pitch (ElementFeed's "pitch": the doctrine's tactical spacing floored by
+## the members' hulls, per axis) rather than a single constant for the whole game. The LARGER axis is the one that
+## bounds it — it is the biggest step between neighbouring slots, and a unit circling inside its own slot must not be
+## able to reach its neighbour's. Never tighter than SLOT_LEASH, and exactly SLOT_LEASH for every squad whose hulls
+## fit inside the doctrine's spacing, which today is everything but the War Rig.
+static func slot_leash(element: Variant) -> float:
+	if typeof(element) != TYPE_DICTIONARY:
+		return SLOT_LEASH
+	var pitch: Variant = (element as Dictionary).get("pitch")
+	if not (pitch is Vector2):
+		return SLOT_LEASH
+	return maxf(maxf((pitch as Vector2).x, (pitch as Vector2).y), SLOT_LEASH)
+
+
+## The slot this unit fights from — the centre of the leash handed to the motion layer, and of the region nav's A7
+## priority table bounds every candidate against at level 0.
+##
+## Round 9 (X3, answering nav's A7 question): this used to return null for the `bound` and `maneuver` roles, so an
+## attacking element's members had NO leash and NO task region. That was right when a slot was a static post and
+## wrong now that the slot tracks the element's intent: the slot an element publishes for a bounding team IS its next
+## bound's anchor, and for a manoeuvre element IS the flank position it was sent to. Leashing those roles to their own
+## published slot therefore does not cage them — it bounds them to the place the element sent them — and nav's level-0
+## semantics (*inside your region, and if you are outside it do not get further outside*) makes a leash on a slot
+## 40 m ahead a convergence guarantee rather than a wall.
+##
+## It matters because it was doing load-bearing work by accident: under the old blended steering the weapon band and
+## the slot compromised to ~15 m of drift with no leash involved; under A7's strict priority the weapon level wins and
+## the same element drifts 42 m — five vehicles each holding their own band, which is the lead's *"just these 2 masses
+## shooting at each other"* in miniature. Holding a band is the right instinct for one vehicle and the wrong one for an
+## element; the element's answer is that the band is chosen WITHIN the slot's region, which is what a formation is for.
 static func element_slot(s: Dictionary) -> Variant:
 	var context: Variant = s.get("element")
-	if context == null or ["bound", "maneuver"].has(String((context as Dictionary).get("role", ""))):
+	if context == null:
 		return null
 	return (context as Dictionary).get("slot")
 
@@ -2293,7 +2325,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	# X1: fight from your place in the formation. Circling 40 m out of the slot wins the duel and loses the element.
 	var slot: Variant = TankBrain.element_slot(s)
 	if slot != null:
-		request["leash"] = {"center": slot, "radius": SLOT_LEASH}
+		request["leash"] = {"center": slot, "radius": TankBrain.slot_leash(s.get("element"))}
 		why = TankBrain._join(why, "in its slot")
 	# X3 (L2): and don't manoeuvre through a beaten zone.
 	var fields := _suppression_fields(game_match) if s.get("features", {}).get("avoid_beaten", true) else null

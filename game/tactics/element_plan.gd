@@ -66,9 +66,14 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 			"bounding": int(state.get("bounding", 0)), "arrived": bool(state.get("arrived", false)),
 			"orders": {}, "slots": {}, "sectors": {}, "seats": {},
 			"leader": String(situation.get("leader", "")), "previous_seats": state.get("seats", {}),
-			"route": [], "route_index": 0}
+			"route": [], "route_index": 0, "pitch": Vector2(TacticsFormation.DEFAULT_SPACING,
+			TacticsFormation.DEFAULT_SPACING)}
 	if members.is_empty():
 		return plan
+	# X1: this element's TACTICAL pitch -- the doctrine's number for the terrain, raised per axis to what its own
+	# hulls fit in. Published so control's readout, the coherence probe and a slot's leash read a real number rather
+	# than the one that was asked for or a constant.
+	plan["pitch"] = TacticsFormation.pitch(members, table.spacing(String(situation["terrain"])))
 
 	var drill := Drills.select(situation, state, table)
 	var pick := table.select({"task": String(task.get("verb", "hold")), "threat": String(situation["threat"]),

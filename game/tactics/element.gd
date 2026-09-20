@@ -51,6 +51,10 @@ var sectors := {}
 ## Who stands in which slot of which shape ({unit: [formation, count, index]}): handed back to the next plan so
 ## the seating is stable from one update to the next (N2).
 var seats := {}
+## X1 (round 9): this element's TACTICAL pitch -- Vector2(across the heading, along it), the doctrine's number for the
+## terrain raised to what the members' own hulls fit in. It is what a slot's leash is one of (TankBrain.slot_leash)
+## and what the coherence probe reports beside its threshold.
+var pitch := Vector2(TacticsFormation.DEFAULT_SPACING, TacticsFormation.DEFAULT_SPACING)
 ## X3: seconds each member needs to reach its slot, and the speed fraction it drives at so the element arrives
 ## together (FormUp). Refreshed every update.
 var etas := {}
@@ -186,6 +190,9 @@ func state() -> Dictionary:
 			"task": task.duplicate(true), "formation": formation, "technique": technique, "drill": drill,
 			"reason": reason, "slots": slots.duplicate(), "sectors": sectors.duplicate(), "pace": paces.duplicate(),
 			"form_up_eta": form_up_eta(),
+			# X1: the pitch the slots were laid at, across the heading and along it. A squad of 14 m rigs is spaced
+			# by its hulls, not by its doctrine's number, and control's readout can say so.
+			"pitch": [pitch.x, pitch.y],
 			# The element's intended facing and where its formation stands (round 6): the geometry control's facing
 			# indicator and preview draw, rather than an illustration of it.
 			"heading": [heading.x, heading.z], "anchor": [anchor.x, anchor.z] if anchor is Vector3 else null,
@@ -226,6 +233,8 @@ func form_up_eta() -> float:
 
 ## N2 for TacticsFormation.slots(element, ...): this element as formation data (members where they were last update).
 func formation_group() -> Dictionary:
+	# `spacing` is the DOCTRINE's tactical number; TacticsFormation.place floors it by the members' hulls (X1), so a
+	# caller that re-lays this shape gets the same slots the element issued.
 	return {"formation": formation, "leader": leader, "policy": "exposure", "spacing": _doctrine().spacing("open"),
 			"members": _last_members.duplicate(), "previous": _seating_now()}
 
@@ -352,6 +361,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	slots = plan["slots"]
 	sectors = plan["sectors"]
 	seats = plan["seats"]
+	pitch = plan.get("pitch", pitch)
 	flow_joined = bool(plan.get("flow_joined", false))
 	route = plan["route"]
 	route_index = int(plan["route_index"])

@@ -18,6 +18,10 @@ extends RefCounted
 ##       place(members, formation, anchor, heading, spacing, opts) -> the same, from plain member data
 ##       seat(members, offsets, ...) -> {unit: slot index}     who stands where (see seat() for the rule)
 ##   offsets(formation, count, spacing) -> Array[Vector2]   raw slots, leader at the origin (any size)
+##   X1  pitch(members, spacing) -> Vector2(across, along)  the spacing the slots are really laid at: the doctrine's
+##                                                          number, floored by the members' own hulls, per axis
+##       offsets_at(formation, count, pitch) -> the shape at that per-axis pitch
+##       closest_boxes(members, formation, spacing) -> clear ground between the two closest hulls
 ##   centered(offsets) -> Array[Vector2]                    the same shape around its own middle (movement anchor)
 ##   auto(count, verb, requested, all_fast) -> String       the shape a group uses when nobody named one
 ##   sectors(formation, count) -> Array[float]              each slot's sector of fire, degrees from the heading
@@ -55,6 +59,89 @@ const SWARM_SPREAD := 1.9
 const SWARM_STAGGER := 0.8
 ## The ring (encircle): how far out the pack orbits a target, as a multiple of spacing.
 const RING_RADIUS := 2.4
+
+# ---- The hull floor under the doctrine's spacing (round 9, X1) ------------------------------------------
+#
+# A doctrine's spacing (open 14 / lanes 11 / dense 8 m) is a TACTICAL number: how dispersed the element wants to
+# be. It says nothing about how big its vehicles are, so a 14 m War Rig at 8 m "dense" spacing stands inside the
+# rig in front of it, and the scale stream's resize (CP2) puts the whole mid-roster in the same position. The floor
+# below sits UNDER the doctrine number -- it never reduces it -- and it is ANISOTROPIC, because side by side a
+# vehicle needs its WIDTH clear and nose to tail its LENGTH: a column of rigs needs length between slots and a line
+# of rigs needs width. That is the same rule `ArmyLayout._shape_of` applies at deploy, hoisted to where slots are
+# laid so every formation in the game gets it (ArmyLayout now calls it rather than keeping its own copy).
+
+## Clear ground between two hulls standing in neighbouring slots (meters).
+const HULL_CLEAR_M := 2.0
+## A member whose unit id is not in the catalogue (a test's bare name) contributes no hull.
+const NO_HULL := Vector2.ZERO
+
+
+## The biggest hull among `members` ({"unit"?: id}), as Vector2(width, length). Vector2.ZERO when no member names a
+## unit the catalogue knows, so a caller with bare names gets today's behaviour unchanged.
+## `hull_size` is [width, height, length]; min/max rather than [0]/[2] so a box authored the other way round still
+## floors the right axis (the same defensive read `ArmyLayout` has always used).
+static func hull_extent(members: Array) -> Vector2:
+	var widest := 0.0
+	var longest := 0.0
+	for member: Dictionary in members:
+		var unit := String(member.get("unit", ""))
+		if not Units.exists(unit):
+			continue
+		var hull: Array = Units.stat(unit, "hull_size", [0.0, 0.0, 0.0])
+		if hull.size() < 3:
+			continue
+		widest = maxf(widest, minf(float(hull[0]), float(hull[2])))
+		longest = maxf(longest, maxf(float(hull[0]), float(hull[2])))
+	return NO_HULL if longest <= 0.0 else Vector2(widest, longest)
+
+
+## The smallest slot pitch `members` physically fit in, as Vector2(across the heading, along it): the widest hull's
+## width and the longest hull's length, each plus HULL_CLEAR_M. Vector2.ZERO for members with no known hull.
+static func hull_floor(members: Array) -> Vector2:
+	var extent := hull_extent(members)
+	return NO_HULL if extent == NO_HULL else extent + Vector2(HULL_CLEAR_M, HULL_CLEAR_M)
+
+
+## The pitch a formation of `members` is actually laid out at: the doctrine's tactical `spacing`, raised per axis to
+## the hull floor where that spacing would put hulls inside each other. Vector2(across, along).
+static func pitch(members: Array, spacing := DEFAULT_SPACING) -> Vector2:
+	var s := maxf(spacing, 1.0)
+	var floor_v := hull_floor(members)
+	return Vector2(maxf(s, floor_v.x), maxf(s, floor_v.y))
+
+
+## `group_offsets()` with a per-axis pitch: the shape at the ALONG pitch with the across axis scaled by the ratio.
+## Exact, because every shape here is homogeneous of degree 1 in its spacing (`ArmyLayout` has always relied on
+## it), and with an isotropic pitch it IS group_offsets(), on the same code path, bit for bit -- which is why a
+## formation whose hull floor does not bind is laid out exactly as before.
+## This is the degenerate DIAGONAL 2x2 transform that A8 will generalise to a continuous affine one.
+static func offsets_at(formation: String, count: int, pitch_v: Vector2) -> Array[Vector2]:
+	var raw := group_offsets(formation, count, pitch_v.y)
+	if pitch_v.y <= 0.0 or is_equal_approx(pitch_v.x, pitch_v.y):
+		return raw
+	var ratio := pitch_v.x / pitch_v.y
+	var result: Array[Vector2] = []
+	for slot in raw:
+		result.append(Vector2(slot.x * ratio, slot.y))
+	return result
+
+
+## Clear ground between the two closest HULL BOXES of a formation of `members` (meters; negative = overlapping).
+## Every slot holds the biggest hull in the squad, so the answer is the conservative bound and does not depend on
+## who is seated where. Boxes are axis-aligned with the heading, so a pair is clear when EITHER axis separates it --
+## side by side needs width, nose to tail needs length -- and the pair's clearance is that separating axis's gap.
+## INF for a single vehicle or members with no known hull (nothing to keep clear of).
+static func closest_boxes(members: Array, formation: String, spacing := DEFAULT_SPACING) -> float:
+	var hull := hull_extent(members)
+	if hull == NO_HULL or members.size() < 2:
+		return INF
+	var slots := offsets_at(formation, members.size(), pitch(members, spacing))
+	var closest := INF
+	for i in slots.size():
+		for j in range(i + 1, slots.size()):
+			var apart: Vector2 = (slots[i] - slots[j]).abs()
+			closest = minf(closest, maxf(apart.x - hull.x, apart.y - hull.y))
+	return closest
 
 
 ## Slots for `count` units in `formation`, leader first, at the origin.
@@ -190,14 +277,16 @@ static func coverage(formation: String, count: int) -> float:
 	return watched.size() / 360.0
 
 
-## Width of the shape across the direction of travel (meters).
+## Width of the shape across the direction of travel (meters). Through group_offsets, so `rows`, `block` and
+## `single` answer for the shape they actually lay out rather than reading 0 (round 9: `offsets()` has no case for
+## them, so `frontage("block", ...)` was 0 for every count and every spacing).
 static func frontage(formation: String, count: int, spacing: float = DEFAULT_SPACING) -> float:
-	return _extent(offsets(formation, count, spacing), true)
+	return _extent(group_offsets(formation, count, spacing), true)
 
 
 ## Length of the shape along the direction of travel (meters).
 static func depth(formation: String, count: int, spacing: float = DEFAULT_SPACING) -> float:
-	return _extent(offsets(formation, count, spacing), false)
+	return _extent(group_offsets(formation, count, spacing), false)
 
 
 ## The closest two slots in the shape (meters): how much one splash or one burst can reach at once.
@@ -533,7 +622,8 @@ static func _hungarian(cost: Array) -> PackedInt32Array:
 ##   {"members": [{"name", "position", "unit"?, "role"?}], "formation", "spacing"?, "leader"?, "previous"?,
 ##    "policy"?, "halt"?}
 ## `count` is how many slots the shape has (default: one per member; more leaves places free for stragglers).
-## Returns one entry per member, in slot order: {"unit", "to", "facing", "role", "index", "offset", "sector"}.
+## Returns one entry per member, in slot order: {"unit", "to", "facing", "role", "index", "offset", "sector",
+## "pitch"} -- "pitch" being the per-axis spacing X1 resolved the slots to (Vector2(across, along)).
 ## Recompute it as the anchor moves, passing the last seating as "previous": the seating is stable.
 static func slots(element: Variant, anchor: Vector3, heading: Vector3, count := -1) -> Array[Dictionary]:
 	var group: Dictionary = element.call("formation_group") if element is Object else element
@@ -553,11 +643,14 @@ static func place(members: Array, formation: String, anchor: Vector3, heading: V
 	if members.is_empty():
 		return result
 	var count := maxi(int(opts.get("count", -1)), members.size())
-	var raw := group_offsets(formation, count, spacing)
+	# X1: the doctrine's spacing, raised per axis to what these hulls physically fit in.
+	var pitch_v := pitch(members, spacing)
+	var raw := offsets_at(formation, count, pitch_v)
 	var shape: Array[Vector2] = centered(raw) if bool(opts.get("centered", true)) else raw
 	var sector_list := sectors(formation if NAMES.has(formation) else "line", count)
 	var seat_opts := opts.duplicate()
-	seat_opts["spacing"] = spacing
+	# The hysteresis margin is a fraction of the biggest step between neighbouring slots, which is the larger axis.
+	seat_opts["spacing"] = maxf(pitch_v.x, pitch_v.y)
 	var seats := seat(members, shape, anchor, heading, seat_opts)
 	var forward := flat(heading)
 	var by_index := {}
@@ -572,7 +665,7 @@ static func place(members: Array, formation: String, anchor: Vector3, heading: V
 		var unit := String(member.get("unit", ""))
 		result.append({"unit": String(member["name"]), "to": to_world(anchor, forward, shape[index]),
 				"facing": facing, "role": String(member.get("role", Units.role_of(unit) if unit != "" else "")),
-				"index": index, "offset": shape[index], "sector": sector})
+				"index": index, "offset": shape[index], "sector": sector, "pitch": pitch_v})
 	return result
 
 
