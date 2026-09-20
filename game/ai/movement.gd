@@ -22,7 +22,26 @@ extends RefCounted
 ## controller for the order, the tank and the tick; it never decides where to go.
 
 ## X7: re-plan a route at least this often even when nothing changed (a safety net: the navmesh is static).
+## **Round 9, A1 replaces this with a state-error tube** — `--nav-off=a1` restores it. See `_tube_for_plan`.
 const REPATH_SECONDS := 4.0
+## A1 (catalogue row A1, Tabuada 2007): the drift budget a plan is good for. Self-triggered control stores, at plan
+## time, how far the state may drift before the plan stops being near-optimal — and for THIS plan, on THIS navmesh,
+## that radius has an exact answer rather than a tuned one.
+##
+## **The navmesh is static and the route is optimal, so by Bellman's principle the route is still optimal from every
+## point ON it.** Nothing about driving along a valid route degrades it. The only state errors that can invalidate it
+## are leaving it, the goal moving, or being stuck — and all three are already EVENTS with their own tests
+## (`OFF_PATH_REPATH`, the goal-moved check, `stalled`). **So the tube radius IS the off-path corridor**, and the
+## fixed `REPATH_SECONDS` cadence on top of it was re-asking a question whose answer could not have changed.
+##
+## Two wrong versions were built and measured first, and both failed the same way — **a radius derived from the
+## route's shape is a cadence wearing a radius**:
+##   1. *distance to the second corner ahead, capped at 40 m*: a tank covers ~36 m in the 4 s cadence, so the cap
+##      bound before the tube ever held. `a1_tube_skips` 0, re-plans 3 of 3.
+##   2. *the same, uncapped*: navmesh routes are funnel-smoothed polylines with **19 points** over 100 m, so "two
+##      corners ahead" is 28.7 m and the hull drifts past it in 3.2 s — it fired EARLIER than the cadence it was
+##      replacing. `a1_tube_skips` 0 again. Measured, not reasoned: see the probe numbers in the brief.
+const TUBE_RADIUS_IS := "the off-path corridor (OFF_PATH_REPATH)"
 ## ...and at once when the hull is this far off its route (flat metres).
 const OFF_PATH_REPATH := 5.0
 ## X7: steer at a point this far along the route beyond the hull (metres); wheels at least this many turning radii.
@@ -135,7 +154,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a7", "a11", "backup", "carrot", "chord", "commit", "grace", "guard", "holdband",
+const OFF_NAMES: Array[String] = ["a1", "a7", "a11", "backup", "carrot", "chord", "commit", "grace", "guard", "holdband",
 		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
 
 
@@ -187,6 +206,31 @@ const YIELD_MESH_SLACK := 0.5
 const YIELD_BACK_UP: Array[float] = [6.0, 10.0]
 const YIELD_SPOTS: Array[Vector2] = [Vector2(0, 5), Vector2(3, 6), Vector2(-3, 6), Vector2(0, 8), Vector2(5, 9),
 		Vector2(0, 11), Vector2(10, 0), Vector2(16, 0), Vector2(24, 0)]
+
+## A1's arm (round 9). `a1_cadence_due` is what `REPATH_SECONDS` alone WOULD have fired on this same run, so the
+## falsifier — *intra-decision re-plan rate down 60%* — is read from one run rather than from two runs that were
+## different drives. `a1_tube_skips` counts the ticks where the cadence was due and the tube said the plan was still
+## good; it is 0 in the control arm by construction, which is what makes the two arms distinguishable (lesson 147).
+static var a1_replans := 0
+static var a1_cadence_due := 0
+static var a1_tube_skips := 0
+
+
+## A1 is OPT-IN (`--nav-off=a1` turns it ON), on the same footing as A7 and A11: round 9's new rows land behind their
+## switch until their behaviour scenarios pass, and the switch is then the A/B arm rather than a leftover.
+static func a1_on() -> bool:
+	return switched_off("a1")
+
+
+static func route_arms() -> Dictionary:
+	return {"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips}
+
+
+static func reset_route_arms() -> void:
+	a1_replans = 0
+	a1_cadence_due = 0
+	a1_tube_skips = 0
+
 
 ## Measurement only: give-ways begun, asks refused for lack of room, and units that gave way themselves.
 static var yields_started := 0
@@ -1190,7 +1234,28 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	_repath_left -= delta
 	var off_path := _path.size() >= 2 and _off_path(here) > OFF_PATH_REPATH
 	var stalled := stalled_ticks > 0 and stalled_ticks % int(BLOCKED_SECONDS * SimClock.TICK_RATE) == 0
-	if _repath_left <= 0.0 or _flat_distance(goal, _path_goal) > 1.0 or off_path or stalled:
+	# A1: the fixed cadence becomes a STATE-ERROR TUBE. The clock still ticks, but only so the arm counters can say
+	# what the cadence WOULD have done on this very run — the alternative is comparing two runs and hoping they were
+	# the same fight. Everything else here is an EVENT and is never gated by the tube: a goal that moved, a hull off
+	# its route, a stall. Contact arrival reaches this as a moved goal, which is why latency is preserved by
+	# construction rather than by a constant, and why the latency test was written before the mechanism.
+	var cadence_due := _repath_left <= 0.0
+	if cadence_due:
+		a1_cadence_due += 1
+		# Re-arm the clock whether or not this becomes a re-plan, so `a1_cadence_due` counts what the CADENCE would
+		# have fired on this run. Without this the clock sits below zero while the tube holds and the counter ticks
+		# once per tick — 120 "cadence firings" in 8 seconds, which is the instrument lying in the treatment's favour.
+		_repath_left = 1.0 if _off.has("repath") else REPATH_SECONDS
+	var drifted := cadence_due
+	if a1_on():
+		# Inside the tube = still on the route it was planned on. `off_path` below is that test, and it is an event,
+		# so the tube's only job here is to stop the CLOCK forcing a re-plan that cannot change the answer.
+		drifted = _path.size() < 2
+		if cadence_due and not drifted:
+			a1_tube_skips += 1
+	var event := _flat_distance(goal, _path_goal) > 1.0 or off_path or stalled
+	if drifted or event:
+		a1_replans += 1
 		_repath_left = 1.0 if _off.has("repath") else REPATH_SECONDS
 		_path_goal = goal
 		# Round 7: reachability is "the route ENDS at the goal", never "a route came back" (lesson 76). NavigationServer

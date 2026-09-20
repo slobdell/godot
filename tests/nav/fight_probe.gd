@@ -159,13 +159,14 @@ func _run() -> void:
 	# `CombatMotion.a7_on()`, not `not switched_off("a7")`. The first version of this line did the latter, and the
 	# moment A7's switch was inverted it printed `a7=false` on a run with `--nav-off=a7` set: an arm header that
 	# confidently reports the opposite treatment, which is precisely how round 7 compared two byte-identical arms.
-	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s a7=%s a11=%s avoidance=%s station=%s off=%s" % [
-			CombatMotion.commit_on(), CombatMotion.hold_band_on(), CombatMotion.fixed_style,
+	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s a1=%s a7=%s a11=%s avoidance=%s station=%s off=%s" % [
+			CombatMotion.commit_on(), CombatMotion.hold_band_on(), CombatMotion.fixed_style, Movement.a1_on(),
 			CombatMotion.a7_on(), CombatMotion.a11_on(), Movement.avoidance_on, Movement.station_on, Movement._off])
 	# Round 9: the arm counters start at zero for THIS run, so a number in the report is this run's (statics outlive a
 	# single probe inside one process).
 	CombatMotion.reset_arms()
 	Movement.reset_gates()
+	Movement.reset_route_arms()
 	print("NAV_FIGHT_CONTROL arena %s, green %d, rust %d, %d pairs start on top of each other" % [
 			Arena.active.get("name", "?"), green.size(), rust, stacked])
 	for frame in SimClock.TICK_RATE:
@@ -520,7 +521,7 @@ func _report(elapsed: float) -> void:
 			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
 			"inplace_detail": inplace_detail, "gear_detail": gear_detail, "travelled": _travel_report(),
 			"gates": Movement.gate_report(), "facings_issued": facings_issued, "holds_issued": holds_issued,
-			"arms": CombatMotion.arm_report(),
+			"arms": CombatMotion.arm_report(), "route_arms": Movement.route_arms(),
 			"inplace_per_unit_minute": _inplace_rates(),
 			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")],
 			"armies": [_flag("green-army", "cpu"), _flag("rust-army", "cpu")], "fielded": fielded, "busy_every_s": busy_every, "busy_orders": busy_orders}

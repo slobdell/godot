@@ -184,6 +184,41 @@ including dodges.** A held unit may dodge *within* its leash and never leaves it
 today (X1: manoeuvre inside your slot's cell, be pulled back rather than frozen). squad gets that scenario's
 before/after with the hash.
 
+#### A1: the state-error tube, and why its radius is not a number (2026-09-20)
+
+**`--nav-off=a1` turns A1 ON.** It replaces the fixed `REPATH_SECONDS` 4.0 cadence in `Movement._next_waypoint`.
+The goal-moved, off-path and stalled triggers are **events** and are untouched: a plan is abandoned the instant
+something invalidates it, never on a clock.
+
+**The radius has an exact answer rather than a tuned one, and finding that took two wrong versions.** Tabuada's
+self-triggered control stores, at plan time, how far the state may drift before the plan stops being near-optimal.
+For *this* plan on *this* navmesh:
+
+> The navmesh is **static** and the route is **optimal**, so by Bellman's principle the route is still optimal from
+> every point **on** it. Nothing about driving along a valid route degrades it. The only state errors that can
+> invalidate it are leaving the route, the goal moving, or being stuck — **and all three are already events.**
+> **So the tube radius IS the off-path corridor**, and `REPATH_SECONDS` on top of it was re-asking a question whose
+> answer could not have changed.
+
+**The two wrong versions, both measured before being discarded** — and they failed the same way, which is the
+transferable part: *a radius derived from the route's shape is a cadence wearing a radius.*
+
+| version | why it failed |
+|---|---|
+| distance to the second corner ahead, capped at 40 m | a tank covers ~36 m in the 4 s cadence, so the **cap** bound first. `a1_tube_skips` **0**, re-plans **3 of 3** |
+| the same, uncapped | navmesh routes are funnel-smoothed polylines — **19 points over 100 m** — so "two corners ahead" is **28.7 m** and the hull drifts past it in **3.2 s**. It fired **earlier than the cadence it was replacing**. `a1_tube_skips` **0** again |
+
+The probe that settled it is worth keeping in mind before designing any geometric budget on a route: at 9 m/s the
+hull's drift from its plan point passed 28.7 m every 3.2 s, all the way down a clear straight corridor.
+
+**Two instrument bugs caught on the way, both of which would have flattered the treatment:**
+1. **The cadence clock did not re-arm while the tube held**, so `_repath_left` sat below zero and `a1_cadence_due`
+   ticked **once per tick** — *120 "cadence firings" in 8 seconds*. It now re-arms whether or not a re-plan follows,
+   so the counter says what the cadence would really have fired on that run.
+2. **The test helper had the switch inverted** (`a1` is opt-in, so `--nav-off=a1` turns it *on*) and the arms came
+   back the wrong way round. The counters caught it — which is the entire reason they exist, and a reminder that a
+   test helper lies about the arm exactly as readily as a probe header does.
+
 #### A11: the dynamic window, and the two things building it taught us (2026-09-20)
 
 **`--nav-off=a11` turns A11 ON, inside A7's chooser (itself opt-in).** `RING` and the `min_cos` chord test survive
