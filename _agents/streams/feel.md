@@ -364,12 +364,32 @@ the first pass over it, which is the right place for it.
 
 **Two items left, both waiting on someone else's clock:**
 
-1. **X4 — the every-unit box-fill test — the moment CP2 lands** (the orchestrator pings). The seed is
-   `test_the_semis_fill_their_boxes` on the local branch `feel-rig-check` at `26e1f26a`, generalised to every unit
-   with art: drawn box against `hull_size` within tolerance, mutation-checked against a deliberately wrong box.
-   **scale derives the numbers; I check the art is not distorted** — `_fit_to_hull` is uniform by length, so a mesh
-   that cannot fill its new box is a finding handed back to scale, never something to stretch away. Then look at
-   `make vehicle-gallery`, `make roster-lineup` and one real match at his pose. **Run it on builder0.**
+1. **X4 — the every-unit box-fill test — the moment CP2 lands.** If CP2 misses its window tonight this is the
+   first thing after the lead's morning merge, so here it is as commands rather than a description.
+
+   **The seed is alive and verified reachable (checked 06:55):** branch **`feel-rig-check`**, commit
+   **`26e1f26a`**, one file, `tests/test_theme_unit_scale.gd`, 14 lines. Read it with
+   `git show 26e1f26a -- tests/`. It asserts, for `gang_tank` and `gang_support` only, that the **drawn** mesh
+   matches `hull_size` on every axis within 5%.
+
+   ```bash
+   cd ~/projects/godot-feel
+   git merge main                      # LOCAL main, never origin/main; no remote run of mine in flight
+   git show 26e1f26a -- tests/         # the seed, to generalise from
+   # generalise: every unit with art, not the two semis; keep the 5% and the per-axis message
+   REMOTE_SLOTS=6 make remote T="test FILTER=unit_scale"
+   REMOTE_SLOTS=6 make remote T=check  # the merge candidate, and 637ad4de rides it
+   ```
+
+   **The division of labour, and it is the whole point of the item:** scale **derives** the numbers
+   (`hull_size` = `SizeLook.box_at_length(unit, reference × K)`); I check **the art is not distorted by them**.
+   `_fit_to_hull` scales uniformly by length, so width and height come out as the mesh's own proportions — **a unit
+   whose mesh cannot fill its new box is a finding handed back to scale, never something to stretch away.** Expect
+   it to pass by construction after CP2, because `box_at_length` makes the box the mesh's proportions; **a failure
+   is therefore interesting**, and it will be one of the units that kept its box for want of an approved mesh.
+
+   Then look, do not just count: `make vehicle-gallery`, `make roster-lineup` (scale's lineup view in my
+   `size_look.gd`), and one real match at his pose. **All of it on builder0.**
 2. **The M1 hinge cost, when builder0 is quiet.** `make remote T=perf-trailer-ab` with more `PERF_CYCLES`. The
    number from the loaded box (13.36 ms) is **noise and must not be quoted**: the same capture reported
    `layer_cost_gpu_ms −0.58` — no measurable GPU cost, which is what 6 extra draw calls should look like — against
