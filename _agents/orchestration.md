@@ -2564,6 +2564,10 @@ The kickoff prompt is one line; this section is the rest.
     exactly those four (two of them in control's file). **A test whose input cannot move the thing it measures reports
     zero and looks like proof. A "0 of N" result is evidence only once the instrument has been shown to produce a
     non-zero at all** — nav's non-vacuity guard for the tube, applied to a measurement instead of an assertion.
+    **Fourth coat (squad, A10 stood down):** the rigid perturbation was NOT what hid the four failures — independent
+    jitter still reports 0 of 512. What hid them: *every test exercised tiers only in cases where the tie-break could
+    not matter.* The instrument was on and could move; it never visited the case. And the failure itself was a
+    load-bearing coincidence: "heavies in front" had never been a cost, only the Hungarian's tie order (lesson 50).
 165. **A lesson describing a defect that has since been fixed is worse than no lesson — it sends a stream to rebuild
     something that works.** Round 9: lesson 65 (the two smokes comparing against the baseline file) had been fixed in
     round 6, and feel's brief budgeted a build item on the strength of it; lesson 137 (the baseline only fields tanks)

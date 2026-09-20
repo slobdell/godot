@@ -417,6 +417,17 @@ greedy completion and produced 6 spurious re-assignments (an approximation artef
 spacings (7 m) was outbid by a CPU slot drift measured at 9.3 m — **a hysteresis term has to exceed the noise it exists
 to resist**; now one full spacing (14 m). Lesson 153 honoured: nothing in the utility is clamped. The first crossings
 measurement (8 before, 47 after) measured a configuration the game cannot produce and is struck, not revised.
+**STOOD DOWN before merge (squad `02762b8d`, 04:40): the tip went red on four tests, and the cause was not the solver.**
+Both solvers return optimal assignments; "heavies in front, artillery behind" had **never been a cost term in this
+codebase** — it was an artefact of the Hungarian's tie order (the tier cost is identically zero for the toughest
+vehicle), and it survived every round until the auction broke ties differently. Lesson 50's load-bearing coincidence,
+in the seating. A correct cost exists (`c0f22597`: a normalised tier mismatch whose coefficient never vanishes — the
+"symmetric-looking" form moved the blind spot to the median tier — plus a deadband for station drift bracketed by two
+measured distances, 1.34 and 3.8 spacings), one test short: a swapped seating arrives as *input* through
+`ElementPlan`'s `previous_seats` bookkeeping, which the deleted hysteresis patches had been masking. **A10's first job
+next round is that bookkeeping, before the cost.** The branch ships X1, X5, A8-off and A9 without A10. And the
+fourth coat of lesson 164: the perturbation test was not what hid this — *every test exercised tiers only where the
+tie-break could not matter*: the instrument never visited the case.
 **Falsifier:** zero path-crossing slot assignments on a formation transition; spurious re-assignments under a small
 perturbation reach **0%**.
 
