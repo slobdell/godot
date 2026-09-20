@@ -2639,3 +2639,10 @@ The kickoff prompt is one line; this section is the rest.
     present column, its own commit says). Read a nullable field with `has()` first; a publisher that sends null is
     only honest if every reader can see the key is there. Sibling of lesson 157 (an empty list must not read as a
     pass) and of lesson 164 (an instrument that cannot see the case reports zero).
+174. **A rule you are enforcing on another stream is worth running against your own files first.** Round 9, feel: three
+    hours after ruling that show's parapet must never be red (a signal colour) or cool white (not in the palette), feel
+    found `CityBlock.neon_color()` honouring only `#`-colours, so the Terminus's eight blocks had worn **red and a
+    near-white** from a seeded random fallback for a whole round — the layout asked for cyan and magenta and every
+    name was silently ignored. It survived because a *seeded* random pick in answer to a deliberate name looks exactly
+    like a deliberate choice. Unresolvable names are now loud (`637ad4de`); the hard rejection belongs in
+    `Arena.validate()`. Sibling of lesson 157: a fallback that produces a plausible answer is worse than one that fails.
