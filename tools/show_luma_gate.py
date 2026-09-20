@@ -27,9 +27,12 @@ import json
 import os
 import sys
 
-# Frame-to-frame render noise in the measured ratio is about +-1.5%; 3% is comfortably outside it and still
-# catches anything a person would see.
-TOLERANCE_PCT = 3.0
+# The floor the gate can never go below, however quiet the null looks.
+FLOOR_PCT = 3.0
+# The bar is this many times the MEASURED null spread. The null is the same frame shot twice with nothing changed
+# at all, so it is the honest answer to "how big must a difference be before it means something" -- and measuring
+# it beats the 1.5% I guessed first, which the data refuted within one run.
+NULL_MULTIPLE = 2.0
 
 out_dir = sys.argv[1] if len(sys.argv) > 1 else "build/show"
 rows = []
@@ -43,6 +46,22 @@ if not rows:
     sys.exit(1)
 
 
+# Calibrate against the null before judging anything.
+nulls = []
+for r in rows:
+    if r.get("luma_band_null"):
+        a = r["luma_ring_before"] / max(r["luma_band_before"], 1e-6)
+        b = r["luma_ring_null"] / max(r["luma_band_null"], 1e-6)
+        nulls.append(abs(b - a) / a * 100.0)
+nulls.sort()
+null_p95 = nulls[int(len(nulls) * 0.95)] if nulls else 0.0
+tolerance = max(FLOOR_PCT, NULL_MULTIPLE * null_p95)
+if nulls:
+    print("show-luma: null control -- the same frame shot twice with NOTHING changed differs by a median %.1f%%, "
+          "p95 %.1f%%, worst %.1f%% (%d pairs)."
+          % (nulls[len(nulls) // 2], null_p95, nulls[-1], len(nulls)))
+print("show-luma: bar = max(%.0f%%, %.0f x null p95) = %.1f%%\n" % (FLOOR_PCT, NULL_MULTIPLE, tolerance))
+
 failed, compared, before_loses = [], 0, 0
 print("%-38s %9s %9s   %s" % ("frame", "show off", "show on", "on vs off, same frozen frame"))
 for r in sorted(rows, key=lambda r: (r["arena"], r["pose"], r["label"])):
@@ -54,10 +73,10 @@ for r in sorted(rows, key=lambda r: (r["arena"], r["pose"], r["label"])):
     d = r["luma_ring"] / max(r["luma_band"], 1e-6)
     delta = (d - b) / b * 100.0
     key = (r["arena"], r["pose"], r["label"])
-    if delta < -TOLERANCE_PCT:
+    if delta < -tolerance:
         failed.append((key, delta))
     print("%-38s %9.3f %9.3f   %+6.1f%%%s"
-          % ("/".join(key), b, d, delta, "  <-- WORSE" if delta < -TOLERANCE_PCT else ""))
+          % ("/".join(key), b, d, delta, "  <-- WORSE" if delta < -tolerance else ""))
 
 print()
 print("show-luma: %d frames compared. The BEFORE arm -- no show at all -- already loses ring<band in %d of them,"
@@ -65,9 +84,9 @@ print("show-luma: %d frames compared. The BEFORE arm -- no show at all -- alread
 print("           which is why this gate is a delta and not an absolute: that is the venue, not the show.")
 if failed:
     print("show-luma: FAILED -- the show makes the fight harder to read in %d frames (worse than %.0f%%):"
-          % (len(failed), TOLERANCE_PCT))
+          % (len(failed), tolerance))
     for key, delta in failed:
         print("           %-38s %+6.1f%%" % ("/".join(key), delta))
     print("           Lower show_edge_energy, or the channel's ceiling in the arena's patch.")
     sys.exit(1)
-print("show-luma: ok -- no frame is more than %.0f%% worse than the branch point." % TOLERANCE_PCT)
+print("show-luma: ok -- no frame is more than %.1f%% worse with the show on than with it off." % tolerance)

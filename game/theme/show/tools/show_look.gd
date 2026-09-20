@@ -196,6 +196,8 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 	# else at all.
 	var before := Vector2.ZERO
 	var before_band := Vector2.ZERO
+	var null_ring := Vector2.ZERO
+	var null_band := Vector2.ZERO
 	if show != null and style != "":
 		show.driving = false
 		var was_paused := get_tree().paused
@@ -207,6 +209,16 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 		before_image.save_png(out_dir.path_join("before").path_join(file))
 		before = _luma(before_image, RING_WINDOW)
 		before_band = _luma(before_image, BAND_WINDOW)
+		# THE NULL: the same half again, changing NOTHING. Whatever this pair differs by is the floor the real
+		# comparison has to clear, and it is not zero even on a paused tree -- shader `TIME` keeps advancing, so
+		# the neon flicker's 12.5 Hz dropouts, the crowd and the ad screens are all somewhere else a frame later.
+		# Measuring it beats assuming it: a gate calibrated against a guessed noise floor fails on weather.
+		for _f in 3:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		var null_image := get_viewport().get_texture().get_image()
+		null_ring = _luma(null_image, RING_WINDOW)
+		null_band = _luma(null_image, BAND_WINDOW)
 		show.driving = true
 		show.apply(t)
 		get_tree().paused = was_paused
@@ -226,6 +238,7 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 		"luma_ring_max": snappedf(ring.y, 0.0001), "luma_band_max": snappedf(band.y, 0.0001),
 		"luma_ring_before": snappedf(before.x, 0.0001), "luma_band_before": snappedf(before_band.x, 0.0001),
 		"luma_ring_max_before": snappedf(before.y, 0.0001), "luma_band_max_before": snappedf(before_band.y, 0.0001),
+		"luma_ring_null": snappedf(null_ring.x, 0.0001), "luma_band_null": snappedf(null_band.x, 0.0001),
 		"ring_wins": ring.x >= band.x,
 	}))
 	return 1
