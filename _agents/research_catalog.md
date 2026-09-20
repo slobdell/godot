@@ -354,7 +354,8 @@ we have been treating it as a UI problem. **It is a motion planning problem**, a
 **Determinism:** dot-product weighting, closed form.
 **Falsifier:** time fraction with velocity opposing the corridor tangent under attack-move drops from **30–36%** to
 **< 10%**, *without* a fall in exchange ratio. If units look obedient and start dying, we bought the wrong thing.
-**Baseline measured by the judging instrument (nav `c025bc6b`, builder0, A12 `--order-verb attack_move --team 0`,
+**Baseline measured by the judging instrument (nav `c025bc6b` for yard and pit, `5369bd13` for terminus — one Status
+file apart, verified by diff, and metrics' `--pool` banner caught it; builder0, A12 `--order-verb attack_move --team 0`,
 `Arena.ROTATION`, FIGHT_SEED=3, 120 s each, pure default path):** off_corridor yard **0.304** (active fraction 0.631,
 28,472 active ticks), pit **0.321** (0.595, 25,764), terminus **0.331** (0.738, 41,818); **pooled 0.320**, weighted by
 active ticks over 96,054 (a mean of the three fractions gives 0.319 today and diverges the day one map dominates, so
