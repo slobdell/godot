@@ -233,32 +233,54 @@ lead's 4 s allowance is exceeded, that is a question for him, recorded here with
 
 ### Read this first if you are picking this up cold
 
-- **`6e0c9968` is committed on `stream/squad`: X1 + the leash change, deliberately small so it can be merged alone**
-  as an early checkpoint (the orchestrator's instruction) and cherry-picked by nav for measurement. Its
-  `make remote T=check` on builder0 was started from exactly that tree; **the hash is only green when the wrapper's
-  own `>> remote: make check exited <N>` line says so**, and until then it is a candidate, not a result. nav and the
-  orchestrator are both waiting on that hash.
-- **The working tree on top of it holds X5, X2 (A8) and X3 (A9), plus `slots_asked` and the `motion` line for nav,
-  uncommitted**, all green on narrow local runs (table below). It needs its own `make remote T=check` before it is
-  committed and handed over.
-- **X4 (A10) is not started.** Its before-measurements are taken (below). Its implementation and its test are written
-  out in this session's scratchpad (`apply_x4.py` and `x4/test_tactics_seating.gd`) — **a scratchpad does not
-  survive**, so if they are gone, the design is in this Status and in the catalogue row and it is a rewrite, not a
-  recovery. The test is deliberately NOT in the working tree: it asserts A10's falsifier and is **red before A10**, so
-  it travels in A10's own commit rather than turning the A8/A9 commit red.
-- **Order matters (Invariant 0c):** A8 lands with seating pinned, then A10, then A8's crossing count is re-run with
-  A10's solver. Do not merge them in one commit.
+**PAUSED 2026-09-20 ~03:05 on the orchestrator's instruction** (the lead's session limit is at 93% and resets at
+03:20; builder0 is off the network anyway). Waiting for its "RESUME" after 03:25. Nothing below needs rediscovering.
+
+- **The branch tip is `c0191beb`, ten commits, and every one of them is local-only green** except where a table below
+  names a builder0 result. `make check` has **not** been run on the tip: builder0 went down mid-round, and rule 4 says
+  a number without its machine is not a number. **Do not hand the tip over as green.**
+- **`ce4bd8ca` is the merge candidate the orchestrator is waiting for** — nothing of mine before it merges, because
+  `ce4bd8ca` is the commit that fixed the A8 suite that its own switch-off had silenced (lesson 164 on `main`). The
+  agreed handover is: **one `make remote T=check` on the tip, plus the five post-`sim-baseline` targets as their own
+  list** (`garage-smoke army-loop-smoke announcer-check audio-check match-pytest`, because `sim-baseline` fails
+  deliberately and would mask everything after it), and the orchestrator merges at **both wrapper lines**.
+- **`sim-baseline` is EXPECTED RED** on this branch, twice over: X1's hull floor moves the hash
+  (`04414f5d6a6dfa7c` → `d4c049819a5833d3`, builder0-confirmed) and A10 changes seating. That is a baseline to
+  re-record, not a failure — the orchestrator owns the re-record (Invariant 2).
+- **Before any remote run, check builder0 for my own surviving `slot.sh` processes** and clear them by PID. Never by
+  pattern: I killed my own watchers three times tonight with `pkill -f` (trip-up 19 / lesson 79), which is how a
+  `make check` dies at exit 144 and looks like a test failure.
+- **Any commit that touches a scenario file carries an `ai-scenarios` count beside its hash.** `ai-scenarios` is NOT
+  in `check` (lesson 42/159), so a green `check` cannot see a scenario break — this is how `6e0c9968` shipped a
+  `StubElement` with no `pitch` and nav found it by cherry-picking, not me.
+- **A8 (`DEFORM_ENABLED`) and A1's brain half (`TUBE_ENABLED`) both ship OFF**, on evidence, and each suite switches
+  its own flag on for itself. A8 measured worse than off; the tube's flip is not yet gated (next step below).
+
+### The exact next step, in order, when RESUME arrives
+
+1. **Ask builder0 what it is holding** before trusting a sync (`ssh` + `grep -c` for a symbol the tip has and the
+   previous tree does not) and clear my own stale slots by PID. Hold the tree still while a check is in flight — I
+   spent a run tonight unable to name which tree it had measured.
+2. **`make remote T=check` on `c0191beb`**, then the five post-`sim-baseline` targets as their own list. Report **both
+   wrapper lines** plus `lint local: 535 files, 5 of the 8 known baselined lines`. That is the handover.
+3. **Then, and only then, the tube's A/B.** `squad-defile TUBE=on|off` **cannot** gate the flip: both arms read
+   `redecides=0 skips=0` because the maze run has no enemies and `_combat_move` is never reached (headroom checked,
+   `c0191beb`). It does show the tube is inert outside contact — arrived 2, gaps 1, inversions 39, identical both
+   arms. **The flip needs a probe that fights:** `tests/tactics/decision_probe.gd` (`make squad-decisions`, yard,
+   seed 3) already resolves brains at line 119, so it wants the same two lines the defile probe got — a `--tube` flag
+   and `redecide_counts()` summed over the same population in both arms. **Until that number exists, `TUBE_ENABLED`
+   stays false.** Not nav's split: that measures two different populations, which nav and I established separately.
 
 ### Plan (ordered, smallest foundation first)
 
 | # | Item | Why here | State |
 |---|---|---|---|
-| 1 | **X1** slot spacing from the members' hulls | CP2 needs it and everything below lays slots through it | in progress |
-| 2 | **X5** the facing guard (a test, no build) | small, independent, and X1 changes the assembly spacing it predicts about | queued |
-| 3 | **X2** A8 affine deformable formations | the transform generalises X1's diagonal pitch; needs X1's per-axis pitch to exist first | queued |
-| 4 | **X3** A9 co-arrival + explicit two-phase bounding | independent of X2, but its before-measurement wants a stable formation geometry | queued |
-| 5 | **X4** A10 auction seating + delete both hysteresis patches | 0c: A8 lands with seating pinned, then A10, then re-run A8's crossing count | queued |
-| 6 | **X6** (stretch) per-faction PID gains, measured | needs CP1's metrics and a merged tree | queued |
+| 1 | **X1** slot spacing from the members' hulls | CP2 needs it and everything below lays slots through it | built, builder0-green at `6e0c9968` |
+| 2 | **X5** the facing guard (a test, no build) | small, independent, and X1 changes the assembly spacing it predicts about | built |
+| 3 | **X2** A8 affine deformable formations | the transform generalises X1's diagonal pitch; needs X1's per-axis pitch to exist first | built, **ships off** |
+| 4 | **X3** A9 co-arrival + explicit two-phase bounding | independent of X2, but its before-measurement wants a stable formation geometry | built |
+| 5 | **X4** A10 auction seating + delete both hysteresis patches | 0c: A8 lands with seating pinned, then A10, then re-run A8's crossing count | built, falsifier met |
+| 6 | **X6** (stretch) per-faction PID gains, measured | needs CP1's metrics and a merged tree | blocked: needs CP1 + `ControlGains.forced` |
 
 **Decisions taken where the brief left a choice** (one line each):
 
