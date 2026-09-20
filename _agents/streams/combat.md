@@ -266,6 +266,44 @@ _Last updated 2026-09-20 03:2x (worker, `stream/combat` at `0ba8d2c9`). **PAUSED
   `…/scratchpad/check-local.log`. It had not finished. **Do not read it as a verdict until it prints its own
   totals.**
 
+### ⚠ A DEFECT IN THIS STREAM'S FILE, CONFIRMED AND SEQUENCED: hulls rotate through scenery
+
+Reported by nav (`7850fbef`, `tests/test_nav_face_recovery.gd`), **verified here in the code rather than taken on
+trust**: `game/tank/tank.gd:425` assigns `global_basis = Basis.looking_at(forward, Vector3.UP)` unconditionally and
+`:431` `move_and_slide()` resolves **translation only**. Godot is never asked about the yaw. So a hull's translation
+is collision-resolved and its rotation is not.
+
+nav's measurement: a 14 m `gang_tank` in a 4.8 m corridor told to face across it — **10.42 m of path, 44.0° of yaw,
+net drift 4.42 m**. A 14 m hull through 44° sweeps ~12.1 m laterally while still 4.4 m off the corridor's centre.
+The basis went through the walls. Their positive control is in the same test (the corridor does wedge it).
+
+**Why it matters beyond tidiness:** this is the lead's round-8 complaint stated more exactly than round 8 could —
+*"the semi trucks are yawing in place (should be impossible, they're not a tracker vehicle)"*. A **partially** pinned
+wheeled hull yawing freely looks exactly like a tracked pivot. `:435-437` already collapses non-tracked `_speed` to
+`estimated_velocity.dot(forward)` after the slide, so a hull flat against a wall does stop; the failure is the hull
+that keeps winning small legal creeps and converting them into yaw the geometry cannot take.
+
+**⚠ CP2 makes it strictly worse across most of the roster.** The lateral sweep this ignores scales with
+**length × sin(yaw)**, and every hull except the rig grows 1.5–2×. The units it newly reaches — bus, garbage truck,
+assault gun — are the ones the lead asked to be resized *because he liked what the semi looked like*.
+
+**Deliberately NOT fixed in the same branch state as the dwell-timer retirement.** It is a second sim-moving change,
+and two sim-moving changes in one merge is how a round loses the ability to attribute anything. One moved baseline
+with a named cause, not two with a shrug.
+
+**The intended shape:** test the rotated hull at the current position with a shape query at the candidate transform
+(not `test_move` — a zero-motion `test_move` is not reliable for this) and refuse, or limit, the yaw that does not
+fit. Refusing outright is the one-line version and the first thing to measure; limiting to the largest fitting
+increment is better behaviour and more code. **Open architecture question put to nav:** whether the constraint
+belongs in the plant or in A7's level-0 feasibility mask. This stream's instinct is the plant — a hull that cannot
+physically rotate should not rotate whichever layer asked.
+
+**Acceptance is nav's, ready-made:** the third assertion of `tests/test_nav_face_recovery.gd` is written to go **red**
+when the basis is coupled to a collision test. nav will re-run its benefit measurement against the fix, and its
+`face`-recovery row (currently `face_checked 7, giveups 0` — a mechanism reached, working as written, and measuring
+nothing because the hull never stalls, it passes through the wall it is stalled against) becomes measurable for the
+first time.
+
 ### THE EXACT NEXT STEP, in order
 
 1. **Read `check-local.log`'s totals** (or re-run `make check` if it was killed). **`sim-baseline` is EXPECTED TO
@@ -298,6 +336,8 @@ _Last updated 2026-09-20 03:2x (worker, `stream/combat` at `0ba8d2c9`). **PAUSED
    already were"*.
 8. **X5 (stretch)**: the rig's unexplained `gangs vs law` 9/20 → 0/20 now has a better candidate than "bigger
    target" — the roster-wide muzzle drop is a *mechanism*.
+9. **The hull-rotation defect above**, immediately after the green hash is named — it is this stream's file, it is
+   the lead's own complaint, and CP2 amplifies it.
 
 ### Requests to other streams, outstanding
 
