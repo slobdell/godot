@@ -270,9 +270,10 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 
 | item | state |
 |---|---|
-| The hinge's frame cost (M1) | **Not reportable yet.** GPU cost indistinguishable from zero; the CPU number came off a machine running eight other jobs and is noise. Re-runs on a quiet box. |
+| The hinge's frame cost (M1) | **Not measured, and the quiet box did not fix it.** Two six-cycle runs on an *empty* builder0 both came back NOT USABLE. The cause is now sized: frame cost regresses on vehicle census at **0.677 ms per vehicle (r 0.921, r² 0.85)**, and the battle thins monotonically through the run (90 → 72), so census alone is worth +0.68…+3.38 ms per cycle against a total cost spread of 6.39 ms and a mean of +0.01 ms. **The confound is the size of the signal, and in one cycle larger than it** — and it is a drift, not noise, so more cycles will not average it away. Needs combat's census-freeze tune (damage off, no deaths, no respawns, default off); the bench will then *require* it and refuse to report when it is off. Do not quote a trailer number until then. |
 | The Terminus lighting | Diagnosed and handed to the stream that owns the map file |
 | Roof dressing on the Terminus | Your new camera shows roofs far more often; they are undressed. A frame first, then surface treatment |
+| The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
 
 
@@ -432,9 +433,15 @@ Godot processes and six resident checks when I checked.** A screenshot is slowed
 number is *destroyed* by it, and the load is exactly the signal you are trying to see past.
 
 ```bash
-# 1. M1: the hinge's frame cost. Self-judging now -- it prints the spread between the repeated `all` phases
-#    (the same condition measured seconds apart, i.e. the noise floor) and says USABLE or NOT USABLE.
-REMOTE_SLOTS=6 make remote T=perf-trailer-ab
+# 1. M1: the hinge's frame cost. Self-judging: per-cycle bracketed costs, warm-up cycle discarded, and a verdict
+#    in metrics' vocabulary -- NOT USABLE -- <what> above <bound> in N of M samples (peak X).
+#    DONE, twice, on an empty box, and it refuses its own number both times: the census confound (0.677 ms per
+#    vehicle) is the size of the signal. Do not re-run this until combat's census-freeze tune exists -- a third
+#    quiet run will spend a slot to print the same refusal. The tune is `--tune=match.no_damage=1` (combat,
+#    guarded at `Tank.take_hit`, default off, REFUSED LOUDLY if mistyped). When it reaches main, add it to this
+#    target's PERF_FLAGS and make the bench require it -- refuse to report when it is absent, rather than report
+#    with a caveat, because the caveat is the part that gets dropped when the number is quoted.
+REMOTE_SLOTS=6 make remote T="perf-trailer-ab PERF_CYCLES=6"
 
 # 2. The merge candidate, taken in the same window rather than adding a check to a busy box.
 REMOTE_SLOTS=6 make remote T=check
