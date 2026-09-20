@@ -427,6 +427,62 @@ orchestrator, with the hash) and again after CP2 — scale's `_apply_hull_size` 
 collider by 0.8 m in height, and that hull is the *target* in the engine-deck scenario, so its hit distribution moves
 for reasons that have nothing to do with A2.
 
+### THE FIVE-ARM TABLE (laptop, `a1209857`, `make switch-arms`, yard, seeds 1/3/7, `gang_ram` vs `law_line`, 120 s)
+
+Both War Rigs on the field (the probe refuses a run without them). Means over three seeds, sd in brackets.
+
+**Switches per unit-minute:**
+
+| class | **cost** (A2) | cost-nostance | flat (1.15 alone) | flat+dwell (`main`) | none |
+|---|---|---|---|---|---|
+| ifv | 17.0 [0.8] | 17.6 [0.6] | 10.5 [0.6] | 11.2 [0.2] | 23.2 [2.0] |
+| scout | 13.6 [1.9] | 13.9 [1.2] | 9.2 [2.0] | 9.7 [0.3] | 14.8 [0.7] |
+| support | 7.4 [0.1] | 9.1 [1.5] | 6.6 [0.7] | 5.9 [0.5] | 10.0 [0.5] |
+| suppressor | 15.1 [1.9] | 13.4 [1.5] | 8.4 [1.4] | 8.0 [1.3] | 16.1 [2.0] |
+| tank | 20.7 [1.2] | 20.4 [1.7] | 12.8 [0.8] | 12.7 [0.7] | 31.3 [0.6] |
+
+**Reversals within 4 s per unit-minute:**
+
+| class | cost | cost-nostance | flat | flat+dwell | none |
+|---|---|---|---|---|---|
+| ifv | 1.1 | 0.8 | 0.6 | 0.5 | 1.0 |
+| scout | 3.0 | 3.7 | 1.4 | 1.4 | 3.1 |
+| support | 1.3 | 3.0 | 1.0 | 0.8 | 2.9 |
+| suppressor | 2.4 | 1.4 | 0.4 | 0.6 | 1.7 |
+| tank | 1.3 | 1.0 | 0.4 | 0.5 | 0.9 |
+
+#### Four results, in order of how much they change what the round believes
+
+**1. DECIDED OVERNIGHT — the stance floor is REMOVED, because it bought nothing.** cost against cost-nostance:
+switches **−1% to +23%**, no consistent sign, inside the seed spread; reversals mixed in sign with an sd larger than
+the effect; option shares mixed and small. Lesson 25 — it had to earn its place by removal and did not. The
+consequence is recorded rather than discovered: `ENGAGE → SUPPRESS` on one target now costs **exactly zero** (same
+bearing, same lay), which is one of round 7's two measured thrash shapes. If it reappears, the fix is a discard
+charged only to options that fight from a **standstill** (reading `_act`: SUPPRESS halts, ENGAGE manoeuvres), never
+this floor again. Asserted as a deliberate property in `test_changing_stance_on_one_target_is_now_free`.
+
+**2. ⚠ MY STATED MECHANISM FOR THE DUEL REGRESSION WAS WRONG, AND MY OWN INSTRUMENT IS WHAT SAYS SO.** I claimed the
+floor suppressed `ENGAGE → FLANK`. **FLANK's share of time is 0.000–0.018 in every arm** — the duel's "flank seconds"
+are `_combat_move`'s circling *inside* ENGAGE, not the FLANK option at all. The floor was never that mechanism.
+**The real candidate is in the same table:** for `tank`, ENGAGE share is **0.319 (cost) against 0.523 (flat)**, with
+COVER_FIRE **0.231 against 0.094**. A2 moves tanks out of circling-while-engaging and into static hide/peek, and
+COVER_FIRE is where a duel's flanking goes to die. Open, with evidence, not guessed at.
+
+**3. THE DWELL TIMER DOES ESSENTIALLY NOTHING.** flat against flat+dwell: switches **−11% to +6%**, reversals ±0.2.
+All of `main`'s churn suppression is the flat bonus; the timer is inert on this measure. P3's *"a veto stores the
+pressure up"* was inferred in round 8 from a doubled switch-and-switch-back count; on switch rates in a real fight the
+timer is simply not doing the work anyone attributed to it. **Whatever else happens to A2, retiring the timer costs
+nothing.**
+
+**4. A2 IS A WEAKER CHURN SUPPRESSANT THAN THE TERM IT REPLACES.** cost against flat: **+47% to +79%** more switches.
+cost against none: **−7% to −34%** fewer. So the mechanism does something — about half what the flat bonus does — and
+the brief's −60% bar (set against the flat 1.15) is missed by a wide margin and in the wrong direction.
+
+**No verdict.** Whether A2's extra switches are genuine re-targeting or the wheeled creep is the question, and it is
+metrics' A12 cusp split that answers it, not this table. Switch-event files with the predicted `angle_deg` /
+`slew_s` / `brake_s` / `lay_s` per event are written by `--switch-events=` and go to metrics for the paired read
+against the hull rotation actually performed. **Nothing published before CP1.**
+
 ### ⚠ REGRESSION FOUND, AND IT IS IN A TERM THAT IS NOT CATALOGUE A2 — IT IS MINE
 
 `make ai-scenarios` on `c68b423e` is **42 passed / 3 failed / 2 pending** against the baseline's **44 / 1 / 2**. I
@@ -452,16 +508,20 @@ both — and five of its six rows were already `0 of ~500` in the baseline. Only
 The firing **rate** barely moved (0.35/s → 0.33/s); the duel ended sooner because one tank died. What changed is that
 the tanks spend **60% less time** working round to each other's side or rear — they trade frontally instead.
 
-**The suspect is the stance floor, which is this stream's addition and not catalogue A2.** It charges the whole
-current velocity whenever the *option* changes on one target, and I added it to price `ENGAGE ↔ SUPPRESS` thrash.
-`ENGAGE → FLANK` on the same target is a way of *prosecuting* the fight, not a change of mind — and because both
-options aim at the same contact, the bearing term is zero and the floor charges a full stop for a manoeuvre that
-never stops. **This is round 8's 1.35 knee in a new costume:** a churn term buying its improvement with positioning
-behaviour, against a behaviour the lead named in round 3 (*"no intent of trying to circle your opponent"*), where
-every churn table says nothing at all.
+**⚠ MY FIRST SUSPECT WAS THE STANCE FLOOR AND IT WAS WRONG — see the five-arm table above.** I reasoned that the
+floor charged `ENGAGE → FLANK` a full stop for a manoeuvre that never stops. **FLANK's share of time is 0.000–0.018
+in every arm**: the duel's "flank seconds" are `_combat_move`'s circling *inside* ENGAGE, not the FLANK option, so
+the floor was never in that path. The instrument built to test the hypothesis refuted it, which is the only reason
+it was not shipped as an explanation.
+
+**The live candidate, from the same table:** for `tank`, ENGAGE share **0.319 (A2) against 0.523 (flat)** and
+COVER_FIRE **0.231 against 0.094**. A2 moves tanks out of circling-while-engaging and into static hide/peek, and
+COVER_FIRE is where a duel's flank seconds go to die. Not fixed, not guessed at — recorded with its evidence, and it
+is one of the things metrics' cusp split will speak to.
 
 **Orchestrator's ruling (2026-09-20):** the floor is not in the catalogue and it taxes prosecution of the fight, so it
 **earns its place by removal** (lesson 25), and the flank-seconds number outranks any churn ladder (lesson 150).
+**Removed** — the five-arm table above says it bought nothing, which is a better reason than the one I gave.
 
 **One correction to that ruling's premise, recorded so a later reader is not misled.** It assumed the lay term already
 prices `ENGAGE ↔ SUPPRESS`. **It does not** — the lay is charged only when the *target* changes, and a suppressing

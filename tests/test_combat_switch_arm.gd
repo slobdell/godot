@@ -46,8 +46,17 @@ func _engaging_first() -> Dictionary:
 	return {"option": "ENGAGE", "target": "Rust_A_1", "since": 0}
 
 
+## A2 is the OPT-IN arm since 2026-09-20 (the default is the flat commitment bonus), so every test of the cost has to
+## select it -- which is itself worth asserting, because a test that silently measured the default would be testing
+## the wrong mechanism and saying nothing about it.
+func _use_the_cost_arm() -> void:
+	assert_eq(Units.apply_tuning("switch.cost=1"), "", "A2 is selectable")
+	assert_true(SwitchingCost.cost_arm(), "and selected")
+
+
 ## The counter must not be able to change what it counts.
 func test_the_counter_does_not_change_the_decision() -> void:
+	_use_the_cost_arm()
 	var s := _two_fronts("gang_tank", 10.0)
 	SwitchingCost.probing = false
 	var quiet: Dictionary = TankBrain.decide(s, _engaging_first())
@@ -60,6 +69,7 @@ func test_the_counter_does_not_change_the_decision() -> void:
 
 ## The null A/B: the same build, twice, must agree. This is the precondition for any A/B against a different build.
 func test_the_counter_reads_the_same_in_both_arms_of_a_null_ab() -> void:
+	_use_the_cost_arm()
 	SwitchingCost.probing = true
 	var first: Dictionary = TankBrain.decide(_two_fronts("gang_tank", 10.0), _engaging_first())["switch"]
 	var second: Dictionary = TankBrain.decide(_two_fronts("gang_tank", 10.0), _engaging_first())["switch"]
@@ -69,6 +79,7 @@ func test_the_counter_reads_the_same_in_both_arms_of_a_null_ab() -> void:
 
 ## Consulted, non-zero, and named: the three things lesson 117 says to prove before measuring anything.
 func test_the_cost_is_consulted_and_non_zero_in_a_real_switch() -> void:
+	_use_the_cost_arm()
 	SwitchingCost.probing = true
 	var row: Dictionary = TankBrain.decide(_two_fronts("gang_tank", 10.0), _engaging_first())["switch"]
 	print("MEASURE switch_arm_row %s" % row)
@@ -77,43 +88,49 @@ func test_the_cost_is_consulted_and_non_zero_in_a_real_switch() -> void:
 	assert_true(float(row["max_cost_s"]) > 0.0, "and charged a non-zero cost (%.2f s)" % float(row["max_cost_s"]))
 
 
-## The counter names which arm ran, so a run can never be mistaken for the other one.
+## The counter names which arm ran, so a run can never be mistaken for the other one. The DEFAULT is the flat bonus.
 func test_the_counter_names_every_arm() -> void:
 	SwitchingCost.probing = true
 	var fresh: Dictionary = TankBrain.decide(_two_fronts("gang_tank", 10.0), {})["switch"]
 	assert_eq(String(fresh["arm"]), "fresh", "no current choice: nothing to switch away from")
 	assert_eq(int(fresh["priced"]), 0, "and nothing priced")
 
-	assert_eq(Units.apply_tuning("switch.legacy=1"), "", "the legacy arm is selectable")
-	var legacy: Dictionary = TankBrain.decide(_two_fronts("gang_tank", 10.0), _engaging_first())["switch"]
-	assert_eq(String(legacy["arm"]), "legacy", "--tune=switch.legacy=1 restores the flat commitment bonus")
-	assert_eq(float(legacy["max_cost_s"]), TankBrain.COMMIT_BONUS, "and the counter reports the multiplier it used")
+	var flat: Dictionary = TankBrain.decide(_two_fronts("gang_tank", 10.0), _engaging_first())["switch"]
+	assert_eq(String(flat["arm"]), "legacy", "the default arm is the flat commitment bonus")
+	assert_eq(float(flat["max_cost_s"]), TankBrain.COMMIT_BONUS, "and the counter reports the multiplier it used")
+
+	assert_eq(Units.apply_tuning("switch.cost=1"), "", "A2 is selectable")
+	var cost: Dictionary = TankBrain.decide(_two_fronts("gang_tank", 10.0), _engaging_first())["switch"]
+	assert_eq(String(cost["arm"]), "cost", "--tune=switch.cost=1 selects the switching cost")
 	SwitchingCost.tuning.clear()
 
 
-## The fourth arm, and the reason it exists: `main`'s commitment is TWO mechanisms — a flat bonus and a hard dwell
-## timer — so A2 measured against "legacy" is measured against both at once, and any churn figure credited to the
-## bonus might belong to the timer A2 deliberately retires. `switch.dwell=0` isolates them.
-func test_the_dwell_timer_can_be_isolated_from_the_flat_bonus() -> void:
-	SwitchingCost.probing = true
-	# A situation where the incumbent is beaten but not decisively: the timer, and only the timer, holds it.
-	var s := _situation("tank", 0.0, [_enemy("Rust_A_1", Vector3(0, 0, -36)), _enemy("Rust_A_2", Vector3(0, 0, -30))])
-	var current := {"option": "ENGAGE", "target": "Rust_A_1", "since": 1000 - TankBrain.MIN_COMMIT_TICKS + 2}
-	assert_eq(Units.apply_tuning("switch.legacy=1"), "", "the flat arm is selectable")
-	var held: Dictionary = TankBrain.decide(s, current)["choice"]
-	assert_eq(Units.apply_tuning("switch.dwell=0"), "", "and its dwell timer is separately selectable")
-	var unheld: Dictionary = TankBrain.decide(s, current)["choice"]
-	print("MEASURE switch_dwell_isolation flat+dwell %s; flat alone %s" % [
-			TankBrain.label(held), TankBrain.label(unheld)])
-	assert_eq(String(held["target"]), "Rust_A_1", "inside the dwell window the flat arm holds its target")
-	assert_true(SwitchingCost.legacy_arm(), "the flat bonus is still in play with the timer off")
-	SwitchingCost.tuning.clear()
+## THE DWELL TIMER IS RETIRED, asserted as a differential rather than by guessing at a score gap. `since` is the only
+## thing the timer ever read: under `main`, a choice one tick old was held through MIN_COMMIT_TICKS while the same
+## choice outside that window was not, so the two decisions differed. They must now be identical for every situation
+## and every option, whatever the scores happen to be -- which is what "no longer consulted" means.
+## Measured justification (five arms x three seeds, `make switch-arms`, yard): the flat bonus with the timer and
+## without differ by -11% to +6% on switches and +-0.2 on reversals, inside the seed spread.
+func test_the_dwell_timer_no_longer_reads_the_clock() -> void:
+	for spots in [[Vector3(0, 0, -60), Vector3(0, 0, -22)], [Vector3(0, 0, -30), Vector3(0, 0, -36)],
+			[Vector3(0, 0, -40), Vector3(35, 0, -12)]]:
+		for speed in [0.0, 9.0]:
+			var s := _situation("tank", speed, [_enemy("Rust_A_1", spots[0]), _enemy("Rust_A_2", spots[1])])
+			var fresh_commit: Dictionary = TankBrain.decide(s,
+					{"option": "ENGAGE", "target": "Rust_A_1", "since": 999})["choice"]
+			var stale_commit: Dictionary = TankBrain.decide(s,
+					{"option": "ENGAGE", "target": "Rust_A_1", "since": 1000 - TankBrain.MIN_COMMIT_TICKS * 8})["choice"]
+			assert_eq(fresh_commit, stale_commit,
+					"a commitment 1 tick old decides the same as one long past the retired window (%s vs %s)" % [
+					TankBrain.label(fresh_commit), TankBrain.label(stale_commit)])
+	assert_true(TankBrain.MIN_COMMIT_TICKS > 1, "setup: the retired window was longer than one tick")
 
 
 ## X2's acceptance 2, asserted at the seam rather than only in the cost function: in ONE situation, the roster's
 ## heaviest hull is charged a multiple of its lightest. A cost that does not separate them is a constant in disguise
 ## and would make an A/B against `main` an A/B of a build against itself.
 func test_the_cost_separates_hull_classes_at_the_seam() -> void:
+	_use_the_cost_arm()
 	SwitchingCost.probing = true
 	var rig: Dictionary = TankBrain.decide(_two_fronts("gang_tank", 10.0), _engaging_first())["switch"]
 	var rod: Dictionary = TankBrain.decide(_two_fronts("gang_scout", 10.0), _engaging_first())["switch"]
@@ -129,6 +146,7 @@ func test_the_cost_separates_hull_classes_at_the_seam() -> void:
 ## the cap is an equal offset, so two candidates beyond it keep their own order, and the subtraction is deliberately
 ## NOT floored at zero, because a floor is the saturation that would tie them.
 func test_two_candidates_beyond_the_cap_still_rank_by_utility() -> void:
+	_use_the_cost_arm()
 	var s := _situation("gang_tank", 12.0, [_enemy("Rust_A_1", Vector3(0, 0, -30)),
 			_enemy("Rust_A_2", Vector3(0, 0, 35)), _enemy("Rust_A_3", Vector3(4, 0, 40))])
 	var ctx := SwitchingCost.context(s, {"option": "ENGAGE", "target": "Rust_A_1", "since": 0})
@@ -155,6 +173,7 @@ func test_two_candidates_beyond_the_cap_still_rank_by_utility() -> void:
 ## have charged — so a null result can be told apart from a mechanism that never ran.
 func test_the_control_arm_still_reports_what_it_would_have_charged() -> void:
 	SwitchingCost.probing = true
+	_use_the_cost_arm()
 	assert_eq(Units.apply_tuning("switch.price=0"), "", "the control arm is selectable")
 	var row: Dictionary = TankBrain.decide(_two_fronts("gang_tank", 10.0), _engaging_first())["switch"]
 	assert_eq(String(row["arm"]), "cost", "the code path is the treatment's, not a different one")

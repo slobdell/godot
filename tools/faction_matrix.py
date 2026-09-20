@@ -119,9 +119,9 @@ def main():
     parser.add_argument("--no-faction-directives", action="store_true",
                         help="control arm: every unit takes its plain-role directive (Army.faction_directives=false)")
     # Round 9 (A2): the same matrix with a combat knob changed, so a mechanism's ladder arm is the SAME BUILD with
-    # `--tune=switch.legacy=1` (or `switch.price=0`) rather than a different checkout. Without this, every arm of a
+    # `--tune=switch.cost=1` (or `switch.price=0`) rather than a different checkout. Without this, every arm of a
     # combat A/B was a separate build and "does not lose" could never be said about one mechanism in isolation.
-    parser.add_argument("--tune", default="", help="passed through to the match as --tune (e.g. switch.legacy=1)")
+    parser.add_argument("--tune", default="", help="passed through to the match as --tune (e.g. switch.cost=1)")
     parser.add_argument("--json")
     args = parser.parse_args()
 

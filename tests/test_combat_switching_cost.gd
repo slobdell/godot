@@ -83,13 +83,18 @@ func test_staying_on_the_same_fight_is_free() -> void:
 	assert_eq(cost, 0.0, "the option it is already carrying out costs nothing")
 
 
-## Changing stance on the same target still throws away the velocity in flight, because engaging, suppressing and
-## orbiting drive to different places. Without this floor, ENGAGE <-> SUPPRESS thrash is priced at zero.
-func test_a_stance_change_on_one_target_still_sheds_its_speed() -> void:
-	var stopped := _cost("tank", 0.0, {"A": AHEAD}, {"option": "ENGAGE", "target": "A"}, {"option": "SUPPRESS", "target": "A"})
+## The measured consequence of removing the stance floor, asserted so it is a recorded property rather than a surprise:
+## changing OPTION on one target -- same bearing, same lay -- now costs exactly nothing. Five arms x three seeds said
+## the floor bought no reduction in switches or reversals worth its complication (lesson 25). If ENGAGE <-> SUPPRESS
+## thrash ever shows up in a measurement, the fix is a discard charged only to options that fight from a standstill,
+## not this floor again.
+func test_changing_stance_on_one_target_is_now_free_and_that_is_deliberate() -> void:
 	var moving := _cost("tank", 9.0, {"A": AHEAD}, {"option": "ENGAGE", "target": "A"}, {"option": "SUPPRESS", "target": "A"})
-	assert_eq(stopped, 0.0, "a halted crew changing stance discards no momentum")
-	assert_near(moving, 9.0 / 12.0, 0.001, "at 9 m/s it sheds 9 m/s at 12 m/s^2 (got %.3f)" % moving)
+	assert_eq(moving, 0.0, "same target, same bearing, lay kept: a switch that discards nothing is charged nothing")
+	# A target change from the same fight is still priced, so the removal did not hollow the mechanism out.
+	var swapped := _cost("tank", 9.0, {"A": AHEAD, "B": RIGHT},
+			{"option": "ENGAGE", "target": "A"}, {"option": "SUPPRESS", "target": "B"})
+	assert_true(swapped > 2.0, "a target change still pays its slew, braking and lay (%.3f s)" % swapped)
 
 
 ## CLEAR_LANE is not a change of mind: it steps aside to shoot the target this crew is already engaging.
@@ -115,9 +120,9 @@ func test_taking_up_a_fight_from_no_fight_is_never_charged_for_the_lay() -> void
 	var s := _situation("tank", 9.0, {"A": AHEAD})
 	var ctx := SwitchingCost.context(s, {"option": "ADVANCE", "target": ""})
 	assert_eq(float(ctx["lay_s"]), 0.0, "a crew laid on nothing has no lay to throw away")
-	# It still pays the momentum it discards by turning to the fight; it just pays nothing for acquisition.
-	assert_near(SwitchingCost.seconds_for(ctx, "ENGAGE", "A"), 9.0 / 12.0, 0.001,
-			"only the velocity it sheds (%.3f s)" % SwitchingCost.seconds_for(ctx, "ENGAGE", "A"))
+	# Driving straight at it, there is no bearing change either, so the whole switch is free -- correctly: nothing
+	# physical is thrown away by opening fire on the thing you were already driving toward.
+	assert_eq(SwitchingCost.seconds_for(ctx, "ENGAGE", "A"), 0.0, "and no bearing change, so nothing at all")
 
 
 ## P3's guarantee in a test: the price is capped, so a decisive advantage always wins. A reversal at speed in the

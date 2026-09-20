@@ -54,16 +54,12 @@ const ARC_SPEED_FLOOR := 0.25
 ##   price   0 removes the cost without removing the code path: the control arm for every A/B of this mechanism, in
 ##           the same build as the treatment (lesson 117).
 ##   cap     the veto guard, lowered or raised only to measure what it is worth.
-##   legacy  1 restores the flat commitment multiplier this replaces (`TankBrain.COMMIT_BONUS` and its dwell timer),
-##           so `main`'s pre-A2 behaviour is an arm of this build rather than an older checkout.
-##   dwell   0 takes the `MIN_COMMIT_TICKS`/`EMERGENCY_MARGIN` timer OUT of the legacy arm, leaving the flat bonus
-##           alone. Without this the only available comparison is A2 against TWO mechanisms at once, and a churn
-##           figure attributed to "the flat bonus" would really belong to a hard dwell timer A2 deliberately retires
-##           (P3). Four arms — cost, flat+dwell, flat alone, nothing — are what it takes to say which term did what.
-##   stance  0 removes the stance floor (below), leaving only the bearing-derived terms. The floor is NOT part of
-##           catalogue A2 -- it is this stream's addition -- and round 9 measured it costing flanking, so it is an arm
-##           of its own rather than a thing argued about.
-const TUNABLE := {"price": PRICE_PER_SECOND, "cap": MAX_PENALTY, "legacy": 0.0, "dwell": 1.0, "stance": 1.0}
+##   cost    1 turns A2 ON. **It is OFF by default** (orchestrator, 2026-09-20): the five-arm table says the flat
+##           bonus suppresses roughly twice the churn A2 does, and whether A2's extra switches are genuine
+##           re-targeting or the wheeled creep is a question only metrics' A12 cusp split can answer. Until it does,
+##           the default is the flat bonus with its dwell timer retired, and A2 is the opt-in arm — reversible in this
+##           one constant either way.
+const TUNABLE := {"price": PRICE_PER_SECOND, "cap": MAX_PENALTY, "cost": 0.0}
 static var tuning := {}
 ## Set by `make switch-arm`: fills in the per-think telemetry X1 counts. Off in play, so a match pays nothing for it.
 static var probing := false
@@ -80,15 +76,9 @@ static func never_charged(option: String) -> bool:
 	return FREE.has(option)
 
 
-## True when `--tune=switch.legacy=1` selects the flat commitment bonus instead of the cost.
-static func legacy_arm() -> bool:
-	return _knob("legacy") > 0.0
-
-
-## True when the legacy arm's dwell timer runs. Always true in the flat arm unless `--tune=switch.dwell=0` isolates
-## the bonus from the timer; irrelevant to the cost arm, which has no timer to gate.
-static func dwell_arm() -> bool:
-	return _knob("dwell") > 0.0
+## True when `--tune=switch.cost=1` selects A2's switching cost instead of the default flat commitment bonus.
+static func cost_arm() -> bool:
+	return _knob("cost") > 0.0
 
 
 ## Everything a think needs to price its candidates, computed once. `current` is the option+target this brain is
@@ -169,12 +159,18 @@ static func _lay_discarded(me: Dictionary, target_position: Variant) -> float:
 ##           (shed it, then build it again the other way), which is the 1/2 m v^2 shape without needing a mass.
 ##   lay     the acquisition already invested in the target being abandoned (see _lay_discarded). Charged only when the
 ##           TARGET changes; without it a halted turret swapping between two targets on one bearing pays nothing.
-## An option change on the SAME target still discards the velocity in flight, because engaging, suppressing and
-## orbiting drive to different places; that floor is what keeps ENGAGE <-> SUPPRESS thrash priced at all.
-## ⚠ THE FLOOR IS THIS STREAM'S ADDITION, NOT CATALOGUE A2, AND IT HAS A MEASURED COST: round 9's duel scenario showed
-## flank seconds falling 6.27/5.27 -> 2.07/3.53 of 20 with it in, because ENGAGE -> FLANK on the SAME target is a way
-## of prosecuting the fight rather than a change of mind, and the floor charges it the whole velocity anyway. Gated by
-## `--tune=switch.stance=0` so it is an arm to be measured rather than a judgement to be argued.
+## REMOVED 2026-09-20, by measurement: a "stance floor" charging the whole current velocity whenever the OPTION
+## changed on one target. It was this stream's addition, not catalogue A2, added to price ENGAGE <-> SUPPRESS thrash.
+## Five arms x three seeds (`make switch-arms`, yard, gang_ram vs law_line, laptop) say it bought NOTHING: switches
+## -1% to +23% with no consistent sign and inside the seed spread, reversals mixed in sign with a standard deviation
+## larger than the effect, option shares mixed and small. Lesson 25 -- it had to earn its place by removal and did not.
+##
+## The consequence is recorded rather than discovered: `ENGAGE -> SUPPRESS` on ONE target now costs exactly zero, same
+## bearing and same lay. That is one of the two thrash shapes round 7 measured. If it reappears, the fix is NOT to
+## restore this floor but to charge the velocity discard only for options that fight from a STANDSTILL -- reading
+## `_act`, SUPPRESS halts ("Standing still is what makes fire effective") while ENGAGE manoeuvres, so the discard is
+## real for that pair and fiction for a manoeuvre that keeps driving. That is a physical property of the option, in
+## one place, and it is the shape to build if the need is ever measured.
 ## Monotone in all three over its whole range, and unbounded — the ceiling lives in penalty(), not here, so this stays
 ## safe to use as a priority level elsewhere (lesson 153).
 static func seconds_for(ctx: Dictionary, option: String, target: String) -> float:
@@ -194,8 +190,6 @@ static func seconds_for(ctx: Dictionary, option: String, target: String) -> floa
 			slew_s = maxf(slew_s, arc_m / maxf(float(ctx["speed"]), float(ctx["arc_speed_floor"])))
 	var speed := float(ctx["speed"])
 	var lost := speed * (1.0 - cosine)
-	if String(ctx["from_option"]) != option and _knob("stance") > 0.0:
-		lost = maxf(lost, speed)
 	# The gun's lay goes only when the gun is pointed somewhere else. ORBIT or SUPPRESS on the target this crew is
 	# already laid on keeps it, which is why a stance change pays the velocity and not the acquisition.
 	var lay := float(ctx["lay_s"]) if target != String(ctx["from_target"]) else 0.0
@@ -227,8 +221,6 @@ static func components(ctx: Dictionary, option: String, target: String) -> Dicti
 			slew_s = maxf(slew_s, radius * deg_to_rad(angle_deg) / maxf(float(ctx["speed"]), float(ctx["arc_speed_floor"])))
 	var speed := float(ctx["speed"])
 	var lost := speed * (1.0 - cosine)
-	if String(ctx["from_option"]) != option and _knob("stance") > 0.0:
-		lost = maxf(lost, speed)
 	var brake_s := lost / float(ctx["braking"])
 	var lay_s := float(ctx["lay_s"]) if target != String(ctx["from_target"]) else 0.0
 	return {"angle_deg": angle_deg, "slew_s": slew_s, "brake_s": brake_s, "lay_s": lay_s,

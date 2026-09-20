@@ -39,8 +39,9 @@ const FIGHT_MARGIN := 15.0
 ## on the deck → 3/0), because a crew that sticks harder no longer switches onto its squad's focus or into an orbit. A
 ## ladder cannot see either. The replacement is `SwitchingCost`: the same commitment derived from each vehicle's own
 ## braking and slew, so it scales across the roster instead of being tuned. This value survives as the flat ARM —
-## `--tune=switch.legacy=1` restores it with its dwell timer, and variant `x5c` still selects 1.35 — so the measurement
-## that retired it re-runs against the mechanism that replaced it, in one build.
+## it is the DEFAULT again as of round 9 (the five-arm table: it suppresses about twice the churn A2's cost does), now
+## WITHOUT the dwell timer, which the same table showed was inert. `--tune=switch.cost=1` selects A2 instead, and
+## variant `x5c` still selects 1.35 — so both mechanisms are arms of one build and neither needs a checkout.
 const COMMIT_BONUS := 1.15
 ## How far CLEAR_LANE outranks the fight it serves. It used to be written `COMMIT_BONUS * 1.15`: one 1.15 to cancel the
 ## commitment bonus on the fight it was competing with, and one that was the genuine edge. The committed fight no longer
@@ -51,13 +52,18 @@ const CLEAR_LANE_EDGE := 1.15
 const PIN_HOLD_FRACTION := 0.75
 ## N5 (CP4): the longest a peek from cover is held waiting for the gunner's lay (Engagement.ACQUIRE_FAR_SECONDS is 1.6 s).
 const PEEK_COMMIT_TICKS := SimClock.TICK_RATE * 2
-## ...and it's kept at least this long unless something is EMERGENCY_MARGIN× better.
+## RETIRED (round 9, combat): the dwell timer that held a committed choice at least this long unless something was
+## EMERGENCY_MARGIN× better. No longer consulted anywhere. Measured over five arms × three seeds: the flat bonus with
+## the timer and the flat bonus alone differ by −11% to +6% on switches and ±0.2 on reversals — inside the seed
+## spread. It was credited for two rounds with work the multiplier was doing. Kept as a named constant only because
+## `tests/test_brain_decide.gd` reads it to place a `since` tick outside the old window.
 const MIN_COMMIT_TICKS := SimClock.TICK_RATE * 3 / 4
 ## Round 7 (make squad-decisions): the thrash shape is A -> B -> A — going straight back to what it just left (mostly a
 ## target flip inside ENGAGE, and ENGAGE <-> SUPPRESS / CLEAR_LANE). For REVISIT_S after leaving an option+target,
 ## returning to it scores REVISIT_FACTOR: it has to be clearly better, not a hair better. Seconds off the fixed tick.
 const REVISIT_S := 3.0
 const REVISIT_FACTOR := 0.85
+## RETIRED with MIN_COMMIT_TICKS (round 9): the margin by which a challenger had to beat a dwell-held choice.
 const EMERGENCY_MARGIN := 1.6
 ## Contacts older than this are investigated rather than engaged.
 const CONTACT_FRESH_TICKS := SimClock.TICK_RATE * 2
@@ -1179,13 +1185,19 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			if FIGHT_OPTIONS.has(candidate["option"]) and candidate["option"] == left["option"] \
 					and candidate["target"] == left["target"]:
 				candidate["score"] *= REVISIT_FACTOR
-	# Commitment (A2, combat, round 9 — contract S5): a switch pays what it destroys. Every candidate that would change
-	# this crew's fight is charged the physical work that change throws away — the velocity it must shed plus the time
-	# to lay the gun on the new bearing, all of it from the vehicle's own Units.PROFILES entry (SwitchingCost). So a rat
-	# rod swapping targets 10 deg apart pays nearly nothing and a 14 m war rig shedding 12 m/s through 140 deg pays a
-	# lot, with no per-class constant to tune: the 5x roster prices itself. It is a PRICE and never a veto (capped), so
-	# a decisively better option always wins; the flat COMMIT_BONUS multiplier, its CLEAR_LANE bake and the
-	# MIN_COMMIT_TICKS/EMERGENCY_MARGIN dwell timer are all replaced by it rather than kept alongside it.
+	# Commitment. TWO arms live here, and the default is the flat one (orchestrator, 2026-09-20):
+	#   DEFAULT — COMMIT_BONUS, a flat multiplier on the current choice, with its dwell timer RETIRED. Round 9's
+	#     five-arm table says the timer was inert and the multiplier was doing all the work.
+	#   `--tune=switch.cost=1` — A2 (contract S5): a switch pays what it destroys. Every candidate that would change
+	#     this crew's fight is charged the physical work that change throws away — the velocity it must shed, the time
+	#     to lay the gun on the new bearing, and the acquisition abandoned on the old target — all from the vehicle's
+	#     own Units.PROFILES entry (SwitchingCost). A rat rod swapping targets 10° apart pays nearly nothing; a 14 m
+	#     war rig shedding 12 m/s through 140° pays a lot, with no per-class constant: the 5× roster prices itself.
+	#     It is a PRICE and never a veto (capped), so a decisively better option always wins.
+	#   A2 is off by default because it suppresses about half the churn the flat bonus does, and whether its extra
+	#     switches are genuine re-targeting or the wheeled creep waits on metrics' A12 cusp split. One constant either
+	#     way. What A2 has already proved is that it costs nothing: both behaviour scenarios that broke the 1.35 knee
+	#     are unchanged on it, which the flat bonus at 1.35 could not manage.
 	var committed: Dictionary = {}
 	# An order the tank isn't carrying out yet outranks commitment to anything but itself or survival.
 	var order_pending := keep_slot > 0.0 and not ["KEEP_SLOT", "RETREAT"].has(current.get("option", ""))
@@ -1195,16 +1207,16 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	if SwitchingCost.probing:
 		for candidate in candidates:
 			unpriced.append(float(candidate["score"]))
-	# The retired flat arm, kept selectable so the measurement that retired it re-runs in ONE build (lesson 117):
-	# `--tune=switch.legacy=1` is main's pre-A2 behaviour, and the `commit_bonus` variant feature still drives x5c's 1.35.
-	var legacy_bonus := float(features.get("commit_bonus", COMMIT_BONUS)) if SwitchingCost.legacy_arm() \
-			else float(features.get("commit_bonus", 0.0))
+	# The DEFAULT is the flat bonus (orchestrator, 2026-09-20, on round 9's five-arm table): it suppresses roughly
+	# twice the churn A2's cost does, and whether A2's extra switches are re-targeting or the wheeled creep waits on
+	# metrics' cusp split. `--tune=switch.cost=1` selects A2; `commit_bonus` in a variant still drives x5c's 1.35.
+	var flat_bonus := 0.0 if SwitchingCost.cost_arm() else float(features.get("commit_bonus", COMMIT_BONUS))
 	var switch_ctx := {}
 	if not order_pending and not current.is_empty():
-		if legacy_bonus > 0.0:
+		if flat_bonus > 0.0:
 			for candidate in candidates:
 				if candidate["option"] == current["option"] and candidate["target"] == current["target"]:
-					candidate["score"] *= legacy_bonus
+					candidate["score"] *= flat_bonus
 					committed = candidate
 		else:
 			switch_ctx = SwitchingCost.context(s, current)
@@ -1222,18 +1234,18 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	for candidate in candidates:
 		if candidate["score"] > best["score"]:
 			best = candidate
-	# The dwell timer belongs to the flat arm and goes with it: P3 measured a hard veto on fast switches making
-	# switch-and-switch-back MORE than twice as bad, because it delays a switch without pricing it.
-	if legacy_bonus > 0.0 and SwitchingCost.dwell_arm() and not committed.is_empty() and committed != best \
-			and int(s["tick"]) - int(current["since"]) < MIN_COMMIT_TICKS \
-			and committed["score"] > 0.0 and best["score"] < committed["score"] * EMERGENCY_MARGIN:
-		best = committed
+	# THE DWELL TIMER IS RETIRED (round 9). It used to hold the committed choice through MIN_COMMIT_TICKS unless beaten
+	# by EMERGENCY_MARGIN. Measured over five arms x three seeds (`make switch-arms`, yard, seeds 1/3/7): the flat
+	# bonus WITH the timer and the flat bonus ALONE differ by -11% to +6% on switches and +-0.2 on reversals, inside
+	# the seed spread. Every bit of commitment this brain had was the multiplier; the timer was credited for two rounds
+	# with work it was not doing, and P3's "a veto stores the pressure up" was inferred from a switch-and-switch-back
+	# count rather than seen. Retiring it is free, and it is one less mechanism between a player's order and a crew.
 
 	var decision := {"choice": {"option": best["option"], "target": best["target"]},
 			"ranked": TankBrain._top(candidates, 3)}
 	if SwitchingCost.probing:  # X1's arm counter (`make switch-arm`); off in play, so a match pays nothing for it
 		decision["switch"] = SwitchingCost.probe(switch_ctx, s, current, best, candidates, unpriced,
-				legacy_bonus, order_pending)
+				flat_bonus, order_pending)
 	return decision
 
 

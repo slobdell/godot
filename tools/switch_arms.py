@@ -5,14 +5,14 @@
 two-arm comparison charges A2 with beating two things while being one, and any churn credited to the flat bonus might
 belong to the timer that P3 says works by storing pressure up. Four arms are what it takes to say which term did what:
 
-    cost      A2's state-dependent switching cost (the default build)
-    flat      the flat 1.15 bonus alone           (--tune=switch.legacy=1,switch.dwell=0)
-    flat+dwell  the flat bonus and its timer      (--tune=switch.legacy=1)   == main
-    none      no commitment term at all           (--tune=switch.price=0)
+    flat      the flat 1.15 bonus, dwell timer retired  (the default build)
+    cost      A2's state-dependent switching cost        (--tune=switch.cost=1)
+    none      no commitment term at all                  (--tune=switch.cost=1,switch.price=0)
 
-`none` is the honest baseline for "does this mechanism do anything"; `flat+dwell` is the honest baseline for "is it
-better than what it replaces". Reporting only one of those two is how a mechanism gets adopted or rejected for the
-wrong reason.
+`none` is the honest baseline for "does this mechanism do anything"; `flat` is the honest baseline for "is it better
+than what it replaces". Reporting only one of those two is how a mechanism gets adopted or rejected for the wrong
+reason. The `flat+dwell` arm that measured the timer inert is gone with the timer; its numbers are recorded in
+`_agents/streams/combat.md` where they were taken.
 
 Every rate is reported per class AND per locomotion, because metrics measured that the creep is a property of wheels
 rather than of a role (ifv and lancer are almost all creep; tracked hulls produce none), so a role split reads two
@@ -31,14 +31,13 @@ import sys
 
 SIM_HZ = "30"
 
+# The DEFAULT build is now the flat bonus with the dwell timer retired, so "flat" is the empty tune and A2 is opted
+# into. The `flat+dwell` arm is gone with the timer: it cannot be reconstructed from this build, and its numbers live
+# in `_agents/streams/combat.md` where they were taken.
 ARMS = {
-    "cost": "",
-    # The stance floor is combat's addition, not catalogue A2, and round 9's duel scenario measured it costing
-    # flanking (flank seconds 6.27/5.27 -> 2.07/3.53 of 20). It gets its own arm rather than a judgement call.
-    "cost-nostance": "switch.stance=0",
-    "flat": "switch.legacy=1,switch.dwell=0",
-    "flat+dwell": "switch.legacy=1",
-    "none": "switch.price=0",
+    "flat": "",
+    "cost": "switch.cost=1",
+    "none": "switch.cost=1,switch.price=0",
 }
 # Reported per class; `tank` is the row that matters most because tracked hulls produce no creep cusps, so it is the
 # only one whose switches are unambiguously about decisions rather than about the wheeled shuffle.

@@ -59,7 +59,7 @@ matchup-search: import ## Score --tune variants of the matchup matrix against th
 # seed 3 drew `gang_hail`, which fields no War Rig at all -- the rig-vs-rat-rod number could not have been read from
 # that run however healthy it looked. `gang_ram` fields two rigs and a rat rod; `law_line` is the counterpart.
 
-switch-arm: import ## X1 (A2): is the switching cost consulted, and does it vary by hull class? Per-class/locomotion arm counter over one fight (ARENA=yard SEED=3 SWITCH_TIME=120 BUDGET=6500 SWITCH_GREEN_ARMY=gang_ram fields the War Rig, SWITCH_RUST_ARMY=law_line; TUNE=switch.legacy=1 or switch.price=0 for the control arms) -> build/switch-arm.json
+switch-arm: import ## X1 (A2): is the switching cost consulted, and does it vary by hull class? Per-class/locomotion arm counter over one fight (ARENA=yard SEED=3 SWITCH_TIME=120 BUDGET=6500 SWITCH_GREEN_ARMY=gang_ram fields the War Rig, SWITCH_RUST_ARMY=law_line; TUNE=switch.cost=1 selects A2; default is the flat bonus) -> build/switch-arm.json
 	@echo ">> switch-arm: ARENA=$(or $(ARENA),yard) SEED=$(or $(SEED),3) SWITCH_TIME=$(or $(SWITCH_TIME),120) TUNE=$(TUNE)"
 	@mkdir -p $(BUILD_DIR)
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/combat/switch_probe.gd -- \
@@ -75,7 +75,7 @@ switch-arm: import ## X1 (A2): is the switching cost consulted, and does it vary
 		json.dump(d, open('$(BUILD_DIR)/switch-arm.json','w'), indent=1); \
 		print('switch-arm:', d['spread']['dearest'], d['spread']['dearest_s'], 's vs', d['spread']['cheapest'], d['spread']['cheapest_s'], 's (x%s)' % d['spread']['ratio'])"
 
-switch-arms: import ## X2 (A2): the churn A/B over all four arms (cost / flat / flat+dwell / none) and SWITCH_SEEDS, per class AND per locomotion, with the spread across seeds beside every mean (ARENA=yard SWITCH_SEEDS=1,3,7 SWITCH_TIME=120 JOBS=2) -> build/switch-arms.json
+switch-arms: import ## X2 (A2): the churn A/B over the three arms (flat = default / cost = A2 / none)  and SWITCH_SEEDS, per class AND per locomotion, with the spread across seeds beside every mean (ARENA=yard SWITCH_SEEDS=1,3,7 SWITCH_TIME=120 JOBS=2) -> build/switch-arms.json
 	@echo ">> switch-arms: ARENA=$(or $(ARENA),yard) SWITCH_SEEDS=$(or $(SWITCH_SEEDS),1,3,7) SWITCH_TIME=$(or $(SWITCH_TIME),120)"
 	@mkdir -p $(BUILD_DIR)
 	$(PYTHON) tools/switch_arms.py --godot $(GODOT) --arena $(or $(ARENA),yard) --seeds $(or $(SWITCH_SEEDS),1,3,7) \
@@ -146,7 +146,7 @@ compare-arms: ## Two faction-matrix runs, subtracted per faction (TREATMENT=a.js
 		$(if $(COMPARE_FACTION),--faction $(COMPARE_FACTION)) \
 		$(if $(BUILD_ARM),--build-is-the-arm $(BUILD_ARM))
 
-faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE= TUNE=switch.legacy=1) -> build/faction-matrix.json
+faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE= TUNE=switch.cost=1) -> build/faction-matrix.json
 	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),6) \
 		--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) $(if $(ARENA),--arena $(ARENA)) \
 		$(if $(ABLATE),--no-faction-directives) $(if $(TUNE),--tune $(TUNE)) \

@@ -25,7 +25,8 @@ extends SceneTree
 ##                     round's bar) are reported. Churn that falls because every crew froze is not a win, which is why
 ##                     the flip rate and the switch rate are printed beside each other
 ##
-## Prints SWITCH_ARM <json>. `--tune=switch.price=0` and `--tune=switch.legacy=1` are the control arms, in this build.
+## Prints SWITCH_ARM <json>. The default build is the flat commitment bonus; `--tune=switch.cost=1` selects A2 and
+## `--tune=switch.cost=1,switch.price=0` is its control (the cost computed and reported, never charged).
 
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
