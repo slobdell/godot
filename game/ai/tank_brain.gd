@@ -2398,6 +2398,22 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	# individual fields, so A11 synthesised a state with `yaw_rate` 0 and gave a hull already turning a window as if
 	# it were standing still. `state_of` carries the real yaw rate (round 8 made it state), plus braking and grip.
 	request["motion"] = TankMotion.state_of(tank)
+	# For nav's A6 (contract S4, level 3 of A7's priority table, nav asked): the ORDERED CORRIDOR'S TANGENT, which
+	# only this layer can supply. `CombatMotion.choose(request)` is handed a Dictionary with no unit handle at all --
+	# position, forward, velocity, style, phase, leash -- so the layer that decides cannot look up its own mover's
+	# corridor. Same seam as nav's "the leash is not in the route path": the layer that decides is not the layer that
+	# moves.
+	#
+	# The null is PASSED THROUGH deliberately and must stay that way. S4 makes "no leg yet" an inactive case with a
+	# name; a Vector3.ZERO would be an unreadable corridor wearing a readable one's clothes, and A6 would hold hulls
+	# to a tangent that means nothing. `Dictionary.get` returns null for a key that is not there, so this is also
+	# inert -- and honest about being inert -- until nav's `corridor` field reaches main.
+	#
+	# Cost note, since this is the hot path: it sits BELOW `_hold_motion_plan`'s early return, so it is one
+	# `Movement.state` per RE-DECIDE, not one per tick. (nav's note said this reuses the reading that `phase` comes
+	# from; it does not -- `request["phase"]` is `_run_phase`, this brain's own strafe/run phase, and nothing in this
+	# request came from `Movement.state` before now.)
+	request["corridor"] = Movement.state(tank).get("corridor")
 	# X3 (L2): and don't manoeuvre through a beaten zone.
 	var fields := _suppression_fields(game_match) if s.get("features", {}).get("avoid_beaten", true) else null
 	if fields != null:

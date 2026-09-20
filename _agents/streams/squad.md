@@ -1068,6 +1068,50 @@ structural properties are asserted by tests; what is missing is the behaviour in
    done remotely and they are the part worth doing first.
 6. **X6 (per-faction PID gains), the stretch item.** Not started. It needs CP1 on `main` and a merged tree.
 
+### A1's brain half: the tube MEASURED in a fight, and it stays off on a number rather than for want of one
+
+`make squad-decisions TUBE=on|off SEED=3 NAV_TIME=120`, laptop, on the merged tree (main at `c41faaff` + this branch,
+so **against nav's `combat_motion` and `clothoid`, not the planner they replaced**). Both arms sum `redecide_counts()`
+over the same 34 GREEN brains — the roster, not the survivors, because the two fights diverge and survivors would be
+two different denominators reading as an effect.
+
+| | TUBE=off | TUBE=on | change |
+|---|---|---|---|
+| re-decides | 5514 | 2076 | **-62.3%** |
+| re-decides per unit-minute | 204.5 | 74.7 | -63.5% |
+| held share | 0.457 | 0.811 | +0.354 |
+| `jumps_motion` per unit-min | 20.9 | 17.3 | **-17.2%** |
+| `jumps_decision` per unit-min | 10.5 | 11.7 | +11.4% |
+| switches per unit-min | 20.5 | 20.5 | **0.0** |
+| reversals per unit-min | 0.4 | 0.4 | 0.0 |
+| GREEN alive of 34 | **33** | **29** | **-4** |
+| RUST alive | 41 | 41 | 0 |
+
+**What it confirms.** The tube does what the row claims, and it is confirmed by an instrument built a round earlier for
+another purpose: `jumps_motion` counts drive-target jumps with the SAME option and target — motion-internal re-planning
+— and it falls 17.2% without being told to. That was pre-registered before the run precisely so a moving counter could
+not be mistaken for a moving game. **And the latency guarantee holds in the fight, not just in the unit test:**
+switches per unit-minute are 20.5 in both arms to the decimal, reversals 0.4 in both. The tube lengthens the life of a
+plan for an unchanged world and does not blunt the reaction to a changed one.
+
+**Why it still ships OFF, and this is a measured reason rather than a missing instrument.** GREEN finishes with
+**29 of 34 alive against 33 of 34** — the tube's arm lost five vehicles where the cadence lost one, on identical
+armies, arena, seed and orders, with RUST untouched at 41 both ways. That is one seed and deaths are the noisiest thing
+in this sim, so it is not proof of harm; it is exactly the size of signal that must not be flipped past. `held_share`
+0.46 → 0.81 says the tube is holding plans through a lot of fighting, and a held plan is a plan made against a world
+four times more stale than before.
+
+**The gate for next round, pre-registered here:** the same A/B over **>= 5 seeds**, reporting GREEN losses and the
+exchange ratio beside the re-decide counts. Flip only if losses are flat within seed noise. If they are not, the tube
+wants a shorter `TUBE_MAX_TICKS` (currently 2 s) or a tighter `TUBE_TARGET_M` before it is worth anything — cheaper
+thinking bought with worse fighting is not the trade A1 was for.
+
+**Also on the branch now:** nav's A6 field (`request["corridor"] = Movement.state(tank).get("corridor")`). Verified
+inert on this tree — `grep -c '"corridor"' game/ai/movement.gd` is **0** even after merging main, because nav's field
+is still on `stream/nav` at `16444beb` — so it passes `null`, which contract S4 §5 makes a named inactive case. nav's
+`a6_no_corridor == a6_asked` will keep reading 1087/1087 until their field reaches main, and their test asserts that
+state explicitly, so the inert case is a documented pass rather than a silent one.
+
 ### Owed to nav, recorded and deliberately NOT done tonight
 
 **1. `scenario_motion.gd:57` punishes a faster fight for being faster.** The assertion is
