@@ -163,6 +163,7 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 		settled.merge(_positions(squads[squad_name]))
 	var worst := {}
 	var off_slot: Array = []
+	var worst_unit := {}
 	var away := 0
 	var without_a_slot := 0
 	for squad_name: String in squads:
@@ -179,6 +180,14 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 			far = maxf(far, gap)
 			# The leash a unit fighting at its post keeps to, with the longer lead an escape (cover, breaking contact) is
 			# allowed: beyond that it has left the ground the player gave it.
+			if gap > far - 0.001:
+				# The worst unit in this squad, printed on EVERY run and not only on a failure. Two reasons, and the
+				# second is why it is not just nice to have: a squad at 22.2 m against a 36 m bar (which is where Delta
+				# sits on main, 62% of the budget, while the other four sit at 3-7 m) is invisible in a passing run that
+				# reports only an aggregate -- and it will start failing for whatever lands next and get blamed on it.
+				# And this code path then RUNS on every green run, so it cannot rot unexercised waiting for a red, which
+				# is the defect that produced half of today's wrong diagnoses.
+				worst_unit[squad_name] = "%s %.1f m off%s" % [unit_name, gap, _nose_of(unit_name, settled)]
 			if gap > TankBrain.PLAYER_POST_LEASH * TankBrain.ESCAPE_LEASH_FACTOR:
 				away += 1
 				# EVERY OFF-SLOT UNIT NAMES ITSELF: its gap, where it stands, and where it was sent. The aggregate alone
@@ -188,14 +197,16 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 				# carry a confident wrong diagnosis for half an hour -- two of us, in writing. **A measurement that
 				# forces its reader to borrow numbers from another measurement is incomplete, however correct its own
 				# total is.**
-				off_slot.append("%s %.0f m off: at (%.0f, %.0f), sent to (%.0f, %.0f) with squad %s" % [unit_name, gap,
-						(settled[unit_name] as Vector3).x, (settled[unit_name] as Vector3).z,
-						(slot as Vector3).x, (slot as Vector3).z, squad_name])
+				off_slot.append("%s %.0f m off: at (%.0f, %.0f), sent to (%.0f, %.0f) with squad %s%s" % [unit_name,
+						gap, (settled[unit_name] as Vector3).x, (settled[unit_name] as Vector3).z,
+						(slot as Vector3).x, (slot as Vector3).z, squad_name, _nose_of(unit_name, settled)])
 		worst[squad_name] = snappedf(far, 0.1)
 	print("MEASURE player_orders_rapid worst gap to its OWN slot per squad %s; %d of %d units off their slot, %d with no slot at all, %d destroyed" % [
 			worst, away, spawned.size(), without_a_slot, destroyed.size()])
 	# Printed as its own lines rather than folded into the MEASURE line: a roster belongs beside the total it explains,
 	# and grep-ability matters more than tidiness when the next reader is hunting a cause across two tests' output.
+	for squad_name: String in worst_unit:
+		print("  player_orders_rapid worst in %s: %s" % [squad_name, worst_unit[squad_name]])
 	for line: String in off_slot:
 		print("  player_orders_rapid off-slot: %s" % line)
 	# The exclusion must not be able to hide the thing the test is for: if the enemy wiped out most of the player's
@@ -346,3 +357,41 @@ func test_a_unit_ordered_across_contact_arrives() -> void:
 				"and nothing else takes the wheel on the way: it spent %d ticks on %s" % [options[option], option])
 	assert_true(gap <= TankBrain.PLAYER_POST_LEASH,
 			"and it fights from the ground it was given rather than wandering off (%.0f m away)" % gap)
+
+
+## Who a unit is nosed against, if anyone: the nearest other unit, the gap, and both hull lengths.
+##
+## combat's mechanism for the yaw-constraint regression is that a crew trying to seat is nosed against a SQUADMATE, the
+## plant refuses its arrival yaw because `test_move` counts that squadmate as a wall, and the brain re-tasks a unit that
+## never arrives. This is the half of that which lives in positions; their `refusals_applied` / `yaw_vehicle_contact`
+## counters are the other half, and the two should name the SAME units. If they do not, the story is wrong however well
+## the bisect fits it.
+##
+## Centre distance and hull lengths rather than an oriented footprint test, deliberately: a seating crew's yaw is
+## whatever its approach left it on, so an exact overlap here would be precision this cannot honestly claim. The raw
+## numbers are printed beside the label so a reader can judge instead of trusting it.
+func _nose_of(unit_name: String, settled: Dictionary) -> String:
+	var near := ""
+	var near_gap := INF
+	for other: String in settled:
+		if other == unit_name:
+			continue
+		var apart: float = (settled[unit_name] as Vector3).distance_to(settled[other] as Vector3)
+		if apart < near_gap:
+			near_gap = apart
+			near = other
+	if near == "":
+		return ""
+	var mine := _hull_length(unit_name)
+	var theirs := _hull_length(near)
+	var touching: bool = mine > 0.0 and theirs > 0.0 and near_gap < (mine + theirs) * 0.5 + 1.0
+	return "; nearest %s at %.1f m (hulls %.1f + %.1f)%s" % [near, near_gap, mine, theirs,
+			" CONTACT" if touching else ""]
+
+
+## A unit's hull length from the live match, or 0.0 when it has been freed.
+func _hull_length(unit_name: String) -> float:
+	var tank := _match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+	if tank == null:
+		return 0.0
+	return float(Units.stat(tank.unit_id, "hull_size", [0.0, 0.0, 0.0])[2])
