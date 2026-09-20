@@ -251,7 +251,7 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 		[ -z "$$left" ] && break; \
 		elapsed=$$(( $$(date +%s) - started )); \
 		printf '>> check: %dm%02ds, %d/%d done, waiting on:%s\n' \
-			"$$(( elapsed / 60 ))" "$$(( elapsed %% 60 ))" "$$count" "$(words $(CHECK_TARGETS))" "$$left" >&2; \
+			"$$(( elapsed / 60 ))" "$$(( elapsed % 60 ))" "$$count" "$(words $(CHECK_TARGETS))" "$$left" >&2; \
 	done ) & heartbeat=$$!; \
 	trap 'kill $$heartbeat 2>/dev/null' EXIT INT TERM; \
 	if $(MAKE) --no-print-directory -j$(CHECK_JOBS) -Otarget check-parallel; then status=0; else status=$$?; fi; \
@@ -309,7 +309,7 @@ check-timed: import ## T1: run check's targets one at a time with per-target wal
 	total=$$(( $$(date +%s) - started )); \
 	printf '# TOTAL\t%d\t\t\n' "$$total" >> $(BUILD_DIR)/check/timings.tsv; \
 	printf '>> check-timed: TOTAL %ds (%dm%02ds) over %d targets\n' \
-		"$$total" "$$(( total / 60 ))" "$$(( total %% 60 ))" "$(words $(CHECK_TARGETS))"; \
+		"$$total" "$$(( total / 60 ))" "$$(( total % 60 ))" "$(words $(CHECK_TARGETS))"; \
 	grep -v '^#' $(BUILD_DIR)/check/timings.tsv | sort -k2 -rn | head -5 \
 		| awk -F"\t" '{printf ">> check-timed: slowest %-18s %5ds\n", $$1, $$2}'; \
 	if [ -n "$$failed" ]; then echo ">> check-timed: FAILED:$$failed (the timings above are still valid)"; exit 1; fi
