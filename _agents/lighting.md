@@ -413,6 +413,63 @@ died, would be the exact mistake this document's rule 3 exists to prevent.**
 It is the first thing to build when builder0 is back, and it should land with its own paired `perf-scene`, not
 bundled with anything else.
 
+## 8b. The first strip, and what it changed (2026-09-20)
+
+The first frames went to the orchestrator and to feel the night they existed, which is the whole reason the
+following is a design note rather than a post-mortem. **Everything below was found by looking at frames, not by
+reading code.**
+
+**The edge emission was an outline, and the fix was not a dimmer one.** `show_edge` is added to `EMISSION` on the
+bevel/chamfer branch of `city_block.gdshader`, and **that branch is the silhouette** — so with the chamfers lit the
+term can only ever draw an outline, which is `art_direction.md` :56's named failure, *"Neon as outlines on
+everything, or a cartoon glow"*. Lowering its energy makes the anti-pattern quieter; it does not make it a different
+thing (feel). The street frame is what proved it: at the lead's wide pose the edges read as an aggressive styling
+choice, and at street level the same strip is a thick glowing bar across a flat wall with no housing and no seam.
+
+**So the default is the roof parapet only** (`show_chamfer_gain = 0`): a horizontal line along a roofline reads as a
+building; a line tracing every corner reads as a wireframe. The breathing that carries the block is
+`show_window` and `show_shop` — **light inside things, which is the rule** (:42) and the reference the art direction
+actually names (*"lit like a Blade Runner night"*, :31). The full outline is kept as the **`outline` style** so the
+lead can compare against his own words (*"making the lit edges breathe and glow"*); it ships to nobody.
+
+**Two colours are barred from the venue's fixtures, and the second reason is the better one:**
+
+- **Cool white is not in the palette.** It reads as architectural LED, which makes the city look *new* rather than
+  salvaged — and in the first strip it was the brightest thing on screen.
+- **Red is a signal in this game, not trim.** Warning lights and beacons are red (`CyberMaterials.RED` on the ad
+  screen's beacon and the crate's alarm). Spending it on building edges spends a colour that means *something is
+  wrong*.
+
+### The brightness hierarchy is a gate, and it is play rather than taste
+
+`art_direction.md` :72: the arena must be **"lit well enough to read the fight"**. The first strip inverted that —
+the brightest pixels in the frame were the building edges and the darkest were the arena floor and the vehicles.
+
+**The fight out-reads the periphery, and `make show-frames` enforces it.** Every frame samples the mean luminance of
+a **ring** window (the middle of the frame, where the fight is) against a **band** window (the top, where the blocks
+and stands are); `tools/show_luma_gate.py` fails the target if the band wins in any **default-style** frame. The
+`outline` variant is exempt — it exists to be compared, not to ship — and a failure in the **BEFORE** arm
+(`--no-show`, no patch, every fixture at its identity) is reported as *information about the venue* rather than as
+the show's bug, because that arm contains no show at all.
+
+The ordering the hierarchy asks for, top to bottom: **the fight → the window grid → the parapet.** In data that is
+the `edges` channel's ceiling sitting under the `windows` channel's floor, which a test asserts for every shipped
+patch.
+
+### A strip cannot show a cue
+
+A chase, a sweep and a strobe are **motion**. A still of a chase is a still of a bank of lights; a still of a strobe
+caught at its trough reads as *"dimmer"*, which is the opposite of the impression it gives. The first strip
+understated `last_stand` exactly that way. **Cues are shot as clips** (`make show-clips`: 60 frames 0.1 s apart,
+ffmpeg to a 6 s 10 fps mp4, 720p because motion is the subject); the strip shows the **fixtures**.
+
+### Shoot an event cue where it has headroom
+
+The first strip took the kill ripple under the `battle` cue, where the edge channel sits at **0.96 of a 1.00
+ceiling** — there was nothing left to ripple into, and the frame was indistinguishable from the battle frame. The
+ripple is now shot **against the idle, at three wavefront ages**. The general rule: *an additive effect is invisible
+on a channel that is already near its ceiling, so measure it against the quiet state, not the loud one.*
+
 ## 9. How this is measured
 
 | claim | the check |
