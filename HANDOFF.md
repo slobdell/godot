@@ -83,7 +83,10 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
   bool, A6 behind its opt-in switch; the baseline unmoved by its merge), so **what remains in the window is
   `tank_brain.gd` (+133: squad's corridor field and tube plumbing, combat's switching-cost seam) — OR no motion at
   all: a unit that spawns ALREADY intersecting looks identical to one nudged on tick one**, which would be a
-  placement-margin failure CP2 exposed (scale's). scale's probe prints spawn vs current position to tell the two apart. **The resize did not create it; it consumed the margin that hid it** (the contact-pip
+  placement-margin failure CP2 exposed (scale's). scale's probe prints spawn vs current position (and a 90-unit tick-one motion count) to tell the two apart. **No new RNG
+  draw exists anywhere in the window**, so if placement changed, its input was something else (scene-tree order from show's
+  mounted nodes is the remaining candidate); if it did not, the mechanism is tick-one motion in `tank_brain.gd` and the
+  **resize consumed the margin it used to have** — a shared composition, not any one stream's defect. **The resize did not create it; it consumed the margin that hid it** (the contact-pip
   finding's shape). scale's `make spawn-probe` names each flagged unit's position and the body it intersects and runs
   after its fairness series (~09:05); nav answers from that. Also found: the test's first assertion compares
   `Match.SPAWN_SLOTS` with a constant defined AS `Match.SPAWN_SLOTS` and cannot fail (combat's/squad's file).
