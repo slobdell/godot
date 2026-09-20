@@ -2023,8 +2023,11 @@ has the block band brighter than the fight ring in 22 of 30 frames at his 21° p
 would have blocked the merge for a property of the venue. The bar is now relative — the show must not make the
 ring/band ratio worse than the same frame with the show off, tolerance 3% against ±1.5% noise — and **the parapet
 default moves it −2.6% to +7.4%, mostly positive: lit interiors make the fight marginally easier to read.** feel's
-"brightest pixels are the edges" was a maximum on the outline variant, not this mean; frames now report both. The
-Terminus's own brightness hierarchy at his pose is a venue question for feel. Stills cannot show a cue (a chase is
+"brightest pixels are the edges" was a maximum on the outline variant, not this mean; frames now report both. **Diagnosed (feel, 05:20): the Terminus is the only arena with `block` props — eight 40 m lit towers INSIDE the fight at
+r = 40 and 69 m — and has half of pit's floodlights at the same size, both out at r = 128 on the centre line. The venue
+got brighter and the floor did not. Fix requested from scale (the layout is the one owner of arena brightness; feel
+refused to compensate in its materials): two floodlights at the street intersections among the blocks.** Found only
+because show reported a no-show control arm beside its treated one. Stills cannot show a cue (a chase is
 motion; last-stand caught at a strobe trough reads dimmer than idle), so short clips per cue and a before frame from the
 no-show arm follow. The kill ripple did not read in its frame (likely no headroom above the battle cue's 0.96) and is
 unproven until shot against lull. Cost: 15 uniform writes per frame idle, 16 on a kill, 25 in the victory sweep, driving
