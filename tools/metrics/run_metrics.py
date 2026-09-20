@@ -40,6 +40,17 @@ def _facing(cells):
     return (" " + " ".join(bits)) if bits else ""
 
 
+def _corridor(cells):
+    """A6's falsifier, with its active fraction welded to it. `null` when the producer's build has no corridor
+    key: the fraction cannot be computed and no verdict may be published from that log."""
+    if cells["off_corridor_fraction"] is None:
+        return " off_corridor=null"
+    return (" off_corridor=%.3f (active %.3f, %d ticks; inactive %d, slow %d, ordered_arc %d)"
+            % (cells["off_corridor_fraction"], cells["corridor_active_fraction"],
+               cells["corridor_active_ticks"], cells["corridor_inactive_ticks"],
+               cells["corridor_below_speed_ticks"], cells["corridor_ordered_arc_ticks"]))
+
+
 def print_report(row, handle):
     head = row["by_unit_id"]
     write = handle.write
@@ -87,7 +98,7 @@ def print_report(row, handle):
                   cells["cusps_unclassified"], cells["efficiency_refused_zero_path"],
                   cells["sparc_refused_parked"], cells["sparc_refused_short"],
                   # Beside the fractions, never inside them.
-                  _facing(cells)))
+                  _facing(cells) + _corridor(cells)))
     turns = row.get("turns")
     if turns:
         write("  hull TURN between consecutive events (degrees; the HULL's own rotation, not a bearing to any\n"

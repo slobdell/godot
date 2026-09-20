@@ -819,6 +819,106 @@ class AffineFormationResidualTest(unittest.TestCase):
 
 
 # ==================================================================================================
+# A6's falsifier: time driving AGAINST the corridor (legibility.md §7)
+# ==================================================================================================
+
+
+class CorridorTest(unittest.TestCase):
+    EAST = (1.0, 0.0)
+
+    def drive(self, dx, corridor=EAST, ticks=30, **kw):
+        """A unit stepping `dx` metres east per tick under attack_move, with `corridor` as its tangent."""
+        out = []
+        for i in range(ticks):
+            out.append(make_sample(
+                i, x=i * dx, goal_x=1000.0, goal_z=0.0, order_verb="attack_move",
+                corridor_x=(corridor[0] if corridor else None),
+                corridor_z=(corridor[1] if corridor else None), **kw))
+        return out
+
+    def test_driving_ALONG_the_corridor_opposes_nothing(self):
+        out = metrics.corridor_opposition(self.drive(0.5), TICK_RATE, has_corridor=True)
+        self.assertEqual(out.opposing, 0)
+        self.assertEqual(out.active, 29)
+        self.assertAlmostEqual(out.fraction, 0.0, places=9)
+        self.assertAlmostEqual(out.active_fraction, 1.0, places=9)
+
+    def test_driving_BACKWARDS_along_it_opposes_every_tick(self):
+        out = metrics.corridor_opposition(self.drive(-0.5), TICK_RATE, has_corridor=True)
+        self.assertEqual(out.opposing, 29)
+        self.assertAlmostEqual(out.fraction, 1.0, places=9)
+
+    def test_the_tangent_is_the_LEG_not_the_bearing_to_the_goal(self):
+        """legibility.md §2: the corridor is the path nav is driving, NOT the straight line to the goal. A hull
+        rounding a corner drives along the leg while the goal bearing points through a wall -- so a statistic
+        built on the goal bearing would be wrong in exactly the cases A6 exists for. This asserts the metric
+        follows the LEG: the same motion is compliant against one tangent and opposing against another."""
+        north = (0.0, 1.0)
+        along = metrics.corridor_opposition(self.drive(0.5, corridor=self.EAST), TICK_RATE, has_corridor=True)
+        across = metrics.corridor_opposition(self.drive(0.5, corridor=north), TICK_RATE, has_corridor=True)
+        back = metrics.corridor_opposition(self.drive(0.5, corridor=(-1.0, 0.0)), TICK_RATE, has_corridor=True)
+        self.assertAlmostEqual(along.fraction, 0.0, places=9)
+        self.assertAlmostEqual(across.fraction, 0.0, places=9)   # perpendicular is not OPPOSING
+        self.assertAlmostEqual(back.fraction, 1.0, places=9)
+
+    def test_no_corridor_KEY_is_no_data_and_refuses_a_verdict(self):
+        samples = self.drive(0.5, corridor=None)
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=False)
+        self.assertIsNone(out.fraction)
+        self.assertIsNone(out.active_fraction)
+        self.assertEqual(out.known, 0)
+
+    def test_a_NULL_corridor_is_INACTIVE_and_named_not_absent(self):
+        """§5 makes "no path yet" an inactive case with a name, and §7 reports the active fraction beside the
+        falsifier -- because a law that improves by switching itself off more often is not a pass."""
+        samples = self.drive(0.5, corridor=None)
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=True)
+        self.assertEqual(out.inactive, 29)
+        self.assertEqual(out.active, 0)
+        self.assertAlmostEqual(out.fraction, 0.0, places=9)        # nothing opposed, over nothing active
+        self.assertAlmostEqual(out.active_fraction, 0.0, places=9)  # and THAT is the number that exposes it
+
+    def test_the_active_fraction_catches_a_law_that_switched_itself_off(self):
+        # Half the ticks lose their leg. The fraction stays perfect; the ACTIVE fraction halves and tells you.
+        samples = self.drive(-0.5)
+        for s in samples[15:]:
+            s.corridor_x = None
+            s.corridor_z = None
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=True)
+        self.assertAlmostEqual(out.fraction, 1.0, places=9)
+        self.assertLess(out.active_fraction, 0.55)
+        self.assertGreater(out.active_fraction, 0.45)
+
+    def test_an_ordered_ARC_is_excluded_and_reported_beside(self):
+        samples = self.drive(-0.5, facing_arc=True)
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=True)
+        self.assertEqual(out.ordered_arc, 29)
+        self.assertEqual(out.active, 0)
+        self.assertEqual(out.opposing, 0)
+
+    def test_facing_ordered_alone_does_NOT_excuse_a_tick(self):
+        """The distinction that matters: an order carries its facing from the moment it is issued, so excluding
+        on `facing_ordered` would excuse the whole drive to the gate -- hiding exactly what A6 is measured on."""
+        samples = self.drive(-0.5, facing_ordered=True, facing_arc=False)
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=True)
+        self.assertEqual(out.ordered_arc, 0)
+        self.assertAlmostEqual(out.fraction, 1.0, places=9)
+
+    def test_a_stopped_hull_opposes_nothing(self):
+        out = metrics.corridor_opposition(self.drive(0.001), TICK_RATE, has_corridor=True)
+        self.assertEqual(out.active, 0)
+        self.assertEqual(out.below_speed, 29)
+
+    def test_only_the_named_order_verb_counts(self):
+        samples = self.drive(-0.5)
+        for s in samples:
+            s.order_verb = "move"
+        out = metrics.corridor_opposition(samples, TICK_RATE, has_corridor=True, order_verb="attack_move")
+        self.assertEqual(out.known, 0)
+        self.assertIsNone(out.fraction)
+
+
+# ==================================================================================================
 # Hull turn between events (combat's A2 bearing read)
 # ==================================================================================================
 
