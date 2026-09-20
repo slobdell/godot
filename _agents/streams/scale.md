@@ -539,6 +539,37 @@ files, and it was measuring a transient. **Checking it before acting on it cost 
 sent three streams to fix nothing** — and my own overlap script had already printed a vacuous "overlap: NONE" the same
 morning. In a round whose recurring failure is checks that cannot fail, the checks I write are not exempt.
 
+### Two units are outside the contract that catches bad boxes — and one is the lead's own example
+
+`roster-scale` prints **`no mesh`** for exactly two of the twenty-one:
+
+```
+tank    condemned  Type D school bus, 40 ft (Blue Bird All American)  12.19  8.62  [2.40, 2.40, 8.62]  no mesh
+burner  condemned  Pumper fire engine, 32 ft (Pierce Enforcer)         9.75  6.89  [2.40, 2.40, 6.89]  no mesh
+```
+
+`SizeLook.natural_size` returns zero without a `model_scene`, so `box_at_length` hands today's width and height back
+unchanged. **That is the brief's rule, followed on purpose** — *"those units get a length from the rule and keep their
+width/height ratio from today's box… Do not invent proportions."* Nothing here is a defect.
+
+**But the consequence lands on the unit the lead pointed at.** He named the *bus-tanks*. `tank` is `Units.DEFAULT`, it
+wears the shared hull art, and it is one of the two the rule could not derive — so it is **8.62 m long and still
+2.40 m wide and 2.40 m tall**, inherited from the old boxy `2.4 × 2.4 × 3.6`. A Type D school bus is ~2.6 m wide and
+**~3.1 m tall**: the reference says *bus*, the box says *long low slab*, at **3.6:1 instead of a bus's 4.7:1** and
+0.7 m short in height.
+
+**Not reopened here, deliberately.** I looked at `lineup_pose.png` and judged that it reads as a bus rather than a
+dozer, and he has that frame on the review page; a look he is about to rule on is not mine to relitigate. If he wants
+true bus proportions it is either **art for those two units** (feel's, a later round) or a **hand-chosen width/height
+from the cited reference** — and the second is exactly what "do not invent proportions" forbids me, so it needs his
+word.
+
+**The part that generalises: this class is invisible to every check we have.** feel's drawn-vs-box test compares a box
+to a mesh, and these two have no mesh, so **they pass by absence** — the same shape as the vacuous lint over zero files
+and my own overlap script over zero obstacles. Two of twenty-one units sit outside the contract that would catch a bad
+box, and nothing said so until the table's own `no mesh` column was read. **That column is the only thing standing
+between "derived" and "assumed" for these two, which is why it is printed on every run.**
+
 ### Queued, in order, behind the current work (recorded so none of it is rediscovered)
 
 1. **The guard + the three fixture-less arena tests** — landing as its own commit, **no baseline move**.
