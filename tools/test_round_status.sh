@@ -106,6 +106,31 @@ mk() { mkdir -p "$1" && cd "$1" && $G init -q . && echo a > f && $G add f && $G 
   grep -q 'main at .*, CHECKED)' <<<"$out" ) \
 	&& ok "tag at main's tip: reads CHECKED" || bad "tag at tip: reads CHECKED"
 
+# THE TAG SAYS A CHECK RAN, NOT THAT IT PASSED. A lightweight tag records no verdict, and reading
+# %(contents:subject) on one silently returns the COMMIT's subject -- which reads exactly like a verdict.
+( cd "$tmp/r1"
+  out=$(bash "$rs" --no-remote 2>&1)
+  grep -q 'VERDICT NOT RECORDED' <<<"$out" ) \
+	&& ok "a lightweight tag: says no verdict was recorded" || bad "lightweight tag: no verdict recorded"
+( cd "$tmp/r1"
+  out=$(bash "$rs" --no-remote 2>&1)
+  grep -q 'says a check RAN, not that it passed' <<<"$out" ) \
+	&& ok "and says what the tag does and does not mean" || bad "says what the tag means"
+( cd "$tmp/r1"
+  out=$(bash "$rs" --no-remote 2>&1)
+  grep -q 'one' <<<"$(grep 'main-checked' <<<"$out")" ) \
+	&& bad "the COMMIT subject must not be printed as a verdict" \
+	|| ok "the commit's own subject is never printed as a verdict"
+( cd "$tmp/r1" && $G tag -d main-checked >/dev/null 2>&1
+  $G tag -a main-checked -m '1516 passed, 2 failed (spawn test, drain-guard budget)'
+  out=$(bash "$rs" --no-remote 2>&1)
+  grep -q 'main-checked .*: 1516 passed, 2 failed (spawn test, drain-guard budget)' <<<"$out" ) \
+	&& ok "an annotated tag: its verdict is printed verbatim" || bad "annotated tag prints its verdict"
+( cd "$tmp/r1"
+  out=$(bash "$rs" --no-remote 2>&1)
+  grep -qi 'green' <<<"$out" ) \
+	&& bad "the word 'green' never appears" || ok "the word 'green' never appears"
+
 ( cd "$tmp/r1" && echo b > f && $G commit -qam two && echo c > f && $G commit -qam three
   out=$(bash "$rs" --no-remote 2>&1)
   grep -qE 'last CHECKED at [0-9a-f]+, 2 commits back' <<<"$out" ) \

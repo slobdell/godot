@@ -45,6 +45,16 @@ main_tip=$(git -C "$main_root" rev-parse --short main 2>/dev/null || echo "?")
 # far main has moved PAST it is the difference between "main is green" and "main was green 49 commits ago",
 # and the two get said the same way in conversation.
 checked=$(git -C "$main_root" rev-parse --short main-checked 2>/dev/null || true)
+# THE TAG SAYS A CHECK RAN. It does not say the check PASSED -- the one on `0ad28f49` read 1516 passed,
+# 2 failed. So the verdict is printed beside it, or its absence is, and the word "green" appears nowhere.
+#
+# The verdict can only come from an ANNOTATED tag. On a lightweight tag `%(contents:subject)` silently
+# returns the COMMIT's subject, which reads exactly like a recorded verdict and is not one -- so the object
+# type decides, not the presence of text.
+checked_verdict=""
+if [ -n "$checked" ] && [ "$(git -C "$main_root" cat-file -t main-checked 2>/dev/null)" = tag ]; then
+	checked_verdict=$(git -C "$main_root" for-each-ref refs/tags/main-checked --format='%(contents:subject)' 2>/dev/null)
+fi
 if [ -z "$checked" ]; then
 	printf '== worktrees (main at %s; NO main-checked tag -- nothing says main was ever checked) ==\n' "$main_tip"
 elif ! git -C "$main_root" merge-base --is-ancestor main-checked main 2>/dev/null; then
@@ -57,6 +67,15 @@ else
 		printf '== worktrees (main at %s, CHECKED) ==\n' "$main_tip"
 	else
 		printf '== worktrees (main at %s; last CHECKED at %s, %s commits back) ==\n' "$main_tip" "$checked" "$behind"
+	fi
+fi
+if [ -n "$checked" ]; then
+	if [ -n "$checked_verdict" ]; then
+		printf '   main-checked %s: %s\n' "$checked" "$checked_verdict"
+	else
+		printf '   main-checked %s: VERDICT NOT RECORDED -- a lightweight tag says a check RAN, not that it passed.\n' "$checked"
+		printf '                 Annotate it so the tool cannot be read as saying green:\n'
+		printf '                 git tag -af main-checked %s -m "<the runner'"'"'s line and the reds>"\n' "$checked"
 	fi
 fi
 printf '%-16s %-16s %-9s %-12s %-6s %-7s %s\n' FOLDER BRANCH TIP BEHIND/AHEAD DIRTY BASE SUBJECT
