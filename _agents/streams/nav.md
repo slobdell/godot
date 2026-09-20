@@ -276,7 +276,14 @@ mechanism cannot act is not a control; its zero is indistinguishable from a resu
 ---
 
 
-**✅ GREEN ON THE TIP: `3b01f5b7` — `>> remote: make check exited 0 (build/ copied back)`, `1295 passed, 0 failed`,
+**✅ GREEN: `53861455` — `>> remote: make check exited 0 (build/ copied back)`, `1321 passed, 0 failed`,
+`sim-baseline passed: 04414f5d6a6dfa7c` (builder0).** Covers the legibility key and the corridor tangent.
+**`main` merged at `d6a1f454`, and the FINAL check is running on that** — it covers everything after `c6222a5c`
+(the corridor, the `no_law`/`override` split, A6's two clauses, the `a6=` arm field, the arrival-heading test, two
+missed `.uid` files) and compares against `main`'s current baseline `d4c049819a5833d3`. **If that hash is not named
+green below, this branch is UNVERIFIED-BUT-COMMITTED after `53861455` and must be read that way.**
+
+**✅ GREEN (earlier): `3b01f5b7` — `>> remote: make check exited 0 (build/ copied back)`, `1295 passed, 0 failed`,
 `lint: all scripts parse`, `sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)` — builder0.** The baseline hash is
 **identical** to `5c8f08b3`'s, so nothing on this branch moves it and every round-9 row is still opt-in. **This also
 closes `0f14cb2b`**, whose 255 was transport: it is an ancestor of the checked tip, so it was unverified rather than
