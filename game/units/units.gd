@@ -913,12 +913,21 @@ static func stat(unit_id: String, key: String, fallback: Variant = null) -> Vari
 ## Parse "tank.max_shield=0,cannon.ammo=60,tank.armor.front=6" into Units.tuning and Weapons.tuning.
 ## Returns "" or an error. Keys must exist; values become numbers. One level of nesting is allowed
 ## (armor facings).
+##
+## A2 (round 9): "switch.<knob>" is a third owner, the switching cost's own knobs (SwitchingCost.TUNABLE). It is here
+## rather than in a brain variant because it is the arm switch for a combat measurement, and every tool that measures
+## combat already passes --tune; `switch.price=0` is the control arm of the same build.
 static func apply_tuning(spec: String) -> String:
 	for pair in spec.split(",", false):
 		var parts := pair.split("=")
 		var path := parts[0].split(".")
 		if parts.size() != 2 or path.size() < 2 or path.size() > 3 or not parts[1].is_valid_float():
 			return "tune: expected owner.key=number, got '%s'" % pair
+		if path[0] == "switch":
+			if path.size() != 2 or not SwitchingCost.TUNABLE.has(path[1]):
+				return "tune: no switching-cost knob '%s'" % parts[0]
+			SwitchingCost.tuning[path[1]] = float(parts[1])
+			continue
 		var is_unit := PROFILES.has(path[0])
 		var owner: Dictionary = PROFILES.get(path[0], Weapons.PROFILES.get(path[0], {}))
 		var value: Variant = owner.get(path[1])

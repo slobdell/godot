@@ -235,4 +235,519 @@ it is his call whether that is a size question or a stats question, and this rou
 
 ## Status
 
-**Not started** (brief written 2026-09-19 by the orchestrator; `main` at `f49aa08a`, first full check in flight).
+_Last updated 2026-09-20 03:2x (worker, `stream/combat` at `0ba8d2c9`). **PAUSED** on the orchestrator's call
+(lead session limit; builder0 down). Resume on its "RESUME" message._
+
+## ⏸ WHERE THIS STREAM IS, AND THE EXACT NEXT STEP
+
+**Tip `0ba8d2c9`, working tree clean, nothing uncommitted.** Six commits, every one green on
+`make test FILTER=switch` at the time it was made:
+
+| commit | what |
+|---|---|
+| `ea792b2e` | A2's switching cost as one expression, inert (S5) |
+| `b69d081b` | the seam in `tank_brain.gd` + the X1 arm counter + `make switch-arm` |
+| `c68b423e` | the lay term (A2's missing third term) + the lesson-153 floor fix |
+| `a1209857` | the stance floor gated as an arm + `option_share`/`transitions` + the `--require` refusal gate |
+| `1e328dfe` | Status: the duel regression |
+| **`0ba8d2c9`** | **the flat bonus becomes the default with its dwell timer RETIRED; A2 becomes the opt-in arm** |
+
+**Verification standing at the pause:**
+- `make test FILTER=switch` — **25 passed, 0 failed** (laptop, `0ba8d2c9`).
+- `make test FILTER=brain_decide` — **18 passed, 0 failed**, including `test_commitment_prevents_flip_flopping`.
+- **lint local: 534 files, 2 error lines, both baselined** (`tank.gd` via `tank.tscn`'s ext_resource self-reference;
+  `faction_art.gd` via `Units.roster` under `--check-only`). **Neither is in a file this stream touched** — checked
+  by diffing `main...HEAD` against the lint output, not by eye. Lesson 157: a remote-green commit is NOT
+  parse-checked, so this local lint is the only parse evidence that exists for this tip.
+- `make remote T=check` **could not run**: builder0 unreachable, the wrapper failed at the sync step with
+  `cannot reach slobdell@builder0` / `Error 3`. It never reached the suite, so `build/` is not holding a previous
+  run's artefacts for this stream.
+- **A full local `make check` was started on `0ba8d2c9` and left running** at the pause; its log is at
+  `…/scratchpad/check-local.log`. It had not finished. **Do not read it as a verdict until it prints its own
+  totals.**
+
+### ⚠ A DEFECT IN THIS STREAM'S FILE, CONFIRMED AND SEQUENCED: hulls rotate through scenery
+
+Reported by nav (`7850fbef`, `tests/test_nav_face_recovery.gd`), **verified here in the code rather than taken on
+trust**: `game/tank/tank.gd:425` assigns `global_basis = Basis.looking_at(forward, Vector3.UP)` unconditionally and
+`:431` `move_and_slide()` resolves **translation only**. Godot is never asked about the yaw. So a hull's translation
+is collision-resolved and its rotation is not.
+
+nav's measurement: a 14 m `gang_tank` in a 4.8 m corridor told to face across it — **10.42 m of path, 44.0° of yaw,
+net drift 4.42 m**. A 14 m hull through 44° sweeps ~12.1 m laterally while still 4.4 m off the corridor's centre.
+The basis went through the walls. Their positive control is in the same test (the corridor does wedge it).
+
+**Why it matters beyond tidiness:** this is the lead's round-8 complaint stated more exactly than round 8 could —
+*"the semi trucks are yawing in place (should be impossible, they're not a tracker vehicle)"*. A **partially** pinned
+wheeled hull yawing freely looks exactly like a tracked pivot. `:435-437` already collapses non-tracked `_speed` to
+`estimated_velocity.dot(forward)` after the slide, so a hull flat against a wall does stop; the failure is the hull
+that keeps winning small legal creeps and converting them into yaw the geometry cannot take.
+
+**⚠ CP2 makes it strictly worse across most of the roster.** The lateral sweep this ignores scales with
+**length × sin(yaw)**, and every hull except the rig grows 1.5–2×. The units it newly reaches — bus, garbage truck,
+assault gun — are the ones the lead asked to be resized *because he liked what the semi looked like*.
+
+**Deliberately NOT fixed in the same branch state as the dwell-timer retirement.** It is a second sim-moving change,
+and two sim-moving changes in one merge is how a round loses the ability to attribute anything. One moved baseline
+with a named cause, not two with a shrug.
+
+**The intended shape:** test the rotated hull at the current position with a shape query at the candidate transform
+(not `test_move` — a zero-motion `test_move` is not reliable for this) and refuse, or limit, the yaw that does not
+fit. Refusing outright is the one-line version and the first thing to measure; limiting to the largest fitting
+increment is better behaviour and more code. **Open architecture question put to nav:** whether the constraint
+belongs in the plant or in A7's level-0 feasibility mask. This stream's instinct is the plant — a hull that cannot
+physically rotate should not rotate whichever layer asked.
+
+**Acceptance is nav's, ready-made:** the third assertion of `tests/test_nav_face_recovery.gd` is written to go **red**
+when the basis is coupled to a collision test. nav will re-run its benefit measurement against the fix, and its
+`face`-recovery row (currently `face_checked 7, giveups 0` — a mechanism reached, working as written, and measuring
+nothing because the hull never stalls, it passes through the wall it is stalled against) becomes measurable for the
+first time.
+
+### THE EXACT NEXT STEP, in order
+
+1. **Read `check-local.log`'s totals** (or re-run `make check` if it was killed). **`sim-baseline` is EXPECTED TO
+   FAIL**: retiring the dwell timer changes option choice and option choice is the simulation. The orchestrator
+   records the new hash (Invariant 2); this branch does not. Anything else red is this stream's and is fixed before
+   the hash is named.
+2. **When builder0 returns**, check for a stale `slot.sh` of this stream's on the box first, then
+   `REMOTE_SLOTS=6 make remote T=check`. Read the result from the wrapper's own `>> remote: make check exited <N>`
+   line and the runner's `N passed, M failed` — never a shell exit through a pipe, and **a 255 is transport, not the
+   suite** (after which `build/` holds a PREVIOUS run's artefacts).
+3. **Name the hash** as: `this commit is green, merge here: <sha>` + `lint local: 534 files, 2 baselined lines` +
+   **the sim-baseline-moves declaration**.
+4. **`make ai-perf` on builder0** (never the laptop — the perf scenario fails here on speed alone). Pre-registered:
+   A2 costs under 2% of `ai_usec_per_tick`. Note it is now the OPT-IN arm, so the default build's cost is the flat
+   bonus's, and the A2 figure needs `--tune=switch.cost=1`.
+5. **Send metrics the switch-event files** for the paired read (predicted `angle_deg` against the hull rotation
+   actually performed). Blocked until CP1 merges, because the `--trajectory` emitter lives on metrics' branch.
+6. **CP2 lands → X3**: `git merge main`, then re-take the sim baseline (orchestrator's), `make faction-matrix` on
+   yard and pit, the `gangs vs law` pair via `compare-arms`, and `make engagement` split direct/indirect. **Nothing
+   size-dependent is compared across CP2.** Two movements are pre-registered as NOT this stream's doing: the
+   engine-deck scenario moves because scale's `_apply_hull_size` makes the Condemned tank 0.8 m taller, and the
+   muzzle ceiling drop (1.30 → 1.14 m, 18 muzzles, floor set by the Rat Rod's own 1.24 m mesh) is a real ballistic
+   change that moves kill distances and cover columns for reasons unrelated to hull size.
+7. **X4**: migrate `TacticalQuery.hull_hidden` onto `Arena.cover_fraction` (built, positive control passed: the
+   12.19 m step is gone and yard's 14 m figure is within 0.03 of its 12 m one), and **rename
+   `EngagementStats.near_cover`** — it has never measured cover, it measures proximity to an obstacle footprint, so
+   every "cover use" column in `make engagement` is really a "standing near a wall" column. **A3's falsifier is only
+   half met and that must not be reported as fully met:** at 2.93 m the query's worst-case error is 0.759 (grid term
+   `2.0/length`), so the honest claim is *"cover works for hulls the grid can resolve, and short hulls are where they
+   already were"*.
+8. **X5 (stretch)**: the rig's unexplained `gangs vs law` 9/20 → 0/20 now has a better candidate than "bigger
+   target" — the roster-wide muzzle drop is a *mechanism*.
+9. **The hull-rotation defect above**, immediately after the green hash is named — it is this stream's file, it is
+   the lead's own complaint, and CP2 amplifies it.
+
+### Requests to other streams, outstanding
+
+- **metrics**: the bearing read (`--switches`) on both arms' event files, and the cusp split that decides A2's
+  verdict. Offered and agreed; blocked on CP1.
+- **scale**: is a 1.0 m cover cell affordable? At 2.93 m the grid error falls 0.683 → 0.341, and the units that hide
+  for a living are the light ones. If not, the range limit is written into `hull_hidden`'s threshold as a known bound.
+- **squad**: `tests/test_brain_decide.gd` has a one-line edit from this stream (its second commitment case now places
+  `since` outside the retired dwell window), and `game/ai/tank_brain.gd` carries the seam. Both are theirs to take,
+  replace or revert.
+
+
+
+### The plan (worker contract step 2)
+
+Ordered smallest-foundation-first. Where the brief left a choice, the one-line reason is on the item.
+
+1. **X1a — the cost function before the counter.** `game/combat/switching_cost.gd`: a pure static
+   `seconds(situation, from, to)` and `penalty(...)`, unit-tested on hand-computed cases. Written first because
+   the X1 counter has to report *this* quantity, not a placeholder.
+2. **X1b — the arm counter.** `decide()` returns a `"switch"` telemetry dict; a probe of mine aggregates it per
+   hull class over a real fight (`make switch-arm`). Null A/B (same build twice) asserted as a test.
+3. **X2 — replace the seam.** The flat `COMMIT_BONUS` multiplier (`tank_brain.gd:1174-1180`), the `CLEAR_LANE`
+   bake (`:1044`) and the dwell timer (`MIN_COMMIT_TICKS`/`EMERGENCY_MARGIN`) go; the cost lands in their place.
+   Then the two acceptance scenarios, churn from `make squad-decisions`, and the counterbalanced ladder.
+4. **X2b — REVISIT_S/REVISIT_FACTOR, measured as its own arm.** Decision recorded below; it is removed in a
+   *separate* commit with its own before/after so the round knows which term did what.
+5. **X3 — the resized roster** (blocked on CP2), **X4 — A3's consumer** (blocked on scale's seam), **X5** stretch.
+
+### Decisions taken (with reasons)
+
+- **The cost is a price in utility, never a veto.** Linear in the discarded work with a hard cap, so a big enough
+  utility advantage always wins. P3 measured what a veto does; the cap is the structural guarantee it cannot recur.
+- **`CLEAR_LANE` is exempt from the cost.** It does not change *what* this crew is fighting — it clears the lane to
+  the fight it is already in. That is why it carried a doubled commitment bake; the exemption replaces the bake
+  with a single documented edge constant instead of a bonus-on-a-bonus.
+- **The `commit_bonus` brain-variant key keeps working and selects the OLD path.** So `x5c` (1.35) still runs, and
+  the round gets both arms in one build for a counterbalanced A/B without editing squad's `brain_variants.gd`.
+- **REVISIT_S/REVISIT_FACTOR: retire it** — a 3 s window that discounts returning to what you just left is a second
+  treatment for the pathology A2 prices physically (you pay the work going to B and the work coming back), and the
+  catalogue's own rule is one treatment per pathology per round (Part 2, composition hazard). Removed in its own
+  commit, with the measurement, so the claim is falsifiable rather than asserted.
+
+### Baselines, taken before anything changed (cite these, not prose)
+
+**`make ai-scenarios` on the PRISTINE tree at `9f864474`, laptop (lesson 38 — it is not in `check`, so it drifts):**
+**44 passed, 1 failed, 2 pending.**
+
+- The one failure is `scenario_perf::test_the_brains_stay_inside_the_cpu_budget` (**22162 µsec per tick**) and it is
+  **pre-existing on this machine** — laptop speed, not behaviour (the laptop is ~2.75× slower than builder0). It does
+  mean A2 has to prove it costs no measurable CPU, and that proof comes from `make ai-perf` **on builder0**, not here.
+- The two pending are `scenario_cp2::test_a_scout_guns_down_a_lancer` and
+  `scenario_evasion::test_a_light_unit_dodges_most_tank_shells`. Both pending before this stream touched anything.
+
+**The two acceptance scenarios, before (same run):**
+
+| scenario | MEASURE line | bar | margin |
+|---|---|---|---|
+| `test_a_squad_focuses_its_fire` | `without squad tactics 69% [403.0, 0.0, 894.0], with 100% [1374.0, 0.0, 0.0]` | squad ≥ 60% and > alone + 15 pts | **31 points** |
+| `test_a_scout_works_onto_a_tanks_engine_deck` | `x4mw { "deck": 23, "hits": 41, "shots": 45 }; x3m { "deck": 0, "hits": 0, "shots": 0 }` | deck share ≥ 0.50 | **0.56, six hits** |
+
+⚠ **The engine-deck scenario has six hits of margin, and its control (`x3m`) fires zero rounds** — a control that
+never fires proves nothing, so only the treatment arm carries information. Relayed to nav and the orchestrator.
+
+### A7 review (nav's `7edec4fb`), sent 2026-09-20 — one blocking objection, one correction
+
+- **Blocking:** A7 makes `standoff_holds()` "a candidate like any other", but level 5's `standoff` weights then vote
+  against the hold every tick (a hold scores 0 on `tangent`, a circling candidate the full 0.5, and both clear level 2
+  equally). That puts round 7's largest measured win up for re-election. Acceptance bar handed to nav:
+  `scenario_motion::test_a_scout_holds_a_firing_position_instead_of_ramming`, today **closest 26.9 m, in-band 0.92,
+  nose-on 0.91, 226 shots** against the `run` control's 6.0 m / 13 shots. A `standoff` hull is a *fixed gun*, so
+  nose-on **is** its aim.
+- **Correction:** the scout is **not** a turreted hull — `Units.PROFILES["scout"]["mount"] == "fixed"` (all three
+  scouts), and `TankBrain.motion_style():2238` sends every fixed mount to `standoff`, where nav keeps armour at level
+  3. The armour demotion **cannot reach the engine-deck scenario**; it applies only to `strafe`, whose armour weight is
+  already **0.15**, the smallest term in that vector. Its real falsifier is the turreted duel
+  `test_two_tanks_duel_on_the_move_front_armor_first` (today **front hits 100% (a6) / 80% (x3)**).
+- **N5 confirmed rather than assumed:** level 2's band is `[weapon.preferred_min, weapon.preferred_max]` read straight
+  from `Weapons.PROFILES` (`tank_brain.gd:2315`), so level 2 *is* the engagement envelope. No objection, on two
+  conditions given to nav (keep reading the weapon profile; check the tolerance against `TankBrain.fire_band`).
+- **L2 suppression: no objection.** And `beaten` is **already** a hard filter today (`combat_motion.gd:313-316`), so
+  promoting it to level 1 is a rename, not a win. `PENALTY_HIT` 3.0 against a maximum achievable `strafe` sum of ~3.25
+  is a real change but a tail effect.
+- Cross-stream finding relayed to the orchestrator (squad's, not mine): level 1 filters before level 4, so a unit
+  ordered to hold a firing line could be pulled off it by fire without the leash being consulted. **Ruled**: under a
+  hold or station the leash becomes a level-0 feasibility bound, so a held unit dodges *within* its leash.
+
+### Contract S5 (orchestrator ruling, 2026-09-20), and how this stream complies
+
+A2 is **one expression**, owned here (`game/combat/switching_cost.gd`), consumed at exactly two seams: (a) the brain's
+option scorer — mine, done; (b) nav's level-5 commitment term in `combat_motion.gd`, the day nav's A7 commit exists.
+nav takes `seconds_for()` (the seconds are portable; the utility price is calibrated to the brain's 0..1.2 score range
+and is not) and **drops the stance floor**, because nav's candidates are directions and every direction change already
+carries its own Δθ — the floor would charge every candidate the full velocity and flatten the ring.
+
+### Done so far (commits on `stream/combat`)
+
+| commit | what | green |
+|---|---|---|
+| `ea792b2e` | **X1a — the switching cost as one expression** (`game/combat/switching_cost.gd`), its unit tests, the `switch.*` tune namespace in `units.gd`, and `--tune` on `tools/faction_matrix.py`. Inert: nothing called it. | `make test FILTER=switching_cost` **12 passed, 0 failed** (laptop) |
+| `b69d081b` | **X2 seam + X1b — the brain's commitment term is the switching cost** (`tank_brain.gd`, squad's file, combat's seam — **on its own commit for squad to take, replace or revert**, per S5 and round 6's CP4 precedent), plus the arm counter and `make switch-arm`. | `make test FILTER=switch` **20 passed, 0 failed** (laptop, `b69d081b`) |
+
+**What the seam replaced, all of it rather than added beside it** (catalogue Part 2): the flat `COMMIT_BONUS` 1.15
+multiplier, the `MIN_COMMIT_TICKS`/`EMERGENCY_MARGIN` dwell timer, and `CLEAR_LANE`'s `COMMIT_BONUS × 1.15` bake
+(now `CLEAR_LANE_EDGE = 1.15` — it was two 1.15s, one of which existed only to cancel the bonus on the fight it
+competed with, and that one had nothing left to cancel).
+
+**Both arms are in one build** (lesson 117): `--tune=switch.legacy=1` is `main`'s pre-A2 behaviour including its dwell
+timer, `--tune=switch.price=0` is the cost computed and never charged, and variant `x5c` still selects 1.35. Which arm
+ran is never inferred from a checkout.
+
+### Three findings so far, none of them predicted by the brief
+
+**1. The catalogue's A2 is incomplete: braking + slew is not all a weapon switch destroys.**
+Priced as specified, a stationary turret swapping between two targets on the **same bearing** pays **exactly zero** —
+and squad's `test_brain_decide::test_commitment_prevents_flip_flopping` is exactly that case (two enemies dead ahead
+at 30 m and 36 m, crew halted). The third thing a switch throws away is **the gun's lay**: N5's own gate 2, where a
+crew must hold a contact for `Engagement.acquire_seconds` before its first round leaves the barrel. Added from
+`Engagement`'s own constants, in combat's file, charged **only when the target changes** (ORBIT or SUPPRESS on the
+target you are already laid on keeps the lay) and deliberately **backward-looking** — the lay invested in the target
+being abandoned, never the time to acquire the next one. A crew laid on nothing pays nothing, so taking up a newly
+seen contact is never slowed; a forward-looking term would have spent this round's *reaction latency ≤ 2 ticks*
+criterion on something nobody would have thought to check. Recorded by the orchestrator on the catalogue's A2 row.
+
+**2. A score floor is a saturation, and it fell through to array order (lesson 153, found by nav on its leash).**
+The price was written `maxf(score − penalty, 0.0)`. That floor ties any two candidates priced below water, after which
+the argmax falls through to **whichever appears first in the candidate array** — an arbitrary silent decision. Not
+theoretical: `HOLD`'s baseline is 0.1 against a 0.35 cap. **Removed**; the price is a plain subtraction and scores may
+go negative (nothing downstream reads a raw score except `_top`, which only sorts).
+**The cap itself is safe here and the reasoning is worth keeping:** `MAX_PENALTY` saturates the *penalty*, not the
+ranked quantity, so two candidates beyond it lose the same 0.35 and keep their own order — an equal offset preserves
+ranking. nav's leash was the opposite: it clamped the thing that *was* the level.
+`test_two_candidates_beyond_the_cap_still_rank_by_utility` fails if anyone reintroduces a floor.
+
+**3. `free()` does not exist as a static name.** `Object.free()` is inherited and a static of that name does not parse
+— it takes down every file that references the class, which reads exactly like a broken tree. It is `never_charged()`.
+
+### Decision on REVISIT_S / REVISIT_FACTOR (the brief asks, Invariant 0c)
+
+**Retire it — in its own commit, with its own before/after, once the churn A/B has a baseline.** It is a 3 s window
+that discounts returning to what a crew just left; A2 prices that return physically and twice over (the work going to
+B, and the work coming back), so keeping both is two treatments for one pathology, which is the catalogue's Part 2
+hazard and its own stated rule. It is not removed in the same commit as the seam, because then nobody could say which
+term did what.
+
+### X1 result — the arm counter on a real fight (and the hole it found in my own pre-registration)
+
+Laptop, `c68b423e`, `make switch-arm ARENA=yard SEED=3`, gangs vs law, 120 s, both armies watched.
+
+| class | thinks | consulted | priced/think | **flipped/think** | switches/unit-min | rev 4 s/unit-min | offered_s median | p90 |
+|---|---|---|---|---|---|---|---|---|
+| artillery | 15153 | 0.98 | 12.33 | 0.223 | 8.8 | 0.64 | 2.433 | 3.379 |
+| ifv | 13061 | 0.99 | 12.30 | 0.102 | 21.6 | 0.77 | 1.568 | 2.440 |
+| scout | 14463 | 0.97 | 14.11 | 0.081 | 12.2 | 2.75 | 1.589 | 3.114 |
+| support | 5028 | 0.99 | 11.78 | 0.061 | 7.9 | 1.22 | 1.250 | 2.784 |
+| suppressor | 3779 | 0.99 | 11.02 | 0.157 | 17.4 | 1.11 | 1.902 | 2.887 |
+| tank | 3772 | 0.98 | 12.63 | 0.132 | 28.5 | 1.93 | 2.662 | 3.773 |
+
+**Against the pre-registration:** `consulted` **0.92–0.99** everywhere against a bar of ≥ 0.80 ✓.
+`flipped_per_think` **0.061–0.231**, inside the pre-registered 0.01–0.25 band ✓ — the term changes decisions without
+deciding the fight. `paid_s_median` is **0.0** in every class, which is the healthy reading: the median think keeps
+its choice and pays nothing. Spread `law_tank` 2.662 s against `gang_support` 1.250 s, **×2.13** ✓.
+
+⚠ **But the claim I pre-registered — the War Rig against the rat rod — was NOT TESTABLE FROM THIS RUN, and nothing in
+the output said so.** The seeded `cpu` draft drew `gang_hail` for the gangs, which fields **no `gang_tank` at all**.
+The probe's own doc comment claimed "the roster's extremes are both on the field"; the numbers it printed were real,
+the claim they were produced to test was unanswerable, and the run exited clean. This is metrics' control lesson in a
+different costume — *a run can exit 0, print exactly the expected numbers, and have done none of the thing you asked*.
+**Fixed by naming archetypes instead of trusting a draft:** `SWITCH_GREEN_ARMY=gang_ram` (two rigs and a rat rod) vs
+`SWITCH_RUST_ARMY=law_line`. The rig-against-rat-rod figure is re-taken on that and is not claimed until it is.
+The ×2.13 above stands on its own terms — it is the dearest against the cheapest hull *that was actually present*.
+
+Also fixed in the same pass: every rate is now split **by locomotion** as well as by class (metrics: the creep is a
+property of wheels, not of a role — `ifv` and `lancer` are both wheels and `tank` is tracks, so a role split was
+reading two mechanisms as one column), and the legacy arm no longer emits `inf` into its own JSON.
+
+### The control arm works exactly as pre-registered — which is the part of X1 that matters most
+
+`--tune=switch.price=0` against the treatment, same fight. The control runs the **same code path** (`arm: cost`,
+consulted 0.96–0.99), computes and reports the cost it would have charged (`offered_s_median` 1.244–2.569 against the
+treatment's 1.250–2.662), and **flips exactly 0.000 decisions per think in every class**. That is the pre-registered
+prediction met to the digit, and it is what makes every later A/B readable: the control is the treatment's own build
+with one number set to zero, not a different checkout.
+
+### ✅ X2 acceptance 1: BOTH behaviour scenarios pass, unchanged — the 1.35 trade is not repeating
+
+`make ai-scenarios` on `c68b423e` (laptop), against the pristine baseline at `9f864474`:
+
+| scenario | pristine `9f864474` | A2 `c68b423e` | bar |
+|---|---|---|---|
+| `test_a_squad_focuses_its_fire` | alone 69%, squad **100%** `[1374, 0, 0]` | alone 69%, squad **100%** `[1399, 0, 0]` | ≥ 60% and > alone + 15 pts ✓ |
+| `test_a_scout_works_onto_a_tanks_engine_deck` | `deck 23, hits 41, shots 45` (0.56) | `deck 23, hits 41, shots 45` (**bit-identical**) | share ≥ 0.50 ✓ |
+
+**This is the bar that killed round 8's 1.35 knee, and A2 does not move it at all.** The mechanism is not luck: a
+squad's focus target is usually already the nearest threat, so the bearing change — and therefore the cost — is
+small; and a scout orbiting one target never *changes target*, so ORBIT → ORBIT is free by construction. The thing
+the flat bonus bought its churn reduction with, A2 does not spend.
+
+⚠ Both were run **before** CP2 and before nav's A7. They are re-run on nav's A7 commit (promised to nav and the
+orchestrator, with the hash) and again after CP2 — scale's `_apply_hull_size` fix grows the Condemned `tank`'s
+collider by 0.8 m in height, and that hull is the *target* in the engine-deck scenario, so its hit distribution moves
+for reasons that have nothing to do with A2.
+
+### THE FIVE-ARM TABLE (laptop, `a1209857`, `make switch-arms`, yard, seeds 1/3/7, `gang_ram` vs `law_line`, 120 s)
+
+Both War Rigs on the field (the probe refuses a run without them). Means over three seeds, sd in brackets.
+
+**Switches per unit-minute:**
+
+| class | **cost** (A2) | cost-nostance | flat (1.15 alone) | flat+dwell (`main`) | none |
+|---|---|---|---|---|---|
+| ifv | 17.0 [0.8] | 17.6 [0.6] | 10.5 [0.6] | 11.2 [0.2] | 23.2 [2.0] |
+| scout | 13.6 [1.9] | 13.9 [1.2] | 9.2 [2.0] | 9.7 [0.3] | 14.8 [0.7] |
+| support | 7.4 [0.1] | 9.1 [1.5] | 6.6 [0.7] | 5.9 [0.5] | 10.0 [0.5] |
+| suppressor | 15.1 [1.9] | 13.4 [1.5] | 8.4 [1.4] | 8.0 [1.3] | 16.1 [2.0] |
+| tank | 20.7 [1.2] | 20.4 [1.7] | 12.8 [0.8] | 12.7 [0.7] | 31.3 [0.6] |
+
+**Reversals within 4 s per unit-minute:**
+
+| class | cost | cost-nostance | flat | flat+dwell | none |
+|---|---|---|---|---|---|
+| ifv | 1.1 | 0.8 | 0.6 | 0.5 | 1.0 |
+| scout | 3.0 | 3.7 | 1.4 | 1.4 | 3.1 |
+| support | 1.3 | 3.0 | 1.0 | 0.8 | 2.9 |
+| suppressor | 2.4 | 1.4 | 0.4 | 0.6 | 1.7 |
+| tank | 1.3 | 1.0 | 0.4 | 0.5 | 0.9 |
+
+#### Four results, in order of how much they change what the round believes
+
+**1. DECIDED OVERNIGHT — the stance floor is REMOVED, because it bought nothing.** cost against cost-nostance:
+switches **−1% to +23%**, no consistent sign, inside the seed spread; reversals mixed in sign with an sd larger than
+the effect; option shares mixed and small. Lesson 25 — it had to earn its place by removal and did not. The
+consequence is recorded rather than discovered: `ENGAGE → SUPPRESS` on one target now costs **exactly zero** (same
+bearing, same lay), which is one of round 7's two measured thrash shapes. If it reappears, the fix is a discard
+charged only to options that fight from a **standstill** (reading `_act`: SUPPRESS halts, ENGAGE manoeuvres), never
+this floor again. Asserted as a deliberate property in `test_changing_stance_on_one_target_is_now_free`.
+
+**2. ⚠ MY STATED MECHANISM FOR THE DUEL REGRESSION WAS WRONG, AND MY OWN INSTRUMENT IS WHAT SAYS SO.** I claimed the
+floor suppressed `ENGAGE → FLANK`. **FLANK's share of time is 0.000–0.018 in every arm** — the duel's "flank seconds"
+are `_combat_move`'s circling *inside* ENGAGE, not the FLANK option at all. The floor was never that mechanism.
+**The real candidate is in the same table:** for `tank`, ENGAGE share is **0.319 (cost) against 0.523 (flat)**, with
+COVER_FIRE **0.231 against 0.094**. A2 moves tanks out of circling-while-engaging and into static hide/peek, and
+COVER_FIRE is where a duel's flanking goes to die. Open, with evidence, not guessed at.
+
+**3. THE DWELL TIMER DOES ESSENTIALLY NOTHING.** flat against flat+dwell: switches **−11% to +6%**, reversals ±0.2.
+All of `main`'s churn suppression is the flat bonus; the timer is inert on this measure. P3's *"a veto stores the
+pressure up"* was inferred in round 8 from a doubled switch-and-switch-back count; on switch rates in a real fight the
+timer is simply not doing the work anyone attributed to it. **Whatever else happens to A2, retiring the timer costs
+nothing.**
+
+**4. A2 IS A WEAKER CHURN SUPPRESSANT THAN THE TERM IT REPLACES.** cost against flat: **+47% to +79%** more switches.
+cost against none: **−7% to −34%** fewer. So the mechanism does something — about half what the flat bonus does — and
+the brief's −60% bar (set against the flat 1.15) is missed by a wide margin and in the wrong direction.
+
+**No verdict.** Whether A2's extra switches are genuine re-targeting or the wheeled creep is the question, and it is
+metrics' A12 cusp split that answers it, not this table. Switch-event files with the predicted `angle_deg` /
+`slew_s` / `brake_s` / `lay_s` per event are written by `--switch-events=` and go to metrics for the paired read
+against the hull rotation actually performed. **Nothing published before CP1.**
+
+### ⚠ REGRESSION FOUND, AND IT IS IN A TERM THAT IS NOT CATALOGUE A2 — IT IS MINE
+
+`make ai-scenarios` on `c68b423e` is **42 passed / 3 failed / 2 pending** against the baseline's **44 / 1 / 2**. I
+checked my two named scenarios and reported the acceptance before checking the suite total; that was the wrong order
+and this section is the correction.
+
+**Failure 1, `scenario_dodge_rate::test_who_dodges_and_how_often_they_try` — documented noise, with evidence.** The
+scenario's own header says the attempt count *"reshuffles with any change at all"* and it is deliberately not in
+`make check`. Dodge **effectiveness** is identical between the runs — `ifv x5p`: **48 fired, 41 hit, 15% dodged** in
+both — and five of its six rows were already `0 of ~500` in the baseline. Only the label count moved, 9 of 451 → 0 of
+444. Not a regression; do not tune anything to it (the header says so in more detail).
+
+**Failure 2, `scenario_motion::test_two_tanks_duel_on_the_move_front_armor_first` — a real regression.**
+
+| | pristine `9f864474` | A2 `c68b423e` |
+|---|---|---|
+| shots (`x3`) | [4, 3] = 7 | **[3, 2] = 5** (bar ≥ 6) |
+| duel length | 20.0 s | **15.2 s** |
+| **flank seconds** | **[6.27, 5.27]** | **[2.07, 3.53]** |
+| front hits | 80% | 75% (bar ≥ 50%) |
+| moving share | [0.685, 0.665] | [0.725, 0.679] |
+
+The firing **rate** barely moved (0.35/s → 0.33/s); the duel ended sooner because one tank died. What changed is that
+the tanks spend **60% less time** working round to each other's side or rear — they trade frontally instead.
+
+**⚠ MY FIRST SUSPECT WAS THE STANCE FLOOR AND IT WAS WRONG — see the five-arm table above.** I reasoned that the
+floor charged `ENGAGE → FLANK` a full stop for a manoeuvre that never stops. **FLANK's share of time is 0.000–0.018
+in every arm**: the duel's "flank seconds" are `_combat_move`'s circling *inside* ENGAGE, not the FLANK option, so
+the floor was never in that path. The instrument built to test the hypothesis refuted it, which is the only reason
+it was not shipped as an explanation.
+
+**The live candidate, from the same table:** for `tank`, ENGAGE share **0.319 (A2) against 0.523 (flat)** and
+COVER_FIRE **0.231 against 0.094**. A2 moves tanks out of circling-while-engaging and into static hide/peek, and
+COVER_FIRE is where a duel's flank seconds go to die. Not fixed, not guessed at — recorded with its evidence, and it
+is one of the things metrics' cusp split will speak to.
+
+**Orchestrator's ruling (2026-09-20):** the floor is not in the catalogue and it taxes prosecution of the fight, so it
+**earns its place by removal** (lesson 25), and the flank-seconds number outranks any churn ladder (lesson 150).
+**Removed** — the five-arm table above says it bought nothing, which is a better reason than the one I gave.
+
+**One correction to that ruling's premise, recorded so a later reader is not misled.** It assumed the lay term already
+prices `ENGAGE ↔ SUPPRESS`. **It does not** — the lay is charged only when the *target* changes, and a suppressing
+crew still has its gun on the same contact, so it has not abandoned its acquisition. If the floor goes wholesale,
+`ENGAGE ↔ SUPPRESS` on one target is priced at **exactly zero**, and that is one of the two thrash shapes round 7
+measured.
+
+**And the code says something sharper than "the floor is a tax".** `_act` (`tank_brain.gd:1833`, `:1845`): ENGAGE and
+SUPPRESS share their band logic exactly, but inside the band **SUPPRESS halts** (*"Standing still is what makes fire
+effective"*) while **ENGAGE manoeuvres** (`_combat_move`). So the floor is *right* for `ENGAGE → SUPPRESS`, which
+genuinely discards the velocity, and *wrong* for `ENGAGE → FLANK`, which does not. **If the `cost-nostance` arm shows
+the floor buying something, the refinement is to charge the velocity discard only for options that fight from a
+standstill** (`SUPPRESS`, `COVER_FIRE`'s hide/peek, `BOMBARD`) — a physical property of the option, stated in one
+place, not a per-class knob. Not built yet: lesson 25 says removal first.
+
+**Instrumented rather than argued.** `--tune=switch.stance=0` gates the floor; `make switch-arms` carries a
+`cost-nostance` arm; and the probe now reports `option_share` (how long each class actually **runs** each option) and
+`transitions_per_unit_min` (which option → option transitions happen). A suppressed manoeuvre is invisible to every
+switch counter and visible in those two.
+
+### ⚠ NEGATIVE RESULT: A2 does not hit the −60% churn bar, and the bar was asking the wrong question
+
+Laptop, `c68b423e`, yard, seed 3, gangs vs law, 120 s, both armies watched. **Switches per unit-minute:**
+
+| class | A2 (cost) | legacy (flat 1.15 **+ dwell timer**) | price=0 (no commitment at all) | A2 vs nothing |
+|---|---|---|---|---|
+| artillery | 8.8 | 6.8 | 11.0 | **−20%** |
+| ifv | 21.6 | 11.7 | 27.7 | **−22%** |
+| scout | 12.2 | 8.2 | 16.8 | **−27%** |
+| support | 7.9 | 6.7 | 7.8 | +1% |
+| suppressor | 17.4 | 6.5 | 18.1 | −4% |
+| tank | 28.5 | 20.7 | 48.9 | **−42%** |
+
+**Reversals within 4 s per unit-minute** (the shape the lead actually complains about):
+
+| class | A2 | legacy | price=0 |
+|---|---|---|---|
+| artillery | 0.64 | 0.10 | 0.87 |
+| ifv | 0.77 | 0.61 | 1.31 |
+| scout | 2.75 | 0.86 | 3.49 |
+| support | 1.22 | 1.28 | 1.72 |
+| suppressor | 1.11 | 0.51 | 1.62 |
+| **tank** | **1.93** | 0.82 | **0.70** |
+
+**Read plainly: A2 reduces churn against no commitment at all, by about half as much as the flat bonus plus its dwell
+timer does, and for `tank` it produces MORE switch-and-switch-back than having no commitment term whatsoever.** The
+brief's −60% bar was set against the flat 1.15 and A2 goes the other way. I pre-registered a −30% to −50% miss; the
+truth is worse than my own pessimistic prediction, and the `tank` reversal row is a result I would not have guessed.
+
+**The bar conflates two mechanisms, and that is a measurement fault I am fixing rather than an excuse.** `main`'s
+commitment is a flat bonus **and** a hard dwell timer; A2 replaces both. So "A2 against legacy" charges A2 with
+beating two mechanisms while being one, and any churn credited to the bonus may belong to the timer — the very timer
+P3 says works by storing pressure up. Added `--tune=switch.dwell=0`, which takes the timer out of the legacy arm and
+leaves the flat bonus alone, so the round can say which term did what:
+
+| arm | what it is |
+|---|---|
+| default | A2's switching cost |
+| `switch.legacy=1` | flat 1.15 **+** dwell timer (`main`) |
+| `switch.legacy=1,switch.dwell=0` | flat 1.15 alone |
+| `switch.price=0` | no commitment term at all |
+
+**Caveats that must travel with these numbers.** Three different fights: the arms diverge after the first differing
+decision, so unit-minutes are not distributed identically and a class that dies early contributes little. One seed,
+one map, one matchup, laptop. `tank`, `suppressor` and `support` have the smallest samples (3.7k–5.0k thinks against
+13–15k). **None of this is a verdict** — the falsifier verdict waits for CP1 (metrics' A12), per the standing rule.
+
+**And the distinction that decides it is one my instrument cannot draw.** Label-counted switches cannot separate
+genuine re-targeting from the wheeled creep, and metrics has just measured that **56% of all reversals are the creep**
+and that it is a property of **wheels** rather than of a role. Every class above except `tank` is wheeled. So the
+`tank` row — tracks, the one hull that produces **zero** creep cusps — is the only row in these tables that is
+unambiguously about decisions, and it is the worst one. That is where I will look first.
+
+### X2 pre-registration — written BEFORE the runs, 2026-09-20
+
+The brief asks for the numbers expected before the run, so here they are, including the one I expect to miss. All on
+the laptop unless a line says builder0; arm A = default (the switching cost), arm B = `--tune=switch.legacy=1`
+(`main`'s pre-A2 flat 1.15 plus its dwell timer), arm C = `--tune=switch.price=0` (cost computed, never charged).
+
+**Arm counter** (`make switch-arm`, yard, seed 3, gangs vs law, 120 s):
+- `consulted` ≥ **0.80** for every hull class on the field — a crew in a fight nearly always has a current choice.
+- `offered_s_median` for `gang_tank` (the 14 m War Rig) ≥ **2×** `gang_scout` (the rat rod). The unit test already
+  says ×2.09 in a hand-built 140° case; this is the same claim in a real fight, where the angles are whatever they are.
+- `flipped_per_think` between **0.01 and 0.25**. Below 0.01 the term is inert and A2 is not an arm; above 0.25 it is
+  deciding the fight rather than pricing it, and that would be a different problem.
+- Arm C: `flipped_per_think` **exactly 0.000** with `offered_s_median` **unchanged** from arm A — that is what makes it
+  a control rather than a different build.
+
+**Churn** (same probe, arm A against arm B; round 8's yard figures at 1.15 were 18.1 switches / 0.30 reversals per
+unit-minute):
+- switches per unit-minute: the brief's bar is **−60%**, i.e. ≤ 7.2. **I predict I will miss it: −30% to −50%.** A
+  price that a decisive option can always pay cannot buy the silence a veto buys, and it should not. Recording the
+  miss in advance is the point — if it comes in at −60% I want that to be a surprise, not a target I drifted toward.
+- reversals within 4 s per unit-minute: **< 0.20** (the bar). This one I expect to hit, because A→B→A pays twice.
+- The honesty check that goes with it: `flipped_per_think` and the switch rate are printed side by side, so churn that
+  fell because every crew froze is visible as such.
+
+**The two acceptance scenarios** (`make ai-scenarios`):
+- `ai_focus_fire`: **unchanged** (100% with squad tactics vs 69% alone). A squad's focus target is usually already the
+  nearest threat, so the angle — and therefore the cost — is small.
+- `ai_cp2_scout_engine_deck`: **0.50–0.60**, i.e. it holds but stays tight. Orbiting re-chooses ORBIT on the same
+  target, which is free; only the first ENGAGE → ORBIT pays, via the stance floor. **This is the one at risk**, and it
+  had six hits of margin before I touched anything.
+
+**Ladder** (`make faction-matrix` on yard and pit, SEEDS ≥ 5, arm A against arm B, builder0): **no significant change
+in any faction pair**, |Δ| < 15 points, which at n ≈ 30 is inside the noise this tool resolves. It is the safety net,
+never the evidence (lesson 150).
+
+**And the one that is not optional:** `make ai-perf` on **builder0**. A2 adds one `acos`, a handful of multiplies and
+a dictionary per think. Predicted cost: **under 2%** of `ai_usec_per_tick`. The perf scenario already fails on this
+laptop for speed alone, so that number is worth nothing from here.
+
+### Questions for the lead
+
+None. (Balance is explicitly deferred by him; nothing here queues a balance question.)
