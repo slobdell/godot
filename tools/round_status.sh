@@ -41,8 +41,49 @@ if [ -z "$have_git" ]; then
 	printf '   (a worktree copied to the build box has no .git -- the launch rsync excludes it)\n'
 else
 main_tip=$(git -C "$main_root" rev-parse --short main 2>/dev/null || echo "?")
-printf '== worktrees (main at %s) ==\n' "$main_tip"
-printf '%-16s %-16s %-9s %-7s %-6s %s\n' FOLDER BRANCH TIP BEHIND/AHEAD DIRTY SUBJECT
+# `main-checked` (lesson 190) marks the last commit on main that a full check actually passed. Knowing how
+# far main has moved PAST it is the difference between "main is green" and "main was green 49 commits ago",
+# and the two get said the same way in conversation.
+# `^{commit}`, and it is not decoration: on an ANNOTATED tag `rev-parse main-checked` returns the TAG
+# OBJECT's id, not the commit's. This printed `f4d327b8` where the orchestrator had just said `0ad28f49`
+# -- two ids for one thing, in the line a reader uses to look it up. Annotating the tag was the fix I asked
+# for, and it silently changed what this expression means: the same shape as make expanding `$` before my
+# shell quoting, one layer up from where I was looking.
+checked=$(git -C "$main_root" rev-parse --short main-checked^{commit} 2>/dev/null || true)
+# THE TAG SAYS A CHECK RAN. It does not say the check PASSED -- the one on `0ad28f49` read 1516 passed,
+# 2 failed. So the verdict is printed beside it, or its absence is, and the word "green" appears nowhere.
+#
+# The verdict can only come from an ANNOTATED tag. On a lightweight tag `%(contents:subject)` silently
+# returns the COMMIT's subject, which reads exactly like a recorded verdict and is not one -- so the object
+# type decides, not the presence of text.
+checked_verdict=""
+if [ -n "$checked" ] && [ "$(git -C "$main_root" cat-file -t main-checked 2>/dev/null)" = tag ]; then
+	checked_verdict=$(git -C "$main_root" for-each-ref refs/tags/main-checked --format='%(contents:subject)' 2>/dev/null)
+fi
+if [ -z "$checked" ]; then
+	printf '== worktrees (main at %s; NO main-checked tag -- nothing says main was ever checked) ==\n' "$main_tip"
+elif ! git -C "$main_root" merge-base --is-ancestor main-checked main 2>/dev/null; then
+	printf '== worktrees (main at %s; main-checked %s is NOT an ancestor of main -- it was rewound or rewritten) ==\n' \
+		"$main_tip" "$checked"
+	checked=""
+else
+	behind=$(git -C "$main_root" rev-list --count main-checked..main 2>/dev/null || echo "?")
+	if [ "$behind" = 0 ]; then
+		printf '== worktrees (main at %s, CHECKED) ==\n' "$main_tip"
+	else
+		printf '== worktrees (main at %s; last CHECKED at %s, %s commits back) ==\n' "$main_tip" "$checked" "$behind"
+	fi
+fi
+if [ -n "$checked" ]; then
+	if [ -n "$checked_verdict" ]; then
+		printf '   main-checked %s: %s\n' "$checked" "$checked_verdict"
+	else
+		printf '   main-checked %s: VERDICT NOT RECORDED -- a lightweight tag says a check RAN, not that it passed.\n' "$checked"
+		printf '                 Annotate it so the tool cannot be read as saying green:\n'
+		printf '                 git tag -af main-checked %s -m "<the runner'"'"'s line and the reds>"\n' "$checked"
+	fi
+fi
+printf '%-16s %-16s %-9s %-12s %-6s %-7s %s\n' FOLDER BRANCH TIP BEHIND/AHEAD DIRTY BASE SUBJECT
 git -C "$main_root" worktree list --porcelain 2>/dev/null \
 	| awk '/^worktree /{w=$2} /^branch /{sub("refs/heads/","",$2); print w" "$2}' \
 	| while read -r dir branch; do
@@ -51,7 +92,17 @@ git -C "$main_root" worktree list --porcelain 2>/dev/null \
 		dirty=no; [ -n "$(git -C "$dir" status --porcelain --untracked-files=no 2>/dev/null)" ] && dirty=YES
 		if [ "$branch" = main ]; then ba="-"
 		else ba=$(git -C "$main_root" rev-list --left-right --count "main...$branch" 2>/dev/null | tr '\t' '/'); fi
-		printf '%-16s %-16s %-9s %-12s %-6s %s\n' "$(basename "$dir")" "$branch" "$tip" "${ba:-?}" "$dirty" "$subject"
+		# Is what this branch has taken FROM main covered by a check? Its merge-base being an ancestor of
+		# main-checked is the precise question, and it is the one that decides whether a red test here can
+		# be blamed on main or has to be explained.
+		base="-"
+		if [ -n "$checked" ] && [ "$branch" != main ]; then
+			mb=$(git -C "$main_root" merge-base main "$branch" 2>/dev/null || true)
+			if [ -z "$mb" ]; then base="?"
+			elif git -C "$main_root" merge-base --is-ancestor "$mb" main-checked^{commit} 2>/dev/null; then base="yes"
+			else base="NO"; fi
+		fi
+		printf '%-16s %-16s %-9s %-12s %-6s %-7s %s\n' "$(basename "$dir")" "$branch" "$tip" "${ba:-?}" "$dirty" "$base" "$subject"
 	done
 fi
 

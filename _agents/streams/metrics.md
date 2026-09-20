@@ -263,6 +263,45 @@ is the orchestrator's call, not his.)
 > `test_theme_city_block::test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll` — **that
 > last one I cannot find written down anywhere and it may be new.**
 
+> ### The lint gap: my structural hypothesis was WRONG, and the probe said so
+> I argued the root cause was that a per-file `--check-only` cannot see an error that only appears when the
+> project compiles together, and recommended a whole-project pass. **The probe on builder0 (`b839495c`)
+> refutes it.** Verbatim, four arms:
+>
+> | arm | result |
+> |---|---|
+> | 0 positive control (blatant syntax error at the same `res://` path) | `Parse Error: Unterminated string.` — the experiment is valid |
+> | A self-contained 12-line ternary, nothing from the project | `Cannot infer the type of "my_map" …` |
+> | B real `movement.gd` at `bffdea0f`, class cache present | `Cannot infer the type of "my_map" …` |
+> | C same, class cache moved aside | `SimClock not declared` + knock-on constants (different errors, not fewer) |
+>
+> So the checker sees this class fine, with or without the cache: **the green run never checked
+> `movement.gd`.** That is the silent-pass hole, closed at `2e73a05e` (no output at all / killed by a signal
+> / blind for the whole run). **No whole-project pass was built** — it would be a second forty-second gate
+> justified by a guess I now know was wrong.
+>
+> The probe paid for itself twice: arm 0 proved `res://build/…` resolves, which is the uncertainty that made
+> me defer the stronger self-test. `lint` now carries **two** liveness probes — the eight baselined
+> artefacts (catches a wholly blind run) and a synthetic type-inference error whose finding is REQUIRED
+> (catches a checker that can reproduce yesterday's findings but not see a new one).
+>
+> ### `check` keeps going, and check4 measured what that is worth
+> `>> check: 16 passed, 2 FAILED, 0 NOT RUN` on `0269e7b0`, against **check3's 10 of 18** under the old
+> behaviour — one failing shard used to abandon seven other targets with nothing in the log saying so.
+> Summary cross-checked against the markers: 18 started, 16 done, 2 failed, 0 never started. They agree.
+>
+> ### `make test FILTER="a|b"` exited 127, and quoting alone would have been worse
+> The filter is a substring, so a quoted `a|b` matches nothing — and the runner printed `0 passed, 0 failed`
+> and **exited 0**. **A filter that matches no tests is now a failure**; `|` means alternation; `'` and `$`
+> are refused by name. `$` was found by the test, not by me: I quoted against the shell and **make had
+> already expanded it** (`FILTER=$HOME` arrived as `OME`).
+>
+> **The general form, four instances today:** a fix aimed at one layer defeated by a layer above it that was
+> never in the picture — make's expansion beating shell quoting, a pipeline reporting `tail`'s status,
+> `$(date)` resetting `$?`. And separately, three times: *a test asserted something about its environment it
+> had never checked* (`TANK_SQUAD_SLOT` set inside `check`, fixed sleeps on a loaded box, no `.git` on the
+> build box). Every one surfaced only because the suites are IN `check`.
+
 > ### Orchestrator's post-backlog tooling block: three items, all in, one check outstanding.
 > | commit | what | the finding it produced |
 > |---|---|---|
