@@ -262,5 +262,162 @@ at for everything visible; every number with commit and machine.
 
 ## Status
 
-**Not started** (brief written 2026-09-20 by the orchestrator; `main` at `a1c2ab24`, the eighth stream, added
-mid-round at the lead's request).
+_Updated 2026-09-20 (overnight). Branch point `e3501ef9`. **Items 1-6 are built and green locally; the lead gate
+(the frame strip) is the only thing outstanding, and it is waiting on builder0.**_
+
+### Where it stands
+
+| item | state | commit |
+|---|---|---|
+| 0. Hard rules | done, and they are written down rather than remembered | `415f9e09` |
+| 1. `_agents/lighting.md` before code | **done**, reviewed by feel and control, their answers folded in with reasons | `415f9e09` |
+| 2. The channel engine | **done** | `a3e86c01` |
+| 3. First fixtures (Terminus blocks, perimeter rim) | **code done**; before/after perf and the frame strip pending builder0 | `a3e86c01` |
+| 4. Patches as data | **done** (`terminus`, `yard`; `make show-report`) | `a3e86c01` |
+| 5. Cues from the match | **done** (7 state cues + the kill ripple) | `a3e86c01` |
+| 6. Signage, pools, tower beams | **done** | `b3bc7896` |
+| 7. Stretch | not started (airship screen, a non-building fixture, a gallery view) | — |
+
+**Local, laptop, at `b3bc7896`: 72 passed, 0 failed** on `--filter=show`; arena 79/0, fx 111/0, theme 39/0, crowd
+16/0; **all touched scripts parse-checked locally** (metrics' lesson 157 — a remote-green commit is not
+parse-checked, so nothing here is called green off a remote run alone).
+
+**`make show-report`, laptop, `b3bc7896`:** terminus **7 uniform writes per frame from 7 patch entries**, yard **4
+from 4**. That is the architecture's whole claim, and it is O(patch entries), never O(instances): eight blocks, six
+rim edges, every sign in the venue and every floodlight pool each cost **one** write, because the per-instance
+desync is a phase the mesh already carries.
+
+### The design, in one paragraph
+
+A channel packs into **one `vec4`** — `(floor, span, clock, sharpness)` — and **one function**,
+`show_value(chan, phase) = chan.x + chan.y * pow(max(0.5 + 0.5*sin(chan.z + phase), 1e-4), chan.w)`, lives in
+`game/theme/fx/shaders/show.gdshaderinc` and, identically, in `ShowChannel.level_at()`. A test asserts the two
+bodies are the same line after normalising language differences, so the headless tests keep describing what the
+player sees. `phase` is the per-instance offset and never comes from the CPU: a block's seed in `COLOR.g`, the rim's
+angle in world space, a sign's `INSTANCE_CUSTOM.a`, a pool's `.y`, a tower's lamp angle. Everything else — programmes,
+patches, cues — is data.
+
+### Decided overnight (the lead asleep; most reversible option taken, reason recorded)
+
+1. **The `Show` mounts itself** under the scene tree root (`FxWorld`'s own pattern) and follows `Arena.active`,
+   rather than being added by `FxWorld` or `ArenaDressing`. *Reason:* it needs no edit to any file feel owns, and
+   `Arena.active` already carries the arena's `show` key because `normalize()` deep-duplicates.
+2. **The show never grows a second `MatchMood`** — lazy booth lookup by `CrowdVoice.BOOTH_GROUP`, cached, copes with
+   null (feel's condition, `CrowdVoice._mood()`'s pattern). With no booth (headless, `--mute`, `make perf-scene`) the
+   show runs its idle and the kill ripple still fires. **The state cues are live in the game the lead plays**,
+   because a windowed launch attaches the booth by default; `make perf-scene PERF_FLAGS="--music=on"` attaches a
+   silent one so the cue path can be measured without unmuting.
+3. **The show director owns the arena-wide wash and reads `AdBroadcast.light_color()` as an input, never writes it.**
+   Agreed with feel in those words. One writer per perceived quantity.
+4. **The victory sweep is the only team-coloured cue**, and it takes the *winner's* colour rather than a hex in the
+   book. A test asserts no other cue carries a colour at all.
+5. **The kill ripple is kills only** (`weight >= 1.0`). See *What this found*, below.
+6. **Rim ceiling 1.25, floor 0.60.** He called the rim "dull", so it peaks *brighter* than today rather than
+   breathing down from it. Reversible in one number per arena; it is the first thing to change if the strip reads hot.
+7. **`export_presets.cfg` gains `game/theme/show/*.json`** to its three `include_filter`s, so the cue book ships in
+   the web and server exports (trip-up 30). Listed in merge notes — it is a shared file.
+
+### What this found, and none of it was visible by eye
+
+1. **⚠ `FxWorld.spectacle` is NOT a kill signal — it fires on every hit.** `fx_world.gd:319` emits `0.15` for a near
+   miss; `weapon_fx.gd:278` emits `0.3` for a plain hit and `:378` `0.5` for a weak spot. Only a kill is `1.0`.
+   Raised by feel, **verified here in the source rather than relayed**. Four subsystems already ride that one bus
+   (`CrowdVoice`, `CrowdSystem`, `AdBroadcast`'s glitch, `LiveFeed`) and feel's new airship puts a 64 m screen 74 m
+   up on the same ad channel — so a kill is now four venue-scale events on one trigger. Each is correctly owned by
+   one writer, and that is not the same as a venue that does not flash on every trade. **Anything new wired to
+   `spectacle` must read `weight`.**
+2. **A "pairwise incommensurate" period bank is much harder to write than it looks.** The first attempt was 4:3 to
+   within 1%; the second, written to fix the first, was 5:4 to within two parts in a thousand. Both were caught by
+   the validator, and the second only because the ratio check tests `p/q` for `p, q <= 5` — **at `<= 4` it sailed
+   through**. Phases have the same trap with a twist: the spread bar is half of even spacing, so it *tightens* as an
+   arena patches fewer channels, and a seven-channel phase set failed the yard's four. **Periods are a global bank;
+   phases are per arena.**
+3. **A "never do X" guard must scan code, not prose.** The test asserting the show never reads the wall clock failed
+   on `show.gd`'s own comment saying *"never `Time.get_ticks_*`"*. It strips comments and string literals now.
+4. **A cue's first frame was a real tear, not a rounding one.** The clock offset was taken from the live channel,
+   which does not exist on the frame a cue starts — so the rim's period moving 24.0 -> 23.x recomputed the clock
+   instead of retuning it: **0.4 rad of jump at t = 40 s, at exactly the moment a cue begins.** It retunes from the
+   patch's channel now, and the test measures the worst single-frame step across a 24 s breathe becoming a 1.6 s
+   strobe.
+5. **feel's `block_seed` "does not exist" was a glob that could not have found it.** Its grep was
+   `game/theme/arena_kit/city/city_block.gd*`; the shader that reads `COLOR.g` is
+   `game/theme/fx/shaders/city_block.gdshader`, and the GDScript side calls the value `seed01`. Checked against
+   feel's own commit rather than argued. feel confirmed.
+
+### Blocked / pending
+
+- **THE LEAD GATE: the before/after frame strip at his pose (21 deg, FOV 35, 49 m) on `terminus` and `yard`.**
+  `make remote T=show-frames` is written and shoots the idle at three moments plus one frame per cue (FIGHT,
+  battle, last stand, victory) and a kill caught mid-ripple, at the wide pose and in the Terminus street. **Waiting
+  on builder0**, which had three streams' full checks resident for over an hour on what turned out to be a
+  hard-coded 3 slots (the orchestrator has since raised it to 6). The BEFORE `perf-scene` ran at the branch point
+  and is recorded below; the AFTER and the strip follow on the same machine and seed.
+- **Shader compilation is not yet proven.** Headless Godot uses a dummy renderer and compiles no shaders, so the
+  five fixture shaders have been parse-checked but not *compiled*. The first builder0 run with a display is what
+  proves them; treat any claim about the look as unverified until then.
+
+### Measurements
+
+**BEFORE, builder0 (Mesa Intel Iris Xe, RPL-U), `e3501ef9`, `make perf-scene PERF_NAME=show-before-terminus
+PERF_RES=1920x1080 PERF_FLAGS=--arena=terminus`:**
+
+| | |
+|---|---|
+| `all_avg_ms` / `all_gpu_ms` / `all_p95_ms` | **15.56 / 6.27 / 27.45** |
+| holds 30 fps at | **53 vehicles** (60 fps at 44) |
+| arena layer cost | **1.42 ms GPU**, 0.40 ms CPU |
+| glow layer cost | 0.46 ms GPU |
+| **instance-uniform errors** | **0** |
+| **other engine errors** | **0** |
+
+builder0's Iris Xe is ~2.3x the laptop's GPU and ~2.75x its CPU, so this is **not** a number about the game the lead
+plays. The honest quantity is the **delta** between this run and the AFTER on the same machine, tree and seed.
+
+### Requests to other streams
+
+- **feel** — answered all four hooks, landed the `CyberMaterials.neon()` fixture tag itself
+  (`stream/feel` `02e30ac0`, **not yet covered by a green check**, taken at the next announced checkpoint rather
+  than cherry-picked), and made three calls this stream adopted: pools take a uniform not instance colour; the
+  airship's navigation lights stay steady (*"the Syndicate is the faction that does not flicker"*); the ripple is
+  kills only. **Still to review at merge:** the edge emission on `city_block.gdshader`, `show_level`/`show_color`
+  on `neon.gdshader`, `splat.gdshader`, `beam_cone.gdshader` and `neon_sign.gdshader`, and that the level-1.0 look
+  is unchanged.
+- **scale** — **not yet messaged; owed.** The `show` key's schema is additive and loads today because
+  `Arena.validate()` does not reject unknown top-level keys, and `make show-report` fails on a patch the validator
+  refuses. What is still wanted is the **one-line call into the show's validator from `Arena.validate()`**, so a bad
+  patch is a load-time error rather than a static arena. That is scale's file.
+- **control** — answered: **nothing reserved.** Its camera-inside-a-block fix moves the camera
+  (`RtsCamera.clear_pose()` lifts over the roof; 703 of 4328 poses inside a building before, 0 after), so it writes
+  no uniform, no alpha, no visibility on a block and there is no faded-while-mid-cue case. Two consequences taken as
+  constraints: roofs are on screen far more often (the parapet is now a fixture, and it is free), and
+  `cutaway_near()` can clip the near wall away entirely at every spawn, so **the rim must not be the fixture that
+  carries match start** — the FIGHT cue lifts the blocks, beams and signs too, and a test holds that.
+
+### Questions for the lead
+
+1. **Is it beautiful?** The only question that matters, and the frame strip is how it gets asked. Items 5-6's
+   direction (how hard the cues push) should be steered by his answer rather than by another round of guessing.
+2. **The rim peaks brighter than today** (ceiling 1.25). Right call for "dull", or does the venue now compete with
+   the fight? One number per arena either way.
+3. **Strobe on `last_stand`** is the one place in the venue a strobe is allowed. Worth keeping, or too much?
+
+### What to playtest
+
+```
+make skirmish --arena=terminus          # the show is live by default: a windowed launch attaches the booth
+make remote T="show-frames"             # the strip: build/show/*.png, idle + one frame per cue
+make show-report ARENA=terminus         # every knob the patch resolved to
+make remote T="perf-scene PERF_NAME=show-after-terminus PERF_RES=1920x1080 PERF_FLAGS=--arena=terminus"
+```
+
+### Merge notes (shared-file edits)
+
+- `export_presets.cfg`: `game/theme/show/*.json` appended to all three `include_filter`s (the cue book must ship).
+- `mk/show.mk` is new and needs no `Makefile` edit — the root `Makefile` already does `include mk/*.mk`.
+- `arenas/terminus.json` and `arenas/yard.json` gain **only** an additive top-level `show` key (scale owns `arenas/`).
+- Additive `show_*` uniforms in five of feel's shaders and a registration call in four of its scripts
+  (`city_block.gd`, `arena_dressing.gd`, `neon_signs.gd`, `kit_yard.gd`), all inside the granted carve-outs, all
+  defaulting to today's look, all asserted by tests that parse the uniform declarations rather than trusting the
+  author.
+- **Take feel's `02e30ac0` first if both land in the same merge**, then `rim_material()` and `beam_material()` pass
+  their `fixture` tags; until then the cache isolation is held by a test instead of by the key.

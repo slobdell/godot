@@ -87,7 +87,16 @@ These are not craft. A change that breaks one of them is wrong even if it looks 
    about something else — say so, do not re-record.
 10. **Periods 10–25 s, pairwise incommensurate, phases scattered** (widget spec §3). Faster reads as alarm-blinking;
     slower reads as static; commensurate periods make the ensemble visibly loop, and synchronised parallel fixtures
-    look like a loading indicator rather than like current.
+    look like a loading indicator rather than like current. **The validator enforces all three, and it had to: the
+    first period bank written for this round was 4:3 to within 1% and the second was 5:4 to within two parts in a
+    thousand. Neither was visible by eye in a table.** The ratio check tests `p/q` for `p, q ≤ 5`, not `≤ 4` — at 4
+    the second bank sailed through.
+    **Periods are a global bank; phases are per arena.** Incommensurability does not depend on how many channels an
+    arena uses, so one period table serves every layout. The phase bar *does*: it is half of even spacing, so it
+    tightens as an arena patches fewer channels. Phases come from the golden angle taken over **that arena's**
+    channel count — a seven-channel set failed the yard's four.
+11. **A cue may run a channel faster than a patch may declare one.** Rule 10 governs the *idle*, not a stab of
+    strobe: a `last_stand` at a 1.6 s period is the point. The floor is 0.8 s, under which it reads as a fault.
 
 ---
 
@@ -347,10 +356,11 @@ Everything below is **already drawn**. None of it needs a new draw call; what is
 | **City block windows** | `city_block` / `window` | `city_block.gdshader:65`, `city_windows.gdshaderinc` at `window_level = 1.4` | **yes** |
 | **City block shopfronts** | `city_block` / `shop` | `city_block.gdshader:71`, a warm constant `0.35` | **yes** |
 | **The perimeter rim** ("a dull neon purple") | `rim` / `level` | `arena_dressing.gd:200-204` (polygon venue), `:492-500` (rectangle); `neon.gdshader`'s fixed `breathe = 0.15` at `breathe_speed = 0.6` | **yes** |
-| **Neon signs** | `signs` / `level` | `neon_signs.gd:18-47`, one MultiMesh for every sign. `INSTANCE_CUSTOM.b`/`.a` are written as zero and never read — **confirmed free and unclaimed by feel**. **`COLOR` is NOT free**: `v_color = COLOR.rgb` is the sign's neon colour, so a per-sign colour cue rides custom data too | item 6 |
-| **Floodlight and tower pools** | `pools` / `level` | `_glow_multimesh` `arena_dressing.gd:579`, its own fresh `ShaderMaterial` (**not** cached — safe). **A uniform, not instance colour** (feel): instance colour already carries the per-pool tint, and rewriting a buffer every frame to say one number is the wrong trade at zero draw calls | item 6 |
-| **Block roofs and parapets** | `city_block` / `edge` | the roof cap and bevel are already surface 0 at `part >= 0.75`, so the edge channel reaches them for free. **Newly worth dressing:** control's camera lift puts roofs on screen far more often | item 6 |
-| **Tower beams** | `beams` / `level` | `_build_tower` `arena_dressing.gd:521-576` | item 6 |
+| **Neon signs** | `signs` / `level` | `neon_signs.gd:18-47`, one MultiMesh for every sign. `INSTANCE_CUSTOM.b`/`.a` are written as zero and never read — **confirmed free and unclaimed by feel**. **`COLOR` is NOT free**: `v_color = COLOR.rgb` is the sign's neon colour, so a per-sign colour cue rides custom data too. **The brief's "rafter strip along the stands' top rail" IS this bank** — the signs already crown the grandstands, so it is a patch and not new geometry | **yes** |
+| **Floodlight and tower pools** | `pools` / `level` | `_glow_multimesh` `arena_dressing.gd:579`, its own fresh `ShaderMaterial` (**not** cached — safe). **A uniform, not instance colour** (feel): instance colour already carries the per-pool tint, and rewriting a buffer every frame to say one number is the wrong trade at zero draw calls. Phase rides `INSTANCE_CUSTOM.y`; a projectile splat leaves it at 0, which is every splat in phase, i.e. exactly today | **yes** |
+| **Block roofs and parapets** | `city_block` / `edge` | the roof cap and bevel are already surface 0 at `part >= 0.75`, so the edge channel reaches them for free -- no new geometry, no new uniform. **Newly worth dressing:** control's camera lift puts roofs on screen far more often | **yes, for free** |
+| **Tower beams** | `beams` / `level` | `_build_tower` `arena_dressing.gd:521-576`. `CyberMaterials.beam()` caches on (colour, energy) exactly as `neon()` does on its triple, and `beam_material()` is its only caller in the game — a test fails if a second one appears. Phase is the lamp's angle round the venue, so four corner towers rise in sequence | **yes** |
+| **The kit's signs and pools** | `signs` / `pools` | `kit_yard.gd` builds its own MultiMesh per kind on the same two shaders, so the kit's props and the dressing's breathe as **one venue** rather than two | **yes** |
 | **Ad screens and their spill** | — | `ad_broadcast.gd`, `ad_spill.gdshader` | **read, never written** (§5) |
 | **The ground hazard band** | `ground` / `level` | `arena_ground.gdshaderinc`, `flood_map` | stretch |
 | **The Syndicate airship's screen** | `airship` | feel builds it | stretch, when it exists |
