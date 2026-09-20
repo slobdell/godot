@@ -104,7 +104,9 @@ sleep 2
 [ "$(count_rows "$out2")" = 0 ] && ok "watch: records nothing before the window opens" \
 	|| bad "watch: records nothing before the window opens" "$(cat "$out2")"
 echo "10:00:00 godot-metrics: EXCLUSIVE (quiet window) make perf-scene" > "$G/slot1.owner"
-sleep 6
+# Poll rather than sleep a guessed interval: builder0 runs this beside four test shards, and "6 s is surely
+# two samples" is a property of an idle laptop, not of the code. It failed there and passed here.
+for _ in $(seq 1 60); do [ "$(count_rows "$out2")" -ge 2 ] && break; sleep 0.5; done
 [ "$(count_rows "$out2")" -ge 2 ] && ok "watch: records once the window opens" \
 	|| bad "watch: records once the window opens" "$(cat "$out2")"
 echo "10:00:00 godot-nav: make check" > "$G/slot2.owner"

@@ -9,6 +9,12 @@
 # They run against a private slot directory with `sleep` standing in for the work -- no Godot, ~15 s.
 set -uo pipefail
 
+# ESCAPE THE SLOT WE ARE INSIDE. `slot.sh` short-circuits to `exec "$@"` when TANK_SQUAD_SLOT is set, which
+# is correct -- a nested make must not queue behind itself -- but it means that run from inside `make check`,
+# where slot.sh exported it, every test below would exercise nothing and six of them failed on builder0 while
+# passing on an idle laptop. Unsetting it here affects only this script's children; the real slot stays held.
+unset TANK_SQUAD_SLOT TANK_SQUAD_EXCLUSIVE TANK_SQUAD_SLOTS TANK_SQUAD_SLOT_DIR TANK_SQUAD_SLOT_TIMEOUT
+
 slot="$(cd "$(dirname "$0")" && pwd)/slot.sh"
 pass=0; fail=0; kids=()
 tmp=$(mktemp -d)
@@ -19,6 +25,13 @@ ok()  { pass=$((pass + 1)); printf '  ok   %s\n' "$1"; }
 bad() { fail=$((fail + 1)); printf '  FAIL %s\n     %s\n' "$1" "${2:-}"; }
 
 fresh() { G="$tmp/slots"; rm -rf "$G"; mkdir -p "$G"; rm -f "$tmp"/flag.*; }
+
+# Poll for a condition instead of sleeping a guessed interval. builder0 runs this with four test shards and a
+# fanned-out lint beside it, so "1.2 s is surely enough" is not a property of the code -- it is a property of
+# an idle laptop, and it failed on the machine that matters.
+wait_for() { local i=0; while [ "$i" -lt "${2:-150}" ]; do eval "$1" && return 0; sleep 0.1; i=$((i + 1)); done; return 1; }
+window_up() { [ -n "$(ls "$G"/slot*.owner 2>/dev/null)" ]; }
+window_full() { [ "$(ls "$G"/slot*.owner 2>/dev/null | wc -l)" = 3 ]; }
 run_excl() { TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" "$@"; }
 run_norm() { TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 bash "$slot" "$@"; }
 
@@ -40,9 +53,9 @@ grep -q "EXCLUSIVE (quiet window)" "$tmp/owner" 2>/dev/null && ok "exclusive: th
 
 # ---- 4. THE PROPERTY THAT MATTERS: nothing else starts while it is up -------------------------------
 fresh
-TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" sleep 4 >/dev/null 2>&1 &
+TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" sleep 8 >/dev/null 2>&1 &
 kids+=($!)
-sleep 1.2
+wait_for window_full || bad "exclusive: (setup) the window opened within 15s"
 timeout 2 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 bash '$slot' touch '$tmp/flag.intruder'" >/dev/null 2>&1
 [ ! -e "$tmp/flag.intruder" ] && ok "exclusive: another run cannot start during the window" \
 	|| bad "exclusive: another run cannot start during the window"
@@ -57,7 +70,7 @@ timeout 10 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 bash '$slot' tou
 fresh
 run_norm bash -c "sleep 3; touch '$tmp/flag.normal_done'" >/dev/null 2>&1 &
 kids+=($!)
-sleep 1
+wait_for window_up || bad "exclusive: (setup) the ordinary run took a slot"
 run_excl bash -c "[ -e '$tmp/flag.normal_done' ] && touch '$tmp/flag.waited'" >/dev/null 2>&1
 [ -e "$tmp/flag.waited" ] && ok "exclusive: waits for a run already in flight" \
 	|| bad "exclusive: waits for a run already in flight"
@@ -81,10 +94,9 @@ rm -f "$tmp/workpid"
 TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" \
 	bash -c "echo \$\$ > '$tmp/workpid'; exec sleep 30" >/dev/null 2>&1 &
 excl_pid=$!; kids+=("$excl_pid")
-sleep 1.2
-[ -n "$(ls "$G"/slot*.owner 2>/dev/null)" ] || bad "exclusive: (setup) the window was up" "no owner files"
+wait_for window_full || bad "exclusive: (setup) the window was up" "no owner files after 15s"
 kill -TERM "$excl_pid" 2>/dev/null
-sleep 1
+wait_for '! window_up' 100
 [ -z "$(ls "$G"/slot*.owner 2>/dev/null)" ] && ok "exclusive: a signalled window releases every slot" \
 	|| bad "exclusive: a signalled window releases every slot" "left $(ls "$G"/slot*.owner 2>/dev/null)"
 # And the work itself must be gone. A slot given back while its Godot still runs is the WORSE half of this
