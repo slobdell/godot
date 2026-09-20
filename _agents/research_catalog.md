@@ -216,6 +216,16 @@ terms, and squad's `test_brain_decide::test_commitment_prevents_flip_flopping` i
 a switch throws away is **the gun's lay** — N5's own acquisition gate (`Engagement.acquire_seconds`) invested in the
 target being abandoned. Added from `Engagement`'s constants, **backward-looking on purpose**: a crew laid on nothing
 pays nothing, so taking up a newly seen contact is never made slower and the ≤ 2-tick reaction criterion is untouched.
+**Round-9 measurement note (combat, 2026-09-20, provisional until CP1):** the control arm is proven — `switch.price=0`
+runs the same code path, consulted 0.92–0.99 of thinks, flips exactly 0.000 decisions; the live arm changes 6–23% of
+decisions. Both acceptance scenarios hold (focus 100% vs 69% unchanged; engine deck bit-identical at 23/41/45). **One
+regression found by looking past the acceptance:** a "stance floor" that charged any option change on one target
+(added to price ENGAGE↔SUPPRESS thrash, not in the catalogue) cut the turreted duel's **flank seconds 60%** — it taxes
+ENGAGE→FLANK, which is *prosecuting* the fight, not changing one's mind; the 1.35 knee's exact shape, against a
+behaviour the lead named in round 3 (*"no intent of trying to circle your opponent"*). Made an arm (`switch.stance=0`)
+with `option_share` and `transitions_per_unit_min` columns so a suppressed manoeuvre is visible; if it costs flanking it
+goes. **P3 is measurable for the first time:** `main`'s commitment was two mechanisms (flat bonus + hard dwell timer),
+now split (`switch.dwell=0`) into the triplet none / flat / flat+dwell.
 **Falsifier:** genuine option-switch churn **−60%** and switch-and-switch-back within 4 s below **0.2/agent-min**,
 with reaction latency **≤ 2 ticks**. **Guard:** the arm must be distinguishable — assert the switching cost is
 non-zero and varies by hull class, or we are A/B-ing a build against itself (lesson 117).

@@ -2461,3 +2461,12 @@ The kickoff prompt is one line; this section is the rest.
     `TANK_SQUAD_COMMIT` instead — and says so in its own comment. Any new tool that stamps a commit reads that variable
     first and falls back to `git rev-parse`. A number with `commit=unknown` beside it is lesson 10's failure by a new
     road.
+156. **A probe can print entirely true numbers about a question it cannot answer, when the thing under test was
+    selected by something nobody read back.** Round 9, two instances in one day. combat's arm counter ran clean on yard
+    seed 3 and **the War Rig was never on the field** — the seeded CPU draft drew `gang_hail`, so the pre-registered
+    rig-vs-rat-rod claim was unanswerable and nothing said so. metrics' first control run reproduced round 8's numbers
+    and **wrote no log** because the flag never reached the probe (lesson 154). Same shape: an input that decides what
+    the run measures (which roster, which flags, which arena) was chosen upstream and never echoed. **Fixes that
+    generalise:** name the archetype rather than seeding a draft; a probe **refuses** a run whose `--require=` unit or
+    artefact is absent; and every resolved knob is printed into the output (lesson 44) so a wrong selection is visible
+    in the artefact, not only in the conclusion.
