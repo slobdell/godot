@@ -330,13 +330,30 @@ bodies are the same line, so the headless tests keep describing what the player 
 never comes from the CPU**: a block's seed in `COLOR.g`, the rim's angle in world space, a sign's
 `INSTANCE_CUSTOM.a`, a pool's `.y`, a tower's lamp angle. Everything else — programmes, patches, cues — is data.
 
+### GREEN, and the hash to merge
+
+**`e1823e68` is green.** builder0, `make remote T=check`, read from the wrapper's own line and the runner's
+summary, never a shell exit code through a pipe:
+
+- `>> remote: make check exited 0 (build/ copied back)`
+- **`1420 passed, 0 failed`** (shard 0: 648, shard 1: 772)
+- `lint: all 560 scripts parse (-P4, 8 known artefacts baselined)` — CP1's real lint
+- **`sim-baseline passed: d4c049819a5833d3 (glibc-2.43)`** — squad's new baseline, **unmoved**
+
+That last line discharges **S6's pre-registered claim**: *the show does not reach the simulation.* It was
+pre-registered before a line was written and it held across a channel engine, five shaders, seven fixtures, a cue
+book and a kill ripple.
+
+**Everything above `e1823e68` is `_agents/streams/show.md` only** (four commits, one file, verified with
+`git diff --name-only`). Merge the tip for the write-up; `e1823e68` is the hash the check ran on.
+
 ### NEXT STEP, in order
 
-1. **The hash for the merge** — `make remote T=check` at `e1823e68` is the last thing running.
-2. **The ground fixture** (*Decided overnight* #8), with its own paired measurement.
-3. **The rest of item 7**: the airship's screen on an ad channel, a fixture that is neither building nor wall, a
+
+1. **The ground fixture** (*Decided overnight* #8), with its own paired measurement.
+2. **The rest of item 7**: the airship's screen on an ad channel, a fixture that is neither building nor wall, a
    `show` view in `arena-kit-gallery`.
-4. **feel's roof question**, which feel is holding as a round-close item: with the chamfers dark the parapet is the
+3. **feel's roof question**, which feel is holding as a round-close item: with the chamfers dark the parapet is the
    only edge left, and control's camera lift puts roofs on screen far more often. feel wants a frame from the
    lifted camera before any geometry, and surface treatment (tar, grime, a vent grid — texture in the existing
    shader) before a MultiMesh. **Do not wait on it**: the parapet at 0.55 under the windows' 0.80 stays correct
