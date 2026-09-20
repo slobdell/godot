@@ -52,6 +52,25 @@ matchup-search: import ## Score --tune variants of the matchup matrix against th
 	$(PYTHON) tools/matchup_search.py --godot $(GODOT) --jobs $(JOBS) --variants $(VARIANT_FILE) --seeds $(or $(SEEDS),2) \
 		$(if $(SEARCH_UNITS),--units $(SEARCH_UNITS)) $(if $(ESCORT),--escort $(ESCORT))
 
+# ---- X1 (round 9): is A2's switching cost actually an arm? ----------------------
+# Lesson 117: round 8 shipped a commitment term into a code path that could never reach it and measured it twice.
+# This proves the cost is consulted, non-zero, and DIFFERENT by hull class before anything is A/B-ed with it.
+# gangs vs law by default, because that fields both ends of the roster (the 14 m war rig and the rat rod).
+
+switch-arm: import ## X1 (A2): is the switching cost consulted, and does it vary by hull class? Per-class arm counter over one fight (ARENA=yard SEED=3 SWITCH_TIME=120 BUDGET=6500 SWITCH_GREEN=gangs SWITCH_RUST=law TUNE=switch.price=0 for the control arm) -> build/switch-arm.json
+	@echo ">> switch-arm: ARENA=$(or $(ARENA),yard) SEED=$(or $(SEED),3) SWITCH_TIME=$(or $(SWITCH_TIME),120) TUNE=$(TUNE)"
+	@mkdir -p $(BUILD_DIR)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/combat/switch_probe.gd -- \
+		--arena=$(or $(ARENA),yard) --seed=$(or $(SEED),3) --time-limit=$(or $(SWITCH_TIME),120) \
+		--budget=$(or $(BUDGET),6500) --green=$(or $(SWITCH_GREEN),gangs) --rust=$(or $(SWITCH_RUST),law) \
+		$(if $(TUNE),--tune=$(TUNE)) 2>&1 | tee $(BUILD_DIR)/switch-arm.log | grep -E "SWITCH_ARM|SCRIPT ERROR|ERROR" || true
+	@$(PYTHON) -c "import json,sys; \
+		raw=open('$(BUILD_DIR)/switch-arm.log').read(); \
+		sys.exit('switch-arm: the probe printed no SWITCH_ARM line') if 'SWITCH_ARM ' not in raw else None; \
+		d=json.loads(raw.split('SWITCH_ARM ')[1].splitlines()[0]); \
+		json.dump(d, open('$(BUILD_DIR)/switch-arm.json','w'), indent=1); \
+		print('switch-arm:', d['spread']['dearest'], d['spread']['dearest_s'], 's vs', d['spread']['cheapest'], d['spread']['cheapest_s'], 's (x%s)' % d['spread']['ratio'])"
+
 # ---- X2 (round 4): does suppression change outcomes? ----------------------------
 # Every weapon's "suppression" set to 0 is the control: the threat field stays empty, nobody is ever pinned, and
 # spread loses its suppression term. A volume weapon (the scout's machine gun) should be worth MORE with it on.
@@ -114,11 +133,11 @@ compare-arms: ## Two faction-matrix runs, subtracted per faction (TREATMENT=a.js
 		$(if $(COMPARE_FACTION),--faction $(COMPARE_FACTION)) \
 		$(if $(BUILD_ARM),--build-is-the-arm $(BUILD_ARM))
 
-faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE=) -> build/faction-matrix.json
+faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE= TUNE=switch.legacy=1) -> build/faction-matrix.json
 	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),6) \
 		--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) $(if $(ARENA),--arena $(ARENA)) \
-		$(if $(ABLATE),--no-faction-directives) \
-		--json $(BUILD_DIR)/faction-matrix$(if $(ARENA),-$(ARENA))$(if $(ABLATE),-plainroles).json
+		$(if $(ABLATE),--no-faction-directives) $(if $(TUNE),--tune $(TUNE)) \
+		--json $(BUILD_DIR)/faction-matrix$(if $(ARENA),-$(ARENA))$(if $(ABLATE),-plainroles)$(if $(TUNE),-tuned).json
 
 faction-shots: import ## L3/X5: screenshots of a full-scale faction battle from above (GREEN_FACTION= RUST_FACTION= DELAY=45) -> build/screenshots/faction-*.png (needs a display)
 	mkdir -p $(BUILD_DIR)/screenshots
