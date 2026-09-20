@@ -35,6 +35,11 @@ const RIPPLE_AGE_S := 0.55
 ## blocks and the stands are. Fractions of the frame, as (x0, y0, x1, y1).
 const RING_WINDOW := Rect2(0.28, 0.38, 0.44, 0.34)
 const BAND_WINDOW := Rect2(0.00, 0.01, 1.00, 0.24)
+## The WHOLE picture. A venue-wide cue -- a strobe, a chase round the rim -- does not live in either window: the
+## rim is at the horizon and the parapets are wherever the buildings happen to be once the camera follows the
+## army. Measuring a strobe in the band window returned the SAME 2.9% swing with the strobe on and off, which is
+## the statistic looking in the wrong place rather than the cue failing to fire.
+const FULL_WINDOW := Rect2(0.0, 0.0, 1.0, 1.0)
 ## Every Nth pixel in each direction: exact enough for a mean, cheap enough to run on every frame.
 const LUMA_STRIDE := 8
 ## Arena -> an extra focus worth a frame, in metres. The Terminus street is the alley the lead said he could not see
@@ -172,6 +177,7 @@ func _shoot_clip(show: Show, arena: String, heading: float) -> void:
 	DirAccess.make_dir_recursive_absolute(dir)
 	_camera.global_transform = RtsCamera.pose_at(_army_centre(get_tree().current_scene), heading, DISTANCE_M, PITCH_DEG)
 	var band_track: Array = []
+	var full_track: Array = []
 	show.settle_into(StringName(clip_cue), CUE_T)
 	var t := CUE_T
 	for i in clip_frames:
@@ -187,21 +193,19 @@ func _shoot_clip(show: Show, arena: String, heading: float) -> void:
 		var image := get_viewport().get_texture().get_image()
 		image.save_png(dir.path_join("%s_%s_%03d.png" % [arena, clip_cue, i]))
 		band_track.append(_luma(image, BAND_WINDOW).x)
+		full_track.append(_luma(image, FULL_WINDOW).x)
 	# A clip pair is an arm like any other: it has to be shown to differ from its control. A strobe's signature is
 	# not that it is brighter on average -- it is that the band SWINGS, so the spread over the clip is the number,
 	# not the mean.
-	var lo := 9.0
-	var hi := 0.0
-	var total := 0.0
-	for value: float in band_track:
-		lo = minf(lo, value)
-		hi = maxf(hi, value)
-		total += value
+	var band := _swing(band_track)
+	var full := _swing(full_track)
 	print("SHOW_LOOK_CLIP " + JSON.stringify({"arena": arena, "cue": clip_cue, "frames": clip_frames,
 			"step_s": clip_step, "fps": snappedf(1.0 / maxf(clip_step, 0.001), 0.1),
 			"strobe": not LaunchFlags.from_environment().has("no-strobe"),
-			"band_min": snappedf(lo, 0.0001), "band_max": snappedf(hi, 0.0001),
-			"band_swing_pct": snappedf((hi - lo) / maxf(total / maxf(float(band_track.size()), 1.0), 1e-6) * 100.0, 0.1),
+			"band_min": snappedf(band.x, 0.0001), "band_max": snappedf(band.y, 0.0001),
+			"band_swing_pct": snappedf(band.z, 0.1),
+			"full_min": snappedf(full.x, 0.0001), "full_max": snappedf(full.y, 0.0001),
+			"full_swing_pct": snappedf(full.z, 0.1),
 			"vehicles_in_frame": _vehicles_in_frame(get_tree().current_scene)}))
 	print("SHOW_LOOK_DONE arena=%s frames=%d" % [arena, clip_frames])
 	get_tree().quit()
@@ -295,6 +299,20 @@ func _luma(image: Image, window: Rect2) -> Vector2:
 			x += LUMA_STRIDE
 		y += LUMA_STRIDE
 	return Vector2(total / maxf(float(count), 1.0), highest)
+
+
+## (min, max, peak-to-peak as a percentage of the mean) over a clip's luminance track.
+func _swing(track: Array) -> Vector3:
+	if track.is_empty():
+		return Vector3.ZERO
+	var lo := 9.0
+	var hi := 0.0
+	var total := 0.0
+	for value: float in track:
+		lo = minf(lo, float(value))
+		hi = maxf(hi, float(value))
+		total += float(value)
+	return Vector3(lo, hi, (hi - lo) / maxf(total / float(track.size()), 1e-6) * 100.0)
 
 
 ## The centroid of every vehicle still alive, or the arena centre when there are none (a gallery, an empty mode).
