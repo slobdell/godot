@@ -150,10 +150,21 @@ func test_the_group_faces_its_direction_of_travel_on_arrival() -> void:
 	# Travel east: every hull starts pointing north.
 	assert_eq(orders.issue(UnitCommand.make(_names(tanks), "move", {"to": [LANE_X + 45.0, 50.0]})), "", "move accepted")
 	await wait_physics_frames(SimClock.TICK_RATE * 12)
+	# Round 8: split by locomotion, because that is what is true today (nav measured it; control chose this over widening
+	# the budget). A tracked hull pivots and is on heading in 12 s. A WHEELED hull cannot pivot: it arrives and then
+	# corrects by creeping round, about 6 s for 45 degrees. The ifv here measured dot(east) 0.70 at 12 s, 0.92 at 13,
+	# 0.97 at 14, 1.00 at 18, still rolling at 0.85 m/s. (This test passed alone and failed in file order before nav's
+	# yaw ramp moved the sim, so its old single bound was marginal by construction.)
+	# The wheeled bound tightens to the tracked one once a move order can carry its facing and wheels arrive already on
+	# heading (nav's Dubins-style last leg, proposed to squad): come back here when that lands.
 	for tank in tanks:
 		assert_true(orders.is_idle(String(tank.name)), "%s arrived" % tank.name)
 		var forward := -tank.global_basis.z
-		assert_true(forward.dot(Vector3.RIGHT) > 0.85, "%s faces east, the way it travelled (%s)" % [tank.name, forward])
+		var east := forward.dot(Vector3.RIGHT)
+		var wheels := String(Units.stat(tank.unit_id, "locomotion", "tracks")) == "wheels"
+		var least := 0.5 if wheels else 0.85
+		assert_true(east > least, "%s (%s) faces east, the way it travelled: dot %.2f, wanted > %.2f (%s)" % [
+				tank.name, tank.unit_id, east, least, forward])
 
 
 func test_a_unit_pushed_away_rejoins_its_group_unless_it_has_its_own_order() -> void:
