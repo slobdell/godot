@@ -136,13 +136,17 @@ func _run() -> void:
 				var writes := show.apply(CUE_T)
 				cue_frames += await _capture(show, arena, pose_name, "cue_%s" % cue, CUE_T, focus,
 						float(poses[pose_name][1]), writes)
-			# A kill ripple, caught mid-flight: the one cue that is a place as well as a moment.
-			show.settle_into(&"battle", CUE_T)
-			show.fire_event(Vector3(focus.x + 28.0, 0.0, focus.z + 16.0), 1.0)
-			show.apply(CUE_T, RIPPLE_AGE_S)
-			cue_frames += await _capture(show, arena, pose_name, "cue_kill", CUE_T, focus,
-					float(poses[pose_name][1]), show.writes_last_frame)
-			show.settle_into(&"lull", CUE_T)
+			# The kill ripple, at several wavefront ages and against the IDLE, where the edge channel has
+			# headroom. The first strip shot it under `battle`, where that channel sits at 0.96 of a 1.00
+			# ceiling with nothing left to ripple into, and the frame was indistinguishable from cue_battle.
+			for age: float in ripples:
+				show.settle_into(ShowCues.IDLE_STATE, CUE_T)
+				show.fire_event(Vector3(focus.x + 28.0, 0.0, focus.z + 16.0), 1.0)
+				show.apply(CUE_T, age)
+				var stamp := ("%.2f" % age).replace(".", "_")
+				cue_frames += await _capture(show, arena, pose_name, "cue_kill_%ss" % stamp, CUE_T, focus,
+						float(poses[pose_name][1]), show.writes_last_frame)
+			show.settle_into(ShowCues.IDLE_STATE, CUE_T)
 	get_tree().paused = false
 	print("SHOW_LOOK_DONE arena=%s frames=%d" % [arena, poses.size() * times.size() + cue_frames])
 	get_tree().quit()
