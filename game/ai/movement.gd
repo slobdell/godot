@@ -62,7 +62,14 @@ const WHEELS_LOOKAHEAD_MAX_RADII := 4.0
 ## this much slack (flat metres), and if it doesn't the carrot is pulled back to these shares of the lookahead.
 const CHORD_SAMPLES: Array[float] = [0.5, 1.0]
 const CHORD_SLACK := 0.3
-## The navmesh bake's agent radius (Arena._bake: agent_radius 2.0) and the clearance kept from an obstacle face.
+## The navmesh bake's agent radius. **This constant is NO LONGER THE SOURCE — it is the cross-check.** The value
+## that routing uses is READ from the live arena (`bake_radius()`); this one records what nav expects to find, and
+## `bake_radius()` complains loudly if they ever disagree. A mirrored constant cannot drift silently if it is only
+## ever compared, never consumed.
+##
+## **Why it cannot be per-hull-class, which is the question CP2 raised:** there is ONE navmesh with ONE bake radius.
+## A per-class value here would claim clearance the mesh does not provide, which is worse than a stale one.
+## `Avoidance.radius_of()` is the per-hull quantity and already derives from `Units` hull_size.
 const NAV_AGENT_RADIUS := 2.0
 const CHORD_MARGIN := 0.2
 const CARROT_PULLBACK: Array[float] = [0.6, 0.3]
@@ -173,7 +180,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "commit", "facegiveup", "grace", "guard", "holdband",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband",
 		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
 
 
@@ -248,10 +255,13 @@ static func a1_on() -> bool:
 
 static func route_arms() -> Dictionary:
 	return {"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
-			"by_cause": a1_by_cause.duplicate()}
+			"by_cause": a1_by_cause.duplicate(),
+			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused}
 
 
 static func reset_route_arms() -> void:
+	clearance_chords = 0
+	clearance_refused = 0
 	a1_replans = 0
 	a1_cadence_due = 0
 	a1_tube_skips = 0
@@ -490,6 +500,67 @@ func legibility() -> Dictionary:
 	return out
 
 
+## CP2's second structural consequence, measured: **the navmesh is baked for a hull smaller than most of the
+## roster.** `arena.tscn` bakes at `agent_radius = 2.0`, and after the resize **14 of 21 units need more than that**
+## — `gang_tank` 4.58 m (2.3x the bake), median 2.50 m, smallest `gang_scout` 1.36 m. So a corridor the mesh
+## certifies as clear for a 2.0 m agent is **not** clear for two thirds of the units that will be routed down it.
+##
+## The bake radius stays 2.0 this round (ruled: raising it to 4.58 would close every alley the two thirds that fit
+## can legitimately use, and per-class meshes are a round-10 cost). What nav does instead is **consult the
+## shortfall**: publish how much the mesh under-promises for this hull, so routing can refuse or widen rather than
+## discovering it by wedging.
+##
+## Cached once: the bake radius is a property of `arena.tscn`, not of a layout, so every arena in the project shares
+## it. `game/arena/` is arena's stream, so nav finds the node rather than asking arena for a hook.
+static var _bake_radius := -1.0
+
+
+static func bake_radius(unit: Node) -> float:
+	if _bake_radius >= 0.0:
+		return _bake_radius
+	var found := -1.0
+	if unit != null and unit.is_inside_tree():
+		# Taking the FIRST region is safe and was checked rather than assumed: `arena.gd` adds a second region,
+		# `NavigationMirror`, but assigns it the SAME `NavigationMesh` resource (`mirror.navigation_mesh = nav_mesh`)
+		# rotated by PI — so `agent_radius` is identical whichever one the search meets. If arena ever gives the
+		# mirror a mesh of its own, this must pick `$Navigation` by name instead.
+		for node in unit.get_tree().get_root().find_children("*", "NavigationRegion3D", true, false):
+			var region := node as NavigationRegion3D
+			if region != null and region.navigation_mesh != null:
+				found = region.navigation_mesh.agent_radius
+				break
+	if found < 0.0:
+		# No arena in the tree (a unit test that never built one). Fall back to the documented expectation rather
+		# than to a guess, and say so — a silent fallback here is a mirrored constant wearing a function's clothes.
+		return NAV_AGENT_RADIUS
+	if absf(found - NAV_AGENT_RADIUS) > 0.001:
+		push_error(("the navmesh bakes at agent_radius %.2f but movement.gd expects %.2f. Routing uses the BAKED "
+				+ "value; update NAV_AGENT_RADIUS so the cross-check means something again.") % [
+				found, NAV_AGENT_RADIUS])
+	_bake_radius = found
+	return _bake_radius
+
+
+## How much MORE clearance this hull needs than the navmesh guarantees, in metres. Positive means the mesh
+## under-promises: a route it certifies may be too tight. Zero or negative means the hull fits anything the mesh
+## calls clear. Post-CP2 this is positive for 14 of 21 units.
+static func clearance_shortfall(unit: Node, unit_id: String) -> float:
+	return Avoidance.radius_of(unit_id) - bake_radius(unit)
+
+
+## OPT-IN like every round-9 row: `--nav-off=clearance` turns the routing half ON. The READ and the published
+## shortfall are unconditional — they change no behaviour — and only the refusal is switched.
+static func clearance_on() -> bool:
+	return switched_off("clearance")
+
+
+## Arm counters (lesson 147): chords where the rule was consulted, and chords it refused for an oversized hull.
+## Equal counts mean every hull asked was oversized; zero `clearance_chords` means the rule never ran at all, which
+## is the failure this round found six times and must not be confused with "it changed nothing".
+static var clearance_chords := 0
+static var clearance_refused := 0
+
+
 ## S4 (`_agents/legibility.md` §2): the ordered corridor's TANGENT, which nav promised to publish at N5 *"on the
 ## principle that one publisher should mean one INTERPRETATION, not one array that three streams each project onto
 ## slightly differently"*. The law, control's readout and the falsifier all read this rather than each deriving a
@@ -547,6 +618,7 @@ func reading() -> Dictionary:
 			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
 			"facing_arc": arc_live, "legibility": legibility(), "corridor": corridor(),
+			"clearance_shortfall_m": clearance_shortfall(ctl.tank, ctl.tank.unit_id) if ctl.tank != null else 0.0,
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan, "wedged": wedged,
 			"wedge_moved_m": wedge_moved_m, "wedge_hull_m": wedge_hull_m,
 			"wedge_ratio": wedge_moved_m / maxf(wedge_hull_m, 0.1)}
@@ -1698,7 +1770,26 @@ func _chord_on_mesh(from: Vector3, to: Vector3) -> bool:
 ## mesh" and dropped head-on maze-60 from 60/60 to 27/60 (builder0, nav-where, round 7).
 func _chord_slack() -> float:
 	var size: Variant = Units.stat(ctl.tank.unit_id, "hull_size", [2.4, 1.6, 3.8])
-	return maxf(CHORD_SLACK, NAV_AGENT_RADIUS - float(size[0]) / 2.0 - CHORD_MARGIN)
+	# The BAKED radius, read from the arena, not the constant. Same number today; the difference is that the day
+	# arena re-bakes, this follows and the constant complains instead of both being quietly wrong.
+	var slack := maxf(CHORD_SLACK, bake_radius(ctl.tank) - float(size[0]) / 2.0 - CHORD_MARGIN)
+	if not clearance_on():
+		return slack
+	# THE ROUTING HALF of the CP2 clearance row, OPT-IN (`--nav-off=clearance` turns it ON).
+	#
+	# This slack is derived from HALF-WIDTH alone, but a hull's real envelope through a corner is `(w + l) / 4`
+	# (`Avoidance.radius_of`) — which is why a 14 m semi 3.3 m wide is allowed to hug a mesh edge on a certificate
+	# that only ever covered its width. Post-CP2 that gap is positive for 14 of 21 units.
+	#
+	# So an oversized hull does not take mesh-hugging shortcuts: it follows the route the bake actually certified.
+	# The slack may go NEGATIVE, and that is the intended refusal rather than an underflow — every probe is then
+	# further from the mesh than allowed, `_chord_on_mesh` answers false, and no carrot is cut.
+	clearance_chords += 1
+	var shortfall := clearance_shortfall(ctl.tank, ctl.tank.unit_id)
+	if shortfall <= 0.0:
+		return slack
+	clearance_refused += 1
+	return slack - shortfall
 
 
 ## Flat distance from `here` to the route near where the hull is on it.

@@ -78,6 +78,12 @@ func test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll() -> v
 	second.randi()
 	assert_eq(CityBlock.neon_color("not-a-colour", first), CityBlock.neon_color("not-a-colour", second),
 			"an unknown name does not depend on the rng")
+	# And it stays DETECTABLE, so `Arena.validate()` can reject a typo once when the layout is read. The detection
+	# is a predicate rather than a warning because the warning fired per block per build -- and because the test
+	# runner's ErrorCollector ignores `_error_type`, so a push_warning fails any test that exercises the path.
+	assert_true(not CityBlock.resolves("not-a-colour"), "and an unknown name is reported as unresolvable")
+	assert_true(CityBlock.resolves("cyan") and CityBlock.resolves("#00F3FF"), "while real colours resolve")
+	assert_true(CityBlock.resolves(null), "and asking for nothing is legal -- it means 'pick me a signage colour'")
 	# And a block that asks for NOTHING still gets variety, which is the behaviour that was always intended.
 	var a := RandomNumberGenerator.new()
 	a.seed = 3
