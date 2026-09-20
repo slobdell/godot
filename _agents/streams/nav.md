@@ -371,7 +371,26 @@ it fails, and a finding that *stops* occurring is reported. Until then the repor
 
 builder0, the tree at `9f864474` (= `main`). The baseline line matches the recorded value, unmodified.
 
-**The tree the remote check is running against is `acd25a0b`.** Everything committed after it is
+**✅ GREEN HASH: `5c8f08b3`** (builder0, 2026-09-20):
+
+    >> remote: make check exited 0 (build/ copied back)
+    1290 passed, 0 failed
+    sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)
+
+**`lint local: 531 files, 8 known baselined lines`** — nothing outside metrics' baseline.
+
+**1290 against the branch point's 1261** is 29 new nav tests passing on builder0, and **the sim baseline did not
+move**, which verifies rather than asserts the round's central claim: **all four rows are opt-in and `main` takes no
+behaviour change from this branch.** No re-record needed.
+
+**Which tree that is was confirmed by ASKING builder0**, not inferred from rsync timing — its `movement.gd` carries
+A1's counters and **no `wedged`**, which pins it to `5c8f08b3` exactly.
+
+**A second check runs on the tip `0f14cb2b`**, covering what postdates the green one: the `wedged` detector, X6's
+forced gains, and A1's monotonicity fix.
+
+~~**The tree the remote check is running against is `acd25a0b`.**~~ *(superseded: that run's wrapper died mid-check
+with no verdict line, and was replaced by the run above.)* Everything committed after it is
 **`_agents/streams/nav.md` only** — verified with `git diff --name-only acd25a0b..HEAD` — so when that check returns,
 **`acd25a0b` is the green hash for every line of code on this branch**, and the commits above it are documentation.
 Name `acd25a0b` when merging code; do not name the tip unless a later check covers it.
