@@ -138,12 +138,16 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
 
 ### What is unverified, stated plainly
 
-**A hardware note for you (12:45, corrected 13:00):** the laptop's `build/metrics/p7-pit.jsonl` (a 101 MB trajectory log
-copied back from builder0 at 10:11) has one changed byte at line 143,873 inside the key `slot_x`. nav's copy of the
-same log, taken out of `build/` right after the run and validated line by line, is intact, so the byte changed ON
-THIS LAPTOP after the copy, while the stale file sat in `build/` across later runs (`remote.sh` copies back without
-`--delete`; metrics is adding `--delete` and a checksum). One event; it landed in a key name, so the reader refused
-the file; in a digit it would have silently moved a number. Whether this laptop's memory deserves a look is your call.
+**A hardware note for you (12:45, corrected 13:20):** the laptop's `build/metrics/p7-pit.jsonl` (a 101 MB trajectory log
+copied back from builder0 at 10:11) has one changed bit at line 143,873 (`"slot_x"` → `"slot_\xf8"`). nav's copy of the
+same log, taken at 10:12 and validated line by line, is intact and the same length to the byte; the corrupt file's
+mtime is still 10:11, so **the byte changed under a file nobody rewrote: corruption at rest or in the read path on
+this laptop** (disk or page cache; not separable without root). The transfer is exonerated for this one. It landed in
+a key name, so the reader refused the file; in a digit it would have silently moved a number. metrics has added a
+checksum manifest to every copy-back (`43594f27`) so the next one is localised. **Whether this laptop's disk and
+memory deserve a look (fsck, memtest) is your call; it ran at 245 MB free for part of the night.** Separately, the
+laptop's `build/` keeps stale files from earlier runs (copy-back without `--delete`); metrics is adding `--delete`
+with wrapper logs protected, and the habit becomes: wrapper logs go in the session scratchpad, not `build/`.
 
 - **`main` at `0808834e` is VERIFIED GREEN** (builder0 07:38: exited 0, **1454 passed, 0 failed**, 16 targets, sim-baseline
   `32831dc99cdaf5ca`): that tip holds every merge in the table above and the recorded baseline. Only docs commits
