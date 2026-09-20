@@ -38,6 +38,32 @@ const ASSEMBLY_SPACING_M := 6.5
 ## rather than a second copy (Invariant 0), and the plan is for those readers to name the owner directly and for this
 ## line to go then.
 const HULL_CLEAR_M := TacticsFormation.HULL_CLEAR_M
+## Every deployed unit is placed this far ABOVE the ground rather than exactly on it (metres).
+##
+## A hull at exactly y = 0.0 rests in a degenerate contact with Arena/Ground -- touching, with no penetration to
+## resolve and no gap. Jolt's answer to that depends on engine state rather than on the placement: scale found that
+## after an earlier arena's bodies had been created and destroyed in the same process, three units of a 90-unit army
+## were ejected **1.5 m DOWN through the ground** from placements identical to the ones that behave in a fresh process.
+## That is why `test_match_spawns_and_results` passed alone and failed only when `test_arena_layouts` ran before it in
+## the same shard: the sharding schedule changed, not the layout.
+##
+## Five centimetres would be enough to make that contact non-degenerate, and far less than the settle a hull does on
+## its suspension anyway, so nothing would visibly hover.
+##
+## **It is 0.0 for now, and that is a ruling rather than a conclusion.** combat measured 0.05 on its MERGED tree
+## (its branch + CP2 + main) and `test_a_full_faction_army_a_side_spawns_clear_of_itself` fails there with three units
+## (Green_S5_1, Rust_S5_1, Rust_S8_1) reported inside a wall or crate, passing again at 0.0. **On this branch 0.05
+## passes** — `test FILTER=match_spawns` on builder0, exited 0, 5 passed 0 failed — so the lift alone breaks nothing and
+## the interaction needs CP2's hull sizes, which is consistent with combat's own note that the 8.62 m hull is what makes
+## it reachable.
+##
+## combat's hypothesis is that the degenerate y = 0 contact was MASKING a placement bug: a unit that `_clear_spot` /
+## `SlotGround.standable` leaves overlapping an obstacle used to be shoved out by the same ejection scale measured, so
+## lifting it merely stops hiding the overlap. If that is right the placement fix is this file's (and `SlotGround`'s),
+## the obstacle numbers are scale's to supply, and this constant becomes 0.05 in the same commit as the fix. The test
+## above now names the body it hit, which is what decides it: **Arena/Ground means an ejection, a crate or a wall means
+## a real overlap.** Raising this to 0.05 before that answer is in would trade a known-masked bug for an unknown one.
+const SPAWN_LIFT_M := 0.0
 ## A widened rank keeps this far off the drivable floor's side edges.
 const SIDE_MARGIN_M := 6.0
 ## Clear ground between one rank of squads and the next (a hull is ~4 m long).
@@ -139,7 +165,7 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 					{"policy": "front", "leader": shape["leader"]}):
 				var at: Vector3 = entry["to"]
 				var limit := Match.DRIVABLE_LIMIT - 2.0
-				at = Vector3(clampf(at.x, -limit, limit), 0.0, clampf(at.z, -limit, limit))
+				at = Vector3(clampf(at.x, -limit, limit), SPAWN_LIFT_M, clampf(at.z, -limit, limit))
 				result[String(entry["unit"])] = {"position": at, "facing": forward, "squad": shape["name"],
 						"anchor": anchor, "formation": shape["formation"]}
 		line -= forward * (float(row["slots_deep"]) + float(row["overhang"]) + RANK_GAP_M)

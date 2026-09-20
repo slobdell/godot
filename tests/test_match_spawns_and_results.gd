@@ -32,6 +32,15 @@ func _full_army() -> Dictionary:
 
 func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
 	# X5 (round 4): the grid has to hold a faction army, not five squads of five.
+	#
+	# BOTH ASSERTIONS MEASURE PLACEMENT, not where physics has put a hull one frame later, and that distinction is the
+	# whole reason this test failed on main while passing alone. Placement is a deterministic function of the layout;
+	# where a body sits after a frame is not. A unit placed at exactly y = 0.0 rests in a degenerate contact with
+	# Arena/Ground, and after an earlier arena's bodies have been created and destroyed in the same process Jolt ejects
+	# some of them 1.5 m DOWN through the ground -- so the old version probed those hulls AT THEIR EJECTED POSITIONS,
+	# inside the ground slab, and reported them as spawning inside a wall. Identical placement, different engine state,
+	# and the trigger was the sharding schedule putting `test_arena_layouts` first. `ArmyLayout.SPAWN_LIFT_M` fixes the
+	# cause; measuring placement is what stops this test reporting an engine artefact as a layout bug.
 	assert_true(Match.SPAWN_SLOTS >= Doctrine.MAX_UNITS, "the spawn grid has a slot for every unit an army can field")
 	var game_match := _setup()
 	game_match.seed_spawns(9, 6.0)  # the match runner's jitter
@@ -39,20 +48,37 @@ func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
 		assert_eq(game_match.load_doctrine(team, _full_army()), "", "a full army loads for team %d" % team)
 	var tanks := game_match.tanks_by_name().values()
 	assert_eq(tanks.size(), 2 * Army.MAX_ARMY_UNITS, "setup: %d units" % (2 * Army.MAX_ARMY_UNITS))
-	await wait_physics_frames(1)
+	# Captured BEFORE any physics frame: this is the placement itself.
+	var placed := {}
+	for tank: Tank in tanks:
+		placed[tank] = tank.global_position
 	var boxes := {}
 	for tank: Tank in tanks:
-		assert_true(absf(tank.global_position.x) < Match.DRIVABLE_LIMIT and absf(tank.global_position.z) < Match.DRIVABLE_LIMIT,
-				"%s spawns inside the arena (%s)" % [tank.name, tank.global_position])
+		var at: Vector3 = placed[tank]
+		assert_true(absf(at.x) < Match.DRIVABLE_LIMIT and absf(at.z) < Match.DRIVABLE_LIMIT,
+				"%s is placed inside the arena (%s)" % [tank.name, at])
 		var size: Array = Units.stat(tank.unit_id, "hull_size")  # spawn yaw is 0 or 180°: boxes are axis-aligned
-		boxes[tank] = Rect2(tank.global_position.x - size[0] / 2.0, tank.global_position.z - size[2] / 2.0, size[0], size[2])
+		boxes[tank] = Rect2(at.x - size[0] / 2.0, at.z - size[2] / 2.0, size[0], size[2])
 	var overlaps: Array = []
 	for i in tanks.size():
 		for j in range(i + 1, tanks.size()):
 			if (boxes[tanks[i]] as Rect2).grow(0.5).intersects(boxes[tanks[j]]):
 				overlaps.append("%s/%s" % [tanks[i].name, tanks[j].name])
-	assert_eq(overlaps, [], "no two hulls spawn within half a meter of each other")
+	assert_eq(overlaps, [], "no two hulls are PLACED within half a meter of each other")
+	# The obstacle probe reads static world geometry, so it needs the space stepped once -- but it probes each unit's
+	# PLACEMENT, captured above, not wherever the body has since been pushed.
+	await wait_physics_frames(1)
 	var space := (tanks[0] as Tank).get_world_3d().direct_space_state
+	# POSITIVE CONTROL, because an empty result from an unready space is indistinguishable from a clear spawn and would
+	# pass this assertion for the worst possible reason. A box over the whole arena must hit SOMETHING on WORLD_MASK.
+	var control := PhysicsShapeQueryParameters3D.new()
+	var control_shape := BoxShape3D.new()
+	control_shape.size = Vector3(Match.DRIVABLE_LIMIT * 2.0, 4.0, Match.DRIVABLE_LIMIT * 2.0)
+	control.shape = control_shape
+	control.transform = Transform3D(Basis.IDENTITY, Vector3.UP * 1.5)
+	control.collision_mask = Perception.WORLD_MASK
+	assert_true(not space.intersect_shape(control, 1).is_empty(),
+			"control: the physics space answers WORLD_MASK queries, so an empty result below means a clear spawn")
 	var blocked: Array = []
 	for tank: Tank in tanks:
 		var probe := PhysicsShapeQueryParameters3D.new()
@@ -60,11 +86,21 @@ func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
 		var size: Array = Units.stat(tank.unit_id, "hull_size")
 		shape.size = Vector3(size[0] + 1.0, 1.0, size[2] + 1.0)
 		probe.shape = shape
-		probe.transform = Transform3D(Basis.IDENTITY, tank.global_position + Vector3.UP * 1.5)  # above the ground slab
+		probe.transform = Transform3D(Basis.IDENTITY, (placed[tank] as Vector3) + Vector3.UP * 1.5)  # above the slab
 		probe.collision_mask = Perception.WORLD_MASK
-		if not space.intersect_shape(probe, 1).is_empty():
-			blocked.append(String(tank.name))
-	assert_eq(blocked, [], "no unit spawns inside a wall or crate")
+		var hits := space.intersect_shape(probe, 1)
+		if not hits.is_empty():
+			# Name the body: "inside a wall or crate" sent scale through the arena layouts before anyone knew it was
+			# the GROUND being hit, which is what pointed at a downward ejection rather than a bad layout.
+			var hit: Variant = (hits[0] as Dictionary).get("collider")
+			var who := "?"
+			if hit is Node:
+				who = String((hit as Node).name)
+				var parent := (hit as Node).get_parent()
+				if parent != null:
+					who = "%s/%s" % [String(parent.name), who]
+			blocked.append("%s hit %s at %s" % [tank.name, who, placed[tank]])
+	assert_eq(blocked, [], "no unit is PLACED inside a wall or crate")
 
 
 func test_the_grid_fills_the_front_row_before_the_rows_behind_it() -> void:
