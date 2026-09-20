@@ -187,9 +187,11 @@ of half the perimeter (180° symmetric) at the lead's 21°/49 m/FOV 35, focus 20
 it; on the yard hexagon all three (two diagonals) cut the wall and stands and keep the floor to the bottom of the frame.
 
 **ROUND 8 CLOSED. Merged into main as part of `1b3da573`** (verified: `git merge-base --is-ancestor 1b3da573 main`).
-**Ahead of main and unchecked until #29 reports:** `39a61b86` (camera-looks "behind wall" frames), `8326e1eb` +
+**MERGE HERE NEXT: `3c488882` — #29 GREEN (builder0): `make check exited 0`, 1261 passed / 0 failed, `sim-baseline
+passed: 0cb238bf366e141f`, every target through `audio-check passed`.** It covers (beyond `1b3da573`): `39a61b86` (camera-looks "behind wall" frames), `8326e1eb` +
 `3c488882` (`facing` on a move = arrive on this heading, nav/squad's contract, documented at the key and in
-`orders.gd`), `17c1235e` (merge of main `22eda2f3`: nav's wheeled arrival, squad's facing half), and two Status commits.
+`orders.gd`), `17c1235e` (merge of main `22eda2f3`: nav's wheeled arrival, squad's facing half). Status commits after `3c488882`
+(`f4f0e2bc`, `27619e69`, this one) landed after #29's sync and are docs only.
 Local after that merge (laptop): control 183/0, camera 52/0, command 77/0, test_r 98/0.
 
 **Next round — A6 (research_catalog.md, control + feel, contract first with nav and combat):** the lead's "they don't
