@@ -303,6 +303,41 @@ sweeping ten placements, longest sightline 196 m — the shortest of the three. 
 shipping map that moves the stall measure: `no_progress` 0.091 against yard's 0.050**, which makes it the test bed
 flow fields have never had, on ground he plays.
 
+### Round 8, late: instruments, and three of my own mistakes
+
+| Commit | What |
+|---|---|
+| `f7bff357` | `nav-maze` passes `NAV_FLAGS`, and prints `NAV_MAZE_ARM` from the **live code**, not the flags given. nav's flow-field A/B had run the same treatment twice and come back byte-identical — a clean null with no symptom |
+| `daa6bb70` | A watch at the **closed** end of `centre_sees_share`, calibrated on the maps the lead has ruled on (terminus excluded, so it flags itself) |
+| `b5e52899` | **Can this map hide the longest hull?** Reads `game/units/units.gd` rather than copying it |
+| `172f6150` | A correction: see below |
+
+**The hull-cover cliff, and it is the number to give him.** Share of the field within 45 m of a prop long enough
+(best case — the box's longest horizontal side):
+
+| hull | 6 m | 7 m | **12.19 m** | **12.5 m** | 14 m |
+|---|---|---|---|---|---|
+| yard | 0.99 | 0.99 | **0.99** | **0.00** | 0.00 |
+| pit | 0.85 | 0.48 | 0.46 | **0.00** | 0.00 |
+| terminus | 0.98 | 0.95 | **0.91** | **0.91** | **0.91** |
+
+**A step at 12.19 m — `container_40`'s own length — not a gradient**, so "12 m or 14 m" for the War Rig is binary
+for cover, not stylistic. The Terminus covers it at any length (40 m blocks); yard and pit cover it nowhere. The
+v1 maps are fine because the legacy `wall` is 18 m, so **this regression arrived with the arena kit**. On this
+tree the rig is still **5.6 m**, so it is a forecast, not a live defect, and the check flips itself when 14 m lands.
+**No long prop added to yard or pit**: they are maps he kept, and at 12 m the problem disappears with no map change.
+
+**Three mistakes of mine this round, recorded because the pattern is the same each time:**
+
+1. **Four tests that never ran.** Added as module-level `def test_...()`; `make arena-pytest` is `unittest discover`,
+   which collects `TestCase` subclasses and silently ignores bare functions. The count stayed at 14 and they
+   "passed" by not existing. Now 18, and verified failable by breaking the kit table on purpose.
+2. **A guard calibrated on the thing it watches.** The closed-end watch first took its range over every shipping
+   map *including terminus*, so terminus defined the low end and could never trip it.
+3. **A tidier story than the truth.** I wrote that the stale objective test was hidden "three reds deep" in
+   `make check`. **`arena-pytest` is deliberately not in `make check` at all** — my own note says so. Nothing
+   masked it; `make arena-test` is the gate, my brief requires it on every layout change, and I did not run it.
+
 **Questions for the lead** (not blocking; recorded per the worker contract):
 
 1. **The Terminus is in the rotation and he has not ruled on it.** It is the one entry in `Arena.ROTATION` that is
