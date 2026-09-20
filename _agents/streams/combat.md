@@ -188,6 +188,33 @@ machine, same seeds, build declared as the arm:
 **Why this is worth a run rather than an opinion:** the three candidates predict the *same* aggregate (the gangs
 lose badly to law) and differ on one cheap metric that already exists. **Nobody has to build anything.**
 
+**⚠ AMENDED, WITH DISCLOSURE: `static_share` CANNOT ANSWER THIS, and I had seen one number before I amended it.**
+
+`EngagementStats` computes it as `speeds[0] < STILL_SPEED and speeds[1] < STILL_SPEED` with `STILL_SPEED = 1.5`
+m/s — **mean SPEED, not displacement, and it requires BOTH TEAMS to be slow at once.** nav's tick dump of the
+creeping rig reads 3.50, 0.47, 3.10, 0.80 m/s: **a rig shuffling on the spot is never "still" by this definition**,
+and a metric about the whole fight being static cannot report that one army is going nowhere. My prediction was
+unfalsifiable in the direction that mattered: the "stuck" arm would have shown a flat `static_share` **whether or
+not the rig was stuck**, and I would have read that as evidence against it.
+
+**The honest order of events:** nav warned me the metric might be speed-based *before* the run reported; I checked
+`engagement_stats.gd` and confirmed it; **and then the 14 m arm printed `static 0%` while I was writing this up.**
+So I had seen the treatment figure before the amendment was committed, though the reasoning that voids the metric
+preceded it and came from someone else. **Recorded rather than tidied, because "I changed the prediction after
+seeing the number" is exactly the shape that needs the timeline attached.**
+
+**THE REPLACEMENT PREDICTION**, which the existing metrics can actually test. The signature of shuffling is
+**moving fast while getting nowhere**, so it lives in the gap between speed and displacement:
+
+- **stuck/shuffling:** `moved` (`centroid_travel_m`) and `push` (`net_advance_m`) fall materially with the 14 m rig
+  **while fire rate and engaged distance hold up** — an army that is fighting but not travelling.
+- **bigger target:** `moved` and `push` hold; the damage shows in losses, suppression and kill distance.
+- **neither:** nothing moves but the matchup still collapses, and I have no mechanism and will say so.
+
+**14 m arm (builder0, `b16b8d78`, gangs:law on yard, n=6):** len 109 s, first shot 5 s, **fire 24.8/unit/min**,
+contact @108 m, engaged 42 m, kill 24 m, **static 0%**, held-line 12%, **moved 220 m**, **push 98 m**, off-axis
+kills 57%, flank+rear 62%, cover time 31%. The 5.6 m control is running on the same seeds and machine.
+
 ### THE 14 m RIG'S COST: one matchup, not one faction (2026-09-19)
 
 Treatment vs the baseline taken with the rig reverted, both maps, `make compare-arms` with the build declared as
