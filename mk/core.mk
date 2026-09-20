@@ -75,7 +75,9 @@ import: $(GODOT)
 #      an empty comparison proves nothing, so the arm was proven (lesson 147).
 #
 # The lock stays: a second `make lint` would still run `import` underneath the first.
-lint: import ## Parse-check every GDScript file; prints only errors (fast way to find compile errors)
+LINT_BASELINE := tests/baselines/lint_expected.txt
+
+lint: import ## Parse-check every GDScript file; fails on any finding NOT in tests/baselines/lint_expected.txt
 	@exec 9>$(BUILD_DIR)/.lint.lock; \
 	flock -n 9 || { \
 		echo "lint: another lint is already running in this checkout ($(CURDIR)) -- refusing."; \
@@ -90,17 +92,74 @@ lint: import ## Parse-check every GDScript file; prints only errors (fast way to
 	count=$$(printf '%s\n' "$$files" | grep -c . || true); \
 	[ "$$count" -gt 0 ] || { echo "lint FAILED: found no .gd files to check. That is not a clean tree, it is a"; \
 		echo "            broken file list -- see the note above this recipe."; exit 1; }; \
-	: > $(BUILD_DIR)/lint.out; \
 	printf '%s\n' "$$files" | \
 		xargs -P $(LINT_JOBS) -I{} sh -c \
 			'out=$$($(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1 | grep -E "Parse Error|SCRIPT ERROR" | grep -v "depended scripts" || true); \
-			[ -z "$$out" ] || printf "%s: %s\n" "$$1" "$$out"' _ {} >> $(BUILD_DIR)/lint.out; \
-	if [ -s $(BUILD_DIR)/lint.out ]; then sort $(BUILD_DIR)/lint.out; \
-		echo "lint FAILED over $$count files"; exit 1; fi; \
-	echo "lint: all $$count scripts parse (-P$(LINT_JOBS))"
+			[ -z "$$out" ] || printf "%s\n" "$$out" | sed "s|^|$$1: |"' _ {} \
+		| sort > $(BUILD_DIR)/lint.out; \
+	sort $(LINT_BASELINE) 2>/dev/null | grep -v '^#' | grep -v '^$$' > $(BUILD_DIR)/lint.expected || true; \
+	new=$$(comm -23 $(BUILD_DIR)/lint.out $(BUILD_DIR)/lint.expected); \
+	gone=$$(comm -13 $(BUILD_DIR)/lint.out $(BUILD_DIR)/lint.expected); \
+	if [ -n "$$new" ]; then \
+		echo "lint FAILED over $$count files -- findings that are NOT in $(LINT_BASELINE):"; \
+		printf '%s\n' "$$new" | sed 's/^/  /'; \
+		echo "  (if these are --check-only isolation artefacts too, add them to the baseline WITH THE REASON;"; \
+		echo "   if they are real, fix them. Do not widen the grep.)"; \
+		exit 1; \
+	fi; \
+	if [ -n "$$gone" ]; then \
+		echo "lint: $$(printf '%s\n' "$$gone" | grep -c .) baselined finding(s) no longer occur -- tighten $(LINT_BASELINE):"; \
+		printf '%s\n' "$$gone" | sed 's/^/  /'; \
+	fi; \
+	echo "lint: all $$count scripts parse (-P$(LINT_JOBS), $$(grep -c . $(BUILD_DIR)/lint.expected || echo 0) known artefacts baselined)"
 
-test: import ## Run the headless test suite (FILTER=substring to run a subset)
-	$(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=$(FILTER)
+# T1 (metrics, round 9). MEASURED on builder0 at c21d0256, serially, per target:
+#
+#     test 2388 s | announcer-check 80 s | army-loop-smoke 24 s | combat-smoke 19 s | determinism 11 s
+#     relay-smoke 11 s | garage-smoke 7 s | net-smoke 4 s | sim-baseline 4 s | broker-test 2 s
+#     lobby-smoke 2 s | match-smoke 2 s | the pytest suites ~1 s
+#
+# **`test` is 2388 s of a 2554 s check: 93% of it.** Everything else in `check` put together is under three
+# minutes. So the round-8 framing -- "the targets in check are largely independent, run them concurrently" -- was
+# aimed at the wrong thing: running all twelve of the others perfectly in parallel saves under 3 minutes out of
+# 42, and the >= 50% bar is unreachable while the suite is one process. The suite is where the check IS.
+#
+# So the suite shards: N processes, each running every Nth file of the SORTED discovery order (round-robin, so a
+# shard gets a mix of cheap and expensive files rather than all of tests/ai_scenarios/). The shard flag lives in
+# tests/run_tests.gd -- a shared file, in merge notes -- and an unsharded run is byte-identical to before,
+# including its final line.
+#
+# **One `N passed, M failed` line, always.** A shard prints `SHARD i/n: ...` and never the bare line; this recipe
+# sums them and prints the bare line once. The orchestrator reads that line and nothing else (lesson 28), and
+# several of them would be worse than none.
+#
+# **FILTER forces the serial path**: a filtered run is short, and sharding it would make `make test FILTER=x`
+# report a total assembled from N processes for no gain.
+TEST_SHARDS ?= $(shell tools/slot.sh --jobs 500 $$(( $$(nproc) / 2 )))
+
+test: import ## Run the headless test suite (FILTER=substring to run a subset; TEST_SHARDS=1 forces one process)
+	@if [ -n "$(FILTER)" ] || [ "$(TEST_SHARDS)" -le 1 ]; then \
+		$(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=$(FILTER); \
+		exit $$?; \
+	fi; \
+	rm -rf $(BUILD_DIR)/test-shards && mkdir -p $(BUILD_DIR)/test-shards; \
+	seq 0 $$(( $(TEST_SHARDS) - 1 )) | xargs -P $(TEST_SHARDS) -I{} sh -c \
+		'$(GODOT) --headless --path . --script res://tests/run_tests.gd -- --shard={}/$(TEST_SHARDS) \
+			> $(BUILD_DIR)/test-shards/{}.log 2>&1; echo $$? > $(BUILD_DIR)/test-shards/{}.status'; \
+	cat $(BUILD_DIR)/test-shards/*.log; \
+	shards=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | wc -l); \
+	if [ "$$shards" -ne "$(TEST_SHARDS)" ]; then \
+		echo "test FAILED: $$shards of $(TEST_SHARDS) shards reported a summary line. A shard that died without"; \
+		echo "             printing one would otherwise vanish from the total, which is the worst way to pass."; \
+		exit 1; \
+	fi; \
+	files=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | sed 's/.*: \([0-9]*\) files.*/\1/' | paste -sd+ | bc); \
+	passed=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | sed 's/.* \([0-9]*\) passed.*/\1/' | paste -sd+ | bc); \
+	failed=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | sed 's/.* \([0-9]*\) failed.*/\1/' | paste -sd+ | bc); \
+	echo ""; \
+	echo "$(TEST_SHARDS) shards over $$files files"; \
+	echo "$$passed passed, $$failed failed"; \
+	[ "$$failed" -eq 0 ] || exit 1
 
 # ---- Verification bundles (see _agents/verification.md) ------------------------
 
@@ -146,15 +205,16 @@ CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-
 # The wrappers exist so the chains live HERE and not on the real targets: putting `| net-smoke` on `combat-smoke`
 # itself would mean `make combat-smoke` silently ran net-smoke too, for every caller, forever.
 # Both DERIVED from the machine, never hard-coded (lesson 148), and both from a MEASURED footprint:
-#   CHECK_JOBS  2200 MB is the worst-case TARGET, not the worst-case process: `net-smoke` and `relay-smoke` each
-#               hold three Godot processes at once. Provisional until the per-target peak RSS from `check-timed`
-#               is in, and it is deliberately the pessimistic figure in the meantime -- a check that under-uses
-#               builder0 costs minutes, and one that OOMs a laptop with six agent sessions up costs the evening.
+#   CHECK_JOBS  1000 MB, from the MEASURED per-target peak RSS on builder0: audio-check 919, test 427, the
+#               smokes 250-273, broker-test 84. `/usr/bin/time -v` reports the largest single PROCESS, not the
+#               sum, and `net-smoke` and `relay-smoke` each hold three at once -- so ~250 x 3 is a target's real
+#               worst case and audio-check's single 919 is the ceiling. 1000 covers both. The earlier 2200 was
+#               a guess from round 8's "~735 MB a Godot run" and was more than twice too pessimistic.
 #   LINT_JOBS   a `--check-only` process peaks at 200-205 MB, measured twice on the laptop (not the ~735 MB a
 #               RUNNING match costs -- it parses and exits without ever building a world). 250 MB with a
 #               half-the-cores cap, because lint runs CONCURRENTLY with up to CHECK_JOBS other targets and the
 #               two budgets share one machine.
-CHECK_JOBS ?= $(shell tools/slot.sh --jobs 2200)
+CHECK_JOBS ?= $(shell tools/slot.sh --jobs 1000)
 LINT_JOBS  ?= $(shell tools/slot.sh --jobs 250 $$(( $$(nproc) / 2 )))
 _CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
 
