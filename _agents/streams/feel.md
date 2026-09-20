@@ -129,7 +129,55 @@ place, you do not place).
 
 ## Status
 
+### Round 8 CLOSE (2026-09-19) — what a fresh agent needs
+
+**Green, sent, awaiting merge: `ea95bdb8`** — builder0, wrapper's own line `>> remote: make check exited 0`,
+`1252 passed, 0 failed`, `sim-baseline passed: 668b7d490607439b (glibc-2.43)`, main `c7583df6` merged. The tip
+`c4195283` is Status only and landed AFTER that check: **merge `ea95bdb8`**, not the tip. builder0 was down
+(`No route to host`) at close, so nothing later was gated.
+
+**Not merged, lives only on the local branch `feel-rig-check`** (survives this worktree; branches sit in the shared
+repo): `26e1f26a` `test_the_semis_fill_their_boxes`, mutation-checked, passes on combat's catalog
+(`2141904b`, which nets the rig boxes; `44d87a28`/`bc1c1f4c` revert-and-restore around a balance baseline) and fails
+on the old one. **Landing order DECIDED by the orchestrator at close: combat's `2141904b` merges first and the test
+follows**, so `26e1f26a` is the TAIL of the round, not the head — combat's unmerged set also carries the widened sim
+baseline, which lands last so the baseline is recorded once after it. So: wait for combat on main, merge main,
+cherry-pick `26e1f26a` onto `stream/feel`, one check, hand over the hash. Don't cherry-pick combat's catalog yourself.
+
+**Rescued out of this worktree** (git-ignored, would die with it): the lead's unjudged review artefacts are now at
+`~/projects/godot/build/feel-round8-review/` — `size-review/` (rig_12_0.png, rig_14_0.png, army.png at his camera),
+`crowd-listen/` (old-vs-new crowd, the re-levelled full mix), `x7-listen/energy_four_new.mp3`. All 75 ElevenLabs sfx
+masters were already mirrored in the main checkout. **The 18 Terminus announcer masters are gone** (see below);
+nothing else to rescue.
+
+**Next round's headline, not started: A6 in `_agents/research_catalog.md`** (main, `4eb53078`). The lead's oldest
+complaint — "they still generally don't do what I command them" — reads as legibility, not obedience: Dragan, Lee &
+Srinivasa (2013) separate moving efficiently toward a goal from showing which goal you hold. **feel owns the motion,
+control owns the readout.** The law as handed over: a **turreted** hull fighting off-axis keeps its nose within ~25°
+of the ordered corridor's tangent and lets the turret fight; a **hull-fixed** hull stays in forward-oblique bounds so
+every leg of a zig-zag visibly advances. **Joint bar: time with velocity opposing the corridor tangent 30–36% → under
+10% with NO fall in exchange ratio** — if units look obedient and start dying, we bought the wrong thing. Note the
+seam: motion is combat's/nav's code today, so agree the contract before touching it.
+
+**Correction to hold (twice written down now):** my `StandsProfile` docstring claimed it "reproduces" control's hand
+values; control measured ~2 m of difference at the front. Fixed in `dd9537de`, but the lesson is the point: **a test
+that asserts a PROPERTY of a shape is weaker than one that asserts IDENTITY to it** — say which you are asserting.
+
 ### Round 8 (2026-09-19) — "the gang tanks are still tiny" (the lead, third time)
+
+- **Green and sent: `ea95bdb8`** (builder0: 1252 passed, 0 failed, `make check exited 0`, `sim-baseline passed:
+  668b7d490607439b`, main `c7583df6` merged). Carries the fit fix + `make size-look`, the music-director flake fix
+  (control's report), **the shield fix** (`b6b23501`) and **the Terminus** (`f8f27593` name + `9b6a52d1` 18
+  lead-approved clips, 1,630 credits; announcer-pytest 58/58 — main's only red target).
+- **Shield fix:** every gang vehicle has `max_shield` 0, so the hull's first `set_shield(0)` read against the shell's
+  default full ratio as the shield being knocked out: a crackle and a `shield_down` sound per vehicle, ~40 a
+  deployment, since the gangs shipped. combat spotted it in my 14 m frames (lesson: a big object magnifies what was
+  already slightly wrong). The shell's first update is now its start, not an event.
+- **Terminus clips, and a master I lost:** the announcer masters are git-ignored, so a worktree dry run priced all 144
+  requests (~17,018 credits, 8x). Copy them in first and read the REQUEST COUNT. I then deleted the copy afterwards
+  **with the 18 new masters in it**: the clips ship and are verified, but those 18 can't be re-cut if the cutting
+  changes (~1,630 credits to re-record; the orchestrator ruled: don't pre-pay, a re-record buys different takes
+  anyway). Recipe in `references/audio/README.md`: copy in → generate → copy new masters back → delete.
 
 - **Why it was still tiny (two causes, both measured):** (1) the art is fitted uniformly by LENGTH and the War Rig
   model is slim (natural 0.85 × 1.35 × 3.6), so combat's 4.4 m box height never reached the screen: it drew

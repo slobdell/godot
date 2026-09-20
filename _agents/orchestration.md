@@ -2158,3 +2158,244 @@ The kickoff prompt is one line; this section is the rest.
        convincing wrong answer available.
      - **And filming both arms before deleting** leaves a picture of what shared-gradient routing looks like for whoever
        tries it next. **A null is cheaper to re-derive than to re-discover.**
+140. **A wrong mechanism attached to a right number is more durable than a wrong number.** combat, on nav's pivot table:
+
+     ```
+     hull_size                      in-place turn      farthest wander
+     3.0, 4.4, 5.6   (old)              7 deg               5.5 m
+     2.84, 4.49, 12.0                  23 deg               3.9 m
+     3.32, 5.24, 14.0 (shipped)        26 deg               3.5 m
+     ```
+
+     **The numbers are sound** — and nav ran the OLD 5.6 m size on today's tree as a control, which is what rules out
+     *"something else landed this round"*. **The explanation offered with them cannot be true:** nav attributed it to the
+     creep legs moving a longer hull's centre less, and **`hull_size` never reaches `TankMotion`.** `state_for()` builds
+     the motion state from locomotion, the two speeds, `hull_turn_rate_deg`, acceleration, braking, `min_turn_radius_m`
+     and `lateral_grip` — **no length, no box** — and `step_in_place` references neither. **At a fixed radius the centre's
+     path per degree is identical at 5.6 m and 14 m; the model cannot tell the hulls apart.**
+     **combat's candidate, with the test that separates it:** the probe runs on **`yard`**, and **`hull_size` IS the
+     collision box.** A 14 m box sweeping a 12 m circle **hits scenery a 5.6 m box passes clean**; a blocked hull
+     translates less while the controller keeps commanding yaw — **exactly the signature of turn rising and wander falling
+     monotonically with length.** One run on clear ground separates them.
+     **If that is right, the number means *"a long hull gets stuck on terrain and pivots while stuck"*, not *"a long hull
+     pivots"*** — map-dependent, worse on the city map, absent on open ground. **Same number, different meaning, different
+     fix.**
+     - **combat's reason for raising it is the lesson:** *"a mechanism that cannot be true gets quoted as fact later, and
+       this one was about to be recorded next to a number I will be citing."* **A retracted number gets struck through; a
+       wrong explanation travels attached to a correct one and is never re-checked.**
+     - **Check a mechanism against the code that would have to implement it.** combat did not argue from plausibility —
+       it named the function, listed what it reads, and observed that length is not in the list.
+     - **This is the fourth time today combat has brought evidence against its own position**, and the second time a
+       stream has corrected a mechanism I or another stream invented from intuition rather than from the source.
+141. **A vehicle far outside the range a system was built for does not fail loudly — it quietly stops getting the benefit
+     everyone else gets.** combat, and this is the third instance this round of one pattern:
+
+     | system | sized for | how it failed |
+     |---|---|---|
+     | the spawn grid | ~4 m (8.0 m pitch − jitter → 5.6 m ceiling) | **loudly** — hulls overlapped, fixed in hours |
+     | `ArmyLayout` spacing | ~4 m (*"hulls are ~4 m long"*, in the comment) | **loudly** — 18 overlaps, fixed in hours |
+     | **cover** | ~4 m props | **SILENTLY** |
+
+     **yard's cover: 58 × `container_40` (12.19 m), 40 × `container_20` (6.06 m), 6 wrecks (6.4 m), barricades.**
+
+     | hull | length | prop types long enough to hide it |
+     |---|---|---|
+     | gang_scout | 2.8 m | 5 of 6 |
+     | gang_ifv | 3.6 m | 5 of 6 |
+     | gang_support | 7.0 m | 2 of 6 |
+     | **gang_tank (the rig)** | **14.0 m** | **0 of 6** |
+
+     **The longest prop on the map is 12.19 m. Nothing can hide a 14 m hull.** Containers stack three high, which adds
+     height, not length.
+     **And cover fails silently: the rig still drives to cover, still counts as *near cover*, and simply is not covered.**
+     That is the whole lesson — **the two systems that failed visibly were fixed within hours; this one would never have
+     announced itself.**
+     - **When a value moves far outside its designed range, enumerate what else was sized for the old range.** combat found
+       the third instance by asking that question rather than by hitting a failure.
+     - **⚠ AND COMBAT IS NOT CLAIMING IT EXPLAINS THE MATCHUP**, which is the discipline worth copying: its own arms show
+       `unit_seconds_near_cover` **flat** (0.300 → 0.306) and `deaths_near_cover` **falling** (0.411 → 0.332). **If the rig
+       were dying while exposed at cover, that share should rise.** So the structural fact is certain and **the story
+       built on it is not evidenced.**
+     - **`gangs vs law` 9/20 → 0/20 remains unexplained.** Shuffling is now evidenced *against* (the rig converts 0.95 of
+       its path into net displacement — the **least** shuffling gang type; the scout is the shuffler at 0.68). Splash is
+       evidenced against (**indirect kills halved, 8.4% → 3.7%**). **"Bigger target" survives by elimination rather than by
+       evidence, which is not the same thing**, and combat said so rather than letting it become the answer.
+142. **`unittest discover` silently ignores bare `def test_...()` functions — four tests "passed" by not existing.**
+     arena's own-goal, reported unprompted: `make arena-pytest` is `unittest discover`, which collects **`TestCase`
+     subclasses only**. Four module-level test functions it added were **never collected**, and **the suite reported the
+     same 14 tests before and after.**
+     **It caught this because the COUNT did not move**, then verified the fix by **breaking the kit table and watching the
+     right test go red.**
+     - **arena's own framing, which is the keeper:** *"A test that cannot fail is worse than no test: it is a green light
+       wired to nothing — and I shipped four of them while spending the day telling other streams to prove their arms
+       differ."*
+     - **Watch the test COUNT, not just the pass/fail line.** It is the only signal that distinguishes *"my new tests
+       passed"* from *"my new tests were not run"* — the same distinction as lesson 91's invisible skip and lesson 95's
+       truncated check. **Three different mechanisms, one symptom: a green result that covers less than it appears to.**
+     - **And the fix is always the same: make it fail on purpose and watch.** Every guard that worked this round was
+       mutation-checked; every one that failed us was not.
+143. **A roster that contains a unit is not coverage — the unit has to DO the thing.** combat, widening the sim baseline
+     after lesson 137, caught its own first draft failing:
+
+     > *"My first draft was BLIND to the scout's fire arc. The fixed-mount hulls were in flanking and scouting squads and
+     > never got into a fight inside 40 s, so their guns never mattered and the arc was unreachable."*
+
+     **Fixing it meant moving them into the line squads.** combat found it **by mutation-testing, not by reasoning about
+     the roster** — which is exactly the trap: *a widened canary that still cannot see a wheeled change is worse than the
+     narrow one, because it will be trusted more.*
+     **The measured result, old baseline against widened:**
+
+     | mutation | widened | old |
+     |---|---|---|
+     | wheels+turret — IFV hull turn rate | SEES | **BLIND** |
+     | wheels+fixed — scout fire arc | SEES | **BLIND** |
+     | hover+turret — syn_scout speed | SEES | **BLIND** |
+     | tracks+turret — tank hull turn rate | SEES | SEES *(control)* |
+     | the 14 m rig's hull box | SEES | **BLIND** |
+     | a turret traverse (law_tank) | SEES | **BLIND** |
+
+     **Blind to five of six.** And the tracked case as a control, confirming the widening did not break what worked.
+     - **This is the positive control (lesson 101) applied to COVERAGE rather than to a treatment.** *Is the unit present*
+       is the easy question; *does the code path execute* is the one that matters. **The same distinction as a test that
+       is collected but never fails, and a switch that is passed but never read.**
+     - **combat wrote NEW doctrines rather than editing the existing ones**, because `anvil_hammer`/`individuals` are also
+       used by `announcer-*`, `audio-*`, `match` and the AI ladder — *"changing them would have moved four other things
+       silently, which is the same class of mistake as the one we are fixing."*
+     - **And it declined the second map, with a reason:** the `ARENA_HALF_SIZE` case a second map would have caught is no
+       longer a miss — that constant is a *bound* now and each layout declares its own `half_size` — so it would double the
+       cost to catch a non-case and make every future investigation span two matches. **"If a hexagon-specific regression
+       ever bites us, that is the moment to add it — with the failure in hand rather than in anticipation."**
+     - **⚠ Consequence to expect: `sim-baseline` will now fail for real changes it used to wave through.** The next few
+       *"the baseline moved"* reports are likely to be **correct**, and should be read as the instrument working rather
+       than as a regression.
+
+144. **A rejection outlives the premise it was built on.** `algorithms.md` rejected learned policies with *"determinism
+   is the blocker: a learned policy is a large pile of floats evaluated in an order we do not control."* Two external
+   reviews, independently, pointed out that **the floats are a choice.** An offline-trained network exported as `int8`
+   weights with `int32` accumulators is bit-exact — integer addition is associative, there is no rounding mode, no
+   libm. The real blocker was **floats inside the tick**, which is a narrower rule that forbids much less.
+   **The lesson is not about machine learning.** It is that we wrote down a *conclusion* (*"no learned policies"*) in
+   the place where the *reason* should have gone, and then the conclusion kept being true-looking after the reason
+   stopped holding. **A rejection is a claim with a mechanism, and the mechanism is the part that can be checked.** This
+   is lesson 140 (*a wrong mechanism outlives a wrong number*) pointed at our own documentation instead of at a
+   measurement — and it cost a lead decision, because he ruled on the question with the wrong reason in front of him.
+   **When recording a rejection, write the mechanism first and the verdict second.** Then re-deriving it is cheap and
+   re-examining it is possible.
+
+145. **Ask an outside reviewer the question you are embarrassed to be unsure about, not the question you can describe
+   well.** The brief that produced this catalogue was strong on everything we had measured and silent on the one thing
+   the lead had complained about most recently: it described hull *length* thoroughly and **never said the word
+   "articulated"** — so neither reviewer addressed the tractor-trailer moving as one rigid body, which is a thoroughly
+   solved problem in the literature. **Fluency in a brief tracks what we already understand**, and the sections we
+   wrote most confidently are the sections where an outside opinion was worth least. Before sending a brief, list the
+   lead's open complaints and check each one appears **as a question**, not as background.
+
+146. **A timeout kills the wrapper, not the work — and then you launch a second copy onto the live first one.**
+   `_agents/remote_builds.md` already records this for `make remote`: a foreground run SIGTERMed by the harness keeps
+   running on builder0. The orchestrator did not think to apply it to a **local** command. A `timeout 300 make lint`
+   was reaped at 300 s, its Godot children survived, a second `make lint` was launched into the same checkout, and the
+   two shared one `.godot` import cache.
+   **The symptom looks exactly like a broken tree and nothing about it says "contention":** `Parse Error:
+   [ext_resource] referenced non-existent resource` for files that are **tracked and present**, then cascading
+   `SCRIPT ERROR: Nonexistent function 'roster'` for a method defined at `game/units/units.gd:866`. The orchestrator
+   told the lead `main` was red, **and asked a stream whether its worktree was to blame for a mess the orchestrator
+   had made.** control settled it by filtering `pgrep` on cwd and finding both offending pids in the main checkout.
+   Three rules out of one evening:
+   - **"I killed it" is not a reason to believe nothing is running.** Check for survivors before relaunching anything.
+   - **A cwd-filtered kill loop matches its own shell** — this one exited 144 by TERMing itself, which is the second
+     time that trap has been paid.
+   - **Fix it in the tool, not in the habit.** `mk/core.mk`'s `lint` now takes `flock -n` and **refuses** a second run
+     in one checkout rather than queueing, because a second lint is always a mistake and never a wait. Proven red
+     before being trusted: hold the lock, run it, confirm the refusal and exit 1, confirm it stops firing on release.
+
+147. **A positive control is the only thing that separates "harmless" from "never ran", and nav's caught one the same
+   night the blind baseline did.** nav's facing-arc A/B came back with **every figure identical between arms to three
+   decimals** — net/path, oscillating, both order buckets, `blocked_friend`, on all four maps. That is the shape of a
+   clean null, and it would have been reported as *"the facing pair is harmless"*. The counter nav had added for
+   exactly this purpose said otherwise: **`gates aimed 0, gates refused 0` in BOTH arms.** The arc never executed, so
+   nothing was ever compared.
+   **Cause:** squad's `_arrive_facing` attaches a facing only when `intended_facing()` is non-null, which needs the
+   order to carry one; `nav-fight` issues `move` with no facing and a CPU fight never sets one.
+   **So the honest claim is narrow, and the wording matters:** *"measured to never execute in a CPU fight; untested
+   under player facings"* — **not** "measured inert". nav asked for precisely that distinction in `HANDOFF.md` and was
+   right to. The cases where it does fire — a player drag-order carrying a facing, and a squad told to hold one for an
+   ambush — are exactly the cases the lead looks at, so round 9's probe must issue orders that carry a facing or it
+   re-measures nothing.
+   **This and lesson 143's blind baseline are one lesson with two instances:** an instrument that cannot detect the
+   treatment produces a green indistinguishable from a real null. We already had *"prove a guard can go red before
+   trusting it."* **The same rule applies to every A/B and every baseline: prove the arm is distinguishable before
+   believing the comparison.** An arm-engagement counter costs four lines and is the difference between a finding and
+   a fiction.
+
+148. **A capacity constant is wrong in both directions the moment it outlives its machine.** `tools/slot.sh` capped
+   heavy runs at 2, sized by a comment reading *"2026-09-14: 8 cores, 7.6 GB RAM"*. Five days later the lead saw
+   builder0 idle across 12 cores and asked whether to raise concurrency. Measured: **builder0 has 12 cores and 11.9 GB
+   available; the laptop has 8 cores and 2.4 GB available**, because six agent sessions hold the rest. At ~735 MB a
+   run, **raising a global default would have starved builder0 anyway while pushing the laptop into OOM.**
+   The fix is not a bigger number, it is **Invariant 0 applied to a constant**: the default is now derived from
+   `/proc/meminfo` at 2.5 GB a slot, clamped to [2, 4], so the laptop keeps 2 and builder0 takes 4 and neither can go
+   stale when the hardware changes again. Mutation-checked in both directions on both machines, plus the
+   unreadable-`/proc` fallback and the explicit-override path.
+   **And the knob the question was reaching for was the wrong one.** 12 cores sat idle because **a `make check` is
+   mostly ONE single-threaded Godot grinding ticks for 30-50 minutes.** More slots shortens the QUEUE; only
+   parallelism *inside* a check shortens the RUN. Recorded in the script so the next person asking "why is it idle"
+   gets the answer instead of the number.
+
+   **The change invalidated a class of existing measurements, and nav said so instead of letting them stand** (nav,
+   `0c839426`, written into `verification.md`). Raising concurrency is not metric-neutral, and the split is exact:
+   - **Safe across the change:** anything that is a share or ratio computed *inside* one run — `oscillating_share`,
+     `no_progress_share`, `net_over_path`, the order-bucket shares, "N of M arrived". **Numerator and denominator
+     slow together.**
+   - **Not safe:** `t50_s` / `t90_s` / `t100_s`, crossing times, "arrived by N seconds", any per-tick cost. Every
+     timing figure in nav's round-8 brief was taken at 2 slots and **is not comparable across the change.**
+   - **The subtlety that makes this bite quietly, and it is nav's:** we run a **fixed tick**, so *sim*-seconds are
+     immune — a saturated run reports the same sim time. What inflates is **wall-clock**, and only the things that
+     sample it inside a run inherit that: profiling, timeouts, and any budget expressed in real seconds. **So nothing
+     looks obviously wrong.** It is also why three garage liveness timeouts had to go from 60/120 s to 600 s.
+   - And control's measurement bounds the workaround: **a reference-workload ratio corrects for "busy machine" but
+     NOT for "every thread busy"** — under 7 burners on 8 threads the order path inflated ~14× while the reference
+     only doubled. **A ratio is not a load-proof instrument**, and at 4 slots that caveat is live rather than
+     theoretical.
+   **Before raising a shared capacity knob, ask which recorded numbers it retires.** This one retired every
+   wall-clock figure in one stream's brief, and the only reason we know is that the stream volunteered it.
+
+149. **"Unmeasured" and "unreachable" look identical from a green check, and the second one means the feature did not
+   ship.** Round 8 reported *"cars arrive on heading"* to the lead as delivered. nav's A/B then showed the arc never
+   executed (lesson 147). control went one step further and asked *why*, in the code rather than in the probe, and
+   found the answer is not the probe at all: a `facing` reaches a move command from **exactly one place**,
+   `game/ui/tactical_map.gd:269`, the **touch map's** right-drag — and the touch map lives behind `--touch-map` /
+   `--command-playtest`. The lead's desktop controls only ever **read** `facing`, never send it. **So the arc cannot
+   fire in the game he plays**, and the counters would read `aimed 0` in a real match exactly as they did in the A/B.
+   **The rule already existed** — *a behaviour behind a flag the default path never passes has not shipped; play the
+   default path* — and the orchestrator broke it by relaying a merge as a win **without once playing the default
+   path**. Three separate instruments (a green check, a clean A/B, and a documented contract on both sides) all
+   reported success, and none of them could see that nothing was connected.
+   **The distinction to hold: a test proves the code works when called. Only the default path proves something calls
+   it.** The cheap guard is control's, and it generalises: **assert the value arrives end to end** — a test on
+   `orders.current(unit)["facing"]` after the real input gesture — so the next A/B has a live arm *by construction*
+   rather than by hope. **An arm you have to remember to check will eventually not be checked.**
+
+150. **A win/loss ladder cannot see a behaviour change, and the metric you tuned can improve while the behaviour you
+   wanted degrades.** squad's churn lever is the cleanest case this project has produced. `commit_bonus` 1.35 **halved
+   the churn metric** — target switches 18.1 → 12.7 and reversals 0.30 → 0.17 per unit-minute — and a **48-match
+   ladder said it does not lose** (27-21, inside noise). The orchestrator relayed it to the lead as an approved
+   round-8 win. **Two behaviour scenarios then failed on it:** a squad stops concentrating its fire (focus share equal
+   to brains-alone, meaning squad tactics buy nothing at all), and **a scout stops working onto engine decks — 41
+   hits / 23 on the deck → 3 / 0.** It was reverted to 1.15 and survives only as variant `x5c`.
+   **The ladder was not broken. It answered a different question.** *"Does this lose?"* and *"does this still do the
+   thing we wanted?"* are separate, and a scalar outcome measure is blind to a unit quietly abandoning a tactic —
+   because the *other* side is degraded too, so the score barely moves. **Two mediocre armies draw exactly like two
+   good ones.**
+   Three consequences:
+   - **Pair every outcome ladder with a behaviour assertion**, and prefer the behaviour assertion when they disagree.
+     A ladder is a *safety net* against making things worse, never evidence of having made them better.
+   - **A knee found on a proxy is not a knee.** The 1.35 knee was located by measuring switches and reversals, which
+     is the proxy, not the goal. **The lead's complaint was never "too many switches" — it was that units look
+     stupid.** A scout that no longer aims at engine decks looks *more* stupid with less churn.
+   - **This is the ML ruling's prerequisite, demonstrated by hand on ONE parameter.** The lead accepted that A12 must
+     land before any offline search because *an optimiser pointed at a bad objective does not fail, it succeeds at the
+     wrong thing.* squad just did that manually, with a single scalar, and it took two hand-written scenarios to
+     catch. **An automated search over a hundred parameters against the same objective would have produced a hundred
+     such regressions and a better-looking metric.** Read this lesson before pointing anything automated at a score.
+   **And A2 inherits its falsifier from this:** squad's two scenarios are the ready-made acceptance test for the
+   state-dependent switching cost, because they are precisely what the crude version cost.

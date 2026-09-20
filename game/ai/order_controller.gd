@@ -10,7 +10,10 @@ extends Node
 ## Move orders (one at a time):
 ##   {"type": "stop"}
 ##   {"type": "move_to", "x": float, "z": float, "reverse": bool (optional), "speed": 0.2..1 (optional),
-##    "arrive": 0.5..10 meters (optional, default ARRIVE_RADIUS)}
+##    "arrive": 0.5..10 meters (optional, default ARRIVE_RADIUS),
+##    "facing": [x, z] (optional): which way to point on arrival. A WHEELED hull plans a straight approach along it so
+##        it arrives already facing that way (it cannot pivot once there); tracked and hover hulls ignore it here and
+##        turn on the spot afterwards as they always have.}
 ##       reverse = back up to the point, front armor kept toward where you came from
 ##       arrive = how close counts as there (brains use ~1 m for hide and peek spots)
 ##       direct = true: steer straight at the point, no navmesh path (brains' short, already-checked hops)
@@ -401,6 +404,10 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 			return "'%s' needs a finite number '%s'" % [type, key]
 	if type == "target" and typeof(order.get("name")) != TYPE_STRING:
 		return "'target' needs a string 'name'"
+	# Round 8 contract (nav + squad): a move may say which way to face when it gets there. [x, z], any length.
+	if order.has("facing") and not (order["facing"] is Array and (order["facing"] as Array).size() >= 2
+			and typeof(order["facing"][0]) in [TYPE_INT, TYPE_FLOAT] and typeof(order["facing"][1]) in [TYPE_INT, TYPE_FLOAT]):
+		return "'facing' must be [x, z] numbers"
 	if order.has("reverse") and typeof(order["reverse"]) != TYPE_BOOL:
 		return "'reverse' must be true or false"
 	if order.has("direct") and typeof(order["direct"]) != TYPE_BOOL:

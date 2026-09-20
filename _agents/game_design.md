@@ -975,6 +975,42 @@ phase `driving`, none creeping, and 7 of 11 had forward AND reverse above 0.5 m/
 angles: heading and position.** A vehicle alternating forward and reverse rotates without translating *and* travels
 without progressing. **One fix should move both**, and the `--nav-off=commit` A/B is pre-registered to test exactly that.
 
+### MEASURED: cover is a STEP FUNCTION at 12.19 m, so 12 m vs 14 m is binary (arena, 2026-09-19)
+
+**Share of the contested field within 45 m of a prop long enough to hide a hull of each length.** Best case by
+construction — a box's screening length is its longest horizontal side, so this assumes the hull is parked along it and
+the shooter is square to it. **A hull that fails here cannot be hidden at all.**
+
+| hull length | 6 m | 7 m | **12.19 m** | **12.5 m** | 14 m |
+|---|---|---|---|---|---|
+| **yard** | 0.99 | 0.99 | **0.99** | **0.00** | **0.00** |
+| **pit** | 0.85 | 0.48 | 0.46 | **0.00** | **0.00** |
+| **terminus** | 0.98 | 0.95 | **0.91** | **0.91** | **0.91** |
+| boneyard | 1.00 | 0.92 | 0.85 | 0.33 | 0.33 |
+
+**The cliff is at 12.19 m — the shipping container's own length — and it is a step, not a gradient.** yard covers
+**0.99 up to 12.19 m and 0.00 at 12.5 m.**
+
+**So the lead's open question is not "how huge do I want it, and what does cover cost": it is binary.**
+- **At 12 m the rig hides on 99% of yard, using props already on the map, with no map change at all.**
+- **At 14 m it hides nowhere on either map he kept.**
+- **The Terminus holds 0.91 at ANY hull length**, because its city blocks are 40 m. **It is the only map he plays that
+  covers a 14 m rig.**
+
+**⚠ AND THIS ARRIVED WITH THE ARENA KIT.** `foundry` and `scrapyard` cover a 14 m hull fine — the **legacy v1 `wall`
+obstacle is 18 m**. The v2 kit that replaced it **tops out at 12.19 m**. **The two maps he kept are exactly the two v2
+maps with zero long props**, so the regression is invisible precisely where it matters most.
+
+**It is a FORECAST, not a current defect:** on arena's tree `gang_tank` is still 5.6 m, and the check **reads
+`game/units/units.gd` rather than copying it**, so it flips itself the moment 14 m lands with nobody needing to remember.
+
+**No long prop has been added to yard or pit, deliberately** — they are maps he kept and ruled on, and **if he rules 12 m
+the problem disappears with no map change at all.** If he rules 14 m, a jackknifed trailer or a container *wall* reads as
+the same venue and wants feel's eye.
+
+**And this does NOT explain `gangs vs law` 9/20 → 0/20.** combat's arms show `unit_seconds_near_cover` flat and
+`deaths_near_cover` **falling**, which is the opposite of what *dying while exposed at cover* predicts.
+
 ### Two decisions from the lead (2026-09-19, answering queued gates)
 
 > *"a 4s slower march for a tidier traversal is better, yes. For the attack mechanics - **making the units appear smart
@@ -1643,3 +1679,175 @@ color, never player names. Lines in other languages later from the same text lib
 - **The AI Commander:** an optional LLM opponent that issues the same SquadCommands. Bring-your-own Gemini key
   first, then on-device Gemini Nano on Android (the plan and its rules are in vision.md).
 - Replays and spectating (recording works over the relay today).
+
+## The external research review (2026-09-19)
+
+The lead asked for a research brief to be written for an external planning system, then sent it to two of them and
+brought both replies back. **His words, verbatim:**
+
+> *"Basically what I'd like to do next is for you to formulate a prompt for an external agentic system; assume there's
+> sort of a proprietary boundary between the 2 of you but you're otherwise free to speak about strictly abstract and
+> research concepts. This system is optimized to produce design strategies and additional input outside of what you
+> might have already considered. So I'd like for you to be able to express the intent of our game, or simulation in
+> completely abstract / research oriented terms, outlining what our system is currently composed of, the general intent
+> of creating extremely intelligent simulations based on state of the art computer science principles, with the
+> constraints we have in place (i.e. deterministic simulation). We basically want to outline the intent that if
+> [the genre's gold standard] is a gold standard, we want to exceed that standard in terms of making our AI vehicles
+> intelligent individually and coherent in high-level unit structures. A crucial consideration for this planner is to
+> known that we can take advantage of AI as much as necessary for offline simulation formulation. This also includes
+> thins for navigation, waypointing, splining, and whatever else I'm missing. We would ask this remote agent to return
+> as many design and algorithmic changes that would be useful for this endeavor."*
+
+And on what to do with the two replies:
+
+> *"I want you to do 2 things: First, distill and curate the feedback from both responses as it applies to our game and
+> ensure this is rigorously documented inside our own codebase. Then I want you to create a final markdown doc in
+> ~/Desktop/final.md that basically re-articulates the data to a human audience (me) - you would explain what
+> approaches we're going to incorporate and what it means in pragmatic terms."*
+
+**Where it lives:** the brief and both verbatim replies are in [`research/`](research/); the curation — 50 techniques
+proposed, 12 adopted, every rejection given its reason — is [`research_catalog.md`](research_catalog.md). The lead's
+own copy of the readable summary is `~/Desktop/final.md`.
+
+**Two design points this raised that are HIS to rule on, not ours:**
+
+1. **Our blanket rejection of learned policies was built on a wrong premise.** He asked and answered the RL question
+   earlier the same day, and the answer recorded in `algorithms.md` was *"determinism is the blocker."* Both external
+   reviews independently pointed out that the float part is a choice: a network trained offline and exported as integer
+   weights is bit-exact, because integer addition is associative and there is no libm. **The blocker was never
+   "learning", it was floats inside the tick.** Our recommendation is still to decline — a frozen net's failure mode
+   cannot be read, and decision trees buy the same trade with a printable artefact — but the premise he decided on was
+   wrong and he should get to decide again on the right one.
+2. **The 12 m-vs-14 m War Rig question should be withdrawn.** Cover reads 0.99 at 12.19 m and 0.00 at 12.5 m because we
+   sample the hull's **centre point**; the step function is an artefact of the query, not of the arena. There is an
+   O(1) exact answer that costs the same at 2.8 m and 14 m. **Keep the rig at 14 m because it looks right, and fix the
+   query** (catalogue A3).
+
+### Ruling: the War Rig stays at 14 m (2026-09-19)
+
+The lead, closing the question the orchestrator should never have asked him:
+
+> *"Yes the war rig stays at 14m, we can revisit that later if it's still an issue."*
+
+**So the 12-vs-14 decision is closed and the fix is in the query, not the vehicle.** `Arena`'s cover table stands as
+measured — yard 0.99 up to 12.19 m and **0.00** at 12.5 m, pit 0.46 → 0.00, terminus 0.91 at any length — but that
+cliff is an artefact of sampling the hull's **centre point**, not of the arena's geometry. Catalogue row **A3**
+replaces it with the fraction of hull length occluded, evaluated by differencing directional summed-area tables: two
+array lookups and a subtraction, **identical cost at 2.8 m and at 14.0 m**.
+
+Consequences now settled, so nobody re-opens them:
+- **arena owns the tables, combat owns the consumer** (`research_catalog.md` A3).
+- **The standing note in `arenas.md` not to add a long prop to yard or pit still holds**, and holds *more* now: the
+  rig is staying long and the fix is elsewhere.
+- **`make arena-report`'s WATCH line — *"NOTHING on this map can hide the longest hull"* — must be revised in the
+  same commit as the tables.** It is true under the point-sample definition and will be false under A3, and a WATCH
+  line that is confidently wrong is worse than silence (arena's warning, and it is right).
+- arena's step function at 12.19 m becomes **the positive control** for A3: if the cliff survives the change, the
+  treatment did not engage. Lesson 147 is why that matters.
+- **Still unresolved and not blocked by this:** `gangs vs law` went **9/20 → 0/20** with the 14 m rig, p ≈ 2×10⁻⁶,
+  and the mechanism is unknown. Shuffling is evidenced against (the rig converts **0.95** of path to net displacement,
+  the *best* of any gang type; the gang **scout** is the shuffler at 0.68). Splash is evidenced against (indirect
+  kills 8.4% → 3.7%). *"Bigger target"* survives by elimination, which is not evidence.
+
+### Ruling: offline compute is unlimited; what SHIPS must be readable (2026-09-19)
+
+The lead, after asking the practical questions the orchestrator had skipped — *"Is there an opportunity to train some
+lightweight integer model somewhere? The only thing is that I don't want this game to require a big GPU or something,
+and I can't invest a bunch of money into training a model (i.e. how much would $50 of GCP resources get me?) — or
+perhaps I can buy some cheap GPU or maybe builder0 even has a nice enough GPU"* — ruled:
+
+> *"yes that sounds like a good decision"*
+
+on the proposal: **the offline budget is open; the shipped artefact must be something a human can read.**
+
+**What this permits:** frozen **lookup tables** from offline parameter search, and **decision trees** distilled from an
+expensive offline planner (catalogue **C6**, **C7**). Both are computed by arbitrarily expensive offline work, both
+ship as a small frozen artefact, both are bit-exact at runtime, and **both can be printed and read** — which is the
+property the ruling turns on.
+
+**What stays shut, for now:** neural-network policies, including integer-quantised ones. **Not because determinism
+forbids them** — see the premise correction below — but because a frozen net is an artefact whose failure mode cannot
+be read, and this project's standing preference is *a smaller mechanism whose failure mode is understood over a larger
+one that is merely better on average*. Revisit only if a pathology appears that a table or a tree cannot express.
+
+**The premise correction that made the re-decision necessary.** Earlier the same day the orchestrator told him
+determinism was the blocker for learned policies. **It was not.** Integer arithmetic is associative, has no rounding
+mode and no libm, so an offline-trained network exported as integer weights is bit-exact across platforms. **The
+blocker was never "learning" — it was floats inside the tick.** He had ruled on the wrong reason, which is why the
+question was re-put. Runtime learning remains impossible and that part is unchanged: anything that changes itself while
+the match runs breaks replay, lockstep and the baseline.
+
+**The hardware answers, measured rather than assumed, because two of his three worries were misdirected:**
+- **The game will never need a GPU.** Inference on a shipped artefact is integer multiply-add — order **0.6 µs per
+  vehicle per tick**, well under 1% of one core for 90 vehicles at 30 Hz. A GPU is involved in *making* the numbers,
+  never in *using* them. Nothing here raises the player's hardware requirement.
+- **A cheap GPU would be the wrong purchase.** The networks in question are ~6,000 parameters and train in seconds;
+  the expense is **generating experience by running our own simulation**, which is CPU-bound Godot headless at a fixed
+  30 Hz. A GPU does not speed that up at all.
+- **builder0 has no discrete GPU** — Intel Iris Xe integrated, and its CPU is an **i5-1345U, a 15 W thin-laptop part**
+  (10 cores / 12 threads). That is why `make check` takes 30–50 minutes. For running matches overnight it is fine:
+  ~120 thread-hours a night, free.
+- **$50 of GCP spot CPU ≈ 3,000–5,000 core-hours** (a 32-vCPU spot VM at roughly $0.30–0.50/hr — verify before
+  spending), which is **25–40 nights of builder0 bought in an afternoon**. That is the correct *next* purchase if
+  offline tuning pays off. **Not a GPU.** It costs engineering effort rather than money: our sim would need packaging
+  to run there.
+
+**Nothing has been spent, and the first step costs nothing:** offline parameter search on builder0 overnight (C7),
+which directly attacks the measured problem that *three separate subsystems were implicitly sized for a ~4 m hull*.
+
+**⚠ The prerequisite, and it is not negotiable:** offline optimisation means telling a machine *"find the parameters
+that maximise this number"*, and **our numbers are exactly what we discovered were measuring the wrong thing** — time
+spent oscillating, while his complaint was about the shape of the motion. **Catalogue A12 (the trajectory-space metric
+suite) lands before any offline search runs.** An optimiser pointed at a bad objective does not fail; it succeeds at
+the wrong thing, faster than we can notice.
+
+### The Syndicate airship (2026-09-19, the lead) — round 9, and it costs no credits
+
+His words:
+
+> *"there's another asset that I think would tie everything together: I'm wondering if the marginal cost is low in terms
+> of assets to add a Bladerunner-like Airship that hovered over the arena, sometimes visible in the field of view, that
+> also had a big TV screen? I suppose the theme would be consistent if this airship had a Syndicate-feel to it?"*
+
+**Answer: the marginal cost is very low, because the screen is already built.** Recorded with the reasoning so nobody
+re-derives it, and **approved by him for round 9** ("yes please record that").
+
+**What we already own, and the airship gets for free by joining a channel:**
+- **`AdBroadcast`** (`game/theme/arena_kit/ads/ad_broadcast.gd`) — one ad laid out in a 2D viewport with a slow
+  push-in, flipbook frames, brand/headline/fine print in real fonts and a scrolling ticker; glitches between ads and
+  on `FxWorld.spectacle`. **"Ten screens cost one layout"** — every screen on a channel shares one material, so an
+  eleventh screen is approximately free. Each ad's average colour already **becomes the light it throws on the
+  ground**, so the airship washes the arena in whatever it is showing.
+- **`LiveFeed`** (`live_feed.gd`) — a broadcast camera follows the fighting and renders at 15 Hz into a ring of
+  SubViewports; newest slot is live, the whole ring is a replay buffer, so **a kill is replayed from frames already on
+  the GPU**. Already tiered: off on LOW (web, phones), 16 slots on MEDIUM, 30 on HIGH. Visual only.
+- **So when the player gets a kill, the airship overhead replays it.** Zero new code for that beat.
+
+**The hull: build it from PRIMITIVES, not Meshy. This is a recommendation, not a compromise.**
+- **Meshy would cost a gate and money** — 88 credits left, and `HANDOFF.md` says new 3D art needs a top-up.
+- An airship is the most primitive-friendly shape in the game: ellipsoid envelope, fins, gondola, a flat screen plane.
+  It is seen **far away, in the sky, often half out of frame**, so nothing about it rewards a high-detail model.
+- **And Meshy is actively the wrong tool here.** Its failure mode is "cartoon" — the first Meshy concept was rejected
+  for exactly that ([art_direction.md](art_direction.md)) — and the Syndicate must read **pristine, not cartoonish**.
+  Clean geometry is easier from primitives than from a generator.
+- It also exercises the primitives work he asked about and had not yet seen.
+
+**Syndicate is the right faction and it tightens the theme.** The art direction has the Syndicate as the ivory tower,
+almost no rust, curvy hover vehicles, clean sci-fi. **The faction that owns the sky and advertises down at the inmates
+of a prison blood sport is exactly that** — and it gives the Corporate Co-host a physical platform, so the announcer
+layer reads as coming from somewhere.
+
+**Three constraints, each earned from a failure this project already paid for:**
+1. **NO collision body, none.** Visual-only should leave the sim hash alone — but arena's `_build_perimeter()`
+   produced geometrically identical walls with a different body creation order and **moved the baseline anyway**
+   (Invariant 2). So pre-register the expectation that the hash does not move, and treat a move as information rather
+   than a surprise.
+2. **Verify "sometimes visible" AT HIS POSE, with frames.** He plays a 35° telephoto. *"Sometimes visible in the field
+   of view"* is exactly the class of claim that turns out false: this round already shipped a camera fix for the HUD
+   hiding his own selection, and a facing feature that **cannot fire on his control scheme at all** (lesson 149).
+   control's per-edge `camera-looks` frames are the tool. **"Visible in a screenshot taken deliberately" is not
+   visible.**
+3. **Drift from the fixed tick**, never the wall clock, so a replay shows it where it was.
+
+**Owner:** arena (placement, the primitive build) with feel on the livery and the screen's look. Small enough to ride
+round 9 beside the A3 cover tables rather than displacing anything.

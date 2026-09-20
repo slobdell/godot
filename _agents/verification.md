@@ -317,3 +317,20 @@ vehicle, and the unit nameplates covered the rest. Before quoting a look as evid
 - nameplates off, or the shot is labels;
 - frame the camera on the army's middle and keep it there as the army moves;
 - look at a frame from the middle of the march, not only the first and last.
+
+## Timing numbers under builder0's 4 heavy slots (nav, round 8 close)
+
+builder0 now runs 4 heavy slots (derived from `/proc/meminfo`, clamped [2, 4]) rather than 2. That is good for queue
+depth and bad for any number measured in SECONDS or TICKS, because control measured that a reference-workload ratio
+corrects for "busy machine" but **not** for "every thread busy": under 7 burners on 8 threads their order path inflated
+about 14x while the reference only doubled. With 4 slots that saturation is routine rather than hypothetical.
+
+For nav's instruments specifically:
+- **Safe under concurrency:** shares and ratios computed inside one run — `oscillating_share`, `no_progress_share`,
+  `net_over_path`, bucket shares, arrivals of N. They are counts over the run's own unit-ticks, so a slow machine slows
+  numerator and denominator together.
+- **NOT safe:** `t50_s` / `t90_s` / `t100_s`, crossing times, "arrived by N seconds", and any per-tick cost. Quote these
+  only from a run that had the machine to itself, and say so.
+- A fixed-tick simulation makes this subtler than it looks: the SIM clock is unaffected, so a saturated run gives the
+  same sim-seconds. What inflates is wall-clock, and anything that samples wall-clock inside the run (profiling, a
+  timeout, a budget in real seconds) inherits it.

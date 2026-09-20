@@ -49,10 +49,14 @@ arena-candidates: ## Stretch: propose generated layouts for a human to approve (
 .PHONY: nav-maze
 # NAV_UNITS, not UNITS: mk/ai.mk sets `UNITS ?= 60` globally, so a nav-maze that read UNITS silently ran 60 units
 # while its own help text and every report said 30. Heed this before adding a bare variable name to a shared Makefile.
-nav-maze: import ## N3/CP2: send NAV_UNITS vehicles across The Maze and report arrivals, timing, crawling and stuck events (NAV_UNITS=30 ARENA=maze NAV_TIME=180 SEED=1 NAV_BOTH=1 for head-on traffic) -> build/nav-maze.json
+# NAV_FLAGS reaches the probe (round 8). Without it this target accepted `--nav-off=flow`, ignored it, and ran the
+# SAME TREATMENT TWICE: nav's flow-field A/B came back byte-identical on both arms — a clean, quiet null that looks
+# exactly like "the change does nothing". A measuring target that silently drops the thing being measured is worse
+# than one that refuses it.
+nav-maze: import ## N3/CP2: send NAV_UNITS vehicles across The Maze and report arrivals, timing, crawling and stuck events (NAV_UNITS=30 ARENA=maze NAV_TIME=180 SEED=1 NAV_BOTH=1 for head-on traffic, NAV_FLAGS=--nav-off=flow) -> build/nav-maze.json
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/maze_probe.gd -- \
 		--units=$(or $(NAV_UNITS),30) --arena=$(or $(ARENA),maze) --time-limit=$(or $(NAV_TIME),180) \
-		--seed=$(or $(SEED),1) $(if $(NAV_BOTH),--both-ways) --json=$(CURDIR)/$(BUILD_DIR)/$(or $(OUT),nav-maze).json
+		--seed=$(or $(SEED),1) $(if $(NAV_BOTH),--both-ways) $(NAV_FLAGS) --json=$(CURDIR)/$(BUILD_DIR)/$(or $(OUT),nav-maze).json
 	@echo ">> nav-maze: build/$(or $(OUT),nav-maze).json"
 
 .PHONY: slope-probe

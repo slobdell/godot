@@ -433,7 +433,10 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# `direct`: the brain already checked the straight line (CombatMotion's short hops), so skip the navmesh path.
 	var direct: bool = order.get("direct", false)
 	var lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
-	var routed := goal if direct else _next_waypoint(goal, delta)
+	# Round 8: a wheeled hull that was told which way to face arrives ALREADY facing it, by driving the last stretch
+	# along that heading, instead of arriving and then creeping round for ~6 s (measured: an IFV 45 degrees off).
+	var aim := _approach_gate(goal, order)
+	var routed := aim if direct else _next_waypoint(aim, delta)
 	lap = OrderController._lap("move.path", lap)
 	var around_fire := _around_fire(routed, goal, order)
 	lap = OrderController._lap("move.fire", lap)
@@ -1047,6 +1050,66 @@ func _track_progress(goal: Vector3, drive_vector: Vector2, remaining: float) -> 
 		stalled_ticks = 0
 	else:
 		stalled_ticks += ctl._step
+
+
+## The point this move should ROUTE to: the goal itself, or, for a wheeled hull with a `facing` in its order, a gate one
+## approach-length short of the goal along that heading. Driving to the gate first turns the last leg into a straight run
+## onto the ordered heading — the only way a car can arrive pointing a given way, since it cannot pivot once it is there
+## (the contract is in _agents/workstreams.md; squad populates `facing`). Arrival is still judged on the goal: this only
+## changes what the route aims at on the way. The gate is abandoned when it is off the navmesh, when the hull is already
+## on the approach, or once the hull has reached it.
+## 2.5 turning radii: pure pursuit needs about two radii of straight to settle onto a line, plus the gate tolerance.
+## Measured at 1.5 radii an IFV still arrived 63 degrees off (dot 0.45) and at 3.5 it did not reach the goal at all.
+const APPROACH_RADII := 2.5
+const APPROACH_MIN := 4.0
+const APPROACH_MAX := 20.0
+const APPROACH_ALIGNED_COS := 0.85
+
+
+## Measuring only: how many plans aimed at a gate, and how many were offered a facing but kept the goal (the gate was
+## refused: off the navmesh, already on the approach, or reached). An arrival arc that never fires looks exactly like one
+## that does nothing, and the A/B against squad's `facing` needs to tell those apart from inside the run.
+static var gates_aimed := 0
+static var gates_refused := 0
+
+
+func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
+	var radius := wheel_radius()
+	if radius <= 0.0 or not order.has("facing"):
+		return goal
+	gates_refused += 1  # provisionally: undone below if a gate is actually aimed at
+	var facing: Variant = order["facing"]
+	if not (facing is Array) or (facing as Array).size() < 2:
+		return goal
+	var direction := Vector2(float(facing[0]), float(facing[1]))
+	if direction.length_squared() < 0.0001:
+		return goal
+	direction = direction.normalized()
+	var length := clampf(radius * APPROACH_RADII, APPROACH_MIN, APPROACH_MAX)
+	var gate := Vector3(goal.x - direction.x * length, 0.0, goal.z - direction.y * length)
+	var tank := ctl.tank
+	var here := tank.global_position
+	if _flat_distance(here, gate) <= _arrive_gate():
+		return goal  # at the gate: the straight run onto the heading IS the rest of the move
+	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
+	var to_goal := Vector2(goal.x - here.x, goal.z - here.z)
+	if to_goal.length() <= length and forward.dot(direction) >= APPROACH_ALIGNED_COS:
+		return goal  # already on the approach, pointing the right way: don't drive backwards to a gate behind me
+	var nearest := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, gate)
+	if _flat_distance(nearest, gate) > MESH_GATE_SLACK:
+		return goal  # the approach would start inside a wall: arrive however the route arrives
+	gates_refused -= 1
+	gates_aimed += 1
+	return gate
+
+
+## How close counts as "at the gate" (metres): a car's settle radius, never less than this.
+const MESH_GATE_SLACK := 1.5
+const GATE_REACHED := 2.5
+
+
+func _arrive_gate() -> float:
+	return maxf(GATE_REACHED, settle_radius(ctl.tank.unit_id))
 
 
 ## X7: the point to steer at now — a "carrot" PATH_LOOKAHEAD metres along the route beyond the hull's own place on it

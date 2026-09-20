@@ -727,3 +727,80 @@ streets read as streets from inside one, and the minimap reads as a city grid on
 2. **Street level is plain** — flat window grids where a tank actually drives, no balconies, signs or awnings.
    **This is feel's own open question and he has not answered it.** Shipping it plain is deliberate: a cityscape he
    can play beats a detailed one he has never seen, which is the entire lesson of round 8.
+
+## Can a map hide the longest hull? (round 8; `make arena-report` prints it)
+
+combat, 2026-09-19: the arena kit's longest prop is `container_40` at **12.19 m**, and the War Rig became **14.0 m**.
+A hull longer than anything on the map has nowhere to hide — and **cover fails silently**: *"the rig still drives to
+cover, still counts as near cover, and simply is not covered."*
+
+Share of the contested field within `TERRAIN_RADIUS` (45 m) of a prop long enough. **Best case by construction** — a
+box's screening length is its longest horizontal side, so this assumes the hull is parked along it and the shooter is
+square to it. A hull that fails here cannot be hidden at all.
+
+| hull length | 6 m | 7 m | **12.19 m** | **12.5 m** | 14 m |
+|---|---|---|---|---|---|
+| **yard** | 0.99 | 0.99 | **0.99** | **0.00** | **0.00** |
+| **pit** | 0.85 | 0.48 | 0.46 | **0.00** | **0.00** |
+| **terminus** | 0.98 | 0.95 | **0.91** | **0.91** | **0.91** |
+| boneyard | 1.00 | 0.92 | 0.85 | 0.33 | 0.33 |
+| foundry / scrapyard (v1) | — | — | fine | fine | **fine** |
+
+**It is a STEP at 12.19 m, not a slope**, which is what makes it decision-useful: the rig's length is *binary* for
+cover. combat's framing — the lead's question stops being *"how much balance is huge worth"* and becomes **"do you
+want a truck that can take cover or one that cannot"**, which is answerable by looking.
+
+**The regression arrived WITH the kit.** foundry and scrapyard handle a 14 m hull because the legacy v1 `wall` is
+18 m; the kit that replaced it tops out at 12.19 m. **The two maps he kept are exactly the two v2 maps with no long
+props**, so it is invisible precisely where it matters most. The general shape, worth more than this instance:
+**replacing a prop set silently changed what the world can hide, and nothing in the layout schema records
+"longest screening dimension" as a property anyone can check.** `make arena-report`'s `WATCH` line is that check,
+and it prints on every run rather than on request.
+
+### ⚠ Do NOT add a long prop to yard or pit before the lead rules
+
+Not caution — the evidence is worth more than the fix, and both of us reached this independently:
+
+1. **At 12 m the problem disappears with no map change at all**, so a map change now may be spent on a length that
+   does not survive the week — and yard and pit are maps he **kept**.
+2. **Adding a 14 m prop destroys the cleanest evidence he has.** The moment yard can hide a 14 m hull, the **0.00**
+   that makes the choice obvious is gone.
+
+If he rules 14 m: a jackknifed trailer, a rail car, or a container **wall** (rather than a stack — stacking adds
+height, not length) reads as the same venue. feel sees it before it ships.
+
+### What I ruled out about the baker, for whoever picks up C2
+
+C2 (per-hull-class clearance from a medial-axis decomposition) is blocked on this, so the **eliminated** hypotheses
+are worth as much as the finding. Each was tested on a layout built for it, with a positive control asserting the
+probe arena was the one named — **the first version of this experiment silently fell back to `foundry` and reported
+six clean, wrong rows** (too few spawn points; `Arena` loaded the default and said so only in a line I was not
+reading).
+
+**The finding, restated exactly:** a box whose footprint exceeds ~8 m on **both** horizontal axes contributes
+**nothing** to the bake — no hole beneath it and no walkable surface on top. Measured as the distance from the box
+centre to the nearest navmesh point after baking; 0.5 m is the ground surface, i.e. the floor under the box is
+still walkable.
+
+| footprint (square) | 4 m | 8 m | 12 m | 18 m | 26 m | 40 m |
+|---|---|---|---|---|---|---|
+| distance to navmesh | **4.0** | 0.5 | 0.5 | 0.5 | 0.5 | 0.5 |
+
+**Ruled out, each by direct test:**
+
+1. **Height.** 3, 8, 12, 16, 20 and 24 m at a fixed 40 m footprint: no carve at any height. It is not the box
+   exceeding the bake volume vertically.
+2. **`filter_baking_aabb`.** Raised the y extent from 20 m to 45 m (verified applied by printing the AABB back):
+   **no change**. Also not a z-extent issue — a block sitting entirely inside the southern half fails identically.
+3. **`border_size`.** Set to 0.0 instead of `SEAM_BORDER` (2.5): **no change**.
+4. **The collision body itself.** Printed at runtime: correct size, `collision_layer = 1`, `disabled = false`,
+   parented under `Obstacles`, which **is** in the `navigation_source` group. The body is built correctly.
+5. **Build order.** `_build_obstacles()` runs before `_bake()` in `_ready()`.
+6. **Obstacle type / explicit size.** Reproduced with a legacy `wall` carrying an explicit `size` and with an
+   unknown type carrying one, so it is not `OBSTACLE_SIZES` overriding the layout.
+
+**Not yet tested, and where I would start:** whether Godot's geometry parser drops a shape by some size or
+triangle-count criterion; whether `cell_size` 0.5 interacts with large flat spans; and whether the same box carves
+when the bake is **not** the half-plus-mirror arrangement (every test above used the shipping bake path). **The
+4 m slab tiling in `Arena._obstacle_shapes()` is a workaround, not an explanation**, and C2 should not assume the
+baker behaves as documented until someone knows why this happens.

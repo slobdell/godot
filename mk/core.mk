@@ -44,8 +44,30 @@ import: $(GODOT)
 	@mkdir -p $(BUILD_DIR) && touch $(BUILD_DIR)/.gdignore  # screenshots and exports are never project resources
 	$(GODOT) --headless --path . --import
 
+# ONE LINT PER CHECKOUT, ENFORCED (2026-09-19). Two `make lint` runs in one checkout share one
+# `.godot` import cache, and the second corrupts what the first is reading: the symptom is a
+# `Parse Error: [ext_resource] referenced non-existent resource` for a file that is TRACKED AND
+# PRESENT, followed by cascading `SCRIPT ERROR: Nonexistent function` for methods that plainly
+# exist. It reads exactly like a broken tree, and it cost this project an evening of believing
+# `main` was red when `Units.roster` was defined the whole time.
+#
+# How it happened, because the mechanism matters more than the rule: a foreground `make lint` was
+# killed by a 300 s timeout, which reaped the WRAPPER and left its Godot children running -- the
+# same failure `_agents/remote_builds.md` records for `make remote`. A second run was then launched
+# against the still-live first one. **A timeout that kills the parent does not stop the work**, so
+# "I killed it" is not a reason to believe nothing is running.
+#
+# `flock -n` fails fast rather than queueing: a second lint is always a mistake, never a wait.
+# Found by control, 2026-09-19, by filtering `pgrep` on cwd after the orchestrator wrongly asked
+# whether a worktree was to blame.
 lint: import ## Parse-check every GDScript file; prints only errors (fast way to find compile errors)
-	@status=0; for f in $$(git ls-files -co --exclude-standard '*.gd'); do \
+	@exec 9>$(BUILD_DIR)/.lint.lock; \
+	flock -n 9 || { \
+		echo "lint: another lint is already running in this checkout ($(CURDIR)) -- refusing."; \
+		echo "      Two lints share one .godot cache and the second corrupts the first's reads."; \
+		echo "      Wait for it, or kill it AND its Godot children (a killed wrapper leaves them)."; \
+		exit 1; }; \
+	status=0; for f in $$(git ls-files -co --exclude-standard '*.gd'); do \
 		out=$$($(GODOT) --headless --path . --check-only --script "res://$$f" 2>&1 | grep -E 'Parse Error|SCRIPT ERROR' | grep -v 'depended scripts' || true); \
 		if [ -n "$$out" ]; then echo "$$f: $$out"; status=1; fi; \
 	done; \

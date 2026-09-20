@@ -12,7 +12,7 @@ Usage:
   python3 tools/arena_report.py --plot build/arenas arenas/*.json  also a PNG per layout
   python3 tools/arena_report.py --json build/arenas/report.json arenas/*.json
 """
-import argparse, heapq, json, math, os, sys
+import argparse, heapq, json, math, os, pathlib, sys
 
 ## The half-extent `centre_sees_share` is ALWAYS measured over, whatever size the layout declares.
 ##
@@ -101,6 +101,103 @@ class Box:
             if t0 > t1:
                 return False
         return True
+
+
+## `centre_sees_share` has a target at the OPEN end (< 0.30, carrying the lead's verdict) and NOTHING at the closed
+## end. Round 8 made that gap real: the cityscape scores 0.13, the lowest of any map, and "the middle can see very
+## little" is a compliment right up to the point where it means "there is nowhere to see from".
+##
+## **These are not targets and the thresholds are not mine to invent.** The lead has ruled on six maps and every one
+## of them was at the open end of the range; nobody has ever told us a map was too closed, so there is no verdict to
+## encode and inventing a number would be exactly the post-hoc threshold this stream keeps writing lessons against.
+## What this does instead is say when a layout is an OUTLIER against the maps he has actually played, and name the
+## comparison, so a human is asked rather than a constant.
+##
+## The reference is **the maps the lead has actually ruled on** — and terminus is deliberately NOT among them, which
+## is the whole point. My first version of this took the range from every shipping map including terminus, so
+## terminus defined the low end and could never flag itself: a guard calibrated on the thing it is meant to watch.
+## Measured by this tool over the seven he has judged:
+##
+##   drivable_share  0.48 (boneyard) .. 0.55 (pit)        mean_view_m  54.3 (yard) .. 81.8 (pit)
+##
+## terminus sits at **0.44 and 50.2 m — outside both**, and so it trips its own flag, which is the honest outcome:
+## it IS the outlier, nobody has ruled on it, and the tool says so every time anyone runs it rather than relying on
+## someone remembering the caveat in a document.
+SHIPPED_DRIVABLE_LOW = 0.48
+SHIPPED_MEAN_VIEW_LOW = 54.3
+
+
+## The longest hull in the game, READ from combat's catalog rather than copied into this file. A copy would be a
+## third table to keep in step, and the rig's length is actively being argued about (12 m vs 14 m), so a mirrored
+## number here would be stale within the week. Same reason `KIT` now has a test against `ArenaKit.PROPS`.
+def hull_lengths():
+    """{unit name: hull length in metres} from game/units/units.gd's `hull_size [w, h, l]`."""
+    import re
+    source = (pathlib.Path(__file__).resolve().parent.parent / "game" / "units" / "units.gd").read_text()
+    out = {}
+    for name, body in re.findall(r'"(\w+)":\s*\{(.*?)\n\t\}', source, re.S):
+        size = re.search(r'"hull_size":\s*\[([^\]]*)\]', body)
+        if size:
+            parts = [float(v) for v in size.group(1).split(",")]
+            if len(parts) == 3:
+                out[name] = parts[2]
+    return out
+
+
+## Can a hull of `length` hide behind anything here, and how much of the field can it do that from?
+##
+## **BEST CASE by construction**: a box's screening length is its longest horizontal side, which assumes the hull is
+## parked along that side and the shooter is square to it. A hull that fails this cannot be hidden at all.
+##
+## Why it exists (round 8, combat found it): the longest prop in the arena kit is `container_40` at **12.19 m** and
+## the War Rig is **14.0 m**, so on yard and pit there is nothing on the map it can hide behind — and **cover fails
+## silently**: the rig still drives to cover, still counts as near cover, and simply is not covered. Stacking adds
+## height, not length. The v1 maps are fine because the legacy `wall` obstacle is 18 m; **the regression came in
+## with the arena kit**, which has no long prop at all.
+def hull_cover_reach(layout, boxes, length, step=8.0):
+    tall = [b for b in boxes if b.h >= EYE_HEIGHT and max(b.w, b.d) >= length]
+    half = float(layout.get("half_size", HALF))
+    points = covered = 0
+    z = -FIELD_Z
+    while z <= FIELD_Z:
+        x = -half
+        while x <= half:
+            points += 1
+            if any(b.distance(x, z) <= TERRAIN_RADIUS for b in tall):
+                covered += 1
+            x += step
+        z += step
+    return covered / max(1, points)
+
+
+def openness_notes(report):
+    """Human-facing flags, never failures: where does this layout sit against the maps the lead has played?"""
+    out = []
+    drivable = report.get("drivable_share", 0.0)
+    view = report.get("mean_view_m", 0.0)
+    if drivable < SHIPPED_DRIVABLE_LOW:
+        out.append("drivable_share %.2f is below every map the lead has ruled on (lowest is %.2f): more of the floor is "
+                   "building than any map he has played. Not a failure — a question for a human." % (drivable, SHIPPED_DRIVABLE_LOW))
+    if view < SHIPPED_MEAN_VIEW_LOW:
+        out.append("mean_view %.1f m is below every map the lead has ruled on (lowest is %.1f m): sightlines may be "
+                   "shorter than a gunline needs. Not a failure — a question for a human." % (view, SHIPPED_MEAN_VIEW_LOW))
+    # Read from `hull_cover`, NOT from a "_"-prefixed key: `main()` strips every key starting with "_" before the
+    # notes are generated, so a private key here is a flag that can never fire. It did not fire, for exactly that
+    # reason, until the 14 m rig landed and yard read reach 0.00 in the JSON with no WATCH line beside it.
+    cover = report.get("hull_cover")
+    if cover:
+        name, length, reach = cover["longest_hull"], cover["longest_hull_m"], cover["reach"]
+        if reach < 0.01:
+            out.append("NOTHING on this map can hide the longest hull (%s, %.1f m): 0.00 of the field is within "
+                       "%.0f m of a prop that long. Cover fails SILENTLY — the hull still drives to cover, still "
+                       "counts as near cover, and is not covered." % (name, length, TERRAIN_RADIUS))
+        elif reach < 0.5:
+            out.append("only %.2f of the field is within %.0f m of cover long enough for the longest hull "
+                       "(%s, %.1f m)." % (reach, TERRAIN_RADIUS, name, length))
+    if report["ambush"]["centre_sees_share"] < 0.10:
+        out.append("centre_sees %.3f is very low: check the middle is a place you can fight FROM, not just a place "
+                   "nothing reaches." % report["ambush"]["centre_sees_share"])
+    return out
 
 
 def boxes_of(layout):
@@ -924,6 +1021,14 @@ def main():
         report = analyze(layout)
         if args.plot:
             report["plot"] = plot(layout, report, args.plot)
+        hulls = hull_lengths()
+        if hulls:
+            name = max(hulls, key=lambda k: hulls[k])
+            report["hull_cover"] = {
+                "longest_hull": name, "longest_hull_m": hulls[name],
+                "reach": round(hull_cover_reach(layout, report["_boxes"], hulls[name]), 3),
+                # The kit's longest prop is the cliff: cover is a step function of hull length, not a gradient.
+                "longest_prop_m": round(max((max(b.w, b.d) for b in report["_boxes"]), default=0.0), 2)}
         clean = {k: v for k, v in report.items() if not k.startswith("_")}
         reports.append(clean)
         a = clean["ambush"]
@@ -935,6 +1040,8 @@ def main():
                  by["direct"].get("exposure_idle", -1), by["direct"].get("exposure_posted", -1),
                  by["direct"].get("posting_gain", -1), by["covered"].get("exposure", -1), a.get("flank_detour", -1),
                  best.get("commands_idle", -1), best.get("commands_posted", -1), best.get("hidden_approach", -1)))
+        for note in openness_notes(clean):
+            print("WATCH %-10s %s" % (clean["name"], note))
         d = a.get("decision", {})
         print("DECISION %-10s objectives=%d  spread=%.2f  %s"
               % (clean["name"], d.get("objectives", 0), d.get("decision_spread", 0.0),
