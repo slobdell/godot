@@ -2731,3 +2731,9 @@ The kickoff prompt is one line; this section is the rest.
     member of one night's family beside lesson 173 (the lint parsing later files against older sources, the
     "before" frame shot with the fix running, `get()` collapsing absent into null): **derive, never mirror**, and
     the readout is a mirror if it can be true while the thing it reports is false.
+184. **An honest instrument is not enough if nothing asserts on it.** Round 9, nav's clearance tests: the arm counter
+    printed `chords 0` (the rule was never consulted) and the slack printed `nan` (a fallback), both correct, both
+    ignored by assertions that then failed for a different-looking reason; the cause was a mover that does not exist
+    until a hull is driven, the same mistake nav had made in the legibility test hours earlier. Beside lesson 171:
+    every positive control the run prints is also an assertion (`chords > 0`, `not is_nan(slack)`, "the mover
+    exists") *before* the number it guards is read, or the print is decoration.
