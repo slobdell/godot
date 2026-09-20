@@ -1800,3 +1800,54 @@ that maximise this number"*, and **our numbers are exactly what we discovered we
 spent oscillating, while his complaint was about the shape of the motion. **Catalogue A12 (the trajectory-space metric
 suite) lands before any offline search runs.** An optimiser pointed at a bad objective does not fail; it succeeds at
 the wrong thing, faster than we can notice.
+
+### The Syndicate airship (2026-09-19, the lead) — round 9, and it costs no credits
+
+His words:
+
+> *"there's another asset that I think would tie everything together: I'm wondering if the marginal cost is low in terms
+> of assets to add a Bladerunner-like Airship that hovered over the arena, sometimes visible in the field of view, that
+> also had a big TV screen? I suppose the theme would be consistent if this airship had a Syndicate-feel to it?"*
+
+**Answer: the marginal cost is very low, because the screen is already built.** Recorded with the reasoning so nobody
+re-derives it, and **approved by him for round 9** ("yes please record that").
+
+**What we already own, and the airship gets for free by joining a channel:**
+- **`AdBroadcast`** (`game/theme/arena_kit/ads/ad_broadcast.gd`) — one ad laid out in a 2D viewport with a slow
+  push-in, flipbook frames, brand/headline/fine print in real fonts and a scrolling ticker; glitches between ads and
+  on `FxWorld.spectacle`. **"Ten screens cost one layout"** — every screen on a channel shares one material, so an
+  eleventh screen is approximately free. Each ad's average colour already **becomes the light it throws on the
+  ground**, so the airship washes the arena in whatever it is showing.
+- **`LiveFeed`** (`live_feed.gd`) — a broadcast camera follows the fighting and renders at 15 Hz into a ring of
+  SubViewports; newest slot is live, the whole ring is a replay buffer, so **a kill is replayed from frames already on
+  the GPU**. Already tiered: off on LOW (web, phones), 16 slots on MEDIUM, 30 on HIGH. Visual only.
+- **So when the player gets a kill, the airship overhead replays it.** Zero new code for that beat.
+
+**The hull: build it from PRIMITIVES, not Meshy. This is a recommendation, not a compromise.**
+- **Meshy would cost a gate and money** — 88 credits left, and `HANDOFF.md` says new 3D art needs a top-up.
+- An airship is the most primitive-friendly shape in the game: ellipsoid envelope, fins, gondola, a flat screen plane.
+  It is seen **far away, in the sky, often half out of frame**, so nothing about it rewards a high-detail model.
+- **And Meshy is actively the wrong tool here.** Its failure mode is "cartoon" — the first Meshy concept was rejected
+  for exactly that ([art_direction.md](art_direction.md)) — and the Syndicate must read **pristine, not cartoonish**.
+  Clean geometry is easier from primitives than from a generator.
+- It also exercises the primitives work he asked about and had not yet seen.
+
+**Syndicate is the right faction and it tightens the theme.** The art direction has the Syndicate as the ivory tower,
+almost no rust, curvy hover vehicles, clean sci-fi. **The faction that owns the sky and advertises down at the inmates
+of a prison blood sport is exactly that** — and it gives the Corporate Co-host a physical platform, so the announcer
+layer reads as coming from somewhere.
+
+**Three constraints, each earned from a failure this project already paid for:**
+1. **NO collision body, none.** Visual-only should leave the sim hash alone — but arena's `_build_perimeter()`
+   produced geometrically identical walls with a different body creation order and **moved the baseline anyway**
+   (Invariant 2). So pre-register the expectation that the hash does not move, and treat a move as information rather
+   than a surprise.
+2. **Verify "sometimes visible" AT HIS POSE, with frames.** He plays a 35° telephoto. *"Sometimes visible in the field
+   of view"* is exactly the class of claim that turns out false: this round already shipped a camera fix for the HUD
+   hiding his own selection, and a facing feature that **cannot fire on his control scheme at all** (lesson 149).
+   control's per-edge `camera-looks` frames are the tool. **"Visible in a screenshot taken deliberately" is not
+   visible.**
+3. **Drift from the fixed tick**, never the wall clock, so a replay shows it where it was.
+
+**Owner:** arena (placement, the primitive build) with feel on the livery and the screen's look. Small enough to ride
+round 9 beside the A3 cover tables rather than displacing anything.
