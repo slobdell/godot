@@ -2517,3 +2517,10 @@ The kickoff prompt is one line; this section is the rest.
     at ≤ 4 the second sailed through. Any stream scattering periods or phases (audio, feel) should steal it. (c) **A
     "never do X" guard must scan code, not prose**: show's never-read-the-wall-clock test failed on its own comment
     saying "never `Time.get_ticks_*`". Strip comments and string literals before grepping.
+161. **A derived limit is only as good as the caller that overrides it.** Round 9, the lead, awake at 02:00: *"you say
+    the bottleneck is machines but builder0 is totally unsaturated."* He was right. `tools/slot.sh` derives its slot
+    count from available RAM (lesson 148) — and `tools/remote.sh` **exported a hard-coded `TANK_SQUAD_SLOTS=3`** to
+    builder0 on every run, so the derivation never applied where it mattered. Measured: load 0.4 on 12 threads, 11.6 GB
+    available, three checks resident at ~1 GB each, a queue behind them. Raised to 6 (`5715ab75`); metrics' T1 memory
+    table decides whether 8 holds. **When you add a derived default, grep for every caller that sets the same variable
+    explicitly** — an explicit value upstream silently wins, and the queue looks like a slow machine.
