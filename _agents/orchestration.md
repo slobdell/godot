@@ -2704,7 +2704,12 @@ The kickoff prompt is one line; this section is the rest.
     the node enters the tree), so the solver resolved a scrambled layout and recovered bodies out of overlaps that
     existed only in its copy; every first-tick number taken this round was taken after that shove.** Eight
     diagnoses, one bug, and the instrument that ended it printed the node's transform beside the server's for the
-    same body. And the sharper form of this lesson (metrics): **the shard count is derived from free memory at
+    same body. **Then the read-back print (combat): `body_set_state` followed by `body_get_state` on the next line
+    returned the OLD transform, because PhysicsServer3D commands queue until the step; nothing a teleport can call
+    reaches the space before the next tick, and three remedies that were three spellings of one queued command
+    produced three bit-identical runs, which should have been read as "the instrument, not the remedy" one
+    negative earlier. A hull teleported and driven in the same frame is driven against the pre-teleport world.
+    The remedy is a tick, not a flush.** And the sharper form of this lesson (metrics): **the shard count is derived from free memory at
     launch, so the schedule, and this test's verdict, is a function of how busy the box was when the check started**
     (5 shards fail, 6 pass, same code). Pin `TEST_SHARDS` when reproducing and print it beside any claim.
 
