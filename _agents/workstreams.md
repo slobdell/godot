@@ -93,6 +93,16 @@ must move into `Movement`'s goal selection. squad: A8's deformation, measured, m
 without it, because a slot layout is the wrong place to express intent the mover cannot see — and it never applied
 to a plain right-click move at all. **Same seam, from both ends, within an hour.** Not a tonight-sized change; it is
 the first candidate for round 10, ahead of retrying either row.
+**And the defile failure that survives CP2d's gap widening (nav, 02:30):** the Condemned artillery failed the maze's
+defile at 2.6 m wide with 2.1 m of slack while four squadmates used the corridor. Three instrumented candidates, all
+derived from hull width or an avoidance radius: (1) the chord guard `_chord_slack()` is 0.5 m at 2.6 m wide and
+clamps to its 0.3 m floor at 4.74 m, pulling the carrot back past every bend (`guard_rescues`); **(2) right-of-way
+needs `radius_of(me) + radius_of(other) + 0.75` = 4.55 m of lateral clearance for two artillery in a 5.0 m corridor
+— impossible by construction — and a refused ask makes the ASKER yield, so in single file the unit that should go
+forward backs off with nowhere to go** (`asks_refused`, `yields_started`; nav's leading hypothesis and the
+signature squad saw); (3) ORCA's off-mesh refusal degrades to a permanent slow in a corridor (`deflected` vs
+`solved`). Measured first when a builder0 window opens after CP2d, before A11's default; accepted fix shape if (2)
+holds: in a corridor narrower than the clearance sum, right-of-way falls back to strict file order.
 
 ### Standing rules for round 9 (in addition to *The standing rules for this round* below)
 
