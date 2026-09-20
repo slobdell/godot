@@ -2482,3 +2482,11 @@ The kickoff prompt is one line; this section is the rest.
     The shape, seen three times this round: arena's four bare test functions `unittest discover` never collected;
     metrics' control run that exited 0 having never written the log (lesson 154); and this. **The absence of work must
     never read as the success of work: every gate prints how many things it checked, and zero is red.**
+158. **If the thing under test advances on `delta`, the test owns the clock.** Round 9, found by nav at the branch
+    point and fixed by control: `test_the_camera_turns_to_face_where_the_selection_faces` spun on `await
+    tree.process_frame` until **3000 ms of wall clock**, so on a loaded laptop it flaked one run in three, and nav spent
+    two bisection experiments hunting a regression that did not exist. A wall-clock budget in a behaviour test is a
+    measurement of the machine (`verification.md` already forbids judging timing in `check`). Fix: take the rig off
+    the tree's process loop and step it at a fixed delta — the same 2 s of simulated time on any machine at any load;
+    6/6 three runs in a row with seven streams live. **T1 makes a loaded machine the normal case**, so every remaining
+    `await`-until-wall-clock in a behaviour test is a flake waiting to happen; grep for them before CP3.

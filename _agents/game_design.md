@@ -1995,3 +1995,15 @@ from the kit. control decides the mechanism — pushing the camera to the neares
 ray, or a cutaway of the block between camera and focus, or both — and proves it with frames on the Terminus at his
 pose, in the alleys, with the case that hides the alley when the camera is pushed out shown and handled. Recorded for
 control's backlog; the running worker adds it to its own brief.
+
+**Decided overnight (control, 2026-09-20, orchestrator endorsed on the lead's behalf): the mechanism is a LIFT, not a
+push-in.** At his pose the camera sits 17.6 m up and 45.7 m back; the Terminus blocks are 40 × 24 × 40 m with 20 m
+streets. Shortening the boom until it exits the block collapses 49 m → ~11 m — below `MIN_DISTANCE`, near
+first-person, and the far side of the street still walls the alley: that answers the sentence and not the problem.
+Lifting over the roof takes the pitch **21° → 32°**, keeps 41.5 m of horizontal reach, and looks *down into* the alley;
+it is inside the tilt range he can reach by hand (8°–70°), and only shortens the boom when even `MAX_PITCH_DEG` cannot
+clear a roof. Measured over every open ground point on the Terminus × 8 yaws at his pose: **703 of 4,328 poses had the
+camera inside a building; 0 after; worst lift 11.0°; nothing pulled in.** Mutation-checked; an arena with no cityscape
+is provably untouched. Because this is the second place the camera overrides his tilt (after the far-range floor), it
+reports `lifted_deg` and is flagged to him rather than hidden. Frames at his pose in the alleys follow. **He can
+overrule this in the morning**: a push-in variant is the same test with a different resolver.
