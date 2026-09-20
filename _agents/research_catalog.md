@@ -226,6 +226,16 @@ behaviour the lead named in round 3 (*"no intent of trying to circle your oppone
 with `option_share` and `transitions_per_unit_min` columns so a suppressed manoeuvre is visible; if it costs flanking it
 goes. **P3 is measurable for the first time:** `main`'s commitment was two mechanisms (flat bonus + hard dwell timer),
 now split (`switch.dwell=0`) into the triplet none / flat / flat+dwell.
+**Correction to the orchestrator's premise (combat, same day):** the lay term is charged only when the *target*
+changes, deliberately — a suppressing crew is still firing at that contact and has not abandoned its acquisition. So
+if the stance floor goes wholesale, **ENGAGE↔SUPPRESS on one target is priced at exactly zero** (same bearing, same
+target, no lay), and that pair is one of round 7's two measured thrash shapes. **Predicted, not to be discovered.**
+The sharper reading of `_act` (`tank_brain.gd:1833`, `:1845`): SUPPRESS *halts* inside the band (standing still is
+what makes fire effective) while ENGAGE and FLANK keep manoeuvring — so ENGAGE→SUPPRESS genuinely discards the
+velocity in flight and ENGAGE→FLANK does not. **If the removal arm shows the floor buys something, the velocity
+discard is charged only for options that fight from a standstill (SUPPRESS, COVER_FIRE's hide/peek, BOMBARD), a
+physical property of the option read in one place — never a per-class knob.** Order: removal arm first; the
+halting-option form is a third arm only if removal costs reversals more than the flank seconds are worth.
 **Falsifier:** genuine option-switch churn **−60%** and switch-and-switch-back within 4 s below **0.2/agent-min**,
 with reaction latency **≤ 2 ticks**. **Guard:** the arm must be distinguishable — assert the switching cost is
 non-zero and varies by hull class, or we are A/B-ing a build against itself (lesson 117).
