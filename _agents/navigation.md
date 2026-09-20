@@ -41,6 +41,31 @@ undone: **when a fact about the world is one query away, query it.** Both habits
 inference that is right most of the time — which is the worst kind, because it fails silently and only when it
 matters.
 
+### Lesson 158: before building a recovery, check the PLANT can produce the failure you are recovering from (nav, 2026-09-20)
+
+nav built a recovery for a `face` order that never comes round, measured it, and found it **inert** — not because the
+detector was wrong but because **the failure mode does not exist in this simulation**. `tank.gd` assigns
+`global_basis` directly and only `move_and_slide()` beneath it resolves anything, so **translation is collided and
+rotation is not**. A hull under a `face` never fails to turn; it turns *through* the wall. `face_checked 7,
+giveups 0` on the real case and `checked 5, giveups 0` in a corridor where the hull's 44° needed 12.1 m of a 4.8 m
+gap.
+
+**The rule:** a recovery is a claim about a state the plant can reach. *Reproduce that state first, and assert you
+reproduced it, before writing the thing that escapes it.* The cost of skipping it is not a bug — the code is
+correct — it is a row that passes its tests, ships behind a flag, and measures nothing, which is expensive precisely
+because nothing looks wrong.
+
+**It is the same family as lesson 153's twin above, one layer down.** That one says an instrument at its ceiling
+cannot report. This one says a *mechanism* whose triggering state is unreachable cannot act — and both are found the
+same cheap way, by checking the control arm before running the treatment. **The positive control belongs inside the
+fixture**: nav's corridor test asserts the hull really is wedged (10.4 m of path ground out) before it asserts
+anything about the recovery, so a fixture that stops wedging reports a broken fixture instead of a passing row.
+
+**And the denominator is what made the difference between a null and a discovery.** The first A/B gave two
+byte-identical arms, which is the shape of "no effect" and of "never ran" at once. `face_checked` separated them in
+one run. **Every switched mechanism gets a denominator** (lesson 147's arm counters, applied to a recovery rather
+than a treatment).
+
 ### Lesson 153 has a MEASUREMENT twin: a saturated instrument reports nothing (scale, 2026-09-20)
 
 nav's lesson 153 is *a term that merely saturates as one addend goes blind when it is promoted to a priority level,
