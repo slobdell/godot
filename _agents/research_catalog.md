@@ -241,6 +241,20 @@ velocity in flight and ENGAGE→FLANK does not. **If the removal arm shows the f
 discard is charged only for options that fight from a standstill (SUPPRESS, COVER_FIRE's hide/peek, BOMBARD), a
 physical property of the option read in one place — never a per-class knob.** Order: removal arm first; the
 halting-option form is a third arm only if removal costs reversals more than the flank seconds are worth.
+**FIVE-ARM TABLE (combat, 2026-09-20, laptop `a1209857`, yard, seeds 1/3/7, `gang_ram` vs `law_line`, 120 s, 15
+runs):** switches per unit-minute, tank class — cost (A2) 20.7, cost-nostance 20.4, flat 12.8, flat+dwell (`main`) 12.7,
+none 31.3; other classes the same ordering. Three results: **(1) the stance floor bought nothing** (−1% to +23%,
+no consistent sign) — removed; ENGAGE→SUPPRESS on one target is priced zero and asserted as deliberate. **(2) The dwell
+timer is inert**: flat vs flat+dwell is −11% to +6% — all of `main`'s churn suppression is the flat bonus, and
+`MIN_COMMIT_TICKS`/`EMERGENCY_MARGIN` are retired for free. **(3) A2 is a weaker suppressant than the flat bonus it
+replaces**: +47% to +79% more switches than flat, −7% to −34% fewer than none; the −60% bar is missed in the wrong
+direction. Whether the extra switches are genuine re-targeting or the wheeled creep is metrics' cusp split to answer
+(switch-event files with predicted angle/slew/brake/lay per event). **combat's mechanism claim corrected by its own
+instrument:** FLANK's time share is 0.000–0.018 in every arm; the duel's flank seconds are `_combat_move`'s circling
+*inside* ENGAGE, and the live candidate is tanks' ENGAGE share 0.319 (cost) vs 0.523 (flat) with COVER_FIRE 0.231 vs
+0.094 — A2 moves tanks from circling into static hide/peek. **RULED (orchestrator, overnight): the default ships as
+the flat bonus with the dwell timer retired; A2 stays as the opt-in arm with its acceptance scenarios asserted; the
+flip waits for the cusp split, then either raise `PRICE_PER_SECOND` and re-measure, or leave it off and say so.**
 **Falsifier:** genuine option-switch churn **−60%** and switch-and-switch-back within 4 s below **0.2/agent-min**,
 with reaction latency **≤ 2 ticks**. **Guard:** the arm must be distinguishable — assert the switching cost is
 non-zero and varies by hull class, or we are A/B-ing a build against itself (lesson 117).
