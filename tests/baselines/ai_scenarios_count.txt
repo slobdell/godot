@@ -6,6 +6,7 @@
 # EXPECT to fail, and one that passes by luck must not redden eight streams' checks. That is not
 # hypothetical -- this baseline's first version recorded a 2% coin landing heads on dodge_rate.
 # machine: builder0
-# commit:  c2b8ba86
-# line:    scenarios: 42 passed, 2 failed, 3 pending, 0 unexpectedly passing
-42,2,3,0
+# commit:  e4a8299a
+# line:    scenarios: 41 passed, 3 failed, 3 pending, 0 unexpectedly passing
+# reason:  the sealed TestCase._teardown() now drains navigation between scenarios (metrics ec6fef46): artillery_stays_dug_in_on_a_moving_target and the_base_of_fire_keeps_firing_while_the_others_move were passing on the previous scenario leaked navigation state, four runs split exactly on the drain and not on load; a_scout_works_onto_a_tanks_engine_deck stays red until ORBIT radius reads hull length (round 10); recorded on main at e4a8299a after the settle tick
+41,3,3,0
