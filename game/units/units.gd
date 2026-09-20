@@ -11,7 +11,10 @@ extends RefCounted
 ##
 ## Keys (all required unless marked optional):
 ##   display_name, role (ROLES), blurb (one line for the army UI), cost (points), unlock_tier (0 = starter)
-##   hull_size [w, h, l] meters (the collision box; S1: derived, see scale_reference and SCALE_K below),
+##   hull_size [w, h, l] meters (the collision box; S1: derived, see scale_reference and SCALE_K below).
+##     **42 call sites read this and it is not a display number** -- what each one assumes is listed in
+##     _agents/workstreams.md "What reads hull_size". Round 9's resize landed in three places nobody was
+##     looking; read that list before changing a size.
 ##   S1 (round 9) optional scale_reference {vehicle: String, length_m: float, source: String} -- the real-world
 ##     vehicle this unit is drawn as, its cited length, and where that length comes from. hull_size[2] is
 ##     length_m x SCALE_K and hull_size[0]/[1] are the approved mesh's proportions at that length

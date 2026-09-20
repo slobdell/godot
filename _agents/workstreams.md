@@ -570,3 +570,51 @@ What `tools/worktree.sh` isolates:
 - A branch can be checked out in only ONE worktree. Don't `git checkout main` inside a stream worktree.
 - `git stash`, hooks, and `git config` are **shared** across worktrees. Prefer WIP commits on the stream branch.
 - Deleting a worktree folder by hand leaves stale metadata; use `make worktree-remove` (or `git worktree prune`).
+
+## What reads `hull_size`, and what each use assumes
+
+**Written after round 9's resize landed in three places nobody was looking** (the spawn grid's "widest hull", the
+asset contract's refit, the screening bar) — so the next resize has a checklist instead of three surprises.
+`Units.PROFILES[*]["hull_size"]` is `[width, height, length]` in metres and **it is the collision box**, so it is not
+a display number: 42 call sites read it. One line each, with the assumption that makes it a consumer rather than a
+reader.
+
+| consumer | reads | assumes |
+|---|---|---|
+| `tank.gd::_apply_hull_size` | all three | **`hull_size` IS the collider**; box bottom at the unit origin (`position.y = h/2`), hull art scaled to the box |
+| `match.gd:1383` friendly-fire risk | w, l | the hull is a **disc** of the box's diagonal — see the hazard below |
+| `match.gd:1450` `incoming_projectiles` | w, l | same disc |
+| `ai/incoming_fire.gd:101` | w, l | same disc, and **caches it per `unit_id`** (`_radius_by_unit`) — a size that changed at runtime would not be re-read |
+| `match.gd::screen_for` + screening geometry | w | a wider screen shadows more; the 0.35 bar in `test_combat_screening` was calibrated against a 2.40 m dozer |
+| `match.gd:1637` `tank_destroyed` payload | all three | FX size the wreck from the event, not the catalog |
+| `theme/fx/weapon_fx.gd:337,342` | from the event | fire shape scales to the dead hull |
+| `ai/avoidance.gd:54` | w, l | avoidance radius `(w + l) / 4 + margin`; **fallback `[2.4, 1.6, 3.8]`** |
+| `ai/movement.gd:708, 1700` | w, l | routing clearance; **same stale fallback** |
+| `tactics/tactics_formation.gd:90` | w, l | `hull_extent` / `hull_floor` → formation spacing; fallback `[0,0,0]` is the deliberate `NO_HULL` sentinel |
+| `tactics/army_layout.gd:302` | w, l | assembly depth and frontage; **fallback `[2.6, 1.8, 4.0]`** |
+| `arena/arena.gd` + `cover_tables.gd` | l | `cover_fraction(..., hull_length)` — A3 chord cover is a function of length |
+| `control/rts_controls.gd:1075` | h | HUD bar sits at `hull[1] + BAR_ABOVE_M` |
+| `control/rts_controls.gd:1202` | all three | selection picking |
+| `assets/pipeline/asset_contracts.gd` + `asset_checker.gd` | all three | art **refitted by LENGTH** must match the box's width and height; refits from the mesh's *authored* pose |
+| `theme/fx/bench/size_look.gd` | all three | `box_at_length` — the function the numbers come FROM |
+| `theme/cyberpunk/dozer_part.gd`, `factions/faction_art.gd` | l | `_fit_to_hull` scales art by `hull_size[2] / FactionArt.hull_length` |
+| `garage/catalog_stub.gd` | — | **hardcodes pre-CP2 boxes** for the garage stub |
+| `tools/roster_scale.py`, `tools/arena_report.py` | all three | the table and the reports |
+| `Match.SLOT_X` clearance (spawn grid) | w, l | adjacent columns and rows must clear the widest/longest hull |
+
+**⚠ THE HAZARD THE LIST FOUND, unflagged until now: three consumers model a hull as a DISC of its diagonal**
+(`Vector2(w, l).length() / 2`). That is fine for a roughly square hull and wrong for a slab:
+
+| unit | w × l | disc radius used | real half-width | error |
+|---|---|---|---|---|
+| `gang_tank` | 3.32 × 14.00 | **7.19 m** | 1.66 m | **4.3×** |
+| `tank` | 2.40 × 8.62 | 4.47 m | 1.20 m | 3.7× |
+| *pre-CP2 worst* | 2.4 × 4.2 | 2.42 m | 1.20 m | 2.0× |
+
+So the AI treats a War Rig as a **14.4 m-wide circle** for friendly-fire avoidance and incoming-shell threat. Before
+CP2 the worst case was 2× and the error was centimetres; now it is metres. **Not fixed here and not this stream's
+files** — recorded so it is a decision rather than a discovery.
+
+**⚠ AND THE STALE FALLBACKS:** `[2.4, 1.6, 3.8]` (three sites) and `[2.6, 1.8, 4.0]` are **pre-CP2 sizes** that apply
+silently when a `unit_id` is unknown. They cannot be reached by a shipped unit today, which is exactly why nothing
+catches them — a fallback that never fires is indistinguishable from a correct one.
