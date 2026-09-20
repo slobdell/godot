@@ -79,10 +79,11 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
   (`Green_S5_1`, `Rust_S5_1`, `Rust_S8_1`) spawn inside a wall or crate. **A composition failure:** it passed on
   scale's branch (1395/0 at `7542df28`) and on `main` before CP2 (1454/0 at `0808834e`), so it is a composition. **scale eliminated from the repository alone (08:58):** the test runs on foundry, whose
   layout is untouched; `game/tactics/` (ArmyLayout) is unchanged in the window; combat's `units.gd` lines are an inert
-  `--tune` parser; the dressing adds no bodies. **What remains is nav's `movement.gd` / `tank_brain.gd` /
-  `combat_motion.gd`: something on the default path acting on the FIRST TICK after deploy** (the sliding-goal tolerance,
-  the face recovery, the `wedged` detector…), displacing a unit that the resize left under a metre from foundry's
-  geometry into the probe box. **The resize did not create it; it consumed the margin that hid it** (the contact-pip
+  `--tune` parser; the dressing adds no bodies. nav then accounted for `movement.gd` and `combat_motion.gd` line by line (constants, pure reads, one write-only
+  bool, A6 behind its opt-in switch; the baseline unmoved by its merge), so **what remains in the window is
+  `tank_brain.gd` (+133: squad's corridor field and tube plumbing, combat's switching-cost seam) — OR no motion at
+  all: a unit that spawns ALREADY intersecting looks identical to one nudged on tick one**, which would be a
+  placement-margin failure CP2 exposed (scale's). scale's probe prints spawn vs current position to tell the two apart. **The resize did not create it; it consumed the margin that hid it** (the contact-pip
   finding's shape). scale's `make spawn-probe` names each flagged unit's position and the body it intersects and runs
   after its fairness series (~09:05); nav answers from that. Also found: the test's first assertion compares
   `Match.SPAWN_SLOTS` with a constant defined AS `Match.SPAWN_SLOTS` and cannot fail (combat's/squad's file).
