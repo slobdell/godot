@@ -2607,3 +2607,11 @@ The kickoff prompt is one line; this section is the rest.
     the box's own `build/check/*.log` with its provenance stated is a primary artefact, not a reconstruction —
     `check passed: N targets` cannot print under `make -j` without `-k` unless all N succeeded, so the count exposes an
     early abort more precisely than an exit code; check the log's timestamp first, it persists between runs.
+169. **Shader `TIME` keeps advancing while the game is paused, so two captures of "the same" frozen scene differ before
+    anything else does.** Round 9, show: a luminance gate comparing show-on against show-off on a paused tree had a
+    guessed noise floor, and two frames sat outside it for reasons nobody could attribute — the neon flicker's 12.5 Hz
+    dropouts, the crowd and the ad screens are all elsewhere a frame later. The run now shoots a **null** (the same
+    half twice, changing nothing) and takes its bar from that measurement (`max(3%, 2 × the null's p95)`), printing the
+    null's median, p95 and worst so the bar is never a mystery. **Any frame comparison gate measures its own null
+    first.** Same night, same stream, lesson 27 again: a string replacement that did not match shipped as "done" in a
+    commit message and a report; the edit now asserts on the way in and checks on the way out.
