@@ -16,7 +16,7 @@ const ROOT := "res://tests/ai_scenarios"
 ## in the engine, which a probe had already exonerated, but a duplicate implementation fixed in one place.
 ##
 ## Two runners, one rule, and they drifted in every way they could: warnings told apart from errors,
-## `expect_warning`, `expect_error`, the engine-message allowlist and nav's awaited `teardown()` all existed
+## `expect_warning`, `expect_error`, the engine-message allowlist and nav's sealed `_teardown()` all existed
 ## in `tests/run_tests.gd` and none of them here. It now shares `TestCase.reconcile_engine_messages`.
 class ErrorCollector extends Logger:
 	var entries: Array[Dictionary] = []
@@ -98,9 +98,13 @@ func _run() -> void:
 			errors.take()
 			var started := Time.get_ticks_msec()
 			await case.call(method_name)
-			# AWAITED, as in tests/run_tests.gd: `teardown()` drains the navigation map and that needs
-			# frames; un-awaited it drains after the NEXT scenario has started.
-			await case.teardown()
+			# `_teardown()`, NOT `teardown()`, and awaited. After main sealed the order, `teardown()` is only
+			# the override hook (`free_owned()`); `_teardown()` is free + body-leak guard + navigation drain.
+			# **Both this runner and main's called `teardown()`**, so every scenario has been skipping the
+			# body guard and the drain entirely -- main's un-awaited, mine awaited, both wrong the same way.
+			# Found by reading the call sites after the signature changed, which is the only way this kind is
+			# ever found: git merged this line clean, because it still compiles and still does something.
+			await case._teardown()
 			var engine: Dictionary = TestCase.reconcile_engine_messages(
 					errors.take(), case.expected_warnings, case.expected_errors, allowed)
 			var engine_failures: PackedStringArray = engine["failures"]

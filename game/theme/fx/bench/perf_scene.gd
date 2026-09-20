@@ -488,6 +488,10 @@ func _finish_phase() -> void:
 		"burst_area": roundi(_sums["burst_area"] / frames),
 		"burst_area_max": roundi(_sums["burst_area_max"]),
 		"vehicles": _living_tanks().size(),
+		# Whether the census is FROZEN for this run (`--tune=match.no_damage=1`, combat). Recorded per phase rather
+		# than once, so the gate can prove it was on for every phase it compares and not merely at startup: the
+		# whole reason the trailer cost was unmeasurable was a census that walked 90 -> 72 while the phases ran.
+		"no_damage": Armor.no_damage,
 		"process_ms": snappedf(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, 0.01),
 		"physics_max_ms": snappedf(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, 0.01),
 		"process_game_ui_ms": snappedf(_cpu_sums["game_ui_ms"] / frames, 0.01),

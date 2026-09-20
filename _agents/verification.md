@@ -85,6 +85,12 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
   STATIC: a value set from `TUNE` lives for the whole process by design, and a test that writes `Units.tuning`
   mid-run and dies hands that value to every later test in its shard, so such a test erases what it tuned in an
   unconditional teardown (`test_combat_hull_geometry` is the pattern).
+- **Assert the ARM before the behaviour** (2026-09-20, nav): a test that selects an arm (`TUNE=…`, a static flag)
+  asserts the arm is live (`assert_true(<the flag reads on>, "the tune took effect")`) BEFORE asserting what the
+  mechanism does, and restores it after. A tune that silently fails to take effect otherwise reads as the mechanism
+  regressing, or as a pass that means nothing; this round produced six false zeros and one false positive, every one
+  a mechanism whose arm nobody asserted. And a test asserts the mechanism under its explicit arm, never the defect on
+  the default path: a defect assertion is a scheduled red that must be inverted the day the default flips.
 - **Filtered runs in a batch use `;` with a per-file summary, never `&&`** (lesson 182): the chain stops at the
   first red and the unrun files look green by silence. A pass claim names the file's own `N passed, M failed` line.
 
