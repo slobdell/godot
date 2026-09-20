@@ -359,17 +359,20 @@ func test_a_unit_ordered_across_contact_arrives() -> void:
 			"and it fights from the ground it was given rather than wandering off (%.0f m away)" % gap)
 
 
-## Who a unit is nosed against, if anyone: the nearest other unit, the gap, and both hull lengths.
+## Who a unit is nosed against, if anyone: the nearest other unit, and whether their hull boxes actually overlap.
 ##
 ## combat's mechanism for the yaw-constraint regression is that a crew trying to seat is nosed against a SQUADMATE, the
 ## plant refuses its arrival yaw because `test_move` counts that squadmate as a wall, and the brain re-tasks a unit that
-## never arrives. This is the half of that which lives in positions; their `refusals_applied` / `yaw_vehicle_contact`
-## counters are the other half, and the two should name the SAME units. If they do not, the story is wrong however well
-## the bisect fits it.
+## never arrives. Their `refusals_applied` / `yaw_vehicle_contact` counters are one half; positions are the other, and
+## the two should name the SAME units. If they do not, the story is wrong however well the bisect fits it.
 ##
-## Centre distance and hull lengths rather than an oriented footprint test, deliberately: a seating crew's yaw is
-## whatever its approach left it on, so an exact overlap here would be precision this cannot honestly claim. The raw
-## numbers are printed beside the label so a reader can judge instead of trusting it.
+## SEPARATING AXIS, not centre distance against a length. My first version compared the gap to the two hull LENGTHS and
+## printed `CONTACT` for five squads out of five -- 4.1 to 7.1 m gaps against 8.6 m hulls -- which is worthless, because
+## **a label that is always true carries no information**, and it was always true because these crews are ABREAST, where
+## the extent that matters is the 2.40 m width and not the 8.62 m length. So: project the offset onto the unit's own
+## forward and right (its yaw IS known at this moment, so this is exact rather than a guess) and require BOTH axes to
+## overlap, which is `ArmyLayout._is_clear`'s own rule. Five of five was the tell; a vacuous signal is the defect this
+## whole round keeps producing.
 func _nose_of(unit_name: String, settled: Dictionary) -> String:
 	var near := ""
 	var near_gap := INF
@@ -382,16 +385,19 @@ func _nose_of(unit_name: String, settled: Dictionary) -> String:
 			near = other
 	if near == "":
 		return ""
-	var mine := _hull_length(unit_name)
-	var theirs := _hull_length(near)
-	var touching: bool = mine > 0.0 and theirs > 0.0 and near_gap < (mine + theirs) * 0.5 + 1.0
-	return "; nearest %s at %.1f m (hulls %.1f + %.1f)%s" % [near, near_gap, mine, theirs,
-			" CONTACT" if touching else ""]
-
-
-## A unit's hull length from the live match, or 0.0 when it has been freed.
-func _hull_length(unit_name: String) -> float:
-	var tank := _match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
-	if tank == null:
-		return 0.0
-	return float(Units.stat(tank.unit_id, "hull_size", [0.0, 0.0, 0.0])[2])
+	var mine := _match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+	var theirs := _match.tanks.get_node_or_null(NodePath(near)) as Tank
+	if mine == null or theirs == null:
+		return "; nearest %s at %.1f m (a hull has been freed)" % [near, near_gap]
+	var my_size: Array = Units.stat(mine.unit_id, "hull_size", [0.0, 0.0, 0.0])
+	var their_size: Array = Units.stat(theirs.unit_id, "hull_size", [0.0, 0.0, 0.0])
+	var forward := -mine.global_basis.z
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	var offset: Vector3 = (settled[near] as Vector3) - (settled[unit_name] as Vector3)
+	var across: float = absf(offset.dot(right)) - (float(my_size[0]) + float(their_size[0])) * 0.5
+	var along: float = absf(offset.dot(forward)) - (float(my_size[2]) + float(their_size[2])) * 0.5
+	# Clear when EITHER axis separates them, which is the pair's clearance (side by side needs width, nose to tail
+	# needs length) -- the same separating-axis rule the layout uses to place them in the first place.
+	var clearance := maxf(across, along)
+	return "; nearest %s at %.1f m, hull gap %.2f m (across %.2f, along %.2f)%s" % [near, near_gap, clearance,
+			across, along, " OVERLAPPING" if clearance < 0.0 else ""]
