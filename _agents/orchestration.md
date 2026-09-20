@@ -2699,6 +2699,12 @@ The kickoff prompt is one line; this section is the rest.
     cost, show cost) go in a **quiet window** the orchestrator calls after the checks drain, one stream at a time, and
     every timing number carries the load average and the per-phase spread beside it or it is not quoted. Screenshots
     and seed-deterministic series are only *slowed* by load and can run through it.
+    **Addendum, the first quiet-window run (feel, load 0.4, 2 other Godots): still NOT USABLE.** The repeated `all`
+    phases went 36.5 → 31.3 → 29.8 ms, monotone: warm-up drift, not noise, which a `max − min` gate cannot tell apart;
+    the two cycles' bracketed costs disagreed in sign (+3.59, −0.44) and their mean (+1.57) hid it; and the draw count
+    moved 328 → 269 between phases because vehicles die during the sampled battle, so the phases were not the same
+    scene. A quiet box is necessary; the tool also needs a frozen census (damage off during the run, the count
+    printed per phase), a discarded warm-up, and a verdict from per-cycle costs agreeing in sign and magnitude.
 180. **A guard that counts at teardown measures a pending removal, and it will convict the innocent with the same
     confidence as a real leak.** Round 9's teardown guard (scale, `3f6c1650`) named three tests for leaving two
     navigation regions each; `NavigationServer3D` drops regions on the frame *after* `free()` ([2, 0, 0, 0] over
@@ -2724,3 +2730,16 @@ The kickoff prompt is one line; this section is the rest.
     that sentence. Rule: **a claim that a file passed names that file's own `N passed, M failed` line from the log**,
     and batches of filtered runs use `;` with a per-file summary, never `&&`. Same family as lesson 163 (read the
     result line, not the exit code, not the absence of a complaint).
+183. **A readout that reports what was INTENDED rather than what was ISSUED will contradict the game exactly when
+    the player is watching.** Round 9: the squad-heading pin drew the arrow from the task (the intent), while the
+    crews had been given a follow order with no facing; control's fix derives the pin from the crews' own orders,
+    unanimously, so it starts drawing on the tick the promise becomes true and needs no follow-up edit. Fourth
+    member of one night's family beside lesson 173 (the lint parsing later files against older sources, the
+    "before" frame shot with the fix running, `get()` collapsing absent into null): **derive, never mirror**, and
+    the readout is a mirror if it can be true while the thing it reports is false.
+184. **An honest instrument is not enough if nothing asserts on it.** Round 9, nav's clearance tests: the arm counter
+    printed `chords 0` (the rule was never consulted) and the slack printed `nan` (a fallback), both correct, both
+    ignored by assertions that then failed for a different-looking reason; the cause was a mover that does not exist
+    until a hull is driven, the same mistake nav had made in the legibility test hours earlier. Beside lesson 171:
+    every positive control the run prints is also an assertion (`chords > 0`, `not is_nan(slack)`, "the mover
+    exists") *before* the number it guards is read, or the print is decoration.
