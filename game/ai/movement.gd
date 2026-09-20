@@ -520,6 +520,10 @@ static func bake_radius(unit: Node) -> float:
 		return _bake_radius
 	var found := -1.0
 	if unit != null and unit.is_inside_tree():
+		# Taking the FIRST region is safe and was checked rather than assumed: `arena.gd` adds a second region,
+		# `NavigationMirror`, but assigns it the SAME `NavigationMesh` resource (`mirror.navigation_mesh = nav_mesh`)
+		# rotated by PI — so `agent_radius` is identical whichever one the search meets. If arena ever gives the
+		# mirror a mesh of its own, this must pick `$Navigation` by name instead.
 		for node in unit.get_tree().get_root().find_children("*", "NavigationRegion3D", true, false):
 			var region := node as NavigationRegion3D
 			if region != null and region.navigation_mesh != null:
