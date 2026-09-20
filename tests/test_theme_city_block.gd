@@ -91,3 +91,20 @@ func test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll() -> v
 	b.seed = 3
 	assert_eq(CityBlock.neon_color(null, a), CityBlock.neon_color(null, b), "no colour asked: seeded, so replayable")
 	assert_true(NeonSigns.COLORS.has(CityBlock.neon_color(null, a)), "and it comes from the signage palette")
+
+
+func test_a_tier_count_the_builder_cannot_honour_is_reported_rather_than_clamped() -> void:
+	## Same shape as the unknown-colour bug above, found while measuring the Terminus roofs: `setup` does
+	## `clampi(tiers, 1, 3)`, so a layout asking for 4 silently gets 3 and the author's intent is lost with nothing
+	## said anywhere. `arenas/terminus.json` really does ask for 4 on two blocks, and those two buildings are
+	## shorter and their roofs flatter than the layout asks for.
+	##
+	## The clamp itself stays -- the builder must draw SOMETHING for any input -- but "can this be honoured?" becomes
+	## a question that can be asked, exactly like `resolves()` for colours. It is deliberately NOT wired into
+	## `Arena.validate()`: `Arena` is read by `Match`, so a layout failing to LOAD over a `game/theme/` concern would
+	## invert the rule that art must never change the simulation (the same reasoning the `show` key carries).
+	assert_true(CityBlock.honours_tiers(1) and CityBlock.honours_tiers(3), "the supported range is honoured")
+	assert_true(not CityBlock.honours_tiers(4), "and 4 is not: it would be clamped to 3 with nothing said")
+	assert_true(not CityBlock.honours_tiers(0), "nor is 0")
+	assert_true(CityBlock.honours_tiers(null), "while asking for nothing is legal -- the block seeds its own")
+

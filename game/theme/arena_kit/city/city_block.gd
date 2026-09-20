@@ -24,6 +24,9 @@ const MIN_WIDTH := 6.0
 const NEON_BAND := Vector2(0.25, 0.06)  # height, how far it stands off the wall (m)
 const SHADER := preload("res://game/theme/fx/shaders/city_block.gdshader")
 const DEFAULT_SIZE := Vector3(40.0, 24.0, 40.0)
+## The tier counts `build` can actually draw; `honours_tiers()` asks about them and `setup` clamps to them.
+const MIN_TIERS := 1
+const MAX_TIERS := 3
 
 var size := DEFAULT_SIZE
 var mesh_instance := MeshInstance3D.new()
@@ -47,7 +50,7 @@ func setup(obstacle: Dictionary) -> void:
 	var seed_value := int(obstacle.get("seed", hash(str(obstacle.get("position", [0, 0])))))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
-	var tiers := clampi(int(obstacle.get("tiers", 1 + rng.randi() % 3)), 1, 3)
+	var tiers := clampi(int(obstacle.get("tiers", 1 + rng.randi() % 3)), MIN_TIERS, MAX_TIERS)
 	var setback := float(obstacle.get("setback", rng.randf_range(2.0, 4.0)))
 	var neon := CityBlock.neon_color(obstacle.get("neon", ""), rng)
 	mesh_instance.mesh = CityBlock.build(size, tiers, setback, neon, rng.randf())
@@ -106,6 +109,18 @@ static func neon_color(wanted: Variant, rng: RandomNumberGenerator) -> Color:
 
 ## Whether a layout's `neon` value names a colour at all: an HTML code or a known name. For `Arena.validate()`, so
 ## a typo is rejected ONCE when the layout is read rather than absorbed eight times when the blocks are built.
+## Whether `build` can draw the tier count a layout asks for, WITHOUT clamping it. `setup` clamps -- it must draw
+## something for any input -- but a clamp is silent, so a layout asking for 4 storeys gets 3 and nobody is told;
+## that is how two Terminus blocks ended up shorter and flatter than their layout asks for. Asking for nothing is
+## legal and means "seed me one". Kept beside `resolves()` because it is the same question about a different key.
+static func honours_tiers(wanted: Variant) -> bool:
+	if wanted == null:
+		return true
+	if not (wanted is int or wanted is float):
+		return false
+	return int(wanted) == clampi(int(wanted), MIN_TIERS, MAX_TIERS)
+
+
 static func resolves(wanted: Variant) -> bool:
 	if not (wanted is String) or String(wanted).is_empty():
 		return true  # asking for nothing is legal: the block gets a seeded signage colour
