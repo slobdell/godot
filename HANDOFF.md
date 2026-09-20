@@ -259,6 +259,8 @@ layout is the wrong place for intent the mover cannot see; the maze defile failu
 hypotheses and is now a named regime (`wedged`) rather than a story. Every one of nav's five rows trips on the same
 seam. That is round 10's first candidate, ahead of retrying any row.
 
+**Metrics' close-out (merged docs-only at `44d4bb58`), and the one thing it would keep if only one survived:** a fix at one layer defeated by a layer above it that was never in the picture (lesson 192): make eating `$` before the shell three times, a pipeline reporting `tail`'s status, `$(date)` resetting `$?`, a tag object between a ref and its commit, six call sites landing in the wrong parameter, a scenario runner still calling `teardown()` after the seal; in every one the code was right about the thing it looked at and wrong about WHAT it was looking at. Its companion: three of its own suites were green on the laptop and red on builder0, and surfaced only because they run inside `check`; a guard exercised only where it is easy passes for the wrong reason, which is the argument for leaving them in the gate.
+
 **Lessons 152–174 were written tonight** (`_agents/orchestration.md`): the night's recurring shape is *the absence of
 work reading as the success of work*: a lint that checked zero files, a scenario suite outside the gate, a flag that
 silenced its own tests, a perturbation that could not perturb, a control arm where the mechanism could not act, a
