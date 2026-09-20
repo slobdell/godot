@@ -201,7 +201,15 @@ threshold. It also directly answers open question 2 from the brief (*is there a 
 route cadence (`REPATH_SECONDS`) accounts for **~3% of re-plans** in a fight, so A1's tube on the route replanner
 cannot move P1. The cause split then found the real driver: **968 of 2,059 re-plans (47%) were nav re-planning against
 a goal it was already regulating** — a follower's station sliding ~1 m — fixed with a tolerance that scales with the
-remaining route (out of squad's `following` observation). The brain's `MOTION_REPLAN_TICKS` half remains squad's.
+remaining route (out of squad's `following` observation). The brain's `MOTION_REPLAN_TICKS` half remains squad's — **measured (squad `1a797642`, 05:40, laptop, merged
+tree, `make squad-decisions TUBE=on|off`, seed 3, 120 s, yard, 34 GREEN brains):** re-decides 5514 → 2076
+(**−62.3%**, the bar met), motion-internal jumps −17.2% (an independent instrument, pre-registered), switches per
+unit-minute **20.5 in both arms to the decimal** and reversals 0.4 in both — the latency guarantee holds in a fight,
+not only in the unit test. **And it ships OFF:** GREEN finishes 29 of 34 against 33 of 34, RUST untouched at 41 both
+ways, one seed. Held share 0.46 → 0.81 means the tube holds plans against a world four times staler. Gate
+pre-registered in squad's brief: the same A/B over ≥ 5 seeds reporting GREEN losses and exchange ratio beside the
+counts; flip only if losses are flat within seed noise. *"The instrument that can finally see the mechanism is the
+one that tells you not to ship it."*
 **Falsifier:** intra-decision re-plan rate drops **≥ 60%** (theirs: ≥ 80%) *and* path-tracking error stays within
 **0.15 m** *and* reaction latency to a new contact stays **≤ 2 ticks**. If churn falls but latency rises, this is
 stubbornness wearing a hat and it reverts.
