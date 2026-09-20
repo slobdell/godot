@@ -167,6 +167,33 @@ directly.
 
 ## Status
 
+> ## ⚠ ITEM 4 IS NOT DONE, AND THERE ARE NO NEW FRAMES. READ THIS BEFORE THE FRAME PATHS BELOW.
+>
+> **CP2 is merged and on this branch** (`914dc7d3`, the roster really is resized: tank hull **8.62 m**, Sonic
+> Emitter **6.18 m** tall, Rat Rod **2.93 m**). The post-CP2 camera sweep **started and did not finish**:
+> `make remote T=camera-looks` came back **`exited 255`**, which is **ssh, not the suite**
+> (`_agents/remote_builds.md`), and **`build/ copied back: FAILED`**. builder0 has been unreachable since ~08:27
+> (`No route to host`). It had finished foundry and furnace on the box before the link dropped; **none of it reached
+> this laptop**, so `build/camera-looks/` here holds **an older run's frames and must not be read as CP2's**.
+>
+> **There are therefore NO frames of the resized roster.** The rule in this brief has not relaxed: *a frame of the
+> old roster is a frame of a game he will not play again*, and that applies to stale frames sitting in `build/` just
+> as much as to freshly shot ones.
+>
+> **The one command that finishes it, the moment builder0 answers:**
+>
+> ```bash
+> cd ~/projects/godot-control && git merge main      # already done: 914dc7d3
+> REMOTE_SLOTS=6 make remote T=camera-looks
+> REMOTE_SLOTS=6 make remote T=control-playtest-shots
+> ```
+>
+> Then read the frames against the checklist under *Still owed*, below, and put the paths here.
+>
+> **The frames that ARE real and worth looking at are the Terminus alleys**, shot locally at 04:02 on the
+> **pre-CP2** roster: `build/terminus-alleys/index.html`. They answer the camera-inside-a-building item, which does
+> not depend on hull size; they are not a substitute for the sweep.
+
 > **Round 9, control. Finished 2026-09-20 ~05:00.** Branch `stream/control`; **`ffd09b0e` is the checked hash**
 > (builder0, **16 of 16 check targets**, verdict read from the box's own markers — metrics' kill took my wrapper
 > line, `mk/core.mk:250` clears the marker directory at the start and `:274` writes a marker only on success, so
