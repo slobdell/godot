@@ -2989,3 +2989,12 @@ The kickoff prompt is one line; this section is the rest.
     (28.5°, 9.6 m) had been taken in an arm that was not the one it claimed; the constraint's benefit was larger
     than reported (74 % of the illegal yaw, not 59 %), the residual unchanged. **A before-column is re-taken on
     the build that reports it, in the arm the knob now provably selects.**
+196. **A change scoped to X must not move a measurement that contains no X; if it does, the scope is wrong, not
+    the measurement.** (nav's rule from combat's finding, round 9.) The world-only yaw arm was described as "the
+    same quantity, a different set of colliders"; the corridor residual, measured in a corridor with NO vehicles,
+    moved 1.27 → 0.70 m under it, so the arms were two APIs (`test_move` with recovery and `get_depth` against
+    `collide_shape` with the widest point-pair) wearing one label, and every encouraging number from the arm was
+    uninterpretable, including a squad pass that would have shipped hulls rotating through each other. Two
+    corollaries: pre-register, for any arm, the measurement it must NOT move and read that first; and read the
+    counters you asked for (offered 30, applied 30, swept 0.0° was the permanent-refusal signature the counters
+    were built to expose, and nobody was looking at them).
