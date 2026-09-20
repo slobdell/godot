@@ -296,3 +296,31 @@ func test_a_teleported_vehicle_is_drawn_where_it_was_put() -> void:
 	var placed := Shown.ground(f.tank("Green_Bravo_2"))
 	assert_true(placed.distance_to(away) < 1.0, "Fixture.place resets the interpolation, so it is drawn where it was put (%s)" % placed)
 	Engine.physics_ticks_per_second = saved
+
+
+## Round 9, discharging round 8's Invariant 0 debt. `VISION_FRAME_BOTTOM` (0.40) was measured off a frame once -- "the
+## card and chips' top is at y 778 at 1920x1080" -- and then lived in the camera as a number that could not know when
+## the card changed. It is now READ from the laid-out HUD.
+##
+## Deriving it from the panel's own constants would NOT have been enough: those constants put the chips' top at y 832
+## today, not 778, so a formula would have been confidently wrong in a second way. Only asking the nodes where they
+## actually are cannot drift.
+func test_the_lean_bound_is_read_from_the_hud_and_not_copied_from_it() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var height: float = float(tree.root.size.y)
+	assert_eq(f.rig.frame_bottom(), RtsCamera.VISION_FRAME_BOTTOM,
+			"with no HUD to ask, the camera falls back to the constant")
+	# A HUD whose top edge is exactly the screen's centre leaves no room below it at all.
+	f.rig.hud_bottom = func() -> float: return height * 0.5
+	assert_true(absf(f.rig.frame_bottom()) < 0.001, "a card reaching the centre line allows no lean below it (%f)" % f.rig.frame_bottom())
+	# The round-8 measurement, as a live HUD: y 778 on a 1080-tall screen is 0.44 of the half-height below centre.
+	f.rig.hud_bottom = func() -> float: return 778.0 * height / 1080.0
+	assert_true(absf(f.rig.frame_bottom() - 0.4407) < 0.01,
+			"the bound is whatever the HUD says, here round 8's own measurement (%f)" % f.rig.frame_bottom())
+	# THE MUTATION THAT PROVES IT IS DERIVED: move the card and the bound moves with it. A copied constant cannot.
+	f.rig.hud_bottom = func() -> float: return 900.0 * height / 1080.0
+	assert_true(f.rig.frame_bottom() > 0.6, "a shorter card lets the squad sit lower (%f)" % f.rig.frame_bottom())
+	# And it never exceeds the symmetric inset, whatever the HUD claims.
+	f.rig.hud_bottom = func() -> float: return height * 4.0
+	assert_true(f.rig.frame_bottom() <= RtsCamera.VISION_FRAME_INSET + 0.001, "clamped to the frame inset")
