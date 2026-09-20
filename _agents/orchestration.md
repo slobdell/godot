@@ -2470,3 +2470,15 @@ The kickoff prompt is one line; this section is the rest.
     generalise:** name the archetype rather than seeding a draft; a probe **refuses** a run whose `--require=` unit or
     artefact is absent; and every resolved knob is printed into the output (lesson 44) so a wrong selection is visible
     in the artefact, not only in the conclusion.
+157. **A gate that cannot find its inputs must FAIL, not pass — and three instances in one round say this shape is
+    common.** Round 9, metrics, found while timing T1: **`make remote T=check` has never parse-checked a file.** `lint`
+    lists files with `git ls-files`, `tools/remote.sh` excludes `.git/` from the sync (and a worktree's `.git` is a
+    pointer file to a gitdir that never travels), so on builder0 git answers *"not a git repository"*, the `for` loop
+    over a failed command substitution iterates zero files without tripping `set -e`, and the recipe printed
+    **"lint: all scripts parse"** — true of zero scripts — with exit 0. Local `make check` linted properly, so parse
+    errors were caught only by whoever ran locally; **every "this commit is green" that rested on the remote check was
+    not parse-checked**, and `main` was merged on that basis. Fix (with CP1): fall back to `find` when git cannot
+    answer (verified: the same 531 files), **fail loudly on an empty list**, and print the count in the success line.
+    The shape, seen three times this round: arena's four bare test functions `unittest discover` never collected;
+    metrics' control run that exited 0 having never written the log (lesson 154); and this. **The absence of work must
+    never read as the success of work: every gate prints how many things it checked, and zero is red.**
