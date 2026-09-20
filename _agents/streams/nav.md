@@ -549,6 +549,45 @@ friend 0.
 `run` (the A/B control for round 7's standoff), and it does not change `COMMIT_BONUS`'s value — combat's A2 replaces
 that expression at level 5 under contract S5.
 
+### OWNED AND UNFIXED: a tracked hull reversing 5.6 m mid-leg, reproducible in one test (scale's trace, 2026-09-20)
+
+scale sent this from `test_control_group_moves::test_the_group_faces_its_direction_of_travel_on_arrival` — three
+vehicles ordered due east, per-second trace of one Condemned `tank` (**8.62 m** after CP2, was 3.60), laptop,
+`07f92087`:
+
+    7s  dot=0.94 pos=-77.1,42.5   <- furthest east on the first attempt
+    8s  dot=0.93 pos=-78.8,43.1   <- going BACKWARDS, nose still east
+   11s  dot=0.93 pos=-82.7,44.7   <- 5.6 m of reverse over four seconds
+   13s  dot=0.99 pos=-75.3,43.6   <- forward again
+
+**Why this is worth more than the aggregate it confirms:**
+
+1. **The heading barely moves through the whole reversal** (0.94 → 0.93 → 0.97). That rules out the K-turn reading:
+   it is not a hull turning, it is forward–reverse–forward on one heading. And a Condemned `tank` is **tracked**, so
+   it is not the wheeled creep either — metrics' A12 puts 56 % of reversals on the creep, and this is one of the ones
+   **neither** counter explains.
+2. **It is reproducible in one file with one filter, ~20 s of sim.** Every instrument nav has for this pathology is a
+   match aggregate. This is the first handle a debugger can be attached to.
+3. **It is size-sensitive**, which is the lever: run alone the scenario finishes by 10 s with no reversal worth the
+   name; only in file order, and the resize widened the in-file gap from 2 s to 5 s. **A 2.4× longer hull makes it
+   markedly worse** — which points straight at nav's known clearance gap, `_chord_slack()` using hull **WIDTH** while
+   a long hull's tail sweeps outside the line its centre follows. A gap the routing calls passable is one the hull
+   catches and has to back out of, and "drive forward, stop, reverse 5.6 m, drive forward" is what that looks like.
+
+**Not fixed this round, deliberately:** A7 and A11 are both built and parked pending measurement decisions, and this
+is not the round to add a third moving part underneath them. scale's re-timed budget (12 s → 16 s, their `23767e5a`)
+is a re-time and not a fix — **nobody should read that green test as the churn being gone.**
+
+**Two things accepted from scale, both after CP2 merges rather than across it:**
+- **`NAV_AGENT_RADIUS` should be read from `Arena`, not mirrored from `Arena._bake`'s 2.0.** A constant that must
+  equal another file's constant is a lesson-153 bug waiting to happen. And the roster is now **2.93–14.0 m long,
+  widest hull 4.74 m** (artillery with outriggers), so 2.0 m of agent radius is **already too tight for the widest
+  unit on the field** — a finding, not a knob.
+- **`tests/test_wheeled_arrival.gd:54`'s `<= 4.0 m` arrival radius** is now less than half a Condemned tank's length,
+  so "arrived" and "somewhere inside its own body" have become nearly the same assertion. Derive it from the hull
+  (lesson 112). scale's other flagged literal (`test_ai_player_orders.gd:291`, a 40 s journey budget) is slack rather
+  than a scale assumption — its assertion is `arrived_after >= 0.0`, not a distance — and is left alone.
+
 ### For control and metrics (T1/CP3): a wall-clock-bounded test that already flakes under load
 
 `test_control_facing_camera::test_the_camera_turns_to_face_where_the_selection_faces` **fails about 1 run in 3 on
