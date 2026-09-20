@@ -276,6 +276,40 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 | The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
 
+**Terminus roof dressing: the frame first, and the frame settles it.** Frames at
+`build/crowd-look/ahead-p{21-d049-f35,35-d120,50-d160}.png` (builder0, `d91dd0e6`, `make crowd-look ARENA=terminus`
+— reused rather than writing a bench, since it already shoots every zoom plus the lead's 21°/FOV 35/49 m pose).
+
+At the lead's own pose the facades fill the frame and the roofs are distant slivers, so **this is not a problem at
+21°**. At the lifted poses it is unmistakable: at `p35-d120` and `p50-d160` the eight blocks' roofs are the largest
+uninterrupted surfaces on screen and carry **nothing at all** — no parapet, plant, vent, tank, aerial or skylight —
+while everything around them is dense (facades on a lit window grid with neon edge lines, crowd stands, marked
+ground). The roofs are the one place the eye finds no information.
+
+**The size of it, derived rather than eyeballed:** 8 blocks at `CityBlock.DEFAULT_SIZE` 40 × 40 m give **12,176 m²
+of top roof plus 624 m² of setback ledge = 12,800 m², which is 16.3% of the arena's 280 × 280 m plan area.** That
+is the fraction of the map that is currently blank.
+
+**Dressing budget, stated in draw calls before any triangle is authored:** all roof dressing across the whole arena
+**≤ 8 draw calls** (one merged mesh per block) and **1–2 if it goes in a single `MultiMesh`**, which is what it
+should do — the item count then stops mattering and only the instance count does. Against the 259–325 draw calls a
+30-a-side match measures (`perf-trailer`, builder0 11:05, on `pit`; Terminus not separately measured, which is why
+the budget is written as a delta and not a total) that is **under 3%**. Anything that cannot be built inside that
+is too expensive for scenery nobody fights on.
+
+**Rule 12 applies the moment any of it emits.** Roof dressing is static arena art, not a show cue, so it sits in
+*both* halves of a `driving`-toggled pair and cancels. Any visual claim about lit roof dressing is therefore a pair
+or it is not a claim — and if a readability gate starts blaming the show for a roof aerial, the gate is wrong, not
+the aerial (lighting.md rule 12, which has already earned this twice on this arena via feel's neon band).
+
+**Found while measuring, and it is a defect rather than a taste question: two blocks ask for 4 tiers and silently
+get 3.** `arenas/terminus.json` has `tiers: 4` on the blocks at `[30, 62]` and `[-30, -62]`; `CityBlock.setup` does
+`clampi(int(obstacle.get("tiers", ...)), 1, 3)`, so the value is capped with no warning and the author's intent is
+lost in silence. Those two buildings are shorter and their roofs flatter than the layout asks for, which is part of
+why the roofline reads uniform. **Same shape as the neon-name bug fixed earlier in this file** — an unresolvable
+value quietly becoming a plausible one — and the same fix: `Arena.validate()` should reject a `tiers` outside 1–3
+instead of the mesh builder swallowing it. The clamp is in feel's file; the layout value is scale's.
+
 **The round-8 re-measure on the resized roster: DONE, both arenas, and the answer is that the unwinnable matchup
 is gone.** Same arms as the originals, read out of each reference's own `args` block rather than re-invented
 (`budget 5200, seeds 5, jobs 8, time_limit 150, directives ON`); 60 matches per arena, each pairing counterbalanced.
