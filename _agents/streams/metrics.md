@@ -438,16 +438,22 @@ Nothing.
 
 ### Known issues
 
-- **⚠ I killed three other streams' `make remote T=check` wrappers (2026-09-20 04:39).** Stopping one orphaned
+- **⚠ I killed two other streams' `make remote T=check` wrappers (2026-09-20 04:39)** — control's and squad's.
+  (I first reported three; combat checked their own and it was alive. Corrected with the orchestrator.) Stopping one orphaned
   run of my own, I used a kill loop whose `ps | grep` pattern matched **machine-wide instead of within this
-  worktree**; control's, combat's and squad's local wrappers died with it. Their builder0 runs survived (killing a
+  worktree**; control's and squad's local wrappers died with it. Their builder0 runs survived (killing a
   wrapper does not stop the box) but their `>> remote: ... exited <N>` line and `build/` copy-back did not. Told
   all three within minutes with recovery commands, and the orchestrator relayed it. **Every kill from here filters
   on `/proc/<pid>/cwd` against `$PWD` first and prints what it is about to kill** — which is what I had been doing
   correctly earlier the same night and skipped while hurrying to free the box. Proposed as a lesson jointly with
   control, who made the mirror-image mistake (a name-matched process tree read as their own worktree's).
-  Related trap, hit twice while cleaning up: **`pgrep -f <pattern>` matches your own command line containing the
-  pattern**, so "is my script still running?" answers yes either way.
+  Related trap, hit **three** times while cleaning up, which is the part worth remembering: a name match tells
+  you nothing about ownership **in either direction**. `pgrep -f <pattern>` matches your own command line
+  containing the pattern, so *"is my script still running?"* answers yes either way; and `pgrep -f tank_squad`
+  on builder0 matches command lines rather than working directories, which had me one step from telling combat
+  their run was dead when 13 of its processes were alive. **Enumerate by `/proc/<pid>/cwd`, never by name** —
+  the read-only version of this mistake is as costly as the destructive one, because it yields a confident wrong
+  conclusion rather than an error.
 
 - **`oscillating_units` is a fragile statistic** (above). The share is not; quote the share.
 - **No producer emits element slots by default.** `nav-fight` installs Elements and nothing forms them; the match
