@@ -6,6 +6,22 @@
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
 ## Round 9: the desired-velocity layer, and what replaces what
+### Ask the machine what it holds; do not reason about rsync timing (squad's, adopted 2026-09-20)
+
+**A remote check covers the tree that was SYNCED, not the tree you have**, and the way to find out which is to ask
+builder0 rather than to reason backwards from when the rsync started:
+
+    ssh slobdell@builder0 "grep -c 'wedged' ~/tank_squad/godot-nav/game/ai/movement.gd"   ->  0
+
+**One query, a definite answer.** That `0` says the running check covers the tree *before* the `wedged` detector —
+so its verdict applies to that commit and to nothing committed since. The alternative is comparing an rsync
+timestamp against a commit time and hoping, which is how round 8 mis-identified which tree a verdict belonged to.
+
+It is the same instinct as *diff against main by path after any cherry-pick* rather than trusting that a checkout was
+undone: **when a fact about the world is one query away, query it.** Both habits cost seconds and both replace an
+inference that is right most of the time — which is the worst kind, because it fails silently and only when it
+matters.
+
 ### Lesson 153 has a MEASUREMENT twin: a saturated instrument reports nothing (scale, 2026-09-20)
 
 nav's lesson 153 is *a term that merely saturates as one addend goes blind when it is promoted to a priority level,
