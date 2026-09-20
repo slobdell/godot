@@ -36,6 +36,15 @@ static func facing(hull_forward: Vector3, shell_direction: Vector3) -> Facing:
 
 
 ## X3: whether a round travelling along `shell_direction` strikes the engine deck of a hull facing `hull_forward`.
+## Round 9 (`--tune=match.no_damage=1`, never set in play): nothing takes damage, nothing dies, and therefore nothing
+## respawns. For TIMING BENCHES that sample a live battle: feel's hinge bench and show's layer bench were comparing
+## per-cycle deltas while the census walked down as units died (90 -> 77 in six cycles), so every delta disagreed in
+## sign and the measurement was of attrition rather than of the thing under test. Freezing the census is a change to
+## the simulation, so it lives here rather than in art. `Tank.take_hit` is the single seam every source of damage
+## passes through -- shells, splash and hazards alike -- so one guard covers all of them.
+static var no_damage := false
+
+
 ## Round 9 diagnostic (`--tune=probe.deck=1`, never set in play): print one line per enemy hit with the three
 ## quantities that decide who owns a missing engine-deck hit -- the angle between the victim's hull forward and the
 ## shell's travel, the shooter's bearing relative to the victim, and the range. `is_weak_spot` below is two directions

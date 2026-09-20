@@ -621,7 +621,7 @@ func _process(delta: float) -> void:
 ## Fractions carry over between hits (flames deal a little every tick).
 ## Returns {"shield": float, "hull": int, "killed": bool}.
 func take_hit(raw: float, shield_multiplier: float, armor_multiplier: float) -> Dictionary:
-	if not alive or raw <= 0.0:
+	if not alive or raw <= 0.0 or Armor.no_damage:
 		return {"shield": 0.0, "hull": 0, "killed": false}
 	ticks_since_hit = 0
 	var split := Armor.split_shield(raw, shield, shield_multiplier, armor_multiplier)
