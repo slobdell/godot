@@ -316,6 +316,13 @@ patches, cues — is data.
    breathing down from it. Reversible in one number per arena; it is the first thing to change if the strip reads hot.
 7. **`export_presets.cfg` gains `game/theme/show/*.json`** to its three `include_filter`s, so the cue book ships in
    the web and server exports (trip-up 30). Listed in merge notes — it is a shared file.
+8. **The ground fixture was designed and deliberately NOT shipped.** It is the best remaining one — the hazard band
+   and the centre ring *are* the "road stripe or kerb line" the lead named, they already exist, and the hook is four
+   uniforms and one line. But the ground plane is **the largest fragment area in the game**, its include is shared by
+   three shader variants across three quality tiers, and builder0 went off the network before a paired measurement
+   could be run. **Shipping the one fixture that cannot be measured, on the night the measuring machine died, is the
+   exact mistake rule 3 exists to prevent.** It is the first thing to build when builder0 is back, and it should land
+   with its own paired `perf-scene` rather than bundled with anything.
 
 ### What this found, and none of it was visible by eye
 
@@ -346,32 +353,62 @@ patches, cues — is data.
 
 ### Blocked / pending
 
-- **THE LEAD GATE: the before/after frame strip at his pose (21 deg, FOV 35, 49 m) on `terminus` and `yard`.**
-  `make remote T=show-frames` is written and shoots the idle at three moments plus one frame per cue (FIGHT,
-  battle, last stand, victory) and a kill caught mid-ripple, at the wide pose and in the Terminus street. **Waiting
-  on builder0**, which had three streams' full checks resident for over an hour on what turned out to be a
-  hard-coded 3 slots (the orchestrator has since raised it to 6). The BEFORE `perf-scene` ran at the branch point
-  and is recorded below; the AFTER and the strip follow on the same machine and seed.
-- **Shader compilation is not yet proven.** Headless Godot uses a dummy renderer and compiles no shaders, so the
-  five fixture shaders have been parse-checked but not *compiled*. The first builder0 run with a display is what
-  proves them; treat any claim about the look as unverified until then.
+**Everything outstanding is behind one thing: builder0 went off the network at ~02:47** (`ssh: No route to host`,
+100% packet loss, confirmed over three attempts). It is every stream's build machine; the orchestrator has told all
+eight to hold remote runs.
+
+1. **THE LEAD GATE — the frame strip. Shot once, found to be wrong, and being re-shot.** The first run produced
+   **30 frames, terminus and yard, at his pose, `shader errors 0`** — and reading their own reported channel values
+   showed the three "idle breathe" frames were taken with the **FIGHT cue still running** (it holds 5 s from arena
+   load; the warmup is 3), each one printing `"mood":"fight"`. The lead would have judged the ambience by looking at
+   the loudest cue in the book. Fixed at `685df1f2`; the re-run is ~6 minutes whenever the machine is back.
+   *The first strip was also only half copied back — `rsync` died mid-transfer with the machine and the wrapper
+   correctly said `local build/ is STALE`. 15 of 30 frames had arrived. The partial set was deleted rather than
+   kept, because a half-strip is exactly the artefact that gets read as a whole one.*
+2. **The paired perf control.** `make show-perf-pair` runs `perf-scene` with `--no-show` and then without it, back to
+   back **in one slot** — same binary, same import cache, same machine, minutes apart. Written and committed;
+   never run.
+3. **A full `make remote T=check`.** Running **locally** instead while builder0 is down (started 02:48 at
+   `685df1f2`); it is the gating artefact and the laptop can produce it, slower.
+4. **The ground fixture** — designed, deliberately not built. See *Decided overnight* #8.
 
 ### Measurements
 
-**BEFORE, builder0 (Mesa Intel Iris Xe, RPL-U), `e3501ef9`, `make perf-scene PERF_NAME=show-before-terminus
-PERF_RES=1920x1080 PERF_FLAGS=--arena=terminus`:**
+**BEFORE, builder0 (Mesa Intel Iris Xe RPL-U), branch point `e3501ef9`, terminus, 1920×1080, seed 3:**
+`all_avg 15.56 ms`, `all_gpu 6.27 ms`, `all_p95 27.45 ms`, holds 30 fps at **53 vehicles**, arena layer
+**1.42 ms GPU**, **instance-uniform errors 0**, other engine errors 0.
 
-| | |
-|---|---|
-| `all_avg_ms` / `all_gpu_ms` / `all_p95_ms` | **15.56 / 6.27 / 27.45** |
-| holds 30 fps at | **53 vehicles** (60 fps at 44) |
-| arena layer cost | **1.42 ms GPU**, 0.40 ms CPU |
-| glow layer cost | 0.46 ms GPU |
-| **instance-uniform errors** | **0** |
-| **other engine errors** | **0** |
+**AFTER, builder0, `e5c8678f`, same arena, resolution and seed:** `all_avg 26.69 ms`, `all_gpu 8.25 ms`,
+`all_p95 43.36 ms`, holds 30 fps at 33 vehicles, arena layer 4.07 ms GPU, **instance-uniform errors 0**, other
+engine errors 0.
 
-builder0's Iris Xe is ~2.3x the laptop's GPU and ~2.75x its CPU, so this is **not** a number about the game the lead
-plays. The honest quantity is the **delta** between this run and the AFTER on the same machine, tree and seed.
+**⚠ DO NOT READ A DELTA FROM THOSE TWO ROWS. The machine was not the same machine.** builder0 went from 4
+concurrent heavy runs to 8+ between them. The tell is that **every layer cost roughly tripled, including layers the
+show does not touch**: `no_hud` 0.43 → 2.14 ms GPU (×5), `no_pool_lights` 0.39 → 3.47 (×9), `no_underglow`
+0.55 → 1.41 (×2.6). A lighting change that made the HUD five times more expensive would be a remarkable lighting
+change.
+
+**What IS honest, because it is a count rather than a time** (median over the 17 all-phase samples in each run):
+
+| | BEFORE `e3501ef9` | AFTER `e5c8678f` | reading |
+|---|---|---|---|
+| **real lights** | **4** (1–5) | **4** (1–5) | **identical: zero added real lights** |
+| **instance-uniform errors** | **0** | **0** | the shader-instance ceiling did not move |
+| **other engine errors** | **0** | **0** | **the five fixture shaders compile on a real GL context** |
+| draw calls | 260 (197–324) | 273 (218–322) | +13 on heavily overlapping ranges — fight variance, not geometry |
+| GPU ms | 6.1 | 6.5 | +0.4 ms **while the CPU side went +62% under load: an upper bound, not a measurement** |
+
+The GPU row is the informative one. The show is a GPU-side change; GPU median moved **6%** while `avg_ms` median
+moved **62%**. On a machine that much busier, +0.4 ms GPU is a ceiling on the cost rather than the cost.
+
+**Frames, builder0, `cb167f69`, 1920×1080, terminus and yard:** 30 rendered, **`shader errors 0` on both arenas.**
+That is the claim headless could never make — headless Godot uses a dummy renderer and compiles no shaders, so until
+this run every "the defaults reproduce today's look" statement rested on parse checks and on a test that reads the
+uniform *declarations*. The `#include`, the `pow` clamp and five sets of `show_*` uniforms are real.
+
+**Local, laptop, `685df1f2`:** 74 passed, 0 failed on `--filter=show` — **43 test methods, every one confirmed
+present in the run output rather than assumed** (trip-up 73). arena 79/0, fx 111/0, theme 39/0, crowd 16/0. All
+touched files parse-checked clean, none of them in metrics' baselined set of 8 known lines.
 
 ### Requests to other streams
 

@@ -387,11 +387,31 @@ Everything below is **already drawn**. None of it needs a new draw call; what is
 | **Tower beams** | `beams` / `level` | `_build_tower` `arena_dressing.gd:521-576`. `CyberMaterials.beam()` caches on (colour, energy) exactly as `neon()` does on its triple, and `beam_material()` is its only caller in the game — a test fails if a second one appears. Phase is the lamp's angle round the venue, so four corner towers rise in sequence | **yes** |
 | **The kit's signs and pools** | `signs` / `pools` | `kit_yard.gd` builds its own MultiMesh per kind on the same two shaders, so the kit's props and the dressing's breathe as **one venue** rather than two | **yes** |
 | **Ad screens and their spill** | — | `ad_broadcast.gd`, `ad_spill.gdshader` | **read, never written** (§5) |
-| **The ground hazard band** | `ground` / `level` | `arena_ground.gdshaderinc`, `flood_map` | stretch |
+| **The ground hazard band and the centre ring** | `ground` / `level` | `arena_ground.gdshaderinc:81-95`. **This is the "road stripe or kerb line" the lead named, and it already exists** — the band inside the walls and the ring around the centre are the arena's floor markings. The hook is one emissive term on `painted`, phase from `atan(p.y, p.x)` so a sweep travels round the band | **stretch, deliberately NOT shipped tonight — see below** |
 | **The Syndicate airship's screen** | `airship` | feel builds it | stretch, when it exists |
 | **A road stripe / the plaza kerb** | `road` | does not exist yet | stretch — **the proof that the abstraction generalises: a patch, not new code** |
 
 ---
+
+### The one fixture that was designed and deliberately not shipped
+
+**The ground.** It is the best remaining fixture — it is the non-building, non-wall case that proves the abstraction
+generalises, it needs no new geometry, and the surfaces are already there. The hook is four uniforms and one line:
+
+```glsl
+EMISSION += mix(hazard_yellow, show_color, show_color_mix) * painted * show_value(show_level, atan(p.y, p.x) * show_spread);
+```
+with `show_level` defaulting to `(0, 0, 0, 1)` — off, because the paint has no emission today.
+
+**It was not shipped, and the reason is the reason, not the clock.** The ground plane is **the largest fragment area
+in the game**, the include is shared by *three* shader variants (`arena_ground`, `_lite`, `_unlit`) across three
+quality tiers, and it is feel's core surface. It is therefore the single place where adding a per-fragment term
+without a before/after measurement is most likely to cost frame time — and builder0 went off the network before the
+paired control could be run. **Shipping the one fixture that cannot be measured, on the night the measuring machine
+died, would be the exact mistake this document's rule 3 exists to prevent.**
+
+It is the first thing to build when builder0 is back, and it should land with its own paired `perf-scene`, not
+bundled with anything else.
 
 ## 9. How this is measured
 
@@ -405,7 +425,23 @@ Everything below is **already drawn**. None of it needs a new draw call; what is
 | it is beautiful | **a human. There is no other check** (lesson 19). Frames go to the orchestrator the day they exist, not at the end of the round |
 
 **Every number carries its commit and its machine.** builder0's Iris Xe is ~2.3× the laptop's GPU and ~2.75× its CPU,
-so a builder0 number is not a number about the game the lead plays — but a builder0 *delta* between two runs on the
-same tree is honest, and that is what the before/after is for.
+so a builder0 number is not a number about the game the lead plays.
+
+**⚠ And "the same machine" means the same machine AT THE SAME LOAD.** A before/after an hour apart on a shared
+builder is not a paired measurement: on 2026-09-20 the two runs straddled builder0 going from 4 concurrent heavy
+runs to 8+, and **every layer cost roughly tripled, including layers the show does not touch** — `no_hud` ×5,
+`no_pool_lights` ×9. The delta was unusable and reported as such rather than as a regression.
+
+**The control that works on a loaded machine is `--no-show`** (`make show-perf-pair`): `Show.get_instance()` returns
+null, no fixture registers, every material keeps its shader defaults — and those defaults *are* the identity — so
+the venue renders exactly as it did before the show existed, on the **same binary, the same import cache and the
+same machine, minutes apart in one slot**. Contention drifts slowly relative to a pair, so the paired delta survives
+what an absolute number does not. This is orchestration.md lesson 22 in a new place: **a control that cancels the
+cause, not more seeds.**
+
+**What survives a bad machine, and what to lean on when the timing does not:** counts. Real lights, draw calls,
+`instance_buffer_pos`, the *"Too many instances using shader instance variables"* count, and whether the shaders
+compiled at all. On the contaminated pair above, *real lights was identical and both error counts were zero* —
+which is most of rule 3, proven, on a run whose milliseconds were worthless.
 
 The lead's pose, for every frame: **21° pitch, FOV 35, 49 m.** Not 12° — that is the camera he played and rejected.
