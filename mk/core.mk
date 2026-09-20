@@ -384,7 +384,8 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 		TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel || true; \
 	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)" >&2; \
 	$(MAKE) --no-print-directory check-hashes >&2 || true; \
-	if tools/check_verdict.sh $(BUILD_DIR)/check $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
+	if CHECK_VERDICT_CONTEXT="test x$(TEST_SHARDS), lint -P$(LINT_JOBS), $(CHECK_JOBS) at once, $$(hostname)" \
+		tools/check_verdict.sh $(BUILD_DIR)/check $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
 	exit $$status
 
 # The hash verdict, in ONE comparable line. It exists because `determinism`'s own line truncates its JSON at 120
