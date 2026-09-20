@@ -808,6 +808,40 @@ friend 0.
 `run` (the A/B control for round 7's standoff), and it does not change `COMMIT_BONUS`'s value — combat's A2 replaces
 that expression at level 5 under contract S5.
 
+### ⚠ THE CORRIDOR FIX IS A MEASURED NULL — and hypothesis 3 was wrong too. All three are now dead.
+
+The orchestrator asked for it built tonight against a falsifier written first; nav raised the concern, it was
+reaffirmed, and it was built. **It fails its own falsifier outright and has been reverted with its switch**, which is
+round 8's precedent for a null (flow fields, the gear-change cost, the target-switch floor).
+
+Same defile, both arms, one binary (`--nav-off=corridor` against the default):
+
+| | corridor OFF | corridor ON |
+|---|---|---|
+| artillery arrives | **no** | **no** |
+| dispersion | 40.57 s | **40.57 s** |
+| every arrival time | ifv 43.77 / lancer 66.9 / burner 60.37 / scout 26.33 | **identical** |
+| `orca_deflected / orca_solved` | 1296 / 2249 | **1296 / 2249** |
+| `corridor_refusals` / `corridor_rescues` | **2** / 0 | 0 / **2** |
+
+**The mechanism fires TWICE in a 70 s run.** Every one of the orchestrator's pre-registered bars — the artillery
+arrives, dispersion drops, `deflected/solved` falls — is unmoved.
+
+**And that kills hypothesis 3 as nav stated it, which is the real correction.** nav read `Avoidance.deflected` at
+58 % as *"the navmesh refusal is firing constantly"*. It is not. **`deflected` counts ORCA SHAPING the velocity —
+its actual job — and does not count the refusal at all.** The refusal has its own count and it is **2**. Two
+quantities, one name, and nav built a mechanism on the wrong one. *A counter's name is not its definition.*
+
+**So all three pre-registered hypotheses are dead and the cause of the defile failure is still unknown.** That is
+the honest state, and it is a better one than a shipped fix that changes nothing.
+
+**What survives, and it is the half the orchestrator was right to insist on: the regime now has a name.**
+`wedged_units` = **8** in both arms — a mover whose avoidance shaped it on more than half of a 2 s window while its
+net displacement stayed under its own hull length. `Movement.state()` reports `wedged` as a **field, deliberately
+not a new `phase` value**, because consumers branch on `phase` and a new value there would silently change every one
+of those branches. **The mechanism was a null; the instrument fires.** Next investigation starts from a signal
+instead of from three stories.
+
 ### DEFILE MEASURED: it is ORCA. Both of nav's favoured hypotheses are DEAD, including the orchestrator's bet
 
 **Run on squad's tree** (their `game/tactics/`, `tank_brain.gd`, `element_feed.gd` and probe taken for measurement
