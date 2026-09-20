@@ -12,8 +12,10 @@ extends RefCounted
 ##
 ## Branicky (1998) and Liberzon (2003) give the principled form: a switched system is stable when each switch pays a
 ## cost related to the energy that switch destroys. So permit i -> j only when utility(j) - utility(i) exceeds the
-## physical work the crew throws away — the velocity it must shed to stop serving the old fight, plus the time to lay
-## the gun on the new one. Every term comes from the vehicle's own `Units.PROFILES` entry, so the roster prices itself
+## physical work the crew throws away — the velocity it must shed to stop serving the old fight, the time to swing the
+## gun onto the new bearing, and the lay already invested in the target it is abandoning (N5's gate 2, and the term the
+## catalogue's "braking plus slew" misses: without it a stopped turret swapping between two targets on the same
+## bearing pays nothing at all). Every term comes from the vehicle's own `Units.PROFILES` entry, so the roster prices itself
 ## and there is nothing to tune per class. A scout switching 10 degrees pays almost nothing; a war rig shedding 12 m/s
 ## and slewing 140 degrees pays a lot.
 ##
@@ -102,8 +104,11 @@ static func context(s: Dictionary, current: Dictionary) -> Dictionary:
 		"speed": velocity.length(),
 		"positions": positions,
 		"from_option": String(current.get("option", "")) if not current.is_empty() else "",
+		"from_target": from_target,
 		"from_dir": _bearing(me["position"], positions.get(from_target), forward),
 		"consulted": not current.is_empty(),
+		# The lay already invested in the current target, thrown away by pointing the gun at a different one.
+		"lay_s": _lay_discarded(me, positions.get(from_target)),
 		# The vehicle's own physics. Missing keys read as the defaults a hull without them behaves like.
 		"turret_deg_s": maxf(float(profile.get("turret_turn_rate_deg", 360.0)), 1.0),
 		"hull_deg_s": maxf(float(profile.get("hull_turn_rate_deg", 90.0)), 1.0),
@@ -118,14 +123,43 @@ static func context(s: Dictionary, current: Dictionary) -> Dictionary:
 	return ctx
 
 
+## N5's gate 2 is the other work a switch destroys, and the one the catalogue's "braking plus slew" misses: a crew
+## must HOLD a contact for `Engagement.acquire_seconds` before its first round leaves the barrel, and pointing the gun
+## at a different target throws that away. Without it a stopped turret swapping between two targets on the same
+## bearing pays literally nothing, which is the near-equal flip-flop the commitment bonus existed to stop.
+##
+## Deliberately BACKWARD-looking — the lay invested in the CURRENT target, not the time to acquire the next one. Two
+## reasons. It is the honest reading of "the energy this switch destroys"; and a crew with no current target discards
+## nothing, so taking up a fresh contact is never made slower. Reaction latency to a new contact is an acceptance
+## criterion of this round and a forward-looking term would have quietly spent it.
+##
+## The shape is `Engagement.acquire_seconds`'s own (`engagement.gd:133`) with the terms that belong to the MOMENT
+## rather than to the switch left out: the crossing-rate and designator scales are properties of the target you are
+## moving to, not of the investment you are abandoning.
+static func _lay_discarded(me: Dictionary, target_position: Variant) -> float:
+	if target_position == null:
+		return 0.0
+	var sight := maxf(float(me.get("sight_radius", 120.0)), 1.0)
+	var reach := clampf((me["position"] as Vector3).distance_to(target_position as Vector3) / sight, 0.0, 1.0)
+	var seconds := lerpf(Engagement.ACQUIRE_NEAR_SECONDS, Engagement.ACQUIRE_FAR_SECONDS, reach)
+	seconds *= 1.0 + Engagement.SUPPRESSION_ACQUIRE_PENALTY * clampf(float(me.get("suppression", 0.0)), 0.0, 1.0)
+	if String(me.get("class", "tank")) == "scout":
+		seconds *= Engagement.SCOUT_ACQUIRE_SCALE
+	return seconds
+
+
 ## The seconds of work the crew discards by taking `option` on `target` instead of what it is doing now.
-## Two terms, both from the vehicle's profile:
+## Three terms, the first two from the vehicle's profile and the third from N5's engagement gate:
 ##   slew    getting the gun onto the new bearing. A turret swings on its own ring; a fixed gun comes round with the
 ##           hull, and on wheels the hull cannot pivot, so it drives an arc of its own minimum radius.
 ##   brake   the velocity that no longer serves. v*(1-cos) is 0 straight ahead, v at a right angle, 2v for a reversal
 ##           (shed it, then build it again the other way), which is the 1/2 m v^2 shape without needing a mass.
+##   lay     the acquisition already invested in the target being abandoned (see _lay_discarded). Charged only when the
+##           TARGET changes; without it a halted turret swapping between two targets on one bearing pays nothing.
 ## An option change on the SAME target still discards the velocity in flight, because engaging, suppressing and
 ## orbiting drive to different places; that floor is what keeps ENGAGE <-> SUPPRESS thrash priced at all.
+## Monotone in all three over its whole range, and unbounded — the ceiling lives in penalty(), not here, so this stays
+## safe to use as a priority level elsewhere (lesson 153).
 static func seconds_for(ctx: Dictionary, option: String, target: String) -> float:
 	if not bool(ctx["consulted"]) or FREE.has(option):
 		return 0.0
@@ -145,7 +179,10 @@ static func seconds_for(ctx: Dictionary, option: String, target: String) -> floa
 	var lost := speed * (1.0 - cosine)
 	if String(ctx["from_option"]) != option:
 		lost = maxf(lost, speed)
-	return slew_s + lost / float(ctx["braking"])
+	# The gun's lay goes only when the gun is pointed somewhere else. ORBIT or SUPPRESS on the target this crew is
+	# already laid on keeps it, which is why a stance change pays the velocity and not the acquisition.
+	var lay := float(ctx["lay_s"]) if target != String(ctx["from_target"]) else 0.0
+	return slew_s + lost / float(ctx["braking"]) + lay
 
 
 ## That work as a price in the scorer's own units, capped so it can never become a veto.

@@ -105,6 +105,33 @@ func test_the_cost_separates_hull_classes_at_the_seam() -> void:
 			float(rig["max_cost_s"]), float(rod["max_cost_s"])])
 
 
+## Lesson 153 (nav's A7 leash clamped at LEASH_FALLOFF, every far candidate tied at 1.0, and the level ranked nothing):
+## every cost that can saturate must still rank what it prices. The penalty is capped — that is the veto guard — but
+## the cap is an equal offset, so two candidates beyond it keep their own order, and the subtraction is deliberately
+## NOT floored at zero, because a floor is the saturation that would tie them.
+func test_two_candidates_beyond_the_cap_still_rank_by_utility() -> void:
+	var s := _situation("gang_tank", 12.0, [_enemy("Rust_A_1", Vector3(0, 0, -30)),
+			_enemy("Rust_A_2", Vector3(0, 0, 35)), _enemy("Rust_A_3", Vector3(4, 0, 40))])
+	var ctx := SwitchingCost.context(s, {"option": "ENGAGE", "target": "Rust_A_1", "since": 0})
+	var second := SwitchingCost.penalty(ctx, "ENGAGE", "Rust_A_2")
+	var third := SwitchingCost.penalty(ctx, "ENGAGE", "Rust_A_3")
+	assert_eq(second, SwitchingCost.MAX_PENALTY, "both are reversals at speed, so both are at the cap")
+	assert_eq(third, SwitchingCost.MAX_PENALTY, "both are reversals at speed, so both are at the cap")
+	# Equal offsets: whatever the scorer made of these two before, it still makes of them after. What must NOT happen
+	# is the two arriving at the same number, which is what a floor at zero would have done to them.
+	var decision: Dictionary = TankBrain.decide(s, {"option": "ENGAGE", "target": "Rust_A_1", "since": 0})
+	var ranked: Array = decision["ranked"]
+	print("MEASURE switch_cap_ranking both priced at the cap (%.3f); top 3 %s" % [SwitchingCost.MAX_PENALTY, ranked])
+	var seen := {}
+	for entry: Dictionary in ranked:
+		var key := "%s %s" % [entry["option"], entry["target"]]
+		assert_true(not seen.has(key), "no option appears twice in the ranking")
+		seen[key] = float(entry["score"])
+	for i in ranked.size() - 1:
+		assert_true(float(ranked[i]["score"]) >= float(ranked[i + 1]["score"]),
+				"the ranking is still ordered past the cap (%s)" % [ranked])
+
+
 ## The control arm of every A/B: the cost off, the code path intact, and the counter still reporting what it WOULD
 ## have charged — so a null result can be told apart from a mechanism that never ran.
 func test_the_control_arm_still_reports_what_it_would_have_charged() -> void:

@@ -1212,8 +1212,12 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				if candidate["option"] == current["option"] and candidate["target"] == current["target"]:
 					committed = candidate
 				elif not SwitchingCost.never_charged(String(candidate["option"])):
-					candidate["score"] = maxf(candidate["score"]
-							- SwitchingCost.penalty(switch_ctx, String(candidate["option"]), String(candidate["target"])), 0.0)
+					# NOT clamped at zero (lesson 153): a floor is a saturation, and two candidates both priced below it
+					# would tie at 0.0 and be decided by their order in the array. The price is a plain subtraction, so
+					# the ranking stays meaningful however expensive the switch. Nothing downstream reads a raw score
+					# except `_top`, which only sorts.
+					candidate["score"] = float(candidate["score"]) \
+							- SwitchingCost.penalty(switch_ctx, String(candidate["option"]), String(candidate["target"]))
 	var best: Dictionary = candidates[0]
 	for candidate in candidates:
 		if candidate["score"] > best["score"]:
