@@ -126,6 +126,15 @@ mk() { mkdir -p "$1" && cd "$1" && $G init -q . && echo a > f && $G add f && $G 
   out=$(bash "$rs" --no-remote 2>&1)
   grep -q 'main-checked .*: 1516 passed, 2 failed (spawn test, drain-guard budget)' <<<"$out" ) \
 	&& ok "an annotated tag: its verdict is printed verbatim" || bad "annotated tag prints its verdict"
+# On an annotated tag `rev-parse <tag>` returns the TAG OBJECT's id, not the commit's. The tool printed
+# one where the other belonged -- two ids for one thing, in the line a reader uses to look it up.
+( cd "$tmp/r1"
+  want=$($G rev-parse --short main-checked^{commit})
+  tagobj=$($G rev-parse --short main-checked)
+  out=$(bash "$rs" --no-remote 2>&1)
+  [ "$want" != "$tagobj" ] && grep -q "main-checked $want:" <<<"$out" && ! grep -q "main-checked $tagobj:" <<<"$out" ) \
+	&& ok "an annotated tag: the COMMIT id is printed, not the tag object's" \
+	|| bad "annotated tag prints the commit id, not the tag object's"
 ( cd "$tmp/r1"
   out=$(bash "$rs" --no-remote 2>&1)
   grep -qi 'green' <<<"$out" ) \

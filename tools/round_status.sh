@@ -44,7 +44,12 @@ main_tip=$(git -C "$main_root" rev-parse --short main 2>/dev/null || echo "?")
 # `main-checked` (lesson 190) marks the last commit on main that a full check actually passed. Knowing how
 # far main has moved PAST it is the difference between "main is green" and "main was green 49 commits ago",
 # and the two get said the same way in conversation.
-checked=$(git -C "$main_root" rev-parse --short main-checked 2>/dev/null || true)
+# `^{commit}`, and it is not decoration: on an ANNOTATED tag `rev-parse main-checked` returns the TAG
+# OBJECT's id, not the commit's. This printed `f4d327b8` where the orchestrator had just said `0ad28f49`
+# -- two ids for one thing, in the line a reader uses to look it up. Annotating the tag was the fix I asked
+# for, and it silently changed what this expression means: the same shape as make expanding `$` before my
+# shell quoting, one layer up from where I was looking.
+checked=$(git -C "$main_root" rev-parse --short main-checked^{commit} 2>/dev/null || true)
 # THE TAG SAYS A CHECK RAN. It does not say the check PASSED -- the one on `0ad28f49` read 1516 passed,
 # 2 failed. So the verdict is printed beside it, or its absence is, and the word "green" appears nowhere.
 #
@@ -94,7 +99,7 @@ git -C "$main_root" worktree list --porcelain 2>/dev/null \
 		if [ -n "$checked" ] && [ "$branch" != main ]; then
 			mb=$(git -C "$main_root" merge-base main "$branch" 2>/dev/null || true)
 			if [ -z "$mb" ]; then base="?"
-			elif git -C "$main_root" merge-base --is-ancestor "$mb" main-checked 2>/dev/null; then base="yes"
+			elif git -C "$main_root" merge-base --is-ancestor "$mb" main-checked^{commit} 2>/dev/null; then base="yes"
 			else base="NO"; fi
 		fi
 		printf '%-16s %-16s %-9s %-12s %-6s %-7s %s\n' "$(basename "$dir")" "$branch" "$tip" "${ba:-?}" "$dirty" "$base" "$subject"
