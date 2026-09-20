@@ -235,7 +235,11 @@ _CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
 # reports every minute, on stderr, unbuffered: how long, how many done, and WHICH targets are still outstanding.
 # It reads marker files the wrappers touch, so it cannot disagree with what make actually finished.
 check: ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
-	@echo ">> check: $(words $(CHECK_TARGETS)) targets, up to $(CHECK_JOBS) at once (lint -P$(LINT_JOBS)) on $$(hostname)"
+	@printf '>> check: %s targets, up to %s at once (lint -P%s, test x%s) on %s | commit %s | load %s | MemAvailable %s MB | %s other godot\n' \
+		"$(words $(CHECK_TARGETS))" "$(CHECK_JOBS)" "$(LINT_JOBS)" "$(TEST_SHARDS)" "$$(hostname)" \
+		"$$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})" \
+		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(awk '/MemAvailable/{print int($$2/1024)}' /proc/meminfo)" \
+		"$$(pgrep -c -f 'Godot_v' || echo 0)"
 	@rm -rf $(BUILD_DIR)/check/done && mkdir -p $(BUILD_DIR)/check/done
 	@started=$$(date +%s); \
 	( while sleep 60; do \
