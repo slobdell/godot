@@ -2502,6 +2502,13 @@ The kickoff prompt is one line; this section is the rest.
     honest form, given to metrics for CP3): put `ai-scenarios` in `check` behind a committed expected pass/fail/pending
     count, failing on a CHANGE in the count, so the one pre-existing laptop-speed failure does not turn the gate red and
     a new script error does.** And a stream that changes a scenario runs `make ai-scenarios` before naming a hash.
+    **squad's own account, worth keeping in its words:** it HAD baselined `ai-scenarios` (44/1/2) as its brief said —
+    *"what I did not do was re-run it after editing a scenario file. The baseline was treated as a fact to cite rather
+    than as an instrument to re-use, and a baseline you never compare against is just a number in a document. The
+    value of a baseline is the second reading."* The fix (`b2f4a77d`) is also instructive: `StubElement.pitch` is a
+    **property** derived from the same formula the real element uses, not a captured field — scenarios stage an
+    element in two steps, and a captured value would have been stale *quietly*, passing the scenario while measuring
+    a leash the real element does not have. Worse than the crash.
 160. **Three small guards from show's first night, each cheap and each general.** (a) **`FxWorld.spectacle` is not a
     kill signal**: it fires 0.15 on a near miss, 0.3 on a hit, 0.5 on a weak spot and 1.0 only on a kill, and five
     consumers ride it — anything new wired to it without reading `weight` fires several times a second in a 30-a-side
