@@ -621,6 +621,23 @@ hand-written inverse of the plant cannot see it (the first lattice promised 3.53
 and **the window is over the CONTROL PERIOD, not one tick** — a one-tick window offered a tracked hull 21° of heading
 change over a 2 s arc when it can swing 160°.
 
+### squad reached the same conclusion from the other end, which makes it round 10's first item
+
+nav found it by measuring: `CombatMotion` decides under a tenth of a hull's ticks, `Movement` drives the rest, and
+`Movement` has no leash. **squad found the same wall from A8's side**: their affine deformation, measured on the
+maze gap, made a wheeled wedge **FAIL a defile it passes without it — 0/5 arrived against 4/5** — and they switched
+it off, because *a slot layout is the wrong place to express intent the mover cannot see.*
+
+Two streams, two mechanisms, one conclusion: **the formation's intent has to reach `Movement`'s goal selection, not
+just the layer above it.** Recorded as round 10's first candidate rather than attempted by either of us at the end
+of a night.
+
+**And one case that is squarely nav's**, from squad's A9: co-arrival dispersion is **1.23 s for tracked hulls and
+41.4 s for wheeled**, same gap, same doctrine. Co-arrival paces off top speed and route ETA; what makes a wheeled
+hull late is its **turning circle and its gear changes** — A11's lattice and A4's curvature are exactly that
+territory, and squad is sending the per-vehicle arrival times and the name of the last vehicle so it is a named case
+rather than an aggregate.
+
 ### ⚠ THE LEASH IS NOT IN THE ROUTE PATH — why A7's drift did not improve, measured four ways
 
 squad's leash now reaches attacking roles (`6e0c9968` + `b2f4a77d`, cherry-picked for measurement only and dropped
