@@ -190,6 +190,107 @@ by reading the code.
 
 ---
 
+## 4b. Recipes: how to actually add one
+
+The lead asked for the abstractions by name, and §1–§4 are the abstractions. This section is the other half — **what
+you type.** Each recipe is the whole change; if you find yourself writing more than this, the thing you are adding
+probably is not a cue or a fixture.
+
+### Add a cue — ten lines, all of them data
+
+A cue is channel overrides bound to a mood state. It goes in `game/theme/show/cues.json`; **no code changes, no new
+file, and it applies to every arena that declares a channel by that name.** To make the venue surge when the match
+tips into `battle`:
+
+```json
+"battle": {
+  "attack": 1.2,
+  "release": 2.5,
+  "set": {
+    "rim":     {"programme": "chase",  "period": 5.5, "floor": 0.70, "ceiling": 1.25},
+    "edges":   {"programme": "sweep",  "period": 7.0, "floor": 0.30, "ceiling": 1.00},
+    "windows": {"period": 11.0}
+  }
+}
+```
+
+That is it. Things worth knowing before you write one:
+
+- **The key must be a `MatchMood` state** (`lull`, `skirmish`, `battle`, `last_stand`, `victory`, `defeat`) or the
+  pseudo-state `fight`. A typo is a **load error naming the states you could have meant**, not a cue that never
+  fires — which is the failure this validator exists to prevent.
+- **Anything you do not mention is left alone.** `{"period": 11.0}` changes the tempo and nothing else.
+- **You cannot escape the arena's floor and ceiling.** `ShowCues.blend()` clamps every override into the band the
+  patch declared, so no cue can take a core fixture dark or to full blast. Ask for `"ceiling": 9.0` and you get the
+  patch's ceiling.
+- **`attack` and `release` are seconds**, and they are why cues do not pop. A period change *retunes* the clock
+  rather than recomputing it, so a 24 s breathe becoming a 1.6 s strobe changes rate without tearing.
+- **A cue may run faster than a patch may** (down to 0.8 s): rule 10 governs the idle, not a stab of strobe.
+- **`"color": "winner"`** is the one team-coloured thing in the venue and resolves at runtime. A hex here would be a
+  venue colour and must obey §8b's bars: **no cool white, no red.**
+
+**An event cue** is the same shape under `"events"`, and its `min_weight` is load-bearing: `FxWorld.spectacle` fires
+on every *hit*, so `1.0` means kills only. See §8b.
+
+### Add a fixture — three steps, and step 1 is usually the only real work
+
+A fixture is any emissive surface already being drawn. **Adding one must not add a draw call, a mesh or a light** —
+if it does, it is not a fixture.
+
+**1. Give the shader the hook.** Include the one waveform and declare the uniforms with **identity defaults**, so
+the surface renders exactly as it does today until something patches it:
+
+```glsl
+#include "res://game/theme/fx/shaders/show.gdshaderinc"
+uniform vec4  show_level      = vec4(1.0, 0.0, 0.0, 1.0);   // SHOW_IDENTITY: a constant 1.0
+uniform float show_spread     = 0.0;                        // per-instance phase scale
+uniform vec3  show_color      : source_color = vec3(1.0);
+uniform float show_color_mix  = 0.0;
+
+// ...then multiply what the surface already emits:
+ALBEDO = mix(color, show_color, show_color_mix) * ... * show_value(show_level, phase);
+```
+
+**`phase` must come from data the mesh already carries** — a per-instance `INSTANCE_CUSTOM` lane, a vertex colour,
+or world position. Never a uniform per instance, and never a new MultiMesh to get variation (§2 rule 2). If you are
+*adding* a term rather than modulating one (as the blocks' parapet does), its identity is `SHOW_OFF`, not
+`SHOW_IDENTITY`, and it adds to `EMISSION` rather than multiplying.
+
+**2. Register the driven object — once per material, never once per instance:**
+
+```gdscript
+var show := Show.get_instance()   # null on a headless peer, and that is fine
+if show != null:
+    show.add_fixture(&"my_fixture", material)
+```
+
+**3. Patch it** in `arenas/<name>.json`, which is the only place a fixture is switched on:
+
+```json
+{"fixture": "my_fixture", "parameter": "level", "channel": "rim", "spread": 1.0}
+```
+
+Then `make show-report ARENA=<name>` prints what it resolved to, and `make show-frames` shoots it and **fails if it
+makes the fight harder to read**.
+
+### Add a new *parameter* (rarely)
+
+`level`, `edge`, `window` and `shop` cover a modulator and an additive term. A genuinely new one is a row in
+`Show.UNIFORMS`, a uniform named `show_<parameter>`, and a decision about its identity — and if it drives a surface
+that is lit **today**, add it to `Show.CORE_PARAMETERS` so the validator refuses a patch that would let it go dark.
+
+### What to do when it does not show up
+
+| symptom | first thing to check |
+|---|---|
+| nothing moves | is the fixture in the arena's `patch`? `make show-report ARENA=<name>` lists every binding |
+| nothing moves, and the report looks right | did anything call `add_fixture`? Headless returns a null `Show` by design |
+| it moves but every instance together | `spread` is 0, or the shader is not using its per-instance `phase` |
+| the cue never fires | the state name — a typo is a load error, so read the error rather than the frame |
+| it looks wrong and you cannot say why | `make show-frames` prints every channel's live value beside each frame (lesson 44) |
+
+---
+
 ## 5. Ownership: who writes what
 
 Two writers to one perceived quantity look like flicker nobody can reproduce. Each row below has exactly one writer.

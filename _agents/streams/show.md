@@ -269,6 +269,10 @@ _2026-09-20, overnight. Branch `stream/show`, `main` merged clean twice (CP1, th
 
 ## FOR THE LEAD, FIRST
 
+> **The dials are on their own page: [`_agents/show_dials.md`](../show_dials.md)** — four dials in his terms, what
+> each does to the picture, and the frame or clip to look at while deciding. This section is the summary; that page
+> is the conversation.
+
 **Watch the clips before the stills.** `build/show/clips/` — five 6-second clips of the Terminus at your pose:
 `terminus_lull`, `terminus_battle`, `terminus_last_stand`, `terminus_victory`, `terminus_kill`. **The stills
 understate it**, because what the show does is *breathe*, and a still cannot show breathing. Then
