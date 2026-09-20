@@ -2819,6 +2819,10 @@ The kickoff prompt is one line; this section is the rest.
     10 fps), so on-vs-off read as the same swing twice and the strobe looked like it did not read. 30 fps, four
     frames per stab, what the player sees. **An arm that cannot be shown to differ from its control looks exactly
     like a null result; before believing the null, ask whether the instrument could have seen the difference.**
+    **Eighth (feel, 17:05):** the lamp-verdict frame was shot with `size-look`, which frames the spawn at the arena's
+    rim; the nearest of the six new lamps was 72 m out of shot, and the floor looking identical to the baseline
+    would have read as "the lamps do nothing". Arena-lighting verdicts come from a bench that frames the arena
+    centre (`crowd-look`, show off). **Before reading a frame, check the subject is in it.**
 186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
     Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
     the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
