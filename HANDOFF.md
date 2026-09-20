@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-20 08:30. **Round 9's overnight run: fifteen branches and all three checkpoints merged; `main` verified green at `0808834e`, CP2 + CP3 above it await one `main` check (builder0 dropped at 08:27). Read the morning summary first.**_
+_Last updated: 2026-09-20 08:52. **Round 9's overnight run: sixteen branches and all three checkpoints merged. `main` is RED on ONE test at `b008a277` (a CP2 composition failure, scale's first item); the last fully green `main` is `0808834e`. Read the morning summary first.**_
 
 ## ☀ THE MORNING AFTER ROUND 9's NIGHT — read this first (2026-09-20, written 07:00, updated at each tick)
 
@@ -74,8 +74,16 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
 - **On `main` above it, merged on their own green branch checks but NOT yet covered by a `main` check:** CP2 (scale
   `ddb16592`, checked at `7542df28`), the recorded baseline `2d5215a8a0a59ded`, and CP3 (metrics `0d4e5ef1`, checked
   at `0f811c1c`). Each is green alone; the combination is the one thing unproven.
-- **builder0 answered again at 08:31 and the `main` check on the full tip (`b008a277`+) was started at 08:32** (log in the
-  orchestrator's scratchpad; ~15 min). If it is not reported in this file when you read it, run `make remote T=check` from `~/projects/godot` on
+- **The `main` check on the full tip `b008a277` (CP2 + CP3 + everything) came back at 08:48: `exited 2`, 1478 passed,
+  1 FAILED** — `test_match_spawns_and_results::test_a_full_faction_army_a_side_spawns_clear_of_itself`: three units
+  (`Green_S5_1`, `Rust_S5_1`, `Rust_S8_1`) spawn inside a wall or crate. **A composition failure:** it passed on
+  scale's branch (1395/0 at `7542df28`) and on `main` before CP2 (1454/0 at `0808834e`), so it is CP2's regenerated
+  spawn grid meeting something merged after its branch point (show's arena JSON keys auto-merged with the regenerated
+  lists, combat's `units.gd` edits, or squad's hull pitch in `ArmyLayout`). **Handed to scale at 08:52 as its first item**
+  (reproduce with `make remote T="test FILTER=match_spawns"`, name the mechanism, fix in its paths, check, hash).
+  Everything else in that run passed, including `sim-baseline` at `2d5215a8a0a59ded`. **So: `main` is RED on exactly
+  one test as you read this; the last fully green `main` is `0808834e`.** If scale has not reported, run
+  `make remote T=check` from `~/projects/godot` on
   `main` (read the `>> remote: make check exited <N>` line, never a pipe; a 255 is ssh). Then, in order:
   control's `make remote T=camera-looks` and `T=control-playtest-shots` (item 4), feel's
   `make remote T=check` on `f1859075` and `T=vehicle-gallery` (X4 + the neon fix), scale's fairness control.
