@@ -466,6 +466,28 @@ intersecting, never moving at all, looks identical to a nudged one.** That is a 
 exposed, not a movement change. Ask the probe to print the **spawn** position beside the current one — if they are
 equal, no motion occurred and every movement-layer candidate is eliminated at once.
 
+### ⚠ `build/` LIES IN BOTH DIRECTIONS — a measurement artefact there is never safe
+
+Two separate hazards bit nav in one night, from opposite sides:
+
+1. **The targets WIPE it.** `nav-fight-maps` and `nav-fight-ab` open with `rm -rf`, so launching one destroys the
+   previous run's logs. nav nearly lost the 120 s four-map headroom pass and only caught it because the next run
+   was still queued for a slot.
+2. **The copy-back LEAVES things in it.** `remote.sh` rsyncs `build/` back **without `--delete`**, so artefacts
+   accumulate across runs. `build/metrics/p7-pit.jsonl` sat there through several later checks and came back
+   **corrupt** — one flipped bit at line 143,873, `slot_x` broken — while **nav's copy taken out of `build/`
+   immediately after the run was byte-intact** (different md5; 273578 lines, 0 unparseable).
+
+**So a file in `build/` is not evidence of anything: it may be this run's, a previous run's, or damaged, and it
+wears the same name in all three cases.** Plausible name, plausible size, no marker saying which run wrote it. It is
+*"a count whose denominator changes between runs"* in file form.
+
+**The rule: copy every measurement artefact OUT of `build/` the moment the run ends, and validate it by parsing,
+not by looking.** nav validated all three P7 logs line by line rather than checking the offset metrics reported —
+the whole point of a corruption report is that the file looks fine at a glance. The habit was adopted to survive
+hazard 1 and it is what saved the measurement from hazard 2; **defending against deletion happened to defend
+against corruption, which is an argument for the habit rather than for the reason it was adopted.**
+
 ### PRE-REGISTERED, before any arm is run: the CLEARANCE row's falsifier
 
 Written with the code committed (`826e4852`, `04fec00b`, `04f472ca`) and **not one number measured**, so the bars
