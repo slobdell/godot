@@ -332,6 +332,31 @@ motivation for that row rather than an inherited one.
 `net_over_path` rises and `oscillating_share` falls is pre-registered in the brief (N4) and runs after CP1, read
 through A12.
 
+### N4 GROUNDWORK, measured: 43% of off-mesh gates have NO straight run-in at any length — that is A4's case
+
+Laptop, `57b8e89b`, `nav-fight` yard seed 3, 45 s, default path (deterministic — `offered` and `aimed` reproduce the
+earlier run exactly):
+
+    gates  offered 6364 = aimed 5168 + refused 1196
+    refusals    off_mesh 835 (70%), reached 312, on_approach 49
+    off_mesh_fit  fits_at_75%: 474      none (not at 75, 50 or 25%): 361
+
+**Two different bugs, and until now they were one number.**
+
+- **474 of 835 (57%) would have fitted with a shorter run-in.** Recoverable cheaply — and *not for free*:
+  `APPROACH_RADII` 2.5 was measured, and at **1.5 radii an IFV still arrived 63° off** (dot 0.45). 75% of 2.5 is
+  1.875 radii, between the value that works and the value that does not, and **arrival accuracy there is
+  unmeasured**. So the cheap fix trades refusals for heading error and needs its own A/B before it ships. It is not
+  a free 9% more gates aimed (5168 → 5642); it is a trade whose other side nobody has measured.
+- **361 of 835 (43%) fit at NO length tried.** The approach corridor itself is blocked, so **no straight gate can
+  fix them at any length** — which is precisely the case a continuous-curvature approach exists for. **This is A4's
+  measured motivation**, and it is now a count rather than an argument from first principles.
+
+**What this changes about how N4 should be built:** A4 is not "replace the straight approach because clothoids are
+better". It is *"43% of the arrival arc's failures are geometrically unreachable by any straight line, and a curved
+approach is the only thing that reaches them"* — with a cheap partial fix available for the other 57% whose cost in
+arrival heading has to be measured first, separately, so the two are never credited to each other.
+
 ### REQUEST TO SQUAD (2): the combat request needs the hull's live motion state
 
 **Measured, on the A7+A11 arm** (laptop, `d4201b64`, `nav-fight` yard seed 3, 45 s, `--nav-off=a7,a11`):
