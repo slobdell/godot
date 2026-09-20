@@ -198,6 +198,13 @@ driving somewhere other than where he sent them, correctly, because they are fig
 owns the readout; the bar is joint (opposing-tangent time under 10% with no fall in exchange ratio). The nearest thing
 already built is `facing` on a move: the hull's orientation carrying the order's intent.
 
+**Round 9, Invariant 0 (the orchestrator's): `RtsCamera.VISION_FRAME_BOTTOM` should READ the command card's geometry,
+not mirror it.** The derivation it mirrors, at 1920×1080: the card (`SelectionPanel.HEIGHT` 200) plus the group chips
+put the HUD's top edge at y 778, i.e. (778 − 540) / 540 = **0.44** of the half-height below centre; the constant is
+**0.40**, the extra leaving room for the hulls themselves above the card. So a camera bound is a copy of a UI height in
+another file — if feel or control changes the card, the lean silently goes back to hiding squads behind it. Both files
+are control's, so this is ours to fix: have the camera ask for the HUD's reserved bottom fraction.
+
 **Housekeeping (2026-09-19):** a backgrounded Godot from Sep 18 10:12 was still running 34 h later against this
 worktree, plus ten waiter loops from checks #6/#17. All killed. **A hung headless Godot holds its checkout's `.godot`
 import cache**; two Godots in ONE checkout produce phantom "tracked file does not exist" and cascading false
