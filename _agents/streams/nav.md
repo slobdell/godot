@@ -233,15 +233,29 @@ fast-forwarded at worktree creation). A baseline `make remote T=check` was start
 
 ### REPORT — read this first (nav, round 9, 2026-09-20)
 
-**RESUMED 03:25. The face-recovery row is CLOSED as a measured negative with a named cause — see *THE FACE RECOVERY
-IS INERT* below.** The remote check on the tip is running; `0f14cb2b`'s 255 was transport, so it was unverified
-rather than red, and one check on the tip covers it.
+**✅ GREEN ON THE TIP: `3b01f5b7` — `>> remote: make check exited 0 (build/ copied back)`, `1295 passed, 0 failed`,
+`lint: all scripts parse`, `sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)` — builder0.** The baseline hash is
+**identical** to `5c8f08b3`'s, so nothing on this branch moves it and every round-9 row is still opt-in. **This also
+closes `0f14cb2b`**, whose 255 was transport: it is an ancestor of the checked tip, so it was unverified rather than
+red, and it is now verified.
 
-**Still to do, in order:** (1) read the tip check's result off the wrapper's own `>> remote: make check exited <N>`
-line and the runner's `N passed, M failed`, then re-check `7850fbef` which postdates it; (2) merge `main` once the
-orchestrator confirms it green; (3) the pre-registered arrival-arc A/B (below, unchanged) — `--nav-off=a4` both
-arms, four maps, seed 3, 120 s, `off_mesh_fit.none` headroom checked on all four **first**, reporting
-`a4_rescued_blocked` against `off_mesh_fit.none` and **never** the aggregate.
+**`main` merged at `0d866853`** — clean, no conflicts, 30/30 nav tests on the merged tree. Merged only once no
+remote run of nav's was in flight (main rewrites `tools/remote.sh` and `tools/slot.sh`, which a live wrapper would
+re-read); the two `make remote` processes alive at the time were metrics' and combat's, in their own worktrees.
+
+**Unverified by remote as of this line:** everything after `3b01f5b7` — the face-recovery measurement, the headroom
+work, the `mk/nav.mk` rotation guard, the front-page restoration and the merge. A check on the merged tip runs once
+the A/B is off the machine.
+
+**Running now:** the arrival-arc A/B, per the amendment below — **terminus and yard**, seeds 1 3 5 7 9, 120 s,
+busy 0. **`pit` is refused** (533 off-mesh gates, 0 blocked).
+
+**⚠ A TRAP IN `nav-fight-ab`, for anyone reading its logs: `--nav-off=a4` ENABLES A4.** The round-9 switches are
+opt-in and inverted, so the arm the target names **`off` is the TREATMENT** (A4 active) and the arm it names **`on`
+is the CONTROL** (A4 inactive). Results are labelled by treatment here, never by filename. The target's own control
+catches a switch that did nothing — it fails if both arms share a treatment line or return identical results, which
+is what round 7's byte-identical A/B bought — but nothing in it catches a human reading the filenames the obvious
+way.
 
 **✅ GREEN: `5c8f08b3` — `make check exited 0`, 1290 passed 0 failed, `sim-baseline passed: 04414f5d6a6dfa7c`
 (builder0). `lint local: 531 files, 8 known baselined lines`. Merged to `main`.** A second check covers the tip.
