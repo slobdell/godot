@@ -24,7 +24,10 @@ const FOV_DEG := 35.0
 ## The lead's pose first (pitch 21, FOV 35, 49 m -- the one he found with the live controls and sent back), then a
 ## higher angle that reads the bend's geometry. NOT 12 degrees: that is the camera he played and rejected ("I was
 ## totally wrong about the camera, the game is unplayable now with low field of view"), and 45 is inside the tilt
-## range he can actually reach. The second frame is a detail view and is labelled as one; only 21 is his.
+## range he can actually reach (control: the player can tilt 8-70). This bench sets its own camera through
+## RtsCamera.pose_at, so the far-range tilt FLOOR (RtsCamera.FAR_TILT_FROM_M: past 70 m the rig lifts the tilt
+## whatever the player set, to 40 by 160 m) does not apply here -- at 49 m it would not bite anyway, but the next
+## agent will read the number and not the mechanism, so: these pitches are the pitches, not the floor's.
 const PITCHES := [21.0, 45.0]
 const MILESTONES := [0.0, 10.0, 25.0, 45.0, 70.0, 100.0]  # degrees through the corner
 

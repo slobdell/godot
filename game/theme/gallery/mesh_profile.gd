@@ -55,7 +55,7 @@ func _run() -> void:
 				kept.append(centroid)
 		tris = kept
 		print("clipped to %s" % box)
-	var bounds := FactionArt.natural_bounds(model)
+	var bounds := _bounds(model)
 	var slice_range := AABB()
 	for i in tris.size():
 		slice_range = AABB(tris[i], Vector3.ZERO) if i == 0 else slice_range.expand(tris[i])
@@ -164,6 +164,30 @@ func _render_ruled(model: Node3D, bounds: AABB, axis: int, out_path: String) -> 
 				image.set_pixel(x, y, color)
 	image.save_png(out_path)
 	print("ruled side view: %s (red = %s 0, green ticks 0.5 m, grey 0.1 m; forward -Z to the RIGHT)" % [out_path, ["x", "y", "z"][axis]])
+
+
+## The union of the model's mesh AABBs in its own space. Deliberately computed here rather than through
+## FactionArt.natural_bounds: touching FactionArt from a --script tool drags in GameTheme's static initialiser,
+## which calls back into FactionArt before Units is resolved and prints a one-off "Nonexistent function 'roster'"
+## before recovering. The slots come out correct (probed: 80 slots, the faction hulls present), but a measurement
+## tool should not print an engine error it does not mean.
+func _bounds(model: Node3D) -> AABB:
+	var result := AABB()
+	var first := true
+	for child in model.find_children("*", "MeshInstance3D", true, false):
+		var instance := child as MeshInstance3D
+		if instance.mesh == null:
+			continue
+		var xform := Transform3D.IDENTITY
+		var node: Node = instance
+		while node != null and node != model:
+			if node is Node3D:
+				xform = (node as Node3D).transform * xform
+			node = node.get_parent()
+		var box := xform * instance.mesh.get_aabb()
+		result = box if first else result.merge(box)
+		first = false
+	return result
 
 
 ## Every triangle centroid of `node`'s meshes, in `space`'s coordinates.

@@ -229,6 +229,13 @@ control owns this; feel is asking for three things and nothing more:
    | "armour"`. The last three are the level 1/2/3 overrides. control maps them onto words already on screen
    (`band` → *holding range*, `survival` → *taking fire*, `armour` → *front toward the threat*) and adds no new
    vocabulary. **Without `why`, §6.2 is not built.**
+
+   **Agreed fallback, pre-registered (control, 2026-09-20), so this is not renegotiated when nav writes A7:** `why`
+   is cheap for nav only if the level that took the heading is still named at the point of the decision. If A7's
+   projection loses that, the honest answer is a **coarser** closed set — `"" | "no_order" | "no_path" | "blocked" |
+   "reflex" | "style_run" | "override"` — and not a guess at which level it was. **A coarse-but-true cause beats a
+   precise-but-inferred one**: the lead will believe whatever the line says, so a wrong cause is worse than a vague
+   one. control builds the readout against whichever of the two sets nav can publish honestly.
 3. **"This is the plan" and "this is a refusal" must not share a channel** (control, **C-3**). A refusal already owns
    one: the order pin turns **red** and its label reads `NOT COMPLYING`. So a deliberate off-corridor leg gets a
    different one — the corridor stays drawn, the pin keeps the order's colour, and one `ElementLog` line names the
