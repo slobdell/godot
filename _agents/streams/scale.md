@@ -279,6 +279,36 @@ sides; if it did not, say that the resize is not the variable.
 
 _Updated 2026-09-20 (post-merge), worktree `godot-scale`, branch `stream/scale`._
 
+### CLOSED: `3e2e77f1` merged at `b70dd8f7` — and one attribution of mine was wrong
+
+**The four lines**: `exited 2`, **1540 passed, 0 failed**, `sim-baseline 1e90f69e5d6fcc46` unmoved,
+`17 passed, 1 FAILED, 0 NOT RUN`. **Both pre-registered predictions held** — `test_theme_factions`' 44 bodies were
+combat's foundry (never that file's), and `test_combat_sim_profile`'s single body was owned, so the seal frees it and
+**nothing went to combat by name**.
+
+**⚠ MY ATTRIBUTION OF THE `43,1` WAS WRONG, and it is recorded so it does not travel.** I wrote that a scenario
+"almost certainly" started passing because combat's `Tank.place()` cleared the spawn settle assertion. **Three things
+are wrong with that**: this tree *predates* `place()` (combat's tip was still checking), the spawn settle assertion is
+a **unit test** in `test_match_spawns_and_results`, **not a scenario**, and **main's own check on `49ed1fb3` already
+read `43,1`** with the engine-deck as the survivor — so the count moved before either tree. metrics has the real
+split: **the scenario runner was not awaiting the drain between scenarios** on both trees, and with the drain awaited
+it reads **`41,3`**.
+
+**The lesson, and it is the round's own in miniature:** I had a nearby, plausible cause (`Tank.place()` was mentioned
+in the same message as the settle assertion), and I attached it to an effect I had not traced. **"Almost certainly"
+is not a hedge when the causal story is invented** — it is the same shape as the primitive-count retraction, where a
+ready-made explanation made one sample feel like a finding. **The part of my reading that survives is the part I
+measured nothing for and reasoned from the gate's design**: it refuses a change to the non-pending counts *even when
+the change is good*, which is right, and the re-record belongs to whoever caused the change.
+
+### OPEN, and not mine: the spawn settle assertion may depend on its shard
+
+**Red on every five-shard main check, passed on this three-shard tree.** So its outcome may turn on which tests share
+its shard — **the third distinct instance today of the schedule deciding a result**, after file distribution changing
+which tests share a process (main's red spawn test) and metrics' 5-fail/6-pass shard count. combat's five-shard merge
+check reads it. **Nothing owed from this stream**, recorded so the next agent meets it as a known open question rather
+than a fresh mystery.
+
 ### PRE-REGISTERED, written before reading the check on the merged tip
 
 The hold is lifted: main's quiet check on `49ed1fb3` read **1535 passed, 1 failed**, `sim-baseline 1e90f69e5d6fcc46`
