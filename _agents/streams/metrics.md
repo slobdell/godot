@@ -290,6 +290,22 @@ is the orchestrator's call, not his.)
 >    errored, and the guard was skipped. The round's recurring defect, inside the code written to prevent
 >    it, defaulting to the reassuring answer.
 >
+> **A6's control arm is read (the last owed item), and one of nav's three logs is corrupt.**
+> `p7-pit.jsonl` carries a single flipped bit — line 143,873 of 273,578, `0x78` `x` → `0xf8` — so it is
+> refused and **the earlier pooled rotation figure 0.3203 is not reproducible from the files on disk**. The
+> loud failure is the lucky case: in a digit instead of a key name it would have read as a valid coordinate.
+> The format has no per-line checksum; that gap is written down, not filled. From the two usable logs:
+>
+> | map | commit | off_corridor | active | eff_mean | cusp/min | sparc |
+> |---|---|---|---|---|---|---|
+> | yard | `c025bc6b` | 0.304 | 0.631 | 0.681 | 43.10 | **−2.013** |
+> | terminus | `5369bd13` | 0.331 | 0.738 | 0.660 | 69.14 | **−2.013** |
+>
+> **`cusp/min` swings 60% between the two maps with no treatment applied; `sparc` is identical to three
+> decimals.** A claim meant to survive the rotation should be pre-registered against SPARC and the
+> off-corridor pair — cusp density is mostly measuring the arena. The two commits differ by one Status file
+> and no code, which the mixed-commit banner flagged and its own printed command settled.
+
 > **Corrected by combat, and it was my error to make:** I reported `scenario_dodge_rate` to the orchestrator
 > as a regression without opening the file, whose own header says KNOWN-FAILING since CP4 and "Not in make
 > check". The gate had inherited a ~2% coin as its expectation. A baseline records whatever was true the
