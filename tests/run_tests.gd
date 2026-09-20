@@ -115,9 +115,11 @@ func _run() -> void:
 			case.tree = self
 			errors.take()
 			await case.call(method_name)
-			# AWAITED: `teardown()` drains the navigation map, and that needs frames. Un-awaited it would return at
-			# once and drain after the NEXT test had started -- a hook that looks wired up and does nothing.
-			await case.teardown()
+			# AWAITED, and SEALED: `_teardown()` owns the order (hook, free, body guard, drain) because the drain
+			# needs frames and a `teardown()` that must be awaited but may be declared `-> void` cannot be made safe
+			# by review -- five files called it un-awaited and four silently skipped the drain for as long as it
+			# existed. `TestCase.teardown()` is now a synchronous hook that `_teardown()` calls.
+			await case._teardown()
 			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings, case.expected_errors)
 			total_engine_errors += int(engine["errors"])
 			total_engine_warnings += int(engine["warnings"])

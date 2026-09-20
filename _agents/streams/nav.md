@@ -1406,6 +1406,35 @@ geometry* under different fights; they cannot tell us it generalises, and the or
 precisely because it could. **The result will be a single-geometry result whatever its confidence interval**, and
 nav will report it that way. The generalisation question moves to arena/scale, where it belongs.
 
+### ⚠⚠ CORRECTION (2026-09-21): "14 of 21 units exceed the bake" COMPARES TWO DIFFERENT LENGTHS
+
+**The count is inflated as a statement about corridors, and nav quoted it all day.** `clearance_shortfall()` is
+`Avoidance.radius_of(unit) − bake_radius`, but those are **not the same kind of length**:
+
+    radius_of = (w + l) / 4 + margin    a ROTATIONAL sweep      rig: (3.32 + 14) / 4 + 0.25 = 4.58 m
+    navmesh bake                         a LATERAL clearance     2.0 m — the mesh eroded for DRIVING
+    rig's true half-width                                        1.66 m
+
+So the comparison sets a **turning envelope** against a **driving clearance**. *"14 of 21 units need more clearance
+than the mesh bakes"* reads as a corridor claim and is not one. **The honest form is:** *14 of 21 units have a
+**rotational** envelope larger than the bake's **lateral** clearance* — weaker, and differently shaped.
+
+**What survives untouched:** a **14 m hull cannot rotate in a 4.8 m corridor**. combat measured that geometrically
+(9.6 m of footprint needed against 4.8 m available, 28.5° of yaw through a wall) and it never used `radius_of` at
+all. The defect is real; the roster-wide *count* was the wrong way to size it.
+
+**AND IT RE-DIAGNOSES THE CLEARANCE A/B'S FAILURE.** nav wrote that the row *"buys clearance and spends the fight"*,
+the same trade A4 made. That is not what happened. The refusal fired on a disc **2.6× a rig's true half-width**, so
+it was refusing shortcuts for hulls whose **width fits comfortably**. **90.9 % refused was the rule measuring the
+wrong length, not the rule being too strict.** The verdict is unchanged — default **off**, on measurement — but the
+reason is different, and **round 10's question moves from *what else to do with a shortfall* to *what a shortfall
+should be measured against*.**
+
+**A seventh "disc" site, and it is nav's own:** `Avoidance.radius_of` models every hull as a circle of
+`(w + l) / 4`, so a rig is **too wide abeam** (4.33 m against a 1.66 m half-width) **and too narrow end-on**
+(4.33 m against 7 m). Queued as its own row with its own falsifier — the rotation with A12's columns plus the
+clearance primaries — and deliberately **not** folded into the clearance row, whose premise it is.
+
 ### ⚠ A4'S HEADROOM EXISTS ON ONE MAP IN FOUR — the pre-registered A/B is REFUSED on three of them
 
 Control arm (A4 off — the default path), `8c7f60c0`, **laptop**, `nav-fight-maps`, seed 3, `FIGHT_BUSY_LEVELS=0`,
