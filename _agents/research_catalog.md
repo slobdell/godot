@@ -197,6 +197,11 @@ it is a *cadence* problem, and this is the smallest mechanism that addresses it 
 threshold. It also directly answers open question 2 from the brief (*is there a principled re-decide cadence?*) with
 "yes, derived, not tuned".
 **Determinism:** integer squared-norm comparison. No state.
+**MEASURED IN ROUND 9 (nav, 2026-09-20, provisional pre-CP1): a negative result that relocates P1.** The fixed
+route cadence (`REPATH_SECONDS`) accounts for **~3% of re-plans** in a fight, so A1's tube on the route replanner
+cannot move P1. The cause split then found the real driver: **968 of 2,059 re-plans (47%) were nav re-planning against
+a goal it was already regulating** — a follower's station sliding ~1 m — fixed with a tolerance that scales with the
+remaining route (out of squad's `following` observation). The brain's `MOTION_REPLAN_TICKS` half remains squad's.
 **Falsifier:** intra-decision re-plan rate drops **≥ 60%** (theirs: ≥ 80%) *and* path-tracking error stays within
 **0.15 m** *and* reaction latency to a new contact stays **≤ 2 ticks**. If churn falls but latency rises, this is
 stubbornness wearing a hat and it reverts.
@@ -210,6 +215,46 @@ energy plus slew. **Replaces** the flat commitment bonus (**1.15** on `main`; 1.
 **Acceptance is not just the churn metric:** squad's two behaviour scenarios (fire concentration, and a scout's
 engine-deck targeting) must hold, because that is exactly what the 1.35 knee cost.
 **Determinism:** four multiplies and two adds, stateless.
+**⚠ CORRECTED IN ROUND 9 (combat, 2026-09-20): braking + slew is not the whole of what a weapon switch destroys.** A
+stationary turret swapping between two targets on the *same bearing* prices at exactly zero under the two catalogue
+terms, and squad's `test_brain_decide::test_commitment_prevents_flip_flopping` is precisely that case. The third thing
+a switch throws away is **the gun's lay** — N5's own acquisition gate (`Engagement.acquire_seconds`) invested in the
+target being abandoned. Added from `Engagement`'s constants, **backward-looking on purpose**: a crew laid on nothing
+pays nothing, so taking up a newly seen contact is never made slower and the ≤ 2-tick reaction criterion is untouched.
+**Round-9 measurement note (combat, 2026-09-20, provisional until CP1):** the control arm is proven — `switch.price=0`
+runs the same code path, consulted 0.92–0.99 of thinks, flips exactly 0.000 decisions; the live arm changes 6–23% of
+decisions. Both acceptance scenarios hold (focus 100% vs 69% unchanged; engine deck bit-identical at 23/41/45). **One
+regression found by looking past the acceptance:** a "stance floor" that charged any option change on one target
+(added to price ENGAGE↔SUPPRESS thrash, not in the catalogue) cut the turreted duel's **flank seconds 60%** — it taxes
+ENGAGE→FLANK, which is *prosecuting* the fight, not changing one's mind; the 1.35 knee's exact shape, against a
+behaviour the lead named in round 3 (*"no intent of trying to circle your opponent"*). Made an arm (`switch.stance=0`)
+with `option_share` and `transitions_per_unit_min` columns so a suppressed manoeuvre is visible; if it costs flanking it
+goes. **P3 is measurable for the first time:** `main`'s commitment was two mechanisms (flat bonus + hard dwell timer),
+now split (`switch.dwell=0`) into the triplet none / flat / flat+dwell.
+**Correction to the orchestrator's premise (combat, same day):** the lay term is charged only when the *target*
+changes, deliberately — a suppressing crew is still firing at that contact and has not abandoned its acquisition. So
+if the stance floor goes wholesale, **ENGAGE↔SUPPRESS on one target is priced at exactly zero** (same bearing, same
+target, no lay), and that pair is one of round 7's two measured thrash shapes. **Predicted, not to be discovered.**
+The sharper reading of `_act` (`tank_brain.gd:1833`, `:1845`): SUPPRESS *halts* inside the band (standing still is
+what makes fire effective) while ENGAGE and FLANK keep manoeuvring — so ENGAGE→SUPPRESS genuinely discards the
+velocity in flight and ENGAGE→FLANK does not. **If the removal arm shows the floor buys something, the velocity
+discard is charged only for options that fight from a standstill (SUPPRESS, COVER_FIRE's hide/peek, BOMBARD), a
+physical property of the option read in one place — never a per-class knob.** Order: removal arm first; the
+halting-option form is a third arm only if removal costs reversals more than the flank seconds are worth.
+**FIVE-ARM TABLE (combat, 2026-09-20, laptop `a1209857`, yard, seeds 1/3/7, `gang_ram` vs `law_line`, 120 s, 15
+runs):** switches per unit-minute, tank class — cost (A2) 20.7, cost-nostance 20.4, flat 12.8, flat+dwell (`main`) 12.7,
+none 31.3; other classes the same ordering. Three results: **(1) the stance floor bought nothing** (−1% to +23%,
+no consistent sign) — removed; ENGAGE→SUPPRESS on one target is priced zero and asserted as deliberate. **(2) The dwell
+timer is inert**: flat vs flat+dwell is −11% to +6% — all of `main`'s churn suppression is the flat bonus, and
+`MIN_COMMIT_TICKS`/`EMERGENCY_MARGIN` are retired for free. **(3) A2 is a weaker suppressant than the flat bonus it
+replaces**: +47% to +79% more switches than flat, −7% to −34% fewer than none; the −60% bar is missed in the wrong
+direction. Whether the extra switches are genuine re-targeting or the wheeled creep is metrics' cusp split to answer
+(switch-event files with predicted angle/slew/brake/lay per event). **combat's mechanism claim corrected by its own
+instrument:** FLANK's time share is 0.000–0.018 in every arm; the duel's flank seconds are `_combat_move`'s circling
+*inside* ENGAGE, and the live candidate is tanks' ENGAGE share 0.319 (cost) vs 0.523 (flat) with COVER_FIRE 0.231 vs
+0.094 — A2 moves tanks from circling into static hide/peek. **RULED (orchestrator, overnight): the default ships as
+the flat bonus with the dwell timer retired; A2 stays as the opt-in arm with its acceptance scenarios asserted; the
+flip waits for the cusp split, then either raise `PRICE_PER_SECOND` and re-measure, or leave it off and say so.**
 **Falsifier:** genuine option-switch churn **−60%** and switch-and-switch-back within 4 s below **0.2/agent-min**,
 with reaction latency **≤ 2 ticks**. **Guard:** the arm must be distinguishable — assert the switching cost is
 non-zero and varies by hull class, or we are A/B-ing a build against itself (lesson 117).
@@ -237,6 +282,18 @@ Curvature linear in arc length, so steering rate is bounded and no join demands 
 See Part 1 §5.
 **Determinism:** Fresnel integrals from a fixed-size lookup table with fixed-order interpolation. **Not** a series
 evaluated to tolerance.
+**MEASURED IN ROUND 9 (nav, 2026-09-20, `nav-fight` yard seed 3, 45 s, default path, laptop `9c5c73ef`):** of 6,364
+arrival gates offered, 1,196 were refused, 835 of them `off_mesh`. Probing each refusal at shrinking run-in lengths
+splits that one number into two bugs: **474 (57%) would have fitted with a shorter run-in** — cheap but *not free*,
+since `APPROACH_RADII` 2.5 is a measured value and at 1.5 radii an IFV arrived 63° off, so 75% of it trades refusals
+for unmeasured heading error and needs its own A/B — and **361 (43%) fit at no length tried: the approach corridor is
+blocked, and no straight gate reaches them at any length.** That 43% is A4's territory, now counted in the
+configuration the lead plays rather than argued from curvature continuity. **Rule before anyone builds it:** the
+shorter run-in and the clothoid fix *different* failures and are never shipped together or credited to each other
+(round 7's shape: ship, measure twice, find the mechanism was never reached).
+**POSITIVE CONTROL PASSED (nav, 2026-09-20, laptop, provisional pre-CP1): 403 of 403** blocked-corridor gates — the
+class no straight run-in reaches at any length — are reached by a curved clothoid entry, reported as that class only
+and never as the aggregate aimed count, so the run-in half cannot leak into it.
 **Falsifier:** signed cusp density below **1.5 per agent-minute** with **zero unexplained cusps** (currently 9–19,
 a third unexplained), and peak steering rate never saturates on a nominal traverse.
 
@@ -285,6 +342,26 @@ Express a formation as a nominal shape plus a per-squad affine transform, then c
 longitudinally as a function of corridor width — so a wedge becomes a column through a defile and re-expands after,
 **continuously and without dissolving**. **Replaces** rigid slot offsets held by PID.
 **Determinism:** closed-form 2×2 matrix algebra.
+**⚠ CORRECTED IN ROUND 9 (squad, 2026-09-20): a pure affine map CANNOT turn a wedge into a column.** A wedge has
+slot pairs at the same depth differing only across the heading; no 2×2 separates two such points while squeezing that
+axis toward zero — at the limit they land on top of each other, so a literal implementation stands hulls inside each
+other in exactly the narrowest corridors. The shipped form is a **shape morph plus a diagonal matrix and a shear**: the
+nominal shape is pulled toward single file with ranks splitting apart *along* the heading before the shape closes
+*across* it, then scaled per axis. The file's target order is the shape's own depth order, not the slot index (a vee
+has slots ahead of its leader). Every slot keeps its index, so zero crossings and zero rank inversions hold by
+construction; the test sweeps 15 corridor widths × 11 shapes × 5 squads × 3 spacings.
+**MEASURED AND SWITCHED OFF (squad, 2026-09-20, laptop, `make squad-defile`, the maze's 11 m gap = 5.0 m of navmesh,
+five Condemned wheeled vehicles, forced wedge, 70 s, `DEFORM_ENABLED` the only difference):** deform ON — arrived
+**0/5**, not through the gap, crossings 6, inversions 21; deform OFF — arrived **4/5**, through, crossings 1,
+inversions 20. The deformation is the difference between getting through and not, and it moves crossings the wrong
+way. `TacticsFormation.DEFORM_ENABLED := false` (one constant, the whole revert path). One configuration, not three
+seeds — seeds 3/5/7 were byte-identical because the scenario has no enemies (lesson 22). **What survives:** every
+geometric invariant holds by construction over 15 widths × 11 shapes × 5 squads × 3 spacings. **The structural
+finding, reached by squad and nav independently within an hour:** a formation-level intent (a deformation, a leash)
+lives in a slot layout that the layer actually moving the hull cannot see — nav measured `CombatMotion` deciding under
+a tenth of a hull's ticks with `Movement` driving the rest and knowing no leash at all. **A8 also never applied to a
+plain right-click move** (the plain-move path sets the corridor to INF), so the lead's commonest order could never
+have got it. Next-round candidate: intent reaches `Movement`'s goal selection.
 **Falsifier:** zero slot crossings / rank inversions during defile passage, and post-defile recovery time **−60%**.
 The lead has already ruled on the trade this needs: *"a 4s slower march for a tidier traversal is better, yes."*
 
@@ -298,6 +375,17 @@ overwatch while the other advances, alternating every 5–8 s.
 legible to a spectator"* — and he has already approved the mechanic: *"making the units appear smart is better, so
 flanking and maneuvering is fine."*
 **Determinism:** tick-count phase synchronisation.
+**Ruled in round 9 (2026-09-20):** two alternating halves of an odd-sized element cannot keep ≥ 50% stationary (3 of 5
+moving leaves 40%). An odd element therefore leaves a **permanent base of fire** (the unit whose firepower is worth
+most static — indirect-fire and long-reach roles first) and bounds the rest in two equal teams; even elements alternate
+halves; a pair alternates singles; a single vehicle does not bound. Doctrinal, and it meets the bar by construction.
+The measured minimum stationary share is still reported.
+**MEASURED (squad, 2026-09-20, laptop, same gap, forced wedge + `bounding_overwatch`):** stationary share
+**0.60 on both arms** (the 3-of-5 the base-of-fire ruling predicts), `bounding_ticks` in the thousands so the phase
+machine ran. **Arrival dispersion: tracked 1.23 s, wheeled 41.4 s.** Co-arrival paces off top speed and route ETA
+and reads no locomotion; what makes a wheeled hull late is its turning circle and gear changes — nav's subjects, and
+metrics' CP1 finding reproduced by an independent instrument. **Every faction but the Condemned is wheeled or hover,
+so on the vehicles the lead fields A9 mostly cannot make a squad arrive together, for reasons below the squad layer.**
 **Falsifier:** inter-element arrival dispersion at an objective line drops from **> 12 s to < 1 s**, and **≥ 50% of
 squad firepower is stationary at every tick** of an advance.
 
