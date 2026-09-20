@@ -52,6 +52,17 @@ func setup(obstacle: Dictionary) -> void:
 	var neon := CityBlock.neon_color(obstacle.get("neon", ""), rng)
 	mesh_instance.mesh = CityBlock.build(size, tiers, setback, neon, rng.randf())
 	mesh_instance.set_surface_override_material(0, CityBlock.facade_material())
+	CityBlock.patch_show()
+
+
+## S6 (the arena light show, `_agents/lighting.md`): the facade is a fixture. Every block registers the ONE material
+## they all share, so the show costs a single uniform write for the whole bank -- and they still breathe on eight
+## different clocks, because the per-block phase is the seed already in each vertex's COLOR.g. Adding a block adds
+## no draw call, no light and no per-frame cost. A no-op on a headless peer, where there is no show.
+static func patch_show() -> void:
+	var show := Show.get_instance()
+	if show != null:
+		show.add_fixture(&"city_block", CityBlock.facade_material())
 
 
 static func facade_material() -> ShaderMaterial:

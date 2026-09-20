@@ -2626,3 +2626,39 @@ The kickoff prompt is one line; this section is the rest.
     switch adds its arm line, its counter, and the "could it act?" denominator (`a6_asked 1087, a6_no_corridor 1087,
     a6_nose_narrowed 0`: reached a thousand times, able to act zero times — without the denominator that reads as "does
     nothing" instead of "never had its input").
+172. **"The owner's version wins in its paths" has no case for an owner who has explicitly deferred.** Round 9, scale
+    merging main: `tests/test_fx_light_rounds.gd` conflicted, and taking feel's side would have shipped a **red** test —
+    feel had deliberately kept the old assertion with a comment saying the replacement was scale's to make inside the
+    CP2 commit. The rule assumes both sides were trying to change the file. When one side's version carries a note
+    deferring to the other, the deferred-to version wins, and the note travels with it.
+173. **Absent is not null, and `get(key, null)` erases the difference.** Round 9, three streams in one night: nav
+    publishes `corridor` as *null* for "no leg this tick" and absent for "the key has not shipped"; control read it
+    with `get("corridor", null)`, so on exactly the ticks nav said there was nothing to derive, control's readout fell
+    through and **derived a tangent anyway** — inside a function whose own comment says an unreadable corridor must
+    not look like a readable one. metrics hit the same shape one level deeper in its emitter (a "no data" that wore a
+    present column, its own commit says). Read a nullable field with `has()` first; a publisher that sends null is
+    only honest if every reader can see the key is there. Sibling of lesson 157 (an empty list must not read as a
+    pass) and of lesson 164 (an instrument that cannot see the case reports zero).
+174. **A rule you are enforcing on another stream is worth running against your own files first.** Round 9, feel: three
+    hours after ruling that show's parapet must never be red (a signal colour) or cool white (not in the palette), feel
+    found `CityBlock.neon_color()` honouring only `#`-colours, so the Terminus's eight blocks had worn **red and a
+    near-white** from a seeded random fallback for a whole round — the layout asked for cyan and magenta and every
+    name was silently ignored. It survived because a *seeded* random pick in answer to a deliberate name looks exactly
+    like a deliberate choice. Unresolvable names are now loud (`637ad4de`); the hard rejection belongs in
+    `Arena.validate()`. Sibling of lesson 157: a fallback that produces a plausible answer is worse than one that fails.
+175. **A safety property that has never been exercised is fiction, and the third run is what exercises it.** Round 9,
+    metrics, CP3's three-run falsifier: runs 1 and 3 (CHECK_JOBS 2) passed; run 2 derived CHECK_JOBS 3 and `lobby-smoke`
+    and `relay-smoke` started a broker on the same port in the first minute. The exclusion groups written to prevent
+    exactly that were inert: `_cp-lobby-smoke: lobby-smoke | _cp-relay-smoke` orders the *wrapper* after the other
+    wrapper, but `lobby-smoke` is a normal prerequisite of that same wrapper and make builds it concurrently — **the
+    order-only edge constrained the bookkeeping, not the work.** Fixed by giving each wrapper no normal prerequisite and
+    invoking its target from its own recipe, verified from make's database. Two runs would have shipped it. The
+    falsifier was not met and was not presented as met; the runs restarted on the fix.
+176. **A `$(shell …)` in a recursively expanded make variable runs again on every reference — and if it reads something
+    that moves, one run gets several answers.** Round 9, scale's CP2 check: `TEST_SHARDS ?= $(shell tools/slot.sh --jobs
+    …)` reads free memory; it is referenced to launch the shards, to fan them out, and to verify how many reported.
+    The run launched 2 shards, both reported 1395/0, and the verification compared against 3 — the guard fired on
+    itself, and a green suite exited 2. Trip-up 67's family: make evaluates a variable differently from how the author
+    read it. Derive once with `:=`, print the value the run actually used in its own header, and verify against that
+    value, never against a fresh evaluation. **The nastier version of "the thing under test is not the thing
+    described": here the instrument and the subject disagreed about how many there were.**

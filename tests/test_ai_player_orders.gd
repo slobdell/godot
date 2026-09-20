@@ -128,8 +128,25 @@ func test_three_squads_ordered_one_after_another_go_and_stay() -> void:
 
 ## The same thing at the size and rhythm the lead plays at: five squads of six, each ordered a second after the last,
 ## which is as fast as a person can select and right-click.
+## ROUND 9 (scale, CP2): a unit the enemy DESTROYED is excluded, which its sibling below has always done.
+##
+## This test left respawn on -- `elimination` is unset, so `Match` brings a destroyed unit back at its own SPAWN
+## SLOT, with full health and **no order**. The sibling states the principle in its own comment: *"skirmish plays
+## to elimination: a destroyed unit doesn't come back without its orders."* This one asserted that all 30 units end
+## on their slots while a live enemy respawned beside them for 40 s, and it held by luck of geometry.
+##
+## CP2 moved the geometry. The spawn grid went from 13 columns to 19, the respawning `Rust_A_1` came back somewhere
+## it could reach the player's line, and it killed `Green_Charlie_1` -- which reappeared at slot 12, which is
+## exactly `SLOT_X[12] = 45.0` at `BASE_Z = 90.0`, and sat there. Measured: 104.9 m from its formation slot, **the
+## same value to 0.1 m on builder0 and on the laptop**, because it is a teleport to a grid point rather than a
+## drive that came up short. Reverting only the spawn grid makes it pass again (4/4, worst gap 7.9 m).
+##
+## So the grid is what CHANGED it, and what was WRONG is that a respawned unit was being asked to hold a post it
+## was never given. The fix is the sibling's rule, not a bigger tolerance.
 func test_five_squads_ordered_in_quick_succession() -> void:
 	var squads := await _setup(5, 6)
+	var destroyed := {}
+	_match.tank_destroyed.connect(func(victim: Tank, _killer: String) -> void: destroyed[String(victim.name)] = true)
 	var goals := {"Alpha": Vector3(-80, 0, 10), "Bravo": Vector3(-40, 0, 10), "Charlie": Vector3(0, 0, 10),
 			"Delta": Vector3(40, 0, 10), "Echo": Vector3(80, 0, 10)}
 	var spawned := {}
@@ -151,6 +168,8 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 		var slots := _slots(squads[squad_name])
 		var far := 0.0
 		for unit_name: String in squads[squad_name]:
+			if destroyed.has(unit_name):
+				continue  # destroyed and respawned at its spawn slot: it has no post, because it was never given one
 			var slot: Variant = slots[unit_name]
 			if slot == null:
 				without_a_slot += 1
@@ -161,8 +180,12 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 			# allowed: beyond that it has left the ground the player gave it.
 			away += 1 if gap > TankBrain.PLAYER_POST_LEASH * TankBrain.ESCAPE_LEASH_FACTOR else 0
 		worst[squad_name] = snappedf(far, 0.1)
-	print("MEASURE player_orders_rapid worst gap to its OWN slot per squad %s; %d of %d units off their slot, %d with no slot at all" % [
-			worst, away, spawned.size(), without_a_slot])
+	print("MEASURE player_orders_rapid worst gap to its OWN slot per squad %s; %d of %d units off their slot, %d with no slot at all, %d destroyed" % [
+			worst, away, spawned.size(), without_a_slot, destroyed.size()])
+	# The exclusion must not be able to hide the thing the test is for: if the enemy wiped out most of the player's
+	# force there is nothing left to assert about formations, and a green run would mean nothing.
+	assert_true(destroyed.size() <= 3, "at most a few units were destroyed (%d of %d); more than that and this test "
+			% [destroyed.size(), spawned.size()] + "is measuring a massacre rather than five squads taking their slots")
 	assert_eq(without_a_slot, 0, "every ordered unit still knows where it belongs")
 	assert_eq(away, 0, "every unit of every squad ends up on its own slot in its squad's formation")
 

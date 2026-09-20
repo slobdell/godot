@@ -109,8 +109,11 @@ func test_commitment_prevents_flip_flopping() -> void:
 	assert_eq(_choice(s), "ENGAGE Rust_A_1", "fresh decision: the nearer enemy scores higher")
 	var current := {"option": "ENGAGE", "target": "Rust_A_2", "since": 990}
 	assert_eq(_choice(s, current), "ENGAGE Rust_A_2", "10 ticks into engaging the other one, it keeps its target")
-	current["since"] = 1000 - TankBrain.MIN_COMMIT_TICKS - 1
-	assert_eq(_choice(s, current), "ENGAGE Rust_A_2", "the commitment bonus still covers a small score gap")
+	# Round 9: the dwell timer is retired, so this second case is now the whole of commitment — the flat bonus alone,
+	# with `since` placed well outside the window the timer used to hold. It passing is what says the bonus, not the
+	# timer, was covering a small score gap all along.
+	current["since"] = 1000 - TankBrain.MIN_COMMIT_TICKS * 4 - 1
+	assert_eq(_choice(s, current), "ENGAGE Rust_A_2", "the commitment bonus alone still covers a small score gap")
 
 
 func test_decide_is_deterministic() -> void:

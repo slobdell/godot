@@ -88,8 +88,26 @@ func corridor(unit_name: String, from: Vector3) -> Dictionary:
 
 
 ## The current leg's unit direction on the ground - the corridor tangent the A6 law and its falsifier are measured
-## against. Vector3.ZERO when the law is inactive (no path) or the unit is already on the waypoint.
+## against. Vector3.ZERO when there is no leg to have a tangent.
+##
+## **nav publishes this now** (`Movement.state(unit)["corridor"]`, S4 §2's "one definition, one publisher"), so take
+## nav's value whenever it is there and derive one only on a build that predates it. Deriving it here as well would
+## be a SECOND interpretation of `path_points` - three projections of one fact was exactly what §2 was written to
+## stop, and a readout that disagreed with the falsifier about which way the corridor ran would be worse than one
+## that said nothing. nav sends `null` for "no leg", never Vector3.ZERO, on the same principle this file applies to
+## an inactive law: an unreadable corridor must not be able to look like a readable one.
 func corridor_tangent(unit_name: String, from: Vector3) -> Vector3:
+	# `has`, not `get(..., null)`: nav sends null for "no leg", so the default would make an ANSWER OF NULL
+	# indistinguishable from NO ANSWER AT ALL and send this straight to the fallback - overruling nav with a
+	# derivation on exactly the ticks nav said there was nothing to derive. It is the same absent-versus-empty
+	# distinction the facing key turns on, and getting it wrong here silently reinstates the second publisher.
+	var reading := state(unit_name)
+	if reading.has("corridor"):
+		var published: Variant = reading["corridor"]
+		if not published is Vector3:
+			return Vector3.ZERO  # nav answered, and its answer was "no leg"
+		var given: Vector3 = published
+		return given.normalized() if given.length() > 0.001 else Vector3.ZERO
 	var lane := corridor(unit_name, from)
 	if lane.is_empty():
 		return Vector3.ZERO
@@ -114,16 +132,32 @@ func corridor_tangent(unit_name: String, from: Vector3) -> Vector3:
 #              anything, and any level name would be invented.
 # So this vocabulary DEGRADES TO ONE WORD and must read correctly when it does.
 const LEGIBILITY_WORDS := {
-	# The level-1/2/3 overrides: a unit that breaks off FOR A REASON THE PLAYER CAN SEE is not disobedient.
-	"survival": "under fire", "band": "holding its range", "armour": "front toward the threat",
-	"arc": "keeping its gun on", "formation": "holding its place",
-	# The honest single word for the blend, and what the default path will say until A7 is on by default.
+	# LIVE TODAY, and the only reason a player sees on this tree: the unit is swinging onto the heading he DREW with
+	# a right-drag. Off the corridor by construction, and obedience - which is why S4 names it, and why folding it
+	# into anything else would show "no reason" for a nose that has a perfectly good one.
+	"arrival_arc": "arriving on the heading you drew",
+	# RESERVED BY NAV AND NOT PUBLISHED YET, but safe to word now: nav split its old `override` in two after this
+	# readout caught the name drifting, so `override` can only ever arrive meaning *a nav-owned law RAN and
+	# something outranked it without naming itself*. The absence of a law is `no_law`, below, and is silent.
 	"override": "a higher priority has the wheel",
+	# A7's levels, real the day A6-a/A6-b exist to lose to them. Wired so the words are already the shipped ones.
+	"survival": "under fire", "band": "holding its range", "armour": "front toward the threat",
 }
-## Reasons the law is inactive that are NOT an override and get NO line: either the law has nothing to say, or
-## something else on screen already says it. `blocked` and `no_path` belong to CALLOUTS (BLOCKED / STUCK) - C-3 keeps
-## that band for *nav cannot proceed*, and A6 is about a unit that IS proceeding.
-const LEGIBILITY_SILENT := ["", "no_order", "no_path", "blocked", "reflex", "style_run"]
+## Reasons that get NO line. Three of these are C-3 doing its job rather than gaps.
+##
+## `no_law` is nav's answer on most ticks today: **no nav-owned motion law exists to run**. It is the ABSENCE of a
+## cause, not a cause, and a line on every off-corridor unit every tick would be the 30-messages failure C-3 exists
+## to prevent, dressed as an explanation. (This entry is why nav split the name: it used to be called `override`.)
+##
+## `yielding`, `blocked` and `no_path` are already spoken by the callout band over the hull (CALLOUTS, and
+## `card_line`'s "No way through"/"Stuck for 4 s"). **One fact, one channel** - a fact in two vocabularies teaches a
+## player to read neither. nav keeps them in its set because metrics wants them; control simply does not speak them.
+##
+## `no_order` is a unit with nothing to be off the corridor of.
+##
+## `run_style` and `reflex` are NOT in nav's set at all - `CombatMotion`'s knowledge, with no channel to the mover -
+## and are listed here only so that if they ever arrive they arrive silent rather than as an unknown.
+const LEGIBILITY_SILENT := ["", "no_law", "yielding", "blocked", "no_path", "no_order", "run_style", "reflex"]
 
 
 ## nav's legibility state for a unit, or {} when this build's nav does not publish one (every build before nav's N5).
@@ -140,10 +174,19 @@ func legibility_line(unit_name: String) -> String:
 	var reading := legibility(unit_name)
 	if reading.is_empty() or bool(reading.get("active", false)):
 		return ""
-	var why := String(reading.get("why", ""))
-	if why in LEGIBILITY_SILENT:
+	# **If the callout band over the hull is already speaking, this line says nothing.** C-3's rule is one fact one
+	# channel, and here it also stops an outright contradiction: nav measured a hull on the A4 arm holding
+	# `arrival_arc` for 45 s, ending 9.8 m short and 147 degrees off the ordered heading. The band correctly calls
+	# that STUCK; rendering "arriving on the heading you drew" beside it would be the screen telling the player two
+	# opposite things, and the wrong one would be the encouraging one - it says WAIT for a unit that is not coming.
+	# This is a general rule and not an A4 special case: whatever the band has to say outranks an explanation.
+	if callout(unit_name) != "":
 		return ""
-	return String(LEGIBILITY_WORDS.get(why, LEGIBILITY_WORDS["override"]))
+	var why := String(reading.get("why", ""))
+	# A reason this build does not know renders as NOTHING, not as a guess. nav refuses anything outside its closed
+	# set with push_error, so an unknown `why` here means the sets have drifted - and a wrong cause is worse than
+	# none, because the player believes it.
+	return String(LEGIBILITY_WORDS.get(why, ""))
 
 
 ## One line for the unit card: "Blocked by Green_Alpha_2", "Giving way", "Arrives in 4 s", or "".

@@ -132,37 +132,83 @@ func test_the_corridor_names_its_current_leg_and_is_empty_when_the_law_is_inacti
 func test_the_readout_names_the_cause_and_never_invents_one() -> void:
 	var f := Fixture.new(self)
 	await f.build(false)
+	# nav's closed set as it actually shipped (`Movement.LEGIBILITY_WHY`, stream/nav 3f8cb7b1): arrival_arc,
+	# yielding and override are live today; band/survival/armour cannot be published until A6 exists, because
+	# `CombatMotion.choose` takes no unit handle and returns into squad's brain.
 	var states := {
 		# On its corridor: the law is active, and there is nothing to explain.
 		"Green_Alpha_1": {"phase": "driving", "legibility": {"active": true, "why": ""}},
-		# Off the corridor, deliberately, and nav names the level that took the nose.
-		"Green_Alpha_2": {"phase": "driving", "legibility": {"active": false, "why": "band"}},
-		# Off the corridor because it CANNOT PROCEED. That is the callout band's job, not this one.
-		"Green_Alpha_3": {"phase": "blocked", "blocked_by": "no_path", "legibility": {"active": false, "why": "blocked"}},
-		# A7 off: the honest single word. This is what the default path says until A7 is on by default.
-		"Green_Bravo_1": {"phase": "driving", "legibility": {"active": false, "why": "override"}},
-		# A unit with no order at all: inactive, and silent.
-		"Green_Bravo_2": {"phase": "driving", "legibility": {"active": false, "why": "no_order"}},
+		# The one live reason worth a line: the unit is swinging onto the heading the PLAYER drew.
+		"Green_Alpha_2": {"phase": "driving", "legibility": {"active": false, "why": "arrival_arc"}},
+		# Right-of-way took the nose. The callout band over the hull already says YIELDING; C-3 gives one fact one
+		# channel, so this line stays quiet.
+		"Green_Alpha_3": {"phase": "yielding", "legibility": {"active": false, "why": "yielding"}},
+		# No nav-owned motion law exists to run -- nav's answer on most ticks today. The ABSENCE of a cause, and a
+		# line on every unit every tick is the 30-messages failure C-3 exists to prevent. (nav split this out of
+		# `override` after this readout caught the name meaning two different things.)
+		"Green_Bravo_1": {"phase": "driving", "legibility": {"active": false, "why": "no_law"}},
+		# A level that took the nose, once A6 exists for it to outrank. Wired now so the words are already shipped.
+		"Green_Bravo_2": {"phase": "driving", "legibility": {"active": false, "why": "band"}},
 	}
 	var readout := f.controls.movement
 	readout.provider = func(unit_name: String) -> Dictionary: return states.get(unit_name, {})
 	assert_eq(readout.legibility_line("Green_Alpha_1"), "", "a unit on its corridor gets no readout at all")
-	assert_eq(readout.legibility_line("Green_Alpha_2"), "holding its range", "a deliberate off-corridor leg names its cause")
+	assert_eq(readout.legibility_line("Green_Alpha_2"), "arriving on the heading you drew",
+			"the live reason: an ordered-facing approach is off-corridor BY CONSTRUCTION and is obedience, so it is named")
 	assert_eq(readout.legibility_line("Green_Alpha_3"), "",
-			"an unreached goal is the callout band's (BLOCKED / STUCK), never this one: A6 is about a unit that IS proceeding")
-	assert_eq(readout.callout("Green_Alpha_3"), "BLOCKED", "and that band still says it")
+			"right-of-way is the callout band's fact, and one fact gets one channel")
+	assert_eq(readout.callout("Green_Alpha_3"), "YIELDING", "and that band still says it")
+	assert_eq(readout.legibility_line("Green_Bravo_1"), "",
+			"`no_law` is the ABSENCE of a cause - most ticks today - and a line every tick on every unit is not attribution")
+	# And the name nav reserved for the real thing does speak, because it can now only mean the real thing.
+	states["Green_Bravo_1"] = {"phase": "driving", "legibility": {"active": false, "why": "override"}}
 	assert_eq(readout.legibility_line("Green_Bravo_1"), "a higher priority has the wheel",
-			"with A7 off nav can only say `override`, and the words must still read correctly")
-	assert_eq(readout.legibility_line("Green_Bravo_2"), "", "a unit with no order has nothing to be off the corridor of")
+			"`override` now means a law RAN and something outranked it, which is worth telling him")
+	# Everything the callout band already speaks stays out of this line: one fact, one channel.
+	for quiet: String in ["yielding", "blocked", "no_path", "no_order"]:
+		states["Green_Bravo_1"] = {"phase": "driving", "legibility": {"active": false, "why": quiet}}
+		assert_eq(readout.legibility_line("Green_Bravo_1"), "", "`%s` is spoken elsewhere or not at all" % quiet)
+	assert_eq(readout.legibility_line("Green_Bravo_2"), "holding its range", "a level that took the nose names itself")
 	# The half that matters most: control NEVER INVENTS A CAUSE. A build whose nav publishes no legibility at all -
 	# which is every build before nav's N5 - is silent, not "unknown".
 	states["Green_Alpha_2"] = {"phase": "driving"}
 	assert_eq(readout.legibility_line("Green_Alpha_2"), "",
 			"nav publishing nothing means the readout says nothing: a guessed cause is confidently wrong")
-	# An unknown `why` from a future nav degrades to the honest single word rather than showing a raw key.
+	# A `why` this build does not know renders as NOTHING, not as a guess and never as a raw key. nav refuses
+	# anything outside its closed set, so an unknown reason here means the two sets have drifted apart - and a wrong
+	# cause is worse than no cause, because the player believes it.
 	states["Green_Alpha_2"] = {"phase": "driving", "legibility": {"active": false, "why": "something_new"}}
-	assert_eq(readout.legibility_line("Green_Alpha_2"), "a higher priority has the wheel",
-			"a cause this build does not know is still a cause, and is never shown as a raw key")
+	assert_eq(readout.legibility_line("Green_Alpha_2"), "",
+			"a reason this build does not know says nothing rather than guessing")
+	# Every name in the vocabulary is one nav can actually publish: a word for a reason that cannot arrive is dead
+	# code that reads like a feature.
+	for why: String in MovementReadout.LEGIBILITY_WORDS:
+		assert_true(why in ["arrival_arc", "override", "survival", "band", "armour"],
+				"%s is not in nav's closed set (Movement.LEGIBILITY_WHY)" % why)
+
+
+## S4 §2, "one definition, one publisher": nav publishes the corridor tangent now, so control must READ it and not
+## derive a second interpretation of `path_points`. A readout that disagreed with the falsifier about which way the
+## corridor ran would be worse than one that said nothing.
+func test_the_corridor_tangent_is_navs_and_not_a_second_opinion() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var here := f.tank("Green_Bravo_1").global_position
+	var route := PackedVector3Array([Vector3(10, 0, 20), Vector3(30, 0, 0)])
+	var states := {"Green_Bravo_1": {"phase": "driving", "path_points": route, "corridor": Vector3(0, 0, -1)}}
+	var readout := f.controls.movement
+	readout.provider = func(unit_name: String) -> Dictionary: return states.get(unit_name, {})
+	assert_eq(readout.corridor_tangent("Green_Bravo_1", here), Vector3(0, 0, -1),
+			"nav's published tangent wins over anything derivable from path_points here")
+	# nav answering "no leg" is null, never Vector3.ZERO -- an unreadable corridor must not look like a readable one.
+	states["Green_Bravo_1"] = {"phase": "blocked", "path_points": route, "corridor": null}
+	assert_eq(readout.corridor_tangent("Green_Bravo_1", here), Vector3.ZERO,
+			"nav saying 'no leg' is honoured even though path_points would have given an answer")
+	# A build older than nav's commit publishes no `corridor` at all: derive, rather than go blind.
+	states["Green_Bravo_1"] = {"phase": "driving", "path_points": route}
+	var derived := readout.corridor_tangent("Green_Bravo_1", here)
+	assert_true(derived.length() > 0.9 and derived.distance_to((Vector3(10, 0, 20) - Vector3(here.x, 0.0, here.z)).normalized()) < 0.01,
+			"with no published corridor the current leg is derived, so the drawing still works (%s)" % [derived])
 
 
 ## C-3's channel rule, end to end: the cause reaches "why did my element do that" and NOTHING ELSE. The order pin is
@@ -212,3 +258,31 @@ func test_the_cause_reaches_the_element_log_and_not_the_order_pin() -> void:
 	for mark: Dictionary in f.controls.order_marks():
 		assert_eq(int(mark.get("refusing", 0)), 0,
 				"the cause never turns a pin red: that is the refusal channel (%s)" % [mark])
+
+
+## nav, from building the arrival-heading test N4 said was missing: on the A4 arm a hull on a blocked corridor can
+## hold `arrival_arc` for 45 s and end 9.8 m short, 147 degrees off the ordered heading. "Arriving on the heading you
+## drew" is the ONE live reason this readout renders, and on that arm the arriving part does not happen - so the
+## line would tell the player to WAIT for a unit that is not coming, while the band beside it correctly says STUCK.
+## Whatever the callout band has to say outranks an explanation.
+func test_the_band_outranks_the_explanation_so_the_screen_never_says_two_opposite_things() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var states := {
+		# On an ordered-facing approach and making progress: the explanation is welcome.
+		"Green_Alpha_1": {"phase": "driving", "stalled_s": 0.0, "legibility": {"active": false, "why": "arrival_arc"}},
+		# The same reason, on a hull that has stopped getting anywhere: the band says STUCK and this line shuts up.
+		"Green_Alpha_2": {"phase": "driving", "stalled_s": 6.0, "legibility": {"active": false, "why": "arrival_arc"}},
+		# And when nav cannot proceed at all, likewise.
+		"Green_Alpha_3": {"phase": "blocked", "blocked_by": "no_path", "legibility": {"active": false, "why": "arrival_arc"}},
+	}
+	var readout := f.controls.movement
+	readout.provider = func(unit_name: String) -> Dictionary: return states.get(unit_name, {})
+	assert_eq(readout.legibility_line("Green_Alpha_1"), "arriving on the heading you drew",
+			"a unit really arriving on its ordered heading is explained")
+	assert_eq(readout.callout("Green_Alpha_1"), "", "and the band has nothing to say about it")
+	assert_eq(readout.callout("Green_Alpha_2"), "STUCK", "a hull going nowhere is STUCK")
+	assert_eq(readout.legibility_line("Green_Alpha_2"), "",
+			"and it is NOT also told it is arriving: the encouraging line would be the wrong one")
+	assert_eq(readout.callout("Green_Alpha_3"), "BLOCKED", "a hull that cannot proceed is BLOCKED")
+	assert_eq(readout.legibility_line("Green_Alpha_3"), "", "and not simultaneously arriving")

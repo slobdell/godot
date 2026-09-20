@@ -6,18 +6,41 @@ construction (Arena.validate checks it). The design vocabulary and each arena's 
 Usage: python3 tools/make_arenas.py arenas   (or `make arenas`; then `make arena-report` and `make test FILTER=arena`)"""
 import json, math, sys, os
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import gdscript_source
+
 OUT = sys.argv[1]
-# Must mirror Match.SLOT_X / SPAWN_ROWS / SPAWN_ROW_SPACING (X5, round 4: 65 slots a side for faction-sized armies).
-COLUMNS = [0.0, -11.0, 11.0, -22.0, 22.0, -33.0, 33.0, -44.0, 44.0, -55.0, 55.0, -66.0, 66.0]
+
+# ROUND 9 (scale): these used to be a COPY of Match.SLOT_X / SPAWN_ROWS / SPAWN_ROW_SPACING, kept in step by a
+# comment saying "must mirror". It is the worst row in Invariant 0's table because THE COPY WON: `Arena.spawn_spot`
+# is consulted before the constants, so the baked lists here beat them and changing a constant changed nothing in a
+# real match. They are read now, and `make arenas` is the only thing that writes a spawn list.
+MATCH_GD = gdscript_source.GAME / "match" / "match.gd"
+ARENA_GD = gdscript_source.GAME / "arena" / "arena.gd"
 
 
-def spawns(base_z=90.0, rows=4, row_spacing=8.0):
+def spawns():
+    """Every spawn point for both sides, laid out exactly as `Match.spawn_position` lays out its fallback."""
+    columns = gdscript_source.const(MATCH_GD, "SLOT_X")
+    rows = int(gdscript_source.const(MATCH_GD, "SPAWN_ROWS"))
+    row_spacing = gdscript_source.const_float(MATCH_GD, "SPAWN_ROW_SPACING")
+    base_z = gdscript_source.const_float(MATCH_GD, "BASE_Z")
+    slots = int(gdscript_source.const(MATCH_GD, "SPAWN_SLOTS"))
     green = []
     for row in range(rows):
-        for x in COLUMNS:
-            green.append([x, base_z + row * row_spacing])
+        for x in columns:
+            green.append([float(x), base_z + row * row_spacing])
+    if len(green) < slots:
+        sys.exit("make_arenas: %d columns x %d rows is %d spawn points, fewer than Match.SPAWN_SLOTS (%d)"
+                 % (len(columns), rows, len(green), slots))
     rust = [[-x if x else 0.0, -z] for x, z in green]
     return {"green": green, "rust": rust}
+
+
+def spawn_clearance():
+    """`Arena.SPAWN_CLEARANCE`, both halves of it read from where they are defined."""
+    return (gdscript_source.const_float(MATCH_GD, "SPAWN_JITTER_MAX_X")
+            + gdscript_source.const_float(ARENA_GD, "SPAWN_CLEARANCE_MARGIN"))
 
 
 def mirrored(half):
@@ -44,11 +67,39 @@ def pit(x, z, radius=7.0, dps=30.0):
     return {"type": "fire_pit", "position": [float(x), float(z)], "radius": radius, "damage_per_second": dps}
 
 
+## Top-level keys that are AUTHORED BESIDE the generated layout and must survive regeneration.
+##
+## `arenas/*.json` are generated, not hand-authored: both writers build a fresh dict and dump the whole file, so
+## any key this generator does not know about is DELETED on the next `make arenas`. `show` (the arena light show's
+## channel/patch data, round 9) is tuning the lead will change several times after he sees the first frames --
+## putting it in this file would make every tweak a cross-stream request, and putting it in a sibling file would
+## need a loader to go looking for it. So the generator does not learn what a channel is; it only refuses to throw
+## one away, and it says which keys it carried.
+##
+## What this gives up: a MISSPELLED key survives regeneration forever as dead data. `Arena.validate()` closes that
+## by rejecting unknown top-level keys, with these in its allowed set.
+PRESERVED_KEYS = ("show",)
+
+
+def _keep(name, layout):
+    """Carry `PRESERVED_KEYS` over from the layout already on disk, and report what was carried."""
+    path = os.path.join(OUT, name + ".json")
+    if not os.path.exists(path):
+        return
+    with open(path) as f:
+        old = json.load(f)
+    for key in PRESERVED_KEYS:
+        if key in old:
+            layout[key] = old[key]
+            print("ARENA_KEPT %s: %s (authored beside the generator, not by it)" % (name, key))
+
+
 def write(name, note, half, control_radius=16.0, hazards=()):
     layout = {"name": name, "note": note, "half_size": 120.0, "obstacles": mirrored(half),
               "spawns": spawns(), "control_point": {"radius": control_radius}}
     if hazards:
         layout["hazards"] = mirrored(list(hazards))
+    _keep(name, layout)
     with open(os.path.join(OUT, name + ".json"), "w") as f:
         f.write(json.dumps(layout, indent=1) + "\n")
 
@@ -189,15 +240,17 @@ def write_v2(name, title, fight, props, lanes=(), regions=(), obstacles=(), cont
         layout["objectives"] = list(objectives)
     if shape:
         layout["shape"] = shape
+    _keep(name, layout)
     check_spawn_clearance(layout)
     with open(os.path.join(OUT, name + ".json"), "w") as f:
         f.write(json.dumps(layout, indent=1) + "\n")
 
 
-def check_spawn_clearance(layout, clearance=6.0):
+def check_spawn_clearance(layout, clearance=None):
     """Arena.SPAWN_CLEARANCE, checked at authoring time so a bad layout never gets written."""
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import arena_report
+    if clearance is None:
+        clearance = spawn_clearance()
     for box in arena_report.boxes_of(layout):
         for side in ("green", "rust"):
             for x, z in layout["spawns"][side]:
