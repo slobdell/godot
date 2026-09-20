@@ -105,7 +105,11 @@ pre-approved "strict file order" fix would fix a deadlock that is not happening 
 why ORCA's deflected velocity does not resolve in a corridor — whether the navmesh refusal (`AVOID_MESH_PROBE`) should
 return a slower but legal velocity instead of falling back to the route at reduced pace — and **something must notice
 the regime** (61% deflection with no arrival in 70 s trips nothing). The method is the finding: signatures written
-before the run killed the two stories their authors believed.
+before the run killed the two stories their authors believed. **Then the third died too (nav, 03:10):** the ORCA
+navmesh refusal fires twice in 70 s; making it return a slower-but-legal velocity changed nothing (identical arrivals,
+identical 40.57 s dispersion) and was reverted as a null. **All three pre-registered hypotheses are dead and the cause is
+unknown.** What survives is `wedged`, a `Movement` regime detector that fires 8 times in the run and gives the failure a
+name in the state machine, so the next investigation starts from a counter rather than a story.
 
 ### Standing rules for round 9 (in addition to *The standing rules for this round* below)
 
