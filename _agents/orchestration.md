@@ -2739,7 +2739,15 @@ The kickoff prompt is one line; this section is the rest.
     bodies have no such window (free() takes them to 0 in the same call), so the guard keeps that half and drops
     regions. Rules: a guard's claim is only as strong as the settling behaviour of what it counts, measured; land a
     guard *with* the fixes for what it finds, never route the fixes first; and when a new instrument convicts three
-    unrelated tests at once, suspect the instrument before the tests.
+    unrelated tests at once, suspect the instrument before the tests. **Second half (nav, 15:20): the transient the
+    guard measured is also a real hazard for the NEXT test.** `free()` is synchronous and the server's region
+    removal is not, so the next test's `ArenaFixture.build()` bakes a second full arena over the old one's regions
+    and the map logs "284 edge errors, more than 2 edges tried to occupy the same rasterization space" at its next
+    sync, poisoning whatever test is running then (14 of 18 failures in one shard, none related to navigation, the
+    carrier standing next to a theme test in the log). The round-6 fixture waited for the *new* arena's polygons; it
+    never waited for the *old* arena's regions to drain. Fix: wait on the map's region count returning to baseline
+    before instantiating, capped, named. Same measurement, two readings: the count was wrong as a leak and right as
+    a hazard.
 181. **A difference between two arms proves the arms differ, never why.** Round 9's spawn lift: combat's 5 cm arm
     moved the frame-1 sink by +0.032 m and combat read it as "the lift reached deployed units"; it was the
     depenetration recovery's sensitivity to the contact. Earlier the same night a 47 % sliding-goal share was read as
