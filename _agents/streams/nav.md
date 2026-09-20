@@ -314,6 +314,35 @@ deliberately NOT re-recorded: nothing on the default path moves it.
 5. **A remote check covering tonight's work.** The one that has been running all night covers `acd25a0b`
    (N0 + A7 + A11). A1, A4 and the instruments postdate it.
 
+### ⚠ `make lint` reports TWO FALSE ERRORS, on files identical to `main` — and lesson 157 just made lint a gate
+
+Running a local `make lint` (required now that the remote one is known to parse-check zero files) on this branch
+gives **two errors, and both are artefacts of `--check-only`, not defects**:
+
+    game/tank/tank.gd: ERROR: res://game/tank/tank.tscn:12 - Parse Error: [ext_resource] referenced
+                       non-existent resource at: res://game/tank/tank.gd
+    game/theme/factions/faction_art.gd: SCRIPT ERROR: Invalid call. Nonexistent function 'roster' in base 'GDScript'
+
+**Neither is nav's and neither is real:**
+- **Both files are byte-identical to `main`.** This branch's diff is 16 files and every one is nav-owned
+  (`git diff --name-only 9f864474..HEAD`); neither of these is among them.
+- **`Units.roster` exists** — `game/units/units.gd:866` — and `faction_art.gd:37` calls it correctly. The error is
+  `--check-only` validating a script whose *other* class is not registered in that invocation.
+- **`tank.gd` exists** and `tank.tscn` references it **by path, not by UID**. The error is the same shape: a scene
+  loaded during a check-only of the very script it references.
+- **The remote `check` on this tree imports every scene and has run hundreds of tests.** A tree that could not load
+  `tank.tscn` would not get that far.
+
+**Why this matters beyond nav:** lesson 157 established that the remote `make lint` has never parse-checked a file,
+and the standing rule became *run a local lint before naming any hash green*. **If the local lint has false
+positives, that replacement gate is broken too** — and its recipe treats any line matching `Parse Error|SCRIPT
+ERROR` as a failure, filtering only `depended scripts`. Both lines above pass that filter.
+
+**What nav has NOT established:** whether this is a stale `.godot` in this worktree or reproduces on a clean `main`
+checkout. The orchestrator linted `main` green earlier, which points at the cache; a re-import and re-check was
+started to settle it. **Until it is settled, a red local lint on these two files is not evidence about anyone's
+branch**, and nav is not claiming its own lint green either way.
+
 ### Verification state — exactly what is proven, and by what
 
 **The branch point is GREEN, which answers HANDOFF's "the first task of round 9 is one full `make remote T=check` on
