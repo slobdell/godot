@@ -272,9 +272,70 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 |---|---|
 | The hinge's frame cost (M1) | **Not measured, and the quiet box did not fix it.** Two six-cycle runs on an *empty* builder0 both came back NOT USABLE. The cause is now sized: frame cost regresses on vehicle census at **0.677 ms per vehicle (r 0.921, r² 0.85)**, and the battle thins monotonically through the run (90 → 72), so census alone is worth +0.68…+3.38 ms per cycle against a total cost spread of 6.39 ms and a mean of +0.01 ms. **The confound is the size of the signal, and in one cycle larger than it** — and it is a drift, not noise, so more cycles will not average it away. Needs combat's census-freeze tune (damage off, no deaths, no respawns, default off); the bench will then *require* it and refuse to report when it is off. Do not quote a trailer number until then. |
 | The Terminus lighting | Diagnosed and handed to the stream that owns the map file |
-| Roof dressing on the Terminus | **Built and green at `df55fa1d`** (9/0). Seven seeded housings/ducts/tanks per roof, inside `_shrink(poly, 2.2)` so nothing overhangs the parapet. **Cost: no new draw call and no new material** — appended to the block's existing SurfaceTool, so a block is still the two surfaces its docstring promises; the test asserts the surface count rather than trusting it. The band is taken OUT of the authored height, not added on top, because the mesh must stay inside the collision box ("what blocks a hull and a shot is what you see"); total height unchanged. Frames below. |
+| Roof dressing on the Terminus | **Built, looked at, fixed, and green at `19e258d2`** (9/0). Seven seeded housings/ducts/tanks per roof, inside `_shrink(poly, 2.2)` so nothing overhangs the parapet. **Cost: no new draw call and no new material** — appended to the block's existing SurfaceTool, so a block is still the two surfaces its docstring promises; the test asserts the surface count rather than trusting it. The band is taken OUT of the authored height, not added on top, because the mesh must stay inside the collision box ("what blocks a hull and a shot is what you see"); total height unchanged. Frames below. |
 | The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
+
+**The hinge cost is UNMEASURED at round's end, after three attempts and three refusals — and that is the honest
+result, not a number.** Each refusal had a different cause and each was the bench correctly declining:
+
+| attempt | why it was refused |
+|---|---|
+| busy box | frame-time spread swamped an effect under 1.5 ms (lesson 179) |
+| quiet box, 6 cycles, twice | census walked 90 → 72 as the battle thinned; **0.677 ms/vehicle (r 0.921)**, the size of the signal |
+| with `--tune=match.no_damage=1` | **the freeze did not take** — `Armor.no_damage` read false in 13 of 13 phases |
+
+The third is the one worth keeping: the flag was on the command line, `apply_tuning` printed **no error** (accepted),
+and the static the damage path reads was still false while the census walked 90 → 77. That is combat's
+initialisation-order bug on a second knob, **measured by the bench's own arm assertion** — which is what makes that
+assertion load-bearing rather than decorative. "Accepted with no error" carried no information whatsoever.
+*(That run was also on a box at load 8.22 with 25 other Godot processes, 78–100 ms frames against a 33.3 ms budget:
+void twice over.)*
+
+**A caveat on reading that check, from combat:** a leak does not only *fail* the next test, it **silently changes
+what the next test measures** — their wall fixture's rig moved 8 cm and went from `applied 0` to `applied 3` the
+moment the leaking teardown started freeing. So the 38 failures are a lower bound on the cost, and a **pass** in a
+shard that follows a leak is not trustworthy either. My four roof tests are robust to it by construction (they
+assert surface count, AABB and vertex positions on a freshly built `CityBlock`, with no dependence on world state),
+which is why I am willing to call them green — but that is a property of those tests, not a general licence.
+
+**ROUND 10, carried forward:**
+
+1. **A faint per-faction rim light on hulls** — the orchestrator's recommendation and the real answer to "the fight
+   should out-read the buildings". Lamps were never going to solve it: they light the *floor*, and a dark hull
+   between pools is still carried by its UI ring. Pair discipline and the readability gate apply.
+2. **The hinge cost**, once combat's `Units.tuning` fix is on main. The bench is already wired and will refuse
+   again if the knob still does not take.
+3. **A single-variable lamp pair**, if anyone wants the lamp claim on stricter footing than the current one (the
+   after-frame carries the roof dressing too; sound for the floor question, not single-variable).
+
+**And a rule I owe myself, from this round's last mistake: when you change SHARED geometry, run the neighbouring
+files before you push.** I changed `tiers_of` and the block shader and ran only `FILTER=theme_city_block`. The check
+came back with 38 reds in `test_theme_factions` and `test_theme_unit_scale` — both mine — and my first assumption was
+that I had broken them. I had not (they were combat's foundry leak, first-observed), but I had no grounds for the
+relief. Two minutes of local runs would have made it knowledge instead of luck.
+
+**The frame said the first version did not work, and every test passed while it did not.** All seven boxes place
+on every seed (counted: 28 distinct plant corners above the roof cap), the surface count was 2, the AABB was inside
+the box — and at the lifted camera the plant was *shapes you had to look for*. The shading sat at **+25% on tops and
+−28% on sides** of the roof's own value, which in a scene this dark is no contrast at all. **Nothing in the suite
+measures legibility, so nothing failed.** Fixed at `19e258d2`: tops catch the sky at ~2× the roof, sides fall well
+under, and a per-unit hash off the world position stops neighbouring boxes merging into one mass. At `p35-d120`
+every block now reads as a working rooftop against the flat slabs of the before-frame.
+
+**Frames, all `--no-show` so the light show cannot be credited for any of it:**
+
+| what | path |
+|---|---|
+| Terminus **before** (2 lamps, bare roofs) | `scratchpad/frames/prelamp-p{21,50}-noshow.png` |
+| Terminus **after** (8 lamps, dressed roofs) | `scratchpad/frames/v2-p{21-d049-f35,35-d120,50-d160}.png` |
+| the roof three-way (before / subtle / fixed) | `scratchpad/frames/roof_three.png` |
+
+**The lamp A/B is now a real pair** and it is positive: in the before-frame the plaza is uniformly dark apart from
+the two original perimeter glows; in the after there are warm pools where the six new lamps are. Earlier I tried to
+get this from a difference image against a **show-ON** frame and discarded it — that conflated six lamps with the
+whole light show. One caveat on the pair as it now stands: the after also carries the roof dressing, so it is not a
+single-variable change. For the **floor** question it is still sound, because plant 24 m up cannot light the street.
 
 **Two traps the roof dressing walked into, both caught before any frame was rendered.**
 
@@ -590,10 +651,17 @@ number is *destroyed* by it, and the load is exactly the signal you are trying t
 #    in metrics' vocabulary -- NOT USABLE -- <what> above <bound> in N of M samples (peak X).
 #    DONE, twice, on an empty box, and it refuses its own number both times: the census confound (0.677 ms per
 #    vehicle) is the size of the signal. Do not re-run this until combat's census-freeze tune exists -- a third
-#    quiet run will spend a slot to print the same refusal. The tune is `--tune=match.no_damage=1` (combat,
-#    guarded at `Tank.take_hit`, default off, REFUSED LOUDLY if mistyped). When it reaches main, add it to this
-#    target's PERF_FLAGS and make the bench require it -- refuse to report when it is absent, rather than report
-#    with a caveat, because the caveat is the part that gets dropped when the number is quoted.
+#    quiet run will spend a slot to print the same refusal.
+#    DONE at `a4161b88`: the target passes `--tune=match.no_damage=1` (combat, guarded at `Tank.take_hit`) and the
+#    bench REQUIRES it -- `perf_scene` records `Armor.no_damage` PER PHASE, and any phase without it makes the
+#    verdict NOT USABLE ahead of every other reason. Refuses rather than caveats, because the caveat is the part
+#    that gets dropped when the number is quoted, which already happened once this round. The per-phase read is
+#    the SAME static `Tank.take_hit` gates on (`tank.gd:624`), so it proves the arm took rather than that it was
+#    requested -- which matters, because combat found `TUNE=` knobs that print "applied" and never reach their
+#    predicate (a static written by `Units._static_init` and clobbered by the owning class's own initialiser).
+#    HELD until combat's structural fix for that lands; the gate would refuse such a run rather than misreport it,
+#    but the orchestrator owns the sequencing. Caveat on the guard: the flag is read at phase END, so a mid-phase
+#    flip relies on the census-constancy clause to catch it.
 REMOTE_SLOTS=6 make remote T="perf-trailer-ab PERF_CYCLES=6"
 
 # 2. The merge candidate, taken in the same window rather than adding a check to a busy box.
