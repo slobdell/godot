@@ -287,6 +287,21 @@ unknown mechanism name.
 Owed next, in order: the wheeled arrive-on-heading arc (contract agreed with squad: a move order may carry `facing`),
 then the terminus oscillation at 45 a side (0.060 — the first number the size of the lead's complaint).
 
+### The War Rig's pivot is length-driven (builder0, `81f87186`, `nav-rotation-numbers ROT_CASES=truck`)
+
+Only `hull_size` changed between these, restored after each run:
+
+| hull_size | in-place turn (within 1.5 m of its start) | farthest wander |
+|---|---|---|
+| 3.0, 4.4, 5.6 (the size the lead complained about) | 7° | 5.5 m |
+| 2.84, 4.49, 12.0 | 23° | 3.9 m |
+| 3.32, 5.24, 14.0 (shipped) | 26° | 3.5 m |
+
+The 5.6 m control re-run on today's tree still reads 7°, so the change is combat's size change and nothing else this
+round. Going back to 12 m recovers 3° of a 19° move, so it does not undo the lead's complaint. The mechanism is that a
+longer hull at a fixed 12 m radius moves its centre LESS per degree during a creep K-turn — the wander falls as the
+length rises. The bar is 30°.
+
 ### The 14 m War Rig, measured (builder0, `81f87186`, `make nav-rotation-numbers`)
 
 - In place: **26°** of turn while within 1.5 m of its start, farthest wander 3.5 m (at the old size: 7° and 5.5 m). A
