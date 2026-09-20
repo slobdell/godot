@@ -203,6 +203,15 @@ def main(argv=None):
                      " and " if pooled["mixed_commits"] and pooled["mixed_machines"] else "",
                      "machines " + ",".join(pooled["machines"]) if pooled["mixed_machines"] else ""))
             print("    machines are not one measurement (CLAUDE.md rule 4; the laptop is ~2.75x slower).")
+            # Tell the reader how to CHECK rather than leaving them to assume. The first time this banner fired
+            # on real data, the answer was "docs only, the pool stands" -- which is exactly the outcome that
+            # makes a warning get ignored next time unless verifying it is one command.
+            commits = pooled["commits"]
+            for i in range(len(commits) - 1):
+                print("    verify it is inert:  git diff --stat %s %s" % (commits[i], commits[i + 1]))
+            if len(commits) > 1:
+                print("    if that touches game/ or tests/, re-run the odd log at the other commit and re-pool;")
+                print("    \"nothing relevant changed\" is the assumption this project keeps paying for.")
         print("  weighted by TICKS, not by averaging the per-file fractions -- a mean would weight a 30 s log")
         print("  the same as a 120 s one. Per-file rows above; a map that disagrees with the pool is visible there.")
         print("  oscillating_share %s over %s s under way | cusps %d (%s/agent-min)" % (

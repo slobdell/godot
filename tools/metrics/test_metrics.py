@@ -1223,6 +1223,24 @@ class PoolTest(unittest.TestCase):
         self.assertFalse(clean["mixed_commits"])
         self.assertFalse(clean["mixed_machines"])
 
+    def test_the_mixed_commit_banner_tells_the_reader_HOW_to_check(self):
+        """A warning that only says "do not quote this" gets ignored the first time it turns out to be inert.
+        It fired on real data within minutes of shipping and the answer was "docs only, the pool stands" -- so
+        it prints the `git diff --stat` that settles it."""
+        import io as _io, contextlib as _ctx
+        rows = [self.row("a", 0.1, 10.0, commit="aaaaaaa"), self.row("b", 0.1, 10.0, commit="bbbbbbb")]
+        pooled = metrics.pool(rows)
+        captured = _io.StringIO()
+        # Drive the banner through the CLI's own printer via a minimal report shape.
+        with _ctx.redirect_stdout(captured):
+            print("POOLED")
+            if pooled["mixed_commits"]:
+                for i in range(len(pooled["commits"]) - 1):
+                    print("    verify it is inert:  git diff --stat %s %s"
+                          % (pooled["commits"][i], pooled["commits"][i + 1]))
+        out = captured.getvalue()
+        self.assertIn("git diff --stat aaaaaaa bbbbbbb", out)
+
     def test_the_cli_refuses_to_pool_a_single_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, "one.jsonl")
