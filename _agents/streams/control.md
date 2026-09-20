@@ -186,7 +186,24 @@ frames. **Behind the walls, diagonals included: looked at, clean** — `make cam
 of half the perimeter (180° symmetric) at the lead's 21°/49 m/FOV 35, focus 20 m inside the edge, camera out beyond
 it; on the yard hexagon all three (two diagonals) cut the wall and stands and keep the floor to the bottom of the frame.
 
-**ROUND 8 MERGE HERE: `1b3da573` — #27 GREEN (builder0): `make check exited 0`, 1233 passed / 0 failed, `sim-baseline
+**ROUND 8 CLOSED. Merged into main as part of `1b3da573`** (verified: `git merge-base --is-ancestor 1b3da573 main`).
+**Ahead of main and unchecked until #29 reports:** `39a61b86` (camera-looks "behind wall" frames), `8326e1eb` +
+`3c488882` (`facing` on a move = arrive on this heading, nav/squad's contract, documented at the key and in
+`orders.gd`), `17c1235e` (merge of main `22eda2f3`: nav's wheeled arrival, squad's facing half), and two Status commits.
+Local after that merge (laptop): control 183/0, camera 52/0, command 77/0, test_r 98/0.
+
+**Next round — A6 (research_catalog.md, control + feel, contract first with nav and combat):** the lead's "they don't
+obey" is a motion-LEGIBILITY problem, not only a readout one — under attack-move units spend 30–36% of their time
+driving somewhere other than where he sent them, correctly, because they are fighting. feel owns the motion, control
+owns the readout; the bar is joint (opposing-tangent time under 10% with no fall in exchange ratio). The nearest thing
+already built is `facing` on a move: the hull's orientation carrying the order's intent.
+
+**Housekeeping (2026-09-19):** a backgrounded Godot from Sep 18 10:12 was still running 34 h later against this
+worktree, plus ten waiter loops from checks #6/#17. All killed. **A hung headless Godot holds its checkout's `.godot`
+import cache**; two Godots in ONE checkout produce phantom "tracked file does not exist" and cascading false
+`Nonexistent function` errors (seen in the main checkout with two concurrent `make lint` loops, not this worktree).
+
+**Round 8 detail: `1b3da573` — #27 GREEN (builder0): `make check exited 0`, 1233 passed / 0 failed, `sim-baseline
 passed: 668b7d490607439b`, every target through `audio-check passed`** (main `0ae1b223` merged; contains every round-8
 item above). After it, unchecked: `39a61b86` (camera-looks wall frames) and docs. **Round 8 is done for control.**
 Before it, `3c1c224e` (waited for main's new sim line). #26 on `4ebe47a7`: 1228/0 tests,
