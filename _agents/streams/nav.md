@@ -808,6 +808,46 @@ friend 0.
 `run` (the A/B control for round 7's standoff), and it does not change `COMMIT_BONUS`'s value — combat's A2 replaces
 that expression at level 5 under contract S5.
 
+### DEFILE MEASURED: it is ORCA. Both of nav's favoured hypotheses are DEAD, including the orchestrator's bet
+
+**Run on squad's tree** (their `game/tactics/`, `tank_brain.gd`, `element_feed.gd` and probe taken for measurement
+only and dropped again; nav's four rows are all default-off, so this is *their* configuration), maze, wheeled,
+`--deform=off`, seed 3, 70 s, wedge + bounding overwatch, laptop. **It reproduces squad's observation exactly** —
+artillery never arrived, dispersion 41.4 s, 4 of 5 in, same per-vehicle times — so the counters describe the very
+failure they saw.
+
+    DEFILE_NAV  asks_refused=0  yields_started=0  guard_rescues=1  orca_solved=2172  orca_deflected=1330
+
+| hypothesis | pre-registered signature | result |
+|---|---|---|
+| **1. chord guard starves wide hulls** | `guard_rescues` high | **DEAD — 1 over the whole run** |
+| **2. right-of-way impossible in a defile** | `asks_refused` and `yields_started` high | **DEAD — both exactly 0. Right-of-way never engaged at all.** |
+| **3. ORCA deflection degrades to a permanent slow** | `deflected / solved` near 1 | **ALIVE — 1330 of 2172, 61 % of solved ticks deflected** |
+
+**Hypothesis 2 was nav's leading candidate and the orchestrator independently bet on it too. It is wrong, and the
+arithmetic that made it compelling was never the point:** the 4.55 m-of-clearance-in-a-5.0 m-corridor calculation is
+still true, and it *never matters*, because **nobody ever asks.** Right-of-way triggers on `stalled_ticks` or on
+being held below `AVOID_ASK_PACE` — and a unit that ORCA is deflecting is **neither stalled nor slow enough**: it
+keeps inching forward, so `stalled_ticks` resets, and its pace stays above the ask threshold.
+
+**That is the real shape of the failure, and it is worse than any of the three hypotheses:** the hull is in a regime
+**no recovery mechanism recognises.** Not stalled (it moves), not blocked (it progresses a little), not held back
+enough to ask for right of way. It simply never gets through, and every safety net nav has is watching for a
+different symptom. It is arena's *"gap-coverer"* problem — *"a unit creeping at 1–2 m/s is NEITHER: too fast to
+crawl, too little path to oscillate"* — in the movement layer rather than the counters.
+
+**Two consequences for whoever takes this:**
+- **The fix is not the one the orchestrator pre-approved** (strict file order inside a narrow corridor). That would
+  fix a deadlock which is not happening. The question is instead *why ORCA's deflected velocity does not resolve in
+  a corridor*, and whether the navmesh refusal (`AVOID_MESH_PROBE`) should yield a **slower but legal** velocity
+  rather than falling back to the route at reduced pace.
+- **Something must notice this regime.** A unit that is deflected for 61 % of its ticks and arrives nowhere in 70 s
+  should trip *something*. Nothing currently does.
+
+**Method note, because it is why this came out right:** the three signatures were written down *before* the run, and
+two of them killed the hypotheses their author believed most. Had the counters not been pre-registered, the 61 %
+would have been easy to narrate as confirmation of whichever story was told first.
+
 ### THE QUESTION THAT SURVIVES THE WIDENING: why did a 2.6 m hull with 2.1 m of slack fail the defile?
 
 The orchestrator's framing is right — scale widening the kit's gaps to `widest_hull + 1.0 m` (CP2d) does not answer
