@@ -36,7 +36,11 @@ spot it can see instead of a fixed 30 m offset that the bigger hulls put behind 
 ### What you should look at (all sent to you overnight; paths on this laptop)
 
 1. **The roster at real relative scale**: `~/projects/godot-scale/build/roster-lineup/lineup_pose.png` (your pose) and
-   `lineup_factions.png`. K = 0.707, rig-anchored. **Overrule:** `Units.RIG_LENGTH_M` → 19.8 for real metres.
+   `lineup_factions.png`. K = 0.707, rig-anchored. **Overrule:** `Units.RIG_LENGTH_M` → 19.8 for real metres. feel's
+   art review of the resize (08:40): it works, the rig dominates; two things for your eye, neither a defect: the
+   Syndicate reads pristine white against everyone's rust (the ivory tower, intended), and **the Syndicate is fewer AND
+   smaller** — the whole faction sits under 5.5 m while three factions field 8 m and up. If that reads as the runt
+   rather than the surgical few, the thing to change is each unit's *reference vehicle*, not a number.
 2. **The War Rig bending**: `~/projects/godot-feel/build/rig-hinge/strip_45.png`, `strip_21.png` (your pose),
    `strip_reverse_60.png` (the jackknife). Hear it from us: the collider is still one box.
 3. **The camera in the Terminus alleys**: `~/projects/godot-control/build/terminus-alleys/index.html`; `alley4_asked`
