@@ -276,6 +276,25 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 | The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
 
+**S1 record — the Condemned artillery's box, 2.90 m wide, agreed by three independent routes.** S1 requires the
+numbers to be *derived and checked, not mirrored* (Invariant 0), and a single derivation that agrees with itself is
+exactly what that rule is aimed at. The box was measured in the pose the unit is shot at in (stowed, outriggers in)
+rather than the pose the concept was approved in (deployed, 4.74 m wide), and three routes that share no code path
+landed on the same number:
+
+1. **Drawn-vs-box test** (`test_theme_unit_scale`, feel): the drawn mesh fits inside the catalogue box on every
+   axis — **2.90**.
+2. **`DRIVING_BOUNDS` print** (`test_assets_outriggers`, feel): authored `2.31 × 1.38 × 4.00` → driving
+   `1.41 × 1.38 × 4.00`; refit by length to the slot's 8.20 m is `1.41 × 2.05 =` **2.89**.
+3. **Inversion of the committed value** (scale, `roster-scale`): the committed `4.74` inverted through the same
+   refit gives the stowed width back — scale's derivation, arrived at from the catalogue side, not the mesh side.
+
+The 2.89/2.90 gap is `snappedf(x, 0.01)`'s rounding and nothing else, which is checkable rather than asserted:
+`snappedf` is invertible, so the committed value brackets the underlying width to `[1.373171, 1.378049)` — scale's
+figure, which I verified independently after quoting an eyeballed `[1.3750, 1.3784]` that was not derived. Route 2
+is the one that can fail silently (a bad slot lookup returns `Vector3.ZERO` and the caller falls back to the
+authored bounds without raising), so it carries its own two tests and its failure was demonstrated, not assumed.
+
 
 ### Plan (feel, 2026-09-20)
 
