@@ -1163,15 +1163,15 @@
     "programme": "breathe",
     "period": 22.2,
     "phase": 1.48,
-    "floor": 0.7,
-    "ceiling": 1.35
+    "floor": 0.8,
+    "ceiling": 1.1
    },
    "shopfronts": {
     "programme": "breathe",
     "period": 15.2,
     "phase": 5.37,
-    "floor": 0.75,
-    "ceiling": 1.3
+    "floor": 0.82,
+    "ceiling": 1.12
    },
    "signs": {
     "programme": "breathe",
