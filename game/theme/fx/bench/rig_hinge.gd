@@ -251,9 +251,12 @@ func _hull_of(tank: Node3D) -> Node:
 	return null
 
 
-## Somewhere with room for the corner: the player's deployment pushed OUTWARD, away from the arena centre, so the
-## corner sweeps across open ground behind the army instead of through the middle of it. (First run: the rig was
-## parked inside its own deployment and the frames were 40 vehicles and a HUD with the rig off the edge.)
+## Somewhere with room for the corner: out of the player's deployment, but INWARD, toward the arena centre.
+## Two wrong answers before this one, both found by looking at the frames:
+##   1. the deployment itself -- forty vehicles and a command card, with the rig off the right edge;
+##   2. the deployment pushed OUTWARD -- a base sits about 100 m out on a ~140 m arena, so +48 m put the rig
+##      through the wall and the six frames were the inside of the advertising hoardings.
+## Inward, and clamped so the whole 26 m arc stays well inside the perimeter.
 func _clear_ground(scene: Node) -> Vector3:
 	var army := scene.find_children("*", "Tank", true, false).filter(
 			func(t: Node) -> bool: return int(t.get("team")) == 0 and t.is_inside_tree()) if scene != null else []
@@ -263,8 +266,13 @@ func _clear_ground(scene: Node) -> Vector3:
 	if not army.is_empty():
 		centre /= army.size()
 	centre.y = 0.0
-	var outward := centre.normalized() if centre.length() > 1.0 else Vector3.BACK
-	return centre + outward * (radius + 22.0)
+	if centre.length() < 1.0:
+		return Vector3(0.0, 0.0, radius + 22.0)
+	var out := centre.length()
+	var keep := maxf(radius + 12.0, minf(out - (radius + 22.0), Match.ARENA_HALF_SIZE * 0.45))
+	var where := centre.normalized() * keep
+	print("RIG_HINGE_PARK at %v (army centre %v, arena half %.0f m)" % [where, centre, Match.ARENA_HALF_SIZE])
+	return where
 
 
 ## The HUD, hidden while the corner is shot and put back afterwards. These frames are an ART review -- the question
