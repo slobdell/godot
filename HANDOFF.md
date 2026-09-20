@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-20 08:52. **Round 9's overnight run: sixteen branches and all three checkpoints merged. `main` is RED on ONE test at `b008a277` (a test-isolation leak the sharded schedule exposed and the resize made fatal; scale is fixing it); the last fully green `main` is `0808834e`. Read the morning summary first.**_
+_Last updated: 2026-09-20 08:52. **Round 9's overnight run: sixteen branches and all three checkpoints merged. `main` is RED on ONE test at `b008a277` (units spawned at exactly y = 0 get ejected through the floor depending on physics-engine state; squad and combat lift the spawn 5 cm, then one main check); the last fully green `main` is `0808834e`. Read the morning summary first.**_
 
 ## ☀ THE MORNING AFTER ROUND 9's NIGHT — read this first (2026-09-20, written 07:00, updated at each tick)
 
@@ -85,7 +85,7 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
   bool, A6 behind its opt-in switch; the baseline unmoved by its merge), so **what remains in the window is
   `tank_brain.gd` (+133: squad's corridor field and tube plumbing, combat's switching-cost seam) — OR no motion at
   all: a unit that spawns ALREADY intersecting looks identical to one nudged on tick one**, which would be a
-  placement-margin failure CP2 exposed (scale's). **MEASURED (scale, 09:15): it is a TEST-ISOLATION LEAK, not anyone's code.** Worst tick-one displacement across 90 units
+  placement-margin failure CP2 exposed (scale's). **MEASURED TO THE COORDINATE (scale `3f6c1650`, 09:30): nothing leaks — units are placed at exactly y = 0.0, a degenerate ground contact, and after an earlier arena's bodies were created and destroyed Jolt ejects three of them ~1.5 m DOWN through `Arena/Ground` (identical placement, different engine state; round 8's sim-hash lesson with positions). A real spawn bug, not only a test one. RULED: spawn at y = +0.05 m in both `ArmyLayout.deploy` (squad) and `Match.spawn_position` (combat), assert placement not the post-physics position, name the body hit; one more baseline move, recorded with the artillery's. The 09:15 reading that follows was the step before:** Worst tick-one displacement across 90 units
   is 1.8 cm (settling); the test **passes alone** (`FILTER=a_full_faction_army`: 1/0, exit 0) and fails only when
   `test_arena_layouts` (which stands up scrapyard) runs before it in the same process — scrapyard's bodies still in the
   physics space while the army deploys on foundry (the tell: two hulls of one squad within half a metre). The merge

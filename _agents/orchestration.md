@@ -2678,5 +2678,14 @@ The kickoff prompt is one line; this section is the rest.
     The merge added test files, the shards redistributed, and the polluter landed ahead of the victim. Four correct
     eliminations of code changes missed it because the variable was the schedule. Lesson 36 with physics bodies instead
     of the navmesh, and the resize made it fatal (an 8.62 m hull no longer fits between phantom obstacles a 3.60 m one
-    slipped past). Fix: arena tests free their arena deterministically, and the shared TestCase counts leftover bodies
-    at test start and names the leaker. **When a green test goes red with no relevant diff, ask what ran before it.**
+    slipped past). **Then measured to the coordinate (scale `3f6c1650`): nothing leaked.** `free()` takes an arena's
+    bodies 38 → 0 in the same call, the granted teardown guard never fires, and both orderings place all 90 units at
+    identical coordinates. **Units are placed at exactly y = 0.0, a degenerate zero-penetration ground contact, and
+    which way Jolt resolves it depends on the engine's internal state after earlier bodies were created and
+    destroyed: three units are ejected ~1.5 m DOWN through `Arena/Ground`.** Round 8's sim-hash lesson with spawn
+    positions instead of a hash, and a real game bug, not only a test one. Ruled: spawn a few centimetres above the
+    ground at both spawn sites (`ArmyLayout.deploy`, `Match.spawn_position`), assert *placement* rather than the
+    post-physics position, and name the body hit in the failure message — "inside a wall or crate" when the body was
+    the ground cost a morning. Three wrong eliminations (RNG divergence, tank_brain, leaked bodies) stand beside the
+    answer. **When a green test goes red with no relevant diff, ask what ran before it — then measure the mechanism
+    before assigning it.**
