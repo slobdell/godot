@@ -43,10 +43,12 @@ const FIGHT_MARGIN := 15.0
 ## WITHOUT the dwell timer, which the same table showed was inert. `--tune=switch.cost=1` selects A2 instead, and
 ## variant `x5c` still selects 1.35 — so both mechanisms are arms of one build and neither needs a checkout.
 const COMMIT_BONUS := 1.15
-## How far CLEAR_LANE outranks the fight it serves. It used to be written `COMMIT_BONUS * 1.15`: one 1.15 to cancel the
-## commitment bonus on the fight it was competing with, and one that was the genuine edge. The committed fight no longer
-## gets a bonus to cancel (and CLEAR_LANE is exempt from the switching cost, because stepping aside to shoot the target
-## you are already engaging is not a change of mind), so only the genuine edge remains.
+## How far CLEAR_LANE outranks the fight it serves, ON TOP of whatever commitment that fight receives. It used to be
+## written `COMMIT_BONUS * 1.15`: one 1.15 cancelling the commitment bonus on the fight it competes with, and one that
+## is the genuine edge. Round 9 split those apart — the cancelling factor is now read from the ACTIVE ARM at the call
+## site (the flat bonus, or 1.0 under A2, where CLEAR_LANE is exempt from the switching cost because stepping aside to
+## shoot the target you are already engaging is not a change of mind) and this constant is the genuine edge alone.
+## Collapsing the two again is how the flat arm ended up giving CLEAR_LANE a net advantage of exactly 1.0.
 const CLEAR_LANE_EDGE := 1.15
 ## A crew being suppressed stays worth suppressing down to this fraction of the pin threshold (hysteresis on `pinned`).
 const PIN_HOLD_FRACTION := 0.75
@@ -1054,12 +1056,18 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	for pair in orbits:
 		candidates.append({"option": "ORBIT", "target": pair[0], "score": float(pair[1])})
 	# CLEAR_LANE (A4): my gun is ready and aimed but a friend is in the way: step aside to a spot with a clear
-	# line to the target instead of waiting (or shooting through it). Above the fight it serves (×CLEAR_LANE_EDGE).
+	# line to the target instead of waiting (or shooting through it). It must out-rank the fight it serves AFTER that
+	# fight has received whatever commitment the active arm gives it — so it carries the arm's own bonus as well as
+	# its edge. Getting this wrong is not subtle: with the flat arm restored and only the edge applied, CLEAR_LANE's
+	# NET advantage over a committed ENGAGE is exactly 1.0 and the manoeuvre never happens
+	# (`test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane`: 0 shots, first shot at tick -1).
 	if features.get("hold_for_friends", true) and int(me.get("lane_blocked_ticks", 0)) >= LANE_BLOCKED_TICKS \
 			and current.get("target", "") != "":
+		var served := 1.0 if SwitchingCost.cost_arm() else float(features.get("commit_bonus", COMMIT_BONUS))
 		for pair in engages:
 			if pair[0] == current["target"]:
-				candidates.append({"option": "CLEAR_LANE", "target": pair[0], "score": float(maxf(float(pair[1]) * fight_scale, 0.3) * CLEAR_LANE_EDGE)})
+				candidates.append({"option": "CLEAR_LANE", "target": pair[0],
+						"score": float(maxf(float(pair[1]) * fight_scale, 0.3) * served * CLEAR_LANE_EDGE)})
 	if is_artillery:
 		for c in contacts:
 			if not c["visible"]:
