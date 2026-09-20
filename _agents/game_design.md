@@ -2132,3 +2132,18 @@ What that is against the tree he played (orchestrator's reading, 16:40):
   is OFF. The acceptance he names, driving squads through the Terminus streets, is round 10's bar for nav + squad.
 - **Containers in the middle of Terminus roads:** an arena-authoring question (feel's kit, nav's clearance rule). The
   read he wants, "is this passable", is a legibility problem before a routing one.
+
+His follow-up, verbatim (16:55):
+
+> ok but previously I had given some long prompt about how I wanted to effectively see light shows. Those 3d buildings
+> right now look like a 1990s game, and we could bring it to life by having some sleight-of-hand lighting tricks (i.e.
+> basic primitives to adjust individual lights on the building) and couple that with light show effects in general.
+> But in any case, our goal right now is to converge so we can re-merge and reset the environment
+
+Reading: the long prompt is `/tmp/widget2.md` from the night before (breathing, glowing lit edges on Terminus;
+Las Vegas-style fading light patterns; breathing arena edges; the camera forced outside solids; abstract light-effect
+modules; beautiful at low compute cost), which show's brief carried as the dials page and the channel engine. What
+shipped is the engine with its dials set where the gates allowed; what he asked for is the SHOW. Round 10's show brief
+starts from these two quotes: **basic primitives to drive individual lights on a building** (per-window, per-edge, per-sign
+addressable, not one uniform over eight blocks), and **light-show effects composed from them**, judged by his eye against
+a 1990s-game baseline frame, not by a luminance bar. The immediate goal is convergence: merge, close, reset.
