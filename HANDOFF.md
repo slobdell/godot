@@ -77,10 +77,15 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
 - **The `main` check on the full tip `b008a277` (CP2 + CP3 + everything) came back at 08:48: `exited 2`, 1478 passed,
   1 FAILED** — `test_match_spawns_and_results::test_a_full_faction_army_a_side_spawns_clear_of_itself`: three units
   (`Green_S5_1`, `Rust_S5_1`, `Rust_S8_1`) spawn inside a wall or crate. **A composition failure:** it passed on
-  scale's branch (1395/0 at `7542df28`) and on `main` before CP2 (1454/0 at `0808834e`), so it is CP2's regenerated
-  spawn grid meeting something merged after its branch point (show's arena JSON keys auto-merged with the regenerated
-  lists, combat's `units.gd` edits, or squad's hull pitch in `ArmyLayout`). **Handed to scale at 08:52 as its first item**
-  (reproduce with `make remote T="test FILTER=match_spawns"`, name the mechanism, fix in its paths, check, hash).
+  scale's branch (1395/0 at `7542df28`) and on `main` before CP2 (1454/0 at `0808834e`), so it is a composition. **scale eliminated from the repository alone (08:58):** the test runs on foundry, whose
+  layout is untouched; `game/tactics/` (ArmyLayout) is unchanged in the window; combat's `units.gd` lines are an inert
+  `--tune` parser; the dressing adds no bodies. **What remains is nav's `movement.gd` / `tank_brain.gd` /
+  `combat_motion.gd`: something on the default path acting on the FIRST TICK after deploy** (the sliding-goal tolerance,
+  the face recovery, the `wedged` detector…), displacing a unit that the resize left under a metre from foundry's
+  geometry into the probe box. **The resize did not create it; it consumed the margin that hid it** (the contact-pip
+  finding's shape). scale's `make spawn-probe` names each flagged unit's position and the body it intersects and runs
+  after its fairness series (~09:05); nav answers from that. Also found: the test's first assertion compares
+  `Match.SPAWN_SLOTS` with a constant defined AS `Match.SPAWN_SLOTS` and cannot fail (combat's/squad's file).
   Everything else in that run passed, including `sim-baseline` at `2d5215a8a0a59ded`. **So: `main` is RED on exactly
   one test as you read this; the last fully green `main` is `0808834e`.** If scale has not reported, run
   `make remote T=check` from `~/projects/godot` on
