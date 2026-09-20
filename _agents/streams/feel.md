@@ -195,7 +195,42 @@ rest of the round runs behind it.
 - **X6 — the two smoke targets: ESTABLISHED, and the premise is wrong.** Both are ALREADY differential; see below.
 - **X5 — the lead's poses.** Next, and the brief's camera is wrong: see *The 12° correction*.
 - **X4 — the every-unit box-fill test.** Blocked on CP2 by design.
-- **X7 — the airship.** Stretch, last.
+- **X7 — the airship: BUILT** (`567a8007`); its orbit numbers are provisional until `make airship-look` says
+  whether the lead can ever actually see it.
+
+### Decided overnight (the lead asleep; orchestrator's standing instruction, 2026-09-20)
+
+1. **The corner in `make rig-hinge` is shot at the rig's own minimum turn radius (12 m), not a wide one.** A wide
+   corner is physically correct and visually nothing — `asin(L/R)` at 26 m is 11° and the frame showed a bend he
+   would have had to be *told* was there. Most reversible option available: one catalog-read constant, overridable
+   with `--rig-hinge-radius=`.
+2. **The jackknife strip is shot from 60°, not his 21°**, and is labelled a diagnostic. At his pitch a hard fold
+   puts the trailer broadside between camera and cab and the frame becomes a tanker with no truck in it. The
+   *judgement* frames stay at his pose.
+3. **`--no-trailer` exists as an A/B switch** so the hinge's frame cost is measured in one tree rather than across
+   two checkouts on two days (round 5 lost hours to exactly that). Shape copied from nav's `--nav-off=`.
+4. **The airship's two navigation lights are steady, not strobing**, and `show` has been told: the Syndicate is the
+   faction that does not flicker, and a strobing airship would undo the one piece of art direction the lead named
+   ("pristine, no rust"). A programme that wants the airship puts the cue on its screens.
+5. **`CyberMaterials.neon()` gained an optional `fixture` tag** rather than granting `show` a carve-out for one line
+   in my file. Sharing stays the default, so the perimeter is still one material and one draw call.
+
+### X7 — the airship, and the question it has to answer before it is finished (`567a8007`)
+
+Built from primitives (ellipsoid envelope, tail cone, four fins, gondola, engine pods, two navigation lights, a
+screen a side), Syndicate ivory, **no collision body of any kind** (asserted by a test over five collision classes),
+drift from `Match.tick` and never the wall clock (asserted: one lap returns it to the same place, and every sampled
+tick is on the orbit at its altitude with the nose on the tangent), **absent on LOW** like the crowd. The screens
+join the existing `arena` `AdBroadcast` channel and share its material, so the eleventh screen in the arena costs
+one quad and no second 2D feed — and the airship replays the player's last kill because `LiveFeed` already does.
+
+**What is NOT yet established, and the reason the orbit's two constants are provisional: whether the lead can ever
+see it.** *"Sometimes visible in the field of view"* is precisely the class of claim that turns out false — round 8
+shipped a camera fix for the HUD hiding his own selection and a facing feature that could not fire on his control
+scheme at all. So `make airship-look` sweeps **every camera yaw a player can rotate to** against **the whole orbit**
+at his pose, projects the airship's bounds and reports the fraction of that grid where any of it is on screen.
+Too low and he never sees it; 100% and it is wallpaper. **The frames come after the number**, and `ORBIT_RADIUS`
+and `ORBIT_ALTITUDE` get set by what they say. Queued.
 
 ### ⚠ The 12° correction (control, 2026-09-20) — it invalidates a line in this brief
 
