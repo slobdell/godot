@@ -317,6 +317,45 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
   6/6 on three consecutive runs with seven streams live. **The rule, worth a round lesson before CP3 makes a loaded
   machine normal: if the thing under test advances on `delta`, the test owns the clock.**
 
+### Verification notes, and one method that was WRONG
+
+- **Windowed local runs were authorised** (orchestrator, 2026-09-20 ~03:15, builder0 off the network, the lead
+  asleep): `terminus-alleys` and the `shell_console` baseline may run on the laptop's own display (`DISPLAY=:0`)
+  instead of `make remote`. Trip-up 32 says say when a windowed run is coming — **neither had started when the pause
+  came.** One run each when work resumes, then leave the display alone.
+- **`git checkout <sha> -- .` does NOT reproduce that commit's lint.** I put the tree at `e27f0681` to lint exactly
+  that commit, reasoning that files added in *later* commits would only add extra checks. **They add FALSE ones:**
+  `block_cutaway.gd` and `test_control_camera_solids.gd` were still on disk and call statics (`segment_hits_box`,
+  `roof_over`, `clear_pose`) that `rts_camera.gd` does not have *at that commit*, so each reports a parse error that
+  is a property of the method and not of the code. Either subtract those files by name or move them aside for the
+  run. Same shape as a control that is not actually the control.
+
+### PAUSED 2026-09-20 ~03:20 (the lead's session limit; the orchestrator called it). Where this is, exactly.
+
+**Everything is committed and the working tree is clean at `bd69de5f`.** There is no half-applied state to
+reconstruct: items 1, 2 (C-1/C-2/C-3), 3 (both halves) and 5 are written, tested and committed, and `e27f0681` is
+already merged to `main` as CP2c.
+
+**Three things are owed, all machine-bound, none of them thinking:**
+
+1. **`lint local` on `e27f0681` — STARTED, KILLED, NO RESULT.** It had reached roughly 40 of 533 files when the
+   pause came and was stopped cleanly with its Godot children. **No number from it may be quoted.** Redo it with the
+   method fixed (above).
+2. **`make terminus-alleys`** — the deliverable that decides whether item 3 *reads*, as opposed to whether its
+   numbers are right. Then **look at `build/terminus-alleys/index.html`**, and send show (`godot-show-b0`) a copy:
+   they asked, and the same frames judge whether the block edges read at street level.
+3. **`make shell-playtest`, then `make shell-console-baseline`**, then commit `tests/baselines/shell_console.txt`
+   saying what each line is. `check-display` refuses until that file exists; `shell-playtest` is deliberately
+   untouched so nobody else's run goes red meanwhile.
+
+**Then:** `make remote T=check REMOTE_SLOTS=6` on `bd69de5f` — only after the orchestrator says builder0 is up, and
+after checking the box for an orphaned `slot.sh` of this stream's.
+
+**⚠ A `make check` is running in this worktree and it is NOT THIS SESSION'S.** `make check` (pid 4145492) →
+`tools/slot.sh` → `timeout 5400 make check`, parented to `systemd --user`. It was left alone: the worker contract
+says never kill processes you did not start. It holds this checkout's `.lint.lock` and a heavy-run slot, so **a
+`make lint` here will refuse or queue until it finishes** — the first thing to check if lint appears to hang.
+
 ### Questions for the lead
 
 - **Should a dragged facing also orient the formation?** Today "move here facing north" lays the squad out along its
