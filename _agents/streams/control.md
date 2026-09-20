@@ -97,7 +97,32 @@ Each item: the failing test first, then the build, then `make remote T=check`, t
    catalogue (opposing-tangent time 30–36% → under 10% with no fall in exchange ratio) is measured by metrics' A12 after
    CP1, not by you. Test: the readout distinguishes a deliberate off-axis leg (nav's state says so) from an unreached
    goal, on a scripted scenario; no readout for a unit on its corridor.
-3. **After CP2 (the resized roster is on `main`): the view at his pose.** `git merge main`, then `make remote
+3. **The camera inside a Terminus block — forced outside the solid** (added mid-round 2026-09-20, the lead, by the
+   orchestrator; game_design.md *Round 9 addition*). His words: *"In the Terminus map it's highlighting another problem
+   where the camera often ends up inside a building and we can't see what's going on inside the alleyways. We need to
+   make it so the camera is forced outside the solid for these cases."* The blocks are the kit's `StaticBody3D` boxes.
+   **Read his sentence as two faults, not one:** the camera *inside* a solid (he named the mechanism) and the alley
+   *unseen* (he named the symptom) — and fixing only the first can make the second worse, which is the case the
+   frames must show.
+   **Mechanism, decided (change it only with frames):** (a) **push out, hard.** After the rig has its pose, query the
+   camera point against the arena's static blocks; if it is inside one, shorten the boom along `focus → camera` to
+   just outside the solid, keeping a standoff of at least the near plane so the near plane is not inside a wall
+   either. The boom shortens; **the pitch and FOV he chose are not touched** — round 6's rule is that the camera
+   overrides his tilt in exactly one place (the far-range floor) and that place is flagged to him, so this must not
+   become a second one. (b) **Then, if the sight line `focus → camera` is still blocked, cut away the occluder** the
+   way the perimeter wall already is, rather than lifting the pitch: lifting brings back the top-down view in the one
+   place he is guaranteed to be looking. (c) **Expose what was cut** (`RtsCamera.cutaway_blocks()` or equivalent) —
+   contract **S6** says a lighting cue must not fight the cutaway, so the new `show` stream reads this signal rather
+   than guessing; tell show the exact shape the day it exists.
+   **Test** (first): after a follow and after a pan across the Terminus, the camera is **never inside a block's box**,
+   asserted against the layout's own boxes, sampled every frame of the move and not only at the ends. Plus: the push
+   never puts the camera closer than `MIN_DISTANCE` without saying so, and a camera in the open is untouched
+   (mutation-check: disable the push and the Terminus test must fail while the open-arena one still passes).
+   **Frames you look at:** `make remote T=camera-looks CAMERA_LOOKS_ARENA=terminus` and
+   `control-playtest-shots` at **his pose (21°, FOV 35, 49 m)** in the alleys — before, after, and **the case where
+   pushing the camera out hides the alley**, with how it was handled written under it. Do not shoot these at 12°.
+
+4. **After CP2 (the resized roster is on `main`): the view at his pose.** `git merge main`, then `make remote
    T=camera-looks` and `control-playtest-shots`, and look: selection rings and boxes on a hull two to three times
    longer; the command card's `VISION_FRAME_BOTTOM` lean (now derive it from the card's geometry — the round-8 Invariant
    0 item — instead of the 0.40 copy); radar blips against 8–14 m hulls (a blip should read the hull's length class,
@@ -106,14 +131,14 @@ Each item: the failing test first, then the build, then `make remote T=check`, t
    physically wider. Fix what the frames show, one commit each, and put the strip in `build/camera-looks/` for the
    orchestrator with the commit and machine in its README. **Nothing here is published before CP2** — a frame of the
    old roster is a frame of a game he will not play again.
-4. **`shell-playtest`'s console gate into `check`, behind a committed baseline.** It needs a display, so it runs
+5. **`shell-playtest`'s console gate into `check`, behind a committed baseline.** It needs a display, so it runs
    under `remote` on builder0 (`tools/remote.sh` handles Xwayland; trip-up 65). The gate as written fails on *any*
    ERROR; lesson 42 says the honest first step is a committed expected state (`tests/baselines/shell_console.txt`, the
    allow-listed lines and their counts) and failure only on **change** — then tighten. This is what makes the next
    texture leak visible to the gate rather than to whoever happens to run a windowed playtest. Ask the orchestrator
    before touching `mk/core.mk`'s `check` line (shared; metrics is rewriting that recipe for T1 — coordinate so your
    target lands in their parallel form, not the serial one they are removing).
-5. **Stretch:** after squad's A10 lands, re-check on the **default path** (`make skirmish`, not a test flag) that the
+6. **Stretch:** after squad's A10 lands, re-check on the **default path** (`make skirmish`, not a test flag) that the
    `ungrouped=N` readout (`game/modes/skirmish_mode.gd:327`) reads 0 and that the ignored-order banner still fires for
    each refused-order class you wired in round 8. Lesson 149: a behaviour behind a flag has not shipped.
 
@@ -148,12 +173,17 @@ _Round 9, control stream. Branch `stream/control`, started from `main` at `9f864
 
 1. **Item 1, desktop right-drag facing** — the only item with no dependency, and the prerequisite for nav's
    arrival-arc A/B (which currently measures zero in both arms). Tests first, then the state machine, then the pin.
-2. **Item 4, `shell-playtest`'s console gate behind a committed baseline** — independent of both checkpoints, and it
-   needs a word with metrics before `mk/core.mk`'s `check` line is touched, so the ask goes out early.
-3. **Item 2, S4** — my half of the signature (the readout spec) can be written now; the code waits for feel's page and
-   nav's signature. **No A6 readout code until all three have signed.**
-4. **Item 3, the view after CP2** — blocked until scale's roster merges. Nothing published before it.
-5. **Item 5 (stretch)** — after squad's A10.
+   **Done; green hash below.**
+2. **Item 2, S4** — the signature first (it is a gate on three streams), then the parts of the readout that do not
+   need nav's new field. **Signed by all three 2026-09-20.** C-1 (the corridor drawn, current leg at full weight) is
+   built; C-2's attribution waits on nav's `legibility.why` key, and no verdict before CP1.
+3. **Item 3, the camera inside a Terminus block** — a new lead item from play, which outranks a scheduled re-check.
+   Independent of CP2 (blocks do not resize), so it can be built before it; the frames go out after CP2 if it has
+   landed, else with the roster named in the README.
+4. **Item 5, `shell-playtest`'s console gate behind a committed baseline** — independent of both checkpoints; the ask
+   went to metrics early and is answered (`check-display` as its own bundle, not in `CHECK_TARGETS`).
+5. **Item 4, the view after CP2** — blocked until scale's roster merges. Nothing published before it.
+6. **Item 6 (stretch)** — after squad's A10.
 
 ### Decisions
 

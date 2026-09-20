@@ -70,6 +70,34 @@ func route(unit_name: String) -> PackedVector3Array:
 	return PackedVector3Array(points) if points is Array else PackedVector3Array()
 
 
+## S4 (`_agents/legibility.md` §2, signed 2026-09-20): the ordered corridor, split for drawing into the **current leg**
+## and the rest of the route. `{}` when nav has no path for this unit - the A6 legibility law is INACTIVE then, and an
+## inactive law draws nothing rather than a guessed corridor (§5: an inactive law must never look like a broken one).
+##
+## Why the split: the law is a claim about the CURRENT LEG and nothing else ("velocity opposing the corridor tangent"
+## is measured against this leg's direction), so the leg is drawn at full weight and the rest is left faint. One
+## definition, one publisher: this reads nav's `path_points` and nobody recomputes a corridor of their own.
+func corridor(unit_name: String, from: Vector3) -> Dictionary:
+	var points := route(unit_name)
+	if points.is_empty():
+		return {}
+	var rest := PackedVector3Array()
+	for i in range(1, points.size()):
+		rest.append(points[i])
+	return {"leg": [Vector3(from.x, 0.0, from.z), Vector3(points[0].x, 0.0, points[0].z)], "rest": rest}
+
+
+## The current leg's unit direction on the ground - the corridor tangent the A6 law and its falsifier are measured
+## against. Vector3.ZERO when the law is inactive (no path) or the unit is already on the waypoint.
+func corridor_tangent(unit_name: String, from: Vector3) -> Vector3:
+	var lane := corridor(unit_name, from)
+	if lane.is_empty():
+		return Vector3.ZERO
+	var leg: Array = lane["leg"]
+	var along: Vector3 = (leg[1] as Vector3) - (leg[0] as Vector3)
+	return along.normalized() if along.length() > 0.001 else Vector3.ZERO
+
+
 ## One line for the unit card: "Blocked by Green_Alpha_2", "Giving way", "Arrives in 4 s", or "".
 func card_line(unit_name: String, describe_unit: Callable = Callable()) -> String:
 	var reading := state(unit_name)

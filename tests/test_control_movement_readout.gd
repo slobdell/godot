@@ -84,3 +84,38 @@ func test_the_real_movement_api_reaches_the_card() -> void:
 	assert_true(float(reading.get("eta_s", -1.0)) > 0.0, "and an ETA")
 	var line := f.controls.movement.card_line("Green_Bravo_2", f.controls._unit_label)
 	assert_true(line != "", "its card says something about getting there (%s)" % line)
+
+
+## S4 / A6 (`_agents/legibility.md` §2 and §6.1, signed 2026-09-20): the ordered corridor, split into the CURRENT LEG
+## and the rest. The legibility law is a claim about the current leg and nothing else, so the player has to be able to
+## see which leg he is judging - and an INACTIVE law (no path) draws nothing at all rather than a guessed corridor.
+func test_the_corridor_names_its_current_leg_and_is_empty_when_the_law_is_inactive() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var route := PackedVector3Array([Vector3(10, 0, 20), Vector3(30, 0, 0), Vector3(30, 0, -30)])
+	var states := {
+		"Green_Bravo_1": {"phase": "driving", "eta_s": 6.0, "path_points": route},
+		"Green_Alpha_1": {"phase": "blocked", "blocked_by": "no_path"},
+		"Green_Alpha_2": {},
+	}
+	var readout := f.controls.movement
+	readout.provider = func(unit_name: String) -> Dictionary: return states.get(unit_name, {})
+	var here := f.tank("Green_Bravo_1").global_position
+	var lane := readout.corridor("Green_Bravo_1", here)
+	assert_true(not lane.is_empty(), "a unit with a path has a corridor")
+	var leg: Array = lane["leg"]
+	assert_true((leg[0] as Vector3).distance_to(Vector3(here.x, 0.0, here.z)) < 0.01,
+			"the current leg starts at the unit, got %s" % [leg[0]])
+	assert_true((leg[1] as Vector3).distance_to(Vector3(10, 0, 20)) < 0.01,
+			"and ends at its NEXT waypoint, not at the goal, got %s" % [leg[1]])
+	assert_eq((lane["rest"] as PackedVector3Array).size(), 2, "the two legs after it are the rest")
+	var tangent := readout.corridor_tangent("Green_Bravo_1", here)
+	var expected := (Vector3(10, 0, 20) - Vector3(here.x, 0.0, here.z)).normalized()
+	assert_true(tangent.distance_to(expected) < 0.01, "the tangent is the current leg's direction, got %s" % [tangent])
+	# Inactive: no path (blocked), and a hull nothing drives. Neither invents a corridor.
+	assert_true(readout.corridor("Green_Alpha_1", f.tank("Green_Alpha_1").global_position).is_empty(),
+			"a blocked unit with no path has no corridor - the law is inactive, and an inactive law draws nothing")
+	assert_eq(readout.corridor_tangent("Green_Alpha_1", f.tank("Green_Alpha_1").global_position), Vector3.ZERO,
+			"and no tangent")
+	assert_true(readout.corridor("Green_Alpha_2", f.tank("Green_Alpha_2").global_position).is_empty(),
+			"a hull nav knows nothing about has no corridor")
