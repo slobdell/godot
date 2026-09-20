@@ -241,6 +241,27 @@ func _fixture_shaders() -> PackedStringArray:
 	return out
 
 
+func test_the_show_only_writes_uniforms_a_fixture_actually_declares() -> void:
+	# The kill ripple writes `show_event`, which only the city blocks' shader has. Without this the rim, the signs,
+	# the pools and the beams would each take a wasted write every frame of every ripple -- harmless, but the whole
+	# architecture's claim is that the cost is countable, and a write nobody reads is not countable.
+	var show := Show.new()
+	add_to_tree(show)
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://arenas/terminus.json"))
+	assert_eq(show.load_patch(data["show"], "terminus"), "", "the Terminus patch loads")
+	show.cues = ShowCues.load_book()
+	var rim := ShaderMaterial.new()
+	rim.shader = CyberMaterials.NEON_SHADER
+	var facade := CityBlock.facade_material()
+	show.add_fixture(&"rim", rim)
+	show.add_fixture(&"city_block", facade)
+	show.fire_event(Vector3.ZERO, 1.0)
+	show.apply(1.0, 0.1)
+	assert_true(facade.get_shader_parameter("show_event") != null, "the blocks take the ripple")
+	assert_eq(rim.get_shader_parameter("show_event"), null, "the rim, whose shader has no show_event, does not")
+	assert_true(rim.get_shader_parameter("show_level") != null, "but it does take the channel its shader declares")
+
+
 func _gd_files(root: String) -> PackedStringArray:
 	var out := PackedStringArray()
 	var stack := PackedStringArray([root])

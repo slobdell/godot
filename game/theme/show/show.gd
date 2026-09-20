@@ -48,6 +48,10 @@ var channels := {}
 var bindings: Array = []
 ## fixture selector -> how far its instances are spread out of phase (0 = all in phase).
 var spreads := {}
+## driven object -> the `show_*` uniforms its shader actually declares, or null when the shader is unknown (a bare
+## ShaderMaterial in a test). Writing a parameter a shader does not have is harmless but pointless, and during a
+## kill ripple it would be one wasted write per fixture per frame on every shader but the blocks'.
+var _accepts := {}
 ## fixture selector -> the objects being driven. ONE object per selector in practice: the rim's six edges share one
 ## cached material, all eight city blocks share `CityBlock.facade_material()`, every sign is one MultiMesh. That is
 ## what keeps the per-frame cost O(patch entries) instead of O(instances), and `writes_last_frame` proves it.
@@ -245,8 +249,31 @@ func add_fixture(selector: StringName, driven: Object) -> void:
 		return
 	list.append(driven)
 	_fixtures[selector] = list
+	_accepts[driven] = _uniforms_of(driven)
 	_write_spread(selector)
 	_apply_defaults(selector, driven)
+
+
+## The `show_*` uniform names `driven`'s shader declares, or an empty dictionary meaning "unknown, write anything"
+## (a ShaderMaterial with no shader, which is what a headless test uses).
+func _uniforms_of(driven: Object) -> Dictionary:
+	if not driven.has_method("get_shader"):
+		return {}
+	var shader: Shader = driven.get_shader()
+	if shader == null:
+		return {}
+	var names := {}
+	for entry: Dictionary in shader.get_shader_uniform_list():
+		var uniform := StringName(str(entry.get("name", "")))
+		if str(uniform).begins_with("show_"):
+			names[uniform] = true
+	return names
+
+
+## Whether it is worth writing `uniform` to `driven` at all.
+func _takes(driven: Object, uniform: StringName) -> bool:
+	var names: Dictionary = _accepts.get(driven, {})
+	return names.is_empty() or names.has(uniform)
 
 
 ## The channel actually being pushed for `name` -- the patch's, or the cue-blended one when a cue is running. What a
@@ -263,7 +290,8 @@ func fixtures_for(selector: StringName) -> Array:
 func _write_spread(selector: StringName) -> void:
 	var spread := float(spreads.get(selector, 0.0))
 	for driven: Object in _fixtures.get(selector, []):
-		driven.set_shader_parameter(SPREAD_UNIFORM, spread)
+		if _takes(driven, SPREAD_UNIFORM):
+			driven.set_shader_parameter(SPREAD_UNIFORM, spread)
 
 
 ## A fixture that nothing patches must look exactly as it does today, so any parameter with no binding is written
@@ -275,11 +303,13 @@ func _apply_defaults(selector: StringName, driven: Object) -> void:
 		if binding["fixture"] == selector:
 			bound[binding["parameter"]] = true
 	for parameter: Variant in UNIFORMS:
-		if bound.has(parameter):
+		if bound.has(parameter) or not _takes(driven, UNIFORMS[parameter]):
 			continue
 		driven.set_shader_parameter(UNIFORMS[parameter], identity_for(parameter))
-	driven.set_shader_parameter(COLOR_MIX_UNIFORM, 0.0)
-	driven.set_shader_parameter(EVENT_UNIFORM, Vector4.ZERO)
+	if _takes(driven, COLOR_MIX_UNIFORM):
+		driven.set_shader_parameter(COLOR_MIX_UNIFORM, 0.0)
+	if _takes(driven, EVENT_UNIFORM):
+		driven.set_shader_parameter(EVENT_UNIFORM, Vector4.ZERO)
 
 
 ## Every show parameter back to the value that reproduces today's look.
@@ -443,7 +473,7 @@ func _push_event(delta: float) -> int:
 	var writes := 0
 	for selector: Variant in _fixtures:
 		for driven: Object in _fixtures[selector]:
-			if not is_instance_valid(driven):
+			if not is_instance_valid(driven) or not _takes(driven, EVENT_UNIFORM):
 				continue
 			driven.set_shader_parameter(EVENT_UNIFORM, value)
 			writes += 1
