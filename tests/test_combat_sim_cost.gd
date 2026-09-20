@@ -33,6 +33,13 @@ func _drive_all(tanks: Array, throttle: float, ticks: int) -> void:
 
 func test_a_parked_hull_stays_exactly_still_and_drives_off_when_told() -> void:
 	for unit in ["tank", "gang_scout", "syn_tank"]:  # tracks, wheels, hover
+		# ⚠ A BASELINE, NOT AN ABSOLUTE, and this is the correction to the first version of these assertions. They
+		# asserted `bodies == 0` at the boundary, which passed here and FAILED on builder0 with `expected 0, got 1`
+		# -- because `_count_bodies` walks the WHOLE tree, so a body some EARLIER test in the shard left behind is
+		# counted against this one. That is precisely the charge-the-observer defect these assertions exist to stop,
+		# reproduced inside the fix for it. What this test can honestly assert is that IT added nothing.
+		var bodies_before := int(_world_left_behind()["bodies"])
+		var regions_before := NavigationServer3D.map_get_regions(tree.root.world_3d.navigation_map).size()
 		var setup := _pair([unit])
 		var tank: Tank = setup[1][0]
 		await wait_physics_frames(1)
@@ -63,9 +70,15 @@ func test_a_parked_hull_stays_exactly_still_and_drives_off_when_told() -> void:
 		await teardown()
 		assert_true(not is_instance_valid(arena) and not is_instance_valid(game_match),
 				"%s: the fixture is gone at the boundary" % unit)
-		assert_eq(NavigationServer3D.map_get_regions(tree.root.world_3d.navigation_map).size(), 0,
-				"%s: and so are its navigation regions, before the next unit bakes" % unit)
-		assert_eq(int(_world_left_behind()["bodies"]), 0, "%s: and its physics bodies" % unit)
+		var regions_after := NavigationServer3D.map_get_regions(tree.root.world_3d.navigation_map).size()
+		var bodies_after := int(_world_left_behind()["bodies"])
+		print("MEASURE sim_cost_boundary %-10s bodies %d -> %d, navigation regions %d -> %d" % [
+				unit, bodies_before, bodies_after, regions_before, regions_after])
+		assert_true(regions_after <= regions_before,
+				"%s: it added no navigation regions (%d -> %d), so the next unit bakes on the map it found"
+				% [unit, regions_before, regions_after])
+		assert_true(bodies_after <= bodies_before,
+				"%s: and no physics bodies (%d -> %d)" % [unit, bodies_before, bodies_after])
 
 
 func test_a_parked_hull_still_blocks_a_hull_driving_into_it() -> void:
