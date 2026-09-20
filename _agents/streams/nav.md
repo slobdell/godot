@@ -284,10 +284,17 @@ mechanism cannot act is not a control; its zero is indistinguishable from a resu
 
 **✅ GREEN: `53861455` — `>> remote: make check exited 0 (build/ copied back)`, `1321 passed, 0 failed`,
 `sim-baseline passed: 04414f5d6a6dfa7c` (builder0).** Covers the legibility key and the corridor tangent.
-**`main` merged at `d6a1f454`, and the FINAL check is running on that** — it covers everything after `c6222a5c`
-(the corridor, the `no_law`/`override` split, A6's two clauses, the `a6=` arm field, the arrival-heading test, two
-missed `.uid` files) and compares against `main`'s current baseline `d4c049819a5833d3`. **If that hash is not named
-green below, this branch is UNVERIFIED-BUT-COMMITTED after `53861455` and must be read that way.**
+**✅ MERGE CANDIDATE, GREEN: `d6a1f454` — `>> remote: make check exited 0 (build/ copied back)`,
+`1381 passed, 0 failed`, `sim-baseline passed: d4c049819a5833d3` (builder0).** That is `main`'s code plus nav's, so
+its green line covers the combination; the orchestrator merges this tip directly. It verifies everything after
+`c6222a5c` — the corridor tangent, the `no_law`/`override` split, A6's two clauses, the `a6=` arm field, the
+arrival-heading test and two missed `.uid` files.
+
+**The baseline point is the one that matters for the lead: `d4c049819a5833d3` is `main`'s CURRENT value, moved by
+squad, and nav's merge leaves it untouched.** So nav's five rows are confirmed not to move the simulation against
+the value that is live now, not merely against the one they were built on.
+
+*(Commits above `d6a1f454` are docs-only: this Status.)*
 
 **✅ GREEN (earlier): `3b01f5b7` — `>> remote: make check exited 0 (build/ copied back)`, `1295 passed, 0 failed`,
 `lint: all scripts parse`, `sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)` — builder0.** The baseline hash is
