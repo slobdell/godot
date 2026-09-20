@@ -235,7 +235,81 @@ it is his call whether that is a size question or a stats question, and this rou
 
 ## Status
 
-_Last updated 2026-09-20 (worker, `stream/combat` at `9f864474`)._
+_Last updated 2026-09-20 03:2x (worker, `stream/combat` at `0ba8d2c9`). **PAUSED** on the orchestrator's call
+(lead session limit; builder0 down). Resume on its "RESUME" message._
+
+## ⏸ WHERE THIS STREAM IS, AND THE EXACT NEXT STEP
+
+**Tip `0ba8d2c9`, working tree clean, nothing uncommitted.** Six commits, every one green on
+`make test FILTER=switch` at the time it was made:
+
+| commit | what |
+|---|---|
+| `ea792b2e` | A2's switching cost as one expression, inert (S5) |
+| `b69d081b` | the seam in `tank_brain.gd` + the X1 arm counter + `make switch-arm` |
+| `c68b423e` | the lay term (A2's missing third term) + the lesson-153 floor fix |
+| `a1209857` | the stance floor gated as an arm + `option_share`/`transitions` + the `--require` refusal gate |
+| `1e328dfe` | Status: the duel regression |
+| **`0ba8d2c9`** | **the flat bonus becomes the default with its dwell timer RETIRED; A2 becomes the opt-in arm** |
+
+**Verification standing at the pause:**
+- `make test FILTER=switch` — **25 passed, 0 failed** (laptop, `0ba8d2c9`).
+- `make test FILTER=brain_decide` — **18 passed, 0 failed**, including `test_commitment_prevents_flip_flopping`.
+- **lint local: 534 files, 2 error lines, both baselined** (`tank.gd` via `tank.tscn`'s ext_resource self-reference;
+  `faction_art.gd` via `Units.roster` under `--check-only`). **Neither is in a file this stream touched** — checked
+  by diffing `main...HEAD` against the lint output, not by eye. Lesson 157: a remote-green commit is NOT
+  parse-checked, so this local lint is the only parse evidence that exists for this tip.
+- `make remote T=check` **could not run**: builder0 unreachable, the wrapper failed at the sync step with
+  `cannot reach slobdell@builder0` / `Error 3`. It never reached the suite, so `build/` is not holding a previous
+  run's artefacts for this stream.
+- **A full local `make check` was started on `0ba8d2c9` and left running** at the pause; its log is at
+  `…/scratchpad/check-local.log`. It had not finished. **Do not read it as a verdict until it prints its own
+  totals.**
+
+### THE EXACT NEXT STEP, in order
+
+1. **Read `check-local.log`'s totals** (or re-run `make check` if it was killed). **`sim-baseline` is EXPECTED TO
+   FAIL**: retiring the dwell timer changes option choice and option choice is the simulation. The orchestrator
+   records the new hash (Invariant 2); this branch does not. Anything else red is this stream's and is fixed before
+   the hash is named.
+2. **When builder0 returns**, check for a stale `slot.sh` of this stream's on the box first, then
+   `REMOTE_SLOTS=6 make remote T=check`. Read the result from the wrapper's own `>> remote: make check exited <N>`
+   line and the runner's `N passed, M failed` — never a shell exit through a pipe, and **a 255 is transport, not the
+   suite** (after which `build/` holds a PREVIOUS run's artefacts).
+3. **Name the hash** as: `this commit is green, merge here: <sha>` + `lint local: 534 files, 2 baselined lines` +
+   **the sim-baseline-moves declaration**.
+4. **`make ai-perf` on builder0** (never the laptop — the perf scenario fails here on speed alone). Pre-registered:
+   A2 costs under 2% of `ai_usec_per_tick`. Note it is now the OPT-IN arm, so the default build's cost is the flat
+   bonus's, and the A2 figure needs `--tune=switch.cost=1`.
+5. **Send metrics the switch-event files** for the paired read (predicted `angle_deg` against the hull rotation
+   actually performed). Blocked until CP1 merges, because the `--trajectory` emitter lives on metrics' branch.
+6. **CP2 lands → X3**: `git merge main`, then re-take the sim baseline (orchestrator's), `make faction-matrix` on
+   yard and pit, the `gangs vs law` pair via `compare-arms`, and `make engagement` split direct/indirect. **Nothing
+   size-dependent is compared across CP2.** Two movements are pre-registered as NOT this stream's doing: the
+   engine-deck scenario moves because scale's `_apply_hull_size` makes the Condemned tank 0.8 m taller, and the
+   muzzle ceiling drop (1.30 → 1.14 m, 18 muzzles, floor set by the Rat Rod's own 1.24 m mesh) is a real ballistic
+   change that moves kill distances and cover columns for reasons unrelated to hull size.
+7. **X4**: migrate `TacticalQuery.hull_hidden` onto `Arena.cover_fraction` (built, positive control passed: the
+   12.19 m step is gone and yard's 14 m figure is within 0.03 of its 12 m one), and **rename
+   `EngagementStats.near_cover`** — it has never measured cover, it measures proximity to an obstacle footprint, so
+   every "cover use" column in `make engagement` is really a "standing near a wall" column. **A3's falsifier is only
+   half met and that must not be reported as fully met:** at 2.93 m the query's worst-case error is 0.759 (grid term
+   `2.0/length`), so the honest claim is *"cover works for hulls the grid can resolve, and short hulls are where they
+   already were"*.
+8. **X5 (stretch)**: the rig's unexplained `gangs vs law` 9/20 → 0/20 now has a better candidate than "bigger
+   target" — the roster-wide muzzle drop is a *mechanism*.
+
+### Requests to other streams, outstanding
+
+- **metrics**: the bearing read (`--switches`) on both arms' event files, and the cusp split that decides A2's
+  verdict. Offered and agreed; blocked on CP1.
+- **scale**: is a 1.0 m cover cell affordable? At 2.93 m the grid error falls 0.683 → 0.341, and the units that hide
+  for a living are the light ones. If not, the range limit is written into `hull_hidden`'s threshold as a known bound.
+- **squad**: `tests/test_brain_decide.gd` has a one-line edit from this stream (its second commitment case now places
+  `since` outside the retired dwell window), and `game/ai/tank_brain.gd` carries the seam. Both are theirs to take,
+  replace or revert.
+
+
 
 ### The plan (worker contract step 2)
 
