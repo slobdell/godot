@@ -78,3 +78,63 @@ func test_the_shortfall_is_published_and_has_the_right_sign() -> void:
 	var published: float = Movement.state(big).get("clearance_shortfall_m", 0.0)
 	assert_true(absf(published - big_short) < 0.001,
 			"`clearance_shortfall_m` is published in the reading (%+.2f)" % published)
+
+
+## THE ROUTING HALF: an oversized hull must not take a mesh-hugging shortcut, and a hull that fits must still take
+## them. The second half is the guard and it matters more — a rule that refused every shortcut would "fix" the
+## clearance problem by making every hull follow every waypoint, which is a different regression wearing a fix's
+## clothes.
+func test_an_oversized_hull_refuses_the_shortcut_and_a_small_one_keeps_it() -> void:
+	var was := Movement._off
+	Movement._off = PackedStringArray(["clearance"])
+	Movement._off_parsed = true
+	Movement.clearance_chords = 0
+	Movement.clearance_refused = 0
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var big := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
+	big.global_position = Vector3(-100, 0, 40)
+	var small := game_match.spawn_tank("Scout", 1, Match.Team.GREEN, "scout")
+	small.global_position = Vector3(-90, 0, 40)
+	await tree.physics_frame
+	var big_slack := Movement.of(big)._chord_slack() if Movement.of(big) != null else NAN
+	var small_slack := Movement.of(small)._chord_slack() if Movement.of(small) != null else NAN
+	Movement._off = was
+	Movement._off_parsed = true
+	print("MEASURE clearance_routing: gang_tank chord slack %.2f m, scout %.2f m (chords %d, refused %d)" % [
+			big_slack, small_slack, Movement.clearance_chords, Movement.clearance_refused])
+	# The denominator first: a zero here would mean the rule never ran, which is not the same as "it changed
+	# nothing" - the distinction this round found six times.
+	assert_true(Movement.clearance_chords > 0,
+			"the rule was CONSULTED (%d chords), so the numbers below are measurements" % Movement.clearance_chords)
+	assert_true(big_slack < 0.0,
+			"the semi's slack goes negative, which IS the refusal: every probe is then further from the mesh than "
+			+ "allowed and no carrot is cut (%.2f m)" % big_slack)
+	assert_true(small_slack > 0.0,
+			"THE GUARD: a scout fits what the mesh certifies and keeps its shortcuts (%.2f m) - a rule that refused "
+			% small_slack + "every hull would be a regression wearing a fix's clothes")
+	assert_eq(Movement.clearance_refused, 1,
+			"exactly one of the two hulls was refused (%d)" % Movement.clearance_refused)
+
+
+## And with the switch OFF the slack is exactly what it was before this row existed, for both hulls.
+func test_the_switch_off_reproduces_the_old_slack() -> void:
+	var was := Movement._off
+	Movement._off = PackedStringArray()
+	Movement._off_parsed = true
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var big := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
+	big.global_position = Vector3(-100, 0, 40)
+	await tree.physics_frame
+	var mover := Movement.of(big)
+	var slack := mover._chord_slack() if mover != null else NAN
+	var size: Variant = Units.stat("gang_tank", "hull_size", [2.4, 1.6, 3.8])
+	var expected := maxf(Movement.CHORD_SLACK,
+			Movement.NAV_AGENT_RADIUS - float(size[0]) / 2.0 - Movement.CHORD_MARGIN)
+	Movement._off = was
+	Movement._off_parsed = true
+	assert_true(absf(slack - expected) < 0.001,
+			"default path is byte-identical to the pre-row formula (%.3f vs %.3f)" % [slack, expected])

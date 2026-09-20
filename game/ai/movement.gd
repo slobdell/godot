@@ -180,7 +180,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "commit", "facegiveup", "grace", "guard", "holdband",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband",
 		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
 
 
@@ -255,10 +255,13 @@ static func a1_on() -> bool:
 
 static func route_arms() -> Dictionary:
 	return {"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
-			"by_cause": a1_by_cause.duplicate()}
+			"by_cause": a1_by_cause.duplicate(),
+			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused}
 
 
 static func reset_route_arms() -> void:
+	clearance_chords = 0
+	clearance_refused = 0
 	a1_replans = 0
 	a1_cadence_due = 0
 	a1_tube_skips = 0
@@ -539,6 +542,19 @@ static func bake_radius(unit: Node) -> float:
 ## calls clear. Post-CP2 this is positive for 14 of 21 units.
 static func clearance_shortfall(unit: Node, unit_id: String) -> float:
 	return Avoidance.radius_of(unit_id) - bake_radius(unit)
+
+
+## OPT-IN like every round-9 row: `--nav-off=clearance` turns the routing half ON. The READ and the published
+## shortfall are unconditional — they change no behaviour — and only the refusal is switched.
+static func clearance_on() -> bool:
+	return switched_off("clearance")
+
+
+## Arm counters (lesson 147): chords where the rule was consulted, and chords it refused for an oversized hull.
+## Equal counts mean every hull asked was oversized; zero `clearance_chords` means the rule never ran at all, which
+## is the failure this round found six times and must not be confused with "it changed nothing".
+static var clearance_chords := 0
+static var clearance_refused := 0
 
 
 ## S4 (`_agents/legibility.md` §2): the ordered corridor's TANGENT, which nav promised to publish at N5 *"on the
@@ -1752,7 +1768,24 @@ func _chord_slack() -> float:
 	var size: Variant = Units.stat(ctl.tank.unit_id, "hull_size", [2.4, 1.6, 3.8])
 	# The BAKED radius, read from the arena, not the constant. Same number today; the difference is that the day
 	# arena re-bakes, this follows and the constant complains instead of both being quietly wrong.
-	return maxf(CHORD_SLACK, bake_radius(ctl.tank) - float(size[0]) / 2.0 - CHORD_MARGIN)
+	var slack := maxf(CHORD_SLACK, bake_radius(ctl.tank) - float(size[0]) / 2.0 - CHORD_MARGIN)
+	if not clearance_on():
+		return slack
+	# THE ROUTING HALF of the CP2 clearance row, OPT-IN (`--nav-off=clearance` turns it ON).
+	#
+	# This slack is derived from HALF-WIDTH alone, but a hull's real envelope through a corner is `(w + l) / 4`
+	# (`Avoidance.radius_of`) — which is why a 14 m semi 3.3 m wide is allowed to hug a mesh edge on a certificate
+	# that only ever covered its width. Post-CP2 that gap is positive for 14 of 21 units.
+	#
+	# So an oversized hull does not take mesh-hugging shortcuts: it follows the route the bake actually certified.
+	# The slack may go NEGATIVE, and that is the intended refusal rather than an underflow — every probe is then
+	# further from the mesh than allowed, `_chord_on_mesh` answers false, and no carrot is cut.
+	clearance_chords += 1
+	var shortfall := clearance_shortfall(ctl.tank, ctl.tank.unit_id)
+	if shortfall <= 0.0:
+		return slack
+	clearance_refused += 1
+	return slack - shortfall
 
 
 ## Flat distance from `here` to the route near where the hull is on it.
