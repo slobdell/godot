@@ -51,6 +51,18 @@
 # ticket and getting a slot must never block the queue: a deadlock here stops every agent at once.
 set -uo pipefail
 
+# Derived from available RAM at ~2.5 GB a slot, clamped to [2, 4]. Falls back to 2 if MemAvailable
+# cannot be read, because a machine we cannot measure gets the conservative answer, never the loud one.
+default_slots() {
+	local avail_mb
+	avail_mb=$(awk '/^MemAvailable:/ {print int($2 / 1024); exit}' /proc/meminfo 2>/dev/null)
+	[ -n "${avail_mb:-}" ] || { echo 2; return; }
+	local n=$((avail_mb / 2500))
+	[ "$n" -lt 2 ] && n=2
+	[ "$n" -gt 4 ] && n=4
+	echo "$n"
+}
+
 # T1 (metrics, round 9): the same question one level down. A slot holds ONE `make check`; this says how many of
 # check's targets that check may run at once INSIDE its slot. Same principle and same owner as `default_slots`,
 # because "how much can this machine take" is one fact with one home (Invariant 0: a value with a single owner is
@@ -94,18 +106,6 @@ if [ -n "${TANK_SQUAD_SLOT:-}" ]; then
 	exec "$@"  # already inside a slot (nested make)
 fi
 
-# Derived from available RAM at ~2.5 GB a slot, clamped to [2, 4]. Falls back to 2 if MemAvailable
-# cannot be read, because a machine we cannot measure gets the conservative answer, never the loud one.
-default_slots() {
-	local avail_mb
-	avail_mb=$(awk '/^MemAvailable:/ {print int($2 / 1024); exit}' /proc/meminfo 2>/dev/null)
-	[ -n "${avail_mb:-}" ] || { echo 2; return; }
-	local n=$((avail_mb / 2500))
-	[ "$n" -lt 2 ] && n=2
-	[ "$n" -gt 4 ] && n=4
-	echo "$n"
-}
-
 slots=${TANK_SQUAD_SLOTS:-$(default_slots)}
 limit=${TANK_SQUAD_SLOT_TIMEOUT:-5400}
 dir=${TANK_SQUAD_SLOT_DIR:-/tmp/tank_squad_slots}   # overridable so the queue can be tested in isolation
@@ -114,7 +114,15 @@ mkdir -p "$dir"
 # Ticket name sorts by arrival: a fixed-width nanosecond stamp, then the pid to break ties.
 ticket="$dir/wait.$(date +%s%N).$$"
 : > "$ticket"
-trap 'rm -f "$ticket"' EXIT INT TERM
+# THE HANDLER MUST EXIT. A `trap ... TERM` whose handler falls through does not stop the script: bash runs the
+# handler and carries on, so `kill <pid>` on a queued waiter removed its ticket and left it polling for a slot
+# forever -- ticketless, so `live_tickets` could not even see it to prune it, and only SIGKILL stopped it.
+# (Found by the orchestrator on the laptop, 2026-09-20.) Same family as remote_builds.md's stale-.owner trap,
+# and the same family as `make lint`'s killed wrapper leaving its Godot children: **a signal that reaches the
+# wrapper has to end the wrapper.**
+trap 'rm -f "$ticket"' EXIT
+trap 'rm -f "$ticket"; exit 130' INT
+trap 'rm -f "$ticket"; exit 143' TERM
 
 holders() { cat "$dir"/slot*.owner 2>/dev/null | sed 's/^/     /'; }
 
@@ -146,7 +154,14 @@ while true; do
 			if flock -n "$fd"; then
 				echo "$(date +%H:%M:%S) $(basename "$PWD"): $*" > "$dir/slot$i.owner"
 				rm -f "$ticket"          # holding a slot, no longer queuing
-				trap - EXIT INT TERM
+				# Hand the traps over from the ticket to the OWNER file. `trap - EXIT INT TERM` used to clear
+				# them outright, so a slot holder killed mid-run left `slot$i.owner` behind and every later
+				# waiter printed a holder that was not there (remote_builds.md's stale-.owner trap). The lock
+				# itself is released by the kernel when the fd closes; it is only the human-readable owner file
+				# that needed an owner.
+				trap 'rm -f "$dir/slot'"$i"'.owner"' EXIT
+				trap 'rm -f "$dir/slot'"$i"'.owner"; exit 130' INT
+				trap 'rm -f "$dir/slot'"$i"'.owner"; exit 143' TERM
 				[ "$announced" -eq 1 ] && echo ">> got heavy-run slot $i after $((($(date +%s) - started) / 60)) min" >&2
 				export TANK_SQUAD_SLOT=$i
 				# The child must not inherit the lock fd: a stray background server would otherwise
