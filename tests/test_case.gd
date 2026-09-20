@@ -224,11 +224,31 @@ func drain_navigation() -> void:
 	_draining = false
 
 
-func teardown() -> void:
+## Free everything this test added. Safe to call mid-test, and the ONLY supported way to do that — a test that
+## wants a clean world part-way through calls this, not `teardown()`.
+func free_owned() -> void:
 	for node in _owned_nodes:
 		if is_instance_valid(node):
 			node.free()
 	_owned_nodes.clear()
+
+
+## **SEALED. The runner awaits this, and it owns the order: hook, free, body guard, drain.**
+##
+## The drain must be awaited, and a `teardown()` that must be awaited but can be declared `-> void` **cannot be made
+## safe by review**: five files called `teardown()` or `super.teardown()` un-awaited, so the runner's `await`
+## returned at once and the drain detached — and **four of them, all viewport-resizing tests, had silently skipped
+## the drain for as long as it existed.** Nobody did anything wrong; the signature allowed it.
+##
+## So the sequence is not overridable. `teardown()` below is a **synchronous hook** and is never responsible for the
+## drain. An override that forgets to call `super` now loses nothing, because the base no longer holds anything an
+## override needs.
+##
+## Hook FIRST, then free: that is the order overrides already assumed, since they did their own cleanup and called
+## `super.teardown()` last.
+func _teardown() -> void:
+	teardown()
+	free_owned()
 	var total: int = int(_world_left_behind()["bodies"])
 	# A high-water mark, so this reports a LOWER BOUND on leakers: once the count has risen, a later test leaking
 	# below that mark is not blamed. Deliberate -- the alternative is blaming a test for someone else's residue.
@@ -237,8 +257,15 @@ func teardown() -> void:
 				+ "them and may fail instead of this one: free every node you add, and if a helper builds the arena, "
 				+ "free it there.") % [total, _world_baseline])
 	_world_baseline = maxi(_world_baseline, total)
-	# LAST, and awaited by the runner: leave the navigation map empty so the next test cannot bake into this one's
+	# LAST, and awaited by the runner via `_teardown()`: leave the navigation map empty so the next test cannot bake into this one's
 	# regions. Placed after the body guard so that guard's timing is unchanged, and after `free()` so there is
 	# something to drain. Every test gets this without asking, which is the point -- 20+ files instantiate the arena
 	# scene directly and would never call it themselves.
 	await drain_navigation()
+
+
+## Overridable hook, run BEFORE this test's nodes are freed. **Synchronous — do not `await` in here, and never call
+## it yourself: the runner calls `_teardown()`, which calls this.** It is not responsible for freeing owned nodes or
+## for the navigation drain; `_teardown()` does both afterwards, so an override need not call `super`.
+func teardown() -> void:
+	pass
