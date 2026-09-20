@@ -129,6 +129,38 @@ place, you do not place).
 
 ## Status
 
+### Round 8 CLOSE (2026-09-19) — what a fresh agent needs
+
+**Green, sent, awaiting merge: `ea95bdb8`** — builder0, wrapper's own line `>> remote: make check exited 0`,
+`1252 passed, 0 failed`, `sim-baseline passed: 668b7d490607439b (glibc-2.43)`, main `c7583df6` merged. The tip
+`c4195283` is Status only and landed AFTER that check: **merge `ea95bdb8`**, not the tip. builder0 was down
+(`No route to host`) at close, so nothing later was gated.
+
+**Not merged, lives only on the local branch `feel-rig-check`** (survives this worktree; branches sit in the shared
+repo): `26e1f26a` `test_the_semis_fill_their_boxes`, mutation-checked, passes on combat's catalog
+(`2141904b`, which nets the rig boxes; `44d87a28`/`bc1c1f4c` revert-and-restore around a balance baseline) and fails
+on the old one. **To land:** cherry-pick `2141904b` onto `stream/feel`, cherry-pick `26e1f26a`, check, hand over one
+hash — or merge combat's first and follow with the test alone.
+
+**Rescued out of this worktree** (git-ignored, would die with it): the lead's unjudged review artefacts are now at
+`~/projects/godot/build/feel-round8-review/` — `size-review/` (rig_12_0.png, rig_14_0.png, army.png at his camera),
+`crowd-listen/` (old-vs-new crowd, the re-levelled full mix), `x7-listen/energy_four_new.mp3`. All 75 ElevenLabs sfx
+masters were already mirrored in the main checkout. **The 18 Terminus announcer masters are gone** (see below);
+nothing else to rescue.
+
+**Next round's headline, not started: A6 in `_agents/research_catalog.md`** (main, `4eb53078`). The lead's oldest
+complaint — "they still generally don't do what I command them" — reads as legibility, not obedience: Dragan, Lee &
+Srinivasa (2013) separate moving efficiently toward a goal from showing which goal you hold. **feel owns the motion,
+control owns the readout.** The law as handed over: a **turreted** hull fighting off-axis keeps its nose within ~25°
+of the ordered corridor's tangent and lets the turret fight; a **hull-fixed** hull stays in forward-oblique bounds so
+every leg of a zig-zag visibly advances. **Joint bar: time with velocity opposing the corridor tangent 30–36% → under
+10% with NO fall in exchange ratio** — if units look obedient and start dying, we bought the wrong thing. Note the
+seam: motion is combat's/nav's code today, so agree the contract before touching it.
+
+**Correction to hold (twice written down now):** my `StandsProfile` docstring claimed it "reproduces" control's hand
+values; control measured ~2 m of difference at the front. Fixed in `dd9537de`, but the lesson is the point: **a test
+that asserts a PROPERTY of a shape is weaker than one that asserts IDENTITY to it** — say which you are asserting.
+
 ### Round 8 (2026-09-19) — "the gang tanks are still tiny" (the lead, third time)
 
 - **Green and sent: `ea95bdb8`** (builder0: 1252 passed, 0 failed, `make check exited 0`, `sim-baseline passed:
