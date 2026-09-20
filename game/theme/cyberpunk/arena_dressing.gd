@@ -61,6 +61,9 @@ func _ready() -> void:
 	var fx := FxWorld.get_instance()
 	if fx != null:
 		fx.quality_changed.connect(_apply_ground_quality)
+		# X7: the airship is tier-dependent like the ground, and the player can change tier mid-match. Rebuilding
+		# just it is cheap (primitives) and leaves the rest of the venue alone.
+		fx.quality_changed.connect(_build_airship)
 	add_child(ground)
 	_build_structures()
 
@@ -118,7 +121,7 @@ func _build_airship() -> void:
 	if airship != null and is_instance_valid(airship):
 		airship.queue_free()
 	airship = null
-	if FxQuality.tier() < FxQuality.Tier.MEDIUM:
+	if structures == null or not is_instance_valid(structures) or FxQuality.tier() < FxQuality.Tier.MEDIUM:
 		return
 	airship = SyndicateAirship.new()
 	structures.add_child(airship)

@@ -70,4 +70,8 @@ func test_it_is_absent_on_LOW_where_its_draws_cannot_be_spared() -> void:
 	FxQuality.set_tier(FxQuality.Tier.HIGH)
 	dressing.call("_build_airship")
 	assert_true(dressing.airship != null, "and one on HIGH")
+	# The player can change tier mid-match, so the airship follows rather than being decided once at build time.
+	FxQuality.set_tier(FxQuality.Tier.LOW)
+	dressing.call("_build_airship")
+	assert_eq(dressing.airship, null, "and it goes away again when the tier drops")
 	FxQuality.set_tier(previous)
