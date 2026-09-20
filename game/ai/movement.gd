@@ -173,7 +173,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a7", "a11", "backup", "carrot", "chord", "commit", "facegiveup", "grace", "guard", "holdband",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "commit", "facegiveup", "grace", "guard", "holdband",
 		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
 
 
@@ -500,6 +500,13 @@ func legibility() -> Dictionary:
 ## where the hull is. **`null` when there is no leg at all**, never a zero vector and never a guess: §5 makes "no
 ## path yet" an inactive case with a name, and a `Vector3.ZERO` tangent would be an unreadable corridor that looks
 ## like a readable one.
+##
+## **READING IT: use `has("corridor")`, never `get("corridor", null)`.** The default-argument form cannot tell *"nav
+## answered null"* from *"this build has no such key"*, so a consumer written that way falls through to its own
+## fallback on **exactly the ticks where nav said there is no leg** — reinstating the second publisher on the only
+## ticks where the two could disagree. control hit this within minutes of adopting the key and reported it
+## (2026-09-20); it is the same absent-versus-empty distinction that makes a right-drag leave `facing` *absent*
+## rather than empty. Sending `null` only works if the reader uses `has`.
 func corridor() -> Variant:
 	# Gated on the SAME condition `reading()` uses to empty `path_points`, not on a similar-looking one. `idle()`
 	# does not clear `_path`, so a corridor keyed only on the path index would publish a tangent for a leg whose
