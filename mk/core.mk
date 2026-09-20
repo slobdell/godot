@@ -145,6 +145,13 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 #     are in the port exclusion groups above.
 # A test that still turns out to depend on which shard it lands in is a TEST bug to report (lesson 36), not a
 # shard assignment to reshuffle around.
+#
+# **The partition is verified, not merely argued.** `index % N` partitions the indices -- that is arithmetic --
+# but "by construction" is exactly what round 8 said about a commitment term that was never in the code path. So
+# it was checked directly and cheaply: the runner prints its file count BEFORE any filtering, so
+# `--shard=i/N --filter=__no_such_test__` reports each shard's share in about five seconds without running a
+# single test. At N = 2, 3, 5 and 6 the shard file counts sum to **187** -- exactly the unsharded discovery count.
+# Nothing is dropped and nothing is run twice, at any shard count. (metrics, 2026-09-20, laptop.)
 TEST_SHARDS ?= $(shell tools/slot.sh --jobs 500 $$(( $$(nproc) / 2 )))
 
 test: import ## Run the headless test suite (FILTER=substring to run a subset; TEST_SHARDS=1 forces one process)
