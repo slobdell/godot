@@ -1,0 +1,7 @@
+extends Node
+## The POSITIVE CONTROL for the probe beside it. This is not subtle: unterminated call, unterminated string.
+## If the checker does not report THIS, the probe's path did not resolve or the checker did not run, and arm
+## A's silence says nothing about type inference. An empty comparison proves nothing (lesson 147).
+func f() -> void:
+	print("unterminated
+	var x: int = (

@@ -98,6 +98,7 @@ LINT_BASELINE := tests/baselines/lint_expected.txt
 lint-cache-probe: import ## Does `--check-only` see the f1128ef5 ternary error, and does the class-name cache change the answer?
 	@mkdir -p $(BUILD_DIR)/lint-probe
 	@cp tests/fixtures/ternary_infer_probe.gd.txt $(BUILD_DIR)/lint-probe/ternary_infer_probe.gd
+	@cp tests/fixtures/blatant_syntax_error.gd.txt $(BUILD_DIR)/lint-probe/blatant_syntax_error.gd
 	@real=game/ai/movement.gd; saved=$(BUILD_DIR)/lint-probe/movement.saved; \
 	cache=.godot/global_script_class_cache.cfg; moved=$(BUILD_DIR)/lint-probe/class_cache.saved; \
 	restore() { [ -f "$$saved" ] && mv -f "$$saved" "$$real"; [ -f "$$moved" ] && mv -f "$$moved" "$$cache"; return 0; }; \
@@ -105,6 +106,10 @@ lint-cache-probe: import ## Does `--check-only` see the f1128ef5 ternary error, 
 	run() { $(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1 \
 		| grep -E "Parse Error|SCRIPT ERROR|Compile Error" | head -3; }; \
 	echo ">> probe on $$(hostname), commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}"; \
+	echo ""; \
+	echo "0. POSITIVE CONTROL -- a blatant syntax error at the same res:// location:"; \
+	z=$$(run "$(BUILD_DIR)/lint-probe/blatant_syntax_error.gd"); \
+	if [ -n "$$z" ]; then printf '%s\n' "$$z" | sed 's/^/     /'; else echo "     (NOTHING -- the path did not resolve or the checker did not run)"; fi; \
 	echo ""; \
 	echo "A. self-contained ternary probe (res://$(BUILD_DIR)/lint-probe/ternary_infer_probe.gd):"; \
 	a=$$(run "$(BUILD_DIR)/lint-probe/ternary_infer_probe.gd"); \
@@ -123,7 +128,11 @@ lint-cache-probe: import ## Does `--check-only` see the f1128ef5 ternary error, 
 	restore; trap - EXIT INT TERM; \
 	echo ""; \
 	echo ">> probe verdict:"; \
-	if [ -z "$$a" ] && [ -z "$$b" ] && [ -z "$$c" ]; then \
+	if [ -z "$$z" ]; then \
+		echo "   INCONCLUSIVE. The positive control reported nothing, so res://$(BUILD_DIR)/... does not"; \
+		echo "   resolve or the checker did not run -- arm A's silence says nothing about type inference."; \
+		echo "   Put the probe files somewhere res:// reaches and run it again. Do not read A, B or C."; \
+	elif [ -z "$$a" ] && [ -z "$$b" ] && [ -z "$$c" ]; then \
 		echo "   PER-FILE CHECKING CANNOT SEE THIS CLASS. A whole-project compile pass is the only guard."; \
 	elif [ -n "$$a" ]; then \
 		echo "   The checker CAN see it in isolation, so the green run did not check movement.gd at all."; \
