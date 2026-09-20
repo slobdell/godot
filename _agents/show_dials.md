@@ -12,6 +12,11 @@
 breathe, and a still cannot show breathing; the stills understate it, and that is not a figure of speech, it is the
 reason a reviewer asked last night whether the thing was switched on at all.
 
+> **These frames are a real fight — 34 vehicles a side, 11 to 23 of them in every picture.** Worth saying because
+> the first set were not: the frame tools were quietly fielding five units a side and shooting three seconds in,
+> while the squads were still on the spawn line and out of shot. If you saw an empty arena earlier, that is what
+> it was.
+
 ---
 
 ## Dial 1 — **How alive the buildings look.** This is the one that matters.
@@ -124,8 +129,11 @@ draws a wireframe around everything, and the direction says in as many words *"n
 not outlines on everything"*. I agree with feel. **You may not, and it is one word in the layout file.** Compare
 `terminus_wide_cue_battle.png` with `outline/terminus_wide_cue_battle_outline.png`.
 
-**The strobe on `last_stand`.** It is the only one in the venue and it is deliberately rare. Keep or cut:
-`clips/terminus_last_stand.mp4`.
+**The strobe on `last_stand`.** It is the only one in the venue and it is deliberately rare. Keep or cut —
+**watch both**: `decisions/strobe_on.mp4` against `decisions/strobe_off.mp4` (the same moment with the strobe
+replaced by a fast breathe). These two are shot at 30 fps rather than 10, because a strobe flashes for about an
+eighth of a second and a slower recording simply misses it — **this is a question only your eye can answer**, and
+the numbers we can put on it are too weak to lean on.
 
 ---
 
@@ -152,7 +160,9 @@ had no business averaging numbers that disagree about their own sign.)*
 
 **And a check you did not ask for but should know exists:** every frame we shoot is measured for whether the venue
 out-competes the fight for your eye, against the same frame with the show switched off. **If the lights win, the
-build fails.**
+build fails.** On a real fight the lights make **no measurable difference either way** — 35 of 36 frames sit inside
+the noise, as many slightly better as slightly worse. The check is there to catch a future change, not to claim a
+win.
 
 That check is what narrowed dial 1 — and to be precise about *why*, because it matters for whether you widen it
 again: it failed on exactly one frame, the single brightest instant the windows ever reach. Not the buildings in
