@@ -2083,7 +2083,8 @@ The kickoff prompt is one line; this section is the rest.
        glass over every effect keyed to hull size, and a defect that survived rounds of play became obvious in one frame.
      - **And it was found because a human looked at a screenshot sent for a different purpose.** Eighth defect this round
        caught by looking rather than by a test.
-137. **⚠ THE SIM BASELINE ONLY FIELDS TANKS. "sim-baseline passed" means "a tank-vs-tank match on foundry is unchanged",
+137. **⚠ SUPERSEDED IN ROUND 8 — READ THIS LINE FIRST.** combat widened the baseline match at round 8's close (`sim_baseline_green.json`: `tank, gang_tank, scout, artillery, syn_scout` vs `law_tank, tank, gang_scout, ifv, syn_scout`, the War Rig included *because it is the longest hull and the one whose box most recently changed*). **The warning below is history**: the baseline now sees wheeled hulls, the rig, fixed mounts and hover. Round 9, squad pre-registered "the hash will not move" on the strength of this lesson's headline and was wrong — its brief quoted the widened match two paragraphs above the sentence it relied on. **A lesson written as a standing warning outlives the thing it warned about and still reads as current, because warnings do.** When a lesson's premise is fixed, write the supersession INTO the lesson, at the top.
+     *Original text:* **THE SIM BASELINE ONLY FIELDS TANKS. "sim-baseline passed" means "a tank-vs-tank match on foundry is unchanged",
      and we have been reading it as "gameplay is unchanged".**
      Three predictions that it would move failed in one day, and I chased the third:
      ```
