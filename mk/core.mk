@@ -77,7 +77,32 @@ import: $(GODOT)
 # The lock stays: a second `make lint` would still run `import` underneath the first.
 LINT_BASELINE := tests/baselines/lint_expected.txt
 
+# ---- lint proves it can still SEE an error, every run (2026-09-20) ----------------------------
+# `make lint` reported "all scripts parse" on a tree whose runtime could not compile `movement.gd`
+# (`Cannot infer the type of "my_map"`, cascading through every dependent script), while the SAME tree
+# failed lint in another worktree. So the checker is not reliably able to SEE an error, and a gate that
+# cannot be shown to fail is not a gate -- lesson 147, from the other end: there it was an empty comparison
+# proving nothing, here it is an empty RESULT proving nothing.
+#
+# The eight baselined artefacts are the liveness probe, and they cost nothing: they are real parse errors
+# that real project files produce on every run. **If the whole run yields ZERO findings while the baseline
+# says eight are expected, the checker did not look** -- and the run says so instead of saying "all scripts
+# parse". A synthetic broken file is the stronger form (it proves a NEW error can be seen, not just a known
+# one) and is the obvious next step, but it has to live somewhere `res://` resolves from and that cannot be
+# settled on a laptop that must not run Godot. This version cannot misfire; that one might.
+#
+# And two silent passes are closed. Per file the checker's raw output and exit status are both kept, so:
+#   * no output AT ALL (Godot always prints its banner) means the process never ran -- OOM on a loaded box,
+#     a bad path -- and is reported, not counted clean;
+#   * an exit of 128+ means it was killed by a signal, likewise.
+# Both used to produce an empty `out` and read exactly like a file that parses.
+#
+# WHAT THIS DOES NOT FIX, and it is the bigger half: a per-file `--check-only` cannot see an error that only
+# appears when the project is compiled TOGETHER. `movement.gd` may be exactly that class. Deciding whether
+# `check` also needs a whole-project compile pass is the orchestrator's; it cannot be settled from a laptop
+# that must not run Godot.
 lint: import ## Parse-check every GDScript file; fails on any finding NOT in tests/baselines/lint_expected.txt
+	@mkdir -p $(BUILD_DIR)
 	@exec 9>$(BUILD_DIR)/.lint.lock; \
 	flock -n 9 || { \
 		echo "lint: another lint is already running in this checkout ($(CURDIR)) -- refusing."; \
@@ -94,10 +119,26 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 		echo "            broken file list -- see the note above this recipe."; exit 1; }; \
 	printf '%s\n' "$$files" | \
 		xargs -P $(LINT_JOBS) -I{} sh -c \
-			'out=$$($(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1 | grep -E "Parse Error|SCRIPT ERROR" | grep -v "depended scripts" || true); \
-			[ -z "$$out" ] || printf "%s\n" "$$out" | sed "s|^|$$1: |"' _ {} \
+			'raw=$$($(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1); rc=$$?; \
+			out=$$(printf "%s\n" "$$raw" | grep -E "Parse Error|SCRIPT ERROR" | grep -v "depended scripts" || true); \
+			if [ -n "$$out" ]; then printf "%s\n" "$$out" | sed "s|^|$$1: |"; \
+			elif [ -z "$$(printf "%s" "$$raw" | tr -d "[:space:]")" ]; then \
+				printf "%s: CHECKER PRODUCED NO OUTPUT AT ALL (exit %s) -- not a pass\n" "$$1" "$$rc"; \
+			elif [ "$$rc" -ge 128 ]; then \
+				printf "%s: CHECKER KILLED BY SIGNAL %s (exit %s) -- not a pass\n" "$$1" "$$(( rc - 128 ))" "$$rc"; \
+			fi' _ {} \
 		| sort > $(BUILD_DIR)/lint.out; \
 	sort $(LINT_BASELINE) 2>/dev/null | grep -v '^#' | grep -v '^$$' > $(BUILD_DIR)/lint.expected || true; \
+	expected_n=$$(grep -c . $(BUILD_DIR)/lint.expected || true); \
+	found_n=$$(grep -c . $(BUILD_DIR)/lint.out || true); \
+	if [ "$$expected_n" -gt 0 ] && [ "$$found_n" -eq 0 ]; then \
+		echo "lint FAILED: the checker reported NOTHING over $$count files, while $(LINT_BASELINE) says"; \
+		echo "  $$expected_n findings are expected from files that are in the tree right now. A checker that"; \
+		echo "  cannot see the errors it saw yesterday cannot be trusted to have seen a new one, so this run"; \
+		echo "  says nothing about the tree. Look at the checker: a killed Godot, an exhausted box, a bad"; \
+		echo "  file list. (If the artefacts were genuinely fixed, re-record the baseline and say why.)"; \
+		exit 1; \
+	fi; \
 	new=$$(comm -23 $(BUILD_DIR)/lint.out $(BUILD_DIR)/lint.expected); \
 	gone=$$(comm -13 $(BUILD_DIR)/lint.out $(BUILD_DIR)/lint.expected); \
 	if [ -n "$$new" ]; then \
@@ -111,7 +152,7 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 		echo "lint: $$(printf '%s\n' "$$gone" | grep -c .) baselined finding(s) no longer occur -- tighten $(LINT_BASELINE):"; \
 		printf '%s\n' "$$gone" | sed 's/^/  /'; \
 	fi; \
-	echo "lint: all $$count scripts parse (-P$(LINT_JOBS), $$(grep -c . $(BUILD_DIR)/lint.expected || echo 0) known artefacts baselined)"
+	echo "lint: all $$count scripts parse (-P$(LINT_JOBS), $$(grep -c . $(BUILD_DIR)/lint.expected || echo 0) known artefacts baselined, $$found_n findings seen)"
 
 # T1 (metrics, round 9). MEASURED on builder0 at c21d0256, serially, per target:
 #
