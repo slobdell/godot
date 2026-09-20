@@ -370,3 +370,8 @@ copy-backs were gone. **Every kill filters by `readlink /proc/<pid>/cwd` against
 is about to kill** (trip-up 79, now from the other side). Recovery when it happens to you: wait for your folder to leave
 `/tmp/tank_squad_slots/*.owner` on the box, read the verdict from `~/tank_squad/godot-<stream>/build/check/*.log` there,
 rsync `build/` back by hand, and report the hash as "verdict read from the box's log, no wrapper line".
+
+**A pattern-based process search is unsafe read-only as well as destructive.** `pgrep -f "Godot_v4.7.2"` matched the
+shell running the search (its own command line contains the string, and its cwd passes a cwd filter), so it reported
+a "lingering" process that was itself — a phantom that looks exactly like the leak you were hunting. Use self-excluding
+patterns (`grep '[G]odot'`), or `pgrep -x` on the binary, and confirm by cwd (squad, 2026-09-20, third time in one night).
