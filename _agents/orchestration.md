@@ -2998,3 +2998,13 @@ The kickoff prompt is one line; this section is the rest.
     corollaries: pre-register, for any arm, the measurement it must NOT move and read that first; and read the
     counters you asked for (offered 30, applied 30, swept 0.0° was the permanent-refusal signature the counters
     were built to expose, and nobody was looking at them).
+197. **A clearance number must state which motion it licenses.** (nav, closing round 9.) Width licenses driving
+    straight; the half-diagonal licenses rotating in place; `(w + l) / 4` licenses a swept turn. Round 9 found the
+    same error twice, in two files, pointing opposite ways: nav's clearance row compared a rotational envelope
+    (`radius_of`) against a lateral bake clearance and inflated a count ("14 of 21 exceed the bake"); squad's
+    formation derived its lateral pitch from width (`HULL_CLEAR_M`) for hulls that need the diagonal to turn, and
+    the plant constraint then correctly refused a rotation there was no room for (four of five squads 90 m off
+    their slots the day it was switched on). Both were invisible while hulls were small enough that every number
+    was generous; CP2 surfaced three in one day. Round 10's question is not "what is a shortfall measured against"
+    but "which motion is this constant licensing": `HULL_CLEAR_M`, the navmesh bake radius and `Avoidance.radius_of`
+    are three constants for three motions, and none of them says which.
