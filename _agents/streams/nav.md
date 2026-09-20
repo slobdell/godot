@@ -301,6 +301,16 @@ deliberately NOT re-recorded: nothing on the default path moves it.
    question `scenario_motion` was never built to answer; it needs something that measures the **exchange** rather
    than the survival time.
 4. **A6's four pieces in one commit** once control's CP2c lands (*N5's shopping list*).
+5. **The `face` order's missing recovery** (round 8's last open stretch item, still open, now with a design). Under
+   a `face`, `order_controller.gd:347-352` commands a turn plus `WHEELS_MIN_THROTTLE` for a wheeled hull and the
+   plant answers with the creep's alternating legs. **There is no recovery**: `Movement.unstick` runs only for a
+   `move_to`, and the mover is `idle()` under a face. A hull wedged against scenery creeps for ever.
+   **This is the lead's complaint directly** — round 8 established that the War Rig's apparent pivot *is* the creep's
+   legs cancelling against scenery (26° within 1.5 m on yard, **7° on bare ground at every hull length**).
+   **Design:** track heading progress under a `face`; if the hull has not turned meaningfully for ~1.5 s, stop
+   commanding the creep instead of shuffling in place, and report it the way a blocked move is reported — *"it never
+   stands still silently"* is N1's guarantee and a face order is currently exempt from it.
+   **Behind its own switch, measured like every other row this round.**
 5. **A remote check covering tonight's work.** The one that has been running all night covers `acd25a0b`
    (N0 + A7 + A11). A1, A4 and the instruments postdate it.
 
