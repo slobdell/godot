@@ -332,6 +332,32 @@ motivation for that row rather than an inherited one.
 `net_over_path` rises and `oscillating_share` falls is pre-registered in the brief (N4) and runs after CP1, read
 through A12.
 
+### REQUEST TO SQUAD (2): the combat request needs the hull's live motion state
+
+**Measured, on the A7+A11 arm** (laptop, `d4201b64`, `nav-fight` yard seed 3, 45 s, `--nav-off=a7,a11`):
+
+    arms  a7_projected 3264, a11_lattices 3264, dwa_candidates_reachable 262565,
+          a11_with_live_state 0, a7_holds_scored 0, a7_region_rejected 0
+    gates offered 6448 = aimed 5226 + refused 1222 (off_mesh 901, reached 277, on_approach 44)
+
+**`a11_with_live_state` is 0**, and the counter exists so that is a number rather than a surprise. `_combat_move`
+(`tank_brain.gd:2296`, squad's) builds the request from individual fields, so A11 has to synthesise a motion state —
+and the synthesised one has **`yaw_rate` 0**, because nothing in the request carries it. A hull already turning is
+therefore given a window as if it were not, which **understates what it can reach** — the same flaw, one level up,
+as the one-tick window that offered a tracked hull 21° over a 2 s arc.
+
+**The ask is one line:** `request["motion"] = TankMotion.state_of(tank)`. `state_of` already carries `yaw_rate`
+(round 8 put it there), plus braking and grip, which the synthesised state also guesses. A11 reads it when present
+and falls back when absent, so this can land whenever squad likes and nothing breaks in between.
+
+**Two other things that run says, both worth knowing before anyone reads a verdict off this arm:**
+- **`a7_holds_scored` 0** — no `standoff` hull was inside its hold band while fighting in this seed, so **the hold
+  candidate, and with it the commitment-on-a-hold claim, is UNTESTED in this configuration.** It is exercised by the
+  unit tests and by `scenario_motion`'s scout, not here. Do not read "commitment now reaches holds" off this run.
+- **`a7_region_rejected` 0** — the level-0 task region never engaged, exactly as predicted, because `element_slot()`
+  returned null for attacking roles on this tree. squad's leash commit is what turns this counter on, and it is the
+  number that will say whether it did.
+
 ### CORRECTION from metrics' A12 (2026-09-20): the shuffler is the WHEELED hull, not the LIGHT one
 
 nav has been carrying round 8's *"the scout is the shuffler"* — squad's briefs aim A8/A9 at light hulls on it.
