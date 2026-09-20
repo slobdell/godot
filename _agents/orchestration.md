@@ -2952,7 +2952,11 @@ The kickoff prompt is one line; this section is the rest.
     drain), the overridable hook is synchronous and documented as never responsible for the drain, and mid-test
     clears go through a public `free_owned()`, deliberately synchronous: one awaitable thing, owned by the
     runner, is the property that keeps the rest safe (a helper that also had to be awaited would carry the same
-    trap, and an `await` on a non-coroutine is a lint red). Same family as an instrument that cannot report its own
+    trap, and an `await` on a non-coroutine is a lint red). **And the sharper argument for sealing (combat): an
+    unsealed teardown does not only lose a shard to noise, it silently changes what the PASSING tests measure: a
+    plant fixture read `offered 14, applied 0` while a previous test's foundry was still in the world and
+    `offered 16, applied 3` the moment the override started freeing; nothing in any output said which world it
+    measured.** Same family as an instrument that cannot report its own
     inapplicability, one level up, in the signature.
 194. **A control that skips the code the treatment runs is not a control, and two arms that write one file compare
     a file with itself.** Round 9 (combat, pre-registering the gangs-vs-law series): `faction-matrix` names its
