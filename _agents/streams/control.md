@@ -361,6 +361,28 @@ in my own worktree from it; metrics killed three streams' wrappers from the same
 - `make remote T=control-playtest-shots` and `T=camera-looks` for the HUD and the camera grid;
   `make remote T=check-display` for the console gate.
 
+### Owed: four teardowns that have silently skipped the navigation drain (waiting on nav)
+
+combat's grep, confirmed here. Four control test files override `teardown()` and call the base:
+
+```
+tests/test_command_readability.gd:141   super.teardown()
+tests/test_touch.gd:177                 super.teardown()
+tests/test_command_camera.gd:194        super.teardown()
+tests/test_control_panel.gd:143         teardown()      <- mid-test, not an override
+```
+
+**Because the override is declared `-> void`, the runner's `await` returns immediately, the navigation drain
+detaches, and these viewport-resizing tests have skipped it since it existed.** nav is sealing the drain into a
+`_teardown()` the runner awaits, with the overridable hook synchronous; **when that lands, these four stop calling
+super**, and `test_control_panel`'s mid-test call becomes an awaited helper or goes. Nothing to do until then.
+
+**It is the same class as the rest of this round, in a new costume:** `await` on a `-> void` function is a
+statement that looks like it waits and does not. A lint over zero files, a `get()` that turns *absent* into *null*,
+a baseline describing an older world, a before-frame shot with the fix running — **every one of them true, and read
+as a stronger claim than it made.** That is the thing to be suspicious of in this codebase, more than any
+particular bug.
+
 ### If you change the selection marker, check the SHADER PARAMETERS, not the mesh
 
 Round 9 turned the marker from an annulus mesh scaled uniformly into **one unit quad per kind with a
