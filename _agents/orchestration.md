@@ -3044,3 +3044,10 @@ The kickoff prompt is one line; this section is the rest.
     is the whole family: **"accepted with no error" carries no information about whether the knob does anything.**
     Had the census not moved on a quiet phase, the run would have read as the freeze working; the bench's refusal
     to report was the only thing between the broken knob and a published number, for the second time in a day.
+    **The test that closes it (combat `d6daa3b3`):** a structural property that nothing asserts is a property with an
+    expiry date nobody can see (the two entry points were covered only because `apply_tuning` happened to be one
+    function). The load-order case cannot be reached from inside the runner (every class is initialised before any
+    test method runs), so it is a child Godot process run TWICE, `env TUNE=…` against `env -u TUNE`, the probe
+    printing the TUNE it saw, the differ-assertion FIRST and the values second: a knob whose default points the
+    same way as its tuned value (`yaw_fit` this morning) prints the same word in a broken and a working arm, and
+    only the pair tells them apart. ~1.7 s per child on the laptop, wrapped in `timeout 120` so a hang fails by name.
