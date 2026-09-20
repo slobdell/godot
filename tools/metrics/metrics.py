@@ -915,5 +915,62 @@ def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, ob
     }
 
 
+def pool(rows: Sequence[Dict[str, object]]) -> Dict[str, object]:
+    """Pool several logs into one figure — nav's rotation number across yard/pit/terminus in one command.
+
+    **Pooled by TICKS, not by averaging the per-file fractions.** A mean of fractions weights a 30 s log the same
+    as a 120 s one, which is how a rotation figure ends up dominated by its shortest map. Everything here is
+    therefore summed from counts and divided once, and the per-file lines are kept beside the pooled row so a map
+    that disagrees with the pool is visible rather than averaged away.
+
+    A quantity that is None in ANY file stays None in the pool: one log without the corridor column makes the
+    pooled off-corridor fraction unpublishable, exactly as it does for that log alone.
+    """
+    out: Dict[str, object] = {
+        "files": len(rows),
+        "machines": sorted({str(r["machine"]) for r in rows}),
+        "commits": sorted({str(r["commit"]) for r in rows}),
+        "arenas": [r.get("arena") for r in rows],
+        "samples": sum(int(r["samples"]) for r in rows),
+        "units": sum(int(r["units"]) for r in rows),
+    }
+    # Provenance first, and loudly: pooling across commits or machines is almost always a mistake.
+    out["mixed_commits"] = len(out["commits"]) > 1
+    out["mixed_machines"] = len(out["machines"]) > 1
+
+    def total(key: str) -> int:
+        return sum(int(r["all"][key]) for r in rows)
+
+    oscillating = sum(int(round(float(r["all"]["oscillating_share"] or 0.0)
+                                * float(r["all"]["under_way_seconds"]) * int(r["tick_rate"]))) for r in rows)
+    under_way_ticks = sum(int(round(float(r["all"]["under_way_seconds"]) * int(r["tick_rate"]))) for r in rows)
+    active = total("corridor_active_ticks")
+    known_any = all(r["all"]["off_corridor_fraction"] is not None for r in rows)
+    opposing = sum(int(round(float(r["all"]["off_corridor_fraction"] or 0.0)
+                             * int(r["all"]["corridor_active_ticks"]))) for r in rows) if known_any else 0
+    inactive = total("corridor_inactive_ticks")
+    slow = total("corridor_below_speed_ticks")
+    arc = total("corridor_ordered_arc_ticks")
+    considered = active + inactive + slow + arc
+    out["pooled"] = {
+        "oscillating_share": _round(oscillating / under_way_ticks, 4) if under_way_ticks else None,
+        "under_way_seconds": _round(under_way_ticks / max(1, int(rows[0]["tick_rate"])), 1),
+        "cusps": total("cusps"),
+        "cusps_per_agent_minute": _round(
+            total("cusps") / sum(float(r["all"]["agent_minutes"]) for r in rows), 2)
+        if sum(float(r["all"]["agent_minutes"]) for r in rows) else None,
+        "off_corridor_fraction": _round(opposing / active, 4) if (known_any and active) else None,
+        # The mean of the per-file fractions, printed BESIDE the real figure and never in place of it. nav
+        # pooled correctly and then observed that the two agree here only because the three maps carry similar
+        # weight -- so the next reader, on maps that do not, would reach for the mean and be wrong quietly.
+        # Showing both makes the weighting visible instead of asking anyone to take it on trust.
+        "off_corridor_mean_of_files": _round(
+            sum(float(r["all"]["off_corridor_fraction"]) for r in rows) / len(rows), 4) if known_any else None,
+        "corridor_active_fraction": _round(active / considered, 4) if (known_any and considered) else None,
+        "corridor_active_ticks": active,
+    }
+    return out
+
+
 def _round(value: Optional[float], digits: int) -> Optional[float]:
     return None if value is None else round(value, digits)
