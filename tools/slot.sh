@@ -177,6 +177,17 @@ kill_tree() {
 }
 
 exclusive=${TANK_SQUAD_EXCLUSIVE:-}
+# AN EXCLUSIVE RUN TAKES SLOTS 1..CEILING, NOT 1..slots, AND THAT IS THE WHOLE MECHANISM.
+# Taking its own slot count is an illusion of exclusivity: a stream launched with TANK_SQUAD_SLOTS=6 takes
+# slot4, which a run configured for 3 never tries for. Measured, not argued -- a quiet-window run on
+# 2026-09-20 acquired "all 3" slots after 15 minutes while three other runs carried on in slots 4-6, and
+# the window watcher correctly refused to certify it (`QUIET WINDOW: NOT USABLE -- 0 samples`).
+#
+# A NORMAL run only ever tries slot1..its own count, so holding 1..CEILING blocks every launcher whatever
+# it was configured with. The files are just locks; holding twelve costs nothing and they are released the
+# same way. Raise the ceiling if anyone ever runs with more.
+ceiling=${TANK_SQUAD_SLOT_CEILING:-12}
+[ "$ceiling" -ge "$slots" ] 2>/dev/null || ceiling=$slots
 held_slots=()
 held_fds=()
 # Give back every slot this process holds. The lock itself dies with the fd; it is the human-readable owner
@@ -212,7 +223,7 @@ while true; do
 	mapfile -t queue < <(live_tickets)
 	if [ "${#queue[@]}" -eq 0 ] || [ "${queue[0]}" = "$ticket" ]; then
 		if [ -n "$exclusive" ]; then
-			for i in $(seq 1 "$slots"); do
+			for i in $(seq 1 "$ceiling"); do
 				case " ${held_slots[*]-} " in *" $i "*) continue ;; esac
 				exec {fd}>"$dir/slot$i.lock"
 				if flock -n "$fd"; then
@@ -225,9 +236,9 @@ while true; do
 					exec {fd}>&-
 				fi
 			done
-			if [ "${#held_slots[@]}" -eq "$slots" ]; then
+			if [ "${#held_slots[@]}" -eq "$ceiling" ]; then
 				rm -f "$ticket"
-				echo ">> quiet window: holding all $slots heavy-run slots$([ "$announced" -eq 1 ] && echo " after $((($(date +%s) - started) / 60)) min")" >&2
+				echo ">> quiet window: holding all $ceiling heavy-run slots$([ "$announced" -eq 1 ] && echo " after $((($(date +%s) - started) / 60)) min")" >&2
 				# The child must inherit none of the lock fds: a stray background server would hold the whole
 				# box. There are N of them, so the redirections are built rather than written out.
 				redir=""
@@ -294,7 +305,7 @@ while true; do
 			pos=$((pos + 1))
 		done
 		if [ -n "$exclusive" ]; then
-			echo ">> quiet window: holding ${#held_slots[@]} of $slots slots, waiting $(((now - started) / 60)) min for the rest; holders:" >&2
+			echo ">> quiet window: holding ${#held_slots[@]} of $ceiling slots, waiting $(((now - started) / 60)) min for the rest; holders:" >&2
 		else
 			echo ">> still waiting for a heavy-run slot: $(((now - started) / 60)) min, position $pos of ${#queue[@]}; holders:" >&2
 		fi
