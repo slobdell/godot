@@ -270,7 +270,112 @@ sides; if it did not, say that the resize is not the variable.
 
 ## Status
 
-_Updated 2026-09-20 (overnight), worktree `godot-scale`, branch `stream/scale`._
+_Updated 2026-09-20 (post-merge), worktree `godot-scale`, branch `stream/scale`._
+
+### The fairness controls after CP2 — the split beside the aggregate
+
+**CP2 is green at `7542df28` (1395 passed, 0 failed) and merged to `main` at `86463527`.** These are the controls
+run on the merged tree, and they are **two different experiments**. Reporting them pooled would be the round-8
+pooling mistake again, so each is labelled by the population it actually exercises:
+
+> ### ⚠ BOTH FAIRNESS CONTROLS ARE OWED — builder0 went off the network mid-run
+>
+> **Nothing of mine is red; there is simply no number yet.** The `arena-series` run started on builder0 at 08:21 and
+> the box dropped off at ~08:27. From my own log, which is the only thing that counts (lesson 28):
+>
+> ```
+> ssh: connect to host builder0 port 22: No route to host
+> >> remote: FAILED to copy build/ back (rsync exit 255); local build/ is STALE, not this run's
+> >> remote: make arena-series ARENAS=... SEEDS=18 OUT=fairness-cp2 exited 255 (build/ copied back: FAILED)
+> ```
+>
+> `ssh builder0 uptime` still answers `No route to host` at 08:28. **`exited 255` is transport, not a result** — the
+> matches were mid-flight, no summary was written, and the copy-back failed, so anything in `build/` is a previous
+> run's. I checked: `build/fairness-cp2.json` does not exist and there is no `grid-fairness` or `faction-matrix` file
+> in `build/` to be mistaken for one. **Do not quote a fairness number from this tree until one of these runs
+> finishes.**
+>
+> **Run these two when `ssh builder0 uptime` answers.** Both are long; **neither is a laptop job** (the laptop is
+> ~2.75× slower and has the memory guard, and these are 180 and 120 matches):
+>
+> ```
+> make remote T="arena-series ARENAS=yard,boulevard,pit,boneyard,foundry SEEDS=18 OUT=fairness-cp2"
+> make remote T="test FILTER=spawn_grid grid-fairness"
+> ```
+>
+> One `make remote` per worktree at a time, so they go in that order, and **read each result from the wrapper's own
+> `>> remote: make <target> exited <N>` line**, never a pipe. The second command runs the swap-applied positive
+> control (`test FILTER=spawn_grid`) in the same invocation as the series it guards, deliberately: a win rate from
+> two arms means nothing until that test is green.
+
+| control | what it plays | what it can see | result |
+|---|---|---|---|
+| `make arena-series` (5 arenas × 18 seeds × 2) | **faction armies** | the arena and its navmesh | **OWED** — died at 255 (transport) |
+| `make grid-fairness` (2v2 bots, 60 seeds × 2) | **the spawn grid** | the grid I changed in item 3 | **OWED** — never got a slot |
+
+### Decided: the Condemned artillery's box binds the DRIVING pose (one number owed)
+
+feel's X4 box-fill sweep found **18 of 19 units pass and one fails for a real reason**:
+
+```
+UNIT_BOX_FILL 19 units, worst artillery axis 0 at 38.9%
+artillery axis 0: drawn 2.90 m against a 4.74 m box (39% out)
+```
+
+**`artillery` is the only unit with an `OutriggerRig`**, whose legs are posed by `set_deployed(ratio)` — 0 stowed for
+driving, 1 jacks down — and per `slot_contracts.md` the model's **authored pose is deployed**. So
+`SizeLook.box_at_length` measured the union AABB **with the legs down** (4.74 m wide) while `Tank` drives it **stowed
+at 2.90 m**. Since **`hull_size` IS the collider**, that artillery drives with a collider **63% wider than the
+vehicle you can see**, and shells stop in empty air beside it.
+
+**Ruled (mine — it is my number): the box binds the driving pose.** A collider must match the silhouette that is
+being shot at, and this one is stowed every moment it is shot at on the move. The precedent decides it the same way:
+the War Rig's jackknife already puts thin geometry outside the box part of the time and the project accepted that. The
+alternative pays a real cost during the behaviour that matters to buy correctness for the behaviour that does not.
+
+**A second reason visible only from this stream: the 4.74 m had already propagated.** This brief records "adjacent
+columns leave 7.5 − 2×1.5 − 4.74 = −0.24 m for the Condemned artillery's width" as the reason the grid does not hold
+the widest hull. At 2.90 m that reads **+1.60 m** and the negative disappears. **The roster's widest hull was an
+artefact of a pose**, and it had already reached a second stream's reasoning.
+
+**The number is deliberately NOT typed in yet.** Every width and height here is `box_at_length`'s own output (S1:
+*derived, not typed*); hand-entering 2.90 from a message is the exact mirror that drifts the first time the mesh
+moves. Sequence: **feel** makes the measurement take the driving pose (stow the legs, or drop `LEG_BOXES` from the
+union — their files), then **I** re-run `make roster-scale` and commit the derived box. The length 8.20 m does not
+move; only the width and whatever height the legs inflated.
+
+**⚠ That edit moves the sim baseline a SECOND time.** A collider change is a simulation change, and CP2's baseline was
+recorded on `main` at the merge. It will need another `sim-baseline-record` from the orchestrator; the commit will say
+so rather than let it surface as a mystery red in someone else's check. Both of us are blocked on builder0 being back.
+
+**Why two, and why the obvious one is the wrong one.** A faction army *never stands on the spawn grid*:
+`Match.load_doctrine` ends in `ArmyLayout.deploy()`, which re-lays every unit by its own hull size at tick 0,
+synchronously, before any physics step. So `arena-series` — the control the brief names, and the one with a recorded
+baseline to sit beside — measures whether the **arena** is still fair under the resized roster, and is structurally
+blind to the grid. What lives on the grid is what `Match.spawn_tank` puts there and leaves: network players and
+legacy bots. So **item 3's answer is the bot series**, which is also verification.md's own prescription
+(`--runs 60 --green 2 --rust 2`, with and without `--swap-bases`) and the E0 configuration that recorded **51%**
+after the mirrored half-bake retired the 64% south bias (trip-up 21). It is now `make grid-fairness` in `mk/scale.mk`
+so it is a command rather than a recollection.
+
+**The baseline `arena-series` is compared against** (arenas.md, 18 pairs, builder0): yard **−0.04 ± 0.05**,
+boulevard **+0.01 ± 0.02**, pit **+0.03 ± 0.04**, boneyard **−0.05 ± 0.03**, foundry **−0.00 ± 0.02** — paired south
+advantage in surviving share. Same five arenas and `SEEDS=18`, so this is like-for-like rather than a fresh number
+with nothing beside it. **The win rate is the wrong instrument here** and is kept only for reference: each team's
+army is seeded separately and army strength decides most matches, so a swap flipped the winner in only 5 of 72 runs
+in round 5, in both directions. The paired surviving-share margin is the measure.
+
+**A guard the project did not have, and the fairness apparatus rests on it.** Every fairness number ever published
+here depends on `--swap-bases` actually moving the teams, and **nothing asserted that it does.**
+`tools/arena_series.py:41` checks that the match *reported* `swap_bases`, which is the right guard for "did the flag
+reach the run" and blind to the failure that matters more: **if `Match.spawn_position` stopped consulting the flag,
+the probe would still report `swap_bases=true` while both arms spawned in identical places** — two identical arms, a
+perfectly plausible "no base advantage", and the answer we hope for reached by the treatment never happening. That is
+verification.md's broken-comparison table exactly. `test_swapping_the_bases_actually_moves_where_a_team_spawns`
+(`tests/test_spawn_grid.gd`) now asserts the **geometry** moves, on **both** paths — the constants *and* every
+layout's baked list, because `spawn_position` consults `Arena.spawn_spot` first and a flag honoured by only one of
+them is a half-applied treatment — and that swapped Green takes the slot normal Rust stood on. `match_series.py` has
+no swap guard of its own, so this test *is* the positive control for the bot series.
 
 ### Decided overnight (the lead was asleep; the orchestrator ruled where a ruling was needed)
 
@@ -412,6 +517,23 @@ record it from its own branch.
 
 The branch tip at announcement was `ddb16592`, Status-only: `git diff --stat 7542df28 ddb16592` is one file,
 `_agents/streams/scale.md`, +38 lines. Same code tree, so the hash stood.
+
+**The merge's one composition test, and it passed on real data.** `main` brought a new top-level key into
+`arenas/yard.json` and `arenas/terminus.json`: **`show`** (98 and 58 lines of another stream's lighting). Both of my
+arena contracts had to accept it or CP2 and that work would have been mutually destructive — `Arena.validate()`
+rejects unknown top-level keys, so the layouts would have refused to load, and `tools/make_arenas.py` rewrites these
+files, so a regeneration would have silently deleted the lighting. Checked rather than assumed, on the merged tree:
+
+```
+ARENA_KEPT yard: show (authored beside the generator, not by it)
+ARENA_KEPT terminus: show (authored beside the generator, not by it)
+```
+
+and `git diff --stat -- arenas/` after a full `python3 tools/make_arenas.py arenas` is **empty** — the generator
+reproduces all ten layouts byte-for-byte, lighting intact. This is the *good* outcome of the hazard that produced
+this round's asset-contract failure: `show` was in `LAYOUT_KEYS` and in `PRESERVED_KEYS` **before** there was
+anything to preserve, so the two streams composed instead of colliding. **The contract was written for a key that did
+not exist yet, and that is the only reason this cost nothing.**
 
 **Merged to `main` by the orchestrator** at `86463527` ("Merge stream/scale at ddb16592 (CP2, checked at
 7542df28)"), then `git merge main` back into this branch to run the post-merge controls on the tree that actually

@@ -48,3 +48,32 @@ arena-cover: import ## A3: how much of a hull each map actually hides, by hull l
 		$(if $(ARENAS),--arenas=$(ARENAS)) --json=$(CURDIR)/$(BUILD_DIR)/arena-cover.json \
 		2>&1 | grep -E '^ARENA_COVER|SCRIPT ERROR' || true
 	@grep -q . $(BUILD_DIR)/arena-cover.json 2>/dev/null || { echo "arena-cover FAILED: no json"; exit 1; }
+
+.PHONY: grid-fairness
+
+# Item 3's OWN fairness control, and it is a different experiment from `make arena-series`.
+#
+# arena-series plays FACTION armies, and a faction army never stands on the spawn grid: `Match.load_doctrine` ends in
+# `ArmyLayout.deploy()`, which re-lays every unit by its own hull size at tick 0, synchronously, before any physics
+# step. So arena-series measures whether the ARENA and its navmesh are fair; it cannot see this grid at all.
+#
+# What lives on the grid is what `Match.spawn_tank` puts there and leaves: network players and legacy bots. So the
+# control for a spawn-grid change is a BOT series -- which is also verification.md's prescription
+# (`--runs 60 --green 2 --rust 2`, with and without `--swap-bases`) and the E0 configuration that recorded 51% after
+# the mirrored half-bake fixed the 64% south bias (squad_ai_design.md's fairness row, trip-up 21).
+#
+# Two arms, same seeds. `tools/match_series.py` has no swap-applied guard of its own (arena_series.py does), so the
+# positive control for THIS arm is `test_swapping_the_bases_actually_moves_where_a_team_spawns` in
+# tests/test_spawn_grid.gd: it asserts the flag moves the geometry on both the constants and every baked list. A win
+# rate from these two arms means nothing without that test green -- an unapplied swap gives two identical arms and a
+# perfectly plausible 50/50.
+grid-fairness: import ## Item 3: the SPAWN GRID's swap-bases control, 2v2 bots (the only units that stand on it) (N=60 TIME=300 SCORE=5) -> build/grid-fairness-{normal,swapped}.json
+	@mkdir -p $(BUILD_DIR)
+	@for arm in normal swapped; do \
+		echo "== grid fairness: 2v2 bots, $$arm bases, seeds 1-$(or $(N),60) =="; \
+		$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),60) --jobs $(JOBS) \
+			--green 2 --rust 2 --score-limit $(or $(SCORE),5) --time-limit $(or $(TIME),300) \
+			--json $(BUILD_DIR)/grid-fairness-$$arm.json \
+			$$([ $$arm = swapped ] && echo "--extra=--swap-bases") \
+			| grep -E "matches|wins:" || exit 1; \
+	done

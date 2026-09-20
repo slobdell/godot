@@ -59,8 +59,11 @@ func test_every_layouts_baked_spawn_list_is_the_grid_the_constants_describe() ->
 
 
 ## What a bare spawn leaves standing here has to fit between its neighbours at the WORST jitter, not the average.
-## The clearance is READ from squad's `ArmyLayout.HULL_CLEAR_M` -- the project's existing answer to "how much clear
-## ground between two vehicles" -- rather than a number invented in this file.
+## The clearance is READ from squad's `TacticsFormation.HULL_CLEAR_M` -- the project's existing answer to "how much
+## clear ground between two vehicles" -- rather than a number invented in this file. It was read through
+## `ArmyLayout.HULL_CLEAR_M` until squad gave the value a single owner this round; `ArmyLayout`'s is now
+## `const HULL_CLEAR_M := TacticsFormation.HULL_CLEAR_M`, so both spellings read the same number today and this one
+## names the owner, which is the spelling that keeps meaning the right thing if the alias ever goes.
 func test_the_bare_spawn_unit_clears_its_neighbours_at_the_worst_jitter() -> void:
 	var hull := _default_hull()
 	for layout_name: String in Arena.layout_names():
@@ -77,9 +80,9 @@ func test_the_bare_spawn_unit_clears_its_neighbours_at_the_worst_jitter() -> voi
 				var gap_z := absf(a.z - b.z) - 2.0 * Match.SPAWN_JITTER_MAX_Z - hull.z
 				worst = minf(worst, maxf(gap_x, gap_z))
 		Arena.active = previous
-		assert_true(worst >= ArmyLayout.HULL_CLEAR_M - TOLERANCE_M,
+		assert_true(worst >= TacticsFormation.HULL_CLEAR_M - TOLERANCE_M,
 				"%s: the closest pair of slots leaves %.2f m clear for a jittered %.2f x %.2f m bare spawn, and %.2f m is the floor"
-				% [layout_name, worst, hull.x, hull.z, ArmyLayout.HULL_CLEAR_M])
+				% [layout_name, worst, hull.x, hull.z, TacticsFormation.HULL_CLEAR_M])
 
 
 ## `DRIVABLE_LIMIT` is a square fallback and three shipped maps are hexagons, so the bound that matters is
@@ -139,3 +142,56 @@ func test_a_doctrine_army_is_never_left_standing_on_the_grid() -> void:
 		assert_eq(overlapping, [], "%s: every vehicle was re-laid clear of every other before the first physics step" % faction)
 		game_match.queue_free()
 		await wait_physics_frames(1)
+
+
+## THE FAIRNESS FLAG ITSELF. Every fairness number this project has ever published rests on `--swap-bases` actually
+## moving the teams, and until now NOTHING asserted that it does. `tools/arena_series.py:41` checks that the match
+## *reported* `swap_bases`, which is the right guard for "did the flag reach the run" and blind to the one that
+## matters more: if `Match.spawn_position` stopped consulting the flag, the probe would still report `swap_bases=true`
+## while both arms spawned in identical places -- two identical arms, a perfectly plausible "no base advantage", and
+## the answer we hope for reached by the treatment never happening (verification.md's broken-comparison table).
+##
+## So this asserts the GEOMETRY moves, on both paths, because `spawn_position` consults `Arena.spawn_spot` (the baked
+## list) before the constants and a flag honoured by only one of them is a half-applied treatment.
+##
+## `swap_bases` is a STATIC var: it is restored here, or every test that runs after this one silently plays its
+## matches with the bases swapped.
+func test_swapping_the_bases_actually_moves_where_a_team_spawns() -> void:
+	var was := Match.swap_bases
+	var previous := Arena.active
+	Arena.active = {}
+	_assert_the_swap_mirrors("the constants")
+	for layout_name: String in Arena.layout_names():
+		var result := Arena.load_layout(layout_name)
+		assert_true(not result.has("error"), "%s loads (%s)" % [layout_name, result.get("error", "")])
+		Arena.active = result["layout"]
+		_assert_the_swap_mirrors("%s's baked list" % layout_name)
+	Match.swap_bases = was
+	Arena.active = previous
+
+
+## Green's spawn against the same slot with the flag off and on, for whatever `Arena.active` is set to.
+func _assert_the_swap_mirrors(source: String) -> void:
+	for slot: int in [0, Match.SPAWN_SLOTS / 2, Match.SPAWN_SLOTS - 1]:
+		Match.swap_bases = false
+		var normal := Match.spawn_position(Match.Team.GREEN, slot)
+		var normal_yaw := Match.spawn_yaw(Match.Team.GREEN)
+		Match.swap_bases = true
+		var swapped := Match.spawn_position(Match.Team.GREEN, slot)
+		var swapped_yaw := Match.spawn_yaw(Match.Team.GREEN)
+		assert_true(normal.z > 0.0 and swapped.z < 0.0,
+				"%s slot %d: Green spawns south (z>0) normally and north (z<0) swapped, not %s and %s"
+				% [source, slot, normal, swapped])
+		assert_near(swapped.z, -normal.z, TOLERANCE_M,
+				"%s slot %d: the swap is the 180 degree mirror, so Green's z negates" % [source, slot])
+		assert_true(absf(angle_difference(normal_yaw, swapped_yaw)) > PI - 0.001,
+				"%s slot %d: a team that starts at the other base faces the other way (yaw %.2f -> %.2f)"
+				% [source, slot, normal_yaw, swapped_yaw])
+	# The two teams must not merely move: swapped Green takes the slot normal Rust stood on.
+	Match.swap_bases = false
+	var rust := Match.spawn_position(Match.Team.RUST, 0)
+	Match.swap_bases = true
+	var green := Match.spawn_position(Match.Team.GREEN, 0)
+	assert_true(rust.distance_to(green) < TOLERANCE_M,
+			"%s: swapped Green takes Rust's own slot 0 (%s vs %s), or the swap is not a base swap"
+			% [source, green, rust])
