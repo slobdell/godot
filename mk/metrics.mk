@@ -32,3 +32,66 @@ metrics-fixtures: ## Write the synthetic trajectory fixtures to build/metrics/fi
 	$(PYTHON) $(METRICS_DIR)/run_metrics.py "$(BUILD_DIR)/metrics/fixtures/*.jsonl"
 
 metrics-check: metrics-pytest metrics-fixtures ## Everything this stream verifies headless
+
+# ---- ai-scenarios in `check`, behind a committed count (lesson 159, orchestrator's call 2026-09-20) ------------
+#
+# nav found squad's leash commit errors in a scenario `check` never ran. The scenarios are not IN `check` because
+# one of them is a laptop-speed perf case that fails on slow hardware -- so adding them as a pass/fail gate would
+# redden the gate for a reason that is not a defect, and lesson 42 says do not add a red suite to the gate.
+#
+# So the gate is on the COUNT, not on the outcome: the committed line in tests/baselines/ai_scenarios_count.txt
+# names the machine and the counts it was taken on, and `ai-scenarios-check` fails when the counts CHANGE. A new
+# script error moves `failed` and is caught; the pre-existing perf failure sits in the baseline and is not.
+#
+# The count file, like the lint baseline and unlike sim_state_hash.txt, is NOT machine-keyed -- but the perf case
+# IS machine-sensitive, so the file records which machine the counts came from and the target says so on failure.
+AI_SCENARIOS_BASELINE := tests/baselines/ai_scenarios_count.txt
+
+.PHONY: ai-scenarios-check ai-scenarios-record
+
+ai-scenarios-check: import ## The AI behaviour scenarios, gated on a CHANGE in the passed/failed/pending counts
+	@mkdir -p $(BUILD_DIR)
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || true
+	@line=$$(grep -E '^scenarios: ' $(BUILD_DIR)/ai-scenarios.log | tail -1); \
+	if [ -z "$$line" ]; then \
+		echo "ai-scenarios-check FAILED: the runner printed no summary line at all."; \
+		echo "  That is a crashed or refused run, not a clean one -- the last 20 lines:"; \
+		tail -20 $(BUILD_DIR)/ai-scenarios.log | sed 's/^/    /'; \
+		exit 1; \
+	fi; \
+	counts=$$(echo "$$line" | grep -oE '[0-9]+' | paste -sd,); \
+	expected=$$(grep -v '^#' $(AI_SCENARIOS_BASELINE) 2>/dev/null | grep -v '^$$' | head -1 | cut -d' ' -f1); \
+	if [ -z "$$expected" ]; then \
+		echo "ai-scenarios-check FAILED: no baseline in $(AI_SCENARIOS_BASELINE)."; \
+		echo "  Record one with: make ai-scenarios-record   (counts now: $$counts)"; \
+		exit 1; \
+	fi; \
+	if [ "$$counts" != "$$expected" ]; then \
+		echo "ai-scenarios-check FAILED: the counts CHANGED."; \
+		echo "  expected (passed,failed,pending,unexpectedly_passing): $$expected"; \
+		echo "  got:                                                   $$counts"; \
+		echo "  baseline was recorded on: $$(grep -E '^# machine:' $(AI_SCENARIOS_BASELINE) | cut -d' ' -f3-)"; \
+		echo "  this machine: $$(hostname)"; \
+		echo "  $$line"; \
+		grep -E '^  (FAIL|UNEXPECTED PASS)' $(BUILD_DIR)/ai-scenarios.log | sed 's/^/    /' | head -20; \
+		echo "  If the change is intended, re-record with `make ai-scenarios-record` and say why in the commit."; \
+		exit 1; \
+	fi; \
+	echo "ai-scenarios-check: $$line (unchanged against $(AI_SCENARIOS_BASELINE))"
+
+ai-scenarios-record: import ## Write this machine's ai-scenarios counts to the baseline (say WHY in the commit)
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || true
+	@line=$$(grep -E '^scenarios: ' $(BUILD_DIR)/ai-scenarios.log | tail -1); \
+	test -n "$$line" || { echo "no summary line; refusing to record nothing"; exit 1; }; \
+	counts=$$(echo "$$line" | grep -oE '[0-9]+' | paste -sd,); \
+	{ echo "# ai-scenarios counts: passed,failed,pending,unexpectedly_passing"; \
+	  echo "# `make ai-scenarios-check` fails when these CHANGE, not when a scenario fails: one perf case is"; \
+	  echo "# laptop-speed-sensitive and would redden the gate for a reason that is not a defect (lesson 42),"; \
+	  echo "# while a new script error moves \`failed\` and is caught (lesson 159)."; \
+	  echo "# machine: $$(hostname)"; \
+	  echo "# commit:  $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})"; \
+	  echo "# line:    $$line"; \
+	  echo "$$counts"; } > $(AI_SCENARIOS_BASELINE); \
+	echo "recorded $$counts in $(AI_SCENARIOS_BASELINE) on $$(hostname)"
