@@ -37,9 +37,16 @@ func _a8() -> void:
 	TacticsFormation.DEFORM_ENABLED = true
 
 
+## Restores the switch, and NOTHING ELSE -- no `super.teardown()`, deliberately.
+##
+## `TestCase._teardown()` is the runner's hook and it calls `teardown()` and then `free_owned()` itself, so freeing and
+## draining are no longer this override's business; calling super would only run `free_owned()` twice. The reason to
+## write it down rather than just delete the line: before nav sealed the drain (`49ed1fb3`), `teardown()` was the thing
+## that awaited, and **a `-> void` override calling a base that awaits detaches it silently** -- the call looks correct,
+## compiles, and runs, it just does not finish. That is the same family as a facing that reaches `plan` but not the
+## orders: code that executes in the right place at the wrong time.
 func teardown() -> void:
 	TacticsFormation.DEFORM_ENABLED = false
-	super.teardown()
 ## Corridor widths swept, in metres. From narrower than any vehicle to wider than any arena gap.
 const WIDTHS: Array[float] = [5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 14.0, 17.0, 20.0, 24.0, 28.0, 33.0, 40.0, 50.0, 70.0]
 

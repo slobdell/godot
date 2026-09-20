@@ -279,6 +279,27 @@ sides; if it did not, say that the resize is not the variable.
 
 _Updated 2026-09-20 (post-merge), worktree `godot-scale`, branch `stream/scale`._
 
+### PRE-REGISTERED, written before reading the check on the merged tip
+
+The hold is lifted: main's quiet check on `49ed1fb3` read **1535 passed, 1 failed**, `sim-baseline 1e90f69e5d6fcc46`
+unmoved, and **zero** physics-body, region or edge-error reports — nav's **sealed `_teardown()`** frees and drains
+whether or not an override calls `super`, so combat's leaking `test_tank_yaw_fit` no longer leaks into its neighbour.
+
+**What I expect from `b6e24892` + `4119d0e2` merged onto that, recorded so it can be wrong:**
+
+1. **`test_theme_factions` at 44 bodies: GONE.** High confidence. Forty-four bodies is an army's worth and it was
+   never that file's — it was combat's foundry, observed by whichever test followed it in the shard. The seal removes
+   the holder, so the residue never reaches the observer. **This is the two-candidate message's hedge being settled
+   in favour of the *other* candidate, which is the outcome that justifies the hedge.**
+2. **`test_combat_sim_profile` at 1 body: probably gone, lower confidence.** The seal frees `_owned_nodes` regardless
+   of an override, so a body added through `add_to_tree` is now freed whatever that test does. **It survives only if
+   the body was never owned** — added outside `add_to_tree`, or created by the engine — in which case it is a **real
+   one-body leak** and goes to combat by name.
+3. **Main's two known reds may still appear** (the spawn settle assertion, which combat's `Tank.place()` clears next,
+   and the engine-deck scenario). Neither is mine.
+
+**If (1) does not hold, my reading of the 44 bodies was wrong** and `test_theme_factions` owns a leak of its own.
+
 ## ROUND-10 HANDOVER — what is open, and what a fresh agent must not rediscover
 
 **The backlog is complete.** Items 1–5 done and merged; item 3's fairness control genuinely run rather than

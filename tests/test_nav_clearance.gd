@@ -167,3 +167,27 @@ func _drive(game_match: Match, tank: Tank) -> void:
 	add_to_tree(ctl)
 	assert_eq(ctl.set_orders({"type": "move_to", "x": tank.global_position.x + 40.0, "z": tank.global_position.z},
 			{"type": "hold_fire"}), "", "ordered %s to drive" % tank.name)
+
+
+## THE FALLBACK IS LOUD, and this is the test the orchestrator asked for. `Units.stat(id, "hull_size", [2.4,1.6,3.8])`
+## was inlined at three nav sites — `avoidance.gd`, and `movement.gd` twice. That literal is **pre-CP2**: after the
+## resize it is smaller than 14 of 21 hulls, so a misspelled id or a unit added before its profile would have nav
+## measuring a 14 m semi as a 3.8 m car. **No shipped unit reaches it, which is exactly why nothing caught it**
+## (scale's consumer sweep). One accessor now, erroring by name, with `Units.DEFAULT`'s live box behind it.
+func test_an_unknown_unit_id_errors_rather_than_measuring_a_pre_cp2_car() -> void:
+	expect_error("no unit not_a_unit_id in the roster")
+	var box := Movement.hull_box("not_a_unit_id")
+	# `Units.stat` would RAISE on this id rather than return a fallback, so `hull_box` must not call it at all for
+	# an unknown unit. That is the bug under the bug: the inline fallback never covered a missing unit.
+	assert_true(not Units.PROFILES.has("not_a_unit_id"), "POSITIVE CONTROL: the id really is unknown")
+	var fallback: Variant = Units.stat(Units.DEFAULT, "hull_size", [])
+	assert_true(box.size() >= 3, "a box comes back so the caller does not crash on a typo (%s)" % str(box))
+	assert_eq(box, fallback,
+			"and it is %s's LIVE box from the roster, not a literal frozen in three files (%s vs %s)"
+			% [Units.DEFAULT, str(box), str(fallback)])
+
+
+## ...and a known id is untouched: the accessor is a lookup, not a policy.
+func test_a_known_unit_id_returns_its_own_box_unchanged() -> void:
+	var direct: Variant = Units.stat("gang_tank", "hull_size", [])
+	assert_eq(Movement.hull_box("gang_tank"), direct, "the semi's own box comes back unchanged (%s)" % str(direct))

@@ -263,7 +263,86 @@ is the orchestrator's call, not his.)
 > `test_theme_city_block::test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll` — **that
 > last one I cannot find written down anywhere and it may be new.**
 
-> ### Waiting on the box (held quiet for feel and show). Four commits verified locally, none checked.
+> ### The lint gap: my structural hypothesis was WRONG, and the probe said so
+> I argued the root cause was that a per-file `--check-only` cannot see an error that only appears when the
+> project compiles together, and recommended a whole-project pass. **The probe on builder0 (`b839495c`)
+> refutes it.** Verbatim, four arms:
+>
+> | arm | result |
+> |---|---|
+> | 0 positive control (blatant syntax error at the same `res://` path) | `Parse Error: Unterminated string.` — the experiment is valid |
+> | A self-contained 12-line ternary, nothing from the project | `Cannot infer the type of "my_map" …` |
+> | B real `movement.gd` at `bffdea0f`, class cache present | `Cannot infer the type of "my_map" …` |
+> | C same, class cache moved aside | `SimClock not declared` + knock-on constants (different errors, not fewer) |
+>
+> So the checker sees this class fine, with or without the cache: **the green run never checked
+> `movement.gd`.** That is the silent-pass hole, closed at `2e73a05e` (no output at all / killed by a signal
+> / blind for the whole run). **No whole-project pass was built** — it would be a second forty-second gate
+> justified by a guess I now know was wrong.
+>
+> The probe paid for itself twice: arm 0 proved `res://build/…` resolves, which is the uncertainty that made
+> me defer the stronger self-test. `lint` now carries **two** liveness probes — the eight baselined
+> artefacts (catches a wholly blind run) and a synthetic type-inference error whose finding is REQUIRED
+> (catches a checker that can reproduce yesterday's findings but not see a new one).
+>
+> ### `check` keeps going, and check4 measured what that is worth
+> `>> check: 16 passed, 2 FAILED, 0 NOT RUN` on `0269e7b0`, against **check3's 10 of 18** under the old
+> behaviour — one failing shard used to abandon seven other targets with nothing in the log saying so.
+> Summary cross-checked against the markers: 18 started, 16 done, 2 failed, 0 never started. They agree.
+>
+> ### `make test FILTER="a|b"` exited 127, and quoting alone would have been worse
+> The filter is a substring, so a quoted `a|b` matches nothing — and the runner printed `0 passed, 0 failed`
+> and **exited 0**. **A filter that matches no tests is now a failure**; `|` means alternation; `'` and `$`
+> are refused by name. `$` was found by the test, not by me: I quoted against the shell and **make had
+> already expanded it** (`FILTER=$HOME` arrived as `OME`).
+>
+> **The general form, four instances today:** a fix aimed at one layer defeated by a layer above it that was
+> never in the picture — make's expansion beating shell quoting, a pipeline reporting `tail`'s status,
+> `$(date)` resetting `$?`. And separately, three times: *a test asserted something about its environment it
+> had never checked* (`TANK_SQUAD_SLOT` set inside `check`, fixed sleeps on a loaded box, no `.git` on the
+> build box). Every one surfaced only because the suites are IN `check`.
+
+> ### Orchestrator's post-backlog tooling block: three items, all in, one check outstanding.
+> | commit | what | the finding it produced |
+> |---|---|---|
+> | `8c5bb14a` | `make sim-baseline-adopt` | **the hand `cp` DELETES other machines' baselines** — `build/sim_state_hash.txt` holds one line, and the symptom where it was deleted is `sim-baseline SKIPPED`, a skip not a failure. Also folded three copies of the hash read into one `SIM_HASH_READ`. |
+> | `dcf4d242` | `--delete` copy-back, `*.log` protected | `--delete` would unlink a wrapper log **while its redirect is open** |
+> | `26c6b1e5` `1e5972e4` | `make round-status` | **six slots held on builder0 at load 15.70** where `REMOTE_SLOTS=3`; and see below |
+>
+> **`round-status` found a real thing and got a second thing wrong on the same run, and the second is mine.**
+> I flagged `godot-feel` and `godot-nav` as "work but no slot" and passed it to the orchestrator as something
+> to look at. **They were QUEUED.** A queued run has already `cd`-ed into its folder — the exact reason the
+> live-run guard covers the queue — so processes-without-a-slot is the *healthy* state while a stream waits.
+> A tool that turns a normal state into a finding is worse than one that says nothing, because someone acts
+> on it. Fixed: a queued run holds a `slot.sh` ticket, so the three states are distinguishable, and only
+> "no slot AND no ticket" is flagged, worded as the uncertainty it is rather than as an accusation.
+>
+> The six-slot observation stands and the part worth keeping is that **the shard count is derived from free
+> memory at launch**, so a run that starts into a crowded box stays slow for its whole duration, not only
+> while it is crowded.
+>
+> 142 shell tests over six suites; `metrics-pytest` 138.
+
+> ### Backlog and both stretch items COMPLETE. Last check `dd6f84ca`: exit 2, and the red was mine.
+> builder0, `1499 passed, 3 failed`, 1000 s, 4 shards over 214 files, `sim-baseline 1e90f69e5d6fcc46`
+> (unmoved), `determinism 253adefeec657df1`. **Both new features proved themselves in it:**
+> `ai-scenarios-check: 42 passed, 2 failed, 3 pending, 0 unexpectedly passing (non-pending counts 42,2
+> unchanged)` — green, the coin out of the gate, the two live regressions still visible to scale; and
+> `engine: 0 errors, 2 warnings`, with `test_theme_city_block` reading `0 engine errors, 2 engine warnings`
+> and naming both — the exact case `expect_warning` exists for.
+>
+> **The red was `shell-tools-test`, and it is this round's lesson pointing at me.** Six of twelve slot tests
+> and one quiet-window test passed on an idle laptop and failed on the box: `slot.sh` short-circuits when
+> `TANK_SQUAD_SLOT` is set, and `check` runs inside a slot, so every slot assertion exercised nothing; and my
+> fixed sleeps were a property of an idle machine. Fixed at `bf2686ac` (unset the slot vars, poll instead of
+> sleep). **A guard exercised only where it is easy passes for the wrong reason** — and I only found out
+> because I put the suite in `check` rather than running it by hand.
+>
+> Not mine, `git diff main...HEAD -- game/` empty: `test_match_spawns_and_results` (the y=0 spawn contact)
+> and `test_assets_pipeline::test_committed_generated_themes_meet_their_contracts`, which I have not seen
+> documented anywhere.
+
+> ### Earlier: waiting on the box (held quiet for feel and show).
 > `bac84a6f`'s check, for the record: builder0, `>> remote: make check exited 2`, **1481 passed / 4 failed**,
 > 993 s, 5 shards over 212 files — the same seven failures as `fbf2af95`, reproduced exactly. **`make
 > check-hashes` printed on real data for the first time**, which closes CP3's one inferred criterion:

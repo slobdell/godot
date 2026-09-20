@@ -231,6 +231,47 @@ lead's 4 s allowance is exceeded, that is a question for him, recorded here with
 
 **In progress** (started 2026-09-20, worktree `godot-squad`, branch `stream/squad`, from `9f864474` = `main`).
 
+### ROUND 10 STARTS HERE (the lead's own summary is the next section down)
+
+**Five items, in the order I would take them. The first is the only one that is a design question rather than work.**
+
+**1. Formation spacing comes from hull WIDTH; rotation needs the DIAGONAL.** Nothing in this codebase accounts for a hull
+turning in place. `hull_floor` is width + `HULL_CLEAR_M`, leaving 2.0 m of lateral air; a yawing hull sweeps to its
+half-diagonal and needs `half_diagonal - half_width` beside it — **3.27 m for a `tank` (short by 1.27) and 5.53 m for a
+War Rig (short by 3.53)**. The deficit grows with LENGTH while the spacing is set by WIDTH, which is why CP2's resize
+made a latent error start failing tests. Measured across five formed-up squads: across gaps 4.28 / 2.98 / 1.12 / 2.39 /
+4.06 m, four of five below what a `tank` needs, **not one pair overlapping** — clear while parallel and unable to rotate.
+Full table and the three trades are in the section of the same name. **Do not choose from the code:** put a squad on the
+field, order a new heading, and decide whether hulls clipping while they dress looks acceptable. That is the lead's.
+
+**2. The wheeled-hull facing is nav's now, with my numbers.** A dragged heading reaches every crew as a standing `hold`
+(`d29115ae`), and the ORDER is asserted because that is what this layer controls. The hulls then end at **tank 1.4 /
+16.2 degrees against ifv 41.4 / 28.5** — a wheeled hull cannot neutral-steer, so its heading is whatever its last travel
+left it on. Ruled: a held wheeled hull manoeuvres to an ordered facing above a stated error; nav owns the how and the
+cost. **If the plant refuses low-speed yaw, that ruling and the constraint collide** — see item 1, since the refusal may
+be geometrically correct.
+
+**3. `ArmyLayout._is_clear` ignores each placed vehicle's own forward.** `taken` holds `[position, width, length]` and the
+test projects onto the DEPLOY frame's axes, which is sound while every hull shares that frame (true within a team; 180°
+preserves width and length). It is **wrong for an arena whose two spawn zones are not exactly opposed**, where the teams'
+forwards differ by something other than 180° and a rotated footprint is compared as if axis-aligned. Latent, with a named
+trigger, caused nothing measured.
+
+**4. Delta's margin is item 1's first symptom, not a separate oddity.** `test_five_squads_ordered_in_quick_succession`
+puts Delta's worst crew at **22.2–22.4 m against a 36 m threshold** — 62% of the budget, on main, with combat's constraint
+absent, while the other four squads sit at 3–7 m. A squad whose crews are 1–4 m apart laterally while carrying 8.62 m
+hulls cannot dress its formation. It PASSES, so it is not urgent; it will start failing for whatever lands next and be
+blamed on it. The worst crew in every squad now prints on every run (`12cd41df`), so the margin is visible in a green run.
+
+**5. `test_tactics_deform`'s `super.teardown()` — blocked on nav's sealing.** A `-> void` override calling a base that
+awaits detaches it silently. nav seals the drain into a `_teardown()` the runner awaits; my override then stops calling
+super. Nothing to do until that merges, and nothing is wrong today.
+
+**Carried, and pre-registered so it can fail:** combat's `Tank.place(spot, yaw)` should make `match_spawns` green — **zero
+units firing the drift detector, the settle completing in one or two frames with a millimetre last step, all four pairs
+clearing**. Measured against `0d5bd0d4`'s log. **If even one unit still moves, the tick-1 permutation was not the whole
+cause.** That red is deliberate and stands until then.
+
 ### For the lead, first thing
 
 **Four things went in, one came out, and one number is worth your eye more than the rest.**
@@ -1243,6 +1284,171 @@ beside its hash or it does not travel.
 without A7, so switching A11 off in a default build measures nothing and reads as "A11 does not help". Same trap as
 `squad-defile TUBE=` reading `redecides=0` in both arms because the maze has no enemies: an arm in which the mechanism
 cannot act is not a control, it is a broken instrument, and its zero looks exactly like a result.
+
+### ROUND 10'S FIRST ITEM: formation spacing is derived from hull WIDTH, and rotation needs the DIAGONAL
+
+**Nothing in this codebase accounts for a hull needing to turn in place.** X1's `hull_floor` is the widest hull's width
+plus `HULL_CLEAR_M`, so a formation leaves exactly **2.0 m** of lateral air between hull edges. A hull yawing sweeps out
+to its **half-diagonal**, so the room it needs beside it is `half_diagonal - half_width`:
+
+| hull | size (w x l) | half-diagonal | half-width | needs beside it | `HULL_CLEAR_M` leaves | short by |
+|---|---|---|---|---|---|---|
+| `tank` | 2.40 x 8.62 | 4.47 m | 1.20 m | **3.27 m** | 2.0 m | **1.27 m** |
+| `gang_tank` (War Rig) | 3.32 x 14.00 | 7.19 m | 1.66 m | **5.53 m** | 2.0 m | **3.53 m** |
+
+**So a tank at doctrine spacing cannot turn in place without sweeping into its neighbour's ground, and a War Rig cannot
+come close.** The deficit grows with LENGTH while the spacing is set by WIDTH, which is why CP2's resize made it bite:
+`tank` went from roughly square to 3.6:1.
+
+**Measured, not derived** (`165ef0cc`, builder0, five squads formed up, the worst crew in each):
+
+    Alpha   across 4.28 m   Bravo across 2.98 m   Charlie across 1.12 m   Delta across 2.39 m   Echo across 4.06 m
+
+Four of five are below the 3.27 m a `tank` needs to yaw; Charlie's pair has **1.12 m**.
+
+**CORRECTION, and the irony is worth the space: my "not one pair is OVERLAPPING" was an artefact of the bug.** Those gaps
+were measured on a tree that still had the tick-1 permutation, whose shove had already pushed the crews APART before I
+read them. On combat's tree, which carries the settle tick, **four crews overlap at spawn — across −1.36, −0.02, −0.01
+and −0.77 m.** The spawn formation is TIGHTER than my measurement showed, and the defect was hiding the spacing problem
+by separating the hulls it had scrambled. A bug that flatters the thing it breaks is the worst kind to measure around.
+
+**And combat's roster says the crews never departed at all:** every off-slot unit sits at z ≈ 94–101, the spawn row, with
+its destination at z ≈ 6–19. Not "drove off and stopped short" — **the first turn toward the goal is refused in the
+press**, so the army cannot execute its first order.
+
+**So item 1 is necessary but NOT SUFFICIENT.** Diagonal-derived slot spacing fixes the formation a squad drives into; it
+does nothing for the grid a squad starts in. `Match.spawn_position` and the layout's deep and lateral floors (scale's
+half, and scale is told) have to give a hull room to TURN before the first order, or the widened formation is somewhere
+the army can never reach. Two halves, two owners, one geometry.
+
+**This is the same finding as combat's yaw-constraint regression, seen from the other side.** Their `986f8921` (one line,
+`yaw_fit_enabled` false -> true) takes 0 of 30 off-slot to 12 of 30 with four squads at 87-91 m, and their reading was
+"the plant counts a squadmate as a wall". **The measurement says the plant is right about the geometry**: the swept
+footprint genuinely does not fit. Falsifier, with combat: their `refusals_applied` should RANK with my across column. If
+the refusals do not track the gap, my mechanism is wrong and theirs stands.
+
+**And it reframes Delta's 22.2-22.4 m margin** (62% of the test's 36 m budget, on main, with the constraint absent, while
+the other four squads sit at 3-7 m) as the first symptom rather than a separate oddity: a squad whose crews are 1-4 m
+apart laterally while carrying 8.62 m hulls cannot dress its formation, so its worst crew ends up further out and stays
+there.
+
+**Three ways out, and this is the lead's call because they trade different things:**
+1. **`HULL_CLEAR_M` becomes `half_diagonal - half_width` of the widest member** — correct by construction, and it opens a
+   War Rig formation to 5.5 m of air per side, which will look loose and cost frontage.
+2. **Crews turn in sequence rather than together** — keeps the spacing, costs time, and needs a mechanism that does not
+   exist.
+3. **Let a rotation sweep through a neighbour** (combat's `match.yaw_world`: penetration against the world layer only) —
+   cheapest, keeps the look, and accepts hulls visibly clipping each other while dressing.
+**Do not pick from the code.** Put a squad on the field, order it to face a new heading, and watch: whether hulls
+clipping while they dress is acceptable is a question about how the game LOOKS, which is the lead's and nobody else's.
+
+### The afternoon: four rules that cost a day between us, and the spawn dataset
+
+**1. A knob being off does not exonerate the commit that added it.** combat A/B'd `match.yaw_fit` on
+`test_ai_player_orders::test_five_squads_ordered_in_quick_succession`, got **bit-identical** output in both arms, and
+reported the plant excluded — which was true of the knob and was read as true of the commit. `986f8921` also moved the
+basis assignment behind a new `_fitting_forward`, and `--tune=match.yaw_fit=0` returns early **from inside that new
+function**, so the off arm still runs the refactored path. **Settled by ancestry, not by a run:** `b3f7ffae` IS in my
+tree and that test passes on it twice (0 of 30 off-slot in a 2-shard check, 0 of 30 filtered, worst gap 8.5 m against a
+36 m bar); `986f8921` is NOT in my tree. So main is clear and the cause is on that branch. Corollary from combat's own
+bisect: **a failure bit-identical across every change on a branch was never caused by those changes** — it points at
+the branch's base or its first commit, not its middle.
+
+**2. A log is not a record per test unless every line says which test it is from.** combat quoted three roster lines to
+me in good faith; they belonged to the test that runs *next*. The arithmetic proves it — the leash line reports 3 living
+units at a mean 3.9 m and the roster entries are 4, 3, 5 (mean 4.0) — and the tell was the phrase itself: *"%s m from
+the slot it was sent to"* reads as belonging to whatever test the reader has in mind. **I built a clean, confident, wrong
+diagnosis on it** (Bravo seated in Echo's formation) and only withdrew when combat read the block instead of grepping.
+Every per-unit line in that file now names its measurement. This safeguard is cheaper than every other one here because
+it costs nothing at read time.
+
+**3. And the reasoning failure under it, which is mine and worse than the mix-up.** I *had* the contradiction —
+`Bravo 89.5` in the per-squad line cannot coexist with `Green_Bravo_1 3 m` in the roster — and it is what made me ask
+for the aggregate line rather than accept the roster. **Then the line arrived and I reasoned from the roster anyway.**
+Using a safeguard to ask the right question and discarding it while reading the answer is worse than never having it.
+combat's stronger form, adopted over mine: **when a quoted detail cannot produce the reported failure, check whether it
+belongs to the same measurement at all** — mine stopped at "the detail is not the failure", which still assumes one
+measurement.
+
+**4. A measurement that forces its reader to borrow numbers from another measurement is incomplete, however correct its
+own total is.** The rapid-succession test's aggregate was never wrong; it just could not be checked without reaching
+outside itself, which is what made two people confident and wrong in the same hour. It now prints one line per off-slot
+unit — gap, position, ordered slot, squad — so the three causes with three different owners (seated in another squad's
+formation / never moved / sent somewhere that does not exist) are distinguishable in one run.
+
+### The spawn dataset, complete in one log for the first time (`0d5bd0d4`, filtered)
+
+My settle assertion fires FIRST — *"the army came to rest within 10 frames — it did NOT (last step 0.1775 m)"* — and
+then the detector names **76 units** with vectors. Three things in it:
+
+- **The two teams' displacements are MIRROR-SYMMETRIC.** `Green_S0_2` 0.55 m from `(-92.34568, 90.0)` to
+  `(-92.36414, 89.45048)`; `Rust_S0_2` 0.55 m from `(92.34568, -90.0)` to `(92.36414, -89.45048)` — exact to five
+  decimals with x and z negated, and the same for S0_3/4/5, S1_1, S1_3, S7_x, S8_x. **Contacts between neighbours do not
+  do that; a deterministic function of the layout does**, which is the tick-1 grid permutation seen through the spawn
+  grid's own symmetry. Pairs that break it (`Green_S1_2` 1.41 m against `Rust_S1_2` 0.98 m) are where the two scrambles
+  differ, not evidence against it.
+- **Both ejections are in the same log as the lateral drift:** `Green_S6_3` at **y = 1.306522** and `Rust_S5_4` at
+  **y = 2.089882**, every other unit at a uniform `y = 0.000999`. The vertical and lateral halves recorded together for
+  the first time, which is what argues they are one resolution rather than two effects.
+- **"Settled" and "ran out of frames" are different conditions** and now fail differently. Before, every assertion after
+  the cap described a scene in motion while reading as settled state — the same error as sampling a turn curve at a
+  fixed moment and calling it the outcome.
+
+**PRE-REGISTERED falsifier for combat's `Tank.place(spot, yaw)`, against this exact log:** zero units fire the detector,
+the settle completes in one or two frames with a last step in **millimetres**, and all four pairs clear. **If even one
+unit still moves, the permutation was not the whole cause** and feel's two-effects reading comes back. The red on that
+test stands until then, deliberately: an assertion that reports a moving scene as settled state is the worse defect.
+
+### Five findings from the morning that live nowhere else
+
+**1. A facing on a MOVE order is an ARRIVAL heading and dies with the order. A facing on a HALT is a SECTOR and is not
+the drawn one.** Establishing that took four measured iterations of the dragged-heading fix, and the wrong three are
+worth more than the right one:
+- *Move + facing:* the crews turn (a follower goes 167° off to 3° off by +15 s) and then the order completes and clears,
+  and the hulls drift to 132 / 41 / 28. Read directly: `holding Green_A_1 NO ORDER; ... NO ORDER` at +20.6 s.
+- *One-shot hold on arrival:* `hold facing=[1,0]` on the LEADER only, every follower `NO ORDER` — overwritten on the
+  next update, because `_group` re-issues every time. **An event cannot hold a posture against a function that runs
+  every tick; the posture has to BE what the function computes.** No flag: `plan["arrived"]` is recomputed anyway.
+- *Hold + halt=true:* persisted, wrong facing — `_group` passes `entry["facing"] if halt else told`, so each crew held
+  its own sector (`[1,0]`, `[-1,0]`, `[0,-1]`: a coil covering every approach). Zeroing `plan["sectors"]` does not
+  help; that happens AFTER `_group` has read the entries.
+- *Hold + halt=false + told:* all four crews hold `facing=[1,0]`. Correct, and the element's contract is the ORDER.
+
+**2. The residual after that is LOCOMOTION, not the element.** Hulls end at tank 1.4°, tank 16.2°, ifv 41.4°, ifv 28.5°
+— tracked close, wheeled not, and `_element_scenario` builds two tanks then two ifvs. A wheeled hull cannot
+neutral-steer, so its heading is whatever its last travel left it on; the crews were at 1, 15, 12, 3 at +15 s and got
+WORSE by the time they stopped, because the final correction to the slot re-pointed them. nav does the other half on an
+APPROACH (`test_wheeled_arrival` passes) and that is not available at rest. **Open question for nav, not for this file:
+should a held wheeled hull manoeuvre to reach an ordered facing?**
+
+**3. Forty seconds from right-drag to a settled squad, and the lead will feel it before he sees any heading.** 22.3 s
+for the element to declare arrival on a **20 m** move, ~20 s more for the crews to stop. That is A9's co-arrival pacing
+waiting on the slowest member. Round-10 item, unstarted, mine.
+
+**4. The spawn overlap was never ArmyLayout's, and the arithmetic that said so held up.** For artillery (2.90) beside
+lancer (2.76) the layout's pitch is ≥ 5.0 m (`hull_floor.x` 4.90 floored to `MIN_SPACING_M`, and pass 2's
+`maxf(spacing * scale, floor)` means zone compression cannot undercut it) and `_clear_spot` guarantees 3.83 m against a
+3.33 m requirement — placement clears by 1.67 m. **Final cause (combat): the physics server's body transforms on tick 1
+are a PERMUTATION of the spawn slots, up to 90 m from the nodes, so the solver recovered bodies out of overlaps that
+existed only in its own copy; from tick 2 node and server agree.** The fix is `Tank._ready`
+(`force_update_transform` after `reset_physics_interpolation`), combat's. **The pitch ruling was withdrawn twice and
+the arithmetic was right both times — do not widen the pitch.** My settle sampling and the armed four-number diagnosis
+stay.
+
+**5. `_is_clear` ignores each placed vehicle's own forward**, and this is a real queued item rather than a footnote.
+`taken` holds `[position, width, length]` and the test projects onto the DEPLOY frame's axes, so it is sound while every
+hull shares that frame — true within a team, and 180° preserves width and length. It is **wrong for an arena whose two
+spawn zones are not exactly opposed**, where the teams' forwards differ by something other than 180° and a rotated
+footprint is compared as if axis-aligned. Not the cause of anything measured; a latent gap with a named trigger.
+
+**And one process lesson from feel that decays two records in this brief: a repro keyed to a SHARD INDEX has a shelf
+life measured in merges.** Their `--shard=3/5` went 42 files to 43 after a merge, `index % N` reshuffled, my test moved
+to shard 4, and the run came back 321 passed 0 failed — **a clean green from a file set that did not contain the
+test.** So "71/71/71 green, 69/68/68 red on the same code" no longer addresses the same files, and neither does my own
+"the 2-shard layout does not trigger it". Metrics' `TEST_SHARDS=5` pin is the workaround; the durable form is a FILE
+LIST or a seed the runner takes directly. Same family as `army_layout.gd:302` naming `STAND_CLEAR_M` by the time it
+reached me, and the stale scenario count: **an identifier stable in syntax but not in meaning produces confident wrong
+answers.**
 
 ### The queue as it stands, in the order it was ruled (round 9 spilled into the lead's morning)
 

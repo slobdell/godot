@@ -104,6 +104,9 @@ wait_for '! window_up' 100
 # By ITS OWN pid, not by command name: several runs of this file share the name `sleep`, and a leftover
 # from an earlier run would answer for this one -- the `pgrep -f` phantom in a different coat.
 work=$(cat "$tmp/workpid" 2>/dev/null)
+# Poll: on builder0 the kill walks a process tree while four test shards compete for the CPU, so "it is
+# dead by the time the next line runs" is an idle-laptop assumption. Third time this suite made one.
+[ -n "$work" ] && wait_for "! kill -0 $work 2>/dev/null" 100
 if [ -n "$work" ] && kill -0 "$work" 2>/dev/null; then
 	bad "exclusive: a signalled window kills the work it was running" "pid $work still alive"
 	kill "$work" 2>/dev/null

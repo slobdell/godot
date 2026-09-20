@@ -466,6 +466,35 @@ intersecting, never moving at all, looks identical to a nudged one.** That is a 
 exposed, not a movement change. Ask the probe to print the **spawn** position beside the current one — if they are
 equal, no motion occurred and every movement-layer candidate is eliminated at once.
 
+### WHY THE DRAIN AND THE SEALED TEARDOWN MATTER — combat's argument, which is better than nav's was
+
+nav justified this work as *"one leaking test becomes a shard of noise in which the culprit is indistinguishable
+from its victims."* **That is about failures, and it is the weaker case.** combat's is about **passes**, and it is
+the one to use (2026-09-21, their finding, their words):
+
+> **a leak does not only fail the next test — it silently changes what the next test MEASURES**
+
+**The evidence is their own wall fixture, dated to the minute.** Two perfectly ordered clusters, no interleaving,
+either side of a single commit — the one where `test_tank_yaw_fit`'s teardown override finally called
+`await super.teardown()`:
+
+    before the fix   rig at (2.869822, …)  offered 14  applied 0     x3 runs
+    after the fix    rig at (2.785599, …)  offered 16  applied 3     x3 runs
+
+**The 8 cm is the size of the leak.** Before it was fixed, the first test's arena, match and hulls were still in the
+world when the second ran, and the rig landed against that residue instead of the wall. **The fixture never failed.**
+It ran green, printed a plausible MEASURE line, and measured a different world than its author believed — for as
+long as the leak existed. Nothing was red; nothing looked wrong; the number was simply about something else.
+
+**That is strictly worse than noise, and it is the argument for the sealed `_teardown()`.** combat's fix was to
+*remember* `await super.teardown()`. Under the sealing, an override **does not need to call super at all** — the
+runner owns free-then-drain and `teardown()` is a synchronous hook that frees — so the bug that moved that rig
+becomes **structurally impossible rather than remembered**. nav made a weaker case for the same change.
+
+**And the reading error underneath is the round's, for the fourth time:** four data points across three commits,
+read as one population. Same shape as nav's 45 s headroom pass, nav's two-commit P7 series that metrics' banner
+caught, and the roster lines. **A measurement carries its commit, or it is not a measurement.**
+
 ### ⚠ `build/` LIES IN BOTH DIRECTIONS — a measurement artefact there is never safe
 
 Two separate hazards bit nav in one night, from opposite sides:
@@ -511,6 +540,48 @@ The claim that survives is the pair:
 refuses, the rule is touching hulls it has no business touching — which is the failure nav pre-registered as the
 most likely one. A count assertion would have passed a rule that refused everything, provided it refused exactly
 the expected number of times.
+
+### PRE-REGISTERED, before any arm: a HELD WHEELED hull turning to its ordered facing (round 10)
+
+squad's hold-on-arrival landed and every crew now holds `hold facing=<drawn>`. The hulls end at:
+
+    tank 1.4°   tank 16.2°   ifv 41.4°   ifv 28.5°
+
+**Tracked crews neutral-steer onto the facing; wheeled ones cannot while parked** and keep their last approach
+heading. **And they got WORSE in the final slot correction — 15°, 12° → 16.2°, 41.4°** — which is the detail that
+shapes the design: the last thing that moves a held hull is a small slot nudge, and it leaves the nose wherever the
+nudge ended.
+
+**THE TENSION, stated before anything is built, because it decides the shape.** The obvious fix is to let a parked
+wheeled hull creep round to its facing. **That is precisely the lead's oldest complaint** — *"the semi trucks are
+yawing in place (should be impossible, they're not a tracker vehicle)"* — and this round traced that complaint to
+the creep's legs plus uncollided rotation. **A fix that makes more hulls creep in place is the complaint, not the
+answer.** So the candidate is a **bounded, visible manoeuvre** — a short three-point turn that reads as a deliberate
+correction — rather than the arrival arc's machinery applied at rest, which would have a held hull drive a small
+loop out of its slot.
+
+**Falsifier, per the orchestrator, written before the arms:**
+
+> **All four crews within 10° of their ordered facing within 5 s of the hold, on the default arena.**
+
+**5 s is a first bar and named as one:** long enough for a bounded manoeuvre at creep speed, short enough that the
+correction reads as obedience rather than dithering. It is not derived and the lead refines it — *"for anything
+subjective, a human is the only check that counts."*
+
+**Two guards, and the second is the one this round says will bite.**
+
+1. **The hold must survive the turn.** A held hull that manoeuvres must not leave its slot: squad's leash is a
+   level-0 feasibility bound on every candidate *including dodges*, and a facing correction is not exempt. Slot
+   drift during the turn is the bar.
+2. **It must not become the creep.** `OrderController.face_giveups` — now LIVE, since combat's plant constraint
+   makes a stalled face a state that occurs — must stay at **zero** for hulls performing this manoeuvre. **A
+   correction that trips the stall detector is the yawing-in-place behaviour wearing a fix's name**, and nav has the
+   instrument for it already because the face row was built and reported inert.
+
+**And the cost bar, because this round's two failures were both costs rather than mechanisms.** A4 bought its gate
+and spent the fight; the clearance row bought clearance and spent 35 % of `progressing`. **So: the manoeuvre must
+not reduce time-on-station or shots fired for a held crew.** If a held unit spends its hold turning, the hold is
+worth less than the facing.
 
 ### ⚠⚠⚠ CLEARANCE A/B: **FAILS ITS GUARDS.** Default stays off — and the AGGREGATE would have called it a pass
 
@@ -757,8 +828,93 @@ rather than on a synthetic one. **Do not flip its default** — on today's plant
 stays green, correctly.** `test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided` returns
 **bit-identical** numbers with the constraint on or off (19.71 m of path, 28.5° of yaw, 3.12 m net drift), verified
 by combat with their own contact gate disabled. **The assertion written to go red has not gone red, and combat
-reported that rather than papering it.** Shipped off by default (`Tank.yaw_fit_enabled = false`), so nothing of
-nav's moves.
+reported that rather than papering it.** **⚠ REVERSED AGAIN, and this is the current state: the constraint's default is back OFF, so nav's face row is
+INERT ON THE DEFAULT PATH once more.** It was live for about an hour. combat's bisect, one line, one machine:
+
+| point | off slot | worst gap per squad |
+|---|---|---|
+| `bd618dd4` constraint **off** | **0 of 30** | Alpha 3.8, Bravo 4.4, Charlie 6.6, Delta 22.4, Echo 4.5 m |
+| `986f8921` constraint **on** | **12 of 30** | Alpha 2.9, Bravo **89.5**, Charlie **87.6**, Delta **86.5**, Echo **91.1** m |
+
+`986f8921` over its parent is `yaw_fit_enabled := false` → `true` **and nothing else**. Four of five squads end
+~90 m from their slots. **No corridor win is worth squads being unable to form up**, and nav agreed with the
+reversal without reservation — having endorsed the enable earlier on evidence that turned out to be confounded.
+
+**⚠ NAV'S VEHICLE-AS-WALL READING IS WRONG. The replacement is squad's, and it is the SAME ERROR nav found in its
+own clearance row this morning.**
+
+nav argued twice that the **predicate** was at fault — that `collision_mask = 3` made a squadmate count as a wall
+and the arrival yaw was refused in error. It is not. squad's roster on the separating axis (`165ef0cc`): the crews
+are **clear while parallel** (gaps 1.12–4.28 m, none overlapping), but an 8.62 × 2.40 m hull **yawing sweeps to its
+half-diagonal, 4.47 m**, so it needs ~3.27 m beside it to turn while `HULL_CLEAR_M` leaves **2.0** — a tank short
+by **1.27 m**, a `gang_tank` by **3.53 m**. **The plant is correctly refusing a rotation there is no room for.**
+
+**Formation spacing is derived from hull WIDTH; rotation needs the DIAGONAL.** The deficit grows with length, and
+CP2 made it bite.
+
+**And that is nav's own clearance-row error, in another file, pointing the other way:**
+
+| | wrong pairing | licensed motion of each |
+|---|---|---|
+| nav's clearance row | `radius_of` (w+l)/4 **rotational sweep** vs navmesh bake **lateral clearance** | turning-in-place vs driving-down-a-corridor |
+| squad's formation | `HULL_CLEAR_M` **width** vs the yaw's **half-diagonal** | driving-straight vs turning-in-place |
+
+**Same class, opposite direction, both exposed by the resize.** Which gives the rule both of them needed:
+***a clearance number must state which motion it licenses.*** Width licenses driving straight; the half-diagonal
+licenses rotating in place; `(w + l) / 4` licenses a swept turn. **Mixing them is the bug**, and it is invisible
+while hulls are small enough that every number is generous.
+
+**What survives of nav's reading, as a checkable claim rather than a face-saver:** the *prediction* that off-slot
+failures track **crowding at the moment of seating** rather than hull type or map position holds under diagonal
+spacing too — both are about what is adjacent when a hull seats — and the staggered-order test still discriminates
+them. The **mechanism** nav proposed was wrong; the correlation it rested on fitted more than one cause, which is
+why it survived two arguments.
+
+**The original reading, kept for the record:** hulls seating into a
+formation are nosed against squadmates, `test_move` uses `collision_mask = 3`, a squadmate counts as a wall, the
+arrival yaw is refused and the crew never seats. **Alpha survives because it is ordered first, into open ground,
+before the others crowd in.** Labelled **inferred, not measured** until the `yaw_vehicle_contact` counter and
+squad's roster print name the same units — and nav has proposed a one-run causal test that needs no new
+instrumentation: **order the squads with a delay between them.** Vehicle-as-wall predicts all five seat.
+
+**So the row's status, stated plainly rather than left reading as live:** the face recovery is **built, opt-in, and
+inert on the default path**, exactly as it was this morning. It becomes live only under `--nav-off=facegiveup` with
+the yaw constraint also on, and nav's test asserts the constrained behaviour under an explicit arm rather than
+leaning on a default that has now **flipped twice in one day**.
+
+**The earlier enable, corrected 2026-09-21 — the improvement is LARGER than was claimed, and nav's own fixture is
+what exposed the error.** combat's "before" column all day (28.5°, 9.6 m) was **not** the unconstrained hull; it
+was taken in an arm that was not "constraint off" (likely the slack-0.02 build). Once `apply-on-first-read` made
+`yaw_fit=0` actually reach the predicate, nav's wedged test went red with:
+
+    10.42 m of path, 44.0° of yaw, giveups 0, 4.42 m net drift, footprint needs 12.1 m in 4.8 m
+
+**bit-identical to nav's original round-9 measurement of the unconstrained hull.** So the corrected result is
+**44.0° → 11.6°, footprint 12.1 m → 6.1 m: 74 % of the illegal yaw removed**, not 59 %. The residual is unchanged
+at **1.27 m against the 1.8 m bar** and still binding, the squad result is untouched, and the reversal to
+default-off stands on the one-line source bisect.
+
+**Why nav's fixture could serve as the anchor, and it is the reusable part:** it is **deterministic** and it
+**asserts its own positive control** (`path > 1.0`, the hull really is wedged) before reading anything out. So a
+number from it in round 9 and a number from it today are comparable, and the mismatch located the error in
+someone else's column rather than in the comparison. **A measurement you can reproduce exactly is an anchor; one
+you cannot is just a number** — and combat's before-column went unchallenged all day precisely because nothing
+anchored it. The fix was nav's diagnosis applied —
+compare the candidate pose against the **current** one rather than against legality — and it recovers **59 % of the
+illegal yaw**: 28.5° → **11.6°**, footprint 9.6 m → **6.1 m** in a 4.8 m corridor.
+
+**⚠ AND THAT MAKES NAV'S FACE-RECOVERY ROW LIVE.** It was reported **inert** because a hull under a `face` never
+stalled — it rotated *through* the wall instead. With the plant refusing impossible yaw, the stall is now a state
+that occurs: combat's run reads **`giveups 1`** against `face_checked 5`, where nav measured **`giveups 0`** against
+`face_checked 7` on the same shape. **The row nav closed as a measured negative has a trigger for the first time**,
+and its benefit is measurable at last — which was the precondition written into it: *"when combat couples the basis
+to a collision test, this assertion goes red and the benefit becomes measurable. Re-run it then."*
+
+**The residual is named and it is not closed: 1.27 m of footprint still exceeds the corridor.** A hull sweeping
+1.3 m more than its corridor allows is still doing the thing the lead complained about, only less of it — and
+**CP2 makes it worse**, because the sweep scales with `length × sin(yaw)` and 1.3 m will not hold across a resized
+roster. combat kept that as a **bar on the exceedance** (`over <= 1.8 m`) rather than an assertion that the
+constraint works, so the number is in the failure text when it moves.
 
 **Why, and it is a tension worth carrying into round 10.** `move_and_slide` **depenetrates every tick**, so at the
 top of each tick the hull is legal where it stands and the next small rotation adds no measurable penetration. The
@@ -1349,6 +1505,35 @@ control: **report `a4_rescued_blocked` against `off_mesh_fit.none`, never the ag
 geometry* under different fights; they cannot tell us it generalises, and the original four-map design was chosen
 precisely because it could. **The result will be a single-geometry result whatever its confidence interval**, and
 nav will report it that way. The generalisation question moves to arena/scale, where it belongs.
+
+### ⚠⚠ CORRECTION (2026-09-21): "14 of 21 units exceed the bake" COMPARES TWO DIFFERENT LENGTHS
+
+**The count is inflated as a statement about corridors, and nav quoted it all day.** `clearance_shortfall()` is
+`Avoidance.radius_of(unit) − bake_radius`, but those are **not the same kind of length**:
+
+    radius_of = (w + l) / 4 + margin    a ROTATIONAL sweep      rig: (3.32 + 14) / 4 + 0.25 = 4.58 m
+    navmesh bake                         a LATERAL clearance     2.0 m — the mesh eroded for DRIVING
+    rig's true half-width                                        1.66 m
+
+So the comparison sets a **turning envelope** against a **driving clearance**. *"14 of 21 units need more clearance
+than the mesh bakes"* reads as a corridor claim and is not one. **The honest form is:** *14 of 21 units have a
+**rotational** envelope larger than the bake's **lateral** clearance* — weaker, and differently shaped.
+
+**What survives untouched:** a **14 m hull cannot rotate in a 4.8 m corridor**. combat measured that geometrically
+(9.6 m of footprint needed against 4.8 m available, 28.5° of yaw through a wall) and it never used `radius_of` at
+all. The defect is real; the roster-wide *count* was the wrong way to size it.
+
+**AND IT RE-DIAGNOSES THE CLEARANCE A/B'S FAILURE.** nav wrote that the row *"buys clearance and spends the fight"*,
+the same trade A4 made. That is not what happened. The refusal fired on a disc **2.6× a rig's true half-width**, so
+it was refusing shortcuts for hulls whose **width fits comfortably**. **90.9 % refused was the rule measuring the
+wrong length, not the rule being too strict.** The verdict is unchanged — default **off**, on measurement — but the
+reason is different, and **round 10's question moves from *what else to do with a shortfall* to *what a shortfall
+should be measured against*.**
+
+**A seventh "disc" site, and it is nav's own:** `Avoidance.radius_of` models every hull as a circle of
+`(w + l) / 4`, so a rig is **too wide abeam** (4.33 m against a 1.66 m half-width) **and too narrow end-on**
+(4.33 m against 7 m). Queued as its own row with its own falsifier — the rotation with A12's columns plus the
+clearance primaries — and deliberately **not** folded into the clearance row, whose premise it is.
 
 ### ⚠ A4'S HEADROOM EXISTS ON ONE MAP IN FOUR — the pre-registered A/B is REFUSED on three of them
 
