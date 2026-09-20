@@ -2686,7 +2686,17 @@ The kickoff prompt is one line; this section is the rest.
     a 5 cm spawn lift moved the frame-1 value by 0.032 m and fixed nothing (the constant stays, wired, at 0.0), and
     squad's "the lift passes on my branch" was a layout write that discarded its own y. **Draw the curve before you
     name the writer, and name the body hit in every failure message: "inside a wall or crate" when the body was the
-    ground cost the morning.**
+    ground cost the morning.** **And then a seventh, the real one (feel, 14:30, a shard-3/5 repro on the laptop with
+    a byte-identical pair list to builder0): placement is clean at frames 0 and 1, four overlapping pairs appear at
+    frame 2 and stay (4 at frame 10, 3 at 20), every failing pair is two of the three widest hulls abreast, and they
+    converge to a lateral pitch of 3.15 m where the half-metre rule needs 3.33 m.** Squad then checked the arithmetic:
+    the layout's lateral pitch for that pair is ≥ 5.0 m and `_clear_spot` guarantees 3.83 m, so placement clears by
+    1.67 m and **something moves each unit ~0.9 m toward its neighbour after placement** (the drift assertion's first
+    catch; a formation-flow slot pitch or a lateral depenetration, the displacement vectors decide). The test sampled
+    one frame before the movement, so anything nudging the sampled instant saw it, and **"flaky" was a true
+    description that stopped the search. A true label that ends
+    inquiry costs as much as a false one.** The sink was real and transient; the overlap was real and permanent;
+    the failure message named neither.
 
 179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
     morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
@@ -2758,3 +2768,43 @@ The kickoff prompt is one line; this section is the rest.
     until a hull is driven, the same mistake nav had made in the legibility test hours earlier. Beside lesson 171:
     every positive control the run prints is also an assertion (`chords > 0`, `not is_nan(slack)`, "the mover
     exists") *before* the number it guards is read, or the print is decoration.
+185. **A check that selects by pattern returns a true answer to a question you did not ask.** (Drafted by feel with
+    combat, round 9.) Four instances across three streams in one night, every one of which *passed its own test*:
+    feel read `PPID 2113` as proof a Godot process was its own (it is the shell supervisor, shared by every session on
+    the machine; feel nearly killed four streams' work); metrics killed by an unscoped pattern; combat's waiters
+    polled `pgrep -f "remote.sh check"`, which matches every worktree's wrapper *and the waiter's own `bash -c` line*,
+    reporting a finished run "alive" for twenty minutes and leaving three loops spinning at 5.5 h, 5.5 h and 10.7 h;
+    and combat's arm counter ran a clean, truthful measurement of a fight that **contained no War Rig**, because the
+    seeded draft chose the army and nobody read it back. None returned a wrong value; **they were wrong about
+    *whose*, and nothing in the output says whose**, so care cannot fix this class and review cannot catch it: the
+    broken version's output is byte-for-byte the shape of the working one. Two replacements, both of which transfer:
+    - **Wait on the artifact, not the process.** `until grep -qE '>> remote: make check exited' <per-run log>`: the
+      wrapper line appears only when *your* run finishes, and a fresh log per run means a stale line cannot be read
+      as a new one. Scoping the pattern (`readlink /proc/<pid>/cwd`, `fuser` on the slot `.lock`) is correct but only
+      repairs the call sites someone revisits: combat fixed one at 05:30 and went on writing new waiters with the
+      same idiom, because **the fix lived at a call site and the habit lived in the fingers.**
+    - **Make the probe refuse rather than report.** `--require=gang_tank` on the counter; the trailer bench refusing
+      to print a number without the damage-off tune. A measurement that can silently measure the wrong subject
+      asserts its subject before reading the number (lesson 184).
+    Beside lesson 182: an `&&` chain that reports "the rest passed" is the same disease in a third costume, **a run
+    that never happened, counted as a pass.** See also nav's note in `navigation.md` (the same shape in routing).
+    **Fifth instance (show, 14:10):** every frame and clip the show stream produced, including the readability
+    gate's "fight ring" window, was a five-a-side skirmish at the 950-point default with a 3 s warm-up, so the army
+    was still 86 m from the ring the camera pointed at: the gate measured bare asphalt, and "the show makes the fight
+    up to +4.2 % easier to read" was withdrawn. The fix is the same shape: `--budget` and warm-up matched to the perf
+    tool, the camera at the army's centroid, and every capture reports `vehicles_in_frame` with a gate that fails
+    an empty frame *before* the luminance gate runs.
+186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
+    Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
+    the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
+    (low camera: the wall is cut, as round 6 measured it must be; steep camera: the vehicle wins) and the worst
+    margin across 8–70° is +0.20 m. A claim about a camera, a formation, or a roster is a claim over its range, and
+    the report names the worst point in the range, not the pose that was to hand.
+187. **A static cache is a correctness bet on an invariant nobody wrote down.** Round 9: scale's teardown guard
+    counted navigation regions the engine had not yet dropped (the bet: "freed means gone"; it came due), and
+    squad's `incoming_fire` cache keys a hull's geometry on `unit_id` alone (the bet: "id → hull is constant for the
+    process", true today because `Units.PROFILES` is never written and `hull_size` is authored, not computed).
+    Squad's answer was the right one: check the invariant rather than guard against it, keep the cheap key, and
+    write the invariant *at the cache* with what would break it ("if a runtime hull scale ever lands, clear this per
+    scenario"). A guard that costs an allocation per call against a risk of zero is worse than a sentence; a bet
+    with no sentence is worse than both.

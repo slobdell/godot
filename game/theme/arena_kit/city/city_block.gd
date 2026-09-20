@@ -86,19 +86,30 @@ const UNRESOLVED := Color(0.1234567, 0.7654321, 0.1111111, 0.9876543)
 ## uses as a SIGNAL (beacons, alarms), and a near-white, which is not in the palette at all -- so the bug was
 ## putting the two things art_direction.md rules out for architecture onto eight buildings on the lead's city map.
 ##
-## A name that does not resolve is now LOUD and DETERMINISTIC rather than a silent random pick, which is how this
-## survived a whole round: a colour someone typed on purpose must never be answered with a dice roll. The hard
-## rejection belongs in `Arena.validate()` with the other unknown-key checks (arena's file, scale's this round).
+## A name that does not resolve is DETERMINISTIC rather than a silent random pick, which is how this survived a
+## whole round: a colour someone typed on purpose must never be answered with a dice roll.
+##
+## **Where the LOUD half lives, and why it is not here.** This runs once per block per build, so a warning here
+## would fire eight times on the Terminus and say nothing the first one did not. The rejection belongs where a
+## layout is *read*, once: `Arena.validate()`, beside the other unknown-key checks (arena's file, scale's this
+## round), using `CityBlock.resolves()` below. **A second reason, found the hard way:** `tests/run_tests.gd`'s
+## `ErrorCollector` ignores `_error_type`, so a `push_warning` is captured as an engine error and **fails any test
+## that exercises the path** -- which is exactly what the determinism test does. A product warning that no test may
+## provoke is a warning in the wrong place.
 static func neon_color(wanted: Variant, rng: RandomNumberGenerator) -> Color:
 	if wanted is String and not String(wanted).is_empty():
-		var text := String(wanted)
-		var resolved := Color.from_string(text, UNRESOLVED)
-		if resolved != UNRESOLVED:
-			return resolved
-		push_warning("city block neon '%s' is neither an HTML code nor a known colour name" % text)
-		return NeonSigns.COLORS[0]
+		var resolved := Color.from_string(String(wanted), UNRESOLVED)
+		return resolved if resolved != UNRESOLVED else NeonSigns.COLORS[0]
 	var palette: Array = NeonSigns.COLORS
 	return palette[rng.randi() % palette.size()]
+
+
+## Whether a layout's `neon` value names a colour at all: an HTML code or a known name. For `Arena.validate()`, so
+## a typo is rejected ONCE when the layout is read rather than absorbed eight times when the blocks are built.
+static func resolves(wanted: Variant) -> bool:
+	if not (wanted is String) or String(wanted).is_empty():
+		return true  # asking for nothing is legal: the block gets a seeded signage colour
+	return Color.from_string(String(wanted), UNRESOLVED) != UNRESOLVED
 
 
 ## The tiers' outlines and heights, bottom first: [[footprint (x, z) polygon, y from, y to], ...]. The first two (the
