@@ -97,16 +97,25 @@ const SLOT_X := [0.0, -7.5, 7.5, -15.0, 15.0, -22.5, 22.5, -30.0, 30.0, -37.5, 3
 const SPAWN_ROWS := 3
 const SPAWN_ROW_SPACING := 12.0
 const SPAWN_SLOTS := 57
-## Round 9: hulls spawn this far ABOVE the floor rather than exactly on it. A body created at exactly y = 0.0 makes a
-## degenerate ground contact -- zero penetration, a contact normal Jolt has to guess at -- and whether it resolves
-## cleanly depends on the solver's internal state left by bodies created and destroyed earlier in the match. Measured
-## by scale: three units ejected **1.5 m through the floor at spawn**, which is a real game bug and not only a flaky
-## test, and it reproduces only after earlier bodies have come and gone. A body that starts a few centimetres clear
-## has an unambiguous contact to resolve and simply settles.
+## Round 9: how far above the floor a spawn point sits. **It is 0.0, and the reason it exists at all is narrower than
+## the reason it was introduced** -- that history is worth one paragraph, because the original rationale is written as
+## fact in commit `0682a366` and is wrong.
 ##
-## It is a lift, not a hover: 5 cm is far below the ride height of every hull in the roster and nothing reads spawn y.
-## `Match._jittered` adds 0.0 on y and squad's `ArmyLayout.deploy` re-seats with `tank.global_position.y`, so both the
-## initial spawn and every respawn inherit this from here and there is exactly one number.
+## It was ruled at 0.05 m to cure what looked like a degenerate ground contact: three units in a full faction army
+## were found 1.5 m BELOW the floor, and the story was that a body created at exactly y = 0.0 gives the solver a
+## contact with zero penetration and no reliable normal. **That story is dead.** Measured frame by frame: the units
+## are at -1.475 after one physics frame, **-0.190 after two, -0.042 after three**, and their collider boxes are
+## exact. It is `move_and_slide`'s depenetration recovering normally over about three frames; the test was reading
+## the worst instant of a settle and calling it a spawn position. Lifting changed the recovery's first frame by
+## 0.032 m and nothing else -- the same three units were below the floor at 0.05 AND at 0.0, same workload.
+##
+## **WHAT SURVIVES, and it is the whole justification for the constant: a spawn point has TWO sources** -- this grid
+## and a layout's own `spawns` list via `Arena.spawn_spot` -- **and they must not drift apart.** Both read this, in
+## `spawn_position`, which is the only place either can be changed. That is worth a named constant even at zero.
+##
+## If it is ever set non-zero, check who writes y LAST before believing it reaches anything: `Match._jittered` adds
+## 0.0 on y, but squad's `ArmyLayout.deploy` writes the full placement, so a doctrine army takes the layout's y and
+## not this one. Two streams implemented the same ruling in two places in round 9 and only one could have an effect.
 const SPAWN_LIFT_M := 0.0
 ## Spawn jitter never moves a unit more than this sideways or along z: the column pitch (7.5) and the row spacing
 ## (12.0), each minus the bare-spawn hull (2.40 x 8.62 m) and minus ArmyLayout.HULL_CLEAR_M (2.0), halved. It came
