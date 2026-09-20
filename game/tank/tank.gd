@@ -562,6 +562,11 @@ func _trace_drive(was: Vector3, planar: Vector3, cmd: TankCommand, delta: float)
 			name, delta, planar.x, planar.z, planar.x * delta, planar.z * delta, moved.x, moved.z,
 			reported.x, reported.z, velocity.x, velocity.z, cmd.throttle, cmd.turn, deploy_ratio, _speed,
 			safe_margin, motion_mode, max_slides, contacts.size(), ", ".join(contacts)])
+	# THE YAW SIDE, on the same line's heels: whether the plant refused this hull's turn, and what it was asked to
+	# do while it was refused. A hull held 4 m off its slot by a refused arrival manoeuvre looks identical, from the
+	# outside, to a hull its brain re-tasked -- and the order beside the refusal count is what tells them apart.
+	print("DRIVE_TRACE_YAW %-14s refused_ticks=%d speed=%.3f throttle=%.3f turn=%.3f parked=%s" % [
+			name, yaw_refused_ticks, _speed, cmd.throttle, cmd.turn, is_parked(cmd)])
 	print("DRIVE_TRACE_OVERLAP %-12s node@%s server@%s was inside [%d] %s" % [
 			name, was, my_server.origin, overlaps.size(), ", ".join(overlaps)])
 
@@ -718,13 +723,43 @@ func _fitting_forward(have: Vector3, wanted: Vector3) -> Vector3:
 	return have
 
 
-## How far this hull would be inside world geometry facing `forward` where it stands (0.0 when clear).
+## THE SECOND ARM OF THE SAME RULE, selectable rather than argued: `--tune=match.yaw_world=1` (or `TUNE=` in a
+## test) measures penetration against the WORLD layer only, instead of against everything this body collides with.
+##
+## Why it might have to be the default: `test_move` uses the body's own `collision_mask`, and `tank.tscn` has
+## `collision_mask = 3` -- world AND vehicles. So the rule as first written treats **another tank as a wall**, and
+## the whole justification for refusing a yaw is that a wall will not move. A squadmate will. A hull nosed up
+## against a neighbour while settling onto its formation slot is then refused the arrival turn and sits wrong.
+##
+## It is an ARM and not a fix until the pair says so: nav's corridor measurement is unaffected either way (scenery
+## is scenery), so the two arms can only be separated by a case where the contact is a vehicle.
+static var yaw_fit_world := false
+
+
+## How far this hull would be inside geometry facing `forward` where it stands (0.0 when clear).
 func _penetration(forward: Vector3) -> float:
-	var hit := KinematicCollision3D.new()
-	if not test_move(Transform3D(Basis.looking_at(forward, Vector3.UP), global_position), Vector3.ZERO, hit,
-			0.001, true):
+	var at := Transform3D(Basis.looking_at(forward, Vector3.UP), global_position)
+	if not yaw_fit_world:
+		var hit := KinematicCollision3D.new()
+		if not test_move(at, Vector3.ZERO, hit, 0.001, true):
+			return 0.0
+		return hit.get_depth()
+	if _collision == null or _collision.shape == null:
 		return 0.0
-	return hit.get_depth()
+	# `collide_shape` returns point pairs (on this shape, on the other); the distance between a pair IS the depth,
+	# and the deepest pair is what `KinematicCollision3D.get_depth()` reports in the other arm. Same quantity,
+	# different set of colliders -- which is the only difference the two arms are allowed to have.
+	var params := PhysicsShapeQueryParameters3D.new()
+	params.shape = _collision.shape
+	params.transform = at * _collision.transform
+	params.collision_mask = Perception.WORLD_MASK
+	params.exclude = [get_rid()]
+	params.margin = 0.001
+	var pairs := get_world_3d().direct_space_state.collide_shape(params, 8)
+	var deepest := 0.0
+	for index in range(0, pairs.size() - 1, 2):
+		deepest = maxf(deepest, (pairs[index] as Vector3).distance_to(pairs[index + 1] as Vector3))
+	return deepest
 
 
 ## CP1: nothing to integrate this tick (see _drive).

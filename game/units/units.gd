@@ -1108,6 +1108,29 @@ static func role_of(unit_id: String) -> String:
 static var tuning := {}
 
 
+## THE SAME KNOBS, FROM THE ENVIRONMENT, so an arm can be selected in a context that has no `--tune=` to pass:
+##
+##     TUNE=match.yaw_fit=0 make test FILTER=ai_player_orders
+##
+## `make test` runs `run_tests.gd` with `--filter=` and nothing else, so until now the ONLY way to run a test
+## against the other arm of a knob was to edit the default in the source -- which means the two arms are not the
+## same tree and the comparison is worth less than it looks (lesson 117: an arm that needs a code edit to select is
+## an arm nobody re-measures). This closes that for every knob at once rather than for one.
+##
+## It is read once, when the class first loads, and it is LOUD: a bad spec pushes an error naming it rather than
+## being ignored, because a mistyped knob that silently does nothing would make a null result look like a
+## measurement. Unset (the normal case) it does nothing at all.
+static func _static_init() -> void:
+	var spec := OS.get_environment("TUNE")
+	if spec.is_empty():
+		return
+	var problem := apply_tuning(spec)
+	if problem != "":
+		push_error("TUNE=%s rejected: %s" % [spec, problem])
+	else:
+		print("TUNE applied from the environment: %s" % spec)
+
+
 ## A unit's stat, honoring `tuning`. Optional keys a unit lacks read as `fallback`.
 ## ⚠ THE UNKNOWN ID IS CHECKED FIRST, and it is not a tidying (nav, round 9). This ended in
 ## `PROFILES[unit_id].get(key, fallback)`, so an unknown id raised "Invalid access to property or key" on the
@@ -1151,13 +1174,16 @@ static func apply_tuning(spec: String) -> String:
 		if parts.size() != 2 or path.size() < 2 or path.size() > 3 or not parts[1].is_valid_float():
 			return "tune: expected owner.key=number, got '%s'" % pair
 		if path[0] == "match":
-			if path.size() != 2 or not ["no_damage", "hull_disc", "yaw_fit"].has(path[1]):
-				return "tune: no match knob '%s' (have match.no_damage, match.hull_disc, match.yaw_fit)" % parts[0]
+			if path.size() != 2 or not ["no_damage", "hull_disc", "yaw_fit", "yaw_world"].has(path[1]):
+				return ("tune: no match knob '%s' (have match.no_damage, match.hull_disc, match.yaw_fit, "
+						+ "match.yaw_world)") % parts[0]
 			match path[1]:
 				"no_damage":
 					Armor.no_damage = float(parts[1]) > 0.0
 				"yaw_fit":
 					Tank.yaw_fit_enabled = float(parts[1]) > 0.0
+				"yaw_world":
+					Tank.yaw_fit_world = float(parts[1]) > 0.0
 				_:
 					tuning["hull_disc"] = float(parts[1])
 			continue
