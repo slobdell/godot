@@ -358,3 +358,13 @@ survives:** `setsid nohup make remote T=check > log 2>&1 &` from a shell that st
 command itself. **Before any re-run:** `ssh builder0 "ps -eo pid,etimes,args | grep '[s]lot.sh'"`, `readlink
 /proc/<pid>/cwd` to find only yours, kill by explicit PID walking `pgrep -P` (never by pattern, trip-up 19), confirm
 no survivors, then launch.
+
+## ⚠ A process-pattern kill is machine-wide: seven checkouts run the same commands (metrics, 2026-09-20 04:39)
+
+metrics meant to stop one orphaned run of its own and ran a kill loop over `ps | grep -E '[r]emote.sh check$'`.
+Seven processes matched; two were its own. It killed the local wrappers of control's, combat's and squad's remote
+checks — the runs kept executing on builder0 (lesson 15) but their `>> remote: make check exited <N>` lines and
+copy-backs were gone. **Every kill filters by `readlink /proc/<pid>/cwd` against the worktree first and prints what it
+is about to kill** (trip-up 79, now from the other side). Recovery when it happens to you: wait for your folder to leave
+`/tmp/tank_squad_slots/*.owner` on the box, read the verdict from `~/tank_squad/godot-<stream>/build/check/*.log` there,
+rsync `build/` back by hand, and report the hash as "verdict read from the box's log, no wrapper line".
