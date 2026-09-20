@@ -4,13 +4,38 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-19. **Round 7 is mid-flight with all six streams active. Nothing is merged yet this round.**_
+_Last updated: 2026-09-19. **Round 8 is CLOSED: all six streams merged, worktrees removed, baseline recorded. Round 9 is planned and not started.**_
+
+## Round 8 is CLOSED (2026-09-19). Start here.
+
+**All six streams merged, worktrees removed, briefs archived to `_agents/streams/archive/round8/`.** `main` carries
+everything. The six `stream/*` branches are kept as history; `make worktree STREAM=<name> OFFSET=<n>` recreates a
+worktree for round 9.
+
+- **Sim baseline: `glibc-2.43 04414f5d6a6dfa7c`** (was `0cb238bf366e141f`). Recorded from builder0, **read twice with
+  both readings agreeing**, covering the two hash-moving changes: squad's brain and start positions, and combat's
+  **widened match** — which is why it moved so far. The old match fielded five `tank` hulls and was blind to 5 of 6
+  mutations; the new one fields every locomotion × mount combination.
+- **⚠ `main` IS NOT COVERED BY A GREEN CHECK.** combat was merged unverified **on the lead's explicit call** (*"checking
+  in a dirty codebase is ok, let's just get everything merged so we can hit a milestone"*), so the round could close
+  and the environment be reset. Its blast radius is bounded and was verified, not assumed:
+  `git diff --name-only main...stream/combat -- game/` returns **nothing**. **The first task of round 9 is one full
+  `make remote T=check` on `main`.**
+- **Round 9 is planned:** `_agents/workstreams.md` *Round 9 goal* has the split, the order, and the argument for the
+  order; `_agents/research_catalog.md` has the twelve adopted techniques with owners and falsifiers. **A12 (metrics)
+  and T1 (parallelise `check`) come before any mechanism.**
+- **Measurement provenance is preserved** in `_agents/streams/references/round8/` — 72 JSONs, the raw data behind
+  every number the archived briefs cite. **Cite from those with their commit and machine, not from a brief's prose.**
+- **Two traps for a fresh environment**, both in `_agents/remote_builds.md`: a cold `make import` exceeds `slot.sh`'s
+  5400 s cap and is killed (use `TANK_SQUAD_SLOT_TIMEOUT=14400`), and a remote run that exits **255** is ssh, not the
+  suite — after which `build/` holds a **previous run's** artefacts.
 
 ## ⚠ READ THIS FIRST: round 8 is merged; the lead's verdict on round 7 was "it still sucks"
 
 **All six streams' round-8 work is on `main`.** What remains unmerged is documentation plus three small tooling commits
-(control's camera-looks frame, arena's brief work, combat's per-matchup reporting). **`main` is green.** Baseline is
-**`glibc-2.43 0cb238bf366e141f`**.
+(control's camera-looks frame, arena's brief work, combat's per-matchup reporting) — **all of which has since been
+merged too.** ~~`main` is green~~ **— see the close section above: `main` is NOT covered by a green check.** Baseline
+is now **`glibc-2.43 04414f5d6a6dfa7c`**; `0cb238bf366e141f` was round 8's mid-round value.
 
 ### What the lead can now do that he could not
 
@@ -45,7 +70,7 @@ lean **parked the selected squad under the command card** on every order.
 
 ### Open, and waiting on him
 
-- **12 m vs 14 m for the War Rig.** 14 m costs `gangs vs law` **9/20 → 0/20** across both maps (p ≈ 2×10⁻⁶), cause
+- ~~**12 m vs 14 m for the War Rig.**~~ **RULED 2026-09-19: it stays at 14 m** (*"we can revisit that later if it's still an issue"*). The cover cliff was an artefact of sampling the hull's CENTRE POINT, not of the maps — catalogue **A3** fixes the query at any hull length. Retained below only for the numbers: 14 m costs `gangs vs law` **9/20 → 0/20** across both maps (p ≈ 2×10⁻⁶), cause
   unresolved between splash/suppression and the creep. **Nobody is shrinking it to make the number look better**; feel has
   12 m ready and he decides with the frames.
 - **The Terminus is in the rotation and marked UNJUDGED** — the constant and its test both say so, with a comment naming
@@ -53,7 +78,7 @@ lean **parked the selected squad under the command card** on every order.
 - **The crowd and the energy weapons** — he has the files and has not said.
 - **Street-level detail on the city blocks** — feel's question, shipped plain deliberately.
 
-## Current state (main)## Current state (main)
+## Current state (main)
 
 - **Round 5 is fully merged** (render, arena, control, combat, ai, audio). Briefs and their reports are archived in
   [`_agents/streams/archive/round5/`](_agents/streams/archive/round5/); the measurements behind their numbers are in
@@ -349,30 +374,6 @@ feel.
 - **Cross-build determinism** (D1–D4), the **AI Commander** (bring-your-own Gemini key → Gemini Nano on Android), the
   Steam build, arena announcer audio, and the paused netcode, garage and progression streams.
 - **Disk:** the laptop is at 95%. `assets/incoming/` alone is 968 MB of raw generated art.
-
-## Round 8 is CLOSED (2026-09-19). Start here.
-
-**All six streams merged, worktrees removed, briefs archived to `_agents/streams/archive/round8/`.** `main` carries
-everything. The six `stream/*` branches are kept as history; `make worktree STREAM=<name> OFFSET=<n>` recreates a
-worktree for round 9.
-
-- **Sim baseline: `glibc-2.43 04414f5d6a6dfa7c`** (was `0cb238bf366e141f`). Recorded from builder0, **read twice with
-  both readings agreeing**, covering the two hash-moving changes: squad's brain and start positions, and combat's
-  **widened match** — which is why it moved so far. The old match fielded five `tank` hulls and was blind to 5 of 6
-  mutations; the new one fields every locomotion × mount combination.
-- **⚠ `main` IS NOT COVERED BY A GREEN CHECK.** combat was merged unverified **on the lead's explicit call** (*"checking
-  in a dirty codebase is ok, let's just get everything merged so we can hit a milestone"*), so the round could close
-  and the environment be reset. Its blast radius is bounded and was verified, not assumed:
-  `git diff --name-only main...stream/combat -- game/` returns **nothing**. **The first task of round 9 is one full
-  `make remote T=check` on `main`.**
-- **Round 9 is planned:** `_agents/workstreams.md` *Round 9 goal* has the split, the order, and the argument for the
-  order; `_agents/research_catalog.md` has the twelve adopted techniques with owners and falsifiers. **A12 (metrics)
-  and T1 (parallelise `check`) come before any mechanism.**
-- **Measurement provenance is preserved** in `_agents/streams/references/round8/` — 72 JSONs, the raw data behind
-  every number the archived briefs cite. **Cite from those with their commit and machine, not from a brief's prose.**
-- **Two traps for a fresh environment**, both in `_agents/remote_builds.md`: a cold `make import` exceeds `slot.sh`'s
-  5400 s cap and is killed (use `TANK_SQUAD_SLOT_TIMEOUT=14400`), and a remote run that exits **255** is ssh, not the
-  suite — after which `build/` holds a **previous run's** artefacts.
 
 ## Three claims on `main` that are weaker than their commit messages say
 
