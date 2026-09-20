@@ -380,7 +380,33 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
 
 ### Still owed
 
-- **Item 4, the post-CP2 camera sweep: NOT DONE, and it is the only backlog item outstanding.** It needs scale's
+- **ITEM 4 IS OWED, AND HERE IS EXACTLY HOW TO RUN IT.** It needs scale's resized roster on `main` and nothing
+  else. It does not depend on anyone remembering anything:
+
+  ```bash
+  cd ~/projects/godot-control
+  git merge main                      # the LOCAL branch; origin/main is behind, nothing is pushed
+  REMOTE_SLOTS=6 make remote T=camera-looks CAMERA_LOOKS_ARENA=yard
+  REMOTE_SLOTS=6 make remote T=control-playtest-shots
+  REMOTE_SLOTS=6 make remote T=terminus-alleys        # the alley pairs again, on the new hulls
+  # then LOOK at: build/camera-looks/index.html, build/control-playtest/1920x1080/*.png,
+  #               build/terminus-alleys/index.html
+  ```
+
+  **Read each frame against this list** (all of it sized for a 3–5 m hull and now facing 2.93–14.0 m):
+  selection rings and boxes on a hull two to three times longer · the command card's lean
+  (`VISION_FRAME_BOTTOM` 0.40, **to be derived from the card's geometry rather than copied** — the round-8 Invariant 0
+  debt) · radar blips, which are a fixed 32 px texture and should read a hull's length class · the wall cutaway
+  against the **6.18 m Sonic Emitter**, the tallest hull · `MIN_DISTANCE` 16 m against the **14 m War Rig**, which
+  may now be inside it · the auto-frame and `VISION_FLOOR_M` 45 / `AUTO_FRAME_MAX_M` 100 against a physically wider
+  squad. Fix what the frames show, one commit each, and put the strip in `build/camera-looks/` with the commit and
+  machine in its README.
+
+  **The rule does not relax if the deadline moves: nothing here is published before CP2.** A frame of the old roster
+  is a frame of a game he will not play again, so if CP2 misses the night, the honest state for his morning is
+  *"item 4 not done, and here is the command"* — not a set of frames shot on the roster being replaced.
+
+- **(superseded, kept for the shape) Item 4, the post-CP2 camera sweep: NOT DONE.** It needs scale's
   resized roster on `main`. When it lands: `git merge main`, then `make remote T=camera-looks` and
   `T=control-playtest-shots` at your pose, and check selection rings, the command card's lean
   (`VISION_FRAME_BOTTOM`, to be derived from the card rather than copied), radar blips against 8–14 m hulls, the
