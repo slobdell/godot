@@ -2696,7 +2696,12 @@ The kickoff prompt is one line; this section is the rest.
     one frame before the movement, so anything nudging the sampled instant saw it, and **"flaky" was a true
     description that stopped the search. A true label that ends
     inquiry costs as much as a false one.** The sink was real and transient; the overlap was real and permanent;
-    the failure message named neither.
+    the failure message named neither. **The mechanism, at last (combat's per-tick trace, 18:45): the model asked
+    for zero lateral velocity, the body moved 1.53 m, velocity came back untouched, no slide collision: penetration
+    recovery out of something on the VEHICLE layer, which the neighbour probe could not see because it asked the
+    world mask.** And the sharper form of this lesson (metrics): **the shard count is derived from free memory at
+    launch, so the schedule, and this test's verdict, is a function of how busy the box was when the check started**
+    (5 shards fail, 6 pass, same code). Pin `TEST_SHARDS` when reproducing and print it beside any claim.
 
 179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
     morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
