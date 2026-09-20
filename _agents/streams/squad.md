@@ -1304,9 +1304,22 @@ come close.** The deficit grows with LENGTH while the spacing is set by WIDTH, w
 
     Alpha   across 4.28 m   Bravo across 2.98 m   Charlie across 1.12 m   Delta across 2.39 m   Echo across 4.06 m
 
-Four of five are below the 3.27 m a `tank` needs to yaw; Charlie's pair has **1.12 m**. Not one pair is OVERLAPPING —
-they are clear while parallel and cannot rotate, which is a different failure from being packed too tightly and has a
-different fix.
+Four of five are below the 3.27 m a `tank` needs to yaw; Charlie's pair has **1.12 m**.
+
+**CORRECTION, and the irony is worth the space: my "not one pair is OVERLAPPING" was an artefact of the bug.** Those gaps
+were measured on a tree that still had the tick-1 permutation, whose shove had already pushed the crews APART before I
+read them. On combat's tree, which carries the settle tick, **four crews overlap at spawn — across −1.36, −0.02, −0.01
+and −0.77 m.** The spawn formation is TIGHTER than my measurement showed, and the defect was hiding the spacing problem
+by separating the hulls it had scrambled. A bug that flatters the thing it breaks is the worst kind to measure around.
+
+**And combat's roster says the crews never departed at all:** every off-slot unit sits at z ≈ 94–101, the spawn row, with
+its destination at z ≈ 6–19. Not "drove off and stopped short" — **the first turn toward the goal is refused in the
+press**, so the army cannot execute its first order.
+
+**So item 1 is necessary but NOT SUFFICIENT.** Diagonal-derived slot spacing fixes the formation a squad drives into; it
+does nothing for the grid a squad starts in. `Match.spawn_position` and the layout's deep and lateral floors (scale's
+half, and scale is told) have to give a hull room to TURN before the first order, or the widened formation is somewhere
+the army can never reach. Two halves, two owners, one geometry.
 
 **This is the same finding as combat's yaw-constraint regression, seen from the other side.** Their `986f8921` (one line,
 `yaw_fit_enabled` false -> true) takes 0 of 30 off-slot to 12 of 30 with four squads at 87-91 m, and their reading was
