@@ -369,6 +369,24 @@ motivation for that row rather than an inherited one.
 `net_over_path` rises and `oscillating_share` falls is pre-registered in the brief (N4) and runs after CP1, read
 through A12.
 
+### A measurement mistake of nav's, recorded because it nearly became a number
+
+After fixing the sliding-goal threshold, nav re-ran the fight and compared the cause buckets to the previous run:
+
+    before the fix   replans 2059   goal_jumped 1031   goal_slid 968
+    after the fix    replans 1706   goal_jumped 426    goal_slid 1226
+
+**That comparison is invalid and the `goal_slid` figures are not comparable at all**, because the same edit changed
+**the label and the mechanism together**: `sliding` used to be `goal_moved AND velocity ≥ min AND shift ≤ 3 m`, and
+is now `velocity ≥ min` on its own. A bucket that grew while the total fell is the giveaway. **Changing the
+instrument and the treatment in one step is how a measurement produces a number that describes neither**, and it is
+the same mistake as comparing two runs that were different fights — which these also were (`green_lost` 1/2 against
+3/4).
+
+The valid comparison is the one now running: **one binary, `--nav-off=a1` against the default**, so both arms carry
+the same label definitions, normalised per ordered-unit-minute rather than per run. Nothing about the sliding-goal
+fix is published until that lands.
+
 ### ⚠ N3/A1 FINDING: nav's route cadence is NOT where P1's churn comes from — it is ~3 % of re-plans
 
 `nav-fight`, yard, seed 3, 45 s, laptop, one seed, `53f7eb42`. **These are direct counts, not estimates.**
