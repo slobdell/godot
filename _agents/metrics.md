@@ -174,7 +174,10 @@ case A6 exists for.
   corridor key**, and then no verdict may be published from that log.
 - **`active`** — the active fraction, and it is **half the result, not a footnote**: a law that improves its own
   number by switching itself off more often is not a pass. §7 requires it beside the fraction; the renderer
-  cannot print one without the other.
+  cannot print one without the other. **P7's baseline shows why it is worth the space:** across yard / pit /
+  terminus the fraction barely moves (0.304 / 0.321 / 0.331) while the **active fraction moves far more**
+  (0.631 / 0.595 / 0.738). So the pathology is roster-wide but A6's *opportunity* to act on it is
+  map-dependent — a distinction invisible in the fraction alone (nav, 2026-09-20).
 - **`inactive`** — nav published the key and said *no leg right now*. A named case (§5), not an absence.
 - **`ordered_arc`** — excluded because an ordered arrival arc is off-corridor **by construction** and is the unit
   obeying. On `facing_arc`, **never** on `facing_ordered`: an order carries its facing from the moment it is
@@ -187,7 +190,9 @@ case A6 exists for.
 Prints the per-file rows as usual and then **one pooled row**, so a rotation figure across yard / pit / terminus
 is one command rather than four and a calculator.
 
-**Pooled by TICKS, never by averaging the per-file fractions.** A mean would weight a 30 s log the same as a
+**Pooled by TICKS, never by averaging the per-file fractions** — and the mean is printed *beside* the real
+figure so the weighting is visible rather than taken on trust. On P7 the two agree to a thousandth (0.3203 against
+0.3187) **only because the three maps carry similar weight**; on files that do not, the mean is quietly wrong. A mean would weight a 30 s log the same as a
 120 s one, which is how a rotation number ends up dominated by its shortest map. A 10 s log at 90% pooled with a
 190 s log at 10% is **14%**, not 50%, and there is a test that says so.
 

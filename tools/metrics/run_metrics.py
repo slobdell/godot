@@ -217,10 +217,13 @@ def main(argv=None):
         print("  oscillating_share %s over %s s under way | cusps %d (%s/agent-min)" % (
             _fmt(p["oscillating_share"], 4, 6).strip(), p["under_way_seconds"], p["cusps"],
             _fmt(p["cusps_per_agent_minute"], 2, 5).strip()))
-        print("  off_corridor %s (active %s over %d ticks)" % (
+        print("  off_corridor %s (active %s over %d ticks)%s" % (
             "null" if p["off_corridor_fraction"] is None else "%.4f" % p["off_corridor_fraction"],
             "null" if p["corridor_active_fraction"] is None else "%.4f" % p["corridor_active_fraction"],
-            p["corridor_active_ticks"]))
+            p["corridor_active_ticks"],
+            "" if p["off_corridor_mean_of_files"] is None else
+            "  [the mean of the per-file fractions would be %.4f -- shown so the weighting is visible, not "
+            "as an alternative]" % p["off_corridor_mean_of_files"]))
         rows.append({"pooled": pooled})
 
     if args.json_out:

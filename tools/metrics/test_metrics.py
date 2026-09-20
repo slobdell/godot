@@ -1196,6 +1196,16 @@ class PoolTest(unittest.TestCase):
                                           (0.0581, 1298.8), (0.0530, 1407.4))) / 5707.2
         self.assertAlmostEqual(metrics.pool(rows)["pooled"]["oscillating_share"], expected, places=3)
 
+    def test_the_mean_of_fractions_is_shown_BESIDE_the_real_figure(self):
+        """nav's point: the two agree only when the files carry similar weight, so a reader on files that do not
+        would reach for the mean and be quietly wrong. Showing both makes the weighting visible."""
+        rows = [self.row("short", 0.0, 1.0, off=0.90, active_ticks=100),
+                self.row("long", 0.0, 1.0, off=0.10, active_ticks=900)]
+        p = metrics.pool(rows)["pooled"]
+        self.assertAlmostEqual(p["off_corridor_fraction"], 0.18, places=4)   # tick-weighted
+        self.assertAlmostEqual(p["off_corridor_mean_of_files"], 0.50, places=4)  # the trap, shown beside it
+        self.assertNotAlmostEqual(p["off_corridor_fraction"], p["off_corridor_mean_of_files"], places=2)
+
     def test_a_None_in_ANY_file_keeps_the_pool_None(self):
         """One log without the corridor column makes the POOLED fraction unpublishable, exactly as it does for
         that log alone. Pooling must not launder a missing column into a number."""

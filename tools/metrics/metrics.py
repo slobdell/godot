@@ -960,6 +960,12 @@ def pool(rows: Sequence[Dict[str, object]]) -> Dict[str, object]:
             total("cusps") / sum(float(r["all"]["agent_minutes"]) for r in rows), 2)
         if sum(float(r["all"]["agent_minutes"]) for r in rows) else None,
         "off_corridor_fraction": _round(opposing / active, 4) if (known_any and active) else None,
+        # The mean of the per-file fractions, printed BESIDE the real figure and never in place of it. nav
+        # pooled correctly and then observed that the two agree here only because the three maps carry similar
+        # weight -- so the next reader, on maps that do not, would reach for the mean and be wrong quietly.
+        # Showing both makes the weighting visible instead of asking anyone to take it on trust.
+        "off_corridor_mean_of_files": _round(
+            sum(float(r["all"]["off_corridor_fraction"]) for r in rows) / len(rows), 4) if known_any else None,
         "corridor_active_fraction": _round(active / considered, 4) if (known_any and considered) else None,
         "corridor_active_ticks": active,
     }
