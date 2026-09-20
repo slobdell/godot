@@ -2778,3 +2778,9 @@ The kickoff prompt is one line; this section is the rest.
       asserts its subject before reading the number (lesson 184).
     Beside lesson 182: an `&&` chain that reports "the rest passed" is the same disease in a third costume, **a run
     that never happened, counted as a pass.** See also nav's note in `navigation.md` (the same shape in routing).
+186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
+    Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
+    the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
+    (low camera: the wall is cut, as round 6 measured it must be; steep camera: the vehicle wins) and the worst
+    margin across 8–70° is +0.20 m. A claim about a camera, a formation, or a roster is a claim over its range, and
+    the report names the worst point in the range, not the pose that was to hand.
