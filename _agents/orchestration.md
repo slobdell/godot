@@ -2822,3 +2822,12 @@ The kickoff prompt is one line; this section is the rest.
     write the invariant *at the cache* with what would break it ("if a runtime hull scale ever lands, clear this per
     scenario"). A guard that costs an allocation per call against a risk of zero is worse than a sentence; a bet
     with no sentence is worse than both.
+188. **The aggregate row would have shipped it; the per-class rows and the active fraction refused.** Round 9's
+    clearance A/B (nav `961640cf`, yard): the ALL row improved on every primary (oscillation halved, cusps −39 %)
+    while attack-move `progressing` fell 35 % and 38.8 % of ticks dropped below the creep threshold and out of the
+    statistic. **You cannot oscillate if you are not going anywhere: the apparent improvement was the pathology.**
+    Two pre-registered choices that looked like bookkeeping caught it: report per hull class (the aggregate was
+    carried by the one class that improved) and print the active fraction beside every fraction (0.664 → 0.176 says
+    the surviving ticks are a different population). And the arm-proof bar nav wrote as `refused < chords` passed at
+    90.9 % refused: **an arm-proof bar is a share, set before the run, never an inequality that any non-zero
+    satisfies.** Same shape as A4 and A1: a behaviour that buys its metric by not moving.
