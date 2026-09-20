@@ -299,8 +299,14 @@ func test_a_fixture_nothing_registers_costs_nothing_and_is_not_an_error() -> voi
 func test_nothing_in_the_show_reaches_the_simulation() -> void:
 	# S6: the show reads the match only through MatchMood and K5 events, runs on frame time, and never on the tick.
 	# Pre-registered with the sim baseline: this is the code-level half of that claim.
+	# The simulation half: the show reads the match only through MatchMood and K5 events.
+	# The renderer half: rule 3 of lighting.md is ZERO added draw calls and ZERO real lights, and the only way to
+	# keep that structurally true is that the show never constructs geometry or a light at all. A fixture is an
+	# emissive surface something else is ALREADY drawing; if a design here wants an OmniLight3D, the design is
+	# wrong for this renderer and the answer is to find the emissive form, not to add the light.
 	var forbidden := ["_physics_process", "Time.get_ticks", "game_match", "Tank", "TankBrain", "Elements",
-			"OrderController", "get_tree().physics_frame", "randf", "randi"]
+			"OrderController", "get_tree().physics_frame", "randf", "randi",
+			"Light3D", "MeshInstance3D", "MultiMesh", "QuadMesh", "PlaneMesh", "ArrayMesh", "SurfaceTool"]
 	var dir := DirAccess.open(SHOW_DIR)
 	assert_true(dir != null, "game/theme/show/ exists")
 	var checked := 0
