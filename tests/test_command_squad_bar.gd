@@ -180,8 +180,13 @@ func test_ground_rings_mark_the_selected_squad_and_respect_fog() -> void:
 	rings = markers.state()
 	assert_eq(rings["Green_Alpha_2"]["kind"], "friendly", "selecting Bravo moves the rings")
 	assert_eq(rings["Green_Bravo_2"]["kind"], "selected", "to Bravo")
-	var material := markers.layer("selected").material_override as StandardMaterial3D
-	assert_true(not material.no_depth_test, "rings are depth-tested, so a vehicle covers its own ring")
+	var material := markers.layer("selected").material_override
+	# Round 9: the marker is a ShaderMaterial now (a signed-distance capsule shaped to the hull, so the band keeps a
+	# constant thickness on a 2.93 m rat rod and a 14 m rig alike). Depth testing is no longer a material property,
+	# so assert the thing that expresses it: the shader must NOT turn the depth test off.
+	assert_true(material is ShaderMaterial, "the marker is drawn by the ring shader")
+	assert_true(not (material as ShaderMaterial).shader.code.contains("depth_test_disabled"),
+			"rings are depth-tested, so a vehicle covers its own ring")
 	assert_true((rings["Green_Bravo_2"]["position"] as Vector3).y < 0.5, "the ring lies on the ground")
 
 
