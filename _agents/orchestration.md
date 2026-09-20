@@ -2450,3 +2450,14 @@ The kickoff prompt is one line; this section is the rest.
     and `maneuver`), so under the old blend `range` and `continuity` compromised *by accident* to 15.4 m, and strict
     priority removed the accident. nav parked A7 behind its switch rather than tune the tolerance, and put the
     decision — do attacking members carry a task region? — to its owner, squad.
+154. **A run that exits 0 with the expected numbers can still have done none of the thing you asked for.** Round 9,
+    metrics' first positive-control run reproduced round 8's four oscillation percentages exactly and **wrote no
+    trajectory log at all** — at `aa984edd` the `nav-fight-maps` target had no `$(NAV_FLAGS)` pass-through, so the
+    `--trajectory=PATH` flag never reached the probe. The numbers were right because the probe was unchanged; the
+    instrument under test had simply not run. **Before reading a control's numbers, check that the artefact the new
+    tool was supposed to produce exists and is non-empty.** Sibling of lesson 27 (verify the edit reached the build).
+155. **Provenance stamps must read the environment the remote wrapper actually provides.** The trajectory emitter's
+    header said `commit=unknown` on builder0 because `tools/remote.sh` excludes `.git/` from the sync and exports
+    `TANK_SQUAD_COMMIT` instead — and says so in its own comment. Any new tool that stamps a commit reads that variable
+    first and falls back to `git rev-parse`. A number with `commit=unknown` beside it is lesson 10's failure by a new
+    road.
