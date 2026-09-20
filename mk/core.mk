@@ -393,19 +393,22 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 		"$$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown})" \
 		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(awk '/MemAvailable/{print int($$2/1024)}' /proc/meminfo)" \
 		"$$(pgrep -c -f 'Godot_v' || echo 0)"
-	@rm -rf $(BUILD_DIR)/check/done $(BUILD_DIR)/check/started && mkdir -p $(BUILD_DIR)/check/done $(BUILD_DIR)/check/started
+	@rm -rf $(BUILD_DIR)/check/done $(BUILD_DIR)/check/started $(BUILD_DIR)/check/running && mkdir -p $(BUILD_DIR)/check/done $(BUILD_DIR)/check/started $(BUILD_DIR)/check/running
 	@$(MAKE) --no-print-directory import
 	@started=$$(date +%s); \
 	( while sleep 60; do \
-		left=""; count=0; \
+		left=""; failed=""; count=0; \
 		for target in $(CHECK_TARGETS); do \
 			if [ -e $(BUILD_DIR)/check/done/$$target ]; then count=$$(( count + 1 )); \
+			elif [ -e $(BUILD_DIR)/check/started/$$target ] && [ ! -e $(BUILD_DIR)/check/running/$$target ]; then \
+				failed="$$failed $$target"; \
 			else left="$$left $$target"; fi; \
 		done; \
 		[ -z "$$left" ] && break; \
 		elapsed=$$(( $$(date +%s) - started )); \
-		printf '>> check: %dm%02ds, %d/%d done, waiting on:%s\n' \
-			"$$(( elapsed / 60 ))" "$$(( elapsed % 60 ))" "$$count" "$(words $(CHECK_TARGETS))" "$$left" >&2; \
+		printf '>> check: %dm%02ds, %d/%d done, waiting on:%s%s\n' \
+			"$$(( elapsed / 60 ))" "$$(( elapsed % 60 ))" "$$count" "$(words $(CHECK_TARGETS))" "$$left" \
+			"$$([ -n "$$failed" ] && printf ' | already FAILED:%s' "$$failed")" >&2; \
 	done ) & heartbeat=$$!; \
 	trap 'kill $$heartbeat 2>/dev/null' EXIT INT TERM; \
 	$(MAKE) --no-print-directory -k -j$(CHECK_JOBS) -Otarget \
@@ -461,7 +464,7 @@ check-parallel: $(_CHECK_WRAPPED) ## (internal) check's targets for `make -j`; r
 # Now each wrapper has NO normal prerequisite and invokes its target from its own recipe, so the order-only edge
 # constrains the work itself. `-o import` because `check` has already built it and 16 sub-makes must not each
 # redo it (that would also put 16 writers on the .godot cache, which is the one thing lint's lock is about).
-$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @mkdir -p $$(BUILD_DIR)/check/started $$(BUILD_DIR)/check/done && touch $$(BUILD_DIR)/check/started/$(t) && $$(MAKE) --no-print-directory -o import $(t) && touch $$(BUILD_DIR)/check/done/$(t)))
+$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @mkdir -p $$(BUILD_DIR)/check/started $$(BUILD_DIR)/check/done $$(BUILD_DIR)/check/running && touch $$(BUILD_DIR)/check/started/$(t) $$(BUILD_DIR)/check/running/$(t) && { $$(MAKE) --no-print-directory -o import $(t); s=$$$$?; rm -f $$(BUILD_DIR)/check/running/$(t); [ $$$$s -eq 0 ] && touch $$(BUILD_DIR)/check/done/$(t); exit $$$$s; }))
 
 # LINT GATES EVERY OTHER TARGET. A file that does not parse makes every Godot target below fail in a way
 # that describes the symptom and not the cause, and reading sixteen of those to find one parse error is
