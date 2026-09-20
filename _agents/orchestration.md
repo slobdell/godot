@@ -2980,3 +2980,8 @@ The kickoff prompt is one line; this section is the rest.
     read at call time with `push_error` for an unknown name). Copy the last: a misspelled knob and a clobbered knob
     otherwise fail identically. And two depths of arm check: a flag read proves the static survived; a behavioural
     check (something only true if the branch ran) proves the branch executed.**
+    **Proven the same night:** with the spec applied at first read, the wedged row went RED under `yaw_fit=0` and
+    reproduced nav's original unconstrained numbers (44.0°, 12.1 m), which showed that the "before" quoted all day
+    (28.5°, 9.6 m) had been taken in an arm that was not the one it claimed; the constraint's benefit was larger
+    than reported (74 % of the illegal yaw, not 59 %), the residual unchanged. **A before-column is re-taken on
+    the build that reports it, in the arm the knob now provably selects.**
