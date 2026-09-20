@@ -1124,7 +1124,8 @@ static var tuning := {}
 ## (`TestCase.expect_warning` exists; its error twin does not). A `push_error` here would therefore make this guard
 ## **untestable** -- and a guard nobody can drive into is exactly the unreachable protection nav objected to. So it
 ## warns, the test declares the warning with `expect_warning`, and an expectation that stops arriving fails the
-## test too. Raise it to `push_error` the day the runner can declare one.
+## test too. **`expect_error` lands with nav's `06c7e772`**; when that is on main this becomes `push_error` and the
+## test becomes `expect_error`, a two-line follow-up.
 static func stat(unit_id: String, key: String, fallback: Variant = null) -> Variant:
 	var tuned_key := "%s.%s" % [unit_id, key]
 	if tuning.has(tuned_key):
