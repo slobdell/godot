@@ -55,6 +55,14 @@ for f in GUARD_DIR/slot*.owner; do
 	[ -e "$f" ] || continue
 	printf 'OWNER %s %s\n' "$(basename "$f" .owner)" "$(head -1 "$f")"
 done
+for t in GUARD_DIR/wait.*; do
+	[ -e "$t" ] || continue
+	base=${t##*/}; pid=${base##*.}
+	cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null) || continue
+	case "$cwd" in "$HOME/ROOT/"*) ;; *) continue ;; esac
+	rel=${cwd#"$HOME/ROOT/"}
+	printf 'TICKET %s\n' "${rel%%/*}"
+done | sort -u
 for p in /proc/[0-9]*; do
 	cwd=$(readlink "$p/cwd" 2>/dev/null) || continue
 	case "$cwd" in "$HOME/ROOT/"*) ;; *) continue ;; esac
@@ -90,9 +98,18 @@ if [ "$mode" != --no-remote ]; then
 		if [ -n "$procs" ]; then
 			echo "  live processes by folder (from /proc, the authority):"
 			awk '{printf "    %-18s %s\n", $2, $3" processes"}' <<<"$procs"
-			# The disagreement worth seeing: work in a folder that holds no slot.
+			# Work in a folder that holds no slot is NOT automatically an orphan: a run that is QUEUED has
+			# already cd-ed in and is waiting for a slot, which is the normal, healthy case. The first
+			# version of this said "has work but holds NO SLOT" for exactly that and read as an accusation.
+			# A queued run holds a slot.sh TICKET, so the three states are distinguishable -- and the one
+			# with neither is the one worth a look, named as the uncertainty it is.
 			while read -r _ folder _; do
-				grep -q "^OWNER .*$folder:" <<<"$block" || echo "    ^ $folder has work but holds NO SLOT"
+				if grep -q "^OWNER .*$folder:" <<<"$block"; then continue; fi
+				if grep -qx "TICKET $folder" <<<"$block"; then
+					echo "    ~ $folder is QUEUED (holds a ticket, waiting for a slot)"
+				else
+					echo "    ? $folder has work, no slot and no ticket: an orphan, or a command run outside the slots"
+				fi
 			done <<<"$procs"
 		else
 			echo "  no processes in any $root folder"

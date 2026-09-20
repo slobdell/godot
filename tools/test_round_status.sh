@@ -25,9 +25,27 @@ out=$(bash "$rs" --remote-from "$tmp/block" 2>&1)
 grep -q 'load 15.70 11.74 10.30 on 12 cores, 8851 MB available' <<<"$out" && ok "renders load, cores and memory" || bad "renders load, cores and memory" "$out"
 grep -q 'slot slot1 11:48:11 godot-scale' <<<"$out" && ok "renders who holds each slot" || bad "renders who holds each slot"
 grep -qE 'godot-metrics +48 processes' <<<"$out" && ok "renders live processes per folder" || bad "renders live processes per folder" "$out"
-# THE POINT of printing both: work in a folder that holds no slot is an orphan or an unslotted command.
-grep -q 'godot-feel has work but holds NO SLOT' <<<"$out" && ok "flags work with no slot" || bad "flags work with no slot" "$out"
-grep -q 'godot-scale has work but holds NO SLOT' <<<"$out" && bad "a slot holder is not flagged" || ok "a slot holder is not flagged"
+# THE POINT of printing both -- but a QUEUED run also has work and no slot, and that is the healthy case.
+# The first version called it "has work but holds NO SLOT", which read as an accusation aimed at two streams
+# doing nothing wrong. Three states, told apart by the slot.sh ticket.
+grep -q 'godot-feel has work, no slot and no ticket' <<<"$out" && ok "work with no slot AND no ticket is flagged as uncertain" \
+	|| bad "work with no slot and no ticket is flagged" "$out"
+grep -q 'an orphan, or a command run outside the slots' <<<"$out" && ok "and it is named as an uncertainty, not an accusation" \
+	|| bad "named as an uncertainty" "$out"
+grep -q 'godot-scale' <<<"$out" | grep -q 'no slot' && bad "a slot holder is not flagged" || ok "a slot holder is not flagged"
+
+cat > "$tmp/queued" <<'B'
+LOAD 1.00 1.00 1.00
+CORES 12
+MEMAVAIL_MB 9000
+OWNER slot1 11:48:11 godot-scale: make --no-print-directory check
+TICKET godot-nav
+PROCS godot-scale 8
+PROCS godot-nav 4
+B
+out=$(bash "$rs" --remote-from "$tmp/queued" 2>&1)
+grep -q 'godot-nav is QUEUED' <<<"$out" && ok "a QUEUED run is named queued, not orphaned" || bad "a queued run is named queued" "$out"
+grep -q 'godot-nav has work, no slot and no ticket' <<<"$out" && bad "a queued run is not called an orphan" || ok "a queued run is not called an orphan"
 
 # An unreachable box must not render as a quiet one.
 : > "$tmp/empty"

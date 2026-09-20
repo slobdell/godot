@@ -152,8 +152,22 @@ runs real time and it is the machine the lead plays on.
 
 builder0 (glibc 2.43) and the laptop (glibc 2.39) produce different `make sim-baseline` hashes from the same binary
 (system math library differences; [determinism.md](determinism.md)). The baseline file holds one line per glibc
-version; builder0's is canonical. When gameplay changes on purpose: `make remote T=sim-baseline-record`, then
-`cp build/sim_state_hash.txt tests/baselines/` and commit.
+version; builder0's is canonical. When gameplay changes on purpose:
+
+    make sim-baseline-adopt      # reads TWICE on builder0, refuses a disagreement, merges, prints the message
+
+**Do not `cp build/sim_state_hash.txt tests/baselines/`.** That file holds ONE line — the recording machine's — so
+the copy does not make other machines' baselines stale, it **deletes** them. It is invisible while only builder0 is
+baselined; the first time the laptop or a second builder has a line, adopting on either removes the other, and the
+next check there reports `sim-baseline SKIPPED: no baseline for glibc-x.yz`. A skip, not a failure, so nobody
+chases it. `sim-baseline-adopt` merges the one key's line and keeps the rest, with provenance per line.
+
+**It reads twice and refuses a disagreement, and that is the point of it.** A hash that does not reproduce on its
+own machine is not a baseline, it is a coin — adopt either number and every check everywhere compares against
+whatever non-determinism produced it. (`ai_scenarios_count.txt` made exactly that mistake this round: its `45,0,2,0`
+was recorded in the one run of about fifty in which a known-failing scenario happened to pass.) The read itself is
+one definition, `SIM_HASH_READ`, shared by the check, the recorder and the adopter, so the number adopted cannot
+come from a slightly different run than the number verified.
 
 ## Paid generation does not take a slot
 
