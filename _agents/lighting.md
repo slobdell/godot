@@ -671,10 +671,26 @@ BEFORE arm it failed **22 of 30 frames with no show in them at all**. At the lea
 top of the frame is simply brighter than the middle, and it was before any of this existed.
 
 **So the bar is relative: the show must not make the ratio meaningfully worse than the same frozen frame with the
-show off.** Measured that way the parapet default moves it **−2.6% to +7.4%, mostly positive** — it makes the fight
-marginally *easier* to read, because the window grid lifts the interiors rather than the silhouette.
+show off.**
 
-Two cautions that outlive this round:
+**⚠ AND THE FIRST ANSWER THAT BAR GAVE WAS WRONG, BECAUSE THE RING WINDOW HAD NO FIGHT IN IT.** It read
+*"−2.6% to +7.4%, mostly positive — the show makes the fight marginally easier to read"*, which was a true
+measurement of bare asphalt: the frame tools never passed `--budget`, so every run fielded **five units a side**
+instead of ~30, and a 3-second warmup left those five on their spawn line 86 m from the camera.
+
+**Re-run against a real army — 34 a side, 11–23 vehicles in every frame — the effect is essentially ZERO:** 35 of
+36 frames inside the bar, scattered both ways, median near zero. The ratios themselves moved from ~0.80 to ~0.93
+on `terminus/wide` once real vehicles were in the ring, which is the clearest evidence that the old numbers were
+measuring the wrong subject.
+
+**So `vehicles_in_frame` is printed with every capture and `tools/show_frame_gate.py` refuses a set containing an
+empty frame — and it runs BEFORE the luminance gate**, because a ring window with nothing in it makes the
+luminance gate meaningless rather than merely wrong.
+
+Three cautions that outlive this round:
+
+- **Check the frame contains its subject before trusting the number.** A measurement of the wrong thing is not
+  noisy, it is confident and wrong, and it looks exactly like a result.
 
 - **Say which statistic you are gating.** feel's observation was *"the brightest pixels in the image are the
   building edges"* — a **maximum**. The gate measures a **mean** over two windows. Both are reported per frame now;
@@ -682,6 +698,26 @@ Two cautions that outlive this round:
 - **Check the control against itself before trusting a failure.** The first failing run had the *outline* variant
   scoring better than the parapet. More lit silhouette cannot help the fight out-read the periphery, so the
   measurement was wrong before the result was interesting.
+
+### A frame-mean cannot tell you whether a strobe reads
+
+Four attempts went into making a number answer *"does the `last_stand` strobe read?"*, and the fourth is the one
+that should have been obvious:
+
+1. **Band-window swing:** 2.9% with the strobe on, 2.9% off. The band is the top of the frame; the rim, beams and
+   signs that strobe are largely outside it. *Wrong window.*
+2. **Whole-frame swing at 10 fps:** 1.9% vs 1.6%. **The clip was aliasing.** At sharpness 40 over 1.6 s the stab is
+   above half its span for **8.4% of the cycle — 0.134 s** — so at 10 fps ~1.3 frames land inside each stab and
+   almost never at its peak. *The clip was sampling the gaps between flashes.*
+3. **Whole-frame swing at 30 fps** (what the player sees, since the game targets 30): **2.4% vs 1.9%.** Real, but
+   barely above the still-pair null, and **there is no null for this statistic** to compare it against.
+4. **The reason it will never be much better:** the swing is a **frame mean**, and the strobing fixtures occupy a
+   small fraction of a frame centred on the fight. A strobe's visibility is *local contrast on the thing that
+   strobes*, not the average brightness of the picture.
+
+**So the clip is the measurement and the number is the sanity check, not the other way round.** That is what clips
+were shot for; it took four tries to stop arguing with the medium. Report the swing with its frame rate beside it,
+and let a human watch.
 
 ### Shoot an event cue where it has headroom
 
