@@ -466,6 +466,35 @@ intersecting, never moving at all, looks identical to a nudged one.** That is a 
 exposed, not a movement change. Ask the probe to print the **spawn** position beside the current one — if they are
 equal, no motion occurred and every movement-layer candidate is eliminated at once.
 
+### WHY THE DRAIN AND THE SEALED TEARDOWN MATTER — combat's argument, which is better than nav's was
+
+nav justified this work as *"one leaking test becomes a shard of noise in which the culprit is indistinguishable
+from its victims."* **That is about failures, and it is the weaker case.** combat's is about **passes**, and it is
+the one to use (2026-09-21, their finding, their words):
+
+> **a leak does not only fail the next test — it silently changes what the next test MEASURES**
+
+**The evidence is their own wall fixture, dated to the minute.** Two perfectly ordered clusters, no interleaving,
+either side of a single commit — the one where `test_tank_yaw_fit`'s teardown override finally called
+`await super.teardown()`:
+
+    before the fix   rig at (2.869822, …)  offered 14  applied 0     x3 runs
+    after the fix    rig at (2.785599, …)  offered 16  applied 3     x3 runs
+
+**The 8 cm is the size of the leak.** Before it was fixed, the first test's arena, match and hulls were still in the
+world when the second ran, and the rig landed against that residue instead of the wall. **The fixture never failed.**
+It ran green, printed a plausible MEASURE line, and measured a different world than its author believed — for as
+long as the leak existed. Nothing was red; nothing looked wrong; the number was simply about something else.
+
+**That is strictly worse than noise, and it is the argument for the sealed `_teardown()`.** combat's fix was to
+*remember* `await super.teardown()`. Under the sealing, an override **does not need to call super at all** — the
+runner owns free-then-drain and `teardown()` is a synchronous hook that frees — so the bug that moved that rig
+becomes **structurally impossible rather than remembered**. nav made a weaker case for the same change.
+
+**And the reading error underneath is the round's, for the fourth time:** four data points across three commits,
+read as one population. Same shape as nav's 45 s headroom pass, nav's two-commit P7 series that metrics' banner
+caught, and the roster lines. **A measurement carries its commit, or it is not a measurement.**
+
 ### ⚠ `build/` LIES IN BOTH DIRECTIONS — a measurement artefact there is never safe
 
 Two separate hazards bit nav in one night, from opposite sides:
