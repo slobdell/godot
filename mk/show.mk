@@ -20,6 +20,11 @@ SHOW_CUES ?= fight,battle,last_stand,victory
 # and at the lead's pose in a Terminus street that is often the nearest block. A frame shot to judge how the block
 # EDGES read must therefore have it off, or the block may simply not be there (control, 2026-09-20).
 SHOW_FLAGS ?= --block-cutaway=off
+# Every capture process now WAITS FOR THE ARMIES TO MEET before it shoots anything, and on builder0's vsync'd
+# window that measured 116 s of wall clock (59.6 m closest pair). Add the captures on top -- 180 of them for a
+# 30 fps strobe clip -- and the old `timeout 420` killed the run mid-clip with "strobe/on did not finish". These
+# are caps against a hang, not budgets: a run that finishes early costs nothing.
+SHOW_TIMEOUT ?= 900
 
 show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49 m). Each frame is shot TWICE at the same frozen moment -- show off then on -- plus the outline variant; idle + one per cue + the kill ripple at three ages -> build/show/ (needs a display: make remote T=show-frames)
 	rm -rf $(BUILD_DIR)/show && mkdir -p $(BUILD_DIR)/show
@@ -34,7 +39,7 @@ show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49
 				*)       extra=""; sub=".";; \
 			esac; \
 			mkdir -p $(BUILD_DIR)/show/$$sub; \
-			timeout 420 $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+			timeout $(SHOW_TIMEOUT) $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
 				--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$$arena $$extra \
 				--show-look=$(CURDIR)/$(BUILD_DIR)/show/$$sub --show-look-times=$(SHOW_TIMES) \
 				--show-look-cues=$(SHOW_CUES) $(SHOW_FLAGS) \
@@ -74,7 +79,7 @@ show-decisions: import ## S6: the two calls that are the lead's -- roofline vs o
 	rm -rf $(BUILD_DIR)/show/decisions && mkdir -p $(BUILD_DIR)/show/decisions
 	@# 1. THE EDGES: one frame each, same arena, seed, pose and moment.
 	for style in parapet outline; do \
-		timeout 300 $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+		timeout $(SHOW_TIMEOUT) $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
 			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) --show-style=$$style \
 			--show-look=$(CURDIR)/$(BUILD_DIR)/show/decisions --show-look-times=8.1 --show-look-cues=battle \
 			2>&1 | tee $(BUILD_DIR)/show/decisions/edges_$$style.log | grep -E '^SHOW_LOOK |SCRIPT ERROR' || true; \
@@ -83,7 +88,7 @@ show-decisions: import ## S6: the two calls that are the lead's -- roofline vs o
 	@# 2. THE STROBE: a clip each, because a still cannot show one.
 	for arm in on off; do \
 		[ $$arm = off ] && extra=--no-strobe || extra=; \
-		timeout 420 $(GODOT) --path . --resolution $(CLIP_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+		timeout $(SHOW_TIMEOUT) $(GODOT) --path . --resolution $(CLIP_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
 			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) $$extra \
 			--show-look=$(CURDIR)/$(BUILD_DIR)/show/decisions --show-look-clip=last_stand \
 			--show-look-clip-frames=$(STROBE_CLIP_FRAMES) --show-look-clip-step=$(STROBE_CLIP_STEP) \
@@ -102,7 +107,7 @@ show-decisions: import ## S6: the two calls that are the lead's -- roofline vs o
 show-clips: import ## S6: each cue as a 6 s clip at 10 fps from the lead's pose -> build/show/clips/*.mp4 (needs a display and ffmpeg: make remote T=show-clips)
 	rm -rf $(BUILD_DIR)/show/clips && mkdir -p $(BUILD_DIR)/show/clips
 	for cue in $(CLIP_CUES); do \
-		timeout 420 $(GODOT) --path . --resolution $(CLIP_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+		timeout $(SHOW_TIMEOUT) $(GODOT) --path . --resolution $(CLIP_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
 			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) \
 			--show-look=$(CURDIR)/$(BUILD_DIR)/show --show-look-clip=$$cue \
 			--show-look-clip-frames=$(CLIP_FRAMES) --show-look-clip-step=$(CLIP_STEP) \
