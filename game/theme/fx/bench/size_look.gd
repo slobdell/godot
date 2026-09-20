@@ -51,9 +51,13 @@ const LINEUP_MARGIN := 1.12
 ## on open ground beside the army, with the HUD and the order markers hidden for the capture -- these frames ask
 ## whether the roster reads at the right relative size, and a command card over the bottom third does not.
 const LINEUP_OFFSET_M := 120.0
-## Labels cycle through these heights above a hull, so neighbours in a dense row do not overprint. Three tiers,
-## not two: two was not enough for a row of five with long names.
-const LABEL_TIERS := [1.0, 2.2, 3.4]
+## Labels sit ON THE GROUND in front of their vehicle, toward the camera, at these multiples of the row gap.
+##
+## They used to float ABOVE the hull, and no number of tiers fixed the overprinting: within a row, tiers help; but
+## a near row's labels rise into the row BEHIND it, and vertical tiers cannot separate things that are separated in
+## DEPTH. On the ground in front, a label can only ever collide with its own row's neighbours, which alternating
+## two offsets does solve.
+const LABEL_AHEAD := [0.40, 0.72]
 
 var out_dir := ""
 var lengths: Array = [5.6, 10.0, 12.0]
@@ -288,7 +292,9 @@ func _lineup(scene: Node, focus: Vector3, heading: float) -> void:
 	# about the frame rather than about the roster (the orchestrator looked at it and said so).
 
 	# 3. His own pose, over the size spread. Directly comparable with round 8's rig frames.
-	await _shoot_rows(scene, stage, heading, [SPREAD], "lineup_pose.png", "pose", DISTANCE_M, PITCH_DEG)
+	# HIS pose is a FIXED 49 m, so the lineup has to fit the frame rather than the frame the lineup: at the wide
+	# gap the six-vehicle spread spans 73 m against about 55 m of visible width and the Rat Rod falls off the edge.
+	await _shoot_rows(scene, stage, heading, [SPREAD], "lineup_pose.png", "pose", DISTANCE_M, PITCH_DEG, 3.0)
 	for restorer: Callable in restore:
 		restorer.call()
 
@@ -296,7 +302,7 @@ func _lineup(scene: Node, focus: Vector3, heading: float) -> void:
 ## Park `rows` (a list of rows of unit ids) on the ground around `focus`, frame them, shoot one PNG, tidy up.
 ## `distance`/`pitch` default to a pose computed to FIT what was parked; pass them to force the lead's own pose.
 func _shoot_rows(scene: Node, focus: Vector3, heading: float, rows: Array, file: String, tag: String,
-		distance := -1.0, pitch := LINEUP_PITCH_DEG) -> void:
+		distance := -1.0, pitch := LINEUP_PITCH_DEG, gap := LINEUP_GAP_M) -> void:
 	var across := Vector3.RIGHT.rotated(Vector3.UP, heading)
 	var deeper := Vector3.FORWARD.rotated(Vector3.UP, heading)
 	var widths: Array = []
@@ -306,9 +312,9 @@ func _shoot_rows(scene: Node, focus: Vector3, heading: float, rows: Array, file:
 		var deepest := 0.0
 		for unit_id: String in row:
 			var box: Array = Units.stat(unit_id, "hull_size")
-			width += float(box[2]) + LINEUP_GAP_M
+			width += float(box[2]) + gap
 			deepest = maxf(deepest, float(box[0]))
-		widths.append(width - LINEUP_GAP_M)
+		widths.append(width - gap)
 		depths.append(deepest)
 	var total_width: float = widths.max()
 	var total_depth := 0.0
@@ -327,14 +333,15 @@ func _shoot_rows(scene: Node, focus: Vector3, heading: float, rows: Array, file:
 			var centre: Vector3 = focus + across * (at + float(box[2]) / 2.0) + deeper * (at_depth + float(depths[r]) / 2.0)
 			centre.y = focus.y
 			parked.append(_park_one(scene, unit_id, centre, heading))
-			at += float(box[2]) + LINEUP_GAP_M
+			at += float(box[2]) + gap
 		at_depth += float(depths[r]) + LINEUP_ROW_GAP_M
 
 	if distance < 0.0:
 		distance = _distance_to_fit(total_width, total_depth, pitch)
+	# The camera FIRST: the labels are placed toward it, so it has to be where it will be when they are created.
+	_camera.global_transform = RtsCamera.pose_at(focus, heading, distance, pitch)
 	for i in parked.size():
 		_label(parked[i] as Node3D, distance, i)
-	_camera.global_transform = RtsCamera.pose_at(focus, heading, distance, pitch)
 	get_tree().paused = true
 	for i in 6:
 		await get_tree().process_frame
@@ -377,10 +384,19 @@ func _label(tank: Node3D, distance: float, index := 0) -> void:
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test = true
 	label.pixel_size = (distance / 60.0) / 64.0
-	# Two tiers, alternating along the row: a dense row of short names still overprints on one tier.
-	var tier: float = LABEL_TIERS[index % LABEL_TIERS.size()]
-	label.position = Vector3(0.0, float(box[1]) + tier * distance / 70.0, 0.0)
 	tank.add_child(label)
+	# ON THE GROUND, in front of the vehicle, toward the camera -- computed in world space and then expressed in
+	# the tank's own, because the tanks are turned side-on and their local axes are not the camera's.
+	var toward := _toward_camera(tank.global_position)
+	var ahead: float = LINEUP_ROW_GAP_M * LABEL_AHEAD[index % LABEL_AHEAD.size()]
+	label.global_position = tank.global_position + toward * ahead + Vector3.UP * 0.35
+
+
+## A flat unit vector from `at` toward the camera.
+func _toward_camera(at: Vector3) -> Vector3:
+	var away := _camera.global_position - at
+	away.y = 0.0
+	return away.normalized() if away.length_squared() > 1e-6 else Vector3.BACK
 
 
 ## How far back the camera has to sit, at `pitch`, for `width` across and `depth` deep to fit in the viewport.
