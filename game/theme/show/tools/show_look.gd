@@ -188,22 +188,24 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 	var style := str(show.style_of(&"city_block")) if show != null else ""
 	var file := "%s_%s_%s%s.png" % [arena, pose_name, label, "" if style in ["", "parapet"] else "_" + style]
 	image.save_png(out_dir.path_join(file))
-	var ring := _mean_luma(image, RING_WINDOW)
-	var band := _mean_luma(image, BAND_WINDOW)
+	var ring := _luma(image, RING_WINDOW)
+	var band := _luma(image, BAND_WINDOW)
 	print("SHOW_LOOK " + JSON.stringify({
 		"arena": arena, "pose": pose_name, "label": label, "t": t, "file": file, "style": style,
 		"pitch_deg": PITCH_DEG, "fov_deg": FOV_DEG, "distance_m": distance,
 		"focus": [focus.x, focus.z], "writes": writes,
 		"mood": str(show.mood_state) if show != null else "", "channels": _levels(show, t),
-		"luma_ring": snappedf(ring, 0.0001), "luma_band": snappedf(band, 0.0001),
-		"ring_wins": ring >= band,
+		"luma_ring": snappedf(ring.x, 0.0001), "luma_band": snappedf(band.x, 0.0001),
+		"luma_ring_max": snappedf(ring.y, 0.0001), "luma_band_max": snappedf(band.y, 0.0001),
+		"ring_wins": ring.x >= band.x,
 	}))
 	return 1
 
 
-## Mean perceptual luminance over a fraction of the frame. The comparison this feeds is the one hard requirement
-## the look has: the fight must out-read the periphery.
-func _mean_luma(image: Image, window: Rect2) -> float:
+## (mean, max) perceptual luminance over a fraction of the frame. Both, because they answer different questions:
+## the MEAN is "is this part of the picture brighter", and the MAX is feel's actual observation about the first
+## strip -- "the brightest pixels in the image are the building edges".
+func _luma(image: Image, window: Rect2) -> Vector2:
 	var w := image.get_width()
 	var h := image.get_height()
 	var x0 := int(window.position.x * float(w))
@@ -211,17 +213,20 @@ func _mean_luma(image: Image, window: Rect2) -> float:
 	var x1 := mini(int((window.position.x + window.size.x) * float(w)), w)
 	var y1 := mini(int((window.position.y + window.size.y) * float(h)), h)
 	var total := 0.0
+	var highest := 0.0
 	var count := 0
 	var y := y0
 	while y < y1:
 		var x := x0
 		while x < x1:
 			var c := image.get_pixel(x, y)
-			total += 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
+			var luma := 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
+			total += luma
+			highest = maxf(highest, luma)
 			count += 1
 			x += LUMA_STRIDE
 		y += LUMA_STRIDE
-	return total / maxf(float(count), 1.0)
+	return Vector2(total / maxf(float(count), 1.0), highest)
 
 
 ## What every channel is at, at this moment — so a frame that looks wrong can be traced to a number instead of to a

@@ -58,7 +58,12 @@ const CORE_PARAMETERS := [&"level", &"window", &"shop"]
 @export var driving := true:
 	set(value):
 		driving = value
-		if not value:
+		if value:
+			# Snap back to the cue rather than ramping into it. `perf_scene` samples 0.4 s after a phase switch
+			# (SETTLE_SECONDS), and a cue's attack is seconds -- so without this the `all` phase after a `no_show`
+			# phase would be measuring the ramp rather than the state (feel, 2026-09-20).
+			settle_into(mood_state, now)
+		else:
 			for selector: Variant in _fixtures:
 				for target: Object in _fixtures[selector]:
 					if is_instance_valid(target):
@@ -292,6 +297,10 @@ func style_of(selector: StringName) -> StringName:
 	var available: Dictionary = STYLES.get(selector, {})
 	if available.is_empty():
 		return &""
+	# No patch loaded at all is NOT "the first style": it is the BEFORE arm, and a frame from it must be
+	# distinguishable from a frame of the default, or the control cannot be told apart from the thing it controls.
+	if bindings.is_empty():
+		return &""
 	var wanted := StringName(LaunchFlags.from_environment().text("show-style"))
 	if available.has(wanted):
 		return wanted
@@ -302,7 +311,11 @@ func _write_style(selector: StringName) -> void:
 	var available: Dictionary = STYLES.get(selector, {})
 	if available.is_empty():
 		return
-	var chosen: Dictionary = available[style_of(selector)]
+	var style := style_of(selector)
+	# "" is the BEFORE arm: no patch, so nothing styles anything and every uniform stays at its shader default.
+	if not available.has(style):
+		return
+	var chosen: Dictionary = available[style]
 	for driven: Object in _fixtures.get(selector, []):
 		for uniform: Variant in chosen:
 			if _takes(driven, uniform):
