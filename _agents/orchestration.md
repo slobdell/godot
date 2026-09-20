@@ -2964,3 +2964,13 @@ The kickoff prompt is one line; this section is the rest.
     neither suite, and a comment promising a flip that did nothing: **each produces a green or a null that looks
     like a measurement, the one kind of bug running more things cannot catch.** Tooling: outputs named by the arm,
     comparisons refusing identical inputs, each arm's commit and knob written into its file.
+195. **A knob's test asserts the predicate moved, not that the spec parsed.** Round 9's last hour: `TUNE=match.yaw_fit=0`
+    printed "applied" and the constraint stayed on (the wedged test byte-identical to its control under the tune),
+    because `Units._static_init()` wrote a static on another class and that class's own initialiser ran later and
+    put the default back. Every conclusion drawn from that knob in an afternoon was void: the A/B that "excluded
+    the constraint" (both arms had it on), the "second cause" it implied, and a corridor table under the world-only
+    arm. What survived was the one-line SOURCE bisect (flag off by default passes, flag on fails), because no tune
+    was in it. Rules: a knob lives where its consumer reads it, never as a foreign static written at class load; a
+    knob's own test flips it and asserts the mechanism's output changed; and a test that selects an arm asserts
+    the arm is live before the behaviour (nav's rule, now in verification.md). The person who shipped the knob had
+    just written the previous eight instances of this family into the brief.
