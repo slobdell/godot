@@ -109,7 +109,7 @@ perf-trailer-ab: import ## M1: what the War Rig's hinge costs a frame, measured 
 	@printf '>> perf-trailer-ab BEFORE: load %s | %s other godot\n' \
 		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"
 	@$(MAKE) --no-print-directory perf-scene PERF_NAME=perf-trailer PERF_LAYERS=no_trailer \
-		PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs"
+		PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs --tune=match.no_damage=1"
 	@printf '>> perf-trailer-ab AFTER:  load %s | %s other godot\n' \
 		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"
 	@$(PYTHON) -c "import json;\
@@ -131,6 +131,8 @@ print();\
 print('PERF_TRAILER_AB cycles kept: %s%s' % (', '.join('%+.2f' % c for c in costs), note));\
 print('PERF_TRAILER_AB mean %+.2f ms, spread %.2f ms, signs %s, census %s' % (mean, spread, 'AGREE' if same else 'DISAGREE', 'CONSTANT' if not moved else 'MOVED %d..%d' % (min(census), max(census))));\
 bad=[];\
+frozen=[p for p in ph if not p.get('no_damage')];\
+bad.append('the census freeze was OFF in %d of %d phases: this bench REFUSES to report without --tune=match.no_damage=1, because a caveat is the part that gets dropped when a number is quoted' % (len(frozen), len(ph))) if frozen else None;\
 off=[c for c in costs if (c>0) != (mean>0)];\
 bad.append('cycles disagreeing with the mean sign above the 0 bound in %d of %d samples (peak %+.2f ms)' % (len(off), len(costs), max(off, key=abs) if off else 0.0)) if not same else None;\
 dev=[abs(c-mean) for c in costs];\
