@@ -176,11 +176,26 @@ compare-arms: ## Two faction-matrix runs, subtracted per faction (TREATMENT=a.js
 		$(if $(COMPARE_FACTION),--faction $(COMPARE_FACTION)) \
 		$(if $(BUILD_ARM),--build-is-the-arm $(BUILD_ARM))
 
-faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE= TUNE=switch.cost=1) -> build/faction-matrix.json
+# THE OUTPUT NAME CARRIES THE ARM. `-tuned` was the suffix for ANY value of TUNE, so the obvious two-run
+# series -- control, then `TUNE=switch.cost=1` -- wrote both arms to one file: the second overwrote the
+# first, and `compare-arms` then compared a file with itself and reported a perfect null, every cell zero,
+# with nothing saying so (combat, 2026-09-20). **A null that looks like a measurement is the one kind of bug
+# that running more of them cannot catch**, because every extra run reproduces it.
+#
+# So the TUNE spec is in the filename, sanitised, and `OUT=<label>` overrides the whole basename when a
+# series wants its own names. `compare-arms` refuses byte-identical inputs as a second line of defence.
+_empty :=
+_space := $(_empty) $(_empty)
+_comma := ,
+_TUNE_SLUG := $(subst $(_space),,$(subst /,_,$(subst $(_comma),-,$(subst =,_,$(TUNE)))))
+FACTION_MATRIX_NAME := $(if $(OUT),$(OUT),faction-matrix$(if $(ARENA),-$(ARENA))$(if $(ABLATE),-plainroles)$(if $(TUNE),-tuned-$(_TUNE_SLUG)))
+
+faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE= TUNE=switch.cost=1 OUT=<label>) -> build/$(FACTION_MATRIX_NAME).json; the TUNE spec is IN the name, so two arms cannot overwrite each other
 	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),6) \
 		--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) $(if $(ARENA),--arena $(ARENA)) \
 		$(if $(ABLATE),--no-faction-directives) $(if $(TUNE),--tune $(TUNE)) \
-		--json $(BUILD_DIR)/faction-matrix$(if $(ARENA),-$(ARENA))$(if $(ABLATE),-plainroles)$(if $(TUNE),-tuned).json
+		--json $(BUILD_DIR)/$(FACTION_MATRIX_NAME).json
+	@echo ">> faction-matrix wrote $(BUILD_DIR)/$(FACTION_MATRIX_NAME).json -- the arm is in the name; a second arm with a different TUNE or OUT cannot overwrite it"
 
 faction-shots: import ## L3/X5: screenshots of a full-scale faction battle from above (GREEN_FACTION= RUST_FACTION= DELAY=45) -> build/screenshots/faction-*.png (needs a display)
 	mkdir -p $(BUILD_DIR)/screenshots

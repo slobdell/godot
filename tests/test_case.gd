@@ -28,16 +28,35 @@ func expect_warning(pattern: String) -> void:
 	expected_warnings.append(pattern)
 
 
+## The same for a `push_error`, which is what a LOUD REFUSAL path emits. Without this, a refusal that correctly
+## errors cannot be tested at all: the runner fails any test that logs an engine error, so the only testable
+## refusals would be the quiet ones — precisely backwards. Declared before the call that should raise it, and a
+## pattern that never arrives fails the test, so this cannot be used to silence an error that stopped happening.
+var expected_errors: PackedStringArray = []
+
+
+func expect_error(pattern: String) -> void:
+	expected_errors.append(pattern)
+
+
 ## Reconcile one test's collected engine messages against the warnings it declared.
 ##
-## Returns {"errors": int, "warnings": int, "failures": PackedStringArray}. Static, and separate from the
-## runner, so every branch can be driven from a test with synthetic input -- including the one branch a real
-## test cannot stage, an expectation that never arrives.
-static func reconcile_engine_messages(entries: Array, expected: PackedStringArray) -> Dictionary:
+## Returns {"errors": int, "warnings": int, "failures": PackedStringArray, "texts": PackedStringArray}.
+## `texts` is what this test was CHARGED with, so the runner can tell one cause from many victims: a leaked
+## object outlives the test that made it, so its warning lands on whoever runs next, and one arena holder in
+## combat's sim_cost test failed 22 tests in one shard (2026-09-20). Twenty-two red tests sharing a message
+## are one defect, and a reader should not have to work that out.
+##
+## Static, and separate from the runner, so every branch can be driven from a test with synthetic input --
+## including the one branch a real test cannot stage, an expectation that never arrives.
+static func reconcile_engine_messages(entries: Array, expected: PackedStringArray,
+		expected_err: PackedStringArray = PackedStringArray()) -> Dictionary:
 	var errors := 0
 	var warnings := 0
 	var failures: PackedStringArray = []
+	var charged: PackedStringArray = []
 	var outstanding := expected.duplicate()
+	var outstanding_err := expected_err.duplicate()
 	for entry: Dictionary in entries:
 		var text: String = entry.get("text", "")
 		if bool(entry.get("warning", false)):
@@ -46,15 +65,23 @@ static func reconcile_engine_messages(entries: Array, expected: PackedStringArra
 				outstanding.remove_at(index)
 				continue
 			warnings += 1
+			charged.append(text)
 			failures.append("engine warning: " + text)
 		else:
+			var index_err := _first_match(outstanding_err, text)
+			if index_err >= 0:
+				outstanding_err.remove_at(index_err)
+				continue
 			errors += 1
+			charged.append(text)
 			failures.append("engine error: " + text)
 	for pattern: String in outstanding:
 		failures.append('expect_warning("%s") was declared and no matching warning arrived' % pattern)
+	for pattern: String in outstanding_err:
+		failures.append('expect_error("%s") was declared and no matching error arrived' % pattern)
 	if errors + warnings > 0:
 		failures.insert(0, "%d engine errors, %d engine warnings" % [errors, warnings])
-	return {"errors": errors, "warnings": warnings, "failures": failures}
+	return {"errors": errors, "warnings": warnings, "failures": failures, "texts": charged}
 
 
 ## The first outstanding pattern that matches, or -1. An EMPTY pattern matches nothing: `contains("")` is

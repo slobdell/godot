@@ -163,5 +163,71 @@ class ExitStatus(unittest.TestCase):
                 sys.argv = argv
 
 
+
+class SameRunTwice(unittest.TestCase):
+    """The failure that produces a PERFECT NULL and looks like a measurement.
+
+    `faction-matrix` named its output `-tuned.json` for any value of TUNE, so a control run and a treatment
+    run wrote the same file: the second overwrote the first, and comparing them gave every cell zero with
+    nothing in the report saying the two inputs were one file. **Running the series again reproduces it** —
+    which is what makes this class of bug different from a flake.
+    """
+
+    def test_byte_identical_inputs_are_refused(self):
+        a = arm(tune="switch.cost=1")
+        out = compare_arms.refusals(a, copy.deepcopy(a), ("t.json", "c.json"),
+                                    digests=("abc123" * 10, "abc123" * 10))
+        self.assertTrue(any("THE SAME RUN TWICE" in line for line in out), out)
+
+    def test_it_says_the_difference_is_zero_by_construction(self):
+        a = arm(tune="switch.cost=1")
+        out = compare_arms.refusals(a, copy.deepcopy(a), ("t.json", "c.json"),
+                                    digests=("f" * 64, "f" * 64))
+        self.assertTrue(any("zero by construction, not by measurement" in line for line in out), out)
+
+    def test_different_digests_are_not_refused_for_that_reason(self):
+        out = compare_arms.refusals(arm(tune="switch.cost=1"), arm(tune=""), ("t.json", "c.json"),
+                                    digests=("a" * 64, "b" * 64))
+        self.assertFalse(any("THE SAME RUN TWICE" in line for line in out), out)
+
+    def test_no_digests_given_means_no_claim_either_way(self):
+        """Absence of the check must not read as having passed it."""
+        out = compare_arms.refusals(arm(tune="switch.cost=1"), arm(tune=""), ("t.json", "c.json"))
+        self.assertFalse(any("THE SAME RUN TWICE" in line for line in out), out)
+
+    def test_sha256_of_a_real_file_is_read(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            one = os.path.join(tmp, "a.json")
+            with open(one, "w") as handle:
+                handle.write("{}")
+            self.assertEqual(len(compare_arms.sha256(one)), 64)
+
+
+class TuneIsAnArm(unittest.TestCase):
+    """One checkout run twice with a different `--tune` IS two arms, and was being refused as one."""
+
+    def test_two_tunes_are_two_arms(self):
+        out = compare_arms.refusals(arm(tune="switch.cost=1"), arm(tune=""), ("t.json", "c.json"))
+        self.assertFalse(any("IDENTICAL ARMS" in line for line in out), out)
+
+    def test_the_same_tune_on_both_sides_is_one_arm(self):
+        out = compare_arms.refusals(arm(tune="switch.cost=1"), arm(tune="switch.cost=1"),
+                                    ("t.json", "c.json"))
+        self.assertTrue(any("IDENTICAL ARMS" in line for line in out), out)
+
+
+class Provenance(unittest.TestCase):
+    def test_it_names_the_commit_the_machine_and_the_tune(self):
+        line = compare_arms.provenance(arm(tune="switch.cost=1"))
+        self.assertIn("switch.cost=1", line)
+        self.assertIn(BASE["run"]["commit"], line)
+        self.assertIn(BASE["run"]["machine"], line)
+
+    def test_no_tune_says_none_rather_than_printing_nothing(self):
+        self.assertIn("tune (none)", compare_arms.provenance(arm(tune="")))
+
+    def test_a_dirty_tree_is_called_out(self):
+        self.assertIn("DIRTY", compare_arms.provenance(arm(dirty=True)))
+
 if __name__ == "__main__":
     unittest.main()

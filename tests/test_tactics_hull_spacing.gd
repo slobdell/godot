@@ -175,3 +175,26 @@ func test_the_slot_leash_is_one_formation_spacing_whatever_the_hulls_are() -> vo
 			"a squad spaced by its hulls is leashed to that spacing, not to less")
 	assert_true(TankBrain.slot_leash({"pitch": big}) >= TankBrain.SLOT_LEASH,
 			"the leash never gets tighter than it was")
+
+
+func test_an_unknown_unit_is_laid_out_as_the_catalogue_default_and_says_so() -> void:
+	# `ArmyLayout._hull` had two SILENT pre-CP2 fallbacks. The reachable one returned `Vector2(2.6, 4.0)` for an id with
+	# no profile; the other passed `[2.6, 1.8, 4.0]` to `Units.stat`, which was stale and DEAD because `stat` ends in
+	# `PROFILES[unit_id].get(key, fallback)` and indexing an unknown id raises before the fallback is consulted (nav).
+	#
+	# The magnitude is why this is not tidying: `tank`'s live hull is `[2.40, 2.40, 8.62]`, so the literal understated
+	# the default LENGTH by 4.6 m -- less than half. A deploy layout built on it pitches slots for a 4 m vehicle and
+	# stands 8.6 m vehicles in them, nose into tail, which is exactly what X1 exists to prevent.
+	#
+	# `expect_warning` is the non-vacuity guard for free: declaring it and getting none fails this test too, so the
+	# branch cannot go quiet without saying so.
+	expect_warning("no unit profile for 'no_such_unit_id'")
+	var laid := ArmyLayout._hull("no_such_unit_id")
+	var live: Array = Units.stat(Units.DEFAULT, "hull_size")
+	var want := Vector2(minf(float(live[0]), float(live[2])), maxf(float(live[0]), float(live[2])))
+	assert_true(laid.is_equal_approx(want),
+			"an unreadable unit is laid out as the catalogue's live '%s' (%s), not a literal (%s)" \
+			% [Units.DEFAULT, want, laid])
+	assert_true(not laid.is_equal_approx(Vector2(2.6, 4.0)),
+			"and specifically not the pre-CP2 2.6 x 4.0, which is 4.6 m short of the default's length")
+

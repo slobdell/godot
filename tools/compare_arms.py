@@ -25,6 +25,7 @@ Usage: compare_arms.py --treatment build/faction-matrix-boulevard.json \\
                        --control   build/faction-matrix-boulevard-plainroles.json [--faction gangs]
 """
 import argparse
+import hashlib
 import json
 import sys
 
@@ -33,7 +34,10 @@ import sys
 # SUPPOSED to differ between two arms, and requiring it to match would refuse every correct comparison.
 WORKLOAD = ("arena", "budget", "seeds", "time_limit", "factions")
 # The keys that describe the ARM. At least one must differ, or there is only one arm.
-CONTROLS = ("no_faction_directives",)
+# `tune` belongs here: combat's series runs one checkout twice with `--tune switch.cost=1` on one arm, which
+# is a difference in the ARM even though the trees are identical. Without it, the only legitimate way to run
+# that comparison was refused as "identical arms" (2026-09-20).
+CONTROLS = ("no_faction_directives", "tune")
 
 
 def load(path):
@@ -43,6 +47,24 @@ def load(path):
         if key not in data:
             raise SystemExit(f"REFUSED: {path} has no '{key}' -- not a faction-matrix result")
     return data
+
+
+def sha256(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def provenance(data):
+    """One line naming the tree and the knobs the arm was run with."""
+    run = data.get("run", {})
+    args = data.get("args", {})
+    dirty = " DIRTY" if run.get("dirty") else ""
+    tune = args.get("tune") or "(none)"
+    return (f"commit {run.get('commit', '?')}{dirty} on {run.get('machine', '?')}, "
+            f"tune {tune}, no_faction_directives {bool(args.get('no_faction_directives'))}")
 
 
 def win_rates(data):
@@ -56,7 +78,8 @@ def win_rates(data):
     return totals
 
 
-def refusals(treatment, control, paths, build_is_the_arm=""):
+def refusals(treatment, control, paths, build_is_the_arm="", digests=()):
+    """`digests`: the two inputs' sha256, when the caller read them from files."""
     """`build_is_the_arm`: a description of what the two BUILDS differ by, when the treatment is a code or data
     change rather than a runner flag. Sizing a vehicle is one -- you cannot put a hull_size behind a flag -- and
     without this the tool refuses the one comparison it was built to make. It is not an escape hatch: declaring it
@@ -86,6 +109,17 @@ def refusals(treatment, control, paths, build_is_the_arm=""):
         first, second = treatment["args"].get(field), control["args"].get(field)
         if first != second:
             out.append(f"args.{field} differs: {first!r} vs {second!r} -- the two runs were asked different questions")
+    # BYTE-IDENTICAL INPUTS ARE THE SAME RUN, whatever the arguments claim. `faction-matrix` named its output
+    # `-tuned.json` for ANY value of TUNE, so the obvious two-run series overwrote the control with the
+    # treatment and this compared a file with itself: every cell zero, a perfect null, and nothing in the
+    # report saying so. **A null that looks like a measurement is the one kind of bug that running more of
+    # them cannot catch** -- every extra run reproduces it. This is checked before anything else because no
+    # later agreement between the two files means anything once they are the same file.
+    if len(digests) == 2 and digests[0] == digests[1]:
+        out.append(f"THE SAME RUN TWICE: both inputs have sha256 {digests[0][:16]}... -- they are byte for "
+                   f"byte the same file, so every difference below is zero by construction, not by "
+                   f"measurement. Give the two arms different output names "
+                   f"(faction-matrix OUT=<label>, or a TUNE that is carried into the filename).")
     if not build_is_the_arm and all(treatment["args"].get(field) == control["args"].get(field) for field in CONTROLS):
         arm = {field: treatment["args"].get(field) for field in CONTROLS}
         out.append(f"IDENTICAL ARMS {arm} -- this is one arm run twice, and its difference will be a clean null")
@@ -121,7 +155,8 @@ def main():
     args = parser.parse_args()
 
     treatment, control = load(args.treatment), load(args.control)
-    problems = refusals(treatment, control, (args.treatment, args.control), args.build_is_the_arm)
+    digests = (sha256(args.treatment), sha256(args.control))
+    problems = refusals(treatment, control, (args.treatment, args.control), args.build_is_the_arm, digests)
     if problems:
         print("REFUSED: these two runs cannot be subtracted from each other:")
         for line in problems:
@@ -131,7 +166,12 @@ def main():
     where = treatment["args"].get("arena") or "foundry (default)"
     print(f"run: {treatment.get('run', {}).get('commit', '?')} on {treatment.get('run', {}).get('machine', '?')}, "
           f"map {where}")
-    print(f"treatment: {args.treatment}\ncontrol:   {args.control}")
+    # Each arm's tree and knobs, beside its file. The two arms of a series are supposed to differ, and
+    # printing what they differ BY is the difference between a comparison and two numbers side by side --
+    # `faction-matrix` wrote both arms to one filename, and the report of a file compared with itself read
+    # exactly like a report of a change that did nothing.
+    print(f"treatment: {args.treatment}\n           {provenance(treatment)}  sha256 {digests[0][:16]}")
+    print(f"control:   {args.control}\n           {provenance(control)}  sha256 {digests[1][:16]}")
     if args.build_is_the_arm:
         print("the arm IS THE BUILD: %s  (%s -> %s)" % (args.build_is_the_arm,
               control.get("run", {}).get("commit"), treatment.get("run", {}).get("commit")))

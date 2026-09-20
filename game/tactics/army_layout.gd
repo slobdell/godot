@@ -338,9 +338,29 @@ static func _is_clear(spot: Vector3, hull: Vector2, forward: Vector3, taken: Arr
 
 ## (width, length) of a unit's hull box.
 static func _hull(unit_id: String) -> Vector2:
-	if not Units.exists(unit_id):
-		return Vector2(2.6, 4.0)
-	var hull: Array = Units.stat(unit_id, "hull_size", [2.6, 1.8, 4.0])
+	# TWO SILENT FALLBACKS, both now loud and both reading the live catalogue. They were `Vector2(2.6, 4.0)` for an
+	# unknown id and `[2.6, 1.8, 4.0]` for a known id with no `hull_size`, and those are PRE-CP2 numbers: `tank`'s live
+	# hull is `[2.40, 2.40, 8.62]`, so the old fallback understated the default LENGTH by 4.6 m -- less than half. In a
+	# deploy layout that is slots pitched for a 4 m vehicle holding 8.6 m vehicles, nose into tail, which is exactly the
+	# failure X1 was built to prevent, reproduced silently for any unit the layout cannot read.
+	#
+	# `push_warning` rather than `push_error` DELIBERATELY: `TestCase.reconcile_engine_messages` counts an error as a
+	# failure and only reconciles WARNINGS through `expect_warning`, so an error here would make this branch impossible
+	# to exercise in a test -- and an unexercised branch is the defect this round kept finding. Loud AND testable beats
+	# loud. Same shape as feel's city-block rejection at its read site.
+	var id := unit_id
+	if not Units.exists(id):
+		push_warning("ArmyLayout: no unit profile for '%s'; laying it out as '%s'" % [id, Units.DEFAULT])
+		id = Units.DEFAULT
+	var hull: Array = Units.stat(id, "hull_size", [])
+	if hull.size() < 3:
+		push_warning("ArmyLayout: unit '%s' has no hull_size; laying it out as '%s'" % [id, Units.DEFAULT])
+		hull = Units.stat(Units.DEFAULT, "hull_size", [])
+	if hull.size() < 3:
+		# The catalogue's own default has no hull either: there is nothing left to read, and a guessed number here is
+		# how the 2.6 x 4.0 got in. MIN_SPACING_M keeps the layout legal without pretending to know a hull.
+		push_warning("ArmyLayout: '%s' has no hull_size either; using MIN_SPACING_M" % Units.DEFAULT)
+		return Vector2(MIN_SPACING_M, MIN_SPACING_M)
 	return Vector2(minf(float(hull[0]), float(hull[2])), maxf(float(hull[0]), float(hull[2])))
 
 

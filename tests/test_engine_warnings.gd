@@ -107,6 +107,30 @@ func test_expect_warning_records_the_pattern() -> void:
 	assert_eq(case.expected_warnings.size(), 1, "recorded")
 
 
+func test_the_messages_a_test_is_charged_with_are_reported_back() -> void:
+	## The runner groups these to name ONE cause behind many failing tests. A declared warning is not
+	## charged, so a test that owns its warning never appears in that group.
+	var result := TestCase.reconcile_engine_messages(
+			[_entry("leak (a.gd:1 in f)", true), _entry("boom (a.gd:2 in f)", false)], PackedStringArray())
+	var texts: PackedStringArray = result["texts"]
+	assert_eq(texts.size(), 2, "both the warning and the error are charged")
+	assert_true(texts[0].contains("leak"), "the warning is there")
+	assert_true(texts[1].contains("boom"), "the error is there")
+
+
+func test_a_declared_warning_is_not_charged_to_the_test_that_declared_it() -> void:
+	var result := TestCase.reconcile_engine_messages([_entry("expected (a.gd:1 in f)", true)],
+			PackedStringArray(["expected"]))
+	var texts: PackedStringArray = result["texts"]
+	assert_eq(texts.size(), 0, "a test that owns its warning is not a victim of it")
+
+
+func test_a_clean_test_is_charged_with_nothing() -> void:
+	var result := TestCase.reconcile_engine_messages([], PackedStringArray())
+	var texts: PackedStringArray = result["texts"]
+	assert_eq(texts.size(), 0, "nothing charged")
+
+
 func test_a_real_warning_declared_by_a_real_test_passes_end_to_end() -> void:
 	## Everything above drives the reconciler directly. This one goes through the engine: the warning below
 	## is raised for real, collected by the runner's Logger, and consumed by the declaration. If any link in
