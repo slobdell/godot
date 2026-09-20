@@ -1396,7 +1396,14 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	if a1_on():
 		# Inside the tube = still on the route it was planned on. `off_path` below is that test, and it is an event,
 		# so the tube's only job here is to stop the CLOCK forcing a re-plan that cannot change the answer.
-		drifted = _path.size() < 2
+		#
+		# **`cadence_due and …`, NOT `…` alone. The tube may only ever hold a plan LONGER than the cadence would,
+		# never shorter** — it is allowed to skip a re-plan and never to add one. The first version read
+		# `drifted = _path.size() < 2` on its own, so a hull with no route yet re-planned on ticks where the cadence
+		# was not due and the blend would not have: **A1 could re-plan MORE than the thing it replaces.** That is the
+		# regression a flag hides, and it is exactly the guarantee squad wrote into the brain half's tests before
+		# nav thought to write it into this one. Monotone by construction now, and asserted.
+		drifted = cadence_due and _path.size() < 2
 		if cadence_due and not drifted:
 			a1_tube_skips += 1
 	# Split by CAUSE, because "an event re-planned it" is not actionable and the four causes have four different
