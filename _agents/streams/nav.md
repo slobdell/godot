@@ -238,10 +238,11 @@ once. That is the report, not an apology** — every row carries the measurement
 the five are negative results that cost a night each instead of a round each.
 
 **Nothing changes when you play.** `make skirmish` is byte-for-byte what it was. Every row below is behind a switch
-that is **off**, and **nav's rows do not move the simulation baseline**: it read `04414f5d6a6dfa7c` on every nav
-check tonight, unchanged across nav's `main` merge. *(`main`'s own baseline has since moved to
-`d4c049819a5833d3` with squad's merge — that is squad's change, not nav's, and nav's next check compares against
-the new value.)*
+that is **off**, and **nav's rows do not move the simulation baseline — confirmed against the value that is live
+now.** It read `04414f5d6a6dfa7c` on every nav check through `53861455`, and then **`d4c049819a5833d3`, `main`'s
+current value after squad's merge, unchanged on the merged tip `d6a1f454`** that went green and was merged. So the
+claim is not "unchanged against the baseline these rows were built on" — it is unchanged against the one in `main`
+today.
 
 | Row | What it was meant to do | What it actually does | Default |
 |---|---|---|---|
