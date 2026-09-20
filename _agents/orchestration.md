@@ -2880,6 +2880,11 @@ The kickoff prompt is one line; this section is the rest.
     wants a known state merges the tag, one that wants the newest merges HEAD and accepts the risk. And beside
     lesson 157: the repaired lint's first real catch on the gate was a parse error in a file nobody on the
     reporting stream had touched, which is exactly what a gate is for.
+    The tag is ANNOTATED with the runner's line and the reds (`git tag -af main-checked <sha> -m "<line>"`): a
+    lightweight tag has no message, and a tool that reads one gets the commit's subject back and prints it where a
+    verdict belongs. **The dangerous absence is not the blank one, it is the one that has something plausible to
+    say** (metrics, five instances in one day: lint over zero files, check-hashes on absent data, a blank quiet
+    window reading HELD, `0 passed, 0 failed` exiting 0, a commit subject standing in for a check verdict).
 191. **A test that asserts something about its environment it never checked is green where it is easy and red on
     the machine it exists to protect.** Round 9's shell suites, three times in one afternoon: they assumed no slot
     variable was set (inside `check` one always is), assumed an idle box (fixed sleeps against a builder running four
