@@ -29,6 +29,9 @@ show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49
 		grep -q SHOW_LOOK_DONE $(BUILD_DIR)/show/$$arena.log || { echo "show-frames: $$arena never finished"; exit 1; }; \
 		echo "show-frames $$arena: shader errors $$(grep -ci 'shader.*error\|error.*shader' $(BUILD_DIR)/show/$$arena.log || true)"; \
 	done
+	@# THE BRIGHTNESS HIERARCHY IS A GATE, not a note (feel, 2026-09-20; art_direction.md :72). If the block band
+	@# out-reads the fight ring in any frame, the venue is competing with the game and the strip does not ship.
+	@python3 tools/show_luma_gate.py $(BUILD_DIR)/show
 	@echo "show-frames: $$(ls $(BUILD_DIR)/show/*.png 2>/dev/null | wc -l) frames in $(BUILD_DIR)/show"
 
 # The paired control (orchestration.md lesson 22: a control that cancels the cause, not more seeds). Both runs are

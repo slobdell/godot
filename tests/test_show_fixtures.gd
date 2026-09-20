@@ -220,6 +220,77 @@ func test_a_blocks_seed_reaches_the_shader_as_its_phase() -> void:
 
 ## Every shader that takes a show channel, found by the include rather than listed: a fixture added next round is
 ## covered by this test the day it lands (lesson 3 -- derive the list, never hard-code one).
+func test_the_blocks_edge_run_is_the_parapet_and_the_outline_is_only_a_variant() -> void:
+	# feel's review of the first strip (2026-09-20): `show_edge` is added on the bevel/chamfer branch, and that
+	# branch IS the silhouette -- so with the chamfers lit the term can only ever draw an outline, which is
+	# art_direction.md :56's named anti-pattern ("Neon as outlines on everything"). Dropping its energy makes the
+	# anti-pattern quieter, not a different thing. The default is the roof parapet: a horizontal line along a
+	# roofline reads as a building; a line tracing every corner reads as a wireframe.
+	var source := FileAccess.get_file_as_string(BLOCK_SHADER)
+	assert_true(source.contains("uniform float show_chamfer_gain = 0.0;"),
+			"the vertical chamfers are dark by default")
+	assert_true(source.contains("max(edge_mask, 0.6 * show_chamfer_gain)"),
+			"and the only thing that lights them is the style")
+	for name: Variant in _arena_shows():
+		var data: Dictionary = _arena_shows()[name]
+		if not data.has("show"):
+			continue
+		for entry: Dictionary in data["show"]["patch"]:
+			if entry.get("parameter", "") != "edge":
+				continue
+			assert_eq(str(entry.get("style", "")), "parapet",
+					"arena %s ships the parapet, not the outline" % name)
+	assert_true(Show.STYLES[&"city_block"].has(&"outline"),
+			"the outline is still reachable, so the lead can compare against his own words")
+
+
+func test_the_edge_palette_is_the_venues_and_spends_no_signal_colour() -> void:
+	# art_direction.md :31/:56 -- "harsh magenta and cyan neon ... red warning lights, amber beacons". Two colours
+	# are deliberately absent: cool white is not in the palette at all (it reads as architectural LED and makes the
+	# city look new rather than salvaged), and RED is a signal in this game rather than trim -- warning lights and
+	# beacons are red, so spending it on building edges spends a colour that means "something is wrong".
+	var source := FileAccess.get_file_as_string(BLOCK_SHADER)
+	var colours := []
+	for line in source.split("\n"):
+		var text := line.strip_edges()
+		if text.begins_with("uniform vec3 show_edge_") and text.contains("source_color"):
+			colours.append(_vec3_default(text))
+	assert_eq(colours.size(), 3, "three venue colours, picked per block by the seed the mesh already carries")
+	for colour: Vector3 in colours:
+		var lowest: float = minf(colour.x, minf(colour.y, colour.z))
+		var highest: float = maxf(colour.x, maxf(colour.y, colour.z))
+		assert_true(highest - lowest > 0.35, "%s is not cool white: it is a colour, not a lamp" % colour)
+		assert_true(not (colour.x > 0.8 and colour.y < 0.25 and colour.z < 0.25),
+				"%s is red, which this game spends on warnings and beacons" % colour)
+
+
+func test_the_parapet_is_dimmer_than_the_windows_which_are_dimmer_than_the_fight() -> void:
+	# The hierarchy is play, not taste: art_direction.md :72, the arena must be "lit well enough to read the
+	# fight". The first strip inverted it -- the brightest pixels were the building edges and the darkest were the
+	# arena floor and the vehicles. The last leg (windows under the fight) is measured from real frames by
+	# tools/show_luma_gate.py, which fails `make show-frames`; this is the leg a patch can get wrong on its own.
+	for name: Variant in _arena_shows():
+		var data: Dictionary = _arena_shows()[name]
+		if not data.has("show"):
+			continue
+		var channels: Dictionary = data["show"]["channels"]
+		if not (channels.has("edges") and channels.has("windows")):
+			continue
+		assert_true(float(channels["edges"]["ceiling"]) < float(channels["windows"]["floor"]),
+				"arena %s: the parapet's brightest (%.2f) is under the window grid's dimmest (%.2f)"
+				% [name, float(channels["edges"]["ceiling"]), float(channels["windows"]["floor"])])
+
+
+func _vec3_default(line: String) -> Vector3:
+	var at := line.find("vec3(", line.find("="))
+	if at < 0:
+		return Vector3.ZERO
+	var parts := line.substr(at + 5, line.find(")", at) - at - 5).split(",")
+	if parts.size() != 3:
+		return Vector3.ZERO
+	return Vector3(float(parts[0]), float(parts[1]), float(parts[2]))
+
+
 func _fixture_shaders() -> PackedStringArray:
 	var out := PackedStringArray()
 	var stack := PackedStringArray(["res://game"])

@@ -1157,7 +1157,7 @@
     "period": 19.7,
     "phase": 3.88,
     "floor": 0.1,
-    "ceiling": 1.0
+    "ceiling": 0.55
    },
    "windows": {
     "programme": "breathe",
@@ -1206,7 +1206,8 @@
     "fixture": "city_block",
     "parameter": "edge",
     "channel": "edges",
-    "spread": 1.0
+    "spread": 1.0,
+    "style": "parapet"
    },
    {
     "fixture": "city_block",

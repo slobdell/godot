@@ -31,6 +31,13 @@ const COLOR_MIX_UNIFORM := &"show_color_mix"
 ## How far instances of one fixture are pushed out of phase with each other. Constant per arena, so it is written
 ## ONCE when a fixture registers and never per frame.
 const SPREAD_UNIFORM := &"show_spread"
+## A fixture's STYLE: a named, whole-fixture shape the patch chooses between, written once at registration like
+## spread. Today one fixture has one: the city blocks' edge run is the roof `parapet` (the default, a horizontal
+## line that reads as a building) or the full `outline` (every vertical chamfer too, which reads as a wireframe --
+## art_direction.md :56's named anti-pattern, kept so the lead can compare against his own words).
+const STYLES := {
+	&"city_block": {&"parapet": {&"show_chamfer_gain": 0.0}, &"outline": {&"show_chamfer_gain": 1.0}},
+}
 ## A K5 event rippling outward from where it happened: (world x, world z, the wavefront's radius in metres, gain).
 ## Gain 0 is "no event", which is what every fixture holds until a kill. The crowd's `event_position` pattern.
 const EVENT_UNIFORM := &"show_event"
@@ -48,6 +55,9 @@ var channels := {}
 var bindings: Array = []
 ## fixture selector -> how far its instances are spread out of phase (0 = all in phase).
 var spreads := {}
+## fixture selector -> the style the patch chose. `--show-style=<name>` overrides every fixture that has one, so
+## `make show-frames` can shoot both variants from one arena file instead of two patches that can drift apart.
+var styles := {}
 ## driven object -> the `show_*` uniforms its shader actually declares, or null when the shader is unknown (a bare
 ## ShaderMaterial in a test). Writing a parameter a shader does not have is harmless but pointless, and during a
 ## kill ripple it would be one wasted write per fixture per frame on every shader but the blocks'.
@@ -229,6 +239,13 @@ func load_patch(data: Variant, arena := "") -> String:
 		if CORE_PARAMETERS.has(parameter) and channel.programme != &"hold" and channel.level_floor <= 0.0:
 			return "%s.patch: '%s' drives a surface that is lit today from channel '%s', whose floor is %.2f — a core fixture never goes fully dark, it reads as broken rather than idle" \
 					% [where, pair, channel_name, channel.level_floor]
+		if patch_entry.has("style"):
+			var style := StringName(str(patch_entry["style"]))
+			var available: Dictionary = STYLES.get(fixture, {})
+			if not available.has(style):
+				return "%s.patch: fixture '%s' has no style '%s' (have %s)" % [where, fixture, style,
+						", ".join(PackedStringArray(available.keys())) if not available.is_empty() else "none"]
+			styles[fixture] = style
 		if patch_entry.has("spread"):
 			var spread := float(patch_entry["spread"])
 			if spread < 0.0:
@@ -240,7 +257,30 @@ func load_patch(data: Variant, arena := "") -> String:
 		bindings.append({"fixture": fixture, "parameter": parameter, "channel": channel_name})
 	for fixture: Variant in _fixtures:
 		_write_spread(fixture)
+		_write_style(fixture)
 	return ""
+
+
+## The style in force for `selector`: the patch's, unless `--show-style=` overrides it.
+func style_of(selector: StringName) -> StringName:
+	var available: Dictionary = STYLES.get(selector, {})
+	if available.is_empty():
+		return &""
+	var wanted := StringName(LaunchFlags.from_environment().text("show-style"))
+	if available.has(wanted):
+		return wanted
+	return StringName(str(styles.get(selector, available.keys()[0])))
+
+
+func _write_style(selector: StringName) -> void:
+	var available: Dictionary = STYLES.get(selector, {})
+	if available.is_empty():
+		return
+	var chosen: Dictionary = available[style_of(selector)]
+	for driven: Object in _fixtures.get(selector, []):
+		for uniform: Variant in chosen:
+			if _takes(driven, uniform):
+				driven.set_shader_parameter(uniform, chosen[uniform])
 
 
 ## A fixture offers the show one object to drive — a ShaderMaterial, or anything with `set_shader_parameter`. Call it
@@ -257,6 +297,7 @@ func add_fixture(selector: StringName, driven: Object) -> void:
 	_fixtures[selector] = list
 	_accepts[driven] = _uniforms_of(driven)
 	_write_spread(selector)
+	_write_style(selector)
 	_apply_defaults(selector, driven)
 
 
@@ -510,6 +551,7 @@ func report() -> Dictionary:
 			"uniform": str(UNIFORMS[binding["parameter"]]),
 			"channel": str(binding["channel"]),
 			"spread": float(spreads.get(binding["fixture"], 0.0)),
+			"style": str(style_of(binding["fixture"])),
 			"registered_objects": _fixtures.get(binding["fixture"], []).size(),
 		})
 	return {
