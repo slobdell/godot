@@ -243,6 +243,62 @@ orchestrator confirms it green; (3) the pre-registered arrival-arc A/B (below, u
 arms, four maps, seed 3, 120 s, `off_mesh_fit.none` headroom checked on all four **first**, reporting
 `a4_rescued_blocked` against `off_mesh_fit.none` and **never** the aggregate.
 
+**✅ GREEN: `5c8f08b3` — `make check exited 0`, 1290 passed 0 failed, `sim-baseline passed: 04414f5d6a6dfa7c`
+(builder0). `lint local: 531 files, 8 known baselined lines`. Merged to `main`.** A second check covers the tip.
+
+**Nothing nav built this round is on the default path, and that is the report, not an apology.** **All four**
+catalogue rows were built, verified against the plant, measured against pre-registered falsifiers, and left behind
+their switches with what they cost written down. **Three of the four FAIL a bar and say so; one passes.** `main`
+takes **no behaviour change**: the sim baseline did not move *on builder0*, and the default path reproduces the
+pristine scenario numbers exactly. That is round 8's shape on purpose — *three things were built, measured and
+thrown away, and all three were cheap because they were measured before shipping.*
+
+| Item | State |
+|---|---|
+| **N0** ground rules, gate counter, facings in the probe | **done and shipped** — the only behaviour-affecting work that is on by default, and it is instrumentation |
+| **N1a** A7's priority table | **done**, reviewed by combat and feel, both reviews folded in, contract **S5** adopted from it |
+| **N1b** A7 in code | **built, measured, opt-in.** squad's leash was measured and **did not fix the drift** — the region engages (1477 rejections, radius 14.0 m) and `CombatMotion` decides under a tenth of a hull's ticks. See *THE LEASH IS NOT IN THE ROUTE PATH* |
+| **N2** A11 dynamic window | **built, measured, opt-in.** One open behaviour question (the duel's 6.3 s) |
+| **N3** A1 event-triggered replanning | **built, measured, opt-in — and a NEGATIVE result that relocates P1.** The cadence is ~3 % of re-plans in a fight; A1 fails its own falsifier there and passes only in isolation |
+| **N4** A4 clothoids | **built, measured, opt-in.** Passes its positive control **on yard** — 403 of 403 blocked-corridor gates reached — **but yard is the only map of four with any blocked gates at all**, so the A/B is refused on three of them and A4's case is a property of cluttered maps, not of the game. See *A4'S HEADROOM EXISTS ON ONE MAP IN FOUR* |
+| **N5** A6 | **blocked on S4**: nav has signed, feel authored, control signs with two requirements; its shopping list is collected below |
+| stretch: `NavigationAgent3D` vs our ORCA | **done** — compared, not swapped, with the verdict and what would change it |
+| stretch: the `face` order's missing recovery | **built, measured, opt-in — a NEGATIVE result that relocates the defect to combat.** It is **inert**: a hull's rotation is never collision-resolved, so a hull under a `face` never stalls and the detector correctly never fires. combat has confirmed it and sequenced the plant fix. See *THE FACE RECOVERY IS INERT* |
+| **the defile** (squad's artillery) | **measured; all three pre-registered hypotheses DEAD and the cause unknown.** The corridor fix was built on the orchestrator's instruction, failed its falsifier, and was reverted as a null. `wedged` now names the regime |
+| **X6** forced gains (squad's ask, the lead's) | **done** — `ControlGains.forced` / `--gains=<faction>`, so an identical army can be driven two ways |
+
+**Correction to an earlier claim in this Status: nav said N3 was blocked on a stable decision layer. That was
+wrong.** A1's target is `Movement._next_waypoint`'s route cadence, which is independent of `CombatMotion` entirely;
+only the *second* half of A1 — the brain's `MOTION_REPLAN_TICKS` — sits on top of A7/A11, and that half is squad's
+file and a request rather than a change. With both new rows opt-in the default decision layer is the unchanged
+round 3–8 blend. A1 was built the same night the mistake was spotted.
+
+**All four rows are now built, measured and opt-in, and not one of them is on the default path.** That is the
+report: `main` takes no behaviour change from this branch, the sim baseline does not move, and every row carries the
+number that decided its default.
+
+**The single most useful measurement of the round**, because it turns a zero into a mechanism: the arrival arc fired
+**5168 times** in a 45 s fight **on yard** where round 8 measured **`gates aimed 0` in both arms of an A/B** and could not tell a
+broken instrument from an inert mechanism. **On yard, 70% of its refusals are `off_mesh`** — the gate lands inside geometry —
+which makes A4 (N4) a measured row rather than an inherited one, and disproves squad's round-8 prediction that
+element spacing would refuse most slot gates (`on_approach` is 49 of 6364, under 1%).
+
+**⚠ SCOPE, from a four-map control arm at 120 s: every A4 number on this page is a YARD number.** yard is the only
+map measured that produces a gate no straight line can reach (430 of 1641 off-mesh gates); boulevard, pit and
+boneyard produce **408–533 off-mesh gates each and zero blocked ones**. The "43% of off-mesh gates" figure is
+corrected twice over — yard-only **and** a 45 s figure (26% on yard at 120 s, 14% across four maps).
+
+**What to playtest** (the lead, when any of this is on — none of it is yet): `make skirmish` is unchanged by this
+branch. To see A7: `make nav-fight NAV_FLAGS=--nav-off=a7`; A7+A11: `--nav-off=a7,a11`. Both print `NAV_FIGHT_ARM`
+with the live treatment and report `arms` counters, so an arm that did not engage says so.
+
+**Merge notes (shared files):** `game/ai/combat_motion.gd`, `game/ai/movement.gd`, `tests/nav/fight_probe.gd`
+(metrics' S3 emitter hook is expected here at CP1 — I review it at merge), `_agents/navigation.md`,
+`_agents/streams/nav.md`. **No file outside nav's ownership is touched *now*** — two of squad's were committed by accident during the defile
+measurement (`git add -A` after a cross-stream checkout) and removed; every changed path was then diffed against
+`main` to verify it, rather than assumed. `tests/baselines/sim_state_hash.txt` is
+deliberately NOT re-recorded: nothing on the default path moves it.
+
 ### Decided overnight (the lead asleep; most reversible option taken, recorded per the orchestrator's rule)
 
 | Decision | Why it is the reversible one |
