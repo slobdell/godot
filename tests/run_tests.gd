@@ -52,6 +52,7 @@ func _run() -> void:
 	var failed := 0
 	var total_engine_errors := 0
 	var total_engine_warnings := 0
+	var charged_by_text := {}
 	# `make test FILTER=bot` passes --filter=bot: run only tests whose "file::method" contains it.
 	# `|` separates ALTERNATIVES -- FILTER="bot|relay" runs tests matching either. It is not a regex, and
 	# saying so matters: `make test FILTER="a|b"` used to reach a shell unquoted and exit 127 without running
@@ -117,12 +118,25 @@ func _run() -> void:
 			# AWAITED: `teardown()` drains the navigation map, and that needs frames. Un-awaited it would return at
 			# once and drain after the NEXT test had started -- a hook that looks wired up and does nothing.
 			await case.teardown()
-			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings)
+			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings, case.expected_errors)
 			total_engine_errors += int(engine["errors"])
 			total_engine_warnings += int(engine["warnings"])
 			var engine_failures: PackedStringArray = engine["failures"]
 			case.failures.append_array(engine_failures)
 			var label := "%s::%s" % [path.get_file().get_basename(), method_name]
+			for text: String in PackedStringArray(engine["texts"]):
+				# COUNT TESTS, NOT OCCURRENCES. A test that emits the same warning twice is one victim, not
+				# two, and the first version of this counted occurrences while calling them tests: it
+				# reported "2 tests" for `test_theme_city_block`, which drives the same bad colour name
+				# twice on purpose and is a single test. Caught by this feature's own first real output
+				# (builder0, 59927de9) -- a count whose name does not match what it counts, in the commit
+				# about attribution. Tests run in order within a shard, so the last label is enough.
+				if not charged_by_text.has(text):
+					charged_by_text[text] = [0, label, ""]
+				var row: Array = charged_by_text[text]
+				if String(row[2]) != label:
+					row[0] = int(row[0]) + 1
+					row[2] = label
 			if case.failures.is_empty():
 				passed += 1
 				print("  PASS  ", label)
@@ -134,6 +148,22 @@ func _run() -> void:
 	# A shard prints a DISTINCT line and never the bare one, so that in a sharded run there is exactly one
 	# `N passed, M failed` in the output -- the total, printed by the make recipe after it adds the shards up.
 	# The orchestrator reads that line and nothing else (lesson 28); several of them would be worse than none.
+	# ONE CAUSE, MANY VICTIMS. A leaked object outlives the test that made it, so its warning lands on
+	# whoever runs next: one arena holder in combat's sim_cost test failed 22 tests in one shard. Twenty-two
+	# red tests sharing a message are one defect, and the first test to see it is the one worth reading --
+	# the rest are downstream. The warnings-fail rule is right and loud; this only fixes the ATTRIBUTION.
+	var shared := []
+	for text: String in charged_by_text:
+		var row: Array = charged_by_text[text]
+		if int(row[0]) > 1:
+			shared.append([int(row[0]), String(row[1]), text])
+	if not shared.is_empty():
+		shared.sort_custom(func(a: Array, b: Array) -> bool: return int(a[0]) > int(b[0]))
+		print("\nENGINE MESSAGES THAT FAILED MORE THAN ONE TEST (one cause, many victims):")
+		for entry: Array in shared:
+			print("  %d tests: %s" % [int(entry[0]), String(entry[2])])
+			print("      first seen in %s -- the tests after it are probably downstream, not guilty." % [String(entry[1])])
+
 	# The engine tally goes on its OWN line, never inside the summary the orchestrator reads (lesson 28). The
 	# make recipe sums the sharded ones the same way it sums the rest.
 	if shard >= 0:

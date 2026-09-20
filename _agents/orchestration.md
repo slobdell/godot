@@ -2846,7 +2846,17 @@ The kickoff prompt is one line; this section is the rest.
     time bought two match-seconds. Fixes: aim at the densest cluster, poll the match for contact with the clock as
     a cap, and require 12 px of *drawn mesh* per counted vehicle. **A gate is only as good as the statistic's
     ability to distinguish the two cases it exists to separate; a frustum count is geometry, the question was
-    pixels.**
+    pixels.** Then a tenth (show): framing the densest cluster put the camera inside a block, because the frame
+    tools called `RtsCamera.pose_at` directly and never control's `clear_pose()` (the lift the lead's own
+    complaint bought); fixed, and every capture now prints the pitch it actually used and `lifted_deg`, because a
+    frame that had to lift to 30° is a fair pair but is not the 21° he plays at, and a label that quietly stops
+    being true is the same disease as the frustum count. Five defects in one pair, each invisible until the one
+    before it was fixed: **stop predicting that the next one is the last, and look at every frame before it travels.**
+    **The closing form (feel, 22:15, the Terminus roof dressing):** the first version placed seven boxes on every
+    seed, kept two surfaces, stayed inside the collision box and passed every test, and at the lifted camera it was
+    shapes you had to look for, +25 % on tops and −28 % on sides of a roof that is itself nearly black. **A change
+    can satisfy every stated criterion and still not do the thing it was for, and nothing in a suite measures
+    legibility; the only instrument that catches it is looking at the picture.**
 186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
     Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
     the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
@@ -2927,6 +2937,11 @@ The kickoff prompt is one line; this section is the rest.
     and wrong about what it was looking at**, and the numbers agreeing beside the wrong label is what makes a
     reader trust the label. Corollary: the tests could not have caught it, because their fixture used a
     lightweight tag, built before the thing it models existed; a fixture is rebuilt when the modelled thing changes.
+    **And after a signature conflict, read the call sites, not the conflict** (metrics, 22:10): two streams added a
+    third parameter to one function; git merged the callers cleanly because they were never marked, and six tests
+    passed their allowlist as what was now the other stream's `expected_err`, exercising the wrong parameter while
+    still passing some assertions. The same shape as the tag object standing in for its commit: the code was
+    correct about what it looked at and wrong about what it was looking at.
 193. **An API whose correct use cannot be told from its incorrect use at the call site is a signature problem, not a
     convention problem.** Round 9 (nav): `TestCase.teardown()` ended in `await drain_navigation()`, so a subclass
     override declared `func teardown() -> void` that called `super.teardown()` un-awaited was not a coroutine, the
@@ -2939,3 +2954,13 @@ The kickoff prompt is one line; this section is the rest.
     runner, is the property that keeps the rest safe (a helper that also had to be awaited would carry the same
     trap, and an `await` on a non-coroutine is a lint red). Same family as an instrument that cannot report its own
     inapplicability, one level up, in the signature.
+194. **A control that skips the code the treatment runs is not a control, and two arms that write one file compare
+    a file with itself.** Round 9 (combat, pre-registering the gangs-vs-law series): `faction-matrix` names its
+    output `-tuned.json` whenever `TUNE` is set, the same name for both arms, so the obvious two-run series
+    overwrites the control with the treatment and `compare-arms` reports a perfect null with every cell zero and
+    nothing anywhere to say the bytes were the same; and a control run as "no TUNE" skips `apply_tuning` while the
+    treatment runs it, so the control is run as `knob=<default>` instead (the switching-cost series' `switch.price=0`
+    precedent). Fourth member of one family with the collapsed `COMMIT_BONUS * 1.15`, the `FILTER="a|b"` that ran
+    neither suite, and a comment promising a flip that did nothing: **each produces a green or a null that looks
+    like a measurement, the one kind of bug running more things cannot catch.** Tooling: outputs named by the arm,
+    comparisons refusing identical inputs, each arm's commit and knob written into its file.

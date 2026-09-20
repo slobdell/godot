@@ -1244,6 +1244,57 @@ without A7, so switching A11 off in a default build measures nothing and reads a
 `squad-defile TUBE=` reading `redecides=0` in both arms because the maze has no enemies: an arm in which the mechanism
 cannot act is not a control, it is a broken instrument, and its zero looks exactly like a result.
 
+### Five findings from the morning that live nowhere else
+
+**1. A facing on a MOVE order is an ARRIVAL heading and dies with the order. A facing on a HALT is a SECTOR and is not
+the drawn one.** Establishing that took four measured iterations of the dragged-heading fix, and the wrong three are
+worth more than the right one:
+- *Move + facing:* the crews turn (a follower goes 167° off to 3° off by +15 s) and then the order completes and clears,
+  and the hulls drift to 132 / 41 / 28. Read directly: `holding Green_A_1 NO ORDER; ... NO ORDER` at +20.6 s.
+- *One-shot hold on arrival:* `hold facing=[1,0]` on the LEADER only, every follower `NO ORDER` — overwritten on the
+  next update, because `_group` re-issues every time. **An event cannot hold a posture against a function that runs
+  every tick; the posture has to BE what the function computes.** No flag: `plan["arrived"]` is recomputed anyway.
+- *Hold + halt=true:* persisted, wrong facing — `_group` passes `entry["facing"] if halt else told`, so each crew held
+  its own sector (`[1,0]`, `[-1,0]`, `[0,-1]`: a coil covering every approach). Zeroing `plan["sectors"]` does not
+  help; that happens AFTER `_group` has read the entries.
+- *Hold + halt=false + told:* all four crews hold `facing=[1,0]`. Correct, and the element's contract is the ORDER.
+
+**2. The residual after that is LOCOMOTION, not the element.** Hulls end at tank 1.4°, tank 16.2°, ifv 41.4°, ifv 28.5°
+— tracked close, wheeled not, and `_element_scenario` builds two tanks then two ifvs. A wheeled hull cannot
+neutral-steer, so its heading is whatever its last travel left it on; the crews were at 1, 15, 12, 3 at +15 s and got
+WORSE by the time they stopped, because the final correction to the slot re-pointed them. nav does the other half on an
+APPROACH (`test_wheeled_arrival` passes) and that is not available at rest. **Open question for nav, not for this file:
+should a held wheeled hull manoeuvre to reach an ordered facing?**
+
+**3. Forty seconds from right-drag to a settled squad, and the lead will feel it before he sees any heading.** 22.3 s
+for the element to declare arrival on a **20 m** move, ~20 s more for the crews to stop. That is A9's co-arrival pacing
+waiting on the slowest member. Round-10 item, unstarted, mine.
+
+**4. The spawn overlap was never ArmyLayout's, and the arithmetic that said so held up.** For artillery (2.90) beside
+lancer (2.76) the layout's pitch is ≥ 5.0 m (`hull_floor.x` 4.90 floored to `MIN_SPACING_M`, and pass 2's
+`maxf(spacing * scale, floor)` means zone compression cannot undercut it) and `_clear_spot` guarantees 3.83 m against a
+3.33 m requirement — placement clears by 1.67 m. **Final cause (combat): the physics server's body transforms on tick 1
+are a PERMUTATION of the spawn slots, up to 90 m from the nodes, so the solver recovered bodies out of overlaps that
+existed only in its own copy; from tick 2 node and server agree.** The fix is `Tank._ready`
+(`force_update_transform` after `reset_physics_interpolation`), combat's. **The pitch ruling was withdrawn twice and
+the arithmetic was right both times — do not widen the pitch.** My settle sampling and the armed four-number diagnosis
+stay.
+
+**5. `_is_clear` ignores each placed vehicle's own forward**, and this is a real queued item rather than a footnote.
+`taken` holds `[position, width, length]` and the test projects onto the DEPLOY frame's axes, so it is sound while every
+hull shares that frame — true within a team, and 180° preserves width and length. It is **wrong for an arena whose two
+spawn zones are not exactly opposed**, where the teams' forwards differ by something other than 180° and a rotated
+footprint is compared as if axis-aligned. Not the cause of anything measured; a latent gap with a named trigger.
+
+**And one process lesson from feel that decays two records in this brief: a repro keyed to a SHARD INDEX has a shelf
+life measured in merges.** Their `--shard=3/5` went 42 files to 43 after a merge, `index % N` reshuffled, my test moved
+to shard 4, and the run came back 321 passed 0 failed — **a clean green from a file set that did not contain the
+test.** So "71/71/71 green, 69/68/68 red on the same code" no longer addresses the same files, and neither does my own
+"the 2-shard layout does not trigger it". Metrics' `TEST_SHARDS=5` pin is the workaround; the durable form is a FILE
+LIST or a seed the runner takes directly. Same family as `army_layout.gd:302` naming `STAND_CLEAR_M` by the time it
+reached me, and the stale scenario count: **an identifier stable in syntax but not in meaning produces confident wrong
+answers.**
+
 ### The queue as it stands, in the order it was ruled (round 9 spilled into the lead's morning)
 
 1. **Option 3, the dragged heading reaching every crew.** Ruled and written, dry-run clean, held out of the tree until
