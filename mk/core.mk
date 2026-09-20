@@ -136,15 +136,39 @@ CHECK_JOBS ?= $(shell tools/slot.sh --jobs 2200)
 LINT_JOBS  ?= $(shell tools/slot.sh --jobs 800)
 _CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
 
+# The heartbeat (lesson 48). `-Otarget` holds each target's output until that target finishes, which is what
+# keeps a parallel run readable -- and it also means a 30-minute check can print NOTHING for 30 minutes. A wait
+# with no heartbeat is indistinguishable from a hang, and this project has already spent an hour misdiagnosing a
+# starved queue as "builder0 is slow" for exactly that reason (tools/slot.sh's own note). So a side process
+# reports every minute, on stderr, unbuffered: how long, how many done, and WHICH targets are still outstanding.
+# It reads marker files the wrappers touch, so it cannot disagree with what make actually finished.
 check: ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
 	@echo ">> check: $(words $(CHECK_TARGETS)) targets, up to $(CHECK_JOBS) at once (lint -P$(LINT_JOBS)) on $$(hostname)"
-	@$(MAKE) --no-print-directory -j$(CHECK_JOBS) -Otarget check-parallel
+	@rm -rf $(BUILD_DIR)/check/done && mkdir -p $(BUILD_DIR)/check/done
+	@started=$$(date +%s); \
+	( while sleep 60; do \
+		left=""; count=0; \
+		for target in $(CHECK_TARGETS); do \
+			if [ -e $(BUILD_DIR)/check/done/$$target ]; then count=$$(( count + 1 )); \
+			else left="$$left $$target"; fi; \
+		done; \
+		[ -z "$$left" ] && break; \
+		elapsed=$$(( $$(date +%s) - started )); \
+		printf '>> check: %dm%02ds, %d/%d done, waiting on:%s\n' \
+			"$$(( elapsed / 60 ))" "$$(( elapsed %% 60 ))" "$$count" "$(words $(CHECK_TARGETS))" "$$left" >&2; \
+	done ) & heartbeat=$$!; \
+	trap 'kill $$heartbeat 2>/dev/null' EXIT INT TERM; \
+	if $(MAKE) --no-print-directory -j$(CHECK_JOBS) -Otarget check-parallel; then status=0; else status=$$?; fi; \
+	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)" >&2; \
+	exit $$status
 
 .PHONY: check-parallel $(_CHECK_WRAPPED)
 check-parallel: $(_CHECK_WRAPPED) ## (internal) check's targets for `make -j`; run `make check`, not this
 	@echo "check passed: $(words $(CHECK_TARGETS)) targets"
 
-$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): $(t)))
+# Each wrapper depends on its real target and leaves a marker the heartbeat counts. The marker is written by the
+# wrapper rather than by the target itself so that nothing about running a target on its own changes.
+$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): $(t) ; @mkdir -p $$(BUILD_DIR)/check/done && touch $$(BUILD_DIR)/check/done/$(t)))
 
 # The three exclusion groups, as order-only prerequisites between the wrappers.
 _cp-combat-smoke:    | _cp-net-smoke
