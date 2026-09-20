@@ -314,10 +314,11 @@ deliberately NOT re-recorded: nothing on the default path moves it.
 5. **A remote check covering tonight's work.** The one that has been running all night covers `acd25a0b`
    (N0 + A7 + A11). A1, A4 and the instruments postdate it.
 
-### ⚠ `make lint` reports TWO FALSE ERRORS, on files identical to `main` — and lesson 157 just made lint a gate
+### ⚠ `make lint` is RED ON `main` ITSELF — 5 files, 8 lines, all `--check-only` artefacts, and lint is now a gate
 
-Running a local `make lint` (required now that the remote one is known to parse-check zero files) on this branch
-gives **two errors, and both are artefacts of `--check-only`, not defects**:
+Running a local `make lint` (required now that the remote one is known to parse-check zero files) is **red — on
+`main` as well as on this branch**. metrics' full sweep: **5 files, 8 lines, every one a `--check-only` isolation
+artefact**, not a defect. The two nav saw first (its own lint was still running, so this was a partial result):
 
     game/tank/tank.gd: ERROR: res://game/tank/tank.tscn:12 - Parse Error: [ext_resource] referenced
                        non-existent resource at: res://game/tank/tank.gd
