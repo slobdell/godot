@@ -505,6 +505,9 @@ remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="t
 remote-status: ## What is running in THIS worktree's folder on builder0 (read-only; ask before REMOTE_FORCE=1)
 	@tools/remote.sh --status
 
+round-status: ## One screen: every worktree vs main, builder0's load and live runs by stream, the baselines in force
+	@tools/round_status.sh
+
 remote-quiet: ## A TIMING run on builder0 that holds the whole box and says whether the window held: T="perf-trailer-ab"
 	@test -n "$(T)" || { echo 'usage: make remote-quiet T="perf-trailer-ab"'; exit 2; }
 	tools/remote.sh --quiet $(T)
