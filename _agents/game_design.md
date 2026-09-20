@@ -2007,7 +2007,14 @@ run on the roof parapet only, dimmer than the windows; venue palette (magenta, c
 warnings, no cool white.** The full-outline look stays as a named patch variant so the lead can compare both in the
 morning — his words were *"lit edges breathe and glow"* and he gets to see it. **The rule that matters for play:** the
 arena floor and the vehicles must stay the brightest read in the frame (in the first frames the building edges were the
-brightest pixels and the fight the darkest); `show-frames` now measures it and refuses a strip where the periphery wins. Stills cannot show a cue (a chase is
+brightest pixels and the fight the darkest); `show-frames` now measures it and refuses a strip where the periphery wins. **Then the three-arm strip (show
+`924b2506`, 04:50) showed the inversion is the Terminus, not the light show:** the BEFORE arm with no show at all already
+has the block band brighter than the fight ring in 22 of 30 frames at his 21° pose over dark asphalt. An absolute gate
+would have blocked the merge for a property of the venue. The bar is now relative — the show must not make the
+ring/band ratio worse than the same frame with the show off, tolerance 3% against ±1.5% noise — and **the parapet
+default moves it −2.6% to +7.4%, mostly positive: lit interiors make the fight marginally easier to read.** feel's
+"brightest pixels are the edges" was a maximum on the outline variant, not this mean; frames now report both. The
+Terminus's own brightness hierarchy at his pose is a venue question for feel. Stills cannot show a cue (a chase is
 motion; last-stand caught at a strobe trough reads dimmer than idle), so short clips per cue and a before frame from the
 no-show arm follow. The kill ripple did not read in its frame (likely no headroom above the battle cue's 0.96) and is
 unproven until shot against lull. Cost: 15 uniform writes per frame idle, 16 on a kill, 25 in the victory sweep, driving

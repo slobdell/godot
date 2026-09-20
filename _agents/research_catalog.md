@@ -297,7 +297,17 @@ cannot enter off-axis. **The sentence for the lead: the clothoid earns its place
 and most on the Terminus.** The A/B runs on terminus and yard; pit is refused by nav's own rule. The screened set had
 been *bias with a direction*: it held two maps he never sees and omitted the map where A4 is strongest, and pointed
 at killing the row. `nav-fight-maps` now reads `Arena.ROTATION` from the code and prints strays and omissions.
-Default stays off until the A/B says otherwise. **Rule before anyone builds it:** the
+**A/B RESULT (nav, 04:50, merged tree `0d8587d6`, laptop, terminus + yard, seeds 1 3 5 7 9, 120 s, arms labelled by
+treatment): A4 FAILS its pre-registered bars and the default stays OFF, on measurement.** Positive control: yard
+**100% of blocked gates reached on every seed** (423/423 … 729/729); terminus **0–13%** — the fan generates hundreds
+of curves per run and on terminus they do not land on the navmesh: a clothoid works by *leaving the approach axis*,
+which needs lateral room, and 20 m streets between sheer towers have none. The bars: `net_over_path` down in 11 of 16
+wheeled-type seed cells, `oscillating_share` up in 9 of 16, and the fight guard breached on 3 of 10 seed-runs — worst
+on yard (−14.4%, −12.8%), **the map where the mechanism succeeds completely: the better A4 works, the more it costs.**
+Routing to a curved gate buys the gate and spends the fight. Bounds on the instrument: `off_mesh_fit.none` counts
+events not gates, and the seeds are not replicates (gates offered 9,077–57,078), so no mean across seeds is reported.
+This does not retire the primitive: it retires *this consumer* (the arrival arc aiming a gate). Whether a hull arrives
+on the ordered heading from a curved entry still has no test, and that is now the more important question. **Rule before anyone builds it:** the
 shorter run-in and the clothoid fix *different* failures and are never shipped together or credited to each other
 (round 7's shape: ship, measure twice, find the mechanism was never reached).
 **POSITIVE CONTROL PASSED (nav, 2026-09-20, laptop, provisional pre-CP1): 403 of 403** blocked-corridor gates — the
