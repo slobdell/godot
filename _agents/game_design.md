@@ -1851,3 +1851,84 @@ layer reads as coming from somewhere.
 
 **Owner:** arena (placement, the primitive build) with feel on the livery and the screen's look. Small enough to ride
 round 9 beside the A3 cover tables rather than displacing anything.
+
+## Round 9 direction: the lead's two feedback items (2026-09-19, evening)
+
+Given while asking the orchestrator to prepare round 9. His words, verbatim:
+
+> *"I have 2 minor feedback items I'd like to get into the round: 1. The semi trucks for the road gangs are still one
+> long box itself of a truck / trailer combination. 2. We resized the semi trucks for the gang and this makes the game
+> much cooler and awesome. We need to do proportional, real-world relative sizing for all of our vehicles. As an
+> example, the bus-tanks and garbage trucks for the condemned definitely need resizing, so by extension I'm sure so do
+> the rest."*
+
+He called them minor. **The second one is the largest change in the round**, and it is scheduled as its own stream.
+
+### 1. The War Rig is one rigid box: articulate it (feel, this round)
+
+This is round 8's item 4 again (*"the gang semi trucks don't actually behave like a semi truck with a truck and a
+trailer — both components just move together"*), which he offered to shelve then and has now asked for a second time.
+feel costed it at the close of round 8: **a visual-only hinge is about a day**, negligible runtime, the simulation
+untouched; the rigid 14 m collision box stays as the compromise. That is the shape adopted:
+
+- **The tractor is the simulated body.** Nothing in `game/tank/`, `game/ai/` or `game/units/` changes. `articulated`
+  in `Units.LOCOMOTIONS` stays reserved.
+- **The trailer is art that follows the hinge.** The approved War Rig model is cut at the fifth wheel exactly the way
+  `FactionArt.GUN_CUTS` cuts a baked gun out of a hull, and the trailer part's yaw follows tractor-trailer kinematics
+  from the drawn motion each frame (the trailer heading lags the tractor's by the standard off-tracking law). It
+  jackknifes on a tight turn because that is what a trailer does. **Its collision is still the one 14 m box** — a shell
+  can hit empty air inside a jackknife this round, and that is the accepted cost of not touching the sim.
+- **The Resupply Tanker is not articulated.** Round 8 settled it as a rigid tanker truck with a semi cab, 7.0 m.
+- **Pre-registered:** the sim baseline hash does not move. Art cannot reach it (round 7 proved that by construction).
+  If it moves, that is information about something else.
+- **The real thing — a second simulated body with its own collider, and `articulated` locomotion in the plant — is
+  the follow-on**, and the research catalogue's Part 7 already records that neither external review addressed it. It is
+  not in round 9.
+
+### 2. Proportional, real-world relative sizing for the whole roster (a new stream: scale)
+
+**What he has confirmed by playing:** making the semi its real size relative to everything else made the game *"much
+cooler and awesome"*. The round-8 measurement that mattered was not the number, it was that a semi finally *looked
+like a semi next to a car*. He now wants that for every vehicle.
+
+**The state of the roster today:** 21 units; every hull except the War Rig (14.0 m) and the Resupply Tanker (7.0 m)
+is between **2.8 and 5.0 m long** — a school bus, a garbage truck, an 8×8 assault gun and a rat rod all drawn within
+a couple of metres of each other. Real-world reference vehicles are named for almost every unit in *Factions* above
+(prison bus, garbage truck, dozer, rally truck, utility truck, rat rod, 1950s pickup, tow wrecker, tanker, pursuit
+sedan, retired APC, 8×8 assault gun, rocket truck, riot truck, supercar, limousine). The round-8 finding that
+*"three separate subsystems were implicitly sized for a ~4 m hull"* is the other half of this: the roster is toy-scale
+and the systems around it were tuned to the toys.
+
+**The sizing rule, decided by the orchestrator (broad strokes are Claude's), recorded so it is not re-derived:**
+
+- **One scale factor for the whole world, anchored by the War Rig.** The lead ruled the rig stays at **14.0 m**. A
+  real tractor and tanker trailer is about 18–21 m, so the world's vehicles are drawn at **K ≈ 0.67–0.78 of real
+  size** — the scale stream fixes K from the rig's reference length with a cited source and publishes it once.
+  **Every other unit's length = its real-world reference length × K.** Nothing is sized by opinion; the only judgment
+  per unit is *which* real vehicle it is, and the design doc already names most of them.
+- **Width and height come from the approved mesh at that length**, via feel's `SizeLook.box_at_length(unit, length)`
+  — the tool round 8 used for the rig. The collision box is the mesh's proportions at the chosen length, never a tidy
+  round number, because `hull_size` IS the collider and a box that disagrees with the mesh means shells hitting empty
+  air. This also discharges feel's round-8 roster-wide finding that **all 19 art units' boxes disagree with their
+  meshes by more than 5% on some axis** — the resize fixes it by construction, and the every-unit box-fill test lands
+  with it.
+- **Why rig-relative rather than real metres:** real metres would put the rig at 18–21 m, which re-opens a question he
+  closed, and would roughly double every arena's apparent crowding; rig-relative keeps his ruling, keeps the smallest
+  vehicles near their current size, and grows the mid-roster (bus, garbage truck, APC, assault gun) by 1.5–2×, which is
+  exactly the change he described. **If he would rather have real metres, it is one number (K) and a re-run of the
+  table.** That is the one question on this round's decisions page.
+- **Balance is not a constraint on sizing** — his round-8 ruling (*"we'll worry about evening up factions later"*)
+  extends to the whole roster. Measure the consequences (the rig's 9/20 → 0/20 is still unexplained); do not tune
+  sizes to fix them.
+
+**What the resize reaches, so every owner knows to re-measure after it lands (checkpoint CP2):** the spawn grid
+(`SLOT_X` 11 m columns and 8 m rows were sized for a 2.6 × 4 m hull, and length was the axis that appeared to cap the
+rig in round 8); the navmesh's single agent radius (P6: one radius for a 5× footprint range); formation slot spacing
+(squad); cover registration (catalogue A3 exists precisely so cover works at any hull length); muzzle heights
+(rounds fly flat at muzzle height, so every muzzle must stay below the shortest hull's top); the camera at his 35°
+telephoto (control); and the sim baseline, which moves and is recorded once by the orchestrator. **Nobody publishes a
+size-dependent number measured across CP2.**
+
+**The lead sees the roster before it ships:** the scale stream renders all 21 vehicles side by side at the new scale
+in one frame (the rig and a Condemned tank as references, the same camera as the gallery) and puts it on a review page.
+It is the one subjective check that counts; the numbers are derived and need no approval.

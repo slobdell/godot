@@ -4,9 +4,36 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-19. **Round 8 is CLOSED: all six streams merged, worktrees removed, baseline recorded. Round 9 is planned and not started.**_
+_Last updated: 2026-09-19 (evening). **Round 9 is LAUNCHED: seven streams briefed, worktrees created; the lead starts the agents.**_
 
-## Round 8 is CLOSED (2026-09-19). Start here.
+## Round 9 is LAUNCHED (2026-09-19 evening). Start here.
+
+**Seven streams — metrics, scale, nav, combat, squad, feel, control** — each with a brief in `_agents/streams/<stream>.md`
+and a worktree at `~/projects/godot-<stream>`. The split, checkpoints (CP1 A12 metrics, CP2 the resized roster, CP3
+parallel `check`), ownership carve-outs and the four new contracts S1–S4 are in
+[`_agents/workstreams.md`](_agents/workstreams.md) *Round 9: the seven streams*. The lead's two feedback items and the
+sizing rule are in [`_agents/game_design.md`](_agents/game_design.md) *Round 9 direction*.
+
+**Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`), the
+same text for all seven:
+
+> /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
+
+**Orchestrator duties this round:** the full `make remote T=check` on `main` at `f49aa08a` was started at launch (main
+was merged unverified at round 8's close; read its result from the `>> remote: make check exited <N>` line); merge CP1
+(metrics' A12) and CP2 (scale's roster) the day they are announced and tell every stream to `git merge main`; record
+the sim baseline in the same session as CP2 (it moves); put scale's side-by-side roster frame and feel's rig-hinge frames
+in front of the lead the day they exist; get feel's `_agents/legibility.md` signed by control and nav before anyone
+writes A6 motion code; review nav's A7 priority table against combat's and feel's contracts before nav codes it; relay
+negative results between streams. Final integration order: metrics → scale → nav → combat → squad → control → feel.
+
+**One question for the lead, with a recommendation:** the roster is being scaled *rig-relative* (the world's vehicles
+at K ≈ 0.7 of real size, so the 14 m rig he ruled on stays and the bus, garbage truck, APC and assault gun grow
+1.5–2×). The alternative is *real metres*, which puts the rig at 18–21 m and roughly doubles apparent crowding on
+every arena. **Recommendation: rig-relative.** If he prefers real metres it is one number (K) and a re-run of the
+table, at any point before CP2 merges.
+
+## Round 8 is CLOSED (2026-09-19). The state at launch of round 9.
 
 **All six streams merged, worktrees removed, briefs archived to `_agents/streams/archive/round8/`.** `main` carries
 everything. The six `stream/*` branches are kept as history; `make worktree STREAM=<name> OFFSET=<n>` recreates a
@@ -326,7 +353,9 @@ feel.
   exists and the defaults are stable, so this is now a data exercise. It must be **measured** rather than shipped as
   flavour: if identical armies with different gains win equally often and look the same on screen, say so.
 
-- **A texture leak on `main` that `make check` cannot see** (found by control on the merged tree at `2fa58c01`,
+- ~~**A texture leak on `main` that `make check` cannot see**~~ **FIXED in round 8 (`3040ccd9`), together with the void
+  below the near wall; feel re-verifies both at the lead's poses in round 9, and the console gate itself is control's
+  round-9 item 4.** The original note, kept for the reasoning: (found by control on the merged tree at `2fa58c01`,
   laptop, windowed): `make shell-playtest` fails its clean-console gate with two `ERROR: Texture with GL ID of
   142/143: leaked 5460 bytes` lines, absent in all seven pre-merge runs. Likely feel's `night_sky`/skyline shaders or
   `arena_environment` crossing the **title → skirmish scene switch** — control's inference, not a proof; routed to
@@ -335,9 +364,8 @@ feel.
   (trip-up 75), so this may be one scene switch from breaking a gated smoke; and it happens on the transition every
   player crosses. **Round-7 candidate regardless of this fix: `shell-playtest`'s console gate belongs in `check`, or
   its expected state belongs in a committed baseline** (lesson 42 — do not simply add a red suite to the gate).
-- **The void below the near wall.** The ground plane ends at the stands, so any camera outside the venue looks down
-  into black — the bottom 15–40% of a far frame, **seen every match at the lead's 12°**. feel's to fill (a dark plaza,
-  car park or road out toward the new skyline).
+- ~~**The void below the near wall.**~~ **FILLED in round 8 (`3040ccd9`).** Was: the ground plane ended at the stands,
+  so any camera outside the venue looked down into black, the bottom 15–40% of a far frame at the lead's 12°.
 
 - **FIGHT → playable is 7.6 s → 1.4 s** (laptop, `make shell-playtest` gangs vs law on Boulevard: 7,563 ms at
   `a975e262` against 1,398/1,406 ms on two runs of `8d9c59af`'s tree). feel's strong-reference fix did the shortening —

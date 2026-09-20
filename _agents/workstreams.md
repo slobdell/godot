@@ -1,8 +1,72 @@
 # Workstreams: the current round
 
-> **Round 6, planned 2026-09-18.** How rounds work (roles, lifecycle, the worker contract, the kickoff prompt) is in
-> [orchestration.md](orchestration.md): read it first. This file is round 6's streams, ownership, contracts, gates and
-> invariants. Rounds 1–5 are archived in `streams/archive/round1..5/`.
+> **Round 9, launched 2026-09-19 (evening).** How rounds work (roles, lifecycle, the worker contract, the kickoff
+> prompt) is in [orchestration.md](orchestration.md): read it first. **Round 9's streams, checkpoints, ownership and
+> contracts are in the next section**; the *Round 9 goal* section after it carries the research-catalogue sequencing
+> and the arguments behind it. Rounds 1–8 are archived in `streams/archive/round1..8/`; the round-6 material further
+> down (contracts N1–N7, ownership, invariants) is still in force where it is not superseded here.
+
+## Round 9: the seven streams (launched 2026-09-19 evening)
+
+**Goal: the research catalogue lands against metrics that can see what the lead sees — and the roster is drawn at
+real relative scale.** The catalogue ([`research_catalog.md`](research_catalog.md)) is the algorithm backlog; the lead
+added two items while asking for the round ([`game_design.md`](game_design.md) *Round 9 direction*): the War Rig is
+still one rigid box, and **every vehicle needs proportional, real-world relative sizing** — the semi resize *"makes the
+game much cooler and awesome"* and he wants it for the whole roster.
+
+| Stream | Brief | Round 9 | Checkpoint |
+|---|---|---|---|
+| **metrics** | [streams/metrics.md](streams/metrics.md) | **A12** trajectory-space metrics (windowed displacement efficiency, signed cusp density, spectral arc length, affine formation residual) that reproduce round 8's oscillation finding from the saved replays; then **T1** parallelise `make check` | **CP1** = A12 green; **CP3** = T1 green |
+| **scale** | [streams/scale.md](streams/scale.md) | **The roster at real relative scale** (one factor K anchored by the 14 m rig; every hull = reference length × K; boxes from the mesh via `SizeLook.box_at_length`), the review frame for the lead, and everything that was sized for a 4 m hull: spawn grid, navmesh agent radius, muzzle heights; then **A3** hull-chord cover tables and the `arena-report` WATCH line | **CP2** = the resized roster green |
+| **nav** | [streams/nav.md](streams/nav.md) | **A7 → A11 → A1 → A4**, in nav's own order (argued below), A7's priority table written and reviewed before code | — |
+| **combat** | [streams/combat.md](streams/combat.md) | **A2** state-dependent switching cost (falsifier: squad's fire-concentration and engine-deck scenarios), then **A3's consumer**; the balance consequences of the resized roster measured, not tuned | — |
+| **squad** | [streams/squad.md](streams/squad.md) | **A8 → A9 → A10**, each naming what it replaces by file; formation spacing derived from hull length after CP2 | — |
+| **feel** | [streams/feel.md](streams/feel.md) | **The articulated War Rig** (visual hinge at the fifth wheel, tractor simulated, trailer follows; the 14 m box stays), the **A6 motion-law contract** with control and nav, the void below the near wall; stretch: the Syndicate airship from primitives | — |
+| **control** | [streams/control.md](streams/control.md) | **Desktop right-drag facing** with the test that makes the arc's A/B live by construction; the **A6 readout**; the camera, HUD, selection and radar checked at his pose against the resized roster after CP2 | — |
+
+**Why seven and not six:** the lead asked for *"as many workstreams as necessary"*. The resize touches five owners'
+paths and is the item he will judge the round by, so it gets an owner rather than being combat's first task; and A12
+gates every falsifier in the catalogue, so it gets an owner rather than the orchestrator's spare time. Seven Claude
+sessions are ~2.8 GB on a 7.6 GB laptop with heavy runs on builder0. **If the laptop swaps, start metrics, scale, nav
+and feel first and the other three after CP1.** arena's paths are scale's this round; the `stream/arena` branch rests.
+
+### Checkpoints (round 9)
+
+- **CP1 — A12 metrics (metrics).** Every catalogue falsifier that names cusp density, displacement efficiency,
+  spectral arc length or formation residual is read from A12. **Streams build and iterate before CP1; nobody publishes
+  a falsifier verdict before it merges.** Its own acceptance: it reproduces the round-8 oscillation finding
+  (5.3–7.2% on four maps) from the saved replays in `streams/references/round8/`.
+- **CP2 — the resized roster (scale).** It moves the sim baseline (the orchestrator records it, Invariant 2), the
+  spawn grid, cover, clearance and every size-dependent number. Lands **once, early**; every stream `git merge main`
+  and re-runs anything size-dependent after it. **Nobody publishes a size-dependent number measured across CP2.**
+  The lead sees the side-by-side frame before it merges (a look, not a number: the numbers are derived).
+- **CP3 — T1 parallel `check` (metrics).** Merged the moment it is green over three consecutive runs with a
+  bit-identical sim hash; every stream benefits and every stream re-times its wall-clock assumptions after it.
+
+### Who owns what (round 9) — changes to the round-6 table below
+
+| Path | Owner (round 9) |
+|---|---|
+| `tools/metrics/` (new), `mk/metrics.mk` (new), `_agents/metrics.md` (new); **granted for T1 only:** the `check` recipe in `mk/core.mk`, `tools/slot.sh`, and timeouts in any smoke it has to raise — each listed in merge notes, and a raised timeout named with its before/after. **Granted for the S3 emitter (2026-09-19, at launch):** no per-tick trajectory log exists anywhere in the repo (round 8's JSONs are per-run aggregates), so metrics may add a **few-line emitter hook** — one call per tick into its own `tools/metrics/` writer, behind a flag off by default — in nav's `tests/nav/fight_probe.gd` and combat's `game/modes/match_runner_mode.gd`. Nothing else in those files; the owners review the hook at merge. | **metrics** |
+| `arenas/`, `game/arena/`, `tools/make_arenas.py`, `mk/arena.mk`, `_agents/arenas.md` (arena's paths, resting this round), **plus a carve-out from combat's C1: the `hull_size` and `muzzle_height` values of every `Units.PROFILES` entry, and the three spawn-grid constants `SLOT_X`, `SPAWN_ROWS`, `SPAWN_ROW_SPACING` in `game/match/match.gd`**; `tools/roster_scale.py` (new), `mk/scale.mk` (new). combat reviews the `units.gd`/`match.gd` diff at merge and owns the files again afterwards. **Also granted (2026-09-19, at launch): a `lineup` view in feel's `game/theme/fx/bench/size_look.gd`** — the 21-unit side-by-side frame for the lead — additive, calling `box_at_length` rather than copying it; feel reviews at merge. Do not build a second renderer. | **scale** |
+| everything else | as the round-6 table below: nav, squad, control, combat, feel, orchestrator, shared |
+
+### New contracts (round 9)
+
+| Contract | Owner, where | Consumers |
+|---|---|---|
+| **S1 Roster scale** (CP2). `Units.PROFILES[id]` gains an optional documented key `scale_reference: {"vehicle": str, "length_m": float}` — the real-world vehicle the unit is drawn as and its cited length. `Units.SCALE_K` is the one world factor, fixed from the War Rig's reference at its ruled 14.0 m. **`hull_size[2] == scale_reference.length_m × SCALE_K` is asserted by a test for every unit that carries a reference, and width/height are asserted to be the mesh's proportions at that length (`SizeLook.box_at_length`) within a stated tolerance** — so the numbers are derived and checked, not mirrored (Invariant 0). `make roster-scale` prints the whole table (reference, K, length, box, drawn box) and renders the side-by-side frame. Units without an approved mesh keep their box and say so in the table. | scale: `game/units/units.gd` values, `tools/roster_scale.py`, `mk/scale.mk` | combat (C1 owner, reviews at merge), feel (the fit is automatic: `_fit_to_hull` scales by length), squad (formation spacing from `hull_size`), nav (clearance), control (framing) |
+| **S2 Articulation is visual this round.** The War Rig's tractor is the simulated body and its 14.0 m box is the collider; the trailer is a theme part cut from the approved mesh at the fifth wheel and yawed per frame by tractor-trailer kinematics from the drawn motion. `articulated` in `Units.LOCOMOTIONS` stays reserved; nothing under `game/tank/`, `game/ai/`, `game/units/` changes for it. **Pre-registered: the sim hash does not move.** The follow-on (a second body with its own collider, and the plant's articulated locomotion) is recorded, not scheduled. | feel: `game/theme/` | nav (none this round), combat (none) |
+| **S3 A12 metrics** (CP1). `tools/metrics/` reads a per-tick trajectory log (position, heading, speed, gear, order/goal, element and slot per unit per tick) and reports, per unit and per match: windowed displacement efficiency (4 s window), signed cusp density (per agent-minute, split ordered / creep / unexplained where the log carries the cause), spectral arc length of the speed profile, and the affine formation residual per element. **The log format is metrics' to define and every producer's to emit**: metrics ships a reference emitter for `nav-fight` and the match runner; if a stream's harness cannot produce it, that stream asks metrics rather than inventing a second format. Every falsifier in the catalogue that names one of these four quantities is read from this tool and no other. | metrics: `tools/metrics/`, `mk/metrics.mk` | nav, combat, squad, feel (every falsifier), orchestrator (the round's verdicts) |
+| **S4 A6 is a contract before it is code.** One written page, `_agents/legibility.md`, owned by feel with control and nav as signatories, stating: the motion law (a turreted hull fighting off-axis keeps its nose within ~25° of the ordered corridor tangent; a hull-fixed vehicle is bounded forward-oblique), who executes it (nav's velocity layer — as a priority in A7's table, named there), and what the player is shown (control's readout). **No stream writes A6 motion code until all three have signed the page.** control's right-drag facing lands first regardless, because it is the prerequisite for any facing A/B. | feel (author), control, nav | squad (a facing on holds) |
+
+### Standing rules for round 9 (in addition to *The standing rules for this round* below)
+
+- **CP1 before verdicts, CP2 before size-dependent numbers.** Build freely; publish after.
+- **The orchestrator records the sim baseline in the same session as CP2 and any sim-moving merge** (Invariant 2 as
+  amended). A merge that moves it says so in its subject.
+- **Every number carries its commit and its machine**, and after CP3 lands, wall-clock figures taken before it are
+  retired (T1's note in *Round 9 goal* below).
 
 ## Round 6 goal
 
@@ -151,7 +215,7 @@ process at ~7% CPU on a 12-thread machine** — latency-bound on awaiting fixed-
 | **nav** | **A7 → A11 → A1 → A4** | **This order is nav's, adopted over the orchestrator's A1-first proposal — see below.** |
 | **combat** | **A2**, then A3's consumer | A2 replaces the flat `commit_bonus` (**1.15** on main; 1.35 reverted) with a state-dependent switching cost. **Its falsifier is inherited, not invented: squad's two behaviour scenarios** — fire concentration and the scout's engine decks — because that is exactly what the crude version cost |
 | **arena** | **A3's summed-area tables**, + the **Syndicate airship** | A3 retires the 12.19 m cover cliff at any hull length. **The `make arena-report` WATCH line must be revised in the same commit as the tables** or it becomes a confident false alarm. Airship: primitives, no Meshy, no collision body ([game_design.md](game_design.md)) |
-| **squad** | **A8 → A9 → A10** | squad's own plan names what each REPLACES **by file** — A8 replaces `TacticsFormation.group_offsets` and `ElementPlan._scale_for`; A9 replaces `Element.form_up_eta` and `_pace_leader_for_flow`; **A10 replaces `TacticsFormation.seat()`'s Hungarian matching AND BOTH its hysteresis patches** (`STABLE_MARGIN` and round 8's `fixed` flag, which is deleted with it, not layered on). **Aim A8/A9 at LIGHT hulls:** the scout is the shuffler (0.68 net/path, 13.3% oscillating), not the rig (0.95, 0.9%) |
+| **squad** | **A8 → A9 → A10** | squad's own plan names what each REPLACES **by file** — A8 replaces `TacticsFormation.group_offsets` and `ArmyLayout._scale_for` (`game/tactics/army_layout.gd:195` — the round-8 plan misnamed it `ElementPlan._scale_for`); A9 replaces `Element.form_up_eta` and `_pace_leader_for_flow`; **A10 replaces `TacticsFormation.seat()`'s Hungarian matching AND BOTH its hysteresis patches** (`STABLE_MARGIN` and round 8's `fixed` flag, which is deleted with it, not layered on). **Aim A8/A9 at LIGHT hulls:** the scout is the shuffler (0.68 net/path, 13.3% oscillating), not the rig (0.95, 0.9%) |
 | **feel + control** | **A6 legibility — as a CONTRACT first** | See below; this one does not start as code |
 
 ### nav's sequencing, adopted over the orchestrator's — and the argument, because the argument is the artefact
