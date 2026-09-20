@@ -1,0 +1,14 @@
+METRICS commit=1422acd9 machine=builder0 producer=nav-fight arena=pit seed=3 tick_rate=30
+        log=_agents/streams/references/round9/metrics/pit.jsonl.gz samples=118583 units=34 window=4.0s (120 ticks)  sparc_window=256 samples, nfft=256, cutoff=20 rad/s
+        `osc_share` counts only ticks under order_verb=attack_move (fight_probe.gd's --stall-verb).
+  unit_id          units ordered  eff_mean   eff_p10 osc_share osc_units  net/path  cusp/min   cusps     sparc
+  ifv                  7       7     0.605     0.265     0.045         4     0.818     40.56     543    -2.236
+  lancer               6       6     0.655     0.317     0.043         4     0.848     37.35     437    -2.207
+  tank                21      21     0.798     0.364     0.064        17     0.770      7.60     310    -1.910
+  ALL                 34      34     0.714     0.321     0.058        25     0.793     19.58    1290    -2.057
+      ifv            under_way=181.8s agent_min=13.39 eff_windows=21720 sparc_windows=80 cusps[ordered=23 creep=493 unexplained=27 unclassified=0] refused[zero_path=355 parked=0 short=10]
+      lancer         under_way=211.2s agent_min=11.70 eff_windows=18893 sparc_windows=71 cusps[ordered=16 creep=400 unexplained=21 unclassified=0] refused[zero_path=739 parked=1 short=6]
+      tank           under_way=905.8s agent_min=40.79 eff_windows=41163 sparc_windows=170 cusps[ordered=146 creep=0 unexplained=164 unclassified=0] refused[zero_path=27118 parked=85 short=22]
+      ALL            under_way=1298.8s agent_min=65.88 eff_windows=81776 sparc_windows=321 cusps[ordered=185 creep=893 unexplained=212 unclassified=0] refused[zero_path=28212 parked=86 short=38]
+  no element/slot columns in this log: the affine formation residual has nothing to fit.
+metrics: wrote _agents/streams/references/round9/metrics/pit-metrics.json (1 log)

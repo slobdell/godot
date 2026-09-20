@@ -51,3 +51,21 @@ func test_a_squad_on_a_task_shows_the_task() -> void:
 	assert_true(bool(marks[0]["task"]), "drawn as a task, with a lead line from the squad")
 	assert_true((marks[0]["point"] as Vector3).distance_to(Vector3(30, 0, 10)) < 1.0, "at the point he clicked")
 	assert_true(f.controls.order_mark_label(marks[0]).begins_with("SCREEN"), "labelled SCREEN")
+
+
+## Round 9: the pin for a move the player DREW a heading on carries that heading, so he can see which way his units
+## will be pointing when they get there - before they get there. A pin for a plain click carries none.
+func test_a_dragged_order_puts_its_heading_on_the_pin() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	await f.right_click(f.ground(Vector3(-30, 0, 10)))
+	assert_true(not (f.controls.order_marks()[0] as Dictionary).has("facing"),
+			"a plain right click leaves the pin with no heading on it")
+	await f.right_drag(f.ground(Vector3(-30, 0, 10)), f.ground(Vector3(-30, 0, -10)))
+	var mark: Dictionary = f.controls.order_marks()[0]
+	assert_true(mark.has("facing"), "the dragged order's pin carries the heading (%s)" % [mark])
+	assert_true((mark["facing"] as Vector3).distance_to(Vector3(0, 0, -1)) < 0.08,
+			"pointing the way he dragged, got %s" % [mark["facing"]])
+	assert_true(f.controls.describe({"units": ["Green_Alpha_1"], "verb": "move", "facing": [0.0, -1.0]}).ends_with("facing N"),
+			"and the HUD says which way in plain compass: %s" % f.controls.describe({"units": ["Green_Alpha_1"], "verb": "move", "facing": [0.0, -1.0]}))
