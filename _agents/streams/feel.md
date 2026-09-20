@@ -337,9 +337,33 @@ a taste one: `art_direction.md` has always required the arena be *"lit well enou
 albedo (`arena_ground*.gdshader`, and the Terminus is asphalt-dark), and the facades' base brightness
 (`city_block.gdshader`, the storey `glow` and shopfront `glow` at channel identity).
 
-**Not started — no slot tonight, and it wants a frame before a constant**, the same discipline as the roof. Worth
-saying plainly for the lead: **this is a defect in the map he liked**, found only because show reported a `--no-show`
-control arm beside its own numbers. A measurement that only reports the treated arm would have blamed the light show.
+**DIAGNOSED 2026-09-20, and the mechanism is specific rather than "the map is dark".** Counted across every layout:
+
+| arena | half | floodlights | blocks |
+|---|---|---|---|
+| pit | 140 | **4** | 0 |
+| **terminus** | 140 | **2** | **8** |
+| yard | 140 | 2 | 0 |
+| boneyard, boulevard | 120 | 4 | 0 |
+| foundry, furnace, scrapyard, maze, barriers | 120 | 0–0 | 0 |
+
+**The Terminus is the only arena with `block` props, and it has HALF the floodlights of `pit` at the same size.**
+Worse, the blocks are **inside the fighting area, not backdrop**: two sit at r = 40 m from the centre and four more
+at r = 69, on a 140 m half-size — eight 40 m towers with lit window grids standing among the fight. Its two
+floodlights are both at **r = 128**, out on the centre line at the far edges.
+
+**So the venue got brighter and the floor did not.** The map adds a large lit facade area right where the player is
+looking and lights the ground only from the perimeter. That is the whole of the 22-of-30 result.
+
+**The fix belongs in the layout, and `arenas/` is scale's this round — so it is a request, not my edit.**
+Recommendation: floodlights **among** the blocks (the street intersections between them), not more lamps on the
+centre line at r = 128. **I deliberately did NOT reach for the lever in my own files** — making the dressing
+compensate for a venue's own emissive would be a second hidden controller of arena brightness, which is exactly the
+"two writers to one perceived quantity" hazard I warned show about on the ground wash. One owner: the layout.
+
+Worth saying plainly for the lead: **this is a defect in the map he liked**, found only because show reported a
+`--no-show` control arm beside its own numbers. A measurement that only reported the treated arm would have blamed
+the light show.
 
 ### Owed at round close, not started: roof dressing on the Terminus (show's question, feel's geometry)
 
