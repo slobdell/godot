@@ -30,9 +30,14 @@ const IDLE_THINK_HZ := 10.0 / 3.0
 const LOD_RADIUS := 130.0
 ## "In reach" for the fight rate: either gun's range plus this (meters).
 const FIGHT_MARGIN := 15.0
-## The current choice gets this multiplier, so near-equal options don't flip-flop... (a variant may raise it:
-## `commit_bonus`, round 8's churn work — squad-decisions measured 1.35 at 12.7 switches and 0.17 reversals per
-## unit-minute against 1.15's 18.1 and 0.30, and it must win a ladder before it becomes the default.)
+## The current choice gets this multiplier, so near-equal options don't flip-flop. Round 8 (the lead: "they seem to just
+## move back and forth indefinitely"): 1.35 halves the churn (`make squad-decisions`, laptop, yard, seeds 1/3/7:
+## switches/reversals per unit-min 18.1/0.30 at 1.15, 12.7/0.17 at 1.35, 12.1/0.27 at 1.60) and a 48-match ladder said
+## "does not lose" — but two BEHAVIOUR scenarios say it does: a squad stops concentrating its fire (focus share 69% vs
+## brains-alone 69%, i.e. squad tactics buy nothing) and a scout stops working onto engine decks (41 hits/23 on the deck
+## → 3/0), because a crew that sticks harder no longer switches onto its squad's focus or into an orbit. A ladder cannot
+## see either. So the default stays 1.15 and the lever lives on as variant `x5c`; the churn fix has to come from
+## somewhere that does not cost target choice.
 const COMMIT_BONUS := 1.15
 ## A crew being suppressed stays worth suppressing down to this fraction of the pin threshold (hysteresis on `pinned`).
 const PIN_HOLD_FRACTION := 0.75
@@ -1166,11 +1171,12 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	var committed: Dictionary = {}
 	# An order the tank isn't carrying out yet outranks commitment to anything but itself or survival.
 	var order_pending := keep_slot > 0.0 and not ["KEEP_SLOT", "RETREAT"].has(current.get("option", ""))
+	var commit_bonus := float(features.get("commit_bonus", COMMIT_BONUS))  # hoisted: decide() runs per brain per think
 	for candidate in candidates:
 		if order_pending:
 			break
 		if not current.is_empty() and candidate["option"] == current["option"] and candidate["target"] == current["target"]:
-			candidate["score"] *= float(s.get("features", {}).get("commit_bonus", COMMIT_BONUS))
+			candidate["score"] *= commit_bonus
 			committed = candidate
 	var best: Dictionary = candidates[0]
 	for candidate in candidates:

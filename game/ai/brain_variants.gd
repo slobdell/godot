@@ -68,9 +68,10 @@ const PROFILES := {
 	# Round-5 X2, split after x5s went 27-37 (the proxy made the swarm army's machine-gun scouts suppress instead of
 	# kill: 36k damage against 42k): x5p is only the flanker fix, x5q only the proxy.
 	"x5p": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true},
-	# Round-8 churn (the lead: "moving back and forth indefinitely"): the champion that sticks to a fight harder.
-	# `make squad-decisions` (laptop, yard, seeds 1/3/7) over COMMIT_BONUS: 1.15 -> 18.1 switches and 0.30 reversals per
-	# unit-minute, 1.35 -> 12.7 and 0.17, 1.60 -> 12.1 and 0.27. 1.35 is the knee; it has to win a ladder to be adopted.
+	# Round-8 churn (the lead: "moving back and forth indefinitely"): the champion that sticks to a fight harder. It halves
+	# the churn metric and a 48-match ladder saw no cost, but it COSTS TARGET CHOICE where the scenarios can see it — a
+	# squad stops concentrating its fire and a scout stops orbiting onto engine decks — so it is not the default. Kept as
+	# the lever: whatever fixes the churn must not pay that price.
 	"x5c": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "commit_bonus": 1.35},
 	# Round-5 X1 on the new champion: x5p with the half-rate controller.
 	"x5pb2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "brain_stride": 2},
