@@ -161,6 +161,33 @@ per range — a scout re-aims quickly because it acquires quickly — instead of
 **It touches squad** (the brain chooses) **and combat** (the envelope says what a choice costs), so it is a contract
 conversation before it is code.
 
+### PRE-REGISTERED: is the `gangs vs law` collapse the rig getting STUCK? (2026-09-19, before the run)
+
+**Written before the measurement, so it can fail.** nav's bare-ground control settled what the rig's pivot metric
+actually is: on an empty arena **every hull length reads 7° and 6.7 m of wander, identical to the decimetre**; on
+`yard` the same three lengths read 7° / 23° / 26° with wander *falling* 5.5 → 3.9 → 3.5 m. **A long rig does not
+pivot. It catches on scenery a short one cleared, and keeps yawing while it is stuck.** (My prediction, nav's run;
+their first mechanism could not be right because `hull_size` never reaches `TankMotion`.)
+
+**That is a candidate for the other open thread.** `gangs vs law` went 9/20 → 0/20 with the 14 m rig, and the two
+explanations on the table were *bigger target for splash/suppression* and *the wheeled creep*. **There is now a
+third, and it is better than both: a vehicle jammed on terrain is a stationary target, and law is the faction
+built to punish anything that stops moving** — the suppression on the loser in both law matchups was the highest
+figure in the whole table (0.077, 0.078) with gang losses near-total (40.0, 40.7 of 43).
+
+**THE PREDICTION.** `make engagement PAIRS=gangs:law ARENA=yard`, the 14 m rig against the 5.6 m control, same
+machine, same seeds, build declared as the arm:
+
+- **If the rig is getting stuck:** the gangs' **`static_share` rises materially** with the 14 m rig. That is the
+  share of unit-time spent stationary, and a jammed vehicle is stationary by definition.
+- **If it is the bigger-target story instead:** `static_share` is flat and the damage shows up in losses and
+  suppression without the gangs standing still any more than before.
+- **If `static_share` falls or is unchanged while the matchup still collapses**, all three explanations are wrong
+  and I have no mechanism — which is a result I would rather publish than paper over.
+
+**Why this is worth a run rather than an opinion:** the three candidates predict the *same* aggregate (the gangs
+lose badly to law) and differ on one cheap metric that already exists. **Nobody has to build anything.**
+
 ### THE 14 m RIG'S COST: one matchup, not one faction (2026-09-19)
 
 Treatment vs the baseline taken with the rig reverted, both maps, `make compare-arms` with the build declared as
