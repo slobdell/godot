@@ -101,10 +101,24 @@ func _run() -> void:
 						mid = {"yaw": yaw, "tick": tick, "pitch": pitch}
 				elif missed.is_empty():
 					missed = {"yaw": yaw, "tick": tick, "pitch": pitch}
+		# WHY, not just how often. A bare 0% is correct and useless: it cannot tell "the airship is in the wrong
+		# place" from "the camera can never look there". Both are one line of geometry, so report both.
+		var camera_y := DISTANCE_M * sin(deg_to_rad(pitch))
+		var frame_top := FOV_DEG / 2.0 - pitch  # degrees ABOVE the horizontal; negative = the horizon is off-screen
+		var rise := SyndicateAirship.ORBIT_ALTITUDE - camera_y
+		var near := maxf(absf(SyndicateAirship.ORBIT_RADIUS - focus.length()), 1.0)
+		var far := SyndicateAirship.ORBIT_RADIUS + focus.length()
+		var needed := (camera_y + far * tan(deg_to_rad(maxf(frame_top, 0.01)))) if frame_top > 0.0 else -1.0
 		per_pitch.append({"pitch_deg": pitch, "seen_pct": snappedf(100.0 * pitch_seen / maxi(pitch_total, 1), 0.1),
-				"widest_px_h": pitch_best, "horizon_in_frame": pitch < FOV_DEG / 2.0})
-		print("AIRSHIP_LOOK_PITCH %.0f seen=%.1f%% widest_px_h=%d" % [pitch,
-				100.0 * pitch_seen / maxi(pitch_total, 1), pitch_best])
+				"widest_px_h": pitch_best, "frame_top_deg_above_horizon": snappedf(frame_top, 0.1),
+				"camera_altitude_m": snappedf(camera_y, 0.1),
+				"airship_elevation_deg": [snappedf(rad_to_deg(atan(rise / far)), 0.1),
+						snappedf(rad_to_deg(atan(rise / near)), 0.1)],
+				"altitude_that_would_fit_m": snappedf(needed, 0.1)})
+		print("AIRSHIP_LOOK_PITCH %.0f seen=%.1f%% widest_px_h=%d frame_top=%+.1f deg elevation=%.1f..%.1f deg %s" % [
+				pitch, 100.0 * pitch_seen / maxi(pitch_total, 1), pitch_best, frame_top,
+				rad_to_deg(atan(rise / far)), rad_to_deg(atan(rise / near)),
+				"(horizon OFF the top of frame)" if frame_top <= 0.0 else "(fits below %.0f m altitude)" % needed])
 	print("AIRSHIP_LOOK " + JSON.stringify({"his_pitch_deg": PITCH_DEG, "fov_deg": FOV_DEG, "distance_m": DISTANCE_M,
 			"yaws": yaws, "orbit_steps": steps, "samples": total,
 			"visible_pct": snappedf(100.0 * seen / maxi(total, 1), 0.1),
@@ -114,7 +128,10 @@ func _run() -> void:
 	var written := PackedStringArray()
 	for label in ["widest", "mid", "off_screen"]:
 		var shot: Dictionary = shots[label]
-		if shot.is_empty():
+		# `widest` starts as a sentinel with no pose in it, so a sweep that never saw the airship has nothing to
+		# shoot for that label. The first run crashed here -- a measurement tool that only works when the answer is
+		# positive is worse than no tool, because the one result you cannot read is the one you did not expect.
+		if shot.is_empty() or not shot.has("yaw"):
 			continue
 		_camera.global_transform = RtsCamera.pose_at(focus, float(shot["yaw"]), DISTANCE_M, float(shot.get("pitch", PITCH_DEG)))
 		airship.call("_place", int(shot["tick"]))
