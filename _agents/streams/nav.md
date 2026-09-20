@@ -276,6 +276,34 @@ with the live treatment and report `arms` counters, so an arm that did not engag
 `_agents/streams/nav.md`. **No file outside nav's ownership was touched.** `tests/baselines/sim_state_hash.txt` is
 deliberately NOT re-recorded: nothing on the default path moves it.
 
+### Decided overnight (the lead asleep; most reversible option taken, recorded per the orchestrator's rule)
+
+| Decision | Why it is the reversible one |
+|---|---|
+| **All four rows land OPT-IN** (`--nav-off=a1/a4/a7/a11` turn them ON), none on the default path | The default is the unchanged round 3–8 behaviour, so `main` takes nothing and the sim baseline does not move. Flipping a default later is one line; un-shipping a regression is a round |
+| **A1's tube radius is the off-path corridor, not a tuned number** | It follows from Bellman on a static mesh. Two geometric radii were built and measured first and both were cadences in disguise |
+| **A1's sliding-goal tolerance is a SHARE of the remaining route (10%, floored at 2 m)** | A constant that is right for one route length is wrong for every other — lesson 112 applied to a threshold instead of a test |
+| **A4's fan is fixed and straightest-first, ties to the lower index** | Deterministic, no search, and its first entry is exactly today's straight gate, so the fan can only ever aim at more gates and never fewer |
+| **A4 refuses a curve tighter than the hull's turning circle** | Offering a motion the plant cannot take is the ring's mistake; refusing it is the one thing A11 exists to stop us repeating |
+| **`goal_slid` is attributed by the PROBE, not by `Movement`** | nav owns why the router acted; control's `Orders` owns whose order it was. The alternative was the mover groping for the Match through `ctl.tanks_root`'s parent |
+| **No tolerance was moved to make a scenario pass** | Every failing row is reported failing. combat's ruling on `TOLERANCE["weapon"]` (leave it at 22.7 m) is the precedent: a constraint moves for a reason about the constraint, and the scenario is told afterwards |
+
+### Still open at hand-over, in the order the next agent should take them
+
+1. **The clean A1 A/B is running** — one binary, `--nav-off=a1` against the default, both arms sharing label
+   definitions, normalised per ordered-unit-minute. **Nothing about the sliding-goal fix is published until it lands**
+   (see *A measurement mistake of nav's* above for why the obvious comparison was invalid).
+2. **squad's fixed leash commit** → cherry-pick for measurement only, drift scenario on the **`--nav-off=a7`** arm
+   (not `a7,a11`), report drift, shots, the leash radius **as it arrived**, and `a7_region_rejected`. **No counter,
+   no drift number.** If it passes, flip A7's default naming both hashes.
+3. **A11's duel needs a new instrument, not a verdict.** The failing bar is the **shot count**, because the duel ends
+   at 6.3 s of 20 — A11's hulls kill each other three times faster. Whether that is lethality or blundering is a
+   question `scenario_motion` was never built to answer; it needs something that measures the **exchange** rather
+   than the survival time.
+4. **A6's four pieces in one commit** once control's CP2c lands (*N5's shopping list*).
+5. **A remote check covering tonight's work.** The one that has been running all night covers `acd25a0b`
+   (N0 + A7 + A11). A1, A4 and the instruments postdate it.
+
 ### Verification state — exactly what is proven, and by what
 
 **The branch point is GREEN, which answers HANDOFF's "the first task of round 9 is one full `make remote T=check` on
