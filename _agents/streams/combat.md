@@ -528,6 +528,67 @@ call `super.teardown()` without `await` — `test_command_readability.gd:141`, `
 super returns to the runner immediately and detaches the drain in exactly the same way**, which means those four
 files have been silently skipping the navigation drain they believe they run.
 
+### ⚠ THE LESSON THAT COST THE MOST TODAY: a leak fails the NEXT test, so no filtered run can catch it
+
+`make test FILTER=<this file>` passes while this file leaks. The guard **charges the first observer, not the
+author** — its own docstring says so — and a file that sorts last in its own filter has no observer. Both roots of
+`396be191`'s **47-test cascade** were this stream's, and both passed their own filtered runs:
+
+| commit | root |
+|---|---|
+| `fc1cbe5a` | `test_combat_sim_cost` called `teardown()` mid-loop **without `await`**, detaching a drain that then counted the *next* iteration's live arena and charged it here |
+| `26754ef1` | `test_tank_yaw_fit` overrode `teardown()` and **never called `super.teardown()` at all**, leaking a whole foundry arena — the **44 bodies and 4 regions** charged to `test_theme_city_block`, which created neither |
+
+**feel was accused on this stream's word and was innocent**; the withdrawal is recorded here because "two leakers,
+the larger one not mine" was wrong in the direction that costs someone else an hour. The class was reported to the
+orchestrator an hour before a worse instance of it shipped from this branch — **review does not catch this**, which
+is why nav's `c3df6d4a` seals it: the runner awaits a `_teardown()` that owns the free, the guards and the drain,
+and `teardown()` becomes a synchronous hook that must never call super. **When `c3df6d4a` is on main, delete the
+`await super.teardown()` in `tests/test_tank_yaw_fit.gd`.**
+
+### ✅ `TUNE=` selects any arm from the environment — the general fix for "an arm nobody re-measures"
+
+`make test` passes `run_tests.gd` only `--filter=`, so until now the only way to run a test against the other side
+of a knob was **to edit the default in the source** — which means the two arms are not the same tree.
+`Units._static_init()` now reads `TUNE` through the same `apply_tuning` the match runner uses:
+
+    TUNE=match.yaw_fit=0 make test FILTER=ai_player_orders
+    TUNE=match.hull_disc=0 make test FILTER=tactics_elements     # the box arm; the DEFAULT is the disc
+
+Loud on a bad spec (`push_error` naming it), silent when unset. ⚠ Still true and still biting: **`make test
+FILTER="a|b"` exits 127 and runs NEITHER suite** — one filter per invocation.
+
+### ✅ THE YAW CONSTRAINT IS EXONERATED of squad's off-slot crews (and this is what `TUNE=` was for)
+
+`test_ai_player_orders::test_five_squads_ordered_in_quick_succession` was the prime suspect for the plant refusing
+arrival manoeuvres. One tree, one knob, **identical**:
+
+    TUNE=match.yaw_fit=0   expected 0 units off slot, got 12
+    default, ON            expected 0 units off slot, got 12
+
+And squad's own discriminator answers itself: **every off-slot crew holds `order now (none)`**, in three different
+choices (ENGAGE / HOLD / SPOT), with `Green_Alpha_1` spending 9 s in MOVE `order move` and then 31 s across
+COVER_FIRE/ENGAGE/HOLD with no order. They were never told to finish the move. Squad's layer; handed over with the
+pair. By elimination the cause is the main window `0416274d..b3f7ffae` or a pre-existing order-dependence.
+
+**`--tune=match.yaw_world=1` is built and is NOT the default** (`43aaa8d7`): penetration against
+`Perception.WORLD_MASK` only, because `test_move` uses the body's `collision_mask = 3` and so **treats another tank
+as a wall**, when the whole justification for refusing a yaw is that a wall will not move. nav endorses it on
+design grounds. It ships as an arm because **the case that was supposed to separate the arms turned out not to
+involve the constraint**, so no measurement distinguishes them yet. ⚠ `_penetration` is *not* a boolean — it
+returns `get_depth()` and the rule ranks by it; the real limit is that `get_depth()` reports the **deepest single
+contact**, so a vehicle term **masks** a wall term. Dominance, not saturation: counting vehicles would need
+per-collider depth, not merely a mask.
+
+### The seventh disc site, squad's find, deliberately out of the series' scope
+
+`Avoidance.radius_of` uses `(w + l) / 4` — **4.33 m** for a War Rig, against this stream's half-diagonal 7.19 and a
+true half-width of 1.66. Three sites, three different radii for one hull, and that one drives **avoidance**: too
+wide abeam, **too narrow end-on** — the opposite error, so a hull can clip a rig's nose. It has its own falsifier
+and is queued separately rather than folded into the held series. Squad also caught a comment promising
+`--tune=match.hull_disc=1` flips every consumer: that is the **pre-inversion** sense, `=0` is the treatment arm,
+and the comment would have had the series run **with two identical arms**.
+
 ### THE EXACT NEXT STEP, in order
 
 1. **Read the running check's result from the wrapper's own `>> remote: make check exited <N>` line and the
