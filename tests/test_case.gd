@@ -202,25 +202,18 @@ func drain_navigation() -> void:
 			_draining = false
 			return
 		await tree.physics_frame
-	# CONTAINMENT. The budget expiring means a node somewhere still OWNS these regions -- `test_combat_sim_cost`
-	# holds an arena past teardown and its two regions survive all 120 frames. Without this, the next test bakes
-	# over them and one leaking test becomes 22 failures in a shard, all carrying the 284-edge-error warning and
-	# none of them the culprit. So: detach the leftovers, name them, and let the LEAKING test fail alone.
-	#
-	# `region_set_map(rid, RID())` and NOT `free_rid`: the leak is a live node still holding the arena, and that
-	# node owns these RIDs. Freeing a RID out from under its owner is a crash waiting for the next frame; detaching
-	# it from the map is enough, because the map is the only thing the next bake collides with.
-	var leftovers := NavigationServer3D.map_get_regions(map)
-	var left := leftovers.size()
+	# REPORT, DO NOT REMOVE. An earlier version detached the leftovers here (`region_set_map(rid, RID())`) so that
+	# one leaking test could not cascade. **Measured: it made things far worse** -- 1401/117 against 1516/2, with
+	# the 284 edge errors returning. The regions it detached were not orphans: detaching navigation out from under
+	# something that still needed it broke arenas across whole files, and the cascade it was written to prevent is
+	# the cascade it caused. Containment needs to know an orphan from a live region and this could not, so it is
+	# gone until something can.
+	var left := NavigationServer3D.map_get_regions(map).size()
 	if left > 0:
-		for rid: RID in leftovers:
-			NavigationServer3D.region_set_map(rid, RID())
-		print("TEST_DRAIN: detached %d leaked navigation region(s) so the rest of the shard survives" % left)
 		failures.append(("left %d navigation region(s) on the map after %d frames (4 s) - a node here still OWNS "
-				+ "them. They have been detached from the map so the next test does not bake over them, but THIS "
-				+ "test is the leak: free every node it adds. Undetached, the engine's 'more than 2 edges tried to "
-				+ "occupy the same map rasterization space' would be charged to whichever test ran next.")
-				% [left, DRAIN_FRAMES])
+				+ "them. The next test may bake into them and the engine's 'more than 2 edges tried to occupy the "
+				+ "same map rasterization space' would then be charged to whichever test was running when it "
+				+ "landed, not to this one. Free every node this test adds.") % [left, DRAIN_FRAMES])
 	_draining = false
 
 
@@ -264,8 +257,14 @@ func _teardown() -> void:
 	await drain_navigation()
 
 
-## Overridable hook, run BEFORE this test's nodes are freed. **Synchronous — do not `await` in here, and never call
-## it yourself: the runner calls `_teardown()`, which calls this.** It is not responsible for freeing owned nodes or
-## for the navigation drain; `_teardown()` does both afterwards, so an override need not call `super`.
+## Overridable, synchronous, and it **still frees this test's nodes exactly as it always did** — so a mid-test
+## `teardown()` call keeps working and an override's `super.teardown()` keeps meaning what its author intended.
+##
+## Making this a bare hook was measured and reverted: `test_control_panel` calls `teardown()` **mid-test** to get a
+## clean world, and with the free moved out it froze nothing and took ten tests with it. **The sealing was supposed
+## to move only the part that needs frames — the drain — and it moved the part everyone depends on as well.**
+##
+## What it must NOT do is drain: that needs `await`, and a `-> void` signature cannot force a caller to use it.
+## `_teardown()` owns the drain for exactly that reason.
 func teardown() -> void:
-	pass
+	free_owned()
