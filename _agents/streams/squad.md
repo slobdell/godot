@@ -868,6 +868,30 @@ the flip safe rather than the part that makes it valuable:
 
 `make test FILTER=motion_tube`: **6 passed, 0 failed.**
 
+### Two rules from tonight that outlive this round
+
+**1. A flag or counter that is saturated or silent in BOTH arms is not a measurement, it is a constant — check its
+headroom before you gate anything on it.** nav's rule, and scale supplied the cleanest illustration: in both arms of a
+maze run `stuck_units` sat pinned at **30 of 30** and carried no signal at all, while `oscillating` sat at 0.004 and
+moved **twelve-fold**. The same trap nearly caught me twice tonight from the other end — my corridor probe returned
+"open" for every sample because it capped at its own reach, and my seating crossings read 8 and 47 for a configuration
+that does not exist. **Before using a new instrument as an A/B's gate, run it on the control arm alone and confirm it
+varies.** When nav's `wedged` reaches `main` that is the first thing I do with it, and if it does not vary I will say
+so rather than run the A/B.
+
+**2. Two counters in two layers are two populations, and neither one's number can gate the other's flag.** nav measured
+its A1 route re-plans falling **21.5%** with its sliding-goal fix, and I had been treating that as evidence about
+whether my brain-half tube was worth flipping. It is not evidence about mine **at all**: nav counts route re-plans in
+`Movement._next_waypoint`, I count brain re-decides in `_hold_motion_plan`, and nav's fix does not touch my path. nav
+caught it and said so before either of us drew the conclusion. **The flip is gated on `redecide_counts` before/after,
+measured here.** Prepared as `make squad-defile TUBE=on|off` — which sets `TUBE_ENABLED` and reports `redecides` and
+`skips` summed over the element's brains, with a brain that never fought contributing zeros so both arms sum over the
+same population.
+
+**Blocked on nav's merge, both named so they are not forgotten:** the re-issue suppression for a wedged unit needs
+`Movement.state()["wedged"]` and `wedge_ratio` (`grep -c wedged game/ai/movement.gd` → **0** on my tree), and X6's
+identical-armies comparison needs `ControlGains.forced` / `--gains=` (`c2f2eecd` on `stream/nav`).
+
 ### What is NOT done, and the exact commands to do it
 
 Written plainly rather than implied, because the round's headline claims rest on measurements I have not been able to
