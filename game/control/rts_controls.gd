@@ -1557,10 +1557,21 @@ func legibility_notes() -> Array:
 func _note_legibility() -> void:
 	if element_log == null or elements == null:
 		return
+	var causing := {}
 	for note: Dictionary in legibility_notes():
 		var element := elements.of(String(note["unit"]))
 		if element != null:
+			causing[element.id] = true
 			element_log.note(element.id, "%s: %s" % [element.element_name, note["why"]])
+	# An element whose cause has gone is forgotten, so the SAME cause later is news again rather than a repeat.
+	for id: int in _noted.keys():
+		if not causing.has(id):
+			element_log.clear_note(id)
+	_noted = causing
+
+
+## Element ids that had a legibility cause last frame (so the one after it knows which have stopped).
+var _noted := {}
 
 
 ## S4 §6.1: the current leg of nav's route is the corridor the A6 law is judged against, so it is drawn to be read;

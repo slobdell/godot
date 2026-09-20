@@ -40,7 +40,22 @@ func _on_changed(id: int) -> void:
 ## gave way to a higher priority. It goes in the SAME history as the leader's own decisions, deliberately: the player
 ## asks one question ("why did my element do that") and gets one answer, in one place, in order. Repeats are dropped,
 ## so a cause that lasts ten seconds is one line and not three hundred.
+## element id -> the last NOTE written for it. Deduping against the last HISTORY entry is not enough: the element's
+## own decisions land in the same list, so a leader that re-decides between two identical causes separates them and
+## every frame's cause becomes a new line ("expected 2, got 4" on builder0, where the timing differed from the
+## laptop's - the remote check caught what the local run could not).
+var _last_note := {}
+
+
+## A cause has stopped: the next occurrence of the same one is news again rather than a repeat.
+func clear_note(id: int) -> void:
+	_last_note.erase(id)
+
+
 func note(id: int, text: String) -> void:
+	if String(_last_note.get(id, "")) == text:
+		return
+	_last_note[id] = text
 	var entries: Array = _history.get(id, [])
 	if not entries.is_empty() and String(entries.back()["text"]) == text:
 		return

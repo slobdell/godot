@@ -188,10 +188,24 @@ func test_the_cause_reaches_the_element_log_and_not_the_order_pin() -> void:
 	var lines := f.controls.element_log.lines(element.id)
 	assert_true(lines.any(func(line: String) -> bool: return line.contains("under fire")),
 			"the cause is in 'why did my element do that' (%s)" % [lines])
-	var before := lines.size()
-	await wait_physics_frames(6)
-	assert_eq(f.controls.element_log.lines(element.id).size(), before,
-			"and a cause that lasts is ONE line, not one per frame")
+	# NOT `lines.size()` unchanged: this element really is deciding things while the test runs (its wedge, its
+	# ambush call), and those lines are supposed to appear. The claim is about the CAUSE, so count the cause.
+	# The half builder0 caught and the laptop could not: the element's OWN decisions land in this same list, so
+	# deduping against the last ENTRY lets a leader re-deciding between two identical causes separate them, and the
+	# cause becomes a new line every frame ("expected 2, got 4" there). This element really does re-decide while the
+	# test runs - the log below carries its wedge and its ambush call - so the claim is simply that one cause that
+	# never stopped is one line, however much the leader said in between.
+	await wait_physics_frames(20)
+	var lived := f.controls.element_log.lines(element.id)
+	var causes := lived.filter(func(line: String) -> bool: return line.contains("under fire"))
+	assert_eq(causes.size(), 1, "one cause that never stopped is ONE line, whatever the leader decided in between (%s)" % [lived])
+	# And a cause that really stops, then comes back, IS news again rather than being swallowed as a repeat.
+	states.clear()
+	await wait_physics_frames(3)
+	states["Green_Bravo_1"] = {"phase": "driving", "legibility": {"active": false, "why": "survival"}}
+	await wait_physics_frames(3)
+	var again := f.controls.element_log.lines(element.id).filter(func(line: String) -> bool: return line.contains("under fire"))
+	assert_eq(again.size(), 2, "a cause that stopped and came back is logged again (%s)" % [f.controls.element_log.lines(element.id)])
 	# The pin is the REFUSAL's channel (a pin turns red and says NOT COMPLYING), and a deliberate off-corridor leg
 	# must never reach it, or "it is doing this on purpose" and "it is not doing it" become the same claim on screen.
 	# These units have orders from their brains, so pins exist; what must be true is that none of them is a refusal.
