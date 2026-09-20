@@ -161,6 +161,32 @@ func test_b_victim_deploys_a_full_army_and_reports_what_it_sees() -> void:
 			print("SPAWN_ISO_WRITER f%d %-12s unit=%-10s at %s delta=%s vel=%s floor=%s contacts[%d] %s"
 					% [frame + 1, tank.name, tank.unit_id, tank.global_position, body.get_position_delta(),
 					body.velocity, str(body.is_on_floor()), contacts.size(), ", ".join(contacts)])
+	# WHO IS ACTUALLY AROUND THEM. S2_2 and S2_3 are the only two units of their squad in the SECOND rank
+	# (z = 100.62 = BASE_Z + 8.62 + HULL_CLEAR_M, ArmyLayout's deep_floor); their three squadmates are at z = 90 and
+	# barely move. So whatever compresses them is NOT their own squad, and depenetration needs something to recover
+	# FROM. This prints every unit placed within 12 m of S2_2, whatever squad it belongs to, with its gap to S2_2 at
+	# placement -- if a neighbouring squad's second rank overlaps them, it will be here.
+	for tank: Tank in tanks:
+		if String(tank.name) != "Green_S2_2":
+			continue
+		var here: Vector3 = placed[tank]
+		var near: Array = []
+		for other: Tank in tanks:
+			if other == tank:
+				continue
+			var there: Vector3 = placed[other]
+			var d := Vector2(here.x, here.z).distance_to(Vector2(there.x, there.z))
+			if d > 12.0:
+				continue
+			var sa: Array = Units.stat(tank.unit_id, "hull_size")
+			var sb: Array = Units.stat(other.unit_id, "hull_size")
+			var gap_x: float = absf(here.x - there.x) - (float(sa[0]) + float(sb[0])) / 2.0
+			var gap_z: float = absf(here.z - there.z) - (float(sa[2]) + float(sb[2])) / 2.0
+			near.append("%s(%s) at %.1f,%.1f d=%.2f gap=%.2f" % [other.name, other.unit_id, there.x, there.z, d,
+					maxf(gap_x, gap_z)])
+		near.sort()
+		print("SPAWN_ISO_NEIGHBOURS of Green_S2_2 at %.1f,%.1f within 12 m: %s" % [here.x, here.z, ", ".join(near)])
+
 	# The pair squad measured, as a distance rather than two positions, so the convergence is one number.
 	var pair: Array = watch.filter(func(t: Tank) -> bool:
 			return String(t.name) == "Green_S2_2" or String(t.name) == "Green_S2_3")

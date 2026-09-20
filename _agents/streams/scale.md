@@ -529,16 +529,30 @@ tests were innocent (`AiScenario.dispose()` already frees properly), the grants 
 guard's own advice — *"build arenas through ArenaFixture"* — was withdrawn as wrong: the fixture solves the *consumer*
 side, waiting for your own regions before measuring, and does nothing about regions outstanding at teardown.
 
-**AND IT CAUGHT SOMETHING REAL.** Its record, in order: **three false reds** (the region half, measuring a settling
-window), **narrowed to bodies**, **two silent full-suite runs** (1487 and 1488 tests, no output), and then a **true
-positive** on combat's check — `test_combat_sim_cost::test_a_parked_hull_stays_exactly_still_and_drives_off_when_told`
-leaves **1 physics body in the world (was 0 before this test)**. combat owns the file and is fixing it.
+**ITS FIRST CATCH IS NOT YET ESTABLISHED, AND I RECORDED IT AS ONE TOO EARLY.** The record, in order: **three false
+reds** (the region half, measuring a settling window), **narrowed to bodies**, **two silent full-suite runs** (1487
+and 1488 tests), then a red on combat's check —
+`test_combat_sim_cost::test_a_parked_hull_stays_exactly_still_and_drives_off_when_told` leaving **1 physics body (was
+0 before this test)**.
 
-**That sequence is the whole argument for narrowing a claim instead of dropping it.** The first version was wrong in a
-way that would have sent three streams to fix nothing; the surviving half found a leak that had been invisible for
-rounds and named the test that caused it rather than the one that would have suffered. **A guard that is wrong once
-and then right is worth more than a guard that is never wrong because it never fires** — and the difference between
-the two versions is exactly one question: *does this measurement have a settling window?*
+**I wrote that up as a true positive on one report. It is not confirmed:** combat's test does **not** reproduce it
+alone (2 passed / 0 failed filtered) and fails only in the shard that carried the navmesh cascade — **so the catch may
+be the cascade's shadow rather than combat's leak.** Unresolved, and stated as unresolved.
+
+**That I made this mistake here, of all places, is the point worth keeping.** I spent the morning insisting that a
+green proves nothing until the arm is distinguishable, retracted my own region guard for measuring a transient, and
+then accepted a single red as a confirmed catch because it was *my* instrument and the result was flattering. **A
+guard's first agreement with you is exactly when to check it hardest.**
+
+**What the narrowing argument still shows, independent of this catch:** the first version was wrong in a way that
+would have sent three streams to fix nothing, and the difference between the two versions was one question — *does
+this measurement have a settling window?* Regions do; bodies do not. That reasoning stands whether or not this
+particular red survives.
+
+**Owed on the guard** (queued, low priority): name the leftover body in the failure line — **node path, class, and its
+owner test if the tree can tell** — and state **which frame the count was sampled on**. "left 1 physics bodies" costs
+a reproduction run to learn whose body it was, which is the same "names the symptom, not the thing" defect as the
+spawn test reporting *"inside a wall or crate"* about the ground.
 
 **What landed is the claim I can defend: bodies only.** A `CollisionObject3D` at teardown has no transient window. It
 reports a **lower bound** on leakers (high-water mark: once the count rises, a later test leaking below it is not
