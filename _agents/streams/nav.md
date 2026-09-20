@@ -519,6 +519,25 @@ friend 0.
 `run` (the A/B control for round 7's standoff), and it does not change `COMMIT_BONUS`'s value — combat's A2 replaces
 that expression at level 5 under contract S5.
 
+### For control and metrics (T1/CP3): a wall-clock-bounded test that already flakes under load
+
+`test_control_facing_camera::test_the_camera_turns_to_face_where_the_selection_faces` **fails about 1 run in 3 on
+the laptop under load, at the branch point as well as on this branch** — measured, three runs at `9f864474`:
+pass / pass / **fail**. It is green on builder0 (1261 passed, 0 failed) and green on a quiet laptop.
+
+The mechanism is in the test, not in nav: it waits `Time.get_ticks_msec() + 3000` while spinning on
+`tree.process_frame`, so how far the camera turns depends on **how many frames a loaded machine delivers in three
+wall-clock seconds**. It is control's test and control's harness; nav is reporting it, not fixing it.
+
+**Why it matters beyond one test: T1 parallelises `check`.** `workstreams.md` already warns that *"determinism is
+safe; TIMING is not"* — this is a concrete instance waiting for that change, and a faster check that flakes once is
+worse than a slow one, because a flake costs a re-run plus a false investigation. It cost exactly that here.
+
+**And the lesson nav paid for it, which is lesson 26 in a new place:** nav concluded *"my branch broke it"* from
+**one** passing run at the branch point against two failing runs on the branch. Three runs at the branch point
+overturned it. **A one-run control is not a control**, and the rule about stating the sample size applies to the
+runs you use to rule something out, not only to the numbers you publish.
+
 ### N5's shopping list, collected from the S4 signatures (build it all in one commit, after control's hash)
 
 Nothing of A6 is in code and nothing will be until the page carries three signatures. nav has signed; control has
