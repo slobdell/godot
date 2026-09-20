@@ -276,6 +276,38 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 | The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
 
+**The hinge cost is UNMEASURED at round's end, after three attempts and three refusals — and that is the honest
+result, not a number.** Each refusal had a different cause and each was the bench correctly declining:
+
+| attempt | why it was refused |
+|---|---|
+| busy box | frame-time spread swamped an effect under 1.5 ms (lesson 179) |
+| quiet box, 6 cycles, twice | census walked 90 → 72 as the battle thinned; **0.677 ms/vehicle (r 0.921)**, the size of the signal |
+| with `--tune=match.no_damage=1` | **the freeze did not take** — `Armor.no_damage` read false in 13 of 13 phases |
+
+The third is the one worth keeping: the flag was on the command line, `apply_tuning` printed **no error** (accepted),
+and the static the damage path reads was still false while the census walked 90 → 77. That is combat's
+initialisation-order bug on a second knob, **measured by the bench's own arm assertion** — which is what makes that
+assertion load-bearing rather than decorative. "Accepted with no error" carried no information whatsoever.
+*(That run was also on a box at load 8.22 with 25 other Godot processes, 78–100 ms frames against a 33.3 ms budget:
+void twice over.)*
+
+**ROUND 10, carried forward:**
+
+1. **A faint per-faction rim light on hulls** — the orchestrator's recommendation and the real answer to "the fight
+   should out-read the buildings". Lamps were never going to solve it: they light the *floor*, and a dark hull
+   between pools is still carried by its UI ring. Pair discipline and the readability gate apply.
+2. **The hinge cost**, once combat's `Units.tuning` fix is on main. The bench is already wired and will refuse
+   again if the knob still does not take.
+3. **A single-variable lamp pair**, if anyone wants the lamp claim on stricter footing than the current one (the
+   after-frame carries the roof dressing too; sound for the floor question, not single-variable).
+
+**And a rule I owe myself, from this round's last mistake: when you change SHARED geometry, run the neighbouring
+files before you push.** I changed `tiers_of` and the block shader and ran only `FILTER=theme_city_block`. The check
+came back with 38 reds in `test_theme_factions` and `test_theme_unit_scale` — both mine — and my first assumption was
+that I had broken them. I had not (they were combat's foundry leak, first-observed), but I had no grounds for the
+relief. Two minutes of local runs would have made it knowledge instead of luck.
+
 **The frame said the first version did not work, and every test passed while it did not.** All seven boxes place
 on every seed (counted: 28 distinct plant corners above the roof cap), the surface count was 2, the AABB was inside
 the box — and at the lifted camera the plant was *shapes you had to look for*. The shading sat at **+25% on tops and
