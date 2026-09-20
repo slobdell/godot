@@ -118,3 +118,19 @@ func test_a_gun_far_outside_its_band_still_closes_on_the_target() -> void:
 	Movement._off = was
 	assert_true(not result.is_empty(), "it chooses something at 90 m (%s)" % result)
 	assert_true(result["point"].z < -0.5, "and it is toward the target, not tied on a saturated band cost (%s)" % result)
+
+
+## X6 (squad's request, the lead's named ask): gains are picked by faction, so "the same army with different gains"
+## could not be set up — changing the faction changes the hulls, the weapons and the doctrine with it. A forced set
+## makes the control law the only difference.
+func test_gains_can_be_forced_so_an_identical_army_can_be_driven_two_ways() -> void:
+	var was := ControlGains.forced
+	ControlGains.forced = ""
+	var condemned := ControlGains.for_loop("station", "")
+	var law_by_faction := ControlGains.for_loop("station", "law")
+	ControlGains.forced = "law"
+	var condemned_forced := ControlGains.for_loop("station", "")
+	ControlGains.forced = was
+	assert_true(condemned["kp"] != law_by_faction["kp"], "the factions really do differ (%s vs %s)" % [condemned, law_by_faction])
+	assert_eq(condemned_forced["kp"], law_by_faction["kp"], "a Condemned crew driven on the Law's gains")
+	assert_eq(condemned_forced["kd"], law_by_faction["kd"], "including the damping that is the point of them")

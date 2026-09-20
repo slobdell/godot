@@ -51,6 +51,26 @@ var sectors := {}
 ## Who stands in which slot of which shape ({unit: [formation, count, index]}): handed back to the next plan so
 ## the seating is stable from one update to the next (N2).
 var seats := {}
+## X1 (round 9): this element's TACTICAL pitch — Vector2(across the heading, along it), the doctrine's number for the
+## terrain raised to what the members' own hulls fit in. It is what a slot's leash is one of (TankBrain.slot_leash)
+## and what the coherence probe reports beside its threshold. The pitch a particular set of slots was laid at may be
+## tighter, because X2 deforms it for the corridor — `corridor_m` and `file` below say by how much.
+var pitch := Vector2(TacticsFormation.DEFAULT_SPACING, TacticsFormation.DEFAULT_SPACING)
+## X2 (A8): the drivable width across the heading of the leg the element is on (metres; INF = open, or unmeasured),
+## and how far its shape is pulled toward single file for it (0 = the nominal shape). Measured once per LEG, not per
+## update: ~40 navmesh queries, and a leg is 22-45 m of driving.
+## For nav (round 9): {unit: the slot the formation asked for} for the members whose slot SlotGround had to move to
+## standable ground. Empty when every slot was already standable, which is the common case.
+var slots_asked := {}
+var corridor_m := INF
+var file := 0.0
+## X3 (A9): the element's bottleneck arrival time in TICKS — the time every member's pace is parameterised against.
+var bottleneck_ticks := 0
+## X3 (A9): the bounding-overwatch phase machine, when the element is bounding. {} when it is not.
+## {"phase": int, "since_tick": int, "movers": PackedStringArray, "overwatch": PackedStringArray, "base": PackedStringArray}
+var bound := {}
+var _corridor_from: Variant = null
+var _corridor_to: Variant = null
 ## X3: seconds each member needs to reach its slot, and the speed fraction it drives at so the element arrives
 ## together (FormUp). Refreshed every update.
 var etas := {}
@@ -77,6 +97,22 @@ var _issued := {}
 var _detached := {}
 ## Contact name -> the tick this element first knew of it, so a drill can tell an ambush from a firefight.
 var _known := {}
+## X5: how many of this element's orders carried a `facing` (a halt, a hold or a firing line). The counter makes
+## "a squad hold issues a facing" falsifiable in a real match rather than only in a unit test.
+var _facings_issued := 0
+## For nav (round 9, A1's finding): WHY the goal of an order this element issued moved. nav measured that its fixed
+## repath cadence is worth ~3% of re-planning in a fight and that the rest are events — overwhelmingly "the goal
+## moved" — and from its side of the seam it cannot tell an order that genuinely changed from a slot that jittered.
+## From this side it is four different things, and they are four different bugs:
+##   task     a new task arrived (the commander really did change its mind)
+##   leg      the element advanced its leg, so the whole formation's anchor moved
+##   reseat   this unit changed slot within the same shape
+##   drift    same task, same leg, same seat, and the goal still moved: the slot itself wandered
+## `following` is the other half of the answer: a member on a K1 `follow` has a goal that slides with its leader
+## EVERY TICK by design (round 7's flow), which nav sees as continuous goal movement and which is not a re-issue at
+## all. A number here of n means n of this element's members have a deliberately moving goal.
+var goal_moves := {"task": 0, "leg": 0, "reseat": 0, "drift": 0}
+var following := 0
 ## Bumped whenever anything the HUD shows changes.
 var revision := 0
 ## What changed in the last update ("task", "formation", "technique", "drill", "leader", "roster"): the
@@ -160,10 +196,11 @@ func update(game_match: Match, orders: Object) -> bool:
 	var situation := ElementSituation.build(game_match, team, commanded, leader,
 			{"heading": heading, "arrived": arrived, "known": _known})
 	_known = situation["known"]
+	situation["corridor_m"] = _corridor(game_match, situation)
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
-			"route": route, "route_index": route_index}
+			"route": route, "route_index": route_index, "bound": bound}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null)
@@ -174,8 +211,11 @@ func update(game_match: Match, orders: Object) -> bool:
 	if game_match.tick - _etas_tick >= ETA_REFRESH_TICKS or etas.size() != slots.size():
 		etas = FormUp.etas(by_name, slots)
 		_etas_tick = game_match.tick
+	# X3 (A9): ONE bottleneck, one pacing rule, every member including the leader (FormUp.paces). Round 7 had a
+	# second rule here — `_pace_leader_for_flow`, which eased the leader off by how far the worst follower trailed
+	# its follow offset — and two rules pacing the same vehicle by different arithmetic is what A9 replaces.
 	paces = FormUp.paces(by_name, slots, etas)
-	_pace_leader_for_flow(plan, by_name)
+	bottleneck_ticks = FormUp.bottleneck_ticks(etas)
 	_issue(plan, orders, situation, game_match)
 	return _note_changes(before)
 
@@ -184,39 +224,54 @@ func update(game_match: Match, orders: Object) -> bool:
 func state() -> Dictionary:
 	return {"id": id, "name": element_name, "team": team, "leader": leader, "members": members(),
 			"task": task.duplicate(true), "formation": formation, "technique": technique, "drill": drill,
-			"reason": reason, "slots": slots.duplicate(), "sectors": sectors.duplicate(), "pace": paces.duplicate(),
+			"reason": reason, "slots": slots.duplicate(), "slots_asked": slots_asked.duplicate(),
+			"sectors": sectors.duplicate(), "pace": paces.duplicate(),
 			"form_up_eta": form_up_eta(),
+			# X1: the pitch the slots were laid at, across the heading and along it. A squad of 14 m rigs is spaced
+			# by its hulls, not by its doctrine's number, and control's readout can say so.
+			"pitch": [pitch.x, pitch.y], "facings_issued": _facings_issued,
+			# X2 (A8): the corridor the element is deforming for, and how far toward single file it has gone.
+			"corridor_m": corridor_m if is_finite(corridor_m) else null, "file": file,
+			# X3 (A9): the bounding phase, so control can draw it and the announcer can call it. `stationary_share`
+			# is the falsifier's own quantity: what fraction of the element is not moving this phase.
+			# duplicate(), not duplicate(true): a PackedStringArray is a VALUE in GDScript (trip-up 48), so a shallow
+			# copy already isolates the member lists, and this dictionary is read once per brain decision.
+			"bound": bound.duplicate(), "bottleneck_ticks": bottleneck_ticks,
+			# For nav: why this element's goals moved, and how many members have a goal that slides by design.
+			"goal_moves": goal_moves.duplicate(), "following": following,
 			# The element's intended facing and where its formation stands (round 6): the geometry control's facing
 			# indicator and preview draw, rather than an illustration of it.
 			"heading": [heading.x, heading.z], "anchor": [anchor.x, anchor.z] if anchor is Vector3 else null,
 			"detached": _detached.keys(), "events": events}
 
 
-## Round 7 flow: while members follow the leader at their offsets, the leader eases off by how far the worst of them
-## trails its place (the old Squad's commander pacing), so the shape can form on the way instead of stringing out.
-const FLOW_LAG_SLACK_M := 6.0
-const FLOW_LAG_FALLOFF_M := 20.0
-const FLOW_MIN_PACE := 0.75
+## X2 (A8): the drivable width across the heading of the leg this element is driving, measured once per leg.
+## Re-measured when the leg's ends move (a new task, a new destination, real progress), and never for an element
+## that is not going anywhere — a halt deforms for nothing. INF when the navmesh cannot answer, which is the
+## identity: a formation must not be worse than today for the lack of a number.
+const CORRIDOR_MOVED_M := 12.0
 
 
-func _pace_leader_for_flow(plan: Dictionary, by_name: Dictionary) -> void:
-	var lead := by_name.get(leader) as Tank
-	if lead == null:
-		return
-	var forward := TacticsFormation.flat(-lead.global_basis.z)
-	var worst := 0.0
-	for unit_name: String in plan["orders"]:
-		var order: Dictionary = plan["orders"][unit_name]
-		if String(order.get("verb", "")) != "follow" or not order.has("slot"):
-			continue
-		var tank := by_name.get(unit_name) as Tank
-		if tank == null:
-			continue
-		var place := TacticsFormation.to_world(lead.global_position, forward, Vector2(order["slot"][0], order["slot"][1]))
-		worst = maxf(worst, Vector2(tank.global_position.x - place.x, tank.global_position.z - place.z).length())
-	if worst > 0.0:
-		paces[leader] = minf(float(paces.get(leader, 1.0)),
-				clampf(1.0 - (worst - FLOW_LAG_SLACK_M) / FLOW_LAG_FALLOFF_M, FLOW_MIN_PACE, 1.0))
+func _corridor(game_match: Match, situation: Dictionary) -> float:
+	var destination: Variant = ElementTask.destination(task)
+	var from: Vector3 = situation["center"]
+	if not (destination is Vector3):
+		corridor_m = INF
+		_corridor_from = null
+		_corridor_to = null
+		return corridor_m
+	var to: Vector3 = destination
+	var stale: bool = not (_corridor_from is Vector3) or not (_corridor_to is Vector3) \
+			or (_corridor_from as Vector3).distance_to(from) > CORRIDOR_MOVED_M \
+			or (_corridor_to as Vector3).distance_to(to) > CORRIDOR_MOVED_M
+	if not stale:
+		return corridor_m
+	_corridor_from = from
+	_corridor_to = to
+	var ground := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
+			and game_match.tanks.get_child_count() > 0 else null
+	corridor_m = SlotGround.corridor_width(ground, from, to, TacticsFormation.flat(to - from))
+	return corridor_m
 
 
 ## X3: seconds until the element is formed up — until its slowest member reaches its slot (the lead's estimate).
@@ -226,6 +281,8 @@ func form_up_eta() -> float:
 
 ## N2 for TacticsFormation.slots(element, ...): this element as formation data (members where they were last update).
 func formation_group() -> Dictionary:
+	# `spacing` is the DOCTRINE's tactical number; TacticsFormation.place floors it by the members' hulls (X1), so a
+	# caller that re-lays this shape gets the same slots the element issued.
 	return {"formation": formation, "leader": leader, "policy": "exposure", "spacing": _doctrine().spacing("open"),
 			"members": _last_members.duplicate(), "previous": _seating_now()}
 
@@ -332,8 +389,18 @@ static func ground(plan: Dictionary, node: Node3D) -> void:
 	if node == null:
 		return
 	var slots_in: Dictionary = plan["slots"]
+	# Round 9, for nav: keep the slot the FORMATION asked for beside the one the navmesh allowed. nav measured 70% of
+	# its arrival-arc refusals as `off_mesh` and cannot tell two different bugs apart without this — a gate behind a
+	# slot that was always inside geometry, versus one behind a slot this push MOVED, where the gate is then computed
+	# one approach-length back along the ordered heading into whatever the slot was pushed out of.
+	var asked := {}
 	for unit_name: String in slots_in:
-		slots_in[unit_name] = SlotGround.standable(node, slots_in[unit_name])
+		var wanted: Vector3 = slots_in[unit_name]
+		var allowed := SlotGround.standable(node, wanted)
+		if allowed != wanted:
+			asked[unit_name] = wanted
+		slots_in[unit_name] = allowed
+	plan["slots_asked"] = asked
 	for unit_name: String in plan["orders"]:
 		var order: Dictionary = plan["orders"][unit_name]
 		if order["to"] is Vector3:
@@ -352,6 +419,10 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	slots = plan["slots"]
 	sectors = plan["sectors"]
 	seats = plan["seats"]
+	pitch = plan.get("pitch", pitch)
+	slots_asked = plan.get("slots_asked", {})
+	file = float(plan.get("file", 0.0))
+	bound = plan.get("bound", {})
 	flow_joined = bool(plan.get("flow_joined", false))
 	route = plan["route"]
 	route_index = int(plan["route_index"])
@@ -389,6 +460,10 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 	var names: Array = (plan["orders"] as Dictionary).keys()
 	names.sort()
 	var player_team := OrderFeed.player_team(game_match)
+	following = 0
+	for unit_name: String in plan["orders"]:
+		if String((plan["orders"][unit_name] as Dictionary).get("verb", "")) == "follow":
+			following += 1
 	for unit_name: String in names:
 		if _detached.has(unit_name):
 			continue
@@ -404,6 +479,7 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 			continue
 		if not _should_issue(unit_name, desired, current, positions.get(unit_name, Vector3.ZERO), int(situation["tick"])):
 			continue
+		var mine_before: Dictionary = (_issued.get(unit_name, {}) as Dictionary).duplicate()
 		# K1's `source`: the player's own orders are the ones the response guarantee is about, and the only ones render
 		# confirms with a marker and a cue. An element's are its own.
 		var command := {"units": [unit_name], "verb": String(desired["verb"]), "source": "element"}
@@ -414,6 +490,13 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 			command["target"] = desired["target"]
 		if desired.has("slot"):
 			command["slot"] = desired["slot"]  # K1 follow-with-slot: this member's place relative to its leader
+		if desired.get("facing") is Vector3:
+			# X5: the heading this crew is to end up on (a halt's sector, a firing line's, a cover position's). K1 has
+			# carried `facing` since round 5 and TankBrain.intended_facing() reads it; until round 9 an element's own
+			# orders never set one, so nav's arrival arc counted `aimed 0 / refused 0` in every CPU fight.
+			var look: Vector3 = desired["facing"]
+			command["facing"] = [look.x, look.z]
+			_facings_issued += 1
 		if command["verb"] == "attack" and not command.has("target"):
 			command["verb"] = "hold"
 			command.erase("to")
@@ -421,9 +504,39 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 		if error != "":
 			# A target that just died, or a unit that did: try again next update with fresh facts.
 			continue
+		_count_goal_move(unit_name, desired, mine_before)
 		var issued: Dictionary = orders.call("current", unit_name)
 		_issued[unit_name] = {"id": int(issued.get("id", -1)), "verb": command["verb"], "tick": int(situation["tick"]),
-				"to": desired["to"], "target": String(desired.get("target", ""))}
+				"to": desired["to"], "target": String(desired.get("target", "")),
+				"anchor": anchor, "seat": _seat_index(unit_name)}
+
+
+## Attribute a re-issued goal to the thing that moved it (see `goal_moves`). `before` is what this element had issued
+## to the unit previously ({} the first time, which is not a MOVE of a goal and is not counted).
+func _count_goal_move(unit_name: String, desired: Dictionary, before: Dictionary) -> void:
+	if before.is_empty() or not (before.get("to") is Vector3) or not (desired.get("to") is Vector3):
+		return
+	if (before["to"] as Vector3).distance_to(desired["to"]) <= 1.0:
+		return  # nav's own threshold: under a metre is not a goal that moved
+	var key := "drift"
+	if _fresh_task:
+		key = "task"
+	elif not _same_anchor(before.get("anchor"), anchor):
+		key = "leg"
+	elif int(before.get("seat", -1)) != _seat_index(unit_name):
+		key = "reseat"
+	goal_moves[key] = int(goal_moves[key]) + 1
+
+
+static func _same_anchor(a: Variant, b: Variant) -> bool:
+	if a is Vector3 and b is Vector3:
+		return (a as Vector3).distance_to(b) <= 1.0
+	return a == null and b == null
+
+
+func _seat_index(unit_name: String) -> int:
+	var seat: Variant = seats.get(unit_name)
+	return int(seat[2]) if seat is Array and (seat as Array).size() > 2 else -1
 
 
 func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, position: Vector3, tick: int) -> bool:

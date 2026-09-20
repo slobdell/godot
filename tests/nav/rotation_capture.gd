@@ -136,6 +136,11 @@ func _truck() -> void:
 	var heading0 := _heading(tank)
 	var in_place_turn := 0.0
 	var farthest := 0.0
+	# The denominator for the face recovery, snapshotted so only THIS case is counted: the counters are statics and
+	# `_pivot` issues a face too. They tick in both arms — only the behaviour is gated — so one run tells us whether
+	# the mechanism was reached (`checked`) and whether it would have fired (`giveups`).
+	var checked0 := OrderController.face_checked
+	var giveups0 := OrderController.face_giveups
 	var series := {String(tank.name): PackedFloat32Array()}
 	for tick in SimClock.TICK_RATE * 12:
 		_log_heading(series, tank)
@@ -148,6 +153,10 @@ func _truck() -> void:
 	print("NAV_ROTATION_INPLACE truck gang_tank (wheels, r=%.0f m): turned %.0f deg while within 1.5 m of its start, farthest %.1f m -> %s" % [
 			float(Units.stat("gang_tank", "min_turn_radius_m")), in_place_turn, farthest,
 			"YAWING IN PLACE" if in_place_turn >= 30.0 else "ok"])
+	print("NAV_ROTATION_FACEGIVEUP truck: switch %s, windows checked %d, giveups %d, stalled_now %s" % [
+			"ON" if OrderController.face_giveup_on() else "off",
+			OrderController.face_checked - checked0, OrderController.face_giveups - giveups0,
+			orders.face_stalled])
 	tank.queue_free()
 	orders.queue_free()
 

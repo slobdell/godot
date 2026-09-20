@@ -291,3 +291,14 @@ func test_a_driven_rig_bends_in_the_real_node_tree_and_settles_on_a_straight() -
 		_drive(tank as Node3D, at, turned)
 	assert_true(absf(rad_to_deg(float(hull.call("articulation")))) < 1.5,
 			"and pulls back into line on a straight (%.1f deg)" % rad_to_deg(float(hull.call("articulation"))))
+
+
+func test_the_trailer_cut_has_an_A_B_switch() -> void:
+	## `--no-trailer` exists so the hinge's frame cost is an A/B in ONE tree (M1), the way nav's `--nav-off=` is.
+	## Asserted from both sides: a switch nobody can prove turns anything off is not a control.
+	assert_true(not FactionArt.trailers_off(), "trailers are on unless --no-trailer says otherwise")
+	assert_true(not FactionArt.trailer_cut(RIG).is_empty(), "so the rig has its cut")
+	FactionArt._trailers_off = 1
+	assert_true(FactionArt.trailer_cut(RIG).is_empty(), "and --no-trailer takes it away")
+	FactionArt._trailers_off = 0
+	assert_true(not FactionArt.trailer_cut(RIG).is_empty(), "and putting it back restores it")

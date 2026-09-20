@@ -22,6 +22,9 @@ extends RefCounted
 ##    "drill": String ("" = none), "task": String ("" = none),
 ##    "slot": Vector3 | null      my post in world meters (doctrine resolves the formation geometry, not the brain),
 ##    "facing": Vector3 | null    my sector of fire, a flat unit vector,
+##    "pitch": Vector2 | null     the spacing the element's slots were laid at (across the heading, along it): since
+##                                round 9 (X1) a per-element number derived from the members' hulls, and what
+##                                TankBrain.slot_leash() turns into "one formation spacing" of manoeuvring room,
 ##    "role": "" | "bound" | "overwatch" | "base_of_fire" | "maneuver",
 ##    "members": PackedStringArray (sorted), "key": String}
 ## `role` is what a brain executes differently, and doctrine's state() doesn't publish it yet (see the ai stream's
@@ -106,6 +109,7 @@ static func normalize(element: Object, unit_name: String, order_verb := "") -> D
 	context["task"] = task if TASKS.has(task) else ""
 	context["slot"] = OrderFeed.point(mine.get("position"))
 	context["facing"] = _sector(state, element, unit_name, mine)
+	context["pitch"] = _pitch_of(state)
 	context["role"] = _role(mine, state, unit_name, technique, drill, task, order_verb)
 	context["members"] = members
 	# X3: the speed fraction this unit drives at so the element forms up together (not part of the key: it changes
@@ -116,6 +120,15 @@ static func normalize(element: Object, unit_name: String, order_verb := "") -> D
 	context["key"] = "%s|%s|%s|%s|%s|%s" % [context["id"], context["technique"], context["drill"], context["task"],
 			context["role"], context["slot"]]
 	return context
+
+
+## X1 (round 9): the spacing the element's slots were really laid at, Vector2(across the heading, along it), or null
+## from a source that does not publish one (a stub, a pre-round-9 recording) — then the brain keeps its constant.
+static func _pitch_of(state: Dictionary) -> Variant:
+	var raw: Variant = state.get("pitch")
+	if typeof(raw) != TYPE_ARRAY or (raw as Array).size() != 2:
+		return null
+	return Vector2(float((raw as Array)[0]), float((raw as Array)[1]))
 
 
 ## True when a brain must re-decide: the element's call changed (a bound halted, a drill started, my role flipped).

@@ -179,8 +179,22 @@ const TRAILER_CUTS := {
 }
 
 
+## `--no-trailer` switches every trailer cut off, so the frame cost of the hinge is an A/B **in one tree** rather
+## than a comparison of two checkouts on two days (the shape nav's `--nav-off=` already uses). Read once: a flag
+## lookup per vehicle per spawn is not free at 60 vehicles.
+static var _trailers_off := -1
+
+
+static func trailers_off() -> bool:
+	if _trailers_off < 0:
+		_trailers_off = 1 if LaunchFlags.from_environment().has("no-trailer") else 0
+	return _trailers_off == 1
+
+
 ## The trailer cut for a unit's art, or {} when it has no trailer.
 static func trailer_cut(unit_id: String) -> Dictionary:
+	if trailers_off():
+		return {}
 	var faction := String(Units.stat(unit_id, "faction", ""))
 	var role := art_role(Units.role_of(unit_id))
 	return TRAILER_CUTS.get("%s/%s" % [faction, role], {})
