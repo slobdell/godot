@@ -2927,3 +2927,13 @@ The kickoff prompt is one line; this section is the rest.
     and wrong about what it was looking at**, and the numbers agreeing beside the wrong label is what makes a
     reader trust the label. Corollary: the tests could not have caught it, because their fixture used a
     lightweight tag, built before the thing it models existed; a fixture is rebuilt when the modelled thing changes.
+193. **An API whose correct use cannot be told from its incorrect use at the call site is a signature problem, not a
+    convention problem.** Round 9 (nav): `TestCase.teardown()` ended in `await drain_navigation()`, so a subclass
+    override declared `func teardown() -> void` that called `super.teardown()` un-awaited was not a coroutine, the
+    runner's `await teardown()` returned at once, and four viewport-resizing tests had silently skipped the drain
+    for as long as it existed; a fifth called `teardown()` mid-test and detached a drain that then counted its own
+    next arena as a leak. `await teardown()` and `teardown()` look equally deliberate on the page, and no review
+    could tell them apart. Fix: the runner awaits a sealed `_teardown()` that owns the order (hook, free, guards,
+    drain), the overridable hook is synchronous and documented as never responsible for the drain, and mid-test
+    clears go through a public `await free_owned()`. Same family as an instrument that cannot report its own
+    inapplicability, one level up, in the signature.
