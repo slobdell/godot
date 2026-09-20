@@ -1,6 +1,6 @@
 # Legibility: the A6 motion law (contract S4)
 
-> **Status: DRAFT, awaiting signatures.** Owner **feel**; signatories **control** and **nav**.
+> **Status: SIGNED by feel, nav and control (2026-09-20). A6 motion code is unblocked.** Owner **feel**; signatories **control** and **nav**.
 > **No stream writes A6 motion code until all three signatures are on this page** ([workstreams.md](workstreams.md),
 > contract S4). Until then the page is the whole deliverable.
 >
@@ -11,8 +11,8 @@
 | Signatory | What signing means | Signed |
 |---|---|---|
 | **feel** (author) | the law below is what "looks obedient" means, and feel will not ask for a different one mid-round | 2026-09-20 |
-| **nav** | the law is executed as **level 3** of A7's priority table, claiming the freedoms named in §4, and nav will not express it as an additive term | *pending* |
-| **control** | the readout in §6 is what the player is shown, and control will build it | *pending* |
+| **nav** | the law is executed as **level 3** of A7's priority table, claiming the freedoms named in §4, and nav will not express it as an additive term | **2026-09-20** |
+| **control** | the readout in §6 is what the player is shown, and control will build it | **2026-09-20**, subject to C-2 (the `why` key) below |
 
 ---
 
@@ -45,7 +45,11 @@ a unit go where it was sent *more*; it makes a unit that is already going there 
 **The ordered corridor** is the path `nav` is currently driving, not the straight line to the goal. Precisely: the
 current leg of `Movement.state(unit)["path_points"]` (contract **N1**) — from the unit's projection onto that leg to
 the next waypoint. One definition, one publisher: the law, the readout and the falsifier all read `path_points`, and
-nobody recomputes a corridor of their own. When `path_points` is empty (no path yet, or `blocked`), **the law is
+nobody recomputes a corridor of their own. **nav checked this rather than agreeing to it** (2026-09-20):
+`Movement.reading()` already slices `path_points` from the mover's own `_path_index`, so `path_points[0]` **is** the
+next waypoint and there is no leg-index ambiguity. nav will additionally publish the tangent itself as `corridor` in
+the reading at N5, on the principle that *one publisher* should mean one **interpretation**, not one array that three
+streams each project onto slightly differently. When it lands, everything here reads `corridor`. When `path_points` is empty (no path yet, or `blocked`), **the law is
 inactive** and says so — see §5.
 
 **The corridor tangent** `t̂` is that leg's unit direction, flattened to the ground plane.
@@ -132,7 +136,8 @@ Level 3's null space is written as *"the sign of the arc (either shoulder), and 
 > **A6 claims the sign of the arc.** Level 3's remaining null space is **speed alone**.
 
 That is A6-b, and it is the difference between A6 mattering and A6 being cosmetic. It is a one-line change to the
-table's *Null space* cell, not a new level and not a new term. `TOLERANCE[3]` remains nav's: A6 wants it **banded,
+table's *Null space* cell, not a new level and not a new term. **nav has made it** (2026-09-20): the table now reads
+*"Level 3's null space: speed alone. A6-b claims the sign of the arc."* `TOLERANCE[3]` remains nav's: A6 wants it **banded,
 not dictatorial** — prefer the advancing shoulder unless the retreating one is better at level 3's own cost by more
 than the tolerance — so that a unit is never wedged into a worse arc for the sake of a tidy line.
 
@@ -158,6 +163,11 @@ chose, laid in by `TankMotion.yaw_toward`. The nearest thing to A6 is `PENALTY_S
 **nav's A7 already deletes that constant** and re-expresses it as level 3's arc task for the `angle` style — so A6-a
 does not replace it either; it composes with it, as the table above says.
 
+**On the record, from nav (2026-09-20), because this is how an addition accidentally looks like a win:** nav's A7
+commit deletes `PENALTY_SIDE_ON` / `ANGLE_MASK_COS` as constants and re-expresses the side-on guard as level 3's arc
+task **before A6 exists**. So when A6-a lands there is already an arc task at level 3, and there is no version of
+this in which A6 becomes the only thing at that level and inherits credit for the arc task's behaviour.
+
 **The honest form of the claim:** A6 replaces nothing, and therefore A6 is an *addition*, and therefore A6 must earn
 its place on its falsifier alone. Its cost is one level-3 cost term over an already-built candidate ring, evaluated on
 candidates that survived levels 1 and 2 — a dot product each, which is what the catalogue means by *"dot-product
@@ -178,8 +188,9 @@ A6 is active only while a unit holds an unreached ordered goal *and* `path_point
 
 **An inactive law must never look like a broken law.** Round 8 shipped a facing feature that could not fire at all
 on the lead's control scheme (lesson 149) and it read as "the feature does nothing" rather than "the feature is off".
-So: every unit-tick carries whether A6 was active, and if it was not, which of the above it was. control's readout
-(§6) reads that flag; the falsifier (§7) is computed **only over active ticks**, and reports the active fraction
+So: every unit-tick carries whether A6 was active, and if it was not, which of the above it was. **nav owns the flag** (2026-09-20): all five cases are things `Movement` already knows, so the flag and its reason
+come out of the same reading as the corridor. control's readout (§6) reads that flag; the falsifier (§7) is computed
+**only over active ticks**, and reports the active fraction
 beside it. A falsifier that improves because the law switched itself off more often is not a pass.
 
 ---
@@ -191,15 +202,42 @@ the only check that counts for "does it read as obedience" is a human looking at
 
 control owns this; feel is asking for three things and nothing more:
 
-1. **The corridor, drawn.** The ordered path leg for the selected element, at the lead's 12° and 35° poses. The
-   player cannot judge "on the corridor" against a corridor nobody drew. Round 8's order markers are the seam.
+1. **The corridor, drawn.** The ordered path leg for the selected **element**, at **the lead's pose: pitch 21°,
+   FOV 35°, 49 m, auto-frame on**. The player cannot judge "on the corridor" against a corridor nobody drew.
+   *(Corrected 2026-09-20 by control, and the correction matters: this page first said "his 12° and 35° poses".
+   **12° is the camera he played and rejected** — "I was totally wrong about the camera, the game is unplayable now
+   with low field of view". Nothing in this round is judged at 12°.)* control's answer, **C-1**: most of it already
+   exists — `RtsControls._draw_waypoints` already draws `movement.route(unit)`, which is N1's `path_points`, never
+   recomputed. Two changes and no new widget: draw it for the selected element, and draw the **current leg** at full
+   weight with the rest left faint, because the law is a claim about the current leg and nothing else.
 2. **Attribution when the law gives way.** When A6 is overridden by level 1 or level 2 — the case the player
-   experiences as *"it stopped doing what I told it"* — the existing "why did my element do that" line says so, in
-   the vocabulary already shipped (*taking fire*, *holding range*), not in the vocabulary of this page. **This is the
-   part that matters most**: the lead's complaint is about attribution, and a unit that breaks off *for a reason the
-   player can see* is not disobedient, it is professional.
-3. **Nothing new on the command card.** A6 is not a button, a stance, or a toggle the player sets. If it needs UI the
-   player operates, it is the wrong feature.
+   experiences as *"it stopped doing what I told it"* — the existing "why did my element do that" line (`ElementLog`)
+   says so, in the vocabulary already shipped (*taking fire*, *holding range*), not in the vocabulary of this page.
+   **This is the part that matters most**: the lead's complaint is about attribution, and a unit that breaks off
+   *for a reason the player can see* is not disobedient, it is professional.
+
+   **C-2, control's condition on signing, and feel endorses it: §5's `active` boolean is not enough.** A boolean
+   cannot say *which* level took the nose, and control will not infer the cause from geometry — a guessed
+   attribution is confidently wrong on exactly the ticks the player is staring at. So `Movement.state(unit)` carries
+   one more key, nav's to publish:
+
+   ```
+   "legibility": {"active": bool, "why": StringName}
+   ```
+
+   `why` from a closed set: `"" | "no_order" | "no_path" | "blocked" | "reflex" | "style_run" | "band" | "survival"
+   | "armour"`. The last three are the level 1/2/3 overrides. control maps them onto words already on screen
+   (`band` → *holding range*, `survival` → *taking fire*, `armour` → *front toward the threat*) and adds no new
+   vocabulary. **Without `why`, §6.2 is not built.**
+3. **"This is the plan" and "this is a refusal" must not share a channel** (control, **C-3**). A refusal already owns
+   one: the order pin turns **red** and its label reads `NOT COMPLYING`. So a deliberate off-corridor leg gets a
+   different one — the corridor stays drawn, the pin keeps the order's colour, and one `ElementLog` line names the
+   cause. No pin colour change, no hull callout, no HUD message (30 units off-corridor at once would be 30
+   messages). The hull callout band (`MovementReadout`: YIELDING / BLOCKED / STUCK) stays reserved for *nav cannot
+   proceed*; A6 is a unit that **is** proceeding. Red = it is not doing it; coloured corridor plus a log line = it is
+   doing it, this way, for this reason.
+4. **Nothing new on the command card.** A6 is not a button, a stance, or a toggle the player sets. If it needs UI the
+   player operates, it is the wrong feature. Agreed and committed by control.
 
 **The A/B control's prerequisite:** control's desktop right-drag facing lands first regardless of this page
 ([workstreams.md](workstreams.md), S4), because without a way to *order* a facing there is no way to A/B one.
@@ -223,6 +261,14 @@ Pre-registered, in full, before any code:
   commit pair. **A fall in exchange ratio fails A6 outright**, however good the first number looks.
 - **Reported beside both: the active fraction** (§5), and the off-corridor number for `run`-style units as an
   untreated control.
+- **⚠ The arrival arc must not be charged to A6** (control, 2026-09-20, and it is new information). Desktop
+  right-drag facing is green on `stream/control`: a right drag now puts `facing` on a move order, so nav's
+  arrive-on-heading arc has a live caller **for the first time** — its round-8 A/B read `gates aimed 0` in *both*
+  arms because nothing in the game he plays ever sent one. **An arrival arc is off-corridor by construction at the
+  end of every dragged move, and that is a unit obeying an explicit order.** If A12 counts those ticks, A6's
+  falsifier is penalised for the behaviour this round just shipped. So either nav marks the arc's ticks (an
+  `arriving` phase, or a `why` of its own) and metrics splits the last `arrive_radius` of the final leg out of the
+  statistic, or those ticks are counted as ordered. It costs nothing now and is a wrong verdict later.
 - **And the frames.** The falsifier is necessary, not sufficient: the claim is *"it reads as obedience"*, and for
   anything subjective a human is the only check that counts. The number and the lead's verdict are reported together.
 
