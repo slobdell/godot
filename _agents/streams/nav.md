@@ -522,20 +522,49 @@ arrival-arc A/B before it** — a facing enters a move from one place today and 
 
 ### Questions for the lead
 
-None yet.
+**None.** Nothing this round reached a point where his judgement was the missing input: both rows failed a behaviour
+scenario, and a failing behaviour scenario is an engineering answer, not a taste question. The moment either row is
+on by default and the frames look wrong at his pose, that is his call and he gets frames, not adjectives.
 
-### Requests to other streams
+### Requests to other streams (all live; status as of 2026-09-20)
 
-- **squad** (via the orchestrator): nothing yet. `MOTION_REPLAN_TICKS` and the brain's `COMMIT_BONUS` 1.15 become a
-  request at **N3**, not before.
-- **combat, feel** (via the orchestrator): **N1a's priority table needs your review before A7 is written.** It is the
-  point where round 7's approved behaviour (standoff, shoot-and-scoot, commitment, armour toward threats, the leash,
-  the dodge, don't-walk-into-a-wall-of-bullets) either survives as a named priority or quietly does not.
+| To | Request | State |
+|---|---|---|
+| **squad** | **Do attacking-element members carry a leash?** A7's level-0 task region cannot engage without one. | **ANSWERED — yes.** `6e0c9968` on `stream/squad` (leash only, check running). nav cherry-picks that one commit for measurement, does not ship it. |
+| **squad** | `request["motion"] = TankMotion.state_of(tank)` in `_combat_move` — A11 needs the hull's live `yaw_rate` or it builds the window as if a turning hull were at rest (`a11_with_live_state` is **0** today). | **DONE**, deliberately in squad's *second* commit so the leash A/B has one variable. |
+| **squad** | Pre-`standable` slot positions, to split nav's 70% `off_mesh` gate refusals into "always in geometry" and "your push moved it". | **DONE** — `Element.state()["slots_asked"]`, squad's second commit. |
+| **combat** | Review A7's priority table; run `scenario_motion`'s two on nav's real commit. | **DONE** — review folded in; contract **S5** adopted (`seconds_for()` not `penalty()`, no stance floor, no lay term, a price with a ceiling, never a veto). |
+| **feel** | Review A6's place in the table. | **DONE** — level 3 confirmed; feel's one change (level 3's null space is *speed alone*; A6-b claims the sign of the arc) accepted and it is the right call. **nav has signed `legibility.md`.** |
+| **metrics** | — | Format frozen; nav's probe already emits `facing`, the key A12 reads. Three instructions taken: pre-register on **p10**, never on "units that ever oscillated", station-holding windows refused not scored. |
+| **control** | — | Right-drag facing merges alone as **CP2c**; **no arrival-arc A/B before it** (lesson 149). control signs S4 with two requirements, both in *N5's shopping list*. |
+| **scale** | Nothing until CP2. nav publishes no size-dependent number and touches `NAV_AGENT_RADIUS` only in coordination. | — |
 
-### Known issues carried in from round 8
+### Next steps, in order, for whoever picks this up
 
-- The clearance gap (`_chord_slack()` uses WIDTH; one `NAV_AGENT_RADIUS` 2.0 for a 5× footprint range) — worse after
-  CP2 by construction, and coordinated with scale before `NAV_AGENT_RADIUS` is touched.
-- A `face` order has no unstick recovery under a wheeled hull.
-- The arrival arc has **never executed in a CPU fight** (`gates aimed 0` in both arms of its round-8 A/B). N0 fixes
-  the instrument; whether the arc does anything is then measurable for the first time.
+1. **squad's `6e0c9968` is green → cherry-pick it for measurement only**, re-run the drift scenario on the
+   **`--nav-off=a7`** arm (not `a7,a11` — A11 moves that number too, 42.1 → 38.7, and the leash must be the only
+   variable). Report drift, shots, the leash radius **as it arrived in the request**, and `a7_region_rejected`.
+   **If that counter is 0, report no drift number at all** — the region did not engage and anything that moved was
+   something else. If it passes, flip A7's default in a commit naming both hashes.
+2. **A11's open question: the duel ends at 6.3 s of 20.** Front hits 67% on a three-hit sample is not the finding;
+   the fight finishing three times faster, with both hulls moving markedly more, is. Behaviour question, not a
+   tolerance.
+3. **N3 (A1) only after 1 and 2** — its own adopted sequencing says it needs a stable decision layer beneath it.
+4. **N4 (A4)** — motivation now measured, not inherited: 70% of gate refusals are `off_mesh`. The diagnostic added
+   this round buckets each one by the longest approach that *would* have fitted, which separates "a shorter run-in
+   recovers it" from "no straight run-in exists at any length" — and only the second is A4's case.
+5. **N5 (A6)** after control's CP2c hash: build the corridor publisher, `legibility: {active, why}`, the inactive
+   flag and the arc's `facing_ordered` tick flag **in one commit**, because three are only checkable with the fourth.
+
+### Known issues carried in from round 8, and their state now
+
+- **The clearance gap** (`_chord_slack()` uses hull WIDTH; one `NAV_AGENT_RADIUS` 2.0 for a 5× footprint range).
+  Untouched, worse after CP2 by construction. squad now has a placeholder (`SlotGround.corridor_width`) waiting to be
+  deleted against a real clearance in `Movement.state()`; nav owes that **after CP2**, because any width measured
+  against a roster about to change has to be retaken.
+- **A `face` order has no unstick recovery under a wheeled hull.** Untouched.
+- ~~The arrival arc has never executed in a CPU fight.~~ **CLOSED.** It fires 5168 times in 45 s on yard; the
+  instrument was the bug, not the mechanism. What replaces it as an open issue: **70% of its refusals are
+  `off_mesh`**, which is N4's.
+- **New, and nav's own:** `a7_holds_scored` is 0 in a CPU fight, so *"commitment now reaches a hold"* is proven by
+  unit tests and `scenario_motion`'s scout and **not** by a fight. Do not cite a fight run for it.

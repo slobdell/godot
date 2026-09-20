@@ -1088,7 +1088,7 @@ static var gate_refusals := {}
 ## The counter, as one reading (nav-fight reports this; the tests diff it).
 static func gate_report() -> Dictionary:
 	return {"offered": gates_offered, "aimed": gates_aimed, "refused": gates_refused,
-			"refusals": gate_refusals.duplicate()}
+			"refusals": gate_refusals.duplicate(), "off_mesh_fit": gate_off_mesh_fit.duplicate()}
 
 
 ## Tests only: zero the gate counters so one case's numbers are its own.
@@ -1097,6 +1097,7 @@ static func reset_gates() -> void:
 	gates_aimed = 0
 	gates_refused = 0
 	gate_refusals = {}
+	gate_off_mesh_fit = {}
 
 
 ## Count a refusal and keep the goal: the route aims at the goal itself, as it did before round 8.
@@ -1133,9 +1134,38 @@ func _approach_gate(goal: Vector3, order: Dictionary) -> Vector3:
 	var nearest := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, gate)
 	if _flat_distance(nearest, gate) > MESH_GATE_SLACK:
 		# The approach would start inside a wall: arrive however the route arrives.
+		_note_off_mesh(goal, direction, length, tank)
 		return _gate_refused("off_mesh", goal)
 	gates_aimed += 1
 	return gate
+
+
+## DIAGNOSTIC ONLY, no behaviour (round 9, N4 groundwork). `off_mesh` is **70% of all gate refusals** (901 of 1222 on
+## yard, seed 3, 45 s), which makes it the single biggest thing standing between the arrival arc and the fights it is
+## meant to run in. Before A4 is designed around it, the question is which KIND of failure it is:
+##
+##   - a gate that would fit if the approach were simply SHORTER — the goal is near geometry but there is open ground
+##     closer in, and a cheap fix (a shorter run-in) recovers it, at the cost of arrival heading accuracy
+##     (`APPROACH_RADII` 2.5 was measured: at 1.5 radii an IFV still arrived 63 degrees off);
+##   - or a gate with NO straight run-in at any length, because the approach corridor itself is blocked — which no
+##     straight gate can fix at any length, and which is exactly the case a curved (clothoid) approach exists for.
+##
+## So each off-mesh gate is probed at shrinking fractions of its nominal length and the LONGEST that would have landed
+## on the navmesh is bucketed. `none` is A4's case; anything else is a shorter-run-in's case. Recorded per refusal so
+## the two are counted, not estimated.
+const OFF_MESH_PROBES: Array[float] = [0.75, 0.5, 0.25]
+static var gate_off_mesh_fit := {}
+
+
+static func _note_off_mesh(goal: Vector3, direction: Vector2, length: float, tank: Node3D) -> void:
+	var map: RID = tank.get_world_3d().navigation_map
+	for share: float in OFF_MESH_PROBES:
+		var shorter := Vector3(goal.x - direction.x * length * share, 0.0, goal.z - direction.y * length * share)
+		if _flat_distance(NavigationServer3D.map_get_closest_point(map, shorter), shorter) <= MESH_GATE_SLACK:
+			var key := "fits_at_%d" % int(share * 100.0)
+			gate_off_mesh_fit[key] = int(gate_off_mesh_fit.get(key, 0)) + 1
+			return
+	gate_off_mesh_fit["none"] = int(gate_off_mesh_fit.get("none", 0)) + 1
 
 
 ## How close counts as "at the gate" (metres): a car's settle radius, never less than this.
