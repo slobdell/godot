@@ -18,16 +18,15 @@ SHOW_CUES ?= fight,battle,last_stand,victory
 # EDGES read must therefore have it off, or the block may simply not be there (control, 2026-09-20).
 SHOW_FLAGS ?= --block-cutaway=off
 
-show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49 m) -- BEFORE (no show), the default parapet look, and the outline variant; idle + one frame per cue + the kill ripple at three ages -> build/show/ (needs a display: make remote T=show-frames)
+show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49 m). Each frame is shot TWICE at the same frozen moment -- show off then on -- plus the outline variant; idle + one per cue + the kill ripple at three ages -> build/show/ (needs a display: make remote T=show-frames)
 	rm -rf $(BUILD_DIR)/show && mkdir -p $(BUILD_DIR)/show
-	@# Three arms of the SAME arena, seed and pose, so his comparison is frames rather than a frame and a memory:
-	@#   before/  -- --no-show: no patch loaded, every fixture at its identity = the branch-point look
-	@#   (root)   -- the default: the roof parapet, venue palette, under the window grid
-	@#   outline/ -- the variant feel argued against and the lead may still want; exempt from the luminance gate
-	for arm in before default outline; do \
+	@# Two runs are not the same run, and these frames ride a LIVE skirmish -- so the BEFORE half is shot by the
+	@# frame tool itself, in the same process, on the same paused scene, by toggling Show.driving. The pair then
+	@# differs in the light show and in nothing else. The only separate process is the `outline` VARIANT, which is
+	@# a look to compare rather than a control to measure against.
+	for arm in default outline; do \
 		for arena in $(SHOW_ARENAS); do \
 			case $$arm in \
-				before)  extra="--no-show"; sub="before";; \
 				outline) extra="--show-style=outline"; sub="outline";; \
 				*)       extra=""; sub=".";; \
 			esac; \
@@ -37,13 +36,14 @@ show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49
 				--show-look=$(CURDIR)/$(BUILD_DIR)/show/$$sub --show-look-times=$(SHOW_TIMES) \
 				--show-look-cues=$(SHOW_CUES) $(SHOW_FLAGS) \
 				2>&1 | tee $(BUILD_DIR)/show/$$sub/$$arena.log | grep -E '^SHOW_LOOK |SCRIPT ERROR' || true; \
-			grep -q SHOW_LOOK_DONE $(BUILD_DIR)/show/$$sub/$$arena.log || { echo "show-frames: $$arm/$$arena never finished"; exit 1; }; \
+			grep -q SHOW_LOOK_DONE $(BUILD_DIR)/show/$$sub/$$arena.log || { echo "show-frames: $$arm/$$arena did not finish"; exit 1; }; \
 			echo "show-frames $$arm/$$arena: shader errors $$(grep -ci 'shader.*error\|error.*shader' $(BUILD_DIR)/show/$$sub/$$arena.log || true)"; \
 		done; \
 	done
 	@echo "show-frames: $$(find $(BUILD_DIR)/show -name '*.png' | wc -l) frames in $(BUILD_DIR)/show"
-	@# THE BRIGHTNESS HIERARCHY IS A GATE, not a note (feel, 2026-09-20; art_direction.md :72). If the block band
-	@# out-reads the fight ring in any DEFAULT-style frame, the venue is competing with the game and this fails.
+	@# THE BRIGHTNESS HIERARCHY IS A GATE (feel, 2026-09-20; art_direction.md :72), and a RELATIVE one: the branch
+	@# point already loses the absolute comparison at the lead's pose, so the bar is that the show must not make it
+	@# worse than the same frozen frame with the show off.
 	@python3 tools/show_luma_gate.py $(BUILD_DIR)/show
 
 # A cue is MOTION. A still of a chase is a still of a bank of lights, and a still of a strobe at its trough reads

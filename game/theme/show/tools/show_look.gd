@@ -181,12 +181,35 @@ func _shoot_clip(show: Show, arena: String, heading: float) -> void:
 ## One frame, saved and reported. Returns 1 so callers can count.
 func _capture(show: Show, arena: String, pose_name: String, label: String, t: float, focus: Vector3,
 		distance: float, writes: int) -> int:
-	for i in 3:
+	var style := str(show.style_of(&"city_block")) if show != null else ""
+	var suffix := "" if style in ["", "parapet"] else "_" + style
+	var file := "%s_%s_%s%s.png" % [arena, pose_name, label, suffix]
+	# THE BEFORE FRAME IS SHOT HERE, IN THIS PROCESS, AT THIS FROZEN MOMENT -- not in a separate run.
+	# It is the same lesson as the `no_show` perf layer, in a second place: two runs are not the same run. These
+	# frames ride a LIVE skirmish, so across two processes the vehicles are somewhere else, the effects are
+	# different, and the fight ring's luminance moves by several percent for reasons that have nothing to do with
+	# the light show. Toggling `driving` on a paused scene makes the two frames differ in the show and in nothing
+	# else at all.
+	var before := Vector2.ZERO
+	var before_band := Vector2.ZERO
+	if show != null and style != "":
+		show.driving = false
+		var was_paused := get_tree().paused
+		for _f in 3:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		var before_image := get_viewport().get_texture().get_image()
+		DirAccess.make_dir_recursive_absolute(out_dir.path_join("before"))
+		before_image.save_png(out_dir.path_join("before").path_join(file))
+		before = _luma(before_image, RING_WINDOW)
+		before_band = _luma(before_image, BAND_WINDOW)
+		show.driving = true
+		show.apply(t)
+		get_tree().paused = was_paused
+	for _f in 3:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	var image := get_viewport().get_texture().get_image()
-	var style := str(show.style_of(&"city_block")) if show != null else ""
-	var file := "%s_%s_%s%s.png" % [arena, pose_name, label, "" if style in ["", "parapet"] else "_" + style]
 	image.save_png(out_dir.path_join(file))
 	var ring := _luma(image, RING_WINDOW)
 	var band := _luma(image, BAND_WINDOW)
@@ -197,6 +220,8 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 		"mood": str(show.mood_state) if show != null else "", "channels": _levels(show, t),
 		"luma_ring": snappedf(ring.x, 0.0001), "luma_band": snappedf(band.x, 0.0001),
 		"luma_ring_max": snappedf(ring.y, 0.0001), "luma_band_max": snappedf(band.y, 0.0001),
+		"luma_ring_before": snappedf(before.x, 0.0001), "luma_band_before": snappedf(before_band.x, 0.0001),
+		"luma_ring_max_before": snappedf(before.y, 0.0001), "luma_band_max_before": snappedf(before_band.y, 0.0001),
 		"ring_wins": ring.x >= band.x,
 	}))
 	return 1
