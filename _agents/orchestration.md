@@ -2939,3 +2939,13 @@ The kickoff prompt is one line; this section is the rest.
     runner, is the property that keeps the rest safe (a helper that also had to be awaited would carry the same
     trap, and an `await` on a non-coroutine is a lint red). Same family as an instrument that cannot report its own
     inapplicability, one level up, in the signature.
+194. **A control that skips the code the treatment runs is not a control, and two arms that write one file compare
+    a file with itself.** Round 9 (combat, pre-registering the gangs-vs-law series): `faction-matrix` names its
+    output `-tuned.json` whenever `TUNE` is set, the same name for both arms, so the obvious two-run series
+    overwrites the control with the treatment and `compare-arms` reports a perfect null with every cell zero and
+    nothing anywhere to say the bytes were the same; and a control run as "no TUNE" skips `apply_tuning` while the
+    treatment runs it, so the control is run as `knob=<default>` instead (the switching-cost series' `switch.price=0`
+    precedent). Fourth member of one family with the collapsed `COMMIT_BONUS * 1.15`, the `FILTER="a|b"` that ran
+    neither suite, and a comment promising a flip that did nothing: **each produces a green or a null that looks
+    like a measurement, the one kind of bug running more things cannot catch.** Tooling: outputs named by the arm,
+    comparisons refusing identical inputs, each arm's commit and knob written into its file.
