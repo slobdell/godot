@@ -119,3 +119,82 @@ func test_the_corridor_names_its_current_leg_and_is_empty_when_the_law_is_inacti
 			"and no tangent")
 	assert_true(readout.corridor("Green_Alpha_2", f.tank("Green_Alpha_2").global_position).is_empty(),
 			"a hull nav knows nothing about has no corridor")
+
+
+## S4 / A6 C-2 and C-3 (`_agents/legibility.md` §6, signed 2026-09-20), and the test control's brief asks for: the
+## readout tells a DELIBERATE off-corridor leg (nav says a level took the nose) from an UNREACHED GOAL (nav says it
+## cannot proceed), and says nothing at all about a unit on its corridor.
+##
+## The shape is nav's N5: `Movement.state(unit)["legibility"] = {"active": bool, "why": StringName}`. nav has stated
+## that with A7 off - today's default - `why` can only ever be `override`, because the blend is a weighted sum and no
+## term "bound" anything. So the vocabulary is tested BOTH ways: rich when nav can name the level, and correct when
+## it cannot.
+func test_the_readout_names_the_cause_and_never_invents_one() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var states := {
+		# On its corridor: the law is active, and there is nothing to explain.
+		"Green_Alpha_1": {"phase": "driving", "legibility": {"active": true, "why": ""}},
+		# Off the corridor, deliberately, and nav names the level that took the nose.
+		"Green_Alpha_2": {"phase": "driving", "legibility": {"active": false, "why": "band"}},
+		# Off the corridor because it CANNOT PROCEED. That is the callout band's job, not this one.
+		"Green_Alpha_3": {"phase": "blocked", "blocked_by": "no_path", "legibility": {"active": false, "why": "blocked"}},
+		# A7 off: the honest single word. This is what the default path says until A7 is on by default.
+		"Green_Bravo_1": {"phase": "driving", "legibility": {"active": false, "why": "override"}},
+		# A unit with no order at all: inactive, and silent.
+		"Green_Bravo_2": {"phase": "driving", "legibility": {"active": false, "why": "no_order"}},
+	}
+	var readout := f.controls.movement
+	readout.provider = func(unit_name: String) -> Dictionary: return states.get(unit_name, {})
+	assert_eq(readout.legibility_line("Green_Alpha_1"), "", "a unit on its corridor gets no readout at all")
+	assert_eq(readout.legibility_line("Green_Alpha_2"), "holding its range", "a deliberate off-corridor leg names its cause")
+	assert_eq(readout.legibility_line("Green_Alpha_3"), "",
+			"an unreached goal is the callout band's (BLOCKED / STUCK), never this one: A6 is about a unit that IS proceeding")
+	assert_eq(readout.callout("Green_Alpha_3"), "BLOCKED", "and that band still says it")
+	assert_eq(readout.legibility_line("Green_Bravo_1"), "a higher priority has the wheel",
+			"with A7 off nav can only say `override`, and the words must still read correctly")
+	assert_eq(readout.legibility_line("Green_Bravo_2"), "", "a unit with no order has nothing to be off the corridor of")
+	# The half that matters most: control NEVER INVENTS A CAUSE. A build whose nav publishes no legibility at all -
+	# which is every build before nav's N5 - is silent, not "unknown".
+	states["Green_Alpha_2"] = {"phase": "driving"}
+	assert_eq(readout.legibility_line("Green_Alpha_2"), "",
+			"nav publishing nothing means the readout says nothing: a guessed cause is confidently wrong")
+	# An unknown `why` from a future nav degrades to the honest single word rather than showing a raw key.
+	states["Green_Alpha_2"] = {"phase": "driving", "legibility": {"active": false, "why": "something_new"}}
+	assert_eq(readout.legibility_line("Green_Alpha_2"), "a higher priority has the wheel",
+			"a cause this build does not know is still a cause, and is never shown as a raw key")
+
+
+## C-3's channel rule, end to end: the cause reaches "why did my element do that" and NOTHING ELSE. The order pin is
+## a refusal's channel and must stay that way, or "it is doing this deliberately" and "it is not doing it" become the
+## same claim on screen.
+func test_the_cause_reaches_the_element_log_and_not_the_order_pin() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	f.controls.elements = Elements.install(f.game_match, f.orders)
+	f.controls.element_log.attach(f.controls.elements, f.game_match)
+	f.controls.groups.save(2, ["Green_Bravo_1", "Green_Bravo_2"])
+	# `Elements.install` creates the registry, not the elements: an element is formed when the player gives a task
+	# (or here, directly). The note path reads `elements.of(unit)`, so that is what this test needs to exist.
+	var element := f.controls.elements.form(["Green_Bravo_1", "Green_Bravo_2"], "Bravo")
+	assert_true(element != null, "setup: the two are an element")
+	await f.select(["Green_Bravo_1", "Green_Bravo_2"])
+	var states := {"Green_Bravo_1": {"phase": "driving", "legibility": {"active": false, "why": "survival"}}}
+	f.controls.movement.provider = func(unit_name: String) -> Dictionary: return states.get(unit_name, {})
+	var notes := f.controls.legibility_notes()
+	assert_eq(notes.size(), 1, "one cause, for the one unit that has one (%s)" % [notes])
+	assert_eq(String(notes[0]["why"]), "under fire", "in the words already on screen")
+	await wait_physics_frames(2)
+	var lines := f.controls.element_log.lines(element.id)
+	assert_true(lines.any(func(line: String) -> bool: return line.contains("under fire")),
+			"the cause is in 'why did my element do that' (%s)" % [lines])
+	var before := lines.size()
+	await wait_physics_frames(6)
+	assert_eq(f.controls.element_log.lines(element.id).size(), before,
+			"and a cause that lasts is ONE line, not one per frame")
+	# The pin is the REFUSAL's channel (a pin turns red and says NOT COMPLYING), and a deliberate off-corridor leg
+	# must never reach it, or "it is doing this on purpose" and "it is not doing it" become the same claim on screen.
+	# These units have orders from their brains, so pins exist; what must be true is that none of them is a refusal.
+	for mark: Dictionary in f.controls.order_marks():
+		assert_eq(int(mark.get("refusing", 0)), 0,
+				"the cause never turns a pin red: that is the refusal channel (%s)" % [mark])

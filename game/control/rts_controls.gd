@@ -180,6 +180,7 @@ func _process(delta: float) -> void:
 		disarm()
 	groups.prune(game_match)
 	_update_compliance(delta)
+	_note_legibility()  # S4 C-3: a deliberate off-corridor leg gets a cause, not a red pin
 	awareness.game_match = game_match
 	awareness.groups = groups
 	awareness.orders = orders
@@ -1535,6 +1536,33 @@ func _order_color(verb: String) -> Color:
 
 
 ## Selected units' routes: a line from each unit through its current and queued stops, a small mark at each stop.
+## S4 / A6 C-3 (round 9, `_agents/legibility.md` §6): what to tell the player about units driving off their ordered
+## corridor, as [{"unit", "why"}] for the current selection. **This never touches the order pin and never posts a HUD
+## message.** A REFUSAL already owns the pin - it turns red and its label says NOT COMPLYING - so a DELIBERATE
+## off-corridor leg has to use a different channel or the two become the same claim. The channel is the corridor,
+## still drawn (C-1), plus one line in "why did my element do that" (C-3). A HUD message would be 30 messages with
+## 30 units off-corridor at once, and the `MovementReadout` callout band over the hull stays reserved for *nav cannot
+## proceed* (YIELDING / BLOCKED / STUCK): A6 is about a unit that IS proceeding.
+func legibility_notes() -> Array:
+	var result: Array = []
+	for unit_name in selection.units:
+		var why := movement.legibility_line(unit_name)
+		if why != "":
+			result.append({"unit": unit_name, "why": why})
+	return result
+
+
+## Put those causes in the element log, one line per cause per element (ElementLog drops repeats, so a cause that
+## lasts ten seconds is one line). Called from _process; silent on every build whose nav publishes no legibility.
+func _note_legibility() -> void:
+	if element_log == null or elements == null:
+		return
+	for note: Dictionary in legibility_notes():
+		var element := elements.of(String(note["unit"]))
+		if element != null:
+			element_log.note(element.id, "%s: %s" % [element.element_name, note["why"]])
+
+
 ## S4 §6.1: the current leg of nav's route is the corridor the A6 law is judged against, so it is drawn to be read;
 ## the legs after it are context and stay where round 6 put them.
 const CORRIDOR_LEG_ALPHA := 0.75

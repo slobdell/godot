@@ -92,6 +92,8 @@ func run() -> void:
 			var at := Vector3(middle.x, 0.0, middle.y) - Vector3(outward.x, 0.0, outward.y) * 20.0
 			frames.append(await _shoot("wall%d" % k, at, atan2(outward.x, outward.y), 49.0, RtsCamera.DEFAULT_PITCH_DEG,
 					RtsCamera.FOV_DEG, {"row": "arena", "label": "behind wall %d" % k}))
+	if grid == "alleys":
+		frames.append_array(await _alley_frames())
 	for level: float in (WELDED_LEVELS if grid == "full" and show_today else []):
 		var distance := RtsCamera.distance_for(level)
 		var pitch := RtsCamera.welded_pitch(level)
@@ -118,6 +120,61 @@ func run() -> void:
 	print("CAMERA_LOOKS_DONE ok=%s frames=%d contact=%s at=%.1fs dir=%s" % [str(frames.size() > 0).to_lower(), frames.size(),
 			str(contact).to_lower(), _clock, out_dir])
 	get_tree().quit(0)
+
+
+## Round 9, the lead on the Terminus: *"the camera often ends up inside a building and we can't see what's going on
+## inside the alleyways."* Each pose is shot TWICE from the same spot - as asked for, and as `RtsCamera.clear_pose`
+## leaves it - so the page is a before/after and not a claim. Poses are picked from the layout's own lanes (its
+## streets), at the yaw where the fault actually happens, and one street where it does not, as the control.
+const ALLEY_PAIRS := 5
+## His pose. Nothing here is shot at 12 degrees: that is the camera he played and rejected.
+const ALLEY_PITCH := RtsCamera.DEFAULT_PITCH_DEG
+const ALLEY_DISTANCE := 49.0
+
+func _alley_frames() -> Array:
+	var frames: Array = []
+	var data: Dictionary = Arena.active
+	var spots: Array = []
+	var clear_spot: Variant = null
+	for lane: Dictionary in Arena.lanes_of(data):
+		for point: Array in lane["points"]:
+			var at := Vector3(float(point[0]), 0.0, float(point[1]))
+			var worst: Variant = null
+			for step in 8:
+				var yaw := TAU * float(step) / 8.0
+				if RtsCamera.roof_over(RtsCamera.pose_at(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH).origin, data) >= 0.0:
+					worst = yaw
+					break
+			if worst == null:
+				if clear_spot == null:
+					clear_spot = [at, 0.0, String(lane["name"])]
+				continue
+			if spots.size() < ALLEY_PAIRS:
+				spots.append([at, float(worst), String(lane["name"])])
+	if clear_spot != null:
+		spots.append(clear_spot)
+	for i in spots.size():
+		var at: Vector3 = spots[i][0]
+		var yaw: float = spots[i][1]
+		var where: String = spots[i][2]
+		var asked := RtsCamera.pose_at(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH).origin
+		var inside := RtsCamera.roof_over(asked, data) >= 0.0
+		var clear := RtsCamera.clear_pose(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH, data)
+		var after := RtsCamera.pose_at(at, yaw, float(clear["distance"]), float(clear["pitch_deg"])).origin
+		# The second half of his sentence: outside the solid, but is the alley in view? A sight line from the camera
+		# to the ground point it is aimed at, against the same boxes.
+		var walled_before := RtsCamera.sight_blocked(asked, at + Vector3.UP * 1.5, data)
+		var walled_after := RtsCamera.sight_blocked(after, at + Vector3.UP * 1.5, data)
+		var label := "%s — %s" % [where, "inside a block" if inside else "in the open (control)"]
+		frames.append(await _shoot("alley%d_asked" % i, at, yaw, ALLEY_DISTANCE, ALLEY_PITCH,
+				RtsCamera.FOV_DEG, {"row": "alley %d" % i, "label": "as asked: " + label,
+				"inside_a_solid": inside, "sight_blocked": walled_before}))
+		frames.append(await _shoot("alley%d_clear" % i, at, yaw, float(clear["distance"]), float(clear["pitch_deg"]),
+				RtsCamera.FOV_DEG, {"row": "alley %d" % i,
+				"label": "forced out: lifted %.1f deg, boom %.0f m" % [float(clear["lifted_deg"]), float(clear["distance"])],
+				"inside_a_solid": RtsCamera.roof_over(after, data) >= 0.0, "sight_blocked": walled_after,
+				"lifted_deg": snappedf(float(clear["lifted_deg"]), 0.1)}))
+	return frames
 
 
 func _shoot(shot_name: String, focus: Vector3, heading: float, distance: float, pitch: float, fov: float,
@@ -224,6 +281,27 @@ static func page(meta: Dictionary) -> String:
 	html.append("<p>One frozen moment of a 30-a-side fight (arena <b>%s</b>, %s), photographed from every pose. Only the camera changes. Pick the frame closest to \"between StarCraft 2 and Twisted Metal\" - its label is all the game needs.</p>"
 			% [meta.get("arena", "?"), "%.0f s after the first shot" % (float(meta.get("seconds_in", 0.0)) - float(meta.get("first_shot_s", 0.0)))
 				if bool(meta.get("contact", false)) else "no shot fired yet"])
+	var alleys: Array = frames.filter(func(f: Dictionary) -> bool: return String(f.get("row", "")).begins_with("alley "))
+	if not alleys.is_empty():
+		html.append("<h2>The camera inside a building (the Terminus)</h2>")
+		html.append("<p>You: <i>\"the camera often ends up inside a building and we can't see what's going on inside the alleyways. We need to make it so the camera is forced outside the solid for these cases.\"</i> Each pair is the SAME spot and the SAME yaw at your pose (21°, FOV 35, 49 m): left as asked for, right as the camera now places itself. It lifts over the roof rather than pulling in - pulling in would collapse the 49 m boom to about 11 m, below the zoom floor, and the far side of the street would still wall the alley.</p>")
+		var rows := {}
+		for frame: Dictionary in alleys:
+			(rows.get_or_add(String(frame["row"]), []) as Array).append(frame)
+		var row_names := rows.keys()
+		row_names.sort()
+		for row_name: String in row_names:
+			html.append("<div class=\"row\">")
+			for frame: Dictionary in rows[row_name]:
+				var flags := PackedStringArray()
+				if bool(frame.get("inside_a_solid", false)):
+					flags.append("INSIDE A BUILDING")
+				if bool(frame.get("sight_blocked", false)):
+					flags.append("alley behind a wall")
+				html.append("<figure><img loading=\"lazy\" src=\"%s\" alt=\"\"><figcaption><b>%s</b> · pitch %.0f° · %.0f m out%s</figcaption></figure>"
+						% [frame["file"], String(frame.get("label", frame["file"])), float(frame["pitch"]), float(frame["distance"]),
+						(" · <b>" + " · ".join(flags) + "</b>") if flags.size() > 0 else ""])
+			html.append("</div>")
 	html.append("<h2>What you played in round 5</h2><p>Zooming out also tilted the camera toward top-down (25° to 82°): the same slider did both.</p><div class=\"row\">")
 	for frame: Dictionary in frames:
 		if frame.get("row", "") == "today":

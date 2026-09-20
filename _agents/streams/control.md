@@ -226,9 +226,14 @@ _Round 9, control stream. Branch `stream/control`, started from `main` at `9f864
 | 1. the pin | done: a move pin drawn from a facing drag grows a ground arrow in the order's colour (`_draw_ordered_facing`), and the HUD line names it in compass ("3 units: move facing NE") | `order_marks()[i]["facing"]`, `describe()` |
 | 1. the live preview | done: while the right button is down, a ring on the destination and, past the threshold, an arrow following the pointer — a player cannot learn a gesture he cannot see | `_draw_facing_drag` |
 | 1. frames | **not yet** — `make remote T=control-playtest-shots` with a drag added to `control_playtest.gd` | — |
-| 2. S4 signature | **signed 2026-09-20**, conditional on C-2 below; sent to feel (`godot-feel-e4`) and the orchestrator. **No A6 readout code until nav signs too.** | `git show 4ec341d2:_agents/legibility.md` |
-| 3. the view after CP2 | blocked on CP2 | — |
-| 4. `shell-playtest` into `check` | not started | — |
+| 2. S4 signature | **signed by all three 2026-09-20**; feel took C-1–C-4 into §6 verbatim and the arrival-arc warning into §7 as a pre-registered exclusion | `git show 4ec341d2:_agents/legibility.md` |
+| 2. C-1 the corridor drawn | done: the **current leg** at full weight, the rest faint; `{}` when nav has no path, and an inactive law draws nothing | `MovementReadout.corridor` / `corridor_tangent`, `test_control_movement_readout` |
+| 2. C-2/C-3 the attribution | **built against nav's contract shape, silent until nav publishes it** — which is the correct output, not a stub. Vocabulary degrades to one word because nav has stated `why` can only be `override` while A7 is off | `MovementReadout.legibility_line`, `RtsControls.legibility_notes`, `ElementLog.note` |
+| 3a. camera forced outside a Terminus block | **built, green locally, mutation-checked**; frames owed | `tests/test_control_camera_solids.gd`, `RtsCamera.clear_pose` / `roof_over` |
+| 3b. the building in the sight line is not drawn | **built**; the pre-registered bar is sight line blocked **518 → under 50** | `BlockCutaway`, `RtsCamera.segment_hits_box`, `test_cutting_the_building_in_the_way_clears_the_alley` |
+| 4. the view after CP2 | blocked on CP2 | — |
+| 5. `shell-playtest` into `check` | **built**: `tools/shell_console.py` (a committed baseline that fails on CHANGE, in either direction), `make check-display`, `make shell-console-baseline`, `make shell-console-pytest` (5 tests, green). **The baseline file itself needs one builder0 display run to generate**, and until it exists `check-display` refuses with "run `make shell-console-baseline` once and commit it" — `shell-playtest` is untouched and stays green for everyone | `tools/test_shell_console.py`, `mk/command.mk` |
+| (unasked) `test_control_facing_camera` wall-clock flake | **fixed**: the test owns its clock | 6/6 on three consecutive loaded runs |
 
 **What the mutation check says:** deleting the `facing` assignment in `right_click_order` fails 4 of the 7 new tests
 (the brief asks only that (a) fail).
@@ -263,6 +268,55 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
   A12 will charge A6's falsifier for exactly the obedience item 1 just shipped, unless the arc's ticks are excluded
   from the off-corridor fraction or counted as ordered. Relayed to feel and the orchestrator for nav and metrics.
 
+### Decided overnight (2026-09-20, the lead asleep; most reversible decent option, recorded rather than waited on)
+
+- **Item 3's mechanism: LIFT the camera over the roof, do not pull the boom in.** Both were available and the numbers
+  decided it. At his pose the camera is 17.6 m up and 45.7 m back; the Terminus is 40 × 24 × 40 m blocks with 20 m
+  streets. Shortening the boom until it exits collapses **49 m → ~11 m** — below `MIN_DISTANCE`, near-first-person,
+  and the far side of the street still walls the alley: *it answers his sentence and not his problem*. Lifting over
+  the roof is **21° → 32°**, keeps 41.5 m of horizontal reach, and looks **down into** the alley, which is the thing
+  he said he could not see; it is also inside the tilt range he can reach by hand (8°–70°). The boom shortens only
+  when even `MAX_PITCH_DEG` cannot clear a roof (a solid taller than the boom is long).
+  **Measured** (`tests/test_control_camera_solids.gd`, laptop, `9bb6d143` + tree): every open ground point on the
+  Terminus × 8 yaws at his pose = 4328 poses; **703 had the camera inside a building, 0 after, worst lift 11.0°,
+  nothing pulled in.** The yard is provably untouched. Mutation-checked: disable the lift and the Terminus test fails
+  while the open-arena one still passes. **Reversible:** one constant loop-bound; the pull-in path is already written
+  and tested, so swapping the preference is a few lines if the frames say otherwise.
+- **The honest second number, and it is not a cure.** His sentence has two halves — the camera *inside* a solid, and
+  the alley *unseen* — and the lift answers the first completely (703 → 0) but the second only partly. Measured over
+  the same 703 poses (`test_control_camera_solids`, laptop): the sight line from the camera to the ground it is
+  aimed at was blocked by a building in **700 of 703 before and 518 after — a 26% reduction, not a fix.** The
+  remaining 518 are cameras that are correctly outside every solid and still looking at the side of one. **So the
+  occlusion half is probably still owed**, and the frames decide it: if the alley reads at his pose in
+  `build/terminus-alleys/index.html`, the lift is enough; if it does not, the next step is the per-block cutaway,
+  which the orchestrator has already ruled the shape of (per-block visibility/alpha, never an emission or show
+  channel, named in merge notes and on `_agents/lighting.md`'s reserved list) and which `RtsCamera.sight_blocked`
+  is already the primitive for. **Do not claim the item is finished on the 703 → 0 number alone.**
+- **The cutaway is VISIBILITY, not a fade, and that is a constraint-driven choice rather than a preference.** S6's
+  seam gives control alpha and visibility and gives `show` emission and channels. A per-block *alpha* would have to
+  be an `instance uniform` on `city_block.gdshader` — **show's file**, and one static ShaderMaterial shared by all
+  eight blocks — so taking it meant either editing their shader or blocking overnight on them adding one. Hiding the
+  block body's `VisualSlot` needs no uniform, cannot collide with anything show writes, and is one boolean to revert.
+  **control reserves nothing on the block material**, and a cut block keeps its cue underneath: it is not drawn while
+  it is in the way and is drawn again mid-cue when it is not. `BlockCutaway.cut_blocks()` is the signal show reads.
+  If the frames say a hard cut reads badly, the next step is to *ask* show for the instance uniform, not to write one.
+- **Cover is never cut** (`MIN_HEIGHT_M` 6 m). A container between the camera and the fight is *information* — it is
+  why a unit stopped where it did — and the lead's complaint was buildings. This is also why the falsifier's bar is
+  "under 50" and not zero: what is left is cover, deliberately still drawn.
+- **It reports what it did** (`RtsCamera.lifted_deg`). This is the **second** place the camera overrides his tilt,
+  after the far-range floor, and round 6's rule is that such a place is flagged to him, not hidden.
+- **Nothing is written on a city block.** No uniform, no instance parameter, no visibility, no alpha — the camera
+  moves instead. Told to show (`godot-show-b0`) and to the orchestrator; control's row on `_agents/lighting.md`'s
+  reserved list reads *nothing reserved*. If the alley frames later force an occlusion cutaway, it arrives as a named
+  uniform plus a message, per the orchestrator's ruling.
+- **A wall-clock budget in a behaviour test is a measurement of the machine.** nav measured
+  `test_control_facing_camera::test_the_camera_turns_to_face_where_the_selection_faces` failing ~1 run in 3 on a
+  loaded laptop **at the branch point**, costing two bisection experiments on a regression that did not exist. It
+  spun on `await tree.process_frame` until 3000 ms of wall clock had passed. Fixed by taking the rig off the tree's
+  process loop and stepping it at a fixed delta (`_step`): the same 2 s of simulated time on any machine at any load.
+  6/6 on three consecutive runs with seven streams live. **The rule, worth a round lesson before CP3 makes a loaded
+  machine normal: if the thing under test advances on `delta`, the test owns the clock.**
+
 ### Questions for the lead
 
 - **Should a dragged facing also orient the formation?** Today "move here facing north" lays the squad out along its
@@ -270,6 +324,46 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
   the drawn heading, which is what an ambush emplacement wants. It is a few lines in `Orders._resolve_group`, and it
   changes the shape of every facing-carrying order (squad's included), so it is not being done blind. Frames rather
   than a question if it comes up.
+
+### Merge notes (shared files, and files another stream owns)
+
+- **`game/control/orders.gd`** (control's own, but every stream's orders run through it): `_same_order` now treats a
+  differing `facing` as a different order **for `source == "player"` only**. Machine re-issues keep today's dedup
+  exactly, so round 8's idle-command numbers cannot move. Reviewed by whoever merges CP2c.
+- **`mk/command.mk`** (control's): new `terminus-alleys`, `check-display`, `shell-console-baseline`,
+  `shell-console-pytest`. **`shell-playtest` itself is unchanged** — the console compare lives in `check-display`,
+  because `shell-playtest` is the instrument every stream reaches for by hand and a missing or stale baseline must
+  never be why someone's playtest goes red. It also lets the baseline be regenerated from a plain
+  `make remote T=shell-playtest` without the gate refusing the run that is producing it.
+- **`tools/shell_console.py`, `tools/test_shell_console.py`** (new, control's).
+- **`mk/core.mk` is NOT edited.** `shell-console-pytest` needs no display and belongs in `check` beside
+  `match-pytest`; the `check` line is shared and metrics is rewriting it for T1, so it is **requested, not taken**.
+  Until it lands there it runs as a prerequisite of `check-display`. `check-display` is deliberately outside
+  `CHECK_TARGETS` (metrics' shape): a display-only target inside `check` either fails every local run or no-ops
+  without a display, and a target that passes for the wrong reason is what lesson 42 is about.
+- **`tests/test_control_group_moves.gd` is deliberately untouched**: the CP2 re-time is scale's, in `23767e5a`, per
+  the orchestrator's ruling. I had made the change and backed it out so the branches do not conflict.
+- **Nothing is written on a city block** — no uniform, no instance parameter, no visibility, no alpha. control's row
+  on `_agents/lighting.md`'s reserved list reads *nothing reserved*.
+
+### Next steps (in order, for whoever picks this up)
+
+1. **Send the orchestrator `e27f0681` with both lines** — the wrapper's `>> remote: make check exited <N>` and the
+   runner's `N passed, M failed` — plus `lint local: N files, 8 known baselined lines` (lesson 157: `make remote`
+   never parse-checked anything, because `lint` lists files with `git ls-files` and `.git` is not synced). The
+   test target came back **1269 passed, 0 failed** on builder0; the exit line was still in the copy-back queue.
+2. **`REMOTE_SLOTS=6` on every remote run** until this branch merges `main` — `tools/remote.sh` hard-coded 3 slots
+   while builder0 sat at load 0.4, and `main` now defaults to 6. Do not `git merge main` for it: CP2 has not been
+   announced, and the brief says merge only at announced checkpoints.
+3. **`make remote T=terminus-alleys REMOTE_SLOTS=6`** — item 3's frames, and the thing the orchestrator asked to see
+   tonight. Then LOOK at `build/terminus-alleys/index.html`: each pair is the same spot and yaw at his pose, left as
+   asked, right as the camera now places itself, labelled `INSIDE A BUILDING` / `alley behind a wall`. **show
+   (`godot-show-b0`) asked for a copy whatever the verdict** — the same frames judge whether the block edges read at
+   street level, and it saves them a builder0 slot.
+4. **`make remote T=shell-playtest REMOTE_SLOTS=6`**, then `make shell-console-baseline`, then commit
+   `tests/baselines/shell_console.txt` saying what each line is. Until that file exists `check-display` refuses.
+5. **A second `make remote T=check`** on the branch tip: everything after `e27f0681` is unverified by a check of its
+   own.
 
 ### Requests to other streams
 

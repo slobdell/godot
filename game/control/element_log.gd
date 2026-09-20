@@ -36,6 +36,21 @@ func _on_changed(id: int) -> void:
 	_history[id] = entries
 
 
+## S4 / A6 C-3 (round 9): a line the element did not decide for itself - "Alpha: under fire" when the legibility law
+## gave way to a higher priority. It goes in the SAME history as the leader's own decisions, deliberately: the player
+## asks one question ("why did my element do that") and gets one answer, in one place, in order. Repeats are dropped,
+## so a cause that lasts ten seconds is one line and not three hundred.
+func note(id: int, text: String) -> void:
+	var entries: Array = _history.get(id, [])
+	if not entries.is_empty() and String(entries.back()["text"]) == text:
+		return
+	var at := float(game_match.tick) / float(SimClock.TICK_RATE) if game_match != null else 0.0
+	entries.append({"at": at, "text": text})
+	if entries.size() > KEEP:
+		entries = entries.slice(entries.size() - KEEP)
+	_history[id] = entries
+
+
 ## The element's recent decisions, oldest first: [{"at", "text"}].
 func history(id: int) -> Array:
 	return _history.get(id, [])
