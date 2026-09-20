@@ -364,6 +364,38 @@ it is pre-registered, not incidental.
 **THE SIM BASELINE MOVES and is deliberately NOT recorded here** (Invariant 2). On the laptop `sim-baseline`
 silently skips — glibc 2.39 has no line — so a green local check proves nothing about the hash.
 
+### 2b. The frame the lead judges — RENDERED AND SENT
+
+`make roster-lineup` (builder0, 1920x1080, commit `0e809a09`). Three frames in `build/roster-lineup/`:
+
+| frame | what it answers |
+|---|---|
+| **`lineup_pose.png`** | **HIS pose** (21°, 49 m, FOV 35 — the same one round 8 shot the rig at) over the size spread. The one to look at. |
+| `lineup_factions.png` | four rows, one per faction, each sorted by length: is each faction's roster sensible? |
+| `lineup_row.png` | all 21 in one row, the Condemned tank and the War Rig as the bookends the round is anchored on |
+
+**What `lineup_pose.png` shows, left to right:** Rat Rod **2.9 m**, Pursuit Cruiser 3.8, Gun Truck 3.4, Railgun
+Platform 5.4, Condemned Tank **8.6**, War Rig **14.0**. A semi looks like a semi next to a car, and the bus-tank he
+named reads as a bus rather than a dozer.
+
+**On screen at his camera, against round 8's numbers:** the rig **734 × 279 px**, the Condemned tank **281 × 135**.
+Round 8 measured that tank at **199 × 100** — so it grew by half again while the rig kept its dominance. (Round 8's
+rig was 721 × 315 at a slightly different framing; the rig's own box did not change.)
+
+**Two cosmetic defects, named rather than hidden:** `lineup_pose.png` clips the Rat Rod slightly at the left edge,
+and `lineup_factions.png` clips the Condemned row at both edges — the near row is the widest at 55.7 m and the fit
+was computed on the focus plane rather than the near row's, so perspective pushes it past the frame. Labels still
+overlap in the two dense back rows. One more render fixes all three; not queued, because the frames are usable and
+CP2 is gated on the frame being *sent*.
+
+**It took three renders, and the first two were the interesting part.** Both were unusable: the HUD covered a third
+of the image and order beams washed out the labels. The cause was not the layout — `_quieten()` read `Main.hud` and
+tested `hud is CanvasItem`, and **`Hud extends CanvasLayer`, which is not a CanvasItem**, so the test was quietly
+false and nothing was hidden. It now finds every CanvasLayer by class and hides both marker drawers (feel's
+`FxWorld.order_feedback` and control's `SelectionMarkers`), and prints
+`SIZE_LOOK_QUIET 1 canvas layers, 2 marker layers` so a future silent no is visible. **A capability test that
+silently means "no" is the same shape as every mirror this stream found this round.**
+
 ### 3. The spawn grid — done, and it needed less than the brief expected
 
 **Test first, and the first thing the tests established is what the grid actually has to hold.** `ArmyLayout.deploy()`
