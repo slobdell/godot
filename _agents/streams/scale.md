@@ -607,6 +607,27 @@ repeatedly:**
    when the leak is synchronous. Fix: print the **previous test's name** beside the riser so the reader gets both
    candidates.
 
+**AND THE STRICTER BASELINE FOUND THE DAY'S CASCADE, indirectly, on its first run.** With the baseline taken at
+process start, the guard reported `left 44 physics bodies in the world (was 1 before this test)` — and 44 bodies is
+an army's worth, not a stray. **It is a whole foundry**: combat's `test_tank_yaw_fit` on main has a **teardown
+override that never calls `super`**, leaking 44 bodies and 4 regions. That live holder is why nav's region drain
+could not drain — *"the drain is not draining"* was the symptom; a test holding an arena open was the cause — and it
+is why **every check on every tree today showed the cascade**.
+
+**The two-candidate message was right to hedge.** It named `test_theme_factions.gd` *or* `test_tank_command.gd`,
+and the truth is a third file's foundry observed by whichever test followed it in that shard. **A guard that samples
+residue can only ever name observers, and saying so in the failure line is the difference between a clue and a
+misdirection** — the previous wording would have sent someone to audit an innocent file.
+
+**So the record on this guard, honestly: wrong about regions, retracted on its first "catch" (the `sim_cost` red was
+the drain budget on a loaded box), and then genuinely useful once narrowed and once its baseline was taken early.**
+Not a triumph, and not nothing — and the fix that made it useful was the one feel found by being wrongly blamed.
+
+**Landing: HELD on this branch (ruled (b)).** `b6e24892` is redder by design and would be read as part of the
+cascade. combat's `super` fix lands with the settle tick as a single hash, then a main check; `b6e24892` and the
+handover merge on the next **quiet** check, where its findings read as findings. **If `test_theme_factions` or
+`test_combat_sim_profile` still rise on that quiet check, they are real and go to feel and combat by name.**
+
 **Owed on the guard** (queued, low priority): name the leftover body in the failure line — **node path, class, and its
 owner test if the tree can tell** — and state **which frame the count was sampled on**. "left 1 physics bodies" costs
 a reproduction run to learn whose body it was, which is the same "names the symptom, not the thing" defect as the
