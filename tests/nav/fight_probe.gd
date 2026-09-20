@@ -164,9 +164,13 @@ func _run() -> void:
 	# `CombatMotion.a7_on()`, not `not switched_off("a7")`. The first version of this line did the latter, and the
 	# moment A7's switch was inverted it printed `a7=false` on a run with `--nav-off=a7` set: an arm header that
 	# confidently reports the opposite treatment, which is precisely how round 7 compared two byte-identical arms.
-	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s a1=%s a7=%s a11=%s avoidance=%s station=%s off=%s" % [
+	# A4 was MISSING from this line until the A/B that needed it had already run (its arm was provable only from the
+	# `off=` list). Every switched row gets its own field, read from the code under test, or the header is a partial
+	# account of the treatment and the one row it omits is the one nobody checks.
+	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s a1=%s a4=%s a7=%s a11=%s avoidance=%s station=%s off=%s" % [
 			CombatMotion.commit_on(), CombatMotion.hold_band_on(), CombatMotion.fixed_style, Movement.a1_on(),
-			CombatMotion.a7_on(), CombatMotion.a11_on(), Movement.avoidance_on, Movement.station_on, Movement._off])
+			Movement.a4_on(), CombatMotion.a7_on(), CombatMotion.a11_on(), Movement.avoidance_on, Movement.station_on,
+			Movement._off])
 	# Round 9: the arm counters start at zero for THIS run, so a number in the report is this run's (statics outlive a
 	# single probe inside one process).
 	CombatMotion.reset_arms()

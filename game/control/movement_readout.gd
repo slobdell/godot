@@ -70,6 +70,82 @@ func route(unit_name: String) -> PackedVector3Array:
 	return PackedVector3Array(points) if points is Array else PackedVector3Array()
 
 
+## S4 (`_agents/legibility.md` §2, signed 2026-09-20): the ordered corridor, split for drawing into the **current leg**
+## and the rest of the route. `{}` when nav has no path for this unit - the A6 legibility law is INACTIVE then, and an
+## inactive law draws nothing rather than a guessed corridor (§5: an inactive law must never look like a broken one).
+##
+## Why the split: the law is a claim about the CURRENT LEG and nothing else ("velocity opposing the corridor tangent"
+## is measured against this leg's direction), so the leg is drawn at full weight and the rest is left faint. One
+## definition, one publisher: this reads nav's `path_points` and nobody recomputes a corridor of their own.
+func corridor(unit_name: String, from: Vector3) -> Dictionary:
+	var points := route(unit_name)
+	if points.is_empty():
+		return {}
+	var rest := PackedVector3Array()
+	for i in range(1, points.size()):
+		rest.append(points[i])
+	return {"leg": [Vector3(from.x, 0.0, from.z), Vector3(points[0].x, 0.0, points[0].z)], "rest": rest}
+
+
+## The current leg's unit direction on the ground - the corridor tangent the A6 law and its falsifier are measured
+## against. Vector3.ZERO when the law is inactive (no path) or the unit is already on the waypoint.
+func corridor_tangent(unit_name: String, from: Vector3) -> Vector3:
+	var lane := corridor(unit_name, from)
+	if lane.is_empty():
+		return Vector3.ZERO
+	var leg: Array = lane["leg"]
+	var along: Vector3 = (leg[1] as Vector3) - (leg[0] as Vector3)
+	return along.normalized() if along.length() > 0.001 else Vector3.ZERO
+
+
+# ---- S4 / A6, control's C-2: attribution when the legibility law gives way ---------------------------------
+#
+# `_agents/legibility.md` section 6.2, signed 2026-09-20, and the condition control's signature carries: when A6 is
+# overridden - the case the player experiences as *"it stopped doing what I told it"* - the existing "why did my
+# element do that" line says so, IN THE VOCABULARY ALREADY SHIPPED. It never invents a cause: control will not infer
+# which level took the nose from geometry, because a guessed attribution is confidently wrong on exactly the ticks
+# the player is watching. Silence is the correct output until nav publishes the cause.
+#
+# nav's shape (its N5 commit): `Movement.state(unit)["legibility"] = {"active": bool, "why": StringName}`. nav has
+# stated what `why` can truthfully be, and it depends on the arm:
+#   * A7 ON  - a real level name, because `choose_projected` narrows one level at a time and the level that last
+#              reduced the candidate set IS the cause. Recorded, not inferred.
+#   * A7 OFF (today's default) - **`override` and nothing finer**: the blend is a weighted sum, no term "bound"
+#              anything, and any level name would be invented.
+# So this vocabulary DEGRADES TO ONE WORD and must read correctly when it does.
+const LEGIBILITY_WORDS := {
+	# The level-1/2/3 overrides: a unit that breaks off FOR A REASON THE PLAYER CAN SEE is not disobedient.
+	"survival": "under fire", "band": "holding its range", "armour": "front toward the threat",
+	"arc": "keeping its gun on", "formation": "holding its place",
+	# The honest single word for the blend, and what the default path will say until A7 is on by default.
+	"override": "a higher priority has the wheel",
+}
+## Reasons the law is inactive that are NOT an override and get NO line: either the law has nothing to say, or
+## something else on screen already says it. `blocked` and `no_path` belong to CALLOUTS (BLOCKED / STUCK) - C-3 keeps
+## that band for *nav cannot proceed*, and A6 is about a unit that IS proceeding.
+const LEGIBILITY_SILENT := ["", "no_order", "no_path", "blocked", "reflex", "style_run"]
+
+
+## nav's legibility state for a unit, or {} when this build's nav does not publish one (every build before nav's N5).
+func legibility(unit_name: String) -> Dictionary:
+	var reading: Variant = state(unit_name).get("legibility", {})
+	return reading if reading is Dictionary else {}
+
+
+## What to tell the player about a unit driving off its ordered corridor: the cause in the words already on screen,
+## or "" when there is nothing honest to say. "" covers every case that matters: nav publishes nothing (no guessing),
+## the law is active (the unit is on its corridor, so there is nothing to explain), the unit has no order, and the
+## reasons another readout already owns.
+func legibility_line(unit_name: String) -> String:
+	var reading := legibility(unit_name)
+	if reading.is_empty() or bool(reading.get("active", false)):
+		return ""
+	var why := String(reading.get("why", ""))
+	if why in LEGIBILITY_SILENT:
+		return ""
+	return String(LEGIBILITY_WORDS.get(why, LEGIBILITY_WORDS["override"]))
+
+
 ## One line for the unit card: "Blocked by Green_Alpha_2", "Giving way", "Arrives in 4 s", or "".
 func card_line(unit_name: String, describe_unit: Callable = Callable()) -> String:
 	var reading := state(unit_name)
