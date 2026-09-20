@@ -420,6 +420,24 @@ out 43% faster** — impossible, therefore a measurement of the noise); and the 
 run on the box. Until it lands, the only honest statement is the bound from the counts: no geometry, no lights,
 zero errors, 15 uniform writes a frame.
 
+### The readability gate forced one look decision, and it should not be buried
+
+The calibrated gate passed 35 of 36 frames, most of them **positive** (up to +6.0%: the show makes the fight
+*easier* to read). The one failure was repeatable across three runs and diagnosable rather than noisy —
+`terminus/wide/t0_0` at **-7.3%** against a measured null of **0.5% median / 1.2% p95**.
+
+`t0_0` is the idle at `t = 0`, where each channel's clock equals its phase; the windows' phase is 1.48 rad, which
+puts `0.5 + 0.5*sin()` at 0.998. **That frame is the brightest the buildings ever get.** The gate was not finding a
+bug, it was finding the worst case, which is what it is for.
+
+So the windows went from `[0.70, 1.35]` to `[0.80, 1.10]` and the shopfronts to `[0.82, 1.12]`. The mean is still
+just under today's look, so the venue breathes around what it always was — with about half the excursion at the top.
+
+**This is a look decision a gate forced, and the lead should see it as one.** He asked for buildings that come
+alive; this makes them breathe less hard at the peak. It is **one number per arena, in data rather than code**
+(`show.channels.windows.ceiling` in `arenas/terminus.json`). If he wants it back, he raises it — and the gate will
+tell him exactly what it costs the fight.
+
 ### Questions for the lead
 
 1. **Is it beautiful?** The strip and the clips are how it gets asked, and his answer should steer items 5-6's
@@ -447,6 +465,24 @@ zero errors, 15 uniform writes a frame.
   constraints: roofs are on screen far more often (the parapet is now a fixture, and it is free), and
   `cutaway_near()` can clip the near wall away entirely at every spawn, so **the rim must not be the fixture that
   carries match start** — the FIGHT cue lifts the blocks, beams and signs too, and a test holds that.
+
+### The readability gate forced one look decision, and it should not be buried
+
+The calibrated gate passed 35 of 36 frames, most of them **positive** (up to +6.0%: the show makes the fight
+*easier* to read). The one failure was repeatable across three runs and diagnosable rather than noisy —
+`terminus/wide/t0_0` at **-7.3%** against a measured null of **0.5% median / 1.2% p95**.
+
+`t0_0` is the idle at `t = 0`, where each channel's clock equals its phase; the windows' phase is 1.48 rad, which
+puts `0.5 + 0.5*sin()` at 0.998. **That frame is the brightest the buildings ever get.** The gate was not finding a
+bug, it was finding the worst case, which is what it is for.
+
+So the windows went from `[0.70, 1.35]` to `[0.80, 1.10]` and the shopfronts to `[0.82, 1.12]`. The mean is still
+just under today's look, so the venue breathes around what it always was — with about half the excursion at the top.
+
+**This is a look decision a gate forced, and the lead should see it as one.** He asked for buildings that come
+alive; this makes them breathe less hard at the peak. It is **one number per arena, in data rather than code**
+(`show.channels.windows.ceiling` in `arenas/terminus.json`). If he wants it back, he raises it — and the gate will
+tell him exactly what it costs the fight.
 
 ### Questions for the lead
 
