@@ -3,7 +3,8 @@
 // (city_windows.gdshaderinc), so the buildings you drive between are the city the arena sits in. Lit by the scene (the
 // moon, the floodlights' ambient) with the windows as emission. Everything is in world space, so windows line up
 // across faces and blocks and nothing needs UVs.
-//   COLOR.r  what the vertex belongs to: 0 = storey facade, 0.5 = shopfront (ground floor), 1 = roof or bevel
+//   COLOR.r  what the vertex belongs to: 0 = storey facade, 0.5 = shopfront (ground floor),
+//            0.75 = roof clutter (plant in the reserved top band), 1 = roof or bevel
 //   COLOR.g  this block's seed (0..1): window pattern and tint vary per block
 shader_type spatial;
 render_mode diffuse_lambert, specular_schlick_ggx;
@@ -137,6 +138,14 @@ void fragment() {
 		float window_glass = step(0.8, world.y) * step(world.y, 3.2) * step(0.12, fract(along / 6.0)) * step(fract(along / 6.0), 0.88);
 		glow = vec3(1.0, 0.7, 0.42) * lit * window_glass * 0.35 * show_value(show_shop, show_phase);
 		ROUGHNESS = 0.35;
+	} else if (part < 0.85) {
+		// Roof clutter: housings, ducts and tanks in the band CityBlock reserves at the top of a block. It needs its
+		// OWN band rather than the roof's, because the roof branch treats every non-upward face as a lit parapet
+		// edge -- tagged as roof, a duct would have four glowing sides. Dark painted metal, a little lighter on top
+		// where it catches the sky, and no emission: the plant is what the parapet and the neon are read AGAINST.
+		float up = smoothstep(0.55, 0.95, world_normal.y);
+		base = mix(roof * 0.72, roof * 1.25, up);
+		ROUGHNESS = 0.9;
 	} else {
 		// Roofs, and the bevel where each tier's edge rolls in: the bevel catches a pale edge (the chamfer detail).
 		bool bevel_face = world_normal.y < 0.9;

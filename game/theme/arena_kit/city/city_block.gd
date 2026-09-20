@@ -21,6 +21,20 @@ const CHAMFER := 0.8
 const BEVEL := 0.3
 ## A tier never gets narrower than this (m).
 const MIN_WIDTH := 6.0
+## The band reserved at the very top of a block for roof clutter (m). It is taken OUT of the structural tiers
+## rather than added on top, so a block is exactly as tall as its layout says and the mesh stays inside the
+## collision box -- the contract this file opens with ("what blocks a hull and a shot is what you see"). Control's
+## camera lift put these roofs on screen constantly and they were the one surface in the frame carrying no
+## information at all: 8 blocks x 40 x 40 m is 16.3% of the Terminus's plan area (feel, 2026-09-20).
+const ROOF_CLUTTER_H := 1.6
+## Roof clutter's own `COLOR.r` tag, between the shopfront's 0.5 and the roof's 1.0, so the shader can shade it as
+## dark plant instead of treating every vertical face as a lit parapet edge.
+##
+## **0.8, not 0.75, and the difference matters.** Vertex colours may be 8-bit, and the shader's band for clutter is
+## `part < 0.85` sitting above the shopfronts' `part < 0.75`. A 0.75 tag quantises to 191/255 = 0.7490, which is
+## BELOW its own band's floor, so every duct on every roof would have shaded as a shopfront -- silently, and only
+## in whatever build quantised. 0.8 is 204/255 exactly and sits clear of both edges.
+const PART_CLUTTER := 0.8
 const NEON_BAND := Vector2(0.25, 0.06)  # height, how far it stands off the wall (m)
 const SHADER := preload("res://game/theme/fx/shaders/city_block.gdshader")
 const DEFAULT_SIZE := Vector3(40.0, 24.0, 40.0)
@@ -133,8 +147,11 @@ static func resolves(wanted: Variant) -> bool:
 static func tiers_of(block_size: Vector3, tiers: int, setback: float) -> Array:
 	var result := []
 	var top := maxf(block_size.y, SHOP_HEIGHT + 3.0)
+	# The topmost roof stops short so its clutter fits under the block's authored height instead of poking through
+	# the collision box. A block with no room to spare keeps its full height and simply gets no clutter.
+	var structural := maxf(top - ROOF_CLUTTER_H, SHOP_HEIGHT + 2.0)
 	result.append([outline(block_size.x, block_size.z, 0.0), 0.0, SHOP_HEIGHT])
-	var span := (top - SHOP_HEIGHT) / tiers
+	var span := (structural - SHOP_HEIGHT) / tiers
 	for i in tiers:
 		var inset := setback * i
 		var w := maxf(block_size.x - 2.0 * inset, MIN_WIDTH)
@@ -169,6 +186,8 @@ static func build(block_size: Vector3, tiers: int, setback: float, neon: Color, 
 		var inner := _shrink(poly, BEVEL)
 		_walls_between(building, poly, inner, y1, y1 + BEVEL, Color(1.0, seed01, 0.0))
 		_cap(building, inner, y1 + BEVEL, Color(1.0, seed01, 0.0))
+		if i == list.size() - 1:
+			_roof_clutter(building, inner, y1 + BEVEL, block_size.y + BEVEL, seed01)
 	var mesh := building.commit()
 	var band := SurfaceTool.new()
 	band.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -199,6 +218,53 @@ static func _walls_between(tool: SurfaceTool, lower: PackedVector2Array, upper: 
 			face = -face
 		_tri(tool, a, b, c, face, color)
 		_tri(tool, a, c, d, face, color)
+
+
+## Plant on the topmost roof: housings, ducts and a tank, in the band reserved by `ROOF_CLUTTER_H`. Appended to the
+## SAME SurfaceTool as the building, so it shares the facade surface and costs **no additional draw call and no
+## additional material** -- a block is still the two surfaces its docstring promises, whatever is on its roof.
+##
+## Everything is derived from the block's own seed, so a given block always wears the same roof, and everything is
+## placed inside `_shrink(poly, EDGE)` and capped at `ceiling` so nothing overhangs the parapet or breaks the
+## collision box.
+static func _roof_clutter(tool: SurfaceTool, poly: PackedVector2Array, y: float, ceiling: float, seed01: float) -> void:
+	var room := ceiling - y
+	if room < 0.3:
+		return  # a block too short to have reserved a band gets no clutter rather than a crushed one
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(seed01)
+	var field := _shrink(poly, 2.2)
+	if field.size() < 3:
+		return
+	var bounds := _bounds(field)
+	var colour := Color(PART_CLUTTER, seed01, 0.0)
+	# Enough to read as a working roof at the lifted camera, few enough to stay cheap: ~10 triangles each.
+	for n in 7:
+		var w := rng.randf_range(2.0, 5.0)
+		var d := rng.randf_range(2.0, 4.5)
+		var h := minf(rng.randf_range(0.5, 1.0) * room, room)
+		var centre := Vector2(rng.randf_range(bounds.position.x + w * 0.5, bounds.end.x - w * 0.5),
+				rng.randf_range(bounds.position.y + d * 0.5, bounds.end.y - d * 0.5))
+		if not Geometry2D.is_point_in_polygon(centre, field):
+			continue
+		_box(tool, centre, Vector2(w, d), y, y + h, colour)
+
+
+## An axis-aligned box from `y0` to `y1`, four walls and a cap. Reuses the wall/cap builders so the winding and
+## normals match the rest of the mesh.
+static func _box(tool: SurfaceTool, centre: Vector2, extent: Vector2, y0: float, y1: float, colour: Color) -> void:
+	var half := extent * 0.5
+	var poly := PackedVector2Array([centre + Vector2(-half.x, -half.y), centre + Vector2(half.x, -half.y),
+			centre + Vector2(half.x, half.y), centre + Vector2(-half.x, half.y)])
+	_walls(tool, poly, y0, y1, colour)
+	_cap(tool, poly, y1, colour)
+
+
+static func _bounds(poly: PackedVector2Array) -> Rect2:
+	var result := Rect2(poly[0], Vector2.ZERO)
+	for point in poly:
+		result = result.expand(point)
+	return result
 
 
 static func _cap(tool: SurfaceTool, poly: PackedVector2Array, y: float, color: Color) -> void:

@@ -21,7 +21,12 @@ func test_a_block_fills_its_footprint_at_ground_level_and_steps_in_only_above_ey
 			smaller = smaller.expand(point)
 		if smaller.size.x < 39.99:
 			assert_true(float(tiers[i][1]) >= CityBlock.SHOP_HEIGHT, "a setback starts above the shopfronts (%.1f m)" % tiers[i][1])
-	assert_near(float(tiers[tiers.size() - 1][2]), 30.0, 0.01, "the roof is the block's height")
+	# The STRUCTURAL roof now stops `ROOF_CLUTTER_H` short, because the roof plant is taken out of the block's
+	# authored height rather than added on top of it (that is what keeps the mesh inside the collision box). The
+	# invariant a reader actually cares about -- the block is as tall as its layout says -- is unchanged and is
+	# asserted on the MESH in the collision-box test, not here.
+	assert_near(float(tiers[tiers.size() - 1][2]), 30.0 - CityBlock.ROOF_CLUTTER_H, 0.01,
+			"the structural roof leaves the reserved band for plant")
 
 
 func test_the_block_mesh_stays_inside_its_collision_box_and_draws_twice() -> void:
@@ -108,3 +113,47 @@ func test_a_tier_count_the_builder_cannot_honour_is_reported_rather_than_clamped
 	assert_true(not CityBlock.honours_tiers(0), "nor is 0")
 	assert_true(CityBlock.honours_tiers(null), "while asking for nothing is legal -- the block seeds its own")
 
+
+
+func test_a_roof_carries_plant_without_costing_a_draw_call_or_leaving_the_box() -> void:
+	## X: control's camera lift put these roofs on screen constantly and they were the one surface in frame with no
+	## information on them at all -- 8 blocks x 40 x 40 m is 16.3% of the Terminus's plan area, drawn as flat slabs.
+	## The clutter is appended to the SAME SurfaceTool as the building, so it must not add a surface; and it lives in
+	## a band reserved out of the block's height by `ROOF_CLUTTER_H`, so the mesh must not grow taller either. Those
+	## two together are the whole budget: no new draw call, no new material, nothing outside the collision box.
+	var plain: CityBlock = add_to_tree(CityBlock.new())
+	plain.setup({"size": [40, 24, 40], "tiers": 1, "setback": 0, "seed": 4})
+	var mesh := plain.mesh_instance.mesh
+	assert_eq(mesh.get_surface_count(), 2, "still two surfaces with a dressed roof: the budget is no new draw call")
+	var aabb := mesh.get_aabb()
+	assert_true(aabb.end.y <= 24.0 + CityBlock.BEVEL + 0.01,
+			"the plant is inside the authored height, not standing on top of it (%.2f m)" % aabb.end.y)
+	assert_true(aabb.size.x <= 40.0 + 0.2 and aabb.size.z <= 40.0 + 0.2,
+			"and nothing overhangs the parapet %s" % aabb)
+	# The plant is really there: the reserved band holds geometry it would not hold if `_roof_clutter` did nothing.
+	var tiers: Array = CityBlock.tiers_of(Vector3(40, 24, 40), 1, 0.0)
+	var roof_y: float = float(tiers[tiers.size() - 1][2]) + CityBlock.BEVEL
+	var above := 0
+	for vertex: Vector3 in mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX] as PackedVector3Array:
+		if vertex.y > roof_y + 0.05:
+			above += 1
+	assert_true(above > 0, "the reserved band above the roof cap at %.2f m holds plant, not air" % roof_y)
+
+
+func test_the_roof_plant_is_tagged_clear_of_the_bands_either_side_of_it() -> void:
+	## Vertex colours may be 8-bit, and the shader reads `COLOR.r` as a band: shopfronts are `< 0.75` and the plant
+	## is `< 0.85`. A 0.75 tag quantises to 191/255 = 0.7490 -- below its OWN band -- and every duct would have
+	## shaded as a shopfront, silently, and only in builds that quantise. This asserts the tag survives the trip.
+	var quantised := roundf(CityBlock.PART_CLUTTER * 255.0) / 255.0
+	assert_true(quantised > 0.75 and quantised < 0.85,
+			"the clutter tag is still in its own band after 8-bit quantisation (%.6f)" % quantised)
+
+
+func test_a_block_with_no_room_to_reserve_gets_no_plant_rather_than_a_crushed_one() -> void:
+	## A block barely taller than its shopfronts has no band to give. It must come out as an ordinary block, not as
+	## one with plant squashed into a few centimetres or poking through its own roof.
+	var squat: CityBlock = add_to_tree(CityBlock.new())
+	squat.setup({"size": [20, 5, 20], "tiers": 1, "setback": 0, "seed": 9})
+	var aabb := squat.mesh_instance.mesh.get_aabb()
+	assert_true(aabb.end.y <= maxf(5.0, CityBlock.SHOP_HEIGHT + 3.0) + CityBlock.BEVEL + 0.01,
+			"a squat block is no taller than its own box %s" % aabb)
