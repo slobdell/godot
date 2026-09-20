@@ -688,6 +688,53 @@ else is on the box. **Any reproduction pins `TEST_SHARDS` and prints it** — th
 sharding bug, and this is the second distinct way the schedule has decided a result today (the first was file
 distribution changing which tests share a process).
 
+### The Terminus lamps: done, verified by both of us, and the sentence that must travel with them
+
+`make lamp-frames` → `build/lamps/terminus-show-off.png` and `terminus-show-on.png`, builder0, `exited 0`.
+
+**The result is the comparison, not either frame: the lit floor is present in BOTH.** With the show **off** there is
+lit asphalt, readable hazard chevrons, the container reading as an object rather than a silhouette, and two lamp posts
+standing in frame as physical fixtures. The show-on frame is nearly identical — it moves band intensities and a few
+window tints and does essentially nothing to the asphalt. **So the lamps are the baseline and the `pools` channel is
+the gloss, verified rather than asserted.** feel reviewed both independently and reached the same reading.
+
+**It reads as LIT, not lit-up.** Pools are local and fall off into dark; nothing is on a grid. feel's point about
+*why*: the visible posts **explain** the light rather than just supplying it, which is most of what makes it read
+improvised rather than municipal. Their objection is withdrawn.
+
+**⚠ KEEP THIS SENTENCE WITH THE FRAMES WHENEVER THEY MOVE** (feel's ask, and it is the bit that stops someone
+"tidying" the lamps later): the six lamps are **point-symmetric TRUE, bilaterally symmetric FALSE**, verified
+mechanically. The 180° rotational symmetry is what keeps the swap-bases control valid and the half-plus-mirror
+navmesh bake honest; the *absence* of bilateral symmetry is what stops them reading as a municipal lattice. **Putting
+them on a tidy grid would silently break the first while fixing nothing.**
+
+**Not solved, and not dressed up:** the neon bands are still the brightest thing in frame, and vehicles away from the
+pools are dark hulls carried by their UI rings. *"The fight out-reads the buildings"* is **better, not solved**, and
+both of us expect this to move feel's 22-of-30 rather than clear it. **More lamps would fix the floor twice and the
+vehicles never** — the remaining gap is hull albedo/rim, which is feel's, already a round-10 item.
+
+**feel corrected their own earlier report to the orchestrator**, and it is worth knowing why: they had said *"at his
+own pose the lamps are not in shot at all"*, which was true of their frames because `crowd-look` frames the player's
+army, which at t=0 sits at the rim ~72 m from the nearest lamp. **They were measuring the spawn, not the pose.** The
+honest statement is *"at his pose AT SPAWN there are no lamps; in play there are"*. Shooting the **play camera**
+rather than a synthetic pose was the right call — `RTSCamera.DEFAULT_PITCH_DEG := 21.0`, so the pitch is his by
+construction — and a strict pixel A/B against a spawn-framed before-frame would have bought precision about the wrong
+50 metres.
+
+### Two process failures of mine, recorded because both produced confident false statements
+
+1. **A trailing `echo` announced a launch that never happened.** `git add -A && git commit … && nohup make remote …`
+   short-circuited when the commit found nothing to commit, so the run never started — and my separate
+   `echo "grid-fairness launched"` printed anyway. **I reported a run as started that was not**, and only caught it by
+   checking the process list. The same `&&` shape as the lamp target's `flags=$(… && echo …)`, which silently dropped
+   the show-ON arm, and as feel's test batch. **Four costumes in one day; the constant is that the failure prints
+   something plausible.**
+2. **`git add -A` swept a code change into two Status commits.** `mk/scale.mk`'s `lamp-frames` target landed inside
+   `9ae1a465` and `402ff578`, both titled "Status: …". `git log -- mk/scale.mk` now attributes a target to messages
+   about a spawn probe and a leak guard. **Not rewritten** (the history is shared and the content is right), but
+   recorded here so the provenance is findable — and the lesson is to `git add` the paths I mean rather than `-A`
+   when a scratch edit may be sitting in the tree.
+
 ### Queued, in order, behind the current work (recorded so none of it is rediscovered)
 
 1. **The guard + the three fixture-less arena tests** — landing as its own commit, **no baseline move**.
