@@ -665,39 +665,66 @@ static var refusals_offered := 0
 static var refusals_applied := 0
 ## Consecutive ticks this hull's yaw has been refused outright: a permanent refusal is a stuck unit, not a fix.
 var yaw_refused_ticks := 0
-## ON BY DEFAULT as of this commit, sequenced by the orchestrator and with nav's agreement, because it is the lead's
-## complaint directly: *"the semi trucks are yawing in place (should be impossible)"*. Two costs were named before
-## the flip and both were paid here -- it moves the sim baseline (the fifth move of the round), and it turns nav's
-## `test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided` red, which is exactly the signal nav wrote
-## that test to give. That test is renamed and inverted in the same commit, and it keeps the RESIDUAL as a number.
+## OFF BY DEFAULT, AND THE COST COMES BEFORE THE BENEFIT because that is the order it was learned in.
 ##
-## IT IS A PARTIAL FIX. 6.1 m of footprint in a 4.8 m corridor is still ~1.3 m of hull rotating through a wall. The
-## predicate is per-tick and relative, `move_and_slide` depenetrates between ticks, so a rotation that is illegal
-## cumulatively is legal at every increment; the exact form (slack 0.000) fits the corridor and freezes a wedged rig
-## for 30 ticks, which breaches nav's N1. No form that is both exact and non-freezing has been found.
+## ⚠ ENABLING THIS STOPS FOUR OF FIVE SQUADS TAKING THEIR FORMATION. Bisected to this one line, one machine,
+## `make test FILTER=ai_player_orders`:
 ##
-## IT WORKS, and the number that matters is PENETRATION_SLACK_M rather than anything structural. Measured, nav's
-## wedged-semi corridor (4.8 m wide, a 14 m rig):
-##     slack 0.020  ->  28.5 deg of yaw, 9.6 m of footprint   -- BLIND: bit-identical to no constraint at all
-##     slack 0.005  ->  11.6 deg,        6.1 m                -- 59% less illegal yaw, no freeze, no open-ground cost
-##     slack 0.000  ->   6.2 deg,        4.8 m                -- exactly fits, but freezes a wedged rig (30/30 refusals)
-## The first version of this comment claimed the per-tick form could not work. That was wrong: the relative
-## predicate was never given a chance, because a tolerance constant chosen to ignore the solver's recovery margin
-## (0.02 m) was LARGER than the whole per-tick signal. A 0.119 deg/tick yaw moves a 14 m hull's tip 0.0147 m, so
-## every increment passed. A threshold has to be measured against the quantity it must discriminate.
+##   point                        worst gap to its own slot, per squad (m)                     off slot
+##   b3f7ffae (main)              Alpha 3.8, Bravo 4.4,  Charlie 6.6,  Delta 22.2, Echo 4.2    0 of 30
+##   bd618dd4 (this flag OFF)     Alpha 3.8, Bravo 4.4,  Charlie 6.6,  Delta 22.4, Echo 4.5    0 of 30
+##   986f8921 (this flag ON)      Alpha 2.9, Bravo 89.5, Charlie 87.6, Delta 86.5, Echo 91.1   12 of 30
 ##
-## At 0.005 the residue is a hull with no non-worsening yaw available, which freezes VISIBLY (`yaw_refused_ticks`)
-## rather than silently -- and that is the state nav's `face` recovery exists for. It fired for the first time in
-## this configuration (`giveups 1`), having been inert all round.
-## `--tune=match.yaw_fit=0` turns it OFF from any harness, so the old behaviour stays measurable without editing this
-## file (it was `=1` to turn it on while the default was off) -- the
-## same shape as `switch.cost` and `match.hull_disc`, and for the same reason: an arm that needs a code edit to
-## select is an arm nobody re-measures.
-static var yaw_fit_enabled := true
+## The threshold is 36 m (`PLAYER_POST_LEASH 18.0 x ESCAPE_LEASH_FACTOR 2.0`), so ~90 m is not a marginal miss: the
+## crews never seat and their brains re-task them (ENGAGE / HOLD / SPOT, no order held). The bisect is source-level
+## with no tune involved, which matters -- see below.
+##
+## THE BENEFIT, and it is real. nav's wedged-semi corridor (4.8 m wide, a 14 m rig), both arms on one build with
+## `TUNE=match.yaw_fit=0` proven to move the predicate:
+##
+##                       off        on
+##   yaw                 44.0 deg   11.6 deg    74% of the illegal rotation gone
+##   footprint           12.1 m      6.1 m      in a 4.8 m corridor
+##   face giveups        0           1          nav's recovery fires, having been inert all round
+##   open ground         71.2 deg in 1 s, 1 offer, 0 applied -- no cost where there is nothing to hit
+##
+## ⚠ THE RESIDUAL IS THE BINDING NUMBER AND A BIGGER BENEFIT DOES NOT SHRINK IT: 6.1 m of footprint in a 4.8 m
+## corridor is still ~1.3 m of hull rotating through a wall (measured 1.27, bar 1.8). The predicate is per-tick and
+## relative, `move_and_slide` depenetrates between ticks, so a rotation illegal cumulatively is legal at every
+## increment; the exact form (slack 0.000) fits the corridor and freezes a wedged rig for 30 ticks, which is nav's
+## N1 breach.
+##
+## ⚠ AN EARLIER "before" OF 28.5 deg / 9.6 m IS STRUCK. It was quoted in a commit, a docstring, a brief and a dozen
+## messages, and it was taken in an arm that was not the one it claimed -- the knob that selected it did nothing
+## (see `Units._ensure_env_tuning`). The figures above are this build's, with the off arm reproducing nav's original
+## unconstrained measurement (10.42 m of path, 44.0 deg, 4.42 m drift, 12.1 m) to the decimal.
+##
+## ⚠ THE MECHANISM IS INFERRED, NOT MEASURED. The likely reading -- nav's -- is that hulls seating into a formation
+## are nosed against SQUADMATES, `test_move` uses this body's own `collision_mask = 3` (world AND vehicles), so a
+## squadmate counts as a wall and the arrival yaw is refused. Alpha surviving fits: ordered first, into open ground,
+## before the others crowd in. `match.yaw_world=1` is that hypothesis as a selectable arm.
+##
+## ⚠ THE TUNE IS READ HERE, AT THE POINT OF USE, and not written into this static by `apply_tuning`. It used to be
+## written: `Units._static_init()` did `Tank.yaw_fit_enabled = false` for `TUNE=match.yaw_fit=0`, and the write
+## LANDED in a bare script (measured: the probe read `false`) and was GONE by the time the predicate ran under the
+## test runner (measured: `TUNE=match.yaw_fit=0` left nav's wedged row byte-identical to the constrained control --
+## 11.6 deg, 6.1 m, giveups 1 -- and green). A static on another class, written at class-load time, is undone by
+## that class's own initialiser whenever the load order puts it second.
+##
+## Every `yaw_fit=0` measurement taken before this fix was measuring the constraint ON. That voided a knob A/B, an
+## "the constraint is excluded" report, and a "second cause" that probably never existed. `Units.tuning` is a
+## dictionary on the class that parses the spec, so no cross-class initialisation order can undo it.
+static var yaw_fit_enabled := false
+
+
+## The live value: the tune when one was given, else the default above (which tests set directly).
+static func yaw_fit_on() -> bool:
+	Units._ensure_env_tuning()
+	return float(Units.tuning.get("yaw_fit", 1.0 if yaw_fit_enabled else 0.0)) > 0.0
 
 
 func _fitting_forward(have: Vector3, wanted: Vector3) -> Vector3:
-	if not yaw_fit_enabled or (get_slide_collision_count() == 0 and yaw_refused_ticks == 0):
+	if not yaw_fit_on() or (get_slide_collision_count() == 0 and yaw_refused_ticks == 0):
 		return wanted
 	refusals_offered += 1
 	# DEPTH, not contact. Asking "does the candidate heading collide?" freezes a wedged hull solid: it is ALREADY
@@ -723,8 +750,22 @@ func _fitting_forward(have: Vector3, wanted: Vector3) -> Vector3:
 	return have
 
 
-## THE SECOND ARM OF THE SAME RULE, selectable rather than argued: `--tune=match.yaw_world=1` (or `TUNE=` in a
-## test) measures penetration against the WORLD layer only, instead of against everything this body collides with.
+## ⚠ NOT A MASK ARM. IT IS A DIFFERENT MEASUREMENT, AND IT FREEZES A HULL. `--tune=match.yaw_world=1` was built to
+## ask "does excluding vehicles restore formation", and it cannot answer that, because it does not differ from the
+## default in only the mask: the default arm calls `test_move(..., recovery_as_collision)` and reads
+## `KinematicCollision3D.get_depth()`; this arm calls `collide_shape` and takes the widest point-pair distance.
+## Two APIs, different margin and recovery semantics.
+##
+## The tell, measured: under this arm nav's corridor residual moved from **1.27 m to 0.70 m** -- and that corridor
+## contains **no vehicles at all**, so a pure mask change must be a no-op there. It moved, therefore the METHOD
+## moved it. And the wall case came back `offered 30, applied 30, refused ticks 30, swept 0.0 deg`: a hull frozen
+## solid for 30 ticks, which is nav's N1 breach and the exact failure that ruled out `PENETRATION_SLACK_M = 0.000`.
+## Its `five_squads` pass is uninterpretable for the same reason and does not count as evidence for anything.
+##
+## It is kept selectable because the code is written and the negative is worth reproducing, NOT because it is a
+## candidate. A real mask experiment is `test_move` in BOTH arms with only the collider set differing -- a
+## temporary `collision_mask` swap around the call -- pre-registered with "the corridor must not move" as its own
+## proof that the arm changed only what it claims to.
 ##
 ## Why it might have to be the default: `test_move` uses the body's own `collision_mask`, and `tank.tscn` has
 ## `collision_mask = 3` -- world AND vehicles. So the rule as first written treats **another tank as a wall**, and
@@ -736,10 +777,16 @@ func _fitting_forward(have: Vector3, wanted: Vector3) -> Vector3:
 static var yaw_fit_world := false
 
 
+## The live value, read at the point of use for the same reason as `yaw_fit_on()`.
+static func yaw_world_on() -> bool:
+	Units._ensure_env_tuning()
+	return float(Units.tuning.get("yaw_world", 1.0 if yaw_fit_world else 0.0)) > 0.0
+
+
 ## How far this hull would be inside geometry facing `forward` where it stands (0.0 when clear).
 func _penetration(forward: Vector3) -> float:
 	var at := Transform3D(Basis.looking_at(forward, Vector3.UP), global_position)
-	if not yaw_fit_world:
+	if not yaw_world_on():
 		var hit := KinematicCollision3D.new()
 		if not test_move(at, Vector3.ZERO, hit, 0.001, true):
 			return 0.0
@@ -825,7 +872,7 @@ func _process(delta: float) -> void:
 ## Fractions carry over between hits (flames deal a little every tick).
 ## Returns {"shield": float, "hull": int, "killed": bool}.
 func take_hit(raw: float, shield_multiplier: float, armor_multiplier: float) -> Dictionary:
-	if not alive or raw <= 0.0 or Armor.no_damage:
+	if not alive or raw <= 0.0 or Armor.no_damage_on():
 		return {"shield": 0.0, "hull": 0, "killed": false}
 	ticks_since_hit = 0
 	var split := Armor.split_shield(raw, shield, shield_multiplier, armor_multiplier)

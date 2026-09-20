@@ -1120,15 +1120,38 @@ static var tuning := {}
 ## It is read once, when the class first loads, and it is LOUD: a bad spec pushes an error naming it rather than
 ## being ignored, because a mistyped knob that silently does nothing would make a null result look like a
 ## measurement. Unset (the normal case) it does nothing at all.
+## ⚠ READ HERE, APPLIED LATER, and the difference is the whole bug. The first version applied the spec inside
+## `_static_init`, and `apply_tuning` reaches across to other classes -- `Tank`, `Armor`, `SwitchingCost.tuning`,
+## `Weapons.tuning`. A write to another class's static at class-load time is undone by THAT class's own initialiser
+## whenever the load order puts it second, and nothing says so: `TUNE=match.yaw_fit=0` landed in a bare script
+## (probed: `Tank.yaw_fit_enabled` read `false`) and was gone by the time the predicate ran under the test runner
+## (nav's wedged row came back byte-identical to the constrained control -- 11.6 deg, 6.1 m, giveups 1 -- and
+## GREEN). Every arm taken with that knob measured the default, which voided a knob A/B, an exoneration and a
+## "second cause".
+##
+## So `_static_init` only READS the spec, and `_ensure_env_tuning()` applies it at first use, by which time every
+## class it touches is loaded. That covers knob owners this file does not know about, which a per-knob fix would
+## not: `switch.*`, `probe.deck` and the weapon knobs go through the same path.
+static var _env_spec := ""
+static var _env_applied := false
+
+
 static func _static_init() -> void:
-	var spec := OS.get_environment("TUNE")
-	if spec.is_empty():
+	_env_spec = OS.get_environment("TUNE")
+
+
+## Applied once, on the first read of a tune by anyone. Cheap enough for `stat()`'s hot path: one bool.
+static func _ensure_env_tuning() -> void:
+	if _env_applied:
 		return
-	var problem := apply_tuning(spec)
+	_env_applied = true  # set FIRST: apply_tuning calls back into stat() and this must not recurse
+	if _env_spec.is_empty():
+		return
+	var problem := apply_tuning(_env_spec)
 	if problem != "":
-		push_error("TUNE=%s rejected: %s" % [spec, problem])
+		push_error("TUNE=%s rejected: %s" % [_env_spec, problem])
 	else:
-		print("TUNE applied from the environment: %s" % spec)
+		print("TUNE applied from the environment: %s" % _env_spec)
 
 
 ## A unit's stat, honoring `tuning`. Optional keys a unit lacks read as `fallback`.
@@ -1150,6 +1173,7 @@ static func _static_init() -> void:
 ## test too. **`expect_error` lands with nav's `06c7e772`**; when that is on main this becomes `push_error` and the
 ## test becomes `expect_error`, a two-line follow-up.
 static func stat(unit_id: String, key: String, fallback: Variant = null) -> Variant:
+	_ensure_env_tuning()
 	var tuned_key := "%s.%s" % [unit_id, key]
 	if tuning.has(tuned_key):
 		return tuning[tuned_key]
@@ -1177,15 +1201,13 @@ static func apply_tuning(spec: String) -> String:
 			if path.size() != 2 or not ["no_damage", "hull_disc", "yaw_fit", "yaw_world"].has(path[1]):
 				return ("tune: no match knob '%s' (have match.no_damage, match.hull_disc, match.yaw_fit, "
 						+ "match.yaw_world)") % parts[0]
-			match path[1]:
-				"no_damage":
-					Armor.no_damage = float(parts[1]) > 0.0
-				"yaw_fit":
-					Tank.yaw_fit_enabled = float(parts[1]) > 0.0
-				"yaw_world":
-					Tank.yaw_fit_world = float(parts[1]) > 0.0
-				_:
-					tuning["hull_disc"] = float(parts[1])
+			# ⚠ EVERY match knob goes into THIS class's own dictionary, and the consumer reads it at the point of
+			# use (`Tank.yaw_fit_on()`, `Tank.yaw_world_on()`, `Armor.no_damage_on()`). Writing a foreign class's
+			# static from here -- which is what this did -- is undone by that class's own initialiser whenever the
+			# load order puts it second: measured, `TUNE=match.yaw_fit=0` landed in a bare script and was gone by
+			# the time the predicate ran under the test runner, so the knob silently did nothing and every arm
+			# taken with it measured the default.
+			tuning[path[1]] = float(parts[1])
 			continue
 		if path[0] == "probe":
 			if path.size() != 2 or path[1] != "deck":

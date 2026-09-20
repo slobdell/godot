@@ -45,6 +45,13 @@ static func facing(hull_forward: Vector3, shell_direction: Vector3) -> Facing:
 static var no_damage := false
 
 
+## The live value: read at the point of use, never written into by `apply_tuning`. See `Tank.yaw_fit_on()` for the
+## measurement that forced this -- a knob written into another class's static at class load was silently undone.
+static func no_damage_on() -> bool:
+	Units._ensure_env_tuning()
+	return float(Units.tuning.get("no_damage", 1.0 if no_damage else 0.0)) > 0.0
+
+
 ## Round 9 diagnostic (`--tune=probe.deck=1`, never set in play): print one line per enemy hit with the three
 ## quantities that decide who owns a missing engine-deck hit -- the angle between the victim's hull forward and the
 ## shell's travel, the shooter's bearing relative to the victim, and the range. `is_weak_spot` below is two directions

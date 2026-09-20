@@ -39,12 +39,13 @@ func _applied() -> int:
 ## off). These tests still select it EXPLICITLY rather than leaning on the default: a test that measured whichever way
 ## the default happened to point would be testing the thing it was written to compare against and saying nothing
 ## about it (lesson 156), and the default has already flipped once this round.
-var _was_fitting := false
-
-
+## ⚠ THE ARM IS SELECTED THROUGH THE TUNING KEY, not by writing `Tank.yaw_fit_enabled`, so that the thing this
+## test flips is the thing production reads. Writing the static is a second source of truth: it worked while the
+## static WAS the source, and the moment a `--tune=` or `TUNE=` value existed the tune outranked it -- measured,
+## `TUNE=match.yaw_fit=0 make test FILTER=tank_yaw_fit` came back `1 passed, 1 failed` with `offered 0 applied 0`,
+## which is correct precedence and a broken test.
 func _enable() -> void:
-	_was_fitting = Tank.yaw_fit_enabled
-	Tank.yaw_fit_enabled = true
+	Units.tuning["yaw_fit"] = 1.0
 
 
 ## RESTORED, not zeroed: `yaw_fit_enabled` is a static, so a teardown that wrote `false` would hand the OLD default to
@@ -68,7 +69,7 @@ func _enable() -> void:
 ## override goes back to restoring `_was_fitting` and nothing else. The same deletion is owed in control's four
 ## files and squad's one.
 func teardown() -> void:
-	Tank.yaw_fit_enabled = _was_fitting
+	Units.tuning.erase("yaw_fit")
 	await super.teardown()
 
 
