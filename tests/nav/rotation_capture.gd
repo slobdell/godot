@@ -27,6 +27,7 @@ const FRAME_EVERY := 10  # ticks between captured frames (1/3 s at 30 Hz)
 var out := "/tmp/nav-rotation"
 ## --no-frames: numbers only (headless, seconds instead of minutes); --cases=pivot,car,wheel,truck picks cases.
 var frames_on := true
+var empty := false
 var cases := PackedStringArray(["pivot", "car", "wheel", "truck"])
 var game_match: Match
 var camera: Camera3D
@@ -40,6 +41,8 @@ func _run() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
+		elif arg == "--empty":
+			empty = true
 		elif arg == "--no-frames":
 			frames_on = false
 		elif arg.begins_with("--cases="):
@@ -48,7 +51,22 @@ func _run() -> void:
 	GameTheme.use("cyberpunk")
 	root.size = SIZE
 	var arena: Arena = ARENA.instantiate()
-	arena.layout_name = "yard"
+	# --empty: the same layout with every prop removed. Round 8: the truck case's in-place yaw rose with hull LENGTH
+	# (7 deg at 5.6 m, 26 at 14), and combat pointed out that length never reaches TankMotion — so the candidate is the
+	# COLLIDER catching scenery while the controller keeps commanding yaw. Bare ground separates the two.
+	if empty:
+		var loaded := Arena.load_layout("yard")
+		if loaded.has("error"):
+			push_error("nav-rotation --empty: " + String(loaded["error"]))
+			quit(1)
+			return
+		var bare: Dictionary = (loaded["layout"] as Dictionary).duplicate(true)
+		bare["name"] = "yard_bare"
+		bare["props"] = []
+		bare["obstacles"] = []
+		arena.layout_override = bare
+	else:
+		arena.layout_name = "yard"
 	root.add_child(arena)
 	game_match = MATCH.instantiate()
 	root.add_child(game_match)

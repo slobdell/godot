@@ -316,9 +316,25 @@ Only `hull_size` changed between these, restored after each run:
 | 3.32, 5.24, 14.0 (shipped) | 26° | 3.5 m |
 
 The 5.6 m control re-run on today's tree still reads 7°, so the change is combat's size change and nothing else this
-round. Going back to 12 m recovers 3° of a 19° move, so it does not undo the lead's complaint. The mechanism is that a
-longer hull at a fixed 12 m radius moves its centre LESS per degree during a creep K-turn — the wander falls as the
-length rises. The bar is 30°.
+round. Going back to 12 m recovers 3° of a 19° move, so it does not undo the lead's complaint.
+
+**The mechanism is terrain contact, not the motion model** (combat caught my first explanation, which was wrong:
+`hull_size` never reaches `TankMotion`, so at a fixed radius the centre's path per degree cannot depend on length).
+`--empty` re-runs the same case with every prop removed. Laptop, `81f87186`, one machine for all six cells:
+
+| hull_size | on yard | on bare ground |
+|---|---|---|
+| 3.0, 4.4, 5.6 | 7°, wander 5.5 m | 7°, wander 6.7 m |
+| 2.84, 4.49, 12.0 | 23°, 3.9 m | 7°, 6.7 m |
+| 3.32, 5.24, 14.0 | 26°, 3.5 m | 7°, 6.7 m |
+
+On bare ground every length is identical. So a long rig does not pivot: **it catches scenery with a collider the short
+one cleared, and goes on yawing while it is stuck.** That is a property of the hull AND the map together — worse on the
+city map than in the open, and absent from an empty arena. The laptop reproduced builder0's yard numbers exactly.
+
+What it means for the fix: neither length nor `min_turn_radius_m` is the lever. A big hull needs either to stop
+commanding yaw while it is against something, or not to be asked to turn on the spot at all (squad's change, and the
+arrive-on-heading arc).
 
 ### The 14 m War Rig, measured (builder0, `81f87186`, `make nav-rotation-numbers`)
 
