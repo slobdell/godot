@@ -52,6 +52,7 @@ func _run() -> void:
 	var failed := 0
 	var total_engine_errors := 0
 	var total_engine_warnings := 0
+	var charged_by_text := {}
 	# `make test FILTER=bot` passes --filter=bot: run only tests whose "file::method" contains it.
 	# `|` separates ALTERNATIVES -- FILTER="bot|relay" runs tests matching either. It is not a regex, and
 	# saying so matters: `make test FILTER="a|b"` used to reach a shell unquoted and exit 127 without running
@@ -120,6 +121,12 @@ func _run() -> void:
 			total_engine_warnings += int(engine["warnings"])
 			var engine_failures: PackedStringArray = engine["failures"]
 			case.failures.append_array(engine_failures)
+			var label_now := "%s::%s" % [path.get_file().get_basename(), method_name]
+			for text: String in PackedStringArray(engine["texts"]):
+				if not charged_by_text.has(text):
+					charged_by_text[text] = [0, label_now]
+				var row: Array = charged_by_text[text]
+				row[0] = int(row[0]) + 1
 			var label := "%s::%s" % [path.get_file().get_basename(), method_name]
 			if case.failures.is_empty():
 				passed += 1
@@ -132,6 +139,22 @@ func _run() -> void:
 	# A shard prints a DISTINCT line and never the bare one, so that in a sharded run there is exactly one
 	# `N passed, M failed` in the output -- the total, printed by the make recipe after it adds the shards up.
 	# The orchestrator reads that line and nothing else (lesson 28); several of them would be worse than none.
+	# ONE CAUSE, MANY VICTIMS. A leaked object outlives the test that made it, so its warning lands on
+	# whoever runs next: one arena holder in combat's sim_cost test failed 22 tests in one shard. Twenty-two
+	# red tests sharing a message are one defect, and the first test to see it is the one worth reading --
+	# the rest are downstream. The warnings-fail rule is right and loud; this only fixes the ATTRIBUTION.
+	var shared := []
+	for text: String in charged_by_text:
+		var row: Array = charged_by_text[text]
+		if int(row[0]) > 1:
+			shared.append([int(row[0]), String(row[1]), text])
+	if not shared.is_empty():
+		shared.sort_custom(func(a: Array, b: Array) -> bool: return int(a[0]) > int(b[0]))
+		print("\nENGINE MESSAGES THAT FAILED MORE THAN ONE TEST (one cause, many victims):")
+		for entry: Array in shared:
+			print("  %d tests: %s" % [int(entry[0]), String(entry[2])])
+			print("      first seen in %s -- the tests after it are probably downstream, not guilty." % [String(entry[1])])
+
 	# The engine tally goes on its OWN line, never inside the summary the orchestrator reads (lesson 28). The
 	# make recipe sums the sharded ones the same way it sums the rest.
 	if shard >= 0:

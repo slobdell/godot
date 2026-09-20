@@ -30,13 +30,19 @@ func expect_warning(pattern: String) -> void:
 
 ## Reconcile one test's collected engine messages against the warnings it declared.
 ##
-## Returns {"errors": int, "warnings": int, "failures": PackedStringArray}. Static, and separate from the
-## runner, so every branch can be driven from a test with synthetic input -- including the one branch a real
-## test cannot stage, an expectation that never arrives.
+## Returns {"errors": int, "warnings": int, "failures": PackedStringArray, "texts": PackedStringArray}.
+## `texts` is what this test was CHARGED with, so the runner can tell one cause from many victims: a leaked
+## object outlives the test that made it, so its warning lands on whoever runs next, and one arena holder in
+## combat's sim_cost test failed 22 tests in one shard (2026-09-20). Twenty-two red tests sharing a message
+## are one defect, and a reader should not have to work that out.
+##
+## Static, and separate from the runner, so every branch can be driven from a test with synthetic input --
+## including the one branch a real test cannot stage, an expectation that never arrives.
 static func reconcile_engine_messages(entries: Array, expected: PackedStringArray) -> Dictionary:
 	var errors := 0
 	var warnings := 0
 	var failures: PackedStringArray = []
+	var charged: PackedStringArray = []
 	var outstanding := expected.duplicate()
 	for entry: Dictionary in entries:
 		var text: String = entry.get("text", "")
@@ -46,15 +52,17 @@ static func reconcile_engine_messages(entries: Array, expected: PackedStringArra
 				outstanding.remove_at(index)
 				continue
 			warnings += 1
+			charged.append(text)
 			failures.append("engine warning: " + text)
 		else:
 			errors += 1
+			charged.append(text)
 			failures.append("engine error: " + text)
 	for pattern: String in outstanding:
 		failures.append('expect_warning("%s") was declared and no matching warning arrived' % pattern)
 	if errors + warnings > 0:
 		failures.insert(0, "%d engine errors, %d engine warnings" % [errors, warnings])
-	return {"errors": errors, "warnings": warnings, "failures": failures}
+	return {"errors": errors, "warnings": warnings, "failures": failures, "texts": charged}
 
 
 ## The first outstanding pattern that matches, or -1. An EMPTY pattern matches nothing: `contains("")` is
