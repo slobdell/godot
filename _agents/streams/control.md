@@ -232,7 +232,7 @@ _Round 9, control stream. Branch `stream/control`, started from `main` at `9f864
 | 3a. camera forced outside a Terminus block | **built, green locally, mutation-checked**; frames owed | `tests/test_control_camera_solids.gd`, `RtsCamera.clear_pose` / `roof_over` |
 | 3b. the building in the sight line is not drawn | **built**; the pre-registered bar is sight line blocked **518 → under 50** | `BlockCutaway`, `RtsCamera.segment_hits_box`, `test_cutting_the_building_in_the_way_clears_the_alley` |
 | 4. the view after CP2 | blocked on CP2 | — |
-| 5. `shell-playtest` into `check` | **built**: `tools/shell_console.py` (a committed baseline that fails on CHANGE, in either direction), `make check-display`, `make shell-console-baseline`, `make shell-console-pytest` (5 tests, green). **The baseline file itself needs one builder0 display run to generate**, and until it exists `check-display` refuses with "run `make shell-console-baseline` once and commit it" — `shell-playtest` is untouched and stays green for everyone | `tools/test_shell_console.py`, `mk/command.mk` |
+| 5. `shell-playtest` into `check` | **built**: `tools/shell_console.py` (a committed baseline that fails on CHANGE, in either direction), `make check-display`, `make shell-console-baseline`, `make shell-console-pytest` (5 tests, green). **baseline recorded and committed, and it is EMPTY** — a real run produced 18/18 checks and **zero** console lines, so the gate is now stricter than the allow-list it replaces | `tests/baselines/shell_console.txt`, `tools/test_shell_console.py`, `mk/command.mk` |
 | (unasked) `test_control_facing_camera` wall-clock flake | **fixed**: the test owns its clock | 6/6 on three consecutive loaded runs |
 
 **What the mutation check says:** deleting the `facing` assignment in `right_click_order` fails 4 of the 7 new tests
@@ -344,9 +344,12 @@ already merged to `main` as CP2c.
 2. **`make terminus-alleys`** — the deliverable that decides whether item 3 *reads*, as opposed to whether its
    numbers are right. Then **look at `build/terminus-alleys/index.html`**, and send show (`godot-show-b0`) a copy:
    they asked, and the same frames judge whether the block edges read at street level.
-3. **`make shell-playtest`, then `make shell-console-baseline`**, then commit `tests/baselines/shell_console.txt`
-   saying what each line is. `check-display` refuses until that file exists; `shell-playtest` is deliberately
-   untouched so nobody else's run goes red meanwhile.
+3. ~~`make shell-playtest`, then `make shell-console-baseline`~~ **DONE** (windowed, local, 04:0x): the console is
+   clean — 18/18 checks and **zero** ERROR/WARNING/SCRIPT ERROR lines, so the baseline is empty on purpose and
+   `make check-display` reports `unchanged (0 classes, 0 lines)`. **Finding worth acting on later:** the two
+   patterns `mk/command.mk` still excludes by hand (`ObjectDB instances were leaked at exit`, `MultiMesh
+   interpolation is being triggered`) **did not occur either**, so that allow-list is currently dead weight; leave
+   it in case another machine or driver still produces them, and delete it if a few more runs stay clean.
 
 **Then:** `make remote T=check REMOTE_SLOTS=6` on `bd69de5f` — only after the orchestrator says builder0 is up, and
 after checking the box for an orphaned `slot.sh` of this stream's.
