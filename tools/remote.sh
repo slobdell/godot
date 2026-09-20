@@ -14,7 +14,33 @@
 #   4. copy build/ back (logs, screenshots, reports; not the big exports) and exit with make's status
 #
 # Knobs (environment or local.mk): REMOTE_HOST (default slobdell@builder0), REMOTE_ROOT (default tank_squad),
-# REMOTE_SLOTS (default 3). Rendering targets use builder0's logged-in desktop session (DISPLAY :0).
+# REMOTE_SLOTS. Rendering targets use builder0's logged-in desktop session (DISPLAY :0).
+#
+# ---- REMOTE_SLOTS is 3, and that is DELIBERATELY FEWER than the 6 it was raised to (T1, 2026-09-20) ----
+#
+# **A slot now holds six to eight processes, not one.** That one sentence is the whole reason, and without it this
+# reads as a step backwards. Before T1 a `check` was a single Godot process grinding ticks, which is why builder0
+# sat at load 0.4 on 12 threads with three whole checks running and why raising 3 -> 6 was right at the time. After
+# T1 a `check` is a sharded test suite plus a fanned-out lint plus concurrent targets.
+#
+# Measured on builder0 (12 threads, ~11.6 GB available, metrics, 2026-09-20). Peak RSS per target: audio-check
+# 919 MB, test 427, the smokes 250-273, broker-test 84. `test` alone was 2388 s of a 2584 s serial check -- 92% --
+# so the only thing that shortens a check is splitting the suite, and how far it can split is set by the memory a
+# single check is entitled to:
+#
+#   slots  memory per check   shards it affords   `test`      whole check
+#       2         ~5.8 GB              6           ~400 s        ~9 min
+#       3         ~3.9 GB              5           ~480 s       ~10 min
+#       6         ~1.9 GB              2          ~1200 s       ~22 min
+#
+# Throughput is the same at any slot count -- the box is the box -- but **latency per check scales with the slot
+# count**, and latency is what eight streams sit waiting on. Six slots would also land the check right on T1's
+# >= 50% bar instead of clearing it.
+#
+# This cannot OOM the box at any setting: `tools/slot.sh --jobs` divides the MEMORY budget by the live slot count,
+# so the inner fan-out shrinks automatically as slots rise. Cores are deliberately not divided -- this work is
+# latency-bound, not compute-bound, which is the finding T1 rests on
+# (`_agents/streams/references/round9/metrics/t1-builder0-idle.txt`).
 set -uo pipefail
 
 host=${REMOTE_HOST:-slobdell@builder0}

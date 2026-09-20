@@ -247,6 +247,16 @@ func right_click(at: Vector2, shift := false) -> void:
 	await test.tree.process_frame
 
 
+## A right press, a drag, and a release: the desktop facing gesture (round 9). The motion carries the RIGHT button
+## mask, so nothing that watches for a left drag (the selection box) can see it.
+func right_drag(from: Vector2, to: Vector2, shift := false, steps := 5) -> void:
+	button(from, true, MOUSE_BUTTON_RIGHT, shift)
+	for i in range(1, steps + 1):
+		motion(from.lerp(to, float(i) / float(steps)), shift, MOUSE_BUTTON_MASK_RIGHT)
+	button(to, false, MOUSE_BUTTON_RIGHT, shift)
+	await test.tree.process_frame
+
+
 func drag(from: Vector2, to: Vector2, shift := false) -> void:
 	button(from, true, MOUSE_BUTTON_LEFT, shift)
 	for i in range(1, 6):

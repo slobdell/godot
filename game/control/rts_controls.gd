@@ -28,6 +28,17 @@ signal pose_copied(pose: String)
 
 ## A left press that moves farther than this (pixels) draws a box instead of clicking.
 const DRAG_THRESHOLD_PX := 6.0
+## Round 9: a RIGHT press that moves farther than this (pixels) is a facing drag - "go there, and be facing that way
+## when you arrive" - instead of a plain move. IN PIXELS, DELIBERATELY, and this is the one decision in the gesture:
+## at the lead's pose (21 deg, FOV 35, 49 m out) the ground under the screen is foreshortened about 100:1 between the
+## bottom of the frame and the top, so the touch map's threshold in METRES (MIN_FACING_DRAG, 4.0) would make the same
+## hand movement a facing near the horizon and a silent plain move near the bottom - the one outcome the gesture must
+## never have. The drag is made by a hand on a screen, so the threshold is the hand's: 18 px is three times the left
+## button's jitter guard (a wrong facing costs a manoeuvre, a wrong box costs nothing) and well inside a deliberate
+## flick. The METRES only have to be non-degenerate; the DIRECTION is exact at either end of the screen.
+const FACING_DRAG_PX := 18.0
+## Below this the two ground points are the same point and their direction is numerical noise, not a heading.
+const FACING_DRAG_MIN_M := 0.05
 ## A click this close to a unit's screen position picks it (more when the unit is drawn bigger than that).
 const PICK_RADIUS_PX := 22.0
 const PICK_BODY_M := 2.6
@@ -118,6 +129,15 @@ var _press_ctrl := false
 var _press_double := false
 var _box_now := Vector2.ZERO
 var _boxing := false
+## Round 9, the right button's own press/drag/release state (the left button's, above, is for boxing). Null when no
+## right press is pending: an armed mode's cancel and a press on an enemy both clear it, so their release does nothing.
+var _right_press_at: Variant = null
+var _right_press_ground: Variant = null
+var _right_press_shift := false
+var _right_now := Vector2.ZERO
+## The last point under the pointer that was really on the ground. A drag up past the horizon has no ground under the
+## release, and the heading the player drew is still the one that got there.
+var _right_ground_now: Variant = null
 ## Order acknowledgements: [{"kind", "position": Vector3, "left": seconds}], newest last.
 var _acks: Array = []
 ## UI clock (seconds since ready, advancing while paused) for double taps.
@@ -352,10 +372,9 @@ func _gui_input(event: InputEvent) -> void:
 			accept_event()
 		elif button.button_index == MOUSE_BUTTON_RIGHT:
 			if button.pressed:
-				if mode != "":
-					disarm()  # right-click cancels an armed order, like StarCraft
-				else:
-					right_click_order(button.position, button.shift_pressed)
+				_right_button_down(button)
+			else:
+				_right_button_up(button)
 			accept_event()
 	if event is InputEventMouseMotion:
 		var at := (event as InputEventMouseMotion).position
@@ -366,6 +385,14 @@ func _gui_input(event: InputEvent) -> void:
 		_box_now = (event as InputEventMouseMotion).position
 		if not _boxing and _box_now.distance_to(_press_at) > DRAG_THRESHOLD_PX:
 			_boxing = true
+		accept_event()
+	if event is InputEventMouseMotion and _right_press_at != null:
+		# A right drag is never a box: _press_at (the left button's) is untouched here, so the branch above cannot see it.
+		_right_now = (event as InputEventMouseMotion).position
+		var ground: Variant = ground_under(_right_now)
+		if ground != null:
+			_right_ground_now = ground
+		queue_redraw()
 		accept_event()
 
 
@@ -757,8 +784,60 @@ func cycle_formation() -> void:
 	formation = FORMATION_CYCLE[(FORMATION_CYCLE.find(formation) + 1) % FORMATION_CYCLE.size()]
 
 
-## Right-click: an enemy = attack, a friend outside the selection = follow, anything else = move there.
-func right_click_order(at: Vector2, queue := false) -> String:
+## Round 9: the right button's press. An enemy under it is attacked at once, exactly as it always was - an attack
+## takes its heading from its target, so there is nothing for a drag to say and nothing to gain by waiting for the
+## release. Anything else only REMEMBERS the press: the ground order is issued on release, because until then we do
+## not know whether the player is clicking or drawing a heading. Returns the error of an order it issued now, "" otherwise.
+func _right_button_down(button: InputEventMouseButton) -> void:
+	_right_press_at = null
+	_right_press_ground = null
+	_right_ground_now = null
+	if mode != "":
+		disarm()  # right-click cancels an armed order, like StarCraft - and that press is spent
+		return
+	if selection.units.is_empty():
+		return
+	var tank := pick_unit(button.position)
+	if tank != null and tank.team != team:
+		right_click_order(button.position, button.shift_pressed)
+		return
+	var ground: Variant = ground_under(button.position)
+	if ground == null:
+		return  # the pointer is off the ground plane entirely: there is no destination to remember
+	_right_press_at = button.position
+	_right_press_ground = ground
+	_right_press_shift = button.shift_pressed
+	_right_now = button.position
+	_right_ground_now = ground
+
+
+## The release that completes a ground order. Past FACING_DRAG_PX it carries the heading the player drew; inside it,
+## it is the plain move a right click has always been, with the facing key ABSENT rather than empty.
+func _right_button_up(button: InputEventMouseButton) -> void:
+	if _right_press_at == null:
+		return
+	var from: Vector2 = _right_press_at
+	var press_ground: Vector3 = _right_press_ground
+	var shift := _right_press_shift
+	var release: Variant = ground_under(button.position)
+	if release == null:
+		release = _right_ground_now  # dragged up past the horizon: the last ground the hand crossed is the heading
+	_right_press_at = null
+	_right_press_ground = null
+	_right_ground_now = null
+	queue_redraw()
+	var facing: Variant = null
+	if from.distance_to(button.position) > FACING_DRAG_PX and release != null:
+		var drawn := Vector3((release as Vector3).x - press_ground.x, 0.0, (release as Vector3).z - press_ground.z)
+		if drawn.length() >= FACING_DRAG_MIN_M:
+			facing = drawn.normalized()
+	right_click_order(from, shift, facing)
+
+
+## Right-click: an enemy = attack, a friend outside the selection = follow, anything else = move there. `facing` (round
+## 9) is the heading a right DRAG drew: the unit rolls onto it on its last leg instead of arriving at whatever angle
+## the approach left it at. Null means the player clicked, and the key never reaches the order.
+func right_click_order(at: Vector2, queue := false, facing: Variant = null) -> String:
 	if selection.units.is_empty():
 		return ""
 	var tank := pick_unit(at)
@@ -774,7 +853,10 @@ func right_click_order(at: Vector2, queue := false) -> String:
 	var world: Variant = screen_to_world(at)
 	if world == null:
 		return ""
-	return order_selection("move", {"to": [world.x, world.z], "queue": queue})
+	var extra := {"to": [world.x, world.z], "queue": queue}
+	if facing is Vector3:
+		extra["facing"] = [(facing as Vector3).x, (facing as Vector3).z]
+	return order_selection("move", extra)
 
 
 ## A right click on the radar (a world point): move there (queued with shift).
@@ -942,13 +1024,23 @@ func disarm() -> void:
 
 
 func screen_to_world(screen: Vector2) -> Variant:
+	var point: Variant = ground_under(screen)
+	if point == null:
+		return null
+	return Orders.clamp_to_arena(point as Vector3)  # M4: the arena's shape, not a square
+
+
+## Where a screen point meets the ground plane, UNCLAMPED, or null when the ray never reaches it (above the horizon).
+## Destinations go through screen_to_world, which pulls them inside the arena; a facing is a DIRECTION, and clamping
+## the far end of a drag to a wall would bend the heading the player drew - or, drawn outward next to a wall, collapse
+## it onto the destination and lose it.
+func ground_under(screen: Vector2) -> Variant:
 	if camera == null:
 		return null
 	var hit: Variant = Plane(Vector3.UP, 0.0).intersects_ray(camera.project_ray_origin(screen), camera.project_ray_normal(screen))
 	if hit == null:
 		return null
-	var point: Vector3 = hit
-	return Orders.clamp_to_arena(Vector3(point.x, 0.0, point.z))  # M4: the arena's shape, not a square
+	return Vector3((hit as Vector3).x, 0.0, (hit as Vector3).z)
 
 
 # ---- X6: readability at close zoom --------------------------------------------------------------------------
@@ -1057,6 +1149,25 @@ func _draw() -> void:
 		var color: Color = GameTheme.ui["friendly"]
 		draw_rect(rect, Color(color, 0.12))
 		draw_rect(rect, Color(color, 0.9), false, 1.5)
+	_draw_facing_drag()
+
+
+## Round 9: the heading the player is drawing right now, while the right button is still down - a ring on the
+## destination and an arrow following the pointer. Without it the gesture is invisible until the order is already
+## given, and a player cannot learn a gesture he cannot see.
+func _draw_facing_drag() -> void:
+	if _right_press_at == null or _right_press_ground == null:
+		return
+	var from: Vector2 = _right_press_at
+	var color: Color = _order_color("move")
+	_draw_ground_ring(_right_press_ground, 6.0, Color(color, 0.7), 2.0)
+	if from.distance_to(_right_now) <= FACING_DRAG_PX:
+		return  # still a click: showing an arrow here would promise a facing the release will not give
+	var direction := (_right_now - from).normalized()
+	var side := Vector2(-direction.y, direction.x)
+	draw_line(from, _right_now, Color(color, 0.85), 2.0)
+	draw_colored_polygon(PackedVector2Array([_right_now + direction * 8.0, _right_now + side * 6.0, _right_now - side * 6.0]),
+			Color(color, 0.95))
 
 
 ## X5: words over our vehicles that nav reports as yielding or blocked, so a unit waiting its turn reads as waiting,
@@ -1225,6 +1336,7 @@ func order_marks() -> Array:
 		if verb == "move" and bool(element.task.get("drills", true)):
 			verb = "attack_move"  # a move task with drills is what the player asked for as attack-move
 		var mark := {"verb": verb, "point": Vector3(float(to[0]), 0.0, float(to[1])), "task": true}  # a task with a place
+		_mark_facing(mark, element.task)
 		for unit_name in element.members():
 			_count_into(mark, String(unit_name), orders.current(String(unit_name)))
 		result.append(_finish_mark(mark))
@@ -1243,6 +1355,7 @@ func order_marks() -> Array:
 			var point := Vector3(target.global_position.x, 0.0, target.global_position.z) if target != null \
 					else Vector3(float(order["to"][0]), 0.0, float(order["to"][1]))
 			by_order[id] = {"verb": String(order["verb"]), "point": point, "task": false}
+			_mark_facing(by_order[id], order)
 			if target != null:
 				by_order[id]["target"] = String(target.name)
 		_count_into(by_order[id], unit_name, order)
@@ -1250,6 +1363,19 @@ func order_marks() -> Array:
 	for id in ids:
 		result.append(_finish_mark(by_order[id]))
 	return result
+
+
+## Round 9: the heading the player DREW with a right drag, on the pin that stands for the order. `_draw_facing` shows
+## where a selected hull points NOW; this is where it is being told to point when it gets there, and the two are
+## different claims. An order with no facing leaves the key absent, so a pin never invents a heading.
+func _mark_facing(mark: Dictionary, order: Dictionary) -> void:
+	var way: Array = order.get("facing", [])
+	if way.size() != 2:
+		return
+	var direction := Vector3(float(way[0]), 0.0, float(way[1]))
+	if direction.length() < 0.001:
+		return
+	mark["facing"] = direction.normalized()
 
 
 func _count_into(mark: Dictionary, unit_name: String, order: Dictionary) -> void:
@@ -1309,6 +1435,8 @@ func _draw_order_marks() -> void:
 		if at == null:
 			continue
 		_draw_ground_ring(mark["point"], 6.0, Color(color, 0.8), 2.0)
+		if mark.has("facing"):
+			_draw_ordered_facing(mark["point"], mark["facing"], color)
 		var from: Variant = _screen_point(mark["from"])
 		# Direct orders already have each unit's dashed line (_draw_waypoints); a squad task gets one from its middle.
 		if bool(mark.get("task", false)) and from != null and int(mark["arrived"]) < int(mark["units"]):
@@ -1442,6 +1570,26 @@ func _draw_acks() -> void:
 		_draw_ground_ring(ack["position"], lerpf(1.0, 4.0, t), Color(_order_color(ack["kind"]), t), 2.5)
 
 
+## The ordered heading on a move pin: an arrow on the ground leaving the pin's ring, in the order's own colour and in
+## the same chevron language as `_draw_facing`. It starts OUTSIDE the ring so it never reads as part of it.
+const ORDER_FACING_FROM_M := 6.0
+const ORDER_FACING_TO_M := 15.0
+
+func _draw_ordered_facing(point: Vector3, facing: Vector3, color: Color) -> void:
+	var a: Variant = _screen_point(point + facing * ORDER_FACING_FROM_M)
+	var b: Variant = _screen_point(point + facing * ORDER_FACING_TO_M)
+	if a == null or b == null:
+		return
+	var tip: Vector2 = b
+	var direction := (tip - (a as Vector2))
+	if direction.length() < 4.0:
+		return  # end-on to the camera: an arrow a few pixels long is a smudge, not a heading
+	direction = direction.normalized()
+	var side := Vector2(-direction.y, direction.x)
+	draw_line(a, tip, Color(color, 0.85), 2.0)
+	draw_colored_polygon(PackedVector2Array([tip + direction * 7.0, tip + side * 5.0, tip - side * 5.0]), Color(color, 0.95))
+
+
 func _draw_ground_ring(center: Vector3, radius: float, color: Color, width: float) -> void:
 	var points := PackedVector2Array()
 	for i in 25:
@@ -1476,9 +1624,22 @@ func describe(command: Dictionary) -> String:
 			"hold": "hold position", "stop": "stop"}.get(command.get("verb", ""), "?")
 	if command.has("target"):
 		words += " " + _unit_label(String(command["target"]))
+	# Round 9: a facing drag is a different order from a click, and the message says so in the player's own compass.
+	var way: Array = command.get("facing", [])
+	if way.size() == 2 and Vector2(float(way[0]), float(way[1])).length() > 0.001:
+		words += " facing " + compass_point(Vector2(float(way[0]), float(way[1])))
 	if command.get("queue", false) and command.get("verb") != "stop":
 		words += " (queued)"
 	return "%s: %s" % [who, words]
+
+
+## A ground direction as one of the eight points of the compass. North is -Z (trip-up 2: forward is -Z), so the
+## radar, the minimap and this all agree on which way "north" points.
+const COMPASS := ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+
+static func compass_point(direction: Vector2) -> String:
+	var bearing := rad_to_deg(atan2(direction.x, -direction.y))
+	return COMPASS[posmod(roundi(bearing / 45.0), 8)]
 
 
 func _unit_label(unit_name: String) -> String:

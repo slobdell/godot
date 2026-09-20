@@ -51,10 +51,6 @@
 # ticket and getting a slot must never block the queue: a deadlock here stops every agent at once.
 set -uo pipefail
 
-if [ -n "${TANK_SQUAD_SLOT:-}" ]; then
-	exec "$@"  # already inside a slot (nested make)
-fi
-
 # Derived from available RAM at ~2.5 GB a slot, clamped to [2, 4]. Falls back to 2 if MemAvailable
 # cannot be read, because a machine we cannot measure gets the conservative answer, never the loud one.
 default_slots() {
@@ -67,6 +63,49 @@ default_slots() {
 	echo "$n"
 }
 
+# T1 (metrics, round 9): the same question one level down. A slot holds ONE `make check`; this says how many of
+# check's targets that check may run at once INSIDE its slot. Same principle and same owner as `default_slots`,
+# because "how much can this machine take" is one fact with one home (Invariant 0: a value with a single owner is
+# READ, not mirrored) -- and lesson 148 is that hard-coding it was wrong in both directions at once.
+#
+#     tools/slot.sh --jobs <mb-per-job> [max]
+#
+# The caller supplies the per-job footprint it MEASURED, because the answer differs per workload: a plain headless
+# match is ~735 MB, but `net-smoke` and `relay-smoke` each hold three Godot processes at once.
+if [ "${1:-}" = "--jobs" ]; then
+	per_job_mb=${2:-1024}
+	max_jobs=${3:-12}
+	avail_mb=$(awk '/^MemAvailable:/ {print int($2 / 1024); exit}' /proc/meminfo 2>/dev/null)
+	cores=$(nproc 2>/dev/null || echo 2)
+	# A machine we cannot measure gets the conservative answer, never the loud one.
+	[ -n "${avail_mb:-}" ] || { echo 2; exit 0; }
+	# DIVIDE BY THE SLOT COUNT. This process holds one slot of N, and the other N-1 are entitled to their share.
+	# Without this the two budgets multiply: after T1 a single `check` is no longer one Godot process but a
+	# sharded test suite plus a fanned-out lint plus concurrent targets, so raising the slot count and raising
+	# the inner fan-out at the same time is how a box that was 95% idle goes straight to OOM. MemAvailable alone
+	# does not catch it, because N runs starting together all read the machine before any of them has grown.
+	holders=${TANK_SQUAD_SLOTS:-$(default_slots)}
+	[ "$holders" -ge 1 ] 2>/dev/null || holders=1
+	share_mb=$(( avail_mb / holders ))
+	# Leave a quarter of the share as headroom: the figure is a peak of one process, and several peaking together
+	# is exactly the case that OOMs a laptop with six agent sessions up.
+	n=$(( (share_mb * 3 / 4) / per_job_mb ))
+	# Cores are NOT divided by the slot count, and memory is not the same kind of constraint as CPU here. These
+	# runs are latency-bound, not compute-bound: `make test` awaits physics frames at real time, so builder0 sat
+	# 90-99% IDLE with three whole checks running (references/round9/metrics/t1-builder0-idle.txt). Oversubscribing
+	# cores costs nothing for work that is mostly waiting; oversubscribing memory kills the box. So: divide the
+	# memory, cap at the core count, and let the memory share be what binds.
+	[ "$n" -gt "$cores" ] && n=$cores
+	[ "$n" -gt "$max_jobs" ] && n=$max_jobs
+	[ "$n" -lt 1 ] && n=1
+	echo "$n"
+	exit 0
+fi
+
+if [ -n "${TANK_SQUAD_SLOT:-}" ]; then
+	exec "$@"  # already inside a slot (nested make)
+fi
+
 slots=${TANK_SQUAD_SLOTS:-$(default_slots)}
 limit=${TANK_SQUAD_SLOT_TIMEOUT:-5400}
 dir=${TANK_SQUAD_SLOT_DIR:-/tmp/tank_squad_slots}   # overridable so the queue can be tested in isolation
@@ -75,7 +114,15 @@ mkdir -p "$dir"
 # Ticket name sorts by arrival: a fixed-width nanosecond stamp, then the pid to break ties.
 ticket="$dir/wait.$(date +%s%N).$$"
 : > "$ticket"
-trap 'rm -f "$ticket"' EXIT INT TERM
+# THE HANDLER MUST EXIT. A `trap ... TERM` whose handler falls through does not stop the script: bash runs the
+# handler and carries on, so `kill <pid>` on a queued waiter removed its ticket and left it polling for a slot
+# forever -- ticketless, so `live_tickets` could not even see it to prune it, and only SIGKILL stopped it.
+# (Found by the orchestrator on the laptop, 2026-09-20.) Same family as remote_builds.md's stale-.owner trap,
+# and the same family as `make lint`'s killed wrapper leaving its Godot children: **a signal that reaches the
+# wrapper has to end the wrapper.**
+trap 'rm -f "$ticket"' EXIT
+trap 'rm -f "$ticket"; exit 130' INT
+trap 'rm -f "$ticket"; exit 143' TERM
 
 holders() { cat "$dir"/slot*.owner 2>/dev/null | sed 's/^/     /'; }
 
@@ -107,7 +154,14 @@ while true; do
 			if flock -n "$fd"; then
 				echo "$(date +%H:%M:%S) $(basename "$PWD"): $*" > "$dir/slot$i.owner"
 				rm -f "$ticket"          # holding a slot, no longer queuing
-				trap - EXIT INT TERM
+				# Hand the traps over from the ticket to the OWNER file. `trap - EXIT INT TERM` used to clear
+				# them outright, so a slot holder killed mid-run left `slot$i.owner` behind and every later
+				# waiter printed a holder that was not there (remote_builds.md's stale-.owner trap). The lock
+				# itself is released by the kernel when the fd closes; it is only the human-readable owner file
+				# that needed an owner.
+				trap 'rm -f "$dir/slot'"$i"'.owner"' EXIT
+				trap 'rm -f "$dir/slot'"$i"'.owner"; exit 130' INT
+				trap 'rm -f "$dir/slot'"$i"'.owner"; exit 143' TERM
 				[ "$announced" -eq 1 ] && echo ">> got heavy-run slot $i after $((($(date +%s) - started) / 60)) min" >&2
 				export TANK_SQUAD_SLOT=$i
 				# The child must not inherit the lock fd: a stray background server would otherwise

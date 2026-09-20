@@ -25,10 +25,38 @@ const FACTIONS := {
 }
 
 
-## The gains for `loop` ("station", …) for a unit of `faction` ("" = default).
+## MEASURING ONLY (round 9, squad's X6 — the lead's named ask). Gains are chosen by `Units.stat(unit, "faction")`,
+## so *"the same army with different gains"* could not be set up at all: changing the faction changes the hulls, the
+## weapons and the doctrine with it, and the comparison stops being about the control law. This forces a gain set
+## regardless of faction, so an identical army can be driven two ways and only the regulator differs.
+##
+## `--gains=<faction>` on any run sets it; a test or scenario may assign it directly and must restore it. Empty = off,
+## which is the shipped behaviour and what every run does unless someone asks otherwise.
+##
+## Read at CALL time, never captured in a static initialiser — `CombatMotion.fixed_style` is the cautionary case in
+## this codebase: a static initialised from another class's static ran before that one was populated, the switch
+## silently did nothing, and round 7's first commitment A/B came back with two byte-identical arms.
+static var forced := ""
+
+
+static func _forced() -> String:
+	if forced != "":
+		return forced
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--gains="):
+			var name := arg.trim_prefix("--gains=")
+			if not FACTIONS.has(name) and name != "":
+				push_error("--gains=%s: no such faction (have %s). A flag nothing reads is an A/B with one treatment." % [
+						name, ", ".join(FACTIONS.keys())])
+			return name
+	return ""
+
+
+## The gains for `loop` ("station", …) for a unit of `faction` ("" = default), or for the forced set when one is on.
 static func for_loop(loop: String, faction: String = "") -> Dictionary:
 	var gains: Dictionary = (DEFAULT.get(loop, {}) as Dictionary).duplicate()
-	var override: Variant = (FACTIONS.get(faction, {}) as Dictionary).get(loop)
+	var pick := _forced()
+	var override: Variant = (FACTIONS.get(pick if pick != "" else faction, {}) as Dictionary).get(loop)
 	if override is Dictionary:
 		gains.merge(override, true)
 	return gains
