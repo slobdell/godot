@@ -276,6 +276,19 @@ Combat's evidence that this costs more than looks: the 14 m rig took `gangs vs l
 the highest suppression figures in their table. A hull that covers 0.5 m in 4 s is a stationary target whatever its
 speedometer says. They are testing `static_share` against hull length, pre-registered at `b16b8d78`.
 
+### BLOCKED (2026-09-19, evening): builder0 is unreachable
+
+The facing-arc measurement below is queued and cannot run: builder0 answers `No route to host` (100% packet loss to
+10.115.229.237 over the ZeroTier interface `ztktis7se4`, which is up on this machine at 10.115.229.242). It stayed down
+for an hour of polling. `zerotier-cli` needs a password here, so diagnosing the tunnel is the lead's, not mine.
+
+Both arms are pinned to commits and the run is reproducible as soon as it is back:
+`make remote T="nav-fight-maps FIGHT_BUSY_LEVELS=0"` on `2038a40a` (no facing populated) and on `777574e5`
+(`stream/nav` + squad's `ea55c624`), reading `travelled`, `gates` and the `move`/`attack_move` buckets.
+
+Also seen in the failed rsync, worth someone's attention: **builder0's root filesystem is at 91%** (102G of 119G, 11G
+free).
+
 ### PRE-REGISTERED before the run: what squad's `facing` does once the arc actually fires
 
 squad populated `facing` (`ea55c624`) on MOVE and KEEP_SLOT orders, so the arrive-on-heading gate now fires in real
