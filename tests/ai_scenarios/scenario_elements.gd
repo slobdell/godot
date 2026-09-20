@@ -39,11 +39,16 @@ func test_a_unit_fighting_from_a_formation_slot_stays_in_it() -> void:
 	# is run twice, with and without the element, and the drift is compared.
 	var free_drift := await _slot_drift(false)
 	var in_slot := await _slot_drift(true)
-	print("MEASURE element_slot_drift %.1f m in its slot vs %.1f m without an element (%d vs %d shots)" % [
-			in_slot["drift"], free_drift["drift"], in_slot["shots"], free_drift["shots"]])
+	# The bar is the element's OWN leash plus a margin, not a constant: round 9 (X1) made a slot's leash the
+	# element's resolved pitch, which is 14 m for these tank hulls and grows with the roster after the resize.
+	# Lesson 112: a constant in a test is a scale assumption, and this one has a size.
+	var bar: float = TankBrain.slot_leash({"pitch": Vector2(in_slot["pitch"][0], in_slot["pitch"][1])}) + 2.0
+	print("MEASURE element_slot_drift %.1f m in its slot vs %.1f m without an element (%d vs %d shots, bar %.1f m)" % [
+			in_slot["drift"], free_drift["drift"], in_slot["shots"], free_drift["shots"], bar])
 	assert_true(int(in_slot["shots"]) >= 6, "the element still fought (%d shots)" % in_slot["shots"])
-	assert_true(float(in_slot["drift"]) <= 16.0,
-			"no unit left its formation slot by more than 16 m (worst %.1f m, %s)" % [in_slot["drift"], in_slot["who"]])
+	assert_true(float(in_slot["drift"]) <= bar,
+			"no unit left its formation slot by more than its own leash plus 2 m (%.1f m of %.1f m, %s)" \
+			% [in_slot["drift"], bar, in_slot["who"]])
 	assert_true(float(in_slot["drift"]) < float(free_drift["drift"]) - 4.0,
 			"and the same fight without an element wanders further (%.1f m vs %.1f m)" % [free_drift["drift"], in_slot["drift"]])
 
@@ -62,6 +67,7 @@ func _slot_drift(in_element: bool) -> Dictionary:
 	for tank in line:
 		AiScenario.make_durable(tank)
 	var slots := {}
+	var pitch := Vector2(TacticsFormation.DEFAULT_SPACING, TacticsFormation.DEFAULT_SPACING)
 	if in_element:
 		var elements := s.elements()
 		var element: Object = elements.form(line.map(func(t: Tank) -> String: return String(t.name)), "Alpha")
@@ -71,6 +77,7 @@ func _slot_drift(in_element: bool) -> Dictionary:
 		element.assign({"verb": "attack", "target": "Rust_A_1"})
 		for tank in line:
 			slots[String(tank.name)] = _slot_of(element, tank)
+		pitch = element.pitch
 	else:
 		for tank in line:
 			slots[String(tank.name)] = tank.global_position
@@ -89,7 +96,7 @@ func _slot_drift(in_element: bool) -> Dictionary:
 				worst_name = String(tank.name)
 	var shots: int = line.reduce(func(total: int, t: Tank) -> int: return total + s.shots_by(t), 0)
 	s.dispose()
-	return {"drift": worst, "who": worst_name, "shots": shots}
+	return {"drift": worst, "who": worst_name, "shots": shots, "pitch": [pitch.x, pitch.y]}
 
 
 func test_each_unit_covers_its_own_sector_of_fire() -> void:

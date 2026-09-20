@@ -112,3 +112,43 @@ func test_the_arm_counter_distinguishes_the_tube_from_the_cadence() -> void:
 	Movement._off = was
 	assert_eq(int(arms["a1_tube_skips"]), 0, "the cadence arm never skips on a tube it does not have (%s)" % arms)
 	assert_true(int(arms["a1_replans"]) > 0, "and it does re-plan (%s)" % arms)
+
+
+## THE GUARANTEE THAT STOPS A FLAG HIDING A REGRESSION (squad's, adopted): **the tube may only ever hold a plan
+## LONGER than the cadence would, never shorter.** It may skip a re-plan; it may never add one. Turning A1 on must
+## not make the layer re-plan MORE, whatever the state has done — otherwise the row achieves the opposite of its
+## purpose in some regime and the switch conceals it.
+##
+## This caught a real bug: the first version read `drifted = _path.size() < 2` on its own, independent of the
+## cadence, so a hull with no route yet re-planned on ticks where the blend would not have.
+func test_the_tube_can_only_hold_a_plan_longer_never_shorter() -> void:
+	# One arena, one match, a fresh hull per arm from the same start — ArenaFixture may only be built once per test.
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var counts := {}
+	for arm in [false, true]:
+		var on: bool = arm
+		var was := _tube(on)
+		var tank := game_match.spawn_tank("Mover_%s" % on, 0, Match.Team.GREEN, "tank")
+		tank.global_position = START
+		tank.rotation.y = 0.0
+		var ctl := OrderController.new()
+		ctl.tank = tank
+		ctl.tanks_root = game_match.tanks
+		add_to_tree(ctl)
+		assert_eq(ctl.set_orders({"type": "move_to", "x": FAR.x, "z": FAR.z}, {"type": "hold_fire"}), "", "ordered")
+		for frame in int(SimClock.TICK_RATE * 10):
+			await tree.physics_frame
+		counts[on] = Movement.route_arms()
+		Movement.cancel(tank)
+		tank.queue_free()
+		ctl.queue_free()
+		await tree.physics_frame
+		Movement._off = was
+	var off: Dictionary = counts[false]
+	var tube: Dictionary = counts[true]
+	assert_true(int(tube["a1_replans"]) <= int(off["a1_replans"]),
+			"A1 never re-plans MORE than the cadence it replaces (%d with the tube, %d without)" % [
+					int(tube["a1_replans"]), int(off["a1_replans"])])
+	assert_true(int(tube["a1_tube_skips"]) > 0, "and it did hold at least once, so this is not a vacuous pass (%s)" % tube)

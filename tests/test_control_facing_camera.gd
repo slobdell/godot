@@ -5,6 +5,19 @@ extends TestCase
 const Fixture := preload("res://tests/support/control_fixture.gd")
 
 
+## Run the camera for `seconds` of ITS OWN time: off the tree's process loop, stepped at a fixed delta. The camera
+## turns at a rate per second, so a test that waits on the wall clock is testing the machine's frame rate; this one
+## tests the camera. One physics frame first, so anything the fixture teleported is where the camera will see it.
+const STEP := 1.0 / 60.0
+
+func _step(f: Fixture, seconds: float) -> void:
+	f.rig.process_mode = Node.PROCESS_MODE_DISABLED
+	await wait_physics_frames(1)
+	for i in roundi(seconds / STEP):
+		f.rig._process(STEP)
+	f.rig.process_mode = Node.PROCESS_MODE_INHERIT
+
+
 func _face(f: Fixture, unit_name: String, yaw: float) -> void:
 	var tank := f.tank(unit_name)
 	tank.rotation.y = yaw  # 0 faces north (-Z); -PI/2 faces east (+X): trip-up 2
@@ -24,10 +37,16 @@ func test_the_camera_turns_to_face_where_the_selection_faces() -> void:
 	assert_true(wanted is Vector3 and (wanted as Vector3).dot(Vector3.RIGHT) > 0.99, "the selection faces east (%s)" % [wanted])
 	# The camera's side, against a facing that holds still (this fixture's brains keep turning toward the enemy).
 	f.rig.facing = func() -> Variant: return Vector3.RIGHT
-	# 90° at YAW_FOLLOW_DEG_PER_S takes ~1.3 s: wait on the clock, not a frame count (headless frames are fast).
-	var until := Time.get_ticks_msec() + 3000
-	while Time.get_ticks_msec() < until:
-		await tree.process_frame
+	# The camera turns on `delta`, so THE TEST OWNS THE CLOCK. This used to spin on `await tree.process_frame` until
+	# 3000 ms of WALL CLOCK had passed, which asks the machine for a frame rate rather than asking the camera for a
+	# behaviour: nav measured it failing about one run in three on a loaded laptop, green on builder0 and on a quiet
+	# laptop, AT THE BRANCH POINT (it cost two bisection experiments hunting a regression that did not exist). It is
+	# also exactly what verification.md's "Timing in tests" forbids - `make check` measures timing and never judges
+	# it - and T1's parallel `check` will make a loaded machine the normal case rather than the unlucky one.
+	# So: the rig is taken off the tree's process loop and stepped by hand at a fixed delta. 90° at
+	# YAW_FOLLOW_DEG_PER_S (70°/s) takes ~1.3 s; 2 s of stepped time is the budget, and it is the same 2 s on any
+	# machine at any load.
+	await _step(f, 2.0)
 	assert_true(absf(angle_difference(f.rig.yaw, RtsCamera.yaw_facing(Vector3.RIGHT))) < deg_to_rad(RtsCamera.YAW_SETTLE_DEG + 1.0),
 			"the camera has turned to look east with them (yaw %.0f°)" % rad_to_deg(f.rig.yaw))
 	# Mixed: two vehicles facing opposite ways have no facing, and the camera keeps its yaw instead of snapping.
@@ -36,8 +55,7 @@ func test_the_camera_turns_to_face_where_the_selection_faces() -> void:
 	assert_eq(f.controls.selection_facing(), null, "a mixed selection has no facing")
 	f.rig.facing = f.controls.selection_facing
 	var kept := f.rig.yaw
-	for i in 30:
-		await tree.process_frame
+	await _step(f, 0.5)
 	assert_near(f.rig.yaw, kept, 0.001, "and the camera stays where it is")
 
 
@@ -120,9 +138,7 @@ func test_leaning_toward_the_reach_keeps_the_squad_on_screen() -> void:
 	f.controls.range_frame = 2.0  # the most the keys allow
 	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	f.rig.take_vision()
-	var until := Time.get_ticks_msec() + 2500
-	while Time.get_ticks_msec() < until:
-		await tree.process_frame
+	await _step(f, 2.5)  # lesson 158: the camera settles on `delta`, so the test owns the clock, not the machine
 	var screen := Rect2(Vector2.ZERO, Vector2(tree.root.size))
 	for unit_name in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
 		var at := f.camera.unproject_position(f.tank(unit_name).global_position)

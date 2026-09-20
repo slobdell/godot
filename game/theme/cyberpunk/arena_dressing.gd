@@ -41,6 +41,8 @@ const GAP := StandsProfile.GAP
 
 var ground: ChunkedGround
 var crowd: CrowdSystem
+## Feel X7 (round 9): the Syndicate airship, or null on LOW.
+var airship: SyndicateAirship
 ## Walls, towers, stands, gates and the crowd: rebuilt when a layout changes the arena's size.
 var structures: Node3D
 ## The perimeter's half size in use (walls at ±half).
@@ -59,6 +61,9 @@ func _ready() -> void:
 	var fx := FxWorld.get_instance()
 	if fx != null:
 		fx.quality_changed.connect(_apply_ground_quality)
+		# X7: the airship is tier-dependent like the ground, and the player can change tier mid-match. Rebuilding
+		# just it is cheap (primitives) and leaves the rest of the venue alone.
+		fx.quality_changed.connect(_build_airship)
 	add_child(ground)
 	_build_structures()
 
@@ -106,6 +111,20 @@ func _build_structures() -> void:
 		_build_venue()
 	# Render X5: repeated kit models (stands, towers, gates) draw as one MultiMesh per mesh.
 	StaticInstancer.instance_repeats(structures)
+	_build_airship()
+
+
+## Feel X7: the Syndicate's airship over the arena (the lead, round 9). Absent on LOW, where the web build and
+## phones cannot spare its draws -- the same rule the crowd lives under. No collision of any kind: it is a
+## MeshInstance3D and two quads under this node, and nothing else.
+func _build_airship() -> void:
+	if airship != null and is_instance_valid(airship):
+		airship.queue_free()
+	airship = null
+	if structures == null or not is_instance_valid(structures) or FxQuality.tier() < FxQuality.Tier.MEDIUM:
+		return
+	airship = SyndicateAirship.new()
+	structures.add_child(airship)
 
 
 ## Stands and their crowd along the north and south walls, gates in the middle of the east and west walls.

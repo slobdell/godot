@@ -97,7 +97,32 @@ Each item: the failing test first, then the build, then `make remote T=check`, t
    catalogue (opposing-tangent time 30–36% → under 10% with no fall in exchange ratio) is measured by metrics' A12 after
    CP1, not by you. Test: the readout distinguishes a deliberate off-axis leg (nav's state says so) from an unreached
    goal, on a scripted scenario; no readout for a unit on its corridor.
-3. **After CP2 (the resized roster is on `main`): the view at his pose.** `git merge main`, then `make remote
+3. **The camera inside a Terminus block — forced outside the solid** (added mid-round 2026-09-20, the lead, by the
+   orchestrator; game_design.md *Round 9 addition*). His words: *"In the Terminus map it's highlighting another problem
+   where the camera often ends up inside a building and we can't see what's going on inside the alleyways. We need to
+   make it so the camera is forced outside the solid for these cases."* The blocks are the kit's `StaticBody3D` boxes.
+   **Read his sentence as two faults, not one:** the camera *inside* a solid (he named the mechanism) and the alley
+   *unseen* (he named the symptom) — and fixing only the first can make the second worse, which is the case the
+   frames must show.
+   **Mechanism, decided (change it only with frames):** (a) **push out, hard.** After the rig has its pose, query the
+   camera point against the arena's static blocks; if it is inside one, shorten the boom along `focus → camera` to
+   just outside the solid, keeping a standoff of at least the near plane so the near plane is not inside a wall
+   either. The boom shortens; **the pitch and FOV he chose are not touched** — round 6's rule is that the camera
+   overrides his tilt in exactly one place (the far-range floor) and that place is flagged to him, so this must not
+   become a second one. (b) **Then, if the sight line `focus → camera` is still blocked, cut away the occluder** the
+   way the perimeter wall already is, rather than lifting the pitch: lifting brings back the top-down view in the one
+   place he is guaranteed to be looking. (c) **Expose what was cut** (`RtsCamera.cutaway_blocks()` or equivalent) —
+   contract **S6** says a lighting cue must not fight the cutaway, so the new `show` stream reads this signal rather
+   than guessing; tell show the exact shape the day it exists.
+   **Test** (first): after a follow and after a pan across the Terminus, the camera is **never inside a block's box**,
+   asserted against the layout's own boxes, sampled every frame of the move and not only at the ends. Plus: the push
+   never puts the camera closer than `MIN_DISTANCE` without saying so, and a camera in the open is untouched
+   (mutation-check: disable the push and the Terminus test must fail while the open-arena one still passes).
+   **Frames you look at:** `make remote T=camera-looks CAMERA_LOOKS_ARENA=terminus` and
+   `control-playtest-shots` at **his pose (21°, FOV 35, 49 m)** in the alleys — before, after, and **the case where
+   pushing the camera out hides the alley**, with how it was handled written under it. Do not shoot these at 12°.
+
+4. **After CP2 (the resized roster is on `main`): the view at his pose.** `git merge main`, then `make remote
    T=camera-looks` and `control-playtest-shots`, and look: selection rings and boxes on a hull two to three times
    longer; the command card's `VISION_FRAME_BOTTOM` lean (now derive it from the card's geometry — the round-8 Invariant
    0 item — instead of the 0.40 copy); radar blips against 8–14 m hulls (a blip should read the hull's length class,
@@ -106,14 +131,14 @@ Each item: the failing test first, then the build, then `make remote T=check`, t
    physically wider. Fix what the frames show, one commit each, and put the strip in `build/camera-looks/` for the
    orchestrator with the commit and machine in its README. **Nothing here is published before CP2** — a frame of the
    old roster is a frame of a game he will not play again.
-4. **`shell-playtest`'s console gate into `check`, behind a committed baseline.** It needs a display, so it runs
+5. **`shell-playtest`'s console gate into `check`, behind a committed baseline.** It needs a display, so it runs
    under `remote` on builder0 (`tools/remote.sh` handles Xwayland; trip-up 65). The gate as written fails on *any*
    ERROR; lesson 42 says the honest first step is a committed expected state (`tests/baselines/shell_console.txt`, the
    allow-listed lines and their counts) and failure only on **change** — then tighten. This is what makes the next
    texture leak visible to the gate rather than to whoever happens to run a windowed playtest. Ask the orchestrator
    before touching `mk/core.mk`'s `check` line (shared; metrics is rewriting that recipe for T1 — coordinate so your
    target lands in their parallel form, not the serial one they are removing).
-5. **Stretch:** after squad's A10 lands, re-check on the **default path** (`make skirmish`, not a test flag) that the
+6. **Stretch:** after squad's A10 lands, re-check on the **default path** (`make skirmish`, not a test flag) that the
    `ungrouped=N` readout (`game/modes/skirmish_mode.gd:327`) reads 0 and that the ignored-order banner still fires for
    each refused-order class you wired in round 8. Lesson 149: a behaviour behind a flag has not shipped.
 
@@ -142,18 +167,73 @@ directly.
 
 ## Status
 
-_Round 9, control stream. Branch `stream/control`, started from `main` at `9f864474` (2026-09-20)._
+> **Round 9, control. Finished 2026-09-20 ~05:00.** Branch `stream/control`; **`ffd09b0e` is the checked hash**
+> (builder0, **16 of 16 check targets**, verdict read from the box's own markers — metrics' kill took my wrapper
+> line, `mk/core.mk:250` clears the marker directory at the start and `:274` writes a marker only on success, so
+> 16 fresh markers is a sound green). `e27f0681` went to `main` earlier as **CP2c**.
 
-### Plan (order, with reasons)
+### What you can now do that you could not
 
-1. **Item 1, desktop right-drag facing** — the only item with no dependency, and the prerequisite for nav's
-   arrival-arc A/B (which currently measures zero in both arms). Tests first, then the state machine, then the pin.
-2. **Item 4, `shell-playtest`'s console gate behind a committed baseline** — independent of both checkpoints, and it
-   needs a word with metrics before `mk/core.mk`'s `check` line is touched, so the ask goes out early.
-3. **Item 2, S4** — my half of the signature (the readout spec) can be written now; the code waits for feel's page and
-   nav's signature. **No A6 readout code until all three have signed.**
-4. **Item 3, the view after CP2** — blocked until scale's roster merges. Nothing published before it.
-5. **Item 5 (stretch)** — after squad's A10.
+| Your words | What shipped |
+|---|---|
+| *"I couldn't tell what direction they were facing"* — and round 8 found your controls never **sent** a facing | **Right-DRAG the ground: "go there, and be facing that way when you get there."** Press picks the spot exactly as before; drag past 18 px and the drag's direction becomes the order's heading. Until now **nothing in the game you play had ever sent one**, so nav's arrive-on-heading arc had no caller and its A/B measured zero in both arms |
+| *"the camera often ends up inside a building… we can't see what's going on inside the alleyways"* | **703 of 4328 camera poses on the Terminus were inside a building. Now 0** — it lifts over the roof (21° → 32°) instead of yanking in, keeping 41.5 m of view. And **the building between the camera and what you are looking at is not drawn**: sight line blocked **518 → 0** |
+| *"they still generally don't do what I command them"* | The groundwork, not the fix: the **ordered corridor** is drawn with its current leg at full weight, and when a unit leaves it deliberately the cause goes in *"why did my element do that"* — never on the order pin, which stays the refusal channel. **The words are silent until nav ships its cause field**, deliberately: a guessed reason is confidently wrong exactly when you are watching |
+| (unasked) the console you see when you play | `make shell-playtest` now has a **committed baseline that fails on change**. A real run came back **18/18 checks and zero error lines**, so the baseline is empty and the gate is stricter than the allow-list it replaced |
+
+### Done, with measurements
+
+- **Right-drag facing** — `tests/test_control_facing_drag.gd`, 7 tests through the real input pipeline. Mutation
+  check: deleting the facing assignment fails 4 of 7. The pin grows a ground arrow for the ordered heading and the
+  HUD says *"3 units: move facing NE"*. A live preview follows the pointer while the button is down.
+- **Camera out of solids** — 4328 poses (every open ground point × 8 yaws) at your pose: **703 inside a building →
+  0**, worst lift **11.0°**, nothing pulled in, the yard provably untouched. Mutation-checked.
+- **The building in the sight line** — over those same 703: **700 blocked before, 518 after the lift, 0 after the
+  cutaway**. Every one of the 518 was a building, so the "cover" headroom in the bar went unused.
+- **Frames, looked at** (`build/terminus-alleys/index.html`, local): the *before* frame is your complaint exactly —
+  the bottom 70% of the screen is the flat dark inside of a wall. The *after* is a legible street with a whole squad
+  and their selection rings, facades and neon intact at the sides, no half-cut geometry. The open-ground control
+  frame cuts nothing and lifts 0.0°, which is the check that the fix does the specific thing and not a general one.
+- **S4 legibility** — signed by feel, nav and control. The corridor's current leg is drawn; an inactive law draws
+  nothing rather than a guessed corridor.
+- **Console gate** — `tools/shell_console.py`, 5 green tests, `make check-display`.
+- **Three wall-clock test budgets removed** (lesson 158) — they were measuring the machine, not the code.
+
+### The five measurements that were lying, and what caught each
+
+**This is the part worth a successor's time. Every one looked like a pass.**
+
+1. **A falsifier read 518 → 0 while the feature cut nothing at all in a real match.** `BlockCutaway`'s root was wired
+   before the arena had built its bodies, so it returned early forever. **Caught by looking at the frames.** No
+   amount of geometry testing closes the gap between *the algorithm is right* and *the feature works*.
+2. **A before/after where both halves were "after"** — the cutaway ran during the control frame too, so the pair was
+   nearly identical and showed no fault. **Caught by looking at the frames.** A comparison must be built so the
+   control arm *can* fail.
+3. **`git checkout <sha> -- .` does not reproduce that commit's lint** — files added in later commits stay on disk
+   and error against the older sources they now mismatch. **Caught by reading the errors instead of counting them.**
+4. **`Arena._ready` takes its layout from `layout_name`/`--arena`, never `Arena.active`** — a test that sets `active`
+   silently builds the DEFAULT arena, runs green on the wrong map, and blames the thing under test. **Caught by a
+   number that was too small** (19 bodies, then 48).
+5. **A wall-clock budget in a behaviour test measures the machine.** **Caught by nav**, who ran the branch point
+   three times instead of once; a single control run had already convinced them my branch was at fault.
+
+Two more from the same family: **a dedup that held only under one frame ordering** (caught by builder0, not by the
+laptop), and **a process list filtered by name is not filtered by worktree** — `pgrep -f` even matches your own
+command line, which turns *"is it still running?"* into yes whatever the truth is. I diagnosed a foreign `make check`
+in my own worktree from it; metrics killed three streams' wrappers from the same root cause.
+
+### What to playtest (exact commands)
+
+- `make skirmish` → FIGHT. **Right-DRAG on the ground** with units selected: a ring appears on the destination and an
+  arrow follows your pointer; release and the pin grows an arrow for the heading, with *"N units: move facing NE"* on
+  the HUD. A plain right-click is unchanged. Right-press on an **enemy** still attacks instantly, drag or no drag.
+  **Shift** queues. An armed order (A/F/M/E/R/B) still cancels on right-press, and that press is spent.
+- `make skirmish --arena=terminus` — drive a squad into the streets. The camera should never end up inside a
+  building, and a building between you and your units should simply not be drawn. `--block-cutaway=off` draws the
+  city whole for comparison.
+- **Look at** `build/terminus-alleys/index.html` (six pairs, your pose, left as asked / right as fixed).
+- `make remote T=control-playtest-shots` and `T=camera-looks` for the HUD and the camera grid;
+  `make remote T=check-display` for the console gate.
 
 ### Decisions
 
@@ -188,21 +268,6 @@ _Round 9, control stream. Branch `stream/control`, started from `main` at `9f864
   facing-carrying order including squad's, and item 1's job is to make the arm live, not to re-shape formations.
   Recorded as a question, below.
 
-### Progress
-
-| Item | State | Evidence |
-|---|---|---|
-| 1. Desktop right-drag facing | **built, green on the control suite (187 passed) and on the full local `make test`**; `make remote T=check` next | `tests/test_control_facing_drag.gd` (7, through `Viewport.push_input`), `test_control_order_marks::test_a_dragged_order_puts_its_heading_on_the_pin` |
-| 1. the pin | done: a move pin drawn from a facing drag grows a ground arrow in the order's colour (`_draw_ordered_facing`), and the HUD line names it in compass ("3 units: move facing NE") | `order_marks()[i]["facing"]`, `describe()` |
-| 1. the live preview | done: while the right button is down, a ring on the destination and, past the threshold, an arrow following the pointer — a player cannot learn a gesture he cannot see | `_draw_facing_drag` |
-| 1. frames | **not yet** — `make remote T=control-playtest-shots` with a drag added to `control_playtest.gd` | — |
-| 2. S4 signature | **signed 2026-09-20**, conditional on C-2 below; sent to feel (`godot-feel-e4`) and the orchestrator. **No A6 readout code until nav signs too.** | `git show 4ec341d2:_agents/legibility.md` |
-| 3. the view after CP2 | blocked on CP2 | — |
-| 4. `shell-playtest` into `check` | not started | — |
-
-**What the mutation check says:** deleting the `facing` assignment in `right_click_order` fails 4 of the 7 new tests
-(the brief asks only that (a) fail).
-
 ### S4: control's signature on `_agents/legibility.md` (2026-09-20)
 
 Read at `4ec341d2` on `stream/feel`. **control signs §6 as the readout, subject to C-2.** Sent to feel and the
@@ -233,13 +298,128 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
   A12 will charge A6's falsifier for exactly the obedience item 1 just shipped, unless the arc's ticks are excluded
   from the off-corridor fraction or counted as ordered. Relayed to feel and the orchestrator for nav and metrics.
 
-### Questions for the lead
+### Decided overnight (2026-09-20, the lead asleep; most reversible decent option, recorded rather than waited on)
 
-- **Should a dragged facing also orient the formation?** Today "move here facing north" lays the squad out along its
-  *travel* direction and each unit arrives on the ordered heading. The alternative is to lay the line out *across*
-  the drawn heading, which is what an ambush emplacement wants. It is a few lines in `Orders._resolve_group`, and it
-  changes the shape of every facing-carrying order (squad's included), so it is not being done blind. Frames rather
-  than a question if it comes up.
+- **Item 3's mechanism: LIFT the camera over the roof, do not pull the boom in.** Both were available and the numbers
+  decided it. At his pose the camera is 17.6 m up and 45.7 m back; the Terminus is 40 × 24 × 40 m blocks with 20 m
+  streets. Shortening the boom until it exits collapses **49 m → ~11 m** — below `MIN_DISTANCE`, near-first-person,
+  and the far side of the street still walls the alley: *it answers his sentence and not his problem*. Lifting over
+  the roof is **21° → 32°**, keeps 41.5 m of horizontal reach, and looks **down into** the alley, which is the thing
+  he said he could not see; it is also inside the tilt range he can reach by hand (8°–70°). The boom shortens only
+  when even `MAX_PITCH_DEG` cannot clear a roof (a solid taller than the boom is long).
+  **Measured** (`tests/test_control_camera_solids.gd`, laptop, `9bb6d143` + tree): every open ground point on the
+  Terminus × 8 yaws at his pose = 4328 poses; **703 had the camera inside a building, 0 after, worst lift 11.0°,
+  nothing pulled in.** The yard is provably untouched. Mutation-checked: disable the lift and the Terminus test fails
+  while the open-arena one still passes. **Reversible:** one constant loop-bound; the pull-in path is already written
+  and tested, so swapping the preference is a few lines if the frames say otherwise.
+- **The honest second number, and it is not a cure.** His sentence has two halves — the camera *inside* a solid, and
+  the alley *unseen* — and the lift answers the first completely (703 → 0) but the second only partly. Measured over
+  the same 703 poses (`test_control_camera_solids`, laptop): the sight line from the camera to the ground it is
+  aimed at was blocked by a building in **700 of 703 before and 518 after — a 26% reduction, not a fix.** The
+  remaining 518 are cameras that are correctly outside every solid and still looking at the side of one. **So the
+  occlusion half is probably still owed**, and the frames decide it: if the alley reads at his pose in
+  `build/terminus-alleys/index.html`, the lift is enough; if it does not, the next step is the per-block cutaway,
+  which the orchestrator has already ruled the shape of (per-block visibility/alpha, never an emission or show
+  channel, named in merge notes and on `_agents/lighting.md`'s reserved list) and which `RtsCamera.sight_blocked`
+  is already the primitive for. **Do not claim the item is finished on the 703 → 0 number alone.**
+- **The cutaway is VISIBILITY, not a fade, and that is a constraint-driven choice rather than a preference.** S6's
+  seam gives control alpha and visibility and gives `show` emission and channels. A per-block *alpha* would have to
+  be an `instance uniform` on `city_block.gdshader` — **show's file**, and one static ShaderMaterial shared by all
+  eight blocks — so taking it meant either editing their shader or blocking overnight on them adding one. Hiding the
+  block body's `VisualSlot` needs no uniform, cannot collide with anything show writes, and is one boolean to revert.
+  **control reserves nothing on the block material**, and a cut block keeps its cue underneath: it is not drawn while
+  it is in the way and is drawn again mid-cue when it is not. `BlockCutaway.cut_blocks()` is the signal show reads.
+  If the frames say a hard cut reads badly, the next step is to *ask* show for the instance uniform, not to write one.
+- **Cover is never cut** (`MIN_HEIGHT_M` 6 m). A container between the camera and the fight is *information* — it is
+  why a unit stopped where it did — and the lead's complaint was buildings. This is also why the falsifier's bar is
+  "under 50" and not zero: what is left is cover, deliberately still drawn.
+- **It reports what it did** (`RtsCamera.lifted_deg`). This is the **second** place the camera overrides his tilt,
+  after the far-range floor, and round 6's rule is that such a place is flagged to him, not hidden.
+- **Nothing is written on a city block.** No uniform, no instance parameter, no visibility, no alpha — the camera
+  moves instead. Told to show (`godot-show-b0`) and to the orchestrator; control's row on `_agents/lighting.md`'s
+  reserved list reads *nothing reserved*. If the alley frames later force an occlusion cutaway, it arrives as a named
+  uniform plus a message, per the orchestrator's ruling.
+- **A wall-clock budget in a behaviour test is a measurement of the machine.** nav measured
+  `test_control_facing_camera::test_the_camera_turns_to_face_where_the_selection_faces` failing ~1 run in 3 on a
+  loaded laptop **at the branch point**, costing two bisection experiments on a regression that did not exist. It
+  spun on `await tree.process_frame` until 3000 ms of wall clock had passed. Fixed by taking the rig off the tree's
+  process loop and stepping it at a fixed delta (`_step`): the same 2 s of simulated time on any machine at any load.
+  6/6 on three consecutive runs with seven streams live. **The rule, worth a round lesson before CP3 makes a loaded
+  machine normal: if the thing under test advances on `delta`, the test owns the clock.**
+
+### Questions for you
+
+- **Should a dragged facing also orient the formation?** Today *"move here facing north"* lays the squad out along
+  its **travel** direction and each unit arrives on the ordered heading. The alternative lays the line **across** the
+  drawn heading, which is what an ambush emplacement wants. It is a few lines, and it changes the shape of every
+  facing-carrying order including squad's, so it is not being done blind.
+- **The camera lifting itself over a roof is the second place it overrides your tilt** (after the far-range floor).
+  It reports how far it lifted. Keep it, or would you rather it pulled in and stayed at your angle? The frames show
+  why I chose the lift: pulling in collapses the 49 m boom to about 11 m.
+
+### Merge notes (shared files, and files another stream owns)
+
+- **`game/control/orders.gd`** (control's own, but every stream's orders run through it): `_same_order` now treats a
+  differing `facing` as a different order **for `source == "player"` only**. Machine re-issues keep today's dedup
+  exactly, so round 8's idle-command numbers cannot move. Reviewed by whoever merges CP2c.
+- **`mk/command.mk`** (control's): new `terminus-alleys`, `check-display`, `shell-console-baseline`,
+  `shell-console-pytest`. **`shell-playtest` itself is unchanged** — the console compare lives in `check-display`,
+  because `shell-playtest` is the instrument every stream reaches for by hand and a missing or stale baseline must
+  never be why someone's playtest goes red. It also lets the baseline be regenerated from a plain
+  `make remote T=shell-playtest` without the gate refusing the run that is producing it.
+- **`tools/shell_console.py`, `tools/test_shell_console.py`** (new, control's).
+- **`mk/core.mk` is NOT edited.** `shell-console-pytest` needs no display and belongs in `check` beside
+  `match-pytest`; the `check` line is shared and metrics is rewriting it for T1, so it is **requested, not taken**.
+  Until it lands there it runs as a prerequisite of `check-display`. `check-display` is deliberately outside
+  `CHECK_TARGETS` (metrics' shape): a display-only target inside `check` either fails every local run or no-ops
+  without a display, and a target that passes for the wrong reason is what lesson 42 is about.
+- **`tests/test_control_group_moves.gd` is deliberately untouched**: the CP2 re-time is scale's, in `23767e5a`, per
+  the orchestrator's ruling. I had made the change and backed it out so the branches do not conflict.
+- **Nothing is written on a city block** — no uniform, no instance parameter, no visibility, no alpha. control's row
+  on `_agents/lighting.md`'s reserved list reads *nothing reserved*.
+
+### Still owed
+
+- **Item 4, the post-CP2 camera sweep: NOT DONE, and it is the only backlog item outstanding.** It needs scale's
+  resized roster on `main`. When it lands: `git merge main`, then `make remote T=camera-looks` and
+  `T=control-playtest-shots` at your pose, and check selection rings, the command card's lean
+  (`VISION_FRAME_BOTTOM`, to be derived from the card rather than copied), radar blips against 8–14 m hulls, the
+  wall cutaway against a taller hull, `MIN_DISTANCE` 16 m against a War Rig, and the auto-frame with a wider squad.
+  **Nothing here is published before CP2** — a frame of the old roster is a frame of a game you will not play again.
+- **Item 6 (stretch)** — stood down to next round with squad's A10.
+- **C-2 is UNBLOCKED and built to nav's real set** (`Movement.LEGIBILITY_WHY`, `stream/nav` at `3f8cb7b1`); the
+  words arrive when nav's commit reaches `main`. Two of nav's reasons render as **nothing**, both deliberately:
+  - **`override` is silent.** nav's wording shifted between the two messages — from *"the honest single word"* when
+    nothing bound the nose, to ***"nothing nav owns is shaping the nose"***. The second is the **absence** of a
+    cause, and by nav's own table it is **most ticks on the default blend**; a line on every off-corridor unit every
+    tick is the 30-messages failure C-3 exists to prevent, dressed as an explanation. It gets words the day A6
+    exists and `override` can only mean *a law ran and something outranked it*.
+  - **`yielding` is silent** because `MovementReadout.CALLOUTS` already floats **YIELDING** over that hull. C-3: one
+    fact, one channel.
+  - **`arrival_arc` → *"arriving on the heading you drew"*** is the one live reason a player sees today, and it
+    exists because of item 1. `band`/`survival`/`armour` are wired with their shipped words and light up when nav
+    can publish them — a test asserts **every word in the vocabulary names a reason nav can actually publish**, so a
+    word for a reason that can never arrive cannot sit here looking like a feature.
+  - An unknown `why` renders as nothing, never a guess and never a raw key. nav's `push_error` catches drift on
+    their side, this catches it on mine.
+- **The A4 finding, and why the readout changed for an arm that is switched off.** nav measured a hull on the A4
+  arm holding `arrival_arc` for **45 s, ending 9.8 m short and 147° off** the ordered heading (the straight arm is
+  home in 4.3 s from the same start). *"Arriving on the heading you drew"* is the one live reason this readout
+  renders, so on that arm it would tell the player to **wait for a unit that is not coming** while the band beside
+  it correctly said STUCK — two opposite things on screen, with the encouraging one wrong. **The callout band now
+  outranks the explanation**: if the band has anything to say about a hull, the legibility line says nothing. A
+  general rule, not an A4 special case; it covers STUCK, BLOCKED and YIELDING at once. Fixed while A4 is off
+  because the flaw is in the readout's wording, not in the arm — lesson 149's converse: a behaviour behind a flag
+  can still mislead the day the flag goes on.
+- **nav's hashes, so C-2 lights up when they reach `main`:** `3f8cb7b1` (the key), `16444beb` (the corridor tangent
+  and the `no_law`/`override` split), `e2fbd1aa` (A6 behind `--nav-off=a6`), `1a616345` (the arm in `NAV_FIGHT_ARM`).
+  **Expect A6 inactive on every unit after that merge and do not call it a wiring fault** — nav measured A6 reached
+  1087 times and able to act **0** times (`a6_asked 1087, a6_no_corridor 1087, a6_nose_narrowed 0`), because
+  `CombatMotion.choose()` has no unit handle until squad passes `request["corridor"]`. `band`/`survival`/`armour`
+  start arriving with squad's merge, with no change needed here.
+- **A "blocked on X" line is a claim with a date on it.** My Status said *blocked on nav's key* for hours while the
+  readout sat built; nav's said *A6 blocked on S4* while the signature had been given. Neither of us re-read the
+  contract and the orchestrator spotted it. Both sides were done and both were waiting.
 
 ### Requests to other streams
 

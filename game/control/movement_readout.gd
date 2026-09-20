@@ -70,6 +70,125 @@ func route(unit_name: String) -> PackedVector3Array:
 	return PackedVector3Array(points) if points is Array else PackedVector3Array()
 
 
+## S4 (`_agents/legibility.md` §2, signed 2026-09-20): the ordered corridor, split for drawing into the **current leg**
+## and the rest of the route. `{}` when nav has no path for this unit - the A6 legibility law is INACTIVE then, and an
+## inactive law draws nothing rather than a guessed corridor (§5: an inactive law must never look like a broken one).
+##
+## Why the split: the law is a claim about the CURRENT LEG and nothing else ("velocity opposing the corridor tangent"
+## is measured against this leg's direction), so the leg is drawn at full weight and the rest is left faint. One
+## definition, one publisher: this reads nav's `path_points` and nobody recomputes a corridor of their own.
+func corridor(unit_name: String, from: Vector3) -> Dictionary:
+	var points := route(unit_name)
+	if points.is_empty():
+		return {}
+	var rest := PackedVector3Array()
+	for i in range(1, points.size()):
+		rest.append(points[i])
+	return {"leg": [Vector3(from.x, 0.0, from.z), Vector3(points[0].x, 0.0, points[0].z)], "rest": rest}
+
+
+## The current leg's unit direction on the ground - the corridor tangent the A6 law and its falsifier are measured
+## against. Vector3.ZERO when there is no leg to have a tangent.
+##
+## **nav publishes this now** (`Movement.state(unit)["corridor"]`, S4 §2's "one definition, one publisher"), so take
+## nav's value whenever it is there and derive one only on a build that predates it. Deriving it here as well would
+## be a SECOND interpretation of `path_points` - three projections of one fact was exactly what §2 was written to
+## stop, and a readout that disagreed with the falsifier about which way the corridor ran would be worse than one
+## that said nothing. nav sends `null` for "no leg", never Vector3.ZERO, on the same principle this file applies to
+## an inactive law: an unreadable corridor must not be able to look like a readable one.
+func corridor_tangent(unit_name: String, from: Vector3) -> Vector3:
+	# `has`, not `get(..., null)`: nav sends null for "no leg", so the default would make an ANSWER OF NULL
+	# indistinguishable from NO ANSWER AT ALL and send this straight to the fallback - overruling nav with a
+	# derivation on exactly the ticks nav said there was nothing to derive. It is the same absent-versus-empty
+	# distinction the facing key turns on, and getting it wrong here silently reinstates the second publisher.
+	var reading := state(unit_name)
+	if reading.has("corridor"):
+		var published: Variant = reading["corridor"]
+		if not published is Vector3:
+			return Vector3.ZERO  # nav answered, and its answer was "no leg"
+		var given: Vector3 = published
+		return given.normalized() if given.length() > 0.001 else Vector3.ZERO
+	var lane := corridor(unit_name, from)
+	if lane.is_empty():
+		return Vector3.ZERO
+	var leg: Array = lane["leg"]
+	var along: Vector3 = (leg[1] as Vector3) - (leg[0] as Vector3)
+	return along.normalized() if along.length() > 0.001 else Vector3.ZERO
+
+
+# ---- S4 / A6, control's C-2: attribution when the legibility law gives way ---------------------------------
+#
+# `_agents/legibility.md` section 6.2, signed 2026-09-20, and the condition control's signature carries: when A6 is
+# overridden - the case the player experiences as *"it stopped doing what I told it"* - the existing "why did my
+# element do that" line says so, IN THE VOCABULARY ALREADY SHIPPED. It never invents a cause: control will not infer
+# which level took the nose from geometry, because a guessed attribution is confidently wrong on exactly the ticks
+# the player is watching. Silence is the correct output until nav publishes the cause.
+#
+# nav's shape (its N5 commit): `Movement.state(unit)["legibility"] = {"active": bool, "why": StringName}`. nav has
+# stated what `why` can truthfully be, and it depends on the arm:
+#   * A7 ON  - a real level name, because `choose_projected` narrows one level at a time and the level that last
+#              reduced the candidate set IS the cause. Recorded, not inferred.
+#   * A7 OFF (today's default) - **`override` and nothing finer**: the blend is a weighted sum, no term "bound"
+#              anything, and any level name would be invented.
+# So this vocabulary DEGRADES TO ONE WORD and must read correctly when it does.
+const LEGIBILITY_WORDS := {
+	# LIVE TODAY, and the only reason a player sees on this tree: the unit is swinging onto the heading he DREW with
+	# a right-drag. Off the corridor by construction, and obedience - which is why S4 names it, and why folding it
+	# into anything else would show "no reason" for a nose that has a perfectly good one.
+	"arrival_arc": "arriving on the heading you drew",
+	# RESERVED BY NAV AND NOT PUBLISHED YET, but safe to word now: nav split its old `override` in two after this
+	# readout caught the name drifting, so `override` can only ever arrive meaning *a nav-owned law RAN and
+	# something outranked it without naming itself*. The absence of a law is `no_law`, below, and is silent.
+	"override": "a higher priority has the wheel",
+	# A7's levels, real the day A6-a/A6-b exist to lose to them. Wired so the words are already the shipped ones.
+	"survival": "under fire", "band": "holding its range", "armour": "front toward the threat",
+}
+## Reasons that get NO line. Three of these are C-3 doing its job rather than gaps.
+##
+## `no_law` is nav's answer on most ticks today: **no nav-owned motion law exists to run**. It is the ABSENCE of a
+## cause, not a cause, and a line on every off-corridor unit every tick would be the 30-messages failure C-3 exists
+## to prevent, dressed as an explanation. (This entry is why nav split the name: it used to be called `override`.)
+##
+## `yielding`, `blocked` and `no_path` are already spoken by the callout band over the hull (CALLOUTS, and
+## `card_line`'s "No way through"/"Stuck for 4 s"). **One fact, one channel** - a fact in two vocabularies teaches a
+## player to read neither. nav keeps them in its set because metrics wants them; control simply does not speak them.
+##
+## `no_order` is a unit with nothing to be off the corridor of.
+##
+## `run_style` and `reflex` are NOT in nav's set at all - `CombatMotion`'s knowledge, with no channel to the mover -
+## and are listed here only so that if they ever arrive they arrive silent rather than as an unknown.
+const LEGIBILITY_SILENT := ["", "no_law", "yielding", "blocked", "no_path", "no_order", "run_style", "reflex"]
+
+
+## nav's legibility state for a unit, or {} when this build's nav does not publish one (every build before nav's N5).
+func legibility(unit_name: String) -> Dictionary:
+	var reading: Variant = state(unit_name).get("legibility", {})
+	return reading if reading is Dictionary else {}
+
+
+## What to tell the player about a unit driving off its ordered corridor: the cause in the words already on screen,
+## or "" when there is nothing honest to say. "" covers every case that matters: nav publishes nothing (no guessing),
+## the law is active (the unit is on its corridor, so there is nothing to explain), the unit has no order, and the
+## reasons another readout already owns.
+func legibility_line(unit_name: String) -> String:
+	var reading := legibility(unit_name)
+	if reading.is_empty() or bool(reading.get("active", false)):
+		return ""
+	# **If the callout band over the hull is already speaking, this line says nothing.** C-3's rule is one fact one
+	# channel, and here it also stops an outright contradiction: nav measured a hull on the A4 arm holding
+	# `arrival_arc` for 45 s, ending 9.8 m short and 147 degrees off the ordered heading. The band correctly calls
+	# that STUCK; rendering "arriving on the heading you drew" beside it would be the screen telling the player two
+	# opposite things, and the wrong one would be the encouraging one - it says WAIT for a unit that is not coming.
+	# This is a general rule and not an A4 special case: whatever the band has to say outranks an explanation.
+	if callout(unit_name) != "":
+		return ""
+	var why := String(reading.get("why", ""))
+	# A reason this build does not know renders as NOTHING, not as a guess. nav refuses anything outside its closed
+	# set with push_error, so an unknown `why` here means the sets have drifted - and a wrong cause is worse than
+	# none, because the player believes it.
+	return String(LEGIBILITY_WORDS.get(why, ""))
+
+
 ## One line for the unit card: "Blocked by Green_Alpha_2", "Giving way", "Arrives in 4 s", or "".
 func card_line(unit_name: String, describe_unit: Callable = Callable()) -> String:
 	var reading := state(unit_name)
