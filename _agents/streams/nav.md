@@ -673,7 +673,64 @@ detail**, and the distinction is exactly the sort that turns into an over-claim 
 diverge and the totals move with them. Every number above is from **one** run and is internally consistent; none of
 them is a before/after against a different run.
 
-### N4 GROUNDWORK, measured: 43% of off-mesh gates have NO straight run-in at any length — that is A4's case
+### ⚠ A4'S HEADROOM EXISTS ON ONE MAP IN FOUR — the pre-registered A/B is REFUSED on three of them
+
+Control arm (A4 off — the default path), `8c7f60c0`, **laptop**, `nav-fight-maps`, seed 3, `FIGHT_BUSY_LEVELS=0`,
+**120 s**, which is the pre-registered length:
+
+| map | offered | aimed | off_mesh | `fits_at_75` | **`none`** | `none` share |
+|---|---|---|---|---|---|---|
+| **yard** | 12237 | 9127 | 1641 | 1211 | **430** | **26 %** |
+| boulevard | 9877 | 8062 | 503 | 503 | **0** | 0 % |
+| pit | 10603 | 8562 | 533 | 533 | **0** | 0 % |
+| boneyard | 10165 | 8259 | 408 | 408 | **0** | 0 % |
+
+**nav's own pre-registration decides what happens next:** *"A run where `none` is 0 is a run that could not have
+tested A4 and is refused, not reported."* Three of the four arms are refused. **The honest A/B is yard-only**, and it
+must be reported as a single-map result with that scope stated.
+
+The other three maps are not quiet — they produce **408–533 off-mesh gates each** — and **not one of those gates
+needs a curve**. Every one is recoverable by trimming the run-in 25 %, which is the cheap fix A4 was supposed to be
+better than.
+
+**TWO CORRECTIONS TO A PUBLISHED NUMBER OF NAV'S.** The claim was *"43 % of off-mesh gates have NO straight run-in at
+any length — that is A4's case."* It is wrong twice:
+
+1. **It is yard-only.** Across four maps at 120 s it is **430 / 3085 = 14 %**, and **0 % on three of them**.
+2. **It is a 45 s figure.** On yard itself at the pre-registered 120 s the share is **26 %**, not 43 % — the
+   recoverable `fits_at_75` class grows faster with run length than the blocked class does.
+
+The measurement below was correctly labelled *yard seed 3, 45 s*; what was wrong was the heading generalising it and
+the front page repeating it. **A4's case is a property of cluttered maps, not of the game.**
+
+**The structural reason, as a correlation across four maps and not a proven cause.** yard is the container yard:
+**98 containers, 58 of them 40-foot** (12 m of straight wall each), against 26 / 38 / 28 on the others. Long walls in
+dense rows are what make a corridor no straight line can enter. boneyard, which produces zero, is the wreck map — 26
+wrecks, the most of any, and wrecks are short and scattered. **Whether yard is representative of where the game is
+going is arena's question, not nav's**, and it decides whether A4 is a core row or a niche one. If most shipped maps
+look like boneyard, A4 should be defaulted off on *that* basis rather than on its duel numbers.
+
+**A THIRD CORRECTION, and this one is to the pre-registration itself.** It says the arms run on *"the four maps
+`--arena=random` can deal"*. **`--arena=random` deals from `Arena.ROTATION`, which is `["yard", "pit", "terminus"]` —
+three maps, not four** (`arena.gd:63`, `:613`). `FIGHT_MAPS`'s default is `yard boulevard pit boneyard`, so the set
+nav screened contained **two maps the player never sees** (boulevard, boneyard) and **omitted terminus, which they
+do**. Caught by the orchestrator, not by nav. The Makefile comment on `nav-fight-maps` repeats the same wrong claim
+and should be fixed by whoever owns `mk/nav.mk` next — that is nav.
+
+**A HAZARD IN NAV'S OWN TARGET, for the next agent:** `nav-fight-maps` opens with `rm -rf $(BUILD_DIR)/nav-maps`, so
+**launching it again destroys the previous run's logs**. nav started the terminus run without copying first and only
+caught it because the run was still in its `import` step; both passes are now saved in the session scratchpad
+(`nav-maps-45s`, `nav-maps-120s-4map`). **Copy `build/nav-maps` before re-running the target.** The runs are seed 3
+and deterministic, so the numbers reproduce exactly in any case — but a number you have to re-earn is a number you
+will be tempted to quote from memory.
+
+**A NEAR-MISS, recorded because the process point is the valuable part.** nav first ran this pre-check at **45 s**,
+where boneyard showed **zero off-mesh gates at all**. At 120 s it shows **408**. Refusing boneyard on the short run
+would have published *"boneyard has no off-mesh gates"*, which is false. **A headroom pre-check needs the same run
+length as the experiment it is screening** — a short control arm is itself an instrument at the end of its range,
+which is scale's lesson-153 twin applied to the thing that screens FOR it.
+
+### N4 GROUNDWORK, measured (yard, 45 s): 43% of off-mesh gates had no straight run-in — **now superseded, see above**
 
 Laptop, `57b8e89b`, `nav-fight` yard seed 3, 45 s, default path (deterministic — `offered` and `aimed` reproduce the
 earlier run exactly):
