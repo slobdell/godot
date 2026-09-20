@@ -311,3 +311,14 @@ waiter's log kept naming a job that had ended. The lock dies with the process; t
 - Then look in `/tmp/tank_squad_slots/`: a `slot<N>.owner` naming a PID that no longer exists is stale — remove it by
   hand. Waiters read that file for their banner, so a stale one lies to everyone.
 - The habit that would have avoided it: builder0 sat at load 0.64 on 12 cores the whole time. Heavy runs go there.
+
+## ⚠ An orphaned remote run yields NO verdict, and it blocks its own directory (squad, 2026-09-20 03:28)
+
+`>> remote: make check exited <N>` is printed by the **local** wrapper. If the wrapper dies (a `&` inside a command
+that then exits, a killed shell, a dropped ssh), the remote `make` keeps running on builder0, holds a slot, scrolls a
+thousand PASS lines — and there is no line at the end, so by the rules the result does not exist. And you cannot
+re-launch into `~/tank_squad/godot-<stream>` while the orphan is reading it (trip-up 66). **Launch pattern that
+survives:** `setsid nohup make remote T=check > log 2>&1 &` from a shell that stays alive, or run it as the tracked
+command itself. **Before any re-run:** `ssh builder0 "ps -eo pid,etimes,args | grep '[s]lot.sh'"`, `readlink
+/proc/<pid>/cwd` to find only yours, kill by explicit PID walking `pgrep -P` (never by pattern, trip-up 19), confirm
+no survivors, then launch.
