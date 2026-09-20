@@ -743,6 +743,51 @@ detail**, and the distinction is exactly the sort that turns into an over-claim 
 diverge and the totals move with them. Every number above is from **one** run and is internally consistent; none of
 them is a before/after against a different run.
 
+### N5/A6: **both clauses are BUILT at level 3 — and A6 cannot fire yet, which is counted rather than trusted**
+
+`e2fbd1aa`, opt-in behind `--nav-off=a6`, 40/40 nav. **A6-a** (nose: turreted within 25° of the tangent, hull-fixed
+bounded forward-oblique at 75°) and **A6-b** (shoulder: of two equal shoulders take the one whose velocity advances
+along the corridor). **A6-b is the half that moves the falsifier** — it is measured on *velocity*, and a turreted
+hull's nose is already free of its gun, so a law constraining only the nose would pass its own review and leave P7
+at 30–36%.
+
+**⚠ A6 IS INERT UNTIL `request["corridor"]` ARRIVES.** `CombatMotion.choose()` takes a Dictionary with **no unit
+handle**, so nav's velocity layer cannot look up its own mover's corridor from inside the decision; `tank_brain.gd`
+must pass it and that is **squad's** file. squad has it written and dry-run clean, landing with their merge.
+**Until then every A6 tick is an inactive one**, and `a6_no_corridor == a6_asked` in `arm_report()` is the signal
+that the field has not arrived. Reported unconditionally **including when zero**, at squad's request and on squad's
+rule, which is the best sentence anyone wrote tonight: ***"An arm in which the mechanism cannot act is not a
+control; its zero is indistinguishable from a result."***
+
+**What the unit tests prove and what they do not.** They prove the law is **reached**, **has its corridor**, and
+**narrows the live set**. They do **not** show it changes behaviour: on the synthetic request both arms choose the
+same heading (0.383 either way) — level 3 hands its null space down and levels 4–5 pick the same winner from a
+smaller set. Whether A6 changes anything is the **falsifier's** question, on a fight, over **active ticks only**
+with the active fraction beside it, and it needs squad's field. *A falsifier that improves because the law switched
+itself off more often is not a pass.*
+
+**Design notes that are decisions, not details.**
+- **A6-a's cost is monotone outside the bound and FLAT inside it.** Candidates satisfying the bound tie, and that
+  tie *is* the null space handed down. Lesson 153 applied deliberately: a floor that makes a level rank nothing is
+  the leash bug, but a floor that expresses a **bound** is what a bound means.
+- **Composition is §4's, written down rather than discovered:** A6 runs *after* the armour task, so `strafe` (armour
+  demoted to level 5) hands A6-a the full set, while `angle` and `standoff` hold only inside what armour leaves.
+- **`run` is excluded** — a control that is also rewritten is not a control.
+- **Binding is by MOUNT, asserted over the live roster.** `TankBrain.motion_style` derives style *from* mount, so
+  hull-fixed is exactly `{standoff, run}` by definition rather than roster coincidence. If that stops holding, A6
+  would put a 25° nose bound on a hull whose gun **is** its hull, which §4 calls an anti-goal.
+- **The tolerance is inherited from level 3's existing `TOLERANCE["arc"]` (0.125) and is NOT separately derived.**
+  It is the first thing to measure once the corridor lands; nav did not invent a number for it.
+
+**A SIXTH false zero, and this one was nav's own test.** A6-a's comparison read `result["to"]` — a key
+`CombatMotion.choose()` does not return — so both arms got the fallback heading and the assertion passed on
+**0.000 against 0.000**. A vacuous comparison *inside the test written to catch vacuous comparisons*. It now reads
+`point`, and a **positive control requires at least one arm to produce a real projection before the arms are
+compared at all**. Tonight's tally across two streams: squad's defile tube (`redecides=0` in both arms, no enemies
+in the maze), nav's `facing_arc` (unpublished, printing `0.0s`), nav's `off_mesh_fit.none` (events, not gates),
+nav's `--nav-off=a11` (one treatment in two arms), metrics' `arc_live` renderer (null counted as false), and this.
+**Every one of them looked like a number.**
+
 ### N5/S4: the legibility key is SHIPPED — control's readout was built and silent waiting on nav
 
 **The deadlock was nav's.** `_agents/workstreams.md` S4: *"control signed 2026-09-20 with one condition on nav:
