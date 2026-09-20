@@ -249,11 +249,19 @@ hull can swing 160°. Every candidate pointed nearly the same way and level 3 ha
 | slot drift / shots | 42.1 m / 5 | **38.7 m / 6** *(blend 15.4 / 10)* |
 | **turreted duel** | 100% / 100% front hits over 20 s | **67% over 6.3 s** ✗ |
 
-**The open question, stated as the number that matters rather than the one that failed:** the duel's bar is front
-hits ≥ 80% and A11 reads 67%, but that is **three hits**. The real finding is that **the fight ends at 6.3 s of a
-20 s scenario**, with both hulls moving markedly more (0.77 / 0.76 against 0.67 / 0.73). Arc candidates make two
-tanks close and settle a duel three times faster. **That is the first thing to look at when A11 resumes**, and it is
-a behaviour question, not a tolerance.
+**⚠ CORRECTION (nav, 2026-09-20): the assertion that fails is NOT the front-armour one.** nav first reported this
+as *"front hits 67% against a bar of 80%"*. Both halves of that were wrong. The scenario's front-armour bar is
+**≥ 50%** and A11 reads **67%**, which passes comfortably — *the check the scenario is named for is fine.* The
+failing line is **`and they still fight ([2, 2] shots)`**, a bar of **6** shots.
+
+**And the shot count is low because the duel ENDS AT 6.3 s of a 20 s scenario** — the harness breaks the moment
+either tank dies (`_duel`, `scenario_motion.gd:24`). Under A11 the two hulls move markedly more (0.77 / 0.76 against
+0.67 / 0.73) and kill each other **three times faster**, so there is no time to fire six rounds.
+
+**So the open question is not "does A11 cost front armour" — it is "why does A11 settle a tank duel three times
+faster", and whether that is lethality or blundering.** The scenario cannot answer it: it was built to check that
+hulls weave with their fronts on the gun, not to judge how quickly a duel should end. That is the first thing to
+look at when A11 resumes, and it needs an instrument that measures the exchange rather than the survival time.
 
 #### ⚠ A7 is built, measured, and NOT shipped on (2026-09-20)
 
