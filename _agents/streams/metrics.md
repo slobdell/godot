@@ -263,6 +263,38 @@ is the orchestrator's call, not his.)
 > `test_theme_city_block::test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll` — **that
 > last one I cannot find written down anywhere and it may be new.**
 
+> ### Waiting on the box (held quiet for feel and show). Four commits verified locally, none checked.
+> `bac84a6f`'s check, for the record: builder0, `>> remote: make check exited 2`, **1481 passed / 4 failed**,
+> 993 s, 5 shards over 212 files — the same seven failures as `fbf2af95`, reproduced exactly. **`make
+> check-hashes` printed on real data for the first time**, which closes CP3's one inferred criterion:
+> `>> check: hashes on builder0 | sim-baseline 2d5215a8a0a59ded (baseline unmoved) | determinism
+> 253adefeec657df1` — `determinism`'s state_hash had never reached a log at all.
+>
+> | commit | what | verified |
+> |---|---|---|
+> | `e3a91460` | `make remote` refuses to rsync over a live run of its own | **on builder0**, against a live 27-process check |
+> | `cc58b4ad` | the ai-scenarios gate, on the non-pending counts | 20 fixture tests; **baseline not yet re-recorded**, so the gate stays red |
+> | `305878b3` | engine warnings told apart from errors; `expect_warning` | **not parsed** — GDScript, no local Godot runs |
+> | `0826d823` | `--quiet`: a timing run holds the box and judges its own window | 76 shell tests; remote script rendered and parse-checked |
+>
+> **Three defects found by tests for features that had not shipped yet**, two of them pre-existing and
+> shared:
+> 1. **`slot.sh` could not release its slot when killed.** bash defers a trap until the foreground command
+>    finishes, so `kill` on a slot holder did nothing until the work finished by itself. This is the whole
+>    of remote_builds.md's stale-`.owner` entry, which had been written up as an operator mistake; the
+>    entry is rewritten. Work now runs in the background under an interruptible `wait`.
+> 2. **Killing a slot holder left its work running** — the slot came back while the Godot under it did not.
+>    Now killed as a tree, walked by parent, never by pattern.
+> 3. **My own `QUIET WINDOW` verdict printed HELD for a file with zero samples.** `grep -cv X || echo 0`
+>    fires its fallback exactly when the count is zero, so the variable became `0\n0`, the integer test
+>    errored, and the guard was skipped. The round's recurring defect, inside the code written to prevent
+>    it, defaulting to the reassuring answer.
+>
+> **Corrected by combat, and it was my error to make:** I reported `scenario_dodge_rate` to the orchestrator
+> as a regression without opening the file, whose own header says KNOWN-FAILING since CP4 and "Not in make
+> check". The gate had inherited a ~2% coin as its expectation. A baseline records whatever was true the
+> instant it was taken, **including luck**.
+
 > ### `e3a91460` — `make remote` refuses to rsync over a live run of its own (trip-up 66, enforced)
 > Requested by the orchestrator after it voided nav's check on `96bbf38e` and scale's 62-minute fairness run
 > in one morning. **Verified against the live box:** `tools/remote.sh --status` listed my own running
