@@ -283,70 +283,37 @@ _Updated 2026-09-20 (overnight), worktree `godot-scale`, branch `stream/scale`._
    its collider at 4.74 m wide (feel's call, round 10, and they have said so for the record), and whether a
    per-hull-class navmesh radius is wanted (nav's, catalogue C2).
 
-### ⛔ CP2 IS BLOCKED ON A FAILURE I INTRODUCED — read this before merging anything
+### The five-squads failure: diagnosed to the line, and fixed
 
-**`test_ai_player_orders::test_five_squads_ordered_in_quick_succession` fails on `4375a9ad`.**
+`test_ai_player_orders::test_five_squads_ordered_in_quick_succession` failed on `4375a9ad` with one unit **104.9 m**
+from its slot while the other four squads sat at 3–5 m. **The spawn grid caused it; a respawn is the mechanism; the
+test's own missing rule is the defect.** Each step measured, none argued:
 
-```
-every unit of every squad ends up on its own slot (expected 0, got 1)
-MEASURE player_orders_rapid worst gap per squad
-      { "Alpha": 3.2, "Bravo": 4.3, "Charlie": 104.9, "Delta": 5.0, "Echo": 4.9 }
-```
+1. **Not flaky, not test order.** It fails `--filter=ai_player_orders` **alone**, with Charlie at **104.9 m in
+   both** the remote full-suite run and the local filtered one — identical to 0.1 m, while every other squad's
+   number moves by ~1 m between the two machines (ordinary glibc drift, trip-up 63). *A value that does not drift
+   when everything around it does is not a measurement of a drive.*
+2. **The offender moved sideways, not short.** `Green_Charlie_1` went x −18 → **+45**, z 95 → **90**; its five
+   squadmates all drove from z = 95 to z ≈ 11–21 as ordered. Invisible until printed, because the test reports the
+   per-squad worst gap and the three units *nearest* their slots.
+3. **(45, 90) is its OWN spawn slot.** It is the 13th green unit spawned, so slot 12: `SLOT_X[12] = 45.0`, row 0,
+   `BASE_Z = 90.0`. Under the old grid that slot is (66, 90).
+4. **Reverting ONLY the spawn grid fixes it** — constants *and* the ten baked lists, resized roster left in place:
+   4/4 pass, worst gap 7.9 m.
+5. **It died and came back.** `Rust_A_1 destroyed Green_Charlie_1`, and at measurement time it is `alive=true`,
+   `health 300.0/300.0`, `slot_index=12`, at (45.0, 90.0). **A respawned unit has no order**, so it sits on its
+   spawn point.
 
-**One unit 104.9 m from its slot; the other four squads sit at 3–5 m.** On `b7055602` — the resized roster with
-the **old** spawn grid — the same test passed with Charlie at **4.5 m**. So it arrived between `b7055602` and the
-tip. **Do not merge CP2 until this is understood.**
+**Why the old grid passed: luck of geometry.** `elimination` is unset in this test, so the enemy respawns too —
+three times in one run. The grid decides where it comes back, the new grid put it somewhere it could reach the
+player's line, and it killed a unit. Nothing about a 19-column grid is wrong; **the test was asserting that all 30
+units hold their posts while a live enemy respawned beside them for 40 s, and it held by coincidence.**
 
-**Ruled out so far (by reading, not by running — the reproduction had not finished when work paused):**
-- **`Arena.SPAWN_CLEARANCE` 6.0 → 4.0** is not it: its only consumers are `arena.gd` itself and two arena tests.
-  It does not reach formation slots.
-- **`Match.SPAWN_SLOTS` 52 → 57** is not it: its only consumer is `Doctrine.MAX_UNITS`, and this test loads no
-  doctrine.
-- **The spawn grid's geometry is not obviously it either**, and this is the awkward part: the test places its
-  units at fixed coordinates (`Vector3(-90 + index * 6, 0, 95)`) **immediately after spawning them**, overriding
-  the grid entirely. All 30 are `"tank"`, so "the widest hull" does not single Charlie out.
-- `git show 07f92087 -- game/` contains **only** the spawn constants, the `SPAWN_CLEARANCE_MARGIN` refactor and
-  `size_look.gd` (not in the simulation). Plus all ten arenas' baked spawn lists.
-
-**✗ CROSS-TEST COUPLING IS RULED OUT.** `--filter=ai_player_orders` **alone** fails the same way, with Charlie at
-**104.9 m in both** the remote full-suite run and the local filtered one — identical to 0.1 m. Deterministic, not
-flaky, not test order.
-
-**AND THE OFFENDER IS NOW LOCATED.** Printing every Charlie unit's start, end and slot (the test reports only the
-per-squad worst gap and the three units *nearest* their slots, which is why this was invisible):
-
-```
-                  start            now             slot          gap    goal
-Green_Charlie_1   -18.0, 95.0  ->   45.0, 90.0    -19.9,  7.6   104.9   (0, 10)
-Green_Charlie_2   -12.0, 95.0  ->  -11.4, 11.7     -9.9,  8.0     4.0   (0, 10)
-Green_Charlie_3    -5.1, 95.0  ->   -1.0, 21.0     -0.3, 18.3     2.8   (0, 10)
-Green_Charlie_4    -0.0, 93.6  ->    0.1, 11.2      0.1,  8.3     2.8   (0, 10)
-Green_Charlie_5     5.1, 95.0  ->    9.8, 11.5     10.1,  8.7     2.8   (0, 10)
-Green_Charlie_6    12.0, 95.0  ->   19.6, 11.9     20.0,  9.0     2.8   (0, 10)
-```
-
-**Charlie_1 did not fail to move — it moved 63 m SIDEWAYS and stayed at the back.** Five squadmates drove from
-z = 95 to z ≈ 11–21 as ordered; Charlie_1 went from x = −18 to **x = +45** and from z = 95 to **z = 90**.
-
-**(45, 90) is a spawn point of the NEW grid.** `Match.SLOT_X` contains exactly `45.0`, and `BASE_Z` is exactly
-`90.0`. The old grid's nearest column was **44.0**, not 45. So the unit is sitting precisely on a grid slot that
-only exists because of my change — which is why the identical 104.9 appears on two machines whose other numbers
-differ by a metre: it is not a unit that drove and came up short, it is a unit **placed on a grid point**.
-
-**Single-variable confirmation is running**: the same filtered test with ONLY the spawn grid reverted (the
-constants *and* the ten baked spawn lists, which win over them) and the resized roster left in place.
-
-**THE EXACT NEXT STEP, in order:**
-1. **Bisect `b7055602..4375a9ad`** with `--filter=ai_player_orders`. It reproduces **alone, deterministically, in
-   about three minutes**, so this is cheap: the three commits that touch anything the simulation reads are
-   `07f92087` (spawn constants + ten regenerated `spawns` lists), `3dcab48b` (A3: `Arena.cover` lazy, new
-   `CoverTables`) and `0e809a09` (`Arena.validate` rejecting unknown top-level keys). **Start with `07f92087`.**
-2. **Print where Charlie's offender actually is**, not just its gap — the test reports the worst gap per squad and
-   the three nearest-to-slot units, which is why the offender's own position is still unknown. One `print` of
-   its `global_position` and its slot separates "never moved" from "moved somewhere wrong".
-3. Fix, then `make lint` **clean on the final commit, with no other local Godot work in the same checkout** —
-   the first lint of the night was corrupted exactly that way.
-4. Then `make remote T=check` for the CP2 hash.
+**The fix is the sibling's rule, not a bigger tolerance.** `test_a_doctrine_army_re_arranges_when_each_squad_is_ordered`
+already excludes destroyed units and says why in its own comment: *"skirmish plays to elimination: a destroyed unit
+doesn't come back without its orders."* The failing test now connects `Match.tank_destroyed` and excludes them too,
+reports the count, **and asserts at most three were destroyed** — so the exclusion can never hide a massacre and
+turn a wipe-out into a green run.
 
 ### Where it stands
 
