@@ -44,11 +44,32 @@ static func check_report(report: Dictionary, slot: String, raise := 0.0, attache
 		contract["elongated"] = ""
 	match String(contract["fit"]):
 		"contain":
-			if size.x > max_size.x * (1 + tolerance) or size.y > max_size.y * (1 + tolerance) or size.z > max_size.z * (1 + tolerance):
-				errors.append("size %s exceeds the slot's %s" % [_v(size), _v(max_size)])
-			var fill := maxf(maxf(size.x / guide.x, size.y / guide.y), size.z / guide.z)
-			if fill < AssetContracts.MIN_FILL:
-				errors.append("size %s is too small for the slot (fills %d%% of %s on its best axis)" % [_v(size), int(fill * 100), _v(guide)])
+			# ROUND 9 (feel's ruling, landed by scale in CP2): a UNIT slot's art is REFITTED AT RUNTIME --
+			# `DozerPart._fit_to_hull` scales it by `hull_size[2] / FactionArt.hull_length()` -- so its authored
+			# absolute size never reaches the screen, and comparing that size to the catalog box measures nothing.
+			# A model at 48% of its slot draws at exactly 100% of it.
+			#
+			# What DOES reach the screen is the SHAPE. The refit is uniform by length, so width and height come out
+			# as `natural.xy x (hull_size.z / natural.z)`: a mesh whose aspect disagrees with its box over- or
+			# under-fills in width and height, and **`hull_size` IS the collider**, so that is a shell passing
+			# through empty air. That is feel's own round-8 roster-wide finding, asserted here at the gate -- which
+			# matters because a freshly generated `.glb` is not in the catalog yet, so the catalog-side test
+			# (`tests/test_units_scale.gd`) cannot see it and this is the only thing that can.
+			#
+			# The absolute checks stay for slots that are NOT refitted: props, arena kit, turrets, weapons.
+			if AssetContracts.unit_of(slot) != "" and slot.ends_with(".hull"):
+				var aspect := Vector2(size.x / maxf(size.z, 0.001), size.y / maxf(size.z, 0.001))
+				var want := Vector2(guide.x / maxf(guide.z, 0.001), guide.y / maxf(guide.z, 0.001))
+				if absf(aspect.x - want.x) > want.x * AssetContracts.SHAPE_TOLERANCE \
+						or absf(aspect.y - want.y) > want.y * AssetContracts.SHAPE_TOLERANCE:
+					errors.append("shape %s does not match the slot's %s: refitted by length it would draw %.2f x %.2f x %.2f"
+							% [_v(size), _v(guide), size.x * guide.z / size.z, size.y * guide.z / size.z, guide.z])
+			else:
+				if size.x > max_size.x * (1 + tolerance) or size.y > max_size.y * (1 + tolerance) or size.z > max_size.z * (1 + tolerance):
+					errors.append("size %s exceeds the slot's %s" % [_v(size), _v(max_size)])
+				var fill := maxf(maxf(size.x / guide.x, size.y / guide.y), size.z / guide.z)
+				if fill < AssetContracts.MIN_FILL:
+					errors.append("size %s is too small for the slot (fills %d%% of %s on its best axis)" % [_v(size), int(fill * 100), _v(guide)])
 		"stretch":
 			for axis in 3:
 				if absf(size[axis] - guide[axis]) > guide[axis] * tolerance:

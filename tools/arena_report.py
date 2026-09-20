@@ -14,6 +14,9 @@ Usage:
 """
 import argparse, heapq, json, math, os, pathlib, sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import units_catalog
+
 ## The half-extent `centre_sees_share` is ALWAYS measured over, whatever size the layout declares.
 ##
 ## The target (<0.30) carries the lead's own verdict — he cut the four most open maps and kept two of the three
@@ -130,18 +133,13 @@ SHIPPED_MEAN_VIEW_LOW = 54.3
 ## The longest hull in the game, READ from combat's catalog rather than copied into this file. A copy would be a
 ## third table to keep in step, and the rig's length is actively being argued about (12 m vs 14 m), so a mirrored
 ## number here would be stale within the week. Same reason `KIT` now has a test against `ArenaKit.PROPS`.
+##
+## Round 9 (scale): the three-line regex that used to live here became `tools/units_catalog.py`, so this tool and
+## `tools/roster_scale.py` share ONE parser instead of one each -- and that parser RAISES instead of returning an
+## empty table when the catalog moves (Invariant 0: a reader must not fall back).
 def hull_lengths():
     """{unit name: hull length in metres} from game/units/units.gd's `hull_size [w, h, l]`."""
-    import re
-    source = (pathlib.Path(__file__).resolve().parent.parent / "game" / "units" / "units.gd").read_text()
-    out = {}
-    for name, body in re.findall(r'"(\w+)":\s*\{(.*?)\n\t\}', source, re.S):
-        size = re.search(r'"hull_size":\s*\[([^\]]*)\]', body)
-        if size:
-            parts = [float(v) for v in size.group(1).split(",")]
-            if len(parts) == 3:
-                out[name] = parts[2]
-    return out
+    return units_catalog.hull_lengths()
 
 
 ## Can a hull of `length` hide behind anything here, and how much of the field can it do that from?
@@ -187,13 +185,40 @@ def openness_notes(report):
     cover = report.get("hull_cover")
     if cover:
         name, length, reach = cover["longest_hull"], cover["longest_hull_m"], cover["reach"]
+        # ROUND 9 (scale, A3): this line USED to say "NOTHING on this map can hide the longest hull", full stop.
+        # That was true under the definition it was computed with -- a prop counts only if its longest horizontal
+        # side is at least the whole hull -- and it is FALSE under the hull-chord query that replaced it
+        # (`Arena.cover_fraction`, `game/arena/cover_tables.gd`), which measures the fraction of the hull's own
+        # centreline that is occluded and therefore has no step at `container_40`'s 12.19 m. A WATCH line that is
+        # confidently wrong is worse than silence (the lead's ruling in game_design.md *Ruling: the War Rig stays
+        # at 14 m*), so the number is still printed -- it is the record of what the cliff was -- and it now says
+        # which definition produced it and where the live one lives.
+        #
+        # The point sample stays printed BESIDE the chord figure for one round rather than instead of it
+        # (lesson 49). `make arena-cover` prints the chord figure; it needs Godot, because it calls the tables
+        # rather than reimplementing them in Python, which would be the mirror Invariant 0 is about.
         if reach < 0.01:
-            out.append("NOTHING on this map can hide the longest hull (%s, %.1f m): 0.00 of the field is within "
-                       "%.0f m of a prop that long. Cover fails SILENTLY — the hull still drives to cover, still "
-                       "counts as near cover, and is not covered." % (name, length, TERRAIN_RADIUS))
+            out.append("SUPERSEDED MEASURE: under CENTRE-POINT registration, 0.00 of the field is within %.0f m of "
+                       "a prop as long as the longest hull (%s, %.1f m) — the 12.19 m step that A3 replaced. It is "
+                       "NOT the game's cover rule any more: `Arena.cover_fraction` measures the occluded fraction "
+                       "of the hull's own chord and does not step. Run `make arena-cover` for the live figure."
+                       % (TERRAIN_RADIUS, name, length))
         elif reach < 0.5:
-            out.append("only %.2f of the field is within %.0f m of cover long enough for the longest hull "
-                       "(%s, %.1f m)." % (reach, TERRAIN_RADIUS, name, length))
+            out.append("SUPERSEDED MEASURE: under CENTRE-POINT registration, only %.2f of the field is within %.0f m "
+                       "of cover long enough for the longest hull (%s, %.1f m). Run `make arena-cover` for what the "
+                       "game actually asks." % (reach, TERRAIN_RADIUS, name, length))
+    # S1/round 9 (squad's finding): the tightest point on the base-to-base route against the roster's widest hull.
+    # A WATCH line and NOT a failing test, deliberately: whether a map should be widened or an agent radius should
+    # vary by hull class is a decision nobody has made, and a check that fails on an open question is an advocate
+    # rather than an instrument (Invariant 0b).
+    corridor = report.get("corridor")
+    if corridor and corridor["narrowest_m"] < corridor["widest_hull_m"] + 1.0:
+        out.append("the tightest point on the base-to-base route is %.2f m of clear ground at [%.0f, %.0f], and the "
+                   "roster's widest hull (%s) is %.2f m: only %d of %d hulls pass there with a metre to spare. A "
+                   "wide vehicle either files through or does not arrive at all."
+                   % (corridor["narrowest_m"], corridor["narrowest_at"][0], corridor["narrowest_at"][1],
+                      corridor["widest_hull"], corridor["widest_hull_m"], corridor["hulls_that_fit"],
+                      corridor["hulls"]))
     if report["ambush"]["centre_sees_share"] < 0.10:
         out.append("centre_sees %.3f is very low: check the middle is a place you can fight FROM, not just a place "
                    "nothing reaches." % report["ambush"]["centre_sees_share"])
@@ -311,6 +336,52 @@ def occupancy(boxes):
             for idx in (g * n + e, g * n + n - 1 - e, e * n + g, (n - 1 - e) * n + g):
                 blocked[idx] = 1
     return blocked, n
+
+
+def corridor_widths(boxes, path, step=4, probe=0.5, reach=60.0):
+    """The passable width (m) ACROSS the route at each point: the free span perpendicular to the direction of travel.
+
+    ROUND 9 (scale), at squad's request. squad measured the Condemned `artillery` failing to cross the maze's
+    defile at its pre-CP2 2.6 m width -- four squadmates used the same corridor in the same run and it never
+    arrived in 70 s -- and asked whether the maps a player plays are dimensioned like the maze fixture.
+
+    ⚠ THE FIRST VERSION OF THIS FUNCTION WAS WRONG AND ITS TABLE WAS CIRCULATED. It returned **twice the distance
+    to the nearest obstacle**, which is the corridor width only when there is an obstacle on BOTH sides. On yard it
+    reported the tightest point as 4.72 m; the route there passes 2.71 m from a single wreck with **20 m of open
+    ground on the other side**, so the real span is 23 m. Every map looked like it had a pinch, and what was
+    actually being measured was "how close does the route pass to one prop" -- a quantity no vehicle cares about.
+    The lesson is the project's own: a confidently wrong instrument is worse than none, and it nearly bought a
+    map-widening change.
+
+    So: march PERPENDICULAR to the direction of travel, both ways, until something tall is hit or `reach` is spent,
+    and sum. That is the gap a hull has to fit through. Measured against the obstacles' own footprints, not the
+    agent-inflated navmesh -- what the router then believes is a separate question with its own radius.
+    """
+    if not path or len(path) < 2:
+        return []
+    tall = [b for b in boxes if b.h >= EYE_HEIGHT]
+    out = []
+    for i in range(0, len(path), step):
+        x, z = path[i]
+        ahead = path[min(i + 1, len(path) - 1)]
+        behind = path[max(i - 1, 0)]
+        dx, dz = ahead[0] - behind[0], ahead[1] - behind[1]
+        span = math.hypot(dx, dz)
+        if span < 1e-6:
+            continue
+        # The normal to the direction of travel.
+        nx, nz = -dz / span, dx / span
+        free = 0.0
+        for sign in (-1.0, 1.0):
+            reached = 0.0
+            while reached < reach:
+                reached += probe
+                px, pz = x + sign * nx * reached, z + sign * nz * reached
+                if any(b.distance(px, pz) <= 0.01 for b in tall):
+                    break
+            free += reached
+        out.append((round(x, 1), round(z, 1), round(free, 2)))
+    return out
 
 
 def route(blocked, n, a, b):
@@ -537,11 +608,24 @@ def visible_share(grid, gn, origin, points):
     return seen / len(points)
 
 
+def front_row(layout, side):
+    """The spawn points nearest the centre line: the row an army actually forms up on.
+
+    Round 9 (scale): this used to be a slice of the first 13 spawn points, 13 being `Match.SLOT_X.size()` at the
+    time -- a mirror of the grid's column count, hidden in a slice, with nothing naming it. When the grid went from
+    13 columns x 4 rows to 19 x 3, the slice quietly took two thirds of the front row instead of all of it, and the
+    only symptom was the route optimiser's monotonicity test wobbling by 0.001. Read the row off the points.
+    """
+    points = [tuple(pt) for pt in layout["spawns"][side]]
+    nearest = min(abs(z) for _, z in points)
+    return [(x, z) for x, z in points if abs(abs(z) - nearest) < 0.01]
+
+
 def defending_positions(boxes, layout):
     """The enemy's covered firing positions: 4 m out from each piece of hard cover on the north half, plus its front
     spawn row. Subsampled evenly to WATCHER_SAMPLE so the pass stays cheap and stable."""
     spots = [(b.x, b.z - (b.d / 2 + 4.0)) for b in boxes if b.h >= EYE_HEIGHT and b.z < -10.0]
-    spots += [tuple(p) for p in layout["spawns"]["rust"][:13]]
+    spots += front_row(layout, "rust")
     spots.sort()
     if len(spots) <= WATCHER_SAMPLE:
         return spots
@@ -897,11 +981,25 @@ def analyze(layout):
     report["longest_sightline_at"] = [[round(v, 1) for v in p] for p in where] if where else None
     direct = route(blocked, n, green_front, rust_front)
     report["base_to_base_m"] = round(length(direct), 1) if direct else None
+    # S1/round 9: the tightest place on the route a whole army has to file through, against the roster's widest
+    # hull. Both halves READ from their owners -- the corridor from the layout's own obstacles, the hull from
+    # `game/units/units.gd` via `tools/units_catalog.py` -- so neither can go stale behind a comment.
+    widths = corridor_widths(boxes, direct)
+    if widths:
+        tightest = min(widths, key=lambda w: w[2])
+        hulls = units_catalog.load()
+        widest_id = max(hulls, key=lambda u: hulls[u]["hull_size"][0])
+        report["corridor"] = {
+            "narrowest_m": tightest[2], "narrowest_at": [tightest[0], tightest[1]],
+            "widest_hull": widest_id, "widest_hull_m": round(float(hulls[widest_id]["hull_size"][0]), 2),
+            "hulls_that_fit": sum(1 for u in hulls if float(hulls[u]["hull_size"][0]) + 1.0 <= tightest[2]),
+            "hulls": len(hulls),
+        }
     to_centre = route(blocked, n, green_front, (0.0, 0.0))
     report["base_to_centre_m"] = round(length(to_centre), 1) if to_centre else None
     # Watchers: the enemy's covered positions, approximated by points 4 m outside hard cover on the north half.
     watchers = [(b.x, b.z - (b.d / 2 + 4.0)) for b in boxes if b.h >= EYE_HEIGHT and b.z < -10.0]
-    watchers += [tuple(p) for p in layout["spawns"]["rust"][:13]]
+    watchers += front_row(layout, "rust")
     report["direct_route_exposure"] = round(exposure(boxes, direct, watchers), 2) if direct else None
     classes = {"open": 0, "lanes": 0, "dense": 0}
     for p in (direct or [])[::10]:
@@ -1026,6 +1124,9 @@ def main():
             name = max(hulls, key=lambda k: hulls[k])
             report["hull_cover"] = {
                 "longest_hull": name, "longest_hull_m": hulls[name],
+                # A3 (round 9): kept, and kept LABELLED. `reach` is the superseded centre-point measure; the
+                # game's cover query is `Arena.cover_fraction` and `make arena-cover` reports it.
+                "definition": "centre-point (SUPERSEDED by A3: Arena.cover_fraction)",
                 "reach": round(hull_cover_reach(layout, report["_boxes"], hulls[name]), 3),
                 # The kit's longest prop is the cliff: cover is a step function of hull length, not a gradient.
                 "longest_prop_m": round(max((max(b.w, b.d) for b in report["_boxes"]), default=0.0), 2)}

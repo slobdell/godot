@@ -65,6 +65,17 @@ const PROGRESS_M := 2.0
 var trail := {}            # tank name -> Array[Vector3], one per tick over the window
 var goal_trail := {}       # tank name -> Array[float], distance to goal per tick
 var oscillating_ticks := {}
+## Round 9 (scale, at nav's request and with nav's sampling code): `Movement.state()`'s wedge readout, per unit and
+## per unit TYPE. The probe reports aggregates, so it could not say WHICH units were in the regime.
+##
+## **Report the RATIO, not the flag count.** `wedged`'s bar is the mover's own hull length, so it is size-dependent
+## BY DEFINITION: after CP2 an 8.62 m tank has to fail to travel 8.62 m where at 3.60 m it only had to fail 3.60 m.
+## Same behaviour, different score. `wedge_ratio` is not size-dependent, which is why it is the one to quote across
+## CP2 (nav and squad both landed on this independently).
+var wedged_ticks := {}
+var wedged_names := {}
+var wedge_ratio_sum := {}
+var wedge_samples := {}
 var no_progress_ticks := {}
 var crawl_ticks := 0
 var under_way_ticks := 0
@@ -247,6 +258,7 @@ func _sample() -> void:
 		under_way_ticks += 1
 		if tank.speed() < CRAWL_SPEED:
 			crawl_ticks += 1
+		_sample_wedge(tank, key)
 		_sample_trail(tank, key)
 		# Progress is measured against the BEST it has ever done, not against the last tick: a unit shuffling back
 		# and forth in a gap moves every tick and arrives never, and that is exactly the failure we are counting.
@@ -260,6 +272,21 @@ func _sample() -> void:
 				stall_seconds[key] = 0.0
 	if arrived_at.size() == units.size() or elapsed >= time_limit:
 		_report(elapsed)
+
+
+## One tick of nav's wedge readout for `tank`, keyed by unit TYPE as well as by name: the question the aggregates
+## could not answer is whether the wide hulls are the ones in the regime.
+func _sample_wedge(tank: Tank, key: String) -> void:
+	var state: Dictionary = Movement.state(tank)
+	if state.is_empty():
+		return  # a hull nothing drives
+	var unit_id := String(tank.unit_id)
+	if bool(state.get("wedged", false)):
+		wedged_ticks[unit_id] = int(wedged_ticks.get(unit_id, 0)) + 1
+		wedged_names[key] = true
+	if state.has("wedge_ratio"):
+		wedge_ratio_sum[unit_id] = float(wedge_ratio_sum.get(unit_id, 0.0)) + float(state["wedge_ratio"])
+		wedge_samples[unit_id] = int(wedge_samples.get(unit_id, 0)) + 1
 
 
 ## One tick of the oscillation window for `tank`.
@@ -302,6 +329,29 @@ func _with_any(counter: Dictionary) -> int:
 		if int(counter.get(String(tank.name), 0)) > 0:
 			count += 1
 	return count
+
+
+## Per unit TYPE: how many ticks each type spent wedged, how many named units were ever wedged, and the mean
+## `wedge_ratio` (net displacement over the mover's own hull length -- NOT size-dependent, so it is the one that
+## survives a roster resize).
+func _wedge_report() -> Dictionary:
+	# AN INERT INSTRUMENT MUST SAY SO. `wedged` / `wedge_ratio` are nav's, added on `stream/nav` and not yet on
+	# `main`, so on a tree without them this samples nothing and every count is legitimately zero. Reporting a
+	# tidy `{"units_ever_wedged": 0}` would be indistinguishable from "nothing was ever wedged", which is the
+	# failure this round has found in five other places (a guard green by absence). It reports `available: false`
+	# and why, so a zero can never be read as a result.
+	if wedge_samples.is_empty():
+		return {"available": false,
+				"why": "Movement.state() carries no `wedge_ratio` on this tree: nav's readout is not merged yet, "
+						+ "so these counts are ABSENT rather than zero"}
+	var by_type := {}
+	for unit_id: String in wedge_samples:
+		by_type[unit_id] = {
+			"wedged_ticks": int(wedged_ticks.get(unit_id, 0)),
+			"samples": int(wedge_samples[unit_id]),
+			"mean_wedge_ratio": snappedf(float(wedge_ratio_sum.get(unit_id, 0.0)) / maxf(1.0, float(wedge_samples[unit_id])), 0.001),
+		}
+	return {"available": true, "units_ever_wedged": wedged_names.size(), "by_type": by_type}
 
 
 func _report(elapsed: float) -> void:
@@ -349,6 +399,9 @@ func _report(elapsed: float) -> void:
 		"no_progress_unit_seconds": snappedf(float(_total(no_progress_ticks)) / float(SimClock.TICK_RATE), 0.1),
 		"no_progress_share": snappedf(float(_total(no_progress_ticks)) / maxf(1.0, float(under_way_ticks)), 0.001),
 		"no_progress_units": _with_any(no_progress_ticks),
+		# nav's wedge readout, per unit TYPE. `wedge_ratio` is the number to compare across CP2; `wedged_ticks` is
+		# a flag count whose bar is the hull's own length and is therefore size-dependent by definition.
+		"wedge": _wedge_report(),
 		"both_ways": OS.get_cmdline_user_args().has("--both-ways"),
 		# The arm, in the JSON as well as on stdout: a sweep that compares files rather than logs must still be
 		# able to see that its two arms were different runs.

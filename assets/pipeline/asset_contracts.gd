@@ -132,16 +132,46 @@ const UNIT_ART_HEIGHT := 1.35
 ## K4 (round 3, assets X4): faction art slots `unit.<faction>.<role>.<part>` (gallery only this round) fit the numbers of
 ## the Condemned unit in the same role until factions get catalog entries of their own. Unit key: "<faction>.<role>".
 const FACTIONS := ["gangs", "law", "syndicate"]
+## The ART ROLES a faction slot may name. Which UNIT fills each is read from the faction's own roster
+## (`catalog_unit`), not from this table -- see `unit_info`.
 const ROLE_UNITS := {"scout": "scout", "ifv": "ifv", "tank": "tank", "artillery": "artillery", "special": "lancer"}
+## Round 9 (feel): how far a refitted unit hull's SHAPE may differ from its slot's, as a fraction. 6%, because
+## `SizeLook.box_at_length` rounds to 0.01 m and an exact match still carries that rounding on a short axis.
+const SHAPE_TOLERANCE := 0.06
 
 
-## The catalog numbers for a roster unit ("ifv") or a faction role ("gangs.tank"), which fits the numbers of the
-## Condemned unit in the same role (K4). Read from `Units.PROFILES` every time -- never cached, never copied.
+## The catalog numbers for a roster unit ("ifv") or a faction role ("gangs.tank"). Read from `Units.PROFILES`
+## every time -- never cached, never copied.
+##
+## ROUND 9 (scale, CP2): a faction role resolves to THAT FACTION'S OWN unit. It used to resolve to the Condemned
+## unit in the same role -- a round-3 stand-in whose own comment said *"until factions get catalog entries of
+## their own"*, which they have had since round 4. So `unit.gangs.tank.hull` was contracted against the Condemned
+## tank's box rather than the War Rig's.
+##
+## It was invisible while every hull was 2.8-5.0 m long: a stand-in is only wrong when the thing it stands in for
+## differs. S1 spread the roster from 2.93 m to 14.0 m and **11 of the 14 faction art slots stopped matching their
+## stand-in**, while every one of them matches its OWN box. That is the stand-in failing, not the art.
 static func unit_info(unit: String) -> Dictionary:
-	var unit_id: String = ROLE_UNITS.get(unit.get_slice(".", 1), "") if unit.contains(".") else unit
-	if unit_id == "" or not UNITS.has(unit_id):
+	var unit_id := catalog_unit(unit)
+	if unit_id == "":
 		return {}
 	return {"hull_size": hull_size_of(unit_id), "muzzle_height": float(Units.stat(unit_id, "muzzle_height", 1.27))}
+
+
+## The catalog unit an art slot is contracted against: "ifv" -> "ifv", "gangs.tank" -> "gang_tank". "" if there
+## is none. The faction's roster is READ (Units.roster + Units.role_of + FactionArt.art_role), never tabulated --
+## a second table of which unit fills which faction role is exactly the stand-in this replaced.
+static func catalog_unit(unit: String) -> String:
+	if not unit.contains("."):
+		# ANY catalog unit, not just the Condemned five `UNITS` lists: `UNITS` is which SLOTS the pipeline names,
+		# and a caller asking for "gang_tank" is asking about a unit, not about a slot.
+		return unit if Units.PROFILES.has(unit) else ""
+	var faction := unit.get_slice(".", 0)
+	var art_role := unit.get_slice(".", 1)
+	for unit_id in Units.roster(faction):
+		if FactionArt.art_role(Units.role_of(unit_id)) == art_role:
+			return unit_id
+	return ""
 
 
 ## Where a unit's turret node sits in hull space, and its scale (both from Tank._apply_hull_size on stream/rules).

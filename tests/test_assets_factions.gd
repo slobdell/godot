@@ -9,10 +9,21 @@ func test_faction_slots_have_contracts_fitted_to_the_role() -> void:
 		for role in FactionArt.ROLES:
 			for part in ["hull", "turret", "weapon"]:
 				assert_true(AssetContracts.has("unit.%s.%s.%s" % [faction, role, part]), "unit.%s.%s.%s has a contract" % [faction, role, part])
-	var condemned_twin: String = AssetContracts.ROLE_UNITS["tank"]
-	assert_eq(AssetContracts.get_contract("unit.gangs.tank.hull")["guide"], AssetContracts.unit_info(condemned_twin)["hull_size"],
-			"a faction's tank-class hull fits the Condemned tank's box")
-	assert_eq(AssetContracts.unit_pivot("law.scout"), AssetContracts.unit_pivot("scout"), "and its turret sits where the scout's does")
+	# ROUND 9 (scale, CP2): a faction slot is contracted against THAT FACTION'S OWN unit. This line used to assert
+	# the opposite -- that a faction's tank-class hull fits the CONDEMNED tank's box -- which was a round-3
+	# stand-in, and this test is what made it look deliberate. The factions have had catalog entries since round 4.
+	#
+	# It was invisible while every hull was 2.8-5.0 m long: a stand-in is only wrong when the thing it stands in
+	# for differs. S1 spread the roster from 2.93 m to 14.0 m, and 11 of the 14 faction art slots stopped matching
+	# their stand-in while every one of them still matched its own box.
+	assert_eq(AssetContracts.catalog_unit("gangs.tank"), "gang_tank", "a faction role resolves to that faction's unit")
+	assert_eq(AssetContracts.get_contract("unit.gangs.tank.hull")["guide"], AssetContracts.unit_info("gang_tank")["hull_size"],
+			"a faction's tank-class hull fits ITS OWN box (the War Rig's), not the Condemned tank's")
+	assert_true(AssetContracts.unit_info("gangs.tank")["hull_size"] != AssetContracts.unit_info("tank")["hull_size"],
+			"and those two boxes really do differ, or this assertion proves nothing")
+	assert_eq(AssetContracts.catalog_unit("law.scout"), "law_scout", "the Law's scout role is the Pursuit Cruiser")
+	assert_eq(AssetContracts.unit_pivot("law.scout"), AssetContracts.unit_pivot("law_scout"),
+			"and its turret sits where ITS OWN unit's does")
 	assert_eq(AssetContracts.get_contract("unit.syndicate.ifv.hull")["file"], "unit_syndicate_ifv_hull", "files are named by slot")
 	assert_eq(AssetContracts.unit_of("unit.pirates.tank.hull"), "", "unknown factions have no slots")
 	assert_eq(AssetContracts.unit_of("unit.gangs.boat.hull"), "", "unknown roles have no slots")
