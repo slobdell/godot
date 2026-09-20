@@ -198,6 +198,25 @@ rest of the round runs behind it.
 - **X7 — the airship: BUILT** (`567a8007`); its orbit numbers are provisional until `make airship-look` says
   whether the lead can ever actually see it.
 
+### ✅ GREEN, and the S2 guarantee delivered: `7a706911` (builder0)
+
+**`sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)` — exactly main's hash, unchanged**, with **1,273 passed,
+0 failed** (main's suite is 1,252; the trailer's 12 and the airship's 5 are the difference). **This is contract S2
+delivered: the articulated trailer does not reach the simulation** — and it was *pre-registered as inert before it
+was built*, so it is a confirmed prediction rather than a discovered fact. That distinction is the whole reason art
+gets asserted rather than assumed here: round 8's `_build_perimeter()` moved the baseline with geometrically
+identical walls in a different body creation order (Invariant 2).
+
+**lint local: 531 files, 8 known baselined lines** (metrics' sweep on `main`: 5 files, 8 lines, all `--check-only`
+isolation artefacts). **The local lint earned its keep on its first run**: of ten lines it reported, two were mine —
+`tests/test_theme_airship.gd` referenced `ArenaDressing` as a class name, and `arena_dressing.gd` has **no**
+`class_name`; the game reaches it through its scene. Fixed at `1d3029d8`. Remote lint parse-checks **zero** files
+(lesson 157), so that test would have failed at run time in the full suite instead, half an hour and one queue away.
+
+**⚠ The tip has moved past the green hash.** `7a706911` is what builder0 ran; everything after it — the file-existence
+guard, `--no-trailer`, the airship, the `spectacle` weight table, the tier fix and the test fix — is **unverified**
+and needs a second check. Merge `7a706911`, or wait for the second check; do not merge the tip on this one's word.
+
 ### Decided overnight (the lead asleep; orchestrator's standing instruction, 2026-09-20)
 
 1. **The corner in `make rig-hinge` is shot at the rig's own minimum turn radius (12 m), not a wide one.** A wide
