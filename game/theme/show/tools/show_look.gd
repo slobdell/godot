@@ -57,7 +57,10 @@ var ripples: Array = [0.25, 0.55, 1.1]
 var clip_cue := ""
 var clip_frames := 60
 var clip_step := 0.1
-var warmup := 3.0
+## Long enough for the armies to leave their spawns and CLOSE. At 3 s -- the old default -- they are still on the
+## spawn line ~86 m from the arena centre, so every frame this stream shot before 2026-09-20 midday framed an
+## empty control ring and called it the fight.
+var warmup := 20.0
 var _camera := Camera3D.new()
 
 
@@ -100,7 +103,12 @@ func _run() -> void:
 	if rig != null:
 		rig.process_mode = Node.PROCESS_MODE_DISABLED
 	_camera.current = true
-	var poses := {"wide": [Vector3.ZERO, DISTANCE_M], "close": [Vector3.ZERO, CLOSE_M]}
+	# Point the camera at the FIGHT, not at the middle of the map. The two are not the same place: the armies
+	# spawn at the ends and the control ring is only where they eventually meet. A frame of the venue with no
+	# vehicles in it cannot answer either question we shoot frames for -- how it looks, or whether it out-reads
+	# the fight -- and the readability gate's "ring" window was measuring bare asphalt.
+	var centre := _army_centre(scene)
+	var poses := {"wide": [centre, DISTANCE_M], "close": [centre, CLOSE_M]}
 	if FOCUS_POINTS.has(arena):
 		poses["street"] = [FOCUS_POINTS[arena], CLOSE_M]
 	get_tree().paused = true
@@ -162,7 +170,8 @@ func _shoot_clip(show: Show, arena: String, heading: float) -> void:
 		return
 	var dir := out_dir.path_join("clips")
 	DirAccess.make_dir_recursive_absolute(dir)
-	_camera.global_transform = RtsCamera.pose_at(Vector3.ZERO, heading, DISTANCE_M, PITCH_DEG)
+	_camera.global_transform = RtsCamera.pose_at(_army_centre(get_tree().current_scene), heading, DISTANCE_M, PITCH_DEG)
+	var band_track: Array = []
 	show.settle_into(StringName(clip_cue), CUE_T)
 	var t := CUE_T
 	for i in clip_frames:
@@ -175,9 +184,25 @@ func _shoot_clip(show: Show, arena: String, heading: float) -> void:
 		for _f in 2:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
-		get_viewport().get_texture().get_image().save_png(dir.path_join("%s_%s_%03d.png" % [arena, clip_cue, i]))
+		var image := get_viewport().get_texture().get_image()
+		image.save_png(dir.path_join("%s_%s_%03d.png" % [arena, clip_cue, i]))
+		band_track.append(_luma(image, BAND_WINDOW).x)
+	# A clip pair is an arm like any other: it has to be shown to differ from its control. A strobe's signature is
+	# not that it is brighter on average -- it is that the band SWINGS, so the spread over the clip is the number,
+	# not the mean.
+	var lo := 9.0
+	var hi := 0.0
+	var total := 0.0
+	for value: float in band_track:
+		lo = minf(lo, value)
+		hi = maxf(hi, value)
+		total += value
 	print("SHOW_LOOK_CLIP " + JSON.stringify({"arena": arena, "cue": clip_cue, "frames": clip_frames,
-			"step_s": clip_step, "fps": snappedf(1.0 / maxf(clip_step, 0.001), 0.1)}))
+			"step_s": clip_step, "fps": snappedf(1.0 / maxf(clip_step, 0.001), 0.1),
+			"strobe": not LaunchFlags.from_environment().has("no-strobe"),
+			"band_min": snappedf(lo, 0.0001), "band_max": snappedf(hi, 0.0001),
+			"band_swing_pct": snappedf((hi - lo) / maxf(total / maxf(float(band_track.size()), 1.0), 1e-6) * 100.0, 0.1),
+			"vehicles_in_frame": _vehicles_in_frame(get_tree().current_scene)}))
 	print("SHOW_LOOK_DONE arena=%s frames=%d" % [arena, clip_frames])
 	get_tree().quit()
 
@@ -239,6 +264,7 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 		"luma_ring_before": snappedf(before.x, 0.0001), "luma_band_before": snappedf(before_band.x, 0.0001),
 		"luma_ring_max_before": snappedf(before.y, 0.0001), "luma_band_max_before": snappedf(before_band.y, 0.0001),
 		"luma_ring_null": snappedf(null_ring.x, 0.0001), "luma_band_null": snappedf(null_band.x, 0.0001),
+		"vehicles_in_frame": _vehicles_in_frame(get_tree().current_scene),
 		"ring_wins": ring.x >= band.x,
 	}))
 	return 1
@@ -269,6 +295,36 @@ func _luma(image: Image, window: Rect2) -> Vector2:
 			x += LUMA_STRIDE
 		y += LUMA_STRIDE
 	return Vector2(total / maxf(float(count), 1.0), highest)
+
+
+## The centroid of every vehicle still alive, or the arena centre when there are none (a gallery, an empty mode).
+func _army_centre(scene: Node) -> Vector3:
+	if scene == null:
+		return Vector3.ZERO
+	var tanks := scene.find_children("*", "Tank", true, false).filter(
+			func(t: Node) -> bool: return t.is_inside_tree())
+	if tanks.is_empty():
+		return Vector3.ZERO
+	var sum := Vector3.ZERO
+	for tank: Node3D in tanks:
+		sum += tank.global_position
+	return Vector3(sum.x / tanks.size(), 0.0, sum.z / tanks.size())
+
+
+## How many vehicles this frame actually contains. Printed with every capture so a frame that claims to show the
+## fight has to say so in a number -- the check that would have caught an empty ring the first time.
+func _vehicles_in_frame(scene: Node) -> int:
+	if scene == null:
+		return 0
+	var size := Vector2(get_viewport().get_visible_rect().size)
+	var seen := 0
+	for tank: Node3D in scene.find_children("*", "Tank", true, false):
+		if not tank.is_inside_tree() or _camera.is_position_behind(tank.global_position):
+			continue
+		var at := _camera.unproject_position(tank.global_position)
+		if at.x >= 0.0 and at.y >= 0.0 and at.x <= size.x and at.y <= size.y:
+			seen += 1
+	return seen
 
 
 ## What every channel is at, at this moment — so a frame that looks wrong can be traced to a number instead of to a

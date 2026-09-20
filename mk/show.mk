@@ -8,6 +8,9 @@ show-report: import ## S6: print the patch every arena's `show` key resolves to,
 # the camera he played and rejected (workstreams.md S4, corrected by control 2026-09-20).
 SHOW_ARENAS ?= terminus yard
 SHOW_RES ?= 1920x1080
+# The fight the lead plays, not the skirmish default. Without this the run fields 950 pts -- FIVE units a side --
+# and every frame is a venue with almost nothing in it. perf-scene has always passed this; the frame tools did not.
+SHOW_BUDGET ?= 6500
 # Three moments of the idle breathe, spread across the slowest channel's period so the strip shows it moving.
 SHOW_TIMES ?= 0,8.1,16.3
 # One frame per cue, so the lead sees the SHOW and not only the ambience.
@@ -32,7 +35,7 @@ show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49
 			esac; \
 			mkdir -p $(BUILD_DIR)/show/$$sub; \
 			timeout 420 $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
-				--no-pick-faction --cinematic --mute --arena=$$arena $$extra \
+				--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$$arena $$extra \
 				--show-look=$(CURDIR)/$(BUILD_DIR)/show/$$sub --show-look-times=$(SHOW_TIMES) \
 				--show-look-cues=$(SHOW_CUES) $(SHOW_FLAGS) \
 				2>&1 | tee $(BUILD_DIR)/show/$$sub/$$arena.log | grep -E '^SHOW_LOOK |SCRIPT ERROR' || true; \
@@ -44,6 +47,7 @@ show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49
 	@# THE BRIGHTNESS HIERARCHY IS A GATE (feel, 2026-09-20; art_direction.md :72), and a RELATIVE one: the branch
 	@# point already loses the absolute comparison at the lead's pose, so the bar is that the show must not make it
 	@# worse than the same frozen frame with the show off.
+	@python3 tools/show_frame_gate.py $(BUILD_DIR)/show
 	@python3 tools/show_luma_gate.py $(BUILD_DIR)/show
 
 # A cue is MOTION. A still of a chase is a still of a bank of lights, and a still of a strobe at its trough reads
@@ -63,7 +67,7 @@ show-decisions: import ## S6: the two calls that are the lead's -- roofline vs o
 	@# 1. THE EDGES: one frame each, same arena, seed, pose and moment.
 	for style in parapet outline; do \
 		timeout 300 $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
-			--no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) --show-style=$$style \
+			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) --show-style=$$style \
 			--show-look=$(CURDIR)/$(BUILD_DIR)/show/decisions --show-look-times=8.1 --show-look-cues=battle \
 			2>&1 | tee $(BUILD_DIR)/show/decisions/edges_$$style.log | grep -E '^SHOW_LOOK |SCRIPT ERROR' || true; \
 		grep -q SHOW_LOOK_DONE $(BUILD_DIR)/show/decisions/edges_$$style.log || { echo "show-decisions: edges/$$style did not finish"; exit 1; }; \
@@ -72,7 +76,7 @@ show-decisions: import ## S6: the two calls that are the lead's -- roofline vs o
 	for arm in on off; do \
 		[ $$arm = off ] && extra=--no-strobe || extra=; \
 		timeout 420 $(GODOT) --path . --resolution $(CLIP_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
-			--no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) $$extra \
+			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) $$extra \
 			--show-look=$(CURDIR)/$(BUILD_DIR)/show/decisions --show-look-clip=last_stand \
 			--show-look-clip-frames=$(CLIP_FRAMES) --show-look-clip-step=$(CLIP_STEP) \
 			2>&1 | tee $(BUILD_DIR)/show/decisions/strobe_$$arm.log | grep -E '^SHOW_LOOK_CLIP|SCRIPT ERROR' || true; \
@@ -82,13 +86,16 @@ show-decisions: import ## S6: the two calls that are the lead's -- roofline vs o
 			-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/show/decisions/strobe_$$arm.mp4; \
 		rm -f $(BUILD_DIR)/show/decisions/clips/$(CLIP_ARENA)_last_stand_*.png; \
 	done
+	@# A decision frame with no vehicles in it cannot answer either question we shoot frames for. This is the
+	@# check that would have caught an empty control ring the first time it was sent.
+	@python3 tools/show_frame_gate.py $(BUILD_DIR)/show/decisions
 	@echo "show-decisions: $$(ls $(BUILD_DIR)/show/decisions/*.png 2>/dev/null | wc -l) frames, $$(ls $(BUILD_DIR)/show/decisions/*.mp4 2>/dev/null | wc -l) clips in $(BUILD_DIR)/show/decisions"
 
 show-clips: import ## S6: each cue as a 6 s clip at 10 fps from the lead's pose -> build/show/clips/*.mp4 (needs a display and ffmpeg: make remote T=show-clips)
 	rm -rf $(BUILD_DIR)/show/clips && mkdir -p $(BUILD_DIR)/show/clips
 	for cue in $(CLIP_CUES); do \
 		timeout 420 $(GODOT) --path . --resolution $(CLIP_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
-			--no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) \
+			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) \
 			--show-look=$(CURDIR)/$(BUILD_DIR)/show --show-look-clip=$$cue \
 			--show-look-clip-frames=$(CLIP_FRAMES) --show-look-clip-step=$(CLIP_STEP) \
 			2>&1 | tee $(BUILD_DIR)/show/clips/$$cue.log | grep -E '^SHOW_LOOK_CLIP|SCRIPT ERROR' || true; \
