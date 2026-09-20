@@ -612,10 +612,17 @@ number is *destroyed* by it, and the load is exactly the signal you are trying t
 #    in metrics' vocabulary -- NOT USABLE -- <what> above <bound> in N of M samples (peak X).
 #    DONE, twice, on an empty box, and it refuses its own number both times: the census confound (0.677 ms per
 #    vehicle) is the size of the signal. Do not re-run this until combat's census-freeze tune exists -- a third
-#    quiet run will spend a slot to print the same refusal. The tune is `--tune=match.no_damage=1` (combat,
-#    guarded at `Tank.take_hit`, default off, REFUSED LOUDLY if mistyped). When it reaches main, add it to this
-#    target's PERF_FLAGS and make the bench require it -- refuse to report when it is absent, rather than report
-#    with a caveat, because the caveat is the part that gets dropped when the number is quoted.
+#    quiet run will spend a slot to print the same refusal.
+#    DONE at `a4161b88`: the target passes `--tune=match.no_damage=1` (combat, guarded at `Tank.take_hit`) and the
+#    bench REQUIRES it -- `perf_scene` records `Armor.no_damage` PER PHASE, and any phase without it makes the
+#    verdict NOT USABLE ahead of every other reason. Refuses rather than caveats, because the caveat is the part
+#    that gets dropped when the number is quoted, which already happened once this round. The per-phase read is
+#    the SAME static `Tank.take_hit` gates on (`tank.gd:624`), so it proves the arm took rather than that it was
+#    requested -- which matters, because combat found `TUNE=` knobs that print "applied" and never reach their
+#    predicate (a static written by `Units._static_init` and clobbered by the owning class's own initialiser).
+#    HELD until combat's structural fix for that lands; the gate would refuse such a run rather than misreport it,
+#    but the orchestrator owns the sequencing. Caveat on the guard: the flag is read at phase END, so a mid-phase
+#    flip relies on the census-constancy clause to catch it.
 REMOTE_SLOTS=6 make remote T="perf-trailer-ab PERF_CYCLES=6"
 
 # 2. The merge candidate, taken in the same window rather than adding a check to a busy box.
