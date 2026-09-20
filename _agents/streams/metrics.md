@@ -235,10 +235,44 @@ is the orchestrator's call, not his.)
 > Full evidence, both denominators, the ordering proofs and the two bugs the series caught:
 > `references/round9/metrics/t1-cp3.md`.
 >
-> **Owed, in order:** (1) `ai-scenarios-check` into `CHECK_TARGETS` — the target and its baseline
-> (45/0/2/0, builder0) are committed, it is out of `check` only so it could not confound the falsifier;
-> (2) `determinism`'s verdict line is truncated at 120 chars so its hash never reaches the log — a verdict that
-> cannot be compared after the fact; (3) nav's A6 control-arm logs, to be read once they emit `corridor`.
+> **Owed, in order:** ~~(1) `ai-scenarios-check` into `CHECK_TARGETS`~~ (`fbf2af95`); ~~(2) `determinism`'s
+> truncated verdict line~~ (`c6cafa42`, `make check-hashes`); (3) nav's A6 control-arm logs, to be read once
+> they emit `corridor`.
+
+> ### ⚠ 2026-09-20 10:32 — MY BRANCH IS NOT GREEN, AND NEITHER IS `main`. THE FAILURES ARE NOT MINE.
+> Check on `fbf2af95`, builder0, 1011 s: **exit 2, 1481 passed / 4 failed, plus `ai-scenarios-check`.**
+> `git diff --stat main...HEAD -- game/ tests/` is **empty** — this branch differs from `main` only in
+> `tools/metrics/`, `mk/core.mk`, `Makefile`, `tools/remote*.sh` and `_agents/`. Every failure below is
+> `main`'s; `fbf2af95` only made three of them visible. Reported to the orchestrator 10:50.
+>
+> **`ai-scenarios-check` 45,0,2,0 → 42,3,2,0 on its first run inside `check` — lesson 159, paid off:**
+>
+> | scenario | measured |
+> |---|---|
+> | `dodge_rate::who_dodges_and_how_often_they_try` | **dodging has stopped.** ifv and tank × 3 seeds: 431–514 ticks with a round inbound, **0 dodging, 0%, every hull, every seed** |
+> | `cp2::a_scout_works_onto_a_tanks_engine_deck` | the scout fights fine (13 hits / 14 shots) and **0 of 13 land on the deck**. Its `x3m` control arm fired **nothing at all** (0 shots) |
+> | `suppression::holding_the_aim_point…` | held 0.29 / density 1.02 / 161 rounds vs tracking 0.12 / 0.28 / 6 — ordering right, margin below its bar |
+>
+> Window `1cb2fda9..main` holds combat's `55b0de58` (dwell timer retired, A2), feel's `d8a107b5` (collider
+> measured stowed) and `1dc2302f` (the 5 cm spawn lift). **Guess, labelled as one:** rows 2–3 are
+> geometry-shaped and HANDOFF says the boxes are mid-handover, so scale's re-derivation may clear them; row 1
+> is not geometry-shaped and I would not expect it to.
+>
+> Also red, all `main`'s: `test_theme_unit_scale`, `test_units_scale` (the box handover, documented),
+> `test_match_spawns_and_results` (the y=0 spawn contact, ruled but not landed), and
+> `test_theme_city_block::test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll` — **that
+> last one I cannot find written down anywhere and it may be new.**
+
+> ### `e3a91460` — `make remote` refuses to rsync over a live run of its own (trip-up 66, enforced)
+> Requested by the orchestrator after it voided nav's check on `96bbf38e` and scale's 62-minute fairness run
+> in one morning. **Verified against the live box:** `tools/remote.sh --status` listed my own running
+> 27-process check out of `/proc` with start times, and `tools/remote.sh metrics-pytest` refused it (exit 9,
+> *"nothing was synced and nothing was run"*) — the old script would have destroyed that run.
+> **/proc decides; the marker is printed, never believed** — a second `.owner` file would have been the
+> stale-`.owner` bug again, locking a stream out of the box until a human deleted a file. Only the launch
+> window (rsync started, no process yet) trusts a file, bounded by `REMOTE_CLAIM_TTL=300` under a `flock`.
+> Fails open, loudly. `REMOTE_FORCE=1` prints the run it destroys. 36 known-answer tests, ~1 s, no Godot,
+> now `CHECK_TARGETS` #18. Its own check is chained behind the `bac84a6f` one.
 
 ### Done
 
