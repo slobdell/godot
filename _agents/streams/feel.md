@@ -271,6 +271,22 @@ in the sky can be drawn there at any altitude or distance. If the sweep confirms
 field of view"* is **false at his camera and true only at the bottom of his tilt range** (he can reach 8°), and the
 airship's `ORBIT_RADIUS` / `ORBIT_ALTITUDE` are provisional until he rules.
 
+### ⚠ OWED, and it is a venue defect of mine, not the light show's: the Terminus fails the luminance rule
+
+**With NO light show at all — the branch-point look — the Terminus's block band is brighter than the fight ring in
+22 of 30 frames at the lead's 21° pose over dark asphalt** (show's three-arm strip, 2026-09-20). The parapet default
+then makes the ratio slightly *better* (−2.6% to +7.4%, mostly positive), **so the show is not the cause.** The rule
+I gave show — *the fight is the brightest read* — is violated by the map itself, and it is a playability rule, not
+a taste one: `art_direction.md` has always required the arena be *"lit well enough to read the fight"* on a phone.
+
+**The levers are all mine:** the floodlight pools (`arena_dressing.gd` `_glow_multimesh`, `FLOODLIGHTS`), the floor's
+albedo (`arena_ground*.gdshader`, and the Terminus is asphalt-dark), and the facades' base brightness
+(`city_block.gdshader`, the storey `glow` and shopfront `glow` at channel identity).
+
+**Not started — no slot tonight, and it wants a frame before a constant**, the same discipline as the roof. Worth
+saying plainly for the lead: **this is a defect in the map he liked**, found only because show reported a `--no-show`
+control arm beside its own numbers. A measurement that only reports the treated arm would have blamed the light show.
+
 ### Owed at round close, not started: roof dressing on the Terminus (show's question, feel's geometry)
 
 **Why it is a question now:** control's `RtsCamera.clear_pose()` lifts the camera over a roof rather than shortening

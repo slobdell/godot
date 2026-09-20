@@ -34,13 +34,38 @@ func test_its_drift_comes_from_the_fixed_tick_and_is_a_closed_orbit() -> void:
 	assert_near(Vector3(nose.x, 0.0, nose.z).normalized().dot(radial), 0.0, 0.05, "it flies along its own orbit")
 
 
-func test_it_is_taller_than_the_arena_and_shorter_than_the_skyline() -> void:
-	## A sanity bound on the two numbers that decide whether he ever sees it, so a later edit cannot quietly park it
-	## on the floor or in orbit. What "sometimes visible" actually MEASURES is `make airship-look`, not this.
-	assert_true(SyndicateAirship.ORBIT_ALTITUDE > 40.0, "well clear of the stands and towers")
-	assert_true(SyndicateAirship.ORBIT_ALTITUDE < 140.0, "and not a dot")
-	assert_true(SyndicateAirship.ORBIT_RADIUS > Match.ARENA_HALF_SIZE * 0.5, "orbiting outside the fighting")
-	assert_true(SyndicateAirship.ORBIT_RADIUS < Match.ARENA_HALF_SIZE * 1.6, "and not over the next postcode")
+func test_the_orbit_is_where_his_camera_can_actually_see_it() -> void:
+	## The guard that `make airship-look`'s first run earned. Its 768 samples returned **0.0% visible at every
+	## reachable tilt** against the original orbit, for one line of geometry: the top of the frame sits at
+	## `FOV/2 - pitch` degrees above the horizon, so at the lead's 21 deg it is 3.5 deg BELOW it and nothing in the
+	## sky is drawable at any altitude. This asserts the geometry that makes it visible, so a later edit cannot put
+	## it back in the blind spot and leave the sweep to discover it again.
+	const FOV_DEG := 35.0
+	const BOOM_M := 49.0
+	# Where his camera is, and how high it can see, at the LOWEST tilt he can reach (control: 8-70).
+	var camera_y: float = BOOM_M * sin(deg_to_rad(8.0))
+	var frame_top_deg: float = FOV_DEG / 2.0 - 8.0
+	assert_true(frame_top_deg > 0.0, "at 8 deg of tilt the horizon is on screen at all (%.1f deg above it)" % frame_top_deg)
+	# The airship at its FARTHEST from a camera parked over a base about 77 m out, which is the easiest case.
+	var far_m: float = SyndicateAirship.ORBIT_RADIUS + 77.0
+	var near_m: float = absf(SyndicateAirship.ORBIT_RADIUS - 77.0)
+	var rise: float = SyndicateAirship.ORBIT_ALTITUDE - camera_y
+	var nearest_elevation: float = rad_to_deg(atan(rise / near_m))
+	assert_true(nearest_elevation < frame_top_deg,
+			"even at its closest the airship is below the top of the frame at 8 deg (%.1f deg against %.1f)"
+					% [nearest_elevation, frame_top_deg])
+	# And it must NOT be visible at his own 21 deg -- not because that would be bad, but because it is impossible,
+	# and a test that claimed otherwise would be lying about the camera.
+	assert_true(FOV_DEG / 2.0 - 21.0 < 0.0, "at his pose the horizon is off the top of the frame, so the sky never is")
+	# In front of the city backdrop and well inside what the camera draws.
+	assert_true(SyndicateAirship.ORBIT_RADIUS < CitySkyline.RADIUS,
+			"in front of the skyline ring (%.0f m), not behind it" % CitySkyline.RADIUS)
+	assert_true(SyndicateAirship.ORBIT_RADIUS + 77.0 < 1200.0, "inside RtsCamera's far plane")
+	assert_true(SyndicateAirship.ORBIT_ALTITUDE > 40.0, "clear of the arena's stands and towers")
+	# Big enough to read: the hull's angular size at its farthest, over the horizontal FOV, in pixels at 1080p.
+	var horizontal_fov: float = 2.0 * rad_to_deg(atan(tan(deg_to_rad(FOV_DEG / 2.0)) * 16.0 / 9.0))
+	var px: float = 2.0 * rad_to_deg(atan(SyndicateAirship.ENVELOPE_LENGTH / 2.0 / far_m)) / horizontal_fov * 1920.0
+	assert_true(px > 120.0, "a readable silhouette at its farthest, not a speck (%.0f px wide)" % px)
 
 
 func test_its_screens_join_the_existing_channel_rather_than_opening_one() -> void:

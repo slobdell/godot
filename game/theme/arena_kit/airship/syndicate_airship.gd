@@ -26,11 +26,31 @@ extends Node3D
 const ENVELOPE_LENGTH := 64.0
 const ENVELOPE_DIAMETER := 17.0
 const SCREEN := Vector2(26.0, 11.0)
-## The orbit: radius and altitude are the only two numbers that decide whether he ever sees it, so they are
-## measured at his pose rather than chosen (see `make airship-look`, and the Status note recording what the frames
-## said). One lap in this many ticks, off the fixed clock.
-const ORBIT_RADIUS := 118.0
-const ORBIT_ALTITUDE := 74.0
+## THE ORBIT IS SET BY MEASUREMENT, AND THE FIRST ANSWER WAS "HE CAN NEVER SEE IT".
+## `make airship-look` swept 768 samples -- every reachable tilt x every camera yaw x the whole orbit -- against the
+## first values (radius 118 m, altitude 74 m) and returned **0.0% visible at every tilt**. The reason is one line of
+## geometry: the top of the frame sits at `FOV/2 - pitch` degrees above the horizon, so at the lead's 21 deg it is
+## **3.5 deg BELOW** it. **At his pose the sky is not on screen at all**, and nothing in it is drawable at any
+## altitude or distance. Even at the bottom of his tilt range (8 deg, frame top +9.5 deg) an airship over the arena
+## sits at 17.7-68.9 deg of elevation: to fit it would have to fly below 42 m, which on a map whose city blocks are
+## 40 m tall is not an airship hovering, it is an airship landing.
+##
+## So the free variable is DISTANCE, not altitude: elevation falls as the thing moves away. Out at the city, an
+## airship is low in the frame instead of above it -- which is also the image the lead actually named, because
+## Blade Runner's airship is over a city, not over a stadium.
+##
+##   * `CitySkyline.RADIUS` is **640 m** and `RtsCamera` draws to **1200 m**, so this orbit is in front of the
+##     backdrop and well inside the far plane.
+##   * At 560 m the hull subtends ~6.5 deg, about **210 px wide** at 1080p -- a readable silhouette, not a speck.
+##   * Elevation from his camera is then ~4-6 deg: **in frame at 8 and 12 deg of tilt, gone by 17, never at his 21.**
+##     That is a real "sometimes visible in the field of view" -- you see it when you pull the camera down toward
+##     the horizon -- rather than a claim that is false everywhere he plays.
+##
+## **This is a design change and it is the lead's to overrule**: it trades "hovered over the arena", which his own
+## camera makes impossible, for "over the city", which his own reference describes. `test_the_orbit_is_where_his
+## _camera_can_actually_see_it` holds the geometry so a later edit cannot quietly put it back in the blind spot.
+const ORBIT_RADIUS := 560.0
+const ORBIT_ALTITUDE := 56.0
 const ORBIT_TICKS := 70.0 * SimClock.TICK_RATE
 ## Ivory, almost no rust: the Syndicate is the only faction in the game that is allowed to look clean.
 const HULL_COLOR := Color(0.88, 0.88, 0.86)
