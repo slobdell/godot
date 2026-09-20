@@ -41,14 +41,20 @@ func expect_error(pattern: String) -> void:
 
 ## Reconcile one test's collected engine messages against the warnings it declared.
 ##
-## Returns {"errors": int, "warnings": int, "failures": PackedStringArray}. Static, and separate from the
-## runner, so every branch can be driven from a test with synthetic input -- including the one branch a real
-## test cannot stage, an expectation that never arrives.
+## Returns {"errors": int, "warnings": int, "failures": PackedStringArray, "texts": PackedStringArray}.
+## `texts` is what this test was CHARGED with, so the runner can tell one cause from many victims: a leaked
+## object outlives the test that made it, so its warning lands on whoever runs next, and one arena holder in
+## combat's sim_cost test failed 22 tests in one shard (2026-09-20). Twenty-two red tests sharing a message
+## are one defect, and a reader should not have to work that out.
+##
+## Static, and separate from the runner, so every branch can be driven from a test with synthetic input --
+## including the one branch a real test cannot stage, an expectation that never arrives.
 static func reconcile_engine_messages(entries: Array, expected: PackedStringArray,
 		expected_err: PackedStringArray = PackedStringArray()) -> Dictionary:
 	var errors := 0
 	var warnings := 0
 	var failures: PackedStringArray = []
+	var charged: PackedStringArray = []
 	var outstanding := expected.duplicate()
 	var outstanding_err := expected_err.duplicate()
 	for entry: Dictionary in entries:
@@ -59,6 +65,7 @@ static func reconcile_engine_messages(entries: Array, expected: PackedStringArra
 				outstanding.remove_at(index)
 				continue
 			warnings += 1
+			charged.append(text)
 			failures.append("engine warning: " + text)
 		else:
 			var index_err := _first_match(outstanding_err, text)
@@ -66,6 +73,7 @@ static func reconcile_engine_messages(entries: Array, expected: PackedStringArra
 				outstanding_err.remove_at(index_err)
 				continue
 			errors += 1
+			charged.append(text)
 			failures.append("engine error: " + text)
 	for pattern: String in outstanding:
 		failures.append('expect_warning("%s") was declared and no matching warning arrived' % pattern)
@@ -73,7 +81,7 @@ static func reconcile_engine_messages(entries: Array, expected: PackedStringArra
 		failures.append('expect_error("%s") was declared and no matching error arrived' % pattern)
 	if errors + warnings > 0:
 		failures.insert(0, "%d engine errors, %d engine warnings" % [errors, warnings])
-	return {"errors": errors, "warnings": warnings, "failures": failures}
+	return {"errors": errors, "warnings": warnings, "failures": failures, "texts": charged}
 
 
 ## The first outstanding pattern that matches, or -1. An EMPTY pattern matches nothing: `contains("")` is
@@ -147,7 +155,8 @@ func _count_bodies(node: Node) -> int:
 
 
 ## Wait until the world's navigation map holds no regions, so the NEXT test starts on an empty map however it built
-## its arena. `ArenaFixture` drains before it instantiates, but **20+ test files call `ARENA.instantiate()` directly**
+## its arena. **This is a coroutine: `await` it, and `await teardown()` if you call that yourself** — see
+## `_draining` above for what a bare call does and how it is caught. `ArenaFixture` drains before it instantiates, but **20+ test files call `ARENA.instantiate()` directly**
 ## and never reach that path — so the fixture's drain is a belt and this is the braces.
 ##
 ## Why it must live here and be awaited: `free()` is **synchronous**, and `NavigationServer3D` drops the freed
@@ -173,29 +182,74 @@ func _count_bodies(node: Node) -> int:
 ## the first frame. It is only spent when something genuinely lingers, and then it is spent once.
 const DRAIN_FRAMES := 120
 
+## **`drain_navigation()` MUST BE AWAITED, and this flag is why.** It is a coroutine: called bare, it returns at
+## once and keeps waiting in the background while the caller carries on. `test_combat_sim_cost` calls `teardown()`
+## bare inside its own loop, so a detached drain sat in its 120-frame wait **while the loop built the next arena**
+## and then counted that LIVE arena as leftover — reporting a leak that was someone else's working state. nav read
+## that report as a real holder and said so; it was this.
+##
+## A second concurrent drain therefore **fails loudly instead of measuring**. Counting a shared, global thing
+## (the world's navigation map) from two overlapping coroutines cannot give either one an answer about itself, and
+## a guard that returned quietly would leave the bare `teardown()` in place and un-diagnosed.
+static var _draining := false
+
 
 func drain_navigation() -> void:
+	if _draining:
+		failures.append("drain_navigation() was re-entered while a previous drain was still waiting. A coroutine "
+				+ "teardown() was called WITHOUT `await`, so the first drain is counting whatever the caller built "
+				+ "after it - not a leak. Await teardown(), or call drain_navigation() directly and await that.")
+		return
 	var viewport := tree.root as Viewport
 	if viewport == null or viewport.world_3d == null:
 		return
+	_draining = true
 	var map := viewport.world_3d.navigation_map
 	for frame in DRAIN_FRAMES:
 		if NavigationServer3D.map_get_regions(map).is_empty():
+			_draining = false
 			return
 		await tree.physics_frame
+	# REPORT, DO NOT REMOVE. An earlier version detached the leftovers here (`region_set_map(rid, RID())`) so that
+	# one leaking test could not cascade. **Measured: it made things far worse** -- 1401/117 against 1516/2, with
+	# the 284 edge errors returning. The regions it detached were not orphans: detaching navigation out from under
+	# something that still needed it broke arenas across whole files, and the cascade it was written to prevent is
+	# the cascade it caused. Containment needs to know an orphan from a live region and this could not, so it is
+	# gone until something can.
 	var left := NavigationServer3D.map_get_regions(map).size()
 	if left > 0:
-		failures.append(("left %d navigation region(s) on the map after %d frames (4 s). The next test will bake into "
-				+ "them and the engine's 'more than 2 edges tried to occupy the same map rasterization space' will "
-				+ "be charged to whichever test is running when it lands - which will not be this one.")
-				% [left, DRAIN_FRAMES])
+		failures.append(("left %d navigation region(s) on the map after %d frames (4 s) - a node here still OWNS "
+				+ "them. The next test may bake into them and the engine's 'more than 2 edges tried to occupy the "
+				+ "same map rasterization space' would then be charged to whichever test was running when it "
+				+ "landed, not to this one. Free every node this test adds.") % [left, DRAIN_FRAMES])
+	_draining = false
 
 
-func teardown() -> void:
+## Free everything this test added. Safe to call mid-test, and the ONLY supported way to do that — a test that
+## wants a clean world part-way through calls this, not `teardown()`.
+func free_owned() -> void:
 	for node in _owned_nodes:
 		if is_instance_valid(node):
 			node.free()
 	_owned_nodes.clear()
+
+
+## **SEALED. The runner awaits this, and it owns the order: hook, free, body guard, drain.**
+##
+## The drain must be awaited, and a `teardown()` that must be awaited but can be declared `-> void` **cannot be made
+## safe by review**: five files called `teardown()` or `super.teardown()` un-awaited, so the runner's `await`
+## returned at once and the drain detached — and **four of them, all viewport-resizing tests, had silently skipped
+## the drain for as long as it existed.** Nobody did anything wrong; the signature allowed it.
+##
+## So the sequence is not overridable. `teardown()` below is a **synchronous hook** and is never responsible for the
+## drain. An override that forgets to call `super` now loses nothing, because the base no longer holds anything an
+## override needs.
+##
+## Hook FIRST, then free: that is the order overrides already assumed, since they did their own cleanup and called
+## `super.teardown()` last.
+func _teardown() -> void:
+	teardown()
+	free_owned()
 	var total: int = int(_world_left_behind()["bodies"])
 	# A high-water mark, so this reports a LOWER BOUND on leakers: once the count has risen, a later test leaking
 	# below that mark is not blamed. Deliberate -- the alternative is blaming a test for someone else's residue.
@@ -204,8 +258,21 @@ func teardown() -> void:
 				+ "them and may fail instead of this one: free every node you add, and if a helper builds the arena, "
 				+ "free it there.") % [total, _world_baseline])
 	_world_baseline = maxi(_world_baseline, total)
-	# LAST, and awaited by the runner: leave the navigation map empty so the next test cannot bake into this one's
+	# LAST, and awaited by the runner via `_teardown()`: leave the navigation map empty so the next test cannot bake into this one's
 	# regions. Placed after the body guard so that guard's timing is unchanged, and after `free()` so there is
 	# something to drain. Every test gets this without asking, which is the point -- 20+ files instantiate the arena
 	# scene directly and would never call it themselves.
 	await drain_navigation()
+
+
+## Overridable, synchronous, and it **still frees this test's nodes exactly as it always did** — so a mid-test
+## `teardown()` call keeps working and an override's `super.teardown()` keeps meaning what its author intended.
+##
+## Making this a bare hook was measured and reverted: `test_control_panel` calls `teardown()` **mid-test** to get a
+## clean world, and with the free moved out it froze nothing and took ten tests with it. **The sealing was supposed
+## to move only the part that needs frames — the drain — and it moved the part everyone depends on as well.**
+##
+## What it must NOT do is drain: that needs `await`, and a `-> void` signature cannot force a caller to use it.
+## `_teardown()` owns the drain for exactly that reason.
+func teardown() -> void:
+	free_owned()
