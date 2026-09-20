@@ -138,11 +138,12 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
 
 ### What is unverified, stated plainly
 
-**A hardware note for you (12:45):** a 101 MB trajectory log written on builder0 at 10:11 and copied to this laptop
-has exactly one flipped bit (`p7-pit.jsonl`, line 143,873, byte `0x78 → 0xf8`). It could be builder0's memory or disk,
-the transfer, or this laptop; nothing here can tell which. It landed in a key name, so the reader refused the file;
-in a digit it would have silently moved a number. metrics is adding a checksum to the copy-back so the next one is
-localised to the transfer or not. Whether builder0's memory deserves a memtest is your call.
+**A hardware note for you (12:45, corrected 13:00):** the laptop's `build/metrics/p7-pit.jsonl` (a 101 MB trajectory log
+copied back from builder0 at 10:11) has one changed byte at line 143,873 inside the key `slot_x`. nav's copy of the
+same log, taken out of `build/` right after the run and validated line by line, is intact, so the byte changed ON
+THIS LAPTOP after the copy, while the stale file sat in `build/` across later runs (`remote.sh` copies back without
+`--delete`; metrics is adding `--delete` and a checksum). One event; it landed in a key name, so the reader refused
+the file; in a digit it would have silently moved a number. Whether this laptop's memory deserves a look is your call.
 
 - **`main` at `0808834e` is VERIFIED GREEN** (builder0 07:38: exited 0, **1454 passed, 0 failed**, 16 targets, sim-baseline
   `32831dc99cdaf5ca`): that tip holds every merge in the table above and the recorded baseline. Only docs commits
