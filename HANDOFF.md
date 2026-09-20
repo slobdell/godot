@@ -8,14 +8,14 @@ _Last updated: 2026-09-19 (evening). **Round 9 is LAUNCHED: seven streams briefe
 
 ## Round 9 is LAUNCHED (2026-09-19 evening). Start here.
 
-**Seven streams — metrics, scale, nav, combat, squad, feel, control** — each with a brief in `_agents/streams/<stream>.md`
+**Eight streams — metrics, scale, nav, combat, squad, feel, control, and (added 2026-09-20) show** — each with a brief in `_agents/streams/<stream>.md`
 and a worktree at `~/projects/godot-<stream>`. The split, checkpoints (CP1 A12 metrics, CP2 the resized roster, CP3
 parallel `check`), ownership carve-outs and the four new contracts S1–S4 are in
 [`_agents/workstreams.md`](_agents/workstreams.md) *Round 9: the seven streams*. The lead's two feedback items and the
 sizing rule are in [`_agents/game_design.md`](_agents/game_design.md) *Round 9 direction*.
 
 **Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`), the
-same text for all seven:
+same text for all eight (show at `~/projects/godot-show`, OFFSET 8; it runs every Godot process on builder0 because the laptop had ~2.2 GB free with seven live):
 
 > /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
 
@@ -26,7 +26,7 @@ docs only. **Orchestrator duties this round:** merge CP1
 the sim baseline in the same session as CP2 (it moves); put scale's side-by-side roster frame and feel's rig-hinge frames
 in front of the lead the day they exist; get feel's `_agents/legibility.md` signed by control and nav before anyone
 writes A6 motion code; review nav's A7 priority table against combat's and feel's contracts before nav codes it; relay
-negative results between streams. Final integration order: metrics → scale → nav → combat → squad → control → feel.
+negative results between streams. Final integration order: metrics → scale → nav → combat → squad → control → feel → show. **Live checkpoints as of 2026-09-20:** CP1 (A12 format stable, positive control passed, merge hash pending), CP2 (roster resized on `stream/scale`, line-up frame for the lead pending), CP2b (squad's attacking-element leash), CP2c (control's right-drag facing, green locally), CP3 (T1 in progress). Contracts S5 (one commitment term, two seams) and S6 (the light show) were added mid-round; the lead's lighting and camera items are in `game_design.md` *Round 9 addition*.
 
 **One question for the lead, with a recommendation:** the roster is being scaled *rig-relative* (the world's vehicles
 at K ≈ 0.7 of real size, so the 14 m rig he ruled on stays and the bus, garbage truck, APC and assault gun grow
