@@ -879,6 +879,13 @@ that does not exist. **Before using a new instrument as an A/B's gate, run it on
 varies.** When nav's `wedged` reaches `main` that is the first thing I do with it, and if it does not vary I will say
 so rather than run the A/B.
 
+**1b. A number someone else is already holding is the worst place to skip a re-run.** nav changed the `drifted`
+condition in A1's nav half *after* giving me its −21.5%, re-ran both arms rather than reasoning that paths are rarely
+empty in a fight so the fix would rarely bite, and got **identical** totals and an identical cause split to the unit.
+The reasoning was right; it is now known instead of inferred. **Every nav figure cited in this Status is post-fix and
+confirmed** — the 2144-of-2222 skip, the +0.9%, the 968-of-2059 `goal_slid` share, and the 1706/2041 A/B. I cite them
+because I depend on them, which is exactly why nav re-running them matters to me and not only to nav.
+
 **2. Two counters in two layers are two populations, and neither one's number can gate the other's flag.** nav measured
 its A1 route re-plans falling **21.5%** with its sliding-goal fix, and I had been treating that as evidence about
 whether my brain-half tube was worth flipping. It is not evidence about mine **at all**: nav counts route re-plans in
