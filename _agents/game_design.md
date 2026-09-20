@@ -2013,7 +2013,11 @@ first-person, and the far side of the street still walls the alley: that answers
 Lifting over the roof takes the pitch **21° → 32°**, keeps 41.5 m of horizontal reach, and looks *down into* the alley;
 it is inside the tilt range he can reach by hand (8°–70°), and only shortens the boom when even `MAX_PITCH_DEG` cannot
 clear a roof. Measured over every open ground point on the Terminus × 8 yaws at his pose: **703 of 4,328 poses had the
-camera inside a building; 0 after; worst lift 11.0°; nothing pulled in.** Mutation-checked; an arena with no cityscape
+camera inside a building; 0 after; worst lift 11.0°; nothing pulled in.** **But the second half of his sentence is not
+fixed by it** (control, measured the same night): over those 703 poses the sight line from the camera to the ground it
+aims at was blocked by a building in **700 before and 518 after — a 26% reduction.** 518 cameras are correctly outside
+every solid and still looking at the side of one. **The occlusion cutaway is still owed, and the alley frames decide
+it; 703 → 0 must not be read as the item finished.** Mutation-checked; an arena with no cityscape
 is provably untouched. Because this is the second place the camera overrides his tilt (after the far-range floor), it
 reports `lifted_deg` and is flagged to him rather than hidden. Frames at his pose in the alleys follow. **He can
 overrule this in the morning**: a push-in variant is the same test with a different resolver.
