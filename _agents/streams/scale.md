@@ -259,7 +259,14 @@ sides; if it did not, say that the resize is not the variable.
 - **nav:** `Movement.NAV_AGENT_RADIUS` mirrors the bake — propose it read `Arena`'s value.
 - **feel:** a 21-unit line-up mode in `SizeLook`, if you cannot build it in your own paths.
 - **control:** the camera, HUD, selection boxes and radar at his pose against the new sizes.
-- **metrics (or whoever owns `tools/remote.sh`): make the merge trap impossible instead of documented.** I lost a
+- **metrics: LANDED — the merge trap is now impossible, not documented.** `tools/remote.sh` re-execs from a private
+  copy and unlinks it immediately (`pinned=$(mktemp …)`, `TANK_SQUAD_PINNED_SELF=… exec bash "$pinned"`), with the
+  reasoning in its own comment: *"the kernel keeps the text alive for this process through its open fd, and nobody —
+  not even git — can reach it by name to change it."* That is better than the copy-to-/tmp I proposed, because
+  unlinking closes the window where the copy itself could be edited. **The ⚠ below is retired**: a `git merge` can no
+  longer rewrite a wrapper mid-flight, so the hand-check it demanded is no longer the thing standing between us and a
+  lost run. *(Original request kept below for the record of what it cost to learn.)*
+- ~~**metrics (or whoever owns `tools/remote.sh`): make the merge trap impossible instead of documented.**~~ I lost a
   render to it (a wrapper part-way through `tools/remote.sh`/`slot.sh` when `git merge main` rewrote them under it),
   and the brief now carries a ⚠ telling every future agent to check by hand. While merging today I noticed metrics
   running `bash /tmp/remote.sh.AIzYCv check` — **a copy of the wrapper in `/tmp`**, which is exactly the defence, and
@@ -467,6 +474,94 @@ each correct, but the interval summarising them — `[1.3750, 1.3784]` — was e
 from the function, so it excluded valid values at one end and admitted an invalid one at the other (`1.3784 × 2.05`
 snaps to **2.83**). **Four decimals is a claim about method.** Stated as "somewhere around 1.375–1.378" it would have
 been honest; stated to four decimals it looked derived, and the right response was to invert it rather than take it.
+
+### The spawn settle curve — the reference for anyone who ever sees a vehicle pop at spawn
+
+**Units are placed at exactly `y = 0.0` with their collider bottom exactly at the origin, and the ground's top is
+exactly `y = 0`.** That contact has zero penetration, and `move_and_slide`'s depenetration recovery resolves it either
+way. Measured on a full 45-unit army a side, foundry, `seed_spawns(9, 6.0)`:
+
+| frame | Green_S5_1 (tank) | its `get_position_delta()` | a passing unit of the same class |
+|---|---|---|---|
+| 1 | **−1.475051** | `(0.0, −1.475051, 1.519325)` | `(0.0, +0.00087, 0.0)` — up 0.87 mm |
+| 2 | −0.190296 | `(0.0, +1.284755, 0.0)` | +0.000113 |
+| 3 | **−0.041655** | `(−0.000031, +0.148641, 0.000031)` | +0.000015 |
+
+`velocity` is **exactly zero** throughout and `motion_mode` is `MOTION_MODE_FLOATING`, so nothing fell and nothing was
+assigned: the delta carries the whole drop, which means **`move_and_slide` recovered the body**. Most units get the
+benign form — pushed *up* by under a millimetre. A few get it downward, and **they climb back out: −1.475 → −0.190 →
+−0.042 by frame 3.**
+
+**So a spawn pop is a settle, not a bug, and it is transient.** If the lead ever sees a vehicle dip at spawn, this is
+it, and the numbers above are the reference. **What is NOT acceptable is measuring it at frame 1** — which is what
+main's red spawn test did, and what made the result depend on test order (the engine's internal state decides which
+way a zero-penetration contact resolves, and that state depends on how many bodies the process made and destroyed
+earlier).
+
+**Ruled (orchestrator): no spawn `y` change — the constant stays `0.0` and wired.** A y-offset only changes which way
+the contact resolves; combat's 5 cm control moved the frame-1 value by **0.032 m** and fixed nothing. The fix is
+test-side: **assert placement, which is deterministic, and sample any physics assertion after settling.**
+
+**And my collider is exonerated by direct measurement**, so the round-9 `_apply_hull_size` rewrite has no defect here:
+
+```
+SPAWN_ISO_AABB Green_S0_1 tank      origin_y=0.0000 local_y=1.2000 box_h=2.4000 -> bottom=+0.0000 top=+2.4000
+SPAWN_ISO_AABB Green_S0_4 artillery origin_y=0.0000 local_y=1.4100 box_h=2.8200 -> bottom=+0.0000 top=+2.8200
+SPAWN_ISO_GROUND Arena/Ground box (320,1,320) centred y=-0.5000 -> top=+0.0000 bottom=-1.0000
+```
+
+Every bottom exactly at the origin, every `local_y` exactly `h/2`, every `box_h` the catalogue height. **The "implied
+2.9 m and 3.5 m hulls" were an artefact of reading the sink depth as a half-height** — there is no second height.
+
+### The teardown guard: narrowed to bodies, after it was wrong about regions
+
+The first version counted **navigation regions** as well and failed three tests in control's, squad's and combat's
+files. **It was wrong, and the measurement that shows it took one run:**
+
+```
+SPAWN_ISO_REGIONS before=2 with_arena=2 then after free: [2, 0, 0, 0]   (frames 0,1,2,3)
+```
+
+`free()` takes an arena's **bodies** to 0 in the same call, but the server drops its **regions on the next frame**, and
+`teardown()` is synchronous so it can only sample frame 0 — where a correctly-freed arena still shows its regions.
+**A guard that fails inside a settling window is the same defect as the test it was written to explain.** The three
+tests were innocent (`AiScenario.dispose()` already frees properly), the grants on their files lapsed unused, and the
+guard's own advice — *"build arenas through ArenaFixture"* — was withdrawn as wrong: the fixture solves the *consumer*
+side, waiting for your own regions before measuring, and does nothing about regions outstanding at teardown.
+
+**What landed is the claim I can defend: bodies only.** A `CollisionObject3D` at teardown has no transient window. It
+reports a **lower bound** on leakers (high-water mark: once the count rises, a later test leaking below it is not
+blamed), and it fails **the test that leaked**, not the next one to run — which is the whole point, since this class of
+bug always appears as the victim's failure.
+
+**The lesson I would keep above either fix:** I built an instrument, it produced three confident reds in other people's
+files, and it was measuring a transient. **Checking it before acting on it cost one run; not checking it would have
+sent three streams to fix nothing** — and my own overlap script had already printed a vacuous "overlap: NONE" the same
+morning. In a round whose recurring failure is checks that cannot fail, the checks I write are not exempt.
+
+### Queued, in order, behind the current work (recorded so none of it is rediscovered)
+
+1. **The guard + the three fixture-less arena tests** — landing as its own commit, **no baseline move**.
+2. **The artillery box + whatever the collider/writer hunt finds** — one commit, one baseline record, both causes named.
+3. **Fairness on yard and pit** (the two arenas in `Arena.ROTATION`, both with rows in arenas.md's recorded table).
+4. **Terminus lamps among the blocks** (feel's ask, forwarded to the lead). Terminus has **two** floodlights at r=128
+   against pit's **four plus eight 40 m towers inside the fight**, so at his pose the neon bands — now correctly cyan
+   and magenta — are still the brightest thing on screen and the vehicles read as dark slabs. **Light the floor; do not
+   dim the bands.** Ruled with show: the floor's baseline lighting is **mine** in `terminus.json` (the show *modulates*
+   what is already lit; its `pools` channel is not the floor's baseline), so the lamps must be judged **with the show
+   off as well as on**, at 21° / FOV 35 / 49 m, and **the vehicles must read without the UI rings.** A frame at that
+   pose is the acceptance test.
+5. **P6 / the navmesh bake radius, pre-registered so the trigger is not invented after the fact.** nav measured that
+   **14 of 21 units' avoidance radius `((w+l)/4 + margin)` exceeds `arena.tscn`'s 2.0 m bake** — median **2.50 m**,
+   `gang_tank` **4.58 m**, `gang_scout` 1.36 m. Ruled: **the bake stays 2.0 this round** and nav's routing consults each
+   hull's shortfall. `arena.tscn`'s bake is mine, so **if the yard/pit fairness runs show the largest hulls wedging in
+   alleys, 2.0 is the number that changes — as a baseline move, and not before nav's falsifier reports.** Note for
+   whoever reads that result: the **median** unit is already under-served, not just the tail, so wedging would not be a
+   rare event.
+
+**An observation from show for the record, not an alarm:** the same 6500 budget buys **68 vehicles at 191k primitives
+before CP2 and 64–68 at 145k after** (terminus, `PERF_NAME=show-layer`). **The resize went through simpler meshes, not
+more geometry** — the hulls grew in metres while the primitive count fell by a quarter.
 
 ### Decided: the Condemned artillery's box binds the DRIVING pose (one number owed)
 

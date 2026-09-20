@@ -37,25 +37,25 @@ func wait_physics_frames(count: int) -> void:
 		await tree.physics_frame
 
 
-## What one test can leave behind for the next one, counted. Physics bodies and navigation regions are the two that
-## silently corrupt another test's world: a stale body makes a unit "spawn inside a wall" on a map that has no wall
-## there, and a stale navigation region answers routing questions about an arena that is gone (the failure
-## ArenaFixture exists for -- see its docstring). Round 9 lost a morning to the physics half of this, on a test that
-## PASSES ALONE and fails only when an arena test runs before it in the same process.
+## Physics bodies one test leaves behind for the next one. A stale body makes a unit "spawn inside a wall" on a map
+## that has no wall there, and nothing says so: the failure lands on whichever test runs afterwards.
 ##
-## Counted in TEARDOWN, not at setup, deliberately: **the test that leaked is the one that should go red.** Checking
-## at the start of the next test names the victim and leaves the culprit green, which is how this survived for rounds
-## -- the failure always appeared in whichever test happened to run afterwards, so it read as that test's bug.
+## Counted in TEARDOWN, not at setup, deliberately: **the test that leaked is the one that should go red.** Checking at
+## the start of the next test names the victim and leaves the culprit green, which is how this class of bug survives.
+##
+## **BODIES ONLY, AND NAVIGATION REGIONS DELIBERATELY NOT.** The first version of this guard counted regions too and
+## failed three tests in other streams' files. It was wrong, and measurably: `free()` takes an arena's bodies to 0 in
+## the same call, but its NAVIGATION REGIONS are dropped by the server on the NEXT FRAME --
+## `SPAWN_ISO_REGIONS before=2 with_arena=2 then after free: [2, 0, 0, 0]` (frames 0,1,2,3, round 9). `teardown()` is
+## synchronous, so it can only ever sample frame 0, where a correctly-freed arena still shows its regions.
+## **A guard that fails inside a settling window is the same defect as the test it was written to explain**, which in
+## this case was a spawn test measuring a depenetration recovery at frame 1 that resolves by frame 3. Bodies have no
+## such window, so bodies are the only claim this makes.
 static var _world_baseline := -1
 
 
 func _world_left_behind() -> Dictionary:
-	var bodies := _count_bodies(tree.root)
-	var regions := 0
-	var viewport := tree.root as Viewport
-	if viewport != null and viewport.world_3d != null:
-		regions = NavigationServer3D.map_get_regions(viewport.world_3d.navigation_map).size()
-	return {"bodies": bodies, "regions": regions}
+	return {"bodies": _count_bodies(tree.root)}
 
 
 func _count_bodies(node: Node) -> int:
@@ -70,11 +70,11 @@ func teardown() -> void:
 		if is_instance_valid(node):
 			node.free()
 	_owned_nodes.clear()
-	var left := _world_left_behind()
-	var total: int = int(left["bodies"]) + int(left["regions"])
+	var total: int = int(_world_left_behind()["bodies"])
+	# A high-water mark, so this reports a LOWER BOUND on leakers: once the count has risen, a later test leaking
+	# below that mark is not blamed. Deliberate -- the alternative is blaming a test for someone else's residue.
 	if _world_baseline >= 0 and total > _world_baseline:
-		failures.append(("left the world dirtier than it found it: %d physics bodies and %d navigation regions "
-				+ "remain (was %d before this test). The next test to run will see them and may fail instead of "
-				+ "this one -- free what you add, or build arenas through ArenaFixture.")
-				% [left["bodies"], left["regions"], _world_baseline])
+		failures.append(("left %d physics bodies in the world (was %d before this test). Whatever runs next will see "
+				+ "them and may fail instead of this one: free every node you add, and if a helper builds the arena, "
+				+ "free it there.") % [total, _world_baseline])
 	_world_baseline = maxi(_world_baseline, total)

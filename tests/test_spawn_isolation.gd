@@ -80,7 +80,66 @@ func test_b_victim_deploys_a_full_army_and_reports_what_it_sees() -> void:
 				touching.append("%s/%s overlap %.2f m" % [a.name, b.name, -gap])
 	print("SPAWN_ISO_PLACEMENT closest pair gap %.3f m; %d overlapping pairs at placement%s"
 			% [closest, touching.size(), ("" if touching.is_empty() else ": " + ", ".join(touching.slice(0, 6)))])
-	await wait_physics_frames(1)
+	# THE COLLIDER'S OWN GEOMETRY AT PLACEMENT, before any physics step. `_apply_hull_size` sets
+	# `_collision.position.y = size.y / 2.0`, which should put the box BOTTOM at the unit origin -- so a unit spawned
+	# at y = 0 rests exactly on the ground and nothing straddles it. If instead the bottom is BELOW y = 0 here, the
+	# box straddles the floor by half its height at spawn and the solver ejects it up or down depending on engine
+	# state, which is the whole failure. Measured for every unit; printed for the ones that end up blocked plus a
+	# passing unit of the same class, so the comparison is like-for-like.
+	var aabb := {}
+	for tank: Tank in tanks:
+		var shape_node := tank.get_node_or_null("Collision") as CollisionShape3D
+		if shape_node == null:
+			continue
+		var box := shape_node.shape as BoxShape3D
+		if box == null:
+			continue
+		var centre: Vector3 = shape_node.global_position
+		aabb[tank] = {"bottom": centre.y - box.size.y / 2.0, "top": centre.y + box.size.y / 2.0,
+				"centre_y": centre.y, "local_y": shape_node.position.y, "box_h": box.size.y,
+				"origin_y": tank.global_position.y}
+
+	# THE GROUND'S OWN GEOMETRY. With `motion_mode = MOTION_MODE_FLOATING` and `velocity.y = 0.0` (tank_motion.gd:462,
+	# "floating on a flat arena"), nothing falls and nothing snaps to a floor -- so the ONLY thing that can move a
+	# unit in y is `move_and_slide`'s depenetration recovery, which means the hull box must already overlap something
+	# at spawn. If the ground slab's TOP is above y = 0, then every unit placed at y = 0 with its box bottom at the
+	# origin is inside the slab by that much, and recovery pushes it out in whichever direction the deepest contact
+	# points -- up on one process history, down on another. That is the number this print exists to get.
+	for ground_name: String in ["Ground", "Terrain"]:
+		for node: Node in tree.root.get_children():
+			var g := node.get_node_or_null(ground_name) as CollisionObject3D
+			if g == null:
+				continue
+			for owner_id: int in g.get_shape_owners():
+				for k in g.shape_owner_get_shape_count(owner_id):
+					var sh := g.shape_owner_get_shape(owner_id, k)
+					var owner_node := g.shape_owner_get_owner(owner_id) as Node3D
+					var at: Vector3 = owner_node.global_position if owner_node != null else g.global_position
+					if sh is BoxShape3D:
+						var bs := sh as BoxShape3D
+						print("SPAWN_ISO_GROUND %s/%s box %s centred y=%.4f -> top=%+.4f bottom=%+.4f"
+								% [node.name, ground_name, bs.size, at.y, at.y + bs.size.y / 2.0,
+								at.y - bs.size.y / 2.0])
+					else:
+						print("SPAWN_ISO_GROUND %s/%s shape=%s at y=%.4f" % [node.name, ground_name, sh, at.y])
+
+	# WHO WRITES THE Y. `CharacterBody3D.get_position_delta()` reports the motion the last `move_and_slide()` produced,
+	# so it separates the two candidates cleanly: if the delta carries the drop, `move_and_slide`'s depenetration
+	# recovery moved the body; if the delta is ~0 while the position changed, some line ASSIGNED the position. With
+	# `velocity.y = 0.0` and `MOTION_MODE_FLOATING` there is no third option. Sampled per frame for a few frames, so
+	# the frame it jumps in is visible rather than inferred from a single before/after pair.
+	var watch: Array = []
+	for tank: Tank in tanks:
+		if ["Green_S5_1", "Rust_S5_1", "Rust_S8_1", "Green_S0_1", "Green_S1_1"].has(String(tank.name)):
+			watch.append(tank)
+	for frame in 3:
+		await wait_physics_frames(1)
+		for tank: Tank in watch:
+			var body := tank as CharacterBody3D
+			print("SPAWN_ISO_WRITER f%d %-12s unit=%-10s y=%+.6f delta=%s vel=%s floor=%s" % [frame + 1, tank.name,
+					tank.unit_id, tank.global_position.y, body.get_position_delta(), body.velocity,
+					str(body.is_on_floor())])
+
 	var space := (tanks[0] as Tank).get_world_3d().direct_space_state
 	var blocked: Array = []
 	for tank: Tank in tanks:
@@ -106,6 +165,20 @@ func test_b_victim_deploys_a_full_army_and_reports_what_it_sees() -> void:
 		print("SPAWN_ISO_BLOCKED %s unit=%s placed %s -> now %s moved %.3f m :: %s" % [tank.name, tank.unit_id,
 				placed[tank], tank.global_position, moved, ", ".join(names)])
 	print("SPAWN_ISO_DONE blocked=%d of %d" % [blocked.size(), tanks.size()])
+
+	# The four AABBs the orchestrator asked for: each blocked unit, plus a PASSING unit of the same class.
+	for name: String in blocked:
+		for tank: Tank in tanks:
+			if String(tank.name) == name and aabb.has(tank):
+				_print_aabb("BLOCKED", tank, aabb[tank])
+	var shown := {}
+	for tank: Tank in tanks:
+		if blocked.has(String(tank.name)) or not aabb.has(tank):
+			continue
+		if shown.has(tank.unit_id):
+			continue
+		shown[tank.unit_id] = true
+		_print_aabb("passing", tank, aabb[tank])
 
 	# WHAT THIS FILE ASSERTS, and it is the half that is scale's: at CP2 hull sizes a full 45-unit army a side is
 	# PLACED with real clearance. That is deterministic -- pure geometry, before any physics step -- so it cannot
@@ -137,3 +210,34 @@ func _bodies(node: Node) -> int:
 	for child in node.get_children():
 		n += _bodies(child)
 	return n
+
+
+## One unit's collider geometry at placement, in the terms the hypothesis is about: is the box bottom at the origin?
+func _print_aabb(label: String, tank: Tank, a: Dictionary) -> void:
+	print("SPAWN_ISO_AABB %-8s %-12s unit=%-10s origin_y=%.4f local_y=%.4f box_h=%.4f -> bottom=%+.4f top=%+.4f %s"
+			% [label, tank.name, tank.unit_id, a["origin_y"], a["local_y"], a["box_h"], a["bottom"], a["top"],
+			("BOTTOM BELOW GROUND" if float(a["bottom"]) < -0.0005 else "bottom at/above ground")])
+
+
+## IS THE GUARD CRYING WOLF? `TestCase.teardown()` counts navigation regions immediately after `free()`, and it is
+## synchronous, so it cannot await. But `NavigationServer3D` applies changes when it syncs, not when a node is freed --
+## ArenaFixture's docstring says exactly that: *"the previous test's arena is freed a frame or two before
+## NavigationServer3D drops its regions"*. **A frame or two.** So a count taken in teardown may be measuring a PENDING
+## removal, not a leak, and a guard that fails on a transient is the same defect as the spawn test it was written to
+## explain. This measures the drain: regions right after `free()`, then after each of three frames.
+##
+## If the count reaches 0 within a frame or two, the guard must measure later (or tolerate pending regions) and the
+## three tests it flagged are NOT leaking. If it stays up, they are, and the guard stands.
+func test_c_do_navigation_regions_drain_after_an_arena_is_freed() -> void:
+	var map := (tree.root as Viewport).world_3d.navigation_map
+	var before := NavigationServer3D.map_get_regions(map).size()
+	var arena: Arena = await ArenaFixture.build(self, "foundry")
+	var with_arena := NavigationServer3D.map_get_regions(map).size()
+	arena.free()
+	var counts: Array = [NavigationServer3D.map_get_regions(map).size()]
+	for f in 3:
+		await wait_physics_frames(1)
+		counts.append(NavigationServer3D.map_get_regions(map).size())
+	print("SPAWN_ISO_REGIONS before=%d with_arena=%d then after free: %s (frames 0,1,2,3)"
+			% [before, with_arena, str(counts)])
+	assert_true(true, "diagnostic only: the numbers decide whether the teardown guard is sound")
