@@ -396,6 +396,31 @@ frames at pitch 21°, 49 m, FOV 35, and a human. *"For anything subjective, a hu
 A4's headroom. An instrument at the end of its range is indistinguishable from one that is not connected, and nav
 has not yet established headroom for this one across four maps (only on yard, where it was 403).
 
+### OWED, not done: P7's control-arm baseline through A12
+
+**What it is:** the off-corridor velocity fraction on **today's default path**, measured by `make metrics` — A6's
+falsifier bar is *"30–36% → under 10%, with no fall in exchange ratio"*, and **the 30–36% has never been measured
+by A12**. It is round 8's figure from a different instrument.
+
+**Why it must be taken BEFORE A6 can act:** a baseline measured after the mechanism exists is worth much less, and
+A6 is inert today, so right now is the only clean window. metrics agreed with that ordering.
+
+**Why it is not done:** two blockers, neither nav's.
+1. **The log column landed on metrics' branch, not `main`.** `corridor_x`/`corridor_z` are at `bfdc58b7` on
+   `stream/metrics`; nav's tree has neither the columns nor `off_corridor` in `metrics.py`. Nav checked rather than
+   assuming — the emitter's only `corridor` mentions in this tree are comments.
+2. **No local Godot runs** (orchestrator, laptop at 245 MB free with nine sessions). It must be queued on builder0.
+
+**The exact run, so whoever takes it does not re-derive it:**
+
+    make remote T="nav-fight ..." with --trajectory=<path>, then
+    make metrics LOGS=<path> --order-verb attack_move --team 0
+
+`--team 0` because the ungated A12 statistics are diluted by the enemy army — that is what made nav's `eff_mean`
+read 0.717 where the ordered side alone reads 0.833, **from the same bytes**. `--order-verb attack_move` matches §7.
+Report the **active fraction beside the fraction**; metrics' renderer now refuses to print one without the other,
+because *a falsifier that improves because the law switched itself off more often is not a pass*.
+
 ### Still open at hand-over, in the order the next agent should take them
 
 1. **The clean A1 A/B is running** — one binary, `--nav-off=a1` against the default, both arms sharing label
