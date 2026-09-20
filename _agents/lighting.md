@@ -192,8 +192,22 @@ Two writers to one perceived quantity look like flicker nobody can reproduce. Ea
 | A block's **alpha / visibility** (the camera-inside-a-block cutaway) | **control** | **the show never writes alpha, visibility, or the cutaway's own uniform.** Ruled by the orchestrator, 2026-09-20 |
 | The **look at channel level 1.0** — every material's base colours, roughness, energies | **feel** | the show is additive only: a hook a material exposes, never a restyle |
 | The ad channel's content and its screens' material | `AdBroadcast` | a cue may *ask* it to `post_live`, as K5 already does on kills |
+| **The Syndicate airship's navigation lights** | **nobody — they stay steady** | feel's look judgement, 2026-09-20, adopted: *"the Syndicate is the faction that does not flicker"*. A strobing airship would undo the one piece of art direction the lead named by hand (the ivory tower, pristine, no rust). **If a Syndicate cue ever exists it goes on the screens, never on the beacons.** |
 
 **If a faded block is also mid-cue, the cue continues underneath the fade. No special case.** (Orchestrator, S6.)
+
+### The airship makes the ad channel the venue's biggest light (feel, 2026-09-20)
+`SyndicateAirship` (`stream/feel` `567a8007`) puts **two screens on the `arena` `AdBroadcast` channel, sharing the
+channel's material**, on a 64 m object orbiting 74 m over the arena. The ownership rule does not change —
+`AdBroadcast` owns the ad channel, the show reads `light_color()` and never writes it — but the **consequence** does:
+
+- **A `post_live` on a kill is now a venue-scale lighting event.** Neither stream designed it as one. It is probably
+  good; it is certainly not small, and the next person to touch either side should know before they find it in a
+  frame.
+- **It is a MOVING fixture, so its phase cannot come from world position.** The rim's per-edge phase is
+  `atan(pos.x, pos.z)` — the angle around the venue — which is exactly the kind of phase that would slide underneath
+  a moving object, giving a sweep that chases the airship around its own orbit. Its pose is a pure function of
+  `Match.tick` (one lap in 70 s), so **if it is ever patched, the phase comes off the orbit parameter.**
 
 ### Reserved by control
 **Nothing. Control answered 2026-09-20: it writes nothing on a city block — not a uniform, not an instance parameter,

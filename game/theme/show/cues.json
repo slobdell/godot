@@ -1,0 +1,83 @@
+{
+ "_comment": "S6, the arena light show: the cue book (_agents/lighting.md section 6). One book for every arena, so an arena that declares a patch gets the show without declaring the show. A cue names CHANNELS, not fixtures, so an arena that has no such channel simply ignores that line -- which is what lets the yard (a rim and nothing else) and the Terminus (a rim and eight buildings) share one book. Every value here moves WITHIN the floor and ceiling the arena's patch declared: ShowCues.blend clamps, so no cue can take a core fixture dark or to full blast.",
+ "states": {
+  "fight": {
+   "_comment": "The loading screen drops. House lights down on the buildings, the rim up: the moment the venue says the match has started. MatchMood has no name for this (it starts at 'lull'), so the show holds it for 'hold' seconds and then hands over.",
+   "attack": 0.7,
+   "release": 3.5,
+   "hold": 5.0,
+   "set": {
+    "rim": {"programme": "breathe", "period": 9.0, "floor": 1.0, "ceiling": 1.25},
+    "edges": {"programme": "breathe", "period": 9.0, "floor": 0.55, "ceiling": 1.0},
+    "windows": {"programme": "hold", "ceiling": 0.72},
+    "shopfronts": {"programme": "hold", "ceiling": 0.78}
+   }
+  },
+  "lull": {
+   "_comment": "The idle, and most of a match. Nothing overridden: the arena's own slow breathe is the lull.",
+   "attack": 3.0,
+   "release": 3.0,
+   "set": {}
+  },
+  "skirmish": {
+   "_comment": "First contact. The venue leans in a little; nothing a player would look away from the fight to notice.",
+   "attack": 2.5,
+   "release": 3.5,
+   "set": {
+    "rim": {"period": 15.0, "floor": 0.65},
+    "edges": {"period": 13.0, "floor": 0.2}
+   }
+  },
+  "battle": {
+   "_comment": "A chase running round the rim and a wave over the buildings. The per-edge phase is the edge's angle, so the chase travels round the venue in order rather than scattering.",
+   "attack": 1.2,
+   "release": 2.5,
+   "set": {
+    "rim": {"programme": "chase", "period": 5.5, "floor": 0.7, "ceiling": 1.25},
+    "edges": {"programme": "sweep", "period": 7.0, "floor": 0.3, "ceiling": 1.0},
+    "windows": {"period": 11.0, "ceiling": 1.35}
+   }
+  },
+  "last_stand": {
+   "_comment": "Something is about to end. A strobe, the only place in the venue one is allowed, and it is deliberately short-lived: last_stand has a floor under the mood's intensity, so this holds while it lasts.",
+   "attack": 0.6,
+   "release": 3.0,
+   "set": {
+    "rim": {"programme": "strobe", "period": 1.6, "floor": 0.62, "ceiling": 1.25},
+    "edges": {"programme": "strobe", "period": 1.6, "floor": 0.15, "ceiling": 1.0},
+    "windows": {"programme": "hold", "ceiling": 0.8}
+   }
+  },
+  "victory": {
+   "_comment": "A sweep round the rim in the winner's colour. THE ONE TEAM-COLOURED CUE IN THE VENUE (art_direction.md: venue lighting must not read as a team; this is the deliberate exception, and it is a cue, not a fixture default). 'winner' is resolved by Show.winner_color().",
+   "attack": 0.8,
+   "release": 6.0,
+   "set": {
+    "rim": {"programme": "sweep", "period": 4.0, "floor": 0.7, "ceiling": 1.25, "color": "winner", "color_mix": 0.8},
+    "edges": {"programme": "sweep", "period": 4.5, "floor": 0.35, "ceiling": 1.0},
+    "windows": {"period": 10.5, "ceiling": 1.35},
+    "shopfronts": {"period": 10.0, "ceiling": 1.3}
+   }
+  },
+  "defeat": {
+   "_comment": "The house goes cold. Nothing switches off -- a dark venue reads as broken -- it just stops being interested.",
+   "attack": 2.0,
+   "release": 6.0,
+   "set": {
+    "rim": {"programme": "breathe", "period": 24.0, "floor": 0.6, "ceiling": 0.68},
+    "edges": {"programme": "hold", "ceiling": 0.12},
+    "windows": {"programme": "hold", "ceiling": 0.72},
+    "shopfronts": {"programme": "hold", "ceiling": 0.78}
+   }
+  }
+ },
+ "events": {
+  "kill": {
+   "_comment": "A confirmed kill ripples outward along the lit edges from where it happened, at 62 m/s across a 280 m venue. Read off FxWorld.spectacle, the same bus the crowd already reacts to -- read, never written. Costs one vec4 write per fixture while it travels and nothing at all the rest of the time. min_weight 1.0 is KILLS ONLY and it is the whole design: that bus carries several events a second in a 30-a-side fight (fx_world.gd:319 emits 1.0 a kill and 0.15 a near miss; weapon_fx.gd:278 emits 0.3 for a plain hit and :378 emits 0.5 for a weak spot), so anything under 1.0 ripples the whole Terminus on every shell that lands. A ripple that means SOMETHING DIED THERE is legible; one that means a shell landed is strobe. feel, 2026-09-20, and it is the direction that is easy to add and hard to take back once the lead has seen it.",
+   "gain": 1.5,
+   "speed": 62.0,
+   "life": 2.6,
+   "min_weight": 1.0
+  }
+ }
+}

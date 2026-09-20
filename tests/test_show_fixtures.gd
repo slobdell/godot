@@ -1,0 +1,238 @@
+extends TestCase
+## S6, the arena light show: the FIXTURES — the venue's own emissive surfaces, and the guards that keep the show
+## additive. `_agents/lighting.md` sections 4, 5 and 8.
+##
+## The claim these tests defend is the one the whole carve-out rests on: **at channel level 1.0 the venue looks
+## exactly as feel shipped it.** A screenshot diff at the lead's pose is the human half of that; this file is the
+## half a machine can run on every commit.
+
+const BLOCK_SHADER := "res://game/theme/fx/shaders/city_block.gdshader"
+const NEON_SHADER := "res://game/theme/fx/shaders/neon.gdshader"
+const DRESSING := "res://game/theme/cyberpunk/arena_dressing.gd"
+## Every (energy, flicker) pair the perimeter rim asks `CyberMaterials.neon()` for. The cache keys on
+## (colour, energy, flicker), so a prop that asks for one of these with a colour an arena also uses would be handed
+## THE SAME MATERIAL and would be driven by the show without anyone meaning it to be.
+const RIM_KEYS := [[0.9, 0.03], [4.0, 0.05], [2.0, 0.3]]
+
+
+func _arena_shows() -> Dictionary:
+	# Derived from arenas/, never hard-coded: a new layout is covered the day it lands (lesson 3).
+	var out := {}
+	for name in Arena.layout_names():
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://arenas/%s.json" % name))
+		out[name] = data if typeof(data) == TYPE_DICTIONARY else {}
+	return out
+
+
+# --- every shipped arena either has a patch that loads, or today's static look --------------------------------
+
+func test_every_shipped_arena_has_a_patch_that_loads_or_no_patch_at_all() -> void:
+	var shows := _arena_shows()
+	assert_true(shows.size() >= 8, "the arenas were found (%d)" % shows.size())
+	var patched := []
+	for name: Variant in shows:
+		var show := Show.new()
+		add_to_tree(show)
+		var problem := show.load_patch(shows[name].get("show"), str(name))
+		assert_eq(problem, "", "arena %s: %s" % [name, problem])
+		if shows[name].has("show"):
+			patched.append(str(name))
+			assert_true(show.bindings.size() > 0, "arena %s declares a 'show' key but patches nothing" % name)
+	patched.sort()
+	assert_eq(patched, ["terminus", "yard"], "the arenas patched this round, and only those")
+
+
+func test_an_arena_with_no_show_key_drives_nothing_at_all() -> void:
+	var shows := _arena_shows()
+	for name: Variant in shows:
+		if shows[name].has("show"):
+			continue
+		var show := Show.new()
+		add_to_tree(show)
+		show.load_patch(shows[name].get("show"), str(name))
+		var material := ShaderMaterial.new()
+		for selector in [&"rim", &"city_block", &"signs", &"pools"]:
+			show.add_fixture(selector, material)
+		assert_eq(show.apply(7.0), 0, "arena %s writes nothing: it is today's static look" % name)
+		assert_eq(material.get_shader_parameter("show_level"), Show.identity_for(&"level"),
+				"arena %s leaves every fixture at its identity" % name)
+		break  # one unpatched arena proves the path; the loop above proves they all validate
+
+
+func test_the_patched_arenas_never_let_a_lit_surface_go_dark() -> void:
+	var shows := _arena_shows()
+	for name: Variant in shows:
+		if not shows[name].has("show"):
+			continue
+		var show := Show.new()
+		add_to_tree(show)
+		assert_eq(show.load_patch(shows[name]["show"], str(name)), "", "arena %s loads" % name)
+		for binding: Dictionary in show.bindings:
+			var channel: ShowChannel = show.channels[binding["channel"]]
+			if not Show.CORE_PARAMETERS.has(binding["parameter"]):
+				continue
+			var lowest := 9.0
+			for i in 500:
+				lowest = minf(lowest, channel.level(float(i) * 0.31))
+			assert_true(lowest > 0.05,
+					"arena %s: %s/%s falls to %.3f — a lit surface must never read as broken" \
+					% [name, binding["fixture"], binding["parameter"], lowest])
+
+
+# --- the shaders' defaults ARE today's look -------------------------------------------------------------------
+
+func test_every_show_uniform_defaults_to_the_value_that_changes_nothing() -> void:
+	# The carve-out from feel is "additive only, never a restyle". This is that promise, checked: with no patch
+	# loaded, every show uniform in every fixture shader holds the identity, so the venue renders as it always did.
+	for path in [BLOCK_SHADER, NEON_SHADER]:
+		var source := FileAccess.get_file_as_string(path)
+		assert_true(source != "", "%s is readable" % path)
+		var found := 0
+		for line in source.split("\n"):
+			var text := line.strip_edges()
+			if not text.begins_with("uniform vec4 show_"):
+				continue
+			var uniform := text.substr("uniform vec4 ".length()).split(" ")[0]
+			var default := _vec4_default(text)
+			if uniform == "show_event":
+				# Not a channel: (world x, world z, wavefront radius, gain). Gain 0 is "nothing happened", so the
+				# whole ripple term is exactly zero until the first kill.
+				assert_eq(default, Vector4.ZERO, "%s: %s starts with no event at all" % [path, uniform])
+				continue
+			found += 1
+			var expected := Show.identity_for(&"edge" if uniform == "show_edge" else &"level")
+			assert_eq(default, expected, "%s: %s defaults to %s, not the identity %s" % [path, uniform, default, expected])
+		assert_true(found > 0, "%s declares at least one show vec4 uniform" % path)
+		assert_true(source.contains("uniform float show_color_mix = 0.0;"),
+				"%s: no colour override until a cue asks for one" % path)
+		assert_true(source.contains("uniform float show_spread = 0.0;"),
+				"%s: instances start in phase; the patch spreads them" % path)
+
+
+func test_the_identity_is_applied_multiplicatively_so_level_one_is_a_no_op() -> void:
+	# show_value(identity, phase) is exactly 1.0 at every phase, so multiplying by it cannot change a pixel.
+	for phase in [0.0, 0.7, 3.14159, 6.0, -2.5]:
+		assert_near(ShowChannel.level_at(Show.identity_for(&"level"), float(phase)), 1.0, 0.000001,
+				"the identity is 1.0 at phase %s" % phase)
+		assert_near(ShowChannel.level_at(Show.identity_for(&"edge"), float(phase)), 0.0, 0.000001,
+				"the off value is 0.0 at phase %s" % phase)
+
+
+func test_the_block_shader_still_multiplies_rather_than_replacing_what_feel_shipped() -> void:
+	var source := FileAccess.get_file_as_string(BLOCK_SHADER)
+	assert_true(source.contains("* show_value(show_window"), "the window glow is MULTIPLIED by its channel")
+	assert_true(source.contains("* show_value(show_shop"), "the shopfront glow is MULTIPLIED by its channel")
+	assert_true(source.contains("EMISSION = glow +"), "the edge emission is ADDED to what was already there")
+	assert_true(source.contains("edge_mask"), "the edge term is masked to the bevels and chamfers")
+
+
+func test_the_neon_shader_keeps_its_own_flicker_and_breathe_underneath_the_show() -> void:
+	# The rim's existing character is feel's; the show modulates it, it does not replace it.
+	var source := FileAccess.get_file_as_string(NEON_SHADER)
+	assert_true(source.contains("float wave = 1.0 - breathe *"), "the shader's own breathe survives")
+	assert_true(source.contains("drop * 0.85"), "and its dropouts survive")
+	assert_true(source.contains("* show_value(show_level, show_phase)"), "the show multiplies on top of both")
+	assert_true(source.contains("atan(NODE_POSITION_WORLD.x, NODE_POSITION_WORLD.z)"),
+			"the per-edge phase is the ANGLE around the venue, so a sweep travels in order")
+
+
+# --- the CyberMaterials.neon() cache hazard --------------------------------------------------------------------
+
+func test_no_prop_shares_a_cached_material_with_the_perimeter_rim() -> void:
+	# `CyberMaterials.neon()` caches on (colour, energy, flicker). The rim is the one fixture the show drives
+	# through that cache, so ANY other call site asking for a rim (energy, flicker) pair could be handed the same
+	# object and be driven without anyone intending it. Nothing collides today (feel checked, 2026-09-20); feel has
+	# landed a `fixture` tag on the key (stream/feel 02e30ac0) that makes this structural. Until that merges, this
+	# test is what holds it — and afterwards it still catches a caller that forgets the tag.
+	var offenders := PackedStringArray()
+	for path in _gd_files("res://game"):
+		var source := FileAccess.get_file_as_string(path)
+		var lines := source.split("\n")
+		for i in lines.size():
+			var line: String = lines[i]
+			if not line.contains("CyberMaterials.neon("):
+				continue
+			if path == DRESSING and line.contains("var material := CyberMaterials.neon(color, energy, flicker)"):
+				continue  # rim_material() itself: the one call site the show drives
+			for key: Array in RIM_KEYS:
+				var needle := "%s, %s)" % [key[0], key[1]]
+				if line.replace(" ", "").contains(needle.replace(" ", "")):
+					offenders.append("%s:%d %s" % [path, i + 1, line.strip_edges()])
+	assert_eq(offenders.size(), 0,
+			"these ask CyberMaterials.neon() for a perimeter-rim cache key and would be driven by the show: %s"
+			% "\n".join(offenders))
+
+
+func test_the_rim_helper_is_the_only_place_the_rim_is_built() -> void:
+	var source := FileAccess.get_file_as_string(DRESSING)
+	assert_true(source.contains("static func rim_material("), "the rim goes through one helper")
+	assert_true(source.contains("show.add_fixture(&\"rim\", material)"), "and that helper is what registers it")
+	# Every piece of perimeter neon, on both venue builders (the hexagon and the rectangle), goes through it --
+	# otherwise the ring would breathe in pieces, with only the edges someone remembered to route.
+	var routed := 0
+	for line in source.split("\n"):
+		if line.contains("rim_material("):
+			routed += 1
+	assert_eq(routed, 6, "five perimeter neon pieces plus the helper's own signature go through rim_material()")
+
+
+# --- one material for the whole bank ---------------------------------------------------------------------------
+
+func test_every_city_block_shares_one_facade_material() -> void:
+	# The reason the show can drive eight blocks with one write, and the reason the per-block phase has to live in
+	# the mesh rather than in a uniform.
+	var first := CityBlock.facade_material()
+	assert_true(first != null, "the facade material exists")
+	assert_true(first == CityBlock.facade_material(), "it is one shared object, not one per block")
+	var a := CityBlock.new()
+	var b := CityBlock.new()
+	add_to_tree(a)
+	add_to_tree(b)
+	a.setup({"size": [40, 24, 40], "tiers": 3, "seed": 11})
+	b.setup({"size": [40, 24, 40], "tiers": 2, "seed": 4})
+	assert_eq(a.mesh_instance.get_surface_override_material(0), b.mesh_instance.get_surface_override_material(0),
+			"two built blocks are driven through the same material")
+	assert_true(a.mesh_instance.mesh.get_surface_count() == 2, "and a block is still two surfaces, i.e. two draws")
+
+
+func test_a_blocks_seed_reaches_the_shader_as_its_phase() -> void:
+	# The per-block desync the show relies on: COLOR.g carries the seed, city_block.gdshader lifts it into
+	# block_seed, and show_phase is block_seed * SHOW_TAU * show_spread.
+	var mesh := CityBlock.build(Vector3(40, 24, 40), 3, 3.0, Color.CYAN, 0.375)
+	var arrays := mesh.surface_get_arrays(0)
+	var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+	assert_true(colors.size() > 0, "the facade carries vertex colours")
+	for color in colors:
+		assert_near(color.g, 0.375, 0.005, "every vertex carries the block's seed in COLOR.g")
+	var source := FileAccess.get_file_as_string(BLOCK_SHADER)
+	assert_true(source.contains("block_seed = COLOR.g"), "the shader reads it")
+	assert_true(source.contains("float show_phase = block_seed * SHOW_TAU * show_spread"),
+			"and turns it into this block's own place in the show's clock")
+
+
+func _gd_files(root: String) -> PackedStringArray:
+	var out := PackedStringArray()
+	var stack := PackedStringArray([root])
+	while stack.size() > 0:
+		var dir_path := stack[stack.size() - 1]
+		stack.remove_at(stack.size() - 1)
+		var dir := DirAccess.open(dir_path)
+		if dir == null:
+			continue
+		for sub in dir.get_directories():
+			stack.append(dir_path.path_join(sub))
+		for file in dir.get_files():
+			if file.ends_with(".gd"):
+				out.append(dir_path.path_join(file))
+	return out
+
+
+func _vec4_default(line: String) -> Vector4:
+	var at := line.find("vec4(", line.find("="))
+	if at < 0:
+		return Vector4.ZERO
+	var inner := line.substr(at + 5, line.find(")", at) - at - 5)
+	var parts := inner.split(",")
+	if parts.size() != 4:
+		return Vector4.ZERO
+	return Vector4(float(parts[0]), float(parts[1]), float(parts[2]), float(parts[3]))
