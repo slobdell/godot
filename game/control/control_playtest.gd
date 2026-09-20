@@ -7,6 +7,7 @@ extends Node
 ##   3 queue a route with shift-clicks      6 L4: what the vision camera shows, and that it refuses the god view
 ##                                          7 X3: a screen task reaches the element's leader, and what it decided
 ##                                          8 X4: ctrl+A takes the whole army; the panel groups it by type
+##                                          9 round 9: a right-DRAG orders the heading to arrive on, and the pin shows it
 ## Every order's response is logged to orders.jsonl: the tick it was issued and the first tick the unit's tracks
 ## steered toward it (the K1 response guarantee: within Orders.RESPONSE_MS, 100 ms). Prints CONTROL_PLAYTEST lines and
 ## CONTROL_PLAYTEST_DONE ok=<bool> at the end, then quits (exit 1 when a check failed).
@@ -47,6 +48,7 @@ func run() -> void:
 	await _element_task()
 	await _vision_report()
 	await _attack_move()
+	await _facing_drag()
 	await _queued_route()
 	await _group_swap()
 	await _rejoin()
@@ -185,6 +187,54 @@ func _attack_move() -> void:
 	await _capture("2_attack_move_2s")
 	await get_tree().create_timer(3.0).timeout
 	await _capture("2_attack_move_5s")
+
+
+## Round 9: the desktop facing gesture, played. Right-press a spot, drag away from it, release: the order carries the
+## heading the drag drew, the pin grows an arrow for it, and the response tick is still K1's (an order issued on the
+## release is issued in one tick, the same as a click). Two frames: one mid-drag with the preview up, one after.
+func _facing_drag() -> void:
+	await _key(KEY_1)
+	var members := _alive(controls.selection.units)
+	if members.is_empty():
+		_checks["facing_drag_orders_a_heading"] = false
+		_step("facing_drag", {"skipped": "group 1 is empty"})
+		return
+	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
+	var spot := _middle(members) + forward * 30.0
+	var from := _screen(spot)
+	var to := from + Vector2(90.0, -90.0)  # up and to the right: a heading, not a twitch
+	_mouse(from, true, MOUSE_BUTTON_RIGHT)
+	for i in range(1, 7):
+		var motion := InputEventMouseMotion.new()
+		motion.position = from.lerp(to, i / 6.0)
+		motion.global_position = motion.position
+		motion.button_mask = MOUSE_BUTTON_MASK_RIGHT
+		_push(motion)
+		await get_tree().process_frame
+	await _capture("9_facing_drag_drawing")
+	_mouse(to, false, MOUSE_BUTTON_RIGHT)
+	await get_tree().process_frame
+	var order := controls.orders.current(members[0])
+	var way: Array = order.get("facing", [])
+	# What the drag drew, in the world: press -> release on the ground. The order's facing must be that direction.
+	var drawn := Vector3.ZERO
+	var a: Variant = controls.ground_under(from)
+	var b: Variant = controls.ground_under(to)
+	if a != null and b != null:
+		drawn = ((b as Vector3) - (a as Vector3))
+		drawn = drawn.normalized() if drawn.length() > 0.001 else Vector3.ZERO
+	var aimed := way.size() == 2 and drawn != Vector3.ZERO \
+			and Vector2(float(way[0]), float(way[1])).dot(Vector2(drawn.x, drawn.z)) > 0.99
+	var pinned := false
+	for mark: Dictionary in controls.order_marks():
+		pinned = pinned or mark.has("facing")
+	_checks["facing_drag_orders_a_heading"] = aimed
+	_checks["facing_drag_shows_on_the_pin"] = pinned
+	_step("facing_drag", {"units": members, "press": [roundi(from.x), roundi(from.y)], "release": [roundi(to.x), roundi(to.y)],
+			"drag_px": roundi(from.distance_to(to)), "drawn": [snappedf(drawn.x, 0.01), snappedf(drawn.z, 0.01)],
+			"facing": way, "on_the_pin": pinned, "summary": controls.describe({"units": members, "verb": "move", "facing": way})})
+	await get_tree().create_timer(1.2).timeout
+	await _capture("9_facing_drag_ordered")
 
 
 func _queued_route() -> void:

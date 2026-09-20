@@ -17,6 +17,9 @@ extends SceneTree
 ## plus: re-task EVENTS (its move target jumping > RETASK_M), unreachable-route ticks, arrivals per order.
 ## Prints `NAV_FIGHT <json>`. Diagnosis, not a gate.
 
+## S3 (metrics, round 9): --trajectory=PATH writes the per-tick trajectory log `make metrics` reads.
+## Off unless the flag is given; the writer is metrics' (tools/metrics/), and this file only turns it on.
+const TRAJECTORY := preload("res://tools/metrics/trajectory_log.gd")
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
 const PROGRESS_MPS := 0.7
@@ -48,6 +51,14 @@ var busy_every := 0.0
 var busy_rng := RandomNumberGenerator.new()
 var busy_next := 0.0
 var busy_orders := 0
+## Round 9 (N0): unit-orders issued carrying a `facing`, and whether the hold-on-a-facing leg went out. These are the
+## run's own positive control for the arrival arc: `facings_issued` 0 means the arc could not have fired, whatever the
+## gate counter says.
+## A1: "<cause>/<order source>/<verb>" -> re-plans. The denominator for "whose churn is it".
+var replan_owner := {}
+var facings_issued := 0
+var holds_issued := 0
+var hold_done := false
 var stall_verb := ""
 ## Round 8, pre-registered before its first run (the lead: "the semi trucks are yawing in place (should be impossible,
 ## they're not a tracker vehicle)"): an IN-PLACE YAW is a WHEELED hull, alive, whose heading changes by >= 30 degrees over
@@ -149,16 +160,41 @@ func _run() -> void:
 	# Stacked starts separate (Avoidance parts coincident hulls by name), so this is reported, not fatal.
 	# The treatment, read live from the code under test (not from the flag passed): an A/B arm is only an arm if this
 	# differs between them.
-	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s avoidance=%s station=%s off=%s" % [CombatMotion.commit_on(),
-			CombatMotion.hold_band_on(), CombatMotion.fixed_style, Movement.avoidance_on, Movement.station_on, Movement._off])
+	# Every field here is read from the CODE UNDER TEST, never from the flag that was passed — `a7=` asks
+	# `CombatMotion.a7_on()`, not `not switched_off("a7")`. The first version of this line did the latter, and the
+	# moment A7's switch was inverted it printed `a7=false` on a run with `--nav-off=a7` set: an arm header that
+	# confidently reports the opposite treatment, which is precisely how round 7 compared two byte-identical arms.
+	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s a1=%s a7=%s a11=%s avoidance=%s station=%s off=%s" % [
+			CombatMotion.commit_on(), CombatMotion.hold_band_on(), CombatMotion.fixed_style, Movement.a1_on(),
+			CombatMotion.a7_on(), CombatMotion.a11_on(), Movement.avoidance_on, Movement.station_on, Movement._off])
+	# Round 9: the arm counters start at zero for THIS run, so a number in the report is this run's (statics outlive a
+	# single probe inside one process).
+	CombatMotion.reset_arms()
+	Movement.reset_gates()
+	Movement.reset_route_arms()
 	print("NAV_FIGHT_CONTROL arena %s, green %d, rust %d, %d pairs start on top of each other" % [
 			Arena.active.get("name", "?"), green.size(), rust, stacked])
+	TRAJECTORY.install(game_match, _flag("trajectory", ""), "nav-fight",
+			{"seed": seed_value, "arena": _flag("arena", "yard"), "time_limit": time_limit, "busy": busy_every,
+			"budget": budget, "stall_verb": stall_verb})
 	for frame in SimClock.TICK_RATE:
 		await physics_frame
 	_order_squads(0.45)  # to the middle of the arena, squads fanned out across it
 	issued_tick = game_match.tick
 	print("NAV_FIGHT_ISSUED %d green units on %s, seed %d" % [green.size(), Arena.active.get("name", "?"), seed_value])
 	physics_frame.connect(_sample)
+
+
+## Round 9 (nav, N0): every A/B this round issues at least one order that CARRIES A FACING, so the arrival arc is a
+## live arm by construction rather than by memory. Round 8's facing A/B compared two arms in which no order in the whole
+## run ever carried one (`gates aimed 0` in both), and the run looked like a clean null. Squads alternate: even squads
+## are told to arrive facing the way they travelled (the common player drag), odd squads to arrive facing 90 degrees
+## across it (the demanding case — the hull has to come round on the approach). One squad is additionally told to HOLD
+## on a facing, which is squad's KEEP_SLOT path and the lead's ambush case.
+static func _facing_for(index: int, heading: Vector2) -> Array:
+	if index % 2 == 0:
+		return [heading.x, heading.y]
+	return [-heading.y, heading.x]
 
 
 ## Order every GREEN squad (by name: Green_<squad>_<n>) to a lane point `depth` of the way toward the enemy base.
@@ -181,8 +217,11 @@ func _order_squads(depth: float) -> void:
 		var point := home.lerp(away, depth)
 		var to := [point.x + lane, point.z]
 		var verb := "move" if depth < 0.6 else "attack_move"
-		if orders.issue(UnitCommand.make(squads[keys[i]], verb, {"to": to})) == "":
+		var heading := Vector2(away.x - home.x, away.z - home.z).normalized()
+		var extra := {"to": to, "facing": _facing_for(i, heading)}
+		if orders.issue(UnitCommand.make(squads[keys[i]], verb, extra)) == "":
 			order_count += (squads[keys[i]] as Array).size()
+			facings_issued += (squads[keys[i]] as Array).size()
 
 
 ## A player's habit: pick one living squad and send it somewhere else on the field (a plain move — a right-click).
@@ -204,6 +243,32 @@ func _busy_order() -> void:
 	var to := [busy_rng.randf_range(-half, half), busy_rng.randf_range(-half, half)]
 	if orders.issue(UnitCommand.make(squads[pick], "move", {"to": to})) == "":
 		busy_orders += 1
+
+
+## Round 9 (N0): the second live path for a facing — a squad told to HOLD on a heading (squad's KEEP_SLOT / station
+## path, and the lead's ambush case). A player's drag gives a move a facing; a hold gives the station one, which
+## `TankBrain.intended_facing()` then hands to every later move the unit makes. Only the FIRST squad by name, so the
+## rest of the fight is unchanged and the leg is identical in both arms of an A/B.
+func _hold_on_a_facing() -> void:
+	var squads := {}
+	for tank in green:
+		if tank.is_alive():
+			var parts := String(tank.name).split("_")
+			var squad := parts[1] if parts.size() >= 3 else "?"
+			if not squads.has(squad):
+				squads[squad] = []
+			(squads[squad] as Array).append(String(tank.name))
+	if squads.is_empty():
+		return
+	var keys := squads.keys()
+	keys.sort()
+	var home := Match.spawn_position(Match.Team.GREEN, 0)
+	var away := Match.spawn_position(Match.Team.RUST, 0)
+	var heading := Vector2(away.x - home.x, away.z - home.z).normalized()
+	# Across the line of advance: a hold facing the way you already point asks the hull for nothing.
+	if orders.issue(UnitCommand.make(squads[keys[0]], "hold", {"facing": [-heading.y, heading.x]})) == "":
+		holds_issued += (squads[keys[0]] as Array).size()
+		facings_issued += (squads[keys[0]] as Array).size()
 
 
 ## Round 8: gear flips. A wheeled hull changing between forward and reverse above GEAR_SPEED must brake through zero
@@ -330,6 +395,9 @@ func _sample() -> void:
 	if busy_every > 0.0 and elapsed >= busy_next:
 		busy_next = elapsed + busy_every
 		_busy_order()
+	if not hold_done and elapsed >= time_limit * 0.7:
+		hold_done = true
+		_hold_on_a_facing()
 	var dt := 1.0 / float(SimClock.TICK_RATE)
 	var dump := OS.get_cmdline_user_args().has("--where") and (game_match.tick - issued_tick) % (SimClock.TICK_RATE * 6) == 0 \
 			and not phase_two_done
@@ -362,6 +430,14 @@ func _sample() -> void:
 			last_target[key] = target
 		last_option[key] = String(brain.choice.get("option", "?")) if not last_option.has(key) else last_option[key]
 		var reading := Movement.state(tank)
+		# A1: attribute a re-plan to an OWNER. nav publishes why it re-planned; only a harness that can see the K1
+		# order knows whose order it was, because the mover is handed a `move_to` and never the order behind it.
+		# squad's point: a sliding goal is an element's flow OR the player's own follow, and those are different owners.
+		var why_replan := String(reading.get("replan", ""))
+		if why_replan != "":
+			var k1: Dictionary = orders.current(key)
+			var owner := "%s/%s/%s" % [why_replan, String(k1.get("source", "?")), String(k1.get("verb", "?"))]
+			replan_owner[owner] = int(replan_owner.get(owner, 0)) + 1
 		if reading.get("reachable") == false and String(move.get("type", "")) == "move_to":
 			unreachable_ticks += 1
 		var closing := (float(last_distance.get(key, distance)) - distance) / dt
@@ -409,6 +485,12 @@ func _sample() -> void:
 
 func _report(elapsed: float) -> void:
 	physics_frame.disconnect(_sample)
+	# Round 9 (N0) positive control: the run must actually have asked for a facing, or the arrival arc could not have
+	# fired and no number about it means anything. Round 8 measured exactly this configuration twice without noticing.
+	if facings_issued == 0:
+		push_error("nav-fight control FAILED: no order in this run carried a `facing`, so the arrival arc was never offered one")
+		quit(1)
+		return
 	var seconds := {}
 	var share := {}
 	for reason: String in buckets:
@@ -454,7 +536,9 @@ func _report(elapsed: float) -> void:
 			"unreachable_route_unit_seconds": snappedf(float(unreachable_ticks) / SimClock.TICK_RATE, 0.1),
 			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
 			"inplace_detail": inplace_detail, "gear_detail": gear_detail, "travelled": _travel_report(),
-			"gates": {"aimed": Movement.gates_aimed, "refused": Movement.gates_refused}, "inplace_per_unit_minute": _inplace_rates(),
+			"gates": Movement.gate_report(), "facings_issued": facings_issued, "holds_issued": holds_issued,
+			"arms": CombatMotion.arm_report(), "route_arms": Movement.route_arms(), "replan_owner": replan_owner,
+			"inplace_per_unit_minute": _inplace_rates(),
 			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")],
 			"armies": [_flag("green-army", "cpu"), _flag("rust-army", "cpu")], "fielded": fielded, "busy_every_s": busy_every, "busy_orders": busy_orders}
 	print("NAV_FIGHT %s" % JSON.stringify(out))

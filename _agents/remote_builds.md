@@ -54,15 +54,51 @@ Chrome 150. Passwordless ssh from the laptop as `slobdell`. No sudo.
 
 ## Measurements
 
+> ⚠ **T1 (metrics, round 9, 2026-09-20) RETIRES every `make check` wall-clock figure taken before it**, on both
+> machines. Not because the machine changed — because *the check* did. It now runs its targets concurrently and
+> splits the test suite across processes, and the figures below were taken when it was one Godot process at a
+> time. **Ratios computed inside one run survive; wall-clock totals, per-target durations and "budget N minutes"
+> do not** (lesson 148's split, applied to itself).
+>
+> ⚠ **And every pre-T1 figure was also measuring a check whose `lint` step did nothing.** `git ls-files` cannot
+> answer on builder0 (`.git/` is not rsynced), so `lint` iterated zero files, printed *"all scripts parse"* and
+> exited 0. So the old numbers are for *less work than the check does now*, which is worth knowing before
+> comparing them with anything.
+
+### The serial profile, measured once so it never has to be guessed again
+
+builder0, `c21d0256`, 12 cores, 12.4 GB available, load 0.42, 5 other Godot processes. Per target, serially:
+
+| target | s | peak RSS | | target | s | peak RSS |
+|---|---|---|---|---|---|---|
+| **test** | **2388** | 427 MB | | garage-smoke | 7 | 266 MB |
+| announcer-check | 80 | 252 MB | | net-smoke | 4 | 250 MB |
+| audio-check | 30 | **919 MB** | | sim-baseline | 4 | 273 MB |
+| army-loop-smoke | 24 | 272 MB | | broker-test | 2 | 84 MB |
+| combat-smoke | 19 | 250 MB | | lobby-smoke | 2 | 259 MB |
+| determinism | 11 | 257 MB | | match-smoke | 2 | 257 MB |
+| relay-smoke | 11 | 249 MB | | match-pytest | 0 | 17 MB |
+| | | | | **TOTAL** | **2584** | |
+
+**`test` is 92% of the check.** Reproduce the table with `make check-timed` (it records the machine, its cores,
+MemAvailable, the load average and how many other Godot processes were already running — because builder0 with one
+check on it and builder0 with five are different machines for this purpose).
+
+**Peak RSS is the largest single PROCESS, not a target's total** — `net-smoke` and `relay-smoke` each hold three
+Godot processes at once. Round 8's "~735 MB a Godot run" is more than twice too pessimistic for these targets, and
+the budgets in `mk/core.mk` are derived from this table rather than from that figure.
+
+### Historic, retired by T1 — kept only to show what the check used to cost
+
 | Run | Laptop | builder0 |
 |---|---|---|
 | `make check` (full, 2026-09-15) | 14–22 min (queued behind other agents' runs) | **6 min 40 s** (first run, including the first import) |
 | `make check` (full, 2026-09-18, **six live streams**) | — | **~50 min** for 1010 tests, orchestrator's run on `main` at `5c68a03e` |
 
-**The 6 min 40 s figure is a quiet-machine number, and a round with six streams is not a quiet machine.** builder0
-runs two slots (`tools/slot.sh`); with four `make remote T=check` runs live, two execute and two wait, and the two
-executing are also slower for sharing the box. Budget **30–50 minutes** for a full check during an active round, not
-seven.
+**The 6 min 40 s figure is a quiet-machine number, and a round with six streams is not a quiet machine.** With
+several `make remote T=check` runs live, some execute and some wait, and the ones executing are also slower for
+sharing the box — so any single figure needs its concurrent load beside it, which is why `check` now prints its own
+load, MemAvailable and Godot-process count in its first line.
 
 Two consequences, both learned the hard way on 2026-09-18:
 
@@ -311,3 +347,14 @@ waiter's log kept naming a job that had ended. The lock dies with the process; t
 - Then look in `/tmp/tank_squad_slots/`: a `slot<N>.owner` naming a PID that no longer exists is stale — remove it by
   hand. Waiters read that file for their banner, so a stale one lies to everyone.
 - The habit that would have avoided it: builder0 sat at load 0.64 on 12 cores the whole time. Heavy runs go there.
+
+## ⚠ An orphaned remote run yields NO verdict, and it blocks its own directory (squad, 2026-09-20 03:28)
+
+`>> remote: make check exited <N>` is printed by the **local** wrapper. If the wrapper dies (a `&` inside a command
+that then exits, a killed shell, a dropped ssh), the remote `make` keeps running on builder0, holds a slot, scrolls a
+thousand PASS lines — and there is no line at the end, so by the rules the result does not exist. And you cannot
+re-launch into `~/tank_squad/godot-<stream>` while the orphan is reading it (trip-up 66). **Launch pattern that
+survives:** `setsid nohup make remote T=check > log 2>&1 &` from a shell that stays alive, or run it as the tracked
+command itself. **Before any re-run:** `ssh builder0 "ps -eo pid,etimes,args | grep '[s]lot.sh'"`, `readlink
+/proc/<pid>/cwd` to find only yours, kill by explicit PID walking `pgrep -P` (never by pattern, trip-up 19), confirm
+no survivors, then launch.

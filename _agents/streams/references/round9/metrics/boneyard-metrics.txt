@@ -1,0 +1,14 @@
+METRICS commit=1422acd9 machine=builder0 producer=nav-fight arena=boneyard seed=3 tick_rate=30
+        log=_agents/streams/references/round9/metrics/boneyard.jsonl.gz samples=119339 units=34 window=4.0s (120 ticks)  sparc_window=256 samples, nfft=256, cutoff=20 rad/s
+        `osc_share` counts only ticks under order_verb=attack_move (fight_probe.gd's --stall-verb).
+  unit_id          units ordered  eff_mean   eff_p10 osc_share osc_units  net/path  cusp/min   cusps     sparc
+  ifv                  7       7     0.618     0.265     0.098         6     0.749     37.70     507    -2.200
+  lancer               6       6     0.621     0.278     0.073         3     0.737     35.24     417    -2.227
+  tank                21      21     0.783     0.373     0.056        18     0.747      7.44     305    -1.956
+  ALL                 34      34     0.704     0.316     0.067        27     0.747     18.54    1229    -2.074
+      ifv            under_way=278.2s agent_min=13.45 eff_windows=21988 sparc_windows=81 cusps[ordered=44 creep=401 unexplained=62 unclassified=0] refused[zero_path=199 parked=0 short=10]
+      lancer         under_way=219.0s agent_min=11.83 eff_windows=18893 sparc_windows=73 cusps[ordered=30 creep=357 unexplained=30 unclassified=0] refused[zero_path=1217 parked=3 short=4]
+      tank           under_way=1023.0s agent_min=41.02 eff_windows=44339 sparc_windows=181 cusps[ordered=145 creep=0 unexplained=160 unclassified=0] refused[zero_path=24611 parked=77 short=19]
+      ALL            under_way=1520.3s agent_min=66.30 eff_windows=85220 sparc_windows=335 cusps[ordered=219 creep=758 unexplained=252 unclassified=0] refused[zero_path=26027 parked=80 short=33]
+  no element/slot columns in this log: the affine formation residual has nothing to fit.
+metrics: wrote _agents/streams/references/round9/metrics/boneyard-metrics.json (1 log)

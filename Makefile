@@ -73,7 +73,7 @@ WEB_SMOKE_DEPS := $(WEB_SMOKE_DIR)/node_modules/.package-lock.json
 
 # Targets live in mk/*.mk, one file per workstream area, so parallel branches rarely
 # conflict here. Add new targets to your area's file (or a new mk/<area>.mk).
-.PHONY: help bootstrap doctor import lint sim-baseline sim-baseline-record check check-all worktree worktrees worktree-remove editor run skirmish demo test screenshot \
+.PHONY: help bootstrap doctor import lint sim-baseline sim-baseline-record check check-timed check-all worktree worktrees worktree-remove editor run skirmish demo test screenshot \
         match matches match-smoke determinism watch-match server client net-smoke combat-smoke agent-client agent-client-windowed agent-offline \
         export-web serve-web play web-smoke web-net-smoke export-server clean distclean
 
@@ -87,7 +87,10 @@ help: ## Show this help
 # New targets are heavy by default; add interactive ones to LIGHT_GOALS — and PAID GENERATION targets, which
 # wait on a hosted API for minutes to an hour and never need a CPU: audio's full ElevenLabs run held one of
 # the two slots for an hour and made every other agent's lint queue (2026-09-16).
+# metrics-* are pure Python and take milliseconds: a 0.15 s known-answer suite queueing behind a 40-minute Godot
+# run is the waste this list exists to prevent (metrics, round 9; the tool has no Godot in it at all).
 LIGHT_GOALS := help doctor bootstrap remote backup backup-status backup-install broker broker-bootstrap broker-test broker-smoke worktree worktrees worktree-remove clean distclean \
+               metrics metrics-pytest metrics-fixtures metrics-check \
                editor run skirmish garage demo play play-relay replay-watch serve-web server client watch-match agent-% \
                assets-generate assets-mock art-concept art-review art-review-status art-decide art-review-page art-apply-decisions art-concept-batch \
                doctrine-page announcer-generate

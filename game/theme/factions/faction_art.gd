@@ -143,13 +143,78 @@ static func gun_cut(unit_id: String) -> Dictionary:
 	return GUN_CUTS.get("%s/%s" % [faction, role], {})
 
 
+## Round 9 (the lead, twice: "the semi trucks for the road gangs are still one long box itself of a truck / trailer
+## combination"): the same mechanism as GUN_CUTS with a different law for the pivot's yaw. The trailer is cut out of
+## the approved hull mesh at the fifth wheel and follows tractor-trailer kinematics from the DRAWN motion each frame
+## (DozerPart._drive_trailer). Contract S2: this is art. The tractor is the simulated body, the collider is still the
+## one `hull_size` box, and a shell can hit empty air inside a jackknife -- the accepted cost of not touching the sim.
+##
+## "<faction>/<role>" -> {
+##   boxes:         model-space AABBs; a triangle whose centroid is in ANY of them is trailer. More than one box
+##                  because the cut is not a plane: the tanker's front cap overhangs the tractor's drive tandem, so
+##                  the barrel above the wheels is trailer while the wheels under it are tractor.
+##   pivot:         the fifth wheel, model space. The hinge is about +Y, so only x and z matter.
+##   wheelbase:     pivot to the trailer bogie's centre, MODEL space (scaled to world by the hull's fit, so it stays
+##                  right when the roster is resized -- CP2).
+##   jackknife_deg: |trailer - tractor| is clamped here. MEASURED against the mesh, not chosen:
+##                  test_the_war_rig_bends_at_the_fifth_wheel finds the largest angle with no tractor/trailer
+##                  overlap and fails if this constant is not below it.
+## }
+## Authored with `make assets-profile IN=...unit_gangs_tank_hull.glb` (slice table + a ruled side view whose pixels
+## are metres). The rig, in model space: plow -1.80, steer axle -1.13, cab rear wall -0.19, a triangle-free gap,
+## tanker front cap -0.01, drive tandem axles +0.19 and +0.39, trailer bogie +1.55, tanker rear +1.80.
+const TRAILER_CUTS := {
+	"gangs/tank": {
+		"boxes": [
+			# Everything aft of the drive tandem's rear wheels, full height: barrel, belly box, bogie, fenders.
+			AABB(Vector3(-0.6, -0.2, 0.58), Vector3(1.2, 2.4, 1.5)),
+			# The tanker's front section ABOVE the drive wheels: the barrel from its front cap back to the first box.
+			# Its floor (0.39) is the underside of the trailer frame; below that is the tractor's tandem and frame.
+			AABB(Vector3(-0.6, 0.39, -0.05), Vector3(1.2, 2.0, 0.63)),
+		],
+		"pivot": Vector3(0.0, 0.38, 0.25),
+		"wheelbase": 1.30,
+		"jackknife_deg": 65.0,
+	},
+}
+
+
+## The trailer cut for a unit's art, or {} when it has no trailer.
+static func trailer_cut(unit_id: String) -> Dictionary:
+	var faction := String(Units.stat(unit_id, "faction", ""))
+	var role := art_role(Units.role_of(unit_id))
+	return TRAILER_CUTS.get("%s/%s" % [faction, role], {})
+
+
+## The trailer's new world yaw after `delta`, from the standard off-tracking law: the trailer heading chases the
+## tractor's at a rate set by the tractor's speed along its own forward over the trailer's wheelbase,
+##
+##     d(yaw_trailer)/dt = (v / L) * sin(yaw_tractor - yaw_trailer)
+##
+## which is why a trailer cuts the corner going forward (steady state on a circle of radius R is asin(L / R) of lag)
+## and DIVERGES in reverse, v being negative -- that divergence is what jackknifing is. `limit` clamps the hinge where
+## the cab is (FactionArt.TRAILER_CUTS jackknife_deg). Pure and static so the law can be tested without a tank.
+## Note yaw here is Godot's: about +Y, positive turns LEFT (orientation.md trip-up 2). Only the DIFFERENCE of two
+## yaws is used, so the convention cancels.
+static func trailer_follow(trailer_yaw: float, tractor_yaw: float, speed: float, wheelbase: float,
+		delta: float, limit: float) -> float:
+	var chased := trailer_yaw + (speed / maxf(wheelbase, 0.01)) * sin(tractor_yaw - trailer_yaw) * delta
+	return tractor_yaw + clampf(wrapf(chased - tractor_yaw, -PI, PI), -limit, limit)
+
+
 static var _cut_cache := {}
 
 
 ## `mesh` (whose vertices `to_model` carries into model space) split by `box`: [the triangles outside, the triangles
 ## inside], each an ArrayMesh with the source's surface materials, or null when empty. Cached per mesh and box.
 static func split_mesh(mesh: Mesh, to_model: Transform3D, box: AABB) -> Array:
-	var key := "%d|%s|%s" % [mesh.get_instance_id(), str(to_model), str(box)]
+	return split_mesh_boxes(mesh, to_model, [box])
+
+
+## As split_mesh, but "inside" means inside ANY of `boxes` -- a cut whose shape is not a single box (the War Rig's
+## trailer overhangs the tractor's drive tandem, so no one box separates them).
+static func split_mesh_boxes(mesh: Mesh, to_model: Transform3D, boxes: Array) -> Array:
+	var key := "%d|%s|%s" % [mesh.get_instance_id(), str(to_model), str(boxes)]
 	if _cut_cache.has(key):
 		return _cut_cache[key]
 	var outside := ArrayMesh.new()
@@ -166,7 +231,7 @@ static func split_mesh(mesh: Mesh, to_model: Transform3D, box: AABB) -> Array:
 		var cut := PackedInt32Array()
 		for t in range(0, indices.size() - 2, 3):
 			var centroid := to_model * ((verts[indices[t]] + verts[indices[t + 1]] + verts[indices[t + 2]]) / 3.0)
-			var target := cut if box.has_point(centroid) else keep
+			var target := cut if _in_any(boxes, centroid) else keep
 			target.append_array([indices[t], indices[t + 1], indices[t + 2]])
 		for pair in [[outside, keep], [inside, cut]]:
 			var part_indices: PackedInt32Array = pair[1]
@@ -179,3 +244,10 @@ static func split_mesh(mesh: Mesh, to_model: Transform3D, box: AABB) -> Array:
 	var result := [outside if outside.get_surface_count() > 0 else null, inside if inside.get_surface_count() > 0 else null]
 	_cut_cache[key] = result
 	return result
+
+
+static func _in_any(boxes: Array, point: Vector3) -> bool:
+	for box in boxes:
+		if (box as AABB).has_point(point):
+			return true
+	return false

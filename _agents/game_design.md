@@ -1929,6 +1929,16 @@ rig in round 8); the navmesh's single agent radius (P6: one radius for a 5× foo
 telephoto (control); and the sim baseline, which moves and is recorded once by the orchestrator. **Nobody publishes a
 size-dependent number measured across CP2.**
 
+**WITHDRAWN (2026-09-20 02:40): the gap-widening ruling.** For twenty minutes the record said the kit's gaps would widen
+to the widest hull plus 1 m, because scale's `arena-report` showed the direct route pinching below the 4.74 m artillery
+on 8 of 10 maps. **The measure was wrong**: it returned twice the distance to the *nearest* obstacle, which equals a
+corridor width only with an obstacle on both sides; yard's reported 4.72 m "pinch" is a route hugging one wreck with
+20 m of clear ground behind it — the real span is ~23 m. The orchestrator ruled on it within minutes without checking
+one value. **The maps are not changing on that evidence.** What stands: the resize lands as is; squad's artillery did
+fail one defile on the maze fixture at its old width, and that is nav's plant/right-of-way question, not geometry.
+scale's corrected measure (march perpendicular to travel both ways until something tall is hit) reports when it lands;
+if a real pinch exists the question is re-put with the right number.
+
 **The lead sees the roster before it ships:** the scale stream renders all 21 vehicles side by side at the new scale
 in one frame (the rig and a Condemned tank as references, the same camera as the gallery) and puts it on a review page.
 It is the one subjective check that counts; the numbers are derived and need no approval.
@@ -1984,6 +1994,25 @@ Stage lighting already has the vocabulary, and it maps onto what the renderer ca
 - **Visual only.** The show reads the match and never writes it; it runs on frame time, not the tick (nothing in the
   simulation may depend on it); pre-registered: the sim hash does not move.
 
+**First frames (show, 2026-09-20 03:27, builder0, `685df1f2`; 30 frames, terminus and yard, `shader errors 0`, sent to the
+lead):** the block edges (chamfers, bevels, parapets) carry an emissive strip where they were a pale albedo, each block
+on its own clock; window grids vary per window; the rim breathes. **Decided overnight:** the direction is approved; the
+edges currently read as an outline on every building, some in cool white, which `art_direction.md` warns against, so a
+second variant ships beside it. **feel's ruling (art owner, 03:45), adopted as the default:** energy and colour were not
+what was wrong — `show_edge` is added to emission on the bevel/chamfer branch, which IS the silhouette, so it can only
+ever draw an outline, the named Never in `art_direction.md`; in the street frame it is a glowing bar stuck diagonally
+across a flat wall with no housing. **Default: `show_edge` 0 on the vertical chamfers; the breathing lives on
+`show_window` and `show_shop` (light inside things, the "Blade Runner night" the art direction names); one horizontal
+run on the roof parapet only, dimmer than the windows; venue palette (magenta, cyan, amber), red reserved for beacons and
+warnings, no cool white.** The full-outline look stays as a named patch variant so the lead can compare both in the
+morning — his words were *"lit edges breathe and glow"* and he gets to see it. **The rule that matters for play:** the
+arena floor and the vehicles must stay the brightest read in the frame (in the first frames the building edges were the
+brightest pixels and the fight the darkest); `show-frames` now measures it and refuses a strip where the periphery wins. Stills cannot show a cue (a chase is
+motion; last-stand caught at a strobe trough reads dimmer than idle), so short clips per cue and a before frame from the
+no-show arm follow. The kill ripple did not read in its frame (likely no headroom above the battle cue's 0.96) and is
+unproven until shot against lull. Cost: 15 uniform writes per frame idle, 16 on a kill, 25 in the victory sweep, driving
+eight buildings, every window, six rim edges, every sign and floodlight — O(driven materials), not O(instances).
+
 **The bar is his: "make it beautiful."** Frames at his pose (21°, FOV 35, 49 m) on the Terminus and the yard, before
 and after, plus `make perf-scene` numbers on builder0 showing the locked 30 fps at 1080p with 30 a side still holds.
 He judges the look; the frame time is the check.
@@ -1995,3 +2024,45 @@ from the kit. control decides the mechanism — pushing the camera to the neares
 ray, or a cutaway of the block between camera and focus, or both — and proves it with frames on the Terminus at his
 pose, in the alleys, with the case that hides the alley when the camera is pushed out shown and handled. Recorded for
 control's backlog; the running worker adds it to its own brief.
+
+**Decided overnight (control, 2026-09-20, orchestrator endorsed on the lead's behalf): the mechanism is a LIFT, not a
+push-in.** At his pose the camera sits 17.6 m up and 45.7 m back; the Terminus blocks are 40 × 24 × 40 m with 20 m
+streets. Shortening the boom until it exits the block collapses 49 m → ~11 m — below `MIN_DISTANCE`, near
+first-person, and the far side of the street still walls the alley: that answers the sentence and not the problem.
+Lifting over the roof takes the pitch **21° → 32°**, keeps 41.5 m of horizontal reach, and looks *down into* the alley;
+it is inside the tilt range he can reach by hand (8°–70°), and only shortens the boom when even `MAX_PITCH_DEG` cannot
+clear a roof. Measured over every open ground point on the Terminus × 8 yaws at his pose: **703 of 4,328 poses had the
+camera inside a building; 0 after; worst lift 11.0°; nothing pulled in.** **But the second half of his sentence is not
+fixed by it** (control, measured the same night): over those 703 poses the sight line from the camera to the ground it
+aims at was blocked by a building in **700 before and 518 after — a 26% reduction.** 518 cameras are correctly outside
+every solid and still looking at the side of one. **The occlusion cutaway is still owed, and the alley frames decide
+it; 703 → 0 must not be read as the item finished.** **Built the same night (control, `bd69de5f`, laptop):** the block
+between camera and aim point is hidden (`visible = false` on its visual slot — no alpha, no uniform, no emission, collision
+untouched, its cue keeps running underneath), and **the alley behind a wall goes 518 → 0** over the same 703 poses.
+Caveat to report with it: every one of the 518 was a *building*, so the 6 m "buildings only, never cover" threshold
+cost nothing on the Terminus and is untested on an arena with tall cover. Alley frames at his pose follow. Mutation-checked; an arena with no cityscape
+is provably untouched. Because this is the second place the camera overrides his tilt (after the far-range floor), it
+reports `lifted_deg` and is flagged to him rather than hidden. Frames at his pose in the alleys follow. **He can
+overrule this in the morning**: a push-in variant is the same test with a different resolver.
+
+### MEASURED: the factions already drive differently enough to see, and none drives better (squad, 2026-09-20)
+
+The lead asked for it by name (*"we might even be able to differentiate units of different factions by PID values"*).
+One hull driven against a moving-then-stopping slot, laptop, `stream/squad` (X6):
+
+| gains | tracking gap | overshoot on stopping | settling |
+|---|---|---|---|
+| default | 0.20 m | 1.89 m | 3.23 s |
+| syndicate | 0.09 m | 1.68 m | 3.23 s |
+| gangs | 0.81 m | 2.56 m | 3.30 s |
+| law | 1.00 m | 1.56 m | 3.20 s |
+
+Every intent beside the tables holds: the Syndicate is 2.2× tighter than the reference crew, the gangs overshoot most,
+the Law overshoots least and — the surprise — tracks loosest, the honest consequence of *damped and deliberate*
+(heavy D, light I: never overshoots, never quite closes). The tracking gap spans **11×**; at his camera a metre of
+station slop is a quarter of a hull and 2.5 m of overshoot is most of a hull past the mark. **Settling time is 3.20–3.30 s
+for all four, a 3% spread: nobody arrives faster, they arrive differently** — flavour without a balance lever, which is
+what the no-pay-to-win pillar needs. **In one sentence for him: the factions already drive differently enough to see,
+and none of them drives better.** What this is not: one hull, a synthetic slot, no enemies or terrain; whether the
+difference reads *in a fight* and stays balance-neutral in a match is unmeasured, and cannot be measured until
+`ControlGains` takes a runtime override (nav's file, requested) so identical armies can be given different gains.

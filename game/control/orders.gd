@@ -345,6 +345,13 @@ static func _same_order(current: Dictionary, order: Dictionary) -> bool:
 		return false
 	if String(current.get("target", "")) != String(order.get("target", "")):
 		return false
+	# Round 9: "go there" and "go there, and be facing north when you get there" are DIFFERENT orders. Without this,
+	# a player who right-clicked a spot and then right-DRAGGED the same spot to correct the heading had his correction
+	# dropped as a repeat - the one case where the new desktop gesture would look ignored. Only the PLAYER's orders
+	# are compared this way: an element leader re-issues its members' moves from a heading that drifts as the element
+	# turns, and making that a new order every few degrees is exactly the re-issue churn round 8 spent a day removing.
+	if String(order.get("source", "")) == "player" and not _same_facing(current.get("facing", []), order.get("facing", [])):
+		return false
 	var a: Array = current.get("goal", current.get("to", []))
 	var b: Array = order.get("goal", order.get("to", []))
 	if a.size() != b.size():
@@ -353,6 +360,20 @@ static func _same_order(current: Dictionary, order: Dictionary) -> bool:
 		if absf(float(a[i]) - float(b[i])) > SAME_ORDER_M:
 			return false
 	return true
+
+
+## Two arrival headings (each [x, z], or empty for "no particular heading") that mean the same thing. Present and
+## absent never match: dropping a facing is as much a change as adding one.
+const SAME_FACING_DOT := 0.996  # about 5 degrees
+
+static func _same_facing(a: Array, b: Array) -> bool:
+	if a.size() != 2 or b.size() != 2:
+		return a.size() == b.size()
+	var one := Vector2(float(a[0]), float(a[1]))
+	var two := Vector2(float(b[0]), float(b[1]))
+	if one.length() < 0.001 or two.length() < 0.001:
+		return one.length() < 0.001 and two.length() < 0.001
+	return one.normalized().dot(two.normalized()) >= SAME_FACING_DOT
 
 
 ## The destination a unit's queue ends at (for chaining shift-queued waypoints), or null.
