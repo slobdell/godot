@@ -121,7 +121,33 @@ is judged against it, and round 8 proved twice over why:
 
 | Stream | Round 9 | Order and why |
 |---|---|---|
-| **orchestrator** | **A12 metrics suite** | Windowed displacement efficiency (the 8 m/2 m signature measured directly), signed cusp density, spectral arc length, affine formation residual. **Before anything else ships.** |
+| **orchestrator** | **A12 metrics suite**, then **T1 parallelise `check`** | Windowed displacement efficiency (the 8 m/2 m signature measured directly), signed cusp density, spectral arc length, affine formation residual. **Before anything else ships.** |
+
+**T1 — PARALLELISE `make check`. The lead asked for this directly (2026-09-19) and it is worth more than any single
+algorithm on this list.** Measured at the close of round 8: a `check` on builder0 is **one single-threaded Godot
+process at ~7% CPU on a 12-thread machine** — latency-bound on awaiting fixed-tick physics frames, not compute-bound.
+**We gate an entire round on ~8% of the build machine for 30–50 minutes.**
+
+- **This is the knob the slot question was really reaching for.** Raising `TANK_SQUAD_SLOTS` (2 → derived, now 4)
+  shortens the QUEUE. **Only inner parallelism shortens the RUN**, and the run is what everyone waits on.
+- **What a 40 → 10 minute check would have changed on the night of round 8's close, concretely:** combat would not
+  have had to abandon a 590-test run when the network dropped and start over; the orchestrator's own lint mess would
+  have been caught in one cycle instead of three wrong diagnoses; and the round would not have needed a two-hour tail
+  that the lead had to cut short.
+- **Shape:** the targets in `check` are largely independent (`lint`, `test`, the smokes, `determinism`,
+  `announcer-check`, `audio-check`, the pytest suites). Run independent targets concurrently under the slot budget
+  rather than serially. **Memory is the constraint, not cores** (~735 MB a Godot run against 11.9 GB available on
+  builder0), so the budget is roughly 8–10 concurrent runs there and far fewer on the laptop — **derive it the way
+  `tools/slot.sh` now derives its slot count, do not hard-code it** (lesson 148).
+- **⚠ Determinism is safe; TIMING is not.** Separate processes on a fixed tick produce identical hashes under any
+  load. What breaks is anything sampling wall-clock inside a run — profiling, timeouts, real-second budgets. Three
+  garage liveness timeouts already went 60/120 s → 600 s for this reason, and **control measured that a
+  reference-workload ratio corrects for "busy machine" but NOT for "every thread busy"** (~14× vs 2× under 7 burners
+  on 8 threads). **Expect to raise timeouts, and expect wall-clock figures taken before this change to be retired**
+  (nav catalogued which of its own survive, in `verification.md`).
+- **Falsifier:** wall-clock for a full `check` on builder0 drops by **≥ 50%** with **zero new flakes over three
+  consecutive runs**, and the sim baseline hash is **bit-identical** to the serial run's. A faster check that flakes
+  once is worse than a slow one, because a flake costs a re-run plus a false investigation.
 | **nav** | **A7 → A11 → A1 → A4** | **This order is nav's, adopted over the orchestrator's A1-first proposal — see below.** |
 | **combat** | **A2**, then A3's consumer | A2 replaces the flat `commit_bonus` (**1.15** on main; 1.35 reverted) with a state-dependent switching cost. **Its falsifier is inherited, not invented: squad's two behaviour scenarios** — fire concentration and the scout's engine decks — because that is exactly what the crude version cost |
 | **arena** | **A3's summed-area tables**, + the **Syndicate airship** | A3 retires the 12.19 m cover cliff at any hull length. **The `make arena-report` WATCH line must be revised in the same commit as the tables** or it becomes a confident false alarm. Airship: primitives, no Meshy, no collision body ([game_design.md](game_design.md)) |
