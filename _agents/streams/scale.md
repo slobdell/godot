@@ -283,6 +283,47 @@ _Updated 2026-09-20 (overnight), worktree `godot-scale`, branch `stream/scale`._
    its collider at 4.74 m wide (feel's call, round 10, and they have said so for the record), and whether a
    per-hull-class navmesh radius is wanted (nav's, catalogue C2).
 
+### ⛔ CP2 IS BLOCKED ON A FAILURE I INTRODUCED — read this before merging anything
+
+**`test_ai_player_orders::test_five_squads_ordered_in_quick_succession` fails on `4375a9ad`.**
+
+```
+every unit of every squad ends up on its own slot (expected 0, got 1)
+MEASURE player_orders_rapid worst gap per squad
+      { "Alpha": 3.2, "Bravo": 4.3, "Charlie": 104.9, "Delta": 5.0, "Echo": 4.9 }
+```
+
+**One unit 104.9 m from its slot; the other four squads sit at 3–5 m.** On `b7055602` — the resized roster with
+the **old** spawn grid — the same test passed with Charlie at **4.5 m**. So it arrived between `b7055602` and the
+tip. **Do not merge CP2 until this is understood.**
+
+**Ruled out so far (by reading, not by running — the reproduction had not finished when work paused):**
+- **`Arena.SPAWN_CLEARANCE` 6.0 → 4.0** is not it: its only consumers are `arena.gd` itself and two arena tests.
+  It does not reach formation slots.
+- **`Match.SPAWN_SLOTS` 52 → 57** is not it: its only consumer is `Doctrine.MAX_UNITS`, and this test loads no
+  doctrine.
+- **The spawn grid's geometry is not obviously it either**, and this is the awkward part: the test places its
+  units at fixed coordinates (`Vector3(-90 + index * 6, 0, 95)`) **immediately after spawning them**, overriding
+  the grid entirely. All 30 are `"tank"`, so "the widest hull" does not single Charlie out.
+- `git show 07f92087 -- game/` contains **only** the spawn constants, the `SPAWN_CLEARANCE_MARGIN` refactor and
+  `size_look.gd` (not in the simulation). Plus all ten arenas' baked spawn lists.
+
+**The leading hypothesis, untested: CROSS-TEST COUPLING, not a simulation change.** Every commit in that range
+added a new `tests/test_*.gd` file (`test_spawn_grid.gd`, `test_arena_cover_tables.gd`,
+`test_arena_layout_keys.gd`), and `run_tests.gd` discovers files in **filesystem order, not alphabetical**. This
+project has documented cross-test coupling before — control's facing test *"passed alone and failed in file
+order"*. `test_spawn_grid.gd` in particular stands up **two full `Match` scenes with ~30-unit armies** and frees
+them. **A test of mine may be leaving state behind.**
+
+**THE EXACT NEXT STEP, in order:**
+1. `--filter=ai_player_orders` **alone** (was running when work paused; result unknown).
+   **Passes alone → cross-test coupling. Fails alone → a real simulation change, and bisect `b7055602..4375a9ad`.**
+2. If it is coupling: run the full suite with my three new test files renamed so `run_tests.gd` cannot discover
+   them (the prefix must stop being `test_`), one at a time, to find which one.
+3. Fix, then `make lint` **clean on the final commit, with no other local Godot work in the same checkout** —
+   the first lint of the night was corrupted exactly that way.
+4. Then `make remote T=check` for the CP2 hash.
+
 ### Where it stands
 
 **Backlog 1, 2, 3, 4 and 5 are complete. Stretch item 6 is not started.** CP2 is unblocked on the look and waits
