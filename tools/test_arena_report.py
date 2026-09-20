@@ -189,9 +189,14 @@ class TestTheDecisionMetricSeesADilemmaAndItsAbsence(unittest.TestCase):
         and no amount of terrain can change that.
 
         **This test said "every arena we ship is in this state" and named yard, which stopped being true the moment
-        objective pairs shipped (`0f18710a`).** It had been red ever since and nobody saw it, because `make check`
-        stops at its first failing target and two earlier ones — a stale sim baseline, then an unnamed arena — were
-        failing ahead of it. Three reds deep, each hiding the next.
+        objective pairs shipped (`0f18710a`).** It had been red ever since and nobody saw it.
+
+        **CORRECTION, and the first explanation I gave was wrong.** I wrote in `daa6bb70` that it was hidden behind
+        two earlier failing targets in `make check`. It was not: **`arena-pytest` is deliberately not in `make check`
+        at all** (see the note above its recipe in `mk/arena.mk` — it guards an instrument only this stream reads,
+        and 14 s on every stream's check is a bad trade). So nothing masked it. **`make arena-test` is the gate, my
+        own brief requires it on every layout change, and I changed the layouts and did not run it.** The mechanism
+        was not subtle and the miss was mine — which is worth more than the tidier story about nested reds.
 
         The fix is to state the property instead of a roster: a layout with ONE objective has no decision to offer.
         `foundry` is chosen because it is `Arena.DEFAULT_LAYOUT` and the sim baseline runs on it, so if it ever
