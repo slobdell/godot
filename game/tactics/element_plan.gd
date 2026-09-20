@@ -199,8 +199,11 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# seating stands. A CPU crew fights from within its slot's leash and drifts ~10 m off it; left to "saves real
 	# driving", the seating re-shuffled around the drift and re-ordered idle units (round 7: the CPU five-squad test).
 	var joined: bool = not FLOW_ENABLED or bool(state.get("flow_joined", false))
+	# `told` goes through to the per-unit orders: a facing the player dragged is an ARRIVAL heading, and K1 has carried
+	# one since round 5 (`TankBrain.intended_facing`, and `test_wheeled_arrival` covers the per-unit case).
 	_group(plan, slot_order(situation), String(plan["formation"]), destination, plan["heading"],
-			table.spacing(String(situation["terrain"])), "move", "", false, holding and joined)
+			table.spacing(String(situation["terrain"])), "move", "", false, holding and joined,
+			told if told is Vector3 else null)
 	if told is Vector3:
 		# A facing the player chose is everyone's facing, not the formation's all-round sectors.
 		for unit_name: String in plan["sectors"]:
@@ -700,7 +703,7 @@ static func _hold(plan: Dictionary, members: Array, situation: Dictionary, facin
 ## `halt` puts every crew on its sector of fire instead of the direction of travel.
 ## `fixed` keeps last update's seating whatever it costs (a plain move standing on its spot).
 static func _group(plan: Dictionary, members: Array, formation: String, anchor: Vector3, heading: Vector3,
-		spacing: float, verb: String, target := "", halt := false, fixed := false) -> void:
+		spacing: float, verb: String, target := "", halt := false, fixed := false, told: Variant = null) -> void:
 	if members.is_empty():
 		return
 	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing,
@@ -724,7 +727,14 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		plan["seats"][name] = [formation, members.size(), int(entry["index"])]
 		# X5: at a halt the crew's sector of fire IS the facing it is being given; on the move the order's facing is
 		# the direction of travel, which nav derives itself, so only a halt carries one.
-		_order(plan, name, verb, spot, target, entry["facing"] if halt else null)
+		# X5, and the case X5 got wrong: a HALT's crew is given its sector of fire, and on the move the heading is
+		# the direction of travel, which nav derives for itself -- so a moving order carried no facing at all. That is
+		# right for every heading the doctrine chose and wrong for the one the PLAYER chose. A facing drag on a whole
+		# squad reaches `plan["heading"]` and zeroes the sectors (see `_plan_form_up`), so the formation is laid facing
+		# where he dragged, and then the orders threw the heading away and the squad arrived pointing whichever way it
+		# had driven. `told` is that explicitly-chosen facing and nothing else: null on every doctrine-chosen heading,
+		# so nav keeps deriving those from travel exactly as before.
+		_order(plan, name, verb, spot, target, entry["facing"] if halt else told)
 
 
 ## Last update's seating for these members in this shape, if they all had one ({} otherwise).
