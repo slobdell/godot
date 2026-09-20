@@ -2844,3 +2844,10 @@ The kickoff prompt is one line; this section is the rest.
     verdict (PASS / FAIL / NOT RUN) printed from the markers, because with `-k` alone a reader still learns of a
     skipped target only by noticing absent output. Read a check as passed / failed / abandoned from its markers,
     never from what happened to print.
+190. **`git merge main` carries no signal about whether main was green at that commit.** Round 9's afternoon: control
+    merged main twice at a mid-repair moment (a stale baseline file, then a parse error from an unverified merge) and
+    each cost a builder0 slot to discover. Rule: the orchestrator keeps a local tag `main-checked` on the last main
+    tip whose own check ran, moved only after a main check with its known reds written in HANDOFF; a stream that
+    wants a known state merges the tag, one that wants the newest merges HEAD and accepts the risk. And beside
+    lesson 157: the repaired lint's first real catch on the gate was a parse error in a file nobody on the
+    reporting stream had touched, which is exactly what a gate is for.
