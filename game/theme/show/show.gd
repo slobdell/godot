@@ -89,10 +89,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	if cues == null:
-		cues = ShowCues.load_book()
-		if cues.problem != "":
-			push_error("SHOW %s" % cues.problem)
+	_ensure_cues()
 	# `make show-frames`: the strip at the lead's pose. It rides here rather than in FxWorld so nothing feel owns has
 	# to know the show exists.
 	if follows_active_arena and LaunchFlags.from_environment().has("show-look"):
@@ -117,11 +114,24 @@ static func get_instance() -> Show:
 	return _instance
 
 
+## Load the cue book once. Safe to call from anywhere; a test or a tool that supplies its own book keeps it.
+func _ensure_cues() -> void:
+	if cues != null:
+		return
+	cues = ShowCues.load_book()
+	if cues.problem != "":
+		push_error("SHOW %s" % cues.problem)
+
+
 ## Follow `Arena.active`. Called before every registration and every frame, so a fixture built during an arena's
 ## construction is always patched against that arena and never against the one before it.
 func follow_active_arena() -> void:
 	if not follows_active_arena:
 		return
+	# The cue book must exist BEFORE the first fixture registers, not at _ready(): the venue is built while the show
+	# is still a deferred add_child, so a book loaded in _ready() arrives after the arena has already been patched
+	# and the FIGHT cue -- the one the loading screen drops into -- would never fire.
+	_ensure_cues()
 	var arena := str(Arena.active.get("name", ""))
 	if arena == _arena:
 		return

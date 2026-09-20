@@ -122,6 +122,21 @@ func test_a_programme_swap_changes_the_rate_and_never_jumps_the_clock() -> void:
 	assert_true(worst < 0.2, "the clock never jumped: worst single-frame step %.4f rad" % worst)
 
 
+func test_the_fight_cue_is_armed_before_the_first_fixture_registers() -> void:
+	# The venue is built while the Show is still a deferred add_child, so a cue book loaded in _ready() arrives
+	# AFTER the arena has been patched -- and the FIGHT cue, the one the loading screen drops into, would never
+	# fire. Loading it lazily on the first registration is the fix, and this is the test that holds it.
+	# Deliberately NOT in the tree: that is the real situation, because the running show mounts itself with a
+	# DEFERRED add_child and the venue is built before it lands, so _ready() has not run when a block registers.
+	var show := Show.new()
+	show.follows_active_arena = true
+	assert_true(show.cues == null, "_ready() has not run, so the book is not loaded yet")
+	show.add_fixture(&"rim", ShaderMaterial.new())
+	assert_true(show.cues != null, "registering a fixture loads it anyway")
+	assert_eq(show.cues.problem, "", "and the shipped book is valid: %s" % show.cues.problem)
+	show.free()
+
+
 func test_the_fight_cue_holds_then_hands_over_to_the_mood() -> void:
 	var cues := ShowCues.load_book(BOOK)
 	var fight: Dictionary = cues.states[ShowCues.FIGHT_STATE]
