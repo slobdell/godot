@@ -727,6 +727,24 @@ class ReportTest(unittest.TestCase):
             self.assertEqual(row["cusps"], 0, unit_id)
         self.assertEqual(out["all"]["units"], 2)
 
+    def test_it_counts_the_units_that_actually_held_an_order(self):
+        # A log holds BOTH armies and only one is under orders. Without this column the ordered side's row reads
+        # as though it did nothing, diluted by the enemy's vehicles standing in the same unit_id bucket.
+        lines = [trajlog.header_line("c", "m", TICK_RATE, "nav-fight")]
+        width = metrics.SPARC_WINDOW_SAMPLES
+        for tick in range(width):
+            lines.append(trajlog.sample_line(make_sample(
+                tick, tick * 1.0, unit="Green_1", unit_id="tank", team=0,
+                goal_x=10_000.0, goal_z=0.0, order_verb="attack_move")))
+            lines.append(trajlog.sample_line(make_sample(tick, tick * 1.0, z=50.0, unit="Rust_1", unit_id="tank",
+                                                         team=1)))
+        out = report(read_lines(lines, "<f>"))
+        self.assertEqual(out["by_unit_id"]["tank"]["units"], 2)
+        self.assertEqual(out["by_unit_id"]["tank"]["units_ordered"], 1)
+        self.assertEqual(out["teams"], [0, 1])
+        # The enemy contributes to neither side of the oscillating share: it has no goal, so it is never under way.
+        self.assertEqual(out["all"]["under_way_seconds"], round(width / float(TICK_RATE), 1))
+
     def test_it_says_whether_the_cause_columns_were_there(self):
         self.assertFalse(report(self.build())["cause_columns"])
         self.assertTrue(report(self.build(with_cause=True))["cause_columns"])

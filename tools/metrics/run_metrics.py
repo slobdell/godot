@@ -36,12 +36,18 @@ def print_report(row, handle):
     if not row["cause_columns"]:
         write("        NOTE: this log has no cause columns, so every cusp is reported as unclassified "
               "(FORMAT.md: order_reverse / phase / creeping).\n")
-    write("  %-16s %5s %9s %9s %9s %9s %9s %9s %7s %9s\n" % (
-        "unit_id", "units", "eff_mean", "eff_p10", "osc_share", "osc_units", "net/path", "cusp/min", "cusps", "sparc"))
+    if len(row["teams"]) > 1:
+        write("        NOTE: this log holds BOTH armies. Only the ordered side has goals, so `osc_share` and\n"
+              "        `net/path` are already over ordered ticks alone, but `units` counts everyone: read\n"
+              "        `ordered` beside it, or pass --team.\n")
+    write("  %-16s %5s %7s %9s %9s %9s %9s %9s %9s %7s %9s\n" % (
+        "unit_id", "units", "ordered", "eff_mean", "eff_p10", "osc_share", "osc_units", "net/path", "cusp/min",
+        "cusps", "sparc"))
     for unit_id in list(head) + ["ALL"]:
         cells = head[unit_id] if unit_id != "ALL" else row["all"]
-        write("  %-16s %5d %s %s %s %9d %s %s %7d %s\n" % (
-            unit_id, cells["units"], _fmt(cells["efficiency_mean"]), _fmt(cells["efficiency_p10"]),
+        write("  %-16s %5d %7d %s %s %s %9d %s %s %7d %s\n" % (
+            unit_id, cells["units"], cells["units_ordered"],
+            _fmt(cells["efficiency_mean"]), _fmt(cells["efficiency_p10"]),
             _fmt(cells["oscillating_share"]), cells["oscillating_units"], _fmt(cells["net_over_path"]),
             _fmt(cells["cusps_per_agent_minute"], 2), cells["cusps"], _fmt(cells["sparc_mean"])))
     for unit_id in list(head) + ["ALL"]:
@@ -67,6 +73,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("logs", nargs="+", help="trajectory logs (.jsonl or .jsonl.gz); globs are expanded")
     parser.add_argument("--json", dest="json_out", default="", help="also write the whole report here, as JSON")
+    parser.add_argument("--team", type=int, default=None,
+                        help="report only this team's units (0 = GREEN, 1 = RUST); default: every unit in the log")
     args = parser.parse_args(argv)
 
     paths = []
@@ -92,6 +100,12 @@ def main(argv=None):
                   "less than one window is not a smaller number, it is no number." % (path, longest, span),
                   file=sys.stderr)
             return 1
+        if args.team is not None:
+            log.units = {n: s for n, s in log.units.items() if s and s[0].team == args.team}
+            if not log.units:
+                print("metrics: REFUSED %s: --team=%d matched no unit in this log" % (path, args.team),
+                      file=sys.stderr)
+                return 1
         row = metrics.report(log)
         rows.append(row)
         print_report(row, sys.stdout)

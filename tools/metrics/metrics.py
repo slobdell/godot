@@ -548,6 +548,9 @@ def formation_residual_by_element(log: TrajectoryLog) -> Dict[int, FormationSumm
 class UnitTypeReport:
     unit_id: str
     units: int = 0
+    ## Units of this type that ever held an order. A log holds BOTH armies; only one of them is under orders, and
+    ## without this column an ordered side's row reads as though it did nothing, diluted by the enemy's vehicles.
+    units_ordered: int = 0
     efficiency: EfficiencySummary = field(default_factory=EfficiencySummary)
     oscillation: OscillationSummary = field(default_factory=OscillationSummary)
     cusps: CuspSummary = field(default_factory=CuspSummary)
@@ -564,6 +567,7 @@ def report(log: TrajectoryLog) -> Dict[str, object]:
         unit_id = samples[0].unit_id
         row = by_type.setdefault(unit_id, UnitTypeReport(unit_id=unit_id))
         row.units += 1
+        row.units_ordered += 1 if any(s.ordered for s in samples) else 0
         row.efficiency.merge(displacement_efficiency(samples, span))
         row.oscillation.merge(oscillation(samples, span))
         row.cusps.merge(cusp_density(samples, log.header.tick_rate))
@@ -573,6 +577,7 @@ def report(log: TrajectoryLog) -> Dict[str, object]:
     def unit_row(row: UnitTypeReport) -> Dict[str, object]:
         return {
             "units": row.units,
+            "units_ordered": row.units_ordered,
             "efficiency_mean": _round(row.efficiency.mean, 4),
             "efficiency_p10": _round(row.efficiency.quantile(0.10), 4),
             "efficiency_p50": _round(row.efficiency.quantile(0.50), 4),
@@ -598,6 +603,7 @@ def report(log: TrajectoryLog) -> Dict[str, object]:
     whole = UnitTypeReport(unit_id="ALL")
     for row in by_type.values():
         whole.units += row.units
+        whole.units_ordered += row.units_ordered
         whole.efficiency.merge(row.efficiency)
         whole.oscillation.merge(row.oscillation)
         whole.cusps.merge(row.cusps)
@@ -621,6 +627,7 @@ def report(log: TrajectoryLog) -> Dict[str, object]:
         "cause_columns": log.has_cause,
         "samples": log.sample_count(),
         "units": len(log.units),
+        "teams": sorted({s.team for samples in log.units.values() for s in samples[:1]}),
         "by_unit_id": {unit_id: unit_row(row) for unit_id, row in sorted(by_type.items())},
         "all": unit_row(whole),
         "by_element": {

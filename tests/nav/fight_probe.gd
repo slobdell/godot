@@ -17,6 +17,9 @@ extends SceneTree
 ## plus: re-task EVENTS (its move target jumping > RETASK_M), unreachable-route ticks, arrivals per order.
 ## Prints `NAV_FIGHT <json>`. Diagnosis, not a gate.
 
+## S3 (metrics, round 9): --trajectory=PATH writes the per-tick trajectory log `make metrics` reads.
+## Off unless the flag is given; the writer is metrics' (tools/metrics/), and this file only turns it on.
+const TRAJECTORY := preload("res://tools/metrics/trajectory_log.gd")
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
 const PROGRESS_MPS := 0.7
@@ -153,6 +156,9 @@ func _run() -> void:
 			CombatMotion.hold_band_on(), CombatMotion.fixed_style, Movement.avoidance_on, Movement.station_on, Movement._off])
 	print("NAV_FIGHT_CONTROL arena %s, green %d, rust %d, %d pairs start on top of each other" % [
 			Arena.active.get("name", "?"), green.size(), rust, stacked])
+	TRAJECTORY.install(game_match, _flag("trajectory", ""), "nav-fight",
+			{"seed": seed_value, "arena": _flag("arena", "yard"), "time_limit": time_limit, "busy": busy_every,
+			"budget": budget, "stall_verb": stall_verb})
 	for frame in SimClock.TICK_RATE:
 		await physics_frame
 	_order_squads(0.45)  # to the middle of the arena, squads fanned out across it
