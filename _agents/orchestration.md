@@ -2502,3 +2502,11 @@ The kickoff prompt is one line; this section is the rest.
     honest form, given to metrics for CP3): put `ai-scenarios` in `check` behind a committed expected pass/fail/pending
     count, failing on a CHANGE in the count, so the one pre-existing laptop-speed failure does not turn the gate red and
     a new script error does.** And a stream that changes a scenario runs `make ai-scenarios` before naming a hash.
+160. **Three small guards from show's first night, each cheap and each general.** (a) **`FxWorld.spectacle` is not a
+    kill signal**: it fires 0.15 on a near miss, 0.3 on a hit, 0.5 on a weak spot and 1.0 only on a kill, and five
+    consumers ride it — anything new wired to it without reading `weight` fires several times a second in a 30-a-side
+    fight. (b) **A bank of "pairwise incommensurate" periods needs a validator, not an eye**: show's first two banks
+    were 4:3 within 1% and 5:4 within two parts in a thousand, caught only because the check tests p/q for p, q ≤ 5 —
+    at ≤ 4 the second sailed through. Any stream scattering periods or phases (audio, feel) should steal it. (c) **A
+    "never do X" guard must scan code, not prose**: show's never-read-the-wall-clock test failed on its own comment
+    saying "never `Time.get_ticks_*`". Strip comments and string literals before grepping.
