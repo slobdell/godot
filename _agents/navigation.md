@@ -41,6 +41,30 @@ undone: **when a fact about the world is one query away, query it.** Both habits
 inference that is right most of the time — which is the worst kind, because it fails silently and only when it
 matters.
 
+### An HONEST instrument is not enough if nothing asserts on it (nav, 2026-09-21)
+
+nav's clearance tests failed with this on the line above the failure:
+
+    MEASURE clearance_routing: gang_tank chord slack nan m, scout nan m (chords 0, refused 0)
+
+**Both halves of the diagnosis were printed and neither was asserted.** `chords 0` says the rule was never
+consulted. `nan` says the number is a fallback, not a measurement. The counter — built precisely so a zero could
+not be mistaken for a result — did its job perfectly, into a log nothing was reading. The assertions then failed on
+a comparison downstream, which looks like a wrong threshold rather than a setup that never ran.
+
+**The rule: every denominator you print, assert on.** A counter that only appears in output protects a human who
+reads the output. A counter that appears in an `assert_true` protects everyone, including the author at 4 a.m. who
+skims to the first FAIL and starts debugging the wrong thing.
+
+**This is one layer beneath the round's arm-and-denominator discipline, and it is where nav kept falling.** The
+round produced six false zeros and caught them all — then produced a seventh where the instrument *worked* and the
+test ignored it. Printing is not checking. `assert_true(clearance_chords > 0, ...)` costs one line and converts
+"these numbers look odd" into "the mechanism never ran", which is a different debugging session.
+
+(The concrete cause was `Movement.of()` returning null before a hull is driven — there is no mover until an order.
+nav made the identical mistake in the legibility test the same night. The second occurrence is why this is a lesson
+about asserting rather than a note about movers.)
+
 ### A positive control proves the mechanism FIRES, not that the row is worth shipping (nav, 2026-09-20)
 
 A4 was measured twice and the two measurements point opposite ways:
