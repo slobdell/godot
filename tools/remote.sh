@@ -211,7 +211,20 @@ ssh "${ssh_opts[@]}" "$host" "bash -s -- $(printf '%q ' "$@")" <<<"$script"
 status=$?
 
 mkdir -p "$repo_root/build"
-copy_log=$(rsync -az -e "ssh ${ssh_opts[*]}" --exclude='web/' --exclude='server/' --exclude='*.pck' --exclude='*.wasm' \
+# --delete, so the local build/ MIRRORS the run that just finished. Without it build/ accumulated artefacts
+# across runs and a stale file announced nothing: plausible name, plausible size, nothing saying which run
+# wrote it (nav, 2026-09-20 -- a 101 MB log from an earlier run sat there being read as this one's).
+#
+# `P *.log` PROTECTS the wrapper logs, and that is not a nicety. Every stream launches with
+# `make remote T=check > build/metrics/x.log` (the pattern in remote_builds.md), so those files exist only
+# here -- and --delete would unlink one while the redirect is still open, leaving the shell writing to an
+# unlinked inode and the log vanishing silently, mid-run. Excluded paths (web/, server/, the big exports)
+# are not deleted either: rsync protects what it was told to skip unless --delete-excluded says otherwise.
+#
+# The end state is wrapper logs in the session scratchpad (`> $SCRATCH/x.log`) and this protection dropped;
+# it is a belt until that habit is everywhere.
+copy_log=$(rsync -az --delete --filter='P *.log' -e "ssh ${ssh_opts[*]}" \
+	--exclude='web/' --exclude='server/' --exclude='*.pck' --exclude='*.wasm' \
 	"$host:~/$remote_dir/build/" "$repo_root/build/" 2>&1)
 copy_status=$?
 if [ $copy_status -ne 0 ]; then

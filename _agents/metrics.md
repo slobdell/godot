@@ -182,43 +182,49 @@ case A6 exists for.
 
 #### The control arm A6 has to beat, read off nav's P7 logs (metrics, 2026-09-20)
 
-Whole roster, both armies, builder0. **Two of the three logs are usable** — see the corruption note below.
+Whole roster, both armies, builder0. **Read the logs from nav's scratchpad copies, not from `build/`** —
+see the note below; the pooled figure reproduces exactly from them.
 
 | map | commit | off_corridor | active | eff_mean | eff_p10 | osc_share | net/path | cusp/min | sparc |
 |---|---|---|---|---|---|---|---|---|---|
 | yard | `c025bc6b` | 0.304 | 0.631 | 0.681 | 0.220 | 0.044 | 0.815 | 43.10 | **−2.013** |
+| pit | `c025bc6b` | 0.321 | 0.595 | — | — | — | — | — | — |
 | terminus | `5369bd13` | 0.331 | 0.738 | 0.660 | 0.210 | 0.052 | 0.799 | 69.14 | **−2.013** |
-| pit | `c025bc6b` | — | — | — | — | — | — | — | — |
+| **pooled** | | **0.3203** | **0.6622** | | | 0.0430 | | 47.02 | |
 
+Pooled over 96,054 active ticks, tick-weighted; the mean of the per-file fractions is 0.3187.
 **The two commits differ by one Status file and nothing else** (`git diff --stat 5369bd13 c025bc6b`:
 `_agents/streams/nav.md`, 28 lines), so the rows are comparable. That is the mixed-commit banner working as
 intended: it flagged the mixture, printed the command that settles it, and the command settled it — the
 reader verified rather than assumed.
 
-**Pick the discriminator by what the map does NOT change.** `cusp/min` swings 60% between these two maps
+**Pick the discriminator by what the map does NOT change.** `cusp/min` swings 60% between yard and terminus
 (43 → 69) with no treatment applied at all, so a treatment effect smaller than that is unreadable against
 it. `sparc` is **−2.013 on both**, to three decimals, across maps whose cusp densities differ by half. For
 an A/B on one map either will do; for a claim that survives the rotation, **SPARC is the sensitive one and
-cusp density is mostly measuring the arena**.
+cusp density is mostly measuring the arena**. A6's pre-registration reads SPARC and the off-corridor pair.
 
-#### ⚠ `p7-pit.jsonl` is UNUSABLE: one flipped bit
+#### ⚠ Read these logs from nav's scratchpad copies, not from `build/`
 
-One byte in 273,578 lines — `0x78` (`x`) → `0xf8`, turning `"slot_x"` into a broken key at line 143,873 of a
-101 MB log written on builder0 and copied to the laptop. A single-bit flip, not a producer bug and not a
-format problem.
+`build/metrics/p7-pit.jsonl` on the laptop has **one flipped bit** — line 143,873 of 273,578, `0x78` (`x`)
+→ `0xf8`, breaking the `"slot_x"` key in a 101 MB log. nav kept copies out of `build/` right after each run
+and every line of all three parses; the two pit files are **the same length to the byte** and differ in
+that one byte. The pooled 0.3203 reproduces exactly from the clean copies, so nothing above is in doubt.
 
-**The loud failure is the lucky case.** That bit landed in a key name, so the reader refuses the file. Had it
-landed in a digit it would have read as a perfectly valid coordinate and quietly moved a number. Nothing in
-this toolchain would have caught it, and nothing yet does — a per-line checksum in the format would, and is
-not there. Until the log is re-produced, **no A6 figure may quote pit**, and the earlier pooled rotation
-figure (0.3203) is not reproducible from these files.
+**Two separate problems, and they call for different responses.** The `build/` copy's mtime never changed,
+so no later rsync rewrote it: the bytes changed under a file nobody touched, on this laptop, at rest or in
+the read path. That is not the same as nav's other finding — that `remote.sh`'s copy-back has no `--delete`,
+so `build/` accumulates artefacts across runs and **a stale file announces nothing**: plausible name,
+plausible size, no marker saying which run wrote it. Both are real; this file is an instance of the first.
 
-`trajlog` now refuses a bad byte with its file, its line, the byte, and its neighbourhood, and says *re-run
-the producer, do not patch the file* — patching the one visible byte would leave any invisible ones and
-bless the file. It used to escape as a bare `UnicodeDecodeError` naming a codec and an offset into a buffer.
-- **`ordered_arc`** — excluded because an ordered arrival arc is off-corridor **by construction** and is the unit
-  obeying. On `facing_arc`, **never** on `facing_ordered`: an order carries its facing from the moment it is
-  issued, so excluding on that would excuse the whole drive to the gate.
+**The loud failure was the lucky case.** That bit landed in a key name, so the reader refuses the file. Had
+it landed in a digit it would have read as a perfectly valid coordinate and quietly moved a number. There
+are no per-line checksums in the format, so **the reader can never be where this is caught** — which is why
+the check is on the files (`remote.sh` verifies a sha256 manifest the box writes) and not on the format.
+
+`trajlog` refuses a bad byte with its file, its line, the byte and its neighbourhood, and says *re-run the
+producer, do not patch the file*: patching the one visible byte would leave any invisible ones and bless the
+file. It used to escape as a bare `UnicodeDecodeError` naming a codec and an offset into a buffer.
 
 ### Pooling several maps into one figure (`--pool`)
 

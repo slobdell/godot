@@ -44,5 +44,29 @@ out=$(bash "$cb" "$R" "$tmp/comments" 2>&1); rc=$?
 
 bash "$cb" >/dev/null 2>&1; [ $? = 2 ] && ok "no arguments: exit 2" || bad "no arguments: exit 2"
 
+# ---- the copy-back's own rsync flags: mirror the run, but never unlink an open log -------------------
+# Two assertions, because either alone is a lie: that remote.sh CARRIES these flags, and that the flags DO
+# what the comment beside them claims. Without the first the test drifts away from the script; without the
+# second it only checks a string.
+remote_sh="$(cd "$(dirname "$0")" && pwd)/remote.sh"
+grep -q -- "--delete --filter='P \*\.log'" "$remote_sh" \
+	&& ok "remote.sh copies back with --delete and protects *.log" \
+	|| bad "remote.sh copies back with --delete and protects *.log" "flags not found in remote.sh"
+
+S="$tmp/src"; D="$tmp/dst"; mkdir -p "$S/metrics" "$D/metrics" "$D/web"
+printf 'this run
+'   > "$S/metrics/fresh.jsonl"
+printf 'LAST run
+'   > "$D/metrics/stale.jsonl"      # must go: it wears a plausible name
+printf 'wrapper
+'    > "$D/metrics/check.log"        # must stay: a redirect may still be open on it
+printf 'big
+'        > "$D/web/index.wasm"           # must stay: excluded, so not ours to delete
+rsync -a --delete --filter='P *.log' --exclude='web/' --exclude='server/' 	--exclude='*.pck' --exclude='*.wasm' "$S/" "$D/" >/dev/null 2>&1
+[ -f "$D/metrics/fresh.jsonl" ] && ok "copy-back: this run's artefact arrives" || bad "copy-back: this run's artefact arrives"
+[ ! -e "$D/metrics/stale.jsonl" ] && ok "copy-back: LAST run's artefact is gone" || bad "copy-back: LAST run's artefact is gone"
+[ -f "$D/metrics/check.log" ] && ok "copy-back: the wrapper log survives" || bad "copy-back: the wrapper log survives"
+[ -f "$D/web/index.wasm" ] && ok "copy-back: excluded paths are not deleted either" || bad "copy-back: excluded paths are not deleted"
+
 printf '\ncopyback-verify: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
