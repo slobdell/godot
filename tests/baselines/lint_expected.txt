@@ -1,0 +1,36 @@
+# `make lint` findings that are ARTEFACTS OF `--check-only --script`, not defects.
+#
+# Each line below is `<file checked>: <message>`, exactly as `make lint` emits it. lint fails on any finding NOT
+# in this file, and reports (without failing) any line here that no longer occurs, so the list can be tightened.
+#
+# WHY THIS FILE EXISTS. `make lint` checks one script per process with `--check-only --script res://<file>`. In
+# that mode the script is being PARSED rather than loaded as a project resource, and the project's `class_name`
+# globals are not registered. Two things follow, and both look exactly like a broken tree:
+#
+#   1. SELF-REFERENCE. If a .tscn carries `[ext_resource type="Script" path="res://<the file being checked>"]`,
+#      that resource cannot resolve while its script is the one under check. `tank.tscn` names `tank.gd` and
+#      `visual_slot.gd`; `shell.tscn` names `visual_slot.gd`. Every line below of this shape is a scene failing
+#      to resolve the very file the checker was pointed at.
+#
+#   2. `class_name` STATICS. `Units` is a `class_name` global with `static func roster()`. Unregistered, the
+#      global resolves to a bare GDScript and the static call reads as "Nonexistent function 'roster' in base
+#      'GDScript'". `mk/core.mk`'s own note records an evening lost to believing `main` was red for this exact
+#      reason when `Units.roster` was defined the whole time -- and the test suite calls `Units.roster(faction)`
+#      in `test_units_roster.gd` and `test_theme_factions.gd` and passes, which is the proof it resolves.
+#
+# VERIFIED, not assumed (metrics, 2026-09-20, laptop, commit a90181c8): every line below survives a COMPLETED
+# `make import` and a serial (non-concurrent) re-check of each file, so none of them is the corrupted-cache
+# symptom the lint lock guards against. They are properties of the checking mode.
+#
+# **A new line here needs its reason written beside it. Widening the grep instead is how a gate stops working.**
+#
+# -- 1. self-reference: a scene cannot resolve the script currently under check --
+game/tank/tank.gd: ERROR: res://game/tank/tank.tscn:12 - Parse Error: [ext_resource] referenced non-existent resource at: res://game/tank/tank.gd.
+game/theme/visual_slot.gd: ERROR: res://game/combat/shell.tscn:10 - Parse Error: [ext_resource] referenced non-existent resource at: res://game/theme/visual_slot.gd.
+game/theme/visual_slot.gd: ERROR: res://game/tank/tank.tscn:19 - Parse Error: [ext_resource] referenced non-existent resource at: res://game/theme/visual_slot.gd.
+game/theme/visual_slot.gd: ERROR: res://game/tank/tank.tscn:26 - Parse Error: [ext_resource] referenced non-existent resource at: res://game/theme/visual_slot.gd.
+game/theme/visual_slot.gd: ERROR: res://game/tank/tank.tscn:30 - Parse Error: [ext_resource] referenced non-existent resource at: res://game/theme/visual_slot.gd.
+# -- 2. a class_name global's static, unregistered in --check-only --
+game/theme/factions/faction_art.gd: SCRIPT ERROR: Invalid call. Nonexistent function 'roster' in base 'GDScript'.
+tests/test_assets_factions.gd: SCRIPT ERROR: Invalid call. Nonexistent function 'roster' in base 'GDScript'.
+tests/test_theme_factions.gd: SCRIPT ERROR: Invalid call. Nonexistent function 'roster' in base 'GDScript'.

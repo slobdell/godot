@@ -262,3 +262,7 @@ build/   (gitignored)    exports and screenshots
     match can be another stream's process; and a `pkill -f` whose pattern appears in your own command line kills your
     shell (trip-up 19, exit 144). Find your own PIDs with `readlink /proc/<pid>/cwd` first (audio, 2026-09-17: nothing
     of anyone else's was hit, but only by luck).
+80. **`Arena._ready` picks its layout from `layout_name` or `--arena`, never from `Arena.active`.** Setting `active`
+    and instantiating silently builds the *default* arena; a test doing so reported "0 buildings" on the Terminus and
+    blamed the code under test (control, 2026-09-20). Set `layout_name` (or pass `--arena`) when a test needs a
+    specific map, and assert on something only that map has (lesson 36's rule).

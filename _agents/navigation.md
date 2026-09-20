@@ -5,6 +5,390 @@
 > `NavigationServer3D` runs A* over the navigation polygons baked from the arena's collision at startup
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
+## Round 9: the desired-velocity layer, and what replaces what
+
+> Written at the start of round 9 (2026-09-19) and kept current as each row lands. The backlog rows are A7, A11, A1
+> and A4 in [research_catalog.md](research_catalog.md); the sequencing argument is in [workstreams.md](workstreams.md)
+> *Round 9 goal*; the brief is [streams/nav.md](streams/nav.md).
+
+**The Invariant 0c declaration, verbatim, because a round-9 row is only safe if it REPLACES something** (catalogue
+Part 2: *replacing is safe, adding alongside is where two techniques fight*):
+
+> nav owns the **desired-velocity layer** — `game/ai/movement.gd`, `game/ai/combat_motion.gd`, `game/ai/steering.gd`,
+> `game/tank/tank_motion.gd`. It assumes **above** it that squad hands down goals and, since round 8, a `facing`. It
+> assumes **below** it that the plant honours (throttle, turn) with a bounded yaw rate. **A7 replaces the additive
+> blend; A11 replaces the 16-direction ring; A1 replaces the fixed repath / re-aim cadence; A4 replaces the straight
+> approach inside the arrival arc. None of the four adds alongside.**
+
+| Row | Replaces, by file and function | Restored by | Arm counter |
+|---|---|---|---|
+| **A7** null-space priority projection | the additive score in `CombatMotion.choose` (`WEIGHTS`, the `PENALTY_*` terms, `COMMIT_BONUS`) **and** the PID station override's precedence over avoidance in `Movement.drive` | `--nav-off=a7` | `a7_projected` |
+| **A11** dynamic-window arcs | `CombatMotion.RING` and the `wheels` / `min_cos` chord test | `--nav-off=a11` | `dwa_candidates_reachable` |
+| **A1** state-error tube | the `REPATH_SECONDS` / off-path / stalled cadence in `Movement._next_waypoint` (and, by request to squad, `TankBrain.MOTION_REPLAN_TICKS`) | `--nav-off=a1` | `a1_tube_skips` |
+| **A4** clothoid primitives | the straight approach in `Movement._approach_gate` | `--nav-off=a4` | `a4_clothoids` |
+
+**Two rules this layer holds itself to all round**, both bought with round-8 time:
+
+1. **An arm counter, or it is not a comparison** (lesson 147). Round 8's facing A/B compared two arms in which the
+   treatment never executed once, and the only thing that said so was a counter added for exactly that. Every row
+   above ships its counter in its first commit, and `nav-fight` reports them all under `arms`.
+2. **`--nav-off=<row>` selects between the NEW mechanism and the OLD one it replaces**, never "the new thing,
+   disabled into nothing", which is a third treatment rather than a control.
+   **`a7` is currently INVERTED** — like `holdband` and `r5sidestep` it turns its mechanism **ON**, because A7 is
+   built and measured but **is not the default**. See *A7 is built, measured, and NOT shipped on* below.
+
+**Determinism, for every row:** no wall clock inside a decision (`dt` is the tick), neighbours ordered by name, a
+fixed iteration count, ties to the lower index. Fresnel integrals (A4) come from a fixed-size table with fixed-order
+interpolation, never a series evaluated to a tolerance.
+
+**Audited at the start of round 9, rather than assumed** (`movement.gd`, `combat_motion.gd`, `steering.gd`,
+`tank_motion.gd`, `avoidance.gd`, `pid.gd`): the layer reads the wall clock in exactly **one** place,
+`movement.gd:435`, and it is a profiling lap timer whose value reaches `OrderController._lap` and nothing else — no
+decision consumes it. There is no RNG anywhere in the layer. So the round starts from a clean determinism position
+and every new row has to keep it, rather than having to establish it first.
+
+### The arrival gate's three-way counter (round 9, N0)
+
+`gates_offered` / `gates_aimed` / `gates_refused`, with refusals split by reason (`off_mesh`, `on_approach`,
+`reached`, `no_facing`, `bad_facing`). Round 8 could not tell *"never offered a facing"* from *"offered one and
+refused the gate"*, and those are opposite findings: the first is an instrument failure, the second is a mechanism
+finding. `nav-fight` reports the split, and the round's A/Bs all issue at least one order carrying a `facing` (a
+squad hold, and a move with one) so the arrival path is a live arm **by construction** rather than by memory.
+
+### A7's priority table (N1a, nav, 2026-09-19) — REVIEW WANTED from combat and feel before any A7 code
+
+> **What this is.** Catalogue row **A7** replaces the additive score in `CombatMotion.choose` and the PID station
+> override's precedence over avoidance in `Movement.drive`. *"Six multiply-adds"* understates it: `CombatMotion.WEIGHTS`
+> is where round 7's approved behaviour lives — standoff and shoot-and-scoot, commitment, armour toward threats, the
+> leash, the dodge, don't-walk-into-a-wall-of-bullets. **Every one of those either survives in this table as a named
+> priority or quietly does not.** So the table is written, reviewed and argued before a line of A7 exists.
+>
+> **Reviewers:** combat (N5 engagement envelope, L2 suppression, A2's switching cost), feel (S4 legibility — the A6
+> motion law must appear here as a named priority, not as a new additive term). Route: the orchestrator.
+
+#### How the levels work, and the one honest caveat
+
+The textbook statement (Antonelli, Arrichiello & Chiaverini 2008) synthesises a velocity as
+`v = Σ_i (Π_{j<i} N_j) v_i`, each lower task projected into the null space `N_j = I − J_j⁺J_j` of the higher ones.
+**Our velocity set is discrete** — a 16-direction ring today, A11's reachable (speed, yaw-rate) lattice after N2 — so
+the projection is exercised as a **tolerance-banded lexicographic filter over candidates**, which is the same algebra
+applied to a finite set:
+
+    survivors := feasible candidates
+    for each level i, highest priority first:
+        if the level has no active task: continue          # it leaves the whole set free
+        c_i := cost of each survivor at level i
+        survivors := { c in survivors : c_i(c) <= min(c_i) + TOLERANCE[i] }
+    choose argmin of the last level's cost; ties by lower index
+
+`TOLERANCE[i]` **is** the null space of level *i*: 0 makes the level dictatorial, ∞ makes it a pure preference. Fixed
+level count, fixed candidate count, no convergence loop, ties by lower index — deterministic by construction.
+
+**The caveat, stated plainly so nobody is surprised at merge: A7 does not remove tuning, it restructures it.** Eight
+weights that traded off incommensurable quantities (metres of range against radians of turn) become five tolerances,
+each with units inside one level. That is a better-shaped problem, not a smaller one, and the honest claim for the
+round is *"opposing goals can no longer cancel to zero"*, never *"nothing is tuned any more"*.
+
+#### The levels
+
+| # | Level | What it is | Null space it leaves |
+|---|---|---|---|
+| **0** | **FEASIBILITY** (a mask, not a level) | reachable by the plant this tick; inside the arena; not crossing or ending in an obstacle | everything else. If the mask is empty the boxed-in fallback runs, exactly as today |
+| **1** | **SURVIVAL** | a round that would hit me; a route through a beaten zone | free whenever no candidate is safe — a unit boxed in by fire still goes somewhere |
+| **2** | **WEAPON** | the standoff band (radial), the ram guard, keeping the target in sight | **the whole tangential component** — which is why circling survives untouched |
+| **3** | **ARC / ARMOUR** | front toward threats; the angle style's side-on guard; **A6's motion law, named** — A6-a the nose clause, A6-b the shoulder clause | **speed alone.** A6-b claims the sign of the arc (feel's one change, accepted — see below) |
+| **4** | **FORMATION** | the leash on the element slot; crowding; `Movement`'s PID station | everything inside the slot's cell |
+| **5** | **PREFERENCE** | tangent, side, flank, continuity, turn cost, reverse cost, commitment | — (argmin here decides) |
+
+**Level 5 keeps the additive weighted sum, deliberately.** A7 forbids summing *across* priority levels, not within
+one. Continuity, the turn cost and commitment go on working exactly as round 7 measured them; what changes is that
+they can no longer outvote a dodge or a standoff band.
+
+#### Every term in the code today, and what it becomes
+
+| Term (`combat_motion.gd`) | Today | Becomes | The lead-approved behaviour it encodes |
+|---|---|---|---|
+| `WEIGHTS[*]["range"]` (1.0 / 1.0 / 1.2 / 0.0) + `_band()` | additive | **Level 2**, as a constraint on the **radial** component only. **The band stays `[weapon.preferred_min, weapon.preferred_max]` read from `Weapons.PROFILES` via `tank_brain.gd:2315`** — no radial constant beside it, or the motion band and N5's firing envelope drift apart silently (combat's condition) | Round 7 standoff / shoot-and-scoot: closest approach 3.0 → 27.7 m, shots 29 → 211. The project's largest measured behaviour win — it is a priority, not a preference |
+| `standoff_holds()` → `{"hold": true, "index": -1}` | an early return **before** the ring is scored | **Level 2's zero-radial solution, scored as a candidate like any other — and carrying its own level-5 term** (see *The hold's own term* below) | Round 7's "stop and shoot". **This is the round-8 cancellation failure being fixed**: a hold returns index −1 today and therefore never consults commitment, so we shipped and measured a term that was never in that code path |
+| `MIN_GAP`, `PENALTY_RAM` (1.2) | penalty | **Level 2** (the band's inner wall) | "Scouts are just running directly into their targets" |
+| `SIGHT_CHECKS` (6), `clear_line_coarse` | a post-hoc rescan of the best 6 | **Level 2's null-space preference** — it orders everything that ties on the band, not only the top 6. **Carries a CPU number** (up to 16 line checks per plan against 6) | "Circling out of view loses the fight" (the Lancer after CP2). Strictly better than today by construction |
+| `PENALTY_HIT` (3.0), `would_be_hit` | penalty | **Level 1** | X3 the dodge. Now strictly dominant — but **predict this as a TAIL effect, not a headline**: 3.0 against a maximum achievable `strafe` sum of ~3.25, so today it is outvoted only by a candidate that is near-perfect on everything else |
+| `beaten` (L2) + `beaten_fallback` | **already a hard skip** (`:313-316`), released only when nothing is safe | **Level 1**, with the same release. **This is a rename, not a win** (combat's word, and it is right): the behaviour is dominant today and stays dominant | "Don't walk into a wall of bullets" — and the release keeps "a unit boxed in by fire has to go somewhere" |
+| `WEIGHTS[*]["armor"]`, `threats`, `MULTI_THREAT_ARMOR`, `BUSY_ARMOR` | additive 0.15–1.0 | **Level 3** for hull-fixed and heavy hulls; **null-space task (level 5)** for turreted hulls, whose gun does not need the hull. **Scope, corrected by combat: this reaches only the `strafe` style, where the weight is 0.15** — already the smallest term in that vector against `range` 1.0 and `tangent` 0.8 | X3 "keep your front toward threats", and the busy-target flank |
+| `PENALTY_SIDE_ON` (1.5), `ANGLE_MASK_COS` | penalty, angle style only | **deleted as a constant**; it is level 3's expression for the `angle` style | Heavy hulls rocking along one angled heading instead of turning side-on |
+| `PENALTY_LEASH` (1.5), `LEASH_FALLOFF` | penalty | **Level 4** | X1 "fight from your place in the formation" |
+| `PENALTY_CROWD` (0.6), `FRIEND_SPACING` | penalty | **Level 4** | Mutual support without piling up |
+| `WEIGHTS[*]["tangent"]` | additive | **Level 5**, inside level 2's null space | Round 3's circling — the lead's "no intent of trying to circle your opponent" |
+| `WEIGHTS[*]["side"]`, `flank`, `BUSY_FLANK` | additive | **Level 5** | X3 the busy-target flank |
+| `WEIGHTS[*]["continuity"]`, `["turn"]`, `turn_seconds()` | additive | **Level 5** | "A pivot is time standing still, the easiest shot there is" |
+| `WEIGHTS[*]["reverse"]` | additive; **negative means never reverse** (`run`) | **Level 5**, priced — never a veto | P3: forbidding a switch more than doubled switch-and-switch-back. A reversal is priced, and A4 prices its cusp |
+| `COMMIT_BONUS` (0.35) | additive | **Level 5, UNCHANGED by A7** | Round 7 commitment. **See the composition hazard below — this term is also combat's A2 this round** |
+| `RING`, `wheels`/`min_cos` | the candidate set | **untouched by A7; A11 replaces them at N2** | — |
+| `HOLD_SLACK_M` / `--nav-off=holdband` | opt-in hysteresis | **unchanged**, still opt-in | Its A/B missed its bar in round 8; it is not smuggled in under A7 |
+| `fixed_style == "run"` | round 3's attack runs | **keeps the old additive blend, untouched** | It exists to be an A/B control (`--nav-off=standoff`). A control that is also rewritten is not a control |
+
+| Term (`movement.gd`) | Today | Becomes |
+|---|---|---|
+| `_avoid` (ORCA) vs `_keep_station` (PID) | the station PID runs **last** and overwrites the avoiding velocity (`movement.gd:483`) | **the priority inversion A7 exists to fix**: avoidance is Level 1, station is Level 4, and the station's correction is clamped into the avoidance-feasible set instead of applied on top of it |
+| `_around_fire` | pipeline stage | Level 1 |
+| `_next_waypoint` / `_approach_gate` | pipeline stage | Level 2 (the goal task); A4 replaces the gate's straight approach at N4 |
+| `_guard_steer`, the chord test | pipeline stage | Level 0 (feasibility) |
+
+#### By style, since a style stops being a weight vector
+
+| Style | Level order | Level 5 weights |
+|---|---|---|
+| `strafe` (turret) | 1 · 2 · 4 · 5, **armour demoted into 5** | tangent high — the turret aims independently of the hull |
+| `angle` (heavy tracked) | 1 · 2 · **3** · 4 · 5, armour promoted above formation | wider radial tolerance at level 2, so it rocks along one angled heading |
+| `standoff` (fixed gun) | 1 · 2 (with the hold as a candidate) · **3** · 4 · 5 | armour at level 3 because the hull *is* the gun mount |
+| `run` (A/B control) | — | the round-3 additive blend, unchanged |
+
+#### The hold's own term (combat's blocking objection, 2026-09-19 — accepted)
+
+combat traced the table's own filter and found that making the standoff hold "a candidate like any other" **votes it
+out every tick**: a crew in band has a level-2 radial cost of ~0, so the hold survives — but so does every in-band
+ring direction, and level 5 for `standoff` then does argmin over `tangent 0.5, flank 0.3, continuity 0.3, side 0.2`.
+**The hold scores zero on tangent; a tangential candidate scores the full 0.5.** That is not a tolerance to discover
+after the code exists; it is the default outcome of the weights as the table originally left them.
+
+**The fix, and it is a statement rather than a constant: for the `standoff` style, level 5's `tangent` and `side`
+terms apply only while level 2 is UNSATISFIED.** A fixed gun's tangent term exists to reposition it into its band. In
+band, a fixed gun's nose *is* its aim (measured: nose-on **0.91**), so tangential motion costs the shot and buys
+nothing — which is precisely what round 7 removed when it replaced `run` with `standoff`. No hold bonus is introduced,
+because a bonus would be a number nobody can defend; the rule is that a satisfied weapon level does not want motion.
+
+**The documented "slide along the band when rounds are incoming" survives, and by the right mechanism:** level 1
+filters first, so an incoming round that would hit removes the hold candidate and leaves the sliding ones. The
+behaviour is unchanged; what changed is that it is now a consequence of the priority order instead of a special case.
+
+**And the hold finally reaches the commitment path.** The hold keeps `index = -1`, and the level-5 commitment term
+matches `previous_index == -1`, so a unit continuing to hold is rewarded for continuity exactly as a unit continuing
+to drive is. Round 8's clearest finding was that `COMMIT_BONUS` was never in the hold's code path at all; **the arm
+counter reports holds separately so this is a number, not a claim** (combat's condition, and lesson 117).
+
+**Acceptance, pre-registered, reported before and after with the hash** —
+`scenario_motion::test_a_scout_holds_a_firing_position_instead_of_ramming`, pristine `9f864474`, laptop,
+`make ai-scenarios`: **closest approach 26.9 m, in-band 0.92, nose-on 0.91, 226 shots**, against the `run` control's
+6.0 m / 0.05 nose-on / 13 shots. **If A7 moves any of those four the wrong way, A7 is wrong, not the scenario.**
+
+#### A held unit's leash is a level-0 bound, not a level-4 preference (orchestrator's ruling, 2026-09-19)
+
+Level 1 filtering before level 4 means a unit ordered to hold a firing line could be pulled off it by fire without the
+leash ever being consulted — which breaks the product constraint that **the player's units hold until ordered**, and
+squad's `scenario_elements::test_the_base_of_fire_keeps_firing_while_the_others_move` with it (baseline: base shots
+5 then 4, through a friend 0).
+
+**So: for a unit under a hold or a station order, the leash is a level-0 FEASIBILITY bound on every candidate,
+including dodges.** A held unit may dodge *within* its leash and never leaves it; a dodge that would exit the leash is
+**infeasible, not merely dispreferred**. For a unit that is not holding, the leash stays the level-4 soft term it is
+today (X1: manoeuvre inside your slot's cell, be pulled back rather than frozen). squad gets that scenario's
+before/after with the hash.
+
+#### A1: the state-error tube, and why its radius is not a number (2026-09-20)
+
+**`--nav-off=a1` turns A1 ON.** It replaces the fixed `REPATH_SECONDS` 4.0 cadence in `Movement._next_waypoint`.
+The goal-moved, off-path and stalled triggers are **events** and are untouched: a plan is abandoned the instant
+something invalidates it, never on a clock.
+
+**The radius has an exact answer rather than a tuned one, and finding that took two wrong versions.** Tabuada's
+self-triggered control stores, at plan time, how far the state may drift before the plan stops being near-optimal.
+For *this* plan on *this* navmesh:
+
+> The navmesh is **static** and the route is **optimal**, so by Bellman's principle the route is still optimal from
+> every point **on** it. Nothing about driving along a valid route degrades it. The only state errors that can
+> invalidate it are leaving the route, the goal moving, or being stuck — **and all three are already events.**
+> **So the tube radius IS the off-path corridor**, and `REPATH_SECONDS` on top of it was re-asking a question whose
+> answer could not have changed.
+
+**The two wrong versions, both measured before being discarded** — and they failed the same way, which is the
+transferable part: *a radius derived from the route's shape is a cadence wearing a radius.*
+
+| version | why it failed |
+|---|---|
+| distance to the second corner ahead, capped at 40 m | a tank covers ~36 m in the 4 s cadence, so the **cap** bound first. `a1_tube_skips` **0**, re-plans **3 of 3** |
+| the same, uncapped | navmesh routes are funnel-smoothed polylines — **19 points over 100 m** — so "two corners ahead" is **28.7 m** and the hull drifts past it in **3.2 s**. It fired **earlier than the cadence it was replacing**. `a1_tube_skips` **0** again |
+
+The probe that settled it is worth keeping in mind before designing any geometric budget on a route: at 9 m/s the
+hull's drift from its plan point passed 28.7 m every 3.2 s, all the way down a clear straight corridor.
+
+**Two instrument bugs caught on the way, both of which would have flattered the treatment:**
+1. **The cadence clock did not re-arm while the tube held**, so `_repath_left` sat below zero and `a1_cadence_due`
+   ticked **once per tick** — *120 "cadence firings" in 8 seconds*. It now re-arms whether or not a re-plan follows,
+   so the counter says what the cadence would really have fired on that run.
+2. **The test helper had the switch inverted** (`a1` is opt-in, so `--nav-off=a1` turns it *on*) and the arms came
+   back the wrong way round. The counters caught it — which is the entire reason they exist, and a reminder that a
+   test helper lies about the arm exactly as readily as a probe header does.
+
+#### A11: the dynamic window, and the two things building it taught us (2026-09-20)
+
+**`--nav-off=a11` turns A11 ON, inside A7's chooser (itself opt-in).** `RING` and the `min_cos` chord test survive
+only in `choose_blended`, the round 3–8 control.
+
+**It is generated in COMMAND space and evaluated through the plant.** A fixed 9 × 9 grid of (throttle, turn), each
+rolled through `TankMotion` for the control period; the resulting pose, speed and yaw rate *are* the cell. Nothing in
+A11 models the plant, so nothing in A11 can drift from it — which is precisely what the `min_cos` chord test does
+today, restating the wheeled turning rule a file away from the rule itself.
+
+**Lesson 1 — the creep is a plant reflex that eats commands, and a hand-written inverse cannot see it.** The first
+version inverted the plant by hand (pick a speed, solve for the throttle). It was wrong for wheels, because the
+multi-point creep hijacks the throttle whenever `|throttle| < WHEEL_CREEP_THROTTLE × |turn|`: the lattice promised
+3.53 m/s and the plant delivered 4.30. Evaluating the plant makes that region **honest instead of invisible** — the
+creep's legs appear as cells with their real speed and yaw, so a K-turn is one scored option among 81. *Whether
+`WHEEL_CREEP_THROTTLE` survives is now a finding rather than a decision*, which is what the brief asked for.
+
+**Lesson 2 — the window is over the CONTROL PERIOD, not over one tick.** A one-tick window offered a tracked hull
+starting from zero yaw only `yaw_accel × dt`; held constant over a 2 s arc that is **21° of heading change** when the
+hull can swing 160°. Every candidate pointed nearly the same way and level 3 had nothing to choose between.
+`DWA_CONTROL_SECONDS` is 0.25 — the brain's own re-plan cadence, and exactly `YAW_RAMP_SECONDS`.
+
+**Measured** (laptop, against the A7-only arm; pristine `9f864474` in brackets):
+
+| | A7 | A7+A11 |
+|---|---|---|
+| scout standoff: closest / in-band / nose-on / shots | 22.7 / 0.92 / 0.92 / 225 | **25.5 / 0.93 / 0.92 / 227** *(26.9 / 0.92 / 0.91 / 226)* |
+| slot drift / shots | 42.1 m / 5 | **38.7 m / 6** *(blend 15.4 / 10)* |
+| **turreted duel** | 100% / 100% front hits over 20 s | **67% over 6.3 s** ✗ |
+
+**⚠ CORRECTION (nav, 2026-09-20): the assertion that fails is NOT the front-armour one.** nav first reported this
+as *"front hits 67% against a bar of 80%"*. Both halves of that were wrong. The scenario's front-armour bar is
+**≥ 50%** and A11 reads **67%**, which passes comfortably — *the check the scenario is named for is fine.* The
+failing line is **`and they still fight ([2, 2] shots)`**, a bar of **6** shots.
+
+**And the shot count is low because the duel ENDS AT 6.3 s of a 20 s scenario** — the harness breaks the moment
+either tank dies (`_duel`, `scenario_motion.gd:24`). Under A11 the two hulls move markedly more (0.77 / 0.76 against
+0.67 / 0.73) and kill each other **three times faster**, so there is no time to fire six rounds.
+
+**So the open question is not "does A11 cost front armour" — it is "why does A11 settle a tank duel three times
+faster", and whether that is lethality or blundering.** The scenario cannot answer it: it was built to check that
+hulls weave with their fronts on the gun, not to judge how quickly a duel should end. That is the first thing to
+look at when A11 resumes, and it needs an instrument that measures the exchange rather than the survival time.
+
+#### ⚠ A7 is built, measured, and NOT shipped on (2026-09-20)
+
+**A7 is opt-in: `--nav-off=a7` turns it ON, and the default is the additive blend.** Everything below it in this
+section is built, unit-tested and measured. It is not the default because **the behaviour assertion and the ladder
+disagree, and the rule is to believe the behaviour assertion** (lesson 150).
+
+**What fails** — `scenario_elements::test_a_unit_fighting_from_a_formation_slot_stays_in_it`, same tree, A7 against
+the blend (laptop):
+
+| | blend (default) | A7 |
+|---|---|---|
+| in-slot drift | **15.4 m** (bar ≤ 16) | **42.1 m** ✗ |
+| free drift | 43.2 m | 62.9 m |
+| in-slot shots | **10** (bar ≥ 6) | **5** ✗ |
+
+**What passes:** all six A7 unit tests; all four `scenario_motion` scenarios, including both of combat's
+pre-registered ones — the scout standoff (closest 22.7 m, in-band 0.92, nose-on 0.92, 225 shots against the pristine
+tree's 26.9 / 0.92 / 0.91 / 226) and the turreted duel that is the armour demotion's falsifier (front hits
+**100% / 100%** against the pristine **100% / 80%**); and all five `scenario_elements` scenarios on the default path,
+which reproduces the pristine numbers exactly, so the sim baseline does not move.
+
+**The cause, localised by switching each level off in turn rather than guessed: level 2.** With the weapon level
+inactive the drift returns to 16.3 m; with level 3 inactive it stays at 37.6 m. **Strict "weapon above formation"
+makes a unit hold its band around the enemy, and holding a band around an enemy is what takes it out of the slot it
+was given.** The blend let the two compromise; strict priority does not.
+
+**Why this is a contract question and not a tolerance to tune.** The fix for exactly this failure already exists and
+was ruled on: state the task region at level 0, so a unit manoeuvres *within* its leash. It does not engage here,
+because **`TankBrain.element_slot()` returns null for the `bound` and `maneuver` roles**, and an attacking element's
+members are one of those — so there is no leash in the request and no task region for level 0 to state. So the
+question for squad is: **should an attacking element's members carry a leash?** Under the blend the answer did not
+matter, because `WEIGHTS["range"]` and `continuity` compromised by accident. Under A7 it decides the behaviour.
+
+**Two things this measurement is worth keeping for, whatever squad answers:**
+
+1. **A level that speaks late only gets to rank what the levels above it left.** nav's leash, nav's `_front_share`
+   floor and combat's score floor are three instances of the same shape in one day — *the ranked set was already
+   destroyed before the ranking ran*. The leash version is the sharpest: no tolerance at level 4 can fix a level-4
+   term, because the candidates it wanted were removed at level 2.
+2. **Making a cost monotone changes what its tolerance means.** The first monotone `arc` cost kept `TOLERANCE` at
+   0.25 and the duel's front hits fell 100% → 75%, because `(1 − dot) / 2` reaches 0.25 at 60° where the floored
+   `1 − max(0, dot)` reached it at 41°. The tolerance has to be re-derived with the cost or the level quietly loosens.
+
+#### A6 at level 3, and the one cell feel changed (accepted, 2026-09-20)
+
+feel's [`legibility.md`](legibility.md) confirms level 3 — the law does **not** outrank the standoff band — and asks
+for one change to this table, which nav accepts because the argument is right and it is the difference between A6
+mattering and A6 being decorative:
+
+> Level 3's null space was written as *"the sign of the arc (either shoulder), and all speed"*. **A6 claims the sign
+> of the arc. What level 3 leaves below it is speed alone.**
+
+**Why that is right:** A6's falsifier is measured on **velocity**, not on heading. For a turreted hull the nose is
+already free of the gun — the velocity is chosen at levels 1, 2 and 5 and the nose follows it — so **A6-a (the nose
+within 25° of the corridor tangent) would pass its own review and leave P7 at 30–36%.** The clause that moves the
+number is **A6-b**: when a unit must go off-corridor for the band or for survival and both shoulders serve equally,
+take the shoulder that advances along the corridor. A unit orbiting at band radius can orbit either way, and today
+that choice is made by `tangent` / `side` / `flank` / `continuity`, **none of which has ever heard of the corridor.**
+Round 3's circling is untouched: it is the *shoulder* that is claimed, not the circling.
+
+**The two clauses as explicit rows, so the table is complete before the code** (the orchestrator's request):
+
+| Clause | Level | What it CONSTRAINS | What it LEAVES FREE | Replaces |
+|---|---|---|---|---|
+| **A6-a** the nose clause | 3 | the hull's **heading**: a turreted hull within **25°** of the corridor tangent `t̂`; a hull-fixed hull bounded **forward-oblique at 75°** (its hull *is* its gun mount) | the whole velocity — which is why this clause alone cannot move the falsifier | **nothing.** The nearest thing was `PENALTY_SIDE_ON` / `ANGLE_MASK_COS`, and A7 already deletes that constant and re-expresses it as level 3's arc task, so A6-a **composes** with the arc task rather than replacing it |
+| **A6-b** the shoulder clause | 3 | the **sign of the tangential step** when a unit must go off-corridor for the band or survival and both shoulders serve that equally: take the one whose velocity has a non-negative projection on `t̂` | **speed alone**, and the radial component entirely (level 2 owns that). Round 3's circling is untouched — the *shoulder* is claimed, not the circling | **nothing.** Today the orbit direction is settled by `tangent` / `side` / `flank` / `continuity`, none of which reads the corridor |
+
+**The corridor is N1's `path_points` current leg and nothing recomputed — confirmed against the code, not agreed.**
+`Movement.reading()` slices `path_points` from the mover's own `_path_index`, so `path_points[0]` **is** the next
+waypoint and the current leg runs from the hull's projection onto it. There is no second leg index to disagree with.
+
+`TOLERANCE["arc"]` stays nav's and A6 wants it **banded, not dictatorial** — prefer the advancing shoulder unless the
+retreating one is better at level 3's own cost by more than the tolerance — so nothing is wedged into a worse arc for
+a tidy line. Inside level 3, feel's per-style composition applies: `strafe` is A6-a alone (armour is already demoted
+to level 5 for turrets by nav's style table), `angle` is armour first with A6-a in its null space, `standoff` is
+armour/lay first then A6-a's 75° forward-oblique bound, and `run` is untouched.
+
+**Two assumptions the page makes about this layer, both checked rather than agreed:**
+
+1. **The corridor is N1's `path_points` current leg, one publisher.** True today and better than feel knows:
+   `reading()` already slices `path_points` from `_path_index`, so **`path_points[0]` IS the next waypoint and the
+   current leg runs from the hull's projection to it.** nav will publish the tangent explicitly (`corridor`) at N5
+   rather than leave every consumer to re-derive it from the array — one publisher should mean one *interpretation*,
+   not just one array.
+2. **An inactive law must not look like a broken one** (lesson 149). nav owns the flag: A6 is inactive with no
+   order, on `phase == "blocked"`, with no path yet, while a reflex owns the heading, or under `run`. The falsifier
+   is computed over active ticks only with the active fraction reported beside it — a number that improves because
+   the law switched itself off more often is not a pass.
+
+**Nothing of A6 is in code, and nothing will be until the page carries all three signatures** (contract S4). A7 ships
+level 3 carrying the arc/armour task only; A6 joins that level at N5.
+
+#### ⚠ Composition hazard, for the orchestrator: A7 and A2 both touch `COMMIT_BONUS` this round
+
+This is catalogue Part 2 happening in real time, in two streams, on one constant. **A7 relocates the commitment term
+into level 5 without changing its value; combat's A2 replaces the flat bonus with a state-dependent switching cost.**
+Those compose only if A2 lands as *the level-5 commitment term's new expression*. If A2 lands as an additional
+penalty somewhere else in the same scorer, we get the exact failure Part 2 predicts: two correct techniques, neither
+working. **nav's proposal: A2's switching cost IS level 5's commitment term, and nav adopts combat's expression
+verbatim rather than keeping a constant beside it.** Sequencing: A7 lands first and leaves the term in one named
+place, so A2 has one line to replace. **Adopted as contract S5** (`workstreams.md`), with three integration terms
+settled with combat:
+
+1. **nav takes `SwitchingCost.seconds_for()`, not `penalty()`.** The seconds are the portable quantity; combat's
+   `PRICE_PER_SECOND = 0.07` and its 0.35 cap are calibrated to the brain scorer's 0..1.2 range and mean nothing in
+   nav's level-5 units. nav scales the seconds itself and publishes the exchange rate and the tree it was calibrated
+   on.
+2. **nav drops combat's stance floor.** combat charges `max(v·(1−cos Δθ), v)` when the *option* changes on one target,
+   because ENGAGE / SUPPRESS / ORBIT drive to different places and that floor is the only thing pricing option
+   thrash. nav's candidates are **directions**, which already carry their own Δθ, so the floor would charge every
+   candidate the full velocity and flatten the ring. nav uses the bare `slew + v·(1−cos Δθ)/braking` with a ceiling.
+3. **It stays a price with a ceiling, never a veto** (P3).
+
+
+
+#### What nav is asking each reviewer for
+
+- **combat:** does the level order above preserve N5's engagement envelope and L2's suppression behaviour? Two
+  specific predictions nav wants challenged: (1) making the dodge **strictly dominant** (level 1, not a −3.0 penalty)
+  will break units off under fire more decisively than today; (2) demoting armour to level 5 for turreted hulls is
+  right because the turret aims independently — but the scout's engine-deck behaviour (41/23) is exactly the kind of
+  thing that dies quietly to a change like that, so **run your two scenarios on nav's A7 commit rather than a copy**.
+- **feel:** A6's motion law (S4) is written into **level 3** above. Is a heading constraint at level 3 — above
+  formation, below the weapon band — where the legibility contract wants it? If the law should outrank the standoff
+  band, say so now: that is a one-line change here and a re-argument after the code exists.
+
 ## The layers
 
 ```
@@ -142,6 +526,56 @@ an IFV with a 1.2-radius carrot three-point-turned for a second on a 40° bend.)
 Tanks are not holonomic, so ORCA's "take this velocity now" is only approximately achievable; in practice the hulls
 turn fast enough (80°/s) that it resolves. **Do not** read the chosen velocity as a physics guarantee — hulls still
 collide through `move_and_slide`, and that is intended (vehicles are vehicles).
+
+## The engine's `NavigationAgent3D` avoidance against ours (nav, round 9, stretch) — COMPARED, NOT SWAPPED
+
+[`algorithms.md`](algorithms.md) has carried an open instruction since 2026-09-19: *"Do not swap without measuring
+both — but do not leave the comparison unmade either."* This is the comparison. **Verdict: keep ours. Revisit only on
+a profile that shows ORCA dominating the tick, which is not the profile we have.**
+
+**The surface, probed from `ClassDB` on our pinned Godot 4.7.2, not read from docs:** `NavigationAgent3D` has
+`avoidance_enabled`, `radius`, `height`, `neighbor_distance`, `max_neighbors`, `time_horizon_agents`,
+`time_horizon_obstacles`, `max_speed`, `velocity`, `avoidance_layers`, `avoidance_mask`, `avoidance_priority` and
+`use_3d_avoidance`; `NavigationServer3D` exposes the same as `agent_*` calls plus `agent_set_avoidance_callback` and
+`agent_set_velocity_forced`. The computed velocity comes back through the **`velocity_computed` signal** (the node's
+`_avoidance_done` callback), not as a return value.
+
+**The algorithm is not the difference.** Godot's avoidance is RVO2 internally and `game/ai/avoidance.gd` is a port of
+RVO2's linear programs. Choosing between them is an *integration* question, not a quality one, and that is what makes
+the five differences below decisive rather than a matter of taste.
+
+| | ours (`avoidance.gd`) | the engine's |
+|---|---|---|
+| **When the velocity arrives** | synchronously, inside the mover's own tick | **asynchronously**, via `velocity_computed` after the server's sync |
+| **Reciprocity** | 0.5, and **a parked neighbour takes none, so the mover takes all** | 0.5, with `avoidance_priority` as a scalar override |
+| **Navmesh awareness** | an avoiding velocity that would put the hull off the mesh 3 m ahead is **refused**; the unit keeps its route and slows | none — RVO2 agents avoid agents and `NavigationObstacle3D`s, not mesh boundaries |
+| **K1 (the 100 ms response guarantee)** | `AVOID_GRACE_TICKS` 10: avoidance sets throttle only, and `AVOID_MIN_PACE` keeps a crowded way on moving at 15% | no equivalent; it returns a velocity |
+| **Right-of-way (X4)** | peer-to-peer negotiation: yield spots on the navmesh, debts, refusals, a player order cancelling a give-way | `avoidance_priority`, a static scalar |
+
+**The three that decide it:**
+
+1. **The asynchronous delivery breaks an invariant we rely on.** Every controller runs before any tank moves, so all
+   of them see one tick's positions — that is why `Avoidance.refresh()` can build one neighbour table per tick for the
+   whole match and why the result is deterministic by construction. A velocity that arrives on a signal after the
+   server's sync is a velocity from the *previous* state, and lockstep multiplayer and the sim baseline both depend on
+   this not being true.
+2. **`avoidance_priority` is coarser than the knob we already know we need.** Catalogue **C4** — proposed
+   independently by both external reviews — wants inertia weighting `α = Iⱼ/(Iᵢ+Iⱼ)`, a **per-pair** responsibility
+   split, because a 50/50 split is wrong across a 5× footprint range and CP2 is about to make that range wider. The
+   engine exposes one scalar per agent. Swapping would move us *away* from the row we intend to adopt.
+3. **We would keep most of our integration anyway.** The navmesh refusal, the K1 grace, the minimum pace and X4 are
+   all ours and none of them has an engine counterpart, so the swap buys a C++ inner loop and keeps the wrapper.
+
+**And the thing the swap would buy is not a bottleneck.** ORCA, right-of-way and the carrot together cost **+0.57 ms
+per tick** at 60 brains (builder0, `1923059c`, `make ai-perf --profile-parts`; `move` 1119 → 1688 µs). The frame-rate
+fight was won in round 5, and round 9's own T1 finding is that a `check` on builder0 is one single-threaded process at
+~7% CPU — we are latency-bound, not compute-bound. **Buying CPU we are not short of, at the price of determinism, the
+navmesh refusal and K1, is a bad trade in a game whose measured problem is the *shape* of the motion.**
+
+**What would change the verdict:** a profile in which ORCA dominates the tick at the unit counts the lead plays; or
+the engine gaining a per-pair responsibility weight. Neither is true at `7edec4fb`. **`NavigationObstacle3D`,
+`NavigationLink3D` and `PATH_METADATA_INCLUDE_*` remain genuinely worth having and are unaffected by this** — the
+verdict is about the avoidance solver only.
 
 ## X4: right-of-way
 
