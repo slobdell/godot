@@ -2108,3 +2108,27 @@ what the no-pay-to-win pillar needs. **In one sentence for him: the factions alr
 and none of them drives better.** What this is not: one hull, a synthetic slot, no enemies or terrain; whether the
 difference reads *in a fight* and stays balance-neutral in a match is unmeasured, and cannot be measured until
 `ControlGains` takes a runtime override (nav's file, requested) so identical armies can be given different gains.
+
+## 2026-09-20, afternoon: first play after round 9's merges (`make skirmish`, main at `7424420b`)
+
+His words, verbatim:
+
+> ok what are we waiting on to merge right now? I did a make skirmish and there is neither the blimp that I wanted
+> to see or the lighting effects on the Terminus map (i.e. making use of the windows). I did see the subtle glowing
+> effect but that's it. The units seem a little smarter but it's hard to tell - The Terminus map is also probably
+> still not ideal because these containers in the middle of the road make it hard to tell if the section is just
+> impassible - I'll know that they units are doing what I want when I can navigate them through the Terminus streets
+
+What that is against the tree he played (orchestrator's reading, 16:40):
+- **The blimp was never briefed.** No stream, brief or design note in this repo mentions one; it is a gap in the
+  orchestrator's record of his intent, not a stream's miss. Round 10 item, art direction his.
+- **The Terminus windows DO breathe on that tree** (`show_window` / `show_edge` uniforms in `city_block.gdshader`,
+  driven from `show.gd`), and they are exactly as subtle as the show stream measured them to be: a 30 % swing on a
+  `[0.80, 1.10]` band, every cue gated by a luminance pair at a 4.6 % bar. "Subtle glowing effect but that's it" is
+  the show as built. His eye is the verdict the brief said counts: the dial is the band's WIDTH (show's own note), and
+  round 10 turns it up until HE says it reads, with a before/after pair for each step.
+- **"Units seem a little smarter":** hold-on-arrival, squad facing, the hull-shaped marker and control's chevron are on
+  the tree; combat's settle tick (`Tank.place()`, every match's first tick fixed) is NOT yet, and the plant constraint
+  is OFF. The acceptance he names, driving squads through the Terminus streets, is round 10's bar for nav + squad.
+- **Containers in the middle of Terminus roads:** an arena-authoring question (feel's kit, nav's clearance rule). The
+  read he wants, "is this passable", is a legibility problem before a routing one.
