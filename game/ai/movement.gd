@@ -520,15 +520,20 @@ static func bake_radius(unit: Node) -> float:
 		return _bake_radius
 	var found := -1.0
 	if unit != null and unit.is_inside_tree():
-		# Taking the FIRST region is safe and was checked rather than assumed: `arena.gd` adds a second region,
-		# `NavigationMirror`, but assigns it the SAME `NavigationMesh` resource (`mirror.navigation_mesh = nav_mesh`)
-		# rotated by PI — so `agent_radius` is identical whichever one the search meets. If arena ever gives the
-		# mirror a mesh of its own, this must pick `$Navigation` by name instead.
+		# KEYED TO THIS HULL'S OWN WORLD, not to the first region in the tree. Taking the first was safe only
+		# because `arena.gd`'s `NavigationMirror` shares the same `NavigationMesh` — luck, not design, and it stops
+		# being even that the moment two arenas can be alive at once, which is exactly the state that produced
+		# combat's 284 edge errors. Matching `get_navigation_map()` against the hull's own map means a region
+		# belonging to some other world can never answer for this hull.
+		var my_map := unit.get_world_3d().navigation_map if unit is Node3D else RID()
 		for node in unit.get_tree().get_root().find_children("*", "NavigationRegion3D", true, false):
 			var region := node as NavigationRegion3D
-			if region != null and region.navigation_mesh != null:
-				found = region.navigation_mesh.agent_radius
-				break
+			if region == null or region.navigation_mesh == null:
+				continue
+			if my_map.is_valid() and region.get_navigation_map() != my_map:
+				continue
+			found = region.navigation_mesh.agent_radius
+			break
 	if found < 0.0:
 		# No arena in the tree (a unit test that never built one). Fall back to the documented expectation rather
 		# than to a guess, and say so — a silent fallback here is a mirrored constant wearing a function's clothes.
