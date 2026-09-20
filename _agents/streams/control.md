@@ -200,6 +200,15 @@ driving somewhere other than where he sent them, correctly, because they are fig
 owns the readout; the bar is joint (opposing-tangent time under 10% with no fall in exchange ratio). The nearest thing
 already built is `facing` on a move: the hull's orientation carrying the order's intent.
 
+**Round 9, control's, found at round-8 close: THE ARRIVE-FACING ARC HAS NO CALLER IN THE LEAD'S GAME.** `facing` on a
+move is issued in exactly one place — `game/ui/tactical_map.gd:269`, the **touch map's** right-drag (press =
+destination, drag = facing). That map is behind `--touch-map`; the lead plays `RtsControls`, which only ever READS
+`facing` (rts_controls.gd:307). Squad sets it for holds and stations. So nav's `_arrive_facing` cannot fire in play,
+which is why its A/B read `gates aimed 0, refused 0` in both arms. **Fix (control's): the desktop right-click gains the
+touch map's grammar — press = destination, drag = the heading to arrive on** — with a test asserting
+`orders.current(unit)["facing"]` after a drag so the next A/B has a live arm by construction, and a look at the lead's
+pose (a facing drag must not read as a box-select; the pin should show the heading it will arrive on).
+
 **Round 9, Invariant 0 (the orchestrator's): `RtsCamera.VISION_FRAME_BOTTOM` should READ the command card's geometry,
 not mirror it.** The derivation it mirrors, at 1920×1080: the card (`SelectionPanel.HEIGHT` 200) plus the group chips
 put the HUD's top edge at y 778, i.e. (778 − 540) / 540 = **0.44** of the half-height below centre; the constant is
