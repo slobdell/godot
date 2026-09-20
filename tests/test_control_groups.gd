@@ -155,3 +155,28 @@ func test_group_chips_say_what_each_squad_is_doing() -> void:
 	assert_true(GroupBar.STATE_WORDS.has("idle"), "idle has a word on the chip")
 	await f.select(["Green_Alpha_3", "Green_Alpha_1", "Green_Alpha_2"])
 	assert_true(bar.summary()[0]["selected"], "group 1 is lit whatever order its units were picked in")
+
+
+## Round 9 (CP2): a radar blip reads the hull it stands for. Every blip used to be the same dot, which was fine when
+## the roster ran 2.8-5.0 m and throws away what the resize bought now that it runs 2.93-14.0 m.
+func test_a_radar_blip_reads_the_hull_it_stands_for() -> void:
+	var lengths := {}
+	for unit_id: String in ["gang_scout", "tank", "gang_tank"]:
+		var hull: Array = Units.stat(unit_id, "hull_size")
+		lengths[unit_id] = float(hull[2])
+	var measured := {}
+	for unit: String in lengths:
+		measured[unit] = [lengths[unit], snappedf(Radar.blip_scale(lengths[unit]), 0.01)]
+	print("MEASURE radar_blip_scale ", JSON.stringify(measured))
+	# Longer hull, bigger mark, in the order the roster actually has them.
+	assert_true(Radar.blip_scale(lengths["gang_scout"]) < Radar.blip_scale(lengths["tank"]),
+			"the rat rod's mark is smaller than the tank's")
+	assert_true(Radar.blip_scale(lengths["tank"]) < Radar.blip_scale(lengths["gang_tank"]),
+			"and the tank's is smaller than the rig's")
+	# Readable, not to scale: a radar is not a scale drawing, so the spread is bounded.
+	var spread := Radar.blip_scale(lengths["gang_tank"]) / Radar.blip_scale(lengths["gang_scout"])
+	assert_true(spread > 1.5 and spread < 2.6, "the extremes differ enough to read and not so much as to swamp (%.2f)" % spread)
+	# A vehicle we have no handle on -- a remembered contact -- is the standard dot and invents nothing.
+	assert_eq(Radar.blip_scale(0.0), 1.0, "an unknown hull is the plain dot")
+	# The length is READ from hull_size through the usual seam, so a resize moves it with no table to update here.
+	assert_eq(lengths["tank"], float((Units.stat("tank", "hull_size") as Array)[2]), "the length is the hull's own")

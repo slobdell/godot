@@ -132,7 +132,7 @@ func blips() -> Array:
 				var of := controls.groups.groups_of(String(tank.name))
 				result.append({"kind": "selected" if controls.selection.units.has(String(tank.name)) else "friendly",
 						"position": tank.global_position, "fade": 1.0, "facing": -tank.global_basis.z,
-						"element": of[0] if not of.is_empty() else 0})
+						"length": Radar.hull_length(tank), "element": of[0] if not of.is_empty() else 0})
 		var destinations := {}
 		for unit_name in controls.selection.units:
 			var goal: Variant = controls.orders.goal_position(unit_name) if controls.orders != null else null
@@ -153,8 +153,10 @@ func blips() -> Array:
 	for contact_name in names:
 		var contact: Dictionary = intel[contact_name]
 		var age := float(game_match.tick - int(contact["seen_tick"])) / Match.CONTACT_MEMORY_TICKS
+		var seen := by_name.get(contact_name) as Tank
 		result.append({"kind": "enemy" if contact["visible"] else "contact", "position": contact["position"],
-				"fade": 1.0 if contact["visible"] else clampf(1.0 - age, 0.15, 0.8)})
+				"fade": 1.0 if contact["visible"] else clampf(1.0 - age, 0.15, 0.8),
+				"length": Radar.hull_length(seen) if seen != null else 0.0})
 	return result
 
 
@@ -262,6 +264,39 @@ func drag_order(from_local: Vector2, to_local: Vector2) -> String:
 
 # ---- Drawing -----------------------------------------------------------------------------
 
+## Round 9 (CP2): A BLIP READS THE HULL IT STANDS FOR.
+##
+## Every blip used to be the same dot. That was defensible when the roster ran 2.8-5.0 m; after the resize it runs
+## **2.93 m (the rat rod) to 14.0 m (the War Rig)**, and a radar where a rig and a rat rod are the same mark throws
+## away the one thing the resize bought - you can see what a vehicle IS. The length comes from `hull_size` through
+## the same seam everything else reads it through (`Units.stat`); there is deliberately **no second table of size
+## classes** to drift away from the roster.
+##
+## Square-rooted, not linear: a radar is not a scale drawing (at radar scale every hull is sub-pixel), so the mark
+## has to say "longer than that one" while staying a readable dot. sqrt over this roster gives about 2.1x between
+## the extremes - rat rod 0.72, tank 1.20, Sonic Emitter 1.07, rig 1.53 - where linear would have given 4.8x and put
+## a rig blip over its neighbours.
+const BLIP_REFERENCE_M := 6.0
+const BLIP_SCALE_MIN := 0.72
+const BLIP_SCALE_MAX := 1.6
+
+
+## The hull length a blip should read, or 0.0 for a vehicle we have no handle on (a remembered contact).
+static func hull_length(tank: Tank) -> float:
+	if tank == null:
+		return 0.0
+	var hull: Array = Units.stat(tank.unit_id, "hull_size")
+	return float(hull[2]) if hull.size() == 3 else 0.0
+
+
+## How much bigger than the standard dot this vehicle's mark is. 0 length (unknown) is the standard dot, so nothing
+## a remembered contact does not know about it is invented.
+static func blip_scale(length_m: float) -> float:
+	if length_m <= 0.0:
+		return 1.0
+	return clampf(sqrt(length_m / BLIP_REFERENCE_M), BLIP_SCALE_MIN, BLIP_SCALE_MAX)
+
+
 ## A white blip shape, drawn once and tinted per use: "disc", "ring", "diamond" or "diamond_outline".
 static func blip_texture(shape: String) -> Texture2D:
 	if not _blip_textures.has(shape):
@@ -336,20 +371,22 @@ func _draw() -> void:
 	var by_shape := {"disc": [], "ring": [], "diamond": [], "diamond_outline": []}
 	for blip in blips():
 		var at := world_to_radar(blip["position"])
+		# The mark is sized to the hull it stands for (blip_scale); an unknown hull is the standard dot.
+		var mark_dot := dot * Radar.blip_scale(float(blip.get("length", 0.0)))
 		match blip["kind"]:
 			"friendly", "selected", "commander":
-				by_shape["disc"].append([at, dot, friendly])
+				by_shape["disc"].append([at, mark_dot, friendly])
 				# X2: a tick showing which way the hull points, so you can read a formation's facing at a glance.
 				if blip.has("facing"):
 					var heading: Vector3 = blip["facing"]
 					ticks.append_array([at, world_to_radar(blip["position"] + heading.normalized() * 6.0)])
 				if blip["kind"] != "friendly":
-					by_shape["ring"].append([at, dot + 3.25, commander])
+					by_shape["ring"].append([at, mark_dot + 3.25, commander])
 			"enemy":
 				# Diamonds for enemies, circles for us: readable without color (accessibility).
-				by_shape["diamond"].append([at, dot * 1.3, enemy])
+				by_shape["diamond"].append([at, mark_dot * 1.3, enemy])
 			"contact":
-				by_shape["diamond_outline"].append([at, dot * 1.3 + 0.75, Color(enemy, blip["fade"])])
+				by_shape["diamond_outline"].append([at, mark_dot * 1.3 + 0.75, Color(enemy, blip["fade"])])
 			"destination":
 				crosses.append_array([at + Vector2(-dot, -dot), at + Vector2(dot, dot), at + Vector2(-dot, dot), at + Vector2(dot, -dot)])
 	for shape: String in ["disc", "diamond", "diamond_outline", "ring"]:
