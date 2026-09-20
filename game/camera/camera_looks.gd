@@ -80,6 +80,18 @@ func run() -> void:
 		frames.append(await _shoot("overview", Vector3.ZERO, Match.team_frame(team)["forward"].angle_to(Vector3.FORWARD),
 				RtsCamera.distance_for(RtsCamera.OVERVIEW_ZOOM), RtsCamera.OVERVIEW_PITCH_DEG, RtsCamera.FOV_DEG,
 				{"row": "arena", "label": "overview (O)"}))
+		# Round 8: the cutaway against the arena's own walls, diagonals included (the hexagon was the first non-square
+		# wall it met). Half the edges - the perimeter is 180-degree symmetric - each at the lead's pose (21 deg, 49 m,
+		# FOV 35), focused 20 m inside the edge's middle with the camera out beyond the wall looking in.
+		var poly := RtsCamera.perimeter_poly
+		for k in poly.size() / 2 if poly.size() >= 4 else 0:
+			var a2: Vector2 = poly[k]
+			var b2: Vector2 = poly[(k + 1) % poly.size()]
+			var middle := (a2 + b2) / 2.0
+			var outward := middle.normalized()  # regular and centred: the edge's normal points away from the centre
+			var at := Vector3(middle.x, 0.0, middle.y) - Vector3(outward.x, 0.0, outward.y) * 20.0
+			frames.append(await _shoot("wall%d" % k, at, atan2(outward.x, outward.y), 49.0, RtsCamera.DEFAULT_PITCH_DEG,
+					RtsCamera.FOV_DEG, {"row": "arena", "label": "behind wall %d" % k}))
 	for level: float in (WELDED_LEVELS if grid == "full" and show_today else []):
 		var distance := RtsCamera.distance_for(level)
 		var pitch := RtsCamera.welded_pitch(level)
