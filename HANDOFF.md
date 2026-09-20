@@ -28,6 +28,13 @@ in front of the lead the day they exist; get feel's `_agents/legibility.md` sign
 writes A6 motion code; review nav's A7 priority table against combat's and feel's contracts before nav codes it; relay
 negative results between streams. Final integration order: metrics → scale → nav → combat → squad → control → feel → show. **Live checkpoints as of 2026-09-20:** CP1 (A12 format stable, positive control passed, merge hash pending), CP2 (roster resized on `stream/scale`, line-up frame for the lead pending), CP2b (squad's attacking-element leash), CP2c (control's right-drag facing, green locally), CP3 (T1 in progress). Contracts S5 (one commitment term, two seams) and S6 (the light show) were added mid-round; the lead's lighting and camera items are in `game_design.md` *Round 9 addition*.
 
+**In front of the lead (2026-09-20 01:15):** feel's **rig-hinge frames** — the War Rig articulated at the fifth wheel
+(corner at 45°, the same corner at his pose, the reverse jackknife), sent as three strips built from
+`~/projects/godot-feel/build/rig-hinge/` (stream/feel `7a706911`, laptop). Numbers beside them: live match, 32 rigs,
+1,440 rig-frames, mean articulation 6.1°, 4.9% past 30°, 1.2% at the 65° clamp; the closed form `asin(5.06/12) = 24.9°`
+at the rig's 12 m turning circle, reached 22.7° on the corner. **Caveat he should know:** the collider is still the
+one 14 m box (S2), so a shell can pass through empty air inside a fold this round. Awaiting his look.
+
 **One question for the lead, with a recommendation:** the roster is being scaled *rig-relative* (the world's vehicles
 at K ≈ 0.7 of real size, so the 14 m rig he ruled on stays and the bus, garbage truck, APC and assault gun grow
 1.5–2×). The alternative is *real metres*, which puts the rig at 18–21 m and roughly doubles apparent crowding on
