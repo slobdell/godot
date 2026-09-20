@@ -239,6 +239,12 @@ func add_fixture(selector: StringName, driven: Object) -> void:
 	_apply_defaults(selector, driven)
 
 
+## The channel actually being pushed for `name` -- the patch's, or the cue-blended one when a cue is running. What a
+## frame is really showing, which is what `make show-frames` reports beside each capture.
+func live_channel(name: StringName) -> ShowChannel:
+	return _live.get(name, channels.get(name))
+
+
 ## Everything a fixture registered for `selector` (for tests and `make show-report`).
 func fixtures_for(selector: StringName) -> Array:
 	return _fixtures.get(selector, [])
@@ -319,6 +325,12 @@ func _listen_for_events() -> void:
 ## A kill (weight 1.0) or a hit (~0.15) somewhere in the venue. The same bus the crowd reacts to, read and never
 ## written -- the show is visual only.
 func _on_spectacle(position: Vector3, weight: float) -> void:
+	fire_event(position, weight)
+
+
+## Start the ripple, if `weight` clears the cue's bar. Public so `make show-frames` can shoot a cue and a headless
+## test can drive one -- the signal handler is a one-line wrapper on it.
+func fire_event(position: Vector3, weight: float) -> void:
 	if cues == null or not cues.events.has(&"kill"):
 		return
 	var cue: Dictionary = cues.events[&"kill"]
@@ -326,6 +338,15 @@ func _on_spectacle(position: Vector3, weight: float) -> void:
 		return
 	_event = {"pos": Vector2(position.x, position.z), "age": 0.0, "gain": float(cue["gain"]),
 			"speed": float(cue["speed"]), "life": float(cue["life"])}
+
+
+## Put the show into `state` and settle every channel there immediately, without waiting out the attack. For
+## `make show-frames` and for tests: the live path always ramps.
+func settle_into(state: StringName, t: float) -> void:
+	mood_state = state
+	_fight_left = 0.0
+	for i in 2:
+		_advance_cue(t, 1000.0)
 
 
 ## Push every bound channel at frame time `t`. Pure in `t`: the same `t` writes the same values, which is what lets a
@@ -374,10 +395,13 @@ func _advance_cue(t: float, delta: float) -> void:
 		if weight <= 0.0 and not _live.has(key):
 			continue
 		var blended := ShowCues.blend(base, wanted, weight, winner_color())
-		var previous: ShowChannel = _live.get(key)
-		# Carry the clock across: the offset belongs to the channel's history, not to this frame's blend.
-		blended.clock_offset = previous.clock_offset if previous != null else base.clock_offset
-		if previous != null and not is_equal_approx(previous.period, blended.period):
+		# Carry the clock across: the offset belongs to the channel's history, not to this frame's blend. The
+		# channel we are coming FROM is the live one if a cue is already running, and otherwise the patch's own --
+		# and getting that second case wrong is a real jump, not a rounding one: the first frame of a cue moves the
+		# rim's period 24.0 -> 23.x, which at t = 40 s is 0.4 rad of clock if it is recomputed instead of retuned.
+		var previous: ShowChannel = _live.get(key, base)
+		blended.clock_offset = previous.clock_offset
+		if not is_equal_approx(previous.period, blended.period):
 			var was := blended.period
 			blended.period = previous.period
 			blended.retune(was, t)

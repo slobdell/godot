@@ -1172,6 +1172,27 @@
     "phase": 5.37,
     "floor": 0.75,
     "ceiling": 1.3
+   },
+   "signs": {
+    "programme": "breathe",
+    "period": 12.8,
+    "phase": 2.97,
+    "floor": 0.55,
+    "ceiling": 1.2
+   },
+   "pools": {
+    "programme": "breathe",
+    "period": 10.8,
+    "phase": 0.57,
+    "floor": 0.7,
+    "ceiling": 1.15
+   },
+   "beams": {
+    "programme": "breathe",
+    "period": 18.5,
+    "phase": 4.45,
+    "floor": 0.55,
+    "ceiling": 1.3
    }
   },
   "patch": [
@@ -1197,6 +1218,24 @@
     "fixture": "city_block",
     "parameter": "shop",
     "channel": "shopfronts",
+    "spread": 1.0
+   },
+   {
+    "fixture": "signs",
+    "parameter": "level",
+    "channel": "signs",
+    "spread": 1.0
+   },
+   {
+    "fixture": "pools",
+    "parameter": "level",
+    "channel": "pools",
+    "spread": 1.0
+   },
+   {
+    "fixture": "beams",
+    "parameter": "level",
+    "channel": "beams",
     "spread": 1.0
    }
   ]

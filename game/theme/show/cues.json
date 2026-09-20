@@ -7,10 +7,44 @@
    "release": 3.5,
    "hold": 5.0,
    "set": {
-    "rim": {"programme": "breathe", "period": 9.0, "floor": 1.0, "ceiling": 1.25},
-    "edges": {"programme": "breathe", "period": 9.0, "floor": 0.55, "ceiling": 1.0},
-    "windows": {"programme": "hold", "ceiling": 0.72},
-    "shopfronts": {"programme": "hold", "ceiling": 0.78}
+    "rim": {
+     "programme": "breathe",
+     "period": 9.0,
+     "floor": 1.0,
+     "ceiling": 1.25
+    },
+    "edges": {
+     "programme": "breathe",
+     "period": 9.0,
+     "floor": 0.55,
+     "ceiling": 1.0
+    },
+    "windows": {
+     "programme": "hold",
+     "ceiling": 0.72
+    },
+    "shopfronts": {
+     "programme": "hold",
+     "ceiling": 0.78
+    },
+    "signs": {
+     "programme": "chase",
+     "period": 3.0,
+     "floor": 0.55,
+     "ceiling": 1.2
+    },
+    "beams": {
+     "programme": "sweep",
+     "period": 5.0,
+     "floor": 0.9,
+     "ceiling": 1.3
+    },
+    "pools": {
+     "programme": "breathe",
+     "period": 9.0,
+     "floor": 0.95,
+     "ceiling": 1.15
+    }
    }
   },
   "lull": {
@@ -24,8 +58,17 @@
    "attack": 2.5,
    "release": 3.5,
    "set": {
-    "rim": {"period": 15.0, "floor": 0.65},
-    "edges": {"period": 13.0, "floor": 0.2}
+    "rim": {
+     "period": 15.0,
+     "floor": 0.65
+    },
+    "edges": {
+     "period": 13.0,
+     "floor": 0.2
+    },
+    "signs": {
+     "period": 11.0
+    }
    }
   },
   "battle": {
@@ -33,9 +76,34 @@
    "attack": 1.2,
    "release": 2.5,
    "set": {
-    "rim": {"programme": "chase", "period": 5.5, "floor": 0.7, "ceiling": 1.25},
-    "edges": {"programme": "sweep", "period": 7.0, "floor": 0.3, "ceiling": 1.0},
-    "windows": {"period": 11.0, "ceiling": 1.35}
+    "rim": {
+     "programme": "chase",
+     "period": 5.5,
+     "floor": 0.7,
+     "ceiling": 1.25
+    },
+    "edges": {
+     "programme": "sweep",
+     "period": 7.0,
+     "floor": 0.3,
+     "ceiling": 1.0
+    },
+    "windows": {
+     "period": 11.0,
+     "ceiling": 1.35
+    },
+    "signs": {
+     "programme": "chase",
+     "period": 4.5,
+     "floor": 0.6,
+     "ceiling": 1.2
+    },
+    "beams": {
+     "programme": "sweep",
+     "period": 6.5,
+     "floor": 0.75,
+     "ceiling": 1.3
+    }
    }
   },
   "last_stand": {
@@ -43,9 +111,34 @@
    "attack": 0.6,
    "release": 3.0,
    "set": {
-    "rim": {"programme": "strobe", "period": 1.6, "floor": 0.62, "ceiling": 1.25},
-    "edges": {"programme": "strobe", "period": 1.6, "floor": 0.15, "ceiling": 1.0},
-    "windows": {"programme": "hold", "ceiling": 0.8}
+    "rim": {
+     "programme": "strobe",
+     "period": 1.6,
+     "floor": 0.62,
+     "ceiling": 1.25
+    },
+    "edges": {
+     "programme": "strobe",
+     "period": 1.6,
+     "floor": 0.15,
+     "ceiling": 1.0
+    },
+    "windows": {
+     "programme": "hold",
+     "ceiling": 0.8
+    },
+    "beams": {
+     "programme": "strobe",
+     "period": 1.6,
+     "floor": 0.6,
+     "ceiling": 1.3
+    },
+    "signs": {
+     "programme": "strobe",
+     "period": 1.6,
+     "floor": 0.55,
+     "ceiling": 1.2
+    }
    }
   },
   "victory": {
@@ -53,10 +146,48 @@
    "attack": 0.8,
    "release": 6.0,
    "set": {
-    "rim": {"programme": "sweep", "period": 4.0, "floor": 0.7, "ceiling": 1.25, "color": "winner", "color_mix": 0.8},
-    "edges": {"programme": "sweep", "period": 4.5, "floor": 0.35, "ceiling": 1.0},
-    "windows": {"period": 10.5, "ceiling": 1.35},
-    "shopfronts": {"period": 10.0, "ceiling": 1.3}
+    "rim": {
+     "programme": "sweep",
+     "period": 4.0,
+     "floor": 0.7,
+     "ceiling": 1.25,
+     "color": "winner",
+     "color_mix": 0.8
+    },
+    "edges": {
+     "programme": "sweep",
+     "period": 4.5,
+     "floor": 0.35,
+     "ceiling": 1.0
+    },
+    "windows": {
+     "period": 10.5,
+     "ceiling": 1.35
+    },
+    "shopfronts": {
+     "period": 10.0,
+     "ceiling": 1.3
+    },
+    "signs": {
+     "programme": "sweep",
+     "period": 4.0,
+     "floor": 0.6,
+     "ceiling": 1.2,
+     "color": "winner",
+     "color_mix": 0.55
+    },
+    "beams": {
+     "programme": "sweep",
+     "period": 4.0,
+     "floor": 0.8,
+     "ceiling": 1.3,
+     "color": "winner",
+     "color_mix": 0.55
+    },
+    "pools": {
+     "period": 10.8,
+     "ceiling": 1.15
+    }
    }
   },
   "defeat": {
@@ -64,10 +195,36 @@
    "attack": 2.0,
    "release": 6.0,
    "set": {
-    "rim": {"programme": "breathe", "period": 24.0, "floor": 0.6, "ceiling": 0.68},
-    "edges": {"programme": "hold", "ceiling": 0.12},
-    "windows": {"programme": "hold", "ceiling": 0.72},
-    "shopfronts": {"programme": "hold", "ceiling": 0.78}
+    "rim": {
+     "programme": "breathe",
+     "period": 24.0,
+     "floor": 0.6,
+     "ceiling": 0.68
+    },
+    "edges": {
+     "programme": "hold",
+     "ceiling": 0.12
+    },
+    "windows": {
+     "programme": "hold",
+     "ceiling": 0.72
+    },
+    "shopfronts": {
+     "programme": "hold",
+     "ceiling": 0.78
+    },
+    "signs": {
+     "programme": "hold",
+     "ceiling": 0.6
+    },
+    "beams": {
+     "programme": "hold",
+     "ceiling": 0.6
+    },
+    "pools": {
+     "programme": "hold",
+     "ceiling": 0.75
+    }
    }
   }
  },

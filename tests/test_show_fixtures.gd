@@ -8,6 +8,7 @@ extends TestCase
 
 const BLOCK_SHADER := "res://game/theme/fx/shaders/city_block.gdshader"
 const NEON_SHADER := "res://game/theme/fx/shaders/neon.gdshader"
+const SHOW_INCLUDE := "game/theme/fx/shaders/show.gdshaderinc"
 const DRESSING := "res://game/theme/cyberpunk/arena_dressing.gd"
 ## Every (energy, flicker) pair the perimeter rim asks `CyberMaterials.neon()` for. The cache keys on
 ## (colour, energy, flicker), so a prop that asks for one of these with a colour an arena also uses would be handed
@@ -84,7 +85,9 @@ func test_the_patched_arenas_never_let_a_lit_surface_go_dark() -> void:
 func test_every_show_uniform_defaults_to_the_value_that_changes_nothing() -> void:
 	# The carve-out from feel is "additive only, never a restyle". This is that promise, checked: with no patch
 	# loaded, every show uniform in every fixture shader holds the identity, so the venue renders as it always did.
-	for path in [BLOCK_SHADER, NEON_SHADER]:
+	var shaders := _fixture_shaders()
+	assert_true(shaders.size() >= 5, "every shader that includes show.gdshaderinc is checked (%d)" % shaders.size())
+	for path in shaders:
 		var source := FileAccess.get_file_as_string(path)
 		assert_true(source != "", "%s is readable" % path)
 		var found := 0
@@ -208,6 +211,29 @@ func test_a_blocks_seed_reaches_the_shader_as_its_phase() -> void:
 	assert_true(source.contains("block_seed = COLOR.g"), "the shader reads it")
 	assert_true(source.contains("float show_phase = block_seed * SHOW_TAU * show_spread"),
 			"and turns it into this block's own place in the show's clock")
+
+
+## Every shader that takes a show channel, found by the include rather than listed: a fixture added next round is
+## covered by this test the day it lands (lesson 3 -- derive the list, never hard-code one).
+func _fixture_shaders() -> PackedStringArray:
+	var out := PackedStringArray()
+	var stack := PackedStringArray(["res://game"])
+	while stack.size() > 0:
+		var dir_path := stack[stack.size() - 1]
+		stack.remove_at(stack.size() - 1)
+		var dir := DirAccess.open(dir_path)
+		if dir == null:
+			continue
+		for sub in dir.get_directories():
+			stack.append(dir_path.path_join(sub))
+		for file in dir.get_files():
+			if not file.ends_with(".gdshader"):
+				continue
+			var path := dir_path.path_join(file)
+			if FileAccess.get_file_as_string(path).contains(SHOW_INCLUDE):
+				out.append(path)
+	out.sort()
+	return out
 
 
 func _gd_files(root: String) -> PackedStringArray:

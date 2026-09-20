@@ -11,13 +11,21 @@ extends Node
 ## commit gives the same frames on any machine, at any frame rate, instead of depending on how long a warmup slept.
 ## It is also the reason [method Show.apply] is public.
 ##
+## It shoots the idle breathe AND the cues, because the idle is the ambience and the cues are the show: the lead is
+## being asked whether it is beautiful, and a strip of only the slow breathe answers half the question.
+##
 ## Flags: --show-look=<abs dir>  --show-look-times=0,8.1,16.3  --show-look-warmup=S (3)
+##        --show-look-cues=fight,battle,last_stand,victory
 
 const PITCH_DEG := 21.0
 const DISTANCE_M := 49.0
 const FOV_DEG := 35.0
 ## A second, closer pose at the same pitch and FOV: the venue read from where a fight actually happens.
 const CLOSE_M := 22.0
+## When a cue frame is taken. Far enough into the show's clock that no channel is sitting at its starting phase.
+const CUE_T := 31.4
+## How far into the kill ripple the frame is taken: the wavefront is 62 m/s, so this catches it crossing the blocks.
+const RIPPLE_AGE_S := 0.55
 ## Arena -> an extra focus worth a frame, in metres. The Terminus street is the alley the lead said he could not see
 ## into; blocks sit at x = 20..60 and x = 80..120, so x = 70 is the middle of the 20 m street between them.
 const FOCUS_POINTS := {
@@ -26,6 +34,9 @@ const FOCUS_POINTS := {
 
 var out_dir := ""
 var times: Array = [0.0, 8.1, 16.3]
+## The cues worth a frame. `fight` is the moment the loading screen drops; `battle` and `victory` are the two the
+## lead is most likely to judge the idea on.
+var cues: Array = ["fight", "battle", "last_stand", "victory"]
 var warmup := 3.0
 var _camera := Camera3D.new()
 
@@ -42,6 +53,9 @@ func _ready() -> void:
 	var listed := flags.text("show-look-times")
 	if listed != "":
 		times = Array(listed.split(",", false)).map(func(v: String) -> float: return float(v))
+	var wanted := flags.text("show-look-cues")
+	if wanted != "":
+		cues = Array(wanted.split(",", false))
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	_camera.name = "ShowLookCamera"
 	_camera.fov = FOV_DEG
@@ -73,20 +87,48 @@ func _run() -> void:
 			if show != null:
 				show.now = t
 				writes = show.apply(t)
-			for i in 3:
-				await get_tree().process_frame
-			await RenderingServer.frame_post_draw
-			var stamp := ("%.1f" % t).replace(".", "_")
-			var file := "%s_%s_t%s.png" % [arena, pose_name, stamp]
-			get_viewport().get_texture().get_image().save_png(out_dir.path_join(file))
-			print("SHOW_LOOK " + JSON.stringify({
-				"arena": arena, "pose": pose_name, "t": t, "file": file,
-				"pitch_deg": PITCH_DEG, "fov_deg": FOV_DEG, "distance_m": distance,
-				"focus": [focus.x, focus.z], "writes": writes, "channels": _levels(show, t),
-			}))
+			await _capture(show, arena, pose_name, "t%s" % ("%.1f" % t).replace(".", "_"), t, focus, distance, writes)
+	# The cues. One frame each, at the pose the lead judges from, with the cue settled rather than mid-attack.
+	var cue_frames := 0
+	if show != null:
+		for pose_name: String in poses:
+			if pose_name == "close":
+				continue  # the cues are a venue-wide effect; two poses is enough to read them
+			var focus: Vector3 = poses[pose_name][0]
+			_camera.global_transform = RtsCamera.pose_at(focus, heading, float(poses[pose_name][1]), PITCH_DEG)
+			for cue: String in cues:
+				show.settle_into(StringName(cue), CUE_T)
+				show.now = CUE_T
+				var writes := show.apply(CUE_T)
+				cue_frames += await _capture(show, arena, pose_name, "cue_%s" % cue, CUE_T, focus,
+						float(poses[pose_name][1]), writes)
+			# A kill ripple, caught mid-flight: the one cue that is a place as well as a moment.
+			show.settle_into(&"battle", CUE_T)
+			show.fire_event(Vector3(focus.x + 28.0, 0.0, focus.z + 16.0), 1.0)
+			show.apply(CUE_T, RIPPLE_AGE_S)
+			cue_frames += await _capture(show, arena, pose_name, "cue_kill", CUE_T, focus,
+					float(poses[pose_name][1]), show.writes_last_frame)
+			show.settle_into(&"lull", CUE_T)
 	get_tree().paused = false
-	print("SHOW_LOOK_DONE arena=%s frames=%d" % [arena, poses.size() * times.size()])
+	print("SHOW_LOOK_DONE arena=%s frames=%d" % [arena, poses.size() * times.size() + cue_frames])
 	get_tree().quit()
+
+
+## One frame, saved and reported. Returns 1 so callers can count.
+func _capture(show: Show, arena: String, pose_name: String, label: String, t: float, focus: Vector3,
+		distance: float, writes: int) -> int:
+	for i in 3:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	var file := "%s_%s_%s.png" % [arena, pose_name, label]
+	get_viewport().get_texture().get_image().save_png(out_dir.path_join(file))
+	print("SHOW_LOOK " + JSON.stringify({
+		"arena": arena, "pose": pose_name, "label": label, "t": t, "file": file,
+		"pitch_deg": PITCH_DEG, "fov_deg": FOV_DEG, "distance_m": distance,
+		"focus": [focus.x, focus.z], "writes": writes,
+		"mood": str(show.mood_state) if show != null else "", "channels": _levels(show, t),
+	}))
+	return 1
 
 
 ## What every channel is at, at this moment — so a frame that looks wrong can be traced to a number instead of to a
@@ -96,6 +138,8 @@ func _levels(show: Show, t: float) -> Dictionary:
 	if show == null:
 		return out
 	for key: Variant in show.channels:
-		var channel: ShowChannel = show.channels[key]
+		# The LIVE channel, not the patch's: under a cue they are different numbers, and the point of printing them
+		# is so a frame that looks wrong can be traced to a value instead of to a guess (lesson 44).
+		var channel: ShowChannel = show.live_channel(key)
 		out[str(key)] = snappedf(channel.level(t), 0.001)
 	return out

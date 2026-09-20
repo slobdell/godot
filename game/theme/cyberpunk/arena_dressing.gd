@@ -550,7 +550,7 @@ func _build_tower(base: Vector3) -> void:
 	cone.cap_top = false
 	cone.cap_bottom = false
 	cone.radial_segments = 16
-	cone.material = CyberMaterials.beam(Color(0.55, 0.8, 1.0), 0.14)
+	cone.material = beam_material(Color(0.55, 0.8, 1.0), 0.14)
 	var beam := MeshInstance3D.new()
 	beam.name = "Beam"
 	beam.mesh = cone
@@ -574,6 +574,19 @@ func _build_tower(base: Vector3) -> void:
 	FxMultiMesh.never_interpolated(pool)
 	pool.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	structures.add_child(pool)
+
+
+## S6: a floodlight tower's fake volumetric beam. `CyberMaterials.beam()` caches on (colour, energy) exactly as
+## `neon()` does on its triple, and this is its ONLY caller in the game -- so the cache cannot hand this material to
+## anything else today, and `tests/test_show_fixtures.gd` fails if a second caller appears. The four corner towers
+## share it, so one uniform write drives every beam in the venue; the per-tower phase is the lamp's angle round the
+## venue, read in beam_cone.gdshader, so they rise in sequence rather than together.
+static func beam_material(color: Color, energy: float) -> ShaderMaterial:
+	var material := CyberMaterials.beam(color, energy)
+	var show := Show.get_instance()
+	if show != null:
+		show.add_fixture(&"beams", material)
+	return material
 
 
 ## S6 (the arena light show, `_agents/lighting.md`): the perimeter neon the lead called "a dull neon purple".
@@ -612,5 +625,13 @@ static func _glow_multimesh(transforms: Array, colors: Array) -> MultiMesh:
 	for i in transforms.size():
 		multimesh.set_instance_transform(i, transforms[i])
 		multimesh.set_instance_color(i, colors[i])
-		multimesh.set_instance_custom_data(i, Color(1, 0, 0, 0))
+		# .x is the pool's intensity (splat.gdshader). .y is its phase in the arena light show (S6), on the golden
+		# angle -- a projectile splat leaves it at 0, which is every splat in phase, i.e. exactly today.
+		multimesh.set_instance_custom_data(i, Color(1, fposmod(float(i) * 0.6180339887, 1.0), 0, 0))
+	# S6: every pool in this MultiMesh shares one material, and the show drives it with one uniform write. A
+	# uniform rather than instance colour, which already carries the per-pool tint (feel, 2026-09-20): rewriting a
+	# buffer every frame to say one number is the wrong trade at zero draw calls.
+	var show := Show.get_instance()
+	if show != null:
+		show.add_fixture(&"pools", material)
 	return multimesh
