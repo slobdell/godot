@@ -63,7 +63,7 @@ func _enable() -> void:
 ## declared `-> void` that does not await it returns to the runner immediately and detaches the drain -- the same
 ## defect, one step less obvious, and it is in four other files in this suite.
 ##
-## FOLLOW-UP, named so it is not left as a permanent oddity: nav's `c3df6d4a` seals this -- the runner awaits a
+## FOLLOW-UP, named so it is not left as a permanent oddity: nav's sealed teardown (`c3df6d4a`, on main as `14c14f0b`) seals this -- the runner awaits a
 ## `_teardown()` that owns the free, the guards and the drain, and `teardown()` becomes a synchronous hook that
 ## must NEVER call its super. When that is on main, the `await super.teardown()` line below is deleted and this
 ## override goes back to restoring `_was_fitting` and nothing else. The same deletion is owed in control's four

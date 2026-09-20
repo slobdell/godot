@@ -662,6 +662,65 @@ contended and a timed 180 s match on a loaded box is not the same measurement as
 (`Avoidance.radius_of`, `(w + l) / 4`) does **not** and is excluded on purpose — its error runs the opposite way
 end-on and it wants its own falsifier.
 
+### ⚠ THE YAW CONSTRAINT IS BACK OFF: it costs four of five squads their formation (`e21f72c8`)
+
+| point | worst gap to its own slot, per squad (m) | off slot |
+|---|---|---|
+| `b3f7ffae` main | Alpha 3.8, Bravo 4.4, Charlie 6.6, Delta 22.2, Echo 4.2 | **0 of 30** |
+| `bd618dd4` flag **off** | Alpha 3.8, Bravo 4.4, Charlie 6.6, Delta 22.4, Echo 4.5 | **0 of 30** |
+| `986f8921` flag **on** | Alpha 2.9, Bravo 89.5, Charlie 87.6, Delta 86.5, Echo 91.1 | **12 of 30** |
+
+One line, threshold 36 m. **The off-slot crews never DEPARTED** — squad's roster puts them at the spawn row
+(z ≈ 94–101) with destinations across the map (z ≈ 6–19), so the first turn toward the goal is refused and the
+hull never starts. Benefit re-measured on one build: **44.0° → 11.6° (74%)**, 12.1 → 6.1 m; residual unchanged at
+**1.27 m** against a 1.8 m bar. The earlier `28.5° / 9.6 m` before-column is **struck** — taken through a knob that
+did nothing.
+
+### ⚠ THE PREDICTION WAS REFUTED, AND THE MECHANISM IS NOW UNEXPLAINED
+
+Pre-registered: *refusals rank with the across gap, Charlie at 1.12 m worst.* Measured, `DRIVE_TRACE`:
+
+| crew | across gap | max **continuous** refused ticks | seats? |
+|---|---|---|---|
+| `Green_Charlie_1` | 0.06 m | 1260 | no |
+| `Green_Bravo_6` | −1.36 m (overlapping) | 1113 | no |
+| `Green_Charlie_3` | **3.19 m** (loosest) | **1135** | no |
+| `Green_Echo_3` | 2.58 m | 867 | no |
+| `Green_Alpha_4` | **0.26 m** (tight) | **128** | **yes** |
+
+**The across gap predicts nothing in either direction.** squad's separating-axis reading is unsupported, and so is
+this stream's endorsement of it. **1100+ CONTINUOUS refused ticks** means no fraction of the wanted turn, down to
+0.3, ever came back non-worsening — a permanent freeze, nav's N1 breach at army scale.
+
+**Round 10's first question is a PREDICATE question, not a formation one:** *why does a clear hull with 3.19 m of
+room never accept any of its three candidate yaws for 1135 consecutive ticks?* Diagonal-derived spacing goes in as
+a **candidate** with this table beside it, not as the fix.
+
+**The one thing the table does support, worth ranking next rather than telling as a story:** Alpha is ordered
+first and seats; the four ordered while Alpha was already moving freeze. ⚠ Gap in the data: `Green_Echo_1`
+produced **zero** traced ticks — absent, not silent, and not chased.
+
+### ⚠ TUNE KNOBS WERE INERT ON BOTH ENTRY POINTS — round 7's bug, recurring
+
+Documented at `game/ai/combat_motion.gd:40` three rounds ago: *"resolved at READ time, never in a static
+initialiser … the switch silently does nothing … two byte-identical arms."* `apply_tuning` wrote **four** other
+classes, two of them foreign **dictionaries** (`SwitchingCost.tuning`, `Weapons.tuning`) an owner's initialiser
+replaces with `{}`. Measured both ways:
+
+- **`TUNE=` env** (this stream): `match.yaw_fit=0` landed in a bare script and was **gone** under the test runner.
+- **`--tune=` CLI** (feel, builder0): flag verbatim in the log, `apply_tuning` returned `""`, **`Armor.no_damage`
+  read FALSE in 13 of 13 phases** while the census walked 90 → 77 with units dying.
+
+Fix is **when** the spec is applied, not which knob reads it: `_static_init` only READS `TUNE`;
+`_ensure_env_tuning()` applies at first read; the `match.*` knobs are read at the point of use from `Units`'s own
+dictionary. ⚠ **feel's CLI path is covered by the fix's SHAPE, and `test_combat_no_damage` now exercises
+`apply_tuning` at runtime — but the LOAD-ORDER case (a knob applied before its owner's class initialises) is still
+untested.**
+
+**feel's rule, above this stream's:** *an arm assertion must read the state the code under test consults, not the
+instruction that was issued. A readout of intent is not a readout of effect.* `apply_tuning` returning `""` says
+the spec parsed; a test asserting that return value passes throughout the bug.
+
 ### THE EXACT NEXT STEP, in order
 
 1. **Read the running check's result from the wrapper's own `>> remote: make check exited <N>` line and the
