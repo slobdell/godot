@@ -273,8 +273,8 @@ rendered (builder0 is busy with this branch's own `make remote T=check`; one rem
 1. the reference table, derived and asserted (S1) — **done**, `b7055602`
 2. apply it, and render the frame the lead judges — **numbers applied** in `b7055602`; **frame built, not yet rendered**
 3. the spawn grid, from the roster's largest hull — **done**, committed with this Status
-4. clearance for the new roster (P6), then announce CP2 — **next**
-5. A3 hull-chord cover over directional summed-area tables — not started; combat has sent its consumer spec (below)
+4. clearance for the new roster (P6), then announce CP2 — **waiting on a builder0 slot**
+5. **A3** hull-chord cover over directional summed-area tables — **done**, built to combat's spec
 6. stretch: the 9/20 → 0/20 re-measured — not started
 
 ### 1. The reference table (S1) — done
@@ -418,6 +418,82 @@ made): at the round-9 roster the grid does **not** hold the biggest hull. Adjace
 
 **All ten layouts regenerated** (`make arenas`); `make arena-test` 75/75, `tools/test_arena*.py` 19/19,
 `--filter=match` 72/72, all on the laptop.
+
+### 5. A3: hull-chord cover over directional summed-area tables — done
+
+**REPLACES centre-point cover registration** (Invariant 0c: a brief that adopts a catalogue row must name what it
+replaces). `Arena.cover_fraction(viewer, point, heading, length)` returns the fraction of a hull's own centreline
+chord occluded from a watcher — combat's signature, taken as they specced it, heading as a flat `Vector3` because
+every caller already holds a forward vector. Two array lookups and a subtraction, the same work at 2.93 m and at
+14.0 m, integer arithmetic throughout (`game/arena/cover_tables.gd`).
+
+**Positive control first, before any code** (lesson 147). `make arena-report` on the resized roster reproduces
+round 8's step exactly — share of the field within 45 m of a prop long enough for the hull (laptop, pure Python):
+
+| hull | 2.93 | 5.0 | 6.0 | 7.0 | 8.62 | 12.0 | **12.19** | **12.5** | 14.0 |
+|---|---|---|---|---|---|---|---|---|---|
+| yard | 0.99 | 0.99 | 0.99 | 0.99 | 0.99 | 0.99 | **0.99** | **0.00** | 0.00 |
+| pit | 0.85 | 0.85 | 0.85 | 0.48 | 0.46 | 0.46 | **0.46** | **0.00** | 0.00 |
+| terminus | 0.98 | 0.98 | 0.98 | 0.95 | 0.91 | 0.91 | **0.91** | 0.91 | 0.91 |
+
+**And the resize is what makes A3 stop being a rig-only fix:** pit's score already halves at **7.0 m**
+(0.85 → 0.48), and five units are now over 7 m where one was.
+
+**The falsifier is met.** Mean occluded chord fraction over the contested field, watcher on the far side, under the
+new query (laptop, this commit):
+
+| hull | 2.93 | 6.0 | 8.62 | 12.0 | 12.19 | 12.5 | 14.0 | spread |
+|---|---|---|---|---|---|---|---|---|
+| yard | 0.320 | 0.292 | 0.291 | 0.288 | 0.288 | 0.288 | **0.287** | 0.033 |
+| pit | 0.31 | 0.38 | 0.34 | 0.36 | 0.36 | 0.36 | **0.36** | — |
+| terminus | 0.76 | 0.76 | 0.77 | 0.77 | 0.77 | 0.77 | **0.77** | — |
+
+**Flat.** Where the old rule put yard at 0.99 and then 0.00, the new one puts a 14 m hull within **0.03** of a 12 m
+one. `make arena-cover` prints it; `tests/test_arena_cover_tables.gd` asserts it on every shipped map (8 tests) and
+**carries the old rule in the same file as the positive control**, so the thing being replaced stays checkable.
+
+**What it costs, reported as two terms because they behave oppositely** (`CoverTables.worst_case_error`): an
+**angular** term, `1 − cos(22.5°) ≈ 7.6%` of hull length, constant as a *fraction*; and a **grid** term of one 2 m
+cell, constant in *metres*. So the query is **least precise on the shortest hull, not the longest** — the opposite
+of the intuition, and combat has said this inverts where they were going to set `hull_hidden`'s threshold.
+
+**One defect found by writing that error report.** The first chord discretisation was
+`floor(length / 2 / cell) * 2 + 1`, which collapses every hull shorter than twice the cell to a **single cell** —
+i.e. the centre-point query, under a new name, for the Rat Rod and the whole light end of the roster. It is
+`max(1, round(length / cell))` now. **A row that replaces a point sample can reintroduce it by arithmetic**, and
+only stating the error term out loud caught it.
+
+**`make arena-report`'s WATCH line changed in the same commit as the tables**, as the lead's ruling requires. It no
+longer says *"NOTHING on this map can hide the longest hull"* — true under the old definition, **false** under the
+new one, and a WATCH line that is confidently wrong is worse than silence. It now names the definition that
+produced the number, says it is superseded, and points at `make arena-cover`. The point sample is still **printed
+beside** the chord figure for one round (lesson 49) and `hull_cover.definition` says so in the JSON. arena's own
+guard against a dead WATCH line keyed on the exact phrase, so it was rewritten to key on the reach reaching the
+reader rather than on a form of words.
+
+**⚠ HALF OF A3'S PRE-REGISTERED FALSIFIER IS NOT ACHIEVABLE AS WRITTEN, and it is recorded here rather than
+discovered when someone quotes A3 as met** (combat spotted it from the error numbers; the reading is theirs):
+
+- **The half that passed cleanly** is the pathology A3 was adopted for: the 12.19 m step is gone, yard's 14 m
+  figure is within 0.03 of its 12 m one against a pre-registered 0.1, and the spread across 2.93–14.0 m is 0.033.
+- **The half that cannot pass** is *"exposed hull fraction … below 5% at **every** hull length 2.8–14.0 m"*. At
+  2.93 m the worst-case error is **0.759**, because the grid term is a constant 2 m against a hull that is one to
+  two cells long: the query cannot distinguish 5% exposure from 50% there. **No threshold fixes that — it is the
+  resolution, not the calibration.**
+- **The honest statement for the round, which is combat's wording:** *A3 fixes cover for hulls long enough to be
+  resolved by the grid, and leaves short hulls where they already were.* It does not make the short end worse — at
+  2.93 m it degrades gracefully to roughly the point sample we already had. **The catalogue over-promised the
+  range; it did not over-promise the mechanism.**
+- **Open, with numbers:** the grid term is exactly the cell size. At 1.0 m cells the Rat Rod's grid error falls
+  0.683 → 0.341, at 0.5 m → 0.171. That is 4× and 16× the table memory and build time. Affordability is being
+  measured (`tests/scale/cover_bench.gd`); if 1.0 m is cheap it is worth having, because the units that hide for a
+  living are the light ones and that is the length the query is currently blindest at. If it is not, the range
+  limit goes into `hull_hidden`'s threshold and into `_agents/balance.md` as a known bound rather than a bug.
+
+**Not answered yet, deliberately:** combat's optional second entry point `hull_footprint_clearance(point, heading,
+length)`. A prefix sum of occlusion along a heading is not a distance transform, so it is not obviously free from
+these tables. I will say yes or no with a reason rather than half-build it; combat keeps the point sample and
+renames it honestly in the meantime.
 
 ### Decisions (with reasons)
 

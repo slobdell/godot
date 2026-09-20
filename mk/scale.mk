@@ -36,3 +36,15 @@ roster-lineup: import ## S1: every vehicle at the new scale, side by side, label
 		2>&1 | tee $(BUILD_DIR)/roster-lineup/log.txt | grep -E '^SIZE_LOOK|SCRIPT ERROR' || true
 	@grep -q SIZE_LOOK_DONE $(BUILD_DIR)/roster-lineup/log.txt
 	@ls $(BUILD_DIR)/roster-lineup/*.png
+
+.PHONY: arena-cover
+
+# A3 (round 9): the cover figure that REPLACED `make arena-report`'s centre-point `hull_cover.reach`. Needs Godot
+# because it CALLS `Arena.cover_fraction` rather than reimplementing it in Python -- a second copy of that query in
+# the report tool is exactly the mirror Invariant 0 is about, and the report tool already carried two of them.
+arena-cover: import ## A3: how much of a hull each map actually hides, by hull length, under Arena.cover_fraction (ARENAS=yard,pit) -> build/arena-cover.json
+	@mkdir -p $(BUILD_DIR)
+	$(GODOT) --headless --path . --script res://tests/scale/cover_sweep.gd -- \
+		$(if $(ARENAS),--arenas=$(ARENAS)) --json=$(CURDIR)/$(BUILD_DIR)/arena-cover.json \
+		2>&1 | grep -E '^ARENA_COVER|SCRIPT ERROR' || true
+	@grep -q . $(BUILD_DIR)/arena-cover.json 2>/dev/null || { echo "arena-cover FAILED: no json"; exit 1; }

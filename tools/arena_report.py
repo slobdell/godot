@@ -185,13 +185,28 @@ def openness_notes(report):
     cover = report.get("hull_cover")
     if cover:
         name, length, reach = cover["longest_hull"], cover["longest_hull_m"], cover["reach"]
+        # ROUND 9 (scale, A3): this line USED to say "NOTHING on this map can hide the longest hull", full stop.
+        # That was true under the definition it was computed with -- a prop counts only if its longest horizontal
+        # side is at least the whole hull -- and it is FALSE under the hull-chord query that replaced it
+        # (`Arena.cover_fraction`, `game/arena/cover_tables.gd`), which measures the fraction of the hull's own
+        # centreline that is occluded and therefore has no step at `container_40`'s 12.19 m. A WATCH line that is
+        # confidently wrong is worse than silence (the lead's ruling in game_design.md *Ruling: the War Rig stays
+        # at 14 m*), so the number is still printed -- it is the record of what the cliff was -- and it now says
+        # which definition produced it and where the live one lives.
+        #
+        # The point sample stays printed BESIDE the chord figure for one round rather than instead of it
+        # (lesson 49). `make arena-cover` prints the chord figure; it needs Godot, because it calls the tables
+        # rather than reimplementing them in Python, which would be the mirror Invariant 0 is about.
         if reach < 0.01:
-            out.append("NOTHING on this map can hide the longest hull (%s, %.1f m): 0.00 of the field is within "
-                       "%.0f m of a prop that long. Cover fails SILENTLY — the hull still drives to cover, still "
-                       "counts as near cover, and is not covered." % (name, length, TERRAIN_RADIUS))
+            out.append("SUPERSEDED MEASURE: under CENTRE-POINT registration, 0.00 of the field is within %.0f m of "
+                       "a prop as long as the longest hull (%s, %.1f m) — the 12.19 m step that A3 replaced. It is "
+                       "NOT the game's cover rule any more: `Arena.cover_fraction` measures the occluded fraction "
+                       "of the hull's own chord and does not step. Run `make arena-cover` for the live figure."
+                       % (TERRAIN_RADIUS, name, length))
         elif reach < 0.5:
-            out.append("only %.2f of the field is within %.0f m of cover long enough for the longest hull "
-                       "(%s, %.1f m)." % (reach, TERRAIN_RADIUS, name, length))
+            out.append("SUPERSEDED MEASURE: under CENTRE-POINT registration, only %.2f of the field is within %.0f m "
+                       "of cover long enough for the longest hull (%s, %.1f m). Run `make arena-cover` for what the "
+                       "game actually asks." % (reach, TERRAIN_RADIUS, name, length))
     if report["ambush"]["centre_sees_share"] < 0.10:
         out.append("centre_sees %.3f is very low: check the middle is a place you can fight FROM, not just a place "
                    "nothing reaches." % report["ambush"]["centre_sees_share"])
@@ -1037,6 +1052,9 @@ def main():
             name = max(hulls, key=lambda k: hulls[k])
             report["hull_cover"] = {
                 "longest_hull": name, "longest_hull_m": hulls[name],
+                # A3 (round 9): kept, and kept LABELLED. `reach` is the superseded centre-point measure; the
+                # game's cover query is `Arena.cover_fraction` and `make arena-cover` reports it.
+                "definition": "centre-point (SUPERSEDED by A3: Arena.cover_fraction)",
                 "reach": round(hull_cover_reach(layout, report["_boxes"], hulls[name]), 3),
                 # The kit's longest prop is the cliff: cover is a step function of hull length, not a gradient.
                 "longest_prop_m": round(max((max(b.w, b.d) for b in report["_boxes"]), default=0.0), 2)}

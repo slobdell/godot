@@ -135,12 +135,49 @@ func _ready() -> void:
 	var dressing := get_node_or_null("Dressing") as VisualSlot
 	if dressing != null:
 		dressing.invoke("setup", [layout])
+	cover = null  # A3: built on the first query, not here -- see `cover_tables()`
 	_bake()
 
 
 func _exit_tree() -> void:
 	if is_same(active, layout):
 		active = {}  # no stale spawns or hazards for a match that runs without an arena
+		cover = null
+
+
+## A3 (round 9, scale): the hull-chord cover tables for the arena that was built last, or `null` until something
+## asks for them. Static for the reason `active` is -- cover is a static query about static geometry, and combat
+## asks it from `TacticalQuery` and from `EngagementStats`, where there is no Arena node to hand.
+##
+## **BUILT LAZILY, ON THE FIRST QUERY**, and that is a deliberate choice rather than an optimisation reflex: FIGHT's
+## load time is a number the lead noticed (round 6 took it from 7.6 s to 1.4 s), and `make check` builds an arena in
+## dozens of tests that will never ask about cover. A stream that adds to a load time the lead complained about,
+## for a query most runs never make, has spent his budget on nothing.
+static var cover: CoverTables = null
+
+
+## The tables for the arena that was built last, building them if this is the first ask.
+static func cover_tables() -> CoverTables:
+	if cover == null and not active.is_empty():
+		cover = CoverTables.build(active)
+	return cover
+
+
+## **A3's query.** The fraction of a hull's own centreline chord that is occluded from `viewer`: 0.0 fully exposed,
+## 1.0 fully covered, the same work at 2.93 m and at 14.0 m. **REPLACES centre-point cover registration**, whose
+## step function at 12.19 m (yard 0.99 up to `container_40`'s length and 0.00 above it) is an artefact of sampling
+## the hull's centre, not of the maps -- game_design.md *Ruling: the War Rig stays at 14 m*.
+##
+##   `viewer`   where the threat is looking from       `point`    the hull's centre
+##   `heading`  the hull's forward, flat               `length`   metres (`hull_size[2]`)
+##
+## Returns 0.0, never garbage and never an error, for a hull off the table or on an arena with no tables: it is
+## called per candidate point, per query, per unit. What it approximates, and by how much, is in `CoverTables` --
+## and the cost has TWO terms, one a constant fraction of hull length and one a constant in metres, so the query is
+## least precise on the SHORTEST hull (`CoverTables.worst_case_error`).
+static func cover_fraction(viewer: Vector3, point: Vector3, heading: Vector3, length: float) -> float:
+	var tables := cover_tables()
+	return tables.cover_fraction(viewer, point, heading, length) if tables != null else 0.0
 
 
 func _bake() -> void:
