@@ -36,6 +36,10 @@ def print_report(row, handle):
     if row["oscillating_order_verb"]:
         write("        `osc_share` counts only ticks under order_verb=%s (fight_probe.gd's --stall-verb).\n"
               % row["oscillating_order_verb"])
+    if "facing_ordered" not in row["columns"]:
+        write("        NOTE: no `facing_ordered` column. An arrival arc under an ORDERED facing is off-corridor by\n"
+              "        construction and is obedience, not a pathology -- without this column nothing can tell the\n"
+              "        two apart, so no off-corridor verdict may be published from this log (FORMAT.md).\n")
     if not row["cause_columns"]:
         write("        NOTE: this log has no cause columns, so every cusp is reported as unclassified "
               "(FORMAT.md: order_reverse / phase / creeping).\n")
@@ -57,11 +61,14 @@ def print_report(row, handle):
         cells = head[unit_id] if unit_id != "ALL" else row["all"]
         write("      %-14s under_way=%.1fs agent_min=%.2f eff_windows=%d sparc_windows=%d "
               "cusps[ordered=%d creep=%d unexplained=%d unclassified=%d] "
-              "refused[zero_path=%d parked=%d short=%d]\n" % (
+              "refused[zero_path=%d parked=%d short=%d]%s\n" % (
                   unit_id, cells["under_way_seconds"], cells["agent_minutes"], cells["efficiency_windows"],
                   cells["sparc_windows"], cells["cusps_ordered"], cells["cusps_creep"], cells["cusps_unexplained"],
                   cells["cusps_unclassified"], cells["efficiency_refused_zero_path"],
-                  cells["sparc_refused_parked"], cells["sparc_refused_short"]))
+                  cells["sparc_refused_parked"], cells["sparc_refused_short"],
+                  # Beside the fractions, never inside them.
+                  (" ordered_facing=%.1fs" % cells["facing_ordered_seconds"])
+                  if cells["facing_ordered_seconds"] else ""))
     if row["by_element"]:
         write("  %-10s %12s %8s %8s %10s\n" % ("element", "residual_rms", "ticks", "members", "too_small"))
         for element, cells in row["by_element"].items():

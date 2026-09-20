@@ -224,6 +224,10 @@ class CuspSummary:
     unexplained: int = 0
     unclassified: int = 0
     ticks: int = 0
+    ## Ticks flown under an ordered arrival facing. Reported BESIDE every fraction, never inside it: an arrival arc
+    ## at the end of a dragged move is off-corridor by construction and is the unit OBEYING (control + the
+    ## orchestrator, 2026-09-20). A statistic that charges A6's falsifier for obedience is the wrong statistic.
+    facing_ordered_ticks: int = 0
     tick_rate: int = 30
 
     @property
@@ -241,6 +245,7 @@ class CuspSummary:
         self.unexplained += other.unexplained
         self.unclassified += other.unclassified
         self.ticks += other.ticks
+        self.facing_ordered_ticks += other.facing_ordered_ticks
         self.tick_rate = other.tick_rate or self.tick_rate
 
 
@@ -271,15 +276,24 @@ def cusp_density(samples: Sequence[Sample], tick_rate: int) -> CuspSummary:
         if current.tick != previous.tick + 1:
             last_sign = 0
             continue
+        if current.facing_ordered:
+            out.facing_ordered_ticks += 1
         speed = signed_speed(previous, current, dt)
         if abs(speed) < CUSP_SPEED_MPS:
             continue  # below the floor: a stationary unit's jitter is not a cusp
         sign = 1 if speed > 0 else -1
         if last_sign != 0 and sign != last_sign:
             out.cusps += 1
-            if current.order_reverse is None and current.phase is None and current.creeping is None:
+            if (
+                current.order_reverse is None
+                and current.phase is None
+                and current.creeping is None
+                and current.facing_ordered is None
+            ):
                 out.unclassified += 1
-            elif current.order_reverse:
+            elif current.order_reverse or current.facing_ordered:
+                # An ordered arrival facing is an ORDER. A reversal inside its arc is the unit doing as it was
+                # told, and it must never land in `unexplained` -- that is the bucket a falsifier reads.
                 out.ordered += 1
             elif current.creeping:
                 out.creep += 1
@@ -598,6 +612,7 @@ def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, ob
             "cusps_creep": row.cusps.creep,
             "cusps_unexplained": row.cusps.unexplained,
             "cusps_unclassified": row.cusps.unclassified,
+            "facing_ordered_seconds": _round(row.cusps.facing_ordered_ticks / float(log.header.tick_rate), 1),
             "agent_minutes": _round(row.cusps.agent_minutes, 2),
             "sparc_mean": _round(row.sparc.mean, 4),
             "sparc_windows": row.sparc.windows,
@@ -630,6 +645,7 @@ def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, ob
         "sparc_nfft": SPARC_NFFT,
         "sparc_cutoff_rad_s": SPARC_CUTOFF_RAD_S,
         "cause_columns": log.has_cause,
+        "columns": sorted(log.columns),
         "oscillating_order_verb": order_verb,
         "samples": log.sample_count(),
         "units": len(log.units),

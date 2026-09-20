@@ -1,0 +1,14 @@
+METRICS commit=1422acd9 machine=builder0 producer=nav-fight arena=boulevard seed=3 tick_rate=30
+        log=_agents/streams/references/round9/metrics/boulevard.jsonl.gz samples=118620 units=34 window=4.0s (120 ticks)  sparc_window=256 samples, nfft=256, cutoff=20 rad/s
+        `osc_share` counts only ticks under order_verb=attack_move (fight_probe.gd's --stall-verb).
+  unit_id          units ordered  eff_mean   eff_p10 osc_share osc_units  net/path  cusp/min   cusps     sparc
+  ifv                  7       7     0.603     0.169     0.068         5     0.799     34.24     456    -2.146
+  lancer               6       6     0.623     0.153     0.061         5     0.737     34.82     412    -2.107
+  tank                21      21     0.834     0.470     0.046        18     0.787      6.82     278    -1.923
+  ALL                 34      34     0.728     0.286     0.053        28     0.783     17.39    1146    -2.021
+      ifv            under_way=280.5s agent_min=13.32 eff_windows=19299 sparc_windows=79 cusps[ordered=23 creep=388 unexplained=45 unclassified=0] refused[zero_path=2410 parked=0 short=12]
+      lancer         under_way=257.2s agent_min=11.83 eff_windows=19829 sparc_windows=76 cusps[ordered=27 creep=336 unexplained=49 unclassified=0] refused[zero_path=281 parked=0 short=4]
+      tank           under_way=869.7s agent_min=40.75 eff_windows=42558 sparc_windows=167 cusps[ordered=108 creep=0 unexplained=170 unclassified=0] refused[zero_path=25437 parked=84 short=24]
+      ALL            under_way=1407.4s agent_min=65.90 eff_windows=81686 sparc_windows=322 cusps[ordered=158 creep=724 unexplained=264 unclassified=0] refused[zero_path=28128 parked=84 short=40]
+  no element/slot columns in this log: the affine formation residual has nothing to fit.
+metrics: wrote _agents/streams/references/round9/metrics/boulevard-metrics.json (1 log)

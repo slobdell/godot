@@ -73,18 +73,48 @@ Unknown extra header keys are kept and passed through. They are documentation, n
 `null` is a value, not an absence: the **key must be present**. A sample missing `goal_x` is refused; a sample with
 `"goal_x": null` is a unit under no orders.
 
-### Optional in every sample — all-or-nothing
+### Optional in every sample — each one all-or-nothing
 
-These let signed cusp density split *ordered* from *unexplained*. A log where **some** samples carry one and some do
-not is refused: that is the shape in which a partial column silently becomes a wrong denominator.
+These say *why* a unit did what it did, so a metric can separate an ordered manoeuvre from a pathology.
+
+**Each column is all-or-nothing across a log** — present in every sample or in none. A log where some samples carry
+one and some do not is refused: that is the shape in which a partial column silently becomes a wrong denominator.
+The **set** of columns is the producer's choice, so a harness that can answer three of them is not forced to fake a
+fourth. (Per-column rather than per-set since 2026-09-20, when `facing_ordered` was added after logs already
+existed with the other three.)
 
 | field | type | notes |
 |---|---|---|
 | `order_reverse` | bool or null | the order asks for reverse (a yield spot behind it, a retreat) |
 | `phase` | str or null | `Movement.state(tank).phase` — `yielding`, `blocked`, `none`, … |
 | `creeping` | bool or null | the plant is in its wheeled creep (K-turn legs) |
+| `facing_ordered` | bool or null | **the unit is flying an ordered arrival facing** (see below) |
 
-Without them every cusp is reported as `unclassified`, and `make metrics` says so rather than reporting a zero.
+Without the first three, every cusp is reported as `unclassified`, and `make metrics` says so rather than
+reporting a zero.
+
+#### `facing_ordered`, and the rule that comes with it
+
+Control shipped desktop right-drag facing, so a move order can now carry an arrival heading, and **an arrival arc
+at the end of a dragged move is off-corridor by construction — that is the unit OBEYING.** Ruled by the
+orchestrator with control, 2026-09-20:
+
+> **Ticks under an ordered facing count as *ordered*, never as off-corridor, and are reported BESIDE the fraction,
+> never inside it.**
+
+So:
+
+- Signed cusp density puts a reversal inside such an arc in `cusps_ordered`. It must never reach `unexplained` —
+  that is the bucket A6's falsifier reads, and charging it for obedience would fail the contract for doing the
+  right thing.
+- Every report carries `facing_ordered_seconds` next to the counts, as a separate tally and not a subtraction, so
+  a reader can see how much of a run was under an ordered facing and judge a fraction themselves.
+- **Any future off-corridor or opposing-tangent statistic obeys the same rule**, and `make metrics` refuses to let
+  a log without this column masquerade as one that has it: it prints a NOTE saying no off-corridor verdict may be
+  published from that log.
+
+Producer: nav's `fight_probe.gd` emitter (nav has been asked for it). Until it lands, logs simply omit the column
+and the NOTE appears.
 
 ## Size
 

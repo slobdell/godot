@@ -33,8 +33,11 @@ REQUIRED_FLOAT = [
     ("slot_x", True),
     ("slot_z", True),
 ]
-# All-or-nothing: present in every sample of a log, or in none of them.
-OPTIONAL_BOOL = ["order_reverse", "creeping"]
+# Optional columns. Each one is all-or-nothing ACROSS A LOG -- present in every sample or in none -- but the set a
+# log carries is the producer's choice, so a harness that can answer three of them is not forced to fake a fourth.
+# (Per-column rather than per-group since 2026-09-20: `facing_ordered` arrived after logs had already been written
+# with the other three, and refusing those logs to keep one rule simple would have thrown away the round's control.)
+OPTIONAL_BOOL = ["order_reverse", "creeping", "facing_ordered"]
 OPTIONAL_STR = ["phase"]
 
 REQUIRED_FIELDS = (
@@ -92,6 +95,10 @@ class Sample:
     order_reverse: Optional[bool] = None
     phase: Optional[str] = None
     creeping: Optional[bool] = None
+    ## The unit is flying an ordered arrival facing. Its arc is off-corridor BY CONSTRUCTION, and that is the unit
+    ## OBEYING, not a pathology (control + the orchestrator, 2026-09-20). Anything that scores "off corridor" or
+    ## "opposing tangent" counts these ticks as ordered and reports them BESIDE the fraction, never inside it.
+    facing_ordered: Optional[bool] = None
 
     @property
     def ordered(self) -> bool:
@@ -109,8 +116,13 @@ class TrajectoryLog:
     header: Header
     units: Dict[str, List[Sample]]
     path: str = ""
-    # Which optional columns this log carries, all-or-nothing.
-    has_cause: bool = False
+    ## Which optional columns this log carries. Each is all-or-nothing across the log; the SET is the producer's.
+    columns: frozenset = frozenset()
+
+    @property
+    def has_cause(self) -> bool:
+        """Whether a cusp can be attributed at all: the cause columns beyond `facing_ordered`."""
+        return bool(self.columns & {"order_reverse", "phase", "creeping"})
 
     @property
     def unit_ids(self) -> Dict[str, str]:
@@ -198,7 +210,7 @@ def parse_header(row: Dict[str, Any], path: str = "", line_no: int = 1) -> Heade
     )
 
 
-def parse_sample(row: Dict[str, Any], path: str, line_no: int, expect_cause: Optional[bool]) -> Sample:
+def parse_sample(row: Dict[str, Any], path: str, line_no: int, expect_cause: Optional[frozenset]) -> Sample:
     kind = row.get("kind", "sample")
     if kind != "sample":
         _die(path, line_no, "unknown kind %r (a log carries one header and samples, nothing else)" % kind)
@@ -222,24 +234,23 @@ def parse_sample(row: Dict[str, Any], path: str, line_no: int, expect_cause: Opt
             "goal_x/goal_z and order_verb must be null together: a goal with no verb, or a verb with no goal, "
             "is an order we cannot attribute (got verb=%r)" % (values["order_verb"],),
         )
-    has_cause = any(key in row for key in OPTIONAL_FIELDS)
-    if expect_cause is not None and has_cause != expect_cause:
+    present = frozenset(key for key in OPTIONAL_FIELDS if key in row)
+    if expect_cause is not None and present != expect_cause:
+        missing = sorted(expect_cause - present)
+        extra = sorted(present - expect_cause)
         _die(
             path,
             line_no,
-            "the optional cause columns %s are all-or-nothing across a log: this line %s them while earlier lines "
-            "%s (a partial column becomes a wrong denominator, silently)"
-            % (OPTIONAL_FIELDS, "carries" if has_cause else "omits", "did not" if has_cause else "did"),
+            "the optional columns are all-or-nothing across a log: this line is missing %s and adds %s against the "
+            "first sample's set %s. A column that is present on some ticks and absent on others becomes a wrong "
+            "denominator, silently" % (missing or "nothing", extra or "nothing", sorted(expect_cause)),
         )
-    if has_cause:
-        for key in OPTIONAL_FIELDS:
-            if key not in row:
-                _die(path, line_no, "the cause columns are all-or-nothing: %r is missing" % key)
-        for key in OPTIONAL_BOOL:
+    for key in present:
+        if key in OPTIONAL_BOOL:
             if row[key] is not None and not isinstance(row[key], bool):
                 _die(path, line_no, "field %r is %r, expected a boolean or null" % (key, row[key]))
             values[key] = row[key]
-        for key in OPTIONAL_STR:
+        else:
             values[key] = _text(path, line_no, row, key, True)
     return Sample(**values)
 
@@ -252,7 +263,7 @@ def _open(path: str) -> io.TextIOBase:
 
 def read_lines(lines: Iterable[str], path: str = "") -> TrajectoryLog:
     header: Optional[Header] = None
-    expect_cause: Optional[bool] = None
+    expect_cause: Optional[frozenset] = None
     units: Dict[str, List[Sample]] = {}
     for line_no, raw in enumerate(lines, start=1):
         line = raw.strip()
@@ -270,7 +281,7 @@ def read_lines(lines: Iterable[str], path: str = "") -> TrajectoryLog:
             continue
         sample = parse_sample(row, path, line_no, expect_cause)
         if expect_cause is None:
-            expect_cause = any(key in row for key in OPTIONAL_FIELDS)
+            expect_cause = frozenset(key for key in OPTIONAL_FIELDS if key in row)
         units.setdefault(sample.unit, []).append(sample)
     if header is None:
         raise TrajectoryLogError("%s: empty log (not even a header)" % (path or "<log>"))
@@ -285,7 +296,7 @@ def read_lines(lines: Iterable[str], path: str = "") -> TrajectoryLog:
         ticks = [s.tick for s in samples]
         if len(set(ticks)) != len(ticks):
             raise TrajectoryLogError("%s: unit %r has two samples on one tick" % (path or "<log>", name))
-    return TrajectoryLog(header=header, units=units, path=path, has_cause=bool(expect_cause))
+    return TrajectoryLog(header=header, units=units, path=path, columns=expect_cause or frozenset())
 
 
 def read_log(path: str) -> TrajectoryLog:
@@ -328,11 +339,12 @@ def header_line(
     )
 
 
-def sample_line(sample: Sample, with_cause: bool = False) -> str:
+def sample_line(sample: Sample, with_cause: Any = False) -> str:
+    """`with_cause`: False for none, True for every optional column, or an explicit iterable of column names."""
     row: Dict[str, Any] = {key: getattr(sample, key) for key in REQUIRED_FIELDS}
-    if with_cause:
-        for key in OPTIONAL_FIELDS:
-            row[key] = getattr(sample, key)
+    columns = OPTIONAL_FIELDS if with_cause is True else ([] if with_cause is False else list(with_cause))
+    for key in columns:
+        row[key] = getattr(sample, key)
     return json.dumps(row, sort_keys=True)
 
 

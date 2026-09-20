@@ -195,6 +195,34 @@ class LogFormatTest(unittest.TestCase):
         log = read_lines([head, with_cause, trajlog.sample_line(self.fixture()[1], with_cause=True)], "<f>")
         self.assertTrue(log.has_cause)
 
+    def test_a_log_may_carry_a_SUBSET_of_the_optional_columns(self):
+        # Per-column, not per-group: `facing_ordered` arrived after logs existed with the other three, and a
+        # harness that can answer three of four must not be forced to fake the fourth.
+        head = trajlog.header_line("c", "m", TICK_RATE, "synthetic")
+        subset = ["order_reverse", "phase"]
+        lines = [head] + [trajlog.sample_line(s, subset) for s in self.fixture()]
+        log = read_lines(lines, "<f>")
+        self.assertEqual(log.columns, frozenset(subset))
+        self.assertTrue(log.has_cause)
+        self.assertIsNone(log.units["Green_alpha_1"][0].facing_ordered)
+
+    def test_a_log_that_adds_a_column_halfway_through_is_refused(self):
+        head = trajlog.header_line("c", "m", TICK_RATE, "synthetic")
+        first = trajlog.sample_line(self.fixture()[0], ["order_reverse", "phase"])
+        later = trajlog.sample_line(self.fixture()[1], ["order_reverse", "phase", "creeping"])
+        self._refuses([head, first, later], "all-or-nothing")
+        self._refuses([head, later, first], "all-or-nothing")
+
+    def test_facing_ordered_round_trips(self):
+        head = trajlog.header_line("c", "m", TICK_RATE, "synthetic")
+        samples = self.fixture()
+        for s in samples:
+            s.facing_ordered = True
+        lines = [head] + [trajlog.sample_line(s, True) for s in samples]
+        log = read_lines(lines, "<f>")
+        self.assertIn("facing_ordered", log.columns)
+        self.assertTrue(log.units["Green_alpha_1"][4].facing_ordered)
+
     def test_two_samples_on_one_tick_are_refused(self):
         head = trajlog.header_line("c", "m", TICK_RATE, "synthetic")
         one = trajlog.sample_line(self.fixture()[0])
@@ -407,6 +435,31 @@ class CuspDensityTest(unittest.TestCase):
         self.assertEqual(out.cusps, 1)
         self.assertEqual(out.unclassified, 1)
         self.assertEqual(out.ordered + out.creep + out.unexplained, 0)
+
+    def test_an_ordered_arrival_facing_is_ORDERED_and_never_unexplained(self):
+        """control + the orchestrator, 2026-09-20: a unit flying an ordered arrival facing is off-corridor BY
+        CONSTRUCTION, and that is the unit OBEYING. A reversal inside that arc must land in `ordered`, because
+        `unexplained` is the bucket A6's falsifier reads -- charging it for the obedience control just shipped
+        would fail the contract for doing the right thing."""
+        xs = [0.0, 4.0, 8.0, 6.0, 4.0]
+        samples = track(xs, order_reverse=False, phase="none", creeping=False, facing_ordered=False)
+        plain = cusp_density(samples, TICK_RATE)
+        self.assertEqual((plain.cusps, plain.unexplained, plain.ordered), (1, 1, 0))
+        for s in samples:
+            s.facing_ordered = True
+        arc = cusp_density(samples, TICK_RATE)
+        self.assertEqual((arc.cusps, arc.unexplained, arc.ordered), (1, 0, 1))
+
+    def test_ordered_facing_ticks_are_reported_BESIDE_the_counts_not_inside_them(self):
+        # It is a separate tally, not a subtraction from anything: a reader must be able to see how much of the
+        # run was under an ordered facing and judge a fraction for themselves.
+        xs = [0.0, 4.0, 8.0, 6.0, 4.0, 8.0]
+        samples = track(xs, order_reverse=False, phase="none", creeping=False, facing_ordered=False)
+        for s in samples[2:]:
+            s.facing_ordered = True
+        out = cusp_density(samples, TICK_RATE)
+        self.assertEqual(out.facing_ordered_ticks, 4)
+        self.assertEqual(out.ticks, 6)
 
     def test_with_the_cause_columns_the_cusps_are_split(self):
         xs = [0.0, 4.0, 8.0, 6.0, 4.0, 8.0, 12.0]

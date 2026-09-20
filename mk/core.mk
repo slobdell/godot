@@ -60,18 +60,35 @@ import: $(GODOT)
 # `flock -n` fails fast rather than queueing: a second lint is always a mistake, never a wait.
 # Found by control, 2026-09-19, by filtering `pgrep` on cwd after the orchestrator wrongly asked
 # whether a worktree was to blame.
+# T1 (metrics, round 9): ONE lint per checkout still, but its files now fan out. At 1.82 s of Godot start-up per
+# file x 531 files this was ~16 minutes on the laptop and the single largest target in `check` -- and it is
+# embarrassingly parallel. Two things were MEASURED before touching it, because the lock above reads like a ban on
+# any concurrency here and it is not:
+#
+#   1. `--check-only` never writes `.godot`. Snapshotted all 911 files under `.godot` (mtime and size), ran five
+#      --check-only passes, diffed: no change. The exclusive writer is `import`, which is a prerequisite and has
+#      already finished -- and re-reading the incident above, the second `make lint` ran `import` FIRST, which is
+#      what corrupted the first lint's reads. The lock guards against a concurrent IMPORT, not against concurrent
+#      parse checks.
+#   2. Serial and `-P6` give byte-identical findings. 24 files: 35 s serial, 11 s parallel, same (empty) output,
+#      `.godot` unchanged. Then with a deliberately broken file added, both arms reported the same parse error --
+#      an empty comparison proves nothing, so the arm was proven (lesson 147).
+#
+# The lock stays: a second `make lint` would still run `import` underneath the first.
 lint: import ## Parse-check every GDScript file; prints only errors (fast way to find compile errors)
 	@exec 9>$(BUILD_DIR)/.lint.lock; \
 	flock -n 9 || { \
 		echo "lint: another lint is already running in this checkout ($(CURDIR)) -- refusing."; \
-		echo "      Two lints share one .godot cache and the second corrupts the first's reads."; \
+		echo "      A second lint runs \`import\` first, and that rewrites the .godot cache the first one is reading."; \
 		echo "      Wait for it, or kill it AND its Godot children (a killed wrapper leaves them)."; \
 		exit 1; }; \
-	status=0; for f in $$(git ls-files -co --exclude-standard '*.gd'); do \
-		out=$$($(GODOT) --headless --path . --check-only --script "res://$$f" 2>&1 | grep -E 'Parse Error|SCRIPT ERROR' | grep -v 'depended scripts' || true); \
-		if [ -n "$$out" ]; then echo "$$f: $$out"; status=1; fi; \
-	done; \
-	if [ $$status -eq 0 ]; then echo "lint: all scripts parse"; fi; exit $$status
+	: > $(BUILD_DIR)/lint.out; \
+	git ls-files -co --exclude-standard '*.gd' | \
+		xargs -P $(LINT_JOBS) -I{} sh -c \
+			'out=$$($(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1 | grep -E "Parse Error|SCRIPT ERROR" | grep -v "depended scripts" || true); \
+			[ -z "$$out" ] || printf "%s: %s\n" "$$1" "$$out"' _ {} >> $(BUILD_DIR)/lint.out; \
+	if [ -s $(BUILD_DIR)/lint.out ]; then sort $(BUILD_DIR)/lint.out; exit 1; fi; \
+	echo "lint: all scripts parse ($$(git ls-files -co --exclude-standard '*.gd' | wc -l) files, -P$(LINT_JOBS))"
 
 test: import ## Run the headless test suite (FILTER=substring to run a subset)
 	$(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=$(FILTER)
@@ -88,7 +105,51 @@ test: import ## Run the headless test suite (FILTER=substring to run a subset)
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest
 
-check: $(CHECK_TARGETS) ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
+# ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
+#
+# Measured at the close of round 8: a `check` on builder0 is ONE single-threaded Godot at ~7% CPU on a 12-thread
+# machine for 30-50 minutes. It is latency-bound on awaiting fixed-tick physics frames, not compute-bound, so the
+# machine sits idle while an entire round waits on it. More slots shortens the QUEUE; only this shortens the RUN.
+#
+# THE DEPENDENCY MAP, which is the whole of the design. Every target in CHECK_TARGETS is independent of every
+# other EXCEPT these four constraints, each read out of the recipes rather than assumed:
+#
+#   .godot          `import` writes it, and among these targets it is the ONLY writer (see `lint` above). It is a
+#                   shared prerequisite, so ONE make invocation with -j builds it exactly once before anything
+#                   else starts -- which is why `check` hands the whole list to a single sub-make and does not loop.
+#   SMOKE_NET_PORT     net-smoke, combat-smoke  -- each starts a Godot server bound to it (mk/net.mk)
+#   SMOKE_BROKER_PORT  relay-smoke, lobby-smoke -- each starts a broker bound to it (mk/net.mk)
+#   user://garage_scratch/my_army.json
+#                      garage-smoke, army-loop-smoke -- both run --garage-scratch and both rewrite the scratch
+#                      army, and garage-smoke then asserts on the army it finds (mk/garage.mk). local.mk isolates
+#                      WORKTREES from each other; it does not isolate two targets inside one checkout.
+#
+# Deliberately NOT constraints, with the reason, because each looks like one:
+#   The sim hash -- determinism, sim-baseline, announcer-record-smoke and music-smoke all run matches and compare
+#      hashes. Separate processes on a fixed tick hash identically under any load, and CP3's falsifier PROVES that
+#      rather than assuming it: both hashes must come out bit-identical to the serial run's.
+#   build/ logs  -- every target writes its own named file; there is no shared output path among them.
+#
+# The wrappers exist so the chains live HERE and not on the real targets: putting `| net-smoke` on `combat-smoke`
+# itself would mean `make combat-smoke` silently ran net-smoke too, for every caller, forever.
+CHECK_JOBS ?= $(shell tools/slot.sh --jobs 2200)
+LINT_JOBS  ?= $(shell tools/slot.sh --jobs 800)
+_CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
+
+check: ## Everything headless: tests + network + relay + combat + match runner + garage (no display/browser)
+	@echo ">> check: $(words $(CHECK_TARGETS)) targets, up to $(CHECK_JOBS) at once (lint -P$(LINT_JOBS)) on $$(hostname)"
+	@$(MAKE) --no-print-directory -j$(CHECK_JOBS) -Otarget check-parallel
+
+.PHONY: check-parallel $(_CHECK_WRAPPED)
+check-parallel: $(_CHECK_WRAPPED) ## (internal) check's targets for `make -j`; run `make check`, not this
+	@echo "check passed: $(words $(CHECK_TARGETS)) targets"
+
+$(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): $(t)))
+
+# The three exclusion groups, as order-only prerequisites between the wrappers.
+_cp-combat-smoke:    | _cp-net-smoke
+_cp-lobby-smoke:     | _cp-relay-smoke
+_cp-army-loop-smoke: | _cp-garage-smoke
 
 # T1 step (a): the BEFORE. Runs exactly the same targets, in the same order, one at a time, and records each one's
 # wall-clock and peak RSS -- plus the machine and the load it ran under, because a check on an idle builder0 and a
@@ -109,8 +170,29 @@ check-timed: import ## T1: run check's targets one at a time with per-target wal
 		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v' || echo 0)" \
 		| tee -a $(BUILD_DIR)/check/timings.tsv
 	@printf '# target\tseconds\tpeak_rss_kb\texit\n' >> $(BUILD_DIR)/check/timings.tsv
-	@started=$$(date +%s); failed=""; 	for target in $(CHECK_TARGETS); do 		start=$$(date +%s); 		if /usr/bin/time -v -o $(BUILD_DIR)/check/$$target.time 				$(MAKE) --no-print-directory $$target > $(BUILD_DIR)/check/$$target.log 2>&1; then 			status=0; 		else 			status=$$?; failed="$$failed $$target"; 		fi; 		seconds=$$(( $$(date +%s) - start )); 		rss=$$(sed -n 's/.*Maximum resident set size (kbytes): //p' $(BUILD_DIR)/check/$$target.time 2>/dev/null | head -1); 		rss=$${rss:-0}; 		printf '%s\t%d\t%s\t%d\n' "$$target" "$$seconds" "$$rss" "$$status" >> $(BUILD_DIR)/check/timings.tsv; 		printf '>> check-timed: %-18s %5ds  peak %6s MB  exit %d\n' "$$target" "$$seconds" "$$(( rss / 1024 ))" "$$status"; 	done; 	total=$$(( $$(date +%s) - started )); 	printf '# TOTAL\t%d\t\t\n' "$$total" >> $(BUILD_DIR)/check/timings.tsv; 	printf '>> check-timed: TOTAL %ds (%dm%02ds) over %d targets\n' "$$total" "$$(( total / 60 ))" "$$(( total %% 60 ))" "$$(words $(CHECK_TARGETS))"; 	sort -k2 -rn -t"$$(printf '\t')" $(BUILD_DIR)/check/timings.tsv | grep -v '^#' | head -6 \
-		| awk -F"\t" '{printf ">> check-timed: slowest %-18s %5ds\n", $$1, $$2}'; 	if [ -n "$$failed" ]; then echo ">> check-timed: FAILED:$$failed (the timings above are still valid)"; exit 1; fi
+	@started=$$(date +%s); failed=""; \
+	for target in $(CHECK_TARGETS); do \
+		start=$$(date +%s); \
+		if /usr/bin/time -v -o $(BUILD_DIR)/check/$$target.time \
+				$(MAKE) --no-print-directory -o import $$target \
+				> $(BUILD_DIR)/check/$$target.log 2>&1; then \
+			status=0; \
+		else \
+			status=$$?; failed="$$failed $$target"; \
+		fi; \
+		seconds=$$(( $$(date +%s) - start )); \
+		rss=$$(sed -n 's/.*Maximum resident set size (kbytes): //p' $(BUILD_DIR)/check/$$target.time 2>/dev/null | head -1); \
+		rss=$${rss:-0}; \
+		printf '%s\t%d\t%s\t%d\n' "$$target" "$$seconds" "$$rss" "$$status" >> $(BUILD_DIR)/check/timings.tsv; \
+		printf '>> check-timed: %-18s %5ds  peak %6s MB  exit %d\n' "$$target" "$$seconds" "$$(( rss / 1024 ))" "$$status"; \
+	done; \
+	total=$$(( $$(date +%s) - started )); \
+	printf '# TOTAL\t%d\t\t\n' "$$total" >> $(BUILD_DIR)/check/timings.tsv; \
+	printf '>> check-timed: TOTAL %ds (%dm%02ds) over %d targets\n' \
+		"$$total" "$$(( total / 60 ))" "$$(( total %% 60 ))" "$(words $(CHECK_TARGETS))"; \
+	grep -v '^#' $(BUILD_DIR)/check/timings.tsv | sort -k2 -rn | head -5 \
+		| awk -F"\t" '{printf ">> check-timed: slowest %-18s %5ds\n", $$1, $$2}'; \
+	if [ -n "$$failed" ]; then echo ">> check-timed: FAILED:$$failed (the timings above are still valid)"; exit 1; fi
 
 check-all: check relay-drop-smoke relay-latency-smoke relay-rejoin-smoke screenshot web-smoke web-net-smoke web-relay-smoke web-host-smoke export-server ## check + desktop render + browser checks + server export
 	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --server=$(SMOKE_NET_PORT) --bots=2 2>&1 \

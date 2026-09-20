@@ -1,0 +1,141 @@
+{
+ "arena": "boneyard",
+ "busy_every_s": 0.0,
+ "busy_orders": 0,
+ "by_verb": {
+  "attack_move": {
+   "at_goal": 0.002,
+   "blocked_friend": 0.0,
+   "blocked_terrain": 0.001,
+   "halted": 0.013,
+   "halted_shooting": 0.075,
+   "progressing": 0.43,
+   "retask_events_per_unit_minute": 37.88,
+   "retasked": 0.473,
+   "slow": 0.004,
+   "unit_seconds": 1523.7,
+   "yielding": 0.002
+  },
+  "move": {
+   "at_goal": 0.047,
+   "blocked_friend": 0.005,
+   "blocked_terrain": 0.002,
+   "progressing": 0.904,
+   "retask_events_per_unit_minute": 0.0,
+   "slow": 0.029,
+   "unit_seconds": 572.5,
+   "yielding": 0.013
+  }
+ },
+ "decision_jumps_per_unit_minute": 6.44,
+ "factions": [
+  "condemned",
+  "condemned"
+ ],
+ "green": 34,
+ "green_alive_end": 33,
+ "green_lost": 1,
+ "halted_by_option_unit_seconds": {
+  "ADVANCE": 0.3,
+  "CLEAR_LANE": 0.3,
+  "COVER_FIRE": 0.0,
+  "ENGAGE": 128.5,
+  "HOLD": 0.2,
+  "SUPPRESS": 4.8
+ },
+ "inplace_yaw_events": {
+  "ifv": 76,
+  "lancer": 72,
+  "scout": 179
+ },
+ "motion_jumps_per_unit_minute": 21.1,
+ "ordered_unit_seconds": 2096.2,
+ "retask_cause": {
+  "CLEAR_LANE": 4,
+  "CLEAR_LANE (switched from ENGAGE)": 30,
+  "CLEAR_LANE (switched from FLANK)": 1,
+  "CLEAR_LANE (switched from SUPPRESS)": 2,
+  "COVER_FIRE": 17,
+  "COVER_FIRE (switched from CLEAR_LANE)": 2,
+  "COVER_FIRE (switched from ENGAGE)": 32,
+  "COVER_FIRE (switched from FLANK)": 2,
+  "COVER_FIRE (switched from SUPPRESS)": 1,
+  "ENGAGE": 4,
+  "ENGAGE (switched from MOVE)": 1,
+  "ENGAGE hop": 703,
+  "ENGAGE hop (switched from CLEAR_LANE)": 22,
+  "ENGAGE hop (switched from COVER_FIRE)": 32,
+  "ENGAGE hop (switched from FLANK)": 5,
+  "ENGAGE hop (switched from MOVE)": 22,
+  "ENGAGE hop (switched from RETREAT)": 1,
+  "ENGAGE hop (switched from SUPPRESS)": 12,
+  "FLANK": 4,
+  "FLANK (switched from CLEAR_LANE)": 1,
+  "FLANK (switched from COVER_FIRE)": 3,
+  "FLANK (switched from ENGAGE)": 6,
+  "FLANK (switched from SUPPRESS)": 1,
+  "MOVE (switched from ?)": 3,
+  "MOVE (switched from ADVANCE)": 8,
+  "MOVE (switched from ENGAGE)": 8,
+  "MOVE (switched from HOLD)": 5,
+  "RETREAT": 3,
+  "RETREAT (switched from ENGAGE)": 10,
+  "RETREAT (switched from MOVE)": 1,
+  "SUPPRESS": 2,
+  "SUPPRESS (switched from CLEAR_LANE)": 4,
+  "SUPPRESS (switched from ENGAGE)": 8,
+  "SUPPRESS (switched from FLANK)": 2
+ },
+ "retask_events": 962,
+ "retask_events_per_unit_minute": 27.54,
+ "retasked_by_option_unit_seconds": {
+  "?": 0.1,
+  "CLEAR_LANE": 31.3,
+  "COVER_FIRE": 112.0,
+  "ENGAGE": 542.0,
+  "FLANK": 7.4,
+  "RETREAT": 6.6,
+  "SUPPRESS": 21.3
+ },
+ "rust": 44,
+ "rust_alive_end": 43,
+ "rust_lost": 1,
+ "seconds": 120.0,
+ "seed": 3,
+ "share": {
+  "at_goal": 0.014,
+  "blocked_friend": 0.001,
+  "blocked_terrain": 0.001,
+  "halted": 0.01,
+  "halted_shooting": 0.054,
+  "progressing": 0.559,
+  "retasked": 0.344,
+  "slow": 0.011,
+  "yielding": 0.005
+ },
+ "shots": [
+  899,
+  1202
+ ],
+ "stall": {
+  "crawl_share": 0.423,
+  "no_progress_share": 0.477,
+  "no_progress_units": 30,
+  "oscillating_share": 0.066,
+  "oscillating_units": 27,
+  "under_way_seconds": 1521.4
+ },
+ "stall_verb": "attack_move",
+ "unit_seconds": {
+  "at_goal": 29.3,
+  "blocked_friend": 2.9,
+  "blocked_terrain": 2.9,
+  "halted": 20.5,
+  "halted_shooting": 113.6,
+  "progressing": 1172.3,
+  "retasked": 720.6,
+  "slow": 23.5,
+  "yielding": 10.6
+ },
+ "unreachable_route_unit_seconds": 0.5
+}

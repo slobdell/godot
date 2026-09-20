@@ -71,9 +71,18 @@ comparable with round 8's gear-flip counter). A K-turn is exactly 2 cusps; a str
 version: round 8's gear-flip counter could only see flips the controller *labelled*, and a third of them came back
 `unexplained`. This sees the motion whatever the controller thought it was doing.
 
-Where the log carries the optional cause columns (`order_reverse`, `phase`, `creeping` — all-or-nothing, FORMAT.md),
-cusps are split `ordered` / `creep` / `unexplained`. Without them every cusp is reported as `unclassified` and the
-tool says so, rather than printing a zero.
+Where the log carries the optional cause columns (`order_reverse`, `phase`, `creeping`, `facing_ordered` — each
+all-or-nothing, FORMAT.md), cusps are split `ordered` / `creep` / `unexplained`. Without them every cusp is
+reported as `unclassified` and the tool says so, rather than printing a zero.
+
+**An ordered arrival facing is an order.** Control shipped desktop right-drag facing, so a move order can carry an
+arrival heading, and the arc at the end of such a move is off-corridor *by construction* — the unit obeying.
+Ruled 2026-09-20 with control: **ticks under an ordered facing count as `ordered`, never as off-corridor, and are
+reported beside the fraction, never inside it.** A reversal inside that arc lands in `cusps_ordered` and never in
+`cusps_unexplained`, because `unexplained` is the bucket A6's falsifier reads — and a metric that charges a
+contract for the obedience we just shipped is the wrong metric. Every report carries `facing_ordered_seconds` as a
+separate tally, and `make metrics` prints a NOTE on any log without the column saying that **no off-corridor
+verdict may be published from it**. The same rule binds any future off-corridor or opposing-tangent statistic.
 
 ### 3. Spectral arc length (SPARC) — *how jerky is the speed?*
 
