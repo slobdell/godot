@@ -1068,6 +1068,33 @@ structural properties are asserted by tests; what is missing is the behaviour in
    done remotely and they are the part worth doing first.
 6. **X6 (per-faction PID gains), the stretch item.** Not started. It needs CP1 on `main` and a merged tree.
 
+### Owed to nav, recorded and deliberately NOT done tonight
+
+**1. `scenario_motion.gd:57` punishes a faster fight for being faster.** The assertion is
+`int(moving["shots"][0]) + int(moving["shots"][1]) >= 6`, an absolute count over a duel whose DURATION the change
+under test shortens: nav measures A7+A11 ending the duel in **6.3 s at 0.57 shots/s** against **20 s at 0.27
+shots/s**. Fewer total shots, more than twice the rate, and the test reads it as a regression. The fix is a rate, and
+the MEASURE line already prints everything it needs (`r["seconds"]` and `r["front_share"]`):
+
+```gdscript
+var fired := int(moving["shots"][0]) + int(moving["shots"][1])
+var rate := float(fired) / maxf(float(moving["seconds"]), 0.001)
+assert_true(rate >= 0.25, "and they still fight (%.2f shots/s over %.1f s, %.0f%% on fronts)" \
+        % [rate, float(moving["seconds"]), float(moving["front_share"]) * 100.0])
+```
+
+**Why it is not committed tonight, which is the point rather than an excuse:** `scenario_motion.gd` is a SCENARIO
+file, `ai-scenarios` is **not** in `check` (lesson 42/159), and a scenario run costs more than the night had left —
+my local `tactics_scenarios` already outran a 900 s ceiling. A one-line edit to a scenario file, committed on the
+grounds that it obviously works, is exactly what shipped `6e0c9968` with a `StubElement` that had no `pitch`, which
+nav found by cherry-picking because my green `check` could not see it. So this travels with an `ai-scenarios` count
+beside its hash or it does not travel.
+
+**2. Whoever measures A11 uses A7+A11 against A7 alone — never `--nav-off=a11` against default.** A11 cannot act
+without A7, so switching A11 off in a default build measures nothing and reads as "A11 does not help". Same trap as
+`squad-defile TUBE=` reading `redecides=0` in both arms because the maze has no enemies: an arm in which the mechanism
+cannot act is not a control, it is a broken instrument, and its zero looks exactly like a result.
+
 ### Requests to other streams
 
 - **nav:** please report a **clearance / corridor width** from `Movement.state(unit)` — the narrowest drivable width
