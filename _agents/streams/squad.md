@@ -1244,6 +1244,63 @@ without A7, so switching A11 off in a default build measures nothing and reads a
 `squad-defile TUBE=` reading `redecides=0` in both arms because the maze has no enemies: an arm in which the mechanism
 cannot act is not a control, it is a broken instrument, and its zero looks exactly like a result.
 
+### The afternoon: four rules that cost a day between us, and the spawn dataset
+
+**1. A knob being off does not exonerate the commit that added it.** combat A/B'd `match.yaw_fit` on
+`test_ai_player_orders::test_five_squads_ordered_in_quick_succession`, got **bit-identical** output in both arms, and
+reported the plant excluded — which was true of the knob and was read as true of the commit. `986f8921` also moved the
+basis assignment behind a new `_fitting_forward`, and `--tune=match.yaw_fit=0` returns early **from inside that new
+function**, so the off arm still runs the refactored path. **Settled by ancestry, not by a run:** `b3f7ffae` IS in my
+tree and that test passes on it twice (0 of 30 off-slot in a 2-shard check, 0 of 30 filtered, worst gap 8.5 m against a
+36 m bar); `986f8921` is NOT in my tree. So main is clear and the cause is on that branch. Corollary from combat's own
+bisect: **a failure bit-identical across every change on a branch was never caused by those changes** — it points at
+the branch's base or its first commit, not its middle.
+
+**2. A log is not a record per test unless every line says which test it is from.** combat quoted three roster lines to
+me in good faith; they belonged to the test that runs *next*. The arithmetic proves it — the leash line reports 3 living
+units at a mean 3.9 m and the roster entries are 4, 3, 5 (mean 4.0) — and the tell was the phrase itself: *"%s m from
+the slot it was sent to"* reads as belonging to whatever test the reader has in mind. **I built a clean, confident, wrong
+diagnosis on it** (Bravo seated in Echo's formation) and only withdrew when combat read the block instead of grepping.
+Every per-unit line in that file now names its measurement. This safeguard is cheaper than every other one here because
+it costs nothing at read time.
+
+**3. And the reasoning failure under it, which is mine and worse than the mix-up.** I *had* the contradiction —
+`Bravo 89.5` in the per-squad line cannot coexist with `Green_Bravo_1 3 m` in the roster — and it is what made me ask
+for the aggregate line rather than accept the roster. **Then the line arrived and I reasoned from the roster anyway.**
+Using a safeguard to ask the right question and discarding it while reading the answer is worse than never having it.
+combat's stronger form, adopted over mine: **when a quoted detail cannot produce the reported failure, check whether it
+belongs to the same measurement at all** — mine stopped at "the detail is not the failure", which still assumes one
+measurement.
+
+**4. A measurement that forces its reader to borrow numbers from another measurement is incomplete, however correct its
+own total is.** The rapid-succession test's aggregate was never wrong; it just could not be checked without reaching
+outside itself, which is what made two people confident and wrong in the same hour. It now prints one line per off-slot
+unit — gap, position, ordered slot, squad — so the three causes with three different owners (seated in another squad's
+formation / never moved / sent somewhere that does not exist) are distinguishable in one run.
+
+### The spawn dataset, complete in one log for the first time (`0d5bd0d4`, filtered)
+
+My settle assertion fires FIRST — *"the army came to rest within 10 frames — it did NOT (last step 0.1775 m)"* — and
+then the detector names **76 units** with vectors. Three things in it:
+
+- **The two teams' displacements are MIRROR-SYMMETRIC.** `Green_S0_2` 0.55 m from `(-92.34568, 90.0)` to
+  `(-92.36414, 89.45048)`; `Rust_S0_2` 0.55 m from `(92.34568, -90.0)` to `(92.36414, -89.45048)` — exact to five
+  decimals with x and z negated, and the same for S0_3/4/5, S1_1, S1_3, S7_x, S8_x. **Contacts between neighbours do not
+  do that; a deterministic function of the layout does**, which is the tick-1 grid permutation seen through the spawn
+  grid's own symmetry. Pairs that break it (`Green_S1_2` 1.41 m against `Rust_S1_2` 0.98 m) are where the two scrambles
+  differ, not evidence against it.
+- **Both ejections are in the same log as the lateral drift:** `Green_S6_3` at **y = 1.306522** and `Rust_S5_4` at
+  **y = 2.089882**, every other unit at a uniform `y = 0.000999`. The vertical and lateral halves recorded together for
+  the first time, which is what argues they are one resolution rather than two effects.
+- **"Settled" and "ran out of frames" are different conditions** and now fail differently. Before, every assertion after
+  the cap described a scene in motion while reading as settled state — the same error as sampling a turn curve at a
+  fixed moment and calling it the outcome.
+
+**PRE-REGISTERED falsifier for combat's `Tank.place(spot, yaw)`, against this exact log:** zero units fire the detector,
+the settle completes in one or two frames with a last step in **millimetres**, and all four pairs clear. **If even one
+unit still moves, the permutation was not the whole cause** and feel's two-effects reading comes back. The red on that
+test stands until then, deliberately: an assertion that reports a moving scene as settled state is the worse defect.
+
 ### Five findings from the morning that live nowhere else
 
 **1. A facing on a MOVE order is an ARRIVAL heading and dies with the order. A facing on a HALT is a SECTOR and is not
