@@ -167,6 +167,44 @@ directly.
 
 ## Status
 
+> ## HAND-OVER TIP: `c0d56029`. THE CASCADE IS GONE; NOTHING FAILING IS CONTROL'S.
+>
+> `make remote T=check` at **`c0d56029`** (main merged at `a6268137`), builder0, 1134s:
+> ```
+> >> remote: make check exited 2 (build/ copied back)
+> 1540 passed, 1 failed
+> >> check: 16 passed, 2 FAILED, 0 NOT RUN  [test x5, lint -P6, 2 at once, builder0]
+> >> check: failed: test ai-scenarios-check
+> ```
+> `sim-baseline 1e90f69e5d6fcc46` (baseline unmoved), `determinism 253adefeec657df1`.
+>
+> **Both failures are main's known pair, not control's:** `test_match_spawns_and_results::…spawns_clear_of_itself`
+> (squad's true positive that combat's `Tank.place()` clears) and `ai-scenarios-check` →
+> `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck`. **Zero control, command, camera or touch tests fail
+> anywhere in the check.** The four teardown sites moved under nav's seal are **31 PASS, 0 FAIL** between them and
+> appear in no leak report — which was the case I named in advance as the one that would make them the suspect.
+>
+> **The 32-failure cascade of `78aa496d` is gone:** `grep -c "navigation region"` = **0** and
+> `grep -c "physics bodies in the world"` = **0** across the whole check. nav's sealed `_teardown()` did it alone,
+> with combat's leaking override still in the tree.
+>
+> **Reading the prediction against what it said.** I predicted *all 32 gone and 0 failed*. The first half held
+> exactly. **The second half was wrong, and wrong in the shape this round keeps producing:** I formed it about
+> control's own tests and then stated it as a total, which quietly swallowed main's two known reds. A true claim
+> about one thing, stated as a claim about everything — the sixth entry in that column and the first where the
+> claim was mine about my own work. Writing a prediction down before reading the result is what made it visible;
+> it would otherwise have been a sentence that sounded right.
+>
+> The second leaker I found (`test_combat_no_damage`, a `Match` per `_tank()` and an override that never reaches
+> the base) was real and verified on main, and **changed nothing for this tree** — the seal does not depend on an
+> override behaving. Worth keeping as the reason the seal was the right shape of fix and combat's one-liner is
+> belt-and-braces.
+>
+> **Round 9 items 1-5 delivered.** The facing frames are with the lead; the pin-head crowding is his call.
+> **Item 6 (stretch) is the only thing left** — the `ungrouped=N` readout and the refused-order banner re-checked
+> on the default `make skirmish` path — and it waits on squad's A10.
+
+
 > ## THE BRANCH WAS RED BEFORE ROUND 9'S WORK STARTED, AND ONLY A FULL CHECK FOUND IT
 >
 > `make remote T=check` at `78aa496d`: wrapper `>> remote: make check exited 2`, runner **1501 passed, 33 failed**.
