@@ -354,15 +354,27 @@ we have been treating it as a UI problem. **It is a motion planning problem**, a
 **Determinism:** dot-product weighting, closed form.
 **Falsifier:** time fraction with velocity opposing the corridor tangent under attack-move drops from **30–36%** to
 **< 10%**, *without* a fall in exchange ratio. If units look obedient and start dying, we bought the wrong thing.
-**Baseline measured by the judging instrument (nav `c025bc6b`, builder0, A12 `--order-verb attack_move --team 0`,
-yard, FIGHT_SEED=3, 120 s; one map, one seed — pit and terminus follow and the rotation figure replaces this line):**
-off_corridor **0.304** over all ordered ticks (28,472), inside the pre-registered 30–36 % that round 8 got from a
-different tool. Taken while A6 is inert, the only window where the mechanism cannot shape its own baseline. **Quote
-the active fraction beside it: 0.631.** A6 can act on 63 % of ordered ticks (inactive 11,592, slow 3,250, arrival-arc
-obedience 1,811 excluded per S4); a third of the pathology is out of A6's reach by construction, so "< 10 % over
-active ticks" is a weaker claim than "< 10 % of the fight" and the falsifier is read over the whole fight. Per hull:
-ifv 0.373 (active 0.664), lancer 0.436 (0.407), tank 0.255 (0.692); `arc_live` 164 s / 171 s wheeled, 0.0 s tracked
-(a measurement, not an absent field: a tracked hull is never offered an arc).
+**Baseline measured by the judging instrument (nav `c025bc6b` for yard and pit, `5369bd13` for terminus — one Status
+file apart, verified by diff, and metrics' `--pool` banner caught it; builder0, A12 `--order-verb attack_move --team 0`,
+`Arena.ROTATION`, FIGHT_SEED=3, 120 s each, pure default path):** off_corridor yard **0.304** (active fraction 0.631,
+28,472 active ticks), pit **0.321** (0.595, 25,764), terminus **0.331** (0.738, 41,818); **pooled 0.320**, weighted by
+active ticks over 96,054 (a mean of the three fractions gives 0.319 today and diverges the day one map dominates, so
+the weighted pool is the method). All three inside the pre-registered 30–36 %, spread 0.304–0.331, and that spread is
+the finding: terminus had 806 blocked gates against pit's zero, yet the off-corridor fraction agrees to three points,
+**so the pathology A6 targets belongs to the movement layer, not to a map.** A6 is a roster-wide row, the opposite of
+where A4 landed. Taken while A6 is inert, the only window where the mechanism cannot shape its own baseline. **Quote
+the active fraction beside the fraction, always:** A6 can act on 59–74 % of ordered ticks depending on the map
+(inactive, slow and S4's arrival-arc obedience excluded), so its *opportunity* is map-dependent though the pathology
+is not, and "< 10 % over active ticks" is a weaker claim than "< 10 % of the fight"; the falsifier is read over the
+whole fight. Per hull on yard: ifv 0.373 (active 0.664), lancer 0.436 (0.407), tank 0.255 (0.692); `arc_live`
+164 s / 171 s wheeled, 0.0 s tracked (a measurement, not an absent field: a tracked hull is never offered an arc).
+The three logs (~100 MB each) are in nav's session scratchpad; the targets wipe `build/`. **12:45: `p7-pit.jsonl`
+on the laptop has ONE FLIPPED BIT (line 143,873, `0x78 → 0xf8` inside the key `slot_x`; metrics' reader now refuses
+with file, line and byte), on a STALE copy in the laptop's `build/`; nav's copies taken out of `build/` after each run parse clean line by line and metrics re-pools from them.** The control arm
+from the two usable logs (whole roster, both armies): yard eff_mean 0.681, osc_share 0.044, net/path 0.815,
+cusp/min 43.10, SPARC −2.013; terminus 0.660, 0.052, 0.799, 69.14, SPARC −2.013. **Cusp density swings 60 % between
+maps with no treatment, so it mostly measures the arena; SPARC is −2.013 on both to three decimals. A6's
+pre-registration reads SPARC and the off-corridor pair, not cusp density.**
 
 ### A7. Null-space behavioural control — priority projection instead of weighted sums
 **[A]** · Antonelli, Arrichiello & Chiaverini (2008), *The Null-Space-Based Behavioral Control for Autonomous
