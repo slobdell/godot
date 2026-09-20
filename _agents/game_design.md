@@ -2017,3 +2017,25 @@ camera inside a building; 0 after; worst lift 11.0°; nothing pulled in.** Mutat
 is provably untouched. Because this is the second place the camera overrides his tilt (after the far-range floor), it
 reports `lifted_deg` and is flagged to him rather than hidden. Frames at his pose in the alleys follow. **He can
 overrule this in the morning**: a push-in variant is the same test with a different resolver.
+
+### MEASURED: the factions already drive differently enough to see, and none drives better (squad, 2026-09-20)
+
+The lead asked for it by name (*"we might even be able to differentiate units of different factions by PID values"*).
+One hull driven against a moving-then-stopping slot, laptop, `stream/squad` (X6):
+
+| gains | tracking gap | overshoot on stopping | settling |
+|---|---|---|---|
+| default | 0.20 m | 1.89 m | 3.23 s |
+| syndicate | 0.09 m | 1.68 m | 3.23 s |
+| gangs | 0.81 m | 2.56 m | 3.30 s |
+| law | 1.00 m | 1.56 m | 3.20 s |
+
+Every intent beside the tables holds: the Syndicate is 2.2× tighter than the reference crew, the gangs overshoot most,
+the Law overshoots least and — the surprise — tracks loosest, the honest consequence of *damped and deliberate*
+(heavy D, light I: never overshoots, never quite closes). The tracking gap spans **11×**; at his camera a metre of
+station slop is a quarter of a hull and 2.5 m of overshoot is most of a hull past the mark. **Settling time is 3.20–3.30 s
+for all four, a 3% spread: nobody arrives faster, they arrive differently** — flavour without a balance lever, which is
+what the no-pay-to-win pillar needs. **In one sentence for him: the factions already drive differently enough to see,
+and none of them drives better.** What this is not: one hull, a synthetic slot, no enemies or terrain; whether the
+difference reads *in a fight* and stays balance-neutral in a match is unmeasured, and cannot be measured until
+`ControlGains` takes a runtime override (nav's file, requested) so identical armies can be given different gains.
