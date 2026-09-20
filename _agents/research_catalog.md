@@ -314,8 +314,13 @@ wheeled-type seed cells, `oscillating_share` up in 9 of 16, and the fight guard 
 on yard (−14.4%, −12.8%), **the map where the mechanism succeeds completely: the better A4 works, the more it costs.**
 Routing to a curved gate buys the gate and spends the fight. Bounds on the instrument: `off_mesh_fit.none` counts
 events not gates, and the seeds are not replicates (gates offered 9,077–57,078), so no mean across seeds is reported.
-This does not retire the primitive: it retires *this consumer* (the arrival arc aiming a gate). Whether a hull arrives
-on the ordered heading from a curved entry still has no test, and that is now the more important question. **Rule before anyone builds it:** the
+This does not retire the primitive: it retires *this consumer* (the arrival arc aiming a gate). **The missing test, built (nav `032953eb`, 06:00, terminus, one wheeled hull, a goal blocked at every straight
+length, both arms on one shared arena): the straight arm arrives in 4.3 s (61° heading error, 4.0 m short); the
+curved arm does NOT arrive in 45 s, ending 147° off and 9.8 m short.** A4 turns an arrival into a non-arrival with
+the hull nearly reversed. That re-reads the A/B's guard breaches: at least some of the "cost" is hulls not getting
+there — same direction, worse mechanism. The fixture finds its own blocked case and refuses a run where terminus
+offers none. (A first version built terminus once per arm, the navmesh failed to sync, and the number read 27 m; on
+one shared arena it is 9.8 m: a measurement on a degraded navmesh is not a measurement.) **Rule before anyone builds it:** the
 shorter run-in and the clothoid fix *different* failures and are never shipped together or credited to each other
 (round 7's shape: ship, measure twice, find the mechanism was never reached).
 **POSITIVE CONTROL PASSED (nav, 2026-09-20, laptop, provisional pre-CP1): 403 of 403** blocked-corridor gates — the
