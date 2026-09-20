@@ -319,7 +319,7 @@ check-hashes: ## The sim hashes from the last run, in one comparable line (both 
 		"$$(hostname)" "$$actual" "$$verdict" "$$det"; \
 	if [ "$$verdict" != "$${verdict#MOVED}" ]; then \
 		echo "   to adopt the move (only if gameplay changed ON PURPOSE -- the orchestrator records it, Invariant 2):"; \
-		echo "     make remote T=sim-baseline-record && cp build/sim_state_hash.txt tests/baselines/"; \
+		echo "     make sim-baseline-adopt      # reads twice on builder0, refuses a disagreement, merges, prints the message"; \
 	fi
 
 .PHONY: check-parallel $(_CHECK_WRAPPED)
@@ -410,25 +410,78 @@ distclean: clean ## Also remove the downloaded toolchain
 # a 14 m wheeled rig, a wheeled-turret facing fix, an arena bound and a facing contract all touched hulls the match
 # never spawned. Most seriously, feel proved its art inert by passing this twice -- a proof that held for TANKS.
 # The replacement fields every locomotion x mount combination on both sides at the same 40 seconds and one map.
+# ONE definition of the read, used by the check, the recorder and the adopter alike. Three copies of a
+# forty-second match with eight flags is three chances for the number we ADOPT to come from a slightly
+# different run than the number we VERIFY -- and the resulting failure would read as a gameplay change on
+# every machine at once, with nothing in the output pointing at the flags.
+SIM_HASH_READ = $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"
+
 sim-baseline: import ## The simulation matches the recorded baseline hash for this machine's libm (art must never change gameplay)
 	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
 	expected=$$(awk -v k="$$key" '$$1 == k {print $$2}' tests/baselines/sim_state_hash.txt); \
-	actual=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
-		--green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json \
-		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
+	actual=$$($(SIM_HASH_READ)); \
 	mkdir -p $(BUILD_DIR); printf '%s %s %s\n' "$$key" "$$actual" "$${expected:-none}" > $(BUILD_DIR)/sim_baseline.txt; \
 	if [ -z "$$expected" ]; then echo "sim-baseline SKIPPED: no baseline for $$key (got $$actual). The canonical one is builder0's (make remote T=check); see _agents/determinism.md"; \
 	elif [ "$$actual" = "$$expected" ]; then echo "sim-baseline passed: $$actual ($$key)"; \
-	else echo "sim-baseline FAILED: expected $$expected for $$key, got $$actual. If gameplay changed on purpose, run make remote T=sim-baseline-record, copy build/sim_state_hash.txt over tests/baselines/, and commit"; exit 1; fi
+	else echo "sim-baseline FAILED: expected $$expected for $$key, got $$actual. If gameplay changed ON PURPOSE: make sim-baseline-adopt (reads twice on builder0, refuses a disagreement, merges the line, prints the commit message)"; exit 1; fi
 
 sim-baseline-record: import ## Write this machine's sim baseline line to build/sim_state_hash.txt (copy it over tests/baselines/ when gameplay changed on purpose)
 	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
-	actual=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
-		--green-doctrine=res://doctrines/sim_baseline_green.json --rust-doctrine=res://doctrines/sim_baseline_rust.json \
-		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
+	actual=$$($(SIM_HASH_READ)); \
 	test -n "$$actual" || { echo "no MATCH_RESULT"; exit 1; }; \
 	mkdir -p $(BUILD_DIR); printf '%s %s\n' "$$key" "$$actual" > $(BUILD_DIR)/sim_state_hash.txt; \
-	echo "recorded $$key $$actual in $(BUILD_DIR)/sim_state_hash.txt: cp it to tests/baselines/sim_state_hash.txt (other machines' lines go stale)"
+	echo "recorded $$key $$actual in $(BUILD_DIR)/sim_state_hash.txt"; \
+	echo "  prefer 'make sim-baseline-adopt': it reads TWICE, refuses a disagreement, and merges the line"; \
+	echo "  instead of copying the file over (a cp DELETES every other machine's baseline -- one line in)"
+
+# ---- Adopting a moved baseline, in one command instead of four by hand -------------------------
+# The hand procedure was: run the recorder on builder0, run it AGAIN, compare the two by eye, copy the file
+# over the baseline, write the commit message. It was done twice by hand this morning. Each step is a place
+# to be interrupted, and the comparison by eye is the step that matters: **a hash that does not reproduce on
+# its own machine is not a baseline, it is a coin** -- which is the mistake `ai_scenarios_count.txt` had
+# already made this round in a different file.
+sim-baseline-adopt-read: import ## (on the build box) read the sim hash TWICE and refuse if the two disagree
+	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
+	echo ">> sim-baseline-adopt: first read on $$(hostname)..."; \
+	first=$$($(SIM_HASH_READ)); \
+	test -n "$$first" || { echo "sim-baseline-adopt FAILED: no MATCH_RESULT on the first read"; exit 1; }; \
+	echo ">> sim-baseline-adopt: first read $$first; second read..."; \
+	second=$$($(SIM_HASH_READ)); \
+	test -n "$$second" || { echo "sim-baseline-adopt FAILED: no MATCH_RESULT on the second read"; exit 1; }; \
+	if [ "$$first" != "$$second" ]; then \
+		echo "sim-baseline-adopt REFUSED: the two reads DISAGREE on this machine."; \
+		echo "  first:  $$first"; \
+		echo "  second: $$second"; \
+		echo "  A hash that does not reproduce on its own machine is not a baseline. Something in the"; \
+		echo "  simulation is not deterministic; adopting either number would bless it and every later"; \
+		echo "  check would compare against a coin. Find the non-determinism first."; \
+		exit 1; \
+	fi; \
+	mkdir -p $(BUILD_DIR); \
+	printf '%s %s\n' "$$key" "$$second" > $(BUILD_DIR)/sim_state_hash.txt; \
+	printf 'key=%s\nhash=%s\ncommit=%s\nmachine=%s\ndate=%s\n' \
+		"$$key" "$$second" "$${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}" \
+		"$$(hostname)" "$$(date +%F)" > $(BUILD_DIR)/sim_baseline_adopt.env; \
+	echo ">> sim-baseline-adopt: $$key $$second, read twice, agreeing"
+
+sim-baseline-adopt: ## Read the sim hash TWICE on builder0, refuse a disagreement, adopt it here, print the commit message
+	@rm -f $(BUILD_DIR)/sim_baseline_adopt.env $(BUILD_DIR)/sim_state_hash.txt
+	tools/remote.sh sim-baseline-adopt-read
+	@# Refuse to adopt from files that did not come back: an absent result must never read as a measurement.
+	@test -s $(BUILD_DIR)/sim_baseline_adopt.env || { \
+		echo "sim-baseline-adopt FAILED: no $(BUILD_DIR)/sim_baseline_adopt.env came back from the box."; \
+		echo "  The run may have passed there, but nothing local proves what it read. Nothing was adopted."; \
+		exit 1; }
+	@set -a; . ./$(BUILD_DIR)/sim_baseline_adopt.env; set +a; \
+	$(PYTHON) tools/baseline_merge.py tests/baselines/sim_state_hash.txt "$$key" "$$hash" "$$commit" "$$machine" "$$date"; \
+	echo ""; \
+	echo "Now commit it, and say WHY the baseline moved (Invariant 2 -- a moved baseline with no named cause"; \
+	echo "is a regression nobody noticed):"; \
+	echo ""; \
+	echo "    git add tests/baselines/sim_state_hash.txt"; \
+	echo "    git commit -m \"baselines: sim hash $$key -> $$hash on $$machine (<the change that moved it>)"; \
+	echo ""; \
+	echo "    Read twice at $$commit on $$machine, agreeing. <Why gameplay changed on purpose.>\""
 
 # ---- Backups of generated assets (tools/backup_assets.sh; _agents/backups.md) -----------------------------
 backup: ## Back up the generated assets that aren't in git (Meshy downloads, announcer masters) to builder0 now
