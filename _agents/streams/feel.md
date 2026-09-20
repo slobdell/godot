@@ -181,4 +181,59 @@ cannot spare). Pre-register the sim hash unchanged; if it moves, it is the same 
 
 ## Status
 
-Not started (brief written 2026-09-19 evening by the orchestrator).
+### Plan (feel, 2026-09-20)
+
+**Order changed at the top, with a reason: X3 first, then X1 → X2 → X6 → X5 → X4 (after CP2) → X7.** X3 is a page,
+it costs no build, and *two other streams are blocked on it* — nav cannot write A7 code and control cannot write the
+readout until it is signed. Everything else in the backlog is mine alone. So the blocking doc goes first and the
+rest of the round runs behind it.
+
+- **X3 — `_agents/legibility.md`: DONE and sent (`4ec341d2`), awaiting nav's and control's signatures.** See below.
+- **X1 — the trailer cut.** Measured, not started.
+- **X2 — the hinge.** Not started.
+- **X6 — the two smoke targets.** Not started.
+- **X5 — the lead'''s poses.** Not started.
+- **X4 — the every-unit box-fill test.** Blocked on CP2 by design.
+- **X7 — the airship.** Stretch, last.
+
+### X3 — the A6 contract (S4): written, feel signed, nav reviewed
+
+`_agents/legibility.md` at **`4ec341d2`**. nav asked for one decision and got it.
+
+**feel confirms nav'''s level 3** (above formation, below the weapon band). A6 does not outrank the standoff band:
+its own falsifier bars trading exchange ratio for a tidy line; for the 3 hull-fixed units a law above the band would
+point the gun mount down the corridor and stop them shooting; and for turreted hulls the conflict is nearly empty,
+since level 2 constrains the *radial* component and leaves the tangential free.
+
+**The one change asked of A7'''s table — and the reason the page is worth more than a one-line brief: the falsifier is
+measured on VELOCITY, not on heading.** A6-a (the nose clause) cannot move P7 on its own, because a turreted hull'''s
+nose is already free of its gun and its velocity is chosen at levels 1, 2 and 5. So A6 also claims what level 3'''s
+null space currently gives away — *the sign of the arc*: when both shoulders serve the band equally, take the one
+that advances along the corridor. Level 3'''s remaining null space is speed alone. Circling is untouched; the
+*shoulder* is claimed. One cell in nav'''s table, and the difference between A6 mattering and A6 being cosmetic.
+
+Also settled in the page: the corridor is N1'''s `path_points` current leg with exactly one publisher; composition
+with the arc/armour task written per style (`strafe` 10 units, `angle` 8, `standoff` 3, `run` exempt as an A/B
+control); an inactive law must not read as a broken one (lesson 149), so active ticks are flagged with a reason and
+the falsifier is computed over them with the active fraction reported beside it; Invariant 0c answered as
+*"replaces nothing"* and then argued rather than asserted.
+
+### The rig, measured (X1'''s input; `9f864474`, laptop, `make assets-profile`)
+
+`unit_gangs_tank_hull.glb` is a long-nose tractor with a plow and a **tanker** trailer, natural 0.85 × 1.35 × 3.60 m,
+forward −Z, fit to the 14.0 m box = **3.889**. In model space:
+
+| feature | model z | world z (× 3.889) |
+|---|---|---|
+| plow tip (front) | −1.80 | −7.00 |
+| steer axle | −1.13 | −4.39 |
+| cab rear wall | −0.19 | −0.74 |
+| **gap: zero triangles in the body band (y 0.40–1.12)** | −0.19 … −0.01 | 0.70 m of air |
+| tanker front cap | −0.01 | −0.04 |
+| drive tandem axles | +0.19, +0.39 | +0.74, +1.52 |
+| trailer bogie | +1.55 | +6.03 |
+| tanker rear | +1.80 | +7.00 |
+
+New tool in the same commit: **`make assets-profile IN=… [AXIS= SLICES= BOX= CLIP=1 RENDER=1]`** — a slice table
+(triangles, height, width per slice) plus a **ruled orthographic side view whose pixels are metres**. A perspective
+turnaround cannot be read as a number, and the cut box has to be read off the mesh.
