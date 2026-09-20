@@ -1244,6 +1244,31 @@ without A7, so switching A11 off in a default build measures nothing and reads a
 `squad-defile TUBE=` reading `redecides=0` in both arms because the maze has no enemies: an arm in which the mechanism
 cannot act is not a control, it is a broken instrument, and its zero looks exactly like a result.
 
+### The queue as it stands, in the order it was ruled (round 9 spilled into the lead's morning)
+
+1. **Option 3, the dragged heading reaching every crew.** Ruled and written, dry-run clean, held out of the tree until
+   the spawn work is on main. `Element.facing_sent` mirrors `flow_joined`; `_plan_form_up` re-issues each crew's final
+   move order with the facing ONCE on arrival, cleared only by `assign`, so it cannot thrash. Falsifier: a squad of four
+   on the DEFAULT scenario arena (yard was ruled out — `AiScenario.create` mounts the arena in one call, and open ground
+   is the cleaner instrument because obstacles would push slots via `SlotGround` and confound a heading assertion),
+   right-drag with a heading, every member within 10° of it within 5 s of the leader's arrival. Then one
+   `tactics-shots` frame at the lead's pose, after feel's and show's timing runs.
+2. **`scenario_cp2`'s no-weak-spots control arm (`x3m`) controls for the wrong thing.** combat measured that it has
+   fired nothing since the pristine tree: with matchups off the scout has no ORBIT to score, falls back to SPOT, and
+   parks at `SCOUT_STANDOFF` 85 m holding a 45 m gun. **So the arm is a correct brain declining a fight, and its zero
+   is not evidence about weak spots.** The fix is mine after option 3: the control wants **matchups ON, weak spots
+   OFF**, so the only difference between arms is the thing named in the arm's name. Wait for combat's `probe.deck`
+   columns (angle/bearing/range on the `x4mw` arm) before rethinking it — the columns say whether the scout is
+   declining for the reason combat infers.
+   **This is the seventh instance of the round's family and the cleanest example of the subspecies:** not an instrument
+   that measured the wrong thing, but a control arm in which the mechanism under test could not act, whose zero was
+   read for months as a result. It is worth putting beside my own defile probe (no enemies, so `_combat_move` never
+   ran) in the lesson, because the two failed the same way from opposite ends — mine had no enemy to fight, this one
+   has a unit that will not fight.
+3. **A10 from `c0f22597`**, whose first job is the `fixed` flag's unconditional guarantee, not the cost.
+4. **The tube's five-seed gate**, reading nav's per-hull shortfall if it fails on the heavy classes.
+5. **A9's cost against the lead's 4 s drill allowance** — still the one item simply unstarted.
+
 ### Round 10 starts here: the ordered list, and the one rule that earned its place
 
 **In order, because each depends on the one before:**
