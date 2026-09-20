@@ -259,6 +259,14 @@ sides; if it did not, say that the resize is not the variable.
 - **nav:** `Movement.NAV_AGENT_RADIUS` mirrors the bake — propose it read `Arena`'s value.
 - **feel:** a 21-unit line-up mode in `SizeLook`, if you cannot build it in your own paths.
 - **control:** the camera, HUD, selection boxes and radar at his pose against the new sizes.
+- **metrics (or whoever owns `tools/remote.sh`): make the merge trap impossible instead of documented.** I lost a
+  render to it (a wrapper part-way through `tools/remote.sh`/`slot.sh` when `git merge main` rewrote them under it),
+  and the brief now carries a ⚠ telling every future agent to check by hand. While merging today I noticed metrics
+  running `bash /tmp/remote.sh.AIzYCv check` — **a copy of the wrapper in `/tmp`**, which is exactly the defence, and
+  it is *not* in the tree, so metrics invented it per-invocation in their own session. Proposal: `make remote` copies
+  the wrapper (and `slot.sh`) to a temp path and execs that, so a merge can never rewrite a script mid-flight. That
+  turns a hand-checked rule into a property, and retires the ⚠ and half of trip-ups 66/68. **One of us should land it
+  rather than both keep working around it.**
 
 ## Status
 
@@ -376,18 +384,51 @@ run is INCONCLUSIVE, not green** — naming the mechanism is not the same as hav
 
 ### Where it stands
 
-**Backlog 1, 2, 3, 4 and 5 are complete. Stretch item 6 is not started.** CP2 is unblocked on the look and waits
-only on the green hash: `make remote T=check` is running on `1a298f3d`, and the local `make lint` that lesson 157
-requires is running beside it. **No commit is claimed green until both lines exist.**
+**Backlog 1, 2, 3, 4 and 5 are complete. CP2 is green, announced, and MERGED. Stretch item 6 is not started.**
+
+**The green line, on `7542df28`, builder0, `TEST_SHARDS=3` pinned:**
+
+```
+>> remote: make check TEST_SHARDS=3 exited 2 (build/ copied back)
+1395 passed, 0 failed
+```
+
+Shards `0/3` 561, `1/3` 440, `2/3` 394 — 69 + 68 + 68 files, 1351 s total. **The sharding labels are right now,
+so T1's guard is no longer firing on itself** (the `?=` bug is still metrics' to land; until it does, every sharded
+check needs `TEST_SHARDS` pinned explicitly or it launches 2 shards and verifies against 3).
+
+**`exited 2` is one target, and it is the pre-registered one.** `determinism passed`; the whole log greps clean for
+`FAILED`/`Error`/`***` except:
+
+```
+sim-baseline FAILED: expected d4c049819a5833d3 for glibc-2.43, got bdf1686a0ce5a750
+```
+
+**The sim baseline moves and is deliberately NOT recorded here** (Invariant 2). CP2 rewrites all 21 colliders and
+the spawn grid, and colliders and spawn positions *are* the simulation, so a moved hash is the consequence, not a
+regression. The orchestrator recorded it on `main` with the merge — and flagged that the recorded value will differ
+from `bdf1686a0ce5a750` because combat's timer retirement is in that tree too, which is why a stream must not
+record it from its own branch.
+
+The branch tip at announcement was `ddb16592`, Status-only: `git diff --stat 7542df28 ddb16592` is one file,
+`_agents/streams/scale.md`, +38 lines. Same code tree, so the hash stood.
+
+**Merged to `main` by the orchestrator** at `86463527` ("Merge stream/scale at ddb16592 (CP2, checked at
+7542df28)"), then `git merge main` back into this branch to run the post-merge controls on the tree that actually
+ships. No remote run of mine was in flight at either merge (checked, not assumed — see the trap below).
 
 ### The plan, in the order it was worked
 
 1. the reference table, derived and asserted (S1) — **done**, `b7055602`
-2. apply it, and render the frame the lead judges — **numbers applied** in `b7055602`; **frame built, not yet rendered**
-3. the spawn grid, from the roster's largest hull — **done**, committed with this Status
-4. clearance for the new roster (P6), then announce CP2 — **waiting on a builder0 slot**
+2. apply it, and render the frame the lead judges — **done**; numbers in `b7055602`, frames rendered at `0e809a09`
+   and **sent** (the CP2 gate), three cosmetic defects named below rather than hidden
+3. the spawn grid, from the roster's largest hull — **done**, `eecc940b` and its predecessors
+4. clearance for the new roster (P6), then **CP2 announced** — **done**, green on `7542df28`, merged at `86463527`
 5. **A3** hull-chord cover over directional summed-area tables — **done**, built to combat's spec
-6. stretch: the 9/20 → 0/20 re-measured — not started
+6. stretch: the 9/20 → 0/20 re-measured — **not started**; the post-merge fairness control comes first (below)
+
+**Post-merge, in flight or owed:** the swap-bases fairness control on the merged tree (the orchestrator's 08:0x
+request — running), then the factions re-render, then item 6.
 
 ### 1. The reference table (S1) — done
 
