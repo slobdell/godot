@@ -67,9 +67,22 @@ if [ "${1:-}" = "--jobs" ]; then
 	cores=$(nproc 2>/dev/null || echo 2)
 	# A machine we cannot measure gets the conservative answer, never the loud one.
 	[ -n "${avail_mb:-}" ] || { echo 2; exit 0; }
-	# Leave a quarter of what is available as headroom: the figure is a peak of one process, and several peaking
-	# together is exactly the case that OOMs a laptop with six agent sessions up.
-	n=$(( (avail_mb * 3 / 4) / per_job_mb ))
+	# DIVIDE BY THE SLOT COUNT. This process holds one slot of N, and the other N-1 are entitled to their share.
+	# Without this the two budgets multiply: after T1 a single `check` is no longer one Godot process but a
+	# sharded test suite plus a fanned-out lint plus concurrent targets, so raising the slot count and raising
+	# the inner fan-out at the same time is how a box that was 95% idle goes straight to OOM. MemAvailable alone
+	# does not catch it, because N runs starting together all read the machine before any of them has grown.
+	holders=${TANK_SQUAD_SLOTS:-$(default_slots)}
+	[ "$holders" -ge 1 ] 2>/dev/null || holders=1
+	share_mb=$(( avail_mb / holders ))
+	# Leave a quarter of the share as headroom: the figure is a peak of one process, and several peaking together
+	# is exactly the case that OOMs a laptop with six agent sessions up.
+	n=$(( (share_mb * 3 / 4) / per_job_mb ))
+	# Cores are NOT divided by the slot count, and memory is not the same kind of constraint as CPU here. These
+	# runs are latency-bound, not compute-bound: `make test` awaits physics frames at real time, so builder0 sat
+	# 90-99% IDLE with three whole checks running (references/round9/metrics/t1-builder0-idle.txt). Oversubscribing
+	# cores costs nothing for work that is mostly waiting; oversubscribing memory kills the box. So: divide the
+	# memory, cap at the core count, and let the memory share be what binds.
 	[ "$n" -gt "$cores" ] && n=$cores
 	[ "$n" -gt "$max_jobs" ] && n=$max_jobs
 	[ "$n" -lt 1 ] && n=1
