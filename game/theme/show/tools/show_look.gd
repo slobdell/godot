@@ -65,7 +65,18 @@ var clip_step := 0.1
 ## Long enough for the armies to leave their spawns and CLOSE. At 3 s -- the old default -- they are still on the
 ## spawn line ~86 m from the arena centre, so every frame this stream shot before 2026-09-20 midday framed an
 ## empty control ring and called it the fight.
-var warmup := 20.0
+## A wall-clock CAP, not a warm-up. `builder0` presents a vsync'd window at ~1/10 real time (remote_builds.md:126,
+## feel measured 3.1 match-seconds in 30 s of wall), so a 20 s timer bought about 2 s of match -- the armies had
+## barely left their spawns. What we actually want is "wait until they are fighting", which is a question about the
+## MATCH and has to be asked of the match.
+var warmup := 240.0
+## The armies are engaged once the nearest pair of opponents is this close (m).
+const ENGAGED_WITHIN_M := 60.0
+## How wide a "cluster" is when picking what to frame (m).
+const CLUSTER_RADIUS_M := 40.0
+## A vehicle counts as "in frame" only if its drawn meshes are at least this tall on screen. At 1080p this is
+## about a tank at 120 m -- small, but unmistakably a vehicle rather than a speck.
+const MIN_VEHICLE_PX := 12.0
 var _camera := Camera3D.new()
 
 
@@ -99,7 +110,7 @@ func _ready() -> void:
 
 
 func _run() -> void:
-	await get_tree().create_timer(warmup, true, false, true).timeout
+	var waited := await _wait_for_contact()
 	var arena := str(Arena.active.get("name", "arena"))
 	var show := get_parent() as Show
 	var scene := get_tree().current_scene
@@ -315,34 +326,106 @@ func _swing(track: Array) -> Vector3:
 	return Vector3(lo, hi, (hi - lo) / maxf(total / float(track.size()), 1e-6) * 100.0)
 
 
+## Wait until the two sides are actually fighting, polling the match rather than a clock. Returns the wall seconds
+## spent, so a capture can report what it waited for instead of leaving a reader to assume.
+func _wait_for_contact() -> float:
+	var started := Time.get_ticks_msec()
+	while true:
+		var elapsed := float(Time.get_ticks_msec() - started) / 1000.0
+		var gap := _closest_gap()
+		if gap <= ENGAGED_WITHIN_M or elapsed >= warmup:
+			print("SHOW_LOOK_CONTACT " + JSON.stringify({
+				"waited_wall_s": snappedf(elapsed, 0.1), "closest_gap_m": snappedf(gap, 0.1),
+				"engaged": gap <= ENGAGED_WITHIN_M, "bar_m": ENGAGED_WITHIN_M}))
+			return elapsed
+		await get_tree().create_timer(0.5, true, false, true).timeout
+	return 0.0
+
+
+## Metres between the nearest pair of opposing vehicles, or INF when one side is gone.
+func _closest_gap() -> float:
+	var sides := {}
+	for tank: Node3D in _tanks(get_tree().current_scene):
+		sides.get_or_add(int(tank.get("team")), []).append(tank.global_position)
+	if sides.size() < 2:
+		return INF
+	var teams: Array = sides.keys()
+	var best := INF
+	for a: Vector3 in sides[teams[0]]:
+		for b: Vector3 in sides[teams[1]]:
+			best = minf(best, a.distance_to(b))
+	return best
+
+
+func _tanks(scene: Node) -> Array:
+	if scene == null:
+		return []
+	return scene.find_children("*", "Tank", true, false).filter(func(t: Node) -> bool: return t.is_inside_tree())
+
+
 ## The centroid of every vehicle still alive, or the arena centre when there are none (a gallery, an empty mode).
 func _army_centre(scene: Node) -> Vector3:
 	if scene == null:
 		return Vector3.ZERO
-	var tanks := scene.find_children("*", "Tank", true, false).filter(
-			func(t: Node) -> bool: return t.is_inside_tree())
+	# NOT the average of every vehicle. Two armies facing each other average to the midpoint BETWEEN them, which on
+	# a symmetric map is the exact centre and the emptiest place on it -- which is what the first fix produced:
+	# focus (4.6, 0.35) while both sides sat at +-82 m. Frame the DENSEST cluster instead, which is where the
+	# fight is once there is one and where the biggest group is before that.
+	var tanks := _tanks(scene)
 	if tanks.is_empty():
 		return Vector3.ZERO
-	var sum := Vector3.ZERO
+	var best := Vector3.ZERO
+	var most := -1
 	for tank: Node3D in tanks:
-		sum += tank.global_position
-	return Vector3(sum.x / tanks.size(), 0.0, sum.z / tanks.size())
+		var here := tank.global_position
+		var near := 0
+		for other: Node3D in tanks:
+			if here.distance_to(other.global_position) <= CLUSTER_RADIUS_M:
+				near += 1
+		if near > most:
+			most = near
+			best = here
+	return Vector3(best.x, 0.0, best.z)
 
 
-## How many vehicles this frame actually contains. Printed with every capture so a frame that claims to show the
-## fight has to say so in a number -- the check that would have caught an empty ring the first time.
+## How many vehicles are actually DRAWN, at a size a person could see. Printed with every capture.
+##
+## The first version of this counted positions inside the camera frustum, and passed 19 on a frame with no hull in
+## it: the frustum is a cone 1200 m deep, so a vehicle 90 m away on the far side of the map counts exactly the
+## same as one filling a third of the picture. A frustum count is a statement about geometry; the question is
+## about pixels. This projects each tank's DRAWN meshes and requires a minimum on-screen height -- the same thing
+## `SizeLook._on_screen` does, and for the same reason.
 func _vehicles_in_frame(scene: Node) -> int:
-	if scene == null:
-		return 0
 	var size := Vector2(get_viewport().get_visible_rect().size)
 	var seen := 0
-	for tank: Node3D in scene.find_children("*", "Tank", true, false):
-		if not tank.is_inside_tree() or _camera.is_position_behind(tank.global_position):
-			continue
-		var at := _camera.unproject_position(tank.global_position)
-		if at.x >= 0.0 and at.y >= 0.0 and at.x <= size.x and at.y <= size.y:
+	for tank: Node3D in _tanks(scene):
+		if _screen_height(tank, size) >= MIN_VEHICLE_PX:
 			seen += 1
 	return seen
+
+
+## A vehicle's on-screen height in pixels, from the bounds of the meshes actually being drawn for it. Zero when
+## nothing is drawn, which is the case this exists to catch.
+func _screen_height(tank: Node3D, size: Vector2) -> float:
+	var lo := Vector2(INF, INF)
+	var hi := Vector2(-INF, -INF)
+	for mesh: MeshInstance3D in tank.find_children("*", "MeshInstance3D", true, false):
+		if not mesh.visible or not mesh.is_visible_in_tree() or mesh.mesh == null:
+			continue
+		var box := mesh.get_aabb()
+		for i in 8:
+			var corner := mesh.global_transform * box.get_endpoint(i)
+			if _camera.is_position_behind(corner):
+				return 0.0
+			var at := _camera.unproject_position(corner)
+			lo = lo.min(at)
+			hi = hi.max(at)
+	if hi.x < lo.x:
+		return 0.0
+	# Off the side of the picture is not on screen, however large it would be.
+	if hi.x < 0.0 or hi.y < 0.0 or lo.x > size.x or lo.y > size.y:
+		return 0.0
+	return hi.y - lo.y
 
 
 ## What every channel is at, at this moment — so a frame that looks wrong can be traced to a number instead of to a
