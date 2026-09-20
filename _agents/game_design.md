@@ -1998,8 +1998,16 @@ Stage lighting already has the vocabulary, and it maps onto what the renderer ca
 lead):** the block edges (chamfers, bevels, parapets) carry an emissive strip where they were a pale albedo, each block
 on its own clock; window grids vary per window; the rim breathes. **Decided overnight:** the direction is approved; the
 edges currently read as an outline on every building, some in cool white, which `art_direction.md` warns against, so a
-second variant ships beside it (edge energy −35%, colours from the venue neon palette per block, no cool white), feel
-picks the default in the materials' terms, the lead overrules in the morning. Stills cannot show a cue (a chase is
+second variant ships beside it. **feel's ruling (art owner, 03:45), adopted as the default:** energy and colour were not
+what was wrong — `show_edge` is added to emission on the bevel/chamfer branch, which IS the silhouette, so it can only
+ever draw an outline, the named Never in `art_direction.md`; in the street frame it is a glowing bar stuck diagonally
+across a flat wall with no housing. **Default: `show_edge` 0 on the vertical chamfers; the breathing lives on
+`show_window` and `show_shop` (light inside things, the "Blade Runner night" the art direction names); one horizontal
+run on the roof parapet only, dimmer than the windows; venue palette (magenta, cyan, amber), red reserved for beacons and
+warnings, no cool white.** The full-outline look stays as a named patch variant so the lead can compare both in the
+morning — his words were *"lit edges breathe and glow"* and he gets to see it. **The rule that matters for play:** the
+arena floor and the vehicles must stay the brightest read in the frame (in the first frames the building edges were the
+brightest pixels and the fight the darkest); `show-frames` now measures it and refuses a strip where the periphery wins. Stills cannot show a cue (a chase is
 motion; last-stand caught at a strobe trough reads dimmer than idle), so short clips per cue and a before frame from the
 no-show arm follow. The kill ripple did not read in its frame (likely no headroom above the battle cue's 0.96) and is
 unproven until shot against lull. Cost: 15 uniform writes per frame idle, 16 on a kill, 25 in the victory sweep, driving
