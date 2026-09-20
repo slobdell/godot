@@ -36,6 +36,14 @@ static func facing(hull_forward: Vector3, shell_direction: Vector3) -> Facing:
 
 
 ## X3: whether a round travelling along `shell_direction` strikes the engine deck of a hull facing `hull_forward`.
+## Round 9 diagnostic (`--tune=probe.deck=1`, never set in play): print one line per enemy hit with the three
+## quantities that decide who owns a missing engine-deck hit -- the angle between the victim's hull forward and the
+## shell's travel, the shooter's bearing relative to the victim, and the range. `is_weak_spot` below is two directions
+## and a dot product with NO position and NO hull size, so a deck hit cannot have gone missing because hulls grew;
+## the three columns say whether the shooter never gets astern, gets astern and the flag misses, or never closes.
+static var deck_probe := false
+
+
 static func is_weak_spot(hull_forward: Vector3, shell_direction: Vector3) -> bool:
 	var forward := Vector3(hull_forward.x, 0.0, hull_forward.z).normalized()
 	var travel := Vector3(shell_direction.x, 0.0, shell_direction.z).normalized()

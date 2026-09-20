@@ -1510,6 +1510,31 @@ func _damage_estimate(unit: Tank, raw: float, weapon: Dictionary, direction: Vec
 	return split.x + split.y
 
 
+## The engine-deck diagnostic's row (see `Armor.deck_probe`). Three columns and no verdict:
+##   travel_deg   the angle between the victim's hull forward and the shell's travel -- what Armor.is_weak_spot tests
+##                (it fires under WEAK_SPOT_ARC_DEG, 25 deg)
+##   bearing_deg  where the SHOOTER stands relative to the victim's nose: 180 is dead astern. A shell can arrive
+##                inside the cone from a shooter that is not behind (a crossing shot), so the two are not the same
+##                question and conflating them is how this lands on the wrong owner.
+##   range_m      shooter to victim
+func _print_deck_row(victim: Tank, forward: Vector3, direction: Vector3, weak: bool, face: String,
+		shooter: String, weapon: Dictionary) -> void:
+	var flat_forward := Vector3(forward.x, 0.0, forward.z).normalized()
+	var travel := Vector3(direction.x, 0.0, direction.z).normalized()
+	var shooter_tank := tanks_by_name().get(shooter) as Tank
+	var bearing_deg := -1.0
+	var range_m := -1.0
+	if shooter_tank != null:
+		var to_shooter := shooter_tank.global_position - victim.global_position
+		range_m = Vector3(to_shooter.x, 0.0, to_shooter.z).length()
+		bearing_deg = rad_to_deg(flat_forward.angle_to(Vector3(to_shooter.x, 0.0, to_shooter.z).normalized()))
+	print("DECK_HIT " + JSON.stringify({"victim": victim.unit_id, "shooter_unit":
+			"" if shooter_tank == null else shooter_tank.unit_id, "weapon": String(weapon.get("id", "")),
+			"travel_deg": snappedf(rad_to_deg(flat_forward.angle_to(travel)), 0.1),
+			"bearing_deg": snappedf(bearing_deg, 0.1), "range_m": snappedf(range_m, 0.1),
+			"face": face, "weak_spot": weak, "arc_deg": Armor.WEAK_SPOT_ARC_DEG}))
+
+
 ## R2: the fraction of a hit's hull damage that gets through `unit_id`'s armor on `face`.
 static func armor_multiplier(weapon: Dictionary, unit_id: String, face: String) -> float:
 	return Armor.penetration_multiplier(float(weapon.get("penetration", 0.0)), Units.armor(unit_id, face))
@@ -1530,6 +1555,8 @@ func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: V
 	if weapon["kind"] == Weapons.Kind.ARC:
 		face = "side"  # indirect rounds come down on top: no face is the strong one
 	var weak := is_weak_spot_hit(weapon, forward, direction)
+	if Armor.deck_probe and victim.team != team:
+		_print_deck_row(victim, forward, direction, weak, face, shooter, weapon)
 	var through_armor := weak_spot_multiplier(weapon, victim.unit_id) if weak else armor_multiplier(weapon, victim.unit_id, face)
 	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]), through_armor)
 	result["face"] = face

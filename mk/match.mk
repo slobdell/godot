@@ -52,6 +52,36 @@ matchup-search: import ## Score --tune variants of the matchup matrix against th
 	$(PYTHON) tools/matchup_search.py --godot $(GODOT) --jobs $(JOBS) --variants $(VARIANT_FILE) --seeds $(or $(SEEDS),2) \
 		$(if $(SEARCH_UNITS),--units $(SEARCH_UNITS)) $(if $(ESCORT),--escort $(ESCORT))
 
+# ---- Round 9: why is nothing landing on the engine deck? ------------------------
+# `Armor.is_weak_spot` is two directions and a dot product against cos(25 deg): NO position, NO hull size. So a deck
+# hit cannot have gone missing because CP2 made hulls bigger, and "0 of 13 on the deck" is unexplained rather than a
+# stale marker. This prints three columns per enemy hit and aggregates their DISTRIBUTION -- deliberately not a
+# verdict, because three different owners are plausible and they are told apart by which column is wrong:
+#   travel angles never enter the 25 deg cone      -> the scout never gets astern (a positioning question)
+#   angles enter the cone but weak_spot is false    -> the flag is wrong (combat's)
+#   the shooter's BEARING never gets behind         -> it never works round at all (a brain/pursuit question)
+
+deck-angles: import ## Round 9: per-hit travel angle, shooter bearing and range for a scout hunting a tank, and their distribution (DECK_GREEN=scout DECK_RUST=tank SEED=1 DECK_TIME=25) -> build/deck-angles.json
+	@echo ">> deck-angles: $(or $(DECK_GREEN),scout) vs $(or $(DECK_RUST),tank), seed $(SEED), $(or $(DECK_TIME),25) s"
+	@mkdir -p $(BUILD_DIR)
+	$(PYTHON) tools/combat_duel.py --godot $(GODOT) --green $(or $(DECK_GREEN),scout) --rust $(or $(DECK_RUST),tank) \
+		--seed $(or $(SEED),1) --time-limit $(or $(DECK_TIME),25) --tune probe.deck=1 \
+		2>&1 | tee $(BUILD_DIR)/deck-angles.log > /dev/null
+	@$(PYTHON) -c "import json,sys; \
+		rows=[json.loads(l.split('DECK_HIT ',1)[1]) for l in open('$(BUILD_DIR)/deck-angles.log') if 'DECK_HIT ' in l]; \
+		json.dump(rows, open('$(BUILD_DIR)/deck-angles.json','w'), indent=1); \
+		print('deck-angles: no enemy hits at all -- the control fired nothing, which proves nothing') if not rows else None; \
+		sys.exit(0) if not rows else None; \
+		band=lambda v,e: sum(1 for r in rows if e[0] <= r[v] < e[1]); \
+		edges=[(0,25),(25,45),(45,90),(90,135),(135,181)]; \
+		print('%d enemy hits; weak_spot flagged on %d' % (len(rows), sum(1 for r in rows if r['weak_spot']))); \
+		print('travel angle (Armor.is_weak_spot fires under %.0f deg):' % rows[0]['arc_deg']); \
+		[print('  %3d-%3d deg: %3d' % (e[0], e[1], band('travel_deg', e))) for e in edges]; \
+		print('shooter bearing from the victim nose (180 = dead astern):'); \
+		[print('  %3d-%3d deg: %3d' % (e[0], e[1], band('bearing_deg', e))) for e in edges]; \
+		rs=sorted(r['range_m'] for r in rows); \
+		print('range m: min %.1f  median %.1f  max %.1f' % (rs[0], rs[len(rs)//2], rs[-1]))"
+
 # ---- X1 (round 9): is A2's switching cost actually an arm? ----------------------
 # Lesson 117: round 8 shipped a commitment term into a code path that could never reach it and measured it twice.
 # This proves the cost is consulted, non-zero, and DIFFERENT by hull class before anything is A/B-ed with it.

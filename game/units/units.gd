@@ -1049,6 +1049,11 @@ static func apply_tuning(spec: String) -> String:
 		var path := parts[0].split(".")
 		if parts.size() != 2 or path.size() < 2 or path.size() > 3 or not parts[1].is_valid_float():
 			return "tune: expected owner.key=number, got '%s'" % pair
+		if path[0] == "probe":
+			if path.size() != 2 or path[1] != "deck":
+				return "tune: no probe '%s' (have probe.deck)" % parts[0]
+			Armor.deck_probe = float(parts[1]) > 0.0
+			continue
 		if path[0] == "switch":
 			if path.size() != 2 or not SwitchingCost.TUNABLE.has(path[1]):
 				return "tune: no switching-cost knob '%s'" % parts[0]
