@@ -181,6 +181,9 @@ func test_the_control_arm_still_reports_what_it_would_have_charged() -> void:
 	SwitchingCost.tuning.clear()
 
 
+## Reaches the base: this file owns no nodes today, but an override that does not is one `add_to_tree` away from
+## leaking, and it skips the navigation drain either way. One line now beats finding it in someone else's shard.
 func teardown() -> void:
 	SwitchingCost.probing = false
 	SwitchingCost.tuning.clear()
+	await super.teardown()

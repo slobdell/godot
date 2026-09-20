@@ -356,8 +356,7 @@ own named cause.
 
 ## ⏸ WHERE THIS STREAM IS, AND THE EXACT NEXT STEP
 
-**Tip `0ba8d2c9`, working tree clean, nothing uncommitted.** Six commits, every one green on
-`make test FILTER=switch` at the time it was made:
+**Tip `396be191`** (`986f8921` + a merge of local `main` `b3f7ffae`), working tree clean.
 
 | commit | what |
 |---|---|
@@ -365,24 +364,53 @@ own named cause.
 | `b69d081b` | the seam in `tank_brain.gd` + the X1 arm counter + `make switch-arm` |
 | `c68b423e` | the lay term (A2's missing third term) + the lesson-153 floor fix |
 | `a1209857` | the stance floor gated as an arm + `option_share`/`transitions` + the `--require` refusal gate |
-| `1e328dfe` | Status: the duel regression |
-| **`0ba8d2c9`** | **the flat bonus becomes the default with its dwell timer RETIRED; A2 becomes the opt-in arm** |
+| `0ba8d2c9` | the flat bonus becomes the default with its dwell timer RETIRED; A2 becomes the opt-in arm |
+| `4cb9b9c6` | the yaw constraint, off by default and (as shipped) BLIND — see the slack correction below |
+| `1c445bda` | the oriented-box hull geometry behind `match.hull_disc`, DISC still the default |
+| `bd618dd4` | the yaw constraint becomes selectable from a harness: `--tune=match.yaw_fit=1` |
+| **`986f8921`** | **the yaw constraint ON by default + nav's test inverted onto the new behaviour** |
 
-**Verification standing at the pause:**
-- `make test FILTER=switch` — **25 passed, 0 failed** (laptop, `0ba8d2c9`).
-- `make test FILTER=brain_decide` — **18 passed, 0 failed**, including `test_commitment_prevents_flip_flopping`.
-- **lint local: 534 files, 2 error lines, both baselined** (`tank.gd` via `tank.tscn`'s ext_resource self-reference;
-  `faction_art.gd` via `Units.roster` under `--check-only`). **Neither is in a file this stream touched** — checked
-  by diffing `main...HEAD` against the lint output, not by eye. Lesson 157: a remote-green commit is NOT
-  parse-checked, so this local lint is the only parse evidence that exists for this tip.
-- `make remote T=check` **could not run**: builder0 unreachable, the wrapper failed at the sync step with
-  `cannot reach slobdell@builder0` / `Error 3`. It never reached the suite, so `build/` is not holding a previous
-  run's artefacts for this stream.
-- **A full local `make check` was started on `0ba8d2c9` and left running** at the pause; its log is at
-  `…/scratchpad/check-local.log`. It had not finished. **Do not read it as a verdict until it prints its own
-  totals.**
+**Verification standing:**
+- `make test FILTER=nav_face_recovery` — **8 passed, 0 failed** (laptop, `986f8921`).
+- `make test FILTER=tank_yaw_fit` — **2 passed, 0 failed** (laptop, `986f8921`).
+- `make test FILTER=switch` — 25 passed, 0 failed (laptop, `0ba8d2c9`).
+- `make remote T=check` on the merged tip `396be191` — **RUNNING on builder0 at the time of writing.** It must
+  reach `sim-baseline` now that nav's fixture drain is on main; the hash it prints is the round's **fifth** baseline
+  move and it is the orchestrator's to record (Invariant 2), not this branch's.
+- ⚠ **Do not read a filtered run as readiness (lesson 45)**, and do not read a remote-green commit as
+  parse-checked (lesson 157). `make test FILTER="a|b"` **exits 127 and runs NEITHER suite** — the recipe
+  interpolates the filter unquoted and the shell eats the pipe. Run one filter per invocation.
 
-### ⚠ A DEFECT IN THIS STREAM'S FILE, CONFIRMED AND SEQUENCED: hulls rotate through scenery
+### ✅ RESOLVED (PARTIALLY, AND THE REMAINDER IS NAMED) in `986f8921`: hulls rotate through scenery
+
+**Read the section below as the history of the finding; this paragraph is the outcome.** `Tank._fitting_forward`
+now refuses a yaw that increases the hull's penetration depth, trying 1.0 / 0.6 / 0.3 of the wanted step, and it is
+**ON by default** (`--tune=match.yaw_fit=0` restores the old behaviour). nav's wedged-semi corridor, laptop:
+
+| | before | after |
+|---|---|---|
+| yaw | 28.5° | **11.6°** (59% of the illegal rotation gone) |
+| footprint | 9.6 m | **6.1 m** in a 4.8 m corridor |
+| `face_giveups` | 0 | **1** — nav's recovery fires, having been inert all round |
+| open ground | 71.2° in 1 s | **71.2° in 1 s**, 1 offer, 0 applied — no cost where there is nothing to hit |
+
+**It is a PARTIAL fix and everything written about it says so.** 6.1 m in a 4.8 m corridor is ~**1.3 m** of hull
+still rotating through a wall. The predicate is per-tick and relative, `move_and_slide` depenetrates between ticks,
+so a rotation illegal cumulatively is legal at every increment; the exact form (slack `0.000`) fits the corridor
+(6.2°, 4.8 m) and **freezes a wedged rig for 30 ticks**, which is nav's N1 breach. No form both exact and
+non-freezing has been found. Because the sweep is `length × sin(yaw)`, **CP2's resize moves the residual across the
+roster and 1.3 m will not hold for every hull** — which is why nav's test asserts a bar on the EXCEEDANCE
+(`_last_span - 4.8 <= 1.8`, measured 1.27) with the figure in the message, rather than "the constraint works".
+
+**The lesson this cost, and it cost two rounds of wrong conclusions:** `PENETRATION_SLACK_M` was `0.02` while the
+whole per-tick signal is `0.0147 m` (a 0.119°/tick yaw moving a 14 m hull's tip). The constraint was present,
+correct in form, and **bit-identical to no constraint at all**. `4cb9b9c6`'s commit message claimed the per-tick
+form *could not work*; that claim is wrong and is corrected here. **A threshold must be measured against the
+quantity it has to discriminate**, or the mechanism reports a clean negative it never ran.
+
+nav granted the one test for the one change and reviews it at merge.
+
+### ⚠ THE FINDING, as it stood before the fix: hulls rotate through scenery
 
 Reported by nav (`7850fbef`, `tests/test_nav_face_recovery.gd`), **verified here in the code rather than taken on
 trust**: `game/tank/tank.gd:425` assigns `global_basis = Basis.looking_at(forward, Vector3.UP)` unconditionally and
@@ -420,40 +448,313 @@ when the basis is coupled to a collision test. nav will re-run its benefit measu
 nothing because the hull never stalls, it passes through the wall it is stalled against) becomes measurable for the
 first time.
 
+### ⚠ THE ROUND'S SECOND FINDING: every match's first physics tick has run against the wrong world
+
+**A hull that is teleported and then driven in the same frame is driven against the world it left.** Found chasing
+scale's "1.5 m lateral step in one tick from rest", which three rounds of measurement had blamed on the spawner's
+spacing, then the motion model's lateral term, then the hull geometry. **All three were innocent.**
+
+`ArmyLayout.deploy` wrote `global_position` and called `reset_physics_interpolation()` — which fixes what is DRAWN
+and says nothing about what is THERE. `PhysicsServer3D` commands queue until the step and `_physics_process` runs
+before the step applies them.
+
+| measured on a full 90-unit army, laptop | before | after |
+|---|---|---|
+| hulls whose physics body was elsewhere on tick 1 | **90 of 90**, 56–110 m | 0 |
+| worst node-vs-body distance | **139.41 m** | **0.02 m** |
+| the two hulls that overlapped in that other layout | shoved **1.5281 m** / **1.5018 m** | 0.0000 m |
+| a placed pair 5.432 m apart, after tick 1 | 3.154 m (2.279 m of convergence) | **5.432 m (0.000)** |
+| `SPAWN_ISO_PLACEMENT` | `gap 2.210 m, 0 overlapping pairs` | unchanged — **the placement was always right** |
+
+**Why it hid since round 1:** the pre-deploy grid is *itself* a valid non-overlapping layout, so in the world the
+solver was actually using, almost nothing overlapped. And the shove arrives through `move_and_slide`'s penetration
+recovery, which **moves a body without touching `velocity` and reports no slide collision** — so the row reads
+`wanted.x = 0.000`, `moved.x = 1.5281`, `contacts[0]`. No velocity to blame, no contact to point at.
+
+**THE REMEDY IS A TICK, NOT A FLUSH, and three flushes were measured to do nothing**: `force_update_transform()` at
+`_ready` (too early — the hull is still at its spawn slot), the same call after deploy's write, and an explicit
+`PhysicsServer3D.body_set_state(..., BODY_STATE_TRANSFORM, ...)`. A read-back on the **next line** after that last
+one still returned the old transform. All three are one queued command spelled three ways. **None of them is kept
+in the code**; they are in `place()`'s docstring as negatives, because a no-op that looks like a fix teaches the
+next reader a wrong model of the engine.
+
+`Tank.place(at, yaw)` writes the transform, `sync_position`/`sync_yaw`, resets the interpolation, and sets
+`_placed_settle` so the next `_drive` returns before `move_and_slide` and drops `_motion`. `ArmyLayout.deploy` and
+`Tank.respawn` both go through it. Two bugs die with it: the shove, and the landmine where `sync_position` was
+written only by `_tick`, so a replicated hull advertised its **spawn** position until its first tick.
+
+**Guarded in the same commit** (nav's find): `Units.stat` ended in `PROFILES[unit_id].get(key, fallback)`, so an
+unknown id raised on the INDEX and **the fallback was unreachable by construction** — every call site passing one
+read as protection that did not exist. It now checks `PROFILES.has` first and returns the fallback (or
+`Units.DEFAULT`'s value). ⚠ It **warns** rather than errors, deliberately: the runner fails a test on any engine
+error and has no `expect_error` to declare a deliberate one, so a `push_error` would make the guard untestable —
+which is the same unreachable-protection defect one level up. **`expect_error` in `tests/test_case.gd` is the
+missing facility** and is not this stream's file; "the path that must error" is untestable project-wide until
+someone adds it.
+
+**The instrument is kept**: `Tank.drive_trace`, armed from the environment so no other stream's test needs editing
+—`DRIVE_TRACE=Green_S2_2,Green_S2_3 make test FILTER=spawn_isolation`. It prints, per traced hull per tick, the
+velocity handed to `move_and_slide` **and what that velocity would move in that delta**, beside what the body
+actually did. **That pairing is what exonerated `tank_motion.gd` without opening it**, and it is the general lesson:
+*print what was asked for beside what happened, or a measurement cannot tell a wrong answer from a wrong question.*
+
+### ✅ RETRACTED: the `test_combat_sim_cost` "navigation leak" was the test's own next fixture
+
+`teardown()` was called from inside that test's per-unit loop **without `await`**. It ends in
+`await drain_navigation()`, so a bare call freed the nodes, cleared `_owned_nodes`, and **detached a coroutine that
+sat in a 120-frame wait while the loop built the next unit's arena**. The stale drain then counted the regions of
+an arena that was *alive and in use*, gave up, and charged `left 2 navigation region(s)` to this test. **The
+failure arriving TWICE in one test's output was the tell**, and it was there from the first run.
+
+    SIMCOST_LEAK after tank        arena valid=false  match valid=false  regions=0  bodies=0
+    SIMCOST_LEAK after gang_scout  arena valid=false  match valid=false  regions=0  bodies=0
+    SIMCOST_LEAK after syn_tank    arena valid=false  match valid=false  regions=0  bodies=0
+
+**Two readings are retracted**: the suspected static/lambda/out-of-tree holder, and this stream's own arithmetic
+that "2 regions is one arena's worth, so one arena is still alive" — right about *what* the regions were
+(`$Navigation` + `_bake()`'s `NavigationMirror`) and wrong about *why*. It also explains the shard-order dependence
+with **no state carried between tests at all**: whether a detached drain's 120 frames overlap a live arena depends
+on what runs next. The flake was inside one test.
+
+**Still open, and this stream cannot settle it**: the isolated file shows **0 edge errors both before and after**
+the fix, so sim_cost is *not* demonstrated to be the source of shard 2's 284 edge errors. A bake race is available
+in principle (a new arena baking while the previous regions are still on the map) but is **unproven** and must not
+be written up as the cause. metrics' message grouping on the next main check names the first carrier.
+
+⚠ **THE SAME SHAPE IS IN FIVE OTHER FILES**, none of them this stream's (reported to the orchestrator):
+`tests/test_control_panel.gd:143` calls `teardown()` mid-test unawaited; and four files override `teardown()` and
+call `super.teardown()` without `await` — `test_command_readability.gd:141`, `test_touch.gd:177`,
+`test_command_camera.gd:194`, `test_tactics_deform.gd:42`. **An override declared `-> void` that does not await its
+super returns to the runner immediately and detaches the drain in exactly the same way**, which means those four
+files have been silently skipping the navigation drain they believe they run.
+
+### ⚠ THE LESSON THAT COST THE MOST TODAY: a leak fails the NEXT test, so no filtered run can catch it
+
+`make test FILTER=<this file>` passes while this file leaks. The guard **charges the first observer, not the
+author** — its own docstring says so — and a file that sorts last in its own filter has no observer. Both roots of
+`396be191`'s **47-test cascade** were this stream's, and both passed their own filtered runs:
+
+| commit | root |
+|---|---|
+| `fc1cbe5a` | `test_combat_sim_cost` called `teardown()` mid-loop **without `await`**, detaching a drain that then counted the *next* iteration's live arena and charged it here |
+| `26754ef1` | `test_tank_yaw_fit` overrode `teardown()` and **never called `super.teardown()` at all**, leaking a whole foundry arena — the **44 bodies and 4 regions** charged to `test_theme_city_block`, which created neither |
+
+**feel was accused on this stream's word and was innocent**; the withdrawal is recorded here because "two leakers,
+the larger one not mine" was wrong in the direction that costs someone else an hour. The class was reported to the
+orchestrator an hour before a worse instance of it shipped from this branch — **review does not catch this**, which
+is why nav's `c3df6d4a` seals it: the runner awaits a `_teardown()` that owns the free, the guards and the drain,
+and `teardown()` becomes a synchronous hook that must never call super. **When `c3df6d4a` is on main, delete the
+`await super.teardown()` in `tests/test_tank_yaw_fit.gd`.**
+
+### ✅ `TUNE=` selects any arm from the environment — the general fix for "an arm nobody re-measures"
+
+`make test` passes `run_tests.gd` only `--filter=`, so until now the only way to run a test against the other side
+of a knob was **to edit the default in the source** — which means the two arms are not the same tree.
+`Units._static_init()` now reads `TUNE` through the same `apply_tuning` the match runner uses:
+
+    TUNE=match.yaw_fit=0 make test FILTER=ai_player_orders
+    TUNE=match.hull_disc=0 make test FILTER=tactics_elements     # the box arm; the DEFAULT is the disc
+
+Loud on a bad spec (`push_error` naming it), silent when unset. ⚠ Still true and still biting: **`make test
+FILTER="a|b"` exits 127 and runs NEITHER suite** — one filter per invocation.
+
+### ✅ THE YAW CONSTRAINT IS EXONERATED of squad's off-slot crews (and this is what `TUNE=` was for)
+
+`test_ai_player_orders::test_five_squads_ordered_in_quick_succession` was the prime suspect for the plant refusing
+arrival manoeuvres. One tree, one knob, **identical**:
+
+    TUNE=match.yaw_fit=0   expected 0 units off slot, got 12
+    default, ON            expected 0 units off slot, got 12
+
+And squad's own discriminator answers itself: **every off-slot crew holds `order now (none)`**, in three different
+choices (ENGAGE / HOLD / SPOT), with `Green_Alpha_1` spending 9 s in MOVE `order move` and then 31 s across
+COVER_FIRE/ENGAGE/HOLD with no order. They were never told to finish the move. Squad's layer; handed over with the
+pair. By elimination the cause is the main window `0416274d..b3f7ffae` or a pre-existing order-dependence.
+
+**`--tune=match.yaw_world=1` is built and is NOT the default** (`43aaa8d7`): penetration against
+`Perception.WORLD_MASK` only, because `test_move` uses the body's `collision_mask = 3` and so **treats another tank
+as a wall**, when the whole justification for refusing a yaw is that a wall will not move. nav endorses it on
+design grounds. It ships as an arm because **the case that was supposed to separate the arms turned out not to
+involve the constraint**, so no measurement distinguishes them yet. ⚠ `_penetration` is *not* a boolean — it
+returns `get_depth()` and the rule ranks by it; the real limit is that `get_depth()` reports the **deepest single
+contact**, so a vehicle term **masks** a wall term. Dominance, not saturation: counting vehicles would need
+per-collider depth, not merely a mask.
+
+### The seventh disc site, squad's find, deliberately out of the series' scope
+
+`Avoidance.radius_of` uses `(w + l) / 4` — **4.33 m** for a War Rig, against this stream's half-diagonal 7.19 and a
+true half-width of 1.66. Three sites, three different radii for one hull, and that one drives **avoidance**: too
+wide abeam, **too narrow end-on** — the opposite error, so a hull can clip a rig's nose. It has its own falsifier
+and is queued separately rather than folded into the held series. Squad also caught a comment promising
+`--tune=match.hull_disc=1` flips every consumer: that is the **pre-inversion** sense, `=0` is the treatment arm,
+and the comment would have had the series run **with two identical arms**.
+
+### ⚠ A SAMPLE IS NOT A SUMMARY — the same misreading, twice in one day
+
+`test_ai_player_orders` prints a per-unit roster **and** a per-squad worst-gap line. This stream read three roster
+entries (`3 m`, `4 m`, `5 m`) and concluded the crews "were never told to finish the move". The summary line said
+something else entirely:
+
+    worst gap per squad { "Alpha": 2.9, "Bravo": 89.5, "Charlie": 87.6, "Delta": 86.5, "Echo": 91.1 };
+      12 of 30 units off their slot, 0 with no slot at all
+
+**Four of five squads have a unit ~90 m from its slot**, and the threshold the assertion uses is 36 m
+(`PLAYER_POST_LEASH 18.0 × ESCAPE_LEASH_FACTOR 2.0`). The roster prints *some* units; the line prints the
+**worst**. squad caught it by asking which of the file's two `assert_eq(..., 0, ...)` had fired instead of
+accepting the narrative — `0 with no slot at all` settled it in one field.
+
+It is the same error as **reading a filtered run as readiness** (lesson 45), which cost this stream an afternoon on
+the same day: *a subset that agrees with the story is not the measurement.* Read the aggregate line before
+theorising from the detail lines, and when a test prints both, **quote the aggregate**.
+
+**AND IT GOT WORSE BEFORE IT GOT BETTER — the sharper form.** Those three roster lines were not a sample of the
+failing test at all: they belong to `test_..._leash`, which runs immediately after it. The failing test's output
+**ends at its FAIL line**; everything below is the next test's. The arithmetic proves it — the leash line reports
+*"3 living units a mean 3.9 m from their slot"* and the three entries are 4, 3 and 5 m, mean 4.0.
+
+Sent to squad, they produced a clean and well-argued diagnosis (*"Bravo's crews are seated in Echo's formation"*)
+from posts belonging to a different scenario, and the explanation **fit beautifully** because two unrelated layouts
+happened to line up. **The rapid-succession test prints no per-unit roster at all**; its aggregate cannot tell
+"seated in another squad's slots" from "never moved" from "sent nowhere".
+
+*When a quoted detail cannot produce the reported failure, check whether it belongs to the same measurement at
+all.* The cause was grepping for a string instead of reading the block — `grep -E "from the slot it was sent to"`
+spans every test in the log, and a log is not a record per test unless something says where one ends.
+
+(Unrelated to the arms: both arms produce the **byte-identical** MEASURE line, which is a stronger exoneration of
+`match.yaw_fit` than the matching counts were.)
+
+### THE GANGS-VS-LAW SERIES — PRE-REGISTERED BEFORE THE RUNS (X5, and the hull-geometry row's falsifier)
+
+**The claim under test:** the disc over-states a hull's lateral reach (a War Rig's disc is 7.19 m against a true
+half-width of **1.66 m**, a factor of 4.3 abeam and near-exact end-on), so the AI refuses **shots across a rig** —
+exactly the shot a gang pack travelling with a rig in the middle wants to take. Whether that is the lead's
+unexplained `gangs vs law` **9/20 → 0/20** is what the series decides and nothing before it may assert.
+
+**THE NULL IS PRE-REGISTERED AND IS THE LIKELIER OUTCOME:** a box arm that does **not** move the gangs-vs-law cell
+is **evidence AGAINST the disc being the cause**, and gets written up as such rather than as "inconclusive, needs
+more seeds".
+
+**Read PER CELL, never pooled.** feel's re-measurement is the *before*, and it is the reason: pooled pit was
+**unmoved at 30%** while the cells moved **0%→20% (pit)** and **0%→50% (yard)**. Pooling hides exactly the effect
+the series exists to find.
+
+**The commands, and the trap in them.** `faction-matrix` names its output `…-tuned.json` whenever `TUNE` is set —
+**the same filename for both arms** — so a naive two-run series **overwrites the control with the treatment and
+then compares a file with itself**, which reads as a perfect null. Copy between runs:
+
+    make faction-matrix ARENA=yard TUNE=match.hull_disc=1 SEEDS=6 TIME=180 JOBS=2   # CONTROL: the disc
+    cp build/faction-matrix-yard-tuned.json build/series/yard-disc.json
+    make faction-matrix ARENA=yard TUNE=match.hull_disc=0 SEEDS=6 TIME=180 JOBS=2   # TREATMENT: the box
+    cp build/faction-matrix-yard-tuned.json build/series/yard-box.json
+    make compare-arms TREATMENT=build/series/yard-box.json CONTROL=build/series/yard-disc.json \
+        COMPARE_FACTION=gangs BUILD_ARM="hull box (match.hull_disc=0) vs disc"
+
+⚠ **The control is run with `TUNE=match.hull_disc=1`, not with no `TUNE` at all.** `=1` is the default's value, so
+it changes nothing — but it puts both arms down the same `apply_tuning` path, and a control that skips the code
+the treatment runs is not a control. (`=1` being the no-op and `=0` the treatment is the **post-inversion** sense;
+a comment promising the opposite was caught by squad and would have run the series **with two identical arms**.)
+
+**Say the machine beside every number** — laptop ≈ 2.75× builder0 — and **say the load**, because the box is
+contended and a timed 180 s match on a loaded box is not the same measurement as on an idle one.
+
+**Scope is deliberate, not "whatever was found first":** six migrated sites move with the knob; the **seventh**
+(`Avoidance.radius_of`, `(w + l) / 4`) does **not** and is excluded on purpose — its error runs the opposite way
+end-on and it wants its own falsifier.
+
+### ⚠ THE YAW CONSTRAINT IS BACK OFF: it costs four of five squads their formation (`e21f72c8`)
+
+| point | worst gap to its own slot, per squad (m) | off slot |
+|---|---|---|
+| `b3f7ffae` main | Alpha 3.8, Bravo 4.4, Charlie 6.6, Delta 22.2, Echo 4.2 | **0 of 30** |
+| `bd618dd4` flag **off** | Alpha 3.8, Bravo 4.4, Charlie 6.6, Delta 22.4, Echo 4.5 | **0 of 30** |
+| `986f8921` flag **on** | Alpha 2.9, Bravo 89.5, Charlie 87.6, Delta 86.5, Echo 91.1 | **12 of 30** |
+
+One line, threshold 36 m. **The off-slot crews never DEPARTED** — squad's roster puts them at the spawn row
+(z ≈ 94–101) with destinations across the map (z ≈ 6–19), so the first turn toward the goal is refused and the
+hull never starts. Benefit re-measured on one build: **44.0° → 11.6° (74%)**, 12.1 → 6.1 m; residual unchanged at
+**1.27 m** against a 1.8 m bar. The earlier `28.5° / 9.6 m` before-column is **struck** — taken through a knob that
+did nothing.
+
+### ⚠ THE PREDICTION WAS REFUTED, AND THE MECHANISM IS NOW UNEXPLAINED
+
+Pre-registered: *refusals rank with the across gap, Charlie at 1.12 m worst.* Measured, `DRIVE_TRACE`:
+
+| crew | across gap | max **continuous** refused ticks | seats? |
+|---|---|---|---|
+| `Green_Charlie_1` | 0.06 m | 1260 | no |
+| `Green_Bravo_6` | −1.36 m (overlapping) | 1113 | no |
+| `Green_Charlie_3` | **3.19 m** (loosest) | **1135** | no |
+| `Green_Echo_3` | 2.58 m | 867 | no |
+| `Green_Alpha_4` | **0.26 m** (tight) | **128** | **yes** |
+
+**The across gap predicts nothing in either direction.** squad's separating-axis reading is unsupported, and so is
+this stream's endorsement of it. **1100+ CONTINUOUS refused ticks** means no fraction of the wanted turn, down to
+0.3, ever came back non-worsening — a permanent freeze, nav's N1 breach at army scale.
+
+**Round 10's first question is a PREDICATE question, not a formation one:** *why does a clear hull with 3.19 m of
+room never accept any of its three candidate yaws for 1135 consecutive ticks?* Diagonal-derived spacing goes in as
+a **candidate** with this table beside it, not as the fix.
+
+**The one thing the table does support, worth ranking next rather than telling as a story:** Alpha is ordered
+first and seats; the four ordered while Alpha was already moving freeze. ⚠ Gap in the data: `Green_Echo_1`
+produced **zero** traced ticks — absent, not silent, and not chased.
+
+### ⚠ TUNE KNOBS WERE INERT ON BOTH ENTRY POINTS — round 7's bug, recurring
+
+Documented at `game/ai/combat_motion.gd:40` three rounds ago: *"resolved at READ time, never in a static
+initialiser … the switch silently does nothing … two byte-identical arms."* `apply_tuning` wrote **four** other
+classes, two of them foreign **dictionaries** (`SwitchingCost.tuning`, `Weapons.tuning`) an owner's initialiser
+replaces with `{}`. Measured both ways:
+
+- **`TUNE=` env** (this stream): `match.yaw_fit=0` landed in a bare script and was **gone** under the test runner.
+- **`--tune=` CLI** (feel, builder0): flag verbatim in the log, `apply_tuning` returned `""`, **`Armor.no_damage`
+  read FALSE in 13 of 13 phases** while the census walked 90 → 77 with units dying.
+
+Fix is **when** the spec is applied, not which knob reads it: `_static_init` only READS `TUNE`;
+`_ensure_env_tuning()` applies at first read; the `match.*` knobs are read at the point of use from `Units`'s own
+dictionary. ⚠ **feel's CLI path is covered by the fix's SHAPE, and `test_combat_no_damage` now exercises
+`apply_tuning` at runtime — but the LOAD-ORDER case (a knob applied before its owner's class initialises) is still
+untested.**
+
+**feel's rule, above this stream's:** *an arm assertion must read the state the code under test consults, not the
+instruction that was issued. A readout of intent is not a readout of effect.* `apply_tuning` returning `""` says
+the spec parsed; a test asserting that return value passes throughout the bug.
+
 ### THE EXACT NEXT STEP, in order
 
-1. **Read `check-local.log`'s totals** (or re-run `make check` if it was killed). **`sim-baseline` is EXPECTED TO
-   FAIL**: retiring the dwell timer changes option choice and option choice is the simulation. The orchestrator
-   records the new hash (Invariant 2); this branch does not. Anything else red is this stream's and is fixed before
-   the hash is named.
-2. **When builder0 returns**, check for a stale `slot.sh` of this stream's on the box first, then
-   `REMOTE_SLOTS=6 make remote T=check`. Read the result from the wrapper's own `>> remote: make check exited <N>`
-   line and the runner's `N passed, M failed` — never a shell exit through a pipe, and **a 255 is transport, not the
-   suite** (after which `build/` holds a PREVIOUS run's artefacts).
-3. **Name the hash** as: `this commit is green, merge here: <sha>` + `lint local: 534 files, 2 baselined lines` +
-   **the sim-baseline-moves declaration**.
-4. **`make ai-perf` on builder0** (never the laptop — the perf scenario fails here on speed alone). Pre-registered:
-   A2 costs under 2% of `ai_usec_per_tick`. Note it is now the OPT-IN arm, so the default build's cost is the flat
-   bonus's, and the A2 figure needs `--tune=switch.cost=1`.
-5. **Send metrics the switch-event files** for the paired read (predicted `angle_deg` against the hull rotation
-   actually performed). Blocked until CP1 merges, because the `--trajectory` emitter lives on metrics' branch.
-6. **CP2 lands → X3**: `git merge main`, then re-take the sim baseline (orchestrator's), `make faction-matrix` on
-   yard and pit, the `gangs vs law` pair via `compare-arms`, and `make engagement` split direct/indirect. **Nothing
+1. **Read the running check's result from the wrapper's own `>> remote: make check exited <N>` line and the
+   runner's `N passed, M failed`** — never a shell exit through a pipe, and **a 255 is transport, not the suite**
+   (after which `build/` holds a PREVIOUS run's artefacts). Send the orchestrator: the tip, the two lines, the new
+   `sim-baseline` hash **declared as the round's fifth move with its cause** (the yaw constraint changes hull
+   headings and heading is the simulation), and the local lint as the only parse evidence.
+2. **The gangs-vs-law series** (X5's mechanism, and the hull-geometry row's falsifier). Both arms via
+   `match.hull_disc`; **feel's re-measured matrix is the BEFORE**; **per cell, not pooled** — feel's pooled pit
+   figure was unmoved at 30% while the cells moved 0%→20% (pit) and 0%→50% (yard), so pooling hides the effect the
+   series is for. **Pre-registered null: a box arm that does not move the gangs-vs-law cell is evidence AGAINST the
+   disc being the cause of the lead's 9/20 → 0/20, and gets written up as such.** Launch when this stream's remote
+   slot frees; **say the machine load beside the numbers** (the laptop is ~2.75× builder0, and the box is
+   contended).
+3. **`make ai-perf` on builder0** (never the laptop — the perf scenario fails here on speed alone). Pre-registered:
+   A2 costs under 2% of `ai_usec_per_tick`. It is the OPT-IN arm, so the default build's cost is the flat bonus's
+   and the A2 figure needs `--tune=switch.cost=1`.
+4. **Send metrics the switch-event files** for the paired read (predicted `angle_deg` against the hull rotation
+   actually performed). Blocked until CP1 merges — the `--trajectory` emitter lives on metrics' branch.
+5. **CP2 lands → X3**: `git merge main`, re-take the sim baseline (orchestrator's), `make faction-matrix` on yard
+   and pit, the `gangs vs law` pair via `compare-arms`, and `make engagement` split direct/indirect. **Nothing
    size-dependent is compared across CP2.** Two movements are pre-registered as NOT this stream's doing: the
    engine-deck scenario moves because scale's `_apply_hull_size` makes the Condemned tank 0.8 m taller, and the
    muzzle ceiling drop (1.30 → 1.14 m, 18 muzzles, floor set by the Rat Rod's own 1.24 m mesh) is a real ballistic
-   change that moves kill distances and cover columns for reasons unrelated to hull size.
-7. **X4**: migrate `TacticalQuery.hull_hidden` onto `Arena.cover_fraction` (built, positive control passed: the
+   change that moves kill distances and cover columns for reasons unrelated to hull size. **The yaw residual is now
+   a third**: it scales with `length × sin(yaw)`, so re-measure nav's corridor after CP2 and move
+   `RESIDUAL_BAR_M` with a stated number rather than letting the bar be met by luck.
+6. **X4**: migrate `TacticalQuery.hull_hidden` onto `Arena.cover_fraction` (built, positive control passed: the
    12.19 m step is gone and yard's 14 m figure is within 0.03 of its 12 m one), and **rename
    `EngagementStats.near_cover`** — it has never measured cover, it measures proximity to an obstacle footprint, so
    every "cover use" column in `make engagement` is really a "standing near a wall" column. **A3's falsifier is only
    half met and that must not be reported as fully met:** at 2.93 m the query's worst-case error is 0.759 (grid term
    `2.0/length`), so the honest claim is *"cover works for hulls the grid can resolve, and short hulls are where they
    already were"*.
-8. **X5 (stretch)**: the rig's unexplained `gangs vs law` 9/20 → 0/20 now has a better candidate than "bigger
-   target" — the roster-wide muzzle drop is a *mechanism*.
-9. **The hull-rotation defect above**, immediately after the green hash is named — it is this stream's file, it is
-   the lead's own complaint, and CP2 amplifies it.
 
 ### Requests to other streams, outstanding
 

@@ -283,9 +283,12 @@ static func deploy(game_match: Match, team: int) -> void:
 		# green as evidence about the lift; it was evidence about nothing, because the lift was never in the arm.
 		# `_clear_spot` preserves y (so does `SlotGround.standable`, which returns `Vector3(closest.x, point.y,
 		# closest.z)`), so `spot.y` is the lift the layout asked for.
-		tank.global_position = spot
-		tank.rotation.y = yaw
-		tank.reset_physics_interpolation()
+		# ONE CALL, because a teleport is three things and doing two of them left every deployed hull's physics body
+		# at its spawn slot until the second tick (combat, measured: 90 of 90 hulls 56-110 m from their own body on
+		# tick 1, and the two that overlapped in that other layout were shoved 1.5 m by penetration recovery before
+		# anything was asked to move). `Tank.place` writes the node, FLUSHES it to the physics server, resets the
+		# interpolation, and updates `sync_position`.
+		tank.place(spot, yaw)
 	# A doctrine squad that starts "in formation" holds at its commander's spawn point: move that hold with it.
 	for squad: Squad in game_match.team_squads(team):
 		if squad.is_commanded() and laid.has(squad.commander):

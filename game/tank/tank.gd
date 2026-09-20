@@ -423,7 +423,164 @@ var _sanitized := TankCommand.new()
 var _held := TankCommand.new()
 
 
+## TELEPORTING A HULL. Every teleport in this file goes through here: `ArmyLayout.deploy`'s placement and
+## `respawn()`. It writes the transform, tells the renderer not to draw a streak, writes `sync_position`, and --
+## the part that is not obvious and was found the hard way -- makes the hull **skip its next drive**.
+##
+## THE DEFECT, measured rather than reasoned about. `ArmyLayout.deploy` wrote `global_position` and called
+## `reset_physics_interpolation()`, which fixes what is DRAWN and says nothing about what is THERE. On the first
+## physics tick after that, **90 of 90 hulls were 56 to 110 m from their own physics body** -- every body still at
+## `Match.spawn_position`'s jittered grid slot while every node stood in the layout. The grid is itself a valid
+## non-overlapping layout, so almost nothing overlapped in it and nothing looked wrong; the two hulls that did were
+## shoved **1.5 m** by `move_and_slide`'s penetration recovery, which moves a body **without touching `velocity`**
+## and reports **no slide collision**. Hence the row that started the hunt: `wanted.x = 0.000` beside
+## `moved.x = 1.5281`, `contacts[0]`.
+##
+## THREE REMEDIES WERE TRIED AND ALL THREE WERE BIT-IDENTICAL, which is why this function does not contain any of
+## them: `force_update_transform()` at `_ready` (too early -- the hull is still at its spawn slot), the same call
+## after deploy's write, and an explicit `PhysicsServer3D.body_set_state(..., BODY_STATE_TRANSFORM, ...)`. A
+## read-back on the line after that last one still returned the **old** transform. `PhysicsServer3D` commands queue
+## until the step, `_physics_process` runs before the step applies them, so **nothing any caller can do reaches the
+## space before the next tick**. All three were one queued command spelled three ways. A no-op that looks like a
+## fix is worse than no fix, so none of them is kept here.
+##
+## THE REMEDY IS A TICK, NOT A FLUSH: a hull that does not yet exist where the physics thinks it does is not asked
+## to move. `_placed_settle` makes the next `_drive` return before `move_and_slide` and drop `_motion`, so the
+## model is rebuilt from the placed transform rather than the one it was spawned at. Measured on the full army:
+##
+##     pair placed 5.432 m apart -> 3.154 m after tick 1 (2.279 m of convergence)   before
+##     pair placed 5.432 m apart -> 5.432 m after tick 1 (0.000 m of convergence)   after
+##     worst node-vs-body distance across 90 hulls: 139.41 m -> 0.02 m
+##     every traced tick: `moved` equals `would move` exactly
+##
+## ⚠ `at.y` IS THE LAYOUT'S AND IS WRITTEN WHOLE -- never snapped, clamped or normalised here (squad's condition,
+## and it is the same trap as the yaw constraint's 0.02 slack). `_clear_spot` and `SlotGround.standable` both
+## preserve y, so `at.y` is the lift the layout asked for. The line this replaced kept the tank's OWN y and threw
+## the layout's away, which is what made `SPAWN_LIFT_M` inert -- and because both versions agree at 0.0, a
+## regression here is a **silent** no-op that measures as "the lift does nothing" rather than as a bug.
+func place(at: Vector3, yaw: float) -> void:
+	global_position = at
+	rotation.y = yaw
+	# The replicated fields, so a hull never advertises the position it was spawned at between here and its first
+	# tick. They were written only by `_tick`, which is why `sync_position` could sit on the far side of the map:
+	# harmless while `simulate` is true and catastrophic the day it is not.
+	sync_position = at
+	sync_yaw = yaw
+	reset_physics_interpolation()  # drawn here, rather than sliding in from wherever it was
+	_placed_settle = true
+	if not _drive_trace_read:
+		_read_drive_trace()
+	if drive_trace.has(String(name)):
+		# THE INSTRUMENT THAT FOUND IT, kept because the claim above rests on it: what the space holds for this body
+		# at the moment of the write, beside what was written. They disagree, and that disagreement IS the defect.
+		var held: Transform3D = PhysicsServer3D.body_get_state(get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM)
+		print("DRIVE_TRACE_PLACE %-12s placed at (%.3f, %.3f, %.3f); the space still holds (%.3f, %.3f)" % [
+				name, at.x, at.y, at.z, held.origin.x, held.origin.z])
+
+
+## SCALE'S 1.5 m LATERAL STEP, instrumented rather than reasoned about. Two units in a second rank (`Green_S2_2`
+## artillery, `Green_S2_3` lancer) take a ~1.5 m step toward their column's centre line in one tick from rest, with
+## nothing within 12 m of them, and the step is INSIDE `get_position_delta()` -- so `move_and_slide` produced it and
+## some velocity had to be that large, however briefly. `velocity.x` reads 0 afterwards, which is what a slide
+## against something would leave, except the test reports no contacts.
+##
+## The three candidates this separates, which no amount of reading the code decides between: the velocity handed to
+## `move_and_slide` really was ~90 m/s for one tick (the motion model, in which case `planar` shows it); `delta` was
+## not the tick (in which case a 1.5 m step at a walking speed is arithmetic, not a bug); or the body moved without a
+## matching velocity at all (depenetration or an assignment, in which case `delta_x` exceeds `planar.x * delta`).
+## `safe_margin` and `motion_mode` are printed because a margin larger than the step makes the solver's recovery the
+## whole signal -- which is exactly how the yaw constraint above was blind for two rounds.
+##
+## OFF unless a hull is named, and nameable from OUTSIDE the code so no other stream's test has to be edited to run
+## it: `DRIVE_TRACE=Green_S2_2,Green_S2_3 make test FILTER=spawn_isolation`, or `Tank.drive_trace = {"name": true}`
+## from a test. Costs one `is_empty()` per hull per tick when off.
+static var drive_trace := {}
+static var _drive_trace_read := false
+static var _drive_trace_dumped := false
+
+
+## Read once per process, not per tank: `static var` initialisers run before `OS` is useful and an env read per hull
+## per spawn is a syscall in the spawn path.
+static func _read_drive_trace() -> void:
+	_drive_trace_read = true
+	var named := OS.get_environment("DRIVE_TRACE")
+	if named.is_empty():
+		return
+	for who in named.split(",", false):
+		drive_trace[who.strip_edges()] = true
+	print("DRIVE_TRACE armed for %s" % ", ".join(drive_trace.keys()))
+
+
+func _trace_drive(was: Vector3, planar: Vector3, cmd: TankCommand, delta: float) -> void:
+	var moved := global_position - was
+	var reported := get_position_delta()
+	var contacts := []
+	for i in get_slide_collision_count():
+		var hit := get_slide_collision(i)
+		var other: Object = hit.get_collider()
+		contacts.append("%s n=%s depth=%.4f" % [
+				String((other as Node).name) if other is Node else str(other), hit.get_normal(), hit.get_depth()])
+	# WHAT THE BODY WAS INSIDE, asked with the hull's OWN shape and the body's OWN mask at the transform it held
+	# BEFORE the move. `get_slide_collision_count()` reports the MOTION phase only -- `move_and_slide`'s penetration
+	# recovery moves the body with no slide collision to show for it, which is why the first tick reads
+	# "moved 1.53 m, no contacts" and why an overlap probe run on a different mask reported nothing overlapping.
+	var overlaps := []
+	if _collision != null and _collision.shape != null:
+		var probe := PhysicsShapeQueryParameters3D.new()
+		probe.shape = _collision.shape
+		probe.transform = Transform3D(global_basis, was) * _collision.transform
+		probe.collision_mask = collision_mask | collision_layer
+		probe.exclude = [get_rid()]
+		for hit in get_world_3d().direct_space_state.intersect_shape(probe, 8):
+			var who: Object = hit.get("collider")
+			# THE NODE'S transform AND THE PHYSICS SERVER'S, because the first probe returned a collider whose node
+			# sits 97 m away from the shape that was actually overlapping. If these two disagree, the defect is a
+			# body placed after its transform reached the server, and no amount of spacing arithmetic fixes it.
+			var server := "?"
+			if who is CollisionObject3D:
+				var at: Transform3D = PhysicsServer3D.body_get_state(
+						(who as CollisionObject3D).get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM)
+				server = str(at.origin)
+			overlaps.append("%s node@%s server@%s" % [String((who as Node).name) if who is Node else str(who),
+					(who as Node3D).global_position if who is Node3D else "?", server])
+	var my_server: Transform3D = PhysicsServer3D.body_get_state(get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM)
+	# ONE-SHOT, EVERY HULL: is the server's world a permutation of THIS match's nodes, or of something else? Two
+	# hulls cannot answer that; the whole set can. Printed once per process, from the first traced hull's first tick.
+	if not _drive_trace_dumped:
+		_drive_trace_dumped = true
+		for other in get_parent().get_children():
+			if other is CharacterBody3D:
+				var at: Transform3D = PhysicsServer3D.body_get_state(
+						(other as CharacterBody3D).get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM)
+				var node_at: Vector3 = (other as Node3D).global_position
+				print("DRIVE_TRACE_WORLD %-12s node@(%.3f, %.3f) server@(%.3f, %.3f) apart %.2f m" % [
+						other.name, node_at.x, node_at.z, at.origin.x, at.origin.z,
+						Vector2(node_at.x - at.origin.x, node_at.z - at.origin.z).length()])
+	print(("DRIVE_TRACE %-12s dt=%.5f wanted=(%.3f, %.3f) -> would move (%.4f, %.4f) | moved=(%.4f, %.4f) "
+			+ "reported=(%.4f, %.4f) after=(%.3f, %.3f) | throttle=%.3f turn=%.3f deploy=%.3f speed=%.3f "
+			+ "margin=%.4f mode=%d slides=%d contacts[%d] %s") % [
+			name, delta, planar.x, planar.z, planar.x * delta, planar.z * delta, moved.x, moved.z,
+			reported.x, reported.z, velocity.x, velocity.z, cmd.throttle, cmd.turn, deploy_ratio, _speed,
+			safe_margin, motion_mode, max_slides, contacts.size(), ", ".join(contacts)])
+	# THE YAW SIDE, on the same line's heels: whether the plant refused this hull's turn, and what it was asked to
+	# do while it was refused. A hull held 4 m off its slot by a refused arrival manoeuvre looks identical, from the
+	# outside, to a hull its brain re-tasked -- and the order beside the refusal count is what tells them apart.
+	print("DRIVE_TRACE_YAW %-14s refused_ticks=%d speed=%.3f throttle=%.3f turn=%.3f parked=%s" % [
+			name, yaw_refused_ticks, _speed, cmd.throttle, cmd.turn, is_parked(cmd)])
+	print("DRIVE_TRACE_OVERLAP %-12s node@%s server@%s was inside [%d] %s" % [
+			name, was, my_server.origin, overlaps.size(), ", ".join(overlaps)])
+
+
+## Set by `place()`, cleared by the first `_drive` after it: see `place()` for why a freshly teleported hull must
+## not be driven until a physics step has carried the write into the space.
+var _placed_settle := false
+
+
 func _drive(cmd: TankCommand, delta: float) -> void:
+	if _placed_settle:
+		_placed_settle = false
+		_motion = {}  # rebuilt next tick from the placed transform, not the one it was spawned at
+		return
 	if _motion.is_empty():
 		_motion = TankMotion.state_for(unit_id, global_position, -global_basis.z, _speed)
 	elif is_parked(cmd):
@@ -470,7 +627,13 @@ func _drive(cmd: TankCommand, delta: float) -> void:
 	velocity.x = planar.x
 	velocity.z = planar.z
 	velocity.y = 0.0  # floating on a flat arena (see _ready)
+	if not _drive_trace_read:
+		_read_drive_trace()
+	var traced := not drive_trace.is_empty() and drive_trace.has(String(name))
+	var was := global_position if traced else Vector3.ZERO
 	move_and_slide()
+	if traced:
+		_trace_drive(was, planar, cmd, delta)
 	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
 	_motion["velocity"] = estimated_velocity
 	if locomotion != "tracks":
@@ -502,28 +665,66 @@ static var refusals_offered := 0
 static var refusals_applied := 0
 ## Consecutive ticks this hull's yaw has been refused outright: a permanent refusal is a stuck unit, not a fix.
 var yaw_refused_ticks := 0
-## OFF BY DEFAULT because turning it on moves the sim baseline and turns nav's `test_a_wedged_semi_keeps_yawing_
-## because_rotation_is_never_collided` red -- that test asserts the CURRENT defect, so its going red is the signal
-## the defect is gone, and flipping it is the orchestrator's to sequence, not this file's.
+## OFF BY DEFAULT, AND THE COST COMES BEFORE THE BENEFIT because that is the order it was learned in.
 ##
-## IT WORKS, and the number that matters is PENETRATION_SLACK_M rather than anything structural. Measured, nav's
-## wedged-semi corridor (4.8 m wide, a 14 m rig):
-##     slack 0.020  ->  28.5 deg of yaw, 9.6 m of footprint   -- BLIND: bit-identical to no constraint at all
-##     slack 0.005  ->  11.6 deg,        6.1 m                -- 59% less illegal yaw, no freeze, no open-ground cost
-##     slack 0.000  ->   6.2 deg,        4.8 m                -- exactly fits, but freezes a wedged rig (30/30 refusals)
-## The first version of this comment claimed the per-tick form could not work. That was wrong: the relative
-## predicate was never given a chance, because a tolerance constant chosen to ignore the solver's recovery margin
-## (0.02 m) was LARGER than the whole per-tick signal. A 0.119 deg/tick yaw moves a 14 m hull's tip 0.0147 m, so
-## every increment passed. A threshold has to be measured against the quantity it must discriminate.
+## ⚠ ENABLING THIS STOPS FOUR OF FIVE SQUADS TAKING THEIR FORMATION. Bisected to this one line, one machine,
+## `make test FILTER=ai_player_orders`:
 ##
-## At 0.005 the residue is a hull with no non-worsening yaw available, which freezes VISIBLY (`yaw_refused_ticks`)
-## rather than silently -- and that is the state nav's `face` recovery exists for. It fired for the first time in
-## this configuration (`giveups 1`), having been inert all round.
+##   point                        worst gap to its own slot, per squad (m)                     off slot
+##   b3f7ffae (main)              Alpha 3.8, Bravo 4.4,  Charlie 6.6,  Delta 22.2, Echo 4.2    0 of 30
+##   bd618dd4 (this flag OFF)     Alpha 3.8, Bravo 4.4,  Charlie 6.6,  Delta 22.4, Echo 4.5    0 of 30
+##   986f8921 (this flag ON)      Alpha 2.9, Bravo 89.5, Charlie 87.6, Delta 86.5, Echo 91.1   12 of 30
+##
+## The threshold is 36 m (`PLAYER_POST_LEASH 18.0 x ESCAPE_LEASH_FACTOR 2.0`), so ~90 m is not a marginal miss: the
+## crews never seat and their brains re-task them (ENGAGE / HOLD / SPOT, no order held). The bisect is source-level
+## with no tune involved, which matters -- see below.
+##
+## THE BENEFIT, and it is real. nav's wedged-semi corridor (4.8 m wide, a 14 m rig), both arms on one build with
+## `TUNE=match.yaw_fit=0` proven to move the predicate:
+##
+##                       off        on
+##   yaw                 44.0 deg   11.6 deg    74% of the illegal rotation gone
+##   footprint           12.1 m      6.1 m      in a 4.8 m corridor
+##   face giveups        0           1          nav's recovery fires, having been inert all round
+##   open ground         71.2 deg in 1 s, 1 offer, 0 applied -- no cost where there is nothing to hit
+##
+## ⚠ THE RESIDUAL IS THE BINDING NUMBER AND A BIGGER BENEFIT DOES NOT SHRINK IT: 6.1 m of footprint in a 4.8 m
+## corridor is still ~1.3 m of hull rotating through a wall (measured 1.27, bar 1.8). The predicate is per-tick and
+## relative, `move_and_slide` depenetrates between ticks, so a rotation illegal cumulatively is legal at every
+## increment; the exact form (slack 0.000) fits the corridor and freezes a wedged rig for 30 ticks, which is nav's
+## N1 breach.
+##
+## ⚠ AN EARLIER "before" OF 28.5 deg / 9.6 m IS STRUCK. It was quoted in a commit, a docstring, a brief and a dozen
+## messages, and it was taken in an arm that was not the one it claimed -- the knob that selected it did nothing
+## (see `Units._ensure_env_tuning`). The figures above are this build's, with the off arm reproducing nav's original
+## unconstrained measurement (10.42 m of path, 44.0 deg, 4.42 m drift, 12.1 m) to the decimal.
+##
+## ⚠ THE MECHANISM IS INFERRED, NOT MEASURED. The likely reading -- nav's -- is that hulls seating into a formation
+## are nosed against SQUADMATES, `test_move` uses this body's own `collision_mask = 3` (world AND vehicles), so a
+## squadmate counts as a wall and the arrival yaw is refused. Alpha surviving fits: ordered first, into open ground,
+## before the others crowd in. `match.yaw_world=1` is that hypothesis as a selectable arm.
+##
+## ⚠ THE TUNE IS READ HERE, AT THE POINT OF USE, and not written into this static by `apply_tuning`. It used to be
+## written: `Units._static_init()` did `Tank.yaw_fit_enabled = false` for `TUNE=match.yaw_fit=0`, and the write
+## LANDED in a bare script (measured: the probe read `false`) and was GONE by the time the predicate ran under the
+## test runner (measured: `TUNE=match.yaw_fit=0` left nav's wedged row byte-identical to the constrained control --
+## 11.6 deg, 6.1 m, giveups 1 -- and green). A static on another class, written at class-load time, is undone by
+## that class's own initialiser whenever the load order puts it second.
+##
+## Every `yaw_fit=0` measurement taken before this fix was measuring the constraint ON. That voided a knob A/B, an
+## "the constraint is excluded" report, and a "second cause" that probably never existed. `Units.tuning` is a
+## dictionary on the class that parses the spec, so no cross-class initialisation order can undo it.
 static var yaw_fit_enabled := false
 
 
+## The live value: the tune when one was given, else the default above (which tests set directly).
+static func yaw_fit_on() -> bool:
+	Units._ensure_env_tuning()
+	return float(Units.tuning.get("yaw_fit", 1.0 if yaw_fit_enabled else 0.0)) > 0.0
+
+
 func _fitting_forward(have: Vector3, wanted: Vector3) -> Vector3:
-	if not yaw_fit_enabled or (get_slide_collision_count() == 0 and yaw_refused_ticks == 0):
+	if not yaw_fit_on() or (get_slide_collision_count() == 0 and yaw_refused_ticks == 0):
 		return wanted
 	refusals_offered += 1
 	# DEPTH, not contact. Asking "does the candidate heading collide?" freezes a wedged hull solid: it is ALREADY
@@ -549,13 +750,63 @@ func _fitting_forward(have: Vector3, wanted: Vector3) -> Vector3:
 	return have
 
 
-## How far this hull would be inside world geometry facing `forward` where it stands (0.0 when clear).
+## ⚠ NOT A MASK ARM. IT IS A DIFFERENT MEASUREMENT, AND IT FREEZES A HULL. `--tune=match.yaw_world=1` was built to
+## ask "does excluding vehicles restore formation", and it cannot answer that, because it does not differ from the
+## default in only the mask: the default arm calls `test_move(..., recovery_as_collision)` and reads
+## `KinematicCollision3D.get_depth()`; this arm calls `collide_shape` and takes the widest point-pair distance.
+## Two APIs, different margin and recovery semantics.
+##
+## The tell, measured: under this arm nav's corridor residual moved from **1.27 m to 0.70 m** -- and that corridor
+## contains **no vehicles at all**, so a pure mask change must be a no-op there. It moved, therefore the METHOD
+## moved it. And the wall case came back `offered 30, applied 30, refused ticks 30, swept 0.0 deg`: a hull frozen
+## solid for 30 ticks, which is nav's N1 breach and the exact failure that ruled out `PENETRATION_SLACK_M = 0.000`.
+## Its `five_squads` pass is uninterpretable for the same reason and does not count as evidence for anything.
+##
+## It is kept selectable because the code is written and the negative is worth reproducing, NOT because it is a
+## candidate. A real mask experiment is `test_move` in BOTH arms with only the collider set differing -- a
+## temporary `collision_mask` swap around the call -- pre-registered with "the corridor must not move" as its own
+## proof that the arm changed only what it claims to.
+##
+## Why it might have to be the default: `test_move` uses the body's own `collision_mask`, and `tank.tscn` has
+## `collision_mask = 3` -- world AND vehicles. So the rule as first written treats **another tank as a wall**, and
+## the whole justification for refusing a yaw is that a wall will not move. A squadmate will. A hull nosed up
+## against a neighbour while settling onto its formation slot is then refused the arrival turn and sits wrong.
+##
+## It is an ARM and not a fix until the pair says so: nav's corridor measurement is unaffected either way (scenery
+## is scenery), so the two arms can only be separated by a case where the contact is a vehicle.
+static var yaw_fit_world := false
+
+
+## The live value, read at the point of use for the same reason as `yaw_fit_on()`.
+static func yaw_world_on() -> bool:
+	Units._ensure_env_tuning()
+	return float(Units.tuning.get("yaw_world", 1.0 if yaw_fit_world else 0.0)) > 0.0
+
+
+## How far this hull would be inside geometry facing `forward` where it stands (0.0 when clear).
 func _penetration(forward: Vector3) -> float:
-	var hit := KinematicCollision3D.new()
-	if not test_move(Transform3D(Basis.looking_at(forward, Vector3.UP), global_position), Vector3.ZERO, hit,
-			0.001, true):
+	var at := Transform3D(Basis.looking_at(forward, Vector3.UP), global_position)
+	if not yaw_world_on():
+		var hit := KinematicCollision3D.new()
+		if not test_move(at, Vector3.ZERO, hit, 0.001, true):
+			return 0.0
+		return hit.get_depth()
+	if _collision == null or _collision.shape == null:
 		return 0.0
-	return hit.get_depth()
+	# `collide_shape` returns point pairs (on this shape, on the other); the distance between a pair IS the depth,
+	# and the deepest pair is what `KinematicCollision3D.get_depth()` reports in the other arm. Same quantity,
+	# different set of colliders -- which is the only difference the two arms are allowed to have.
+	var params := PhysicsShapeQueryParameters3D.new()
+	params.shape = _collision.shape
+	params.transform = at * _collision.transform
+	params.collision_mask = Perception.WORLD_MASK
+	params.exclude = [get_rid()]
+	params.margin = 0.001
+	var pairs := get_world_3d().direct_space_state.collide_shape(params, 8)
+	var deepest := 0.0
+	for index in range(0, pairs.size() - 1, 2):
+		deepest = maxf(deepest, (pairs[index] as Vector3).distance_to(pairs[index + 1] as Vector3))
+	return deepest
 
 
 ## CP1: nothing to integrate this tick (see _drive).
@@ -621,7 +872,7 @@ func _process(delta: float) -> void:
 ## Fractions carry over between hits (flames deal a little every tick).
 ## Returns {"shield": float, "hull": int, "killed": bool}.
 func take_hit(raw: float, shield_multiplier: float, armor_multiplier: float) -> Dictionary:
-	if not alive or raw <= 0.0 or Armor.no_damage:
+	if not alive or raw <= 0.0 or Armor.no_damage_on():
 		return {"shield": 0.0, "hull": 0, "killed": false}
 	ticks_since_hit = 0
 	var split := Armor.split_shield(raw, shield, shield_multiplier, armor_multiplier)
@@ -703,8 +954,9 @@ func apply_damage(amount: int) -> bool:
 
 
 func respawn(at_position: Vector3, yaw: float) -> void:
-	global_position = at_position
-	rotation.y = yaw
+	# THE SAME CLASS AS DEPLOY: a respawn is a placement followed by a drive in the same frame. `place()` carries the
+	# settle tick and the `sync_position` write; everything below is the respawn's own state reset.
+	place(at_position, yaw)
 	turret.rotation.y = 0.0
 	velocity = Vector3.ZERO
 	_speed = 0.0
@@ -721,7 +973,6 @@ func respawn(at_position: Vector3, yaw: float) -> void:
 	heat = 0.0
 	_set_alive(true)
 	_publish_state()
-	reset_physics_interpolation()  # a respawn is a teleport: don't draw a streak from where the wreck was
 
 
 # ---- Queries (valid on every peer) -------------------------------------------------

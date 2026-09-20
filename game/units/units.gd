@@ -1108,11 +1108,79 @@ static func role_of(unit_id: String) -> String:
 static var tuning := {}
 
 
+## THE SAME KNOBS, FROM THE ENVIRONMENT, so an arm can be selected in a context that has no `--tune=` to pass:
+##
+##     TUNE=match.yaw_fit=0 make test FILTER=ai_player_orders
+##
+## `make test` runs `run_tests.gd` with `--filter=` and nothing else, so until now the ONLY way to run a test
+## against the other arm of a knob was to edit the default in the source -- which means the two arms are not the
+## same tree and the comparison is worth less than it looks (lesson 117: an arm that needs a code edit to select is
+## an arm nobody re-measures). This closes that for every knob at once rather than for one.
+##
+## It is read once, when the class first loads, and it is LOUD: a bad spec pushes an error naming it rather than
+## being ignored, because a mistyped knob that silently does nothing would make a null result look like a
+## measurement. Unset (the normal case) it does nothing at all.
+## ⚠ READ HERE, APPLIED LATER, and the difference is the whole bug. The first version applied the spec inside
+## `_static_init`, and `apply_tuning` reaches across to other classes -- `Tank`, `Armor`, `SwitchingCost.tuning`,
+## `Weapons.tuning`. A write to another class's static at class-load time is undone by THAT class's own initialiser
+## whenever the load order puts it second, and nothing says so: `TUNE=match.yaw_fit=0` landed in a bare script
+## (probed: `Tank.yaw_fit_enabled` read `false`) and was gone by the time the predicate ran under the test runner
+## (nav's wedged row came back byte-identical to the constrained control -- 11.6 deg, 6.1 m, giveups 1 -- and
+## GREEN). Every arm taken with that knob measured the default, which voided a knob A/B, an exoneration and a
+## "second cause".
+##
+## So `_static_init` only READS the spec, and `_ensure_env_tuning()` applies it at first use, by which time every
+## class it touches is loaded. That covers knob owners this file does not know about, which a per-knob fix would
+## not: `switch.*`, `probe.deck` and the weapon knobs go through the same path.
+static var _env_spec := ""
+static var _env_applied := false
+
+
+static func _static_init() -> void:
+	_env_spec = OS.get_environment("TUNE")
+
+
+## Applied once, on the first read of a tune by anyone. Cheap enough for `stat()`'s hot path: one bool.
+static func _ensure_env_tuning() -> void:
+	if _env_applied:
+		return
+	_env_applied = true  # set FIRST: apply_tuning calls back into stat() and this must not recurse
+	if _env_spec.is_empty():
+		return
+	var problem := apply_tuning(_env_spec)
+	if problem != "":
+		push_error("TUNE=%s rejected: %s" % [_env_spec, problem])
+	else:
+		print("TUNE applied from the environment: %s" % _env_spec)
+
+
 ## A unit's stat, honoring `tuning`. Optional keys a unit lacks read as `fallback`.
+## ⚠ THE UNKNOWN ID IS CHECKED FIRST, and it is not a tidying (nav, round 9). This ended in
+## `PROFILES[unit_id].get(key, fallback)`, so an unknown id raised "Invalid access to property or key" on the
+## INDEX, **before `get` could ever consult the fallback**. Every call site that passes a fallback for a
+## possibly-unknown id therefore read as protection that did not exist -- the fallback was unreachable by
+## construction, which is how the pre-CP2 literals scale found were stale AND dead at the same time.
+##
+## An unknown id is still a bug and still says so once, by name; it just no longer takes the frame down and no
+## longer makes a written fallback a lie. A caller that gave no fallback gets `Units.DEFAULT`'s value for that key,
+## which is a unit that exists rather than a null that fails somewhere further on.
+##
+## ⚠ `push_warning`, NOT `push_error`, and the severity is a deliberate trade rather than an opinion about how bad
+## this is. The runner fails a test on any engine ERROR and has no `expect_error` to declare a deliberate one
+## (`TestCase.expect_warning` exists; its error twin does not). A `push_error` here would therefore make this guard
+## **untestable** -- and a guard nobody can drive into is exactly the unreachable protection nav objected to. So it
+## warns, the test declares the warning with `expect_warning`, and an expectation that stops arriving fails the
+## test too. **`expect_error` lands with nav's `06c7e772`**; when that is on main this becomes `push_error` and the
+## test becomes `expect_error`, a two-line follow-up.
 static func stat(unit_id: String, key: String, fallback: Variant = null) -> Variant:
+	_ensure_env_tuning()
 	var tuned_key := "%s.%s" % [unit_id, key]
 	if tuning.has(tuned_key):
 		return tuning[tuned_key]
+	if not PROFILES.has(unit_id):
+		push_warning("Units.stat: no unit '%s' (asked for '%s'); using %s" % [unit_id, key,
+				"the given fallback" if fallback != null else "%s's value" % DEFAULT])
+		return fallback if fallback != null else PROFILES[DEFAULT].get(key, null)
 	return PROFILES[unit_id].get(key, fallback)
 
 
@@ -1130,12 +1198,16 @@ static func apply_tuning(spec: String) -> String:
 		if parts.size() != 2 or path.size() < 2 or path.size() > 3 or not parts[1].is_valid_float():
 			return "tune: expected owner.key=number, got '%s'" % pair
 		if path[0] == "match":
-			if path.size() != 2 or not ["no_damage", "hull_disc"].has(path[1]):
-				return "tune: no match knob '%s' (have match.no_damage, match.hull_disc)" % parts[0]
-			if path[1] == "no_damage":
-				Armor.no_damage = float(parts[1]) > 0.0
-			else:
-				tuning["hull_disc"] = float(parts[1])
+			if path.size() != 2 or not ["no_damage", "hull_disc", "yaw_fit", "yaw_world"].has(path[1]):
+				return ("tune: no match knob '%s' (have match.no_damage, match.hull_disc, match.yaw_fit, "
+						+ "match.yaw_world)") % parts[0]
+			# ⚠ EVERY match knob goes into THIS class's own dictionary, and the consumer reads it at the point of
+			# use (`Tank.yaw_fit_on()`, `Tank.yaw_world_on()`, `Armor.no_damage_on()`). Writing a foreign class's
+			# static from here -- which is what this did -- is undone by that class's own initialiser whenever the
+			# load order puts it second: measured, `TUNE=match.yaw_fit=0` landed in a bare script and was gone by
+			# the time the predicate ran under the test runner, so the knob silently did nothing and every arm
+			# taken with it measured the default.
+			tuning[path[1]] = float(parts[1])
 			continue
 		if path[0] == "probe":
 			if path.size() != 2 or path[1] != "deck":

@@ -19,10 +19,9 @@ func _pair(units: Array) -> Array:
 			"army loads")
 	for brain in game_match.brains.get_children():
 		brain.queue_free()
-	var tanks := game_match.sorted_team_tanks(Match.Team.GREEN)
-	for tank in tanks:
-		tank.set_meta("keep", true)
-	return [game_match, tanks]
+	# (A `keep` meta was set on each tank here and nothing in the repo ever read it -- removed rather than left as
+	# a thing the next reader has to go and check. `teardown()` frees the match, which owns them.)
+	return [game_match, game_match.sorted_team_tanks(Match.Team.GREEN)]
 
 
 func _drive_all(tanks: Array, throttle: float, ticks: int) -> void:
@@ -34,6 +33,13 @@ func _drive_all(tanks: Array, throttle: float, ticks: int) -> void:
 
 func test_a_parked_hull_stays_exactly_still_and_drives_off_when_told() -> void:
 	for unit in ["tank", "gang_scout", "syn_tank"]:  # tracks, wheels, hover
+		# ⚠ A BASELINE, NOT AN ABSOLUTE, and this is the correction to the first version of these assertions. They
+		# asserted `bodies == 0` at the boundary, which passed here and FAILED on builder0 with `expected 0, got 1`
+		# -- because `_count_bodies` walks the WHOLE tree, so a body some EARLIER test in the shard left behind is
+		# counted against this one. That is precisely the charge-the-observer defect these assertions exist to stop,
+		# reproduced inside the fix for it. What this test can honestly assert is that IT added nothing.
+		var bodies_before := int(_world_left_behind()["bodies"])
+		var regions_before := NavigationServer3D.map_get_regions(tree.root.world_3d.navigation_map).size()
 		var setup := _pair([unit])
 		var tank: Tank = setup[1][0]
 		await wait_physics_frames(1)
@@ -48,7 +54,31 @@ func test_a_parked_hull_stays_exactly_still_and_drives_off_when_told() -> void:
 				% [unit, tank.global_position.distance_to(parked_at)])
 		# CP1: hulls move in floating mode (no floor queries); they must still sit on the ground, not creep off it.
 		assert_near(tank.global_position.y, 0.0, 0.05, "%s stays on the ground while driving" % unit)
-		teardown()
+		# ⚠ `await`, AND THE REASON IS WORTH THE THREE LINES, because this read as a physics leak for two rounds.
+		# `teardown()` ends in `await drain_navigation()`. Called WITHOUT `await` -- which is how this loop was
+		# written -- it frees the nodes, clears `_owned_nodes`, and then DETACHES a coroutine that sits in a
+		# 120-frame wait while this loop builds the NEXT unit's arena. That stale drain then counts the regions of
+		# an arena that is alive and in use, gives up, and appends "left 2 navigation region(s) on the map" against
+		# THIS test. Two detached drains plus the runner's own is why the failure arrived twice.
+		#
+		# There was never a holder. `free()` released everything at every boundary; the guard was reporting the
+		# test's own next fixture. Measured after the `await`, all three units: arena invalid, match invalid,
+		# **regions 0, bodies 0** -- asserted below rather than printed, so a real holder would fail here in future
+		# instead of landing on whatever test runs next.
+		var game_match: Match = setup[0]
+		var arena: Node = game_match.get_meta("arena")
+		await teardown()
+		assert_true(not is_instance_valid(arena) and not is_instance_valid(game_match),
+				"%s: the fixture is gone at the boundary" % unit)
+		var regions_after := NavigationServer3D.map_get_regions(tree.root.world_3d.navigation_map).size()
+		var bodies_after := int(_world_left_behind()["bodies"])
+		print("MEASURE sim_cost_boundary %-10s bodies %d -> %d, navigation regions %d -> %d" % [
+				unit, bodies_before, bodies_after, regions_before, regions_after])
+		assert_true(regions_after <= regions_before,
+				"%s: it added no navigation regions (%d -> %d), so the next unit bakes on the map it found"
+				% [unit, regions_before, regions_after])
+		assert_true(bodies_after <= bodies_before,
+				"%s: and no physics bodies (%d -> %d)" % [unit, bodies_before, bodies_after])
 
 
 func test_a_parked_hull_still_blocks_a_hull_driving_into_it() -> void:

@@ -31,8 +31,10 @@ func _use_the_box() -> void:
 
 ## Restored on EVERY exit, including a failing one: `Units.tuning` is a static and a test that dies holding the box
 ## would hand the default to whatever runs next -- the leak-into-the-next-test shape that cost this round two shards.
+## Reaches the base, for the same reason as its siblings: owning nothing today is not a property that stays true.
 func teardown() -> void:
 	Units.tuning.erase("hull_disc")
+	await super.teardown()
 
 
 ## The orchestrator's two cases, hand-computed from `hull_size` and depending on no series: a shell passing 3 m
@@ -135,3 +137,22 @@ func test_the_cached_pair_agrees_with_the_hull_size_form() -> void:
 	assert_near(Units.hull_reach_of(half, NORTH, EAST), Units.hull_reach_along(rig, NORTH, EAST), 1e-6,
 			"the disc is half.length(), which is Vector2(w, l).length() / 2 -- the same number by either route")
 	Units.tuning.erase("hull_disc")
+
+
+## nav, round 9: `Units.stat(unit_id, key, fallback)` ended in `PROFILES[unit_id].get(key, fallback)`, so an unknown
+## id raised on the INDEX and the fallback was **unreachable by construction**. Every call site passing a fallback
+## for a possibly-unknown id read as protection that did not exist -- which is how the pre-CP2 literals scale found
+## managed to be stale AND dead at once. The guard is only worth having if it can be driven, so it is driven here:
+## both the given-fallback branch and the no-fallback branch, with the warning declared so a guard that stops
+## warning fails this test rather than passing it quietly.
+func test_an_unknown_unit_id_returns_the_fallback_instead_of_raising() -> void:
+	expect_warning("Units.stat: no unit 'no_such_unit'*")
+	expect_warning("Units.stat: no unit 'no_such_unit'*")
+	var given: Variant = Units.stat("no_such_unit", "hull_size", [1.0, 1.0, 1.0])
+	assert_eq(given, [1.0, 1.0, 1.0], "the fallback the caller wrote is the one it gets")
+	# No fallback: DEFAULT's value, which is a unit that exists, rather than a null that fails somewhere else later.
+	var defaulted: Variant = Units.stat("no_such_unit", "hull_size")
+	assert_eq(defaulted, Units.stat(Units.DEFAULT, "hull_size"),
+			"with no fallback given, %s's value stands in (%s)" % [Units.DEFAULT, defaulted])
+	# And a KNOWN id is untouched by the guard, which is the half that would be easy to break silently.
+	assert_eq(Units.stat(RIG, "hull_size"), _rig(), "a known id still reads its own profile")

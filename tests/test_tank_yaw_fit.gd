@@ -35,13 +35,42 @@ func _applied() -> int:
 	return Tank.refusals_applied - _applied_at
 
 
-## The constraint is OFF by default (see `Tank.yaw_fit_enabled`); these tests turn it on to measure what it does.
+## The constraint is ON by default as of the enable commit (`Tank.yaw_fit_enabled`, `--tune=match.yaw_fit=0` turns it
+## off). These tests still select it EXPLICITLY rather than leaning on the default: a test that measured whichever way
+## the default happened to point would be testing the thing it was written to compare against and saying nothing
+## about it (lesson 156), and the default has already flipped once this round.
+## ⚠ THE ARM IS SELECTED THROUGH THE TUNING KEY, not by writing `Tank.yaw_fit_enabled`, so that the thing this
+## test flips is the thing production reads. Writing the static is a second source of truth: it worked while the
+## static WAS the source, and the moment a `--tune=` or `TUNE=` value existed the tune outranked it -- measured,
+## `TUNE=match.yaw_fit=0 make test FILTER=tank_yaw_fit` came back `1 passed, 1 failed` with `offered 0 applied 0`,
+## which is correct precedence and a broken test.
 func _enable() -> void:
-	Tank.yaw_fit_enabled = true
+	Units.tuning["yaw_fit"] = 1.0
 
 
+## RESTORED, not zeroed: `yaw_fit_enabled` is a static, so a teardown that wrote `false` would hand the OLD default to
+## every test that ran after this file in the shard -- the leak-into-the-next-test shape that cost this round two
+## shards. It goes back to whatever it was.
+##
+## ⚠ AND IT `await`s ITS SUPER, which the first version of this override did not call AT ALL. That is not a style
+## point: `TestCase.teardown()` is what frees `_owned_nodes` and drains the navigation map, so an override that
+## replaces it silently leaks everything the test built. This file builds a FOUNDRY arena and a match, and on
+## `396be191`'s check it ran immediately before `test_theme_city_block`, which was then charged with **44 physics
+## bodies and 4 navigation regions it never created** and became the head of a 47-test cascade. The guard names the
+## first OBSERVER of a residue, not its author; this file was the author.
+##
+## `await super.teardown()`, not `super.teardown()`: the super ends in `await drain_navigation()`, so an override
+## declared `-> void` that does not await it returns to the runner immediately and detaches the drain -- the same
+## defect, one step less obvious, and it is in four other files in this suite.
+##
+## FOLLOW-UP, named so it is not left as a permanent oddity: nav's sealed teardown (`c3df6d4a`, on main as `14c14f0b`) seals this -- the runner awaits a
+## `_teardown()` that owns the free, the guards and the drain, and `teardown()` becomes a synchronous hook that
+## must NEVER call its super. When that is on main, the `await super.teardown()` line below is deleted and this
+## override goes back to restoring `_was_fitting` and nothing else. The same deletion is owed in control's four
+## files and squad's one.
 func teardown() -> void:
-	Tank.yaw_fit_enabled = false
+	Units.tuning.erase("yaw_fit")
+	await super.teardown()
 
 
 func _world() -> Match:
