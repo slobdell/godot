@@ -2932,6 +2932,11 @@ The kickoff prompt is one line; this section is the rest.
     and wrong about what it was looking at**, and the numbers agreeing beside the wrong label is what makes a
     reader trust the label. Corollary: the tests could not have caught it, because their fixture used a
     lightweight tag, built before the thing it models existed; a fixture is rebuilt when the modelled thing changes.
+    **And after a signature conflict, read the call sites, not the conflict** (metrics, 22:10): two streams added a
+    third parameter to one function; git merged the callers cleanly because they were never marked, and six tests
+    passed their allowlist as what was now the other stream's `expected_err`, exercising the wrong parameter while
+    still passing some assertions. The same shape as the tag object standing in for its commit: the code was
+    correct about what it looked at and wrong about what it was looking at.
 193. **An API whose correct use cannot be told from its incorrect use at the call site is a signature problem, not a
     convention problem.** Round 9 (nav): `TestCase.teardown()` ended in `await drain_navigation()`, so a subclass
     override declared `func teardown() -> void` that called `super.teardown()` un-awaited was not a coroutine, the
