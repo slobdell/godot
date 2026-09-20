@@ -512,6 +512,48 @@ refuses, the rule is touching hulls it has no business touching — which is the
 most likely one. A count assertion would have passed a rule that refused everything, provided it refused exactly
 the expected number of times.
 
+### PRE-REGISTERED, before any arm: a HELD WHEELED hull turning to its ordered facing (round 10)
+
+squad's hold-on-arrival landed and every crew now holds `hold facing=<drawn>`. The hulls end at:
+
+    tank 1.4°   tank 16.2°   ifv 41.4°   ifv 28.5°
+
+**Tracked crews neutral-steer onto the facing; wheeled ones cannot while parked** and keep their last approach
+heading. **And they got WORSE in the final slot correction — 15°, 12° → 16.2°, 41.4°** — which is the detail that
+shapes the design: the last thing that moves a held hull is a small slot nudge, and it leaves the nose wherever the
+nudge ended.
+
+**THE TENSION, stated before anything is built, because it decides the shape.** The obvious fix is to let a parked
+wheeled hull creep round to its facing. **That is precisely the lead's oldest complaint** — *"the semi trucks are
+yawing in place (should be impossible, they're not a tracker vehicle)"* — and this round traced that complaint to
+the creep's legs plus uncollided rotation. **A fix that makes more hulls creep in place is the complaint, not the
+answer.** So the candidate is a **bounded, visible manoeuvre** — a short three-point turn that reads as a deliberate
+correction — rather than the arrival arc's machinery applied at rest, which would have a held hull drive a small
+loop out of its slot.
+
+**Falsifier, per the orchestrator, written before the arms:**
+
+> **All four crews within 10° of their ordered facing within 5 s of the hold, on the default arena.**
+
+**5 s is a first bar and named as one:** long enough for a bounded manoeuvre at creep speed, short enough that the
+correction reads as obedience rather than dithering. It is not derived and the lead refines it — *"for anything
+subjective, a human is the only check that counts."*
+
+**Two guards, and the second is the one this round says will bite.**
+
+1. **The hold must survive the turn.** A held hull that manoeuvres must not leave its slot: squad's leash is a
+   level-0 feasibility bound on every candidate *including dodges*, and a facing correction is not exempt. Slot
+   drift during the turn is the bar.
+2. **It must not become the creep.** `OrderController.face_giveups` — now LIVE, since combat's plant constraint
+   makes a stalled face a state that occurs — must stay at **zero** for hulls performing this manoeuvre. **A
+   correction that trips the stall detector is the yawing-in-place behaviour wearing a fix's name**, and nav has the
+   instrument for it already because the face row was built and reported inert.
+
+**And the cost bar, because this round's two failures were both costs rather than mechanisms.** A4 bought its gate
+and spent the fight; the clearance row bought clearance and spent 35 % of `progressing`. **So: the manoeuvre must
+not reduce time-on-station or shots fired for a held crew.** If a held unit spends its hold turning, the hold is
+worth less than the facing.
+
 ### ⚠⚠⚠ CLEARANCE A/B: **FAILS ITS GUARDS.** Default stays off — and the AGGREGATE would have called it a pass
 
 yard, seed 3, 120 s, `af0bcefc` tree, both arms on one rsynced tree. **Arm proof first, as pre-registered:**
