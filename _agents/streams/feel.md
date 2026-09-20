@@ -182,6 +182,29 @@ cannot spare). Pre-register the sim hash unchanged; if it moves, it is the same 
 ## Status
 ### THE REPORT — read this first; everything below it is the working record
 
+**FRAMES FOR THE LEAD, all on this laptop:**
+
+| what | path | pose |
+|---|---|---|
+| **The roster at real relative scale** | `build/roster-lineup/lineup_pose.png` | **his** (21°, FOV 35, 49 m) |
+| the same, four faction rows | `build/roster-lineup/lineup_factions.png` | — |
+| **The War Rig bending** | `build/rig-hinge/strip_45.png` (reads best), `strip_21.png` (his pose), `strip_reverse_60.png` (jackknife) | 45° / **his** / 60° |
+| **The Syndicate airship** | `build/airship-look/airship_widest.png` | 8° tilt — **he cannot see it at 21°**, see §2 |
+
+**My look at the resize (the one subjective check I owe on CP2): it works.** `lineup_pose.png` runs Rat Rod **2.9 m**
+→ War Rig **14.0 m** and the rig **dominates** — visibly five times the rat rod and clearly larger than the
+Condemned Tank at 8.6 m. That is the thing he asked for. Two observations, neither a defect:
+
+- **The Syndicate reads as a different game, and that is the art direction working.** The Railgun Platform is
+  pristine white against everyone else's rust and soot — `art_direction.md` calls the Syndicate the ivory tower
+  with almost no rust, so this is intended; at roster scale it is simply very legible.
+- **The Syndicate is fewer AND smaller** (Skimmer 4.0, Spotter 4.0, Limousine Gunship 4.6, Missile Ring 4.9,
+  Railgun Platform 5.4 — the whole faction sits under 5.5 m while three other factions field 8 m+). Their doctrine
+  is "fields almost nothing but guns and the eyes to aim them", which argues for fewer-but-bigger. **A look
+  question for the lead, not a defect** — the numbers are derived from real reference vehicles, so if it reads
+  wrong the reference is what changes.
+
+
 **Round 9, feel. Green at `5ae7e531`** (builder0: `>> remote: make check exited 0`, `check passed: 16 targets`,
 **1,316 passed / 0 failed**, `sim-baseline passed: 04414f5d6a6dfa7c` — unchanged —, `lint: all 543 scripts parse,
 8 known artefacts baselined`). Merged to main. *(Squad's later merge moved the baseline to `d4c049819a5833d3`;
