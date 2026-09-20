@@ -14,6 +14,9 @@ Usage:
 """
 import argparse, heapq, json, math, os, pathlib, sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import units_catalog
+
 ## The half-extent `centre_sees_share` is ALWAYS measured over, whatever size the layout declares.
 ##
 ## The target (<0.30) carries the lead's own verdict — he cut the four most open maps and kept two of the three
@@ -130,18 +133,13 @@ SHIPPED_MEAN_VIEW_LOW = 54.3
 ## The longest hull in the game, READ from combat's catalog rather than copied into this file. A copy would be a
 ## third table to keep in step, and the rig's length is actively being argued about (12 m vs 14 m), so a mirrored
 ## number here would be stale within the week. Same reason `KIT` now has a test against `ArenaKit.PROPS`.
+##
+## Round 9 (scale): the three-line regex that used to live here became `tools/units_catalog.py`, so this tool and
+## `tools/roster_scale.py` share ONE parser instead of one each -- and that parser RAISES instead of returning an
+## empty table when the catalog moves (Invariant 0: a reader must not fall back).
 def hull_lengths():
     """{unit name: hull length in metres} from game/units/units.gd's `hull_size [w, h, l]`."""
-    import re
-    source = (pathlib.Path(__file__).resolve().parent.parent / "game" / "units" / "units.gd").read_text()
-    out = {}
-    for name, body in re.findall(r'"(\w+)":\s*\{(.*?)\n\t\}', source, re.S):
-        size = re.search(r'"hull_size":\s*\[([^\]]*)\]', body)
-        if size:
-            parts = [float(v) for v in size.group(1).split(",")]
-            if len(parts) == 3:
-                out[name] = parts[2]
-    return out
+    return units_catalog.hull_lengths()
 
 
 ## Can a hull of `length` hide behind anything here, and how much of the field can it do that from?

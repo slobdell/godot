@@ -11,7 +11,12 @@ extends RefCounted
 ##
 ## Keys (all required unless marked optional):
 ##   display_name, role (ROLES), blurb (one line for the army UI), cost (points), unlock_tier (0 = starter)
-##   hull_size [w, h, l] meters (the collision box), max_health, max_shield, shield_recharge_delay (s),
+##   hull_size [w, h, l] meters (the collision box; S1: derived, see scale_reference and SCALE_K below),
+##   S1 (round 9) optional scale_reference {vehicle: String, length_m: float, source: String} -- the real-world
+##     vehicle this unit is drawn as, its cited length, and where that length comes from. hull_size[2] is
+##     length_m x SCALE_K and hull_size[0]/[1] are the approved mesh's proportions at that length
+##     (SizeLook.box_at_length). `make roster-scale` prints the whole table; tests/test_units_scale.gd asserts it.
+##   max_health, max_shield, shield_recharge_delay (s),
 ##   shield_recharge_rate (/s), max_forward_speed, max_reverse_speed (m/s), hull_turn_rate_deg (/s),
 ##   sight_radius (m), weapon (a Weapons.PROFILES id), mount ("turret" or "fixed"),
 ##   turret_turn_rate_deg (/s: how fast a turret, or a fixed mount's small gimbal, swings),
@@ -58,6 +63,50 @@ const LOCOMOTIONS := ["tracks", "wheels", "hover", "articulated"]
 ## (orientation trip-up 15: shells once flew over every tank).
 const MUZZLE_CLEARANCE := 0.1
 
+## S1 (round 9, scale): REAL-WORLD RELATIVE SIZING, the lead's second feedback item -- *"We resized the semi trucks
+## for the gang and this makes the game much cooler and awesome. We need to do proportional, real-world relative
+## sizing for all of our vehicles. As an example, the bus-tanks and garbage trucks for the condemned definitely need
+## resizing, so by extension I'm sure so do the rest."*
+##
+## ONE factor for the whole world, anchored by the War Rig at the length he RULED (*"yes the war rig stays at 14m"*).
+## Its `scale_reference` is a standard US fuel-tanker semi at 19.8 m, so the arena draws vehicles at ~0.707 of real
+## size, and **every other hull's length is its own reference vehicle's real length times SCALE_K**. Nothing is sized
+## by opinion; the only judgment per unit is WHICH real vehicle it is, and that judgment is written down in the
+## profile where anyone can argue with it (`make roster-scale` prints the whole table).
+##
+## SCALE_K IS DERIVED, NEVER TYPED. A literal here would be a mirror of the rig's reference that drifts from it in
+## silence (Invariant 0), and this is the one number that may still move: if the lead prefers real metres,
+## RIG_LENGTH_M becomes 19.8 and all 21 hulls re-derive from the same table. It is `NAN` -- loudly, not quietly --
+## if the rig ever loses its reference, so every derived length fails rather than defaulting to something plausible.
+const RIG_UNIT := "gang_tank"
+const RIG_LENGTH_M := 14.0
+static var SCALE_K: float = _derive_scale_k()
+
+
+## `rig` is a parameter only so the derivation can be mutation-checked from a test: PROFILES is a const, hence
+## read-only, so there is no other way to move the reference and watch K move with it (Invariant 0 asks for the
+## reader to be checked in BOTH directions, and a derivation nobody can perturb is one nobody has checked).
+static func _derive_scale_k(rig: Dictionary = PROFILES[RIG_UNIT]) -> float:
+	if not rig.has("scale_reference") or not (rig["scale_reference"] as Dictionary).has("length_m"):
+		push_error("Units.SCALE_K: %s has no scale_reference.length_m, so no hull length in the game can be " % RIG_UNIT
+				+ "derived. Restore it; do not type SCALE_K in by hand (contract S1).")
+		return NAN
+	var reference := float(rig["scale_reference"]["length_m"])
+	if reference <= 0.0:
+		push_error("Units.SCALE_K: %s's reference length is %s" % [RIG_UNIT, reference])
+		return NAN
+	return RIG_LENGTH_M / reference
+
+
+## S1: the length this unit's hull_size[2] is derived from -- its reference vehicle's real length times SCALE_K.
+## Units without a `scale_reference` (there are none today; the key is optional so a new unit can land before its
+## reference is chosen) keep whatever length the catalog gives them.
+static func target_length_m(unit_id: String) -> float:
+	var profile: Dictionary = PROFILES[unit_id]
+	if not profile.has("scale_reference"):
+		return float(profile["hull_size"][2])
+	return snappedf(float(profile["scale_reference"]["length_m"]) * SCALE_K, 0.01)
+
 ## Points a player spends on an army per match. A standard tank is 200.
 const DEFAULT_BUDGET := 1000
 ## L3/X5 (round 4): the budget a full-scale battle is fought at. The lead asked for "a baseline of 30 units per
@@ -76,7 +125,11 @@ const PROFILES := {
 		"blurb": "Fast rally truck with a hood-mounted machine gun. Sees far; hunts artillery and Lancers.",
 		"cost": 110,
 		"unlock_tier": 0,
-		"hull_size": [2.0, 1.4, 3.0],
+		"hull_size": [1.81, 1.50, 3.04],
+		# S1 (round 9): Drawn as a caged desert buggy with a ram spear, not a pickup: the blurb's rally truck is a buggy
+		# in the art.
+		"scale_reference": {"vehicle": "Dakar-class rally-raid buggy (Prodrive Hunter T1+)",
+				"length_m": 4.30, "source": "Prodrive Hunter published dimensions"},
 		"max_health": 140,
 		"max_shield": 80,
 		"shield_recharge_delay": 3.0,
@@ -114,7 +167,11 @@ const PROFILES := {
 		"blurb": "The armored prison-bus dozer. Heavy cannon on a slow turret; thick front armor.",
 		"cost": 200,
 		"unlock_tier": 0,
-		"hull_size": [2.4, 2.4, 3.6],
+		"hull_size": [2.40, 2.40, 8.62],
+		# S1 (round 9): The lead's own example: "the bus-tanks ... definitely need resizing". A prison bus is a school bus
+		# with the windows welded over.
+		"scale_reference": {"vehicle": "Type D school bus, 40 ft (Blue Bird All American)",
+				"length_m": 12.19, "source": "40 ft = 12.19 m, the standard full-size US school bus"},
 		"max_health": 300,
 		"max_shield": 150,
 		"shield_recharge_delay": 4.0,
@@ -136,7 +193,7 @@ const PROFILES := {
 		"mount": "turret",
 		# R2: 110 -> 50 (the lead's "slow turret"): a scout crossing at 15 m sweeps ~53°/s, faster than it turns.
 		"turret_turn_rate_deg": 50.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"armor": {"front": 8.0, "side": 4.0, "rear": 2.0},
 		"good_vs": ["ifv", "tank"],
 		"weak_vs": ["scout"],
@@ -149,7 +206,11 @@ const PROFILES := {
 		"blurb": "Armored troop bus with a 30 mm autocannon on a fast turret. Shreds scouts; can't crack tank fronts.",
 		"cost": 150,
 		"unlock_tier": 0,
-		"hull_size": [2.4, 3.0, 3.8],
+		"hull_size": [2.86, 3.70, 7.54],
+		# S1 (round 9): The armored troop bus. A 35 ft body also matches what is drawn (a 6x4 boxed truck), so the choice
+		# does not turn on which reading wins.
+		"scale_reference": {"vehicle": "Type C school/prisoner-transport bus, 35 ft (Blue Bird Vision)",
+				"length_m": 10.67, "source": "35 ft = 10.67 m"},
 		"max_health": 220,
 		"max_shield": 100,
 		"shield_recharge_delay": 3.5,
@@ -167,7 +228,7 @@ const PROFILES := {
 		"weapon": "autocannon",
 		"mount": "turret",
 		"turret_turn_rate_deg": 180.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		# X6 (round 3): front 5 -> 7, so a laser needs longer to cut through an IFV rush (IFV > Lancer 0% -> 75%);
 		# flanks unchanged.
 		"armor": {"front": 7.0, "side": 3.0, "rear": 2.0},
@@ -182,7 +243,10 @@ const PROFILES := {
 		"blurb": "Crane carrier with a mortar battery. Shells what teammates spot; helpless up close.",
 		"cost": 220,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 2.8, 4.0],
+		"hull_size": [4.74, 2.82, 8.20],
+		# S1 (round 9): The crane carrier the mortar rack is bolted to; the art is a four-axle flatbed.
+		"scale_reference": {"vehicle": "Four-axle all-terrain crane carrier (Liebherr LTM 1070-4.2)",
+				"length_m": 11.60, "source": "Liebherr LTM 1070-4.2 datasheet, overall length"},
 		"max_health": 200,
 		"max_shield": 80,
 		"shield_recharge_delay": 4.0,
@@ -204,7 +268,7 @@ const PROFILES := {
 		"weapon": "mortar",
 		"mount": "turret",
 		"turret_turn_rate_deg": 70.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"good_vs": ["tank", "artillery"],
 		"weak_vs": ["scout"],
@@ -217,7 +281,10 @@ const PROFILES := {
 		"blurb": "Converted power-utility truck with a long laser. Strips shields at range; overheats.",
 		"cost": 200,
 		"unlock_tier": 1,
-		"hull_size": [2.4, 2.2, 3.8],
+		"hull_size": [2.76, 3.85, 6.46],
+		# S1 (round 9): The converted power-utility truck.
+		"scale_reference": {"vehicle": "Utility line truck, 30 ft (International 4300 with an Altec boom)",
+				"length_m": 9.14, "source": "30 ft = 9.14 m, a standard two-axle line-crew body"},
 		"max_health": 200,
 		"max_shield": 120,
 		"shield_recharge_delay": 4.0,
@@ -237,7 +304,7 @@ const PROFILES := {
 		"weapon": "laser",
 		"mount": "turret",
 		"turret_turn_rate_deg": 55.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		# X6 (round 3): 4/3/2 -> 3/2/1.5, a utility truck: IFV bursts must hurt it (IFV > Lancer).
 		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"heat_capacity": 100.0,
@@ -258,7 +325,10 @@ const PROFILES := {
 		# 100% of every matchup; at these values it beats IFVs 67% and artillery 83%, loses to tanks and Lancers.
 		"cost": 220,
 		"unlock_tier": 2,
-		"hull_size": [2.4, 2.4, 3.8],
+		"hull_size": [2.40, 2.40, 6.89],
+		# S1 (round 9): The plow-nosed fire truck.
+		"scale_reference": {"vehicle": "Pumper fire engine, 32 ft (Pierce Enforcer)",
+				"length_m": 9.75, "source": "32 ft = 9.75 m, a standard single-axle pumper"},
 		"max_health": 220,
 		"max_shield": 100,
 		"shield_recharge_delay": 3.5,
@@ -276,7 +346,7 @@ const PROFILES := {
 		"weapon": "flamethrower",
 		"mount": "turret",
 		"turret_turn_rate_deg": 120.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		# X6 (round 3): plow front 4 -> 6, so it survives the 25 mm while closing on IFVs (Burner > IFV).
 		"armor": {"front": 6.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["ifv", "artillery"],
@@ -290,8 +360,13 @@ const PROFILES := {
 	# fewest."* Nothing here is a faction-wide bonus: a faction is a set of COSTS and STATS, and the army size falls
 	# out of them (Units.roster_average_cost at BASELINE_BUDGET: gangs ~39 vehicles, Condemned 28, Law ~24,
 	# Syndicate ~15). Counters live between units, never between factions (game_design.md *Factions*).
-	# Art: game/theme/factions/<faction>/ (K4). Hull heights stay at or above 1.4 m because MUZZLE_CLEARANCE is
-	# measured against the SHORTEST hull in the whole catalog.
+	# Art: game/theme/factions/<faction>/ (K4).
+	#
+	# S1 (round 9): heights are no longer held at or above 1.4 m by hand -- every box is now the approved mesh's own
+	# proportions at the unit's derived length (SizeLook.box_at_length), so the SHORTEST hull in the catalog is
+	# whatever the art says it is. It is the Rat Rod at 1.24 m, down from 1.40, which lowers the roster-wide muzzle
+	# ceiling (MUZZLE_CLEARANCE below the shortest hull's top) from 1.30 m to 1.14 m: every muzzle above 1.14 came
+	# down to it, and `test_every_muzzle_clears_under_every_hull_top` is what keeps that true.
 	# ================================================================================================================
 
 	# ---- Road gangs: cheapest, fastest, most numerous. No shields anywhere (game_design.md): scrap and speed. -------
@@ -302,7 +377,10 @@ const PROFILES := {
 		"blurb": "Stripped hot rod with an explosive spear launcher. The fastest thing in the arena, and made of nothing.",
 		"cost": 70,
 		"unlock_tier": 0,
-		"hull_size": [1.8, 1.4, 2.8],
+		"hull_size": [1.52, 1.24, 2.93],
+		# S1 (round 9): The stripped hot rod, chopped and blown.
+		"scale_reference": {"vehicle": "1932 Ford Model B hot rod",
+				"length_m": 4.14, "source": "1932 Ford Model B, 163 in = 4.14 m"},
 		"max_health": 100,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -336,7 +414,10 @@ const PROFILES := {
 		"blurb": "1950s pickup with twin salvaged machine guns. Buries a position in fire; folds if anything answers.",
 		"cost": 110,
 		"unlock_tier": 0,
-		"hull_size": [2.2, 2.2, 3.6],
+		"hull_size": [1.59, 2.10, 3.44],
+		# S1 (round 9): The 1950s pickup gun truck, named in game_design.md *Factions*.
+		"scale_reference": {"vehicle": "1955 Chevrolet 3100 half-ton pickup",
+				"length_m": 4.87, "source": "Chevrolet Task Force 3100, 191.7 in = 4.87 m"},
 		"max_health": 170,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -353,7 +434,7 @@ const PROFILES := {
 		"weapon": "twin_mg",
 		"mount": "turret",
 		"turret_turn_rate_deg": 190.0,
-		"muzzle_height": 1.2,
+		"muzzle_height": 1.14,
 		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"good_vs": ["scout"],
 		"weak_vs": ["tank"],
@@ -375,7 +456,11 @@ const PROFILES := {
 		# approved model is never distorted, so a 4.4 m box drew a 2.09 m truck. At the lead's camera the rig
 		# rendered 114 px tall against a Condemned tank's 95 -- the "huge" semi was barely taller on screen than a
 		# regular tank. Length is what makes a semi, and length was the axis the spawn grid appeared to cap.
-		"hull_size": [3.32, 5.24, 14.0],
+		"hull_size": [3.32, 5.24, 14.00],
+		# S1 (round 9): THE ANCHOR. The lead ruled this hull at 14.0 m, so SCALE_K = 14.0 / 19.8 and the whole world
+		# follows from it.
+		"scale_reference": {"vehicle": "Tractor unit with a 42 ft DOT-406 petroleum tanker semi-trailer",
+				"length_m": 19.80, "source": "65 ft = 19.8 m, the standard US legal tractor-tanker configuration"},
 		"max_health": 420,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -393,7 +478,7 @@ const PROFILES := {
 		"weapon": "scrap_cannon",
 		"mount": "turret",
 		"turret_turn_rate_deg": 60.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"armor": {"front": 7.0, "side": 4.0, "rear": 2.0},
 		"good_vs": ["ifv", "tank"],
 		"weak_vs": ["scout"],
@@ -405,7 +490,10 @@ const PROFILES := {
 		"blurb": "Tow truck slinging flaming barrels. Half a mortar's reach, twice its splash, and it lands anywhere.",
 		"cost": 170,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 3.2, 4.2],
+		"hull_size": [2.91, 3.36, 6.89],
+		# S1 (round 9): The tow-wrecker catapult.
+		"scale_reference": {"vehicle": "Heavy-duty tow wrecker on a 6x4 chassis (Century 5030 boom)",
+				"length_m": 9.75, "source": "32 ft = 9.75 m over the boom stowed"},
 		"max_health": 190,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -424,7 +512,7 @@ const PROFILES := {
 		"weapon": "catapult",
 		"mount": "turret",
 		"turret_turn_rate_deg": 70.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"good_vs": ["tank", "artillery"],
 		"weak_vs": ["scout"],
@@ -439,7 +527,11 @@ const PROFILES := {
 		"unlock_tier": 1,
 		# Round 8: a rigid tanker truck with a semi cab, not an articulated rig -- feel's measurement, filling the
 		# 3.6 m height it already had. Same rule: the box is the mesh's proportions at the chosen length.
-		"hull_size": [3.39, 3.59, 7.0],
+		"hull_size": [3.18, 3.37, 6.58],
+		# S1 (round 9): Round 8 settled this as a RIGID tanker with a semi cab and set it at 7.0 m by eye; the rule puts
+		# it at 6.58 m.
+		"scale_reference": {"vehicle": "Rigid fuel bowser, 3,000 gal (Freightliner M2 106 tank truck)",
+				"length_m": 9.30, "source": "~30.5 ft = 9.3 m for a two-axle rigid tanker body"},
 		"max_health": 260,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -456,7 +548,7 @@ const PROFILES := {
 		"weapon": "fuel_spray",
 		"mount": "turret",
 		"turret_turn_rate_deg": 100.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"armor": {"front": 4.0, "side": 3.0, "rear": 2.0},
 		# L3: field repair. A faction with no shields at all has to get its hit points back some other way, and this
 		# is it: hulls near a living tanker mend at this rate wherever they are, on the same terms as a home base
@@ -475,7 +567,10 @@ const PROFILES := {
 		"blurb": "Up-armored patrol car under a giant light bar. Sees farther than anything else in the arena.",
 		"cost": 140,
 		"unlock_tier": 0,
-		"hull_size": [2.1, 1.5, 3.4],
+		"hull_size": [1.79, 1.33, 3.80],
+		# S1 (round 9): The up-armored pursuit sedan.
+		"scale_reference": {"vehicle": "Ford Crown Victoria Police Interceptor",
+				"length_m": 5.38, "source": "Crown Victoria P71, 212.0 in = 5.38 m"},
 		"max_health": 180,
 		"max_shield": 90.0,
 		"shield_recharge_delay": 3.0,
@@ -506,7 +601,10 @@ const PROFILES := {
 		"blurb": "A 6x6 MRAP that outlived its war, with a remote 25 mm. Slow, and very hard to open.",
 		"cost": 195,
 		"unlock_tier": 0,
-		"hull_size": [2.6, 2.6, 4.2],
+		"hull_size": [2.75, 3.29, 5.01],
+		# S1 (round 9): Named in game_design.md *The Law roster sketch*.
+		"scale_reference": {"vehicle": "Force Protection Cougar 6x6 MRAP",
+				"length_m": 7.08, "source": "Cougar 6x6 published length 7.08 m"},
 		"max_health": 280,
 		"max_shield": 120.0,
 		"shield_recharge_delay": 3.5,
@@ -523,7 +621,7 @@ const PROFILES := {
 		"weapon": "autocannon",
 		"mount": "turret",
 		"turret_turn_rate_deg": 175.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		# Mine-resistant: the toughest front in the game after the war rig, on a unit that cannot chase anything.
 		# Rear 2.0 like every other hull: "everything hurts from behind" is a rule of the game, not a unit's choice
 		# (test_combat_mechanics), and an MRAP you cannot flank would break it.
@@ -538,7 +636,12 @@ const PROFILES := {
 		"blurb": "An 8x8 with a real gun: reaches farther and works faster than a dozer, and cannot trade with one.",
 		"cost": 260,
 		"unlock_tier": 0,
-		"hull_size": [2.6, 2.6, 4.6],
+		"hull_size": [2.55, 2.88, 5.55],
+		# S1 (round 9): The 8x8 wheeled assault gun with a real gun. game_design.md says Stryker-style; the Stryker MGS is
+		# 6.95 m, which would make the Law's tank SHORTER than its own 6x6 MRAP. Centauro is the 8x8 assault gun the blurb
+		# describes and keeps the role order legible.
+		"scale_reference": {"vehicle": "Centauro B1 8x8 assault gun (hull, gun excluded)",
+				"length_m": 7.85, "source": "Centauro B1 hull length 7.85 m"},
 		"max_health": 330,
 		"max_shield": 140.0,
 		"shield_recharge_delay": 4.0,
@@ -555,7 +658,7 @@ const PROFILES := {
 		"weapon": "assault_gun",
 		"mount": "turret",
 		"turret_turn_rate_deg": 70.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"armor": {"front": 7.0, "side": 4.0, "rear": 2.0},
 		"good_vs": ["ifv", "tank"],
 		"weak_vs": ["scout"],
@@ -567,7 +670,10 @@ const PROFILES := {
 		"blurb": "Tear gas and smoke by the salvo. It does not kill a position, it shuts it down.",
 		"cost": 250,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 3.2, 4.4],
+		"hull_size": [2.09, 2.64, 4.95],
+		# S1 (round 9): The truck rocket launcher; the art is a three-axle truck with a launcher box.
+		"scale_reference": {"vehicle": "M142 HIMARS on an FMTV 6x6 chassis",
+				"length_m": 7.00, "source": "HIMARS published length 7.0 m"},
 		"max_health": 220,
 		"max_shield": 90.0,
 		"shield_recharge_delay": 4.0,
@@ -586,7 +692,7 @@ const PROFILES := {
 		"weapon": "gas_rockets",
 		"mount": "turret",
 		"turret_turn_rate_deg": 70.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"good_vs": ["tank", "artillery"],
 		"weak_vs": ["scout"],
@@ -599,7 +705,10 @@ const PROFILES := {
 		"blurb": "Riot truck with a wall of sound. Barely scratches paint; nothing in front of it can aim.",
 		"cost": 230,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 3.0, 4.4],
+		"hull_size": [3.32, 6.18, 6.86],
+		# S1 (round 9): The riot truck. The sonic horns replace the cannon; the vehicle underneath is the same class.
+		"scale_reference": {"vehicle": "Riot-control water cannon (Wasserwerfer 10000, MAN 6x6)",
+				"length_m": 9.70, "source": "WaWe 10000 published length 9.7 m"},
 		"max_health": 260,
 		"max_shield": 120.0,
 		"shield_recharge_delay": 3.5,
@@ -616,7 +725,7 @@ const PROFILES := {
 		"weapon": "sonic_emitter",
 		"mount": "turret",
 		"turret_turn_rate_deg": 110.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"armor": {"front": 6.0, "side": 3.0, "rear": 2.0},
 		"good_vs": [],
 		"weak_vs": ["artillery"],
@@ -630,7 +739,12 @@ const PROFILES := {
 		"blurb": "An unmanned teardrop that never touches the ground. Sees everything and drifts out of trouble.",
 		"cost": 210,
 		"unlock_tier": 0,
-		"hull_size": [2.0, 1.4, 3.2],
+		"hull_size": [2.18, 1.64, 4.04],
+		# S1 (round 9): game_design.md names the Syndicate's hulls by SHAPE (teardrop, supercar, limousine), not by a
+		# vehicle they were converted from: they are purpose-built hover platforms. So the whole faction is referenced to
+		# the real vehicle that fills the SAME ROLE, consistently, and the table says so.
+		"scale_reference": {"vehicle": "BY ROLE (hover, no road ancestry): wheeled recon vehicle, Fennek LGS",
+				"length_m": 5.71, "source": "Fennek published length 5.71 m"},
 		"max_health": 150,
 		# Energy instead of armor: the biggest shield per point in the game on the thinnest hull.
 		"max_shield": 160.0,
@@ -650,7 +764,7 @@ const PROFILES := {
 		"weapon": "pulse_repeater",
 		"mount": "turret",
 		"turret_turn_rate_deg": 200.0,
-		"muzzle_height": 1.2,
+		"muzzle_height": 1.14,
 		# A shell, not a tank: no strong face to find.
 		"armor": {"front": 2.0, "side": 2.0, "rear": 2.0},
 		"good_vs": ["artillery"],
@@ -663,7 +777,10 @@ const PROFILES := {
 		"blurb": "Black glass and a pulse cannon. Corporate hospitality at 13 m/s.",
 		"cost": 300,
 		"unlock_tier": 0,
-		"hull_size": [2.4, 1.9, 4.6],
+		"hull_size": [1.82, 1.34, 4.63],
+		# S1 (round 9): The limousine gunship: a long low body, and an IFV is what it does.
+		"scale_reference": {"vehicle": "BY ROLE (hover, no road ancestry): infantry fighting vehicle, CV90 hull",
+				"length_m": 6.55, "source": "CV9035 hull length 6.55 m"},
 		"max_health": 240,
 		"max_shield": 200.0,
 		"shield_recharge_delay": 3.0,
@@ -680,7 +797,7 @@ const PROFILES := {
 		"weapon": "pulse_cannon",
 		"mount": "turret",
 		"turret_turn_rate_deg": 180.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"heat_capacity": 100.0,
 		"heat_dissipation": 14.0,
 		"armor": {"front": 5.0, "side": 4.0, "rear": 2.0},
@@ -694,7 +811,10 @@ const PROFILES := {
 		"blurb": "A supercar the size of a tank with a charge-up railgun. Two shots, then it has to cool down.",
 		"cost": 470,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 2.8, 5.0],
+		"hull_size": [3.55, 1.85, 5.44],
+		# S1 (round 9): The blurb already sets the size: "a supercar the size of a tank".
+		"scale_reference": {"vehicle": "BY ROLE (hover, no road ancestry): main battle tank hull, Leopard 2A7, gun excluded",
+				"length_m": 7.70, "source": "Leopard 2 hull length 7.70 m"},
 		"max_health": 320,
 		"max_shield": 260.0,
 		"shield_recharge_delay": 4.0,
@@ -711,7 +831,7 @@ const PROFILES := {
 		"weapon": "railgun",
 		"mount": "turret",
 		"turret_turn_rate_deg": 55.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"heat_capacity": 100.0,
 		"heat_dissipation": 10.0,
 		# Thick everywhere a shell is likely to arrive and thin behind: a hover tank you have to get round.
@@ -726,7 +846,10 @@ const PROFILES := {
 		"blurb": "A wing of missiles that only fires at what somebody is looking at. Blind, it wastes the salvo.",
 		"cost": 380,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 3.0, 4.4],
+		"hull_size": [4.07, 2.08, 4.93],
+		# S1 (round 9): The missile-wing ring.
+		"scale_reference": {"vehicle": "BY ROLE (hover, no road ancestry): rocket artillery, M270 MLRS",
+				"length_m": 6.97, "source": "M270 published length 6.97 m"},
 		"max_health": 220,
 		"max_shield": 160.0,
 		"shield_recharge_delay": 4.0,
@@ -745,7 +868,7 @@ const PROFILES := {
 		"weapon": "guided_missiles",
 		"mount": "turret",
 		"turret_turn_rate_deg": 80.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"armor": {"front": 3.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["tank", "artillery"],
 		"weak_vs": ["scout"],
@@ -772,7 +895,10 @@ const PROFILES := {
 		"blurb": "Eyes for the syndicate: it paints a target and every gun on your side is already on it.",
 		"cost": 340,
 		"unlock_tier": 1,
-		"hull_size": [2.4, 2.2, 4.4],
+		"hull_size": [1.64, 1.46, 4.04],
+		# S1 (round 9): The spotter platform designates rather than shoots, so it takes the recon hull's length.
+		"scale_reference": {"vehicle": "BY ROLE (hover, no road ancestry): sensor/designator vehicle, Fennek with the BAA mast",
+				"length_m": 5.71, "source": "Fennek published length 5.71 m"},
 		"max_health": 220,
 		"max_shield": 200.0,
 		"shield_recharge_delay": 3.5,
@@ -789,7 +915,7 @@ const PROFILES := {
 		"weapon": "laser",
 		"mount": "turret",
 		"turret_turn_rate_deg": 60.0,
-		"muzzle_height": 1.27,
+		"muzzle_height": 1.14,
 		"heat_capacity": 100.0,
 		"heat_dissipation": 14.0,
 		"armor": {"front": 3.0, "side": 3.0, "rear": 2.0},
