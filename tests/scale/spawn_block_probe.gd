@@ -41,6 +41,46 @@ func _run() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--arena="):
 			arena_name = arg.trim_prefix("--arena=")
+	# POSITIVE CONTROL for the test-isolation hypothesis (`--pollute=<layout>`): stand up ANOTHER arena first and
+	# never free it, which is what an arena test whose deferred `queue_free` has not been processed leaves behind.
+	# If the standalone run is clean and this one reproduces the failure, the cause is a stale arena in the physics
+	# space and not the roster, the grid or anyone's tick-one motion.
+	var pollute := ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--pollute="):
+			pollute = arg.trim_prefix("--pollute=")
+	# `--pollute=X` leaves X in the tree (proves a mechanism). `--pollute-free=X` builds X and then FREES it exactly
+	# as `TestCase.teardown()` does, which is what actually happens between two tests -- so this arm is the one that
+	# decides whether the real failure is stale bodies surviving a free, or something else entirely.
+	var pollute_free := ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--pollute-free="):
+			pollute_free = arg.trim_prefix("--pollute-free=")
+	if pollute != "":
+		var stale: Node = ARENA.instantiate()
+		stale.layout_name = pollute
+		root.add_child(stale)
+		await physics_frame
+		print("SPAWN_PROBE_POLLUTED with '%s' left in the tree; world bodies now %d" % [pollute, _bodies()])
+	if pollute_free != "":
+		# `--pollute-frames=N`: how many physics frames the doomed arena lives for before it is freed. The real
+		# polluter is `test_arena_layouts::test_match_spawns_come_from_the_layout`, four lines whose first is
+		# `await ArenaFixture.build(self, "scrapyard")` -- and that fixture awaits frames until the arena's OWN
+		# navmesh has baked, up to 5 s. One frame is not the same experiment.
+		var frames := 1
+		for arg2 in OS.get_cmdline_user_args():
+			if arg2.begins_with("--pollute-frames="):
+				frames = int(arg2.trim_prefix("--pollute-frames="))
+		var doomed: Node = ARENA.instantiate()
+		doomed.layout_name = pollute_free
+		root.add_child(doomed)
+		for f in frames:
+			await physics_frame
+		var before := _bodies()
+		doomed.free()  # exactly TestCase.teardown(): immediate free, no physics frame after it
+		print("SPAWN_PROBE_FREED '%s': world bodies %d -> %d immediately after free(), no frame awaited"
+				% [pollute_free, before, _bodies()])
+
 	var arena: Node = ARENA.instantiate()
 	arena.layout_name = arena_name
 	root.add_child(arena)
@@ -53,10 +93,25 @@ func _run() -> void:
 			print("SPAWN_PROBE_ERROR load_doctrine team %d: %s" % [team, err])
 			quit(1)
 			return
+	# nav's discriminator, and it is the whole point of the run: a unit that spawns ALREADY intersecting, with no
+	# first-tick motion, is indistinguishable in the test's output from one that was nudged into geometry. So the
+	# placement coordinate is captured HERE -- `ArmyLayout.deploy()` runs synchronously inside `load_doctrine`, before
+	# any physics step -- and compared with the position the probe sees. Equal means PLACEMENT (scale's: the grid and
+	# the hull sizes). Different means TICK-ONE MOTION (squad's corridor field or combat's switching seam in
+	# tank_brain.gd, the only code left in the 7542df28..HEAD window).
+	var placed := {}
+	for tank: Tank in game_match.tanks_by_name().values():
+		placed[tank] = tank.global_position
+
 	await physics_frame
 	await physics_frame
 
 	var tanks: Array = game_match.tanks_by_name().values()
+	# half_size does NOT discriminate two layouts (foundry and scrapyard are both 120.0) -- the name and the obstacle
+	# count do. A print that cannot tell the two arms apart is not an instrument.
+	print("SPAWN_PROBE world_bodies=%d active=%s obstacles=%d half_size=%s" % [_bodies(),
+			str(Arena.active.get("name", "?")), (Arena.active.get("obstacles", []) as Array).size(),
+			str(Arena.active.get("half_size", "?"))])
 	print("SPAWN_PROBE arena=%s units=%d squads=%d slots=%d drivable=%.1f base_z=%.1f" % [arena_name, tanks.size(),
 			ceili(float(Army.MAX_ARMY_UNITS) / Doctrine.MAX_SQUAD_UNITS), Match.SPAWN_SLOTS,
 			Match.DRIVABLE_LIMIT, Match.BASE_Z])
@@ -100,7 +155,37 @@ func _run() -> void:
 				names.append("%s/%s%s" % [owner_name, node3d.name, where])
 			else:
 				names.append("%s%s" % [str(body), where])
-		print("SPAWN_PROBE_BLOCKED %s unit=%s hull %.2fx%.2f at %s :: %s" % [tank.name, tank.unit_id,
-				float(size[0]), float(size[2]), tank.global_position, ", ".join(names)])
+		var at_placement: Vector3 = placed.get(tank, tank.global_position)
+		var moved := at_placement.distance_to(tank.global_position)
+		var cause := "PLACEMENT (did not move)" if moved < 0.001 else "MOTION (moved %.3f m on tick one)" % moved
+		print("SPAWN_PROBE_BLOCKED %s unit=%s hull %.2fx%.2f placed %s -> now %s :: %s :: %s" % [tank.name,
+				tank.unit_id, float(size[0]), float(size[2]), at_placement, tank.global_position, cause,
+				", ".join(names)])
+	# The same discriminator over the WHOLE army, so "nothing moved on tick one" is a measured statement about all 90
+	# units rather than an observation about the three that happened to fail.
+	var movers := 0
+	var worst := 0.0
+	var worst_name := ""
+	for tank: Tank in tanks:
+		var d: float = (placed.get(tank, tank.global_position) as Vector3).distance_to(tank.global_position)
+		if d >= 0.001:
+			movers += 1
+		if d > worst:
+			worst = d
+			worst_name = String(tank.name)
+	print("SPAWN_PROBE_MOTION %d of %d units moved on tick one; worst %.3f m (%s)" % [movers, tanks.size(), worst,
+			worst_name if worst_name != "" else "none"])
 	print("SPAWN_PROBE_DONE blocked=%d of %d" % [blocked, tanks.size()])
 	quit(0)
+
+
+## Every static body in the tree: the count that distinguishes "one arena" from "one arena plus a stale one".
+func _bodies() -> int:
+	return _count(root)
+
+
+func _count(node: Node) -> int:
+	var n := 1 if node is StaticBody3D else 0
+	for child in node.get_children():
+		n += _count(child)
+	return n
