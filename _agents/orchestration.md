@@ -2565,3 +2565,12 @@ The kickoff prompt is one line; this section is the rest.
     reader of this file reads the first line of a lesson as its current truth. Also learned on the way: `make
     sim-baseline` does not skip on the laptop by nature — only because `sim_state_hash.txt` has no `glibc-2.39` line;
     add one and the laptop self-checks (it produced `5dbb0689ddffc1c0`), though builder0's line stays canonical.
+166. **A headroom pre-check needs the same run length as the experiment — a short control arm is itself an instrument
+    at the end of its range.** Round 9, nav: at 45 s boneyard showed **zero** off-mesh arrival gates; at the
+    pre-registered 120 s it showed **408**. Refusing the map on the short run would have published "boneyard has no
+    off-mesh gates", which is false. The same check then scoped a claim honestly: A4's "43% of off-mesh gates need a
+    curve" was yard alone; across four maps it is ~20% and 0% on three, so the A/B runs on the cluttered maps only and
+    says so. And control's version the same hour: `BlockCutaway` cut **nothing in a real match** while its pure
+    falsifier read 518 → 0 — `obstacles_root` was wired before the arena had built its bodies, so `_process` returned
+    early forever; only a node-level test in the real tree, and looking at the frames, closed the distance between
+    "the algorithm is right" and "the feature works" (lesson 23's shape, one layer down).
