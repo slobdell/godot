@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-20 08:52. **Round 9's overnight run: sixteen branches and all three checkpoints merged. `main` is RED on ONE test at `b008a277` (three resized hulls are pushed 1.475 m under the floor by `move_and_slide`'s depenetration in frame 1 and climb back out by frame 3; the test read frame 1; squad makes it assert placement and sample after settling); the last fully green `main` is `0808834e`. Read the morning summary first.**_
+_Last updated: 2026-09-20 08:52. **Round 9's overnight run: sixteen branches and all three checkpoints merged. `main` is RED on ONE test at `b008a277` (three resized hulls are pushed 1.475 m under the floor by `move_and_slide`'s depenetration in frame 1 and climb back out by frame 3; the test read frame 1; squad makes it assert placement and sample after settling). 11:15: `main` is ALSO red on `test_theme_city_block::test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll` (verified on main at f40ebb24, laptop, filtered: 4 passed, 1 failed; feel's 637ad4de, feel is on it) and on the two artillery handover reds (`test_theme_unit_scale` box-fill, `test_units_scale` mesh proportions) until scale's box lands; the last fully green `main` is `0808834e`. Read the morning summary first.**_
 
 ## ☀ THE MORNING AFTER ROUND 9's NIGHT — read this first (2026-09-20, written 07:00, updated at each tick)
 
