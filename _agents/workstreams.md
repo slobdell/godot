@@ -179,6 +179,40 @@ it asks first.**
 
 ## Invariants every stream must keep
 
+0. **A value with a single owner is READ, not mirrored. Where it must be mirrored, the mirror FAILS LOUDLY — or it is
+   not a mirror, it is a second source of truth.** (arena + combat, adopted as house policy 2026-09-19 after **five
+   instances in five streams in two days**.)
+
+   | the copy | how it failed |
+   |---|---|
+   | feel's copied `ROSTER` table | drifted from the catalog |
+   | `make_arenas.py` mirroring `Match.SLOT_X` / `SPAWN_ROWS` / `SPAWN_ROW_SPACING` behind a comment saying *"must mirror"* | **the copy WON** — baked spawn lists beat the constants, so changing a constant changed nothing in a real match |
+   | `arena_report.KIT` mirroring `ArenaKit.PROPS` | **the original was ABSENT** — `block` was missing, so the cityscape could not be authored |
+   | hull sizes | read rather than copied, and **re-answered themselves** the moment the 14 m rig landed |
+   | `faction_matrix.py`'s hard-coded `FACTIONS = [...]` | **adding a faction would have produced a smaller table that looked complete** |
+
+   **The second clause is the one that bites.** Everyone already agrees copies are bad; the copies that *hurt* are the
+   ones that fail **without a symptom** — where the copy silently **wins**, or where the original is silently **absent**.
+   **A copy that disagrees loudly is an annoyance. A copy that disagrees quietly is a wrong number with evidence
+   attached.**
+
+   Three clauses that are part of the rule, not craft around it:
+   - **A reader must NOT fall back to a hard-coded list when the parse fails. Raise.** A fallback restores the exact bug
+     silently the moment the parse breaks — that is how a guard becomes decoration.
+   - **Mutation-check the reader BOTH directions:** add a value and confirm the tool picks it up; rename the source and
+     confirm it refuses. Otherwise the reader is no better than the copy it replaced and you will not find out until it
+     matters.
+   - **Prove a guard can go red before trusting it.** arena shipped **two guards that could not fire** in one session —
+     four tests `unittest discover` never collected because they were bare functions, and a `WATCH` line whose value its
+     own `_`-prefix convention stripped before the notes were built. **Both were green by absence, and both were found
+     because a COUNT did not move, not because anything failed.**
+
+0b. **A check must not encode a decision nobody has made.** arena declined to make the hull-cover finding a failing test:
+   a red `make check` would be the tooling taking a position on a question the lead has not ruled on, **and would force
+   the very fix two streams had agreed to hold.** It prints loudly on every report, stays out of `check`, and **becomes
+   an assertion the day he rules.** **A tool that fails on an open question is an advocate, not an instrument.**
+
+
 1. **`make remote T=check` passes before merging** (lint, tests, network + relay + lobby smoke, combat, match,
    determinism, sim baseline, garage smoke). Paused areas keep their tests green.
 2. **The sim baseline is recorded ONCE, by the orchestrator, on `main`, after the last simulation-changing merge of
