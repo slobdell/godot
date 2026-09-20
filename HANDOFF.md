@@ -6,6 +6,47 @@
 
 _Last updated: 2026-09-20 16:00 (the 21:50 stamp below was a typo for 13:50). **Round 9's overnight run: sixteen branches and all three checkpoints merged; the day has merged thirty-eight more. `main` at `a6268137`+ is the CLEANEST tree of the round: the main check on `49ed1fb3` (builder0, 16:00) read `>> remote: make check exited 2`, 1535 passed, 1 failed, 16 passed 2 FAILED 0 NOT RUN, sim-baseline 1e90f69e5d6fcc46 unmoved, determinism 253adefeec657df1, and ZERO body, region or edge reports, with combat's leaking `test_tank_yaw_fit` override (and a second leaker control found, `test_combat_no_damage`, a Match per call) still in the tree: nav's sealed `_teardown()` frees and drains whether or not an override calls super, prediction confirmed. `main-checked` is the annotated tag on `49ed1fb3` with that verdict in its message. The two reds are known and named: the spawn test's settle assertion (squad's committed true positive; combat's `Tank.place()` clears it, its check on `1db4893c` running) and the engine-deck scenario (ORBIT radius reads hull length, round 10). Nothing is pushed to `origin`; you push.** The rest of this line is the morning's history: **Round 9's overnight run: sixteen branches and all three checkpoints merged; the day has merged thirty-five more (the latest: squad's hold-on-arrival, nav's accessor and expect_error, metrics' keep-going check, grouping, FILTER and REASON tooling). `main` at `0e7f884a` carries ONE known poisoner: combat's `test_tank_yaw_fit` teardown override that never calls super leaks a foundry (44 bodies, 4 regions) and takes its shard with it; combat's fix is on its tip with the settle tick (every match's first physics tick fixed) and lands as ONE hash with two causes (the plant constraint on; the settle tick) the moment its tip's check reaches sim-baseline, then a main check runs and the annotated `main-checked` tag moves. Until then the last main check that reached the baseline is `0ad28f49` (1516/2, reds listed, NOT green) and every check on any tree shows the 44-body cascade. Open: the five-squads test fails on combat's laptop at every commit and passes on builder0 on identical code (machine before branch; combat's builder0 run decides); nav's sealed teardown re-checks without its containment (which regressed the suite to 1401/117). Baseline `1e90f69e5d6fcc46`, recorded twice; the day's fifth and sixth moves pending in combat's hash. The last fully green `main` is `0808834e`. Read the morning summary first; the red-test paragraph under "Where it stood" is the full history.**_
 
+## ⏹ ROUND 9 IS CONVERGING (2026-09-20, 17:10) — read this before the morning's section below
+
+**Your direction at 16:55: converge, re-merge, reset the environment. State:** eight streams briefed; **seven merged and
+closed** (nav, squad, scale, feel, control, metrics, combat), each at the commit whose own builder0 check was read from
+the wrapper's line and the runner's line, every red named; **show is the last**, finishing run eight and handing over
+its tip. `main` at `70dd60fa`+ carries: combat's settle tick (`Tank.place()`: the tick-1 shove that put all 90 hulls
+56–110 m off is gone), the plant constraint OFF on a source bisect, nav's sealed teardown (the cascade that cost 30–50
+reds per check is structurally closed: two arms confirmed independently), metrics' keep-going check with the PASS /
+FAIL / NOT RUN verdict, `TUNE` applied at first read, control's screen-specified chevron and contract-true pin test,
+squad's hold-on-arrival, scale's bodies guard and spawn-grid handover, feel's roof dressing and the lamp pair.
+**The sim baseline moved once today for one declared cause** (the settle tick; `1ea332e7bc268d2a`, read twice at
+`7f8eeab8` on builder0). Nothing is pushed to `origin`; you push.
+
+**The last check on a stream tree was fully green: combat's `63155ffb`, 1544 passed, 0 failed, 0 engine errors, 0
+warnings, zero residue.** The closing main check runs after the scenario re-record (below) and its lines go in the table.
+
+**Combat's ledger, which is the round's, in its words:** what shipped is infrastructure and retractions: a settle tick
+nobody can see, a knob that now works, four leaks closed, a constraint reverted. The visible thing you asked for, semis
+not yawing in place, did NOT ship, because enabling it stopped four of five squads forming up; "the units seem a little
+smarter but it's hard to tell" is the correct reading, not faint praise. Eleven measurements were retracted today, most
+of them combat's, every one the same shape: the thing under test was never selected and the null looked like a
+measurement (`offered 14 / applied 0` quoted for six hours; a knob that parsed and did nothing on both entry points; a
+baseline taken in an arm it did not name). Against that, two structural things now make the class harder: nav's sealed
+teardown, and arm assertions that read the state the code consults rather than the instruction issued (feel's
+sentence, at the top of the lessons: **"accepted with no error" carries no information about whether the knob does
+anything**).
+
+**What you saw when you played (`make skirmish` at `7424420b`, your words in `game_design.md`):** no blimp (never
+briefed by anyone: my gap; round 10, your art call); the Terminus windows breathe exactly as subtly as the show's own
+gates sized them ("the subtle glowing effect but that's it" is the show as built; round 10 starts from your two
+quotes: basic primitives to drive individual lights on a building, light-show effects composed from them, your eye the
+judge against a 1990s-game baseline frame); containers in the Terminus roads read as "impassable?" before routing
+matters; your acceptance test for round 10 is driving squads through the Terminus streets.
+
+**Round 10's list is below** ("Round 10's list, in the order I would brief it"), and each stream's brief has its own
+at the top of Status. **To reset:** end the eight worker sessions, then `make worktree-remove STREAM=<s>` for each,
+delete the merged `stream/*` branches, archive the briefs to `_agents/streams/archive/round9/` (I do this as the last
+commit once show is merged, if the sessions are gone; otherwise it is the first thing round 10's orchestrator does).
+
+---
+
 ## ☀ THE MORNING AFTER ROUND 9's NIGHT — read this first (2026-09-20, written 07:00, updated at each tick)
 
 **You went to bed at ~00:45 with eight streams briefed. By 07:00 twelve branches were merged to `main`, every merge at
