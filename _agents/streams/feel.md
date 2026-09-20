@@ -272,9 +272,91 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 |---|---|
 | The hinge's frame cost (M1) | **Not measured, and the quiet box did not fix it.** Two six-cycle runs on an *empty* builder0 both came back NOT USABLE. The cause is now sized: frame cost regresses on vehicle census at **0.677 ms per vehicle (r 0.921, r² 0.85)**, and the battle thins monotonically through the run (90 → 72), so census alone is worth +0.68…+3.38 ms per cycle against a total cost spread of 6.39 ms and a mean of +0.01 ms. **The confound is the size of the signal, and in one cycle larger than it** — and it is a drift, not noise, so more cycles will not average it away. Needs combat's census-freeze tune (damage off, no deaths, no respawns, default off); the bench will then *require* it and refuse to report when it is off. Do not quote a trailer number until then. |
 | The Terminus lighting | Diagnosed and handed to the stream that owns the map file |
-| Roof dressing on the Terminus | Your new camera shows roofs far more often; they are undressed. A frame first, then surface treatment |
+| Roof dressing on the Terminus | **Built and green at `df55fa1d`** (9/0). Seven seeded housings/ducts/tanks per roof, inside `_shrink(poly, 2.2)` so nothing overhangs the parapet. **Cost: no new draw call and no new material** — appended to the block's existing SurfaceTool, so a block is still the two surfaces its docstring promises; the test asserts the surface count rather than trusting it. The band is taken OUT of the authored height, not added on top, because the mesh must stay inside the collision box ("what blocks a hull and a shot is what you see"); total height unchanged. Frames below. |
 | The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
+
+**Two traps the roof dressing walked into, both caught before any frame was rendered.**
+
+1. **The plant needed its own shader band, not the roof's.** The roof branch shades *every* non-upward face as a lit
+   parapet edge (`bevel_face = world_normal.y < 0.9` → `edge` colour and `edge_mask = 1.0`). Tagged as roof, a duct
+   would have had **four glowing sides**. Hence `PART_CLUTTER` and a `part < 0.85` band between the shopfronts and
+   the roof.
+2. **The tag is 0.8, not the 0.75 I first wrote, and 0.75 would have failed silently.** Vertex colours may be 8-bit
+   and the clutter band sits above the shopfronts' `part < 0.75`: **0.75 quantises to 191/255 = 0.7490, below its
+   own band's floor**, so every duct on every roof would have shaded as a shopfront — and only in builds that
+   quantise, so it could have shipped looking fine here. 0.8 is 204/255 exactly. There is a test asserting the tag
+   survives the round trip, because this is not the kind of thing anyone rediscovers by looking.
+
+**And one invariant deliberately broken:** `tiers_of`'s last tier used to end at the block's authored height and a
+test asserted it. It now stops `ROOF_CLUTTER_H` short, because reserving the band is what keeps the mesh inside the
+collision box. Nothing outside this file and its tests reads `tiers_of` — checked, not assumed — and the invariant a
+reader actually cares about (a block is as tall as its layout says) is unchanged and asserted on the mesh AABB.
+
+**Terminus lamps (scale's six inside the grid, `fba3b298`): floor YES, vehicles NO.** Frames
+`build/crowd-look/ahead-p{21-d049-f35,35-d120,50-d160}.png`, `make remote T="crowd-look ARENA=terminus
+CROWD_FLAGS=--no-show"` at `e9122334`.
+
+- **Does the floor read as improvised light? Yes.** Discrete warm pools with real falloff, hazard-striped rings at
+  their bases, genuinely dark asphalt between. Reads as work lights bolted up, not street lighting. **The
+  municipal-lattice objection is answered** — the pools sit at a corner, a ring road and a street, not on a
+  spacing.
+- **Do the vehicles read without the UI rings? No.** What carries a hull is its *own* neon — flank strips, hazard
+  chevrons — not the lamps. A dark hull between pools is near-invisible on the asphalt. **The lamps add
+  atmosphere, not legibility**, and legibility is a separate ask (more pools where units fight, or vehicle-side
+  contrast) that should be decided rather than hoped for as a side effect.
+- **At his own pose the lamps are not in shot at all.** 21°/FOV 35/49 m frames his army; at spawn that is ~72 m
+  from the nearest lamp. So the improvement is to mid-match play, not to the opening.
+
+**Two instrument lessons from this one, both mine:**
+
+1. **`size-look` cannot answer an arena-lighting question** and I nearly published a verdict from it. It always
+   frames the *player's army at spawn*, and every arena's spawns are at the rim while the dressing that matters is
+   in the middle — army centre `[-1.2, 94.2]`, nearest lamp **71.7 m** away, framed floor ~40–60 m across. The
+   render was clean, at the right pose, and the subject was not in it. Use `crowd-look ARENA=<x>
+   CROWD_FLAGS=--no-show`, which shoots the wide poses too. *(Ruled round-wide by the orchestrator.)*
+2. **A difference image against a show-ON frame is not a lamp A/B.** I built one and discarded it: my only
+   "before" was shot with the show on and the after with `--no-show`, so it conflated six lamps with the whole
+   light show being switched off — lighting.md rule 12's exact trap, walked into by reusing a frame that was not
+   the other half of a pair. **The floor verdict above therefore rests on the after-frames plus the 10:20
+   baseline, not on a clean A/B**; a true pair needs a pre-merge `--no-show` frame and is one render away.
+
+Also worth knowing for any future frame: **the bright cyan pools under units are UI rings, not light.** Cropped and
+zoomed they are saturated hard-edged annuli that tint the hull cyan. Do not read the HUD as pooling.
+
+**Terminus roof dressing: the frame first, and the frame settles it.** Frames at
+`build/crowd-look/ahead-p{21-d049-f35,35-d120,50-d160}.png` (builder0, `d91dd0e6`, `make crowd-look ARENA=terminus`
+— reused rather than writing a bench, since it already shoots every zoom plus the lead's 21°/FOV 35/49 m pose).
+
+At the lead's own pose the facades fill the frame and the roofs are distant slivers, so **this is not a problem at
+21°**. At the lifted poses it is unmistakable: at `p35-d120` and `p50-d160` the eight blocks' roofs are the largest
+uninterrupted surfaces on screen and carry **nothing at all** — no parapet, plant, vent, tank, aerial or skylight —
+while everything around them is dense (facades on a lit window grid with neon edge lines, crowd stands, marked
+ground). The roofs are the one place the eye finds no information.
+
+**The size of it, derived rather than eyeballed:** 8 blocks at `CityBlock.DEFAULT_SIZE` 40 × 40 m give **12,176 m²
+of top roof plus 624 m² of setback ledge = 12,800 m², which is 16.3% of the arena's 280 × 280 m plan area.** That
+is the fraction of the map that is currently blank.
+
+**Dressing budget, stated in draw calls before any triangle is authored:** all roof dressing across the whole arena
+**≤ 8 draw calls** (one merged mesh per block) and **1–2 if it goes in a single `MultiMesh`**, which is what it
+should do — the item count then stops mattering and only the instance count does. Against the 259–325 draw calls a
+30-a-side match measures (`perf-trailer`, builder0 11:05, on `pit`; Terminus not separately measured, which is why
+the budget is written as a delta and not a total) that is **under 3%**. Anything that cannot be built inside that
+is too expensive for scenery nobody fights on.
+
+**Rule 12 applies the moment any of it emits.** Roof dressing is static arena art, not a show cue, so it sits in
+*both* halves of a `driving`-toggled pair and cancels. Any visual claim about lit roof dressing is therefore a pair
+or it is not a claim — and if a readability gate starts blaming the show for a roof aerial, the gate is wrong, not
+the aerial (lighting.md rule 12, which has already earned this twice on this arena via feel's neon band).
+
+**Found while measuring, and it is a defect rather than a taste question: two blocks ask for 4 tiers and silently
+get 3.** `arenas/terminus.json` has `tiers: 4` on the blocks at `[30, 62]` and `[-30, -62]`; `CityBlock.setup` does
+`clampi(int(obstacle.get("tiers", ...)), 1, 3)`, so the value is capped with no warning and the author's intent is
+lost in silence. Those two buildings are shorter and their roofs flatter than the layout asks for, which is part of
+why the roofline reads uniform. **Same shape as the neon-name bug fixed earlier in this file** — an unresolvable
+value quietly becoming a plausible one — and the same fix: `Arena.validate()` should reject a `tiers` outside 1–3
+instead of the mesh builder swallowing it. The clamp is in feel's file; the layout value is scale's.
 
 **The round-8 re-measure on the resized roster: DONE, both arenas, and the answer is that the unwinnable matchup
 is gone.** Same arms as the originals, read out of each reference's own `args` block rather than re-invented
