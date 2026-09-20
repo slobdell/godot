@@ -636,6 +636,33 @@ terminus += [
     # z = 80, not 84: the authoring clearance check refused 84 at 4.8 m from the spawn point at
     # [-44, 90] (SPAWN_CLEARANCE is 6.0). Caught before the file was written, which is the point of it.
     c20(-42, 80, 0, 1), c20(0, 80, 0, 1, faction="condemned", doors="open"), c20(42, 80, 0, 1),
+    # LAMPS AMONG THE BLOCKS (round 9, feel's finding): at the lead's pose the neon bands -- correct cyan and magenta
+    # since show landed -- were the brightest thing on screen and the vehicles read as dark slabs. The cause was not
+    # the bands being too bright; it was that NOTHING lit the floor they drive on. The Terminus had exactly ONE
+    # authored floodlight, at (-128, 0) on the hexagon's west vertex, plus its 180 degree mirror: two lights at r=128,
+    # both OUTSIDE the fight, against pit's four plus eight 40 m towers standing inside it.
+    #
+    # So these are the first lights inside the grid, placed on the floor a fight actually happens on. The block
+    # footprint is 40 x 40 centred on each block, which fixes the open ground exactly: a 40 m plaza at x,z in
+    # -20..20, 20 m streets at x in 60..80, and a 22 m ring road across each half at z in 20..42.
+    #
+    #   plaza corners (14, 14) and (-14, 14): inside the crossroads, 6 m clear of the block corners at |x|,|z| = 20,
+    #       so the light falls across the plaza floor rather than up a wall. Their mirrors light the far two corners.
+    #   ring road (35, 31) and (-35, 31): mid-road between the z = 0 blocks' north edge (z = 20) and the z = 62
+    #       blocks' south edge (z = 42), clear of wreck(62, 36) and of c20(+-70, 30) at the street mouth.
+    #
+    # FOUR authored here, and `mirrored_props()` supplies the north half, so EIGHT lights end up inside the grid where
+    # there were none -- authoring only the south/centre half is what keeps the symmetry the navmesh bake depends on
+    # true by construction rather than by checking afterwards. (`arenas/terminus.json` therefore lists ten
+    # floodlights: these eight plus the two original vertex lights at r = 128.)
+    #
+    # WHETHER EIGHT IS TOO MANY IS A LOOK QUESTION AND IS NOT SETTLED HERE. The acceptance test is a frame at the
+    # lead's pose (21 degrees, FOV 35, 49 m) judged with the show OFF as well as on -- the show modulates what is
+    # already lit, so its `pools` channel is not the floor's baseline -- and the vehicles must read without the UI
+    # rings. If the floor goes flat or the bands stop reading as the brightest thing by design, the count comes down
+    # from here; the placement is the part that is reasoned, the count is the part that gets looked at.
+    floodlight(14, 14), floodlight(-14, 14),
+    floodlight(35, 31), floodlight(-35, 31),
     # Floodlights on the hexagon's east/west vertices; screens facing each base; a sign on the base-side corner.
     floodlight(-128, 0), # x = -76, hemmed in from both sides: the hexagon wall is at |x| = 82.2 at this z, and the spawn
     # lattice reaches x = -66, so a screen fits only in the 6 m of clearance between them.
