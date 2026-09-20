@@ -2670,25 +2670,24 @@ The kickoff prompt is one line; this section is the rest.
     wrong reason, an assertion at a moment the thing could not be observed), caught only by the stream's own
     anti-vacuity guard. *"I am reliable at demanding an arm can exercise its mechanism and unreliable at checking it
     when the change feels too small to deserve the ceremony."* The ceremony is for the small ones.
-178. **A sharded suite changes which tests share a process, and a test that leaks into the engine's globals goes red on
-    schedule, not on code.** Round 9's last red: `test_a_full_faction_army_a_side_spawns_clear_of_itself` passed alone,
-    passed on two green trees, and failed on `main` only when `test_arena_layouts` (which stands up scrapyard) ran
-    before it in the same process — scrapyard's bodies still in the physics space while the army deployed on foundry,
-    compressing the formation (two hulls of one squad within half a metre) and putting three units "inside a wall".
-    The merge added test files, the shards redistributed, and the polluter landed ahead of the victim. Four correct
-    eliminations of code changes missed it because the variable was the schedule. Lesson 36 with physics bodies instead
-    of the navmesh, and the resize made it fatal (an 8.62 m hull no longer fits between phantom obstacles a 3.60 m one
-    slipped past). **Then measured to the coordinate (scale `3f6c1650`): nothing leaked.** `free()` takes an arena's
-    bodies 38 → 0 in the same call, the granted teardown guard never fires, and both orderings place all 90 units at
-    identical coordinates. **Units are placed at exactly y = 0.0, a degenerate zero-penetration ground contact, and
-    which way Jolt resolves it depends on the engine's internal state after earlier bodies were created and
-    destroyed: three units are ejected ~1.5 m DOWN through `Arena/Ground`.** Round 8's sim-hash lesson with spawn
-    positions instead of a hash, and a real game bug, not only a test one. Ruled: spawn a few centimetres above the
-    ground at both spawn sites (`ArmyLayout.deploy`, `Match.spawn_position`), assert *placement* rather than the
-    post-physics position, and name the body hit in the failure message — "inside a wall or crate" when the body was
-    the ground cost a morning. Three wrong eliminations (RNG divergence, tank_brain, leaked bodies) stand beside the
-    answer. **When a green test goes red with no relevant diff, ask what ran before it — then measure the mechanism
-    before assigning it.**
+178. **A green test that goes red on schedule is measuring a transient, and every hypothesis that names a culprit
+    before the settling curve is drawn will be wrong.** Round 9's last red, `test_a_full_faction_army_a_side_spawns_
+    clear_of_itself`, passed alone, passed at a 71/71/71 shard layout and failed at 69/68/68 on identical code. Six
+    diagnoses fell in one morning, each measured and each retracted: nav's code, `tank_brain`, RNG divergence, a
+    test-isolation leak of physics bodies (free() takes them 38 → 0 in the same call), a solver ejecting a degenerate
+    y = 0 contact (the body is a `CharacterBody3D`; nothing ejects it), a collider straddling the floor (every box
+    bottom is exactly at the origin at the catalogue height). **The mechanism (scale `3f6c1650`+): `move_and_slide`'s
+    depenetration recovery moves three resized hulls 1.475 m DOWN in frame 1 with velocity exactly zero, then they
+    climb back: −0.190 at frame 2, −0.042 at frame 3; a passing unit gets +0.87 mm from the identical contact.** The
+    test read at frame 1, the single worst instant of a settle that resolves by frame 3, and which units land on the
+    bad side depends on engine state left by earlier tests, so the schedule decided the verdict. Fix: assert on
+    *placement* (deterministic), and any physics-frame assertion samples after settling (largest per-frame delta
+    below 1 cm, capped), never at a fixed frame. Two side findings, both false leads, are kept beside the answer:
+    a 5 cm spawn lift moved the frame-1 value by 0.032 m and fixed nothing (the constant stays, wired, at 0.0), and
+    squad's "the lift passes on my branch" was a layout write that discarded its own y. **Draw the curve before you
+    name the writer, and name the body hit in every failure message: "inside a wall or crate" when the body was the
+    ground cost the morning.**
+
 179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
     morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
     read +1.50 ms with two cycles and −0.65 ms with six, on builder0 at load 14–21 with 67 Godot processes and five
@@ -2700,13 +2699,13 @@ The kickoff prompt is one line; this section is the rest.
     cost, show cost) go in a **quiet window** the orchestrator calls after the checks drain, one stream at a time, and
     every timing number carries the load average and the per-phase spread beside it or it is not quoted. Screenshots
     and seed-deterministic series are only *slowed* by load and can run through it.
-180. **A teardown guard that names the polluter finds leaks on its first full run, and they are not the class you were
-    chasing.** Round 9's guard (scale, `3f6c1650`) was granted to catch leaked physics bodies; it found none, and
-    instead named three tests that leave **navigation regions** behind because they build an arena without
-    `ArenaFixture` — the exact failure `ArenaFixture`'s own docstring had warned about for rounds: the next
-    routing-dependent test's `is_ready()` answers for the OLD map and every path is a straight line through the new
-    arena's walls, silently, looking like flakiness or the victim's bug. Two rules: **a guard must fail, not warn**
-    (a warning nobody is forced to read is how this survived), and **land the guard with the fixes for what it finds**
-    so `main` never goes red on other streams' files; the orchestrator grants the one-line changes. And state the
-    guard's limits beside it: a high-water mark blames the first riser only, and it counts what corrupts another
-    test's world, not everything that leaks.
+180. **A guard that counts at teardown measures a pending removal, and it will convict the innocent with the same
+    confidence as a real leak.** Round 9's teardown guard (scale, `3f6c1650`) named three tests for leaving two
+    navigation regions each; `NavigationServer3D` drops regions on the frame *after* `free()` ([2, 0, 0, 0] over
+    frames 0–3), `TestCase.teardown()` counts synchronously at frame 0, so all three were innocent, and the
+    orchestrator had already granted one-line "fixes" in three streams' files before scale measured the drain
+    curve. Same morning, same suite, same shape as lesson 178: **a transient read at the wrong frame.** Physics
+    bodies have no such window (free() takes them to 0 in the same call), so the guard keeps that half and drops
+    regions. Rules: a guard's claim is only as strong as the settling behaviour of what it counts, measured; land a
+    guard *with* the fixes for what it finds, never route the fixes first; and when a new instrument convicts three
+    unrelated tests at once, suspect the instrument before the tests.
