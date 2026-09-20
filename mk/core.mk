@@ -180,8 +180,11 @@ test: import ## Run the headless test suite (FILTER=substring to run a subset; T
 	files=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | sed 's/.*: \([0-9]*\) files.*/\1/' | paste -sd+ | bc); \
 	passed=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | sed 's/.* \([0-9]*\) passed.*/\1/' | paste -sd+ | bc); \
 	failed=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | sed 's/.* \([0-9]*\) failed.*/\1/' | paste -sd+ | bc); \
+	eerr=$$(grep -h '^SHARD-ENGINE ' $(BUILD_DIR)/test-shards/*.log | sed 's/.* \([0-9]*\) errors.*/\1/' | paste -sd+ | bc 2>/dev/null); \
+	ewarn=$$(grep -h '^SHARD-ENGINE ' $(BUILD_DIR)/test-shards/*.log | sed 's/.* \([0-9]*\) warnings.*/\1/' | paste -sd+ | bc 2>/dev/null); \
 	echo ""; \
 	echo "$(TEST_SHARDS) shards over $$files files"; \
+	echo "engine: $${eerr:-0} errors, $${ewarn:-0} warnings"; \
 	echo "$$passed passed, $$failed failed"; \
 	[ "$$failed" -eq 0 ] || exit 1
 
