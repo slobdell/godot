@@ -2585,3 +2585,7 @@ The kickoff prompt is one line; this section is the rest.
     falsifier read 518 → 0 — `obstacles_root` was wired before the arena had built its bodies, so `_process` returned
     early forever; only a node-level test in the real tree, and looking at the frames, closed the distance between
     "the algorithm is right" and "the feature works" (lesson 23's shape, one layer down).
+167. **Round 9's motion switches are opt-in and inverted: `--nav-off=a4` ENABLES A4.** So `nav-fight-ab`'s arm named
+    `off` is the TREATMENT and the arm named `on` is the CONTROL. The target's own guard catches an inert switch (both
+    arms identical, or sharing a treatment line) but cannot catch a human reading the filenames the obvious way. Label
+    arms by treatment in every write-up, never by the flag's name (nav, 2026-09-20).
