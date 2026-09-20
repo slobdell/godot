@@ -181,7 +181,7 @@ arrived with CP2, not with any nav change. **A third consequence, on the unit yo
 **Ruled (10:40):** nav's routing reads the bake radius from the arena and
 consults each hull's shortfall (refuse or widen) rather than discovering it by wedging; the bake stays 2.0 this round
 (4.58 would close every alley for the two thirds that fit); per-class meshes are round 10 money only if nav's
-falsifier says so. **Your call, recorded:** should the largest hulls simply not route through alleys narrower than
+falsifier says so. **Built and measured (nav `164d51d4`, builder0, 13:30):** `bake_radius()` reads the live mesh (the constant demoted to a cross-check that `push_error`s), `clearance_shortfall()` per hull (gang_tank +2.58 m, scout −0.54 m), and the routing refusal behind `--nav-off=clearance`: gang_tank's chord slack −2.28 m → refused (3 of 6 consultations), scout 0.90 m → untouched; the switch-off test reproduces the old slack byte for byte and `sim-baseline 1e90f69e5d6fcc46` is unmoved with the whole row in the tree. Falsifier arms next. **Your call, recorded:** should the largest hulls simply not route through alleys narrower than
 their clearance (heavies use streets)? nav can measure the cost of not deciding; it cannot decide it.
 
 **Intent does not reach the layer that moves the hull.** nav measured `CombatMotion` deciding under a tenth of a hull's
