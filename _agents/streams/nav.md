@@ -288,6 +288,34 @@ deliberately NOT re-recorded: nothing on the default path moves it.
 | **`goal_slid` is attributed by the PROBE, not by `Movement`** | nav owns why the router acted; control's `Orders` owns whose order it was. The alternative was the mover groping for the Match through `ctl.tanks_root`'s parent |
 | **No tolerance was moved to make a scenario pass** | Every failing row is reported failing. combat's ruling on `TOLERANCE["weapon"]` (leave it at 22.7 m) is the precedent: a constraint moves for a reason about the constraint, and the scenario is told afterwards |
 
+### PRE-REGISTERED, before the run: the arrival-arc A/B with live facings (N4)
+
+Written before `main` is merged, so the bars cannot be chosen after seeing the numbers.
+
+**Arms.** One binary, `--nav-off=a4` against the default, on the facing-carrying probe. `nav-fight-maps`, the four
+maps `--arena=random` can deal, `FIGHT_BUSY_LEVELS=0`, seed 3, 120 s. Both arms read `NAV_FIGHT_ARM` for the live
+treatment **and** the `a4` counters, so an arm that did not engage says so from inside the run (lesson 147).
+
+**The positive control, and it is the whole design** (the orchestrator's, pre-registered before A4 was built):
+**report `a4_rescued_blocked` against the `off_mesh_fit.none` bucket — gates no straight run-in could reach at any
+length — and NEVER the aggregate `aimed` count.** The 474-class gates a shorter run-in would also recover must not
+leak into the clothoid's number. A run where `none` is 0 is a run that could not have tested A4 and is refused, not
+reported.
+
+**Primaries, unchanged from round 8's pre-registration:** per-wheeled-type `net_over_path` ↑ and `oscillating_share`
+↓. **Guard:** attack-move `progressing` must not fall more than 10 % on 2 or more maps — routing to a gate costs
+distance, and if it costs fighting it is not worth it.
+
+**What this A/B canNOT establish, stated now so it is not claimed later.** The treated arm is *"moves that carry a
+facing"*, and in this probe those are **scripted**, not drawn. control's CP2c makes a *player* drag the live source,
+and a player is not in this harness. So the result describes the arc under orders that carry a heading — which is
+squad's hold path and a scripted move — and **says nothing about how it feels at the lead's pose.** That needs
+frames at pitch 21°, 49 m, FOV 35, and a human. *"For anything subjective, a human is the only check that counts."*
+
+**And one thing to check before believing any of it:** `off_mesh_fit.none` must be **non-zero in both arms** —
+A4's headroom. An instrument at the end of its range is indistinguishable from one that is not connected, and nav
+has not yet established headroom for this one across four maps (only on yard, where it was 403).
+
 ### Still open at hand-over, in the order the next agent should take them
 
 1. **The clean A1 A/B is running** — one binary, `--nav-off=a1` against the default, both arms sharing label
