@@ -100,13 +100,35 @@ func _run() -> void:
 	if file != null:
 		file.store_string(JSON.stringify(live, "  "))
 		file.close()
+	_expected.append("live.json")
 	if rig_camera != null:
 		rig_camera.process_mode = Node.PROCESS_MODE_DISABLED
 	_camera.current = true
 	for i in PITCHES.size():
 		await _shoot_corner(scene, heading, float(PITCHES[i]), i == 0)
-	print("RIG_HINGE_DONE")
+	# Every file the report names must exist, checked rather than claimed. The strips are written LAST, after the
+	# final frame, so between the last RIG_HINGE line and this one the directory is genuinely incomplete -- and the
+	# orchestrator looked in exactly that window and reasonably concluded they were never written. A report that
+	# names a path owes a check that the path is there (orchestration lesson 154's shape).
+	var missing := _missing_files()
+	if missing.is_empty():
+		print("RIG_HINGE_DONE files=%d in %s" % [_expected.size(), out_dir])
+	else:
+		push_error("rig-hinge: the report names %d file(s) that were not written: %s" % [missing.size(), ", ".join(missing)])
+		print("RIG_HINGE_FAILED missing=%s" % ", ".join(missing))
 	get_tree().quit()
+
+
+## Files this run said it wrote, in report order.
+var _expected: PackedStringArray = []
+
+
+func _missing_files() -> PackedStringArray:
+	var missing := PackedStringArray()
+	for name in _expected:
+		if not FileAccess.file_exists(out_dir.path_join(name)):
+			missing.append(name)
+	return missing
 
 
 ## The largest hinge angle on the field, frame by frame, while the match plays. No posing: if this reports zeros the
@@ -184,6 +206,7 @@ func _shoot_corner(scene: Node, heading: float, pitch: float, with_reverse: bool
 		var bend := rad_to_deg(float(cornering.call("articulation"))) if cornering != null else 0.0
 		var shot_name := "corner_%d_%d.png" % [int(pitch), int(milestone)]
 		image.save_png(out_dir.path_join(shot_name))
+		_expected.append(shot_name)
 		shots.append(image)
 		report.append({"turn_deg": milestone, "hinge_deg": snappedf(bend, 0.1), "frame": shot_name})
 		print("RIG_HINGE_STEP pitch=%d corner=%d hinge=%.1f" % [int(pitch), int(milestone), bend])
@@ -209,6 +232,7 @@ func _shoot_corner(scene: Node, heading: float, pitch: float, with_reverse: bool
 		var bend := rad_to_deg(float(hull.call("articulation"))) if hull != null else 0.0
 		var shot_name := "reverse_%d_%d.png" % [int(REVERSE_PITCH_DEG), int(milestone)]
 		image.save_png(out_dir.path_join(shot_name))
+		_expected.append(shot_name)
 		reverse_shots.append(image)
 		reverse_report.append({"reversed_m": milestone, "hinge_deg": snappedf(bend, 0.1), "frame": shot_name})
 		print("RIG_HINGE_STEP pitch=%d reverse=%d hinge=%.1f" % [int(REVERSE_PITCH_DEG), int(milestone), bend])
@@ -218,8 +242,10 @@ func _shoot_corner(scene: Node, heading: float, pitch: float, with_reverse: bool
 	tank.queue_free()
 	await get_tree().process_frame
 	_save_strip(shots, out_dir.path_join("strip_%d.png" % int(pitch)))
+	_expected.append("strip_%d.png" % int(pitch))
 	if not reverse_shots.is_empty():
 		_save_strip(reverse_shots, out_dir.path_join("strip_reverse_%d.png" % int(REVERSE_PITCH_DEG)))
+		_expected.append("strip_reverse_%d.png" % int(REVERSE_PITCH_DEG))
 	print("RIG_HINGE " + JSON.stringify({"pitch_deg": pitch, "distance_m": DISTANCE_M, "fov_deg": FOV_DEG,
 			"radius_m": radius, "speed_mps": speed, "corner": report, "reverse": reverse_report}))
 

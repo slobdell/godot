@@ -96,7 +96,9 @@ rig-hinge: import ## Feel X2, S2: the War Rig bending at the fifth wheel -- its 
 		$(if $(ARENA),--arena=$(ARENA)) --rig-hinge=$(CURDIR)/$(BUILD_DIR)/rig-hinge \
 		$(or $(RIG_HINGE_FLAGS),--player=cpu:gang_ram --player-faction=gangs --budget=6500) \
 		2>&1 | tee $(BUILD_DIR)/rig-hinge/log.txt | grep -E '^RIG_HINGE|SCRIPT ERROR' || true
-	@grep -q RIG_HINGE_DONE $(BUILD_DIR)/rig-hinge/log.txt
+	@grep -q RIG_HINGE_DONE $(BUILD_DIR)/rig-hinge/log.txt || { grep -E 'RIG_HINGE_FAILED|SCRIPT ERROR' $(BUILD_DIR)/rig-hinge/log.txt; echo "rig-hinge FAILED"; exit 1; }
+	@echo "Now LOOK at $(BUILD_DIR)/rig-hinge/strip_*.png -- the strips are written LAST, after every frame."
+	@ls $(BUILD_DIR)/rig-hinge/strip_*.png
 
 facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg)
 	rm -rf $(BUILD_DIR)/facing && mkdir -p $(BUILD_DIR)/facing
