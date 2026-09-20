@@ -539,36 +539,45 @@ files, and it was measuring a transient. **Checking it before acting on it cost 
 sent three streams to fix nothing** — and my own overlap script had already printed a vacuous "overlap: NONE" the same
 morning. In a round whose recurring failure is checks that cannot fail, the checks I write are not exempt.
 
-### The two no-mesh units, now derived from their references (ruled on the lead's behalf)
+### The no-mesh derivation was built, measured, and REVERTED on the picture
 
-**Ruled by the orchestrator, recorded as on the lead's behalf:** *"do not invent proportions"* was written against
-**guessing**, not against the reference the rule already asks each unit to cite — so `tank` and `burner` take width and
-height from their cited vehicle's **published** dimensions × K, exactly the derivation the length already follows.
+**It exists in history at `adcdec13` and was reverted deliberately, not abandoned.** The reasoning still stands; the
+*look* did not, and the look is the thing the lead judges.
 
-**Derived, not typed:** `width_m` and `height_m` now live in `scale_reference` beside `length_m`, and a new test
-asserts the box equals `snappedf([width_m, height_m, length_m] × SCALE_K, 0.01)`. The lengths reproduce **exactly**
-(8.62 and 6.89), which is the self-consistency check that the same derivation is running on all three axes.
+**What was built:** `width_m` and `height_m` in `scale_reference`, so the two art-less units derive all three
+dimensions from their cited vehicle × K instead of inheriting the pre-CP2 box, plus a test asserting exactly that and
+asserting it checked exactly 2 units. The lengths reproduced exactly (8.62, 6.89), confirming one derivation on all
+three axes.
 
-| unit | reference (published) | today | derived × K = 0.707071 |
+| unit | reference (published) | kept | was derived |
 |---|---|---|---|
-| `tank` | Type D bus, 12.19 × **2.59 × 3.15** m | `[2.40, 2.40, 8.62]` | **`[1.83, 2.23, 8.62]`** |
-| `burner` | Pierce pumper, 9.75 × **2.54 × 3.20** m | `[2.40, 2.40, 6.89]` | **`[1.80, 2.26, 6.89]`** |
+| `tank` | Type D bus, 12.19 × 2.59 × 3.15 m | **`[2.40, 2.40, 8.62]`** | `[1.83, 2.23, 8.62]` |
+| `burner` | Pierce pumper, 9.75 × 2.54 × 3.20 m | **`[2.40, 2.40, 6.89]`** | `[1.80, 2.26, 6.89]` |
 
-**What the lead is being asked to look at, stated plainly because the number is not obviously an improvement.** The
-bus-tank gets **thinner and shorter**, not fatter: 2.40 → 1.83 m wide and 2.40 → 2.23 m tall. Its aspect goes from
-**3.59:1 to 4.71:1 — which is exactly a real Type D bus's 4.71:1** — so it is more correct, and it may still read
-worse, because a 8.62 × 1.83 m box is a long thin slab. **1.84 m of width is consistent with the rest of the roster,
-which is all at K**; it only looks narrow against real-world intuition, and the whole world is at 70.7%. **The
-re-shot lineup frame is what he rules from, not this table.**
+**Why it was reverted — from `lineup_factions.png`, after looking at it.** The Tank (8.6 m) and the Burner (6.9 m) are
+**the only two vehicles in the roster that do not read as vehicles**: long, low, dark slabs sharing one silhouette at
+two lengths, no visible wheels or body, closer to flatbed rail cars than to a prison-bus dozer and a fire engine.
+Every other unit reads as its name. **The comparison that settles it is inside the same faction: the IFV at 7.5 m
+reads as a bus far better than the Tank at 8.6 m — because the IFV has its own art and the Tank does not.**
 
-**And this closes a hole rather than just changing two numbers.**
-`test_every_box_is_its_meshs_proportions_at_that_length` **skips** a unit with no mesh — there is nothing to compare
-against — so before this, the only two units the mesh arm could not see were also the only two whose width and height
-nothing checked at all. **A green that means "not looked at"**, the same shape as a lint over zero files. The new
-`test_a_unit_with_no_art_takes_all_three_dimensions_from_its_reference` is the other arm, and it asserts it checked
-**exactly 2** units so it cannot itself pass by looking at nothing. Both arms together now cover all twenty-one.
+**So the diagnosis is the missing mesh, and the derivation made it worse.** Both wear the shared dozer hull stretched
+by `_fit_to_hull`, so they were never going to look like their references; going 2.40 → 1.83 wide and 2.40 → 2.23 tall
+made an already-wrong silhouette flatter. **The number was defensible and the picture was not.**
 
-### Superseded: two units were outside the contract that catches bad boxes
+**Decided (orchestrator, on the lead's behalf, recorded as overridable):** the two keep `2.40 × 2.40` until they have
+art; the box contract keeps its no-mesh branch until then; **no third baseline move today**; and combat's
+screening-bar re-derive is **cancelled**, because the width that broke it is no longer in the tree.
+
+**On the lead's gate list, with the frames: one hull mesh each for `tank` and `burner`** (paid generation). That fixes
+the silhouette *and* retires the no-mesh branch, collapsing both arms of the box contract back into one rule.
+
+**The lesson, and it is the one I would keep from the whole round:** the derivation was correct, cited, tested,
+self-consistent on three axes, and agreed with two independent measurements — **and it was still the wrong change,
+because none of that is a claim about how it looks.** Every check I built could only ever have said yes. **The frame
+is not a formality at the end of the work; it is the only instrument that could have caught this**, which is exactly
+why the brief makes the lead's look the gate and why item 2 renders one.
+
+### Superseded by the revert above: two units are outside the contract that catches bad boxes
 
 `roster-scale` prints **`no mesh`** for exactly two of the twenty-one:
 
@@ -892,7 +901,7 @@ mesh's box, MISMATCH). Hull length in metres, today → new:
 | faction | unit | today | new | reference vehicle |
 |---|---|---|---|---|
 | condemned | scout | 3.00 | **3.04** | Dakar-class rally-raid buggy (Prodrive Hunter T1+), 4.30 m |
-| condemned | tank | 3.60 | **8.62** | Type D school bus, 40 ft (Blue Bird All American), 12.19 m — *the lead's own example; **no mesh**, so width and height are now `2.59 × 3.15 m × K` = `1.83 × 2.23`, replacing the inherited `2.40 × 2.40`* |
+| condemned | tank | 3.60 | **8.62** | Type D school bus, 40 ft (Blue Bird All American), 12.19 m — *the lead's own example* |
 | condemned | ifv | 3.80 | **7.54** | Type C school / prisoner-transport bus, 35 ft, 10.67 m |
 | condemned | artillery | 4.00 | **8.20** | four-axle all-terrain crane carrier (Liebherr LTM 1070-4.2), 11.60 m — *width re-derived 4.74 → 2.90 in the driving pose* |
 | condemned | lancer | 3.80 | **6.46** | utility line truck, 30 ft (International 4300 + Altec boom), 9.14 m |

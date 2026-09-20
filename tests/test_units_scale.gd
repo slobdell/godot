@@ -73,10 +73,7 @@ func test_every_box_is_its_meshs_proportions_at_that_length() -> void:
 
 
 ## The two units with no `unit.<id>.hull` art of their own wear the shared dozer, which Tank stretches to their box
-## on every axis, so there is no mesh to take proportions from. They take ALL THREE dimensions from the cited
-## reference vehicle x K instead (see the test below): a published dimension is not an invented proportion, it is the
-## same derivation the length already uses. Until round 9 they kept the pre-CP2 width and height, which left the
-## lead's own example -- the bus-tank -- 8.62 m long and still 2.40 x 2.40, a 3.6:1 slab where a Type D bus is 4.7:1.
+## on every axis, so they take a LENGTH from the rule and keep the width and height the catalog already had.
 ## Pinned by name in both directions: a unit that gains art must take its proportions from that art, and a unit that
 ## silently LOSES its art must not keep a box nothing draws.
 func test_only_the_two_known_units_have_no_art_of_their_own() -> void:
@@ -188,37 +185,3 @@ func test_a_unit_wearing_the_shared_hull_art_is_drawn_at_its_own_box() -> void:
 			assert_near(drawn[axis], float(box[axis]), 0.02,
 					"a shared-art hull is drawn at its box on axis %d (box %s, drew %s)" % [axis, box, drawn])
 	GameTheme.use(previous)
-
-
-## THE OTHER ARM OF THE BOX CONTRACT, and it exists because the first arm passes BY ABSENCE for these two.
-## `test_every_box_is_its_meshs_proportions_at_that_length` skips a unit with no mesh -- there is nothing to compare
-## against -- so before this test the only two units the mesh check could not see were also the only two whose width
-## and height nothing checked at all. That is the same shape as a lint over zero files: a green that means "not
-## looked at". Here they are derived from the cited reference instead, and asserted, so both arms together cover all
-## twenty-one.
-func test_a_unit_with_no_art_takes_all_three_dimensions_from_its_reference() -> void:
-	var previous := GameTheme.theme_name
-	GameTheme.use("cyberpunk")
-	var checked := 0
-	for unit_id: String in Units.PROFILES:
-		if SizeLook.natural_size(unit_id).z > 0.01:
-			continue
-		var reference: Dictionary = Units.PROFILES[unit_id]["scale_reference"]
-		for key in ["width_m", "height_m"]:
-			assert_true(reference.has(key), ("%s has no hull art, so its %s cannot come from a mesh and must come " +
-					"from the cited reference -- add %s to its scale_reference rather than typing a box")
-					% [unit_id, key, key])
-		if not (reference.has("width_m") and reference.has("height_m")):
-			continue
-		var box: Array = Units.PROFILES[unit_id]["hull_size"]
-		var wanted := [snappedf(float(reference["width_m"]) * Units.SCALE_K, 0.01),
-				snappedf(float(reference["height_m"]) * Units.SCALE_K, 0.01),
-				snappedf(float(reference["length_m"]) * Units.SCALE_K, 0.01)]
-		for axis in 3:
-			assert_near(float(box[axis]), float(wanted[axis]), 0.011,
-					"%s axis %d: box %s, the reference (%s) at K gives %s"
-					% [unit_id, axis, box, reference["vehicle"], wanted])
-		checked += 1
-	GameTheme.use(previous)
-	# A test that silently checked nothing would be the very failure this file is about.
-	assert_eq(checked, 2, "both art-less units were actually checked")

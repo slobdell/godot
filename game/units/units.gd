@@ -12,8 +12,7 @@ extends RefCounted
 ## Keys (all required unless marked optional):
 ##   display_name, role (ROLES), blurb (one line for the army UI), cost (points), unlock_tier (0 = starter)
 ##   hull_size [w, h, l] meters (the collision box; S1: derived, see scale_reference and SCALE_K below),
-##   S1 (round 9) optional scale_reference {vehicle: String, length_m: float, source: String,
-##     and for a unit with NO hull art of its own, width_m and height_m too} -- the real-world
+##   S1 (round 9) optional scale_reference {vehicle: String, length_m: float, source: String} -- the real-world
 ##     vehicle this unit is drawn as, its cited length, and where that length comes from. hull_size[2] is
 ##     length_m x SCALE_K and hull_size[0]/[1] are the approved mesh's proportions at that length
 ##     (SizeLook.box_at_length). `make roster-scale` prints the whole table; tests/test_units_scale.gd asserts it.
@@ -168,13 +167,11 @@ const PROFILES := {
 		"blurb": "The armored prison-bus dozer. Heavy cannon on a slow turret; thick front armor.",
 		"cost": 200,
 		"unlock_tier": 0,
-		"hull_size": [1.83, 2.23, 8.62],
+		"hull_size": [2.40, 2.40, 8.62],
 		# S1 (round 9): The lead's own example: "the bus-tanks ... definitely need resizing". A prison bus is a school bus
 		# with the windows welded over.
 		"scale_reference": {"vehicle": "Type D school bus, 40 ft (Blue Bird All American)",
-				"length_m": 12.19, "width_m": 2.59, "height_m": 3.15,
-				"source": "40 ft = 12.19 m, the standard full-size US school bus; 102 in body width = 2.59 m; "
-						+ "roof at about 10 ft 4 in = 3.15 m"},
+				"length_m": 12.19, "source": "40 ft = 12.19 m, the standard full-size US school bus"},
 		"max_health": 300,
 		"max_shield": 150,
 		"shield_recharge_delay": 4.0,
@@ -328,12 +325,10 @@ const PROFILES := {
 		# 100% of every matchup; at these values it beats IFVs 67% and artillery 83%, loses to tanks and Lancers.
 		"cost": 220,
 		"unlock_tier": 2,
-		"hull_size": [1.80, 2.26, 6.89],
+		"hull_size": [2.40, 2.40, 6.89],
 		# S1 (round 9): The plow-nosed fire truck.
 		"scale_reference": {"vehicle": "Pumper fire engine, 32 ft (Pierce Enforcer)",
-				"length_m": 9.75, "width_m": 2.54, "height_m": 3.20,
-				"source": "32 ft = 9.75 m, a standard single-axle pumper; 100 in body width = 2.54 m; "
-						+ "10 ft 6 in over the hosebed = 3.20 m"},
+				"length_m": 9.75, "source": "32 ft = 9.75 m, a standard single-axle pumper"},
 		"max_health": 220,
 		"max_shield": 100,
 		"shield_recharge_delay": 3.5,
