@@ -233,7 +233,7 @@ fast-forwarded at worktree creation). A baseline `make remote T=check` was start
 
 ### REPORT — read this first (nav, round 9, 2026-09-20)
 
-**Nav built five catalogue rows this round. Not one of them is on by default, and the sim baseline has not moved
+**Nav built five catalogue rows this round, and a sixth after CP2. Not one of them is on by default, and the sim baseline has not moved
 once. That is the report, not an apology** — every row carries the measurement that decided its default, and four of
 the five are negative results that cost a night each instead of a round each.
 
@@ -251,6 +251,7 @@ today.
 | **A1** event replanning | cut route churn | **−21.5 % re-plans in isolation**, but the cadence is only ~3 % of re-plans in a fight — it fixes the wrong thing | **off** |
 | **A4** clothoid approach | reach gates a straight run-in cannot | reaches **100 %** of them on yard — and **breaches the fight guard hardest where it works best**, and on terminus **never arrives at all** | **off** |
 | **A6** legibility | stop hulls driving backwards down their own corridor | built, both clauses, and **cannot fire yet**: it needs one field from squad's brain. Measured inert, not assumed inert | **off** |
+| **clearance** (post-CP2) | stop oversized hulls routing through gaps the navmesh only certified for a 2 m agent | built; **the finding is the row** — after the resize **14 of 21 units need more clearance than the mesh bakes**, `gang_tank` 2.3× and the *median* unit over it. Falsifier pre-registered, not yet run | **off** |
 
 **The one thing a player would notice, and it is not ours to fix.** Your *"the semi trucks are yawing in place
 (should be impossible, they're not a tracker vehicle)"* has a cause: **a hull's rotation is never checked against
