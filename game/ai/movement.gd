@@ -438,7 +438,9 @@ func reading() -> Dictionary:
 			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
 			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
-			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan, "wedged": wedged}
+			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan, "wedged": wedged,
+			"wedge_moved_m": wedge_moved_m, "wedge_hull_m": wedge_hull_m,
+			"wedge_ratio": wedge_moved_m / maxf(wedge_hull_m, 0.1)}
 
 
 ## A new order: drop the unstick routine, the old path, the fire detour and the stall bookkeeping, so the new order
@@ -592,6 +594,8 @@ func _note_wedge(here: Vector3, deflected: bool) -> void:
 	var moved := _flat_distance(_wedge_trail[0], _wedge_trail[_wedge_trail.size() - 1])
 	var size: Variant = Units.stat(ctl.tank.unit_id, "hull_size", [2.4, 1.6, 3.8])
 	var was := wedged
+	wedge_moved_m = moved
+	wedge_hull_m = float(size[2])
 	wedged = float(hits) / float(WEDGED_WINDOW) > WEDGED_SHARE and moved < float(size[2])
 	if wedged and not was:
 		wedged_units += 1
@@ -1352,6 +1356,14 @@ func _arrive_gate() -> float:
 var _deflect_window: Array[bool] = []
 var _wedge_trail: Array[Vector3] = []
 var wedged := false
+## ...and the CONTINUOUS quantities behind the flag, published because the flag alone cannot be compared across a
+## roster change. scale caught this: `wedged`'s bar is **the mover's own hull length**, so it is size-dependent in its
+## DEFINITION rather than in its data — after CP2 an 8.62 m tank must fail to travel 8.62 m where at 3.60 m it only
+## had to fail 3.60 m, and the same physical behaviour scores differently. A drop in `wedged` counts across CP2 is
+## therefore not necessarily an improvement, and neither is a rise. Publishing the metres travelled, the hull length
+## and their ratio lets a consumer normalise it however it needs instead of trusting the boolean.
+var wedge_moved_m := 0.0
+var wedge_hull_m := 0.0
 
 
 ## A1: why this mover re-planned THIS tick, or "" — published so a harness that can see the K1 order (which nav
