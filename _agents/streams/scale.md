@@ -332,6 +332,52 @@ pooling mistake again, so each is labelled by the population it actually exercis
 | `make arena-series` (5 arenas × 18 seeds × 2) | **faction armies** | the arena and its navmesh | **OWED** — died at 255 (transport) |
 | `make grid-fairness` (2v2 bots, 60 seeds × 2) | **the spawn grid** | the grid I changed in item 3 | **OWED** — never got a slot |
 
+### The round's recurring shape: things that succeeded in a way indistinguishable from working
+
+Not "something broke". **Every expensive thing this round was something that reported success while doing nothing**,
+and the instances are now numerous enough to be a pattern rather than a run of bad luck. Four, across two streams:
+
+| what looked fine | what it actually did |
+|---|---|
+| `_quieten()` in the line-up render | `hud is CanvasItem` was quietly **false** (`Hud extends CanvasLayer`), so nothing was hidden — two unusable renders |
+| the baked-spawn-list guard | `Arena.load_layout` returns `{"layout": …}`, so it compared the constants **with themselves** |
+| a stale `slot.sh` `.owner` after a cleanup | the slot goes on blocking **every** worktree's queue while the cleanup looks finished |
+| `AssetContracts.ROLE_UNITS` | a round-3 stand-in that was **only** wrong once hulls differed — green on both branches, red on the merge |
+
+feel adds the vacuous lint (`--check-only` reporting "all scripts parse" over **zero files**), the seeded random colour
+that looked like a design choice, and A6's heading law that would have passed its own review while moving nothing.
+
+**The operational rule this earns: a check that cannot fail is worse than a missing check, because a missing check is
+visible.** Hence the discipline this stream now applies without being asked — mutation-check every reader in both
+directions, and prove the arm is distinguishable before believing the result. The swap-bases guard added today is that
+rule applied to the fairness apparatus itself: `arena_series.py` verified the flag was *reported*, which cannot see
+`spawn_position` ceasing to consult it, and that failure yields two identical arms and a perfectly plausible
+"no base advantage" from a treatment that never happened.
+
+### A derived roster is interrogable; a typed one is inert
+
+**The better argument for S1's "derived, not typed", and it was found by accident.** feel reported the artillery's mesh
+height as `1.38` and `1.38 × 2.0500 = 2.829` disagreed with the committed `2.82`, so I asked whether the height had
+moved. It was settled **without either of us running anything**, by inverting the function that produced the number:
+`box_at_length` computes `snappedf(natural.y × k, 0.01)`, so
+
+```
+snapped == 2.82  <=>  natural.y × 2.0500 ∈ [2.815, 2.825)  <=>  natural.y ∈ [1.373171, 1.378049)
+```
+
+`1.38` was a `%.2f` print, the geometry does not move, and the committed 2.82 will reproduce. **A hand-typed 2.82
+could not have answered that question at all** — the only route would have been to occupy builder0.
+
+So the rule has a second payoff nobody designed: **a derived value carries information about the mesh it came from, and
+can be interrogated after the fact.** That is a stronger argument than drift, because drift is a risk you are asked to
+take on faith while interrogability is a capability that can be demonstrated on demand.
+
+**And the same exchange shows the failure mode of stating a bound you did not derive.** feel's five sample rows were
+each correct, but the interval summarising them — `[1.3750, 1.3784]` — was eyeballed from the rows rather than inverted
+from the function, so it excluded valid values at one end and admitted an invalid one at the other (`1.3784 × 2.05`
+snaps to **2.83**). **Four decimals is a claim about method.** Stated as "somewhere around 1.375–1.378" it would have
+been honest; stated to four decimals it looked derived, and the right response was to invert it rather than take it.
+
 ### Decided: the Condemned artillery's box binds the DRIVING pose (one number owed)
 
 feel's X4 box-fill sweep found **18 of 19 units pass and one fails for a real reason**:
