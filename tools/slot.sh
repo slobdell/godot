@@ -51,22 +51,6 @@
 # ticket and getting a slot must never block the queue: a deadlock here stops every agent at once.
 set -uo pipefail
 
-if [ -n "${TANK_SQUAD_SLOT:-}" ]; then
-	exec "$@"  # already inside a slot (nested make)
-fi
-
-# Derived from available RAM at ~2.5 GB a slot, clamped to [2, 4]. Falls back to 2 if MemAvailable
-# cannot be read, because a machine we cannot measure gets the conservative answer, never the loud one.
-default_slots() {
-	local avail_mb
-	avail_mb=$(awk '/^MemAvailable:/ {print int($2 / 1024); exit}' /proc/meminfo 2>/dev/null)
-	[ -n "${avail_mb:-}" ] || { echo 2; return; }
-	local n=$((avail_mb / 2500))
-	[ "$n" -lt 2 ] && n=2
-	[ "$n" -gt 4 ] && n=4
-	echo "$n"
-}
-
 # T1 (metrics, round 9): the same question one level down. A slot holds ONE `make check`; this says how many of
 # check's targets that check may run at once INSIDE its slot. Same principle and same owner as `default_slots`,
 # because "how much can this machine take" is one fact with one home (Invariant 0: a value with a single owner is
@@ -92,6 +76,22 @@ if [ "${1:-}" = "--jobs" ]; then
 	echo "$n"
 	exit 0
 fi
+
+if [ -n "${TANK_SQUAD_SLOT:-}" ]; then
+	exec "$@"  # already inside a slot (nested make)
+fi
+
+# Derived from available RAM at ~2.5 GB a slot, clamped to [2, 4]. Falls back to 2 if MemAvailable
+# cannot be read, because a machine we cannot measure gets the conservative answer, never the loud one.
+default_slots() {
+	local avail_mb
+	avail_mb=$(awk '/^MemAvailable:/ {print int($2 / 1024); exit}' /proc/meminfo 2>/dev/null)
+	[ -n "${avail_mb:-}" ] || { echo 2; return; }
+	local n=$((avail_mb / 2500))
+	[ "$n" -lt 2 ] && n=2
+	[ "$n" -gt 4 ] && n=4
+	echo "$n"
+}
 
 slots=${TANK_SQUAD_SLOTS:-$(default_slots)}
 limit=${TANK_SQUAD_SLOT_TIMEOUT:-5400}

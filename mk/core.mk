@@ -79,16 +79,25 @@ lint: import ## Parse-check every GDScript file; prints only errors (fast way to
 	@exec 9>$(BUILD_DIR)/.lint.lock; \
 	flock -n 9 || { \
 		echo "lint: another lint is already running in this checkout ($(CURDIR)) -- refusing."; \
-		echo "      A second lint runs \`import\` first, and that rewrites the .godot cache the first one is reading."; \
+		echo "      A second lint runs \`import\` first, and that rewrites the .godot cache the first is reading."; \
 		echo "      Wait for it, or kill it AND its Godot children (a killed wrapper leaves them)."; \
 		exit 1; }; \
+	files=$$(git ls-files -co --exclude-standard '*.gd' 2>/dev/null || true); \
+	if [ -z "$$files" ]; then \
+		files=$$(find . -name '*.gd' -not -path './.git/*' -not -path './.godot/*' -not -path './.tools/*' \
+			-not -path './build/*' -not -path './node_modules/*' | sed 's|^\./||' | sort); \
+	fi; \
+	count=$$(printf '%s\n' "$$files" | grep -c . || true); \
+	[ "$$count" -gt 0 ] || { echo "lint FAILED: found no .gd files to check. That is not a clean tree, it is a"; \
+		echo "            broken file list -- see the note above this recipe."; exit 1; }; \
 	: > $(BUILD_DIR)/lint.out; \
-	git ls-files -co --exclude-standard '*.gd' | \
+	printf '%s\n' "$$files" | \
 		xargs -P $(LINT_JOBS) -I{} sh -c \
 			'out=$$($(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1 | grep -E "Parse Error|SCRIPT ERROR" | grep -v "depended scripts" || true); \
 			[ -z "$$out" ] || printf "%s: %s\n" "$$1" "$$out"' _ {} >> $(BUILD_DIR)/lint.out; \
-	if [ -s $(BUILD_DIR)/lint.out ]; then sort $(BUILD_DIR)/lint.out; exit 1; fi; \
-	echo "lint: all scripts parse ($$(git ls-files -co --exclude-standard '*.gd' | wc -l) files, -P$(LINT_JOBS))"
+	if [ -s $(BUILD_DIR)/lint.out ]; then sort $(BUILD_DIR)/lint.out; \
+		echo "lint FAILED over $$count files"; exit 1; fi; \
+	echo "lint: all $$count scripts parse (-P$(LINT_JOBS))"
 
 test: import ## Run the headless test suite (FILTER=substring to run a subset)
 	$(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=$(FILTER)
@@ -102,8 +111,12 @@ test: import ## Run the headless test suite (FILTER=substring to run a subset)
 # T1 (metrics, round 9). ONE list, used by `check` and by `check-timed`, so a target can never be measured and
 # not run (or run and not measured). Order is the serial order `check` has always used: `match-pytest` stays LAST
 # for the reason above.
+# `metrics-pytest` is here for `match-pytest`'s reason and not arena's. arena keeps `arena-pytest` OUT of `check`
+# because it guards an instrument only arena reads. A12 is the opposite case: contract S3 makes EVERY stream's
+# falsifier this round read from `tools/metrics/` and no other tool, so its guards sit on the hot path of every
+# measurement anyone publishes -- and it costs 0.6 s.
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
-                 sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest
+                 sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #
@@ -132,8 +145,17 @@ CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-
 #
 # The wrappers exist so the chains live HERE and not on the real targets: putting `| net-smoke` on `combat-smoke`
 # itself would mean `make combat-smoke` silently ran net-smoke too, for every caller, forever.
+# Both DERIVED from the machine, never hard-coded (lesson 148), and both from a MEASURED footprint:
+#   CHECK_JOBS  2200 MB is the worst-case TARGET, not the worst-case process: `net-smoke` and `relay-smoke` each
+#               hold three Godot processes at once. Provisional until the per-target peak RSS from `check-timed`
+#               is in, and it is deliberately the pessimistic figure in the meantime -- a check that under-uses
+#               builder0 costs minutes, and one that OOMs a laptop with six agent sessions up costs the evening.
+#   LINT_JOBS   a `--check-only` process peaks at 200-205 MB, measured twice on the laptop (not the ~735 MB a
+#               RUNNING match costs -- it parses and exits without ever building a world). 250 MB with a
+#               half-the-cores cap, because lint runs CONCURRENTLY with up to CHECK_JOBS other targets and the
+#               two budgets share one machine.
 CHECK_JOBS ?= $(shell tools/slot.sh --jobs 2200)
-LINT_JOBS  ?= $(shell tools/slot.sh --jobs 800)
+LINT_JOBS  ?= $(shell tools/slot.sh --jobs 250 $$(( $$(nproc) / 2 )))
 _CHECK_WRAPPED := $(addprefix _cp-,$(CHECK_TARGETS))
 
 # The heartbeat (lesson 48). `-Otarget` holds each target's output until that target finishes, which is what
