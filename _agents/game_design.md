@@ -1852,6 +1852,16 @@ layer reads as coming from somewhere.
 **Owner:** arena (placement, the primitive build) with feel on the livery and the screen's look. Small enough to ride
 round 9 beside the A3 cover tables rather than displacing anything.
 
+**BUILT AND MEASURED (feel, round 9, 2026-09-20 `5ae7e531`, laptop):** primitives, no Meshy, no collision, on the ad
+channel (kills replay on it for free), tier-aware. **The lead will NOT see it at his default pose, and the reason is
+geometry, not art:** the frame's top edge sits at `FOV/2 − pitch` above the horizon, which at 21°/FOV 35 is **3.5° below
+it — the sky is not on screen at all**, and to fit over the arena even at his lowest tilt (8°) it would have to fly below
+42 m on a map with 40 m blocks. Decided overnight: it moved out to **radius 560 m, altitude 56 m** over the *city*
+(inside the skyline's 640 m); measured 768 samples: **12.5% of frames at 8–12° tilt, 105–108 px on screen, 0% at 17°
+and above.** `build/airship-look/airship_widest.png` has it top-left against the lit city, half out of frame — his phrase.
+**His call in the morning:** keep it as a thing he sees only when he tilts down, or make it a presentation element
+(title, results, replay) where the camera can look up. Both are one constant.
+
 ## Round 9 direction: the lead's two feedback items (2026-09-19, evening)
 
 Given while asking the orchestrator to prepare round 9. His words, verbatim:
