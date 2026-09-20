@@ -137,3 +137,79 @@ func _spread(element: Element, scenario: AiScenario) -> float:
 		for j in range(i + 1, positions.size()):
 			widest = maxf(widest, (positions[i] as Vector3).distance_to(positions[j]))
 	return widest
+
+
+func test_a_facing_the_player_dragged_reaches_the_order_of_the_crew_that_has_one() -> void:
+	# THE LEAD'S COMMONEST ORDER, and control's post-CP2 playtest caught it losing the heading. A facing drag on a
+	# WHOLE SQUAD goes down the task path (`"drills": false`, `rts_controls.gd:530`), where the chosen facing reaches
+	# `plan["heading"]` and zeroes the sectors -- so the formation is laid facing where he dragged -- and then the
+	# per-unit orders threw the heading away and the squad arrived pointing whichever way it had driven.
+	#
+	# It was my own X5 rule that dropped it: `_group` gave a crew a facing only at a HALT, because on the move a crew's
+	# heading is the direction of travel and nav derives that for itself. True of every heading DOCTRINE chooses, false
+	# of the one the PLAYER chooses.
+	#
+	# WHAT THIS ASSERTS, AND WHAT IT DOES NOT. The leader is given a `move` to its own slot and now carries the facing.
+	# Every other crew is given a `follow` on the leader while the element flows into formation (`_flow` replaces the
+	# order with verb, target and slot, no destination), and a facing on THAT would be an arrival heading for a moving
+	# target, so it deliberately carries none. Whether a follower ends up on the dragged heading once the flow joins is
+	# a live question and NOT settled here -- see the Status note; measuring it needs a window between `flow_joined` and
+	# `arrived` that is very narrow, because the flow joins when the LEADER reaches its own slot.
+	var context := await _element_scenario()
+	var elements: Elements = context["elements"]
+	var scenario: AiScenario = context["scenario"]
+	var orders: Object = context["orders"]
+	var alpha := elements.form(["Green_A_1", "Green_A_2"], "Alpha")
+	var east := Vector3(1.0, 0.0, 0.0)
+	assert_eq(alpha.assign({"verb": "move", "to": [0, -20], "facing": [east.x, east.z], "drills": false}), "",
+			"the element takes a plain move task with a facing on it")
+	for i in TICKS * 2:
+		await scenario.step()
+	var moving := 0
+	var following := 0
+	for member in alpha.members():
+		var order: Dictionary = orders.call("current", member)
+		if order.is_empty():
+			continue
+		if String(order["verb"]) == "follow":
+			following += 1
+			assert_true(not order.has("facing"),
+					"%s is following the leader, so it is given no arrival heading" % member)
+			continue
+		moving += 1
+		if not order.has("facing"):
+			# Reported, then skipped: reading the key anyway turns one honest failure into an engine error that
+			# buries it.
+			assert_true(false, "%s was told which way to end up facing" % member)
+			continue
+		var look := Vector3(float(order["facing"][0]), 0.0, float(order["facing"][1])).normalized()
+		assert_true(look.dot(east) > 0.99,
+				"%s is told to face the way the player dragged (dot %.3f)" % [member, look.dot(east)])
+	assert_true(moving >= 1, "at least one crew is driving to its own slot, so the facing had somewhere to land")
+	assert_eq(moving + following, 2, "and both crews were ordered, so this is not passing on an empty list")
+	scenario.dispose()
+
+
+func test_a_move_with_no_facing_still_leaves_the_heading_to_nav() -> void:
+	# The other arm, and the one that keeps the fix honest. With no facing on the task, NO order may carry one, so a
+	# crew's heading stays the direction it drove -- which is what nav derives and what every arrival behaviour in
+	# `test_wheeled_arrival` is built on. If this goes red, the fix above has become a facing on every order, which
+	# would quietly take the derived heading away from nav.
+	var context := await _element_scenario()
+	var elements: Elements = context["elements"]
+	var scenario: AiScenario = context["scenario"]
+	var orders: Object = context["orders"]
+	var alpha := elements.form(["Green_A_1", "Green_A_2"], "Alpha")
+	alpha.assign({"verb": "move", "to": [0, -20], "drills": false})
+	for i in TICKS * 2:
+		await scenario.step()
+	var seen := 0
+	for member in alpha.members():
+		var order: Dictionary = orders.call("current", member)
+		if order.is_empty():
+			continue
+		seen += 1
+		assert_true(not order.has("facing"),
+				"%s drove without being told a heading, so nav derives it from travel" % member)
+	assert_eq(seen, 2, "and both crews were ordered, so this is not passing on an empty list")
+	scenario.dispose()

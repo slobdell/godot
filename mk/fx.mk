@@ -106,10 +106,41 @@ rig-hinge: import ## Feel X2, S2: the War Rig bending at the fifth wheel -- its 
 # the instrumented arm 43% FASTER than the control, i.e. noise swamping any real difference. perf-scene already
 # alternates `all` and a layer seconds apart for every other layer; the trailer gets the same treatment.
 perf-trailer-ab: import ## M1: what the War Rig's hinge costs a frame, measured WITHIN one run (the no_trailer layer against the `all` phases either side)
+	@printf '>> perf-trailer-ab BEFORE: load %s | %s other godot\n' \
+		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"
 	@$(MAKE) --no-print-directory perf-scene PERF_NAME=perf-trailer PERF_LAYERS=no_trailer \
 		PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs"
-	@echo "M1 budget: a locked 30 fps at 1080p with 30 a side = 33.3 ms. Read the layer cost against that, not against zero."
-	@grep -E '^PERF_SCENE_LAYERS' $(BUILD_DIR)/perf-trailer.log || true
+	@printf '>> perf-trailer-ab AFTER:  load %s | %s other godot\n' \
+		"$$(cut -d' ' -f1-3 /proc/loadavg)" "$$(pgrep -c -f 'Godot_v4' || echo 0)"
+	@$(PYTHON) -c "import json;\
+d=json.load(open('$(BUILD_DIR)/perf-trailer.json'));\
+ph=d['phases'];\
+print();\
+print('PERF_TRAILER_AB phase      avg_ms   p95_ms   p99_ms  draws  vehicles');\
+[print('PERF_TRAILER_AB %-10s %7.2f %8.2f %8.2f %6d %9d' % (p['phase'], p['avg_ms'], p['p95_ms'], p['p99_ms'], p['draw_calls'], p['vehicles'])) for p in ph];\
+cyc=[((ph[i-1]['avg_ms']+ph[i+1]['avg_ms'])/2.0 - ph[i]['avg_ms'], ph[i]['vehicles'], ph[i-1]['vehicles'], ph[i+1]['vehicles']) for i in range(1,len(ph)-1) if ph[i]['phase']!='all'];\
+print();\
+[print('PERF_TRAILER_AB cycle %d: %+6.2f ms   (census %d / %d / %d)' % (n+1, c[0], c[2], c[1], c[3])) for n,c in enumerate(cyc)];\
+keep=cyc[1:] if len(cyc)>2 else cyc;\
+note=' (first cycle discarded: warm-up)' if len(cyc)>2 else ' (too few cycles to discard warm-up; run PERF_CYCLES=6)';\
+costs=[c[0] for c in keep];\
+mean=sum(costs)/len(costs); spread=max(costs)-min(costs);\
+same=all(c>0 for c in costs) or all(c<0 for c in costs);\
+census=[v for c in keep for v in c[1:]]; moved=(max(census)-min(census))>0;\
+print();\
+print('PERF_TRAILER_AB cycles kept: %s%s' % (', '.join('%+.2f' % c for c in costs), note));\
+print('PERF_TRAILER_AB mean %+.2f ms, spread %.2f ms, signs %s, census %s' % (mean, spread, 'AGREE' if same else 'DISAGREE', 'CONSTANT' if not moved else 'MOVED %d..%d' % (min(census), max(census))));\
+bad=[];\
+off=[c for c in costs if (c>0) != (mean>0)];\
+bad.append('cycles disagreeing with the mean sign above the 0 bound in %d of %d samples (peak %+.2f ms)' % (len(off), len(costs), max(off, key=abs) if off else 0.0)) if not same else None;\
+dev=[abs(c-mean) for c in costs];\
+bad.append('per-cycle deviation from the mean above the |mean| bound of %.2f ms in %d of %d samples (peak %.2f ms)' % (abs(mean), sum(1 for d in dev if d > abs(mean)), len(dev), max(dev))) if spread > abs(mean) else None;\
+rng=[max(c[1:])-min(c[1:]) for c in keep];\
+bad.append('vehicle census change between phases above the 0 bound in %d of %d samples (peak %d vehicles), so the phases are not the same scene' % (sum(1 for r in rng if r > 0), len(rng), max(rng))) if moved else None;\
+bad.append('usable cycles below the 2-cycle bound: %d of %d (run PERF_CYCLES=6)' % (len(keep), len(cyc))) if len(keep) < 2 else None;\
+bad=[b for b in bad if b];\
+print('PERF_TRAILER_AB VERDICT: ' + ('USABLE -- %+.2f ms CPU' % mean if not bad else 'NOT USABLE -- ' + '; '.join(bad) + '. Do not quote this number.'));\
+print('PERF_TRAILER_AB M1 budget is 33.3 ms (a locked 30 fps at 1080p, 30 a side). Read the cost against that, not against zero.')"
 
 AIRSHIP_RES ?= 1920x1080
 airship-look: import ## Feel X7: is the Syndicate airship EVER in the lead's field of view? Sweeps every camera yaw x the whole orbit at his pose and reports the fraction -> build/airship-look/ (needs a display; AIRSHIP_FLAGS=, ARENA=)

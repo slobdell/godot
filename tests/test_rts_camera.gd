@@ -275,17 +275,34 @@ func _the_square_cutaway() -> void:
 	assert_true(depth.call(rail) < near and depth.call(seat) < near, "the rail and the seats are cut away (near %.1f; rail %.1f, seat %.1f)" %
 			[near, depth.call(rail), depth.call(seat)])
 	assert_true(depth.call(wall_foot) > near and depth.call(squad) > near, "the floor at the wall and a vehicle on it are drawn")
-	# At the lead's 12° the wall itself (3 m) must go too, or its top edge hides every vehicle parked against it (seen in
-	# shell-playtest at 12°); a vehicle hugging the wall stays.
+	# At the lead's LOW camera the wall itself (3 m) must go too, or its top edge hides every vehicle parked against it
+	# (measured in shell-playtest at 12°); a vehicle hugging the wall stays.
+	#
+	# ROUND 9 (CP2) NARROWED THAT FROM "AT EVERY TILT" TO "AT THE LOW TILTS WHERE IT WAS MEASURED", and the reason is
+	# a conflict the resize created rather than a preference. The tallest hull is now **6.18 m**, twice the wall, so
+	# the top of a vehicle parked against it is NEARER the camera than the wall's top edge - more so the steeper the
+	# tilt - and one near plane cannot both cut the wall's top and keep that vehicle. Measured across the range the
+	# player can reach: at 21° the hull top sits 0.22 m BEHIND the wall cut (no conflict, nothing changes), and at
+	# 50° it sits 1.57 m in FRONT of it, so the old rule sliced 1.57 m off a 6.18 m vehicle.
+	#
+	# The trade taken: at a low camera cut the wall (the measured problem), and at a steep one keep the vehicle and
+	# leave the wall drawn - where a 3 m wall hides little of anything anyway. A vehicle with its top sliced off
+	# reads as a rendering fault; a vehicle behind a wall reads as a wall.
 	for pitch: float in [12.0, 25.0, 50.0]:
 		var low_near := RtsCamera.cutaway_near(focus, 0.0, 50.0, pitch, half)
 		var low_view := RtsCamera.pose_at(focus, 0.0, 50.0, pitch).affine_inverse()
 		var wall_top := Vector3(0, RtsCamera.WALL_HEIGHT_M, half)
 		var hugging := Vector3(0, 2.0, half - 0.5)
-		if low_near > RtsCamera.NEAR_DEFAULT:  # (at 50° from here the stands hide nothing, so nothing is cut)
+		if low_near > RtsCamera.NEAR_DEFAULT and pitch <= 12.0:  # the low camera he plays, where it was measured
 			assert_true(-(low_view * wall_top).z < low_near, "at %d° the wall's top edge is cut away" % pitch)
 		assert_true(-(low_view * hugging).z > low_near, "at %d° a vehicle against the wall is drawn" % pitch)
 		assert_true(-(low_view * Vector3(0, 0, half)).z > low_near, "at %d° the floor at the wall is drawn" % pitch)
+		# The new half of the rule, at EVERY tilt: the tallest hull the roster has, parked as close to the wall as
+		# its own box allows, is never cut to get at the wall behind it.
+		var tall: Array = RtsCamera.tallest_hull()
+		var tallest := Vector3(0, float(tall[0]), half - float(tall[1]))
+		assert_true(-(low_view * tallest).z > low_near,
+				"at %d° the tallest hull (%.2f m) parked against the wall is drawn, not sliced" % [pitch, float(tall[0])])
 	# A camera among the seats (close framing at 12°, shell-playtest at 3 s: a railing across the whole view) always cuts.
 	# (36 m inside the wall, 46 m out: the camera sits 9 m past the wall at 9.6 m, among the seats, where the sight line
 	# to the arena clears every sampled profile point: the first version of the rule left the railings standing.)
@@ -416,3 +433,50 @@ func test_a_long_lean_keeps_the_squad_above_the_command_card() -> void:
 	assert_true((pose[0] as Vector3).z < (squad_only[0] as Vector3).z - 5.0,
 			"and the view still leans toward the destination (focus z %.1f vs %.1f framing the squad alone)" % [(pose[0] as Vector3).z, (squad_only[0] as Vector3).z])
 	RtsCamera.fov = saved_fov
+
+
+## Round 9 (CP2), item 4's checklist: THE WALL CUTAWAY AGAINST A HULL TALLER THAN THE WALL.
+##
+## The cut puts the near plane just past the perimeter wall's top edge (3.0 m). That was safe by a mile when the
+## tallest hull was about 1.6 m. After the resize the Sonic Emitter is **6.18 m** and the War Rig **5.24 m** - both
+## more than the wall - so the top of a vehicle parked against the wall is now nearer the camera than the wall's
+## top edge, and a near plane placed there can cut the vehicle instead of the wall.
+##
+## It does NOT today, and the margin is the finding: the closest a hull's CENTRE can come to the wall is half its
+## own footprint, and for the Sonic Emitter that standoff beats the clip zone by **0.22 m**. That is the whole of
+## the safety, it is collision geometry rather than anything the camera does, and nobody would notice it crossing.
+## So this asserts it for every hull in the roster across the whole tilt range the player can reach: it fails the
+## day a taller hull lands, the wall gets shorter, or the tilt range opens up.
+func test_no_hull_is_cut_by_the_wall_cutaway_it_is_parked_against() -> void:
+	var half := 120.0
+	var was := RtsCamera.perimeter_poly
+	RtsCamera.perimeter_poly = PackedVector2Array()  # the square fallback, so `half` is the wall
+	var worst := INF
+	var worst_unit := ""
+	var worst_pitch := 0.0
+	for unit_id: String in Units.PROFILES:
+		var hull: Array = Units.stat(unit_id, "hull_size")
+		if hull.size() != 3:
+			continue
+		var height := float(hull[1])
+		var standoff := minf(float(hull[0]), float(hull[2])) * 0.5  # a hull cannot overlap the wall
+		for pitch in [8.0, 21.0, 35.0, 50.0, 70.0]:
+			var focus := Vector3(0.0, 0.0, half - 20.0)
+			var distance := 49.0
+			var near := RtsCamera.cutaway_near(focus, 0.0, distance, pitch, half)
+			if near <= RtsCamera.NEAR_DEFAULT:
+				continue  # nothing cut at this pose
+			var pose := RtsCamera.pose_at(focus, 0.0, distance, pitch)
+			var forward := -pose.basis.z
+			# The top of that hull, parked as close to the wall as its own box allows.
+			var top := focus + Vector3(0.0, 0.0, 1.0) * (20.0 - standoff) + Vector3.UP * height
+			var margin: float = (top - pose.origin).dot(forward) - near
+			if margin < worst:
+				worst = margin
+				worst_unit = unit_id
+				worst_pitch = pitch
+	RtsCamera.perimeter_poly = was
+	print("MEASURE cutaway_hull_margin ", JSON.stringify({"worst_m": snappedf(worst, 0.01), "unit": worst_unit,
+			"pitch_deg": worst_pitch, "wall_m": RtsCamera.WALL_HEIGHT_M}))
+	assert_true(worst > 0.0,
+			"no hull is cut by the wall it is parked against (worst %.2f m: %s at %.0f deg)" % [worst, worst_unit, worst_pitch])
