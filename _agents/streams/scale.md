@@ -308,23 +308,33 @@ tip. **Do not merge CP2 until this is understood.**
 - `git show 07f92087 -- game/` contains **only** the spawn constants, the `SPAWN_CLEARANCE_MARGIN` refactor and
   `size_look.gd` (not in the simulation). Plus all ten arenas' baked spawn lists.
 
-**✗ CROSS-TEST COUPLING IS RULED OUT.** The reproduction finished after the pause was called:
-`--filter=ai_player_orders` **alone** fails the same way, `3 passed, 1 failed`, with
+**✗ CROSS-TEST COUPLING IS RULED OUT.** `--filter=ai_player_orders` **alone** fails the same way, with Charlie at
+**104.9 m in both** the remote full-suite run and the local filtered one — identical to 0.1 m. Deterministic, not
+flaky, not test order.
+
+**AND THE OFFENDER IS NOW LOCATED.** Printing every Charlie unit's start, end and slot (the test reports only the
+per-squad worst gap and the three units *nearest* their slots, which is why this was invisible):
 
 ```
-worst gap per squad { "Alpha": 2.9, "Bravo": 5.8, "Charlie": 104.9, "Delta": 4.9, "Echo": 4.3 }
+                  start            now             slot          gap    goal
+Green_Charlie_1   -18.0, 95.0  ->   45.0, 90.0    -19.9,  7.6   104.9   (0, 10)
+Green_Charlie_2   -12.0, 95.0  ->  -11.4, 11.7     -9.9,  8.0     4.0   (0, 10)
+Green_Charlie_3    -5.1, 95.0  ->   -1.0, 21.0     -0.3, 18.3     2.8   (0, 10)
+Green_Charlie_4    -0.0, 93.6  ->    0.1, 11.2      0.1,  8.3     2.8   (0, 10)
+Green_Charlie_5     5.1, 95.0  ->    9.8, 11.5     10.1,  8.7     2.8   (0, 10)
+Green_Charlie_6    12.0, 95.0  ->   19.6, 11.9     20.0,  9.0     2.8   (0, 10)
 ```
 
-**Charlie is 104.9 m in BOTH runs — the remote full-suite run and the local filtered one, identical to 0.1 m.**
-So it is deterministic, it is not flaky, and it is not test-order state. It is a real change in the simulation.
+**Charlie_1 did not fail to move — it moved 63 m SIDEWAYS and stayed at the back.** Five squadmates drove from
+z = 95 to z ≈ 11–21 as ordered; Charlie_1 went from x = −18 to **x = +45** and from z = 95 to **z = 90**.
 
-**And the shape of the numbers is the best clue available.** The other four squads move by ~1 m between the two
-runs (Alpha 3.2 → 2.9, Bravo 4.3 → 5.8, Delta 5.0 → 4.9, Echo 4.9 → 4.3) — the ordinary builder0-vs-laptop drift
-(different glibc, trip-up 63). **Charlie does not move at all.** A continuous cause would drift with everything
-else; a value identical across two machines points at something **categorical** — a unit that never gets an order,
-never leaves its start, or is placed somewhere fixed and wrong — rather than at a unit that drove and came up
-short. `_setup` puts unit index 12–17 (Charlie) at x = −18 … +12, z = 95; a unit that simply never moved would sit
-~85 m from a slot near (0, 10), and 104.9 m is further than that.
+**(45, 90) is a spawn point of the NEW grid.** `Match.SLOT_X` contains exactly `45.0`, and `BASE_Z` is exactly
+`90.0`. The old grid's nearest column was **44.0**, not 45. So the unit is sitting precisely on a grid slot that
+only exists because of my change — which is why the identical 104.9 appears on two machines whose other numbers
+differ by a metre: it is not a unit that drove and came up short, it is a unit **placed on a grid point**.
+
+**Single-variable confirmation is running**: the same filtered test with ONLY the spawn grid reverted (the
+constants *and* the ten baked spawn lists, which win over them) and the resized roster left in place.
 
 **THE EXACT NEXT STEP, in order:**
 1. **Bisect `b7055602..4375a9ad`** with `--filter=ai_player_orders`. It reproduces **alone, deterministically, in
