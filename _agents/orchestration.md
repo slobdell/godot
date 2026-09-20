@@ -2234,3 +2234,37 @@ The kickoff prompt is one line; this section is the rest.
        truncated check. **Three different mechanisms, one symptom: a green result that covers less than it appears to.**
      - **And the fix is always the same: make it fail on purpose and watch.** Every guard that worked this round was
        mutation-checked; every one that failed us was not.
+143. **A roster that contains a unit is not coverage — the unit has to DO the thing.** combat, widening the sim baseline
+     after lesson 137, caught its own first draft failing:
+
+     > *"My first draft was BLIND to the scout's fire arc. The fixed-mount hulls were in flanking and scouting squads and
+     > never got into a fight inside 40 s, so their guns never mattered and the arc was unreachable."*
+
+     **Fixing it meant moving them into the line squads.** combat found it **by mutation-testing, not by reasoning about
+     the roster** — which is exactly the trap: *a widened canary that still cannot see a wheeled change is worse than the
+     narrow one, because it will be trusted more.*
+     **The measured result, old baseline against widened:**
+
+     | mutation | widened | old |
+     |---|---|---|
+     | wheels+turret — IFV hull turn rate | SEES | **BLIND** |
+     | wheels+fixed — scout fire arc | SEES | **BLIND** |
+     | hover+turret — syn_scout speed | SEES | **BLIND** |
+     | tracks+turret — tank hull turn rate | SEES | SEES *(control)* |
+     | the 14 m rig's hull box | SEES | **BLIND** |
+     | a turret traverse (law_tank) | SEES | **BLIND** |
+
+     **Blind to five of six.** And the tracked case as a control, confirming the widening did not break what worked.
+     - **This is the positive control (lesson 101) applied to COVERAGE rather than to a treatment.** *Is the unit present*
+       is the easy question; *does the code path execute* is the one that matters. **The same distinction as a test that
+       is collected but never fails, and a switch that is passed but never read.**
+     - **combat wrote NEW doctrines rather than editing the existing ones**, because `anvil_hammer`/`individuals` are also
+       used by `announcer-*`, `audio-*`, `match` and the AI ladder — *"changing them would have moved four other things
+       silently, which is the same class of mistake as the one we are fixing."*
+     - **And it declined the second map, with a reason:** the `ARENA_HALF_SIZE` case a second map would have caught is no
+       longer a miss — that constant is a *bound* now and each layout declares its own `half_size` — so it would double the
+       cost to catch a non-case and make every future investigation span two matches. **"If a hexagon-specific regression
+       ever bites us, that is the moment to add it — with the failure in hand rather than in anticipation."**
+     - **⚠ Consequence to expect: `sim-baseline` will now fail for real changes it used to wave through.** The next few
+       *"the baseline moved"* reports are likely to be **correct**, and should be read as the instrument working rather
+       than as a regression.
