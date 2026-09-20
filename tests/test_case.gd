@@ -8,7 +8,69 @@ extends RefCounted
 
 var tree: SceneTree
 var failures: PackedStringArray = []
+var expected_warnings: PackedStringArray = []
 var _owned_nodes: Array[Node] = []
+
+
+## Declare that this test EXPECTS one engine warning matching [param pattern], and that it is not a defect.
+##
+## Engine warnings fail a test by default, which is the right default: `push_warning` on a production path a
+## test exercises is a defect in that path until someone says otherwise. But a test that deliberately drives
+## a path INTO its warning -- a rejected config, a clamped value, a refused load -- then has no way to say so,
+## and feel's city-block determinism test could not pass as written for exactly that reason.
+##
+## One call consumes one matching warning. Declaring it and getting none FAILS the test too: an expectation
+## that silently holds for a warning that no longer happens is how a test stops testing anything.
+##
+## Matching is substring, or glob (`String.match`) when the pattern contains `*` or `?`. It may be called
+## before or after the warning: reconciliation happens once, after teardown.
+func expect_warning(pattern: String) -> void:
+	expected_warnings.append(pattern)
+
+
+## Reconcile one test's collected engine messages against the warnings it declared.
+##
+## Returns {"errors": int, "warnings": int, "failures": PackedStringArray}. Static, and separate from the
+## runner, so every branch can be driven from a test with synthetic input -- including the one branch a real
+## test cannot stage, an expectation that never arrives.
+static func reconcile_engine_messages(entries: Array, expected: PackedStringArray) -> Dictionary:
+	var errors := 0
+	var warnings := 0
+	var failures: PackedStringArray = []
+	var outstanding := expected.duplicate()
+	for entry: Dictionary in entries:
+		var text: String = entry.get("text", "")
+		if bool(entry.get("warning", false)):
+			var index := _first_match(outstanding, text)
+			if index >= 0:
+				outstanding.remove_at(index)
+				continue
+			warnings += 1
+			failures.append("engine warning: " + text)
+		else:
+			errors += 1
+			failures.append("engine error: " + text)
+	for pattern: String in outstanding:
+		failures.append('expect_warning("%s") was declared and no matching warning arrived' % pattern)
+	if errors + warnings > 0:
+		failures.insert(0, "%d engine errors, %d engine warnings" % [errors, warnings])
+	return {"errors": errors, "warnings": warnings, "failures": failures}
+
+
+## The first outstanding pattern that matches, or -1. An EMPTY pattern matches nothing: `contains("")` is
+## true for every string, so an accidental `expect_warning("")` would swallow the first warning of every
+## kind -- a blanket exemption that reads like a specific one.
+static func _first_match(patterns: PackedStringArray, text: String) -> int:
+	for index in patterns.size():
+		var pattern := patterns[index]
+		if pattern == "":
+			continue
+		if pattern.contains("*") or pattern.contains("?"):
+			if text.match(pattern):
+				return index
+		elif text.contains(pattern):
+			return index
+	return -1
 
 
 func assert_true(condition: bool, message: String) -> void:
@@ -65,6 +127,42 @@ func _count_bodies(node: Node) -> int:
 	return n
 
 
+## Wait until the world's navigation map holds no regions, so the NEXT test starts on an empty map however it built
+## its arena. `ArenaFixture` drains before it instantiates, but **20+ test files call `ARENA.instantiate()` directly**
+## and never reach that path — so the fixture's drain is a belt and this is the braces.
+##
+## Why it must live here and be awaited: `free()` is **synchronous**, and `NavigationServer3D` drops the freed
+## arena's regions when it next **syncs**, a frame or two later. A test boundary is not a synchronisation point, so
+## the next test bakes into the previous one's geometry — two full arenas of edges in one rasterization space, which
+## the engine reports as *"more than 2 edges tried to occupy the same map rasterization space"* and `run_tests.gd`
+## then charges to **whatever test is running when the warning lands**. combat lost 14 of 18 in one shard that way,
+## with the warning standing beside a test that builds no arena at all; nav saw 4 of the same errors from building
+## terminus twice inside one test.
+##
+## **EMPTY, not "back to the count we started with".** scale's drain probe printed `before=2 with_arena=2` — equal,
+## so a baseline guard is satisfied having waited for nothing, and that `before=2` **was** the previous test's
+## regions mid-drain. "Stops changing" fails too: a drain spanning two syncs reads `2, 2` as settled while both
+## samples are pre-drain. Zero is the resting state and the only predicate with no false-satisfied case.
+const DRAIN_FRAMES := 30
+
+
+func drain_navigation() -> void:
+	var viewport := tree.root as Viewport
+	if viewport == null or viewport.world_3d == null:
+		return
+	var map := viewport.world_3d.navigation_map
+	for frame in DRAIN_FRAMES:
+		if NavigationServer3D.map_get_regions(map).is_empty():
+			return
+		await tree.physics_frame
+	var left := NavigationServer3D.map_get_regions(map).size()
+	if left > 0:
+		failures.append(("left %d navigation region(s) on the map after %d frames. The next test will bake into "
+				+ "them and the engine's 'more than 2 edges tried to occupy the same map rasterization space' will "
+				+ "be charged to whichever test is running when it lands - which will not be this one.")
+				% [left, DRAIN_FRAMES])
+
+
 func teardown() -> void:
 	for node in _owned_nodes:
 		if is_instance_valid(node):
@@ -78,3 +176,8 @@ func teardown() -> void:
 				+ "them and may fail instead of this one: free every node you add, and if a helper builds the arena, "
 				+ "free it there.") % [total, _world_baseline])
 	_world_baseline = maxi(_world_baseline, total)
+	# LAST, and awaited by the runner: leave the navigation map empty so the next test cannot bake into this one's
+	# regions. Placed after the body guard so that guard's timing is unchanged, and after `free()` so there is
+	# something to drain. Every test gets this without asking, which is the point -- 20+ files instantiate the arena
+	# scene directly and would never call it themselves.
+	await drain_navigation()

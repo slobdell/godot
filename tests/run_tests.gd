@@ -15,19 +15,27 @@ const TEST_ROOT := "res://tests"
 
 ## Collects every error the engine logs (script errors, push_error, failed checks).
 class ErrorCollector extends Logger:
-	var messages: PackedStringArray = []
+	## Errors and warnings are recorded SEPARATELY. This used to ignore `_error_type` entirely, so every
+	## `push_warning` on a production path a test exercised arrived as "engine error: ..." and failed the
+	## test with no way to tell the two apart and no way to declare an expected one -- feel's city-block
+	## determinism test could not pass as written. Warnings still fail by default; they are now countable,
+	## nameable, and declarable with TestCase.expect_warning().
+	var entries: Array[Dictionary] = []
 	var _mutex := Mutex.new()
 
 	func _log_error(function: String, file: String, line: int, code: String, rationale: String,
-			_editor_notify: bool, _error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
+			_editor_notify: bool, error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
 		_mutex.lock()
-		messages.append("%s (%s:%d in %s)" % [rationale if rationale != "" else code, file, line, function])
+		entries.append({
+			"warning": error_type == Logger.ERROR_TYPE_WARNING,
+			"text": "%s (%s:%d in %s)" % [rationale if rationale != "" else code, file, line, function],
+		})
 		_mutex.unlock()
 
-	func take() -> PackedStringArray:
+	func take() -> Array[Dictionary]:
 		_mutex.lock()
-		var taken := messages
-		messages = PackedStringArray()
+		var taken := entries
+		entries = []
 		_mutex.unlock()
 		return taken
 
@@ -42,6 +50,8 @@ func _run() -> void:
 	OS.add_logger(errors)
 	var passed := 0
 	var failed := 0
+	var total_engine_errors := 0
+	var total_engine_warnings := 0
 	# `make test FILTER=bot` passes --filter=bot: run only tests whose "file::method" contains it.
 	var filter := ""
 	for arg in OS.get_cmdline_user_args():
@@ -95,9 +105,14 @@ func _run() -> void:
 			case.tree = self
 			errors.take()
 			await case.call(method_name)
-			case.teardown()
-			for message in errors.take():
-				case.failures.append("engine error: " + message)
+			# AWAITED: `teardown()` drains the navigation map, and that needs frames. Un-awaited it would return at
+			# once and drain after the NEXT test had started -- a hook that looks wired up and does nothing.
+			await case.teardown()
+			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings)
+			total_engine_errors += int(engine["errors"])
+			total_engine_warnings += int(engine["warnings"])
+			var engine_failures: PackedStringArray = engine["failures"]
+			case.failures.append_array(engine_failures)
 			var label := "%s::%s" % [path.get_file().get_basename(), method_name]
 			if case.failures.is_empty():
 				passed += 1
@@ -110,10 +125,14 @@ func _run() -> void:
 	# A shard prints a DISTINCT line and never the bare one, so that in a sharded run there is exactly one
 	# `N passed, M failed` in the output -- the total, printed by the make recipe after it adds the shards up.
 	# The orchestrator reads that line and nothing else (lesson 28); several of them would be worse than none.
+	# The engine tally goes on its OWN line, never inside the summary the orchestrator reads (lesson 28). The
+	# make recipe sums the sharded ones the same way it sums the rest.
 	if shard >= 0:
-		print("\nSHARD %d/%d: %d files, %d passed, %d failed" % [shard, shards, mine.size(), passed, failed])
+		print("\nSHARD-ENGINE %d/%d: %d errors, %d warnings" % [shard, shards, total_engine_errors, total_engine_warnings])
+		print("SHARD %d/%d: %d files, %d passed, %d failed" % [shard, shards, mine.size(), passed, failed])
 	else:
-		print("\n%d passed, %d failed" % [passed, failed])
+		print("\nengine: %d errors, %d warnings" % [total_engine_errors, total_engine_warnings])
+		print("%d passed, %d failed" % [passed, failed])
 	quit(1 if failed > 0 else 0)
 
 

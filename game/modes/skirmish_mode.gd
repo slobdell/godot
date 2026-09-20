@@ -362,6 +362,15 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	bar.controls = controls
 	bar.panel = panel
 	controls.add_child(bar)
+	# Round 9 (round 8's Invariant 0 debt): the camera's lean bound READS the HUD instead of copying a number off a
+	# frame. It asks the laid-out nodes where they actually are, so it cannot drift from what is drawn - whatever
+	# anyone later does to the card's height, the chips, or the gap between them.
+	rig.hud_bottom = func() -> float:
+		var top := INF
+		for node: Control in [bar, panel]:
+			if is_instance_valid(node) and node.visible and node.size.y > 0.0:
+				top = minf(top, node.position.y)
+		return 0.0 if top == INF else top
 	# X2: the elements you aren't watching, pinned to the screen edge, plus the alert strip (Q jumps).
 	var edge := EdgeMarkers.new()
 	edge.name = "EdgeMarkers"

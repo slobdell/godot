@@ -15,7 +15,7 @@ import json
 import math
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Iterator, Any, Dict, Iterable, List, Optional
 
 FORMAT_NAME = "tank-squad-trajectory"
 VERSION = 1
@@ -278,10 +278,35 @@ def parse_sample(row: Dict[str, Any], path: str, line_no: int, expect_cause: Opt
     return Sample(**values)
 
 
-def _open(path: str) -> io.TextIOBase:
+def _open_binary(path: str):
+    """Binary, so the decode happens HERE and a bad byte can be named by line."""
     if path.endswith(".gz"):
-        return gzip.open(path, "rt", encoding="utf-8")
-    return open(path, "r", encoding="utf-8")
+        return gzip.open(path, "rb")
+    return open(path, "rb")
+
+
+def _decoded_lines(handle, path: str) -> Iterator[str]:
+    """Decode line by line, refusing a bad byte with its line and its neighbourhood.
+
+    Opening the file as text decodes lazily inside the read loop, so a single bad byte escaped as a bare
+    ``UnicodeDecodeError`` traceback naming a codec and a byte offset into some buffer -- no line, no file,
+    no context, from the tool every stream's falsifier reads through (contract S3).
+
+    It is worth refusing precisely, because a bad byte here is usually **corruption, not a format problem**:
+    nav's `p7-pit.jsonl` had exactly one in 273,578 lines, 0x78 `x` flipped to 0xf8, turning `"slot_x"` into
+    a broken key (2026-09-20). One bit. Had it landed in a digit instead of a key name it would have read as
+    a perfectly valid coordinate, so the loud failure is the lucky case and it should say so.
+    """
+    for line_no, raw in enumerate(handle, start=1):
+        try:
+            yield raw.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            near = raw[max(0, exc.start - 30):exc.start + 30]
+            _die(path, line_no, "not valid UTF-8 (byte 0x%02x at offset %d of the line), near %r. "
+                                "A single bad byte in an otherwise well-formed log is usually CORRUPTION, "
+                                "not a producer bug -- and a flip that lands in a digit instead of a key "
+                                "name reads as a valid number. Re-run the producer; do not patch the file."
+                 % (raw[exc.start], exc.start, near))
 
 
 def read_lines(lines: Iterable[str], path: str = "") -> TrajectoryLog:
@@ -323,8 +348,8 @@ def read_lines(lines: Iterable[str], path: str = "") -> TrajectoryLog:
 
 
 def read_log(path: str) -> TrajectoryLog:
-    with _open(path) as handle:
-        return read_lines(handle, path)
+    with _open_binary(path) as handle:
+        return read_lines(_decoded_lines(handle, path), path)
 
 
 def read_logs(paths: Iterable[str]) -> List[TrajectoryLog]:

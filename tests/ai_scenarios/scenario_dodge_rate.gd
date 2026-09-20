@@ -8,6 +8,15 @@ extends TestCase
 ## Reported per brain variant, never asserted except that the champion still tries: this is evidence for the lead's
 ## choice between army size and units that react.
 
+## The assertion below has never passed on merit, and its own comment (above the test) says so: dodging has never
+## really fired, so "the champion still tries" tests an aspiration, and WHICH variant collects the few attempts
+## reshuffles with any change at all. It passed once, at `1cb2fda9`, and that pass is what got recorded as the
+## `ai-scenarios-check` baseline -- so the gate would have failed `main` at random, on a coin, for a behaviour
+## everyone already knows is missing. The header said "Not in make check"; PENDING is how this runner says that
+## in a way a tool can read, rather than in prose only a human can. Promote it by deleting this line when
+## dodging is fixed -- the runner then fails the run with UNEXPECTED PASS, which is the point.
+const PENDING := ["test_who_dodges_and_how_often_they_try"]
+
 const SEEDS := [1, 2, 3, 4, 5, 6, 7, 8]
 const SECONDS := 30
 

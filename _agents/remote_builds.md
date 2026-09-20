@@ -336,17 +336,55 @@ non-existent resource` for tracked, present files, cascading into false `Nonexis
 lints sharing one import cache**, now prevented by the `flock` on `make lint`. Clearing `.godot/imported` is the
 widest scope that is ever warranted; the full delete costs 90+ minutes and fixes nothing the lock does not.
 
-## ⚠ Killing a `make` leaves `tools/slot.sh` holding a slot, and its stale `.owner` file makes a dead holder look alive (feel, 2026-09-20)
+## ⚠ ~~Killing a `make` leaves `tools/slot.sh` holding a slot~~ — it did, and it was the SCRIPT, not the operator (metrics, 2026-09-20)
 
 feel started a second `make lint` while the first was running, killed the wrong process in the chain, and one of the
 laptop's two slots sat **held with nothing inside it** while every other stream queued behind it — the banner in every
-waiter's log kept naming a job that had ended. The lock dies with the process; the owner file does not.
+waiter's log kept naming a job that had ended. **That was written up as killing the wrong process. It was not.** Two
+defects in `slot.sh` made the outcome close to unavoidable, and both are now fixed (`tools/slot.sh`, metrics):
 
-- **Kill the `slot.sh` wrapper, not the `make` inside it.** Find it with `ps -eo pid,args | grep '[s]lot.sh'` and
-  `readlink /proc/<pid>/cwd` to confirm it is yours (trip-up 79).
-- Then look in `/tmp/tank_squad_slots/`: a `slot<N>.owner` naming a PID that no longer exists is stale — remove it by
-  hand. Waiters read that file for their banner, so a stale one lies to everyone.
-- The habit that would have avoided it: builder0 sat at load 0.64 on 12 cores the whole time. Heavy runs go there.
+1. **The release handler could not run.** bash defers a trap until the current foreground command finishes, and the
+   work ran in the foreground — so a `kill` aimed at a slot holder did *nothing at all* until the thing you were
+   trying to stop finished on its own. The handler that removes the owner file was waiting for a `make check` nobody
+   had signalled. The work now runs in the background and is `wait`ed on, because **`wait` is interruptible**: the
+   handler runs at once, kills the work, gives the slot back and exits.
+2. **Killing the holder left the work running.** The command sits under a subshell and a `timeout`, so a signal to
+   the top of that tree left the Godot underneath alive while the slot was handed back — *the box then looks free and
+   is not* (lesson 15, from the other side). It now kills the whole tree, **walked by PARENT (`pgrep -P`), never by
+   pattern**: seven checkouts run the same command lines, and a pattern kill took out three other streams' wrappers
+   in one night (trip-up 19).
+
+Both were found by known-answer tests written for the exclusive mode below, before it shipped — not by inspection,
+and not by anyone reading `slot.sh`, which several of us had done.
+
+**What still holds:** the lock dies with the process and the owner file does not, so a `slot<N>.owner` naming a PID
+that no longer exists is stale and should be removed by hand; `fuser /tmp/tank_squad_slots/slot<N>.lock` is who really
+holds it. **Kill the `slot.sh` wrapper, not the `make` inside it** (`ps -eo pid,args | grep '[s]lot.sh'`, then
+`readlink /proc/<pid>/cwd` to confirm it is yours, trip-up 79) — that advice was right, it just could not work.
+And the habit that would have avoided the whole thing: builder0 sat at load 0.64 on 12 cores. Heavy runs go there.
+
+## A timing run holds the box, and says afterwards whether it held (`--quiet`, metrics, 2026-09-20)
+
+A frame-time measurement needs a quiet machine (lesson 179), and *waiting* for one does not give you one: another
+stream can start two seconds after the box looks idle, inside your run.
+
+    make remote-quiet T="perf-trailer-ab"      # or: tools/remote.sh --quiet perf-trailer-ab
+
+The run takes **every** `slot.sh` slot for its duration (`TANK_SQUAD_EXCLUSIVE=1`), so other streams queue rather
+than land in the middle of a measurement, and a sampler watches the window while it is open. The run's output ends
+in one of two words, and the samples come home in `build/quiet-window.tsv`:
+
+- **`QUIET WINDOW: HELD`** — every sample saw this run alone on the box. It says nobody else *ran*; it does not say
+  the machine was fast, so the load range is printed with it.
+- **`QUIET WINDOW: NOT USABLE`** — one of four stated bounds was broken, and the verdict says which and by how much:
+  another worktree's process was live (bound 0), a Godot outside this run was live (bound 0), `load1` went above
+  `QUIET_MAX_LOAD` (default 4.0 — **this counts the run's own load**, because a number taken on a busy box is not a
+  quiet-box number even when the box is busy with us), or **fewer than two samples reached the verdict**. That last
+  one is the failure that would otherwise pass in silence: an unwatched window is not a quiet one.
+
+Holding a window and having held one are different claims, and only the second is evidence — show's back-to-back
+pair once reported the instrumented arm **43% faster** than its control on a loaded box, and nothing in the output
+said so.
 
 ## ⚠ An orphaned remote run yields NO verdict, and it blocks its own directory (squad, 2026-09-20 03:28)
 
@@ -354,9 +392,24 @@ waiter's log kept naming a job that had ended. The lock dies with the process; t
 that then exits, a killed shell, a dropped ssh), the remote `make` keeps running on builder0, holds a slot, scrolls a
 thousand PASS lines — and there is no line at the end, so by the rules the result does not exist. And you cannot
 re-launch into `~/tank_squad/godot-<stream>` while the orphan is reading it (trip-up 66). **Launch pattern that
-survives (squad's third launch of one check, after losing two):** `setsid nohup make remote T=check > log 2>&1 &`
-— its own process group, a log with a completion marker (`echo CHECK_EXIT=$? >> log` after the make) — so neither a
-parent shell exiting nor a signal aimed at somebody's process group can take the wrapper. Then read the wrapper line
+survives (squad's third launch of one check, after losing two):**
+`setsid nohup make remote T=check > $SCRATCH/check.log 2>&1 &` — its own process group, a log with a completion
+marker (`echo CHECK_EXIT=$? >> $SCRATCH/check.log` after the make) — so neither a parent shell exiting nor a signal
+aimed at somebody's process group can take the wrapper.
+
+**Write that log into your session scratchpad, not into `build/`.** The copy-back now runs with `--delete`, so the
+local `build/` MIRRORS the run that just finished — a stale artefact there announces nothing (plausible name,
+plausible size, nothing saying which run wrote it), and nav lost an hour to a 101 MB log from an earlier run being
+read as the current one. `*.log` is protected from that delete as a belt, because unlinking a file whose redirect is
+still open leaves the shell writing to an unlinked inode and the log vanishing silently, mid-run. **The protection
+goes away once the habit is everywhere**, so put new logs in the scratchpad today.
+
+**And what comes back is checked.** The box writes `build/.copyback.sha256` over exactly the files the copy-back
+takes, and the laptop verifies them: a mismatch names the file, prints both hashes, and fails the command
+(exit 5) — a green run beside silently altered bytes is the worst shape this can take. A missing manifest prints
+`NOT VERIFIED` and does not fail, because "nothing to check" and "everything checked out" must not look the same.
+`REMOTE_VERIFY=0` opts out. This does not stop corruption; it **localises** it, which after one flipped bit in a
+101 MB log (`"slot_x"` → `"slot_\xf8"`, 2026-09-20) is the only thing we can cheaply learn. Then read the wrapper line
 from the log. **Before any re-run:** `ssh builder0 "ps -eo pid,etimes,args | grep '[s]lot.sh'"`, `readlink
 /proc/<pid>/cwd` to find only yours, kill by explicit PID walking `pgrep -P` (never by pattern, trip-up 19), confirm
 no survivors, then launch.
@@ -392,3 +445,26 @@ between runs.
 builder0 ten minutes after its wrapper died (the make, slot.sh, arena_series.py and two headless matches); the next
 `make remote` from that worktree would have rsynced `--delete` under it. Kill the whole tree by cwd-verified PID
 before relaunching (scale, 2026-09-20 08:45).
+
+## trip-up 66 is now enforced, not remembered (`tools/remote_guard.sh`, metrics, 2026-09-20)
+
+`remote.sh` refuses to launch when **this worktree's own folder on builder0 already has something running in it**,
+because the launch rsync is `--delete`: it replaces the tree the earlier run is reading, mid-run. Remembering that
+failed twice in one morning — nav's check on `96bbf38e` was voided and scale lost a 62-minute fairness run.
+
+    tools/remote.sh --status     # or: make remote-status -- what is live in YOUR folder, with start times
+    REMOTE_FORCE=1 make remote T=check    # launch anyway; prints the run it is about to destroy
+
+- **The refusal reads /proc, not a lock file.** A second `.owner` file would have been the stale-`.owner` bug again
+  (above): a marker naming a dead pid is indistinguishable from one naming a live pid, and it would lock a stream
+  out of the box until a human deleted a file. A run is live iff some process has its **cwd inside the run
+  directory** — which also covers the forty minutes a run can sit QUEUED in `slot.sh`, since it has already
+  `cd`-ed in. The marker beside the slot files is **printed, never believed**, and `--status` labels it STALE.
+- **The one exception is the launch window**, between "the rsync started" and "a process exists": that is a claim
+  with a TTL (`REMOTE_CLAIM_TTL`, 300 s), and check-and-claim is one `flock`ed step so two launches seconds apart
+  cannot both see an idle folder.
+- **It fails open, loudly.** If the guard itself cannot run, the launch proceeds with a `launching UNGUARDED`
+  warning — a guard that cannot run must not stop eight streams working, but it must not be silent either.
+- `make check` runs its 36 known-answer tests (`remote-guard-test`, ~1 s, no Godot). **That is the point**: every
+  defect round 9 found — the inert exclusion groups, the re-derived shard count, `lint`'s empty file list,
+  `check-hashes` reporting "unmoved" with no data — was a guard nobody had ever exercised.
