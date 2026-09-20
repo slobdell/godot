@@ -589,6 +589,33 @@ instance-uniform error count, and whether the shaders compiled at all survive a 
 contaminated pair, real lights were identical and both error counts were zero — which is most of rule 3, proven, on
 a run whose milliseconds were worthless.
 
+### Within one run is necessary and not sufficient — and more samples do not fix a moving machine
+
+The `no_show` layer is the right instrument and it still failed on 2026-09-20 morning, which is worth writing down
+because the obvious next move is the wrong one.
+
+Re-measuring on the CP2 roster with builder0 at **load 21 on 12 cores, 67 Godot processes resident**:
+
+| attempt | reported `no_show` GPU cost |
+|---|---|
+| `PERF_CYCLES=2` (3 `all` phases, 2 `no_show`) | **+1.50 ms** |
+| `PERF_CYCLES=6` (7 `all`, 6 `no_show`) | **−0.65 ms** |
+
+**They straddle zero**, and each phase's own GPU spread was **~5 ms** against an effect that should be under 1.5.
+
+**Raising the cycle count did not help, and could not have.** More samples fix *sampling* noise — the error from
+having looked too few times at a **stable** quantity. On a box at load 21 the GPU's throughput is itself moving
+between one phase and the next, so more samples describe the drift more confidently and converge on nothing.
+
+**So the rule has a second half.** "Get A and B from one run" bounds *when* the two halves are measured; it does
+not bound *how quiet the machine is while they are*. Within-run is what stops a 43%-faster-when-slower result; it
+is not what turns a sub-millisecond effect into a number. **For an effect near the noise floor you need both: one
+run, and a quiet machine.** Ask the orchestrator for the window — it is six minutes of Godot, and the alternative
+is a figure that straddles zero and a paragraph that has to be written twice.
+
+**Report the load average beside the number, always.** A layer cost with no load beside it cannot be checked by the
+next reader, and on a shared builder that is most of what decides whether it means anything.
+
 ### A gate that fails the branch point is not a gate
 
 The luminance rule shipped first as an **absolute**: fail if the block band out-reads the fight ring. Run against a
