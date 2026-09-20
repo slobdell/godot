@@ -42,11 +42,14 @@ const BAND_WINDOW := Rect2(0.00, 0.01, 1.00, 0.24)
 const FULL_WINDOW := Rect2(0.0, 0.0, 1.0, 1.0)
 ## Every Nth pixel in each direction: exact enough for a mean, cheap enough to run on every frame.
 const LUMA_STRIDE := 8
-## Arena -> an extra focus worth a frame, in metres. The Terminus street is the alley the lead said he could not see
-## into; blocks sit at x = 20..60 and x = 80..120, so x = 70 is the middle of the 20 m street between them.
-const FOCUS_POINTS := {
-	"terminus": Vector3(70.0, 0.0, 0.0),
-}
+## THE STREET POSE IS GONE, and the reason is worth keeping because it was a good idea that stopped being one.
+## It was a fixed point -- the middle of the 20 m street between the Terminus blocks -- chosen back when the camera
+## pointed at the map centre, so "somewhere specific" was an improvement on "nowhere". Now that every pose follows
+## the fight, a fixed coordinate is just a place the fight is not: it shot 0 vehicles and failed the frame gate,
+## correctly. It also answered nothing -- the edge arms measured +0.00% apart there, because a street-level camera
+## has the rooflines and chamfers above the frame entirely.
+##
+## What it was for -- a low camera in the alleys -- is what the `close` pose now is, at the fight.
 
 var out_dir := ""
 var times: Array = [0.0, 8.1, 16.3]
@@ -134,8 +137,6 @@ func _run() -> void:
 	# the fight -- and the readability gate's "ring" window was measuring bare asphalt.
 	var centre := _army_centre(scene)
 	var poses := {"wide": [centre, DISTANCE_M], "close": [centre, CLOSE_M]}
-	if FOCUS_POINTS.has(arena):
-		poses["street"] = [FOCUS_POINTS[arena], CLOSE_M]
 	get_tree().paused = true
 	if clip_cue != "":
 		await _shoot_clip(show, arena, heading)
