@@ -2705,6 +2705,13 @@ The kickoff prompt is one line; this section is the rest.
     moved 328 → 269 between phases because vehicles die during the sampled battle, so the phases were not the same
     scene. A quiet box is necessary; the tool also needs a frozen census (damage off during the run, the count
     printed per phase), a discarded warm-up, and a verdict from per-cycle costs agreeing in sign and magnitude.
+    **The second run (show, load 0.7–0.9, six cycles): the reusable numbers.** `all` GPU spread **1.64 ms** (stdev
+    0.64) and `no_show` **0.97 ms** on the quiet box against 4.86 / 5.13 ms at load 21: **a quiet builder0 is 3–5×
+    tighter, and a layer cost under ~1 ms is not readable on a busy one at all.** Even quiet, the six per-cycle deltas
+    declined monotonically as the battle thinned 68 → 55 vehicles (4 positive, 2 negative), so the honest result is a
+    bound, |cost| < ~0.8 ms, not a mean. And the roster question closed the same way: post-CP2 on a quiet box is
+    6.40 ms against pre-CP2's 6.43, so 19.87 was load; the "145k primitives" sentence was a single-run artefact
+    (the quiet run had 180,780 with fewer vehicles): **a counter immune to load is not immune to sampling.**
 180. **A guard that counts at teardown measures a pending removal, and it will convict the innocent with the same
     confidence as a real leak.** Round 9's teardown guard (scale, `3f6c1650`) named three tests for leaving two
     navigation regions each; `NavigationServer3D` drops regions on the frame *after* `free()` ([2, 0, 0, 0] over
