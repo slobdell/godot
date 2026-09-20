@@ -61,9 +61,31 @@ static func facade_material() -> ShaderMaterial:
 	return _material
 
 
+## A colour a layout asked for but that is neither an HTML code nor a known name. Improbable on purpose: it is the
+## sentinel `Color.from_string` hands back, and nothing should ever equal it.
+const UNRESOLVED := Color(0.1234567, 0.7654321, 0.1111111, 0.9876543)
+
+
+## A block's neon band colour: what the layout asked for, or a signage colour when it asked for nothing.
+##
+## Round 9 (found by show): this honoured ONLY strings beginning with "#", so every colour NAME a layout used fell
+## straight through to a random pick from the SIGNAGE palette -- and `arenas/terminus.json` asks for "cyan" on four
+## blocks and "magenta" on four. **All eight were drawing amber, warm white, red or violet**, stable only because
+## the pick is seeded. That is not merely the wrong colour: `NeonSigns.COLORS` contains **red**, which this game
+## uses as a SIGNAL (beacons, alarms), and a near-white, which is not in the palette at all -- so the bug was
+## putting the two things art_direction.md rules out for architecture onto eight buildings on the lead's city map.
+##
+## A name that does not resolve is now LOUD and DETERMINISTIC rather than a silent random pick, which is how this
+## survived a whole round: a colour someone typed on purpose must never be answered with a dice roll. The hard
+## rejection belongs in `Arena.validate()` with the other unknown-key checks (arena's file, scale's this round).
 static func neon_color(wanted: Variant, rng: RandomNumberGenerator) -> Color:
-	if wanted is String and String(wanted).begins_with("#"):
-		return Color(String(wanted))
+	if wanted is String and not String(wanted).is_empty():
+		var text := String(wanted)
+		var resolved := Color.from_string(text, UNRESOLVED)
+		if resolved != UNRESOLVED:
+			return resolved
+		push_warning("city block neon '%s' is neither an HTML code nor a known colour name" % text)
+		return NeonSigns.COLORS[0]
 	var palette: Array = NeonSigns.COLORS
 	return palette[rng.randi() % palette.size()]
 

@@ -40,3 +40,48 @@ func test_corners_are_chamfered_like_the_hud_frames() -> void:
 	assert_eq(outline.size(), 8, "four sides and four cut corners")
 	assert_true(not outline.has(Vector2(10.0, 5.0)), "no sharp corner")
 	assert_near(outline[1].distance_to(outline[2]), CityBlock.CHAMFER * sqrt(2.0), 0.01, "each cut is CHAMFER along both sides")
+
+
+func test_a_block_gets_the_neon_colour_its_layout_ASKED_for() -> void:
+	## Round 9 (show found it): `neon_color` honoured only strings beginning with "#", so every colour NAME fell
+	## through to a random pick from the SIGNAGE palette. `arenas/terminus.json` asks for "cyan" on four blocks and
+	## "magenta" on four, and all eight were drawing amber, warm white, red or violet -- stable only because the
+	## pick is seeded, which is why it survived a round. Red is a SIGNAL in this game and the near-white is not in
+	## the palette at all, so the bug put the two colours art_direction.md rules out for architecture onto the
+	## lead's city map.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1
+	assert_eq(CityBlock.neon_color("cyan", rng), Color("cyan"), "a named colour is honoured")
+	assert_eq(CityBlock.neon_color("magenta", rng), Color("magenta"), "both of the names the Terminus uses")
+	assert_eq(CityBlock.neon_color("#00F3FF", rng), Color("#00F3FF"), "and an HTML code still is")
+	# Every colour the Terminus actually asks for resolves -- read from the layout, not from this test's memory.
+	var layout: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://arenas/terminus.json"))
+	var asked := 0
+	for prop: Dictionary in (layout as Dictionary).get("props", []):
+		if String(prop.get("type", "")) != "block" or not prop.has("neon"):
+			continue
+		asked += 1
+		var wanted := String(prop["neon"])
+		assert_true(CityBlock.neon_color(wanted, rng) != CityBlock.UNRESOLVED, "the Terminus's '%s' resolves" % wanted)
+		assert_true(not NeonSigns.COLORS.has(CityBlock.neon_color(wanted, rng)),
+				"'%s' is the layout's colour, not a signage-palette pick" % wanted)
+	assert_true(asked >= 8, "the Terminus still asks for a colour on its blocks (%d)" % asked)
+
+
+func test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll() -> void:
+	## The failure mode that hid the bug: answering a name someone typed on purpose with a seeded random pick looks
+	## exactly like a deliberate choice. An unresolvable name now gives the SAME colour whatever the rng is doing.
+	var first := RandomNumberGenerator.new()
+	first.seed = 1
+	var second := RandomNumberGenerator.new()
+	second.seed = 99999
+	second.randi()
+	assert_eq(CityBlock.neon_color("not-a-colour", first), CityBlock.neon_color("not-a-colour", second),
+			"an unknown name does not depend on the rng")
+	# And a block that asks for NOTHING still gets variety, which is the behaviour that was always intended.
+	var a := RandomNumberGenerator.new()
+	a.seed = 3
+	var b := RandomNumberGenerator.new()
+	b.seed = 3
+	assert_eq(CityBlock.neon_color(null, a), CityBlock.neon_color(null, b), "no colour asked: seeded, so replayable")
+	assert_true(NeonSigns.COLORS.has(CityBlock.neon_color(null, a)), "and it comes from the signage palette")
