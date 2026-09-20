@@ -3008,3 +3008,8 @@ The kickoff prompt is one line; this section is the rest.
     was generous; CP2 surfaced three in one day. Round 10's question is not "what is a shortfall measured against"
     but "which motion is this constant licensing": `HULL_CLEAR_M`, the navmesh bake radius and `Avoidance.radius_of`
     are three constants for three motions, and none of them says which.
+    And the same number is wrong in one place and right in another (scale): a disc of the box's half-diagonal
+    overstates where a hull IS (the friendly-fire and incoming-fire sites refused safe shots by it) and correctly
+    states the room a hull needs to TURN (the spawn grid and the formation under-provisioned it); a measurement
+    of where boxes stand answers "do they intersect", which is the wrong question for a vehicle that has to turn,
+    and nothing in the measurement says so.
