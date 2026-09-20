@@ -184,6 +184,42 @@ including dodges.** A held unit may dodge *within* its leash and never leaves it
 today (X1: manoeuvre inside your slot's cell, be pulled back rather than frozen). squad gets that scenario's
 before/after with the hash.
 
+#### A11: the dynamic window, and the two things building it taught us (2026-09-20)
+
+**`--nav-off=a11` turns A11 ON, inside A7's chooser (itself opt-in).** `RING` and the `min_cos` chord test survive
+only in `choose_blended`, the round 3–8 control.
+
+**It is generated in COMMAND space and evaluated through the plant.** A fixed 9 × 9 grid of (throttle, turn), each
+rolled through `TankMotion` for the control period; the resulting pose, speed and yaw rate *are* the cell. Nothing in
+A11 models the plant, so nothing in A11 can drift from it — which is precisely what the `min_cos` chord test does
+today, restating the wheeled turning rule a file away from the rule itself.
+
+**Lesson 1 — the creep is a plant reflex that eats commands, and a hand-written inverse cannot see it.** The first
+version inverted the plant by hand (pick a speed, solve for the throttle). It was wrong for wheels, because the
+multi-point creep hijacks the throttle whenever `|throttle| < WHEEL_CREEP_THROTTLE × |turn|`: the lattice promised
+3.53 m/s and the plant delivered 4.30. Evaluating the plant makes that region **honest instead of invisible** — the
+creep's legs appear as cells with their real speed and yaw, so a K-turn is one scored option among 81. *Whether
+`WHEEL_CREEP_THROTTLE` survives is now a finding rather than a decision*, which is what the brief asked for.
+
+**Lesson 2 — the window is over the CONTROL PERIOD, not over one tick.** A one-tick window offered a tracked hull
+starting from zero yaw only `yaw_accel × dt`; held constant over a 2 s arc that is **21° of heading change** when the
+hull can swing 160°. Every candidate pointed nearly the same way and level 3 had nothing to choose between.
+`DWA_CONTROL_SECONDS` is 0.25 — the brain's own re-plan cadence, and exactly `YAW_RAMP_SECONDS`.
+
+**Measured** (laptop, against the A7-only arm; pristine `9f864474` in brackets):
+
+| | A7 | A7+A11 |
+|---|---|---|
+| scout standoff: closest / in-band / nose-on / shots | 22.7 / 0.92 / 0.92 / 225 | **25.5 / 0.93 / 0.92 / 227** *(26.9 / 0.92 / 0.91 / 226)* |
+| slot drift / shots | 42.1 m / 5 | **38.7 m / 6** *(blend 15.4 / 10)* |
+| **turreted duel** | 100% / 100% front hits over 20 s | **67% over 6.3 s** ✗ |
+
+**The open question, stated as the number that matters rather than the one that failed:** the duel's bar is front
+hits ≥ 80% and A11 reads 67%, but that is **three hits**. The real finding is that **the fight ends at 6.3 s of a
+20 s scenario**, with both hulls moving markedly more (0.77 / 0.76 against 0.67 / 0.73). Arc candidates make two
+tanks close and settle a duel three times faster. **That is the first thing to look at when A11 resumes**, and it is
+a behaviour question, not a tolerance.
+
 #### ⚠ A7 is built, measured, and NOT shipped on (2026-09-20)
 
 **A7 is opt-in: `--nav-off=a7` turns it ON, and the default is the additive blend.** Everything below it in this

@@ -289,6 +289,28 @@ motivation for that row rather than an inherited one.
 `net_over_path` rises and `oscillating_share` falls is pre-registered in the brief (N4) and runs after CP1, read
 through A12.
 
+### N2: A11 is BUILT, MEASURED, and NOT SHIPPED ON either
+
+**`--nav-off=a11` turns A11 ON, inside A7's chooser (itself opt-in). The default path is untouched.** The lattice is
+generated in command space and evaluated through `TankMotion`, so **nothing in A11 models the plant and nothing in
+A11 can drift from it** — five tests drive the plant itself and agree with every cell to 1e-4.
+
+| | A7 | A7 + A11 | pristine `9f864474` |
+|---|---|---|---|
+| scout standoff: closest / in-band / nose-on / shots | 22.7 / 0.92 / 0.92 / 225 | **25.5 / 0.93 / 0.92 / 227** | 26.9 / 0.92 / 0.91 / 226 |
+| slot drift / shots | 42.1 m / 5 | **38.7 m / 6** | blend 15.4 / 10 |
+| turreted duel, front hits | 100% / 100% over 20 s | **67% over 6.3 s** ✗ | 100% / 80% |
+
+**The open question, stated as the number that matters:** the duel's bar is ≥ 80% and A11 reads 67% — on **three
+hits**. The real finding is that **the fight ends at 6.3 s of a 20 s scenario** with both hulls moving markedly more
+(0.77/0.76 against 0.67/0.73). Arc candidates make two tanks close and settle a duel three times faster. **First
+thing to look at when A11 resumes.** It is a behaviour question, not a tolerance, and I did not tune it away.
+
+**Two things building it taught the layer, both in `navigation.md`:** the wheeled creep hijacks the throttle, so a
+hand-written inverse of the plant cannot see it (the first lattice promised 3.53 m/s and the plant delivered 4.30);
+and **the window is over the CONTROL PERIOD, not one tick** — a one-tick window offered a tracked hull 21° of heading
+change over a 2 s arc when it can swing 160°.
+
 ### ⚠ N1b: A7 is BUILT, MEASURED, and NOT SHIPPED ON — the headline, so nobody reads past it
 
 **`--nav-off=a7` turns A7 ON. The default is the additive blend, and the default path reproduces the pristine
