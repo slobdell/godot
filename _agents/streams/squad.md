@@ -1244,6 +1244,50 @@ without A7, so switching A11 off in a default build measures nothing and reads a
 `squad-defile TUBE=` reading `redecides=0` in both arms because the maze has no enemies: an arm in which the mechanism
 cannot act is not a control, it is a broken instrument, and its zero looks exactly like a result.
 
+### ROUND 10'S FIRST ITEM: formation spacing is derived from hull WIDTH, and rotation needs the DIAGONAL
+
+**Nothing in this codebase accounts for a hull needing to turn in place.** X1's `hull_floor` is the widest hull's width
+plus `HULL_CLEAR_M`, so a formation leaves exactly **2.0 m** of lateral air between hull edges. A hull yawing sweeps out
+to its **half-diagonal**, so the room it needs beside it is `half_diagonal - half_width`:
+
+| hull | size (w x l) | half-diagonal | half-width | needs beside it | `HULL_CLEAR_M` leaves | short by |
+|---|---|---|---|---|---|---|
+| `tank` | 2.40 x 8.62 | 4.47 m | 1.20 m | **3.27 m** | 2.0 m | **1.27 m** |
+| `gang_tank` (War Rig) | 3.32 x 14.00 | 7.19 m | 1.66 m | **5.53 m** | 2.0 m | **3.53 m** |
+
+**So a tank at doctrine spacing cannot turn in place without sweeping into its neighbour's ground, and a War Rig cannot
+come close.** The deficit grows with LENGTH while the spacing is set by WIDTH, which is why CP2's resize made it bite:
+`tank` went from roughly square to 3.6:1.
+
+**Measured, not derived** (`165ef0cc`, builder0, five squads formed up, the worst crew in each):
+
+    Alpha   across 4.28 m   Bravo across 2.98 m   Charlie across 1.12 m   Delta across 2.39 m   Echo across 4.06 m
+
+Four of five are below the 3.27 m a `tank` needs to yaw; Charlie's pair has **1.12 m**. Not one pair is OVERLAPPING —
+they are clear while parallel and cannot rotate, which is a different failure from being packed too tightly and has a
+different fix.
+
+**This is the same finding as combat's yaw-constraint regression, seen from the other side.** Their `986f8921` (one line,
+`yaw_fit_enabled` false -> true) takes 0 of 30 off-slot to 12 of 30 with four squads at 87-91 m, and their reading was
+"the plant counts a squadmate as a wall". **The measurement says the plant is right about the geometry**: the swept
+footprint genuinely does not fit. Falsifier, with combat: their `refusals_applied` should RANK with my across column. If
+the refusals do not track the gap, my mechanism is wrong and theirs stands.
+
+**And it reframes Delta's 22.2-22.4 m margin** (62% of the test's 36 m budget, on main, with the constraint absent, while
+the other four squads sit at 3-7 m) as the first symptom rather than a separate oddity: a squad whose crews are 1-4 m
+apart laterally while carrying 8.62 m hulls cannot dress its formation, so its worst crew ends up further out and stays
+there.
+
+**Three ways out, and this is the lead's call because they trade different things:**
+1. **`HULL_CLEAR_M` becomes `half_diagonal - half_width` of the widest member** — correct by construction, and it opens a
+   War Rig formation to 5.5 m of air per side, which will look loose and cost frontage.
+2. **Crews turn in sequence rather than together** — keeps the spacing, costs time, and needs a mechanism that does not
+   exist.
+3. **Let a rotation sweep through a neighbour** (combat's `match.yaw_world`: penetration against the world layer only) —
+   cheapest, keeps the look, and accepts hulls visibly clipping each other while dressing.
+**Do not pick from the code.** Put a squad on the field, order it to face a new heading, and watch: whether hulls
+clipping while they dress is acceptable is a question about how the game LOOKS, which is the lead's and nobody else's.
+
 ### The afternoon: four rules that cost a day between us, and the spawn dataset
 
 **1. A knob being off does not exonerate the commit that added it.** combat A/B'd `match.yaw_fit` on
