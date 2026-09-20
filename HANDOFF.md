@@ -54,8 +54,12 @@ spot it can see instead of a fixed 30 m offset that the bigger hulls put behind 
    `~/projects/godot-control/build/control-playtest/1920x1080/8_whole_army.png`. **Two findings, one is your call:**
    the selection rings are now a cloverleaf, because a ring's radius is 0.75 × the longer hull side and the 8.62 m
    tank's ring is 12.9 m across; options costed at the top of control's Status (circumscribing-circle bound, an
-   oriented marker along the hull, or leave it). And a facing drag on a WHOLE SQUAD loses its heading: the element's
-   move path never reads `task["facing"]` (squad's, one read; control's half is fixed and the playtest names it).
+   oriented marker along the hull, or leave it). And a facing drag on a WHOLE SQUAD lost its heading: **fixed for the leader on `stream/squad` at `23b1d1a7`**
+   (the cause was one line of squad's own, a facing only at a halt; verified 7/7 on a filtered run, NOT a full check —
+   merge it after one) — **but the followers still cannot carry it** (`_flow` gives them a `follow` with no destination
+   until the leader arrives, which is essentially arrival). Three fixes are in squad's brief in the order to try; **you
+   can see the answer in two seconds by dragging a facing and looking where the followers point**, which is why squad
+   did not pick one blind.
 6. **The airship**: `~/projects/godot-feel/build/airship-look/airship_widest.png`. **You will not see it at your
    default pose**: the sky is below the top of the frame at 21°. It lives over the city at 560 m and shows at 8–12° tilt.
    **Your call:** leave it, or make it a title/results element. One constant either way.

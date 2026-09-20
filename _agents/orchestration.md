@@ -2662,3 +2662,11 @@ The kickoff prompt is one line; this section is the rest.
     read it. Derive once with `:=`, print the value the run actually used in its own header, and verify against that
     value, never against a fresh evaluation. **The nastier version of "the thing under test is not the thing
     described": here the instrument and the subject disagreed about how many there were.**
+177. **The change that feels too small for the ceremony is the common case, not the exotic one.** Round 9's last hour,
+    squad, a "one-line" fix to a facing drag on a whole squad: the peer's premise (nothing reads `task["facing"]`) was
+    wrong — it was read, and the heading was thrown away one line later by `entry["facing"] if halt else null` — so
+    implementing what was described would have fixed nothing; then three process slips on the same small item (a
+    verification launched in the same command as an edit that had aborted, a test whose negative arm passed for the
+    wrong reason, an assertion at a moment the thing could not be observed), caught only by the stream's own
+    anti-vacuity guard. *"I am reliable at demanding an arm can exercise its mechanism and unreliable at checking it
+    when the change feels too small to deserve the ceremony."* The ceremony is for the small ones.
