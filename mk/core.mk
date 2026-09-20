@@ -209,7 +209,8 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 # but "by construction" is exactly what round 8 said about a commitment term that was never in the code path. So
 # it was checked directly and cheaply: the runner prints its file count BEFORE any filtering, so
 # `--shard=i/N --filter=__no_such_test__` reports each shard's share in about five seconds without running a
-# single test. At N = 2, 3, 5 and 6 the shard file counts sum to **187** -- exactly the unsharded discovery count.
+# single test (it now exits 1, by design -- read the counts it printed, not its status).
+# At N = 2, 3, 5 and 6 the shard file counts sum to **187** -- exactly the unsharded discovery count.
 # Nothing is dropped and nothing is run twice, at any shard count. (metrics, 2026-09-20, laptop.)
 # `:=`, NOT `?=`. `?=` creates a RECURSIVELY EXPANDED variable, so `$(shell ...)` re-runs on every reference --
 # and this one is referenced three times in the recipe below (the `seq` that launches the shards, the `xargs -P`,
@@ -220,9 +221,27 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 # The `$(if ...)` keeps `?=`'s "leave an existing value alone" while running the shell exactly once per make.
 TEST_SHARDS := $(if $(TEST_SHARDS),$(TEST_SHARDS),$(shell tools/slot.sh --jobs 500 $$(( $$(nproc) / 2 ))))
 
-test: import ## Run the headless test suite (FILTER=substring to run a subset; TEST_SHARDS=1 forces one process)
+# FILTER reaches the runner INSIDE SINGLE QUOTES. Unquoted, `make test FILTER="a|b"` handed the pipe to a
+# shell and exited 127 without running either suite (it bit combat twice on 2026-09-20). Quoting alone would
+# have been worse than the crash -- the filter is a substring, so "a|b" would have matched nothing and
+# reported success -- so the runner also takes `|` as ALTERNATION and fails a filter that matches no tests.
+# TWO characters cannot get through, and both are refused BY NAME rather than silently becoming a different
+# filter: `'`, which single-quoting cannot carry, and `$`, which MAKE expands before any shell sees it --
+# `FILTER=$HOME` arrives at the runner as `OME`. That second one was found by the test below, not by
+# reading: the fix was quoting against the SHELL and make had already eaten it.
+_FILTER_BAD := $(findstring ',$(value FILTER))$(findstring $$,$(value FILTER))
+.PHONY: _filter-ok
+_filter-ok:
+	@test -z "$(_FILTER_BAD)" || { \
+		echo "make test: FILTER may not contain a single quote or a dollar sign."; \
+		echo "  ' cannot survive: the filter reaches the runner inside single quotes."; \
+		echo "  \$$ never reaches the shell at all -- MAKE expands it first, so FILTER=\$$HOME arrives as"; \
+		echo "  OME. Both are refused by name rather than silently becoming a different filter, which is"; \
+		echo "  the worst of the three outcomes. Spaces, |, backticks and brackets are all fine."; exit 2; }
+
+test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for alternatives, fails if it matches nothing; TEST_SHARDS=1 forces one process)
 	@if [ -n "$(FILTER)" ] || [ "$(TEST_SHARDS)" -le 1 ]; then \
-		$(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=$(FILTER); \
+		$(GODOT) --headless --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)'; \
 		exit $$?; \
 	fi; \
 	rm -rf $(BUILD_DIR)/test-shards && mkdir -p $(BUILD_DIR)/test-shards; \
@@ -365,7 +384,8 @@ check: ## Everything headless: tests + network + relay + combat + match runner +
 		TEST_SHARDS=$(TEST_SHARDS) LINT_JOBS=$(LINT_JOBS) check-parallel || true; \
 	printf '>> check: %ds total on %s\n' "$$(( $$(date +%s) - started ))" "$$(hostname)" >&2; \
 	$(MAKE) --no-print-directory check-hashes >&2 || true; \
-	if tools/check_verdict.sh $(BUILD_DIR)/check $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
+	if CHECK_VERDICT_CONTEXT="test x$(TEST_SHARDS), lint -P$(LINT_JOBS), $(CHECK_JOBS) at once, $$(hostname)" \
+		tools/check_verdict.sh $(BUILD_DIR)/check $(CHECK_TARGETS) >&2; then status=0; else status=1; fi; \
 	exit $$status
 
 # The hash verdict, in ONE comparable line. It exists because `determinism`'s own line truncates its JSON at 120

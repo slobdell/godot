@@ -2846,7 +2846,17 @@ The kickoff prompt is one line; this section is the rest.
     time bought two match-seconds. Fixes: aim at the densest cluster, poll the match for contact with the clock as
     a cap, and require 12 px of *drawn mesh* per counted vehicle. **A gate is only as good as the statistic's
     ability to distinguish the two cases it exists to separate; a frustum count is geometry, the question was
-    pixels.**
+    pixels.** Then a tenth (show): framing the densest cluster put the camera inside a block, because the frame
+    tools called `RtsCamera.pose_at` directly and never control's `clear_pose()` (the lift the lead's own
+    complaint bought); fixed, and every capture now prints the pitch it actually used and `lifted_deg`, because a
+    frame that had to lift to 30° is a fair pair but is not the 21° he plays at, and a label that quietly stops
+    being true is the same disease as the frustum count. Five defects in one pair, each invisible until the one
+    before it was fixed: **stop predicting that the next one is the last, and look at every frame before it travels.**
+    **The closing form (feel, 22:15, the Terminus roof dressing):** the first version placed seven boxes on every
+    seed, kept two surfaces, stayed inside the collision box and passed every test, and at the lifted camera it was
+    shapes you had to look for, +25 % on tops and −28 % on sides of a roof that is itself nearly black. **A change
+    can satisfy every stated criterion and still not do the thing it was for, and nothing in a suite measures
+    legibility; the only instrument that catches it is looking at the picture.**
 186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
     Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
     the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
@@ -2877,7 +2887,11 @@ The kickoff prompt is one line; this section is the rest.
     among the abandoned and a merge was blind to the one number that gates it. The fix is `-k` *plus* a three-state
     verdict (PASS / FAIL / NOT RUN) printed from the markers, because with `-k` alone a reader still learns of a
     skipped target only by noticing absent output. Read a check as passed / failed / abandoned from its markers,
-    never from what happened to print. Measured the same afternoon: the keep-going check completed 16 of 18
+    never from what happened to print. **And the attribution half (metrics, 19:50): the runner fails a test on any
+    engine warning it did not declare, which is right and loud; but twenty-two red tests sharing one message are
+    one defect and twenty-one victims, so the runner groups engine messages that failed more than one test and
+    names the first carrier ("the tests after it are probably downstream, not guilty"); a test that declared its
+    warning with `expect_warning` is never in that group.** Measured the same afternoon: the keep-going check completed 16 of 18
     targets through two failures where the old one completed 10, and its summary agreed with the markers exactly.
     **And the lint half of the same day (metrics `b839495c`):** a tree the runtime could not compile had passed lint
     in one worktree and failed it in another; the hypothesis "a per-file check cannot see a cross-file type error"
@@ -2923,3 +2937,74 @@ The kickoff prompt is one line; this section is the rest.
     and wrong about what it was looking at**, and the numbers agreeing beside the wrong label is what makes a
     reader trust the label. Corollary: the tests could not have caught it, because their fixture used a
     lightweight tag, built before the thing it models existed; a fixture is rebuilt when the modelled thing changes.
+    **And after a signature conflict, read the call sites, not the conflict** (metrics, 22:10): two streams added a
+    third parameter to one function; git merged the callers cleanly because they were never marked, and six tests
+    passed their allowlist as what was now the other stream's `expected_err`, exercising the wrong parameter while
+    still passing some assertions. The same shape as the tag object standing in for its commit: the code was
+    correct about what it looked at and wrong about what it was looking at.
+193. **An API whose correct use cannot be told from its incorrect use at the call site is a signature problem, not a
+    convention problem.** Round 9 (nav): `TestCase.teardown()` ended in `await drain_navigation()`, so a subclass
+    override declared `func teardown() -> void` that called `super.teardown()` un-awaited was not a coroutine, the
+    runner's `await teardown()` returned at once, and four viewport-resizing tests had silently skipped the drain
+    for as long as it existed; a fifth called `teardown()` mid-test and detached a drain that then counted its own
+    next arena as a leak. `await teardown()` and `teardown()` look equally deliberate on the page, and no review
+    could tell them apart. Fix: the runner awaits a sealed `_teardown()` that owns the order (hook, free, guards,
+    drain), the overridable hook is synchronous and documented as never responsible for the drain, and mid-test
+    clears go through a public `free_owned()`, deliberately synchronous: one awaitable thing, owned by the
+    runner, is the property that keeps the rest safe (a helper that also had to be awaited would carry the same
+    trap, and an `await` on a non-coroutine is a lint red). **And the sharper argument for sealing (combat): an
+    unsealed teardown does not only lose a shard to noise, it silently changes what the PASSING tests measure: a
+    plant fixture read `offered 14, applied 0` while a previous test's foundry was still in the world and
+    `offered 16, applied 3` the moment the override started freeing; nothing in any output said which world it
+    measured.** Same family as an instrument that cannot report its own
+    inapplicability, one level up, in the signature.
+194. **A control that skips the code the treatment runs is not a control, and two arms that write one file compare
+    a file with itself.** Round 9 (combat, pre-registering the gangs-vs-law series): `faction-matrix` names its
+    output `-tuned.json` whenever `TUNE` is set, the same name for both arms, so the obvious two-run series
+    overwrites the control with the treatment and `compare-arms` reports a perfect null with every cell zero and
+    nothing anywhere to say the bytes were the same; and a control run as "no TUNE" skips `apply_tuning` while the
+    treatment runs it, so the control is run as `knob=<default>` instead (the switching-cost series' `switch.price=0`
+    precedent). Fourth member of one family with the collapsed `COMMIT_BONUS * 1.15`, the `FILTER="a|b"` that ran
+    neither suite, and a comment promising a flip that did nothing: **each produces a green or a null that looks
+    like a measurement, the one kind of bug running more things cannot catch.** Tooling: outputs named by the arm,
+    comparisons refusing identical inputs, each arm's commit and knob written into its file.
+195. **A knob's test asserts the predicate moved, not that the spec parsed.** Round 9's last hour: `TUNE=match.yaw_fit=0`
+    printed "applied" and the constraint stayed on (the wedged test byte-identical to its control under the tune),
+    because `Units._static_init()` wrote a static on another class and that class's own initialiser ran later and
+    put the default back. Every conclusion drawn from that knob in an afternoon was void: the A/B that "excluded
+    the constraint" (both arms had it on), the "second cause" it implied, and a corridor table under the world-only
+    arm. What survived was the one-line SOURCE bisect (flag off by default passes, flag on fails), because no tune
+    was in it. Rules: a knob lives where its consumer reads it, never as a foreign static written at class load; a
+    knob's own test flips it and asserts the mechanism's output changed; and a test that selects an arm asserts
+    the arm is live before the behaviour (nav's rule, now in verification.md). The person who shipped the knob had
+    just written the previous eight instances of this family into the brief. **It is round 7's bug recurring:
+    `game/ai/combat_motion.gd:40` documents the same clobber between Movement, TankBrain and CombatMotion ("the
+    switch silently does nothing; two byte-identical arms") and nav's files carry three working fixes (a getter
+    resolving at read time with a pinned static for tests; a switch parsed lazily on first use; `ControlGains.forced()`
+    read at call time with `push_error` for an unknown name). Copy the last: a misspelled knob and a clobbered knob
+    otherwise fail identically. And two depths of arm check: a flag read proves the static survived; a behavioural
+    check (something only true if the branch ran) proves the branch executed.**
+    **Proven the same night:** with the spec applied at first read, the wedged row went RED under `yaw_fit=0` and
+    reproduced nav's original unconstrained numbers (44.0°, 12.1 m), which showed that the "before" quoted all day
+    (28.5°, 9.6 m) had been taken in an arm that was not the one it claimed; the constraint's benefit was larger
+    than reported (74 % of the illegal yaw, not 59 %), the residual unchanged. **A before-column is re-taken on
+    the build that reports it, in the arm the knob now provably selects.**
+196. **A change scoped to X must not move a measurement that contains no X; if it does, the scope is wrong, not
+    the measurement.** (nav's rule from combat's finding, round 9.) The world-only yaw arm was described as "the
+    same quantity, a different set of colliders"; the corridor residual, measured in a corridor with NO vehicles,
+    moved 1.27 → 0.70 m under it, so the arms were two APIs (`test_move` with recovery and `get_depth` against
+    `collide_shape` with the widest point-pair) wearing one label, and every encouraging number from the arm was
+    uninterpretable, including a squad pass that would have shipped hulls rotating through each other. Two
+    corollaries: pre-register, for any arm, the measurement it must NOT move and read that first; and read the
+    counters you asked for (offered 30, applied 30, swept 0.0° was the permanent-refusal signature the counters
+    were built to expose, and nobody was looking at them).
+197. **A clearance number must state which motion it licenses.** (nav, closing round 9.) Width licenses driving
+    straight; the half-diagonal licenses rotating in place; `(w + l) / 4` licenses a swept turn. Round 9 found the
+    same error twice, in two files, pointing opposite ways: nav's clearance row compared a rotational envelope
+    (`radius_of`) against a lateral bake clearance and inflated a count ("14 of 21 exceed the bake"); squad's
+    formation derived its lateral pitch from width (`HULL_CLEAR_M`) for hulls that need the diagonal to turn, and
+    the plant constraint then correctly refused a rotation there was no room for (four of five squads 90 m off
+    their slots the day it was switched on). Both were invisible while hulls were small enough that every number
+    was generous; CP2 surfaced three in one day. Round 10's question is not "what is a shortfall measured against"
+    but "which motion is this constant licensing": `HULL_CLEAR_M`, the navmesh bake radius and `Avoidance.radius_of`
+    are three constants for three motions, and none of them says which.

@@ -52,7 +52,12 @@ func _run() -> void:
 	var failed := 0
 	var total_engine_errors := 0
 	var total_engine_warnings := 0
+	var charged_by_text := {}
 	# `make test FILTER=bot` passes --filter=bot: run only tests whose "file::method" contains it.
+	# `|` separates ALTERNATIVES -- FILTER="bot|relay" runs tests matching either. It is not a regex, and
+	# saying so matters: `make test FILTER="a|b"` used to reach a shell unquoted and exit 127 without running
+	# anything (it bit combat twice on 2026-09-20), and merely quoting it through would have run nothing at
+	# all while reporting success, which is worse.
 	var filter := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--filter="):
@@ -70,6 +75,11 @@ func _run() -> void:
 			if parts.size() == 2:
 				shard = int(parts[0])
 				shards = maxi(1, int(parts[1]))
+	var filter_parts := PackedStringArray()
+	for part in filter.split("|", false):
+		var trimmed := part.strip_edges()
+		if trimmed != "":
+			filter_parts.append(trimmed)
 	var discovered := _discover(TEST_ROOT)
 	var mine := PackedStringArray()
 	for index in discovered.size():
@@ -90,7 +100,7 @@ func _run() -> void:
 				test_methods += 1
 		var stem := path.get_file().get_basename()
 		# tests/test_case.gd is the base class every case extends, not a case itself.
-		if test_methods == 0 and stem != "test_case" and (filter == "" or stem.contains(filter)):
+		if test_methods == 0 and stem != "test_case" and _matches(stem, filter_parts):
 			failed += 1
 			print("  FAIL  ", stem, "::<file>")
 			print("          no test_ methods: a parse error leaves a loadable script with none")
@@ -99,21 +109,36 @@ func _run() -> void:
 			var method_name: String = method["name"]
 			if not method_name.begins_with("test_"):
 				continue
-			if filter != "" and not ("%s::%s" % [path.get_file().get_basename(), method_name]).contains(filter):
+			if not _matches("%s::%s" % [path.get_file().get_basename(), method_name], filter_parts):
 				continue
 			var case: TestCase = script.new()
 			case.tree = self
 			errors.take()
 			await case.call(method_name)
-			# AWAITED: `teardown()` drains the navigation map, and that needs frames. Un-awaited it would return at
-			# once and drain after the NEXT test had started -- a hook that looks wired up and does nothing.
-			await case.teardown()
-			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings)
+			# AWAITED, and SEALED: `_teardown()` owns the order (hook, free, body guard, drain) because the drain
+			# needs frames and a `teardown()` that must be awaited but may be declared `-> void` cannot be made safe
+			# by review -- five files called it un-awaited and four silently skipped the drain for as long as it
+			# existed. `TestCase.teardown()` is now a synchronous hook that `_teardown()` calls.
+			await case._teardown()
+			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings, case.expected_errors)
 			total_engine_errors += int(engine["errors"])
 			total_engine_warnings += int(engine["warnings"])
 			var engine_failures: PackedStringArray = engine["failures"]
 			case.failures.append_array(engine_failures)
 			var label := "%s::%s" % [path.get_file().get_basename(), method_name]
+			for text: String in PackedStringArray(engine["texts"]):
+				# COUNT TESTS, NOT OCCURRENCES. A test that emits the same warning twice is one victim, not
+				# two, and the first version of this counted occurrences while calling them tests: it
+				# reported "2 tests" for `test_theme_city_block`, which drives the same bad colour name
+				# twice on purpose and is a single test. Caught by this feature's own first real output
+				# (builder0, 59927de9) -- a count whose name does not match what it counts, in the commit
+				# about attribution. Tests run in order within a shard, so the last label is enough.
+				if not charged_by_text.has(text):
+					charged_by_text[text] = [0, label, ""]
+				var row: Array = charged_by_text[text]
+				if String(row[2]) != label:
+					row[0] = int(row[0]) + 1
+					row[2] = label
 			if case.failures.is_empty():
 				passed += 1
 				print("  PASS  ", label)
@@ -125,6 +150,22 @@ func _run() -> void:
 	# A shard prints a DISTINCT line and never the bare one, so that in a sharded run there is exactly one
 	# `N passed, M failed` in the output -- the total, printed by the make recipe after it adds the shards up.
 	# The orchestrator reads that line and nothing else (lesson 28); several of them would be worse than none.
+	# ONE CAUSE, MANY VICTIMS. A leaked object outlives the test that made it, so its warning lands on
+	# whoever runs next: one arena holder in combat's sim_cost test failed 22 tests in one shard. Twenty-two
+	# red tests sharing a message are one defect, and the first test to see it is the one worth reading --
+	# the rest are downstream. The warnings-fail rule is right and loud; this only fixes the ATTRIBUTION.
+	var shared := []
+	for text: String in charged_by_text:
+		var row: Array = charged_by_text[text]
+		if int(row[0]) > 1:
+			shared.append([int(row[0]), String(row[1]), text])
+	if not shared.is_empty():
+		shared.sort_custom(func(a: Array, b: Array) -> bool: return int(a[0]) > int(b[0]))
+		print("\nENGINE MESSAGES THAT FAILED MORE THAN ONE TEST (one cause, many victims):")
+		for entry: Array in shared:
+			print("  %d tests: %s" % [int(entry[0]), String(entry[2])])
+			print("      first seen in %s -- the tests after it are probably downstream, not guilty." % [String(entry[1])])
+
 	# The engine tally goes on its OWN line, never inside the summary the orchestrator reads (lesson 28). The
 	# make recipe sums the sharded ones the same way it sums the rest.
 	if shard >= 0:
@@ -133,7 +174,25 @@ func _run() -> void:
 	else:
 		print("\nengine: %d errors, %d warnings" % [total_engine_errors, total_engine_warnings])
 		print("%d passed, %d failed" % [passed, failed])
+	# A FILTER THAT MATCHES NOTHING IS NOT A PASS. `make test FILTER=typo` printed "0 passed, 0 failed" and
+	# exited 0, so a mistyped filter read exactly like a clean run of the tests you meant -- the same shape as
+	# `lint` over zero files, and the reason a green filtered run was never evidence of anything.
+	if not filter_parts.is_empty() and passed + failed == 0:
+		print("\nFILTER MATCHED NO TESTS: nothing contains %s." % [", ".join(filter_parts)])
+		print("  This is a failure, not an empty pass: a run of zero tests says nothing about the code.")
+		print("  The filter is a SUBSTRING of \"file::method\" (use | for alternatives), not a regex.")
+		quit(1)
 	quit(1 if failed > 0 else 0)
+
+
+## Does `label` match any alternative? No alternatives means everything matches.
+static func _matches(label: String, parts: PackedStringArray) -> bool:
+	if parts.is_empty():
+		return true
+	for part in parts:
+		if label.contains(part):
+			return true
+	return false
 
 
 func _discover(dir_path: String) -> PackedStringArray:

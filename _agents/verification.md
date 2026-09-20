@@ -79,6 +79,18 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
   4 cm by frame 3; which units take the bad side depends on engine state left by earlier tests. Assert *placement*
   for what placement guarantees; for the physical claim, wait until the largest per-frame delta is below 1 cm
   (capped), and name the unit, the body it hit and the frame count in the failure message.
+- **Select an arm in a test with `TUNE=<knob>=<value> make test FILTER=…`** (2026-09-20, combat): `Units._static_init()`
+  applies the environment's `TUNE` through the same `apply_tuning` as `--tune`, loud on a bad spec, so both arms of a
+  knob run on ONE tree; an arm that needs a code edit to select is an arm nobody re-measures. `Units.tuning` is a
+  STATIC: a value set from `TUNE` lives for the whole process by design, and a test that writes `Units.tuning`
+  mid-run and dies hands that value to every later test in its shard, so such a test erases what it tuned in an
+  unconditional teardown (`test_combat_hull_geometry` is the pattern).
+- **Assert the ARM before the behaviour** (2026-09-20, nav): a test that selects an arm (`TUNE=…`, a static flag)
+  asserts the arm is live (`assert_true(<the flag reads on>, "the tune took effect")`) BEFORE asserting what the
+  mechanism does, and restores it after. A tune that silently fails to take effect otherwise reads as the mechanism
+  regressing, or as a pass that means nothing; this round produced six false zeros and one false positive, every one
+  a mechanism whose arm nobody asserted. And a test asserts the mechanism under its explicit arm, never the defect on
+  the default path: a defect assertion is a scheduled red that must be inverted the day the default flips.
 - **Filtered runs in a batch use `;` with a per-file summary, never `&&`** (lesson 182): the chain stops at the
   first red and the unrun files look green by silence. A pass claim names the file's own `N passed, M failed` line.
 
