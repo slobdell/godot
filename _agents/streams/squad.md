@@ -1119,6 +1119,40 @@ is still on `stream/nav` at `16444beb` — so it passes `null`, which contract S
 `a6_no_corridor == a6_asked` will keep reading 1087/1087 until their field reaches main, and their test asserts that
 state explicitly, so the inert case is a documented pass rather than a silent one.
 
+### X1's "the deploy layout is unchanged to the bit": re-checked by derivation, and it holds
+
+Raised as owed when main's full check went red on a spawn/wall test and my `ArmyLayout` change was in the window. Two
+things settled it, and the order is the useful part.
+
+**The differential argument settled the regression, and it was not mine.** X1 (`974f194a`) is in the GREEN tree as well
+as the red one — scale's `7542df28` passed that exact test with X1's `ArmyLayout` in it, and
+`git diff 7542df28..b008a277 -- game/tactics/` is empty. So whatever the claim's truth, X1 could not be the difference.
+**A change present in both arms cannot explain a difference between them** — worth remembering before reading any code,
+because I had already started reading. The real cause was test pollution: the test passes alone and fails only when
+`test_arena_layouts` (scrapyard) runs before it in the same sharded process, leaving phantom bodies that compress the
+formation (two hulls within half a metre is the tell). The **sharding schedule** changed, not the code. scale owns it.
+Corroborating datum from scale's probe, which also clears every brain change: **worst tick-one displacement 1.8 cm
+across 90 units.**
+
+**The claim itself, re-derived and holding.** Both versions call `place(members, formation, anchor, forward, spacing)`
+with the same scalar spacing and the same anchor; only the along-axis stretch moved.
+- Old: isotropic at `spacing`, then each local offset's forward component × `deep_pitch / spacing` ⇒ (across `spacing`,
+  along `deep_pitch`).
+- New: `pitch(members, spacing)` = `(max(spacing, hull_floor.x), max(spacing, hull_floor.y))`. Pass 1 sets
+  `item["spacing"] = max(squad x scale, floor_m)` with `floor_m >= hull_floor.x`, so across collapses to exactly
+  `spacing`; `item["deep_pitch"] = max(spacing, hull_floor.y)` is exactly the along pitch. The same pair.
+- `offsets_at` lays the shape at the along-pitch with across scaled by the ratio, which is algebraically the isotropic
+  layout with forward components scaled — and centring commutes with per-axis scaling (scaling is linear,
+  `centered()` shifts by the centroid), so place()'s centroid-centring gives the same absolute positions the old manual
+  scaling about the anchor gave. `seat()`'s changed spacing cannot reach it: the deploy path passes no `previous`, so
+  spacing only feeds hysteresis that is not active.
+
+**A derivation is not a measurement, and this one is the weaker of the two kinds of evidence available.** It is
+corroborated by `test_spawn_grid` passing in the 1364/0 run and by `garage-smoke`/`army-loop-smoke` green. If anyone
+wants certainty rather than an argument, deploy a full faction army on foundry at `9f864474` and at main and diff the
+positions. **Do not treat my algebra as closing it** — this round caught me twice reasoning correctly from a premise I
+had not checked, which is exactly how the original claim got into a commit message.
+
 ### The facing drag on a whole squad: fixed for the crew that has a move order, OPEN for the followers
 
 **Fixed and verified** (builder0, `test FILTER=tactics_elements` **exited 0, 7 passed 0 failed**): a facing the player
