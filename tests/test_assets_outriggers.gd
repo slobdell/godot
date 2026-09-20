@@ -147,3 +147,40 @@ func test_a_part_with_no_moving_geometry_measures_its_model_unchanged() -> void:
 		model.free()
 		part.free()
 	GameTheme.use(previous)
+
+
+func test_the_checker_finds_the_posing_part_for_a_slot_and_not_the_mesh_carrier() -> void:
+	## The contract check reads the DRIVING silhouette, and it gets there through `AssetChecker.driving_size(slot)`.
+	## That lookup is the part of the chain that can fail silently: `driving_size` answers Vector3.ZERO for a slot
+	## no part poses, and the caller then falls back to the authored bounds -- so a broken lookup does not raise,
+	## it just quietly re-reports the deployed pose and the contract compares the wrong number against the box.
+	## That is exactly what a manifest-driven lookup did: a generated theme's `scene` is the mesh carrier
+	## (`generated_visual.gd`), which has no `driving_bounds`, so every slot measured ZERO and nothing said so.
+	## So: the artillery slot must resolve to a part that really shrinks the model, and it must differ from the
+	## model's own bounds -- if this ever reads zero again, this test fails instead of the silhouette going wrong.
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var part := GameTheme.scene("unit.artillery.hull").instantiate()
+	var packed: PackedScene = part.get("model_scene")
+	var model := packed.instantiate() as Node3D
+	var authored := FactionArt.natural_bounds(model).size
+	var looked_up := AssetChecker.driving_size("unit.artillery.hull", model)
+	var direct: Vector3 = part.driving_bounds(model).size
+	model.free()
+	part.free()
+	GameTheme.use(previous)
+	assert_true(looked_up.z > 0.01,
+			"the lookup found a posing part (got %.2f x %.2f x %.2f)" % [looked_up.x, looked_up.y, looked_up.z])
+	assert_eq(looked_up, direct, "and it is the same part the unit draws with, so it reports the same box")
+	assert_true(looked_up.x < authored.x * 0.85,
+			"which is the stowed silhouette, not the authored deployed one (%.2f m against %.2f m)"
+			% [looked_up.x, authored.x])
+
+
+func test_a_slot_no_part_poses_reports_zero_so_the_caller_keeps_the_authored_bounds() -> void:
+	## The other half of the fallback: `driving_size` must answer ZERO -- not crash, not guess -- for a slot that
+	## has no part at all, because the caller reads `driving.z > 0.01` to decide whether to use it.
+	var model := Node3D.new()
+	assert_eq(AssetChecker.driving_size("unit.nonexistent.hull", model), Vector3.ZERO,
+			"an unknown slot has no posing part, so there is no driving pose to report")
+	model.free()

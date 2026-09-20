@@ -40,7 +40,48 @@ static func build_layout(test: TestCase, layout: Dictionary, seconds := 5.0) -> 
 	return await _ready_arena(test, String(layout.get("name", "layout")), layout, seconds)
 
 
+## Wait until the world's navigation map holds NO regions at all, before a new arena is built into it.
+##
+## `TestCase.teardown()` calls `free()`, which is **synchronous**; `NavigationServer3D` drops the freed arena's
+## regions when it next **syncs**, a frame or two later. A test boundary is not a synchronisation point, so the next
+## test's arena was baking into a map that still held the previous one's geometry — two full arenas of edges in one
+## rasterization space. The engine reports it as
+##
+##     Navigation map synchronization had 284 edge error(s).
+##     More than 2 edges tried to occupy the same map rasterization space.
+##
+## and `run_tests.gd` fails **every test running when that warning lands**, which is why combat's shard 0 had 14 of
+## 18 failures sharing nothing but timing, and why the test standing next to the warning (`test_theme_unit_scale`)
+## builds no arena at all. **The carrier is a server warning, not a test's own error**, so its position in the log
+## marks the next sync and not the cause. nav hit the same bug at smaller scale — **4** edge errors from building
+## terminus twice inside one test, against **284** from two full arenas across a boundary. Same mechanism, different
+## overlap, one bug.
+##
+## **`_ready_arena`'s own predicate already knew foreign regions could be present and waited them out — but it waits
+## AFTER `add_to_tree`, so the bake has already happened into the shared map.** This drains first.
+##
+## **The predicate is EMPTY, not "back to the count we started with".** scale's drain probe printed
+## `before=2 with_arena=2 then after free: [2, 0, 0, 0]`: `before` and `with_arena` are equal, so a baseline guard
+## would have been satisfied immediately having waited for nothing — and `before=2` **was itself the previous test's
+## regions mid-drain**, so the baseline carried the very hazard it was meant to exclude. "Stops changing" is not
+## enough either: a drain spanning two syncs reads `2, 2` as settled while both samples are pre-drain. Zero is the
+## real resting state (their frame 1 onwards) and it is the only predicate with no false-satisfied case.
+static func _drain_regions(test: TestCase, seconds: float) -> void:
+	var map := (test.tree.root as Viewport).world_3d.navigation_map
+	for frame in int(SimClock.TICK_RATE * seconds):
+		if NavigationServer3D.map_get_regions(map).is_empty():
+			return
+		await test.tree.physics_frame
+	var left := NavigationServer3D.map_get_regions(map).size()
+	test.assert_true(left == 0,
+			("setup: %d navigation region(s) from a previous arena never drained in %.0f s. Building into them "
+			+ "raises 'more than 2 edges tried to occupy the same map rasterization space', and the runner then "
+			+ "fails whatever test is running when the warning lands — which will not be this one.") % [left, seconds])
+
+
 static func _ready_arena(test: TestCase, label: String, override: Dictionary, seconds: float) -> Arena:
+	# BEFORE instantiating: the previous arena's regions must be gone, or this arena bakes into them.
+	await _drain_regions(test, seconds)
 	var arena: Arena = ARENA.instantiate()
 	if override.is_empty():
 		arena.layout_name = label

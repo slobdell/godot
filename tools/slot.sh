@@ -30,7 +30,17 @@
 # parallelism shortens the RUN.
 #
 # Knobs (environment): TANK_SQUAD_SLOTS (overrides the derived value), TANK_SQUAD_SLOT_TIMEOUT
-# (seconds, default 5400).
+# (seconds, default 5400), TANK_SQUAD_EXCLUSIVE (hold EVERY slot -- see below).
+#
+# ---- TANK_SQUAD_EXCLUSIVE=1: a quiet window, held rather than hoped for ------------------------
+# A frame-time measurement needs a quiet machine (lesson 179), and "wait until the box looks quiet, then
+# launch" does not deliver one: another stream can start two seconds later, in the middle of the run. The
+# only way to hold a window is to OWN it, so an exclusive run takes every slot and gives them back when it
+# finishes. Other streams then queue normally -- they are not refused, they wait, which is what slots are for.
+# It cannot livelock: only the OLDEST live ticket may attempt a lock, so an exclusive run at the head of the
+# queue accumulates the slots as they free with nobody racing it, and it keeps its ticket until it has them
+# all. Holding some while waiting for the rest is deliberate and the heartbeat says so, because a box that
+# looks half-idle for ten minutes otherwise reads as the starvation bug this queue was built to fix.
 # A command that exceeds the timeout is killed, so one hung run can't starve every agent overnight.
 #
 # The queue is FIFO, and it says so out loud (both added 2026-09-18, found by combat: a pilot run
@@ -49,6 +59,15 @@
 #
 # Stale tickets are pruned by checking the owning pid, because a waiter killed between taking a
 # ticket and getting a slot must never block the queue: a deadlock here stops every agent at once.
+#
+# ---- The work runs in the BACKGROUND and is waited on, and that is not a style choice ----------
+# bash defers a trap until the current foreground command finishes. So with the work in the foreground, a
+# `kill` aimed at this script did nothing for as long as the work ran -- the handler, the one that removes
+# the owner file, waited for a `make check` that nobody had signalled. That is exactly the stale-`.owner`
+# failure in remote_builds.md, where a dead holder went on looking alive to every waiter and one of two
+# slots sat held with nothing inside it. `wait` is interruptible, so the handler runs AT ONCE: it kills the
+# work, gives the slot back, and exits. Found by the exclusive mode's own tests (metrics, 2026-09-20), and
+# it was already true of the single-slot path every stream uses all day.
 set -uo pipefail
 
 # Derived from available RAM at ~2.5 GB a slot, clamped to [2, 4]. Falls back to 2 if MemAvailable
@@ -144,6 +163,31 @@ trap 'rm -f "$ticket"; exit 143' TERM
 
 holders() { cat "$dir"/slot*.owner 2>/dev/null | sed 's/^/     /'; }
 
+# TERM a whole process tree, deepest first. `kill $child` is not enough: the work may sit under a subshell
+# and a `timeout`, and killing the top of that leaves the Godot underneath running while the slot is given
+# back -- the box then looks free and is not (lesson 15: a remote run kept executing after its wrapper died).
+# Walked by PARENT, never by pattern: seven checkouts run the same command lines, and a pattern kill here
+# took out three other streams' wrappers in one night (remote_builds.md, trip-up 19).
+kill_tree() {
+	local pid=$1 kid
+	for kid in $(pgrep -P "$pid" 2>/dev/null); do
+		kill_tree "$kid"
+	done
+	kill -TERM "$pid" 2>/dev/null
+}
+
+exclusive=${TANK_SQUAD_EXCLUSIVE:-}
+held_slots=()
+held_fds=()
+# Give back every slot this process holds. The lock itself dies with the fd; it is the human-readable owner
+# file that needs an owner, exactly as in the single-slot path below.
+release_exclusive() {
+	local i
+	for i in ${held_slots[@]+"${held_slots[@]}"}; do
+		rm -f "$dir/slot$i.owner"
+	done
+}
+
 # Every live ticket, oldest first. A ticket whose process is gone is removed rather than waited on.
 live_tickets() {
 	local t base pid
@@ -167,6 +211,42 @@ while true; do
 	# Wait our turn: only the oldest live ticket may try for a lock.
 	mapfile -t queue < <(live_tickets)
 	if [ "${#queue[@]}" -eq 0 ] || [ "${queue[0]}" = "$ticket" ]; then
+		if [ -n "$exclusive" ]; then
+			for i in $(seq 1 "$slots"); do
+				case " ${held_slots[*]-} " in *" $i "*) continue ;; esac
+				exec {fd}>"$dir/slot$i.lock"
+				if flock -n "$fd"; then
+					held_slots+=("$i"); held_fds+=("$fd")
+					echo "$(date +%H:%M:%S) $(basename "$PWD"): EXCLUSIVE (quiet window) $*" > "$dir/slot$i.owner"
+					trap 'release_exclusive' EXIT
+					trap 'release_exclusive; exit 130' INT
+					trap 'release_exclusive; exit 143' TERM
+				else
+					exec {fd}>&-
+				fi
+			done
+			if [ "${#held_slots[@]}" -eq "$slots" ]; then
+				rm -f "$ticket"
+				echo ">> quiet window: holding all $slots heavy-run slots$([ "$announced" -eq 1 ] && echo " after $((($(date +%s) - started) / 60)) min")" >&2
+				# The child must inherit none of the lock fds: a stray background server would hold the whole
+				# box. There are N of them, so the redirections are built rather than written out.
+				redir=""
+				for f in ${held_fds[@]+"${held_fds[@]}"}; do redir="$redir $f>&-"; done
+				export TANK_SQUAD_SLOT=exclusive
+				# Entitled to the whole machine, because nobody else is on it: `--jobs` divides its memory
+				# budget by the live slot count, and the live slot count for this run is one.
+				export TANK_SQUAD_SLOTS=1
+				eval timeout --kill-after=30 "$limit" '"$@"' "$redir" &
+				child=$!
+				trap 'kill_tree $child; release_exclusive; exit 130' INT
+				trap 'kill_tree $child; release_exclusive; exit 143' TERM
+				wait "$child"
+				status=$?
+				[ "$status" -eq 124 ] && echo ">> slot.sh: killed after ${limit}s: $*" >&2
+				release_exclusive
+				exit "$status"
+			fi
+		else
 		for i in $(seq 1 "$slots"); do
 			exec {fd}>"$dir/slot$i.lock"
 			if flock -n "$fd"; then
@@ -184,7 +264,11 @@ while true; do
 				export TANK_SQUAD_SLOT=$i
 				# The child must not inherit the lock fd: a stray background server would otherwise
 				# hold the slot forever.
-				timeout --kill-after=30 "$limit" "$@" {fd}>&-
+				timeout --kill-after=30 "$limit" "$@" {fd}>&- &
+				child=$!
+				trap 'kill_tree $child; rm -f "$dir/slot'"$i"'.owner"; exit 130' INT
+				trap 'kill_tree $child; rm -f "$dir/slot'"$i"'.owner"; exit 143' TERM
+				wait "$child"
 				status=$?
 				[ "$status" -eq 124 ] && echo ">> slot.sh: killed after ${limit}s: $*" >&2
 				rm -f "$dir/slot$i.owner"
@@ -192,6 +276,7 @@ while true; do
 			fi
 			exec {fd}>&-
 		done
+		fi
 	fi
 
 	now=$(date +%s)
@@ -208,7 +293,11 @@ while true; do
 			[ "$t" = "$ticket" ] && break
 			pos=$((pos + 1))
 		done
-		echo ">> still waiting for a heavy-run slot: $(((now - started) / 60)) min, position $pos of ${#queue[@]}; holders:" >&2
+		if [ -n "$exclusive" ]; then
+			echo ">> quiet window: holding ${#held_slots[@]} of $slots slots, waiting $(((now - started) / 60)) min for the rest; holders:" >&2
+		else
+			echo ">> still waiting for a heavy-run slot: $(((now - started) / 60)) min, position $pos of ${#queue[@]}; holders:" >&2
+		fi
 		holders
 		last_beat=$now
 	fi

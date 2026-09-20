@@ -1263,5 +1263,76 @@ class PoolTest(unittest.TestCase):
             self.assertEqual(status, 1)
 
 
+
+class TestCorruptBytes(unittest.TestCase):
+    """A single bad byte is refused BY LINE, because it is usually corruption, not a format problem.
+
+    nav's `p7-pit.jsonl` carried exactly one in 273,578 lines: 0x78 `x` flipped to 0xf8, so `"slot_x"`
+    became a broken key (2026-09-20, builder0 -> laptop). Opening the file as text decoded lazily inside
+    the read loop, so it escaped as a bare UnicodeDecodeError naming a codec and an offset into some
+    buffer -- no file, no line, no context, out of the tool every stream's falsifier reads through.
+    """
+
+    def _write(self, tmp, payload: bytes) -> str:
+        path = os.path.join(tmp, "corrupt.jsonl")
+        with open(path, "wb") as fh:
+            fh.write(payload)
+        return path
+
+    def _header(self) -> bytes:
+        return (json.dumps({"kind": "header", "format": "tank-squad-trajectory", "version": 1,
+                            "tick_rate": 30, "producer": "t", "commit": "c", "machine": "m"})
+                + "\n").encode()
+
+    def _sample(self, tick: int) -> bytes:
+        return (json.dumps({"tick": tick, "unit": "A", "unit_id": "tank", "team": 0,
+                            "x": 0.0, "z": 0.0, "heading_rad": 0.0, "speed_mps": 0.0, "gear": 0,
+                            "goal_x": None, "goal_z": None, "order_verb": None, "element": None,
+                            "slot_x": None, "slot_z": None}) + "\n").encode()
+
+    def test_a_bad_byte_is_refused_rather_than_traced_back(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = self._header() + self._sample(1) + self._sample(2).replace(b'"slot_x"', b'"slot_\xf8"')
+            path = self._write(tmp, body)
+            with self.assertRaises(trajlog.TrajectoryLogError) as caught:
+                trajlog.read_log(path)
+            self.assertIn("not valid UTF-8", str(caught.exception))
+
+    def test_it_names_the_line(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = self._header() + self._sample(1) + self._sample(2) \
+                + self._sample(3).replace(b'"slot_x"', b'"slot_\xf8"')
+            path = self._write(tmp, body)
+            with self.assertRaises(trajlog.TrajectoryLogError) as caught:
+                trajlog.read_log(path)
+            # `_die` names it the way every other refusal in this reader does: path:line:
+            self.assertIn("corrupt.jsonl:4:", str(caught.exception))
+
+    def test_it_names_the_offending_byte_and_its_neighbourhood(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = self._header() + self._sample(1).replace(b'"slot_x"', b'"slot_\xf8"')
+            path = self._write(tmp, body)
+            with self.assertRaises(trajlog.TrajectoryLogError) as caught:
+                trajlog.read_log(path)
+            message = str(caught.exception)
+            self.assertIn("0xf8", message)
+            self.assertIn("slot_", message)
+
+    def test_it_says_corruption_rather_than_suggesting_an_edit(self):
+        """The advice matters: a flip that lands in a DIGIT reads as a valid number, so patching the
+        one visible byte would leave the invisible ones and quietly bless the file."""
+        with tempfile.TemporaryDirectory() as tmp:
+            body = self._header() + self._sample(1).replace(b'"slot_x"', b'"slot_\xf8"')
+            path = self._write(tmp, body)
+            with self.assertRaises(trajlog.TrajectoryLogError) as caught:
+                trajlog.read_log(path)
+            self.assertIn("do not patch the file", str(caught.exception))
+
+    def test_a_clean_log_still_reads(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write(tmp, self._header() + self._sample(1) + self._sample(2))
+            log = trajlog.read_log(path)
+            self.assertEqual(len(log.units["A"]), 2)
+
 if __name__ == "__main__":
     unittest.main()

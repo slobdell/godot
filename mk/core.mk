@@ -180,8 +180,11 @@ test: import ## Run the headless test suite (FILTER=substring to run a subset; T
 	files=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | sed 's/.*: \([0-9]*\) files.*/\1/' | paste -sd+ | bc); \
 	passed=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | sed 's/.* \([0-9]*\) passed.*/\1/' | paste -sd+ | bc); \
 	failed=$$(grep -h '^SHARD ' $(BUILD_DIR)/test-shards/*.log | sed 's/.* \([0-9]*\) failed.*/\1/' | paste -sd+ | bc); \
+	eerr=$$(grep -h '^SHARD-ENGINE ' $(BUILD_DIR)/test-shards/*.log | sed 's/.* \([0-9]*\) errors.*/\1/' | paste -sd+ | bc 2>/dev/null); \
+	ewarn=$$(grep -h '^SHARD-ENGINE ' $(BUILD_DIR)/test-shards/*.log | sed 's/.* \([0-9]*\) warnings.*/\1/' | paste -sd+ | bc 2>/dev/null); \
 	echo ""; \
 	echo "$(TEST_SHARDS) shards over $$files files"; \
+	echo "engine: $${eerr:-0} errors, $${ewarn:-0} warnings"; \
 	echo "$$passed passed, $$failed failed"; \
 	[ "$$failed" -eq 0 ] || exit 1
 
@@ -205,7 +208,7 @@ test: import ## Run the headless test suite (FILTER=substring to run a subset; T
 # touches no `user://` path, and the target writes only `build/ai-scenarios.log`.
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
-                 ai-scenarios-check
+                 ai-scenarios-check remote-guard-test
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #
@@ -445,6 +448,26 @@ backup-install: ## Install and start the 30-minute systemd user timer that runs 
 remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="test FILTER=combat"
 	@test -n "$(T)" || { echo 'usage: make remote T="check"'; exit 2; }
 	tools/remote.sh $(T)
+
+remote-status: ## What is running in THIS worktree's folder on builder0 (read-only; ask before REMOTE_FORCE=1)
+	@tools/remote.sh --status
+
+remote-quiet: ## A TIMING run on builder0 that holds the whole box and says whether the window held: T="perf-trailer-ab"
+	@test -n "$(T)" || { echo 'usage: make remote-quiet T="perf-trailer-ab"'; exit 2; }
+	tools/remote.sh --quiet $(T)
+
+# The guard that stops `make remote` rsyncing --delete over a run of your own that is still going. It is in
+# `check` because it is a guard, and every defect round 9 found -- in the exclusion groups, in the shard count,
+# in `lint`'s file list, in `check-hashes` -- was a guard nobody had ever exercised. This one costs ~1 s and
+# needs no Godot, no ports and no `user://` path, so it joins with no exclusion edge.
+remote-guard-test: shell-tools-test ## Alias kept for the name that shipped in CHECK_TARGETS
+
+shell-tools-test: ## Every tools/test_*.sh known-answer suite (no Godot, ~20 s), and it FAILS if it finds none
+	@suites=$$(ls tools/test_*.sh 2>/dev/null); \
+	test -n "$$suites" || { echo "shell-tools-test FAILED: no tools/test_*.sh found. A suite that runs"; \
+		echo "  nothing reports success, which is how \`lint\` passed over zero files for three rounds."; exit 1; }; \
+	echo "shell-tools-test: $$(echo "$$suites" | wc -l) suites"; \
+	rc=0; for s in $$suites; do echo "-- $$s"; bash $$s || rc=1; done; exit $$rc
 
 # ---- Parallel workstreams (git worktrees; see _agents/workstreams.md) ---------------
 

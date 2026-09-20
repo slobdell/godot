@@ -233,15 +233,16 @@ fast-forwarded at worktree creation). A baseline `make remote T=check` was start
 
 ### REPORT — read this first (nav, round 9, 2026-09-20)
 
-**Nav built five catalogue rows this round. Not one of them is on by default, and the sim baseline has not moved
+**Nav built five catalogue rows this round, and a sixth after CP2. Not one of them is on by default, and the sim baseline has not moved
 once. That is the report, not an apology** — every row carries the measurement that decided its default, and four of
 the five are negative results that cost a night each instead of a round each.
 
 **Nothing changes when you play.** `make skirmish` is byte-for-byte what it was. Every row below is behind a switch
-that is **off**, and **nav's rows do not move the simulation baseline**: it read `04414f5d6a6dfa7c` on every nav
-check tonight, unchanged across nav's `main` merge. *(`main`'s own baseline has since moved to
-`d4c049819a5833d3` with squad's merge — that is squad's change, not nav's, and nav's next check compares against
-the new value.)*
+that is **off**, and **nav's rows do not move the simulation baseline — confirmed against the value that is live
+now.** It read `04414f5d6a6dfa7c` on every nav check through `53861455`, and then **`d4c049819a5833d3`, `main`'s
+current value after squad's merge, unchanged on the merged tip `d6a1f454`** that went green and was merged. So the
+claim is not "unchanged against the baseline these rows were built on" — it is unchanged against the one in `main`
+today.
 
 | Row | What it was meant to do | What it actually does | Default |
 |---|---|---|---|
@@ -250,6 +251,7 @@ the new value.)*
 | **A1** event replanning | cut route churn | **−21.5 % re-plans in isolation**, but the cadence is only ~3 % of re-plans in a fight — it fixes the wrong thing | **off** |
 | **A4** clothoid approach | reach gates a straight run-in cannot | reaches **100 %** of them on yard — and **breaches the fight guard hardest where it works best**, and on terminus **never arrives at all** | **off** |
 | **A6** legibility | stop hulls driving backwards down their own corridor | built, both clauses, and **cannot fire yet**: it needs one field from squad's brain. Measured inert, not assumed inert | **off** |
+| **clearance** (post-CP2) | stop oversized hulls routing through gaps the navmesh only certified for a 2 m agent | built; **the finding is the row** — after the resize **14 of 21 units need more clearance than the mesh bakes**, `gang_tank` 2.3× and the *median* unit over it. Falsifier pre-registered, not yet run | **off** |
 
 **The one thing a player would notice, and it is not ours to fix.** Your *"the semi trucks are yawing in place
 (should be impossible, they're not a tracker vehicle)"* has a cause: **a hull's rotation is never checked against
@@ -416,7 +418,195 @@ frames at pitch 21°, 49 m, FOV 35, and a human. *"For anything subjective, a hu
 A4's headroom. An instrument at the end of its range is indistinguishable from one that is not connected, and nav
 has not yet established headroom for this one across four maps (only on yard, where it was 403).
 
-### OWED, not done: P7's control-arm baseline through A12
+### ~~MORNING: main red on a foundry spawn-clearance test~~ — **RESOLVED: the sharding schedule, not the code**
+
+**Cause (scale, 2026-09-21):** the test passes alone and fails only when `test_arena_layouts` — which stands up
+scrapyard — runs before it **in the same sharded process**. Lesson 36's shape with physics bodies: state leaking
+between tests in one process. **The schedule changed, not the code.** scale owns the fix.
+
+**scale's probe also settled the question directly: worst tick-one displacement is 1.8 cm across 90 units** —
+settling, not motion. So no movement-layer change of anyone's was nudging anything, and the accounting below was
+the right answer for the right reason rather than by luck. **Kept, not deleted, because the method is reusable:**
+this is how a stream clears its own files from a red test without a bisection and without a single run.
+
+**The reusable part:** when asked "which of your changes could have done this", answer by **enumerating the window
+and reading every non-comment line**, then look for the cheapest discriminator rather than bisecting. Here the
+discriminator nav proposed — *print the spawn position beside the current one; if they are equal, no motion
+occurred and the whole movement layer is eliminated at once* — is what scale's probe measured, and 1.8 cm is that
+answer.
+
+
+
+`main` at `b008a277` fails `test_match_spawns_and_results::test_a_full_faction_army_a_side_spawns_clear_of_itself`
+(foundry, three units inside a `hull_size + 1.0 m` probe, one physics frame after `load_doctrine` places the army).
+It passed on scale's `7542df28` and on pre-CP2 `0808834e`. The orchestrator asked which nav **default-path** change
+could nudge a hull on the first tick. **The answer is none, and three of the five candidates are not in the window.**
+
+1. **The window holds four nav commits, all from tonight** — `e3363d46` (`facing_arc`), `53861455` (legibility key),
+   `16444beb` (corridor), `e2fbd1aa` (A6). **The sliding-goal fix, the face recovery and the wedged detector all
+   predate `7542df28`**, so they were in the tree that passed.
+2. **Every non-comment line of the +115 in `movement.gd`** is a constant (`OFF_NAMES`, `LEGIBILITY_WHY`), a pure
+   read function (`legibility()`, `corridor()` — they read `phase`/`_goal`/`_path` and mutate nothing), or
+   `arc_live`. **Nothing writes `cmd`, throttle, turn, position, velocity, `_path`, `_goal` or any steering term.**
+3. **`arc_live` is write-only with respect to behaviour:** assigned in `idle()` and `drive()`, read only inside
+   `legibility()` and in `reading()`'s dictionary. No decision consults it.
+4. **The +82 in `combat_motion.gd` is all A6**, wholly inside `if a6_on() and style != "run" and live.size() > 1`;
+   `a6_on()` is opt-in and off.
+5. **The one way added keys could matter, checked not assumed:** a consumer branching on the reading's *shape*.
+   **8 call sites, none** using `.size()`/`.keys()`/`.hash()`/`.values()`/`.is_empty()` or whole-dict comparison.
+6. **Measured, not just read: `d6a1f454` reports `sim-baseline d4c049819a5833d3` unchanged** — `main`'s current
+   value. A nav change perturbing hull motion would have to survive a hash of simulation state.
+
+**What remains in the window is `tank_brain.gd` (+133), which is squad's** — stated as what is unaccounted for, not
+as a diagnosis; nav has not read it.
+
+**The hypothesis nav would test first, because it fits the symptom better than a nudge:** the probe fires *one frame
+after placement*, and the resize left units under a metre from foundry's geometry. **A unit that spawns already
+intersecting, never moving at all, looks identical to a nudged one.** That is a placement-margin failure CP2
+exposed, not a movement change. Ask the probe to print the **spawn** position beside the current one — if they are
+equal, no motion occurred and every movement-layer candidate is eliminated at once.
+
+### ⚠ `build/` LIES IN BOTH DIRECTIONS — a measurement artefact there is never safe
+
+Two separate hazards bit nav in one night, from opposite sides:
+
+1. **The targets WIPE it.** `nav-fight-maps` and `nav-fight-ab` open with `rm -rf`, so launching one destroys the
+   previous run's logs. nav nearly lost the 120 s four-map headroom pass and only caught it because the next run
+   was still queued for a slot.
+2. **The copy-back LEAVES things in it.** `remote.sh` rsyncs `build/` back **without `--delete`**, so artefacts
+   accumulate across runs. `build/metrics/p7-pit.jsonl` sat there through several later checks and came back
+   **corrupt** — one flipped bit at line 143,873, `slot_x` broken — while **nav's copy taken out of `build/`
+   immediately after the run was byte-intact** (different md5; 273578 lines, 0 unparseable).
+
+**So a file in `build/` is not evidence of anything: it may be this run's, a previous run's, or damaged, and it
+wears the same name in all three cases.** Plausible name, plausible size, no marker saying which run wrote it. It is
+*"a count whose denominator changes between runs"* in file form.
+
+**The rule: copy every measurement artefact OUT of `build/` the moment the run ends, and validate it by parsing,
+not by looking.** nav validated all three P7 logs line by line rather than checking the offset metrics reported —
+the whole point of a corruption report is that the file looks fine at a glance. The habit was adopted to survive
+hazard 1 and it is what saved the measurement from hazard 2; **defending against deletion happened to defend
+against corruption, which is an argument for the habit rather than for the reason it was adopted.**
+
+### The clearance rule, PROVEN by its own numbers (builder0, `164d51d4`)
+
+    clearance:          14 of 21 units exceed the 2.0 m bake; worst gang_tank at 4.58 m (2.3x)
+    clearance_shortfall: gang_tank +2.58 m, scout -0.54 m
+    clearance_routing:   gang_tank chord slack -2.28 m, scout 0.90 m (chords 6, refused 3)
+
+`gang_tank` is `max(0.3, 2.0 − 1.66 − 0.2) = 0.3`, then `0.3 − 2.58 = **−2.28**` — the refusal, arithmetic visible.
+`scout` is `max(0.3, 2.0 − 0.905 − 0.2) = **0.90**` with a negative shortfall, so it is untouched and keeps its
+shortcuts. **`test_the_switch_off_reproduces_the_old_slack` passes**, so the default path is byte-identical to the
+pre-row formula, and `sim-baseline 1e90f69e5d6fcc46` is unmoved with the whole row in the tree.
+
+**⚠ `clearance_chords` COUNTS CONSULTATIONS, NOT HULLS.** `_chord_slack()` is called **once per driving hull per
+frame**, so two hulls over three frames give **six** consultations and three refusals — not "one hull refused".
+nav asserted `refused == 1`, which is the natural thing to write and is wrong. **Do not write a fixed count here.**
+The claim that survives is the pair:
+
+    refused > 0          the oversized hull WAS refused
+    refused < chords     the hull that FITS was not
+
+**The second half is the guard this row most needs, and a fixed count never tested it:** if every consultation
+refuses, the rule is touching hulls it has no business touching — which is the failure nav pre-registered as the
+most likely one. A count assertion would have passed a rule that refused everything, provided it refused exactly
+the expected number of times.
+
+### PRE-REGISTERED, before any arm is run: the CLEARANCE row's falsifier
+
+Written with the code committed (`826e4852`, `04fec00b`, `04f472ca`) and **not one number measured**, so the bars
+cannot be chosen to fit them.
+
+**The claim under test.** CP2 left **14 of 21 units** needing more clearance than the navmesh bakes (`gang_tank`
+4.58 m against a 2.0 m bake; median 2.50 m). An oversized hull that cuts a mesh-hugging shortcut is driving on a
+certificate that only ever covered its width. **Stopping those shortcuts should reduce wedging for the oversized
+classes, and it must not cost the hulls that fit anything at all.**
+
+**Arms, on ONE commit** (metrics' cross-commit banner caught nav reporting a two-commit series as one; the
+procedural rule is *do not commit between runs of a series*): control = default path, treatment =
+`--nav-off=clearance`. `Arena.ROTATION` — yard, pit, terminus — seed 3, 120 s, `--trajectory=` on both arms.
+
+**Arm proof first (lesson 147), or the run is refused, not reported.** `route_arms()` must show
+`clearance_chords > 0` **and** `clearance_refused > 0` in the treatment and **`clearance_refused == 0`** in the
+control. `--nav-off=a11` ran one treatment in two arms tonight and returned byte-identical results with every part
+working; this is the check that would have caught it.
+
+**Primaries, per hull class with sample sizes** — read from A12, never from nav's own counters, since the whole
+point is an independent instrument:
+
+| metric | direction for the OVERSIZED classes | why |
+|---|---|---|
+| `stuck` / `oscillating_share` | **down** | the row exists to stop oversized hulls wedging on corners the mesh said were clear |
+| `net_over_path` | **up, or unchanged** | fewer failed corner attempts should mean less doubling back |
+| `cusps` per agent-minute | **down** | a cusp is a reversal, and a wedged hull reverses |
+
+**THE GUARD, and it is the one nav expects to bite:** refusing shortcuts makes routes longer. **Attack-move
+`progressing` must not fall more than 10 % on any map**, and `off_corridor` (A6's quantity, baseline **0.320**
+pooled) **must not rise**. A4 bought its gate and spent the fight; this row must not buy clearance and spend the
+same thing.
+
+**And the guard that matters more, stated as a bar rather than a hope: the hulls that FIT must be unchanged.**
+`scout`, `gang_scout` and every class whose shortfall is negative must show **no metric moving by more than noise**,
+because the rule is not supposed to touch them. A row that improved the heavies by slowing everyone down is a
+regression wearing a fix's clothes, and that is the result nav considers most likely.
+
+**What this A/B cannot establish, said now.** It measures one seed per map. If the primaries move, the next
+question is whether they move for the *reason* claimed — fewer refused corners — and that needs the per-class
+`clearance_refused` correlated against the per-class stuck delta, which is a second run, not this one.
+
+### ✅ P7's BASELINE, MEASURED BY A12 — and it corroborates round 8's band from a different instrument
+
+**⚠ PROVENANCE, corrected by metrics' cross-commit banner: these runs span TWO commits.** yard and pit were
+produced at **`c025bc6b`**, terminus at **`5369bd13`** — nav committed a Status file between runs and then reported
+all three under one hash. The diff between them is **one Status file and nothing else**, so the pooled number
+stands and the A6 row names both commits; but the attribution was wrong when nav gave it, and *"every number you
+report carries its commit"* is the rule nav has spent the round holding other people to. **The lesson for the next
+measurement is procedural: do not commit between runs of one series** — metrics' banner caught it, nav did not.
+
+**`c025bc6b` / `5369bd13`, builder0, seed 3, 120 s, the pure default path** (`NAV_FIGHT_ARM` reads
+`a1=false a4=false a6=false a7=false a11=false off=[]`), read with `--order-verb attack_move --team 0`:
+
+    ALL   off_corridor=0.304 (active 0.631, 28472 ticks; inactive 11592, slow 3250, ordered_arc 1811)
+          ifv 0.373 (active 0.664)   lancer 0.436 (active 0.407)   tank 0.255 (active 0.692)
+
+**30.4 %, inside round 8's 30–36 %.** That band was round 8's figure from a *different tool*, and the caveat on the
+front page — *"the bar has never been measured by the instrument that will judge it"* — is now **answered rather
+than outstanding**: A12 puts the baseline where the bar assumed it. Taken while **A6 is inert**, so the mechanism
+cannot have influenced its own baseline, which is the only window in which that is true.
+
+**The active fraction is the half people will skip, and it is the more interesting number: 0.631.** A6 can act on
+**63 % of ordered ticks**; the rest are inactive (no leg, arrived, blocked) or excluded. So **a third of the
+pathology is out of A6's reach by construction**, and a bar of *"under 10 %"* over active ticks is not the same
+claim as *"under 10 % of the fight"*. Whoever reads A6's falsifier must read both numbers or they will overstate it.
+
+**`ordered_arc 1811`** ticks are excluded as obedience — the arrival-arc case S4 names, which would otherwise be
+charged to A6. And **`arc_live` is 164.3 s / 171.3 s for the wheeled hulls and 0.0 s for the tank**: a tracked hull
+is never offered an arc, so that zero is a measurement and not a gap.
+
+**THE ROTATION, complete — `Arena.ROTATION` at seed 3, 120 s, each run's own wrapper line `exited 0`:**
+
+| map | `off_corridor` | active fraction | active ticks |
+|---|---|---|---|
+| yard | 0.304 | 0.631 | 28472 |
+| pit | 0.321 | 0.595 | 25764 |
+| terminus | 0.331 | 0.738 | 41818 |
+| **POOLED** | **0.320** | — | **96054** |
+
+**All three maps sit inside the pre-registered 30–36 %, and the spread is 0.304–0.331** — far tighter than nav
+expected given how differently these maps behaved for A4 (terminus had 806 blocked gates to pit's zero). **The
+pathology A6 targets is a property of the movement layer, not of a map.** That is the strongest thing this baseline
+says, and it makes A6 a roster-wide row rather than a cluttered-map one — the opposite of where A4 landed.
+
+**Pooled WEIGHTED BY ACTIVE TICKS (0.320), not as a mean of the three fractions (0.319).** They agree to a
+thousandth here because the maps carry similar weight, so the choice changes nothing — but it is still the right
+statistic, and the day one map dominates it will stop agreeing. Averaging fractions with unequal denominators is
+the same error as averaging five small front shares in the A11 duel.
+
+**The active fraction moves more than the fraction does: 0.595 → 0.738.** A6 reaches **59–74 %** of ordered ticks
+depending on the map, so its *opportunity* is map-dependent even though the pathology is not. A falsifier read
+without it would compare unlike quantities across maps.
+
+
 
 **What it is:** the off-corridor velocity fraction on **today's default path**, measured by `make metrics` — A6's
 falsifier bar is *"30–36% → under 10%, with no fall in exchange ratio"*, and **the 30–36% has never been measured
@@ -518,6 +708,33 @@ measurable for the first time. **Re-run the benefit measurement then; do not del
 
 **What stays shipped:** the recovery, opt-in and unchanged, with its guard now holding on the hardest case available
 rather than on a synthetic one. **Do not flip its default** — on today's plant it can only ever subtract.
+
+**UPDATE (2026-09-21): combat built the plant fix to nav's spec at `4cb9b9c6` and IT DOES NOT WORK — nav's test
+stays green, correctly.** `test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided` returns
+**bit-identical** numbers with the constraint on or off (19.71 m of path, 28.5° of yaw, 3.12 m net drift), verified
+by combat with their own contact gate disabled. **The assertion written to go red has not gone red, and combat
+reported that rather than papering it.** Shipped off by default (`Tank.yaw_fit_enabled = false`), so nothing of
+nav's moves.
+
+**Why, and it is a tension worth carrying into round 10.** `move_and_slide` **depenetrates every tick**, so at the
+top of each tick the hull is legal where it stands and the next small rotation adds no measurable penetration. The
+yaw is illegal **cumulatively** — 28.5° needs 9.6 m of a 4.8 m corridor — and legal at **every increment**. And the
+obvious alternative is worse, measured: testing the **absolute pose** froze a wedged rig solid, **30 offers, 30
+refusals, 0.0° swept** — N1's breach exactly, and the thing nav's `refusals_offered`/`refusals_applied` requirement
+was written to catch.
+
+**nav's read, sent to combat: both failures are ONE bug — lesson 153 in a boolean.** The absolute test is a
+**saturating predicate**: for a wedged rig every candidate overlaps *including the pose it already occupies*, so it
+ranks nothing and refuses everything. Same shape as `_front_share()`'s floor and squad's leash clamp. **The fix is
+the same: compare the candidate against the CURRENT pose, not against legality** — refuse a yaw that is *worse*,
+permit one that is not, including while still overlapping. The rig then cannot screw deeper into the wall but can
+always unwind out of it, and **the cumulative violation never has to be detected at all**, because no increment is
+allowed to add to it. It also survives depenetration, since both poses are queried at the same instant and the
+push is common-mode.
+
+**So per-tick is the right granularity; it was the wrong comparison.** And where genuinely no non-worsening yaw
+exists — a hull boxed on every side — freezing *is* correct, and **that** is the state to detect and report. That
+is nav's `face` recovery's condition, and it is the first thing that would make that inert row fire.
 
 **AGREED WITH COMBAT (2026-09-20): the constraint goes in the PLANT, not in A7's feasibility mask.** The argument
 that decided it is this round's own null — *THE LEASH IS NOT IN THE ROUTE PATH*: **the layer holding a constraint
