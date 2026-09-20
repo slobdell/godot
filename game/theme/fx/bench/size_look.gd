@@ -20,8 +20,7 @@ extends Node
 ## than standing up a second renderer, and it calls `box_at_length` for nothing -- the catalog IS the boxes now.
 ## Three frames, because one pose cannot answer both questions:
 ##   lineup_factions.png  four rows, one per faction, each sorted by length -- "is my faction's roster sensible?"
-##   lineup_row.png       all 21 in a single row, the Condemned tank and the War Rig at the ends as the references
-##                        the round is anchored on, grouped by faction -- "does a semi look like a semi next to a car?"
+##   (a single row of all 21 was tried and dropped: 183.8 m of span is unreadable at 1080p)
 ##   lineup_pose.png      HIS pose (21 deg, 49 m, FOV 35), the same one round 8 shot the rig at, over the size
 ##                        spread -- the frame that is directly comparable with round 8's rig_14_0.png
 ## Each vehicle is labelled with its name and its hull length. Visual only; nothing here simulates.
@@ -37,11 +36,13 @@ const GAP_M := 4.0
 
 ## S1: the size spread, smallest to largest, for the frame shot at the lead's own pose.
 const SPREAD := ["gang_scout", "law_scout", "gang_ifv", "syn_tank", "tank", RIG]
-## Gap between vehicles in a lineup row, and between rows, as a fraction of the longest hull in that row.
-const LINEUP_GAP_M := 3.0
+## Gap between vehicles in a lineup row, and between rows. The gap is wide because the LABELS need the room, not
+## the vehicles: at 3 m the four longest names in the Syndicate row overprinted each other.
+const LINEUP_GAP_M := 7.0
 const LINEUP_ROW_GAP_M := 7.0
-## A wide pose still looks down from above, but not so steeply that lengths foreshorten away.
-const LINEUP_PITCH_DEG := 26.0
+## A wide pose still looks down from above, but not so steeply that lengths foreshorten away. Raised from 26 for
+## the multi-row frame: at 26 the near row hid the row behind it.
+const LINEUP_PITCH_DEG := 34.0
 ## Margin around a framed lineup, as a fraction of what it has to fit.
 const LINEUP_MARGIN := 1.12
 ## How far outward of the camera's focus the lineup is parked. The first run put it inside the player's own
@@ -50,8 +51,9 @@ const LINEUP_MARGIN := 1.12
 ## on open ground beside the army, with the HUD and the order markers hidden for the capture -- these frames ask
 ## whether the roster reads at the right relative size, and a command card over the bottom third does not.
 const LINEUP_OFFSET_M := 120.0
-## Labels alternate between these heights above a hull, so neighbours in a dense row do not overprint.
-const LABEL_TIERS := [1.0, 2.1]
+## Labels cycle through these heights above a hull, so neighbours in a dense row do not overprint. Three tiers,
+## not two: two was not enough for a row of five with long names.
+const LABEL_TIERS := [1.0, 2.2, 3.4]
 
 var out_dir := ""
 var lengths: Array = [5.6, 10.0, 12.0]
@@ -282,16 +284,8 @@ func _lineup(scene: Node, focus: Vector3, heading: float) -> void:
 	# 1. Four rows, one per faction: is each faction's own roster sensible?
 	await _shoot_rows(scene, stage, heading, by_faction, "lineup_factions.png", "factions")
 
-	# 2. One row, every unit, the two references the round is anchored on at the ends. The Condemned tank is what
-	#    "tiny" was measured against in round 8 and the War Rig is what he ruled at 14 m, so the frame reads
-	#    left to right from the thing he called a tank to the thing he called huge.
-	var single: Array = ["tank"]
-	for row: Array in by_faction:
-		for unit_id: String in row:
-			if unit_id != "tank" and unit_id != RIG:
-				single.append(unit_id)
-	single.append(RIG)
-	await _shoot_rows(scene, stage, heading, [single], "lineup_row.png", "row")
+	# A single row of all 21 was tried and dropped: at 183.8 m of span it is unreadable at 1080p, which is a fact
+	# about the frame rather than about the roster (the orchestrator looked at it and said so).
 
 	# 3. His own pose, over the size spread. Directly comparable with round 8's rig frames.
 	await _shoot_rows(scene, stage, heading, [SPREAD], "lineup_pose.png", "pose", DISTANCE_M, PITCH_DEG)
@@ -400,4 +394,8 @@ func _distance_to_fit(width: float, depth: float, pitch: float) -> float:
 	var projected := depth * sin(deg_to_rad(pitch))
 	var for_width := (width * LINEUP_MARGIN / 2.0) / tan(half_h)
 	var for_depth := (projected * LINEUP_MARGIN / 2.0) / tan(half_v)
-	return maxf(maxf(for_width, for_depth), DISTANCE_M)
+	# THE NEAR ROW IS NEARER THAN THE FOCUS, so it subtends a wider angle than this calculation assumes -- which is
+	# why the first multi-row frame clipped the Condemned row (the widest, 55.7 m) at both edges. Push back by the
+	# half-depth's projection so the width fits AT THE NEAREST ROW rather than at the middle of the block.
+	var near_row_bias := (depth / 2.0) * cos(deg_to_rad(pitch))
+	return maxf(maxf(for_width, for_depth) + near_row_bias, DISTANCE_M)
