@@ -272,9 +272,31 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 |---|---|
 | The hinge's frame cost (M1) | **Not measured, and the quiet box did not fix it.** Two six-cycle runs on an *empty* builder0 both came back NOT USABLE. The cause is now sized: frame cost regresses on vehicle census at **0.677 ms per vehicle (r 0.921, r² 0.85)**, and the battle thins monotonically through the run (90 → 72), so census alone is worth +0.68…+3.38 ms per cycle against a total cost spread of 6.39 ms and a mean of +0.01 ms. **The confound is the size of the signal, and in one cycle larger than it** — and it is a drift, not noise, so more cycles will not average it away. Needs combat's census-freeze tune (damage off, no deaths, no respawns, default off); the bench will then *require* it and refuse to report when it is off. Do not quote a trailer number until then. |
 | The Terminus lighting | Diagnosed and handed to the stream that owns the map file |
-| Roof dressing on the Terminus | **Built and green at `df55fa1d`** (9/0). Seven seeded housings/ducts/tanks per roof, inside `_shrink(poly, 2.2)` so nothing overhangs the parapet. **Cost: no new draw call and no new material** — appended to the block's existing SurfaceTool, so a block is still the two surfaces its docstring promises; the test asserts the surface count rather than trusting it. The band is taken OUT of the authored height, not added on top, because the mesh must stay inside the collision box ("what blocks a hull and a shot is what you see"); total height unchanged. Frames below. |
+| Roof dressing on the Terminus | **Built, looked at, fixed, and green at `19e258d2`** (9/0). Seven seeded housings/ducts/tanks per roof, inside `_shrink(poly, 2.2)` so nothing overhangs the parapet. **Cost: no new draw call and no new material** — appended to the block's existing SurfaceTool, so a block is still the two surfaces its docstring promises; the test asserts the surface count rather than trusting it. The band is taken OUT of the authored height, not added on top, because the mesh must stay inside the collision box ("what blocks a hull and a shot is what you see"); total height unchanged. Frames below. |
 | The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
+
+**The frame said the first version did not work, and every test passed while it did not.** All seven boxes place
+on every seed (counted: 28 distinct plant corners above the roof cap), the surface count was 2, the AABB was inside
+the box — and at the lifted camera the plant was *shapes you had to look for*. The shading sat at **+25% on tops and
+−28% on sides** of the roof's own value, which in a scene this dark is no contrast at all. **Nothing in the suite
+measures legibility, so nothing failed.** Fixed at `19e258d2`: tops catch the sky at ~2× the roof, sides fall well
+under, and a per-unit hash off the world position stops neighbouring boxes merging into one mass. At `p35-d120`
+every block now reads as a working rooftop against the flat slabs of the before-frame.
+
+**Frames, all `--no-show` so the light show cannot be credited for any of it:**
+
+| what | path |
+|---|---|
+| Terminus **before** (2 lamps, bare roofs) | `scratchpad/frames/prelamp-p{21,50}-noshow.png` |
+| Terminus **after** (8 lamps, dressed roofs) | `scratchpad/frames/v2-p{21-d049-f35,35-d120,50-d160}.png` |
+| the roof three-way (before / subtle / fixed) | `scratchpad/frames/roof_three.png` |
+
+**The lamp A/B is now a real pair** and it is positive: in the before-frame the plaza is uniformly dark apart from
+the two original perimeter glows; in the after there are warm pools where the six new lamps are. Earlier I tried to
+get this from a difference image against a **show-ON** frame and discarded it — that conflated six lamps with the
+whole light show. One caveat on the pair as it now stands: the after also carries the roof dressing, so it is not a
+single-variable change. For the **floor** question it is still sound, because plant 24 m up cannot light the street.
 
 **Two traps the roof dressing walked into, both caught before any frame was rendered.**
 
