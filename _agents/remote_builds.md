@@ -245,6 +245,21 @@ A backgrounded `make remote T=check ... | tail -30` on `main` finished and the h
 **`completed (exit code 0)`**. The wrapper's own line in the log said **`>> remote: make check exited 2`**, and
 `sim-baseline` had failed. **The notification was reporting `tail`'s exit status, not `make`'s.**
 
+**The same family, in a wrapper script rather than a pipeline (metrics, 2026-09-20):**
+
+    make remote T=check > log 2>&1
+    echo ">>> $(date +%H:%M:%S) wrapper exit $?"      # always prints 0
+
+**The command substitution runs first and resets `$?`.** That line sat in the chained check scripts and
+reported `wrapper exit 0` for a run that exited 2. Nothing downstream was wrong, because every number quoted
+was read from the wrapper's own `>> remote: make check exited <N>` line as CLAUDE.md rule 2 requires — which
+is exactly why that rule is worded the way it is. Capture the status into a variable on its own line, before
+anything else runs:
+
+    make remote T=check > log 2>&1
+    rc=$?
+    echo ">>> $(date +%H:%M:%S) wrapper exit $rc"
+
 **So the rule *never read a build result through a pipe* has a second face: the completion notification is downstream of
 your pipeline too.** It is more dangerous than a piped `echo $?`, because it arrives from the *tooling* rather than from a
 log, which is exactly the kind of source one trusts without checking. **Believing it here would have meant announcing
