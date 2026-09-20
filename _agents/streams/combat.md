@@ -354,6 +354,57 @@ own named cause.
 - **`game/units/units.gd`** — `Units.apply_tuning` gains a third owner, `switch.<knob>`. Never set in normal play.
 - **`mk/match.mk`** — `switch-arm`, `switch-arms`, and `TUNE=` on `faction-matrix`.
 
+## ▶ ROUND 10 STARTS HERE — the list, in order, with what is measured and what is only believed
+
+Round 9 closed with combat merged at **`7f8eeab8`** (`63155ffb` + the orchestrator's record updates). The lead's
+acceptance test for round 10 is **driving squads through the Terminus streets**; he played main without this
+stream's tip and said *"the units seem a little smarter but it's hard to tell"*. The settle tick is on main now.
+
+**1. THE PREDICATE QUESTION — and it is first because everything else here assumes an answer to it.**
+
+> *Why does a clear hull with 3.19 m of room never accept any of its three candidate yaws for 1135 consecutive
+> ticks?*
+
+| crew | across gap | max **continuous** refused ticks | seats? |
+|---|---|---|---|
+| `Green_Charlie_1` | 0.06 m | 1260 | no |
+| `Green_Bravo_6` | −1.36 m (overlapping) | 1113 | no |
+| `Green_Charlie_3` | **3.19 m** (loosest) | **1135** | no |
+| `Green_Echo_3` | 2.58 m | 867 | no |
+| `Green_Alpha_4` | **0.26 m** (tight) | **128** | **yes** |
+
+`yaw_refused_ticks` never resetting means **no fraction of the wanted turn, down to 0.3, ever came back
+non-worsening**. That is a predicate question, not a formation one. Reproduce with
+`TUNE=match.yaw_fit=1 DRIVE_TRACE=<crew> make test FILTER=ai_player_orders`. ⚠ Gap: `Green_Echo_1` produced zero
+traced ticks — absent, not silent, not chased.
+
+**2. THE ORDERING OBSERVATION — one sentence, to be RANKED and not told as a story.** Alpha is ordered first and
+seats; the four squads ordered while Alpha was already moving freeze. That is the only pattern the table supports,
+and it is a correlation with n=1 on the seating side.
+
+**3. DIAGONAL SPACING — a CANDIDATE, not the fix**, with the table above beside it. squad's separating-axis
+reading (an 8.62 × 2.40 m hull sweeps to its 4.48 m half-diagonal, needing ~3.3 m of lateral room) is **not
+supported by the ranking** — 3.19 m refuses as hard as 0.06 m. **Two sites, not one**: the off-slot crews never
+DEPARTED (they sit at the spawn row, z ≈ 94–101, with destinations at z ≈ 6–19), so the **spawn grid** needs the
+arithmetic before the slot layout does. Four crews overlap **at spawn** on the settle-tick tree.
+
+**4. THE ARTILLERY SCENARIO THAT WAS PASSING ON LEAKED NAVIGATION STATE** —
+`scenario_cp2::test_artillery_stays_dug_in_on_a_moving_target`, routed here by metrics with a four-run table.
+**This stream does not yet hold that table**: get it from metrics before touching the scenario, and treat the
+previous pass as evidence about the leak rather than about artillery. Same shape as the wall fixture whose rig
+moved 8 cm — *a leak does not only fail the next test, it silently changes what the next test measures.*
+
+**5. THE GANGS-VS-LAW SERIES** — deferred from round 9 by the lead's convergence call. Pre-registration is written
+below and unchanged: `match.hull_disc` as the arm (**`=0` is the treatment**, the default is the disc), feel's
+matrix as the **before**, **per cell, never pooled**, the null pre-registered as **evidence AGAINST** the disc
+being the cause of `9/20 → 0/20`, and the `-tuned.json` filename trap avoided by copying between runs.
+
+**6. ORBIT RADIUS vs HULL LENGTH** for `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` — the one
+scenario still red. scale's single-variable arm (tank length 8.62 → 3.60) took engine-deck hits from 0 to 22 of
+43; **the scout's orbit (A5) is tuned to a hull length that no longer exists**. With nav.
+
+---
+
 ## ⏸ WHERE THIS STREAM IS, AND THE EXACT NEXT STEP
 
 **Tip `396be191`** (`986f8921` + a merge of local `main` `b3f7ffae`), working tree clean.
