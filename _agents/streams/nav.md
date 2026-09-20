@@ -488,6 +488,30 @@ the whole point of a corruption report is that the file looks fine at a glance. 
 hazard 1 and it is what saved the measurement from hazard 2; **defending against deletion happened to defend
 against corruption, which is an argument for the habit rather than for the reason it was adopted.**
 
+### The clearance rule, PROVEN by its own numbers (builder0, `164d51d4`)
+
+    clearance:          14 of 21 units exceed the 2.0 m bake; worst gang_tank at 4.58 m (2.3x)
+    clearance_shortfall: gang_tank +2.58 m, scout -0.54 m
+    clearance_routing:   gang_tank chord slack -2.28 m, scout 0.90 m (chords 6, refused 3)
+
+`gang_tank` is `max(0.3, 2.0 − 1.66 − 0.2) = 0.3`, then `0.3 − 2.58 = **−2.28**` — the refusal, arithmetic visible.
+`scout` is `max(0.3, 2.0 − 0.905 − 0.2) = **0.90**` with a negative shortfall, so it is untouched and keeps its
+shortcuts. **`test_the_switch_off_reproduces_the_old_slack` passes**, so the default path is byte-identical to the
+pre-row formula, and `sim-baseline 1e90f69e5d6fcc46` is unmoved with the whole row in the tree.
+
+**⚠ `clearance_chords` COUNTS CONSULTATIONS, NOT HULLS.** `_chord_slack()` is called **once per driving hull per
+frame**, so two hulls over three frames give **six** consultations and three refusals — not "one hull refused".
+nav asserted `refused == 1`, which is the natural thing to write and is wrong. **Do not write a fixed count here.**
+The claim that survives is the pair:
+
+    refused > 0          the oversized hull WAS refused
+    refused < chords     the hull that FITS was not
+
+**The second half is the guard this row most needs, and a fixed count never tested it:** if every consultation
+refuses, the rule is touching hulls it has no business touching — which is the failure nav pre-registered as the
+most likely one. A count assertion would have passed a rule that refused everything, provided it refused exactly
+the expected number of times.
+
 ### PRE-REGISTERED, before any arm is run: the CLEARANCE row's falsifier
 
 Written with the code committed (`826e4852`, `04fec00b`, `04f472ca`) and **not one number measured**, so the bars
