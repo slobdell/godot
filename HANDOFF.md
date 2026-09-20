@@ -19,8 +19,9 @@ same text for all seven:
 
 > /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
 
-**Orchestrator duties this round:** the full `make remote T=check` on `main` at `f49aa08a` was started at launch (main
-was merged unverified at round 8's close; read its result from the `>> remote: make check exited <N>` line); merge CP1
+**`main` IS GREEN at `f49aa08a`** (builder0, 2026-09-20 00:27: `>> remote: make check exited 0`, `1261 passed, 0 failed`,
+`sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)`). Round 8's unverified merge is now verified; every commit since is
+docs only. **Orchestrator duties this round:** merge CP1
 (metrics' A12) and CP2 (scale's roster) the day they are announced and tell every stream to `git merge main`; record
 the sim baseline in the same session as CP2 (it moves); put scale's side-by-side roster frame and feel's rig-hinge frames
 in front of the lead the day they exist; get feel's `_agents/legibility.md` signed by control and nav before anyone
@@ -43,7 +44,7 @@ worktree for round 9.
   both readings agreeing**, covering the two hash-moving changes: squad's brain and start positions, and combat's
   **widened match** — which is why it moved so far. The old match fielded five `tank` hulls and was blind to 5 of 6
   mutations; the new one fields every locomotion × mount combination.
-- **⚠ `main` IS NOT COVERED BY A GREEN CHECK.** combat was merged unverified **on the lead's explicit call** (*"checking
+- ~~**⚠ `main` IS NOT COVERED BY A GREEN CHECK.**~~ **Verified green at `f49aa08a` on 2026-09-20 (see the round-9 section above).** Was: combat was merged unverified **on the lead's explicit call** (*"checking
   in a dirty codebase is ok, let's just get everything merged so we can hit a milestone"*), so the round could close
   and the environment be reset. Its blast radius is bounded and was verified, not assumed:
   `git diff --name-only main...stream/combat -- game/` returns **nothing**. **The first task of round 9 is one full
