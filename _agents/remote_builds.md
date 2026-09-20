@@ -488,6 +488,20 @@ builder0 ten minutes after its wrapper died (the make, slot.sh, arena_series.py 
 `make remote` from that worktree would have rsynced `--delete` under it. Kill the whole tree by cwd-verified PID
 before relaunching (scale, 2026-09-20 08:45).
 
+## ⚠ `.SHELLFLAGS := -eu -o pipefail`, so "found nothing" aborts a recipe (metrics, 2026-09-20)
+
+The Makefile runs every recipe under `-eu -o pipefail`. Two consequences bite any probe or diagnostic whose
+**clean** outcome is silence, and they killed one of mine twice before it produced a line:
+
+- `something | grep -E '...'` returns non-zero when grep matches nothing, and `pipefail` propagates it;
+- a tool whose job is to fail on bad input — `godot --check-only` on a file with a syntax error — exits
+  non-zero itself, and `pipefail` propagates that too, *even though that outcome is the one you wanted*.
+
+Guard the whole pipeline, not just the grep: `{ cmd ... || true; } | { grep ... || true; } | head -3`. A
+count wants the same treatment (`n=$(grep -c . file || true)`). **`make lint` is not affected**: its per-file
+check runs under `xargs`' own `sh -c`, which does not inherit `.SHELLFLAGS` — worth knowing, because it
+means the same pipeline behaves differently in the two halves of one Makefile.
+
 ## trip-up 66 is now enforced, not remembered (`tools/remote_guard.sh`, metrics, 2026-09-20)
 
 `remote.sh` refuses to launch when **this worktree's own folder on builder0 already has something running in it**,

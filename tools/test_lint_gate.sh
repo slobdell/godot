@@ -22,6 +22,7 @@ BANNER='echo "Godot Engine v4.7.2.stable - https://godotengine.org" >&2'
 TARGET='for a in "$@"; do case "$a" in res://*) t=${a#res://};; esac; done'
 # A healthy checker still produces the baselined artefacts -- they are real parse errors from real files,
 # and they are what proves it is still looking.
+SELFTEST='case "$t" in *type_inference_probe*) echo "SCRIPT ERROR: Parse Error: Cannot infer the type of \"my_map\" variable";; esac'
 ARTEFACTS='case "$t" in
   game/tank/tank.gd) echo "ERROR: res://game/tank/tank.tscn:12 - Parse Error: [ext_resource] referenced non-existent resource at: res://game/tank/tank.gd.";;
   game/theme/visual_slot.gd) echo "ERROR: res://game/combat/shell.tscn:10 - Parse Error: [ext_resource] referenced non-existent resource at: res://game/theme/visual_slot.gd."; echo "ERROR: res://game/tank/tank.tscn:19 - Parse Error: [ext_resource] referenced non-existent resource at: res://game/theme/visual_slot.gd."; echo "ERROR: res://game/tank/tank.tscn:26 - Parse Error: [ext_resource] referenced non-existent resource at: res://game/theme/visual_slot.gd."; echo "ERROR: res://game/tank/tank.tscn:30 - Parse Error: [ext_resource] referenced non-existent resource at: res://game/theme/visual_slot.gd.";;
@@ -32,6 +33,7 @@ esac'
 stub "$TARGET
 $BANNER
 $ARTEFACTS
+$SELFTEST
 exit 0"
 out=$(lint); rc=$?
 [ "$rc" = 0 ] && ok "healthy checker: lint passes" || bad "healthy checker: lint passes" "exit $rc: $(tail -6 <<<"$out")"
@@ -42,9 +44,12 @@ stub "$BANNER
 exit 0"
 out=$(lint); rc=$?
 [ "$rc" != 0 ] && ok "a checker that reports nothing at all FAILS lint" || bad "a blind checker fails lint" "exit 0"
-grep -q 'reported NOTHING over' <<<"$out" && ok "and says the CHECKER is the problem" \
-	|| bad "says the checker is the problem" "$(tail -6 <<<"$out")"
-grep -q 'says nothing about the tree' <<<"$out" && ok "and says it is not a finding about the tree" || bad "not about the tree"
+# The self-test is checked BEFORE the baselined-artefact count, so a wholly blind checker trips the
+# stronger probe first. Either message is the same diagnosis; require one of them.
+grep -qE 'did not report the deliberately broken file|reported NOTHING over' <<<"$out" \
+	&& ok "and says the CHECKER is the problem" || bad "says the checker is the problem" "$(tail -6 <<<"$out")"
+grep -qiE 'says nothing about the tree' <<<"$out" && ok "and says it is not a finding about the tree" \
+	|| bad "not about the tree" "$(tail -6 <<<"$out")"
 grep -q 'all .* scripts parse' <<<"$out" && bad "a blind checker never prints 'all scripts parse'" \
 	|| ok "a blind checker never prints 'all scripts parse'"
 
@@ -53,6 +58,7 @@ stub "$TARGET
 case \"\$t\" in *movement.gd) exit 0;; esac      # killed before it printed even its banner
 $BANNER
 $ARTEFACTS
+$SELFTEST
 exit 0"
 out=$(lint); rc=$?
 [ "$rc" != 0 ] && ok "a file whose checker printed nothing FAILS lint" || bad "silent file fails lint" "exit 0"
@@ -62,6 +68,7 @@ grep -q 'CHECKER PRODUCED NO OUTPUT AT ALL' <<<"$out" && ok "and names that file
 stub "$TARGET
 $BANNER
 $ARTEFACTS
+$SELFTEST
 case \"\$t\" in *movement.gd) exit 137;; esac
 exit 0"
 out=$(lint); rc=$?
@@ -72,6 +79,7 @@ grep -q 'CHECKER KILLED BY SIGNAL 9' <<<"$out" && ok "and says which signal" || 
 stub "$TARGET
 $BANNER
 $ARTEFACTS
+$SELFTEST
 case \"\$t\" in *movement.gd) echo 'SCRIPT ERROR: Parse Error: Cannot infer the type of \"my_map\" variable';; esac
 exit 0"
 out=$(lint); rc=$?
@@ -83,10 +91,26 @@ grep -q 'movement.gd' <<<"$out" && ok "and names the file" || bad "names the fil
 stub "$TARGET
 $BANNER
 $ARTEFACTS
+$SELFTEST
 echo 'SCRIPT ERROR: Compile Error: Failed to compile depended scripts'
 exit 0"
 out=$(lint); rc=$?
 [ "$rc" = 0 ] && ok "the depended-scripts artefact is still filtered" || bad "depended-scripts stays filtered" "exit $rc: $(tail -4 <<<"$out")"
+
+# ---- 7. the checker sees the known artefacts but NOT a fresh error -------------------------------
+# The stronger probe: reproducing yesterday's eight findings does not prove the analyser still runs. This
+# stub is "alive" by the baseline's measure and blind to anything new.
+stub "$TARGET
+$BANNER
+$ARTEFACTS
+exit 0"
+out=$(lint); rc=$?
+[ "$rc" != 0 ] && ok "artefacts seen but a FRESH error missed: lint fails" || bad "fresh error missed: lint fails" "exit 0"
+grep -q 'did not report the deliberately broken file' <<<"$out" && ok "and says the checker is the problem" \
+	|| bad "says the checker is the problem" "$(tail -6 <<<"$out")"
+grep -q 'says NOTHING about the tree' <<<"$out" && ok "and refuses to describe the tree" || bad "refuses to describe the tree"
+grep -q 'type_inference_probe' <<<"$out" && bad "the self-test never leaks into the findings" \
+	|| ok "the self-test never leaks into the findings"
 
 printf '\nlint-gate: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

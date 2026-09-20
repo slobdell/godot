@@ -77,74 +77,6 @@ import: $(GODOT)
 # The lock stays: a second `make lint` would still run `import` underneath the first.
 LINT_BASELINE := tests/baselines/lint_expected.txt
 
-# ---- The decisive experiment behind that comment (orchestrator's call, 2026-09-20) -------------
-# `make remote T=lint-cache-probe` on builder0. It answers, with output rather than argument, whether
-# `--check-only` can see the error class that passed lint and failed at runtime on `f1128ef5`:
-#
-#   A  a SELF-CONTAINED file with the same ternary (`tests/fixtures/ternary_infer_probe.gd.txt`). Nothing
-#      in it depends on the project -- `Node`, `Node3D` and `RID` are engine types and `unit` is declared
-#      `Node`, exactly as `bake_radius` declared it. If A is silent, per-file checking cannot see this class
-#      and a whole-project compile pass is the only guard. If A reports it, the checker CAN see it, and the
-#      run that went green did not check `movement.gd` at all -- a different defect, and one already closed.
-#   B  the REAL `game/ai/movement.gd` at `bffdea0f`, checked in place, with the class-name cache present.
-#   C  the same file with `.godot/global_script_class_cache.cfg` moved aside.
-#
-# B against C is the cache question. It deliberately does NOT delete `.godot`: that costs 90+ minutes of
-# import and remote_builds.md says not to reach for it. The class-name registry is the only cross-run state
-# that could change a type verdict, so moving that one file is both the cheap experiment and the exact one.
-#
-# The real file is restored by a trap, so an interrupted probe cannot leave a broken tree behind.
-.PHONY: lint-cache-probe
-lint-cache-probe: import ## Does `--check-only` see the f1128ef5 ternary error, and does the class-name cache change the answer?
-	@mkdir -p $(BUILD_DIR)/lint-probe
-	@cp tests/fixtures/ternary_infer_probe.gd.txt $(BUILD_DIR)/lint-probe/ternary_infer_probe.gd
-	@cp tests/fixtures/blatant_syntax_error.gd.txt $(BUILD_DIR)/lint-probe/blatant_syntax_error.gd
-	@real=game/ai/movement.gd; saved=$(BUILD_DIR)/lint-probe/movement.saved; \
-	cache=.godot/global_script_class_cache.cfg; moved=$(BUILD_DIR)/lint-probe/class_cache.saved; \
-	restore() { [ -f "$$saved" ] && mv -f "$$saved" "$$real"; [ -f "$$moved" ] && mv -f "$$moved" "$$cache"; return 0; }; \
-	trap restore EXIT INT TERM; \
-	run() { { $(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1 || true; } \
-		| { grep -E "Parse Error|SCRIPT ERROR|Compile Error" || true; } | head -3; }; \
-	echo ">> probe on $$(hostname), commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}"; \
-	echo ""; \
-	echo "0. POSITIVE CONTROL -- a blatant syntax error at the same res:// location:"; \
-	z=$$(run "$(BUILD_DIR)/lint-probe/blatant_syntax_error.gd"); \
-	if [ -n "$$z" ]; then printf '%s\n' "$$z" | sed 's/^/     /'; else echo "     (NOTHING -- the path did not resolve or the checker did not run)"; fi; \
-	echo ""; \
-	echo "A. self-contained ternary probe (res://$(BUILD_DIR)/lint-probe/ternary_infer_probe.gd):"; \
-	a=$$(run "$(BUILD_DIR)/lint-probe/ternary_infer_probe.gd"); \
-	if [ -n "$$a" ]; then printf '%s\n' "$$a" | sed 's/^/     /'; else echo "     (nothing reported)"; fi; \
-	cp "$$real" "$$saved"; \
-	cp tests/fixtures/movement_bffdea0f.gd.txt "$$real"; \
-	echo ""; \
-	echo "B. real movement.gd at bffdea0f, class-name cache PRESENT:"; \
-	b=$$(run "$$real"); \
-	if [ -n "$$b" ]; then printf '%s\n' "$$b" | sed 's/^/     /'; else echo "     (nothing reported)"; fi; \
-	if [ -f "$$cache" ]; then mv -f "$$cache" "$$moved"; else echo "     (no class-name cache on this box to move)"; fi; \
-	echo ""; \
-	echo "C. same file, class-name cache MOVED ASIDE:"; \
-	c=$$(run "$$real"); \
-	if [ -n "$$c" ]; then printf '%s\n' "$$c" | sed 's/^/     /'; else echo "     (nothing reported)"; fi; \
-	restore; trap - EXIT INT TERM; \
-	echo ""; \
-	echo ">> probe verdict:"; \
-	if [ -z "$$z" ]; then \
-		echo "   INCONCLUSIVE. The positive control reported nothing, so res://$(BUILD_DIR)/... does not"; \
-		echo "   resolve or the checker did not run -- arm A's silence says nothing about type inference."; \
-		echo "   Put the probe files somewhere res:// reaches and run it again. Do not read A, B or C."; \
-	elif [ -z "$$a" ] && [ -z "$$b" ] && [ -z "$$c" ]; then \
-		echo "   PER-FILE CHECKING CANNOT SEE THIS CLASS. A whole-project compile pass is the only guard."; \
-	elif [ -n "$$a" ]; then \
-		echo "   The checker CAN see it in isolation, so the green run did not check movement.gd at all."; \
-		echo "   That is the silent-pass hole, already closed -- not a type-resolution subtlety."; \
-	elif [ "$$b" != "$$c" ]; then \
-		echo "   THE CACHE CHANGES THE VERDICT: lint's answer on this file is a property of .godot state,"; \
-		echo "   not of the tree. B and C above differ."; \
-	else \
-		echo "   The real file reports it and the cache makes no difference; the isolated probe does not."; \
-		echo "   The error needs the project's own types, so a whole-project pass is the guard."; \
-	fi
-
 # ---- lint proves it can still SEE an error, every run (2026-09-20) ----------------------------
 # `make lint` reported "all scripts parse" on a tree whose runtime could not compile `movement.gd`
 # (`Cannot infer the type of "my_map"`, cascading through every dependent script), while the SAME tree
@@ -152,12 +84,18 @@ lint-cache-probe: import ## Does `--check-only` see the f1128ef5 ternary error, 
 # cannot be shown to fail is not a gate -- lesson 147, from the other end: there it was an empty comparison
 # proving nothing, here it is an empty RESULT proving nothing.
 #
-# The eight baselined artefacts are the liveness probe, and they cost nothing: they are real parse errors
-# that real project files produce on every run. **If the whole run yields ZERO findings while the baseline
-# says eight are expected, the checker did not look** -- and the run says so instead of saying "all scripts
-# parse". A synthetic broken file is the stronger form (it proves a NEW error can be seen, not just a known
-# one) and is the obvious next step, but it has to live somewhere `res://` resolves from and that cannot be
-# settled on a laptop that must not run Godot. This version cannot misfire; that one might.
+# TWO liveness probes, because they fail in different ways.
+#
+#   * The eight baselined artefacts cost nothing: they are real parse errors that real project files produce
+#     every run. If the whole run yields ZERO findings while the baseline expects eight, the checker did not
+#     look, and the run says so instead of saying "all scripts parse".
+#   * A SYNTHETIC file with a type-inference error is checked alongside, and its finding is REQUIRED. This
+#     is the stronger one: it proves the checker can still see a NEW error rather than reproduce known ones,
+#     and it is deliberately the same construct that escaped lint on `f1128ef5` (a ternary whose inferred
+#     type cannot be resolved). **Measured on builder0 before being relied on** (`b839495c`): the file
+#     resolves at `res://build/...` and `--check-only` reports it, with and without the class-name cache.
+#     That experiment also settled the bug itself -- the checker sees this class fine, so the run that went
+#     green never checked `movement.gd` at all, which is the hole closed above and NOT a per-file blind spot.
 #
 # And two silent passes are closed. Per file the checker's raw output and exit status are both kept, so:
 #   * no output AT ALL (Godot always prints its banner) means the process never ran -- OOM on a loaded box,
@@ -185,7 +123,10 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 	count=$$(printf '%s\n' "$$files" | grep -c . || true); \
 	[ "$$count" -gt 0 ] || { echo "lint FAILED: found no .gd files to check. That is not a clean tree, it is a"; \
 		echo "            broken file list -- see the note above this recipe."; exit 1; }; \
-	printf '%s\n' "$$files" | \
+	selftest=$(BUILD_DIR)/lint-selftest/type_inference_probe.gd; \
+	mkdir -p $(BUILD_DIR)/lint-selftest; \
+	cp tests/fixtures/ternary_infer_probe.gd.txt "$$selftest"; \
+	printf '%s\n' "$$files" "$$selftest" | \
 		xargs -P $(LINT_JOBS) -I{} sh -c \
 			'raw=$$($(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1); rc=$$?; \
 			out=$$(printf "%s\n" "$$raw" | grep -E "Parse Error|SCRIPT ERROR" | grep -v "depended scripts" || true); \
@@ -195,7 +136,16 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 			elif [ "$$rc" -ge 128 ]; then \
 				printf "%s: CHECKER KILLED BY SIGNAL %s (exit %s) -- not a pass\n" "$$1" "$$(( rc - 128 ))" "$$rc"; \
 			fi' _ {} \
-		| sort > $(BUILD_DIR)/lint.out; \
+		| sort > $(BUILD_DIR)/lint.raw; \
+	seen=$$(grep -c "type_inference_probe.gd:" $(BUILD_DIR)/lint.raw || true); \
+	grep -v "type_inference_probe.gd:" $(BUILD_DIR)/lint.raw > $(BUILD_DIR)/lint.out || true; \
+	if [ "$$seen" -eq 0 ]; then \
+		echo "lint FAILED: the checker did not report the deliberately broken file it was handed."; \
+		echo "  That file has a type-inference error of exactly the kind that escaped lint on f1128ef5, and"; \
+		echo "  builder0 was measured reporting it. A checker that cannot see an error it was pointed at"; \
+		echo "  cannot be trusted to have seen a real one, so this run says NOTHING about the tree."; \
+		exit 1; \
+	fi; \
 	sort $(LINT_BASELINE) 2>/dev/null | grep -v '^#' | grep -v '^$$' > $(BUILD_DIR)/lint.expected || true; \
 	expected_n=$$(grep -c . $(BUILD_DIR)/lint.expected || true); \
 	found_n=$$(grep -c . $(BUILD_DIR)/lint.out || true); \
@@ -220,7 +170,7 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 		echo "lint: $$(printf '%s\n' "$$gone" | grep -c .) baselined finding(s) no longer occur -- tighten $(LINT_BASELINE):"; \
 		printf '%s\n' "$$gone" | sed 's/^/  /'; \
 	fi; \
-	echo "lint: all $$count scripts parse (-P$(LINT_JOBS), $$(grep -c . $(BUILD_DIR)/lint.expected || echo 0) known artefacts baselined, $$found_n findings seen)"
+	echo "lint: all $$count scripts parse (-P$(LINT_JOBS), $$(grep -c . $(BUILD_DIR)/lint.expected || echo 0) known artefacts baselined, $$found_n findings seen, self-test seen)"
 
 # T1 (metrics, round 9). MEASURED on builder0 at c21d0256, serially, per target:
 #
