@@ -143,8 +143,13 @@ void fragment() {
 		// OWN band rather than the roof's, because the roof branch treats every non-upward face as a lit parapet
 		// edge -- tagged as roof, a duct would have four glowing sides. Dark painted metal, a little lighter on top
 		// where it catches the sky, and no emission: the plant is what the parapet and the neon are read AGAINST.
+		// The tonal spread has to be WIDE or the plant does not read: the first version sat within +25%/-28% of the
+		// roof's own value and rendered as shapes you had to look for. Tops catch the sky at roughly twice the
+		// roof, sides fall well under it, and a per-unit hash off the world position keeps neighbouring boxes from
+		// reading as one mass -- no extra vertex data, the position is already here.
 		float up = smoothstep(0.55, 0.95, world_normal.y);
-		base = mix(roof * 0.72, roof * 1.25, up);
+		float unit = city_hash(floor(world.xz * 0.35));
+		base = roof * mix(0.45, 2.1, up) * (0.78 + 0.45 * unit);
 		ROUGHNESS = 0.9;
 	} else {
 		// Roofs, and the bevel where each tier's edge rolls in: the bevel catches a pale edge (the chamfer detail).
