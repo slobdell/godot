@@ -423,7 +423,7 @@ func reading() -> Dictionary:
 			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
 			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
-			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE)}
+			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan}
 
 
 ## A new order: drop the unstick routine, the old path, the fire detour and the stall bookkeeping, so the new order
@@ -1303,6 +1303,13 @@ func _arrive_gate() -> float:
 ## radius), which is what lets a car take a corner it can actually make. The route is re-planned only when something
 ## changed — the goal moved, the hull is off it, it made no progress — or every REPATH_SECONDS as a safety net: the
 ## navmesh is static, so re-planning a route every second (round 5) bought nothing but cost.
+## A1: why this mover re-planned THIS tick, or "" — published so a harness that can see the K1 order (which nav
+## cannot: the mover is handed a `move_to`, not the order that produced it) can attribute the cause to an owner.
+## squad's point: a sliding goal can come from an element's flow OR from the player's own follow, and those are two
+## different owners. Splitting it here rather than arguing about it is the cheap way to find out.
+var last_replan := &""
+
+
 func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	var tank := ctl.tank
 	var here := tank.global_position
@@ -1314,6 +1321,7 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	# the same fight. Everything else here is an EVENT and is never gated by the tube: a goal that moved, a hull off
 	# its route, a stall. Contact arrival reaches this as a moved goal, which is why latency is preserved by
 	# construction rather than by a constant, and why the latency test was written before the mechanism.
+	last_replan = &""
 	var cadence_due := _repath_left <= 0.0
 	if cadence_due:
 		a1_cadence_due += 1
@@ -1356,12 +1364,16 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		if goal_moved:
 			var key := "goal_slid" if sliding else "goal_jumped"
 			a1_by_cause[key] = int(a1_by_cause.get(key, 0)) + 1
+			last_replan = StringName(key)
 		elif off_path:
 			a1_by_cause["off_path"] = int(a1_by_cause.get("off_path", 0)) + 1
+			last_replan = &"off_path"
 		elif stalled:
 			a1_by_cause["stalled"] = int(a1_by_cause.get("stalled", 0)) + 1
+			last_replan = &"stalled"
 		else:
 			a1_by_cause["cadence"] = int(a1_by_cause.get("cadence", 0)) + 1
+			last_replan = &"cadence"
 		_repath_left = 1.0 if _off.has("repath") else REPATH_SECONDS
 		_path_goal = goal
 		# Round 7: reachability is "the route ENDS at the goal", never "a route came back" (lesson 76). NavigationServer

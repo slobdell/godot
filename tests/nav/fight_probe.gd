@@ -51,6 +51,8 @@ var busy_orders := 0
 ## Round 9 (N0): unit-orders issued carrying a `facing`, and whether the hold-on-a-facing leg went out. These are the
 ## run's own positive control for the arrival arc: `facings_issued` 0 means the arc could not have fired, whatever the
 ## gate counter says.
+## A1: "<cause>/<order source>/<verb>" -> re-plans. The denominator for "whose churn is it".
+var replan_owner := {}
 var facings_issued := 0
 var holds_issued := 0
 var hold_done := false
@@ -422,6 +424,14 @@ func _sample() -> void:
 			last_target[key] = target
 		last_option[key] = String(brain.choice.get("option", "?")) if not last_option.has(key) else last_option[key]
 		var reading := Movement.state(tank)
+		# A1: attribute a re-plan to an OWNER. nav publishes why it re-planned; only a harness that can see the K1
+		# order knows whose order it was, because the mover is handed a `move_to` and never the order behind it.
+		# squad's point: a sliding goal is an element's flow OR the player's own follow, and those are different owners.
+		var why_replan := String(reading.get("replan", ""))
+		if why_replan != "":
+			var k1: Dictionary = orders.current(key)
+			var owner := "%s/%s/%s" % [why_replan, String(k1.get("source", "?")), String(k1.get("verb", "?"))]
+			replan_owner[owner] = int(replan_owner.get(owner, 0)) + 1
 		if reading.get("reachable") == false and String(move.get("type", "")) == "move_to":
 			unreachable_ticks += 1
 		var closing := (float(last_distance.get(key, distance)) - distance) / dt
@@ -521,7 +531,7 @@ func _report(elapsed: float) -> void:
 			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
 			"inplace_detail": inplace_detail, "gear_detail": gear_detail, "travelled": _travel_report(),
 			"gates": Movement.gate_report(), "facings_issued": facings_issued, "holds_issued": holds_issued,
-			"arms": CombatMotion.arm_report(), "route_arms": Movement.route_arms(),
+			"arms": CombatMotion.arm_report(), "route_arms": Movement.route_arms(), "replan_owner": replan_owner,
 			"inplace_per_unit_minute": _inplace_rates(),
 			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")],
 			"armies": [_flag("green-army", "cpu"), _flag("rust-army", "cpu")], "fielded": fielded, "busy_every_s": busy_every, "busy_orders": busy_orders}
