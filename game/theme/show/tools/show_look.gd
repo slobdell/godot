@@ -83,6 +83,9 @@ const MIN_VEHICLE_PX := 12.0
 ## Headings tried when the fight is behind a building. A heading is the one part of the pose a player changes
 ## freely, so it is the right thing to move -- unlike the pitch, FOV and distance, which are his.
 const HEADING_STEPS := 12
+## Frames between setting a uniform and reading the picture. One is enough for a write to land, and every extra
+## one is more shader TIME -- the only thing left moving between the halves once FX and the show are frozen.
+const SETTLE_FRAMES := 1
 var _camera := Camera3D.new()
 ## The pitch the last capture actually used. `clear_pose` lifts over a roof when it has to, so a frame that is not
 ## at 21 degrees has to say so rather than be presented as the lead's pose when it is not.
@@ -90,6 +93,9 @@ var _pose_pitch := PITCH_DEG
 ## The heading the sweep settled on, and whether the fight was still behind a building when it gave up.
 var _pose_heading := 0.0
 var _pose_blocked := false
+## The Show's process mode, held across the pair so the "after" capture is the value this tool set rather than
+## whatever the Show's own clock reached while the frames were being read.
+var _restore_show := Node.PROCESS_MODE_INHERIT
 
 
 func _init() -> void:
@@ -249,9 +255,21 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 	var null_ring := Vector2.ZERO
 	var null_band := Vector2.ZERO
 	if show != null and style != "":
+		# FREEZE EVERYTHING THAT ANIMATES, or the pair is not a pair. `get_tree().paused` stops the simulation and
+		# nothing else: FxWorld sets PROCESS_MODE_ALWAYS (fx_world.gd:115) so tracers, muzzle flashes, bursts and
+		# engine effects keep advancing straight through it, and the Show does the same, re-applying its own clock
+		# over the value set here. Six process frames of that sat between the two halves of every pair, which is
+		# why the null grew from 1.3% to 2.3% the moment the camera started following a real fight: the frozen
+		# scene was busy. The show is the only thing that may differ between the halves.
+		var fx := FxWorld.get_instance()
+		var fx_mode := fx.process_mode if fx != null else Node.PROCESS_MODE_INHERIT
+		var show_mode := show.process_mode
+		if fx != null:
+			fx.process_mode = Node.PROCESS_MODE_DISABLED
+		show.process_mode = Node.PROCESS_MODE_DISABLED
 		show.driving = false
 		var was_paused := get_tree().paused
-		for _f in 3:
+		for _f in SETTLE_FRAMES:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		var before_image := get_viewport().get_texture().get_image()
@@ -263,7 +281,7 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 		# comparison has to clear, and it is not zero even on a paused tree -- shader `TIME` keeps advancing, so
 		# the neon flicker's 12.5 Hz dropouts, the crowd and the ad screens are all somewhere else a frame later.
 		# Measuring it beats assuming it: a gate calibrated against a guessed noise floor fails on weather.
-		for _f in 3:
+		for _f in SETTLE_FRAMES:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		var null_image := get_viewport().get_texture().get_image()
@@ -272,10 +290,16 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 		show.driving = true
 		show.apply(t)
 		get_tree().paused = was_paused
-	for _f in 3:
+		if fx != null:
+			fx.process_mode = fx_mode
+		_restore_show = show_mode
+	for _f in SETTLE_FRAMES:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	var image := get_viewport().get_texture().get_image()
+	if show != null and _restore_show != Node.PROCESS_MODE_INHERIT:
+		show.process_mode = _restore_show
+		_restore_show = Node.PROCESS_MODE_INHERIT
 	image.save_png(out_dir.path_join(file))
 	var ring := _luma(image, RING_WINDOW)
 	var band := _luma(image, BAND_WINDOW)
