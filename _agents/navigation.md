@@ -6,6 +6,25 @@
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
 ## Round 9: the desired-velocity layer, and what replaces what
+### When a number is in someone else's document, it stops being yours to reason about (squad's refinement)
+
+nav re-ran a published A/B after changing the code under it, and framed the lesson as *"a number someone else is
+already holding is the worst place to skip a re-run"*. **squad sharpened it, and their version is the right one:**
+
+> **The rule is about WHO IS HOLDING IT, not about who measured it.**
+
+Both halves of tonight fail the same way and they are mirror images:
+- **nav's case — a number it OWNED.** The figure was mine, the change was small, the direction was conservative.
+  *Every one of those is a reason to skip a re-run and none of them is a reason it would have been safe.* Four of
+  those figures turned out to be load-bearing in squad's Status, and two were the stated reason their A1 half ships
+  with its default off — a stale one would have been cited in a document another stream reads.
+- **squad's case — a number it did NOT own.** They relayed scale's corridor table into their brief and reasoned from
+  it inside the hour. It was retracted. *(nav did exactly the same thing with the same table.)*
+
+**So the test is not "did I measure it" or "is the change small". It is: has this number left my hands?** Once it
+has, it is a dependency of someone else's decision and it gets re-verified when anything under it moves —
+or withdrawn out loud.
+
 ### Ask the machine what it holds; do not reason about rsync timing (squad's, adopted 2026-09-20)
 
 **A remote check covers the tree that was SYNCED, not the tree you have**, and the way to find out which is to ask
