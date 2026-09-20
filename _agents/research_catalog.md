@@ -109,8 +109,16 @@ The replacement is a **state-dependent switching cost**, not a timer: permit `i 
 exceeds the physical work the switch throws away — braking energy plus turret/hull slew. A light scout switching
 targets 10° apart pays nearly nothing and switches freely; a 14 m rig that must shed 12 m/s and slew 140° pays a lot
 and commits. **One expression, no per-class tuning, and it scales itself across a 5× roster** — which is the thing our
-flat commitment bonus of **1.35** (measured knee, round 8: switches 18.1 → 12.7, reversals 0.30 → 0.17) cannot do.
-Our 1.35 is the crude scalar approximation of this. Adopting the switching cost is how it stops being a magic number.
+flat commitment bonus cannot do.
+
+**⚠ And 1.35 was REVERTED to 1.15 before round 8 closed — read this before adopting A2, because squad has already
+handed it a falsifier.** The knee looked clean on the metric (switches 18.1 → 12.7, reversals 0.30 → 0.17 per
+unit-minute) and a 48-match ladder said it does not lose. **Two behaviour scenarios then failed on it:** a squad stops
+concentrating its fire (focus share equal to brains-alone, i.e. squad tactics buy nothing) and **a scout stops working
+onto engine decks — 41 hits / 23 on the deck → 3 / 0.** A win/loss ladder cannot see either. 1.35 survives only as
+variant `x5c`.
+**So A2 must not buy churn reduction at that price, and those two scenarios are its acceptance test, ready-made.**
+This is also the clearest case we have of optimising a proxy: the metric improved and the behaviour degraded.
 
 ### 4. The 12 m-vs-14 m question is the wrong question, and there is an O(1) answer
 
@@ -198,7 +206,9 @@ stubbornness wearing a hat and it reverts.
 **Stream: combat** · **Pathology: P1, P3**
 
 Permit an option switch only when its utility advantage exceeds the physical work the switch discards — braking
-energy plus slew. **Replaces** the flat commitment bonus (1.35) and any dwell timer. See Part 1 §3.
+energy plus slew. **Replaces** the flat commitment bonus (**1.15** on `main`; 1.35 was reverted — see Part 1 §3) and any dwell timer.
+**Acceptance is not just the churn metric:** squad's two behaviour scenarios (fire concentration, and a scout's
+engine-deck targeting) must hold, because that is exactly what the 1.35 knee cost.
 **Determinism:** four multiplies and two adds, stateless.
 **Falsifier:** genuine option-switch churn **−60%** and switch-and-switch-back within 4 s below **0.2/agent-min**,
 with reaction latency **≤ 2 ticks**. **Guard:** the arm must be distinguishable — assert the switching cost is

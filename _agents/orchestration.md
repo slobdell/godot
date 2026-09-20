@@ -2374,3 +2374,28 @@ The kickoff prompt is one line; this section is the rest.
    it.** The cheap guard is control's, and it generalises: **assert the value arrives end to end** — a test on
    `orders.current(unit)["facing"]` after the real input gesture — so the next A/B has a live arm *by construction*
    rather than by hope. **An arm you have to remember to check will eventually not be checked.**
+
+150. **A win/loss ladder cannot see a behaviour change, and the metric you tuned can improve while the behaviour you
+   wanted degrades.** squad's churn lever is the cleanest case this project has produced. `commit_bonus` 1.35 **halved
+   the churn metric** — target switches 18.1 → 12.7 and reversals 0.30 → 0.17 per unit-minute — and a **48-match
+   ladder said it does not lose** (27-21, inside noise). The orchestrator relayed it to the lead as an approved
+   round-8 win. **Two behaviour scenarios then failed on it:** a squad stops concentrating its fire (focus share equal
+   to brains-alone, meaning squad tactics buy nothing at all), and **a scout stops working onto engine decks — 41
+   hits / 23 on the deck → 3 / 0.** It was reverted to 1.15 and survives only as variant `x5c`.
+   **The ladder was not broken. It answered a different question.** *"Does this lose?"* and *"does this still do the
+   thing we wanted?"* are separate, and a scalar outcome measure is blind to a unit quietly abandoning a tactic —
+   because the *other* side is degraded too, so the score barely moves. **Two mediocre armies draw exactly like two
+   good ones.**
+   Three consequences:
+   - **Pair every outcome ladder with a behaviour assertion**, and prefer the behaviour assertion when they disagree.
+     A ladder is a *safety net* against making things worse, never evidence of having made them better.
+   - **A knee found on a proxy is not a knee.** The 1.35 knee was located by measuring switches and reversals, which
+     is the proxy, not the goal. **The lead's complaint was never "too many switches" — it was that units look
+     stupid.** A scout that no longer aims at engine decks looks *more* stupid with less churn.
+   - **This is the ML ruling's prerequisite, demonstrated by hand on ONE parameter.** The lead accepted that A12 must
+     land before any offline search because *an optimiser pointed at a bad objective does not fail, it succeeds at the
+     wrong thing.* squad just did that manually, with a single scalar, and it took two hand-written scenarios to
+     catch. **An automated search over a hundred parameters against the same objective would have produced a hundred
+     such regressions and a better-looking metric.** Read this lesson before pointing anything automated at a score.
+   **And A2 inherits its falsifier from this:** squad's two scenarios are the ready-made acceptance test for the
+   state-dependent switching cost, because they are precisely what the crude version cost.
