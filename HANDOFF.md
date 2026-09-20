@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-20 08:52. **Round 9's overnight run: sixteen branches and all three checkpoints merged. `main` is RED on ONE test at `b008a277` (a CP2 composition failure, scale's first item); the last fully green `main` is `0808834e`. Read the morning summary first.**_
+_Last updated: 2026-09-20 08:52. **Round 9's overnight run: sixteen branches and all three checkpoints merged. `main` is RED on ONE test at `b008a277` (a composition the resize exposed; scale's probe names the mechanism, owner to follow); the last fully green `main` is `0808834e`. Read the morning summary first.**_
 
 ## ☀ THE MORNING AFTER ROUND 9's NIGHT — read this first (2026-09-20, written 07:00, updated at each tick)
 
