@@ -373,6 +373,32 @@ friend 0.
 `run` (the A/B control for round 7's standoff), and it does not change `COMMIT_BONUS`'s value — combat's A2 replaces
 that expression at level 5 under contract S5.
 
+### N5's shopping list, collected from the S4 signatures (build it all in one commit, after control's hash)
+
+Nothing of A6 is in code and nothing will be until the page carries three signatures. nav has signed; control has
+signed with two requirements; feel authored it. **These four are one commit, because three of them are only
+checkable with the fourth:**
+
+1. **The corridor tangent, published by nav** (`Movement.reading()`). `path_points` is already sliced from
+   `_path_index`, so `path_points[0]` IS the next waypoint and the current leg runs from the hull's projection onto
+   it — but one publisher should mean one *interpretation*, not one array three streams each project onto slightly
+   differently.
+2. **`"legibility": {"active": bool, "why": StringName}`** in `Movement.state(unit)`, `why` from a closed set
+   (`band`, `survival`, `armour`, …) naming **which level took the nose**. control will not infer cause from geometry
+   and will not build its readout without it. nav owns the level order, so nav owns this answer — nobody else can
+   produce it without re-deriving A7's filter.
+3. **The inactive flag and its reason** (feel's §5): no order, `phase == "blocked"`, no path yet, a reflex owning the
+   heading, or `run` style. The falsifier is computed over active ticks only with the active fraction beside it —
+   *a number that improves because the law switched itself off more often is not a pass*, which is round 8's
+   `gates aimed 0` in a new place.
+4. **⚠ The arrival arc's ticks must be flagged ORDERED, not off-corridor.** A wheeled hull under an ordered `facing`
+   drives the last leg along that heading, so it is off-corridor **by construction** at the end of every dragged
+   move. That is obedience, not the pathology, and A12 must not charge it to A6's off-corridor fraction. nav's
+   trajectory emitter flags those ticks (arc active + facing ordered); the orchestrator has told metrics the same.
+
+**Sequencing:** control's desktop right-drag facing merges alone as **CP2c** and control will send the hash. **No
+arrival-arc A/B before it** — a facing enters a move from one place today and the lead never runs it (lesson 149).
+
 ### Questions for the lead
 
 None yet.

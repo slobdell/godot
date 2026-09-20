@@ -425,10 +425,16 @@ static func reset_arms() -> void:
 	a7_projected = 0
 	a7_holds_scored = 0
 	a7_holds_won = 0
+	a7_region_rejected = 0
+	dwa_lattices = 0
+	dwa_candidates_reachable = 0
+	dwa_with_live_state = 0
 
 
 static func arm_report() -> Dictionary:
-	return {"a7_projected": a7_projected, "a7_holds_scored": a7_holds_scored, "a7_holds_won": a7_holds_won}
+	return {"a7_projected": a7_projected, "a7_holds_scored": a7_holds_scored, "a7_holds_won": a7_holds_won,
+			"a7_region_rejected": a7_region_rejected, "a11_lattices": dwa_lattices,
+			"dwa_candidates_reachable": dwa_candidates_reachable, "a11_with_live_state": dwa_with_live_state}
 
 
 ## Keep every candidate within `tolerance` of the best cost. Ties and near-ties survive together: that IS the null
@@ -527,26 +533,31 @@ static func choose_projected(request: Dictionary) -> Dictionary:
 		var slack := HOLD_SLACK_M if holding else 0.0
 		if distance >= weapon_low - slack and distance <= band_high + slack:
 			a7_holds_scored += 1
-			cands.append([-1, false, here, forward, 1.0, distance, -to_target, 0.0, 0.0, 0.0])
-	for i in RING.size():
-		var ring := Vector3(RING[i].x, 0.0, RING[i].y)
-		for reverse: bool in [false, true]:
-			var travel := travel_reverse if reverse else travel_forward
-			if travel <= 0.0:
-				continue
-			var hull := -ring if reverse else ring
-			var turn_cos := hull.dot(forward)
-			# Level 0: a heading the plant cannot swing onto within this horizon is not a candidate. (A11 replaces
-			# this whole test at N2 with a lattice that is reachable by construction.)
-			if wheels and turn_cos < min_cos:
-				continue
-			var end := here + ring * travel
-			var from_target := end - target_at
-			var gap := maxf(from_target.length(), 0.1)
-			var tangent := absf(ring.x * bearing.z - ring.z * bearing.x)
-			var around := bearing.x * ring.z - bearing.z * ring.x
-			var turning := 0.0 if wheels else CombatMotion.turn_seconds(turn_cos, float(request.get("turn_rate_deg", 90.0)))
-			cands.append([i, reverse, end, hull, turn_cos, gap, from_target, tangent, around, turning])
+			cands.append([-1, false, here, forward, 1.0, distance, -to_target, 0.0, 0.0, 0.0, 0.0])
+	if a11_on():
+		# A11: the candidates are arcs the plant can drive, not directions it may be unable to take.
+		cands.append_array(_lattice_candidates(request, here, forward, target_at, bearing))
+	else:
+		for i in RING.size():
+			var ring := Vector3(RING[i].x, 0.0, RING[i].y)
+			for reverse: bool in [false, true]:
+				var travel := travel_reverse if reverse else travel_forward
+				if travel <= 0.0:
+					continue
+				var hull := -ring if reverse else ring
+				var turn_cos := hull.dot(forward)
+				# A heading the plant cannot swing onto within this horizon is not a candidate. A11 deletes this
+				# test, because a lattice is reachable by construction and does not need a restatement of the rule.
+				if wheels and turn_cos < min_cos:
+					continue
+				var end := here + ring * travel
+				var from_target := end - target_at
+				var gap := maxf(from_target.length(), 0.1)
+				var tangent := absf(ring.x * bearing.z - ring.z * bearing.x)
+				var around := bearing.x * ring.z - bearing.z * ring.x
+				var turning := 0.0 if wheels else CombatMotion.turn_seconds(turn_cos, float(request.get("turn_rate_deg", 90.0)))
+				cands.append([i, reverse, end, hull, turn_cos, gap, from_target, tangent, around, turning,
+						-travel_reverse / HORIZON_SECONDS if reverse else travel_forward / HORIZON_SECONDS])
 
 	# ---- LEVEL 0: feasibility. Not a priority level — an infeasible candidate is not a candidate. ---------------------
 	var live: Array = []
@@ -570,6 +581,7 @@ static func choose_projected(request: Dictionary) -> Dictionary:
 		if leash_binds:
 			var excess := leash_center.distance_to(end) - leash_radius
 			if excess > maxf(0.0, leash_now):
+				a7_region_rejected += 1
 				continue
 		live.append(c)
 	if live.is_empty():
@@ -595,8 +607,11 @@ static func choose_projected(request: Dictionary) -> Dictionary:
 		if not incoming.is_empty():
 			var planned: Vector3 = Vector3.ZERO
 			if int(entry[0]) >= 0:
-				var ring := Vector3(RING[entry[0]].x, 0.0, RING[entry[0]].y)
-				planned = ring * (float(request.get("reverse_speed", 0.0)) if bool(entry[1]) else float(request["speed"]))
+				var travel_dir: Vector3 = (entry[2] as Vector3) - here
+				if travel_dir.length_squared() > 0.0001:
+					travel_dir = travel_dir.normalized()
+					planned = travel_dir * (float(entry[10]) if a11_on() else
+							(float(request.get("reverse_speed", 0.0)) if bool(entry[1]) else float(request["speed"])))
 			if CombatMotion.would_be_hit(here, velocity_now, planned, incoming, float(entry[9]),
 					float(request.get("acceleration", 1000.0))):
 				cost += 1.0
@@ -623,9 +638,12 @@ static func choose_projected(request: Dictionary) -> Dictionary:
 		var cost := maxf(0.0, weapon_low - gap) / 12.0 + maxf(0.0, gap - band_high) / 20.0
 		var passes := gap
 		if int(entry[0]) >= 0:
-			var ring := Vector3(RING[entry[0]].x, 0.0, RING[entry[0]].y)
-			var along := clampf((target_at - here).dot(ring), 0.0, here.distance_to(entry[2] as Vector3))
-			passes = (here + ring * along).distance_to(target_at)
+			var travel_dir: Vector3 = (entry[2] as Vector3) - here
+			var reach := travel_dir.length()
+			if reach > 0.0001:
+				travel_dir /= reach
+				var along := clampf((target_at - here).dot(travel_dir), 0.0, reach)
+				passes = (here + travel_dir * along).distance_to(target_at)
 		if minf(gap, passes) < MIN_GAP:
 			cost += 1.0  # the ram guard: not a preference, a wall
 		weapon[c] = cost
@@ -725,7 +743,14 @@ static func choose_projected(request: Dictionary) -> Dictionary:
 	if int(won[0]) == -1:
 		a7_holds_won += 1
 		return {"hold": true, "point": here, "reverse": false, "index": -1, "score": best_score}
-	var direction := Vector3(RING[won[0]].x, 0.0, RING[won[0]].y)
+	# The output contract is unchanged: a point to steer at, at a fixed distance, so `Steering` and `Movement` are
+	# untouched by A11. What changed is the SET the choice was made over. The arc's direction of travel is what the
+	# steer point expresses; its curvature is the plant's business, and the plant is what generated it.
+	var direction: Vector3 = (won[2] as Vector3) - here
+	if a11_on():
+		direction = direction.normalized() if direction.length_squared() > 0.0001 else forward
+	else:
+		direction = Vector3(RING[won[0]].x, 0.0, RING[won[0]].y)
 	var steer := maxf(STEER_DISTANCE, float(request.get("min_turn_radius", 0.0)) * WHEELS_STEER_RADII) if wheels else STEER_DISTANCE
 	var point := here + direction * steer
 	return {"point": Vector3(clampf(point.x, -limit, limit), point.y, clampf(point.z, -limit, limit)),
@@ -788,12 +813,31 @@ const DWA_YAWS := 9
 const DWA_HORIZON := 2.0
 ## Below this speed (m/s) a wheeled hull is treated as stopped: `yaw = |speed| * turn / radius` gives it nothing.
 const DWA_ROLLING := 0.2
+## **How long a command is actually HELD before the next plan** — the window is over the control period, not over one
+## physics tick. This matters more than it sounds and it was found by measurement, not by reading the paper again.
+##
+## With a one-tick window, a tracked hull starting from zero yaw could only be offered `yaw_accel * dt` of turn rate;
+## held constant over a 2 s arc that is **21 degrees of heading change, total**, when the hull can physically swing
+## 160. Every candidate pointed nearly the same way, level 3 had nothing to choose between, and a tank in the duel
+## scenario could not get its front around: front hits fell to **67% and it died in 6.3 s** of a 20 s fight.
+##
+## 0.25 s because that is the brain's own re-plan cadence (`TankBrain.MOTION_REPLAN_TICKS` = TICK_RATE / 4, squad's
+## file — matched here deliberately, not read, so nav's window does not silently change when squad retunes its
+## cadence; A1 at N3 is where the two become one number on purpose). It is also exactly `YAW_RAMP_SECONDS`, so a
+## tracked hull's window reaches its full turn rate, which is the honest statement of what it can do before anyone
+## asks it again.
+const DWA_CONTROL_SECONDS := 0.25
 
 ## Measurement only (lesson 147): lattices built, cells offered, and — separately, because it says whether the window
 ## was computed from the hull's REAL yaw or from an assumed one — plans whose request carried a live `yaw_rate`.
 static var dwa_lattices := 0
 static var dwa_candidates_reachable := 0
-static var dwa_with_live_yaw := 0
+## ...and whether the request carried a LIVE `motion` state. Without one the window is built from a synthesised state
+## with `yaw_rate` 0, which is a less precise window, not a wrong one — but an A/B has to know which it measured.
+static var dwa_with_live_state := 0
+## Level 0's task region (squad asked for this by name): candidates rejected for leaving, or worsening, the leash.
+## "Level 0 engaged" is exactly the kind of claim round 8 proved should never be taken on trust.
+static var a7_region_rejected := 0
 
 
 ## A11 is OPT-IN (`--nav-off=a11` turns it ON), on the same footing as A7: round 9's new rows land behind their switch
@@ -819,19 +863,81 @@ static func a11_on() -> bool:
 ## `WHEEL_CREEP_THROTTLE` survives is then a finding rather than a decision.
 static func dynamic_window(state: Dictionary) -> Array:
 	var dt := SimClock.TICK_SECONDS
+	var ticks := maxi(1, int(DWA_CONTROL_SECONDS * SimClock.TICK_RATE))
 	var cells: Array = []
 	for i in DWA_SPEEDS:
 		var throttle := float(i) / float(DWA_SPEEDS - 1) * 2.0 - 1.0  # -1 .. +1, the middle cell exactly 0
 		for j in DWA_YAWS:
 			var turn := float(j) / float(DWA_YAWS - 1) * 2.0 - 1.0
-			# `step` duplicates, so the live state's creep bookkeeping is never advanced by a hypothetical.
-			var driven := TankMotion.step(state, throttle, turn, dt)
-			var forward: Vector3 = state["forward"]
-			var turned: Vector3 = driven["forward"]
-			# The yaw this tick, as a signed rate: the small-angle cross product of the two headings over dt.
-			var yaw_rate := (forward.x * turned.z - forward.z * turned.x) / dt
-			cells.append({"speed": float(driven["speed"]), "yaw_rate": yaw_rate, "throttle": throttle, "turn": turn})
+			# One duplicate per command, then stepped IN PLACE: the live state's creep and yaw bookkeeping is never
+			# advanced by a hypothetical, and the control period costs allocations once rather than once per tick.
+			var rolled: Dictionary = state.duplicate()
+			var before: Vector3 = rolled["forward"]
+			var last: Vector3 = before
+			for _t in ticks:
+				last = rolled["forward"]
+				TankMotion.step_in_place(rolled, throttle, turn, dt)
+			var turned: Vector3 = rolled["forward"]
+			# The rate it ENDS the control period at (the last tick's swing), which is what the arc then holds; and
+			# the total swing over the period, which is what actually happened while it got there.
+			var yaw_rate := (last.x * turned.z - last.z * turned.x) / dt
+			var swing := (before.x * turned.z - before.z * turned.x) / (float(ticks) * dt)
+			cells.append({"speed": float(rolled["speed"]), "yaw_rate": yaw_rate, "mean_yaw": swing,
+					"position": rolled["position"], "forward": turned, "throttle": throttle, "turn": turn})
 	return cells
+
+
+## A11's candidates, in the same 10-field shape the ring produces so every level scores one the same way — plus an
+## 11th field, the arc's own speed, because an arc knows how fast it is going and a direction never did.
+##
+## `request["motion"]` is a live `TankMotion.state_of(tank)`. Without one the window is built from a state synthesised
+## out of the request, whose `yaw_rate` is 0 — a LESS PRECISE window, not a wrong one, and `dwa_with_live_state`
+## records which was measured so no A/B has to guess.
+static func _lattice_candidates(request: Dictionary, here: Vector3, forward: Vector3, target_at: Vector3,
+		bearing: Vector3) -> Array:
+	var state: Dictionary = request.get("motion", {})
+	if state.is_empty():
+		state = {"position": here, "forward": forward, "speed": _flat(request.get("velocity", Vector3.ZERO)).dot(forward),
+				"velocity": _flat(request.get("velocity", Vector3.ZERO)),
+				"locomotion": "wheels" if bool(request.get("wheels", false)) else "tracks",
+				"max_forward_speed": float(request["speed"]), "max_reverse_speed": float(request.get("reverse_speed", 0.0)),
+				"hull_turn_rate_deg": float(request.get("turn_rate_deg", 90.0)),
+				"acceleration_mps2": float(request.get("acceleration", 14.0)),
+				"braking_mps2": float(request.get("acceleration", 14.0)),
+				"min_turn_radius_m": float(request.get("min_turn_radius", 0.0)), "lateral_grip": 1.0}
+	else:
+		dwa_with_live_state += 1
+	dwa_lattices += 1
+	var turn_rate := float(state.get("hull_turn_rate_deg", 90.0))
+	var cells := dynamic_window(state)
+	var out: Array = []
+	for k in cells.size():
+		var cell: Dictionary = cells[k]
+		var speed := float(cell["speed"])
+		# The committed part is what the plant DID over the control period; the rest is a constant-curvature arc from
+		# there. Only the second part is a model, and it is a model of a command already chosen.
+		var driven_at: Vector3 = cell["position"]
+		var driven_forward: Vector3 = cell["forward"]
+		var rolled := arc_end(driven_at, driven_forward, speed, float(cell["yaw_rate"]),
+				DWA_HORIZON - DWA_CONTROL_SECONDS)
+		var end: Vector3 = rolled[0]
+		var heading: Vector3 = rolled[1]
+		var travel := end - here
+		var reach := travel.length()
+		if reach < 0.01:
+			continue  # a cell that goes nowhere is the hold, and only `standoff` gets to offer one
+		var travel_dir := travel / reach
+		var from_target := end - target_at
+		var gap := maxf(from_target.length(), 0.1)
+		var tangent := absf(travel_dir.x * bearing.z - travel_dir.z * bearing.x)
+		var around := bearing.x * travel_dir.z - bearing.z * travel_dir.x
+		var turn_cos := heading.dot(forward)
+		# Priced in the same currency the ring used (seconds of swing), so level 5's `turn` weight keeps its meaning
+		# across the A/B instead of silently changing units with the candidate set.
+		var turning := CombatMotion.turn_seconds(turn_cos, turn_rate)
+		out.append([k, speed < 0.0, end, heading, turn_cos, gap, from_target, tangent, around, turning, speed])
+	dwa_candidates_reachable += out.size()
+	return out
 
 
 ## One constant-curvature arc: where a hull at `here` facing `forward` ends up after DWA_HORIZON seconds holding

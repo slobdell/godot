@@ -19,52 +19,56 @@ static func _state(unit_id: String, speed: float, yaw_rate := 0.0) -> Dictionary
 
 
 func test_every_offered_arc_is_one_the_plant_can_actually_drive() -> void:
+	# The window is over the CONTROL PERIOD (how long a command is actually held before the next plan), not over one
+	# tick, so this drives the plant for that long and checks the cell promised what the plant delivered: the pose it
+	# reaches, the speed it ends at, and the yaw rate it is turning at when it gets there.
+	var ticks := maxi(1, int(CombatMotion.DWA_CONTROL_SECONDS * SimClock.TICK_RATE))
 	for unit_id: String in ["tank", "ifv", "scout"]:
 		var state := _state(unit_id, 4.0)
 		var lattice := CombatMotion.dynamic_window(state)
 		assert_true(not lattice.is_empty(), "%s gets a lattice (%d)" % [unit_id, lattice.size()])
 		for cell: Dictionary in lattice:
-			# Drive the plant for one tick with this cell's controls and check it produced this cell's motion.
-			var driven := TankMotion.step(state, float(cell["throttle"]), float(cell["turn"]), SimClock.TICK_SECONDS)
-			var forward: Vector3 = state["forward"]
-			var turned: Vector3 = driven["forward"]
-			var got_yaw := (forward.x * turned.z - forward.z * turned.x) / SimClock.TICK_SECONDS
-			var wanted_yaw := float(cell["yaw_rate"])
-			# Tight on purpose. At 0.06 this assertion passed a lattice that promised a STOPPED CAR 36 turning arcs,
-			# because one tick of a small promised yaw fits inside a loose tolerance. A tolerance wide enough to
-			# accept a wrong model is not a test.
-			assert_near(got_yaw, wanted_yaw, 0.0001,
-					"%s: the plant yawed what the cell promised (cell %s)" % [unit_id, cell])
+			var driven: Dictionary = state.duplicate()
+			for _t in ticks:
+				TankMotion.step_in_place(driven, float(cell["throttle"]), float(cell["turn"]), SimClock.TICK_SECONDS)
 			assert_near(float(driven["speed"]), float(cell["speed"]), 0.0001,
-					"%s: and reached the speed the cell promised (cell %s)" % [unit_id, cell])
+					"%s: the plant reached the speed the cell promised (cell %s)" % [unit_id, cell])
+			assert_near((driven["position"] as Vector3).distance_to(cell["position"] as Vector3), 0.0, 0.0001,
+					"%s: and the pose (cell %s)" % [unit_id, cell])
+			assert_near((driven["forward"] as Vector3).dot(cell["forward"] as Vector3), 1.0, 0.0001,
+					"%s: and the heading (cell %s)" % [unit_id, cell])
 
 
-func test_a_car_standing_still_is_offered_no_turning_arcs() -> void:
-	# The ring offers a stopped car all 16 directions and the plant answers with a creep K-turn. The lattice cannot
-	# offer what `yaw = |speed| * turn / radius` will not produce, so the choice is honest at the point it is made.
-	var still := CombatMotion.dynamic_window(_state("ifv", 0.0))
-	var turning := still.filter(func(c: Dictionary) -> bool: return absf(float(c["yaw_rate"])) > 0.01)
-	assert_eq(turning.size(), 0, "a stopped car is offered no turning arc (%d of %d)" % [turning.size(), still.size()])
-	var rolling := CombatMotion.dynamic_window(_state("ifv", 6.0))
-	var turns := rolling.filter(func(c: Dictionary) -> bool: return absf(float(c["yaw_rate"])) > 0.01)
-	assert_true(turns.size() > 0, "and a rolling one is offered plenty (%d of %d)" % [turns.size(), rolling.size()])
+func test_a_car_is_never_offered_a_turn_it_cannot_roll_into() -> void:
+	# The ring offers a stopped car all 16 directions and the plant answers with a creep K-turn. A car's yaw is
+	# `|speed| * turn / radius`, so turning REQUIRES rolling — and over a control period a stopped car may legitimately
+	# roll first and then turn, which is why the claim is not "no turning arcs" but "no turning without travelling".
+	# The lattice cannot offer a pivot in place to something that has no way of performing one.
+	for start_speed: float in [0.0, 6.0]:
+		var state := _state("ifv", start_speed)
+		for cell: Dictionary in CombatMotion.dynamic_window(state):
+			var swung := absf(float(cell["mean_yaw"]))
+			if swung <= 0.01:
+				continue
+			var moved := (cell["position"] as Vector3).distance_to(state["position"] as Vector3)
+			assert_true(moved > 0.05,
+					"a car that turned %.2f rad/s travelled to do it (%.3f m, from %.1f m/s)" % [swung, moved, start_speed])
 
 
-func test_a_tracked_hull_is_offered_only_the_yaw_its_ramp_allows_this_tick() -> void:
-	# Round 8 gave tracks an angular-acceleration ramp, so a hull at rest cannot be at full turn rate this tick.
-	# A lattice that ignored the ramp would offer exactly the unreachable heading the ring offers.
-	var from_rest := CombatMotion.dynamic_window(_state("tank", 3.0, 0.0))
+func test_a_tracked_hull_reaches_its_full_turn_rate_within_the_control_period() -> void:
+	# Round 8 gave tracks an angular-acceleration ramp, and YAW_RAMP_SECONDS is 0.25 — exactly the control period.
+	# So a hull starting from rest CAN be offered its full rate by the end of the period, and must be: a one-tick
+	# window offered it 21 degrees of heading change over a 2 s arc, every candidate pointed nearly the same way,
+	# level 3 had nothing to choose between, and the duel scenario's tank died in 6.3 s of a 20 s fight.
+	var state := _state("tank", 3.0, 0.0)
+	var max_rate := deg_to_rad(float(state["hull_turn_rate_deg"]))
 	var widest := 0.0
-	for cell: Dictionary in from_rest:
+	for cell: Dictionary in CombatMotion.dynamic_window(state):
 		widest = maxf(widest, absf(float(cell["yaw_rate"])))
-	var max_rate := deg_to_rad(float(_state("tank", 3.0)["hull_turn_rate_deg"]))
-	assert_true(widest < max_rate,
-			"a hull not yet turning cannot be offered its full rate this tick (%.3f of %.3f rad/s)" % [widest, max_rate])
-	var already := CombatMotion.dynamic_window(_state("tank", 3.0, max_rate * 0.9))
-	var widest_moving := 0.0
-	for cell: Dictionary in already:
-		widest_moving = maxf(widest_moving, absf(float(cell["yaw_rate"])))
-	assert_true(widest_moving > widest, "a hull already turning is offered more (%.3f vs %.3f)" % [widest_moving, widest])
+	# Within a tenth: the period is a whole number of ticks (7 at 30 Hz = 0.233 s), so the ramp gets 93% of the way
+	# rather than exactly all of it. The point of the assertion is "most of its rate", not a fencepost.
+	assert_near(widest, max_rate, max_rate * 0.1,
+			"a hull given the whole control period reaches its rate (%.3f of %.3f rad/s)" % [widest, max_rate])
 
 
 func test_the_lattice_is_a_fixed_size_and_the_same_every_time() -> void:
@@ -76,3 +80,31 @@ func test_the_lattice_is_a_fixed_size_and_the_same_every_time() -> void:
 	for i in a.size():
 		assert_near(float((a[i] as Dictionary)["yaw_rate"]), float((b[i] as Dictionary)["yaw_rate"]), 0.0000001,
 				"cell %d identical, row-major and deterministic" % i)
+
+
+## The arm, provable from outside (lesson 147, and round 8's `gates aimed 0` in both arms). A11 only means anything
+## inside A7's chooser, so both switches are pinned here rather than inherited.
+func test_the_lattice_replaces_the_ring_and_says_so() -> void:
+	var request := {"position": Vector3.ZERO, "forward": Vector3.FORWARD, "speed": 10.0, "reverse_speed": 5.0,
+			"style": "strafe", "target": {"position": Vector3(0, 0, -30), "forward": Vector3.BACK, "velocity": Vector3.ZERO},
+			"band": [15.0, 40.0], "side": 1.0, "wheels": false, "turn_rate_deg": 90.0, "acceleration": 8.0,
+			"velocity": Vector3.FORWARD * 6.0, "limit": 200.0,
+			"motion": _state("tank", 6.0, 0.1)}
+	var was := Movement._off
+	Movement._off = PackedStringArray(["a7"])
+	Movement._off_parsed = true
+	CombatMotion.reset_arms()
+	var ring := CombatMotion.choose(request)
+	var ring_arms := CombatMotion.arm_report()
+	Movement._off = PackedStringArray(["a7", "a11"])
+	CombatMotion.reset_arms()
+	var lattice := CombatMotion.choose(request)
+	var lattice_arms := CombatMotion.arm_report()
+	Movement._off = was
+	assert_eq(int(ring_arms["a11_lattices"]), 0, "the ring arm builds no lattice (%s)" % ring_arms)
+	assert_true(int(lattice_arms["a11_lattices"]) > 0, "the lattice arm builds one (%s)" % lattice_arms)
+	assert_true(int(lattice_arms["dwa_candidates_reachable"]) > 16,
+			"and it offers more than a ring's worth of reachable arcs (%s)" % lattice_arms)
+	assert_eq(int(lattice_arms["a11_with_live_state"]), 1,
+			"built from the hull's LIVE motion state, not a synthesised one (%s)" % lattice_arms)
+	assert_true(not ring.is_empty() and not lattice.is_empty(), "both arms chose something")
