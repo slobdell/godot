@@ -19,7 +19,12 @@ host=${REMOTE_HOST:-slobdell@builder0}
 root=${REMOTE_ROOT:-tank_squad}
 guard_dir=${TANK_SQUAD_SLOT_DIR:-/tmp/tank_squad_slots}
 ssh_opts=(-o BatchMode=yes -o ConnectTimeout=10)
-main_root=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "not a git repository" >&2; exit 2; }
+# DEGRADE, do not die. builder0's copy of a worktree has no `.git` at all (the launch rsync excludes it),
+# and `check` runs this suite there -- so exiting 2 made fifteen assertions fail for a reason that has
+# nothing to do with the tool. The box and the baselines are still readable without git, and a tool that
+# refuses to say the things it CAN say is less useful than one that says them and names what is missing.
+main_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
+have_git=1; [ -n "$main_root" ] || { have_git=""; main_root=$(pwd); }
 
 mode=${1:-}
 remote_file=""
@@ -31,6 +36,10 @@ case "$mode" in
 esac
 
 # ---- worktrees ---------------------------------------------------------------------------------
+if [ -z "$have_git" ]; then
+	printf '== worktrees == NOT AVAILABLE: %s is not a git repository\n' "$main_root"
+	printf '   (a worktree copied to the build box has no .git -- the launch rsync excludes it)\n'
+else
 main_tip=$(git -C "$main_root" rev-parse --short main 2>/dev/null || echo "?")
 printf '== worktrees (main at %s) ==\n' "$main_tip"
 printf '%-16s %-16s %-9s %-7s %-6s %s\n' FOLDER BRANCH TIP BEHIND/AHEAD DIRTY SUBJECT
@@ -44,6 +53,7 @@ git -C "$main_root" worktree list --porcelain 2>/dev/null \
 		else ba=$(git -C "$main_root" rev-list --left-right --count "main...$branch" 2>/dev/null | tr '\t' '/'); fi
 		printf '%-16s %-16s %-9s %-12s %-6s %s\n' "$(basename "$dir")" "$branch" "$tip" "${ba:-?}" "$dirty" "$subject"
 	done
+fi
 
 # ---- the build box -----------------------------------------------------------------------------
 remote_script() {

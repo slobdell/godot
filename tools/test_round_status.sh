@@ -79,5 +79,17 @@ after=$(cd "$(dirname "$rs")/.." && git status --porcelain | sort | md5sum)
 
 bash "$rs" --wat >/dev/null 2>&1; [ $? = 2 ] && ok "an unknown flag is refused" || bad "an unknown flag is refused"
 
+# ---- no git repository (this is how the BUILD BOX sees a worktree: the rsync excludes .git) -------------
+# It used to exit 2 here, so fifteen assertions failed on builder0 for a reason that had nothing to do with
+# the tool. The box and the baselines are readable without git; only the worktree table is not.
+mkdir -p "$tmp/nogit/tests/baselines"
+printf 'glibc-2.43 1e90f69e5d6fcc46\n' > "$tmp/nogit/tests/baselines/sim_state_hash.txt"
+printf '42,2,3,0\n' > "$tmp/nogit/tests/baselines/ai_scenarios_count.txt"
+out=$( cd "$tmp/nogit" && bash "$rs" --no-remote 2>&1 ); rc=$?
+[ "$rc" = 0 ] && ok "no git repository: it still runs" || bad "no git repository: it still runs" "exit $rc: $out"
+grep -q 'NOT AVAILABLE' <<<"$out" && ok "no git repository: says the worktree table is missing" || bad "says the table is missing" "$out"
+grep -q 'the launch rsync excludes it' <<<"$out" && ok "no git repository: says WHY" || bad "says why" "$out"
+grep -q '1e90f69e5d6fcc46' <<<"$out" && ok "no git repository: the baselines are still read" || bad "baselines still read" "$out"
+
 printf '\nround-status: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

@@ -77,6 +77,65 @@ import: $(GODOT)
 # The lock stays: a second `make lint` would still run `import` underneath the first.
 LINT_BASELINE := tests/baselines/lint_expected.txt
 
+# ---- The decisive experiment behind that comment (orchestrator's call, 2026-09-20) -------------
+# `make remote T=lint-cache-probe` on builder0. It answers, with output rather than argument, whether
+# `--check-only` can see the error class that passed lint and failed at runtime on `f1128ef5`:
+#
+#   A  a SELF-CONTAINED file with the same ternary (`tests/fixtures/ternary_infer_probe.gd.txt`). Nothing
+#      in it depends on the project -- `Node`, `Node3D` and `RID` are engine types and `unit` is declared
+#      `Node`, exactly as `bake_radius` declared it. If A is silent, per-file checking cannot see this class
+#      and a whole-project compile pass is the only guard. If A reports it, the checker CAN see it, and the
+#      run that went green did not check `movement.gd` at all -- a different defect, and one already closed.
+#   B  the REAL `game/ai/movement.gd` at `bffdea0f`, checked in place, with the class-name cache present.
+#   C  the same file with `.godot/global_script_class_cache.cfg` moved aside.
+#
+# B against C is the cache question. It deliberately does NOT delete `.godot`: that costs 90+ minutes of
+# import and remote_builds.md says not to reach for it. The class-name registry is the only cross-run state
+# that could change a type verdict, so moving that one file is both the cheap experiment and the exact one.
+#
+# The real file is restored by a trap, so an interrupted probe cannot leave a broken tree behind.
+.PHONY: lint-cache-probe
+lint-cache-probe: import ## Does `--check-only` see the f1128ef5 ternary error, and does the class-name cache change the answer?
+	@mkdir -p $(BUILD_DIR)/lint-probe
+	@cp tests/fixtures/ternary_infer_probe.gd.txt $(BUILD_DIR)/lint-probe/ternary_infer_probe.gd
+	@real=game/ai/movement.gd; saved=$(BUILD_DIR)/lint-probe/movement.saved; \
+	cache=.godot/global_script_class_cache.cfg; moved=$(BUILD_DIR)/lint-probe/class_cache.saved; \
+	restore() { [ -f "$$saved" ] && mv -f "$$saved" "$$real"; [ -f "$$moved" ] && mv -f "$$moved" "$$cache"; return 0; }; \
+	trap restore EXIT INT TERM; \
+	run() { $(GODOT) --headless --path . --check-only --script "res://$$1" 2>&1 \
+		| grep -E "Parse Error|SCRIPT ERROR|Compile Error" | head -3; }; \
+	echo ">> probe on $$(hostname), commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}"; \
+	echo ""; \
+	echo "A. self-contained ternary probe (res://$(BUILD_DIR)/lint-probe/ternary_infer_probe.gd):"; \
+	a=$$(run "$(BUILD_DIR)/lint-probe/ternary_infer_probe.gd"); \
+	if [ -n "$$a" ]; then printf '%s\n' "$$a" | sed 's/^/     /'; else echo "     (nothing reported)"; fi; \
+	cp "$$real" "$$saved"; \
+	cp tests/fixtures/movement_bffdea0f.gd.txt "$$real"; \
+	echo ""; \
+	echo "B. real movement.gd at bffdea0f, class-name cache PRESENT:"; \
+	b=$$(run "$$real"); \
+	if [ -n "$$b" ]; then printf '%s\n' "$$b" | sed 's/^/     /'; else echo "     (nothing reported)"; fi; \
+	if [ -f "$$cache" ]; then mv -f "$$cache" "$$moved"; else echo "     (no class-name cache on this box to move)"; fi; \
+	echo ""; \
+	echo "C. same file, class-name cache MOVED ASIDE:"; \
+	c=$$(run "$$real"); \
+	if [ -n "$$c" ]; then printf '%s\n' "$$c" | sed 's/^/     /'; else echo "     (nothing reported)"; fi; \
+	restore; trap - EXIT INT TERM; \
+	echo ""; \
+	echo ">> probe verdict:"; \
+	if [ -z "$$a" ] && [ -z "$$b" ] && [ -z "$$c" ]; then \
+		echo "   PER-FILE CHECKING CANNOT SEE THIS CLASS. A whole-project compile pass is the only guard."; \
+	elif [ -n "$$a" ]; then \
+		echo "   The checker CAN see it in isolation, so the green run did not check movement.gd at all."; \
+		echo "   That is the silent-pass hole, already closed -- not a type-resolution subtlety."; \
+	elif [ "$$b" != "$$c" ]; then \
+		echo "   THE CACHE CHANGES THE VERDICT: lint's answer on this file is a property of .godot state,"; \
+		echo "   not of the tree. B and C above differ."; \
+	else \
+		echo "   The real file reports it and the cache makes no difference; the isolated probe does not."; \
+		echo "   The error needs the project's own types, so a whole-project pass is the guard."; \
+	fi
+
 # ---- lint proves it can still SEE an error, every run (2026-09-20) ----------------------------
 # `make lint` reported "all scripts parse" on a tree whose runtime could not compile `movement.gd`
 # (`Cannot infer the type of "my_map"`, cascading through every dependent script), while the SAME tree
