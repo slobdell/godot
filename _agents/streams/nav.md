@@ -787,6 +787,26 @@ entry was found"*: whether a hull then **arrives on the ordered heading** from a
 the N4/A4 RESULT section has said since it was written. That remains N4's next piece of work and it is now **more**
 important, because a mechanism that hurts the fight while landing its gates may be failing at precisely that step.
 
+**INDEPENDENTLY CONFIRMED by metrics' A12 tool (CP1), which matters more than usual because nav's own instrument
+had two defects this same night.** The decisive yard arms were re-run with `--trajectory=` and read by
+`make metrics` — a different tool, a different author, the same logs:
+
+| yard | `net/path` control → treatment | `osc_share` control → treatment | `eff_mean` control → treatment |
+|---|---|---|---|
+| **seed 3** | 0.864 → **0.838** | 0.033 → **0.036** | 0.717 → **0.700** |
+| **seed 5** | 0.806 → **0.766** | 0.046 → **0.055** | 0.651 → **0.645** |
+
+**All three move the wrong way on both seeds**, and metrics' per-unit `ifv net/path` (0.873 → 0.849 on seed 3)
+matches nav's own probe counters to three decimals. Two instruments, one verdict. **A4's default stays off.**
+
+**That run also caught a nav debt: `arc_live` was a FALSE ZERO.** `make metrics` printed `arc_live=0.0s` in **both
+arms**, which reads like a measurement of behaviour. It was not: metrics' emitter reads an optional `facing_arc` key
+off `Movement.state(tank)` and writes `null` *until nav publishes it*, and **nav never had**. Published at
+`e3363d46` — `_approach_gate` computed it every tick and kept it nowhere; it is now set in `drive()` and **cleared by
+`idle()`** so a stale `true` cannot become arc seconds a hull never spent. `arc_live` is now **135.7 s** where it was
+0.0 s, and it checks itself: ifv 63.7 s of 88.7 s ordered facing, lancer 72.0 s of 72.0 s, **tank 0.0 s of 256.3 s**
+— correct, because a tracked hull pivots and the gate is never offered to it. **That zero is now a measurement.**
+
 **Two defects in nav's own instrument, recorded because they bound how far these numbers can be pushed.**
 
 1. **`off_mesh_fit.none` counts EVENTS, not distinct gates.** A hull sitting off-mesh re-requests a gate every tick
