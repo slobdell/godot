@@ -289,6 +289,16 @@ func _apply(phase: String) -> void:
 		"no_pool_lights":
 			if fx != null:
 				_override(fx.lights, "enabled", false)
+		"no_trailer":
+			# X2/M1: what the War Rig's visual hinge costs a frame -- the extra draw per rig and the per-frame
+			# integration -- measured WITHIN the run against the `all` phases either side, never as two runs.
+			# Deliberately NOT in LAYERS: it is faction-specific and would lengthen every other stream's breakdown.
+			for node in get_tree().root.find_children("*", "MeshInstance3D", true, false):
+				if node.name == "Trailer":
+					_override(node, "visible", false)
+			for node in get_tree().root.find_children("*", "Node3D", true, false):
+				if node.get("trailer_pivot") != null:
+					_override(node, "hinge_enabled", false)
 		"no_blob_shadow":
 			if fx != null:
 				var shadows := fx.underglow.get_node_or_null("BlobShadows")
