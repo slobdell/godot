@@ -46,7 +46,13 @@ spot it can see instead of a fixed 30 m offset that the bigger hulls put behind 
    still and lives in motion. The coloured horizontal bands in every frame are feel's round-7 shopfront neon, not the
    show. **Three dials, all data:** `show.channels.windows.ceiling` (1.10; the gate says what raising it costs the
    fight), `show_edge_energy` (0.8, parapet only), `"style": "outline"` (the full-silhouette look feel argues against).
-5. **The airship**: `~/projects/godot-feel/build/airship-look/airship_widest.png`. **You will not see it at your
+5. **The resized roster under your camera** (control, shot locally at 08:28):
+   `~/projects/godot-control/build/control-playtest/1920x1080/8_whole_army.png`. **Two findings, one is your call:**
+   the selection rings are now a cloverleaf, because a ring's radius is 0.75 × the longer hull side and the 8.62 m
+   tank's ring is 12.9 m across; options costed at the top of control's Status (circumscribing-circle bound, an
+   oriented marker along the hull, or leave it). And a facing drag on a WHOLE SQUAD loses its heading: the element's
+   move path never reads `task["facing"]` (squad's, one read; control's half is fixed and the playtest names it).
+6. **The airship**: `~/projects/godot-feel/build/airship-look/airship_widest.png`. **You will not see it at your
    default pose**: the sky is below the top of the frame at 21°. It lives over the city at 560 m and shows at 8–12° tilt.
    **Your call:** leave it, or make it a title/results element. One constant either way.
 
