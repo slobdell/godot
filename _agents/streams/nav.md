@@ -940,6 +940,20 @@ in unexamined. *A number's owner is not its evidence.*
 slack did not get through a defile four squadmates used, in 70 s, with a deterministic repro. That was always the
 case worth answering and it never depended on the table.
 
+**And the CORRECTED table (scale, `d0aeb5d8`) makes nav's clearance case stronger, not weaker.** Perpendicular free
+span on the base-to-base route, against the 4.74 m widest hull: foundry/furnace **62.5 m**, boulevard 59.0,
+boneyard 27.0, pit 19.0, yard 18.0, scrapyard 17.5, terminus 11.5, **maze 7.0**, barriers 5.5. **The physical
+geometry is generous everywhere — even the maze's deliberate defile is 7.0 m**, and the corrected measure validates
+against a constant somebody typed on purpose (`tools/make_arenas.py`'s `MAZE_TIGHT_GAP = 7.0`); the broken version
+called that same gap 4.41 m.
+
+**So every metre of the squeeze is the BAKE, not the map:** 7.0 m physical − 2.0 m of `NAV_AGENT_RADIUS` each side
+= **5.0 m navigable for a 4.74 m hull, 13 cm a side.** With the maps exonerated there is no competing explanation,
+and **nobody can answer it by widening a map** — which is a far tighter argument for a per-hull-class radius than
+"the maps are too tight" ever was. On the shipping rotation the bake takes 4.0 m off 11.5–19.0 m of span, leaving
+7.5–15.0 m navigable; on the maze fixture it leaves 3.0 m. **The rotation is comfortable and the fixture is not,
+which is the right shape for a fixture whose job is to be the hard case.**
+
 ### OWNED AND UNFIXED: a tracked hull reversing 5.6 m mid-leg, reproducible in one test (scale's trace, 2026-09-20)
 
 scale sent this from `test_control_group_moves::test_the_group_faces_its_direction_of_travel_on_arrival` — three
