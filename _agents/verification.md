@@ -79,6 +79,9 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
   4 cm by frame 3; which units take the bad side depends on engine state left by earlier tests. Assert *placement*
   for what placement guarantees; for the physical claim, wait until the largest per-frame delta is below 1 cm
   (capped), and name the unit, the body it hit and the frame count in the failure message.
+- **Select an arm in a test with `TUNE=<knob>=<value> make test FILTER=…`** (2026-09-20, combat): `Units._static_init()`
+  applies the environment's `TUNE` through the same `apply_tuning` as `--tune`, loud on a bad spec, so both arms of a
+  knob run on ONE tree; an arm that needs a code edit to select is an arm nobody re-measures.
 - **Filtered runs in a batch use `;` with a per-file summary, never `&&`** (lesson 182): the chain stops at the
   first red and the unrun files look green by silence. A pass claim names the file's own `N passed, M failed` line.
 
