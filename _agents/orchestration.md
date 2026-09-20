@@ -2615,3 +2615,14 @@ The kickoff prompt is one line; this section is the rest.
     null's median, p95 and worst so the bar is never a mystery. **Any frame comparison gate measures its own null
     first.** Same night, same stream, lesson 27 again: a string replacement that did not match shipped as "done" in a
     commit message and a report; the edit now asserts on the way in and checks on the way out.
+170. **A "waiting on" line is a claim with a date on it, and an undated one goes stale silently.** Round 9: control's
+    Status said *blocked on nav's `legibility.why` key* and nav's said *blocked on control's S4 signature* for hours,
+    with the work done on both sides and the signature already given. Neither re-read the contract; the orchestrator
+    broke it by reading both Statuses in one sitting. **Every *waiting on* line carries the date it was written and
+    what would discharge it, and a tick re-reads the pairs.**
+171. **A switched row and its arm field are ONE change.** nav added `a4` to `NAV_FIGHT_ARM` two hours after landing A4
+    (the arm was provable only from the `off=` list), then landed A6 with the identical omission, in the file whose own
+    comment explains why the field matters — found only by running the counter in a fight. The commit that adds a
+    switch adds its arm line, its counter, and the "could it act?" denominator (`a6_asked 1087, a6_no_corridor 1087,
+    a6_nose_narrowed 0`: reached a thousand times, able to act zero times — without the denominator that reads as "does
+    nothing" instead of "never had its input").
