@@ -289,6 +289,90 @@ motivation for that row rather than an inherited one.
 `net_over_path` rises and `oscillating_share` falls is pre-registered in the brief (N4) and runs after CP1, read
 through A12.
 
+### ⚠ N1b: A7 is BUILT, MEASURED, and NOT SHIPPED ON — the headline, so nobody reads past it
+
+**`--nav-off=a7` turns A7 ON. The default is the additive blend, and the default path reproduces the pristine
+numbers exactly, so the sim baseline does not move and `main` takes no behaviour change from this.**
+
+A7 fails one pre-registered behaviour scenario and passes everything else, and the rule when a ladder and a
+behaviour assertion disagree is to believe the behaviour assertion (lesson 150):
+
+| `scenario_elements::test_a_unit_fighting_from_a_formation_slot_stays_in_it` | blend | A7 |
+|---|---|---|
+| in-slot drift (bar ≤ 16 m) | **15.4 m** | **42.1 m** ✗ |
+| in-slot shots (bar ≥ 6) | **10** | **5** ✗ |
+
+**Passing on A7:** six A7 unit tests; all four `scenario_motion` scenarios including both of combat's pre-registered
+ones — scout standoff **22.7 m / 0.92 / 0.92 / 225 shots** (pristine `9f864474`: 26.9 / 0.92 / 0.91 / 226) and the
+turreted duel, the armour demotion's falsifier, **front hits 100% / 100%** (pristine 100% / 80%).
+
+**Cause, localised by switching each level off in turn rather than guessed: level 2.** Weapon level inactive → drift
+back to 16.3 m; level 3 inactive → still 37.6 m. Strict *weapon above formation* makes a unit hold its band around
+the enemy, and holding a band around an enemy is what takes it out of its slot. The blend compromised by accident.
+
+**REQUEST TO SQUAD, and it is the thing that unblocks A7: should an attacking element's members carry a leash?**
+`TankBrain.element_slot()` returns null for the `bound` and `maneuver` roles, so an attacking element's members
+arrive here with **no leash**, and level 0 therefore has no task region to state. The ruled fix for exactly this
+failure — the leash as a level-0 feasibility bound — is implemented and correct and simply never engages. Under the
+blend the answer did not matter because `WEIGHTS["range"]` and `continuity` compromised by accident; under A7 it
+decides the behaviour. **nav has not tuned a tolerance to make the scenario green, and will not.**
+
+### N1b: A7 in code — what landed, and the three things a reviewer should check
+
+`CombatMotion.choose()` now dispatches: `choose_projected()` (A7) or `choose_blended()` (**the round 3–8 additive
+score, kept whole** — a control that is also rewritten is not a control). `--nav-off=a7` selects the blend.
+
+**The shape.** A tolerance-banded lexicographic filter over candidates — the discrete form of null-space projection,
+because our candidate set is finite (the ring today, A11's lattice at N2). Level 0 feasibility, then SURVIVAL,
+WEAPON, ARC/ARMOUR, FORMATION, PREFERENCE; each level keeps everything within `TOLERANCE[level]` of its own best and
+hands that set down. `TOLERANCE` **is** the null space: `{survival: 0.0, weapon: 0.15, arc: 0.25, formation: 0.2}`.
+
+**Three things that are easy to get wrong and were done deliberately:**
+
+1. **The hold is a candidate, not an early exit — and it carries `index = -1`, so the commitment term matches it.**
+   Round 8's clearest finding was that `COMMIT_BONUS` had *never executed*, because a hold returned before the ring
+   was scored. `a7_holds_scored` and `a7_holds_won` report it, so "it is reachable now" is a number rather than a
+   claim (combat's condition).
+2. **combat's blocking objection is answered by a statement, not a constant:** for `standoff`, level 5's `tangent`
+   and `side` apply only while the weapon level is UNSATISFIED. A fixed gun's nose is its aim; in band, tangential
+   motion costs the shot. "Slide when rounds are incoming" still happens, because level 1 filters first.
+3. **The leash binds at level 0 for a leashed unit, and needs no new request field.** squad established that
+   `TankBrain.element_slot()` returns null for the `bound` and `maneuver` roles, so **a leash in the request already
+   means "you were given a position to fight from"**. The radius used is the one that ARRIVES (squad derives it per
+   formation from member hulls), never `SLOT_LEASH` read as a constant. It binds only a unit currently inside its
+   leash: if every candidate is outside, level 0's release drops the bound and level 4's soft term pulls the unit
+   back — which is X1's *"pulled back rather than frozen"* falling out of the structure instead of being special-cased.
+
+**The defect A7's own falsifier test found, twice — and it is the round's most transferable lesson** (recorded as
+orchestration lesson 153): **a term that merely SATURATES as one addend among many goes BLIND when it is promoted to
+a priority level, because inside a level a cost only ever competes with itself.**
+
+- `PENALTY_LEASH` clamps at `LEASH_FALLOFF` (10 m) past the slot radius. As a penalty that was harmless — other terms
+  still separated the candidates. As level 4 it is fatal: a unit 36 m outside its slot has **every** candidate clamped
+  to 1.0, the level ranks nothing, hands a fully-tied set down, and level 5 keeps the unit exactly where it is.
+  **That is the stall A7 exists to make impossible, reappearing inside the fix.** Caught by
+  `test_a_gun_held_outside_its_slot_slides_back_into_it_instead_of_standing_still`, which was written before the code.
+- `_band()` floors at 0 twelve metres below the band and twenty above, so a unit 60 m from its target would have every
+  candidate tied at the maximum band cost — **no pressure to close, on the level whose entire job is the radial
+  component.** Found by re-auditing the other levels for the same shape rather than by a failing test, and then given
+  one (`test_a_gun_far_outside_its_band_still_closes_on_the_target`).
+
+Both are now uncapped and monotone over the whole range they can see, keeping the blend's scales (leash in
+`LEASH_FALLOFF` units with crowding quoted in the same currency at `PENALTY_CROWD / PENALTY_LEASH`; the band at 12 m
+below / 20 m above). Level 1 is binary and dictatorial by design, and level 3's `1 − front` cannot saturate.
+
+**Pre-registered acceptance, to be reported before/after with the hash** (combat's and squad's baselines, pristine
+`9f864474`, laptop): `scenario_motion::test_a_scout_holds_a_firing_position_instead_of_ramming` — 26.9 m closest,
+0.92 in-band, 0.91 nose-on, 226 shots; `scenario_motion::test_two_tanks_duel_on_the_move_front_armor_first` — front
+hits 100% (a6) / 80% (x3), which is **the honest falsifier for the armour demotion** (all three scouts are
+`mount: "fixed"` → `standoff`, so the engine-deck scenario cannot reach it);
+`scenario_elements::test_the_base_of_fire_keeps_firing_while_the_others_move` — base shots 5 then 4, through a
+friend 0.
+
+**What A7 does NOT do:** it does not touch `RING` or the `min_cos` chord test (A11's, at N2), it does not touch
+`run` (the A/B control for round 7's standoff), and it does not change `COMMIT_BONUS`'s value — combat's A2 replaces
+that expression at level 5 under contract S5.
+
 ### Questions for the lead
 
 None yet.

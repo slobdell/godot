@@ -165,7 +165,32 @@ static func standoff_holds(request: Dictionary) -> bool:
 	return holding and not would_be_hit(here, Vector3.ZERO, Vector3.ZERO, incoming)
 
 
+## Round 9 (nav, catalogue A7 — Antonelli, Arrichiello & Chiaverini 2008): null-space behavioural control. `choose`
+## dispatches to the priority-projected chooser; `--nav-off=a7` restores the additive blend below, unchanged, as the
+## A/B control. The priority table (which term became which level, and the lead-approved behaviour each encodes) is in
+## _agents/navigation.md, reviewed by combat and feel before this code existed.
 static func choose(request: Dictionary) -> Dictionary:
+	if a7_on():
+		return choose_projected(request)
+	return choose_blended(request)
+
+
+## A7 is OPT-IN, like `holdband` and `r5sidestep`: `--nav-off=a7` turns it ON. It is built, tested and measured, and
+## it is NOT the default, because the behaviour assertion and the ladder disagree and the rule is to believe the
+## behaviour assertion (lesson 150). `scenario_elements::test_a_unit_fighting_from_a_formation_slot_stays_in_it`:
+## slot drift **15.4 m -> 42.1 m** and the element's shots **10 -> 5**, A7 against the blend on one tree.
+## Cause, localised by switching each level off in turn rather than guessed: **level 2**. Strict "weapon above
+## formation" makes a unit hold its band around the enemy, and holding a band around a moving enemy is what takes it
+## out of the slot it was given. The blend let the two compromise; strict priority does not, and in this scenario
+## squad's `element_slot()` returns null for an attacking role, so there is no leash at level 0 to state the task
+## region with. **That is a contract question for squad, not a tolerance for nav to tune**, and A7 waits behind this
+## switch until it is answered rather than shipping a regression in lead-approved behaviour (X1).
+static func a7_on() -> bool:
+	return Movement.switched_off("a7")
+
+
+## Round 3-8's additive score, kept whole as the control arm. A control that is also rewritten is not a control.
+static func choose_blended(request: Dictionary) -> Dictionary:
 	var style: String = request.get("style", "strafe")
 	if style == "standoff" and standoff_holds(request):
 		return {"hold": true, "point": _flat(request["position"]), "reverse": false, "index": -1, "score": 0.0}
@@ -347,6 +372,398 @@ static func choose(request: Dictionary) -> Dictionary:
 		return {"point": Vector3(clampf(point.x, -limit, limit), point.y, clampf(point.z, -limit, limit)),
 				"reverse": entry[2], "index": entry[1], "score": -float(entry[0]), "dodging": false, "boxed_in": true}
 	return {}
+
+
+# ---- A7: null-space priority projection (round 9, nav) -------------------------------------------------------------
+# Catalogue row A7 (Antonelli, Arrichiello & Chiaverini 2008). The textbook form synthesises a velocity as
+# v = SUM_i (PROD_{j<i} N_j) v_i, every lower task projected into the null space N_j = I - J_j^+ J_j of the higher
+# ones. Our velocity set is DISCRETE — a 16-direction ring today, A11's reachable (speed, yaw-rate) lattice at N2 — so
+# the projection is exercised as a tolerance-banded lexicographic filter over candidates, which is the same algebra on
+# a finite set: each level keeps the candidates within TOLERANCE of its own best, and the level below chooses inside
+# exactly the freedom that leaves. TOLERANCE *is* the null space: 0 makes a level dictatorial, a large value makes it
+# a pure preference.
+#
+# What this buys, and it is the whole reason A7 was sequenced first: opposing goals can no longer cancel to zero,
+# because they no longer act on the same scalar. The weapon band owns the RADIAL component; the tangential component
+# is untouched by it and is where circling, the flank and the slot are answered.
+#
+# The priority table (every WEIGHTS term, every PENALTY_*, the leash, commitment, the dodge, `beaten`, the sight
+# check, and which lead-approved behaviour each encodes) is in _agents/navigation.md. It was written, sent to combat
+# and feel, and reviewed BEFORE this function existed, because CombatMotion.WEIGHTS is where round 7's approved
+# behaviour lives and "six multiply-adds" badly understates the blast radius.
+
+## The null space each level leaves the one below it. Tuned nowhere else; changing one of these changes how much
+## freedom a level gives away, which is the only tuning surface A7 has.
+## - survival 0.0: dictatorial. If ANY candidate avoids the round, only such candidates continue. When none does, the
+##   level is inactive and leaves the whole set free, which is how "a unit boxed in by fire has to go somewhere"
+##   survives (it is today's `beaten_fallback` release, restated as a priority level).
+## - weapon 0.15: `_band` is flat inside the band and falls linearly over 12 m below / 20 m above, so 0.15 of band
+##   cost is ~1.8 m of slack inside the near edge and ~3.0 m past the far one. Both stay inside the weapon's
+##   EFFECTIVE range (TankBrain.fire_band), which is the condition combat set: a tolerance that parks a hull where it
+##   may not legally fire would buy motion at the price of the shot.
+## - arc 0.125: level 3's cost is `(1 - dot) / 2` over the whole half-turn, so 0.125 admits headings within `dot`
+##   0.75 of the best — a ~41 degree cone. Measured, not chosen: the first monotone version kept 0.25 and the duel
+##   scenario's front hits fell 100% -> 75% (bar 80%), because `(1 - dot) / 2` reaches 0.25 at 60 degrees where the
+##   floored `1 - max(0, dot)` reached it at 41. Making a cost monotone CHANGES WHAT A TOLERANCE MEANS, and the
+##   tolerance has to be re-derived with it or the level quietly loosens. That is lesson 153's second half.
+## - formation 0.2: enough slack that a unit manoeuvres inside its slot's cell rather than being frozen on its centre.
+const TOLERANCE := {"survival": 0.0, "weapon": 0.15, "arc": 0.125, "formation": 0.2}
+## Level 4 prices the leash in LEASH_FALLOFF units (1.0 = a full falloff outside the slot), so crowding has to be
+## quoted in the same currency to be comparable. The blend's ratio is kept: PENALTY_CROWD 0.6 / PENALTY_LEASH 1.5.
+const CROWD_IN_LEASH_UNITS := PENALTY_CROWD / PENALTY_LEASH
+
+## Measurement only, and the thing that makes an A/B a comparison rather than a fiction (lesson 147): plans that ran
+## the projection, and — separately, because this is the claim round 8 could not check — plans in which the HOLD
+## candidate was scored against the ring instead of returned by an early exit. `a7_holds_scored` is how we know the
+## commitment term is reachable on a hold at last, rather than asserting that it is.
+static var a7_projected := 0
+static var a7_holds_scored := 0
+static var a7_holds_won := 0
+
+
+static func reset_arms() -> void:
+	a7_projected = 0
+	a7_holds_scored = 0
+	a7_holds_won = 0
+
+
+static func arm_report() -> Dictionary:
+	return {"a7_projected": a7_projected, "a7_holds_scored": a7_holds_scored, "a7_holds_won": a7_holds_won}
+
+
+## Keep every candidate within `tolerance` of the best cost. Ties and near-ties survive together: that IS the null
+## space handed to the level below. Deterministic — one pass for the minimum, one to filter, input order preserved.
+static func _keep_within(live: Array, costs: Array, tolerance: float) -> Array:
+	var best := INF
+	for i: int in live:
+		best = minf(best, float(costs[i]))
+	if best == INF:
+		return live
+	var kept: Array = []
+	var bar := best + tolerance
+	for i: int in live:
+		if float(costs[i]) <= bar:
+			kept.append(i)
+	return kept if not kept.is_empty() else live
+
+
+static func choose_projected(request: Dictionary) -> Dictionary:
+	var style: String = request.get("style", "strafe")
+	# `run` is round 3's attack runs, kept only as the A/B control for round 7's standoff. A control that is also
+	# rewritten is not a control, so A7 does not touch it.
+	if style == "run":
+		return choose_blended(request)
+	a7_projected += 1
+	var weights: Dictionary = WEIGHTS.get(style, WEIGHTS["strafe"])
+	var here := _flat(request["position"])
+	var forward := _flat(request["forward"]).normalized()
+	var target: Dictionary = request["target"]
+	var target_at := _flat(target["position"])
+	var target_forward := _flat(target.get("forward", Vector3.FORWARD)).normalized()
+	var to_target := target_at - here
+	var distance := maxf(to_target.length(), 0.1)
+	var bearing := to_target / distance
+	var band: Array = request.get("band", [15.0, 40.0])
+	var band_low := float(band[0])
+	var band_high := float(band[1])
+	var side := 1.0 if float(request.get("side", 1.0)) >= 0.0 else -1.0
+	var map: CoverMap = request.get("map")
+	var friends: Array = request.get("friends", [])
+	var limit := float(request.get("limit", Match.DRIVABLE_LIMIT)) - 4.0
+	var travel_forward := clampf(float(request["speed"]) * HORIZON_SECONDS, MIN_TRAVEL, MAX_TRAVEL)
+	var travel_reverse := clampf(float(request.get("reverse_speed", 0.0)) * HORIZON_SECONDS, 0.0, MAX_TRAVEL)
+	var wheels: bool = request.get("wheels", false)
+	var min_cos := -1.0
+	if wheels and float(request.get("min_turn_radius", 0.0)) > 0.0:
+		var theta := travel_forward / float(request["min_turn_radius"])
+		min_cos = maxf(-1.0, 1.0 - theta * theta / 2.0) if theta < 2.0 else -1.0
+	var incoming: Array = request.get("incoming", [])
+	var threats: Array = request.get("threats", [])
+	var busy: bool = request.get("target_busy", false)
+	var flank_weight := BUSY_FLANK if busy else float(weights["flank"])
+	var armor_weight := float(weights["armor"]) * (BUSY_ARMOR if busy else 1.0)
+	var velocity_now := _flat(request.get("velocity", Vector3.ZERO))
+	var leash: Dictionary = request.get("leash", {})
+	var leash_center := _flat(leash.get("center", Vector3.ZERO))
+	var leash_radius := float(leash.get("radius", 0.0))
+	# The orchestrator's ruling (2026-09-19): for a unit told to fight from a place, the leash is a level-0 FEASIBILITY
+	# bound on every candidate, DODGES INCLUDED — it dodges INSIDE its leash and never leaves it. Without that, level 1
+	# filtering before level 4 lets incoming fire pull a firing line off its line with the leash never consulted, which
+	# breaks "the player's units hold until ordered" and squad's base-of-fire scenario.
+	#
+	# "Told to fight from a place" needs no new request field, because squad established (2026-09-19) that
+	# `TankBrain.element_slot()` returns null for the `bound` and `maneuver` roles: under bounding overwatch the moving
+	# half arrives here UNLEASHED by design, and base of fire, overwatch and the covering half arrive leashed. **So a
+	# leash in the request already means "you were given a position to fight from".**
+	#
+	# And it binds only a unit that is currently INSIDE its leash: if every candidate is outside, level 0's release
+	# below drops the bound and level 4's soft term pulls the unit back instead. That is X1's own rule — *pulled back
+	# rather than frozen when something pushes it out* — falling out of the structure rather than being special-cased.
+	# The radius is the one that ARRIVES (squad derives it per formation from member hulls: `max(pitch, SLOT_LEASH)`,
+	# ~16 m for a squad of War Rigs and growing at CP2), never `SLOT_LEASH` read as a constant here.
+	var leash_binds := leash_radius > 0.0
+	## How far outside its leash the hull is right now: 0 or less while it is in its slot's cell. A candidate may
+	## never make this worse (level 0 above), so a unit outside its slot always closes on it, whatever it is fighting.
+	var leash_now := leash_center.distance_to(here) - leash_radius if leash_binds else 0.0
+	var previous_index := int(request.get("previous_index", -1))
+	var previous_reverse := bool(request.get("previous_reverse", false))
+	var beaten: Callable = request.get("beaten", Callable())
+
+	# ---- candidates ------------------------------------------------------------------------------------------------
+	# Each is [index, reverse, end, hull, turn_cos, gap, from_target, tangent, around, turning]. The HOLD is index -1
+	# with no displacement: round 7's "stop and shoot" is not an early exit any more, it is the zero-radial-speed
+	# solution of the weapon level, scored against the ring like everything else. Its admissibility still uses the
+	# HOLD band (narrower than the weapon band) and its hysteresis, so round 7's behaviour is preserved exactly; what
+	# level 1 now owns is the dodge, which is why "slide along the band when rounds are incoming" still happens.
+	# A fixed gun's weapon level targets the HOLD band, not the whole preferred band: round 7's `STANDOFF_HOLD_SHARE`
+	# already says a gun truck stops and shoots between half the outer edge and the edge. Using the preferred band here
+	# would leave a `standoff` hull between `band_low` and the hold band with a flat level-2 cost AND no tangent
+	# preference (level 5 suppresses it in band) — directionless, by construction. Level 2 owns the radial component,
+	# so it is the level that must know where the gun actually wants to be.
+	var weapon_low := maxf(band_low, band_high * STANDOFF_HOLD_SHARE) if style == "standoff" else band_low
+	var cands: Array = []
+	if style == "standoff":
+		var holding := hold_band_on() and previous_index == -1
+		var slack := HOLD_SLACK_M if holding else 0.0
+		if distance >= weapon_low - slack and distance <= band_high + slack:
+			a7_holds_scored += 1
+			cands.append([-1, false, here, forward, 1.0, distance, -to_target, 0.0, 0.0, 0.0])
+	for i in RING.size():
+		var ring := Vector3(RING[i].x, 0.0, RING[i].y)
+		for reverse: bool in [false, true]:
+			var travel := travel_reverse if reverse else travel_forward
+			if travel <= 0.0:
+				continue
+			var hull := -ring if reverse else ring
+			var turn_cos := hull.dot(forward)
+			# Level 0: a heading the plant cannot swing onto within this horizon is not a candidate. (A11 replaces
+			# this whole test at N2 with a lattice that is reachable by construction.)
+			if wheels and turn_cos < min_cos:
+				continue
+			var end := here + ring * travel
+			var from_target := end - target_at
+			var gap := maxf(from_target.length(), 0.1)
+			var tangent := absf(ring.x * bearing.z - ring.z * bearing.x)
+			var around := bearing.x * ring.z - bearing.z * ring.x
+			var turning := 0.0 if wheels else CombatMotion.turn_seconds(turn_cos, float(request.get("turn_rate_deg", 90.0)))
+			cands.append([i, reverse, end, hull, turn_cos, gap, from_target, tangent, around, turning])
+
+	# ---- LEVEL 0: feasibility. Not a priority level — an infeasible candidate is not a candidate. ---------------------
+	var live: Array = []
+	for c in cands.size():
+		var entry: Array = cands[c]
+		var end: Vector3 = entry[2]
+		if absf(end.x) > limit or absf(end.z) > limit:
+			continue
+		if map != null and (map.path_blocked(Vector2(here.x, here.z), Vector2(end.x, end.z), OBSTACLE_GROW)
+				or map.inside_any(Vector2(end.x, end.z), OBSTACLE_GROW)):
+			continue
+		# The leash is the TASK REGION, so level 0 states it as: stay in it, and if you are already out of it, come
+		# back. A unit inside may only pick candidates that stay inside; a unit outside may only pick candidates that
+		# do not increase how far outside it is. Both are the same rule and the second is the one that matters.
+		#
+		# Measured, not assumed. With the leash as a level-4 preference ONLY, A7 took slot drift from 15.4 m (the
+		# blended arm, `--nav-off=a7`) to 42.1 m and the element's shots from 10 to 5 — strict priority demoted the
+		# leash below a band filter that had already narrowed the set, so by the time level 4 spoke there was nothing
+		# left to choose between. X1 is lead-approved behaviour (mutual support, sectors of fire, armour facing) and
+		# A7 was quietly buying the band with it.
+		if leash_binds:
+			var excess := leash_center.distance_to(end) - leash_radius
+			if excess > maxf(0.0, leash_now):
+				continue
+		live.append(c)
+	if live.is_empty():
+		# Boxed in. Drop the leash bound first (a held unit that cannot stay inside its leash must still move), then
+		# the obstacle filter, exactly as the blended path's last loop does: standing still in a fight is worse.
+		for c in cands.size():
+			var end: Vector3 = (cands[c] as Array)[2]
+			if absf(end.x) <= limit and absf(end.z) <= limit:
+				live.append(c)
+	if live.is_empty():
+		return {}
+
+	# ---- LEVEL 1: SURVIVAL. A round that would hit me, and a route through a beaten zone. ------------------------------
+	# Dictatorial (tolerance 0), and INACTIVE when nothing is safe, which is the release that keeps a unit boxed in by
+	# fire moving. `beaten` is a hard skip today, so its promotion is a rename; `would_be_hit` genuinely changes from a
+	# large-but-finite 3.0 to dominant — predict that as a tail effect (3.0 against a max achievable ~3.25 for strafe).
+	var survival: Array = []
+	survival.resize(cands.size())
+	var any_survival := false
+	for c: int in live:
+		var entry: Array = cands[c]
+		var cost := 0.0
+		if not incoming.is_empty():
+			var planned: Vector3 = Vector3.ZERO
+			if int(entry[0]) >= 0:
+				var ring := Vector3(RING[entry[0]].x, 0.0, RING[entry[0]].y)
+				planned = ring * (float(request.get("reverse_speed", 0.0)) if bool(entry[1]) else float(request["speed"]))
+			if CombatMotion.would_be_hit(here, velocity_now, planned, incoming, float(entry[9]),
+					float(request.get("acceleration", 1000.0))):
+				cost += 1.0
+		if beaten.is_valid() and beaten.call(here, entry[2] as Vector3):
+			cost += 1.0
+		survival[c] = cost
+		any_survival = any_survival or cost > 0.0
+	if any_survival:
+		live = _keep_within(live, survival, float(TOLERANCE["survival"]))
+
+	# ---- LEVEL 2: WEAPON. The standoff band owns the RADIAL component; the ram guard is its inner wall. ----------------
+	# The band is `[weapon.preferred_min, weapon.preferred_max]` straight from Weapons.PROFILES (tank_brain.gd), never
+	# a radial constant of nav's own, or the motion band and N5's firing envelope drift apart silently.
+	var weapon: Array = []
+	weapon.resize(cands.size())
+	for c: int in live:
+		var entry: Array = cands[c]
+		var gap := float(entry[5])
+		# Metres outside the band, NOT `1 - _band()`. Same saturation trap as level 4: `_band` floors at 0 twelve
+		# metres below the band and twenty above, so a unit 60 m from its target would have EVERY candidate tied at
+		# cost 1.0 and the weapon level would rank nothing — no pressure to close, on the level whose whole job is the
+		# radial component. Uncapped and monotone, keeping the blend's asymmetry (12 m below, 20 m above), so
+		# TOLERANCE 0.15 is ~1.8 m of slack inside the near edge and ~3.0 m past the far one.
+		var cost := maxf(0.0, weapon_low - gap) / 12.0 + maxf(0.0, gap - band_high) / 20.0
+		var passes := gap
+		if int(entry[0]) >= 0:
+			var ring := Vector3(RING[entry[0]].x, 0.0, RING[entry[0]].y)
+			var along := clampf((target_at - here).dot(ring), 0.0, here.distance_to(entry[2] as Vector3))
+			passes = (here + ring * along).distance_to(target_at)
+		if minf(gap, passes) < MIN_GAP:
+			cost += 1.0  # the ram guard: not a preference, a wall
+		weapon[c] = cost
+	# The bar is the BETTER of "within TOLERANCE of the best" and "no worse than standing here". That second clause is
+	# the null-space statement this table has claimed all along — *level 2 owns the radial component and leaves the
+	# whole tangential component free* — and without it the claim was false while out of band.
+	#
+	# Measured: with a magnitude tolerance alone, a unit outside its band admitted only candidates within ~1.8 m of the
+	# single best radial step, which is "drive straight at it" — round 3's `run`, the behaviour round 7 removed. It took
+	# slot drift from 15.4 m (blended arm) to 42.1 m, and switching level 2 off entirely brought it back to 16.3 m,
+	# which is how the level was identified rather than guessed at. The weapon level wants the gap to IMPROVE; it has
+	# no opinion about how directly, and a tolerance in metres was an opinion about how directly.
+	var here_cost := maxf(0.0, weapon_low - distance) / 12.0 + maxf(0.0, distance - band_high) / 20.0
+	var best_weapon := INF
+	for c: int in live:
+		best_weapon = minf(best_weapon, float(weapon[c]))
+	live = _keep_within(live, weapon, maxf(float(TOLERANCE["weapon"]), here_cost - best_weapon))
+	# Keeping the target in sight is the weapon level's own null-space preference — it now orders EVERY candidate that
+	# ties on the band, where the blended path could only rescan its best SIGHT_CHECKS. Strictly better, and it costs
+	# up to one line query per surviving candidate rather than 6 per plan.
+	if map != null and live.size() > 1:
+		var sight: Array = []
+		sight.resize(cands.size())
+		for c: int in live:
+			sight[c] = 0.0 if map.clear_line_coarse((cands[c] as Array)[2], target_at) else 1.0
+		live = _keep_within(live, sight, 0.0)
+
+	# ---- LEVEL 3: ARC / ARMOUR. Front toward what can shoot me. A6's motion law joins this level (S4). ----------------
+	# A heading constraint, not a velocity one. For a TURRETED hull the gun aims independently, so this is demoted into
+	# level 5's preference sum; for a hull-fixed or heavy hull the hull IS the mount and it is a priority. The demotion
+	# reaches `strafe` only, where the weight is 0.15 — already the smallest term in that vector.
+	var armour_is_priority := style != "strafe"
+	if armour_is_priority and live.size() > 1:
+		var arc: Array = []
+		arc.resize(cands.size())
+		for c: int in live:
+			arc[c] = 1.0 - _front_share(cands[c], target_at, threats, armor_weight, false)
+		live = _keep_within(live, arc, float(TOLERANCE["arc"]))
+
+	# ---- LEVEL 4: FORMATION. The slot leash and crowding — below safety, which is the inversion A7 exists to fix. -----
+	if (leash_radius > 0.0 or not friends.is_empty()) and live.size() > 1:
+		var formation: Array = []
+		formation.resize(cands.size())
+		for c: int in live:
+			var end: Vector3 = (cands[c] as Array)[2]
+			# UNCLAMPED, and this is the one place A7 could not reuse the blend's shape. As a PENALTY, saturating the
+			# leash at LEASH_FALLOFF past the radius was harmless — other terms still separated the candidates. As a
+			# LEVEL it is fatal: a unit far outside its slot has every candidate clamped to the same 1.0, the level
+			# ranks nothing, and level 5 then keeps it exactly where it is. That is the stall this row exists to make
+			# impossible, reappearing inside the fix; `test_a_gun_held_outside_its_slot_slides_back_into_it` caught it.
+			# A cost inside one level only ever competes with itself, so it must stay monotone in the thing it prices.
+			var cost := maxf(0.0, leash_center.distance_to(end) - leash_radius) / LEASH_FALLOFF if leash_radius > 0.0 else 0.0
+			for friend: Vector3 in friends:
+				if _flat(friend).distance_to(end) < FRIEND_SPACING:
+					cost += CROWD_IN_LEASH_UNITS
+					break
+			formation[c] = cost
+		live = _keep_within(live, formation, float(TOLERANCE["formation"]))
+
+	# ---- LEVEL 5: PREFERENCE, and it is still a weighted sum. --------------------------------------------------------
+	# A7 forbids summing ACROSS priority levels, not within one. Continuity, the turn cost and commitment go on working
+	# exactly as round 7 measured them; what changed is that they can no longer outvote a dodge or a standoff band.
+	# For `standoff`, `tangent` and `side` apply only while the weapon level is UNSATISFIED (combat's blocking review):
+	# a fixed gun's nose IS its aim (nose-on 0.91 measured), so tangential motion in band costs the shot and buys
+	# nothing — which is exactly what round 7 removed when `standoff` replaced `run`.
+	# "Satisfied" for a fixed gun means inside the HOLD band — the same edge level 2 aims at, so the two cannot disagree.
+	var reposition := not (style == "standoff" and distance >= weapon_low and distance <= band_high)
+	var best_index := -2
+	var best_score := -INF
+	for c: int in live:
+		var entry: Array = cands[c]
+		var score := 0.0
+		if reposition:
+			score += float(weights["tangent"]) * float(entry[7])
+			score += float(weights["side"]) * (1.0 if float(entry[8]) * side > 0.0 else 0.0)
+		var gap := float(entry[5])
+		score += flank_weight * (1.0 - target_forward.dot((entry[6] as Vector3) / gap)) * 0.5
+		if not armour_is_priority:
+			score += armor_weight * _front_share(entry, target_at, threats, armor_weight)
+		score += float(weights["continuity"]) * (float(entry[4]) + 1.0) * 0.5
+		score -= float(weights["turn"]) * float(entry[9])
+		if bool(entry[1]):
+			score -= float(weights["reverse"])
+		# Commitment — and for the first time it is reachable ON A HOLD. Round 8's clearest finding was that a hold
+		# returned index -1 before the ring was scored, so COMMIT_BONUS was shipped and measured twice while never
+		# executing. Here the hold IS index -1 and `previous_index == -1` matches it.
+		if commit_on() and int(entry[0]) == previous_index and bool(entry[1]) == previous_reverse:
+			score += COMMIT_BONUS
+		if score > best_score:
+			best_score = score
+			best_index = c
+	if best_index < 0:
+		return {}
+
+	# ---- the answer -------------------------------------------------------------------------------------------------
+	var won: Array = cands[best_index]
+	if int(won[0]) == -1:
+		a7_holds_won += 1
+		return {"hold": true, "point": here, "reverse": false, "index": -1, "score": best_score}
+	var direction := Vector3(RING[won[0]].x, 0.0, RING[won[0]].y)
+	var steer := maxf(STEER_DISTANCE, float(request.get("min_turn_radius", 0.0)) * WHEELS_STEER_RADII) if wheels else STEER_DISTANCE
+	var point := here + direction * steer
+	return {"point": Vector3(clampf(point.x, -limit, limit), point.y, clampf(point.z, -limit, limit)),
+			"reverse": bool(won[1]), "index": int(won[0]), "score": best_score,
+			"dodging": any_survival}
+
+
+## Front armour toward the target and every other gun that can shoot me, the target counting double (X3 "keep your
+## front toward threats"). Shared by level 3 and level 5's demoted form so the two cannot drift apart.
+## `floored` is the difference between an addend and a level, and it is lesson 153 in one parameter.
+## The blend clamps each facing dot at 0, so a hull 91 degrees off a threat and one 179 degrees off score the SAME.
+## Inside an additive sum that is harmless — the other terms still separate the two. As LEVEL 3's cost it is the
+## leash bug again: every candidate facing away ties, the level ranks nothing, and it hands a tied set down. So
+## level 3 asks for the unfloored form (`(1 - dot) / 2`, monotone over the whole half-turn) and level 5's demoted
+## armour term keeps the floored one, which is what `choose_blended` scores and therefore what the A/B compares.
+static func _front_share(entry: Array, target_at: Vector3, threats: Array, armor_weight: float, floored := true) -> float:
+	var hull: Vector3 = entry[3]
+	var end: Vector3 = entry[2]
+	var gap := maxf(float(entry[5]), 0.1)
+	var new_bearing := (target_at - end) / gap
+	var front := _facing(hull, new_bearing, floored)
+	if threats.is_empty() or armor_weight < MULTI_THREAT_ARMOR:
+		return front
+	var weighted := 2.0 * front
+	var weight_sum := 2.0
+	for threat: Dictionary in threats:
+		var toward := _flat(threat["position"]) - end
+		var length := toward.length()
+		if length > 0.1:
+			weighted += float(threat.get("weight", 1.0)) * _facing(hull, toward / length, floored)
+			weight_sum += float(threat.get("weight", 1.0))
+	return weighted / weight_sum
+
+
+## How well `hull` points at `toward`, in [0, 1]: the blend's clamped dot, or the monotone (1 + dot) / 2.
+static func _facing(hull: Vector3, toward: Vector3, floored: bool) -> float:
+	var dot := hull.dot(toward)
+	return maxf(0.0, dot) if floored else (1.0 + dot) * 0.5
 
 
 ## Whether a unit at `here` moving at `now` that sets out on `planned` passes within HIT_RADIUS of any incoming round

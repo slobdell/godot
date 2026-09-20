@@ -155,8 +155,13 @@ func _run() -> void:
 	# Stacked starts separate (Avoidance parts coincident hulls by name), so this is reported, not fatal.
 	# The treatment, read live from the code under test (not from the flag passed): an A/B arm is only an arm if this
 	# differs between them.
-	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s avoidance=%s station=%s off=%s" % [CombatMotion.commit_on(),
-			CombatMotion.hold_band_on(), CombatMotion.fixed_style, Movement.avoidance_on, Movement.station_on, Movement._off])
+	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s a7=%s avoidance=%s station=%s off=%s" % [CombatMotion.commit_on(),
+			CombatMotion.hold_band_on(), CombatMotion.fixed_style, not Movement.switched_off("a7"),
+			Movement.avoidance_on, Movement.station_on, Movement._off])
+	# Round 9: the arm counters start at zero for THIS run, so a number in the report is this run's (statics outlive a
+	# single probe inside one process).
+	CombatMotion.reset_arms()
+	Movement.reset_gates()
 	print("NAV_FIGHT_CONTROL arena %s, green %d, rust %d, %d pairs start on top of each other" % [
 			Arena.active.get("name", "?"), green.size(), rust, stacked])
 	for frame in SimClock.TICK_RATE:
@@ -511,6 +516,7 @@ func _report(elapsed: float) -> void:
 			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
 			"inplace_detail": inplace_detail, "gear_detail": gear_detail, "travelled": _travel_report(),
 			"gates": Movement.gate_report(), "facings_issued": facings_issued, "holds_issued": holds_issued,
+			"arms": CombatMotion.arm_report(),
 			"inplace_per_unit_minute": _inplace_rates(),
 			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")],
 			"armies": [_flag("green-army", "cpu"), _flag("rust-army", "cpu")], "fielded": fielded, "busy_every_s": busy_every, "busy_orders": busy_orders}

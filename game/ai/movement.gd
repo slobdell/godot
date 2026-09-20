@@ -131,7 +131,11 @@ static var _off_parsed := false
 ## and `switched_off()` would answer false for it forever: the A/B would run one treatment in both arms and come back a
 ## clean null (arena hit exactly that with `flow` on a tree that did not have it yet). So an unknown name is refused
 ## loudly instead. Add the name here in the same commit that adds the switch.
-const OFF_NAMES: Array[String] = ["backup", "carrot", "chord", "commit", "grace", "guard", "holdband",
+## Round 9: a row's switch selects between the NEW mechanism and the OLD one it replaces — never "the new thing,
+## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
+## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
+## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
+const OFF_NAMES: Array[String] = ["a7", "backup", "carrot", "chord", "commit", "grace", "guard", "holdband",
 		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
 
 

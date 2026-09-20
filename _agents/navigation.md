@@ -32,8 +32,10 @@ Part 2: *replacing is safe, adding alongside is where two techniques fight*):
 1. **An arm counter, or it is not a comparison** (lesson 147). Round 8's facing A/B compared two arms in which the
    treatment never executed once, and the only thing that said so was a counter added for exactly that. Every row
    above ships its counter in its first commit, and `nav-fight` reports them all under `arms`.
-2. **`--nav-off=<row>` restores the OLD mechanism, it does not disable the new one into nothing.** An arm that is
-   "the new thing, switched off" is a third treatment, not a control.
+2. **`--nav-off=<row>` selects between the NEW mechanism and the OLD one it replaces**, never "the new thing,
+   disabled into nothing", which is a third treatment rather than a control.
+   **`a7` is currently INVERTED** — like `holdband` and `r5sidestep` it turns its mechanism **ON**, because A7 is
+   built and measured but **is not the default**. See *A7 is built, measured, and NOT shipped on* below.
 
 **Determinism, for every row:** no wall clock inside a decision (`dt` is the tick), neighbours ordered by name, a
 fixed iteration count, ties to the lower index. Fresnel integrals (A4) come from a fixed-size table with fixed-order
@@ -94,7 +96,7 @@ round is *"opposing goals can no longer cancel to zero"*, never *"nothing is tun
 | **0** | **FEASIBILITY** (a mask, not a level) | reachable by the plant this tick; inside the arena; not crossing or ending in an obstacle | everything else. If the mask is empty the boxed-in fallback runs, exactly as today |
 | **1** | **SURVIVAL** | a round that would hit me; a route through a beaten zone | free whenever no candidate is safe — a unit boxed in by fire still goes somewhere |
 | **2** | **WEAPON** | the standoff band (radial), the ram guard, keeping the target in sight | **the whole tangential component** — which is why circling survives untouched |
-| **3** | **ARC / ARMOUR** | front toward threats; the angle style's side-on guard; **A6's motion law goes here, named** | the sign of the arc (either shoulder), and all speed |
+| **3** | **ARC / ARMOUR** | front toward threats; the angle style's side-on guard; **A6's motion law, named** — A6-a the nose clause, A6-b the shoulder clause | **speed alone.** A6-b claims the sign of the arc (feel's one change, accepted — see below) |
 | **4** | **FORMATION** | the leash on the element slot; crowding; `Movement`'s PID station | everything inside the slot's cell |
 | **5** | **PREFERENCE** | tangent, side, flank, continuity, turn cost, reverse cost, commitment | — (argmin here decides) |
 
@@ -181,6 +183,98 @@ including dodges.** A held unit may dodge *within* its leash and never leaves it
 **infeasible, not merely dispreferred**. For a unit that is not holding, the leash stays the level-4 soft term it is
 today (X1: manoeuvre inside your slot's cell, be pulled back rather than frozen). squad gets that scenario's
 before/after with the hash.
+
+#### ⚠ A7 is built, measured, and NOT shipped on (2026-09-20)
+
+**A7 is opt-in: `--nav-off=a7` turns it ON, and the default is the additive blend.** Everything below it in this
+section is built, unit-tested and measured. It is not the default because **the behaviour assertion and the ladder
+disagree, and the rule is to believe the behaviour assertion** (lesson 150).
+
+**What fails** — `scenario_elements::test_a_unit_fighting_from_a_formation_slot_stays_in_it`, same tree, A7 against
+the blend (laptop):
+
+| | blend (default) | A7 |
+|---|---|---|
+| in-slot drift | **15.4 m** (bar ≤ 16) | **42.1 m** ✗ |
+| free drift | 43.2 m | 62.9 m |
+| in-slot shots | **10** (bar ≥ 6) | **5** ✗ |
+
+**What passes:** all six A7 unit tests; all four `scenario_motion` scenarios, including both of combat's
+pre-registered ones — the scout standoff (closest 22.7 m, in-band 0.92, nose-on 0.92, 225 shots against the pristine
+tree's 26.9 / 0.92 / 0.91 / 226) and the turreted duel that is the armour demotion's falsifier (front hits
+**100% / 100%** against the pristine **100% / 80%**); and all five `scenario_elements` scenarios on the default path,
+which reproduces the pristine numbers exactly, so the sim baseline does not move.
+
+**The cause, localised by switching each level off in turn rather than guessed: level 2.** With the weapon level
+inactive the drift returns to 16.3 m; with level 3 inactive it stays at 37.6 m. **Strict "weapon above formation"
+makes a unit hold its band around the enemy, and holding a band around an enemy is what takes it out of the slot it
+was given.** The blend let the two compromise; strict priority does not.
+
+**Why this is a contract question and not a tolerance to tune.** The fix for exactly this failure already exists and
+was ruled on: state the task region at level 0, so a unit manoeuvres *within* its leash. It does not engage here,
+because **`TankBrain.element_slot()` returns null for the `bound` and `maneuver` roles**, and an attacking element's
+members are one of those — so there is no leash in the request and no task region for level 0 to state. So the
+question for squad is: **should an attacking element's members carry a leash?** Under the blend the answer did not
+matter, because `WEIGHTS["range"]` and `continuity` compromised by accident. Under A7 it decides the behaviour.
+
+**Two things this measurement is worth keeping for, whatever squad answers:**
+
+1. **A level that speaks late only gets to rank what the levels above it left.** nav's leash, nav's `_front_share`
+   floor and combat's score floor are three instances of the same shape in one day — *the ranked set was already
+   destroyed before the ranking ran*. The leash version is the sharpest: no tolerance at level 4 can fix a level-4
+   term, because the candidates it wanted were removed at level 2.
+2. **Making a cost monotone changes what its tolerance means.** The first monotone `arc` cost kept `TOLERANCE` at
+   0.25 and the duel's front hits fell 100% → 75%, because `(1 − dot) / 2` reaches 0.25 at 60° where the floored
+   `1 − max(0, dot)` reached it at 41°. The tolerance has to be re-derived with the cost or the level quietly loosens.
+
+#### A6 at level 3, and the one cell feel changed (accepted, 2026-09-20)
+
+feel's [`legibility.md`](legibility.md) confirms level 3 — the law does **not** outrank the standoff band — and asks
+for one change to this table, which nav accepts because the argument is right and it is the difference between A6
+mattering and A6 being decorative:
+
+> Level 3's null space was written as *"the sign of the arc (either shoulder), and all speed"*. **A6 claims the sign
+> of the arc. What level 3 leaves below it is speed alone.**
+
+**Why that is right:** A6's falsifier is measured on **velocity**, not on heading. For a turreted hull the nose is
+already free of the gun — the velocity is chosen at levels 1, 2 and 5 and the nose follows it — so **A6-a (the nose
+within 25° of the corridor tangent) would pass its own review and leave P7 at 30–36%.** The clause that moves the
+number is **A6-b**: when a unit must go off-corridor for the band or for survival and both shoulders serve equally,
+take the shoulder that advances along the corridor. A unit orbiting at band radius can orbit either way, and today
+that choice is made by `tangent` / `side` / `flank` / `continuity`, **none of which has ever heard of the corridor.**
+Round 3's circling is untouched: it is the *shoulder* that is claimed, not the circling.
+
+**The two clauses as explicit rows, so the table is complete before the code** (the orchestrator's request):
+
+| Clause | Level | What it CONSTRAINS | What it LEAVES FREE | Replaces |
+|---|---|---|---|---|
+| **A6-a** the nose clause | 3 | the hull's **heading**: a turreted hull within **25°** of the corridor tangent `t̂`; a hull-fixed hull bounded **forward-oblique at 75°** (its hull *is* its gun mount) | the whole velocity — which is why this clause alone cannot move the falsifier | **nothing.** The nearest thing was `PENALTY_SIDE_ON` / `ANGLE_MASK_COS`, and A7 already deletes that constant and re-expresses it as level 3's arc task, so A6-a **composes** with the arc task rather than replacing it |
+| **A6-b** the shoulder clause | 3 | the **sign of the tangential step** when a unit must go off-corridor for the band or survival and both shoulders serve that equally: take the one whose velocity has a non-negative projection on `t̂` | **speed alone**, and the radial component entirely (level 2 owns that). Round 3's circling is untouched — the *shoulder* is claimed, not the circling | **nothing.** Today the orbit direction is settled by `tangent` / `side` / `flank` / `continuity`, none of which reads the corridor |
+
+**The corridor is N1's `path_points` current leg and nothing recomputed — confirmed against the code, not agreed.**
+`Movement.reading()` slices `path_points` from the mover's own `_path_index`, so `path_points[0]` **is** the next
+waypoint and the current leg runs from the hull's projection onto it. There is no second leg index to disagree with.
+
+`TOLERANCE["arc"]` stays nav's and A6 wants it **banded, not dictatorial** — prefer the advancing shoulder unless the
+retreating one is better at level 3's own cost by more than the tolerance — so nothing is wedged into a worse arc for
+a tidy line. Inside level 3, feel's per-style composition applies: `strafe` is A6-a alone (armour is already demoted
+to level 5 for turrets by nav's style table), `angle` is armour first with A6-a in its null space, `standoff` is
+armour/lay first then A6-a's 75° forward-oblique bound, and `run` is untouched.
+
+**Two assumptions the page makes about this layer, both checked rather than agreed:**
+
+1. **The corridor is N1's `path_points` current leg, one publisher.** True today and better than feel knows:
+   `reading()` already slices `path_points` from `_path_index`, so **`path_points[0]` IS the next waypoint and the
+   current leg runs from the hull's projection to it.** nav will publish the tangent explicitly (`corridor`) at N5
+   rather than leave every consumer to re-derive it from the array — one publisher should mean one *interpretation*,
+   not just one array.
+2. **An inactive law must not look like a broken one** (lesson 149). nav owns the flag: A6 is inactive with no
+   order, on `phase == "blocked"`, with no path yet, while a reflex owns the heading, or under `run`. The falsifier
+   is computed over active ticks only with the active fraction reported beside it — a number that improves because
+   the law switched itself off more often is not a pass.
+
+**Nothing of A6 is in code, and nothing will be until the page carries all three signatures** (contract S4). A7 ships
+level 3 carrying the arc/armour task only; A6 joins that level at N5.
 
 #### ⚠ Composition hazard, for the orchestrator: A7 and A2 both touch `COMMIT_BONUS` this round
 
