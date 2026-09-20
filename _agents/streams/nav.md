@@ -757,8 +757,22 @@ rather than on a synthetic one. **Do not flip its default** — on today's plant
 stays green, correctly.** `test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided` returns
 **bit-identical** numbers with the constraint on or off (19.71 m of path, 28.5° of yaw, 3.12 m net drift), verified
 by combat with their own contact gate disabled. **The assertion written to go red has not gone red, and combat
-reported that rather than papering it.** Shipped off by default (`Tank.yaw_fit_enabled = false`), so nothing of
-nav's moves.
+reported that rather than papering it.** **SUPERSEDED 2026-09-21: it works now and is ENABLED** (`986f8921`, combat). The fix was nav's diagnosis applied —
+compare the candidate pose against the **current** one rather than against legality — and it recovers **59 % of the
+illegal yaw**: 28.5° → **11.6°**, footprint 9.6 m → **6.1 m** in a 4.8 m corridor.
+
+**⚠ AND THAT MAKES NAV'S FACE-RECOVERY ROW LIVE.** It was reported **inert** because a hull under a `face` never
+stalled — it rotated *through* the wall instead. With the plant refusing impossible yaw, the stall is now a state
+that occurs: combat's run reads **`giveups 1`** against `face_checked 5`, where nav measured **`giveups 0`** against
+`face_checked 7` on the same shape. **The row nav closed as a measured negative has a trigger for the first time**,
+and its benefit is measurable at last — which was the precondition written into it: *"when combat couples the basis
+to a collision test, this assertion goes red and the benefit becomes measurable. Re-run it then."*
+
+**The residual is named and it is not closed: 1.27 m of footprint still exceeds the corridor.** A hull sweeping
+1.3 m more than its corridor allows is still doing the thing the lead complained about, only less of it — and
+**CP2 makes it worse**, because the sweep scales with `length × sin(yaw)` and 1.3 m will not hold across a resized
+roster. combat kept that as a **bar on the exceedance** (`over <= 1.8 m`) rather than an assertion that the
+constraint works, so the number is in the failure text when it moves.
 
 **Why, and it is a tension worth carrying into round 10.** `move_and_slide` **depenetrates every tick**, so at the
 top of each tick the hull is legal where it stands and the next small rotation adds no measurable penetration. The
