@@ -35,13 +35,23 @@ func _applied() -> int:
 	return Tank.refusals_applied - _applied_at
 
 
-## The constraint is OFF by default (see `Tank.yaw_fit_enabled`); these tests turn it on to measure what it does.
+## The constraint is ON by default as of the enable commit (`Tank.yaw_fit_enabled`, `--tune=match.yaw_fit=0` turns it
+## off). These tests still select it EXPLICITLY rather than leaning on the default: a test that measured whichever way
+## the default happened to point would be testing the thing it was written to compare against and saying nothing
+## about it (lesson 156), and the default has already flipped once this round.
+var _was_fitting := false
+
+
 func _enable() -> void:
+	_was_fitting = Tank.yaw_fit_enabled
 	Tank.yaw_fit_enabled = true
 
 
+## RESTORED, not zeroed: `yaw_fit_enabled` is a static, so a teardown that wrote `false` would hand the OLD default to
+## every test that ran after this file in the shard -- the leak-into-the-next-test shape that cost this round two
+## shards. It goes back to whatever it was.
 func teardown() -> void:
-	Tank.yaw_fit_enabled = false
+	Tank.yaw_fit_enabled = _was_fitting
 
 
 func _world() -> Match:

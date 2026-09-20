@@ -502,9 +502,16 @@ static var refusals_offered := 0
 static var refusals_applied := 0
 ## Consecutive ticks this hull's yaw has been refused outright: a permanent refusal is a stuck unit, not a fix.
 var yaw_refused_ticks := 0
-## OFF BY DEFAULT because turning it on moves the sim baseline and turns nav's `test_a_wedged_semi_keeps_yawing_
-## because_rotation_is_never_collided` red -- that test asserts the CURRENT defect, so its going red is the signal
-## the defect is gone, and flipping it is the orchestrator's to sequence, not this file's.
+## ON BY DEFAULT as of this commit, sequenced by the orchestrator and with nav's agreement, because it is the lead's
+## complaint directly: *"the semi trucks are yawing in place (should be impossible)"*. Two costs were named before
+## the flip and both were paid here -- it moves the sim baseline (the fifth move of the round), and it turns nav's
+## `test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided` red, which is exactly the signal nav wrote
+## that test to give. That test is renamed and inverted in the same commit, and it keeps the RESIDUAL as a number.
+##
+## IT IS A PARTIAL FIX. 6.1 m of footprint in a 4.8 m corridor is still ~1.3 m of hull rotating through a wall. The
+## predicate is per-tick and relative, `move_and_slide` depenetrates between ticks, so a rotation that is illegal
+## cumulatively is legal at every increment; the exact form (slack 0.000) fits the corridor and freezes a wedged rig
+## for 30 ticks, which breaches nav's N1. No form that is both exact and non-freezing has been found.
 ##
 ## IT WORKS, and the number that matters is PENETRATION_SLACK_M rather than anything structural. Measured, nav's
 ## wedged-semi corridor (4.8 m wide, a 14 m rig):
@@ -519,10 +526,11 @@ var yaw_refused_ticks := 0
 ## At 0.005 the residue is a hull with no non-worsening yaw available, which freezes VISIBLY (`yaw_refused_ticks`)
 ## rather than silently -- and that is the state nav's `face` recovery exists for. It fired for the first time in
 ## this configuration (`giveups 1`), having been inert all round.
-## `--tune=match.yaw_fit=1` turns it on from any harness, so it can be measured without editing this file -- the
+## `--tune=match.yaw_fit=0` turns it OFF from any harness, so the old behaviour stays measurable without editing this
+## file (it was `=1` to turn it on while the default was off) -- the
 ## same shape as `switch.cost` and `match.hull_disc`, and for the same reason: an arm that needs a code edit to
 ## select is an arm nobody re-measures.
-static var yaw_fit_enabled := false
+static var yaw_fit_enabled := true
 
 
 func _fitting_forward(have: Vector3, wanted: Vector3) -> Vector3:
