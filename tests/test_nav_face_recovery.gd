@@ -12,8 +12,15 @@ extends TestCase
 
 const MATCH := preload("res://game/match/match.tscn")
 ## The wedging corridor's width, and the bar on how far the hull's rotated footprint may still exceed it. The
-## measured residual is 1.3 m; the bar sits just above it so that a regression is a failure and the number is in the
+## measured residual is 1.27 m; the bar sits just above it so that a regression is a failure and the number is in the
 ## message. It is NOT a target: see the partial-result note on the wedged test below.
+##
+## ⚠ IF THIS GOES RED, LOOK AT THE ROSTER BEFORE LOOKING AT THE CODE (nav's note, and it will save an hour). The
+## sweep is `length x sin(yaw)`, so the bar's 0.53 m of headroom is eaten by hull LENGTH, not by the constraint
+## weakening: an 18 m hull at the same 11.6 deg needs ~0.7 m more footprint on its own, which breaches this on a
+## roster change alone. CP2 resizes most of the roster. The right reading then is "CP2 moved it", and the right fix
+## is to re-measure the corridor and move this number WITH THE NEW FIGURE STATED -- never to widen it to whatever
+## makes the test pass.
 const CORRIDOR_M := 4.8
 const RESIDUAL_BAR_M := 1.8
 
