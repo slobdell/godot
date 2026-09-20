@@ -336,17 +336,55 @@ non-existent resource` for tracked, present files, cascading into false `Nonexis
 lints sharing one import cache**, now prevented by the `flock` on `make lint`. Clearing `.godot/imported` is the
 widest scope that is ever warranted; the full delete costs 90+ minutes and fixes nothing the lock does not.
 
-## ⚠ Killing a `make` leaves `tools/slot.sh` holding a slot, and its stale `.owner` file makes a dead holder look alive (feel, 2026-09-20)
+## ⚠ ~~Killing a `make` leaves `tools/slot.sh` holding a slot~~ — it did, and it was the SCRIPT, not the operator (metrics, 2026-09-20)
 
 feel started a second `make lint` while the first was running, killed the wrong process in the chain, and one of the
 laptop's two slots sat **held with nothing inside it** while every other stream queued behind it — the banner in every
-waiter's log kept naming a job that had ended. The lock dies with the process; the owner file does not.
+waiter's log kept naming a job that had ended. **That was written up as killing the wrong process. It was not.** Two
+defects in `slot.sh` made the outcome close to unavoidable, and both are now fixed (`tools/slot.sh`, metrics):
 
-- **Kill the `slot.sh` wrapper, not the `make` inside it.** Find it with `ps -eo pid,args | grep '[s]lot.sh'` and
-  `readlink /proc/<pid>/cwd` to confirm it is yours (trip-up 79).
-- Then look in `/tmp/tank_squad_slots/`: a `slot<N>.owner` naming a PID that no longer exists is stale — remove it by
-  hand. Waiters read that file for their banner, so a stale one lies to everyone.
-- The habit that would have avoided it: builder0 sat at load 0.64 on 12 cores the whole time. Heavy runs go there.
+1. **The release handler could not run.** bash defers a trap until the current foreground command finishes, and the
+   work ran in the foreground — so a `kill` aimed at a slot holder did *nothing at all* until the thing you were
+   trying to stop finished on its own. The handler that removes the owner file was waiting for a `make check` nobody
+   had signalled. The work now runs in the background and is `wait`ed on, because **`wait` is interruptible**: the
+   handler runs at once, kills the work, gives the slot back and exits.
+2. **Killing the holder left the work running.** The command sits under a subshell and a `timeout`, so a signal to
+   the top of that tree left the Godot underneath alive while the slot was handed back — *the box then looks free and
+   is not* (lesson 15, from the other side). It now kills the whole tree, **walked by PARENT (`pgrep -P`), never by
+   pattern**: seven checkouts run the same command lines, and a pattern kill took out three other streams' wrappers
+   in one night (trip-up 19).
+
+Both were found by known-answer tests written for the exclusive mode below, before it shipped — not by inspection,
+and not by anyone reading `slot.sh`, which several of us had done.
+
+**What still holds:** the lock dies with the process and the owner file does not, so a `slot<N>.owner` naming a PID
+that no longer exists is stale and should be removed by hand; `fuser /tmp/tank_squad_slots/slot<N>.lock` is who really
+holds it. **Kill the `slot.sh` wrapper, not the `make` inside it** (`ps -eo pid,args | grep '[s]lot.sh'`, then
+`readlink /proc/<pid>/cwd` to confirm it is yours, trip-up 79) — that advice was right, it just could not work.
+And the habit that would have avoided the whole thing: builder0 sat at load 0.64 on 12 cores. Heavy runs go there.
+
+## A timing run holds the box, and says afterwards whether it held (`--quiet`, metrics, 2026-09-20)
+
+A frame-time measurement needs a quiet machine (lesson 179), and *waiting* for one does not give you one: another
+stream can start two seconds after the box looks idle, inside your run.
+
+    make remote-quiet T="perf-trailer-ab"      # or: tools/remote.sh --quiet perf-trailer-ab
+
+The run takes **every** `slot.sh` slot for its duration (`TANK_SQUAD_EXCLUSIVE=1`), so other streams queue rather
+than land in the middle of a measurement, and a sampler watches the window while it is open. The run's output ends
+in one of two words, and the samples come home in `build/quiet-window.tsv`:
+
+- **`QUIET WINDOW: HELD`** — every sample saw this run alone on the box. It says nobody else *ran*; it does not say
+  the machine was fast, so the load range is printed with it.
+- **`QUIET WINDOW: NOT USABLE`** — one of four stated bounds was broken, and the verdict says which and by how much:
+  another worktree's process was live (bound 0), a Godot outside this run was live (bound 0), `load1` went above
+  `QUIET_MAX_LOAD` (default 4.0 — **this counts the run's own load**, because a number taken on a busy box is not a
+  quiet-box number even when the box is busy with us), or **fewer than two samples reached the verdict**. That last
+  one is the failure that would otherwise pass in silence: an unwatched window is not a quiet one.
+
+Holding a window and having held one are different claims, and only the second is evidence — show's back-to-back
+pair once reported the instrumented arm **43% faster** than its control on a loaded box, and nothing in the output
+said so.
 
 ## ⚠ An orphaned remote run yields NO verdict, and it blocks its own directory (squad, 2026-09-20 03:28)
 

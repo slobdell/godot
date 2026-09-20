@@ -5,6 +5,7 @@
 #     tools/remote.sh test FILTER=combat
 #     tools/remote.sh bootstrap             # first time only (also runs automatically when needed)
 #     tools/remote.sh --status              # what is running in YOUR folder on builder0, and is its marker stale
+#     tools/remote.sh --quiet perf-trailer-ab  # a TIMING run: hold the whole box, and say whether the window held
 #
 # What it does (one builder over ssh; deliberately much simpler than plane_maker's distributed system):
 #   1. rsync this checkout to builder0:~/tank_squad/<folder name> (each worktree gets its own folder, so
@@ -15,7 +16,7 @@
 #   4. copy build/ back (logs, screenshots, reports; not the big exports) and exit with make's status
 #
 # Knobs (environment or local.mk): REMOTE_HOST (default slobdell@builder0), REMOTE_ROOT (default tank_squad),
-# REMOTE_SLOTS, REMOTE_FORCE (launch on top of a live run of your own), REMOTE_CLAIM_TTL.
+# REMOTE_SLOTS, REMOTE_FORCE (launch on top of a live run of your own), REMOTE_CLAIM_TTL, QUIET_MAX_LOAD.
 # Rendering targets use builder0's logged-in desktop session (DISPLAY :0).
 #
 # ---- REMOTE_SLOTS is 3, and that is DELIBERATELY FEWER than the 6 it was raised to (T1, 2026-09-20) ----
@@ -97,8 +98,21 @@ if [ "$1" = "--status" ]; then
 	run_guard report; exit $?
 fi
 
+# ---- --quiet: a timing run owns the box, and says afterwards whether it did ---------------------
+# A frame-time measurement needs a quiet machine (lesson 179). Waiting for the box to look idle and then
+# launching does not give one -- another stream can start two seconds later, inside the run. So the run
+# HOLDS the window by taking every slot (`slot.sh`'s TANK_SQUAD_EXCLUSIVE), and a sampler watches it while
+# it is open, because holding a window and having held one are different claims and only the second is
+# evidence. The run's own output ends in QUIET WINDOW: HELD or NOT USABLE, and the samples come home in
+# build/quiet-window.tsv.
+quiet=""
+if [ "$1" = "--quiet" ]; then
+	quiet=1; shift
+	[ $# -gt 0 ] || { echo "usage: tools/remote.sh --quiet <make target> [VAR=value ...]" >&2; exit 2; }
+fi
+
 if [ -r "$guard_script" ]; then
-	run_guard check "make $*"
+	run_guard check "make $*${quiet:+ (quiet window)}"
 	guard_status=$?
 	if [ "$guard_status" -eq 9 ]; then
 		echo ">> remote: nothing was synced and nothing was run." >&2
@@ -139,6 +153,8 @@ if [ ! -x ~/$root/.tools/node/bin/node ]; then
 fi
 export PATH=~/$root/.tools/node/bin:\$PATH
 export TANK_SQUAD_SLOTS=$slots
+export TANK_SQUAD_QUIET=$quiet
+export QUIET_MAX_LOAD=${QUIET_MAX_LOAD:-4.0}
 # Hand the marker from "a launch claimed this directory" to "this pid is the run". From here the claim's TTL
 # stops mattering, because /proc can speak for the run itself -- including the forty minutes it may spend
 # QUEUED inside slot.sh, which has already cd-ed in. A signalled run releases it at once; a normal exit leaves
@@ -163,7 +179,21 @@ if ! compgen -G ".tools/godot-*/editor_data/export_templates/*/.installed" >/dev
 	echo ">> remote: first run here, bootstrapping the toolchain" >&2
 	make bootstrap >&2 || exit \$?
 fi
+if [ -n "\$TANK_SQUAD_QUIET" ] && [ -f tools/quiet_window.sh ]; then
+	export TANK_SQUAD_EXCLUSIVE=1
+	mkdir -p build
+	bash tools/quiet_window.sh watch $guard_dir ~/$root "\$PWD" build/quiet-window.tsv 15 >/dev/null 2>&1 &
+	watcher=\$!
+fi
 make "\$@"
+make_status=\$?
+if [ -n "\${watcher:-}" ]; then
+	kill "\$watcher" 2>/dev/null
+	# The verdict prints whatever the run's own status was: a green run in a window that did not hold is
+	# exactly the case worth shouting about, because nothing else in the output would say so.
+	bash tools/quiet_window.sh verdict build/quiet-window.tsv || true
+fi
+exit \$make_status
 EOF
 
 echo ">> remote: make $* on $host" >&2

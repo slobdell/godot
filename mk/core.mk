@@ -452,12 +452,22 @@ remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="t
 remote-status: ## What is running in THIS worktree's folder on builder0 (read-only; ask before REMOTE_FORCE=1)
 	@tools/remote.sh --status
 
+remote-quiet: ## A TIMING run on builder0 that holds the whole box and says whether the window held: T="perf-trailer-ab"
+	@test -n "$(T)" || { echo 'usage: make remote-quiet T="perf-trailer-ab"'; exit 2; }
+	tools/remote.sh --quiet $(T)
+
 # The guard that stops `make remote` rsyncing --delete over a run of your own that is still going. It is in
 # `check` because it is a guard, and every defect round 9 found -- in the exclusion groups, in the shard count,
 # in `lint`'s file list, in `check-hashes` -- was a guard nobody had ever exercised. This one costs ~1 s and
 # needs no Godot, no ports and no `user://` path, so it joins with no exclusion edge.
-remote-guard-test: ## The live-run guard's known-answer tests (no Godot, ~1 s)
-	@tools/test_remote_guard.sh
+remote-guard-test: shell-tools-test ## Alias kept for the name that shipped in CHECK_TARGETS
+
+shell-tools-test: ## Every tools/test_*.sh known-answer suite (no Godot, ~20 s), and it FAILS if it finds none
+	@suites=$$(ls tools/test_*.sh 2>/dev/null); \
+	test -n "$$suites" || { echo "shell-tools-test FAILED: no tools/test_*.sh found. A suite that runs"; \
+		echo "  nothing reports success, which is how \`lint\` passed over zero files for three rounds."; exit 1; }; \
+	echo "shell-tools-test: $$(echo "$$suites" | wc -l) suites"; \
+	rc=0; for s in $$suites; do echo "-- $$s"; bash $$s || rc=1; done; exit $$rc
 
 # ---- Parallel workstreams (git worktrees; see _agents/workstreams.md) ---------------
 
