@@ -16,7 +16,8 @@
 #   4. copy build/ back (logs, screenshots, reports; not the big exports) and exit with make's status
 #
 # Knobs (environment or local.mk): REMOTE_HOST (default slobdell@builder0), REMOTE_ROOT (default tank_squad),
-# REMOTE_SLOTS, REMOTE_FORCE (launch on top of a live run of your own), REMOTE_CLAIM_TTL, QUIET_MAX_LOAD.
+# REMOTE_SLOTS, REMOTE_FORCE (launch on top of a live run of your own), REMOTE_CLAIM_TTL, QUIET_MAX_LOAD,
+# REMOTE_VERIFY=0 (skip the sha256 check on the files copied back).
 # Rendering targets use builder0's logged-in desktop session (DISPLAY :0).
 #
 # ---- REMOTE_SLOTS is 3, and that is DELIBERATELY FEWER than the 6 it was raised to (T1, 2026-09-20) ----
@@ -179,6 +180,14 @@ if ! compgen -G ".tools/godot-*/editor_data/export_templates/*/.installed" >/dev
 	echo ">> remote: first run here, bootstrapping the toolchain" >&2
 	make bootstrap >&2 || exit \$?
 fi
+# A manifest of what the copy-back is about to take, written by the machine that WROTE the files. The
+# exclusions match the copy-back rsync's exactly, or the check would report files that were never sent.
+write_manifest() {
+	[ -d build ] || return 0
+	find build -type f ! -path 'build/web/*' ! -path 'build/server/*' \
+		! -name '*.pck' ! -name '*.wasm' ! -name '.copyback.sha256' -print0 2>/dev/null \
+		| xargs -0 -r sha256sum > build/.copyback.sha256 2>/dev/null || true
+}
 if [ -n "\$TANK_SQUAD_QUIET" ] && [ -f tools/quiet_window.sh ]; then
 	export TANK_SQUAD_EXCLUSIVE=1
 	mkdir -p build
@@ -193,6 +202,7 @@ if [ -n "\${watcher:-}" ]; then
 	# exactly the case worth shouting about, because nothing else in the output would say so.
 	bash tools/quiet_window.sh verdict build/quiet-window.tsv || true
 fi
+write_manifest
 exit \$make_status
 EOF
 
@@ -211,6 +221,20 @@ if [ $copy_status -ne 0 ]; then
 	echo "$copy_log" | tail -3 >&2
 	df -h "$repo_root" | tail -1 >&2
 fi
+# ---- Did the bytes survive the trip? -----------------------------------------------------------
+# nav's p7-pit.jsonl came back from builder0 with ONE byte changed in 273,578 lines, and the file alone
+# cannot say whether that happened in the box's memory, on its disk, in the transfer, or here. This narrows
+# it to "the transfer, or not", which is the only part we can cheaply learn -- and the next flip gets
+# located instead of argued about. The check is on the files, not on the format: a flip in a digit reads as
+# a perfectly good number, so the reader can never be the place this is caught.
+verify_status=0
+if [ "${REMOTE_VERIFY:-1}" != 0 ] && [ "$copy_status" -eq 0 ] && [ -x "$repo_root/tools/copyback_verify.sh" ]; then
+	"$repo_root/tools/copyback_verify.sh" "$repo_root" "$repo_root/build/.copyback.sha256" || verify_status=$?
+	# A missing manifest (exit 3) is reported and does not fail the command: an older checkout on the box
+	# writes none, and refusing every run over that would be worse than the problem. A MISMATCH (5) does.
+	[ "$verify_status" -eq 3 ] && verify_status=0
+fi
+
 # The copy-back is done, so the directory is genuinely free now.
 run_guard release >/dev/null 2>&1 || true
 echo ">> remote: make $* exited $status (build/ copied back$([ "$copy_status" -ne 0 ] && echo ": FAILED"))" >&2
@@ -220,5 +244,11 @@ echo ">> remote: make $* exited $status (build/ copied back$([ "$copy_status" -n
 if [ "$status" -eq 0 ] && [ "$copy_status" -ne 0 ]; then
 	echo ">> remote: treating that as a failure: nothing local proves what the run did" >&2
 	exit 4
+fi
+# Corruption outranks a green run for the same reason: what is local is not what the run produced, and a
+# green exit beside silently altered bytes is the worst shape this can take.
+if [ "$verify_status" -ne 0 ]; then
+	echo ">> remote: treating that as a failure: build/ here is not what the box wrote" >&2
+	exit 5
 fi
 exit "$status"
