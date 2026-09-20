@@ -2857,3 +2857,11 @@ The kickoff prompt is one line; this section is the rest.
     wants a known state merges the tag, one that wants the newest merges HEAD and accepts the risk. And beside
     lesson 157: the repaired lint's first real catch on the gate was a parse error in a file nobody on the
     reporting stream had touched, which is exactly what a gate is for.
+191. **A test that asserts something about its environment it never checked is green where it is easy and red on
+    the machine it exists to protect.** Round 9's shell suites, three times in one afternoon: they assumed no slot
+    variable was set (inside `check` one always is), assumed an idle box (fixed sleeps against a builder running four
+    shards), and assumed a `.git` directory (the launch rsync excludes it). Each was green on the laptop and red on
+    builder0, and each surfaced only because the suites were in `check`. Rule: a test names its environmental
+    assumptions and checks them first, or degrades with a sentence (`NOT AVAILABLE: <path> is not a git repository`)
+    rather than failing fifteen assertions for one absent thing; and a tool that must run on two machines runs its
+    tests on both before it ships.
