@@ -362,8 +362,8 @@ no survivors, then launch.
 ## ⚠ A process-pattern kill is machine-wide: seven checkouts run the same commands (metrics, 2026-09-20 04:39)
 
 metrics meant to stop one orphaned run of its own and ran a kill loop over `ps | grep -E '[r]emote.sh check$'`.
-Seven processes matched; two were its own. It killed the local wrappers of control's, combat's and squad's remote
-checks — the runs kept executing on builder0 (lesson 15) but their `>> remote: make check exited <N>` lines and
+Seven processes matched; two were its own. It killed the local wrappers of control's and squad's remote checks (combat's was reported dead and was not — a
+read-only name match misled the report the same way) — the runs kept executing on builder0 (lesson 15) but their `>> remote: make check exited <N>` lines and
 copy-backs were gone. **Every kill filters by `readlink /proc/<pid>/cwd` against the worktree first and prints what it
 is about to kill** (trip-up 79, now from the other side). Recovery when it happens to you: wait for your folder to leave
 `/tmp/tank_squad_slots/*.owner` on the box, read the verdict from `~/tank_squad/godot-<stream>/build/check/*.log` there,
