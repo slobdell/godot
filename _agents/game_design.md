@@ -1722,3 +1722,29 @@ own copy of the readable summary is `~/Desktop/final.md`.
    sample the hull's **centre point**; the step function is an artefact of the query, not of the arena. There is an
    O(1) exact answer that costs the same at 2.8 m and 14 m. **Keep the rig at 14 m because it looks right, and fix the
    query** (catalogue A3).
+
+### Ruling: the War Rig stays at 14 m (2026-09-19)
+
+The lead, closing the question the orchestrator should never have asked him:
+
+> *"Yes the war rig stays at 14m, we can revisit that later if it's still an issue."*
+
+**So the 12-vs-14 decision is closed and the fix is in the query, not the vehicle.** `Arena`'s cover table stands as
+measured — yard 0.99 up to 12.19 m and **0.00** at 12.5 m, pit 0.46 → 0.00, terminus 0.91 at any length — but that
+cliff is an artefact of sampling the hull's **centre point**, not of the arena's geometry. Catalogue row **A3**
+replaces it with the fraction of hull length occluded, evaluated by differencing directional summed-area tables: two
+array lookups and a subtraction, **identical cost at 2.8 m and at 14.0 m**.
+
+Consequences now settled, so nobody re-opens them:
+- **arena owns the tables, combat owns the consumer** (`research_catalog.md` A3).
+- **The standing note in `arenas.md` not to add a long prop to yard or pit still holds**, and holds *more* now: the
+  rig is staying long and the fix is elsewhere.
+- **`make arena-report`'s WATCH line — *"NOTHING on this map can hide the longest hull"* — must be revised in the
+  same commit as the tables.** It is true under the point-sample definition and will be false under A3, and a WATCH
+  line that is confidently wrong is worse than silence (arena's warning, and it is right).
+- arena's step function at 12.19 m becomes **the positive control** for A3: if the cliff survives the change, the
+  treatment did not engage. Lesson 147 is why that matters.
+- **Still unresolved and not blocked by this:** `gangs vs law` went **9/20 → 0/20** with the 14 m rig, p ≈ 2×10⁻⁶,
+  and the mechanism is unknown. Shuffling is evidenced against (the rig converts **0.95** of path to net displacement,
+  the *best* of any gang type; the gang **scout** is the shuffler at 0.68). Splash is evidenced against (indirect
+  kills 8.4% → 3.7%). *"Bigger target"* survives by elimination, which is not evidence.

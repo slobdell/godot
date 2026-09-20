@@ -2340,3 +2340,21 @@ The kickoff prompt is one line; this section is the rest.
    mostly ONE single-threaded Godot grinding ticks for 30-50 minutes.** More slots shortens the QUEUE; only
    parallelism *inside* a check shortens the RUN. Recorded in the script so the next person asking "why is it idle"
    gets the answer instead of the number.
+
+   **The change invalidated a class of existing measurements, and nav said so instead of letting them stand** (nav,
+   `0c839426`, written into `verification.md`). Raising concurrency is not metric-neutral, and the split is exact:
+   - **Safe across the change:** anything that is a share or ratio computed *inside* one run — `oscillating_share`,
+     `no_progress_share`, `net_over_path`, the order-bucket shares, "N of M arrived". **Numerator and denominator
+     slow together.**
+   - **Not safe:** `t50_s` / `t90_s` / `t100_s`, crossing times, "arrived by N seconds", any per-tick cost. Every
+     timing figure in nav's round-8 brief was taken at 2 slots and **is not comparable across the change.**
+   - **The subtlety that makes this bite quietly, and it is nav's:** we run a **fixed tick**, so *sim*-seconds are
+     immune — a saturated run reports the same sim time. What inflates is **wall-clock**, and only the things that
+     sample it inside a run inherit that: profiling, timeouts, and any budget expressed in real seconds. **So nothing
+     looks obviously wrong.** It is also why three garage liveness timeouts had to go from 60/120 s to 600 s.
+   - And control's measurement bounds the workaround: **a reference-workload ratio corrects for "busy machine" but
+     NOT for "every thread busy"** — under 7 burners on 8 threads the order path inflated ~14× while the reference
+     only doubled. **A ratio is not a load-proof instrument**, and at 4 slots that caveat is live rather than
+     theoretical.
+   **Before raising a shared capacity knob, ask which recorded numbers it retires.** This one retired every
+   wall-clock figure in one stream's brief, and the only reason we know is that the stream volunteered it.

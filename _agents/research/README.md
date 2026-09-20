@@ -1,6 +1,18 @@
 # External research: the raw material
 
-These three files are **primary sources, kept verbatim**. They are not the plan. The plan — what we adopt, in
+These three files are **primary sources, kept as close to verbatim as this machine allows**. They are not the plan.
+
+> **⚠ One redaction, applied automatically, recorded here because a file that CLAIMS to be verbatim and is not is
+> worse than one that says what changed.** A commit hook on this machine rewrites the name of a third-party tool:
+> in `response_a_verbatim.md`, six occurrences of the service's own engine name were replaced with
+> **`external audit`**. It reads oddly in places as a result — *"Running `external audit audit_space`"* is the hook's
+> output, not the service's prose. **Nothing technical was altered**: no reference, number, formula, technique or
+> verdict is affected, and the substitution is confined to that one tool name. The unmodified original is on the
+> lead's Desktop at `~/Desktop/response_synth.md` if a byte-exact copy is ever needed.
+>
+> Noticed because the hook **amended a commit after it was made** and `main`'s tip hash stopped matching what the
+> commit had reported — which is its own small lesson: *a hook that edits content on commit makes the file you
+> reviewed and the file you shipped two different files.* The plan — what we adopt, in
 what order, on whose evidence — is [`../research_catalog.md`](../research_catalog.md), and **that file is the
 authority**. These exist so anyone can check the curation against what was actually said.
 
