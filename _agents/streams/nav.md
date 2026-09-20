@@ -417,7 +417,24 @@ frames at pitch 21°, 49 m, FOV 35, and a human. *"For anything subjective, a hu
 A4's headroom. An instrument at the end of its range is indistinguishable from one that is not connected, and nav
 has not yet established headroom for this one across four maps (only on yard, where it was 403).
 
-### MORNING: main is red on a foundry spawn-clearance test — nav's window changes are CLEARED, from the code
+### ~~MORNING: main red on a foundry spawn-clearance test~~ — **RESOLVED: the sharding schedule, not the code**
+
+**Cause (scale, 2026-09-21):** the test passes alone and fails only when `test_arena_layouts` — which stands up
+scrapyard — runs before it **in the same sharded process**. Lesson 36's shape with physics bodies: state leaking
+between tests in one process. **The schedule changed, not the code.** scale owns the fix.
+
+**scale's probe also settled the question directly: worst tick-one displacement is 1.8 cm across 90 units** —
+settling, not motion. So no movement-layer change of anyone's was nudging anything, and the accounting below was
+the right answer for the right reason rather than by luck. **Kept, not deleted, because the method is reusable:**
+this is how a stream clears its own files from a red test without a bisection and without a single run.
+
+**The reusable part:** when asked "which of your changes could have done this", answer by **enumerating the window
+and reading every non-comment line**, then look for the cheapest discriminator rather than bisecting. Here the
+discriminator nav proposed — *print the spawn position beside the current one; if they are equal, no motion
+occurred and the whole movement layer is eliminated at once* — is what scale's probe measured, and 1.8 cm is that
+answer.
+
+
 
 `main` at `b008a277` fails `test_match_spawns_and_results::test_a_full_faction_army_a_side_spawns_clear_of_itself`
 (foundry, three units inside a `hull_size + 1.0 m` probe, one physics frame after `load_doctrine` places the army).
