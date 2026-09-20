@@ -1188,6 +1188,35 @@ dragged facing; a follower's `follow` carries none; both crews are ordered (`mov
 can pass on an empty list); and with no facing on the task NO order carries one, which stops this fix from quietly
 becoming "a facing on every order".
 
+### Every corridor width in this brief is a NAVMESH width, and after CP2 that is not drivable width for heavy hulls
+
+nav's post-CP2 measurement: **14 of 21 hulls have an avoidance radius above the 2.0 m navmesh bake, `gang_tank` at
+4.58 m.** `SlotGround.corridor_width` measures the navmesh (`NavigationServer3D.map_get_closest_point` through
+`standable`), so every number it reports is walkable width **for a 2.0 m agent** — already inset 2.0 m per side and
+inset by the wrong amount for two thirds of the roster.
+
+**What that does to the maze number in this brief.** The probe read the maze's tight gap as **5.0 m** of corridor, and
+that agreed with the authored `MAZE_TIGHT_GAP` of 7.00 m through `7.0 - 2 x 2.0 = 5.0`. That agreement stands and the
+mutual positive control with scale stands with it — **we measured the same mesh quantity and got the same answer.** But
+for a `gang_tank` the mesh is accounting for 2.0 m of clearance where the hull wants 4.58 m, so it needs
+`(4.58 - 2.0) x 2 = 5.16 m` MORE than the mesh has reserved. A 5.0 m mesh corridor is not a tight fit for that vehicle;
+**it is not a fit at all**, while every instrument here says it is clear.
+
+**So the note to attach to A8, and it strengthens the case already in round 10's list.** A8 deformed a formation as a
+function of `corridor_m`, and `corridor_m` overstates drivable space for the heaviest hulls by up to 5 m. A8 already
+measured worse than off for a reason nav and I reached independently — `Movement` has no notion of a formation — and
+this is a second, arithmetic reason its input was never trustworthy for the classes that most need a defile drill.
+**When A8 comes back, read nav's per-hull shortfall rather than the mesh width**, or squeeze the one vehicle that
+cannot fit into a gap the probe calls open.
+
+**It does NOT touch the tube's five-seed gate.** That gate counts re-decides, held share and GREEN losses in a yard
+fight; no corridor enters it. nav's instruction is a confounder rule rather than a change: **if the gate fails on the
+heavy classes, cite the per-hull shortfall before blaming the tube**, because a heavy hull refused or re-routed by a
+corridor it cannot fit is a routing outcome that would land in the loss column looking like a thinking-cadence problem.
+
+**And it does not touch my A6 corridor field**, which forwards `Movement.state(tank).get("corridor")` untouched and
+asserts nothing about clearance — the shortfall is A6's to interpret, not the channel's to correct.
+
 ### Owed to nav, recorded and deliberately NOT done tonight
 
 **1. `scenario_motion.gd:57` punishes a faster fight for being faster.** The assertion is
