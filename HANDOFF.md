@@ -98,7 +98,7 @@ and the `main` check that would have covered CP2 and its baseline. **So:**
 
 ### What each stream owes (each is at the head of its brief's Status, in your terms)
 
-- **scale:** a green check and the swap-bases fairness control for CP2; the factions re-render; feel's two Terminus
+- **scale:** the swap-bases fairness control (two commands at the top of its Status, labelled by population; died with builder0 at 08:27); **the Condemned artillery's collider was measured in its DEPLOYED pose** (outriggers down, 4.74 m wide) while it drives stowed at 2.90 m, so shells stop in empty air beside it: feel stows the legs in the measurement, scale re-derives the box (length unchanged), **and that is one more baseline move for you to record**; the "roster's widest hull" of the night was that pose artefact. Then the factions re-render; feel's two Terminus
   floodlights (half the lamps of pit, eight lit towers inside the fight); the stretch 9/20 → 0/20 re-measure.
 - **combat:** **the hull-rotation plant defect**: a hull's position is collision-resolved and its rotation is not, so
   hulls rotate through scenery; this is your round-8 "semi yawing in place", and CP2 makes it worse. Spec agreed with
