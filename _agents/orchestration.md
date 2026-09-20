@@ -2716,3 +2716,11 @@ The kickoff prompt is one line; this section is the rest.
     two streams implementing one ruling in two places produced one arm that could not act (squad's layout discarded
     its own y) and one that acted for the wrong reason: **one constant, one home, one arm that exercises it, before
     anyone reads a number off it.**
+182. **An `&&` chain of test runs reports the first failure and silence for the rest, and silence was read as green.**
+    Round 9: feel ran `make test FILTER=unit_scale && … city_block && … trailer && … airship`; `unit_scale` failed on
+    the artillery handover, the chain stopped, and the report said "the other three files passed" — `grep -c
+    city_block` on that log returns 0. The city-block test had never run and could not have passed as written
+    (`push_warning` on the path it exercises is an engine error to `ErrorCollector`), and it merged to `main` on
+    that sentence. Rule: **a claim that a file passed names that file's own `N passed, M failed` line from the log**,
+    and batches of filtered runs use `;` with a per-file summary, never `&&`. Same family as lesson 163 (read the
+    result line, not the exit code, not the absence of a complaint).
