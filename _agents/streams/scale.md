@@ -336,6 +336,44 @@ is now 7.54 m. Resolved by combining — feel's note explaining the deferral, my
 **The conflict rule assumes both sides were trying to change the file; it does not cover an owner who has
 explicitly deferred.**
 
+### The CP2 check, and four consequences it found in other streams' tests
+
+**Candidate `7542df28`.** The first full check on the merged tree (`e7ebb372`) returned `exited 2`,
+`1392 passed, 3 failed`. **All three were real CP2 consequences in other streams' files, none was a flake, and
+all three are fixed:**
+
+| test | what CP2 did to it | fix |
+|---|---|---|
+| `test_ai_player_orders::test_five_squads_ordered_in_quick_succession` | the grid moved where a *respawning enemy* came back, it killed a unit, and a respawned unit has no order | excludes destroyed units, as its sibling already did |
+| `test_units_roster::test_v1_armies_are_rejected_with_reasons` | `SPAWN_SLOTS` 52 → 57 makes a full army 12 squads, so a 13th trips `MAX_SQUADS` before the spawn cap | the extra vehicle goes into a squad with room |
+| `test_assets_pipeline::test_committed_generated_themes_meet_their_contracts` | feel made the contract read `Units.PROFILES`; the boxes then grew 1.7–2.4× and the committed art "filled 48%" | shape check + faction slots contracted against their **own** unit |
+| `test_command_squad_bar::test_contact_pip_when_an_enemy_is_in_sight` | the enemy's 8.62 m hull overlaps a crate, physics shoves it **1.48 m under the floor**, the eye-height ray goes underground | control's: the test picks a spot it can actually see |
+
+**The asset one is the find, and it was not the one anyone was looking for.** feel granted the shape check and
+asked me to *check rather than assume* that all 14 art units would then pass. Measured: **against its own box, 0
+fail; against the Condemned box, 11 of 14 fail.** `AssetContracts.ROLE_UNITS` mapped every faction's art slot to
+the Condemned unit in the same role — a round-3 stand-in whose own comment said *"until factions get catalog
+entries of their own"*, which they have had since round 4. **A stand-in is only wrong when the thing it stands in
+for differs**, and nothing differed while every hull was 2.8–5.0 m long.
+
+**And it is the round's cleanest composition failure: feel's branch was green because it had the old roster, mine
+was green because it had the old contract table. Inertness does not compose, and neither of us could have found
+it alone.**
+
+**The contact pip had a detail worth more than the fix:** at the old 3.60 m hull the enemy already overlapped that
+crate by **5 cm**. CP2 did not move it from clear to blocked — it moved it from an overlap the solver tolerated to
+one the solver resolved by shoving the body through the floor. **A smaller resize, or a different arena, would
+have done it eventually.**
+
+**⚠ The re-check found a bug in T1's sharding, not in CP2.** `SHARD 0/2: 645 passed, 0 failed` and
+`SHARD 1/2: 750 passed, 0 failed` — **1395 tests, 0 failed** — and then
+`test FAILED: 2 of 3 shards reported a summary line`. `mk/core.mk:155` has
+`TEST_SHARDS ?= $(shell ...)`: **`?=` is recursively expanded, so the shell re-runs on every reference** — twice to
+launch, once to verify — and `slot.sh --jobs` reads free memory, which moves. The run launched 2 and compared
+against 3. **Nothing died; the guard fired on itself.** Routed to metrics (their file, one character: `:=`).
+Re-running pinned with `TEST_SHARDS=3`. **Until a wrapper line says `exited 0`, this stream's position is that the
+run is INCONCLUSIVE, not green** — naming the mechanism is not the same as having the line.
+
 ### Where it stands
 
 **Backlog 1, 2, 3, 4 and 5 are complete. Stretch item 6 is not started.** CP2 is unblocked on the look and waits
