@@ -367,6 +367,38 @@ motivation for that row rather than an inherited one.
 `net_over_path` rises and `oscillating_share` falls is pre-registered in the brief (N4) and runs after CP1, read
 through A12.
 
+### ⚠ N3/A1 FINDING: nav's route cadence is NOT where P1's churn comes from — it is ~3 % of re-plans
+
+`nav-fight`, yard, seed 3, 45 s, laptop, one seed, `53f7eb42`. **These are direct counts, not estimates.**
+
+| | A1 ON (`--nav-off=a1`) | A1 OFF |
+|---|---|---|
+| `a1_cadence_due` | 2222 | 1995 |
+| `a1_tube_skips` | **2144** | 0 |
+| `a1_replans` | **2059** | **2041** |
+
+**The tube engaged massively — 2144 of 2222 cadence firings skipped — and total re-plans did not move (+0.9 %).**
+Arithmetic: with A1 on, only **78** cadence firings became re-plans, so ~1981 of 2059 were **events**. With A1 off,
+the cadence contributed about **60** of 2041. **The fixed `REPATH_SECONDS` cadence is worth ~3 % of re-planning in a
+fight.**
+
+**A1's pre-registered falsifier is intra-decision re-plan rate −60 %. It passes in isolation (the unit test bar is
+≤ 40 % of the cadence's, on a clear route) and FAILS in a fight — so A1 does not ship on by default.** Removing the
+cadence is nearly free and nearly pointless, because the cadence was never the driver.
+
+**And that is the useful half, because it relocates P1.** The catalogue's *"70 % of direction churn is re-planning
+inside one unchanged decision"* is **not nav's route cadence**. The re-plans are **events** — overwhelmingly the
+goal moving, because the brain re-issues its goal as the fight moves. So the lever is upstream, exactly where the
+brief predicted it would end up: **`TankBrain.MOTION_REPLAN_TICKS` and the goal-jitter that drives the goal-moved
+test** — squad's file, a request rather than a change. *(`retask_events_per_unit_minute` 20.7 / 17.0 across the arms
+is the same story from the other end.)*
+
+**What these numbers do NOT say.** The two arms' **behaviour** figures (oscillating share, shots, losses) are from
+**two different battles** — same seed, but the trees diverge and `green_lost` 3 vs 2 with shots 302/265 vs 331/342
+proves it. **Nothing about cost or benefit is read from them**, which is the *"a comparison of two runs that were
+different fights"* mistake round 5 paid for. The re-plan counts above are direct per-tick counters and are immune to
+that; the behaviour numbers are not, and are reported only to show the arms diverged.
+
 ### N4 GROUNDWORK, measured: 43% of off-mesh gates have NO straight run-in at any length — that is A4's case
 
 Laptop, `57b8e89b`, `nav-fight` yard seed 3, 45 s, default path (deterministic — `offered` and `aimed` reproduce the
