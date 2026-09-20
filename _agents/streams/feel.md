@@ -195,8 +195,7 @@ rest of the round runs behind it.
 - **X6 — the two smoke targets: ESTABLISHED, and the premise is wrong.** Both are ALREADY differential; see below.
 - **X5 — the lead's poses: VERIFIED CLEAN.** Both round-8 fixes held through every merge since. See below.
 - **X4 — the every-unit box-fill test.** Blocked on CP2 by design.
-- **X7 — the airship: BUILT** (`567a8007`); its orbit numbers are provisional until `make airship-look` says
-  whether the lead can ever actually see it.
+- **X7 — the airship: BUILT, MEASURED, and MOVED because the measurement said he could never see it.** See below.
 
 ### ✅ GREEN, and the S2 guarantee delivered: `7a706911` (builder0) — with one honest caveat about the artefacts
 
@@ -270,6 +269,43 @@ bug:** at his pose the top of the frame sits at `pitch - FOV/2` = 21 - 17.5 = **
 in the sky can be drawn there at any altitude or distance. If the sweep confirms it, *"sometimes visible in the
 field of view"* is **false at his camera and true only at the bottom of his tilt range** (he can reach 8°), and the
 airship's `ORBIT_RADIUS` / `ORBIT_ALTITUDE` are provisional until he rules.
+
+### X7 — the sweep said 0.0% everywhere, and that changed the design (builder0, `e82ecd1a`)
+
+**Before — radius 118 m, altitude 74 m: `visible_pct 0.0` over 768 samples, at EVERY reachable tilt.** Not rare.
+Never. The tool now prints why, which is one line of geometry: the frame's top edge sits at `FOV/2 - pitch` degrees
+above the horizon.
+
+| tilt | frame top | airship elevation | altitude that would have fitted |
+|---|---|---|---|
+| **21° (his)** | **−3.5°** — horizon off the top | 15.0–65.3° | **impossible at any altitude** |
+| 8° | +9.5° | 17.7–68.9° | below 42 m |
+| 12° | +5.5° | 16.9–67.8° | below 30 m |
+| 17° | +0.5° | 15.9–66.5° | below 16 m |
+
+**At his pose the sky is not on screen at all.** And at his lowest reachable tilt an airship over the arena would
+have had to fly below 42 m — on a map whose city blocks are 40 m tall. That is not hovering, it is landing.
+
+**After — radius 560 m, altitude 56 m (`CitySkyline.RADIUS` is 640 m, `RtsCamera` draws to 1200 m):**
+
+| tilt | seen | widest on screen |
+|---|---|---|
+| 8° | **12.5%** | **105 px** |
+| 12° | **12.5%** | **108 px** |
+| 17° and above | 0.0% | — |
+| **21° (his default)** | **0.0%** | — |
+
+**Looked at, not just counted:** `build/airship-look/airship_widest.png` has it top-left, silhouetted against the
+lit city, its ad screen showing the arena channel, half out of frame — which is the lead's phrase almost exactly.
+The three frames were checked to have **three different md5s** before anything was read into them, because a stale
+X cookie makes Godot fall back to Wayland and silently repeat the first capture (`remote_builds.md`), and for a
+sweep whose whole output is frames that should differ, that failure is indistinguishable from a result.
+
+**WHAT HE HAS TO RULE ON, and I am not pretending otherwise: he will not see it at his default 21°.** It is in
+frame only when he tilts down to 8–12°, and it is over the **city**, not over the arena. That trades his literal
+words for his own reference — Blade Runner's airship is over a city. **Both numbers are constants; overruling this
+is one line.** The alternative, if he wants it over the arena, is that it becomes a presentation element (title,
+results, replay) where the camera can look up.
 
 ### X5 — the void and the sky leak: both still fixed (`make shell-playtest`, builder0, merged tree)
 
