@@ -721,6 +721,23 @@ looked like when it lied.
   the 21 `hull_size` values from the table. Everything else re-derives.
 - **The look** (backlog item 2) is his, and CP2 waits for the frame to be *sent*, not approved.
 
+### Owed after the CP2 hash (not started)
+
+**feel's floodlight request, diagnosed with counts, and it is in this stream's paths** (`arenas/terminus.json` via
+`tools/make_arenas.py`). **Its own commit AFTER CP2**, because it changes a rotation map.
+
+- **The Terminus is the only arena with `block` props** — eight 40 m towers *inside* the fight, at r = 40 and
+  r = 69 — and it carries **half pit's floodlights at the same arena size**, both sets out at **r = 128 on the
+  centre line**. So the venue got brighter and the floor did not.
+- That asymmetry is **the whole of show's 22-of-30 "band brighter than ring" result.**
+- **The fix is two more floodlights AT THE STREET INTERSECTIONS among the blocks, where the fight is** — not more
+  at the perimeter, which is what made the ring bright in the first place.
+- **feel deliberately did not compensate in its own materials**: one owner of arena brightness, and it is the
+  layout. That is the right call and it is why this lands here rather than there.
+- **Measure with show's frame gate (ring vs band, with a no-show arm) before and after.** If the light bodies turn
+  out to be geometry rather than pure lighting, it needs the swap-bases fairness control too; if they are not, it
+  needs none.
+
 ### Requests to other streams
 
 - **combat** — reviews the `units.gd` / `match.gd` / `tank.gd` diff at merge (already briefed, no objection).
