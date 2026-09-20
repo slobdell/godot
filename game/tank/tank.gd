@@ -494,7 +494,7 @@ func _drive(cmd: TankCommand, delta: float) -> void:
 const YAW_FIT_FRACTIONS := [1.0, 0.6, 0.3]
 ## A turn may push the hull this much further into geometry before it is cut short: below it the difference is the
 ## solver's own recovery margin rather than the turn, and treating that as "deeper" would refuse harmless yaw.
-const PENETRATION_SLACK_M := 0.02
+const PENETRATION_SLACK_M := 0.005
 ## How often a yaw was TESTED against the world, and how often it was actually cut short. A hull that cannot turn and
 ## does not say so breaks nav's N1 guarantee ("it never stands still silently"), and a hull frozen by a spawn overlap
 ## would otherwise be indistinguishable from a refusal that is doing its job (lesson 147).
@@ -502,17 +502,23 @@ static var refusals_offered := 0
 static var refusals_applied := 0
 ## Consecutive ticks this hull's yaw has been refused outright: a permanent refusal is a stuck unit, not a fix.
 var yaw_refused_ticks := 0
-## OFF BY DEFAULT, and the reason is a measurement rather than caution. The constraint below does what it says --
-## it costs nothing in the open (71.2 deg turned in 1 s, 0 refusals applied) and it never freezes a hull -- but it
-## does NOT stop nav's wedged semi: `test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided` still
-## passes, with numbers BIT-IDENTICAL whether this runs or not (19.71 m of path, 28.5 deg of yaw, 3.12 m net drift).
+## OFF BY DEFAULT because turning it on moves the sim baseline and turns nav's `test_a_wedged_semi_keeps_yawing_
+## because_rotation_is_never_collided` red -- that test asserts the CURRENT defect, so its going red is the signal
+## the defect is gone, and flipping it is the orchestrator's to sequence, not this file's.
 ##
-## Why, and it is a real tension rather than a bug: `move_and_slide` DEPENETRATES the hull every tick, so at the top
-## of the next tick it is legal where it stands and the next small rotation adds no measurable penetration. The yaw
-## is illegal CUMULATIVELY (28.5 deg needs 9.6 m of a 4.8 m corridor) and legal at every single increment. A
-## per-tick test of the increment cannot see that. Testing the absolute pose instead is the version that froze a
-## wedged rig solid for 30 ticks -- so the two obvious forms fail in opposite directions and the answer is neither.
-## Landed off, with both measurements, rather than shipped on a claim it does not support.
+## IT WORKS, and the number that matters is PENETRATION_SLACK_M rather than anything structural. Measured, nav's
+## wedged-semi corridor (4.8 m wide, a 14 m rig):
+##     slack 0.020  ->  28.5 deg of yaw, 9.6 m of footprint   -- BLIND: bit-identical to no constraint at all
+##     slack 0.005  ->  11.6 deg,        6.1 m                -- 59% less illegal yaw, no freeze, no open-ground cost
+##     slack 0.000  ->   6.2 deg,        4.8 m                -- exactly fits, but freezes a wedged rig (30/30 refusals)
+## The first version of this comment claimed the per-tick form could not work. That was wrong: the relative
+## predicate was never given a chance, because a tolerance constant chosen to ignore the solver's recovery margin
+## (0.02 m) was LARGER than the whole per-tick signal. A 0.119 deg/tick yaw moves a 14 m hull's tip 0.0147 m, so
+## every increment passed. A threshold has to be measured against the quantity it must discriminate.
+##
+## At 0.005 the residue is a hull with no non-worsening yaw available, which freezes VISIBLY (`yaw_refused_ticks`)
+## rather than silently -- and that is the state nav's `face` recovery exists for. It fired for the first time in
+## this configuration (`giveups 1`), having been inert all round.
 static var yaw_fit_enabled := false
 
 
