@@ -51,6 +51,29 @@ func _nudged(members: Array, by: Vector3) -> Array:
 	return moved
 
 
+## Every member nudged INDEPENDENTLY, up to `amount` metres in any direction.
+##
+## THIS IS THE PERTURBATION, and the rigid `_nudged` above is not. Moving every member by one shared vector slides the
+## whole element relative to the slots and leaves the members' geometry relative to each other exactly as it was, so
+## the assignment it produces is very nearly forced to be the old one. That version of this test reported
+## "0 of 384 assignments changed" and I shipped A10 on it; `make check` then failed four tests that perturb members
+## independently, two of them in a stream that is not mine. What a vehicle actually does is drift on its own -- the
+## measured CPU station-keeping error is 9.3 m, per unit, in its own direction -- and that is what has to not re-seat
+## anybody. Lesson 164's third coat: a "0 of N" is evidence only once the instrument has been shown able to produce a
+## non-zero at all.
+func _jittered(members: Array, seed_value: int, amount: float) -> Array:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value * 7919 + 13
+	var moved: Array = []
+	for member: Dictionary in members:
+		var copy := (member as Dictionary).duplicate()
+		var at: Vector3 = member["position"]
+		moved.append(copy)
+		copy["position"] = at + Vector3(rng.randf_range(-amount, amount), 0.0,
+				rng.randf_range(-amount, amount))
+	return moved
+
+
 func test_a_small_perturbation_does_not_re_seat_anybody() -> void:
 	# The measurement A10 pre-registered: nudge every member half a metre, re-seat, count the changes. A seating that
 	# re-shuffles for half a metre re-issues every order behind it, and every new order resets what a brain was doing
@@ -62,7 +85,7 @@ func test_a_small_perturbation_does_not_re_seat_anybody() -> void:
 			for formation in ["wedge", "line", "column", "vee"]:
 				var members := _scattered(count, seed_value + count)
 				var first := _seat(members, formation)
-				var again := _seat(_nudged(members, Vector3(NUDGE_M, 0.0, 0.0)), formation, first)
+				var again := _seat(_jittered(members, seed_value + count, NUDGE_M), formation, first)
 				for unit_name: String in first:
 					total += 1
 					if int(again[unit_name]) != int(first[unit_name]):
@@ -171,3 +194,154 @@ func test_seating_is_deterministic_and_independent_of_member_order() -> void:
 			assert_eq(int(backward[unit_name]), int(forward[unit_name]),
 					"seed %d: %s is seated the same whichever order the members were listed in" \
 					% [seed_value, unit_name])
+
+
+## A10's solver against the reference, on matrices shaped like the ones `seat()` actually builds.
+##
+## This is the test that would have caught what shipped. `seat()` squares its cost matrix to `max(slots, members)`, and
+## a shape routinely has more slots than members (`test_formation_slots::test_the_contract_shape` asserts exactly
+## that), so the matrix carries padded MEMBER rows. Those rows were costed at 0.0 for **every** slot, real ones
+## included -- under the Hungarian reference an indifferent row is harmless, because it cannot change the minimum. Under
+## an auction it is poison: a bidder whose best and second-best are equal raises the price by exactly
+## `AUCTION_EPSILON`, so an indifferent row crawls, displacing real members from real slots one epsilon at a time until
+## the bid cap trips and the deterministic fallback hands back whatever is left. The failure is invisible in small
+## exact-fit cases and certain in big ones, which is why control's eight-vehicle group tests went red and none of mine
+## did.
+func test_the_auction_finds_what_the_reference_solver_finds() -> void:
+	var worse := 0
+	var cases := 0
+	var gap_total := 0.0
+	for seed_value in SEEDS:
+		for members in [3, 5, 8]:
+			for slots in [members, members + 1, members + 3]:
+				cases += 1
+				var built := _matrix(members, slots, seed_value)
+				var cost: Array = built["cost"]
+				var auction := TacticsFormation._auction(built["utility"])
+				var reference := TacticsFormation._hungarian(cost)
+				var mine := _total(cost, auction)
+				var theirs := _total(cost, reference)
+				gap_total += mine - theirs
+				# The auction is an epsilon-approximation, so it may be worse by at most n * epsilon of utility.
+				var slack := float(slots) * float(TacticsFormation.AUCTION_EPSILON) / float(TacticsFormation.UTILITY_SCALE)
+				if mine > theirs + slack + 0.001:
+					worse += 1
+	print("MEASURE seating_solver %d of %d matrices where the auction lost to the reference, total excess %.2f m" \
+			% [worse, cases, gap_total])
+	assert_eq(worse, 0, "the auction returned a worse assignment than the reference on %d of %d matrices" \
+			% [worse, cases])
+
+
+## A square cost matrix with `members` real rows and `slots` real columns, padded exactly as `seat()` pads it, plus the
+## integer utilities the auction is given. Distances stand in for driving cost; the structure is what matters.
+func _matrix(members: int, slots: int, seed_value: int) -> Dictionary:
+	var n := maxi(members, slots)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value * 104729 + members * 31 + slots
+	var at: Array[Vector2] = []
+	for i in members:
+		at.append(Vector2(rng.randf_range(-40.0, 40.0), rng.randf_range(-40.0, 40.0)))
+	var slot_at: Array[Vector2] = []
+	for j in slots:
+		slot_at.append(Vector2(rng.randf_range(-20.0, 20.0), rng.randf_range(-20.0, 20.0)))
+	var cost: Array = []
+	var utility: Array = []
+	for i in n:
+		var row := PackedFloat64Array()
+		row.resize(n)
+		var util := PackedInt64Array()
+		util.resize(n)
+		for j in n:
+			var value: float
+			if i >= members:
+				# A padded member, costed EXACTLY as `seat()` costs it -- indifferent across every slot, real ones
+				# included. Writing what it ought to be here instead is how my first version of this test passed
+				# while the bug stood: it compared the two solvers on the matrix I meant to build, not the one the
+				# game builds. An instrument that encodes the fix cannot see the defect.
+				value = 0.0
+			elif j >= slots:
+				value = TacticsFormation._PINNED
+			else:
+				value = at[i].distance_to(slot_at[j])
+			row[j] = value
+			util[j] = int(round(-value * TacticsFormation.UTILITY_SCALE))
+		cost.append(row)
+		utility.append(util)
+	return {"cost": cost, "utility": utility}
+
+
+## The true cost of an assignment, counting only the real members' real slots -- padding is bookkeeping, not driving.
+func _total(cost: Array, seating: PackedInt32Array) -> float:
+	var sum := 0.0
+	for i in seating.size():
+		var value: float = (cost[i] as PackedFloat64Array)[seating[i]]
+		if value < TacticsFormation._PINNED:
+			sum += value
+	return sum
+
+
+## `seat()` itself against a brute-force optimum, on the real path, with more slots than members.
+##
+## Uniform vehicles, so every tier term is zero and the cost is pure driving distance -- which makes the optimum
+## enumerable and removes any need for this test to restate the cost function. Restating it is what went wrong in the
+## solver test above, twice over. Small counts only, because this is n! by construction.
+func test_a_shape_with_room_to_spare_still_seats_everybody_optimally() -> void:
+	var worse := 0
+	var cases := 0
+	var excess := 0.0
+	for seed_value in SEEDS:
+		for count in [3, 4, 5]:
+			for room in [0, 1, 3]:
+				cases += 1
+				var members := _scattered(count, seed_value + count)
+				var shape := TacticsFormation.centered(
+						TacticsFormation.group_offsets("line", count + room, 14.0))
+				var seating := TacticsFormation.seat(members, shape, Vector3.ZERO, Vector3.FORWARD,
+						{"policy": "exposure", "spacing": 14.0})
+				var mine := 0.0
+				for member: Dictionary in members:
+					mine += _drive(member, shape[int(seating[String(member["name"])])])
+				var best := _brute_force(members, shape)
+				excess += mine - best
+				# The auction is an epsilon-approximation BY DESIGN -- its own doc-comment promises within
+				# n x AUCTION_EPSILON of optimal, "a quarter of a metre of driving for a five-vehicle element" -- so
+				# the property to assert is that bound, not exact optimality. Demanding exact optimality here reported
+				# 1 case of 72 at 0.05 m, which is one epsilon, and that is the instrument disagreeing with the
+				# contract rather than a defect in the seating.
+				var slack := float(shape.size()) * float(TacticsFormation.AUCTION_EPSILON) \
+						/ float(TacticsFormation.UTILITY_SCALE)
+				if mine > best + slack + 0.001:
+					worse += 1
+	print("MEASURE seating_room %d of %d cases seated worse than optimal, total excess driving %.2f m" \
+			% [worse, cases, excess])
+	assert_eq(worse, 0, "%d of %d seatings drove further than necessary when the shape had spare slots" \
+			% [worse, cases])
+
+
+func _drive(member: Dictionary, slot: Vector2) -> float:
+	var world := TacticsFormation.to_world(Vector3.ZERO, Vector3.FORWARD, slot)
+	var at: Vector3 = member["position"]
+	return Vector2(at.x - world.x, at.z - world.z).length()
+
+
+## The least total driving over every way of putting `members` into distinct slots of `shape`.
+func _brute_force(members: Array, shape: Array[Vector2]) -> float:
+	var best := INF
+	var chosen: Array[int] = []
+	best = _search(members, shape, 0, chosen, 0.0, best)
+	return best
+
+
+func _search(members: Array, shape: Array[Vector2], index: int, taken: Array[int], sum: float,
+		best: float) -> float:
+	if sum >= best:
+		return best
+	if index >= members.size():
+		return sum
+	for j in shape.size():
+		if taken.has(j):
+			continue
+		taken.append(j)
+		best = _search(members, shape, index + 1, taken, sum + _drive(members[index], shape[j]), best)
+		taken.pop_back()
+	return best

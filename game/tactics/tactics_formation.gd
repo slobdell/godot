@@ -675,7 +675,23 @@ const AUCTION_BIDS_PER_UNIT := 64
 ## It is bounded the other way by the thing it must NOT resist: a formation transition, which moves slots by tens of
 ## metres AND clears the incumbency outright (`ElementPlan._previous_seating` returns {} when the shape or the count
 ## changes), so no bonus of any size can make a shape change sticky.
-const INCUMBENT_SPACINGS := 1.0
+const INCUMBENT_SPACINGS := 0.5
+## A unit this far (in spacings) from the slot it already holds counts as STANDING IN IT for costing purposes.
+##
+## This is the drift deadband, and it is what the incumbent bonus was doing badly. A vehicle holding station wanders --
+## the measured CPU error is 9.3 m -- and that wander changes its distance to every slot, so the cheapest seating
+## flickers and every flicker re-issues an order. A bonus big enough to outbid 9.3 m of flicker (1.0 spacing, 14 m) is
+## also big enough to hold a seating that sends two units across each other, which is A10's own falsifier: that is the
+## trade `test_formation_slots::test_nobody_swaps_slots_tick_to_tick` failed on. Treating a unit inside its leash as
+## being AT its slot removes the flicker at its source instead of outbidding it, which leaves the bonus free to be
+## small enough that no crossing can survive it. Same abstraction as `TankBrain.slot_leash`.
+## Bracketed by measurement, not chosen: a crew that has drifted as far as a NEIGHBOURING slot is 1.34 spacings from
+## its own (wedge of four, adjacent slots 18.8 m apart at 14 m spacing) and must keep its seating -- that is round 7's
+## "sent once means seated once", and `test_tactics_tasks::test_a_plain_move_standing_on_its_spot_keeps_its_seating`
+## drifts two crews onto each other's slots to say so. A seating that is genuinely wrong puts a unit 3.8 spacings from
+## the slot it holds (46 m at 12 m spacing in `test_formation_slots::test_nobody_swaps_slots_tick_to_tick`) and must be
+## dropped. 1.5 sits between them with room on both sides.
+const ON_STATION_SPACINGS := 1.5
 
 
 ## Who stands where. `members` are {"name", "position"?: Vector3, "unit"?, "role"?}; `offsets` the slots (in the
@@ -715,12 +731,19 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 	var deepest := 0
 	for tier: int in slot_tier:
 		deepest = maxi(deepest, tier)
+	var most_fragile := 0
+	for tier: int in member_tier:
+		most_fragile = maxi(most_fragile, tier)
 	var pin := false
 	for member: Dictionary in members:
 		pin = pin or (leader != "" and String(member.get("name", "")) == leader)
 	var world: Array[Vector3] = []
 	for slot in offsets:
 		world.append(to_world(anchor, heading, slot))
+	# The seating we are already holding, resolved BEFORE the costs, because being on station changes them.
+	var previous: Dictionary = opts.get("previous", {})
+	var held := previous if _valid_seating(previous, members, offsets.size()) else {}
+	var on_station := ON_STATION_SPACINGS * spacing
 	# Square cost matrix: members (padded with empty seats) by slots (padded with nowhere).
 	var cost: Array = []
 	for i in slot_count:
@@ -734,9 +757,38 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 			var value := 0.0
 			if member.has("position"):
 				var at: Vector3 = member["position"]
+				var seat_held: int = int(held.get(String(member.get("name", "")), -1))
+				# On station in the slot it already holds: cost it from the slot, not from where it has drifted to.
+				if seat_held >= 0 and seat_held < world.size() \
+						and Vector2(at.x - world[seat_held].x, at.z - world[seat_held].z).length() <= on_station:
+					at = world[seat_held]
 				value = Vector2(at.x - world[j].x, at.z - world[j].z).length()
-			# Fragile vehicles (a high tier) are paid for standing anywhere but the most sheltered slots.
-			value += TIER_COST * float(member_tier[i]) * float(deepest - int(slot_tier[j]))
+			# THE ROLE RULE: stand in the slot whose exposure rank matches your toughness rank. Tiers are normalised
+			# to 0..1 on both sides and the cost is the MISMATCH, so it is minimised exactly when the tiers line up
+			# -- toughest in the most exposed slot, most fragile in the most sheltered -- and it is strictly
+			# increasing in how far out of order a vehicle stands.
+			#
+			# Two earlier forms of this term both had a tier that the cost could not see, and each one let doctrine's
+			# ordering survive only as an accident of the solver's tie-breaking:
+			#   `m * (D - s)` alone charges a fragile vehicle for standing forward, but it is identically ZERO for
+			#   the toughest vehicle (m = 0), so nothing pulls a heavy to the point. That is what shipped, and
+			#   `test_control_group_moves`'s role tests went red the moment A10 changed how ties break.
+			#   `m * (D - s) + (M - m) * s` adds the other half, but its s-coefficient is (M - 2m), which is zero at
+			#   m = M/2: the MIDDLE tier goes indifferent instead of the top one. With tank/ifv/scout/lancer/artillery
+			#   that is exactly the scout, which then shared the rear rank with the artillery and failed
+			#   "the artillery stays behind the scout" on an equality.
+			# A mismatch has no such tier: the coefficient of s never vanishes, because the quantity IS the distance
+			# between the two ranks.
+			# And it says NOTHING when there is no ordering to express. An element of one toughness tier (every
+			# scattered-tanks test in the suite, and any single-vehicle-type squad in the game) has no heavies and no
+			# fragiles, so the mismatch must vanish and leave the seating to driving distance. Normalising a single
+			# tier to 0 while the slots still rank 0..1 would instead send every identical vehicle after the most
+			# exposed slot, with a cost ten thousand times any distance -- which broke `paths_never_cross`,
+			# `the_seating_is_the_least_driving` and four more the first time I wrote this.
+			if most_fragile > 0 and deepest > 0:
+				var member_rank := float(member_tier[i]) / float(most_fragile)
+				var slot_rank := float(slot_tier[j]) / float(deepest)
+				value += TIER_COST * absf(member_rank - slot_rank)
 			if pin:
 				var is_leader := String(member.get("name", "")) == leader
 				if is_leader != (j == 0):
@@ -744,9 +796,7 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 			row[j] = value
 		cost.append(row)
 	# A10: costs become integer utilities (bigger is better), with the incumbent bonus as a term rather than a patch.
-	var previous: Dictionary = opts.get("previous", {})
 	var incumbent := INCUMBENT_SPACINGS * spacing
-	var held := previous if _valid_seating(previous, members, offsets.size()) else {}
 	var utility: Array = []
 	for i in slot_count:
 		var row := PackedInt64Array()
