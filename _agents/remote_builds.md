@@ -299,3 +299,15 @@ script failures** — because its prerequisite had been killed, not because anyt
 non-existent resource` for tracked, present files, cascading into false `Nonexistent function` errors — is **two
 lints sharing one import cache**, now prevented by the `flock` on `make lint`. Clearing `.godot/imported` is the
 widest scope that is ever warranted; the full delete costs 90+ minutes and fixes nothing the lock does not.
+
+## ⚠ Killing a `make` leaves `tools/slot.sh` holding a slot, and its stale `.owner` file makes a dead holder look alive (feel, 2026-09-20)
+
+feel started a second `make lint` while the first was running, killed the wrong process in the chain, and one of the
+laptop's two slots sat **held with nothing inside it** while every other stream queued behind it — the banner in every
+waiter's log kept naming a job that had ended. The lock dies with the process; the owner file does not.
+
+- **Kill the `slot.sh` wrapper, not the `make` inside it.** Find it with `ps -eo pid,args | grep '[s]lot.sh'` and
+  `readlink /proc/<pid>/cwd` to confirm it is yours (trip-up 79).
+- Then look in `/tmp/tank_squad_slots/`: a `slot<N>.owner` naming a PID that no longer exists is stale — remove it by
+  hand. Waiters read that file for their banner, so a stale one lies to everyone.
+- The habit that would have avoided it: builder0 sat at load 0.64 on 12 cores the whole time. Heavy runs go there.
