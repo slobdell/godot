@@ -379,9 +379,10 @@ three overrides and the mid-test call need DIFFERENT fixes:**
 
 - `test_command_readability:141`, `test_touch:177`, `test_command_camera:194` — **just drop `super.teardown()`**.
   Their own viewport restore keeps its place, because the hook runs *before* the freeing.
-- `test_control_panel:143` — **`await free_owned()`**, now public and the supported way to clear the world part-way
-  through a test. A bare `teardown()` there would run only the synchronous hook and **free nothing**, which is the
-  same trap one layer along: a call that looks like it tears down and does not.
+- `test_control_panel:143` — **`free_owned()`, with NO `await`.** It is public now and the supported way to clear
+  the world part-way through a test. **It is synchronous by design** — nothing inside it yields, so no caller can
+  leave it half-run by forgetting to wait — and `await`ing it would raise Godot's `REDUNDANT_AWAIT` and fail lint.
+  A bare `teardown()` there would run only the synchronous hook and **free nothing**.
 
 Nothing to do until nav's merges.
 
