@@ -292,6 +292,13 @@ assertion load-bearing rather than decorative. "Accepted with no error" carried 
 *(That run was also on a box at load 8.22 with 25 other Godot processes, 78–100 ms frames against a 33.3 ms budget:
 void twice over.)*
 
+**A caveat on reading that check, from combat:** a leak does not only *fail* the next test, it **silently changes
+what the next test measures** — their wall fixture's rig moved 8 cm and went from `applied 0` to `applied 3` the
+moment the leaking teardown started freeing. So the 38 failures are a lower bound on the cost, and a **pass** in a
+shard that follows a leak is not trustworthy either. My four roof tests are robust to it by construction (they
+assert surface count, AABB and vertex positions on a freshly built `CityBlock`, with no dependence on world state),
+which is why I am willing to call them green — but that is a property of those tests, not a general licence.
+
 **ROUND 10, carried forward:**
 
 1. **A faint per-faction rim light on hulls** — the orchestrator's recommendation and the real answer to "the fight
