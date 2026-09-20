@@ -217,8 +217,21 @@ func test_holding_the_aim_point_suppresses_far_better_than_tracking() -> void:
 	assert_true(int(held["rounds"]) > int(chased["rounds"]) * 3,
 			"a gun told to hose a place keeps firing; one told to track a unit stops every time the unit is out of reach or out of sight (%d rounds vs %d)"
 			% [held["rounds"], chased["rounds"]])
-	assert_true(float(held["density"]) >= Match.BEATEN_ZONE_DENSITY * 0.5 and float(chased["density"]) < 0.2,
-			"and it is the held fire that marks the ground: %.2f density against %.2f" % [held["density"], chased["density"]])
+	# THE SEPARATION, not an absolute on the control (re-derived round 9, CP2). `chased["density"] < 0.2` was
+	# calibrated against a pre-CP2 roster and had **0.005 of headroom**: the pristine tree at `9f864474` printed
+	# exactly `0.20` and passed, so the true value was between 0.195 and 0.19999. CP2's resized hulls moved the
+	# CONTROL arm to 0.28 and it went red -- while the held arm was unchanged to three figures (1.02 density, 161
+	# rounds, identical pre- and post-CP2). The mechanic never moved; an absolute threshold on a control is
+	# calibrated against one roster by construction and goes stale at every size change.
+	#
+	# What this test actually claims is a SEPARATION -- held fire marks the ground, tracking fire does not -- and
+	# that survives any roster:   pre-CP2  1.02 / 0.195 = 5.2x     post-CP2  1.02 / 0.28 = 3.6x
+	# So it fails when the two densities CONVERGE, which is the mechanic stopping, and not when the hulls change size.
+	# `held >= BEATEN_ZONE_DENSITY * 0.5` stays: that one is anchored to a game constant, not to a roster.
+	assert_true(float(held["density"]) >= Match.BEATEN_ZONE_DENSITY * 0.5
+			and float(held["density"]) > float(chased["density"]) * 3.0,
+			"and it is the held fire that marks the ground: %.2f density against %.2f (%.1fx, bar 3x)" % [
+			held["density"], chased["density"], float(held["density"]) / maxf(float(chased["density"]), 0.001)])
 	assert_true(float(held["suppression"]) > float(chased["suppression"]),
 			"so the unit crossing it is the more suppressed (%.2f vs %.2f)" % [held["suppression"], chased["suppression"]])
 

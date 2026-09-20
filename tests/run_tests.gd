@@ -53,6 +53,10 @@ func _run() -> void:
 	var total_engine_errors := 0
 	var total_engine_warnings := 0
 	# `make test FILTER=bot` passes --filter=bot: run only tests whose "file::method" contains it.
+	# `|` separates ALTERNATIVES -- FILTER="bot|relay" runs tests matching either. It is not a regex, and
+	# saying so matters: `make test FILTER="a|b"` used to reach a shell unquoted and exit 127 without running
+	# anything (it bit combat twice on 2026-09-20), and merely quoting it through would have run nothing at
+	# all while reporting success, which is worse.
 	var filter := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--filter="):
@@ -70,6 +74,11 @@ func _run() -> void:
 			if parts.size() == 2:
 				shard = int(parts[0])
 				shards = maxi(1, int(parts[1]))
+	var filter_parts := PackedStringArray()
+	for part in filter.split("|", false):
+		var trimmed := part.strip_edges()
+		if trimmed != "":
+			filter_parts.append(trimmed)
 	var discovered := _discover(TEST_ROOT)
 	var mine := PackedStringArray()
 	for index in discovered.size():
@@ -90,7 +99,7 @@ func _run() -> void:
 				test_methods += 1
 		var stem := path.get_file().get_basename()
 		# tests/test_case.gd is the base class every case extends, not a case itself.
-		if test_methods == 0 and stem != "test_case" and (filter == "" or stem.contains(filter)):
+		if test_methods == 0 and stem != "test_case" and _matches(stem, filter_parts):
 			failed += 1
 			print("  FAIL  ", stem, "::<file>")
 			print("          no test_ methods: a parse error leaves a loadable script with none")
@@ -99,7 +108,7 @@ func _run() -> void:
 			var method_name: String = method["name"]
 			if not method_name.begins_with("test_"):
 				continue
-			if filter != "" and not ("%s::%s" % [path.get_file().get_basename(), method_name]).contains(filter):
+			if not _matches("%s::%s" % [path.get_file().get_basename(), method_name], filter_parts):
 				continue
 			var case: TestCase = script.new()
 			case.tree = self
@@ -108,7 +117,7 @@ func _run() -> void:
 			# AWAITED: `teardown()` drains the navigation map, and that needs frames. Un-awaited it would return at
 			# once and drain after the NEXT test had started -- a hook that looks wired up and does nothing.
 			await case.teardown()
-			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings)
+			var engine: Dictionary = TestCase.reconcile_engine_messages(errors.take(), case.expected_warnings, case.expected_errors)
 			total_engine_errors += int(engine["errors"])
 			total_engine_warnings += int(engine["warnings"])
 			var engine_failures: PackedStringArray = engine["failures"]
@@ -133,7 +142,25 @@ func _run() -> void:
 	else:
 		print("\nengine: %d errors, %d warnings" % [total_engine_errors, total_engine_warnings])
 		print("%d passed, %d failed" % [passed, failed])
+	# A FILTER THAT MATCHES NOTHING IS NOT A PASS. `make test FILTER=typo` printed "0 passed, 0 failed" and
+	# exited 0, so a mistyped filter read exactly like a clean run of the tests you meant -- the same shape as
+	# `lint` over zero files, and the reason a green filtered run was never evidence of anything.
+	if not filter_parts.is_empty() and passed + failed == 0:
+		print("\nFILTER MATCHED NO TESTS: nothing contains %s." % [", ".join(filter_parts)])
+		print("  This is a failure, not an empty pass: a run of zero tests says nothing about the code.")
+		print("  The filter is a SUBSTRING of \"file::method\" (use | for alternatives), not a regex.")
+		quit(1)
 	quit(1 if failed > 0 else 0)
+
+
+## Does `label` match any alternative? No alternatives means everything matches.
+static func _matches(label: String, parts: PackedStringArray) -> bool:
+	if parts.is_empty():
+		return true
+	for part in parts:
+		if label.contains(part):
+			return true
+	return false
 
 
 func _discover(dir_path: String) -> PackedStringArray:

@@ -91,7 +91,7 @@ help: ## Show this help
 # run is the waste this list exists to prevent (metrics, round 9; the tool has no Godot in it at all).
 LIGHT_GOALS := help doctor bootstrap remote backup backup-status backup-install broker broker-bootstrap broker-test broker-smoke worktree worktrees worktree-remove clean distclean \
                metrics metrics-pytest metrics-fixtures metrics-check \
-               remote-status remote-guard-test shell-tools-test remote-quiet \
+               remote-status remote-guard-test shell-tools-test remote-quiet sim-baseline-adopt round-status \
                editor run skirmish garage demo play play-relay replay-watch serve-web server client watch-match agent-% \
                assets-generate assets-mock art-concept art-review art-review-status art-decide art-review-page art-apply-decisions art-concept-batch \
                doctrine-page announcer-generate

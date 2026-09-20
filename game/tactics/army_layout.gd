@@ -38,6 +38,38 @@ const ASSEMBLY_SPACING_M := 6.5
 ## rather than a second copy (Invariant 0), and the plan is for those readers to name the owner directly and for this
 ## line to go then.
 const HULL_CLEAR_M := TacticsFormation.HULL_CLEAR_M
+## Every deployed unit is placed this far ABOVE the ground rather than exactly on it (metres).
+##
+## A hull at exactly y = 0.0 rests in a degenerate contact with Arena/Ground -- touching, with no penetration to
+## resolve and no gap. Jolt's answer to that depends on engine state rather than on the placement: scale found that
+## after an earlier arena's bodies had been created and destroyed in the same process, three units of a 90-unit army
+## were ejected **1.5 m DOWN through the ground** from placements identical to the ones that behave in a fresh process.
+## That is why `test_match_spawns_and_results` passed alone and failed only when `test_arena_layouts` ran before it in
+## the same shard: the sharding schedule changed, not the layout.
+##
+## Five centimetres would be enough to make that contact non-degenerate, and far less than the settle a hull does on
+## its suspension anyway, so nothing would visibly hover.
+##
+## **RETRACTED, and read this before citing the number below.** Until the write in `deploy` was fixed, this constant
+## was INERT: that line kept `tank.global_position.y` (whatever `Match.spawn_position` had set, 0.0) and discarded the
+## layout's y, so 0.05 and 0.0 gave byte-identical results here and my "0.05 passes on my branch" told us nothing about
+## the lift. The arm could not exercise the mechanism. The same defect this round found four times in other people's
+## instruments, in my own code, reported as evidence.
+##
+## **It is 0.0 for now, and that is a ruling rather than a conclusion.** combat measured 0.05 on its MERGED tree
+## (its branch + CP2 + main) and `test_a_full_faction_army_a_side_spawns_clear_of_itself` fails there with three units
+## (Green_S5_1, Rust_S5_1, Rust_S8_1) reported inside a wall or crate, passing again at 0.0. **On this branch 0.05
+## passes** — `test FILTER=match_spawns` on builder0, exited 0, 5 passed 0 failed — so the lift alone breaks nothing and
+## the interaction needs CP2's hull sizes, which is consistent with combat's own note that the 8.62 m hull is what makes
+## it reachable.
+##
+## combat's hypothesis is that the degenerate y = 0 contact was MASKING a placement bug: a unit that `_clear_spot` /
+## `SlotGround.standable` leaves overlapping an obstacle used to be shoved out by the same ejection scale measured, so
+## lifting it merely stops hiding the overlap. If that is right the placement fix is this file's (and `SlotGround`'s),
+## the obstacle numbers are scale's to supply, and this constant becomes 0.05 in the same commit as the fix. The test
+## above now names the body it hit, which is what decides it: **Arena/Ground means an ejection, a crate or a wall means
+## a real overlap.** Raising this to 0.05 before that answer is in would trade a known-masked bug for an unknown one.
+const SPAWN_LIFT_M := 0.0
 ## A widened rank keeps this far off the drivable floor's side edges.
 const SIDE_MARGIN_M := 6.0
 ## Clear ground between one rank of squads and the next (a hull is ~4 m long).
@@ -139,7 +171,7 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 					{"policy": "front", "leader": shape["leader"]}):
 				var at: Vector3 = entry["to"]
 				var limit := Match.DRIVABLE_LIMIT - 2.0
-				at = Vector3(clampf(at.x, -limit, limit), 0.0, clampf(at.z, -limit, limit))
+				at = Vector3(clampf(at.x, -limit, limit), SPAWN_LIFT_M, clampf(at.z, -limit, limit))
 				result[String(entry["unit"])] = {"position": at, "facing": forward, "squad": shape["name"],
 						"anchor": anchor, "formation": shape["formation"]}
 		line -= forward * (float(row["slots_deep"]) + float(row["overhang"]) + RANK_GAP_M)
@@ -245,7 +277,13 @@ static func deploy(game_match: Match, team: int) -> void:
 		var hull := _hull(tank.unit_id)
 		var spot := _clear_spot(tank, laid[unit_name]["position"], hull, forward, taken)
 		taken.append([spot, hull.x, hull.y])
-		tank.global_position = Vector3(spot.x, tank.global_position.y, spot.z)
+		# The layout's y is USED, not discarded. This line read `Vector3(spot.x, tank.global_position.y, spot.z)`,
+		# which kept whatever y the tank already had from `Match.spawn_position` and threw the layout's away -- so
+		# `SPAWN_LIFT_M` was inert and 0.05 produced byte-identical results to 0.0 on this branch. I reported that
+		# green as evidence about the lift; it was evidence about nothing, because the lift was never in the arm.
+		# `_clear_spot` preserves y (so does `SlotGround.standable`, which returns `Vector3(closest.x, point.y,
+		# closest.z)`), so `spot.y` is the lift the layout asked for.
+		tank.global_position = spot
 		tank.rotation.y = yaw
 		tank.reset_physics_interpolation()
 	# A doctrine squad that starts "in formation" holds at its commander's spawn point: move that hold with it.
@@ -297,9 +335,29 @@ static func _is_clear(spot: Vector3, hull: Vector2, forward: Vector3, taken: Arr
 
 ## (width, length) of a unit's hull box.
 static func _hull(unit_id: String) -> Vector2:
-	if not Units.exists(unit_id):
-		return Vector2(2.6, 4.0)
-	var hull: Array = Units.stat(unit_id, "hull_size", [2.6, 1.8, 4.0])
+	# TWO SILENT FALLBACKS, both now loud and both reading the live catalogue. They were `Vector2(2.6, 4.0)` for an
+	# unknown id and `[2.6, 1.8, 4.0]` for a known id with no `hull_size`, and those are PRE-CP2 numbers: `tank`'s live
+	# hull is `[2.40, 2.40, 8.62]`, so the old fallback understated the default LENGTH by 4.6 m -- less than half. In a
+	# deploy layout that is slots pitched for a 4 m vehicle holding 8.6 m vehicles, nose into tail, which is exactly the
+	# failure X1 was built to prevent, reproduced silently for any unit the layout cannot read.
+	#
+	# `push_warning` rather than `push_error` DELIBERATELY: `TestCase.reconcile_engine_messages` counts an error as a
+	# failure and only reconciles WARNINGS through `expect_warning`, so an error here would make this branch impossible
+	# to exercise in a test -- and an unexercised branch is the defect this round kept finding. Loud AND testable beats
+	# loud. Same shape as feel's city-block rejection at its read site.
+	var id := unit_id
+	if not Units.exists(id):
+		push_warning("ArmyLayout: no unit profile for '%s'; laying it out as '%s'" % [id, Units.DEFAULT])
+		id = Units.DEFAULT
+	var hull: Array = Units.stat(id, "hull_size", [])
+	if hull.size() < 3:
+		push_warning("ArmyLayout: unit '%s' has no hull_size; laying it out as '%s'" % [id, Units.DEFAULT])
+		hull = Units.stat(Units.DEFAULT, "hull_size", [])
+	if hull.size() < 3:
+		# The catalogue's own default has no hull either: there is nothing left to read, and a guessed number here is
+		# how the 2.6 x 4.0 got in. MIN_SPACING_M keeps the layout legal without pretending to know a hull.
+		push_warning("ArmyLayout: '%s' has no hull_size either; using MIN_SPACING_M" % Units.DEFAULT)
+		return Vector2(MIN_SPACING_M, MIN_SPACING_M)
 	return Vector2(minf(float(hull[0]), float(hull[2])), maxf(float(hull[0]), float(hull[2])))
 
 

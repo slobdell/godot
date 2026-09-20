@@ -126,6 +126,13 @@ def main():
     args = parser.parse_args()
 
     factions = [f.strip() for f in args.factions.split(",") if f.strip()]
+    # `--factions` defaults to `",".join(Units.FACTIONS)` read live from the catalogue, so the RAW arg records the
+    # order that const happened to have at run time -- it changed between rounds 8 and 9 when someone reordered
+    # `units.gd:50`, and two identical runs then looked like different arms to anyone diffing their `args` blocks.
+    # That nearly cost a builder0 run. The job set is provably independent of the order (itertools.combinations over
+    # unordered pairs, both orientations per seed, seeds 1..N regardless of position), so record the RESOLVED list
+    # canonically as well: a diff of this field is then a statement about the experiment rather than about a const.
+    resolved_factions = sorted(factions)
     controls = ("--no-faction-directives",) if args.no_faction_directives else ()
     if args.tune:
         controls = controls + (f"--tune={args.tune}",)
@@ -247,7 +254,9 @@ def main():
         print("  FAILED: " + failure)
     if args.json:
         with open(args.json, "w") as handle:
-            json.dump({"run": run_conditions.describe(), "args": vars(args), "rows": rows, "failures": failures}, handle, indent=2)
+            json.dump({"run": run_conditions.describe(), "args": vars(args),
+                       "factions_resolved": resolved_factions, "rows": rows, "failures": failures},
+                      handle, indent=2)
     sys.exit(1 if failures else 0)
 
 

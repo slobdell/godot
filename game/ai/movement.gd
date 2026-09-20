@@ -571,6 +571,34 @@ static var clearance_chords := 0
 static var clearance_refused := 0
 
 
+## The hull box every nav computation measures against — **one accessor, because three copies of a default is how
+## the literal got to be three copies.** `avoidance.gd:54`, `movement.gd`'s chord slack and its `_chord_slack`
+## twin all carried `[2.4, 1.6, 3.8]` inline: a **pre-CP2 size**, applied silently to any unit id the roster does
+## not know, and **no shipped unit reaches it, which is exactly why nothing caught it** (scale's consumer sweep,
+## 2026-09-21). After the resize that literal is smaller than 14 of 21 hulls and would model a 14 m semi as a 3.8 m
+## car — the kind of value that looks like an answer and is a measurement of nothing.
+##
+## So: **loud, and live.** An unknown id is an error naming the id, not a shrug, and the fallback is
+## `Units.DEFAULT`'s **current** box read from the roster rather than a number frozen in this file, so it cannot
+## drift from the roster again the way the literal did.
+static func hull_box(unit_id: String) -> Array:
+	# `Units.PROFILES.has()` FIRST, and this is the sharper half of scale's finding. `Units.stat()` ends in
+	# `PROFILES[unit_id].get(key, fallback)` — so its `fallback` covers a **missing KEY**, never a **missing UNIT**:
+	# an unknown id raises *"Invalid access to property or key … on a base object of type 'Dictionary'"* before the
+	# fallback is ever consulted. So `Units.stat(id, "hull_size", [2.4, 1.6, 3.8])` was not a stale guard against a
+	# typo'd unit — **it was never a guard against one at all.** That literal only ever applied if a KNOWN unit
+	# lacked `hull_size`, which no unit does. The case everyone assumed it covered was unreachable.
+	if Units.PROFILES.has(unit_id):
+		var size: Variant = Units.stat(unit_id, "hull_size", null)
+		if size is Array and (size as Array).size() >= 3:
+			return size
+	push_error(("hull_size: no unit %s in the roster, so nav is measuring against %s's box. Every clearance, "
+			+ "chord and avoidance radius for this hull is now wrong — a misspelled id or a unit added before its "
+			+ "profile.") % [unit_id, Units.DEFAULT])
+	var fallback: Variant = Units.stat(Units.DEFAULT, "hull_size", [2.4, 1.6, 3.8])
+	return fallback if fallback is Array else [2.4, 1.6, 3.8]
+
+
 ## S4 (`_agents/legibility.md` §2): the ordered corridor's TANGENT, which nav promised to publish at N5 *"on the
 ## principle that one publisher should mean one INTERPRETATION, not one array that three streams each project onto
 ## slightly differently"*. The law, control's readout and the falsifier all read this rather than each deriving a
@@ -787,7 +815,7 @@ func _note_wedge(here: Vector3, deflected: bool) -> void:
 	for flag: bool in _deflect_window:
 		hits += 1 if flag else 0
 	var moved := _flat_distance(_wedge_trail[0], _wedge_trail[_wedge_trail.size() - 1])
-	var size: Variant = Units.stat(ctl.tank.unit_id, "hull_size", [2.4, 1.6, 3.8])
+	var size: Array = hull_box(ctl.tank.unit_id)
 	var was := wedged
 	wedge_moved_m = moved
 	wedge_hull_m = float(size[2])
@@ -1779,7 +1807,7 @@ func _chord_on_mesh(from: Vector3, to: Vector3) -> bool:
 ## that. A 0.3 m slack for every hull (the first version) called ordinary driving in the maze's 3 m corridors "off the
 ## mesh" and dropped head-on maze-60 from 60/60 to 27/60 (builder0, nav-where, round 7).
 func _chord_slack() -> float:
-	var size: Variant = Units.stat(ctl.tank.unit_id, "hull_size", [2.4, 1.6, 3.8])
+	var size: Array = hull_box(ctl.tank.unit_id)
 	# The BAKED radius, read from the arena, not the constant. Same number today; the difference is that the day
 	# arena re-bakes, this follows and the constant complains instead of both being quietly wrong.
 	var slack := maxf(CHORD_SLACK, bake_radius(ctl.tank) - float(size[0]) / 2.0 - CHORD_MARGIN)
