@@ -85,6 +85,8 @@ var route: Array = []
 var route_index := 0
 ## Round 7 flow: the element has switched to its final slots for this task (never flows again until a new task).
 var flow_joined := false
+## Whether this task's dragged facing has been handed to every crew yet (option 3; one order per crew per task).
+var facing_sent := false
 var heading := Vector3.FORWARD
 var bounding := 0
 var arrived := false
@@ -151,6 +153,7 @@ func assign(new_task: Variant) -> String:
 	route = []
 	route_index = 0
 	flow_joined = false
+	facing_sent = false
 	arrived = false
 	drill = ""
 	drill_point = null
@@ -200,6 +203,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
+			"facing_sent": facing_sent,
 			"route": route, "route_index": route_index, "bound": bound}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
@@ -424,6 +428,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	file = float(plan.get("file", 0.0))
 	bound = plan.get("bound", {})
 	flow_joined = bool(plan.get("flow_joined", false))
+	facing_sent = bool(plan.get("facing_sent", false))
 	route = plan["route"]
 	route_index = int(plan["route_index"])
 	strength = (situation["members"] as Array).size()
