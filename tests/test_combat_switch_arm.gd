@@ -91,6 +91,25 @@ func test_the_counter_names_every_arm() -> void:
 	SwitchingCost.tuning.clear()
 
 
+## The fourth arm, and the reason it exists: `main`'s commitment is TWO mechanisms — a flat bonus and a hard dwell
+## timer — so A2 measured against "legacy" is measured against both at once, and any churn figure credited to the
+## bonus might belong to the timer A2 deliberately retires. `switch.dwell=0` isolates them.
+func test_the_dwell_timer_can_be_isolated_from_the_flat_bonus() -> void:
+	SwitchingCost.probing = true
+	# A situation where the incumbent is beaten but not decisively: the timer, and only the timer, holds it.
+	var s := _situation("tank", 0.0, [_enemy("Rust_A_1", Vector3(0, 0, -36)), _enemy("Rust_A_2", Vector3(0, 0, -30))])
+	var current := {"option": "ENGAGE", "target": "Rust_A_1", "since": 1000 - TankBrain.MIN_COMMIT_TICKS + 2}
+	assert_eq(Units.apply_tuning("switch.legacy=1"), "", "the flat arm is selectable")
+	var held: Dictionary = TankBrain.decide(s, current)["choice"]
+	assert_eq(Units.apply_tuning("switch.dwell=0"), "", "and its dwell timer is separately selectable")
+	var unheld: Dictionary = TankBrain.decide(s, current)["choice"]
+	print("MEASURE switch_dwell_isolation flat+dwell %s; flat alone %s" % [
+			TankBrain.label(held), TankBrain.label(unheld)])
+	assert_eq(String(held["target"]), "Rust_A_1", "inside the dwell window the flat arm holds its target")
+	assert_true(SwitchingCost.legacy_arm(), "the flat bonus is still in play with the timer off")
+	SwitchingCost.tuning.clear()
+
+
 ## X2's acceptance 2, asserted at the seam rather than only in the cost function: in ONE situation, the roster's
 ## heaviest hull is charged a multiple of its lightest. A cost that does not separate them is a constant in disguise
 ## and would make an A/B against `main` an A/B of a build against itself.

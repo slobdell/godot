@@ -144,6 +144,37 @@ func test_the_cost_rises_with_the_angle() -> void:
 		last = cost
 
 
+## `seconds_for` is the hot path and `components` is the readable one, and they compute the same thing twice. That is
+## a deliberate duplication — the scorer runs it per candidate per think and must not allocate a dictionary to do it —
+## so the drift is caught here rather than discovered in a measurement six weeks later.
+func test_the_fast_path_and_the_breakdown_agree() -> void:
+	for unit_id in ["tank", "scout", "gang_tank", "gang_scout", "syn_tank", "law_ifv"]:
+		for degrees in [0.0, 30.0, 90.0, 150.0, 180.0]:
+			for speed in [0.0, 6.0, 13.0]:
+				var spot := Vector3(-60.0 * sin(deg_to_rad(degrees)), 0, -60.0 * cos(deg_to_rad(degrees)))
+				var s := _situation(unit_id, speed, {"A": AHEAD, "B": spot})
+				for pair in [["ENGAGE", "B"], ["SUPPRESS", "A"], ["ORBIT", "B"], ["HOLD", ""]]:
+					var ctx := SwitchingCost.context(s, {"option": "ENGAGE", "target": "A"})
+					var fast := SwitchingCost.seconds_for(ctx, pair[0], pair[1])
+					var slow: Dictionary = SwitchingCost.components(ctx, pair[0], pair[1])
+					assert_near(fast, float(slow["total_s"]), 0.0001,
+							"%s %s at %.0f deg, %.0f m/s: %.4f vs %.4f" % [unit_id, pair[0], degrees, speed, fast, slow["total_s"]])
+
+
+## The breakdown carries the bearing the cost was computed FROM, which is the half of the round's central question
+## that lives on this side. A turret aims without its hull, so a turreted unit may be charged for coming round onto a
+## new bearing and then simply drive on; metrics' trajectory log measures the rotation actually performed, and the
+## pair says whether A2 prices work the vehicle really does.
+func test_the_breakdown_reports_the_bearing_the_cost_was_computed_from() -> void:
+	var s := _situation("tank", 9.0, {"A": AHEAD, "B": RIGHT})
+	var ctx := SwitchingCost.context(s, {"option": "ENGAGE", "target": "A"})
+	var parts: Dictionary = SwitchingCost.components(ctx, "ENGAGE", "B")
+	assert_near(float(parts["angle_deg"]), 90.0, 0.01, "the two targets are 90 deg apart (got %.2f)" % parts["angle_deg"])
+	assert_near(float(parts["slew_s"]), 90.0 / 50.0, 0.001, "the turret term alone")
+	assert_near(float(parts["brake_s"]), 9.0 / 12.0, 0.001, "the braking term alone")
+	assert_near(float(parts["lay_s"]), _lay("tank", 50.0), 0.001, "the abandoned lay alone")
+
+
 ## Stateless by construction: the same situation prices the same twice, and pricing one candidate does not change
 ## what the next one is charged. This is what lets the sim stay deterministic with the term in the loop.
 func test_pricing_is_stateless() -> void:

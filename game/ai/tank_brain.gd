@@ -1224,7 +1224,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			best = candidate
 	# The dwell timer belongs to the flat arm and goes with it: P3 measured a hard veto on fast switches making
 	# switch-and-switch-back MORE than twice as bad, because it delays a switch without pricing it.
-	if legacy_bonus > 0.0 and not committed.is_empty() and committed != best \
+	if legacy_bonus > 0.0 and SwitchingCost.dwell_arm() and not committed.is_empty() and committed != best \
 			and int(s["tick"]) - int(current["since"]) < MIN_COMMIT_TICKS \
 			and committed["score"] > 0.0 and best["score"] < committed["score"] * EMERGENCY_MARGIN:
 		best = committed

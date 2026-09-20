@@ -56,7 +56,14 @@ const ARC_SPEED_FLOOR := 0.25
 ##   cap     the veto guard, lowered or raised only to measure what it is worth.
 ##   legacy  1 restores the flat commitment multiplier this replaces (`TankBrain.COMMIT_BONUS` and its dwell timer),
 ##           so `main`'s pre-A2 behaviour is an arm of this build rather than an older checkout.
-const TUNABLE := {"price": PRICE_PER_SECOND, "cap": MAX_PENALTY, "legacy": 0.0}
+##   dwell   0 takes the `MIN_COMMIT_TICKS`/`EMERGENCY_MARGIN` timer OUT of the legacy arm, leaving the flat bonus
+##           alone. Without this the only available comparison is A2 against TWO mechanisms at once, and a churn
+##           figure attributed to "the flat bonus" would really belong to a hard dwell timer A2 deliberately retires
+##           (P3). Four arms — cost, flat+dwell, flat alone, nothing — are what it takes to say which term did what.
+##   stance  0 removes the stance floor (below), leaving only the bearing-derived terms. The floor is NOT part of
+##           catalogue A2 -- it is this stream's addition -- and round 9 measured it costing flanking, so it is an arm
+##           of its own rather than a thing argued about.
+const TUNABLE := {"price": PRICE_PER_SECOND, "cap": MAX_PENALTY, "legacy": 0.0, "dwell": 1.0, "stance": 1.0}
 static var tuning := {}
 ## Set by `make switch-arm`: fills in the per-think telemetry X1 counts. Off in play, so a match pays nothing for it.
 static var probing := false
@@ -76,6 +83,12 @@ static func never_charged(option: String) -> bool:
 ## True when `--tune=switch.legacy=1` selects the flat commitment bonus instead of the cost.
 static func legacy_arm() -> bool:
 	return _knob("legacy") > 0.0
+
+
+## True when the legacy arm's dwell timer runs. Always true in the flat arm unless `--tune=switch.dwell=0` isolates
+## the bonus from the timer; irrelevant to the cost arm, which has no timer to gate.
+static func dwell_arm() -> bool:
+	return _knob("dwell") > 0.0
 
 
 ## Everything a think needs to price its candidates, computed once. `current` is the option+target this brain is
@@ -158,6 +171,10 @@ static func _lay_discarded(me: Dictionary, target_position: Variant) -> float:
 ##           TARGET changes; without it a halted turret swapping between two targets on one bearing pays nothing.
 ## An option change on the SAME target still discards the velocity in flight, because engaging, suppressing and
 ## orbiting drive to different places; that floor is what keeps ENGAGE <-> SUPPRESS thrash priced at all.
+## ⚠ THE FLOOR IS THIS STREAM'S ADDITION, NOT CATALOGUE A2, AND IT HAS A MEASURED COST: round 9's duel scenario showed
+## flank seconds falling 6.27/5.27 -> 2.07/3.53 of 20 with it in, because ENGAGE -> FLANK on the SAME target is a way
+## of prosecuting the fight rather than a change of mind, and the floor charges it the whole velocity anyway. Gated by
+## `--tune=switch.stance=0` so it is an arm to be measured rather than a judgement to be argued.
 ## Monotone in all three over its whole range, and unbounded — the ceiling lives in penalty(), not here, so this stays
 ## safe to use as a priority level elsewhere (lesson 153).
 static func seconds_for(ctx: Dictionary, option: String, target: String) -> float:
@@ -177,12 +194,45 @@ static func seconds_for(ctx: Dictionary, option: String, target: String) -> floa
 			slew_s = maxf(slew_s, arc_m / maxf(float(ctx["speed"]), float(ctx["arc_speed_floor"])))
 	var speed := float(ctx["speed"])
 	var lost := speed * (1.0 - cosine)
-	if String(ctx["from_option"]) != option:
+	if String(ctx["from_option"]) != option and _knob("stance") > 0.0:
 		lost = maxf(lost, speed)
 	# The gun's lay goes only when the gun is pointed somewhere else. ORBIT or SUPPRESS on the target this crew is
 	# already laid on keeps it, which is why a stance change pays the velocity and not the acquisition.
 	var lay := float(ctx["lay_s"]) if target != String(ctx["from_target"]) else 0.0
 	return slew_s + lost / float(ctx["braking"]) + lay
+
+
+## The same cost broken into its terms, for the arm counter only. `seconds_for` above is the hot path and stays a
+## straight-line calculation; this is the readable one, and `test_the_fast_path_and_the_breakdown_agree` asserts the
+## two never drift apart over a matrix of hulls, angles and speeds. If that test fails, believe this one.
+##
+## `angle_deg` is what makes the round's central question answerable. The cost charges a turreted hull for shedding
+## velocity and coming round onto a new bearing — but a turret aims without the hull, so the hull may simply drive on.
+## metrics' trajectory log reports the hull rotation a unit ACTUALLY performed between two decisions; this reports the
+## bearing change the cost was computed FROM. Paired, they say whether A2 is pricing work the vehicle really does.
+static func components(ctx: Dictionary, option: String, target: String) -> Dictionary:
+	var zero := {"angle_deg": 0.0, "slew_s": 0.0, "brake_s": 0.0, "lay_s": 0.0, "total_s": 0.0}
+	if not bool(ctx["consulted"]) or FREE.has(option):
+		return zero
+	var to_dir := _bearing(ctx["position"], ctx["positions"].get(target), ctx["forward"])
+	var cosine := clampf(Vector3(ctx["from_dir"]).dot(to_dir), -1.0, 1.0)
+	var angle_deg := rad_to_deg(acos(cosine))
+	var slew_s := 0.0
+	if bool(ctx["turret"]):
+		slew_s = angle_deg / float(ctx["turret_deg_s"])
+	else:
+		slew_s = angle_deg / float(ctx["hull_deg_s"])
+		var radius := float(ctx["turn_radius"])
+		if radius > 0.0:
+			slew_s = maxf(slew_s, radius * deg_to_rad(angle_deg) / maxf(float(ctx["speed"]), float(ctx["arc_speed_floor"])))
+	var speed := float(ctx["speed"])
+	var lost := speed * (1.0 - cosine)
+	if String(ctx["from_option"]) != option and _knob("stance") > 0.0:
+		lost = maxf(lost, speed)
+	var brake_s := lost / float(ctx["braking"])
+	var lay_s := float(ctx["lay_s"]) if target != String(ctx["from_target"]) else 0.0
+	return {"angle_deg": angle_deg, "slew_s": slew_s, "brake_s": brake_s, "lay_s": lay_s,
+			"total_s": slew_s + brake_s + lay_s}
 
 
 ## That work as a price in the scorer's own units, capped so it can never become a veto.
@@ -229,6 +279,9 @@ static func probe(ctx: Dictionary, s: Dictionary, current: Dictionary, best: Dic
 		row["priced"] = int(ctx["priced"])
 		row["max_cost_s"] = float(ctx["max_cost_s"])
 		row["cost_s"] = seconds_for(ctx, String(best["option"]), String(best["target"]))
+		# The breakdown of what the choice this think actually paid, so a switch event can be paired with the hull
+		# rotation metrics measures for the same tick.
+		row.merge(components(ctx, String(best["option"]), String(best["target"])))
 	elif current.is_empty():
 		row["arm"] = "fresh"
 	elif order_pending:

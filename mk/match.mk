@@ -55,14 +55,18 @@ matchup-search: import ## Score --tune variants of the matchup matrix against th
 # ---- X1 (round 9): is A2's switching cost actually an arm? ----------------------
 # Lesson 117: round 8 shipped a commitment term into a code path that could never reach it and measured it twice.
 # This proves the cost is consulted, non-zero, and DIFFERENT by hull class before anything is A/B-ed with it.
-# gangs vs law by default, because that fields both ends of the roster (the 14 m war rig and the rat rod).
+# NAMED ARCHETYPES, not a seeded "cpu" draft: the probe's claim is that both ends of the roster are on the field, and
+# seed 3 drew `gang_hail`, which fields no War Rig at all -- the rig-vs-rat-rod number could not have been read from
+# that run however healthy it looked. `gang_ram` fields two rigs and a rat rod; `law_line` is the counterpart.
 
-switch-arm: import ## X1 (A2): is the switching cost consulted, and does it vary by hull class? Per-class arm counter over one fight (ARENA=yard SEED=3 SWITCH_TIME=120 BUDGET=6500 SWITCH_GREEN=gangs SWITCH_RUST=law TUNE=switch.price=0 for the control arm) -> build/switch-arm.json
+switch-arm: import ## X1 (A2): is the switching cost consulted, and does it vary by hull class? Per-class/locomotion arm counter over one fight (ARENA=yard SEED=3 SWITCH_TIME=120 BUDGET=6500 SWITCH_GREEN_ARMY=gang_ram fields the War Rig, SWITCH_RUST_ARMY=law_line; TUNE=switch.legacy=1 or switch.price=0 for the control arms) -> build/switch-arm.json
 	@echo ">> switch-arm: ARENA=$(or $(ARENA),yard) SEED=$(or $(SEED),3) SWITCH_TIME=$(or $(SWITCH_TIME),120) TUNE=$(TUNE)"
 	@mkdir -p $(BUILD_DIR)
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/combat/switch_probe.gd -- \
 		--arena=$(or $(ARENA),yard) --seed=$(or $(SEED),3) --time-limit=$(or $(SWITCH_TIME),120) \
 		--budget=$(or $(BUDGET),6500) --green=$(or $(SWITCH_GREEN),gangs) --rust=$(or $(SWITCH_RUST),law) \
+		--green-army=$(or $(SWITCH_GREEN_ARMY),gang_ram) --rust-army=$(or $(SWITCH_RUST_ARMY),law_line) \
+		--require=$(or $(SWITCH_REQUIRE),gang_tank) $(if $(SWITCH_EVENTS),--switch-events=$(CURDIR)/$(SWITCH_EVENTS)) \
 		$(if $(TUNE),--tune=$(TUNE)) 2>&1 | tee $(BUILD_DIR)/switch-arm.log | grep -E "SWITCH_ARM|SCRIPT ERROR|ERROR" || true
 	@$(PYTHON) -c "import json,sys; \
 		raw=open('$(BUILD_DIR)/switch-arm.log').read(); \
@@ -70,6 +74,15 @@ switch-arm: import ## X1 (A2): is the switching cost consulted, and does it vary
 		d=json.loads(raw.split('SWITCH_ARM ')[1].splitlines()[0]); \
 		json.dump(d, open('$(BUILD_DIR)/switch-arm.json','w'), indent=1); \
 		print('switch-arm:', d['spread']['dearest'], d['spread']['dearest_s'], 's vs', d['spread']['cheapest'], d['spread']['cheapest_s'], 's (x%s)' % d['spread']['ratio'])"
+
+switch-arms: import ## X2 (A2): the churn A/B over all four arms (cost / flat / flat+dwell / none) and SWITCH_SEEDS, per class AND per locomotion, with the spread across seeds beside every mean (ARENA=yard SWITCH_SEEDS=1,3,7 SWITCH_TIME=120 JOBS=2) -> build/switch-arms.json
+	@echo ">> switch-arms: ARENA=$(or $(ARENA),yard) SWITCH_SEEDS=$(or $(SWITCH_SEEDS),1,3,7) SWITCH_TIME=$(or $(SWITCH_TIME),120)"
+	@mkdir -p $(BUILD_DIR)
+	$(PYTHON) tools/switch_arms.py --godot $(GODOT) --arena $(or $(ARENA),yard) --seeds $(or $(SWITCH_SEEDS),1,3,7) \
+		--seconds $(or $(SWITCH_TIME),120) --budget $(or $(BUDGET),6500) --jobs $(JOBS) \
+		--green-army $(or $(SWITCH_GREEN_ARMY),gang_ram) --rust-army $(or $(SWITCH_RUST_ARMY),law_line) \
+		--require $(or $(SWITCH_REQUIRE),gang_tank) $(if $(SWITCH_ARMS),--arms $(SWITCH_ARMS)) \
+		--json $(BUILD_DIR)/switch-arms.json
 
 # ---- X2 (round 4): does suppression change outcomes? ----------------------------
 # Every weapon's "suppression" set to 0 is the control: the threat field stays empty, nobody is ever pinned, and
