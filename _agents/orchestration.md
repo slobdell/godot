@@ -2187,3 +2187,36 @@ The kickoff prompt is one line; this section is the rest.
        it named the function, listed what it reads, and observed that length is not in the list.
      - **This is the fourth time today combat has brought evidence against its own position**, and the second time a
        stream has corrected a mechanism I or another stream invented from intuition rather than from the source.
+141. **A vehicle far outside the range a system was built for does not fail loudly — it quietly stops getting the benefit
+     everyone else gets.** combat, and this is the third instance this round of one pattern:
+
+     | system | sized for | how it failed |
+     |---|---|---|
+     | the spawn grid | ~4 m (8.0 m pitch − jitter → 5.6 m ceiling) | **loudly** — hulls overlapped, fixed in hours |
+     | `ArmyLayout` spacing | ~4 m (*"hulls are ~4 m long"*, in the comment) | **loudly** — 18 overlaps, fixed in hours |
+     | **cover** | ~4 m props | **SILENTLY** |
+
+     **yard's cover: 58 × `container_40` (12.19 m), 40 × `container_20` (6.06 m), 6 wrecks (6.4 m), barricades.**
+
+     | hull | length | prop types long enough to hide it |
+     |---|---|---|
+     | gang_scout | 2.8 m | 5 of 6 |
+     | gang_ifv | 3.6 m | 5 of 6 |
+     | gang_support | 7.0 m | 2 of 6 |
+     | **gang_tank (the rig)** | **14.0 m** | **0 of 6** |
+
+     **The longest prop on the map is 12.19 m. Nothing can hide a 14 m hull.** Containers stack three high, which adds
+     height, not length.
+     **And cover fails silently: the rig still drives to cover, still counts as *near cover*, and simply is not covered.**
+     That is the whole lesson — **the two systems that failed visibly were fixed within hours; this one would never have
+     announced itself.**
+     - **When a value moves far outside its designed range, enumerate what else was sized for the old range.** combat found
+       the third instance by asking that question rather than by hitting a failure.
+     - **⚠ AND COMBAT IS NOT CLAIMING IT EXPLAINS THE MATCHUP**, which is the discipline worth copying: its own arms show
+       `unit_seconds_near_cover` **flat** (0.300 → 0.306) and `deaths_near_cover` **falling** (0.411 → 0.332). **If the rig
+       were dying while exposed at cover, that share should rise.** So the structural fact is certain and **the story
+       built on it is not evidenced.**
+     - **`gangs vs law` 9/20 → 0/20 remains unexplained.** Shuffling is now evidenced *against* (the rig converts 0.95 of
+       its path into net displacement — the **least** shuffling gang type; the scout is the shuffler at 0.68). Splash is
+       evidenced against (**indirect kills halved, 8.4% → 3.7%**). **"Bigger target" survives by elimination rather than by
+       evidence, which is not the same thing**, and combat said so rather than letting it become the answer.
