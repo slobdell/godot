@@ -211,6 +211,38 @@ seeing the number" is exactly the shape that needs the timeline attached.**
 - **bigger target:** `moved` and `push` hold; the damage shows in losses, suppression and kill distance.
 - **neither:** nothing moves but the matchup still collapses, and I have no mechanism and will say so.
 
+**RESULT: INCONCLUSIVE, and the prediction is not met. I am not claiming a mechanism.** Both arms, builder0,
+`gangs:law` on yard, n=6, same seeds, build declared as the arm:
+
+| metric | 5.6 m control | **14 m rig** | |
+|---|---|---|---|
+| match length | 126 s | 109 s | −13% |
+| fire per unit-minute | 18.7 | **24.8** | **+33%** |
+| moved (centroid travel) | 281 m | 220 m | −22% |
+| **push (net advance)** | **98 m** | **98 m** | **identical** |
+| engaged distance | 43 m | 42 m | flat |
+| kill distance | 27 m | 24 m | −11% |
+| deaths in cover | 41% | 33% | −8 pts |
+
+**I predicted `moved` AND `push` would fall while fire held up. `moved` fell, `push` is identical to the metre,
+and fire rose by a third.** That is not the shuffling signature I described.
+
+**And the deeper problem: `centroid_travel` cannot detect per-unit shuffling either.** It is the ARMY's centre of
+mass, and individual vehicles shuffling forward and back **cancel in an average**. So this is the *second* metric
+I have aimed at this question that is structurally incapable of answering it — `static_share` because it is
+speed-based and whole-fight, `centroid_travel` because it is an army-level mean. **Both would have read the same
+whether or not the rigs were shuffling.**
+
+**What the data does say, offered as description and not as mechanism:** with the 14 m rig the fight is *faster
+and hotter* — a third more shots per unit-minute, 13% shorter, killing 11% closer, with the same net advance. That
+is consistent with a bigger target being easier to engage, and it is equally consistent with vehicles that spend
+more time able to shoot because they are travelling less. **n=6, one pairing, one map: it discriminates nothing.**
+
+**What would actually settle it: a per-unit metric of net displacement against distance travelled** — "did this
+vehicle go anywhere" rather than "was the army still" or "did the centre of mass move". Nothing in the engagement
+stats measures a single vehicle's progress, and **the honest close is that the mechanism behind `gangs vs law`
+9/20 → 0/20 is still unknown**, with three candidates alive and no instrument that separates them.
+
 **14 m arm (builder0, `b16b8d78`, gangs:law on yard, n=6):** len 109 s, first shot 5 s, **fire 24.8/unit/min**,
 contact @108 m, engaged 42 m, kill 24 m, **static 0%**, held-line 12%, **moved 220 m**, **push 98 m**, off-axis
 kills 57%, flank+rear 62%, cover time 31%. The 5.6 m control is running on the same seeds and machine.
