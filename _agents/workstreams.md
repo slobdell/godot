@@ -55,6 +55,13 @@ and feel first and the other three after CP1.** **An eighth stream, `show`, was 
   drag's ground direction becomes `facing` (pixels, not metres: at his pose 18 px is 0.3 m at the bottom of the frame
   and 40 m at the top); inside = a plain move with the key absent. Merged alone the day control names its green hash;
   it is the live arm for nav's arrival-arc A/B, which must not run before it.
+- **CP3 note (2026-09-20 02:20):** T1's profile says `test` is **92%** of a check (2388 of 2584 s, builder0 `c21d0256`), so
+  T1 is test sharding, not target concurrency. **After CP3 a slot holds six to eight processes, so CP3 sets
+  `REMOTE_SLOTS=3`, not 6 or 8** — same box saturation, half the latency per check (metrics' arithmetic: 3 slots → ~5
+  shards → ~10 min; 6 → ~2 shards → ~22 min); `tools/slot.sh --jobs` divides the *memory* budget by the live slot count
+  so the two knobs cannot multiply into an OOM. **A separate follow-up checkpoint after CP3:** `make test` passes no
+  `--fixed-fps`, so the suite waits on wall-clock 30 Hz physics — measured ~5× on simulated time; landed alone with
+  three consecutive runs because it can change a test's *result* where sharding cannot.
 - **CP3 — T1 parallel `check` (metrics).** Merged the moment it is green over three consecutive runs with a
   bit-identical sim hash; every stream benefits and every stream re-times its wall-clock assumptions after it.
 
