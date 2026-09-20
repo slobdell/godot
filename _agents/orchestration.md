@@ -2836,3 +2836,11 @@ The kickoff prompt is one line; this section is the rest.
     the surviving ticks are a different population). And the arm-proof bar nav wrote as `refused < chords` passed at
     90.9 % refused: **an arm-proof bar is a share, set before the run, never an inequality that any non-zero
     satisfies.** Same shape as A4 and A1: a behaviour that buys its metric by not moving.
+189. **A check that stops at the first failing target abandons the rest, and nothing in the log says so.** Round 9,
+    metrics' `check3` on `9f263162`: `test` failed, `make` stopped, and 7 of 18 targets never ran (combat-smoke,
+    lobby-smoke, army-loop-smoke, match-pytest, metrics-pytest, ai-scenarios-check, remote-guard-test); the run was
+    read as "the usual three reds" until the `done/` markers were counted. Twice that afternoon `sim-baseline` was
+    among the abandoned and a merge was blind to the one number that gates it. The fix is `-k` *plus* a three-state
+    verdict (PASS / FAIL / NOT RUN) printed from the markers, because with `-k` alone a reader still learns of a
+    skipped target only by noticing absent output. Read a check as passed / failed / abandoned from its markers,
+    never from what happened to print.
