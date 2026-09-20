@@ -2570,7 +2570,11 @@ The kickoff prompt is one line; this section is the rest.
     pre-registered 120 s it showed **408**. Refusing the map on the short run would have published "boneyard has no
     off-mesh gates", which is false. The same check then scoped a claim honestly: A4's "43% of off-mesh gates need a
     curve" was yard alone; across four maps it is ~20% and 0% on three, so the A/B runs on the cluttered maps only and
-    says so. And control's version the same hour: `BlockCutaway` cut **nothing in a real match** while its pure
+    says so — and the map set itself was wrong: the pre-registration said *"the four maps `--arena=random` can deal"*,
+    but `random` deals from `Arena.ROTATION` (three maps), so the screen held two maps the player never sees and omitted
+    one they do; **a pre-registered set is checked against the code that deals it, not typed from a Makefile default.**
+    Also: `nav-fight-maps` opens with `rm -rf build/nav-maps`, so a re-run destroys the previous run's logs — copy first.
+    And control's version the same hour: `BlockCutaway` cut **nothing in a real match** while its pure
     falsifier read 518 → 0 — `obstacles_root` was wired before the arena had built its bodies, so `_process` returned
     early forever; only a node-level test in the real tree, and looking at the frames, closed the distance between
     "the algorithm is right" and "the feature works" (lesson 23's shape, one layer down).
