@@ -155,3 +155,133 @@ func _slab(body: StaticBody3D, at: Vector3, size: Vector3) -> void:
 	shape.shape = box
 	shape.position = at
 	body.add_child(shape)
+
+
+## S3: `facing_arc` must be PUBLISHED, and must be live only while the hull is actually being steered at a gate.
+## metrics' emitter writes `null` until nav publishes this key, and a null column made `make metrics` print
+## `arc_live=0.0s` in both arms of nav's own A4 A/B — a zero that reads like a measurement of behaviour and was an
+## unpublished field. The guard that matters is the CLEAR: a stale `true` becomes arc seconds the hull never spent.
+func test_the_arrival_arc_publishes_whether_it_is_live() -> void:
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var tank := game_match.spawn_tank("Arcer", 0, Match.Team.GREEN, "ifv")
+	tank.global_position = Vector3(-100, 0, 40)
+	tank.rotation.y = 0.0
+	var ctl := OrderController.new()
+	ctl.tank = tank
+	ctl.tanks_root = game_match.tanks
+	add_to_tree(ctl)
+	# A wheeled hull sent somewhere with an ordered facing: the gate is what it steers at first.
+	assert_eq(ctl.set_orders({"type": "move_to", "x": -60.0, "z": 40.0, "facing": [1.0, 0.0]},
+			{"type": "hold_fire"}), "", "told to arrive facing east")
+	await tree.physics_frame  # `Movement.of` has no mover until the hull is driven, and `state` is {} until then
+	assert_true(Movement.state(tank).has("facing_arc"), "the key is published at all (metrics reads it as optional)")
+	var seen_live := false
+	for frame in int(SimClock.TICK_RATE * 6):
+		await tree.physics_frame
+		if bool(Movement.state(tank).get("facing_arc", false)):
+			seen_live = true
+			break
+	assert_true(seen_live, "the arc reports itself LIVE while the hull is steered at the gate")
+	# ...and stops reporting live the moment the mover is no longer driving.
+	Movement.of(tank).idle()
+	assert_true(not bool(Movement.state(tank).get("facing_arc", true)),
+			"and is cleared by idle(), so it can never be counted as arc seconds the hull did not spend")
+
+
+## S4: control signed A6 on one condition — that `Movement.state(unit)` carry `legibility: {active, why}` so their
+## readout names which level took the nose instead of inferring it from geometry. Their C-2 readout was built and
+## SILENT waiting for this key. These tests hold the shape control renders against, and the closed set, because a
+## `why` outside it renders as nothing and a silent readout looks exactly like a working one.
+func test_the_legibility_key_control_signed_for_is_published() -> void:
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var tank := game_match.spawn_tank("Legible", 0, Match.Team.GREEN, "ifv")
+	tank.global_position = Vector3(-100, 0, 40)
+	tank.rotation.y = 0.0
+	var ctl := OrderController.new()
+	ctl.tank = tank
+	ctl.tanks_root = game_match.tanks
+	add_to_tree(ctl)
+	assert_eq(ctl.set_orders({"type": "move_to", "x": -60.0, "z": 40.0, "facing": [1.0, 0.0]},
+			{"type": "hold_fire"}), "", "sent somewhere with an ordered facing")
+	await tree.physics_frame
+	var leg: Variant = Movement.state(tank).get("legibility")
+	assert_true(leg is Dictionary, "the key is published as a Dictionary")
+	var pair: Dictionary = leg
+	assert_true(pair.has("active") and pair["active"] is bool, "`active` is a bool")
+	assert_true(pair.has("why"), "`why` is present")
+	assert_true(Movement.LEGIBILITY_WHY.has(pair["why"]),
+			"`why` (%s) is in the closed set control renders: %s" % [pair["why"], Movement.LEGIBILITY_WHY])
+	# A6 is not built, so nothing nav owns shapes the nose. Asserting this keeps a later `active: true` honest:
+	# whoever flips it has to come through this test and say which law did it.
+	assert_true(not bool(pair["active"]),
+			"`active` is false until A6-a/A6-b exist - no nav-owned motion law is shaping the nose yet")
+	# `override` is RESERVED and must stay unpublished until a law can actually be outranked. control renders the
+	# absence of a law as nothing; publishing `override` for it would be attribution for a cause that never ran.
+	assert_true(pair["why"] != &"override",
+			"nothing publishes `override` while no nav-owned law exists to be overridden (got %s)" % pair["why"])
+
+
+## S4 names this case explicitly: an arrival arc under an ORDERED facing is off-corridor by construction, and those
+## ticks must be counted as ordered and never charged to A6's fraction. The readout can only do that if nav says so,
+## which is why `arrival_arc` is in the set rather than folded into `override`.
+func test_an_ordered_arrival_arc_names_itself_rather_than_looking_like_a6() -> void:
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var tank := game_match.spawn_tank("Arced", 0, Match.Team.GREEN, "ifv")
+	tank.global_position = Vector3(-100, 0, 40)
+	tank.rotation.y = 0.0
+	var ctl := OrderController.new()
+	ctl.tank = tank
+	ctl.tanks_root = game_match.tanks
+	add_to_tree(ctl)
+	assert_eq(ctl.set_orders({"type": "move_to", "x": -60.0, "z": 40.0, "facing": [1.0, 0.0]},
+			{"type": "hold_fire"}), "", "told to arrive facing east")
+	var named := false
+	for frame in int(SimClock.TICK_RATE * 6):
+		await tree.physics_frame
+		var pair: Dictionary = Movement.state(tank).get("legibility", {})
+		if pair.get("why") == &"arrival_arc":
+			named = true
+			assert_true(bool(Movement.state(tank).get("facing_arc", false)),
+					"and it agrees with `facing_arc` on the same tick - one fact, not two that can drift")
+			break
+	assert_true(named, "the arc names itself as `arrival_arc` while it is live, so A12 can exclude it from A6")
+
+
+## S4 §2: nav publishes the corridor TANGENT so the law, control's readout and the falsifier read one interpretation
+## rather than each projecting `path_points` their own way. And §5: `null` when there is no leg, never a zero vector
+## — an unreadable corridor must not look like a readable one.
+func test_the_corridor_tangent_is_published_and_is_null_when_there_is_no_leg() -> void:
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var tank := game_match.spawn_tank("Corridor", 0, Match.Team.GREEN, "ifv")
+	tank.global_position = Vector3(-100, 0, 40)
+	tank.rotation.y = 0.0
+	var ctl := OrderController.new()
+	ctl.tank = tank
+	ctl.tanks_root = game_match.tanks
+	add_to_tree(ctl)
+	assert_eq(ctl.set_orders({"type": "move_to", "x": -60.0, "z": 40.0}, {"type": "hold_fire"}), "", "sent east")
+	var tangent: Variant = null
+	for frame in int(SimClock.TICK_RATE * 4):
+		await tree.physics_frame
+		tangent = Movement.state(tank).get("corridor")
+		if tangent != null:
+			break
+	assert_true(tangent is Vector3, "the tangent is published as a Vector3 while a leg exists")
+	var t: Vector3 = tangent
+	assert_true(absf(t.length() - 1.0) < 0.001, "it is a UNIT vector (%.3f)" % t.length())
+	assert_true(absf(t.y) < 0.001, "flattened to the ground plane (y %.3f)" % t.y)
+	assert_true(t.dot(Vector3.RIGHT) > 0.5, "and points down the ordered leg, east (dot %.2f)" % t.dot(Vector3.RIGHT))
+	# ...and an idle hull has no leg at all, which must read as absent rather than as a zero tangent.
+	Movement.of(tank).idle()
+	var reading := Movement.state(tank)
+	assert_true(reading.get("corridor") == null, "no leg publishes null, never Vector3.ZERO")
+	assert_eq(reading.get("legibility", {}).get("why"), &"no_order",
+			"and the law reports itself inactive with §5's reason rather than looking broken")

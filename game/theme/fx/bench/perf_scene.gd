@@ -23,7 +23,8 @@ extends Node
 ##        --perf-capped (keep FrameTarget's cap and vsync: does the locked rate hold?)  --frame-target=30|60
 
 ## Each layer toggle, in run order. Every one is measured against the `all` phases beside it. More on request
-## (--perf-layers): no_venue (stands, gates, screens, crowd), ground_lite (the low-tier floor shader), no_msaa, lights_4
+## (--perf-layers): no_venue (stands, gates, screens, crowd), ground_lite (the low-tier floor shader), no_msaa,
+## lights_4, no_show (S6's arena light show, measured against itself inside one run)
 ## (a 4-light pool), glow_lite (glow levels 2-3 only), no_fog,
 ## no_spill (the ad screens' light on the floor), scale_085 / scale_075 (3D render scale), glow_wide (glow levels 3+),
 ## ground_unlit / ground_lit (the high floor lit in its shader, or by the renderer), lod_4 / lod_8 (mesh LOD threshold px),
@@ -406,6 +407,13 @@ func _apply(phase: String) -> void:
 				_override(dome, "visible", false)
 			for skyline in get_tree().root.find_children("*", "CitySkyline", true, false):
 				_override(skyline, "visible", false)
+		"no_show":
+			# S6, the arena light show: its cost, measured WITHIN one run so both halves see the same machine.
+			# `driving = false` writes every fixture back to its identity, so this phase renders exactly what the
+			# venue rendered before the show existed. Not in the default LAYERS: ask for it with
+			# `--perf-layers=no_show` (make show-perf-layer).
+			for show in get_tree().root.find_children("*", "Show", true, false):
+				_override(show, "driving", false)
 		"no_glow":
 			for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
 				var environment := (world as WorldEnvironment).environment

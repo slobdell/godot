@@ -180,6 +180,100 @@ cannot spare). Pre-register the sim hash unchanged; if it moves, it is the same 
   frame before it ships, since "Syndicate-feel" is his to judge.
 
 ## Status
+### THE REPORT — read this first; everything below it is the working record
+
+**FRAMES FOR THE LEAD, all on this laptop:**
+
+| what | path | pose |
+|---|---|---|
+| **The roster at real relative scale** | `build/roster-lineup/lineup_pose.png` | **his** (21°, FOV 35, 49 m) |
+| the same, four faction rows | `build/roster-lineup/lineup_factions.png` | — |
+| **The War Rig bending** | `build/rig-hinge/strip_45.png` (reads best), `strip_21.png` (his pose), `strip_reverse_60.png` (jackknife) | 45° / **his** / 60° |
+| **The Syndicate airship** | `build/airship-look/airship_widest.png` | 8° tilt — **he cannot see it at 21°**, see §2 |
+
+**My look at the resize (the one subjective check I owe on CP2): it works.** `lineup_pose.png` runs Rat Rod **2.9 m**
+→ War Rig **14.0 m** and the rig **dominates** — visibly five times the rat rod and clearly larger than the
+Condemned Tank at 8.6 m. That is the thing he asked for. Two observations, neither a defect:
+
+- **The Syndicate reads as a different game, and that is the art direction working.** The Railgun Platform is
+  pristine white against everyone else's rust and soot — `art_direction.md` calls the Syndicate the ivory tower
+  with almost no rust, so this is intended; at roster scale it is simply very legible.
+- **The Syndicate is fewer AND smaller** (Skimmer 4.0, Spotter 4.0, Limousine Gunship 4.6, Missile Ring 4.9,
+  Railgun Platform 5.4 — the whole faction sits under 5.5 m while three other factions field 8 m+). Their doctrine
+  is "fields almost nothing but guns and the eyes to aim them", which argues for fewer-but-bigger. **A look
+  question for the lead, not a defect** — the numbers are derived from real reference vehicles, so if it reads
+  wrong the reference is what changes.
+
+
+**Round 9, feel. Green at `5ae7e531`** (builder0: `>> remote: make check exited 0`, `check passed: 16 targets`,
+**1,316 passed / 0 failed**, `sim-baseline passed: 04414f5d6a6dfa7c` — unchanged —, `lint: all 543 scripts parse,
+8 known artefacts baselined`). Merged to main. *(Squad's later merge moved the baseline to `d4c049819a5833d3`;
+mine was verified against the value that was current when it ran.)*
+
+#### 1. "The semi trucks are still one long box" — done, and you have the frames
+
+**The War Rig is a tractor and a trailer now, hinged at the fifth wheel.** It corners like a semi: the cab swings
+out ahead while the tanker cuts the corner inside it. It **jackknifes when it reverses**, because that is what a
+trailer does.
+
+- **In a live match** (32 rigs, 1,440 samples): mean bend **6.1°**, 4.9% of the time past 30°, 1.2% at the limit.
+  So it folds occasionally and **lives near straight** — the occasional truck backing out of a corner, not a fleet
+  of broken vehicles.
+- **On its own tightest turn** (12 m, its real turning circle): settles at **22.7°** against the textbook's
+  `asin(L/R) = 24.9°`. The law is right, not just plausible.
+- **Frames:** `build/rig-hinge/` — the corner at 45° (where the bend reads), the same corner at **your pose**, and
+  the jackknife from above.
+
+**⚠ One thing to know before you see it happen: the collision box is still the single 14 m box.** A shell can pass
+through empty air inside a fold this round. That was the agreed trade for not touching the simulation — and the
+simulation is **proved** untouched, not assumed: the hash is identical, and that was predicted in writing before
+the work started.
+
+#### 2. The Syndicate airship — built, and there is a decision for you
+
+It exists: envelope, fins, gondola, engine pods, a screen a side sharing the arena's ad channel, so **it replays
+your kills overhead**. Syndicate-clean, no rust. No collision. Absent on low-end.
+
+**But the measurement says you will not see it at your pose, and the reason is geometry, not tuning.** The top of
+your screen sits **3.5° below the horizon** at pitch 21° — *the sky is never on screen where you play*. Over 768
+samples at every tilt you can reach, the first version was visible **0.0%** of the time.
+
+**So I moved it out over the city** (560 m, in front of the skyline, inside the draw distance). Now: **visible 12.5%
+of the time at 8–12° of tilt, ~105 px on screen, still never at your default 21°.** The frame is
+`build/airship-look/airship_widest.png` — top-left, against the lit city, half out of frame.
+
+**Your call, and it is one line either way:** *(a)* leave it over the city, where you see it when you tilt down —
+which is Blade Runner's airship, over a city; or *(b)* accept it cannot hover over the arena in play, and use it on
+the title, results and replay screens where the camera can look up.
+
+#### 3. "They still don't do what I command" — the cause is now written down and agreed
+
+Three streams signed `_agents/legibility.md`. The claim: that complaint is **not disobedience, it is
+illegibility** — a unit circling correctly still spends a third of its time moving away from where you sent it.
+**Nothing has shipped yet**; the page is the contract that stops it being built wrong. The key finding was that the
+obvious version of the fix would have done nothing measurable, and nav said so plainly: it would have *"shipped a
+heading law, measured no change, and spent a round arguing about the tolerance."*
+
+#### 4. Found on the way, not asked for
+
+- **The Terminus is brighter than the fight.** On the city map, the buildings out-read the vehicles in **22 of 30
+  frames at your pose** — with the lighting show switched off entirely, so it is the map, not the show. Cause found:
+  it is the only arena with buildings *inside* the fighting area (eight 40 m towers, two of them 40 m from the
+  centre) and it has **half the floodlights of `pit`** at the same size. The fix is more light among the buildings.
+- **The asset pipeline had its own stale copy of every vehicle's size**, already disagreeing with the real one.
+  Harmless today; it would have made every model generated after the resize come out the wrong size, silently.
+- **Two of our own safety checks had been described as broken for two rounds** after they were fixed. Proved
+  working four different ways.
+
+#### 5. Owed
+
+| item | state |
+|---|---|
+| The hinge's frame cost (M1) | **Not reportable yet.** GPU cost indistinguishable from zero; the CPU number came off a machine running eight other jobs and is noise. Re-runs on a quiet box. |
+| The Terminus lighting | Diagnosed and handed to the stream that owns the map file |
+| Roof dressing on the Terminus | Your new camera shows roofs far more often; they are undressed. A frame first, then surface treatment |
+| Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
+
 
 ### Plan (feel, 2026-09-20)
 
@@ -228,48 +322,137 @@ isolation artefacts). **The local lint earned its keep on its first run**: of te
 guard, `--no-trailer`, the airship, the `spectacle` weight table, the tier fix and the test fix — is **unverified**
 and needs a second check. Merge `7a706911`, or wait for the second check; do not merge the tip on this one's word.
 
-### ⏸ PAUSED 03:20 (orchestrator: the lead's session limit). WHERE I AM, AND THE EXACT NEXT STEP
+### X4 — ran once and found one unit: the artillery's collider is its DEPLOYED pose (`f1859075`)
 
-**Nothing is mid-flight and nothing is uncommitted.** The local batch was still queued behind another stream's
-`make check` when I stopped it, so no work was lost: I killed the `slot.sh` wrapper (not the `make` inside it),
-verified no `slot<N>.owner` and no wait-ticket of mine remains in `/tmp/tank_squad_slots/`, and the working tree is
-clean. Branch tip: see the last commit below.
+```
+UNIT_BOX_FILL 19 units, worst artillery axis 0 at 38.9%
+artillery axis 0: drawn 2.90 m against a 4.74 m box (39% out)
+```
 
-**`7a706911` is MERGED TO MAIN** — X1, X2's code, X3 and X8 are shipped. **The tip is ELEVEN commits past it and
-is covered by no check**: the file-existence guard, `--no-trailer`, the airship and `airship-look`, the `spectacle`
-weight table, the airship's tier fix, the `ArenaDressing` test fix, and Status commits.
+**18 of 19 pass**, so scale's resize is right everywhere else and this is not a resize mistake — it is a
+measurement that could not have known better.
 
-**THE EXACT NEXT STEP, in order, when RESUME arrives:**
+**The mechanism.** `artillery` is the only unit with an `OutriggerRig` (`artillery_part.gd`): four legs cut loose
+from the hull and posed by `set_deployed(ratio)`, **0 = stowed for driving, 1 = jacks down**. Per
+`slot_contracts.md` the model's **authored pose is deployed**, so `SizeLook.box_at_length` measured the union AABB
+**with the legs down** (4.74 m wide) while `Tank` drives it **stowed** (2.90 m).
 
-1. **Only after the orchestrator says builder0 is up**, and after checking builder0 for an orphaned `slot.sh` of
-   mine from the run that died at 03:15: `REMOTE_SLOTS=6 make remote T=check` on the tip. That is the one thing
-   standing between eleven commits and a merge.
-2. **Recover the stranded artefacts** — a plain
-   `rsync -az builder0:~/tank_squad/godot-feel/build/ build/` brings back `7a706911`'s run output. **No re-run is
-   needed**; only the copy failed. Until then **no number may be cited from local `build/`**, except
-   `build/rig-hinge/`, which was made locally and which I verified the failed rsync never touched.
-3. **The local batch, re-queued as one sequential slot** (all four are laptop-only; none can go to builder0
-   usefully while the queue there is the bottleneck):
-   `make perf-scene PERF_NAME=perf-gangs-off PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs --no-trailer"`,
-   then the same with `PERF_NAME=perf-gangs-on` and no `--no-trailer` (**M1: the hinge's frame cost, A/B in one
-   tree**), then `make airship-look`, then `make shell-playtest` (**X5's leak lines**).
-4. **`make airship-look`: check the frames DIFFER before reading anything into them.** A stale X cookie makes Godot
-   fall back to Wayland, which stops redrawing a hidden window, so every capture after the first silently repeats
-   the first (`remote_builds.md`, and the comment at `tools/remote.sh:62`). For a sweep whose entire output is
-   frames that are *supposed* to differ, that failure is indistinguishable from a result.
-5. **X6's two experiments** — the script is written and ready at
-   `<scratchpad>/x6.sh`: stale the baseline for this machine's glibc and confirm `sim-baseline` goes red while both
-   smokes stay green (they do not consult the file), then skew the instrumented run's seed and confirm `music-smoke`
-   goes red (the comparison is live). Then delete the dead `key="control"` in both recipes and correct **lesson 65**,
-   which is the orchestrator's file.
-6. **X4** stays blocked on CP2 by design.
+**Why it is not cosmetic: `hull_size` IS the collider.** While that artillery drives — most of the time, and all of
+the time it is shot at on the move — **its collider is 63% wider than the vehicle you can see.** Shells stop in
+empty air beside it.
 
-**The open question I expect to answer with (3) and (4), and which is a design question for the lead rather than a
-bug:** at his pose the top of the frame sits at `pitch - FOV/2` = 21 - 17.5 = **3.5° BELOW the horizon**, so nothing
-in the sky can be drawn there at any altitude or distance. If the sweep confirms it, *"sometimes visible in the
-field of view"* is **false at his camera and true only at the bottom of his tilt range** (he can reach 8°), and the
-airship's `ORBIT_RADIUS` / `ORBIT_ALTITUDE` are provisional until he rules.
+**Recommendation (scale's number, scale's call): bind the box to the DRIVING pose.** A deployed leg overhanging the
+collider is the same accepted cost as the War Rig's jackknife, and far less wrong than 1.84 m of permanent
+invisible armour on a moving vehicle.
 
+**The honest half, about my own test:** a unit with two silhouettes cannot match one box in both poses, so **no box
+makes this test pass in both states.** It checks the driving pose deliberately. If scale rules the other way, **my
+test changes, not their number** — and the exception gets the measurement attached rather than a widened tolerance.
+
+**Confirmed in passing:** `syn_artillery`'s 4.07 m width, which scale flagged as arguable, **passes** the
+drawn-vs-box check — its missile wings really are that wide. A look question for the lead, not a defect.
+
+### The Terminus has been wearing the wrong colours for a round (show found it; fixed `637ad4de`)
+
+`CityBlock.neon_color()` honoured only strings beginning with `#`, so every colour **name** a layout used fell
+through to a random pick from the **signage** palette. `arenas/terminus.json` asks for `"cyan"` on four blocks and
+`"magenta"` on four — **all eight were ignored.**
+
+**And `NeonSigns.COLORS` is `[amber, warm white, RED, violet]`**, so the bug was putting **red and a near-white** on
+eight buildings on the lead's city map: the exact two colours I ruled out for show's parapet three hours earlier,
+on the grounds that red is a *signal* in this game (beacons, alarms) and cool white is not in the palette. **I laid
+down a rule about architectural colour while my own file was breaking it eight times.**
+
+**The half worth remembering is not "honour names", it is the fallback.** A *seeded* random pick in answer to a
+name someone typed on purpose **looks exactly like a deliberate choice**, which is how this survived a whole round
+of people looking at that map. An unresolvable name is now loud and deterministic; a block that asks for nothing
+still gets seeded variety, which was always the intent. The tests read what `terminus.json` actually asks for
+rather than remembering it, and assert the result is **not** a signage-palette pick. The hard rejection belongs in
+`Arena.validate()` beside the other unknown-key checks — arena's file, scale's this round, flagged to them.
+
+**Frame provenance, for whoever assembles the lead's summary:** every Terminus frame shot before `637ad4de` — all
+of show's — has the old accidental palette. **Mine are unaffected:** `build/rig-hinge/` is `foundry`,
+`build/airship-look/` is `foundry`, and `build/shell-playtest/` is `pit`. None of the three needs that caveat.
+**Not yet verified**: no local Godot runs tonight, so the fix rides the next builder0 check.
+
+### The X8/CP2 composition, and my ruling on it (2026-09-20, scale's find)
+
+**My `AssetContracts` change and scale's resize are each correct alone and RED together** — 14 slot-contract
+failures on the merged tree (`test_assets_pipeline::test_committed_generated_themes_meet_their_contracts`,
+builder0 `e7ebb372`). I made the pipeline read `Units.PROFILES` on every call, which scale asked for and which was
+right; scale then made `hull_size` 1.7–2.4× bigger. The slot size is derived from `hull_size`, the committed art
+was normalised to the OLD sizes, so *"too small for the slot"* fires on every unit whose hull grew. **My branch was
+green because it had the old roster; scale's was green because it had the old contract table.**
+
+**scale's lesson, and it is better than either of our fixes: INERTNESS DOES NOT COMPOSE.** Neither of us could have
+found this alone, and it is the cleanest instance of Invariant 2's own warning the round has produced.
+
+**My ruling: the shape check, not the size check — and NOT simply retiring the rule.**
+
+- scale is right that the absolute check measures nothing now: `_fit_to_hull` scales every part by
+  `hull_size[2] / FactionArt.hull_length()`, so a model at 48% of its slot draws at **100%** of it.
+- **But retiring it leaves newly generated art ungated, which is the one thing the pipeline is for.** scale's
+  `test_every_box_is_its_meshs_proportions_at_that_length` covers every unit **in the catalog**; a fresh `.glb` is
+  not in the catalog yet, and `assets-check` is the gate it passes on the way there.
+- **So the rule changes question rather than disappearing: not "is this the right size" but "is this the right
+  SHAPE".** The fit is uniform by length, so a mesh whose aspect disagrees with its box over- or under-fills in
+  width and height — and `hull_size` **is** the collider, so that is a shell through empty air. It is my own
+  round-8 roster-wide finding, asserted at the gate from the other side.
+
+**Granted to scale to land inside CP2** (my file; I review at merge), with the code written out and a
+`SHAPE_TOLERANCE` of 6% justified by `box_at_length`'s own 0.01 m rounding — **and the instruction that a unit which
+still fails is a real finding, not something to widen the tolerance for.** A tolerance chosen to make the red go
+away is not a tolerance.
+
+### ⏹ STANDING BY (05:45). Everything in the backlog is done or owed; here is the exact next step
+
+**No process of mine is running on either machine, and no local Godot runs at all until morning** (orchestrator:
+the laptop was at 245 MB free with nine sessions live). The slot I was holding is released and its `.owner` file
+removed.
+
+**`main` is merged into `stream/feel`** — clean, zero behind, clean tree. **The merged tree is NOT verified on my
+branch**: three of four post-merge test files had passed when I stopped the run for the memory call and the fourth
+had not reported, so **do not read the last green (`5ae7e531`) as covering the merge.** X4's remote check will be
+the first pass over it, which is the right place for it.
+
+**Two items left, both waiting on someone else's clock:**
+
+1. **X4 — the every-unit box-fill test — the moment CP2 lands.** If CP2 misses its window tonight this is the
+   first thing after the lead's morning merge, so here it is as commands rather than a description.
+
+   **The seed is alive and verified reachable (checked 06:55):** branch **`feel-rig-check`**, commit
+   **`26e1f26a`**, one file, `tests/test_theme_unit_scale.gd`, 14 lines. Read it with
+   `git show 26e1f26a -- tests/`. It asserts, for `gang_tank` and `gang_support` only, that the **drawn** mesh
+   matches `hull_size` on every axis within 5%.
+
+   ```bash
+   cd ~/projects/godot-feel
+   git merge main                      # LOCAL main, never origin/main; no remote run of mine in flight
+   git show 26e1f26a -- tests/         # the seed, to generalise from
+   # generalise: every unit with art, not the two semis; keep the 5% and the per-axis message
+   REMOTE_SLOTS=6 make remote T="test FILTER=unit_scale"
+   REMOTE_SLOTS=6 make remote T=check  # the merge candidate, and 637ad4de rides it
+   ```
+
+   **The division of labour, and it is the whole point of the item:** scale **derives** the numbers
+   (`hull_size` = `SizeLook.box_at_length(unit, reference × K)`); I check **the art is not distorted by them**.
+   `_fit_to_hull` scales uniformly by length, so width and height come out as the mesh's own proportions — **a unit
+   whose mesh cannot fill its new box is a finding handed back to scale, never something to stretch away.** Expect
+   it to pass by construction after CP2, because `box_at_length` makes the box the mesh's proportions; **a failure
+   is therefore interesting**, and it will be one of the units that kept its box for want of an approved mesh.
+
+   Then look, do not just count: `make vehicle-gallery`, `make roster-lineup` (scale's lineup view in my
+   `size_look.gd`), and one real match at his pose. **All of it on builder0.**
+2. **The M1 hinge cost, when builder0 is quiet.** `make remote T=perf-trailer-ab` with more `PERF_CYCLES`. The
+   number from the loaded box (13.36 ms) is **noise and must not be quoted**: the same capture reported
+   `layer_cost_gpu_ms −0.58` — no measurable GPU cost, which is what 6 extra draw calls should look like — against
+   `all_avg_ms 61.42` / `p95 92.11` and `holds_30fps_at_vehicles: 0`. Within-run toggling fixed the between-runs
+   noise; it cannot fix contention that varies over seconds.
+
+**Two process traps I hit tonight, both now in `remote_builds.md`:** a killed `make` leaves its `slot.sh` wrapper
+holding a machine-wide slot with nothing inside it, and the `.owner` file survives the process so a dead holder
+looks alive in every waiter's log; and **PPID is not an ownership test** — all nine sessions share one parent, so
+ownership is `readlink /proc/<pid>/cwd`, and a slot's real holder is `fuser` on its `.lock`, never the `.owner`.
 ### X7 — the sweep said 0.0% everywhere, and that changed the design (builder0, `e82ecd1a`)
 
 **Before — radius 118 m, altitude 74 m: `visible_pct 0.0` over 768 samples, at EVERY reachable tilt.** Not rare.

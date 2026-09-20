@@ -2639,3 +2639,95 @@ The kickoff prompt is one line; this section is the rest.
     present column, its own commit says). Read a nullable field with `has()` first; a publisher that sends null is
     only honest if every reader can see the key is there. Sibling of lesson 157 (an empty list must not read as a
     pass) and of lesson 164 (an instrument that cannot see the case reports zero).
+174. **A rule you are enforcing on another stream is worth running against your own files first.** Round 9, feel: three
+    hours after ruling that show's parapet must never be red (a signal colour) or cool white (not in the palette), feel
+    found `CityBlock.neon_color()` honouring only `#`-colours, so the Terminus's eight blocks had worn **red and a
+    near-white** from a seeded random fallback for a whole round — the layout asked for cyan and magenta and every
+    name was silently ignored. It survived because a *seeded* random pick in answer to a deliberate name looks exactly
+    like a deliberate choice. Unresolvable names are now loud (`637ad4de`); the hard rejection belongs in
+    `Arena.validate()`. Sibling of lesson 157: a fallback that produces a plausible answer is worse than one that fails.
+175. **A safety property that has never been exercised is fiction, and the third run is what exercises it.** Round 9,
+    metrics, CP3's three-run falsifier: runs 1 and 3 (CHECK_JOBS 2) passed; run 2 derived CHECK_JOBS 3 and `lobby-smoke`
+    and `relay-smoke` started a broker on the same port in the first minute. The exclusion groups written to prevent
+    exactly that were inert: `_cp-lobby-smoke: lobby-smoke | _cp-relay-smoke` orders the *wrapper* after the other
+    wrapper, but `lobby-smoke` is a normal prerequisite of that same wrapper and make builds it concurrently — **the
+    order-only edge constrained the bookkeeping, not the work.** Fixed by giving each wrapper no normal prerequisite and
+    invoking its target from its own recipe, verified from make's database. Two runs would have shipped it. The
+    falsifier was not met and was not presented as met; the runs restarted on the fix.
+176. **A `$(shell …)` in a recursively expanded make variable runs again on every reference — and if it reads something
+    that moves, one run gets several answers.** Round 9, scale's CP2 check: `TEST_SHARDS ?= $(shell tools/slot.sh --jobs
+    …)` reads free memory; it is referenced to launch the shards, to fan them out, and to verify how many reported.
+    The run launched 2 shards, both reported 1395/0, and the verification compared against 3 — the guard fired on
+    itself, and a green suite exited 2. Trip-up 67's family: make evaluates a variable differently from how the author
+    read it. Derive once with `:=`, print the value the run actually used in its own header, and verify against that
+    value, never against a fresh evaluation. **The nastier version of "the thing under test is not the thing
+    described": here the instrument and the subject disagreed about how many there were.**
+177. **The change that feels too small for the ceremony is the common case, not the exotic one.** Round 9's last hour,
+    squad, a "one-line" fix to a facing drag on a whole squad: the peer's premise (nothing reads `task["facing"]`) was
+    wrong — it was read, and the heading was thrown away one line later by `entry["facing"] if halt else null` — so
+    implementing what was described would have fixed nothing; then three process slips on the same small item (a
+    verification launched in the same command as an edit that had aborted, a test whose negative arm passed for the
+    wrong reason, an assertion at a moment the thing could not be observed), caught only by the stream's own
+    anti-vacuity guard. *"I am reliable at demanding an arm can exercise its mechanism and unreliable at checking it
+    when the change feels too small to deserve the ceremony."* The ceremony is for the small ones.
+178. **A green test that goes red on schedule is measuring a transient, and every hypothesis that names a culprit
+    before the settling curve is drawn will be wrong.** Round 9's last red, `test_a_full_faction_army_a_side_spawns_
+    clear_of_itself`, passed alone, passed at a 71/71/71 shard layout and failed at 69/68/68 on identical code. Six
+    diagnoses fell in one morning, each measured and each retracted: nav's code, `tank_brain`, RNG divergence, a
+    test-isolation leak of physics bodies (free() takes them 38 → 0 in the same call), a solver ejecting a degenerate
+    y = 0 contact (the body is a `CharacterBody3D`; nothing ejects it), a collider straddling the floor (every box
+    bottom is exactly at the origin at the catalogue height). **The mechanism (scale `3f6c1650`+): `move_and_slide`'s
+    depenetration recovery moves three resized hulls 1.475 m DOWN in frame 1 with velocity exactly zero, then they
+    climb back: −0.190 at frame 2, −0.042 at frame 3; a passing unit gets +0.87 mm from the identical contact.** The
+    test read at frame 1, the single worst instant of a settle that resolves by frame 3, and which units land on the
+    bad side depends on engine state left by earlier tests, so the schedule decided the verdict. Fix: assert on
+    *placement* (deterministic), and any physics-frame assertion samples after settling (largest per-frame delta
+    below 1 cm, capped), never at a fixed frame. Two side findings, both false leads, are kept beside the answer:
+    a 5 cm spawn lift moved the frame-1 value by 0.032 m and fixed nothing (the constant stays, wired, at 0.0), and
+    squad's "the lift passes on my branch" was a layout write that discarded its own y. **Draw the curve before you
+    name the writer, and name the body hit in every failure message: "inside a wall or crate" when the body was the
+    ground cost the morning.**
+
+179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
+    morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
+    read +1.50 ms with two cycles and −0.65 ms with six, on builder0 at load 14–21 with 67 Godot processes and five
+    checks resident; each phase's own spread was ~5 ms against an effect under 1.5. Raising the cycle count fixes
+    *sampling* noise, the error from looking too few times at a stable quantity; it does nothing when the quantity
+    itself drifts with the machine's load between one phase and the next: **more samples of a drifting quantity
+    describe the drift more confidently.** Within-run pairing (lesson 175's cross-run failure) bounds *when* the two
+    halves are measured, not *how quiet* the box is while they are: necessary, not sufficient. So timing runs (hinge
+    cost, show cost) go in a **quiet window** the orchestrator calls after the checks drain, one stream at a time, and
+    every timing number carries the load average and the per-phase spread beside it or it is not quoted. Screenshots
+    and seed-deterministic series are only *slowed* by load and can run through it.
+180. **A guard that counts at teardown measures a pending removal, and it will convict the innocent with the same
+    confidence as a real leak.** Round 9's teardown guard (scale, `3f6c1650`) named three tests for leaving two
+    navigation regions each; `NavigationServer3D` drops regions on the frame *after* `free()` ([2, 0, 0, 0] over
+    frames 0–3), `TestCase.teardown()` counts synchronously at frame 0, so all three were innocent, and the
+    orchestrator had already granted one-line "fixes" in three streams' files before scale measured the drain
+    curve. Same morning, same suite, same shape as lesson 178: **a transient read at the wrong frame.** Physics
+    bodies have no such window (free() takes them to 0 in the same call), so the guard keeps that half and drops
+    regions. Rules: a guard's claim is only as strong as the settling behaviour of what it counts, measured; land a
+    guard *with* the fixes for what it finds, never route the fixes first; and when a new instrument convicts three
+    unrelated tests at once, suspect the instrument before the tests.
+181. **A difference between two arms proves the arms differ, never why.** Round 9's spawn lift: combat's 5 cm arm
+    moved the frame-1 sink by +0.032 m and combat read it as "the lift reached deployed units"; it was the
+    depenetration recovery's sensitivity to the contact. Earlier the same night a 47 % sliding-goal share was read as
+    a mechanism when it was a selection. The delta is the licence to look for the mechanism, not the mechanism. And
+    two streams implementing one ruling in two places produced one arm that could not act (squad's layout discarded
+    its own y) and one that acted for the wrong reason: **one constant, one home, one arm that exercises it, before
+    anyone reads a number off it.**
+182. **An `&&` chain of test runs reports the first failure and silence for the rest, and silence was read as green.**
+    Round 9: feel ran `make test FILTER=unit_scale && … city_block && … trailer && … airship`; `unit_scale` failed on
+    the artillery handover, the chain stopped, and the report said "the other three files passed" — `grep -c
+    city_block` on that log returns 0. The city-block test had never run and could not have passed as written
+    (`push_warning` on the path it exercises is an engine error to `ErrorCollector`), and it merged to `main` on
+    that sentence. Rule: **a claim that a file passed names that file's own `N passed, M failed` line from the log**,
+    and batches of filtered runs use `;` with a per-file summary, never `&&`. Same family as lesson 163 (read the
+    result line, not the exit code, not the absence of a complaint).
+183. **A readout that reports what was INTENDED rather than what was ISSUED will contradict the game exactly when
+    the player is watching.** Round 9: the squad-heading pin drew the arrow from the task (the intent), while the
+    crews had been given a follow order with no facing; control's fix derives the pin from the crews' own orders,
+    unanimously, so it starts drawing on the tick the promise becomes true and needs no follow-up edit. Fourth
+    member of one night's family beside lesson 173 (the lint parsing later files against older sources, the
+    "before" frame shot with the fix running, `get()` collapsing absent into null): **derive, never mirror**, and
+    the readout is a mirror if it can be true while the thing it reports is false.

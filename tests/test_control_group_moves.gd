@@ -149,7 +149,21 @@ func test_the_group_faces_its_direction_of_travel_on_arrival() -> void:
 	var tanks: Array[Tank] = setup[2]
 	# Travel east: every hull starts pointing north.
 	assert_eq(orders.issue(UnitCommand.make(_names(tanks), "move", {"to": [LANE_X + 45.0, 50.0]})), "", "move accepted")
-	await wait_physics_frames(SimClock.TICK_RATE * 12)
+	# ROUND 9 (scale, CP2): 12 s -> 16 s. The Condemned `tank`, which this test fields two of, went from 3.60 m to
+	# 8.62 m of hull (contract S1), and 12 s was calibrated on the 3.6 m one. Measured in file order at `07f92087`
+	# on the laptop, per second: everything is idle and on heading by **15 s** (tracked hulls dot(east) 1.00, the
+	# ifv 0.98, against the 0.85 and 0.5 bounds below), so 15 is the measurement and 16 is the budget. This literal
+	# has now been re-calibrated twice -- by nav's yaw ramp and by the resize -- and control would rather it were
+	# derived from the group's ETA; that is control's to do, and this is the CP2 re-time, not the redesign.
+	#
+	# What is NOT a budget story, and is filed with nav and metrics rather than here: Green_Alpha_1 travels east,
+	# then REVERSES 5.6 m between 7 s and 11 s (x -77.1 -> -82.7), then resumes and arrives. That is round 8's
+	# gear-shuffling on an 8.6 m hull, and it is the likeliest reason the file-order gap widened from 2 s to 5 s.
+	await wait_physics_frames(SimClock.TICK_RATE * 16)
+	# The facing drag (round 9, item 1) is the desktop half of the fix the comment below predicts: a move order CAN
+	# now carry its facing. This test deliberately does NOT use it - it is the no-facing baseline the wheeled bound
+	# (0.5) exists for, and tightening it to the tracked bound needs a facing on the order, not a longer wait.
+	#
 	# Round 8: split by locomotion, because that is what is true today (nav measured it; control chose this over widening
 	# the budget). A tracked hull pivots and is on heading in 12 s. A WHEELED hull cannot pivot: it arrives and then
 	# corrects by creeping round, about 6 s for 45 degrees. The ifv here measured dot(east) 0.70 at 12 s, 0.92 at 13,

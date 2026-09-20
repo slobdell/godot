@@ -34,7 +34,10 @@ static func build(placements: Array) -> MultiMeshInstance3D:
 		var xform: Transform3D = placements[i]["transform"] * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
 		multimesh.set_instance_transform(i, xform)
 		multimesh.set_instance_color(i, placements[i]["color"])
-		multimesh.set_instance_custom_data(i, Color((int(placements[i]["cell"]) % CELLS + 0.01) / float(CELLS), float(i) * 0.137, 0, 0))
+		# .a is the sign's phase in the arena light show (S6): the golden angle, so a chase runs along the stands
+		# without neighbours ever landing on the same beat. .r is the atlas row and .g the flicker seed; .b is free.
+		multimesh.set_instance_custom_data(i, Color((int(placements[i]["cell"]) % CELLS + 0.01) / float(CELLS),
+				float(i) * 0.137, 0, fposmod(float(i) * 0.6180339887, 1.0)))
 		var box := AABB(xform.origin - Vector3(9, 2, 9), Vector3(18, 4, 18))
 		bounds = box if i == 0 else bounds.merge(box)
 	var instance := MultiMeshInstance3D.new()
@@ -45,4 +48,9 @@ static func build(placements: Array) -> MultiMeshInstance3D:
 	instance.custom_aabb = bounds
 	# Headless renderers don't keep MultiMesh instance data: tests and tools read the placements from here.
 	instance.set_meta("placements", placements)
+	# S6: every sign in the venue is one MultiMesh over one material, so this registers the whole bank for one
+	# uniform write a frame. A no-op on a headless peer, where there is no show.
+	var show := Show.get_instance()
+	if show != null:
+		show.add_fixture(&"signs", material)
 	return instance

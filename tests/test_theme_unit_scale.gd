@@ -128,3 +128,62 @@ func test_a_gun_baked_into_its_hull_turns_with_the_turret() -> void:
 	await tree.process_frame
 	assert_true(absf(tank.turret.rotation.y) > 0.1, "the turret is turned")
 	assert_near((pivots[0] as Node3D).rotation.y, tank.turret.rotation.y, 0.05, "the gun follows the turret's yaw")
+
+
+## X4 (round 9, after CP2's resize): the round-8 generalisation of `test_the_semis_fill_their_boxes` from two semis
+## to the WHOLE ROSTER, and from length to EVERY AXIS.
+##
+## Why it is not a duplicate of scale's `test_every_box_is_its_meshs_proportions_at_that_length`, which asserts the
+## same-sounding thing: scale's test asks whether the CATALOG's box matches the mesh's proportions. This one spawns
+## the unit and measures what is actually DRAWN. They fail on different things — scale's catches a bad box; this one
+## catches a bad FIT, and the fit now has more moving parts than it did (`_fit_to_hull`'s uniform scale, a gun cut
+## out of the hull onto its own pivot, and since round 9 a trailer cut onto a second pivot). `hull_size` IS the
+## collider, so a unit that draws outside it is a shell passing through empty air.
+##
+## The division of labour, because a failure here is routed rather than fixed in place: **scale derives the numbers,
+## feel checks the art is not distorted by them.** `_fit_to_hull` scales uniformly by length, so width and height
+## come out as the mesh's own proportions — a unit whose mesh cannot fill its new box is a finding handed BACK to
+## scale, never something to stretch away.
+func test_every_unit_with_art_is_drawn_inside_its_own_box_on_every_axis() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var checked := 0
+	var worst := {"unit": "", "axis": -1, "off": 0.0}
+	for faction in Units.FACTIONS:
+		for unit_id in Units.roster(faction):
+			if not GameTheme.slots.has("unit.%s.hull" % unit_id):
+				continue
+			var tank := _spawn(unit_id)
+			await wait_physics_frames(1)
+			var drawn := _drawn_size(tank)
+			var box: Array = Units.stat(unit_id, "hull_size")
+			checked += 1
+			for axis in 3:
+				var wanted := float(box[axis])
+				var off := absf(drawn[axis] - wanted) / maxf(wanted, 0.001)
+				if off > worst["off"]:
+					worst = {"unit": unit_id, "axis": axis, "off": off}
+				assert_true(off <= 0.05,
+						"%s axis %d: drawn %.2f m against a %.2f m box (%.0f%% out). scale derives the box; if the mesh cannot fill it, that is scale's finding, not a reason to stretch the art"
+								% [unit_id, axis, drawn[axis], wanted, off * 100.0])
+			tank.queue_free()
+	GameTheme.use(previous)
+	assert_true(checked >= 18, "the whole roster with art was checked, not a handful (%d units)" % checked)
+	print("UNIT_BOX_FILL %d units, worst %s axis %d at %.1f%%" % [checked, worst["unit"], worst["axis"], worst["off"] * 100.0])
+
+
+func test_the_box_fill_check_can_actually_fail() -> void:
+	## Prove the guard goes red (Invariant 0). A box nobody's mesh has the proportions of must be caught — otherwise
+	## the test above passes for the same reason a switched-off test passes.
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	Units.tuning["gang_tank.hull_size"] = [3.32, 5.24, 28.0]  # twice the rig's length, same width and height
+	var drawn := _drawn_size(_spawn("gang_tank"))
+	Units.tuning.erase("gang_tank.hull_size")
+	GameTheme.use(previous)
+	# Fitted by LENGTH, the rig now draws 28 m long and twice as wide and tall as its box says — so width and height
+	# must both be well outside the 5% the test above allows.
+	var wide := absf(drawn.x - 3.32) / 3.32
+	var tall := absf(drawn.y - 5.24) / 5.24
+	assert_true(wide > 0.05 or tall > 0.05,
+			"a deliberately wrong box is caught (drew %.2f x %.2f, box says 3.32 x 5.24)" % [drawn.x, drawn.y])

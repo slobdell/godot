@@ -130,18 +130,28 @@ func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
 		probe.shape = shape
 		probe.transform = Transform3D(Basis.IDENTITY, (placed[tank] as Vector3) + Vector3.UP * 1.5)  # above the slab
 		probe.collision_mask = Perception.WORLD_MASK
-		var hits := space.intersect_shape(probe, 1)
+		# NAME THE BODY, and name every body. "inside a wall or crate" is a guess dressed as a finding: when three
+		# units failed this it cost an hour to learn whether they had hit an obstacle (a placement bug, this file's
+		# owner) or the ground itself (the degenerate y = 0 contact, scale's, a different bug with a different fix).
+		# combat's version of this and mine were written independently and each had half: the hit COUNT and the class
+		# from combat, the parent path from me -- `Arena/Ground` is legible where a bare `Ground` is not.
+		var hits := space.intersect_shape(probe, 4)
 		if not hits.is_empty():
-			# Name the body: "inside a wall or crate" sent scale through the arena layouts before anyone knew it was
-			# the GROUND being hit, which is what pointed at a downward ejection rather than a bad layout.
-			var hit: Variant = (hits[0] as Dictionary).get("collider")
-			var who := "?"
-			if hit is Node:
-				who = String((hit as Node).name)
-				var parent := (hit as Node).get_parent()
+			var names: Array = []
+			for hit: Dictionary in hits:
+				var body := hit.get("collider") as Node
+				if body == null:
+					names.append("<freed>")
+					continue
+				var who := String(body.name)
+				var parent := body.get_parent()
 				if parent != null:
 					who = "%s/%s" % [String(parent.name), who]
-			blocked.append("%s hit %s at %s" % [tank.name, who, placed[tank]])
+				names.append("%s (%s)" % [who, body.get_class()])
+			# The PLACEMENT, not `global_position`: the probe sits at the placement, so reporting where the body has
+			# since been pushed would name a spot the probe never looked at. That mismatch is what made the original
+			# failure read as a layout bug.
+			blocked.append("%s hit %s at %s" % [tank.name, ", ".join(names), placed[tank]])
 	assert_eq(blocked, [], "no unit is PLACED inside a wall or crate")
 
 
@@ -152,9 +162,32 @@ func test_the_grid_fills_the_front_row_before_the_rows_behind_it() -> void:
 		assert_eq(spot.z, Match.BASE_Z, "slot %d stands in the front row" % slot)
 	assert_true(Match.spawn_position(Match.Team.GREEN, columns).z > Match.BASE_Z,
 			"the next slot starts the second row, behind the first")
-	assert_eq(Match.spawn_position(Match.Team.RUST, columns + 1), -Match.spawn_position(Match.Team.GREEN, columns + 1),
-			"Rust's grid mirrors Green's")
+	# The mirror is point symmetry ON THE FLOOR PLANE. `SPAWN_LIFT_M` is a constant lift on BOTH sides, so negating a
+	# spawn point would flip it below the floor -- the mirror is asserted in x/z and the lift separately.
+	var green_deep := Match.spawn_position(Match.Team.GREEN, columns + 1)
+	var rust_deep := Match.spawn_position(Match.Team.RUST, columns + 1)
+	assert_eq(Vector2(rust_deep.x, rust_deep.z), -Vector2(green_deep.x, green_deep.z), "Rust's grid mirrors Green's")
+	# `assert_near`, not `assert_eq`: Vector3 stores 32-bit floats, so the component reads back 0.05000000074506 and a
+	# double literal will never equal it. Comparing a stored float to a source constant always needs a tolerance.
+	assert_near(green_deep.y, Match.SPAWN_LIFT_M, 1e-6, "and both sides stand the same distance clear of the floor")
+	assert_near(rust_deep.y, Match.SPAWN_LIFT_M, 1e-6, "and both sides stand the same distance clear of the floor")
 	assert_true(Match.SPAWN_SLOTS >= Army.MAX_ARMY_UNITS, "and there is a slot for every vehicle an army may field")
+
+
+## Round 9: a body created at exactly y = 0.0 makes a degenerate ground contact, and whether Jolt resolves it cleanly
+## depends on solver state left by earlier bodies — scale measured three units ejected 1.5 m THROUGH the floor at
+## spawn, reproducing only after other bodies had been created and destroyed. Every spawn point now stands clear of
+## the floor, and it comes from ONE constant so the grid path and the arena-layout path cannot drift apart.
+func test_every_spawn_point_stands_clear_of_the_floor() -> void:
+	# NOT `> 0.0`: the constant is deliberately 0.0 while the ejection is diagnosed (it is not the lift -- the same
+	# three units fall through the floor at 0.0 AND at 0.05, same workload). What this test guards is the property
+	# that survives whatever value it takes: EVERY spawn point, both teams, grid slots and layout slots alike, has the
+	# SAME clearance and it comes from one constant. That is what stops the two sources drifting apart again.
+	assert_true(Match.SPAWN_LIFT_M >= 0.0, "the lift is a real distance")
+	for team in [Match.Team.GREEN, Match.Team.RUST]:
+		for slot in [0, 1, Match.SLOT_X.size(), Match.SPAWN_SLOTS - 1]:
+			assert_near(Match.spawn_position(team, slot).y, Match.SPAWN_LIFT_M, 1e-6,
+					"team %d slot %d spawns clear of the floor" % [team, slot])
 
 
 func test_the_result_carries_what_progression_needs() -> void:
