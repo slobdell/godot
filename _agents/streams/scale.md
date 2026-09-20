@@ -529,6 +529,17 @@ tests were innocent (`AiScenario.dispose()` already frees properly), the grants 
 guard's own advice — *"build arenas through ArenaFixture"* — was withdrawn as wrong: the fixture solves the *consumer*
 side, waiting for your own regions before measuring, and does nothing about regions outstanding at teardown.
 
+**AND IT CAUGHT SOMETHING REAL.** Its record, in order: **three false reds** (the region half, measuring a settling
+window), **narrowed to bodies**, **two silent full-suite runs** (1487 and 1488 tests, no output), and then a **true
+positive** on combat's check — `test_combat_sim_cost::test_a_parked_hull_stays_exactly_still_and_drives_off_when_told`
+leaves **1 physics body in the world (was 0 before this test)**. combat owns the file and is fixing it.
+
+**That sequence is the whole argument for narrowing a claim instead of dropping it.** The first version was wrong in a
+way that would have sent three streams to fix nothing; the surviving half found a leak that had been invisible for
+rounds and named the test that caused it rather than the one that would have suffered. **A guard that is wrong once
+and then right is worth more than a guard that is never wrong because it never fires** — and the difference between
+the two versions is exactly one question: *does this measurement have a settling window?*
+
 **What landed is the claim I can defend: bodies only.** A `CollisionObject3D` at teardown has no transient window. It
 reports a **lower bound** on leakers (high-water mark: once the count rises, a later test leaking below it is not
 blamed), and it fails **the test that leaked**, not the next one to run — which is the whole point, since this class of

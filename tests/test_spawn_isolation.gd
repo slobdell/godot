@@ -136,13 +136,18 @@ func test_b_victim_deploys_a_full_army_and_reports_what_it_sees() -> void:
 	# normal is what says which surface the solver thought it was escaping.
 	var watch: Array = []
 	for tank: Tank in tanks:
-		if ["Green_S5_1", "Rust_S5_1", "Rust_S8_1", "Green_S0_1", "Green_S2_2", "Green_S2_3"].has(String(tank.name)):
+		# The WHOLE S2 row, not two of its members: if frame 1 is recovery from their OUTER squadmates, the outer
+		# units move inward too and the row compresses from both ends. Two units cannot show that; five can.
+		if String(tank.name).begins_with("Green_S2_") or ["Green_S5_1", "Rust_S5_1", "Green_S0_1"].has(String(tank.name)):
 			watch.append(tank)
 	for tank: Tank in watch:
 		var a: Dictionary = aabb.get(tank, {})
-		print("SPAWN_ISO_PLACED %-12s unit=%-10s at %s  box_h=%s local_y=%s bottom=%s top=%s"
-				% [tank.name, tank.unit_id, placed[tank], a.get("box_h", "?"), a.get("local_y", "?"),
-				a.get("bottom", "?"), a.get("top", "?")])
+		# `simulate` and `sync_position` test the remote-smoothing hypothesis: `Tank._process` lerps toward
+		# `sync_position` ONLY when `simulate` is false, and `Match.simulate` defaults true (only client_mode sets it
+		# false), so this should print true/unused. Printed rather than argued.
+		print("SPAWN_ISO_PLACED %-12s unit=%-10s at %s  box_h=%s bottom=%s  simulate=%s sync_position=%s smoothing=%s"
+				% [tank.name, tank.unit_id, placed[tank], a.get("box_h", "?"), a.get("bottom", "?"),
+				str(tank.simulate), tank.sync_position, tank.remote_smoothing])
 	for frame in 4:
 		await wait_physics_frames(1)
 		for tank: Tank in watch:
