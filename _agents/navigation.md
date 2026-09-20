@@ -106,13 +106,13 @@ they can no longer outvote a dodge or a standoff band.
 
 | Term (`combat_motion.gd`) | Today | Becomes | The lead-approved behaviour it encodes |
 |---|---|---|---|
-| `WEIGHTS[*]["range"]` (1.0 / 1.0 / 1.2 / 0.0) + `_band()` | additive | **Level 2**, as a constraint on the **radial** component only | Round 7 standoff / shoot-and-scoot: closest approach 3.0 → 27.7 m, shots 29 → 211. The project's largest measured behaviour win — it is a priority, not a preference |
-| `standoff_holds()` → `{"hold": true, "index": -1}` | an early return **before** the ring is scored | **Level 2's zero-radial solution, scored as a candidate like any other** | Round 7's "stop and shoot". **This is the round-8 cancellation failure being fixed**: a hold returns index −1 today and therefore never consults commitment, so we shipped and measured a term that was never in that code path |
+| `WEIGHTS[*]["range"]` (1.0 / 1.0 / 1.2 / 0.0) + `_band()` | additive | **Level 2**, as a constraint on the **radial** component only. **The band stays `[weapon.preferred_min, weapon.preferred_max]` read from `Weapons.PROFILES` via `tank_brain.gd:2315`** — no radial constant beside it, or the motion band and N5's firing envelope drift apart silently (combat's condition) | Round 7 standoff / shoot-and-scoot: closest approach 3.0 → 27.7 m, shots 29 → 211. The project's largest measured behaviour win — it is a priority, not a preference |
+| `standoff_holds()` → `{"hold": true, "index": -1}` | an early return **before** the ring is scored | **Level 2's zero-radial solution, scored as a candidate like any other — and carrying its own level-5 term** (see *The hold's own term* below) | Round 7's "stop and shoot". **This is the round-8 cancellation failure being fixed**: a hold returns index −1 today and therefore never consults commitment, so we shipped and measured a term that was never in that code path |
 | `MIN_GAP`, `PENALTY_RAM` (1.2) | penalty | **Level 2** (the band's inner wall) | "Scouts are just running directly into their targets" |
-| `SIGHT_CHECKS` (6), `clear_line_coarse` | a post-hoc rescan of the best 6 | **Level 2's null-space preference** — it orders everything that ties on the band, not only the top 6 | "Circling out of view loses the fight" (the Lancer after CP2). Strictly better than today by construction |
-| `PENALTY_HIT` (3.0), `would_be_hit` | penalty | **Level 1** | X3 the dodge. **Now strictly dominant**; today 3.0 is large but finite and can in principle be outvoted |
-| `beaten` (L2) + `beaten_fallback` | last-resort filter | **Level 1**, with the same "free when nothing is safe" release | "Don't walk into a wall of bullets" — and the release keeps "a unit boxed in by fire has to go somewhere" |
-| `WEIGHTS[*]["armor"]`, `threats`, `MULTI_THREAT_ARMOR`, `BUSY_ARMOR` | additive 0.15–1.0 | **Level 3** for hull-fixed and heavy hulls; **null-space task (level 5)** for turreted hulls, whose gun does not need the hull | X3 "keep your front toward threats", and the busy-target flank |
+| `SIGHT_CHECKS` (6), `clear_line_coarse` | a post-hoc rescan of the best 6 | **Level 2's null-space preference** — it orders everything that ties on the band, not only the top 6. **Carries a CPU number** (up to 16 line checks per plan against 6) | "Circling out of view loses the fight" (the Lancer after CP2). Strictly better than today by construction |
+| `PENALTY_HIT` (3.0), `would_be_hit` | penalty | **Level 1** | X3 the dodge. Now strictly dominant — but **predict this as a TAIL effect, not a headline**: 3.0 against a maximum achievable `strafe` sum of ~3.25, so today it is outvoted only by a candidate that is near-perfect on everything else |
+| `beaten` (L2) + `beaten_fallback` | **already a hard skip** (`:313-316`), released only when nothing is safe | **Level 1**, with the same release. **This is a rename, not a win** (combat's word, and it is right): the behaviour is dominant today and stays dominant | "Don't walk into a wall of bullets" — and the release keeps "a unit boxed in by fire has to go somewhere" |
+| `WEIGHTS[*]["armor"]`, `threats`, `MULTI_THREAT_ARMOR`, `BUSY_ARMOR` | additive 0.15–1.0 | **Level 3** for hull-fixed and heavy hulls; **null-space task (level 5)** for turreted hulls, whose gun does not need the hull. **Scope, corrected by combat: this reaches only the `strafe` style, where the weight is 0.15** — already the smallest term in that vector against `range` 1.0 and `tangent` 0.8 | X3 "keep your front toward threats", and the busy-target flank |
 | `PENALTY_SIDE_ON` (1.5), `ANGLE_MASK_COS` | penalty, angle style only | **deleted as a constant**; it is level 3's expression for the `angle` style | Heavy hulls rocking along one angled heading instead of turning side-on |
 | `PENALTY_LEASH` (1.5), `LEASH_FALLOFF` | penalty | **Level 4** | X1 "fight from your place in the formation" |
 | `PENALTY_CROWD` (0.6), `FRIEND_SPACING` | penalty | **Level 4** | Mutual support without piling up |
@@ -141,6 +141,47 @@ they can no longer outvote a dodge or a standoff band.
 | `standoff` (fixed gun) | 1 · 2 (with the hold as a candidate) · **3** · 4 · 5 | armour at level 3 because the hull *is* the gun mount |
 | `run` (A/B control) | — | the round-3 additive blend, unchanged |
 
+#### The hold's own term (combat's blocking objection, 2026-09-19 — accepted)
+
+combat traced the table's own filter and found that making the standoff hold "a candidate like any other" **votes it
+out every tick**: a crew in band has a level-2 radial cost of ~0, so the hold survives — but so does every in-band
+ring direction, and level 5 for `standoff` then does argmin over `tangent 0.5, flank 0.3, continuity 0.3, side 0.2`.
+**The hold scores zero on tangent; a tangential candidate scores the full 0.5.** That is not a tolerance to discover
+after the code exists; it is the default outcome of the weights as the table originally left them.
+
+**The fix, and it is a statement rather than a constant: for the `standoff` style, level 5's `tangent` and `side`
+terms apply only while level 2 is UNSATISFIED.** A fixed gun's tangent term exists to reposition it into its band. In
+band, a fixed gun's nose *is* its aim (measured: nose-on **0.91**), so tangential motion costs the shot and buys
+nothing — which is precisely what round 7 removed when it replaced `run` with `standoff`. No hold bonus is introduced,
+because a bonus would be a number nobody can defend; the rule is that a satisfied weapon level does not want motion.
+
+**The documented "slide along the band when rounds are incoming" survives, and by the right mechanism:** level 1
+filters first, so an incoming round that would hit removes the hold candidate and leaves the sliding ones. The
+behaviour is unchanged; what changed is that it is now a consequence of the priority order instead of a special case.
+
+**And the hold finally reaches the commitment path.** The hold keeps `index = -1`, and the level-5 commitment term
+matches `previous_index == -1`, so a unit continuing to hold is rewarded for continuity exactly as a unit continuing
+to drive is. Round 8's clearest finding was that `COMMIT_BONUS` was never in the hold's code path at all; **the arm
+counter reports holds separately so this is a number, not a claim** (combat's condition, and lesson 117).
+
+**Acceptance, pre-registered, reported before and after with the hash** —
+`scenario_motion::test_a_scout_holds_a_firing_position_instead_of_ramming`, pristine `9f864474`, laptop,
+`make ai-scenarios`: **closest approach 26.9 m, in-band 0.92, nose-on 0.91, 226 shots**, against the `run` control's
+6.0 m / 0.05 nose-on / 13 shots. **If A7 moves any of those four the wrong way, A7 is wrong, not the scenario.**
+
+#### A held unit's leash is a level-0 bound, not a level-4 preference (orchestrator's ruling, 2026-09-19)
+
+Level 1 filtering before level 4 means a unit ordered to hold a firing line could be pulled off it by fire without the
+leash ever being consulted — which breaks the product constraint that **the player's units hold until ordered**, and
+squad's `scenario_elements::test_the_base_of_fire_keeps_firing_while_the_others_move` with it (baseline: base shots
+5 then 4, through a friend 0).
+
+**So: for a unit under a hold or a station order, the leash is a level-0 FEASIBILITY bound on every candidate,
+including dodges.** A held unit may dodge *within* its leash and never leaves it; a dodge that would exit the leash is
+**infeasible, not merely dispreferred**. For a unit that is not holding, the leash stays the level-4 soft term it is
+today (X1: manoeuvre inside your slot's cell, be pulled back rather than frozen). squad gets that scenario's
+before/after with the hash.
+
 #### ⚠ Composition hazard, for the orchestrator: A7 and A2 both touch `COMMIT_BONUS` this round
 
 This is catalogue Part 2 happening in real time, in two streams, on one constant. **A7 relocates the commitment term
@@ -149,7 +190,20 @@ Those compose only if A2 lands as *the level-5 commitment term's new expression*
 penalty somewhere else in the same scorer, we get the exact failure Part 2 predicts: two correct techniques, neither
 working. **nav's proposal: A2's switching cost IS level 5's commitment term, and nav adopts combat's expression
 verbatim rather than keeping a constant beside it.** Sequencing: A7 lands first and leaves the term in one named
-place, so A2 has one line to replace.
+place, so A2 has one line to replace. **Adopted as contract S5** (`workstreams.md`), with three integration terms
+settled with combat:
+
+1. **nav takes `SwitchingCost.seconds_for()`, not `penalty()`.** The seconds are the portable quantity; combat's
+   `PRICE_PER_SECOND = 0.07` and its 0.35 cap are calibrated to the brain scorer's 0..1.2 range and mean nothing in
+   nav's level-5 units. nav scales the seconds itself and publishes the exchange rate and the tree it was calibrated
+   on.
+2. **nav drops combat's stance floor.** combat charges `max(v·(1−cos Δθ), v)` when the *option* changes on one target,
+   because ENGAGE / SUPPRESS / ORBIT drive to different places and that floor is the only thing pricing option
+   thrash. nav's candidates are **directions**, which already carry their own Δθ, so the floor would charge every
+   candidate the full velocity and flatten the ring. nav uses the bare `slew + v·(1−cos Δθ)/braking` with a ceiling.
+3. **It stays a price with a ceiling, never a veto** (P3).
+
+
 
 #### What nav is asking each reviewer for
 
@@ -299,6 +353,56 @@ an IFV with a 1.2-radius carrot three-point-turned for a second on a 40° bend.)
 Tanks are not holonomic, so ORCA's "take this velocity now" is only approximately achievable; in practice the hulls
 turn fast enough (80°/s) that it resolves. **Do not** read the chosen velocity as a physics guarantee — hulls still
 collide through `move_and_slide`, and that is intended (vehicles are vehicles).
+
+## The engine's `NavigationAgent3D` avoidance against ours (nav, round 9, stretch) — COMPARED, NOT SWAPPED
+
+[`algorithms.md`](algorithms.md) has carried an open instruction since 2026-09-19: *"Do not swap without measuring
+both — but do not leave the comparison unmade either."* This is the comparison. **Verdict: keep ours. Revisit only on
+a profile that shows ORCA dominating the tick, which is not the profile we have.**
+
+**The surface, probed from `ClassDB` on our pinned Godot 4.7.2, not read from docs:** `NavigationAgent3D` has
+`avoidance_enabled`, `radius`, `height`, `neighbor_distance`, `max_neighbors`, `time_horizon_agents`,
+`time_horizon_obstacles`, `max_speed`, `velocity`, `avoidance_layers`, `avoidance_mask`, `avoidance_priority` and
+`use_3d_avoidance`; `NavigationServer3D` exposes the same as `agent_*` calls plus `agent_set_avoidance_callback` and
+`agent_set_velocity_forced`. The computed velocity comes back through the **`velocity_computed` signal** (the node's
+`_avoidance_done` callback), not as a return value.
+
+**The algorithm is not the difference.** Godot's avoidance is RVO2 internally and `game/ai/avoidance.gd` is a port of
+RVO2's linear programs. Choosing between them is an *integration* question, not a quality one, and that is what makes
+the five differences below decisive rather than a matter of taste.
+
+| | ours (`avoidance.gd`) | the engine's |
+|---|---|---|
+| **When the velocity arrives** | synchronously, inside the mover's own tick | **asynchronously**, via `velocity_computed` after the server's sync |
+| **Reciprocity** | 0.5, and **a parked neighbour takes none, so the mover takes all** | 0.5, with `avoidance_priority` as a scalar override |
+| **Navmesh awareness** | an avoiding velocity that would put the hull off the mesh 3 m ahead is **refused**; the unit keeps its route and slows | none — RVO2 agents avoid agents and `NavigationObstacle3D`s, not mesh boundaries |
+| **K1 (the 100 ms response guarantee)** | `AVOID_GRACE_TICKS` 10: avoidance sets throttle only, and `AVOID_MIN_PACE` keeps a crowded way on moving at 15% | no equivalent; it returns a velocity |
+| **Right-of-way (X4)** | peer-to-peer negotiation: yield spots on the navmesh, debts, refusals, a player order cancelling a give-way | `avoidance_priority`, a static scalar |
+
+**The three that decide it:**
+
+1. **The asynchronous delivery breaks an invariant we rely on.** Every controller runs before any tank moves, so all
+   of them see one tick's positions — that is why `Avoidance.refresh()` can build one neighbour table per tick for the
+   whole match and why the result is deterministic by construction. A velocity that arrives on a signal after the
+   server's sync is a velocity from the *previous* state, and lockstep multiplayer and the sim baseline both depend on
+   this not being true.
+2. **`avoidance_priority` is coarser than the knob we already know we need.** Catalogue **C4** — proposed
+   independently by both external reviews — wants inertia weighting `α = Iⱼ/(Iᵢ+Iⱼ)`, a **per-pair** responsibility
+   split, because a 50/50 split is wrong across a 5× footprint range and CP2 is about to make that range wider. The
+   engine exposes one scalar per agent. Swapping would move us *away* from the row we intend to adopt.
+3. **We would keep most of our integration anyway.** The navmesh refusal, the K1 grace, the minimum pace and X4 are
+   all ours and none of them has an engine counterpart, so the swap buys a C++ inner loop and keeps the wrapper.
+
+**And the thing the swap would buy is not a bottleneck.** ORCA, right-of-way and the carrot together cost **+0.57 ms
+per tick** at 60 brains (builder0, `1923059c`, `make ai-perf --profile-parts`; `move` 1119 → 1688 µs). The frame-rate
+fight was won in round 5, and round 9's own T1 finding is that a `check` on builder0 is one single-threaded process at
+~7% CPU — we are latency-bound, not compute-bound. **Buying CPU we are not short of, at the price of determinism, the
+navmesh refusal and K1, is a bad trade in a game whose measured problem is the *shape* of the motion.**
+
+**What would change the verdict:** a profile in which ORCA dominates the tick at the unit counts the lead plays; or
+the engine gaining a per-pair responsibility weight. Neither is true at `7edec4fb`. **`NavigationObstacle3D`,
+`NavigationLink3D` and `PATH_METADATA_INCLUDE_*` remain genuinely worth having and are unaffected by this** — the
+verdict is about the avoidance solver only.
 
 ## X4: right-of-way
 

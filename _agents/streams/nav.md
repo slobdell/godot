@@ -260,6 +260,35 @@ Smallest foundation first, and the brief's order is the order — it was argued 
 4. **Provisional until CP1, re-run after CP2.** Every number below carries `provisional (pre-CP1)` until metrics'
    A12 merges, and any size-dependent number is re-measured after scale's roster lands.
 
+### FINDING: the arrival arc fires 5168 times in a fight that used to measure ZERO
+
+**Laptop, `7edec4fb`, `make nav-fight NAV_TIME=45`, yard, seed 3, 34 GREEN units. Provisional (pre-CP1), and the
+numbers below are counts of PLAN TICKS, not of orders.**
+
+| | |
+|---|---|
+| `gates_offered` | **6364** |
+| `gates_aimed` | **5168** |
+| `gates_refused` | **1196** — `off_mesh` 835, `reached` 312, `on_approach` 49 |
+| `facings_issued` / `holds_issued` | 72 / 5 |
+
+Round 8 ran this same instrument on four maps and got **`gates aimed 0, gates refused 0` in both arms of an A/B**,
+and could not tell a broken instrument from an inert mechanism. It was the instrument: no order in a CPU fight ever
+carried a `facing`. With the probe issuing them, the arrival arc is live, and `offered == aimed + refused` holds
+exactly (6364 = 5168 + 1196), which is the counter checking itself.
+
+**The finding inside the finding, and it is nav's to fix, not squad's:** **70% of all refusals are `off_mesh`** — the
+gate is placed one approach-length back along the ordered heading and lands inside geometry. squad predicted that
+element spacing would refuse most slot gates (`on_approach`); that prediction is **not** what the data shows —
+`on_approach` is 49 of 6364, under 1%. The approach length is `clampf(radius × 2.5, 4, 20)` and it is placed without
+ever asking whether the ground it lands on exists. **A4 (N4) is the right answer: a clothoid approach curves onto the
+heading instead of requiring a straight run backwards into whatever is behind the goal**, and it is now a measured
+motivation for that row rather than an inherited one.
+
+**What this does NOT yet say:** whether the arc *helps*. It says the arc executes. The A/B that asks whether
+`net_over_path` rises and `oscillating_share` falls is pre-registered in the brief (N4) and runs after CP1, read
+through A12.
+
 ### Questions for the lead
 
 None yet.
