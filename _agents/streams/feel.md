@@ -229,6 +229,48 @@ isolation artefacts). **The local lint earned its keep on its first run**: of te
 guard, `--no-trailer`, the airship, the `spectacle` weight table, the tier fix and the test fix — is **unverified**
 and needs a second check. Merge `7a706911`, or wait for the second check; do not merge the tip on this one's word.
 
+### ⏸ PAUSED 03:20 (orchestrator: the lead's session limit). WHERE I AM, AND THE EXACT NEXT STEP
+
+**Nothing is mid-flight and nothing is uncommitted.** The local batch was still queued behind another stream's
+`make check` when I stopped it, so no work was lost: I killed the `slot.sh` wrapper (not the `make` inside it),
+verified no `slot<N>.owner` and no wait-ticket of mine remains in `/tmp/tank_squad_slots/`, and the working tree is
+clean. Branch tip: see the last commit below.
+
+**`7a706911` is MERGED TO MAIN** — X1, X2's code, X3 and X8 are shipped. **The tip is ELEVEN commits past it and
+is covered by no check**: the file-existence guard, `--no-trailer`, the airship and `airship-look`, the `spectacle`
+weight table, the airship's tier fix, the `ArenaDressing` test fix, and Status commits.
+
+**THE EXACT NEXT STEP, in order, when RESUME arrives:**
+
+1. **Only after the orchestrator says builder0 is up**, and after checking builder0 for an orphaned `slot.sh` of
+   mine from the run that died at 03:15: `REMOTE_SLOTS=6 make remote T=check` on the tip. That is the one thing
+   standing between eleven commits and a merge.
+2. **Recover the stranded artefacts** — a plain
+   `rsync -az builder0:~/tank_squad/godot-feel/build/ build/` brings back `7a706911`'s run output. **No re-run is
+   needed**; only the copy failed. Until then **no number may be cited from local `build/`**, except
+   `build/rig-hinge/`, which was made locally and which I verified the failed rsync never touched.
+3. **The local batch, re-queued as one sequential slot** (all four are laptop-only; none can go to builder0
+   usefully while the queue there is the bottleneck):
+   `make perf-scene PERF_NAME=perf-gangs-off PERF_FLAGS="--player-faction=gangs --enemy-faction=gangs --no-trailer"`,
+   then the same with `PERF_NAME=perf-gangs-on` and no `--no-trailer` (**M1: the hinge's frame cost, A/B in one
+   tree**), then `make airship-look`, then `make shell-playtest` (**X5's leak lines**).
+4. **`make airship-look`: check the frames DIFFER before reading anything into them.** A stale X cookie makes Godot
+   fall back to Wayland, which stops redrawing a hidden window, so every capture after the first silently repeats
+   the first (`remote_builds.md`, and the comment at `tools/remote.sh:62`). For a sweep whose entire output is
+   frames that are *supposed* to differ, that failure is indistinguishable from a result.
+5. **X6's two experiments** — the script is written and ready at
+   `<scratchpad>/x6.sh`: stale the baseline for this machine's glibc and confirm `sim-baseline` goes red while both
+   smokes stay green (they do not consult the file), then skew the instrumented run's seed and confirm `music-smoke`
+   goes red (the comparison is live). Then delete the dead `key="control"` in both recipes and correct **lesson 65**,
+   which is the orchestrator's file.
+6. **X4** stays blocked on CP2 by design.
+
+**The open question I expect to answer with (3) and (4), and which is a design question for the lead rather than a
+bug:** at his pose the top of the frame sits at `pitch - FOV/2` = 21 - 17.5 = **3.5° BELOW the horizon**, so nothing
+in the sky can be drawn there at any altitude or distance. If the sweep confirms it, *"sometimes visible in the
+field of view"* is **false at his camera and true only at the bottom of his tilt range** (he can reach 8°), and the
+airship's `ORBIT_RADIUS` / `ORBIT_ALTITUDE` are provisional until he rules.
+
 ### Decided overnight (the lead asleep; orchestrator's standing instruction, 2026-09-20)
 
 1. **The corner in `make rig-hinge` is shot at the rig's own minimum turn radius (12 m), not a wide one.** A wide
