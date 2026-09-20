@@ -31,7 +31,7 @@ decision, and finished, validated work. Every decision below is reversible in on
 **NOT merged at 07:00: CP2, scale's resized roster.** Built and verified to 1392 passed / 3 failed on `e7ebb372`; two of
 the three since fixed, the third (a contact-pip test in control's file) fixed by control at 07:00 (`e36d61c7`: the test now picks a
 spot it can see instead of a fixed 30 m offset that the bigger hulls put behind a prop) and committed by scale at
-`7542df28`; **scale's full check on it started 07:01 and lands ~07:40**; the swap-bases fairness control is owed. **If it did not land by the time you read this, it is the first merge of
+`7542df28`; scale's full check on it at 07:01 came back **1395 passed, 0 failed across both shards and still exit 2**, because T1's shard count is a recursively expanded make variable that re-derived itself from free memory between launch (2 shards) and verification (3): lesson 176, the fix is routed to metrics. **Re-running with the count pinned (`TEST_SHARDS=3`), wrapper line ~08:05**; inconclusive, not green, until then. The swap-bases fairness control is owed. **If it did not land by the time you read this, it is the first merge of
 your morning, and control's item 4 and feel's X4 (the post-resize camera and art sweeps) follow it.** **CP3 (metrics' three-slot series and the `REMOTE_SLOTS=3` default):** the check is 63–66% faster than serial (2820 s → ~930 s) with bit-identical hashes, **but its own three-run flake criterion caught a latent race** (the exclusion groups that keep two smokes off one port were inert: lesson 175); fixed at `fe7599f5`, the three runs restarted at 07:10 and land ~08:00. Not merged until they do.
 
 ### What you should look at (all sent to you overnight; paths on this laptop)
