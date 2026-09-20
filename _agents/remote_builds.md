@@ -354,8 +354,10 @@ waiter's log kept naming a job that had ended. The lock dies with the process; t
 that then exits, a killed shell, a dropped ssh), the remote `make` keeps running on builder0, holds a slot, scrolls a
 thousand PASS lines — and there is no line at the end, so by the rules the result does not exist. And you cannot
 re-launch into `~/tank_squad/godot-<stream>` while the orphan is reading it (trip-up 66). **Launch pattern that
-survives:** `setsid nohup make remote T=check > log 2>&1 &` from a shell that stays alive, or run it as the tracked
-command itself. **Before any re-run:** `ssh builder0 "ps -eo pid,etimes,args | grep '[s]lot.sh'"`, `readlink
+survives (squad's third launch of one check, after losing two):** `setsid nohup make remote T=check > log 2>&1 &`
+— its own process group, a log with a completion marker (`echo CHECK_EXIT=$? >> log` after the make) — so neither a
+parent shell exiting nor a signal aimed at somebody's process group can take the wrapper. Then read the wrapper line
+from the log. **Before any re-run:** `ssh builder0 "ps -eo pid,etimes,args | grep '[s]lot.sh'"`, `readlink
 /proc/<pid>/cwd` to find only yours, kill by explicit PID walking `pgrep -P` (never by pattern, trip-up 19), confirm
 no survivors, then launch.
 
