@@ -139,8 +139,10 @@ place, you do not place).
 **Not merged, lives only on the local branch `feel-rig-check`** (survives this worktree; branches sit in the shared
 repo): `26e1f26a` `test_the_semis_fill_their_boxes`, mutation-checked, passes on combat's catalog
 (`2141904b`, which nets the rig boxes; `44d87a28`/`bc1c1f4c` revert-and-restore around a balance baseline) and fails
-on the old one. **To land:** cherry-pick `2141904b` onto `stream/feel`, cherry-pick `26e1f26a`, check, hand over one
-hash — or merge combat's first and follow with the test alone.
+on the old one. **Landing order DECIDED by the orchestrator at close: combat's `2141904b` merges first and the test
+follows**, so `26e1f26a` is the TAIL of the round, not the head — combat's unmerged set also carries the widened sim
+baseline, which lands last so the baseline is recorded once after it. So: wait for combat on main, merge main,
+cherry-pick `26e1f26a` onto `stream/feel`, one check, hand over the hash. Don't cherry-pick combat's catalog yourself.
 
 **Rescued out of this worktree** (git-ignored, would die with it): the lead's unjudged review artefacts are now at
 `~/projects/godot/build/feel-round8-review/` — `size-review/` (rig_12_0.png, rig_14_0.png, army.png at his camera),
