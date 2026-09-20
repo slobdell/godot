@@ -78,6 +78,11 @@ func _run() -> void:
 	if FOCUS_POINTS.has(arena):
 		poses["street"] = [FOCUS_POINTS[arena], CLOSE_M]
 	get_tree().paused = true
+	# THE IDLE FRAMES MUST BE THE IDLE. The FIGHT cue holds for 5 s after the arena loads and the warmup is 3, so
+	# without this the first strip shot three frames of FIGHT and labelled them the slow breathe -- the lead would
+	# have judged the ambience by looking at the loudest cue in the book.
+	if show != null:
+		show.settle_into(ShowCues.IDLE_STATE, times[0] if not times.is_empty() else 0.0)
 	for pose_name: String in poses:
 		var focus: Vector3 = poses[pose_name][0]
 		var distance: float = poses[pose_name][1]

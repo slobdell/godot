@@ -12,7 +12,11 @@ SHOW_RES ?= 1920x1080
 SHOW_TIMES ?= 0,8.1,16.3
 # One frame per cue, so the lead sees the SHOW and not only the ambience.
 SHOW_CUES ?= fight,battle,last_stand,victory
-SHOW_FLAGS ?=
+# --block-cutaway=off draws the city whole. control cuts a city block's VisualSlot (visibility, never a uniform --
+# it reserves nothing on the block material) when one stands between the camera and what the camera is aimed at,
+# and at the lead's pose in a Terminus street that is often the nearest block. A frame shot to judge how the block
+# EDGES read must therefore have it off, or the block may simply not be there (control, 2026-09-20).
+SHOW_FLAGS ?= --block-cutaway=off
 
 show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49 m), idle + one frame per cue + a kill mid-ripple, per arena -> build/show/ (needs a display: make remote T=show-frames)
 	rm -rf $(BUILD_DIR)/show && mkdir -p $(BUILD_DIR)/show
@@ -26,3 +30,12 @@ show-frames: import ## S6: the light show at the lead's pose (21 deg, FOV 35, 49
 		echo "show-frames $$arena: shader errors $$(grep -ci 'shader.*error\|error.*shader' $(BUILD_DIR)/show/$$arena.log || true)"; \
 	done
 	@echo "show-frames: $$(ls $(BUILD_DIR)/show/*.png 2>/dev/null | wc -l) frames in $(BUILD_DIR)/show"
+
+# The paired control (orchestration.md lesson 22: a control that cancels the cause, not more seeds). Both runs are
+# the SAME binary, the same import cache and the same machine, minutes apart in one slot, so contention -- which
+# drifts slowly -- is common to both and the PAIRED delta survives a loaded builder0 that an absolute number does
+# not. `--no-show` makes Show.get_instance() return null: nothing registers, every material keeps its shader
+# defaults, and those defaults are the identity.
+show-perf-pair: import ## S6: perf-scene with the show off then on, back to back in one slot -> build/show-off.json, build/show-on.json
+	$(MAKE) perf-scene PERF_NAME=show-off PERF_RES=$(SHOW_RES) PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS)) --no-show"
+	$(MAKE) perf-scene PERF_NAME=show-on  PERF_RES=$(SHOW_RES) PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS))"

@@ -219,11 +219,36 @@ channel's material**, on a 64 m object orbiting 74 m over the arena. The ownersh
   `Match.tick` (one lap in 70 s), so **if it is ever patched, the phase comes off the orbit parameter.**
 
 ### Reserved by control
-**Nothing. Control answered 2026-09-20: it writes nothing on a city block — not a uniform, not an instance parameter,
-not visibility, not alpha.** Its fix for the camera-inside-a-block moves the *camera*, not the building:
-`RtsCamera.clear_pose()` lifts the camera over the roof rather than shortening the boom (21° → 32° clears a 24 m roof
-on a 49 m arm; measured 703 of 4328 poses inside a building before, 0 after). So `show_edge`, `show_window` and
-`show_shop` are the show's alone and **there is no faded-while-mid-cue case to handle**.
+**Nothing on the block material, and that is still true after control changed its mechanism.** Updated 2026-09-20
+(second message): control now *does* cut city blocks, and it does it by setting **`visible = false` on the block
+body's `VisualSlot` node** (`game/camera/block_cutaway.gd`, `BlockCutaway`) — not the mesh, not a material, not an
+instance parameter. `show_edge`, `show_window` and `show_shop` are untouched.
+
+It chose visibility over a per-block alpha **because of the shared-material constraint in §3**: a per-block fade
+would have to be an `instance uniform` on `city_block.gdshader`, which is the show's file, so taking it would have
+meant editing another stream's shader overnight. A node boolean needs neither.
+
+Three consequences for the show, all from control's own message:
+
+1. **A cut block is not drawn at all, so its cue is invisible, not interrupted.** The channels keep running and
+   nothing of control's writes or resets them; when the block is drawn again it comes back **mid-cue**, at whatever
+   value the channel is at. That is exactly the orchestrator's ruling ("the cue continues underneath"), and it needs
+   no special case here.
+2. **`BlockCutaway.cut_blocks() -> Array[String]`** (node names, on the node named `BlockCutaway` under `Main`,
+   recomputed per frame) is the S6 signal, and it is polled rather than pushed.
+3. **Only solids ≥ 6 m are ever cut** — never cover, because a container between the camera and the fight is
+   information. So floodlight footings, signs and barricades are never affected; only the city blocks.
+
+**`--block-cutaway=off` draws the city whole, and `make show-frames` passes it**, or a frame shot to judge how the
+block edges read may not contain the nearest block.
+
+The original mechanism, kept because its measurement is the reason the second one exists: control's first fix was to
+lift the camera over the roof rather than shorten the boom —
+`RtsCamera.clear_pose()`, 21° → 32° to clear a 24 m roof on a 49 m arm, **703 of 4328 poses inside a building before,
+0 after**. It fixed the camera being *inside* a solid and not the alley being *unseen*: of those 703, the sight line
+to the ground was still blocked by a building in **518** after the lift (down from 700, a 26% reduction) — 518
+cameras correctly outside every building, looking at the side of one. Hence the cutaway, with a pre-registered bar of
+**518 → under 50**.
 
 Two consequences for the show, both from control's own message:
 

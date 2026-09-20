@@ -106,6 +106,12 @@ func _ready() -> void:
 static func get_instance() -> Show:
 	if DisplayServer.get_name() == "headless":
 		return null
+	# `--no-show`: the control that cancels the cause (orchestration.md lesson 22). With no show, no fixture
+	# registers and every material keeps its shader defaults -- which ARE the identity -- so the venue renders
+	# exactly as it did before the show existed, on the same binary, the same import cache and the same machine.
+	# That is what makes `make perf-scene PERF_FLAGS="--no-show"` a paired control rather than another run.
+	if LaunchFlags.from_environment().has("no-show"):
+		return null
 	if is_instance_valid(_instance) and not _instance.is_queued_for_deletion():
 		return _instance
 	var tree := Engine.get_main_loop() as SceneTree
