@@ -3051,3 +3051,12 @@ The kickoff prompt is one line; this section is the rest.
     printing the TUNE it saw, the differ-assertion FIRST and the values second: a knob whose default points the
     same way as its tuned value (`yaw_fit` this morning) prints the same word in a broken and a working arm, and
     only the pair tells them apart. ~1.7 s per child on the laptop, wrapped in `timeout 120` so a hang fails by name.
+200. **The tooling you write the record with has the round's failure shape too.** Twice on 2026-09-20 a
+    `git commit -m "..."` with backticks inside double quotes let the shell substitute a command and silently eat a
+    phrase from the message ("The per-phase `no_damage` flag" committed as "The per-phase  flag"; a merge message lost
+    a backticked name the same way), exit 0, looked fine at a glance, caught only by reading the message back. And
+    control's teardown audit produced two false counts from grep before the true one (`super()` reaches the base as
+    well as `super.teardown()`; `own(` matched inside `teardown(`): a grep result is a claim about a pattern, not
+    about the code. Rules: commit messages with any punctuation go through a heredoc or a file, never a double-quoted
+    `-m`; read the message back before reporting the hash; and a count from grep is verified on the code before it
+    travels, the same as any other number.
