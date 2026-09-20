@@ -498,6 +498,36 @@ velocity handed to `move_and_slide` **and what that velocity would move in that 
 actually did. **That pairing is what exonerated `tank_motion.gd` without opening it**, and it is the general lesson:
 *print what was asked for beside what happened, or a measurement cannot tell a wrong answer from a wrong question.*
 
+### ✅ RETRACTED: the `test_combat_sim_cost` "navigation leak" was the test's own next fixture
+
+`teardown()` was called from inside that test's per-unit loop **without `await`**. It ends in
+`await drain_navigation()`, so a bare call freed the nodes, cleared `_owned_nodes`, and **detached a coroutine that
+sat in a 120-frame wait while the loop built the next unit's arena**. The stale drain then counted the regions of
+an arena that was *alive and in use*, gave up, and charged `left 2 navigation region(s)` to this test. **The
+failure arriving TWICE in one test's output was the tell**, and it was there from the first run.
+
+    SIMCOST_LEAK after tank        arena valid=false  match valid=false  regions=0  bodies=0
+    SIMCOST_LEAK after gang_scout  arena valid=false  match valid=false  regions=0  bodies=0
+    SIMCOST_LEAK after syn_tank    arena valid=false  match valid=false  regions=0  bodies=0
+
+**Two readings are retracted**: the suspected static/lambda/out-of-tree holder, and this stream's own arithmetic
+that "2 regions is one arena's worth, so one arena is still alive" — right about *what* the regions were
+(`$Navigation` + `_bake()`'s `NavigationMirror`) and wrong about *why*. It also explains the shard-order dependence
+with **no state carried between tests at all**: whether a detached drain's 120 frames overlap a live arena depends
+on what runs next. The flake was inside one test.
+
+**Still open, and this stream cannot settle it**: the isolated file shows **0 edge errors both before and after**
+the fix, so sim_cost is *not* demonstrated to be the source of shard 2's 284 edge errors. A bake race is available
+in principle (a new arena baking while the previous regions are still on the map) but is **unproven** and must not
+be written up as the cause. metrics' message grouping on the next main check names the first carrier.
+
+⚠ **THE SAME SHAPE IS IN FIVE OTHER FILES**, none of them this stream's (reported to the orchestrator):
+`tests/test_control_panel.gd:143` calls `teardown()` mid-test unawaited; and four files override `teardown()` and
+call `super.teardown()` without `await` — `test_command_readability.gd:141`, `test_touch.gd:177`,
+`test_command_camera.gd:194`, `test_tactics_deform.gd:42`. **An override declared `-> void` that does not await its
+super returns to the runner immediately and detaches the drain in exactly the same way**, which means those four
+files have been silently skipping the navigation drain they believe they run.
+
 ### THE EXACT NEXT STEP, in order
 
 1. **Read the running check's result from the wrapper's own `>> remote: make check exited <N>` line and the
