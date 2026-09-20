@@ -551,6 +551,15 @@ morning. In a round whose recurring failure is checks that cannot fail, the chec
    what is already lit; its `pools` channel is not the floor's baseline), so the lamps must be judged **with the show
    off as well as on**, at 21° / FOV 35 / 49 m, and **the vehicles must read without the UI rings.** A frame at that
    pose is the acceptance test.
+   **Two constraints found while reading, before any work:** (a) **the lamps go in `tools/make_arenas.py`, not in
+   `terminus.json`.** `props` is generated, and only `show` is in `PRESERVED_KEYS` — a lamp hand-added to the JSON is
+   silently deleted by the next `make arenas`, which is exactly the Invariant 0 trap this stream spent round 9 removing.
+   (b) The current two floodlights are **one** `floodlight(-128, 0)` plus its 180° mirror, i.e. both on the hexagon's
+   east/west vertices at r=128, **outside the fight entirely** — so this is not "add more of the same", it is the first
+   light inside the block grid. The grid's geometry gives the candidates: a 40 m plaza at the origin, a 20 m avenue up
+   the middle between the `x = ±30, z = ±62` blocks, 20 m streets at `x ≈ 60..80` between the `z = 0` blocks, and a
+   22 m ring road across each half at `z ≈ 20..42`. Intersections at `(0, 30)` and `(±70, 30)` already carry
+   containers, so a lamp there must not fight the clearance check that already refused `z = 84` for a container.
 5. **P6 / the navmesh bake radius, pre-registered so the trigger is not invented after the fact.** nav measured that
    **14 of 21 units' avoidance radius `((w+l)/4 + margin)` exceeds `arena.tscn`'s 2.0 m bake** — median **2.50 m**,
    `gang_tank` **4.58 m**, `gang_scout` 1.36 m. Ruled: **the bake stays 2.0 this round** and nav's routing consults each
