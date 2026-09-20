@@ -161,6 +161,153 @@ per range — a scout re-aims quickly because it acquires quickly — instead of
 **It touches squad** (the brain chooses) **and combat** (the envelope says what a choice costs), so it is a contract
 conversation before it is code.
 
+### PRE-REGISTERED: is the `gangs vs law` collapse the rig getting STUCK? (2026-09-19, before the run)
+
+**Written before the measurement, so it can fail.** nav's bare-ground control settled what the rig's pivot metric
+actually is: on an empty arena **every hull length reads 7° and 6.7 m of wander, identical to the decimetre**; on
+`yard` the same three lengths read 7° / 23° / 26° with wander *falling* 5.5 → 3.9 → 3.5 m. **A long rig does not
+pivot. It catches on scenery a short one cleared, and keeps yawing while it is stuck.** (My prediction, nav's run;
+their first mechanism could not be right because `hull_size` never reaches `TankMotion`.)
+
+**That is a candidate for the other open thread.** `gangs vs law` went 9/20 → 0/20 with the 14 m rig, and the two
+explanations on the table were *bigger target for splash/suppression* and *the wheeled creep*. **There is now a
+third, and it is better than both: a vehicle jammed on terrain is a stationary target, and law is the faction
+built to punish anything that stops moving** — the suppression on the loser in both law matchups was the highest
+figure in the whole table (0.077, 0.078) with gang losses near-total (40.0, 40.7 of 43).
+
+**THE PREDICTION.** `make engagement PAIRS=gangs:law ARENA=yard`, the 14 m rig against the 5.6 m control, same
+machine, same seeds, build declared as the arm:
+
+- **If the rig is getting stuck:** the gangs' **`static_share` rises materially** with the 14 m rig. That is the
+  share of unit-time spent stationary, and a jammed vehicle is stationary by definition.
+- **If it is the bigger-target story instead:** `static_share` is flat and the damage shows up in losses and
+  suppression without the gangs standing still any more than before.
+- **If `static_share` falls or is unchanged while the matchup still collapses**, all three explanations are wrong
+  and I have no mechanism — which is a result I would rather publish than paper over.
+
+**Why this is worth a run rather than an opinion:** the three candidates predict the *same* aggregate (the gangs
+lose badly to law) and differ on one cheap metric that already exists. **Nobody has to build anything.**
+
+**⚠ AMENDED, WITH DISCLOSURE: `static_share` CANNOT ANSWER THIS, and I had seen one number before I amended it.**
+
+`EngagementStats` computes it as `speeds[0] < STILL_SPEED and speeds[1] < STILL_SPEED` with `STILL_SPEED = 1.5`
+m/s — **mean SPEED, not displacement, and it requires BOTH TEAMS to be slow at once.** nav's tick dump of the
+creeping rig reads 3.50, 0.47, 3.10, 0.80 m/s: **a rig shuffling on the spot is never "still" by this definition**,
+and a metric about the whole fight being static cannot report that one army is going nowhere. My prediction was
+unfalsifiable in the direction that mattered: the "stuck" arm would have shown a flat `static_share` **whether or
+not the rig was stuck**, and I would have read that as evidence against it.
+
+**The honest order of events:** nav warned me the metric might be speed-based *before* the run reported; I checked
+`engagement_stats.gd` and confirmed it; **and then the 14 m arm printed `static 0%` while I was writing this up.**
+So I had seen the treatment figure before the amendment was committed, though the reasoning that voids the metric
+preceded it and came from someone else. **Recorded rather than tidied, because "I changed the prediction after
+seeing the number" is exactly the shape that needs the timeline attached.**
+
+**THE REPLACEMENT PREDICTION**, which the existing metrics can actually test. The signature of shuffling is
+**moving fast while getting nowhere**, so it lives in the gap between speed and displacement:
+
+- **stuck/shuffling:** `moved` (`centroid_travel_m`) and `push` (`net_advance_m`) fall materially with the 14 m rig
+  **while fire rate and engaged distance hold up** — an army that is fighting but not travelling.
+- **bigger target:** `moved` and `push` hold; the damage shows in losses, suppression and kill distance.
+- **neither:** nothing moves but the matchup still collapses, and I have no mechanism and will say so.
+
+### THE COVER CLIFF IS AT 12.19 m, AND IT IS A STEP (arena's measurement, 2026-09-19)
+
+arena measured what my structural note only asserted: **the share of the contested field within 45 m of a prop long
+enough to hide a hull of each length.** Best case by construction — it assumes the hull is parked along the prop's
+longest side and the shooter is square to it — so **a hull that fails here cannot be hidden at all.**
+
+| hull length | 6 m | 7 m | **12.19 m** | **12.5 m** | 14 m |
+|---|---|---|---|---|---|
+| **yard** | 0.99 | 0.99 | **0.99** | **0.00** | **0.00** |
+| **pit** | 0.85 | 0.48 | 0.46 | **0.00** | **0.00** |
+| terminus | 0.98 | 0.95 | 0.91 | 0.91 | 0.91 |
+| boneyard | 1.00 | 0.92 | 0.85 | 0.33 | 0.33 |
+
+**The cliff is `container_40`'s own length and it is a STEP, not a slope.** So the rig's length is **binary for
+cover**: at 12 m it hides on 99% of yard with props already on the map; at 14 m it hides **nowhere on either map the
+lead kept**. That makes 12-vs-14 answerable as geometry rather than as an opinion about balance.
+
+**And a second finding neither of us went looking for: this arrived with the ARENA KIT.** foundry and scrapyard
+handle a 14 m hull because the legacy v1 `wall` obstacle is **18 m**; the kit that replaced it tops out at 12.19 m.
+**The two maps he kept are exactly the two v2 maps with no long props**, so the regression is invisible precisely
+where it matters most. `make arena-report` now prints a `WATCH` line for it on every run.
+
+**arena has NOT added a long prop to yard or pit**, deliberately: they are maps the lead ruled on, the rig's length
+is still open, and at 12 m the problem disappears with no map change at all. If 14 m stands, a jackknifed trailer
+or a container *wall* reads as the same venue.
+
+**Still not an explanation of `gangs vs law` 9/20 → 0/20**, and arena held that caution rather than dropping it: my
+arms show `unit_seconds_near_cover` flat and `deaths_near_cover` **falling**, which is the opposite of what "dying
+while exposed at cover" predicts. **If this table gets quoted as the cause, the numbers that contradict it are
+above.**
+
+### THE COVER ON THE MAP IS SIZED FOR A 4 m VEHICLE (structural, 2026-09-19)
+
+**Certain, and independent of any of my statistics.** Yard's cover is 58 × `container_40` (**12.19 m**), 40 ×
+`container_20` (6.06 m), 6 wrecks (6.4 m), plus barricades and an ad screen. **The longest single prop on the map
+is 12.19 m. The War Rig is 14.0 m.**
+
+| hull | length | prop types long enough to hide it |
+|---|---|---|
+| gang_scout | 2.8 m | 5 of 6 |
+| gang_ifv | 3.6 m | 5 of 6 |
+| gang_artillery | 4.2 m | 5 of 6 |
+| gang_support | 7.0 m | 2 of 6 |
+| **gang_tank (the rig)** | **14.0 m** | **0 of 6 — nothing on the map is long enough** |
+
+**Every other gang vehicle can hide behind a single container. The rig cannot hide behind anything.** Containers
+stack (`max_stack` 3) but that is height, not length.
+
+**This is the THIRD system found this round that was sized for a ~4 m vehicle** — after the spawn grid (pitch 8.0 m
+minus jitter) and `ArmyLayout`'s spacing ("hulls are ~4 m long"). Each was invisible until a 14 m hull met it.
+**The pattern is worth more than any of the three: a vehicle far outside the range a system was built for does not
+fail loudly, it just stops getting the benefit everyone else gets** — and in this case the benefit is cover.
+
+**What it does NOT establish.** My engagement arms show `unit_seconds_near_cover` flat (0.300 → 0.306) and
+`deaths_near_cover` **falling** (0.411 → 0.332) — the rig reaches cover as often, and a smaller share of deaths
+happen there. If the rig were dying *while exposed at* cover I would expect that share to **rise**, so the numbers
+do not simply confirm the story. They are also **pairing-level** (both armies pooled) at n=6, so they cannot
+attribute a death to a faction, let alone to a hull. **I am not claiming this explains `gangs vs law`.** It is a
+structural consequence of the size that is true whether or not it explains anything, and it is the first candidate
+I would test with a metric that can attribute.
+
+**RESULT: INCONCLUSIVE, and the prediction is not met. I am not claiming a mechanism.** Both arms, builder0,
+`gangs:law` on yard, n=6, same seeds, build declared as the arm:
+
+| metric | 5.6 m control | **14 m rig** | |
+|---|---|---|---|
+| match length | 126 s | 109 s | −13% |
+| fire per unit-minute | 18.7 | **24.8** | **+33%** |
+| moved (centroid travel) | 281 m | 220 m | −22% |
+| **push (net advance)** | **98 m** | **98 m** | **identical** |
+| engaged distance | 43 m | 42 m | flat |
+| kill distance | 27 m | 24 m | −11% |
+| deaths in cover | 41% | 33% | −8 pts |
+
+**I predicted `moved` AND `push` would fall while fire held up. `moved` fell, `push` is identical to the metre,
+and fire rose by a third.** That is not the shuffling signature I described.
+
+**And the deeper problem: `centroid_travel` cannot detect per-unit shuffling either.** It is the ARMY's centre of
+mass, and individual vehicles shuffling forward and back **cancel in an average**. So this is the *second* metric
+I have aimed at this question that is structurally incapable of answering it — `static_share` because it is
+speed-based and whole-fight, `centroid_travel` because it is an army-level mean. **Both would have read the same
+whether or not the rigs were shuffling.**
+
+**What the data does say, offered as description and not as mechanism:** with the 14 m rig the fight is *faster
+and hotter* — a third more shots per unit-minute, 13% shorter, killing 11% closer, with the same net advance. That
+is consistent with a bigger target being easier to engage, and it is equally consistent with vehicles that spend
+more time able to shoot because they are travelling less. **n=6, one pairing, one map: it discriminates nothing.**
+
+**What would actually settle it: a per-unit metric of net displacement against distance travelled** — "did this
+vehicle go anywhere" rather than "was the army still" or "did the centre of mass move". Nothing in the engagement
+stats measures a single vehicle's progress, and **the honest close is that the mechanism behind `gangs vs law`
+9/20 → 0/20 is still unknown**, with three candidates alive and no instrument that separates them.
+
+**14 m arm (builder0, `b16b8d78`, gangs:law on yard, n=6):** len 109 s, first shot 5 s, **fire 24.8/unit/min**,
+contact @108 m, engaged 42 m, kill 24 m, **static 0%**, held-line 12%, **moved 220 m**, **push 98 m**, off-axis
+kills 57%, flank+rear 62%, cover time 31%. The 5.6 m control is running on the same seeds and machine.
+
 ### THE 14 m RIG'S COST: one matchup, not one faction (2026-09-19)
 
 Treatment vs the baseline taken with the rig reverted, both maps, `make compare-arms` with the build declared as
@@ -332,7 +479,88 @@ reading is that this was fixed before I measured it.
 - **Not landing the assertion was right for a second reason I did not have at the time:** had I landed it, my branch
   would now carry a failing test asserting a defect that main has already fixed.
 
-### GREEN AND READY TO MERGE: `80bcd085`
+### ⚠ THE BLIND BASELINE RETROACTIVELY WEAKENS EVERY "INERT" CONCLUSION OF ROUND 8
+
+**The widening is not only a fix going forward. It invalidates reasoning already done.** The old `sim-baseline`
+was blind to **5 of 6** mutations — wheeled hull turn rate, fixed-mount fire arc, hover speed, the rig's hull box,
+a turret traverse — and saw only the tracked case. So **every conclusion of the form "the baseline did not move,
+therefore this change is inert" that was drawn against the old match this round is weaker than it looked**, and how
+much weaker depends entirely on whether the change touched a hull the match actually spawned.
+
+**Named instances, so nobody has to rediscover them:**
+
+- **`6a8aaa8c`, the facing pair "does not move the sim baseline" — the orchestrator's own commit.** The facing
+  contract is about **arrival heading on wheeled hulls**, and wheeled hulls are *inside* the blind set. That
+  conclusion is not necessarily wrong; it is **unsupported by the evidence given for it.**
+- **feel's art proved inert twice by passing this check.** That proof holds for `tank` and says nothing about the
+  nineteen other units re-cut this round.
+- **My own four failed predictions** (the 14 m rig, `ARENA_HALF_SIZE`, squad's wheeled-turret fix, the facing
+  contract) were each read at the time as "my change was inert". **Only the `ARENA_HALF_SIZE` one was genuinely
+  inert** — that constant became a bound and foundry declares its own `half_size`. The other three were invisible,
+  not absent.
+
+**The general form, which is the part worth carrying:** *a negative result is only as strong as the instrument's
+reach, and nobody checks the reach of an instrument that keeps agreeing with them.* The baseline agreed with four
+predictions in a row and each stream took the agreement as confirmation. **It was the fourth failure in a row that
+made anyone read the doctrine files** — and the check had been narrow since it was written.
+
+**What to do with it:** re-run anything whose inertness mattered against the **widened** baseline once builder0 is
+back. Nothing needs re-deciding on a laptop.
+
+### ROUND 8 CLOSE — what is verified, what is not, and the evidence for each
+
+**VERIFIED, with the wrapper's own exit line** (the only thing that counts):
+
+| hash | targets | result | log |
+|---|---|---|---|
+| `2cf61f57` | 13 (no `sim-baseline`) | **exited 0**, 1181 passed / 0 failed | `gate4.log` |
+| `80bcd085` | 14 (+ `match-pytest`) | **exited 0**, 1187 passed / 0 failed | `gatefinal.log` |
+| `332033f1` | 14 | **exited 2** — 1250 passed / 0 failed, then `announcer-pytest` on `main`'s `terminus` | `gate_rig.log` |
+
+**NOT evidence, and named here so nobody mistakes them for it:** `gate.log` and `gate2.log` have **no exit line at
+all** — I killed both to relaunch on newer tips. `gate3.log` says `exited 143`: I killed that one by accident while
+clearing builder0 orphans. **A log without `>> remote: make ... exited <N>` is a run that was cut off, not a pass**,
+and three of my six gate logs are exactly that.
+
+**UNVERIFIED: everything after `332033f1`.** builder0 is down (`No route to host`), so it cannot be otherwise.
+**Combat should be carried into round 9 as unverified.**
+
+**What is actually unmerged:** 11 commits, of which **nine are docs or tooling**. Two touch `game/` and **cancel
+exactly** — `b84b9ff8` reverts the rig sizes for a control arm, `6c12ce00` restores them, and the diff between them
+is empty. **Against the merge base my only changed files are three:** `doctrines/sim_baseline_{green,rust}.json`
+and `mk/core.mk`. That is the widened baseline and nothing else.
+
+**The widened baseline moves the sim hash once, by construction** — it is a different match. **My local
+`5dbb0689ddffc1c0` must not be recorded:** this laptop is glibc-2.39, the baseline keys on libm, and recording a
+laptop hash would make the baseline wrong for builder0, the one machine that checks it. **Recording is the
+orchestrator's, from builder0** (invariant 2).
+
+**Round 9's first reading, not started:** `_agents/research_catalog.md` A2 (switched-system theory — a target switch
+should pay a cost proportional to the energy it destroys, which retires my flat 1.35 commitment bonus and explains
+why a hard veto made switch-and-switch-back *worse*: a timer delays a switch without pricing it, so the pressure
+discharges intact the moment it clears) and A3 (cover as a fraction of hull length occluded, which retires the
+12.19 m step).
+
+### ⚠ EARLIER STATE NOTE (2026-09-19)
+
+**`db837581` — the widened `sim-baseline` — is BUILT AND MUTATION-CHECKED LOCALLY, AND UNVERIFIED.** Not green.
+**builder0 is down** (`No route to host`, 100% packet loss, confirmed across sessions), so there is no remote
+verification of anything right now: no check hashes, no baselines, no measurements.
+
+**It cannot be verified on this laptop even in principle.** `sim-baseline` keys on the machine's libm, the recorded
+baseline is builder0's **glibc-2.43**, and this laptop is **glibc-2.39** — so the target **SKIPS** here rather than
+passing or failing. *A check that skips is not a check that passes.* My local unmutated hash is
+`5dbb0689ddffc1c0`; **it is for reference only and must not be recorded** — recording a laptop hash would make the
+baseline wrong for the one machine that checks it.
+
+**What that leaves standing:** the mutation table below is a *local* result and does not need builder0 — it compares
+hashes to each other on one machine, which is exactly the comparison `compare_arms` was built to protect. The
+widening is sound; what is missing is the recorded hash, and **that recording is the orchestrator's** (invariant 2).
+
+**Everything earlier in this round IS on `main`** — the 14 m rig at `fc9e1393`, verified in the file. The section
+below is the round-7 hand-over and is kept for its target list, not as a claim about today.
+
+### (round 7) GREEN AND READY TO MERGE: `80bcd085`
 
 `>> remote: make ... exited 0` on builder0, **1187 passed, 0 failed**, plus `match-pytest` **Ran 11 tests — OK**.
 Working tree clean at that hash and unchanged since the sync, so the verdict is that commit's and not an
