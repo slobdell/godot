@@ -287,6 +287,17 @@ unknown mechanism name.
 Owed next, in order: the wheeled arrive-on-heading arc (contract agreed with squad: a move order may carry `facing`),
 then the terminus oscillation at 45 a side (0.060 — the first number the size of the lead's complaint).
 
+### The 14 m War Rig, measured (builder0, `81f87186`, `make nav-rotation-numbers`)
+
+- In place: **26°** of turn while within 1.5 m of its start, farthest wander 3.5 m (at the old size: 7° and 5.5 m). A
+  longer hull on the same 12 m circle translates less per degree, so it reads MORE like a pivot. Still under the
+  pre-registered 30° bar, but no longer far from it.
+- Throughput: 62° of a 90° face in 12 s, peak yaw 17°/s. Slow, not snappy; its ROBOTIC(b) is the capture ending mid-turn.
+- `min_turn_radius_m` 12 is right for a 14 m hull (bicycle geometry: ~8.4 m of wheelbase, 30° of lock → 14.6 m, 40° → 10).
+  My earlier "12–15" was a guess and is withdrawn.
+- `settle_radius` = min(0.6 × R, 6) = 6 m, which is 0.43 hull lengths. Right: it stops a rig circling a point it cannot
+  stop on.
+
 ### Round 8 (nav, 2026-09-19) — read this first when resuming round 8
 
 The lead's verdict on round 7 was "it still sucks". The orchestrator set the order: (1) angular acceleration at the plant, plus
