@@ -438,6 +438,43 @@ alive; this makes them breathe less hard at the peak. It is **one number per are
 (`show.channels.windows.ceiling` in `arenas/terminus.json`). If he wants it back, he raises it — and the gate will
 tell him exactly what it costs the fight.
 
+### The default patch is conservative to the point of being almost invisible in a still — say so to him
+
+Between feel's variant C (vertical chamfers dark) and the readability gate (window ceiling 1.35 → 1.10), the
+before/after **stills** of the same frozen frame are nearly identical. The parapet peaks at 0.44 on a thin masked
+edge; the windows breathe around roughly today's mean. Measured over 36 frames, the block band's mean luminance
+changes between show-off and show-on by a **median −0.39%** — noise.
+
+**What is left is motion, and that is not nothing** — it is the whole idle, it is what the cue clips show, and it is
+what the lead asked for when he said *"making the lit edges breathe"*. But it does mean the other half of his
+sentence, *"bring these figures to life"*, is currently answered by **breathing rather than by looking different**,
+and a strip of two near-identical stills is an honest picture of that.
+
+**Three dials change it, all in data, none in code:**
+
+| dial | now | what it does |
+|---|---|---|
+| `show.channels.windows.ceiling` (`arenas/terminus.json`) | 1.10 (was 1.35) | how hard the buildings breathe. The gate says what raising it costs the fight |
+| `show_edge_energy` (`city_block.gdshader`) | 0.8 | the parapet's brightness |
+| `"style": "outline"` on the `city_block`/`edge` patch entry | `parapet` | the full-silhouette look, already shot in `build/show/outline/`; feel argues against it on art-direction grounds and he may want it anyway |
+
+### Proved on request, and worth keeping: the `--no-show` arm really is off
+
+The orchestrator saw lit coloured lines on the blocks **in the show-off arm** and asked, correctly, whether the
+"additive hook, never a restyle" promise had been broken. It had not. Those are feel's **`NEON_BAND`** — a second
+surface on every `CityBlock` at shopfront height (`city_block.gd:23, :117-119`), which has been on the Terminus
+since round 7. Nothing in the show touches surface 1.
+
+The proof is the pair's own numbers rather than an argument: if the identity were leaking, the band would be
+*equal* between arms; if the parapet were lit only in the on arm, it would be consistently *higher*. It is neither —
+median −0.39%, scattered both ways, against a null of 1.3%.
+
+**⚠ And a latent bug found on the way, in feel's file, reported and not touched:** `CityBlock.neon_color()`
+(`city_block.gd:63-68`) only honours a colour that **begins with `#`**; any *name* silently falls through to a
+random pick from `NeonSigns.COLORS`. `arenas/terminus.json` asks for **`"neon": "cyan"` on four blocks and
+`"magenta"` on four, and all eight are ignored** — the map's neon bands are the signage palette in seeded random
+order instead of the colours the layout chose.
+
 ### Questions for the lead
 
 1. **Is it beautiful?** The strip and the clips are how it gets asked, and his answer should steer items 5-6's
