@@ -958,6 +958,38 @@ class ReportTest(unittest.TestCase):
         # The enemy contributes to neither side of the oscillating share: it has no goal, so it is never under way.
         self.assertEqual(out["all"]["under_way_seconds"], round(width / float(TICK_RATE), 1))
 
+    def test_a_column_PRESENT_BUT_ALL_NULL_reports_null_too(self):
+        """The half my first fix missed, and the half nav actually hit. My emitter writes `"facing_arc": null`
+        until nav's Movement publishes it, so the COLUMN IS PRESENT and every value is null -- keying off the
+        column name alone still reported 0.0 s. That is no data wearing a present column."""
+        log = self.build(with_cause=True)      # every optional column present, every facing value None
+        out = report(log)
+        self.assertIn("facing_arc", log.columns)          # the column IS there ...
+        self.assertIsNone(out["all"]["facing_arc_seconds"])  # ... and it still reports null
+        captured = io.StringIO()
+        run_metrics.print_report(out, captured)
+        self.assertIn("arc_live=null", captured.getvalue())
+        self.assertIn("NOTE: no `facing_arc` DATA", captured.getvalue())
+
+    def test_a_REAL_zero_is_reported_as_a_zero(self):
+        """And the converse, which matters as much: once a producer says `false` even once, 0.0 s is a
+        measurement. nav's tracked hulls are exactly this -- 0.0 s of arc because `_approach_gate` returns
+        immediately at wheel_radius 0 -- and that zero must not read as an absent field."""
+        lines = [trajlog.header_line("c", "m", TICK_RATE, "synthetic")]
+        width = metrics.SPARC_WINDOW_SAMPLES
+        for tick in range(width):
+            lines.append(trajlog.sample_line(make_sample(
+                tick, float(tick), speed=30.0, unit="T1", unit_id="tank",
+                order_reverse=False, phase="none", creeping=False,
+                facing_ordered=False, facing_arc=False), with_cause=True))
+        out = report(read_lines(lines, "<f>"))
+        self.assertEqual(out["all"]["facing_arc_seconds"], 0.0)
+        captured = io.StringIO()
+        run_metrics.print_report(out, captured)
+        self.assertIn("arc_live=0.0s", captured.getvalue())
+        self.assertNotIn("arc_live=null", captured.getvalue())
+        self.assertNotIn("NOTE: no `facing_arc` DATA", captured.getvalue())
+
     def test_an_ABSENT_facing_column_reports_null_and_never_a_zero(self):
         """nav, 2026-09-20: a log written before `facing_arc` was published printed `arc_live=0.0s` in BOTH arms
         of an A/B -- which reads exactly like a measurement of behaviour and was an unpublished field. A zero
@@ -969,14 +1001,6 @@ class ReportTest(unittest.TestCase):
         run_metrics.print_report(out, captured)
         self.assertIn("arc_live=null", captured.getvalue())
         self.assertNotIn("arc_live=0.0s", captured.getvalue())
-
-    def test_a_PRESENT_facing_column_with_no_arc_time_reports_a_real_zero(self):
-        # The other half: once the column exists, 0.0 s IS a measurement and must not read as absent.
-        out = report(self.build(with_cause=True))
-        self.assertEqual(out["all"]["facing_arc_seconds"], 0.0)
-        captured = io.StringIO()
-        run_metrics.print_report(out, captured)
-        self.assertNotIn("arc_live=null", captured.getvalue())
 
     def test_it_says_whether_the_cause_columns_were_there(self):
         self.assertFalse(report(self.build())["cause_columns"])

@@ -231,6 +231,12 @@ class CuspSummary:
     ## that excuses a whole journey because it ends in an arc is wrong in the other direction and harder to catch.
     facing_ordered_ticks: int = 0
     facing_arc_ticks: int = 0
+    ## Ticks where the field carried a real bool rather than null. The COLUMN can be present and every value
+    ## null -- my emitter writes `"facing_arc": null` until nav's Movement publishes it -- and that is "no data"
+    ## wearing a present column. Counting only truthy values reported 0.0 s for it, which is the absence-as-a-
+    ## measurement bug one level in from where I first fixed it (nav, 2026-09-20).
+    facing_ordered_known: int = 0
+    facing_arc_known: int = 0
     tick_rate: int = 30
 
     @property
@@ -250,6 +256,8 @@ class CuspSummary:
         self.ticks += other.ticks
         self.facing_ordered_ticks += other.facing_ordered_ticks
         self.facing_arc_ticks += other.facing_arc_ticks
+        self.facing_ordered_known += other.facing_ordered_known
+        self.facing_arc_known += other.facing_arc_known
         self.tick_rate = other.tick_rate or self.tick_rate
 
 
@@ -276,6 +284,8 @@ def cusp_density(samples: Sequence[Sample], tick_rate: int) -> CuspSummary:
     # Per-TICK tallies, over every sample: a cusp needs a pair of samples, but "was the arc live" does not.
     out.facing_ordered_ticks = sum(1 for s in samples if s.facing_ordered)
     out.facing_arc_ticks = sum(1 for s in samples if s.facing_arc)
+    out.facing_ordered_known = sum(1 for s in samples if s.facing_ordered is not None)
+    out.facing_arc_known = sum(1 for s in samples if s.facing_arc is not None)
     dt = 1.0 / float(tick_rate)
     last_sign = 0
     for i in range(1, len(samples)):
@@ -729,17 +739,18 @@ def report(log: TrajectoryLog, order_verb: Optional[str] = None) -> Dict[str, ob
             "cusps_creep": row.cusps.creep,
             "cusps_unexplained": row.cusps.unexplained,
             "cusps_unclassified": row.cusps.unclassified,
-            # None when the COLUMN IS ABSENT, 0.0 only when the column is there and the unit spent no time in
-            # an arc. nav hit the difference: a log written before `facing_arc` was published printed
-            # `arc_live=0.0s` in both arms of an A/B, which reads exactly like a measurement of behaviour and
-            # was an unpublished field. A zero that means "no data" is the thing this whole tool exists to
-            # refuse (Invariant 0), and it was in the renderer.
+            # None when there is NO DATA -- the column absent, or present and every value null -- and 0.0 only
+            # when the producer actually said "no arc this tick" at least once. nav hit the difference: a log
+            # from before `facing_arc` was published printed `arc_live=0.0s` in both arms of an A/B, which reads
+            # exactly like a measurement of behaviour and was an unpublished field. Note the column was PRESENT
+            # in those logs (my emitter writes `"facing_arc": null` until nav publishes it), so keying off the
+            # column name alone was not enough -- the first fix was one level short of the bug.
             "facing_ordered_seconds": (
                 _round(row.cusps.facing_ordered_ticks / float(log.header.tick_rate), 1)
-                if "facing_ordered" in log.columns else None),
+                if row.cusps.facing_ordered_known else None),
             "facing_arc_seconds": (
                 _round(row.cusps.facing_arc_ticks / float(log.header.tick_rate), 1)
-                if "facing_arc" in log.columns else None),
+                if row.cusps.facing_arc_known else None),
             "agent_minutes": _round(row.cusps.agent_minutes, 2),
             "sparc_mean": _round(row.sparc.mean, 4),
             "sparc_windows": row.sparc.windows,
