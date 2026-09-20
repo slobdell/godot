@@ -162,6 +162,7 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 	for squad_name: String in squads:
 		settled.merge(_positions(squads[squad_name]))
 	var worst := {}
+	var off_slot: Array = []
 	var away := 0
 	var without_a_slot := 0
 	for squad_name: String in squads:
@@ -178,10 +179,25 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 			far = maxf(far, gap)
 			# The leash a unit fighting at its post keeps to, with the longer lead an escape (cover, breaking contact) is
 			# allowed: beyond that it has left the ground the player gave it.
-			away += 1 if gap > TankBrain.PLAYER_POST_LEASH * TankBrain.ESCAPE_LEASH_FACTOR else 0
+			if gap > TankBrain.PLAYER_POST_LEASH * TankBrain.ESCAPE_LEASH_FACTOR:
+				away += 1
+				# EVERY OFF-SLOT UNIT NAMES ITSELF: its gap, where it stands, and where it was sent. The aggregate alone
+				# cannot tell "seated in another squad's formation" from "never moved" from "sent somewhere that does
+				# not exist", and those have three different owners. Because this test printed only the aggregate, a
+				# reader hunting the cause reached for the NEXT test's roster lines, and they fitted well enough to
+				# carry a confident wrong diagnosis for half an hour -- two of us, in writing. **A measurement that
+				# forces its reader to borrow numbers from another measurement is incomplete, however correct its own
+				# total is.**
+				off_slot.append("%s %.0f m off: at (%.0f, %.0f), sent to (%.0f, %.0f) with squad %s" % [unit_name, gap,
+						(settled[unit_name] as Vector3).x, (settled[unit_name] as Vector3).z,
+						(slot as Vector3).x, (slot as Vector3).z, squad_name])
 		worst[squad_name] = snappedf(far, 0.1)
 	print("MEASURE player_orders_rapid worst gap to its OWN slot per squad %s; %d of %d units off their slot, %d with no slot at all, %d destroyed" % [
 			worst, away, spawned.size(), without_a_slot, destroyed.size()])
+	# Printed as its own lines rather than folded into the MEASURE line: a roster belongs beside the total it explains,
+	# and grep-ability matters more than tidiness when the next reader is hunting a cause across two tests' output.
+	for line: String in off_slot:
+		print("  player_orders_rapid off-slot: %s" % line)
 	# The exclusion must not be able to hide the thing the test is for: if the enemy wiped out most of the player's
 	# force there is nothing left to assert about formations, and a green run would mean nothing.
 	assert_true(destroyed.size() <= 3, "at most a few units were destroyed (%d of %d); more than that and this test "
@@ -236,7 +252,7 @@ func test_a_doctrine_army_re_arranges_when_each_squad_is_ordered() -> void:
 		var key := "%s | order %s | %s" % [String(brain.choice.get("option", "")), order.get("verb", "(none)"),
 				"goal " + str(OrderFeed.point(order.get("goal"))) if not order.is_empty() else "station"]
 		log[key] = int(log.get(key, 0)) + 1
-	print("      what %s did, seconds per state: %s" % [watched[0], log])
+	print("      player_orders_leash: what %s did, seconds per state: %s" % [watched[0], log])
 	var away := 0
 	var dead := 0
 	var worst := {}
@@ -257,7 +273,7 @@ func test_a_doctrine_army_re_arranges_when_each_squad_is_ordered() -> void:
 			var gap: float = (settled[unit_name] as Vector3).distance_to(slots[unit_name] as Vector3)
 			far = maxf(far, gap)
 			var each := _match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain
-			print("        %s %.0f m from the slot it was sent to; choice %s; post %s; order now %s" % [unit_name, gap,
+			print("        player_orders_leash roster: %s %.0f m from its slot; choice %s; post %s; order now %s" % [unit_name, gap,
 					each.choice.get("option", "?") if each != null else "(no brain)",
 					each._player_post if each != null else "?", _orders.current(unit_name).get("verb", "(none)")])
 			# The leash a unit fighting at its post keeps to, with the longer lead an escape (cover, breaking contact) is

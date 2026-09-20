@@ -101,8 +101,21 @@ static func _count_in_flight(game_match: Match, unit: Tank) -> int:
 	# shell's reach along its travel, once as the perpendicular limit. For a War Rig (3.32 x 14.00 m) that disc is
 	# 7.19 m against a 1.66 m half-width, and the error is not a constant: 4.3x abeam, 1.03x end-on. So the crew
 	# over-reported shells crossing its flank and under-reported nothing, which is the shape that makes a gang pack
-	# with a rig in the middle the worst case. Both axes now go through `Units.hull_reach_along`, which is the same
-	# projection `Match` uses, so one flag (`--tune=match.hull_disc=1`) flips every consumer and both axes together.
+	# with a rig in the middle the worst case. Both axes now go through `Units.hull_reach_of` -- the `_of` form, which
+	# takes the CACHED half-extents, because the `hull_size` form would re-derive them on every shell and defeat the
+	# cache this file exists to keep. `hull_distance_of` calls it with the line's normal, so it is one projection on two
+	# axes and they cannot drift apart.
+	#
+	# THE KNOB'S SENSE: the DISC is the default (`tuning.get("hull_disc", 1.0) > 0.0`), so `--tune=match.hull_disc=0`
+	# selects the box and is the treatment arm; `=1` is a no-op. Reviewed against `units.gd` rather than taken from a
+	# description, because this comment said `=1` flips it, which was the sense BEFORE the box was held behind its
+	# falsifier. One flag still flips every consumer and both axes together, which it has to -- otherwise an arm would
+	# measure a hull that is a box on one axis and a disc on the other.
+	#
+	# Verified behaviour-identical today rather than assumed: in disc mode `hull_reach_of` returns `half.length()`,
+	# which is exactly the radius this used to compute, and `offset.dot(normal)` with `normal = (-along.y, along.x)` is
+	# exactly the old `direction.cross(offset)`. The `max(..., 0.0)` clamp only engages when the line crosses the hull,
+	# where the old test did not skip either. So this carries no baseline move.
 	#
 	# The cache holds the (half width, half length) PAIR instead of one radius: `PROFILES` is never written and
 	# `hull_size` is authored, so id -> hull is a process constant.

@@ -98,6 +98,14 @@ func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
 			previous[tank] = now
 		if worst_step < SETTLE_STEP_M:
 			break
+	# "SETTLED" AND "RAN OUT OF FRAMES" ARE DIFFERENT CONDITIONS and must be reported as different ones. feel's shard-4
+	# run hit the cap with the army still moving 18 cm per frame -- `10 frame(s), last step 0.1775 m` -- and everything
+	# the assertions said after that described a scene in motion while reading as settled state. That is the same error
+	# as sampling a turn curve at a fixed moment and calling it the outcome, and it fails FIRST so a red says which of
+	# the two happened rather than leaving the reader to notice the frame count in passing.
+	assert_true(worst_step < SETTLE_STEP_M,
+			"the army came to rest within %d frames -- it did NOT (last step %.4f m), so every position below is a "
+			% [SETTLE_MAX_FRAMES, worst_step] + "snapshot of something still moving and the numbers are not a settled state")
 	# THE WRITER DETECTOR. A green on the two assertions above is not evidence that nothing moves a hull off its
 	# placement -- scale saw this test pass at a 71/71/71 shard layout and fail at 69/68/68, so the quantity is still
 	# sensitive to engine state. This says so directly instead of letting it surface as "inside a wall": scale measured
