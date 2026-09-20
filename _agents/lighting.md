@@ -616,6 +616,28 @@ is a figure that straddles zero and a paragraph that has to be written twice.
 **Report the load average beside the number, always.** A layer cost with no load beside it cannot be checked by the
 next reader, and on a shared builder that is most of what decides whether it means anything.
 
+### Read the counters in the same JSON before blaming the treatment
+
+`all_gpu` went **7.69 ms → 19.87 ms** between last night and the morning after CP2 merged, and the obvious reading —
+*"the resized roster costs 2.6× the GPU"* — was wrong, and refutable from data already in the same output:
+
+| run | vehicles | **primitives** | **draw calls** | GPU ms | avg ms |
+|---|---|---|---|---|---|
+| `96e10e82` (before CP2) | 68 | **191,206** | **291** | **6.43** | 23.44 |
+| `d8a107b5` (after CP2) | 68 | **145,093** | **259** | **20.05** | 99.68 |
+
+**The scene got 24% smaller in primitives and 11% smaller in draw calls, and took 3× the GPU time.** A GPU drawing
+less through fewer calls cannot take three times longer unless it is sharing the card — so this is a contended
+machine, not a heavier scene, and the counters say so from *inside* the run without needing the load average.
+
+**The general habit:** when a timing number moves, **check the counters beside it before believing the story that
+fits.** `primitives`, `draw_calls`, `objects` and `real_lights` are in every `PERF_SCENE` row, they cost nothing to
+read, and they are immune to the load that moved the timing. Here they inverted the conclusion in thirty seconds.
+
+**The real CP2 observation, which is the opposite of an alarm:** the same 6500 budget now buys **68 vehicles at
+145k primitives where it bought 68 at 191k** — bigger hulls, fewer primitives, consistent with the resize going
+through simpler approved meshes rather than more geometry.
+
 ### A gate that fails the branch point is not a gate
 
 The luminance rule shipped first as an **absolute**: fail if the block band out-reads the fight ring. Run against a

@@ -30,6 +30,15 @@ It was narrowed last night to pass a readability check, and I want you to know t
 `"floor": 0.70, "ceiling": 1.20` instead of `0.80 / 1.10` — so the city gets **more alive without getting
 brighter**.
 
+**And one thing that is NOT this dial, so you do not spend it on the wrong problem.** The brightest thing in a
+Terminus frame is not the windows and not the rooflines — it is the **neon band running along each building at
+shop-window height, facing the arena**. That is the venue's own art, it predates the light show, and no dial on
+this page touches it. feel looked at it this morning: now that the colours are right (cyan and magenta, as the map
+always asked for), **what makes it compete with the fight is where it is, not what colour it is** — a lit strip at
+eye level pointing into the arena. **The fix for that is more light on the floor, not less on the buildings.**
+So if the fight ever looks hard to read on this map, **that** is the thing to chase, and turning dial 1 down is
+spending the wrong budget.
+
 **Look at:** `clips/terminus_lull.mp4` (this is the idle — most of a match looks like this), then
 `terminus_wide_cue_battle.png` against `before/terminus_wide_cue_battle.png`, which is the same instant with the
 show switched off.
@@ -137,5 +146,11 @@ will replace this paragraph rather than sit beside it.
 
 **And a check you did not ask for but should know exists:** every frame we shoot is measured for whether the venue
 out-competes the fight for your eye, against the same frame with the show switched off. **If the lights win, the
-build fails.** That is why dial 1 got narrowed — and it is also how you will find out immediately if widening it
-goes too far.
+build fails.**
+
+That check is what narrowed dial 1 — and to be precise about *why*, because it matters for whether you widen it
+again: it failed on exactly one frame, the single brightest instant the windows ever reach. Not the buildings in
+general, and **not** the shop-height bands above, which the check cannot blame on the show because they are there
+with the show switched off. **So dial 1 was narrowed for its own peak, and widening it is a question about that
+peak and nothing else** — the check will tell you immediately if you go too far, and it will not blame you for
+something the venue was already doing.
