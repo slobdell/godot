@@ -233,7 +233,70 @@ fast-forwarded at worktree creation). A baseline `make remote T=check` was start
 
 ### REPORT — read this first (nav, round 9, 2026-09-20)
 
-**✅ GREEN ON THE TIP: `3b01f5b7` — `>> remote: make check exited 0 (build/ copied back)`, `1295 passed, 0 failed`,
+**Nav built five catalogue rows this round. Not one of them is on by default, and the sim baseline has not moved
+once. That is the report, not an apology** — every row carries the measurement that decided its default, and four of
+the five are negative results that cost a night each instead of a round each.
+
+**Nothing changes when you play.** `make skirmish` is byte-for-byte what it was. Every row below is behind a switch
+that is **off**, and **nav's rows do not move the simulation baseline**: it read `04414f5d6a6dfa7c` on every nav
+check tonight, unchanged across nav's `main` merge. *(`main`'s own baseline has since moved to
+`d4c049819a5833d3` with squad's merge — that is squad's change, not nav's, and nav's next check compares against
+the new value.)*
+
+| Row | What it was meant to do | What it actually does | Default |
+|---|---|---|---|
+| **A7** priority projection | replace the additive score with strict priorities | the leash engages (1477 rejections) and **does not fix the drift** — `CombatMotion` decides on under a tenth of a hull's ticks | **off** |
+| **A11** dynamic window | offer only arcs the plant can drive | **doubles the exchange tempo** (2.1× shots/s, 2.7× damage/s). Whether that is lethality or blundering is **not settled** (p = 0.26) | **off** |
+| **A1** event replanning | cut route churn | **−21.5 % re-plans in isolation**, but the cadence is only ~3 % of re-plans in a fight — it fixes the wrong thing | **off** |
+| **A4** clothoid approach | reach gates a straight run-in cannot | reaches **100 %** of them on yard — and **breaches the fight guard hardest where it works best**, and on terminus **never arrives at all** | **off** |
+| **A6** legibility | stop hulls driving backwards down their own corridor | built, both clauses, and **cannot fire yet**: it needs one field from squad's brain. Measured inert, not assumed inert | **off** |
+
+**The one thing a player would notice, and it is not ours to fix.** Your *"the semi trucks are yawing in place
+(should be impossible, they're not a tracker vehicle)"* has a cause: **a hull's rotation is never checked against
+scenery.** `tank.gd` sets the hull's facing directly and only its *movement* is collided, so a truck pinned against
+a wall keeps turning — through the wall. A 14 m semi in a 5 m corridor rotated 44°, needing 12.1 m of room it did
+not have. That file is combat's; they have confirmed it, and it is their next item after tonight's green hash.
+**It gets worse at CP2**, because the sweep this ignores scales with length × sin(yaw) and most of the roster is
+about to get longer.
+
+**One caveat about a bar, because it is the kind of thing that quietly decides a row.** A6's falsifier is written as
+*"off-corridor time 30–36 % → under 10 %"*. **That 30–36 % has never been measured by the instrument that will
+judge it.** It is round 8's figure from a different tool; A12 is what §7 requires, A12 could not compute it at all
+until tonight (the trajectory log had no corridor column), and the baseline is still **owed** rather than taken. A
+bar phrased that confidently should rest on the instrument that will read it, and this one does not yet.
+
+**What nav would spend the next round on, in order.** (1) **The seam**: the layer that decides a hull's motion is
+not the layer that moves it, which is why the leash did nothing, why A6 cannot see its corridor, and why the
+legibility readout cannot name a cause. Everything above trips on it. (2) **A6's falsifier**, once squad's field and
+metrics' log column land — it is the only row whose bar has not been tested. (3) **A4 stays off** unless the
+non-arrival is fixed, and probably stays off regardless.
+
+**Round 9's actual lesson, across four streams: six measurements looked like numbers and were not.** squad's defile
+tube read zero in both arms because the maze has no enemies; nav's `facing_arc` printed `0.0s` for a field nobody
+published; nav's blocked-gate denominator counted *events*, not gates (19245 against 794 for the same 120 s);
+`--nav-off=a11` ran one treatment in two arms; metrics' renderer counted *null* as *false*; and nav's own A6 test
+compared a key that does not exist and passed on 0.000 against 0.000 — **inside the test written to catch that.**
+Every one was caught, none reached a decision, and the phrase worth keeping is squad's: ***an arm in which the
+mechanism cannot act is not a control; its zero is indistinguishable from a result.***
+
+---
+
+
+**✅ GREEN: `53861455` — `>> remote: make check exited 0 (build/ copied back)`, `1321 passed, 0 failed`,
+`sim-baseline passed: 04414f5d6a6dfa7c` (builder0).** Covers the legibility key and the corridor tangent.
+**✅ MERGE CANDIDATE, GREEN: `d6a1f454` — `>> remote: make check exited 0 (build/ copied back)`,
+`1381 passed, 0 failed`, `sim-baseline passed: d4c049819a5833d3` (builder0).** That is `main`'s code plus nav's, so
+its green line covers the combination; the orchestrator merges this tip directly. It verifies everything after
+`c6222a5c` — the corridor tangent, the `no_law`/`override` split, A6's two clauses, the `a6=` arm field, the
+arrival-heading test and two missed `.uid` files.
+
+**The baseline point is the one that matters for the lead: `d4c049819a5833d3` is `main`'s CURRENT value, moved by
+squad, and nav's merge leaves it untouched.** So nav's five rows are confirmed not to move the simulation against
+the value that is live now, not merely against the one they were built on.
+
+*(Commits above `d6a1f454` are docs-only: this Status.)*
+
+**✅ GREEN (earlier): `3b01f5b7` — `>> remote: make check exited 0 (build/ copied back)`, `1295 passed, 0 failed`,
 `lint: all scripts parse`, `sim-baseline passed: 04414f5d6a6dfa7c (glibc-2.43)` — builder0.** The baseline hash is
 **identical** to `5c8f08b3`'s, so nothing on this branch moves it and every round-9 row is still opt-in. **This also
 closes `0f14cb2b`**, whose 255 was transport: it is an ancestor of the checked tip, so it was unverified rather than
@@ -352,6 +415,31 @@ frames at pitch 21°, 49 m, FOV 35, and a human. *"For anything subjective, a hu
 **And one thing to check before believing any of it:** `off_mesh_fit.none` must be **non-zero in both arms** —
 A4's headroom. An instrument at the end of its range is indistinguishable from one that is not connected, and nav
 has not yet established headroom for this one across four maps (only on yard, where it was 403).
+
+### OWED, not done: P7's control-arm baseline through A12
+
+**What it is:** the off-corridor velocity fraction on **today's default path**, measured by `make metrics` — A6's
+falsifier bar is *"30–36% → under 10%, with no fall in exchange ratio"*, and **the 30–36% has never been measured
+by A12**. It is round 8's figure from a different instrument.
+
+**Why it must be taken BEFORE A6 can act:** a baseline measured after the mechanism exists is worth much less, and
+A6 is inert today, so right now is the only clean window. metrics agreed with that ordering.
+
+**Why it is not done:** two blockers, neither nav's.
+1. **The log column landed on metrics' branch, not `main`.** `corridor_x`/`corridor_z` are at `bfdc58b7` on
+   `stream/metrics`; nav's tree has neither the columns nor `off_corridor` in `metrics.py`. Nav checked rather than
+   assuming — the emitter's only `corridor` mentions in this tree are comments.
+2. **No local Godot runs** (orchestrator, laptop at 245 MB free with nine sessions). It must be queued on builder0.
+
+**The exact run, so whoever takes it does not re-derive it:**
+
+    make remote T="nav-fight ..." with --trajectory=<path>, then
+    make metrics LOGS=<path> --order-verb attack_move --team 0
+
+`--team 0` because the ungated A12 statistics are diluted by the enemy army — that is what made nav's `eff_mean`
+read 0.717 where the ordered side alone reads 0.833, **from the same bytes**. `--order-verb attack_move` matches §7.
+Report the **active fraction beside the fraction**; metrics' renderer now refuses to print one without the other,
+because *a falsifier that improves because the law switched itself off more often is not a pass*.
 
 ### Still open at hand-over, in the order the next agent should take them
 
@@ -743,6 +831,87 @@ detail**, and the distinction is exactly the sort that turns into an over-claim 
 diverge and the totals move with them. Every number above is from **one** run and is internally consistent; none of
 them is a before/after against a different run.
 
+### N5/A6: **both clauses are BUILT at level 3 — and A6 cannot fire yet, which is counted rather than trusted**
+
+`e2fbd1aa`, opt-in behind `--nav-off=a6`, 40/40 nav. **A6-a** (nose: turreted within 25° of the tangent, hull-fixed
+bounded forward-oblique at 75°) and **A6-b** (shoulder: of two equal shoulders take the one whose velocity advances
+along the corridor). **A6-b is the half that moves the falsifier** — it is measured on *velocity*, and a turreted
+hull's nose is already free of its gun, so a law constraining only the nose would pass its own review and leave P7
+at 30–36%.
+
+**⚠ A6 IS INERT UNTIL `request["corridor"]` ARRIVES.** `CombatMotion.choose()` takes a Dictionary with **no unit
+handle**, so nav's velocity layer cannot look up its own mover's corridor from inside the decision; `tank_brain.gd`
+must pass it and that is **squad's** file. squad has it written and dry-run clean, landing with their merge.
+**Until then every A6 tick is an inactive one**, and `a6_no_corridor == a6_asked` in `arm_report()` is the signal
+that the field has not arrived. Reported unconditionally **including when zero**, at squad's request and on squad's
+rule, which is the best sentence anyone wrote tonight: ***"An arm in which the mechanism cannot act is not a
+control; its zero is indistinguishable from a result."***
+
+**What the unit tests prove and what they do not.** They prove the law is **reached**, **has its corridor**, and
+**narrows the live set**. They do **not** show it changes behaviour: on the synthetic request both arms choose the
+same heading (0.383 either way) — level 3 hands its null space down and levels 4–5 pick the same winner from a
+smaller set. Whether A6 changes anything is the **falsifier's** question, on a fight, over **active ticks only**
+with the active fraction beside it, and it needs squad's field. *A falsifier that improves because the law switched
+itself off more often is not a pass.*
+
+**Design notes that are decisions, not details.**
+- **A6-a's cost is monotone outside the bound and FLAT inside it.** Candidates satisfying the bound tie, and that
+  tie *is* the null space handed down. Lesson 153 applied deliberately: a floor that makes a level rank nothing is
+  the leash bug, but a floor that expresses a **bound** is what a bound means.
+- **Composition is §4's, written down rather than discovered:** A6 runs *after* the armour task, so `strafe` (armour
+  demoted to level 5) hands A6-a the full set, while `angle` and `standoff` hold only inside what armour leaves.
+- **`run` is excluded** — a control that is also rewritten is not a control.
+- **Binding is by MOUNT, asserted over the live roster.** `TankBrain.motion_style` derives style *from* mount, so
+  hull-fixed is exactly `{standoff, run}` by definition rather than roster coincidence. If that stops holding, A6
+  would put a 25° nose bound on a hull whose gun **is** its hull, which §4 calls an anti-goal.
+- **The tolerance is inherited from level 3's existing `TOLERANCE["arc"]` (0.125) and is NOT separately derived.**
+  It is the first thing to measure once the corridor lands; nav did not invent a number for it.
+
+**A SIXTH false zero, and this one was nav's own test.** A6-a's comparison read `result["to"]` — a key
+`CombatMotion.choose()` does not return — so both arms got the fallback heading and the assertion passed on
+**0.000 against 0.000**. A vacuous comparison *inside the test written to catch vacuous comparisons*. It now reads
+`point`, and a **positive control requires at least one arm to produce a real projection before the arms are
+compared at all**. Tonight's tally across two streams: squad's defile tube (`redecides=0` in both arms, no enemies
+in the maze), nav's `facing_arc` (unpublished, printing `0.0s`), nav's `off_mesh_fit.none` (events, not gates),
+nav's `--nav-off=a11` (one treatment in two arms), metrics' `arc_live` renderer (null counted as false), and this.
+**Every one of them looked like a number.**
+
+### N5/S4: the legibility key is SHIPPED — control's readout was built and silent waiting on nav
+
+**The deadlock was nav's.** `_agents/workstreams.md` S4: *"control signed 2026-09-20 with one condition on nav:
+`Movement.state(unit)` carries `legibility: {active, why}` … so the readout names which level took the nose rather
+than inferring it from geometry."* **control signed hours before nav noticed**, and nav's Status said A6 was
+"blocked on S4" the whole time, while control's C-2 readout sat built and silent waiting for this key. Broken by the
+orchestrator, not by either stream re-reading the contract. **Whoever writes "blocked on X" owes a check that X is
+still true** — a `Waiting on` line is a claim with a date on it, and this one had gone stale hours earlier.
+
+**`why` is a CLOSED SET, refused loudly** (`LEGIBILITY_WHY`, the `OFF_NAMES` rule): a `why` the readout does not know
+renders as nothing, and **a silent readout looks exactly like a working one**.
+
+| `why` | when |
+|---|---|
+| `band` `survival` `armour` | A7's levels, once A6-a/A6-b exist to lose to them. **Nothing publishes these yet.** |
+| **`arrival_arc`** | the hull is on an ordered-facing approach gate |
+| `yielding` | X4 right-of-way took the nose |
+| `override` | nothing nav owns is shaping the nose. **On the default blend this is most ticks, which is correct and documented rather than hidden** |
+
+**`arrival_arc` is in the set because S4 demands that case by name:** *"an arrival arc under an ordered facing is
+off-corridor by construction — those ticks are flagged by nav's emitter and counted as ordered, never charged to
+A6's fraction."* Without it **A12 would bill obedience to A6**. It is asserted to agree with `facing_arc` on the same
+tick, so the two cannot drift into two facts.
+
+**`active` is FALSE until A6 exists, and that is deliberate.** It means *"a nav-owned motion law is shaping the
+nose"*, and no such law is built — A6-a and A6-b are the next commit. A key reporting `active: true` for the route
+tangent would hand control a readout that lights up for behaviour nobody implemented, which is this round's
+recurring failure wearing a new hat. The test asserts the false, so whoever flips it must come through that test and
+name the law that did it.
+
+**Known limitation, stated rather than discovered later: `why` cannot name `band`/`survival`/`armour` yet, because
+there is no channel from `CombatMotion` to `Movement`.** `CombatMotion.choose()` takes a request with **no unit
+handle** and returns to `tank_brain.gd`, which is squad's file. That is the *same seam* as *THE LEASH IS NOT IN THE
+ROUTE PATH* — the layer that decides is not the layer that moves — and it is round 10's first candidate. A6-a/A6-b
+land on the A7 arm, where the decision and the level are in one place.
+
 ### ⚠⚠⚠ A4 RESULT: it passes its positive control on yard and **FAILS its pre-registered primaries and its guard**
 
 **The verdict is that A4's default stays OFF, now on measured grounds rather than on caution.** Run on the merged
@@ -786,6 +955,56 @@ both maps in the rotation that have any blocked gates at all. The claim is also 
 entry was found"*: whether a hull then **arrives on the ordered heading** from a curved entry has no test today, as
 the N4/A4 RESULT section has said since it was written. That remains N4's next piece of work and it is now **more**
 important, because a mechanism that hurts the fight while landing its gates may be failing at precisely that step.
+
+**INDEPENDENTLY CONFIRMED by metrics' A12 tool (CP1), which matters more than usual because nav's own instrument
+had two defects this same night.** The decisive yard arms were re-run with `--trajectory=` and read by
+`make metrics` — a different tool, a different author, the same logs:
+
+| yard | `net/path` control → treatment | `osc_share` control → treatment | `eff_mean` control → treatment |
+|---|---|---|---|
+| **seed 3** | 0.864 → **0.838** | 0.033 → **0.036** | 0.717 → **0.700** |
+| **seed 5** | 0.806 → **0.766** | 0.046 → **0.055** | 0.651 → **0.645** |
+
+**All three move the wrong way on both seeds**, and metrics' per-unit `ifv net/path` (0.873 → 0.849 on seed 3)
+matches nav's own probe counters to three decimals. Two instruments, one verdict. **A4's default stays off.**
+
+**metrics then read all four arms properly (GREEN only, `attack_move` ticks only) and the verdict is stronger than
+nav's own reading — TWELVE of twelve metrics worse, same direction:**
+
+| | s3 control | s3 **A4** | s5 control | s5 **A4** |
+|---|---|---|---|---|
+| efficiency mean | 0.833 | **0.792** ↓ | 0.627 | **0.616** ↓ |
+| **efficiency p10** | 0.439 | **0.335** ↓ | 0.261 | **0.216** ↓ |
+| oscillating share | 4.9 % | **5.7 %** ↑ | 6.3 % | **7.8 %** ↑ |
+| net / path | 0.811 | **0.756** ↓ | 0.760 | **0.693** ↓ |
+| cusps / agent-min | 7.44 | **9.90** ↑ | 37.94 | **38.49** ↑ |
+| SPARC | −1.893 | **−1.915** ↓ | −2.087 | **−2.132** ↓ |
+
+**The p10 moves most — −24 % on seed 3, −17 % on seed 5.** That is the pre-registered statistic and the one a player
+feels: A4 is not merely failing to help, it makes **the worst tenth of the motion materially worse**. The cusp rise
+is broad rather than one hull class (s3: ifv 9.09 → 13.69, lancer 11.00 → 12.93, tank 5.89 → 7.77).
+
+**And a property of the A12 numbers nav should have known before quoting them.** `osc_share`, `net/path` and
+`under_way` are **gated on orders**, so the 44 unordered RUST units cannot dilute them; `eff_mean`, `eff_p10`,
+`cusp/min` and `sparc` are **ungated**. Unfiltered `eff_mean` is 0.717 and GREEN-only it is **0.833 — from the same
+bytes**. Neither is wrong and the verdict is identical either way, but they are **not the same quantity**, and nav
+quoted the unfiltered one without saying so. metrics has rewritten the both-armies NOTE to name which numbers are
+safe unfiltered, with nav's reading as the worked example.
+
+**That run also caught a nav debt: `arc_live` was a FALSE ZERO.** `make metrics` printed `arc_live=0.0s` in **both
+arms**, which reads like a measurement of behaviour. It was not: metrics' emitter reads an optional `facing_arc` key
+off `Movement.state(tank)` and writes `null` *until nav publishes it*, and **nav never had**. Published at
+`e3363d46` — `_approach_gate` computed it every tick and kept it nowhere; it is now set in `drive()` and **cleared by
+`idle()`** so a stale `true` cannot become arc seconds a hull never spent. `arc_live` is now **135.7 s** where it was
+0.0 s, and it checks itself: ifv 63.7 s of 88.7 s ordered facing, lancer 72.0 s of 72.0 s, **tank 0.0 s of 256.3 s**
+— correct, because a tracked hull pivots and the gate is never offered to it. **That zero is now a measurement.**
+
+**Follow-on worth keeping: metrics' first fix for this was one level short, and nav's data is what exposed it.** They
+keyed it on whether the *column* was present — but their emitter writes `"facing_arc": null`, so in nav's four A4
+logs **the column IS present and every value in it is null**, and the fix still printed `0.0s` on the very data that
+prompted it. Now keyed on whether any value was ever *known*, with three tested states: column absent → `null`;
+column present and all null → `null` (nav's case); column present with a real `false` → **`0.0s`, a measurement**
+(nav's tank row). Caught only because they ran nav's files instead of trusting their own passing test.
 
 **Two defects in nav's own instrument, recorded because they bound how far these numbers can be pushed.**
 
