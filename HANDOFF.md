@@ -4,7 +4,108 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-19 (evening). **Round 9 is LAUNCHED: seven streams briefed, worktrees created; the lead starts the agents.**_
+_Last updated: 2026-09-20 07:00. **Round 9's overnight run: twelve branches merged and verified; CP2 and CP3 pending. Read the morning summary first.**_
+
+## ☀ THE MORNING AFTER ROUND 9's NIGHT — read this first (2026-09-20, written 07:00, updated at each tick)
+
+**You went to bed at ~00:45 with eight streams briefed. By 07:00 twelve branches were merged to `main`, every merge at
+a hash whose own builder0 check went green, the sim baseline was recorded as it moved, and `main` was verified green
+after each wave. Nothing is pushed to `origin` — you push.** The night's rules were yours: any decision over no
+decision, and finished, validated work. Every decision below is reversible in one place, and each says how.
+
+### What is on `main` (in merge order; builder0 verdicts read from the wrapper's own line)
+
+| stream | merged at | what | verdict |
+|---|---|---|---|
+| control | `e27f0681` (CP2c) | **desktop right-drag orders the heading to arrive on** (press = destination, drag past 18 px = facing): the arc that could never fire on your controls now can | 1269/0 |
+| nav | `5c8f08b3` | **A7 priority projection, A11 dynamic-window arcs, A1 event-triggered replanning, A4 clothoids: all built, measured, and OPT-IN**; the arrival gate counts offered = aimed + refused | 1290/0, baseline unmoved |
+| feel | `7a706911` | **the War Rig is a tractor and a trailer hinged at the fifth wheel** (S2: the collider is still one 14 m box, so a shell can pass through a fold; the accepted cost this round) | 1273/0, baseline unmoved |
+| metrics | `ae9c65e1` (CP1) | **A12 trajectory metrics** (reproduced round 8's oscillation numbers to 0.05 pt), **the lint that actually checks** (the remote gate had parse-checked ZERO files all round: lesson 157), the sharded parallel check (a full gate now takes 13–18 min instead of 45) | 1310/0 |
+| nav | `3b01f5b7`, `c6222a5c`, `d6a1f454` | the `wedged` regime detector, the gains override, **the A4 A/B (fails its bars; default stays off on measurement)**, the legibility key and corridor tangent, A6's two clauses (opt-in, honestly inert until the corridor arrives) | 1295/0, 1316/0, 1381/0 |
+| control | `ffd09b0e`, `3683e0ca` | **the camera stays outside the Terminus blocks** (lift 21° → 32° over a roof; 703 of 4328 poses inside a building → 0) **and the block in the way is cut** (alley walled 518 → 0); the corridor readout | 16/16 targets, 1372/0 |
+| squad | `02762b8d`, `1a797642` | **slot pitch and leash from the members' hulls**, facings on element orders, **A8 measured and switched off**, **A9 co-arrival + explicit bounding overwatch**, per-faction PID gains measured; A10 stood down; A1's brain-side tube measured and OFF | 1297/0 + five targets; 1364/0; **baseline moved → `d4c049819a5833d3`** (recorded twice) |
+| feel | `5ae7e531` | **the Syndicate airship** (primitives, no Meshy), the differential smokes proved, the pipeline roster fix | 1316/0, baseline unmoved |
+| combat | `55b0de58` | **the dwell timer retired on measurement** (inert for two rounds), **A2 opt-in** (weaker than the flat bonus on churn, costs nothing where 1.35 did), the CLEAR_LANE catch | 1393/0; **baseline moves → `32831dc99cdaf5ca`** (record in progress at 07:00) |
+| show | `e1823e68` | **the arena as a light show**: fixtures, channels, patches, cues; Terminus and yard patched; ~1.5% of frame time, zero added lights | 1420/0, baseline unmoved |
+
+**NOT merged at 07:00: CP2, scale's resized roster.** Built and verified to 1392 passed / 3 failed on `e7ebb372`; two of
+the three since fixed, the third (a contact-pip test in control's file) handed to control at 07:05; a green check and
+the swap-bases fairness control are owed. **If it did not land by the time you read this, it is the first merge of
+your morning, and control's item 4 and feel's X4 (the post-resize camera and art sweeps) follow it.** **CP3 (metrics'
+three-slot series and the `REMOTE_SLOTS=3` default)** was in its final runs at 07:00.
+
+### What you should look at (all sent to you overnight; paths on this laptop)
+
+1. **The roster at real relative scale**: `~/projects/godot-scale/build/roster-lineup/lineup_pose.png` (your pose) and
+   `lineup_factions.png`. K = 0.707, rig-anchored. **Overrule:** `Units.RIG_LENGTH_M` → 19.8 for real metres.
+2. **The War Rig bending**: `~/projects/godot-feel/build/rig-hinge/strip_45.png`, `strip_21.png` (your pose),
+   `strip_reverse_60.png` (the jackknife). Hear it from us: the collider is still one box.
+3. **The camera in the Terminus alleys**: `~/projects/godot-control/build/terminus-alleys/index.html`; `alley4_asked`
+   vs `alley4_clear` is the pair. **Overrule:** the lift resolver is one function; a push-in variant is the same test.
+4. **The light show**: `~/projects/godot-show/build/show/` (frames, three arms: default, `before/`, `outline/`) and
+   **`build/show/clips/*.mp4`; watch the clips before the stills**: after feel's art review the default is quiet in a
+   still and lives in motion. The coloured horizontal bands in every frame are feel's round-7 shopfront neon, not the
+   show. **Three dials, all data:** `show.channels.windows.ceiling` (1.10; the gate says what raising it costs the
+   fight), `show_edge_energy` (0.8, parapet only), `"style": "outline"` (the full-silhouette look feel argues against).
+5. **The airship**: `~/projects/godot-feel/build/airship-look/airship_widest.png`. **You will not see it at your
+   default pose**: the sky is below the top of the frame at 21°. It lives over the city at 560 m and shows at 8–12° tilt.
+   **Your call:** leave it, or make it a title/results element. One constant either way.
+
+### Decisions made on your behalf (each reversible in one place)
+
+- **Sizing is rig-relative** (K = 14.0 / 19.8 = 0.707); Syndicate platforms referenced by role; `law_tank` is a
+  Centauro 8×8. **Balance was not a constraint**, per your round-8 ruling.
+- **Articulation is visual** this round; the sim keeps one body and one box (S2).
+- **The light show's default is light inside things** (windows, shopfronts) plus one roofline per block, venue palette,
+  never red or cool white; the outline look is a named variant. The fight must stay the brightest read: a gate measures
+  it against its own null. (feel's art ruling, adopted.)
+- **The camera lifts over a roof rather than pushing in**, and cuts the block in the way.
+- **A2 ships opt-in; the dwell timer is retired** (measured inert). **A4's default stays off** (it fails its bars and the
+  curved entry does not arrive). **A8 is off** (it made a wedge fail a defile it passes without it). **A10 is stood down**
+  (heavies-in-front was never a cost, only the old matcher's tie order: lesson 50's shape). **A1's brain-side tube is
+  off** behind a five-seed gate (−62% re-decides with latency intact, but four more GREEN dead on one seed).
+- **The gap-widening ruling was made and WITHDRAWN** within twenty minutes: the measure behind it was wrong (lesson 162).
+  The maps are fine; no map changed.
+- **The airship moved over the city** because geometry made it invisible over the arena at your pose.
+- **builder0 slots 3 → 6** (the queue, not the machine, was the bottleneck: lesson 161); CP3 sets 3 once a slot holds a
+  sharded check.
+
+### What is unverified, stated plainly
+
+- Whatever merged after the last green `main` check at the time you read this (see *Live checkpoints* below for the
+  latest verdict line). Every branch was green on its own check before merging; the combination is what each `main`
+  check proves.
+- CP2 (scale) and CP3 (metrics) as above.
+- Nothing is pushed to `origin`.
+
+### What each stream owes (each is at the head of its brief's Status, in your terms)
+
+- **scale:** a green check and the swap-bases fairness control for CP2; the factions re-render; feel's two Terminus
+  floodlights (half the lamps of pit, eight lit towers inside the fight); the stretch 9/20 → 0/20 re-measure.
+- **combat:** **the hull-rotation plant defect**: a hull's position is collision-resolved and its rotation is not, so
+  hulls rotate through scenery; this is your round-8 "semi yawing in place", and CP2 makes it worse. Spec agreed with
+  nav; not started so that tonight's baseline move has one named cause.
+- **nav:** P7's A12 baseline (exact invocation written); per-hull-class agent radius after CP2.
+- **squad:** A10 resumes at `c0f22597` once the deleted `fixed` flag's guarantee is preserved; the tube's five-seed gate.
+- **control:** item 4 (the post-CP2 camera sweep) the moment CP2 is on `main`; the contact-pip fix for scale.
+- **feel:** X4 after CP2; the hinge's frame cost when the box is quiet; the Terminus brightness (diagnosed, scale's fix).
+- **metrics:** CP3's table; `ai-scenarios` into `check` behind its count baseline; the corridor columns' consumer.
+- **show:** item 7 (stretch) not started.
+
+### The round's structural finding, and what round 10 should spend itself on
+
+**Intent does not reach the layer that moves the hull.** nav measured `CombatMotion` deciding under a tenth of a hull's
+ticks with `Movement` driving the rest and knowing no leash; squad found A8's deformation fails a defile because a slot
+layout is the wrong place for intent the mover cannot see; the maze defile failure survived three pre-registered
+hypotheses and is now a named regime (`wedged`) rather than a story. Every one of nav's five rows trips on the same
+seam. That is round 10's first candidate, ahead of retrying any row.
+
+**Lessons 152–174 were written tonight** (`_agents/orchestration.md`): the night's recurring shape is *the absence of
+work reading as the success of work*: a lint that checked zero files, a scenario suite outside the gate, a flag that
+silenced its own tests, a perturbation that could not perturb, a control arm where the mechanism could not act, a
+measure that flagged everything. Each is now a guard.
+
+---
 
 ## Round 9 is LAUNCHED (2026-09-19 evening). Start here.
 
