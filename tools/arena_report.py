@@ -181,9 +181,12 @@ def openness_notes(report):
     if view < SHIPPED_MEAN_VIEW_LOW:
         out.append("mean_view %.1f m is below every map the lead has ruled on (lowest is %.1f m): sightlines may be "
                    "shorter than a gunline needs. Not a failure — a question for a human." % (view, SHIPPED_MEAN_VIEW_LOW))
-    longest = report.get("_longest_hull")
-    if longest:
-        name, length, reach = longest
+    # Read from `hull_cover`, NOT from a "_"-prefixed key: `main()` strips every key starting with "_" before the
+    # notes are generated, so a private key here is a flag that can never fire. It did not fire, for exactly that
+    # reason, until the 14 m rig landed and yard read reach 0.00 in the JSON with no WATCH line beside it.
+    cover = report.get("hull_cover")
+    if cover:
+        name, length, reach = cover["longest_hull"], cover["longest_hull_m"], cover["reach"]
         if reach < 0.01:
             out.append("NOTHING on this map can hide the longest hull (%s, %.1f m): 0.00 of the field is within "
                        "%.0f m of a prop that long. Cover fails SILENTLY — the hull still drives to cover, still "
@@ -1026,7 +1029,6 @@ def main():
                 "reach": round(hull_cover_reach(layout, report["_boxes"], hulls[name]), 3),
                 # The kit's longest prop is the cliff: cover is a step function of hull length, not a gradient.
                 "longest_prop_m": round(max((max(b.w, b.d) for b in report["_boxes"]), default=0.0), 2)}
-            report["_longest_hull"] = (name, hulls[name], report["hull_cover"]["reach"])
         clean = {k: v for k, v in report.items() if not k.startswith("_")}
         reports.append(clean)
         a = clean["ambush"]

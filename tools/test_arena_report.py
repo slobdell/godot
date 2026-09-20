@@ -348,6 +348,34 @@ class TestTheToolAgreesWithTheGameItModels(unittest.TestCase):
             "the cityscape's 40 m blocks cover a 14 m hull where the container maps cannot"
 
 
+    def test_the_hull_cover_warning_actually_reaches_the_reader(self):
+        """The measure was right and the WARNING WAS DEAD. `hull_cover_reach` correctly returned 0.00 for yard the
+        moment the 14 m rig landed, and no WATCH line appeared, because the note read a `_longest_hull` key that
+        `main()` strips along with every other "_"-prefixed private key before the notes are built.
+
+        **Second dead guard of the same session** — after four tests that `unittest discover` never collected. Both
+        were green by absence. So this test exercises the NOTE, not the number behind it: a measurement nobody is
+        ever shown is not a warning.
+        """
+        root = pathlib.Path(__file__).resolve().parent.parent
+        yard = json.loads((root / "arenas" / "yard.json").read_text())
+        boxes = ar.boxes_of(yard)
+        hulls = ar.hull_lengths()
+        longest = max(hulls, key=lambda k: hulls[k])
+        report = {"ambush": {"centre_sees_share": 0.2}, "drivable_share": 0.51, "mean_view_m": 54.3,
+                  "hull_cover": {"longest_hull": longest, "longest_hull_m": hulls[longest],
+                                 "reach": ar.hull_cover_reach(yard, boxes, hulls[longest]),
+                                 "longest_prop_m": 12.19}}
+        notes = ar.openness_notes(report)
+        if report["hull_cover"]["reach"] < 0.01:
+            assert any("hide the longest hull" in n for n in notes), \
+                "reach is %.2f and the reader is told nothing: %s" % (report["hull_cover"]["reach"], notes)
+        # And the same report with a hull everything can hide must stay quiet.
+        report["hull_cover"] = dict(report["hull_cover"], longest_hull_m=4.0,
+                                    reach=ar.hull_cover_reach(yard, boxes, 4.0))
+        assert not any("hide the longest hull" in n for n in ar.openness_notes(report)), \
+            "a 4 m hull hides fine on yard and must not be flagged"
+
     def test_hull_lengths_are_read_from_the_game_not_copied(self):
         """If this file carried its own table of hull sizes it would be a third copy to keep in step, and the rig's
         length is being argued about right now (12 m vs 14 m). Reading the catalog means the cover check re-answers
