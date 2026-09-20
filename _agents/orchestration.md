@@ -2689,9 +2689,12 @@ The kickoff prompt is one line; this section is the rest.
     ground cost the morning.** **And then a seventh, the real one (feel, 14:30, a shard-3/5 repro on the laptop with
     a byte-identical pair list to builder0): placement is clean at frames 0 and 1, four overlapping pairs appear at
     frame 2 and stay (4 at frame 10, 3 at 20), every failing pair is two of the three widest hulls abreast, and they
-    converge to a lateral pitch of 3.15 m where the half-metre rule needs 3.33 m.** The wedge's lateral slot pitch
-    did not follow the widened roster; the test sampled one frame before the defect appears, so anything nudging the
-    sampled instant saw it, and **"flaky" was a true description that stopped the search. A true label that ends
+    converge to a lateral pitch of 3.15 m where the half-metre rule needs 3.33 m.** Squad then checked the arithmetic:
+    the layout's lateral pitch for that pair is ≥ 5.0 m and `_clear_spot` guarantees 3.83 m, so placement clears by
+    1.67 m and **something moves each unit ~0.9 m toward its neighbour after placement** (the drift assertion's first
+    catch; a formation-flow slot pitch or a lateral depenetration, the displacement vectors decide). The test sampled
+    one frame before the movement, so anything nudging the sampled instant saw it, and **"flaky" was a true
+    description that stopped the search. A true label that ends
     inquiry costs as much as a false one.** The sink was real and transient; the overlap was real and permanent;
     the failure message named neither.
 
