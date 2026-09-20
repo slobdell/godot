@@ -263,6 +263,27 @@ is the orchestrator's call, not his.)
 > `test_theme_city_block::test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll` — **that
 > last one I cannot find written down anywhere and it may be new.**
 
+> ### Orchestrator's post-backlog tooling block: three items, all in, one check outstanding.
+> | commit | what | the finding it produced |
+> |---|---|---|
+> | `8c5bb14a` | `make sim-baseline-adopt` | **the hand `cp` DELETES other machines' baselines** — `build/sim_state_hash.txt` holds one line, and the symptom where it was deleted is `sim-baseline SKIPPED`, a skip not a failure. Also folded three copies of the hash read into one `SIM_HASH_READ`. |
+> | `dcf4d242` | `--delete` copy-back, `*.log` protected | `--delete` would unlink a wrapper log **while its redirect is open** |
+> | `26c6b1e5` `1e5972e4` | `make round-status` | **six slots held on builder0 at load 15.70** where `REMOTE_SLOTS=3`; and see below |
+>
+> **`round-status` found a real thing and got a second thing wrong on the same run, and the second is mine.**
+> I flagged `godot-feel` and `godot-nav` as "work but no slot" and passed it to the orchestrator as something
+> to look at. **They were QUEUED.** A queued run has already `cd`-ed into its folder — the exact reason the
+> live-run guard covers the queue — so processes-without-a-slot is the *healthy* state while a stream waits.
+> A tool that turns a normal state into a finding is worse than one that says nothing, because someone acts
+> on it. Fixed: a queued run holds a `slot.sh` ticket, so the three states are distinguishable, and only
+> "no slot AND no ticket" is flagged, worded as the uncertainty it is rather than as an accusation.
+>
+> The six-slot observation stands and the part worth keeping is that **the shard count is derived from free
+> memory at launch**, so a run that starts into a crowded box stays slow for its whole duration, not only
+> while it is crowded.
+>
+> 142 shell tests over six suites; `metrics-pytest` 138.
+
 > ### Backlog and both stretch items COMPLETE. Last check `dd6f84ca`: exit 2, and the red was mine.
 > builder0, `1499 passed, 3 failed`, 1000 s, 4 shards over 214 files, `sim-baseline 1e90f69e5d6fcc46`
 > (unmoved), `determinism 253adefeec657df1`. **Both new features proved themselves in it:**
