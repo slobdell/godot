@@ -67,6 +67,32 @@ default_slots() {
 	echo "$n"
 }
 
+# T1 (metrics, round 9): the same question one level down. A slot holds ONE `make check`; this says how many of
+# check's targets that check may run at once INSIDE its slot. Same principle and same owner as `default_slots`,
+# because "how much can this machine take" is one fact with one home (Invariant 0: a value with a single owner is
+# READ, not mirrored) -- and lesson 148 is that hard-coding it was wrong in both directions at once.
+#
+#     tools/slot.sh --jobs <mb-per-job> [max]
+#
+# The caller supplies the per-job footprint it MEASURED, because the answer differs per workload: a plain headless
+# match is ~735 MB, but `net-smoke` and `relay-smoke` each hold three Godot processes at once.
+if [ "${1:-}" = "--jobs" ]; then
+	per_job_mb=${2:-1024}
+	max_jobs=${3:-12}
+	avail_mb=$(awk '/^MemAvailable:/ {print int($2 / 1024); exit}' /proc/meminfo 2>/dev/null)
+	cores=$(nproc 2>/dev/null || echo 2)
+	# A machine we cannot measure gets the conservative answer, never the loud one.
+	[ -n "${avail_mb:-}" ] || { echo 2; exit 0; }
+	# Leave a quarter of what is available as headroom: the figure is a peak of one process, and several peaking
+	# together is exactly the case that OOMs a laptop with six agent sessions up.
+	n=$(( (avail_mb * 3 / 4) / per_job_mb ))
+	[ "$n" -gt "$cores" ] && n=$cores
+	[ "$n" -gt "$max_jobs" ] && n=$max_jobs
+	[ "$n" -lt 1 ] && n=1
+	echo "$n"
+	exit 0
+fi
+
 slots=${TANK_SQUAD_SLOTS:-$(default_slots)}
 limit=${TANK_SQUAD_SLOT_TIMEOUT:-5400}
 dir=${TANK_SQUAD_SLOT_DIR:-/tmp/tank_squad_slots}   # overridable so the queue can be tested in isolation

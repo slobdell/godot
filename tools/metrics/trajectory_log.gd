@@ -45,6 +45,15 @@ static func install(p_match: Match, path: String, producer: String, knobs: Dicti
 	if not node._open(path, producer, knobs):
 		return null
 	p_match.add_child(node)
+	# Sample on `physics_frame`, NOT in `_physics_process`. Godot emits `physics_frame` immediately BEFORE the
+	# frame's physics callbacks, so it reads the settled state the previous tick left -- which is exactly where
+	# every probe in this repo samples (`fight_probe.gd` does `physics_frame.connect(_sample)`). In
+	# `_physics_process` this node would instead see each hull AFTER it moved this frame, a one-tick offset
+	# against the counters it is meant to be comparable with. Measured, not assumed: with the offset, the
+	# positive control's oscillating SHARE still matched round 8 to three decimals on all four maps, but yard's
+	# "units that ever oscillated" came out 27 against the probe's 28 -- one borderline unit on one map, which is
+	# what a one-tick shift looks like when it is small enough to be mistaken for noise.
+	p_match.get_tree().physics_frame.connect(node._sample_frame)
 	return node
 
 
@@ -58,7 +67,7 @@ func _open(path: String, producer: String, knobs: Dictionary) -> bool:
 		return false
 	var header := {
 		"kind": "header", "format": "tank-squad-trajectory", "version": 1,
-		"commit": _shell("git", ["rev-parse", "--short", "HEAD"], "unknown"),
+		"commit": _commit(),
 		"machine": _shell("hostname", [], "unknown"),
 		"tick_rate": SimClock.TICK_RATE,
 		"arena": Arena.active.get("name", null) if Arena.active != null else null,
@@ -73,6 +82,20 @@ func _open(path: String, producer: String, knobs: Dictionary) -> bool:
 	return true
 
 
+## The tree that produced this log. TANK_SQUAD_COMMIT first, because `tools/remote.sh` EXCLUDES `.git/` from the
+## rsync and exports this instead -- so on builder0, which is where nearly every number this project quotes is
+## taken, asking git would answer "unknown" (remote.sh says so in its own comment). `+dirty` when uncommitted
+## changes were rsynced, because then the hash does not identify what ran.
+static func _commit() -> String:
+	var carried := OS.get_environment("TANK_SQUAD_COMMIT")
+	if carried != "":
+		return carried + ("+dirty" if OS.get_environment("TANK_SQUAD_DIRTY") == "1" else "")
+	var local := _shell("git", ["rev-parse", "--short", "HEAD"], "unknown")
+	if local == "unknown":
+		return local
+	return local + ("+dirty" if _shell("git", ["status", "--porcelain"], "") != "" else "")
+
+
 static func _shell(command: String, arguments: Array, fallback: String) -> String:
 	var out: Array = []
 	if OS.execute(command, arguments, out, false) != 0 or out.is_empty():
@@ -81,7 +104,7 @@ static func _shell(command: String, arguments: Array, fallback: String) -> Strin
 	return text if text != "" else fallback
 
 
-func _physics_process(_delta: float) -> void:
+func _sample_frame() -> void:
 	if _file == null or game_match == null or not is_instance_valid(game_match):
 		return
 	if orders == null:
@@ -174,4 +197,7 @@ func close() -> void:
 
 
 func _exit_tree() -> void:
+	var tree := get_tree()
+	if tree != null and tree.physics_frame.is_connected(_sample_frame):
+		tree.physics_frame.disconnect(_sample_frame)
 	close()
