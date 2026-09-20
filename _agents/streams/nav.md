@@ -332,6 +332,36 @@ motivation for that row rather than an inherited one.
 `net_over_path` rises and `oscillating_share` falls is pre-registered in the brief (N4) and runs after CP1, read
 through A12.
 
+### CORRECTION from metrics' A12 (2026-09-20): the shuffler is the WHEELED hull, not the LIGHT one
+
+nav has been carrying round 8's *"the scout is the shuffler"* — squad's briefs aim A8/A9 at light hulls on it.
+metrics re-ran round 8's exact configuration (yard, GREEN, attack_move, seed 3, 120 s, builder0) on a **Condemned
+roster that fields no scout at all** and reproduced the same shape:
+
+| unit | units | eff_mean | eff_p10 | oscillating | cusps/agent-min |
+|---|---|---|---|---|---|
+| ifv | 7 | 0.624 | 0.250 | 12.1 % | 35.8 |
+| lancer | 6 | 0.619 | 0.216 | 9.4 % | 34.8 |
+| tank | 21 | 0.798 | 0.388 | 4.9 % | 7.4 |
+
+**It is a locomotion property, not a unit property.** That is the axis A11's lattice already splits on — a car's yaw
+is `|speed| / radius`, a tracked hull's is a ramped rate — so the mechanism was aimed correctly by accident and the
+description was wrong.
+
+**And the number A11 is actually for: 56 % of all reversals are the wheeled creep** (665 creep / 234 ordered / 293
+unexplained of 1192 cusps; `tank` produces **zero** creep cusps). Cusp density reads the *motion*, so it names flips
+round 8's gear-flip counter had to call unexplained — P2's "unexplained third" is now about a quarter.
+**A11 makes the creep a scored candidate rather than a plant reflex, so this is the number that should move**, and
+whether `WHEEL_CREEP_THROTTLE` survives is a finding rather than a decision.
+
+**Three instructions from metrics about how to read any of this, taken as instructions:**
+1. **Pre-register on the p10 of windowed efficiency, not the threshold share** — the old threshold understates the
+   problem ~4×.
+2. **Never pre-register a bar on "units that ever oscillated"** — it moves by ±1 with a ±1 window-length change while
+   the share stays put. The oscillating *share* is robust (metrics' tool and nav's own counter agree to 0.05 pp).
+3. **Station-holding windows are refused, not scored** — 27,500 of them; folding them in at 1.0 or 0.0 would move an
+   army-level mean more than the pathology does.
+
 ### N2: A11 is BUILT, MEASURED, and NOT SHIPPED ON either
 
 **`--nav-off=a11` turns A11 ON, inside A7's chooser (itself opt-in). The default path is untouched.** The lattice is

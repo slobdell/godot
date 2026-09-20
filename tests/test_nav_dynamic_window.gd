@@ -108,3 +108,21 @@ func test_the_lattice_replaces_the_ring_and_says_so() -> void:
 	assert_eq(int(lattice_arms["a11_with_live_state"]), 1,
 			"built from the hull's LIVE motion state, not a synthesised one (%s)" % lattice_arms)
 	assert_true(not ring.is_empty() and not lattice.is_empty(), "both arms chose something")
+
+
+## The arm HEADER must say what the code is doing, not what the flag said. The first version of `nav-fight`'s
+## NAV_FIGHT_ARM line read `not Movement.switched_off("a7")`, which was right while A7 was on by default and became a
+## confident lie the moment the switch was inverted: it printed `a7=false` on a run with `--nav-off=a7` set. An arm
+## header that reports the opposite treatment is how round 7 compared two byte-identical arms and believed the result.
+func test_the_switches_report_the_treatment_the_code_is_actually_running() -> void:
+	var was := Movement._off
+	Movement._off = PackedStringArray()
+	Movement._off_parsed = true
+	assert_true(not CombatMotion.a7_on(), "no flag: the blend")
+	assert_true(not CombatMotion.a11_on(), "no flag: the ring")
+	Movement._off = PackedStringArray(["a7"])
+	assert_true(CombatMotion.a7_on(), "--nav-off=a7 turns A7 ON")
+	assert_true(not CombatMotion.a11_on(), "and leaves A11 alone")
+	Movement._off = PackedStringArray(["a7", "a11"])
+	assert_true(CombatMotion.a7_on() and CombatMotion.a11_on(), "both on")
+	Movement._off = was

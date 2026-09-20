@@ -155,9 +155,13 @@ func _run() -> void:
 	# Stacked starts separate (Avoidance parts coincident hulls by name), so this is reported, not fatal.
 	# The treatment, read live from the code under test (not from the flag passed): an A/B arm is only an arm if this
 	# differs between them.
-	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s a7=%s avoidance=%s station=%s off=%s" % [CombatMotion.commit_on(),
-			CombatMotion.hold_band_on(), CombatMotion.fixed_style, not Movement.switched_off("a7"),
-			Movement.avoidance_on, Movement.station_on, Movement._off])
+	# Every field here is read from the CODE UNDER TEST, never from the flag that was passed — `a7=` asks
+	# `CombatMotion.a7_on()`, not `not switched_off("a7")`. The first version of this line did the latter, and the
+	# moment A7's switch was inverted it printed `a7=false` on a run with `--nav-off=a7` set: an arm header that
+	# confidently reports the opposite treatment, which is precisely how round 7 compared two byte-identical arms.
+	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s a7=%s a11=%s avoidance=%s station=%s off=%s" % [
+			CombatMotion.commit_on(), CombatMotion.hold_band_on(), CombatMotion.fixed_style,
+			CombatMotion.a7_on(), CombatMotion.a11_on(), Movement.avoidance_on, Movement.station_on, Movement._off])
 	# Round 9: the arm counters start at zero for THIS run, so a number in the report is this run's (statics outlive a
 	# single probe inside one process).
 	CombatMotion.reset_arms()
