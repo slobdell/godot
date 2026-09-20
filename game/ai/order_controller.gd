@@ -236,6 +236,11 @@ func set_orders(new_move: Variant, new_weapon: Variant, new_reflexes: Variant = 
 		for reflex in reflexes:
 			_reflex_armed.append(true)
 	if new_move != null:
+		if String(new_move.get("type", "")) != "face" or not _same_face(new_move):
+			# A new order, or a face aimed somewhere else, restarts the stall window: the hull is being asked a
+			# different question and has not failed to answer this one yet.
+			_face_heading = Vector3.INF
+			face_stalled = false
 		move_order = new_move
 		_drive_elapsed = 0.0
 		movement.new_order()
@@ -333,6 +338,59 @@ func _log_event(text: String) -> void:
 		events = events.slice(events.size() - MAX_EVENTS)
 
 
+## Round 9: a wheeled `face` that has not turned for this long stops creeping (see `_apply_move`). OPT-IN, like
+## every round-9 row — `--nav-off=facegiveup` turns it ON — because it is behaviour on the default path.
+const FACE_STALL_SECONDS := 1.5
+## ...and "turned" means this many degrees over that window. Below it the hull is shuffling, not coming round.
+const FACE_STALL_DEG := 3.0
+## Measurement: faces that gave up creeping, and faces that were checked at all (the denominator, so a zero in the
+## first is distinguishable from a mechanism nothing reached — round 8's `gates aimed 0` in a new place).
+static var face_giveups := 0
+static var face_checked := 0
+
+var _face_heading := Vector3.INF
+var _face_turned := 0.0
+var _face_left := FACE_STALL_SECONDS
+## Reported in `state()`: this hull is under a face it cannot execute.
+var face_stalled := false
+
+
+## Is `candidate` the same face order the hull is already executing (same spot, within a metre)?
+func _same_face(candidate: Dictionary) -> bool:
+	if String(move_order.get("type", "")) != "face":
+		return false
+	return Vector2(float(candidate.get("x", 0.0)) - float(move_order.get("x", 0.0)),
+			float(candidate.get("z", 0.0)) - float(move_order.get("z", 0.0))).length() <= 1.0
+
+
+static func face_giveup_on() -> bool:
+	return Movement.switched_off("facegiveup")
+
+
+## True when this hull has been asked to face something and has not turned FACE_STALL_DEG in FACE_STALL_SECONDS.
+func _face_giving_up(delta: float) -> bool:
+	var forward := -tank.global_basis.z
+	if _face_heading == Vector3.INF:
+		_face_heading = forward
+		_face_turned = 0.0
+		_face_left = FACE_STALL_SECONDS
+		return false
+	_face_turned += rad_to_deg(absf(atan2(_face_heading.x * forward.z - _face_heading.z * forward.x,
+			_face_heading.x * forward.x + _face_heading.z * forward.z)))
+	_face_heading = forward
+	_face_left -= delta
+	if _face_left > 0.0:
+		return face_stalled
+	face_checked += 1
+	var stuck := _face_turned < FACE_STALL_DEG
+	if stuck and not face_stalled:
+		face_giveups += 1
+	face_stalled = stuck
+	_face_turned = 0.0
+	_face_left = FACE_STALL_SECONDS
+	return face_stalled and face_giveup_on()
+
+
 # ---- Movement ------------------------------------------------------------------------
 
 func _apply_move(cmd: TankCommand, delta: float) -> void:
@@ -351,6 +409,18 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			if movement.wheel_radius() > 0.0 and cmd.turn != 0.0 and absf(turn_only.y) >= 1.0:
 				# Wheels can't turn standing still: creep round (combat's wheels roll along the arc on a pure turn command).
 				cmd.throttle = Steering.WHEELS_MIN_THROTTLE
+				# ROUND 9: a `face` order had NO recovery. `Movement.unstick` runs only for a `move_to` and the mover
+				# is `idle()` under a face, so a wheeled hull wedged against scenery creeps for ever. Round 8 measured
+				# what that looks like from the lead's camera: the War Rig's apparent pivot IS these creep legs
+				# cancelling against props — **26 degrees within 1.5 m on yard against 7 degrees on bare ground at
+				# EVERY hull length**. So the hull is not turning and not going anywhere, and nothing notices.
+				#
+				# A face that is not turning stops creeping. It keeps the turn command (a tracked hull, or a car that
+				# gets room back, still comes round) and drops the throttle that is producing the shuffle, and it
+				# reports itself the way a blocked move does — N1's guarantee is *"it never stands still silently"*
+				# and a `face` order was the one exemption.
+				if _face_giving_up(delta):
+					cmd.throttle = 0.0
 		"drive":
 			_drive_elapsed += delta
 			if _drive_elapsed <= float(move_order["seconds"]):
