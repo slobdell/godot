@@ -2935,5 +2935,7 @@ The kickoff prompt is one line; this section is the rest.
     next arena as a leak. `await teardown()` and `teardown()` look equally deliberate on the page, and no review
     could tell them apart. Fix: the runner awaits a sealed `_teardown()` that owns the order (hook, free, guards,
     drain), the overridable hook is synchronous and documented as never responsible for the drain, and mid-test
-    clears go through a public `await free_owned()`. Same family as an instrument that cannot report its own
+    clears go through a public `free_owned()`, deliberately synchronous: one awaitable thing, owned by the
+    runner, is the property that keeps the rest safe (a helper that also had to be awaited would carry the same
+    trap, and an `await` on a non-coroutine is a lint red). Same family as an instrument that cannot report its own
     inapplicability, one level up, in the signature.
