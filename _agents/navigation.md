@@ -41,7 +41,7 @@ undone: **when a fact about the world is one query away, query it.** Both habits
 inference that is right most of the time — which is the worst kind, because it fails silently and only when it
 matters.
 
-### Lesson (number to be assigned by the orchestrator — nav did not self-assign, see the note below): **a positive control proves the mechanism fires, not that the row is worth shipping**
+### A positive control proves the mechanism FIRES, not that the row is worth shipping (nav, 2026-09-20)
 
 A4 was measured twice and the two measurements point opposite ways:
 
@@ -65,12 +65,15 @@ row screened only on maps where it barely fires will pass its guard and then fai
 built for. **Check the guard hardest where the treatment is strongest**, which is the opposite of where a
 headroom check sends you.
 
-**On the numbering:** nav wrote "Lesson 158" below without checking the register, and the orchestrator has since
-assigned 159 and 167 to other streams. **158 may collide.** Lesson numbers are a shared, global sequence and a
-worker should not mint one — ask the orchestrator. Recorded here rather than quietly renumbered, because a lesson
-about drift that itself drifted is worth one line.
+**On the numbering:** nav minted "Lesson 158" for the entry below without checking the register, which is a shared
+global sequence in [orchestration.md](orchestration.md) that only the orchestrator assigns. The number is dropped
+rather than kept: both nav entries above are titled and unnumbered, and the two lessons nav *did* earn a number for
+this round are **lesson 170** (*a "waiting-on" line is a claim with a date on it — nav and control each blocked on
+the other for hours with both halves already done*) and **lesson 171** (*a switched row and its arm field are one
+change, not two — nav shipped `a4` and then `a6` without their `NAV_FIGHT_ARM` fields, twice in one night*).
+Recorded rather than quietly renumbered, because a lesson about drift that itself drifted is worth the line.
 
-### Lesson 158: before building a recovery, check the PLANT can produce the failure you are recovering from (nav, 2026-09-20)
+### Before building a recovery, check the PLANT can produce the failure you are recovering from (nav, 2026-09-20)
 
 nav built a recovery for a `face` order that never comes round, measured it, and found it **inert** — not because the
 detector was wrong but because **the failure mode does not exist in this simulation**. `tank.gd` assigns
