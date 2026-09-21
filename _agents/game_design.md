@@ -2232,3 +2232,15 @@ existing behaviour (assign the selection a control group, 1–5, and it becomes 
 element orders) is the design. What changes is discoverability: the greyed task buttons say why in words the player
 reads, and the card offers a one-click **Form squad** action that assigns the next free group number and enables the
 buttons at once. Squad's CP1 API is withdrawn; control owns the whole item.
+
+### Formations still do not come together (the lead, 2026-09-20, night, after a few games)
+
+> Formation behavior is still not great, i.e. the units really don't coherently come together in a formation. I
+> assume that's somethin we're still ironing out and working on?
+
+Yes; it is the round's centre. The four measured causes and their owners: arrival declared at the slowest member
+after every slot is dressed (~40 s on a 20 m move; squad's three-phase arrival, bar 8 s); slot pitch from width where
+rotation needs the turning envelope (squad's pitch, arena's spawn grid); wheeled hulls that cannot dress to a facing
+(they keep the approach heading, the turret covers); the mover that knows no leash or corridor (nav's seam item, the
+funnel construction). Combat's yaw freeze underneath all four. The acceptance is his: squads driven through the
+Terminus streets and seen to arrive as a formation.
