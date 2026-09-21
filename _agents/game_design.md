@@ -2206,3 +2206,17 @@ His words, verbatim (one message; the round is split from it):
    the caller as authentic fight-night hype) plus the audit tool; the announcer stream writes, audits, puts every new
    line on the review page, and generates WITHOUT waiting; a line he vetoes on the page is regenerated or dropped
    (cheap). The ledger records every run. Scope is his to limit (memory: he limits the asset count, not the spend).
+
+### Maps: bridges, pits and water (the lead, 2026-09-20, evening, after the round was briefed)
+
+> another possible workstream - what about map generation? I had asked about adding bridges / pits / water elements
+> to create different mapping types, but this never materialized
+
+Why it did not (orchestrator's reading): the round-7 mechanism exists (`ArenaTerrain`: water and pits carve the
+navmesh, bridges restore a deck, a 0.9 m rim stops hulls and not shells, all measured by `make water-probe`), but
+**no shipping arena carries a `terrain` list and the `arena.terrain` art slot was never filled**, so there was
+nothing to see; and until round 6's off-centre objectives landed (`spread` 0.00 → 0.35 on yard), a bridge had nothing
+on the far side worth crossing for, which is his own rule. Both gates are now open. **Round 10 adds a ninth stream,
+`terrain`:** the art for the slot first, then two maps that use the mechanism with mirrored objective pairs (a river
+with two bridges; pits as kill zones), each judged by the arena report's `spread`, a paired match series showing the
+expensive route used, and his eye on the arena page. Bridges are lanes under R4 (the rig fits, corners certified).

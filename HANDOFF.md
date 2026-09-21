@@ -10,7 +10,7 @@ _Last updated: 2026-09-20 16:00 (the 21:50 stamp below was a typo for 13:50). **
 
 ## 🚀 ROUND 10 IS LAUNCHED (2026-09-20, evening) — read this first
 
-**Eight streams — control, squad, arena, nav, combat, feel, show, announcer — each with a brief in
+**Nine streams — control, squad, arena, nav, combat, feel, show, announcer, and (added the same evening on his ask) terrain — each with a brief in
 `_agents/streams/<stream>.md` and a worktree at `~/projects/godot-<stream>`.** The lead's playtest words are verbatim in
 [`_agents/game_design.md`](_agents/game_design.md) *Round 10 direction* (with the orchestrator's reading and the
 decisions made on them); the split, the four checkpoints (CP1 squad's transient element, CP2 arena's Terminus lanes,
@@ -21,13 +21,15 @@ are in [`_agents/workstreams.md`](_agents/workstreams.md) *Round 10: the eight s
 R2), any selection can carry an element order (squad's R1, control's buttons), and a squad can be driven through the
 Terminus streets (arena's lanes R4, nav's drive test); then the rigs' yaw (combat's predicate), the walls of light
 (show, per-window), the blimp in his frame (feel, R7), the turret mounts (R5), the bus bigger than the garbage truck
-(R6, CP3), and the announcer's pools deepened and GENERATED (R8: he authorised the spend).
+(R6, CP3), and the announcer's pools deepened and GENERATED (R8: he authorised the spend), and the water/pit/bridge maps he asked for
+twice (terrain, R9: the art for the slot, then a river map and a pits map with mirrored objectives, judged by `spread`
+and a paired series).
 
-**PAUSED AT LAUNCH (2026-09-20, ~20:00): the lead is at ~93 % of the week's credits, so the eight agents are NOT started yet; the worktrees exist and are current. Meanwhile a second external research brief was drafted at `_agents/research/brief2.md` (16 abstract questions from round 9's negative results; the lead sends it, the replies go in `_agents/research/` and the curation into `research_catalog.md`). When credits allow, start the agents exactly as below.**
+**PAUSED AT LAUNCH (2026-09-20, ~20:00): the lead is at ~93 % of the week's credits, so the nine agents are NOT started yet; the worktrees exist and are current. Meanwhile a second external research brief was drafted at `_agents/research/brief2.md` (16 abstract questions from round 9's negative results; the lead sends it, the replies go in `_agents/research/` and the curation into `research_catalog.md`). When credits allow, start the agents exactly as below.**
 
 **Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`), the
-same text for all eight (OFFSETs: control 1, squad 2, arena 3, nav 4, combat 5, feel 6, show 7, announcer 8; show runs
-every Godot process on builder0; announcer runs no Godot beyond `announcer-check`):
+same text for all nine (OFFSETs: control 1, squad 2, arena 3, nav 4, combat 5, feel 6, show 7, announcer 8, terrain 9;
+show and terrain run every Godot process on builder0; announcer runs no Godot beyond `announcer-check`):
 
 > /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
 
@@ -46,7 +48,7 @@ baseline: record it twice in the same session; put feel's lineup frame, blimp fr
 band-width frames and its 1990s-baseline page, arena's street pairs and announcer's review page in front of the lead
 the day they exist; carry nav's wall-contact log to combat and combat's refusal log to nav; re-record the ai-scenarios
 count with combat's and squad's REASONs; relay the lead's vetoes (bus concept, announcer lines, band width) the same
-day. Integration order: squad (CP1) → arena (CP2) → control → nav → combat → feel (CP3 alone) → show → announcer.
+day. Integration order: squad (CP1) → arena (CP2) → control → nav → combat → feel (CP3 alone) → show → announcer → terrain (after arena, whose generator it extends).
 
 **Decisions made for him at launch (each reversible in one place, all in `game_design.md` §"What it means"):** streets
 are for driving, containers to the kerbs (arena); any selection of two or more units forms a transient element
