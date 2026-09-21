@@ -67,7 +67,19 @@ func test_a_parked_hull_stays_exactly_still_and_drives_off_when_told() -> void:
 		# instead of landing on whatever test runs next.
 		var game_match: Match = setup[0]
 		var arena: Node = game_match.get_meta("arena")
-		await teardown()
+		# ⚠ `free_owned()` THEN `drain_navigation()`, NOT `teardown()`. Under nav's sealed `_teardown()` the hook
+		# frees and is *never* responsible for the drain -- the drain needs `await` and a `-> void` signature cannot
+		# force a caller to use it, which is the whole reason the sequence stopped being overridable. So a mid-loop
+		# `teardown()` frees the fixture and leaves its navigation regions on the map, and the boundary read below
+		# then measures what the SERVER had not yet removed rather than what this test left.
+		#
+		# Measured, one line apart: on the unsealed tree this read `0 -> 0`, because `teardown()` still ended in
+		# `await drain_navigation()`; on the sealed tree (main's closing check, 22af6d0c) it read `0 -> 2` and this
+		# test was the single red in 1557. Not a leak, not shard scheduling -- the seal removing the drain from a
+		# path I was relying on. main's own docstring names the replacement: `free_owned()` is "the ONLY supported
+		# way" to get a clean world part-way through a test.
+		free_owned()
+		await drain_navigation()
 		assert_true(not is_instance_valid(arena) and not is_instance_valid(game_match),
 				"%s: the fixture is gone at the boundary" % unit)
 		var regions_after := NavigationServer3D.map_get_regions(tree.root.world_3d.navigation_map).size()
