@@ -194,7 +194,7 @@ see the note below; the pooled figure reproduces exactly from them.
 
 Pooled over 96,054 active ticks, tick-weighted; the mean of the per-file fractions is 0.3187.
 **The two commits differ by one Status file and nothing else** (`git diff --stat 5369bd13 c025bc6b`:
-`_agents/streams/nav.md`, 28 lines), so the rows are comparable. That is the mixed-commit banner working as
+`_agents/streams/archive/round9/nav.md`, 28 lines), so the rows are comparable. That is the mixed-commit banner working as
 intended: it flagged the mixture, printed the command that settles it, and the command settled it — the
 reader verified rather than assumed.
 

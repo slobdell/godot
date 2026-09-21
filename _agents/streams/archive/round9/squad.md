@@ -1,3 +1,5 @@
+> **ARCHIVED: round 9 (2026-09-19 → 2026-09-20), stream `squad`.** Every commit named here is merged to `main`; the round-10 list at the top of Status is the live part. Relative links below were written from `_agents/streams/`.
+
 # Stream: squad (formations that deform, arrive together, and never swap seats — A8 → A9 → A10)
 
 > Read `HANDOFF.md`, `_agents/orchestration.md` (*The worker contract*), `_agents/game_design.md` (*Round 9

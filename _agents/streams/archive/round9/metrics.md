@@ -1,3 +1,5 @@
+> **ARCHIVED: round 9 (2026-09-19 → 2026-09-20), stream `metrics`.** Every commit named here is merged to `main`; the round-10 list at the top of Status is the live part. Relative links below were written from `_agents/streams/`.
+
 # Stream: metrics (A12 trajectory-space metrics = CP1, then T1 parallelise `make check` = CP3)
 
 > Read `HANDOFF.md`, [orientation.md](../orientation.md), [orchestration.md](../orchestration.md) (*The worker

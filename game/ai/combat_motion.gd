@@ -139,7 +139,7 @@ const RUN_VEER := 10.0
 ## gang cars flipped hold <-> move at the band edge and on every incoming round, and each flip made a wheeled hull re-lay
 ## itself with a K-turn — about 40% of their in-place-yaw events, and the hold never saw the commitment bonus.
 ## OFF by default (like r5sidestep, `--nav-off=holdband` turns it ON): its pre-registered A/B (builder0, 7c4ec608,
-## _agents/streams/nav.md) cut scout in-place yaw 20%+ on only 1 of 4 maps and tripped the kills guard, so it does not
+## _agents/streams/archive/round9/nav.md) cut scout in-place yaw 20%+ on only 1 of 4 maps and tripped the kills guard, so it does not
 ## ship without the lead's say-so.
 const HOLD_SLACK_M := 3.0
 

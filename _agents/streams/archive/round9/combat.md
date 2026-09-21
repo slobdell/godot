@@ -1,3 +1,5 @@
+> **ARCHIVED: round 9 (2026-09-19 → 2026-09-20), stream `combat`.** Every commit named here is merged to `main`; the round-10 list at the top of Status is the live part. Relative links below were written from `_agents/streams/`.
+
 # Stream: combat (a switch pays what it destroys; cover at any hull length; the resized roster measured, not tuned)
 
 > Read `HANDOFF.md`, [orientation.md](../orientation.md), [game_design.md](../game_design.md) (*Round 9 direction*,

@@ -1,3 +1,5 @@
+> **ARCHIVED: round 9 (2026-09-19 → 2026-09-20), stream `feel`.** Every commit named here is merged to `main`; the round-10 list at the top of Status is the live part. Relative links below were written from `_agents/streams/`.
+
 # Stream: feel (round 9 — the War Rig bends in the middle, and motion that reads as obedience)
 
 > Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)

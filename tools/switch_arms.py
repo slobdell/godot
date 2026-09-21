@@ -12,7 +12,7 @@ belong to the timer that P3 says works by storing pressure up. Four arms are wha
 `none` is the honest baseline for "does this mechanism do anything"; `flat` is the honest baseline for "is it better
 than what it replaces". Reporting only one of those two is how a mechanism gets adopted or rejected for the wrong
 reason. The `flat+dwell` arm that measured the timer inert is gone with the timer; its numbers are recorded in
-`_agents/streams/combat.md` where they were taken.
+`_agents/streams/archive/round9/combat.md` where they were taken.
 
 Every rate is reported per class AND per locomotion, because metrics measured that the creep is a property of wheels
 rather than of a role (ifv and lancer are almost all creep; tracked hulls produce none), so a role split reads two
@@ -33,7 +33,7 @@ SIM_HZ = "30"
 
 # The DEFAULT build is now the flat bonus with the dwell timer retired, so "flat" is the empty tune and A2 is opted
 # into. The `flat+dwell` arm is gone with the timer: it cannot be reconstructed from this build, and its numbers live
-# in `_agents/streams/combat.md` where they were taken.
+# in `_agents/streams/archive/round9/combat.md` where they were taken.
 ARMS = {
     "flat": "",
     "cost": "switch.cost=1",

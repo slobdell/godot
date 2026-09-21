@@ -1,3 +1,5 @@
+> **ARCHIVED: round 9 (2026-09-19 → 2026-09-20), stream `nav`.** Every commit named here is merged to `main`; the round-10 list at the top of Status is the live part. Relative links below were written from `_agents/streams/`.
+
 # Stream: nav (round 9 — the desired-velocity layer, rebuilt in the catalogue's order: A7 → A11 → A1 → A4)
 
 > Read `HANDOFF.md`, [orientation.md](../orientation.md), [orchestration.md](../orchestration.md) (the worker contract),

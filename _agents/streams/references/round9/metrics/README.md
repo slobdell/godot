@@ -1,7 +1,7 @@
 # A12's positive control: reproducing round 8's oscillation finding
 
 > **This section was written and committed BEFORE the run's numbers existed.** Its bar is the one in
-> `_agents/streams/metrics.md` backlog item 3, which the orchestrator pre-registered on 2026-09-19.
+> `_agents/streams/archive/round9/metrics.md` backlog item 3, which the orchestrator pre-registered on 2026-09-19.
 > The results table below is filled in afterwards and says plainly whether the bar was met.
 
 ## What is being controlled, and why it is a re-run and not a replay

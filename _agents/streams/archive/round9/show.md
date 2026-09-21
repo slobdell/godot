@@ -1,3 +1,5 @@
+> **ARCHIVED: round 9 (2026-09-19 → 2026-09-20), stream `show`.** Every commit named here is merged to `main`; the round-10 list at the top of Status is the live part. Relative links below were written from `_agents/streams/`.
+
 # Stream: show (the arena as a light show — fixtures, channels, patches and cues over the venue's emissive art)
 
 > Read `HANDOFF.md`, [orientation.md](../orientation.md), [game_design.md](../game_design.md) *Round 9 addition: the

@@ -1,3 +1,5 @@
+> **ARCHIVED: round 9 (2026-09-19 → 2026-09-20), stream `scale`.** Every commit named here is merged to `main`; the round-10 list at the top of Status is the live part. Relative links below were written from `_agents/streams/`.
+
 # Stream: scale (the roster at real relative scale — CP2 — then everything that was sized for a 4 m hull, then A3)
 
 > Read `CLAUDE.md`, `HANDOFF.md`, [orchestration.md](../orchestration.md) (*The worker contract*),
