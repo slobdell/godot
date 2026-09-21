@@ -4,7 +4,57 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
+_Last updated: 2026-09-20 19:30 — **Round 10 launched; see the section directly below.** The rest of this file is round 9's record, kept as written (its own stamp follows)._
+
 _Last updated: 2026-09-20 16:00 (the 21:50 stamp below was a typo for 13:50). **Round 9's overnight run: sixteen branches and all three checkpoints merged; the day has merged thirty-eight more. `main` at `a6268137`+ is the CLEANEST tree of the round: the main check on `49ed1fb3` (builder0, 16:00) read `>> remote: make check exited 2`, 1535 passed, 1 failed, 16 passed 2 FAILED 0 NOT RUN, sim-baseline 1e90f69e5d6fcc46 unmoved, determinism 253adefeec657df1, and ZERO body, region or edge reports, with combat's leaking `test_tank_yaw_fit` override (and a second leaker control found, `test_combat_no_damage`, a Match per call) still in the tree: nav's sealed `_teardown()` frees and drains whether or not an override calls super, prediction confirmed. `main-checked` is the annotated tag on `49ed1fb3` with that verdict in its message. The two reds are known and named: the spawn test's settle assertion (squad's committed true positive; combat's `Tank.place()` clears it, its check on `1db4893c` running) and the engine-deck scenario (ORBIT radius reads hull length, round 10). Nothing is pushed to `origin`; you push.** The rest of this line is the morning's history: **Round 9's overnight run: sixteen branches and all three checkpoints merged; the day has merged thirty-five more (the latest: squad's hold-on-arrival, nav's accessor and expect_error, metrics' keep-going check, grouping, FILTER and REASON tooling). `main` at `0e7f884a` carries ONE known poisoner: combat's `test_tank_yaw_fit` teardown override that never calls super leaks a foundry (44 bodies, 4 regions) and takes its shard with it; combat's fix is on its tip with the settle tick (every match's first physics tick fixed) and lands as ONE hash with two causes (the plant constraint on; the settle tick) the moment its tip's check reaches sim-baseline, then a main check runs and the annotated `main-checked` tag moves. Until then the last main check that reached the baseline is `0ad28f49` (1516/2, reds listed, NOT green) and every check on any tree shows the 44-body cascade. Open: the five-squads test fails on combat's laptop at every commit and passes on builder0 on identical code (machine before branch; combat's builder0 run decides); nav's sealed teardown re-checks without its containment (which regressed the suite to 1401/117). Baseline `1e90f69e5d6fcc46`, recorded twice; the day's fifth and sixth moves pending in combat's hash. The last fully green `main` is `0808834e`. Read the morning summary first; the red-test paragraph under "Where it stood" is the full history.**_
+
+## 🚀 ROUND 10 IS LAUNCHED (2026-09-20, evening) — read this first
+
+**Eight streams — control, squad, arena, nav, combat, feel, show, announcer — each with a brief in
+`_agents/streams/<stream>.md` and a worktree at `~/projects/godot-<stream>`.** The lead's playtest words are verbatim in
+[`_agents/game_design.md`](_agents/game_design.md) *Round 10 direction* (with the orchestrator's reading and the
+decisions made on them); the split, the four checkpoints (CP1 squad's transient element, CP2 arena's Terminus lanes,
+CP3 feel's bus box, CP4 combat's constraint ON if it earns it), the ownership carve-outs and the eight contracts R1–R8
+are in [`_agents/workstreams.md`](_agents/workstreams.md) *Round 10: the eight streams*.
+
+**The round in one line:** he cannot judge unit intelligence until a right-click is obeyed at once (control + squad,
+R2), any selection can carry an element order (squad's R1, control's buttons), and a squad can be driven through the
+Terminus streets (arena's lanes R4, nav's drive test); then the rigs' yaw (combat's predicate), the walls of light
+(show, per-window), the blimp in his frame (feel, R7), the turret mounts (R5), the bus bigger than the garbage truck
+(R6, CP3), and the announcer's pools deepened and GENERATED (R8: he authorised the spend).
+
+**Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`), the
+same text for all eight (OFFSETs: control 1, squad 2, arena 3, nav 4, combat 5, feel 6, show 7, announcer 8; show runs
+every Godot process on builder0; announcer runs no Godot beyond `announcer-check`):
+
+> /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
+
+**`main` at launch:** `de31eeea` (round 9's close, plus the round-10 docs). Its code equals the round's final green
+check (`a21bad3c` / `4b95749d`: 1559/0, 18 targets, exit 0, sim-baseline `1ea332e7bc268d2a`, ai-scenarios 41,3) on
+every checked path except two comment lines (`combat_motion.gd`, `switch_arms.py`: archive links); a fresh full check
+on `de31eeea` was launched on builder0 at 18:55 and its four lines are recorded here when read. **The eight round-9
+worker sessions are still open on this laptop (ListAgents shows them idle in folders that no longer exist): end them
+before starting the eight new ones.** Nothing is pushed to `origin`; you push.
+
+**Orchestrator duties this round:** merge CP1 (squad's `element_for`) and CP2 (arena's lanes) the day they are
+announced and tell control and nav to `git merge main`; CP3 (the bus box) and CP4 (the constraint) move the sim
+baseline: record it twice in the same session; put feel's lineup frame, blimp frame and turret pairs, show's three
+band-width frames and its 1990s-baseline page, arena's street pairs and announcer's review page in front of the lead
+the day they exist; carry nav's wall-contact log to combat and combat's refusal log to nav; re-record the ai-scenarios
+count with combat's and squad's REASONs; relay the lead's vetoes (bus concept, announcer lines, band width) the same
+day. Integration order: squad (CP1) → arena (CP2) → control → nav → combat → feel (CP3 alone) → show → announcer.
+
+**Decisions made for him at launch (each reversible in one place, all in `game_design.md` §"What it means"):** streets
+are for driving, containers to the kerbs (arena); any selection of two or more units forms a transient element
+(squad/control); a player's order pre-empts every task, hold and pacing (R2); slot pitch from the turning envelope,
+hulls do not clip while dressing (squad); a dragged facing orients the formation across the heading, the camera keeps
+lifting (control's two questions); the bus's numbers are his eye, not the table (feel, R6); the blimp flies low among
+the blocks in his frame (feel, R7); heavies-in-alleys is moot after CP2 and priced, not refused (nav); announcer
+generation proceeds without per-line approval, review page for veto, stop at half the balance (R8); 2× band width
+ships as the show's default if the gate allows, 3× is his (show).
+
+---
+
 
 ## ✅ ROUND 9 IS CLOSED (2026-09-20, 18:05) — read this first
 

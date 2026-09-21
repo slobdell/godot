@@ -1,10 +1,89 @@
 # Workstreams: the current round
 
-> **Round 9, launched 2026-09-19 (evening).** How rounds work (roles, lifecycle, the worker contract, the kickoff
-> prompt) is in [orchestration.md](orchestration.md): read it first. **Round 9's streams, checkpoints, ownership and
-> contracts are in the next section**; the *Round 9 goal* section after it carries the research-catalogue sequencing
-> and the arguments behind it. Rounds 1–8 are archived in `streams/archive/round1..8/`; the round-6 material further
-> down (contracts N1–N7, ownership, invariants) is still in force where it is not superseded here.
+> **Round 10, launched 2026-09-20 (evening).** How rounds work (roles, lifecycle, the worker contract, the kickoff
+> prompt) is in [orchestration.md](orchestration.md): read it first. **Round 10's streams, checkpoints, ownership and
+> contracts are in the next section.** The round-9 section after it (S1–S6, the research-catalogue sequencing) is
+> still in force where it is not superseded here; rounds 1–9 are archived in `streams/archive/round1..9/`; the
+> round-6 material further down (contracts N1–N7, ownership, invariants) is still in force where it is not superseded.
+
+## Round 10: the eight streams (launched 2026-09-20, evening)
+
+**Goal: the playability blockers he named, in the order they block him.** His words are in
+[`game_design.md`](game_design.md) *Round 10 direction*. He cannot judge unit intelligence until a right-click is obeyed
+at once, any selection can carry an element order, and a squad can be driven through the Terminus streets; after that
+come the walls and the yaw, then the look (walls of light, the blimp, the turrets, the bus), then the announcer. Every
+stream's first backlog item is one of his sentences. **The acceptance test for the round is his: `make skirmish
+ARENA=terminus`, drive squads through the streets, give ad-hoc selections element orders, and see the lights.**
+
+| Stream | Brief | Round 10 | Checkpoint |
+|---|---|---|---|
+| **control** | [streams/control.md](streams/control.md) | **The unanswered right-click** (a player's order replaces an in-flight one within one input frame, on the default path, with the readout saying what was ISSUED); **element orders for any selection** (the buttons never grey out for a selection that could carry them; consumes R1); the refused-order banner and `ungrouped=N` readout | consumes **CP1** |
+| **squad** | [streams/squad.md](streams/squad.md) | **R1: a transient element from any selection** (the API control calls, with the base/manoeuvre split by role and position); **a player's order pre-empts a task, a hold and co-arrival pacing**; the 40 s settle on a 20 m move; slot pitch from the turning envelope (decided: hulls do not clip while dressing); the base-of-fire scenario; `_is_clear`; Delta's margin | **CP1** = R1 green, merged alone, early |
+| **arena** | [streams/arena.md](streams/arena.md) | **The Terminus streets are lanes** (containers off the lanes; every lane's narrowest drivable width asserted, not watched; the arena page shows the before/after at his pose); **prop collision parity** (R3: what a hull can touch has a collider; the lamps); the spawn grid gives a hull room to turn (the half-diagonal, scale's round-9 handover) | **CP2** = the Terminus lanes green, merged alone, early (nav's drive test runs on it) |
+| **nav** | [streams/nav.md](streams/nav.md) | **Units still drive into walls**: the Terminus drive test (a squad ordered street to street on the default path: zero wall contacts, arrival, measured), what a wall contact IS (a counter on the plant, published), the wedged regime, the obstacle-tiling row; every clearance constant names the motion it licenses; `Avoidance.radius_of` (the seventh disc site); the held wheeled hull's facing; the seam (Movement vs CombatMotion) as the structural item, measured before moved | — |
+| **combat** | [streams/combat.md](streams/combat.md) | **The rigs yaw through walls**: the plant predicate (why a clear hull refuses every candidate yaw for 1135 ticks), the ordering, then diagonal spacing as a candidate; the constraint returns ON only when five_squads passes with the corridor numbers kept; ORBIT radius reads hull length (the engine-deck scenario); the artillery scenario; the gangs-vs-law series with `match.hull_disc` (stretch) | **CP4** = the constraint ON (baseline moves), merged alone if it happens |
+| **feel** | [streams/feel.md](streams/feel.md) | **The blimp he asked for, in HIS frame** (R7); **the turret mounts** (R5: a per-unit mount in the hull frame, derived from the mesh, applied on all three axes; Condemned and gangs first); **the Condemned bus reads bigger than the garbage truck** (R6: his eye rules over the reference for `tank` and `burner`; concept page for a paid bus mesh); the per-faction rim light | **CP3** = the bus box (baseline moves), merged alone; the orchestrator records |
+| **show** | [streams/show.md](streams/show.md) | **The light show on the building WALLS**: per-window addressable primitives (custom data per instance, the S6 hook rule), effects composed from them (chases, waves, sweeps, sign flicker, a kill ripple that crosses a facade), judged by HIS eye against a 1990s-baseline frame, not a luminance bar; the frozen re-shoot and the louder pair first (the fastest thing he can see) | — |
+| **announcer** | [streams/announcer.md](streams/announcer.md) | **More lines on the same themes** (deepen every thin moment to a real pool; same voices, same humour direction), audited, on the review page, **generated this round** (R8: he authorised the spend); the ledger; speech-to-text verified; the transcripts and the Booth Monitor re-cut | — (runs in total isolation against fixtures) |
+
+**Why eight:** commanding is one problem with two owners (control's input path, squad's task layer) and a contract
+between them, so both run; the Terminus streets are the map's fault (arena) before they are nav's; the yaw is combat's
+plant and the walls are nav's mover, and round 9 showed they must be measured apart; the look is three streams' paths
+(feel, show, announcer's carve-out). Eight sessions are ~3.2 GB on the laptop: **show runs every Godot process on
+builder0; announcer is Python and fixtures and runs no Godot beyond `announcer-check`.** If the laptop swaps, start
+control, squad, arena and nav first.
+
+### Checkpoints (round 10)
+
+- **CP1 — R1, squad's transient element (squad).** `Tactics.element_for(units: Array, task: Dictionary) -> Element` (or
+  the name squad chooses, recorded here at merge): any two or more friendly units become one element for the duration
+  of the task, base and manoeuvre split by role and position, dissolved on the next non-element order. Merged alone
+  the day squad names its green hash; **control stubs against the signature until then** (its buttons enable on the
+  selection's SIZE, and the call is one line).
+- **CP2 — the Terminus lanes (arena).** Containers off the lanes, the lane-width assertion, R3's parity test, the
+  before/after frames at his pose. Merged alone, early; nav's drive test runs on the new map from then on (before it,
+  nav measures on the ring road and the avenue's clear halves, and says so). Moves no baseline (the sim baseline's
+  match runs on the foundry; pre-registered, and a move is a finding).
+- **CP3 — the bus box (feel).** A `hull_size` change is a sim-baseline move by construction (spawn grid, collider);
+  merged alone with the lineup frame beside it; the orchestrator records the baseline twice in the same session.
+- **CP4 — the plant constraint ON (combat), only if** five_squads passes with the constraint on AND the corridor
+  numbers (44.0° → 11.6°, 12.1 → 6.1 m) are re-measured on the same build. Baseline moves; merged alone.
+
+### Who owns what (round 10) — changes to the round-6 table below
+
+| Path | Owner (round 10) |
+|---|---|
+| `arenas/`, `game/arena/` (including `arena_kit.gd`'s `PROPS` sizes: the collider boxes), `tools/make_arenas.py`, `tools/arena_report.py` and siblings, `mk/arena.mk`, `_agents/arenas.md`, `tests/arena/`, `tests/test_arena*.gd`; **carve-out from combat's C1 (as scale had it in round 9):** the three spawn-grid constants `SLOT_X`, `SPAWN_ROWS`, `SPAWN_ROW_SPACING` in `game/match/match.gd` (combat reviews at merge). `tools/roster_scale.py`, `mk/scale.mk` rest with arena (read, not changed). | **arena** |
+| `game/announcer/`, `assets/announcer/`, `tools/announcer/`, `tests/announcer/`, `mk/announcer.mk`, and the announcer targets in `mk/audio.mk` (`announcer-*`, `audio-launch-smoke`); `_agents/streams/archive/round3/announcer.md` is its reference. **Carved out of feel for the round**; feel reviews nothing here (the voices and humour direction are the lead's, recorded in `game_design.md`). | **announcer** |
+| `game/theme/**` except show's carve-outs (unchanged from round 9) and the announcer paths above; `game/audio/`, `assets/{audio,music}/`, `tools/{assets,audio}/`, `mk/{fx,assets}.mk`, the art docs. **Carve-outs granted 2026-09-20:** (a) an optional `turret_mount: [x, y, z]` key per `Units.PROFILES` entry and its consumer in `Tank._apply_hull_size` (`game/tank/tank.gd`, the three-axis write; combat reviews at merge, mutation-checked test required); (b) the `hull_size` (and `muzzle_height`) VALUES of `tank` and `burner` in `game/units/units.gd` (R6; combat reviews; CP3). | **feel** |
+| `game/theme/show/`, `mk/show.mk`, `_agents/lighting.md`, `_agents/show_dials.md`, the `show` key per arena, and the round-9 emission carve-outs from feel (`CityBlock`'s emission paths and `city_block.gdshader`, the perimeter rim, `NeonSigns`, the pools, `CyberMaterials.neon()`). **Extended 2026-09-20 for per-window addressing:** `CityBlock`'s window MESH construction may gain per-instance custom data (a MultiMesh where it is a mesh today) — additive, the silhouette unchanged, feel reviews the look at merge. | **show** |
+| everything else | as the round-6 table below: nav, squad, control, combat, orchestrator, shared |
+
+### New contracts (round 10)
+
+| Contract | Owner, where | Consumers |
+|---|---|---|
+| **R1 Transient elements.** Any selection of two or more friendly units can carry an element order. squad exposes one call that forms an element from a unit list with a task (`Tactics.element_for(units, task)` or squad's chosen name, recorded here at CP1): the base is chosen by role and position (the heaviest/slowest nearest the objective's approach for `support_by_fire`; the rest manoeuvre), the element publishes its split in `Element.state()` so control's readout can name it, and it dissolves when any member receives a non-element order. Numbered groups keep today's path. | squad: `game/tactics/` | control (`SelectionPanel`, `RtsControls.can_task/assign_task`) |
+| **R2 A player's order pre-empts everything.** A new order from the player on a unit or selection replaces that unit's in-flight order, task, hold and pacing within one input frame, always. `Orders._same_order()` never drops a `player` order (its 3 m dedup compares slots, not clicks: two clicks metres apart on a moving squad compare equal); an armed mode (`mode != ""`) cancelled by a right press still issues the move on the NEXT press, and the readout says which happened; `Element.assign()` re-derives every crew's order on the next tick and the re-issue suppression (`element.gd` `_same_place`/`REISSUE_M`) yields to a fresh task. Test: the round-10 regression is an integration test on the default `make skirmish` path — a squad en route, a right-click 40 m off its line, every crew's order changes within 2 ticks. | control: `game/control/orders.gd`, `rts_controls.gd`; squad: `game/tactics/element.gd` | the lead |
+| **R3 Prop collision parity.** For every kit prop, the drawn geometry a hull can reach (everything below the tallest hull's height, `law_suppressor` 6.18 m, plus the tallest hull's reach when it yaws) lies inside the prop's collider footprint in `ArenaKit.PROPS`, or the prop is declared `drive_through` and placed where no lane runs. A test asserts it per prop by measuring feel's mesh AABB against the box (arena writes it; a failure names the prop and the overhang in metres). The floodlight is the known offender (footing 2.4 × 3.0 × 2.4; the mast and the 4.2 m head have no collider): arena widens the box or asks feel to raise the head above 6.2 m; either way the test decides. | arena: `game/arena/arena_kit.gd`, `tests/arena/` | feel (meshes), nav (the bake reads the same boxes) |
+| **R4 Streets are lanes.** Every declared lane in an arena's `lanes` (Terminus: the avenue, west street ×2, the ring road ×2, and arena adds the east street and the plaza crossings) keeps a continuous drivable width of at least **2 × the widest hull's width (2 × 3.32 = 6.64 m) after the bake radius** (physical ≥ 10.64 m at a 2.0 m bake) along its whole length; containers, wrecks and barricades stand on lots, against walls and at kerbs, parallel to the street, never across it. `tools/arena_report.py`'s corridor WATCH line becomes a failing assertion for lanes (it stays a watch line for the open field, the reason it was a watch line still holds there). The arena page shows the before/after pair at his pose (21°, FOV 35, 49 m) for each changed street. Authored chokepoints are allowed only OFF the declared lanes and are listed in `arenas.md` by name. | arena: `tools/make_arenas.py`, `tools/arena_report.py`, `tests/arena/` | nav (the drive test), the lead |
+| **R5 Turret mount.** `Units.PROFILES[id]` gains an optional `turret_mount: [x, y, z]` in metres in the hull frame (x right, y up, z forward, the hull's origin at its box centre on the ground); `Tank._apply_hull_size` applies all three (today only y is written and z stays at `tank.tscn`'s +0.2 m for every hull from 2.9 to 14 m). Default when absent: today's `[0, muzzle_height − 0.05, 0.2]`, so nothing moves until a unit is measured. feel derives each value from the mesh's ring (the pipeline's `driving_bounds()` pattern), records it in `slot_contracts.md`, and the sim baseline is pre-registered UNMOVED (the turret is visual; the muzzle height is unchanged; a move is a finding, not a record). | feel: values and the write (carve-out); combat reviews `tank.gd` | control (the marker reads the hull, not the turret), combat |
+| **R6 The bus is his eye.** S1's derivation (reference × K) stands for every unit with a mesh; for `tank` and `burner` (no mesh of their own) the lead's ruling on the lineup frame is the source: **the bus must read LONGER than the garbage truck (the Condemned `ifv`, 7.54 m) and TALLER in proportion.** feel picks the numbers (start: length ≥ 1.25 × the ifv's, height ≥ the ifv's 3.70 scaled by the same ratio, width from a coach's proportions), shoots the lineup at his pose, records the chosen reference beside the box, and CP3 merges it alone with the baseline recorded. A paid bus mesh goes through the concept page (2–3 directions) before any 3D. | feel: `units.gd` values (carve-out), `slot_contracts.md`, the concept page | combat (reviews), arena (spawn grid), squad (slot pitch), nav (clearance) |
+| **R7 The blimp.** The lead's blimp is a thing he sees while he PLAYS, at his pose (21°, FOV 35, 49 m), not a title element. Geometry: the frame's top edge is 3.5° below the horizon there, so nothing at or above the camera's own height (~17.5 m at his boom) is ever in frame; a blimp that shows in play flies LOW, among the Terminus blocks (24 m tall) and over the far half of the frame, ~10–14 m up, slow, with its own lights and screens, no collider (pre-registered: the sim baseline does not move). feel builds it and proves it with the airship-look sweep: in frame at his pose for a stated fraction of a match, with the frame beside the number. The round-9 airship at 560 m stays as the city's. If the geometry refuses at every candidate, the frames go to him and the choice (title/results element) is his. | feel: `game/theme/arena_kit/airship/`, `arena_dressing.gd` | show (its screens are fixtures), control (the cutaway must not cut it) |
+| **R8 Announcer generation is authorised this round.** His words: *"let's burn through some ElevenLabs credits."* Lead gate 1's text approval is satisfied by the standing humour direction (`game_design.md` *The arena announcer*, the 2026-09-15 ruling) plus `make announcer-audit` plus the review page; the announcer stream generates in batches (`APPROVED=1`) without waiting, appends every run to `assets/announcer/ledger.md` with the balance before and after, verifies every clip with speech-to-text, and puts the new lines on the Booth Monitor page for his veto. Spend guidance: the balance is ~109 k credits at launch; the round's target is the thin moments deepened to real pools, roughly 400–600 lines (~30–50 k credits); **stop at half the remaining balance and ask** unless he says otherwise. | announcer: its paths | the lead (veto), feel (nothing to review) |
+
+### Standing rules for round 10 (in addition to *The standing rules for this round* below)
+
+- **Play the default path.** Every fix in this round is judged on `make skirmish ARENA=terminus` with no flags: a
+  behaviour behind a flag the default path never passes has not shipped (lesson 165's shape).
+- **A readout says what was ISSUED, not what was intended** (lesson 183): control's banner, squad's element split,
+  nav's wall-contact counter, combat's refusal counter all report the thing that happened.
+- **Every visual claim is a pair** (show's rule 12): before/after at his pose, one variable moved, the dial and the file
+  named in the caption.
+- **Baseline moves are pre-registered and merged alone** (CP3, CP4); every other stream pre-registers UNMOVED and
+  treats a move as a finding.
+- **Every number carries its commit and its machine**; merge at the hash whose check went green; read the wrapper's
+  own line.
 
 ## Round 9: the seven streams (launched 2026-09-19 evening)
 
