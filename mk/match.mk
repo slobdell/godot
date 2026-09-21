@@ -52,6 +52,36 @@ matchup-search: import ## Score --tune variants of the matchup matrix against th
 	$(PYTHON) tools/matchup_search.py --godot $(GODOT) --jobs $(JOBS) --variants $(VARIANT_FILE) --seeds $(or $(SEEDS),2) \
 		$(if $(SEARCH_UNITS),--units $(SEARCH_UNITS)) $(if $(ESCORT),--escort $(ESCORT))
 
+# ---- Round 9: why is nothing landing on the engine deck? ------------------------
+# `Armor.is_weak_spot` is two directions and a dot product against cos(25 deg): NO position, NO hull size. So a deck
+# hit cannot have gone missing because CP2 made hulls bigger, and "0 of 13 on the deck" is unexplained rather than a
+# stale marker. This prints three columns per enemy hit and aggregates their DISTRIBUTION -- deliberately not a
+# verdict, because three different owners are plausible and they are told apart by which column is wrong:
+#   travel angles never enter the 25 deg cone      -> the scout never gets astern (a positioning question)
+#   angles enter the cone but weak_spot is false    -> the flag is wrong (combat's)
+#   the shooter's BEARING never gets behind         -> it never works round at all (a brain/pursuit question)
+
+deck-angles: import ## Round 9: per-hit travel angle, shooter bearing and range for a scout hunting a tank, and their distribution (DECK_GREEN=scout DECK_RUST=tank SEED=1 DECK_TIME=25) -> build/deck-angles.json
+	@echo ">> deck-angles: $(or $(DECK_GREEN),scout) vs $(or $(DECK_RUST),tank), seed $(SEED), $(or $(DECK_TIME),25) s"
+	@mkdir -p $(BUILD_DIR)
+	$(PYTHON) tools/combat_duel.py --godot $(GODOT) --green $(or $(DECK_GREEN),scout) --rust $(or $(DECK_RUST),tank) \
+		--seed $(or $(SEED),1) --time-limit $(or $(DECK_TIME),25) --tune probe.deck=1 \
+		2>&1 | tee $(BUILD_DIR)/deck-angles.log > /dev/null
+	@$(PYTHON) -c "import json,sys; \
+		rows=[json.loads(l.split('DECK_HIT ',1)[1]) for l in open('$(BUILD_DIR)/deck-angles.log') if 'DECK_HIT ' in l]; \
+		json.dump(rows, open('$(BUILD_DIR)/deck-angles.json','w'), indent=1); \
+		print('deck-angles: no enemy hits at all -- the control fired nothing, which proves nothing') if not rows else None; \
+		sys.exit(0) if not rows else None; \
+		band=lambda v,e: sum(1 for r in rows if e[0] <= r[v] < e[1]); \
+		edges=[(0,25),(25,45),(45,90),(90,135),(135,181)]; \
+		print('%d enemy hits; weak_spot flagged on %d' % (len(rows), sum(1 for r in rows if r['weak_spot']))); \
+		print('travel angle (Armor.is_weak_spot fires under %.0f deg):' % rows[0]['arc_deg']); \
+		[print('  %3d-%3d deg: %3d' % (e[0], e[1], band('travel_deg', e))) for e in edges]; \
+		print('shooter bearing from the victim nose (180 = dead astern):'); \
+		[print('  %3d-%3d deg: %3d' % (e[0], e[1], band('bearing_deg', e))) for e in edges]; \
+		rs=sorted(r['range_m'] for r in rows); \
+		print('range m: min %.1f  median %.1f  max %.1f' % (rs[0], rs[len(rs)//2], rs[-1]))"
+
 # ---- X1 (round 9): is A2's switching cost actually an arm? ----------------------
 # Lesson 117: round 8 shipped a commitment term into a code path that could never reach it and measured it twice.
 # This proves the cost is consulted, non-zero, and DIFFERENT by hull class before anything is A/B-ed with it.
@@ -146,11 +176,26 @@ compare-arms: ## Two faction-matrix runs, subtracted per faction (TREATMENT=a.js
 		$(if $(COMPARE_FACTION),--faction $(COMPARE_FACTION)) \
 		$(if $(BUILD_ARM),--build-is-the-arm $(BUILD_ARM))
 
-faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE= TUNE=switch.cost=1) -> build/faction-matrix.json
+# THE OUTPUT NAME CARRIES THE ARM. `-tuned` was the suffix for ANY value of TUNE, so the obvious two-run
+# series -- control, then `TUNE=switch.cost=1` -- wrote both arms to one file: the second overwrote the
+# first, and `compare-arms` then compared a file with itself and reported a perfect null, every cell zero,
+# with nothing saying so (combat, 2026-09-20). **A null that looks like a measurement is the one kind of bug
+# that running more of them cannot catch**, because every extra run reproduces it.
+#
+# So the TUNE spec is in the filename, sanitised, and `OUT=<label>` overrides the whole basename when a
+# series wants its own names. `compare-arms` refuses byte-identical inputs as a second line of defence.
+_empty :=
+_space := $(_empty) $(_empty)
+_comma := ,
+_TUNE_SLUG := $(subst $(_space),,$(subst /,_,$(subst $(_comma),-,$(subst =,_,$(TUNE)))))
+FACTION_MATRIX_NAME := $(if $(OUT),$(OUT),faction-matrix$(if $(ARENA),-$(ARENA))$(if $(ABLATE),-plainroles)$(if $(TUNE),-tuned-$(_TUNE_SLUG)))
+
+faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE= TUNE=switch.cost=1 OUT=<label>) -> build/$(FACTION_MATRIX_NAME).json; the TUNE spec is IN the name, so two arms cannot overwrite each other
 	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),6) \
 		--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) $(if $(ARENA),--arena $(ARENA)) \
 		$(if $(ABLATE),--no-faction-directives) $(if $(TUNE),--tune $(TUNE)) \
-		--json $(BUILD_DIR)/faction-matrix$(if $(ARENA),-$(ARENA))$(if $(ABLATE),-plainroles)$(if $(TUNE),-tuned).json
+		--json $(BUILD_DIR)/$(FACTION_MATRIX_NAME).json
+	@echo ">> faction-matrix wrote $(BUILD_DIR)/$(FACTION_MATRIX_NAME).json -- the arm is in the name; a second arm with a different TUNE or OUT cannot overwrite it"
 
 faction-shots: import ## L3/X5: screenshots of a full-scale faction battle from above (GREEN_FACTION= RUST_FACTION= DELAY=45) -> build/screenshots/faction-*.png (needs a display)
 	mkdir -p $(BUILD_DIR)/screenshots

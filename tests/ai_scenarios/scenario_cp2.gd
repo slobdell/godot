@@ -105,6 +105,12 @@ func test_a_scout_guns_down_a_lancer() -> void:
 func _deck_run(variant: String) -> Dictionary:
 	var s := AiScenario.create(self)
 	BrainVariants.use(Match.Team.GREEN, variant)
+	# Granted to combat 2026-09-20 (orchestrator): with DECK_PROBE=1 in the environment, print the three columns that
+	# decide who owns a missing engine-deck hit -- travel angle against Armor's 25 deg cone, the shooter's bearing
+	# from the victim's nose, and the range -- for every enemy hit here. DEFAULT OFF so `ai-scenarios` stays quiet in
+	# metrics' gate; `Armor.deck_probe` is never set in play. 2026-09-20 reading: 16 hits, NONE within 66.7 deg of the
+	# cone, bearing topping out at 109.7 deg -- the scout never gets behind, so the flag has nothing to miss.
+	Armor.deck_probe = OS.get_environment("DECK_PROBE") == "1"
 	var tank := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-100, 0, -20), PI, {"type": "stop"}, {"type": "fire_at_will"})
 	AiScenario.make_durable(tank)
 	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", Vector3(-70, 0, 20), 0.0, {}, "scout")
@@ -114,6 +120,7 @@ func _deck_run(variant: String) -> Dictionary:
 		await s.step()
 	var result := {"deck": int(s.game_match.stats["weak_spot_hits"][Match.Team.GREEN]),
 			"hits": int(s.game_match.stats["hits"][Match.Team.GREEN]), "shots": s.shots_by(scout)}
+	Armor.deck_probe = false
 	BrainVariants.reset()
 	s.dispose()
 	return result

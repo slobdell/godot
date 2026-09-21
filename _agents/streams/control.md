@@ -167,6 +167,247 @@ directly.
 
 ## Status
 
+> ## HAND-OVER TIP: `c0d56029`. THE CASCADE IS GONE; NOTHING FAILING IS CONTROL'S.
+>
+> `make remote T=check` at **`c0d56029`** (main merged at `a6268137`), builder0, 1134s:
+> ```
+> >> remote: make check exited 2 (build/ copied back)
+> 1540 passed, 1 failed
+> >> check: 16 passed, 2 FAILED, 0 NOT RUN  [test x5, lint -P6, 2 at once, builder0]
+> >> check: failed: test ai-scenarios-check
+> ```
+> `sim-baseline 1e90f69e5d6fcc46` (baseline unmoved), `determinism 253adefeec657df1`.
+>
+> **Both failures are main's known pair, not control's:** `test_match_spawns_and_results::…spawns_clear_of_itself`
+> (squad's true positive that combat's `Tank.place()` clears) and `ai-scenarios-check` →
+> `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck`. **Zero control, command, camera or touch tests fail
+> anywhere in the check.** The four teardown sites moved under nav's seal are **31 PASS, 0 FAIL** between them and
+> appear in no leak report — which was the case I named in advance as the one that would make them the suspect.
+>
+> **The 32-failure cascade of `78aa496d` is gone:** `grep -c "navigation region"` = **0** and
+> `grep -c "physics bodies in the world"` = **0** across the whole check. nav's sealed `_teardown()` did it alone,
+> with combat's leaking override still in the tree.
+>
+> **Reading the prediction against what it said.** I predicted *all 32 gone and 0 failed*. The first half held
+> exactly. **The second half was wrong, and wrong in the shape this round keeps producing:** I formed it about
+> control's own tests and then stated it as a total, which quietly swallowed main's two known reds. A true claim
+> about one thing, stated as a claim about everything — the sixth entry in that column and the first where the
+> claim was mine about my own work. Writing a prediction down before reading the result is what made it visible;
+> it would otherwise have been a sentence that sounded right.
+>
+> The second leaker I found (`test_combat_no_damage`, a `Match` per `_tank()` and an override that never reaches
+> the base) was real and verified on main, and **changed nothing for this tree** — the seal does not depend on an
+> override behaving. Worth keeping as the reason the seal was the right shape of fix and combat's one-liner is
+> belt-and-braces.
+>
+> **Round 9 items 1-5 delivered.** The facing frames are with the lead; the pin-head crowding is his call.
+> **Item 6 (stretch) is the only thing left** — the `ungrouped=N` readout and the refused-order banner re-checked
+> on the default `make skirmish` path — and it waits on squad's A10.
+
+
+> ## THE BRANCH WAS RED BEFORE ROUND 9'S WORK STARTED, AND ONLY A FULL CHECK FOUND IT
+>
+> `make remote T=check` at `78aa496d`: wrapper `>> remote: make check exited 2`, runner **1501 passed, 33 failed**.
+> **Not green, not handed over as green.** The 33 split into 32 + 1.
+>
+> **The 32 are one cascade.** All carry the same message — `left 4 navigation region(s) on the map after 120
+> frames` — from the leaked-region guard in `tests/test_case.gd`, which says in its own text that it charges
+> whichever test runs *next*. Whole files go red together (all of `test_theme_trailer`, `test_units_catalog`,
+> `test_wheeled_arrival`, plus `test_combat_sim_cost`, `test_combat_suppression_bite`,
+> `test_match_spawns_and_results`). The orchestrator found the author: combat's `test_tank_yaw_fit` had a
+> `teardown()` override that never called super and leaked a foundry arena (44 bodies, 4 regions); it has been on
+> main since `53cc42e3` and has been charged to feel, scale, control and combat in turn. **Nothing here is owed on
+> those 32** — two arms are in flight, nav's sealed `_teardown()` (`49ed1fb3`) and combat's `await
+> super.teardown()` (`26754ef1`).
+>
+> **The 1 was control's, and older than the round.** `test_control_order_marks`' pin test failed in isolation too.
+> `ac4df0d7` asserted the pin draws what the CREWS were told and never what the task holds; `2cca6bea` reversed
+> that rule in `rts_controls.gd` and **did not run the file that asserted the old one**. `2cca6bea` was this
+> session's starting tip, so the branch carried a red test through all of round 9's drawing work. (Control's
+> branch only — `2cca6bea` is not on main, and main's copy of that test passes.) Rewritten at `19d87f5c` **to the
+> contract, not bent to the code**: the task's heading is drawn because since squad's `4cff69b6` it is the order
+> deferred, and the unanimity rule is kept, still asserted on the path it still governs — orders given directly to
+> units, where there is no task to read. `make test FILTER=control_order_marks`: **5 passed, 0 failed**.
+>
+> **The rule this cost, and it is the round's theme again: when a commit reverses a rule, run the file that
+> asserted the old one.** Every filtered run I leaned on all round was green and none of them touched that file.
+> A filtered run is a claim about the files it named and nothing else.
+>
+> **Prediction, written before the merge check is read.** On the post-merge tip: all 32 gone, control's pin test
+> green, 0 failed. Watching two things rather than assuming them — (a) if only combat's arm is on main, the leak
+> is fixed at its source but any *other* override that skips super is still live, so expect a smaller cascade
+> rather than none; (b) **the four teardown edits below are themselves overrides that stop calling super.** Under
+> nav's seal that is correct, but it is the same shape that caused this, so if the cascade reappears near
+> `test_command_readability`, `test_touch`, `test_command_camera` or `test_control_panel`, those edits are the
+> first suspect and not nav's seal.
+>
+> **Sequence agreed with the orchestrator, to spend one check and not two:** wait for word that both arms are on
+> main → `git merge main` → the four teardown edits under the seal → one check on that tip, which is the one that
+> merges.
+
+
+> ## CP2c, THIRD FRAME: THE ORDERED HEADING NOW READS. WHAT THE FIRST TWO ATTEMPTS BOTH GOT WRONG.
+>
+> **The frames** (`78aa496d`, builder0, shot 14:48): `build/control-playtest/{1920x1080,1280x720}/9_facing_drag_ordered.png`
+> and `..._drawing.png`. Two nested chevrons run out of the destination ring along the heading. They read at both
+> sizes. **One thing left for your eye:** the chevrons cross the pin's head disc and, at 720p, the left edge of the
+> `MOVE · 0/3 there · 24 m` plate. Crowded, not hidden. If you want it cleaner the fix is to lean the pin's head
+> away from the heading it carries so the two stop stacking — say the word and it is a small change.
+>
+> **Why this took three goes, because the reason generalises.** The heading was first a line with an arrowhead. It
+> vanished into the pin's own stalk. I replaced it with chevrons — and they vanished the same way. The frame says
+> why: **arms fixed at ±2.6 m span 96 px at 21°, while the nose stands off only 15 px.** A 96:15 "V" is a
+> horizontal tick, and it lies along screen-vertical, which is exactly where the stalk is whenever the heading
+> points away from the camera. The stalk was also drawn *after* it, painting over what nose there was.
+>
+> So the shape is now specified **on the screen** and the ground that produces it is **solved for, per pin, per
+> pose**: the nose must stand off the arms by half their span. At 21°/49 m that buys **4.62 m** of ground pointing
+> away against **2.20 m** across — the shape is the constant and the ground pays for it. This is invariant 0
+> applied to a drawing: derive the metres from the pose, never mirror a number that happened to read once. A dark
+> backing stroke carries it over the stalk it must still cross.
+>
+> **What no test caught, twice.** Both failed attempts passed every assertion that asked *"does a facing reach the
+> pin"* — which was all of them. `test_the_pin_chevron_reads_as_an_arrow_and_not_a_tick` now asserts the
+> **property** (nose stand-off ≥ half the span, at the lead's pose, for a heading pointing away, toward and
+> across) rather than the pixels. That is the fifth entry this round in the same column: *a measurement that is
+> true but reads as a stronger claim than it makes*. "The facing is on the pin" was true all along and never meant
+> "the player can see it".
+>
+> **Also:** the frames only settled this because I cropped and magnified them (`convert -crop … -resize 200%`)
+> instead of judging a 1920-wide screenshot at thumbnail size. Twice this round I reported "I cannot tell" on a
+> frame that a crop would have answered. Do that first.
+>
+> `make test FILTER=control_facing_drag` on builder0 at `78aa496d`: **8 passed, 0 failed**.
+> Still blocked: the teardown edits wait on nav's sealing merge — `free_owned()` does not exist in this worktree
+> yet, so `tests/test_case.gd:194` is still `teardown()` and the four call sites stay as they are.
+
+
+> ## WHAT THE RESIZE CHANGED FOR YOU, AND THE ONE THING STILL TO DECIDE
+>
+> Making the vehicles their real relative sizes was worth it, and it broke four things that were quietly sized for
+> a 3.6 m hull. Three are fixed. **Two of the four were wrong at your own camera**, not at some extreme.
+>
+> | What you will see | Look at |
+> |---|---|
+> | **The marker under a vehicle is now shaped like the vehicle** — a capsule along the hull instead of a circle round its longest side. A tank's circle had grown to 12.9 m across, wide enough to park two tanks abreast in, and a squad's markers overlapped into a blob you could not read a unit out of. The marker now also shows which way a vehicle points. | `build/ring-before-after/before_circles.png` vs `after_shaped.png` |
+> | **A vehicle parked against the arena wall is no longer sliced in half** when you tilt the camera down. The wall cut-away was placed at the wall's top edge (3 m) — fine when the tallest vehicle was 1.6 m, wrong now that the Sonic Emitter is 6.18 m. At 50° it was cutting 1.57 m off the top of it. | it is geometry, not a frame: `-1.57 m → +0.20 m` worst across your whole tilt range |
+> | **The camera stops cutting squads off at the edge of the screen.** It framed where vehicles *stood*, never how big they are, so a column of War Rigs ran off the screen **at your own 21° camera** while the camera believed it had them all. | `-16.3 px → +12.4 px` at your pose |
+> | **A radar blip is sized to the vehicle it stands for** — rat rod smallest, rig biggest — instead of every vehicle being the same dot. | `build/control-playtest/1920x1080/8_whole_army.png` (bottom right) |
+>
+> **Still yours to decide** (below): whether the marker should be a tighter circle, the shaped capsule now shipped,
+> or left alone — and note the whole-squad facing drag is half-built, described under it.
+>
+> **One thing we have NOT fixed, so you know before you find it:** at the very lowest camera tilt (8°, the floor of
+> the range), a column of vehicles longer than about 70 m still runs off the screen. That is not the resize — it is
+> the camera's fitting maths going wrong when the ground is nearly edge-on, and it was true before. Measured and
+> recorded rather than quietly rounded off.
+
+> ## TWO CALLS FOR YOU, WITH THE PICTURES. Neither is broken; both are choices the resize forced.
+>
+> ### 1. The ring under your vehicles is now wider than the vehicle is long. Which do you want?
+>
+> **Look at** `build/camera-looks/arenas/yard/default.jpg` (one tank, one ring) and
+> `build/control-playtest/1920x1080/8_whole_army.png` (three rings at once).
+>
+> Your tanks got longer — the Condemned tank went from about the length of a car to **8.6 m, the length of a bus** —
+> but they did not get wider. The selection ring is drawn from whichever is bigger, so it grew with the length and
+> is now **a circle you could park two tanks abreast inside**. On one vehicle it looks loose. On a squad the rings
+> overlap into a cloverleaf and you cannot tell which ring belongs to which vehicle, which is the thing rings exist
+> to tell you.
+>
+> - **(a) Tighter circle.** One number. The ring shrinks to just contain the hull (about a third smaller). Cheapest,
+>   and on a squad in close formation they will still touch.
+> - **(b) A ring shaped like the vehicle** — an oval or a rounded rectangle lying along the hull. This is the honest
+>   answer now that your roster runs from a 2.9 m rat rod to a 14 m rig, and it is the only option that stops a
+>   squad's rings overlapping. It is real work on the marker, not a constant.
+> - **(c) Leave it.** Loose rings, and you live with the cloverleaf when a squad is packed.
+>
+> **My recommendation: (b).** You said the resize made the game *"much cooler and awesome"*; the rings are the one
+> piece of UI that got worse in exchange, and (a) only halves the problem.
+>
+> ### 2. When you drag a heading for a whole squad, the squad does not turn to it yet.
+>
+> Right-drag now means *"go there, and be facing that way when you arrive"*. It works when you have picked
+> vehicles individually. **When you have a whole squad selected — your commonest order — the heading currently
+> stops at the squad leader and does not reach the vehicles.** The pin shows the heading you drew, so the screen is
+> telling you it took; the vehicles have not been told.
+>
+> **This is half-built, not broken, and the missing half is one line in squad's code** (the element passes the
+> task's facing down to its members). Nothing for you to decide unless you would rather it waited for the whole
+> thing before you play with it. Flagged because the pin promises something the vehicles do not yet do, and a
+> promise the game does not keep is worse than a feature that is obviously absent.
+
+> ## ITEM 4, PART DONE: THE HUD ON THE RESIZED ROSTER. TWO FINDINGS, ONE IS YOURS TO RULE ON.
+>
+> **THE FRAMES (item 4 is now shot; `camera-looks` landed at 08:59, `exited 0`, copy-back verified):**
+>
+> ```
+> build/camera-looks/index.html                       the page: 28 grid frames + all ten arenas at his pose
+> build/camera-looks/arenas/yard/default.jpg          his pose, resized roster, one ring on one tank
+> build/control-playtest/1920x1080/8_whole_army.png   the cloverleaf: three rings at once
+> build/control-playtest/1920x1080/*.png              12 frames (and 1280x720 beside it)
+> ```
+>
+> `control-playtest-shots` was shot **locally at 08:28 while builder0 was down**; `camera-looks` ran on **builder0
+> at 08:59** once it returned. Both are on the **resized** roster (`914dc7d3`). The earlier `camera-looks` attempt
+> `exited 255` (ssh) with a failed copy-back and produced nothing here — this one exited 0, and its `index.html`
+> timestamp was checked before anything was read out of it.
+>
+> **FINDING 1 — the selection rings have become a cloverleaf, and this is your call.** A ring's radius is
+> `max(hull.x, hull.z) * 0.75`. The Condemned tank went **3.60 m → 8.62 m long** but is still **2.40 m wide**, so
+> its ring went from **5.4 m across to 12.9 m** — for a vehicle you could park two abreast inside it. In
+> `8_whole_army.png` three neighbouring units' rings visibly intersect and you cannot tell which ring belongs to
+> which vehicle; `arenas/yard/default.jpg` shows the same thing on a SINGLE unit, where the ring is about **twice
+> the hull's own length**. **It is not a bug, it is a constant that was right for a 3.6 m hull**, and the fix is a design
+> choice rather than a number: (a) bound the hull's own circumscribing circle instead of its longest axis
+> (`hypot(x,z)/2`, which gives 4.47 m for the tank against today's 6.47) — cheapest, still overlaps at formation
+> spacing; (b) an **oriented** marker (an ellipse or a rounded box along the hull) that bounds a long narrow
+> vehicle tightly — the honest answer for a roster spanning 2.93–14.0 m, and a real change to the marker mesh;
+> (c) leave it. **I did not change it blind:** at 08:45 with one display I could not have re-shot and LOOKED at a
+> new constant before you read this, and a ring I have not seen is exactly what this stream has spent the night
+> refusing to hand over.
+>
+> **FINDING 2 — a facing drag on a WHOLE SQUAD lost its heading, and that is mine, not CP2's.** The playtest I
+> added for item 1 ran for the first time here and failed: `drag_px 127`, a good ground direction, and
+> `facing: []` on the order. A whole-element move goes down the **task** path, and `RtsControls.assign_task` copied
+> only `to` and `target` into the task — so the lead's commonest order, a squad with a drawn heading, silently
+> became a plain move. **Control's half is fixed** (the task now carries `facing`); **the last mile is squad's** —
+> the element layer has a facing channel (`element.gd:493`) but nothing reads `task["facing"]` yet, so the per-unit
+> orders will not carry it until squad wires it. The playtest now reports **which half** failed
+> (`facing_drag_reaches_the_task`). My unit tests missed it because they all order single units or pairs that are
+> not elements, and those take the direct path.
+>
+> **Still owed:** `REMOTE_SLOTS=6 make remote T=camera-looks` the moment builder0 answers, and the rest of the
+> checklist under *Still owed* below (radar blips across a 2.93–14.0 m spread, the cutaway against the 6.18 m
+> Sonic Emitter, `MIN_DISTANCE` 16 m against the 14 m War Rig, the card lean derived rather than copied).
+
+> ## ⚠ (superseded by the section above) ITEM 4 IS NOT DONE, AND THERE ARE NO NEW FRAMES.
+>
+> **CP2 is merged and on this branch** (`914dc7d3`, the roster really is resized: tank hull **8.62 m**, Sonic
+> Emitter **6.18 m** tall, Rat Rod **2.93 m**). The post-CP2 camera sweep **started and did not finish**:
+> `make remote T=camera-looks` came back **`exited 255`**, which is **ssh, not the suite**
+> (`_agents/remote_builds.md`), and **`build/ copied back: FAILED`**. builder0 has been unreachable since ~08:27
+> (`No route to host`). It had finished foundry and furnace on the box before the link dropped; **none of it reached
+> this laptop**, so `build/camera-looks/` here holds **an older run's frames and must not be read as CP2's**.
+>
+> **There are therefore NO frames of the resized roster.** The rule in this brief has not relaxed: *a frame of the
+> old roster is a frame of a game he will not play again*, and that applies to stale frames sitting in `build/` just
+> as much as to freshly shot ones.
+>
+> **The one command that finishes it, the moment builder0 answers:**
+>
+> ```bash
+> cd ~/projects/godot-control && git merge main      # already done: 914dc7d3
+> REMOTE_SLOTS=6 make remote T=camera-looks
+> REMOTE_SLOTS=6 make remote T=control-playtest-shots
+> ```
+>
+> Then read the frames against the checklist under *Still owed*, below, and put the paths here.
+>
+> **The frames that ARE real and worth looking at are the Terminus alleys**, shot locally at 04:02 on the
+> **pre-CP2** roster: `build/terminus-alleys/index.html`. They answer the camera-inside-a-building item, which does
+> not depend on hull size; they are not a substitute for the sweep.
+
 > **Round 9, control. Finished 2026-09-20 ~05:00.** Branch `stream/control`; **`ffd09b0e` is the checked hash**
 > (builder0, **16 of 16 check targets**, verdict read from the box's own markers — metrics' kill took my wrapper
 > line, `mk/core.mk:250` clears the marker directory at the start and `:274` writes a marker only on success, so
@@ -234,6 +475,65 @@ in my own worktree from it; metrics killed three streams' wrappers from the same
 - **Look at** `build/terminus-alleys/index.html` (six pairs, your pose, left as asked / right as fixed).
 - `make remote T=control-playtest-shots` and `T=camera-looks` for the HUD and the camera grid;
   `make remote T=check-display` for the console gate.
+
+### Owed: four teardowns that have silently skipped the navigation drain (waiting on nav)
+
+combat's grep, confirmed here. Four control test files override `teardown()` and call the base:
+
+```
+tests/test_command_readability.gd:141   super.teardown()
+tests/test_touch.gd:177                 super.teardown()
+tests/test_command_camera.gd:194        super.teardown()
+tests/test_control_panel.gd:143         teardown()      <- mid-test, not an override
+```
+
+**Because the override is declared `-> void`, the runner's `await` returns immediately, the navigation drain
+detaches, and these viewport-resizing tests have skipped it since it existed.** nav has sealed the drain into a
+`_teardown()` the runner awaits, with the overridable hook synchronous (`c3df6d4a`, riding nav's next check). **The
+three overrides and the mid-test call need DIFFERENT fixes:**
+
+- `test_command_readability:141`, `test_touch:177`, `test_command_camera:194` — **just drop `super.teardown()`**.
+  Their own viewport restore keeps its place, because the hook runs *before* the freeing.
+- `test_control_panel:143` — **`free_owned()`, with NO `await`.** It is public now and the supported way to clear
+  the world part-way through a test. **It is synchronous by design** — nothing inside it yields, so no caller can
+  leave it half-run by forgetting to wait — and `await`ing it would raise Godot's `REDUNDANT_AWAIT` and fail lint.
+  A bare `teardown()` there would run only the synchronous hook and **free nothing**.
+
+Nothing to do until nav's merges.
+
+**It is the same class as the rest of this round, in a new costume:** `await` on a `-> void` function is a
+statement that looks like it waits and does not. A lint over zero files, a `get()` that turns *absent* into *null*,
+a baseline describing an older world, a before-frame shot with the fix running — **every one of them true, and read
+as a stronger claim than it made.** That is the thing to be suspicious of in this codebase, more than any
+particular bug.
+
+### If you change the selection marker, check the SHADER PARAMETERS, not the mesh
+
+Round 9 turned the marker from an annulus mesh scaled uniformly into **one unit quad per kind with a
+signed-distance capsule in the fragment shader** (`selection_markers.gd`), and **two guarantees moved with it**.
+Both had tests that went on passing for the wrong reason, or failed for a reason that was not a regression:
+
+- **depth testing** was `StandardMaterial3D.no_depth_test`; it is now the absence of `depth_test_disabled` in the
+  shader's `render_mode`. (*A vehicle must cover its own marker.*)
+- **friend and foe differ by SHAPE, not only colour** — an accessibility property — was a dashed *mesh* with fewer
+  vertices; it is now the material's `dashes` parameter. A vertex count now compares **6 against 6** and cannot see
+  it at all.
+
+**Neither property changed. Both assertions had to move.** If you touch the marker again, the question to ask of
+every ring test is *where does this guarantee live now* — and the answer is a shader parameter or a `render_mode`,
+not a mesh or a material flag. The second of the two was caught by `make remote T=check`, not locally: it lives in
+`test_command_readability.gd`, which is not one of the files you would think to run after editing the markers.
+
+### One pose is not a range
+
+I reported the wall-cutaway checklist entry as **"answered: clear"** from a single check at the lead's pose (21°),
+where a 6.18 m hull parked against the wall clears the near plane by **+0.22 m**. Swept across the tilt range he
+can actually reach, it is **−1.57 m at 50°** — the top 1.57 m of that vehicle cut away. The fix brings the worst
+case across 8–70° to **+0.20 m**.
+
+**The analysis was not wrong, it was narrow**, and it read as a clean answer — which is what made it dangerous.
+Anything checked at one pose, one seed, one arena or one hull is checked at one point of a range the player moves
+through freely, and a checklist entry is not answered until the range is.
 
 ### Decisions
 
@@ -380,7 +680,33 @@ orchestrator; the page is feel's file, so this copy is the record on this branch
 
 ### Still owed
 
-- **Item 4, the post-CP2 camera sweep: NOT DONE, and it is the only backlog item outstanding.** It needs scale's
+- **ITEM 4 IS OWED, AND HERE IS EXACTLY HOW TO RUN IT.** It needs scale's resized roster on `main` and nothing
+  else. It does not depend on anyone remembering anything:
+
+  ```bash
+  cd ~/projects/godot-control
+  git merge main                      # the LOCAL branch; origin/main is behind, nothing is pushed
+  REMOTE_SLOTS=6 make remote T=camera-looks CAMERA_LOOKS_ARENA=yard
+  REMOTE_SLOTS=6 make remote T=control-playtest-shots
+  REMOTE_SLOTS=6 make remote T=terminus-alleys        # the alley pairs again, on the new hulls
+  # then LOOK at: build/camera-looks/index.html, build/control-playtest/1920x1080/*.png,
+  #               build/terminus-alleys/index.html
+  ```
+
+  **Read each frame against this list** (all of it sized for a 3–5 m hull and now facing 2.93–14.0 m):
+  selection rings and boxes on a hull two to three times longer · the command card's lean
+  (`VISION_FRAME_BOTTOM` 0.40, **to be derived from the card's geometry rather than copied** — the round-8 Invariant 0
+  debt) · radar blips, which are a fixed 32 px texture and should read a hull's length class · the wall cutaway
+  against the **6.18 m Sonic Emitter**, the tallest hull · `MIN_DISTANCE` 16 m against the **14 m War Rig**, which
+  may now be inside it · the auto-frame and `VISION_FLOOR_M` 45 / `AUTO_FRAME_MAX_M` 100 against a physically wider
+  squad. Fix what the frames show, one commit each, and put the strip in `build/camera-looks/` with the commit and
+  machine in its README.
+
+  **The rule does not relax if the deadline moves: nothing here is published before CP2.** A frame of the old roster
+  is a frame of a game he will not play again, so if CP2 misses the night, the honest state for his morning is
+  *"item 4 not done, and here is the command"* — not a set of frames shot on the roster being replaced.
+
+- **(superseded, kept for the shape) Item 4, the post-CP2 camera sweep: NOT DONE.** It needs scale's
   resized roster on `main`. When it lands: `git merge main`, then `make remote T=camera-looks` and
   `T=control-playtest-shots` at your pose, and check selection rings, the command card's lean
   (`VISION_FRAME_BOTTOM`, to be derived from the card rather than copied), radar blips against 8–14 m hulls, the

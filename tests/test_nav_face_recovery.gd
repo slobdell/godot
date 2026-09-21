@@ -11,6 +11,18 @@ extends TestCase
 ## OPT-IN (`--nav-off=facegiveup` turns it ON), because it is behaviour on the default path.
 
 const MATCH := preload("res://game/match/match.tscn")
+## The wedging corridor's width, and the bar on how far the hull's rotated footprint may still exceed it. The
+## measured residual is 1.27 m; the bar sits just above it so that a regression is a failure and the number is in the
+## message. It is NOT a target: see the partial-result note on the wedged test below.
+##
+## ⚠ IF THIS GOES RED, LOOK AT THE ROSTER BEFORE LOOKING AT THE CODE (nav's note, and it will save an hour). The
+## sweep is `length x sin(yaw)`, so the bar's 0.53 m of headroom is eaten by hull LENGTH, not by the constraint
+## weakening: an 18 m hull at the same 11.6 deg needs ~0.7 m more footprint on its own, which breaches this on a
+## roster change alone. CP2 resizes most of the roster. The right reading then is "CP2 moved it", and the right fix
+## is to re-measure the corridor and move this number WITH THE NEW FIGURE STATED -- never to widen it to whatever
+## makes the test pass.
+const CORRIDOR_M := 4.8
+const RESIDUAL_BAR_M := 1.8
 
 
 static func _giveup(on: bool) -> PackedStringArray:
@@ -80,31 +92,84 @@ func test_the_counter_distinguishes_never_checked_from_never_stalled() -> void:
 ## it. **When combat couples the basis to a collision test, the third assertion here goes red** — that is the signal
 ## that the defect is fixed and this row's benefit becomes measurable for the first time. Re-run it then; do not
 ## delete it.
-func test_a_wedged_semi_keeps_yawing_because_rotation_is_never_collided() -> void:
+## ROUND 9, RENAMED AND INVERTED: the plant now refuses a yaw that would push the hull deeper into geometry
+## (`Tank.yaw_fit_enabled`, `--tune=match.yaw_fit=0` restores the old behaviour). nav wrote the previous version to
+## assert the DEFECT -- "keeps yawing because rotation is never collided" -- and said its going red would be the
+## signal the defect was gone. It went red; this is that signal, written down as the new expectation.
+##
+## Measured, laptop, BOTH ARMS ON ONE BUILD with the tune proven to move the predicate:
+##            off           on
+##   yaw      44.0 deg      11.6 deg     (74% of the illegal rotation gone)
+##   footprint 12.1 m        6.1 m       in a 4.8 m corridor
+##   giveups   0             1           the recovery FIRES, having been inert all round
+##   refusals  0 applied     3+ applied  the arm's own behavioural evidence, asserted below
+##
+## ⚠ AN EARLIER "before" OF 28.5 deg / 9.6 m IS STRUCK: it was taken with a knob that did nothing, so it measured
+## the constraint ON. The off column above reproduces this test's ORIGINAL unconstrained reading (10.42 m of path,
+## 44.0 deg, 4.42 m of drift, 12.1 m of footprint) to the decimal, which is what says the arm is genuinely off.
+##
+## ⚠ THE RESIDUAL IS NAMED RATHER THAN HIDDEN: 6.1 m of footprint in a 4.8 m corridor still means the hull rotates
+## about **1.3 m** through the wall. The constraint is a per-tick comparison against the hull's CURRENT penetration,
+## and `move_and_slide` depenetrates between ticks, so a rotation that is illegal cumulatively is legal at every
+## increment. The exact form -- refuse any yaw that penetrates at all -- freezes a wedged rig solid for 30 ticks,
+## which is N1's breach. No form that is both exact and non-freezing has been found; this asserts what IS true.
+##
+## **This is a PARTIAL result, not a closed one**, and nav asked for it to be written that way: a hull still sweeping
+## 1.3 m more than its corridor allows is still doing the thing the lead complained about, only less of it. The sweep
+## is `length x sin(yaw)`, so CP2's resize moves the residual across the roster and 1.3 m will not hold for every
+## hull -- which is why the bar below is on the EXCEEDANCE and prints the figure, rather than asserting "it works".
+func test_a_wedged_semi_no_longer_yaws_through_the_wall() -> void:
 	var path := await _wedged_path(false)
 	print("MEASURE face_wedged: %.2f m of path, %.1f deg of yaw (windows checked %d, giveups %d); net drift %.2f m in a corridor 4.8 m wide, where the hull's rotated footprint needs %.1f m" % [
 			path, _last_yaw, OrderController.face_checked, OrderController.face_giveups, _last_net, _last_span])
-	# POSITIVE CONTROL: the corridor must really wedge the hull, or nothing below means anything.
+	# ⚠ THE ARM, ASSERTED FIRST AND BEHAVIOURALLY. The constraint is off by default, so this row selects it -- and a
+	# selection that silently fails to take gives a freely-yawing hull, a large residual, and a RED THAT READS AS
+	# THE CONSTRAINT REGRESSING rather than as the switch never firing. `applied` is the only counter that can rise
+	# when the mechanism actually refuses a yaw; `offered` rises either way. Measured with the arm genuinely off:
+	# 44.0 deg, 12.1 m of footprint, giveups 0, `applied 0`.
+	assert_true(_last_refusals > 0,
+			"the constraint is LIVE for this row (%d yaw refusals applied), so everything below measures it"
+			% _last_refusals)
+	# POSITIVE CONTROL, unchanged: the corridor must really wedge the hull, or nothing below means anything.
 	assert_true(path > 1.0, "the corridor wedges the semi into a shuffle (%.2f m of path ground out)" % path)
-	# THE DENOMINATOR: the mechanism was reached. Without this, "giveups 0" is indistinguishable from dead code —
-	# round 8's `gates aimed 0` is the cautionary case and this counter exists because of it.
+	# THE DENOMINATOR, unchanged: the mechanism was reached, so the count below is a measurement and not dead code.
 	assert_true(OrderController.face_checked > 0,
-			"the recovery was REACHED (%d windows checked), so its zero below is a measurement" % OrderController.face_checked)
-	assert_eq(OrderController.face_giveups, 0,
-			"and it never fires, because the hull is not stalled: it yawed %.1f deg" % _last_yaw)
-	# THE CAUSE, as geometry: a 14 m hull cannot legally sit at this angle in a 4.8 m corridor it is still inside.
-	assert_true(_last_span > 4.8 and _last_net < 8.0,
-			"the basis was rotated THROUGH the walls: %.1f m of footprint in 4.8 m, %.2f m from the centre" % [
-			_last_span, _last_net])
+			"the recovery was REACHED (%d windows checked), so the count below is a measurement" % OrderController.face_checked)
+	# INVERTED: it used to be asserted at 0 because the hull never stalled -- it rotated through the wall instead.
+	# The plant now refuses that rotation, so the hull DOES stall and the recovery nav built for it finally fires.
+	assert_true(OrderController.face_giveups > 0,
+			"the recovery fires now that the plant refuses an impossible yaw (%d giveups, %.1f deg yawed)" % [
+			OrderController.face_giveups, _last_yaw])
+	assert_true(_last_yaw < 20.0,
+			"the wedged yaw is cut well below the 44.0 deg it reaches unconstrained (%.1f deg)" % _last_yaw)
+	# THE RESIDUAL AS A NUMBER, at nav's request and for its reason: the obvious rewrite here is "the constraint
+	# works", and that assertion would throw the 1.3 m away -- the remainder could then grow back to 2 m or 3 and the
+	# test would still pass, asserting the wrong thing about the right mechanism. So the BAR IS ON THE EXCEEDANCE and
+	# the measured figure is in the failure text, exactly as nav's original printed "12.1 m of footprint in 4.8 m".
+	var over := _last_span - CORRIDOR_M
+	print("MEASURE face_wedged residual: the rotated footprint exceeds its %.1f m corridor by %.2f m (unconstrained: 7.3 m over, at 12.1 m of footprint)" % [
+			CORRIDOR_M, over])
+	assert_true(over <= RESIDUAL_BAR_M,
+			"the rotated footprint exceeds its corridor by no more than %.1f m (1.27 m at 6.1 m in a 4.8 m corridor; unconstrained 7.3 m; now %.2f m)" % [
+			RESIDUAL_BAR_M, over])
 
 
 var _last_yaw := 0.0
+## The arm's BEHAVIOURAL evidence: refusals this run actually APPLIED. `refusals_offered` counts the call site and
+## would rise with the constraint off; only `applied` can rise when the mechanism fires. Snapshotted as a delta
+## because both are process-wide statics.
+var _refusals_at := 0
+var _last_refusals := 0
 var _last_net := 0.0
 var _last_span := 0.0
 
 
 ## Drives the wedged semi for 8 s with the recovery `on` or off, returning the metres of path it grinds out.
 func _wedged_path(on: bool) -> float:
+	# The constraint is OFF by default (it costs four of five squads their formation -- see `Tank.yaw_fit_enabled`).
+	# This row measures what it DOES, so it selects the arm itself, through the tuning key production reads.
+	Units.tuning["yaw_fit"] = 1.0
+	_refusals_at = Tank.refusals_applied
 	var was := _giveup(on)
 	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
 	var game_match: Match = MATCH.instantiate()
@@ -135,6 +200,8 @@ func _wedged_path(on: bool) -> float:
 	# and the hull is still inside it, the basis was rotated THROUGH the walls.
 	_last_span = 14.0 * sin(deg_to_rad(_last_yaw)) + 3.32 * cos(deg_to_rad(_last_yaw))
 	Movement._off = was
+	_last_refusals = Tank.refusals_applied - _refusals_at
+	Units.tuning.erase("yaw_fit")
 	return path
 
 

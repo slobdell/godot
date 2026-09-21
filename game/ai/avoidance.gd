@@ -51,7 +51,9 @@ static var deflected := 0
 ## A hull's avoidance radius by unit type (cached: the catalog doesn't change mid-match).
 static func radius_of(unit_id: String) -> float:
 	if not _radius_by_unit.has(unit_id):
-		var size: Variant = Units.stat(unit_id, "hull_size", [2.4, 1.6, 3.8])
+		# One accessor, shared with movement.gd: an unknown id is an error naming the id, and the fallback is
+		# Units.DEFAULT's live box rather than a pre-CP2 literal frozen in three files.
+		var size: Array = Movement.hull_box(unit_id)
 		_radius_by_unit[unit_id] = (float(size[0]) + float(size[2])) / 4.0 + RADIUS_MARGIN
 	return float(_radius_by_unit[unit_id])
 

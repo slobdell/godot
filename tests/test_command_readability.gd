@@ -111,9 +111,14 @@ func test_friend_and_foe_differ_by_shape_not_only_color() -> void:
 	markers.refresh()
 	assert_true(markers.state()["Rust_Near_1"]["visible"] and markers.state()["Rust_Near_1"]["kind"] == "enemy",
 			"setup: the enemy in sight has a ring")
-	var enemy_triangles := (markers.layer("enemy").multimesh.mesh as ArrayMesh).surface_get_array_len(0)
-	var friend_triangles := (markers.layer("friendly").multimesh.mesh as ArrayMesh).surface_get_array_len(0)
-	assert_true(enemy_triangles < friend_triangles * 0.75, "the enemy ring is dashed (gaps), the friendly ring solid (%d vs %d vertices)" % [enemy_triangles, friend_triangles])
+	# Round 9: the accessibility property is unchanged -- friend and foe still differ by SHAPE and not only colour --
+	# but it no longer lives in the mesh. Every marker is now one unit quad (the shape is a signed-distance capsule
+	# in the fragment shader, so the band keeps a constant thickness from a 2.93 m rat rod to a 14 m rig), so
+	# counting vertices compares 6 against 6 and can no longer see the dashes. Assert it where it now lives.
+	var enemy_dashes := float((markers.layer("enemy").material_override as ShaderMaterial).get_shader_parameter("dashes"))
+	var friend_dashes := float((markers.layer("friendly").material_override as ShaderMaterial).get_shader_parameter("dashes"))
+	assert_true(enemy_dashes > 0.0, "the enemy marker is broken into dashes (%d)" % enemy_dashes)
+	assert_eq(friend_dashes, 0.0, "and a friendly marker is solid, so the two differ without relying on colour")
 
 
 func test_ui_scale_makes_everything_bigger_and_still_fits_a_phone() -> void:
@@ -132,5 +137,5 @@ func test_ui_scale_makes_everything_bigger_and_still_fits_a_phone() -> void:
 
 
 func teardown() -> void:
+	# The hook restores the viewport and nothing else: `_teardown()` frees and drains after it, sealed.
 	tree.root.size = Vector2i(1280, 720)
-	super.teardown()

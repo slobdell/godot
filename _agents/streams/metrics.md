@@ -221,6 +221,64 @@ is the orchestrator's call, not his.)
 
 ## Status
 
+> # ROUND 9 CLOSED. CP1 and CP3 met and merged; backlog, both stretch items and every orchestrator-queued
+> # item complete. Last merge `ec6fef46` (my `2746233b`). Working tree clean, nothing on builder0.
+>
+> **CP1 (A12) `ae9c65e1`** — the four trajectory metrics, contract S3, positive control reproduced round 8's
+> oscillation finding to within 0.05 points against a ±0.5 bar, and found that the shuffler is the WHEELED
+> hull, not the light one. **CP3 (T1) `0d4e5ef1`** — `check` parallel and sharded, 2820 s → 837/882/882 s
+> (−70%/−69%/−69%), three consecutive greens, hashes identical; `REMOTE_SLOTS` LOWERED to 3 on measurement.
+>
+> **The last check: `2746233b`, builder0** — `>> remote: make check exited 2`, `1548 passed, 1 failed`,
+> 5 shards over 219 files, 1123 s, `sim-baseline 1e90f69e5d6fcc46 (baseline unmoved) | determinism
+> 253adefeec657df1`, `16 passed, 2 FAILED, 0 NOT RUN [test x5, lint -P6, 2 at once, builder0]`, markers
+> agreeing, no cascade, **`engine: 0 errors, 0 warnings`**. The two reds are main's known pair.
+>
+> ### The one finding to carry into round 10
+> **Two AI scenarios were passing on a neighbour's leaked navigation state.** Four runs split exactly on
+> whether the drain completed between scenarios, not on the box:
+>
+> | tree | drain completed? | count | `artillery_stays_dug_in` + `base_of_fire_keeps_firing` |
+> |---|---|---|---|
+> | `4dba0b53` | **no** | `43,1,3,0` | PASS |
+> | `0870877f` ×2, `2746233b` | yes | `41,3,3,0` | FAIL |
+>
+> They fail in 0.6 s and 1.4 s, so not load. Routed: artillery → combat, base-of-fire → squad's round-10
+> brief. **`tests/baselines/ai_scenarios_count.txt` is still `42,2,3,0` and is the orchestrator's to
+> re-record from main once combat's tip lands** — two records an hour apart would each be true of a
+> different tree.
+>
+> ### What a fresh agent should know about this tooling
+> - `make round-status` — every worktree vs main, the box, the baselines, and whether each branch's base is
+>   covered by `main-checked`. `make remote-status` for one folder.
+> - `make remote` refuses to rsync over a live run of its own, verifies the copy-back by sha256, and mirrors
+>   (`--delete`, `*.log` protected). `--quiet` holds every slot and ends in `QUIET WINDOW: HELD | NOT USABLE`.
+> - `check` keeps going and reports PASS / FAIL / **NOT RUN** per target with the schedule it ran under.
+> - `lint` carries two liveness probes and fails if the checker reports nothing.
+> - `make sim-baseline-adopt` reads twice, refuses a disagreement, merges rather than overwriting.
+> - **Every gate refuses to record a baseline without a REASON**, and every shell tool has a `tools/test_*.sh`
+>   suite in `check` (231 tests) — `make shell-tools-test`.
+>
+> ### The two patterns worth more than any of it
+> **1. An absence that has something plausible to say.** `lint` over zero files, `check-hashes` on absent
+> data, a blank `QUIET WINDOW` reading HELD, `0 passed, 0 failed` exiting 0, a commit subject standing in
+> for a check verdict, a count of occurrences labelled "tests". The blank absence gets noticed; the
+> plausible one does not.
+>
+> **2. A fix at one layer defeated by a layer above it that was never in the picture.** make expanding `$`
+> before shell quoting (three times), a pipeline reporting `tail`'s status, `$(date)` resetting `$?`, a tag
+> object interposing between a ref and its commit, six call sites landing in the wrong parameter, and a
+> scenario runner still calling `teardown()` after the seal. **In every one the code was correct about the
+> thing it was looking at and wrong about what it was looking at.** The rule that follows: *after a
+> signature change, read every caller, not every conflict.* I wrote that down and then broke it an hour
+> later in a file I had just edited.
+>
+> **And the one that cost the most: three of my own test suites were green here and red on the box**
+> — `TANK_SQUAD_SLOT` set inside `check`, fixed sleeps on a loaded box, no `.git` on builder0. Every one
+> surfaced only because the suites run inside `check` rather than by hand. A guard exercised only where it
+> is easy passes for the wrong reason.
+
+
 > ### ✅ CP1 MERGED (`ae9c65e1`). CP3's falsifier MET at `0f811c1c` — ready to merge.
 > **Green commit: `0f811c1c`** (`>> remote: make check exited 0`, three consecutive runs). Commits above it are
 > **documentation only** (`git diff 0f811c1c..HEAD` touches `_agents/` and nothing else).
@@ -235,10 +293,182 @@ is the orchestrator's call, not his.)
 > Full evidence, both denominators, the ordering proofs and the two bugs the series caught:
 > `references/round9/metrics/t1-cp3.md`.
 >
-> **Owed, in order:** (1) `ai-scenarios-check` into `CHECK_TARGETS` — the target and its baseline
-> (45/0/2/0, builder0) are committed, it is out of `check` only so it could not confound the falsifier;
-> (2) `determinism`'s verdict line is truncated at 120 chars so its hash never reaches the log — a verdict that
-> cannot be compared after the fact; (3) nav's A6 control-arm logs, to be read once they emit `corridor`.
+> **Owed, in order:** ~~(1) `ai-scenarios-check` into `CHECK_TARGETS`~~ (`fbf2af95`); ~~(2) `determinism`'s
+> truncated verdict line~~ (`c6cafa42`, `make check-hashes`); (3) nav's A6 control-arm logs, to be read once
+> they emit `corridor`.
+
+> ### ⚠ 2026-09-20 10:32 — MY BRANCH IS NOT GREEN, AND NEITHER IS `main`. THE FAILURES ARE NOT MINE.
+> Check on `fbf2af95`, builder0, 1011 s: **exit 2, 1481 passed / 4 failed, plus `ai-scenarios-check`.**
+> `git diff --stat main...HEAD -- game/ tests/` is **empty** — this branch differs from `main` only in
+> `tools/metrics/`, `mk/core.mk`, `Makefile`, `tools/remote*.sh` and `_agents/`. Every failure below is
+> `main`'s; `fbf2af95` only made three of them visible. Reported to the orchestrator 10:50.
+>
+> **`ai-scenarios-check` 45,0,2,0 → 42,3,2,0 on its first run inside `check` — lesson 159, paid off:**
+>
+> | scenario | measured |
+> |---|---|
+> | `dodge_rate::who_dodges_and_how_often_they_try` | **dodging has stopped.** ifv and tank × 3 seeds: 431–514 ticks with a round inbound, **0 dodging, 0%, every hull, every seed** |
+> | `cp2::a_scout_works_onto_a_tanks_engine_deck` | the scout fights fine (13 hits / 14 shots) and **0 of 13 land on the deck**. Its `x3m` control arm fired **nothing at all** (0 shots) |
+> | `suppression::holding_the_aim_point…` | held 0.29 / density 1.02 / 161 rounds vs tracking 0.12 / 0.28 / 6 — ordering right, margin below its bar |
+>
+> Window `1cb2fda9..main` holds combat's `55b0de58` (dwell timer retired, A2), feel's `d8a107b5` (collider
+> measured stowed) and `1dc2302f` (the 5 cm spawn lift). **Guess, labelled as one:** rows 2–3 are
+> geometry-shaped and HANDOFF says the boxes are mid-handover, so scale's re-derivation may clear them; row 1
+> is not geometry-shaped and I would not expect it to.
+>
+> Also red, all `main`'s: `test_theme_unit_scale`, `test_units_scale` (the box handover, documented),
+> `test_match_spawns_and_results` (the y=0 spawn contact, ruled but not landed), and
+> `test_theme_city_block::test_an_unknown_colour_name_is_deterministic_rather_than_a_dice_roll` — **that
+> last one I cannot find written down anywhere and it may be new.**
+
+> ### The lint gap: my structural hypothesis was WRONG, and the probe said so
+> I argued the root cause was that a per-file `--check-only` cannot see an error that only appears when the
+> project compiles together, and recommended a whole-project pass. **The probe on builder0 (`b839495c`)
+> refutes it.** Verbatim, four arms:
+>
+> | arm | result |
+> |---|---|
+> | 0 positive control (blatant syntax error at the same `res://` path) | `Parse Error: Unterminated string.` — the experiment is valid |
+> | A self-contained 12-line ternary, nothing from the project | `Cannot infer the type of "my_map" …` |
+> | B real `movement.gd` at `bffdea0f`, class cache present | `Cannot infer the type of "my_map" …` |
+> | C same, class cache moved aside | `SimClock not declared` + knock-on constants (different errors, not fewer) |
+>
+> So the checker sees this class fine, with or without the cache: **the green run never checked
+> `movement.gd`.** That is the silent-pass hole, closed at `2e73a05e` (no output at all / killed by a signal
+> / blind for the whole run). **No whole-project pass was built** — it would be a second forty-second gate
+> justified by a guess I now know was wrong.
+>
+> The probe paid for itself twice: arm 0 proved `res://build/…` resolves, which is the uncertainty that made
+> me defer the stronger self-test. `lint` now carries **two** liveness probes — the eight baselined
+> artefacts (catches a wholly blind run) and a synthetic type-inference error whose finding is REQUIRED
+> (catches a checker that can reproduce yesterday's findings but not see a new one).
+>
+> ### `check` keeps going, and check4 measured what that is worth
+> `>> check: 16 passed, 2 FAILED, 0 NOT RUN` on `0269e7b0`, against **check3's 10 of 18** under the old
+> behaviour — one failing shard used to abandon seven other targets with nothing in the log saying so.
+> Summary cross-checked against the markers: 18 started, 16 done, 2 failed, 0 never started. They agree.
+>
+> ### `make test FILTER="a|b"` exited 127, and quoting alone would have been worse
+> The filter is a substring, so a quoted `a|b` matches nothing — and the runner printed `0 passed, 0 failed`
+> and **exited 0**. **A filter that matches no tests is now a failure**; `|` means alternation; `'` and `$`
+> are refused by name. `$` was found by the test, not by me: I quoted against the shell and **make had
+> already expanded it** (`FILTER=$HOME` arrived as `OME`).
+>
+> **The general form, four instances today:** a fix aimed at one layer defeated by a layer above it that was
+> never in the picture — make's expansion beating shell quoting, a pipeline reporting `tail`'s status,
+> `$(date)` resetting `$?`. And separately, three times: *a test asserted something about its environment it
+> had never checked* (`TANK_SQUAD_SLOT` set inside `check`, fixed sleeps on a loaded box, no `.git` on the
+> build box). Every one surfaced only because the suites are IN `check`.
+
+> ### Orchestrator's post-backlog tooling block: three items, all in, one check outstanding.
+> | commit | what | the finding it produced |
+> |---|---|---|
+> | `8c5bb14a` | `make sim-baseline-adopt` | **the hand `cp` DELETES other machines' baselines** — `build/sim_state_hash.txt` holds one line, and the symptom where it was deleted is `sim-baseline SKIPPED`, a skip not a failure. Also folded three copies of the hash read into one `SIM_HASH_READ`. |
+> | `dcf4d242` | `--delete` copy-back, `*.log` protected | `--delete` would unlink a wrapper log **while its redirect is open** |
+> | `26c6b1e5` `1e5972e4` | `make round-status` | **six slots held on builder0 at load 15.70** where `REMOTE_SLOTS=3`; and see below |
+>
+> **`round-status` found a real thing and got a second thing wrong on the same run, and the second is mine.**
+> I flagged `godot-feel` and `godot-nav` as "work but no slot" and passed it to the orchestrator as something
+> to look at. **They were QUEUED.** A queued run has already `cd`-ed into its folder — the exact reason the
+> live-run guard covers the queue — so processes-without-a-slot is the *healthy* state while a stream waits.
+> A tool that turns a normal state into a finding is worse than one that says nothing, because someone acts
+> on it. Fixed: a queued run holds a `slot.sh` ticket, so the three states are distinguishable, and only
+> "no slot AND no ticket" is flagged, worded as the uncertainty it is rather than as an accusation.
+>
+> The six-slot observation stands and the part worth keeping is that **the shard count is derived from free
+> memory at launch**, so a run that starts into a crowded box stays slow for its whole duration, not only
+> while it is crowded.
+>
+> 142 shell tests over six suites; `metrics-pytest` 138.
+
+> ### Backlog and both stretch items COMPLETE. Last check `dd6f84ca`: exit 2, and the red was mine.
+> builder0, `1499 passed, 3 failed`, 1000 s, 4 shards over 214 files, `sim-baseline 1e90f69e5d6fcc46`
+> (unmoved), `determinism 253adefeec657df1`. **Both new features proved themselves in it:**
+> `ai-scenarios-check: 42 passed, 2 failed, 3 pending, 0 unexpectedly passing (non-pending counts 42,2
+> unchanged)` — green, the coin out of the gate, the two live regressions still visible to scale; and
+> `engine: 0 errors, 2 warnings`, with `test_theme_city_block` reading `0 engine errors, 2 engine warnings`
+> and naming both — the exact case `expect_warning` exists for.
+>
+> **The red was `shell-tools-test`, and it is this round's lesson pointing at me.** Six of twelve slot tests
+> and one quiet-window test passed on an idle laptop and failed on the box: `slot.sh` short-circuits when
+> `TANK_SQUAD_SLOT` is set, and `check` runs inside a slot, so every slot assertion exercised nothing; and my
+> fixed sleeps were a property of an idle machine. Fixed at `bf2686ac` (unset the slot vars, poll instead of
+> sleep). **A guard exercised only where it is easy passes for the wrong reason** — and I only found out
+> because I put the suite in `check` rather than running it by hand.
+>
+> Not mine, `git diff main...HEAD -- game/` empty: `test_match_spawns_and_results` (the y=0 spawn contact)
+> and `test_assets_pipeline::test_committed_generated_themes_meet_their_contracts`, which I have not seen
+> documented anywhere.
+
+> ### Earlier: waiting on the box (held quiet for feel and show).
+> `bac84a6f`'s check, for the record: builder0, `>> remote: make check exited 2`, **1481 passed / 4 failed**,
+> 993 s, 5 shards over 212 files — the same seven failures as `fbf2af95`, reproduced exactly. **`make
+> check-hashes` printed on real data for the first time**, which closes CP3's one inferred criterion:
+> `>> check: hashes on builder0 | sim-baseline 2d5215a8a0a59ded (baseline unmoved) | determinism
+> 253adefeec657df1` — `determinism`'s state_hash had never reached a log at all.
+>
+> | commit | what | verified |
+> |---|---|---|
+> | `e3a91460` | `make remote` refuses to rsync over a live run of its own | **on builder0**, against a live 27-process check |
+> | `cc58b4ad` | the ai-scenarios gate, on the non-pending counts | 20 fixture tests; **baseline not yet re-recorded**, so the gate stays red |
+> | `305878b3` | engine warnings told apart from errors; `expect_warning` | **not parsed** — GDScript, no local Godot runs |
+> | `0826d823` | `--quiet`: a timing run holds the box and judges its own window | 76 shell tests; remote script rendered and parse-checked |
+>
+> **Three defects found by tests for features that had not shipped yet**, two of them pre-existing and
+> shared:
+> 1. **`slot.sh` could not release its slot when killed.** bash defers a trap until the foreground command
+>    finishes, so `kill` on a slot holder did nothing until the work finished by itself. This is the whole
+>    of remote_builds.md's stale-`.owner` entry, which had been written up as an operator mistake; the
+>    entry is rewritten. Work now runs in the background under an interruptible `wait`.
+> 2. **Killing a slot holder left its work running** — the slot came back while the Godot under it did not.
+>    Now killed as a tree, walked by parent, never by pattern.
+> 3. **My own `QUIET WINDOW` verdict printed HELD for a file with zero samples.** `grep -cv X || echo 0`
+>    fires its fallback exactly when the count is zero, so the variable became `0\n0`, the integer test
+>    errored, and the guard was skipped. The round's recurring defect, inside the code written to prevent
+>    it, defaulting to the reassuring answer.
+>
+> **A6's control arm is read — the last owed item — and the pooled figure stands.** From nav's scratchpad
+> copies (**not** from `build/`, see below): yard 0.304/0.631, pit 0.321/0.595, terminus 0.331/0.738,
+> **pooled 0.3203 (active 0.6622) over 96,054 active ticks — reproduces the earlier figure exactly.**
+>
+> | map | commit | off_corridor | active | eff_mean | cusp/min | sparc |
+> |---|---|---|---|---|---|---|
+> | yard | `c025bc6b` | 0.304 | 0.631 | 0.681 | 43.10 | **−2.013** |
+> | terminus | `5369bd13` | 0.331 | 0.738 | 0.660 | 69.14 | **−2.013** |
+>
+> **`cusp/min` swings 60% between the two maps with no treatment applied; `sparc` is identical to three
+> decimals.** A claim meant to survive the rotation should be pre-registered against SPARC and the
+> off-corridor pair — cusp density is mostly measuring the arena. The two commits differ by one Status file
+> and no code, which the mixed-commit banner flagged and its own printed command settled.
+>
+> **One flipped bit, and I got its cause wrong the first time.** `build/metrics/p7-pit.jsonl` on this laptop
+> has `0x78` `x` → `0xf8` at line 143,873 of 273,578; nav's copy is clean and the same length to the byte. I
+> reported the file as unusable and the pooled figure as unreproducible; **both were wrong** — nav kept
+> copies out of `build/`. And the mechanism is not the stale-artefact story it looked like: the `build/`
+> copy's **mtime never changed**, so no rsync rewrote it. The byte changed under a file nobody touched, on
+> this laptop. The transfer is exonerated for this one; the stale-`build/` problem nav found is real and
+> **separate**, and this file is not an instance of it.
+>
+> Both are now guarded anyway: the copy-back mirrors the run (`--delete`, with `*.log` protected so a live
+> redirect is never unlinked) and verifies a sha256 manifest the box writes. That localises the next flip;
+> it does not prevent one. **The loud failure was the lucky case** — in a digit instead of a key name it
+> would have read as a valid coordinate, and no per-line checksum exists to catch that.
+
+> **Corrected by combat, and it was my error to make:** I reported `scenario_dodge_rate` to the orchestrator
+> as a regression without opening the file, whose own header says KNOWN-FAILING since CP4 and "Not in make
+> check". The gate had inherited a ~2% coin as its expectation. A baseline records whatever was true the
+> instant it was taken, **including luck**.
+
+> ### `e3a91460` — `make remote` refuses to rsync over a live run of its own (trip-up 66, enforced)
+> Requested by the orchestrator after it voided nav's check on `96bbf38e` and scale's 62-minute fairness run
+> in one morning. **Verified against the live box:** `tools/remote.sh --status` listed my own running
+> 27-process check out of `/proc` with start times, and `tools/remote.sh metrics-pytest` refused it (exit 9,
+> *"nothing was synced and nothing was run"*) — the old script would have destroyed that run.
+> **/proc decides; the marker is printed, never believed** — a second `.owner` file would have been the
+> stale-`.owner` bug again, locking a stream out of the box until a human deleted a file. Only the launch
+> window (rsync started, no process yet) trusts a file, bounded by `REMOTE_CLAIM_TTL=300` under a `flock`.
+> Fails open, loudly. `REMOTE_FORCE=1` prints the run it destroys. 36 known-answer tests, ~1 s, no Godot,
+> now `CHECK_TARGETS` #18. Its own check is chained behind the `bac84a6f` one.
 
 ### Done
 

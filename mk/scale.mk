@@ -48,3 +48,64 @@ arena-cover: import ## A3: how much of a hull each map actually hides, by hull l
 		$(if $(ARENAS),--arenas=$(ARENAS)) --json=$(CURDIR)/$(BUILD_DIR)/arena-cover.json \
 		2>&1 | grep -E '^ARENA_COVER|SCRIPT ERROR' || true
 	@grep -q . $(BUILD_DIR)/arena-cover.json 2>/dev/null || { echo "arena-cover FAILED: no json"; exit 1; }
+
+.PHONY: grid-fairness
+
+# Item 3's OWN fairness control, and it is a different experiment from `make arena-series`.
+#
+# arena-series plays FACTION armies, and a faction army never stands on the spawn grid: `Match.load_doctrine` ends in
+# `ArmyLayout.deploy()`, which re-lays every unit by its own hull size at tick 0, synchronously, before any physics
+# step. So arena-series measures whether the ARENA and its navmesh are fair; it cannot see this grid at all.
+#
+# What lives on the grid is what `Match.spawn_tank` puts there and leaves: network players and legacy bots. So the
+# control for a spawn-grid change is a BOT series -- which is also verification.md's prescription
+# (`--runs 60 --green 2 --rust 2`, with and without `--swap-bases`) and the E0 configuration that recorded 51% after
+# the mirrored half-bake fixed the 64% south bias (squad_ai_design.md's fairness row, trip-up 21).
+#
+# Two arms, same seeds. `tools/match_series.py` has no swap-applied guard of its own (arena_series.py does), so the
+# positive control for THIS arm is `test_swapping_the_bases_actually_moves_where_a_team_spawns` in
+# tests/test_spawn_grid.gd: it asserts the flag moves the geometry on both the constants and every baked list. A win
+# rate from these two arms means nothing without that test green -- an unapplied swap gives two identical arms and a
+# perfectly plausible 50/50.
+grid-fairness: import ## Item 3: the SPAWN GRID's swap-bases control, 2v2 bots (the only units that stand on it) (N=60 TIME=300 SCORE=5) -> build/grid-fairness-{normal,swapped}.json
+	@mkdir -p $(BUILD_DIR)
+	@for arm in normal swapped; do \
+		echo "== grid fairness: 2v2 bots, $$arm bases, seeds 1-$(or $(N),60) =="; \
+		$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),60) --jobs $(JOBS) \
+			--green 2 --rust 2 --score-limit $(or $(SCORE),5) --time-limit $(or $(TIME),300) \
+			--json $(BUILD_DIR)/grid-fairness-$$arm.json \
+			$$([ $$arm = swapped ] && echo "--extra=--swap-bases") \
+			| grep -E "matches|wins:" || exit 1; \
+	done
+
+.PHONY: spawn-probe
+
+# Diagnostic for main's red spawn test: says WHERE the flagged units are and WHAT they intersect, which the test
+# itself cannot (it reports names only). Reproduces the test's setup exactly -- foundry, seed_spawns(9, 6.0), a full
+# Army.MAX_ARMY_UNITS army a side.
+spawn-probe: import ## Why a full army spawns inside geometry: positions + the bodies hit (ARENA=foundry PROBE_FLAGS=--pollute=X|--pollute-free=X)
+	$(GODOT) --headless --path . --script res://tests/scale/spawn_block_probe.gd -- \
+		$(if $(ARENA),--arena=$(ARENA)) $(PROBE_FLAGS) 2>&1 | grep -E '^SPAWN_PROBE|SCRIPT ERROR' || true
+
+.PHONY: lamp-frames
+
+# The acceptance test for the Terminus lamps (round 9, feel's finding): the floor has to read, and the vehicles have
+# to read ON it, at the pose the lead plays at. Shot as a PAIR -- `--no-show` and then with the show -- because the
+# show MODULATES what is already lit and its `pools` channel is not the floor's baseline (ruled with show). A frame
+# that looks lit only with the show on has not fixed anything; the lamps are the baseline and the show is the gloss.
+# Same seed and the same delay for both arms, so the only difference between the two images is the show.
+lamp-frames: import ## The Terminus lamp pair at the player's camera, show OFF then ON (ARENA=terminus DELAY=20) -> build/lamps/
+	rm -rf $(BUILD_DIR)/lamps && mkdir -p $(BUILD_DIR)/lamps
+	for arm in off on; do \
+		if [ $$arm = off ]; then flags=--no-show; else flags=; fi; \
+		$(GODOT) --path . --resolution 1920x1080 -- --skirmish --scripted --seed=3 --mute \
+			--arena=$(or $(ARENA),terminus) $$flags --screenshot-delay=$(or $(DELAY),20) \
+			--screenshot=$(CURDIR)/$(BUILD_DIR)/lamps/terminus-show-$$arm.png 2>&1 \
+			| grep -E "ERROR|SCRIPT ERROR" || true; \
+	done
+	@# BOTH arms or nothing: the first version used `flags=$$([ $$arm = off ] && echo ...)`, whose exit status is 1
+	@# when the test is false, so under errexit the `on` arm was skipped -- and the target still produced a plausible
+	@# single frame. A pair with one side missing is not a pair, and this is what says so.
+	@test -s $(BUILD_DIR)/lamps/terminus-show-off.png || { echo "lamp-frames: the show-OFF frame is missing"; exit 1; }
+	@test -s $(BUILD_DIR)/lamps/terminus-show-on.png || { echo "lamp-frames: the show-ON frame is missing"; exit 1; }
+	@ls -la $(BUILD_DIR)/lamps/*.png

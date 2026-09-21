@@ -619,7 +619,13 @@ def block(x, z, rot=0, **look):
 terminus = [
     block(40, 0, tiers=3, neon="cyan", seed=11),
     block(100, 0, tiers=2, setback=1, neon="magenta", seed=23),
-    block(30, 62, tiers=4, neon="magenta", seed=37),
+    # tiers=3, not 4: `CityBlock.setup` clamps to `clampi(..., 1, 3)`, so this block has been BUILT at 3 since
+    # it was authored and the 4 was silently discarded (feel, round 9, found while measuring roofs). Dropped to
+    # what actually ships rather than raising the kit's ceiling: taller blocks here would change sightlines and
+    # cover on the one map with block props near the centre, which is a gameplay change wearing an art change's
+    # clothes and nobody has asked for it. If 4 is ever wanted, it needs the kit extended AND A3 cover
+    # re-measured, on the lead's word.
+    block(30, 62, tiers=3, neon="magenta", seed=37),
     block(-30, 62, tiers=2, setback=1, neon="cyan", seed=41),
 ]
 terminus += [
@@ -636,6 +642,42 @@ terminus += [
     # z = 80, not 84: the authoring clearance check refused 84 at 4.8 m from the spawn point at
     # [-44, 90] (SPAWN_CLEARANCE is 6.0). Caught before the file was written, which is the point of it.
     c20(-42, 80, 0, 1), c20(0, 80, 0, 1, faction="condemned", doors="open"), c20(42, 80, 0, 1),
+    # LAMPS AMONG THE BLOCKS (round 9, feel's finding): at the lead's pose the neon bands -- correct cyan and magenta
+    # since show landed -- were the brightest thing on screen and the vehicles read as dark slabs. The cause was not
+    # the bands being too bright; it was that NOTHING lit the floor they drive on. The Terminus had exactly ONE
+    # authored floodlight, at (-128, 0) on the hexagon's west vertex, plus its 180 degree mirror: two lights at r=128,
+    # both OUTSIDE the fight, against pit's four plus eight 40 m towers standing inside it.
+    #
+    # So these are the first lights inside the grid, placed on the floor a fight actually happens on. The block
+    # footprint is 40 x 40 centred on each block, which fixes the open ground exactly: a 40 m plaza at x,z in
+    # -20..20, 20 m streets at x in 60..80, and a 22 m ring road across each half at z in 20..42.
+    #
+    #   plaza corner (14, 14): inside the crossroads, 6 m clear of the block corner at (20, 20), so the light falls
+    #       across the plaza floor rather than up a wall.
+    #   ring road (-35, 31): mid-road between the z = 0 blocks' north edge (z = 20) and the z = 62 blocks' south edge
+    #       (z = 42), clear of wreck(62, 36) and of c20(-70, 30) at the street mouth.
+    #   east street (66, 6): in the 20 m street at x in 60..80 between the two z = 0 blocks -- the street a flank comes
+    #       down, and the one place a scout is invisible until the corner. 14.6 m from c40(70, -8).
+    #
+    # THREE authored, so SIX inside the grid after `mirrored_props()` supplies the north.
+    #
+    # DELIBERATELY NOT A LATTICE, and this is the part worth reading twice. The first version of this put four lamps at
+    # (+-14, 14) and (+-35, 31), which is symmetric about x = 0 as well as about the origin -- and feel's objection was
+    # that eight pools in a neat grid read as MUNICIPAL rather than as a salvaged city that lights what it uses. The
+    # fix is not fewer or dimmer; it is that **the fairness invariant is 180 degree ROTATIONAL symmetry, not BILATERAL
+    # symmetry.** `mirrored_props()` gives every authored prop its point-mirror, so the layout is fair no matter how
+    # irregular the authored half is. These three are deliberately NOT mirror images of each other across x = 0: one
+    # plaza corner, one ring road west, one street east. Each half gets the same three, rotated, so the navmesh bake's
+    # half-plus-mirror construction and the swap-bases control are untouched -- and the arrangement reads as scattered
+    # rather than planned.
+    #
+    # WHETHER SIX IS RIGHT IS A LOOK QUESTION AND IS NOT SETTLED HERE. The acceptance test is a frame at the lead's
+    # pose (21 degrees, FOV 35, 49 m) judged with the show OFF as well as on -- the show modulates what is already lit,
+    # so its `pools` channel is not the floor's baseline -- with the vehicles reading without the UI rings, and against
+    # feel's before-frame at build/terminus-luminance/terminus_pitch21_fov35_49m_default-camera.png. The failure to
+    # watch for is not "too dim" but "lit-up": if the pools read as a pattern, the count comes down further. The
+    # placement is the reasoned part; the count is the part that gets looked at.
+    floodlight(14, 14), floodlight(-35, 31), floodlight(66, 6),
     # Floodlights on the hexagon's east/west vertices; screens facing each base; a sign on the base-side corner.
     floodlight(-128, 0), # x = -76, hemmed in from both sides: the hexagon wall is at |x| = 82.2 at this z, and the spawn
     # lattice reaches x = -66, so a screen fits only in the 6 m of clearance between them.

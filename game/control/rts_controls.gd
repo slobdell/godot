@@ -253,6 +253,7 @@ func vision_state() -> Dictionary:
 		return {}
 	var element: Array[String] = commanded_units()
 	var frame: Array = []
+	var pad := 0.0
 	var eyes: Array = []
 	var middle := Vector3.ZERO
 	for unit_name in element:
@@ -261,6 +262,11 @@ func vision_state() -> Dictionary:
 			frame.append(Shown.ground(tank))
 			middle += frame[-1]
 			eyes.append(tank)
+			# ROUND 9 (CP2): how much hull hangs off the point it stands on. The camera frames POSITIONS, so a
+			# vehicle's own size was never part of the bounds - 1.8 m of slop on a 3.60 m hull, and up to 7 m on the
+			# 14 m rig. Published beside the frame rather than folded into it, because `frame` is a list of
+			# positions that several other things read as one entry per vehicle.
+			pad = maxf(pad, Shown.half_hull(tank))
 	middle /= maxf(frame.size(), 1.0)
 	# Contacts the element can see widen the frame, but only symmetrically about the element: each one is framed
 	# together with its mirror image, so the frame stays centred on your own vehicles. Framing contacts as they are
@@ -292,7 +298,7 @@ func vision_state() -> Dictionary:
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
 			friendly.append(tank)
-	return {"frame": frame, "destination": destination, "region": VisionRegion.of(friendly)}
+	return {"frame": frame, "pad_m": pad, "destination": destination, "region": VisionRegion.of(friendly)}
 
 
 ## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective
@@ -524,6 +530,15 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		task["to"] = [float(extra["to"][0]), float(extra["to"][1])]
 	if extra.has("target"):
 		task["target"] = String(extra["target"])
+	# Round 9: the heading the player DREW with a right-drag reaches the element's leader. Without this a facing
+	# drag on a WHOLE SQUAD - the lead's commonest order - silently lost its heading here, because a whole-element
+	# move goes down the task path and this dictionary only ever copied `to` and `target`. control's unit tests
+	# never caught it: they order single units and pairs that are not elements, so they all took the direct path.
+	# **The last mile is squad's**: the element layer has a facing channel (`element.gd:493`) but nothing reads
+	# `task["facing"]` yet, so today this puts the heading where squad can find it and the per-unit orders do not
+	# carry it until they do.
+	if extra.has("facing"):
+		task["facing"] = extra["facing"]
 	if task["verb"] == "move" and not task.has("to"):
 		return _refuse("a move task needs somewhere to go")
 	if verb == "move":
@@ -1337,7 +1352,15 @@ func order_marks() -> Array:
 		if verb == "move" and bool(element.task.get("drills", true)):
 			verb = "attack_move"  # a move task with drills is what the player asked for as attack-move
 		var mark := {"verb": verb, "point": Vector3(float(to[0]), 0.0, float(to[1])), "task": true}  # a task with a place
-		_mark_facing(mark, element.task)
+		# The pin draws what the CREWS WERE TOLD, not what the task holds. Mirroring the task was a promise the game
+		# could not keep: a facing drag on a whole squad put the heading on the element and the members' orders never
+		# carried it, so the pin showed an arrow for a turn that was never going to happen - and the lead would have
+		# read that as his units ignoring him, which is the exact complaint this feature exists to answer.
+		# Unanimity, deliberately: the arrow claims "the SQUAD arrives on this heading", so one crew holding it is
+		# not enough. squad's 23b1d1a7 gives the leader the heading and leaves followers on a plain follow; under
+		# that commit this correctly stays silent, and it starts drawing by itself the day every crew carries it
+		# (squad's option 3) with no further change here. Derive, never mirror (Invariant 0).
+		_mark_facing(mark, _element_facing(element) if not element.task.has("facing") else element.task)
 		for unit_name in element.members():
 			_count_into(mark, String(unit_name), orders.current(String(unit_name)))
 		result.append(_finish_mark(mark))
@@ -1369,6 +1392,43 @@ func order_marks() -> Array:
 ## Round 9: the heading the player DREW with a right drag, on the pin that stands for the order. `_draw_facing` shows
 ## where a selected hull points NOW; this is where it is being told to point when it gets there, and the two are
 ## different claims. An order with no facing leaves the key absent, so a pin never invents a heading.
+## THE PIN MARKS THE ORDER THE PLAYER GAVE, and falls back to what the crews hold when the task does not say.
+##
+## Round 9 went round this twice, and both positions were right for the world they were written in. First the pin
+## mirrored the task, which promised a heading the crews were never given (squad's element dropped it) - a promise
+## the game did not keep. So it was changed to require every crew to hold the heading. Then squad landed the hold
+## on arrival (`4cff69b6`): **the crews are given the heading as a `hold` WHEN THEY ARRIVE, not on the move**, so a
+## pin reading live orders is blank for the whole drive and appears only once the squad is already there - which is
+## exactly when the player no longer needs it. Measured: two runs of the same playtest disagreed, because the
+## element re-issues its members' moves without the facing a few frames after the click.
+##
+## So the task wins when it carries a facing. **This is a deliberate reversal of the rule written this morning, not
+## that rule being forgotten: the CONTRACT MOVED under it.** When the pin was changed to require unanimity, a task's
+## facing was a promise nothing downstream kept. Since squad's `4cff69b6` the hold-on-arrival honours the task's
+## facing by construction and squad's own test asserts it, so the task is now *what is issued, deferred* - and
+## drawing it is drawing the order, not an intention. The unanimity rule below stays as the fallback for orders
+## given directly to units, where there is no task to read.
+## The heading EVERY living crew of this element has actually been given, as a `{"facing": [x, z]}` for `_mark_facing`,
+## or {} when they have not all been told the same one. Empty is the honest answer whenever the squad as a whole is
+## not going to arrive on a single heading.
+func _element_facing(element: Element) -> Dictionary:
+	var agreed: Array = []
+	var crews := 0
+	for unit_name in element.members():
+		var tank := game_match.tanks.get_node_or_null(NodePath(String(unit_name))) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		crews += 1
+		var way: Array = (orders.current(String(unit_name)) as Dictionary).get("facing", [])
+		if way.size() != 2:
+			return {}
+		if agreed.is_empty():
+			agreed = way
+		elif Vector2(float(agreed[0]), float(agreed[1])).dot(Vector2(float(way[0]), float(way[1]))) < 0.99:
+			return {}  # they were told different headings: the squad has no single one to draw
+	return {"facing": agreed} if crews > 0 and agreed.size() == 2 else {}
+
+
 func _mark_facing(mark: Dictionary, order: Dictionary) -> void:
 	var way: Array = order.get("facing", [])
 	if way.size() != 2:
@@ -1436,8 +1496,6 @@ func _draw_order_marks() -> void:
 		if at == null:
 			continue
 		_draw_ground_ring(mark["point"], 6.0, Color(color, 0.8), 2.0)
-		if mark.has("facing"):
-			_draw_ordered_facing(mark["point"], mark["facing"], color)
 		var from: Variant = _screen_point(mark["from"])
 		# Direct orders already have each unit's dashed line (_draw_waypoints); a squad task gets one from its middle.
 		if bool(mark.get("task", false)) and from != null and int(mark["arrived"]) < int(mark["units"]):
@@ -1445,6 +1503,9 @@ func _draw_order_marks() -> void:
 		# A pin: a stalk up from the ring to the task's symbol on a dark disc, readable over any ground at 21°.
 		var head := (at as Vector2) - Vector2(0.0, glyph_px * 1.6)
 		draw_line(at, head + Vector2(0.0, glyph_px * 0.5), Color(color, 0.7), 2.0)
+		# After the stalk, never before it: the heading and the stalk share screen-vertical when it points away.
+		if mark.has("facing"):
+			_draw_ordered_facing(mark["point"], mark["facing"], color)
 		draw_circle(head, glyph_px * 0.62, Color(0, 0, 0, 0.6))
 		draw_arc(head, glyph_px * 0.62, 0.0, TAU, 32, Color(color, 0.9), 1.5, true)
 		var verb := String(mark["verb"])
@@ -1625,24 +1686,70 @@ func _draw_acks() -> void:
 		_draw_ground_ring(ack["position"], lerpf(1.0, 4.0, t), Color(_order_color(ack["kind"]), t), 2.5)
 
 
-## The ordered heading on a move pin: an arrow on the ground leaving the pin's ring, in the order's own colour and in
-## the same chevron language as `_draw_facing`. It starts OUTSIDE the ring so it never reads as part of it.
-const ORDER_FACING_FROM_M := 6.0
-const ORDER_FACING_TO_M := 15.0
+## The ordered heading on a move pin: CHEVRONS ON THE GROUND running out of the destination ring, not a line.
+##
+## It was a line with an arrowhead and the first frame showed why that fails: when the heading points away from the
+## camera the line lies along the pin's own stalk and disappears into it. The FIRST chevrons failed the same way,
+## for a reason worth keeping. A chevron whose arms are fixed in METRES is flattened by the ground's own
+## perspective: at 21 deg with the heading pointing away, arms of +-2.6 m span 96 px while the nose stands off only
+## 15 px, and a 96:15 "V" is a horizontal tick. It landed on the stalk, and the stalk - drawn after it - painted
+## over what little nose there was.
+##
+## So the shape is specified on the SCREEN and the ground that produces it is SOLVED for, per pin, per pose: the
+## nose must stand off the arms by ORDER_FACING_NOSE of their span. That is the round's invariant applied to a
+## drawing - derive the metres from the pose, never mirror a number that happened to read once. The dark backing
+## stroke carries it across the stalk, which it must cross whenever the heading points away from the camera.
+const ORDER_FACING_FROM_M := 6.0  # the destination ring's radius: the chevrons start at its edge
+const ORDER_FACING_HALF_M := 2.2  # half the span, across the heading
+const ORDER_FACING_NOSE := 0.5  # the nose stands off the arms by this fraction of their span, on screen
+const ORDER_FACING_ARM_MAX_M := 16.0
+const ORDER_FACING_MIN_SPAN_PX := 8.0
+
+
+## The chevron's ground length along `facing` that makes it read as an arrow on THIS screen, with the span and
+## stand-off it buys, as `{"arm_m", "span_px", "stand_px"}`. Empty when no length on this screen reads: looking
+## straight down the heading the ground foreshortens without bound, and nothing beats a smudge.
+func ordered_facing_shape(point: Vector3, facing: Vector3) -> Dictionary:
+	var side := Vector3(-facing.z, 0.0, facing.x)
+	var arm := ORDER_FACING_HALF_M
+	for _i in 8:
+		var tip := point + facing * (ORDER_FACING_FROM_M + arm)
+		var back := tip - facing * arm
+		var a: Variant = _screen_point(back + side * ORDER_FACING_HALF_M)
+		var nose: Variant = _screen_point(tip)
+		var b: Variant = _screen_point(back - side * ORDER_FACING_HALF_M)
+		if a == null or nose == null or b == null:
+			return {}
+		var span := (a as Vector2).distance_to(b as Vector2)
+		var stand := (nose as Vector2).distance_to(((a as Vector2) + (b as Vector2)) * 0.5)
+		if span < ORDER_FACING_MIN_SPAN_PX:
+			return {}
+		if stand >= span * ORDER_FACING_NOSE:
+			return {"arm_m": arm, "span_px": span, "stand_px": stand}
+		arm *= clampf(span * ORDER_FACING_NOSE / maxf(stand, 0.5), 1.25, 2.0)
+		if arm > ORDER_FACING_ARM_MAX_M:
+			return {}
+	return {}
+
 
 func _draw_ordered_facing(point: Vector3, facing: Vector3, color: Color) -> void:
-	var a: Variant = _screen_point(point + facing * ORDER_FACING_FROM_M)
-	var b: Variant = _screen_point(point + facing * ORDER_FACING_TO_M)
-	if a == null or b == null:
+	var shape := ordered_facing_shape(point, facing)
+	if shape.is_empty():
 		return
-	var tip: Vector2 = b
-	var direction := (tip - (a as Vector2))
-	if direction.length() < 4.0:
-		return  # end-on to the camera: an arrow a few pixels long is a smudge, not a heading
-	direction = direction.normalized()
-	var side := Vector2(-direction.y, direction.x)
-	draw_line(a, tip, Color(color, 0.85), 2.0)
-	draw_colored_polygon(PackedVector2Array([tip + direction * 7.0, tip + side * 5.0, tip - side * 5.0]), Color(color, 0.95))
+	var arm := float(shape["arm_m"])
+	var side := Vector3(-facing.z, 0.0, facing.x)
+	for i in 2:
+		# Stepped by the arm, not by a fixed 5 m: the pair nests like ">>" at whatever size the pose asked for.
+		var tip := point + facing * (ORDER_FACING_FROM_M + arm + arm * 0.55 * float(i))
+		var back := tip - facing * arm
+		var a: Variant = _screen_point(back + side * ORDER_FACING_HALF_M)
+		var nose: Variant = _screen_point(tip)
+		var b: Variant = _screen_point(back - side * ORDER_FACING_HALF_M)
+		if a == null or nose == null or b == null:
+			return
+		var stroke := PackedVector2Array([a, nose, b])
+		draw_polyline(stroke, Color(0.0, 0.0, 0.0, 0.55), 7.0, true)
+		draw_polyline(stroke, Color(color, 0.95 if i == 0 else 0.7), 3.0, true)
 
 
 func _draw_ground_ring(center: Vector3, radius: float, color: Color, width: float) -> void:

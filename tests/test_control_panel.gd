@@ -140,7 +140,7 @@ func test_the_panel_stays_clear_of_the_radar_at_desktop_and_small_windows() -> v
 		assert_true(not panel.get_global_rect().intersects(radar.get_global_rect()), "at %s the panel (%s) doesn't cover the radar (%s)" %
 				[window, panel.get_global_rect(), radar.get_global_rect()])
 		assert_true(Rect2(Vector2.ZERO, Vector2(window)).encloses(panel.get_global_rect()), "at %s the panel is fully on screen" % window)
-		teardown()
+		free_owned()  # the supported mid-test reset; `teardown()` is a hook now and does not own the sequence
 	tree.root.size = Vector2i(1280, 720)
 
 

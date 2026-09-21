@@ -65,7 +65,7 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 			"anchor": state.get("anchor"), "heading": situation.get("heading", Vector3.FORWARD),
 			"bounding": int(state.get("bounding", 0)), "arrived": bool(state.get("arrived", false)),
 			"orders": {}, "slots": {}, "sectors": {}, "seats": {},
-			"leader": String(situation.get("leader", "")), "previous_seats": state.get("seats", {}),
+			"leader": String(situation.get("leader", "")), "previous_seats": state.get("seats", {}), "facing_sent": bool(state.get("facing_sent", false)),
 			"route": [], "route_index": 0, "pitch": Vector2(TacticsFormation.DEFAULT_SPACING,
 			TacticsFormation.DEFAULT_SPACING), "corridor_m": float(situation.get("corridor_m", INF)), "file": 0.0,
 			# X3 (A9): only a bounding advance fills this; everything else says "not bounding" rather than leaving
@@ -199,15 +199,48 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# seating stands. A CPU crew fights from within its slot's leash and drifts ~10 m off it; left to "saves real
 	# driving", the seating re-shuffled around the drift and re-ordered idle units (round 7: the CPU five-squad test).
 	var joined: bool = not FLOW_ENABLED or bool(state.get("flow_joined", false))
+	# `told` goes through to the per-unit orders: a facing the player dragged is an ARRIVAL heading, and K1 has carried
+	# one since round 5 (`TankBrain.intended_facing`, and `test_wheeled_arrival` covers the per-unit case).
+	# ARRIVED, WITH A HEADING THE PLAYER DREW: the posture is a HOLD on that heading, and it is the plan's STEADY
+	# STATE rather than a one-shot. My first version issued the hold once on arrival and it was overwritten on the very
+	# next update, because `_group` re-issues its orders every time -- measured as `Green_A_1 hold facing=[1.0, 0.0]`
+	# with every follower on `NO ORDER`, the leader's surviving only because its order happened not to change. An event
+	# cannot hold a posture against a function that runs every tick; the posture has to BE what the function computes.
+	#
+	# Chosen from `plan["arrived"]` each update, so it needs no flag to remember it. The verb is `hold` because a hold
+	# is a standing order that outlives the drive, and `halt` stays FALSE because the two are different things:
+	# `_group` passes `entry["facing"] if halt else told`, so halting would hand each crew its own ALL-ROUND SECTOR
+	# instead of the heading the player drew. Measured, with halt on: the crews held `[1,0]`, `[-1,0]` and `[0,-1]` --
+	# east, west and north, which is a coil covering every approach and not an answer to a right-drag. Zeroing
+	# `plan["sectors"]` above does not help, because that happens AFTER `_group` has already read the entries.
+	#
+	# A facing on a MOVE is an arrival heading and dies with the order; a facing on a HALT is a sector and is not the
+	# drawn one. A hold carrying `told` is the only combination that both persists and points where he pointed.
+	var holding_heading: bool = told is Vector3 and bool(plan["arrived"])
 	_group(plan, slot_order(situation), String(plan["formation"]), destination, plan["heading"],
-			table.spacing(String(situation["terrain"])), "move", "", false, holding and joined)
+			table.spacing(String(situation["terrain"])), "hold" if holding_heading else "move", "",
+			false, holding and joined, told if told is Vector3 else null)
+	if holding_heading:
+		plan["why"] = "%s; holding the heading you drew" % String(plan["why"])
 	if told is Vector3:
 		# A facing the player chose is everyone's facing, not the formation's all-round sectors.
 		for unit_name: String in plan["sectors"]:
 			plan["sectors"][unit_name] = 0.0
 	_flow(plan, situation, state)
-
-
+	# THE DRAGGED HEADING REACHES THE CREWS THAT WERE FOLLOWING (option 3, ruled by the orchestrator).
+	#
+	# `23b1d1a7` got the facing into the order of any crew driving to its own slot, which is the LEADER and, once the
+	# flow has joined, everybody. It never reached a follower: `_flow` hands a follower a `follow` on the leader with no
+	# destination, and a facing there would be an arrival heading for a moving target. By the time `flow_joined` lets
+	# `_group`'s move orders through -- which happens when the LEADER reaches its own slot, essentially arrival -- the
+	# orders have completed (measured: 8 s into a 20 m move, no orders at all). So there was no tick on which a
+	# follower held the drawn heading, and control's page promised what the vehicles did not do.
+	#
+	# On arrival, re-issue every crew's final move order once, carrying the facing. **One order per crew per task**:
+	# `facing_sent` is cleared only by `Element.assign`, so an element whose centre wobbles across ARRIVE_M cannot
+	# re-order anybody twice, and a crew standing on its slot simply turns in place. That once-only property is what
+	# made this the reversible option rather than putting a facing on a `follow` order and reaching into nav's arrival
+	# code, which is not my paths and not one place.
 ## Round 7: the element FLOWS into formation on the way, not only at the end (the lead's "formula to form up", its
 ## visible half). The leader drives to its own slot; every other member follows the leader at its slot's offset from the
 ## leader's (K1 `follow` with a `slot`, in the leader's frame): its goal slides with the leader every tick, so nav's PID
@@ -700,7 +733,7 @@ static func _hold(plan: Dictionary, members: Array, situation: Dictionary, facin
 ## `halt` puts every crew on its sector of fire instead of the direction of travel.
 ## `fixed` keeps last update's seating whatever it costs (a plain move standing on its spot).
 static func _group(plan: Dictionary, members: Array, formation: String, anchor: Vector3, heading: Vector3,
-		spacing: float, verb: String, target := "", halt := false, fixed := false) -> void:
+		spacing: float, verb: String, target := "", halt := false, fixed := false, told: Variant = null) -> void:
 	if members.is_empty():
 		return
 	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing,
@@ -724,7 +757,14 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		plan["seats"][name] = [formation, members.size(), int(entry["index"])]
 		# X5: at a halt the crew's sector of fire IS the facing it is being given; on the move the order's facing is
 		# the direction of travel, which nav derives itself, so only a halt carries one.
-		_order(plan, name, verb, spot, target, entry["facing"] if halt else null)
+		# X5, and the case X5 got wrong: a HALT's crew is given its sector of fire, and on the move the heading is
+		# the direction of travel, which nav derives for itself -- so a moving order carried no facing at all. That is
+		# right for every heading the doctrine chose and wrong for the one the PLAYER chose. A facing drag on a whole
+		# squad reaches `plan["heading"]` and zeroes the sectors (see `_plan_form_up`), so the formation is laid facing
+		# where he dragged, and then the orders threw the heading away and the squad arrived pointing whichever way it
+		# had driven. `told` is that explicitly-chosen facing and nothing else: null on every doctrine-chosen heading,
+		# so nav keeps deriving those from travel exactly as before.
+		_order(plan, name, verb, spot, target, entry["facing"] if halt else told)
 
 
 ## Last update's seating for these members in this shape, if they all had one ({} otherwise).

@@ -137,3 +137,37 @@ func test_the_same_hand_gesture_means_the_same_thing_anywhere_on_his_screen() ->
 			"near_horizon_to": results["near the horizon"].get("to", []),
 			"near_bottom_to": results["near the bottom"].get("to", [])}))
 	RtsCamera.fov = lens
+
+
+## The pin's heading chevron must read AS AN ARROW on the screen, at the pose the lead actually plays, including
+## the worst case: a heading pointing straight away from the camera, where the ground foreshortens hardest and the
+## chevron shares screen-vertical with the pin's own stalk. The first two attempts both failed here - a line, then
+## a chevron sized in metres - and both passed every test that only asked "is a facing on the pin".
+func test_the_pin_chevron_reads_as_an_arrow_and_not_a_tick() -> void:
+	var f := await _setup()
+	f.rig.zoom = RtsCamera.level_for(49.0)
+	f.rig.focus = Vector3.ZERO
+	f.rig.snap()
+	await wait_physics_frames(2)
+	var aim := -f.camera.global_basis.z
+	var away := Vector3(aim.x, 0.0, aim.z).normalized()  # the hard one: pointing away, down the screen's vertical
+	var toward := -away
+	var across := Vector3(-away.z, 0.0, away.x)
+	var measured := {}
+	for case: Array in [["away", away], ["toward", toward], ["across", across]]:
+		var shape := f.controls.ordered_facing_shape(Vector3.ZERO, case[1] as Vector3)
+		assert_true(not shape.is_empty(), "%s: no chevron shape was found at the lead's pose" % case[0])
+		var span := float(shape["span_px"])
+		var stand := float(shape["stand_px"])
+		assert_true(stand >= span * RtsControls.ORDER_FACING_NOSE,
+				"%s: the nose stands off %.1f px against a %.1f px span - that reads as a tick" % [case[0], stand, span])
+		assert_true(span >= RtsControls.ORDER_FACING_MIN_SPAN_PX,
+				"%s: a %.1f px span is a smudge" % [case[0], span])
+		measured[case[0]] = {"arm_m": snappedf(float(shape["arm_m"]), 0.01),
+				"span_px": roundi(span), "stand_px": roundi(stand)}
+	# Metres, not pixels, are what changes with the pose: the shape is the constant and the ground pays for it.
+	assert_true(float(measured["away"]["arm_m"]) > float(measured["across"]["arm_m"]),
+			"pointing away costs more ground than pointing across, got %s" % [measured])
+	print("MEASURE pin_chevron_shape ", JSON.stringify({
+			"pitch_deg": RtsCamera.DEFAULT_PITCH_DEG, "distance_m": 49.0,
+			"nose_ratio": RtsControls.ORDER_FACING_NOSE, "cases": measured}))

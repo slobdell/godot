@@ -69,3 +69,47 @@ func test_a_dragged_order_puts_its_heading_on_the_pin() -> void:
 			"pointing the way he dragged, got %s" % [mark["facing"]])
 	assert_true(f.controls.describe({"units": ["Green_Alpha_1"], "verb": "move", "facing": [0.0, -1.0]}).ends_with("facing N"),
 			"and the HUD says which way in plain compass: %s" % f.controls.describe({"units": ["Green_Alpha_1"], "verb": "move", "facing": [0.0, -1.0]}))
+
+
+## The pin draws THE ORDER THE PLAYER GAVE, and there are two paths to it that answer to different things.
+##
+## A squad TASK carrying a heading is drawn, full stop, before any crew has been handed it. That is not the pin
+## running ahead of the game: since squad's `4cff69b6` the hold-on-arrival honours the task's facing by
+## construction and squad's own test asserts it, so the task is the order, deferred.
+##
+## **This assertion is the reverse of the one `ac4df0d7` wrote here, deliberately.** That rule was right while a
+## task's facing was a promise nothing downstream kept. `2cca6bea` moved the rule in `rts_controls.gd` and left
+## this test behind, so the branch was red here before round 9's drawing work started and stayed red through it -
+## the failure rode under 32 unrelated ones in the same check. The test is rewritten to the contract, not bent to
+## the code: if squad stops honouring a task's facing, this is the assertion that should fail.
+##
+## Orders given DIRECTLY to units have no task to read, and there unanimity still governs: one crew out of two is
+## not the squad arriving on a heading.
+func test_the_squad_pin_draws_the_tasks_heading_and_needs_every_crew_without_one() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	f.controls.elements = Elements.install(f.game_match, f.orders)
+	var element := f.controls.elements.form(["Green_Bravo_1", "Green_Bravo_2"], "Bravo")
+	element.assign({"verb": "move", "to": [30.0, 10.0], "facing": [0.0, -1.0], "drills": false})
+	f.controls.groups.save(2, ["Green_Bravo_1", "Green_Bravo_2"])
+	await f.select(["Green_Bravo_1", "Green_Bravo_2"])
+	assert_true(not f.controls.order_marks().is_empty(), "setup: the squad's task has a pin")
+	var mark: Dictionary = f.controls.order_marks()[0]
+	assert_true(mark.has("facing"), "the task's heading IS the order given, so the pin draws it (%s)" % [mark])
+	assert_true((mark["facing"] as Vector3).distance_to(Vector3(0, 0, -1)) < 0.08, "and it is the task's own")
+
+	# The other path: the same squad on a task with NO heading, so the pin has only the crews' orders to read.
+	element.assign({"verb": "move", "to": [30.0, 10.0], "drills": false})
+	assert_true(not (f.controls.order_marks()[0] as Dictionary).has("facing"),
+			"a task with no heading on it claims none (%s)" % [f.controls.order_marks()[0]])
+	# squad's 23b1d1a7 shape: the LEADER has it, the follower does not. Still not a squad heading.
+	assert_eq(f.orders.issue({"units": ["Green_Bravo_1"], "verb": "move", "to": [30.0, 10.0],
+			"facing": [0.0, -1.0], "source": "player"}), "", "the leader is given the heading")
+	assert_true(not (f.controls.order_marks()[0] as Dictionary).has("facing"),
+			"one crew out of two is not the squad arriving on a heading")
+	# Every crew told the same heading: now the pin may claim it.
+	assert_eq(f.orders.issue({"units": ["Green_Bravo_1", "Green_Bravo_2"], "verb": "move", "to": [30.0, 10.0],
+			"facing": [0.0, -1.0], "source": "player"}), "", "both crews are given it")
+	mark = f.controls.order_marks()[0]
+	assert_true(mark.has("facing"), "with every crew told, the pin draws the heading (%s)" % [mark])
+	assert_true((mark["facing"] as Vector3).distance_to(Vector3(0, 0, -1)) < 0.08, "and it is the one they were given")

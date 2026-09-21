@@ -231,6 +231,47 @@ lead's 4 s allowance is exceeded, that is a question for him, recorded here with
 
 **In progress** (started 2026-09-20, worktree `godot-squad`, branch `stream/squad`, from `9f864474` = `main`).
 
+### ROUND 10 STARTS HERE (the lead's own summary is the next section down)
+
+**Five items, in the order I would take them. The first is the only one that is a design question rather than work.**
+
+**1. Formation spacing comes from hull WIDTH; rotation needs the DIAGONAL.** Nothing in this codebase accounts for a hull
+turning in place. `hull_floor` is width + `HULL_CLEAR_M`, leaving 2.0 m of lateral air; a yawing hull sweeps to its
+half-diagonal and needs `half_diagonal - half_width` beside it — **3.27 m for a `tank` (short by 1.27) and 5.53 m for a
+War Rig (short by 3.53)**. The deficit grows with LENGTH while the spacing is set by WIDTH, which is why CP2's resize
+made a latent error start failing tests. Measured across five formed-up squads: across gaps 4.28 / 2.98 / 1.12 / 2.39 /
+4.06 m, four of five below what a `tank` needs, **not one pair overlapping** — clear while parallel and unable to rotate.
+Full table and the three trades are in the section of the same name. **Do not choose from the code:** put a squad on the
+field, order a new heading, and decide whether hulls clipping while they dress looks acceptable. That is the lead's.
+
+**2. The wheeled-hull facing is nav's now, with my numbers.** A dragged heading reaches every crew as a standing `hold`
+(`d29115ae`), and the ORDER is asserted because that is what this layer controls. The hulls then end at **tank 1.4 /
+16.2 degrees against ifv 41.4 / 28.5** — a wheeled hull cannot neutral-steer, so its heading is whatever its last travel
+left it on. Ruled: a held wheeled hull manoeuvres to an ordered facing above a stated error; nav owns the how and the
+cost. **If the plant refuses low-speed yaw, that ruling and the constraint collide** — see item 1, since the refusal may
+be geometrically correct.
+
+**3. `ArmyLayout._is_clear` ignores each placed vehicle's own forward.** `taken` holds `[position, width, length]` and the
+test projects onto the DEPLOY frame's axes, which is sound while every hull shares that frame (true within a team; 180°
+preserves width and length). It is **wrong for an arena whose two spawn zones are not exactly opposed**, where the teams'
+forwards differ by something other than 180° and a rotated footprint is compared as if axis-aligned. Latent, with a named
+trigger, caused nothing measured.
+
+**4. Delta's margin is item 1's first symptom, not a separate oddity.** `test_five_squads_ordered_in_quick_succession`
+puts Delta's worst crew at **22.2–22.4 m against a 36 m threshold** — 62% of the budget, on main, with combat's constraint
+absent, while the other four squads sit at 3–7 m. A squad whose crews are 1–4 m apart laterally while carrying 8.62 m
+hulls cannot dress its formation. It PASSES, so it is not urgent; it will start failing for whatever lands next and be
+blamed on it. The worst crew in every squad now prints on every run (`12cd41df`), so the margin is visible in a green run.
+
+**5. `test_tactics_deform`'s `super.teardown()` — blocked on nav's sealing.** A `-> void` override calling a base that
+awaits detaches it silently. nav seals the drain into a `_teardown()` the runner awaits; my override then stops calling
+super. Nothing to do until that merges, and nothing is wrong today.
+
+**Carried, and pre-registered so it can fail:** combat's `Tank.place(spot, yaw)` should make `match_spawns` green — **zero
+units firing the drift detector, the settle completing in one or two frames with a millimetre last step, all four pairs
+clearing**. Measured against `0d5bd0d4`'s log. **If even one unit still moves, the tick-1 permutation was not the whole
+cause.** That red is deliberate and stands until then.
+
 ### For the lead, first thing
 
 **Four things went in, one came out, and one number is worth your eye more than the rest.**
@@ -1119,6 +1160,104 @@ is still on `stream/nav` at `16444beb` — so it passes `null`, which contract S
 `a6_no_corridor == a6_asked` will keep reading 1087/1087 until their field reaches main, and their test asserts that
 state explicitly, so the inert case is a documented pass rather than a silent one.
 
+### X1's "the deploy layout is unchanged to the bit": re-checked by derivation, and it holds
+
+Raised as owed when main's full check went red on a spawn/wall test and my `ArmyLayout` change was in the window. Two
+things settled it, and the order is the useful part.
+
+**The differential argument settled the regression, and it was not mine.** X1 (`974f194a`) is in the GREEN tree as well
+as the red one — scale's `7542df28` passed that exact test with X1's `ArmyLayout` in it, and
+`git diff 7542df28..b008a277 -- game/tactics/` is empty. So whatever the claim's truth, X1 could not be the difference.
+**A change present in both arms cannot explain a difference between them** — worth remembering before reading any code,
+because I had already started reading. The real cause was test pollution: the test passes alone and fails only when
+`test_arena_layouts` (scrapyard) runs before it in the same sharded process, leaving phantom bodies that compress the
+formation (two hulls within half a metre is the tell). The **sharding schedule** changed, not the code. scale owns it.
+Corroborating datum from scale's probe, which also clears every brain change: **worst tick-one displacement 1.8 cm
+across 90 units.**
+
+**The claim itself, re-derived and holding.** Both versions call `place(members, formation, anchor, forward, spacing)`
+with the same scalar spacing and the same anchor; only the along-axis stretch moved.
+- Old: isotropic at `spacing`, then each local offset's forward component × `deep_pitch / spacing` ⇒ (across `spacing`,
+  along `deep_pitch`).
+- New: `pitch(members, spacing)` = `(max(spacing, hull_floor.x), max(spacing, hull_floor.y))`. Pass 1 sets
+  `item["spacing"] = max(squad x scale, floor_m)` with `floor_m >= hull_floor.x`, so across collapses to exactly
+  `spacing`; `item["deep_pitch"] = max(spacing, hull_floor.y)` is exactly the along pitch. The same pair.
+- `offsets_at` lays the shape at the along-pitch with across scaled by the ratio, which is algebraically the isotropic
+  layout with forward components scaled — and centring commutes with per-axis scaling (scaling is linear,
+  `centered()` shifts by the centroid), so place()'s centroid-centring gives the same absolute positions the old manual
+  scaling about the anchor gave. `seat()`'s changed spacing cannot reach it: the deploy path passes no `previous`, so
+  spacing only feeds hysteresis that is not active.
+
+**A derivation is not a measurement, and this one is the weaker of the two kinds of evidence available.** It is
+corroborated by `test_spawn_grid` passing in the 1364/0 run and by `garage-smoke`/`army-loop-smoke` green. If anyone
+wants certainty rather than an argument, deploy a full faction army on foundry at `9f864474` and at main and diff the
+positions. **Do not treat my algebra as closing it** — this round caught me twice reasoning correctly from a premise I
+had not checked, which is exactly how the original claim got into a commit message.
+
+### The facing drag on a whole squad: fixed for the crew that has a move order, OPEN for the followers
+
+**Fixed and verified** (builder0, `test FILTER=tactics_elements` **exited 0, 7 passed 0 failed**): a facing the player
+drags on a whole squad now reaches the per-unit order. It was **my own X5 line** that dropped it —
+`_order(..., entry["facing"] if halt else null)` gave a crew a facing only at a halt, on the grounds that a moving
+crew's heading is the direction of travel and nav derives that itself. **True of every heading doctrine chooses, false
+of the one the player chooses.** `told` now threads through `_group` and is null on every doctrine-chosen heading, so
+nav keeps deriving those exactly as before.
+
+**Correction to the report that raised it**, because it would have sent the next agent to the wrong file: it said
+`element.gd:493` has a facing channel but *"nothing reads `task["facing"]`"*. `ElementTask.facing()` exists and
+`element_plan.gd:181` reads it — the facing already reached `plan["heading"]` and zeroed the sectors, so the formation
+was laid facing where he dragged. Only the ORDERS threw it away. A second read would have changed nothing.
+
+**STILL OPEN, and it is a design question rather than a line:** does a FOLLOWER end up on the dragged heading? While
+the element flows into formation, `_flow` replaces every follower's order with `{"verb": "follow", "target": leader,
+"slot": [...]}` — no destination — and a facing on that would be an arrival heading for a moving target, so it
+deliberately carries none. The follower gets a facing-carrying `move` only once `flow_joined` is set, and
+**`flow_joined` fires when the LEADER reaches its own slot, which is essentially arrival**. Measured evidence that this
+window is too narrow to rely on: asserting 8 s into a 20 m move found **no orders at all** (`expected 2, got 0`) —
+they had completed. So there may be no tick on which a follower holds the dragged facing.
+
+**Three ways to settle it, in the order I would try them:**
+1. Let a `follow` order carry the element's ordered facing, and have nav apply it only on the follower's own arrival.
+2. Set `flow_joined` when the leader is within one SPACING of its slot rather than `FLOW_JOIN_M`, widening the window
+   deliberately.
+3. Re-issue the final `move` orders once on arrival, which is one order per crew per task and cannot thrash.
+**Do not guess between them from the code** — put a squad on the field, drag a facing, and look at where the followers
+end up pointing. It is the lead's commonest order and a human can see the answer in two seconds.
+
+**What the tests now assert**, so nobody reads them as covering more than they do: the leader's `move` carries the
+dragged facing; a follower's `follow` carries none; both crews are ordered (`moving + following == 2`, so neither arm
+can pass on an empty list); and with no facing on the task NO order carries one, which stops this fix from quietly
+becoming "a facing on every order".
+
+### Every corridor width in this brief is a NAVMESH width, and after CP2 that is not drivable width for heavy hulls
+
+nav's post-CP2 measurement: **14 of 21 hulls have an avoidance radius above the 2.0 m navmesh bake, `gang_tank` at
+4.58 m.** `SlotGround.corridor_width` measures the navmesh (`NavigationServer3D.map_get_closest_point` through
+`standable`), so every number it reports is walkable width **for a 2.0 m agent** — already inset 2.0 m per side and
+inset by the wrong amount for two thirds of the roster.
+
+**What that does to the maze number in this brief.** The probe read the maze's tight gap as **5.0 m** of corridor, and
+that agreed with the authored `MAZE_TIGHT_GAP` of 7.00 m through `7.0 - 2 x 2.0 = 5.0`. That agreement stands and the
+mutual positive control with scale stands with it — **we measured the same mesh quantity and got the same answer.** But
+for a `gang_tank` the mesh is accounting for 2.0 m of clearance where the hull wants 4.58 m, so it needs
+`(4.58 - 2.0) x 2 = 5.16 m` MORE than the mesh has reserved. A 5.0 m mesh corridor is not a tight fit for that vehicle;
+**it is not a fit at all**, while every instrument here says it is clear.
+
+**So the note to attach to A8, and it strengthens the case already in round 10's list.** A8 deformed a formation as a
+function of `corridor_m`, and `corridor_m` overstates drivable space for the heaviest hulls by up to 5 m. A8 already
+measured worse than off for a reason nav and I reached independently — `Movement` has no notion of a formation — and
+this is a second, arithmetic reason its input was never trustworthy for the classes that most need a defile drill.
+**When A8 comes back, read nav's per-hull shortfall rather than the mesh width**, or squeeze the one vehicle that
+cannot fit into a gap the probe calls open.
+
+**It does NOT touch the tube's five-seed gate.** That gate counts re-decides, held share and GREEN losses in a yard
+fight; no corridor enters it. nav's instruction is a confounder rule rather than a change: **if the gate fails on the
+heavy classes, cite the per-hull shortfall before blaming the tube**, because a heavy hull refused or re-routed by a
+corridor it cannot fit is a routing outcome that would land in the loss column looking like a thinking-cadence problem.
+
+**And it does not touch my A6 corridor field**, which forwards `Movement.state(tank).get("corridor")` untouched and
+asserts nothing about clearance — the shortfall is A6's to interpret, not the channel's to correct.
+
 ### Owed to nav, recorded and deliberately NOT done tonight
 
 **1. `scenario_motion.gd:57` punishes a faster fight for being faster.** The assertion is
@@ -1145,6 +1284,210 @@ beside its hash or it does not travel.
 without A7, so switching A11 off in a default build measures nothing and reads as "A11 does not help". Same trap as
 `squad-defile TUBE=` reading `redecides=0` in both arms because the maze has no enemies: an arm in which the mechanism
 cannot act is not a control, it is a broken instrument, and its zero looks exactly like a result.
+
+### ROUND 10'S FIRST ITEM: formation spacing is derived from hull WIDTH, and rotation needs the DIAGONAL
+
+**Nothing in this codebase accounts for a hull needing to turn in place.** X1's `hull_floor` is the widest hull's width
+plus `HULL_CLEAR_M`, so a formation leaves exactly **2.0 m** of lateral air between hull edges. A hull yawing sweeps out
+to its **half-diagonal**, so the room it needs beside it is `half_diagonal - half_width`:
+
+| hull | size (w x l) | half-diagonal | half-width | needs beside it | `HULL_CLEAR_M` leaves | short by |
+|---|---|---|---|---|---|---|
+| `tank` | 2.40 x 8.62 | 4.47 m | 1.20 m | **3.27 m** | 2.0 m | **1.27 m** |
+| `gang_tank` (War Rig) | 3.32 x 14.00 | 7.19 m | 1.66 m | **5.53 m** | 2.0 m | **3.53 m** |
+
+**So a tank at doctrine spacing cannot turn in place without sweeping into its neighbour's ground, and a War Rig cannot
+come close.** The deficit grows with LENGTH while the spacing is set by WIDTH, which is why CP2's resize made it bite:
+`tank` went from roughly square to 3.6:1.
+
+**Measured, not derived** (`165ef0cc`, builder0, five squads formed up, the worst crew in each):
+
+    Alpha   across 4.28 m   Bravo across 2.98 m   Charlie across 1.12 m   Delta across 2.39 m   Echo across 4.06 m
+
+Four of five are below the 3.27 m a `tank` needs to yaw; Charlie's pair has **1.12 m**.
+
+**CORRECTION, and the irony is worth the space: my "not one pair is OVERLAPPING" was an artefact of the bug.** Those gaps
+were measured on a tree that still had the tick-1 permutation, whose shove had already pushed the crews APART before I
+read them. On combat's tree, which carries the settle tick, **four crews overlap at spawn — across −1.36, −0.02, −0.01
+and −0.77 m.** The spawn formation is TIGHTER than my measurement showed, and the defect was hiding the spacing problem
+by separating the hulls it had scrambled. A bug that flatters the thing it breaks is the worst kind to measure around.
+
+**And combat's roster says the crews never departed at all:** every off-slot unit sits at z ≈ 94–101, the spawn row, with
+its destination at z ≈ 6–19. Not "drove off and stopped short" — **the first turn toward the goal is refused in the
+press**, so the army cannot execute its first order.
+
+**So item 1 is necessary but NOT SUFFICIENT.** Diagonal-derived slot spacing fixes the formation a squad drives into; it
+does nothing for the grid a squad starts in. `Match.spawn_position` and the layout's deep and lateral floors (scale's
+half, and scale is told) have to give a hull room to TURN before the first order, or the widened formation is somewhere
+the army can never reach. Two halves, two owners, one geometry.
+
+**This is the same finding as combat's yaw-constraint regression, seen from the other side.** Their `986f8921` (one line,
+`yaw_fit_enabled` false -> true) takes 0 of 30 off-slot to 12 of 30 with four squads at 87-91 m, and their reading was
+"the plant counts a squadmate as a wall". **The measurement says the plant is right about the geometry**: the swept
+footprint genuinely does not fit. Falsifier, with combat: their `refusals_applied` should RANK with my across column. If
+the refusals do not track the gap, my mechanism is wrong and theirs stands.
+
+**And it reframes Delta's 22.2-22.4 m margin** (62% of the test's 36 m budget, on main, with the constraint absent, while
+the other four squads sit at 3-7 m) as the first symptom rather than a separate oddity: a squad whose crews are 1-4 m
+apart laterally while carrying 8.62 m hulls cannot dress its formation, so its worst crew ends up further out and stays
+there.
+
+**Three ways out, and this is the lead's call because they trade different things:**
+1. **`HULL_CLEAR_M` becomes `half_diagonal - half_width` of the widest member** — correct by construction, and it opens a
+   War Rig formation to 5.5 m of air per side, which will look loose and cost frontage.
+2. **Crews turn in sequence rather than together** — keeps the spacing, costs time, and needs a mechanism that does not
+   exist.
+3. **Let a rotation sweep through a neighbour** (combat's `match.yaw_world`: penetration against the world layer only) —
+   cheapest, keeps the look, and accepts hulls visibly clipping each other while dressing.
+**Do not pick from the code.** Put a squad on the field, order it to face a new heading, and watch: whether hulls
+clipping while they dress is acceptable is a question about how the game LOOKS, which is the lead's and nobody else's.
+
+### The afternoon: four rules that cost a day between us, and the spawn dataset
+
+**1. A knob being off does not exonerate the commit that added it.** combat A/B'd `match.yaw_fit` on
+`test_ai_player_orders::test_five_squads_ordered_in_quick_succession`, got **bit-identical** output in both arms, and
+reported the plant excluded — which was true of the knob and was read as true of the commit. `986f8921` also moved the
+basis assignment behind a new `_fitting_forward`, and `--tune=match.yaw_fit=0` returns early **from inside that new
+function**, so the off arm still runs the refactored path. **Settled by ancestry, not by a run:** `b3f7ffae` IS in my
+tree and that test passes on it twice (0 of 30 off-slot in a 2-shard check, 0 of 30 filtered, worst gap 8.5 m against a
+36 m bar); `986f8921` is NOT in my tree. So main is clear and the cause is on that branch. Corollary from combat's own
+bisect: **a failure bit-identical across every change on a branch was never caused by those changes** — it points at
+the branch's base or its first commit, not its middle.
+
+**2. A log is not a record per test unless every line says which test it is from.** combat quoted three roster lines to
+me in good faith; they belonged to the test that runs *next*. The arithmetic proves it — the leash line reports 3 living
+units at a mean 3.9 m and the roster entries are 4, 3, 5 (mean 4.0) — and the tell was the phrase itself: *"%s m from
+the slot it was sent to"* reads as belonging to whatever test the reader has in mind. **I built a clean, confident, wrong
+diagnosis on it** (Bravo seated in Echo's formation) and only withdrew when combat read the block instead of grepping.
+Every per-unit line in that file now names its measurement. This safeguard is cheaper than every other one here because
+it costs nothing at read time.
+
+**3. And the reasoning failure under it, which is mine and worse than the mix-up.** I *had* the contradiction —
+`Bravo 89.5` in the per-squad line cannot coexist with `Green_Bravo_1 3 m` in the roster — and it is what made me ask
+for the aggregate line rather than accept the roster. **Then the line arrived and I reasoned from the roster anyway.**
+Using a safeguard to ask the right question and discarding it while reading the answer is worse than never having it.
+combat's stronger form, adopted over mine: **when a quoted detail cannot produce the reported failure, check whether it
+belongs to the same measurement at all** — mine stopped at "the detail is not the failure", which still assumes one
+measurement.
+
+**4. A measurement that forces its reader to borrow numbers from another measurement is incomplete, however correct its
+own total is.** The rapid-succession test's aggregate was never wrong; it just could not be checked without reaching
+outside itself, which is what made two people confident and wrong in the same hour. It now prints one line per off-slot
+unit — gap, position, ordered slot, squad — so the three causes with three different owners (seated in another squad's
+formation / never moved / sent somewhere that does not exist) are distinguishable in one run.
+
+### The spawn dataset, complete in one log for the first time (`0d5bd0d4`, filtered)
+
+My settle assertion fires FIRST — *"the army came to rest within 10 frames — it did NOT (last step 0.1775 m)"* — and
+then the detector names **76 units** with vectors. Three things in it:
+
+- **The two teams' displacements are MIRROR-SYMMETRIC.** `Green_S0_2` 0.55 m from `(-92.34568, 90.0)` to
+  `(-92.36414, 89.45048)`; `Rust_S0_2` 0.55 m from `(92.34568, -90.0)` to `(92.36414, -89.45048)` — exact to five
+  decimals with x and z negated, and the same for S0_3/4/5, S1_1, S1_3, S7_x, S8_x. **Contacts between neighbours do not
+  do that; a deterministic function of the layout does**, which is the tick-1 grid permutation seen through the spawn
+  grid's own symmetry. Pairs that break it (`Green_S1_2` 1.41 m against `Rust_S1_2` 0.98 m) are where the two scrambles
+  differ, not evidence against it.
+- **Both ejections are in the same log as the lateral drift:** `Green_S6_3` at **y = 1.306522** and `Rust_S5_4` at
+  **y = 2.089882**, every other unit at a uniform `y = 0.000999`. The vertical and lateral halves recorded together for
+  the first time, which is what argues they are one resolution rather than two effects.
+- **"Settled" and "ran out of frames" are different conditions** and now fail differently. Before, every assertion after
+  the cap described a scene in motion while reading as settled state — the same error as sampling a turn curve at a
+  fixed moment and calling it the outcome.
+
+**PRE-REGISTERED falsifier for combat's `Tank.place(spot, yaw)`, against this exact log:** zero units fire the detector,
+the settle completes in one or two frames with a last step in **millimetres**, and all four pairs clear. **If even one
+unit still moves, the permutation was not the whole cause** and feel's two-effects reading comes back. The red on that
+test stands until then, deliberately: an assertion that reports a moving scene as settled state is the worse defect.
+
+### Five findings from the morning that live nowhere else
+
+**1. A facing on a MOVE order is an ARRIVAL heading and dies with the order. A facing on a HALT is a SECTOR and is not
+the drawn one.** Establishing that took four measured iterations of the dragged-heading fix, and the wrong three are
+worth more than the right one:
+- *Move + facing:* the crews turn (a follower goes 167° off to 3° off by +15 s) and then the order completes and clears,
+  and the hulls drift to 132 / 41 / 28. Read directly: `holding Green_A_1 NO ORDER; ... NO ORDER` at +20.6 s.
+- *One-shot hold on arrival:* `hold facing=[1,0]` on the LEADER only, every follower `NO ORDER` — overwritten on the
+  next update, because `_group` re-issues every time. **An event cannot hold a posture against a function that runs
+  every tick; the posture has to BE what the function computes.** No flag: `plan["arrived"]` is recomputed anyway.
+- *Hold + halt=true:* persisted, wrong facing — `_group` passes `entry["facing"] if halt else told`, so each crew held
+  its own sector (`[1,0]`, `[-1,0]`, `[0,-1]`: a coil covering every approach). Zeroing `plan["sectors"]` does not
+  help; that happens AFTER `_group` has read the entries.
+- *Hold + halt=false + told:* all four crews hold `facing=[1,0]`. Correct, and the element's contract is the ORDER.
+
+**2. The residual after that is LOCOMOTION, not the element.** Hulls end at tank 1.4°, tank 16.2°, ifv 41.4°, ifv 28.5°
+— tracked close, wheeled not, and `_element_scenario` builds two tanks then two ifvs. A wheeled hull cannot
+neutral-steer, so its heading is whatever its last travel left it on; the crews were at 1, 15, 12, 3 at +15 s and got
+WORSE by the time they stopped, because the final correction to the slot re-pointed them. nav does the other half on an
+APPROACH (`test_wheeled_arrival` passes) and that is not available at rest. **Open question for nav, not for this file:
+should a held wheeled hull manoeuvre to reach an ordered facing?**
+
+**3. Forty seconds from right-drag to a settled squad, and the lead will feel it before he sees any heading.** 22.3 s
+for the element to declare arrival on a **20 m** move, ~20 s more for the crews to stop. That is A9's co-arrival pacing
+waiting on the slowest member. Round-10 item, unstarted, mine.
+
+**4. The spawn overlap was never ArmyLayout's, and the arithmetic that said so held up.** For artillery (2.90) beside
+lancer (2.76) the layout's pitch is ≥ 5.0 m (`hull_floor.x` 4.90 floored to `MIN_SPACING_M`, and pass 2's
+`maxf(spacing * scale, floor)` means zone compression cannot undercut it) and `_clear_spot` guarantees 3.83 m against a
+3.33 m requirement — placement clears by 1.67 m. **Final cause (combat): the physics server's body transforms on tick 1
+are a PERMUTATION of the spawn slots, up to 90 m from the nodes, so the solver recovered bodies out of overlaps that
+existed only in its own copy; from tick 2 node and server agree.** The fix is `Tank._ready`
+(`force_update_transform` after `reset_physics_interpolation`), combat's. **The pitch ruling was withdrawn twice and
+the arithmetic was right both times — do not widen the pitch.** My settle sampling and the armed four-number diagnosis
+stay.
+
+**5. `_is_clear` ignores each placed vehicle's own forward**, and this is a real queued item rather than a footnote.
+`taken` holds `[position, width, length]` and the test projects onto the DEPLOY frame's axes, so it is sound while every
+hull shares that frame — true within a team, and 180° preserves width and length. It is **wrong for an arena whose two
+spawn zones are not exactly opposed**, where the teams' forwards differ by something other than 180° and a rotated
+footprint is compared as if axis-aligned. Not the cause of anything measured; a latent gap with a named trigger.
+
+**And one process lesson from feel that decays two records in this brief: a repro keyed to a SHARD INDEX has a shelf
+life measured in merges.** Their `--shard=3/5` went 42 files to 43 after a merge, `index % N` reshuffled, my test moved
+to shard 4, and the run came back 321 passed 0 failed — **a clean green from a file set that did not contain the
+test.** So "71/71/71 green, 69/68/68 red on the same code" no longer addresses the same files, and neither does my own
+"the 2-shard layout does not trigger it". Metrics' `TEST_SHARDS=5` pin is the workaround; the durable form is a FILE
+LIST or a seed the runner takes directly. Same family as `army_layout.gd:302` naming `STAND_CLEAR_M` by the time it
+reached me, and the stale scenario count: **an identifier stable in syntax but not in meaning produces confident wrong
+answers.**
+
+### The queue as it stands, in the order it was ruled (round 9 spilled into the lead's morning)
+
+1. **Option 3, the dragged heading reaching every crew.** Ruled and written, dry-run clean, held out of the tree until
+   the spawn work is on main. `Element.facing_sent` mirrors `flow_joined`; `_plan_form_up` re-issues each crew's final
+   move order with the facing ONCE on arrival, cleared only by `assign`, so it cannot thrash. Falsifier: a squad of four
+   on the DEFAULT scenario arena (yard was ruled out — `AiScenario.create` mounts the arena in one call, and open ground
+   is the cleaner instrument because obstacles would push slots via `SlotGround` and confound a heading assertion),
+   right-drag with a heading, every member within 10° of it within 5 s of the leader's arrival. Then one
+   `tactics-shots` frame at the lead's pose, after feel's and show's timing runs.
+2. **`scenario_cp2`'s no-weak-spots control arm (`x3m`) controls for the wrong thing.** combat measured that it has
+   fired nothing since the pristine tree: with matchups off the scout has no ORBIT to score, falls back to SPOT, and
+   parks at `SCOUT_STANDOFF` 85 m holding a 45 m gun. **So the arm is a correct brain declining a fight, and its zero
+   is not evidence about weak spots.** The fix is mine after option 3: the control wants **matchups ON, weak spots
+   OFF**, so the only difference between arms is the thing named in the arm's name. Wait for combat's `probe.deck`
+   columns (angle/bearing/range on the `x4mw` arm) before rethinking it — the columns say whether the scout is
+   declining for the reason combat infers.
+   **This is the seventh instance of the round's family and the cleanest example of the subspecies:** not an instrument
+   that measured the wrong thing, but a control arm in which the mechanism under test could not act, whose zero was
+   read for months as a result. It is worth putting beside my own defile probe (no enemies, so `_combat_move` never
+   ran) in the lesson, because the two failed the same way from opposite ends — mine had no enemy to fight, this one
+   has a unit that will not fight.
+3. **A10 from `c0f22597`**, whose first job is the `fixed` flag's unconditional guarantee, not the cost.
+4. **The tube's five-seed gate**, reading nav's per-hull shortfall if it fails on the heavy classes.
+5. **A9's cost against the lead's 4 s drill allowance** — still the one item simply unstarted.
+6. **`ArmyLayout._hull`'s silent pre-CP2 fallbacks, made loud.** Ten minutes, queued after option 3, and the message
+   that raised it needs three corrections before anyone acts on it:
+   - **It is not line 302** (that is `STAND_CLEAR_M`); it is `_hull`, which my own edits pushed down the file. Cite the
+     function, not the line.
+   - **There are TWO fallbacks, not one.** `if not Units.exists(unit_id): return Vector2(2.6, 4.0)` for an unknown id,
+     and `Units.stat(unit_id, "hull_size", [2.6, 1.8, 4.0])` for a KNOWN id whose profile has no `hull_size`. Both are
+     silent and both are pre-CP2. Making only the first loud would leave the second.
+   - **`Units.DEFAULT` is `"tank"`, a unit id, not a size**, so "read its live size" means
+     `Units.stat(Units.DEFAULT, "hull_size")`.
+   **And the magnitude is worth knowing before calling this cosmetic: `tank`'s live hull is `[2.40, 2.40, 8.62]`, so the
+   fallback understates the default hull's LENGTH by 4.6 m — less than half.** In a deploy layout that is slots pitched
+   for a 4 m vehicle holding 8.6 m vehicles, nose into tail, which is precisely the failure X1 was built to prevent and
+   precisely the hull (`gang_tank`'s 8.62 m relative) that binds every doctrine spacing. So a silent fallback here does
+   not merely mis-size one unknown unit; it reproduces the pre-X1 bug for it.
 
 ### Round 10 starts here: the ordered list, and the one rule that earned its place
 

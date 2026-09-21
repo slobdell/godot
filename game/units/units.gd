@@ -11,7 +11,10 @@ extends RefCounted
 ##
 ## Keys (all required unless marked optional):
 ##   display_name, role (ROLES), blurb (one line for the army UI), cost (points), unlock_tier (0 = starter)
-##   hull_size [w, h, l] meters (the collision box; S1: derived, see scale_reference and SCALE_K below),
+##   hull_size [w, h, l] meters (the collision box; S1: derived, see scale_reference and SCALE_K below).
+##     **42 call sites read this and it is not a display number** -- what each one assumes is listed in
+##     _agents/workstreams.md "What reads hull_size". Round 9's resize landed in three places nobody was
+##     looking; read that list before changing a size.
 ##   S1 (round 9) optional scale_reference {vehicle: String, length_m: float, source: String} -- the real-world
 ##     vehicle this unit is drawn as, its cited length, and where that length comes from. hull_size[2] is
 ##     length_m x SCALE_K and hull_size[0]/[1] are the approved mesh's proportions at that length
@@ -243,7 +246,7 @@ const PROFILES := {
 		"blurb": "Crane carrier with a mortar battery. Shells what teammates spot; helpless up close.",
 		"cost": 220,
 		"unlock_tier": 1,
-		"hull_size": [4.74, 2.82, 8.20],
+		"hull_size": [2.90, 2.82, 8.20],
 		# S1 (round 9): The crane carrier the mortar rack is bolted to; the art is a four-axle flatbed.
 		"scale_reference": {"vehicle": "Four-axle all-terrain crane carrier (Liebherr LTM 1070-4.2)",
 				"length_m": 11.60, "source": "Liebherr LTM 1070-4.2 datasheet, overall length"},
@@ -1018,6 +1021,83 @@ static func with_role(role: String) -> PackedStringArray:
 	return result
 
 
+## How close a straight shot passes to a hull: the flat distance from the infinite line (`line_origin`,
+## `line_direction`) to the hull's OWN ORIENTED FOOTPRINT, and 0.0 when the line crosses it.
+##
+## ROUND 9, and it replaces a disc. Three consumers modelled a hull as a circle of radius
+## `Vector2(width, length).length() / 2` -- `Match` friendly-fire risk, `Match.incoming_projectiles` (whose docstring
+## says "within the hull's half-diagonal") and squad's `IncomingFire`. For a War Rig (3.32 x 14.00 m) that disc is
+## **7.19 m** against a real half-width of **1.66 m**. The error is NOT a constant: abeam it is 4.3x, end-on the disc
+## is 7.19 against a true 7.00 and almost exact. So the AI does not refuse every shot -- it refuses the ones ACROSS a
+## rig, which is exactly the shot a gang pack travelling with a rig in the middle wants to take. That is a candidate
+## mechanism for the lead's unexplained `gangs vs law` 9/20 -> 0/20, and it is UNTESTED until the series says so.
+##
+## The maths is a separating axis and it is exact for a line against a box: only the line's own normal can separate
+## them, so the hull's extent toward the line is `half_width * |n.x| + half_length * |n.z|` in the hull's frame.
+## Four multiplies, two adds, no branches, no trig, deterministic.
+##
+## `--tune=match.hull_disc=1` restores the disc inside `hull_reach_along`, which BOTH this and squad's longitudinal
+## test go through, so every consumer and both axes flip together and a series arm measures the whole change rather
+## than the two thirds of it that live in combat's files.
+static func hull_distance_to_line(hull_size: Array, hull_forward: Vector3, hull_origin: Vector3,
+		line_origin: Vector3, line_direction: Vector3) -> float:
+	var along := Vector2(line_direction.x, line_direction.z)
+	along = along.normalized() if along.length_squared() > 0.0001 else Vector2(0.0, -1.0)
+	var normal := Vector2(-along.y, along.x)
+	var offset := Vector2(hull_origin.x - line_origin.x, hull_origin.z - line_origin.z)
+	return hull_distance_of(hull_half_extents(hull_size), hull_forward, hull_origin, line_origin, line_direction)
+
+
+## `hull_distance_to_line` from the cached half-extents (see `hull_reach_of`).
+static func hull_distance_of(half: Vector2, hull_forward: Vector3, hull_origin: Vector3,
+		line_origin: Vector3, line_direction: Vector3) -> float:
+	var along := Vector2(line_direction.x, line_direction.z)
+	along = along.normalized() if along.length_squared() > 0.0001 else Vector2(0.0, -1.0)
+	var normal := Vector2(-along.y, along.x)
+	var offset := Vector2(hull_origin.x - line_origin.x, hull_origin.z - line_origin.z)
+	return maxf(absf(offset.dot(normal)) - hull_reach_of(half, hull_forward, Vector3(normal.x, 0.0, normal.y)), 0.0)
+
+
+## How far a hull reaches from its own centre along `direction` -- its half-extent projected on that axis. THE SAME
+## PROJECTION `hull_distance_to_line` uses, exposed because squad's `IncomingFire` needs it on the OTHER axis: it
+## tests the hull's reach along the shell's TRAVEL to decide whether a round with `reach` metres left could touch the
+## hull at all, and it used the same disc radius for that as for the perpendicular test. Both are the same bug on
+## two axes, and both must move together or someone tightening one will not know the other exists.
+##
+## Exact for a box, because only one axis can separate a box from a line or a point along a direction:
+## `half_width * |d . right| + half_length * |d . forward|`. Four multiplies, two adds, no branches, no trig.
+## `--tune=match.hull_disc=1` restores the pre-round-9 disc here, so BOTH consumers and BOTH axes flip together.
+static func hull_reach_along(hull_size: Array, hull_forward: Vector3, direction: Vector3) -> float:
+	return hull_reach_of(hull_half_extents(hull_size), hull_forward, direction)
+
+
+## The same projection taking the CACHED (half width, half length) pair, for callers on a per-tick path that must not
+## re-read `Units.stat` every call (squad's `IncomingFire` runs this per unit per shell per tick). The disc the knob
+## restores is `half.length()`, which is `Vector2(width, length).length() / 2` -- the same number, so the arm is
+## identical whichever entry point a caller uses.
+static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vector3) -> float:
+	# THE DISC IS THE DEFAULT, and that is a deliberate hold rather than an opinion about which is right. The box is
+	# a geometry CORRECTION -- the disc is wrong by a factor varying 4.3x abeam to 1.03x end-on -- but this round's
+	# rule is that a behaviour changes default only on measurement, and the box's falsifier (the gangs-vs-law series,
+	# both arms from one build) has not run. `--tune=match.hull_disc=0` selects the box and is the treatment arm.
+	# When the series says the box is no worse on every cell, the default flips in the same commit as the result,
+	# with its builder0 baseline hash recorded once. Measured on this laptop (glibc-2.39), the two arms are NOT the
+	# same simulation: sim-baseline match, seed 3 -- box `debb895da1fa288f`, disc `906d9c3df0c8e656`.
+	if tuning.get("hull_disc", 1.0) > 0.0:
+		return half.length()
+	var forward := Vector2(hull_forward.x, hull_forward.z)
+	forward = forward.normalized() if forward.length_squared() > 0.0001 else Vector2(0.0, -1.0)
+	var axis := Vector2(direction.x, direction.z)
+	axis = axis.normalized() if axis.length_squared() > 0.0001 else Vector2(0.0, -1.0)
+	var right := Vector2(-forward.y, forward.x)
+	return half.x * absf(axis.dot(right)) + half.y * absf(axis.dot(forward))
+
+
+## (half width, half length) of a hull, the pair a caller should cache per unit id instead of one radius.
+static func hull_half_extents(hull_size: Array) -> Vector2:
+	return Vector2(float(hull_size[0]) * 0.5, float(hull_size[2]) * 0.5)
+
+
 ## A unit's role ("" for an unknown id).
 static func role_of(unit_id: String) -> String:
 	return String(PROFILES.get(unit_id, {}).get("role", ""))
@@ -1028,11 +1108,79 @@ static func role_of(unit_id: String) -> String:
 static var tuning := {}
 
 
+## THE SAME KNOBS, FROM THE ENVIRONMENT, so an arm can be selected in a context that has no `--tune=` to pass:
+##
+##     TUNE=match.yaw_fit=0 make test FILTER=ai_player_orders
+##
+## `make test` runs `run_tests.gd` with `--filter=` and nothing else, so until now the ONLY way to run a test
+## against the other arm of a knob was to edit the default in the source -- which means the two arms are not the
+## same tree and the comparison is worth less than it looks (lesson 117: an arm that needs a code edit to select is
+## an arm nobody re-measures). This closes that for every knob at once rather than for one.
+##
+## It is read once, when the class first loads, and it is LOUD: a bad spec pushes an error naming it rather than
+## being ignored, because a mistyped knob that silently does nothing would make a null result look like a
+## measurement. Unset (the normal case) it does nothing at all.
+## ⚠ READ HERE, APPLIED LATER, and the difference is the whole bug. The first version applied the spec inside
+## `_static_init`, and `apply_tuning` reaches across to other classes -- `Tank`, `Armor`, `SwitchingCost.tuning`,
+## `Weapons.tuning`. A write to another class's static at class-load time is undone by THAT class's own initialiser
+## whenever the load order puts it second, and nothing says so: `TUNE=match.yaw_fit=0` landed in a bare script
+## (probed: `Tank.yaw_fit_enabled` read `false`) and was gone by the time the predicate ran under the test runner
+## (nav's wedged row came back byte-identical to the constrained control -- 11.6 deg, 6.1 m, giveups 1 -- and
+## GREEN). Every arm taken with that knob measured the default, which voided a knob A/B, an exoneration and a
+## "second cause".
+##
+## So `_static_init` only READS the spec, and `_ensure_env_tuning()` applies it at first use, by which time every
+## class it touches is loaded. That covers knob owners this file does not know about, which a per-knob fix would
+## not: `switch.*`, `probe.deck` and the weapon knobs go through the same path.
+static var _env_spec := ""
+static var _env_applied := false
+
+
+static func _static_init() -> void:
+	_env_spec = OS.get_environment("TUNE")
+
+
+## Applied once, on the first read of a tune by anyone. Cheap enough for `stat()`'s hot path: one bool.
+static func _ensure_env_tuning() -> void:
+	if _env_applied:
+		return
+	_env_applied = true  # set FIRST: apply_tuning calls back into stat() and this must not recurse
+	if _env_spec.is_empty():
+		return
+	var problem := apply_tuning(_env_spec)
+	if problem != "":
+		push_error("TUNE=%s rejected: %s" % [_env_spec, problem])
+	else:
+		print("TUNE applied from the environment: %s" % _env_spec)
+
+
 ## A unit's stat, honoring `tuning`. Optional keys a unit lacks read as `fallback`.
+## ⚠ THE UNKNOWN ID IS CHECKED FIRST, and it is not a tidying (nav, round 9). This ended in
+## `PROFILES[unit_id].get(key, fallback)`, so an unknown id raised "Invalid access to property or key" on the
+## INDEX, **before `get` could ever consult the fallback**. Every call site that passes a fallback for a
+## possibly-unknown id therefore read as protection that did not exist -- the fallback was unreachable by
+## construction, which is how the pre-CP2 literals scale found were stale AND dead at the same time.
+##
+## An unknown id is still a bug and still says so once, by name; it just no longer takes the frame down and no
+## longer makes a written fallback a lie. A caller that gave no fallback gets `Units.DEFAULT`'s value for that key,
+## which is a unit that exists rather than a null that fails somewhere further on.
+##
+## ⚠ `push_warning`, NOT `push_error`, and the severity is a deliberate trade rather than an opinion about how bad
+## this is. The runner fails a test on any engine ERROR and has no `expect_error` to declare a deliberate one
+## (`TestCase.expect_warning` exists; its error twin does not). A `push_error` here would therefore make this guard
+## **untestable** -- and a guard nobody can drive into is exactly the unreachable protection nav objected to. So it
+## warns, the test declares the warning with `expect_warning`, and an expectation that stops arriving fails the
+## test too. **`expect_error` lands with nav's `06c7e772`**; when that is on main this becomes `push_error` and the
+## test becomes `expect_error`, a two-line follow-up.
 static func stat(unit_id: String, key: String, fallback: Variant = null) -> Variant:
+	_ensure_env_tuning()
 	var tuned_key := "%s.%s" % [unit_id, key]
 	if tuning.has(tuned_key):
 		return tuning[tuned_key]
+	if not PROFILES.has(unit_id):
+		push_warning("Units.stat: no unit '%s' (asked for '%s'); using %s" % [unit_id, key,
+				"the given fallback" if fallback != null else "%s's value" % DEFAULT])
+		return fallback if fallback != null else PROFILES[DEFAULT].get(key, null)
 	return PROFILES[unit_id].get(key, fallback)
 
 
@@ -1049,6 +1197,23 @@ static func apply_tuning(spec: String) -> String:
 		var path := parts[0].split(".")
 		if parts.size() != 2 or path.size() < 2 or path.size() > 3 or not parts[1].is_valid_float():
 			return "tune: expected owner.key=number, got '%s'" % pair
+		if path[0] == "match":
+			if path.size() != 2 or not ["no_damage", "hull_disc", "yaw_fit", "yaw_world"].has(path[1]):
+				return ("tune: no match knob '%s' (have match.no_damage, match.hull_disc, match.yaw_fit, "
+						+ "match.yaw_world)") % parts[0]
+			# ⚠ EVERY match knob goes into THIS class's own dictionary, and the consumer reads it at the point of
+			# use (`Tank.yaw_fit_on()`, `Tank.yaw_world_on()`, `Armor.no_damage_on()`). Writing a foreign class's
+			# static from here -- which is what this did -- is undone by that class's own initialiser whenever the
+			# load order puts it second: measured, `TUNE=match.yaw_fit=0` landed in a bare script and was gone by
+			# the time the predicate ran under the test runner, so the knob silently did nothing and every arm
+			# taken with it measured the default.
+			tuning[path[1]] = float(parts[1])
+			continue
+		if path[0] == "probe":
+			if path.size() != 2 or path[1] != "deck":
+				return "tune: no probe '%s' (have probe.deck)" % parts[0]
+			Armor.deck_probe = float(parts[1]) > 0.0
+			continue
 		if path[0] == "switch":
 			if path.size() != 2 or not SwitchingCost.TUNABLE.has(path[1]):
 				return "tune: no switching-cost knob '%s'" % parts[0]

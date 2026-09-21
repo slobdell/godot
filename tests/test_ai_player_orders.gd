@@ -162,6 +162,8 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 	for squad_name: String in squads:
 		settled.merge(_positions(squads[squad_name]))
 	var worst := {}
+	var off_slot: Array = []
+	var worst_unit := {}
 	var away := 0
 	var without_a_slot := 0
 	for squad_name: String in squads:
@@ -178,10 +180,35 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 			far = maxf(far, gap)
 			# The leash a unit fighting at its post keeps to, with the longer lead an escape (cover, breaking contact) is
 			# allowed: beyond that it has left the ground the player gave it.
-			away += 1 if gap > TankBrain.PLAYER_POST_LEASH * TankBrain.ESCAPE_LEASH_FACTOR else 0
+			if gap > far - 0.001:
+				# The worst unit in this squad, printed on EVERY run and not only on a failure. Two reasons, and the
+				# second is why it is not just nice to have: a squad at 22.2 m against a 36 m bar (which is where Delta
+				# sits on main, 62% of the budget, while the other four sit at 3-7 m) is invisible in a passing run that
+				# reports only an aggregate -- and it will start failing for whatever lands next and get blamed on it.
+				# And this code path then RUNS on every green run, so it cannot rot unexercised waiting for a red, which
+				# is the defect that produced half of today's wrong diagnoses.
+				worst_unit[squad_name] = "%s %.1f m off%s" % [unit_name, gap, _nose_of(unit_name, settled)]
+			if gap > TankBrain.PLAYER_POST_LEASH * TankBrain.ESCAPE_LEASH_FACTOR:
+				away += 1
+				# EVERY OFF-SLOT UNIT NAMES ITSELF: its gap, where it stands, and where it was sent. The aggregate alone
+				# cannot tell "seated in another squad's formation" from "never moved" from "sent somewhere that does
+				# not exist", and those have three different owners. Because this test printed only the aggregate, a
+				# reader hunting the cause reached for the NEXT test's roster lines, and they fitted well enough to
+				# carry a confident wrong diagnosis for half an hour -- two of us, in writing. **A measurement that
+				# forces its reader to borrow numbers from another measurement is incomplete, however correct its own
+				# total is.**
+				off_slot.append("%s %.0f m off: at (%.0f, %.0f), sent to (%.0f, %.0f) with squad %s%s" % [unit_name,
+						gap, (settled[unit_name] as Vector3).x, (settled[unit_name] as Vector3).z,
+						(slot as Vector3).x, (slot as Vector3).z, squad_name, _nose_of(unit_name, settled)])
 		worst[squad_name] = snappedf(far, 0.1)
 	print("MEASURE player_orders_rapid worst gap to its OWN slot per squad %s; %d of %d units off their slot, %d with no slot at all, %d destroyed" % [
 			worst, away, spawned.size(), without_a_slot, destroyed.size()])
+	# Printed as its own lines rather than folded into the MEASURE line: a roster belongs beside the total it explains,
+	# and grep-ability matters more than tidiness when the next reader is hunting a cause across two tests' output.
+	for squad_name: String in worst_unit:
+		print("  player_orders_rapid worst in %s: %s" % [squad_name, worst_unit[squad_name]])
+	for line: String in off_slot:
+		print("  player_orders_rapid off-slot: %s" % line)
 	# The exclusion must not be able to hide the thing the test is for: if the enemy wiped out most of the player's
 	# force there is nothing left to assert about formations, and a green run would mean nothing.
 	assert_true(destroyed.size() <= 3, "at most a few units were destroyed (%d of %d); more than that and this test "
@@ -236,7 +263,7 @@ func test_a_doctrine_army_re_arranges_when_each_squad_is_ordered() -> void:
 		var key := "%s | order %s | %s" % [String(brain.choice.get("option", "")), order.get("verb", "(none)"),
 				"goal " + str(OrderFeed.point(order.get("goal"))) if not order.is_empty() else "station"]
 		log[key] = int(log.get(key, 0)) + 1
-	print("      what %s did, seconds per state: %s" % [watched[0], log])
+	print("      player_orders_leash: what %s did, seconds per state: %s" % [watched[0], log])
 	var away := 0
 	var dead := 0
 	var worst := {}
@@ -257,7 +284,7 @@ func test_a_doctrine_army_re_arranges_when_each_squad_is_ordered() -> void:
 			var gap: float = (settled[unit_name] as Vector3).distance_to(slots[unit_name] as Vector3)
 			far = maxf(far, gap)
 			var each := _match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain
-			print("        %s %.0f m from the slot it was sent to; choice %s; post %s; order now %s" % [unit_name, gap,
+			print("        player_orders_leash roster: %s %.0f m from its slot; choice %s; post %s; order now %s" % [unit_name, gap,
 					each.choice.get("option", "?") if each != null else "(no brain)",
 					each._player_post if each != null else "?", _orders.current(unit_name).get("verb", "(none)")])
 			# The leash a unit fighting at its post keeps to, with the longer lead an escape (cover, breaking contact) is
@@ -330,3 +357,47 @@ func test_a_unit_ordered_across_contact_arrives() -> void:
 				"and nothing else takes the wheel on the way: it spent %d ticks on %s" % [options[option], option])
 	assert_true(gap <= TankBrain.PLAYER_POST_LEASH,
 			"and it fights from the ground it was given rather than wandering off (%.0f m away)" % gap)
+
+
+## Who a unit is nosed against, if anyone: the nearest other unit, and whether their hull boxes actually overlap.
+##
+## combat's mechanism for the yaw-constraint regression is that a crew trying to seat is nosed against a SQUADMATE, the
+## plant refuses its arrival yaw because `test_move` counts that squadmate as a wall, and the brain re-tasks a unit that
+## never arrives. Their `refusals_applied` / `yaw_vehicle_contact` counters are one half; positions are the other, and
+## the two should name the SAME units. If they do not, the story is wrong however well the bisect fits it.
+##
+## SEPARATING AXIS, not centre distance against a length. My first version compared the gap to the two hull LENGTHS and
+## printed `CONTACT` for five squads out of five -- 4.1 to 7.1 m gaps against 8.6 m hulls -- which is worthless, because
+## **a label that is always true carries no information**, and it was always true because these crews are ABREAST, where
+## the extent that matters is the 2.40 m width and not the 8.62 m length. So: project the offset onto the unit's own
+## forward and right (its yaw IS known at this moment, so this is exact rather than a guess) and require BOTH axes to
+## overlap, which is `ArmyLayout._is_clear`'s own rule. Five of five was the tell; a vacuous signal is the defect this
+## whole round keeps producing.
+func _nose_of(unit_name: String, settled: Dictionary) -> String:
+	var near := ""
+	var near_gap := INF
+	for other: String in settled:
+		if other == unit_name:
+			continue
+		var apart: float = (settled[unit_name] as Vector3).distance_to(settled[other] as Vector3)
+		if apart < near_gap:
+			near_gap = apart
+			near = other
+	if near == "":
+		return ""
+	var mine := _match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+	var theirs := _match.tanks.get_node_or_null(NodePath(near)) as Tank
+	if mine == null or theirs == null:
+		return "; nearest %s at %.1f m (a hull has been freed)" % [near, near_gap]
+	var my_size: Array = Units.stat(mine.unit_id, "hull_size", [0.0, 0.0, 0.0])
+	var their_size: Array = Units.stat(theirs.unit_id, "hull_size", [0.0, 0.0, 0.0])
+	var forward := -mine.global_basis.z
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	var offset: Vector3 = (settled[near] as Vector3) - (settled[unit_name] as Vector3)
+	var across: float = absf(offset.dot(right)) - (float(my_size[0]) + float(their_size[0])) * 0.5
+	var along: float = absf(offset.dot(forward)) - (float(my_size[2]) + float(their_size[2])) * 0.5
+	# Clear when EITHER axis separates them, which is the pair's clearance (side by side needs width, nose to tail
+	# needs length) -- the same separating-axis rule the layout uses to place them in the first place.
+	var clearance := maxf(across, along)
+	return "; nearest %s at %.1f m, hull gap %.2f m (across %.2f, along %.2f)%s" % [near, near_gap, clearance,
+			across, along, " OVERLAPPING" if clearance < 0.0 else ""]

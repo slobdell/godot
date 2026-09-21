@@ -173,5 +173,5 @@ func test_real_touch_events_reach_the_map_through_godot() -> void:
 
 
 func teardown() -> void:
+	# The hook restores the viewport and nothing else: `_teardown()` frees and drains after it, sealed.
 	tree.root.size = Vector2i(1280, 720)  # later test files expect a desktop-sized viewport
-	super.teardown()

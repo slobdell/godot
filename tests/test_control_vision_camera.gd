@@ -296,3 +296,121 @@ func test_a_teleported_vehicle_is_drawn_where_it_was_put() -> void:
 	var placed := Shown.ground(f.tank("Green_Bravo_2"))
 	assert_true(placed.distance_to(away) < 1.0, "Fixture.place resets the interpolation, so it is drawn where it was put (%s)" % placed)
 	Engine.physics_ticks_per_second = saved
+
+
+## Round 9, discharging round 8's Invariant 0 debt. `VISION_FRAME_BOTTOM` (0.40) was measured off a frame once -- "the
+## card and chips' top is at y 778 at 1920x1080" -- and then lived in the camera as a number that could not know when
+## the card changed. It is now READ from the laid-out HUD.
+##
+## Deriving it from the panel's own constants would NOT have been enough: those constants put the chips' top at y 832
+## today, not 778, so a formula would have been confidently wrong in a second way. Only asking the nodes where they
+## actually are cannot drift.
+func test_the_lean_bound_is_read_from_the_hud_and_not_copied_from_it() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var height: float = float(tree.root.size.y)
+	assert_eq(f.rig.frame_bottom(), RtsCamera.VISION_FRAME_BOTTOM,
+			"with no HUD to ask, the camera falls back to the constant")
+	# A HUD whose top edge is exactly the screen's centre leaves no room below it at all.
+	f.rig.hud_bottom = func() -> float: return height * 0.5
+	assert_true(absf(f.rig.frame_bottom()) < 0.001, "a card reaching the centre line allows no lean below it (%f)" % f.rig.frame_bottom())
+	# The round-8 measurement, as a live HUD: y 778 on a 1080-tall screen is 0.44 of the half-height below centre.
+	f.rig.hud_bottom = func() -> float: return 778.0 * height / 1080.0
+	assert_true(absf(f.rig.frame_bottom() - 0.4407) < 0.01,
+			"the bound is whatever the HUD says, here round 8's own measurement (%f)" % f.rig.frame_bottom())
+	# THE MUTATION THAT PROVES IT IS DERIVED: move the card and the bound moves with it. A copied constant cannot.
+	f.rig.hud_bottom = func() -> float: return 900.0 * height / 1080.0
+	assert_true(f.rig.frame_bottom() > 0.6, "a shorter card lets the squad sit lower (%f)" % f.rig.frame_bottom())
+	# And it never exceeds the symmetric inset, whatever the HUD claims.
+	f.rig.hud_bottom = func() -> float: return height * 4.0
+	assert_true(f.rig.frame_bottom() <= RtsCamera.VISION_FRAME_INSET + 0.001, "clamped to the frame inset")
+
+
+## Round 9 (CP2), item 4's last entry: DOES THE AUTO-FRAME STILL CONTAIN A SQUAD THAT IS PHYSICALLY WIDER?
+##
+## `frame_pose` builds its bounds from POINTS -- unit centres, zero extent -- so a hull's own size has never been
+## part of the framing. That was +-1.8 m of slop on a 3.60 m hull and is +-4.3 m on the 8.62 m tank and +-7.0 m on
+## the 14 m rig. Swept across the tilt range and the squad sizes the player can actually have, not checked at one
+## pose: the correction from the cutaway entry, where checking only the lead's 21 deg said "clear" and 50 deg said
+## -1.57 m.
+func test_the_auto_frame_still_contains_a_squad_of_resized_hulls() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var worst := INF
+	var worst_case := {}
+	var declined := 0
+	var fitted := 0
+	var above_floor := INF
+	var above_case := {}
+	# The tank the lead fields and the LONGEST hull in the roster; line abreast and column, because a column puts a
+	# 14 m hull's LENGTH along the view axis, where a low camera foreshortens it most.
+	for unit_id: String in ["tank", "gang_tank"]:
+		var hull: Array = Units.stat(unit_id, "hull_size")
+		var length := float(hull[2])
+		var wide := float(hull[0])
+		for column in [false, true]:
+			for count in [3, 5, 8]:
+				for pitch: float in [8.0, 21.0, 35.0, 50.0, 70.0]:
+					# Spacing derived from the hull, which is what CP2 made squad's spacing do.
+					var points: Array = []
+					for i in count:
+						var along: float = (float(i) - (count - 1) * 0.5) * ((length if column else wide) + 4.0)
+						points.append(Vector3(0.0 if column else along, 0.0, along if column else 0.0))
+					# What the real path now passes: the frame's positions plus how far a hull reaches from one
+					# (RtsControls.vision_state publishes `pad_m`; Shown.half_hull is half the hull's diagonal).
+					var pad := Vector2(wide, length).length() * 0.5
+					var goal := RtsCamera.frame_pose(points, 0.0, 16.0 / 9.0, RtsCamera.FRAME_MIN_ZOOM,
+							RtsCamera.FRAME_INSET, pitch, pad)
+					# The auto camera's own floor and cap, as _update_tracking applies them.
+					# THE CAP IS A DELIBERATE REFUSAL, NOT A FAILURE: past AUTO_FRAME_MAX_M the auto camera stops
+					# pulling back and the rest of the squad goes to the edge markers (round 7, the lead's 35 deg
+					# telephoto pulled it to ~220 m). So a squad the cap declines to fit is counted, not asserted --
+					# asserting it would be demanding the opposite of what the constant is for.
+					var capped := float(goal[1]) > RtsCamera.level_for(RtsCamera.AUTO_FRAME_MAX_M)
+					if capped:
+						declined += 1
+						continue
+					var level := clampf(float(goal[1]), RtsCamera.VISION_MIN_ZOOM,
+							RtsCamera.level_for(RtsCamera.AUTO_FRAME_MAX_M))
+					var distance := RtsCamera.distance_for(level)
+					f.camera.fov = RtsCamera.FOV_DEG
+					f.camera.global_transform = RtsCamera.pose_at(goal[0], 0.0, distance,
+							RtsCamera.tilt_at(pitch, distance))
+					await tree.process_frame
+					fitted += 1
+					var screen := Rect2(Vector2.ZERO, Vector2(tree.root.size))
+					# Every CORNER of every hull, not its centre: the centre is all the framing ever used.
+					for p: Vector3 in points:
+						for dx: float in [-wide * 0.5, wide * 0.5]:
+							for dz: float in [-length * 0.5, length * 0.5]:
+								var corner: Vector3 = p + Vector3(dx, 0.0, dz)
+								var case := {"unit": unit_id, "column": column, "count": count, "pitch": pitch}
+								if f.camera.is_position_behind(corner):
+									worst = -INF
+									case["why"] = "behind the camera"
+									worst_case = case
+									continue
+								var at := f.camera.unproject_position(corner)
+								var margin: float = minf(minf(at.x, screen.end.x - at.x), minf(at.y, screen.end.y - at.y))
+								if margin < worst:
+									worst = margin
+									case["margin_px"] = snappedf(margin, 0.1)
+									worst_case = case
+								if pitch > RtsCamera.MIN_PITCH_DEG and margin < above_floor:
+									above_floor = margin
+									above_case = {"unit": unit_id, "column": column, "count": count,
+											"pitch": pitch, "margin_px": snappedf(margin, 0.1)}
+	print("MEASURE auto_frame_hull_corners ", JSON.stringify({"worst_px": snappedf(worst, 0.1), "case": worst_case,
+			"worst_above_the_floor_px": snappedf(above_floor, 0.1), "case_above_the_floor": above_case,
+			"fitted": fitted, "declined_by_the_cap": declined}))
+	assert_true(fitted > 0, "setup: some squads are inside the cap")
+	# THE GUARANTEE, and its one measured exception. Above the tilt FLOOR every corner of every hull is on screen
+	# once the frame has accepted a squad. AT the floor (8 deg, the lowest the player can set) a column longer than
+	# about 70 m does not fit at any distance the frame will choose: the ground is so near edge-on that the fit
+	# maths under-estimates how much screen the column's near end takes, and padding the bounds cannot reach it -
+	# measured -16.3 px for five War Rigs in column, unchanged across three different ways of feeding the hull's
+	# size in. That is a fit-maths limit at the extreme tilt rather than anything CP2 broke, it is reported rather
+	# than papered over, and this asserts the range where the promise does hold so a regression above the floor
+	# still fails.
+	assert_true(above_floor > 0.0,
+			"above the tilt floor, an accepted squad has every hull corner on screen (worst %s)" % [above_case])

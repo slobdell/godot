@@ -192,6 +192,11 @@ The kickoff prompt is one line; this section is the rest.
 
 ## Lessons (add to this list every round)
 
+**Round 9's one sentence, above the list (feel, 2026-09-20): "accepted with no error" carries no information about
+whether the knob does anything.** An arm assertion reads the state the code CONSULTS, not the instruction that was
+issued; eleven measurements were retracted in one day because the thing under test was never selected and the null
+looked like a measurement. Lessons 181, 195, 196, 199 are the instances.
+
 1. Create worktrees **after** committing the round's docs (round 1: workers started without the new HANDOFF).
 2. A stream that depends on another's foundation needs an explicit checkpoint, or it builds against stubs all round
    (round 2: checkpoint 1 was never called; integration adapted army's stub and ai's scenarios at the end).
@@ -2670,22 +2675,404 @@ The kickoff prompt is one line; this section is the rest.
     wrong reason, an assertion at a moment the thing could not be observed), caught only by the stream's own
     anti-vacuity guard. *"I am reliable at demanding an arm can exercise its mechanism and unreliable at checking it
     when the change feels too small to deserve the ceremony."* The ceremony is for the small ones.
-178. **A sharded suite changes which tests share a process, and a test that leaks into the engine's globals goes red on
-    schedule, not on code.** Round 9's last red: `test_a_full_faction_army_a_side_spawns_clear_of_itself` passed alone,
-    passed on two green trees, and failed on `main` only when `test_arena_layouts` (which stands up scrapyard) ran
-    before it in the same process — scrapyard's bodies still in the physics space while the army deployed on foundry,
-    compressing the formation (two hulls of one squad within half a metre) and putting three units "inside a wall".
-    The merge added test files, the shards redistributed, and the polluter landed ahead of the victim. Four correct
-    eliminations of code changes missed it because the variable was the schedule. Lesson 36 with physics bodies instead
-    of the navmesh, and the resize made it fatal (an 8.62 m hull no longer fits between phantom obstacles a 3.60 m one
-    slipped past). **Then measured to the coordinate (scale `3f6c1650`): nothing leaked.** `free()` takes an arena's
-    bodies 38 → 0 in the same call, the granted teardown guard never fires, and both orderings place all 90 units at
-    identical coordinates. **Units are placed at exactly y = 0.0, a degenerate zero-penetration ground contact, and
-    which way Jolt resolves it depends on the engine's internal state after earlier bodies were created and
-    destroyed: three units are ejected ~1.5 m DOWN through `Arena/Ground`.** Round 8's sim-hash lesson with spawn
-    positions instead of a hash, and a real game bug, not only a test one. Ruled: spawn a few centimetres above the
-    ground at both spawn sites (`ArmyLayout.deploy`, `Match.spawn_position`), assert *placement* rather than the
-    post-physics position, and name the body hit in the failure message — "inside a wall or crate" when the body was
-    the ground cost a morning. Three wrong eliminations (RNG divergence, tank_brain, leaked bodies) stand beside the
-    answer. **When a green test goes red with no relevant diff, ask what ran before it — then measure the mechanism
-    before assigning it.**
+178. **A green test that goes red on schedule is measuring a transient, and every hypothesis that names a culprit
+    before the settling curve is drawn will be wrong.** Round 9's last red, `test_a_full_faction_army_a_side_spawns_
+    clear_of_itself`, passed alone, passed at a 71/71/71 shard layout and failed at 69/68/68 on identical code. Six
+    diagnoses fell in one morning, each measured and each retracted: nav's code, `tank_brain`, RNG divergence, a
+    test-isolation leak of physics bodies (free() takes them 38 → 0 in the same call), a solver ejecting a degenerate
+    y = 0 contact (the body is a `CharacterBody3D`; nothing ejects it), a collider straddling the floor (every box
+    bottom is exactly at the origin at the catalogue height). **The mechanism (scale `3f6c1650`+): `move_and_slide`'s
+    depenetration recovery moves three resized hulls 1.475 m DOWN in frame 1 with velocity exactly zero, then they
+    climb back: −0.190 at frame 2, −0.042 at frame 3; a passing unit gets +0.87 mm from the identical contact.** The
+    test read at frame 1, the single worst instant of a settle that resolves by frame 3, and which units land on the
+    bad side depends on engine state left by earlier tests, so the schedule decided the verdict. Fix: assert on
+    *placement* (deterministic), and any physics-frame assertion samples after settling (largest per-frame delta
+    below 1 cm, capped), never at a fixed frame. Two side findings, both false leads, are kept beside the answer:
+    a 5 cm spawn lift moved the frame-1 value by 0.032 m and fixed nothing (the constant stays, wired, at 0.0), and
+    squad's "the lift passes on my branch" was a layout write that discarded its own y. **Draw the curve before you
+    name the writer, and name the body hit in every failure message: "inside a wall or crate" when the body was the
+    ground cost the morning.** **And then a seventh, the real one (feel, 14:30, a shard-3/5 repro on the laptop with
+    a byte-identical pair list to builder0): placement is clean at frames 0 and 1, four overlapping pairs appear at
+    frame 2 and stay (4 at frame 10, 3 at 20), every failing pair is two of the three widest hulls abreast, and they
+    converge to a lateral pitch of 3.15 m where the half-metre rule needs 3.33 m.** Squad then checked the arithmetic:
+    the layout's lateral pitch for that pair is ≥ 5.0 m and `_clear_spot` guarantees 3.83 m, so placement clears by
+    1.67 m and **something moves each unit ~0.9 m toward its neighbour after placement** (the drift assertion's first
+    catch; a formation-flow slot pitch or a lateral depenetration, the displacement vectors decide). The test sampled
+    one frame before the movement, so anything nudging the sampled instant saw it, and **"flaky" was a true
+    description that stopped the search. A true label that ends
+    inquiry costs as much as a false one.** The sink was real and transient; the overlap was real and permanent;
+    the failure message named neither. **The mechanism, at last (combat's per-tick trace, 18:45): the model asked
+    for zero lateral velocity, the body moved 1.53 m, velocity came back untouched, no slide collision: penetration
+    recovery out of something on the VEHICLE layer, which the neighbour probe could not see because it asked the
+    world mask.** **And then the body was named (combat's collider probe): on tick 1 the physics server's transforms
+    are a PERMUTATION of the spawn slots, up to 90 m from the nodes (physics interpolation with positions set before
+    the node enters the tree), so the solver resolved a scrambled layout and recovered bodies out of overlaps that
+    existed only in its copy; every first-tick number taken this round was taken after that shove.** Eight
+    diagnoses, one bug, and the instrument that ended it printed the node's transform beside the server's for the
+    same body. **Then the read-back print (combat): `body_set_state` followed by `body_get_state` on the next line
+    returned the OLD transform, because PhysicsServer3D commands queue until the step; nothing a teleport can call
+    reaches the space before the next tick, and three remedies that were three spellings of one queued command
+    produced three bit-identical runs, which should have been read as "the instrument, not the remedy" one
+    negative earlier. A hull teleported and driven in the same frame is driven against the pre-teleport world.
+    The remedy is a tick, not a flush.** And the sharper form of this lesson (metrics): **the shard count is derived from free memory at
+    launch, so the schedule, and this test's verdict, is a function of how busy the box was when the check started**
+    (5 shards fail, 6 pass, same code). Pin `TEST_SHARDS` when reproducing and print it beside any claim.
+
+179. **A frame-time measurement needs a quiet machine, and more samples do not substitute for one.** Round 9's
+    morning: show's within-run layer cost (`show-perf-layer`, the `no_show` phase alternated with `all` seconds apart)
+    read +1.50 ms with two cycles and −0.65 ms with six, on builder0 at load 14–21 with 67 Godot processes and five
+    checks resident; each phase's own spread was ~5 ms against an effect under 1.5. Raising the cycle count fixes
+    *sampling* noise, the error from looking too few times at a stable quantity; it does nothing when the quantity
+    itself drifts with the machine's load between one phase and the next: **more samples of a drifting quantity
+    describe the drift more confidently.** Within-run pairing (lesson 175's cross-run failure) bounds *when* the two
+    halves are measured, not *how quiet* the box is while they are: necessary, not sufficient. So timing runs (hinge
+    cost, show cost) go in a **quiet window** the orchestrator calls after the checks drain, one stream at a time, and
+    every timing number carries the load average and the per-phase spread beside it or it is not quoted. Screenshots
+    and seed-deterministic series are only *slowed* by load and can run through it.
+    **Addendum, the first quiet-window run (feel, load 0.4, 2 other Godots): still NOT USABLE.** The repeated `all`
+    phases went 36.5 → 31.3 → 29.8 ms, monotone: warm-up drift, not noise, which a `max − min` gate cannot tell apart;
+    the two cycles' bracketed costs disagreed in sign (+3.59, −0.44) and their mean (+1.57) hid it; and the draw count
+    moved 328 → 269 between phases because vehicles die during the sampled battle, so the phases were not the same
+    scene. A quiet box is necessary; the tool also needs a frozen census (damage off during the run, the count
+    printed per phase), a discarded warm-up, and a verdict from per-cycle costs agreeing in sign and magnitude.
+    **The second run (show, load 0.7–0.9, six cycles): the reusable numbers.** `all` GPU spread **1.64 ms** (stdev
+    0.64) and `no_show` **0.97 ms** on the quiet box against 4.86 / 5.13 ms at load 21: **a quiet builder0 is 3–5×
+    tighter, and a layer cost under ~1 ms is not readable on a busy one at all.** Even quiet, the six per-cycle deltas
+    declined monotonically as the battle thinned 68 → 55 vehicles (4 positive, 2 negative), so the honest result is a
+    bound, |cost| < ~0.8 ms, not a mean. And the roster question closed the same way: post-CP2 on a quiet box is
+    6.40 ms against pre-CP2's 6.43, so 19.87 was load; the "145k primitives" sentence was a single-run artefact
+    (the quiet run had 180,780 with fewer vehicles): **a counter immune to load is not immune to sampling.**
+    **The third run (feel, load 0.1–0.6, six cycles, warm-up dropped): NOT USABLE again, and now with the cause
+    sized.** Frame cost regressed on the vehicle census across all 13 phases: **0.677 ms per vehicle, r = 0.92**; the
+    census walked 90 → 72 during the run, so the confound alone is +0.7 to +3.4 ms across the kept cycles against a
+    trailer effect whose mean was +0.01 ms and whose spread was 6.39 ms. A monotone drift is not noise and more
+    cycles do not average it out; a quiet box does not touch it (the spread got worse on the quieter run). The
+    remedy is a frozen scene: a damage-off tune (combat's, a simulation switch) that the bench *requires* rather than
+    caveats. Until then the record says "the War Rig's frame cost is not yet measured", not a number with an
+    asterisk. **Before quoting any layer cost: the census per phase is printed and did not move.**
+180. **A guard that counts at teardown measures a pending removal, and it will convict the innocent with the same
+    confidence as a real leak.** Round 9's teardown guard (scale, `3f6c1650`) named three tests for leaving two
+    navigation regions each; `NavigationServer3D` drops regions on the frame *after* `free()` ([2, 0, 0, 0] over
+    frames 0–3), `TestCase.teardown()` counts synchronously at frame 0, so all three were innocent, and the
+    orchestrator had already granted one-line "fixes" in three streams' files before scale measured the drain
+    curve. Same morning, same suite, same shape as lesson 178: **a transient read at the wrong frame.** Physics
+    bodies have no such window (free() takes them to 0 in the same call), so the guard keeps that half and drops
+    regions. Rules: a guard's claim is only as strong as the settling behaviour of what it counts, measured; land a
+    guard *with* the fixes for what it finds, never route the fixes first; and when a new instrument convicts three
+    unrelated tests at once, suspect the instrument before the tests. **Second half (nav, 15:20): the transient the
+    guard measured is also a real hazard for the NEXT test.** `free()` is synchronous and the server's region
+    removal is not, so the next test's `ArenaFixture.build()` bakes a second full arena over the old one's regions
+    and the map logs "284 edge errors, more than 2 edges tried to occupy the same rasterization space" at its next
+    sync, poisoning whatever test is running then (14 of 18 failures in one shard, none related to navigation, the
+    carrier standing next to a theme test in the log). The round-6 fixture waited for the *new* arena's polygons; it
+    never waited for the *old* arena's regions to drain. Fix: wait on the map's region count returning to baseline
+    until the map's region count is ZERO, capped, named; not "back to baseline", because the baseline sample
+    (`before=2`, equal to `with_arena=2`) was the previous test's regions mid-drain, so a baseline captured while the
+    hazard is present cannot detect the hazard, and not "two equal samples", because stability is not emptiness.
+    Same measurement, two readings: the count was wrong as a leak and right as a hazard. **And the sharper form
+    (combat): the round-6 docstring described the hazard correctly and the fix addressed half of it, the read side
+    (do not trust a stale map as ready), leaving the write side (do not add a second arena into it) untouched: the
+    docstring was right and the guard was narrower than the docstring.** 4 edge errors from two terminus arenas
+    inside one test; 284 from two full arenas across a test boundary; one bug.
+181. **A difference between two arms proves the arms differ, never why.** Round 9's spawn lift: combat's 5 cm arm
+    moved the frame-1 sink by +0.032 m and combat read it as "the lift reached deployed units"; it was the
+    depenetration recovery's sensitivity to the contact. Earlier the same night a 47 % sliding-goal share was read as
+    a mechanism when it was a selection. The delta is the licence to look for the mechanism, not the mechanism. And
+    two streams implementing one ruling in two places produced one arm that could not act (squad's layout discarded
+    its own y) and one that acted for the wrong reason: **one constant, one home, one arm that exercises it, before
+    anyone reads a number off it.**
+182. **An `&&` chain of test runs reports the first failure and silence for the rest, and silence was read as green.**
+    Round 9: feel ran `make test FILTER=unit_scale && … city_block && … trailer && … airship`; `unit_scale` failed on
+    the artillery handover, the chain stopped, and the report said "the other three files passed" — `grep -c
+    city_block` on that log returns 0. The city-block test had never run and could not have passed as written
+    (`push_warning` on the path it exercises is an engine error to `ErrorCollector`), and it merged to `main` on
+    that sentence. Rule: **a claim that a file passed names that file's own `N passed, M failed` line from the log**,
+    and batches of filtered runs use `;` with a per-file summary, never `&&`. Same family as lesson 163 (read the
+    result line, not the exit code, not the absence of a complaint).
+183. **A readout that reports what was INTENDED rather than what was ISSUED will contradict the game exactly when
+    the player is watching.** Round 9: the squad-heading pin drew the arrow from the task (the intent), while the
+    crews had been given a follow order with no facing; control's fix derives the pin from the crews' own orders,
+    unanimously, so it starts drawing on the tick the promise becomes true and needs no follow-up edit. Fourth
+    member of one night's family beside lesson 173 (the lint parsing later files against older sources, the
+    "before" frame shot with the fix running, `get()` collapsing absent into null): **derive, never mirror**, and
+    the readout is a mirror if it can be true while the thing it reports is false.
+184. **An honest instrument is not enough if nothing asserts on it.** Round 9, nav's clearance tests: the arm counter
+    printed `chords 0` (the rule was never consulted) and the slack printed `nan` (a fallback), both correct, both
+    ignored by assertions that then failed for a different-looking reason; the cause was a mover that does not exist
+    until a hull is driven, the same mistake nav had made in the legibility test hours earlier. Beside lesson 171:
+    every positive control the run prints is also an assertion (`chords > 0`, `not is_nan(slack)`, "the mover
+    exists") *before* the number it guards is read, or the print is decoration.
+185. **A check that selects by pattern returns a true answer to a question you did not ask.** (Drafted by feel with
+    combat, round 9.) Four instances across three streams in one night, every one of which *passed its own test*:
+    feel read `PPID 2113` as proof a Godot process was its own (it is the shell supervisor, shared by every session on
+    the machine; feel nearly killed four streams' work); metrics killed by an unscoped pattern; combat's waiters
+    polled `pgrep -f "remote.sh check"`, which matches every worktree's wrapper *and the waiter's own `bash -c` line*,
+    reporting a finished run "alive" for twenty minutes and leaving three loops spinning at 5.5 h, 5.5 h and 10.7 h;
+    and combat's arm counter ran a clean, truthful measurement of a fight that **contained no War Rig**, because the
+    seeded draft chose the army and nobody read it back. None returned a wrong value; **they were wrong about
+    *whose*, and nothing in the output says whose**, so care cannot fix this class and review cannot catch it: the
+    broken version's output is byte-for-byte the shape of the working one. Two replacements, both of which transfer:
+    - **Wait on the artifact, not the process.** `until grep -qE '>> remote: make check exited' <per-run log>`: the
+      wrapper line appears only when *your* run finishes, and a fresh log per run means a stale line cannot be read
+      as a new one. Scoping the pattern (`readlink /proc/<pid>/cwd`, `fuser` on the slot `.lock`) is correct but only
+      repairs the call sites someone revisits: combat fixed one at 05:30 and went on writing new waiters with the
+      same idiom, because **the fix lived at a call site and the habit lived in the fingers.**
+    - **Make the probe refuse rather than report.** `--require=gang_tank` on the counter; the trailer bench refusing
+      to print a number without the damage-off tune. A measurement that can silently measure the wrong subject
+      asserts its subject before reading the number (lesson 184).
+    Beside lesson 182: an `&&` chain that reports "the rest passed" is the same disease in a third costume, **a run
+    that never happened, counted as a pass.** See also nav's note in `navigation.md` (the same shape in routing).
+    **Sixth instance, in the other direction (feel, 16:15):** the faction matrix's pooled gangs number on pit read
+    30 % before and 30 % after while the unwinnable 0/20 cell went to 20 %, because the rig paid ten points in each
+    of its two playable matchups to buy it back; the default summary would have said nothing happened. The pooled
+    statistic hid an improvement this time, so the failure is not pessimism: **the summary answers a question nobody
+    asked.**
+    **Fifth instance (show, 14:10):** every frame and clip the show stream produced, including the readability
+    gate's "fight ring" window, was a five-a-side skirmish at the 950-point default with a 3 s warm-up, so the army
+    was still 86 m from the ring the camera pointed at: the gate measured bare asphalt, and "the show makes the fight
+    up to +4.2 % easier to read" was withdrawn. The fix is the same shape: `--budget` and warm-up matched to the perf
+    tool, the camera at the army's centroid, and every capture reports `vehicles_in_frame` with a gate that fails
+    an empty frame *before* the luminance gate runs. Re-shot on a real army (21 tanks, 7 IFVs, 6 lancers, 11–23
+    vehicles in frame): the show's effect on readability is scattered around zero; the +4.2 % was bare ground.
+    **Seventh instance, the same afternoon:** the strobe clips at 10 fps sampled the gaps between flashes
+    (`last_stand` strobes at sharpness 40 over 1.6 s; the stab is above half its span for 0.134 s, 1.3 frames at
+    10 fps), so on-vs-off read as the same swing twice and the strobe looked like it did not read. 30 fps, four
+    frames per stab, what the player sees. **An arm that cannot be shown to differ from its control looks exactly
+    like a null result; before believing the null, ask whether the instrument could have seen the difference.**
+    **Eighth (feel, 17:05):** the lamp-verdict frame was shot with `size-look`, which frames the spawn at the arena's
+    rim; the nearest of the six new lamps was 72 m out of shot, and the floor looking identical to the baseline
+    would have read as "the lamps do nothing". Arena-lighting verdicts come from a bench that frames the arena
+    centre (`crowd-look`, show off). **Before reading a frame, check the subject is in it.**
+    **Ninth, and the worst (show, 17:15): the gate written against "the frame is empty" was given a statistic
+    that cannot observe emptiness.** `vehicles_in_frame` counted positions inside a 1200 m frustum, so a speck at
+    90 m counted the same as a hull filling a third of the picture, and it reported 19 for a frame with no hull
+    drawn; the camera had been aimed at the centroid of two facing armies, which on a symmetric map is the exact
+    centre and the emptiest place on it; and a 20 s wall-clock warm-up on builder0's vsync'd window at ~1/10 real
+    time bought two match-seconds. Fixes: aim at the densest cluster, poll the match for contact with the clock as
+    a cap, and require 12 px of *drawn mesh* per counted vehicle. **A gate is only as good as the statistic's
+    ability to distinguish the two cases it exists to separate; a frustum count is geometry, the question was
+    pixels.** Then a tenth (show): framing the densest cluster put the camera inside a block, because the frame
+    tools called `RtsCamera.pose_at` directly and never control's `clear_pose()` (the lift the lead's own
+    complaint bought); fixed, and every capture now prints the pitch it actually used and `lifted_deg`, because a
+    frame that had to lift to 30° is a fair pair but is not the 21° he plays at, and a label that quietly stops
+    being true is the same disease as the frustum count. Five defects in one pair, each invisible until the one
+    before it was fixed: **stop predicting that the next one is the last, and look at every frame before it travels.**
+    **The closing form (feel, 22:15, the Terminus roof dressing):** the first version placed seven boxes on every
+    seed, kept two surfaces, stayed inside the collision box and passed every test, and at the lifted camera it was
+    shapes you had to look for, +25 % on tops and −28 % on sides of a roof that is itself nearly black. **A change
+    can satisfy every stated criterion and still not do the thing it was for, and nothing in a suite measures
+    legibility; the only instrument that catches it is looking at the picture.**
+186. **One pose is not a range.** Round 9, control's post-resize checklist: "the wall cutaway against the 6.18 m Sonic
+    Emitter: clear" was reported off a single check at the lead's 21° pose, where the margin is +0.22 m; swept across
+    the tilt he can reach it is −1.57 m at 50°, the top quarter of the vehicle cut away. The fix states the trade
+    (low camera: the wall is cut, as round 6 measured it must be; steep camera: the vehicle wins) and the worst
+    margin across 8–70° is +0.20 m. A claim about a camera, a formation, or a roster is a claim over its range, and
+    the report names the worst point in the range, not the pose that was to hand.
+187. **A static cache is a correctness bet on an invariant nobody wrote down.** Round 9: scale's teardown guard
+    counted navigation regions the engine had not yet dropped (the bet: "freed means gone"; it came due), and
+    squad's `incoming_fire` cache keys a hull's geometry on `unit_id` alone (the bet: "id → hull is constant for the
+    process", true today because `Units.PROFILES` is never written and `hull_size` is authored, not computed).
+    Squad's answer was the right one: check the invariant rather than guard against it, keep the cheap key, and
+    write the invariant *at the cache* with what would break it ("if a runtime hull scale ever lands, clear this per
+    scenario"). A guard that costs an allocation per call against a risk of zero is worse than a sentence; a bet
+    with no sentence is worse than both.
+188. **The aggregate row would have shipped it; the per-class rows and the active fraction refused.** Round 9's
+    clearance A/B (nav `961640cf`, yard): the ALL row improved on every primary (oscillation halved, cusps −39 %)
+    while attack-move `progressing` fell 35 % and 38.8 % of ticks dropped below the creep threshold and out of the
+    statistic. **You cannot oscillate if you are not going anywhere: the apparent improvement was the pathology.**
+    Two pre-registered choices that looked like bookkeeping caught it: report per hull class (the aggregate was
+    carried by the one class that improved) and print the active fraction beside every fraction (0.664 → 0.176 says
+    the surviving ticks are a different population). And the arm-proof bar nav wrote as `refused < chords` passed at
+    90.9 % refused: **an arm-proof bar is a share, set before the run, never an inequality that any non-zero
+    satisfies.** Same shape as A4 and A1: a behaviour that buys its metric by not moving.
+189. **A check that stops at the first failing target abandons the rest, and nothing in the log says so.** Round 9,
+    metrics' `check3` on `9f263162`: `test` failed, `make` stopped, and 7 of 18 targets never ran (combat-smoke,
+    lobby-smoke, army-loop-smoke, match-pytest, metrics-pytest, ai-scenarios-check, remote-guard-test); the run was
+    read as "the usual three reds" until the `done/` markers were counted. Twice that afternoon `sim-baseline` was
+    among the abandoned and a merge was blind to the one number that gates it. The fix is `-k` *plus* a three-state
+    verdict (PASS / FAIL / NOT RUN) printed from the markers, because with `-k` alone a reader still learns of a
+    skipped target only by noticing absent output. Read a check as passed / failed / abandoned from its markers,
+    never from what happened to print. **And the attribution half (metrics, 19:50): the runner fails a test on any
+    engine warning it did not declare, which is right and loud; but twenty-two red tests sharing one message are
+    one defect and twenty-one victims, so the runner groups engine messages that failed more than one test and
+    names the first carrier ("the tests after it are probably downstream, not guilty"); a test that declared its
+    warning with `expect_warning` is never in that group.** Measured the same afternoon: the keep-going check completed 16 of 18
+    targets through two failures where the old one completed 10, and its summary agreed with the markers exactly.
+    **And the lint half of the same day (metrics `b839495c`):** a tree the runtime could not compile had passed lint
+    in one worktree and failed it in another; the hypothesis "a per-file check cannot see a cross-file type error"
+    was tested with four arms on builder0 (a positive control, the twelve-line self-contained ternary, the real file
+    with and without the class-name cache) and was wrong: the checker sees the class in every arm, so the green run
+    simply never checked the file. Closed as three silent-pass holes (empty output, a signal death, a blind run) plus
+    a liveness probe that plants a fresh error every run. **A gate that can pass by not looking needs a probe that
+    proves it looked, and a hypothesis about a gate is tested with a positive control before a fix is built on it.**
+190. **`git merge main` carries no signal about whether main was green at that commit.** Round 9's afternoon: control
+    merged main twice at a mid-repair moment (a stale baseline file, then a parse error from an unverified merge) and
+    each cost a builder0 slot to discover. Rule: the orchestrator keeps a local tag `main-checked` on the last main
+    tip whose own check ran (the tag means "checked, reds known", never "green": say so in the first clause wherever
+    it is mentioned, because `main-checked` reads like `main-good` at a glance), moved only after a main check with
+    its known reds written in HANDOFF; a stream that
+    wants a known state merges the tag, one that wants the newest merges HEAD and accepts the risk. And beside
+    lesson 157: the repaired lint's first real catch on the gate was a parse error in a file nobody on the
+    reporting stream had touched, which is exactly what a gate is for.
+    The tag is ANNOTATED with the runner's line and the reds (`git tag -af main-checked <sha> -m "<line>"`): a
+    lightweight tag has no message, and a tool that reads one gets the commit's subject back and prints it where a
+    verdict belongs. **The dangerous absence is not the blank one, it is the one that has something plausible to
+    say** (metrics, five instances in one day: lint over zero files, check-hashes on absent data, a blank quiet
+    window reading HELD, `0 passed, 0 failed` exiting 0, a commit subject standing in for a check verdict).
+191. **A test that asserts something about its environment it never checked is green where it is easy and red on
+    the machine it exists to protect.** Round 9's shell suites, three times in one afternoon: they assumed no slot
+    variable was set (inside `check` one always is), assumed an idle box (fixed sleeps against a builder running four
+    shards), and assumed a `.git` directory (the launch rsync excludes it). Each was green on the laptop and red on
+    builder0, and each surfaced only because the suites were in `check`. Rule: a test names its environmental
+    assumptions and checks them first, or degrades with a sentence (`NOT AVAILABLE: <path> is not a git repository`)
+    rather than failing fifteen assertions for one absent thing; and a tool that must run on two machines runs its
+    tests on both before it ships.
+192. **A fix aimed at one layer is defeated by a layer above it that was never in the picture.** Round 9, metrics:
+    `make test FILTER="a|b"` reached the shell unquoted and ran neither suite (exit 127); quoting it through would
+    have matched nothing and exited 0 with `0 passed, 0 failed`, a green run of zero tests, worse than the crash;
+    and `FILTER=$HOME` arrived at the runner as `OME` because make expands `$` before any shell sees it, found by a
+    test that recorded the runner's argv, not by reading. Same family as the pipeline reporting `tail`'s status and
+    `$(date)` resetting `$?`. Rules: a filter that matches no tests is a failure; the two characters no layer can
+    carry are refused by name, saying which layer would have eaten them; and a fix to how a value crosses layers is
+    tested by asserting what arrived at the far end, not what was sent.
+    **The canonical instance (metrics, 18:25):** annotating `main-checked` made `git rev-parse --short main-checked`
+    return the TAG OBJECT's id, so round-status printed a commit id nobody could look up beside distances and
+    BASE columns that were all correct, because `merge-base` and `rev-list` peel a tag implicitly and `rev-parse`
+    does not; `^{commit}` throughout. **In every instance the code was correct about the thing it was looking at
+    and wrong about what it was looking at**, and the numbers agreeing beside the wrong label is what makes a
+    reader trust the label. Corollary: the tests could not have caught it, because their fixture used a
+    lightweight tag, built before the thing it models existed; a fixture is rebuilt when the modelled thing changes.
+    **And after a signature conflict, read the call sites, not the conflict** (metrics, 22:10): two streams added a
+    third parameter to one function; git merged the callers cleanly because they were never marked, and six tests
+    passed their allowlist as what was now the other stream's `expected_err`, exercising the wrong parameter while
+    still passing some assertions. The same shape as the tag object standing in for its commit: the code was
+    correct about what it looked at and wrong about what it was looking at.
+    **And a second implementation drifts from every rule the first gains (metrics, 00:10):** the scenario runner
+    carried its own `ErrorCollector` that ignored `_error_type`, so a Jolt load WARNING reached the gate labelled
+    "engine error" and a probe was spent looking for an engine subtlety; the same runner lacked `expect_warning`,
+    `expect_error`, the allowlist and the awaited teardown that the test runner had gained that day. Unified: one
+    `reconcile_engine_messages`, one allowlist, one teardown. Two runners, one rule.
+193. **An API whose correct use cannot be told from its incorrect use at the call site is a signature problem, not a
+    convention problem.** Round 9 (nav): `TestCase.teardown()` ended in `await drain_navigation()`, so a subclass
+    override declared `func teardown() -> void` that called `super.teardown()` un-awaited was not a coroutine, the
+    runner's `await teardown()` returned at once, and four viewport-resizing tests had silently skipped the drain
+    for as long as it existed; a fifth called `teardown()` mid-test and detached a drain that then counted its own
+    next arena as a leak. `await teardown()` and `teardown()` look equally deliberate on the page, and no review
+    could tell them apart. Fix: the runner awaits a sealed `_teardown()` that owns the order (hook, free, guards,
+    drain), the overridable hook is synchronous and documented as never responsible for the drain, and mid-test
+    clears go through a public `free_owned()`, deliberately synchronous: one awaitable thing, owned by the
+    runner, is the property that keeps the rest safe (a helper that also had to be awaited would carry the same
+    trap, and an `await` on a non-coroutine is a lint red). **And the sharper argument for sealing (combat): an
+    unsealed teardown does not only lose a shard to noise, it silently changes what the PASSING tests measure: a
+    plant fixture read `offered 14, applied 0` while a previous test's foundry was still in the world and
+    `offered 16, applied 3` the moment the override started freeing; nothing in any output said which world it
+    measured.** Same family as an instrument that cannot report its own
+    inapplicability, one level up, in the signature.
+194. **A control that skips the code the treatment runs is not a control, and two arms that write one file compare
+    a file with itself.** Round 9 (combat, pre-registering the gangs-vs-law series): `faction-matrix` names its
+    output `-tuned.json` whenever `TUNE` is set, the same name for both arms, so the obvious two-run series
+    overwrites the control with the treatment and `compare-arms` reports a perfect null with every cell zero and
+    nothing anywhere to say the bytes were the same; and a control run as "no TUNE" skips `apply_tuning` while the
+    treatment runs it, so the control is run as `knob=<default>` instead (the switching-cost series' `switch.price=0`
+    precedent). Fourth member of one family with the collapsed `COMMIT_BONUS * 1.15`, the `FILTER="a|b"` that ran
+    neither suite, and a comment promising a flip that did nothing: **each produces a green or a null that looks
+    like a measurement, the one kind of bug running more things cannot catch.** Tooling: outputs named by the arm,
+    comparisons refusing identical inputs, each arm's commit and knob written into its file.
+195. **A knob's test asserts the predicate moved, not that the spec parsed.** Round 9's last hour: `TUNE=match.yaw_fit=0`
+    printed "applied" and the constraint stayed on (the wedged test byte-identical to its control under the tune),
+    because `Units._static_init()` wrote a static on another class and that class's own initialiser ran later and
+    put the default back. Every conclusion drawn from that knob in an afternoon was void: the A/B that "excluded
+    the constraint" (both arms had it on), the "second cause" it implied, and a corridor table under the world-only
+    arm. What survived was the one-line SOURCE bisect (flag off by default passes, flag on fails), because no tune
+    was in it. Rules: a knob lives where its consumer reads it, never as a foreign static written at class load; a
+    knob's own test flips it and asserts the mechanism's output changed; and a test that selects an arm asserts
+    the arm is live before the behaviour (nav's rule, now in verification.md). The person who shipped the knob had
+    just written the previous eight instances of this family into the brief. **It is round 7's bug recurring:
+    `game/ai/combat_motion.gd:40` documents the same clobber between Movement, TankBrain and CombatMotion ("the
+    switch silently does nothing; two byte-identical arms") and nav's files carry three working fixes (a getter
+    resolving at read time with a pinned static for tests; a switch parsed lazily on first use; `ControlGains.forced()`
+    read at call time with `push_error` for an unknown name). Copy the last: a misspelled knob and a clobbered knob
+    otherwise fail identically. And two depths of arm check: a flag read proves the static survived; a behavioural
+    check (something only true if the branch ran) proves the branch executed.**
+    **Proven the same night:** with the spec applied at first read, the wedged row went RED under `yaw_fit=0` and
+    reproduced nav's original unconstrained numbers (44.0°, 12.1 m), which showed that the "before" quoted all day
+    (28.5°, 9.6 m) had been taken in an arm that was not the one it claimed; the constraint's benefit was larger
+    than reported (74 % of the illegal yaw, not 59 %), the residual unchanged. **A before-column is re-taken on
+    the build that reports it, in the arm the knob now provably selects.**
+196. **A change scoped to X must not move a measurement that contains no X; if it does, the scope is wrong, not
+    the measurement.** (nav's rule from combat's finding, round 9.) The world-only yaw arm was described as "the
+    same quantity, a different set of colliders"; the corridor residual, measured in a corridor with NO vehicles,
+    moved 1.27 → 0.70 m under it, so the arms were two APIs (`test_move` with recovery and `get_depth` against
+    `collide_shape` with the widest point-pair) wearing one label, and every encouraging number from the arm was
+    uninterpretable, including a squad pass that would have shipped hulls rotating through each other. Two
+    corollaries: pre-register, for any arm, the measurement it must NOT move and read that first; and read the
+    counters you asked for (offered 30, applied 30, swept 0.0° was the permanent-refusal signature the counters
+    were built to expose, and nobody was looking at them).
+197. **A clearance number must state which motion it licenses.** (nav, closing round 9.) Width licenses driving
+    straight; the half-diagonal licenses rotating in place; `(w + l) / 4` licenses a swept turn. Round 9 found the
+    same error twice, in two files, pointing opposite ways: nav's clearance row compared a rotational envelope
+    (`radius_of`) against a lateral bake clearance and inflated a count ("14 of 21 exceed the bake"); squad's
+    formation derived its lateral pitch from width (`HULL_CLEAR_M`) for hulls that need the diagonal to turn, and
+    the plant constraint then correctly refused a rotation there was no room for (four of five squads 90 m off
+    their slots the day it was switched on). Both were invisible while hulls were small enough that every number
+    was generous; CP2 surfaced three in one day. Round 10's question is not "what is a shortfall measured against"
+    but "which motion is this constant licensing": `HULL_CLEAR_M`, the navmesh bake radius and `Avoidance.radius_of`
+    are three constants for three motions, and none of them says which.
+    And the same number is wrong in one place and right in another (scale): a disc of the box's half-diagonal
+    overstates where a hull IS (the friendly-fire and incoming-fire sites refused safe shots by it) and correctly
+    states the room a hull needs to TURN (the spawn grid and the formation under-provisioned it); a measurement
+    of where boxes stand answers "do they intersect", which is the wrong question for a vehicle that has to turn,
+    and nothing in the measurement says so.
+198. **A bug that flatters the thing it breaks is the worst kind to measure around.** (squad, closing round 9.)
+    The tick-1 shove, a real defect, pushed spawned hulls apart before anyone read their spacing, so squad's roster
+    reported "not one pair overlapping" and scale's placement numbers reported clearance on trees where the shove
+    had done that work; on the tree with the settle tick, four crews overlap at spawn. Every other instance this
+    round was a measurement of the wrong thing; this one was a measurement of the right thing on a tree where the
+    answer was temporarily false, and the item it undermined was written from it. When a defect is fixed, every
+    number taken in its presence is re-taken before the item built on it is closed.
+199. **A correlation across five points, one of them different in a way you did not list, is not a mechanism.**
+    (combat, closing round 9.) Diagonal-derived spawn spacing was going into round 10 as THE fix for the plant
+    constraint's freeze, on squad's separating-axis reading of four crews (the across gap was under the diagonal,
+    so the turn was refused). Combat pre-registered the refutation (`Green_Charlie_3` at 3.19 m across, near the
+    ~3.3 m a turn needs, should refuse least) and ran the ranking: 0.06 m refused 1260 continuous ticks, 3.19 m
+    refused 1135, and the one crew that seated (`Alpha_4`, 128 ticks) sat at a TIGHT 0.26 m; what set it apart was
+    that Alpha was ordered first. The gap predicts nothing in either direction; the freeze is permanent (the
+    refusal counter never resets for over a thousand ticks, nav's N1 breach at army scale); and the only surviving
+    variable is timing. Three readings died in one table: vehicle-as-wall, no-room-for-the-diagonal, and combat's
+    own settle-tick and second-cause stories. The rule: before a correlation becomes a round's fix, rank it against
+    the case that would refute it, and say what ELSE differs between the points that fit and the one that does not.
+    The candidate still goes into the brief, with the table beside it and the predicate question first.
+    **Same day, the tenth "null that confirms the setup" (feel's hinge bench, then combat):** `--tune=match.no_damage=1`
+    on the match runner's own command line was accepted, `apply_tuning` returned no error, and `Armor.no_damage` read
+    false in 13 of 13 phases while the census walked 90 → 77. Both entry points to the knob were broken and only
+    the environment one had been measured; the fix covered the second by its shape, not by a test. feel's sentence
+    is the whole family: **"accepted with no error" carries no information about whether the knob does anything.**
+    Had the census not moved on a quiet phase, the run would have read as the freeze working; the bench's refusal
+    to report was the only thing between the broken knob and a published number, for the second time in a day.
+    **The test that closes it (combat `d6daa3b3`):** a structural property that nothing asserts is a property with an
+    expiry date nobody can see (the two entry points were covered only because `apply_tuning` happened to be one
+    function). The load-order case cannot be reached from inside the runner (every class is initialised before any
+    test method runs), so it is a child Godot process run TWICE, `env TUNE=…` against `env -u TUNE`, the probe
+    printing the TUNE it saw, the differ-assertion FIRST and the values second: a knob whose default points the
+    same way as its tuned value (`yaw_fit` this morning) prints the same word in a broken and a working arm, and
+    only the pair tells them apart. ~1.7 s per child on the laptop, wrapped in `timeout 120` so a hang fails by name.
+200. **The tooling you write the record with has the round's failure shape too.** Twice on 2026-09-20 a
+    `git commit -m "..."` with backticks inside double quotes let the shell substitute a command and silently eat a
+    phrase from the message ("The per-phase `no_damage` flag" committed as "The per-phase  flag"; a merge message lost
+    a backticked name the same way), exit 0, looked fine at a glance, caught only by reading the message back. And
+    control's teardown audit produced two false counts from grep before the true one (`super()` reaches the base as
+    well as `super.teardown()`; `own(` matched inside `teardown(`): a grep result is a claim about a pattern, not
+    about the code. Rules: commit messages with any punctuation go through a heredoc or a file, never a double-quoted
+    `-m`; read the message back before reporting the hash; and a count from grep is verified on the code before it
+    travels, the same as any other number.
+    **Third instance of lesson 192's addendum, same day (metrics):** after nav sealed `_teardown()`, the scenario
+    runner's `case.teardown()` at `run_scenarios.gd:70` still compiled and still did something (the hook), so git
+    merged it clean and no conflict pointed at it; every AI scenario ran without the body guard and the drain until
+    metrics read the call sites. Two runners, one rule, and a signature change is followed by reading every caller,
+    not every conflict.
+    **And the inverse, same evening (combat):** main's last red arrived after combat had closed, in a test it owned,
+    and both the orchestrator's and combat's first readings reached for timing because the numbers looked like a
+    race (`0 -> 2` then `2 -> 2`). The correct reading was available only by opening main's `test_case.gd`, the
+    file combat did not have in its tree: the seal had moved the drain out of the hook the test called mid-loop,
+    and the seal's own docstring listed the supported replacement. A symptom that looks like a race is read from
+    the file before it is read from the numbers.

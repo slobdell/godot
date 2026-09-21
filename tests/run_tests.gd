@@ -10,24 +10,40 @@ extends SceneTree
 ## error logged while a test runs also fails that test. For the same reason a file that fails to load, or that has no
 ## test_ methods at all (what a parse error leaves behind), is reported as a failure instead of being skipped.
 
+const ALLOWLIST := "res://tests/baselines/engine_expected.txt"
 const TEST_ROOT := "res://tests"
 
 
 ## Collects every error the engine logs (script errors, push_error, failed checks).
 class ErrorCollector extends Logger:
-	var messages: PackedStringArray = []
+	## Errors and warnings are recorded SEPARATELY. This used to ignore `_error_type` entirely, so every
+	## `push_warning` on a production path a test exercised arrived as "engine error: ..." and failed the
+	## test with no way to tell the two apart and no way to declare an expected one -- feel's city-block
+	## determinism test could not pass as written. Warnings still fail by default; they are now countable,
+	## nameable, and declarable with TestCase.expect_warning().
+	var entries: Array[Dictionary] = []
 	var _mutex := Mutex.new()
 
 	func _log_error(function: String, file: String, line: int, code: String, rationale: String,
-			_editor_notify: bool, _error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
+			_editor_notify: bool, error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
 		_mutex.lock()
-		messages.append("%s (%s:%d in %s)" % [rationale if rationale != "" else code, file, line, function])
+		entries.append({
+			"warning": error_type == Logger.ERROR_TYPE_WARNING,
+			# The raw type, carried so a message that is classified surprisingly says so itself. A Jolt
+			# job-system message that Godot's console printed as `WARNING:` reached this check as a
+			# non-warning and failed a test (builder0, 2026-09-20); a probe confirmed the enum
+			# (error=0 warning=1 script=2 shader=3) and that `push_warning` arrives as 1, but could not
+			# reproduce a C++-side warning, so WHY that message is not a 1 is still open. Printing the
+			# number means the next occurrence answers it instead of costing another probe.
+			"type": error_type,
+			"text": "%s (%s:%d in %s)" % [rationale if rationale != "" else code, file, line, function],
+		})
 		_mutex.unlock()
 
-	func take() -> PackedStringArray:
+	func take() -> Array[Dictionary]:
 		_mutex.lock()
-		var taken := messages
-		messages = PackedStringArray()
+		var taken := entries
+		entries = []
 		_mutex.unlock()
 		return taken
 
@@ -42,7 +58,17 @@ func _run() -> void:
 	OS.add_logger(errors)
 	var passed := 0
 	var failed := 0
+	var total_engine_errors := 0
+	var total_engine_warnings := 0
+	var charged_by_text := {}
+	var allowed := _read_allowlist()
+	var allowed_total := 0
+	var allow_used := {}
 	# `make test FILTER=bot` passes --filter=bot: run only tests whose "file::method" contains it.
+	# `|` separates ALTERNATIVES -- FILTER="bot|relay" runs tests matching either. It is not a regex, and
+	# saying so matters: `make test FILTER="a|b"` used to reach a shell unquoted and exit 127 without running
+	# anything (it bit combat twice on 2026-09-20), and merely quoting it through would have run nothing at
+	# all while reporting success, which is worse.
 	var filter := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--filter="):
@@ -60,6 +86,11 @@ func _run() -> void:
 			if parts.size() == 2:
 				shard = int(parts[0])
 				shards = maxi(1, int(parts[1]))
+	var filter_parts := PackedStringArray()
+	for part in filter.split("|", false):
+		var trimmed := part.strip_edges()
+		if trimmed != "":
+			filter_parts.append(trimmed)
 	var discovered := _discover(TEST_ROOT)
 	var mine := PackedStringArray()
 	for index in discovered.size():
@@ -80,7 +111,7 @@ func _run() -> void:
 				test_methods += 1
 		var stem := path.get_file().get_basename()
 		# tests/test_case.gd is the base class every case extends, not a case itself.
-		if test_methods == 0 and stem != "test_case" and (filter == "" or stem.contains(filter)):
+		if test_methods == 0 and stem != "test_case" and _matches(stem, filter_parts):
 			failed += 1
 			print("  FAIL  ", stem, "::<file>")
 			print("          no test_ methods: a parse error leaves a loadable script with none")
@@ -89,16 +120,40 @@ func _run() -> void:
 			var method_name: String = method["name"]
 			if not method_name.begins_with("test_"):
 				continue
-			if filter != "" and not ("%s::%s" % [path.get_file().get_basename(), method_name]).contains(filter):
+			if not _matches("%s::%s" % [path.get_file().get_basename(), method_name], filter_parts):
 				continue
 			var case: TestCase = script.new()
 			case.tree = self
 			errors.take()
 			await case.call(method_name)
-			case.teardown()
-			for message in errors.take():
-				case.failures.append("engine error: " + message)
+			# AWAITED, and SEALED: `_teardown()` owns the order (hook, free, body guard, drain) because the drain
+			# needs frames and a `teardown()` that must be awaited but may be declared `-> void` cannot be made safe
+			# by review -- five files called it un-awaited and four silently skipped the drain for as long as it
+			# existed. `TestCase.teardown()` is now a synchronous hook that `_teardown()` calls.
+			await case._teardown()
+			var engine: Dictionary = TestCase.reconcile_engine_messages(
+					errors.take(), case.expected_warnings, case.expected_errors, allowed)
+			allowed_total += int(engine["allowed_seen"])
+			for pattern: String in PackedStringArray(engine["allow_matched"]):
+				allow_used[pattern] = true
+			total_engine_errors += int(engine["errors"])
+			total_engine_warnings += int(engine["warnings"])
+			var engine_failures: PackedStringArray = engine["failures"]
+			case.failures.append_array(engine_failures)
 			var label := "%s::%s" % [path.get_file().get_basename(), method_name]
+			for text: String in PackedStringArray(engine["texts"]):
+				# COUNT TESTS, NOT OCCURRENCES. A test that emits the same warning twice is one victim, not
+				# two, and the first version of this counted occurrences while calling them tests: it
+				# reported "2 tests" for `test_theme_city_block`, which drives the same bad colour name
+				# twice on purpose and is a single test. Caught by this feature's own first real output
+				# (builder0, 59927de9) -- a count whose name does not match what it counts, in the commit
+				# about attribution. Tests run in order within a shard, so the last label is enough.
+				if not charged_by_text.has(text):
+					charged_by_text[text] = [0, label, ""]
+				var row: Array = charged_by_text[text]
+				if String(row[2]) != label:
+					row[0] = int(row[0]) + 1
+					row[2] = label
 			if case.failures.is_empty():
 				passed += 1
 				print("  PASS  ", label)
@@ -110,11 +165,78 @@ func _run() -> void:
 	# A shard prints a DISTINCT line and never the bare one, so that in a sharded run there is exactly one
 	# `N passed, M failed` in the output -- the total, printed by the make recipe after it adds the shards up.
 	# The orchestrator reads that line and nothing else (lesson 28); several of them would be worse than none.
+	# ONE CAUSE, MANY VICTIMS. A leaked object outlives the test that made it, so its warning lands on
+	# whoever runs next: one arena holder in combat's sim_cost test failed 22 tests in one shard. Twenty-two
+	# red tests sharing a message are one defect, and the first test to see it is the one worth reading --
+	# the rest are downstream. The warnings-fail rule is right and loud; this only fixes the ATTRIBUTION.
+	var shared := []
+	for text: String in charged_by_text:
+		var row: Array = charged_by_text[text]
+		if int(row[0]) > 1:
+			shared.append([int(row[0]), String(row[1]), text])
+	if not shared.is_empty():
+		shared.sort_custom(func(a: Array, b: Array) -> bool: return int(a[0]) > int(b[0]))
+		print("\nENGINE MESSAGES THAT FAILED MORE THAN ONE TEST (one cause, many victims):")
+		for entry: Array in shared:
+			print("  %d tests: %s" % [int(entry[0]), String(entry[2])])
+			print("      first seen in %s -- the tests after it are probably downstream, not guilty." % [String(entry[1])])
+
+	# An exemption that is silent cannot be told from a run in which nothing happened, so the allowlist
+	# reports both halves: what it absorbed, and which of its lines no longer occur. The second is how the
+	# list gets SHORTER -- a blanket exemption nobody revisits is the cost of having this file at all.
+	if not allowed.is_empty():
+		print("\nexpected engine messages: %d seen, from %d allowed pattern(s) in %s"
+				% [allowed_total, allowed.size(), ALLOWLIST])
+		var unused: PackedStringArray = []
+		for pattern: String in allowed:
+			if not allow_used.has(pattern):
+				unused.append(pattern)
+		if not unused.is_empty():
+			print("  %d pattern(s) matched nothing this run -- tighten %s:" % [unused.size(), ALLOWLIST])
+			for pattern: String in unused:
+				print("      %s" % pattern)
+
+	# The engine tally goes on its OWN line, never inside the summary the orchestrator reads (lesson 28). The
+	# make recipe sums the sharded ones the same way it sums the rest.
 	if shard >= 0:
-		print("\nSHARD %d/%d: %d files, %d passed, %d failed" % [shard, shards, mine.size(), passed, failed])
+		print("\nSHARD-ENGINE %d/%d: %d errors, %d warnings" % [shard, shards, total_engine_errors, total_engine_warnings])
+		print("SHARD %d/%d: %d files, %d passed, %d failed" % [shard, shards, mine.size(), passed, failed])
 	else:
-		print("\n%d passed, %d failed" % [passed, failed])
+		print("\nengine: %d errors, %d warnings" % [total_engine_errors, total_engine_warnings])
+		print("%d passed, %d failed" % [passed, failed])
+	# A FILTER THAT MATCHES NOTHING IS NOT A PASS. `make test FILTER=typo` printed "0 passed, 0 failed" and
+	# exited 0, so a mistyped filter read exactly like a clean run of the tests you meant -- the same shape as
+	# `lint` over zero files, and the reason a green filtered run was never evidence of anything.
+	if not filter_parts.is_empty() and passed + failed == 0:
+		print("\nFILTER MATCHED NO TESTS: nothing contains %s." % [", ".join(filter_parts)])
+		print("  This is a failure, not an empty pass: a run of zero tests says nothing about the code.")
+		print("  The filter is a SUBSTRING of \"file::method\" (use | for alternatives), not a regex.")
+		quit(1)
 	quit(1 if failed > 0 else 0)
+
+
+## Does `label` match any alternative? No alternatives means everything matches.
+static func _matches(label: String, parts: PackedStringArray) -> bool:
+	if parts.is_empty():
+		return true
+	for part in parts:
+		if label.contains(part):
+			return true
+	return false
+
+
+## Engine messages allowed by name, one pattern per line, `#` comments. Absent or empty is not an error:
+## the allowlist is an exception mechanism, and a project with no exceptions is the goal, not a fault.
+func _read_allowlist() -> PackedStringArray:
+	var patterns: PackedStringArray = []
+	var file := FileAccess.open(ALLOWLIST, FileAccess.READ)
+	if file == null:
+		return patterns
+	while not file.eof_reached():
+		var line := file.get_line().strip_edges()
+		if line != "" and not line.begins_with("#"):
+			patterns.append(line)
+	return patterns
 
 
 func _discover(dir_path: String) -> PackedStringArray:

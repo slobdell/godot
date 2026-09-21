@@ -60,7 +60,7 @@
     62.0
    ],
    "rotation_deg": 0.0,
-   "tiers": 4,
+   "tiers": 3,
    "neon": "magenta",
    "seed": 37
   },
@@ -71,7 +71,7 @@
     -62.0
    ],
    "rotation_deg": 180.0,
-   "tiers": 4,
+   "tiers": 3,
    "neon": "magenta",
    "seed": 37
   },
@@ -392,6 +392,54 @@
    "position": [
     -42.0,
     -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    14.0,
+    14.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -14.0,
+    -14.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -35.0,
+    31.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    35.0,
+    -31.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    66.0,
+    6.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -66.0,
+    -6.0
    ],
    "rotation_deg": 180.0
   },

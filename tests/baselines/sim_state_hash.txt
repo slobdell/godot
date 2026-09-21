@@ -1,1 +1,2 @@
-glibc-2.43 2d5215a8a0a59ded
+# glibc-2.43: recorded on builder0 at 7f8eeab8, twice, agreeing (2026-09-20)
+glibc-2.43 1ea332e7bc268d2a

@@ -205,5 +205,7 @@ func test_the_price_can_be_tuned_to_zero_for_a_control_arm() -> void:
 	SwitchingCost.tuning.clear()
 
 
+## Reaches the base, for the same reason as its siblings: owning nothing today is not a property that stays true.
 func teardown() -> void:
 	SwitchingCost.tuning.clear()
+	await super.teardown()

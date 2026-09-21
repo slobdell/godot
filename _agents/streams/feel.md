@@ -182,6 +182,30 @@ cannot spare). Pre-register the sim hash unchanged; if it moves, it is the same 
 ## Status
 ### THE REPORT — read this first; everything below it is the working record
 
+**FRAMES FOR THE LEAD, all on this laptop:**
+
+| what | path | pose |
+|---|---|---|
+| **The roster at real relative scale** | `build/roster-lineup/lineup_pose.png` | **his** (21°, FOV 35, 49 m) |
+| the same, four faction rows | `build/roster-lineup/lineup_factions.png` | — |
+| **The War Rig bending** | `build/rig-hinge/strip_45.png` (reads best), `strip_21.png` (his pose), `strip_reverse_60.png` (jackknife) | 45° / **his** / 60° |
+| **The Syndicate airship** | `build/airship-look/airship_widest.png` | 8° tilt — **he cannot see it at 21°**, see §2 |
+| **The Terminus out-reading its own fight** | `build/terminus-luminance/terminus_pitch21_fov35_49m_default-camera.png` | **his** — the evidence for the 22/30 finding |
+
+**My look at the resize (the one subjective check I owe on CP2): it works.** `lineup_pose.png` runs Rat Rod **2.9 m**
+→ War Rig **14.0 m** and the rig **dominates** — visibly five times the rat rod and clearly larger than the
+Condemned Tank at 8.6 m. That is the thing he asked for. Two observations, neither a defect:
+
+- **The Syndicate reads as a different game, and that is the art direction working.** The Railgun Platform is
+  pristine white against everyone else's rust and soot — `art_direction.md` calls the Syndicate the ivory tower
+  with almost no rust, so this is intended; at roster scale it is simply very legible.
+- **The Syndicate is fewer AND smaller** (Skimmer 4.0, Spotter 4.0, Limousine Gunship 4.6, Missile Ring 4.9,
+  Railgun Platform 5.4 — the whole faction sits under 5.5 m while three other factions field 8 m+). Their doctrine
+  is "fields almost nothing but guns and the eyes to aim them", which argues for fewer-but-bigger. **A look
+  question for the lead, not a defect** — the numbers are derived from real reference vehicles, so if it reads
+  wrong the reference is what changes.
+
+
 **Round 9, feel. Green at `5ae7e531`** (builder0: `>> remote: make check exited 0`, `check passed: 16 targets`,
 **1,316 passed / 0 failed**, `sim-baseline passed: 04414f5d6a6dfa7c` — unchanged —, `lint: all 543 scripts parse,
 8 known artefacts baselined`). Merged to main. *(Squad's later merge moved the baseline to `d4c049819a5833d3`;
@@ -246,10 +270,225 @@ heading law, measured no change, and spent a round arguing about the tolerance."
 
 | item | state |
 |---|---|
-| The hinge's frame cost (M1) | **Not reportable yet.** GPU cost indistinguishable from zero; the CPU number came off a machine running eight other jobs and is noise. Re-runs on a quiet box. |
+| The hinge's frame cost (M1) | **Not measured, and the quiet box did not fix it.** Two six-cycle runs on an *empty* builder0 both came back NOT USABLE. The cause is now sized: frame cost regresses on vehicle census at **0.677 ms per vehicle (r 0.921, r² 0.85)**, and the battle thins monotonically through the run (90 → 72), so census alone is worth +0.68…+3.38 ms per cycle against a total cost spread of 6.39 ms and a mean of +0.01 ms. **The confound is the size of the signal, and in one cycle larger than it** — and it is a drift, not noise, so more cycles will not average it away. Needs combat's census-freeze tune (damage off, no deaths, no respawns, default off); the bench will then *require* it and refuse to report when it is off. Do not quote a trailer number until then. |
 | The Terminus lighting | Diagnosed and handed to the stream that owns the map file |
-| Roof dressing on the Terminus | Your new camera shows roofs far more often; they are undressed. A frame first, then surface treatment |
+| Roof dressing on the Terminus | **Built, looked at, fixed, and green at `19e258d2`** (9/0). Seven seeded housings/ducts/tanks per roof, inside `_shrink(poly, 2.2)` so nothing overhangs the parapet. **Cost: no new draw call and no new material** — appended to the block's existing SurfaceTool, so a block is still the two surfaces its docstring promises; the test asserts the surface count rather than trusting it. The band is taken OUT of the authored height, not added on top, because the mesh must stay inside the collision box ("what blocks a hull and a shot is what you see"); total height unchanged. Frames below. |
+| The artillery contract check (X4) | **Fixed and green at `9cc69e0b`.** The slot check compared the *authored* pose (legs down, 2.31 m wide) against a box derived from the *driving* pose and blamed the mesh. It now reads the driving silhouette through the shipping theme's part. Refit by length: 1.41 × 2.05 = **2.89** against scale's committed **2.90** — the same box from a third direction. The lookup has its own two tests because it is the link that fails *silently*: a wrong lookup returns `Vector3.ZERO` and the caller quietly falls back to the authored bounds, which is exactly what my first version did. |
 | Every-unit hitbox check (X4) | **Written and it found something on its first run** — see below. **Unverified**: builder0 went off the network mid-check. |
+
+**The hinge cost is UNMEASURED at round's end, after three attempts and three refusals — and that is the honest
+result, not a number.** Each refusal had a different cause and each was the bench correctly declining:
+
+| attempt | why it was refused |
+|---|---|
+| busy box | frame-time spread swamped an effect under 1.5 ms (lesson 179) |
+| quiet box, 6 cycles, twice | census walked 90 → 72 as the battle thinned; **0.677 ms/vehicle (r 0.921)**, the size of the signal |
+| with `--tune=match.no_damage=1` | **the freeze did not take** — `Armor.no_damage` read false in 13 of 13 phases |
+
+The third is the one worth keeping: the flag was on the command line, `apply_tuning` printed **no error** (accepted),
+and the static the damage path reads was still false while the census walked 90 → 77. That is combat's
+initialisation-order bug on a second knob, **measured by the bench's own arm assertion** — which is what makes that
+assertion load-bearing rather than decorative. "Accepted with no error" carried no information whatsoever.
+*(That run was also on a box at load 8.22 with 25 other Godot processes, 78–100 ms frames against a 33.3 ms budget:
+void twice over.)*
+
+**A caveat on reading that check, from combat:** a leak does not only *fail* the next test, it **silently changes
+what the next test measures** — their wall fixture's rig moved 8 cm and went from `applied 0` to `applied 3` the
+moment the leaking teardown started freeing. So the 38 failures are a lower bound on the cost, and a **pass** in a
+shard that follows a leak is not trustworthy either. My four roof tests are robust to it by construction (they
+assert surface count, AABB and vertex positions on a freshly built `CityBlock`, with no dependence on world state),
+which is why I am willing to call them green — but that is a property of those tests, not a general licence.
+
+**ROUND 10, carried forward:**
+
+1. **A faint per-faction rim light on hulls** — the orchestrator's recommendation and the real answer to "the fight
+   should out-read the buildings". Lamps were never going to solve it: they light the *floor*, and a dark hull
+   between pools is still carried by its UI ring. Pair discipline and the readability gate apply.
+2. **The hinge cost**, once combat's `Units.tuning` fix is on main. The bench is already wired and will refuse
+   again if the knob still does not take.
+3. **A single-variable lamp pair**, if anyone wants the lamp claim on stricter footing than the current one (the
+   after-frame carries the roof dressing too; sound for the floor question, not single-variable).
+
+**And a rule I owe myself, from this round's last mistake: when you change SHARED geometry, run the neighbouring
+files before you push.** I changed `tiers_of` and the block shader and ran only `FILTER=theme_city_block`. The check
+came back with 38 reds in `test_theme_factions` and `test_theme_unit_scale` — both mine — and my first assumption was
+that I had broken them. I had not (they were combat's foundry leak, first-observed), but I had no grounds for the
+relief. Two minutes of local runs would have made it knowledge instead of luck.
+
+**The frame said the first version did not work, and every test passed while it did not.** All seven boxes place
+on every seed (counted: 28 distinct plant corners above the roof cap), the surface count was 2, the AABB was inside
+the box — and at the lifted camera the plant was *shapes you had to look for*. The shading sat at **+25% on tops and
+−28% on sides** of the roof's own value, which in a scene this dark is no contrast at all. **Nothing in the suite
+measures legibility, so nothing failed.** Fixed at `19e258d2`: tops catch the sky at ~2× the roof, sides fall well
+under, and a per-unit hash off the world position stops neighbouring boxes merging into one mass. At `p35-d120`
+every block now reads as a working rooftop against the flat slabs of the before-frame.
+
+**Frames, all `--no-show` so the light show cannot be credited for any of it:**
+
+| what | path |
+|---|---|
+| Terminus **before** (2 lamps, bare roofs) | `scratchpad/frames/prelamp-p{21,50}-noshow.png` |
+| Terminus **after** (8 lamps, dressed roofs) | `scratchpad/frames/v2-p{21-d049-f35,35-d120,50-d160}.png` |
+| the roof three-way (before / subtle / fixed) | `scratchpad/frames/roof_three.png` |
+
+**The lamp A/B is now a real pair** and it is positive: in the before-frame the plaza is uniformly dark apart from
+the two original perimeter glows; in the after there are warm pools where the six new lamps are. Earlier I tried to
+get this from a difference image against a **show-ON** frame and discarded it — that conflated six lamps with the
+whole light show. One caveat on the pair as it now stands: the after also carries the roof dressing, so it is not a
+single-variable change. For the **floor** question it is still sound, because plant 24 m up cannot light the street.
+
+**Two traps the roof dressing walked into, both caught before any frame was rendered.**
+
+1. **The plant needed its own shader band, not the roof's.** The roof branch shades *every* non-upward face as a lit
+   parapet edge (`bevel_face = world_normal.y < 0.9` → `edge` colour and `edge_mask = 1.0`). Tagged as roof, a duct
+   would have had **four glowing sides**. Hence `PART_CLUTTER` and a `part < 0.85` band between the shopfronts and
+   the roof.
+2. **The tag is 0.8, not the 0.75 I first wrote, and 0.75 would have failed silently.** Vertex colours may be 8-bit
+   and the clutter band sits above the shopfronts' `part < 0.75`: **0.75 quantises to 191/255 = 0.7490, below its
+   own band's floor**, so every duct on every roof would have shaded as a shopfront — and only in builds that
+   quantise, so it could have shipped looking fine here. 0.8 is 204/255 exactly. There is a test asserting the tag
+   survives the round trip, because this is not the kind of thing anyone rediscovers by looking.
+
+**And one invariant deliberately broken:** `tiers_of`'s last tier used to end at the block's authored height and a
+test asserted it. It now stops `ROOF_CLUTTER_H` short, because reserving the band is what keeps the mesh inside the
+collision box. Nothing outside this file and its tests reads `tiers_of` — checked, not assumed — and the invariant a
+reader actually cares about (a block is as tall as its layout says) is unchanged and asserted on the mesh AABB.
+
+**Terminus lamps (scale's six inside the grid, `fba3b298`): floor YES, vehicles NO.** Frames
+`build/crowd-look/ahead-p{21-d049-f35,35-d120,50-d160}.png`, `make remote T="crowd-look ARENA=terminus
+CROWD_FLAGS=--no-show"` at `e9122334`.
+
+- **Does the floor read as improvised light? Yes.** Discrete warm pools with real falloff, hazard-striped rings at
+  their bases, genuinely dark asphalt between. Reads as work lights bolted up, not street lighting. **The
+  municipal-lattice objection is answered** — the pools sit at a corner, a ring road and a street, not on a
+  spacing.
+- **Do the vehicles read without the UI rings? No.** What carries a hull is its *own* neon — flank strips, hazard
+  chevrons — not the lamps. A dark hull between pools is near-invisible on the asphalt. **The lamps add
+  atmosphere, not legibility**, and legibility is a separate ask (more pools where units fight, or vehicle-side
+  contrast) that should be decided rather than hoped for as a side effect.
+- **At his own pose the lamps are not in shot at all.** 21°/FOV 35/49 m frames his army; at spawn that is ~72 m
+  from the nearest lamp. So the improvement is to mid-match play, not to the opening.
+
+**Two instrument lessons from this one, both mine:**
+
+1. **`size-look` cannot answer an arena-lighting question** and I nearly published a verdict from it. It always
+   frames the *player's army at spawn*, and every arena's spawns are at the rim while the dressing that matters is
+   in the middle — army centre `[-1.2, 94.2]`, nearest lamp **71.7 m** away, framed floor ~40–60 m across. The
+   render was clean, at the right pose, and the subject was not in it. Use `crowd-look ARENA=<x>
+   CROWD_FLAGS=--no-show`, which shoots the wide poses too. *(Ruled round-wide by the orchestrator.)*
+2. **A difference image against a show-ON frame is not a lamp A/B.** I built one and discarded it: my only
+   "before" was shot with the show on and the after with `--no-show`, so it conflated six lamps with the whole
+   light show being switched off — lighting.md rule 12's exact trap, walked into by reusing a frame that was not
+   the other half of a pair. **The floor verdict above therefore rests on the after-frames plus the 10:20
+   baseline, not on a clean A/B**; a true pair needs a pre-merge `--no-show` frame and is one render away.
+
+Also worth knowing for any future frame: **the bright cyan pools under units are UI rings, not light.** Cropped and
+zoomed they are saturated hard-edged annuli that tint the hull cyan. Do not read the HUD as pooling.
+
+**Terminus roof dressing: the frame first, and the frame settles it.** Frames at
+`build/crowd-look/ahead-p{21-d049-f35,35-d120,50-d160}.png` (builder0, `d91dd0e6`, `make crowd-look ARENA=terminus`
+— reused rather than writing a bench, since it already shoots every zoom plus the lead's 21°/FOV 35/49 m pose).
+
+At the lead's own pose the facades fill the frame and the roofs are distant slivers, so **this is not a problem at
+21°**. At the lifted poses it is unmistakable: at `p35-d120` and `p50-d160` the eight blocks' roofs are the largest
+uninterrupted surfaces on screen and carry **nothing at all** — no parapet, plant, vent, tank, aerial or skylight —
+while everything around them is dense (facades on a lit window grid with neon edge lines, crowd stands, marked
+ground). The roofs are the one place the eye finds no information.
+
+**The size of it, derived rather than eyeballed:** 8 blocks at `CityBlock.DEFAULT_SIZE` 40 × 40 m give **12,176 m²
+of top roof plus 624 m² of setback ledge = 12,800 m², which is 16.3% of the arena's 280 × 280 m plan area.** That
+is the fraction of the map that is currently blank.
+
+**Dressing budget, stated in draw calls before any triangle is authored:** all roof dressing across the whole arena
+**≤ 8 draw calls** (one merged mesh per block) and **1–2 if it goes in a single `MultiMesh`**, which is what it
+should do — the item count then stops mattering and only the instance count does. Against the 259–325 draw calls a
+30-a-side match measures (`perf-trailer`, builder0 11:05, on `pit`; Terminus not separately measured, which is why
+the budget is written as a delta and not a total) that is **under 3%**. Anything that cannot be built inside that
+is too expensive for scenery nobody fights on.
+
+**Rule 12 applies the moment any of it emits.** Roof dressing is static arena art, not a show cue, so it sits in
+*both* halves of a `driving`-toggled pair and cancels. Any visual claim about lit roof dressing is therefore a pair
+or it is not a claim — and if a readability gate starts blaming the show for a roof aerial, the gate is wrong, not
+the aerial (lighting.md rule 12, which has already earned this twice on this arena via feel's neon band).
+
+**Found while measuring, and it is a defect rather than a taste question: two blocks ask for 4 tiers and silently
+get 3.** `arenas/terminus.json` has `tiers: 4` on the blocks at `[30, 62]` and `[-30, -62]`; `CityBlock.setup` does
+`clampi(int(obstacle.get("tiers", ...)), 1, 3)`, so the value is capped with no warning and the author's intent is
+lost in silence. Those two buildings are shorter and their roofs flatter than the layout asks for, which is part of
+why the roofline reads uniform. **Same shape as the neon-name bug fixed earlier in this file** — an unresolvable
+value quietly becoming a plausible one — and the same fix: `Arena.validate()` should reject a `tiers` outside 1–3
+instead of the mesh builder swallowing it. The clamp is in feel's file; the layout value is scale's.
+
+**The round-8 re-measure on the resized roster: DONE, both arenas, and the answer is that the unwinnable matchup
+is gone.** Same arms as the originals, read out of each reference's own `args` block rather than re-invented
+(`budget 5200, seeds 5, jobs 8, time_limit 150, directives ON`); 60 matches per arena, each pairing counterbalanced.
+Run on builder0 at `933b4882`; references are `faction-matrix-{pit,yard}-rig14m-2026-09-19.json`.
+
+**Read the matchups, not the factions** — combat's round-8 lesson, and on `pit` it is the whole story:
+
+| | pit: round 8 → now | yard: round 8 → now |
+|---|---|---|
+| **gangs vs law** (the 0/20) | **0% → 20%** | **0% → 50%** |
+| gangs pooled | 30% → **30%** (unmoved) | 27% → **53%** |
+| gangs worst matchup | 0% → 20% | 0% → 50% |
+| gangs spread | 50 → 20 pts | 40 → 10 pts |
+
+**On `pit` the pooled gangs rate is 30% before and after — identical — while the matchup that was unwinnable is
+not any more.** That is exactly the pooling trap combat named in round 8 (there it hid a collapse; here it hides
+an improvement), and the default table the target prints is the pooled one. The rig bought its 0% cell back by
+paying ~10 points in each of its two playable matchups, which is why the average does not move.
+
+On `yard` the same change is large enough to show through the pooling: gangs go from the bottom faction to even.
+The lowest cell in the whole matrix went **0% → 20%** (pit) and **0% → 50%** (yard), and three of four factions'
+spreads narrowed on pit. **No matchup on either arena is unwinnable now**, which for a game about squad tactics is
+a better result than any movement in the pooled rates.
+
+**Two caveats, stated rather than left to be inferred.** Ten matches per cell means one match is 10 points, so the
+±10 and ±20 movements are one and two matches — noise-sized; only the +50, the 0→20, and gangs' pooled 27 → 53 are
+large enough to lean on. And the new runs list the factions as `condemned,gangs,law,syndicate` against the
+references' `gangs,condemned,law,syndicate` — the same set in a different order, which should not bias a
+counterbalanced pairing, but it is a difference from the reference arm and it is recorded rather than smoothed
+over. **This is a balance result and belongs to combat**, not to art; it is reported, not acted on.
+
+**Handed to squad, 2026-09-20: `spawns_clear_of_itself` is not flaky, it samples one frame early.** The test had
+been read as a shard-schedule flake (green at 71/71/71, red at 69/68/68, same code). It reproduces on the laptop at
+`--shard=3/5` with a pair list byte-identical to builder0's — `Green_S2_2/S2_3`, `Green_S4_1/S4_3` and the Rust
+twins — so it is deterministic, not random. Overlap count by physics frame (probe run against the same army and
+seed, then deleted; nothing committed):
+
+| frame | 0 (placement) | 1 | 2 | 3 | 5 | 10 | 20 |
+|---|---|---|---|---|---|---|---|
+| overlaps | 0 | 0 | **4** | 4 | 4 | 4 | 3 |
+
+**Placement is clean; the first couple of physics steps create the overlap**, and the test reads after one physics
+frame — the last clean instant. So the ruled fix ("sample after settling, capped at ten frames") samples where all
+four still are and will not turn it green. The overlap itself looks like a CP2 consequence: the pairs converge to a
+stable lateral pitch of **3.15 m** while the assertion needs `(2.90 + 2.76)/2 + 0.5 = 3.33 m` — short by ~0.18 m,
+every time, and every failing pair is two of the three widest hulls abreast (artillery 2.90, ifv 2.86, lancer 2.76;
+the scout at 1.81 never appears). Points at the wedge's lateral slot pitch against the widened roster. **Squad's
+file and squad's call — not touched here.** The one-frame-margin mechanism was handed over as a hypothesis, not a
+proof: what the sampled instant actually is under a shard was not instrumented.
+
+*Lesson 185's shape a fourth time: "flaky" was a true description that stopped the search.*
+
+**S1 record — the Condemned artillery's box, 2.90 m wide, agreed by three independent routes.** S1 requires the
+numbers to be *derived and checked, not mirrored* (Invariant 0), and a single derivation that agrees with itself is
+exactly what that rule is aimed at. The box was measured in the pose the unit is shot at in (stowed, outriggers in)
+rather than the pose the concept was approved in (deployed, 4.74 m wide), and three routes that share no code path
+landed on the same number:
+
+1. **Drawn-vs-box test** (`test_theme_unit_scale`, feel): the drawn mesh fits inside the catalogue box on every
+   axis — **2.90**.
+2. **`DRIVING_BOUNDS` print** (`test_assets_outriggers`, feel): authored `2.31 × 1.38 × 4.00` → driving
+   `1.41 × 1.38 × 4.00`; refit by length to the slot's 8.20 m is `1.41 × 2.05 =` **2.89**.
+3. **Inversion of the committed value** (scale, `roster-scale`): the committed `4.74` inverted through the same
+   refit gives the stowed width back — scale's derivation, arrived at from the catalogue side, not the mesh side.
+
+The 2.89/2.90 gap is `snappedf(x, 0.01)`'s rounding and nothing else, which is checkable rather than asserted:
+`snappedf` is invertible, so the committed value brackets the underlying width to `[1.373171, 1.378049)` — scale's
+figure, which I verified independently after quoting an eyeballed `[1.3750, 1.3784]` that was not derived. Route 2
+is the one that can fail silently (a bad slot lookup returns `Vector3.ZERO` and the caller falls back to the
+authored bounds without raising), so it carries its own two tests and its failure was demonstrated, not assumed.
 
 
 ### Plan (feel, 2026-09-20)
@@ -381,54 +620,90 @@ found this alone, and it is the cleanest instance of Invariant 2's own warning t
 still fails is a real finding, not something to widen the tolerance for.** A tolerance chosen to make the red go
 away is not a tolerance.
 
-### ⏹ STANDING BY (05:45). Everything in the backlog is done or owed; here is the exact next step
+### What is actually verified on the merged tree (run, not inferred — 2026-09-20, laptop, filtered)
 
-**No process of mine is running on either machine, and no local Godot runs at all until morning** (orchestrator:
-the laptop was at 245 MB free with nine sessions live). The slot I was holding is released and its `.owner` file
-removed.
+**I claimed three files passed that had never executed**, so these were re-run **with `;` rather than `&&`, so each
+file reports its own line**:
 
-**`main` is merged into `stream/feel`** — clean, zero behind, clean tree. **The merged tree is NOT verified on my
-branch**: three of four post-merge test files had passed when I stopped the run for the memory call and the fourth
-had not reported, so **do not read the last green (`5ae7e531`) as covering the merge.** X4's remote check will be
-the first pass over it, which is the right place for it.
+| file | result |
+|---|---|
+| `test_theme_trailer` | **12 passed, 0 failed** |
+| `test_theme_airship` | **5 passed, 0 failed** |
+| `test_assets_outriggers` | **6 passed, 0 failed** |
+| `test_theme_city_block` | **5 passed, 0 failed** (after `a33638b8`) |
+| `test_theme_unit_scale` | **1 failed** — the artillery handover red, expected |
+| `test_units_scale` (scale's) | **1 failed** — same artillery cause, `2.9 m` |
 
-**Two items left, both waiting on someone else's clock:**
+**The lesson, in its general form:** an `&&` chain reports the first failure and **silence** for everything after
+it, and silence reads exactly like success at the bottom of a log. **A batch claim has to name each file's own
+passed/failed line.** I read one summary line, took it for four files, and told another stream three of them had
+passed — one of which was genuinely broken and merged on that claim. It is the round's recurring shape
+(*something that looked finished and was not*) arriving in my own reporting rather than in someone's code.
 
-1. **X4 — the every-unit box-fill test — the moment CP2 lands.** If CP2 misses its window tonight this is the
-   first thing after the lead's morning merge, so here it is as commands rather than a description.
+### READY TO RUN the moment the orchestrator calls the quiet window (three runs, in this order)
 
-   **The seed is alive and verified reachable (checked 06:55):** branch **`feel-rig-check`**, commit
-   **`26e1f26a`**, one file, `tests/test_theme_unit_scale.gd`, 14 lines. Read it with
-   `git show 26e1f26a -- tests/`. It asserts, for `gang_tank` and `gang_support` only, that the **drawn** mesh
-   matches `hull_size` on every axis within 5%.
+**Why they wait: two of the three are TIMING or BEHAVIOUR measurements, and builder0 was at load 20.89 with 67
+Godot processes and six resident checks when I checked.** A screenshot is slowed by contention; a frame-time
+number is *destroyed* by it, and the load is exactly the signal you are trying to see past.
 
-   ```bash
-   cd ~/projects/godot-feel
-   git merge main                      # LOCAL main, never origin/main; no remote run of mine in flight
-   git show 26e1f26a -- tests/         # the seed, to generalise from
-   # generalise: every unit with art, not the two semis; keep the 5% and the per-axis message
-   REMOTE_SLOTS=6 make remote T="test FILTER=unit_scale"
-   REMOTE_SLOTS=6 make remote T=check  # the merge candidate, and 637ad4de rides it
-   ```
+```bash
+# 1. M1: the hinge's frame cost. Self-judging: per-cycle bracketed costs, warm-up cycle discarded, and a verdict
+#    in metrics' vocabulary -- NOT USABLE -- <what> above <bound> in N of M samples (peak X).
+#    DONE, twice, on an empty box, and it refuses its own number both times: the census confound (0.677 ms per
+#    vehicle) is the size of the signal. Do not re-run this until combat's census-freeze tune exists -- a third
+#    quiet run will spend a slot to print the same refusal.
+#    DONE at `a4161b88`: the target passes `--tune=match.no_damage=1` (combat, guarded at `Tank.take_hit`) and the
+#    bench REQUIRES it -- `perf_scene` records `Armor.no_damage` PER PHASE, and any phase without it makes the
+#    verdict NOT USABLE ahead of every other reason. Refuses rather than caveats, because the caveat is the part
+#    that gets dropped when the number is quoted, which already happened once this round. The per-phase read is
+#    the SAME static `Tank.take_hit` gates on (`tank.gd:624`), so it proves the arm took rather than that it was
+#    requested -- which matters, because combat found `TUNE=` knobs that print "applied" and never reach their
+#    predicate (a static written by `Units._static_init` and clobbered by the owning class's own initialiser).
+#    HELD until combat's structural fix for that lands; the gate would refuse such a run rather than misreport it,
+#    but the orchestrator owns the sequencing. Caveat on the guard: the flag is read at phase END, so a mid-phase
+#    flip relies on the census-constancy clause to catch it.
+REMOTE_SLOTS=6 make remote T="perf-trailer-ab PERF_CYCLES=6"
 
-   **The division of labour, and it is the whole point of the item:** scale **derives** the numbers
-   (`hull_size` = `SizeLook.box_at_length(unit, reference × K)`); I check **the art is not distorted by them**.
-   `_fit_to_hull` scales uniformly by length, so width and height come out as the mesh's own proportions — **a unit
-   whose mesh cannot fill its new box is a finding handed back to scale, never something to stretch away.** Expect
-   it to pass by construction after CP2, because `box_at_length` makes the box the mesh's proportions; **a failure
-   is therefore interesting**, and it will be one of the units that kept its box for want of an approved mesh.
+# 2. The merge candidate, taken in the same window rather than adding a check to a busy box.
+REMOTE_SLOTS=6 make remote T=check
 
-   Then look, do not just count: `make vehicle-gallery`, `make roster-lineup` (scale's lineup view in my
-   `size_look.gd`), and one real match at his pose. **All of it on builder0.**
-2. **The M1 hinge cost, when builder0 is quiet.** `make remote T=perf-trailer-ab` with more `PERF_CYCLES`. The
-   number from the loaded box (13.36 ms) is **noise and must not be quoted**: the same capture reported
-   `layer_cost_gpu_ms −0.58` — no measurable GPU cost, which is what 6 extra draw calls should look like — against
-   `all_avg_ms 61.42` / `p95 92.11` and `holds_30fps_at_vehicles: 0`. Within-run toggling fixed the between-runs
-   noise; it cannot fix contention that varies over seconds.
+# 3. The round-8 re-measure, on the RESIZED roster. Same arms as the original or it is not a re-measure.
+REMOTE_SLOTS=6 make remote T="faction-matrix ARENA=pit  SEEDS=5 TIME=150 BUDGET=5200 JOBS=8"
+REMOTE_SLOTS=6 make remote T="faction-matrix ARENA=yard SEEDS=5 TIME=150 BUDGET=5200 JOBS=8"
+```
 
-**Two process traps I hit tonight, both now in `remote_builds.md`:** a killed `make` leaves its `slot.sh` wrapper
-holding a machine-wide slot with nothing inside it, and the `.owner` file survives the process so a dead holder
-looks alive in every waiter's log; and **PPID is not an ownership test** — all nine sessions share one parent, so
+**The arms for (3) are not invented — they are read out of the original run's own JSON**
+(`_agents/streams/references/combat/faction-matrix-pit-rig14m-2026-09-19.json`, whose `args` block records
+`budget 5200, seeds 5, jobs 8, time_limit 150, factions gangs,condemned,law,syndicate, no_faction_directives
+false`, taken on **builder0 at `c042bb81`, dirty false**). `--seeds 5` is **5 × 2 bases × 2 colours = the twenty
+counterbalanced matches** the 9/20 and 0/20 were counted from. **A re-measure whose arms differ from the original
+is not a re-measure**, and this is the round where two streams already found that inertness and green-ness do not
+compose.
+
+**What the question actually is now, and it is not the round-8 question.** The 0/20 was the 14 m rig against a
+**toy roster** — everything else was 2.8–5.0 m. After CP2 the whole roster grew, so the rig is no longer an
+outlier in kind, only in degree. **Read matchups, not factions** (combat's own round-8 lesson: pooling hid this
+completely on `pit`, where the gangs' rate was 30% in both arms while one matchup had become unwinnable).
+
+### ⏹ WAITING (10:40) on two calls that are not mine. Everything else is done.
+
+**Nothing of mine is running on either machine; tree clean; zero behind `main`.**
+
+| waiting on | who | what happens then |
+|---|---|---|
+| **scale's `b3c36498` reaching `main`** (its check started 10:37) | orchestrator merges at the wrapper line | **Three reds clear at once**: my `test_theme_unit_scale` box-fill, scale's `test_units_scale` proportions, both the same artillery cause. I re-run both files — **run, not inferred**. The baseline moves once, `2d5215a8a0a59ded → 1e90f69e5d6fcc46`, recorded twice. |
+| **the quiet window** (builder0 was load 20.89, six checks) | orchestrator calls it; I go first | The three runs in the block above: the hinge cost, the check on `a33638b8`, the 20/20 re-measure. |
+
+**Owed to scale, accepted:** an eye on the Terminus floodlight frame before the lead sees it (they put **eight**
+lamps inside the block grid at `dc28822f`, authored in `make_arenas.py` since `props` is generated). I judge it
+**at his pose with the show OFF**, because the floor's baseline is mine and the 22-of-30 luminance question is a
+property of the map rather than of the light show. **What I am watching for is not "too dim" but eight pools
+reading as a regular lattice** — a salvaged city that lights its streets in a neat grid reads municipal rather
+than improvised. If it does, the note back is **fewer-and-brighter with one or two dark corners**, not dimmer.
+
+**Still owed and nobody is blocked on it:** the Terminus roof dressing (a frame before a triangle), and the
+`ErrorCollector` warning/error conflation, which is metrics' now — until it lands, **no production path a test
+exercises may `push_warning`**, and that sentence is going into `verification.md`.
 ownership is `readlink /proc/<pid>/cwd`, and a slot's real holder is `fuser` on its `.lock`, never the `.owner`.
 ### X7 — the sweep said 0.0% everywhere, and that changed the design (builder0, `e82ecd1a`)
 
@@ -496,6 +771,21 @@ a taste one: `art_direction.md` has always required the arena be *"lit well enou
 **The levers are all mine:** the floodlight pools (`arena_dressing.gd` `_glow_multimesh`, `FLOODLIGHTS`), the floor's
 albedo (`arena_ground*.gdshader`, and the Terminus is asphalt-dark), and the facades' base brightness
 (`city_block.gdshader`, the storey `glow` and shopfront `glow` at channel identity).
+
+**AND NOW SHOT, at his pose:** `build/terminus-luminance/terminus_pitch21_fov35_49m_default-camera.png`. The
+brightest things in the frame are the **bands on the buildings** — a near-white cyan run along the left block and a
+magenta one on the right — with the window grids behind them. **The vehicles are dark slabs**, legible mainly
+because the selection rings around them are UI rather than lighting. Take the rings away and the fight is the
+hardest thing in the frame to find. That is the 22-of-30 number as a picture.
+
+**Incidentally confirmed by the same frame: the neon fix works in the real game.** Those bands read **cyan and
+magenta** — the colours `terminus.json` asks for — where before `637ad4de` they were a random draw from the
+signage palette (amber, warm white, red, violet). First visual confirmation, unplanned, from a frame shot for a
+different question.
+
+**And it sharpens my note to show:** the bands are correct in colour now and **still** the brightest thing on
+screen, so it is the **placement** — a lit run at shopfront height on surface 1, facing the arena — that
+out-competes the fight, not the palette. Dimming them is not the fix; lighting the floor is.
 
 **DIAGNOSED 2026-09-20, and the mechanism is specific rather than "the map is dark".** Counted across every layout:
 

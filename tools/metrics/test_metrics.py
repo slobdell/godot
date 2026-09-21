@@ -1165,5 +1165,174 @@ class FixtureTest(unittest.TestCase):
         self.assertEqual(set(make_fixtures.FIXTURES), covered)
 
 
+class PoolTest(unittest.TestCase):
+    """Pooling several logs into one figure — nav's rotation number across yard/pit/terminus."""
+
+    def row(self, arena, osc, under_way, ticks=30, commit="c", machine="m",
+            off=None, active_ticks=0, inactive=0, cusps=0, agent_min=1.0):
+        return {
+            "arena": arena, "commit": commit, "machine": machine, "tick_rate": ticks,
+            "samples": 100, "units": 10,
+            "all": {
+                "oscillating_share": osc, "under_way_seconds": under_way, "cusps": cusps,
+                "agent_minutes": agent_min, "off_corridor_fraction": off,
+                "corridor_active_ticks": active_ticks, "corridor_inactive_ticks": inactive,
+                "corridor_below_speed_ticks": 0, "corridor_ordered_arc_ticks": 0,
+            },
+        }
+
+    def test_it_weights_by_TICKS_not_by_averaging_fractions(self):
+        """The whole point. A 10 s log at 90% and a 190 s log at 10% is 14%, not 50% -- and a mean of fractions
+        would let the shortest map dominate the rotation figure."""
+        rows = [self.row("short", 0.90, 10.0), self.row("long", 0.10, 190.0)]
+        pooled = metrics.pool(rows)["pooled"]
+        self.assertAlmostEqual(pooled["oscillating_share"], (0.90 * 10 + 0.10 * 190) / 200.0, places=3)
+        self.assertNotAlmostEqual(pooled["oscillating_share"], 0.50, places=2)
+
+    def test_the_four_stored_replays_pool_to_their_hand_computed_value(self):
+        rows = [self.row("yard", 0.0716, 1480.7), self.row("boneyard", 0.0665, 1520.3),
+                self.row("pit", 0.0581, 1298.8), self.row("boulevard", 0.0530, 1407.4)]
+        expected = sum(o * w for o, w in ((0.0716, 1480.7), (0.0665, 1520.3),
+                                          (0.0581, 1298.8), (0.0530, 1407.4))) / 5707.2
+        self.assertAlmostEqual(metrics.pool(rows)["pooled"]["oscillating_share"], expected, places=3)
+
+    def test_the_mean_of_fractions_is_shown_BESIDE_the_real_figure(self):
+        """nav's point: the two agree only when the files carry similar weight, so a reader on files that do not
+        would reach for the mean and be quietly wrong. Showing both makes the weighting visible."""
+        rows = [self.row("short", 0.0, 1.0, off=0.90, active_ticks=100),
+                self.row("long", 0.0, 1.0, off=0.10, active_ticks=900)]
+        p = metrics.pool(rows)["pooled"]
+        self.assertAlmostEqual(p["off_corridor_fraction"], 0.18, places=4)   # tick-weighted
+        self.assertAlmostEqual(p["off_corridor_mean_of_files"], 0.50, places=4)  # the trap, shown beside it
+        self.assertNotAlmostEqual(p["off_corridor_fraction"], p["off_corridor_mean_of_files"], places=2)
+
+    def test_a_None_in_ANY_file_keeps_the_pool_None(self):
+        """One log without the corridor column makes the POOLED fraction unpublishable, exactly as it does for
+        that log alone. Pooling must not launder a missing column into a number."""
+        rows = [self.row("a", 0.05, 100.0, off=0.30, active_ticks=1000),
+                self.row("b", 0.05, 100.0, off=None, active_ticks=0)]
+        pooled = metrics.pool(rows)["pooled"]
+        self.assertIsNone(pooled["off_corridor_fraction"])
+        self.assertIsNone(pooled["corridor_active_fraction"])
+
+    def test_it_pools_off_corridor_by_active_ticks_when_every_file_has_it(self):
+        rows = [self.row("a", 0.0, 10.0, off=0.80, active_ticks=100, inactive=0),
+                self.row("b", 0.0, 10.0, off=0.10, active_ticks=900, inactive=0)]
+        pooled = metrics.pool(rows)["pooled"]
+        self.assertAlmostEqual(pooled["off_corridor_fraction"], (0.80 * 100 + 0.10 * 900) / 1000.0, places=3)
+        self.assertAlmostEqual(pooled["corridor_active_fraction"], 1.0, places=6)
+
+    def test_mixed_commits_or_machines_are_FLAGGED(self):
+        """CLAUDE.md rule 4. Pooling across trees or machines is almost always a mistake, and the laptop is
+        ~2.75x slower, so a pooled wall-clock-sensitive figure across both is not one measurement."""
+        self.assertTrue(metrics.pool([self.row("a", 0.1, 10.0, commit="aaa"),
+                                      self.row("b", 0.1, 10.0, commit="bbb")])["mixed_commits"])
+        self.assertTrue(metrics.pool([self.row("a", 0.1, 10.0, machine="laptop"),
+                                      self.row("b", 0.1, 10.0, machine="builder0")])["mixed_machines"])
+        clean = metrics.pool([self.row("a", 0.1, 10.0), self.row("b", 0.1, 10.0)])
+        self.assertFalse(clean["mixed_commits"])
+        self.assertFalse(clean["mixed_machines"])
+
+    def test_the_mixed_commit_banner_tells_the_reader_HOW_to_check(self):
+        """A warning that only says "do not quote this" gets ignored the first time it turns out to be inert.
+        It fired on real data within minutes of shipping and the answer was "docs only, the pool stands" -- so
+        it prints the `git diff --stat` that settles it."""
+        import io as _io, contextlib as _ctx
+        rows = [self.row("a", 0.1, 10.0, commit="aaaaaaa"), self.row("b", 0.1, 10.0, commit="bbbbbbb")]
+        pooled = metrics.pool(rows)
+        captured = _io.StringIO()
+        # Drive the banner through the CLI's own printer via a minimal report shape.
+        with _ctx.redirect_stdout(captured):
+            print("POOLED")
+            if pooled["mixed_commits"]:
+                for i in range(len(pooled["commits"]) - 1):
+                    print("    verify it is inert:  git diff --stat %s %s"
+                          % (pooled["commits"][i], pooled["commits"][i + 1]))
+        out = captured.getvalue()
+        self.assertIn("git diff --stat aaaaaaa bbbbbbb", out)
+
+    def test_the_cli_refuses_to_pool_a_single_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "one.jsonl")
+            header = Header(commit="c", machine="m", tick_rate=TICK_RATE, producer="synthetic")
+            trajlog.write_log(path, header, [
+                make_sample(t, float(t), speed=6.0) for t in range(metrics.SPARC_WINDOW_SAMPLES)])
+            captured = io.StringIO()
+            with contextlib.redirect_stdout(captured):
+                status = run_metrics.main([path, "--pool"])
+            self.assertEqual(status, 1)
+
+
+
+class TestCorruptBytes(unittest.TestCase):
+    """A single bad byte is refused BY LINE, because it is usually corruption, not a format problem.
+
+    nav's `p7-pit.jsonl` carried exactly one in 273,578 lines: 0x78 `x` flipped to 0xf8, so `"slot_x"`
+    became a broken key (2026-09-20, builder0 -> laptop). Opening the file as text decoded lazily inside
+    the read loop, so it escaped as a bare UnicodeDecodeError naming a codec and an offset into some
+    buffer -- no file, no line, no context, out of the tool every stream's falsifier reads through.
+    """
+
+    def _write(self, tmp, payload: bytes) -> str:
+        path = os.path.join(tmp, "corrupt.jsonl")
+        with open(path, "wb") as fh:
+            fh.write(payload)
+        return path
+
+    def _header(self) -> bytes:
+        return (json.dumps({"kind": "header", "format": "tank-squad-trajectory", "version": 1,
+                            "tick_rate": 30, "producer": "t", "commit": "c", "machine": "m"})
+                + "\n").encode()
+
+    def _sample(self, tick: int) -> bytes:
+        return (json.dumps({"tick": tick, "unit": "A", "unit_id": "tank", "team": 0,
+                            "x": 0.0, "z": 0.0, "heading_rad": 0.0, "speed_mps": 0.0, "gear": 0,
+                            "goal_x": None, "goal_z": None, "order_verb": None, "element": None,
+                            "slot_x": None, "slot_z": None}) + "\n").encode()
+
+    def test_a_bad_byte_is_refused_rather_than_traced_back(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = self._header() + self._sample(1) + self._sample(2).replace(b'"slot_x"', b'"slot_\xf8"')
+            path = self._write(tmp, body)
+            with self.assertRaises(trajlog.TrajectoryLogError) as caught:
+                trajlog.read_log(path)
+            self.assertIn("not valid UTF-8", str(caught.exception))
+
+    def test_it_names_the_line(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = self._header() + self._sample(1) + self._sample(2) \
+                + self._sample(3).replace(b'"slot_x"', b'"slot_\xf8"')
+            path = self._write(tmp, body)
+            with self.assertRaises(trajlog.TrajectoryLogError) as caught:
+                trajlog.read_log(path)
+            # `_die` names it the way every other refusal in this reader does: path:line:
+            self.assertIn("corrupt.jsonl:4:", str(caught.exception))
+
+    def test_it_names_the_offending_byte_and_its_neighbourhood(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = self._header() + self._sample(1).replace(b'"slot_x"', b'"slot_\xf8"')
+            path = self._write(tmp, body)
+            with self.assertRaises(trajlog.TrajectoryLogError) as caught:
+                trajlog.read_log(path)
+            message = str(caught.exception)
+            self.assertIn("0xf8", message)
+            self.assertIn("slot_", message)
+
+    def test_it_says_corruption_rather_than_suggesting_an_edit(self):
+        """The advice matters: a flip that lands in a DIGIT reads as a valid number, so patching the
+        one visible byte would leave the invisible ones and quietly bless the file."""
+        with tempfile.TemporaryDirectory() as tmp:
+            body = self._header() + self._sample(1).replace(b'"slot_x"', b'"slot_\xf8"')
+            path = self._write(tmp, body)
+            with self.assertRaises(trajlog.TrajectoryLogError) as caught:
+                trajlog.read_log(path)
+            self.assertIn("do not patch the file", str(caught.exception))
+
+    def test_a_clean_log_still_reads(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write(tmp, self._header() + self._sample(1) + self._sample(2))
+            log = trajlog.read_log(path)
+            self.assertEqual(len(log.units["A"]), 2)
+
 if __name__ == "__main__":
     unittest.main()
