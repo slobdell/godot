@@ -31,8 +31,10 @@ every Godot process on builder0; announcer runs no Godot beyond `announcer-check
 
 **`main` at launch:** `de31eeea` (round 9's close, plus the round-10 docs). Its code equals the round's final green
 check (`a21bad3c` / `4b95749d`: 1559/0, 18 targets, exit 0, sim-baseline `1ea332e7bc268d2a`, ai-scenarios 41,3) on
-every checked path except two comment lines (`combat_motion.gd`, `switch_arms.py`: archive links); a fresh full check
-on `de31eeea` was launched on builder0 at 18:55 and its four lines are recorded here when read. **The eight round-9
+every checked path except two comment lines (`combat_motion.gd`, `switch_arms.py`: archive links). **VERIFIED GREEN: the
+full check on `de31eeea` (builder0, launched 18:55, read 19:45 from the wrapper's own line): `>> remote: make check
+exited 0`, `1559 passed, 0 failed` over six shards, 18 targets, ai-scenarios 41,3 unchanged, sim-baseline
+`1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`. The round-10 docs commits since it are docs only.** **The eight round-9
 worker sessions are still open on this laptop (ListAgents shows them idle in folders that no longer exist): end them
 before starting the eight new ones.** Nothing is pushed to `origin`; you push.
 
