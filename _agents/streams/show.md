@@ -262,8 +262,67 @@ at for everything visible; every number with commit and machine.
 
 ## Status
 
-_2026-09-20, overnight. Branch `stream/show`, `main` merged clean twice (CP1, then squad's baseline).
+_2026-09-20, round 9 closing. Branch `stream/show`, `main` merged clean twice (CP1, then squad's baseline).
 **Items 1-6 of the backlog are done; item 7 (stretch) is not started.**_
+
+---
+
+## ROUND 10, in order — start here
+
+**The lead has seen it and his verdict is "it reads as nothing".** That is the premise of this list, not a problem
+to be argued with. Everything below follows from it.
+
+1. **Re-shoot the frames.** `make remote T='show-decisions show-frames'`. Round 9's last run (`c83117dc`) measured
+   through a pair that was **not frozen**: `FxWorld` runs `PROCESS_MODE_ALWAYS` (`fx_world.gd:115`) and kept
+   ticking through the pause between the two halves of every pair. `06f8ca0b` disables both `FxWorld` and `Show`
+   across the pair and has never been shot. **Every luminance number in `lighting.md` §9 and `show_dials.md` is
+   measured through that leak and does not count.** This run was queued and deliberately dropped to let the round
+   converge — it is not a discovery, it is an owed measurement.
+2. **The louder pair, for the lead.** Today's band width, **2×** and **3×**, one dial moved and nothing else, cost
+   beside each, and the dial and file named in the caption: it is `"floor"`/`"ceiling"` on the `windows` and
+   `shopfronts` channels in `arenas/terminus.json`. **Keep the mean fixed and widen the band** — that is dial 1 in
+   `show_dials.md`, and raising the ceiling instead is the wrong knob:
+
+   | | windows | shopfronts | swing |
+   |---|---|---|---|
+   | today | `[0.80, 1.10]` | `[0.82, 1.12]` | 32% / 31% |
+   | **2×** | `[0.65, 1.25]` | `[0.67, 1.27]` | 63% / 62% |
+   | **3×** | `[0.50, 1.40]` | `[0.52, 1.42]` | 95% / 93% |
+
+   (3× on the windows is wider than the 65% this shipped at last night before the readability gate narrowed it, so
+   expect the gate to have an opinion — that is the point of shooting it rather than arguing about it.) This is the
+   answer to "it reads as nothing" and it should be the first thing he sees.
+3. **His two quotes belong in `_agents/game_design.md`** (the orchestrator owns that file; §1956 is the round-9
+   light-show section they extend):
+   - the buildings still look like a **1990s game**;
+   - he wants **basic primitives that drive individual lights on a building**, with light-show effects composed
+     from those primitives — **and his eye is the judge** of the result.
+     Read together these are not a lighting request, they are a *geometry* request with lighting on top: the
+     channel engine already composes effects from primitives (§3, §4b of `lighting.md`) and it is doing it on
+     buildings that do not have enough shape to carry them. The louder pair (#2) will not fix a 1990s silhouette.
+4. **The three luminance reds, with a discriminator on a still pair.** An earlier strip showed `cue_fight −5.1%`,
+   `cue_kill_0_25s −7.5%`, `t16_3 −7.5%` and they were deliberately not tuned, because a red measured through an
+   unfrozen pair is not a red. **The last run reads the same three frames at −2.7%, −3.0% and −1.5%** — still the
+   most negative on the Terminus, still in the same order, but now inside a 2.8% null. That halving is itself
+   unexplained: it could be the dropped street pose, the swept heading, or the leak. After #1, either they are gone
+   or they survive — and if they survive, the discriminator is a **still pair at one instant**, not a frame mean.
+5. **Fix the two broken comparison arms** (`lighting.md` rule 13):
+   - `STROBE_ALTERNATIVE_PERIOD_S = 6.0` in `show.gd:57` is compared against a **1.6 s** strobe in a **6 s** clip,
+     so the "off" arm is under one cycle of a slow breath and reads a quarter darker, with a *larger* full-frame
+     swing (12.4% vs 8.7%) than the strobe it replaces. Two readings of that constant and both need acting on:
+     as a **look** it is deliberate (its comment: *"urgent, but not a fault light"*) and it is fine; as an **arm**
+     it changes programme *and* period, so the clip pair cannot isolate the strobe. **Shoot both** — the arm at the
+     cue's own 1.6 s, and keep the 6.0 s version as a third look if he wants it. (While in there: the call-site
+     comment says `--show-no-strobe`, the flag is `--no-strobe`.)
+   - **Parapet vs outline no longer discriminates** (0.00% to +0.35% against a 2.8% null; on the wide pose it used
+     to read +7.3% to +13.5%). Nothing about the looks changed — the camera learned to sweep its heading toward the fight, and the
+     band window at the new heading holds far less building. Either the window follows the buildings or the pair
+     goes back to a fixed heading; the lead's eye decides the look either way.
+6. **Re-shoot the five mood clips.** `build/show/clips/*.mp4` are from **05:47–05:56**, before the frame tools
+   learned to wait for contact — five units a side, still on the spawn line. `make show-clips` was not in round
+   9's last target list. **Do not send them to the lead** until they are re-shot.
+7. **The blimp.** Never briefed, and it is the lead's art call before it is anyone's engineering. Listed here so it
+   is not lost, not because it is ready to start.
 
 ---
 
@@ -273,16 +332,21 @@ _2026-09-20, overnight. Branch `stream/show`, `main` merged clean twice (CP1, th
 > each does to the picture, and the frame or clip to look at while deciding. This section is the summary; that page
 > is the conversation.
 
-**Watch the clips before the stills.** `build/show/clips/` — five 6-second clips of the Terminus at your pose:
-`terminus_lull`, `terminus_battle`, `terminus_last_stand`, `terminus_victory`, `terminus_kill`. **The stills
-understate it**, because what the show does is *breathe*, and a still cannot show breathing. Then
-`build/show/terminus_wide_cue_battle.png` against `build/show/before/terminus_wide_cue_battle.png` — the same
-frozen moment with the show off and on.
+**Look at the stills; the clips are stale.** `build/show/terminus_wide_cue_battle.png` against
+`build/show/before/terminus_wide_cue_battle.png` — the same frozen moment with the show off and on, 39 vehicles in
+shot, `c83117dc` on builder0 at 16:46. The five mood clips in `build/show/clips/` are from **05:5x**, before the
+frame tools learned to wait for contact, and they show five units a side on the spawn line. Re-shooting them is
+round 10 item 6.
 
-**What it costs: about 1.5% of a frame.** +0.22 ms of GPU on builder0 against that run's 7.69 ms, nothing
-measurable on the CPU, **zero added draw calls and zero added lights**. Scaled to your laptop, roughly half a
-millisecond out of a 33 ms budget. That is the answer to *"nice effects that bring the arena to life without
-costing much in terms of frame rate"*.
+**What it costs: a ceiling, not a figure — under about 0.8 ms.** Six `--no-show` pairs inside one run on an empty
+builder0 read `+0.28 +0.49 +0.78 +0.06 −0.46 −0.77` ms against frames of 6.6 ms. **Two of six are negative**, and
+the show cannot make the game faster, so that is the measurement moving under us. All six are inside ±0.8 ms, i.e.
+under ~2.5% of the frame and probably a good deal less. **Zero added draw calls and zero added lights** — that part
+is structural (the code may not create geometry or a light, and a test enforces it), not a measurement. That is the
+answer to *"nice effects that bring the arena to life without costing much in terms of frame rate"*.
+
+*(This section said "1.5%, +0.22 ms" this morning. That was a mean of measurements that disagree about their own
+sign, which I had no business averaging.)*
 
 **What you are looking at.** Every block's roofline carries a thin lit run in one of the venue's colours, picked
 per building; the windows and shopfronts breathe, each window on its own clock; the perimeter rim breathes instead
@@ -293,8 +357,9 @@ it is driven by **15 uniform writes a frame** — the same 15 whether there are 
 
 1. **The buildings breathe; they do not look different.** Between feel's judgement (see below) and a readability
    gate, the default is conservative enough that a *still* barely changes. That is a deliberate position, not a
-   limit of the machinery, and **you have the dial**.
-2. **The dial is the band's WIDTH, not its ceiling.** The windows currently swing 30% (`[0.80, 1.10]` in
+   limit of the machinery, and **you have the dial**. *(This is the caveat his verdict landed on, and round 10
+   item 2 exists to answer it with pictures instead of prose.)*
+2. **The dial is the band's WIDTH, not its ceiling.** The windows currently swing 32% (`[0.80, 1.10]` in
    `arenas/terminus.json`); they used to swing 65%. What reads as *alive* is contrast, not brightness — widening to
    `[0.70, 1.20]` gives most of the life back without making the city brighter. **"Turn it up" is the wrong dial**:
    raising the ceiling alone brightens the periphery and costs you the fight's readability, which is measured.
@@ -303,11 +368,17 @@ it is driven by **15 uniform writes a frame** — the same 15 whether there are 
    in art-direction terms — the corner IS the silhouette, so lighting it draws an outline on everything, which
    `art_direction.md` names as a failure — and I agree with feel. **You decide; it is one word in the layout file.**
 
-**Frames and clips were shot at `96e10e82`, before feel's `637ad4de`**, which changes the Terminus's block-band
-colours (they currently wear an accidental palette; see *Provenance*). Don't read that colour change as the show.
+**Provenance.** Stills: `c83117dc`, builder0, 2026-09-20 16:46 — a real fight both arenas (Terminus 39 vehicles
+wide / 12 close, yard 37 / 16), contact confirmed before the shutter, pitch 21° on every frame, `sight_blocked`
+false throughout, zero shader errors on a real GL context. Clips: **05:5x, stale, do not use**. Decision pairs
+(`build/show-decisions/`): same run.
+
+**And the honest health warning on every luminance number in this brief:** they were measured through a pair that
+was supposed to be two shots of one frozen instant and was not — `FxWorld` runs `PROCESS_MODE_ALWAYS` and ticked
+through the pause. `06f8ca0b` fixes it and **has not been shot**. Round 10 item 1.
 
 **Three questions:** Is it beautiful? Outline or parapet? Is the `last_stand` strobe — the one strobe in the venue
-— too much?
+— too much? *(His answer to the first is already in: it reads as nothing. Round 10 item 2 is the reply.)*
 
 ---
 
@@ -348,11 +419,15 @@ That last line discharges **S6's pre-registered claim**: *the show does not reac
 pre-registered before a line was written and it held across a channel engine, five shaders, seven fixtures, a cue
 book and a kill ripple.
 
-**Everything above `e1823e68` is `_agents/streams/show.md` only** (four commits, one file, verified with
-`git diff --name-only`). Merge the tip for the write-up; `e1823e68` is the hash the check ran on.
+**Superseded — see *The handover* below.** `e1823e68` is where round 9's code first went green; twenty-five
+commits of capture tooling, two `show.gd`/`cues.gd` fixes and the docs landed above it, so the tip carries its own
+check.
 
 ### NEXT STEP, in order
 
+**The round-10 list at the top of this Status comes first** — it is what the lead's verdict and the last run
+changed. What follows is the work that was already queued behind it and is still wanted; nothing here is urgent
+next to item 2 up there.
 
 1. **The ground fixture** (*Decided overnight* #8), with its own paired measurement.
 2. **The rest of item 7**: the airship's screen on an ad channel, a fixture that is neither building nor wall, a
@@ -386,7 +461,7 @@ book and a kill ripple.
 
 | claim | evidence |
 |---|---|
-| **Frame cost** | `no_show` layer, measured **within one run**: **+0.22 ms GPU, +2.25 draw calls** against that run's `all_gpu` 7.69 ms. The same run's CPU figure came out **−2.0 ms** — impossible as a cost, so that is the method's own noise, and the honest reading is **"under half a millisecond of GPU, nothing measurable on CPU"** |
+| **Frame cost** | `no_show` layer, six pairs **within one run** on an empty builder0: `+0.28 +0.49 +0.78 +0.06 −0.46 −0.77` ms against frames of 6.6 ms. **Two of six are negative and the show cannot make the game faster**, so this is a bound, not a figure: **under ~0.8 ms, and not resolvable** |
 | **Real lights added** | **0** — median 4 vs 4, identical ranges |
 | **Draw calls added** | none detectable; and structurally a test forbids `MeshInstance3D`, `MultiMesh` and `Light3D` anywhere under `game/theme/show/` |
 | **Instance-uniform errors** | **0** in every run |
@@ -453,6 +528,11 @@ gate found the worst case, which is what it is for. The windows went `[0.70, 1.3
 
 **This is a look decision a gate forced**, and the lead's section above says so and names the dial.
 
+**And it is the decision round 10 should revisit first.** The last run (`c83117dc`) measures 26 pairs between
+**−3.0% and +3.3%** against a null whose *worst* pair is **2.8%** — the whole result is inside the error bar, so
+this gate is not currently able to justify a narrowing it once forced. Re-shoot through a genuinely frozen pair
+(round 10 item 1), then let the 2×/3× set (item 2) answer the band question with pictures.
+
 ### Proved on request: the `--no-show` arm really is off
 
 The orchestrator saw lit coloured lines on the blocks in the show-off arm and asked whether the "additive hook,
@@ -464,9 +544,19 @@ scattered both ways**, against a 1.3% null.
 
 ### Provenance of the frames and clips
 
-**Everything in `build/show/` was shot at `96e10e82`, before feel's `637ad4de`**, which changes the Terminus's
-block-band colours. The show's own effect is unaffected (surface 1 is not ours), but **do not compare these frames
-against a Terminus rendered after that commit** and read the colour change as the light show.
+| what | commit | when | fight? |
+|---|---|---|---|
+| `build/show/*.png`, `build/show/outline/` | `c83117dc` | 16:46 | **yes** — Terminus 39 wide / 12 close, yard 37 / 16, contact confirmed |
+| `build/show-decisions/` (parapet·outline, strobe on·off) | `c83117dc` | 16:24–16:43 | **yes** — 39 vehicles |
+| `build/show/clips/*.mp4` (five moods) | earlier | **05:47–05:56** | **NO — five a side on the spawn line. Do not send these.** |
+| `build/show/terminus_street_*.png` | earlier | 14:46 | stale: the street pose was dropped at `cd00e613` |
+
+`make show-clips` was not in the last run's target list, which is why the clips are the old set; `show-frames`
+and `show-decisions` write to different directories since `c83117dc`, so a re-run of one no longer wipes the other.
+
+**Every luminance number from this run passed through a pair that was not frozen** — `FxWorld` is
+`PROCESS_MODE_ALWAYS` and ticked through the pause between halves. `06f8ca0b` fixes it; nothing has been shot
+since. Round 10 item 1.
 
 ### Requests to other streams
 

@@ -8,14 +8,19 @@
 > `game/theme/show/cues.json` (what they do when the fight changes). `make show-report ARENA=terminus` prints every
 > value currently in force.
 
-**Watch the clips before the stills.** `build/show/clips/` — five six-second clips. What the show *does* is
-breathe, and a still cannot show breathing; the stills understate it, and that is not a figure of speech, it is the
-reason a reviewer asked last night whether the thing was switched on at all.
+> **Your verdict is already in, and it is the one that counts: it reads as nothing.** Nothing on this page argues
+> with that. The page exists so that the next round starts from the right dial rather than the loudest one, and the
+> first thing round 10 does is put the louder version in front of you — today's band width, 2× and 3×, one dial
+> moved, cost beside each.
 
-> **These frames are a real fight — 34 vehicles a side, 11 to 23 of them in every picture.** Worth saying because
-> the first set were not: the frame tools were quietly fielding five units a side and shooting three seconds in,
-> while the squads were still on the spawn line and out of shot. If you saw an empty arena earlier, that is what
-> it was.
+**Look at the stills, not the clips.** This is the reverse of what this page said this morning, and the reason is
+provenance: the six-second clips in `build/show/clips/` were shot at 05:5x, **before** the frame tools learned to
+wait for the fight, so they show five units a side sitting on the spawn line. The stills in `build/show/` were shot
+at 16:46 and are a real fight. Re-shooting the clips is on round 10's list.
+
+> **The stills are a real fight — 39 vehicles in every wide frame of the Terminus, 12 in the close ones; 37 and 16
+> on the yard.** The tools now wait for the two armies to close (they waited 116 s and 71 s) and refuse to shoot
+> until the nearest opposing pair is inside 60 m. If you saw an empty arena in an earlier set, that is what it was.
 
 ---
 
@@ -31,9 +36,18 @@ city, which competes with the fight for your eye, and we now measure that and re
 | Shopfront swing | 31% | 55% | the same, at street level |
 
 It was narrowed last night to pass a readability check, and I want you to know that rather than find it.
-**Widening it back is one line**, and the way to do it is to lower the floor *and* raise the ceiling together —
-`"floor": 0.70, "ceiling": 1.20` instead of `0.80 / 1.10` — so the city gets **more alive without getting
-brighter**.
+**Widening it back is one line**, and the way to do it is to lower the floor *and* raise the ceiling **by the same
+amount**, so the average stays put and only the swing grows — the city gets **more alive without getting
+brighter**:
+
+| | windows | shopfronts | swing |
+|---|---|---|---|
+| today | `[0.80, 1.10]` | `[0.82, 1.12]` | 32% / 31% |
+| **2× as alive** | `[0.65, 1.25]` | `[0.67, 1.27]` | 63% / 62% |
+| **3× as alive** | `[0.50, 1.40]` | `[0.52, 1.42]` | 95% / 93% |
+
+**You should not have to pick from a table, so round 10 shoots all three and puts them side by side**, one dial
+moved and the frame cost printed under each.
 
 **And one thing that is NOT this dial, so you do not spend it on the wrong problem.** The brightest thing in a
 Terminus frame is not the windows and not the rooflines — it is the **neon band running along each building at
@@ -44,9 +58,9 @@ eye level pointing into the arena. **The fix for that is more light on the floor
 So if the fight ever looks hard to read on this map, **that** is the thing to chase, and turning dial 1 down is
 spending the wrong budget.
 
-**Look at:** `clips/terminus_lull.mp4` (this is the idle — most of a match looks like this), then
-`terminus_wide_cue_battle.png` against `before/terminus_wide_cue_battle.png`, which is the same instant with the
-show switched off.
+**Look at:** `build/show/terminus_wide_cue_battle.png` against `build/show/before/terminus_wide_cue_battle.png` —
+the same instant with the show switched off. (`clips/terminus_lull.mp4` is the idle, but see the note at the top:
+that clip is from the empty-arena set.)
 
 ---
 
@@ -71,7 +85,7 @@ Making two of them the same, or one exactly double another, makes the whole venu
 minutes, which looks like a fault. The file refuses a set that would do that and tells you which pair is the
 problem, so you can change numbers freely and it will stop you.
 
-**Look at:** `clips/terminus_lull.mp4`.
+**Look at:** nothing yet, honestly — a 24-second breath needs a clip, and the clips are the stale set. Round 10.
 
 ---
 
@@ -92,9 +106,10 @@ The idle is the breathing. The **cues** are the show: the venue changes when the
 Two numbers per cue: **how fast it moves** (the chase/strobe period) and **how fast it arrives** (the attack). A cue
 can run much faster than the idle is allowed to — that is the point of a cue — with a floor at 0.8 s.
 
-**Look at:** `clips/terminus_battle.mp4`, `clips/terminus_last_stand.mp4`, `clips/terminus_victory.mp4`,
-`clips/terminus_kill.mp4`. **This is the dial the stills are worst at showing** — a still of a chase is a still of
-some lights, and a still of a strobe caught between flashes just looks dim.
+**Look at:** `terminus_wide_cue_battle.png`, `..._cue_last_stand.png`, `..._cue_victory.png` and the three
+`..._cue_kill_*.png` in `build/show/`, each against its twin in `before/`. **This is the dial the stills are worst
+at showing** — a still of a chase is a still of some lights, and a still of a strobe caught between flashes just
+looks dim — which is why round 10 re-shoots the clips before asking you anything about it.
 
 ---
 
@@ -111,8 +126,8 @@ It is one word per channel — `breathe`, `sweep`, `chase`, `strobe` — plus **
 are, which is a single number from 0 (all together) to 1 (fully scattered). Everything in the venue is currently at
 1, which is why no two buildings are ever at the same brightness.
 
-**Look at:** `terminus_wide_cue_fight.png` (rim and towers up together) against `clips/terminus_battle.mp4` (the
-chase travelling).
+**Look at:** `terminus_wide_cue_fight.png` (rim and towers up together) against `terminus_wide_cue_battle.png`
+(the chase mid-travel).
 
 ---
 
@@ -127,13 +142,24 @@ built:
 feel argues for the roofline on art-direction grounds: the corners *are* the building's outline, so lighting them
 draws a wireframe around everything, and the direction says in as many words *"neon lives behind or inside things,
 not outlines on everything"*. I agree with feel. **You may not, and it is one word in the layout file.** Compare
-`terminus_wide_cue_battle.png` with `outline/terminus_wide_cue_battle_outline.png`.
+`build/show-decisions/terminus_wide_cue_battle.png` with `..._cue_battle_outline.png`.
+
+**Use your eye and ignore the number beside them.** The pair used to measure +7% to +13% apart and now measures
+0.00% to +0.35%, which is under the noise — not because the two looks converged but because the camera now sweeps
+to face the fight, and the strip of screen the measurement reads holds much less building than it did. The
+pictures still differ; the instrument stopped being able to say so. Fixing the instrument is round 10; **the call
+is yours either way and it was always going to be your eye.**
 
 **The strobe on `last_stand`.** It is the only one in the venue and it is deliberately rare. Keep or cut —
-**watch both**: `decisions/strobe_on.mp4` against `decisions/strobe_off.mp4` (the same moment with the strobe
-replaced by a fast breathe). These two are shot at 30 fps rather than 10, because a strobe flashes for about an
-eighth of a second and a slower recording simply misses it — **this is a question only your eye can answer**, and
-the numbers we can put on it are too weak to lean on.
+**watch both**: `build/show-decisions/strobe_on.mp4` against `strobe_off.mp4`. These two are shot at 30 fps rather
+than 10, because a strobe flashes for about an eighth of a second and a slower recording simply misses it. Both are
+the real fight (39 vehicles), and unlike the mood clips these two are from today's run.
+
+**But the "off" arm is not a fair opposite, and you should know that before you watch.** It replaces the 1.6 s
+strobe with a **6.0 s** breath, and the clip is only 6 s long — so you are not watching "the venue without a
+strobe", you are watching one slow inhale. That is why the off clip reads a quarter darker overall. **Watch them
+for the strobe, not for the difference between them**, and expect round 10 to re-shoot the off arm at the same
+rhythm so the comparison means what it claims.
 
 ---
 
@@ -160,9 +186,15 @@ had no business averaging numbers that disagree about their own sign.)*
 
 **And a check you did not ask for but should know exists:** every frame we shoot is measured for whether the venue
 out-competes the fight for your eye, against the same frame with the show switched off. **If the lights win, the
-build fails.** On a real fight the lights make **no measurable difference either way** — 35 of 36 frames sit inside
-the noise, as many slightly better as slightly worse. The check is there to catch a future change, not to claim a
-win.
+build fails.** On today's run it passes on all 26 frames.
+
+**I am not going to dress that up as a result.** The 26 on-vs-off pairs land between −3.0% and +3.3%. The same
+frame shot twice with *nothing changed* lands as much as 2.8% apart. **The whole result fits inside the error
+bar** — so the honest reading is "this instrument cannot see the show at today's band width", not "the show is
+free". And one more thing you should have rather than find: the two halves of each pair were supposed to be the
+same frozen instant, and they were not quite — the effects world kept ticking through the pause between them. That
+is fixed in the code and **has not been re-shot**; it is the first thing round 10 does. It is also, as it happens,
+one more reason the dial-1 number above deserves the louder test rather than more argument.
 
 That check is what narrowed dial 1 — and to be precise about *why*, because it matters for whether you widen it
 again: it failed on exactly one frame, the single brightest instant the windows ever reach. Not the buildings in
