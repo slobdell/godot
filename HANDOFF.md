@@ -23,6 +23,8 @@ Terminus streets (arena's lanes R4, nav's drive test); then the rigs' yaw (comba
 (show, per-window), the blimp in his frame (feel, R7), the turret mounts (R5), the bus bigger than the garbage truck
 (R6, CP3), and the announcer's pools deepened and GENERATED (R8: he authorised the spend).
 
+**PAUSED AT LAUNCH (2026-09-20, ~20:00): the lead is at ~93 % of the week's credits, so the eight agents are NOT started yet; the worktrees exist and are current. Meanwhile a second external research brief was drafted at `_agents/research/brief2.md` (16 abstract questions from round 9's negative results; the lead sends it, the replies go in `_agents/research/` and the curation into `research_catalog.md`). When credits allow, start the agents exactly as below.**
+
 **Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`), the
 same text for all eight (OFFSETs: control 1, squad 2, arena 3, nav 4, combat 5, feel 6, show 7, announcer 8; show runs
 every Godot process on builder0; announcer runs no Godot beyond `announcer-check`):
