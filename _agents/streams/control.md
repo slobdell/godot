@@ -8,7 +8,7 @@
 > **You own** `game/control/`, `game/ui/` (HUD, widgets, title, loading), `game/camera/`, `game/controllers/`,
 > `game/modes/{skirmish,offline,title}_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md`, and the control tests
 > (`tests/test_control_*.gd`, `tests/test_rts_camera.gd`, `tests/test_camera_looks.gd`, `tests/test_command_camera.gd`).
-> **Contracts you consume:** R1 (squad's transient element, CP1) and R2 (you own the input half, squad the task half).
+> **Contracts:** R1 (narrowed to UX, yours alone) and R2 (you own the input half, squad the task half).
 
 ## The lead's direction (2026-09-20, evening; verbatim in game_design.md *Round 10 direction*)
 
@@ -81,12 +81,14 @@ keep lifting over roofs) are DECIDED below so you are not waiting.
    NEXT press issues; `order_selection` on a selection with a task in flight replaces the task (via `Element.assign`
    or by dissolving the element, whichever squad's R1 says) rather than being deduplicated against it. The
    regression test from item 1 goes green here. Mutation-check it (it must fail with the old `_same_order`).
-3. **Element orders for any selection (R1's consumer).** The card enables every `kind: "task"` row when the selection
-   holds two or more commandable units, whatever their squads; `can_task()` answers the selection's SIZE, and
-   `assign_task` calls squad's `element_for(units, task)` for an unnumbered selection. Until CP1 merges, stub against
-   the signature in `workstreams.md` R1 (your stub returns null and the banner says "forming element: waiting on
-   squad"), so your tests and the card are done the day squad's hash lands. The readout names the split ("2 base of
-   fire, 3 manoeuvre") from `Element.state()`.
+3. **Squad orders for a mixed selection (R1, narrowed by the lead on 2026-09-20 night; his words in
+   `game_design.md` *Squad orders for a mixed selection*).** He found that regrouping (Ctrl+1–5) already turns a
+   mixed selection into a squad that carries formation and element orders, calls it good behaviour, and asks only
+   that the UX say so. So: no transient element, no squad API. The greyed task buttons carry a one-line reason he
+   reads without a tooltip ("these units are in different squads: press Form squad or Ctrl+1–5"); the card gains a
+   one-click **Form squad** action that assigns the next free group number to the selection and enables the buttons
+   in the same frame (the existing `assign_task` path from a numbered group); the keyboard/radar refusal says the
+   same words. Test: a box-drag across two squads, Form squad, support_by_fire enabled and issued within one frame.
 4. **The banner and the `ungrouped=N` readout on the default path** (your round-9 item 6): every refused or
    deduplicated order shows why in the banner for 2 s ("cancelled the armed order; click again to move"), and the HUD
    shows how many selected units are in no squad. A player who is not told why nothing happened concludes the game is

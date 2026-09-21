@@ -2220,3 +2220,15 @@ on the far side worth crossing for, which is his own rule. Both gates are now op
 `terrain`:** the art for the slot first, then two maps that use the mechanism with mirrored objective pairs (a river
 with two bridges; pits as kill zones), each judged by the arena report's `spread`, a paired match series showing the
 expensive route used, and his eye on the arena page. Bridges are lanes under R4 (the rig fits, corners certified).
+
+### Squad orders for a mixed selection: regrouping already works, the UX must say so (the lead, 2026-09-20, night)
+
+> quick feedback after a few games - one of my earlier confusions is now gone. If I select a group of units composed
+> of multiple squads, I complained how the formation options went away. I see now that if I just regroup the unit,
+> they can operate as a formation. That is good behavior, but the UX just needs to clarify that
+
+Consequence: **R1 is narrowed.** No transient element is formed automatically from an arbitrary selection; the
+existing behaviour (assign the selection a control group, 1–5, and it becomes a squad that carries formation and
+element orders) is the design. What changes is discoverability: the greyed task buttons say why in words the player
+reads, and the card offers a one-click **Form squad** action that assigns the next free group number and enables the
+buttons at once. Squad's CP1 API is withdrawn; control owns the whole item.

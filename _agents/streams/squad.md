@@ -24,8 +24,8 @@
 > I want to gauge how smart units are by trying to navigate them through the city.
 
 The orchestrator's reading: he noticed the formations (that is your round 9 landing). What blocks him now is that the
-element layer only exists for numbered squads, and that a task in flight can outlive his next order. **Your first two
-items are the two halves of the round's first two blockers**; control owns the input side of each.
+element layer only exists for numbered squads, and that a task in flight can outlive his next order. **Your first live item
+is the task half of the round's first blocker (R2)**; control owns the input side.
 
 ## Where things stand
 
@@ -58,12 +58,11 @@ items are the two halves of the round's first two blockers**; control owns the i
 
 ## Backlog (in order)
 
-1. **R1: `element_for(units, task)` (CP1, merged alone, early).** Failing test first: five units from three squads,
-   `support_by_fire` on a point, an element forms, `Element.state()["split"]` names base and manoeuvre with the
-   heaviest/slowest unit nearest the approach as base, the manoeuvre element moves and the base fires; a plain move
-   to one member dissolves it and the others keep theirs. Replaces: nothing (numbered groups keep their path;
-   name the shared code). Name the green hash to the orchestrator the day it exists; control is stubbed against the
-   signature in `workstreams.md` R1 and lands its half the same day.
+1. **WITHDRAWN (the lead, 2026-09-20 night): no transient-element API.** He found that regrouping a mixed
+   selection (Ctrl+1–5) already makes it a squad with formation and element orders, calls that good behaviour, and
+   wants only the UX to say so; control owns that. Nothing to build here; keep `Element.state()` publishing the
+   base/manoeuvre split for control's readout, and take the fitness split (research row B8) only if a numbered group's
+   element formation lacks one today.
 2. **R2 on your side.** A fresh task on an element re-derives every crew's order on the next tick; the re-issue
    suppression yields to a task with a new id; a standing hold yields to any player order. The integration test is
    control's (item 1 of its brief) and it runs on the default path; your unit test asserts the ORDER on each crew two

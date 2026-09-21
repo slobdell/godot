@@ -18,7 +18,7 @@ CP3 feel's bus box, CP4 combat's constraint ON if it earns it), the ownership ca
 are in [`_agents/workstreams.md`](_agents/workstreams.md) *Round 10: the eight streams*.
 
 **The round in one line:** he cannot judge unit intelligence until a right-click is obeyed at once (control + squad,
-R2), any selection can carry an element order (squad's R1, control's buttons), and a squad can be driven through the
+R2), a mixed selection can be told how to become a squad (R1, narrowed by the lead at night to a Form-squad action and a reason on the greyed buttons: regrouping already works), and a squad can be driven through the
 Terminus streets (arena's lanes R4, nav's drive test); then the rigs' yaw (combat's predicate), the walls of light
 (show, per-window), the blimp in his frame (feel, R7), the turret mounts (R5), the bus bigger than the garbage truck
 (R6, CP3), and the announcer's pools deepened and GENERATED (R8: he authorised the spend), and the water/pit/bridge maps he asked for
@@ -42,8 +42,7 @@ exited 0`, `1559 passed, 0 failed` over six shards, 18 targets, ai-scenarios 41,
 worker sessions are still open on this laptop (ListAgents shows them idle in folders that no longer exist): end them
 before starting the eight new ones.** Nothing is pushed to `origin`; you push.
 
-**Orchestrator duties this round:** merge CP1 (squad's `element_for`) and CP2 (arena's lanes) the day they are
-announced and tell control and nav to `git merge main`; CP3 (the bus box) and CP4 (the constraint) move the sim
+**Orchestrator duties this round:** merge CP2 (arena's lanes) the day it is announced and tell nav to `git merge main` (CP1 withdrawn: R1 is control's UX item now); CP3 (the bus box) and CP4 (the constraint) move the sim
 baseline: record it twice in the same session; put feel's lineup frame, blimp frame and turret pairs, show's three
 band-width frames and its 1990s-baseline page, arena's street pairs and announcer's review page in front of the lead
 the day they exist; carry nav's wall-contact log to combat and combat's refusal log to nav; re-record the ai-scenarios
