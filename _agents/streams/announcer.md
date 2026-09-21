@@ -120,6 +120,35 @@ never for the caller, who is hype. Examples in the reply's §8; the audit reject
 **Stretch:** clause assembly (prefix × subject × action × clause with matched pitch and tempo) for the Veteran only;
 the pipeline slices whole sentences by design and this would be a second recording mode, priced before it is tried.
 
+## Research addendum 2 (brief 3, 2026-09-20 late; rows C9, C10)
+
+**Pool size is a formula per moment (C9), not "≥ 12".** `N_c = ⌈λ·τ⌉ + ⌈λ·T_eff / −ln(1 − R)⌉`: λ the moment's
+trigger rate per minute (measure it from the fixtures and a real match), τ the cooldown, T_eff the ROLE's memory
+horizon, R the target repeat-perception rate (0.05). The roles differ by an order of magnitude: the caller's hype
+lines fade in 90–180 s; the Veteran's analytical lines are recognised across 5–10 min; **the PA's one-wrong-detail
+lines are remembered across sessions** (the isolation effect): one hearing, and a repeat is a jarring 100 % hit. Their
+table, as a shape only: a moment firing twice a minute wants ~22 caller lines (with 3 takes each), ~58 Veteran, ~135
+PA; at 0.5/min 9/21/42; rare 4/7/12. Item 1's pool report prints λ, N_c and the current count per (speaker, moment)
+and the generation plan targets the deficit, biggest first. Cross-match memory (`AnnouncerHistory`) must give the PA's
+lines a horizon of days, not one match.
+
+**Takes (C10): the cheapest good use of the credits he authorised is the CALLER at 3 takes per line** (pitch peak
+±3.5 semitones, rate ±18 %, different onset), an effective pool ×1.8–2.4; the Veteran gains little (×1.15) and gets
+paraphrase instead; **the PA gets exactly ONE take per wrong detail** (a second take is a repeat, and emphasis on the
+detail breaks the register). Check `voice_client.py` for the per-request voice settings (stability/style) that move
+pitch and rate; STT-verify every take.
+
+**Authoring gates for the PA, in `audit_lines.py` (C10):** exactly one anomalous span of 1–6 tokens; mid-sentence,
+followed by ≥ 4 mundane tokens (clause-final is a punchline's position and is rejected); the carrier in flat
+informational register (no exclamations, no affect words); no two lines with the same CATEGORY of wrong detail
+(keep a small category list in the JSON). **Diversity audits without listeners:** Distinct-n / self-BLEU over each
+pool (surface templates), and the compression ratio of a simulated 12-minute transcript (rises with real variety);
+both cheap in Python now; an embedding-based effective-line count (the Vendi score) later if a model is at hand.
+
+**Confirmed by the reply:** whole-sentence recording is right (spliced sub-sentence audio breaks the pitch
+declination and reads as robotic); clause assembly stays a stretch; the "narrow context funnel" (a specific tag
+conjunction with 3 lines firing 4× a match) is the failure the pool report exists to catch.
+
 ## Status
 
 _(the worker keeps this current; the ledger and the pool report are the numbers he reads)_

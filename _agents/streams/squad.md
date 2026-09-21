@@ -132,6 +132,15 @@ the next tick. Cheap; it buys tolerance for everything slower.
 plus the leash, in `Element.state()`, so the mover can project onto it. Build the publisher when nav asks; the shape
 is in the catalog row.
 
+## Research addendum 2 (brief 3, 2026-09-20 late; rows C1, C2, C6)
+
+**The funnel you publish (B1) has a construction (C1):** it is the string-pulled corridor's polygons shrunk by the
+member's effective clearance and intersected around each portal; nav owns the construction, you publish the
+element's corridor and leash so nav can build it per member. **`incoming_fire.gd:101` is one arm of combat's series
+(C6):** give it its own knob so the disc can be swapped at that one site with the others held; the series pairs
+arms by seed. **"Who yields" during dressing (C2):** the deterministic key nav adopts; tracked hulls hold turning
+room (B14) and the key breaks the rest.
+
 ## Status
 
 _(the worker keeps this current)_

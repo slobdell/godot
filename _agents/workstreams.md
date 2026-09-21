@@ -87,6 +87,9 @@ control, squad, arena and nav first.
 - **Every A/B states its positive control** (research addendum B12): before an arm's null is reported, a known
   disturbance must move the metric; an arm proves it applied with a counter; shared state is hashed or drained between
   tests. A null without a positive control is "not measured", never "no effect".
+- **Series compare arms on the SAME seeds and report discordant pairs** (C6): a cell is a paired comparison over a
+  fixed seed list, never two unpaired batches; ~32 paired seeds for a large shift, ~64 to size a component; the
+  report prints the discordant counts beside any rate.
 - **The clearance vocabulary is four names** (B5): static footprint, swept travel ribbon, turning envelope, combat
   signature. A constant or a reader that does not say which it is gets a comment or a rename in the commit that touches it.
 

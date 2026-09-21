@@ -129,6 +129,33 @@ rigs is its runtime check. The per-class routing table (an edge certified or not
 next round's row and the reframe of `clearance_shortfall`. **Vocabulary (B5):** every clearance constant you touch
 names its tier: static footprint, swept travel ribbon, turning envelope, combat signature.
 
+## Research addendum 2 (brief 3, 2026-09-20 late; rows C1–C5 in the catalog's *Round 10 addendum, part 2*)
+
+**The funnel has a construction and a cost (C1), and you already compute most of it.** From the navmesh corridor the
+route already has: run the portal funnel (`pathing.gd`'s string-puller) with the apex offsets shifted inward by
+`r_eff = r_a + R_min·(sec(Δψ/2) − 1)` per portal turn (the off-tracking term; `R_min` is the unit's
+`min_turn_radius_m`), shrink each corridor polygon's boundary half-spaces by `r_eff`, intersect neighbours around each
+portal into a convex overlap polytope; 3–6 half-spaces each, 6–20 polytopes for a 3–5 s horizon, one fixed pass.
+That chain is the funnel B1's governor projects onto. Cost claim to measure: under 12 polytopes and under 12
+half-spaces per polytope per agent; the executor's projection is a 2-variable QP with ≤ 12 constraints (a fixed
+Seidel pass), which is deterministic by construction.
+
+**"Who yields" is a deterministic key (C2), and it is the rule B2's reservation and B6's token both lacked:**
+(in-emergency-brake, −clearance slack, stopping distance v/a, distance to goal, unit id); higher-priority reservations
+are immutable within a step and lower agents take one half-space cut per conflicting neighbour, zero iterations. A
+buffered Voronoi cell asymmetric by priority is the geometric form of the same cut. Hard rule: a higher agent's cut
+may never slice a lower agent's CURRENT braking set; truncate the higher's reservation instead. Counter: an active
+polytope sliced empty is the freezing-robot cascade, and the count must be zero.
+
+**Starvation is safe by construction (C3):** every deliberative packet carries a braking trajectory ending
+stationary inside its last polytope; a missed deliberative step degrades to a stop, never to an unstick heuristic.
+Positive control for the seam item: drop a deliberative step on purpose and show a stop, not a wedge.
+
+**The corner pinch (C5) is arena's certification and your drive test's corner case:** the same `sec(Δψ/2) − 1`
+term decides whether a junction is drivable for the rig.
+
+**Next round (C4):** per-class eroded meshes and precomputed portal-pair polytopes; the bake stays 2.0 m now.
+
 ## Status
 
 _(the worker keeps this current)_

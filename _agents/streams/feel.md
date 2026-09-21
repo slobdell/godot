@@ -124,6 +124,15 @@ bus, the turrets and the blimp.
 already drive visually); it is combat's stretch item, not yours; expect a request for the kinematics as a shared
 function.
 
+## Research addendum 2 (brief 3, 2026-09-20 late; row C11)
+
+**Two kit items from the legibility instrument, after the bus, the turrets and the blimp:** scale anchors along every
+lane (lane markings, paving slabs or kerb stones at a known pitch: at his telephoto pose the eye has no depth cue
+between the vehicle and a throat 80 m away), and low obstacles (barricades, kerbs, 0.4–0.9 m) lit top-versus-side or
+given a marking, because at 21° they project 3–6 px tall and camouflage against the road. A 1.5 m object hides 3.9 m
+of ground behind it from his camera, so kerb furniture never stands in front of a throat's contact line. arena sends
+the list; pair discipline.
+
 ## Status
 
 _(the worker keeps this current)_

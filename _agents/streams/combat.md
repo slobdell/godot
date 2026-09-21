@@ -122,6 +122,30 @@ candidate: a hull that cannot keep its nose on the threat; `hull_reach_along` al
 solver; RK2 on the articulation angle; a jackknife lock in reverse), so a shell through a fold misses. Moves the
 baseline once; not before the lead asks.
 
+## Research addendum 2 (brief 3, 2026-09-20 late; rows C2, C6, C7, C8)
+
+**The series' design changes (C6).** The one `match.hull_disc` knob flips three sites at once and can only say
+"the disc" or "not the disc". Intervene on ONE site at a time with the disc kept in the others: the friendly-fire
+line-of-fire site (`match.gd:1383`), the incoming-projectile site (`match.gd:1450`), squad's `incoming_fire.gd:101`
+(squad's file; ask for the knob), and the aim point. Then Shapley effects over the subsets if the sites interact.
+**Run every arm on the SAME seed list** (common random numbers) and report discordant pairs (McNemar), never pooled
+rates: ~32 paired seeds per cell detect a 25-point shift, ~64 size a component; stop a dominated arm early with a
+sequential test. Ten unpaired matches per cell (round 9's design) is retired.
+
+**Counterfactual forking (C7) is the instrument that avoids the butterfly:** replay a seed to a checkpoint every
+~5 s, fork under each configuration for 1 tick (which predicate flipped: friendly-fire blocked, threat, mode) and for
+5 s (net damage from the identical state). Our determinism makes it a match-runner flag (`--fork-at=T` plus a tune).
+The pre-registered arm the reply proposes: rescaled bodies, disc kept for spacing, box for line-of-fire AND threat;
+its prediction is that this recovers most of the lost win rate. Record the prediction, then run it.
+
+**Two traps to check before believing any cell (C8):** (a) the aim point: after the rescale (and R5's turret mount),
+does every weapon aim at the target's hull centre at height, or at its origin? A test. (b) hard thresholds in the
+selectors near the disc radius flip modes on a 1 % change; list them beside A2's verdict.
+
+**"Who yields" for the yaw reservation (C2):** the deterministic key nav adopts (emergency brake, clearance slack,
+stopping distance, distance to goal, unit id) is the tie-break for B2's turning-envelope reservation too; do not
+invent a second one.
+
 ## Status
 
 _(the worker keeps this current)_

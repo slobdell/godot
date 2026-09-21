@@ -115,6 +115,13 @@ dominates the frame) and the readability gate as a 3 : 1 luminance ratio of the 
 falsifier for item 2 is unchanged: two windows on one block differ by the channel's full range while `perf-scene`'s
 draw calls and instance-variable counter do not move.
 
+## Research addendum 2 (brief 3, 2026-09-20 late; row C11)
+
+**One fixture rule from the legibility instrument:** a light behind every street corner so the entrance silhouettes
+from his camera, and no facade wash that lowers the contrast of a street's ground-contact line (the edge the eye uses
+to read passability). arena's render test prints the contact-line contrast per lane; keep it from falling when a cue
+runs. After the per-window work.
+
 ## Status
 
 _(the worker keeps this current)_

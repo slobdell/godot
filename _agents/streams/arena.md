@@ -127,6 +127,29 @@ kit material question for feel.
 **Vocabulary (B5):** the spawn-grid derivation (item 4) is a TURNING ENVELOPE use; the collider boxes (R3) are STATIC
 FOOTPRINT; name them in the code.
 
+## Research addendum 2 (brief 3, 2026-09-20 late; rows C5, C11, C12)
+
+**The corner check is a closed form (C5).** A car-like hull turning through exterior angle Δψ needs an effective
+clearance radius `r_eff = r_a + R_min·(sec(Δψ/2) − 1)` beyond its footprint (`R_min` from `Units`'
+`min_turn_radius_m` for the War Rig). Item 1's lane test prints, for every junction and lane corner, Δψ, the rig's
+`r_eff`, and the corner's inscribed clearance, and fails where the clearance is short. That replaces "the rig's
+turning template" with one formula; the swept-polygon template can come later.
+
+**"Reads passable" has an instrument now (C11), and three numbers explain his read.** At his pose (21°): a gap
+ACROSS the screen is foreshortened by sin 21° ≈ 0.36, so the ring road (cross-screen at his default heading) shows
+the same clearance 2.8× narrower than the avenue (in depth); a foreground object of height h hides 2.6 h of ground
+behind it, so a 1.5 m barricade hides 3.9 m of the street's contact line; the telephoto flattens depth, so the eye
+needs scale anchors (lane markings, paving, kerb stones) between the vehicle and the throat. Low obstacles (0.4–0.9 m:
+barricades, kerbs) project 3–6 px tall and camouflage; overhead geometry reads as blockage. **Item 3 becomes a
+render test** using control's camera tooling (`terminus-alleys` / `camera-looks`): per lane, project the narrowest
+throat to screen at his pose, read the Z-buffer for the occluded fraction of its ground-contact line, and print the
+visible throat width minus the rig's projected width. The page shows each frame with the throat drawn and the two
+numbers; the ring road's beside the avenue's. Design rules that follow: kerb furniture never in front of a throat's
+contact line from his camera; low barricades lit top-vs-side or replaced by tall ones; paving or lane marks as scale
+anchors along every lane (feel's kit); a light behind every corner (show's).
+
+**C12 (a calibrated per-frame score) waits** until his reads disagree with the instrument's ranking.
+
 ## Status
 
 _(the worker keeps this current)_

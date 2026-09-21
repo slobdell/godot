@@ -131,6 +131,16 @@ phase, and a "dressing" state follows it so the player sees why hulls are still 
 **Later (B4):** an affordance overlay of certified lanes for the selected vehicle class (arena's corner certification
 is the data). Not this round unless cheap.
 
+## Research addendum 2 (brief 3, 2026-09-20 late; row C11)
+
+**arena's lane-readability render test uses your camera tooling** (`terminus-alleys`, `camera-looks`, his pose): it
+projects a lane's narrowest throat to screen and reads the Z-buffer for the occluded fraction of its ground-contact
+line. Expose what it needs (a headless frame at his pose with the G-buffer's depth and a world-to-screen for a
+segment) as a small API or make target; nothing else changes on your side. The three numbers behind his "is it
+blocked?" read (cross-screen foreshortening at sin 21°, foreground occlusion of 2.6× an object's height, the
+telephoto's missing scale cues) are also why the camera's default heading matters: a street read along the depth
+axis is 2.8× more legible than one read across.
+
 ## Status
 
 _(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
