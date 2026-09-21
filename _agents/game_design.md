@@ -2147,3 +2147,62 @@ shipped is the engine with its dials set where the gates allowed; what he asked 
 starts from these two quotes: **basic primitives to drive individual lights on a building** (per-window, per-edge, per-sign
 addressable, not one uniform over eight blocks), and **light-show effects composed from them**, judged by his eye against
 a 1990s-game baseline frame, not by a luminance bar. The immediate goal is convergence: merge, close, reset.
+
+## Round 10 direction: the lead's playtest on Terminus (2026-09-20, evening, main at `de31eeea`)
+
+His words, verbatim (one message; the round is split from it):
+
+> I want to review the next round of work. Reviewing an iteration of gaming, it's hard to give feedback because there
+> are some general playability blockers. I'm playong on the terminus map, and I want to gauge how smart units are by
+> trying to navigate them through the city. But there streets are blocked with these shipping containers so there's
+> almost no passageway. Some problems though - vehicles are going straight through and overlapping with some of the
+> assets (like the lights). I asked for lightshows on the building walls but haven't gotten that yet, we're missing the
+> blimp I wanted. We can definitely expand the set of things announcers can say (try to generate more stuff on the same
+> theme to create more selection - let's burn through some ElevenLabs credits). You alreayd mentioned that the truck
+> rigs had yaw problems. Units are still driving into walls. The turret placement on our vehicles is wrong (at least
+> with the condemned and the gangs). When I select a set of units that doesn't necessarily belong to a squad, the
+> buttons to do support by fire or whatever the case is is disabled - any way we can make that usable for new, random
+> selections? I can see that the condemned bus is too small still. It should be longer than the garbage truck and
+> heightened proportionally. I'm also trying to move units, and they weren't responding (I can see improvement for sure
+> in formation generation and stuff). But I had a selection and the yellow X's on the map were in the center, that's
+> where they were driving to, and I was trying to right click to move them in a different direction and they didnt
+> respond
+
+**What it means for the round (orchestrator's reading; every item below is a stream's first backlog entry):**
+
+1. **The playability blockers come first.** He cannot judge unit intelligence until he can (a) give a move order and
+   see it obeyed at once, (b) give element orders to any selection, and (c) drive through the Terminus streets. Those
+   three gate every other judgement, so the round is ordered by them: commanding → the Terminus streets → walls and
+   yaw → the look (lights, blimp, turrets, bus) → the announcer.
+2. **The unanswered right-click is the worst bug in the game right now.** A selection with orders in flight (the
+   yellow X markers at the map centre were its destinations) ignored a fresh right-click elsewhere. A new order from
+   the player replaces an in-flight one, always, within one input frame; anything the squad layer does after arrival
+   (hold-on-arrival, co-arrival pacing) yields to it. control diagnoses on the default `make skirmish` path from the
+   input event to the crew's order, and the readout must say what was ISSUED (lesson 183).
+3. **Element orders for any selection.** "Support by fire or whatever the case is" is disabled unless the selection is
+   a squad. Decision: any selection of two or more units becomes a transient element when an element order is given
+   (one of them the base, the rest the manoeuvre element, by role and position); the buttons are never disabled for a
+   selection that could carry them. squad provides the API, control the buttons and the readout.
+4. **The Terminus streets.** Containers in the roads are the map's fault, not the units'. Decision: streets are for
+   driving; containers and other props stand on lots, against walls and at kerbs, never across a street; a few authored
+   chokepoints are allowed but every street keeps a lane wider than the widest hull (the War Rig's 3.32 m plus the
+   bake margin), and the arena report prints each street's narrowest lane beside that number. Every prop a vehicle
+   cannot drive through (lamps, containers, planters) has a collider AND sits in the navmesh bake; a prop without a
+   collider is a decoration and lives where no vehicle drives. "Vehicles going straight through the lights" is that
+   rule broken by the round-9 lamps.
+5. **Walls and yaw.** Units still drive into walls (nav's), and the rigs still yaw through geometry (combat's plant
+   constraint, off since round 9's bisect). The acceptance for both is his: a squad ordered through the Terminus
+   streets arrives with zero wall contacts and no hull rotating through a building, measured on the default path.
+6. **The look.** The light show on the building WALLS (per-window primitives composed into effects; his eye against a
+   1990s-game baseline frame, not a luminance bar); the blimp he asked for, visible at HIS pose over the arena (the
+   round-9 airship sits at 560 m over the city and is out of frame at 21°: that is the miss); the turret mounts on the
+   Condemned and gang hulls sit in the wrong place; and the Condemned bus reads too small: **longer than the garbage
+   truck (the Condemned IFV, 7.54 m) and taller in proportion**. The bus's number is his eye, not the reference table:
+   the S1 rule is amended for `tank` (and `burner`) so the lead's ruling on the lineup frame is the source and the
+   reference is recorded beside it.
+7. **The announcer.** More lines on the SAME themes, for selection variety, and he has authorised the spend: "let's
+   burn through some ElevenLabs credits". Decision (orchestrator, on his words): lead gate 1's text approval is
+   satisfied for this round by the standing humour direction above (satire that is slightly off, never a punchline;
+   the caller as authentic fight-night hype) plus the audit tool; the announcer stream writes, audits, puts every new
+   line on the review page, and generates WITHOUT waiting; a line he vetoes on the page is regenerated or dropped
+   (cheap). The ledger records every run. Scope is his to limit (memory: he limits the asset count, not the spend).
