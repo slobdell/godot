@@ -242,6 +242,16 @@ func test_the_blocks_edge_run_is_the_parapet_and_the_outline_is_only_a_variant()
 					"arena %s ships the parapet, not the outline" % name)
 	assert_true(Show.STYLES[&"city_block"].has(&"outline"),
 			"the outline is still reachable, so the lead can compare against his own words")
+	# A STYLE IS THE WHOLE LOOK. Shot at the parapet's own energy the two arms landed within 1.8% of each other on
+	# every frame -- inside the 1.3% measurement null -- so the pair the lead was being asked to choose between
+	# was two copies of the same picture. `outline` carries the energy it was built at, or it is not the thing
+	# anyone argued about.
+	var parapet: Dictionary = Show.STYLES[&"city_block"][&"parapet"]
+	var outline: Dictionary = Show.STYLES[&"city_block"][&"outline"]
+	assert_eq(outline.keys(), parapet.keys(), "both styles set the same uniforms, so neither leaks the other's")
+	assert_true(float(outline[&"show_edge_energy"]) > float(parapet[&"show_edge_energy"]) * 2.0,
+			"the outline is bright enough to be a different picture (%.2f vs %.2f)"
+			% [float(outline[&"show_edge_energy"]), float(parapet[&"show_edge_energy"])])
 
 
 func test_the_edge_palette_is_the_venues_and_spends_no_signal_colour() -> void:

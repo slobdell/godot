@@ -105,6 +105,13 @@ These are not craft. A change that breaks one of them is wrong even if it looks 
     the show does not own — which is exactly what the first version of the readability gate asked for when it
     failed 22 of 30 frames with no show in them at all. **If you find yourself tuning one of these dials to fix
     something that is in the show-off half too, the check is wrong, not the dial.**
+13. **An arm that changes two things at once is not an arm — and the second thing is usually the camera.** Round 9
+    ended with three comparisons and *all three* turned out to move something besides the treatment. The
+    `--no-strobe` arm swaps programme **and** period (a 1.6 s strobe for a 6.0 s breathe), so its clip is not "the
+    venue without a strobe", it is a different rhythm. The parapet/outline pair stopped discriminating the week the
+    camera learned to sweep its heading, because the band window at the new heading holds far less building. And
+    the "frozen" pair was not frozen, because `FxWorld` runs `PROCESS_MODE_ALWAYS`. **Before believing a delta,
+    write down every input that differs between the halves and check that the list has one entry.**
 
 ---
 
@@ -671,10 +678,26 @@ BEFORE arm it failed **22 of 30 frames with no show in them at all**. At the lea
 top of the frame is simply brighter than the middle, and it was before any of this existed.
 
 **So the bar is relative: the show must not make the ratio meaningfully worse than the same frozen frame with the
-show off.** Measured that way the parapet default moves it **−2.6% to +7.4%, mostly positive** — it makes the fight
-marginally *easier* to read, because the window grid lifts the interiors rather than the silhouette.
+show off.**
 
-Two cautions that outlive this round:
+**⚠ AND THE FIRST ANSWER THAT BAR GAVE WAS WRONG, BECAUSE THE RING WINDOW HAD NO FIGHT IN IT.** It read
+*"−2.6% to +7.4%, mostly positive — the show makes the fight marginally easier to read"*, which was a true
+measurement of bare asphalt: the frame tools never passed `--budget`, so every run fielded **five units a side**
+instead of ~30, and a 3-second warmup left those five on their spawn line 86 m from the camera.
+
+**Re-run against a real army — 34 a side, 11–23 vehicles in every frame — the effect is essentially ZERO:** 35 of
+36 frames inside the bar, scattered both ways, median near zero. The ratios themselves moved from ~0.80 to ~0.93
+on `terminus/wide` once real vehicles were in the ring, which is the clearest evidence that the old numbers were
+measuring the wrong subject.
+
+**So `vehicles_in_frame` is printed with every capture and `tools/show_frame_gate.py` refuses a set containing an
+empty frame — and it runs BEFORE the luminance gate**, because a ring window with nothing in it makes the
+luminance gate meaningless rather than merely wrong.
+
+Three cautions that outlive this round:
+
+- **Check the frame contains its subject before trusting the number.** A measurement of the wrong thing is not
+  noisy, it is confident and wrong, and it looks exactly like a result.
 
 - **Say which statistic you are gating.** feel's observation was *"the brightest pixels in the image are the
   building edges"* — a **maximum**. The gate measures a **mean** over two windows. Both are reported per frame now;
@@ -682,6 +705,26 @@ Two cautions that outlive this round:
 - **Check the control against itself before trusting a failure.** The first failing run had the *outline* variant
   scoring better than the parapet. More lit silhouette cannot help the fight out-read the periphery, so the
   measurement was wrong before the result was interesting.
+
+### A frame-mean cannot tell you whether a strobe reads
+
+Four attempts went into making a number answer *"does the `last_stand` strobe read?"*, and the fourth is the one
+that should have been obvious:
+
+1. **Band-window swing:** 2.9% with the strobe on, 2.9% off. The band is the top of the frame; the rim, beams and
+   signs that strobe are largely outside it. *Wrong window.*
+2. **Whole-frame swing at 10 fps:** 1.9% vs 1.6%. **The clip was aliasing.** At sharpness 40 over 1.6 s the stab is
+   above half its span for **8.4% of the cycle — 0.134 s** — so at 10 fps ~1.3 frames land inside each stab and
+   almost never at its peak. *The clip was sampling the gaps between flashes.*
+3. **Whole-frame swing at 30 fps** (what the player sees, since the game targets 30): **2.4% vs 1.9%.** Real, but
+   barely above the still-pair null, and **there is no null for this statistic** to compare it against.
+4. **The reason it will never be much better:** the swing is a **frame mean**, and the strobing fixtures occupy a
+   small fraction of a frame centred on the fight. A strobe's visibility is *local contrast on the thing that
+   strobes*, not the average brightness of the picture.
+
+**So the clip is the measurement and the number is the sanity check, not the other way round.** That is what clips
+were shot for; it took four tries to stop arguing with the medium. Report the swing with its frame rate beside it,
+and let a human watch.
 
 ### Shoot an event cue where it has headroom
 
@@ -722,3 +765,52 @@ compiled at all. On the contaminated pair above, *real lights was identical and 
 which is most of rule 3, proven, on a run whose milliseconds were worthless.
 
 The lead's pose, for every frame: **21° pitch, FOV 35, 49 m.** Not 12° — that is the camera he played and rejected.
+
+---
+
+### The last run of round 9, and what it is worth (`c83117dc`, builder0, 2026-09-20 16:21–16:58)
+
+**This is the run every number below the round-9 line comes from, and it is weaker than it looks.** Read this
+before quoting any of it.
+
+**What the run did right.** 26 frames, two arenas, every one of them a real fight: Terminus 39 vehicles in the wide
+pose and 12 in the close, yard 37 and 16, contact confirmed before the first shutter (`closest_gap_m` 59.6 and 59.3
+against a 60 m bar, after 115.8 s and 70.8 s of waiting). Pitch 21.0 on every frame, no lift, `sight_blocked` false
+throughout. 15 uniform writes a frame at idle, 16 while a kill ripple runs, 25 on the victory sweep. Shader errors:
+zero, on a real GL context.
+
+**What the run cannot tell you: whether the show changes the picture.**
+
+| | |
+|---|---|
+| on vs off, 26 frozen pairs | between **−3.0%** and **+3.3%** |
+| the same frame shot twice, nothing changed | median 0.2%, p95 1.1%, **worst 2.8%** |
+
+**The whole spread of the result sits inside the null's own worst case.** The gate passes — no frame is more than
+3.0% worse with the show on — but passing a bar that the noise alone can nearly clear is not evidence that the show
+is harmless, it is evidence that this instrument cannot see the show at this band width. Say "not measurable",
+never "no effect".
+
+**And the pair was not frozen.** `FxWorld` runs `PROCESS_MODE_ALWAYS` (`fx_world.gd:115`), so it kept ticking
+through the pause between the two halves of every pair in this run. `06f8ca0b` disables both `FxWorld` and `Show`
+across the pair and sets `SETTLE_FRAMES`, and **it has not been shot**. Every luminance number above is measured
+through that leak. Re-shooting is the first action of round 10.
+
+**Two comparisons in this run are broken, in the way rule 13 describes:**
+
+- **Parapet vs outline no longer discriminates.** 0.00% to +0.35% across six pairs, against a 2.8% null. An
+  earlier run of the same pair read +7.3% to +13.5%; what changed in between is not the lighting, it is that the
+  camera learned to sweep its heading toward the fight, and the band window at the new heading holds far less
+  building. **The two PNGs are still the right thing to put in front of the lead — the number beside them is not.**
+- **The strobe arm changes the rhythm too.** `STROBE_ALTERNATIVE_PERIOD_S = 6.0` against a 1.6 s strobe, and the
+  clip is 6.0 s long, so the "off" arm shows under one cycle of a slow breath. That is why its floor is 25% darker
+  (0.0822 vs 0.1101) and its full-frame swing is *larger* (12.4% vs 8.7%), which is the opposite of what a strobe
+  should do. **As a look the constant is defensible** — its comment says *"urgent, but not a fault light"*, and
+  that is a real alternative. **As an arm it is not**, because it moves two variables, and the call site describes
+  it as "a fast breathe" while 6.0 s is not fast. Shoot the arm at the cue's own 1.6 s and keep 6.0 s as a third
+  look. Left unchanged here only because changing it means re-shooting the clips, which round 10 does anyway.
+
+**The five mood clips in `build/show/clips/` are from 05:47–05:56, not from this run.** `make show-clips` was not
+in the run's target list, so they are the ones shot before the frame tools learned to wait for contact — five units
+a side, three seconds in, the squads still on the spawn line. **Do not send them to the lead as the show.** The
+stills in `build/show/` (16:46) are the real fight; the clips are not.

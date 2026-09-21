@@ -149,6 +149,43 @@ func test_the_fight_cue_holds_then_hands_over_to_the_mood() -> void:
 			"and something inside the perimeter too: the rim can be clipped away at spawn (control, 2026-09-20)")
 
 
+func test_softening_the_strobes_changes_only_the_strobes() -> void:
+	# `--no-strobe` is the comparison arm for the lead's call on whether the last_stand strobe survives. It is only
+	# a fair comparison if the two arms differ in the strobe and in NOTHING ELSE -- which is why it edits the
+	# loaded book rather than shipping a second one that could drift.
+	var before := ShowCues.load_book(BOOK)
+	var after := ShowCues.load_book(BOOK)
+	after.soften_strobes(6.0)
+	var softened := 0
+	var untouched := 0
+	for state: Variant in before.states:
+		var a: Dictionary = before.states[state]["set"]
+		var b: Dictionary = after.states[state]["set"]
+		assert_eq(b.keys(), a.keys(), "'%s' overrides the same channels in both arms" % state)
+		for channel: Variant in a:
+			var was: Dictionary = a[channel]
+			var now: Dictionary = b[channel]
+			if str(was.get("programme", "")) == "strobe":
+				softened += 1
+				assert_eq(str(now["programme"]), "breathe", "%s/%s is a breathe now" % [state, channel])
+				assert_near(float(now["period"]), 6.0, 0.001, "%s/%s took the new period" % [state, channel])
+				assert_near(float(now.get("floor", -1.0)), float(was.get("floor", -1.0)), 0.0001,
+						"%s/%s keeps its floor: the arms differ in the PROGRAMME, not the band" % [state, channel])
+				assert_near(float(now.get("ceiling", -1.0)), float(was.get("ceiling", -1.0)), 0.0001,
+						"%s/%s keeps its ceiling" % [state, channel])
+			else:
+				untouched += 1
+				assert_eq(str(now.get("programme", "")), str(was.get("programme", "")),
+						"%s/%s is not a strobe and must not move" % [state, channel])
+				assert_eq(now.get("period", null), was.get("period", null),
+						"%s/%s keeps its period" % [state, channel])
+	assert_true(softened >= 2, "the book really does contain strobes to soften (%d)" % softened)
+	assert_true(untouched > softened, "and most of the book is left alone (%d untouched)" % untouched)
+	for state: Variant in after.states:
+		assert_eq(float(after.states[state]["attack"]), float(before.states[state]["attack"]),
+				"'%s' keeps its attack: only the programme changes" % state)
+
+
 # --- the kill ripple ---------------------------------------------------------------------------------------------
 
 func test_the_ripple_fires_on_a_kill_and_on_nothing_quieter() -> void:

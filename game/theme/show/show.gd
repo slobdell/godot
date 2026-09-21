@@ -35,8 +35,15 @@ const SPREAD_UNIFORM := &"show_spread"
 ## spread. Today one fixture has one: the city blocks' edge run is the roof `parapet` (the default, a horizontal
 ## line that reads as a building) or the full `outline` (every vertical chamfer too, which reads as a wireframe --
 ## art_direction.md :56's named anti-pattern, kept so the lead can compare against his own words).
+## A style is the WHOLE look, not just the mask. `outline` restores the energy it was built at (2.2) as well as
+## lighting the chamfers, because "outline" has always meant the look feel objected to -- and shot at the parapet's
+## 0.8 the two arms came out within 1.8% of each other on every frame, inside the 1.3% measurement null. A
+## comparison the lead cannot see is not a comparison.
 const STYLES := {
-	&"city_block": {&"parapet": {&"show_chamfer_gain": 0.0}, &"outline": {&"show_chamfer_gain": 1.0}},
+	&"city_block": {
+		&"parapet": {&"show_chamfer_gain": 0.0, &"show_edge_energy": 0.8},
+		&"outline": {&"show_chamfer_gain": 1.0, &"show_edge_energy": 2.2},
+	},
 }
 ## A K5 event rippling outward from where it happened: (world x, world z, the wavefront's radius in metres, gain).
 ## Gain 0 is "no event", which is what every fixture holds until a kill. The crowd's `event_position` pattern.
@@ -46,6 +53,8 @@ const EVENT_UNIFORM := &"show_event"
 ## "the circuit disconnected visually every cycle and looked broken"). `edge` is not here: the blocks have no edge
 ## emission today, so its identity IS zero and a floor of zero is the look we ship without a patch.
 const CORE_PARAMETERS := [&"level", &"window", &"shop"]
+## What `last_stand` becomes with `--show-no-strobe`: urgent, but not a fault light.
+const STROBE_ALTERNATIVE_PERIOD_S := 6.0
 
 ## Whether the show drives anything this frame. Turning it OFF writes every fixture back to its identity, so the
 ## venue renders exactly as it did before the show existed; turning it back on resumes from the same clock.
@@ -164,6 +173,11 @@ func _ensure_cues() -> void:
 	cues = ShowCues.load_book()
 	if cues.problem != "":
 		push_error("SHOW %s" % cues.problem)
+	# `--show-no-strobe`: the comparison arm for the lead's one open look question -- keep the `last_stand` strobe
+	# or cut it. It is a question about DATA, so the flag edits the loaded book rather than adding a second one:
+	# every strobe becomes a fast breathe, which is what `last_stand` would be if the strobe went.
+	if LaunchFlags.from_environment().has("no-strobe"):
+		cues.soften_strobes(STROBE_ALTERNATIVE_PERIOD_S)
 
 
 ## Follow `Arena.active`. Called before every registration and every frame, so a fixture built during an arena's
