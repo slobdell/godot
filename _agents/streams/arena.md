@@ -109,6 +109,24 @@ continuous drivable width; a prop a vehicle cannot drive through has a collider 
 
 Nothing blocks. Chokepoints off the lanes are yours to author or drop; list them in `arenas.md`.
 
+## Research addendum (brief 2, 2026-09-20 evening; rows B4, B5, B10)
+
+**R4 gains corners (B4).** Road-design practice certifies a street for a design vehicle by its swept path at every
+turn, not by its straight width. Item 1's lane test also checks each lane corner and each street-to-street junction
+against the War Rig's turning template (its outer cab-overhang arc and inner trailer-axle arc at the rig's minimum
+turning radius, a swept polygon per turn angle, computed offline from `Units`), and fails on any corner the template
+does not clear. Print each corner's fillet radius beside the rig's. The Terminus grid's 90° junctions at 20 m streets
+are the cases; the report names each.
+
+**"Reads passable" gets a language (B10):** certified lanes read warm (street-level light, painted kerbs, unbroken
+pavement); chokepoints read cold (blue perimeter light, warning stencils, containers and barriers ≥ 1.2 m tall);
+passable clutter is under 0.3 m. And a light behind every corner so the entrance silhouettes from his camera. Item 3
+uses this table; the fixtures are feel's and show's (send them the list of corners and lanes); the kerb paint is a
+kit material question for feel.
+
+**Vocabulary (B5):** the spawn-grid derivation (item 4) is a TURNING ENVELOPE use; the collider boxes (R3) are STATIC
+FOOTPRINT; name them in the code.
+
 ## Status
 
 _(the worker keeps this current)_

@@ -105,6 +105,33 @@ steering,avoidance,pid,control_gains,order_controller,order_feed}.gd`, `game/tan
 
 Nothing blocks. The pitch decision (item 4) was made for him; he overrules on the field.
 
+## Research addendum (brief 2, 2026-09-20 evening; rows B1, B2, B7, B8, B14)
+
+**R1 gets its default split (B8):** fitness S = (range × DPS) / (speed × agility), agility 1.0 tracked/hover, 0.5
+wheeled, 0.2 articulated; sort descending, ties by unit id; the top ⌈n/2⌉ are the base element; then match the
+assignments to positions projected on the normal of the target vector so deployment paths do not cross. Falsifier:
+zero crossing deployment paths on five random selections.
+
+**Item 3 (the settle time) is re-specified (B7): arrival is three phases.** Transit under pacing → OPERATIONAL
+ARRIVAL the instant the formation centroid enters the destination zone and every hull is braking: the player's order
+is COMPLETED here, pacing lifts, weapons free → INDEPENDENT DRESSING per crew: tracked and hover hulls neutral-steer
+to the facing; wheeled hulls stop on their slot and keep their approach heading, accepting a residual (the turret
+covers the sector). Our bar: a 20 m move on flat ground reports COMPLETED in ≤ 8 s with no rise in collisions. This
+replaces the round-9 ruling that a held wheeled hull manoeuvres to its facing, EXCEPT for hull-fixed wheeled units
+whose weapon arc the residual exceeds (nav's row). Composition rule (B14): during dressing, tracked hulls hold
+turning-room priority and wheeled hulls never claim it.
+
+**Item 4 (pitch) is confirmed as an invariant (B2):** lateral slot pitch ≥ the turning envelope's diameter unless
+the element is deliberately single file.
+
+**Acknowledgement within one second (B7):** on any player order a crew shows visible intent within 1 s on the default
+path (turret slews toward the destination, the nose begins to turn) before the hull moves; control draws the pin at
+the next tick. Cheap; it buys tolerance for everything slower.
+
+**The funnel (B1) is what you publish for nav's seam item:** the element's corridor as a chain of convex polytopes
+plus the leash, in `Element.state()`, so the mover can project onto it. Build the publisher when nav asks; the shape
+is in the catalog row.
+
 ## Status
 
 _(the worker keeps this current)_

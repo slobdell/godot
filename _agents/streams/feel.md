@@ -112,6 +112,18 @@ answer its requests), `game/units/units.gd` beyond the `tank`/`burner` values an
 The bus concept page (his tap before any 3D); the burner's, if the count allows. Nothing else blocks: the bus's box
 lands from your eye, and he overrules on the lineup.
 
+## Research addendum (brief 2, 2026-09-20 evening; rows B10, B3)
+
+**Affordance language for the streets (B10), with arena:** certified lanes read warm (street light at ~3000 K,
+painted kerbs, unbroken pavement); chokepoints read cold (blue perimeter light, warning stencils, barriers ≥ 1.2 m);
+and a light behind every corner so a street's entrance silhouettes from his camera. arena sends the list of lanes and
+corners; the kerb paint and the corner fixture are kit work of yours; pair discipline as always. This sits after the
+bus, the turrets and the blimp.
+
+**The trailer's second collider (B3)** has a shape now (a hinged OBB placed analytically from the hitch kinematics you
+already drive visually); it is combat's stretch item, not yours; expect a request for the kinematics as a shared
+function.
+
 ## Status
 
 _(the worker keeps this current)_

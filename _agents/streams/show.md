@@ -104,6 +104,17 @@ blocks and a test holds that), the simulation.
 His eye on item 1's three frames (the band width he prefers) and on item 4's page. Neither blocks: 2× ships as the
 default on the gate's say, and items 2–3 proceed regardless.
 
+## Research addendum (brief 2, 2026-09-20 evening; row B10)
+
+**Item 2 changes mechanism.** Per-window addressing is a packed 32-bit per-instance attribute (zone id, spatial phase,
+palette index, wave mode) that the SHADER evaluates from one global time uniform: chases, pulses and strobes per
+window at zero CPU per frame and zero added draw calls; the CPU writes per-window values only for event ripples (a
+kill crossing a facade). That is the media-facade practice and it is cheaper than the buffer-per-frame plan. Two
+dials from the same source: camera-facing attenuation (a facade facing the camera dims, so a broadside wall never
+dominates the frame) and the readability gate as a 3 : 1 luminance ratio of the fight over the venue. The
+falsifier for item 2 is unchanged: two windows on one block differ by the channel's full range while `perf-scene`'s
+draw calls and instance-variable counter do not move.
+
 ## Status
 
 _(the worker keeps this current)_

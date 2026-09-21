@@ -106,6 +106,20 @@ announcer targets.
 His veto on the review page (never blocks: generation proceeds under R8); the "stop at half" line if the pools want
 more than ~55 k credits.
 
+## Research addendum (brief 2, 2026-09-20 evening; row B11)
+
+**Selection scoring (cheap, do it with item 5):** a recency-decay penalty per clip, Σ exp(−Δt/τ) over its firings
+plus a lifetime count, replacing or joining the LRU + cooldown; the falsifier is the repeat-within-three-minutes rate
+on the fixtures falling to zero for pools ≥ 12 (listeners notice a repeat inside about three minutes and not hours
+apart).
+
+**Authoring framework for the PA and the Veteran (item 2):** bureaucratic banality (a catastrophe as a maintenance
+deviation), technical detachment (an accurate observation that downplays the crisis), understated inconvenience;
+never for the caller, who is hype. Examples in the reply's §8; the audit rejects anything that reads as a joke.
+
+**Stretch:** clause assembly (prefix × subject × action × clause with matched pitch and tempo) for the Veteran only;
+the pipeline slices whole sentences by design and this would be a second recording mode, priced before it is tried.
+
 ## Status
 
 _(the worker keeps this current; the ledger and the pool report are the numbers he reads)_

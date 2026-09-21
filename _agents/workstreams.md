@@ -84,6 +84,11 @@ control, squad, arena and nav first.
   treats a move as a finding.
 - **Every number carries its commit and its machine**; merge at the hash whose check went green; read the wrapper's
   own line.
+- **Every A/B states its positive control** (research addendum B12): before an arm's null is reported, a known
+  disturbance must move the metric; an arm proves it applied with a counter; shared state is hashed or drained between
+  tests. A null without a positive control is "not measured", never "no effect".
+- **The clearance vocabulary is four names** (B5): static footprint, swept travel ribbon, turning envelope, combat
+  signature. A constant or a reader that does not say which it is gets a comment or a rename in the commit that touches it.
 
 ## Round 9: the seven streams (launched 2026-09-19 evening)
 

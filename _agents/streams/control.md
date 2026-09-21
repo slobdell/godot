@@ -116,6 +116,21 @@ keep lifting over roofs) are DECIDED below so you are not waiting.
 
 Nothing blocks. His verdict on the round is the playtest.
 
+## Research addendum (brief 2, 2026-09-20 evening; rows B7, B4)
+
+**Acknowledgement is its own requirement (B7):** within one tick of any order the pin is drawn and the banner (if
+the order was refused, deduplicated or spent on a cancel) says so; within one second a crew shows visible intent
+(squad's half: the turret slews toward the destination, the nose begins to turn). Item 4's banner and item 1's
+regression test both assert the acknowledgement tick. The player tolerates slow execution he can see acknowledged;
+he cannot tolerate silence.
+
+**The order COMPLETES at operational arrival (B7):** squad now reports a move complete when the formation's centroid
+is in the zone and every hull is braking, before dressing. The pin's state and the "MOVE · 0/3 there" plate read that
+phase, and a "dressing" state follows it so the player sees why hulls are still nudging.
+
+**Later (B4):** an affordance overlay of certified lanes for the selected vehicle class (arena's corner certification
+is the data). Not this round unless cheap.
+
 ## Status
 
 _(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other

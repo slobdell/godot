@@ -99,6 +99,29 @@ correlation.**
 
 Nothing blocks. Balance is deferred by him; the series (item 6) reports, it does not tune.
 
+## Research addendum (brief 2, 2026-09-20 evening; rows B2, B3, B9 in `research_catalog.md` *Round 10 addendum*)
+
+**The freeze has a candidate mechanism, and it reorders item 1.** The reply names the sequence: formed-up hulls settle
+INSIDE each other's collision margins (a non-zero penetration baseline), every candidate yaw compares worse against
+the SQUADMATE contact, both hulls refuse, and the deepest contact masks the wall term. Your ranking measured LATERAL
+gaps only; nose-to-tail contact was never measured, which is consistent with a 3.19 m-across crew refusing as long as
+a 0.06 m one. So item 1's instrument is: per candidate per tick, the identity and depth of the deepest contact
+collider, on the refusing crews AND the seating one. Confirmed if the refusers' deepest contact is a squadmate and
+Alpha_4's is not. Then the fix family, in this order: (i) a capsule-string / multi-circle hull for the yaw test (its
+distance field is monotone in yaw: no OBB discontinuity, no masking); (ii) a turning-envelope reservation before a
+rotation, yield by priority (unit id) if denied; (iii) elongated wheeled hulls do not rotate in place at all (yaw
+coupled to forward speed), which is what the creep already tries to be. CP4's three bars are unchanged and gain a
+fourth: zero runs of more than 3 consecutive refused ticks anywhere in five_squads.
+
+**The series gains two arms (B9):** physical collider (rescaled vs legacy mesh) × AI perception (disc vs box): arm B
+(true mesh, box) decides whether perception caused 9/20 → 0/20; arm C (legacy mesh, scaled disc) whether perception
+alone suffices. Per cell, never pooled. The aspect-exposure formula (broadside 4.2× head-on for the rig) is the other
+candidate: a hull that cannot keep its nose on the threat; `hull_reach_along` already computes the chord.
+
+**Stretch (B3):** the trailer as a second HINGED collider placed analytically from feel's hitch kinematics (no joint
+solver; RK2 on the articulation angle; a jackknife lock in reverse), so a shell through a fold misses. Moves the
+baseline once; not before the lead asks.
+
 ## Status
 
 _(the worker keeps this current)_

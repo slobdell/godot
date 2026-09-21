@@ -102,6 +102,33 @@ Nothing blocks. "Heavies in alleys" (should hulls above the bake radius not rout
 clearance) is DECIDED for this round: after CP2 there are no lanes narrower than the rig; alleys off the lanes are
 priced by your instrument and reported, not refused.
 
+## Research addendum (brief 2, 2026-09-20 evening; rows B1, B4, B5, B6, B7, B14)
+
+**The seam has a shape now (B1): an explicit reference governor over a funnel.** The element publishes a chain of
+convex corridor polytopes plus a leash (squad's publisher); `Movement` projects its nominal velocity onto that
+admissible set every tick, scaling speed along the centreline and never leaving the corridor; the unstick heuristics
+run only outside it. Neither intent down nor execution up: one shared object both layers read. Item 6 is that, with
+A7's projection, A6's corridor and the leash as consumers of the same object. Bars: off-corridor share and unstick
+triggers fall on the Terminus drive test and five_squads with the active fraction beside them; A12's formation
+residual does not rise; no new freeze. Composition rule (B14): a right-of-way hold line is a barrier INSIDE the
+admissible set, never an "obstacle" that trips unsticking.
+
+**The defile gets a new arm (B6): a corridor right-of-way TOKEN, zone-triggered.** In any passage narrower than twice
+the swept width, reciprocal avoidance is OFF and a single-lane exclusion zone with two terminals arbitrates: the
+leader takes the token with a polarity, squadmates inherit at ≥ 1.5 L headway, the token frees when the last rear
+axle exits, ties by unit id. This is why the round-9 right-of-way "never asked": it was stall-triggered. Falsifier on
+`make squad-defile`: every unit arrives within 1.25× its unimpeded transit, zero head-on deadlocks over 200 opposing
+runs, `wedged` fires 0 times. Item 3's "ORCA deflecting into a wall in a corridor" is this arm.
+
+**Item 5 (the held wheeled hull's facing) is narrowed (B7):** turreted wheeled hulls keep their approach heading on
+arrival and the turret covers; only HULL-FIXED wheeled units whose weapon arc the residual exceeds do the bounded
+three-point turn. Falsifier unchanged for that case; the others are out of the row.
+
+**Corners (B4):** arena is certifying lane corners with the rig's turning template offline; your drive test with
+rigs is its runtime check. The per-class routing table (an edge certified or not per class, priced at corners) is
+next round's row and the reframe of `clearance_shortfall`. **Vocabulary (B5):** every clearance constant you touch
+names its tier: static footprint, swept travel ribbon, turning envelope, combat signature.
+
 ## Status
 
 _(the worker keeps this current)_
