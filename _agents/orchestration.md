@@ -3070,3 +3070,9 @@ looked like a measurement. Lessons 181, 195, 196, 199 are the instances.
     merged it clean and no conflict pointed at it; every AI scenario ran without the body guard and the drain until
     metrics read the call sites. Two runners, one rule, and a signature change is followed by reading every caller,
     not every conflict.
+    **And the inverse, same evening (combat):** main's last red arrived after combat had closed, in a test it owned,
+    and both the orchestrator's and combat's first readings reached for timing because the numbers looked like a
+    race (`0 -> 2` then `2 -> 2`). The correct reading was available only by opening main's `test_case.gd`, the
+    file combat did not have in its tree: the seal had moved the drain out of the hook the test called mid-loop,
+    and the seal's own docstring listed the supported replacement. A symptom that looks like a race is read from
+    the file before it is read from the numbers.
