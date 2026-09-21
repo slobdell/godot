@@ -407,7 +407,30 @@ never comes from the CPU**: a block's seed in `COLOR.g`, the rim's angle in worl
 
 ### GREEN, and the hash to merge
 
-**`e1823e68` is green.** builder0, `make remote T=check`, read from the wrapper's own line and the runner's
+**The hash handed over is `a21bad3c`** — `main` at `c13821c9` merged into `stream/show`, zero conflicts, checked
+on builder0 17:21–17:58 (1780 s):
+
+- `>> remote: make check exited 0 (build/ copied back)` — and `>> remote: copy-back verified, 244 files, sha256`
+- **`1559 passed, 0 failed`** (shards of 74/74/73 files: 562, 494, 503)
+- `lint: all 587 scripts parse (-P6, 8 known artefacts baselined, 8 findings seen, self-test seen)`
+- **`sim-baseline passed: 1ea332e7bc268d2a (glibc-2.43)` — unmoved**, and `determinism 559a415887806e43`
+- `check passed: 18 targets` / `18 targets, all passed`; `ai-scenarios-check` non-pending counts **41,3 unchanged**
+- **Failure list: empty.** Zero `FAIL` lines in the log.
+
+**That last baseline line discharges S6's pre-registered claim for the final time:** *the show does not reach the
+simulation.* It was registered before a line of code existed and has survived a channel engine, five shaders,
+seven fixtures, a cue book, a kill ripple and a full merge of a `main` that moved ~20 commits underneath it.
+
+**The check before it, on `06f8ca0b`, was RED and none of it was the show's** — `exited 2`, 1483/3. Two artillery
+box-fill tests (the red feel's own merge announced as "box-fill red until scale re-derives"; scale re-derived at
+`b70dd8f7`) and `test_theme_city_block`'s colour warning (feel's `637ad4de`, fixed by feel in `a33638b8`). Both
+fixes were on `main` and not in this branch: the merge base was `d389c2c0`, i.e. the last `main` merge here was
+`d8a107b5`. **A red check on a branch that is twenty commits behind is a statement about the branch's age**, and
+the first thing to do with one is merge and re-run, not debug. It also cost a `sim-baseline` reading: `check`
+stopped at the first failure, so the one number that gates a merge never printed — which is the failure mode
+`tools/check_verdict.sh` was written for, now in the tree.
+
+**Round 9's first green was `e1823e68`.** builder0, `make remote T=check`, read from the wrapper's own line and the runner's
 summary, never a shell exit code through a pipe:
 
 - `>> remote: make check exited 0 (build/ copied back)`
