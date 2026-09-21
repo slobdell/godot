@@ -3076,3 +3076,9 @@ looked like a measurement. Lessons 181, 195, 196, 199 are the instances.
     file combat did not have in its tree: the seal had moved the drain out of the hook the test called mid-loop,
     and the seal's own docstring listed the supported replacement. A symptom that looks like a race is read from
     the file before it is read from the numbers.
+201. **An arm that changes two things at once is not an arm, and the second thing is usually the camera.** (show,
+    closing round 9; rule 13 in lighting.md.) Three comparisons ended the round and all three moved something
+    besides the treatment: the strobe arm changed the period as well as the programme (a 6 s breath against a 1.6 s
+    strobe in a 6 s clip); the outline pair's measurement window moved because the camera learned to face the fight,
+    not because the lighting changed; and the "frozen" pair was not frozen (FxWorld and the Show ran through the
+    pause). None of the three was visible from the number; each needed the list of inputs written out and counted.

@@ -29,7 +29,7 @@ source bisect with the refusal ranking that refuted diagonal spacing, nav's seal
 check structurally closed, two arms confirmed independently), metrics' keep-going check with a PASS / FAIL / NOT RUN
 verdict and the first fully clean engine tally, `TUNE` applied at first read with a two-arm load-order test, control's
 screen-specified chevron and contract-true pin test, squad's hold-on-arrival, scale's bodies guard and spawn-grid
-handover, feel's roof dressing and lamp pair, show's decision pair on a real fight with a pair that is finally frozen.
+handover, feel's roof dressing and lamp pair, show's decision pair on a real fight with a pair that is finally frozen. **Show's pre-registered S6 held at every check of the round: the show never reached the simulation** (sim-baseline unmoved across a channel engine, five shaders, seven fixtures, a cue book, a kill ripple and a main that moved twenty commits underneath it; the falsifier was registered before a line of code existed).
 **Combat's ledger is the round's:** infrastructure and retractions shipped; the visible thing (semis not yawing in
 place) did not, because enabling it stopped four of five squads forming up; "the units seem a little smarter but it's
 hard to tell" is the correct reading. Eleven measurements were retracted, all one shape: the thing under test was
