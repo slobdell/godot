@@ -152,3 +152,52 @@ conjunction with 3 lines firing 4× a match) is the failure the pool report exis
 ## Status
 
 _(the worker keeps this current; the ledger and the pool report are the numbers he reads)_
+
+**Updated 2026-09-22 (worker, round 10).** Baseline: `make remote T=check` on `2ee65f94` (builder0): `>> remote:
+make check exited 0`, 1559 passed, 0 failed.
+
+### Plan (in order) and state
+
+1. **Pool report: DONE** (`bf9fdb43`). `make announcer-pool-report` runs the director over every fixture for seeds 1–5
+   (40 broadcasts, 51.9 match minutes) and prints, per (speaker, moment): library lines (`new` = added this round),
+   λ/min, the director's pool at the pick (the director now records `pool`, `fresh` and `effective` = exp entropy of
+   the pick's weights on every cue), starved picks, C9's N_c, the target, the deficit, and Distinct-2; then the narrow
+   funnels. Knobs (decided, in the script): R = 0.05; horizons caller 2 min, Veteran 7.5, PA 30; floors 12/12/8; deep
+   pools (≥ 18) +25 %; **caps 40/40 and 16 for the PA** (her lines are the hardest to write, and a mass-produced wrong
+   detail turns into the joke he told us to cut). A moment the fixtures never reach gets only its floor. The deficit
+   is measured against the smaller of the library count and the mean pool at the pick (army lines are per faction:
+   16 in the library, 2 at the pick). **Laptop, 601 lines: deficit 568.**
+2. **Lines: DONE** (`96333be1`). 505 new lines (`"added": "r10"`): caller 205, Veteran 183, PA 117, written to the
+   report's plan, mostly slot-free (a `{faction}` line is 4 recordings, a `{unit}` line 6). **Laptop, 1106 lines: the
+   deficit at the round-start base is 140** (what's left is mostly the capped busy pools: caller kill, Veteran lull).
+   `caller preview` was skipped on purpose (the fixtures never reach it; tape got only 5).
+   The **PA gates (C10)** are in `audit_lines.py`: every new PA line names its wrong detail (`oddity: {span,
+   category}`), 1–6 words, with at least 4 ordinary words after it (not clause-final), no `!`, no affect word, and no
+   two lines of the same kind in one moment's pool (33 categories, `oddity_categories` in `lines.json`). Audit: 1106
+   lines, 0 errors (the 1 warning is from before the round).
+3. **Review page: DONE** (`96333be1`). `make announcer-demo` → `build/announcer/demo/index.html#new`: every new line
+   by moment, a Play button once its clip exists, a veto tick per line that collects ids into a list to send back,
+   and a `new` badge on the match rows. Looked at, desktop 1400×1000 and phone 420×900.
+4. **Generation: IN PROGRESS.** `generate.py` now takes `--max-characters` (a batch cannot overshoot its stop line) and
+   `--note` (the ledger row names the batch). Balance at start **108,348**; stop line ≈ 54,000. Dry run for all 505
+   lines: 523 recordings, **39,369 characters**. Pilot `pa.hit.01`: STT exact. Batch 1 = the PA.
+5. Runtime checks: after generation.
+6. Stretch: after 5.
+
+### Measurements
+- Variance (laptop, `96333be1`, 50 matches per fixture, history on): 0 in-match repeats; openers 0.3 %, welcomes 0.5 %,
+  carryover 0.4 % (ceilings 0 / 10 / 10 / 30 %).
+
+### Decisions
+- PA pool cap 16 this round (quality over count); the formula wants hundreds for her (30-minute horizon). Next round:
+  more PA lines only as fast as they can be written well.
+- "No two lines with the same category" is per moment pool, not global (117 lines cannot have 117 kinds of wrong).
+- Takes (C10, the caller ×3) are NOT done this round: that needs the booth to choose between recordings of one variant
+  (a runtime change) and roughly doubles the caller's bill. Written up as the first next step.
+
+### Questions for the lead
+- None blocking. His veto is a line id from the New tab.
+
+### Requests to other streams
+- None.
+
