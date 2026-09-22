@@ -17,8 +17,8 @@ const SOURCES_META := &"unit_skin_sources"
 
 ## Feel (round 10, backlog 4; round 9's recommendation): A FAINT RIM PER FACTION. Dark hulls between the lamp pools were
 ## carried only by their selection rings; the shader's rim was one cool blue for every vehicle. Each faction's rim is
-## now its own colour, the team hint on top of it unchanged (`rim_team`: friend/foe still reads on the silhouette),
-## and a little stronger. Colours from art_direction.md's faction looks: the Condemned's hazard amber, the gangs'
+## now its own colour with the team as a lighter hint on top (`rim_team` 0.55 -> 0.3: friend/foe is still on the
+## silhouette, and carried by the ring and the neon), and a little stronger (0.3 -> 0.4). Colours from art_direction.md's faction looks: the Condemned's hazard amber, the gangs'
 ## magenta, Law's police blue, the Syndicate's ivory. `--no-faction-rim` restores the old rim for the A/B pair.
 const FACTION_RIM := {
 	"condemned": Color(1.0, 0.62, 0.22),
@@ -26,7 +26,10 @@ const FACTION_RIM := {
 	"law": Color(0.42, 0.62, 1.0),
 	"syndicate": Color(0.92, 0.94, 1.0),
 }
-const FACTION_RIM_STRENGTH := 0.5
+## First pass at 0.5 with the shader's 0.55 team mix washed whole panels yellow-green on a green-team Condemned hull at
+## his pose (rim-pair, builder0, 010456f5): not faint. The faction colour now carries the rim and the team is a hint.
+const FACTION_RIM_STRENGTH := 0.4
+const FACTION_RIM_TEAM := 0.3
 static var faction_rim_enabled := not LaunchFlags.from_environment().has("no-faction-rim")
 
 ## key → WeakRef(ShaderMaterial): a material is freed with the last vehicle wearing it (a strong static cache leaks at exit).
@@ -105,5 +108,6 @@ static func material_for(source: BaseMaterial3D, team := DEFAULT_TEAM, paint := 
 		var rim: Color = FACTION_RIM[rim_faction]
 		material.set_shader_parameter("rim_color", Vector3(rim.r, rim.g, rim.b))
 		material.set_shader_parameter("rim_strength", FACTION_RIM_STRENGTH)
+		material.set_shader_parameter("rim_team", FACTION_RIM_TEAM)
 	_materials[key] = weakref(material)
 	return material

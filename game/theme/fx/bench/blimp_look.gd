@@ -3,10 +3,11 @@ extends Node
 ## `make blimp-look` (feel, round 10, R7): is the low ad blimp in the lead's frame while he PLAYS, and how often?
 ## The airship-look method (lesson: "visible in a screenshot taken deliberately" is not visible), moved to where the
 ## blimp lives. At HIS pose only (21 deg, FOV 35, 49 m): every focus point he could be looking at (a 20 m grid over
-## the arena's playable ground) x four camera yaws x the blimp's whole lap. A sample counts as SEEN when the blimp's
-## drawn bounds land in the viewport AND at least one of five points on it (centre, nose, tail, top, a screen) has a
-## clear line from the camera past the city blocks -- occlusion tested against every tall mesh's bounds, which is
-## conservative (a stepped block's box hides more than the block does).
+## the arena's playable ground) x four camera yaws x the blimp's whole lap. A sample is ON SCREEN when the blimp's drawn
+## bounds land in the viewport, and SEEN when also at least one of six points on it (centre, nose, tail, top, the two
+## screens) has a clear physics ray from the camera -- the city blocks' colliders are their full 40 x 24 x 40 m boxes,
+## so the ray is the honest occluder. (The first version tested mesh AABBs; StaticBatcher's merged meshes span whole
+## districts and swallowed every sight line: 0% seen with the blimp 366 px wide on screen. Both counts are printed.)
 ##
 ## Reported three ways, because the honest reading of "sometimes" depends on where he looks: over the whole map,
 ## over the middle band where fights happen (|z| <= 60 m), and at the skirmish's starting yaw only. Then frames:
@@ -18,15 +19,12 @@ const PITCH_DEG := 21.0
 const DISTANCE_M := 49.0
 const FOV_DEG := 35.0
 const MIDDLE_BAND_M := 60.0
-## A mesh taller than this counts as a possible occluder (blocks, towers, stands); vehicles and props do not.
-const OCCLUDER_MIN_H := 8.0
 
 var out_dir := ""
 var warmup := 6.0
 var steps := 24
 var grid := 20.0
 var _camera := Camera3D.new()
-var _occluders: Array[AABB] = []
 
 
 func _init() -> void:
@@ -62,7 +60,6 @@ func _run() -> void:
 	if rig != null:
 		rig.process_mode = Node.PROCESS_MODE_DISABLED
 	_camera.current = true
-	_collect_occluders(scene, blimp)
 	get_tree().paused = true
 	blimp.process_mode = Node.PROCESS_MODE_ALWAYS
 	var lap := blimp.lap_ticks()
@@ -79,6 +76,7 @@ func _run() -> void:
 		x += grid
 	var yaws := [start_yaw, start_yaw + PI / 2.0, start_yaw + PI, start_yaw + 1.5 * PI]
 	var tally := {"all": [0, 0], "middle": [0, 0], "start_yaw": [0, 0], "middle_start_yaw": [0, 0]}
+	var on_screen := 0
 	var best := {"px_w": -1}
 	var typical := {}
 	var sizes: Array = []
@@ -90,6 +88,8 @@ func _run() -> void:
 				blimp.call("_place", tick)
 				var reading := _reading(blimp)
 				var seen: bool = reading["seen"]
+				if bool(reading["on"]):
+					on_screen += 1
 				var middle := absf(focus.z) <= MIDDLE_BAND_M
 				_count(tally, "all", seen)
 				if middle:
@@ -118,7 +118,8 @@ func _run() -> void:
 				break
 	var report := {"pitch_deg": PITCH_DEG, "fov_deg": FOV_DEG, "distance_m": DISTANCE_M, "grid_m": grid,
 			"foci": foci.size(), "yaws": yaws.size(), "lap_steps": steps, "lap_s": snappedf(lap / SimClock.TICK_RATE, 0.1),
-			"altitude_m": AdBlimp.ALTITUDE, "speed_mps": AdBlimp.SPEED_MPS, "median_px_w": median_px, "widest": best}
+			"altitude_m": AdBlimp.ALTITUDE, "speed_mps": AdBlimp.SPEED_MPS, "median_px_w": median_px, "widest": best,
+			"on_screen_pct_all": snappedf(100.0 * on_screen / maxi(int(tally["all"][1]), 1), 0.1)}
 	for key: String in tally:
 		var pair: Array = tally[key]
 		report["seen_pct_" + key] = snappedf(100.0 * pair[0] / maxi(pair[1], 1), 0.1)
@@ -153,31 +154,6 @@ func _count(tally: Dictionary, key: String, seen: bool) -> void:
 		pair[0] += 1
 
 
-func _collect_occluders(scene: Node, blimp: Node) -> void:
-	for node in scene.find_children("*", "MeshInstance3D", true, false):
-		var mesh := node as MeshInstance3D
-		if mesh.mesh == null or blimp.is_ancestor_of(mesh) or not mesh.is_visible_in_tree():
-			continue
-		if mesh.find_parent("SyndicateAirship") != null:
-			continue
-		var box := mesh.global_transform * mesh.get_aabb()
-		# Tall things near the arena (blocks, towers); not the skyline ring hundreds of metres out, not the floor.
-		if box.size.y >= OCCLUDER_MIN_H and box.get_center().length() < 400.0 and box.size.x < 150.0 and box.size.z < 150.0:
-			_occluders.append(box)
-	# Multi-instanced repeats (StaticInstancer) are MultiMeshInstance3D: their instances occlude too.
-	for node in scene.find_children("*", "MultiMeshInstance3D", true, false):
-		var multi := node as MultiMeshInstance3D
-		if multi.multimesh == null or multi.multimesh.mesh == null:
-			continue
-		var local := multi.multimesh.mesh.get_aabb()
-		if local.size.y < OCCLUDER_MIN_H:
-			continue
-		for i in multi.multimesh.instance_count:
-			var box := multi.global_transform * multi.multimesh.get_instance_transform(i) * local
-			if box.get_center().length() < 400.0:
-				_occluders.append(box)
-
-
 func _reading(blimp: Node3D) -> Dictionary:
 	var lo := Vector2(INF, INF)
 	var hi := Vector2(-INF, -INF)
@@ -198,7 +174,7 @@ func _reading(blimp: Node3D) -> Dictionary:
 	var size := get_viewport().get_visible_rect().size
 	var on := any_ahead and hi.x > 0.0 and lo.x < size.x and hi.y > 0.0 and lo.y < size.y
 	if not on:
-		return {"seen": false, "px_w": 0, "px_h": 0}
+		return {"seen": false, "on": false, "px_w": 0, "px_h": 0}
 	# Clip to the viewport for the size that is actually on screen.
 	var w := minf(hi.x, size.x) - maxf(lo.x, 0.0)
 	var h := minf(hi.y, size.y) - maxf(lo.y, 0.0)
@@ -207,16 +183,13 @@ func _reading(blimp: Node3D) -> Dictionary:
 			xf * Vector3(0, 0, AdBlimp.ENVELOPE_LENGTH * 0.45), xf * Vector3(0, AdBlimp.ENVELOPE_DIAMETER * 0.45, 0),
 			xf * Vector3(AdBlimp.ENVELOPE_DIAMETER * 0.55, 0.9, 0), xf * Vector3(-AdBlimp.ENVELOPE_DIAMETER * 0.55, 0.9, 0)]
 	var eye := _camera.global_position
+	var space := blimp.get_world_3d().direct_space_state
 	var clear := false
 	for p: Vector3 in probes:
 		if _camera.is_position_behind(p) or not get_viewport().get_visible_rect().has_point(_camera.unproject_position(p)):
 			continue
-		var blocked := false
-		for box: AABB in _occluders:
-			if box.intersects_segment(eye, p):
-				blocked = true
-				break
-		if not blocked:
+		var query := PhysicsRayQueryParameters3D.create(eye, p, 1)  # layer 1: the arena's static world, not tanks
+		if space.intersect_ray(query).is_empty():
 			clear = true
 			break
-	return {"seen": clear, "px_w": roundi(w), "px_h": roundi(h)}
+	return {"seen": clear, "on": true, "px_w": roundi(w), "px_h": roundi(h)}
