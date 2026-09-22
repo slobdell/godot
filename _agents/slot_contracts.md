@@ -45,7 +45,7 @@ All: units are meters, **forward is −Z**, up is +Y, and origin as stated. Visu
 | `fx.tracer` *(gameplay directive set 2, placeholder)* | like `fx.laser_beam` | muzzle to hit point (≤ 45 m), 5 bursts per second | `setup(from: Vector3, to: Vector3)` | FX only |
 | (all vehicle visuals) | | | `set_team_color(Color)` = the TEAM color (friend or foe), called once at spawn by `Tank.set_team_accent`; optional `set_paint(Color)` = cosmetic full-body paint, only when an army entry has `paint` | |
 | `unit.<id>.hull` *(round 2, rules R3; ids: scout, tank, ifv, artillery, lancer, burner)* | like `tank.hull` | the unit's `hull_size` from `Units.PROFILES` (a slot filled by `unit.<id>.hull` is **not** rescaled; the `tank.hull` fallback is scaled from the tank's 2.4 × 1.6 × 3.6) | `set_team_color`, `set_paint`, `set_shield`; units that deploy (artillery, round 3 combat X5): `set_deployed(ratio 0..1)` every frame on the hull, turret, and weapon (0 = packed and driving, 1 = outriggers down and firing) | ≤ 15k tris |
-| `unit.<id>.turret` *(round 2)* | turret pivot at the unit's `muzzle_height − 0.05` m; rotates about +Y. Fixed mounts (the scout) swing only ±`fire_arc_deg`/2: draw a hood gun, not a turret | | `set_team_color`, `set_paint` | ≤ 4k tris |
+| `unit.<id>.turret` *(round 2; mount R5, round 10)* | turret pivot at the unit's `muzzle_height − 0.05` m, at x/z from the profile's `turret_mount` (default x 0, z +0.2); the ART stands `turret_mount[1] − pivot` above the pivot (see *The turret mount* below); rotates about +Y. Fixed mounts (the scout) swing only ±`fire_arc_deg`/2: draw a hood gun, not a turret | | `set_team_color`, `set_paint` | ≤ 4k tris |
 | `unit.<id>.weapon` *(round 2)* | turret pivot; along −Z; muzzle ~3.2 m ahead (times the turret scale) | falls back to `weapon.<the unit's weapon id>` | `set_team_color`, `setup(weapon)`, `set_firing`, `set_heat` | ≤ 2k tris |
 | `prop.fire_pit` *(stretch hazard, rules; layout `furnace`)* | ground center | a burning pit `radius` m across (7–9 m in `furnace`), flush with the ground, no collision | `setup(hazard)` with `{type, position, radius, damage_per_second}` | ≤ 2k tris + FX |
 | `unit.burner.*` *(stretch unit, rules)* | like the other `unit.<id>` rows | hull 2.4 × 1.6 × 3.8; the Burner fires `weapon.flamethrower` | | |
@@ -56,6 +56,22 @@ All: units are meters, **forward is −Z**, up is +Y, and origin as stated. Visu
 | `arena.environment` | world origin | sky/lighting/fog only | — | — |
 | `arena.dressing` | world origin | ground 320×320 at y=0; perimeter walls at ±121 | optional `setup(layout)` (rules R6: the arena layout dictionary from `arenas/<name>.json`, so stands and crowds can fit it) | ≤ 50k tris |
 | `prop.<type>` for layout obstacles *(rules R6)* | ground center; the body is rotated by `rotation_deg` | an obstacle with a `size` other than its type's default gets its visual scaled by size / default | — | per type |
+
+## The turret mount (R5, round 10)
+
+`Units.PROFILES[id].turret_mount = [x, y, z]`, optional, in metres in the **Tank node's frame: x right, y up, +z toward
+the REAR** (Godot's forward is −Z, trip-up 2; `tank.tscn`'s historic +0.2 is 0.2 m AFT). `Tank.turret_pose(profile)`
+turns it into two things, because **the `Turret` node is simulation**: `muzzle_position()`, Match's shell ray and
+friendly-fire origin, and Gunnery all read it.
+
+| axis | moves | why |
+|---|---|---|
+| x, z | the `Turret` pivot (sim) | a round leaves from under the gun that is drawn; the aim point stays the target's origin (combat) |
+| y | only `TurretVisual`/`WeaponVisual` (art), by `y − (muzzle_height − 0.05)` | rounds fly flat at `muzzle_height` under the shortest hull's top (the ceiling rule); a vertical offset cannot orbit when the turret yaws |
+
+No `turret_mount` = today's pose exactly (x 0, z +0.2, no lift). Values are measured with `make turret-probe` (each
+hull's drawn roof profile in the tank frame) and the side-on frames of `make facing-audit`; each value carries its
+derivation beside it in `units.gd`.
 
 ## Runtime cuts: one approved mesh, more than one moving part (round 7 and round 9)
 

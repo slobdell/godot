@@ -85,7 +85,7 @@ show-decisions: import ## S6: the two calls that are the lead's -- roofline vs o
 	@# 1. THE EDGES: one frame each, same arena, seed, pose and moment.
 	for style in parapet outline; do \
 		timeout $(SHOW_TIMEOUT) $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
-			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) --show-style=$$style \
+			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) --show-style=$$style --show-look-fixed-heading \
 			--show-look=$(CURDIR)/$(DECISIONS_DIR) --show-look-times=8.1 --show-look-cues=battle \
 			2>&1 | tee $(DECISIONS_DIR)/edges_$$style.log | grep -E '^SHOW_LOOK |SCRIPT ERROR' || true; \
 		grep -q SHOW_LOOK_DONE $(DECISIONS_DIR)/edges_$$style.log || { echo "show-decisions: edges/$$style did not finish"; exit 1; }; \
