@@ -278,8 +278,11 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
 - `d8193e86` **pitch** (baseline MOVES, cause 1): lateral floor = diagonal + `DRESS_MARGIN_M` 0.30 m. Bus 2.90 × 9.70
   (laptop): width 4.90 m −0.27 (2/4) / −0.56; one_turning 6.51 m −0.43 / −0.52; diagonal 10.12 m +0.02 / 0.00;
   **dressing 10.42 m +0.27 / +0.29, 4/4 turned**.
-- `bed99012` legged-path seating (baseline MOVES, cause 2): KEEP ONLY IF its own measurement (the drills-ON settle
-  pair, 8 jittered seeds) shows the gain; otherwise reverted on top before the named hash.
+- `bed99012` legged-path seating: **DROPPED** (reverted in `9e075524`). Its own measurement (drills-ON settle pair,
+  builder0, 8 jittered seeds, median stopped s unpinned/pinned): default fwd 13.5/13.5, side 30.9/32.5, back 45/45;
+  Terminus fwd 14.3/14.3, side 26.7/45.0, back 28.8/28.8; pairs 8 / 4 / **36 ties**. The leader already takes seat
+  0 on the legged path. **Known issue (round 11 candidate): drills-ON 20 m moves settle in 13–45 s** (the element
+  halts in a herringbone on arrival), against 4–9 s for a plain move.
 - `ed24518c` follow-ups: a hold carrying a drawn heading replaces a move at once (two wheeled crews never finished
   their final move at the wider slots); drive-to-slots measures ROUTE progress (the leader's route runs 7 m east
   before turning north: `MEASURE element_drive route progress 19.0 m (north 9.2 m; bar 16.2)`, the 0.3 factor a
