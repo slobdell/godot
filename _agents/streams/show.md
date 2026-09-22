@@ -125,3 +125,61 @@ runs. After the per-window work.
 ## Status
 
 _(the worker keeps this current)_
+
+**2026-09-22, round 10 worker started at `2ee65f94` (the launch commit; its tree is the orchestrator's verified-green
+`de31eeea` code).** builder0 had nine checks queued at start (every stream launching at once), so the baseline check
+was cancelled in favour of one check on the first changed tree: the launch tree's green is the orchestrator's, read
+from the wrapper's line on `de31eeea` (1559/0).
+
+### Plan (smallest foundation first; decisions in one line each)
+
+1. **Dial 1 as a strip** — `Show.set_band(k)` scales the `window`/`shop` channels' span around the mean (idempotent
+   against the patch; floor never under 0.1), `--show-band=K`, and `make show-bands` shoots off/1×/2×/3× at ONE
+   frozen moment in ONE process (idle + battle), so the three arms differ in the band and nothing else. *Decided:*
+   one process beats three runs (lighting.md §8b "two runs are not the same run").
+2. **Per-window primitives** — `ShowWindowGrid`: one RGBA8 texel per window (32 × 1024, 128 KB), the shader finds its
+   own texel from block index (COLOR.b), facade (world normal), storey (y / 3.6) and bay (along / bay). *Decided:
+   texel, not MultiMesh* — the windows are drawn procedurally in the fragment shader, there is no mesh per window to
+   instance; a texel needs no vertex data, no instance uniform, no draw call. *Decided:* the bay width moves from a
+   GPU `sin()` hash to a CPU-chosen 8-bit code in COLOR.a, so CPU and GPU agree on where every window is (float32
+   and float64 disagree about `fract(sin(x) * 43758)`); the bay widths of the eight blocks change (still 3–4.5 m,
+   silhouette unchanged, feel reviews). `CityBlock.set_window(i, v)` / `window_count()`.
+3. **Effects composed from windows** — a `pixel` parameter (any pane, lit by the art or dark, carries a venue-palette
+   light) evaluated per window IN THE SHADER from one channel plus a spatial `wave` (per storey, per metre, scatter,
+   rate jitter): idle = Vegas twinkle; skirmish = sweep across facades; battle = vertical chase up every tower;
+   last_stand = strobe on the one facade facing the losing base; victory = sweep in the winner's colour; kill =
+   ripple crossing the windows; capture = CPU floor-by-floor fill of the nearest block. *Decided (research B10):*
+   shader-evaluated programmes, CPU writes only for events.
+4. The 1990s-baseline page (show OFF beside items 1–3 ON, two clips at 30 fps).
+5. Signs / rim / pools / shopfront segments in the same show.
+6. Round-9 leftovers (strobe arm at the cue's period, parapet-vs-outline instrument, the three reds, mood clips).
+7. Stretch: blimp screens (after feel's R7), a road/bridge patch.
+
+### Done (with measurements; every number builder0)
+
+- **Items 1–3 at `9f68b95e` — GREEN: `make remote T=check` 1572 passed 0 failed, 18/18, sim-baseline
+  `1ea332e7bc268d2a` UNMOVED (S6 held), determinism `559a415887806e43`.** `fba345d7` on top: values only (2× band,
+  pixel energy 1.8 → 1.3), its check pending.
+- **Per-window primitives work and read.** The frames at his pose (`build/show/`, one frozen frame shot show-off then
+  show-on in one process) show individual windows lit: idle magenta twinkle window by window, battle rows lit up the
+  towers, the capture fill amber from the street up, the kill ripple across the windows. **The instrument now SEES the
+  show:** Terminus wide ring/band ratio −5.8 % to −26.7 % with the show on (round 9: inside a 2.8 % null); yard within
+  ±2.7 %; the null this run p95 1.4 %. The luma gate *reports* this (it would have refused 9 of 29 frames): per the
+  brief the numbers go to him beside the frames, not a quieter effect.
+- **The band dial (item 1) is not the lever.** `make show-bands`: 1×/2×/3× on the same frozen frame are near
+  indistinguishable to the eye (the art lights few windows at his pose), all −4.8 % to −6.1 % idle, −15 % to −18 %
+  battle (that spread is the pixel layer, present in all three arms). 2× ships as the default (the brief's rule); 3×
+  stays his. The louder thing he can see is the pixel layer.
+- **Cost.** Structural: zero draw calls, lights, nodes, instance uniforms added (`tests/test_show_windows.gd`).
+  `perf-scene` 1080p terminus seed 3, `--perf-layers=no_show`, before `2ee65f94` / after `fba345d7`: draw calls
+  257 / 258 on the first phase (both runs wander 230–263 with the camera), instance-uniform errors 0 / 0, real
+  lights 1 / 1. **GPU cost not measurable on this builder0:** both runs were taken while other streams' checks ran,
+  and per-phase GPU swung 8–17 ms inside EACH run (the no_show layer read +0.42 ms before, −1.29 ms after: noise, not
+  a speed-up). A quiet-box re-measure is owed.
+
+### Requests to other streams
+
+- **feel (owner of `game/audio/match_mood.gd`):** a public read of how many `control_changed` events the mood has
+  counted (e.g. `func control_changes() -> int`). The capture fill polls `MatchMood._control_changes` through `get()`
+  today, because S6 lets the show hear the match only through MatchMood and K5 events; a rename degrades to "no fill",
+  never to an error. Not blocking.
