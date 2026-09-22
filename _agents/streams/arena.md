@@ -158,8 +158,12 @@ _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round
 1. **R4 lanes (CP2)** — DONE; **CP2 green at `44315882`** (builder0), frames and page done.
 2. **R3 prop collision parity** — DONE (`b438f72b`, `aa3ce791`).
 3. **Reads passable** — DONE as a headless instrument (`aa3ce791`); frames come with item 1's shots.
-4. **Spawn grid** — WAITS for feel's CP3 (orchestrator, 2026-09-22: CP3 shrinks the spawn jitter; derive from the
-   new jitter after `git merge main`, one comment block for both constant families).
+4. **Spawn grid** — DONE (ruling A, after CP3): the same 57 lattice points fill turning-clear checkerboard cells
+   first (28: worst-jitter centres 12.40 m apart against the bus's 10.42 m envelope), then the rest; the derivation
+   block is in `match.gd` beside `_spawn_cells()`; `tests/test_arena_spawn_envelope.gd`. **Baseline MOVES, one
+   cause: bots take different slots.** Plus `tests/test_arena_deploy_zone.gd` (a 25-bus army deploys inside its
+   zone on yard, pit, Terminus). Squad's `test_the_grid_fills_the_front_row_before_the_rows_behind_it` edited to
+   the new contract (front row first within each band): squad to review.
 5. **Other arenas' lanes** — DONE (reported: `arenas.md` *Streets are lanes*, table below).
 6. **Stretch** — `hull_size` consumer status (below); terrain's `decision_report` bug fixed (`c28ac8e0`).
 
