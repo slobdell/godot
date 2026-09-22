@@ -167,7 +167,7 @@ _(the worker keeps this current; the ledger and the pool report are the numbers 
    2 min / Veteran 7.5 / PA 30; floors 12/12/8; deep pools (>= 18) +25 % measured against the pool **as the round found
    it**; caps 40/40/**16 for the PA**. A moment the fixtures never reach gets only its floor. The deficit is against the
    smaller of the library count and the mean pool at the pick, because `caller.army` has 16 lines and offers 2.
-   **Deficit: 568 lines (laptop, 601 lines) -> 147 (laptop, 1119 lines).**
+   **Deficit: 514 -> 147** (the table below; both measured under the final rules).
 2. **The lines** (`96333be1`, `69057d84`, `dc95c555`). **518 new lines** (`"added": "r10"`): caller 205, Veteran 196
    (183 + 13 stretch), PA 117, mostly slot-free, since a `{faction}` line is 4 recordings and a `{unit}` line 6.
    `caller.preview` was skipped on purpose (0 firings in 64 broadcasts) and `tape` got 5.
@@ -206,8 +206,74 @@ _(the worker keeps this current; the ledger and the pool report are the numbers 
    ("The Wreckers **draws** first blood", "hit **its** own scout"); the audit's verb list and its-check now catch both,
    and the 14 lines they flagged are fixed and re-recorded.
 
+### The pool table, before and after (laptop, 40 fixture broadcasts, 51.9 match minutes, `dc95c555`)
+
+Both columns are measured the same way, under the final rules (PA cap 16; the +25 % for deep pools anchored to the
+pool as the round FOUND it, not as it grows): the round-start library scores **514**, the round's library **147**.
+*(The 568 quoted earlier in the round was the same library under the first cap setting, before the PA's cap came down
+to 16 and the growth target stopped receding; 514 → 147 is the honest pair.)* `lines` is what the moment can reach in
+the library; `pool at the pick` is what the director actually had to choose from, which is the number that bounds
+variety; `N_c` is C9's formula at that λ, and `target` is it capped, or the floor, whichever is larger.
+
+| speaker | moment | λ/min | lines | pool at the pick | N_c | target | deficit |
+|---|---|---|---|---|---|---|---|
+| caller | drill | 0.79 | 4 → 33 | 2.5 → 25.7 | 32 | 32 | 28 → 6 |
+| color | lull | 0.21 | 58 → 85 | 13.4 → 16.3 | 33 | 33 | 27 → 17 |
+| caller | kill | 3.57 | 92 → 117 | 14.8 → 30.5 | 140 | 40 | 25 → 9 |
+| color | big hit | 0.41 | 18 → 41 | 16.5 → 36.8 | 61 | 40 | 23 → 3 |
+| color | momentum | 0.39 | 19 → 44 | 17.0 → 36.0 | 58 | 40 | 23 → 4 |
+| caller | result | 0.89 | 34 → 56 | 11.0 → 24.6 | 35 | 35 | 22 → 10 |
+| color | army | 0.19 | 26 → 49 | 17.9 → 27.2 | 29 | 29 | 22 → 2 |
+| color | drill | 0.73 | 21 → 41 | 19.8 → 31.8 | 109 | 40 | 20 → 8 |
+| color | contact | 0.62 | 20 → 44 | 19.7 → 40.2 | 91 | 40 | 20 → 0 |
+| caller | big hit | 0.71 | 29 → 48 | 8.9 → 25.7 | 29 | 29 | 19 → 3 |
+| color | result | 0.71 | 28 → 48 | 21.9 → 34.1 | 105 | 40 | 18 → 6 |
+| color | kill | 0.69 | 41 → 61 | 22.9 → 34.3 | 102 | 40 | 17 → 6 |
+| pa | drill | 0.04 | 1 → 15 | 1.0 → 15.0 | 24 | 16 | 15 → 1 |
+| pa | big hit | 0.02 | 1 → 16 | 1.0 → 16.0 | 13 | 13 | 15 → 0 |
+| caller | contact | 0.62 | 12 → 27 | 7.7 → 18.6 | 25 | 25 | 14 → 6 |
+| pa | control | 0.08 | 3 → 16 | 2.5 → 13.2 | 46 | 16 | 14 → 3 |
+| pa | kill | 0.17 | 6 → 18 | 3.0 → 9.3 | 102 | 16 | 13 → 7 |
+| pa | friendly fire | 0.02 | 2 → 12 | 1.0 → 11.0 | 13 | 13 | 12 → 2 |
+| pa | formation | 0.02 | 1 → 12 | 1.0 → 12.0 | 13 | 13 | 12 → 1 |
+| pa | momentum | 0.00 | 1 → 11 | 1.0 → 0.0 | 0 | 8 | 12 → 0 |
+| caller | army | 0.15 | 16 → 28 | 2.0 → 4.5 | 7 | 12 | 10 → 8 |
+| caller | momentum | 0.02 | 3 → 13 | 2.0 → 9.0 | 2 | 12 | 10 → 3 |
+| caller | squad wiped | 0.00 | 3 → 12 | 0.0 → 0.0 | 0 | 12 | 9 → 0 |
+| caller | control | 0.23 | 7 → 16 | 3.2 → 7.4 | 10 | 12 | 9 → 5 |
+| caller | formation | 0.04 | 3 → 13 | 3.0 → 9.5 | 3 | 12 | 9 → 2 |
+| caller | tape | 0.00 | 3 → 8 | 0.0 → 0.0 | 0 | 12 | 9 → 4 |
+| pa | outro | 1.21 | 15 → 24 | 7.4 → 10.6 | 711 | 16 | 9 → 5 |
+| caller | hazard kill | 0.08 | 4 → 12 | 4.7 → 10.5 | 4 | 12 | 8 → 2 |
+| caller | friendly kill | 0.08 | 6 → 14 | 4.3 → 12.0 | 4 | 12 | 8 → 0 |
+| color | friendly fire | 0.04 | 7 → 15 | 4.0 → 12.5 | 7 | 12 | 8 → 0 |
+| caller | preview | 0.00 | 4 → 4 | 0.0 → 0.0 | 0 | 12 | 8 → 8 |
+| caller | close call | 0.19 | 6 → 13 | 5.0 → 12.0 | 9 | 12 | 7 → 0 |
+| caller | friendly fire | 0.17 | 7 → 14 | 4.6 → 10.9 | 8 | 12 | 7 → 1 |
+| caller | intro | 0.62 | 29 → 35 | 23.8 → 29.8 | 25 | 32 | 6 → 2 |
+| color | close call | 0.15 | 16 → 21 | 16.0 → 21.0 | 24 | 24 | 5 → 3 |
+| pa | hazard kill | 0.00 | 3 → 8 | 0.0 → 0.0 | 0 | 8 | 5 → 0 |
+| pa | friendly kill | 0.00 | 4 → 8 | 0.0 → 0.0 | 0 | 8 | 4 → 0 |
+| caller | lull | 0.23 | 41 → 45 | 7.8 → 9.7 | 11 | 12 | 4 → 2 |
+| pa | army | 0.00 | 4 → 8 | 0.0 → 0.0 | 0 | 8 | 4 → 0 |
+| pa | lull | 0.14 | 27 → 31 | 13.0 → 15.0 | 80 | 16 | 3 → 1 |
+| color | squad wiped | 0.00 | 11 → 11 | 0.0 → 0.0 | 0 | 12 | 1 → 1 |
+| pa | intro | 0.91 | 38 → 44 | 21.8 → 27.1 | 530 | 16 | 0 → 0 |
+| color | formation | 0.06 | 29 → 29 | 0.0 → 23.0 | 10 | 29 | 0 → 6 |
+| color | tape | 0.00 | 14 → 14 | 0.0 → 0.0 | 0 | 12 | 0 → 0 |
+| color | preview | 0.00 | 26 → 26 | 0.0 → 0.0 | 0 | 12 | 0 → 0 |
+| color | hazard kill | 0.00 | 12 → 12 | 0.0 → 0.0 | 0 | 12 | 0 → 0 |
+| color | control | 0.04 | 14 → 14 | 14.0 → 14.0 | 6 | 12 | 0 → 0 |
+| color | intro | 0.00 | 25 → 25 | 0.0 → 0.0 | 0 | 12 | 0 → 0 |
+| color | friendly kill | 0.00 | 18 → 19 | 0.0 → 0.0 | 0 | 12 | 0 → 0 |
+| **total** | | | **601 → 1119** | | | | **514 → 147** |
+
+**The ledger, this round: 621 requests, 44,608 characters, 41,346 credits spent (108,348 → 63,894).** Five runs, each
+its own row in `assets/announcer/ledger.md`: the pilot, the PA (15,253), the Veteran (13,248), the caller with the
+stretch pairs (11,755), five speech-to-text re-records (205), and the plural-faction fix (4,009).
+
 ### Numbers, each with its commit and machine
-- Pool deficit 568 -> 147; library 601 -> 1119 lines (laptop, `dc95c555`, 40 broadcasts).
+- Pool deficit 514 -> 147; library 601 -> 1119 lines (laptop, `dc95c555`, 40 broadcasts).
 - Credits 108,348 -> 63,894 (41,346 spent this round, ~4,000 of it the grammar fix and the re-records).
 - The pack: 3,051 -> 2,866 clips, 76 MB -> 72 MB (216 orphaned recordings pruned, 24 of them left by an earlier round).
 - `make check` on builder0: green on `96333be1` (1559 passed, 0 failed, `exited 0`); the final one in Merge notes.
