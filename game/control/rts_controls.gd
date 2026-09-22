@@ -498,7 +498,9 @@ func can_task() -> bool:
 ## Round 10 (R1, the lead: "if I just regroup the unit, they can operate as a formation. That is good behavior, but the
 ## UX just needs to clarify that"): why the selection cannot take a task, in words the player reads without a tooltip,
 ## or "" when it can (or there is nothing selected). The card's footer, its tooltips and the key refusals all say this.
-func task_refusal() -> String:
+## `short` is the card's footer, which reads INTO its FORM SQUAD button ("In different squads: Ctrl+1-9 or [FORM SQUAD]");
+## the full sentence goes to the banner and the tooltip.
+func task_refusal(short := false) -> String:
 	if selection.units.is_empty() or can_task():
 		return ""
 	if elements == null:
@@ -514,10 +516,12 @@ func task_refusal() -> String:
 			whole = number
 			break
 	if whole > 0:
+		if short:
+			return "Part of %s: press %d, or" % [groups.label(whole), whole]
 		return "part of %s: press %d for all of it, or Form squad" % [groups.label(whole), whole]
 	if in_some == 0:
-		return "these units are in no squad: press Form squad or Ctrl+1-9"
-	return "these units are in different squads: press Form squad or Ctrl+1-9"
+		return "In no squad: Ctrl+1-9 or" if short else "these units are in no squad: press Form squad or Ctrl+1-9"
+	return "In different squads: Ctrl+1-9 or" if short else "these units are in different squads: press Form squad or Ctrl+1-9"
 
 
 ## Round 10 (R1): the card's one-click Form squad. The selection becomes the lowest EMPTY control group - exactly what
