@@ -152,6 +152,15 @@ _(the worker keeps this current; newest first within each part)_
    merges → I `git merge main` → the pitch lands with the baseline move pre-registered → combat re-runs five_squads).
 5. Base-of-fire scenario; 6. `_is_clear` + Delta's margin; 7. stretch.
 
+**Item 4, the orchestrator's refinement (2026-09-22):** `2 × half_diagonal` (tank 8.95 m, rig ~14.4 m) is the bound
+for neighbours rotating in OPPOSITE directions; a dressing formation turns its hulls the same way at about the same
+rate, and one hull turning beside a still neighbour needs `half_diagonal + half_width` (tank 5.7 m, rig 8.85 m). 14 m
+between rigs abreast is a look he notices before the rotation room. So: the test MEASURES the turning envelopes
+per tick while a formed squad is ordered to a new heading (not the static bound), the landed pitch is the smallest
+that passes with zero intersections, both candidates' numbers go in Status (the conservative bound is the fallback if
+the measured one clips), doctrine spacing still wins where larger, and a frame pair goes to him: a five-rig line at the
+chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
+
 **Machine note:** every number below says its commit and machine. The laptop is ~2.75× slower than builder0.
 
 ### Done
