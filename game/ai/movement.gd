@@ -181,7 +181,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband", "inflate",
-		"minpace", "nosestop", "notready", "press", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
+		"minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "wheelhold", "yield"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -259,7 +259,7 @@ static var route_not_ready := 0
 
 static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
-			"nose_stops": nose_stops,
+			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs,
 			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused}
@@ -270,6 +270,7 @@ static func reset_route_arms() -> void:
 	corners_kept = 0
 	press_escapes = 0
 	nose_stops = 0
+	Avoidance.oriented_pairs = 0
 	route_not_ready = 0
 	clearance_chords = 0
 	clearance_refused = 0
