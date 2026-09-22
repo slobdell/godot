@@ -301,7 +301,9 @@ func vision_state() -> Dictionary:
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
 			friendly.append(tank)
-	return {"frame": frame, "pad_m": pad, "destination": destination, "region": VisionRegion.of(friendly)}
+	# "own" (round 10): how many of `frame`'s first points are OUR vehicles; the rest are contacts and their mirrors,
+	# which may fall off the screen by design. Only ours decide the readout's "column too long for this tilt".
+	return {"frame": frame, "own": eyes.size(), "pad_m": pad, "destination": destination, "region": VisionRegion.of(friendly)}
 
 
 ## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective
@@ -498,7 +500,9 @@ func can_task() -> bool:
 ## Round 10 (R1, the lead: "if I just regroup the unit, they can operate as a formation. That is good behavior, but the
 ## UX just needs to clarify that"): why the selection cannot take a task, in words the player reads without a tooltip,
 ## or "" when it can (or there is nothing selected). The card's footer, its tooltips and the key refusals all say this.
-func task_refusal() -> String:
+## `short` is the card's footer, which reads INTO its FORM SQUAD button ("In different squads: Ctrl+1-9 or [FORM SQUAD]");
+## the full sentence goes to the banner and the tooltip.
+func task_refusal(short := false) -> String:
 	if selection.units.is_empty() or can_task():
 		return ""
 	if elements == null:
@@ -514,10 +518,12 @@ func task_refusal() -> String:
 			whole = number
 			break
 	if whole > 0:
+		if short:
+			return "Part of %s: press %d, or" % [groups.label(whole), whole]
 		return "part of %s: press %d for all of it, or Form squad" % [groups.label(whole), whole]
 	if in_some == 0:
-		return "these units are in no squad: press Form squad or Ctrl+1-9"
-	return "these units are in different squads: press Form squad or Ctrl+1-9"
+		return "In no squad: Ctrl+1-9 or" if short else "these units are in no squad: press Form squad or Ctrl+1-9"
+	return "In different squads: Ctrl+1-9 or" if short else "these units are in different squads: press Form squad or Ctrl+1-9"
 
 
 ## Round 10 (R1): the card's one-click Form squad. The selection becomes the lowest EMPTY control group - exactly what
@@ -1426,6 +1432,10 @@ func order_marks() -> Array:
 		# that commit this correctly stays silent, and it starts drawing by itself the day every crew carries it
 		# (squad's option 3) with no further change here. Derive, never mirror (Invariant 0).
 		_mark_facing(mark, _element_facing(element) if not element.task.has("facing") else element.task)
+		# B7 (round 10): squad completes a move at OPERATIONAL arrival (the formation's centre in the zone, hulls
+		# braking), before the hulls have dressed onto their slots. The pin says that phase, so the player sees why
+		# hulls are still nudging after the order is done instead of reading it as the order running late.
+		mark["operational"] = bool(element.get("arrived"))
 		for unit_name in element.members():
 			_count_into(mark, String(unit_name), orders.current(String(unit_name)))
 		result.append(_finish_mark(mark))
@@ -1545,6 +1555,8 @@ func order_mark_label(mark: Dictionary) -> String:
 	var left := (mark["from"] as Vector3).distance_to(mark["point"])
 	if int(mark["arrived"]) >= int(mark["units"]):
 		return "%s · there" % words
+	if bool(mark.get("operational", false)):
+		return "%s · ARRIVED · dressing %d/%d" % [words, mark["arrived"], mark["units"]]
 	return "%s · %d/%d there · %d m" % [words, mark["arrived"], mark["units"], roundi(left)]
 
 
@@ -1563,7 +1575,8 @@ func _draw_order_marks() -> void:
 		_draw_ground_ring(mark["point"], 6.0, Color(color, 0.8), 2.0)
 		var from: Variant = _screen_point(mark["from"])
 		# Direct orders already have each unit's dashed line (_draw_waypoints); a squad task gets one from its middle.
-		if bool(mark.get("task", false)) and from != null and int(mark["arrived"]) < int(mark["units"]):
+		if bool(mark.get("task", false)) and from != null and int(mark["arrived"]) < int(mark["units"]) \
+				and not bool(mark.get("operational", false)):
 			draw_line(from, at, Color(color, 0.35), 1.5)
 		# A pin: a stalk up from the ring to the task's symbol on a dark disc, readable over any ground at 21°.
 		var head := (at as Vector2) - Vector2(0.0, glyph_px * 1.6)

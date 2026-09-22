@@ -161,8 +161,40 @@ airship-look: import ## Feel X7: is the Syndicate airship EVER in the lead's fie
 	@grep -q AIRSHIP_LOOK_DONE $(BUILD_DIR)/airship-look/log.txt || { grep -E 'AIRSHIP_LOOK_FAILED|SCRIPT ERROR' $(BUILD_DIR)/airship-look/log.txt; echo "airship-look FAILED"; exit 1; }
 	@ls $(BUILD_DIR)/airship-look/*.png
 
+blimp-look: import ## Feel R7: how often is the low ad blimp in the lead's frame at HIS pose (21 deg, FOV 35, 49 m)? Foci over the map x 4 yaws x its lap, occlusion by the blocks -> build/blimp-look/ (needs a display; ARENA=terminus by default, BLIMP_FLAGS=)
+	rm -rf $(BUILD_DIR)/blimp-look && mkdir -p $(BUILD_DIR)/blimp-look
+	timeout 900 $(GODOT) --path . --resolution $(AIRSHIP_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
+		--arena=$(or $(ARENA),terminus) --blimp-look=$(CURDIR)/$(BUILD_DIR)/blimp-look $(BLIMP_FLAGS) \
+		2>&1 | tee $(BUILD_DIR)/blimp-look/log.txt | grep -E '^BLIMP_LOOK|SCRIPT ERROR' || true
+	@grep -q BLIMP_LOOK_DONE $(BUILD_DIR)/blimp-look/log.txt || { grep -E 'SCRIPT ERROR' $(BUILD_DIR)/blimp-look/log.txt; echo "blimp-look FAILED"; exit 1; }
+	@ls $(BUILD_DIR)/blimp-look/*.png
+
 facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg)
 	rm -rf $(BUILD_DIR)/facing && mkdir -p $(BUILD_DIR)/facing
 	timeout 300 $(GODOT) --path . --resolution 960x540 --script res://game/theme/gallery/facing_audit.gd -- \
 		--facing-dir=$(CURDIR)/$(BUILD_DIR)/facing $(if $(UNITS),--facing-units=$(UNITS)) $(if $(TURRET),--facing-turret=$(TURRET)) 2>&1 | grep -E 'FACING_AUDIT|SCRIPT ERROR|SHADER ERROR' || true
 	@grep -q . $(BUILD_DIR)/facing/*.png 2>/dev/null || { echo "facing-audit FAILED: no images"; exit 1; }
+
+.PHONY: turret-probe
+turret-probe: import ## Feel R5: each unit's drawn roof profile, turret/weapon art bounds and pivot in the tank frame -> build/turret-probe.json (headless; UNITS=a,b)
+	@mkdir -p $(BUILD_DIR)
+	$(GODOT) --headless --path . --script res://game/theme/gallery/turret_probe.gd -- \
+		--turret-probe-json=$(CURDIR)/$(BUILD_DIR)/turret-probe.json $(if $(UNITS),--turret-probe-units=$(UNITS)) \
+		2>&1 | grep -E '^TURRET_PROBE|SCRIPT ERROR' || true
+	@grep -q . $(BUILD_DIR)/turret-probe.json 2>/dev/null || { echo "turret-probe FAILED: no json"; exit 1; }
+
+.PHONY: rim-pair
+# Feel round 10, backlog 4: the per-faction rim as a PAIR at his pose (show's rule 12: one variable). Four arms of the
+# same seed and frame -- show off/on x rim off/on -- each size-look's army.png (the army framed at 21 deg, 49 m, FOV
+# 35). The eye judges; the frames are a pair per variable. Needs a display: `make remote T=rim-pair`.
+rim-pair: import ## Feel: the per-faction hull rim, show off/on x rim off/on, one frame each at his pose -> build/rim-pair/<arm>/army.png (needs a display; ARENA=terminus, RIM_FLAGS=)
+	rm -rf $(BUILD_DIR)/rim-pair && mkdir -p $(BUILD_DIR)/rim-pair
+	@for arm in show-rim show-norim noshow-rim noshow-norim; do \
+		flags=""; case $$arm in *noshow*) flags="$$flags --no-show";; esac; case $$arm in *norim*) flags="$$flags --no-faction-rim";; esac; \
+		mkdir -p $(BUILD_DIR)/rim-pair/$$arm; \
+		timeout 300 $(GODOT) --path . --resolution $(SIZE_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
+			--arena=$(or $(ARENA),terminus) --size-look=$(CURDIR)/$(BUILD_DIR)/rim-pair/$$arm --size-look-lengths=14 $$flags $(RIM_FLAGS) \
+			> $(BUILD_DIR)/rim-pair/$$arm/log.txt 2>&1 || true; \
+		grep -E '^SIZE_LOOK_ARMY|SCRIPT ERROR' $(BUILD_DIR)/rim-pair/$$arm/log.txt | sed "s/^/$$arm: /" || true; \
+		test -f $(BUILD_DIR)/rim-pair/$$arm/army.png || { echo "rim-pair FAILED: no frame for $$arm"; exit 1; }; \
+	done
