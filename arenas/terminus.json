@@ -102,192 +102,142 @@
   {
    "type": "container_40",
    "position": [
-    -70.0,
+    -78.78,
     8.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 90.0,
    "faction": "law"
   },
   {
    "type": "container_40",
    "position": [
-    70.0,
+    78.78,
     -8.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 270.0,
    "faction": "law"
   },
   {
    "type": "container_40",
    "position": [
-    70.0,
-    -8.0
-   ],
-   "rotation_deg": 0.0,
-   "faction": "gangs"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    -70.0,
-    8.0
-   ],
-   "rotation_deg": 180.0,
-   "faction": "gangs"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -70.0,
-    30.0
+    -8.78,
+    60.0
    ],
    "rotation_deg": 90.0,
    "stack": 2,
-   "faction": "condemned"
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    8.78,
+    -60.0
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "mixed"
   },
   {
    "type": "container_20",
    "position": [
-    70.0,
-    -30.0
+    8.78,
+    72.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -8.78,
+    -72.0
    ],
    "rotation_deg": 270.0,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -96.0,
+    21.22
+   ],
+   "rotation_deg": 0.0,
    "stack": 2,
    "faction": "condemned"
   },
   {
    "type": "container_20",
    "position": [
-    70.0,
-    30.0
+    96.0,
+    -21.22
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    51.22,
+    58.0
    ],
    "rotation_deg": 90.0
   },
   {
    "type": "container_20",
    "position": [
-    -70.0,
-    -30.0
+    -51.22,
+    -58.0
    ],
    "rotation_deg": 270.0
   },
   {
-   "type": "container_20",
+   "type": "wreck",
    "position": [
-    0.0,
-    30.0
+    -55.0,
+    56.0
    ],
-   "rotation_deg": 0.0,
-   "faction": "syndicate"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    0.0,
-    -30.0
-   ],
-   "rotation_deg": 180.0,
-   "faction": "syndicate"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    0.0,
-    -34.0
-   ],
-   "rotation_deg": 0.0,
-   "stack": 2,
-   "faction": "mixed"
-  },
-  {
-   "type": "container_40",
-   "position": [
-    0.0,
-    34.0
-   ],
-   "rotation_deg": 180.0,
-   "stack": 2,
-   "faction": "mixed"
+   "rotation_deg": 15.0
   },
   {
    "type": "wreck",
    "position": [
-    -16.0,
-    24.0
+    55.0,
+    -56.0
    ],
-   "rotation_deg": 20.0
+   "rotation_deg": 195.0
   },
   {
    "type": "wreck",
    "position": [
-    16.0,
-    -24.0
-   ],
-   "rotation_deg": 200.0
-  },
-  {
-   "type": "wreck",
-   "position": [
-    18.0,
-    -26.0
-   ],
-   "rotation_deg": 200.0
-  },
-  {
-   "type": "wreck",
-   "position": [
-    -18.0,
-    26.0
-   ],
-   "rotation_deg": 20.0
-  },
-  {
-   "type": "wreck",
-   "position": [
-    62.0,
-    36.0
+    57.0,
+    50.0
    ],
    "rotation_deg": 75.0
   },
   {
    "type": "wreck",
    "position": [
-    -62.0,
-    -36.0
+    -57.0,
+    -50.0
    ],
    "rotation_deg": 255.0
   },
   {
-   "type": "barricade",
+   "type": "wreck",
    "position": [
-    -10.0,
-    42.0
+    -104.0,
+    46.0
    ],
-   "rotation_deg": 0.0
+   "rotation_deg": 30.0
   },
   {
-   "type": "barricade",
+   "type": "wreck",
    "position": [
-    10.0,
-    -42.0
+    104.0,
+    -46.0
    ],
-   "rotation_deg": 180.0
-  },
-  {
-   "type": "barricade",
-   "position": [
-    10.0,
-    42.0
-   ],
-   "rotation_deg": 0.0
-  },
-  {
-   "type": "barricade",
-   "position": [
-    -10.0,
-    -42.0
-   ],
-   "rotation_deg": 180.0
+   "rotation_deg": 210.0
   },
   {
    "type": "barricade",
@@ -344,58 +294,6 @@
    "faction": "condemned"
   },
   {
-   "type": "container_20",
-   "position": [
-    -42.0,
-    80.0
-   ],
-   "rotation_deg": 0.0
-  },
-  {
-   "type": "container_20",
-   "position": [
-    42.0,
-    -80.0
-   ],
-   "rotation_deg": 180.0
-  },
-  {
-   "type": "container_20",
-   "position": [
-    0.0,
-    80.0
-   ],
-   "rotation_deg": 0.0,
-   "faction": "condemned",
-   "doors": "open"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    0.0,
-    -80.0
-   ],
-   "rotation_deg": 180.0,
-   "faction": "condemned",
-   "doors": "open"
-  },
-  {
-   "type": "container_20",
-   "position": [
-    42.0,
-    80.0
-   ],
-   "rotation_deg": 0.0
-  },
-  {
-   "type": "container_20",
-   "position": [
-    -42.0,
-    -80.0
-   ],
-   "rotation_deg": 180.0
-  },
-  {
    "type": "floodlight",
    "position": [
     14.0,
@@ -414,23 +312,23 @@
   {
    "type": "floodlight",
    "position": [
-    -35.0,
-    31.0
+    -55.0,
+    45.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "floodlight",
    "position": [
-    35.0,
-    -31.0
+    55.0,
+    -45.0
    ],
    "rotation_deg": 180.0
   },
   {
    "type": "floodlight",
    "position": [
-    66.0,
+    62.4,
     6.0
    ],
    "rotation_deg": 0.0
@@ -438,7 +336,7 @@
   {
    "type": "floodlight",
    "position": [
-    -66.0,
+    -62.4,
     -6.0
    ],
    "rotation_deg": 180.0
@@ -498,8 +396,8 @@
   {
    "type": "sign",
    "position": [
-    -64.0,
-    108.0
+    -81.0,
+    88.0
    ],
    "rotation_deg": 180.0,
    "sign": "arena"
@@ -507,8 +405,8 @@
   {
    "type": "sign",
    "position": [
-    64.0,
-    -108.0
+    81.0,
+    -88.0
    ],
    "rotation_deg": 0.0,
    "sign": "arena"
@@ -1048,7 +946,7 @@
    "width": 18.0
   },
   {
-   "name": "west street (far)",
+   "name": "east street",
    "points": [
     [
      70.0,
@@ -1104,6 +1002,50 @@
     ]
    ],
    "width": 20.0
+  },
+  {
+   "name": "plaza crossing west",
+   "points": [
+    [
+     -50.0,
+     30.0
+    ],
+    [
+     -12.0,
+     30.0
+    ],
+    [
+     12.0,
+     -30.0
+    ],
+    [
+     50.0,
+     -30.0
+    ]
+   ],
+   "width": 18.0
+  },
+  {
+   "name": "plaza crossing east",
+   "points": [
+    [
+     50.0,
+     30.0
+    ],
+    [
+     12.0,
+     30.0
+    ],
+    [
+     -12.0,
+     -30.0
+    ],
+    [
+     -50.0,
+     -30.0
+    ]
+   ],
+   "width": 18.0
   }
  ],
  "regions": [
@@ -1115,42 +1057,6 @@
     0.0
    ],
    "radius": 18.0
-  },
-  {
-   "name": "avenue mouth",
-   "kind": "chokepoint",
-   "position": [
-    0.0,
-    42.0
-   ],
-   "radius": 8.0
-  },
-  {
-   "name": "avenue mouth (far)",
-   "kind": "chokepoint",
-   "position": [
-    0.0,
-    -42.0
-   ],
-   "radius": 8.0
-  },
-  {
-   "name": "west crossing",
-   "kind": "chokepoint",
-   "position": [
-    -70.0,
-    0.0
-   ],
-   "radius": 9.0
-  },
-  {
-   "name": "west crossing (far)",
-   "kind": "chokepoint",
-   "position": [
-    70.0,
-    0.0
-   ],
-   "radius": 9.0
   },
   {
    "name": "ring road west",

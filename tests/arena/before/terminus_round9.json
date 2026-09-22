@@ -1,0 +1,1332 @@
+{
+ "name": "terminus",
+ "schema": 2,
+ "title": "The Terminus",
+ "note": "A block city dropped into the arena: 20 m streets between sheer neon-edged towers, a plaza at the crossroads and a ring road across each half. Sightlines end at the next corner, so a flank is a street away and an ambush is a doorway. Scouts and IFVs own the grid; artillery has to be walked into it.",
+ "half_size": 140.0,
+ "fixture": false,
+ "obstacles": [],
+ "props": [
+  {
+   "type": "block",
+   "position": [
+    40.0,
+    0.0
+   ],
+   "rotation_deg": 0.0,
+   "tiers": 3,
+   "neon": "cyan",
+   "seed": 11
+  },
+  {
+   "type": "block",
+   "position": [
+    -40.0,
+    0.0
+   ],
+   "rotation_deg": 180.0,
+   "tiers": 3,
+   "neon": "cyan",
+   "seed": 11
+  },
+  {
+   "type": "block",
+   "position": [
+    100.0,
+    0.0
+   ],
+   "rotation_deg": 0.0,
+   "tiers": 2,
+   "setback": 1,
+   "neon": "magenta",
+   "seed": 23
+  },
+  {
+   "type": "block",
+   "position": [
+    -100.0,
+    0.0
+   ],
+   "rotation_deg": 180.0,
+   "tiers": 2,
+   "setback": 1,
+   "neon": "magenta",
+   "seed": 23
+  },
+  {
+   "type": "block",
+   "position": [
+    30.0,
+    62.0
+   ],
+   "rotation_deg": 0.0,
+   "tiers": 3,
+   "neon": "magenta",
+   "seed": 37
+  },
+  {
+   "type": "block",
+   "position": [
+    -30.0,
+    -62.0
+   ],
+   "rotation_deg": 180.0,
+   "tiers": 3,
+   "neon": "magenta",
+   "seed": 37
+  },
+  {
+   "type": "block",
+   "position": [
+    -30.0,
+    62.0
+   ],
+   "rotation_deg": 0.0,
+   "tiers": 2,
+   "setback": 1,
+   "neon": "cyan",
+   "seed": 41
+  },
+  {
+   "type": "block",
+   "position": [
+    30.0,
+    -62.0
+   ],
+   "rotation_deg": 180.0,
+   "tiers": 2,
+   "setback": 1,
+   "neon": "cyan",
+   "seed": 41
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -70.0,
+    8.0
+   ],
+   "rotation_deg": 0.0,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    70.0,
+    -8.0
+   ],
+   "rotation_deg": 180.0,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    70.0,
+    -8.0
+   ],
+   "rotation_deg": 0.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -70.0,
+    8.0
+   ],
+   "rotation_deg": 180.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -70.0,
+    30.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    70.0,
+    -30.0
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    70.0,
+    30.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -70.0,
+    -30.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    30.0
+   ],
+   "rotation_deg": 0.0,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    -30.0
+   ],
+   "rotation_deg": 180.0,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    0.0,
+    -34.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    0.0,
+    34.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -16.0,
+    24.0
+   ],
+   "rotation_deg": 20.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    16.0,
+    -24.0
+   ],
+   "rotation_deg": 200.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    18.0,
+    -26.0
+   ],
+   "rotation_deg": 200.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -18.0,
+    26.0
+   ],
+   "rotation_deg": 20.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    62.0,
+    36.0
+   ],
+   "rotation_deg": 75.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -62.0,
+    -36.0
+   ],
+   "rotation_deg": 255.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -10.0,
+    42.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    10.0,
+    -42.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    10.0,
+    42.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -10.0,
+    -42.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -64.0,
+    62.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    64.0,
+    -62.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -88.0,
+    62.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    88.0,
+    -62.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    88.0,
+    74.0
+   ],
+   "rotation_deg": 0.0,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -88.0,
+    -74.0
+   ],
+   "rotation_deg": 180.0,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    80.0
+   ],
+   "rotation_deg": 0.0,
+   "faction": "condemned",
+   "doors": "open"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0,
+   "faction": "condemned",
+   "doors": "open"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    14.0,
+    14.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -14.0,
+    -14.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -35.0,
+    31.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    35.0,
+    -31.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    66.0,
+    6.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -66.0,
+    -6.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -128.0,
+    0.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    128.0,
+    0.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    -76.0,
+    100.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    76.0,
+    -100.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    76.0,
+    96.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "faction"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    -76.0,
+    -96.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "faction"
+  },
+  {
+   "type": "sign",
+   "position": [
+    -64.0,
+    108.0
+   ],
+   "rotation_deg": 180.0,
+   "sign": "arena"
+  },
+  {
+   "type": "sign",
+   "position": [
+    64.0,
+    -108.0
+   ],
+   "rotation_deg": 0.0,
+   "sign": "arena"
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -7.5,
+    90.0
+   ],
+   [
+    7.5,
+    90.0
+   ],
+   [
+    -15.0,
+    90.0
+   ],
+   [
+    15.0,
+    90.0
+   ],
+   [
+    -22.5,
+    90.0
+   ],
+   [
+    22.5,
+    90.0
+   ],
+   [
+    -30.0,
+    90.0
+   ],
+   [
+    30.0,
+    90.0
+   ],
+   [
+    -37.5,
+    90.0
+   ],
+   [
+    37.5,
+    90.0
+   ],
+   [
+    -45.0,
+    90.0
+   ],
+   [
+    45.0,
+    90.0
+   ],
+   [
+    -52.5,
+    90.0
+   ],
+   [
+    52.5,
+    90.0
+   ],
+   [
+    -60.0,
+    90.0
+   ],
+   [
+    60.0,
+    90.0
+   ],
+   [
+    -67.5,
+    90.0
+   ],
+   [
+    67.5,
+    90.0
+   ],
+   [
+    0.0,
+    102.0
+   ],
+   [
+    -7.5,
+    102.0
+   ],
+   [
+    7.5,
+    102.0
+   ],
+   [
+    -15.0,
+    102.0
+   ],
+   [
+    15.0,
+    102.0
+   ],
+   [
+    -22.5,
+    102.0
+   ],
+   [
+    22.5,
+    102.0
+   ],
+   [
+    -30.0,
+    102.0
+   ],
+   [
+    30.0,
+    102.0
+   ],
+   [
+    -37.5,
+    102.0
+   ],
+   [
+    37.5,
+    102.0
+   ],
+   [
+    -45.0,
+    102.0
+   ],
+   [
+    45.0,
+    102.0
+   ],
+   [
+    -52.5,
+    102.0
+   ],
+   [
+    52.5,
+    102.0
+   ],
+   [
+    -60.0,
+    102.0
+   ],
+   [
+    60.0,
+    102.0
+   ],
+   [
+    -67.5,
+    102.0
+   ],
+   [
+    67.5,
+    102.0
+   ],
+   [
+    0.0,
+    114.0
+   ],
+   [
+    -7.5,
+    114.0
+   ],
+   [
+    7.5,
+    114.0
+   ],
+   [
+    -15.0,
+    114.0
+   ],
+   [
+    15.0,
+    114.0
+   ],
+   [
+    -22.5,
+    114.0
+   ],
+   [
+    22.5,
+    114.0
+   ],
+   [
+    -30.0,
+    114.0
+   ],
+   [
+    30.0,
+    114.0
+   ],
+   [
+    -37.5,
+    114.0
+   ],
+   [
+    37.5,
+    114.0
+   ],
+   [
+    -45.0,
+    114.0
+   ],
+   [
+    45.0,
+    114.0
+   ],
+   [
+    -52.5,
+    114.0
+   ],
+   [
+    52.5,
+    114.0
+   ],
+   [
+    -60.0,
+    114.0
+   ],
+   [
+    60.0,
+    114.0
+   ],
+   [
+    -67.5,
+    114.0
+   ],
+   [
+    67.5,
+    114.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    7.5,
+    -90.0
+   ],
+   [
+    -7.5,
+    -90.0
+   ],
+   [
+    15.0,
+    -90.0
+   ],
+   [
+    -15.0,
+    -90.0
+   ],
+   [
+    22.5,
+    -90.0
+   ],
+   [
+    -22.5,
+    -90.0
+   ],
+   [
+    30.0,
+    -90.0
+   ],
+   [
+    -30.0,
+    -90.0
+   ],
+   [
+    37.5,
+    -90.0
+   ],
+   [
+    -37.5,
+    -90.0
+   ],
+   [
+    45.0,
+    -90.0
+   ],
+   [
+    -45.0,
+    -90.0
+   ],
+   [
+    52.5,
+    -90.0
+   ],
+   [
+    -52.5,
+    -90.0
+   ],
+   [
+    60.0,
+    -90.0
+   ],
+   [
+    -60.0,
+    -90.0
+   ],
+   [
+    67.5,
+    -90.0
+   ],
+   [
+    -67.5,
+    -90.0
+   ],
+   [
+    0.0,
+    -102.0
+   ],
+   [
+    7.5,
+    -102.0
+   ],
+   [
+    -7.5,
+    -102.0
+   ],
+   [
+    15.0,
+    -102.0
+   ],
+   [
+    -15.0,
+    -102.0
+   ],
+   [
+    22.5,
+    -102.0
+   ],
+   [
+    -22.5,
+    -102.0
+   ],
+   [
+    30.0,
+    -102.0
+   ],
+   [
+    -30.0,
+    -102.0
+   ],
+   [
+    37.5,
+    -102.0
+   ],
+   [
+    -37.5,
+    -102.0
+   ],
+   [
+    45.0,
+    -102.0
+   ],
+   [
+    -45.0,
+    -102.0
+   ],
+   [
+    52.5,
+    -102.0
+   ],
+   [
+    -52.5,
+    -102.0
+   ],
+   [
+    60.0,
+    -102.0
+   ],
+   [
+    -60.0,
+    -102.0
+   ],
+   [
+    67.5,
+    -102.0
+   ],
+   [
+    -67.5,
+    -102.0
+   ],
+   [
+    0.0,
+    -114.0
+   ],
+   [
+    7.5,
+    -114.0
+   ],
+   [
+    -7.5,
+    -114.0
+   ],
+   [
+    15.0,
+    -114.0
+   ],
+   [
+    -15.0,
+    -114.0
+   ],
+   [
+    22.5,
+    -114.0
+   ],
+   [
+    -22.5,
+    -114.0
+   ],
+   [
+    30.0,
+    -114.0
+   ],
+   [
+    -30.0,
+    -114.0
+   ],
+   [
+    37.5,
+    -114.0
+   ],
+   [
+    -37.5,
+    -114.0
+   ],
+   [
+    45.0,
+    -114.0
+   ],
+   [
+    -45.0,
+    -114.0
+   ],
+   [
+    52.5,
+    -114.0
+   ],
+   [
+    -52.5,
+    -114.0
+   ],
+   [
+    60.0,
+    -114.0
+   ],
+   [
+    -60.0,
+    -114.0
+   ],
+   [
+    67.5,
+    -114.0
+   ],
+   [
+    -67.5,
+    -114.0
+   ]
+  ]
+ },
+ "spawn_zones": {
+  "green": {
+   "center": [
+    0.0,
+    102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  },
+  "rust": {
+   "center": [
+    0.0,
+    -102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  }
+ },
+ "lanes": [
+  {
+   "name": "the avenue",
+   "points": [
+    [
+     0.0,
+     90.0
+    ],
+    [
+     0.0,
+     42.0
+    ],
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -42.0
+    ],
+    [
+     0.0,
+     -90.0
+    ]
+   ],
+   "width": 18.0
+  },
+  {
+   "name": "west street",
+   "points": [
+    [
+     -70.0,
+     90.0
+    ],
+    [
+     -70.0,
+     20.0
+    ],
+    [
+     -70.0,
+     -20.0
+    ],
+    [
+     -70.0,
+     -90.0
+    ]
+   ],
+   "width": 18.0
+  },
+  {
+   "name": "west street (far)",
+   "points": [
+    [
+     70.0,
+     90.0
+    ],
+    [
+     70.0,
+     20.0
+    ],
+    [
+     70.0,
+     -20.0
+    ],
+    [
+     70.0,
+     -90.0
+    ]
+   ],
+   "width": 18.0
+  },
+  {
+   "name": "the ring road",
+   "points": [
+    [
+     -110.0,
+     30.0
+    ],
+    [
+     0.0,
+     30.0
+    ],
+    [
+     110.0,
+     30.0
+    ]
+   ],
+   "width": 20.0
+  },
+  {
+   "name": "the ring road (far)",
+   "points": [
+    [
+     -110.0,
+     -30.0
+    ],
+    [
+     0.0,
+     -30.0
+    ],
+    [
+     110.0,
+     -30.0
+    ]
+   ],
+   "width": 20.0
+  }
+ ],
+ "regions": [
+  {
+   "name": "the plaza",
+   "kind": "centre",
+   "position": [
+    0.0,
+    0.0
+   ],
+   "radius": 18.0
+  },
+  {
+   "name": "avenue mouth",
+   "kind": "chokepoint",
+   "position": [
+    0.0,
+    42.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "avenue mouth (far)",
+   "kind": "chokepoint",
+   "position": [
+    0.0,
+    -42.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "west crossing",
+   "kind": "chokepoint",
+   "position": [
+    -70.0,
+    0.0
+   ],
+   "radius": 9.0
+  },
+  {
+   "name": "west crossing (far)",
+   "kind": "chokepoint",
+   "position": [
+    70.0,
+    0.0
+   ],
+   "radius": 9.0
+  },
+  {
+   "name": "ring road west",
+   "kind": "flank",
+   "position": [
+    -80.0,
+    30.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "ring road west (far)",
+   "kind": "flank",
+   "position": [
+    80.0,
+    -30.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "south approach",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    92.0
+   ],
+   "radius": 20.0
+  },
+  {
+   "name": "south approach (far)",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    -92.0
+   ],
+   "radius": 20.0
+  },
+  {
+   "name": "tower corner",
+   "kind": "overlook",
+   "position": [
+    -52.0,
+    40.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "tower corner (far)",
+   "kind": "overlook",
+   "position": [
+    52.0,
+    -40.0
+   ],
+   "radius": 7.0
+  }
+ ],
+ "control_point": {
+  "radius": 16.0
+ },
+ "objectives": [
+  {
+   "name": "the west ring",
+   "position": [
+    -75.0,
+    -26.0
+   ],
+   "radius": 15.0
+  },
+  {
+   "name": "the west ring (far)",
+   "position": [
+    75.0,
+    26.0
+   ],
+   "radius": 15.0
+  }
+ ],
+ "shape": {
+  "kind": "hexagon"
+ },
+ "show": {
+  "channels": {
+   "rim": {
+    "programme": "breathe",
+    "period": 24.0,
+    "phase": 0.0,
+    "floor": 0.6,
+    "ceiling": 1.25
+   },
+   "edges": {
+    "programme": "breathe",
+    "period": 19.7,
+    "phase": 3.88,
+    "floor": 0.1,
+    "ceiling": 0.55
+   },
+   "windows": {
+    "programme": "breathe",
+    "period": 22.2,
+    "phase": 1.48,
+    "floor": 0.8,
+    "ceiling": 1.1
+   },
+   "shopfronts": {
+    "programme": "breathe",
+    "period": 15.2,
+    "phase": 5.37,
+    "floor": 0.82,
+    "ceiling": 1.12
+   },
+   "signs": {
+    "programme": "breathe",
+    "period": 12.8,
+    "phase": 2.97,
+    "floor": 0.55,
+    "ceiling": 1.2
+   },
+   "pools": {
+    "programme": "breathe",
+    "period": 10.8,
+    "phase": 0.57,
+    "floor": 0.7,
+    "ceiling": 1.15
+   },
+   "beams": {
+    "programme": "breathe",
+    "period": 18.5,
+    "phase": 4.45,
+    "floor": 0.55,
+    "ceiling": 1.3
+   }
+  },
+  "patch": [
+   {
+    "fixture": "rim",
+    "parameter": "level",
+    "channel": "rim",
+    "spread": 1.0
+   },
+   {
+    "fixture": "city_block",
+    "parameter": "edge",
+    "channel": "edges",
+    "spread": 1.0,
+    "style": "parapet"
+   },
+   {
+    "fixture": "city_block",
+    "parameter": "window",
+    "channel": "windows",
+    "spread": 1.0
+   },
+   {
+    "fixture": "city_block",
+    "parameter": "shop",
+    "channel": "shopfronts",
+    "spread": 1.0
+   },
+   {
+    "fixture": "signs",
+    "parameter": "level",
+    "channel": "signs",
+    "spread": 1.0
+   },
+   {
+    "fixture": "pools",
+    "parameter": "level",
+    "channel": "pools",
+    "spread": 1.0
+   },
+   {
+    "fixture": "beams",
+    "parameter": "level",
+    "channel": "beams",
+    "spread": 1.0
+   }
+  ]
+ }
+}

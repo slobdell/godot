@@ -97,6 +97,42 @@
    "bait": "a bait"
   }
  },
+ "oddity_categories": {
+  "archive": "records, replays or footage kept of people",
+  "audience_risk": "spectators treated as in the line of fire",
+  "children": "minors in the arena's programmes",
+  "cleanup": "what the floor crew clears away",
+  "confinement": "the crowd kept in, counted or released",
+  "detention": "the crews' prison routine",
+  "euphemism": "a loss renamed in operational language",
+  "family": "the crews' relatives",
+  "hearing": "noise damage treated as routine",
+  "housing": "housing allotted by results",
+  "informants": "reporting on neighbours",
+  "inspection": "checks that pass the wrong thing",
+  "insurance": "cover that covers nothing",
+  "labour": "work placements after release",
+  "medical": "care that waits",
+  "merchandise": "selling the crews' moments",
+  "officials": "the Law and officials, slightly bent",
+  "ownership": "people counted as property",
+  "papers": "identity documents",
+  "paperwork": "forms and filings at the wrong moment",
+  "privilege": "the upper districts treated better",
+  "quotas": "district quotas of participants",
+  "rationing": "water, food and credits",
+  "salvage": "the machine valued over the crew",
+  "schedule": "timing indifferent to people",
+  "scoring": "points that count the wrong thing",
+  "sentence": "sentences and their review",
+  "staffing": "the arena's own staff",
+  "surveillance": "watching and recording the audience",
+  "transit": "trains, buses and escorts",
+  "utilities": "power and water for the districts",
+  "volunteering": "consent that is not consent",
+  "wagers": "betting on the crews",
+  "weather": "the air people breathe"
+ },
  "lines": [
   {
    "id": "caller.intro.01",
@@ -1421,7 +1457,7 @@
     "hurt"
    ],
    "intensity": 2,
-   "text": "The {victim_unit} is smoking, and {faction} smells blood!"
+   "text": "The {victim_unit} is smoking, and they smell blood!"
   },
   {
    "id": "caller.hit.07",
@@ -1519,7 +1555,7 @@
     "big_hit"
    ],
    "intensity": 1,
-   "text": "{faction} connects, and the {victim_unit} wobbles!"
+   "text": "They connect, and the {victim_unit} wobbles!"
   },
   {
    "id": "color.hit.01",
@@ -1665,7 +1701,7 @@
     "kill"
    ],
    "intensity": 1,
-   "text": "{faction} picks off the {victim_unit}. Clean work."
+   "text": "They pick off the {victim_unit}. Clean work."
   },
   {
    "id": "caller.kill.12",
@@ -1697,7 +1733,7 @@
     "first_blood"
    ],
    "intensity": 3,
-   "text": "{faction} draws first blood, and this crowd is on its feet!"
+   "text": "{faction} draw first blood, and this crowd is on its feet!"
   },
   {
    "id": "caller.kill.15",
@@ -1853,7 +1889,7 @@
     "killer_artillery"
    ],
    "intensity": 2,
-   "text": "The artillery finds its mark! {faction} shells the {victim_unit} right out of the fight!"
+   "text": "The artillery finds its mark! They shell the {victim_unit} right out of the fight!"
   },
   {
    "id": "caller.kill.29",
@@ -1919,7 +1955,7 @@
     "victim_lancer"
    ],
    "intensity": 2,
-   "text": "The Lancer goes dark! {faction} shuts off the beam!"
+   "text": "The Lancer goes dark! {faction} shut off the beam!"
   },
   {
    "id": "caller.kill.35",
@@ -2696,7 +2732,7 @@
     "friendly_kill"
    ],
    "intensity": 3,
-   "text": "Oh no! {faction} just took out its own {victim_unit}!"
+   "text": "Oh no! They have just taken out their own {victim_unit}!"
   },
   {
    "id": "caller.ownkill.02",
@@ -2716,7 +2752,7 @@
     "friendly_kill"
    ],
    "intensity": 3,
-   "text": "They hit their own! {faction} lose the {victim_unit} to its own guns!"
+   "text": "They hit their own! The {victim_unit} is gone, and it was their own guns!"
   },
   {
    "id": "caller.ownkill.04",
@@ -2877,7 +2913,7 @@
     "friendly_fire"
    ],
    "intensity": 2,
-   "text": "Whoa, whoa! {faction} just hit its own {victim_unit}!"
+   "text": "Whoa, whoa! They just hit their own {victim_unit}!"
   },
   {
    "id": "caller.ff.02",
@@ -2897,7 +2933,7 @@
     "friendly_fire"
    ],
    "intensity": 2,
-   "text": "Oh, that's their own! {faction} hit its own {victim_unit}!"
+   "text": "Oh, that's their own! They just shot their own {victim_unit}!"
   },
   {
    "id": "caller.ff.04",
@@ -2932,7 +2968,7 @@
     "said_friendly_{team}"
    ],
    "intensity": 3,
-   "text": "Again! {faction} hit its own again!"
+   "text": "Again! {faction} have hit their own again!"
   },
   {
    "id": "caller.ff.07",
@@ -3176,7 +3212,7 @@
     "stolen"
    ],
    "intensity": 3,
-   "text": "{faction} steals the point away from {other_faction}!"
+   "text": "{faction} steal the point away from {other_faction}!"
   },
   {
    "id": "caller.control.05",
@@ -5062,7 +5098,7 @@
     "result"
    ],
    "intensity": 2,
-   "text": "And there it is. {faction} closes it out."
+   "text": "And there it is. {faction} close it out."
   },
   {
    "id": "caller.result.16",
@@ -5092,7 +5128,7 @@
     "result"
    ],
    "intensity": 3,
-   "text": "It is done! {faction} stands alone on that floor!"
+   "text": "It is done! {faction} stand alone on that floor!"
   },
   {
    "id": "pa.result.07",
@@ -6223,6 +6259,6160 @@
     "outro"
    ],
    "text": "Thank you for joining us. Your attendance tonight has been recorded, and is appreciated."
+  },
+  {
+   "id": "caller.drill.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 3,
+   "text": "They're running the play! Everybody moving together!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "Look at that! That is a trained crew right there!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "They didn't even have to talk about it! They just went!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 3,
+   "text": "Here it comes! The whole element is moving!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "Oh, they have rehearsed this one, folks!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 1,
+   "text": "And you can see the drill kick in. Nobody hesitates.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "That is muscle memory! That is hours and hours of practice!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 3,
+   "text": "They are executing! They are executing out there!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "Everybody knows their job, and they are doing it right now!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "That's not panic, folks, that is a plan!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 1,
+   "text": "Watch the whole group react at once. That's discipline.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.14",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 3,
+   "text": "They snap right into it! Look how fast that was!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.15",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "Somebody called it, and the whole crew answered!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.16",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 3,
+   "text": "Oh, here we go! They're going by the book!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.17",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "That is a drilled unit, and it shows!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.18",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 1,
+   "text": "No wasted motion there. They've done this before.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.19",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "Every vehicle moving on the same count! Beautiful!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.20",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 3,
+   "text": "They are committed now! No turning back!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.21",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "Look at the timing on that! Right on cue!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.22",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 1,
+   "text": "That was a decision made weeks ago, in practice. You're seeing it now.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.23",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "intensity": 2,
+   "text": "The whole element just changed gears!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.24",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_break_contact"
+   ],
+   "intensity": 2,
+   "text": "They're pulling out! Covering each other all the way back!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.25",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_break_contact"
+   ],
+   "intensity": 3,
+   "text": "They're breaking off! They are getting out of there!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.26",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_break_contact"
+   ],
+   "intensity": 2,
+   "text": "Smart! They're backing out before it gets any worse!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.27",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_react_to_contact"
+   ],
+   "intensity": 3,
+   "text": "They've been hit, and they're turning into it! No hesitation!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.28",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_react_to_contact"
+   ],
+   "intensity": 2,
+   "text": "Contact, and they answer right away! The guns are coming around!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.29",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_assault_through"
+   ],
+   "intensity": 3,
+   "text": "They're charging straight through! Right through the middle!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.30",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_support_by_fire"
+   ],
+   "intensity": 2,
+   "text": "Half of them stop and open up while the rest get moving!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.drill.31",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_near_ambush"
+   ],
+   "intensity": 3,
+   "text": "Ambush! And they drive right back into it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.77",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "Down it goes! That one is finished!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.78",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "Oh, they lit that one up!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.79",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "That's a kill! No doubt about that one!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.80",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "And that vehicle is not getting back up!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.81",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "Oh, it's over for that crew! It's over!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.82",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 1,
+   "text": "That one's done. Clean shot, clean result.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.83",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "intensity": 2,
+   "text": "Right on target, and that's another hull on the scrap pile!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.84",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "Oh, they just folded that thing in half!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.85",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "Stopped cold! That machine is going nowhere!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.86",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "Good night! That one is going home on a truck!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.87",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "There's the finish! They closed the deal!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.88",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "intensity": 1,
+   "text": "And that's one fewer on the floor.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.89",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "What a shot! What a shot! That is a kill!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.90",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "It's burning! That one is burning, and it's out!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.91",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "Ohh, they took that one apart piece by piece!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.92",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "No answer for that one! None!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.93",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "That's lights out for that crew!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.94",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 1,
+   "text": "They wear it down, and there it goes. Patience pays.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.95",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "Dead stop! That thing is scrap!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.96",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "intensity": 2,
+   "text": "Another hull goes dark!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.97",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "They finished it! They absolutely finished it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.98",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "Smoke pouring out, and that one is done for the night!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.99",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 1,
+   "text": "And that's the end of that one.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.100",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "Oh, you do not come back from that!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.kill.101",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "That one saw it coming and could not get out of the way!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.19",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 3,
+   "text": "It's over! It is all over!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.20",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 3,
+   "text": "That's the match, ladies and gentlemen! That is the match!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.21",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 2,
+   "text": "And the floor goes quiet. We have a winner.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.22",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 3,
+   "text": "They did it! They actually did it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.23",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 2,
+   "text": "Somebody get those crews a cold drink, because that was a war!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.24",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 3,
+   "text": "Unbelievable finish! What a way to end it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.25",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 2,
+   "text": "And that'll do it. What a night on the floor.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.26",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "win_elimination"
+   ],
+   "intensity": 3,
+   "text": "The last engine stops, and this place erupts!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.27",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "flawless"
+   ],
+   "intensity": 3,
+   "text": "Not a scratch! They won it without a single loss!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.28",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "close"
+   ],
+   "intensity": 3,
+   "text": "By the thinnest of margins! One machine left running!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.29",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "comeback"
+   ],
+   "intensity": 3,
+   "text": "From the edge of the cliff to the top of the card! What a comeback!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.30",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "win_control"
+   ],
+   "intensity": 3,
+   "text": "The point was theirs when it counted! What a finish!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.31",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "win_time"
+   ],
+   "intensity": 2,
+   "text": "Time! Time is up, and the count decides it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.32",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "draw"
+   ],
+   "intensity": 2,
+   "text": "A draw! After all of that, a draw!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.33",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "quick"
+   ],
+   "intensity": 3,
+   "text": "Blink and you missed it! That was over in a hurry!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.34",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "long"
+   ],
+   "intensity": 2,
+   "text": "That one went on forever, and I loved every second of it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.35",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 3,
+   "text": "{faction} win it! {faction} win it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.36",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 2,
+   "text": "Give it up for {faction}, folks! They were the better army tonight!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.37",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 3,
+   "text": "Nobody is taking this one away from {faction}! They win it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.38",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 2,
+   "text": "That's a win for {faction}, and they had to fight for every inch of it.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.39",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 1,
+   "text": "And that's the match. A hard one to watch, and a hard one to win.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.result.40",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 2,
+   "text": "Final engine off! This one is in the books!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.16",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "Ohh! Right on the button!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.17",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 3,
+   "text": "What a hit! That shook the whole floor!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.18",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "They felt that one inside the hull!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.19",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 1,
+   "text": "Solid hit. That's going to slow them down.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.20",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "Oh, that took a chunk right out of it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.21",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 3,
+   "text": "Direct hit! Direct hit!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.22",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "That rang like a bell up here!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.23",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "Big damage! That thing is limping now!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.24",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 3,
+   "text": "Oh, they caught it flush!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.25",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 1,
+   "text": "That one's going to leave a dent. A big dent.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.26",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "Right on the plating, and the plating lost!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.27",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 3,
+   "text": "Ohh, sparks everywhere! What a shot!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.28",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "They're pouring it on now!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.29",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "hurt"
+   ],
+   "intensity": 3,
+   "text": "It's hurt! It is badly hurt! Can it get out of there?",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.30",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "hurt"
+   ],
+   "intensity": 2,
+   "text": "That machine is leaking smoke, and they know it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.31",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "weak_spot"
+   ],
+   "intensity": 3,
+   "text": "They found the gap in the armor! Right where it hurts!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.32",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "rear"
+   ],
+   "intensity": 2,
+   "text": "Hit from behind! They never saw it coming!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.33",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "Oh, that turret just got rearranged!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hit.34",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 1,
+   "text": "A heavy hit, and they absorb it. For now.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 3,
+   "text": "Here we go! We are live on the floor!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.14",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "Shots fired! This one is underway!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.15",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "First rounds are away! Here comes the fight!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.16",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 3,
+   "text": "There's the first shot! Buckle up, folks!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.17",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 1,
+   "text": "And there's the first shot. Now everybody knows.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.18",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "They've found each other, and the guns are talking!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.19",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 3,
+   "text": "Contact! Contact on the floor!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.20",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "The waiting is over! We have a fight!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.21",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "Somebody pulled the trigger, and here we go!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.22",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 3,
+   "text": "It's on! It is on!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.23",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 1,
+   "text": "First shot fired. The quiet part is over.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.24",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "Muzzle flash! We have shooting!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.25",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact",
+    "unit_scout"
+   ],
+   "intensity": 2,
+   "text": "The scout sees them first and lets them know about it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.26",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact",
+    "unit_tank"
+   ],
+   "intensity": 3,
+   "text": "The big gun speaks first! What an opening shot!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.contact.27",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact",
+    "unit_burner"
+   ],
+   "intensity": 2,
+   "text": "The Burner is first to open up, and it is spitting fire!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_condemned"
+   ],
+   "intensity": 2,
+   "text": "Here come the Condemned! Every one of those drivers is fighting for a reason!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_condemned"
+   ],
+   "intensity": 3,
+   "text": "Look at the Condemned out there! They look hungry tonight!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_condemned"
+   ],
+   "intensity": 1,
+   "text": "The Condemned. Old buses, old trucks, and crews that have waited a long time for this.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_gangs"
+   ],
+   "intensity": 3,
+   "text": "The Wreckers are here! Listen to those engines!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_gangs"
+   ],
+   "intensity": 2,
+   "text": "Here come the Wreckers, loud and fast and not slowing down for anybody!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_gangs"
+   ],
+   "intensity": 2,
+   "text": "The Wreckers roll in with spikes on everything! This crowd loves them!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_law"
+   ],
+   "intensity": 2,
+   "text": "The Law takes the floor, and this building lets them hear about it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_law"
+   ],
+   "intensity": 2,
+   "text": "Here comes the Law, and that armor looks brand new!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.14",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_law"
+   ],
+   "intensity": 1,
+   "text": "The Law. Heavy armor, tight formation, and not a single fan in this building.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.15",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_syndicate"
+   ],
+   "intensity": 2,
+   "text": "The Syndicate machines glide onto the floor! Not a sound out of them!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.16",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_syndicate"
+   ],
+   "intensity": 3,
+   "text": "Here comes the Syndicate! Look at that hover tech!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.faction.17",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_syndicate"
+   ],
+   "intensity": 1,
+   "text": "The Syndicate fleet, straight from the showroom. Somebody is going to scratch that paint.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.momentum.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum"
+   ],
+   "intensity": 2,
+   "text": "The momentum is shifting out there, you can feel it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.momentum.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum",
+    "rout"
+   ],
+   "intensity": 3,
+   "text": "It is falling apart for them! This is a rout!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.momentum.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum"
+   ],
+   "intensity": 2,
+   "text": "Somebody has the upper hand now, and they know it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.momentum.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum",
+    "shift"
+   ],
+   "intensity": 2,
+   "text": "The tide is turning on the floor!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.momentum.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum"
+   ],
+   "intensity": 1,
+   "text": "Slowly, surely, one side is taking control.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.momentum.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum"
+   ],
+   "intensity": 2,
+   "text": "{faction} have their foot on the gas now!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.momentum.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum"
+   ],
+   "intensity": 3,
+   "text": "Everything is going {faction_s} way right now!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.momentum.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum",
+    "edge"
+   ],
+   "intensity": 2,
+   "text": "One side is winning the war of attrition, and it's not close!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.momentum.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum"
+   ],
+   "intensity": 1,
+   "text": "The damage is starting to add up for one of these armies.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.momentum.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum",
+    "shift"
+   ],
+   "intensity": 3,
+   "text": "Whoa, did you feel that? This match just turned!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.control.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "taken"
+   ],
+   "intensity": 2,
+   "text": "They're on the point! The center is theirs!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.control.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "taken"
+   ],
+   "intensity": 3,
+   "text": "Somebody is sitting on the middle, and the clock is running!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.control.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "stolen"
+   ],
+   "intensity": 3,
+   "text": "Stolen! They steal the point right out from under them!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.control.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "stolen"
+   ],
+   "intensity": 2,
+   "text": "And the point changes hands! What a swing!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.control.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "neutral"
+   ],
+   "intensity": 2,
+   "text": "Nobody holds the center now! It's wide open!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.control.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "again"
+   ],
+   "intensity": 3,
+   "text": "Back and forth, back and forth! Who wants it more?",
+   "added": "r10"
+  },
+  {
+   "id": "caller.control.14",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control"
+   ],
+   "intensity": 2,
+   "text": "The center of the floor is where this one gets decided!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.control.15",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "taken"
+   ],
+   "intensity": 1,
+   "text": "They've settled onto the point. Now they have to hold it.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.control.16",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "stolen"
+   ],
+   "intensity": 3,
+   "text": "Snatched away! The point flips!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.formation.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "intensity": 2,
+   "text": "Look at them line up! That is a real formation!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.formation.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "intensity": 1,
+   "text": "They're getting into shape out there. Somebody's in charge.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.formation.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "intensity": 2,
+   "text": "Beautiful spacing on that group!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.formation.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "intensity": 2,
+   "text": "They're tightening up! Everybody's finding their spot!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.formation.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "intensity": 3,
+   "text": "Look at that! Rolling out in formation like a parade!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.formation.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "intensity": 1,
+   "text": "Nice and tidy out there. Somebody has been practicing.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.formation.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation",
+    "formation_column"
+   ],
+   "intensity": 2,
+   "text": "Single file! They're rolling out in a column!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.formation.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation",
+    "formation_wedge"
+   ],
+   "intensity": 2,
+   "text": "There's the wedge! Point first, and everybody fans out behind!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.formation.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation",
+    "formation_swarm"
+   ],
+   "intensity": 3,
+   "text": "Oh, they're swarming! No shape at all, just everybody at once!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.formation.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation",
+    "formation_line"
+   ],
+   "intensity": 2,
+   "text": "Side by side! They're coming across in one big line!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.squad.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 3,
+   "text": "A whole squad, gone! Wiped off the floor!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.squad.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 2,
+   "text": "That entire group has been erased!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.squad.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 2,
+   "text": "And that's a full squad out of the fight!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.squad.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 3,
+   "text": "They lost the whole squad! Every single one!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.squad.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 1,
+   "text": "That squad is gone. All of it.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.squad.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 2,
+   "text": "Squad wiped! There's nobody left in that group!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.squad.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 3,
+   "text": "The whole unit is down! That's a huge blow!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.squad.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 2,
+   "text": "That's a hole in their army you could drive a bus through!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.squad.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 1,
+   "text": "One whole squad, off the board. That changes the math.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.tape.04",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "tape",
+    "outnumbers"
+   ],
+   "intensity": 2,
+   "text": "On paper, one side has the numbers. But paper doesn't fight!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.tape.05",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "tape",
+    "outnumbers"
+   ],
+   "intensity": 1,
+   "text": "The numbers are lopsided tonight. Somebody is going to have to be clever.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.tape.06",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "tape",
+    "even_numbers"
+   ],
+   "intensity": 2,
+   "text": "Even numbers tonight. Same count on both sides of the floor!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.tape.07",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "tape",
+    "even_numbers"
+   ],
+   "intensity": 1,
+   "text": "Matched up vehicle for vehicle. This comes down to driving.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.tape.08",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "tape",
+    "outnumbers"
+   ],
+   "intensity": 2,
+   "text": "One of these armies is bigger. We'll find out if bigger is better!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ownkill.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 3,
+   "text": "No! They just took out their own vehicle!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ownkill.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 3,
+   "text": "Oh, that's a teammate! They destroyed a teammate!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ownkill.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 2,
+   "text": "Friendly fire, and it's a kill! That one is going to hurt in the debrief!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ownkill.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 3,
+   "text": "Wrong target! Wrong target, and it's gone!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ownkill.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 2,
+   "text": "Oh, they have lost one to their own gun! Brutal!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ownkill.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 1,
+   "text": "And that's one of their own. Oh, that's rough.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ownkill.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 3,
+   "text": "Oh, you cannot do that! That was their own crew!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ownkill.14",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill",
+    "repeat"
+   ],
+   "needs": [
+    "said_friendly_{team}"
+   ],
+   "intensity": 3,
+   "text": "They've done it again! Another one of their own!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hazard.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 3,
+   "text": "The arena claims another one!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hazard.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 3,
+   "text": "Straight in! It drove straight in, and it's gone!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hazard.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 2,
+   "text": "Nobody fired a shot, and it's gone! The floor takes it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hazard.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 2,
+   "text": "The pit swallows it whole!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hazard.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 1,
+   "text": "That's the arena doing the work. Nobody touched that one.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hazard.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 3,
+   "text": "Wrong turn! Wrong turn, and the arena takes it!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hazard.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 2,
+   "text": "The floor itself gets a kill tonight!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.hazard.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 2,
+   "text": "It went in, and it is not coming back out!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.close.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 3,
+   "text": "It's still alive! How is it still alive?",
+   "added": "r10"
+  },
+  {
+   "id": "caller.close.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 2,
+   "text": "Hanging on by a thread out there!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.close.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 2,
+   "text": "That one should be finished, and it's still rolling!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.close.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 3,
+   "text": "Barely! Barely made it out of there!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.close.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 1,
+   "text": "That crew is running on fumes and prayers.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.close.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 2,
+   "text": "Oh, that was too close! Way too close!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.close.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 3,
+   "text": "Smoking and still fighting! What a machine!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ff.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire"
+   ],
+   "intensity": 2,
+   "text": "Whoa! Watch where you're pointing that!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ff.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire"
+   ],
+   "intensity": 2,
+   "text": "That's their own! They just hit their own!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ff.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire"
+   ],
+   "intensity": 3,
+   "text": "Friendly fire! Friendly fire on the floor!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ff.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire"
+   ],
+   "intensity": 1,
+   "text": "Oh, that was a teammate on the receiving end.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ff.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire"
+   ],
+   "intensity": 2,
+   "text": "Somebody is going to hear about that after the match!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ff.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire"
+   ],
+   "intensity": 3,
+   "text": "Oh, wrong vehicle! That's one of theirs!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.ff.14",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire",
+    "repeat"
+   ],
+   "needs": [
+    "said_friendly_{team}"
+   ],
+   "intensity": 3,
+   "text": "Again with the friendly fire! What is going on over there?",
+   "added": "r10"
+  },
+  {
+   "id": "caller.intro.30",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "Are you ready? Because I have been ready all week!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.intro.31",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "The engines are warm, the crowd is loud, and we are minutes away!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.intro.32",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "Fight night! Every seat in the house is paid for, and nobody is sitting in one!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.intro.33",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "I've got chills, folks. Real chills.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.intro.34",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "This is what we wait all week for! Here we go!",
+   "added": "r10"
+  },
+  {
+   "id": "caller.intro.35",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 1,
+   "text": "Take a breath, everybody. It's about to get very loud in here.",
+   "added": "r10"
+  },
+  {
+   "id": "caller.banter.13",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "first_match",
+   "text": "Do you remember your first match?",
+   "added": "r10"
+  },
+  {
+   "id": "caller.banter.14",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "rival",
+   "text": "Who was the toughest driver you ever faced?",
+   "added": "r10"
+  },
+  {
+   "id": "caller.banter.15",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "night_before",
+   "text": "What do the crews do the night before a match?",
+   "added": "r10"
+  },
+  {
+   "id": "caller.banter.16",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "toughness",
+   "text": "How much can one of those machines take before it quits?",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Plate held. The crew inside didn't enjoy it, but the plate held.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "That's the kind of hit you feel in your teeth for a week.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "He'll be deaf in one ear until Thursday. The machine's fine.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "You can take a hit like that twice. Nobody I know took it three times.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "That's where the welds are. Welds are always the weak part.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Now he knows where the shot came from. The question is whether he can do anything about it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Good shot. Patient. He waited for the side to turn.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Everything inside that hull just moved about a foot to the left. Including the driver.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "That's the difference between armor and a vehicle with armor bolted on.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.13",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Hit like that, the first thing you lose is the radio. Then you're on your own.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.14",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "You don't hear that one. You find out about it later.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.15",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "He angled the hull a little. Not enough, but a little.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.16",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "That's going to slow the turret down. Hydraulics don't like that.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.17",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "The crew will be patching that one tonight, by torchlight, before the next session.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.18",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "That's not the one that kills you. That's the one that makes the next one easy.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.19",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit",
+    "rear"
+   ],
+   "text": "Rear plate is thinner. Always has been. Engines need to breathe.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.20",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit",
+    "weak_spot"
+   ],
+   "text": "That's the seam under the turret ring. Everybody knows about it. Nobody can fix it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.21",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit",
+    "hurt"
+   ],
+   "text": "He's hurt now. Watch him. Hurt crews do one of two things, and neither one is good.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.22",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Those hits add up. The machine keeps count even when the crew doesn't.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.23",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Clean hit. Nothing flashy. That's how they should all look.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.24",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "That driver just learned something about the ground he's sitting on.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.25",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit",
+    "shooter_artillery"
+   ],
+   "text": "Artillery doesn't aim at you. It aims at where you were going to be. That's worse.",
+   "added": "r10"
+  },
+  {
+   "id": "color.hit.26",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Now watch his next move. A hit like that makes you hurry, and hurrying is the mistake.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Look at the gaps opening up. That's an army running out of people to fill them.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "They've stopped trading. When you stop trading in here, you're losing.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "The damage has been going one way for a while now. It shows.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "One side is choosing where the fight happens. The other one is reacting.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Momentum's a word for it. I'd call it attrition with better lighting.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "They're behind, and they know it. That's when crews start doing brave things.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Every exchange has gone one way for about a minute. That's not luck anymore.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "The losing side is still shooting. They're just shooting at the wrong things.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.13",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "You can see it in how they move. One side is careful. The other side is in a hurry.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.14",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "It's not over. But the arithmetic is starting to decide for them.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.15",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "shift"
+   ],
+   "text": "There. That's the turn. Everybody felt it, down there too.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.16",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "shift"
+   ],
+   "text": "They changed something. I don't know what yet, but the fight is different.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.17",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "rout"
+   ],
+   "text": "That's an army looking for an exit. There isn't one on that side.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.18",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "rout"
+   ],
+   "text": "Nobody is giving orders over there anymore. Everybody is just surviving.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.19",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "edge"
+   ],
+   "text": "Slight edge. Slight. One good shot turns it around.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.20",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "edge"
+   ],
+   "text": "They're a little ahead. A little ahead is nothing in here.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.21",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Watch the one at the back that isn't shooting. He's the one who'll decide this.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.22",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "When it goes wrong in here, it goes wrong all at once.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.23",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "They're winning the fight they wanted. That's the whole trick of it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.24",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Somebody over there is going to have to try something. I hope it's something good.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.25",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Two crews are carrying that army right now. The rest are just there.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.26",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Nobody's broken yet. Bent, though. You can see them bending.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.27",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "The side with more left always thinks it's winning. Sometimes it's right.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army"
+   ],
+   "text": "Those machines have been rebuilt more times than anybody will tell you.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army"
+   ],
+   "text": "That army was put together by somebody who has lost before. You can tell.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army"
+   ],
+   "text": "Balanced list. Nothing clever. I like it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "mixed"
+   ],
+   "text": "A bit of everything. That means somebody has to know how all of it works together.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.13",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "heavy"
+   ],
+   "text": "Heavy build. They'll be slow off the line and hard to move once they're set.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.14",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "all_same"
+   ],
+   "text": "All one type. Simple to drive. Simple to read, too, if you're on the other side.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.15",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "main_scout"
+   ],
+   "text": "Lots of scouts. Somebody wants to see this fight before they're in it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.16",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "main_tank"
+   ],
+   "text": "Tanks up front. That's a wall with a gun in it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.17",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "main_ifv"
+   ],
+   "text": "IFVs. Autocannons all night. Anything thin is going to have a hard time.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.18",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "main_artillery"
+   ],
+   "text": "Artillery-heavy. They'll want this to last. Watch them keep their distance.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.19",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "main_lancer"
+   ],
+   "text": "Lancers. Long reach, thin skin. They need the floor to be big.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.20",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "main_burner"
+   ],
+   "text": "Burners. They have to get close, which is exactly where nobody else wants to be.",
+   "added": "r10"
+  },
+  {
+   "id": "color.faction.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_condemned"
+   ],
+   "text": "The Condemned drive what they're given. You learn to love what you're given.",
+   "added": "r10"
+  },
+  {
+   "id": "color.faction.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_condemned"
+   ],
+   "text": "Most of those Condemned crews learned to drive in the yard. There's a track. I drove it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.faction.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_gangs"
+   ],
+   "text": "The Wreckers build their own. Every one of those machines is different under the paint.",
+   "added": "r10"
+  },
+  {
+   "id": "color.faction.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_gangs"
+   ],
+   "text": "Road crews fight like they're paid by the minute. Fast, loud, early.",
+   "added": "r10"
+  },
+  {
+   "id": "color.faction.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_law"
+   ],
+   "text": "The Law drills well. Their problem has always been what to do once the drill is done.",
+   "added": "r10"
+  },
+  {
+   "id": "color.faction.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_law"
+   ],
+   "text": "Law crews are the only ones in here who get paid either way.",
+   "added": "r10"
+  },
+  {
+   "id": "color.faction.13",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_syndicate"
+   ],
+   "text": "Syndicate machines don't get tired. That's worth more than armor in a long match.",
+   "added": "r10"
+  },
+  {
+   "id": "color.faction.14",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_syndicate"
+   ],
+   "text": "They send the new Syndicate models here first. It's cheaper than a test track.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.21",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army"
+   ],
+   "text": "I've driven against armies like that. You don't beat it. You wait for it to make a mistake.",
+   "added": "r10"
+  },
+  {
+   "id": "color.army.22",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army"
+   ],
+   "text": "The list tells you what they're afraid of. That one is afraid of being flanked.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Now it starts. Everything before this was driving.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "First shot's a question. The answer comes back in about two seconds.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Both sides know where the other is now. Nobody gets to be clever anymore.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Good. Early contact is better than late. Late contact means somebody was lost.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "You'll see them spread out now. If they don't, that's a problem.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "The first few seconds of contact decide more than people think.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "That was a long shot. Long shots are information more than damage.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.13",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Everybody's heart rate just doubled. Mine too, and I'm up here.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.14",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Now watch who moves and who stops. The ones who stop are the ones who planned.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.15",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "They found each other in the middle. That's usually a brawl.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.16",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Whoever's leading that element has about three seconds to make a decision.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.17",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Shooting at range in here is mostly noise. The real fight comes when they close.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.18",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Contact on the edge of the floor. That's where scouts earn their keep.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.19",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "There's a moment right after first contact where everybody waits for somebody else. Watch for it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.20",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Doesn't matter if that first shot hit. It told everybody where to look.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.21",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Nobody panicked. Good. The first ten seconds are where crews panic.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.22",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact",
+    "unit_scout"
+   ],
+   "text": "The scout found them. Now the scout has to live long enough to tell somebody.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.23",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact",
+    "unit_artillery"
+   ],
+   "text": "Artillery opening the fight. The other side has to close the distance now. They don't have a choice.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.24",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact",
+    "unit_tank"
+   ],
+   "text": "The tank fired first. Now everybody knows where the tank is, which isn't nothing.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.25",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "It's quiet for a long time, and then it isn't. That's all this job ever was.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "That's a drill. The decision was made weeks ago. They're just carrying it out.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "Watch the timing. A drill only works if everybody starts on the same beat.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "Nobody in that element is thinking right now. That's the point of a drill.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "They're running it clean. Whether it's the right drill is a separate question.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.13",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "Good drills look boring. That one looks boring.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.14",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "Every drill has a moment where it can go wrong. That's usually the second vehicle.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.15",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "You practice that until you hate it. Then one night you're glad you did.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.16",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "That's the drill they teach first. It's also the one people forget first.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.17",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "It's a good drill. It was a good drill on the floor where I learned it, too.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.18",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "Somebody gave that order half a second before I'd have given it. That's a good leader.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.19",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_break_contact"
+   ],
+   "text": "Breaking contact. Hardest thing in the book. You have to turn your back on somebody who's shooting.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.20",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_break_contact"
+   ],
+   "text": "They're pulling back in bounds. One covers while one moves. If anybody gets greedy, it falls apart.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.21",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_break_contact"
+   ],
+   "text": "Knowing when to leave is most of it. They know.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.22",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_react_to_contact"
+   ],
+   "text": "React to contact. Return fire, find cover, report. In that order, every time.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.23",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_react_to_contact"
+   ],
+   "text": "They got hit and they didn't freeze. You'd be surprised how many freeze.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.24",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_near_ambush"
+   ],
+   "text": "Near ambush, you go straight at them. Every instinct you have says run. Every instinct you have is wrong.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.25",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_assault_through"
+   ],
+   "text": "Assault through. You don't stop in the killzone. Not for anything.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.26",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_support_by_fire"
+   ],
+   "text": "Support by fire. Half of them are just there to make the other side keep their heads down.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.27",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_far_ambush"
+   ],
+   "text": "Far ambush, you get out of the line of fire first and think second.",
+   "added": "r10"
+  },
+  {
+   "id": "color.drill.28",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_bait"
+   ],
+   "text": "That's bait. Somebody is being offered up so somebody else can get a clean shot.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.16",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "They made fewer mistakes. That's all winning is in here.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.17",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "The crews that won tonight get to come back. That's the prize, really.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.18",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "That was decided about two minutes ago. The rest was paperwork.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.19",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "Nobody got lucky. It was a fair fight, or as fair as they get.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.20",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "The winning crew kept their spacing all night. Look at the replay. It's all spacing.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.21",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "Hard match to watch from up here. Harder down there.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.22",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "They'll watch this back tonight. The winners more than the losers, strangely.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.23",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "Good match. Not pretty. Good.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.24",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "flawless"
+   ],
+   "text": "Nobody lost a vehicle. I'd like to meet whoever drew up that plan.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.25",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "close"
+   ],
+   "text": "That close, it could have gone either way. Nobody down there will admit it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.26",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "comeback"
+   ],
+   "text": "You don't come back from that. Except they just did.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.27",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "win_control"
+   ],
+   "text": "They won by standing somewhere. That takes more nerve than shooting.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.28",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "draw"
+   ],
+   "text": "A draw. Everybody's tired, nobody's happy. The most honest result there is in here.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.29",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "quick"
+   ],
+   "text": "Short match. The short ones are decided by the first mistake.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.30",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "long"
+   ],
+   "text": "That went long. Long matches are won by whoever's gearbox lasts.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.31",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "The losing side will want to talk about the one exchange that went wrong. It was more than one.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.32",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "Discipline. Every result in here comes down to that word, one way or the other.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.33",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "Both crews drove well. One drove a little better for a little longer.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.22",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "He saw it too late. In here, too late is about half a second.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.23",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill"
+   ],
+   "text": "He stopped to aim. You can't stop to aim in here.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.24",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "That's what focus fire looks like. Two guns, one target, done.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.25",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "The crew is out of that one. The machine will be back next session. They always are.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.26",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill"
+   ],
+   "text": "Wrong place, wrong angle, wrong second. Get one of those right and you live. Not all three wrong.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.27",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "Nothing fancy there. Just a better position.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.28",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "That's the one they'll talk about in the debrief. Not the kill. The ten seconds before it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.29",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill"
+   ],
+   "text": "He had a way out. He didn't take it. I don't know why.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.30",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "text": "You lose one, you tighten up. Watch whether they tighten up.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.31",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "That kill was set up by somebody we didn't even see. That's teamwork.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.32",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill"
+   ],
+   "text": "Sat in the open for three full seconds. That's a long time in here.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.33",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "text": "Every kill changes the floor. Now there's a gap on that side, and everybody knows it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.34",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "He took his shot and then he took another. Most people stop to see if the first one worked.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.35",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill"
+   ],
+   "text": "That's the problem with chasing. Eventually you catch up to something.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.36",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "victim_tank"
+   ],
+   "text": "Big tank, big target. They put a lot of steel on it and forgot the sides.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.37",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "victim_scout"
+   ],
+   "text": "Scouts die. That's the job. The good ones die later.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.38",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "killer_artillery"
+   ],
+   "text": "Artillery kill. The crew never saw who did it. That's the worst way, I think.",
+   "added": "r10"
+  },
+  {
+   "id": "color.ff.07",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "He fired at movement instead of a target. In here, everything moves.",
+   "added": "r10"
+  },
+  {
+   "id": "color.ff.08",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "Somebody is going to have a very quiet ride home.",
+   "added": "r10"
+  },
+  {
+   "id": "color.ff.09",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "Check your lanes. First thing they teach you. Last thing anybody remembers.",
+   "added": "r10"
+  },
+  {
+   "id": "color.ff.10",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "He saw a shape and fired. The shape was a friend.",
+   "added": "r10"
+  },
+  {
+   "id": "color.ff.11",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "Crossfire is a plan until you're standing in the middle of it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.ff.12",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "You don't aim at a spot in here. You aim at a thing. He aimed at a spot.",
+   "added": "r10"
+  },
+  {
+   "id": "color.ff.13",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "That's a conversation for after the match. A long one.",
+   "added": "r10"
+  },
+  {
+   "id": "color.ff.14",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "Too many guns pointed at too small a space. Somebody was always going to get hit.",
+   "added": "r10"
+  },
+  {
+   "id": "color.close.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "close_call"
+   ],
+   "text": "He's running on luck now. Luck is a terrible plan and a fine backup.",
+   "added": "r10"
+  },
+  {
+   "id": "color.close.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "close_call"
+   ],
+   "text": "Get out of there. Right now. Whatever you're doing, stop doing it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.close.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "close_call"
+   ],
+   "text": "That machine is held together by the paint.",
+   "added": "r10"
+  },
+  {
+   "id": "color.close.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "close_call"
+   ],
+   "text": "That was about a hand's width from being over.",
+   "added": "r10"
+  },
+  {
+   "id": "color.close.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "close_call"
+   ],
+   "text": "A hit like that makes you a careful driver for the rest of your life.",
+   "added": "r10"
+  },
+  {
+   "id": "color.banter.26",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "first_match",
+   "text": "Every second of it. I couldn't tell you what I had for breakfast, but I remember that.",
+   "added": "r10"
+  },
+  {
+   "id": "color.banter.27",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "first_match",
+   "text": "Not really. I remember the tunnel, and then I remember the medics. The middle is gone.",
+   "added": "r10"
+  },
+  {
+   "id": "color.banter.28",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "rival",
+   "text": "A woman called Harrow. Never raised her voice, never missed. I still check my mirrors for her.",
+   "added": "r10"
+  },
+  {
+   "id": "color.banter.29",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "rival",
+   "text": "There isn't one. The toughest one is whoever you forgot about.",
+   "added": "r10"
+  },
+  {
+   "id": "color.banter.30",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "night_before",
+   "text": "Write letters, mostly. The office posts them afterwards, depending.",
+   "added": "r10"
+  },
+  {
+   "id": "color.banter.31",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "night_before",
+   "text": "Nothing. They sleep. You'd be surprised how well you sleep when it's out of your hands.",
+   "added": "r10"
+  },
+  {
+   "id": "color.banter.32",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "toughness",
+   "text": "More than the crew inside it. The machine always outlasts the crew.",
+   "added": "r10"
+  },
+  {
+   "id": "color.banter.33",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "toughness",
+   "text": "Less than you'd think. They're buses with plate on. They were never built for this.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lore.12",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "The medics in my day had one stretcher. They were very quick with it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lore.13",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "I kept a photograph taped to the dash. Everybody did. They clean them out between seasons.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lore.14",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "The loudest thing in a match isn't the guns. It's your engine, when you're trying to hear something else.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lore.15",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "They gave me a watch when I got out. It stopped the next year. I kept it anyway.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lore.16",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "My first season, the crowd threw things. The second season, they put up the nets. Nobody asked why.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lore.17",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "There was an old mechanic who'd listen to your engine and tell you how long you had. He was usually right.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lore.18",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "People think you're scared of the other crews. You're scared of the floor. So are they.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lore.19",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "We used to paint our own numbers on. Now they come printed. It's more efficient.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lore.20",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "I still wake up at the time the matches used to start. My body never got the message.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lore.21",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "My loader was a quiet kid. Good hands. I think about him most nights before the broadcast.",
+   "added": "r10"
+  },
+  {
+   "id": "color.waiting.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "text": "Nobody wants to be found first. Whoever gets found first loses a vehicle.",
+   "added": "r10"
+  },
+  {
+   "id": "color.waiting.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "text": "This part feels long. It isn't. It's about forty seconds, usually.",
+   "added": "r10"
+  },
+  {
+   "id": "color.waiting.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "text": "Right now every driver out there is looking at a gap between two walls and doing arithmetic.",
+   "added": "r10"
+  },
+  {
+   "id": "color.waiting.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "text": "The scouts are earning their pay right now, and nobody's watching them do it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.waiting.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "text": "Slow is fine here. Slow means you get to pick the fight.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lull.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull",
+    "level"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "Even match. Even matches get decided by whoever gets impatient first.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lull.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull",
+    "team_leading"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "The side that's ahead can wait. The side that's behind can't. That's the whole shape of it now.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lull.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "Quiet like this, the crews are reloading, repairing, and counting. Mostly counting.",
+   "added": "r10"
+  },
+  {
+   "id": "color.lull.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "text": "If the crowd settles, you can hear the engines idling. That's a dozen people thinking very hard.",
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit",
+    "after_caller"
+   ],
+   "text": "Thank you, Joseph. That impact was recorded from four angles, one of them inside the vehicle, and will be available in the replay package.",
+   "oddity": {
+    "span": "one of them inside the vehicle",
+    "category": "surveillance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Medical staff have logged that hit, and will attend to it in order of rank once the match has concluded.",
+   "oddity": {
+    "span": "in order of rank",
+    "category": "medical"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit",
+    "after_caller"
+   ],
+   "text": "Quite so, Joseph. Damage of that kind is covered under the crew's own policy, which they may renew at the concourse after the match.",
+   "oddity": {
+    "span": "under the crew's own policy",
+    "category": "insurance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Engineers confirm the vehicle remains serviceable, which is the main thing, and it will return to the floor next session.",
+   "oddity": {
+    "span": "which is the main thing",
+    "category": "salvage"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Fans in the lower bowl may notice some ringing after an impact like that. It is expected to fade within the season, and requires no action.",
+   "oddity": {
+    "span": "within the season",
+    "category": "hearing"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. Officially, that is a performance adjustment, and it will appear in tonight's statistics under that heading.",
+   "oddity": {
+    "span": "a performance adjustment",
+    "category": "euphemism"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "A reminder that wagers on individual hits close as the hit lands, including hits on local crews, and the windows reopen shortly.",
+   "oddity": {
+    "span": "including hits on local crews",
+    "category": "wagers"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "That moment has been added to the season highlights, and to the crew's permanent file, for broadcast later this week.",
+   "oddity": {
+    "span": "and to the crew's permanent file",
+    "category": "archive"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.09",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Fragments from tonight's impacts will be sold at the souvenir stand, with the crew's signature where possible, from tomorrow morning at nine.",
+   "oddity": {
+    "span": "with the crew's signature where possible",
+    "category": "merchandise"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.10",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit",
+    "after_caller"
+   ],
+   "text": "Well described, Joseph. That plate was inspected this morning and passed, as did the driver, according to the same checklist.",
+   "oddity": {
+    "span": "as did the driver",
+    "category": "inspection"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.11",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Crews may file a damage report for that hit before the end of the match, at the stewards' office on level two.",
+   "oddity": {
+    "span": "before the end of the match",
+    "category": "paperwork"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.12",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Families of tonight's crews are seated in the east stand, where applause is kept even, out of fairness to both sides.",
+   "oddity": {
+    "span": "where applause is kept even",
+    "category": "family"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.13",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "That hit counts toward tonight's damage total, and toward the district allocation, which is updated at the end of the week.",
+   "oddity": {
+    "span": "and toward the district allocation",
+    "category": "quotas"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.14",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Our camera operators on the floor are all accounted for after that impact, and the broadcast continues without interruption.",
+   "oddity": {
+    "span": "on the floor",
+    "category": "staffing"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hit.15",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "Spectators in the first three rows may feel some debris from impacts like that one, which is normal, and the stewards will be around shortly.",
+   "oddity": {
+    "span": "which is normal",
+    "category": "audience_risk"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. Maneuvers like that one are studied by the Law's training office, who watch every broadcast in full, for reasons of public safety.",
+   "oddity": {
+    "span": "who watch every broadcast in full",
+    "category": "surveillance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "Crews who show that kind of discipline are eligible for the Syndicate's placement program in the eastern mines, following their release from the arena.",
+   "oddity": {
+    "span": "in the eastern mines",
+    "category": "labour"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "Tonight's crews rehearsed that drill all week in the exercise yard, between the morning and evening counts, according to the arena's training log.",
+   "oddity": {
+    "span": "between the morning and evening counts",
+    "category": "detention"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "Every crew member tonight chose their own position in the drill, from the list provided, and we thank them for their flexibility.",
+   "oddity": {
+    "span": "from the list provided",
+    "category": "volunteering"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "The drills you see tonight are the property of the Syndicate, like the crews performing them, and may not be reproduced at home.",
+   "oddity": {
+    "span": "like the crews performing them",
+    "category": "ownership"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "Footage of that drill will join the arena's training archive, alongside footage of the previous crews, for use in future seasons.",
+   "oddity": {
+    "span": "alongside footage of the previous crews",
+    "category": "archive"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "That drill took about nine seconds, slightly faster than the medical team, and well within the arena's published target.",
+   "oddity": {
+    "span": "slightly faster than the medical team",
+    "category": "medical"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "That drill is part of the youth program in several districts, from the age of eleven, and places are still available this term.",
+   "oddity": {
+    "span": "from the age of eleven",
+    "category": "children"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.09",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "Viewers who recognise that drill from their own neighborhood are asked to report it, using the usual form, before the end of the broadcast.",
+   "oddity": {
+    "span": "from their own neighborhood",
+    "category": "informants"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.10",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. The arena refers to that as a coordinated relocation, and our graphics will use the same term from here on.",
+   "oddity": {
+    "span": "a coordinated relocation",
+    "category": "euphemism"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.11",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "Well-executed drills earn the crew additional points, which are converted to meal credits, at the end of each session.",
+   "oddity": {
+    "span": "which are converted to meal credits",
+    "category": "rationing"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.12",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "Tonight's stewards grade each drill on timing, spacing and compliance, with compliance weighted most heavily, and scores are posted after the match.",
+   "oddity": {
+    "span": "with compliance weighted most heavily",
+    "category": "scoring"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.13",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "A drill completed without losses counts toward sentence review, if the crew attends the review, and the arena wishes them well.",
+   "oddity": {
+    "span": "if the crew attends the review",
+    "category": "sentence"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.drill.14",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill"
+   ],
+   "text": "The smoke you see during that drill is produced by the vehicles and the floor itself, and is safe to breathe in moderation, according to the venue.",
+   "oddity": {
+    "span": "in moderation",
+    "category": "weather"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "without": [
+    "neutral"
+   ],
+   "text": "The centre has changed hands. Scoreboards and sentence estimates have been updated, and the betting windows remain open.",
+   "oddity": {
+    "span": "and sentence estimates",
+    "category": "sentence"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "text": "The lights over the centre marker draw from the eastern district grid, which is restored after the match, and are operating normally.",
+   "oddity": {
+    "span": "which is restored after the match",
+    "category": "utilities"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "without": [
+    "neutral"
+   ],
+   "text": "The centre marker was cleaned before tonight's match, and between the last two holders, by our floor staff, whom we thank.",
+   "oddity": {
+    "span": "and between the last two holders",
+    "category": "cleanup"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "without": [
+    "neutral"
+   ],
+   "text": "Crews holding the centre are asked to keep their identification visible on the outside of the vehicle, for the benefit of the scorers.",
+   "oddity": {
+    "span": "on the outside of the vehicle",
+    "category": "papers"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control",
+    "neutral"
+   ],
+   "text": "The centre is currently unclaimed. Scoring is paused, as is the medical team, until a crew holds the marker again.",
+   "oddity": {
+    "span": "as is the medical team",
+    "category": "medical"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "text": "Each second on the centre is timed by the arena clock and by the Law's own clock, which runs slightly faster, and both are shown above the north stand.",
+   "oddity": {
+    "span": "which runs slightly faster",
+    "category": "officials"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.09",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "text": "Fans seated nearest the centre marker are reminded that the marker is live, as are the first two rows, for the remainder of the match.",
+   "oddity": {
+    "span": "as are the first two rows",
+    "category": "audience_risk"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.10",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control",
+    "after_caller"
+   ],
+   "text": "Thank you, Joseph. A claim on the centre can be filed by any crew, in writing, and is processed within the match, time permitting.",
+   "oddity": {
+    "span": "in writing",
+    "category": "paperwork"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.11",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "without": [
+    "neutral"
+   ],
+   "text": "The centre scores one point for every second it is held, rising slightly for crews with dependents, according to tonight's scoring sheet.",
+   "oddity": {
+    "span": "rising slightly for crews with dependents",
+    "category": "family"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.12",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "text": "Crews who hold the centre longest this season will be housed near the arena, within walking distance, for their convenience on match days.",
+   "oddity": {
+    "span": "within walking distance",
+    "category": "housing"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.13",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "text": "The centre marker, the floor around it and the crews standing on it remain Syndicate property throughout the match, and are insured accordingly.",
+   "oddity": {
+    "span": "and the crews standing on it",
+    "category": "ownership"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.14",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control",
+    "after_caller"
+   ],
+   "without": [
+    "neutral"
+   ],
+   "text": "That's right, Joseph. For the record, that is a voluntary transfer, with no fault to either crew, and play continues.",
+   "oddity": {
+    "span": "a voluntary transfer",
+    "category": "euphemism"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.control.15",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control",
+    "taken"
+   ],
+   "text": "The crew now holding the centre volunteered for that position before the match, as the rules require, and we wish them a steady hold.",
+   "oddity": {
+    "span": "as the rules require",
+    "category": "volunteering"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The crew's family has been notified, and thanks you for watching, according to the card they completed before the match.",
+   "oddity": {
+    "span": "and thanks you for watching",
+    "category": "family"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. Medical staff will reach the vehicle at the end of the match, in keeping with arena rules, as they do every night.",
+   "oddity": {
+    "span": "at the end of the match",
+    "category": "medical"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The vehicle will be recovered and refitted for next week, and its crew compartment resealed, ahead of the new season.",
+   "oddity": {
+    "span": "and its crew compartment resealed",
+    "category": "salvage"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "That result is now final, and has been entered in the crew's record, and in their district's quota, for the current quarter of the year.",
+   "oddity": {
+    "span": "and in their district's quota",
+    "category": "quotas"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "Wagers on that crew have now closed, and will be settled in full to ticket holders, and to the crew's estate, within three to five working days.",
+   "oddity": {
+    "span": "and to the crew's estate",
+    "category": "wagers"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill",
+    "after_caller"
+   ],
+   "text": "Quite so, Joseph. For the record, that crew has completed their appearance, and the arena thanks them for it.",
+   "oddity": {
+    "span": "completed their appearance",
+    "category": "euphemism"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The floor crew will attend to that area during the next quiet moment, with the usual equipment, so that play can continue as normal.",
+   "oddity": {
+    "span": "during the next quiet moment",
+    "category": "cleanup"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "Your reaction at home to that moment has been noted for the district census, and we thank you for taking part.",
+   "oddity": {
+    "span": "for the district census",
+    "category": "surveillance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.09",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "Commemorative prints of that moment are on sale at the concourse, signed by the surviving crew, while stocks last this evening.",
+   "oddity": {
+    "span": "signed by the surviving crew",
+    "category": "merchandise"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.10",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "Stewards will collect the crew's papers from the vehicle, where possible, and return them to the district office in the morning.",
+   "oddity": {
+    "span": "from the vehicle, where possible",
+    "category": "papers"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.11",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "That crew's sentence is now considered served in full, and the arena congratulates them on its completion, on behalf of the district.",
+   "oddity": {
+    "span": "considered served in full",
+    "category": "sentence"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.kill.12",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "Seats have become available on tonight's last train to the outer districts, and may be booked at the Meridian desk before the final whistle.",
+   "oddity": {
+    "span": "Seats have become available",
+    "category": "transit"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.signoff.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "That concludes tonight's broadcast. Sections will be released in the order they were sold, beginning with the upper tier, over the next hour.",
+   "oddity": {
+    "span": "in the order they were sold",
+    "category": "confinement"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.signoff.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Meridian buses are waiting at gates two and five, and will depart once full, or at dawn, whichever comes first, for all outer districts.",
+   "oddity": {
+    "span": "or at dawn",
+    "category": "transit"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.signoff.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Thank you for watching. Tonight's viewing figures, by household, will be published in the morning, and we are grateful for your attendance.",
+   "oddity": {
+    "span": "by household",
+    "category": "surveillance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.signoff.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Before you leave, tonight's ticket stubs may be exchanged for a day's water ration at any district office until the end of the month.",
+   "oddity": {
+    "span": "for a day's water ration",
+    "category": "rationing"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.signoff.09",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "The floor will now be prepared for tomorrow's session, and fans may stay to watch, for about forty minutes, from their seats.",
+   "oddity": {
+    "span": "and fans may stay to watch",
+    "category": "cleanup"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.signoff.10",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Relatives of tonight's crews are asked to wait at the lower concourse, where representatives will meet them with forms, and refreshments will be provided.",
+   "oddity": {
+    "span": "with forms",
+    "category": "family"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.signoff.11",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "The reporting desk on the main concourse stays open after the match for anything you noticed about your neighbors tonight, and the queue is short.",
+   "oddity": {
+    "span": "about your neighbors",
+    "category": "informants"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.signoff.12",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Our next broadcast is tomorrow evening at the usual time, with the same crews where available, and we hope you will join us.",
+   "oddity": {
+    "span": "where available",
+    "category": "schedule"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.signoff.13",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "The air outside the arena is within limits for walking tonight, for most residents, so please take your time on the way home.",
+   "oddity": {
+    "span": "for most residents",
+    "category": "weather"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation"
+   ],
+   "text": "Formations like that one are photographed from above by the arena drones, and matched against the district registry, for the programme notes.",
+   "oddity": {
+    "span": "and matched against the district registry",
+    "category": "surveillance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation"
+   ],
+   "text": "Crews who hold formation well are sought for convoy work in the outer districts, where the pay is in kind, after their release from the arena.",
+   "oddity": {
+    "span": "where the pay is in kind",
+    "category": "labour"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation"
+   ],
+   "text": "That formation is taught in district schools from the second year, alongside arithmetic, and parents are encouraged to practise it at home.",
+   "oddity": {
+    "span": "in district schools",
+    "category": "children"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation"
+   ],
+   "text": "Stewards score formation spacing to the centimetre, including vehicles no longer running, and the totals are shown above the north stand.",
+   "oddity": {
+    "span": "including vehicles no longer running",
+    "category": "scoring"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation"
+   ],
+   "text": "Each vehicle in that formation passed its inspection this morning, brakes excepted, and the crews were briefed on the results.",
+   "oddity": {
+    "span": "brakes excepted",
+    "category": "inspection"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation"
+   ],
+   "text": "Crews choose their own place in the formation, by lot, before each match, and exchanges are permitted with the steward's approval.",
+   "oddity": {
+    "span": "by lot",
+    "category": "volunteering"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation",
+    "after_caller"
+   ],
+   "text": "Quite so, Joseph. The arena refers to that as a supervised group transit, and the scoreboard will reflect the new term shortly.",
+   "oddity": {
+    "span": "a supervised group transit",
+    "category": "euphemism"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation"
+   ],
+   "text": "The arena keeps a record of every formation driven here since the first season, along with the crews, in the basement archive, which is open on weekdays.",
+   "oddity": {
+    "span": "along with the crews",
+    "category": "archive"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.09",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation"
+   ],
+   "text": "Relatives in the east stand may recognise the formation, which is taught at family visits, and are asked to remain in their seats.",
+   "oddity": {
+    "span": "which is taught at family visits",
+    "category": "family"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.10",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation"
+   ],
+   "text": "The haze over the floor is exhaust from the formation, and is being vented into the lower concourse, for about ten minutes.",
+   "oddity": {
+    "span": "into the lower concourse",
+    "category": "weather"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.formation.11",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation"
+   ],
+   "text": "Medical staff are watching the formation from the upper gallery, as close as regulations allow, and are ready to assist afterwards.",
+   "oddity": {
+    "span": "as close as regulations allow",
+    "category": "medical"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "Officials have logged that as an internal matter for the crew concerned, to be settled between them, after the match, in writing.",
+   "oddity": {
+    "span": "to be settled between them",
+    "category": "paperwork"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "Damage between members of the same crew is not covered by the arena policy, or by any other, and the match continues as normal.",
+   "oddity": {
+    "span": "or by any other",
+    "category": "insurance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "The two crews involved share a district, and in one case a surname, and officials are aware of the situation.",
+   "oddity": {
+    "span": "and in one case a surname",
+    "category": "family"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "For scoring purposes, that hit is credited to both crews equally, and the scoreboard has been updated to reflect it.",
+   "oddity": {
+    "span": "to both crews equally",
+    "category": "scoring"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.09",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire",
+    "after_caller"
+   ],
+   "text": "Thank you, Joseph. That exchange was recorded inside both vehicles for review by the Law, as a matter of routine, later this evening.",
+   "oddity": {
+    "span": "for review by the Law",
+    "category": "surveillance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.10",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "Under arena rules, striking a crewmate adds nothing to a sentence, and removes nothing, and the crews have been reminded of this.",
+   "oddity": {
+    "span": "and removes nothing",
+    "category": "sentence"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.11",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "The arena describes that as a coordination event, and it will be listed that way in tomorrow's results, with the time it occurred.",
+   "oddity": {
+    "span": "a coordination event",
+    "category": "euphemism"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.12",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "Wagers placed on friendly fire tonight, at considerably shortened odds, will be settled at the end of the quarter as usual.",
+   "oddity": {
+    "span": "at considerably shortened odds",
+    "category": "wagers"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.13",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "The floor steward assigned to that crew has been relieved of duty as a precaution, and will be back with us next week.",
+   "oddity": {
+    "span": "has been relieved of duty",
+    "category": "staffing"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.14",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "Medical staff are aware of the incident, and it is on their list, which they will work through after the match, in order.",
+   "oddity": {
+    "span": "and it is on their list",
+    "category": "medical"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.momentum.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum"
+   ],
+   "text": "The odds boards have moved with the match, including the Syndicate's own position, and the windows remain open to the public.",
+   "oddity": {
+    "span": "including the Syndicate's own position",
+    "category": "wagers"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.momentum.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Crews on the leading side have moved up the sentence review list, provisionally, and the list will be confirmed after the match.",
+   "oddity": {
+    "span": "moved up the sentence review list",
+    "category": "sentence"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.momentum.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Viewers at home will notice the crowd noise meter on screen, which is shared with the Law, and is purely for entertainment.",
+   "oddity": {
+    "span": "which is shared with the Law",
+    "category": "surveillance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.momentum.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. Our statisticians describe that as a change in availability, and it is shown on the left of your screen.",
+   "oddity": {
+    "span": "a change in availability",
+    "category": "euphemism"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.momentum.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum"
+   ],
+   "text": "The leading crews are now on course for the season's housing allocation, and their families have been informed of the change.",
+   "oddity": {
+    "span": "the season's housing allocation",
+    "category": "housing"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.momentum.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum"
+   ],
+   "text": "The damage chart on your screen updates every few seconds, copied to the repair yard, so they can begin preparing tonight's work orders.",
+   "oddity": {
+    "span": "copied to the repair yard",
+    "category": "salvage"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.momentum.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Families in the east stand have been moved upstairs, for a better view of the change in fortunes, and will be escorted down afterwards.",
+   "oddity": {
+    "span": "have been moved upstairs",
+    "category": "family"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.momentum.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Crews on the trailing side may request a pause at the steward's window, which is on the concourse, and requests are reviewed the following day.",
+   "oddity": {
+    "span": "which is on the concourse",
+    "category": "paperwork"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.momentum.09",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum"
+   ],
+   "text": "The match clock continues to run, and tonight's broadcast has been extended for the district office, by twenty minutes, to allow for the change.",
+   "oddity": {
+    "span": "for the district office",
+    "category": "schedule"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.momentum.10",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Supporters' scarves are on sale at the concourse, reduced for the trailing crews, and all proceeds go to the arena's maintenance fund.",
+   "oddity": {
+    "span": "reduced for the trailing crews",
+    "category": "merchandise"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.notice.11",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Lost property from previous sessions is on display near gate six, and may be claimed by relatives, with identification, until Friday.",
+   "oddity": {
+    "span": "by relatives",
+    "category": "family"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.notice.12",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Northgrid advises that power to the residential blocks around the arena will return after the broadcast, as usual, and thanks residents for their patience.",
+   "oddity": {
+    "span": "as usual",
+    "category": "utilities"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.notice.13",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "The stewards' desk thanks the fan in section twelve for their report earlier this evening, which has been actioned, and the seat beside them is now free.",
+   "oddity": {
+    "span": "which has been actioned",
+    "category": "informants"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.notice.14",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "The concourse bars stay open until the final whistle for guests from the upper districts, and a limited menu is available elsewhere.",
+   "oddity": {
+    "span": "for guests from the upper districts",
+    "category": "privilege"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hazard.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "hazard_kill"
+   ],
+   "text": "The floor hazards were inspected again this afternoon and found to be working as intended, and the crews were briefed on their positions.",
+   "oddity": {
+    "span": "working as intended",
+    "category": "inspection"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hazard.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "hazard_kill"
+   ],
+   "text": "Recovery teams will retrieve the vehicle once the hazard is safe, along with its contents, and return it to the workshop by morning.",
+   "oddity": {
+    "span": "along with its contents",
+    "category": "salvage"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hazard.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "hazard_kill"
+   ],
+   "text": "The arena reminds participants that the floor hazards are protected under the venue's heritage listing, and may not be altered or avoided.",
+   "oddity": {
+    "span": "protected under the venue's heritage listing",
+    "category": "ownership"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hazard.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "hazard_kill"
+   ],
+   "text": "A vehicle lost to the arena itself is scored as a win for the venue, and does not count toward either crew's total tonight.",
+   "oddity": {
+    "span": "as a win for the venue",
+    "category": "scoring"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.hazard.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "hazard_kill",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. That is recorded as a venue interaction, with no crew at fault, and the match continues.",
+   "oddity": {
+    "span": "a venue interaction",
+    "category": "euphemism"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.faction.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_condemned"
+   ],
+   "text": "Tonight's Condemned crews have each served at least a season in the yard, with sentences shown beside their numbers, for viewers following along.",
+   "oddity": {
+    "span": "with sentences shown beside their numbers",
+    "category": "sentence"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.faction.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_gangs"
+   ],
+   "text": "The Wrecker crews tonight travelled in under escort, in sealed carriages, and were given a warm welcome by the Law on arrival.",
+   "oddity": {
+    "span": "in sealed carriages",
+    "category": "transit"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.faction.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_law"
+   ],
+   "text": "The Law's crews are serving officers, competing on their day off, with patrols covered by volunteers, and they are warmly received as always.",
+   "oddity": {
+    "span": "with patrols covered by volunteers",
+    "category": "officials"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.faction.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_syndicate"
+   ],
+   "text": "The Syndicate's vehicles tonight are piloted remotely from the executive suite, above section one, and are available to lease from next month.",
+   "oddity": {
+    "span": "from the executive suite",
+    "category": "privilege"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.15",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "The loss will be recorded under the crew's own name, as is standard, and the paperwork has already been started by the stewards.",
+   "oddity": {
+    "span": "under the crew's own name",
+    "category": "paperwork"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.16",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "Under arena rules, the surviving crew inherits the remainder of the sentence, in addition to their own, and the match continues.",
+   "oddity": {
+    "span": "inherits the remainder of the sentence",
+    "category": "sentence"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.17",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "The vehicle involved will be returned to the same crew for the next session, once repaired, as tonight's rules require.",
+   "oddity": {
+    "span": "to the same crew",
+    "category": "salvage"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.ff.18",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_kill",
+    "after_caller"
+   ],
+   "text": "Thank you, Joseph. A review of that incident is scheduled for the next lull in play, by radio with the crew involved, and the result will be announced.",
+   "oddity": {
+    "span": "by radio with the crew involved",
+    "category": "schedule"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.welcome.31",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Good evening. Tonight's crowd has been counted twice at the gates, once on the way in, and we are delighted to have you with us.",
+   "oddity": {
+    "span": "once on the way in",
+    "category": "confinement"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.welcome.32",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Good evening, and welcome. Every seat tonight has a clear view of the floor, and of the seat beside it, thanks to our new sightline design.",
+   "oddity": {
+    "span": "and of the seat beside it",
+    "category": "surveillance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.welcome.33",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Welcome, everyone. Your hosts tonight are the same team as always, minus one, and we are delighted to be with you for the full programme.",
+   "oddity": {
+    "span": "minus one",
+    "category": "staffing"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.welcome.34",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Good evening. The air in the arena has been filtered for tonight's event, for guests in the upper tiers, and conditions on the floor are ideal.",
+   "oddity": {
+    "span": "for guests in the upper tiers",
+    "category": "privilege"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.welcome.35",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "A warm welcome to tonight's school groups, attending as part of the civic curriculum, and seated together in the lower bowl.",
+   "oddity": {
+    "span": "as part of the civic curriculum",
+    "category": "children"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "pa.welcome.36",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Good evening. Every ticket tonight includes cover for the duration of the match, for the ticket holder only, and your seat number is your policy number.",
+   "oddity": {
+    "span": "for the ticket holder only",
+    "category": "insurance"
+   },
+   "added": "r10"
+  },
+  {
+   "id": "color.army.25",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "heavy"
+   ],
+   "sets": [
+    "predicted_heavy"
+   ],
+   "text": "All that armor is slow. If it gets caught out of position, it is a long way back.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.39",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "victim_scout"
+   ],
+   "needs": [
+    "predicted_scouts"
+   ],
+   "text": "And there go the eyes, like I said. Driving blind from here.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.40",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "victim_artillery"
+   ],
+   "needs": [
+    "predicted_artillery"
+   ],
+   "text": "Somebody got to the artillery. I did say somebody usually does.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.41",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "rear"
+   ],
+   "needs": [
+    "predicted_flank"
+   ],
+   "text": "That's the flank I was talking about. Nobody was watching it then either.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.28",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "rout"
+   ],
+   "needs": [
+    "predicted_heavy"
+   ],
+   "text": "Caught out of position, exactly like I said. You don't get that back with armor.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.29",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "shift"
+   ],
+   "needs": [
+    "predicted_flank"
+   ],
+   "text": "It turned on the flank. I'd like to say I'm pleased about being right.",
+   "added": "r10"
+  },
+  {
+   "id": "color.ownkill.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "friendly_kill"
+   ],
+   "needs": [
+    "predicted_friendly_fire"
+   ],
+   "text": "There it is. I said it would happen, and I'd rather it hadn't.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.34",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "needs": [
+    "predicted_scouts"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "The scouts went early and it was decided from there. I'll stop saying it when crews stop doing it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.35",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "needs": [
+    "predicted_heavy"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "Heavy and slow, caught out of position. Same match I've watched for nine seasons.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.26",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "sets": [
+    "predicted_friendly_fire"
+   ],
+   "text": "Too many heavy guns in a small room tonight. Somebody hits their own before the end. They always do.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.27",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "sets": [
+    "predicted_flank"
+   ],
+   "text": "Watch the flanks from here. That's where this gets decided, and right now nobody is watching them.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.28",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact",
+    "unit_scout"
+   ],
+   "sets": [
+    "predicted_scouts"
+   ],
+   "text": "Those scouts are the whole plan. Lose them early and the rest of it is guesswork.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.29",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact",
+    "unit_artillery"
+   ],
+   "sets": [
+    "predicted_artillery"
+   ],
+   "text": "That artillery decides this if nobody gets to it. Somebody usually gets to it.",
+   "added": "r10"
   }
  ]
 }

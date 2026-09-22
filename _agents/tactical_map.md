@@ -22,6 +22,17 @@
 | **The wall cutaway** | At a low camera a squad near a wall (every spawn) is framed from a camera past the wall, among or behind the stands; the camera's near plane then sits just past the wall's top edge, so the stands and the wall between it and the arena aren't drawn (`RtsCamera.cutaway_near`). It cuts only when the stands would hide something: always when the camera is among the seats, and from beyond their back only when the sight line to a vehicle inside the wall passes through the stands' measured profile; otherwise the stands and crowd stay as foreground. Over the arena nothing changes. Chosen over raising the pitch near walls, which would bring back the top-down view exactly where every match starts. |
 | **Why did it do that** | Hover the doctrine line on the card: the selected element's last six decisions with the match time ("0:47  line, react to contact — contact ahead"; `ElementLog`). |
 
+## v8 (round 10, control): every click answers, and any selection can become a squad
+
+| Round 10 | What it means at the mouse |
+|---|---|
+| **A player's order is a repeat only when it is the same click** | `Orders._same_order` used to compare each unit's SLOT goal within 3 m, so a second right-click a couple of metres from the first on a moving group was dropped without a word. Now a player order repeats only for the same click (`PLAYER_REPEAT_M` = 1 m, same facing, same units). It is never a repeat when it takes a unit off an element's order. An element's orders under a new task (K1 `task`, squad's sequence) are never repeats. Test: `test_control_repath`. |
+| **A click that does nothing says why** | `RtsControls.notice(text, warning)` → the HUD banner: "Cancelled Attack-move: right-click again to move" (the right press spent on an armed order), "Already doing that" (the same click again), "Squad 6 formed: press 6 to select it". |
+| **Greyed task buttons carry their reason, and FORM SQUAD** | The card's footer (the doctrine line's strip, free when there is no element) reads e.g. "These units are in different squads: press Form squad or Ctrl+1-9", with a FORM SQUAD button. It takes the lowest EMPTY group (6 on the default path), the same rule as Ctrl+N, and the task buttons enable in the same frame. E/R/B on such a selection refuse at the KEY in the same words (they used to arm, and refuse only at the click). Test: `test_control_form_squad`. |
+| **"N UNITS (K IN NO SQUAD)"** | The group header counts selected units on no number key. |
+| **A drawn facing turns the formation** | A right-drag lays a direct order's slots in the DRAWN heading's frame: the front rank leads toward it (an emplacement faces its threat). A plain click still lays them along the travel. A whole squad goes down the task path, where the facing is squad's to honour. |
+| **`make repath-test`** | Squad 1 on Terminus, seven in-flight states (move, attack-move, support by fire, an armed card command, a facing drag, a click 5 m off, arrived), then a right-click 40 m off its line. Per tick and per crew it logs what Orders says each crew CARRIES OUT. It fails when any crew is neither re-ordered within 2 ticks nor following one that was. `ONLY=arrived` runs one state. |
+
 ## v7 (round 9, control): the right button draws a heading
 
 | Round 9 | What it means at the mouse |

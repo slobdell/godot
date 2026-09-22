@@ -145,5 +145,61 @@ axis is 2.8× more legible than one read across.
 
 ## Status
 
-_(the worker keeps this current: plan, done with measurements, decisions, questions for the lead, requests to other
-streams, known issues, what to playtest, next steps, merge notes, and the hash whose check went green)_
+_Updated 2026-09-22 11:20, worker session 1. Branch tip `10da860e` (laptop filtered runs only; full check pending)._
+
+### Plan (in order, smallest foundation first)
+1. ✅ Reproduce on the default path: `make repath-test` (new; headless, Terminus, condemned v law, seed 3, squad 1 = 8 Guns).
+2. ✅ R2 on control's side: `_same_order` compares the CLICK for player orders; K1 `task` key (squad's ask).
+3. ✅ R1: reasons on the greyed buttons, Form squad on the card, task keys refused at the key in the same words.
+4. ✅ (code) banner notices + `N IN NO SQUAD` header. Frames still to take.
+5. ✅ (code) 5a: a drawn facing lays the formation in the facing's frame (direct orders; the task path is squad's). 5b needs no change (camera keeps lifting; readout stays).
+6. Stretch: the pin-head lean; the "column too long for this tilt" note.
+
+### Item 1: what swallowed the click (measured)
+`make repath-test` runs seven in-flight states through real input: a move, an attack-move (the yellow pin), support by fire,
+an armed card command, a right-drag facing, a click 5 m from the last, and a squad that has arrived. After each it logs
+per tick and per crew the order Orders says the crew is CARRYING OUT (lesson 183).
+- **With this branch's R2 (`54fa6ff6`, builder0):** 6/7 pass. Every crew's order is new within 2 ticks of the issuing input
+  frame, or it follows a leader whose order is new. **"arrived" fails:** crews that had finished their element move and
+  gone idle got NO order after a new task (4 of 8 crews, still idle through tick +8). Mechanism: `element.gd:_should_issue`'s
+  idle branch (a finished `move` in `_issued`, a desired `follow` with no `to`). That is squad's; it's fixed on stream/squad at `35f7b459`.
+- Old-code A/B (pre-R2 Orders and controls, same harness): _running on builder0; the result goes here._
+- Mechanism 3 (the armed press) is real by construction: the press cancels the armed order and issues nothing. It now
+  says "Cancelled Attack-move: right-click again to move" in the warning banner, and the next press moves (tested).
+
+### Done
+- `Orders._same_order` (R2): a player order is a repeat only for the same click (≤ `PLAYER_REPEAT_M` 1 m, same facing,
+  same units), never when it takes a unit off an element's order; an order under a new `task` is never a repeat.
+  Mutation-checked: with the player rule disabled, 2 of the new tests fail.
+- K1 gains optional `"task": int` (squad's ask; contract change for workstreams.md: K1 row).
+- R1: `RtsControls.task_refusal()` ("these units are in different squads: press Form squad or Ctrl+1-9", "part of Alpha:
+  press 1 for all of it, or Form squad", "these units are in no squad: …"), shown on the card's footer beside a FORM SQUAD
+  button. It forms the lowest EMPTY group, the same rule as Ctrl+N; units stay in their old groups too. Task keys (E/R/B), the
+  card's greyed buttons and the radar all refuse with those words. The tooltip says "Greyed out: …".
+- Item 4: a `notice(text, warning)` signal on RtsControls, posted to the HUD banner by skirmish_mode ("Cancelled …",
+  "Already doing that", "Squad 6 formed: press 6 to select it"); the group header reads "N UNITS (K IN NO SQUAD)".
+- 5a: `_resolve_group` lays slots in the drawn facing's frame (the front rank leads toward the drawn heading); `heading` stays
+  the travel. Mutation-checked.
+- Tests: `test_control_repath` (7), `test_control_form_squad` (5), `test_control_facing_drag` (+1). Laptop, filtered:
+  all pass.
+
+### Decisions
+- Form squad uses the lowest empty group 1-9 (squads hold 1-5, so it's 6 on the default path) and does not remove units
+  from their old groups, because that is exactly what Ctrl+N does and the lead called regrouping good behaviour.
+- Reason text says Ctrl+1-9 (not 1-5): 1-5 are the doctrine squads, and Ctrl+1-5 would overwrite one.
+- Form squad lives in the card's footer strip (where an element's doctrine line goes; a selection that cannot take a
+  task has no element, so the strip is free), not as an eighth card button, so the card's layout does not move.
+
+### Requests to other streams
+- squad: the "arrived" idle-crew case above (sent via the orchestrator; squad replied that it's fixed at `35f7b459`).
+
+### Questions for the lead
+- None blocking.
+
+### What to playtest
+`make skirmish ARENA=terminus`: press 1, right-click the plaza, and 3 s later right-click 40 m to the side. Box-drag
+across two squads: the card says why the task buttons are grey; click FORM SQUAD and press R.
+
+### Merge notes
+- Shared file touched: `game/modes/skirmish_mode.gd` (mine) only. `mk/command.mk`: new `repath-test` target.
+- K1 contract change: `UnitCommand.KEYS` gains `task`.

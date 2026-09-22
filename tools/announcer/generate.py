@@ -59,10 +59,14 @@ STT_UNVERIFIABLE_S = 0.7
 CHARACTERS_PER_SECOND = 15.0
 
 
-## Godot must not import this folder: the booth loads clips from disk at runtime, importing 2,396 files is slow
+## Godot must not import these folders: the booth loads clips from disk at runtime, importing 2,396 files is slow
 ## and once crashed the import step outright, and they are excluded from every export anyway. The generator writes
 ## the marker itself so that wiping the folder to re-cut cannot silently lose it (it did, 2026-09-16, and 2,396
 ## .import files ended up committed).
+## **The masters need it just as much (round 10).** They are git-ignored, so nobody thought about them - but
+## `tools/remote.sh` rsyncs them to builder0 all the same (it excludes assets/incoming/, not these), and there
+## `make import` met 616 fresh MP3s and died: `make[2]: *** [mk/core.mk:45: import] Segmentation fault`, on
+## color.faction.09.mp3. Nothing loads a master at runtime; they are the cutter's input.
 GDIGNORE_NOTE = """# Godot deliberately ignores this folder; see README.md. The booth loads these clips from disk
 # at runtime (AnnouncerVoice), they are excluded from both export presets, and importing them all is slow.
 """
@@ -227,13 +231,18 @@ def dry_run(the_plan: dict, speakers: dict, masters: Path, model_id: str) -> str
     return "\n".join(out)
 
 
-def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, model_id: str, log=print) -> dict:
-    """Records what's missing, cuts every clip, checks it, and writes out/manifest.json. Returns a report."""
+def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, model_id: str, log=print,
+             max_characters: int | None = None) -> dict:
+    """Records what's missing, cuts every clip, checks it, and writes out/manifest.json. Returns a report.
+
+    `max_characters` is the run's budget: a recording that would take the characters sent past it is not requested
+    (counted in `over_budget`), so a paid batch cannot overshoot the stop line it was sized against."""
     resolved = client.voice_ids()
     counts_words = getattr(client, "counts_words", isinstance(client, voice_client.MockClient))
     report = {"requests_sent": 0, "characters": 0, "skipped_existing": 0, "clips": 0, "stt_failed": [], "stt_unverifiable": [], "failed_requests": [], "missing_voices": [],
-              "alignment_errors": []}
+              "alignment_errors": [], "over_budget": 0}
     clips = {}
+    keep_out_of_godot(masters)
     manifest_path = out / "manifest.json"
     previous = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     keep_out_of_godot(out)
@@ -255,6 +264,9 @@ def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, m
         meta = json.loads(meta_path.read_text()) if meta_path.exists() and master.exists() else {}
         if meta.get("key") == key:
             report["skipped_existing"] += 1
+        elif max_characters is not None and report["characters"] + len(request["text"]) > max_characters:
+            report["over_budget"] += 1
+            continue
         else:
             try:
                 audio, alignment = voice_client.with_retries(
@@ -363,6 +375,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--only", default="", help="comma-separated line ids (every recording of each comes along)")
     parser.add_argument("--model", default=voice_client.MODEL_ID)
     parser.add_argument("--ledger", type=Path, default=LEDGER)
+    parser.add_argument("--note", default="", help="the ledger row's note: which batch this is")
+    parser.add_argument("--max-characters", type=int, help="send nothing that takes this run past this many characters")
     args = parser.parse_args(argv)
     lines_data = json.loads(args.lines.read_text())
     the_plan = recording_plan.plan(lines_data, [s for s in args.speakers.split(",") if s] or None,
@@ -381,12 +395,16 @@ def main(argv: list[str]) -> int:
     else:
         client = voice_client.RealClient(model_id=args.model)
         out = args.out or CLIPS
-        report = generate(the_plan, speakers, client, args.masters or MASTERS, out, args.model)
-        append_ledger(args.ledger, report, "ElevenLabs", args.model)
+        report = generate(the_plan, speakers, client, args.masters or MASTERS, out, args.model,
+                          max_characters=args.max_characters)
+        append_ledger(args.ledger, report, "ElevenLabs", args.model, args.note)
     print("sent %d requests (%d characters), reused %d masters, cut %d clips; speech-to-text flagged %d; alignment errors %d; "
           "voices missing: %s; credits %s → %s" % (
               report["requests_sent"], report["characters"], report["skipped_existing"], report["clips"], len(report["stt_failed"]),
               len(report["alignment_errors"]), ", ".join(report["missing_voices"]) or "none", report["credits_before"], report["credits_after"]))
+    if report.get("over_budget"):
+        print("  %d recordings NOT requested: they would have passed --max-characters %d" % (
+            report["over_budget"], args.max_characters))
     if report.get("failed_requests"):
         print("  %d recordings did not come back even after retrying; re-run to pick them up:"
               % len(report["failed_requests"]))

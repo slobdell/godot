@@ -89,5 +89,55 @@ class AuditTest(unittest.TestCase):
         self.assertTrue(any("borrowed" in w for w in warnings), warnings)
 
 
+    def test_a_faction_is_plural_in_verb_and_pronoun(self):
+        # Round 10: the transcripts read "The Wreckers draws first blood" and "hit its own scout". Both are the same
+        # rule ("the Condemned take it"), and both slipped past a list that did not have the words in it.
+        self.assert_error(with_line(text="{faction} draws first blood tonight."), "plural verb")
+        self.assert_error(with_line(text="{faction} steals the point away!"), "plural verb")
+        self.assert_error(with_line(text="{faction} hit its own scout!"), "their")
+        errors, _ = audit_lines.audit(with_line(text="{faction} draw first blood here, and this crowd is on its feet!"),
+                                      BEATS)
+        self.assertEqual([e for e in errors if "test.line" in e], [], "the crowd keeps its own feet")
+
+    # C10 (round 10): the PA's new lines carry their one wrong detail as data, and the audit holds it to the register.
+    def pa_line(self, text, span, category="paperwork", **fields):
+        line = dict(speaker="pa", act="notice", tags=["lull"], added="r10", text=text,
+                    oddity={"span": span, "category": category})
+        line.update(fields)
+        return with_line(**line)
+
+    def test_a_good_pa_line_passes(self):
+        data = self.pa_line("Medical staff will attend to the crews after the match, in the order their forms arrive, "
+                            "and not a minute before that.", "in the order their forms arrive")
+        errors, _ = audit_lines.audit(data, BEATS)
+        self.assertEqual([e for e in errors if "test.line" in e], [])
+
+    def test_pa_gates(self):
+        self.assert_error(with_line(speaker="pa", act="notice", tags=["lull"], added="r10", text="A calm notice here."),
+                          "names no oddity")
+        self.assert_error(self.pa_line("Water is served in the lower bowl tonight, for the crews.", "for the elephants"),
+                          "is not in the text")
+        self.assert_error(self.pa_line("Water service resumes for residents of approved households and their lawfully registered pets, "
+                                       "on the usual schedule tonight.",
+                                       "for residents of approved households and their lawfully registered pets"),
+                          "1-6 words")
+        self.assert_error(self.pa_line("Water service in the lower bowl resumes for approved households.",
+                                       "for approved households"), "punchline position")
+        self.assert_error(self.pa_line("Water service resumes for approved households only, as scheduled tonight.",
+                                       "for approved households", category="wizardry"), "unknown oddity category")
+        self.assert_error(self.pa_line("Water service resumes for approved households, and is scheduled for tonight!",
+                                       "for approved households"), "flat register")
+        self.assert_error(self.pa_line("Sadly, water service resumes for approved households only, as scheduled.",
+                                       "for approved households"), "affect word")
+
+    def test_pa_categories_do_not_repeat_in_a_pool(self):
+        data = self.pa_line("Water service resumes for approved households only, and on schedule tonight.",
+                            "for approved households", category="rationing")
+        data["lines"].append(dict(data["lines"][-1], id="test.line2", text="Ration cards are honoured at the "
+                                  "concourse this evening, at half value, for the whole of the match.",
+                                  oddity={"span": "at half value", "category": "rationing"}))
+        self.assert_error(data, "same kind of wrong detail")
+
+
 if __name__ == "__main__":
     unittest.main()
