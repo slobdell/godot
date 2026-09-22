@@ -168,6 +168,16 @@ _(the worker keeps this current; newest first within each part)_
    to fire.
    (Its sibling, the overwatch scenario, was a start-geometry literal: fixed in CP3 by feel with a 4 m east start
    and a setup assertion that the stay-put control is exposed; box tree 0% vs 73%.)
+   6d. **Off-mesh slots (nav, 2026-09-22; next after the pitch merge; his acceptance test):** nav's Terminus drive rows
+   (merged tree `709cbeb9`, builder0) show most arrival misses in every arm are crews whose GOAL is 4–10 m off the
+   navmesh (`goal_off_mesh_m` = Movement's route reading of the controller's move_to point). Read so far (laptop):
+   `Element.ground` → `SlotGround.standable` DOES move nav's three example slots onto the mesh by exactly those
+   distances, so the controller is chasing an ungrounded point. Two squad items, agreed with nav: (a) grounding
+   with the HULL's own clearance (the turning-envelope tier), not the bake radius: `standable` stops at the mesh
+   edge, and a bus or rig centred there has its nose in the wall; (b) ground the `follow` station (leader pose +
+   slot offset, never grounded, slides every tick). Nav's re-run prints each miss's controller move_order and
+   Orders verb, and says whether a third path exists. Test: on the Terminus every slot an element publishes is on
+   the mesh with clearance ≥ the hull's, or logged as moved. No slot finding goes on his page before that re-read.
    7. stretch.
 
 **Item 4, the orchestrator's refinement (2026-09-22):** `2 × half_diagonal` (tank 8.95 m, rig ~14.4 m) is the bound
