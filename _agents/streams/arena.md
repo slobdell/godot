@@ -239,6 +239,11 @@ _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round
   `arena_report.analyze()`. Accepted in principle (the centre is a river or a building on its maps). At review I'll
   check the fallback still exercises the centre on foundry/yard/pit/terminus, and that the report's LANE table sees
   terrain (the Python lane table does not model water; `ArenaLanes` does).
+- **terrain, to check at review:** its branch's `arena_terrain.gd` carries `LANE_DRIVABLE_M := 8.14` and
+  `BAKE_RADIUS_M := 2.0` as literals (its `MIN_DECK_M` is derived from them): a copy of `ArenaLanes.bar()` that goes
+  stale the next time the widest hull or the bake changes (Invariant 0). Ask for `MIN_DECK_M` to be checked against
+  `ArenaLanes.bar()` in a test, or derived at load. `ArenaLanes` now reads its rims (`rim_slabs`) and, once merged,
+  its rails (`rail_slabs`, asked by name) as colliders (commit below).
 
 ### Requests to other streams
 - **Orchestrator / all:** R4's number is 8.14 m drivable (the widest hull is `syn_artillery` 4.07 m), not 6.64 m.
