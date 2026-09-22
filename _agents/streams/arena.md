@@ -221,6 +221,14 @@ _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round
 - (none blocking) The Terminus's objective pair now measures spread 0.33 on the fixed instrument (was 0.44 with the
   furniture in the streets). Worth a re-sweep only if the map plays like the objectives are a formality.
 
+### Merge notes (other streams' edits in arena's paths, reviewed at their merge)
+- **terrain:** `test_arena_kit::test_every_shipped_layout_connects_both_bases_and_the_centre` asserts every
+  `Arena.objectives_of` objective is reachable (the centre when a layout lists none; existing maps tested as before);
+  `Arena._build_terrain()` becomes a delegate to `ArenaTerrain.build()`; a `tools/arena_terrain.carve()` hook in
+  `arena_report.analyze()`. Accepted in principle (the centre is a river or a building on its maps). At review I'll
+  check the fallback still exercises the centre on foundry/yard/pit/terminus, and that the report's LANE table sees
+  terrain (the Python lane table does not model water; `ArenaLanes` does).
+
 ### Requests to other streams
 - **Orchestrator / all:** R4's number is 8.14 m drivable (the widest hull is `syn_artillery` 4.07 m), not 6.64 m.
   Terrain's bridges (R9) and nav's drive test should read `ArenaLanes.bar()` rather than the prose.
