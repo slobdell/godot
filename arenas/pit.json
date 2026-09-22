@@ -500,8 +500,8 @@
   {
    "type": "sign",
    "position": [
-    -60.0,
-    100.0
+    -81.0,
+    88.0
    ],
    "rotation_deg": 180.0,
    "sign": "pit"
@@ -509,8 +509,8 @@
   {
    "type": "sign",
    "position": [
-    60.0,
-    -100.0
+    81.0,
+    -88.0
    ],
    "rotation_deg": 0.0,
    "sign": "pit"

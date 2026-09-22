@@ -25,6 +25,9 @@ extends Control
 signal command_issued(command: Dictionary, error: String)
 ## Round 6: P copied the camera pose (the HUD says so).
 signal pose_copied(pose: String)
+## Round 10 (item 4, B7): something the player must be TOLD that is not an order's own result - a right press spent
+## cancelling an armed order, an order dropped as a repeat, a squad formed. `warning` = it did not do what he asked.
+signal notice(text: String, warning: bool)
 
 ## A left press that moves farther than this (pixels) draws a box instead of clicking.
 const DRAG_THRESHOLD_PX := 6.0
@@ -492,6 +495,50 @@ func can_task() -> bool:
 	return elements != null and (selected_element() != null or selected_group() > 0)
 
 
+## Round 10 (R1, the lead: "if I just regroup the unit, they can operate as a formation. That is good behavior, but the
+## UX just needs to clarify that"): why the selection cannot take a task, in words the player reads without a tooltip,
+## or "" when it can (or there is nothing selected). The card's footer, its tooltips and the key refusals all say this.
+func task_refusal() -> String:
+	if selection.units.is_empty() or can_task():
+		return ""
+	if elements == null:
+		return "squad tasks are off in this mode"
+	var whole := 0  # a group holding every selected unit (and more): a part of one squad
+	var in_some := 0
+	for unit_name in selection.units:
+		if not groups.groups_of(unit_name).is_empty():
+			in_some += 1
+	for number in groups.numbers():
+		var members := groups.members(number)
+		if selection.units.all(func(n: String) -> bool: return members.has(n)):
+			whole = number
+			break
+	if whole > 0:
+		return "part of %s: press %d for all of it, or Form squad" % [groups.label(whole), whole]
+	if in_some == 0:
+		return "these units are in no squad: press Form squad or Ctrl+1-9"
+	return "these units are in different squads: press Form squad or Ctrl+1-9"
+
+
+## Round 10 (R1): the card's one-click Form squad. The selection becomes the lowest EMPTY control group - exactly what
+## Ctrl+N does, so the units stay in their old groups too - and can take tasks in the same frame. Returns the group
+## number, or 0 when it could not (nothing selected, or all nine groups hold units: the refusal says so).
+func form_squad() -> int:
+	if selection.units.is_empty():
+		return 0
+	var existing := selected_group()
+	if existing > 0:
+		return existing
+	for number in range(1, ControlGroups.COUNT + 1):
+		if groups.is_empty(number):
+			groups.save(number, selection.units)
+			_last_group = number
+			notice.emit("Squad %d formed: press %d to select it" % [number, number], false)
+			return number
+	_refuse("all nine groups hold units: Ctrl+1-9 to reuse one")
+	return 0
+
+
 func selected_element() -> Element:
 	if elements == null or selection.units.is_empty():
 		return null
@@ -523,7 +570,7 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		# player's own orders for the wheel. The first task forms it; a direct order (below) dissolves it again.
 		var number := selected_group()
 		if number == 0 or elements == null:
-			return _refuse("select a whole element to give it a task")
+			return _refuse(task_refusal() if task_refusal() != "" else "select a whole squad to give it a task")
 		element = elements.form(selection.units.duplicate(), groups.label(number))
 	var task := {"verb": String(ELEMENT_TASKS[verb])}
 	if extra.has("to"):
@@ -765,6 +812,10 @@ func issue(command: Dictionary) -> String:
 	command_issued.emit(command, error)
 	if error == "":
 		_acknowledge(command)
+		# Round 10 (item 4): a click that changed nothing says why (only the same click again is a repeat since R2).
+		if orders.last_dropped > 0 and orders.last_dropped == (command.get("units", []) as Array).size() \
+				and String(command.get("source", "")) == "player":
+			notice.emit("Already doing that", false)
 	return error
 
 
@@ -809,7 +860,10 @@ func _right_button_down(button: InputEventMouseButton) -> void:
 	_right_press_ground = null
 	_right_ground_now = null
 	if mode != "":
-		disarm()  # right-click cancels an armed order, like StarCraft - and that press is spent
+		# Right-click cancels an armed order, like StarCraft - and that press is spent. Round 10 (R2): it SAYS so. The
+		# lead right-clicked a moving squad and "they didnt respond"; a press eaten by a forgotten armed button is one
+		# way that happens, and silence made it indistinguishable from a broken game.
+		_cancel_armed()
 		return
 	if selection.units.is_empty():
 		return
@@ -878,7 +932,7 @@ func right_click_order(at: Vector2, queue := false, facing: Variant = null) -> S
 ## A right click on the radar (a world point): move there (queued with shift).
 func world_order(world: Vector3, queue := false) -> String:
 	if mode != "":
-		disarm()
+		_cancel_armed()
 		return ""
 	return order_selection("move", {"to": [world.x, world.z], "queue": queue})
 
@@ -889,7 +943,7 @@ func armed_world_order(world: Vector3, queue := false) -> String:
 	if not queue:
 		disarm()
 	if armed in ["screen", "support_by_fire", "ambush"] and not can_task():
-		return _refuse("select a whole element to give it a task")
+		return _refuse(task_refusal())
 	if armed in ["attack_move", "move", "screen", "support_by_fire", "ambush"]:
 		return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""
@@ -1020,7 +1074,7 @@ func armed_click_order(at: Vector2, queue := false) -> String:
 				return order_selection("move", {"to": [world.x, world.z], "queue": queue})
 		"screen", "support_by_fire", "ambush":
 			if not can_task():
-				return _refuse("select a whole element to give it a task")
+				return _refuse(task_refusal())
 			if world != null:
 				return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""
@@ -1030,6 +1084,10 @@ func armed_click_order(at: Vector2, queue := false) -> String:
 func arm(p_mode: String) -> void:
 	if selection.units.is_empty():
 		return
+	# Round 10 (R1): a task key on a selection that cannot take one says why at the KEY, not at the click after it.
+	if TaskPalette.element_only().has(p_mode) and not can_task():
+		_refuse(task_refusal())
+		return
 	mode = p_mode
 	_press_at = null
 	_boxing = false
@@ -1037,6 +1095,13 @@ func arm(p_mode: String) -> void:
 
 func disarm() -> void:
 	mode = ""
+
+
+## A right press spent cancelling the armed order: disarm, and tell the player the NEXT right-click moves.
+func _cancel_armed() -> void:
+	var armed := String(TaskPalette.row(mode).get("name", mode.capitalize()))
+	disarm()
+	notice.emit("Cancelled %s: right-click again to move" % armed, true)
 
 
 func screen_to_world(screen: Vector2) -> Variant:
@@ -1502,7 +1567,12 @@ func _draw_order_marks() -> void:
 			draw_line(from, at, Color(color, 0.35), 1.5)
 		# A pin: a stalk up from the ring to the task's symbol on a dark disc, readable over any ground at 21°.
 		var head := (at as Vector2) - Vector2(0.0, glyph_px * 1.6)
-		draw_line(at, head + Vector2(0.0, glyph_px * 0.5), Color(color, 0.7), 2.0)
+		if mark.has("facing"):
+			var way := Vector3(float(mark["facing"][0]), 0.0, float(mark["facing"][1]))
+			var tip: Variant = _screen_point((mark["point"] as Vector3) + way * ORDER_FACING_FROM_M * 2.0)
+			if tip != null:
+				head = RtsControls.pin_head(at as Vector2, tip as Vector2, glyph_px)
+		draw_line(at, head + ((at as Vector2) - head).normalized() * glyph_px * 0.62, Color(color, 0.7), 2.0)
 		# After the stalk, never before it: the heading and the stalk share screen-vertical when it points away.
 		if mark.has("facing"):
 			_draw_ordered_facing(mark["point"], mark["facing"], color)
@@ -1516,6 +1586,23 @@ func _draw_order_marks() -> void:
 		var plate := Rect2(head + Vector2(glyph_px * 0.8, -text_size.y * 0.5 - 3.0), text_size + Vector2(10.0, 6.0))
 		draw_rect(plate, Color(0, 0, 0, 0.6))
 		draw_string(font, plate.position + Vector2(5.0, 3.0 + font.get_ascent(px)), label, HORIZONTAL_ALIGNMENT_LEFT, -1, px, color)
+
+
+## Round 10 (control stretch 6): where a pin's head goes. Straight up from its ring, unless the pin carries a drawn heading
+## whose chevrons run UP the screen (a heading away from the camera): then the stalk leans the head away from them, to
+## the side the chevrons are not on, so the heading and the head stop stacking (round 9's frame: the chevrons crossed the
+## head disc and the plate at 720p). `tip` is the screen point the chevrons run toward. Pure, for tests.
+static func pin_head(at: Vector2, tip: Vector2, glyph_px: float) -> Vector2:
+	var up := Vector2(0.0, -glyph_px * 1.6)
+	var run := tip - at
+	if run.length() < 1.0 or run.y > -glyph_px * 0.3:
+		return at + up  # the chevrons point across or down the screen: they are clear of an upright head
+	var side := -1.0 if run.x >= 0.0 else 1.0
+	return at + up.rotated(side * deg_to_rad(PIN_LEAN_DEG))
+
+
+## How far a pin's stalk leans away from chevrons that run up the screen.
+const PIN_LEAN_DEG := 40.0
 
 
 ## Round 7 (A): which way each selected vehicle points - a chevron on the ground ahead of its hull - and, for a gun that
