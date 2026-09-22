@@ -707,7 +707,7 @@ z = 62 blocks' footprints.
 | yard | 7 of 7, each 0.00 m (a collider on the lane's line) | centre (0, 81), inner west (−34, 74), outer west (−67, 53), far west (−100, 37), and mirrors |
 | pit | south gate 0.00 m; west gate corners 4.88 m clear vs 8.37 m | (0, 81); corners at (±70, ±40) |
 | boneyard (cut) | 4 of 4, each 0.00 m | (4, 45), (−3, 61), (−68, 50), (67, 70) |
-| boulevard (cut) | 4 of 4, each 0.00 m | (−60, 80), (60, 61), (−98, 66), (98, 31) |
+| boulevard (cut) | 6 of 6, each 0.00 m (the centre avenue since the ad screen's box became 7.8 × 2.0, R3) | (∓4, 31), (−60, 81), (60, 61), (−98, 66), (98, 31) |
 
 A 0.00 m reading means a collider stands on the lane's centre line. On a map whose lanes were drawn as AI hints
 through its cover (yard's run between container walls) that can be the lane line's fault rather than the map's;

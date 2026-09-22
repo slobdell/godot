@@ -110,6 +110,18 @@ def main():
         "<tr><td>%s</td><td class=\"num\">%.0f&deg;</td><td class=\"num\">%.2f m</td><td class=\"num %s\">%.2f m</td></tr>"
         % (html.escape(" x ".join(c["lanes"])), c["delta_deg"], c["r_eff_m"], "ok" if c["pass"] else "bad",
            c["clearance_m"]) for c in ta["corners"])
+    others = []
+    for name in ar.lane_bar()["report_only"]:
+        path = ROOT / "arenas" / (name + ".json")
+        if not path.exists():
+            continue
+        tab = table(json.loads(path.read_text()))
+        short = [l for l in tab["lanes"] if not l["pass"]]
+        bent = [c for c in tab["corners"] if not c["pass"]]
+        where = "; ".join("%s %.2f m at (%.0f, %.0f)" % (l["name"], l["narrowest_physical_m"], l["at"][0], l["at"][1])
+                          for l in short) or "none"
+        others.append("<tr><td>%s</td><td class=\"num\">%d of %d</td><td class=\"num\">%d of %d</td><td>%s</td></tr>"
+                      % (html.escape(name), len(short), len(tab["lanes"]), len(bent), len(tab["corners"]), html.escape(where)))
     fonts = ('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600'
              '&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap">')
     page = """<title>Terminus Streets</title>%s<style>%s</style>
@@ -123,13 +135,20 @@ doing so. Every frame is at your camera: 21&deg; pitch, 35&deg; field of view, 4
 %s
 <section><h2>Every street's narrowest point</h2><div class="table-wrap"><table><tr><th>street</th><th>round 9</th><th>now</th></tr>%s</table></div></section>
 <section><h2>Every corner and junction, against the War Rig's turn</h2>
-<p class="lede">The rig (minimum turning radius <span class="num">%.1f m</span>) cuts inside a corner; the clear
-circle it needs is beside the one each corner has.</p>
-<div class="table-wrap"><table><tr><th>where</th><th>turn</th><th>rig needs</th><th>corner has</th></tr>%s</table></div></section>
+<p class="lede">A hull turning through an angle &Delta;&psi; on its tightest circle cuts inside the corner, so it needs
+a clear circle around the corner of radius <span class="num">r_eff = r_a + R&middot;(sec(&Delta;&psi;/2) &minus; 1)</span>:
+R is the War Rig's minimum turning radius (<span class="num">%.1f m</span>), r_a is half the street-width bar. A
+junction is certified for a right-angle turn; a street's own bend at its drawn angle. A corner passes when its
+inscribed clearance (the distance to the nearest building, box or wall) is at least r_eff.</p>
+<div class="table-wrap"><table><tr><th>where</th><th>&Delta;&psi;</th><th>r_eff (rig needs)</th><th>inscribed clearance</th></tr>%s</table></div></section>
+<section><h2>The other maps (reported, not changed)</h2>
+<p class="lede">The same test on the maps you have not complained about. A short lane there is a note for a later
+round, not a change made without you.</p>
+<div class="table-wrap"><table><tr><th>map</th><th>lanes short</th><th>corners short</th><th>where</th></tr>%s</table></div></section>
 </div>""" % (fonts, CSS, html.escape(bar["widest_hull"]), bar["widest_hull_m"], bar["drivable_bar_m"],
                           bar["bake_radius_m"], ("Built at " + html.escape(args.commit) + ".") if args.commit else "",
                           "".join(pairs) or '<p class="bad">No frames yet: run make remote T=terminus-streets.</p>',
-                          "".join(rows), bar["rig_min_turn_m"], corner_rows)
+                          "".join(rows), bar["rig_min_turn_m"], corner_rows, "".join(others))
     out = ROOT / args.out
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(page)
