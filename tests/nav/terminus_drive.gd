@@ -96,6 +96,8 @@ func _run() -> void:
 	for frame in SimClock.TICK_RATE:
 		await physics_frame
 	WallContact.reset()
+	Movement.reset_route_arms()
+	print("NAV_DRIVE_ARM off=%s" % [Movement._off])
 	print("NAV_DRIVE_CONTROL arena %s squad %s units %d (%s)" % [Arena.active.get("name", "?"), squad_kind, units.size(),
 			", ".join(units.map(func(t: Tank) -> String: return t.unit_id))])
 	_next_leg()
@@ -143,8 +145,12 @@ func _close_leg(elapsed: float) -> void:
 		if leg_done.has(key) and gap >= 0.0 and gap <= ARRIVED_M:
 			arrived += 1
 		else:
+			var reading := Movement.state(tank)
 			misses.append({"unit": key, "id": tank.unit_id, "gap_m": snappedf(gap, 0.1),
-					"completed": leg_done.has(key), "phase": String(Movement.state(tank).get("phase", "?")),
+					"completed": leg_done.has(key), "phase": String(reading.get("phase", "?")),
+					"blocked_by": String(reading.get("blocked_by", "")), "reachable": bool(reading.get("reachable", true)),
+					"goal_off_mesh_m": snappedf(float(reading.get("goal_gap_m", 0.0)), 0.1),
+					"goal": [snappedf(leg_goal[key].x, 0.1), snappedf(leg_goal[key].z, 0.1)] if leg_goal.has(key) else null,
 					"at": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)]})
 	var contacts := {}
 	for cause: String in WallContact.by_cause:
@@ -164,18 +170,14 @@ func _report() -> void:
 	physics_frame.disconnect(_sample)
 	var arrived_all := leg_results.all(func(row: Dictionary) -> bool: return int(row["arrived"]) == int(row["units"]))
 	var report := WallContact.report()
-	# The contact log, summarised: the first few contact ticks per (unit, cause, collider), with the lane.
-	var episodes := {}
-	for entry: Dictionary in WallContact.log:
-		var key := "%s|%s|%s" % [entry["unit"], entry["cause"], entry["collider"]]
-		if not episodes.has(key):
-			episodes[key] = entry.duplicate()
-			episodes[key]["ticks"] = 0
-		episodes[key]["ticks"] = int(episodes[key]["ticks"]) + 1
+	# Every episode (unit, cause, collider), uncapped, longest first.
+	var episodes: Array = WallContact.episodes.values()
+	episodes.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["ticks"]) > int(b["ticks"]))
 	var mixed_ok := squad_kind != "mixed" or int(report["contact_unit_ticks"]) == 0
 	var out := {"arena": String(Arena.active.get("name", "?")), "squad": squad_kind, "units": units.size(),
 			"legs": leg_results.size(), "arrived_every_leg": arrived_all, "wall_contacts": report,
-			"episodes": episodes.values(), "pass": arrived_all and mixed_ok and int(report["observed_unit_ticks"]) > 0}
+			"route_arms": Movement.route_arms(), "off": Array(Movement._off),
+			"episodes": episodes.slice(0, 40), "pass": arrived_all and mixed_ok and int(report["observed_unit_ticks"]) > 0}
 	print("NAV_DRIVE %s" % JSON.stringify(out))
 	quit(0)
 
