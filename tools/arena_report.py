@@ -748,7 +748,9 @@ def standing_point(blocked, n, want):
     """The nearest DRIVABLE point to `want`. An observer placed inside a box sees nothing at all, and foundry has a
     crate on the exact centre: the first version of centre_sees_share reported 0.000 for the most open arena in the
     game. An eye has to be somewhere a vehicle could be."""
-    cell = snap(blocked, n, (int((want[0] + HALF) / GRID), int((want[1] + HALF) / GRID)))
+    # Search wide enough to leave any footprint: the 12-cell default could not get out of a 40 m city block from its
+    # centre, so the eye stayed inside it and centre_sees read 0.00 (round 10, terrain's finding).
+    cell = snap(blocked, n, (int((want[0] + HALF) / GRID), int((want[1] + HALF) / GRID)), reach=int(60 / GRID))
     if cell is None:
         return want
     return (cell[0] * GRID - HALF + GRID / 2, cell[1] * GRID - HALF + GRID / 2)
@@ -1023,11 +1025,15 @@ def decision_report(layout, boxes, blocked, n, grid, gn, field, watchers):
     if not objectives:
         return {"objectives": 0, "routes": [], "decision_spread": 0.0}
     green = tuple(layout["spawns"]["green"][0])
-    rust = tuple(layout["spawns"]["rust"][0])
     routes = []
     for objective in objectives:
         mine = covered_route(blocked, n, field, green, objective["at"], 6.0)
-        theirs = covered_route(blocked, n, field, rust, objective["at"], 6.0)
+        # The ENEMY routes against ITS OWN exposure field (round 10, terrain's finding): `field` is exposure to
+        # RUST's watchers, so routing rust through it priced rust's trip by its own guns and flipped terrain's river
+        # map between spread 0.45 and 0.03 on one alley. Every layout is point-symmetric (Arena.validate), so rust's
+        # field is green's turned 180 degrees and rust's covered route to X is green's covered route to -X, mirrored.
+        at = objective["at"]
+        theirs = covered_route(blocked, n, field, green, (-at[0], -at[1]), 6.0)
         if mine is None:
             routes.append({"objective": objective["name"], "reachable": False})
             continue

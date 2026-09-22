@@ -63,3 +63,31 @@ class LaneTable(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DecisionRoutes(unittest.TestCase):
+    """Round 10 (terrain's finding): `decision_report` routed the ENEMY through green's exposure field. On a
+    point-symmetric map the enemy's covered route to an objective IS green's covered route to its twin, so the two
+    lengths must agree exactly; the bug made them disagree whenever cover was lopsided along the way."""
+
+    def test_the_enemy_routes_with_its_own_field(self):
+        for name in ("yard", "terminus"):
+            with open(os.path.join(ARENAS, name + ".json")) as f:
+                layout = json.load(f)
+            report = ar.analyze(layout)
+            routes = {r["objective"]: r for r in report["ambush"]["decision"]["routes"]}
+            pairs = [(k, k + " (far)") for k in routes if k + " (far)" in routes]
+            self.assertTrue(pairs, "%s has a mirrored objective pair" % name)
+            for home, away in pairs:
+                self.assertAlmostEqual(routes[home]["enemy_length_m"], routes[away]["length_m"], places=1,
+                                       msg="%s: rust's trip to %s is green's trip to %s" % (name, home, away))
+
+    def test_the_centre_eye_leaves_a_block(self):
+        """A 40 m block on the centre: the eye must end up outside it, not inside with a 0.00 view."""
+        layout = {"name": "probe", "half_size": 120.0, "obstacles": [
+            {"type": "block", "position": [0.0, 0.0], "size": [40.0, 24.0, 40.0], "rotation_deg": 0.0}], "props": []}
+        ar.use_extent(layout)
+        boxes = ar.boxes_of(layout)
+        blocked, n = ar.occupancy(boxes)
+        eye = ar.standing_point(blocked, n, (0.0, 0.0))
+        self.assertGreater(boxes[0].distance(*eye), 0.0, "the eye at %s is outside the block" % (eye,))
