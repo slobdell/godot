@@ -35,6 +35,7 @@ and a paired series).
 - **The bus (feel, CP3 pending its final check):** the concept page for your tap at `~/projects/godot-feel/build/review_page_bus/index.html` (3 directions at 2.90 × 4.76 × 9.70 m, 27 Meshy credits); the bus lineup and the turret side-on pairs (paths in feel's Status). Copied to the Desktop folder at close.
 - **The right-click (control + squad):** fixed on main (three mechanisms in control's path, two in squad's); the repath harness reads 6/7 on main and 7/7 with control's pending commit. Play it.
 - **Form squad (control):** the greyed buttons now say why and the card has a one-click Form squad.
+- **The 40-second settle (squad):** a 20 m plain move now STOPS in a median 4.2 s forward / 4.9 s side on the default arena (9.2 / 14.8 before) and 5.8 / 9.3 s on the Terminus (7.1 / 17.2 before), the order COMPLETED within 2.8 s; 8 seeds per cell, tank/tank/ifv/ifv, builder0, squad 6d6d6264 (37 seeds faster, 8 slower, 3 ties). Moving BACK is unchanged at ~16 s on both (a 40 m column pressed on the arena edge): known, not fixed. One wheeled crew creeps 0.5–1.8 m/s for ~15 s after its order completes: known issue in squad's Status.
 - **Walls (nav):** the drive-test table in the night log below: contacts −37 %/−48 % from the streets alone, a further −68 %/−53 % from nav's two arms (not yet merged).
 
 ### Merged to `main` (round 10, in order; verdicts read from the wrapper's own line)
