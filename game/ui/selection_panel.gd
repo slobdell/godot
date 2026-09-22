@@ -235,6 +235,9 @@ func summary() -> Dictionary:
 		portrait["unit"] = String(portrait["key"]) if int(portrait["count"]) == 1 else ""
 	result["count"] = units.size()
 	result["strength"] = _strength(units)
+	# Round 10 (item 4): how many of these are in no squad (no control group): a unit on no number key is the one a
+	# player loses track of, and it is why a task can be refused.
+	result["ungrouped"] = units.filter(func(n: String) -> bool: return controls.groups.groups_of(n).is_empty()).size()
 	var verbs := {}
 	for unit_name in units:
 		if _tank(unit_name) == null:
@@ -486,8 +489,10 @@ func _draw() -> void:
 					var tag_width := font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(tag_size)).x
 					_text(batch, font, cell.position + Vector2(cell.size.x - tag_width - 3.0, tag_size + 1.0), tag, tag_size, CyberStyle.YELLOW)
 			# X4: one header for the whole selection - how many, what they are doing, how much of them is left.
-			_text(batch, font, Vector2(PAD * s, 16.0 * s), "%d UNITS   %s   %d%%" % [int(info["count"]),
-					String(info["orders"]).to_upper(), roundi(float(info["strength"]) * 100.0)], 15.0 * s, CyberStyle.CYAN)
+			var loose := int(info.get("ungrouped", 0))
+			_text(batch, font, Vector2(PAD * s, 16.0 * s), "%d UNITS%s   %s   %d%%" % [int(info["count"]),
+					" (%d IN NO SQUAD)" % loose if loose > 0 else "", String(info["orders"]).to_upper(),
+					roundi(float(info["strength"]) * 100.0)], 15.0 * s, CyberStyle.CYAN)
 		"unit", "enemy":
 			var card: Dictionary = info["card"]
 			var color := enemy if card.get("enemy", false) else friendly

@@ -62,3 +62,33 @@ func test_an_order_under_a_new_task_is_never_a_repeat() -> void:
 	orders.issue({"units": ["Green_Alpha_1"], "verb": "move", "to": [-10.5, 0.0], "source": "element", "task": 4})
 	assert_true(orders.current("Green_Alpha_1")["id"] != first["id"], "a new task at the same place is a new order")
 	assert_eq(int(orders.current("Green_Alpha_1")["task"]), 4, "carrying its task number")
+
+
+## R2 / item 4: a right press spent cancelling an armed order SAYS so, and the next right-click moves. The lead's
+## "they didnt respond" is indistinguishable, from his chair, from a press eaten by a button he forgot he pressed.
+func test_a_right_click_that_cancels_an_armed_order_says_so_and_the_next_one_moves() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var told: Array = []
+	f.controls.notice.connect(func(text: String, warning: bool) -> void: told.append([text, warning]))
+	await f.select(ALPHA)
+	await f.key(KEY_A)
+	assert_eq(f.controls.mode, "attack_move", "A arms attack-move")
+	await f.right_click(f.ground(Vector3(-10, 0, 0)))
+	assert_eq(f.controls.mode, "", "the right press cancels it")
+	assert_true(f.orders.current("Green_Alpha_1").is_empty(), "and that press issued nothing")
+	assert_eq(told, [["Cancelled Attack-move: right-click again to move", true]], "which the banner says (%s)" % [told])
+	await f.right_click(f.ground(Vector3(-10, 0, 0)))
+	assert_eq(f.orders.current("Green_Alpha_1").get("verb", ""), "move", "the NEXT right-click moves")
+
+
+func test_a_click_that_changed_nothing_says_so() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var told: Array = []
+	f.controls.notice.connect(func(text: String, _warning: bool) -> void: told.append(text))
+	await f.select(ALPHA)
+	await f.right_click(f.ground(Vector3(-10, 0, 0)))
+	assert_eq(told, [], "a new order needs no explanation")
+	await f.right_click(f.ground(Vector3(-10, 0, 0)))
+	assert_eq(told, ["Already doing that"], "the same click again is a repeat, and the banner says so")

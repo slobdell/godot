@@ -103,3 +103,15 @@ func test_form_squad_takes_the_lowest_empty_group_and_says_so() -> void:
 		f.controls.groups.save(number, ["Green_Alpha_1"])
 	f.controls.selection.set_units(["Green_Alpha_2", "Green_Bravo_1"])
 	assert_eq(f.controls.form_squad(), 0, "with all nine groups used there is no free number")
+
+
+## Round 10 (item 4): the header counts the selected units that are on no number key.
+func test_the_panel_counts_units_in_no_squad() -> void:
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var panel: SelectionPanel = setup[1]
+	f.controls.groups.save(2, ["Green_Bravo_1"])
+	f.controls.selection.set_units(["Green_Alpha_1", "Green_Bravo_1", "Green_Bravo_2"])
+	assert_eq(int(panel.summary()["ungrouped"]), 1, "Bravo_2 left group 2: one unit in no squad")
+	f.controls.form_squad()
+	assert_eq(int(panel.summary()["ungrouped"]), 0, "Form squad puts it on a number key")
