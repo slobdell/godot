@@ -202,6 +202,22 @@ moved or turned within 1 s. **Three mechanisms, two owners:**
 - New/extended tests: `test_control_repath` (7), `test_control_form_squad` (5), `test_control_objective_rings` (2),
   `test_control_facing_drag` (+1), `test_control_order_marks` (+1), `test_rts_camera` (+1).
 
+### After `f8e8c592` (merged at `52254fd2`): on the branch, check on `363c2952` queued
+- `repath-test`: element membership and the selection in the log; a destroyed crew is "dead", not STALE (squad's
+  run on main with both branches: 6/7 living-crew passes, and "arrived" failed only on two destroyed crews).
+  Visible intent at 1 s is reported (8/8 in the en-route states).
+- **The Form-squad reason was cut off at 1920×1080** ("These units are in different squads: press", from the first
+  frame, `build/control-playtest/1920x1080/7a_mixed_selection.png` at `f874047e`). The card now uses a short form that
+  reads into the button ("In different squads: Ctrl+1-9 or [FORM SQUAD]"); a test asserts every variant fits at 720p.
+- **COLUMN TOO LONG showed with all three units in view** (the first frame, `9_facing_drag_ordered.png`): the vision
+  frame also carries contacts and their mirrors. It now judges only our own vehicles (`vision_state()["own"]`) and
+  clears whenever the vision frame is not driving the camera.
+- B7: a squad task's pin reads `MOVE · ARRIVED · dressing n/m` after squad's operational arrival (`Element.arrived`)
+  and drops its lead line.
+- The control playtest gained three checked steps with frames: `7a/7b` (the mixed selection, then Form squad), `7c`
+  (the armed-cancel banner), and `10a/10b` (plain click vs right-drag east, same three hand-picked units, same spot: the
+  5a pair).
+
 ### Decisions
 - Form squad = lowest empty group 1-9 (6 on the default path). Units stay in their old groups too, exactly as Ctrl+N
   leaves them, because the lead called regrouping good behaviour.
