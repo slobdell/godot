@@ -437,7 +437,7 @@ func _armed_cancel() -> void:
 	var before: int = int(controls.orders.current(members[0]).get("id", -1))
 	await _right_click(_screen(spot))
 	var spent: bool = controls.mode == "" and controls.orders.current(members[0]).get("id", -1) == before
-	await get_tree().create_timer(0.4).timeout
+	await get_tree().create_timer(1.5).timeout  # the warning banner slides in (the first frame at 0.4 s caught none of it)
 	await _capture("7c_armed_cancel_banner")
 	await _right_click(_screen(spot))
 	await get_tree().physics_frame
@@ -463,6 +463,10 @@ func _formation_faces_the_drag() -> void:
 		return
 	var three := [one[0], one[1], two[0]]
 	controls.selection.set_units(three)
+	# One variable moved: the camera must not turn between the two frames (yaw-follow swung it 56° in the first pair).
+	var follow_was := controls.rig.yaw_follow if controls.rig != null else false
+	if controls.rig != null:
+		controls.rig.yaw_follow = false
 	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
 	var right := Vector3(-forward.z, 0.0, forward.x)
 	var spot := _middle(three) + forward * 30.0
@@ -488,6 +492,8 @@ func _formation_faces_the_drag() -> void:
 	_checks["drag_turns_the_formation"] = facing.size() == 2 and not controls.can_task()
 	_step("formation_facing", {"units": three, "facing": facing, "goals": goals})
 	await _capture("10b_drag_right_layout")
+	if controls.rig != null:
+		controls.rig.yaw_follow = follow_was
 
 
 ## Whether this unit can currently see a living enemy (it is fighting, not travelling).
