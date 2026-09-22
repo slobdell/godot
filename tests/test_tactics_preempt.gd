@@ -237,3 +237,26 @@ func test_an_idle_crew_is_given_the_follow_its_flow_asks_for() -> void:
 			still_idle.append(member)
 	assert_eq(still_idle, [], "a CPU element's idle crews are given their follow within two cycles")
 	scenario.dispose()
+
+
+func test_a_player_task_5m_from_the_old_one_moves_the_leaders_order() -> void:
+	# control's repath-test "near" (laptop, control 649d7e44): a right-click 5 m from the squad's destination; the
+	# element took the task but REISSUE_M (8 m) kept the leader on its old move and the followers on it.
+	var context := await _squad()
+	var scenario: AiScenario = context["scenario"]
+	var orders: Object = context["orders"]
+	var alpha: Element = context["alpha"]
+	alpha.assign({"verb": "move", "to": [0, 10], "drills": false})
+	await _step(scenario, Element.UPDATE_TICKS * 4)
+	var leader_before: Dictionary = orders.call("current", alpha.leader)
+	assert_true(not leader_before.is_empty(), "setup: the leader is on the squad's move")
+	alpha.assign({"verb": "move", "to": [3, 14], "drills": false})
+	await _step(scenario, WITHIN_TICKS)
+	var leader_now: Dictionary = orders.call("current", alpha.leader)
+	assert_true(int(leader_now.get("id", -1)) != int(leader_before.get("id", -1)),
+			"the leader's order is a new one within %d ticks" % WITHIN_TICKS)
+	var was := Vector2(float(leader_before["to"][0]), float(leader_before["to"][1]))
+	var now := Vector2(float(leader_now["to"][0]), float(leader_now["to"][1]))
+	assert_true(now.distance_to(was) > 3.0, "and its goal moved with the task (%.1f m)" % now.distance_to(was))
+	assert_eq(_not_rederived(alpha, orders), [], "every crew was re-derived from the new task")
+	scenario.dispose()
