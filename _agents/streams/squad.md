@@ -161,6 +161,11 @@ _(the worker keeps this current; newest first within each part)_
    slot_stays_in_it` on feel's box commit `055fb10f`: drift 15.2 m against its own leash + 2 m = 16.0 (laptop, PASS
    by 0.8), over on builder0. The bar is already derived (the leash is the doctrine's 14 m spacing, not the hull), so
    it is behaviour: a 9.7 m hull fighting from its slot carries its centre further. After the pitch + seating pair.
+   **Correction (feel's bisect, builder0):** it PASSES on the box-only tree `055fb10f` (ai-scenarios 40,4) and fails
+   only at `a138b5f1` with the R5 mounts, where the Condemned bus's turret pivot moved 0.2 m aft (z 0.2 → 0.4). The
+   knife-edge (15.2 vs 16.0) was tipped by the MOUNT, not the box. Discriminating pair: `a138b5f1` vs `055fb10f` on
+   the same seeds; the mechanism to look for is a pivot further from the hull centre changing where the hull stands
+   to fire.
    (Its sibling, the overwatch scenario, was a start-geometry literal: fixed in CP3 by feel with a 4 m east start
    and a setup assertion that the stay-put control is exposed; box tree 0% vs 73%.)
    7. stretch.
