@@ -3,7 +3,7 @@
 # No target here calls ElevenLabs except announcer-generate APPROVED=1 (lead gate 2: the text is approved first).
 
 .PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-variance announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate \
-        announcer-transcripts-check announcer-record-smoke announcer-shots announcer-check
+        announcer-transcripts-check announcer-record-smoke announcer-shots announcer-check announcer-pool-report
 
 ANNOUNCER_FIXTURES := tests/announcer/fixtures
 ANNOUNCER_CLI := $(GODOT) --headless --path . --script res://game/announcer/announcer_cli.gd --
@@ -24,6 +24,16 @@ announcer-pytest: ## The announcer's Python tests (contract, generator, text aud
 
 announcer-audit: ## Audit the line library's text (symbols, slots, tags, duplicates, rejected tone)
 	$(PYTHON) tools/announcer/audit_lines.py
+
+## Round 10 item 1: how deep each (speaker, moment) pool is against what it needs (C9's N_c), from the director's own
+## picks over every fixture broadcast with seeds 1-POOL_SEEDS. Writes build/announcer/pool_report.{txt,json}.
+POOL_SEEDS ?= 5
+announcer-pool-report: import ## Lines per (speaker, moment), the director's pool at each pick, N_c and the deficit: POOL_SEEDS=5
+	@rm -rf $(BUILD_DIR)/announcer/pool && mkdir -p $(BUILD_DIR)/announcer/pool
+	@$(ANNOUNCER_CLI) --all=res://$(ANNOUNCER_FIXTURES) --seeds=$$(seq -s, 1 $(POOL_SEEDS)) --out-dir=$(BUILD_DIR)/announcer/pool 2>&1 \
+		| grep -E 'ANNOUNCER_CLI_EXIT=0' >/dev/null || { echo "announcer CLI failed"; exit 1; }
+	@$(PYTHON) tools/announcer/pool_report.py --cues $(BUILD_DIR)/announcer/pool --json $(BUILD_DIR)/announcer/pool_report.json \
+		| tee $(BUILD_DIR)/announcer/pool_report.txt
 
 ## X1: the lead heard the PA open the same way in several matches. This replays every fixture as MATCHES
 ## consecutive broadcasts and fails when the booth repeats itself too much across them.
