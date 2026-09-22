@@ -376,6 +376,12 @@ Before on record: feel's matrix, gangs 20 % on pit and 50 % on yard (unpaired, d
 The rest of that run was killed by slot.sh's 90-minute limit (one arm ≈ 41 min at 2 jobs). The series restarts on the
 post-CP3 tree (the 9.70 m bus, where the parked-friend question lives), one arm per invocation, at 3 jobs.
 
+**The series tree is FROZEN at `6e2d9421`** (post-CP3 bus, before nav's route retry and squad's pair). Every arm must
+share the control's commit (`paired_arms` refuses otherwise, even for a docs-only commit), and this branch keeps
+merging `main`. So the `lof` arm runs from this worktree's builder0 folder, and the `incoming` and `both` arms run
+from a clean clone at the same commit in the scratchpad (`godot-combat-series`, its own builder0 folder, a fresh
+control at the same commit; the two controls should be byte-identical games, which doubles as a determinism check).
+
 **Predictions, stated now:**
 - C7's prediction for `both`: it recovers most of the rig's lost win rate (the round-8 loss was 9/20 → 0/20).
   Operationally: on each map, b > c for gangs with p < 0.05.
