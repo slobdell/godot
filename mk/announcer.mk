@@ -120,7 +120,8 @@ announcer-demo-audio: announcer-demo ## The Booth Monitor with audio: CLIPS=asse
 	done
 	@rm -f $(BUILD_DIR)/announcer/demo/data/*.txt
 	$(PYTHON) tools/announcer/mixdown.py --manifest $(ANNOUNCER_DEMO_CLIPS)/manifest.json --match $(BUILD_DIR)/announcer/demo/data/*_seed1.json
-	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html
+	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html \
+		--clips $(ANNOUNCER_DEMO_CLIPS)
 
 # The sim-baseline match (mk/core.mk) again, with the booth recording K5 events: the hash must not move (the announcer
 # never touches gameplay) and the recorded real-match timeline must pass both validators and read as a broadcast.
