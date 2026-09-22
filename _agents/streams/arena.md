@@ -155,35 +155,71 @@ anchors along every lane (feel's kit); a light behind every corner (show's).
 _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round 10).**
 
 ### Plan (in order; smallest foundation first)
-1. **R4 lanes (CP2)** — `ArenaLanes` + `tests/test_arena_lanes.gd` (failing first), move the Terminus furniture,
-   declare east street + plaza crossings, report `LANE`/`CORNER` lines and fail on asserted lanes, before/after frames
-   (`terminus-streets`, `terminus-streets-page`). **In progress.**
-2. **R3 prop collision parity** — mesh AABB below 6.2 m vs `PROPS[kind].size`; floodlight first.
-3. **Reads passable** — the C11 render test on the streets (throat visibility at his pose).
+1. **R4 lanes (CP2)** — DONE in code (`b438f72b`, `aa3ce791`); builder0 check pending; before/after frames pending
+   (`make remote T=terminus-streets`, one remote per worktree).
+2. **R3 prop collision parity** — DONE (`b438f72b`, `aa3ce791`).
+3. **Reads passable** — DONE as a headless instrument (`aa3ce791`); frames come with item 1's shots.
 4. **Spawn grid** — WAITS for feel's CP3 (orchestrator, 2026-09-22: CP3 shrinks the spawn jitter; derive from the
    new jitter after `git merge main`, one comment block for both constant families).
-5. **Other arenas' lanes** — reported (done as part of 1: `arenas.md` *Streets are lanes*).
-6. **Stretch** — `hull_size` consumer list status.
+5. **Other arenas' lanes** — DONE (reported: `arenas.md` *Streets are lanes*, table below).
+6. **Stretch** — `hull_size` consumer status (below); terrain's `decision_report` bug fixed (`c28ac8e0`).
+
+### Done (with measurements; static geometry is machine-independent, commit named)
+- **R4** (`b438f72b` + `aa3ce791`): `ArenaLanes` (game/arena/arena_lanes.gd) + `tests/test_arena_lanes.gd`. Terminus
+  lanes, round 9 → now: every lane 0.00 m → avenue 17.56 m physical (13.56 drivable), west/east street 16.40
+  (12.40), ring road ×2 22.00 (18.00), plaza crossing west/east 22.00 (18.00); all 17 corners/junctions clear the
+  rig's r_eff (tightest 12.00 m vs 11.04). East street (the west street's mirror, `mirror_name`) and two plaza
+  crossings declared. `make arena-report` prints LANE/CORNER lines and exits 1 on an asserted short lane.
+- **R3** (`b438f72b`, `aa3ce791`): `tests/test_arena_prop_parity.gd` measures feel's drawn meshes below the tallest
+  roof (6.18 m, `law_suppressor`) against `PROPS`. Drawn vs box: containers exact, barricade exact, floodlight
+  2.42 vs 2.40 (hazard bands), block 40.12 vs 40.00 (trim) — both inside the 0.10 m tolerance (a fifth of the bake
+  cell); **ad screen 7.80 × 1.92 vs 7.4 × 1.4 → box 7.8 × 2.0** (feel: keep the box, no art change); **wreck drawn
+  3.20 × 3.30 in a 3.2 × 6.4 box → box 3.2 × 3.3** (feel's call); **sign** (decoration, a post and a 6.3 m board)
+  stood INSIDE both spawn zones on yard, pit and terminus → moved to (−81, 88), asserted out of spawn zones on
+  every map and off lanes where lanes are asserted.
+  **What he saw vehicles pass through:** NOT the floodlight (its footing contains its drawn geometry; the head is at
+  15 m). The sign in the spawn zone is the best candidate; the War Rig's folding trailer art outside its rigid
+  collider (feel/combat S2) is the other.
+- **Item 3** (`aa3ce791`): `LaneReadability` + `tests/test_arena_lane_readability.gd` (C11): each lane's throat
+  projected at his pose (clear_pose + BlockCutaway applied), contact line traced through colliders. It found the
+  ring-road lamp on the near kerb hiding 23% of the throat → lamps and one box moved to lots. Now every Terminus
+  throat is 100% visible at his default heading, margins +329..+472 px over the widest hull.
+- **Item 5**: yard 7/7 lanes short (0.00 m), pit south gate 0.00 m and west gate corners 4.88 vs 8.37 m, boneyard
+  and boulevard (cut) 4/4 each. Reported only (`ArenaLanes.REPORT_ONLY`).
+- **terrain's report bugs** (`c28ac8e0`): the enemy now routes with its own exposure field; the centre eye leaves a
+  block. **decision_spread moved on every paired map** (the ~0.4 placements were swept under the bug): pit 0.43 →
+  0.67, yard 0.45 → 0.49; terminus round-9 layout 0.44, today's 0.33 (clearing the streets lowered it; centre_sees
+  0.12 → 0.20, still under 0.30). Not re-placed.
+- **Stretch, `hull_size` consumers:** the three disc sites have the oriented box implemented but the DISC is still
+  the default behind `match.hull_disc` (combat's arm); `army_layout` and `movement` fallbacks now read the live
+  catalogue and warn (squad/nav, done); `garage/catalog_stub.gd` still hardcodes pre-CP2 boxes (stub only).
+
+- **Nav's "pinned against block kerbs" (asked 2026-09-22):** not a parity mismatch. The block art fills its
+  footprint exactly (drawn 40.12 × 40.12 below 6.18 m against a 40.00 box: the art is 6 cm wider, never narrower),
+  there is no drawn pavement outside the box, and the collider is 4 m slabs tiling the footprint, so the bake hole is
+  the footprint plus 2.0 m and physics and navmesh agree. The pins are a turning-envelope-vs-bake-radius question
+  (IFV half-diagonal ~4.0 m, lancer ~3.5, rig 7.19 against a 2.0 m bake): nav's clearance item.
 
 ### Decisions (one line each, reversible in one place)
 - **The lane bar is read from `Units`, so it is 8.14 m drivable (`syn_artillery` 4.07 m wide), not the 6.64 m in
-  R4's prose** (the War Rig is the second-widest). The contract's principle is "the widest hull"; the code follows
-  the principle. Reversible: `ArenaLanes.bar()`.
+  R4's prose** (the War Rig is the second-widest). Reversible: `ArenaLanes.bar()`.
 - Every collider counts across a lane (barricades too); anything on the lane's centre line reads 0 m.
-- Corner r_a = the width bar's half (6.07 m); junctions certified for a 90° turn (`JUNCTION_TURN_DEG`), a lane's own
-  bends at their authored angle.
+- Corner r_a = the width bar's half (6.07 m); junctions certified for a 90° turn (`JUNCTION_TURN_DEG`).
 - Report-only maps: boneyard, boulevard, pit, yard (`ArenaLanes.REPORT_ONLY`); fixtures skipped; new maps asserted.
-- The Terminus's two on-lane chokepoint regions dropped (no game code reads `chokepoint`); no replacement authored.
-- The before/after frames come from a small shooter of my own (`tests/arena/street_shots.gd`, the real skirmish,
-  camera parked with `RtsCamera.pose_at`) rather than control's `terminus-alleys`, which shoots cutaway pairs.
+- No furniture at either kerb of a street stretch bounded by buildings (the readability rule under point symmetry).
+- The Terminus's two on-lane chokepoint regions dropped (no game code reads `chokepoint`); none authored.
+- Before/after frames from my own shooter (`tests/arena/street_shots.gd`, the real skirmish) rather than control's
+  `terminus-alleys` (cutaway pairs); the round-9 layout is frozen in `tests/arena/before/terminus_round9.json`.
+- decision_spread shifts from the instrument fix are reported, not chased by moving objectives.
 
 ### Measurements
-- Baseline `make remote T=check` at `2ee65f94` (builder0): _running_.
-- Terminus lanes at the working tree (laptop, `ArenaLanes`, static geometry): round 9 every lane 0.00 m; now avenue
-  17.56 m physical, west/east street 16.40, ring road 18.20, plaza crossings 18.20 / 19.56; all 17 corners pass.
+- Baseline `make remote T=check` at `2ee65f94` (builder0): `>> remote: make check exited 0`, 1559 passed 0 failed,
+  sim-baseline `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`, ai-scenarios 41,3.
+- `b438f72b` (builder0): _running_.
 
 ### Questions for the lead
-- (none yet)
+- (none blocking) The Terminus's objective pair now measures spread 0.33 on the fixed instrument (was 0.44 with the
+  furniture in the streets). Worth a re-sweep only if the map plays like the objectives are a formality.
 
 ### Requests to other streams
 - **Orchestrator / all:** R4's number is 8.14 m drivable (the widest hull is `syn_artillery` 4.07 m), not 6.64 m.
