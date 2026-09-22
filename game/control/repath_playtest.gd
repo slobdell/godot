@@ -12,6 +12,7 @@ extends Node
 ##   new       its order changed within RESPONSE_TICKS of the click
 ##   follows   it follows (K1 follow) a crew whose order changed: the column turns with its leader
 ##   STALE     neither: the click did not reach this crew
+##   dead      destroyed (the scenarios run back to back in a live match)
 ##
 ## Variants of the in-flight state, one per way the brief suspects a click can be swallowed: a squad move, an
 ## attack-move (the yellow pin), a support-by-fire task, an armed card command (whose right press is spent on the
@@ -113,6 +114,7 @@ func _scenario(scenario: String) -> void:
 	var before := _snapshot(members)
 	var task_before: Dictionary = element.task.duplicate(true) if element != null else {}
 	var row := {"scenario": scenario, "members": members, "first": _xz(first), "second": _xz(second),
+			"selected_at_click": controls.selection.units.duplicate(), "group_1": controls.groups.members(1),
 			"task_before": task_before, "orders_before": before}
 	if scenario == "armed":
 		await _key(KEY_R)  # a card command armed and forgotten: this right press is spent cancelling it
@@ -181,11 +183,20 @@ func _click_and_log(members: Array, at: Vector3, how: String, before: Dictionary
 	for unit_name: String in members:
 		if verdicts.has(unit_name):
 			continue
+		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank == null or not tank.is_alive():
+			verdicts[unit_name] = "dead"  # destroyed in an earlier scenario: nothing to order
+			continue
 		var order: Dictionary = final[unit_name]
 		var leader := String(order.get("target", ""))
 		verdicts[unit_name] = "follows" if String(order["verb"]) == "follow" and verdicts.get(leader, "") == "new" else "STALE"
 	return {"click_tick": click_tick, "issued_tick": _issued_tick, "via": via, "visible_1s": visible, "ticks": ticks, "verdicts": verdicts,
 			"changed_after_ticks": changed_at, "dropped": _dropped.duplicate(true)}
+
+
+func _element_id(unit_name: String) -> int:
+	var element := controls.elements.of(unit_name) if controls.elements != null else null
+	return element.id if element != null else -1
 
 
 ## {unit: [flat position, yaw]} for the living members.
@@ -204,7 +215,8 @@ func _snapshot(members: Array) -> Dictionary:
 		var order := controls.orders.current(unit_name)
 		result[unit_name] = {"id": int(order.get("id", -1)), "verb": String(order.get("verb", "")),
 				"source": String(order.get("source", "")), "goal": order.get("goal", []),
-				"target": String(order.get("target", ""))}
+				"target": String(order.get("target", "")),
+				"element": _element_id(unit_name)}
 	return result
 
 
