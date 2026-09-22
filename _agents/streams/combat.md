@@ -170,8 +170,9 @@ move, but a squadmate gets pushed aside, so the rule now only counts buildings. 
 
 It switches on (CP4) after the bus box (CP3) and squad's new slot pitch, measured again on that tree, so you get it
 together with the formation work. Two scenarios were decided by something else: the scout's orbit around the bigger
-tank is too slow to beat its turret at any radius (squad's behaviour, written up), and the artillery was right all
-along (its scenario tested which frame the map loaded on; fixed).
+tank was too slow to beat its turret at any radius (measured here; squad has since rebuilt the orbit, and the scout
+now lands 27 of 29 hits on the engine deck), and the artillery was right all along (its scenario tested which frame
+the map loaded on; fixed).
 
 ### Plan (the brief's order; one-line reasons where the brief left a choice)
 
