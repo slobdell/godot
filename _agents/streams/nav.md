@@ -192,6 +192,12 @@ the mixed squad, every unit arriving). What remains is mostly a hull at the END 
 against a kerb, its slot 8–14 m away (probably off the mesh: the miss report now prints `reachable` and the slot's
 off-mesh gap, for squad) — item 3c, the nose stop, is that row.
 
+**MERGE HERE: `f386c63e`** — builder0 check (REMOTE_SLOTS=5): 1634 passed / 0 failed, ai-scenarios 44,0 unchanged,
+**sim-baseline MOVED `1ea332e7bc268d2a` → `7574ac017c17265b`, the ONE pre-registered cause: the not-ready route retry**
+(`--nav-off=notready` reads the recorded hash back exactly). Merge alone and adopt the baseline (`make
+sim-baseline-adopt`). Arms opt-in in that hash; the per-arm `tactics_elements` bisect (arm alone ON): press 8/0,
+nosestop 8/0, **inflate 7/1** (the element's drive north) — inflation stays opt-in until that is understood.
+
 **The arms are OPT-IN (inverted switches, like `a7`) until their own A/B clears**, because default-on at `c91d8039`
 they reddened two `test_tactics_elements` tests (bisected: corner inflation delays the element's drive north; the
 dragged-heading hold is under bisection) and moved the sim baseline. **The sim baseline's one pre-registered cause is
