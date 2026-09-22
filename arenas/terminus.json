@@ -1251,15 +1251,15 @@
     "programme": "breathe",
     "period": 22.2,
     "phase": 1.48,
-    "floor": 0.8,
-    "ceiling": 1.1
+    "floor": 0.65,
+    "ceiling": 1.25
    },
    "shopfronts": {
     "programme": "breathe",
     "period": 15.2,
     "phase": 5.37,
-    "floor": 0.82,
-    "ceiling": 1.12,
+    "floor": 0.67,
+    "ceiling": 1.27,
     "wave": {
      "scatter": 0.6
     }

@@ -89,7 +89,9 @@ uniform float show_event_width = 9.0;
 uniform vec4 show_pixel = vec4(0.0, 0.0, 0.0, 1.0);
 uniform vec4 show_pixel_wave = vec4(0.0, 0.0, 0.0, 0.0);
 uniform vec4 show_pixel_focus = vec4(-1.0, -1.0, 0.0, 0.0);
-uniform float show_pixel_energy = 1.8;
+// 1.3, not 1.8: at 1.8 the first frames (9f68b95e, builder0) washed magenta and amber toward white; a saturated venue
+// colour reads as neon, a pastel one as a lit office.
+uniform float show_pixel_energy = 1.3;
 uniform sampler2D show_window_map : hint_default_black, filter_nearest, repeat_disable;
 // ShowWindowGrid's layout: COLS columns, ROWS storeys per facade, FACADES facades per block.
 const int SHOW_COLS = 32;
