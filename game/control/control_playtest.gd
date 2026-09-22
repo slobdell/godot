@@ -45,6 +45,7 @@ func run() -> void:
 	await _capture("0_start")
 	await _box_select()
 	await _whole_army()
+	await _form_squad()
 	await _element_task()
 	await _vision_report()
 	await _attack_move()
@@ -392,6 +393,29 @@ func _whole_army() -> void:
 			"grouped": picked > SelectionPanel.GROUP_ABOVE})
 	await get_tree().create_timer(0.8).timeout
 	await _capture("8_whole_army")
+
+
+## Round 10 (R1): one unit from squad 1 and one from squad 2. The card must say why its task buttons are grey and
+## offer FORM SQUAD; one real click on it makes the pair a squad whose buttons are live in the same frame.
+func _form_squad() -> void:
+	var panel := controls.get_node_or_null("SelectionPanel") as SelectionPanel
+	var one := _alive(controls.groups.members(1))
+	var two := _alive(controls.groups.members(2))
+	if panel == null or controls.elements == null or one.is_empty() or two.is_empty():
+		_step("form_squad", {"skipped": "needs the panel, elements, and living squads 1 and 2"})
+		return
+	controls.selection.set_units([one[0], two[0]])
+	await get_tree().create_timer(0.6).timeout
+	var reason := String(panel.summary()["reason"])
+	var button := panel.form_squad_rect()
+	_checks["mixed_selection_says_why"] = reason.contains("Form squad") and button.has_area()
+	await _capture("7a_mixed_selection")
+	if button.has_area():
+		await _click(panel.get_global_rect().position + button.get_center())
+	_checks["form_squad_enables_tasks"] = controls.can_task() and String(panel.summary()["reason"]) == ""
+	_step("form_squad", {"reason": reason, "group": controls.selected_group(), "selected": controls.selection.units})
+	await get_tree().create_timer(0.6).timeout
+	await _capture("7b_formed_squad")
 
 
 ## Whether this unit can currently see a living enemy (it is fighting, not travelling).

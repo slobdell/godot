@@ -20,8 +20,11 @@ extends RefCounted
 ##                                           costs time", that becomes its own key here rather than a second meaning.
 ##    "slot": [right, back],                 optional, follow, ONE unit: its place in the target's frame (round 7, for
 ##                                           elements flowing into formation: a live sliding goal, see Orders.goal_of)
-##    "source": "player" | "element" | ""}   who asked (optional): the response guarantee and the playtest's
+##    "source": "player" | "element" | "",   who asked (optional): the response guarantee and the playtest's
 ##                                           measurements are about the player's orders, not a leader's
+##    "task": int}                           optional (round 10, R2, for squad): the issuing element's task sequence.
+##                                           An order under a NEW task is never a repeat of one under the old, even to
+##                                           the same spot (Orders._same_order), so a re-drag on the same place lands.
 ##
 ## Validation here is structural (types, required keys, no unknown keys, so a typo from a script or an LLM fails
 ## loudly); Orders.issue then checks names, teams, and targets against the match.
@@ -29,7 +32,7 @@ extends RefCounted
 const VERBS := ["move", "attack", "attack_move", "follow", "hold", "stop"]
 const NEEDS_TO := ["move", "attack_move"]
 const NEEDS_TARGET := ["attack", "follow"]
-const KEYS := ["units", "verb", "to", "target", "queue", "formation", "source", "facing", "slot"]
+const KEYS := ["units", "verb", "to", "target", "queue", "formation", "source", "facing", "slot", "task"]
 const TAKES_FACING := ["move", "attack_move", "hold"]
 const SOURCES := ["player", "element", ""]
 const AUTO := "auto"
@@ -89,6 +92,10 @@ static func validate(command: Variant) -> String:
 			return "'slot' is one unit's place: give it to one unit"
 		if typeof(slot) != TYPE_ARRAY or (slot as Array).size() != 2 or not _finite(slot[0]) or not _finite(slot[1]):
 			return "'slot' must be [right, back] in meters"
+	if command.has("task"):
+		var task: Variant = command["task"]
+		if not _finite(task) or float(task) < 0.0 or float(task) != floorf(float(task)):
+			return "'task' must be a whole number (the element's task sequence)"
 	if command.has("source") and not SOURCES.has(command["source"]):
 		return "'source' must be one of %s" % ", ".join(SOURCES.map(func(s: String) -> String: return "'%s'" % s))
 	return ""

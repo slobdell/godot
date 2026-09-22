@@ -34,6 +34,9 @@ signal order_changed(unit_name: String)
 signal issued(command: Dictionary)
 ## A unit's queue changed without its current order changing (a shift-queued waypoint): for waypoint markers.
 signal queue_changed(unit_name: String)
+## Round 10 (R2): an order for a unit that was dropped as a repeat of the one it is already carrying out. The instrument
+## for "I clicked and nothing happened": a drop the player cannot see is the bug the lead hit.
+signal deduplicated(unit_name: String, order: Dictionary)
 
 ## K1's response guarantee, in wall-clock time (round 5, the orchestrator's ruling ahead of combat's 30 Hz tick): an order
 ## takes effect within this many milliseconds of the input. A player feels milliseconds, not ticks: "3 ticks" meant 50 ms
@@ -47,12 +50,19 @@ const ARRIVE_RADIUS := 3.0
 ## recompute their members' slots against a moving anchor every update, so the difference is a metre or two of drift,
 ## not a new intention.
 const SAME_ORDER_M := ARRIVE_RADIUS
+## Round 10 (R2): a PLAYER's order is a repeat only when he clicked the same spot again: the clicks within this far of
+## each other (not the per-unit slots, which on a moving squad compare equal for clicks metres apart), the same facing,
+## the same units. Anything else he does is a new order, always.
+const PLAYER_REPEAT_M := 1.0
 
 var game_match: Match
 var _current := {}
 var _queues := {}
 var _next_id := 1
 var _stations := {}
+## How many units the last issue() left on the order they already had (a repeat): the controls tell the player when
+## that was ALL of them, because a click that changed nothing and said nothing reads as a broken game.
+var last_dropped := 0
 
 
 ## Contract M4: how far inside the wall's inner face a hull may be sent. The old square clamp was the wall (120) minus
@@ -155,7 +165,10 @@ func issue(command: Variant, team: int = -1) -> String:
 		base["facing"] = command["facing"]
 	if command.has("slot"):
 		base["slot"] = [float(command["slot"][0]), float(command["slot"][1])]
+	if command.has("task"):
+		base["task"] = int(command["task"])
 	var per_unit := _resolve_group(base, names, queued)
+	last_dropped = 0
 	for unit_name: String in names:
 		var order: Dictionary = per_unit[unit_name]
 		if queued and not (_current.get(unit_name, {}) as Dictionary).is_empty():
@@ -163,6 +176,8 @@ func issue(command: Variant, team: int = -1) -> String:
 			queue_changed.emit(unit_name)
 			continue
 		if _same_order(_current.get(unit_name, {}), order):
+			last_dropped += 1
+			deduplicated.emit(unit_name, order)
 			continue  # already doing exactly this: restarting it would reset its path and fire a fresh marker and cue
 		_queues.erase(unit_name)
 		_start(unit_name, order)
@@ -295,6 +310,7 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 
 	var slots := {}
 	var heading := forward
+	var layout := forward  # the frame the slots are laid in: the travel, or a drawn facing (round 10)
 	var anchor: Variant = null
 	var formation := GroupFormation.choose(tanks, String(base["formation"]), verb)
 	if verb in ["move", "attack_move"] or (verb == "hold" and base.has("to")):
@@ -302,7 +318,15 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 		var travel: Vector3 = anchor - start
 		if travel.length() > 2.0:
 			heading = travel.normalized()
-		slots = GroupFormation.slots(tanks, formation, heading, anchor, verb)
+		# Round 10 (control item 5a, decided 2026-09-20): a DRAWN facing orients the formation across that heading - an
+		# emplacement faces its threat, so a line dragged east stands north-south with its front to the east. Without
+		# one, the shape lies along the direction of travel, as it always has. `heading` itself stays the travel.
+		layout = heading
+		if base.has("facing"):
+			var drawn := Vector3(float(base["facing"][0]), 0.0, float(base["facing"][1]))
+			if drawn.length() > 0.001:
+				layout = drawn.normalized()
+		slots = GroupFormation.slots(tanks, formation, layout, anchor, verb)
 	elif verb == "follow":
 		slots = GroupFormation.follow_slots(tanks)
 		formation = "rows" if tanks.size() > 1 else "single"
@@ -323,7 +347,7 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 			var slot: Vector2 = slots[unit_name]
 			order["slot"] = [slot.x, slot.y]
 		if anchor != null:
-			var goal := Formations.to_world(anchor, heading, slots[unit_name])
+			var goal := Formations.to_world(anchor, layout, slots[unit_name])
 			goal = Orders.clamp_to_arena(goal)
 			order["goal"] = [goal.x, goal.z]
 			order["heading"] = [heading.x, heading.z]
@@ -345,13 +369,27 @@ static func _same_order(current: Dictionary, order: Dictionary) -> bool:
 		return false
 	if String(current.get("target", "")) != String(order.get("target", "")):
 		return false
-	# Round 9: "go there" and "go there, and be facing north when you get there" are DIFFERENT orders. Without this,
-	# a player who right-clicked a spot and then right-DRAGGED the same spot to correct the heading had his correction
-	# dropped as a repeat - the one case where the new desktop gesture would look ignored. Only the PLAYER's orders
-	# are compared this way: an element leader re-issues its members' moves from a heading that drifts as the element
-	# turns, and making that a new order every few degrees is exactly the re-issue churn round 8 spent a day removing.
-	if String(order.get("source", "")) == "player" and not _same_facing(current.get("facing", []), order.get("facing", [])):
+	# Round 10 (R2, squad's ask): an order under a new element task is new, whatever it says - the task changed.
+	if int(current.get("task", -1)) != int(order.get("task", -1)):
 		return false
+	# Round 10 (R2, the lead: "I was trying to right click to move them in a different direction and they didnt
+	# respond"): the player's order pre-empts everything. It compares the CLICK, not this unit's slot: two clicks
+	# metres apart on a moving squad resolve to slots within SAME_ORDER_M of each other, and the old rule dropped the
+	# second. Only the same click again (same spot within PLAYER_REPEAT_M, same facing, same units) is a repeat, and an
+	# order that takes a unit off someone else's (an element's) is never one.
+	if String(order.get("source", "")) == "player":
+		if String(current.get("source", "")) != "player" or current.get("units", []) != order.get("units", []):
+			return false
+		if not _same_facing(current.get("facing", []), order.get("facing", [])):
+			return false
+		var clicked: Array = current.get("to", [])
+		var again: Array = order.get("to", [])
+		if clicked.size() != again.size():
+			return false
+		return clicked.is_empty() or Vector2(float(clicked[0]) - float(again[0]), float(clicked[1]) - float(again[1])).length() <= PLAYER_REPEAT_M
+	# Everyone else (an element re-issuing its members' moves): the same place within SAME_ORDER_M is the same order.
+	# Facing is not compared here - a leader's heading drifts as the element turns, and a new order every few degrees
+	# is the re-issue churn round 8 spent a day removing. (Round 9's player-facing rule is inside the player branch.)
 	var a: Array = current.get("goal", current.get("to", []))
 	var b: Array = order.get("goal", order.get("to", []))
 	if a.size() != b.size():
