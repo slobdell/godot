@@ -22,6 +22,9 @@ extends SceneTree
 const STILL_MPS := 0.3
 const STILL_HOLD_S := 1.0
 const IN_SLOT_M := 3.0
+## B7: a crew has visibly acknowledged an order once it moves faster than this, or its hull or turret has turned this far.
+const ACK_MPS := 1.0
+const ACK_DEG := 5.0
 
 var case: TestCase
 
@@ -74,6 +77,14 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var before := {}
 	for unit_name: String in names:
 		before[unit_name] = int((lab.orders.call("current", unit_name) as Dictionary).get("id", -1))
+	# B7's acknowledgement: each crew's hull yaw and turret heading when the order is given.
+	var yaw0 := {}
+	var gun0 := {}
+	for unit_name: String in names:
+		var t := game_match.tanks.get_node(NodePath(unit_name)) as Tank
+		yaw0[unit_name] = t.global_rotation.y
+		gun0[unit_name] = t.turret_forward()
+	var acked := {}
 	var given: int = game_match.tick
 	element.assign({"verb": "move", "to": [goal.x, goal.z], "drills": false})
 	var ordered := -1
@@ -90,6 +101,16 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			ordered = now
 		if arrived < 0 and element.arrived:
 			arrived = now
+		for unit_name: String in names:
+			if acked.has(unit_name):
+				continue
+			var t := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if t == null:
+				continue
+			var turned: float = absf(angle_difference(t.global_rotation.y, float(yaw0[unit_name])))
+			var slewed: float = (gun0[unit_name] as Vector3).angle_to(t.turret_forward())
+			if t.estimated_velocity.length() > ACK_MPS or turned > deg_to_rad(ACK_DEG) or slewed > deg_to_rad(ACK_DEG):
+				acked[unit_name] = now
 		var fastest := 0.0
 		var worst_slot := 0.0
 		var at := {}
@@ -139,6 +160,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	return {"arena": arena_name if arena_name != "" else "default", "dir": dir,
 			"pin": ElementPlan.PIN_LEADER_ON_PLAIN_MOVE, "units": ":".join(unit_ids),
 			"metres": metres, "seed": seed_value, "formation": element.formation,
+			"ack_s": _s(acked.values().max()) if acked.size() == names.size() else null,
 			"ordered_s": _s(ordered), "arrived_s": _s(arrived), "in_slot_s": _s(in_slot), "stopped_s": _s(stopped),
 			"off_slot_m": off, "closest_m": snappedf(closest, 0.01), "goal_moves": element.goal_moves,
 			"bottleneck_s": _s(element.bottleneck_ticks)}
