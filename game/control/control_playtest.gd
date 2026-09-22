@@ -437,7 +437,7 @@ func _armed_cancel() -> void:
 	var before: int = int(controls.orders.current(members[0]).get("id", -1))
 	await _right_click(_screen(spot))
 	var spent: bool = controls.mode == "" and controls.orders.current(members[0]).get("id", -1) == before
-	await get_tree().create_timer(1.5).timeout  # the warning banner slides in (the first frame at 0.4 s caught none of it)
+	await get_tree().create_timer(3.5).timeout  # the warning banner slides in (0.4 s and 1.5 s caught only its empty box on builder0)
 	await _capture("7c_armed_cancel_banner")
 	await _right_click(_screen(spot))
 	await get_tree().physics_frame
