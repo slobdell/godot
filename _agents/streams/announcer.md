@@ -199,7 +199,7 @@ _(the worker keeps this current; the ledger and the pool report are the numbers 
    three times as the library moved (the reason each time is in the commit). **C9's cross-match memory** (`5bb8d2a3`):
    `AnnouncerHistory` keeps 40 matches, and PA lines fade on their own curve, never weaker than everybody's in the
    recent matches. Measured old -> new over 400 broadcasts: **window 20 openers 30 % -> 19 %, PA welcomes 40 % -> 33 %**;
-   window 5 gives up 0 -> 2 % and 1 -> 4 %. `audio-launch-smoke` on builder0: see Merge notes.
+   window 5 gives up 0 -> 2 % and 1 -> 4 %. `audio-launch-smoke` on builder0: **passed** (its own section below).
 6. **Stretch.** *Callbacks*: four predictions fire at **first contact** (the moment that reaches the air in every
    match; `preview` fired 0 times in 64 broadcasts) and set `predicted_{friendly_fire,flank,scouts,artillery}`; nine
    callbacks in kill, momentum, friendly_kill and result need them. A director test proves the pairing in both
@@ -208,6 +208,24 @@ _(the worker keeps this current; the ledger and the pool report are the numbers 
    pass on the deep pools*: reading the transcripts as a listener found two grammar bugs recorded three rounds ago
    ("The Wreckers **draws** first blood", "hit **its** own scout"); the audit's verb list and its-check now catch both,
    and the 14 lines they flagged are fixed and re-recorded.
+
+### After the merge: the Crossing and the Sumps (terrain R9, authorised by the orchestrator under R8)
+
+terrain's two new shipping arenas had no spoken name, which fails `test_arena_names`: the booth would build a match
+it cannot name. `vocabulary.arena` gains `crossing` -> "the Crossing" and `sumps` -> "the Sumps", and the 18 lines
+that say `{arena}` are recorded for both (36 requests, 4,196 characters, **62,609 -> 60,398**, 0 speech-to-text
+mismatches). **Every arena now has all 18 recordings.** `announcer-transcripts-check`: current.
+
+**`generate.py --only-values` came out of it, and it matters beyond this round.** Ordering those 18 lines by id
+orders 180 recordings, one per arena — and **the Terminus's masters were lost with the worktree that made them**, so
+18 of those would have been paid for again, replacing shipped clips with new takes nobody asked for. `--only-values`
+records only the realizations that speak a given slot value (an arena, a faction); the narrowed plan still writes
+every variant into the manifest, so a partial run cannot shrink a line's entry. Tested both ways. The lesson is the
+same one as the masters' `.gdignore`: **rescue a worktree's git-ignored inputs before it is removed**, or the next
+round pays for them twice.
+
+**`audio-launch-smoke` on builder0: passed** — "a flagless player launch has the announcer's voice and the music"
+(`ANNOUNCER_BOOTH mode=voice`, `MUSIC on: 9 beds, 6 stingers`), `exited 0`.
 
 ### The pool table, before and after (laptop, 40 fixture broadcasts, 51.9 match minutes, `dc95c555`)
 
