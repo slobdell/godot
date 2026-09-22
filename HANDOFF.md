@@ -25,7 +25,7 @@ Terminus streets (arena's lanes R4, nav's drive test); then the rigs' yaw (comba
 twice (terrain, R9: the art for the slot, then a river map and a pits map with mirrored objectives, judged by `spread`
 and a paired series).
 
-**PAUSED AT LAUNCH (2026-09-20, ~20:00): the lead is at ~93 % of the week's credits, so the nine agents are NOT started yet; the worktrees exist and are current. Meanwhile a second external research brief was drafted at `_agents/research/brief2.md` (16 abstract questions from round 9's negative results; the lead sends it, the replies go in `_agents/research/` and the curation into `research_catalog.md`). When credits allow, start the agents exactly as below.**
+**LAUNCHED 2026-09-22 (credits back): the nine agents were started by the lead in their worktrees at `main` = the commit of this line.** Between the briefing (2026-09-20) and the launch, two research replies were curated into the catalog and the briefs (rows B1–B14, C1–C12), a ninth stream (terrain) was added, and R1 was narrowed on the lead's playtest (CP1 withdrawn). The lead's newest playtest notes (formations still do not come together; the four causes) are at the end of `game_design.md`.
 
 **Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`), the
 same text for all nine (OFFSETs: control 1, squad 2, arena 3, nav 4, combat 5, feel 6, show 7, announcer 8, terrain 9;
