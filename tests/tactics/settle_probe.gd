@@ -46,6 +46,7 @@ func _run_probe() -> void:
 	case = TestCase.new()
 	case.tree = self
 	ElementPlan.PIN_LEADER_ON_PLAIN_MOVE = _flag("pin", "off") == "on"
+	ElementPlan.PIN_LEADER_ON_LEGS = _flag("pin", "off") == "on"
 	var report := await _run(_flag("arena", ""), _flag("dir", "forward"), _flag("units", "tank:tank:ifv:ifv").split(":"),
 			float(_flag("metres", "20")), int(_flag("seed", "3")), float(_flag("seconds", "45")))
 	print("SETTLE_PROBE " + JSON.stringify(report))
@@ -96,7 +97,12 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 		gun0[unit_name] = t.turret_forward()
 	var acked := {}
 	var given: int = game_match.tick
-	element.assign({"verb": "move", "to": [goal.x, goal.z], "drills": false})
+	# --drills=on: the task with drills ON takes ElementPlan's LEGGED movement (the path PIN_LEADER_ON_LEGS governs),
+	# not the plain move's form-up; that is the CPU's and an attack-move's path.
+	var task := {"verb": "move", "to": [goal.x, goal.z]}
+	if _flag("drills", "off") != "on":
+		task["drills"] = false
+	element.assign(task)
 	var ordered := -1
 	var arrived := -1
 	var in_slot := -1
@@ -168,7 +174,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 		if tank != null and slot is Vector3:
 			off[unit_name] = snappedf(_flat(tank.global_position).distance_to(_flat(slot)), 0.1)
 	return {"arena": arena_name if arena_name != "" else "default", "dir": dir,
-			"pin": ElementPlan.PIN_LEADER_ON_PLAIN_MOVE, "units": ":".join(unit_ids),
+			"pin": ElementPlan.PIN_LEADER_ON_PLAIN_MOVE, "drills": _flag("drills", "off"), "units": ":".join(unit_ids),
 			"metres": metres, "seed": seed_value, "formation": element.formation,
 			"ack_s": _s(acked.values().max()) if acked.size() == names.size() else null,
 			"ordered_s": _s(ordered), "arrived_s": _s(arrived), "in_slot_s": _s(in_slot), "stopped_s": _s(stopped),
