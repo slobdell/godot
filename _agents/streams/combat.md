@@ -149,3 +149,124 @@ invent a second one.
 ## Status
 
 _(the worker keeps this current)_
+
+**Started 2026-09-22 (worker session, `stream/combat` at `2ee65f94`).** Start-of-round check on `2ee65f94` (builder0):
+`>> remote: make check exited 0`, 1559 passed, 0 failed, sim-baseline `1ea332e7bc268d2a` unmoved, determinism
+`559a415887806e43`.
+
+### Plan (the brief's order; one-line reasons where the brief left a choice)
+
+1. **Predicate instrument**: `YAW_TRACE` lines per candidate per tick on a `DRIVE_TRACE` crew: the predicate's depth,
+   the verdict, and every contact of the same zero-motion query by name, kind (tank/world) and depth. Run on the
+   refusing crews (Charlie_3, Charlie_1, Bravo_6) and the seating Alpha_4, constraint ON by tune. Rank (a)–(d) by the
+   trace, not before.
+2. **Ordering table**: five_squads in the other four orders (a test-local permutation knob, measured, not asserted).
+3. **The fix the predicate implies**, measured on slots + corridor + nav's wedged rig on one build; CP4 only if all
+   bars (plus B2's "no run > 3 refused ticks") pass. **Sequenced by the orchestrator (2026-09-22):** CP3 (bus box +
+   jitter + mount x/z) → squad's pitch → the five_squads re-run with the constraint on, on that tree.
+4. ORBIT reads hull length (engine-deck scenario).
+5. The artillery scenario, with the drain.
+6. Stretch: gangs-vs-law per-site series (C6 paired seeds), `Units.stat()` guard, A2 verdict, duel hide/peek.
+
+### 1. The predicate: ANSWERED, a mechanism with its tick (laptop, `2ee65f94` + the `YAW_TRACE` instrument)
+
+**Repro:** `TUNE=match.yaw_fit=1 DRIVE_TRACE=Green_Charlie_3,Green_Alpha_4,Green_Charlie_1,Green_Bravo_6 make test
+FILTER=ai_player_orders` (the constraint selected by tune for the instrument; the default stays OFF). It reproduced
+round 9 to the decimal: Alpha 2.9, Bravo 89.5, Charlie 87.6, Delta 86.5, Echo 91.1, 12 of 30 off.
+
+| crew | refused candidates | against | longest refused run | command while refused (ticks) |
+|---|---|---|---|---|
+| Charlie_3 | 3516 | Charlie_2 only | 1134 | throttle 0, turn −1: 1209 |
+| Charlie_1 | 3782 | Charlie_2 (3779), Bravo_6 (3) | 1259 | throttle 0, turn −1: 1290 |
+| Bravo_6 | 3742 | Charlie_1 (3741), Bravo_5 (1) | 1112 | throttle 0, turn −1: 1279 |
+| **Alpha_4 (seats)** | 476 | Alpha_3, Alpha_5 | **128** | turn +1: 188; **throttle 0.5: 140**; turn −1: 56 |
+
+**Every refused candidate of every traced crew, the seating one included, was refused against a SQUADMATE. The world
+never appeared once** (the `Ground` rows are depth 0.0000 and never refuse).
+
+**The mechanism: a ratchet into a fixed point.** `tank` is the tracked dozer, 8.62 × 2.40 m, half-diagonal 4.48 m, in a
+6 m row. A pivot in place there needs 8.96 m, and one end of a pivoting hull swings toward each neighbour. Its goal is
+behind it, so the driver commands a pure pivot (throttle 0, turn −1). Each accepted small candidate deepens its corner
+into the neighbour by up to the slack (5 mm). `move_and_slide` with zero velocity leaves the pair touching. The hull
+stops at the one posture where even the smallest candidate costs just over the slack. Charlie_3 from **tick 1880**:
+here 0.0000, candidates 1.0 / 0.6 / 0.3 = 0.0177 / 0.0104 / 0.0050 m against Green_Charlie_2, **byte-identical every
+tick for 1134 ticks**. Nothing translates the hull, so the state never changes. Alpha_4 escapes because its command is
+not a pure pivot (140 ticks of throttle 0.5), and throttle moves it off the contact.
+
+**The four hypotheses, ranked on the trace:**
+- **(a) Dominance against a squadmate: CONFIRMED in its corrected form.** The current penetration is ~0 (not
+  non-zero), and every candidate is worse against the squadmate by the ratchet's margin.
+- **(b) Boolean saturation: REFUTED.** The depths are continuous and ordered by fraction (0.0177 > 0.0104 > 0.0050).
+- **(c) Stale basis: REFUTED.** The candidate yaws are exact fractions of a constant 2.66° step off the live heading.
+- **(d) A kerb container on the world layer: REFUTED.** Zero world refusals.
+- **Research B2's prediction** that the refusers' deepest contact is a squadmate and Alpha_4's is not: half right.
+  Alpha_4's is also a squadmate; what separates it is the command (throttle), not the contact.
+
+**What the mechanism implies for item 3:** a wall does not yield and a squadmate does (the slide depenetrates the
+pair). Refusing a yaw because a VEHICLE is in the way is the defect. The arm is `match.yaw_world`, rebuilt as a true
+mask arm: the same `test_move`, with the body's mask narrowed to the world layer for the call. Round 9's `collide_shape`
+version is retired; its numbers are not carried forward. Tests in `test_tank_yaw_fit.gd`: a positive control (vehicles
+in the mask → the pivot freezes, run > 3) and the treatment (world mask → run ≤ 3 and > 90° turned), plus the wall case
+under the world mask.
+
+### 2. The ordering: ONE TABLE, and the answer is "neither alone" (laptop, `2ee65f94` + instrument)
+
+`FIVE_SQUADS_ORDER=<letters> TUNE=match.yaw_fit=1 make test FILTER=five_squads`, n=1 per order (worst gap to its
+own slot, m; bold = frozen, beyond the 36 m leash):
+
+| order | Alpha | Bravo | Charlie | Delta | Echo | off of 30 |
+|---|---|---|---|---|---|---|
+| ABCDE | 2.9 | 5.4 | **88.0** | 4.3 | **89.7** | 8 |
+| EDCBA | **89.7** | **87.2** | **88.1** | 9.0 | **90.0** | 14 |
+| CABDE | **89.9** | 3.5 | 3.0 | 6.5 | **89.7** | 7 |
+| BCDEA | 3.5 | 5.5 | 8.7 | 3.5 | **89.7** | 5 |
+| DEABC | 2.9 | **89.5** | **87.6** | **86.5** | **91.1** | 12 |
+
+- **The order does not decide.** The first-ordered squad seated in 3 of 5 (Echo and Delta, ordered first, froze).
+- **The geometry does not decide alone either.** Echo, at the +x end of the row, froze in all five orders. Every other
+  squad both seated and froze depending on the order.
+- **⚠ THE HARNESS IS NOT DETERMINISTIC ENOUGH FOR THIS TABLE, so no row above is evidence about order.** The same
+  order and code (ABCDE, vehicles in the mask) ran **12 off** in the arm batch and in item 1's run, and **8 off** in this
+  batch. DEABC reproduced the 12-off row to the decimal. `make test` runs Godot WITHOUT `--fixed-fps` (`mk/core.mk:244`),
+  so physics steps interleave with idle frames by wall clock, and a loaded laptop (nine agents) changes the simulation.
+  Run-to-run noise on identical input (4 frozen squads vs 2) is as large as any difference between orders.
+- **What survives:** Echo froze in every row; the first-ordered squad did not reliably seat (3 of 5). "Alpha seats
+  because it was ordered first" (round 9's n=1) is **not supported**. The freeze is the predicate plus the pivot command
+  (item 1), and item 3 removes the vehicle term instead of tuning an order, so the order question closes with it.
+- **Harness note for whoever owns `mk/core.mk` (metrics/orchestrator):** a filtered `make test` is not a repeatable
+  measurement of a many-unit test on a loaded machine. Every number here was cross-checked by re-running.
+
+### 3. The fix the predicate implies: the WORLD-ONLY mask, measured (laptop, working tree on `2ee65f94`)
+
+Same build, arms selected by tune and proven applied (`TUNE applied from the environment: …` and the MEASURE line's
+`yaw_fit true, world mask true`):
+
+| arm | five_squads off of 30 (worst per squad, m) | longest refused run | nav's wedged rig: yaw / footprint / residual / giveups | nav suite |
+|---|---|---|---|---|
+| constraint OFF (today's default) | **0** (3.8, 4.3, 10.1, 4.2, 4.3) | 0 | 44.0° / 12.1 m (nav's unconstrained figures) | 8/0 |
+| ON, vehicles in the mask (round 9's) | **12** (2.9, 89.5, 87.6, 86.5, 91.1) | **1268** | 11.6° / 6.1 m / 1.27 m / 1 | 8/0 |
+| **ON, world mask (the fix)** | **0** (2.9, 5.0, 9.2, 6.2, 3.8); a second run: 0 (4.1, 4.3, 5.4, 5.0, 5.6) | **1** | **11.6° / 6.1 m / 1.27 m / 1** | **8/0** |
+
+- **The arm proof:** the corridor holds no vehicles, and it is byte-identical between the two mask arms (4.99 m of path,
+  11.6°, net drift 2.26 m, residual 1.27 m). The arm changed only the collider set.
+- **All four CP4 bars pass on one build with the world mask:** slots 0 of 30; corridor 11.6° / 6.1 m, residual
+  1.27 ≤ 1.8 m, giveups 1; the wedged rig not frozen; no refused run over 3 ticks (longest 1).
+- **Tests** (`FILTER=tank_yaw_fit`: 5 tests, the three new ones included; builder0 check below). The positive control: two squadmates 0.8 m
+  either side, vehicles in the mask → the pivot freezes (longest run 82 ticks, 12.6° in 3 s). The treatment: the world
+  mask → 128.9°, run 0. The wall case under the world mask: unchanged (36.3°, the rig not inside the crate).
+- **The cost, stated:** under the world mask a pivoting hull overlaps its squadmates (the slide separates them), which is
+  exactly today's default behaviour with the constraint off. It is not new clipping. Hulls not clipping while they dress
+  is squad's slot pitch (this round).
+- **CP4 is prepared, not flipped.** The orchestrator's sequence is CP3 (bus box + jitter + mount) → squad's pitch →
+  five_squads re-run with the constraint on, on that tree. The flip is two defaults (`yaw_fit_enabled`,
+  `yaw_fit_world` → true) in one commit, merged alone, baseline recorded twice.
+
+### Answers given to other streams
+
+- **feel CP3 jitter (2026-09-22):** no objection. five_squads seeds jitter 0.0; `test_tank_place`/`test_spawn_isolation`
+  positions move (pre-registered as moved, not regressed). The bus box raises the default hull's half-diagonal at
+  five_squads' 6 m pitch, so CP4 is measured after CP3.
+- **feel R5 mount (2026-09-22):** no objection to x/z pivot moves with y kept. **C8(a) aim point:** `gunnery.gd:149`
+  aims at `target.global_position` (the box centre on the ground), and every aim test is planar
+  (`Ballistics.aim_error` zeroes y; shells fly flat), so the aim is the hull centre in plan: not a trap today. Test to
+  add: the collider centre equals the origin in x/z for every profile.
