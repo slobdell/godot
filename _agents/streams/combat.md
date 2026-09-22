@@ -432,6 +432,17 @@ around the blocks; compare with `TUNE=match.yaw_fit=1` (round 9's rule), where s
   passes its own tuned value. Test: `test_combat_hull_geometry::test_a_tuned_muzzle_height_reaches_the_mounted_pivot`
   (red before, green after). No tune means identical values: baseline pre-registered unmoved.
 
+### Where five_squads' hulls start (for CP4's re-run)
+
+Arena's finding: doctrine armies re-lay at tick 0 and never stand on the spawn grid, so its checkerboard fill (turning
+envelopes disjoint for the first 28 bare spawns) does not reach five_squads. **Neither does squad's pitch, at spawn:**
+`test_ai_player_orders._setup` places the 30 hulls by hand at `x = −90 + 6·i, z = 95`, a 6 m row. The bus's turning
+envelope needs 10.42 m (arena's figure), so every hull starts inside its neighbours' envelopes. That start is exactly
+the regime item 1 traced: the freeze happened at the spawn row. Squad's pitch governs the arrival slots only. So the
+CP4 re-run measures the world-mask fix against a start that is deliberately worst-case, which is the right test of it,
+and "hulls clip while pivoting out of a 6 m row" is expected there under the world mask (the accepted trade), not a
+regression.
+
 ### Owed after CP3 (taken 2026-09-22)
 
 - `scenario_fire_discipline::test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane` fails on feel's CP3 tree
