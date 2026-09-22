@@ -182,3 +182,19 @@ turret-probe: import ## Feel R5: each unit's drawn roof profile, turret/weapon a
 		--turret-probe-json=$(CURDIR)/$(BUILD_DIR)/turret-probe.json $(if $(UNITS),--turret-probe-units=$(UNITS)) \
 		2>&1 | grep -E '^TURRET_PROBE|SCRIPT ERROR' || true
 	@grep -q . $(BUILD_DIR)/turret-probe.json 2>/dev/null || { echo "turret-probe FAILED: no json"; exit 1; }
+
+.PHONY: rim-pair
+# Feel round 10, backlog 4: the per-faction rim as a PAIR at his pose (show's rule 12: one variable). Four arms of the
+# same seed and frame -- show off/on x rim off/on -- each size-look's army.png (the army framed at 21 deg, 49 m, FOV
+# 35). The eye judges; the frames are a pair per variable. Needs a display: `make remote T=rim-pair`.
+rim-pair: import ## Feel: the per-faction hull rim, show off/on x rim off/on, one frame each at his pose -> build/rim-pair/<arm>/army.png (needs a display; ARENA=terminus, RIM_FLAGS=)
+	rm -rf $(BUILD_DIR)/rim-pair && mkdir -p $(BUILD_DIR)/rim-pair
+	@for arm in show-rim show-norim noshow-rim noshow-norim; do \
+		flags=""; case $$arm in *noshow*) flags="$$flags --no-show";; esac; case $$arm in *norim*) flags="$$flags --no-faction-rim";; esac; \
+		mkdir -p $(BUILD_DIR)/rim-pair/$$arm; \
+		timeout 300 $(GODOT) --path . --resolution $(SIZE_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
+			--arena=$(or $(ARENA),terminus) --size-look=$(CURDIR)/$(BUILD_DIR)/rim-pair/$$arm --size-look-lengths=14 $$flags $(RIM_FLAGS) \
+			> $(BUILD_DIR)/rim-pair/$$arm/log.txt 2>&1 || true; \
+		grep -E '^SIZE_LOOK_ARMY|SCRIPT ERROR' $(BUILD_DIR)/rim-pair/$$arm/log.txt | sed "s/^/$$arm: /" || true; \
+		test -f $(BUILD_DIR)/rim-pair/$$arm/army.png || { echo "rim-pair FAILED: no frame for $$arm"; exit 1; }; \
+	done
