@@ -25,6 +25,33 @@ func _box(unit_id: String) -> Vector3:
 	return Vector3(float(size[0]), float(size[1]), float(size[2]))
 
 
+func test_the_bus_is_longer_than_the_garbage_truck() -> void:
+	var bus := _box("tank")
+	var truck := _box("ifv")
+	assert_true(bus.z / truck.z >= LONGER_BY - RATIO_SLACK,
+			"the bus (%.2f m) is at least %.2fx the garbage truck's length (%.2f m): it is %.2fx"
+			% [bus.z, LONGER_BY, truck.z, bus.z / truck.z])
+
+
+func test_the_bus_is_heightened_in_proportion() -> void:
+	var bus := _box("tank")
+	var truck := _box("ifv")
+	var length_ratio := bus.z / truck.z
+	assert_true(bus.y / truck.y >= length_ratio - RATIO_SLACK,
+			"the bus is %.2fx the truck's length, so it is at least %.2fx its height (%.2f m): it is %.2f m, %.2fx"
+			% [length_ratio, length_ratio, truck.y, bus.y, bus.y / truck.y])
+
+
+## The number came from his eye, but the reference it lands on is still written down beside the box (R6: "record the
+## reference you settle on"), and it is one S1's rule accepts: the length is that vehicle's times SCALE_K, so the
+## roster-wide `test_every_hull_is_its_reference_length_times_k` keeps holding for the bus too.
+func test_the_bus_records_the_reference_it_settled_on() -> void:
+	var reference: Dictionary = Units.PROFILES["tank"]["scale_reference"]
+	assert_true(reference.has("ruled"), "the bus's reference says it was ruled by the lead's eye, and on what")
+	assert_near(_box("tank").z, Units.target_length_m("tank"), 0.011,
+			"the bus's length is its recorded reference times K")
+
+
 ## The second half of "too small", found by R5's turret probe (2026-09-22): the bus was not even DRAWN at its box.
 ## `Tank.shared_hull_size()` measured the shared dozer by instantiating its scene out of the tree, where the
 ## `dozer_part` wrapper has not built its model yet (it does that in `_ready`), found no meshes and fell back to

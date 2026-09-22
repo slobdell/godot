@@ -303,12 +303,12 @@ func _lineup(scene: Node, focus: Vector3, heading: float) -> void:
 	await _shoot_rows(scene, stage, heading, [SPREAD], "lineup_pose.png", "pose", DISTANCE_M, PITCH_DEG, 3.0)
 
 	# 4. R6 (round 10): the bus beside the garbage truck (and the fire engine) at HIS pose -- the frame his ruling
-	# "longer than the garbage truck and heightened proportionally" is judged on. `--size-look-bus=W,H,L;W,H,L`
+	# "longer than the garbage truck and heightened proportionally" is judged on. `--size-look-bus=W,H,L/W,H,L` (a slash: a semicolon ends the recipe's shell command)
 	# shoots one more frame per candidate box (Units.tuning, so the catalog is not edited to look).
 	await _shoot_rows(scene, stage, heading, [BUS_ROW], "lineup_bus.png", "bus", DISTANCE_M, PITCH_DEG, 3.0)
 	var candidates := LaunchFlags.from_environment().text("size-look-bus", "")
 	var n := 0
-	for spec in candidates.split(";", false):
+	for spec in candidates.split("/", false):
 		var parts := spec.split(",", false)
 		if parts.size() != 3:
 			continue

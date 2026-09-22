@@ -170,11 +170,16 @@ const PROFILES := {
 		"blurb": "The armored prison-bus dozer. Heavy cannon on a slow turret; thick front armor.",
 		"cost": 200,
 		"unlock_tier": 0,
-		"hull_size": [2.40, 2.40, 8.62],
-		# S1 (round 9): The lead's own example: "the bus-tanks ... definitely need resizing". A prison bus is a school bus
-		# with the windows welded over.
-		"scale_reference": {"vehicle": "Type D school bus, 40 ft (Blue Bird All American)",
-				"length_m": 12.19, "source": "40 ft = 12.19 m, the standard full-size US school bus"},
+		"hull_size": [2.90, 4.76, 9.70],
+		# R6 (round 10, feel; carve-out, combat reviews; CP3): THE LEAD'S EYE, on the Terminus: "the condemned bus is too
+		# small still. It should be longer than the garbage truck and heightened proportionally." The garbage truck is
+		# `ifv` (7.54 m, 3.70 m tall). Length: a 45 ft coach x K = 9.70 m, 1.29x the truck. Height: the truck's 3.70 x the
+		# same 1.29 = 4.76 m. Width 2.90: a coach is no wider than a truck (the ifv is 2.86); the spawn grid's jitter was
+		# re-derived for it (match.gd). Picked on lineup_bus_*.png at his pose; tests/test_units_bus_eye.gd holds the
+		# two ratios against the ifv's live box. (Round 9: a 40 ft school bus, 2.40 x 2.40 x 8.62, which he ruled too small.)
+		"scale_reference": {"vehicle": "45 ft motor coach, the US prisoner-transport bus (MCI D4505)",
+				"length_m": 13.72, "source": "45 ft = 13.72 m; the MCI D-series is the coach the US Marshals and the Bureau of Prisons run as prison buses",
+				"ruled": "the lead, 2026-09-20: longer than the garbage truck (ifv) and heightened proportionally (R6)"},
 		"max_health": 300,
 		"max_shield": 150,
 		"shield_recharge_delay": 4.0,
