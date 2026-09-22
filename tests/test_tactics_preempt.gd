@@ -176,3 +176,64 @@ func test_a_cpu_element_keeps_its_cycle() -> void:
 		await _step(scenario, Element.UPDATE_TICKS + 1)
 	assert_true(waited > 0, "with no player on the team the element plans on its own tick (%d of 4 waited)" % waited)
 	scenario.dispose()
+
+
+func test_crews_that_finished_their_move_and_went_idle_take_the_new_task() -> void:
+	# control's repath-test "arrived" state (Terminus, builder0): a squad sent 15 m, 15 s later a right-click 40 m off;
+	# the crews that had finished their element move and gone idle got no order through tick +8.
+	var context := await _squad()
+	var scenario: AiScenario = context["scenario"]
+	var orders: Object = context["orders"]
+	var alpha: Element = context["alpha"]
+	alpha.assign({"verb": "move", "to": [0, 45], "drills": false})
+	var idle := 0
+	for i in SimClock.TICK_RATE * 30:
+		await scenario.step()
+		idle = 0
+		for member: String in MEMBERS:
+			if (orders.call("current", member) as Dictionary).is_empty():
+				idle += 1
+		if idle >= 2:
+			break
+	assert_true(idle >= 2, "setup: crews finished the move and went idle (%d of 4)" % idle)
+	alpha.assign({"verb": "move", "to": [40, 45], "drills": false})
+	await _step(scenario, WITHIN_TICKS)
+	assert_eq(_not_rederived(alpha, orders), [], "every crew, the idle ones included, is on the new task")
+	scenario.dispose()
+
+
+func test_an_idle_crew_is_given_the_follow_its_flow_asks_for() -> void:
+	# The same hole outside a player task's first update (a CPU element, or any later update): _should_issue's idle
+	# branch had no case for a crew whose last order was our finished move and whose new one is a `follow`.
+	var scenario := AiScenario.create(self)
+	for i in 4:
+		scenario.brain_tank(Match.Team.GREEN, MEMBERS[i], Vector3(-15.0 + i * 10.0, 0.0, 60.0), 0.0, {}, "tank")
+	var orders: Object = scenario.orders()
+	var elements := Elements.install(scenario.game_match, orders)
+	await scenario.start()
+	var alpha := elements.form(MEMBERS, "Alpha")
+	alpha.assign({"verb": "move", "to": [0, 30], "drills": false})
+	var idle: Array = []
+	for i in SimClock.TICK_RATE * 30:
+		await scenario.step()
+		idle = []
+		for member: String in MEMBERS:
+			if member != alpha.leader and (orders.call("current", member) as Dictionary).is_empty() \
+					and String(alpha.issued_to(member).get("verb", "")) == "move":
+				idle.append(member)
+		if idle.size() >= 2:
+			break
+	# control's case exactly: the crew's LAST element order is a finished `move` to its final slot (the flow had
+	# joined), not a `follow` — an idle crew last on a follow is re-issued by the branch above it.
+	assert_true(idle.size() >= 2, "setup: followers finished their final move and went idle (%s)" % str(idle))
+	alpha.assign({"verb": "move", "to": [0, -30], "drills": false})
+	await _step(scenario, Element.UPDATE_TICKS * 2)
+	var still_idle: Array = []
+	print("MEASURE idle_follow idle %s -> %s" % [str(idle), str(idle.map(func(m: String) -> String:
+			return "%s %s (was %s)" % [m, String((orders.call("current", m) as Dictionary).get("verb", "none")),
+					String(alpha.issued_to(m).get("verb", "?"))]))])
+	for member: String in idle:
+		if (orders.call("current", member) as Dictionary).is_empty():
+			still_idle.append(member)
+	assert_eq(still_idle, [], "a CPU element's idle crews are given their follow within two cycles")
+	scenario.dispose()

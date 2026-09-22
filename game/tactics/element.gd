@@ -625,6 +625,11 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		if String(desired["verb"]) in ["attack", "attack_move"] and String(desired.get("target", "")) != "":
 			return String(mine.get("target", "")) != String(desired["target"]) \
 					or tick - int(mine.get("tick", -RE_ISSUE_TICKS)) >= RE_ISSUE_TICKS
+		# A crew that finished our move and went idle, now wanted on a `follow` (the new task's flow): a different
+		# intention with no place to compare, so none of the checks above can issue it. control measured it on Terminus
+		# (repath-test "arrived"): crews 3/4/6/8 idle through tick +8 while the leader drove off on the new task.
+		if not mine.is_empty() and String(desired["verb"]) == "follow" and String(mine.get("verb", "")) != "follow":
+			return true
 		return mine.is_empty() and String(desired["verb"]) != "hold"
 	if mine.is_empty() or int(current.get("id", -1)) != int(mine.get("id", -2)):
 		return false  # not ours to change
