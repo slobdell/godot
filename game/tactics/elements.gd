@@ -159,7 +159,9 @@ func _physics_process(_delta: float) -> void:
 		# Round 5 (ai): each element decides on its own tick in the cycle (by id), so a 30-a-side battle pays
 		# for one or two leaders every tick instead of all of them every sixth tick (a ~9 ms spike on the laptop).
 		# Still every UPDATE_TICKS for each element, still in id order, still deterministic.
-		if (tick + element.id) % UPDATE_TICKS != 0:
+		# R2 (round 10): a task the player just gave is acted on THIS tick, not on the element's slot in the cycle
+		# (up to UPDATE_TICKS - 1 later). Only the player's elements: a CPU's keep the cycle, and the baseline with it.
+		if (tick + element.id) % UPDATE_TICKS != 0 and not element.preempting(game_match):
 			continue
 		var leader_before := element.leader
 		var changed := element.update(game_match, orders)
