@@ -155,8 +155,7 @@ anchors along every lane (feel's kit); a light behind every corner (show's).
 _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round 10).**
 
 ### Plan (in order; smallest foundation first)
-1. **R4 lanes (CP2)** — DONE in code (`b438f72b`, `aa3ce791`); builder0 check pending; before/after frames pending
-   (`make remote T=terminus-streets`, one remote per worktree).
+1. **R4 lanes (CP2)** — DONE; **CP2 green at `44315882`** (builder0), frames and page done.
 2. **R3 prop collision parity** — DONE (`b438f72b`, `aa3ce791`).
 3. **Reads passable** — DONE as a headless instrument (`aa3ce791`); frames come with item 1's shots.
 4. **Spawn grid** — WAITS for feel's CP3 (orchestrator, 2026-09-22: CP3 shrinks the spawn jitter; derive from the
@@ -215,7 +214,24 @@ _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round
 ### Measurements
 - Baseline `make remote T=check` at `2ee65f94` (builder0): `>> remote: make check exited 0`, 1559 passed 0 failed,
   sim-baseline `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`, ai-scenarios 41,3.
-- `b438f72b` (builder0): _running_.
+- `b438f72b` (builder0): `>> remote: make check exited 0`, 1567 passed 0 failed, sim-baseline `1ea332e7bc268d2a`
+  unmoved (as pre-registered), determinism `559a415887806e43`.
+- **`44315882` (builder0): `>> remote: make check exited 0`, 1569 passed 0 failed, 18 targets, sim-baseline
+  `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`, ai-scenarios 41,3 unchanged. CP2 IS GREEN HERE.**
+- `1c745225` (builder0, terrain-rim parity): full check `exited 2`: 1570 passed 0 failed, sim-baseline unmoved,
+  17 of 18 targets; the one red is `ai-scenarios-check` with `scenario_perf` at 21755 us/tick (budget 4000) under
+  a 3-at-once load, the case the baseline file names as load-sensitive. Re-run alone on the SAME tree:
+  `>> remote: make ai-scenarios-check exited 0`, 41,3 unchanged. No scenario reads `ArenaLanes`/`LaneReadability`
+  (grep: only their own files). Verdict: green on this commit, the red was load, not code.
+- Frames: `make remote T=terminus-streets` (builder0, tree = `44315882`), 7 pairs looked at; page
+  `make terminus-streets-page` → published https://claude.ai/artifact/U3rZUei4p8YeLBS55VyCuX (private: share it).
+
+### CP2 merge notes
+- **Merge at `44315882`** (green). Commits after it are docs and `tools/street_page.py` only (not in `make check`).
+- Touches no other stream's paths. `tests/arena/before/terminus_round9.json` is a frozen copy for the pair, not a
+  layout (`Arena.layout_names()` reads `arenas/` only). Box changes other streams feel: `ad_screen` 7.8 × 2.0
+  (was 7.4 × 1.4), `wreck` 3.2 × 3.3 (was 3.2 × 6.4) — cover and navmesh on yard/pit/boneyard/boulevard/terminus
+  change with them; the foundry (sim baseline) has no kit props.
 
 ### Questions for the lead
 - (none blocking) The Terminus's objective pair now measures spread 0.33 on the fixed instrument (was 0.44 with the
@@ -228,6 +244,11 @@ _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round
   `arena_report.analyze()`. Accepted in principle (the centre is a river or a building on its maps). At review I'll
   check the fallback still exercises the centre on foundry/yard/pit/terminus, and that the report's LANE table sees
   terrain (the Python lane table does not model water; `ArenaLanes` does).
+- **terrain, to check at review:** its branch's `arena_terrain.gd` carries `LANE_DRIVABLE_M := 8.14` and
+  `BAKE_RADIUS_M := 2.0` as literals (its `MIN_DECK_M` is derived from them): a copy of `ArenaLanes.bar()` that goes
+  stale the next time the widest hull or the bake changes (Invariant 0). Ask for `MIN_DECK_M` to be checked against
+  `ArenaLanes.bar()` in a test, or derived at load. `ArenaLanes` now reads its rims (`rim_slabs`) and, once merged,
+  its rails (`rail_slabs`, asked by name) as colliders (commit below).
 
 ### Requests to other streams
 - **Orchestrator / all:** R4's number is 8.14 m drivable (the widest hull is `syn_artillery` 4.07 m), not 6.64 m.

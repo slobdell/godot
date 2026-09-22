@@ -263,13 +263,40 @@ static func _exit(perimeter: PackedVector2Array, p: Vector2, dir: Vector2, reach
 	return best
 
 
-## Every collider's footprint: {center: Vector2, size: Vector3, rotation_deg}.
+## Every collider's footprint: {center: Vector2, size: Vector3, rotation_deg}. Obstacles and colliding props, and
+## (round 10, terrain's parity finding) the terrain's own colliders READ from `ArenaTerrain`: the rim around every
+## carved footprint and the rails on every bridge deck. Carved ground itself is `Arena.contains`' answer (`_free`).
 static func _boxes(data: Dictionary) -> Array:
 	var out: Array = []
 	for obstacle: Dictionary in data.get("obstacles", []):
 		out.append({"center": Vector2(obstacle["position"][0], obstacle["position"][1]),
 				"size": Arena.obstacle_size(obstacle), "rotation_deg": float(obstacle.get("rotation_deg", 0.0))})
+	var terrain: Array = data.get("terrain", [])
+	for entry: Dictionary in terrain:
+		var kind := String(entry["kind"])
+		if ArenaTerrain.carves(kind):
+			for slab: Array in ArenaTerrain.rim_slabs(entry, terrain):
+				out.append(_slab(slab, ArenaTerrain.RIM_HEIGHT))
+		elif ArenaTerrain.is_deck(kind):
+			for slab: Array in _rails(entry, terrain):
+				out.append(_slab(slab, ArenaTerrain.RIM_HEIGHT))
 	return out
+
+
+## A bridge deck's rails, when the terrain code builds them (`ArenaTerrain.rail_slabs`, terrain's round-10 addition).
+## Asked by name so this file does not depend on the order the two streams merge in; once terrain's branch is on
+## main it always answers.
+static func _rails(deck: Dictionary, terrain: Array) -> Array:
+	var script := ArenaTerrain as Script
+	for method: Dictionary in script.get_script_method_list():
+		if String(method["name"]) == "rail_slabs":
+			return script.call("rail_slabs", deck, terrain)
+	return []
+
+
+## An `ArenaTerrain` slab [centre_x, centre_z, width, depth] as a box.
+static func _slab(slab: Array, height: float) -> Dictionary:
+	return {"center": Vector2(slab[0], slab[1]), "size": Vector3(slab[2], height, slab[3]), "rotation_deg": 0.0}
 
 
 ## One line per lane and per corner, for logs and the report.

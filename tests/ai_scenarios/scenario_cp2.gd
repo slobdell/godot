@@ -61,9 +61,19 @@ func test_artillery_digs_in_and_shells_a_spotted_target() -> void:
 
 ## Combat's request (d): a battery stays dug in while its target drives across its range (the turret follows it);
 ## re-facing the hull every think packed it up again.
+##
+## ROUND 10 (combat, backlog item 5): the target now stops at (-45, -40), not (-30, -40), and the artillery is
+## unchanged. The old goal made the result depend on the target's ROUTE. When this scenario runs after another in the
+## same process, the target's first route request lands on the frame where the previous arena's navigation regions
+## are gone and the new ones are not yet synced (`regions=[]`). It gets no route, drives a straight line for the 4 s
+## until `Movement` replans, and parks at (-33, -40), out of the spotter's line of sight. The battery then correctly
+## packs up to SHADOW (1 round, FAIL). Run first in its process, the tick-2 route is the 7-point path, the target parks
+## at (-32, -41) in sight, and the battery keeps shelling (5 rounds, PASS). Measured with probes, laptop, `2434f50d`.
+## (-45, -40) is in the spotter's sight on both routes, so the scenario tests what it claims (the battery on a moving,
+## spotted target) and not which frame navigation synced on. The route retry is nav's (`Movement`).
 func test_artillery_stays_dug_in_on_a_moving_target() -> void:
 	var s := AiScenario.create(self)
-	var target := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-110, 0, -40), PI, {"type": "move_to", "x": -30.0, "z": -40.0},
+	var target := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-110, 0, -40), PI, {"type": "move_to", "x": -45.0, "z": -40.0},
 			{"type": "hold_fire"})
 	AiScenario.make_durable(target)
 	var spotter := s.dummy(Match.Team.GREEN, "Green_Scout_1", Vector3(-80, 0, 0), 0.0, "scout")
