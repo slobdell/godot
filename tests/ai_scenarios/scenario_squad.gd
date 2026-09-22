@@ -49,7 +49,11 @@ func _overwatch_hidden_share(variant: String) -> Array:
 	var gun := s.dummy(Match.Team.RUST, "Rust_Gun_1", Vector3(-40, 0, -60), PI)
 	AiScenario.make_durable(gun)
 	var members: Array[Tank] = []
-	for x in [-22.0, -16.0, -10.0, -4.0]:
+	# CP3 (round 10, feel; squad's derived form, squad reviews): 4 m further east than round 9's [-22, -16, -10, -4]. The
+	# 9.70 m bus settles its start ~2.3 m south and 0.8 m west of the 8.62 m one's, onto the edge of WallWestA's shadow,
+	# so "stay put" was already hidden and the positive control stopped controlling; the setup assertion below makes
+	# the next resize fail as SETUP, not as behaviour.
+	for x in [-18.0, -12.0, -6.0, 0.0]:
 		members.append(s.brain_tank(Match.Team.GREEN, "Green_Alpha_%d" % (members.size() + 1), Vector3(x, 0, -8), 0.0,
 				{"role": "anchor"}, "tank", "", "Alpha"))
 	var squad := s.form_squad(Match.Team.GREEN, "Alpha", members)
@@ -80,6 +84,7 @@ func _overwatch_hidden_share(variant: String) -> Array:
 
 func test_the_overwatch_element_covers_from_cover() -> void:
 	var stay: Array = await _overwatch_hidden_share("a4")
+	assert_true(stay[0] <= 0.2, "setup: the watcher that stays put is exposed (%.0f%%)" % (stay[0] * 100.0))
 	var tactical: Array = await _overwatch_hidden_share("a6")
 	print("MEASURE ai_overwatch Alpha_1 hidden during the first overwatch leg: staying put %.0f%% of %d ticks (commander ends at z %.0f), tactical spot %.0f%% of %d ticks (z %.0f)" % [
 			stay[0] * 100.0, stay[2], stay[1], tactical[0] * 100.0, tactical[2], tactical[1]])

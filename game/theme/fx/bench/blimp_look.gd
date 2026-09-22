@@ -25,6 +25,8 @@ var warmup := 6.0
 var steps := 24
 var grid := 20.0
 var _camera := Camera3D.new()
+## The first few blocked rays are printed with what blocked them, so a 0% can be told from a broken occluder.
+var _hits_logged := 0
 
 
 func _init() -> void:
@@ -189,7 +191,13 @@ func _reading(blimp: Node3D) -> Dictionary:
 		if _camera.is_position_behind(p) or not get_viewport().get_visible_rect().has_point(_camera.unproject_position(p)):
 			continue
 		var query := PhysicsRayQueryParameters3D.create(eye, p, 1)  # layer 1: the arena's static world, not tanks
-		if space.intersect_ray(query).is_empty():
+		var hit := space.intersect_ray(query)
+		if hit.is_empty():
 			clear = true
 			break
+		if _hits_logged < 12:
+			_hits_logged += 1
+			var who: Object = hit.get("collider")
+			print("BLIMP_LOOK_BLOCKED by %s (%s) at %s, eye %s -> %s" % [(who as Node).name if who is Node else str(who),
+					who.get_class() if who != null else "?", hit.get("position"), eye, p])
 	return {"seen": clear, "on": true, "px_w": roundi(w), "px_h": roundi(h)}
