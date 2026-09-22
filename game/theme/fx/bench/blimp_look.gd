@@ -136,8 +136,17 @@ func _run() -> void:
 		if not shot.has("focus"):
 			continue
 		_camera.global_transform = RtsCamera.pose_at(shot["focus"], float(shot["yaw"]), DISTANCE_M, PITCH_DEG)
-		blimp.call("_place", int(shot["tick"]))
+		# The dressing REBUILDS the blimp when the adaptive quality tier changes, which happens once frames render again
+		# after the sweep: re-find it before every shot and pose that one (the first frames posed a freed instance, and
+		# only the tick-0 opening shot matched, because a fresh blimp starts at tick 0).
 		for i in 3:
+			await get_tree().process_frame
+		blimp = scene.find_child("AdBlimp", true, false) as AdBlimp
+		if blimp == null:
+			continue
+		blimp.set_process(false)
+		blimp.call("_place", int(shot["tick"]))
+		for i in 2:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		var file := "blimp_%s.png" % label
