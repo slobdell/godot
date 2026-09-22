@@ -27,6 +27,10 @@ and a paired series).
 
 **LAUNCHED 2026-09-22 (credits back): the nine agents were started by the lead in their worktrees at `main` = the commit of this line.** Between the briefing (2026-09-20) and the launch, two research replies were curated into the catalog and the briefs (rows B1–B14, C1–C12), a ninth stream (terrain) was added, and R1 was narrowed on the lead's playtest (CP1 withdrawn). The lead's newest playtest notes (formations still do not come together; the four causes) are at the end of `game_design.md`.
 
+### Night log, 2026-09-22 (the orchestrator's decisions while the lead is away; newest first)
+
+- **Sequence set for the spawn regime:** CP3 (feel: the bus box ≥ 9.4 × 2.9 m AND combat's `SPAWN_JITTER_MAX_Z` 0.6 → ≤ 0.3, `SPAWN_JITTER_MAX_X` 1.5 → ≤ 1.3, derived in the comment from pitch − 2·jitter − hull ≥ `HULL_CLEAR_M`; two named causes for one baseline move; combat reviews at merge, no objection) → squad's lateral pitch from the turning envelope (alone, baseline recorded) → combat re-runs five_squads with the constraint on, on that tree (CP4 is measured on the post-CP3 box, combat's request). Arena's spawn-grid item (its 4) merges main after CP3 and derives from the new jitter. Pre-registered by combat: `test_tank_place` / `test_spawn_isolation` placements MOVE under the jitter cap (not a regression); five_squads seeds jitter 0 and cannot be touched by it.
+
 **Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`), the
 same text for all nine (OFFSETs: control 1, squad 2, arena 3, nav 4, combat 5, feel 6, show 7, announcer 8, terrain 9;
 show and terrain run every Godot process on builder0; announcer runs no Godot beyond `announcer-check`):
