@@ -1405,24 +1405,24 @@ func friendlies_in_line_of_fire(shooter: Tank, aim_point: Vector3) -> Array[Tank
 				# Toward the landing POINT: the hull's reach along the line from that point to the hull.
 				var toward_landing := Vector3(spot.x - landing.x, 0.0, spot.y - landing.y)
 				risky = spot.distance_to(landing) <= float(weapon["splash_radius"]) \
-						+ Units.hull_reach_along(size, friend_forward, toward_landing) + LINE_OF_FIRE_SIGMAS * sigma
+						+ Units.hull_reach_along(size, friend_forward, toward_landing, "lof") + LINE_OF_FIRE_SIGMAS * sigma
 			Weapons.Kind.CONE:
 				var toward_muzzle := friend.global_position - origin
 				risky = Weapons.in_cone(origin, Vector3(direction.x, 0.0, direction.y), friend.global_position,
-						float(weapon["range"]) + Units.hull_reach_along(size, friend_forward, toward_muzzle),
+						float(weapon["range"]) + Units.hull_reach_along(size, friend_forward, toward_muzzle, "lof"),
 						float(weapon["cone_deg"]))
 			_:
 				var flat_direction := Vector3(direction.x, 0.0, direction.y)
 				var reach := minf(to_aim.length() + LINE_OF_FIRE_OVERSHOOT, float(weapon["range"]) + Shell.RANGE_MARGIN)
 				var along := (spot - flat_origin).dot(direction)
 				# LONGITUDINAL: could a shot with `reach` left travel far enough to touch this hull at all.
-				if along > 0.0 and along <= reach + Units.hull_reach_along(size, friend_forward, flat_direction):
+				if along > 0.0 and along <= reach + Units.hull_reach_along(size, friend_forward, flat_direction, "lof"):
 					var moving := clampf(absf(shooter.speed()) / maxf(shooter.max_forward_speed, 0.1), 0.0, 1.0)
 					var spread := tan(shot_spread(weapon, moving, shooter.suppression) * LINE_OF_FIRE_SIGMAS) * along
 					# LATERAL: hull_distance_to_line has already taken the hull's own extent off, so what remains to
 					# compare against is the spread alone.
 					risky = Units.hull_distance_to_line(size, friend_forward, friend.global_position,
-							Vector3(flat_origin.x, 0.0, flat_origin.y), flat_direction) <= spread
+							Vector3(flat_origin.x, 0.0, flat_origin.y), flat_direction, "lof") <= spread
 		if risky:
 			at_risk.append(friend)
 			distances[friend] = spot.distance_to(flat_origin)
@@ -1482,15 +1482,15 @@ func incoming_projectiles(unit: Tank) -> Array:
 		var along := offset.dot(direction)
 		var flat_direction := Vector3(direction.x, 0.0, direction.y)
 		# ROUND 9: the box, not the half-diagonal (see the friendly-fire note above and Units.hull_reach_along).
-		if along <= 0.0 or along > shell.remaining_range() + Units.hull_reach_of(half, forward, flat_direction):
+		if along <= 0.0 or along > shell.remaining_range() + Units.hull_reach_of(half, forward, flat_direction, "incoming"):
 			continue
 		if Units.hull_distance_of(half, forward, unit.global_position,
-				Vector3(from.x, 0.0, from.y), flat_direction) > INCOMING_MARGIN:
+				Vector3(from.x, 0.0, from.y), flat_direction, "incoming") > INCOMING_MARGIN:
 			continue
 		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
 		var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
 		threats.append({"position": shell.global_position, "velocity": shell.direction * shell.speed,
-				"eta_ticks": ceili(maxf(0.0, along - Units.hull_reach_of(half, forward, flat_direction))
+				"eta_ticks": ceili(maxf(0.0, along - Units.hull_reach_of(half, forward, flat_direction, "incoming"))
 						/ shell.speed * SimClock.TICK_RATE), "projectile_id": shell.projectile_id,
 				"weapon": shooter.weapon_id if shooter != null else Weapons.DEFAULT,
 				"damage_estimate": _damage_estimate(unit, float(weapon["damage"]), weapon, shell.direction, false)})
@@ -1504,7 +1504,7 @@ func incoming_projectiles(unit: Tank) -> Array:
 		# Toward the landing POINT: an arcing round comes down somewhere, so the hull's reach is measured along the
 		# line from that point to the hull rather than along any travel direction.
 		if distance > splash + Units.hull_reach_of(half, forward,
-				Vector3(unit.global_position.x - landing.x, 0.0, unit.global_position.z - landing.z)):
+				Vector3(unit.global_position.x - landing.x, 0.0, unit.global_position.z - landing.z), "incoming"):
 			continue
 		var from: Vector3 = flying["from"]
 		var flight := maxi(1, int(flying["land_tick"]) - int(flying["fire_tick"]))

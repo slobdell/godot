@@ -939,6 +939,12 @@ const PROFILES := {
 
 ## The unit a bare spawn (network players, legacy bots) drives.
 const DEFAULT := "tank"
+## The disc/box reach sites that take their own `match.hull_disc_<site>` override (C6): `lof` is the friendly-fire
+## line-of-fire test and `incoming` the projectile-threat test (both in `Match`); `squad_incoming` is squad's
+## `IncomingFire` (it passes the name when squad wires it; until then it follows `match.hull_disc`).
+const HULL_DISC_SITES := ["lof", "incoming", "squad_incoming"]
+const MATCH_KNOBS := ["no_damage", "hull_disc", "hull_disc_lof", "hull_disc_incoming", "hull_disc_squad_incoming",
+		"yaw_fit", "yaw_world"]
 ## Keys a v1 army entry used. Army JSON v2 rejects them with V1_KEY_HELP.
 const V1_UNIT_KEYS := ["weapon", "weapons", "components"]
 const V1_KEY_HELP := "units have fixed weapons since army JSON v2: pick a unit type (%s) instead of '%s'"
@@ -1040,22 +1046,22 @@ static func with_role(role: String) -> PackedStringArray:
 ## test go through, so every consumer and both axes flip together and a series arm measures the whole change rather
 ## than the two thirds of it that live in combat's files.
 static func hull_distance_to_line(hull_size: Array, hull_forward: Vector3, hull_origin: Vector3,
-		line_origin: Vector3, line_direction: Vector3) -> float:
+		line_origin: Vector3, line_direction: Vector3, site := "") -> float:
 	var along := Vector2(line_direction.x, line_direction.z)
 	along = along.normalized() if along.length_squared() > 0.0001 else Vector2(0.0, -1.0)
 	var normal := Vector2(-along.y, along.x)
 	var offset := Vector2(hull_origin.x - line_origin.x, hull_origin.z - line_origin.z)
-	return hull_distance_of(hull_half_extents(hull_size), hull_forward, hull_origin, line_origin, line_direction)
+	return hull_distance_of(hull_half_extents(hull_size), hull_forward, hull_origin, line_origin, line_direction, site)
 
 
 ## `hull_distance_to_line` from the cached half-extents (see `hull_reach_of`).
 static func hull_distance_of(half: Vector2, hull_forward: Vector3, hull_origin: Vector3,
-		line_origin: Vector3, line_direction: Vector3) -> float:
+		line_origin: Vector3, line_direction: Vector3, site := "") -> float:
 	var along := Vector2(line_direction.x, line_direction.z)
 	along = along.normalized() if along.length_squared() > 0.0001 else Vector2(0.0, -1.0)
 	var normal := Vector2(-along.y, along.x)
 	var offset := Vector2(hull_origin.x - line_origin.x, hull_origin.z - line_origin.z)
-	return maxf(absf(offset.dot(normal)) - hull_reach_of(half, hull_forward, Vector3(normal.x, 0.0, normal.y)), 0.0)
+	return maxf(absf(offset.dot(normal)) - hull_reach_of(half, hull_forward, Vector3(normal.x, 0.0, normal.y), site), 0.0)
 
 
 ## How far a hull reaches from its own centre along `direction` -- its half-extent projected on that axis. THE SAME
@@ -1067,15 +1073,25 @@ static func hull_distance_of(half: Vector2, hull_forward: Vector3, hull_origin: 
 ## Exact for a box, because only one axis can separate a box from a line or a point along a direction:
 ## `half_width * |d . right| + half_length * |d . forward|`. Four multiplies, two adds, no branches, no trig.
 ## `--tune=match.hull_disc=1` restores the pre-round-9 disc here, so BOTH consumers and BOTH axes flip together.
-static func hull_reach_along(hull_size: Array, hull_forward: Vector3, direction: Vector3) -> float:
-	return hull_reach_of(hull_half_extents(hull_size), hull_forward, direction)
+static func hull_reach_along(hull_size: Array, hull_forward: Vector3, direction: Vector3, site := "") -> float:
+	return hull_reach_of(hull_half_extents(hull_size), hull_forward, direction, site)
 
 
 ## The same projection taking the CACHED (half width, half length) pair, for callers on a per-tick path that must not
 ## re-read `Units.stat` every call (squad's `IncomingFire` runs this per unit per shell per tick). The disc the knob
 ## restores is `half.length()`, which is `Vector2(width, length).length() / 2` -- the same number, so the arm is
 ## identical whichever entry point a caller uses.
-static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vector3) -> float:
+## ROUND 10 (combat, research C6): `site` names the reader, so ONE site can be switched while the others keep the disc.
+## `match.hull_disc_<site>` (see `HULL_DISC_SITES`) overrides `match.hull_disc` for that site only; a site with no
+## override follows `match.hull_disc`, and a caller that passes no site follows it too, so the defaults are unchanged.
+## One knob that flips three sites can only answer "the disc or not"; the series needs "which site".
+static func hull_disc_at(site: String) -> bool:
+	if site != "" and tuning.has("hull_disc_" + site):
+		return float(tuning["hull_disc_" + site]) > 0.0
+	return float(tuning.get("hull_disc", 1.0)) > 0.0
+
+
+static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vector3, site := "") -> float:
 	# THE DISC IS THE DEFAULT, and that is a deliberate hold rather than an opinion about which is right. The box is
 	# a geometry CORRECTION -- the disc is wrong by a factor varying 4.3x abeam to 1.03x end-on -- but this round's
 	# rule is that a behaviour changes default only on measurement, and the box's falsifier (the gangs-vs-law series,
@@ -1083,7 +1099,7 @@ static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vecto
 	# When the series says the box is no worse on every cell, the default flips in the same commit as the result,
 	# with its builder0 baseline hash recorded once. Measured on this laptop (glibc-2.39), the two arms are NOT the
 	# same simulation: sim-baseline match, seed 3 -- box `debb895da1fa288f`, disc `906d9c3df0c8e656`.
-	if tuning.get("hull_disc", 1.0) > 0.0:
+	if hull_disc_at(site):
 		return half.length()
 	var forward := Vector2(hull_forward.x, hull_forward.z)
 	forward = forward.normalized() if forward.length_squared() > 0.0001 else Vector2(0.0, -1.0)
@@ -1194,9 +1210,9 @@ static func apply_tuning(spec: String) -> String:
 		if parts.size() != 2 or path.size() < 2 or path.size() > 3 or not parts[1].is_valid_float():
 			return "tune: expected owner.key=number, got '%s'" % pair
 		if path[0] == "match":
-			if path.size() != 2 or not ["no_damage", "hull_disc", "yaw_fit", "yaw_world"].has(path[1]):
-				return ("tune: no match knob '%s' (have match.no_damage, match.hull_disc, match.yaw_fit, "
-						+ "match.yaw_world)") % parts[0]
+			if path.size() != 2 or not MATCH_KNOBS.has(path[1]):
+				return "tune: no match knob '%s' (have %s)" % [parts[0], ", ".join(MATCH_KNOBS.map(
+						func(knob: String) -> String: return "match." + knob))]
 			# ⚠ EVERY match knob goes into THIS class's own dictionary, and the consumer reads it at the point of
 			# use (`Tank.yaw_fit_on()`, `Tank.yaw_world_on()`, `Armor.no_damage_on()`). Writing a foreign class's
 			# static from here -- which is what this did -- is undone by that class's own initialiser whenever the

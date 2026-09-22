@@ -34,6 +34,8 @@ func _use_the_box() -> void:
 ## Reaches the base, for the same reason as its siblings: owning nothing today is not a property that stays true.
 func teardown() -> void:
 	Units.tuning.erase("hull_disc")
+	for site: String in Units.HULL_DISC_SITES:
+		Units.tuning.erase("hull_disc_" + site)
 	await super.teardown()
 
 
@@ -179,3 +181,27 @@ func test_every_hull_collider_is_centred_on_its_origin_in_plan() -> void:
 		assert_near((collider.shape as BoxShape3D).size.z, float(size[2]), 1e-6, "%s: and it is the profile's box" % unit_id)
 		checked += 1
 	assert_eq(checked, ids.size(), "every profile was spawned and checked (%d)" % checked)
+
+
+## Round 10 (combat, research C6): one site's knob moves THAT site and no other. The series intervenes on one disc site
+## at a time with the disc kept in the rest, so each knob's arm proof is that it reached its reader AND left the others
+## alone; a knob that also moved its neighbours would make every per-site cell a whole-knob cell under another name.
+func test_each_disc_site_knob_moves_only_its_own_site() -> void:
+	var disc := Units.hull_reach_along(_rig(), NORTH, EAST)  # default: the disc, the half-diagonal
+	assert_true(disc > 6.0, "the default abeam reach is the disc's half-diagonal (%.2f m)" % disc)
+	for site: String in Units.HULL_DISC_SITES:
+		assert_eq(Units.apply_tuning("match.hull_disc_%s=0" % site), "", "match.hull_disc_%s is a knob" % site)
+		for other: String in Units.HULL_DISC_SITES:
+			var reach := Units.hull_reach_along(_rig(), NORTH, EAST, other)
+			if other == site:
+				assert_true(reach < 2.0, "%s=0 gives %s the box (abeam %.2f m)" % [site, other, reach])
+			else:
+				assert_near(reach, disc, 1e-6, "%s=0 leaves %s on the disc" % [site, other])
+		assert_near(Units.hull_reach_along(_rig(), NORTH, EAST), disc, 1e-6, "and an unnamed reader keeps the disc")
+		Units.tuning.erase("hull_disc_" + site)
+	# The whole-knob arm still reaches every site, and a site override beats it both ways.
+	_use_the_box()
+	for site: String in Units.HULL_DISC_SITES:
+		assert_true(Units.hull_reach_along(_rig(), NORTH, EAST, site) < 2.0, "hull_disc=0 reaches %s" % site)
+	Units.apply_tuning("match.hull_disc_lof=1")
+	assert_near(Units.hull_reach_along(_rig(), NORTH, EAST, "lof"), disc, 1e-6, "a site override beats the whole knob")
