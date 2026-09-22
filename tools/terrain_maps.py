@@ -58,9 +58,9 @@ def check_terrain(layout, clearance):
     if len(layout.get("objectives", [])) < 2:
         sys.exit("%s: R9 -- a map that carries terrain must carry a mirrored objective pair (a crossing needs a reason)" % name)
     for t in terrain:
-        if arena_terrain.is_deck(t["kind"]) and min(t["rect"][2], t["rect"][3]) < arena_terrain.MIN_DECK_M:
+        if arena_terrain.is_deck(t["kind"]) and min(t["rect"][2], t["rect"][3]) < arena_terrain.min_deck_m():
             sys.exit("%s: bridge %s is %.2f m across; R4 needs %.2f m (two widest hulls + bake radius + rails)"
-                     % (name, t["name"], min(t["rect"][2], t["rect"][3]), arena_terrain.MIN_DECK_M))
+                     % (name, t["name"], min(t["rect"][2], t["rect"][3]), arena_terrain.min_deck_m()))
     # Anything that must stand on dry ground, with the margin it needs: spawns keep the spawn clearance from the
     # water's edge AND its rim; an objective's whole disc must be dry, or part of what you hold is in the river.
     walls = arena_terrain.walls(terrain)
@@ -188,7 +188,11 @@ def crossing(m):
                              m.region("the neck", "open_ground", 0, 36, 10)])
 
 
-# ---- The Pits (round 10, backlog 3): kill zones without a river -------------------------------------------------
+# ---- The Sumps (round 10, backlog 3: "the Pits"): kill zones without a river ------------------------------------
+#
+# NAMED `sumps`, not `pits`: the lead KEPT a map called `pit` ("The Pit", the container ring), and `ARENA=pit` next
+# to `ARENA=pits` -- and an announcer calling both -- is a mix-up waiting to happen. The brief's working title was
+# "the Pits"; the map's name is the Sumps (a drained works: a pump house and its sumps).
 #
 # His sentence: *"elements that units could not cross but they could still fire over. Useful for setting up kill
 # zones."* No river and no line to hold: a pump house (a city block) stands in the centre, and a chain of sheer pits
@@ -234,10 +238,10 @@ def pits(m):
         m.block(62, 66, tiers=1, neon="cyan", seed=73), m.wreck(-8, 62, 20),
         m.c20(-42, 80, 0, 1), m.c20(0, 80, 0, 1), m.c20(42, 80, 0, 1),
         m.floodlight(-40, 42), m.floodlight(-128, 0),
-        m.screen(-76, 100, 180, "arena"), m.sign(-64, 108, 180, "pit"),
+        m.screen(-76, 100, 180, "arena"), m.sign(-64, 108, 180, "arena"),
     ]
-    write_with_twin(m, "pits", "The Pits",
-                    "A pump house in the middle and a chain of sheer pits out to both walls, a catwalk over one. The "
+    write_with_twin(m, "sumps", "The Sumps",
+                    "A pump house in the middle and a chain of sheer sumps out to both walls, a catwalk over one. The "
                     "short ways forward are the causeways between the drops, watched from cover across the pits; the "
                     "safe way is the long one round. Hold the far objective and you hold a kill zone; take it and you "
                     "cross one.",

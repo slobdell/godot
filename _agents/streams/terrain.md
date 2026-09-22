@@ -125,7 +125,7 @@ _Worker: terrain, started 2026-09-22 on `2ee65f94` (= `main` at launch). Every G
 4. **The Crossing** (river, two bridges, mirrored objective pair across the river) + its dry twin fixture
    (`crossing_dry`, `terrain: []`, the null arm) → `make arenas`, `arena-report` (`spread`, centre_sees, reach),
    swap-bases fairness, paired series vs the dry twin on the same seeds.
-5. **The Pits** + `pits_dry`, same measurements.
+5. **The Pits** (shipped as `sumps`, "The Sumps", beside the kept `pit`) + `sumps_dry`, same measurements.
 6. Terminus canal proposal (frames only, arena's map), the map page, stretch (diagonal river price, hazards).
 
 **Decisions (one line each):**
@@ -145,7 +145,7 @@ _(updated as each step lands; numbers carry machine and commit once committed)_
   `arena_report.analyze()`; `make terrain-pytest` 7/7, mutation-checked (hook removed → the analyze test fails).
 - **Art (plan 3) — built, not yet seen.** `game/theme/arena_kit/terrain/` (water/pit interior-mapped shader, kerb
   shader, deck and rails from the collider boxes), slot registered. Frames: `make remote T=terrain-shots`.
-- **The Crossing and the Pits (plans 4–5) — authored, static numbers in `_agents/arenas.md` *Terrain maps*.**
+- **The Crossing and the Sumps (the brief's "Pits"; plans 4–5) — authored, static numbers in `_agents/arenas.md` *Terrain maps*.**
   Crossing: centre 0.30 (dry 0.46), spread 0.45 (dry 0.02), contested route 185 m (dry 148 m). Pits: centre 0.34
   (ring-of-eyes), spread 0.39 wet and dry — the static instruments cannot see a kill zone; the series decides.
 - **Series tooling:** `make terrain-series TERRAIN_MAP=crossing SEEDS=32` (paired wet/dry, discordant pairs, sign test,
@@ -169,5 +169,5 @@ _(updated as each step lands; numbers carry machine and commit once committed)_
   `tools/terrain_maps.author()` at the end.
 - `game/theme/game_theme.gd` (feel's): one `DEFAULT_SLOTS` line, `arena.terrain`.
 - `mk/arena.mk`: additive `terrain-*` targets.
-- New fixture layouts `crossing_dry`, `pits_dry`: every all-layouts test now includes them (fixtures).
+- New fixture layouts `crossing_dry`, `sumps_dry`: every all-layouts test now includes them (fixtures).
 

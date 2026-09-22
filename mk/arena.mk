@@ -105,11 +105,11 @@ terrain-pytest: ## Terrain: the Python water/bridge mirror against the golden fi
 	$(PYTHON) -m unittest tools/test_arena_terrain.py
 
 ## Spots and scale hulls per terrain map: name:x:z for the camera, x:z:yaw for a hull. The dry twin is shot from the same pose.
-TERRAIN_SHOT_ARENAS ?= crossing pits
+TERRAIN_SHOT_ARENAS ?= crossing sumps
 TERRAIN_SPOTS_crossing ?= bridge:-92:14,neck:0:22,landing:-76:-22,far_bridge:92:-14
 TERRAIN_HULLS_crossing ?= -92:12:0,-88:36:10,-78:-20:170,6:48:0,70:18:200
-TERRAIN_SPOTS_pits ?= catwalk:-55:14,causeway:-27:14,lip:-40:40,far:-52:-22
-TERRAIN_HULLS_pits ?= -55:10:0,-27:20:10,-44:40:0,-50:-22:170,-84:30:0
+TERRAIN_SPOTS_sumps ?= catwalk:-55:14,causeway:-27:14,lip:-40:40,far:-52:-22
+TERRAIN_HULLS_sumps ?= -55:10:0,-27:20:10,-44:40:0,-50:-22:170,-84:30:0
 
 terrain-shots: import ## Terrain: each terrain map at the lead's pose (21 deg, FOV 35, 49 m) beside its dry twin, plus an overview -> build/terrain-shots/ (needs a display: make remote T=terrain-shots)
 	rm -rf $(BUILD_DIR)/terrain-shots && mkdir -p $(BUILD_DIR)/terrain-shots
@@ -131,7 +131,7 @@ terrain-series: import ## Terrain (R9): a terrain map vs its dry twin on the SAM
 		| grep -E '^TERRAIN_(RUN|SERIES)'
 
 terrain-measure: ## Terrain: the ring-of-eyes centre figure and plain objective routes beside arena-report's (no Godot)
-	$(PYTHON) tools/terrain_measure.py arenas/crossing.json arenas/crossing_dry.json arenas/pits.json arenas/pits_dry.json
+	$(PYTHON) tools/terrain_measure.py arenas/crossing.json arenas/crossing_dry.json arenas/sumps.json arenas/sumps_dry.json
 
 .PHONY: terrain-page
 terrain-page: ## Terrain: the lead's page -- every terrain map's frames beside its dry twin, and the numbers (after make remote T=terrain-shots) -> build/terrain-page/index.html

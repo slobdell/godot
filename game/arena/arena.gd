@@ -847,9 +847,9 @@ static func _validate_v2(data: Dictionary) -> String:
 			continue
 		# A deck must actually bridge something, and be wide enough to leave navmesh after the agent radius.
 		var narrow: float = minf(float(entry["rect"][2]), float(entry["rect"][3]))
-		if narrow < ArenaTerrain.MIN_DECK_M:
+		if narrow < ArenaTerrain.min_deck_m():
 			return "bridge %s is %.1f m across: under %.1f m the %0.1f m agent radius leaves no navmesh on it" \
-					% [entry["name"], narrow, ArenaTerrain.MIN_DECK_M, 2.0]
+					% [entry["name"], narrow, ArenaTerrain.min_deck_m(), 2.0]
 		var crosses: bool = terrain.any(func(other: Dictionary) -> bool:
 			return ArenaTerrain.carves(String(other["kind"])) \
 					and ArenaTerrain.overlaps(ArenaTerrain.bounds(entry), ArenaTerrain.bounds(other)))

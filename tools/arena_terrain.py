@@ -27,12 +27,16 @@ RIM_HEIGHT = gdscript_source.const_float(TERRAIN_GD, "RIM_HEIGHT")
 RIM_THICKNESS = gdscript_source.const_float(TERRAIN_GD, "RIM_THICKNESS")
 RAIL_HEIGHT = gdscript_source.const_float(TERRAIN_GD, "RAIL_HEIGHT")
 RAIL_THICKNESS = gdscript_source.const_float(TERRAIN_GD, "RAIL_THICKNESS")
-LANE_DRIVABLE_M = gdscript_source.const_float(TERRAIN_GD, "LANE_DRIVABLE_M")
-BAKE_RADIUS_M = gdscript_source.const_float(TERRAIN_GD, "BAKE_RADIUS_M")
 EDGE_EPSILON = gdscript_source.const_float(TERRAIN_GD, "EDGE_EPSILON")
 KINDS = gdscript_source.const(TERRAIN_GD, "KINDS")
-## MIN_DECK_M is an expression in GDScript, so it is recomputed here from the parts it is made of.
-MIN_DECK_M = LANE_DRIVABLE_M + 2.0 * BAKE_RADIUS_M + 2.0 * RAIL_THICKNESS
+
+
+def min_deck_m():
+    """`ArenaTerrain.min_deck_m()`: the R4 lane bar's physical width (`arena_report.lane_bar()`, which reads the
+    catalog and arena.tscn live, as `ArenaLanes.bar()` does) plus a rail each side. Imported lazily: arena_report
+    imports this module."""
+    import arena_report
+    return arena_report.lane_bar()["physical_bar_m"] + 2.0 * RAIL_THICKNESS
 
 
 def carves(kind):

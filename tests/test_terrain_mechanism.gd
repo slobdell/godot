@@ -89,12 +89,12 @@ func test_the_narrowest_legal_deck_is_a_lane_for_the_widest_hull() -> void:
 	var radius := nav.navigation_mesh.agent_radius
 	arena.free()
 	var needed := 2.0 * widest + 2.0 * radius + 2.0 * ArenaTerrain.RAIL_THICKNESS
-	assert_true(ArenaTerrain.MIN_DECK_M >= needed - 0.01,
-			"MIN_DECK_M %.2f m covers two %s widths (%.2f m) + the %.1f m bake radius twice + two %.2f m rails = %.2f m"
-			% [ArenaTerrain.MIN_DECK_M, widest_id, 2.0 * widest, radius, ArenaTerrain.RAIL_THICKNESS, needed])
+	assert_true(ArenaTerrain.min_deck_m() >= needed - 0.01,
+			"min_deck_m() %.2f m covers two %s widths (%.2f m) + the %.1f m bake radius twice + two %.2f m rails = %.2f m"
+			% [ArenaTerrain.min_deck_m(), widest_id, 2.0 * widest, radius, ArenaTerrain.RAIL_THICKNESS, needed])
 	var narrow := _layout([RIVER, RIVER_FAR,
-			{"kind": "bridge", "name": "b", "rect": [50.0, 40.0, ArenaTerrain.MIN_DECK_M - 0.5, 30.0]},
-			{"kind": "bridge", "name": "b (far)", "rect": [-50.0, -40.0, ArenaTerrain.MIN_DECK_M - 0.5, 30.0]}])
+			{"kind": "bridge", "name": "b", "rect": [50.0, 40.0, ArenaTerrain.min_deck_m() - 0.5, 30.0]},
+			{"kind": "bridge", "name": "b (far)", "rect": [-50.0, -40.0, ArenaTerrain.min_deck_m() - 0.5, 30.0]}])
 	assert_true(Arena.validate(narrow) != "", "and a deck under it is refused: %s" % Arena.validate(narrow))
 
 

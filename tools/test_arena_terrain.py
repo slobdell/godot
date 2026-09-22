@@ -85,7 +85,8 @@ class MirrorMatchesTheGolden(unittest.TestCase):
     def test_constants_are_read_not_copied(self):
         self.assertGreater(T.RIM_HEIGHT, 0.5)
         self.assertLess(T.RAIL_HEIGHT, 1.3, "rails stay below the eye line")
-        self.assertAlmostEqual(T.MIN_DECK_M, T.LANE_DRIVABLE_M + 2 * T.BAKE_RADIUS_M + 2 * T.RAIL_THICKNESS)
+        bar = arena_report.lane_bar()
+        self.assertAlmostEqual(T.min_deck_m(), 2 * bar["widest_hull_m"] + 2 * bar["bake_radius_m"] + 2 * T.RAIL_THICKNESS)
 
 
 class TheReportSeesWater(unittest.TestCase):

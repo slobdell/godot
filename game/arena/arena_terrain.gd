@@ -49,16 +49,19 @@ const RIM_THICKNESS := 1.2
 ## thin, because every centimetre of rail is a centimetre of deck the roadway loses.
 const RAIL_HEIGHT := 0.9
 const RAIL_THICKNESS := 0.5
-## R4 (round 10): a bridge is a LANE, and a lane keeps **2 x the widest hull's width** drivable after the bake
-## radius: 8.14 m, the Syndicate artillery at 4.07 m (arena's `ArenaLanes.bar()` reads the same catalog live; when
-## CP2 lands this should read it too). `tests/test_terrain_mechanism.gd` reads `Units.PROFILES` and fails if a wider
-## hull lands -- it did exactly that against round 10's first figure, 6.64 m from the War Rig.
-const LANE_DRIVABLE_M := 8.14
-## The navmesh agent radius the bake erodes each side by (`arena.tscn`'s NavigationMesh; the test reads it).
-const BAKE_RADIUS_M := 2.0
-## The narrowest deck `Arena.validate()` accepts: R4's drivable width, plus the bake radius and a rail each side.
-## Round 7's 7.0 m left 3 m of single-file deck -- the maze's tight gate, which is a test fixture, not a bridge.
-const MIN_DECK_M := LANE_DRIVABLE_M + 2.0 * BAKE_RADIUS_M + 2.0 * RAIL_THICKNESS
+## R4 (round 10): a bridge is a LANE. The narrowest deck `Arena.validate()` accepts is the lane bar's PHYSICAL width
+## (2 x the widest hull + the bake radius each side: `ArenaLanes.bar()`, read live from `Units` and the arena's own
+## NavigationMesh) plus a rail each side. READ, never copied (Invariant 0): the first version carried 6.64 m, then
+## 8.14 m, as literals, and each went stale the day a wider hull landed. Computed once per process.
+static var _min_deck_m := -1.0
+
+
+static func min_deck_m() -> float:
+	if _min_deck_m < 0.0:
+		_min_deck_m = float(ArenaLanes.bar()["physical_bar_m"]) + 2.0 * RAIL_THICKNESS
+	return _min_deck_m
+
+
 ## How far past a footprint's edge a deck must reach to count as crossing that edge.
 const EDGE_EPSILON := 0.01
 

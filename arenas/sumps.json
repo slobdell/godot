@@ -1,8 +1,8 @@
 {
- "name": "pits",
+ "name": "sumps",
  "schema": 2,
- "title": "The Pits",
- "note": "A pump house in the middle and a chain of sheer pits out to both walls, a catwalk over one. The short ways forward are the causeways between the drops, watched from cover across the pits; the safe way is the long one round. Hold the far objective and you hold a kill zone; take it and you cross one.",
+ "title": "The Sumps",
+ "note": "A pump house in the middle and a chain of sheer sumps out to both walls, a catwalk over one. The short ways forward are the causeways between the drops, watched from cover across the pits; the safe way is the long one round. Hold the far objective and you hold a kill zone; take it and you cross one.",
  "half_size": 140.0,
  "fixture": false,
  "obstacles": [],
@@ -430,7 +430,7 @@
     108.0
    ],
    "rotation_deg": 180.0,
-   "sign": "pit"
+   "sign": "arena"
   },
   {
    "type": "sign",
@@ -439,7 +439,7 @@
     -108.0
    ],
    "rotation_deg": 0.0,
-   "sign": "pit"
+   "sign": "arena"
   }
  ],
  "spawns": {

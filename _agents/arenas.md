@@ -954,8 +954,8 @@ glow at the bottom. Kerbs and rails are built from the SAME boxes as the collide
 |---|---|---|---|---|
 | **crossing** | **0.29** | **0.55** | **185 m** / 112 m | west bridge + mirror: pass (13.0 m physical over the deck with rails) |
 | crossing_dry | 0.46 | 0.30 | 148 m / 112 m | (fixture: reported only) |
-| **pits** | **0.34** | 0.35 | 134 m / 94 m | catwalk, west causeway, far causeway + mirrors: pass |
-| pits_dry | 0.34 | 0.35 | 134 m / 94 m | (fixture) |
+| **sumps** (the brief's "Pits"; renamed so `ARENA=pits` never sits beside the kept `pit`) | **0.34** | 0.35 | 134 m / 94 m | catwalk, west causeway, far causeway + mirrors: pass |
+| sumps_dry | 0.34 | 0.35 | 134 m / 94 m | (fixture) |
 
 - **On the Crossing the river IS the decision:** spread 0.55 against the dry twin's 0.30, the contested route grows
   148 → 185 m, and the river halves what the middle sees (0.46 → 0.29).

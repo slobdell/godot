@@ -1,8 +1,8 @@
 {
- "name": "pits_dry",
+ "name": "sumps_dry",
  "schema": 2,
- "title": "The Pits (dry: no water)",
- "note": "FIXTURE: The Pits with its terrain removed -- the null arm of its paired series and the before-frame of every picture of it. Not a map.",
+ "title": "The Sumps (dry: no water)",
+ "note": "FIXTURE: The Sumps with its terrain removed -- the null arm of its paired series and the before-frame of every picture of it. Not a map.",
  "half_size": 140.0,
  "fixture": true,
  "obstacles": [],
@@ -430,7 +430,7 @@
     108.0
    ],
    "rotation_deg": 180.0,
-   "sign": "pit"
+   "sign": "arena"
   },
   {
    "type": "sign",
@@ -439,7 +439,7 @@
     -108.0
    ],
    "rotation_deg": 0.0,
-   "sign": "pit"
+   "sign": "arena"
   }
  ],
  "spawns": {

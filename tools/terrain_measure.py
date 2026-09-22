@@ -6,7 +6,7 @@ which reads as a perfect score and is an artifact (the same shape as the instrum
 crate). So this reports the share from the nearest drivable point in each of the eight directions round the centre,
 and their mean -- a figure that cannot be won by standing inside a wall.
 
-Usage: python3 tools/terrain_measure.py arenas/pits.json [...]
+Usage: python3 tools/terrain_measure.py arenas/sumps.json [...]
 """
 import json
 import math
