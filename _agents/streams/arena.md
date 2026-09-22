@@ -250,6 +250,29 @@ _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round
   `ArenaLanes.bar()` in a test, or derived at load. `ArenaLanes` now reads its rims (`rim_slabs`) and, once merged,
   its rails (`rail_slabs`, asked by name) as colliders (commit below).
 
+### Post-merge review of terrain's edits in arena's paths (`git diff 6900ef8b 4ffb4c1a`, 2026-09-22): ACCEPTED
+- `Arena._build_terrain()` → `ArenaTerrain.build(...)`: a pure move of the round-7 body (floor slabs, rims, pans,
+  the guarded `arena.terrain` slot) into terrain's file. OK.
+- Deck width: `ArenaTerrain.min_deck_m()` = `ArenaLanes.bar().physical_bar_m + 2 × RAIL_THICKNESS`, derived and
+  cached, not typed. **My Invariant-0 point is resolved.**
+- `test_every_shipped_layout_connects_both_bases_and_the_centre`: now every `Arena.objectives_of` goal. **Point 1
+  verdict: holds.** `objectives_of` falls back to the control point at the centre for any layout without
+  `objectives`, so foundry, furnace, scrapyard, boneyard, boulevard (and the maze) still assert the centre exactly
+  as before. What changed: yard, pit and the Terminus now assert their objective PAIR instead of the centre, so
+  "the Terminus plaza is reachable" is no longer asserted directly. Accepted: the pairs are what is fought over, and
+  the plaza lies on four asserted lanes (`test_arena_lanes`), which is a stronger statement than one path.
+- `arena_report.analyze()` terrain hook: carves the ROUTE grid (water, rims, rails grown by the bake). **Point 2
+  verdict: holds, with a follow-up of mine.** The Python lane table (`lane_table`) still measures only `boxes_of`,
+  so on a terrain map it can OVER-read a lane along a bank (never under-read), i.e. `make arena-report` could print
+  `ok` where `tests/test_arena_lanes.gd` (the gate, which reads rims, rails and carved water) fails. Not a gate
+  hole, a page inaccuracy. Follow-up (arena, after the CP3 `git merge main`): `lane_table` adds
+  `arena_terrain.walls(terrain)` as boxes and stops a width ray at `arena_terrain.in_water`; pinned by a Python
+  test against the GDScript's Crossing numbers.
+- `make_arenas.py`: `write_v2(terrain=...)` + `terrain_maps.check_terrain`, and `terrain_maps.author(...)` appended.
+  Additive; the six old layouts regenerate byte for byte (their generator paths are untouched).
+- `tools/arena_terrain.py`: terrain's Python mirror, reading its constants through `gdscript_source` and pinned to a
+  golden file both sides test. Not reviewed line by line (terrain's file); the reads-not-copies shape is right.
+
 ### Requests to other streams
 - **Orchestrator / all:** R4's number is 8.14 m drivable (the widest hull is `syn_artillery` 4.07 m), not 6.64 m.
   Terrain's bridges (R9) and nav's drive test should read `ArenaLanes.bar()` rather than the prose.
