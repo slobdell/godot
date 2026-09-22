@@ -154,7 +154,7 @@ _(the worker keeps this current)_
 `>> remote: make check exited 0`, 1559 passed, 0 failed, sim-baseline `1ea332e7bc268d2a` unmoved, determinism
 `559a415887806e43`.
 
-### ✅ MERGE HERE: `6e3cd021` (stream/combat with `main` at `08319e59` merged in)
+### ✅ MERGED to main at `4a96829d` (from `6e3cd021`; the orchestrator re-records the scenario count 44,0 on main)
 
 builder0, the check on this exact hash: `>> remote: make check exited 2`, **1604 passed, 0 failed**, sim-baseline
 `1ea332e7bc268d2a` **unmoved**, determinism `559a415887806e43`, 17 of 18 targets passed. The one red is
