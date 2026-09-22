@@ -317,6 +317,30 @@ whole file), 5 rounds each, packed up 0–1 times. The count moves 41,3 → 42,2
 tick rather than after `REPATH_SECONDS`. The same frame exists in real play (a match's first tick after a scene
 reload), and a unit ordered on it drives straight for 4 s.
 
+### 6. The gangs-vs-law series, site by site: PRE-REGISTERED (written before any run)
+
+**Instrument (committed before the run):** `match.hull_disc_<site>` knobs (`lof` = Match's friendly-fire
+line-of-fire test, `incoming` = Match's projectile-threat test; `squad_incoming` reserved for squad's `IncomingFire`,
+which stays on the whole knob until squad passes the site name). A test proves each knob moves its own site only.
+`MATCH_RESULT.controls.tuning` carries the tuning the match READ, and `faction_matrix.py` refuses a run whose matches
+did not carry the requested `--tune`. `faction_matrix.py` writes a per-game `games` list; `tools/paired_arms.py` /
+`make paired-arms` pairs two arms by (faction, other, seed, colour) and prints pairs, both rates, the discordant
+counts b and c, and an exact McNemar p. It never reports a pooled rate alone.
+
+**Design:** `make remote T="disc-site-series ARENA=pit"`, then `ARENA=yard`. gangs vs law, 32 seeds × both colours =
+64 games per arm per map, the same seed list in every arm. The control is today's default (the disc at every site).
+Treatments: `lof` (the box at the line-of-fire site only), `incoming` (the box at the threat site only), `both`
+(research C7's arm: the box for line of fire AND threat, the disc kept for spacing). Per map, per cell, never pooled.
+Before on record: feel's matrix, gangs 20 % on pit and 50 % on yard (unpaired, different build: context only).
+
+**Predictions, stated now:**
+- C7's prediction for `both`: it recovers most of the rig's lost win rate (the round-8 loss was 9/20 → 0/20).
+  Operationally: on each map, b > c for gangs with p < 0.05.
+- **The null** (b ≈ c on both maps for every arm) is evidence AGAINST the disc being the cause of 9/20 → 0/20, and gets
+  written up as such.
+- Positive control: an arm's `controls.tuning` must show its knob in every match (enforced by the tool). A
+  McNemar null with the knob proven applied is "no effect detected at n=64", not "not measured".
+
 ### Answers given to other streams
 
 - **feel CP3 jitter (2026-09-22):** no objection. five_squads seeds jitter 0.0; `test_tank_place`/`test_spawn_isolation`

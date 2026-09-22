@@ -153,6 +153,35 @@ scale-bench: import ## X5: sim cost per tick at SCALE_SIZES vehicles a side, wit
 # arms that are secretly the same arm, whose difference is a clean and entirely plausible null.
 match-pytest: ## The match tools' own tests: what compare_arms refuses to subtract, and why
 	$(PYTHON) -m unittest discover -s tools -p 'test_compare_arms.py'
+	$(PYTHON) -m unittest discover -s tools -p 'test_paired_arms.py'
+
+# Round 10 (combat, item 6; research C6/C7): the gangs-vs-law series, ONE disc site at a time. Four arms on the SAME
+# seed list, both colours, one map per invocation (each stays under slot.sh's 90-minute kill): the control (the disc at
+# every site, today's default), the box at the friendly-fire line-of-fire site only, at the incoming-projectile site
+# only, and at both (C7's pre-registered arm). Each treatment is compared with the control per game (paired-arms);
+# every match proves its arm through `controls.tuning` (faction_matrix refuses a run that did not carry it).
+# SEEDS=32 is ~64 games per arm per map; `make remote T="disc-site-series ARENA=pit"`.
+DISC_SITE_ARMS := lof=match.hull_disc_lof=0 incoming=match.hull_disc_incoming=0 both=match.hull_disc_lof=0,match.hull_disc_incoming=0
+disc-site-series: import ## Item 6: gangs vs law, the disc site by site, paired seeds (ARENA=pit|yard SEEDS=32 TIME=180)
+	@test -n "$(ARENA)" || { echo "disc-site-series: ARENA= is required (one map per run)"; exit 2; }
+	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),32) --factions gangs,law \
+		--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) --arena $(ARENA) \
+		--json $(BUILD_DIR)/disc-series-$(ARENA)-control.json
+	for arm in $(DISC_SITE_ARMS); do \
+		label=$${arm%%=*}; tune=$${arm#*=}; \
+		$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),32) --factions gangs,law \
+			--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) --arena $(ARENA) --tune $$tune \
+			--json $(BUILD_DIR)/disc-series-$(ARENA)-$$label.json || exit 1; \
+		$(PYTHON) tools/paired_arms.py --treatment $(BUILD_DIR)/disc-series-$(ARENA)-$$label.json \
+			--control $(BUILD_DIR)/disc-series-$(ARENA)-control.json \
+			--json $(BUILD_DIR)/disc-series-$(ARENA)-$$label-paired.json || exit 1; \
+	done
+
+# Round 10 (research C6): two arms on the SAME seeds compared game by game (discordant pairs, exact McNemar), never
+# as two pooled rates. Needs faction-matrix JSONs from this round's tool (they carry `games`).
+paired-arms: ## Two faction-matrix runs on the same seeds, paired per game (TREATMENT=a.json CONTROL=b.json)
+	$(PYTHON) tools/paired_arms.py --treatment $(TREATMENT) --control $(CONTROL) \
+		$(if $(BUILD_ARM),--build-is-the-arm '$(BUILD_ARM)')
 
 # Both arms on every map in ARENAS, in ONE remote invocation. Four separate `make remote` calls would rsync the
 # worktree four times into the same folder on builder0 while earlier runs were still reading it, and would queue for
