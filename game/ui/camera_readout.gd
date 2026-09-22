@@ -42,6 +42,8 @@ func lines() -> Array[String]:
 			roundi(rad_to_deg(rig.yaw)), "ON" if rig.auto_frame else "OFF", "ON" if rig.yaw_follow else "OFF",
 			("x%.2f (%d m)" % [controls.range_frame, roundi(controls.selection_reach())]) if controls != null else "-"])
 	result.append("PgUp/PgDn tilt · wheel or - = distance · [ ] FOV · , . turn · V auto-frame · Y yaw-follow · ; ' range · P copy pose")
+	if rig.frame_short:
+		result.append("COLUMN TOO LONG FOR THIS TILT: part of the selection is off screen (PgUp tilts up)")
 	if _copied_left > 0.0:
 		result.append("Copied: " + _copied)
 	return result

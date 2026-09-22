@@ -226,3 +226,17 @@ spawn-cost: import ## Headless: ms per spawned vehicle, first of each type vs th
 control-timing: import ## Judge control's timing budgets (frame, order, click, health bars) - run on an idle machine
 	TANK_SQUAD_JUDGE_TIMING=1 $(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=test_control_scale
 	TANK_SQUAD_JUDGE_TIMING=1 $(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=test_control_readability
+
+## Round 10 (control item 1, contract R2; the lead: "I was trying to right click to move them in a different direction
+## and they didnt respond"). Squad 1 en route on Terminus, a right-click 40 m off its line, per tick per crew what Orders
+## says it CARRIES OUT, in seven in-flight states. Fails when any crew's order is unchanged 2 ticks after the click.
+REPATH_DIR := $(BUILD_DIR)/repath
+REPATH_ARENA ?= terminus
+REPATH_FLAGS ?= --player-faction=condemned --enemy-faction=law
+
+repath-test: import ## R2: a right-click on a squad already moving, seven ways, on Terminus; per-tick crew orders in build/repath/repath.json (headless)
+	rm -rf $(REPATH_DIR) && mkdir -p $(REPATH_DIR)
+	timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(REPATH_ARENA) \
+		$(REPATH_FLAGS) --repath-test=$(CURDIR)/$(REPATH_DIR) $(if $(ONLY),--repath-only=$(ONLY)) 2>&1 \
+		| tee $(REPATH_DIR)/run.log | grep -E '^REPATH|SCRIPT ERROR|^ERROR' || true
+	grep -q 'REPATH_DONE ok=true' $(REPATH_DIR)/run.log

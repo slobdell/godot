@@ -25,6 +25,7 @@ extends GameMode
 ##   --camera-readout=off  hide the live camera values (round 6: on, so the lead can find the camera; P copies the pose)
 ##   --hints=off|fresh  no control hints (X6; they retire themselves as each control is used), or all of them, remembering nothing
 ##   --squad-orders-test=DIR  the lead's sequence: order every squad in turn, then where each unit actually ends up
+##   --repath-test=DIR  R2: squad 1 en route, a right-click 40 m off its line; per tick what each crew carries (RepathPlaytest)
 ##   --response-test=DIR  click → order → ack → first visible movement, in ms, at this army size (ResponsePlaytest)
 ##   --hud-cost=PATH  X4: what each HUD widget costs in draw calls and _process at ~30 a side (HudCostProbe)
 ##   --shell-playtest=DIR  the first minutes through real input: faction menu, planning, the camera in battle (ShellPlaytest)
@@ -255,7 +256,8 @@ func _start_match() -> void:
 	var rig := RtsCamera.new()
 	rig.name = "RtsCamera"
 	rig.camera = main.camera
-	rig.edge_pan = not (flags.has("scripted") or flags.has("command-playtest") or flags.has("control-playtest"))
+	rig.edge_pan = not (flags.has("scripted") or flags.has("command-playtest") or flags.has("control-playtest") \
+			or flags.has("repath-test"))
 	var frame := Match.team_frame(Match.Team.GREEN)
 	rig.yaw = 0.0 if frame["forward"] == Vector3.FORWARD else PI
 	# C5: start where the vehicles read as vehicles: frame the whole army and the ground just ahead of it,
@@ -407,6 +409,8 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		rig.vision_inset = SkirmishMode.camera_frame_inset(flags)
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
+	controls.notice.connect(func(text: String, warning: bool) -> void:
+		messages.post(text, Hud.WARNING if warning else Hud.INFO))
 	# Round 6: the camera's live values and keys, so the lead can find the camera in play (P copies the pose).
 	if flags.text("camera-readout", "on") != "off" and not (flags.has("scripted") or SkirmishMode.spectated(flags)):
 		var readout := CameraReadout.new()
@@ -422,6 +426,15 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		squads.out_dir = flags.text("squad-orders-test")
 		main.add_child(squads)
 		squads.run()
+	if flags.has("repath-test"):
+		var repath := RepathPlaytest.new()
+		repath.name = "RepathPlaytest"
+		repath.controls = controls
+		repath.out_dir = flags.text("repath-test")
+		if flags.text("repath-only") != "":
+			repath.only = flags.text("repath-only").split(",")
+		main.add_child(repath)
+		repath.run()
 	if flags.has("response-test"):
 		var response := ResponsePlaytest.new()
 		response.name = "ResponsePlaytest"
