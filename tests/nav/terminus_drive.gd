@@ -145,8 +145,12 @@ func _close_leg(elapsed: float) -> void:
 		if leg_done.has(key) and gap >= 0.0 and gap <= ARRIVED_M:
 			arrived += 1
 		else:
+			var reading := Movement.state(tank)
 			misses.append({"unit": key, "id": tank.unit_id, "gap_m": snappedf(gap, 0.1),
-					"completed": leg_done.has(key), "phase": String(Movement.state(tank).get("phase", "?")),
+					"completed": leg_done.has(key), "phase": String(reading.get("phase", "?")),
+					"blocked_by": String(reading.get("blocked_by", "")), "reachable": bool(reading.get("reachable", true)),
+					"goal_off_mesh_m": snappedf(float(reading.get("goal_gap_m", 0.0)), 0.1),
+					"goal": [snappedf(leg_goal[key].x, 0.1), snappedf(leg_goal[key].z, 0.1)] if leg_goal.has(key) else null,
 					"at": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)]})
 	var contacts := {}
 	for cause: String in WallContact.by_cause:
