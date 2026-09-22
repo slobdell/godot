@@ -271,6 +271,27 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
 - **Item 6a, `_is_clear`** — `80905740`. REPLACES the aligned projection in `ArmyLayout._is_clear` with the
   separating-axis rule on each placed hull's own forward. Test with a 90° neighbour (old: 3.6 m clear, true 0.5 m).
 
+### The pitch pair (after CP3, main `69c681ac` merged at `5f8376bc`)
+
+- `e11376f4` base-of-fire: a lane is clear by the game's own `lof` friend check (a hull-centre literal on the bus).
+  On the bus: lane clear 11.8 s, first shot +0.2 s, 5 shots, 0 through a friend. No baseline move.
+- `d8193e86` **pitch** (baseline MOVES, cause 1): lateral floor = diagonal + `DRESS_MARGIN_M` 0.30 m. Bus 2.90 × 9.70
+  (laptop): width 4.90 m −0.27 (2/4) / −0.56; one_turning 6.51 m −0.43 / −0.52; diagonal 10.12 m +0.02 / 0.00;
+  **dressing 10.42 m +0.27 / +0.29, 4/4 turned**.
+- `bed99012` legged-path seating (baseline MOVES, cause 2): KEEP ONLY IF its own measurement (the drills-ON settle
+  pair, 8 jittered seeds) shows the gain; otherwise reverted on top before the named hash.
+- `ed24518c` follow-ups: a hold carrying a drawn heading replaces a move at once (two wheeled crews never finished
+  their final move at the wider slots); drive-to-slots measures ROUTE progress (the leader's route runs 7 m east
+  before turning north: `MEASURE element_drive route progress 19.0 m (north 9.2 m; bar 16.2)`, the 0.3 factor a
+  judgement call, accepted).
+- `547f87cf` **deploy at the round-9 width floor** (ruling, option 1): formations lay at the diagonal from the first
+  order on; ArmyLayout deploys at width + 2 (`DEPLOY_FLOOR`). A 25-bus army's front slot z 90.0 inside the edge 86
+  (it was 75 at the diagonal; arena: 0–5 m free ahead of every hexagonal map's zone).
+  **KNOWN COST: squads are packed at spawn, and their FIRST dressing turns clip (bus at 4.90 m: −0.27 m). Round 11:
+  a checkerboard-staggered deploy (arena's option (a): 1 × diagonal across, ranks offset half a pitch, depth ≈
+  0.87 × diagonal) removes it.**
+- `a8789bea` the `squad_incoming` disc site (no move).
+
 ### Requests to other streams
 
 - **control (R2), sent via the orchestrator 2026-09-22:** `Orders._same_order` drops an ELEMENT re-issue whose only
