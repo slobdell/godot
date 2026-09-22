@@ -158,6 +158,13 @@ class MockPipelineTest(unittest.TestCase):
     def run_pipeline(self, the_plan, client):
         return generate.generate(the_plan, SPEAKERS, client, self.masters, self.out, voice_client.MODEL_ID, log=lambda *_: None)
 
+    def test_godot_is_kept_out_of_both_folders(self):
+        """Round 10: the clips folder had a .gdignore; the masters folder did not, and a builder0 check died in
+        `make import` on a fresh MP3 master. Nothing loads either folder at runtime."""
+        self.run_pipeline(sample_plan(["caller.kill.08"]), mock_client())
+        self.assertTrue((self.out / ".gdignore").exists(), "the clips are not Godot's business")
+        self.assertTrue((self.masters / ".gdignore").exists(), "and neither are the masters")
+
     def test_records_slices_checks_and_writes_a_manifest(self):
         the_plan = sample_plan(["caller.kill.08", "caller.close.04"])
         client = mock_client()

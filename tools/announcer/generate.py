@@ -59,10 +59,14 @@ STT_UNVERIFIABLE_S = 0.7
 CHARACTERS_PER_SECOND = 15.0
 
 
-## Godot must not import this folder: the booth loads clips from disk at runtime, importing 2,396 files is slow
+## Godot must not import these folders: the booth loads clips from disk at runtime, importing 2,396 files is slow
 ## and once crashed the import step outright, and they are excluded from every export anyway. The generator writes
 ## the marker itself so that wiping the folder to re-cut cannot silently lose it (it did, 2026-09-16, and 2,396
 ## .import files ended up committed).
+## **The masters need it just as much (round 10).** They are git-ignored, so nobody thought about them - but
+## `tools/remote.sh` rsyncs them to builder0 all the same (it excludes assets/incoming/, not these), and there
+## `make import` met 616 fresh MP3s and died: `make[2]: *** [mk/core.mk:45: import] Segmentation fault`, on
+## color.faction.09.mp3. Nothing loads a master at runtime; they are the cutter's input.
 GDIGNORE_NOTE = """# Godot deliberately ignores this folder; see README.md. The booth loads these clips from disk
 # at runtime (AnnouncerVoice), they are excluded from both export presets, and importing them all is slow.
 """
@@ -238,6 +242,7 @@ def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, m
     report = {"requests_sent": 0, "characters": 0, "skipped_existing": 0, "clips": 0, "stt_failed": [], "stt_unverifiable": [], "failed_requests": [], "missing_voices": [],
               "alignment_errors": [], "over_budget": 0}
     clips = {}
+    keep_out_of_godot(masters)
     manifest_path = out / "manifest.json"
     previous = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     keep_out_of_godot(out)
