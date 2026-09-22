@@ -14,6 +14,11 @@ const ROLES := ["scout", "ifv", "tank", "artillery", "special"]
 const CONDEMNED := {"scout": "scout", "ifv": "ifv", "tank": "tank", "artillery": "artillery", "special": "lancer"}
 const PART_WRAPPER := preload("res://game/theme/cyberpunk/dozer_part.gd")
 const NO_PART := "res://game/theme/cyberpunk/units/no_part.tscn"
+## R5 (round 10): weapon parts that draw nothing but a stray 3 cm stick, so the unit shows no weapon part at all. Every
+## generated weapon part is such a stick (tools/assets/build_faction_parts.py); on these it crossed the whole vehicle
+## (the catapult's is 5.2 m, through its crane) and read as a misplaced gun. A unit with a GUN_CUT never shows its
+## weapon part either: its real gun is cut out of the hull.
+const STRAY_WEAPONS := ["gangs/artillery"]
 ## The catalog roles that have their own art role; any other role (support, suppressor, lancer) is the faction's special.
 const ART_ROLES := ["scout", "ifv", "tank", "artillery"]
 
@@ -42,7 +47,8 @@ static func unit_slots() -> Dictionary:
 			result["unit.%s.hull" % unit_id] = hull
 			for part in ["turret", "weapon"]:
 				var scene := part_scene(faction, role, part)
-				result["unit.%s.%s" % [unit_id, part]] = scene if ResourceLoader.exists(scene) else NO_PART
+				var stray: bool = part == "weapon" and (GUN_CUTS.has("%s/%s" % [faction, role]) or STRAY_WEAPONS.has("%s/%s" % [faction, role]))
+				result["unit.%s.%s" % [unit_id, part]] = scene if ResourceLoader.exists(scene) and not stray else NO_PART
 	return result
 
 
@@ -131,6 +137,13 @@ const GUN_CUTS := {
 	# The rocket pod on the truck's bed (the bed tops out near 1.2 m; the pod and its turntable stand above it).
 	"law/artillery": {"box": AABB(Vector3(-0.9, 1.2, 0.1), Vector3(1.8, 1.3, 2.1)), "pivot": Vector3(0.0, 1.2, 0.9),
 			"rest_yaw_deg": 180.0},
+	# R5 (round 10; the lead: "the turret placement on our vehicles is wrong (at least with the condemned and the
+	# gangs)"): the gun truck's twin machine gun stands on a post in the BED, generated into the hull, while the parts
+	# that traversed were a 3 cm "barrel" stick and a plate over the cab. Measured with `make assets-profile`
+	# (unit_gangs_ifv_hull.glb, +z is the model's FRONT, the wrapper yaws it 180): the gun and its shield plate are the
+	# narrow mass at z -1.72..-0.28, |x| <= 0.42, above the bed rails (y >= 1.55); the post is at z ~ -0.95. It points
+	# forward as modelled, so no rest yaw.
+	"gangs/ifv": {"box": AABB(Vector3(-0.45, 1.55, -1.74), Vector3(0.9, 0.65, 1.47)), "pivot": Vector3(0.0, 1.55, -0.95)},
 	# Not the Syndicate IFV: its roof gun is its real turret part (it traverses). An early render taken while the tank
 	# was driving its turret home made it look baked in; a cut there hid the gun and turned a slab of roof instead.
 }
