@@ -109,9 +109,18 @@ static func hull_floor(members: Array) -> Vector2:
 ## this is the turning envelope, a circle of the hull's half-diagonal about its centre.
 ##   "width"         round 9: side by side and parallel only (width + HULL_CLEAR_M); hulls may clip while they turn
 ##   "one_turning"   one hull turning beside a still neighbour: half_diagonal + half_width
-##   "both_turning"  two neighbours turning in OPPOSITE directions: 2 × half_diagonal (B2's conservative bound)
-## The measurement that picks one is tests/test_tactics_pitch.gd; the default is the round-9 rule until it lands.
-static var LATERAL_FLOOR := "width"
+##   "both_turning"  two neighbours turning at once, either way: 2 × half_diagonal, the full diagonal
+##   "dressing"      the LANDED rule (round 10, after CP3): the diagonal + DRESS_MARGIN_M
+## MEASURED (tests/test_tactics_pitch.gd, laptop, tank 2.40 × 8.62, four abreast each turning in place to a new
+## heading, every pair's hull boxes per tick): width 4.40 m clips −0.23 (same way; 2 of 4 jammed) / −0.48 (opposite);
+## half_diagonal + half_width 5.67 m clips −0.73 / −0.36; 6.5–8.5 m clips at every step (−0.27 at 8.5); the diagonal
+## 8.95 m clears +0.01 / 0.00. Two parallel hulls turning TOGETHER each project w|cos θ| + l|sin θ| on the line between
+## them, which peaks at the full diagonal part-way round, so a dressing formation needs the diagonal, not the
+## one-turning bound (which assumes the neighbour stands still).
+static var LATERAL_FLOOR := "dressing"
+## The orchestrator's ruling (2026-09-22): a centimetre of clearance at the diagonal is inside the plant's own slack and
+## the spawn jitter; 0.3 m is invisible to the lead's eye and outside both.
+const DRESS_MARGIN_M := 0.30
 
 
 ## The centre-to-centre pitch across the heading that `rule` asks of a hull `extent` (Vector2(width, length)).
@@ -122,6 +131,8 @@ static func turning_pitch(extent: Vector2, rule: String) -> float:
 			return half_diagonal + 0.5 * extent.x
 		"both_turning":
 			return 2.0 * half_diagonal
+		"dressing":
+			return 2.0 * half_diagonal + DRESS_MARGIN_M
 	return 0.0
 
 
