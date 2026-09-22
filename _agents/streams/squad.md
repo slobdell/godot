@@ -157,6 +157,12 @@ _(the worker keeps this current; newest first within each part)_
    60° of the scout on 236 of 236 ORBIT thinks; a surface-relative radius moved deck hits 0 → 0). The fix is mine, in
    `tank_brain.gd`: the gate reads the orbit's REAL angular rate (measured, not v/r from constants), and/or the
    orbit's steering achieves the rate the gate assumes. The scenario's bar is the falsifier. After R2, settle, pitch.
+   6c. **Slot drift on the bigger bus (from CP3, 2026-09-22):** `scenario_elements::test_a_unit_fighting_from_a_formation_
+   slot_stays_in_it` on feel's box commit `055fb10f`: drift 15.2 m against its own leash + 2 m = 16.0 (laptop, PASS
+   by 0.8), over on builder0. The bar is already derived (the leash is the doctrine's 14 m spacing, not the hull), so
+   it is behaviour: a 9.7 m hull fighting from its slot carries its centre further. After the pitch + seating pair.
+   (Its sibling, the overwatch scenario, was a start-geometry literal: fixed in CP3 by feel with a 4 m east start
+   and a setup assertion that the stay-put control is exposed; box tree 0% vs 73%.)
    7. stretch.
 
 **Item 4, the orchestrator's refinement (2026-09-22):** `2 × half_diagonal` (tank 8.95 m, rig ~14.4 m) is the bound
