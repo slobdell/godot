@@ -355,9 +355,10 @@ func _draw() -> void:
 		else:
 			draw_colored_polygon(shape, prop_color)
 	if game_match.control_point:
-		var owner_color: Color = Color(1, 1, 1, 0.7) if game_match.control_owner < 0 else (GameTheme.ui["friendly"] if game_match.control_owner == team else GameTheme.ui["enemy"])
-		var zone_radius := Match.CONTROL_RADIUS / SPAN * size.x
-		draw_arc(world_to_radar(Match.CONTROL_CENTER), zone_radius, 0.0, TAU, 32, owner_color, 2.0)
+		for ring: Dictionary in Radar.objective_rings(game_match):
+			var holder := int(ring["owner"])
+			var owner_color: Color = Color(1, 1, 1, 0.7) if holder < 0 else (GameTheme.ui["friendly"] if holder == team else GameTheme.ui["enemy"])
+			draw_arc(world_to_radar(ring["position"]), float(ring["radius"]) / SPAN * size.x, 0.0, TAU, 32, owner_color, 2.0)
 	_draw_camera_footprint()
 	var friendly: Color = GameTheme.ui["friendly"]
 	var enemy: Color = GameTheme.ui["enemy"]
@@ -426,3 +427,20 @@ func _draw_camera_footprint() -> void:
 		points.append(world_to_radar(ground).clamp(Vector2.ZERO, size))
 	points.append(points[0])
 	draw_polyline(points, Color(1, 1, 1, 0.5), 1.0)
+
+
+## Round 10 (terrain's report, relayed): the zones the match actually SCORES, one ring each - `Match.objectives`, which
+## is the layout's objective pair on yard, pit and terminus, and the single central zone only when a layout lists none.
+## Both maps drew Match.CONTROL_CENTER whatever the layout said: a ring at a centre nobody fights over, and none at the
+## real objectives (lesson 183: the UI saying something the game does not do). [{position, radius, owner, progress}].
+static func objective_rings(game_match: Match) -> Array:
+	var rings: Array = []
+	if game_match == null:
+		return rings
+	for objective: Dictionary in game_match.objectives:
+		rings.append({"position": objective["position"], "radius": float(objective["radius"]),
+				"owner": int(objective["owner"]), "progress": float(objective["progress"])})
+	if rings.is_empty():
+		rings.append({"position": Match.CONTROL_CENTER, "radius": Match.CONTROL_RADIUS, "owner": game_match.control_owner,
+				"progress": game_match.control_progress})
+	return rings

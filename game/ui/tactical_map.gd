@@ -567,20 +567,24 @@ func _draw() -> void:
 
 	# The control point (stretch): a ring on the ground in the holder's color, filling with capture progress.
 	if game_match.control_point:
-		var ring := PackedVector2Array()
-		for i in 33:
-			var angle := TAU * i / 32.0
-			ring.append(_screen(Match.CONTROL_CENTER + Vector3(cos(angle), 0.0, sin(angle)) * Match.CONTROL_RADIUS))
-		var holder := Color(1, 1, 1, 0.8) if game_match.control_owner < 0 else (FRIENDLY if game_match.control_owner == team else ENEMY)
-		draw_polyline(ring, holder, 3.0)
-		var ours := game_match.control_progress if team == Match.Team.GREEN else -game_match.control_progress
-		var progress_color := FRIENDLY if ours > 0.0 else ENEMY
-		var arc := PackedVector2Array()
-		for i in int(absf(ours) * 32.0) + 1:
-			var angle := TAU * i / 32.0
-			arc.append(_screen(Match.CONTROL_CENTER + Vector3(cos(angle), 0.0, sin(angle)) * (Match.CONTROL_RADIUS - 2.0)))
-		if arc.size() > 1:
-			draw_polyline(arc, progress_color, 4.0)
+		# Round 10: every zone the match scores (Radar.objective_rings), not a hard-coded centre.
+		for zone: Dictionary in Radar.objective_rings(game_match):
+			var center: Vector3 = zone["position"]
+			var radius := float(zone["radius"])
+			var ring := PackedVector2Array()
+			for i in 33:
+				var angle := TAU * i / 32.0
+				ring.append(_screen(center + Vector3(cos(angle), 0.0, sin(angle)) * radius))
+			var holder := Color(1, 1, 1, 0.8) if int(zone["owner"]) < 0 else (FRIENDLY if int(zone["owner"]) == team else ENEMY)
+			draw_polyline(ring, holder, 3.0)
+			var ours := float(zone["progress"]) if team == Match.Team.GREEN else -float(zone["progress"])
+			var progress_color := FRIENDLY if ours > 0.0 else ENEMY
+			var arc := PackedVector2Array()
+			for i in int(absf(ours) * 32.0) + 1:
+				var angle := TAU * i / 32.0
+				arc.append(_screen(center + Vector3(cos(angle), 0.0, sin(angle)) * (radius - 2.0)))
+			if arc.size() > 1:
+				draw_polyline(arc, progress_color, 4.0)
 
 	# Enemies, only as our intel knows them. Remembered contacts: a hollow triangle fading with age. Contacts
 	# in sight: their unit-type icon from far out; up close the model and its red ground ring show them.
