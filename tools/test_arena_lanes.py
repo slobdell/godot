@@ -91,3 +91,24 @@ class DecisionRoutes(unittest.TestCase):
         blocked, n = ar.occupancy(boxes)
         eye = ar.standing_point(blocked, n, (0.0, 0.0))
         self.assertGreater(boxes[0].distance(*eye), 0.0, "the eye at %s is outside the block" % (eye,))
+
+
+class TerrainLanes(unittest.TestCase):
+    """Round 10: the report's lane table reads rims, rails and carved ground, as `ArenaLanes` (the gate) does.
+    Pinned to the GDScript's numbers (tests/test_arena_lanes.gd's LANE lines at the merge of terrain's maps); the
+    positive control is the same map with its terrain removed, which the old table effectively measured."""
+
+    def test_the_terrain_maps_match_the_game(self):
+        want = {"crossing": {"west bridge": 13.0, "west bridge (far)": 13.0},
+                "sumps": {"the catwalk": 13.0, "west causeway": 12.8, "far causeway": 15.6}}
+        for name, lanes in want.items():
+            with open(os.path.join(ARENAS, name + ".json")) as f:
+                layout = json.load(f)
+            ar.use_extent(layout)
+            got = {l["name"]: l["narrowest_physical_m"] for l in ar.lane_table(layout, ar.boxes_of(layout))["lanes"]}
+            for lane, width in lanes.items():
+                self.assertAlmostEqual(got[lane], width, places=1, msg="%s / %s" % (name, lane))
+            dry = dict(layout, terrain=[])
+            dry_got = {l["name"]: l["narrowest_physical_m"] for l in ar.lane_table(dry, ar.boxes_of(dry))["lanes"]}
+            first = next(iter(lanes))
+            self.assertGreater(dry_got[first], got[first] + 3.0, "%s: the terrain is what bounds %s" % (name, first))
