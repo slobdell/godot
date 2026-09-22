@@ -40,10 +40,11 @@ func _run() -> void:
 				"hull_art": _aabb(_bounds(tank, tank.get_node("HullVisual"))),
 				"roof": _roof(tank, tank.get_node("HullVisual")),
 				"gun_cut": not FactionArt.gun_cut(unit_id).is_empty(),
+				"gun_pivot": _gun_pivot(tank),
 			}
 			report[unit_id] = entry
-			print("TURRET_PROBE %s box=%s pivot=%s turret_art=%s hull_art=%s" % [unit_id, entry["box"], entry["pivot"],
-					entry["turret_art"], entry["hull_art"]])
+			print("TURRET_PROBE %s box=%s pivot=%s turret_art=%s weapon_art=%s gun_pivot=%s hull_art=%s" % [unit_id,
+					entry["box"], entry["pivot"], entry["turret_art"], entry["weapon_art"], entry["gun_pivot"], entry["hull_art"]])
 			tank.free()
 	var path := flags.text("turret-probe-json", "")
 	if path != "":
@@ -110,3 +111,12 @@ func _roof(tank: Node3D, node: Node) -> Array:
 	for key: int in keys:
 		out.append([snappedf((key + 0.5) * BIN_M, 0.01), snappedf(float(bins[key]), 0.01)])
 	return out
+
+
+## A gun cut out of the hull (FactionArt.GUN_CUTS) yaws about its own GunPivot: where that is in the tank frame, so the
+## simulated pivot (turret_mount x/z) can be put under it. [] when the unit has none.
+func _gun_pivot(tank: Node3D) -> Array:
+	var pivots := tank.find_children("GunPivot", "Node3D", true, false)
+	if pivots.is_empty():
+		return []
+	return _v(tank.to_local((pivots[0] as Node3D).global_position))

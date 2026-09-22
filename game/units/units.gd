@@ -202,6 +202,11 @@ const PROFILES := {
 		# R2: 110 -> 50 (the lead's "slow turret"): a scout crossing at 15 m sweeps ~53°/s, faster than it turns.
 		"turret_turn_rate_deg": 50.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the turret on the ROOF, not buried in the hull (it drew at 1.55-2.11 m inside a 2.40 m
+		# box, then a 4.76 m one). `make turret-probe` (builder0, the 9.70 m box): the roof is flat at 4.71-4.76 m from
+		# z -0.6 to +3.6 and the dozer turret's art stands 0.46 m above its pivot, so its origin goes to 4.72 - 0.46 = 4.26
+		# and the pivot 0.4 m aft of centre, where the turret sits wholly on the flat. [x, y, z]: x right, y up, +z REAR.
+		"turret_mount": [0.0, 4.26, 0.4],
 		"armor": {"front": 8.0, "side": 4.0, "rear": 2.0},
 		"good_vs": ["ifv", "tank"],
 		"weak_vs": ["scout"],
@@ -355,6 +360,9 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 120.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the same buried dozer turret. Probe (builder0): roof flat at 2.36-2.40 m from z -0.4 to +2.6,
+		# the turret art 0.38 m above its pivot: origin 2.37 - 0.38 = 1.99, pivot 0.4 m aft of centre.
+		"turret_mount": [0.0, 1.99, 0.4],
 		# X6 (round 3): plow front 4 -> 6, so it survives the 25 mm while closing on IFVs (Burner > IFV).
 		"armor": {"front": 6.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["ifv", "artillery"],
@@ -443,6 +451,10 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 190.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the gun truck's real machine gun is in the BED (FactionArt.GUN_CUTS "gangs/ifv" now cuts it
+		# out and yaws it); its GunPivot is at z +0.92 in the tank frame (probe, builder0), so the simulated pivot goes under
+		# it and rounds leave from the gun that is drawn. No turret art is drawn, so y stays at the muzzle's pivot height.
+		"turret_mount": [0.0, 1.09, 0.92],
 		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"good_vs": ["scout"],
 		"weak_vs": ["tank"],
@@ -487,6 +499,9 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 60.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the War Rig's cut gun yaws about its GunPivot at z +1.75 (probe, builder0), on the tanker;
+		# the simulated pivot goes under it. No turret art is drawn, so y stays at the muzzle's pivot height.
+		"turret_mount": [0.0, 1.09, 1.75],
 		"armor": {"front": 7.0, "side": 4.0, "rear": 2.0},
 		"good_vs": ["ifv", "tank"],
 		"weak_vs": ["scout"],

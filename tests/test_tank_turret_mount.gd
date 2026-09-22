@@ -62,3 +62,30 @@ func test_a_spawned_tank_places_its_turret_art_at_the_mount() -> void:
 		assert_near(art_y, pivot.y + float(pose["lift"]), EPS, "%s: the turret art stands at the ring" % unit_id)
 		var weapon := tank.get_node("Turret/WeaponVisual") as Node3D
 		assert_near(tank.to_local(weapon.global_position).y, art_y, EPS, "%s: and the weapon with it" % unit_id)
+
+
+## combat's condition on the values (2026-09-22): `muzzle_position()` is a FIXED 3.2 m x the turret's scale ahead of
+## the pivot, so a pivot moved FORWARD on a long hull could start a round outside the shooter's own box -- inside a
+## squadmate nosed up close, a real sim change in five_squads-style packing. Asserted per profile: with its mount, the
+## muzzle is inside the unit's own box, or no further outside it than today's default pose already puts it (the small
+## hulls' muzzles have always been past their noses: the scout's by ~0.7 m).
+func test_no_mount_pushes_the_muzzle_further_out_of_its_own_box() -> void:
+	var mounted := Units.PROFILES.keys().filter(func(id: String) -> bool: return Units.PROFILES[id].has("turret_mount"))
+	assert_true(mounted.size() >= 4, "the measured units carry mounts, so this checks something (%s)" % [mounted])
+	for unit_id: String in Units.PROFILES:
+		var profile: Dictionary = Units.PROFILES[unit_id]
+		if not profile.has("turret_mount"):
+			continue
+		var tank: Tank = (load("res://game/tank/tank.tscn") as PackedScene).instantiate()
+		tank.set("unit_id", unit_id)
+		tank.set("simulate", false)
+		add_to_tree(tank)
+		var half := float(profile["hull_size"][2]) / 2.0
+		var reach := tank.turret.scale.z * 3.2
+		var muzzle_z := tank.to_local(tank.muzzle_position()).z
+		var today_z := Tank.DEFAULT_TURRET_Z - reach
+		var overhang := maxf(0.0, -half - muzzle_z)
+		var today_overhang := maxf(0.0, -half - today_z)
+		assert_true(overhang <= today_overhang + EPS,
+				"%s: its muzzle is %.2f m past its nose (today's pose: %.2f m)" % [unit_id, overhang, today_overhang])
+		assert_true(muzzle_z <= half, "%s: and it does not start behind its own tail (%.2f m)" % [unit_id, muzzle_z])
