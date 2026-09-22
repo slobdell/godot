@@ -292,19 +292,30 @@ func test_the_base_of_fire_keeps_firing_while_the_others_move() -> void:
 	assert_eq(through_a_friend, 0, "and it never shot through one of its own")
 
 
-## A base-of-fire crew has a shot once no assault vehicle is within this of its line of fire; and it should use it
-## within BASE_REACT_S: a reload plus a turret slew, with a second of margin.
-const LANE_CLEAR_M := 3.0
+## A base-of-fire crew has a shot once no assault HULL comes within LANE_SPREAD_M of its line of fire, measured the way
+## the game's own friend check measures it (`Match`'s line-of-fire test: `Units.hull_distance_to_line(..., "lof")`, the
+## hull's extent toward the line taken off first). Round 10 first measured 3 m from each assault vehicle's CENTRE,
+## which was a hull-size literal: on the CP3 bus (9.70 m, reaching 5.06 m from its centre on the default disc) it called
+## a lane clear while the bus's own box still stood in it, and the base, correctly, held its fire (laptop, 69c681ac:
+## "first shot 10.6 s after" a lane the game still considered blocked). Then it should use the lane within
+## BASE_REACT_S: a reload plus a turret slew, with a second of margin.
+const LANE_SPREAD_M := 1.0
 const BASE_REACT_S := 4.0
 
 
-## Whether any base crew has a lane to any foe that no assault vehicle stands in.
+## Whether any base crew has a lane to any foe that no assault hull stands in (the game's own test, see above).
 static func _a_lane_is_clear(base: Array, foes: Array, assault: Array) -> bool:
 	for gun: Tank in base:
 		for foe: Tank in foes:
+			var line := foe.global_position - gun.global_position
+			var direction := Vector3(line.x, 0.0, line.z).normalized()
 			var blocked := false
 			for friend: Tank in assault:
-				if _lane_distance(gun.global_position, foe.global_position, friend.global_position) < LANE_CLEAR_M:
+				var along := (friend.global_position - gun.global_position).dot(direction)
+				if along <= 0.0 or along >= Vector2(line.x, line.z).length():
+					continue
+				if Units.hull_distance_to_line(Units.stat(friend.unit_id, "hull_size"), -friend.global_basis.z,
+						friend.global_position, gun.global_position, direction, "lof") <= LANE_SPREAD_M:
 					blocked = true
 			if not blocked:
 				return true
