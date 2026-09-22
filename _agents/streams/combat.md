@@ -443,6 +443,15 @@ CP4 re-run measures the world-mask fix against a start that is deliberately wors
 and "hulls clip while pivoting out of a 6 m row" is expected there under the world mask (the accepted trade), not a
 regression.
 
+**Decision rule for CP4's re-run, written before it (2026-09-22, with the orchestrator):** the run happens on squad's
+merge hash (arrival slots + seating) with CP3's bus; arena's grid is not a prerequisite. Under the world mask a
+squadmate cannot refuse a yaw, so the hand-placed 6 m row cannot reproduce item 1's freeze. If five_squads still leaves
+units off their slots with the constraint on, I trace it with `YAW_TRACE` first. If the refusals name a squadmate, the
+mask arm is not applied (an arm failure, not a result). If they name the world, it's a new mechanism (write it up).
+If there are no refusals, it's not the constraint at all. Only if the trace shows the row's geometry itself (hulls
+overlapping at placement) does the test's row pitch become the literal to derive from the turning envelope, with a
+REASON. The constraint does not stay off because of a hand-placed literal.
+
 ### Owed after CP3 (taken 2026-09-22)
 
 - `scenario_fire_discipline::test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane` fails on feel's CP3 tree
