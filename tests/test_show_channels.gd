@@ -371,11 +371,12 @@ func test_the_band_dial_widens_the_window_and_shopfront_swing_around_a_fixed_mea
 	for key in [&"rim", &"edges"]:
 		var c: ShowChannel = show.channels[key]
 		assert_eq(Vector2(c.level_floor, c.level_ceiling), before[key], "%s is not this dial" % key)
-	# Idempotent against the PATCH, not cumulative: 2x then 3x is 3x, never 6x.
-	show.set_band(3.0)
+	# Idempotent against the PATCH, not cumulative: 2x then 1.5x is 1.5x, never 3x. (1.5, not 3: the patch already
+	# ships at 2x the round-9 band, and 3x of THAT would hit BAND_FLOOR_MIN, which is the next test's business.)
+	show.set_band(1.5)
 	var w: ShowChannel = show.channels[&"windows"]
 	var was_w: Vector2 = before[&"windows"]
-	assert_near(w.span(), 3.0 * (was_w.y - was_w.x), 1e-5, "3x is 3x of the patch, not of the last call")
+	assert_near(w.span(), 1.5 * (was_w.y - was_w.x), 1e-5, "1.5x is 1.5x of the patch, not of the last call")
 	show.set_band(1.0)
 	assert_near(w.level_floor, was_w.x, 1e-5, "1x puts the patch back exactly")
 

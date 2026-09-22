@@ -155,6 +155,28 @@ from the wrapper's line on `de31eeea` (1559/0).
 6. Round-9 leftovers (strobe arm at the cue's period, parapet-vs-outline instrument, the three reds, mood clips).
 7. Stretch: blimp screens (after feel's R7), a road/bridge patch.
 
+### Done (with measurements; every number builder0)
+
+- **Items 1–3 at `9f68b95e` — GREEN: `make remote T=check` 1572 passed 0 failed, 18/18, sim-baseline
+  `1ea332e7bc268d2a` UNMOVED (S6 held), determinism `559a415887806e43`.** `fba345d7` on top: values only (2× band,
+  pixel energy 1.8 → 1.3), its check pending.
+- **Per-window primitives work and read.** The frames at his pose (`build/show/`, one frozen frame shot show-off then
+  show-on in one process) show individual windows lit: idle magenta twinkle window by window, battle rows lit up the
+  towers, the capture fill amber from the street up, the kill ripple across the windows. **The instrument now SEES the
+  show:** Terminus wide ring/band ratio −5.8 % to −26.7 % with the show on (round 9: inside a 2.8 % null); yard within
+  ±2.7 %; the null this run p95 1.4 %. The luma gate *reports* this (it would have refused 9 of 29 frames): per the
+  brief the numbers go to him beside the frames, not a quieter effect.
+- **The band dial (item 1) is not the lever.** `make show-bands`: 1×/2×/3× on the same frozen frame are near
+  indistinguishable to the eye (the art lights few windows at his pose), all −4.8 % to −6.1 % idle, −15 % to −18 %
+  battle (that spread is the pixel layer, present in all three arms). 2× ships as the default (the brief's rule); 3×
+  stays his. The louder thing he can see is the pixel layer.
+- **Cost.** Structural: zero draw calls, lights, nodes, instance uniforms added (`tests/test_show_windows.gd`).
+  `perf-scene` 1080p terminus seed 3, `--perf-layers=no_show`, before `2ee65f94` / after `fba345d7`: draw calls
+  257 / 258 on the first phase (both runs wander 230–263 with the camera), instance-uniform errors 0 / 0, real
+  lights 1 / 1. **GPU cost not measurable on this builder0:** both runs were taken while other streams' checks ran,
+  and per-phase GPU swung 8–17 ms inside EACH run (the no_show layer read +0.42 ms before, −1.29 ms after: noise, not
+  a speed-up). A quiet-box re-measure is owed.
+
 ### Requests to other streams
 
 - **feel (owner of `game/audio/match_mood.gd`):** a public read of how many `control_changed` events the mood has
