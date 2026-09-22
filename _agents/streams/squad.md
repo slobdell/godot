@@ -206,6 +206,26 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   6.7/13.5, Terminus side 10.7/13.1; longest leg 47.9 → 23.9 m. The paired series on builder0 decides it (pending).
   The Terminus forward tail (20 s) is one wheeled ifv `blocked/terrain` 5 m from a slot against geometry: nav's.
   Tried and reverted: lifting co-arrival pacing at arrival (Terminus fwd 20.5 → 32.7 s, one seed).
+- **Item 3, settle time, step 2** — `6d6d6264`: `_flow` runs only when the leader leads from the front (else every crew
+  goes straight to its final slot); the probe's seed jitters the start (±1.5 m, ±10°: the first series had six
+  identical seeds, n = 1). **Paired series, builder0, `a3582c82`-tree + `6d6d6264`, 8 jittered seeds per cell,
+  20 m plain move, tank/tank/ifv/ifv (median arrived / stopped, s; shipped vs round 9's pinned leader; discordant
+  stopped pairs shipped-faster/round-9-faster/tie):**
+
+  | arena | dir | arrived | stopped | pairs |
+  |---|---|---|---|---|
+  | default | forward | 1.9 / 3.8 | **4.2** / 9.2 | 7/0/1 |
+  | default | side | 2.7 / 11.7 | **4.9** / 14.8 | 8/0/0 |
+  | default | back | 8.4 / 8.4 | 15.8 / 15.3 | 4/3/1 |
+  | terminus | forward | 2.6 / 3.8 | **5.8** / 7.1 | 6/1/1 |
+  | terminus | side | 2.8 / 12.5 | **9.3** / 17.2 | 8/0/0 |
+  | terminus | back | 8.9 / 7.3 | 16.2 / 13.5 | 4/4/0 |
+
+  Overall 37 / 8 / 3. **B7's COMPLETED ≤ 8 s: met forward and side (max 2.8 s); back 8.4–8.9 s. The < 10 s settle bar:
+  met forward and side on both arenas; NOT met for back** (a wash between arms): a 20 m move BACK from the spawn lays
+  a 40 m column whose rear slots press on the arena edge (`blocked/terrain` in the trace), and one wheeled crew
+  creeps 0.5–1.8 m/s for ~15 s after its order completes. Known issue, next in item 3 if time: the plain move's
+  formation is the doctrine's COLUMN, 40 m long for four hulls, for a 20 m reposition.
 - **Item 5, base-of-fire scenario** — `35f7b459`. Re-specified with the reason: the base crews were hand-issued
   `attack` (close with and destroy: they reversed, one charged 32 m, no shot for 6.3 s after a lane cleared); the
   element issues a base crew a HOLD on its spot, and the scenario now does. The early-shots bar measured nav moving
