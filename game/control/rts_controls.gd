@@ -1567,7 +1567,12 @@ func _draw_order_marks() -> void:
 			draw_line(from, at, Color(color, 0.35), 1.5)
 		# A pin: a stalk up from the ring to the task's symbol on a dark disc, readable over any ground at 21°.
 		var head := (at as Vector2) - Vector2(0.0, glyph_px * 1.6)
-		draw_line(at, head + Vector2(0.0, glyph_px * 0.5), Color(color, 0.7), 2.0)
+		if mark.has("facing"):
+			var way := Vector3(float(mark["facing"][0]), 0.0, float(mark["facing"][1]))
+			var tip: Variant = _screen_point((mark["point"] as Vector3) + way * ORDER_FACING_FROM_M * 2.0)
+			if tip != null:
+				head = RtsControls.pin_head(at as Vector2, tip as Vector2, glyph_px)
+		draw_line(at, head + ((at as Vector2) - head).normalized() * glyph_px * 0.62, Color(color, 0.7), 2.0)
 		# After the stalk, never before it: the heading and the stalk share screen-vertical when it points away.
 		if mark.has("facing"):
 			_draw_ordered_facing(mark["point"], mark["facing"], color)
@@ -1581,6 +1586,23 @@ func _draw_order_marks() -> void:
 		var plate := Rect2(head + Vector2(glyph_px * 0.8, -text_size.y * 0.5 - 3.0), text_size + Vector2(10.0, 6.0))
 		draw_rect(plate, Color(0, 0, 0, 0.6))
 		draw_string(font, plate.position + Vector2(5.0, 3.0 + font.get_ascent(px)), label, HORIZONTAL_ALIGNMENT_LEFT, -1, px, color)
+
+
+## Round 10 (control stretch 6): where a pin's head goes. Straight up from its ring, unless the pin carries a drawn heading
+## whose chevrons run UP the screen (a heading away from the camera): then the stalk leans the head away from them, to
+## the side the chevrons are not on, so the heading and the head stop stacking (round 9's frame: the chevrons crossed the
+## head disc and the plate at 720p). `tip` is the screen point the chevrons run toward. Pure, for tests.
+static func pin_head(at: Vector2, tip: Vector2, glyph_px: float) -> Vector2:
+	var up := Vector2(0.0, -glyph_px * 1.6)
+	var run := tip - at
+	if run.length() < 1.0 or run.y > -glyph_px * 0.3:
+		return at + up  # the chevrons point across or down the screen: they are clear of an upright head
+	var side := -1.0 if run.x >= 0.0 else 1.0
+	return at + up.rotated(side * deg_to_rad(PIN_LEAN_DEG))
+
+
+## How far a pin's stalk leans away from chevrons that run up the screen.
+const PIN_LEAN_DEG := 40.0
 
 
 ## Round 7 (A): which way each selected vehicle points - a chevron on the ground ahead of its hull - and, for a gun that

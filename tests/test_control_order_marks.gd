@@ -113,3 +113,16 @@ func test_the_squad_pin_draws_the_tasks_heading_and_needs_every_crew_without_one
 	mark = f.controls.order_marks()[0]
 	assert_true(mark.has("facing"), "with every crew told, the pin draws the heading (%s)" % [mark])
 	assert_true((mark["facing"] as Vector3).distance_to(Vector3(0, 0, -1)) < 0.08, "and it is the one they were given")
+
+
+## Round 10 (stretch 6): a pin whose heading runs up the screen leans its head away from the chevrons; otherwise the
+## head stands straight up from its ring as it always has.
+func test_a_pin_leans_its_head_away_from_a_heading_that_runs_up_the_screen() -> void:
+	var at := Vector2(500, 500)
+	assert_eq(RtsControls.pin_head(at, Vector2(500, 560), 20.0), at + Vector2(0, -32), "a heading toward the camera: upright")
+	assert_eq(RtsControls.pin_head(at, Vector2(600, 500), 20.0), at + Vector2(0, -32), "a heading across: upright")
+	var away := RtsControls.pin_head(at, Vector2(505, 420), 20.0)
+	assert_true(away.x < at.x - 10.0 and away.y < at.y, "a heading away and a little right: the head leans left (%s)" % away)
+	var left := RtsControls.pin_head(at, Vector2(470, 420), 20.0)
+	assert_true(left.x > at.x + 10.0, "away and to the left: it leans right (%s)" % left)
+	assert_near(away.distance_to(at), 32.0, 0.01, "the stalk keeps its length")

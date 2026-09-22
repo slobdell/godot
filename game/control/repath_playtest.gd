@@ -26,6 +26,8 @@ const OFF_LINE_M := 40.0
 const EN_ROUTE_S := 3.0
 ## Ticks logged after each click.
 const LOG_TICKS := 8
+## B7: a crew shows visible intent (moves or turns, ResponsePlaytest's thresholds) within this long of the order.
+const VISIBLE_S := 1.0
 
 var out_dir := ""
 var controls: RtsControls
@@ -127,6 +129,7 @@ func _scenario(scenario: String) -> void:
 	_results.append(row)
 	print("REPATH ", JSON.stringify({"scenario": scenario, "ok": row["ok"], "verdicts": log["verdicts"],
 			"click_tick": log["click_tick"], "via": log["via"], "dropped": log["dropped"].size(),
+			"visible_1s": "%d/%d" % [(log["visible_1s"] as Dictionary).values().count(true), members.size()],
 			"task_before": task_before.get("verb", ""), "task_after": (row["task_after"] as Dictionary).get("verb", ""),
 			"armed_spent": row.get("spent_press", {}).get("verdicts", {})}))
 	# Leave the squad standing still for the next scenario.
@@ -152,6 +155,7 @@ func _click_and_log(members: Array, at: Vector3, how: String, before: Dictionary
 	var ticks: Array = []
 	var verdicts := {}
 	var changed_at := {}
+	var poses := _poses(members)
 	# The response is counted from the tick the controls ISSUED (the input frame), which is what R2 promises; on a
 	# slow headless machine one process frame can span several physics ticks, so the click's own tick is logged too.
 	var issued := _issued_tick if _issued_tick >= 0 else click_tick
@@ -159,6 +163,16 @@ func _click_and_log(members: Array, at: Vector3, how: String, before: Dictionary
 		ticks.append({"tick": controls.game_match.tick, "orders": _snapshot(members)})
 		await get_tree().physics_frame
 	var final := _snapshot(members)
+	# B7's second half (squad's): within a second of the order every crew shows visible intent. Reported, not judged.
+	while controls.game_match.tick - issued < SimClock.TICK_RATE * VISIBLE_S:
+		await get_tree().physics_frame
+	var visible := {}
+	var later := _poses(members)
+	for unit_name: String in members:
+		if poses.has(unit_name) and later.has(unit_name):
+			var moved: float = (later[unit_name][0] as Vector3).distance_to(poses[unit_name][0])
+			var turned := rad_to_deg(absf(angle_difference(float(later[unit_name][1]), float(poses[unit_name][1]))))
+			visible[unit_name] = moved >= ResponsePlaytest.MOVED_M or turned >= ResponsePlaytest.TURNED_DEG
 	for unit_name: String in members:
 		if _changed.has(unit_name) and int(final[unit_name]["id"]) != int(before[unit_name]["id"]):
 			changed_at[unit_name] = int(_changed[unit_name]) - issued
@@ -170,8 +184,18 @@ func _click_and_log(members: Array, at: Vector3, how: String, before: Dictionary
 		var order: Dictionary = final[unit_name]
 		var leader := String(order.get("target", ""))
 		verdicts[unit_name] = "follows" if String(order["verb"]) == "follow" and verdicts.get(leader, "") == "new" else "STALE"
-	return {"click_tick": click_tick, "issued_tick": _issued_tick, "via": via, "ticks": ticks, "verdicts": verdicts,
+	return {"click_tick": click_tick, "issued_tick": _issued_tick, "via": via, "visible_1s": visible, "ticks": ticks, "verdicts": verdicts,
 			"changed_after_ticks": changed_at, "dropped": _dropped.duplicate(true)}
+
+
+## {unit: [flat position, yaw]} for the living members.
+func _poses(members: Array) -> Dictionary:
+	var result := {}
+	for unit_name: String in members:
+		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive():
+			result[unit_name] = [Vector3(tank.global_position.x, 0.0, tank.global_position.z), tank.global_rotation.y]
+	return result
 
 
 func _snapshot(members: Array) -> Dictionary:
