@@ -415,6 +415,23 @@ Nothing on the default path changes on this branch (the constraint stays OFF unt
 `TUNE=match.yaw_fit=1,match.yaw_world=1 make skirmish ARENA=terminus` and order squads of War Rigs and dozers
 around the blocks; compare with `TUNE=match.yaw_fit=1` (round 9's rule), where squads parked in a row can freeze.
 
+### CP3 review (`git diff 4ff45e50 69c681ac -- game/match game/units game/tank`): APPROVED, one defect fixed here
+
+- **`match.gd` jitter:** approved. Derived from the rule `pitch − 2·jitter − hull ≥ HULL_CLEAR_M` for
+  `Units.DEFAULT`, asserted by `tests/test_spawn_grid.gd`. The values are X 1.30, **Z 0.15** (the relay said 0.3;
+  the code's derivation, (12.0 − 9.70 − 2.0)/2, is the one that counts).
+- **`units.gd` bus box and mounts:** approved as carve-out values (the lead's eye, R6; the mounts measured on
+  builder0). The bus is now 2.90 × 4.76 × 9.70 m.
+- **`tank.gd` turret pose and scale:** approved. The turret's scale is pinned to `TURRET_STANDARD`, so the art
+  measurement fix does not move a muzzle, and `turret_pose` keeps y at the muzzle's height.
+- **The muzzle-inside-own-hull condition landed as a test:**
+  `test_tank_turret_mount.gd::test_no_mount_pushes_the_muzzle_further_out_of_its_own_box` (no mounted unit's muzzle
+  sits further past its nose than today's default pose puts it, and none behind its tail). Verified here: 5/5 pass.
+- **Defect, fixed on this branch:** `_apply_turret_mount` read the RAW profile, so `TUNE=tank.muzzle_height=…` moved
+  `Tank.muzzle_height` but not the pivot rounds leave from (pivot 1.09 m against an expected 1.45 m). The tank now
+  passes its own tuned value. Test: `test_combat_hull_geometry::test_a_tuned_muzzle_height_reaches_the_mounted_pivot`
+  (red before, green after). No tune means identical values: baseline pre-registered unmoved.
+
 ### Owed after CP3 (taken 2026-09-22)
 
 - `scenario_fire_discipline::test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane` fails on feel's CP3 tree
