@@ -116,8 +116,25 @@ func _deck_run(variant: String) -> Dictionary:
 	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", Vector3(-70, 0, 20), 0.0, {}, "scout")
 	AiScenario.make_durable(scout)
 	await s.start()
+	# ORBIT_PROBE=1 (squad, round 10 item 6b): per 0.5 s, the scout's option, its attack-run flag, its range and
+	# angular rate around the tank's centre, its speed, and how far the tank's turret is off it. Default off.
+	var orbit_probe := OS.get_environment("ORBIT_PROBE") == "1"
+	var last_bearing := 0.0
 	for tick in SimClock.TICK_RATE * 25:
 		await s.step()
+		if not orbit_probe:
+			continue
+		var rel := scout.global_position - tank.global_position
+		var bearing := atan2(rel.x, rel.z)
+		var rate := rad_to_deg(absf(angle_difference(bearing, last_bearing))) * SimClock.TICK_RATE
+		last_bearing = bearing
+		if tick % 15 == 0:
+			var brain := s.brain_of(scout)
+			var gun := tank.turret_forward()
+			var off := rad_to_deg(Vector2(gun.x, gun.z).angle_to(Vector2(rel.x, rel.z)))
+			print("ORBIT_PROBE t=%.1f %s burst=%s r=%.1f w=%.0f v=%.1f gun_off=%.0f hp=%.0f ranked=%s" % [tick / 30.0,
+					String((brain.get("choice") as Dictionary).get("option", "?")) if brain.get("choice") is Dictionary else "?", str(brain.get("_bursting")),
+					Vector2(rel.x, rel.z).length(), rate, scout.estimated_velocity.length(), absf(off), float(scout.health), str(brain.ranked)])
 	var result := {"deck": int(s.game_match.stats["weak_spot_hits"][Match.Team.GREEN]),
 			"hits": int(s.game_match.stats["hits"][Match.Team.GREEN]), "shots": s.shots_by(scout)}
 	Armor.deck_probe = false

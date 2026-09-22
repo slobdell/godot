@@ -265,18 +265,19 @@ static func deploy(game_match: Match, team: int) -> void:
 	var frame := Match.team_frame(team)
 	var laid := plan(squads, zone_of(south), frame)
 	var yaw := Match.spawn_yaw(team)
-	var taken: Array = []  # [position, hull width, hull length] of every vehicle placed so far (and the other team's)
+	var taken: Array = []  # [position, hull width, hull length, forward] of every vehicle placed (and the other team's)
 	var forward: Vector3 = TacticsFormation.flat(frame["forward"])
 	for other in game_match.sorted_team_tanks(1 - team):
 		if other.is_alive():
-			taken.append([other.global_position, _hull(other.unit_id).x, _hull(other.unit_id).y])
+			taken.append([other.global_position, _hull(other.unit_id).x, _hull(other.unit_id).y,
+					TacticsFormation.flat(-other.global_basis.z)])
 	var names: Array = laid.keys()
 	names.sort()
 	for unit_name: String in names:
 		var tank := by_name.get(unit_name) as Tank
 		var hull := _hull(tank.unit_id)
 		var spot := _clear_spot(tank, laid[unit_name]["position"], hull, forward, taken)
-		taken.append([spot, hull.x, hull.y])
+		taken.append([spot, hull.x, hull.y, forward])
 		# The layout's y is USED, not discarded. This line read `Vector3(spot.x, tank.global_position.y, spot.z)`,
 		# which kept whatever y the tank already had from `Match.spawn_position` and threw the layout's away -- so
 		# `SPAWN_LIFT_M` was inert and 0.05 produced byte-identical results to 0.0 on this branch. I reported that
@@ -326,14 +327,28 @@ static func _clear_spot(tank: Tank, wanted: Vector3, hull: Vector2, forward: Vec
 
 
 static func _is_clear(spot: Vector3, hull: Vector2, forward: Vector3, taken: Array) -> bool:
-	var right := Vector3(-forward.z, 0.0, forward.x)
+	# Round 10 (item 6): every placed hull is measured on ITS OWN axes. Each `taken` entry may carry its forward as a
+	# fourth field (absent: it shares ours, the old form); the test is the separating-axis rule over both boxes' two
+	# axes, with STAND_CLEAR_M of gap required on at least one. For two boxes sharing a frame it is exactly the old
+	# `max(across, along) >= STAND_CLEAR_M`; it differs only for a neighbour turned by something other than 0 or 180
+	# degrees, which the old one measured as if aligned (a 90-degree tank 6 m away read 3.6 m clear at 0.5 m).
+	var mine := TacticsFormation.flat(forward)
 	for entry: Array in taken:
+		var theirs: Vector3 = TacticsFormation.flat(entry[3]) if entry.size() > 3 and entry[3] is Vector3 else mine
 		var d: Vector3 = spot - (entry[0] as Vector3)
-		var across := absf(d.dot(right)) - (hull.x + float(entry[1])) * 0.5
-		var along := absf(d.dot(forward)) - (hull.y + float(entry[2])) * 0.5
-		if maxf(across, along) < STAND_CLEAR_M:
+		var other := Vector2(float(entry[1]), float(entry[2]))
+		var gap := -INF
+		for axis: Vector3 in [mine, Vector3(-mine.z, 0.0, mine.x), theirs, Vector3(-theirs.z, 0.0, theirs.x)]:
+			gap = maxf(gap, absf(d.dot(axis)) - _radius_on(hull, mine, axis) - _radius_on(other, theirs, axis))
+		if gap < STAND_CLEAR_M:
 			return false
 	return true
+
+
+## Half the extent of a (width, length) hull facing `forward`, projected on `axis` (a flat unit vector).
+static func _radius_on(hull: Vector2, forward: Vector3, axis: Vector3) -> float:
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	return hull.x * 0.5 * absf(right.dot(axis)) + hull.y * 0.5 * absf(forward.dot(axis))
 
 
 ## (width, length) of a unit's hull box.

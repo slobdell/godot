@@ -142,4 +142,105 @@ room (B14) and the key breaks the rest.
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current; newest first within each part)_
+
+**Plan (2026-09-22, in order; one-line reasons):**
+1. ~~Transient-element API~~: withdrawn by the lead (R1 is control's UX item). Nothing to build; `Element.state()` keeps its split.
+2. **R2, squad's half**: FIRST, because the lead can't judge anything until a right-click is obeyed.
+3. **Settle time**: measure end to end (`make squad-settle`), then B7's three-phase arrival. Second because it's what he sees next.
+4. **Pitch from the turning envelope**: built now, merged ALONE after CP3 (the orchestrator's sequencing, 2026-09-22: CP3
+   merges → I `git merge main` → the pitch lands with the baseline move pre-registered → combat re-runs five_squads).
+5. Base-of-fire scenario; 6. `_is_clear` + Delta's margin; 6b. **ORBIT's eligibility gate (new, from combat,
+   2026-09-22):** the engine-deck scenario (`scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck`) is red because
+   ORBIT cannot out-circle a 50°/s turret around an 8.62 m hull: the scout's real orbit is a median 9.1 m/s at 6.6 m
+   from the centre = 33.7°/s, while the gate assumes 14 m/s ÷ 11 m = 73°/s (combat's probe: the tank's turret within
+   60° of the scout on 236 of 236 ORBIT thinks; a surface-relative radius moved deck hits 0 → 0). The fix is mine, in
+   `tank_brain.gd`: the gate reads the orbit's REAL angular rate (measured, not v/r from constants), and/or the
+   orbit's steering achieves the rate the gate assumes. The scenario's bar is the falsifier. After R2, settle, pitch.
+   7. stretch.
+
+**Item 4, the orchestrator's refinement (2026-09-22):** `2 × half_diagonal` (tank 8.95 m, rig ~14.4 m) is the bound
+for neighbours rotating in OPPOSITE directions; a dressing formation turns its hulls the same way at about the same
+rate, and one hull turning beside a still neighbour needs `half_diagonal + half_width` (tank 5.7 m, rig 8.85 m). 14 m
+between rigs abreast is a look he notices before the rotation room. So: the test MEASURES the turning envelopes
+per tick while a formed squad is ordered to a new heading (not the static bound), the landed pitch is the smallest
+that passes with zero intersections, both candidates' numbers go in Status (the conservative bound is the fallback if
+the measured one clips), doctrine spacing still wins where larger, and a frame pair goes to him: a five-rig line at the
+chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
+
+**Machine note:** every number below says its commit and machine. The laptop is ~2.75× slower than builder0.
+
+### Done
+
+- **Baseline (start of round):** `2ee65f94`, builder0: `make check exited 0`, 1559 passed / 0 failed, sim-baseline
+  `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`, ai-scenarios 41,3.
+- **Item 2, R2 (squad's half)** — `2d5945ac`, `35f7b459`. REPLACES: `Elements._physics_process`'s cycle gate for a
+  player task (it now runs on the next tick), and for that first update `Element._issue`'s three skips (player-source
+  guard, `_should_issue`) and `_adopt` (`_retake` takes detached crews back). Only on the player's team (CPU elements
+  keep their cycle). Also `_should_issue`'s idle branch gives an idle crew the `follow` its flow asks for (control's
+  repath-test "arrived" finding; any team). `task_seq` rides on orders as `task` once control's key exists (it does
+  on stream/control `54fa6ff6`). Measured on the unfixed code (laptop): 3 of 4 crews still on pre-task `follow`s 2
+  ticks after `assign()` at every phase of the cycle. `test_tactics_preempt` 7/7 (laptop); mutation-checked: no cycle
+  bypass fails 2, no forced re-issue fails 3, no retake fails 1, no idle-follow branch fails 1.
+- **Item 3, settle time, step 1** — `96915bfc`. `make squad-settle` (three times per run: `ordered_s`, `arrived_s` =
+  COMPLETED per B7, `stopped_s`; `TRACE=on` per second) and `make squad-settle-series` (paired seeds, both arms).
+  Before (laptop, seed 1, tank/tank/ifv/ifv abreast, 20 m plain move; arrived / stopped): default fwd 4.0/8.2, default
+  SIDE 14.8/19.8, Terminus fwd 4.4/20.5, Terminus side 18.0/25.0. Cause of the slow side moves (trace): the leader was
+  pinned to the column's head, 46.8 m from where it stood, and stalled 5 s driving through its own squad; the armour
+  tiers sent a tank through two ifvs; collinear moves tied and the solver picked crossing paths. REPLACES the plain
+  move's seating in `ElementPlan._plan_form_up` (→ `_group(..., pin_leader=false, policy="travel")`) and adds the
+  `travel` policy to `TacticsFormation.seat` (least SQUARED driving, no tiers). After, one seed (laptop): default side
+  6.7/13.5, Terminus side 10.7/13.1; longest leg 47.9 → 23.9 m. The paired series on builder0 decides it (pending).
+  The Terminus forward tail (20 s) is one wheeled ifv `blocked/terrain` 5 m from a slot against geometry: nav's.
+  Tried and reverted: lifting co-arrival pacing at arrival (Terminus fwd 20.5 → 32.7 s, one seed).
+- **Item 5, base-of-fire scenario** — `35f7b459`. Re-specified with the reason: the base crews were hand-issued
+  `attack` (close with and destroy: they reversed, one charged 32 m, no shot for 6.3 s after a lane cleared); the
+  element issues a base crew a HOLD on its spot, and the scenario now does. The early-shots bar measured nav moving
+  the assault out of the lanes it starts in; the clock now starts at the first clear lane. Laptop: clear 1.5 s,
+  first shot +0.9 s, 9 shots, 0 through a friend. **REASON for the count: expect ai-scenarios 41,3 → 42,2.**
+- **Checks:** `96915bfc` builder0 exit 2: 1565/1, the red `test_an_element_flows_in_formation_on_the_way` (travel
+  seating improved snapping's transit gap more than the flow's; re-specified in `64a9e1e1` against round 9's seating:
+  flow 8.0 m vs round 9's 10.0, dresses 3.2 vs snapping's 6.4). `64a9e1e1` builder0 exit 2: **1569 passed / 0
+  failed, sim-baseline `1ea332e7bc268d2a` UNMOVED, determinism `559a415887806e43`**, red ONLY on ai-scenarios-check
+  at 42,2 (pre-registered, the base-of-fire REASON below). The orchestrator's ruling: red only on the count with the
+  REASON written is mergeable; the count is re-recorded once on main, not on this branch.
+- **R2, control's "near" state** — `d358febc`: a player task 5 m from the old one moves the leader's order within 2
+  ticks (mutation: without the forced re-issue the goal moves 0.0 m, control's laptop finding exactly).
+- **Item 6b, ORBIT** — `2ac026af` (combat's finding: the orbit radius was not the mechanism). REPLACES the ORBIT
+  steer point in `TankBrain` (a point ON the 11 m circle 75° ahead → an orbit controller: tangent turned by the
+  radius error, gain 2, clamped 45°, 13 m look-ahead), adds `ORBIT_MEMORY_TICKS` (the circled target stays fresh 4 s,
+  three sites, the COVER_FIRE pattern), and deck runs start inside Armor's 25° cone (`COS_DECK`) and break outside
+  45°. Engine-deck scenario (laptop): 0 deck hits of 13 → **27 of 29**. **REASON for the count: expect 43,1 at the
+  tip.** May move the sim baseline (CPU scouts orbit turrets): the tip's check says.
+- **Item 4, instrument** — `d1253eb1`. `TacticsFormation.LATERAL_FLOOR` (default "width" = round 9: nothing moves) and
+  `tests/test_tactics_pitch.gd`. Measured (laptop, tank 2.40 × 8.62, four abreast turning in place): width 4.40 m
+  −0.23 same (2 of 4 jammed) / −0.48 opposite; half_diagonal + half_width 5.67 m −0.73 / −0.36; 6.5–8.5 m clips at
+  every step (−0.27 at 8.5); **2 × half_diagonal 8.95 m +0.01 / 0.00**. Two parallel hulls turning together each
+  project w|cos θ| + l|sin θ| on the line between them, peaking at the diagonal: a dressing formation needs the
+  diagonal. Lands at CP3 as `max(width + HULL_CLEAR_M, diagonal)` (tank 8.95, rig ~14.4; doctrine spacing wins where
+  larger). The only tighter option is a STAGGERED dressing (crews turning one after another): a behaviour for the
+  lead's eye, not built.
+  **RULING (orchestrator, 2026-09-22):** lateral floor = `max(width + HULL_CLEAR_M, diagonal + DRESS_MARGIN_M)`,
+  `DRESS_MARGIN_M` = 0.30 m, a named constant (1 cm at 8.95 is inside the plant's slack and the spawn jitter; 0.3 m is
+  invisible to his eye and outside both). Tank 9.25 m, rig ≈ 14.7 m. Lands after CP3: alone, baseline pre-registered
+  MOVED with one cause, the five-row pitch table in the commit message, the five-rig frame pair for him. Staggered
+  dressing is the next arm only if he says the rigs look too spread.
+- **Item 6a, `_is_clear`** — `80905740`. REPLACES the aligned projection in `ArmyLayout._is_clear` with the
+  separating-axis rule on each placed hull's own forward. Test with a 90° neighbour (old: 3.6 m clear, true 0.5 m).
+
+### Requests to other streams
+
+- **control (R2), sent via the orchestrator 2026-09-22:** `Orders._same_order` drops an ELEMENT re-issue whose only
+  change is the facing (non-player sources skip the facing compare; slots < `SAME_ORDER_M` apart). It also drops an unchanged
+  `follow`, so a squad re-dragged on the same spot can keep its leader's old arrival heading until arrival. Ask: add
+  `"task"` to `UnitCommand.KEYS` and have `_same_order` return false when `current.task != order.task`. squad's side
+  already sends `command["task"] = element.task_seq` for the player's elements as soon as the key exists (runtime
+  adapter `Element._ORDERS_TAKE_TASK`), and `test_tactics_preempt` asserts the leader's facing from that day.
+
+### Questions for the lead
+
+_(none yet)_
+
+### Known issues
+
+_(none yet)_

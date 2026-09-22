@@ -181,6 +181,9 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if tank == null or not is_instance_valid(tank):
 		return
+	# Round 10: the wall-contact instrument reads the slide the tank made LAST tick, every tick, before the stride
+	# skip below (a strided brain's hull still slides every tick). Measurement only.
+	movement.observe_contact()
 	var started := Time.get_ticks_usec() if profiling else 0
 	var brain := self as TankBrain
 	if _stride > 1 and brain != null and brain.game_match != null:
@@ -267,6 +270,7 @@ func compute_command(delta: float) -> TankCommand:
 		TankBrain.profile_parts["move"] = int(TankBrain.profile_parts.get("move", 0)) + Time.get_ticks_usec() - clock
 		clock = Time.get_ticks_usec()
 	gunnery.apply(cmd, _seconds_step())  # after the movement half, in seconds (combat's seam)
+	movement.note_decision(cmd, move_order)
 	if profiling:
 		TankBrain.profile_parts["weapon"] = int(TankBrain.profile_parts.get("weapon", 0)) + Time.get_ticks_usec() - clock
 	return cmd
