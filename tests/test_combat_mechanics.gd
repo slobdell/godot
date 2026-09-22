@@ -187,7 +187,12 @@ func test_autocannon_rounds_fall_short_past_its_range() -> void:
 		await _dispose(game_match)
 		return lost
 	var in_range: int = await damage_at.call(50.0)
-	var out_of_range: int = await damage_at.call(float(Weapons.profile("autocannon")["range"]) + Shell.RANGE_MARGIN + 6.0)
+	# CP3 (round 10, feel; combat's derived form, combat reviews): the gap is to the target's FACE, not its centre. The
+	# target is the default unit standing broadside (rotation PI/2), so its collider box reaches half its WIDTH along
+	# the lane (the box projection, not Units.hull_reach_along's disc default): the 2.40 m bus reached 1.20 m, the
+	# 2.90 m one 1.45 m, which is what put its face inside the burn-out distance.
+	var face := float(Units.stat(Units.DEFAULT, "hull_size")[0]) / 2.0
+	var out_of_range: int = await damage_at.call(float(Weapons.profile("autocannon")["range"]) + Shell.RANGE_MARGIN + 6.0 + face)
 	assert_true(in_range > 0, "50 m: inside the autocannon's range, rounds land (%d damage)" % in_range)
 	assert_eq(out_of_range, 0, "past its range the rounds burn out before arriving")
 
