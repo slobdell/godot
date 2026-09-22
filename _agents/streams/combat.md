@@ -154,6 +154,14 @@ _(the worker keeps this current)_
 `>> remote: make check exited 0`, 1559 passed, 0 failed, sim-baseline `1ea332e7bc268d2a` unmoved, determinism
 `559a415887806e43`.
 
+### ✅ MERGE HERE: `6e3cd021` (stream/combat with `main` at `08319e59` merged in)
+
+builder0, the check on this exact hash: `>> remote: make check exited 2`, **1604 passed, 0 failed**, sim-baseline
+`1ea332e7bc268d2a` **unmoved**, determinism `559a415887806e43`, 17 of 18 targets passed. The one red is
+`ai-scenarios-check`, by design: **44 passed, 0 failed, 3 pending** against the file's 41,3, which the orchestrator
+re-records on `main` (my record reverted on request). Earlier green points: `d0445bbf` exit 0 (1564/0), start of round
+`2ee65f94` exit 0 (1559/0).
+
 ### For the lead, in one paragraph
 
 **Why the yaw fix froze your squads, and the fix.** Round 9's rule that stops a hull rotating through a wall also
