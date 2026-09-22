@@ -227,6 +227,29 @@ instance-uniform errors 0 / 0, real lights 1 / 1. Re-run `make show-perf-layer` 
   Still open from item 6: the three luminance reds (moot: the round-9 frames they came from are superseded by the
   pixel layer, whose numbers are above), the mood clips re-shot as `build/show-clips/` (done, 30 fps).
 
+### Waiting (not blocked on anything of mine)
+
+- **The quiet perf re-measure** — on the orchestrator's signal (builder0's queue drains after squad, arena, nav,
+  combat's last checks): `make remote-quiet T="perf-scene PERF_NAME=perf-quiet-after PERF_RES=1920x1080
+  PERF_LAYERS=no_show PERF_CYCLES=4 PERF_FLAGS=--arena=terminus"` here, and the same with `perf-quiet-before` from a
+  worktree at `2ee65f94` (a detached one is kept at the scratchpad path `…/scratchpad/godot-show-base`; `git worktree
+  remove` it after). Until then the cost claim is structural (zero draw calls, lights, nodes, instance uniforms) plus
+  a ceiling from the contended runs above.
+- **Stretch (a): the blimp's screens as fixtures** — needs feel's blimp (R7) on main; it is a `show.add_fixture` call
+  and a `show_level` uniform on its screen shader, no new abstraction (lighting.md §4b).
+- **Stretch (b): a road or bridge patched** — needs terrain's `arena.terrain` art; no emissive road/bridge surface
+  exists yet to patch. Same recipe.
+- **C11 (contact-line contrast under a cue)** — arena's render test prints the per-lane contrast; I have not seen it
+  run on main yet, so the show-on/show-off comparison of that number is owed once it is there.
+
+### Questions for the lead
+
+- **3× band width?** 2× ships; at his pose 1×/2×/3× look alike (`build/show-bands/`), so this is low-stakes.
+- **Too loud?** The pixel layer takes the fight/venue ratio −6 % to −27 % on the Terminus wide frames. If the venue
+  competes with the fight, `show_pixel_energy` (1.3) and `channels.pixels.ceiling` (0.9) are the two dials.
+- **Keep the last-stand strobe?** `build/show-decisions/strobe_on.mp4` vs `strobe_off.mp4`, now a fair pair.
+- **Parapet or outline edges?** `build/show-decisions/terminus_wide_t8_1.png` vs `..._outline.png`, fixed heading.
+
 ### Requests to other streams
 
 - **feel (owner of `game/audio/match_mood.gd`):** a public read of how many `control_changed` events the mood has
