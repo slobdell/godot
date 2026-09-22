@@ -415,6 +415,14 @@ around the blocks; compare with `TUNE=match.yaw_fit=1` (round 9's rule), where s
   over-reach (series evidence, and a candidate to flip that site); both fail = the lane search vs a longer friend
   (squad's CLEAR_LANE). The literal `test_autocannon_rounds_fall_short_past_its_range` is feel's derived fix in CP3
   (approved: measure the gap from the target's hull reach).
+- **Feel's arm on the CP3 tree (`a138b5f1` + derivations, LAPTOP):** plain PASSES (first shot tick 114, 2 shots, moved
+  3.9 m); `match.hull_disc=0` FAILS (first shot 232, 1 shot, roamed 32.1 m). On builder0 the plain run FAILS (first shot
+  231, 1 shot). So the box, not the disc, is the arm that roams, and the plain verdict flips by machine. The first
+  shot straddles the 6 s bar (180 ticks) by a wide bimodal margin (~114 vs ~231), which reads as two behaviours
+  (clear lane found at once vs a re-position), selected by something small: a knife-edge on the 9.7 m bus, not "the
+  disc refuses". My hypothesis is not supported by this pair (n=1 per arm, two machines). The discriminator is the
+  paired-seed series with `match.hull_disc_lof` on builder0 after CP3, plus a seed sweep of this scenario (the
+  first-shot tick per seed per arm), before any reading.
 
 ### Next steps
 
