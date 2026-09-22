@@ -407,6 +407,15 @@ Nothing on the default path changes on this branch (the constraint stays OFF unt
 `TUNE=match.yaw_fit=1,match.yaw_world=1 make skirmish ARENA=terminus` and order squads of War Rigs and dozers
 around the blocks; compare with `TUNE=match.yaw_fit=1` (round 9's rule), where squads parked in a row can freeze.
 
+### Owed after CP3 (taken 2026-09-22)
+
+- `scenario_fire_discipline::test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane` fails on feel's CP3 tree
+  (1 shot, not ≥ 2) with the bigger bus as the parked friend. It is a behaviour claim on the `lof` disc site, not a
+  literal. Run it with the plain tree against `match.hull_disc_lof=0`: box passes / disc fails = the disc's
+  over-reach (series evidence, and a candidate to flip that site); both fail = the lane search vs a longer friend
+  (squad's CLEAR_LANE). The literal `test_autocannon_rounds_fall_short_past_its_range` is feel's derived fix in CP3
+  (approved: measure the gap from the target's hull reach).
+
 ### Next steps
 
 1. When CP3 and squad's pitch are on `main` (the orchestrator messages the hash): merge `main`, re-run five_squads,
