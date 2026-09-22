@@ -129,6 +129,9 @@ _Worker: terrain, started 2026-09-22 on `2ee65f94` (= `main` at launch). Every G
 6. Terminus canal proposal (frames only, arena's map), the map page, stretch (diagonal river price, hazards).
 
 **Decisions (one line each):**
+- The brief's "Pits" ships as **`sumps`, "The Sumps"** (a pump house and its sumps): `ARENA=pits` beside the lead's
+  kept `pit`, and a booth saying both, is a mix-up waiting to happen. The orchestrator agreed (2026-09-22).
+- `ArenaTerrain.min_deck_m()` is READ from `ArenaLanes.bar()` + two rails (arena's ask, Invariant 0), not a literal.
 - The null arm for every paired series is a committed FIXTURE twin (`<map>_dry.json`, `fixture: true`, identical but
   `terrain: []`): the series and the before-frames need it loadable by name, and a fixture never reaches a menu.
 - Tooling that needs Godot lives in `game/theme/arena_kit/terrain/tools/` (mine), not `tests/arena/` (arena's).

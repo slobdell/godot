@@ -426,8 +426,8 @@
   {
    "type": "sign",
    "position": [
-    -64.0,
-    108.0
+    -81.0,
+    88.0
    ],
    "rotation_deg": 180.0,
    "sign": "arena"
@@ -435,8 +435,8 @@
   {
    "type": "sign",
    "position": [
-    64.0,
-    -108.0
+    81.0,
+    -88.0
    ],
    "rotation_deg": 0.0,
    "sign": "arena"

@@ -168,7 +168,7 @@ def crossing(m):
         m.c20(-42, 80, 0, 1), m.c20(0, 80, 0, 1), m.c20(42, 80, 0, 1),
         # Lamps: one at the bridge mouth on the bank side (the crossing is lit, the water is not), one by the block.
         m.floodlight(-108, 36), m.floodlight(8, 44),
-        m.screen(-76, 100, 180, "arena"), m.sign(-64, 108, 180, "arena"),
+        m.screen(-76, 100, 180, "arena"), m.sign(-81, 88, 180, "arena"),  # outside the spawn zone (x +-75), as arena moved the others in CP2
     ]
     write_with_twin(m, "crossing", "The Crossing",
                     "A river snakes through a canal district and two bridges cross it, each landing on the enemy's "
@@ -238,7 +238,7 @@ def pits(m):
         m.block(62, 66, tiers=1, neon="cyan", seed=73), m.wreck(-8, 62, 20),
         m.c20(-42, 80, 0, 1), m.c20(0, 80, 0, 1), m.c20(42, 80, 0, 1),
         m.floodlight(-40, 42), m.floodlight(-128, 0),
-        m.screen(-76, 100, 180, "arena"), m.sign(-64, 108, 180, "arena"),
+        m.screen(-76, 100, 180, "arena"), m.sign(-81, 88, 180, "arena"),  # outside the spawn zone (x +-75), as arena moved the others in CP2
     ]
     write_with_twin(m, "sumps", "The Sumps",
                     "A pump house in the middle and a chain of sheer sumps out to both walls, a catwalk over one. The "
