@@ -152,4 +152,40 @@ anchors along every lane (feel's kit); a light behind every corner (show's).
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round 10).**
+
+### Plan (in order; smallest foundation first)
+1. **R4 lanes (CP2)** — `ArenaLanes` + `tests/test_arena_lanes.gd` (failing first), move the Terminus furniture,
+   declare east street + plaza crossings, report `LANE`/`CORNER` lines and fail on asserted lanes, before/after frames
+   (`terminus-streets`, `terminus-streets-page`). **In progress.**
+2. **R3 prop collision parity** — mesh AABB below 6.2 m vs `PROPS[kind].size`; floodlight first.
+3. **Reads passable** — the C11 render test on the streets (throat visibility at his pose).
+4. **Spawn grid** — WAITS for feel's CP3 (orchestrator, 2026-09-22: CP3 shrinks the spawn jitter; derive from the
+   new jitter after `git merge main`, one comment block for both constant families).
+5. **Other arenas' lanes** — reported (done as part of 1: `arenas.md` *Streets are lanes*).
+6. **Stretch** — `hull_size` consumer list status.
+
+### Decisions (one line each, reversible in one place)
+- **The lane bar is read from `Units`, so it is 8.14 m drivable (`syn_artillery` 4.07 m wide), not the 6.64 m in
+  R4's prose** (the War Rig is the second-widest). The contract's principle is "the widest hull"; the code follows
+  the principle. Reversible: `ArenaLanes.bar()`.
+- Every collider counts across a lane (barricades too); anything on the lane's centre line reads 0 m.
+- Corner r_a = the width bar's half (6.07 m); junctions certified for a 90° turn (`JUNCTION_TURN_DEG`), a lane's own
+  bends at their authored angle.
+- Report-only maps: boneyard, boulevard, pit, yard (`ArenaLanes.REPORT_ONLY`); fixtures skipped; new maps asserted.
+- The Terminus's two on-lane chokepoint regions dropped (no game code reads `chokepoint`); no replacement authored.
+- The before/after frames come from a small shooter of my own (`tests/arena/street_shots.gd`, the real skirmish,
+  camera parked with `RtsCamera.pose_at`) rather than control's `terminus-alleys`, which shoots cutaway pairs.
+
+### Measurements
+- Baseline `make remote T=check` at `2ee65f94` (builder0): _running_.
+- Terminus lanes at the working tree (laptop, `ArenaLanes`, static geometry): round 9 every lane 0.00 m; now avenue
+  17.56 m physical, west/east street 16.40, ring road 18.20, plaza crossings 18.20 / 19.56; all 17 corners pass.
+
+### Questions for the lead
+- (none yet)
+
+### Requests to other streams
+- **Orchestrator / all:** R4's number is 8.14 m drivable (the widest hull is `syn_artillery` 4.07 m), not 6.64 m.
+  Terrain's bridges (R9) and nav's drive test should read `ArenaLanes.bar()` rather than the prose.
+

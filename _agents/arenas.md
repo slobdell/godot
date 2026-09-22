@@ -642,6 +642,65 @@ range work lands: syndicate vs condemned on boulevard vs yard; gangs vs law on t
 swarm).
 
 
+## Streets are lanes (R4, round 10): what every declared lane must keep
+
+**The lead, playing the Terminus (2026-09-20):** *"there streets are blocked with these shipping containers so
+there's almost no passageway."* The round-8 layout put furniture IN the streets "so a 20 m street is a fight and
+not a corridor"; measured, every Terminus lane was 0.00 m at its narrowest (a container on its centre line).
+
+**The rule, asserted in `make check` by `tests/test_arena_lanes.gd` over `ArenaLanes` (`game/arena/arena_lanes.gd`):**
+
+- **Width.** Along every declared lane (sampled each metre), the free span across it -- every collider counts,
+  0.9 m barricades included, and the wall -- minus 2 × the live bake radius is at least **2 × the roster's widest
+  hull**. The widest hull is READ from `Units`: it is **`syn_artillery` at 4.07 m**, not the War Rig's 3.32 m that
+  contract R4's text quotes, so the bar is **8.14 m drivable, 12.14 m physical** at the 2.0 m bake. (The contract's
+  principle, "the widest hull", is what the code implements; the number in its prose was the second-widest.)
+- **Corners (C5).** At each lane's own bends (at their authored angle) and at every crossing of two lanes (certified
+  for a right-angle turn, `ArenaLanes.JUNCTION_TURN_DEG`: sharper than that at a junction is a three-point turn),
+  the clear disc around the vertex is at least `r_eff = r_a + R_min·(sec(Δψ/2) − 1)`, with `R_min` the rig's 12.0 m
+  and `r_a` the width bar's half (6.07 m). A 90° junction needs 11.04 m.
+- **Who is asserted.** Every layout except `ArenaLanes.REPORT_ONLY` (boneyard, boulevard, pit, yard: maps he has
+  not complained about; their short lanes are listed below and in the arena brief's Status, not redesigned) and
+  fixtures (the maze is single-file on purpose). **A new map is asserted by default** (terrain's bridges, R9).
+- **The report.** `make arena-report` prints `LANE` and `CORNER` lines for every layout and exits 1 on an asserted
+  short lane (`LANE_FAIL`/`CORNER_FAIL`); the round-9 corridor WATCH line stays a watch line for the open field.
+  `tools/test_arena_lanes.py` pins the Python copy to the GDScript's Terminus numbers.
+- **Authored chokepoints** live only OFF declared lanes and are named here. **The Terminus has none** since round
+  10: its two (`avenue mouth` at (0, 42), `west crossing` at (−70, 0)) stood on streets and were dropped.
+
+**The Terminus after R4** (`tools/make_arenas.py`, lanes and furniture): containers stand flush against block faces
+parallel to the street (kerb position = face ± 1.22 m); lamps moved to the kerbs, set in so R3 can widen the box;
+wrecks in lots; the form-up line and the avenue-mouth barricades are gone. Lanes declared: the avenue, west street,
+**east street** (the west street's mirror, named by `mirror_name`), the ring road ×2, **plaza crossing west/east**.
+
+| lane | round 9 | round 10 |
+|---|---|---|
+| the avenue | 0.00 m | 17.56 m physical, 13.56 drivable |
+| west street / east street | 0.00 m | 16.40 m, 12.40 |
+| the ring road ×2 | 0.00 m | 18.20 m, 14.20 |
+| plaza crossing west / east | (not declared) | 18.20 m / 19.56 m |
+
+Every junction passes (narrowest: the plaza crossings meeting the ring road at (±12, ±30), 12.00 m against 11.04).
+Two round-8 authoring bugs went with the old list: three prop pairs authored on BOTH halves (so each mirror landed
+on another authored prop: two containers in one place), and form-up containers at x = ±42 standing inside the
+z = 62 blocks' footprints.
+
+**The before/after pair at his pose:** `make remote T=terminus-streets` (the round-9 layout is frozen in
+`tests/arena/before/terminus_round9.json`) then `make terminus-streets-page` → `build/terminus-streets/index.html`.
+
+**The other maps (item 5, reported, not changed; same bar):**
+
+| map | lanes short of the bar | where |
+|---|---|---|
+| yard | 7 of 7, each 0.00 m (a collider on the lane's line) | centre (0, 81), inner west (−34, 74), outer west (−67, 53), far west (−100, 37), and mirrors |
+| pit | south gate 0.00 m; west gate corners 4.88 m clear vs 8.37 m | (0, 81); corners at (±70, ±40) |
+| boneyard (cut) | 4 of 4, each 0.00 m | (4, 45), (−3, 61), (−68, 50), (67, 70) |
+| boulevard (cut) | 4 of 4, each 0.00 m | (−60, 80), (60, 61), (−98, 66), (98, 31) |
+
+A 0.00 m reading means a collider stands on the lane's centre line. On a map whose lanes were drawn as AI hints
+through its cover (yard's run between container walls) that can be the lane line's fault rather than the map's;
+deciding which is a redesign question for a map he has complained about, and he has not.
+
 ## The Terminus, and the trap that kept the city blocks off every map (round 8)
 
 feel built `block` (40 x 24 x 40, `prop.block`/CityBlock) in round 7 — chamfered corners, bevelled roof edges, neon

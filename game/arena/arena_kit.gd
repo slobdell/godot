@@ -17,8 +17,11 @@ const PROPS := {
 	# ISO 668 shipping containers; the visual (theme/arena_kit/containers) has its long axis along x too.
 	"container_20": {"size": [6.06, 2.59, 2.44], "cover": "hard", "max_stack": 3},
 	"container_40": {"size": [12.19, 2.59, 2.44], "cover": "hard", "max_stack": 3},
-	# The 7 x 14 m LED wall stands on legs over a concrete plinth: only the plinth is in the way of anything.
-	"ad_screen": {"size": [7.4, 1.4, 1.4], "cover": "hard"},
+	# The 7 x 14 m LED wall stands on legs over a concrete plinth (7.4 x 1.4). R3 (round 10): the panel's housing,
+	# drawn from 5.71 m up, is 7.80 x 1.92 m, and the tallest hull (6.18 m) can reach it, so the box is 7.8 x 2.0,
+	# not the plinth's footprint (tests/test_arena_prop_parity.gd measures it; the test decides, not this comment).
+	# If feel raises the housing above the tallest roof, the box can return to the plinth.
+	"ad_screen": {"size": [7.8, 1.4, 2.0], "cover": "hard"},
 	# Jersey-barrier runs: stop a hull, not a shell or a sightline.
 	"barricade": {"size": [6.0, 0.9, 0.8], "cover": "low", "fallback": "prop.wall"},
 	# A burned-out husk left as permanent cover (theme prop.wreck, scaled to this box by render).
