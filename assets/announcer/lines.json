@@ -43,7 +43,9 @@
    "boulevard": "the Boulevard",
    "pit": "the Pit",
    "boneyard": "the Boneyard",
-   "terminus": "the Terminus"
+   "terminus": "the Terminus",
+   "crossing": "the Crossing",
+   "sumps": "the Sumps"
   },
   "faction": {
    "condemned": "the Condemned",

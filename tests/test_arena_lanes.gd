@@ -104,3 +104,18 @@ func test_the_terminus_declares_the_streets_he_drives() -> void:
 	var names: Array = data["lanes"].map(func(l: Dictionary) -> String: return String(l["name"]))
 	for street in ["the avenue", "west street", "east street", "the ring road", "plaza crossing"]:
 		assert_true(names.any(func(n: String) -> bool: return n.begins_with(street)), "the Terminus declares %s (%s)" % [street, names])
+
+
+## Terrain parity (round 10, terrain's finding): a lane along a river bank is bounded by the 0.9 m RIM, not by the
+## water's edge, because the rim stops a hull. Positive control: the same street with the water and without.
+func test_a_river_rim_bounds_a_lane_along_its_bank() -> void:
+	var data := {"name": "probe", "half_size": 120.0, "obstacles": [],
+			"lanes": [{"name": "bank road", "points": [[0.0, 60.0], [0.0, -60.0]], "width": 18.0}]}
+	data["obstacles"].append({"type": "wall", "position": [-30.0, 0.0], "size": [40.0, 10.0, 200.0], "rotation_deg": 0.0})
+	var dry: Dictionary = ArenaLanes.measure(data)[0]
+	var wet := data.duplicate(true)
+	# Water from x = 12 to 40: its rim stands at x = 10.8..12.
+	wet["terrain"] = [{"kind": "water", "rect": [26.0, 0.0, 28.0, 200.0]}]
+	var banked: Dictionary = ArenaLanes.measure(wet)[0]
+	assert_near(banked["narrowest_physical_m"], 10.0 + 12.0 - ArenaTerrain.RIM_THICKNESS, 0.3,
+			"the lane ends at the rim, not the water (%.2f m; dry %.2f m)" % [banked["narrowest_physical_m"], dry["narrowest_physical_m"]])

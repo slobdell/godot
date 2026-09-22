@@ -155,7 +155,10 @@ _(the worker keeps this current; the ledger and the pool report are the numbers 
 
 **Updated 2026-09-22 (worker, round 10). Every backlog item is done; the round's report is below.** Baseline:
 `make remote T=check` on `2ee65f94` (builder0): `>> remote: make check exited 0`, 1559 passed, 0 failed.
-**Green commit for the merge: see "Merge notes" (the final check's hash).**
+**GREEN, MERGE HERE: `7a72ad05`.** Its own builder0 check, read from the wrapper's line and the runner's:
+`>> remote: make check exited 0`, **1561 passed, 0 failed, 18 targets all passed**, sim-baseline
+`1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`. The commits after it are docs only
+(`353aa9da`, and whatever Status edits follow this line).
 
 ### Done
 
@@ -196,7 +199,7 @@ _(the worker keeps this current; the ledger and the pool report are the numbers 
    three times as the library moved (the reason each time is in the commit). **C9's cross-match memory** (`5bb8d2a3`):
    `AnnouncerHistory` keeps 40 matches, and PA lines fade on their own curve, never weaker than everybody's in the
    recent matches. Measured old -> new over 400 broadcasts: **window 20 openers 30 % -> 19 %, PA welcomes 40 % -> 33 %**;
-   window 5 gives up 0 -> 2 % and 1 -> 4 %. `audio-launch-smoke` on builder0: see Merge notes.
+   window 5 gives up 0 -> 2 % and 1 -> 4 %. `audio-launch-smoke` on builder0: **passed** (its own section below).
 6. **Stretch.** *Callbacks*: four predictions fire at **first contact** (the moment that reaches the air in every
    match; `preview` fired 0 times in 64 broadcasts) and set `predicted_{friendly_fire,flank,scouts,artillery}`; nine
    callbacks in kill, momentum, friendly_kill and result need them. A director test proves the pairing in both
@@ -205,6 +208,27 @@ _(the worker keeps this current; the ledger and the pool report are the numbers 
    pass on the deep pools*: reading the transcripts as a listener found two grammar bugs recorded three rounds ago
    ("The Wreckers **draws** first blood", "hit **its** own scout"); the audit's verb list and its-check now catch both,
    and the 14 lines they flagged are fixed and re-recorded.
+
+### After the merge: the Crossing and the Sumps (terrain R9, authorised by the orchestrator under R8)
+
+terrain's two new shipping arenas had no spoken name, which fails `test_arena_names`: the booth would build a match
+it cannot name. `vocabulary.arena` gains `crossing` -> "the Crossing" and `sumps` -> "the Sumps", and the 18 lines
+that say `{arena}` are recorded for both (36 requests, 4,196 characters, **62,609 -> 60,398**, 0 speech-to-text
+mismatches). **Every arena now has all 18 recordings.** `announcer-transcripts-check`: current.
+**GREEN: `88c91f18`** — builder0, `>> remote: make check exited 0`, **1587 passed, 0 failed, 18 targets all
+passed**, sim-baseline `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`. Merge this one ahead of terrain;
+the commits after it are docs only.
+
+**`generate.py --only-values` came out of it, and it matters beyond this round.** Ordering those 18 lines by id
+orders 180 recordings, one per arena — and **the Terminus's masters were lost with the worktree that made them**, so
+18 of those would have been paid for again, replacing shipped clips with new takes nobody asked for. `--only-values`
+records only the realizations that speak a given slot value (an arena, a faction); the narrowed plan still writes
+every variant into the manifest, so a partial run cannot shrink a line's entry. Tested both ways. The lesson is the
+same one as the masters' `.gdignore`: **rescue a worktree's git-ignored inputs before it is removed**, or the next
+round pays for them twice.
+
+**`audio-launch-smoke` on builder0: passed** — "a flagless player launch has the announcer's voice and the music"
+(`ANNOUNCER_BOOTH mode=voice`, `MUSIC on: 9 beds, 6 stingers`), `exited 0`.
 
 ### The pool table, before and after (laptop, 40 fixture broadcasts, 51.9 match minutes, `dc95c555`)
 
@@ -276,7 +300,25 @@ stretch pairs (11,755), five speech-to-text re-records (205), and the plural-fac
 - Pool deficit 514 -> 147; library 601 -> 1119 lines (laptop, `dc95c555`, 40 broadcasts).
 - Credits 108,348 -> 63,894 (41,346 spent this round, ~4,000 of it the grammar fix and the re-records).
 - The pack: 3,051 -> 2,866 clips, 76 MB -> 72 MB (216 orphaned recordings pruned, 24 of them left by an earlier round).
-- `make check` on builder0: green on `96333be1` (1559 passed, 0 failed, `exited 0`); the final one in Merge notes.
+- `make check` on builder0: green on `96333be1` (1559 passed, 0 failed) and on **`7a72ad05`** (1561 passed, 0 failed,
+  18 targets, `exited 0`, sim-baseline unmoved). One red in between, `ad9f6a1d`, written up below.
+
+### The one red check of the round, and what it was
+
+The final `make remote T=check` on `ad9f6a1d` read **`>> remote: make check exited 2`**, and it was not a test:
+
+    make[2]: *** [mk/core.mk:45: import] Segmentation fault      (on color.faction.09.mp3)
+
+`assets/announcer/masters/` had no `.gdignore`. The **clips** folder has carried one since round 4 precisely
+because importing thousands of audio files "once crashed the import step outright" — the masters never got one,
+because they are git-ignored and so nobody thought about them, while `tools/remote.sh` rsyncs them to builder0 all
+the same (it excludes `assets/incoming/`, not these). There, Godot met this round's 616 fresh MP3s with no import
+cache and died. Fixed in `7a72ad05`: `generate.py` writes the marker into the masters folder as well, a test
+asserts both folders, and the orchestrator has been told that `~/projects/godot/assets/announcer/masters/` needs
+the same one-line file (it now holds these masters, and its cache is the only reason it has not hit this).
+
+**The lesson for the next stream that generates gigabytes of an input format Godot knows how to import:** git-ignored
+is not the same as invisible. The remote check syncs the working tree, not the index.
 
 ### Decisions
 - **PA cap 16 this round** (the formula wants hundreds for a 30-minute horizon): her lines are the hardest to write

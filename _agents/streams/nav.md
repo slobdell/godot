@@ -159,3 +159,14 @@ term decides whether a junction is drivable for the rig.
 ## Status
 
 _(the worker keeps this current)_
+
+**Plan (2026-09-22, nav worker, round 10), smallest foundation first:**
+1. `WallContact` (`game/ai/wall_contact.gd`, new, nav's) read by `Movement.observe_contact()` from the controller's
+   `_physics_process` before the stride skip; the decision it judges is `Movement.note_decision()` at the end of
+   `compute_command`. Published in `Movement.state()` (`wall_contact*` keys) and summed in `NAV_FIGHT` (`wall_contacts`).
+   *Decision:* a stub read of `Tank.get_slide_collision_count()` (public on `CharacterBody3D`), no edit to `tank.gd`;
+   staleness guarded by `Tank.is_parked(tank.command)` (a parked hull skips `move_and_slide`). Request to combat below.
+2. `make nav-terminus-drive` (`tests/nav/terminus_drive.gd`): mixed squad and rigs, spawn → ring road → west street →
+   plaza → far ring road, through `Orders`; pre-CP2 numbers first.
+3. Fix by cause, one arm each, with before/after on item 2.
+4. `radius_of` oriented (knob, off). 5. Held wheeled facing (narrowed by B7). 6. The seam, measured first. 7. Stretch.

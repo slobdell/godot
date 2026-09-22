@@ -227,6 +227,17 @@ class MockPipelineTest(unittest.TestCase):
         self.assertEqual(voice_client.with_retries(flaky, "clip", delays=(0.001, 0.001, 0.001)), "recorded")
         self.assertEqual(len(calls), 3, "it kept trying")
 
+    def test_only_values_records_one_arena_without_touching_the_others(self):
+        """Round 10: two arenas got names after everything else was recorded. Ordering the 18 lines that say
+        {arena} would have re-recorded every arena's copy of them (and the Terminus's masters are long gone, so it
+        would have paid for clips the pack already has)."""
+        the_plan = recording_plan.plan(LINES, None, {"pa.welcome.01"}, {"terminus"})
+        self.assertTrue(the_plan["requests"], "the Terminus recording is ordered")
+        self.assertTrue(all(r["id"].endswith("@terminus") for r in the_plan["requests"]),
+                        "and only it: %s" % [r["id"] for r in the_plan["requests"]])
+        self.assertGreater(len(the_plan["lines"]["pa.welcome.01"]["variants"]), 1,
+                           "the manifest entry still lists every arena, so a narrowed run does not shrink it")
+
     def test_a_run_stops_before_it_passes_its_character_budget(self):
         """Round 10 generates in paid batches against a stop line (half the balance): a run is given a budget and
         records nothing that would take it past it, whatever the plan asks for."""

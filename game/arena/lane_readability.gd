@@ -122,8 +122,4 @@ static func _local(point: Vector3, center: Vector2, c: float, s: float) -> Vecto
 
 
 static func _boxes(data: Dictionary) -> Array:
-	var out: Array = []
-	for obstacle: Dictionary in data.get("obstacles", []):
-		out.append({"center": Vector2(obstacle["position"][0], obstacle["position"][1]),
-				"size": Arena.obstacle_size(obstacle), "rotation_deg": float(obstacle.get("rotation_deg", 0.0))})
-	return out
+	return ArenaLanes._boxes(data)

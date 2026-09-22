@@ -134,6 +134,8 @@ static func blend(base: ShowChannel, override: Dictionary, weight: float, team_c
 		target.level_floor = float(override["floor"])
 	if override.has("ceiling"):
 		target.level_ceiling = float(override["ceiling"])
+	if override.has("wave"):
+		target.wave = ShowChannel.wave_from(override["wave"])
 	if override.has("color"):
 		var wanted := str(override["color"])
 		target.color = team_color if wanted == "winner" else Color(wanted)
@@ -151,4 +153,7 @@ static func blend(base: ShowChannel, override: Dictionary, weight: float, team_c
 	blended.level_ceiling = lerpf(base.level_ceiling, target.level_ceiling, weight)
 	blended.color = target.color
 	blended.color_mix = lerpf(base.color_mix, target.color_mix, weight)
+	# The shape of the wave switches at the halfway point with the programme, rather than lerping through
+	# meaningless intermediate shapes (a chase half-way to a twinkle is neither).
+	blended.wave = target.wave if weight > 0.5 else base.wave
 	return blended

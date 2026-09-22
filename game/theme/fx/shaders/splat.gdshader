@@ -13,12 +13,18 @@ uniform vec4 show_level = vec4(1.0, 0.0, 0.0, 1.0);
 uniform float show_spread = 0.0;
 uniform vec3 show_color : source_color = vec3(1.0, 1.0, 1.0);
 uniform float show_color_mix = 0.0;
+// Round 10: the floodlight pools follow the kill ripple -- the same (x, z, wavefront radius, gain) the city blocks
+// read, so a kill's wave crosses the floor and the facades together. Gain 0 (the default, and every projectile splat
+// forever: they are not a fixture) makes the term exactly zero.
+uniform vec4 show_event = vec4(0.0, 0.0, 0.0, 0.0);
+uniform float show_event_width = 9.0;
 
 const float SHOW_TAU = 6.28318530718;
 
 varying vec3 v_color;
 varying float v_intensity;
 varying float v_show_phase;
+varying vec3 v_world;
 
 void vertex() {
 	v_color = COLOR.rgb;
@@ -26,11 +32,16 @@ void vertex() {
 	// .y is the pool's own phase, written once when the venue is built. It was a spare lane (projectile splats
 	// leave it at 0, which puts every one of them in phase -- exactly today's behaviour).
 	v_show_phase = INSTANCE_CUSTOM.y * SHOW_TAU;
+	v_world = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
 
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float falloff = clamp(1.0 - dot(p, p), 0.0, 1.0);
+	float ripple = 0.0;
+	if (show_event.w > 0.0) {
+		ripple = show_event.w * exp(-abs(distance(v_world.xz, show_event.xy) - show_event.z) / show_event_width);
+	}
 	ALBEDO = mix(v_color, show_color, show_color_mix) * falloff * falloff * v_intensity
-			* show_value(show_level, v_show_phase * show_spread);
+			* (show_value(show_level, v_show_phase * show_spread) + ripple);
 }
