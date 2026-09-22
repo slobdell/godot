@@ -215,6 +215,9 @@ terrain's two new shipping arenas had no spoken name, which fails `test_arena_na
 it cannot name. `vocabulary.arena` gains `crossing` -> "the Crossing" and `sumps` -> "the Sumps", and the 18 lines
 that say `{arena}` are recorded for both (36 requests, 4,196 characters, **62,609 -> 60,398**, 0 speech-to-text
 mismatches). **Every arena now has all 18 recordings.** `announcer-transcripts-check`: current.
+**GREEN: `88c91f18`** — builder0, `>> remote: make check exited 0`, **1587 passed, 0 failed, 18 targets all
+passed**, sim-baseline `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`. Merge this one ahead of terrain;
+the commits after it are docs only.
 
 **`generate.py --only-values` came out of it, and it matters beyond this round.** Ordering those 18 lines by id
 orders 180 recordings, one per arena — and **the Terminus's masters were lost with the worktree that made them**, so
