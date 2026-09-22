@@ -142,4 +142,62 @@ room (B14) and the key breaks the rest.
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current; newest first within each part)_
+
+**Plan (2026-09-22, in order; one-line reasons):**
+1. ~~Transient-element API~~: withdrawn by the lead (R1 is control's UX item). Nothing to build; `Element.state()` keeps its split.
+2. **R2, squad's half**: FIRST, because the lead can't judge anything until a right-click is obeyed.
+3. **Settle time**: measure end to end (`make squad-settle`), then B7's three-phase arrival. Second because it's what he sees next.
+4. **Pitch from the turning envelope**: built now, merged ALONE after CP3 (the orchestrator's sequencing, 2026-09-22: CP3
+   merges → I `git merge main` → the pitch lands with the baseline move pre-registered → combat re-runs five_squads).
+5. Base-of-fire scenario; 6. `_is_clear` + Delta's margin; 7. stretch.
+
+**Machine note:** every number below says its commit and machine. The laptop is ~2.75× slower than builder0.
+
+### Done
+
+- **Baseline (start of round):** `2ee65f94`, builder0: `make check exited 0`, 1559 passed / 0 failed, sim-baseline
+  `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`, ai-scenarios 41,3.
+- **Item 2, R2 (squad's half)** — `2d5945ac`, `35f7b459`. REPLACES: `Elements._physics_process`'s cycle gate for a
+  player task (it now runs on the next tick), and for that first update `Element._issue`'s three skips (player-source
+  guard, `_should_issue`) and `_adopt` (`_retake` takes detached crews back). Only on the player's team (CPU elements
+  keep their cycle). Also `_should_issue`'s idle branch gives an idle crew the `follow` its flow asks for (control's
+  repath-test "arrived" finding; any team). `task_seq` rides on orders as `task` once control's key exists (it does
+  on stream/control `54fa6ff6`). Measured on the unfixed code (laptop): 3 of 4 crews still on pre-task `follow`s 2
+  ticks after `assign()` at every phase of the cycle. `test_tactics_preempt` 7/7 (laptop); mutation-checked: no cycle
+  bypass fails 2, no forced re-issue fails 3, no retake fails 1, no idle-follow branch fails 1.
+- **Item 3, settle time, step 1** — `96915bfc`. `make squad-settle` (three times per run: `ordered_s`, `arrived_s` =
+  COMPLETED per B7, `stopped_s`; `TRACE=on` per second) and `make squad-settle-series` (paired seeds, both arms).
+  Before (laptop, seed 1, tank/tank/ifv/ifv abreast, 20 m plain move; arrived / stopped): default fwd 4.0/8.2, default
+  SIDE 14.8/19.8, Terminus fwd 4.4/20.5, Terminus side 18.0/25.0. Cause of the slow side moves (trace): the leader was
+  pinned to the column's head, 46.8 m from where it stood, and stalled 5 s driving through its own squad; the armour
+  tiers sent a tank through two ifvs; collinear moves tied and the solver picked crossing paths. REPLACES the plain
+  move's seating in `ElementPlan._plan_form_up` (→ `_group(..., pin_leader=false, policy="travel")`) and adds the
+  `travel` policy to `TacticsFormation.seat` (least SQUARED driving, no tiers). After, one seed (laptop): default side
+  6.7/13.5, Terminus side 10.7/13.1; longest leg 47.9 → 23.9 m. The paired series on builder0 decides it (pending).
+  The Terminus forward tail (20 s) is one wheeled ifv `blocked/terrain` 5 m from a slot against geometry: nav's.
+  Tried and reverted: lifting co-arrival pacing at arrival (Terminus fwd 20.5 → 32.7 s, one seed).
+- **Item 5, base-of-fire scenario** — `35f7b459`. Re-specified with the reason: the base crews were hand-issued
+  `attack` (close with and destroy: they reversed, one charged 32 m, no shot for 6.3 s after a lane cleared); the
+  element issues a base crew a HOLD on its spot, and the scenario now does. The early-shots bar measured nav moving
+  the assault out of the lanes it starts in; the clock now starts at the first clear lane. Laptop: clear 1.5 s,
+  first shot +0.9 s, 9 shots, 0 through a friend. **REASON for the count: expect ai-scenarios 41,3 → 42,2.**
+- **Item 6a, `_is_clear`** — `80905740`. REPLACES the aligned projection in `ArmyLayout._is_clear` with the
+  separating-axis rule on each placed hull's own forward. Test with a 90° neighbour (old: 3.6 m clear, true 0.5 m).
+
+### Requests to other streams
+
+- **control (R2), sent via the orchestrator 2026-09-22:** `Orders._same_order` drops an ELEMENT re-issue whose only
+  change is the facing (non-player sources skip the facing compare; slots < `SAME_ORDER_M` apart). It also drops an unchanged
+  `follow`, so a squad re-dragged on the same spot can keep its leader's old arrival heading until arrival. Ask: add
+  `"task"` to `UnitCommand.KEYS` and have `_same_order` return false when `current.task != order.task`. squad's side
+  already sends `command["task"] = element.task_seq` for the player's elements as soon as the key exists (runtime
+  adapter `Element._ORDERS_TAKE_TASK`), and `test_tactics_preempt` asserts the leader's facing from that day.
+
+### Questions for the lead
+
+_(none yet)_
+
+### Known issues
+
+_(none yet)_
