@@ -99,7 +99,30 @@ static func hull_extent(members: Array) -> Vector2:
 ## width and the longest hull's length, each plus HULL_CLEAR_M. Vector2.ZERO for members with no known hull.
 static func hull_floor(members: Array) -> Vector2:
 	var extent := hull_extent(members)
-	return NO_HULL if extent == NO_HULL else extent + Vector2(HULL_CLEAR_M, HULL_CLEAR_M)
+	if extent == NO_HULL:
+		return NO_HULL
+	var floor_v := extent + Vector2(HULL_CLEAR_M, HULL_CLEAR_M)
+	return Vector2(maxf(floor_v.x, turning_pitch(extent, LATERAL_FLOOR)), floor_v.y)
+
+
+## Round 10 (squad item 4): which motion the LATERAL floor licenses. The clearance vocabulary (B5) names four things;
+## this is the turning envelope, a circle of the hull's half-diagonal about its centre.
+##   "width"         round 9: side by side and parallel only (width + HULL_CLEAR_M); hulls may clip while they turn
+##   "one_turning"   one hull turning beside a still neighbour: half_diagonal + half_width
+##   "both_turning"  two neighbours turning in OPPOSITE directions: 2 × half_diagonal (B2's conservative bound)
+## The measurement that picks one is tests/test_tactics_pitch.gd; the default is the round-9 rule until it lands.
+static var LATERAL_FLOOR := "width"
+
+
+## The centre-to-centre pitch across the heading that `rule` asks of a hull `extent` (Vector2(width, length)).
+static func turning_pitch(extent: Vector2, rule: String) -> float:
+	var half_diagonal := 0.5 * extent.length()
+	match rule:
+		"one_turning":
+			return half_diagonal + 0.5 * extent.x
+		"both_turning":
+			return 2.0 * half_diagonal
+	return 0.0
 
 
 ## The pitch a formation of `members` is actually laid out at: the doctrine's tactical `spacing`, raised per axis to
