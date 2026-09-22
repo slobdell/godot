@@ -428,6 +428,14 @@ func _clear_pose(at: Vector3, heading: float, distance: float) -> Transform3D:
 	# first heading whose sight line to the fight is clear, preferring the one that sees the most of it.
 	var seen := _visible_from(best)
 	_pose_blocked = RtsCamera.sight_blocked(best.origin, at)
+	# `--show-look-fixed-heading`: no sweep. The parapet-vs-outline pair is two PROCESSES, and when each swept to its
+	# own best heading the two frames looked at different amounts of building -- the pair stopped discriminating
+	# (+7..13 % became 0.00..0.35 %) because the camera moved, not the lighting (lighting.md 9).
+	if LaunchFlags.from_environment().has("show-look-fixed-heading"):
+		_pose_heading = heading
+		_camera.global_transform = best
+		_pose_pitch = _pitch_of(best, at)
+		return best
 	if _pose_blocked or seen < _tanks(get_tree().current_scene).size() / 4:
 		for step in HEADING_STEPS:
 			var candidate := _look_from(at, heading + TAU * float(step) / float(HEADING_STEPS), distance)

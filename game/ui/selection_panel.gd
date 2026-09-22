@@ -523,9 +523,13 @@ func _draw() -> void:
 	# Round 10 (R1): why the task buttons are grey, and the one click that fixes it, where the doctrine line would be.
 	var form := form_squad_rect()
 	if doctrine == "" and form.has_area():
-		var reason := String(info["reason"])
-		batch.text(font, Vector2(PAD * s, size.y - PAD * s - FOOTER * s * 0.25), reason.left(1).to_upper() + reason.substr(1),
-				roundi(13.0 * s), Color(CyberStyle.YELLOW, 0.95), form.position.x - PAD * s * 2.0)
+		# The short form reads into the button: "In different squads: Ctrl+1-9 or [FORM SQUAD]", right-aligned against it.
+		var reason := controls.task_refusal(true)
+		var px := roundi(13.0 * s)
+		var room := form.position.x - PAD * s * 2.0
+		var width := minf(font.get_string_size(reason, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x, room)
+		batch.text(font, Vector2(form.position.x - PAD * s - width, size.y - PAD * s - FOOTER * s * 0.25), reason, px,
+				Color(CyberStyle.YELLOW, 0.95), room)
 		var hot := _hovered == "form_squad"
 		batch.fill(form, Color(CyberStyle.CARD, 1.0))
 		batch.outline(form, Color(CyberStyle.YELLOW, 1.0 if hot else 0.85), 2.0 if hot else 1.5)
