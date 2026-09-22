@@ -153,51 +153,93 @@ conjunction with 3 lines firing 4× a match) is the failure the pool report exis
 
 _(the worker keeps this current; the ledger and the pool report are the numbers he reads)_
 
-**Updated 2026-09-22 (worker, round 10).** Baseline: `make remote T=check` on `2ee65f94` (builder0): `>> remote:
-make check exited 0`, 1559 passed, 0 failed.
+**Updated 2026-09-22 (worker, round 10). Every backlog item is done; the round's report is below.** Baseline:
+`make remote T=check` on `2ee65f94` (builder0): `>> remote: make check exited 0`, 1559 passed, 0 failed.
+**Green commit for the merge: see "Merge notes" (the final check's hash).**
 
-### Plan (in order) and state
+### Done
 
-1. **Pool report: DONE** (`bf9fdb43`). `make announcer-pool-report` runs the director over every fixture for seeds 1–5
-   (40 broadcasts, 51.9 match minutes) and prints, per (speaker, moment): library lines (`new` = added this round),
-   λ/min, the director's pool at the pick (the director now records `pool`, `fresh` and `effective` = exp entropy of
-   the pick's weights on every cue), starved picks, C9's N_c, the target, the deficit, and Distinct-2; then the narrow
-   funnels. Knobs (decided, in the script): R = 0.05; horizons caller 2 min, Veteran 7.5, PA 30; floors 12/12/8; deep
-   pools (≥ 18) +25 %; **caps 40/40 and 16 for the PA** (her lines are the hardest to write, and a mass-produced wrong
-   detail turns into the joke he told us to cut). A moment the fixtures never reach gets only its floor. The deficit
-   is measured against the smaller of the library count and the mean pool at the pick (army lines are per faction:
-   16 in the library, 2 at the pick). **Laptop, 601 lines: deficit 568.**
-2. **Lines: DONE** (`96333be1`). 505 new lines (`"added": "r10"`): caller 205, Veteran 183, PA 117, written to the
-   report's plan, mostly slot-free (a `{faction}` line is 4 recordings, a `{unit}` line 6). **Laptop, 1106 lines: the
-   deficit at the round-start base is 140** (what's left is mostly the capped busy pools: caller kill, Veteran lull).
-   `caller preview` was skipped on purpose (the fixtures never reach it; tape got only 5).
-   The **PA gates (C10)** are in `audit_lines.py`: every new PA line names its wrong detail (`oddity: {span,
-   category}`), 1–6 words, with at least 4 ordinary words after it (not clause-final), no `!`, no affect word, and no
-   two lines of the same kind in one moment's pool (33 categories, `oddity_categories` in `lines.json`). Audit: 1106
-   lines, 0 errors (the 1 warning is from before the round).
-3. **Review page: DONE** (`96333be1`). `make announcer-demo` → `build/announcer/demo/index.html#new`: every new line
-   by moment, a Play button once its clip exists, a veto tick per line that collects ids into a list to send back,
-   and a `new` badge on the match rows. Looked at, desktop 1400×1000 and phone 420×900.
-4. **Generation: IN PROGRESS.** `generate.py` now takes `--max-characters` (a batch cannot overshoot its stop line) and
-   `--note` (the ledger row names the batch). Balance at start **108,348**; stop line ≈ 54,000. Dry run for all 505
-   lines: 523 recordings, **39,369 characters**. Pilot `pa.hit.01`: STT exact. Batch 1 = the PA.
-5. Runtime checks: after generation.
-6. Stretch: after 5.
+1. **The recount and the plan** (`bf9fdb43`). `make announcer-pool-report` replays every fixture for seeds 1-5 (40
+   broadcasts, 51.9 match minutes) and prints per (speaker, moment): library lines and how many are `new` this round,
+   λ/min, the director's pool **at the pick** (the director records `pool`, `fresh` and `effective` = exp entropy of
+   the pick's weights on every cue), starved picks, C9's `N_c`, the target, the deficit and Distinct-2; then the narrow
+   funnels (a tag set firing often from few lines). Knobs, decided and written in the script: R = 0.05; horizons caller
+   2 min / Veteran 7.5 / PA 30; floors 12/12/8; deep pools (>= 18) +25 % measured against the pool **as the round found
+   it**; caps 40/40/**16 for the PA**. A moment the fixtures never reach gets only its floor. The deficit is against the
+   smaller of the library count and the mean pool at the pick, because `caller.army` has 16 lines and offers 2.
+   **Deficit: 568 lines (laptop, 601 lines) -> 147 (laptop, 1119 lines).**
+2. **The lines** (`96333be1`, `69057d84`, `dc95c555`). **518 new lines** (`"added": "r10"`): caller 205, Veteran 196
+   (183 + 13 stretch), PA 117, mostly slot-free, since a `{faction}` line is 4 recordings and a `{unit}` line 6.
+   `caller.preview` was skipped on purpose (0 firings in 64 broadcasts) and `tape` got 5.
+   **The PA's C10 gates are in `audit_lines.py`**: a new PA line names its one wrong detail (`oddity: {span,
+   category}`), 1-6 words, at least 4 ordinary words after it (clause-final is a punchline's position), no `!`, no
+   affect word, and no two lines of the same kind of wrong detail in one moment's pool (33 categories in
+   `lines.json`). Audit: **1119 lines, 0 errors** (the 1 warning predates the round).
+3. **The review page** (`96333be1`). `make announcer-demo` -> `build/announcer/demo/index.html#new`: every new line by
+   moment, **518 of 518 with a Play button**, a veto tick per line collecting ids to send back, an optional marker for
+   the PA's wrong detail, and a `new` badge on the match rows. Looked at, desktop 1400x1100 and phone 420x900.
+4. **Generation** (`69057d84`, `dc95c555`). Five runs, every one a ledger row:
+   | batch | requests | characters | credits |
+   |---|---|---|---|
+   | pilot (`pa.hit.01`) | 1 | 138 | 108,348 -> 108,348 (unsettled) |
+   | 1: the PA | 116 | 15,253 | 108,348 -> 93,575 |
+   | 2: the Veteran | 183 | 13,248 | 92,572 -> 80,143 |
+   | 3: the caller + the stretch pairs | 236 | 11,755 | 78,952 -> 67,002 |
+   | 3b + reword: 5 speech-to-text re-records | 5 | 205 | 67,002 -> 66,710 |
+   | 4: the plural-faction fix, 14 older lines | 80 | 4,009 | 66,710 -> 63,894 |
+   **Balance 63,894, well above the ~54,000 stop line, so nothing needed asking.** Speech-to-text: **0 mismatches
+   left**; 4 of 523 new clips were flagged, 3 passed the one re-record the brief allows, and the fourth was the
+   recogniser splitting "downrange", so `caller.contact.15` is now "First rounds are away!". `generate.py` gained
+   `--max-characters` (a batch cannot overshoot its stop line; tested with the mock) and `--note`.
+5. **Runtime checks.** Variance (laptop, `dc95c555`, 50 matches per fixture, window 5, history on): **0 in-match
+   repeats, openers 2.0 %, PA welcomes 3.8 %, carryover 0.4 %** (ceilings 0/10/10/30). Review transcripts re-recorded
+   three times as the library moved (the reason each time is in the commit). **C9's cross-match memory** (`5bb8d2a3`):
+   `AnnouncerHistory` keeps 40 matches, and PA lines fade on their own curve, never weaker than everybody's in the
+   recent matches. Measured old -> new over 400 broadcasts: **window 20 openers 30 % -> 19 %, PA welcomes 40 % -> 33 %**;
+   window 5 gives up 0 -> 2 % and 1 -> 4 %. `audio-launch-smoke` on builder0: see Merge notes.
+6. **Stretch.** *Callbacks*: four predictions fire at **first contact** (the moment that reaches the air in every
+   match; `preview` fired 0 times in 64 broadcasts) and set `predicted_{friendly_fire,flank,scouts,artillery}`; nine
+   callbacks in kill, momentum, friendly_kill and result need them. A director test proves the pairing in both
+   directions, including that a flag set *after* the moment is hindsight, not a prediction. *The `{arena}` lines*:
+   nothing to do - all eight arenas, **Terminus included**, already have clips for all 18 `{arena}` lines. *A second
+   pass on the deep pools*: reading the transcripts as a listener found two grammar bugs recorded three rounds ago
+   ("The Wreckers **draws** first blood", "hit **its** own scout"); the audit's verb list and its-check now catch both,
+   and the 14 lines they flagged are fixed and re-recorded.
 
-### Measurements
-- Variance (laptop, `96333be1`, 50 matches per fixture, history on): 0 in-match repeats; openers 0.3 %, welcomes 0.5 %,
-  carryover 0.4 % (ceilings 0 / 10 / 10 / 30 %).
+### Numbers, each with its commit and machine
+- Pool deficit 568 -> 147; library 601 -> 1119 lines (laptop, `dc95c555`, 40 broadcasts).
+- Credits 108,348 -> 63,894 (41,346 spent this round, ~4,000 of it the grammar fix and the re-records).
+- The pack: 3,051 -> 2,866 clips, 76 MB -> 72 MB (216 orphaned recordings pruned, 24 of them left by an earlier round).
+- `make check` on builder0: green on `96333be1` (1559 passed, 0 failed, `exited 0`); the final one in Merge notes.
 
 ### Decisions
-- PA pool cap 16 this round (quality over count); the formula wants hundreds for her (30-minute horizon). Next round:
-  more PA lines only as fast as they can be written well.
-- "No two lines with the same category" is per moment pool, not global (117 lines cannot have 117 kinds of wrong).
-- Takes (C10, the caller ×3) are NOT done this round: that needs the booth to choose between recordings of one variant
-  (a runtime change) and roughly doubles the caller's bill. Written up as the first next step.
+- **PA cap 16 this round** (the formula wants hundreds for a 30-minute horizon): her lines are the hardest to write
+  well, and a mass-produced wrong detail becomes the joke the lead told us to cut. Reversible in `pool_report.py`.
+- **"No two lines with the same category" is per moment pool**, not global: 117 PA lines cannot carry 117 kinds of wrong.
+- **Takes (C10: the caller at 3 takes a line) are NOT done.** They need the booth to choose between recordings of one
+  variant (a runtime change in `AnnouncerVoice` and the manifest) and roughly double the caller's bill. First next step.
+- Eight of the 14 grammar fixes **dropped the `{faction}` slot** rather than keep 24 recordings each: same meaning in
+  context, a quarter of the cost.
+
+### What to playtest (exact commands)
+- `make announcer-demo` then open `build/announcer/demo/index.html#new` (the tab has audio for all 518 lines).
+- `make announcer-transcript FIXTURE=gangs_vs_law SEED=2` and read it as a listener.
+- `make skirmish` with the announcer on, one match: does the booth repeat itself?
+
+### Next steps (in order)
+1. **Takes for the caller** (C10): one variant, several recordings, chosen at random with the recency penalty.
+2. The remaining deficit, 147 lines, biggest first: `color lull` 17, `caller kill` 9, `pa kill` 7.
+3. The PA's pools past 16 once someone has read a session's worth of her lines and still likes them.
 
 ### Questions for the lead
-- None blocking. His veto is a line id from the New tab.
+- None blocking. **His veto is a line id** from the New tab's list.
 
 ### Requests to other streams
 - None.
 
+### Merge notes
+- Shared files touched: none outside the stream's own paths (`assets/announcer/`, `tools/announcer/`,
+  `tests/announcer/`, `game/announcer/`, `mk/announcer.mk`, this brief).
+- **The masters for this round's 523 recordings are in `~/projects/godot-announcer/assets/announcer/masters`
+  (git-ignored, ~60 MB).** The main checkout's masters folder does not have them. **Rescue it before this worktree is
+  removed** (orchestration lesson 6; `_agents/backups.md` names the masters as an input worth keeping).
