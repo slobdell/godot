@@ -154,6 +154,24 @@ _(updated as each step lands; numbers carry machine and commit once committed)_
 - **Series tooling:** `make terrain-series TERRAIN_MAP=crossing SEEDS=32` (paired wet/dry, discordant pairs, sign test,
   positive control on `terrain_entries`).
 
+### Stretch: the diagonal river, priced (not built)
+
+**~1.5 agent-days, one real risk.** Everything today is axis-aligned rectangles because the floor is cut by exact
+rectangle decomposition. A diagonal (or any polygon) river needs:
+1. **The floor and rims as polygons** — Godot already ships the clipper: `Geometry2D.clip_polygons` /
+   `offset_polygon` (Clipper2) for arena-minus-water-plus-decks and for the rim ring, then
+   `Geometry2D.decompose_polygon_in_convex` into `ConvexPolygonShape3D` prisms. ~4 h with tests. No new dependency.
+2. **Rails** along deck edges that border water: deck ∩ offset(water), same primitives. ~2 h.
+3. **The shader's union trace** against arbitrary edges instead of boxes (a ray against ≤ 32 segments per kind; the
+   hop logic already exists). ~2 h.
+4. **The Python mirror** (report routing): rasterise polygons per cell (point-in-polygon), no clipper needed; the
+   golden parity test moves from boxes to polygons. ~3 h.
+5. `Arena.validate` symmetry for polygons (vertex-set mirror). ~1 h.
+**The risk is the baker, not the maths:** the Terminus trap (a box ≥ 8 m on both axes contributes nothing to the
+bake) was never characterised for large CONVEX PRISMS as floor pieces. The floor today is huge boxes and bakes fine,
+so the trap is likely obstacle-only, but it must be measured first with the water probe on a diagonal channel
+(half a day), before anything else is built. Recommendation: build it only if the lead likes the straight river.
+
 ### Waiting / blocked
 
 - **Backlog 4 (a Terminus canal): deferred to after CP2.** arena is turning the Terminus streets into R4 lanes right
