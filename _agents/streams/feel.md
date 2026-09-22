@@ -269,6 +269,14 @@ in 7 wherever he looks, and every time he starts a match.
   standing in the spawn zones on yard, pit and Terminus; arena moved it and asserts it. The other candidate is the
   War Rig's trailer art folding outside its rigid 14 m collider (S2's accepted cost; combat's B3 stretch).
 
+- **Two traps for whoever measures art next (candidates for orientation.md's trip-ups):** (1) a `dozer_part`
+  wrapper instantiated OUT of the tree has no meshes -- it builds its model in `_ready` -- so any "measure the theme's
+  scene" code finds nothing and falls back in silence; measure the wrapper's `model_scene`, or measure a spawned Tank.
+  (2) The adaptive quality tier REBUILDS the arena dressing (airship, blimp) when it changes, which can happen the
+  moment a paused bench lets frames render again: a node reference taken before is then a freed instance. Re-find by
+  name before every shot. And a bounding-box "on screen" test lies about merged or partial meshes: the blimp read
+  "on screen" in 37 % of samples while no point of it was ever in the viewport.
+
 ### Answered for arena (R3, 2026-09-22)
 
 - Ad screen housing (down to 5.71 m, 7.80 x 1.92): **keep arena's widened 7.8 x 2.0 box**; no art change.
