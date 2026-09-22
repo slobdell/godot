@@ -97,12 +97,13 @@ static func hull_extent(members: Array) -> Vector2:
 
 ## The smallest slot pitch `members` physically fit in, as Vector2(across the heading, along it): the widest hull's
 ## width and the longest hull's length, each plus HULL_CLEAR_M. Vector2.ZERO for members with no known hull.
-static func hull_floor(members: Array) -> Vector2:
+## `rule` is which motion the lateral floor licenses (LATERAL_FLOOR by default; ArmyLayout's deploy asks for "width").
+static func hull_floor(members: Array, rule := "") -> Vector2:
 	var extent := hull_extent(members)
 	if extent == NO_HULL:
 		return NO_HULL
 	var floor_v := extent + Vector2(HULL_CLEAR_M, HULL_CLEAR_M)
-	return Vector2(maxf(floor_v.x, turning_pitch(extent, LATERAL_FLOOR)), floor_v.y)
+	return Vector2(maxf(floor_v.x, turning_pitch(extent, rule if rule != "" else LATERAL_FLOOR)), floor_v.y)
 
 
 ## Round 10 (squad item 4): which motion the LATERAL floor licenses. The clearance vocabulary (B5) names four things;
@@ -138,9 +139,9 @@ static func turning_pitch(extent: Vector2, rule: String) -> float:
 
 ## The pitch a formation of `members` is actually laid out at: the doctrine's tactical `spacing`, raised per axis to
 ## the hull floor where that spacing would put hulls inside each other. Vector2(across, along).
-static func pitch(members: Array, spacing := DEFAULT_SPACING) -> Vector2:
+static func pitch(members: Array, spacing := DEFAULT_SPACING, rule := "") -> Vector2:
 	var s := maxf(spacing, 1.0)
-	var floor_v := hull_floor(members)
+	var floor_v := hull_floor(members, rule)
 	return Vector2(maxf(s, floor_v.x), maxf(s, floor_v.y))
 
 
@@ -248,8 +249,8 @@ static var DEFORM_ENABLED := false
 ## the corridor. With an unknown corridor (INF or <= 0) the answer is the IDENTITY — X1's pitch, no morph — because
 ## a formation must never be worse than today for the lack of a number.
 static func fit_to_corridor(members: Array, formation: String, count: int, spacing: float, corridor_m: float,
-		shear := 0.0) -> Dictionary:
-	var pitch_v := pitch(members, spacing)
+		shear := 0.0, rule := "") -> Dictionary:
+	var pitch_v := pitch(members, spacing, rule)
 	var slots := maxi(count, members.size())
 	var hull := hull_extent(members)
 	var nominal := group_offsets(formation, slots, 1.0)
@@ -906,8 +907,9 @@ static func place(members: Array, formation: String, anchor: Vector3, heading: V
 	# X1: the doctrine's spacing, raised per axis to what these hulls physically fit in. X2 (A8): and deformed to
 	# fit the corridor the element is driving through, when one was measured ("corridor_m"; absent = the open field,
 	# and the identity). "shear" is the caller's heading change, if it has one.
+	# "floor_rule": which motion the lateral floor licenses (hull_floor; ArmyLayout's deploy passes "width").
 	var fit := fit_to_corridor(members, formation, count, spacing,
-			float(opts.get("corridor_m", INF)), float(opts.get("shear", 0.0)))
+			float(opts.get("corridor_m", INF)), float(opts.get("shear", 0.0)), String(opts.get("floor_rule", "")))
 	var pitch_v: Vector2 = fit["pitch"]
 	var raw := offsets_deformed(formation, count, fit)
 	var shape: Array[Vector2] = centered(raw) if bool(opts.get("centered", true)) else raw

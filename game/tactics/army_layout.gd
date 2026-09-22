@@ -78,6 +78,8 @@ const RANK_GAP_M := 6.0
 ## (TacticsFormation "block", ~3 x 2 for six), so a full faction army stands in one rank of clearly separate clusters
 ## (seen at 34 a side: five wedges of seven needed two ranks, and the second rank merged into the first's gaps).
 const DEFAULT_FORMATION := "wedge"
+## Which motion the deploy's lateral floor licenses (TacticsFormation.LATERAL_FLOOR's vocabulary): side by side only.
+const DEPLOY_FLOOR := "width"
 const BLOCK_OVER := 4
 ## Only at the very start of a match: never re-lays an army that is already moving.
 const DEPLOY_BY_TICK := 2
@@ -168,7 +170,7 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 			# The along-axis stretch this used to apply by hand IS place()'s X1 pitch: spacing across, the hull's
 			# length floor along (item["deep_pitch"] is max(spacing, deep_floor), which is what pitch() resolves to).
 			for entry in TacticsFormation.place(shape["members"], shape["formation"], anchor, forward, spacing,
-					{"policy": "front", "leader": shape["leader"]}):
+					{"policy": "front", "leader": shape["leader"], "floor_rule": DEPLOY_FLOOR}):
 				var at: Vector3 = entry["to"]
 				var limit := Match.DRIVABLE_LIMIT - 2.0
 				at = Vector3(clampf(at.x, -limit, limit), SPAWN_LIFT_M, clampf(at.z, -limit, limit))
@@ -197,7 +199,13 @@ static func _shape_of(squad: Dictionary) -> Dictionary:
 	# ONE derivation, two callers (round 9, X1): the floor itself is TacticsFormation's, so the assembly and the
 	# moving formation can never disagree about what a hull needs. This file keeps only its own assembly policy
 	# (MIN_SPACING_M and ASSEMBLY_SPACING_M) on top of it.
-	var hull_floor := TacticsFormation.hull_floor(members)
+	# Round 10 (the orchestrator's ruling on arena's measurement): the DEPLOY stays at the round-9 lateral floor, width
+	# + HULL_CLEAR_M, while every formation laid from the first order on uses the turning envelope (the diagonal +
+	# DRESS_MARGIN_M). At the diagonal a 25-bus army needs ~210 m abreast, stood in two ranks with its front 11 m ahead
+	# of a 150 x 32 m zone, and every hexagonal map has 0-5 m free there (containers, blocks). The known cost: squads
+	# are packed at spawn and their first dressing turns clip (measured on the bus at 4.90 m: -0.27 m). The round-11
+	# item that removes it is a checkerboard-staggered deploy (arena's option (a)).
+	var hull_floor := TacticsFormation.hull_floor(members, DEPLOY_FLOOR)
 	var longest := TacticsFormation.hull_extent(members).y
 	var floor_m := maxf(MIN_SPACING_M, hull_floor.x)
 	return {"front": ahead, "floor": floor_m, "deep_floor": hull_floor.y, "hull": longest,
