@@ -237,6 +237,10 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   already sends `command["task"] = element.task_seq` for the player's elements as soon as the key exists (runtime
   adapter `Element._ORDERS_TAKE_TASK`), and `test_tactics_preempt` asserts the leader's facing from that day.
 
+- **combat (C6), owed by squad AFTER combat merges:** pass `"squad_incoming"` as the site argument at
+  `game/ai/incoming_fire.gd:137/139` (combat's `match.hull_disc_{lof,incoming,squad_incoming}`). The helper has no
+  site argument on main at `52254fd2`, so the one line waits for combat's merge; then `git merge main` and add it.
+
 ### Questions for the lead
 
 _(none yet)_
