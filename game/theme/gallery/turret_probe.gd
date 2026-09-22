@@ -69,7 +69,7 @@ func _points(tank: Node3D, node: Node) -> PackedVector3Array:
 	var to_tank := tank.global_transform.affine_inverse()
 	for child in node.find_children("*", "MeshInstance3D", true, false):
 		var instance := child as MeshInstance3D
-		if instance.mesh == null or not instance.is_visible_in_tree():
+		if instance.mesh == null or not instance.is_visible_in_tree() or instance is ShieldEffect:
 			continue
 		var skip := false
 		var up: Node = instance

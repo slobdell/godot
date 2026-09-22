@@ -278,26 +278,49 @@ func _apply_hull_size(size_list: Variant, own_hull_art := false) -> void:
 	_collision.shape = box
 	_collision.position.y = size.y / 2.0
 	var standard := shared_hull_size()
-	var ratio := Vector3(size.x / standard.x, size.y / standard.y, size.z / standard.z)
 	if not own_hull_art:
-		_hull_visual.scale = ratio
-	turret.scale = Vector3.ONE * minf(ratio.x, ratio.z)
+		_hull_visual.scale = Vector3(size.x / standard.x, size.y / standard.y, size.z / standard.z)
+	# R6 (round 10, feel): the turret's scale is SIMULATION -- `muzzle_position` puts the muzzle 3.2 m x this ahead of
+	# the pivot -- and it has always been computed against TURRET_STANDARD, because `shared_hull_size` used to return
+	# that fallback for every unit. Fixing the art's measurement must not move where rounds leave from, so the turret
+	# keeps the size it was always scaled against, by name.
+	turret.scale = Vector3.ONE * minf(size.x / TURRET_STANDARD.x, size.z / TURRET_STANDARD.z)
 
 
+## The size every turret has been scaled against since round 2 (see `_apply_hull_size`). Not a measurement.
+const TURRET_STANDARD := Vector3(2.4, 1.6, 3.6)
 ## The shared hull art's own size in metres (the theme's `tank.hull` scene, unscaled). Measured once per theme: the
 ## scene is a handful of nodes and every vehicle without its own art asks for it.
+##
+## R6 (round 10, feel): THE MODEL IS MEASURED, NOT THE WRAPPER. The cyberpunk `tank.hull` is a `dozer_part` wrapper
+## that builds its model in `_ready`, so an instance that never entered the tree has no meshes: this used to find
+## none and return the (2.4, 1.6, 3.6) fallback in silence, and the 2.40 x 2.40 x 8.62 bus drew 1.60 wide and 7.36
+## long (tests/test_units_bus_eye.gd). A wrapper's `model_scene` is now measured under the wrapper's own yaw, which is
+## all `_ready` does to it before the tank scales the slot (putting the wrapper in the tree instead would register
+## its underglow and engine sound on a node freed a line later).
 static var _shared_hull: Dictionary = {}
 
 
 static func shared_hull_size() -> Vector3:
 	if not _shared_hull.has(GameTheme.theme_name):
 		var packed := GameTheme.scene("tank.hull")
-		var measured := Vector3(2.4, 1.6, 3.6)
+		var measured := TURRET_STANDARD
 		if packed != null:
 			var node := packed.instantiate() as Node3D
-			var bounds := FactionArt.natural_bounds(node)
+			var holder := node
+			var model_scene: Variant = node.get("model_scene")
+			if model_scene is PackedScene:
+				holder = Node3D.new()
+				var model := (model_scene as PackedScene).instantiate() as Node3D
+				model.rotation.y = deg_to_rad(float(node.get("model_yaw_deg")))
+				holder.add_child(model)
+			var bounds := FactionArt.natural_bounds(holder)
 			if bounds.size.z > 0.01:
 				measured = bounds.size
+			else:
+				push_warning("Tank.shared_hull_size: '%s' tank.hull drew no meshes; using %s" % [GameTheme.theme_name, measured])
+			if holder != node:
+				holder.free()
 			node.free()
 		_shared_hull[GameTheme.theme_name] = measured
 	return _shared_hull[GameTheme.theme_name]
