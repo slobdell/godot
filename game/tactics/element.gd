@@ -270,7 +270,11 @@ func state() -> Dictionary:
 			# The element's intended facing and where its formation stands (round 6): the geometry control's facing
 			# indicator and preview draw, rather than an illustration of it.
 			"heading": [heading.x, heading.z], "anchor": [anchor.x, anchor.z] if anchor is Vector3 else null,
-			"detached": _detached.keys(), "events": events}
+			"detached": _detached.keys(), "events": events,
+			# B7: the player's order is COMPLETED at operational arrival (the centre in the destination zone); the crews
+			# still dressing onto their slots after it are not the order running late. R2: the tick the last player
+			# task was acted on (-1 never), so a readout can show the acknowledgement.
+			"arrived": arrived, "preempted_tick": preempted_tick}
 
 
 ## X2 (A8): the drivable width across the heading of the leg this element is driving, measured once per leg.

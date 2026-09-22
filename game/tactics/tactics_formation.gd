@@ -687,8 +687,17 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 			if member.has("position"):
 				var at: Vector3 = member["position"]
 				value = Vector2(at.x - world[j].x, at.z - world[j].z).length()
-			# Fragile vehicles (a high tier) are paid for standing anywhere but the most sheltered slots.
-			value += TIER_COST * float(member_tier[i]) * float(deepest - int(slot_tier[j]))
+				if policy == "travel":
+					# SQUARED distance under "travel": when every crew moves the same way along one line, every matching
+					# has the same total length (a tie the solver breaks arbitrarily, and measured: two crews passing
+					# through each other). The squared cost's optimum keeps their order and shortens the LONGEST leg,
+					# which is what a squad's settle time waits on. Divided by the spacing so it stays in metres' scale.
+					value = value * value / maxf(spacing, 1.0)
+			# Fragile vehicles (a high tier) are paid for standing anywhere but the most sheltered slots — except under
+			# "travel" (round 10, a PLAIN move: the player said where, not how to fight, and drills are off), where the
+			# least total driving alone decides, so nobody drives through a squadmate to reach a more sheltered slot.
+			if policy != "travel":
+				value += TIER_COST * float(member_tier[i]) * float(deepest - int(slot_tier[j]))
 			if pin:
 				var is_leader := String(member.get("name", "")) == leader
 				if is_leader != (j == 0):
