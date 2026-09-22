@@ -183,7 +183,12 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
 
 ### Done
 
-- **MERGE HERE: `e4d5e3f3`** (stream/squad with main `52254fd2` = control's R2 merged in), builder0: `make check
+- **On main `08319e59` (builder0, the record):** `MEASURE element_support_by_fire lane clear at 1.5 s, first shot
+  0.9 s after it, 9 shots in the 22.5 s after, through a friend 0` PASS; `MEASURE ai_cp2_scout_engine_deck x4mw
+  {deck 27, hits 29, shots 29}; x3m (no weak spots) {0, 0, 0}` PASS. `make repath-test`: 6/7; `arrived` STALE only
+  for crews destroyed before the click (six of eight dead there; the two living changed at +0 ticks). Count
+  re-recorded on main at `4ff45e50`: 44,0,3,0.
+- **MERGED to main at `08319e59`:** `e4d5e3f3` (stream/squad with main `52254fd2` = control's R2 merged in), builder0: `make check
   exited 2`, **1587 passed / 0 failed**, sim-baseline `1ea332e7bc268d2a` UNMOVED, determinism `559a415887806e43`,
   red ONLY on ai-scenarios-check: **43 passed, 1 failed** (was 41,3; the one red is combat's
   `artillery_stays_dug_in`). REASONs: base-of-fire re-specified (`35f7b459`), ORBIT controller (`2ac026af`). Commits
