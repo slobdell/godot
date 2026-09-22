@@ -21,16 +21,36 @@ func test_a_line_heard_last_match_is_far_less_likely_tonight() -> void:
 
 
 func test_the_penalty_fades_as_matches_go_by() -> void:
+	# The caller's curve; the PA's is longer on purpose (test_the_pa_is_remembered_for_an_evening).
 	var history := AnnouncerHistory.new()
-	history.remember(["pa.welcome.03"])
-	var weights: Array[float] = [history.weight("pa.welcome.03")]
+	history.remember(["caller.intro.03"])
+	var weights: Array[float] = [history.weight("caller.intro.03")]
 	for index in 6:
 		history.remember(["other.%d" % index])
-		weights.append(history.weight("pa.welcome.03"))
+		weights.append(history.weight("caller.intro.03"))
 	for index in range(1, weights.size()):
 		assert_true(weights[index] > weights[index - 1],
 				"the longer ago it was said the likelier it comes back (step %d)" % index)
 	assert_true(weights[-1] > 0.5, "after six matches it is nearly fresh again")
+
+
+## C9 (round 10): the PA's one wrong detail is remembered across sessions, so a repeat of hers after six matches is
+## still a repeat. Her lines keep a penalty for a whole evening of matches, fading slowly, where the caller's are fresh
+## again after about six.
+func test_the_pa_is_remembered_for_an_evening() -> void:
+	var history := AnnouncerHistory.new()
+	history.remember(["pa.welcome.03", "caller.intro.03"])
+	for index in 10:
+		history.remember(["other.%d" % index])
+	assert_eq(history.weight("caller.intro.03"), 1.0, "eleven matches on, the caller's line is forgotten")
+	var pa := history.weight("pa.welcome.03")
+	assert_true(pa < 0.6, "the PA's line is still held back (%.2f)" % pa)
+	assert_true(pa > 0.0, "but not banned")
+	var previous := pa
+	for index in 20:
+		history.remember(["more.%d" % index])
+	assert_true(history.weight("pa.welcome.03") > previous, "and it keeps fading back in")
+	assert_true(history.matches_ago("pa.welcome.03") > 0, "thirty-one matches on, it is still remembered")
 
 
 func test_the_memory_forgets_past_its_depth() -> void:

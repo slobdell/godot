@@ -8,6 +8,7 @@ Owner: the announcer stream ([_agents/streams/archive/round3/announcer.md](../..
 | `lines.json` | every line the booth can say, tagged; the text we'd send to ElevenLabs (lead gate: approved first) |
 | `beats.json` | the grammar: what each moment is worth and the shapes a call can take |
 | `transcripts/` | review transcripts: every fixture × director seeds 1 and 2 (`make announcer-transcripts`) |
+| `ledger.md` | every paid generation run: requests, characters, credits before → after, and the batch it was |
 
 ## The voices
 
@@ -32,9 +33,17 @@ Owner: the announcer stream ([_agents/streams/archive/round3/announcer.md](../..
 | `without` | none of these may be on the moment |
 | `intensity` | 1 calm … 3 screaming; a line is used within ±1 of the moment's intensity (omit = any) |
 | `topic` | setup questions and their answers pair by topic (`any` answers anything) |
+| `added` | the round that wrote the line (`r10`). The review page's *New this round* tab lists these, and the pool report counts them apart from the pool it found |
+| `oddity` | **PA lines added from round 10 on:** `{span, category}` — which words are the one wrong detail and what kind it is (`oddity_categories` at the top of the file). `audit_lines.py` holds them to the register: 1–6 words, mid-sentence with at least four ordinary words after them (clause-final is a punchline's position), no exclamation, no affect word, and no two lines in one moment's pool with the same kind of wrong detail |
 | `sets` / `needs` | memory flags: a prediction sets `predicted_friendly_fire`; a callback needs it. The director also sets `said_<kind>_<team>` and `said_friendly_<team>` when a moment was actually called, so "again!" only follows a first time the audience heard |
 | `unless_flags` | the line is skipped while any of these flags is set (only one "welcome to the Foundry" per intro: welcome lines set and exclude `welcomed`) |
 | `text` | plain words, no digits or symbols; `{slots}` below |
+
+**How deep a pool should be:** `make announcer-pool-report` replays every fixture for several director seeds and
+prints, per (speaker, moment), the library lines, how often that speaker actually speaks there (λ per match minute),
+the pool the director saw *at the pick*, the size the C9 formula wants, the target and the deficit. A pool is thin
+when the pick is thin, not when the id prefix is short: `caller.army` has sixteen lines and offers two, because army
+lines are per faction and unit.
 
 **More specific lines win:** each matched tag beyond the moment kind multiplies a line's chance by 8, so a "first
 blood" line beats a generic kill call, and a beat can `require` a tag outright.

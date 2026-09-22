@@ -143,6 +143,11 @@ def floodlight(x, z):
     return prop("floodlight", x, z)
 
 
+## R3 (round 10): a sign is DECORATION (`collides: false`): a hull drives straight through its post and under its
+## 6 m board. So it stands where no hull is sent -- off every lane and OUTSIDE both spawn zones
+## (tests/test_arena_prop_parity.gd). Yard, pit and the Terminus each had theirs at (-64..-60, 100..108), inside the
+## spawn zone among the armies' own spawn points; (-81, 88) is outside it (|x| > 75), inside the hexagon with the
+## board clear of the wall, and 11 m off the Terminus's west street.
 def sign(x, z, rot=0, which="arena"):
     return prop("sign", x, z, rot, sign=which)
 
@@ -188,9 +193,13 @@ def mirrored_lanes(half):
     out = []
     for l in half:
         own = l.pop("self_mirror", False)
+        # `mirror_name`: the mirror's own street name when it is a different street on the map (the Terminus's
+        # west street's mirror is the EAST street, and the lead drives it by that name), not "(far)".
+        mirror_name = l.pop("mirror_name", None)
         out.append(l)
         if not own:
-            out.append({"name": l["name"] + " (far)", "points": [[-x if x else 0.0, -z if z else 0.0] for x, z in reversed(l["points"])],
+            out.append({"name": mirror_name or l["name"] + " (far)",
+                        "points": [[-x if x else 0.0, -z if z else 0.0] for x, z in reversed(l["points"])],
                         "width": l["width"]})
     return out
 
@@ -327,7 +336,7 @@ yard += [
     barricade(-20, 78, 0), barricade(20, 78, 0),
     # Floodlights on the hexagon's east/west VERTICES and signs on its base-side corners: the square's corners do
     # not exist any more, and these four were the only props of yard's that fell outside the new wall.
-    screen(-34, 74, 180, "arena"), floodlight(-128, 0), sign(-64, 108, 180, "yard"),
+    screen(-34, 74, 180, "arena"), floodlight(-128, 0), sign(-81, 88, 180, "yard"),
 ]
 write_v2("yard", "The Container Yard",
          "Dense lanes and short sightlines: fights happen at corners and alley mouths, a flank is one wall away, and "
@@ -413,7 +422,7 @@ pit += [
     # Four of the hexagon's six vertices, which is a better ring than the square's corners were.
     # The east vertex and a point on the north-east edge; their mirrors give four. NOT the base-side vertices:
     # those sit inside the spawn block, and check_spawn_clearance refused them at 3.8 m from a spawn point.
-    screen(0, 52, 180, "arena"), floodlight(-128, 0), floodlight(-94, 60), sign(-60, 100, 180, "pit"),
+    screen(0, 52, 180, "arena"), floodlight(-128, 0), floodlight(-94, 60), sign(-81, 88, 180, "pit"),
 ]
 write_v2("pit", "The Pit",
          "A control-point brawl behind walls: four gates into a ring of stacked containers, open killing ground "
@@ -635,19 +644,43 @@ terminus = [
     block(-30, 62, tiers=2, setback=1, neon="cyan", seed=41),
 ]
 terminus += [
-    # Street furniture, so a 20 m street is a fight and not a corridor: containers set back against the kerbs,
-    # barricades at the mouths, wrecks where a lane opens out. Every one is the same kit as the other arenas --
-    # that is the consistency he asked for, and it is why this reads as the venue rather than as a city level.
-    c40(-70, 8, 0, 1, faction="law"), c40(70, -8, 0, 1, faction="gangs"),
-    c20(-70, 30, 90, 2, faction="condemned"), c20(70, 30, 90, 1),
-    c20(0, 30, 0, 1, faction="syndicate"), c40(0, -34, 0, 2, faction="mixed"),
-    wreck(-16, 24, 20), wreck(18, -26, 200), wreck(62, 36, 75),
-    barricade(-10, 42, 0), barricade(10, 42, 0), barricade(-64, 62, 90),
+    # STREETS ARE FOR DRIVING (round 10, R4; the lead: "there streets are blocked with these shipping containers so
+    # there's almost no passageway"). The first version put containers IN the streets "so a 20 m street is a fight
+    # and not a corridor" -- a 40 ft box across the west street, a 20 ft box on the avenue at the ring-road junction,
+    # a two-high stack on the avenue at z = -34, a form-up line across each base's front -- and his read was that the
+    # streets were impassable. He was right on the numbers too: every lane measured 0.00 m at its narrowest.
+    #
+    # The rule now, asserted by tests/test_arena_lanes.gd for every declared lane: furniture stands on lots, against
+    # block walls and at kerbs, PARALLEL to the street, never across it; every lane keeps 2 x the widest hull drivable
+    # after the bake (8.14 m at syn_artillery's 4.07 m, so 12.14 m physical), and every junction clears the rig's
+    # corner cut. A 40 ft container flush against a 20 m street's kerb leaves 17.56 m. Kerb positions below are the
+    # block face plus half the container's width (2.44 / 2 = 1.22), so the box touches the wall it stands against.
+    #
+    # Two authoring bugs went with the old list: three pairs were authored on BOTH halves (c40 at (-70, 8) and at
+    # (70, -8), whose mirrors land on each other: two containers in one place), and the form-up boxes at x = +-42
+    # stood inside the z = 62 blocks' footprints, invisible and colliding with nothing a hull could reach.
+    #
+    # West street (x in -80..-60 between the z = 0 blocks; its mirror is the east street): a 40 ft box on the west
+    # kerb, the street lamp on the east kerb, staggered in z so the street never narrows at two places at once.
+    c40(-78.78, 8, 90, 1, faction="law"),
+    # The avenue between the z = 62 blocks (x in -10..10, z 42..82): a two-high 40 ft stack against the west block,
+    # a 20 ft box against the east block further south. The avenue keeps 17.56 m at both.
+    c40(-8.78, 60, 90, 2, faction="mixed"), c20(8.78, 72, 90, 1, faction="syndicate"),
+    # Against the z = 0 blocks' south face (z = 20), where the ring road opens out to the west wall, long axis along
+    # the road; and one on the lot against the east z = 62 block's east face (x = 50). Not on the ring road between
+    # the blocks: anything at either kerb there stands in front of a throat from one camera or the other (see the
+    # lamps below), so that stretch is bounded by buildings only.
+    c20(-96, 21.22, 0, 2, faction="condemned"), c20(51.22, 58, 90, 1),
+    # Wrecks in lots, off every lane: the open ground between the west street and the west z = 62 block, the lot south
+    # of the east ring road, and the outer lot by the west wall.
+    wreck(-55, 56, 15), wreck(57, 50, 75), wreck(-104, 46, 30),
+    # A barricade line on the lot beside the west street (parallel to it, off the lane), and containers in the outer
+    # lots by the hexagon wall. The avenue-mouth barricades are gone: low cover across a throat is the thing C11
+    # measures as camouflaging the contact line at his pose.
+    barricade(-64, 62, 90),
     c20(-88, 62, 0, 2, faction="law"), c20(88, 74, 0, 1, faction="condemned"),
-    # The form-up line in front of each base, as every other arena has.
-    # z = 80, not 84: the authoring clearance check refused 84 at 4.8 m from the spawn point at
-    # [-44, 90] (SPAWN_CLEARANCE is 6.0). Caught before the file was written, which is the point of it.
-    c20(-42, 80, 0, 1), c20(0, 80, 0, 1, faction="condemned", doors="open"), c20(42, 80, 0, 1),
+    # No form-up line: the base's front is the avenue's and the streets' mouth, and a line of boxes across it is the
+    # same mistake at the other end of the street.
     # LAMPS AMONG THE BLOCKS (round 9, feel's finding): at the lead's pose the neon bands -- correct cyan and magenta
     # since show landed -- were the brightest thing on screen and the vehicles read as dark slabs. The cause was not
     # the bands being too bright; it was that NOTHING lit the floor they drive on. The Terminus had exactly ONE
@@ -683,12 +716,21 @@ terminus += [
     # feel's before-frame at build/terminus-luminance/terminus_pitch21_fov35_49m_default-camera.png. The failure to
     # watch for is not "too dim" but "lit-up": if the pools read as a pattern, the count comes down further. The
     # placement is the reasoned part; the count is the part that gets looked at.
-    floodlight(14, 14), floodlight(-35, 31), floodlight(66, 6),
+    #
+    # ROUND 10 (R4): the ring-road lamp stood ON the ring road's centre line (-35, 31) and the street lamp 4 m into the
+    # east street (66, 6); both move to the kerb, keeping their street and their scatter. The street lamp stands on
+    # the east street's west kerb (x = 60). The ring-road lamp leaves the road altogether, for the lot just south of
+    # it between the west z = 62 block and the west street (-55, 45), facing north so its pool still falls across the
+    # road. At either kerb it stood in front of a throat from HIS camera -- on the near kerb its 3 m footing hid 23%
+    # of the ring road's narrowest cross-section at his pose (LaneReadability, research C11: kerb furniture never in
+    # front of a throat's contact line), and under 180 degree symmetry the far kerb's mirror is the near kerb of the
+    # other ring road. Off the road, both throats are bounded by blocks, which the camera cuts away.
+    floodlight(14, 14), floodlight(-55, 45), floodlight(62.4, 6),
     # Floodlights on the hexagon's east/west vertices; screens facing each base; a sign on the base-side corner.
     floodlight(-128, 0), # x = -76, hemmed in from both sides: the hexagon wall is at |x| = 82.2 at this z, and the spawn
     # lattice reaches x = -66, so a screen fits only in the 6 m of clearance between them.
     screen(-76, 100, 180, "arena"), screen(76, 96, 180, "faction"),
-    sign(-64, 108, 180, "arena"),
+    sign(-81, 88, 180, "arena"),
 ]
 
 write_v2("terminus", "The Terminus",
@@ -705,12 +747,17 @@ write_v2("terminus", "The Terminus",
          # other nearly impossible. Ten placements were measured; (-75, -26) gives **0.406**, which puts this map
          # in the same family as the two he kept (yard 0.43, pit 0.42) rather than in boulevard's.
          objectives=objective_pair("the west ring", -75.0, -26.0, 15.0),
+         # R4: every street he drives is declared, so the lane assertion covers it. The west street's mirror is
+         # the EAST street (x in 60..80); the plaza crossings are the two diagonal routes from one ring road to the
+         # other through the plaza, each its own mirror.
          lanes=[lane("the avenue", [(0, 90), (0, 42), (0, 0), (0, -42), (0, -90)], 18) | {"self_mirror": True},
-                lane("west street", [(-70, 90), (-70, 20), (-70, -20), (-70, -90)], 18),
-                lane("the ring road", [(-110, 30), (0, 30), (110, 30)], 20)],
+                lane("west street", [(-70, 90), (-70, 20), (-70, -20), (-70, -90)], 18) | {"mirror_name": "east street"},
+                lane("the ring road", [(-110, 30), (0, 30), (110, 30)], 20),
+                lane("plaza crossing west", [(-50, 30), (-12, 30), (12, -30), (50, -30)], 18) | {"self_mirror": True},
+                lane("plaza crossing east", [(50, 30), (12, 30), (-12, -30), (-50, -30)], 18) | {"self_mirror": True}],
          regions=[region("the plaza", "centre", 0, 0, 18),
-                  region("avenue mouth", "chokepoint", 0, 42, 8),
-                  region("west crossing", "chokepoint", -70, 0, 9),
+                  # R4: no chokepoint ON a lane. "avenue mouth" (0, 42) and "west crossing" (-70, 0) were both on
+                  # declared streets, which are now clear 20 m lanes; the Terminus authors no chokepoint (arenas.md).
                   region("ring road west", "flank", -80, 30, 16),
                   region("south approach", "open_ground", 0, 92, 20),
                   region("tower corner", "overlook", -52, 40, 7)])

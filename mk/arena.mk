@@ -77,6 +77,27 @@ water-probe: import ## Round 7: does a carved navmesh hole give us water (impass
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/water_probe.gd -- \
 		$(if $(BRIDGE),--bridge) --json=$(CURDIR)/$(BUILD_DIR)/water$(if $(BRIDGE),-bridge).json
 
+# R4 (round 10): the Terminus streets at the lead's pose, before (the round-9 layout frozen in tests/arena/before/)
+# and after (the shipping layout), one frame per named street; `make arena-page` shows the pairs when they exist.
+STREETS_DIR := $(BUILD_DIR)/terminus-streets
+STREETS_FLAGS := --skirmish --mute --seed=3 --player-faction=condemned --enemy-faction=syndicate
+.PHONY: terminus-streets
+terminus-streets: import ## R4: every Terminus street at the lead's pose (21 deg, FOV 35, 49 m), round-9 layout vs today's -> build/terminus-streets/ (needs a display: make remote T=terminus-streets)
+	rm -rf $(STREETS_DIR) && mkdir -p $(STREETS_DIR) && touch $(BUILD_DIR)/.gdignore
+	timeout 240 $(GODOT) --path . --resolution 1920x1080 --script res://tests/arena/street_shots.gd -- $(STREETS_FLAGS) \
+		--arena=res://tests/arena/before/terminus_round9.json --street-shots=$(CURDIR)/$(STREETS_DIR) --street-shots-tag=before 2>&1 \
+		| tee $(STREETS_DIR)/before.log | grep -E 'STREET_SHOTS_DONE|SCRIPT ERROR|^ERROR' || true
+	timeout 240 $(GODOT) --path . --resolution 1920x1080 --script res://tests/arena/street_shots.gd -- $(STREETS_FLAGS) \
+		--arena=terminus --street-shots=$(CURDIR)/$(STREETS_DIR) --street-shots-tag=after 2>&1 \
+		| tee $(STREETS_DIR)/after.log | grep -E 'STREET_SHOTS_DONE|SCRIPT ERROR|^ERROR' || true
+	grep -q 'STREET_SHOTS_DONE tag=before' $(STREETS_DIR)/before.log
+	grep -q 'STREET_SHOTS_DONE tag=after' $(STREETS_DIR)/after.log
+	@echo "Now LOOK at $(STREETS_DIR)/*_before.jpg against *_after.jpg"
+
+.PHONY: terminus-streets-page
+terminus-streets-page: ## R4: the before/after street pairs with each street's narrowest width, one self-contained file -> build/terminus-streets/index.html (after make remote T=terminus-streets)
+	$(PYTHON) tools/street_page.py --commit $$(git rev-parse --short HEAD)
+
 # ---- Terrain (round 10, the terrain stream's; additive): water, pits, bridges -------------------------------------
 .PHONY: terrain-pytest terrain-shots
 

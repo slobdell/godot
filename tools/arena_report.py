@@ -48,9 +48,9 @@ FIELD_Z = 84.0
 KIT = {  # ArenaKit.PROPS (game/arena/arena_kit.gd): one level [x, height, z], cover, collides
     "container_20": ([6.06, 2.59, 2.44], "hard", True),
     "container_40": ([12.19, 2.59, 2.44], "hard", True),
-    "ad_screen": ([7.4, 1.4, 1.4], "hard", True),
+    "ad_screen": ([7.8, 1.4, 2.0], "hard", True),
     "barricade": ([6.0, 0.9, 0.8], "low", True),
-    "wreck": ([3.2, 2.0, 6.4], "hard", True),
+    "wreck": ([3.2, 2.0, 3.3], "hard", True),
     "floodlight": ([2.4, 3.0, 2.4], "hard", True),
     "sign": ([0.4, 6.0, 0.4], "none", False),
     "block": ([40.0, 24.0, 40.0], "hard", True),
@@ -385,6 +385,161 @@ def corridor_widths(boxes, path, step=4, probe=0.5, reach=60.0):
     return out
 
 
+## R4 (round 10): STREETS ARE LANES. The authority is `ArenaLanes` (game/arena/arena_lanes.gd) and its assertion
+## `tests/test_arena_lanes.gd`, which run in `make check`; this is the same measurement for the page and for
+## `make arena-report`, which FAILS (exit 1) on a short lane of an asserted layout. The round-9 corridor WATCH line
+## stays a watch line for the open field; for declared lanes the question was closed by the lead's ruling.
+##
+## Every input is READ: the widest hull and the rig's turning radius from `game/units/units.gd`, the bake radius from
+## `arena.tscn`'s NavigationMesh, the report-only list and the junction turn from `ArenaLanes`, the perimeter's
+## sides from `ArenaShape.KINDS`. The one thing mirrored is the algorithm, and `test_the_lane_table_matches_the_game`
+## pins it to the GDScript's numbers on the Terminus.
+ARENA_TSCN = pathlib.Path(__file__).resolve().parent.parent / "game" / "arena" / "arena.tscn"
+ARENA_LANES_GD = pathlib.Path(__file__).resolve().parent.parent / "game" / "arena" / "arena_lanes.gd"
+ARENA_SHAPE_GD = pathlib.Path(__file__).resolve().parent.parent / "game" / "arena" / "arena_shape.gd"
+
+
+def lane_bar():
+    import gdscript_source, re
+    hulls = units_catalog.load()
+    widest = max(hulls, key=lambda u: float(hulls[u]["hull_size"][0]))
+    rig = max(hulls, key=lambda u: float(hulls[u].get("min_turn_radius_m", 0.0)))
+    found = re.search(r"^agent_radius = ([0-9.]+)$", ARENA_TSCN.read_text(), re.M)
+    if not found:
+        raise RuntimeError("arena.tscn declares no NavigationMesh agent_radius; the lane bar cannot be read")
+    bake = float(found.group(1))
+    w = float(hulls[widest]["hull_size"][0])
+    return {"widest_hull": widest, "widest_hull_m": w, "bake_radius_m": bake, "drivable_bar_m": 2 * w,
+            "physical_bar_m": 2 * w + 2 * bake, "rig": rig, "rig_min_turn_m": float(hulls[rig]["min_turn_radius_m"]),
+            "junction_turn_deg": gdscript_source.const_float(ARENA_LANES_GD, "JUNCTION_TURN_DEG"),
+            "report_only": list(gdscript_source.const(ARENA_LANES_GD, "REPORT_ONLY"))}
+
+
+def perimeter_polygon(layout):
+    """`ArenaShape.vertices`: a regular polygon whose widest axis extent is `half_size`, counter-clockwise."""
+    import gdscript_source
+    kind = (layout.get("shape") or {}).get("kind", "square")
+    n = int(gdscript_source.const(ARENA_SHAPE_GD, "KINDS").get(kind, 4))
+    bound = float(layout.get("half_size", 120.0))
+    widest = max(abs(math.sin(2 * math.pi * k / n + math.pi / n)) for k in range(n))
+    radius = bound / widest
+    return [(radius * math.sin(2 * math.pi * k / n + math.pi / n), radius * math.cos(2 * math.pi * k / n + math.pi / n))
+            for k in range(n)]
+
+
+def _ray_exit_polygon(poly, px, pz, dx, dz, reach):
+    best = reach
+    for i in range(len(poly)):
+        ax, az = poly[i]
+        bx, bz = poly[(i + 1) % len(poly)]
+        ex, ez = bx - ax, bz - az
+        den = dx * ez - dz * ex
+        if abs(den) < 1e-12:
+            continue
+        t = ((ax - px) * ez - (az - pz) * ex) / den
+        u = ((ax - px) * dz - (az - pz) * dx) / den
+        if 0.0 <= u <= 1.0 and t >= 0.0:
+            best = min(best, t)
+    return best
+
+
+def _clearance(boxes, poly, x, z):
+    best = min((b.distance(x, z) for b in boxes), default=1e9)
+    for i in range(len(poly)):
+        ax, az = poly[i]
+        bx, bz = poly[(i + 1) % len(poly)]
+        ex, ez = bx - ax, bz - az
+        t = max(0.0, min(1.0, ((x - ax) * ex + (z - az) * ez) / (ex * ex + ez * ez)))
+        best = min(best, math.hypot(x - ax - t * ex, z - az - t * ez))
+    return best
+
+
+def lane_table(layout, boxes, bar=None, step=1.0, reach=60.0):
+    """Per declared lane: the narrowest physical width across it (every collider counts, low ones too: `boxes_of`
+    keeps barricades) and where; per lane bend and lane crossing: the rig's r_eff against the clear disc. The same
+    numbers as `ArenaLanes.describe`. Terrain (water, pits) is NOT modelled here; the GDScript measures it."""
+    bar = bar or lane_bar()
+    poly = perimeter_polygon(layout)
+    lanes_out, corners = [], []
+    for lane in layout.get("lanes", []):
+        pts = lane["points"]
+        narrow, at = 1e9, None
+        for i in range(1, len(pts)):
+            (ax, az), (bx, bz) = pts[i - 1], pts[i]
+            leg = math.hypot(bx - ax, bz - az)
+            if leg < 1e-6:
+                continue
+            ux, uz = (bx - ax) / leg, (bz - az) / leg
+            nx, nz = -uz, ux
+            steps = max(1, math.ceil(leg / step))
+            for k in range(steps + 1):
+                px, pz = ax + ux * leg * k / steps, az + uz * leg * k / steps
+                width = 0.0
+                for sgn in (1.0, -1.0):
+                    dx, dz = sgn * nx, sgn * nz
+                    far = reach
+                    for b in boxes:
+                        t = entry_t(b, px, pz, px + dx * reach, pz + dz * reach)
+                        if t is not None:
+                            far = min(far, t * reach)
+                    width += min(far, _ray_exit_polygon(poly, px, pz, dx, dz, reach))
+                if width < narrow:
+                    narrow, at = width, (px, pz)
+        drivable = narrow - 2 * bar["bake_radius_m"]
+        lanes_out.append({"name": lane["name"], "narrowest_physical_m": round(narrow, 2),
+                          "narrowest_drivable_m": round(drivable, 2), "at": [round(at[0], 1), round(at[1], 1)],
+                          "pass": drivable >= bar["drivable_bar_m"] - 0.001})
+    r_a = bar["physical_bar_m"] / 2
+    found = []
+    lanes = layout.get("lanes", [])
+    for lane in lanes:
+        pts = lane["points"]
+        for i in range(1, len(pts) - 1):
+            a0 = math.atan2(pts[i][1] - pts[i - 1][1], pts[i][0] - pts[i - 1][0])
+            a1 = math.atan2(pts[i + 1][1] - pts[i][1], pts[i + 1][0] - pts[i][0])
+            delta = abs(math.degrees(math.remainder(a1 - a0, 2 * math.pi)))
+            if delta >= 1.0:
+                found.append({"where": tuple(pts[i]), "lanes": [lane["name"]], "delta_deg": delta})
+    for i in range(len(lanes)):
+        for j in range(i + 1, len(lanes)):
+            seen = []
+            pa, pb = lanes[i]["points"], lanes[j]["points"]
+            for a in range(1, len(pa)):
+                for b in range(1, len(pb)):
+                    hit = _segments_cross(pa[a - 1], pa[a], pb[b - 1], pb[b])
+                    if hit is None:
+                        continue
+                    ang = abs(math.degrees(math.remainder(
+                        math.atan2(pb[b][1] - pb[b - 1][1], pb[b][0] - pb[b - 1][0])
+                        - math.atan2(pa[a][1] - pa[a - 1][1], pa[a][0] - pa[a - 1][0]), 2 * math.pi)))
+                    if min(ang, 180 - ang) < 1.0 or any(math.dist(hit, s) < 0.5 for s in seen):
+                        continue
+                    seen.append(hit)
+                    found.append({"where": hit, "lanes": [lanes[i]["name"], lanes[j]["name"]],
+                                  "delta_deg": bar["junction_turn_deg"]})
+    for c in found:
+        d = math.radians(c["delta_deg"])
+        r_eff = r_a + bar["rig_min_turn_m"] * (1 / math.cos(d / 2) - 1) if d < math.pi - 0.01 else float("inf")
+        clear = _clearance(boxes, poly, *c["where"])
+        corners.append({"where": [round(c["where"][0], 1), round(c["where"][1], 1)], "lanes": c["lanes"],
+                        "delta_deg": round(c["delta_deg"], 1), "r_eff_m": round(r_eff, 2),
+                        "clearance_m": round(clear, 2), "pass": clear >= r_eff - 0.001})
+    return {"bar": {k: v for k, v in bar.items() if k != "report_only"}, "lanes": lanes_out, "corners": corners}
+
+
+def _segments_cross(a0, a1, b0, b1):
+    rx, rz = a1[0] - a0[0], a1[1] - a0[1]
+    sx, sz = b1[0] - b0[0], b1[1] - b0[1]
+    den = rx * sz - rz * sx
+    if abs(den) < 1e-12:
+        return None
+    t = ((b0[0] - a0[0]) * sz - (b0[1] - a0[1]) * sx) / den
+    u = ((b0[0] - a0[0]) * rz - (b0[1] - a0[1]) * rx) / den
+    if -1e-9 <= t <= 1 + 1e-9 and -1e-9 <= u <= 1 + 1e-9:
+        return (a0[0] + t * rx, a0[1] + t * rz)
+    return None
+
+
 def route(blocked, n, a, b):
     """8-connected A* on the grid; returns the path as world points, or None."""
     def cell(p):
@@ -594,7 +749,9 @@ def standing_point(blocked, n, want):
     """The nearest DRIVABLE point to `want`. An observer placed inside a box sees nothing at all, and foundry has a
     crate on the exact centre: the first version of centre_sees_share reported 0.000 for the most open arena in the
     game. An eye has to be somewhere a vehicle could be."""
-    cell = snap(blocked, n, (int((want[0] + HALF) / GRID), int((want[1] + HALF) / GRID)))
+    # Search wide enough to leave any footprint: the 12-cell default could not get out of a 40 m city block from its
+    # centre, so the eye stayed inside it and centre_sees read 0.00 (round 10, terrain's finding).
+    cell = snap(blocked, n, (int((want[0] + HALF) / GRID), int((want[1] + HALF) / GRID)), reach=int(60 / GRID))
     if cell is None:
         return want
     return (cell[0] * GRID - HALF + GRID / 2, cell[1] * GRID - HALF + GRID / 2)
@@ -869,11 +1026,15 @@ def decision_report(layout, boxes, blocked, n, grid, gn, field, watchers):
     if not objectives:
         return {"objectives": 0, "routes": [], "decision_spread": 0.0}
     green = tuple(layout["spawns"]["green"][0])
-    rust = tuple(layout["spawns"]["rust"][0])
     routes = []
     for objective in objectives:
         mine = covered_route(blocked, n, field, green, objective["at"], 6.0)
-        theirs = covered_route(blocked, n, field, rust, objective["at"], 6.0)
+        # The ENEMY routes against ITS OWN exposure field (round 10, terrain's finding): `field` is exposure to
+        # RUST's watchers, so routing rust through it priced rust's trip by its own guns and flipped terrain's river
+        # map between spread 0.45 and 0.03 on one alley. Every layout is point-symmetric (Arena.validate), so rust's
+        # field is green's turned 180 degrees and rust's covered route to X is green's covered route to -X, mirrored.
+        at = objective["at"]
+        theirs = covered_route(blocked, n, field, green, (-at[0], -at[1]), 6.0)
         if mine is None:
             routes.append({"objective": objective["name"], "reachable": False})
             continue
@@ -1018,6 +1179,7 @@ def analyze(layout):
                           "longest_uncovered_m": round(cover_gap(boxes, path), 1)})
         lanes.append(entry)
     report["lanes"] = lanes
+    report["lane_table"] = lane_table(layout, boxes)
     # How doctrine would classify the field (ElementSituation: every obstacle counts), and how it would with only
     # sight-blocking cover counted: drivable points every 8 m in the contested field.
     groups = cover_groups(boxes)
@@ -1122,6 +1284,8 @@ def main():
             key, _, value = part.partition("=")
             WATCHER_REACH_M[key.strip()] = float(value)
     reports = []
+    short = []
+    bar = lane_bar()
     for file in args.layouts:
         with open(file) as f:
             layout = json.load(f)
@@ -1152,6 +1316,22 @@ def main():
                  best.get("commands_idle", -1), best.get("commands_posted", -1), best.get("hidden_approach", -1)))
         for note in openness_notes(clean):
             print("WATCH %-10s %s" % (clean["name"], note))
+        # R4: lanes are ASSERTED (the corridor WATCH above stays a watch line for the open field).
+        asserted = clean["name"] not in bar["report_only"] and not layout.get("fixture", False)
+        for lane in clean["lane_table"]["lanes"]:
+            verdict = "ok" if lane["pass"] else ("LANE_FAIL" if asserted else "short (report only)")
+            print("LANE %-10s %-24s narrowest %6.2f m physical, %6.2f m drivable (bar %.2f) at [%.0f, %.0f]  %s"
+                  % (clean["name"], lane["name"], lane["narrowest_physical_m"], lane["narrowest_drivable_m"],
+                     bar["drivable_bar_m"], lane["at"][0], lane["at"][1], verdict))
+            if asserted and not lane["pass"]:
+                short.append("%s / %s" % (clean["name"], lane["name"]))
+        for corner in clean["lane_table"]["corners"]:
+            verdict = "ok" if corner["pass"] else ("CORNER_FAIL" if asserted else "short (report only)")
+            print("CORNER %-10s %s at [%.0f, %.0f]: turn %.0f deg, rig r_eff %.2f m (R_min %.1f), clearance %.2f m  %s"
+                  % (clean["name"], " x ".join(corner["lanes"]), corner["where"][0], corner["where"][1],
+                     corner["delta_deg"], corner["r_eff_m"], bar["rig_min_turn_m"], corner["clearance_m"], verdict))
+            if asserted and not corner["pass"]:
+                short.append("%s / corner %s" % (clean["name"], " x ".join(corner["lanes"])))
         d = a.get("decision", {})
         print("DECISION %-10s objectives=%d  spread=%.2f  %s"
               % (clean["name"], d.get("objectives", 0), d.get("decision_spread", 0.0),
@@ -1162,6 +1342,10 @@ def main():
         os.makedirs(os.path.dirname(args.json) or ".", exist_ok=True)
         with open(args.json, "w") as f:
             json.dump(reports, f, indent=1)
+    if short:
+        print("arena_report: R4 FAILED -- %d asserted lane(s)/corner(s) short of the bar: %s" % (len(short), "; ".join(short)))
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

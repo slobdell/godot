@@ -63,6 +63,11 @@ var _next_lull_at := -1.0
 var _outro_done := false
 var _heat_t := -100.0
 var _quiet_lulls := 0
+## The pool behind the last line chosen, for the pool report (tools/announcer/pool_report.py): every eligible line
+## (`pool`), the ones still usable right now (`fresh`: unused this match, intensity within one), and how many lines
+## the weights really spread over (`effective`: the exponential of the pick's entropy, so eight lines where one
+## carries all the weight count as about one).
+var _last_pool := {}
 
 
 func _init(line_library: AnnouncerLibrary, seed_value: int = 1) -> void:
@@ -410,7 +415,7 @@ func _speak_step() -> Dictionary:
 			"slots": _slots_used(line, found["slots"]),
 			# Which recording of this line to play: one whole sentence per combination of slot values.
 			"variant_key": AnnouncerLibrary.variant_key(line["text"], found["slots"]),
-			"reason": _reason(found, line), "_moment": found,
+			"reason": _reason(found, line), "_moment": found, "pool": _last_pool,
 			"_priority": int(found["priority"]) if step.get("hard", false) else int(found["priority"]) - SOFT_DISCOUNT}
 	_used[line["id"]] = now
 	for flag in line.get("sets", []):
@@ -472,9 +477,25 @@ func _choose_line(speaker: String, acts: Array, found: Dictionary, topic: String
 		if topic != "" and line.get("topic", "") == "any":
 			weight *= 0.05  # "ask me again in a minute" only when nothing on topic is left
 		weights.append(weight)
+	_last_pool = {"pool": pool.size(), "fresh": fresh.size(), "effective": snappedf(_effective_count(weights), 0.01)}
 	if fresh.is_empty():
 		return {}
 	return fresh[_pick_index(weights)]
+
+
+## exp(entropy) of a pick's weights: the number of equally likely lines the pick is worth.
+static func _effective_count(weights: Array) -> float:
+	var total := 0.0
+	for weight in weights:
+		total += float(weight)
+	if total <= 0.0:
+		return 0.0
+	var entropy := 0.0
+	for weight in weights:
+		var p := float(weight) / total
+		if p > 0.0:
+			entropy -= p * log(p)
+	return exp(entropy)
 
 
 func _reason(found: Dictionary, line: Dictionary) -> String:

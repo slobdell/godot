@@ -4,43 +4,42 @@ result: rust by elimination at 1:24.2
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   CALLER   Welcome in, everybody. Take a look at that floor. That is where this gets decided.
-0:05.3   PA       Welcome, everyone, to the Foundry. Concessions are open—
+0:00.0   CALLER   I have watched both of these crews all week and I still could not tell you how this goes.
+0:06.2   PA       A warm welcome to the—
 0:08.5   ── first contact: rust ifv fires on a scout
 0:08.5   CALLER   The autocannon opens up! The Syndicate's IFV is the first to speak!
-0:12.7   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
-0:25.2   CALLER   What does the Syndicate have to do to get back into this?
-0:29.3   VETERAN  Pick one target and all shoot it. They're spreading their fire around.
-0:35.3   CALLER   They found the soft spot on that tank!
-0:38.2   VETERAN  They showed their side. You can't show your side in here.
-0:43.8   VETERAN  Two—
+0:12.7   VETERAN  First shot's a question. The answer comes back in about two seconds.
+0:18.7   CALLER   Oh! The tank took that one right on the chin!
+0:29.1   CALLER   The Wreckers have the numbers right now. Over five still running.
+0:33.6   CALLER   The scout is smoking, and they smell blood!
+0:36.6   VETERAN  Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming.
 0:44.2   ── rust ifv destroys green scout
-0:44.3   CALLER   Whoa! Look at this!
+0:44.5   CALLER   First blood goes to the Syndicate!
 0:44.8   ── rust tank destroys green scout
-0:46.1   CALLER   There it is! The first kill of the night belongs to the Syndicate!
 0:46.8   ── friendly fire: rust tank hits its own ifv
+0:46.8   CALLER   Back to back! The Syndicate take out the scout too!
 0:48.8   ── rust tank destroys green scout
-0:50.6   CALLER   That's three in a row for the Syndicate! They cannot miss!
+0:50.4   CALLER   That's three in a row for the Syndicate! They cannot miss!
 0:50.8   ── rust tank destroys green scout
 0:50.8   ── green squad Hornets wiped out
 0:50.8   ── close call: rust ifv at 8% hull
-0:54.5   CALLER   Two in a row! The Syndicate strike again!
-1:02.0   CALLER   That scout's machine gun is just hosing the tank!
-1:05.2   VETERAN  Every one of those—
+0:54.3   CALLER   They got another one! Oh my goodness!
+1:02.0   CALLER   It's hurt! It is badly hurt! Can it get out of there?
 1:06.0   ── close call: rust tank at 3% hull
+1:06.3   VETERAN  Good shot—
 1:07.2   ── rust tank destroyed by a hazard
-1:07.3   CALLER   That tank was already hurting, and the fire finishes the job!
+1:07.3   CALLER   It went in, and it is not coming back out!
 1:09.0   ── green scout destroys rust ifv
 1:09.0   ── rust squad Spotter wiped out
 1:09.0   ── green scout destroys rust tank
 1:09.8   ── rust tank destroys green scout
-1:11.2   CALLER   All square! This thing is dead even!
-1:14.5   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
+1:10.9   CALLER   Vehicles are going down all over the floor! Three in a matter of seconds!
+1:16.3   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
 1:24.2   ── rust tank destroys green scout
 1:24.2   ── green squad Wasps wiped out
 1:24.2   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
 1:24.3   CALLER   That's the last one! The Syndicate wipe them out!
-1:27.6   CALLER   The Syndicate take it! What a fight, ladies and gentlemen!
-1:31.3   VETERAN  Turrets turn slower than vehicles do. That's the whole trick. That's it, that's the trick.
-1:38.7   PA       Tonight's match goes to the Syndicate. Settlement of wagers will begin within the hour.
-1:44.3   PA       While the floor is prepared for the next match, a reminder that Syndicate Security reports made tonight will be credited by morning.
+1:27.6   CALLER   And the Syndicate are the last army standing! The Syndicate win!
+1:31.5   VETERAN  Hard match to watch from up here. Harder down there.
+1:36.7   PA       Tonight's match goes to the Syndicate. Settlement of wagers will begin within the hour.
+1:42.3   PA       Meridian buses are waiting at gates two and five, and will depart once full, or at dawn, whichever comes first, for all outer districts.
