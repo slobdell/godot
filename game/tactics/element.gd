@@ -231,7 +231,7 @@ func update(game_match: Match, orders: Object) -> bool:
 			"route": route, "route_index": route_index, "bound": bound}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
-			and game_match.tanks.get_child_count() > 0 else null)
+			and game_match.tanks.get_child_count() > 0 else null, _envelopes(situation))
 	_take(plan, situation)
 	var by_name := AiTickCache.tanks_by_name(game_match)
 	# An ETA is a navmesh route per member (nav's Movement.eta), so it is refreshed once a second, or at once when the
@@ -430,7 +430,15 @@ func _commanded_members() -> PackedStringArray:
 
 ## X2: every slot and every order's destination moved onto ground a vehicle can stand on (SlotGround). The plan is
 ## pure geometry; this is the step that meets the arena. `node` is any node in the match's world (null: unchanged).
-static func ground(plan: Dictionary, node: Node3D) -> void:
+## Each member's turning envelope ({unit: metres}), for grounding its slot with the hull's own clearance.
+static func _envelopes(situation: Dictionary) -> Dictionary:
+	var result := {}
+	for member: Dictionary in situation.get("members", []):
+		result[String(member["name"])] = SlotGround.envelope_of(String(member.get("unit", "")))
+	return result
+
+
+static func ground(plan: Dictionary, node: Node3D, envelopes: Dictionary = {}) -> void:
 	if node == null:
 		return
 	var slots_in: Dictionary = plan["slots"]
@@ -441,7 +449,7 @@ static func ground(plan: Dictionary, node: Node3D) -> void:
 	var asked := {}
 	for unit_name: String in slots_in:
 		var wanted: Vector3 = slots_in[unit_name]
-		var allowed := SlotGround.standable(node, wanted)
+		var allowed := SlotGround.standable_for(node, wanted, float(envelopes.get(unit_name, 0.0)))
 		if allowed != wanted:
 			asked[unit_name] = wanted
 		slots_in[unit_name] = allowed
@@ -449,7 +457,7 @@ static func ground(plan: Dictionary, node: Node3D) -> void:
 	for unit_name: String in plan["orders"]:
 		var order: Dictionary = plan["orders"][unit_name]
 		if order["to"] is Vector3:
-			order["to"] = SlotGround.standable(node, order["to"])
+			order["to"] = SlotGround.standable_for(node, order["to"], float(envelopes.get(unit_name, 0.0)))
 
 
 ## Record what the leader decided.

@@ -27,6 +27,56 @@ static func standable(node: Node3D, point: Vector3) -> Vector3:
 	return flat
 
 
+## Round 10 (nav's finding on the Terminus): the nearest standable point where a HULL fits, not just its centre.
+## `standable()` stops at the navmesh's EDGE, which the bake keeps only BAKE_RADIUS clear of a wall, so a bus or a
+## War Rig centred there has its nose in the building (nav's drive rows: arrival misses in every arm with the goal 4-10
+## m off the mesh, and the mover pressing the nose into the face). `clearance` is the hull's own (the turning envelope:
+## half its diagonal): from the grounded point, CLEARANCE_PROBES directions are probed at `clearance - BAKE_RADIUS`,
+## and every probe that falls off the mesh pushes the point back by how far off it fell. In a street narrower than the
+## envelope the pushes from the two walls cancel, and the hull ends in the middle, which is the best there is.
+const CLEARANCE_PROBES := 8
+const CLEARANCE_ITERATIONS := 3
+
+
+static func standable_for(node: Node3D, point: Vector3, clearance: float) -> Vector3:
+	var at := standable(node, point)
+	var need := clearance - bake_radius()
+	if need <= 0.0 or node == null or not node.is_inside_tree() or not Pathing.enabled or not Pathing.is_ready(node):
+		return at
+	var map := node.get_world_3d().navigation_map
+	for iteration in CLEARANCE_ITERATIONS:
+		var push := Vector3.ZERO
+		for k in CLEARANCE_PROBES:
+			var angle := TAU * float(k) / float(CLEARANCE_PROBES)
+			var probe := Vector3(at.x + cos(angle) * need, 0.0, at.z + sin(angle) * need)
+			var closest := NavigationServer3D.map_get_closest_point(map, probe)
+			var back := Vector3(closest.x - probe.x, 0.0, closest.z - probe.z)
+			if back.length() > TOLERANCE_M:
+				push += back
+		if push.length() <= TOLERANCE_M:
+			break
+		at = standable(node, at + push / float(CLEARANCE_PROBES) * 2.0)
+	return at
+
+
+## The navmesh bake's agent radius (ArenaLanes reads it off arena.tscn); cached, it is a scene constant.
+static var _bake := -1.0
+
+
+static func bake_radius() -> float:
+	if _bake < 0.0:
+		_bake = ArenaLanes.bake_radius()
+	return _bake
+
+
+## A hull's turning envelope: half its diagonal (0 for a unit the catalogue does not know).
+static func envelope_of(unit_id: String) -> float:
+	if not Units.exists(unit_id):
+		return 0.0
+	var hull: Array = Units.stat(unit_id, "hull_size", [0.0, 0.0, 0.0])
+	return 0.5 * Vector2(float(hull[0]), float(hull[2])).length()
+
+
 ## Whether `point` is standable as it is.
 static func is_standable(node: Node3D, point: Vector3) -> bool:
 	return standable(node, point) == point
