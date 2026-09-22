@@ -162,7 +162,13 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 			_group(plan, halves[1], "wedge", trail_anchor, heading, spacing, "attack_move")
 		_:
 			var anchor := _advance(plan, situation, state, table, center, destination, heading, ordered, spacing)
-			_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb)
+			# Round 10 (squad, after CP3): the leader is seated by the least driving here too (the armour tiers stay: drills
+			# are on, contact is possible). Pinned to the column's head it crossed its own row first: measured on the CP3
+			# tree (a138b5f1, laptop, test_the_leader_issues_one_order_per_vehicle_and_they_drive_to_their_slots) the 9.7 m
+			# bus leader drove EAST 2.5 s at 8.8 m/s from the left end while pacing held the rest at 0.35: 9.2 m north in
+			# 6 s against a bar of 21.6.
+			_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb, "", false, false,
+					null, PIN_LEADER_ON_LEGS)
 
 
 
@@ -257,6 +263,8 @@ static var FLOW_ENABLED := true
 ## Round 10 (item 3): the A/B switch for a PLAIN move's seating. true = round 9 (the leader pinned to the head of the
 ## shape, heavies to the exposed slots); false = everyone, the leader included, by the least total driving.
 static var PIN_LEADER_ON_PLAIN_MOVE := false
+## ...and on a MOVING leg with drills on (the traveling technique's formation): true = round 9, the leader at the head.
+static var PIN_LEADER_ON_LEGS := false
 const FLOW_JOIN_M := 15.0
 
 
