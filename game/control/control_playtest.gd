@@ -494,6 +494,11 @@ func _formation_faces_the_drag() -> void:
 	await _capture("10b_drag_right_layout")
 	if controls.rig != null:
 		controls.rig.yaw_follow = follow_was
+	# Leave nobody on this step's move: the queued-route step after it shift-clicks group 2 and must find it idle
+	# (Bravo_1 still driving here queued the route BEHIND this order: 4 waypoints, not 3, at 1920x1080).
+	controls.selection.set_units(three)
+	controls.order_selection("stop")
+	await get_tree().physics_frame
 
 
 ## Whether this unit can currently see a living enemy (it is fighting, not travelling).
