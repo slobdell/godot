@@ -152,6 +152,30 @@ _Updated 2026-09-22 ~13:30, worker session 1._
 > (unmoved); determinism `559a415887806e43`. The orchestrator has the hash (SendMessage). Later commits on the branch are
 > harness, frames and docs only, and each names its own check below.
 
+### THE RECORD for the unanswered right-click (main `8abba2b7` + harness fix `0097de46`, builder0)
+`make repath-test` (no-damage tune, Terminus, condemned v law, seed 3, squad 1 = 8 Guns): **`REPATH_DONE ok=true
+scenarios=7 failed=`**, wrapper `exited 0`. All seven in-flight states came out MOVE tasks: move, attack-move,
+support by fire, an armed card command, a facing drag, 5 m from the destination, and arrived. Every crew was re-ordered
+within 2 ticks of the issuing input frame, or follows a leader who was. **8/8 crews visibly moved or turned within 1 s in
+every state.** Control's half and squad's half are both on main. (The first 7/7 on main, before the harness fix, had its
+"near" click land on an enemy hull, so it measured an attack; the fix steps every click off hulls and fails any state
+whose task is not a move.)
+
+### Frames for the lead (builder0, `make remote T="control-playtest-shots CONTROL_FLAGS=--arena=yard"`, his 21° pose)
+Copied off `build/` so a later run can't overwrite them:
+`/tmp/claude-1000/-home-slobdell-projects-godot-control/a0d0a217-9966-4c91-9c3f-0a72d9e73ef9/scratchpad/frames3/{1920x1080,1280x720}/`
+(also in `build/control-playtest/` until the next run).
+- `7a_mixed_selection.png`: one unit each of squads 1 and 2. The card's footer reads "In different squads: Ctrl+1-9 or
+  [FORM SQUAD]"; Screen, Support by Fire and Ambush are greyed.
+- `7b_formed_squad.png`: after one click on FORM SQUAD. A chip "3" appears in the group bar and the three task
+  buttons are live.
+- `10a_plain_click_layout.png` → `10b_drag_right_layout.png`: the same three hand-picked units, the same spot, the camera
+  held still. A plain click, then a right-drag east. **Honest limit:** the change of shape shows only through the dashed
+  goal lines; the playtest's numbers are what prove it (the front unit's goal furthest east after the drag).
+- The banner ("Cancelled Attack-move: right-click again to move") reads in `10a`/`10b` at the right. `7c` was taken
+  while it slid in (fixed to 3.5 s in `161d0780`, not re-shot yet).
+- The radar in every yard frame shows the two objective rings off-centre, and none at the centre.
+
 ### Plan (in order) and where each stands
 1. ✅ Reproduce on the default path: `make repath-test` (new).
 2. ✅ R2, control's half: player orders compare the CLICK; K1 `task` key (squad's ask).
