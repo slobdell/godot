@@ -16,7 +16,7 @@ result: green by control at 2:34.0
 0:38.7   VETERAN  Bunched—
 0:39.2   ── rust ifv destroys green scout
 0:39.3   CALLER   Hold on, hold on!
-0:41.1   CALLER   The Condemned draws first blood, and this crowd is on its feet!
+0:41.1   CALLER   The Condemned draw first blood, and this crowd is on its feet!
 0:45.0   ── rust lancer destroys green ifv
 0:45.0   ── green squad Bravo wiped out
 0:45.3   CALLER   Upset! Upset on the floor! The Lancer gets it done!

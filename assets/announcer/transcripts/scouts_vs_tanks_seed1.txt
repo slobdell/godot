@@ -23,8 +23,8 @@ result: rust by elimination at 1:24.2
 0:50.8   ── close call: rust ifv at 8% hull
 0:52.8   CALLER   The Syndicate are on a tear! That's four straight!
 0:56.1   PA       Tonight's targeting systems are the same ones protecting Syndicate facilities in all eleven districts.
-1:02.2   CALLER   The tank is smoking, and the Wreckers smells blood!
-1:05.5   VETERAN  That's not the one—
+1:02.2   CALLER   The tank is smoking, and they smell blood!
+1:05.2   VETERAN  That's not the one—
 1:06.0   ── close call: rust tank at 3% hull
 1:07.2   ── rust tank destroyed by a hazard
 1:07.3   CALLER   Oh, wait, wait!

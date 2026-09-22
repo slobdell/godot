@@ -16,7 +16,7 @@ result: green by elimination at 1:01.2
 0:37.5   ── rust tank destroys green ifv
 0:37.5   CALLER   Textbook! The tank eats it alive!
 0:37.8   ── green scout destroys rust lancer
-0:40.5   CALLER   The Lancer goes dark! The Condemned shuts off the beam!
+0:40.5   CALLER   The Lancer goes dark! The Condemned shut off the beam!
 0:44.7   VETERAN  That's break contact, and it's about two seconds late.
 0:49.5   CALLER   The tank round lands! You felt that one in the seats!
 0:53.4   VETERAN  Artillery—

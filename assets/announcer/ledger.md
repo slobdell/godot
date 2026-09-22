@@ -20,3 +20,4 @@ Every paid generation run, appended by tools/announcer/generate.py. Lead gate: t
 | 2026-09-22 | ElevenLabs | eleven_multilingual_v2 | 236 | 11755 | 11755 | 78952 → 67002 | r10 batch 3: the caller (205) and the Veteran stretch pairs (13) |
 | 2026-09-22 | ElevenLabs | eleven_multilingual_v2 | 4 | 161 | 161 | 66920 → 66920 | r10 batch 3b: four clips re-recorded once after a speech-to-text mismatch |
 | 2026-09-22 | ElevenLabs | eleven_multilingual_v2 | 1 | 44 | 44 | 66920 → 66920 | r10: caller.contact.15 reworded and re-recorded (speech-to-text split 'downrange') |
+| 2026-09-22 | ElevenLabs | eleven_multilingual_v2 | 80 | 4009 | 4009 | 66710 → 63894 | r10 batch 4: fourteen older lines re-recorded after the plural-faction fix (a faction takes a plural verb and their own guns) |

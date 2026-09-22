@@ -10,21 +10,22 @@ result: green by elimination at 0:33.0
 0:15.8   ── first contact: green scout fires on a artillery
 0:15.8   CALLER   There's the first shot! Buckle up, folks!
 0:17.0   ── friendly fire: rust artillery hits its own ifv
-0:19.2   CALLER   Whoa, whoa! The Condemned just hit its own IFV!
-0:23.2   VETERAN  Slight edge. Slight. One good shot turns it around.
+0:19.2   CALLER   Whoa, whoa! They just hit their own IFV!
+0:22.9   VETERAN  Slight edge. Slight. One good shot turns it around.
 0:26.5   ── friendly fire: rust artillery hits its own ifv
 0:26.8   ── close call: rust artillery at 10% hull
-0:28.1   CALLER   That's two times now the Condemned have hit their own vehicles!
+0:27.8   CALLER   That's two times now the Condemned have hit their own vehicles!
 0:28.8   ── green ifv destroys rust artillery
 0:29.0   ── green scout destroys rust artillery
 0:29.0   ── rust squad Battery wiped out
+0:32.2   CALLER   It—
 0:32.2   ── rust ifv destroyed by its own tank
-0:32.3   CALLER   Again! The Condemned have done it again!
+0:32.7   VETERAN  Artillery doesn't kill you. It moves you somewhere that does.
 0:33.0   ── green tank destroys rust tank
 0:33.0   ── rust squad Front wiped out
 0:33.0   ── MATCH OVER: green wins by elimination (5 green, 0 rust left)
-0:35.0   CALLER   The tank is down! The biggest thing on the floor is down!
-0:39.2   CALLER   And the Wreckers are the last army standing! The Wreckers win!
-0:43.1   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
-0:50.9   CALLER   Oh, my goodness!
-0:53.0   PA       Tonight's match goes to the Wreckers. Settlement of wagers will begin within the hour.
+0:37.3   CALLER   That's the last one! The Wreckers wipe them out!
+0:40.6   CALLER   That is the match! The Wreckers take it!
+0:43.6   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
+0:50.0   PA       The Wreckers win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
+0:57.7   PA       Our next broadcast is tomorrow evening at the usual time, with the same crews where available, and we hope you will join us.

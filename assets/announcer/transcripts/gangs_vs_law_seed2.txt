@@ -10,11 +10,11 @@ result: green by elimination at 1:20.2
 0:12.8   VETERAN  Fast doesn't mean safe. Fast means you arrive at the problem sooner.
 0:18.8   CALLER   Here comes the drill! This is what they train for!
 0:19.5   ── friendly fire: green burner hits its own scout
-0:23.0   CALLER   Oh, that's their own! The Wreckers hit its own scout!
+0:23.0   CALLER   Oh, that's their own! They just shot their own scout!
 0:26.7   VETERAN  You don't aim at a—
 0:29.0   ── green ifv destroys rust scout
 0:29.0   ── rust squad Spotlight wiped out
-0:29.1   CALLER   The Wreckers draws first blood, and this crowd is on its feet!
+0:29.1   CALLER   The Wreckers draw first blood, and this crowd is on its feet!
 0:29.8   ── rust tank destroys green ifv
 0:31.5   ── close call: rust ifv at 9% hull
 0:31.8   ── green scout destroys rust ifv

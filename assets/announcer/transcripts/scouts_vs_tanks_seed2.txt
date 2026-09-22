@@ -11,36 +11,35 @@ result: rust by elimination at 1:24.2
 0:12.7   VETERAN  First shot's a question. The answer comes back in about two seconds.
 0:18.7   CALLER   Oh! The tank took that one right on the chin!
 0:29.1   CALLER   The Wreckers have the numbers right now. Over five still running.
-0:33.6   CALLER   The scout is smoking, and the Syndicate smells blood!
-0:36.9   VETERAN  Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming.
+0:33.6   CALLER   The scout is smoking, and they smell blood!
+0:36.6   VETERAN  Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming.
 0:44.2   ── rust ifv destroys green scout
+0:44.5   CALLER   First blood goes to the Syndicate!
 0:44.8   ── rust tank destroys green scout
-0:44.8   CALLER   Are you kidding me? The tank takes it out!
 0:46.8   ── friendly fire: rust tank hits its own ifv
-0:48.7   VETERAN  Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other.
+0:46.8   CALLER   Back to back! The Syndicate take out the scout too!
 0:48.8   ── rust tank destroys green scout
+0:50.4   CALLER   That's three in a row for the Syndicate! They cannot miss!
 0:50.8   ── rust tank destroys green scout
 0:50.8   ── green squad Hornets wiped out
 0:50.8   ── close call: rust ifv at 8% hull
+0:54.3   CALLER   They got another one! Oh my goodness!
 1:02.0   CALLER   It's hurt! It is badly hurt! Can it get out of there?
 1:06.0   ── close call: rust tank at 3% hull
-1:06.9   VETERAN  That machine is held—
+1:06.3   VETERAN  Good shot—
 1:07.2   ── rust tank destroyed by a hazard
+1:07.3   CALLER   It went in, and it is not coming back out!
 1:09.0   ── green scout destroys rust ifv
 1:09.0   ── rust squad Spotter wiped out
 1:09.0   ── green scout destroys rust tank
-1:09.0   CALLER   The scout! The scout gets around the back of the tank and takes it down!
 1:09.8   ── rust tank destroys green scout
-1:14.1   CALLER   Stopped cold! That machine is going nowhere!
-1:17.4   CALLER   Ambush! And they drive right back into it!
-1:20.4   VETERAN  That's the drill nobody wants. You're already inside the—
+1:10.9   CALLER   Vehicles are going down all over the floor! Three in a matter of seconds!
+1:16.3   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
 1:24.2   ── rust tank destroys green scout
 1:24.2   ── green squad Wasps wiped out
 1:24.2   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
-1:24.3   CALLER   Whoa, whoa, whoa!
-1:25.9   CALLER   The last Wrecker vehicle goes down!
-1:28.2   CALLER   By the thinnest of margins! One machine left running!
-1:31.5   VETERAN  That is what it looks like when everybody does their job and nobody gets clever.
-1:38.0   CALLER   This is fight night!
-1:40.3   PA       Tonight's match goes to the Syndicate. Settlement of wagers will begin within the hour.
-1:45.9   PA       Meridian buses are waiting at gates two and five, and will depart once full, or at dawn, whichever comes first, for all outer districts.
+1:24.3   CALLER   That's the last one! The Syndicate wipe them out!
+1:27.6   CALLER   And the Syndicate are the last army standing! The Syndicate win!
+1:31.5   VETERAN  Hard match to watch from up here. Harder down there.
+1:36.7   PA       Tonight's match goes to the Syndicate. Settlement of wagers will begin within the hour.
+1:42.3   PA       Meridian buses are waiting at gates two and five, and will depart once full, or at dawn, whichever comes first, for all outer districts.

@@ -10,8 +10,8 @@ result: green by elimination at 1:20.2
 0:12.8   VETERAN  The first few seconds of contact decide more than people think.
 0:17.7   CALLER   Somebody pulled the trigger, and here we go!
 0:19.5   ── friendly fire: green burner hits its own scout
-0:21.3   CALLER   Whoa, whoa! The Wreckers just hit its own scout!
-0:25.3   VETERAN  Watch the one at the back that isn't—
+0:21.3   CALLER   Whoa, whoa! They just hit their own scout!
+0:25.0   VETERAN  Watch the one at the back that isn't shooting—
 0:29.0   ── green ifv destroys rust scout
 0:29.0   ── rust squad Spotlight wiped out
 0:29.1   CALLER   Whoa, whoa, whoa!

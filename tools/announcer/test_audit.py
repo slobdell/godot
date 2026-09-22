@@ -89,6 +89,16 @@ class AuditTest(unittest.TestCase):
         self.assertTrue(any("borrowed" in w for w in warnings), warnings)
 
 
+    def test_a_faction_is_plural_in_verb_and_pronoun(self):
+        # Round 10: the transcripts read "The Wreckers draws first blood" and "hit its own scout". Both are the same
+        # rule ("the Condemned take it"), and both slipped past a list that did not have the words in it.
+        self.assert_error(with_line(text="{faction} draws first blood tonight."), "plural verb")
+        self.assert_error(with_line(text="{faction} steals the point away!"), "plural verb")
+        self.assert_error(with_line(text="{faction} hit its own scout!"), "their")
+        errors, _ = audit_lines.audit(with_line(text="{faction} draw first blood here, and this crowd is on its feet!"),
+                                      BEATS)
+        self.assertEqual([e for e in errors if "test.line" in e], [], "the crowd keeps its own feet")
+
     # C10 (round 10): the PA's new lines carry their one wrong detail as data, and the audit holds it to the register.
     def pa_line(self, text, span, category="paperwork", **fields):
         line = dict(speaker="pa", act="notice", tags=["lull"], added="r10", text=text,

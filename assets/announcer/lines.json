@@ -1457,7 +1457,7 @@
     "hurt"
    ],
    "intensity": 2,
-   "text": "The {victim_unit} is smoking, and {faction} smells blood!"
+   "text": "The {victim_unit} is smoking, and they smell blood!"
   },
   {
    "id": "caller.hit.07",
@@ -1555,7 +1555,7 @@
     "big_hit"
    ],
    "intensity": 1,
-   "text": "{faction} connects, and the {victim_unit} wobbles!"
+   "text": "They connect, and the {victim_unit} wobbles!"
   },
   {
    "id": "color.hit.01",
@@ -1701,7 +1701,7 @@
     "kill"
    ],
    "intensity": 1,
-   "text": "{faction} picks off the {victim_unit}. Clean work."
+   "text": "They pick off the {victim_unit}. Clean work."
   },
   {
    "id": "caller.kill.12",
@@ -1733,7 +1733,7 @@
     "first_blood"
    ],
    "intensity": 3,
-   "text": "{faction} draws first blood, and this crowd is on its feet!"
+   "text": "{faction} draw first blood, and this crowd is on its feet!"
   },
   {
    "id": "caller.kill.15",
@@ -1889,7 +1889,7 @@
     "killer_artillery"
    ],
    "intensity": 2,
-   "text": "The artillery finds its mark! {faction} shells the {victim_unit} right out of the fight!"
+   "text": "The artillery finds its mark! They shell the {victim_unit} right out of the fight!"
   },
   {
    "id": "caller.kill.29",
@@ -1955,7 +1955,7 @@
     "victim_lancer"
    ],
    "intensity": 2,
-   "text": "The Lancer goes dark! {faction} shuts off the beam!"
+   "text": "The Lancer goes dark! {faction} shut off the beam!"
   },
   {
    "id": "caller.kill.35",
@@ -2732,7 +2732,7 @@
     "friendly_kill"
    ],
    "intensity": 3,
-   "text": "Oh no! {faction} just took out its own {victim_unit}!"
+   "text": "Oh no! They have just taken out their own {victim_unit}!"
   },
   {
    "id": "caller.ownkill.02",
@@ -2752,7 +2752,7 @@
     "friendly_kill"
    ],
    "intensity": 3,
-   "text": "They hit their own! {faction} lose the {victim_unit} to its own guns!"
+   "text": "They hit their own! The {victim_unit} is gone, and it was their own guns!"
   },
   {
    "id": "caller.ownkill.04",
@@ -2913,7 +2913,7 @@
     "friendly_fire"
    ],
    "intensity": 2,
-   "text": "Whoa, whoa! {faction} just hit its own {victim_unit}!"
+   "text": "Whoa, whoa! They just hit their own {victim_unit}!"
   },
   {
    "id": "caller.ff.02",
@@ -2933,7 +2933,7 @@
     "friendly_fire"
    ],
    "intensity": 2,
-   "text": "Oh, that's their own! {faction} hit its own {victim_unit}!"
+   "text": "Oh, that's their own! They just shot their own {victim_unit}!"
   },
   {
    "id": "caller.ff.04",
@@ -2968,7 +2968,7 @@
     "said_friendly_{team}"
    ],
    "intensity": 3,
-   "text": "Again! {faction} hit its own again!"
+   "text": "Again! {faction} have hit their own again!"
   },
   {
    "id": "caller.ff.07",
@@ -3212,7 +3212,7 @@
     "stolen"
    ],
    "intensity": 3,
-   "text": "{faction} steals the point away from {other_faction}!"
+   "text": "{faction} steal the point away from {other_faction}!"
   },
   {
    "id": "caller.control.05",
@@ -5098,7 +5098,7 @@
     "result"
    ],
    "intensity": 2,
-   "text": "And there it is. {faction} closes it out."
+   "text": "And there it is. {faction} close it out."
   },
   {
    "id": "caller.result.16",
@@ -5128,7 +5128,7 @@
     "result"
    ],
    "intensity": 3,
-   "text": "It is done! {faction} stands alone on that floor!"
+   "text": "It is done! {faction} stand alone on that floor!"
   },
   {
    "id": "pa.result.07",

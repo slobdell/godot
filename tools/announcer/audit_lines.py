@@ -53,7 +53,11 @@ PREPOSITIONS = {"for", "of", "to", "from", "with", "by", "on", "in", "at", "agai
 SINGULAR_VERBS = {"is", "has", "takes", "wins", "gets", "keeps", "goes", "does", "brings", "rolls", "fields",
                   "looks", "needs", "loses", "leads", "holds", "cracks", "shreds", "opens", "comes", "puts",
                   "finishes", "answers", "wants", "was", "hits", "makes", "drives", "runs", "turns", "knows",
-                  "pays", "sends", "starts", "stops", "catches", "lands", "strikes", "wipes"}
+                  "pays", "sends", "starts", "stops", "catches", "lands", "strikes", "wipes",
+                  # Round 10, from the transcripts: "The Wreckers draws first blood" had been recorded for three
+                  # rounds because these words were not on the list.
+                  "draws", "steals", "smells", "connects", "picks", "shells", "shuts", "closes", "stands", "opens",
+                  "pulls", "seals", "breaks", "throws", "fires", "calls", "clears", "scores"}
 VERBS = {"is", "are", "was", "were", "has", "have", "had", "takes", "wins", "gets", "keeps", "goes", "does",
          "will", "can", "brings", "rolls", "fields", "looks", "needs", "loses", "leads", "holds"}
 # X3 (round 5): the booth names a side by its faction, never by its colour. Capitalised, a colour is a team name
@@ -196,8 +200,18 @@ def audit(lines_data: dict, beats_data: dict) -> tuple[list[str], list[str]]:
             if pattern.search(text) and not {"faction_" + faction, "other_faction_" + faction} & set(tags):
                 errors.append("%s: names %s as a side without a faction_%s or other_faction_%s tag, so it can play "
                               "in a match they are not in" % (where, faction, faction, faction))
-        if re.search(r"\{(?:other_)?faction\}\s+(?:are|have|were)\b[^.!?]*\bits\b", text):
-            errors.append("%s: a faction is plural all the way through the sentence (\"are ... its\" -> \"their\")" % where)
+        # A faction is plural all the way through its own clause: "the Condemned hit their own", never "its own".
+        # `its` is fine when something else owns it ("this crowd is on its feet", "the artillery finds its mark"), so
+        # only an `its` before the next full stop, with no other subject in between, counts.
+        # Not {faction_s}: a possessive hands the sentence to whatever it owns ("the Wreckers' scout lands one on
+        # its own" is right), so only a faction as the subject counts.
+        for match in re.finditer(r"\{(?:other_)?faction\}([^.!?]*?)\bits\b", text):
+            between = match.group(1).lower()
+            if re.search(r"\b(crowd|artillery|building|arena|floor|scout|tank|lancer|burner|machine|vehicle|gun|"
+                         r"turret|shell|beam|and|but|while)\b", between):
+                continue
+            errors.append("%s: a faction is plural all the way through the sentence (%r -> \"their\")"
+                          % (where, match.group(0).strip()))
         key = _norm(text)
         if key in texts:
             errors.append("%s: same text as %s" % (where, texts[key]))

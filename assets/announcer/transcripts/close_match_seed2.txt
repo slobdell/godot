@@ -21,8 +21,8 @@ result: rust by elimination at 1:21.8
 0:47.2   ── rust lancer destroys green tank
 0:47.3   CALLER   That's the matchup! The Lancer does exactly what it was built to do!
 0:48.0   ── friendly fire: green artillery hits its own ifv
-0:53.0   CALLER   The Law connects, and the IFV wobbles!
-0:55.7   VETERAN  That's the seam under the turret ring. Everybody knows about it. Nobody can fix it.
+0:53.0   CALLER   They connect, and the IFV wobbles!
+0:55.4   VETERAN  That's the seam under the turret ring. Everybody knows about it. Nobody can fix it.
 0:58.5   ── close call: rust lancer at 5% hull
 1:06.8   ── green ifv destroys rust lancer
 1:06.8   ── rust squad Lance wiped out
