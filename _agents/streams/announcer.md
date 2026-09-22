@@ -155,7 +155,10 @@ _(the worker keeps this current; the ledger and the pool report are the numbers 
 
 **Updated 2026-09-22 (worker, round 10). Every backlog item is done; the round's report is below.** Baseline:
 `make remote T=check` on `2ee65f94` (builder0): `>> remote: make check exited 0`, 1559 passed, 0 failed.
-**Green commit for the merge: see "Merge notes" (the final check's hash).**
+**GREEN, MERGE HERE: `7a72ad05`.** Its own builder0 check, read from the wrapper's line and the runner's:
+`>> remote: make check exited 0`, **1561 passed, 0 failed, 18 targets all passed**, sim-baseline
+`1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`. The commits after it are docs only
+(`353aa9da`, and whatever Status edits follow this line).
 
 ### Done
 
@@ -276,7 +279,8 @@ stretch pairs (11,755), five speech-to-text re-records (205), and the plural-fac
 - Pool deficit 514 -> 147; library 601 -> 1119 lines (laptop, `dc95c555`, 40 broadcasts).
 - Credits 108,348 -> 63,894 (41,346 spent this round, ~4,000 of it the grammar fix and the re-records).
 - The pack: 3,051 -> 2,866 clips, 76 MB -> 72 MB (216 orphaned recordings pruned, 24 of them left by an earlier round).
-- `make check` on builder0: green on `96333be1` (1559 passed, 0 failed, `exited 0`); the final one in Merge notes.
+- `make check` on builder0: green on `96333be1` (1559 passed, 0 failed) and on **`7a72ad05`** (1561 passed, 0 failed,
+  18 targets, `exited 0`, sim-baseline unmoved). One red in between, `ad9f6a1d`, written up below.
 
 ### The one red check of the round, and what it was
 
