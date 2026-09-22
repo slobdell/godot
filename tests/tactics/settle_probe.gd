@@ -46,7 +46,6 @@ func _run_probe() -> void:
 	case = TestCase.new()
 	case.tree = self
 	ElementPlan.PIN_LEADER_ON_PLAIN_MOVE = _flag("pin", "off") == "on"
-	ElementPlan.PIN_LEADER_ON_LEGS = _flag("pin", "off") == "on"
 	var report := await _run(_flag("arena", ""), _flag("dir", "forward"), _flag("units", "tank:tank:ifv:ifv").split(":"),
 			float(_flag("metres", "20")), int(_flag("seed", "3")), float(_flag("seconds", "45")))
 	print("SETTLE_PROBE " + JSON.stringify(report))
@@ -97,7 +96,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 		gun0[unit_name] = t.turret_forward()
 	var acked := {}
 	var given: int = game_match.tick
-	# --drills=on: the task with drills ON takes ElementPlan's LEGGED movement (the path PIN_LEADER_ON_LEGS governs),
+	# --drills=on: the task with drills ON takes ElementPlan's LEGGED movement,
 	# not the plain move's form-up; that is the CPU's and an attack-move's path.
 	var task := {"verb": "move", "to": [goal.x, goal.z]}
 	if _flag("drills", "off") != "on":
