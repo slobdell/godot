@@ -61,6 +61,14 @@ static var by_lane := {}
 ## Unit-ticks touching another hull (not a wall): reported beside, never inside, the wall count.
 static var hull_ticks := 0
 static var log: Array = []
+## Every (unit, cause, collider) episode, UNCAPPED: its tick count and the first contact's detail. The log above keeps
+## only the first LOG_CAP ticks of a run, which is the start of the drive and nothing after it.
+static var episodes := {}
+## `plant` split by what moved the contact point into the wall: `sweep` = the commanded YAW (the hull's end swinging
+## through it: combat's constraint row), `drift` = neither yaw nor throttle (a slide, momentum, a depenetration).
+static var plant_kind := {}
+## cause -> {collider -> unit-ticks}: WHICH geometry each cause presses into, not only how often.
+static var by_cause_collider := {}
 
 
 static func reset() -> void:
@@ -72,12 +80,28 @@ static func reset() -> void:
 	by_lane = {}
 	hull_ticks = 0
 	log = []
+	episodes = {}
+	plant_kind = {}
+	by_cause_collider = {}
 
 
 static func report() -> Dictionary:
 	return {"observed_unit_ticks": observed, "contact_unit_ticks": ticks, "by_cause": by_cause.duplicate(),
 			"by_driver": by_driver.duplicate(), "by_unit": by_unit.duplicate(), "by_lane": by_lane.duplicate(),
-			"hull_contact_unit_ticks": hull_ticks}
+			"hull_contact_unit_ticks": hull_ticks, "plant_kind": plant_kind.duplicate(),
+			"top_colliders": top_colliders(5)}
+
+
+## Per cause, the `limit` colliders with the most contact unit-ticks, as [[collider, ticks], ...], most first.
+static func top_colliders(limit: int) -> Dictionary:
+	var out := {}
+	for cause: String in by_cause_collider:
+		var rows: Array = []
+		for name: String in by_cause_collider[cause]:
+			rows.append([name, int(by_cause_collider[cause][name])])
+		rows.sort_custom(func(a: Array, b: Array) -> bool: return a[1] > b[1] or (a[1] == b[1] and String(a[0]) < String(b[0])))
+		out[cause] = rows.slice(0, limit)
+	return out
 
 
 ## ---- One mover's reading ----------------------------------------------------------------------------------------
@@ -89,6 +113,9 @@ var collider := ""
 var lane := ""
 var count := 0
 var mine_by_cause := {}
+## The last contact's point and wall normal (flat, from the wall toward the hull): what an escape backs away from.
+var point := Vector3.ZERO
+var normal := Vector3.ZERO
 
 ## What the controller decided on the tick whose motion is being judged (set by `Movement.note_decision`).
 var decided := {}
@@ -125,8 +152,8 @@ func observe(mover: Movement) -> void:
 	if wall == null:
 		return
 	touching = true
-	var point := wall.get_position()
-	var normal := Vector3(wall.get_normal().x, 0.0, wall.get_normal().z).normalized()
+	point = wall.get_position()
+	normal = Vector3(wall.get_normal().x, 0.0, wall.get_normal().z).normalized()
 	driver = String(decided.get("driver", "?"))
 	cause = _classify(mover, tank, point, normal)
 	var other: Object = wall.get_collider()
@@ -139,6 +166,23 @@ func observe(mover: Movement) -> void:
 	by_driver[driver] = int(by_driver.get(driver, 0)) + 1
 	by_unit[String(tank.name)] = int(by_unit.get(String(tank.name), 0)) + 1
 	by_lane[lane] = int(by_lane.get(lane, 0)) + 1
+	var colliders: Dictionary = by_cause_collider.get(cause, {})
+	colliders[collider] = int(colliders.get(collider, 0)) + 1
+	by_cause_collider[cause] = colliders
+	if cause == "plant":
+		var kind := "sweep" if _yaw_drives_into(tank, point, normal) else "drift"
+		plant_kind[kind] = int(plant_kind.get(kind, 0)) + 1
+	var episode_key := "%s|%s|%s" % [tank.name, cause, collider]
+	if episodes.has(episode_key):
+		episodes[episode_key]["ticks"] = int(episodes[episode_key]["ticks"]) + 1
+		episodes[episode_key]["last_at"] = [snappedf(point.x, 0.01), snappedf(point.z, 0.01)]
+	else:
+		episodes[episode_key] = {"unit": String(tank.name), "unit_id": tank.unit_id, "cause": cause, "driver": driver,
+				"collider": collider, "lane": lane, "ticks": 1, "first_tick": Engine.get_physics_frames(),
+				"at": [snappedf(point.x, 0.01), snappedf(point.z, 0.01)], "last_at": [snappedf(point.x, 0.01), snappedf(point.z, 0.01)],
+				"throttle": snappedf(float(decided.get("throttle", 0.0)), 0.01), "turn": snappedf(float(decided.get("turn", 0.0)), 0.01),
+				"route_gap_m": snappedf(float(decided.get("_route_gap", -1.0)), 0.01),
+				"mesh_gap_m": snappedf(float(decided.get("_mesh_gap", -1.0)), 0.01)}
 	if log.size() < LOG_CAP:
 		var tangent: Variant = mover.corridor()
 		log.append({"unit": String(tank.name), "unit_id": tank.unit_id, "tick": Engine.get_physics_frames(),
@@ -152,15 +196,15 @@ func observe(mover: Movement) -> void:
 				"mesh_gap_m": snappedf(float(decided.get("_mesh_gap", -1.0)), 0.01)})
 
 
-func _classify(mover: Movement, tank: Tank, point: Vector3, normal: Vector3) -> String:
-	var into := -normal
+func _classify(mover: Movement, tank: Tank, at: Vector3, wall_normal: Vector3) -> String:
+	var into := -wall_normal
 	decided.erase("_route_gap")
 	decided.erase("_mesh_gap")
 	# bake: the contact point is on ground the navmesh called clear.
 	var map := tank.get_world_3d().navigation_map if tank.get_world_3d() != null else RID()
 	if map.is_valid() and NavigationServer3D.map_get_iteration_id(map) > 0:
-		var on_mesh := NavigationServer3D.map_get_closest_point(map, point)
-		var mesh_gap := Vector2(point.x - on_mesh.x, point.z - on_mesh.z).length()
+		var on_mesh := NavigationServer3D.map_get_closest_point(map, at)
+		var mesh_gap := Vector2(at.x - on_mesh.x, at.z - on_mesh.z).length()
 		decided["_mesh_gap"] = mesh_gap
 		if mesh_gap < Movement.bake_radius(tank) - BAKE_SLACK_M:
 			return "bake"
@@ -169,7 +213,7 @@ func _classify(mover: Movement, tank: Tank, point: Vector3, normal: Vector3) -> 
 		var path: PackedVector3Array = decided.get("path", PackedVector3Array())
 		if path.size() >= 1:
 			var half_width := float(Movement.hull_box(tank.unit_id)[0]) * 0.5
-			var gap := distance_to_polyline(point, path)
+			var gap := distance_to_polyline(at, path)
 			decided["_route_gap"] = gap
 			if gap < half_width + ROUTE_SLACK_M:
 				return "route"
@@ -188,25 +232,42 @@ func _classify(mover: Movement, tank: Tank, point: Vector3, normal: Vector3) -> 
 	return "plant"
 
 
+## Does the commanded yaw move the contact point INTO the wall? `turn` is the hull's yaw in either gear, and a
+## POSITIVE turn rotates the heading toward the hull's right (`TankMotion.turn_heading`: f + right·θ, right =
+## (-f.z, f.x)), so a point r = (x, z) from the hull centre moves along (-z, x)·sign(turn). Its component along
+## -normal says whether the swing presses it in.
+static func _yaw_drives_into(tank: Tank, at: Vector3, wall_normal: Vector3) -> bool:
+	var turn := float(tank.command.turn) if tank.command != null else 0.0
+	if absf(turn) < 0.05:
+		return false
+	return swing_of(tank.global_position, at, turn).dot(Vector2(-wall_normal.x, -wall_normal.z)) > 0.0
+
+
+## The direction a point at `at` moves when a hull centred at `centre` yaws with command `turn` (unnormalised).
+static func swing_of(centre: Vector3, at: Vector3, turn: float) -> Vector2:
+	var r := Vector2(at.x - centre.x, at.z - centre.z)
+	return Vector2(-r.y, r.x) * signf(turn)
+
+
 ## The declared lane (`Arena.active`'s `lanes`) whose half-width covers `point`, or "". The lanes are converted once
 ## per layout (keyed on the layout dictionary itself, so a test that swaps `Arena.active` is never served stale lanes).
 static var _lanes: Array = []
 static var _lanes_of: Dictionary = {}
 
 
-static func lane_at(point: Vector3) -> String:
+static func lane_at(at: Vector3) -> String:
 	if not is_same(_lanes_of, Arena.active):
 		_lanes_of = Arena.active
 		_lanes = Arena.lanes_of(Arena.active)
 	for entry: Dictionary in _lanes:
-		if distance_to_polyline(point, entry["points"]) <= float(entry["width"]) * 0.5:
+		if distance_to_polyline(at, entry["points"]) <= float(entry["width"]) * 0.5:
 			return String(entry["name"])
 	return ""
 
 
 ## Flat distance from `point` to the polyline `path` (a single point is a degenerate polyline).
-static func distance_to_polyline(point: Vector3, path: PackedVector3Array) -> float:
-	var p := Vector2(point.x, point.z)
+static func distance_to_polyline(at: Vector3, path: PackedVector3Array) -> float:
+	var p := Vector2(at.x, at.z)
 	if path.size() == 1:
 		return p.distance_to(Vector2(path[0].x, path[0].z))
 	var best := INF

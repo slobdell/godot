@@ -180,8 +180,8 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband",
-		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband", "inflate",
+		"minpace", "press", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -253,13 +253,22 @@ static func a1_on() -> bool:
 	return switched_off("a1")
 
 
+## Measurement only: route requests that found the navigation map not synced (each is retried the next tick).
+static var route_not_ready := 0
+
+
 static func route_arms() -> Dictionary:
-	return {"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
+	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
+			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused}
 
 
 static func reset_route_arms() -> void:
+	corners_inflated = 0
+	corners_kept = 0
+	press_escapes = 0
+	route_not_ready = 0
 	clearance_chords = 0
 	clearance_refused = 0
 	a1_replans = 0
@@ -701,6 +710,8 @@ func reset() -> void:
 	_fire_since = -1
 	_unstick_left = 0.0
 	_stuck_time = 0.0
+	_press_time = 0.0
+	_escape_gear = 0.0
 	_repath_left = 0.0
 	stalled_ticks = 0
 	_progress_goal = Vector3.INF
@@ -1708,11 +1719,18 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		# says which it is. For a MOVE the question is also whether the unit can get within its arrive radius of the goal:
 		# a goal inside cover is on its island but NO_PATH_MARGIN+ off the mesh, so it is "no_path" for driving purposes.
 		var route := Pathing.query(tank, here, goal)
-		_path = route["points"]
+		_path = _inflate_corners(route["points"])
 		_reachable = not bool(route["ready"]) or _path.size() < 2 \
 				or (bool(route["reachable"]) and float(route["goal_gap_m"]) <= NO_PATH_MARGIN)
 		_route_reading = route
 		_path_index = 1 if _path.size() >= 2 else _path.size()
+		if not bool(route["ready"]):
+			# Round 10 (combat's relay): a route asked on a frame where the navigation map is not synced (the first
+			# frames of a match, or the frame after a scene reload drained the old regions) came back EMPTY, and the
+			# cadence then drove the hull in a straight line for REPATH_SECONDS before asking again. Ask again next
+			# tick instead: the map is usually ready one or two frames later.
+			_repath_left = 0.0
+			route_not_ready += 1
 	if _path.size() < 2:
 		_path_index = _path.size()
 		return goal
@@ -1768,6 +1786,82 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		if point != Vector3.INF and point != carrot and not _off.has("chord") and not _chord_on_mesh(here, point):
 			point = carrot  # no reachable-and-drivable point further on: take the carrot and the three-point turn
 	return point if point != Vector3.INF else _route_end(goal)
+
+
+## Round 10 (nav item 3b): **corner inflation — the route's corners get the hull's TURNING envelope, not the bake's.**
+## The navmesh is eroded by the bake radius (2.0 m, the static-footprint tier of B5), and a string-pulled route bends
+## exactly ON that erosion edge: every corner of it is 2.0 m from a block's face. A hull whose half-width fits that
+## still hits the face while it TURNS there, because a turning hull sweeps its half-diagonal (the turning-envelope tier:
+## IFV 4.0 m, the Condemned tank 4.5 m, the War Rig 7.2 m). The drive test measured it: the pinned contacts sat at a
+## route gap of 2.1-2.7 m from the block they touched.
+##
+## So each interior corner is pushed OUTWARD along its bisector (away from the obstacle the route bends round, which
+## lies along d_in − d_out's opposite) by `half-diagonal + INFLATE_MARGIN − bake`, capped at half the free ground found
+## along that direction (so in a narrow street the corner is centred, never pushed against the far kerb), and kept only
+## if the corner and both legs to it stay on the navmesh. Clearance tier: TURNING ENVELOPE (B5).
+##
+## Default ON (the default path is where he drives); `--nav-off=inflate` restores the raw route. Arm counters:
+## `corners_inflated` (moved) and `corners_kept` (asked, no room).
+const INFLATE_MARGIN := 0.3
+## Sampling step (metres) along a leg and along the outward probe.
+const INFLATE_STEP := 0.5
+static var corners_inflated := 0
+static var corners_kept := 0
+
+
+func _inflate_corners(path: PackedVector3Array) -> PackedVector3Array:
+	if _off.has("inflate") or path.size() < 3 or not Pathing.enabled or not Pathing.is_ready(ctl.tank):
+		return path
+	var size: Array = hull_box(ctl.tank.unit_id)
+	var extra := Vector2(float(size[0]), float(size[2])).length() / 2.0 + INFLATE_MARGIN - bake_radius(ctl.tank)
+	if extra <= 0.0:
+		return path
+	var map := ctl.tank.get_world_3d().navigation_map
+	var out := path.duplicate()
+	for i in range(1, path.size() - 1):
+		var d_in := Vector2(path[i].x - out[i - 1].x, path[i].z - out[i - 1].z)
+		var d_out := Vector2(path[i + 1].x - path[i].x, path[i + 1].z - path[i].z)
+		if d_in.length_squared() < 0.01 or d_out.length_squared() < 0.01:
+			continue
+		d_in = d_in.normalized()
+		d_out = d_out.normalized()
+		if d_in.dot(d_out) > 0.996:
+			continue  # under 5 degrees: not a corner
+		var outward := (d_in - d_out).normalized()
+		# The free ground along `outward`, in fixed steps (deterministic, bounded): how far the mesh reaches.
+		var free := 0.0
+		var reach := extra * 2.0
+		var t := INFLATE_STEP
+		while t <= reach + 0.001:
+			if not _on_mesh(map, path[i] + Vector3(outward.x, 0.0, outward.y) * t):
+				break
+			free = t
+			t += INFLATE_STEP
+		var shift := minf(extra, free * 0.5)
+		if shift < INFLATE_STEP:
+			corners_kept += 1
+			continue
+		var moved := path[i] + Vector3(outward.x, 0.0, outward.y) * shift
+		if _leg_on_mesh(map, out[i - 1], moved) and _leg_on_mesh(map, moved, path[i + 1]):
+			out[i] = moved
+			corners_inflated += 1
+		else:
+			corners_kept += 1
+	return out
+
+
+static func _on_mesh(map: RID, point: Vector3) -> bool:
+	var near := NavigationServer3D.map_get_closest_point(map, point)
+	return Vector2(near.x - point.x, near.z - point.z).length() <= 0.05
+
+
+static func _leg_on_mesh(map: RID, from: Vector3, to: Vector3) -> bool:
+	var length := Vector2(to.x - from.x, to.z - from.z).length()
+	var steps := maxi(1, ceili(length / INFLATE_STEP))
+	for k in range(1, steps):
+		if not _on_mesh(map, from.lerp(to, float(k) / float(steps))):
+			return false
+	return true
 
 
 ## Where the route runs out: the goal itself, or — when the goal is unreachable — the last point the route reaches
@@ -1896,11 +1990,22 @@ func _remaining_path_distance(goal: Vector3) -> float:
 func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	if _unstick_left > 0.0:
 		_unstick_left -= delta
+		if _escape_gear != 0.0:
+			# Round 10 (item 3a): backing off a wall this hull was PRESSING, away from it and swinging the touching end
+			# clear, until it has put PRESS_BACKOFF_M between itself and where it was pinned. See `_pressing_escape`.
+			cmd.throttle = _escape_gear * PRESS_ESCAPE_THROTTLE
+			cmd.turn = _escape_turn
+			if _unstick_left <= 0.0 or _flat_distance(ctl.tank.global_position, _press_from) >= PRESS_BACKOFF_M:
+				_escape_gear = 0.0
+				_unstick_left = 0.0
+			return
 		if _unstick_pivot:
 			cmd.throttle = 0.0  # no room behind: tracks swing the nose off whatever it is pressed against instead
 		else:
 			cmd.throttle = 1.0 if order.get("reverse", false) else -1.0  # back off the way you were NOT going
 		cmd.turn = 1.0
+		return
+	if String(order.get("type", "")) == "move_to" and _pressing_escape(cmd, delta):
 		return
 	if absf(cmd.throttle) > 0.5 and ctl.tank.estimated_velocity.length() < STUCK_SPEED:
 		_stuck_time += delta
@@ -1919,6 +2024,69 @@ func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 				_ask_behind(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing)
 	else:
 		_stuck_time = 0.0
+
+
+## Round 10 (nav item 3a): **the pressed-wall escape.** The Terminus drive test's longest contacts were hulls held
+## against a block face or a lamp for 30-130 s at a LOW throttle (0.12-0.35: a wheeled hull's minimum creep, a slowing
+## arrival, a tight turn) — below the 0.5 the stall rule above asks for, so nothing ever noticed. The wall-contact
+## reading says exactly what the stall rule was guessing: this hull is touching a wall, it is being asked to move, and
+## it is not getting anywhere (net displacement, not velocity). After PRESS_SECONDS of that it backs away from the wall (PRESS_BACKOFF_M, at most PRESS_ESCAPE_MAX_S), in the gear that
+## moves the touching end off it, yawing so that end swings clear; then the route resumes (and re-plans: it was off it).
+##
+## Default ON, because the default path is where the lead saw it; `--nav-off=press` restores the old rule alone.
+## Arm counter: `press_escapes`. Deterministic: it reads only physics state already produced and the tick's command.
+const PRESS_SECONDS := 0.5
+const PRESS_ESCAPE_THROTTLE := 0.6
+## The escape ends once the hull is this far from where it was pinned, or after PRESS_ESCAPE_MAX_S (a wheeled hull
+## from rest covers under a metre in the stall rule's 0.9 s: measured 0.78 m on the foundry wall).
+const PRESS_BACKOFF_M := 1.5
+const PRESS_ESCAPE_MAX_S := 2.0
+## Less net movement than this over PRESS_SECONDS in wall contact is "pressed" (a hull sliding past a kerb at speed
+## covers metres in that time).
+const PRESS_PROGRESS_M := 0.75
+static var press_escapes := 0
+var _press_time := 0.0
+var _press_from := Vector3.ZERO
+var _escape_gear := 0.0
+var _escape_turn := 0.0
+
+
+func _pressing_escape(cmd: TankCommand, delta: float) -> bool:
+	if _off.has("press"):
+		return false
+	var tank := ctl.tank
+	var asked := absf(cmd.throttle) >= WallContact.THROTTLE_MIN or absf(cmd.turn) >= 0.05
+	if not (contact.touching and asked):
+		_press_time = 0.0
+		return false
+	# Progress is NET DISPLACEMENT over the window, not the hull's velocity: a hull scrubbing along a face keeps a
+	# tangential velocity from the slide while going nowhere (the first version gated on `estimated_velocity` and
+	# fired 0 times on the drive test's 2000-tick pins).
+	if _press_time == 0.0:
+		_press_from = tank.global_position
+	_press_time += delta
+	if _press_time < PRESS_SECONDS:
+		return false
+	var moved := _flat_distance(tank.global_position, _press_from)
+	_press_time = 0.0
+	if moved >= PRESS_PROGRESS_M:
+		return false
+	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
+	var away := Vector2(contact.normal.x, contact.normal.z)
+	var r := Vector2(contact.point.x - tank.global_position.x, contact.point.z - tank.global_position.z)
+	# The gear that moves the hull off the wall: along the normal when the hull faces into or away from it, otherwise
+	# away from the END that is touching (a nose on the wall backs off, a tail on it drives on).
+	var along := forward.dot(away)
+	_escape_gear = signf(along) if absf(along) > 0.2 else (-1.0 if forward.dot(r) > 0.0 else 1.0)
+	# The yaw that swings the touching point away from the wall (WallContact.swing_of: positive turn = clockwise).
+	_escape_turn = 1.0 if WallContact.swing_of(tank.global_position, contact.point, 1.0).dot(away) > 0.0 else -1.0
+	_unstick_left = PRESS_ESCAPE_MAX_S
+	_press_from = tank.global_position
+	_repath_left = 0.0
+	press_escapes += 1
+	cmd.throttle = _escape_gear * PRESS_ESCAPE_THROTTLE
+	cmd.turn = _escape_turn
+	return true
 
 
 ## Ask the friend nearest behind (along `direction`) to give way, so this car has room to back off.

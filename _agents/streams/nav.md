@@ -170,3 +170,24 @@ _(the worker keeps this current)_
    plaza → far ring road, through `Orders`; pre-CP2 numbers first.
 3. Fix by cause, one arm each, with before/after on item 2.
 4. `radius_of` oriented (knob, off). 5. Held wheeled facing (narrowed by B7). 6. The seam, measured first. 7. Stretch.
+
+### The Terminus drive test (item 2): the before row and the table CP2 fills
+
+`make nav-terminus-drive`, builder0, seed 1, 90 s per leg, legs spawn → ring road (-40, 30) → west street (-70, -10) →
+plaza (0, 0) → far ring road (40, -30). The run is deterministic (two runs of one tree byte-identical). Contact counts
+are **unit-ticks with a wall contact** (30 Hz) over observed unit-ticks; arrival is per leg, out of the squad.
+
+| tree | map | squad | arrived per leg | wall-contact unit-ticks (of observed) | by cause | hull-hull |
+|---|---|---|---|---|---|---|
+| `95ae1ce6` (instrument only) | pre-CP2 | mixed ×6 | 5, 5, 6, 4 | 7866 / 39472 | steer 6529, plant 1301 (drift 1075, sweep 226), avoid 36 | 3398 |
+| `95ae1ce6` | pre-CP2 | rigs ×4 | 1, 1, 0, 0 | 15691 / 24463 | plant 8893 (drift 8541, sweep 352), steer 6790, avoid 7, route 1 | 8620 |
+
+(The sweep/drift split was read with the corrected yaw sign on the same run: it is deterministic.)
+
+**What it names (pre-CP2), longest episodes:** mixed — an IFV nose-in to Block_1's ring-road face for 2232 ticks and
+to Block_7 for 1889, the lancer against Block_0 for 1766, all at throttle 0.12–0.35, route gap 2.2–2.7 m (the route
+runs on the bake's erosion edge, 2.0 m from the face); rigs — one rig pinned beside Floodlight_44 on the ring road for
+7839 ticks (a lamp in the lane: CP2's R3 moves it), one nose-in to Container40_19 on the avenue for 2318 (CP2 clears
+it), one against Block_6 for 2215. **Two nav causes:** (a) nothing notices a hull pressed on a wall at low throttle
+(the stall rule wants |throttle| > 0.5); (b) route corners sit on the static-footprint edge while a turning hull needs
+its turning envelope (arena's reading of the block pins agrees: bake and physics agree where the wall is).
