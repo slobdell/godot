@@ -21,6 +21,14 @@ func _hull(game_match: Match, unit_id: String, at: Vector3, yaw: float) -> Order
 	return ctl
 
 
+## Item 3's arms are opt-in (`--nav-off=<name>` turns them ON): select exactly `names` for this test.
+static func _arms(names: Array) -> PackedStringArray:
+	var was := Movement._off
+	Movement._off = PackedStringArray(names)
+	Movement._off_parsed = true
+	return was
+
+
 func _run(seconds: float) -> void:
 	for frame in int(SimClock.TICK_RATE * seconds):
 		await tree.physics_frame
@@ -113,6 +121,7 @@ func test_polyline_distance() -> void:
 ## Item 3a's positive control: a hull ordered (`direct`, so no route bends it away) at a point BEHIND the wall presses
 ## into it and gets nowhere. The pressed-wall escape must fire, and back it off the wall.
 func test_a_hull_pressed_on_a_wall_backs_off() -> void:
+	var was := _arms(["press"])
 	WallContact.reset()
 	var fired := Movement.press_escapes
 	await ArenaFixture.build(self, "foundry")
@@ -129,8 +138,47 @@ func test_a_hull_pressed_on_a_wall_backs_off() -> void:
 			nearest = minf(nearest, gap)
 		if nearest < INF:
 			backed = maxf(backed, gap - nearest)
+	Movement._off = was
 	print("MEASURE press_escape: escapes %d, contacts %d, backed off %.2f m after touching" % [
 			Movement.press_escapes - fired, WallContact.ticks, backed])
 	assert_true(WallContact.ticks > 0, "the hull reached the wall (%d contact ticks)" % WallContact.ticks)
 	assert_true(Movement.press_escapes > fired, "the escape fired (%d)" % (Movement.press_escapes - fired))
 	assert_true(backed > 1.0, "and the hull backed away from the face after touching it (%.2f m)" % backed)
+
+
+## Item 3c: a hull sent to a point hard against a wall (inside the bake's erosion band, so the route ends on the mesh
+## edge 2.0 m from the face) with a tight arrive radius. The CONTROL (arm off) must press the face for most of the
+## order, or the treatment below proves nothing.
+func _nose_run(arms: Array) -> Dictionary:
+	var was := _arms(arms)
+	WallContact.reset()
+	var escapes := Movement.press_escapes
+	var stops := Movement.nose_stops
+	await ArenaFixture.build(self, "foundry")
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	# Facing the wall (-Z), 14 m north of it, sent to 0.5 m off its north face, arriving within 0.5 m. A TRACKED hull:
+	# a wheeled one settles a share of its turning circle short (`Movement.settle_radius`) and never gets there, which
+	# is how the first version of this control read 0 contacts. The tank is 8.62 m long: its nose is 4.3 m ahead of
+	# the centre that the route brings to the mesh edge, 2.0 m from the face.
+	var ctl := _hull(game_match, "tank", WALL_AT + Vector3(0, 0, 14.0), 0.0)
+	ctl.set_orders({"type": "move_to", "x": WALL_AT.x, "z": WALL_AT.z + 1.25, "arrive": 0.5}, {"type": "hold_fire"})
+	await _run(8.0)
+	var state := Movement.state(ctl.tank)
+	Movement._off = was
+	var out := {"contacts": WallContact.ticks, "stops": Movement.nose_stops - stops,
+			"escapes": Movement.press_escapes - escapes, "phase": state.get("phase"), "by": state.get("blocked_by")}
+	print("MEASURE nose_stop %s: %s" % [arms, out])
+	return out
+
+
+func test_nose_stop_control_a_hull_sent_against_a_wall_presses_it() -> void:
+	var out := await _nose_run([])
+	assert_true(int(out["contacts"]) > 30, "without the arm the nose presses the face (%d contact ticks)" % out["contacts"])
+	assert_eq(int(out["stops"]), 0, "and the arm never ran")
+
+
+func test_a_nose_on_the_wall_at_the_end_of_the_route_stops() -> void:
+	var out := await _nose_run(["nosestop"])
+	assert_true(int(out["stops"]) > 0, "the nose stop held the hull (%d)" % out["stops"])
+	assert_true(int(out["contacts"]) <= 10, "it touched the face briefly, not for the order's length (%d ticks)" % out["contacts"])

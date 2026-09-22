@@ -171,23 +171,30 @@ _(the worker keeps this current)_
 3. Fix by cause, one arm each, with before/after on item 2.
 4. `radius_of` oriented (knob, off). 5. Held wheeled facing (narrowed by B7). 6. The seam, measured first. 7. Stretch.
 
-### The Terminus drive test (item 2): the before row and the table CP2 fills
+### The Terminus drive test (item 2): before/after, pre-CP2 and CP2
 
 `make nav-terminus-drive`, builder0, seed 1, 90 s per leg, legs spawn → ring road (-40, 30) → west street (-70, -10) →
-plaza (0, 0) → far ring road (40, -30). The run is deterministic (two runs of one tree byte-identical). Contact counts
-are **unit-ticks with a wall contact** (30 Hz) over observed unit-ticks; arrival is per leg, out of the squad.
+plaza (0, 0) → far ring road (40, -30). Deterministic (two runs of one tree byte-identical). Contacts = **unit-ticks
+with a wall contact** (30 Hz) of observed unit-ticks; arrival per leg (within 7 m of the crew's own slot, order done).
+"arms" = item 3's `press,inflate` (pressed-wall escape, corner inflation), proven applied by their counters.
 
-| tree | map | squad | arrived per leg | wall-contact unit-ticks (of observed) | by cause | hull-hull |
-|---|---|---|---|---|---|---|
-| `95ae1ce6` (instrument only) | pre-CP2 | mixed ×6 | 5, 5, 6, 4 | 7866 / 39472 | steer 6529, plant 1301 (drift 1075, sweep 226), avoid 36 | 3398 |
-| `95ae1ce6` | pre-CP2 | rigs ×4 | 1, 1, 0, 0 | 15691 / 24463 | plant 8893 (drift 8541, sweep 352), steer 6790, avoid 7, route 1 | 8620 |
+| map | tree | arms | squad | arrived per leg | contacts / observed | by cause | top colliders (steer) | hull-hull |
+|---|---|---|---|---|---|---|---|---|
+| pre-CP2 | `95ae1ce6` | off | mixed ×6 | 5, 5, 6, 4 | 7866 / 39472 | steer 6529, plant 1301, avoid 36 | Block_1 2279, Block_7 1890, Block_0 1766 | 3398 |
+| pre-CP2 | `95ae1ce6` | off | rigs ×4 | 1, 1, 0, 0 | 15691 / 24463 | plant 8893, steer 6790, avoid 7, route 1 | Container40_19 2326, Block_6 2215, Block_1 1960 (plant: Floodlight_44 7839) | 8620 |
+| CP2 | `c91d8039` | off | mixed ×6 | 5, 3, 6, 4 | **4957** / 36146 | steer 4632, plant 306, avoid 19 | Block_1 2384, Block_7 2184, Floodlight_35 52 | 6123 |
+| CP2 | `c91d8039` | off | rigs ×4 | 2, 2, 1, 3 | **8139** / 23349 | steer 6200, plant 1864, avoid 75 | Block_1 3929, Floodlight_31 2150, Block_0 58 | 9518 |
+| CP2 | `c91d8039` | ON (56 / 67 escapes, 231 / 278 corners) | mixed ×6 | 5, 4, 6, 4 | **1575** / 33298 | steer 954, plant 618, avoid 3 | Block_7 394, Block_1 306, Container40_8 196 | 5999 |
+| CP2 | `c91d8039` | ON | rigs ×4 | 1, 3, 2, 3 | **3839** / 26599 | plant 2599, steer 1165, avoid 75 | Block_1 486, Floodlight_31 313, Block_0 255 | 8092 |
 
-(The sweep/drift split was read with the corrected yaw sign on the same run: it is deterministic.)
+**CP2 alone: −37 % (mixed), −48 % (rigs). The arms on top: −68 % / −53 %.** Still short of the bar (zero contacts for
+the mixed squad, every unit arriving). What remains is mostly a hull at the END of a route that lies on the mesh edge
+against a kerb, its slot 8–14 m away (probably off the mesh: the miss report now prints `reachable` and the slot's
+off-mesh gap, for squad) — item 3c, the nose stop, is that row.
 
-**What it names (pre-CP2), longest episodes:** mixed — an IFV nose-in to Block_1's ring-road face for 2232 ticks and
-to Block_7 for 1889, the lancer against Block_0 for 1766, all at throttle 0.12–0.35, route gap 2.2–2.7 m (the route
-runs on the bake's erosion edge, 2.0 m from the face); rigs — one rig pinned beside Floodlight_44 on the ring road for
-7839 ticks (a lamp in the lane: CP2's R3 moves it), one nose-in to Container40_19 on the avenue for 2318 (CP2 clears
-it), one against Block_6 for 2215. **Two nav causes:** (a) nothing notices a hull pressed on a wall at low throttle
-(the stall rule wants |throttle| > 0.5); (b) route corners sit on the static-footprint edge while a turning hull needs
-its turning envelope (arena's reading of the block pins agrees: bake and physics agree where the wall is).
+**The arms are OPT-IN (inverted switches, like `a7`) until their own A/B clears**, because default-on at `c91d8039`
+they reddened two `test_tactics_elements` tests (bisected: corner inflation delays the element's drive north; the
+dragged-heading hold is under bisection) and moved the sim baseline. **The sim baseline's one pre-registered cause is
+the not-ready route retry** (combat's relay): hash with arms off = `7574ac017c17265b` (builder0), vs recorded
+`1ea332e7bc268d2a`; per-arm hashes: `--nav-off=press` → `630c4d0f0227bdc7`, `inflate` → `53ae702d4f43e232`
+(each arm moves it on its own too; `make nav-sim-arms`).
