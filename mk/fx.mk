@@ -198,3 +198,18 @@ rim-pair: import ## Feel: the per-faction hull rim, show off/on x rim off/on, on
 		grep -E '^SIZE_LOOK_ARMY|SCRIPT ERROR' $(BUILD_DIR)/rim-pair/$$arm/log.txt | sed "s/^/$$arm: /" || true; \
 		test -f $(BUILD_DIR)/rim-pair/$$arm/army.png || { echo "rim-pair FAILED: no frame for $$arm"; exit 1; }; \
 	done
+
+.PHONY: lane-pair
+# B10 / C11 (round 10): the lane markings as a PAIR at his pose on the Terminus (one variable: --no-lane-marks), the
+# army framed at 21 deg / 49 m / FOV 35 at the start -- his opening view. Needs a display: `make remote T=lane-pair`.
+lane-pair: import ## Feel: kerb paint, centre dashes and junction pools off/on at his pose -> build/lane-pair/<arm>/army.png (needs a display; ARENA=terminus)
+	rm -rf $(BUILD_DIR)/lane-pair && mkdir -p $(BUILD_DIR)/lane-pair
+	@for arm in marks nomarks; do \
+		flags=""; case $$arm in nomarks) flags="--no-lane-marks";; esac; \
+		mkdir -p $(BUILD_DIR)/lane-pair/$$arm; \
+		timeout 300 $(GODOT) --path . --resolution $(SIZE_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
+			--arena=$(or $(ARENA),terminus) --size-look=$(CURDIR)/$(BUILD_DIR)/lane-pair/$$arm --size-look-lengths=14 $$flags \
+			> $(BUILD_DIR)/lane-pair/$$arm/log.txt 2>&1 || true; \
+		grep -E '^SIZE_LOOK_ARMY|SCRIPT ERROR' $(BUILD_DIR)/lane-pair/$$arm/log.txt | sed "s/^/$$arm: /" || true; \
+		test -f $(BUILD_DIR)/lane-pair/$$arm/army.png || { echo "lane-pair FAILED: no frame for $$arm"; exit 1; }; \
+	done
