@@ -217,6 +217,16 @@ instance-uniform errors 0 / 0, real lights 1 / 1. Re-run `make show-perf-layer` 
   and per-phase GPU swung 8–17 ms inside EACH run (the no_show layer read +0.42 ms before, −1.29 ms after: noise, not
   a speed-up). A quiet-box re-measure is owed.
 
+- **Round-9 leftovers, fixed at `b5f95d14` — GREEN** (builder0: `1572 passed, 0 failed`, `18 targets, all passed`,
+  `>> remote: make check show-decisions exited 0`, sim-baseline unmoved). (a) The no-strobe arm keeps the strobe's own
+  1.6 s period (one variable): band swing **23.5 % strobe vs 13.7 % breathe**, full frame 8.8 % vs 5.3 %, 38 vehicles
+  in both 30 fps clips — the pair now discriminates (round 9's arm changed the tempo too). (b) Parapet vs outline on
+  a FIXED heading (`--show-look-fixed-heading`, both at 21°): outline band luma **+3.2 % to +7.9 %** over parapet
+  (wide idle 0.1605 → 0.1732, battle 0.1776 → 0.1832), against a ~1.4 % null — discriminates again (round 9, swept:
+  0.00–0.35 %). Frames and clips: `build/show-decisions/` (`strobe_on.mp4`, `strobe_off.mp4`, `*_outline.png`).
+  Still open from item 6: the three luminance reds (moot: the round-9 frames they came from are superseded by the
+  pixel layer, whose numbers are above), the mood clips re-shot as `build/show-clips/` (done, 30 fps).
+
 ### Requests to other streams
 
 - **feel (owner of `game/audio/match_mood.gd`):** a public read of how many `control_changed` events the mood has

@@ -156,7 +156,7 @@ func test_softening_the_strobes_changes_only_the_strobes() -> void:
 	# loaded book rather than shipping a second one that could drift.
 	var before := ShowCues.load_book(BOOK)
 	var after := ShowCues.load_book(BOOK)
-	after.soften_strobes(6.0)
+	after.soften_strobes()
 	var softened := 0
 	var untouched := 0
 	for state: Variant in before.states:
@@ -169,7 +169,8 @@ func test_softening_the_strobes_changes_only_the_strobes() -> void:
 			if str(was.get("programme", "")) == "strobe":
 				softened += 1
 				assert_eq(str(now["programme"]), "breathe", "%s/%s is a breathe now" % [state, channel])
-				assert_near(float(now["period"]), 6.0, 0.001, "%s/%s took the new period" % [state, channel])
+				assert_near(float(now["period"]), float(was["period"]), 0.001,
+						"%s/%s keeps the strobe's own period: the arms differ in sharpness only" % [state, channel])
 				assert_near(float(now.get("floor", -1.0)), float(was.get("floor", -1.0)), 0.0001,
 						"%s/%s keeps its floor: the arms differ in the PROGRAMME, not the band" % [state, channel])
 				assert_near(float(now.get("ceiling", -1.0)), float(was.get("ceiling", -1.0)), 0.0001,
