@@ -355,7 +355,10 @@ func build(_builder: ColorMeshBuilder) -> void:
 
 func _apply_skin() -> void:
 	var paint := Color(paint_color, paint_strength) if paint_color.a > 0.0 else Color(1, 1, 1, 0)
-	UnitSkin.dress(skinned, team_color, paint, heat if part == "cannon" else 0.0)
+	var tank := _tank()
+	var unit_id := str(tank.get("unit_id")) if tank != null and tank.get("unit_id") != null else ""
+	var faction := str(Units.PROFILES[unit_id].get("faction", "")) if Units.PROFILES.has(unit_id) else ""
+	UnitSkin.dress(skinned, team_color, paint, heat if part == "cannon" else 0.0, faction)
 
 
 ## Union of the model's mesh AABBs, in this node's space.

@@ -15,6 +15,23 @@ const HEAT_LEVELS := 8
 const DEFAULT_TEAM := Color(0.75, 0.75, 0.8)
 const SOURCES_META := &"unit_skin_sources"
 
+## Feel (round 10, backlog 4; round 9's recommendation): A FAINT RIM PER FACTION. Dark hulls between the lamp pools were
+## carried only by their selection rings; the shader's rim was one cool blue for every vehicle. Each faction's rim is
+## now its own colour with the team as a lighter hint on top (`rim_team` 0.55 -> 0.3: friend/foe is still on the
+## silhouette, and carried by the ring and the neon), and a little stronger (0.3 -> 0.4). Colours from art_direction.md's faction looks: the Condemned's hazard amber, the gangs'
+## magenta, Law's police blue, the Syndicate's ivory. `--no-faction-rim` restores the old rim for the A/B pair.
+const FACTION_RIM := {
+	"condemned": Color(1.0, 0.62, 0.22),
+	"gangs": Color(1.0, 0.38, 0.78),
+	"law": Color(0.42, 0.62, 1.0),
+	"syndicate": Color(0.92, 0.94, 1.0),
+}
+## First pass at 0.5 with the shader's 0.55 team mix washed whole panels yellow-green on a green-team Condemned hull at
+## his pose (rim-pair, builder0, 010456f5): not faint. The faction colour now carries the rim and the team is a hint.
+const FACTION_RIM_STRENGTH := 0.4
+const FACTION_RIM_TEAM := 0.3
+static var faction_rim_enabled := not LaunchFlags.from_environment().has("no-faction-rim")
+
 ## key → WeakRef(ShaderMaterial): a material is freed with the last vehicle wearing it (a strong static cache leaks at exit).
 static var _materials: Dictionary = {}
 
@@ -44,14 +61,14 @@ static func apply(model: Node) -> Array[MeshInstance3D]:
 
 
 ## Put every dressed surface in the shared material for this team, paint (`paint.a` = strength, 0 = none) and heat (0..1).
-static func dress(instances: Array[MeshInstance3D], team: Color, paint: Color, heat: float) -> void:
+static func dress(instances: Array[MeshInstance3D], team: Color, paint: Color, heat: float, faction := "") -> void:
 	var level := heat_level(heat)
 	for instance in instances:
 		var sources: Array = instance.get_meta(SOURCES_META, [])
 		for surface in sources.size():
 			if sources[surface] == null:
 				continue
-			var material := material_for(sources[surface] as BaseMaterial3D, team, paint, level)
+			var material := material_for(sources[surface] as BaseMaterial3D, team, paint, level, faction)
 			if instance.get_surface_override_material(surface) != material:
 				instance.set_surface_override_material(surface, material)
 
@@ -60,8 +77,11 @@ static func heat_level(heat: float) -> int:
 	return clampi(roundi(heat * HEAT_LEVELS), 0, HEAT_LEVELS)
 
 
-static func material_for(source: BaseMaterial3D, team := DEFAULT_TEAM, paint := Color(1, 1, 1, 0), level := 0) -> ShaderMaterial:
-	var key := "%d|%s|%s|%d" % [source.albedo_texture.get_instance_id(), team.to_html(), paint.to_html(), level]
+static func material_for(source: BaseMaterial3D, team := DEFAULT_TEAM, paint := Color(1, 1, 1, 0), level := 0,
+		faction := "") -> ShaderMaterial:
+	var rim_faction := faction if faction_rim_enabled and FACTION_RIM.has(faction) else ""
+	var key := "%d|%s|%s|%d|%s" % [source.albedo_texture.get_instance_id(), team.to_html(), paint.to_html(), level,
+			rim_faction]
 	if _materials.has(key):
 		var cached := (_materials[key] as WeakRef).get_ref() as ShaderMaterial
 		if cached != null:
@@ -84,5 +104,10 @@ static func material_for(source: BaseMaterial3D, team := DEFAULT_TEAM, paint := 
 	material.set_shader_parameter("team_color", team)
 	material.set_shader_parameter("paint", paint)
 	material.set_shader_parameter("heat", float(level) / HEAT_LEVELS)
+	if rim_faction != "":
+		var rim: Color = FACTION_RIM[rim_faction]
+		material.set_shader_parameter("rim_color", Vector3(rim.r, rim.g, rim.b))
+		material.set_shader_parameter("rim_strength", FACTION_RIM_STRENGTH)
+		material.set_shader_parameter("rim_team", FACTION_RIM_TEAM)
 	_materials[key] = weakref(material)
 	return material

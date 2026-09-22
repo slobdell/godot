@@ -64,6 +64,12 @@ var _control_changes := 0
 var _reasons := PackedStringArray()
 
 
+## How many times the control point has changed hands this match (show reads it for its capture beats; it read the
+## private field through get() before this accessor existed).
+func control_changes() -> int:
+	return _control_changes
+
+
 func _init(team: String = "green") -> void:
 	point_of_view = team
 

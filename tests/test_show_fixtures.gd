@@ -107,8 +107,18 @@ func test_every_show_uniform_defaults_to_the_value_that_changes_nothing() -> voi
 				# whole ripple term is exactly zero until the first kill.
 				assert_eq(default, Vector4.ZERO, "%s: %s starts with no event at all" % [path, uniform])
 				continue
+			if uniform.ends_with("_wave"):
+				# Not a channel: a programme's spatial shape (round 10). Zero is "no wave": every instance on its own
+				# phase, exactly as before waves existed.
+				assert_eq(default, Vector4.ZERO, "%s: %s starts with no wave" % [path, uniform])
+				continue
+			if uniform == "show_pixel_focus":
+				# Not a channel: (block, facade, map_live, 0). -1 is "every block, every facade"; map_live 0 means the
+				# per-window map is never read until the CPU writes something into it.
+				assert_eq(default, Vector4(-1, -1, 0, 0), "%s: %s focuses nothing and reads no map" % [path, uniform])
+				continue
 			found += 1
-			var expected := Show.identity_for(&"edge" if uniform == "show_edge" else &"level")
+			var expected := Show.identity_for(&"edge" if uniform in ["show_edge", "show_pixel"] else &"level")
 			assert_eq(default, expected, "%s: %s defaults to %s, not the identity %s" % [path, uniform, default, expected])
 		assert_true(found > 0, "%s declares at least one show vec4 uniform" % path)
 		assert_true(source.contains("uniform float show_color_mix = 0.0;"),

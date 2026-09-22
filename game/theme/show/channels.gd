@@ -57,6 +57,11 @@ var color_mix := 0.0
 ## touched this channel, which is what keeps an idle show a pure function of frame time -- the property
 ## `make show-frames` relies on to give the same strip on any machine.
 var clock_offset := 0.0
+## The SPATIAL half of a programme, for a fixture whose instances have a position the shader knows (the windows of a
+## city block, round 10): (radians per storey, radians per metre along the facade, scatter 0..1 of TAU by the
+## instance's hash, clock-rate jitter 0..1). Zero is "every instance on the block's own phase", i.e. no wave. Written
+## beside the channel as `<uniform>_wave`, and only on a frame where it changed.
+var wave := Vector4.ZERO
 
 
 static func from_data(name: StringName, data: Dictionary) -> ShowChannel:
@@ -71,6 +76,8 @@ static func from_data(name: StringName, data: Dictionary) -> ShowChannel:
 	if data.has("color"):
 		channel.color = Color(str(data["color"]))
 	channel.color_mix = float(data.get("color_mix", 1.0 if data.has("color") else 0.0))
+	if data.has("wave"):
+		channel.wave = ShowChannel.wave_from(data["wave"])
 	if channel.programme == &"hold":
 		# A hold IS a floor equal to its ceiling. Saying it in the data rather than as a special case in span() is
 		# what lets a cue blend in and out of a hold without the span popping halfway through the ramp.
@@ -90,7 +97,17 @@ func duplicate_channel() -> ShowChannel:
 	copy.color = color
 	copy.color_mix = color_mix
 	copy.clock_offset = clock_offset
+	copy.wave = wave
 	return copy
+
+
+## A wave from data: {"row": rad/storey, "along": rad/m, "scatter": 0..1, "jitter": 0..1}, every key optional.
+static func wave_from(data: Variant) -> Vector4:
+	if typeof(data) != TYPE_DICTIONARY:
+		return Vector4.ZERO
+	var d: Dictionary = data
+	return Vector4(float(d.get("row", 0.0)), float(d.get("along", 0.0)), float(d.get("scatter", 0.0)),
+			float(d.get("jitter", 0.0)))
 
 
 ## Change the period at frame time `t` without moving the clock: the offset takes up the discontinuity exactly, so

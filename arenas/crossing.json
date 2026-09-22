@@ -1,0 +1,1095 @@
+{
+ "name": "crossing",
+ "schema": 2,
+ "title": "The Crossing",
+ "note": "A river snakes through a canal district and two bridges cross it, each landing on the enemy's bank beside the objective they hold cheaply. Take theirs and you fight at the far end of a bridge they can see; hold yours and you are the kill zone. Tanks force a crossing; artillery owns the water; scouts find the one that is unwatched.",
+ "half_size": 140.0,
+ "fixture": false,
+ "obstacles": [],
+ "props": [
+  {
+   "type": "block",
+   "position": [
+    34.0,
+    33.0
+   ],
+   "rotation_deg": 0.0,
+   "tiers": 2,
+   "setback": 1,
+   "neon": "cyan",
+   "seed": 53
+  },
+  {
+   "type": "block",
+   "position": [
+    -34.0,
+    -33.0
+   ],
+   "rotation_deg": 180.0,
+   "tiers": 2,
+   "setback": 1,
+   "neon": "cyan",
+   "seed": 53
+  },
+  {
+   "type": "block",
+   "position": [
+    -38.0,
+    62.0
+   ],
+   "rotation_deg": 0.0,
+   "tiers": 3,
+   "neon": "magenta",
+   "seed": 61
+  },
+  {
+   "type": "block",
+   "position": [
+    38.0,
+    -62.0
+   ],
+   "rotation_deg": 180.0,
+   "tiers": 3,
+   "neon": "magenta",
+   "seed": 61
+  },
+  {
+   "type": "container_40",
+   "position": [
+    0.0,
+    40.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    0.0,
+    -40.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    24.0,
+    11.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -24.0,
+    -11.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    30.0,
+    4.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -30.0,
+    -4.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -69.0,
+    36.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    69.0,
+    -36.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -106.0,
+    42.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    106.0,
+    -42.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -78.0,
+    42.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    78.0,
+    -42.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    104.0,
+    22.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -104.0,
+    -22.0
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "gangs"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    66.0,
+    34.0
+   ],
+   "rotation_deg": 70.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -66.0,
+    -34.0
+   ],
+   "rotation_deg": 250.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    60.0,
+    6.0
+   ],
+   "rotation_deg": 0.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -60.0,
+    -6.0
+   ],
+   "rotation_deg": 180.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    8.0,
+    64.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -8.0,
+    -64.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    58.0,
+    60.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -58.0,
+    -60.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -86.0,
+    70.0
+   ],
+   "rotation_deg": 20.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    86.0,
+    -70.0
+   ],
+   "rotation_deg": 200.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    92.0,
+    50.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -92.0,
+    -50.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -108.0,
+    36.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    108.0,
+    -36.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    8.0,
+    44.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -8.0,
+    -44.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    -76.0,
+    100.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    76.0,
+    -100.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "arena"
+  },
+  {
+   "type": "sign",
+   "position": [
+    -81.0,
+    88.0
+   ],
+   "rotation_deg": 180.0,
+   "sign": "arena"
+  },
+  {
+   "type": "sign",
+   "position": [
+    81.0,
+    -88.0
+   ],
+   "rotation_deg": 0.0,
+   "sign": "arena"
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -7.5,
+    90.0
+   ],
+   [
+    7.5,
+    90.0
+   ],
+   [
+    -15.0,
+    90.0
+   ],
+   [
+    15.0,
+    90.0
+   ],
+   [
+    -22.5,
+    90.0
+   ],
+   [
+    22.5,
+    90.0
+   ],
+   [
+    -30.0,
+    90.0
+   ],
+   [
+    30.0,
+    90.0
+   ],
+   [
+    -37.5,
+    90.0
+   ],
+   [
+    37.5,
+    90.0
+   ],
+   [
+    -45.0,
+    90.0
+   ],
+   [
+    45.0,
+    90.0
+   ],
+   [
+    -52.5,
+    90.0
+   ],
+   [
+    52.5,
+    90.0
+   ],
+   [
+    -60.0,
+    90.0
+   ],
+   [
+    60.0,
+    90.0
+   ],
+   [
+    -67.5,
+    90.0
+   ],
+   [
+    67.5,
+    90.0
+   ],
+   [
+    0.0,
+    102.0
+   ],
+   [
+    -7.5,
+    102.0
+   ],
+   [
+    7.5,
+    102.0
+   ],
+   [
+    -15.0,
+    102.0
+   ],
+   [
+    15.0,
+    102.0
+   ],
+   [
+    -22.5,
+    102.0
+   ],
+   [
+    22.5,
+    102.0
+   ],
+   [
+    -30.0,
+    102.0
+   ],
+   [
+    30.0,
+    102.0
+   ],
+   [
+    -37.5,
+    102.0
+   ],
+   [
+    37.5,
+    102.0
+   ],
+   [
+    -45.0,
+    102.0
+   ],
+   [
+    45.0,
+    102.0
+   ],
+   [
+    -52.5,
+    102.0
+   ],
+   [
+    52.5,
+    102.0
+   ],
+   [
+    -60.0,
+    102.0
+   ],
+   [
+    60.0,
+    102.0
+   ],
+   [
+    -67.5,
+    102.0
+   ],
+   [
+    67.5,
+    102.0
+   ],
+   [
+    0.0,
+    114.0
+   ],
+   [
+    -7.5,
+    114.0
+   ],
+   [
+    7.5,
+    114.0
+   ],
+   [
+    -15.0,
+    114.0
+   ],
+   [
+    15.0,
+    114.0
+   ],
+   [
+    -22.5,
+    114.0
+   ],
+   [
+    22.5,
+    114.0
+   ],
+   [
+    -30.0,
+    114.0
+   ],
+   [
+    30.0,
+    114.0
+   ],
+   [
+    -37.5,
+    114.0
+   ],
+   [
+    37.5,
+    114.0
+   ],
+   [
+    -45.0,
+    114.0
+   ],
+   [
+    45.0,
+    114.0
+   ],
+   [
+    -52.5,
+    114.0
+   ],
+   [
+    52.5,
+    114.0
+   ],
+   [
+    -60.0,
+    114.0
+   ],
+   [
+    60.0,
+    114.0
+   ],
+   [
+    -67.5,
+    114.0
+   ],
+   [
+    67.5,
+    114.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    7.5,
+    -90.0
+   ],
+   [
+    -7.5,
+    -90.0
+   ],
+   [
+    15.0,
+    -90.0
+   ],
+   [
+    -15.0,
+    -90.0
+   ],
+   [
+    22.5,
+    -90.0
+   ],
+   [
+    -22.5,
+    -90.0
+   ],
+   [
+    30.0,
+    -90.0
+   ],
+   [
+    -30.0,
+    -90.0
+   ],
+   [
+    37.5,
+    -90.0
+   ],
+   [
+    -37.5,
+    -90.0
+   ],
+   [
+    45.0,
+    -90.0
+   ],
+   [
+    -45.0,
+    -90.0
+   ],
+   [
+    52.5,
+    -90.0
+   ],
+   [
+    -52.5,
+    -90.0
+   ],
+   [
+    60.0,
+    -90.0
+   ],
+   [
+    -60.0,
+    -90.0
+   ],
+   [
+    67.5,
+    -90.0
+   ],
+   [
+    -67.5,
+    -90.0
+   ],
+   [
+    0.0,
+    -102.0
+   ],
+   [
+    7.5,
+    -102.0
+   ],
+   [
+    -7.5,
+    -102.0
+   ],
+   [
+    15.0,
+    -102.0
+   ],
+   [
+    -15.0,
+    -102.0
+   ],
+   [
+    22.5,
+    -102.0
+   ],
+   [
+    -22.5,
+    -102.0
+   ],
+   [
+    30.0,
+    -102.0
+   ],
+   [
+    -30.0,
+    -102.0
+   ],
+   [
+    37.5,
+    -102.0
+   ],
+   [
+    -37.5,
+    -102.0
+   ],
+   [
+    45.0,
+    -102.0
+   ],
+   [
+    -45.0,
+    -102.0
+   ],
+   [
+    52.5,
+    -102.0
+   ],
+   [
+    -52.5,
+    -102.0
+   ],
+   [
+    60.0,
+    -102.0
+   ],
+   [
+    -60.0,
+    -102.0
+   ],
+   [
+    67.5,
+    -102.0
+   ],
+   [
+    -67.5,
+    -102.0
+   ],
+   [
+    0.0,
+    -114.0
+   ],
+   [
+    7.5,
+    -114.0
+   ],
+   [
+    -7.5,
+    -114.0
+   ],
+   [
+    15.0,
+    -114.0
+   ],
+   [
+    -15.0,
+    -114.0
+   ],
+   [
+    22.5,
+    -114.0
+   ],
+   [
+    -22.5,
+    -114.0
+   ],
+   [
+    30.0,
+    -114.0
+   ],
+   [
+    -30.0,
+    -114.0
+   ],
+   [
+    37.5,
+    -114.0
+   ],
+   [
+    -37.5,
+    -114.0
+   ],
+   [
+    45.0,
+    -114.0
+   ],
+   [
+    -45.0,
+    -114.0
+   ],
+   [
+    52.5,
+    -114.0
+   ],
+   [
+    -52.5,
+    -114.0
+   ],
+   [
+    60.0,
+    -114.0
+   ],
+   [
+    -60.0,
+    -114.0
+   ],
+   [
+    67.5,
+    -114.0
+   ],
+   [
+    -67.5,
+    -114.0
+   ]
+  ]
+ },
+ "spawn_zones": {
+  "green": {
+   "center": [
+    0.0,
+    102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  },
+  "rust": {
+   "center": [
+    0.0,
+    -102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  }
+ },
+ "lanes": [
+  {
+   "name": "west bridge",
+   "points": [
+    [
+     -70.0,
+     88.0
+    ],
+    [
+     -87.0,
+     44.0
+    ],
+    [
+     -92.0,
+     28.0
+    ],
+    [
+     -92.0,
+     -16.0
+    ],
+    [
+     -60.0,
+     -86.0
+    ]
+   ],
+   "width": 14.0
+  },
+  {
+   "name": "west bridge (far)",
+   "points": [
+    [
+     60.0,
+     86.0
+    ],
+    [
+     92.0,
+     16.0
+    ],
+    [
+     92.0,
+     -28.0
+    ],
+    [
+     87.0,
+     -44.0
+    ],
+    [
+     70.0,
+     -88.0
+    ]
+   ],
+   "width": 14.0
+  }
+ ],
+ "regions": [
+  {
+   "name": "west bridge",
+   "kind": "chokepoint",
+   "position": [
+    -92.0,
+    14.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "west bridge (far)",
+   "kind": "chokepoint",
+   "position": [
+    92.0,
+    -14.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "the east bulge",
+   "kind": "cover_cluster",
+   "position": [
+    76.0,
+    22.0
+   ],
+   "radius": 20.0
+  },
+  {
+   "name": "the east bulge (far)",
+   "kind": "cover_cluster",
+   "position": [
+    -76.0,
+    -22.0
+   ],
+   "radius": 20.0
+  },
+  {
+   "name": "the west quay",
+   "kind": "overlook",
+   "position": [
+    -70.0,
+    40.0
+   ],
+   "radius": 10.0
+  },
+  {
+   "name": "the west quay (far)",
+   "kind": "overlook",
+   "position": [
+    70.0,
+    -40.0
+   ],
+   "radius": 10.0
+  },
+  {
+   "name": "the neck",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    36.0
+   ],
+   "radius": 10.0
+  },
+  {
+   "name": "the neck (far)",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    -36.0
+   ],
+   "radius": 10.0
+  }
+ ],
+ "control_point": {
+  "radius": 16.0
+ },
+ "objectives": [
+  {
+   "name": "the west landing",
+   "position": [
+    -76.0,
+    -22.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "the west landing (far)",
+   "position": [
+    76.0,
+    22.0
+   ],
+   "radius": 14.0
+  }
+ ],
+ "shape": {
+  "kind": "hexagon"
+ },
+ "terrain": [
+  {
+   "kind": "water",
+   "name": "west reach",
+   "rect": [
+    -77.0,
+    14.0,
+    134.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "water",
+   "name": "west reach (far)",
+   "rect": [
+    77.0,
+    -14.0,
+    134.0,
+    24.0
+   ]
+  },
+  {
+   "kind": "water",
+   "name": "the neck",
+   "rect": [
+    0.0,
+    0.0,
+    20.0,
+    52.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "west bridge",
+   "rect": [
+    -92.0,
+    14.0,
+    14.0,
+    34.0
+   ]
+  },
+  {
+   "kind": "bridge",
+   "name": "west bridge (far)",
+   "rect": [
+    92.0,
+    -14.0,
+    14.0,
+    34.0
+   ]
+  }
+ ]
+}

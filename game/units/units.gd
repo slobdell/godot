@@ -170,11 +170,16 @@ const PROFILES := {
 		"blurb": "The armored prison-bus dozer. Heavy cannon on a slow turret; thick front armor.",
 		"cost": 200,
 		"unlock_tier": 0,
-		"hull_size": [2.40, 2.40, 8.62],
-		# S1 (round 9): The lead's own example: "the bus-tanks ... definitely need resizing". A prison bus is a school bus
-		# with the windows welded over.
-		"scale_reference": {"vehicle": "Type D school bus, 40 ft (Blue Bird All American)",
-				"length_m": 12.19, "source": "40 ft = 12.19 m, the standard full-size US school bus"},
+		"hull_size": [2.90, 4.76, 9.70],
+		# R6 (round 10, feel; carve-out, combat reviews; CP3): THE LEAD'S EYE, on the Terminus: "the condemned bus is too
+		# small still. It should be longer than the garbage truck and heightened proportionally." The garbage truck is
+		# `ifv` (7.54 m, 3.70 m tall). Length: a 45 ft coach x K = 9.70 m, 1.29x the truck. Height: the truck's 3.70 x the
+		# same 1.29 = 4.76 m. Width 2.90: a coach is no wider than a truck (the ifv is 2.86); the spawn grid's jitter was
+		# re-derived for it (match.gd). Picked on lineup_bus_*.png at his pose; tests/test_units_bus_eye.gd holds the
+		# two ratios against the ifv's live box. (Round 9: a 40 ft school bus, 2.40 x 2.40 x 8.62, which he ruled too small.)
+		"scale_reference": {"vehicle": "45 ft motor coach, the US prisoner-transport bus (MCI D4505)",
+				"length_m": 13.72, "source": "45 ft = 13.72 m; the MCI D-series is the coach the US Marshals and the Bureau of Prisons run as prison buses",
+				"ruled": "the lead, 2026-09-20: longer than the garbage truck (ifv) and heightened proportionally (R6)"},
 		"max_health": 300,
 		"max_shield": 150,
 		"shield_recharge_delay": 4.0,
@@ -197,6 +202,11 @@ const PROFILES := {
 		# R2: 110 -> 50 (the lead's "slow turret"): a scout crossing at 15 m sweeps ~53°/s, faster than it turns.
 		"turret_turn_rate_deg": 50.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the turret on the ROOF, not buried in the hull (it drew at 1.55-2.11 m inside a 2.40 m
+		# box, then a 4.76 m one). `make turret-probe` (builder0, the 9.70 m box): the roof is flat at 4.71-4.76 m from
+		# z -0.6 to +3.6 and the dozer turret's art stands 0.46 m above its pivot, so its origin goes to 4.72 - 0.46 = 4.26
+		# and the pivot 0.4 m aft of centre, where the turret sits wholly on the flat. [x, y, z]: x right, y up, +z REAR.
+		"turret_mount": [0.0, 4.26, 0.4],
 		"armor": {"front": 8.0, "side": 4.0, "rear": 2.0},
 		"good_vs": ["ifv", "tank"],
 		"weak_vs": ["scout"],
@@ -350,6 +360,9 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 120.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the same buried dozer turret. Probe (builder0): roof flat at 2.36-2.40 m from z -0.4 to +2.6,
+		# the turret art 0.38 m above its pivot: origin 2.37 - 0.38 = 1.99, pivot 0.4 m aft of centre.
+		"turret_mount": [0.0, 1.99, 0.4],
 		# X6 (round 3): plow front 4 -> 6, so it survives the 25 mm while closing on IFVs (Burner > IFV).
 		"armor": {"front": 6.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["ifv", "artillery"],
@@ -438,6 +451,10 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 190.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the gun truck's real machine gun is in the BED (FactionArt.GUN_CUTS "gangs/ifv" now cuts it
+		# out and yaws it); its GunPivot is at z +0.92 in the tank frame (probe, builder0), so the simulated pivot goes under
+		# it and rounds leave from the gun that is drawn. No turret art is drawn, so y stays at the muzzle's pivot height.
+		"turret_mount": [0.0, 1.09, 0.92],
 		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"good_vs": ["scout"],
 		"weak_vs": ["tank"],
@@ -482,6 +499,9 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 60.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the War Rig's cut gun yaws about its GunPivot at z +1.75 (probe, builder0), on the tanker;
+		# the simulated pivot goes under it. No turret art is drawn, so y stays at the muzzle's pivot height.
+		"turret_mount": [0.0, 1.09, 1.75],
 		"armor": {"front": 7.0, "side": 4.0, "rear": 2.0},
 		"good_vs": ["ifv", "tank"],
 		"weak_vs": ["scout"],

@@ -163,7 +163,13 @@ func test_every_shipped_layout_connects_both_bases_and_the_centre() -> void:
 		var arena := await ArenaFixture.build(self, layout_name)
 		var green: Vector3 = Arena.spawn_spot(true, 0)
 		var rust: Vector3 = Arena.spawn_spot(false, 0)
-		for goal: Array in [[rust, 4.0], [Vector3.ZERO, 12.0]]:
+		# What the match is FOUGHT OVER must be reachable: every objective the layout declares, which is the centre
+		# only when it declares none (`Arena.objectives_of`). Round 10 (terrain): the Crossing's centre is a river
+		# and the Pits' a pump house, and a centre nobody fights over has no reason to be reachable.
+		var goals: Array = [[rust, 4.0]]
+		for objective: Dictionary in Arena.objectives_of(Arena.load_layout(layout_name)["layout"]):
+			goals.append([objective["position"], 12.0])
+		for goal: Array in goals:
 			var route := Pathing.find_path(arena, green, goal[0])
 			assert_true(route.size() >= 2 and route[route.size() - 1].distance_to(goal[0]) < goal[1],
 					"%s: green's base reaches %s" % [layout_name, goal[0]])
