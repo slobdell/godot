@@ -118,6 +118,10 @@ const DECK_SEEK_GAIN := 1.4
 const ORBIT_RELOAD_WINDOW := 1.0
 ## cos 45° astern (Armor.ARC_DEG): inside it I see the target's rear.
 const COS_ASTERN := 0.70710678
+## cos 25° astern (Armor.WEAK_SPOT_ARC_DEG): inside it a round strikes the engine deck. A deck-seeking attack run STARTS
+## only inside this cone and breaks once it drifts out of COS_ASTERN (round 10, squad 6b): starting anywhere inside 45°
+## put 25 of 63 hits on the deck (laptop), the rest landing on the rear plate beside it.
+const COS_DECK := 0.90630779
 ## ...when the estimated duel advantage is at least ORBIT_START_ADVANTAGE, and keeps orbiting down to ORBIT_KEEP_ADVANTAGE.
 const ORBIT_START_ADVANTAGE := 0.9
 const ORBIT_KEEP_ADVANTAGE := 0.6
@@ -129,10 +133,11 @@ const ORBIT_BURST_COS := 0.5
 ## ...and swings back out when the gun comes within ~37° (cos 0.8) or it's this close.
 const ORBIT_BREAK_COS := 0.8
 const ORBIT_BREAK_RANGE := 5.0
-## cos and sin of 75°: the orbit steers at a point this far ahead on the circle (constants, no runtime trig); far
-## enough ahead (~13 m) that steering doesn't slow down for arrival.
-const ORBIT_LEAD_COS := 0.259
-const ORBIT_LEAD_SIN := 0.966
+## The orbit controller (round 10, squad 6b): steer this far ahead of the hull (metres; far enough that the mover does
+## not slow for arrival), along the tangent turned by the radius error × ORBIT_RADIAL_GAIN / ORBIT_RADIUS, clamped at
+## 45 deg in or out. Gain 2: at half the radius off the circle the hull is already steering 45 deg back onto it.
+const ORBIT_LOOKAHEAD := 13.0
+const ORBIT_RADIAL_GAIN := 2.0
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
 const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "CLEAR_LANE", "ORBIT", "COVER_FIRE", "SUPPRESS", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Options only a K1 order produces (TankBrain._obey adds them): MOVE (drive to the order's slot), FOLLOW (keep station
@@ -261,6 +266,11 @@ const SHORT_HALT_EXPOSURE := 0.8
 const PEEK_PATIENCE_TICKS := SimClock.TICK_RATE * 4
 ## A target fought from cover stays fresh this long out of sight (a slow reload plus a margin).
 const COVER_FIRE_MEMORY_TICKS := SimClock.TICK_RATE * 8
+## ...and a turret I am CIRCLING stays fresh this long (round 10, squad 6b). An orbit crosses the target's line of sight
+## fast, and combat's acquisition makes that hard to hold: measured (engine-deck scenario, laptop) once the orbit held its
+## radius instead of spiralling onto the flank, the scout lost the contact mid-circle, ORBIT fell out of the ranking at
+## 22 m and the scout drove off to SPOT at 120 m. It knows where the slow hull it is circling is.
+const ORBIT_MEMORY_TICKS := SimClock.TICK_RATE * 4
 ## A bait shows the unit for at most BAIT_OUT_TICKS (or until the target can see it), then ducks back for BAIT_BACK_TICKS
 ## (a shell's flight plus a margin), at most MAX_BAITS times before a real peek.
 const BAIT_OUT_TICKS := SimClock.TICK_RATE * 5 / 6
@@ -948,6 +958,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		# A target I'm fighting from cover stays fresh while I hide through its reload (reload windows).
 		var fresh_ticks := COVER_FIRE_MEMORY_TICKS if features.get("reload_windows", false) \
 				and current.get("option", "") == "COVER_FIRE" and current.get("target", "") == c["name"] else CONTACT_FRESH_TICKS
+		if current.get("option", "") == "ORBIT" and current.get("target", "") == c["name"]:
+			fresh_ticks = ORBIT_MEMORY_TICKS
 		if int(c["age"]) <= fresh_ticks:
 			var reach := 1.0
 			if distance > float(weapon["range"]):
@@ -1647,6 +1659,8 @@ func build_situation() -> Dictionary:
 		"objective_radius": objective_radius,
 		"squad_center": squad_center,
 		"features": features,
+		# The target I am circling, if any (round 10, squad 6b: its contact stays fresh for ORBIT_MEMORY_TICKS).
+		"orbiting": String(choice.get("target", "")) if String(choice.get("option", "")) == "ORBIT" else "",
 		"tactics": tactics,
 		"cover": cover,
 		"cover_fire": cover_fire,
@@ -1713,6 +1727,8 @@ func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary,
 		# A target that ducked out of sight a moment ago is still the fight (hiding breaks our own line of sight too).
 		var fresh_ticks := COVER_FIRE_MEMORY_TICKS if BrainVariants.for_team(tank.team).get("reload_windows", false) \
 				and choice.get("option", "") == "COVER_FIRE" and c["name"] == choice.get("target", "") else CONTACT_FRESH_TICKS
+		if choice.get("option", "") == "ORBIT" and c["name"] == choice.get("target", ""):
+			fresh_ticks = ORBIT_MEMORY_TICKS
 		if int(c["age"]) > fresh_ticks or tank.global_position.distance_to(c["position"]) > reach + 15.0:
 			continue
 		if c["name"] == choice.get("target", ""):
@@ -1836,7 +1852,8 @@ static func matchups_for(s: Dictionary) -> Dictionary:
 	var orbit_rate_deg := rad_to_deg(float(my_profile.get("max_forward_speed", 0.0)) / ORBIT_RADIUS)
 	for c: Dictionary in s["contacts"]:
 		var their_profile := Units.profile(String(c.get("unit", "")))
-		if their_profile.is_empty() or int(c["age"]) > CONTACT_FRESH_TICKS:
+		var fresh := ORBIT_MEMORY_TICKS if String(c["name"]) == String(s.get("orbiting", "")) else CONTACT_FRESH_TICKS
+		if their_profile.is_empty() or int(c["age"]) > fresh:
 			continue
 		var offset := Vector3(c["position"].x - my_position.x, 0.0, c["position"].z - my_position.z)
 		var distance := maxf(offset.length(), 0.1)
@@ -2027,10 +2044,11 @@ func _act(s: Dictionary) -> void:
 			var deck := weak_spots and Matchups.deck_gain(weapon, Units.profile(String(contact.get("unit", "")))) >= DECK_SEEK_GAIN
 			# Its slow gun still reloading (a 5 s cannon): the run is on even with the turret on me.
 			var reloading := weak_spots and _gun_ready_in(String(contact["name"])) >= ORBIT_RELOAD_WINDOW
-			if _bursting and ((gun_on_me > ORBIT_BREAK_COS and not reloading) or distance < ORBIT_BREAK_RANGE):
+			if _bursting and ((gun_on_me > ORBIT_BREAK_COS and not reloading) or distance < ORBIT_BREAK_RANGE \
+					or (deck and hull_on_me > -COS_ASTERN)):
 				_bursting = false
 			elif not _bursting and (gun_on_me < ORBIT_BURST_COS or reloading) and distance <= ORBIT_BURST_RANGE \
-					and (not deck or hull_on_me <= -COS_ASTERN):
+					and (not deck or hull_on_me <= -COS_DECK):
 				_bursting = true
 			if _bursting:
 				# Swing the hull (and the fixed gun) onto it and fire until its turret catches up.
@@ -2045,7 +2063,13 @@ func _act(s: Dictionary) -> void:
 					why = TankBrain._join(why, "for its engine deck")
 					if tangent.dot(hull) > 0.0:
 						tangent = -tangent
-				var point: Vector3 = target_position + (out * ORBIT_LEAD_COS + tangent * ORBIT_LEAD_SIN) * ORBIT_RADIUS
+				# Round 10 (squad 6b): an orbit CONTROLLER, not a point on the circle. Round 9 steered at a point on the
+				# circle 75 deg ahead, which has no idea of the radius error: measured (engine-deck scenario, laptop) the
+				# scout ran straight down the tank's gun from 45 m and then spiralled in to 3-7 m from its centre, onto a
+				# flank 4.3 m out, and never got astern (0 deck hits of 13). Now: along the tangent, turned out or in by the
+				# radius error (clamped at 45 deg), at a look-ahead far enough that the mover does not slow for arrival.
+				var error := clampf((ORBIT_RADIUS - distance) / ORBIT_RADIUS * ORBIT_RADIAL_GAIN, -1.0, 1.0)
+				var point: Vector3 = my_position + (tangent + out * error).normalized() * ORBIT_LOOKAHEAD
 				_order_move(_move_to(point, false, 1.0, 2.0))
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
 		"CLEAR_LANE":

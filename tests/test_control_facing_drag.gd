@@ -171,3 +171,37 @@ func test_the_pin_chevron_reads_as_an_arrow_and_not_a_tick() -> void:
 	print("MEASURE pin_chevron_shape ", JSON.stringify({
 			"pitch_deg": RtsCamera.DEFAULT_PITCH_DEG, "distance_m": 49.0,
 			"nose_ratio": RtsControls.ORDER_FACING_NOSE, "cases": measured}))
+
+
+## Round 10 (item 5a, decided for the lead 2026-09-20): a dragged facing orients the FORMATION across the drawn heading,
+## not along the road it came in on - an emplacement faces its threat. Travel north, drag east: the group's front is to
+## the east. A plain click keeps the shape along the travel.
+func test_a_dragged_facing_turns_the_whole_formation_to_face_it() -> void:
+	var f := await _setup()
+	var three := ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]
+	await f.select(three)
+	var destination := Vector3(LANE_X, 0.0, 0.0)  # 40 m north of the row: the travel is -Z
+	# The front of the shape is its rank 0 (the smallest `back` in each order's slot): it leads toward the facing.
+	await f.right_click(f.ground(destination))
+	assert_true(_front_leads(f, three, Vector2(0, -1)), "a plain click: the front rank leads north, the travel")
+	await f.right_drag(f.ground(destination), f.ground(destination + Vector3(20.0, 0.0, 0.0)))
+	assert_true(_facing(f.orders.current("Green_Alpha_1")).distance_to(Vector2(1, 0)) < 0.1, "the drag faces east")
+	assert_true(_front_leads(f, three, Vector2(1, 0)), "a drag east: the front rank now leads EAST, toward the threat")
+	assert_true(not _front_leads(f, three, Vector2(0, -1)), "and no longer north")
+
+
+## Whether every front-rank unit's goal is at least 2 m further along `way` than every other unit's.
+func _front_leads(f: Fixture, names: Array, way: Vector2) -> bool:
+	var front := INF
+	for unit_name: String in names:
+		front = minf(front, float(f.orders.current(unit_name)["slot"][1]))
+	var lead := INF
+	var rest := -INF
+	for unit_name: String in names:
+		var order := f.orders.current(unit_name)
+		var along := Vector2(float(order["goal"][0]), float(order["goal"][1])).dot(way)
+		if absf(float(order["slot"][1]) - front) < 0.5:
+			lead = minf(lead, along)
+		else:
+			rest = maxf(rest, along)
+	return lead - rest >= 2.0

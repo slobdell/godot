@@ -715,6 +715,9 @@ static var refusals_offered := 0
 static var refusals_applied := 0
 ## Consecutive ticks this hull's yaw has been refused outright: a permanent refusal is a stuck unit, not a fix.
 var yaw_refused_ticks := 0
+## ROUND 10: the longest such run by any hull since a reader last zeroed it. CP4's fourth bar (research B2) is "no run
+## of more than 3 consecutive refused ticks anywhere in five_squads", and a bar needs the quantity it reads.
+static var refused_run_max := 0
 ## OFF BY DEFAULT, AND THE COST COMES BEFORE THE BENEFIT because that is the order it was learned in.
 ##
 ## ⚠ ENABLING THIS STOPS FOUR OF FIVE SQUADS TAKING THEIR FORMATION. Bisected to this one line, one machine,
@@ -784,46 +787,73 @@ func _fitting_forward(have: Vector3, wanted: Vector3) -> Vector3:
 	# So the rule is: a turn may not push the hull DEEPER into geometry than its current heading already is.
 	# A hull in contact can still rotate to equal-or-less penetration, which is how it works itself free.
 	var here := _penetration(have)
+	var traced := not drive_trace.is_empty() and drive_trace.has(String(name))
+	if traced:
+		_trace_yaw_candidate("here", have, have, here, here)
 	# slerp is unstable for an exact reversal (no unique arc), and a reversal is reachable: a hull told to turn about.
 	var reversing := have.dot(wanted) < -0.9999
 	for fraction: float in YAW_FIT_FRACTIONS:
 		var candidate := wanted
 		if fraction < 1.0:
 			candidate = Vector3(have.z, 0.0, -have.x) if reversing else have.slerp(wanted, fraction)
-		if _penetration(candidate) <= here + PENETRATION_SLACK_M:
+		var depth := _penetration(candidate)
+		if traced:
+			_trace_yaw_candidate("%.1f" % fraction, have, candidate, depth, here)
+		if depth <= here + PENETRATION_SLACK_M:
 			if fraction < 1.0:
 				refusals_applied += 1
 			yaw_refused_ticks = 0
 			return candidate
 	refusals_applied += 1
 	yaw_refused_ticks += 1
+	refused_run_max = maxi(refused_run_max, yaw_refused_ticks)
 	return have
 
 
-## ⚠ NOT A MASK ARM. IT IS A DIFFERENT MEASUREMENT, AND IT FREEZES A HULL. `--tune=match.yaw_world=1` was built to
-## ask "does excluding vehicles restore formation", and it cannot answer that, because it does not differ from the
-## default in only the mask: the default arm calls `test_move(..., recovery_as_collision)` and reads
-## `KinematicCollision3D.get_depth()`; this arm calls `collide_shape` and takes the widest point-pair distance.
-## Two APIs, different margin and recovery semantics.
+## ROUND 10, backlog item 1: WHICH collider decides each candidate, and how deep. One line per candidate per tick on a
+## traced hull (`DRIVE_TRACE=<crew>`): the predicate's own number (`test_move`'s depth) and then every contact the
+## same query reports, by name and by depth, so "the deepest contact is a squadmate" is read, not inferred.
+func _trace_yaw_candidate(label: String, have: Vector3, candidate: Vector3, depth: float, here: float) -> void:
+	var params := PhysicsTestMotionParameters3D.new()
+	params.from = Transform3D(Basis.looking_at(candidate, Vector3.UP), global_position)
+	params.motion = Vector3.ZERO
+	params.margin = 0.001
+	params.recovery_as_collision = true
+	params.max_collisions = 6
+	var result := PhysicsTestMotionResult3D.new()
+	var contacts := []
+	var mask := collision_mask
+	if yaw_world_on():
+		collision_mask = Perception.WORLD_MASK
+	var touching := PhysicsServer3D.body_test_motion(get_rid(), params, result)
+	collision_mask = mask
+	if touching:
+		for i in result.get_collision_count():
+			var other: Object = result.get_collider(i)
+			var kind := "tank" if other is Tank else "world"
+			contacts.append("%s[%s] d=%.4f n=(%.2f,%.2f)" % [
+					String((other as Node).name) if other is Node else str(other), kind,
+					result.get_collision_depth(i), result.get_collision_normal(i).x, result.get_collision_normal(i).z])
+	print("YAW_TRACE %-14s tick=%d cand=%s dyaw=%.2fdeg depth=%.4f here=%.4f verdict=%s refused=%d contacts[%d] %s" % [
+			name, Engine.get_physics_frames(), label, rad_to_deg(have.signed_angle_to(candidate, Vector3.UP)), depth,
+			here, "ok" if depth <= here + PENETRATION_SLACK_M else "REFUSE", yaw_refused_ticks, contacts.size(),
+			", ".join(contacts)])
+
+
+## ROUND 10: the WORLD-ONLY arm, rebuilt as a true mask arm (`test_move` in both arms, only the collider set differs:
+## see `_penetration`). Round 9's version of this knob called `collide_shape` instead, moved a corridor that holds no
+## vehicles (1.27 -> 0.70 m) and froze a wall-pinned hull for 30 ticks: two APIs, not one mask, so its results say
+## nothing about the mask and are not carried forward.
 ##
-## The tell, measured: under this arm nav's corridor residual moved from **1.27 m to 0.70 m** -- and that corridor
-## contains **no vehicles at all**, so a pure mask change must be a no-op there. It moved, therefore the METHOD
-## moved it. And the wall case came back `offered 30, applied 30, refused ticks 30, swept 0.0 deg`: a hull frozen
-## solid for 30 ticks, which is nav's N1 breach and the exact failure that ruled out `PENETRATION_SLACK_M = 0.000`.
-## Its `five_squads` pass is uninterpretable for the same reason and does not count as evidence for anything.
-##
-## It is kept selectable because the code is written and the negative is worth reproducing, NOT because it is a
-## candidate. A real mask experiment is `test_move` in BOTH arms with only the collider set differing -- a
-## temporary `collision_mask` swap around the call -- pre-registered with "the corridor must not move" as its own
-## proof that the arm changed only what it claims to.
-##
-## Why it might have to be the default: `test_move` uses the body's own `collision_mask`, and `tank.tscn` has
-## `collision_mask = 3` -- world AND vehicles. So the rule as first written treats **another tank as a wall**, and
-## the whole justification for refusing a yaw is that a wall will not move. A squadmate will. A hull nosed up
-## against a neighbour while settling onto its formation slot is then refused the arrival turn and sits wrong.
-##
-## It is an ARM and not a fix until the pair says so: nav's corridor measurement is unaffected either way (scenery
-## is scenery), so the two arms can only be separated by a case where the contact is a vehicle.
+## WHY THIS IS THE ARM THE PREDICATE IMPLIES (backlog item 1, measured with `YAW_TRACE`, laptop, `2ee65f94`+instrument,
+## five_squads with `TUNE=match.yaw_fit=1`): every refused candidate of every traced crew -- the four freezers AND the
+## seating Alpha_4 -- was refused against a SQUADMATE; the world never appeared once. The freeze is a ratchet into a
+## fixed point: a tracked 8.62 x 2.40 m hull (half-diagonal 4.48 m) in a 6 m row is told to pivot in place (throttle
+## 0, turn -1: its goal is behind it), each accepted small step deepens its corner into the neighbour by up to
+## `PENETRATION_SLACK_M`, and it stops at the one posture where even the 0.3 candidate costs just over the slack
+## (Charlie_3 from tick 1880: here 0.0000, candidates 0.0177 / 0.0104 / 0.0050 m against Green_Charlie_2, byte-identical
+## for 1134 ticks). Nothing translates it out, so the state never changes. A wall does not yield; a squadmate does
+## (`move_and_slide` depenetrates the pair), so refusing a yaw because a VEHICLE is in the way is the defect.
 static var yaw_fit_world := false
 
 
@@ -834,29 +864,22 @@ static func yaw_world_on() -> bool:
 
 
 ## How far this hull would be inside geometry facing `forward` where it stands (0.0 when clear).
+##
+## ROUND 10: the `match.yaw_world` arm is now what round 9 said a mask experiment must be -- the SAME `test_move`
+## query in both arms with only the collider set swapped (this body's `collision_mask` narrowed to the world layer for
+## the duration of the call and restored), so an arm difference can only come from which colliders count. Its proof
+## that it changed nothing else is nav's corridor, which holds no vehicles and must not move between the arms.
 func _penetration(forward: Vector3) -> float:
 	var at := Transform3D(Basis.looking_at(forward, Vector3.UP), global_position)
-	if not yaw_world_on():
-		var hit := KinematicCollision3D.new()
-		if not test_move(at, Vector3.ZERO, hit, 0.001, true):
-			return 0.0
-		return hit.get_depth()
-	if _collision == null or _collision.shape == null:
-		return 0.0
-	# `collide_shape` returns point pairs (on this shape, on the other); the distance between a pair IS the depth,
-	# and the deepest pair is what `KinematicCollision3D.get_depth()` reports in the other arm. Same quantity,
-	# different set of colliders -- which is the only difference the two arms are allowed to have.
-	var params := PhysicsShapeQueryParameters3D.new()
-	params.shape = _collision.shape
-	params.transform = at * _collision.transform
-	params.collision_mask = Perception.WORLD_MASK
-	params.exclude = [get_rid()]
-	params.margin = 0.001
-	var pairs := get_world_3d().direct_space_state.collide_shape(params, 8)
-	var deepest := 0.0
-	for index in range(0, pairs.size() - 1, 2):
-		deepest = maxf(deepest, (pairs[index] as Vector3).distance_to(pairs[index + 1] as Vector3))
-	return deepest
+	var mask := collision_mask
+	var world_only := yaw_world_on()
+	if world_only:
+		collision_mask = Perception.WORLD_MASK
+	var hit := KinematicCollision3D.new()
+	var touching := test_move(at, Vector3.ZERO, hit, 0.001, true)
+	if world_only:
+		collision_mask = mask
+	return hit.get_depth() if touching else 0.0
 
 
 ## CP1: nothing to integrate this tick (see _drive).

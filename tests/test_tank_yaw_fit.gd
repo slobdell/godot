@@ -70,6 +70,7 @@ func _enable() -> void:
 ## files and squad's one.
 func teardown() -> void:
 	Units.tuning.erase("yaw_fit")
+	Units.tuning.erase("yaw_world")
 	await super.teardown()
 
 
@@ -133,6 +134,65 @@ func test_a_hull_against_a_wall_cannot_turn_through_it() -> void:
 	assert_true(_offered() > 0, "setup: the rig is in contact, so the yaw constraint actually ran (%d offers)" % _offered())
 	# Not "it never turns": it may turn as far as it fits. What it may not do is pass through.
 	assert_true(not _overlaps(tank), "the rig does not end a turn inside the crate")
+
+
+## ROUND 10, backlog item 1's mechanism as a test: the five_squads freeze in two hulls. A tracked 8.62 m `tank` (half
+## diagonal 4.48 m) beside a squadmate at five_squads' 6 m pitch is told to pivot in place about -- throttle 0, turn
+## -1, exactly the command `YAW_TRACE` caught the freezers holding for ~1200 ticks, between two squadmates. Returns [longest run of refused
+## ticks, degrees swept] over three seconds.
+func _pivot_beside_a_squadmate(world_only: bool) -> Array:
+	var game_match := await _world()
+	var pivot := game_match.spawn_tank("Green_Pivot_1", 0, Match.Team.GREEN, "tank")
+	pivot.global_position = Vector3(0, 0, 40)
+	pivot.rotation.y = PI
+	# Boxed in on both sides, 0.8 m of air each side (2.40 m hulls at a 3.2 m pitch): one end of a pivoting hull swings
+	# toward each neighbour, so whichever way it turns it meets one. At five_squads' 6 m pitch a hull turning under
+	# throttle drives clear before it touches, and the control would measure nothing.
+	for side in [-1, 1]:
+		var mate := game_match.spawn_tank("Green_Pivot_%d" % (2 if side < 0 else 3), 1 if side < 0 else 2,
+				Match.Team.GREEN, "tank")
+		mate.global_position = Vector3(3.2 * side, 0, 40)
+		mate.rotation.y = PI
+	await wait_physics_frames(2)
+	_enable()
+	Units.tuning["yaw_world"] = 1.0 if world_only else 0.0
+	_mark()
+	var before := -pivot.global_basis.z
+	var longest := 0
+	for tick in SimClock.TICK_RATE * 3:
+		# The freezers' own history (`YAW_TRACE`): a few ticks of turning under throttle first, which puts the hull's
+		# corner onto its neighbour and gives the slide a contact to report -- the constraint only arms on one -- and
+		# then the pure pivot they held for ~1200 ticks. A pivot from rest never reports a contact and is never checked.
+		pivot.command.throttle = 0.3 if tick < 6 else 0.0
+		pivot.command.turn = -1.0
+		await wait_physics_frames(1)
+		longest = maxi(longest, pivot.yaw_refused_ticks)
+	var swept := rad_to_deg(Vector3(before.x, 0, before.z).normalized().angle_to(
+			Vector3(-pivot.global_basis.z.x, 0, -pivot.global_basis.z.z).normalized()))
+	print("MEASURE yaw_fit_squadmate world_only=%s swept %.1f deg in 3 s, longest refused run %d ticks, offered %d applied %d" % [
+			world_only, swept, longest, _offered(), _applied()])
+	return [longest, swept]
+
+
+## The positive control: with vehicles counted as walls the pivot ratchets into the fixed point and stays there. If
+## this ever passes as "not frozen", the test below has stopped measuring anything.
+func test_a_squadmate_counted_as_a_wall_freezes_a_pivot() -> void:
+	var got := await _pivot_beside_a_squadmate(false)
+	assert_true(int(got[0]) > 3, "vehicles in the yaw mask: the pivot freezes against its squadmate (longest refused run %d ticks, swept %.1f deg)" % [got[0], got[1]])
+
+
+## The fix the mechanism implies: a squadmate yields (the slide depenetrates the pair), a wall does not, so only the
+## world may refuse a yaw. CP4's fourth bar (research B2): no run of more than 3 consecutive refused ticks.
+func test_a_squadmate_does_not_freeze_a_pivot_under_the_world_mask() -> void:
+	var got := await _pivot_beside_a_squadmate(true)
+	assert_true(int(got[0]) <= 3, "world-only mask: no refused run over 3 ticks (longest %d)" % got[0])
+	assert_true(float(got[1]) > 90.0, "and the hull actually turns about (%.1f deg in 3 s)" % got[1])
+
+
+## The world-only mask must keep what the constraint is FOR: the rig against the crate still cannot turn through it.
+func test_the_world_mask_still_stops_a_turn_through_a_wall() -> void:
+	Units.tuning["yaw_world"] = 1.0
+	await test_a_hull_against_a_wall_cannot_turn_through_it()
 
 
 ## True when the hull is overlapping world geometry where it stands. NOT named `test_*`: the runner collects every

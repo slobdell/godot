@@ -198,6 +198,8 @@ var handback_seconds := HANDBACK_SECONDS
 var vision_inset := VISION_FRAME_INSET
 ## Off: the vision camera never takes the view back (V in play).
 var auto_frame := true
+## Round 10: the vision frame could not hold every framed vehicle at this pose (CameraReadout says "column too long").
+var frame_short := false
 var auto_frame_max_m := AUTO_FRAME_MAX_M
 ## Round 7 (A), the lead: "the camera's yaw orientation should match the intended facing position of the squad or
 ## selected unit - this is what I think can differentiate us from a normal RTS game." `facing` returns the selection's
@@ -1037,6 +1039,14 @@ func _update_vision_tracking() -> void:
 				float(_vision_state.get("pad_m", 0.0)))
 	zoom = minf(minf(float(goal[1]), vision_zoom), RtsCamera.level_for(auto_frame_max_m))
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
+	frame_short = RtsCamera.cuts_off(points, focus, yaw, zoom, _aspect(), pitch)
+
+
+## Round 10 (control stretch): whether a camera at this pose leaves any of `points` off the whole screen. At the lowest
+## tilts a long column cannot be framed at all (round 9 measured ~70 m at 8°: the ground is nearly edge-on); the
+## readout says so instead of the camera pretending it has them. Pure, for tests.
+static func cuts_off(points: Array, at: Vector3, heading: float, level: float, aspect: float, pitch_deg := DEFAULT_PITCH_DEG) -> bool:
+	return not points.is_empty() and not RtsCamera.shows_all(points, at, heading, level, aspect, 1.0, pitch_deg)
 
 
 ## Shift a frame centre up the screen by `amount` of the screen's half-height, so the HUD's command card does not

@@ -155,6 +155,7 @@ def main():
                 failures.append(str(err))
                 continue
             faction, other = (green, rust) if first_is_green else (rust, green)
+            result["_seed"] = seed  # the seed as this tool asked for it, for the paired comparison
             outcomes.setdefault((faction, other), []).append((result, first_is_green))
 
     rows = [summarize(faction, other, results) for (faction, other), results in sorted(outcomes.items())]
@@ -179,6 +180,15 @@ def main():
                          for _pairing, results in outcomes.items() for result, _green in results
                          for got in [result.get("controls") or {}]
                          for key, value in want.items() if got.get(key) != value})
+    # Round 10 (combat, C6): the same adherence for `--tune`. Each `owner.key=value` the invocation asked for must be
+    # in the tuning the match READ (`controls.tuning`); a match knob is stored under its bare key (`hull_disc_lof`).
+    for pair in filter(None, args.tune.split(",")):
+        path, _, value = pair.partition("=")
+        key = path.split(".", 1)[1] if path.startswith("match.") else path
+        mismatched.extend(sorted({f"tune {path}={(result.get('controls') or {}).get('tuning', {}).get(key)} "
+                                  f"(asked for {value})"
+                                  for _pairing, results in outcomes.items() for result, _green in results
+                                  if (result.get("controls") or {}).get("tuning", {}).get(key) != float(value)}))
     if mismatched:
         print("REFUSED: the runs did not carry the controls this invocation asked for -- both arms are the same arm:")
         for line in mismatched[:5]:
@@ -254,8 +264,15 @@ def main():
         print("  FAILED: " + failure)
     if args.json:
         with open(args.json, "w") as handle:
+            # `games`: every match by seed and colour, so two arms on the same seed list can be compared PAIRED
+            # (tools/paired_arms.py, research C6) instead of as two pooled rates.
+            games = [{"faction": faction, "other": other, "seed": seed, "first_is_green": first_is_green,
+                      "winner": result["winner"].lower()}
+                     for (faction, other), results in sorted(outcomes.items())
+                     for result, first_is_green in results for seed in [result["_seed"]]]
             json.dump({"run": run_conditions.describe(), "args": vars(args),
-                       "factions_resolved": resolved_factions, "rows": rows, "failures": failures},
+                       "factions_resolved": resolved_factions, "rows": rows, "failures": failures,
+                       "games": games},
                       handle, indent=2)
     sys.exit(1 if failures else 0)
 

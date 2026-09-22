@@ -3,7 +3,7 @@
 # No target here calls ElevenLabs except announcer-generate APPROVED=1 (lead gate 2: the text is approved first).
 
 .PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-variance announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate \
-        announcer-transcripts-check announcer-record-smoke announcer-shots announcer-check
+        announcer-transcripts-check announcer-record-smoke announcer-shots announcer-check announcer-pool-report
 
 ANNOUNCER_FIXTURES := tests/announcer/fixtures
 ANNOUNCER_CLI := $(GODOT) --headless --path . --script res://game/announcer/announcer_cli.gd --
@@ -24,6 +24,16 @@ announcer-pytest: ## The announcer's Python tests (contract, generator, text aud
 
 announcer-audit: ## Audit the line library's text (symbols, slots, tags, duplicates, rejected tone)
 	$(PYTHON) tools/announcer/audit_lines.py
+
+## Round 10 item 1: how deep each (speaker, moment) pool is against what it needs (C9's N_c), from the director's own
+## picks over every fixture broadcast with seeds 1-POOL_SEEDS. Writes build/announcer/pool_report.{txt,json}.
+POOL_SEEDS ?= 5
+announcer-pool-report: import ## Lines per (speaker, moment), the director's pool at each pick, N_c and the deficit: POOL_SEEDS=5
+	@rm -rf $(BUILD_DIR)/announcer/pool && mkdir -p $(BUILD_DIR)/announcer/pool
+	@$(ANNOUNCER_CLI) --all=res://$(ANNOUNCER_FIXTURES) --seeds=$$(seq -s, 1 $(POOL_SEEDS)) --out-dir=$(BUILD_DIR)/announcer/pool 2>&1 \
+		| grep -E 'ANNOUNCER_CLI_EXIT=0' >/dev/null || { echo "announcer CLI failed"; exit 1; }
+	@$(PYTHON) tools/announcer/pool_report.py --cues $(BUILD_DIR)/announcer/pool --json $(BUILD_DIR)/announcer/pool_report.json \
+		| tee $(BUILD_DIR)/announcer/pool_report.txt
 
 ## X1: the lead heard the PA open the same way in several matches. This replays every fixture as MATCHES
 ## consecutive broadcasts and fails when the booth repeats itself too much across them.
@@ -70,19 +80,20 @@ announcer-transcripts-check: import ## The checked-in review transcripts match w
 		|| { echo "review transcripts are stale: run make announcer-transcripts and commit"; diff -r $(ANNOUNCER_REVIEW) $(BUILD_DIR)/announcer/fresh | head -20; exit 1; }
 	@echo "announcer transcripts current"
 
-announcer-demo: import ## Build the Arena Booth Monitor page (every fixture, seeds 1-3; FIXTURE=name for one): build/announcer/demo/index.html
+announcer-demo: import ## Build the Arena Booth Monitor page (every fixture, seeds 1-3; FIXTURE=name for one; the New tab: open index.html#new): build/announcer/demo/index.html
 	@rm -rf $(BUILD_DIR)/announcer/demo/data && mkdir -p $(BUILD_DIR)/announcer/demo/data
 	@$(ANNOUNCER_CLI) --all=res://$(ANNOUNCER_FIXTURES) --seeds=1,2,3 --out-dir=$(BUILD_DIR)/announcer/demo/data 2>&1 \
 		| grep -E 'ANNOUNCER_CLI_EXIT=0' >/dev/null || { echo "announcer CLI failed"; exit 1; }
 	@rm -f $(BUILD_DIR)/announcer/demo/data/*.txt
 	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html \
-		$(if $(filter command line,$(origin FIXTURE)),--fixture $(FIXTURE))
+		--clips assets/announcer/clips $(if $(filter command line,$(origin FIXTURE)),--fixture $(FIXTURE))
 
 ## Real generation needs APPROVED=1 (lead gate 2: the lead has approved the text). The default is the dry run.
-announcer-generate: ## Voice clips from lines.json: DRY_RUN=1 (default) prints requests and credits; APPROVED=1 calls ElevenLabs (key: ELEVENLABS_KEY_ID)
+announcer-generate: ## Voice clips from lines.json: DRY_RUN=1 (default) prints requests and credits; APPROVED=1 calls ElevenLabs (key: ELEVENLABS_API_KEY); ONLY=ids MAX_CHARACTERS=n NOTE="batch"
 	@if [ "$(APPROVED)" = "1" ]; then \
 		$(PYTHON) -c "import elevenlabs" 2>/dev/null || { echo "pip install elevenlabs==2.24.0 first (tools/announcer/requirements.txt)"; exit 1; }; \
-		$(PYTHON) tools/announcer/generate.py --lead-approved $(if $(SPEAKERS),--speakers $(SPEAKERS)) $(if $(ONLY),--only $(ONLY)); \
+		$(PYTHON) tools/announcer/generate.py --lead-approved $(if $(SPEAKERS),--speakers $(SPEAKERS)) $(if $(ONLY),--only $(ONLY)) \
+			$(if $(MAX_CHARACTERS),--max-characters $(MAX_CHARACTERS)) $(if $(NOTE),--note "$(NOTE)"); \
 	else \
 		$(PYTHON) tools/announcer/generate.py --dry-run $(if $(SPEAKERS),--speakers $(SPEAKERS)) $(if $(ONLY),--only $(ONLY)); \
 		echo; echo "(dry run: nothing was sent. The lead approves the text before APPROVED=1.)"; \
@@ -109,7 +120,8 @@ announcer-demo-audio: announcer-demo ## The Booth Monitor with audio: CLIPS=asse
 	done
 	@rm -f $(BUILD_DIR)/announcer/demo/data/*.txt
 	$(PYTHON) tools/announcer/mixdown.py --manifest $(ANNOUNCER_DEMO_CLIPS)/manifest.json --match $(BUILD_DIR)/announcer/demo/data/*_seed1.json
-	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html
+	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html \
+		--clips $(ANNOUNCER_DEMO_CLIPS)
 
 # The sim-baseline match (mk/core.mk) again, with the booth recording K5 events: the hash must not move (the announcer
 # never touches gameplay) and the recorded real-match timeline must pass both validators and read as a broadcast.
