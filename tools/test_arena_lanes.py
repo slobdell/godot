@@ -55,8 +55,8 @@ class LaneTable(unittest.TestCase):
         ar.use_extent(layout)
         table = self.table(layout)
         got = {l["name"]: l["narrowest_physical_m"] for l in table["lanes"]}
-        self.assertEqual(got, {"the avenue": 17.56, "west street": 16.4, "east street": 16.4, "the ring road": 18.2,
-                               "the ring road (far)": 18.2, "plaza crossing west": 18.2, "plaza crossing east": 19.56})
+        self.assertEqual(got, {"the avenue": 17.56, "west street": 16.4, "east street": 16.4, "the ring road": 22.0,
+                               "the ring road (far)": 22.0, "plaza crossing west": 22.0, "plaza crossing east": 22.0})
         self.assertTrue(all(c["pass"] for c in table["corners"]), table["corners"])
         self.assertEqual(len(table["corners"]), 17, "4 bends and 13 junctions")
 

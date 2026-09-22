@@ -49,7 +49,7 @@ KIT = {  # ArenaKit.PROPS (game/arena/arena_kit.gd): one level [x, height, z], c
     "container_40": ([12.19, 2.59, 2.44], "hard", True),
     "ad_screen": ([7.8, 1.4, 2.0], "hard", True),
     "barricade": ([6.0, 0.9, 0.8], "low", True),
-    "wreck": ([3.2, 2.0, 6.4], "hard", True),
+    "wreck": ([3.2, 2.0, 3.3], "hard", True),
     "floodlight": ([2.4, 3.0, 2.4], "hard", True),
     "sign": ([0.4, 6.0, 0.4], "none", False),
     "block": ([40.0, 24.0, 40.0], "hard", True),

@@ -71,7 +71,8 @@ static func bake_radius() -> float:
 
 
 ## Every declared lane's narrowest width. `data` is a NORMALIZED layout (`Arena.load_layout(name)["layout"]`).
-## [{name, narrowest_physical_m, narrowest_drivable_m, at: Vector2, samples, pass}]
+## [{name, narrowest_physical_m, narrowest_drivable_m, at: Vector2, samples, pass, throat: {normal, along, left_m,
+## right_m}}] -- the throat is the narrowest cross-section: from `at`, `left_m` along `normal` and `right_m` against it.
 static func measure(data: Dictionary, the_bar: Dictionary = {}) -> Array:
 	if the_bar.is_empty():
 		the_bar = bar()
@@ -82,6 +83,7 @@ static func measure(data: Dictionary, the_bar: Dictionary = {}) -> Array:
 		var points: Array = lane["points"]
 		var narrowest := INF
 		var at := Vector2.ZERO
+		var throat := {}
 		var samples := 0
 		for i in range(1, points.size()):
 			var a := Vector2(points[i - 1][0], points[i - 1][1])
@@ -94,14 +96,17 @@ static func measure(data: Dictionary, the_bar: Dictionary = {}) -> Array:
 			var steps := maxi(1, int(ceil(leg / SAMPLE_STEP_M)))
 			for s in range(steps + 1):
 				var p := a + along * (leg * s / steps)
-				var width := _free(data, boxes, perimeter, p, normal) + _free(data, boxes, perimeter, p, -normal)
+				var left := _free(data, boxes, perimeter, p, normal)
+				var right := _free(data, boxes, perimeter, p, -normal)
+				var width := left + right
 				samples += 1
 				if width < narrowest:
 					narrowest = width
 					at = p
+					throat = {"normal": normal, "along": along, "left_m": left, "right_m": right}
 		var drivable := narrowest - 2.0 * float(the_bar["bake_radius_m"])
 		results.append({"name": String(lane["name"]), "narrowest_physical_m": narrowest,
-				"narrowest_drivable_m": drivable, "at": at, "samples": samples,
+				"narrowest_drivable_m": drivable, "at": at, "samples": samples, "throat": throat,
 				"pass": drivable >= float(the_bar["drivable_bar_m"]) - 0.001})
 	return results
 

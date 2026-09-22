@@ -677,10 +677,22 @@ wrecks in lots; the form-up line and the avenue-mouth barricades are gone. Lanes
 |---|---|---|
 | the avenue | 0.00 m | 17.56 m physical, 13.56 drivable |
 | west street / east street | 0.00 m | 16.40 m, 12.40 |
-| the ring road ×2 | 0.00 m | 18.20 m, 14.20 |
-| plaza crossing west / east | (not declared) | 18.20 m / 19.56 m |
+| the ring road ×2 | 0.00 m | 22.00 m, 18.00 (bounded by blocks only) |
+| plaza crossing west / east | (not declared) | 22.00 m, 18.00 |
+
+**It also READS passable (arena item 3, research C11; `LaneReadability`, `tests/test_arena_lane_readability.gd`).**
+Per lane, the narrowest throat is projected to a 1920 x 1080 frame from his pose (with `clear_pose` and the
+`BlockCutaway` applied, as the game does) and its ground-contact line traced back to the camera through the
+colliders. At his default heading every Terminus throat is 100% visible, and the visible width minus the widest
+hull's projected width is +329 to +472 px (the ring road, across the screen, is the narrowest on screen: 405-439 px
+for a 22 m gap, against 614 px for the avenue's 17.56 m in depth: C11's foreshortening). The rule that got there:
+**no furniture at either kerb of a street stretch bounded by buildings** -- on the near kerb it hides the throat from
+his camera, and under 180° symmetry the far kerb's mirror is the other ring road's near kerb. The ring-road lamp at
+(−35, 39.4) hid 23% of the throat this way; it and a 20 ft box moved to lots.
 
 Every junction passes (narrowest: the plaza crossings meeting the ring road at (±12, ±30), 12.00 m against 11.04).
+Lamps: the ring-road lamp is on the lot at (−55, 45) facing north across the road, the street lamp on the east
+street's west kerb (62.4, 6); the plaza lamp (14, 14) was never on a lane.
 Two round-8 authoring bugs went with the old list: three prop pairs authored on BOTH halves (so each mirror landed
 on another authored prop: two containers in one place), and form-up containers at x = ±42 standing inside the
 z = 62 blocks' footprints.

@@ -24,8 +24,11 @@ const PROPS := {
 	"ad_screen": {"size": [7.8, 1.4, 2.0], "cover": "hard"},
 	# Jersey-barrier runs: stop a hull, not a shell or a sightline.
 	"barricade": {"size": [6.0, 0.9, 0.8], "cover": "low", "fallback": "prop.wall"},
-	# A burned-out husk left as permanent cover (theme prop.wreck, scaled to this box by render).
-	"wreck": {"size": [3.2, 2.0, 6.4], "cover": "hard"},
+	# A burned-out husk left as permanent cover (theme prop.wreck). R3 (round 10): the approved husk is drawn 3.20 x
+	# 3.30 m (its model is nearly square and render keeps its proportions), so the box that was 6.4 m long left 1.5 m
+	# of invisible wall at each end; feel's call (2026-09-22) was to fit the box to the art. Two husks nose to tail
+	# give back the long cover where a layout wants it.
+	"wreck": {"size": [3.2, 2.0, 3.3], "cover": "hard"},
 	# A floodlight tower's concrete footing; the mast above it is too thin to matter.
 	"floodlight": {"size": [2.4, 3.0, 2.4], "cover": "hard", "fallback": "prop.crate"},
 	# A neon sign on a post: spectacle only.

@@ -660,9 +660,11 @@ terminus += [
     # The avenue between the z = 62 blocks (x in -10..10, z 42..82): a two-high 40 ft stack against the west block,
     # a 20 ft box against the east block further south. The avenue keeps 17.56 m at both.
     c40(-8.78, 60, 90, 2, faction="mixed"), c20(8.78, 72, 90, 1, faction="syndicate"),
-    # The ring road's north kerb is the z = 0 blocks' south face (z = 20): boxes stand against it, long axis along the
-    # road, clear of the street mouths.
-    c20(-96, 21.22, 0, 2, faction="condemned"), c20(44, 21.22, 0, 1),
+    # Against the z = 0 blocks' south face (z = 20), where the ring road opens out to the west wall, long axis along
+    # the road; and one on the lot against the east z = 62 block's east face (x = 50). Not on the ring road between
+    # the blocks: anything at either kerb there stands in front of a throat from one camera or the other (see the
+    # lamps below), so that stretch is bounded by buildings only.
+    c20(-96, 21.22, 0, 2, faction="condemned"), c20(51.22, 58, 90, 1),
     # Wrecks in lots, off every lane: the open ground between the west street and the west z = 62 block, the lot south
     # of the east ring road, and the outer lot by the west wall.
     wreck(-55, 56, 15), wreck(57, 50, 75), wreck(-104, 46, 30),
@@ -710,11 +712,14 @@ terminus += [
     # placement is the reasoned part; the count is the part that gets looked at.
     #
     # ROUND 10 (R4): the ring-road lamp stood ON the ring road's centre line (-35, 31) and the street lamp 4 m into the
-    # east street (66, 6); both move to the kerb, keeping their street and their scatter. The ring-road lamp stands
-    # against the west z = 62 block's south face (z = 42) and the street lamp on the east street's west kerb
-    # (x = 60), each set in by more than half the lamp head's footprint so R3 can widen the box without reaching the
-    # lane. The plaza lamp is off every lane already.
-    floodlight(14, 14), floodlight(-35, 39.4), floodlight(62.4, 6),
+    # east street (66, 6); both move to the kerb, keeping their street and their scatter. The street lamp stands on
+    # the east street's west kerb (x = 60). The ring-road lamp leaves the road altogether, for the lot just south of
+    # it between the west z = 62 block and the west street (-55, 45), facing north so its pool still falls across the
+    # road. At either kerb it stood in front of a throat from HIS camera -- on the near kerb its 3 m footing hid 23%
+    # of the ring road's narrowest cross-section at his pose (LaneReadability, research C11: kerb furniture never in
+    # front of a throat's contact line), and under 180 degree symmetry the far kerb's mirror is the near kerb of the
+    # other ring road. Off the road, both throats are bounded by blocks, which the camera cuts away.
+    floodlight(14, 14), floodlight(-55, 45), floodlight(62.4, 6),
     # Floodlights on the hexagon's east/west vertices; screens facing each base; a sign on the base-side corner.
     floodlight(-128, 0), # x = -76, hemmed in from both sides: the hexagon wall is at |x| = 82.2 at this z, and the spawn
     # lattice reaches x = -66, so a screen fits only in the 6 m of clearance between them.
