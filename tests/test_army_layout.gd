@@ -46,7 +46,11 @@ func test_the_plan_puts_squads_side_by_side_in_formation_facing_the_enemy() -> v
 		for i in 5:
 			members.append({"name": "S%d_%d" % [s, i], "unit": "tank"})
 		squads.append({"name": "S%d" % s, "members": members, "leader": "S%d_0" % s})
-	var zone := {"center": Vector3(0, 0, 102), "size": Vector2(150, 32)}
+	# The zone is as wide as five wedges of THESE hulls need, derived from the live floor (round 10: the lateral floor
+	# is the hull's diagonal + DRESS_MARGIN_M, 10.42 m for the CP3 bus, so five 5-bus wedges need ~210 m; the literal
+	# 150 m zone this test used made them stack in ranks, which is the case the next test covers).
+	var wedge := 4.0 * TacticsFormation.hull_floor([{"unit": "tank"}]).x + 10.0
+	var zone := {"center": Vector3(0, 0, 102), "size": Vector2(5.0 * wedge, 32)}
 	var frame := {"right": Vector3.RIGHT, "forward": Vector3.FORWARD}
 	var laid := ArmyLayout.plan(squads, zone, frame)
 	assert_eq(laid.size(), 25, "every vehicle has a place")
@@ -54,7 +58,7 @@ func test_the_plan_puts_squads_side_by_side_in_formation_facing_the_enemy() -> v
 	for unit: String in laid:
 		var at: Vector3 = laid[unit]["position"]
 		(by_squad.get_or_add(laid[unit]["squad"], []) as Array).append(at)
-		assert_true(absf(at.x) <= 75.0 and absf(at.z - 102.0) <= 16.0, "%s stands inside the spawn zone (%s)" % [unit, at])
+		assert_true(absf(at.x) <= 2.5 * wedge and absf(at.z - 102.0) <= 16.0, "%s stands inside the spawn zone (%s)" % [unit, at])
 		assert_true((laid[unit]["facing"] as Vector3).is_equal_approx(Vector3.FORWARD), "%s faces the enemy" % unit)
 	_assert_separated(by_squad, "plan")
 	# Left to right in the order given.
@@ -106,3 +110,32 @@ func test_a_rotated_neighbour_is_measured_on_its_own_axes() -> void:
 	var nose_to_tail := [[Vector3(0.0, 0.0, -9.0), 2.4, 8.6, Vector3.FORWARD]]
 	assert_true(not ArmyLayout._is_clear(Vector3.ZERO, hull, Vector3.FORWARD, nose_to_tail),
 			"nose to tail 0.4 m apart is not clear, aligned or not")
+
+
+
+func test_an_army_too_wide_for_its_zone_stands_in_ranks_each_in_order() -> void:
+	# The same five squads of five buses in a 150 m zone: at the diagonal pitch they cannot stand abreast (measured
+	# 69c681ac + the pitch: three squads in a front rank, two behind). What must still hold: nobody overlaps, and each
+	# rank stands in the order given, left to right.
+	var squads: Array = []
+	for s in 5:
+		var members: Array = []
+		for i in 5:
+			members.append({"name": "S%d_%d" % [s, i], "unit": "tank"})
+		squads.append({"name": "S%d" % s, "members": members, "leader": "S%d_0" % s})
+	var laid := ArmyLayout.plan(squads, {"center": Vector3(0, 0, 102), "size": Vector2(150, 32)},
+			{"right": Vector3.RIGHT, "forward": Vector3.FORWARD})
+	assert_eq(laid.size(), 25, "every vehicle has a place")
+	var by_squad := {}
+	for unit: String in laid:
+		(by_squad.get_or_add(laid[unit]["squad"], []) as Array).append(laid[unit]["position"])
+	_assert_separated(by_squad, "ranks")
+	var ranks := {}
+	for s in 5:
+		var c := _centroid(by_squad["S%d" % s])
+		(ranks.get_or_add(snappedf(c.z, 5.0), []) as Array).append([s, c.x])
+	print("MEASURE army_ranks %s" % str(ranks))
+	for z: float in ranks:
+		var rank: Array = ranks[z]
+		for i in range(1, rank.size()):
+			assert_true(float(rank[i][1]) > float(rank[i - 1][1]), "rank at z %.0f stands in the order given" % z)
