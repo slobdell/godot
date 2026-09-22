@@ -42,9 +42,22 @@ const DEFAULT_SIZE := Vector3(40.0, 24.0, 40.0)
 const MIN_TIERS := 1
 const MAX_TIERS := 3
 
+## S6 (round 10, per-window addressing; show's carve-out): the narrowest and widest bay a block draws (m). The bay
+## is chosen per block and reaches the shader in COLOR.a as an 8-bit code, so the CPU and the GPU agree on where
+## every window is -- the shader used to derive it from a sin() hash, which float32 and float64 disagree about.
+const BAY_MIN := 3.0
+const BAY_SPAN := 1.5
+
 var size := DEFAULT_SIZE
 var mesh_instance := MeshInstance3D.new()
 static var _material: ShaderMaterial
+## This block's index in the show's window grid (COLOR.b), or -1 on a peer with no show.
+var block_index := -1
+## This block's bay width (m): BAY_MIN + BAY_SPAN * code / 255.
+var bay_m := BAY_MIN
+var _grid: ShowWindowGrid
+var _tiers := 1
+var _setback := 0.0
 
 
 func _init() -> void:
@@ -67,9 +80,94 @@ func setup(obstacle: Dictionary) -> void:
 	var tiers := clampi(int(obstacle.get("tiers", 1 + rng.randi() % 3)), MIN_TIERS, MAX_TIERS)
 	var setback := float(obstacle.get("setback", rng.randf_range(2.0, 4.0)))
 	var neon := CityBlock.neon_color(obstacle.get("neon", ""), rng)
-	mesh_instance.mesh = CityBlock.build(size, tiers, setback, neon, rng.randf())
+	var seed01 := rng.randf()
+	# Drawn AFTER every value the look already used, so adding it moved no block's tiers, setback, neon or seed.
+	var bay_code := rng.randi_range(0, 255)
+	bay_m = CityBlock.bay_of(bay_code)
+	_tiers = tiers
+	_setback = setback
+	var show := Show.get_instance()
+	if show != null and _grid == null:
+		attach_windows(show.window_grid())
+	mesh_instance.mesh = CityBlock.build(size, tiers, setback, neon, seed01, maxi(block_index, 0), bay_code)
 	mesh_instance.set_surface_override_material(0, CityBlock.facade_material())
 	CityBlock.patch_show()
+	if _grid != null and block_index >= 0:
+		_grid.add_block(block_index, CityBlock.windows_of(size, tiers, setback, bay_m, _placement(obstacle)))
+
+
+## Join a window grid: claim an index (it goes into the mesh's COLOR.b, so call before the mesh is built). Public so a
+## headless test can hand a block a grid without a running show.
+func attach_windows(grid: ShowWindowGrid) -> void:
+	_grid = grid
+	block_index = grid.claim_block() if grid != null else -1
+
+
+## The fixture's per-window primitive: how many windows this block has.
+func window_count() -> int:
+	return _grid.window_count(block_index) if _grid != null and block_index >= 0 else 0
+
+
+## The fixture's per-window primitive: set this block's window `i` to `value` (0..1). `palette` 0 keeps the block's
+## own colour; 1..3 is magenta, cyan, amber. Takes effect on the next frame the show flushes the grid.
+func set_window(i: int, value: float, palette := 0) -> bool:
+	if _grid == null or block_index < 0:
+		return false
+	return _grid.set_window(_grid.index_of(block_index, i), value, palette)
+
+
+## Where the block stands in the world: its node's transform once in the tree, the layout's otherwise.
+func _placement(obstacle: Dictionary) -> Transform3D:
+	if is_inside_tree():
+		return global_transform
+	var at: Variant = obstacle.get("position", [0.0, 0.0])
+	var yaw := deg_to_rad(float(obstacle.get("rotation_deg", 0.0)))
+	return Transform3D(Basis(Vector3.UP, yaw), Vector3(float(at[0]), 0.0, float(at[1])))
+
+
+static func bay_of(code: int) -> float:
+	return BAY_MIN + BAY_SPAN * float(clampi(code, 0, 255)) / 255.0
+
+
+## Every window the shader draws on a block: [{facade, row, column, centre}], with `row` and `column` in the SHADER's
+## terms (storey = floor(y / 3.6), world bay column = floor(along / bay)), so [method ShowWindowGrid.texel_of] lands on
+## the texel the fragment reads. Only the flat faces of the storey tiers carry windows (the chamfers are 0.8 m wide;
+## the shopfronts and roofs have none). Pure.
+static func windows_of(block_size: Vector3, tiers: int, setback: float, bay: float, placement: Transform3D) -> Array:
+	var out := []
+	var list := tiers_of(block_size, tiers, setback)
+	for t in range(1, list.size()):
+		var poly: PackedVector2Array = list[t][0]
+		var y0: float = list[t][1]
+		var y1: float = list[t][2]
+		for i in poly.size():
+			var a := poly[i]
+			var b := poly[(i + 1) % poly.size()]
+			var edge := b - a
+			if absf(edge.x) > 0.001 and absf(edge.y) > 0.001:
+				continue  # a chamfer
+			var mid := (a + b) * 0.5
+			var local_normal := Vector3(mid.x, 0.0, mid.y)
+			local_normal = Vector3(signf(local_normal.x), 0.0, 0.0) if absf(edge.x) < 0.001 else Vector3(0.0, 0.0, signf(local_normal.z))
+			var normal := (placement.basis * local_normal).normalized()
+			var facade := ShowWindowGrid.facade_of(normal)
+			var wa := placement * Vector3(a.x, 0.0, a.y)
+			var wb := placement * Vector3(b.x, 0.0, b.y)
+			var along_z := facade <= 1
+			var lo := minf(wa.z, wb.z) if along_z else minf(wa.x, wb.x)
+			var hi := maxf(wa.z, wb.z) if along_z else maxf(wa.x, wb.x)
+			var fixed := wa.x if along_z else wa.z
+			for column in range(floori(lo / bay) - 1, ceili(hi / bay) + 1):
+				var along := (float(column) + (ShowWindowGrid.PANE_X.x + ShowWindowGrid.PANE_X.y) * 0.5) * bay
+				if along < lo or along > hi:
+					continue
+				for row in range(floori(y0 / ShowWindowGrid.FLOOR_M), ceili(y1 / ShowWindowGrid.FLOOR_M) + 1):
+					var y := (float(row) + (ShowWindowGrid.PANE_Y.x + ShowWindowGrid.PANE_Y.y) * 0.5) * ShowWindowGrid.FLOOR_M
+					if y < y0 or y > y1:
+						continue
+					var centre := Vector3(fixed, y, along) if along_z else Vector3(along, y, fixed)
+					out.append({"facade": facade, "row": row, "column": column, "centre": centre})
+	return out
 
 
 ## S6 (the arena light show, `_agents/lighting.md`): the facade is a fixture. Every block registers the ONE material
@@ -172,7 +270,13 @@ static func outline(w: float, d: float, inset: float) -> PackedVector2Array:
 
 ## The block's mesh: surface 0 the building (facade, shopfronts, bevels and roofs; COLOR.r says which, COLOR.g the
 ## block's seed for the shader), surface 1 the neon band over the shopfronts.
-static func build(block_size: Vector3, tiers: int, setback: float, neon: Color, seed01: float) -> ArrayMesh:
+##
+## COLOR.b is the block's index in the show's window grid and COLOR.a its bay code, both as exact 8-bit steps (k/255),
+## because vertex colours may be stored 8-bit.
+static func build(block_size: Vector3, tiers: int, setback: float, neon: Color, seed01: float, index := 0,
+		bay_code := 0) -> ArrayMesh:
+	var b := float(clampi(index, 0, 255)) / 255.0
+	var a := float(clampi(bay_code, 0, 255)) / 255.0
 	var building := SurfaceTool.new()
 	building.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var list := tiers_of(block_size, tiers, setback)
@@ -181,13 +285,13 @@ static func build(block_size: Vector3, tiers: int, setback: float, neon: Color, 
 		var y0: float = list[i][1]
 		var y1: float = list[i][2]
 		var part := 0.5 if i == 0 else 0.0  # vertex colours may be 8-bit: tags stay in 0..1
-		_walls(building, poly, y0, y1, Color(part, seed01, 0.0))
+		_walls(building, poly, y0, y1, Color(part, seed01, b, a))
 		# A tier's roof: the bevel rolling in, then a flat cap (the next tier stands on it).
 		var inner := _shrink(poly, BEVEL)
-		_walls_between(building, poly, inner, y1, y1 + BEVEL, Color(1.0, seed01, 0.0))
-		_cap(building, inner, y1 + BEVEL, Color(1.0, seed01, 0.0))
+		_walls_between(building, poly, inner, y1, y1 + BEVEL, Color(1.0, seed01, b, a))
+		_cap(building, inner, y1 + BEVEL, Color(1.0, seed01, b, a))
 		if i == list.size() - 1:
-			_roof_clutter(building, inner, y1 + BEVEL, block_size.y + BEVEL, seed01)
+			_roof_clutter(building, inner, y1 + BEVEL, block_size.y + BEVEL, seed01, b, a)
 	var mesh := building.commit()
 	var band := SurfaceTool.new()
 	band.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -227,7 +331,8 @@ static func _walls_between(tool: SurfaceTool, lower: PackedVector2Array, upper: 
 ## Everything is derived from the block's own seed, so a given block always wears the same roof, and everything is
 ## placed inside `_shrink(poly, EDGE)` and capped at `ceiling` so nothing overhangs the parapet or breaks the
 ## collision box.
-static func _roof_clutter(tool: SurfaceTool, poly: PackedVector2Array, y: float, ceiling: float, seed01: float) -> void:
+static func _roof_clutter(tool: SurfaceTool, poly: PackedVector2Array, y: float, ceiling: float, seed01: float,
+		b := 0.0, a := 0.0) -> void:
 	var room := ceiling - y
 	if room < 0.3:
 		return  # a block too short to have reserved a band gets no clutter rather than a crushed one
@@ -237,7 +342,7 @@ static func _roof_clutter(tool: SurfaceTool, poly: PackedVector2Array, y: float,
 	if field.size() < 3:
 		return
 	var bounds := _bounds(field)
-	var colour := Color(PART_CLUTTER, seed01, 0.0)
+	var colour := Color(PART_CLUTTER, seed01, b, a)
 	# Enough to read as a working roof at the lifted camera, few enough to stay cheap: ~10 triangles each.
 	for n in 7:
 		var w := rng.randf_range(2.0, 5.0)
