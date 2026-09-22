@@ -126,3 +126,22 @@ func test_a_pin_leans_its_head_away_from_a_heading_that_runs_up_the_screen() -> 
 	var left := RtsControls.pin_head(at, Vector2(470, 420), 20.0)
 	assert_true(left.x > at.x + 10.0, "away and to the left: it leans right (%s)" % left)
 	assert_near(away.distance_to(at), 32.0, 0.01, "the stalk keeps its length")
+
+
+## B7 (round 10): squad completes a move at OPERATIONAL arrival, before the hulls have dressed. The pin says that phase
+## ("ARRIVED · dressing 1/2") so hulls still nudging read as dressing, not as the order running late.
+func test_a_squad_that_has_arrived_but_not_dressed_says_so() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	f.controls.elements = Elements.install(f.game_match, f.orders)
+	f.controls.groups.save(2, ["Green_Bravo_1", "Green_Bravo_2"])
+	await f.select(["Green_Bravo_1", "Green_Bravo_2"])
+	await f.right_click(f.ground(Vector3(30, 0, 10)))
+	await wait_physics_frames(Element.UPDATE_TICKS + 2)  # the leader hands its crews their orders
+	var element := f.controls.elements.of("Green_Bravo_1")
+	assert_true(element != null, "a whole squad's move is a task")
+	var label := f.controls.order_mark_label(f.controls.order_marks()[0])
+	assert_true(not label.contains("ARRIVED"), "on its way: no arrival claimed (%s)" % label)
+	element.arrived = true  # squad's operational arrival, as its plan reports it
+	label = f.controls.order_mark_label(f.controls.order_marks()[0])
+	assert_true(label.begins_with("MOVE · ARRIVED · dressing"), "then the pin reads the phase (%s)" % label)
