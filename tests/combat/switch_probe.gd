@@ -103,6 +103,10 @@ func _run() -> void:
 	orders = Orders.new()
 	Orders.attach(game_match, orders)
 	Elements.install(game_match, orders)
+	# Round 10 (combat, A2's verdict): --trajectory=PATH writes metrics' per-tick log for this fight, so `make metrics`
+	# can split the cusps into ordered / creep / unexplained per arm. The writer is metrics'; this only turns it on.
+	preload("res://tools/metrics/trajectory_log.gd").install(game_match, _flag("trajectory", ""), "switch-arm",
+			{"seed": seed_value, "budget": budget, "time_limit": time_limit, "tune": _flag("tune", "")})
 	# Both sides are watched: the counter is about the mechanism, not about who wins, and a one-sided sample would
 	# leave out whichever faction happens to die first.
 	for tank: Tank in game_match.tanks.get_children():
