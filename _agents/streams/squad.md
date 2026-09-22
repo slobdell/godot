@@ -220,6 +220,11 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   diagonal. Lands at CP3 as `max(width + HULL_CLEAR_M, diagonal)` (tank 8.95, rig ~14.4; doctrine spacing wins where
   larger). The only tighter option is a STAGGERED dressing (crews turning one after another): a behaviour for the
   lead's eye, not built.
+  **RULING (orchestrator, 2026-09-22):** lateral floor = `max(width + HULL_CLEAR_M, diagonal + DRESS_MARGIN_M)`,
+  `DRESS_MARGIN_M` = 0.30 m, a named constant (1 cm at 8.95 is inside the plant's slack and the spawn jitter; 0.3 m is
+  invisible to his eye and outside both). Tank 9.25 m, rig ≈ 14.7 m. Lands after CP3: alone, baseline pre-registered
+  MOVED with one cause, the five-row pitch table in the commit message, the five-rig frame pair for him. Staggered
+  dressing is the next arm only if he says the rigs look too spread.
 - **Item 6a, `_is_clear`** — `80905740`. REPLACES the aligned projection in `ArmyLayout._is_clear` with the
   separating-axis rule on each placed hull's own forward. Test with a 90° neighbour (old: 3.6 m clear, true 0.5 m).
 
