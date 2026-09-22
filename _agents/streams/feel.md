@@ -159,7 +159,8 @@ _(the worker keeps this current)_
 
 ### Merge notes
 
-- **CP3 merged** at `f49b5f15` (main `69c681ac`). **Not yet merged** (all visual, pre-registered UNMOVED):
+- **CP3 merged** at `f49b5f15` (main `69c681ac`); **the rest merged** at `a822a48f` (main `28d60a4a`). They were
+  (all visual, pre-registered UNMOVED):
   `d9b70dc4` (blimp re-routed down the avenue), `7f1707a3` + `e27e0b85` (blimp-look frame fixes), `010456f5` +
   `839cf3f4` (the faction rim), `a822a48f` (burner concepts), the MatchMood accessor, Status/docs. **Green hash for
   them: see the last line of this Status** (the check on the merged tip).
@@ -170,7 +171,7 @@ _(the worker keeps this current)_
   (`test_combat_mechanics`, `test_tactics_elements`, `scenario_fire_discipline`, `scenario_squad`,
   `scenario_elements`) with REASON lines where the claim is a behaviour, `game/audio/match_mood.gd` (mine).
 - Temporary worktrees `~/projects/godot-feelneutral` and `~/projects/godot-feelbisect` (detached, mine, for the
-  bisect) are removed at the end of the session.
+  bisect) and their builder0 folders are REMOVED.
 
 ### Known issues / reds with a reason
 
@@ -301,7 +302,11 @@ in 7 wherever he looks, and every time he starts a match.
 
 ### The last check (the green hash for everything after CP3)
 
-**Merge here: `a822a48f`.** Check on it (builder0, merged with main `69c681ac`, `REMOTE_SLOTS=5`): `>> remote: make
+**MERGED: `a822a48f` → main `28d60a4a` (2026-09-22).** The engine-deck scenario is routed to squad as a CP3 consequence
+of its ORBIT controller; scenario_perf under five slots is load. **What is left for feel:** the hinge bench in the
+quiet window the orchestrator calls at the round's end; the bus/burner image-to-3D after his taps (his morning);
+B10/C11 kit work when arena sends the lane/corner list (asked 2026-09-22). Later commits (`e27e0b85` tool fix, Status)
+merge with the next docs hash. **Was: merge here, `a822a48f`.** Check on it (builder0, merged with main `69c681ac`, `REMOTE_SLOTS=5`): `>> remote: make
 check exited 2`; **1645 passed, 2 failed** -- the two REASON'd tests above; sim-baseline `aac14c6704fbac39` (CP3's
 recorded move; these commits add none); determinism `2bf54e1e4c829e06`; ai-scenarios **39,5 against 44,0**: the three
 REASON'd or named scenarios above, plus `scenario_cp2` engine-deck (fixed on main by squad's ORBIT fix, broken again
