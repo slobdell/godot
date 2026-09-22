@@ -439,7 +439,7 @@ around the blocks; compare with `TUNE=match.yaw_fit=1` (round 9's rule), where s
    (`yaw_fit_enabled` and `yaw_fit_world` → true), merged alone, baseline recorded twice.
 2. After CP2 + nav's drive test: the rigs on Terminus under the world mask (nav's instrument), and frames at his pose.
 3. The series: `make remote T="disc-site-series ARENA=pit"`, then `ARENA=yard`; read against the pre-registration.
-   The third site (`squad_incoming`, squad's `64dd9b2f`, arm-proven by `tests/test_ai_incoming_site.gd`) joins as a
+   The third site (`squad_incoming`, squad's `a8789bea`, arm-proven by `tests/test_ai_incoming_site.gd`) joins as a
    fourth treatment arm (`squad=match.hull_disc_squad_incoming=0`) only after squad's pitch + seating merge reaches
    this branch. Before that the knob would be accepted and never read (round 9's lesson).
 4. Stretch: A2's verdict once metrics' cusp split is read; the duel's hide/peek regression.
