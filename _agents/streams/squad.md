@@ -150,7 +150,14 @@ _(the worker keeps this current; newest first within each part)_
 3. **Settle time**: measure end to end (`make squad-settle`), then B7's three-phase arrival. Second because it's what he sees next.
 4. **Pitch from the turning envelope**: built now, merged ALONE after CP3 (the orchestrator's sequencing, 2026-09-22: CP3
    merges → I `git merge main` → the pitch lands with the baseline move pre-registered → combat re-runs five_squads).
-5. Base-of-fire scenario; 6. `_is_clear` + Delta's margin; 7. stretch.
+5. Base-of-fire scenario; 6. `_is_clear` + Delta's margin; 6b. **ORBIT's eligibility gate (new, from combat,
+   2026-09-22):** the engine-deck scenario (`scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck`) is red because
+   ORBIT cannot out-circle a 50°/s turret around an 8.62 m hull: the scout's real orbit is a median 9.1 m/s at 6.6 m
+   from the centre = 33.7°/s, while the gate assumes 14 m/s ÷ 11 m = 73°/s (combat's probe: the tank's turret within
+   60° of the scout on 236 of 236 ORBIT thinks; a surface-relative radius moved deck hits 0 → 0). The fix is mine, in
+   `tank_brain.gd`: the gate reads the orbit's REAL angular rate (measured, not v/r from constants), and/or the
+   orbit's steering achieves the rate the gate assumes. The scenario's bar is the falsifier. After R2, settle, pitch.
+   7. stretch.
 
 **Item 4, the orchestrator's refinement (2026-09-22):** `2 × half_diagonal` (tank 8.95 m, rig ~14.4 m) is the bound
 for neighbours rotating in OPPOSITE directions; a dressing formation turns its hulls the same way at about the same
