@@ -301,7 +301,9 @@ func vision_state() -> Dictionary:
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
 			friendly.append(tank)
-	return {"frame": frame, "pad_m": pad, "destination": destination, "region": VisionRegion.of(friendly)}
+	# "own" (round 10): how many of `frame`'s first points are OUR vehicles; the rest are contacts and their mirrors,
+	# which may fall off the screen by design. Only ours decide the readout's "column too long for this tilt".
+	return {"frame": frame, "own": eyes.size(), "pad_m": pad, "destination": destination, "region": VisionRegion.of(friendly)}
 
 
 ## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective
