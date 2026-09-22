@@ -218,6 +218,11 @@ _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round
   unmoved (as pre-registered), determinism `559a415887806e43`.
 - **`44315882` (builder0): `>> remote: make check exited 0`, 1569 passed 0 failed, 18 targets, sim-baseline
   `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`, ai-scenarios 41,3 unchanged. CP2 IS GREEN HERE.**
+- `1c745225` (builder0, terrain-rim parity): full check `exited 2`: 1570 passed 0 failed, sim-baseline unmoved,
+  17 of 18 targets; the one red is `ai-scenarios-check` with `scenario_perf` at 21755 us/tick (budget 4000) under
+  a 3-at-once load, the case the baseline file names as load-sensitive. Re-run alone on the SAME tree:
+  `>> remote: make ai-scenarios-check exited 0`, 41,3 unchanged. No scenario reads `ArenaLanes`/`LaneReadability`
+  (grep: only their own files). Verdict: green on this commit, the red was load, not code.
 - Frames: `make remote T=terminus-streets` (builder0, tree = `44315882`), 7 pairs looked at; page
   `make terminus-streets-page` → published https://claude.ai/artifact/U3rZUei4p8YeLBS55VyCuX (private: share it).
 
