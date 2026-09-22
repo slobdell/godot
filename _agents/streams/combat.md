@@ -367,6 +367,15 @@ Treatments: `lof` (the box at the line-of-fire site only), `incoming` (the box a
 (research C7's arm: the box for line of fire AND threat, the disc kept for spacing). Per map, per cell, never pooled.
 Before on record: feel's matrix, gangs 20 % on pit and 50 % on yard (unpaired, different build: context only).
 
+**Results so far:**
+
+| tree (machine) | map | arm vs control | pairs | gangs: treatment / control | b | c | McNemar p |
+|---|---|---|---|---|---|---|---|
+| `e7d3ced6`, pre-CP3 8.62 m bus (builder0) | pit | `lof` | 64 | 28% / 20% | 8 | 3 | 0.227 |
+
+The rest of that run was killed by slot.sh's 90-minute limit (one arm ≈ 41 min at 2 jobs). The series restarts on the
+post-CP3 tree (the 9.70 m bus, where the parked-friend question lives), one arm per invocation, at 3 jobs.
+
 **Predictions, stated now:**
 - C7's prediction for `both`: it recovers most of the rig's lost win rate (the round-8 loss was 9/20 → 0/20).
   Operationally: on each map, b > c for gangs with p < 0.05.
