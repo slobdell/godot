@@ -154,6 +154,25 @@ _(the worker keeps this current)_
 `>> remote: make check exited 0`, 1559 passed, 0 failed, sim-baseline `1ea332e7bc268d2a` unmoved, determinism
 `559a415887806e43`.
 
+### For the lead, in one paragraph
+
+**Why the yaw fix froze your squads, and the fix.** Round 9's rule that stops a hull rotating through a wall also
+treated a squadmate as a wall. A long vehicle parked in a row, told to turn round in place, nudged its corner into
+its neighbour a few millimetres at a time until the next nudge was over the limit, and then held that exact pose
+forever. Every refused turn we traced was against a squadmate; not one was against a building. A building doesn't
+move, but a squadmate gets pushed aside, so the rule now only counts buildings. Same build, both measured:
+
+| | squads that formed up (of 5) | units off their slot (of 30) | longest freeze | rig in the wall corridor (turn / footprint) |
+|---|---|---|---|---|
+| constraint off (what you play today) | 5 | 0 | none | 44.0° / 12.1 m, through the walls |
+| constraint on, squadmates count as walls (round 9) | 1 | 12 | 1268 ticks (42 s) | 11.6° / 6.1 m |
+| **constraint on, only buildings count (the fix)** | **5** | **0** | **1 tick** | **11.6° / 6.1 m** |
+
+It switches on (CP4) after the bus box (CP3) and squad's new slot pitch, measured again on that tree, so you get it
+together with the formation work. Two scenarios were decided by something else: the scout's orbit around the bigger
+tank is too slow to beat its turret at any radius (squad's behaviour, written up), and the artillery was right all
+along (its scenario tested which frame the map loaded on; fixed).
+
 ### Plan (the brief's order; one-line reasons where the brief left a choice)
 
 1. **Predicate instrument**: `YAW_TRACE` lines per candidate per tick on a `DRIVE_TRACE` crew: the predicate's depth,
@@ -261,7 +280,13 @@ Same build, arms selected by tune and proven applied (`TUNE applied from the env
   five_squads re-run with the constraint on, on that tree. The flip is two defaults (`yaw_fit_enabled`,
   `yaw_fit_world` → true) in one commit, merged alone, baseline recorded twice.
 
-### 4. ORBIT vs the resized tank: the radius is NOT the mechanism; written up, scenario stays red with this REASON
+### 4. ORBIT vs the resized tank: the radius is NOT the mechanism. SUPERSEDED by squad's orbit controller
+
+**Update 2026-09-22 (orchestrator relay):** squad gave ORBIT an orbit controller that holds its radius, keeps the
+circled target fresh for 4 s, and starts deck runs inside the 25° cone. The engine-deck scenario passes at 27 deck hits
+of 29 (laptop, squad `2ac026af`). That is the behaviour fix the finding below asked squad for. The analysis stays as
+the record of why the radius was not the lever. The count is recorded once on `main` by the orchestrator (my
+`d0445bbf` record is reverted in `87bc107f`).
 
 Laptop, `2434f50d` + temporary probes in `tank_brain.gd`/`gunnery.gd` (never committed; carve-out granted for the
 ORBIT_RADIUS/BREAK lines, unused because the arm did not work). `make ai-scenarios FILTER=engine_deck`, one run per arm:
@@ -283,7 +308,7 @@ from 30 m at a 43° bearing and from 3–6 m at ~109° (side-rear): the round-9 
 from the centre is ~4–5 m clear of the hull and can swing onto the stern inside its 5 m turning radius. The 8.62 m
 hull's stern is 4.31 m out, so the same circle is 1–3 m off it, and a larger circle is too slow angularly to beat 50°/s.
 
-**REASON for the count re-record (orchestrator):** `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` stays
+**REASON as written before squad's fix (kept for the record):** `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` stayed
 red on the resized tank. The ORBIT tactic is geometrically marginal against an 8.62 m hull with a 50°/s turret: the
 scout's measured orbit rate (33.7°/s) is below the turret's at every radius that clears the hull, and a
 surface-relative radius does not change the result (0 deck in both arms). Not a radius constant.
@@ -350,3 +375,43 @@ Before on record: feel's matrix, gangs 20 % on pit and 50 % on yard (unpaired, d
   aims at `target.global_position` (the box centre on the ground), and every aim test is planar
   (`Ballistics.aim_error` zeroes y; shells fly flat), so the aim is the hull centre in plan: not a trap today. Test to
   add: the collider centre equals the origin in x/z for every profile.
+
+### Requests to other streams
+
+- ~~**squad** (`tank_brain.gd`): the ORBIT eligibility gate vs the measured orbit rate (item 4).~~ Done by squad
+  (`2ac026af`: an orbit controller, 27 deck hits of 29).
+- **squad** (`incoming_fire.gd:137`): pass `"squad_incoming"` as the site to `Units.hull_reach_of` /
+  `hull_distance_of` (a one-word change) so the series can switch that site alone. Until then it follows
+  `match.hull_disc`.
+- **nav** (`movement.gd`): retry a route that came back `ready=false` on the next tick, not after `REPATH_SECONDS`
+  (item 5: a unit ordered on the frame the map has no regions drives straight for 4 s).
+- **nav**: after CP2, the War Rigs' `plant` wall contacts (8893 of 24463 unit-ticks pre-CP2) re-measured with
+  `TUNE=match.yaw_fit=1,match.yaw_world=1`, and the hull-hull count beside it (the accepted trade).
+- **metrics/orchestrator** (`mk/core.mk`): `make test` without `--fixed-fps` is not repeatable for many-unit tests on a
+  loaded machine (item 2). The orchestrator has taken this.
+
+### Merge notes (shared or other-owned files touched)
+
+- `tests/test_ai_player_orders.gd`: the `FIVE_SQUADS_ORDER` knob (default unchanged) and a refusal MEASURE line.
+- `tests/ai_scenarios/scenario_cp2.gd`: the artillery target's goal (−30 → −45, −40), with the reason in its comment.
+- `tests/baselines/ai_scenarios_count.txt`: recorded (`d0445bbf`, 42,2 on builder0) and then reverted (`87bc107f`)
+  on the orchestrator's instruction: it records the count once on `main` after control → squad → combat. My branch's
+  check is therefore red on `ai-scenarios-check` alone, by design, with the REASON in item 5.
+- `game/modes/match_runner_mode.gd` (mine): `controls.tuning` in `MATCH_RESULT`; no simulation effect.
+- The `game/ai` probes used for items 4 and 5 were never committed.
+
+### What to playtest
+
+Nothing on the default path changes on this branch (the constraint stays OFF until CP4). To see the fix now:
+`TUNE=match.yaw_fit=1,match.yaw_world=1 make skirmish ARENA=terminus` and order squads of War Rigs and dozers
+around the blocks; compare with `TUNE=match.yaw_fit=1` (round 9's rule), where squads parked in a row can freeze.
+
+### Next steps
+
+1. When CP3 and squad's pitch are on `main` (the orchestrator messages the hash): merge `main`, re-run five_squads,
+   nav's corridor, the wedged rig and the refused-run bar on builder0 with the world mask, then the CP4 commit
+   (`yaw_fit_enabled` and `yaw_fit_world` → true), merged alone, baseline recorded twice.
+2. After CP2 + nav's drive test: the rigs on Terminus under the world mask (nav's instrument), and frames at his pose.
+3. The series: `make remote T="disc-site-series ARENA=pit"`, then `ARENA=yard`; read against the pre-registration.
+4. Stretch: A2's verdict once metrics' cusp split is read; the duel's hide/peek regression.
+
