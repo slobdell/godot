@@ -122,6 +122,23 @@ def main():
                           for l in short) or "none"
         others.append("<tr><td>%s</td><td class=\"num\">%d of %d</td><td class=\"num\">%d of %d</td><td>%s</td></tr>"
                       % (html.escape(name), len(short), len(tab["lanes"]), len(bent), len(tab["corners"]), html.escape(where)))
+    read_rows = []
+    read_path = shots / "lane_read.json"
+    if read_path.exists():
+        reads = json.loads(read_path.read_text())
+        for name in ["terminus"] + [n for n in sorted(reads) if n != "terminus"]:
+            for row in reads.get(name, []):
+                if row["throat_m"] < 0.05:
+                    verdict = '<span class="bad">shut on its line: a collider stands on the lane</span>'
+                    seen = "&ndash;"
+                else:
+                    tone = "ok" if row["margin_px"] > 0 else "bad"
+                    verdict = '<span class="num %s">%+.0f px</span>' % (tone, row["margin_px"])
+                    seen = "%.0f%% of %.0f px" % (row["visible_fraction"] * 100, row["throat_px"])
+                read_rows.append('<tr><td>%s</td><td>%s</td><td class="num">%.2f m</td><td class="num">%s</td>'
+                                 '<td class="num">%.0f px</td><td>%s</td></tr>'
+                                 % (html.escape(name), html.escape(row["name"]), row["throat_m"], seen,
+                                    row["hull_px"], verdict))
     fonts = ('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600'
              '&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap">')
     page = """<title>Terminus Streets</title>%s<style>%s</style>
@@ -141,6 +158,12 @@ R is the War Rig's minimum turning radius (<span class="num">%.1f m</span>), r_a
 junction is certified for a right-angle turn; a street's own bend at its drawn angle. A corner passes when its
 inscribed clearance (the distance to the nearest building, box or wall) is at least r_eff.</p>
 <div class="table-wrap"><table><tr><th>where</th><th>&Delta;&psi;</th><th>r_eff (rig needs)</th><th>inscribed clearance</th></tr>%s</table></div></section>
+<section><h2>Does each street read passable from your camera?</h2>
+<p class="lede">Each lane's narrowest point, seen from your default camera (with the building cutaway the game
+applies): how much of the gap you can actually see, and how much wider that visible gap is on screen than the widest
+vehicle. Positive means you can see a vehicle fits. A lane with a box standing on its line has no gap to see at all:
+that is the other maps' lane lines running through their cover.</p>
+<div class="table-wrap"><table><tr><th>map</th><th>lane</th><th>narrowest</th><th>visible</th><th>widest hull</th><th>margin</th></tr>%s</table></div></section>
 <section><h2>The other maps (reported, not changed)</h2>
 <p class="lede">The same test on the maps you have not complained about. A short lane there is a note for a later
 round, not a change made without you.</p>
@@ -148,7 +171,7 @@ round, not a change made without you.</p>
 </div>""" % (fonts, CSS, html.escape(bar["widest_hull"]), bar["widest_hull_m"], bar["drivable_bar_m"],
                           bar["bake_radius_m"], ("Built at " + html.escape(args.commit) + ".") if args.commit else "",
                           "".join(pairs) or '<p class="bad">No frames yet: run make remote T=terminus-streets.</p>',
-                          "".join(rows), bar["rig_min_turn_m"], corner_rows, "".join(others))
+                          "".join(rows), bar["rig_min_turn_m"], corner_rows, "".join(read_rows) or '<tr><td colspan="6">not measured: run make terminus-streets-page</td></tr>', "".join(others))
     out = ROOT / args.out
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(page)

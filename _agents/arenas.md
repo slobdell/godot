@@ -709,6 +709,12 @@ z = 62 blocks' footprints.
 | boneyard (cut) | 4 of 4, each 0.00 m | (4, 45), (−3, 61), (−68, 50), (67, 70) |
 | boulevard (cut) | 6 of 6, each 0.00 m (the centre avenue since the ad screen's box became 7.8 × 2.0, R3) | (∓4, 31), (−60, 81), (60, 61), (−98, 66), (98, 31) |
 
+**Readability on the other maps** (`LaneReadability` at his default heading, `make terminus-streets-page` →
+`tests/arena/lane_read_probe.gd`): every yard lane, boneyard and boulevard lane and pit's south gate is "shut on its
+line" (a collider on the lane: nothing to see through). **Pit's west gate is 18.06 m wide but only 16% of its
+throat is visible from his camera** (margin −15 px against the widest hull): open, and it reads shut. Pit's flanks
+read wide open (+777 / +959 px).
+
 A 0.00 m reading means a collider stands on the lane's centre line. On a map whose lanes were drawn as AI hints
 through its cover (yard's run between container walls) that can be the lane line's fault rather than the map's;
 deciding which is a redesign question for a map he has complained about, and he has not.
