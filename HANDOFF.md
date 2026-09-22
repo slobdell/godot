@@ -32,6 +32,7 @@ and a paired series).
 | stream | merged at | what | branch verdict | main check |
 |---|---|---|---|---|
 | control | `52254fd2` (`f8e8c592`) | R2's input half (player orders compare the click; K1 gains `task`; `_same_order` never repeats across a task change), R1 as UX (task refusal reasons on the card, **Form squad**), the notice banner and "N IN NO SQUAD", a drawn facing orients the formation, **the objective rings drawn where the match scores** (terrain's finding), the pin-head lean, `make repath-test` | builder0 1575/0, exit 0, baseline unmoved, ai-scenarios 41,3 | launched 12:10, result below when read |
+| arena | `46388559` (`44315882`, CP2) | **the Terminus streets are lanes** (R4 asserted: every street 16.4–22 m physical, bar 8.14 m drivable from `ArenaLanes.bar()`, 17/17 junctions clear the rig's corner cut), R3 prop parity (ad_screen 7.8 × 2.0, wreck 3.2 × 3.3, the neon sign out of the spawn zones), the lane readability test at his pose (every throat 100 % visible at his default heading), terrain's decision_report/standing_point fix (spread now pit 0.67, yard 0.49, terminus 0.33); **his page: https://claude.ai/artifact/U3rZUei4p8YeLBS55VyCuX (7 street pairs; private, share from its menu)** | builder0 1569/0, exit 0, baseline unmoved, ai-scenarios 41,3 | covered by the next main check after the control check lands |
 
 ### Night log, 2026-09-22 (the orchestrator's decisions while the lead is away; newest first)
 
