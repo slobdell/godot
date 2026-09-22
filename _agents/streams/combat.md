@@ -261,6 +261,62 @@ Same build, arms selected by tune and proven applied (`TUNE applied from the env
   five_squads re-run with the constraint on, on that tree. The flip is two defaults (`yaw_fit_enabled`,
   `yaw_fit_world` → true) in one commit, merged alone, baseline recorded twice.
 
+### 4. ORBIT vs the resized tank: the radius is NOT the mechanism; written up, scenario stays red with this REASON
+
+Laptop, `2434f50d` + temporary probes in `tank_brain.gd`/`gunnery.gd` (never committed; carve-out granted for the
+ORBIT_RADIUS/BREAK lines, unused because the arm did not work). `make ai-scenarios FILTER=engine_deck`, one run per arm:
+
+| arm | x4mw deck / hits / shots | where the scout sits astern | gun error while astern |
+|---|---|---|---|
+| today (radius 11, break 5, from the centre) | 0 / 13 / 14 | 5.5–7.5 m from the centre (1–3 m off the stern) | 30–90° |
+| radius, break, burst range surface-relative (+ half-length − 1.8 = +2.5 m) | 0 / 16 / 16 | ~10 m | 60–120° |
+| + the eligibility gate surface-relative (ORBIT ineligible: 47.5 < 50°/s) | 0 / 0 / 0 (the scout declines the fight, like x3m) | n/a | n/a |
+
+**The mechanism (probe, today's arm):** the tank's turret was within 60° of the scout on **236 of 236** ORBIT thinks
+(245 of 245 under the radius arm). The orbit never outruns the turret, so the scout bursts only in the cannon's reload
+window. Its real orbit is a median **9.1 m/s at 6.6 m from the centre, 33.7°/s about the target** (p90 101°/s). The
+brain's eligibility gate assumes 14 m/s ÷ 11 m = 73°/s against the turret's 50°/s. Every fire gate but `aimed` is true
+astern (envelope, range, ready); the fixed gun is 30–120° off because the scout is circling, not facing. Its hits come
+from 30 m at a 43° bearing and from 3–6 m at ~109° (side-rear): the round-9 DECK_PROBE reading, now explained.
+
+**Why the 3.60 m tank worked (scale's arm, 22 deck hits of 43):** with the stern 1.8 m out, a scout circling ~6–7 m
+from the centre is ~4–5 m clear of the hull and can swing onto the stern inside its 5 m turning radius. The 8.62 m
+hull's stern is 4.31 m out, so the same circle is 1–3 m off it, and a larger circle is too slow angularly to beat 50°/s.
+
+**REASON for the count re-record (orchestrator):** `scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` stays
+red on the resized tank. The ORBIT tactic is geometrically marginal against an 8.62 m hull with a 50°/s turret: the
+scout's measured orbit rate (33.7°/s) is below the turret's at every radius that clears the hull, and a
+surface-relative radius does not change the result (0 deck in both arms). Not a radius constant.
+
+**Request to squad (owner of `tank_brain.gd`), not urgent:** the orbit's steering (a lead point 75° ahead on an 11 m
+circle, re-aimed each think, with arrival slowdowns) produces 9.1 m/s and 33.7°/s where the gate assumes 14 m/s and
+73°/s. An eligibility gate that reads the MEASURED angular rate, or a true constant-radius pursuit curve, is the
+behaviour fix. The option to pick when ORBIT is ineligible (today the scout declines the fight) is a design call.
+
+### 5. The artillery scenario: the artillery is right; the scenario measured nav's tick-1 route (re-specified)
+
+Laptop, `2434f50d` + temporary probes (never committed). `make ai-scenarios` uses `--fixed-fps`, so every row repeats.
+
+| run order | target's first route (its tick 2) | where the target parks | spotter sees it | battery | result |
+|---|---|---|---|---|---|
+| alone (first in the process) | ready, 7 points | (−32, −41) | yes | BOMBARD to the end, 5 rounds | PASS |
+| after any scenario (e.g. `artillery_digs_in`) | **ready=false, 0 points, `regions=[]`** | (−33, −40) | **no, from t≈300** | SHADOW from t≈300, drives off to (−62, 30), 1 round | FAIL |
+
+**Mechanism:** a scripted unit's first route request happens on the scenario's first physics frame. After a previous
+scenario, that is the one frame where the drained map has no regions and the new arena's are not yet synced (they are
+the next frame). `Movement` keeps the empty "not ready" route and replans only on its 4 s cadence, so the target
+drives straight and parks out of the spotter's line of sight. The battery then correctly packs up to re-acquire. It
+did nothing wrong in either run. Round 9's "passing on leaked navigation state" had the direction backwards for
+today's tree: the FIRST scenario of a process is the one that gets a route on tick 2.
+
+**Re-specified:** the target's goal is (−45, −40), in the spotter's sight on both routes (the claim is "stays dug in on
+a moving, spotted target", not "the target parks here"). Laptop: PASS in all three orders (alone, after `digs_in`, the
+whole file), 5 rounds each, packed up 0–1 times. The count moves 41,3 → 42,2 (REASON recorded in the baseline).
+
+**Request to nav (via the orchestrator):** `Movement` should retry a route that came back `ready=false` on the next
+tick rather than after `REPATH_SECONDS`. The same frame exists in real play (a match's first tick after a scene
+reload), and a unit ordered on it drives straight for 4 s.
+
 ### Answers given to other streams
 
 - **feel CP3 jitter (2026-09-22):** no objection. five_squads seeds jitter 0.0; `test_tank_place`/`test_spawn_isolation`

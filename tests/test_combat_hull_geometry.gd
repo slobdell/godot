@@ -143,11 +143,11 @@ func test_the_cached_pair_agrees_with_the_hull_size_form() -> void:
 ## id raised on the INDEX and the fallback was **unreachable by construction**. Every call site passing a fallback
 ## for a possibly-unknown id read as protection that did not exist -- which is how the pre-CP2 literals scale found
 ## managed to be stale AND dead at once. The guard is only worth having if it can be driven, so it is driven here:
-## both the given-fallback branch and the no-fallback branch, with the warning declared so a guard that stops
-## warning fails this test rather than passing it quietly.
+## both the given-fallback branch and the no-fallback branch, with the error declared (round 10: an error, not a
+## warning) so a guard that stops erroring fails this test rather than passing it quietly.
 func test_an_unknown_unit_id_returns_the_fallback_instead_of_raising() -> void:
-	expect_warning("Units.stat: no unit 'no_such_unit'*")
-	expect_warning("Units.stat: no unit 'no_such_unit'*")
+	expect_error("Units.stat: no unit 'no_such_unit'*")
+	expect_error("Units.stat: no unit 'no_such_unit'*")
 	var given: Variant = Units.stat("no_such_unit", "hull_size", [1.0, 1.0, 1.0])
 	assert_eq(given, [1.0, 1.0, 1.0], "the fallback the caller wrote is the one it gets")
 	# No fallback: DEFAULT's value, which is a unit that exists, rather than a null that fails somewhere else later.
@@ -156,3 +156,26 @@ func test_an_unknown_unit_id_returns_the_fallback_instead_of_raising() -> void:
 			"with no fallback given, %s's value stands in (%s)" % [Units.DEFAULT, defaulted])
 	# And a KNOWN id is untouched by the guard, which is the half that would be easy to break silently.
 	assert_eq(Units.stat(RIG, "hull_size"), _rig(), "a known id still reads its own profile")
+
+
+## Round 10 (combat, research row C8(a)): every aim, line-of-fire and exposure computation treats a hull's ORIGIN as the
+## centre of its box in plan (`gunnery.gd` aims at `target.global_position`; `Ballistics.aim_error` is planar; the disc
+## and box reaches are centred there). That is only true while the collider sits on the origin in x and z. R5 moves the
+## turret, not the hull, so nothing should move it; this makes an offset collider fail by name instead of quietly
+## shifting every unit's exposure.
+func test_every_hull_collider_is_centred_on_its_origin_in_plan() -> void:
+	add_to_tree(preload("res://game/arena/arena.tscn").instantiate())
+	var game_match: Match = add_to_tree(preload("res://game/match/match.tscn").instantiate())
+	var ids: Array = Units.PROFILES.keys()
+	ids.sort()
+	var checked := 0
+	for index in ids.size():
+		var unit_id := String(ids[index])
+		var tank := game_match.spawn_tank("Green_Centre_%d" % index, index, Match.Team.GREEN, unit_id)
+		var collider := tank.get_node("Collision") as CollisionShape3D
+		var size: Array = Units.stat(unit_id, "hull_size")
+		assert_near(collider.position.x, 0.0, 1e-6, "%s: the collider's centre is on the origin across (x)" % unit_id)
+		assert_near(collider.position.z, 0.0, 1e-6, "%s: the collider's centre is on the origin along (z)" % unit_id)
+		assert_near((collider.shape as BoxShape3D).size.z, float(size[2]), 1e-6, "%s: and it is the profile's box" % unit_id)
+		checked += 1
+	assert_eq(checked, ids.size(), "every profile was spawned and checked (%d)" % checked)

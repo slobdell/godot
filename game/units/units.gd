@@ -1165,20 +1165,16 @@ static func _ensure_env_tuning() -> void:
 ## longer makes a written fallback a lie. A caller that gave no fallback gets `Units.DEFAULT`'s value for that key,
 ## which is a unit that exists rather than a null that fails somewhere further on.
 ##
-## ⚠ `push_warning`, NOT `push_error`, and the severity is a deliberate trade rather than an opinion about how bad
-## this is. The runner fails a test on any engine ERROR and has no `expect_error` to declare a deliberate one
-## (`TestCase.expect_warning` exists; its error twin does not). A `push_error` here would therefore make this guard
-## **untestable** -- and a guard nobody can drive into is exactly the unreachable protection nav objected to. So it
-## warns, the test declares the warning with `expect_warning`, and an expectation that stops arriving fails the
-## test too. **`expect_error` lands with nav's `06c7e772`**; when that is on main this becomes `push_error` and the
-## test becomes `expect_error`, a two-line follow-up.
+## `push_error` (round 10, combat): it was a `push_warning` only because the runner had no `expect_error` and an
+## error here would have made the guard untestable. `TestCase.expect_error` exists now, so an unknown id is an ERROR
+## again, which fails any test that reaches it by accident, and the guard's own test declares it.
 static func stat(unit_id: String, key: String, fallback: Variant = null) -> Variant:
 	_ensure_env_tuning()
 	var tuned_key := "%s.%s" % [unit_id, key]
 	if tuning.has(tuned_key):
 		return tuning[tuned_key]
 	if not PROFILES.has(unit_id):
-		push_warning("Units.stat: no unit '%s' (asked for '%s'); using %s" % [unit_id, key,
+		push_error("Units.stat: no unit '%s' (asked for '%s'); using %s" % [unit_id, key,
 				"the given fallback" if fallback != null else "%s's value" % DEFAULT])
 		return fallback if fallback != null else PROFILES[DEFAULT].get(key, null)
 	return PROFILES[unit_id].get(key, fallback)
