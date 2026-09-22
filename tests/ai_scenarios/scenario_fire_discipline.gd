@@ -66,6 +66,10 @@ func test_holds_fire_while_a_friendly_crosses_the_line() -> void:
 	assert_eq(fired_through, 0, "it never fires while the friend is in the line of fire")
 
 
+# REASON (CP3, round 10; combat's ruling, 2026-09-22): RED ON PURPOSE -- combat's row: parked-friend lane vs the bigger
+# bus, lof-site arm pending. The shooter and the friend are both the default unit, the bus grew to 2.90 x 9.70 m (R6),
+# and the friendly-fire disc of its diagonal (5.06 m, was 4.47) refuses the second shot. A behaviour claim on the `lof`
+# disc site, so the bar (shots >= 2) is NOT loosened; combat takes it once CP3 is on main.
 func test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane() -> void:
 	var s := AiScenario.create(self)
 	var target := s.dummy(Match.Team.RUST, "Rust_Target_1", TARGET_AT, PI)

@@ -117,12 +117,15 @@ const SPAWN_SLOTS := 57
 ## 0.0 on y, but squad's `ArmyLayout.deploy` writes the full placement, so a doctrine army takes the layout's y and
 ## not this one. Two streams implemented the same ruling in two places in round 9 and only one could have an effect.
 const SPAWN_LIFT_M := 0.0
-## Spawn jitter never moves a unit more than this sideways or along z: the column pitch (7.5) and the row spacing
-## (12.0), each minus the bare-spawn hull (2.40 x 8.62 m) and minus ArmyLayout.HULL_CLEAR_M (2.0), halved. It came
-## down with the grid's pitch -- a bare spawn now scatters +-1.5 m across and +-0.6 m along instead of +-3.5 / +-1.2.
-## A doctrine army's scatter is unaffected: ArmyLayout lays it out itself, by hull size, at tick 0.
-const SPAWN_JITTER_MAX_X := 1.5
-const SPAWN_JITTER_MAX_Z := 0.6
+## Spawn jitter never moves a unit more than this sideways or along z. THE RULE (re-derive it, do not type it, when a
+## hull or the grid changes): `pitch - 2 x jitter - hull >= TacticsFormation.HULL_CLEAR_M (2.0)` for the bare-spawn
+## unit `Units.DEFAULT` on each axis, so jitter = (pitch - hull - 2.0) / 2 -- tests/test_spawn_grid.gd asserts it.
+## Round 10, CP3 (feel, with the orchestrator's approval; combat's constants, combat reviews at merge): the bus grew
+## to 2.90 x 9.70 m (R6), so X = (7.5 - 2.90 - 2.0) / 2 = 1.30 and Z = (12.0 - 9.70 - 2.0) / 2 = 0.15 (they were 1.5 /
+## 0.6 for the 2.40 x 8.62 bus). Arena.SPAWN_CLEARANCE reads X, so it shrinks by 0.2 m with it, which only loosens
+## arena's authoring checks. A doctrine army's scatter is unaffected: ArmyLayout lays it out by hull size at tick 0.
+const SPAWN_JITTER_MAX_X := 1.30
+const SPAWN_JITTER_MAX_Z := 0.15
 
 ## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
 static var swap_bases := false

@@ -32,6 +32,9 @@ static func _flat_distance(a: Vector3, b: Vector3) -> float:
 
 # ---- 1. slot and sector ------------------------------------------------------------------------
 
+# REASON (CP3, round 10; squad's ruling, 2026-09-22): may read RED on builder0 -- a 9.7 m bus fighting from its slot
+# drifts 15-16+ m against its own leash + 2 m (16.0); the leash is the doctrine's spacing, not the hull; squad's row,
+# investigated after the pitch. A behaviour claim: the bar is NOT bent.
 func test_a_unit_fighting_from_a_formation_slot_stays_in_it() -> void:
 	# Three tanks in line abreast, told by their leader to attack an enemy pair 55 m ahead. Fighting on the move is
 	# right (round 3), but a unit that circles 40 m out of its slot has left the formation: mutual support, sectors

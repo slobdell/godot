@@ -38,6 +38,9 @@ func test_forming_an_element_gives_every_unit_a_leader_and_a_slot() -> void:
 	scenario.dispose()
 
 
+# REASON (CP3, round 10; squad's ruling, 2026-09-22): RED ON PURPOSE -- test_the_leader_issues_one_order_per_vehicle_and_
+# they_drive_to_their_slots: the leader pinned to its column's head crosses its own row first while co-arrival pacing
+# holds the rest at 0.35 (trace: 2.5 s east at 8.8 m/s); squad's, the legged path's seating; fix follows.
 func test_the_leader_issues_one_order_per_vehicle_and_they_drive_to_their_slots() -> void:
 	var context := await _element_scenario()
 	var elements: Elements = context["elements"]
@@ -59,10 +62,21 @@ func test_the_leader_issues_one_order_per_vehicle_and_they_drive_to_their_slots(
 	var before := _spread(alpha, scenario)
 	for i in SimClock.TICK_RATE * 6:
 		await scenario.step()
-	assert_true((scenario.game_match.tanks.get_node("Green_A_1") as Tank).global_position.z < 45.0,
-			"the element actually drove north toward its objective")
-	assert_true(_spread(alpha, scenario) <= before + 12.0,
-			"and it stayed formed up on the way (spread %.1f m -> %.1f m)" % [before, _spread(alpha, scenario)])
+	# CP3 (round 10, feel, squad's derived form -- squad reviews): both bars were literals calibrated on the 8.62 m bus.
+	# Progress is a SPEED, not a hull length (a bigger bus drives no slower): 40% of the leader's top speed over the 6 s
+	# window, from its z = 60 spawn. Spread is laid wider on purpose for a bigger hull: 1.5 slot pitches, from the
+	# element's own published pitch.
+	var leader := scenario.game_match.tanks.get_node("Green_A_1") as Tank
+	var progress := 60.0 - leader.global_position.z
+	var wanted := 0.4 * float(Units.stat(leader.unit_id, "max_forward_speed")) * 6.0
+	var pitch_x := float((alpha.state()["pitch"] as Array)[0])
+	var spread := _spread(alpha, scenario)
+	print("MEASURE element_drive progress %.1f m (bar %.1f), spread %.1f -> %.1f m (bar +%.1f = 1.5 x pitch %.1f)"
+			% [progress, wanted, before, spread, 1.5 * pitch_x, pitch_x])
+	assert_true(progress >= wanted,
+			"the element actually drove north toward its objective (%.1f m, bar %.1f m)" % [progress, wanted])
+	assert_true(spread <= before + 1.5 * pitch_x,
+			"and it stayed formed up on the way (spread %.1f m -> %.1f m, bar +%.1f)" % [before, spread, 1.5 * pitch_x])
 	scenario.dispose()
 
 
