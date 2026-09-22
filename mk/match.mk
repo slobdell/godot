@@ -97,6 +97,7 @@ switch-arm: import ## X1 (A2): is the switching cost consulted, and does it vary
 		--budget=$(or $(BUDGET),6500) --green=$(or $(SWITCH_GREEN),gangs) --rust=$(or $(SWITCH_RUST),law) \
 		--green-army=$(or $(SWITCH_GREEN_ARMY),gang_ram) --rust-army=$(or $(SWITCH_RUST_ARMY),law_line) \
 		--require=$(or $(SWITCH_REQUIRE),gang_tank) $(if $(SWITCH_EVENTS),--switch-events=$(CURDIR)/$(SWITCH_EVENTS)) \
+		$(if $(TRAJECTORY),--trajectory=$(CURDIR)/$(TRAJECTORY)) \
 		$(if $(TUNE),--tune=$(TUNE)) 2>&1 | tee $(BUILD_DIR)/switch-arm.log | grep -E "SWITCH_ARM|SCRIPT ERROR|ERROR" || true
 	@$(PYTHON) -c "import json,sys; \
 		raw=open('$(BUILD_DIR)/switch-arm.log').read(); \
@@ -154,6 +155,21 @@ scale-bench: import ## X5: sim cost per tick at SCALE_SIZES vehicles a side, wit
 match-pytest: ## The match tools' own tests: what compare_arms refuses to subtract, and why
 	$(PYTHON) -m unittest discover -s tools -p 'test_compare_arms.py'
 	$(PYTHON) -m unittest discover -s tools -p 'test_paired_arms.py'
+
+# Round 10 (combat, stretch: A2's verdict). Both switching arms on the same seeds, each fight's trajectory logged, then
+# metrics' cusp split per arm. The pre-registered reading (round 9): `tank` decides it -- tracked hulls make no creep
+# cusps, so its unexplained cusps are decisions; if A2's excess reversals show up there, A2 stays off.
+A2_SEEDS ?= 1 2 3 4 5 6
+a2-cusps: import ## A2's verdict: switch-arm with trajectories on both arms (flat default, switch.cost=1) over A2_SEEDS, then make metrics per arm
+	@mkdir -p $(BUILD_DIR)/metrics/a2
+	for seed in $(A2_SEEDS); do \
+		$(MAKE) --no-print-directory switch-arm SEED=$$seed TRAJECTORY=$(BUILD_DIR)/metrics/a2/flat-$$seed.jsonl || exit 1; \
+		$(MAKE) --no-print-directory switch-arm SEED=$$seed TUNE=switch.cost=1 TRAJECTORY=$(BUILD_DIR)/metrics/a2/cost-$$seed.jsonl || exit 1; \
+	done
+	$(MAKE) --no-print-directory metrics LOGS="$(BUILD_DIR)/metrics/a2/flat-*.jsonl" METRICS_JSON=$(BUILD_DIR)/metrics/a2/flat.json
+	$(MAKE) --no-print-directory metrics LOGS="$(BUILD_DIR)/metrics/a2/cost-*.jsonl" METRICS_JSON=$(BUILD_DIR)/metrics/a2/cost.json
+	@# ~100 MB per 120 s fight: keep the two per-arm JSONs, not the logs (make remote copies build/ back).
+	rm -f $(BUILD_DIR)/metrics/a2/*.jsonl
 
 # Round 10 (combat, item 6; research C6/C7): the gangs-vs-law series, ONE disc site at a time. Four arms on the SAME
 # seed list, both colours, one map per invocation (each stays under slot.sh's 90-minute kill): the control (the disc at
