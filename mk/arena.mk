@@ -76,3 +76,42 @@ arena-reach: import ## X2: write the catalog's covering ranges (Engagement.cover
 water-probe: import ## Round 7: does a carved navmesh hole give us water (impassable, fire-transparent)? BRIDGE=1 restores a strip -> build/water.json
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/water_probe.gd -- \
 		$(if $(BRIDGE),--bridge) --json=$(CURDIR)/$(BUILD_DIR)/water$(if $(BRIDGE),-bridge).json
+
+# ---- Terrain (round 10, the terrain stream's; additive): water, pits, bridges -------------------------------------
+.PHONY: terrain-pytest terrain-shots
+
+terrain-pytest: ## Terrain: the Python water/bridge mirror against the golden file Godot is held to, and the report routing round water
+	$(PYTHON) -m unittest tools/test_arena_terrain.py
+
+## Spots and scale hulls per terrain map: name:x:z for the camera, x:z:yaw for a hull. The dry twin is shot from the same pose.
+TERRAIN_SHOT_ARENAS ?= crossing pits
+TERRAIN_SPOTS_crossing ?= bridge:-92:14,neck:0:22,landing:-76:-22,far_bridge:92:-14
+TERRAIN_HULLS_crossing ?= -92:12:0,-88:36:10,-78:-20:170,6:48:0,70:18:200
+TERRAIN_SPOTS_pits ?= catwalk:-55:14,causeway:-27:14,lip:-40:40,far:-52:-22
+TERRAIN_HULLS_pits ?= -55:10:0,-27:20:10,-44:40:0,-50:-22:170,-84:30:0
+
+terrain-shots: import ## Terrain: each terrain map at the lead's pose (21 deg, FOV 35, 49 m) beside its dry twin, plus an overview -> build/terrain-shots/ (needs a display: make remote T=terrain-shots)
+	rm -rf $(BUILD_DIR)/terrain-shots && mkdir -p $(BUILD_DIR)/terrain-shots
+	@# $(foreach), not a shell loop over a nested `make`: every make target takes a heavy-run slot, and a recipe that
+	@# already holds one waiting for another is a deadlock.
+	$(foreach arena,$(TERRAIN_SHOT_ARENAS),timeout 600 $(GODOT) --path . --resolution 1920x1080 \
+		--script res://game/theme/arena_kit/terrain/tools/terrain_shots.gd -- --arena=$(arena) \
+		--out=$(CURDIR)/$(BUILD_DIR)/terrain-shots --spots=$(TERRAIN_SPOTS_$(arena)) --hulls=$(TERRAIN_HULLS_$(arena)) \
+		> $(BUILD_DIR)/terrain-shots/$(arena).log 2>&1 || true; \
+		grep -E 'TERRAIN_SHOT|SCRIPT ERROR|^ERROR' $(BUILD_DIR)/terrain-shots/$(arena).log || true; \
+		grep -q 'TERRAIN_SHOTS_DONE ok=true' $(BUILD_DIR)/terrain-shots/$(arena).log || { echo "terrain-shots: $(arena) failed"; exit 1; };)
+	ls $(BUILD_DIR)/terrain-shots/*.png
+
+.PHONY: terrain-series terrain-measure
+terrain-series: import ## Terrain (R9): a terrain map vs its dry twin on the SAME seeds -- unit-time on the crossings, time at the contested objective, discordant pairs (TERRAIN_MAP=crossing SEEDS=32 FIRST_SEED=1 ARENA_FACTION=condemned ARENA_TIME=180) -> build/terrain-series-<map>.json
+	$(PYTHON) tools/terrain_series.py --godot $(GODOT) --map $(or $(TERRAIN_MAP),crossing) --seeds $(or $(SEEDS),32) \
+		--first-seed $(or $(FIRST_SEED),1) --jobs $(or $(JOBS),3) --faction $(or $(ARENA_FACTION),condemned) \
+		--time-limit $(or $(ARENA_TIME),180) --json $(BUILD_DIR)/terrain-series-$(or $(TERRAIN_MAP),crossing).json \
+		| grep -E '^TERRAIN_(RUN|SERIES)'
+
+terrain-measure: ## Terrain: the ring-of-eyes centre figure and plain objective routes beside arena-report's (no Godot)
+	$(PYTHON) tools/terrain_measure.py arenas/crossing.json arenas/crossing_dry.json arenas/pits.json arenas/pits_dry.json
+
+.PHONY: terrain-page
+terrain-page: ## Terrain: the lead's page -- every terrain map's frames beside its dry twin, and the numbers (after make remote T=terrain-shots) -> build/terrain-page/index.html
+	$(PYTHON) tools/terrain_page.py --shots $(BUILD_DIR)/terrain-shots --series $(BUILD_DIR) --out $(BUILD_DIR)/terrain-page/index.html $(TERRAIN_SHOT_ARENAS)

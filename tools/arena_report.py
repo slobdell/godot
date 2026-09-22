@@ -16,6 +16,7 @@ import argparse, heapq, json, math, os, pathlib, sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import units_catalog
+import arena_terrain
 
 ## The half-extent `centre_sees_share` is ALWAYS measured over, whatever size the layout declares.
 ##
@@ -969,6 +970,9 @@ def analyze(layout):
     use_extent(layout)
     boxes = boxes_of(layout)
     blocked, n = occupancy(boxes)
+    # Round 10 (terrain): water and pits are not floor, and rims and bridge rails are walls, grown by the bake
+    # radius as the navmesh is. Sight is untouched: all of it is below the eye line. See tools/arena_terrain.py.
+    arena_terrain.carve(blocked, n, layout, HALF, GRID, AGENT_RADIUS)
     green_front = tuple(layout["spawns"]["green"][0])
     rust_front = tuple(layout["spawns"]["rust"][0])
     report = {"name": layout["name"], "features": len(boxes),
@@ -1065,6 +1069,11 @@ def plot(layout, report, out_dir):
         if zone:
             ax.add_patch(Rectangle((zone["center"][0] - zone["size"][0] / 2, zone["center"][1] - zone["size"][1] / 2),
                                    zone["size"][0], zone["size"][1], fill=False, ec=col, ls="--"))
+    for t in layout.get("terrain", []):  # round 10 (terrain): water blue, pits black, decks steel
+        x0, z0, x1, z1 = arena_terrain.bounds(t)
+        shade = {"water": "#1f6fb2", "pit": "#050505", "bridge": "#8a8f98"}.get(t["kind"], "#555")
+        ax.add_patch(Rectangle((x0, z0), x1 - x0, z1 - z0, fc=shade, ec="#44d7ff" if t["kind"] != "bridge" else "#ffd500",
+                               lw=0.8, alpha=0.9, zorder=0.5 if t["kind"] != "bridge" else 0.6))
     for h in layout.get("hazards", []):
         ax.add_patch(Circle(tuple(h["position"]), h["radius"], color="#ff7b00", alpha=0.5))
     cp = layout.get("control_point")

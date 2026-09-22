@@ -239,56 +239,11 @@ func _build_perimeter() -> void:
 		wall.add_child(shape_node)
 
 
-## Round 7: water, pits and the bridges over them. The FLOOR is rebuilt as the arena minus every carving footprint
-## plus every deck, because the hole in the navmesh is what makes the water impassable; the rim and the pan are
-## deliberately NOT navigation sources, so they stop hulls without ever reaching the bake.
+## Round 7: water, pits and the bridges over them; built by `ArenaTerrain.build()` (terrain's, round 10), which
+## owns the floor, rims, rails, pans and the `arena.terrain` art so the mechanism lives in one file.
 func _build_terrain() -> void:
-	var terrain: Array = layout.get("terrain", [])
-	if terrain.is_empty():
-		return
-	var half := float(layout["half_size"]) + GROUND_MARGIN
-	# The stock Ground is one slab covering everything; a carved layout replaces it wholesale.
-	var ground := get_node_or_null("Ground") as StaticBody3D
-	if ground != null:
-		var stock := ground.get_node_or_null("Collision") as CollisionShape3D
-		if stock != null:
-			stock.disabled = true
-		for slab: Array in ArenaTerrain.slabs(half, terrain):
-			ground.add_child(_slab(Vector3(slab[0], -GROUND_THICKNESS / 2.0, slab[1]),
-					Vector3(slab[2], GROUND_THICKNESS, slab[3])))
-	var rims := StaticBody3D.new()
-	rims.name = "TerrainRims"
-	var pans := StaticBody3D.new()
-	pans.name = "TerrainPans"
-	for entry: Dictionary in terrain:
-		if not ArenaTerrain.carves(String(entry["kind"])):
-			continue
-		for slab: Array in ArenaTerrain.rim_slabs(entry, terrain):
-			rims.add_child(_slab(Vector3(slab[0], ArenaTerrain.RIM_HEIGHT / 2.0, slab[1]),
-					Vector3(slab[2], ArenaTerrain.RIM_HEIGHT, slab[3])))
-		var depth := float(ArenaTerrain.KINDS[entry["kind"]]["pan_depth"])
-		var rect: Array = entry["rect"]
-		pans.add_child(_slab(Vector3(rect[0], -depth - GROUND_THICKNESS / 2.0, rect[1]),
-				Vector3(rect[2], GROUND_THICKNESS, rect[3])))
-	add_child(rims)
-	add_child(pans)
-	# Only if feel has the slot: VisualSlot pushes an engine error for a slot the theme lacks, and an arena that
-	# errors because its water has no art yet is worse than water with no art. Same guard the kit props use.
-	if GameTheme.slots.has("arena.terrain"):
-		var dressing := VisualSlot.new()
-		dressing.name = "TerrainVisual"
-		dressing.slot = "arena.terrain"
-		add_child(dressing)
-		dressing.invoke("setup", [terrain])
-
-
-func _slab(at: Vector3, size: Vector3) -> CollisionShape3D:
-	var shape := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = size
-	shape.shape = box
-	shape.position = at
-	return shape
+	ArenaTerrain.build(self, layout.get("terrain", []), float(layout["half_size"]) + GROUND_MARGIN,
+			get_node_or_null("Ground") as StaticBody3D, GROUND_THICKNESS)
 
 
 func _build_obstacles() -> void:

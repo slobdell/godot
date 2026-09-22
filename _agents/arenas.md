@@ -839,3 +839,62 @@ triangle-count criterion; whether `cell_size` 0.5 interacts with large flat span
 when the bake is **not** the half-plus-mirror arrangement (every test above used the shipping bake path). **The
 4 m slab tiling in `Arena._obstacle_shapes()` is a workaround, not an explanation**, and C2 should not assume the
 baker behaves as documented until someone knows why this happens.
+
+## Terrain maps: water, pits and bridges (terrain stream, round 10)
+
+> Owner: terrain (`game/arena/arena_terrain.gd`, `game/theme/arena_kit/terrain/`, `tools/terrain_maps.py`,
+> `tools/arena_terrain.py`, `tools/terrain_measure.py`, the `terrain-*` targets). The lead asked twice; the round-7
+> mechanism existed with no art and no map, which is why he never saw it.
+
+**The rule every map here is built to:** terrain makes risk, objectives make reason, the prize goes where the risk
+is. Every terrain map carries a mirrored objective pair (R9), and each side's CONTESTED objective sits at the far
+mouth of a crossing. `tools/terrain_maps.py` refuses to write a terrain map without one.
+
+**Every terrain map has a DRY TWIN** (`<name>_dry.json`, `fixture: true`, identical but `terrain: []`): the null
+arm of the paired series and the before-frame of every picture. Measure the map AND its twin; a number without its
+twin's beside it does not say what the terrain did.
+
+### What the mechanism gained in round 10
+
+| Change | Why |
+|---|---|
+| A rim is cut only by a deck that crosses THAT edge | round 7 cut an edge wherever a deck overlapped its axis: a second river got a gap onto open water at the first one's bridge |
+| **Bridge rails** (`rail_slabs`, 0.9 m, on the deck along every side over water) | without them a hull shoved sideways left the deck into the pan for the rest of the match |
+| Rims and rails are **navigation sources** (R3) | the mesh reached 0.8 m past the rim's outer face, so a route along a bank scraped the rim |
+| `MIN_DECK_M` = R4 bar + 2 × bake radius + 2 rails = **13.14 m** | round 7's 7 m was the maze's single-file gate; a test reads `Units` and fails when a wider hull lands (it caught 4.07 m) |
+| `ArenaTerrain.build()` owns floor, rims, rails, pans, art | `Arena._build_terrain()` is a one-line delegate |
+| `arena_report` sees terrain (`tools/arena_terrain.py` hook) | it routed straight through rivers: every figure on a river map was measured as if the river were floor |
+
+The Python mirror of the rim/rail geometry is pinned: `tests/fixtures/terrain_golden.json` is reproduced by BOTH
+`tests/test_terrain_golden.gd` and `tools/test_arena_terrain.py` (`make terrain-pytest`).
+
+### The art (`arena.terrain`, `game/theme/arena_kit/terrain/`)
+
+Five surface kinds, one draw each, no lights, no textures. **Water and pits are interior-mapped** (van Dongen 2008):
+the floor is one plane at y = 0 that feel owns, so a real sunken channel would mean cutting it; instead a quad just
+above the floor traces each view ray into the footprint's imaginary box and shades the wall, water line or pan it
+hits. From his 21° camera the far bank's wall is in view, so the channel reads as cut into the arena. Water reflects
+the venue's neon (fresnel, a horizon band, ripples on one animated scalar `flow`); a pit is a deep shaft with a red
+glow at the bottom. Kerbs and rails are built from the SAME boxes as the colliders.
+
+### Measured (laptop, python `arena_report` + `terrain_measure`, static geometry, no match)
+
+| map | `centre_sees` (report) | centre, ring of eyes | decision spread | contested route, plain (green / rust) |
+|---|---|---|---|---|
+| **crossing** | **0.30** | **0.27** | **0.45** | **185 m** / 112 m |
+| crossing_dry | 0.46 | 0.46 | 0.02 | 148 m / 112 m |
+| **pits** | 0.00 ⚠ artifact | **0.34** | 0.39 | 134 m / 90 m |
+| pits_dry | 0.00 ⚠ artifact | 0.34 | 0.39 | 134 m / 90 m |
+
+- **On the Crossing the river IS the decision:** spread 0.45 against its dry twin's 0.02, and the plain route to the
+  contested objective grows 148 → 185 m. The river also cuts what the middle sees (0.46 → 0.30).
+- **On the Pits the static instruments cannot see the pits:** routes and spread are identical wet and dry, because
+  the chain does not lengthen the short route, it EXPOSES it (the causeways are open to the far lips). Whether that
+  changes play is the paired series' question, not this table's.
+- ⚠ **Two instrument limits, reported to arena:** `standing_point` snaps only 12 m, so a map with a 40 m block at
+  the centre puts the eye inside it and scores 0.00 (hence the ring-of-eyes column); and `decision_report` routes the
+  ENEMY with green's exposure field, so the Crossing's spread flips 0.45 ↔ 0.03 on whether one alley is open while the
+  plain routes do not move. The Crossing's screens were swept to the variant where both centre < 0.30 and the spread
+  do not rest on that flip.
+- Pits' 0.34 sits between the Pit he kept (0.30) and Boneyard he cut (0.40). A kill-zone map is open across its pits
+  by design; his eye decides, not a further 0.04 of containers.

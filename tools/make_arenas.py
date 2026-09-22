@@ -228,7 +228,7 @@ def objective_pair(name, x, z, radius=14.0):
 
 
 def write_v2(name, title, fight, props, lanes=(), regions=(), obstacles=(), control_radius=16.0, hazards=(),
-             fixture=False, objectives=(), shape=None, half_size=120.0):
+             fixture=False, objectives=(), shape=None, half_size=120.0, terrain=()):
     layout = {"name": name, "schema": 2, "title": title, "note": fight, "half_size": half_size, "fixture": fixture,
               "obstacles": mirrored(list(obstacles)), "props": mirrored_props(list(props)),
               "spawns": spawns(), "spawn_zones": {"green": SPAWN_ZONE, "rust": {"center": [0.0, -102.0], "size": SPAWN_ZONE["size"]}},
@@ -240,8 +240,14 @@ def write_v2(name, title, fight, props, lanes=(), regions=(), obstacles=(), cont
         layout["objectives"] = list(objectives)
     if shape:
         layout["shape"] = shape
+    if terrain:
+        # Round 10 (terrain): already mirrored by the caller (tools/terrain_maps.mirrored_terrain), and checked there.
+        layout["terrain"] = list(terrain)
     _keep(name, layout)
     check_spawn_clearance(layout)
+    if terrain:
+        import terrain_maps
+        terrain_maps.check_terrain(layout, spawn_clearance())
     with open(os.path.join(OUT, name + ".json"), "w") as f:
         f.write(json.dumps(layout, indent=1) + "\n")
 
@@ -708,3 +714,8 @@ write_v2("terminus", "The Terminus",
                   region("ring road west", "flank", -80, 30, 16),
                   region("south approach", "open_ground", 0, 92, 20),
                   region("tower corner", "overlook", -52, 40, 7)])
+
+
+# ---- Terrain maps (round 10, the terrain stream's; additive): water, pits, bridges. See tools/terrain_maps.py. ----
+import terrain_maps
+terrain_maps.author(sys.modules[__name__])
