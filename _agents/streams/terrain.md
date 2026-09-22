@@ -173,6 +173,22 @@ Winner changed between the arms on 6 of 32 seeds.
   Read: the brains-only CPUs cross where they must and fight there; whether a player's squads would take the far
   objective more is the lead's game, not this series'. Not claimed.
 
+**The Sumps vs `sumps_dry`, the same 32 paired seeds and settings, sim code at `56691a5b` (the tree synced at 15:33,
+before any later commit), builder0.** Positive control held on every run.
+
+| measure (median) | sumps | sumps_dry | seeds wet > dry | wet < dry | sign test p |
+|---|---|---|---|---|---|
+| unit-time on the crossings (catwalk and causeway chokepoints) | **0.0253** | 0.0140 | **29** | 3 | **< 0.0001** |
+| time at the CONTESTED objective / time at either | 0.47 | 0.64 | 12 | 20 | 0.22 |
+| hits | 482 | 503 | 15 | 17 | 0.86 |
+
+Winner changed between the arms on 2 of 32 seeds.
+- **The sumps put the fight on the causeways and the catwalk** (29 of 32 seeds) without changing how much fighting
+  there is (hits flat), which is what a kill-zone map should do.
+- **The contested-objective rate does not move** here either (12 vs 20, p 0.22; its median falls, not significantly).
+  Same reading as the Crossing: the terrain decides WHERE the crossing happens, not WHETHER the CPUs go for the far
+  objective. Not claimed.
+
 ### For his page (paths in `~/projects/godot-terrain`; the orchestrator copies them)
 
 - **Frames at his pose** (21°, FOV 35, 49 m), each beside the same frame of its dry twin: `build/terrain-shots/`
