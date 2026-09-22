@@ -161,6 +161,14 @@ airship-look: import ## Feel X7: is the Syndicate airship EVER in the lead's fie
 	@grep -q AIRSHIP_LOOK_DONE $(BUILD_DIR)/airship-look/log.txt || { grep -E 'AIRSHIP_LOOK_FAILED|SCRIPT ERROR' $(BUILD_DIR)/airship-look/log.txt; echo "airship-look FAILED"; exit 1; }
 	@ls $(BUILD_DIR)/airship-look/*.png
 
+blimp-look: import ## Feel R7: how often is the low ad blimp in the lead's frame at HIS pose (21 deg, FOV 35, 49 m)? Foci over the map x 4 yaws x its lap, occlusion by the blocks -> build/blimp-look/ (needs a display; ARENA=terminus by default, BLIMP_FLAGS=)
+	rm -rf $(BUILD_DIR)/blimp-look && mkdir -p $(BUILD_DIR)/blimp-look
+	timeout 900 $(GODOT) --path . --resolution $(AIRSHIP_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
+		--arena=$(or $(ARENA),terminus) --blimp-look=$(CURDIR)/$(BUILD_DIR)/blimp-look $(BLIMP_FLAGS) \
+		2>&1 | tee $(BUILD_DIR)/blimp-look/log.txt | grep -E '^BLIMP_LOOK|SCRIPT ERROR' || true
+	@grep -q BLIMP_LOOK_DONE $(BUILD_DIR)/blimp-look/log.txt || { grep -E 'SCRIPT ERROR' $(BUILD_DIR)/blimp-look/log.txt; echo "blimp-look FAILED"; exit 1; }
+	@ls $(BUILD_DIR)/blimp-look/*.png
+
 facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg)
 	rm -rf $(BUILD_DIR)/facing && mkdir -p $(BUILD_DIR)/facing
 	timeout 300 $(GODOT) --path . --resolution 960x540 --script res://game/theme/gallery/facing_audit.gd -- \
