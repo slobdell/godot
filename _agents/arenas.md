@@ -948,24 +948,26 @@ hits. From his 21° camera the far bank's wall is in view, so the channel reads 
 the venue's neon (fresnel, a horizon band, ripples on one animated scalar `flow`); a pit is a deep shaft with a red
 glow at the bottom. Kerbs and rails are built from the SAME boxes as the colliders.
 
-### Measured (laptop, python `arena_report` + `terrain_measure`, static geometry, no match)
+### Measured (laptop, python `arena_report` after CP2's instrument fixes, `terrain_measure`; static geometry, no match)
 
-| map | `centre_sees` (report) | centre, ring of eyes | decision spread | contested route, plain (green / rust) |
+| map | `centre_sees` | decision spread | contested route, plain (green / rust) | R4 lanes |
 |---|---|---|---|---|
-| **crossing** | **0.30** | **0.27** | **0.45** | **185 m** / 112 m |
-| crossing_dry | 0.46 | 0.46 | 0.02 | 148 m / 112 m |
-| **pits** | 0.00 ⚠ artifact | **0.34** | 0.39 | 134 m / 90 m |
-| pits_dry | 0.00 ⚠ artifact | 0.34 | 0.39 | 134 m / 90 m |
+| **crossing** | **0.29** | **0.55** | **185 m** / 112 m | west bridge + mirror: pass (13.0 m physical over the deck with rails) |
+| crossing_dry | 0.46 | 0.30 | 148 m / 112 m | (fixture: reported only) |
+| **pits** | **0.34** | 0.35 | 134 m / 94 m | catwalk, west causeway, far causeway + mirrors: pass |
+| pits_dry | 0.34 | 0.35 | 134 m / 94 m | (fixture) |
 
-- **On the Crossing the river IS the decision:** spread 0.45 against its dry twin's 0.02, and the plain route to the
-  contested objective grows 148 → 185 m. The river also cuts what the middle sees (0.46 → 0.30).
-- **On the Pits the static instruments cannot see the pits:** routes and spread are identical wet and dry, because
-  the chain does not lengthen the short route, it EXPOSES it (the causeways are open to the far lips). Whether that
-  changes play is the paired series' question, not this table's.
-- ⚠ **Two instrument limits, reported to arena:** `standing_point` snaps only 12 m, so a map with a 40 m block at
-  the centre puts the eye inside it and scores 0.00 (hence the ring-of-eyes column); and `decision_report` routes the
-  ENEMY with green's exposure field, so the Crossing's spread flips 0.45 ↔ 0.03 on whether one alley is open while the
-  plain routes do not move. The Crossing's screens were swept to the variant where both centre < 0.30 and the spread
-  do not rest on that flip.
+- **On the Crossing the river IS the decision:** spread 0.55 against the dry twin's 0.30, the contested route grows
+  148 → 185 m, and the river halves what the middle sees (0.46 → 0.29).
+- **On the Pits the static instruments cannot see the pits:** routes, spread and centre are identical wet and dry,
+  because the chain does not lengthen the short route, it EXPOSES it (the causeways are open to the far lips). Whether
+  that changes play is the paired series' question.
+- **Two instrument findings, fixed by arena in CP2:** `standing_point` snapped 12 m, so the Pits' eye stood inside the
+  pump house and read 0.00 (it is 0.48 before the corner stacks, 0.34 after); `decision_report` routed the enemy with
+  green's exposure field, flipping the Crossing's spread 0.45 ↔ 0.03 on one alley.
+- **Lanes are measured WITH the rims and rails** (`terrain_measure.lanes_with_terrain`, run by `check_terrain`, which
+  refuses to write a failing map); `ArenaLanes` sees the carved water but not the rims or rails, so it over-reads a
+  lane along a bank by up to 2.4 m. The lanes were found by a clearance-grown A* and simplified, not drawn by hand
+  (the first hand-drawn ones clipped a block corner and two barricades 10 m apart).
 - Pits' 0.34 sits between the Pit he kept (0.30) and Boneyard he cut (0.40). A kill-zone map is open across its pits
-  by design; his eye decides, not a further 0.04 of containers.
+  by design; his eye decides.

@@ -73,6 +73,15 @@ def check_terrain(layout, clearance):
         x, z = o["position"]
         if _nearest_wet(terrain, walls, x, z) < o["radius"]:
             sys.exit("%s: objective %s at %s has part of its %.0f m disc in the water" % (name, o["name"], o["position"], o["radius"]))
+    # R4: every declared lane two widest hulls wide after the bake, corners cleared for the rig -- measured WITH the
+    # water, rims and rails (terrain_measure; arena's `test_arena_lanes.gd` is the game-side assertion).
+    if not layout.get("fixture"):
+        import terrain_measure
+        for lane in terrain_measure.lanes_with_terrain(layout):
+            bad = [c for c in lane["corners"] if not c["pass"]]
+            if not lane["pass"] or bad:
+                sys.exit("%s: lane %s fails R4: %.2f m drivable at %s; corners %s" % (
+                    name, lane["name"], lane["drivable_m"], lane["at"], bad))
     import arena_report
     for box in arena_report.boxes_of(layout):
         for cx, cz in [box.corners()[i] for i in range(4)] + [(box.x, box.z)]:
@@ -149,7 +158,8 @@ def crossing(m):
         # Green's south bank of the west reach: a container wall along the quay, broken at the bridge mouth. It hides
         # an army forming to cross, and it is where green's overwatch of the bridge stands.
         *m.run("container_40", -76, 36, -62, 36, 2, faction="law"),
-        m.barricade(-100, 42, 0), m.barricade(-84, 42, 0),
+        # 22 m apart: the bridge mouth is a LANE (R4 physical bar 12.14 m); 10 m apart they closed it.
+        m.barricade(-106, 42, 0), m.barricade(-78, 42, 0),
         # Green's east bulge, around its cheap objective: cover the defender can hold without standing on it.
         m.c20(104, 22, 90, 2, faction="gangs"), m.wreck(66, 34, 70), m.c20(60, 6, 0, 1, faction="mixed"),
         # The approaches from the base: cover lines, offset so no lane is straight.
@@ -168,8 +178,10 @@ def crossing(m):
                     props, terrain,
                     shape={"kind": "hexagon"}, half_size=140.0,
                     objectives=m.objective_pair("the west landing", *CROSSING_OBJECTIVE, 14.0),
-                    lanes=[m.lane("west bridge", [(-40, 90), (-92, 44), (-92, -16), (-60, -90)], 14),
-                           m.lane("east bank", [(60, 90), (80, 20), (92, 6), (92, -44), (40, -90)], 14)],
+                    # R4 lanes, found by a clearance-grown A* (every point >= half the physical bar from any collider,
+                    # rim, rail or water) and simplified; certified by `terrain_measure.lanes_with_terrain`, which
+                    # check_terrain runs. The mirror is the east bridge from rust's side.
+                    lanes=[m.lane("west bridge", [(-70, 88), (-87, 44), (-92, 28), (-92, -16), (-60, -86)], 14)],
                     regions=[m.region("west bridge", "chokepoint", -92, 14, 8),
                              m.region("the east bulge", "cover_cluster", 76, 22, 20),
                              m.region("the west quay", "overlook", -70, 40, 10),
@@ -206,15 +218,20 @@ def pits(m):
         m.c40(-68, 38, 0, 2, faction="syndicate"), m.c20(-38, 36, 0, 2, faction="law"), m.c40(-112, 36, 0, 2),
         # Screens on the east side's south lip (their mirrors stand on the west's north lip): they break the view
         # along the chain, so the pump house's corners do not see down the whole band.
-        m.c40(54, 8, 0, 2, faction="gangs"), m.c20(100, 8, 0, 2, faction="mixed"), m.c20(28, 28, 90, 2),
+        # BETWEEN the crossings, never in a mouth: the first version stood these at the east crossings' mouths,
+        # whose mirrors are the west ones, and closed three R4 lanes.
+        m.c20(41, 8, 0, 2, faction="gangs"), m.c20(69, 8, 0, 2, faction="mixed"), m.c20(112, 10, 0, 2),
         # The pump house's own sightlines up the middle and along the causeways, broken (swept: ring-eye centre
         # 0.39 -> 0.34; a kill-zone map is open ACROSS its pits by design, so this is flagged for his eye rather
         # than pushed under 0.30 by burying the pits in cover).
         m.c40(0, 46, 0, 2, faction="law"), m.c20(-14, 34, 0, 2), m.c20(14, 34, 0, 2, faction="condemned"),
+        # Re-swept on arena's FIXED eye (round 10: the old one stood inside the pump house and read 0.00; placed on
+        # the pump house's corner it read 0.48). Three-high stacks off the corner: 0.48 -> 0.34, every lane intact.
+        m.c40(46, 30, 0, 3, faction="syndicate"), m.c40(8, 30, 0, 3, faction="gangs"), m.c20(38, 16, 90, 3),
         # Green's cheap objective (the mirror, at (44, 30)) and cover a holder uses without standing on it.
         m.c20(70, 44, 90, 2, faction="condemned"), m.wreck(22, 52, 60),
         # Approaches and the form-up line.
-        m.block(62, 66, tiers=1, neon="cyan", seed=73), m.wreck(-56, 64, 20),
+        m.block(62, 66, tiers=1, neon="cyan", seed=73), m.wreck(-8, 62, 20),
         m.c20(-42, 80, 0, 1), m.c20(0, 80, 0, 1), m.c20(42, 80, 0, 1),
         m.floodlight(-40, 42), m.floodlight(-128, 0),
         m.screen(-76, 100, 180, "arena"), m.sign(-64, 108, 180, "pit"),
@@ -227,9 +244,11 @@ def pits(m):
                     props, terrain,
                     shape={"kind": "hexagon"}, half_size=140.0,
                     objectives=m.objective_pair("the far causeway", *PITS_OBJECTIVE, 14.0),
-                    lanes=[m.lane("the catwalk", [(-40, 90), (-55, 36), (-55, -8), (-40, -90)], 14),
-                           m.lane("west causeway", [(-20, 90), (-27, 32), (-27, -8), (-20, -90)], 12),
-                           m.lane("far causeway", [(-80, 90), (-85, 32), (-85, -8), (-70, -90)], 16)],
+                    # R4 lanes (as the Crossing's): each crossing from green's approach to just past the far lip,
+                    # ending before any two meet -- a junction is certified for a right-angle turn, 11 m of clearance.
+                    lanes=[m.lane("the catwalk", [(-55, 86), (-55, -1), (-45, -24)], 14),
+                           m.lane("west causeway", [(-27, 86), (-27, -30)], 14),
+                           m.lane("far causeway", [(-85, 80), (-87, -20)], 16)],
                     regions=[m.region("the catwalk", "chokepoint", -55, 14, 7),
                              m.region("west causeway", "chokepoint", -27, 14, 7),
                              m.region("the south lip", "overlook", -40, 34, 10),
