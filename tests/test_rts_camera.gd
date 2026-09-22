@@ -480,3 +480,23 @@ func test_no_hull_is_cut_by_the_wall_cutaway_it_is_parked_against() -> void:
 			"pitch_deg": worst_pitch, "wall_m": RtsCamera.WALL_HEIGHT_M}))
 	assert_true(worst > 0.0,
 			"no hull is cut by the wall it is parked against (worst %.2f m: %s at %.0f deg)" % [worst, worst_unit, worst_pitch])
+
+
+## Round 10 (control stretch 6): at the floor of the tilt range a long column cannot be framed (round 9 measured ~70 m
+## at 8°). The camera says so instead of believing it has them all: RtsCamera.cuts_off, read by CameraReadout.
+func test_a_column_too_long_for_the_tilt_is_reported_not_hidden() -> void:
+	var column: Array = []
+	for i in 12:
+		column.append(Vector3(0.0, 0.0, -float(i) * 12.0))  # 132 m of column, straight away from the camera
+	var level := RtsCamera.level_for(49.0)
+	var middle := Vector3(0.0, 0.0, -66.0)
+	assert_true(RtsCamera.cuts_off(column, middle, 0.0, level, 16.0 / 9.0, 8.0), "132 m of column at 8°, 49 m out: cut off")
+	assert_true(not RtsCamera.cuts_off(column.slice(0, 3), Vector3(0.0, 0.0, -12.0), 0.0, level, 16.0 / 9.0, 21.0),
+			"three hulls at his 21° fit")
+	var rig := _rig()
+	var readout := CameraReadout.new()
+	readout.rig = rig
+	assert_true(not "\n".join(readout.lines()).contains("TOO LONG"), "nothing to say while the frame holds")
+	rig.frame_short = true
+	assert_true("\n".join(readout.lines()).contains("COLUMN TOO LONG FOR THIS TILT"), "and the readout says it when it does not")
+	readout.free()
