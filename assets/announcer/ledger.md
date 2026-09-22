@@ -21,3 +21,4 @@ Every paid generation run, appended by tools/announcer/generate.py. Lead gate: t
 | 2026-09-22 | ElevenLabs | eleven_multilingual_v2 | 4 | 161 | 161 | 66920 → 66920 | r10 batch 3b: four clips re-recorded once after a speech-to-text mismatch |
 | 2026-09-22 | ElevenLabs | eleven_multilingual_v2 | 1 | 44 | 44 | 66920 → 66920 | r10: caller.contact.15 reworded and re-recorded (speech-to-text split 'downrange') |
 | 2026-09-22 | ElevenLabs | eleven_multilingual_v2 | 80 | 4009 | 4009 | 66710 → 63894 | r10 batch 4: fourteen older lines re-recorded after the plural-faction fix (a faction takes a plural verb and their own guns) |
+| 2026-09-22 | ElevenLabs | eleven_multilingual_v2 | 36 | 4196 | 4196 | 62609 → 60398 | r10: the Crossing and the Sumps (terrain R9), the 18 arena lines each |

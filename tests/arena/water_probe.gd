@@ -28,9 +28,6 @@ const MATCH := preload("res://game/match/match.tscn")
 const CHANNEL_Z := 40.0
 const CHANNEL_DEPTH := 26.0
 const CHANNEL_HALF_WIDTH := 116.0
-## The rim. 0.9 m matches ArenaKit's barricade, which is documented as stopping a hull but not an eye or a gun.
-const RIM_HEIGHT := 0.9
-const RIM_THICKNESS := 1.2
 ## The bridge deck's width. The rim must be CUT here, or the lip that keeps hulls out of the water also keeps them
 ## off the bridge -- which the first run of this probe did, reporting a crossing that was blocked by its own
 ## safety rail. A bridge is a hole in the water AND a hole in the rim.
@@ -53,12 +50,12 @@ func _flag(name: String, fallback: String) -> String:
 func _run() -> void:
 	var bridge := OS.get_cmdline_user_args().has("--bridge")
 	var arena: Arena = ARENA.instantiate()
-	arena.layout_name = "foundry"
-	# The stock Ground is one 320 x 320 slab, so carving means REPLACING it with the floor minus the footprint.
-	var ground: StaticBody3D = arena.get_node("Ground")
-	(ground.get_node("Collision") as CollisionShape3D).disabled = true
-	arena.add_child(_carved_ground(bridge))
-	arena.add_child(_rim(bridge))
+	# Round 10 (terrain): the channel is built by the SHIPPING path -- `ArenaTerrain.build()` from a layout's
+	# `terrain` list, with its rims, rails and art -- not by a floor and rim this probe assembled for itself. The
+	# round-7 probe measured the idea; this one measures what a map actually gets.
+	var layout: Dictionary = Arena.load_layout("foundry")["layout"].duplicate(true)
+	layout["terrain"] = _terrain(bridge)
+	arena.layout_override = layout
 	root.add_child(arena)
 	var game_match: Match = MATCH.instantiate()
 	root.add_child(game_match)
@@ -110,8 +107,32 @@ func _run() -> void:
 	var ended := tank.global_position
 	var crossed := ended.z < CHANNEL_Z - CHANNEL_DEPTH / 2.0
 
+	# 4. RAILS (round 10): a hull ON the deck driven straight at the water beside it must stay on the deck.
+	var shove := {}
+	if bridge:
+		var sider := game_match.spawn_tank("Sider", 0, Match.Team.GREEN, "tank")
+		sider.global_position = Vector3(0.0, 0.0, CHANNEL_Z)
+		if sider.has_method("reset_physics_interpolation"):
+			sider.reset_physics_interpolation()
+		var side_orders := OrderController.new()
+		side_orders.name = "Orders_Sider"
+		side_orders.tank = sider
+		side_orders.tanks_root = game_match.tanks
+		game_match.brains.add_child(side_orders)
+		side_orders.set_orders({"type": "move_to", "x": 40.0, "z": CHANNEL_Z, "direct": true}, {"type": "hold_fire"})
+		var low := sider.global_position.y
+		for frame in int(SimClock.TICK_RATE * 8.0):
+			await physics_frame
+			low = minf(low, sider.global_position.y)
+		var at := sider.global_position
+		shove = {"ended_at": [snappedf(at.x, 0.1), snappedf(at.y, 0.1), snappedf(at.z, 0.1)], "lowest_y": snappedf(low, 0.1),
+				"stayed_on_deck": absf(at.x) <= BRIDGE_WIDTH / 2.0 and low > -0.5,
+				"rails": arena.get_node_or_null("TerrainRails") != null and arena.get_node("TerrainRails").get_child_count() > 0}
+
 	var out := {
 		"bridge": bridge,
+		"shove": shove,
+		"art": arena.get_node_or_null("TerrainVisual") != null,
 		"channel_z": CHANNEL_Z, "channel_depth_m": CHANNEL_DEPTH,
 		"navmesh_gap": {"centre_off_mesh_m": snappedf(off_mesh, 0.1), "carved": off_mesh > 2.0},
 		"route": {"straight_m": snappedf(straight, 0.1), "navmesh_m": snappedf(route_m, 0.1),
@@ -132,47 +153,17 @@ func _run() -> void:
 	quit(0)
 
 
-## The arena floor with the channel cut out of it: two slabs, north and south of the water. With `--bridge`, a
-## strip of floor is restored across the middle, which is all a bridge is.
-func _carved_ground(bridge: bool) -> StaticBody3D:
-	var body := StaticBody3D.new()
-	body.name = "CarvedGround"
-	body.add_to_group("navigation_source")
-	var half := 160.0
-	var near_edge := CHANNEL_Z - CHANNEL_DEPTH / 2.0
-	var far_edge := CHANNEL_Z + CHANNEL_DEPTH / 2.0
-	_slab(body, Vector3(0.0, -0.5, (near_edge - half) / 2.0), Vector3(half * 2.0, 1.0, near_edge + half))
-	_slab(body, Vector3(0.0, -0.5, (far_edge + half) / 2.0), Vector3(half * 2.0, 1.0, half - far_edge))
+## The channel and its mirror (a layout must be point-symmetric), and with `--bridge` a deck across each.
+func _terrain(bridge: bool) -> Array:
+	var width := CHANNEL_HALF_WIDTH * 2.0 + 88.0  # past the wall at both ends, so nothing drives round it
+	var out: Array = [
+		{"kind": "water", "name": "channel", "rect": [0.0, CHANNEL_Z, width, CHANNEL_DEPTH]},
+		{"kind": "water", "name": "channel (far)", "rect": [0.0, -CHANNEL_Z, width, CHANNEL_DEPTH]},
+	]
 	if bridge:
-		_slab(body, Vector3(0.0, -0.5, CHANNEL_Z), Vector3(BRIDGE_WIDTH, 1.0, CHANNEL_DEPTH))
-	return body
-
-
-## The lip that stops a hull. NOT in `navigation_source`, so the bake never sees it: its whole job is physical.
-func _rim(bridge: bool) -> StaticBody3D:
-	var body := StaticBody3D.new()
-	body.name = "WaterRim"
-	for side: float in [-1.0, 1.0]:
-		var z: float = CHANNEL_Z + side * (CHANNEL_DEPTH / 2.0 + RIM_THICKNESS / 2.0)
-		if not bridge:
-			_slab(body, Vector3(0.0, RIM_HEIGHT / 2.0, z), Vector3(CHANNEL_HALF_WIDTH * 2.0, RIM_HEIGHT, RIM_THICKNESS))
-			continue
-		var run := (CHANNEL_HALF_WIDTH * 2.0 - BRIDGE_WIDTH) / 2.0
-		for side_x: float in [-1.0, 1.0]:
-			_slab(body, Vector3(side_x * (BRIDGE_WIDTH / 2.0 + run / 2.0), RIM_HEIGHT / 2.0, z),
-					Vector3(run, RIM_HEIGHT, RIM_THICKNESS))
-	return body
-
-
-func _slab(body: StaticBody3D, at: Vector3, size: Vector3) -> void:
-	if size.x <= 0.0 or size.z <= 0.0:
-		return
-	var shape := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = size
-	shape.shape = box
-	shape.position = at
-	body.add_child(shape)
+		out.append({"kind": "bridge", "name": "deck", "rect": [0.0, CHANNEL_Z, BRIDGE_WIDTH, CHANNEL_DEPTH + 6.0]})
+		out.append({"kind": "bridge", "name": "deck (far)", "rect": [0.0, -CHANNEL_Z, BRIDGE_WIDTH, CHANNEL_DEPTH + 6.0]})
+	return out
 
 
 func _path_length(path: PackedVector3Array) -> float:

@@ -86,3 +86,23 @@ func test_a_match_spawns_its_squads_as_an_army() -> void:
 			assert_true((-tank.global_basis.z).dot(forward) > 0.99, "%s faces the enemy" % tank.name)
 		assert_eq(by_squad.size(), 5, "five squads")
 		_assert_separated(by_squad, Match.TEAM_NAMES[team])
+
+
+func test_a_rotated_neighbour_is_measured_on_its_own_axes() -> void:
+	# Round 9 item 3 (squad): `_is_clear` projected every placed hull onto the DEPLOY frame's axes, sound only while all
+	# of them share it. A neighbour turned 90 degrees (an arena whose spawn zones are not opposed, or the other team's
+	# hull) is 8.6 m long across our heading, not 2.4 m wide. Here: our tank at the origin facing -Z, a tank 6 m to the
+	# right facing +X. Its nose reaches x = 1.7; our flank is at x = 1.2, so 0.5 m apart, under STAND_CLEAR_M.
+	var hull := Vector2(2.4, 8.6)
+	var rotated := [[Vector3(6.0, 0.0, 0.0), 2.4, 8.6, Vector3(1.0, 0.0, 0.0)]]
+	assert_true(not ArmyLayout._is_clear(Vector3.ZERO, hull, Vector3.FORWARD, rotated),
+			"a neighbour turned 90 degrees is measured along its own length, and 0.5 m is not clear")
+	var aligned := [[Vector3(6.0, 0.0, 0.0), 2.4, 8.6, Vector3.FORWARD]]
+	assert_true(ArmyLayout._is_clear(Vector3.ZERO, hull, Vector3.FORWARD, aligned),
+			"the same neighbour facing our way stands 3.6 m clear, as before")
+	var legacy := [[Vector3(6.0, 0.0, 0.0), 2.4, 8.6]]
+	assert_true(ArmyLayout._is_clear(Vector3.ZERO, hull, Vector3.FORWARD, legacy),
+			"an entry without its own forward shares ours (the old three-field form)")
+	var nose_to_tail := [[Vector3(0.0, 0.0, -9.0), 2.4, 8.6, Vector3.FORWARD]]
+	assert_true(not ArmyLayout._is_clear(Vector3.ZERO, hull, Vector3.FORWARD, nose_to_tail),
+			"nose to tail 0.4 m apart is not clear, aligned or not")

@@ -152,7 +152,19 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 	var spawned := {}
 	for squad_name: String in squads:
 		spawned.merge(_positions(squads[squad_name]))
-	for squad_name: String in squads:
+	# ROUND 10 (combat, backlog item 2): `FIVE_SQUADS_ORDER=EDCBA` issues the same five orders in another order, so
+	# "the seating squad follows the order" and "it follows the geometry" can be told apart. Unset = the order below.
+	var order: Array = squads.keys()
+	var asked := OS.get_environment("FIVE_SQUADS_ORDER")
+	if not asked.is_empty():
+		order = []
+		for letter in asked:
+			for squad_name: String in squads:
+				if squad_name.begins_with(letter):
+					order.append(squad_name)
+		print("MEASURE player_orders_rapid order %s" % [order])
+	Tank.refused_run_max = 0
+	for squad_name: String in order:
 		var goal: Vector3 = goals[squad_name]
 		assert_eq(_orders.issue({"units": squads[squad_name], "verb": "move", "to": [goal.x, goal.z],
 				"source": "player"}, Match.Team.GREEN), "", "squad %s accepts a move order" % squad_name)
@@ -203,6 +215,10 @@ func test_five_squads_ordered_in_quick_succession() -> void:
 		worst[squad_name] = snappedf(far, 0.1)
 	print("MEASURE player_orders_rapid worst gap to its OWN slot per squad %s; %d of %d units off their slot, %d with no slot at all, %d destroyed" % [
 			worst, away, spawned.size(), without_a_slot, destroyed.size()])
+	# Combat's CP4 bar (research B2): the longest run of consecutive refused yaw ticks by any hull (0 with the
+	# constraint off, where nothing is ever refused).
+	print("MEASURE player_orders_rapid yaw refusals: longest run %d ticks, yaw_fit %s, world mask %s" % [
+			Tank.refused_run_max, Tank.yaw_fit_on(), Tank.yaw_world_on()])
 	# Printed as its own lines rather than folded into the MEASURE line: a roster belongs beside the total it explains,
 	# and grep-ability matters more than tidiness when the next reader is hunting a cause across two tests' output.
 	for squad_name: String in worst_unit:
