@@ -90,12 +90,13 @@ func test_a_cue_ramps_in_over_its_attack_instead_of_snapping() -> void:
 	var show := _patched_show()
 	show.mood_state = &"battle"
 	var attack := float(show.cues.for_state(&"battle")["attack"])
+	var target := float(show.cues.for_state(&"battle")["set"]["rim"]["period"])  # from the book, not a copy of it
 	var before: ShowChannel = show.channels[&"rim"]
 	show.apply(0.0, 0.0)
 	assert_near(show.live_channel(&"rim").period, before.period, 0.01, "nothing has moved on the first frame")
 	var steps := 0
 	var t := 0.0
-	while steps < 600 and absf(show.live_channel(&"rim").period - 5.5) > 0.1:
+	while steps < 600 and absf(show.live_channel(&"rim").period - target) > 0.1:
 		t += 0.02
 		show.apply(t, 0.02)
 		steps += 1

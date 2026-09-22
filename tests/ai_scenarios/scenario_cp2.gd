@@ -61,9 +61,19 @@ func test_artillery_digs_in_and_shells_a_spotted_target() -> void:
 
 ## Combat's request (d): a battery stays dug in while its target drives across its range (the turret follows it);
 ## re-facing the hull every think packed it up again.
+##
+## ROUND 10 (combat, backlog item 5): the target now stops at (-45, -40), not (-30, -40), and the artillery is
+## unchanged. The old goal made the result depend on the target's ROUTE. When this scenario runs after another in the
+## same process, the target's first route request lands on the frame where the previous arena's navigation regions
+## are gone and the new ones are not yet synced (`regions=[]`). It gets no route, drives a straight line for the 4 s
+## until `Movement` replans, and parks at (-33, -40), out of the spotter's line of sight. The battery then correctly
+## packs up to SHADOW (1 round, FAIL). Run first in its process, the tick-2 route is the 7-point path, the target parks
+## at (-32, -41) in sight, and the battery keeps shelling (5 rounds, PASS). Measured with probes, laptop, `2434f50d`.
+## (-45, -40) is in the spotter's sight on both routes, so the scenario tests what it claims (the battery on a moving,
+## spotted target) and not which frame navigation synced on. The route retry is nav's (`Movement`).
 func test_artillery_stays_dug_in_on_a_moving_target() -> void:
 	var s := AiScenario.create(self)
-	var target := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-110, 0, -40), PI, {"type": "move_to", "x": -30.0, "z": -40.0},
+	var target := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-110, 0, -40), PI, {"type": "move_to", "x": -45.0, "z": -40.0},
 			{"type": "hold_fire"})
 	AiScenario.make_durable(target)
 	var spotter := s.dummy(Match.Team.GREEN, "Green_Scout_1", Vector3(-80, 0, 0), 0.0, "scout")
@@ -116,8 +126,25 @@ func _deck_run(variant: String) -> Dictionary:
 	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", Vector3(-70, 0, 20), 0.0, {}, "scout")
 	AiScenario.make_durable(scout)
 	await s.start()
+	# ORBIT_PROBE=1 (squad, round 10 item 6b): per 0.5 s, the scout's option, its attack-run flag, its range and
+	# angular rate around the tank's centre, its speed, and how far the tank's turret is off it. Default off.
+	var orbit_probe := OS.get_environment("ORBIT_PROBE") == "1"
+	var last_bearing := 0.0
 	for tick in SimClock.TICK_RATE * 25:
 		await s.step()
+		if not orbit_probe:
+			continue
+		var rel := scout.global_position - tank.global_position
+		var bearing := atan2(rel.x, rel.z)
+		var rate := rad_to_deg(absf(angle_difference(bearing, last_bearing))) * SimClock.TICK_RATE
+		last_bearing = bearing
+		if tick % 15 == 0:
+			var brain := s.brain_of(scout)
+			var gun := tank.turret_forward()
+			var off := rad_to_deg(Vector2(gun.x, gun.z).angle_to(Vector2(rel.x, rel.z)))
+			print("ORBIT_PROBE t=%.1f %s burst=%s r=%.1f w=%.0f v=%.1f gun_off=%.0f hp=%.0f ranked=%s" % [tick / 30.0,
+					String((brain.get("choice") as Dictionary).get("option", "?")) if brain.get("choice") is Dictionary else "?", str(brain.get("_bursting")),
+					Vector2(rel.x, rel.z).length(), rate, scout.estimated_velocity.length(), absf(off), float(scout.health), str(brain.ranked)])
 	var result := {"deck": int(s.game_match.stats["weak_spot_hits"][Match.Team.GREEN]),
 			"hits": int(s.game_match.stats["hits"][Match.Team.GREEN]), "shots": s.shots_by(scout)}
 	Armor.deck_probe = false

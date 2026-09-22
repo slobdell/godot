@@ -158,6 +158,13 @@ class MockPipelineTest(unittest.TestCase):
     def run_pipeline(self, the_plan, client):
         return generate.generate(the_plan, SPEAKERS, client, self.masters, self.out, voice_client.MODEL_ID, log=lambda *_: None)
 
+    def test_godot_is_kept_out_of_both_folders(self):
+        """Round 10: the clips folder had a .gdignore; the masters folder did not, and a builder0 check died in
+        `make import` on a fresh MP3 master. Nothing loads either folder at runtime."""
+        self.run_pipeline(sample_plan(["caller.kill.08"]), mock_client())
+        self.assertTrue((self.out / ".gdignore").exists(), "the clips are not Godot's business")
+        self.assertTrue((self.masters / ".gdignore").exists(), "and neither are the masters")
+
     def test_records_slices_checks_and_writes_a_manifest(self):
         the_plan = sample_plan(["caller.kill.08", "caller.close.04"])
         client = mock_client()
@@ -219,6 +226,28 @@ class MockPipelineTest(unittest.TestCase):
             return "recorded"
         self.assertEqual(voice_client.with_retries(flaky, "clip", delays=(0.001, 0.001, 0.001)), "recorded")
         self.assertEqual(len(calls), 3, "it kept trying")
+
+    def test_only_values_records_one_arena_without_touching_the_others(self):
+        """Round 10: two arenas got names after everything else was recorded. Ordering the 18 lines that say
+        {arena} would have re-recorded every arena's copy of them (and the Terminus's masters are long gone, so it
+        would have paid for clips the pack already has)."""
+        the_plan = recording_plan.plan(LINES, None, {"pa.welcome.01"}, {"terminus"})
+        self.assertTrue(the_plan["requests"], "the Terminus recording is ordered")
+        self.assertTrue(all(r["id"].endswith("@terminus") for r in the_plan["requests"]),
+                        "and only it: %s" % [r["id"] for r in the_plan["requests"]])
+        self.assertGreater(len(the_plan["lines"]["pa.welcome.01"]["variants"]), 1,
+                           "the manifest entry still lists every arena, so a narrowed run does not shrink it")
+
+    def test_a_run_stops_before_it_passes_its_character_budget(self):
+        """Round 10 generates in paid batches against a stop line (half the balance): a run is given a budget and
+        records nothing that would take it past it, whatever the plan asks for."""
+        the_plan = sample_plan(["caller.kill.08", "caller.close.04"])
+        first = len(the_plan["requests"][0]["text"])
+        report = generate.generate(the_plan, SPEAKERS, mock_client(), self.masters, self.out, voice_client.MODEL_ID,
+                                   log=lambda *_: None, max_characters=first)
+        self.assertEqual(report["requests_sent"], 1)
+        self.assertEqual(report["characters"], first)
+        self.assertEqual(report["over_budget"], len(the_plan["requests"]) - 1, "the rest are counted, not sent")
 
     def test_one_recording_that_never_comes_does_not_lose_the_others(self):
         """The run's job is to get audio recorded. Anything that is not recording must not be able to stop it —

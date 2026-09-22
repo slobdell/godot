@@ -203,7 +203,8 @@ func _role(unit_name: String) -> String:
 ##  "commands": [{"id", "label", "hotkey", "enabled"}]}
 func summary() -> Dictionary:
 	var result := {"mode": "none", "portraits": [], "card": {}, "orders": "", "commands": [], "count": 0,
-			"strength": 1.0, "doctrine": controls.doctrine_line() if controls != null else ""}
+			"strength": 1.0, "doctrine": controls.doctrine_line() if controls != null else "",
+			"reason": controls.task_refusal() if controls != null and controls.selection.inspected == "" else ""}
 	if controls == null:
 		return result
 	var commandable := not controls.selection.units.is_empty()
@@ -234,6 +235,9 @@ func summary() -> Dictionary:
 		portrait["unit"] = String(portrait["key"]) if int(portrait["count"]) == 1 else ""
 	result["count"] = units.size()
 	result["strength"] = _strength(units)
+	# Round 10 (item 4): how many of these are in no squad (no control group): a unit on no number key is the one a
+	# player loses track of, and it is why a task can be refused.
+	result["ungrouped"] = units.filter(func(n: String) -> bool: return controls.groups.groups_of(n).is_empty()).size()
 	var verbs := {}
 	for unit_name in units:
 		if _tank(unit_name) == null:
@@ -305,6 +309,20 @@ func doctrine_rect() -> Rect2:
 	return Rect2(PAD * s, size.y - PAD * s - FOOTER * s * 1.25, _card_left() - PAD * s * 2.0, FOOTER * s * 1.25)
 
 
+## Round 10 (R1): the footer's one-click Form squad, shown while the task buttons are greyed for this selection (the
+## footer is otherwise the element's doctrine line, and a selection that cannot take a task has no element). Rect2() when
+## it is not shown.
+const FORM_SQUAD_WIDTH := 150.0
+
+func form_squad_rect() -> Rect2:
+	if controls == null or controls.elements == null or _command_rects.is_empty() or controls.selection.inspected != "" \
+			or controls.task_refusal() == "":
+		return Rect2()
+	var strip := doctrine_rect()
+	var width := minf(FORM_SQUAD_WIDTH * _scale(), strip.size.x * 0.4)
+	return Rect2(strip.end.x - width, strip.position.y, width, strip.size.y)
+
+
 func command_rect(id: String) -> Rect2:
 	return _command_rects.get(id, Rect2())
 
@@ -318,6 +336,7 @@ func press_command(id: String) -> void:
 	if controls == null or controls.selection.units.is_empty():
 		return
 	if ELEMENT_ONLY.has(id) and not controls.can_task():
+		controls.arm(id)  # refuses, and says why (round 10: a greyed button pressed used to do nothing, silently)
 		return
 	match id:
 		"attack_move", "screen", "support_by_fire", "ambush":
@@ -335,6 +354,8 @@ func tooltip() -> Dictionary:
 		return _tooltip_for(_intro)
 	if _hovered == "" or not visible:
 		return {}
+	if _hovered == "form_squad":
+		return {}  # the reason beside the button is its explanation
 	if _hovered == "doctrine":
 		var element := controls.selected_element() if controls != null else null
 		if element == null:
@@ -354,8 +375,8 @@ func _tooltip_for(id: String) -> Dictionary:
 	# Round 7 (C3): which grammar this button is.
 	title += "  -  then click where" if String(row.get("then", "now")) == "click" else "  -  happens at once"
 	var line := String(row.get("line", ""))
-	if ELEMENT_ONLY.has(id) and controls != null and not controls.can_task():
-		line += " Select a whole squad (1-5) first."
+	if ELEMENT_ONLY.has(id) and controls != null and controls.task_refusal() != "":
+		line += " Greyed out: " + controls.task_refusal() + "."
 	return {"id": id, "title": title, "line": line}
 
 
@@ -382,7 +403,9 @@ func _gui_input(event: InputEvent) -> void:
 		for id in _command_rects:
 			if (_command_rects[id] as Rect2).has_point(motion.position):
 				_hovered = id
-		if _hovered == "" and doctrine_rect().has_point(motion.position):
+		if _hovered == "" and form_squad_rect().has_point(motion.position):
+			_hovered = "form_squad"
+		elif _hovered == "" and doctrine_rect().has_point(motion.position):
 			_hovered = "doctrine"
 		return
 	var button := event as InputEventMouseButton
@@ -390,6 +413,9 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	accept_event()  # nothing on the panel reaches the map behind it
 	if not button.pressed or button.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if form_squad_rect().has_point(button.position):
+		controls.form_squad()
 		return
 	for id in _command_rects:
 		if (_command_rects[id] as Rect2).has_point(button.position):
@@ -463,8 +489,10 @@ func _draw() -> void:
 					var tag_width := font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(tag_size)).x
 					_text(batch, font, cell.position + Vector2(cell.size.x - tag_width - 3.0, tag_size + 1.0), tag, tag_size, CyberStyle.YELLOW)
 			# X4: one header for the whole selection - how many, what they are doing, how much of them is left.
-			_text(batch, font, Vector2(PAD * s, 16.0 * s), "%d UNITS   %s   %d%%" % [int(info["count"]),
-					String(info["orders"]).to_upper(), roundi(float(info["strength"]) * 100.0)], 15.0 * s, CyberStyle.CYAN)
+			var loose := int(info.get("ungrouped", 0))
+			_text(batch, font, Vector2(PAD * s, 16.0 * s), "%d UNITS%s   %s   %d%%" % [int(info["count"]),
+					" (%d IN NO SQUAD)" % loose if loose > 0 else "", String(info["orders"]).to_upper(),
+					roundi(float(info["strength"]) * 100.0)], 15.0 * s, CyberStyle.CYAN)
 		"unit", "enemy":
 			var card: Dictionary = info["card"]
 			var color := enemy if card.get("enemy", false) else friendly
@@ -492,6 +520,17 @@ func _draw() -> void:
 		var width: float = _card_left() - PAD * s * 2.0
 		batch.text(font, Vector2(PAD * s, size.y - PAD * s - FOOTER * s * 0.25), doctrine, roundi(13.0 * s),
 				Color(CyberStyle.YELLOW, 0.95), width)
+	# Round 10 (R1): why the task buttons are grey, and the one click that fixes it, where the doctrine line would be.
+	var form := form_squad_rect()
+	if doctrine == "" and form.has_area():
+		var reason := String(info["reason"])
+		batch.text(font, Vector2(PAD * s, size.y - PAD * s - FOOTER * s * 0.25), reason.left(1).to_upper() + reason.substr(1),
+				roundi(13.0 * s), Color(CyberStyle.YELLOW, 0.95), form.position.x - PAD * s * 2.0)
+		var hot := _hovered == "form_squad"
+		batch.fill(form, Color(CyberStyle.CARD, 1.0))
+		batch.outline(form, Color(CyberStyle.YELLOW, 1.0 if hot else 0.85), 2.0 if hot else 1.5)
+		_centered(batch, font, Rect2(form.position, Vector2(form.size.x, form.size.y * 1.12)), "FORM SQUAD", 14.0 * s,
+				CyberStyle.YELLOW)
 	for command: Dictionary in info["commands"]:
 		var button: Rect2 = _command_rects[command["id"]]
 		var enabled: bool = command["enabled"]

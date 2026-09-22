@@ -4,36 +4,39 @@ result: rust by elimination at 1:21.8
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
-0:07.5   CALLER   Oh, this is going to be good. I can feel it in my chest already!
-0:13.3   CALLER   And here comes the Law. Listen to this building—
+0:00.0   PA       A very good evening to you all. The floor has been swept, the barriers are secure, and the crews have been briefed on the new penalty for stopping.
+0:10.9   CALLER   I have watched both of these crews all week and I still could not tell you how this goes.
 0:16.5   ── first contact: rust scout fires on a tank
-0:16.5   VETERAN  You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
+0:17.1   VETERAN  The first few seconds of contact decide more than people think.
 0:22.0   ── rust ifv destroys green scout
+0:22.0   CALLER   The scout runs out of road!
+0:24.9   CALLER   Look at that! That is a trained crew right there!
 0:25.0   ── green ifv destroys rust scout
-0:28.2   CALLER   The Law takes out the scout, and the boos are raining down!
+0:29.1   VETERAN  You don't take the scout into that. You just don't.
 0:30.0   ── green tank destroys rust ifv
-0:33.0   CALLER   And the IFV goes down right behind it!
-0:36.5   VETERAN  They're going to break contact, which is brave, and I want to be clear that brave is not the compliment people think it is.
+0:34.3   CALLER   The Law's tank puts it away!
+0:36.6   PA       Quite so, Joseph. For the record, that crew has completed their appearance, and the arena thanks them for it.
 0:47.2   ── rust lancer destroys green tank
-0:47.4   CALLER   And just like that, we're even! Three a side!
+0:47.3   CALLER   The Syndicate machine takes it clean. That was surgical.
 0:48.0   ── friendly fire: green artillery hits its own ifv
-0:51.4   CALLER   That artillery shell landed on their own IFV!
-0:54.3   PA       Thank you, Joseph. Officials remind participants that striking one's own crew is discouraged, and is not itself an offence.
+0:51.2   VETERAN  That's the drill nobody wants. You're already inside the killzone, so the only way out is through whoever put you there.
 0:58.5   ── close call: rust lancer at 5% hull
+1:00.9   VETERAN  Now if he'd taken that hit three feet further left, the whole... No, actually, three feet left is worse. Forget that.
 1:06.8   ── green ifv destroys rust lancer
 1:06.8   ── rust squad Lance wiped out
-1:06.8   CALLER   That's the matchup! The IFV does exactly what it was built to do!
 1:10.8   ── rust tank destroys green ifv
-1:11.9   CALLER   The Law loses one, and this building absolutely loves it!
-1:16.1   CALLER   They're turning into it! They're driving straight at them!
+1:11.2   CALLER   They're trading! They are trading in the middle of the floor!
+1:15.7   CALLER   They are executing! They are executing out there!
+1:18.7   VETERAN  Good—
 1:18.8   ── rust ifv destroys green artillery
 1:18.8   ── green squad Bravo wiped out
-1:19.4   CALLER   It's all on the last Law vehicle now!
+1:19.2   CALLER   It's all on the last Law vehicle now!
 1:21.8   ── rust ifv destroys green ifv
 1:21.8   ── green squad Alpha wiped out
 1:21.8   ── MATCH OVER: rust wins by elimination (0 green, 2 rust left)
-1:22.3   CALLER   And that's it! That's the last one!
-1:25.0   CALLER   It is done! The Syndicate stands alone on that floor!
-1:28.6   VETERAN  The Law traded evenly early and couldn't afford it later. You could see it coming.
-1:35.8   PA       Tonight's winner is the Syndicate. The surviving crews will be processed shortly. Good night.
+1:22.1   CALLER   The Syndicate finish it! The last IFV is gone!
+1:25.4   CALLER   And the floor goes quiet. We have a winner.
+1:28.7   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
+1:36.5   CALLER   Listen to this crowd!
+1:38.8   PA       The Syndicate are tonight's winner. Ticket holders may remain seated during the recovery operation.
+1:44.4   PA       Relatives of tonight's crews are asked to wait at the lower concourse, where representatives will meet them with forms, and refreshments will be provided.
