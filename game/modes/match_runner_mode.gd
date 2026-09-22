@@ -118,7 +118,9 @@ func start() -> void:
 		# most expensive lesson (matchup-search spent its whole history at --units 60 and recorded it nowhere), and
 		# a measurement ARM is the knob that matters most: without it, two arms are two identical-looking files.
 		result["controls"] = {"acquisition": Engagement.acquisition_enabled, "crossing": Engagement.crossing_enabled,
-				"faction_directives": Army.faction_directives}
+				"faction_directives": Army.faction_directives, "tuning": Units.tuning.duplicate()}
+		# ROUND 10 (combat, C6): `tuning` is the dictionary every point-of-use reader consults (`Units.hull_disc_at`,
+		# `Tank.yaw_fit_on`, ...), so an arm is proven by what the code READ, not by the flag that was passed.
 		if SimProfile.enabled:
 			print("SIM_PROFILE " + JSON.stringify(SimProfile.report()))
 		print("MATCH_RESULT " + JSON.stringify(result))

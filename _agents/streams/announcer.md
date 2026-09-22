@@ -152,3 +152,202 @@ conjunction with 3 lines firing 4× a match) is the failure the pool report exis
 ## Status
 
 _(the worker keeps this current; the ledger and the pool report are the numbers he reads)_
+
+**Updated 2026-09-22 (worker, round 10). Every backlog item is done; the round's report is below.** Baseline:
+`make remote T=check` on `2ee65f94` (builder0): `>> remote: make check exited 0`, 1559 passed, 0 failed.
+**GREEN, MERGE HERE: `7a72ad05`.** Its own builder0 check, read from the wrapper's line and the runner's:
+`>> remote: make check exited 0`, **1561 passed, 0 failed, 18 targets all passed**, sim-baseline
+`1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`. The commits after it are docs only
+(`353aa9da`, and whatever Status edits follow this line).
+
+### Done
+
+1. **The recount and the plan** (`bf9fdb43`). `make announcer-pool-report` replays every fixture for seeds 1-5 (40
+   broadcasts, 51.9 match minutes) and prints per (speaker, moment): library lines and how many are `new` this round,
+   λ/min, the director's pool **at the pick** (the director records `pool`, `fresh` and `effective` = exp entropy of
+   the pick's weights on every cue), starved picks, C9's `N_c`, the target, the deficit and Distinct-2; then the narrow
+   funnels (a tag set firing often from few lines). Knobs, decided and written in the script: R = 0.05; horizons caller
+   2 min / Veteran 7.5 / PA 30; floors 12/12/8; deep pools (>= 18) +25 % measured against the pool **as the round found
+   it**; caps 40/40/**16 for the PA**. A moment the fixtures never reach gets only its floor. The deficit is against the
+   smaller of the library count and the mean pool at the pick, because `caller.army` has 16 lines and offers 2.
+   **Deficit: 514 -> 147** (the table below; both measured under the final rules).
+2. **The lines** (`96333be1`, `69057d84`, `dc95c555`). **518 new lines** (`"added": "r10"`): caller 205, Veteran 196
+   (183 + 13 stretch), PA 117, mostly slot-free, since a `{faction}` line is 4 recordings and a `{unit}` line 6.
+   `caller.preview` was skipped on purpose (0 firings in 64 broadcasts) and `tape` got 5.
+   **The PA's C10 gates are in `audit_lines.py`**: a new PA line names its one wrong detail (`oddity: {span,
+   category}`), 1-6 words, at least 4 ordinary words after it (clause-final is a punchline's position), no `!`, no
+   affect word, and no two lines of the same kind of wrong detail in one moment's pool (33 categories in
+   `lines.json`). Audit: **1119 lines, 0 errors** (the 1 warning predates the round).
+3. **The review page** (`96333be1`). `make announcer-demo` -> `build/announcer/demo/index.html#new`: every new line by
+   moment, **518 of 518 with a Play button**, a veto tick per line collecting ids to send back, an optional marker for
+   the PA's wrong detail, and a `new` badge on the match rows. Looked at, desktop 1400x1100 and phone 420x900.
+4. **Generation** (`69057d84`, `dc95c555`). Five runs, every one a ledger row:
+   | batch | requests | characters | credits |
+   |---|---|---|---|
+   | pilot (`pa.hit.01`) | 1 | 138 | 108,348 -> 108,348 (unsettled) |
+   | 1: the PA | 116 | 15,253 | 108,348 -> 93,575 |
+   | 2: the Veteran | 183 | 13,248 | 92,572 -> 80,143 |
+   | 3: the caller + the stretch pairs | 236 | 11,755 | 78,952 -> 67,002 |
+   | 3b + reword: 5 speech-to-text re-records | 5 | 205 | 67,002 -> 66,710 |
+   | 4: the plural-faction fix, 14 older lines | 80 | 4,009 | 66,710 -> 63,894 |
+   **Balance 63,894, well above the ~54,000 stop line, so nothing needed asking.** Speech-to-text: **0 mismatches
+   left**; 4 of 523 new clips were flagged, 3 passed the one re-record the brief allows, and the fourth was the
+   recogniser splitting "downrange", so `caller.contact.15` is now "First rounds are away!". `generate.py` gained
+   `--max-characters` (a batch cannot overshoot its stop line; tested with the mock) and `--note`.
+5. **Runtime checks.** Variance (laptop, `dc95c555`, 50 matches per fixture, window 5, history on): **0 in-match
+   repeats, openers 2.0 %, PA welcomes 3.8 %, carryover 0.4 %** (ceilings 0/10/10/30). Review transcripts re-recorded
+   three times as the library moved (the reason each time is in the commit). **C9's cross-match memory** (`5bb8d2a3`):
+   `AnnouncerHistory` keeps 40 matches, and PA lines fade on their own curve, never weaker than everybody's in the
+   recent matches. Measured old -> new over 400 broadcasts: **window 20 openers 30 % -> 19 %, PA welcomes 40 % -> 33 %**;
+   window 5 gives up 0 -> 2 % and 1 -> 4 %. `audio-launch-smoke` on builder0: **passed** (its own section below).
+6. **Stretch.** *Callbacks*: four predictions fire at **first contact** (the moment that reaches the air in every
+   match; `preview` fired 0 times in 64 broadcasts) and set `predicted_{friendly_fire,flank,scouts,artillery}`; nine
+   callbacks in kill, momentum, friendly_kill and result need them. A director test proves the pairing in both
+   directions, including that a flag set *after* the moment is hindsight, not a prediction. *The `{arena}` lines*:
+   nothing to do - all eight arenas, **Terminus included**, already have clips for all 18 `{arena}` lines. *A second
+   pass on the deep pools*: reading the transcripts as a listener found two grammar bugs recorded three rounds ago
+   ("The Wreckers **draws** first blood", "hit **its** own scout"); the audit's verb list and its-check now catch both,
+   and the 14 lines they flagged are fixed and re-recorded.
+
+### After the merge: the Crossing and the Sumps (terrain R9, authorised by the orchestrator under R8)
+
+terrain's two new shipping arenas had no spoken name, which fails `test_arena_names`: the booth would build a match
+it cannot name. `vocabulary.arena` gains `crossing` -> "the Crossing" and `sumps` -> "the Sumps", and the 18 lines
+that say `{arena}` are recorded for both (36 requests, 4,196 characters, **62,609 -> 60,398**, 0 speech-to-text
+mismatches). **Every arena now has all 18 recordings.** `announcer-transcripts-check`: current.
+**GREEN: `88c91f18`** — builder0, `>> remote: make check exited 0`, **1587 passed, 0 failed, 18 targets all
+passed**, sim-baseline `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`. Merge this one ahead of terrain;
+the commits after it are docs only.
+
+**`generate.py --only-values` came out of it, and it matters beyond this round.** Ordering those 18 lines by id
+orders 180 recordings, one per arena — and **the Terminus's masters were lost with the worktree that made them**, so
+18 of those would have been paid for again, replacing shipped clips with new takes nobody asked for. `--only-values`
+records only the realizations that speak a given slot value (an arena, a faction); the narrowed plan still writes
+every variant into the manifest, so a partial run cannot shrink a line's entry. Tested both ways. The lesson is the
+same one as the masters' `.gdignore`: **rescue a worktree's git-ignored inputs before it is removed**, or the next
+round pays for them twice.
+
+**`audio-launch-smoke` on builder0: passed** — "a flagless player launch has the announcer's voice and the music"
+(`ANNOUNCER_BOOTH mode=voice`, `MUSIC on: 9 beds, 6 stingers`), `exited 0`.
+
+### The pool table, before and after (laptop, 40 fixture broadcasts, 51.9 match minutes, `dc95c555`)
+
+Both columns are measured the same way, under the final rules (PA cap 16; the +25 % for deep pools anchored to the
+pool as the round FOUND it, not as it grows): the round-start library scores **514**, the round's library **147**.
+*(The 568 quoted earlier in the round was the same library under the first cap setting, before the PA's cap came down
+to 16 and the growth target stopped receding; 514 → 147 is the honest pair.)* `lines` is what the moment can reach in
+the library; `pool at the pick` is what the director actually had to choose from, which is the number that bounds
+variety; `N_c` is C9's formula at that λ, and `target` is it capped, or the floor, whichever is larger.
+
+| speaker | moment | λ/min | lines | pool at the pick | N_c | target | deficit |
+|---|---|---|---|---|---|---|---|
+| caller | drill | 0.79 | 4 → 33 | 2.5 → 25.7 | 32 | 32 | 28 → 6 |
+| color | lull | 0.21 | 58 → 85 | 13.4 → 16.3 | 33 | 33 | 27 → 17 |
+| caller | kill | 3.57 | 92 → 117 | 14.8 → 30.5 | 140 | 40 | 25 → 9 |
+| color | big hit | 0.41 | 18 → 41 | 16.5 → 36.8 | 61 | 40 | 23 → 3 |
+| color | momentum | 0.39 | 19 → 44 | 17.0 → 36.0 | 58 | 40 | 23 → 4 |
+| caller | result | 0.89 | 34 → 56 | 11.0 → 24.6 | 35 | 35 | 22 → 10 |
+| color | army | 0.19 | 26 → 49 | 17.9 → 27.2 | 29 | 29 | 22 → 2 |
+| color | drill | 0.73 | 21 → 41 | 19.8 → 31.8 | 109 | 40 | 20 → 8 |
+| color | contact | 0.62 | 20 → 44 | 19.7 → 40.2 | 91 | 40 | 20 → 0 |
+| caller | big hit | 0.71 | 29 → 48 | 8.9 → 25.7 | 29 | 29 | 19 → 3 |
+| color | result | 0.71 | 28 → 48 | 21.9 → 34.1 | 105 | 40 | 18 → 6 |
+| color | kill | 0.69 | 41 → 61 | 22.9 → 34.3 | 102 | 40 | 17 → 6 |
+| pa | drill | 0.04 | 1 → 15 | 1.0 → 15.0 | 24 | 16 | 15 → 1 |
+| pa | big hit | 0.02 | 1 → 16 | 1.0 → 16.0 | 13 | 13 | 15 → 0 |
+| caller | contact | 0.62 | 12 → 27 | 7.7 → 18.6 | 25 | 25 | 14 → 6 |
+| pa | control | 0.08 | 3 → 16 | 2.5 → 13.2 | 46 | 16 | 14 → 3 |
+| pa | kill | 0.17 | 6 → 18 | 3.0 → 9.3 | 102 | 16 | 13 → 7 |
+| pa | friendly fire | 0.02 | 2 → 12 | 1.0 → 11.0 | 13 | 13 | 12 → 2 |
+| pa | formation | 0.02 | 1 → 12 | 1.0 → 12.0 | 13 | 13 | 12 → 1 |
+| pa | momentum | 0.00 | 1 → 11 | 1.0 → 0.0 | 0 | 8 | 12 → 0 |
+| caller | army | 0.15 | 16 → 28 | 2.0 → 4.5 | 7 | 12 | 10 → 8 |
+| caller | momentum | 0.02 | 3 → 13 | 2.0 → 9.0 | 2 | 12 | 10 → 3 |
+| caller | squad wiped | 0.00 | 3 → 12 | 0.0 → 0.0 | 0 | 12 | 9 → 0 |
+| caller | control | 0.23 | 7 → 16 | 3.2 → 7.4 | 10 | 12 | 9 → 5 |
+| caller | formation | 0.04 | 3 → 13 | 3.0 → 9.5 | 3 | 12 | 9 → 2 |
+| caller | tape | 0.00 | 3 → 8 | 0.0 → 0.0 | 0 | 12 | 9 → 4 |
+| pa | outro | 1.21 | 15 → 24 | 7.4 → 10.6 | 711 | 16 | 9 → 5 |
+| caller | hazard kill | 0.08 | 4 → 12 | 4.7 → 10.5 | 4 | 12 | 8 → 2 |
+| caller | friendly kill | 0.08 | 6 → 14 | 4.3 → 12.0 | 4 | 12 | 8 → 0 |
+| color | friendly fire | 0.04 | 7 → 15 | 4.0 → 12.5 | 7 | 12 | 8 → 0 |
+| caller | preview | 0.00 | 4 → 4 | 0.0 → 0.0 | 0 | 12 | 8 → 8 |
+| caller | close call | 0.19 | 6 → 13 | 5.0 → 12.0 | 9 | 12 | 7 → 0 |
+| caller | friendly fire | 0.17 | 7 → 14 | 4.6 → 10.9 | 8 | 12 | 7 → 1 |
+| caller | intro | 0.62 | 29 → 35 | 23.8 → 29.8 | 25 | 32 | 6 → 2 |
+| color | close call | 0.15 | 16 → 21 | 16.0 → 21.0 | 24 | 24 | 5 → 3 |
+| pa | hazard kill | 0.00 | 3 → 8 | 0.0 → 0.0 | 0 | 8 | 5 → 0 |
+| pa | friendly kill | 0.00 | 4 → 8 | 0.0 → 0.0 | 0 | 8 | 4 → 0 |
+| caller | lull | 0.23 | 41 → 45 | 7.8 → 9.7 | 11 | 12 | 4 → 2 |
+| pa | army | 0.00 | 4 → 8 | 0.0 → 0.0 | 0 | 8 | 4 → 0 |
+| pa | lull | 0.14 | 27 → 31 | 13.0 → 15.0 | 80 | 16 | 3 → 1 |
+| color | squad wiped | 0.00 | 11 → 11 | 0.0 → 0.0 | 0 | 12 | 1 → 1 |
+| pa | intro | 0.91 | 38 → 44 | 21.8 → 27.1 | 530 | 16 | 0 → 0 |
+| color | formation | 0.06 | 29 → 29 | 0.0 → 23.0 | 10 | 29 | 0 → 6 |
+| color | tape | 0.00 | 14 → 14 | 0.0 → 0.0 | 0 | 12 | 0 → 0 |
+| color | preview | 0.00 | 26 → 26 | 0.0 → 0.0 | 0 | 12 | 0 → 0 |
+| color | hazard kill | 0.00 | 12 → 12 | 0.0 → 0.0 | 0 | 12 | 0 → 0 |
+| color | control | 0.04 | 14 → 14 | 14.0 → 14.0 | 6 | 12 | 0 → 0 |
+| color | intro | 0.00 | 25 → 25 | 0.0 → 0.0 | 0 | 12 | 0 → 0 |
+| color | friendly kill | 0.00 | 18 → 19 | 0.0 → 0.0 | 0 | 12 | 0 → 0 |
+| **total** | | | **601 → 1119** | | | | **514 → 147** |
+
+**The ledger, this round: 621 requests, 44,608 characters, 41,346 credits spent (108,348 → 63,894).** Five runs, each
+its own row in `assets/announcer/ledger.md`: the pilot, the PA (15,253), the Veteran (13,248), the caller with the
+stretch pairs (11,755), five speech-to-text re-records (205), and the plural-faction fix (4,009).
+
+### Numbers, each with its commit and machine
+- Pool deficit 514 -> 147; library 601 -> 1119 lines (laptop, `dc95c555`, 40 broadcasts).
+- Credits 108,348 -> 63,894 (41,346 spent this round, ~4,000 of it the grammar fix and the re-records).
+- The pack: 3,051 -> 2,866 clips, 76 MB -> 72 MB (216 orphaned recordings pruned, 24 of them left by an earlier round).
+- `make check` on builder0: green on `96333be1` (1559 passed, 0 failed) and on **`7a72ad05`** (1561 passed, 0 failed,
+  18 targets, `exited 0`, sim-baseline unmoved). One red in between, `ad9f6a1d`, written up below.
+
+### The one red check of the round, and what it was
+
+The final `make remote T=check` on `ad9f6a1d` read **`>> remote: make check exited 2`**, and it was not a test:
+
+    make[2]: *** [mk/core.mk:45: import] Segmentation fault      (on color.faction.09.mp3)
+
+`assets/announcer/masters/` had no `.gdignore`. The **clips** folder has carried one since round 4 precisely
+because importing thousands of audio files "once crashed the import step outright" — the masters never got one,
+because they are git-ignored and so nobody thought about them, while `tools/remote.sh` rsyncs them to builder0 all
+the same (it excludes `assets/incoming/`, not these). There, Godot met this round's 616 fresh MP3s with no import
+cache and died. Fixed in `7a72ad05`: `generate.py` writes the marker into the masters folder as well, a test
+asserts both folders, and the orchestrator has been told that `~/projects/godot/assets/announcer/masters/` needs
+the same one-line file (it now holds these masters, and its cache is the only reason it has not hit this).
+
+**The lesson for the next stream that generates gigabytes of an input format Godot knows how to import:** git-ignored
+is not the same as invisible. The remote check syncs the working tree, not the index.
+
+### Decisions
+- **PA cap 16 this round** (the formula wants hundreds for a 30-minute horizon): her lines are the hardest to write
+  well, and a mass-produced wrong detail becomes the joke the lead told us to cut. Reversible in `pool_report.py`.
+- **"No two lines with the same category" is per moment pool**, not global: 117 PA lines cannot carry 117 kinds of wrong.
+- **Takes (C10: the caller at 3 takes a line) are NOT done.** They need the booth to choose between recordings of one
+  variant (a runtime change in `AnnouncerVoice` and the manifest) and roughly double the caller's bill. First next step.
+- Eight of the 14 grammar fixes **dropped the `{faction}` slot** rather than keep 24 recordings each: same meaning in
+  context, a quarter of the cost.
+
+### What to playtest (exact commands)
+- `make announcer-demo` then open `build/announcer/demo/index.html#new` (the tab has audio for all 518 lines).
+- `make announcer-transcript FIXTURE=gangs_vs_law SEED=2` and read it as a listener.
+- `make skirmish` with the announcer on, one match: does the booth repeat itself?
+
+### Next steps (in order)
+1. **Takes for the caller** (C10): one variant, several recordings, chosen at random with the recency penalty.
+2. The remaining deficit, 147 lines, biggest first: `color lull` 17, `caller kill` 9, `pa kill` 7.
+3. The PA's pools past 16 once someone has read a session's worth of her lines and still likes them.
+
+### Questions for the lead
+- None blocking. **His veto is a line id** from the New tab's list.
+
+### Requests to other streams
+- None.
+
+### Merge notes
+- Shared files touched: none outside the stream's own paths (`assets/announcer/`, `tools/announcer/`,
+  `tests/announcer/`, `game/announcer/`, `mk/announcer.mk`, this brief).
+- **The masters for this round's 523 recordings are in `~/projects/godot-announcer/assets/announcer/masters`
+  (git-ignored, ~60 MB).** The main checkout's masters folder does not have them. **Rescue it before this worktree is
+  removed** (orchestration lesson 6; `_agents/backups.md` names the masters as an input worth keeping).

@@ -26,6 +26,25 @@ static func moment_of(library: AnnouncerLibrary, kind: String, tags: Array, slot
 	return memory.moment(kind, t, tags, slots, "")
 
 
+## Round 10 stretch: the Veteran calls something early and says so later. The prediction sets a memory flag at first
+## contact (the moment that reaches the air in every match); the callback is only eligible once that flag is set, and
+## only for a moment that happened AFTER it.
+func test_a_callback_waits_for_the_prediction_that_earns_it() -> void:
+	var library := tiny([
+		{"id": "p", "speaker": "color", "act": "analysis", "tags": ["contact"], "sets": ["predicted_scouts"],
+			"text": "Those scouts are the whole plan."},
+		{"id": "back", "speaker": "color", "act": "analysis", "tags": ["kill", "victim_scout"],
+			"needs": ["predicted_scouts"], "text": "There go the eyes, like I said."},
+	], {"contact": {"beats": []}, "kill": {"beats": []}})
+	var kill := moment_of(library, "kill", ["victim_scout"], {}, 30.0)
+	assert_eq(library.candidates("color", ["analysis"], kill, {}, "").size(), 0,
+			"without the prediction there is no callback to make")
+	assert_eq(library.candidates("color", ["analysis"], kill, {"predicted_scouts": 12.0}, "")[0]["id"], "back",
+			"predicted at first contact, called back on the kill")
+	assert_eq(library.candidates("color", ["analysis"], kill, {"predicted_scouts": 45.0}, "").size(), 0,
+			"a flag set after the moment is not a prediction, it is hindsight")
+
+
 static func event(t: float, type: String, fields: Dictionary) -> Dictionary:
 	var made := {"tick": roundi(t * 60), "t": t, "type": type}
 	made.merge(fields)

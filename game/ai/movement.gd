@@ -360,6 +360,37 @@ func _init(controller: OrderController = null) -> void:
 	ctl = controller
 
 
+# ---- Round 10 (item 1): the wall-contact instrument (game/ai/wall_contact.gd) -------------------------------------
+
+## This mover's wall-contact reading, published in `state()` (measurement only; nothing decides on it).
+var contact := WallContact.new()
+## Did ORCA move this tick's steering point (set in `drive`, cleared when nothing drives)?
+var _deflected := false
+
+
+## The controller's last word on the tick: what it commanded and which layer produced it. The instrument judges the
+## NEXT tick's slide against this, because the slide it reads is the motion this command produced.
+func note_decision(cmd: TankCommand, order: Dictionary) -> void:
+	var driver := String(order.get("type", "stop"))
+	if phase == "yielding" and yield_to != "":
+		driver = "yield"
+	elif _unstick_left > 0.0:
+		driver = "unstick"
+	elif driver == "move_to":
+		driver = "direct" if bool(order.get("direct", false)) else "route"
+	var path := PackedVector3Array()
+	if driver == "route" and _path_index < _path.size():
+		path = _path.slice(maxi(_path_index - 1, 0))
+	contact.decided = {"driver": driver, "throttle": cmd.throttle, "turn": cmd.turn,
+			"deflected": _deflected and (driver == "route" or driver == "direct"),
+			"steer_to": steer_to if steer_to != Vector3.INF else null, "path": path}
+
+
+## Read the hull's last slide (the controller calls this every physics tick, before its stride skip).
+func observe_contact() -> void:
+	contact.observe(self)
+
+
 # ---- The N1 API (static: what other streams call) ------------------------------------------------------------------
 
 ## The Movement driving `unit`, or null (nothing drives it, or its controller is gone).
@@ -659,7 +690,7 @@ func reading() -> Dictionary:
 			"clearance_shortfall_m": clearance_shortfall(ctl.tank, ctl.tank.unit_id) if ctl.tank != null else 0.0,
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan, "wedged": wedged,
 			"wedge_moved_m": wedge_moved_m, "wedge_hull_m": wedge_hull_m,
-			"wedge_ratio": wedge_moved_m / maxf(wedge_hull_m, 0.1)}
+			"wedge_ratio": wedge_moved_m / maxf(wedge_hull_m, 0.1)}.merged(contact.reading())
 
 
 ## A new order: drop the unstick routine, the old path, the fire detour and the stall bookkeeping, so the new order
@@ -710,6 +741,7 @@ func new_order() -> void:
 func idle() -> void:
 	yield_to = ""
 	arc_live = false
+	_deflected = false
 	stalled_ticks = 0
 	phase = "arrived"
 	blocked_by = ""
@@ -752,11 +784,13 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	_remaining = remaining
 	lap = OrderController._lap("move.remaining", lap)
 	var pace := 1.0
+	_deflected = false
 	if avoidance_on and not order.get("reverse", false) and ctl.tanks_root != null \
 			and _flat_distance(tank.global_position, around_fire) > arrive:
 		var avoided := _avoid(waypoint, speed_factor, delta)
 		if avoided[0] != waypoint:
 			arrive = 0.1  # steering at an avoiding point, not the goal: never "arrive" at it
+			_deflected = true
 		waypoint = avoided[0]
 		pace = avoided[1]
 	if not direct and waypoint != goal and not _off.has("guard"):

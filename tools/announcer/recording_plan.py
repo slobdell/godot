@@ -142,12 +142,17 @@ def fill(text: str, slots: dict, vocabulary: dict) -> str:
     return out + text[cursor:]
 
 
-def plan(lines_data: dict, speakers: list[str] | None = None, only: set | None = None) -> dict:
+def plan(lines_data: dict, speakers: list[str] | None = None, only: set | None = None,
+         only_values: set | None = None) -> dict:
     """{requests: [...], lines: {line_id: {speaker, variants: {key: clip}}}, too_many: [...]}
 
-    One request per whole sentence. `speakers` and `only` (line ids) narrow what is recorded; the whole library
-    still provides context (the question an answer is recorded against), so a line's request is the same however
-    it was selected. Lines over MAX_COMBINATIONS are reported in `too_many` and not ordered."""
+    One request per whole sentence. `speakers` and `only` (line ids) narrow what is recorded; `only_values` narrows
+    it further, to the realizations that speak one of those slot values - a new arena name needs the 18 lines that
+    say it, and none of the recordings of the arenas that already have theirs (round 10, the Crossing and the
+    Sumps). The whole library still provides context (the question an answer is recorded against), so a line's
+    request is the same however it was selected. `lines` always lists every variant of a line it covers, so a
+    narrowed run still writes a complete manifest entry. Lines over MAX_COMBINATIONS are reported in `too_many`
+    and not ordered."""
     vocabulary = lines_data.get("vocabulary", {})
     requests, line_variants, too_many = [], {}, []
     topic_questions = {}
@@ -165,6 +170,9 @@ def plan(lines_data: dict, speakers: list[str] | None = None, only: set | None =
         variants = {}
         for realization in spoken:
             clip = variant_clip(line["id"], realization["key"])
+            variants[realization["key"]] = clip
+            if only_values is not None and not (set(realization["key"].split(".")) & only_values):
+                continue
             request = {"id": clip, "speaker": line["speaker"], "text": realization["text"],
                        "slices": [{"clip": clip, "start": 0, "end": len(realization["text"]),
                                    "text": realization["text"], "kind": "line"}]}
@@ -172,7 +180,6 @@ def plan(lines_data: dict, speakers: list[str] | None = None, only: set | None =
             if line["act"].startswith("answer") and line.get("topic") in topic_questions:
                 request["previous_text"] = topic_questions[line["topic"]]
             requests.append(request)
-            variants[realization["key"]] = clip
         line_variants[line["id"]] = {"speaker": line["speaker"], "variants": variants,
                                      "bases": line_bases(line["text"])}
     return {"requests": requests, "lines": line_variants, "too_many": too_many}
