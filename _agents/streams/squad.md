@@ -172,6 +172,13 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
 
 ### Done
 
+- **MERGE HERE: `e4d5e3f3`** (stream/squad with main `52254fd2` = control's R2 merged in), builder0: `make check
+  exited 2`, **1587 passed / 0 failed**, sim-baseline `1ea332e7bc268d2a` UNMOVED, determinism `559a415887806e43`,
+  red ONLY on ai-scenarios-check: **43 passed, 1 failed** (was 41,3; the one red is combat's
+  `artillery_stays_dug_in`). REASONs: base-of-fire re-specified (`35f7b459`), ORBIT controller (`2ac026af`). Commits
+  after it are docs only. `make repath-test` (laptop) on it: 6 of 7 pass; `arrived` reads STALE only for two crews
+  destroyed before the click (control's dead-crew exclusion `563c9155` not yet on main).
+
 - **Baseline (start of round):** `2ee65f94`, builder0: `make check exited 0`, 1559 passed / 0 failed, sim-baseline
   `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`, ai-scenarios 41,3.
 - **Item 2, R2 (squad's half)** — `2d5945ac`, `35f7b459`. REPLACES: `Elements._physics_process`'s cycle gate for a
