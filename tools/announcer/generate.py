@@ -373,6 +373,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--masters", type=Path, help="masters (default: assets/announcer/masters, or <out>/masters with --mock)")
     parser.add_argument("--speakers", default="", help="comma-separated speakers to include")
     parser.add_argument("--only", default="", help="comma-separated line ids (every recording of each comes along)")
+    parser.add_argument("--only-values", default="", help="comma-separated slot values (an arena, a faction): only the recordings that say one of them")
     parser.add_argument("--model", default=voice_client.MODEL_ID)
     parser.add_argument("--ledger", type=Path, default=LEDGER)
     parser.add_argument("--note", default="", help="the ledger row's note: which batch this is")
@@ -380,7 +381,8 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     lines_data = json.loads(args.lines.read_text())
     the_plan = recording_plan.plan(lines_data, [s for s in args.speakers.split(",") if s] or None,
-                                   set(args.only.split(",")) if args.only else None)
+                                   set(args.only.split(",")) if args.only else None,
+                                   set(args.only_values.split(",")) if args.only_values else None)
     speakers = lines_data.get("speakers", {})
     if args.dry_run:
         print(dry_run(the_plan, speakers, args.masters or MASTERS, args.model))
