@@ -24,6 +24,8 @@ const STILL_HOLD_S := 1.0
 const IN_SLOT_M := 3.0
 ## B7: a crew has visibly acknowledged an order once it moves faster than this, or its hull or turret has turned this far.
 const ACK_MPS := 1.0
+const START_JITTER_M := 1.5
+const START_JITTER_DEG := 10.0
 const ACK_DEG := 5.0
 
 var case: TestCase
@@ -63,10 +65,18 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var right := Vector3(-toward.z, 0.0, toward.x)
 	var yaw := atan2(-toward.x, -toward.z)
 	var names: Array = []
+	# The SEED jitters each crew's start (±START_JITTER_M along both axes, ±START_JITTER_DEG of yaw), so a series over
+	# seeds samples real layouts: before this every seed produced the identical run (builder0, 0d18ce43: six seeds per
+	# cell, six identical rows), and a "paired series" of n = 6 was n = 1.
+	var jitter := RandomNumberGenerator.new()
+	jitter.seed = seed_value
 	for i in unit_ids.size():
 		# Abreast at 8 m, the squad as it stands after forming up at the spawn.
-		var at := home + right * ((i - (unit_ids.size() - 1) * 0.5) * 8.0)
-		var tank := lab.unit(Match.Team.GREEN, "Green_S_%d" % (i + 1), at, yaw, String(unit_ids[i]))
+		var at := home + right * ((i - (unit_ids.size() - 1) * 0.5) * 8.0) \
+				+ right * jitter.randf_range(-START_JITTER_M, START_JITTER_M) \
+				+ toward * jitter.randf_range(-START_JITTER_M, START_JITTER_M)
+		var tank := lab.unit(Match.Team.GREEN, "Green_S_%d" % (i + 1), at,
+				yaw + deg_to_rad(jitter.randf_range(-START_JITTER_DEG, START_JITTER_DEG)), String(unit_ids[i]))
 		names.append(String(tank.name))
 	await lab.start()
 	# The faction's own table (Elements picks it), exactly as a numbered squad gets in skirmish.
