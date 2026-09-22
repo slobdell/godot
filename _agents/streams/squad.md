@@ -198,6 +198,28 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   element issues a base crew a HOLD on its spot, and the scenario now does. The early-shots bar measured nav moving
   the assault out of the lanes it starts in; the clock now starts at the first clear lane. Laptop: clear 1.5 s,
   first shot +0.9 s, 9 shots, 0 through a friend. **REASON for the count: expect ai-scenarios 41,3 → 42,2.**
+- **Checks:** `96915bfc` builder0 exit 2: 1565/1, the red `test_an_element_flows_in_formation_on_the_way` (travel
+  seating improved snapping's transit gap more than the flow's; re-specified in `64a9e1e1` against round 9's seating:
+  flow 8.0 m vs round 9's 10.0, dresses 3.2 vs snapping's 6.4). `64a9e1e1` builder0 exit 2: **1569 passed / 0
+  failed, sim-baseline `1ea332e7bc268d2a` UNMOVED, determinism `559a415887806e43`**, red ONLY on ai-scenarios-check
+  at 42,2 (pre-registered, the base-of-fire REASON below). The orchestrator's ruling: red only on the count with the
+  REASON written is mergeable; the count is re-recorded once on main, not on this branch.
+- **R2, control's "near" state** — `d358febc`: a player task 5 m from the old one moves the leader's order within 2
+  ticks (mutation: without the forced re-issue the goal moves 0.0 m, control's laptop finding exactly).
+- **Item 6b, ORBIT** — `2ac026af` (combat's finding: the orbit radius was not the mechanism). REPLACES the ORBIT
+  steer point in `TankBrain` (a point ON the 11 m circle 75° ahead → an orbit controller: tangent turned by the
+  radius error, gain 2, clamped 45°, 13 m look-ahead), adds `ORBIT_MEMORY_TICKS` (the circled target stays fresh 4 s,
+  three sites, the COVER_FIRE pattern), and deck runs start inside Armor's 25° cone (`COS_DECK`) and break outside
+  45°. Engine-deck scenario (laptop): 0 deck hits of 13 → **27 of 29**. **REASON for the count: expect 43,1 at the
+  tip.** May move the sim baseline (CPU scouts orbit turrets): the tip's check says.
+- **Item 4, instrument** — `d1253eb1`. `TacticsFormation.LATERAL_FLOOR` (default "width" = round 9: nothing moves) and
+  `tests/test_tactics_pitch.gd`. Measured (laptop, tank 2.40 × 8.62, four abreast turning in place): width 4.40 m
+  −0.23 same (2 of 4 jammed) / −0.48 opposite; half_diagonal + half_width 5.67 m −0.73 / −0.36; 6.5–8.5 m clips at
+  every step (−0.27 at 8.5); **2 × half_diagonal 8.95 m +0.01 / 0.00**. Two parallel hulls turning together each
+  project w|cos θ| + l|sin θ| on the line between them, peaking at the diagonal: a dressing formation needs the
+  diagonal. Lands at CP3 as `max(width + HULL_CLEAR_M, diagonal)` (tank 8.95, rig ~14.4; doctrine spacing wins where
+  larger). The only tighter option is a STAGGERED dressing (crews turning one after another): a behaviour for the
+  lead's eye, not built.
 - **Item 6a, `_is_clear`** — `80905740`. REPLACES the aligned projection in `ArmyLayout._is_clear` with the
   separating-axis rule on each placed hull's own forward. Test with a 90° neighbour (old: 3.6 m clear, true 0.5 m).
 
