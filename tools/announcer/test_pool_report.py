@@ -27,7 +27,7 @@ class PoolReportTest(unittest.TestCase):
     def test_target_floor_cap_and_deep_growth(self):
         self.assertEqual(pool_report.target("caller", 3, 5), 12, "the brief's floor wins over a small N_c")
         self.assertEqual(pool_report.target("caller", 3, 500), 40, "N_c is capped")
-        self.assertEqual(pool_report.target("pa", 3, 500), 24, "the PA's cap is lower")
+        self.assertEqual(pool_report.target("pa", 3, 500), 16, "the PA's cap is lower")
         self.assertEqual(pool_report.target("color", 20, 0), 25, "a deep pool grows by a quarter")
         self.assertEqual(pool_report.target("color", 20, 0, used=False), 12, "not when nobody hears it")
 

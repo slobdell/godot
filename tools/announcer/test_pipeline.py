@@ -220,6 +220,17 @@ class MockPipelineTest(unittest.TestCase):
         self.assertEqual(voice_client.with_retries(flaky, "clip", delays=(0.001, 0.001, 0.001)), "recorded")
         self.assertEqual(len(calls), 3, "it kept trying")
 
+    def test_a_run_stops_before_it_passes_its_character_budget(self):
+        """Round 10 generates in paid batches against a stop line (half the balance): a run is given a budget and
+        records nothing that would take it past it, whatever the plan asks for."""
+        the_plan = sample_plan(["caller.kill.08", "caller.close.04"])
+        first = len(the_plan["requests"][0]["text"])
+        report = generate.generate(the_plan, SPEAKERS, mock_client(), self.masters, self.out, voice_client.MODEL_ID,
+                                   log=lambda *_: None, max_characters=first)
+        self.assertEqual(report["requests_sent"], 1)
+        self.assertEqual(report["characters"], first)
+        self.assertEqual(report["over_budget"], len(the_plan["requests"]) - 1, "the rest are counted, not sent")
+
     def test_one_recording_that_never_comes_does_not_lose_the_others(self):
         """The run's job is to get audio recorded. Anything that is not recording must not be able to stop it —
         and every master already written stays written, so re-running costs nothing for them."""

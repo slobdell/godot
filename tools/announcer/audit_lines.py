@@ -81,6 +81,43 @@ BORROWED = ["let's get it on", "it's time", "down goes", "let's get ready", "oh 
             "shit", "bastard", "christ"]
 
 
+# C10 (round 10): the PA's register. Her new lines (`added` set) name their one wrong detail as data,
+# {"span": "...", "category": "..."}, and these gates hold it to the research's shape: one short span, mid-sentence with
+# ordinary words after it (clause-final is where a punchline sits), a flat carrier, and no two lines in a pool with the
+# same kind of wrong detail. The categories are listed in lines.json (`oddity_categories`).
+AFFECT_WORDS = {"sadly", "unfortunately", "tragically", "hilarious", "hilariously", "amazing", "amazingly", "wow",
+                "incredible", "incredibly", "terrible", "terribly", "horrible", "horribly", "awful", "shocking",
+                "shockingly", "lol", "ironically", "funny", "joke", "grim", "grimly", "darkly"}
+ODDITY_WORDS = (1, 6)
+ODDITY_TAIL = 4
+
+
+def audit_oddity(line: dict, categories: dict) -> list[str]:
+    where, text, oddity = line["id"], line["text"], line.get("oddity")
+    if not isinstance(oddity, dict) or not oddity.get("span"):
+        return ["%s: a new PA line names no oddity {span, category}: which words are the one wrong detail?" % where]
+    errors = []
+    span, category = oddity["span"], oddity.get("category", "")
+    if category not in categories:
+        errors.append("%s: unknown oddity category %r (lines.json oddity_categories)" % (where, category))
+    if text.count(span) != 1:
+        errors.append("%s: the oddity %r is not in the text exactly once" % (where, span))
+        return errors
+    words = len(span.split())
+    if not ODDITY_WORDS[0] <= words <= ODDITY_WORDS[1]:
+        errors.append("%s: the oddity is %d words; the wrong detail is 1-6 words" % (where, words))
+    after = text[text.index(span) + len(span):]
+    if after.lstrip()[:1] in (".", "!", "?", "") or len(re.findall(r"[A-Za-z']+", after)) < ODDITY_TAIL:
+        errors.append("%s: the oddity sits at the end, the punchline position; bury it with %d or more ordinary words "
+                      "after it" % (where, ODDITY_TAIL))
+    if "!" in text:
+        errors.append("%s: an exclamation breaks the PA's flat register" % where)
+    affect = sorted(set(re.findall(r"[a-z]+", text.lower())) & AFFECT_WORDS)
+    if affect:
+        errors.append("%s: affect word %s in the PA's flat register" % (where, ", ".join(affect)))
+    return errors
+
+
 def _norm(text: str) -> str:
     return re.sub(r"[^a-z ]", "", text.lower()).strip()
 
@@ -96,6 +133,8 @@ def audit(lines_data: dict, beats_data: dict) -> tuple[list[str], list[str]]:
     ids, texts, openings = {}, {}, {}
     sets, topics_asked, topics_answered = set(), set(), set()
     by_kind_act: dict[tuple, int] = {}
+    categories = lines_data.get("oddity_categories", {})
+    oddity_seen: dict[tuple, str] = {}
     for line in lines:
         where = line.get("id", "<no id>")
         for field in ("id", "speaker", "act", "tags", "text"):
@@ -176,6 +215,15 @@ def audit(lines_data: dict, beats_data: dict) -> tuple[list[str], list[str]]:
         for phrase in BORROWED:
             if re.search(r"\b%s\b" % re.escape(phrase), lowered):
                 warnings.append("%s: %r is a borrowed catchphrase or strong language" % (where, phrase))
+        if speaker == "pa" and line.get("added"):
+            errors.extend(audit_oddity(line, categories))
+        if speaker == "pa" and isinstance(line.get("oddity"), dict):
+            for kind in line_kinds:
+                key = (kind, line["oddity"].get("category"))
+                if key in oddity_seen:
+                    errors.append("%s: the same kind of wrong detail (%s) as %s in the %s pool"
+                                  % (where, key[1], oddity_seen[key], kind))
+                oddity_seen.setdefault(key, where)
         sets.update(line.get("sets", []))
         if act == "setup_question":
             if not line.get("topic"):

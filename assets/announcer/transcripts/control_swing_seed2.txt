@@ -4,54 +4,54 @@ result: green by control at 2:34.0
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   CALLER   Some nights you know inside a minute. I do not think this is one of them.
-0:05.4   PA       Welcome to the Furnace. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.
-0:15.0   VETERAN  Mixed army. That's the smart build. It's also the—
+0:00.0   CALLER   That centre marker is hot tonight, folks, and somebody has to go stand on it!
+0:05.2   PA       Welcome to the Furnace. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.
+0:14.8   VETERAN  IFVs are honest work. Nothing fancy. They'll chew up anything light.
 0:19.2   ── first contact: rust tank fires on a ifv
-0:19.3   CALLER   Big gun, first shot! The Condemned tank gets things started!
-0:23.0   VETERAN  First shot isn't the fight. First hit is.
-0:27.4   CALLER   Here comes the drill! This is what they train for!
+0:19.9   CALLER   Shots fired! The Condemned take the first shot!
+0:22.9   VETERAN  Now, the correct answer here is to break contact and reset, unless the ground is—
 0:30.0   ── control point: green
-0:31.6   PA       The Law now holds the control point. Scoring has been updated.
-0:36.7   CALLER   Right in the weak spot! What a shot!
+0:30.1   CALLER   Sorry to cut you off, but look!
+0:32.8   PA       The centre marker, the floor around it and the crews standing on it remain Syndicate property throughout the match, and are insured accordingly.
 0:39.2   ── rust ifv destroys green scout
-0:39.7   CALLER   And the Condemned strike first! The IFV gets the honors!
-0:43.3   VETERAN  That's what they—
+0:41.8   CALLER   There it is! The first kill of the night belongs to the Condemned!
 0:45.0   ── rust lancer destroys green ifv
 0:45.0   ── green squad Bravo wiped out
-0:45.0   CALLER   Are you kidding me? The Lancer takes it out!
-0:48.3   VETERAN  Matchups are a—
+0:46.3   CALLER   Nobody saw that coming! The Lancer wins that one!
 0:49.0   ── close call: rust scout at 8% hull
+0:49.6   VETERAN  That—
 0:50.0   ── control point: rust
-0:50.0   CALLER   Oh, the Condemned take it right back!
-0:52.7   PA       Quite so, Joseph. Holding ground is permitted here and nowhere else in the district.
-0:59.0   VETERAN  This is the part where you either commit or you don't, and the crews that get it wrong are usually the ones that... Sorry, what was the question?
+0:50.1   CALLER   Whoa! Look at this!
+0:51.9   CALLER   Stolen! They steal the point right out from under them!
+0:55.5   VETERAN  Everybody wants the point until they're standing on it.
+1:00.2   VETERAN  Slight edge. Slight. One good shot turns it around.
+1:05.1   VETERAN  That's the seam—
 1:06.8   ── green ifv destroys rust scout
+1:06.8   CALLER   Textbook! The IFV eats it alive!
 1:07.8   ── friendly fire: green tank hits its own ifv
-1:11.9   CALLER   Oh, they're going right back at them! Straight into the guns!
-1:16.5   CALLER   They found the soft spot on that IFV!
-1:19.4   PA       Well described, Joseph. Viewers should be aware that describing a vehicle as stolen property—
+1:09.8   CALLER   Ambush! And they drive right back into it!
+1:12.8   VETERAN  Near ambush, you go straight at them. Every instinct you have says run. Every instinct you have is wrong.
 1:23.2   ── close call: rust ifv at 6% hull
+1:23.3   CALLER   Look at that IFV! Smoking, burning, and still going!
 1:25.0   ── control point: green
-1:25.0   CALLER   The center belongs to the Law!
-1:32.8   PA       Medical staff are standing by, and will attend to participants following the conclusion of the match.
+1:27.4   CALLER   Back and forth, back and forth! Who wants it more?
+1:35.4   VETERAN  We used to have a whole system—
 1:38.5   ── green ifv destroys rust ifv
-1:39.1   VETERAN  Open ground. In here, open ground is just a place you haven't been shot yet.
-1:46.4   VETERAN  There it is: react to contact. That's trained, not improvised.
+1:38.5   CALLER   Ohh, they took that one apart piece by piece!
+1:41.8   PA       That's right, Joseph. Medical staff will reach the vehicle at the end of the match, in keeping with arena rules, as they do every night.
 1:48.2   ── close call: rust lancer at 6% hull
-1:51.7   CALLER   The Condemned Lancer is hanging on by a thread!
-1:54.9   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
+1:58.1   VETERAN  People ask if I miss it. I don't. I still dream—
 2:03.0   ── green tank destroys rust lancer
 2:03.0   ── rust squad Dart wiped out
-2:03.0   CALLER   That's three in a row for the Law! They cannot miss!
-2:06.9   CALLER   The Law have taken out three—
+2:03.0   CALLER   Hold on, hold on!
+2:04.8   CALLER   The tank round lands, and the Lancer just comes apart!
+2:08.4   PA       Lovely—
 2:09.0   ── rust tank destroys green tank
-2:09.0   CALLER   What an exchange, and the Condemned win it!
-2:12.6   CALLER   They're turning into it! They're driving straight at them!
-2:15.9   PA       That's right, Joseph. Coordinated maneuver of this kind requires a permit outside the arena, which tonight's crews do not hold.
-2:32.1   CALLER   Dead even, one apiece. Anybody's match.
+2:09.0   VETERAN  That last the Law crew has nothing to lose. That's the dangerous one.
+2:15.4   VETERAN  Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other.
+2:32.4   CALLER   Dead even, one apiece. Anybody's match.
 2:34.0   ── MATCH OVER: green wins by control (1 green, 1 rust left)
-2:34.6   CALLER   The Law win it on the control point! They held the middle, and it paid off!
-2:40.1   VETERAN  Spacing is the whole game. Too close and one shell takes two of you. Too far and nobody can help anybody.
-2:49.8   PA       The Law are tonight's winner. Ticket holders may remain seated during the recovery operation.
-2:55.4   PA       That concludes this evening's programme. Please take a moment to enjoy the screens while the floor is cleared.
+2:34.9   CALLER   And there it is. The Law closes it out.
+2:38.2   VETERAN  You don't come back from that. Except they just did.
+2:43.4   PA       The Law are tonight's winner. Ticket holders may remain seated during the recovery operation.
+2:49.0   PA       The next match begins shortly. Fans who have been asked to remain in their seats should continue to do so.

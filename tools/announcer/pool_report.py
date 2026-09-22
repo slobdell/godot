@@ -3,7 +3,8 @@
 Selection variety is bounded by pool size per (speaker, moment): the director can only vary what the library gives it
 for the moment in front of it. This prints, per (speaker, moment):
 
-  lines      library lines the moment can ever reach for that speaker (its kind tag, an act its beats ask for)
+  lines      library lines the moment can ever reach for that speaker (its kind tag, an act its beats ask for);
+             `new` of them added this round
   λ/min      how often that speaker actually speaks at that moment, per match minute, over the fixture broadcasts
   pool       the director's candidate count when it picked (mean), and `eff`, the effective count (exp of the pick's
              entropy: eight lines where one carries the weight is about one); `min eff` is the narrowest pick seen
@@ -50,7 +51,7 @@ DEEP_GROWTH = 1.25
 ## the round's credits spread over every thin moment first. A pool at the cap is "deep enough for this round". The PA's
 ## cap is lower: her lines are the hardest to write well (one wrong detail each, never the same kind twice in a pool),
 ## and a mass-produced wrong detail is the joke the lead told us to cut.
-CAP = {"caller": 40, "color": 40, "pa": 24}
+CAP = {"caller": 40, "color": 40, "pa": 16}
 WORD = re.compile(r"\{[a-z_]+\}|[a-z']+")
 
 
@@ -114,12 +115,14 @@ def n_c(rate: float, cooldown_min: float, horizon_min: float, repeat_rate: float
 
 
 def target(speaker: str, current: int, needed: int, used: bool = True) -> int:
-    """The pool size the plan works towards. A moment the fixtures never reach for this speaker gets only its floor:
-    a deep pool nobody hears is credits spent on silence."""
-    floor = FLOOR[speaker]
+    """The pool size the plan works towards. `current` is the pool as the round found it (lines added this round do
+    not count, or the +25 % for deep pools would recede as the pool grows). A moment the fixtures never reach for this
+    speaker gets only its floor: a deep pool nobody hears is credits spent on silence. Everything above the floor is
+    capped."""
+    wanted = needed
     if current >= DEEP and used:
-        floor = max(floor, math.ceil(current * DEEP_GROWTH))
-    return max(floor, min(needed, CAP[speaker]))
+        wanted = max(wanted, math.ceil(current * DEEP_GROWTH))
+    return max(FLOOR[speaker], min(wanted, CAP[speaker]))
 
 
 def read_runs(folder: str) -> list:
@@ -164,7 +167,7 @@ def mean(values: list) -> float:
     return sum(values) / len(values) if values else 0.0
 
 
-def build(lines_data: dict, beats: dict, runs: list) -> dict:
+def build(lines_data: dict, beats: dict, runs: list, this_round: str = "r10") -> dict:
     lines = lines_data["lines"]
     by_id = {line["id"]: line for line in lines}
     pools = static_pools(lines, beats)
@@ -181,8 +184,11 @@ def build(lines_data: dict, beats: dict, runs: list) -> dict:
         # the deficit are measured against whichever is smaller: the library count or the mean pool the director
         # actually saw.
         base = min(len(pool), round(mean(entry["pool"]))) if entry["pool"] else len(pool)
-        goal = target(speaker, base, needed, entry["n"] > 0)
-        rows.append({"speaker": speaker, "moment": moment, "lines": len(pool), "rate_per_min": round(rate, 3),
+        # The pool as the round found it: the pick-time share of the lines that were not added this round.
+        before = sum(1 for line in pool if line.get("added") != this_round)
+        start = round(base * before / len(pool)) if pool else 0
+        goal = target(speaker, start, needed, entry["n"] > 0)
+        rows.append({"speaker": speaker, "moment": moment, "lines": len(pool), "new": len(pool) - before, "rate_per_min": round(rate, 3),
                      "uses": entry["n"], "pool_mean": round(mean(entry["pool"]), 2),
                      "fresh_mean": round(mean(entry["fresh"]), 2), "effective_mean": round(mean(entry["effective"]), 2),
                      "effective_min": round(min(entry["effective"]), 2) if entry["effective"] else None,
@@ -214,11 +220,11 @@ def render(report: dict) -> str:
            f"cap {report['knobs']['cap']}; floors {report['knobs']['floor']}, deep pools (≥{report['knobs']['deep']}) "
            f"×{report['knobs']['deep_growth']}",
            "",
-           f"{'speaker':7} {'moment':14} {'lines':>5} {'λ/min':>6} {'uses':>5} {'pool':>5} {'eff':>5} {'min eff':>7} "
+           f"{'speaker':7} {'moment':14} {'lines':>5} {'new':>4} {'λ/min':>6} {'uses':>5} {'pool':>5} {'eff':>5} {'min eff':>7} "
            f"{'starved':>7} {'N_c':>5} {'target':>6} {'deficit':>7} {'d2':>5}"]
     for row in sorted(report["rows"], key=lambda r: (-r["deficit"], r["speaker"], r["moment"])):
         low = "" if row["effective_min"] is None else f"{row['effective_min']:.1f}"
-        out.append(f"{row['speaker']:7} {row['moment']:14} {row['lines']:5d} {row['rate_per_min']:6.2f} {row['uses']:5d} "
+        out.append(f"{row['speaker']:7} {row['moment']:14} {row['lines']:5d} {row['new']:4d} {row['rate_per_min']:6.2f} {row['uses']:5d} "
                    f"{row['pool_mean']:5.1f} {row['effective_mean']:5.1f} {low:>7} {row['starved']:7d} {row['n_c']:5d} "
                    f"{row['target']:6d} {row['deficit']:7d} {row['distinct_2']:5.2f}")
     out.append("")

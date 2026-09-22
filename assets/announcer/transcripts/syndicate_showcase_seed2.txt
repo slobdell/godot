@@ -4,28 +4,27 @@ result: green by elimination at 0:54.0
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   CALLER   Welcome in, everybody. Take a look at that floor. That is where this gets decided.
-0:05.3   PA       Welcome, everyone, to the Foundry. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.
-0:15.5   VETERAN  Mixed army. That's the smart build. It's also the—
+0:00.0   CALLER   I have watched both of these crews all week and I still could not tell you how this goes.
+0:06.2   PA       A warm welcome to the Foundry, to everyone watching at home, and to our viewers in the detention blocks.
+0:14.3   VETERAN  Spacing is the whole game. Too close and one shell takes two—
 0:19.5   ── first contact: green scout fires on a lancer
-0:19.6   CALLER   The scout finds them first! That's the job, and the Condemned are doing it!
-0:24.5   VETERAN  First shot isn't the fight. First hit is.
-0:28.9   CALLER   Here comes the drill! This is what they train for!
+0:19.6   CALLER   There's the first shot! Buckle up, folks!
+0:22.4   VETERAN  Whoever shot first just told everybody where they are. Now we see if it was worth it.
+0:30.4   VETERAN  Slight—
 0:31.2   ── rust lancer destroys green scout
-0:32.5   CALLER   And the Syndicate strike first! The Lancer gets the honors!
-0:36.7   VETERAN  Turrets turn slower than vehicles do. That's the whole trick. That's it, that's the trick.
-0:45.5   CALLER   That artillery is hurt! That artillery is hurt!
+0:31.3   CALLER   There it is! The first kill of the night belongs to the Syndicate!
+0:36.4   CALLER   Oh, they're going right back at them! Straight into the guns!
+0:40.4   VETERAN  Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other.
 0:49.8   ── green scout destroys rust artillery
 0:49.8   ── rust squad Halo wiped out
-0:49.8   CALLER   That artillery is out of the fight!
+0:49.8   CALLER   That's the matchup! The scout does exactly what it was built to do!
 0:52.5   ── rust lancer destroys green scout
-0:53.0   CALLER   The Condemned are down to three!
 0:53.5   ── green ifv destroys rust lancer
 0:54.0   ── green tank destroys rust lancer
 0:54.0   ── rust squad Vesper wiped out
 0:54.0   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-0:55.3   CALLER   And that's it! That's the last one!
-0:58.0   CALLER   That was fast! The Condemned made short work of that one!
-1:01.9   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
-1:08.3   PA       The Condemned are tonight's winner. Ticket holders may remain seated during the recovery operation.
-1:13.9   PA       Thank you for joining us. Your attendance tonight has been recorded, and is appreciated.
+0:54.3   CALLER   The last Syndicate vehicle goes down!
+0:56.6   CALLER   And the Condemned are the last army standing! The Condemned win!
+1:00.5   VETERAN  Good match. Not pretty. Good.
+1:03.8   PA       The Condemned are tonight's winner. Ticket holders may remain seated during the recovery operation.
+1:09.4   PA       The floor will now be prepared for tomorrow's session, and fans may stay to watch, for about forty minutes, from their seats.

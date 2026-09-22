@@ -121,19 +121,57 @@
     .team-name { font-size: 24px; }
   }
   @media (prefers-reduced-motion: reduce) { .row { transition: none; } }
+
+  /* Round 10: the New tab (every line added this round, for the lead's veto). */
+  .tabs { display: flex; gap: 4px; }
+  .tabs button { font: 600 16px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim);
+    background: none; border: none; border-bottom: 2px solid transparent; padding: 8px 10px 6px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--tally); }
+  .badge { font: 600 11px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ground);
+    background: var(--caller); border-radius: 2px; padding: 2px 4px; margin-left: 6px; vertical-align: 2px; }
+  [hidden] { display: none !important; }
+  .fresh-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 16px 0 10px; }
+  .fresh-group h3 { font: 700 15px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim);
+    margin: 22px 0 6px; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
+  .fresh-row { display: grid; grid-template-columns: 34px 68px 1fr auto; gap: 4px 10px; align-items: start;
+    padding: 7px 8px; border-left: 2px solid transparent; }
+  .fresh-row:hover { background: var(--panel); }
+  .fresh-row.vetoed { border-left-color: var(--tally); opacity: 0.55; }
+  .fresh-row .text { font-size: 16px; line-height: 1.45; max-width: 76ch; }
+  .fresh-row .id { font: 12px/1.4 var(--mono); color: var(--faint); margin-top: 2px; overflow-wrap: anywhere; }
+  .fresh-row .span { text-decoration: underline dotted var(--pa); text-underline-offset: 3px; }
+  .hide-span .fresh-row .span { text-decoration: none; }
+  .fresh-row button.clip { font: 600 13px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink); background: var(--panel-2); border: 1px solid var(--rule); border-radius: 3px; padding: 6px 8px;
+    cursor: pointer; min-width: 44px; }
+  .fresh-row .noclip { font: 12px/1.9 var(--mono); color: var(--faint); }
+  .veto { display: flex; align-items: center; justify-content: center; min-height: 28px; }
+  .veto input { width: 18px; height: 18px; accent-color: var(--tally); }
+  .vetoes { display: grid; gap: 6px; margin-top: 18px; }
+  .vetoes textarea { width: 100%; min-height: 64px; box-sizing: border-box; font: 13px/1.4 var(--mono); color: var(--ink);
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 3px; padding: 8px; }
+  @media (max-width: 760px) {
+    .fresh-row { grid-template-columns: 30px 1fr auto; }
+    .fresh-row .who { grid-column: 2; }
+    .fresh-row > div:nth-child(3) { grid-column: 1 / -1; }
+  }
 </style>
 
 <div class="wrap" id="app">
   <header class="bar">
     <div class="title-row">
       <h1>Arena Booth Monitor</h1>
-      <span class="gate" id="gate"><b>●</b> Text only. No voice audio has been generated; the lead approves this text first.</span>
+      <span class="gate" id="gate"><b>●</b> The matches are text. The New tab plays each new line's recorded voice.</span>
     </div>
-    <div class="controls">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tab-matches" aria-selected="true">Matches</button>
+      <button type="button" role="tab" id="tab-fresh" aria-selected="false">New this round</button>
+    </div>
+    <div class="controls match-only">
       <span class="label">Match</span>
       <div class="seg" id="fixtures" role="group" aria-label="Match"></div>
     </div>
-    <div class="controls">
+    <div class="controls match-only">
       <span class="label">Director seed</span>
       <div class="seg" id="seeds" role="group" aria-label="Director seed"></div>
       <div class="transport">
@@ -150,13 +188,27 @@
     </div>
   </header>
 
-  <section class="board" aria-label="Scoreboard">
+  <section id="fresh" hidden aria-label="New this round">
+    <div class="fresh-tools">
+      <span class="label">Voice</span>
+      <div class="seg" id="fresh-speakers" role="group" aria-label="Voice"></div>
+      <label class="toggle"><input type="checkbox" id="mark-span"> Mark the PA's wrong detail</label>
+      <span class="meta" id="fresh-count"></span>
+    </div>
+    <div id="fresh-list"></div>
+    <div class="vetoes">
+      <span class="label">Vetoed line ids (tick a line to veto it; send this list back)</span>
+      <textarea id="veto-list" readonly aria-label="Vetoed line ids"></textarea>
+    </div>
+  </section>
+
+  <section class="board match-only" aria-label="Scoreboard">
     <div class="team green"><span class="team-name">Green</span><div><div class="pips" id="pips-green"></div><div class="units" id="units-green"></div></div></div>
     <div class="onair"><span class="tally" id="tally">On air</span><span class="speaking" id="speaking"></span><span class="meta" id="meta"></span></div>
     <div class="team rust"><div><div class="pips" id="pips-rust"></div><div class="units" id="units-rust"></div></div><span class="team-name">Rust</span></div>
   </section>
 
-  <main class="desk" id="desk">
+  <main class="desk match-only" id="desk">
     <section class="col" aria-label="The floor">
       <h2><span>The floor</span><span id="floor-count"></span></h2>
       <div class="feed" id="floor"></div>
@@ -167,7 +219,7 @@
     </section>
   </main>
 
-  <p class="note">Fixture matches are fake timelines from <code>tools/announcer/fake_match.py</code>; each seed is the same match
+  <p class="note match-only">Fixture matches are fake timelines from <code>tools/announcer/fake_match.py</code>; each seed is the same match
   called by the director with a different random draw. <b>Why</b> shows the moment the director noticed and the tags a line
   matched. <b>Skipped</b> shows moments it chose not to call (stale, cooling down, the fight still live). A line ending in — was
   cut off by something bigger. Rebuild with <code>make announcer-demo</code>.</p>
@@ -178,6 +230,8 @@
 (() => {
   const DATA = JSON.parse(document.getElementById("data").textContent);
   const SPEAKER = {caller: "Caller", color: "Veteran", pa: "PA"};
+  const FRESH_LINES = (DATA.fresh && DATA.fresh.lines) || [];
+  const FRESH = new Set(FRESH_LINES.map((l) => l.id));
   const $ = (id) => document.getElementById(id);
   const state = {fixture: null, seed: null, t: 0, playing: false, last: 0, match: null};
   try {
@@ -252,7 +306,7 @@
     $("floor-count").textContent = `${floorRows.length} events`;
     const rows = m.cues.map((c) => ({t: c.t, html:
       `<div class="row line ${c.speaker}" data-t="${c.t}" data-end="${c.end}" tabindex="0"><span class="tc">${clock(c.t)}</span>` +
-      `<span class="who ${c.speaker}">${SPEAKER[c.speaker]}</span><div><div class="text">${esc(cutText(c))}</div>` +
+      `<span class="who ${c.speaker}">${SPEAKER[c.speaker]}</span><div><div class="text">${esc(cutText(c))}${FRESH.has(c.line_id) ? '<span class="badge">new</span>' : ""}</div>` +
       `<div class="why">${esc(c.reason)} · ${esc(c.line_id)}</div></div></div>`}));
     for (const d of m.decisions || []) {
       if (!d.text.startsWith("skip")) continue;
@@ -325,7 +379,7 @@
     if (src) audio.src = src; else audio.removeAttribute("src");
     $("gate").innerHTML = src
       ? "<b>●</b> Mock audio: tone bursts stand in for words, to check timing and stitching. No voice audio yet."
-      : "<b>●</b> Text only. No voice audio has been generated; the lead approves this text first.";
+      : "<b>●</b> The matches are text. The New tab plays each new line's recorded voice.";
   }
   function syncAudio() {
     if (!soundOn()) { audio.pause(); return; }
@@ -365,7 +419,72 @@
   const rowSeek = (ev) => { const row = ev.target.closest(".row"); if (row) seek(Number(row.dataset.t) + 0.01); };
   $("floor").onclick = rowSeek; $("booth").onclick = rowSeek;
   for (const feed of ["floor", "booth"]) $(feed).onkeydown = (ev) => { if (ev.key === "Enter") rowSeek(ev); };
+  // The New tab: every line added this round, grouped by moment, each with its clip and a veto box.
+  const fresh = {speaker: "all", vetoes: new Set()};
+  try { for (const id of JSON.parse(localStorage.getItem("booth-vetoes") || "[]")) fresh.vetoes.add(id); } catch (e) { /* none */ }
+  const clipAudio = new Audio();
+  function showTab(name) {
+    $("tab-matches").setAttribute("aria-selected", String(name === "matches"));
+    $("tab-fresh").setAttribute("aria-selected", String(name === "fresh"));
+    for (const el of document.querySelectorAll(".match-only")) el.hidden = name !== "matches";
+    $("fresh").hidden = name !== "fresh";
+    if (name === "fresh") setPlaying(false);
+    try { localStorage.setItem("booth-tab", name); } catch (e) { /* fine */ }
+  }
+  function markSpan(line) {
+    const text = esc(line.text);
+    if (!line.span) return text;
+    const span = esc(line.span);
+    return text.replace(span, `<span class="span">${span}</span>`);
+  }
+  function renderFresh() {
+    const speakers = ["all", "caller", "color", "pa"];
+    $("fresh-speakers").innerHTML = speakers.map((s) =>
+      `<button type="button" data-speaker="${s}" aria-pressed="${s === fresh.speaker}">${s === "all" ? "All" : SPEAKER[s]}</button>`).join("");
+    const shown = FRESH_LINES.filter((l) => fresh.speaker === "all" || l.speaker === fresh.speaker);
+    const groups = new Map();
+    for (const line of shown) {
+      const key = line.moments.join(", ").replace(/_/g, " ");
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(line);
+    }
+    const voiced = shown.filter((l) => l.clip).length;
+    $("fresh-count").textContent = `${shown.length} lines · ${voiced} voiced · ${fresh.vetoes.size} vetoed`;
+    $("fresh-list").innerHTML = [...groups].map(([moment, lines]) => `<div class="fresh-group"><h3>${esc(moment)} · ${lines.length}</h3>` +
+      lines.map((l) => `<div class="fresh-row${fresh.vetoes.has(l.id) ? " vetoed" : ""}" data-id="${esc(l.id)}">` +
+        `<label class="veto" title="Veto ${esc(l.id)}"><input type="checkbox" aria-label="Veto ${esc(l.id)}"${fresh.vetoes.has(l.id) ? " checked" : ""}></label>` +
+        `<span class="who ${l.speaker}">${SPEAKER[l.speaker]}</span>` +
+        `<div><div class="text">${markSpan(l)}</div><div class="id">${esc(l.id)} · ${esc(l.act)}${l.tags.length ? " · " + esc(l.tags.join(", ")) : ""}` +
+        `${l.variants ? ` · ${l.variants} recordings, playing one` : ""}${l.clip && !l.stt_ok ? " · speech-to-text disagreed" : ""}</div></div>` +
+        (l.clip ? `<button type="button" class="clip" data-clip="${esc(l.clip)}">Play</button>` : `<span class="noclip">text</span>`) +
+        `</div>`).join("") + `</div>`).join("");
+    $("veto-list").value = [...fresh.vetoes].sort().join(", ");
+  }
+  $("tab-matches").onclick = () => showTab("matches");
+  $("tab-fresh").onclick = () => showTab("fresh");
+  $("tab-fresh").textContent = `New this round (${FRESH_LINES.length})`;
+  $("tab-fresh").hidden = FRESH_LINES.length === 0;
+  $("fresh-speakers").onclick = (ev) => { const b = ev.target.closest("button"); if (b) { fresh.speaker = b.dataset.speaker; renderFresh(); } };
+  $("mark-span").onchange = () => $("fresh").classList.toggle("hide-span", !$("mark-span").checked);
+  $("fresh").classList.add("hide-span");
+  $("fresh-list").onclick = (ev) => {
+    const play = ev.target.closest("button.clip");
+    if (play) { clipAudio.src = play.dataset.clip; clipAudio.play().catch(() => {}); return; }
+  };
+  $("fresh-list").onchange = (ev) => {
+    const row = ev.target.closest(".fresh-row");
+    if (!row) return;
+    if (ev.target.checked) fresh.vetoes.add(row.dataset.id); else fresh.vetoes.delete(row.dataset.id);
+    try { localStorage.setItem("booth-vetoes", JSON.stringify([...fresh.vetoes])); } catch (e) { /* fine */ }
+    renderFresh();
+  };
+
   buildButtons();
   select(state.fixture, state.seed);
+  renderFresh();
+  let startTab = "matches";
+  try { startTab = localStorage.getItem("booth-tab") || "matches"; } catch (e) { /* fine */ }
+  if (location.hash === "#new") startTab = "fresh";
+  showTab(FRESH_LINES.length && startTab === "fresh" ? "fresh" : "matches");
 })();
 </script>

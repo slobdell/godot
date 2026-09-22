@@ -4,34 +4,33 @@ result: green by elimination at 1:14.2
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   CALLER   Here we go! The building is shaking and we have not even started!
-0:04.5   PA       Welcome, everyone, to the Scrapyard. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.
-0:14.7   VETERAN  The Syndicate came to hold ground. That army doesn't chase anybody.
+0:00.0   CALLER   Welcome in, everybody. Take a look at that floor. That is where this gets decided.
+0:05.3   PA       A warm welcome to the Scrapyard, to everyone watching at home, and to our viewers in the detention blocks.
+0:13.4   VETERAN  That's a lot of tanks. I hope the Syndicate have a plan for whatever beats them.
 0:20.0   ── first contact: rust scout fires on a tank
-0:20.0   CALLER   The scout finds them first! That's the job, and the Condemned are doing it!
-0:24.9   VETERAN  First shot isn't—
+0:20.4   CALLER   Shots fired! The Condemned take the first shot!
+0:23.4   VETERAN  Turrets turn slower than vehicles do—
 0:26.2   ── green tank destroys rust ifv
-0:26.3   CALLER   The tank round lands, and the IFV just comes apart!
-0:29.9   PA       The Syndicate congratulates its engineering team on another successful field test.
+0:26.3   CALLER   Sorry to cut you off, but look!
+0:29.0   CALLER   One shot! One shot from the big gun and it's over for that IFV!
 0:32.0   ── close call: rust scout at 4% hull
-0:34.9   CALLER   The Condemned scout is hanging on by a thread!
-0:38.1   VETERAN  Turrets turn slower—
+0:33.8   VETERAN  That kill was set up by somebody we didn't even see. That's teamwork.
 0:39.5   ── green tank destroys rust scout
-0:39.5   CALLER   Whoa! Look at this!
-0:41.3   CALLER   Nobody saw that coming! The tank wins that one!
+0:39.6   CALLER   Nobody saw that coming! The tank wins that one!
+0:43.5   CALLER   Oh, here we go! They're going by the book!
 0:43.8   ── green tank destroys rust artillery
-0:44.6   CALLER   That's three in a row for the Syndicate! They cannot miss!
-0:49.1   CALLER   Here comes the drill! This is what they train for!
-0:52.7   VETERAN  Bunched up like that, only the front two can shoot. Seven seconds before that pack hurt anybody.
-1:07.0   CALLER   The Syndicate land a heavy one!
-1:09.3   PA       Well described, Joseph. Viewers should be aware that describing a vehicle as—
+0:46.9   CALLER   The tank round lands, and the artillery just comes apart!
+0:50.5   CALLER   Wow. Just wow.
+0:52.6   CALLER   Right in the weak spot! What a shot!
+1:03.1   VETERAN  The side that's ahead can wait. The side that's behind can't. That's the whole shape of it now.
 1:11.0   ── close call: rust scout at 10% hull
+1:11.6   VETERAN  You hear that ringing? Everybody inside—
 1:14.2   ── green scout destroys rust artillery
 1:14.2   ── rust squad Battery wiped out
 1:14.2   ── green tank destroys rust scout
 1:14.2   ── rust squad Swarm wiped out
 1:14.2   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
-1:14.3   VETERAN  Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming.
-1:22.2   CALLER   That's the match! The Syndicate are your winner tonight!
-1:25.5   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
-1:33.1   PA       The Syndicate win tonight's match. Thank you for joining us. Please exit by section, and have your papers ready.
+1:14.3   CALLER   And that's it! That's the last one!
+1:17.0   CALLER   Not a scratch! They won it without a single loss!
+1:21.2   PA       The Syndicate win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
+1:28.9   PA       Thank you for joining us. Your attendance tonight has been recorded, and is appreciated.

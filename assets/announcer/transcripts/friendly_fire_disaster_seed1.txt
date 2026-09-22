@@ -4,25 +4,24 @@ result: green by elimination at 0:33.0
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
-0:07.5   CALLER   Here we go! The building is shaking and we have not even started!
-0:12.6   CALLER   The Condemned are on the floor, and every one—
+0:00.0   PA       A very good evening to you all. The floor has been swept, the barriers are secure, and the crews have been briefed on the new penalty for stopping.
+0:10.9   CALLER   Welcome in, everybody. Take a look at that floor. That is where this gets decided.
 0:15.8   ── first contact: green scout fires on a artillery
-0:15.8   VETERAN  Now everybody knows where everybody is. This is where it gets honest.
+0:16.2   VETERAN  Now it starts. Everything before this was driving.
 0:17.0   ── friendly fire: rust artillery hits its own ifv
-0:21.8   VETERAN  Once a crew starts losing in here, it goes fast. It's better that way, I'm told.
+0:20.6   CALLER   That artillery shell landed on their own IFV!
+0:24.1   VETERAN  Two crews are carrying that army right now. The rest are just there.
 0:26.5   ── friendly fire: rust artillery hits its own ifv
 0:26.8   ── close call: rust artillery at 10% hull
 0:28.8   ── green ifv destroys rust artillery
 0:29.0   ── green scout destroys rust artillery
 0:29.0   ── rust squad Battery wiped out
-0:29.6   CALLER   The Wreckers are cleaning house! Two down, just like that!
+0:30.5   CALLER   Oh, they just folded that thing in half!
 0:32.2   ── rust ifv destroyed by its own tank
 0:33.0   ── green tank destroys rust tank
 0:33.0   ── rust squad Front wiped out
 0:33.0   ── MATCH OVER: green wins by elimination (5 green, 0 rust left)
-0:33.3   CALLER   The last Condemned vehicle goes down!
-0:35.6   CALLER   That was fast! The Wreckers made short work of that one!
-0:39.5   VETERAN  Good crews down there tonight. One of them was a little better drilled.
-0:45.9   PA       The Wreckers win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
-0:53.6   PA       While the floor is prepared for the next match, a reminder that Syndicate Security reports made tonight will be credited by morning.
+0:33.5   CALLER   And that's it! That's the last one!
+0:36.2   CALLER   Not a scratch! They won it without a single loss!
+0:39.8   VETERAN  Good match. Not pretty. Good.
+0:43.1   PA       The Wreckers win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
