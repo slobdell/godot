@@ -43,7 +43,9 @@ func _run() -> void:
 	var hulls := _parse("hull:" + hull_text.replace(",", ",hull:")) if hull_text != "" else []
 	var yaw := deg_to_rad(float(_flag("yaw", "0")))
 	var ok := true
-	for variant: String in [arena_name, arena_name + "_dry"]:
+	# The "before" frame: the map's dry twin by default; `--dry=<layout>` for a proposal whose before is a real map
+	# (the Terminus canal's is the Terminus).
+	for variant: String in [arena_name, _flag("dry", arena_name + "_dry")]:
 		if not ResourceLoader.exists("res://arenas/%s.json" % variant) and not FileAccess.file_exists("res://arenas/%s.json" % variant):
 			print("TERRAIN_SHOT missing layout %s" % variant)
 			ok = false

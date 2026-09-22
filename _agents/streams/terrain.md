@@ -154,6 +154,37 @@ _(updated as each step lands; numbers carry machine and commit once committed)_
 - **Series tooling:** `make terrain-series TERRAIN_MAP=crossing SEEDS=32` (paired wet/dry, discordant pairs, sign test,
   positive control on `terrain_entries`).
 
+### The paired series (R9's second acceptance; `make terrain-series`, builder0)
+
+**The Crossing vs `crossing_dry`, 32 paired seeds (1–32), Condemned vs Condemned, budget 5200, 180 s, sim code at
+`56691a5b`.** Positive control held on every run (`terrain_entries` > 0 wet, 0 dry, or the pair is refused).
+
+| measure (median) | crossing | crossing_dry | seeds wet > dry | wet < dry | sign test p |
+|---|---|---|---|---|---|
+| unit-time on the crossings (the bridges' chokepoint regions) | **0.0186** | 0.0024 | **31** | 1 | **< 0.0001** |
+| time at the CONTESTED objective / time at either | 0.58 | 0.63 | 13 | 19 | 0.38 |
+| hits | 591 | 507 | 23 | 9 | 0.02 |
+
+Winner changed between the arms on 6 of 32 seeds.
+- **The expensive route IS used:** unit-time on the bridges goes up 8× with the river, on 31 of 32 seeds. That is R9's
+  "unit-time on the expensive route", met.
+- **The flanking rate does NOT move:** time at the contested objective is flat (13 vs 19, p 0.38). The river funnels
+  the fight onto the bridges (more hits, 23 vs 9) but does not change how much of it happens at the far objective.
+  Read: the brains-only CPUs cross where they must and fight there; whether a player's squads would take the far
+  objective more is the lead's game, not this series'. Not claimed.
+
+### For his page (paths in `~/projects/godot-terrain`; the orchestrator copies them)
+
+- **Frames at his pose** (21°, FOV 35, 49 m), each beside the same frame of its dry twin: `build/terrain-shots/`
+  (`crossing-{bridge,neck,landing,far_bridge,overview}.png`, `sumps-{catwalk,causeway,lip,far,overview}.png`, the
+  `_dry` twins, and `terminus_canal-*` beside `terminus-*` for the canal proposal once shot).
+- **The page:** `build/terrain-page/index.html` (`make terrain-page`: frames in pairs, the report's numbers, the
+  paired series when it exists). Built on builder0 with the shots.
+- **Merged:** `ef29355f` → main `4ffb4c1a` (check on `ef29355f`: 1611/0, sim-baseline `1ea332e7bc268d2a` unmoved,
+  17/18; the one red was main's scenario count, since re-recorded at `4ff45e50`).
+- **feel's look review: ACCEPTED** (2026-09-22), two non-blocking notes (water read as a starfield; the pit floor had
+  no depth cue), both addressed in `water.gdshader` after the merge; new frames pending.
+
 ### Stretch: the diagonal river, priced (not built)
 
 **~1.5 agent-days, one real risk.** Everything today is axis-aligned rectangles because the floor is cut by exact
