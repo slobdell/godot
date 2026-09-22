@@ -179,6 +179,7 @@ func _run() -> void:
 	CombatMotion.reset_arms()
 	Movement.reset_gates()
 	Movement.reset_route_arms()
+	WallContact.reset()
 	print("NAV_FIGHT_CONTROL arena %s, green %d, rust %d, %d pairs start on top of each other" % [
 			Arena.active.get("name", "?"), green.size(), rust, stacked])
 	TRAJECTORY.install(game_match, _flag("trajectory", ""), "nav-fight",
@@ -544,7 +545,7 @@ func _report(elapsed: float) -> void:
 			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
 			"inplace_detail": inplace_detail, "gear_detail": gear_detail, "travelled": _travel_report(),
 			"gates": Movement.gate_report(), "facings_issued": facings_issued, "holds_issued": holds_issued,
-			"arms": CombatMotion.arm_report(), "route_arms": Movement.route_arms(), "replan_owner": replan_owner,
+			"arms": CombatMotion.arm_report(), "route_arms": Movement.route_arms(), "wall_contacts": WallContact.report(), "replan_owner": replan_owner,
 			"inplace_per_unit_minute": _inplace_rates(),
 			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")],
 			"armies": [_flag("green-army", "cpu"), _flag("rust-army", "cpu")], "fielded": fielded, "busy_every_s": busy_every, "busy_orders": busy_orders}
