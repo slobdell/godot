@@ -150,3 +150,24 @@ _(updated as each step lands; numbers carry machine and commit once committed)_
   (ring-of-eyes), spread 0.39 wet and dry — the static instruments cannot see a kill zone; the series decides.
 - **Series tooling:** `make terrain-series TERRAIN_MAP=crossing SEEDS=32` (paired wet/dry, discordant pairs, sign test,
   positive control on `terrain_entries`).
+
+### Waiting / blocked
+
+- **Backlog 4 (a Terminus canal): deferred to after CP2.** arena is turning the Terminus streets into R4 lanes right
+  now (CP2); a canal down a 20 m street would take the lane width R4 guarantees, so a proposal drawn on today's
+  Terminus would be drawn on a map that is about to change. After CP2 merges: a proposal layout (fixture) with
+  frames, sent to arena through the orchestrator; I do not edit `terminus.json`.
+
+### Merge notes (shared or other streams' files this branch touches)
+
+- `game/arena/arena.gd` (arena's): `_build_terrain()` is a one-line delegate to `ArenaTerrain.build()`; the body
+  moved to `arena_terrain.gd` unchanged except rims/rails are navigation sources and rails are new.
+- `tests/test_arena_kit.gd` (arena's): the connectivity test asserts every OBJECTIVE is reachable (the centre only
+  when a layout lists none) -- the Crossing's centre is a river and the Pits' a building.
+- `tools/arena_report.py` (arena's): +`import arena_terrain`, one `carve()` call in `analyze()`, terrain on the plot.
+- `tools/make_arenas.py` (arena's): `write_v2(..., terrain=())` + `terrain_maps.check_terrain`, and the call to
+  `tools/terrain_maps.author()` at the end.
+- `game/theme/game_theme.gd` (feel's): one `DEFAULT_SLOTS` line, `arena.terrain`.
+- `mk/arena.mk`: additive `terrain-*` targets.
+- New fixture layouts `crossing_dry`, `pits_dry`: every all-layouts test now includes them (fixtures).
+
