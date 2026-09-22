@@ -7386,7 +7386,7 @@
     "contact"
    ],
    "intensity": 2,
-   "text": "First rounds downrange! Here comes the fight!",
+   "text": "First rounds are away! Here comes the fight!",
    "added": "r10"
   },
   {
@@ -12229,6 +12229,189 @@
     "span": "for the ticket holder only",
     "category": "insurance"
    },
+   "added": "r10"
+  },
+  {
+   "id": "color.army.25",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "heavy"
+   ],
+   "sets": [
+    "predicted_heavy"
+   ],
+   "text": "All that armor is slow. If it gets caught out of position, it is a long way back.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.39",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "victim_scout"
+   ],
+   "needs": [
+    "predicted_scouts"
+   ],
+   "text": "And there go the eyes, like I said. Driving blind from here.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.40",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "victim_artillery"
+   ],
+   "needs": [
+    "predicted_artillery"
+   ],
+   "text": "Somebody got to the artillery. I did say somebody usually does.",
+   "added": "r10"
+  },
+  {
+   "id": "color.kill.41",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "rear"
+   ],
+   "needs": [
+    "predicted_flank"
+   ],
+   "text": "That's the flank I was talking about. Nobody was watching it then either.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.28",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "rout"
+   ],
+   "needs": [
+    "predicted_heavy"
+   ],
+   "text": "Caught out of position, exactly like I said. You don't get that back with armor.",
+   "added": "r10"
+  },
+  {
+   "id": "color.momentum.29",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "shift"
+   ],
+   "needs": [
+    "predicted_flank"
+   ],
+   "text": "It turned on the flank. I'd like to say I'm pleased about being right.",
+   "added": "r10"
+  },
+  {
+   "id": "color.ownkill.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "friendly_kill"
+   ],
+   "needs": [
+    "predicted_friendly_fire"
+   ],
+   "text": "There it is. I said it would happen, and I'd rather it hadn't.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.34",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "needs": [
+    "predicted_scouts"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "The scouts went early and it was decided from there. I'll stop saying it when crews stop doing it.",
+   "added": "r10"
+  },
+  {
+   "id": "color.result.35",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "needs": [
+    "predicted_heavy"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "Heavy and slow, caught out of position. Same match I've watched for nine seasons.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.26",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "sets": [
+    "predicted_friendly_fire"
+   ],
+   "text": "Too many heavy guns in a small room tonight. Somebody hits their own before the end. They always do.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.27",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "sets": [
+    "predicted_flank"
+   ],
+   "text": "Watch the flanks from here. That's where this gets decided, and right now nobody is watching them.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.28",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact",
+    "unit_scout"
+   ],
+   "sets": [
+    "predicted_scouts"
+   ],
+   "text": "Those scouts are the whole plan. Lose them early and the rest of it is guesswork.",
+   "added": "r10"
+  },
+  {
+   "id": "color.contact.29",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact",
+    "unit_artillery"
+   ],
+   "sets": [
+    "predicted_artillery"
+   ],
+   "text": "That artillery decides this if nobody gets to it. Somebody usually gets to it.",
    "added": "r10"
   }
  ]

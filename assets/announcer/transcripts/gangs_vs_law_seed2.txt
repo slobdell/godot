@@ -7,11 +7,11 @@ result: green by elimination at 1:20.2
 0:00.0   CALLER   Welcome in, everybody. Take a look at that floor. That is where this gets decided.
 0:05.3   PA       A warm welcome to the Scrapyard, to everyone watching at home, and to our viewers in the detention blocks.
 0:12.8   ── first contact: green scout fires on a scout
-0:12.8   VETERAN  Watch the gaps between them. That's where the next one dies.
-0:18.4   CALLER   Here comes the drill! This is what they train for!
+0:12.8   VETERAN  Fast doesn't mean safe. Fast means you arrive at the problem sooner.
+0:18.8   CALLER   Here comes the drill! This is what they train for!
 0:19.5   ── friendly fire: green burner hits its own scout
-0:22.6   CALLER   Oh, that's their own! The Wreckers hit its own scout!
-0:26.3   VETERAN  You don't aim at a spot—
+0:23.0   CALLER   Oh, that's their own! The Wreckers hit its own scout!
+0:26.7   VETERAN  You don't aim at a—
 0:29.0   ── green ifv destroys rust scout
 0:29.0   ── rust squad Spotlight wiped out
 0:29.1   CALLER   The Wreckers draws first blood, and this crowd is on its feet!

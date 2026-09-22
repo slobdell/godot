@@ -8,7 +8,7 @@ result: green by elimination at 1:14.2
 0:10.9   CALLER   Welcome in, everybody. Take a look at that floor. That is where this gets decided.
 0:16.8   CALLER   The Syndicate brings the hover machines. Look at that—
 0:20.0   ── first contact: rust scout fires on a tank
-0:20.1   VETERAN  Shooting at range in here is mostly noise. The real fight comes when they close.
+0:20.1   VETERAN  The scout found them. Now the scout has to live long enough to tell somebody.
 0:26.2   ── green tank destroys rust ifv
 0:26.7   CALLER   Ohh, they took that one apart piece by piece!
 0:30.6   VETERAN  Hard cover stops a shell. Soft cover just stops them seeing you. Knowing which is which is most of it.

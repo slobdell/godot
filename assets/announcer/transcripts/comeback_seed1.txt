@@ -8,7 +8,7 @@ result: green by elimination at 1:01.2
 0:10.9   CALLER   You are looking live at the Furnace, and I promise you nobody here is sitting down tonight!
 0:17.2   CALLER   The Condemned are out tonight. Prison—
 0:19.5   ── first contact: green scout fires on a tank
-0:19.6   VETERAN  Shooting at range in here is mostly noise. The real fight comes when they close.
+0:19.6   VETERAN  The scout found them. Now the scout has to live long enough to tell somebody.
 0:26.2   CALLER   The scout sees them first and lets them know about it!
 0:29.2   ── rust lancer destroys green scout
 0:30.0   CALLER   Upset! Upset on the floor! The Lancer gets it done!

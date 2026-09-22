@@ -9,7 +9,7 @@ result: green by elimination at 1:14.2
 0:13.4   VETERAN  That's a lot of tanks. I hope the Syndicate have a plan for whatever beats them.
 0:20.0   ── first contact: rust scout fires on a tank
 0:20.4   CALLER   Shots fired! The Condemned take the first shot!
-0:23.4   VETERAN  Turrets turn slower than vehicles do—
+0:23.4   VETERAN  A machine gun won't open armor—
 0:26.2   ── green tank destroys rust ifv
 0:26.3   CALLER   Sorry to cut you off, but look!
 0:29.0   CALLER   One shot! One shot from the big gun and it's over for that IFV!

@@ -8,48 +8,44 @@ result: green by control at 2:34.0
 0:09.6   CALLER   That centre marker is hot tonight, folks, and somebody has to go stand on it!
 0:15.4   CALLER   And here comes the Law. Listen to this building. They are not popular in here.
 0:19.2   ── first contact: rust tank fires on a ifv
-0:20.6   VETERAN  There's a moment right after first contact where everybody waits for somebody else. Watch for it.
-0:27.6   CALLER   The big gun speaks first! What an opening shot!
+0:20.6   VETERAN  Doesn't matter if that first shot hit. It told everybody where to look.
+0:26.4   CALLER   The big gun speaks first! What an opening shot!
 0:30.0   ── control point: green
-0:31.5   PA       The crew now holding the centre volunteered for that position before the match, as the rules require, and we wish them a steady hold.
+0:30.3   PA       The crew now holding the centre volunteered for that position before the match, as the rules require, and we wish them a steady hold.
 0:39.2   ── rust ifv destroys green scout
-0:40.8   CALLER   The scout runs out of road!
-0:43.7   CALLER   They're breaking off! They are getting out of there!
+0:39.6   CALLER   The scout runs out of road!
+0:42.5   CALLER   They're breaking off! They are getting out of there!
 0:45.0   ── rust lancer destroys green ifv
 0:45.0   ── green squad Bravo wiped out
-0:47.0   CALLER   The Law loses one, and this building absolutely loves it!
+0:45.8   CALLER   The Law loses one, and this building absolutely loves it!
 0:49.0   ── close call: rust scout at 8% hull
+0:49.4   PA       What—
 0:50.0   ── control point: rust
-0:51.2   CALLER   And the point changes hands! What a swing!
-0:54.8   CALLER   They found the soft spot on that tank!
-0:57.7   VETERAN  That's going to slow the turret down. Hydraulics don't like that.
-1:04.8   CALLER   Solid hit. That's going to slow them down.
+0:50.0   CALLER   Stolen! They steal the point right out from under them!
+0:53.6   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
+0:59.2   VETERAN  This is the part where you either commit or you don't, and the crews that get it wrong are usually the ones that... Sorry, what was the question?
 1:06.8   ── green ifv destroys rust scout
 1:07.8   ── friendly fire: green tank hits its own ifv
-1:08.4   CALLER   Textbook! The IFV eats it alive!
-1:11.4   CALLER   They're turning into it! They're driving straight at them!
-1:16.3   CALLER   The autocannon is chewing right through that IFV!
-1:19.2   VETERAN  You can take a hit like that twice. Nobody I know took it three times.
+1:12.1   CALLER   That is a drilled unit, and it shows!
+1:15.1   VETERAN  Watch the timing. A drill only works if everybody starts on the same beat.
 1:23.2   ── close call: rust ifv at 6% hull
+1:23.3   VETERAN  I drove a whole match like that once. After a while you stop looking at the gauges.
 1:25.0   ── control point: green
-1:26.4   PA       The centre marker, the floor around it and the crews standing on it remain Syndicate property throughout the match, and are insured accordingly.
+1:37.7   PA       The—
 1:38.5   ── green ifv destroys rust ifv
-1:38.5   CALLER   All square! This thing is dead even!
-1:41.2   VETERAN  That's the one they'll talk about in the debrief. Not the kill. The ten seconds before it.
+1:38.5   CALLER   Oh, you do not come back from that!
+1:41.5   VETERAN  Spacing is the whole game. Too close and one shell takes two of you. Too far and nobody can help anybody.
 1:48.2   ── close call: rust lancer at 6% hull
-1:49.3   CALLER   That Lancer should be scrap, and it is still in the fight!
-1:53.5   VETERAN  I drove a whole match like that once. After a while you stop looking at the gauges.
+1:51.2   CALLER   They are hurt, but they are not out!
+2:01.4   CALLER   It's two a side—
 2:03.0   ── green tank destroys rust lancer
 2:03.0   ── rust squad Dart wiped out
-2:03.0   CALLER   One left! The Condemned have one left!
-2:06.3   CALLER   The whole element just changed gears!
-2:08.6   VETERAN  They're—
+2:03.0   CALLER   The Condemned are down to their last vehicle!
+2:06.5   CALLER   Somebody called it, and the whole crew answered!
 2:09.0   ── rust tank destroys green tank
-2:09.1   CALLER   Here it comes!
-2:10.5   CALLER   The tank is down! The biggest thing on the floor is down!
-2:14.7   VETERAN  That last the Law crew has nothing to lose. That's the dangerous one.
-2:25.6   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
+2:09.5   CALLER   It's all on the last Law vehicle now!
+2:18.0   VETERAN  Best driver I ever saw in here never fired first. Not once. Nine seasons.
 2:34.0   ── MATCH OVER: green wins by control (1 green, 1 rust left)
-2:34.0   CALLER   What a comeback! The Law were down and out, and the Law win it!
-2:38.9   VETERAN  That went long. Long matches are won by whoever's gearbox lasts.
-2:44.5   PA       The Law take tonight's match. We thank our participants, and our sponsors, in that order.
+2:34.0   CALLER   What a war! That one went the distance, and the Law come out on top!
+2:39.2   VETERAN  Holding the point takes nerve. The Law had it.
+2:44.0   PA       The Law take tonight's match. We thank our participants, and our sponsors, in that order.

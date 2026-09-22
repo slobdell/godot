@@ -8,35 +8,32 @@ result: rust by elimination at 1:24.2
 0:06.2   PA       A warm welcome to the—
 0:08.5   ── first contact: rust ifv fires on a scout
 0:08.5   CALLER   The autocannon opens up! The Syndicate's IFV is the first to speak!
-0:12.7   VETERAN  Now it starts. Everything before this was driving.
-0:17.1   VETERAN  Hard cover stops a shell. Soft cover just stops them seeing you. Knowing which is which is most of it.
-0:26.4   CALLER   They're getting into shape out there. Somebody's in charge.
-0:29.7   VETERAN  That's a swarm, and it's the right call for this ground. Probably.
-0:35.8   CALLER   That scout's machine gun is just hosing the tank!
-0:39.0   VETERAN  You don't hear that one. You find out about it later.
+0:12.7   VETERAN  First shot's a question. The answer comes back in about two seconds.
+0:18.7   CALLER   Oh! The tank took that one right on the chin!
+0:29.1   CALLER   The Wreckers have the numbers right now. Over five still running.
+0:33.6   CALLER   The scout is smoking, and the Syndicate smells blood!
+0:36.9   VETERAN  Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming.
 0:44.2   ── rust ifv destroys green scout
-0:44.3   CALLER   First blood goes to the Syndicate!
 0:44.8   ── rust tank destroys green scout
-0:46.6   CALLER   Nobody saw that coming! The tank wins that one!
+0:44.8   CALLER   Are you kidding me? The tank takes it out!
 0:46.8   ── friendly fire: rust tank hits its own ifv
+0:48.7   VETERAN  Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other.
 0:48.8   ── rust tank destroys green scout
-0:49.9   CALLER   And another one! The Syndicate isn't done!
 0:50.8   ── rust tank destroys green scout
 0:50.8   ── green squad Hornets wiped out
 0:50.8   ── close call: rust ifv at 8% hull
-0:52.6   CALLER   Another one for the Syndicate! This is a clinic!
-0:55.9   CALLER   That's a run of unanswered kills for the Syndicate. The Wreckers have to do something, and fast.
-1:02.3   VETERAN  He's hurt now. Watch him. Hurt crews do one of two—
+1:02.0   CALLER   It's hurt! It is badly hurt! Can it get out of there?
 1:06.0   ── close call: rust tank at 3% hull
+1:06.9   VETERAN  That machine is held—
 1:07.2   ── rust tank destroyed by a hazard
-1:07.3   CALLER   The pit claims one! The Syndicate lose the tank to the floor itself!
 1:09.0   ── green scout destroys rust ifv
 1:09.0   ── rust squad Spotter wiped out
 1:09.0   ── green scout destroys rust tank
+1:09.0   CALLER   The scout! The scout gets around the back of the tank and takes it down!
 1:09.8   ── rust tank destroys green scout
-1:11.8   CALLER   Blow for blow! Everybody is swinging, and everybody is getting hit!
-1:16.4   CALLER   Ambush! And they drive right back into it!
-1:19.4   VETERAN  That's the drill nobody wants. You're already inside the killzone, so—
+1:14.1   CALLER   Stopped cold! That machine is going nowhere!
+1:17.4   CALLER   Ambush! And they drive right back into it!
+1:20.4   VETERAN  That's the drill nobody wants. You're already inside the—
 1:24.2   ── rust tank destroys green scout
 1:24.2   ── green squad Wasps wiped out
 1:24.2   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)

@@ -7,36 +7,36 @@ result: rust by elimination at 1:21.8
 0:00.0   PA       A very good evening to you all. The floor has been swept, the barriers are secure, and the crews have been briefed on the new penalty for stopping.
 0:10.9   CALLER   I have watched both of these crews all week and I still could not tell you how this goes.
 0:16.5   ── first contact: rust scout fires on a tank
-0:17.1   VETERAN  Now it starts. Everything before this was driving.
-0:20.9   CALLER   Somebody pulled the—
+0:17.1   VETERAN  The first few seconds of contact decide more than people think.
 0:22.0   ── rust ifv destroys green scout
-0:22.1   CALLER   First blood goes to the Syndicate!
+0:22.0   CALLER   The scout runs out of road!
+0:24.9   CALLER   Look at that! That is a trained crew right there!
 0:25.0   ── green ifv destroys rust scout
-0:25.0   VETERAN  You don't take the scout into that. You just don't.
+0:29.1   VETERAN  You don't take the scout into that. You just don't.
 0:30.0   ── green tank destroys rust ifv
-0:30.2   CALLER   The Law's tank puts it away!
-0:33.1   CALLER   They're breaking off! They are getting out of there!
-0:36.4   VETERAN  They're pulling back in bounds. One covers while one moves. If anybody gets greedy, it falls apart.
+0:34.3   CALLER   The Law's tank puts it away!
+0:36.6   PA       Quite so, Joseph. For the record, that crew has completed their appearance, and the arena thanks them for it.
 0:47.2   ── rust lancer destroys green tank
-0:47.3   CALLER   And just like that, we're even! Three a side!
+0:47.3   CALLER   The Syndicate machine takes it clean. That was surgical.
 0:48.0   ── friendly fire: green artillery hits its own ifv
-0:51.3   CALLER   They didn't even have to talk about it! They just went!
-0:55.2   VETERAN  A near ambush. Every crew says they'll do it. Almost nobody does it under fire.
+0:51.2   VETERAN  That's the drill nobody wants. You're already inside the killzone, so the only way out is through whoever put you there.
 0:58.5   ── close call: rust lancer at 5% hull
-1:02.5   VETERAN  He'll feel that for the rest of his life. Which, in his case, is being decided right now.
+1:00.9   VETERAN  Now if he'd taken that hit three feet further left, the whole... No, actually, three feet left is worse. Forget that.
 1:06.8   ── green ifv destroys rust lancer
 1:06.8   ── rust squad Lance wiped out
 1:10.8   ── rust tank destroys green ifv
-1:11.1   CALLER   Blow for blow! Everybody is swinging, and everybody is getting hit!
-1:15.7   CALLER   They're turning into it! They're driving straight at them!
+1:11.2   CALLER   They're trading! They are trading in the middle of the floor!
+1:15.7   CALLER   They are executing! They are executing out there!
+1:18.7   VETERAN  Good—
 1:18.8   ── rust ifv destroys green artillery
 1:18.8   ── green squad Bravo wiped out
-1:19.0   CALLER   They got to the artillery! The Syndicate get—
+1:19.2   CALLER   It's all on the last Law vehicle now!
 1:21.8   ── rust ifv destroys green ifv
 1:21.8   ── green squad Alpha wiped out
 1:21.8   ── MATCH OVER: rust wins by elimination (0 green, 2 rust left)
-1:21.8   VETERAN  The Law keep feeding them one at a time. Regroup. Please regroup.
-1:27.3   CALLER   That is the match! The Syndicate take it!
-1:30.3   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
+1:22.1   CALLER   The Syndicate finish it! The last IFV is gone!
+1:25.4   CALLER   And the floor goes quiet. We have a winner.
+1:28.7   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
+1:36.5   CALLER   Listen to this crowd!
 1:38.8   PA       The Syndicate are tonight's winner. Ticket holders may remain seated during the recovery operation.
 1:44.4   PA       Relatives of tonight's crews are asked to wait at the lower concourse, where representatives will meet them with forms, and refreshments will be provided.
