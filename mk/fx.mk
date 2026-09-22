@@ -166,3 +166,11 @@ facing-audit: import ## Every faction unit side-on with a red arrow along its en
 	timeout 300 $(GODOT) --path . --resolution 960x540 --script res://game/theme/gallery/facing_audit.gd -- \
 		--facing-dir=$(CURDIR)/$(BUILD_DIR)/facing $(if $(UNITS),--facing-units=$(UNITS)) $(if $(TURRET),--facing-turret=$(TURRET)) 2>&1 | grep -E 'FACING_AUDIT|SCRIPT ERROR|SHADER ERROR' || true
 	@grep -q . $(BUILD_DIR)/facing/*.png 2>/dev/null || { echo "facing-audit FAILED: no images"; exit 1; }
+
+.PHONY: turret-probe
+turret-probe: import ## Feel R5: each unit's drawn roof profile, turret/weapon art bounds and pivot in the tank frame -> build/turret-probe.json (headless; UNITS=a,b)
+	@mkdir -p $(BUILD_DIR)
+	$(GODOT) --headless --path . --script res://game/theme/gallery/turret_probe.gd -- \
+		--turret-probe-json=$(CURDIR)/$(BUILD_DIR)/turret-probe.json $(if $(UNITS),--turret-probe-units=$(UNITS)) \
+		2>&1 | grep -E '^TURRET_PROBE|SCRIPT ERROR' || true
+	@grep -q . $(BUILD_DIR)/turret-probe.json 2>/dev/null || { echo "turret-probe FAILED: no json"; exit 1; }

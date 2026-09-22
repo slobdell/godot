@@ -218,6 +218,7 @@ func apply_unit() -> void:
 	if GameTheme.slots.has("unit.%s.turret" % unit_id):
 		_turret_visual.fill("unit.%s.turret" % unit_id)
 	_apply_hull_size(Units.stat(unit_id, "hull_size"), own_hull)
+	_apply_turret_mount(Units.PROFILES.get(unit_id, {"muzzle_height": muzzle_height}))
 	health = max_health
 	shield = max_shield
 	set_weapon(String(Units.stat(unit_id, "weapon")))
@@ -225,6 +226,33 @@ func apply_unit() -> void:
 
 ## The turret pivot sits MUZZLE_ABOVE_PIVOT below the muzzle (see muzzle_position).
 const MUZZLE_ABOVE_PIVOT := 0.05
+## R5: where `tank.tscn` has always put the pivot along the hull when a unit has no `turret_mount`: 0.2 m AFT of
+## centre (+z is the rear, trip-up 2).
+const DEFAULT_TURRET_Z := 0.2
+
+
+## R5 (round 10, feel; carve-out, combat reviews): where a unit's turret goes, from its profile's optional
+## `turret_mount: [x, y, z]` (the Tank node's frame: x right, y up, +z toward the REAR). Returns
+## {"pivot": Vector3, "lift": float}. The `Turret` node is SIMULATION -- `muzzle_position`, Match's shell ray and
+## friendly-fire origin and Gunnery read it -- so only x and z move the pivot (a round leaves from under the gun that
+## is drawn); its height stays at the muzzle's, so rounds fly where the ceiling rule says, and `lift` raises only the
+## turret's and weapon's art to the ring. No mount: today's pose exactly, lift 0.
+static func turret_pose(profile: Dictionary) -> Dictionary:
+	var pivot_y := float(profile.get("muzzle_height", 1.27)) - MUZZLE_ABOVE_PIVOT
+	if not profile.has("turret_mount"):
+		return {"pivot": Vector3(0.0, pivot_y, DEFAULT_TURRET_Z), "lift": 0.0}
+	var mount: Array = profile["turret_mount"]
+	return {"pivot": Vector3(float(mount[0]), pivot_y, float(mount[2])), "lift": float(mount[1]) - pivot_y}
+
+
+## R5's write, on all three axes. Runs after `_apply_hull_size` because the art's lift is divided by the turret's
+## scale (the visuals are children of the scaled pivot) and that scale is set there.
+func _apply_turret_mount(profile: Dictionary) -> void:
+	var pose := turret_pose(profile)
+	turret.position = pose["pivot"]
+	var local_lift := float(pose["lift"]) / maxf(turret.scale.y, 0.001)
+	_turret_visual.position.y = local_lift
+	_weapon_visual.position.y = local_lift
 
 
 ## ROUND 9 (scale, contract S1) -- EDITED IN game/tank/, WHICH IS NOT SCALE'S FILE. Two mirrors lived here and both
@@ -244,7 +272,6 @@ const MUZZLE_ABOVE_PIVOT := 0.05
 ## it anyway. combat and feel own this file and review the diff at merge.
 func _apply_hull_size(size_list: Variant, own_hull_art := false) -> void:
 	var size := Vector3(size_list[0], size_list[1], size_list[2])
-	turret.position.y = muzzle_height - MUZZLE_ABOVE_PIVOT
 	# Scene sub-resources are shared by every instance (trip-up 13): resize a copy.
 	var box := BoxShape3D.new()
 	box.size = size

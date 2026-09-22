@@ -36,6 +36,8 @@ const GAP_M := 4.0
 
 ## S1: the size spread, smallest to largest, for the frame shot at the lead's own pose.
 const SPREAD := ["gang_scout", "law_scout", "gang_ifv", "syn_tank", "tank", RIG]
+## R6: the Condemned trucks the bus is ruled against: the fire engine, the garbage truck, the bus.
+const BUS_ROW := ["burner", "ifv", "tank"]
 ## Gap between vehicles in a lineup row, and between rows. The gap is wide because the LABELS need the room, not
 ## the vehicles: at 3 m the four longest names in the Syndicate row overprinted each other.
 const LINEUP_GAP_M := 7.0
@@ -299,6 +301,10 @@ func _lineup(scene: Node, focus: Vector3, heading: float) -> void:
 	# HIS pose is a FIXED 49 m, so the lineup has to fit the frame rather than the frame the lineup: at the wide
 	# gap the six-vehicle spread spans 73 m against about 55 m of visible width and the Rat Rod falls off the edge.
 	await _shoot_rows(scene, stage, heading, [SPREAD], "lineup_pose.png", "pose", DISTANCE_M, PITCH_DEG, 3.0)
+
+	# 4. R6 (round 10): the bus beside the garbage truck (and the fire engine) at HIS pose -- the frame his ruling
+	# "longer than the garbage truck and heightened proportionally" is judged on.
+	await _shoot_rows(scene, stage, heading, [BUS_ROW], "lineup_bus.png", "bus", DISTANCE_M, PITCH_DEG, 3.0)
 	for restorer: Callable in restore:
 		restorer.call()
 
