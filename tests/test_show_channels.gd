@@ -344,3 +344,45 @@ func _code_only(source: String) -> String:
 			text = text.substr(0, open_quote) + text.substr(close_quote + 1)
 		out.append(text)
 	return "\n".join(out)
+
+
+# --- the band-width dial (round 10, item 1): the swing grows, the mean does not move -------------------------
+
+func _terminus_show() -> Show:
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://arenas/terminus.json"))
+	var show := Show.new()
+	add_to_tree(show)
+	assert_eq(show.load_patch(data["show"], "terminus"), "", "the Terminus patch loads")
+	return show
+
+
+func test_the_band_dial_widens_the_window_and_shopfront_swing_around_a_fixed_mean() -> void:
+	var show := _terminus_show()
+	var before := {}
+	for key in [&"windows", &"shopfronts", &"rim", &"edges"]:
+		var c: ShowChannel = show.channels[key]
+		before[key] = Vector2(c.level_floor, c.level_ceiling)
+	show.set_band(2.0)
+	for key in [&"windows", &"shopfronts"]:
+		var c: ShowChannel = show.channels[key]
+		var was: Vector2 = before[key]
+		assert_near(c.level_floor + c.level_ceiling, was.x + was.y, 1e-5, "%s keeps its mean" % key)
+		assert_near(c.span(), 2.0 * (was.y - was.x), 1e-5, "%s swings twice as far" % key)
+	for key in [&"rim", &"edges"]:
+		var c: ShowChannel = show.channels[key]
+		assert_eq(Vector2(c.level_floor, c.level_ceiling), before[key], "%s is not this dial" % key)
+	# Idempotent against the PATCH, not cumulative: 2x then 3x is 3x, never 6x.
+	show.set_band(3.0)
+	var w: ShowChannel = show.channels[&"windows"]
+	var was_w: Vector2 = before[&"windows"]
+	assert_near(w.span(), 3.0 * (was_w.y - was_w.x), 1e-5, "3x is 3x of the patch, not of the last call")
+	show.set_band(1.0)
+	assert_near(w.level_floor, was_w.x, 1e-5, "1x puts the patch back exactly")
+
+
+func test_the_band_dial_refuses_to_take_a_lit_surface_dark() -> void:
+	var show := _terminus_show()
+	show.set_band(50.0)
+	for key in [&"windows", &"shopfronts"]:
+		var c: ShowChannel = show.channels[key]
+		assert_true(c.level_floor > 0.0, "%s keeps a floor above zero at any band (%.3f)" % [key, c.level_floor])

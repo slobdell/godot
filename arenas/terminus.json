@@ -1259,14 +1259,21 @@
     "period": 15.2,
     "phase": 5.37,
     "floor": 0.82,
-    "ceiling": 1.12
+    "ceiling": 1.12,
+    "wave": {
+     "scatter": 0.6
+    }
    },
    "signs": {
     "programme": "breathe",
     "period": 12.8,
     "phase": 2.97,
     "floor": 0.55,
-    "ceiling": 1.2
+    "ceiling": 1.2,
+    "wave": {
+     "scatter": 0.35,
+     "jitter": 0.2
+    }
    },
    "pools": {
     "programme": "breathe",
@@ -1281,6 +1288,18 @@
     "phase": 4.45,
     "floor": 0.55,
     "ceiling": 1.3
+   },
+   "pixels": {
+    "programme": "breathe",
+    "period": 10.5,
+    "phase": 2.22,
+    "floor": 0.0,
+    "ceiling": 0.9,
+    "sharpness": 6.0,
+    "wave": {
+     "scatter": 1.0,
+     "jitter": 0.6
+    }
    }
   },
   "patch": [
@@ -1325,6 +1344,12 @@
     "fixture": "beams",
     "parameter": "level",
     "channel": "beams",
+    "spread": 1.0
+   },
+   {
+    "fixture": "city_block",
+    "parameter": "pixel",
+    "channel": "pixels",
     "spread": 1.0
    }
   ]

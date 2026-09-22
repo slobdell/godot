@@ -6,6 +6,9 @@
 //   COLOR.r  what the vertex belongs to: 0 = storey facade, 0.5 = shopfront (ground floor),
 //            0.75 = roof clutter (plant in the reserved top band), 1 = roof or bevel
 //   COLOR.g  this block's seed (0..1): window pattern and tint vary per block
+//   COLOR.b  this block's index in the show's window grid, k/255 (S6 round 10; 0 without a show)
+//   COLOR.a  this block's bay code, k/255: bay = 3.0 + 1.5 * code (m). It used to be a sin() hash of the seed,
+//            which the CPU could not reproduce exactly, so the CPU could not know where a window was.
 shader_type spatial;
 render_mode diffuse_lambert, specular_schlick_ggx;
 
@@ -32,6 +35,8 @@ uniform vec4 show_edge = vec4(0.0, 0.0, 0.0, 1.0);
 // windows swell and fade against each other instead of the block pulsing as one slab.
 uniform vec4 show_window = vec4(1.0, 0.0, 0.0, 1.0);
 uniform vec4 show_shop = vec4(1.0, 0.0, 0.0, 1.0);
+// Round 10: the shopfronts' spatial wave (lighting.md section 4c); zero is "the whole block on one phase", as before.
+uniform vec4 show_shop_wave = vec4(0.0, 0.0, 0.0, 0.0);
 // How far out of phase instances are pushed: 0 = every block and every window together, 1 = fully scattered.
 // Written once when the fixture registers, never per frame.
 uniform float show_spread = 0.0;
@@ -64,6 +69,32 @@ uniform float show_chamfer_gain = 0.0;
 uniform vec4 show_event = vec4(0.0, 0.0, 0.0, 0.0);
 uniform float show_event_width = 9.0;
 
+// ---- S6 round 10: EVERY WINDOW ADDRESSABLE (_agents/lighting.md section 4c) --------------------------------------
+// The lead: "basic primitives to adjust individual lights on the building". The unit of the show is the window.
+//
+// THE PIXEL LAYER. Every pane -- lit by the art or dark -- can carry a show light in the venue palette, on top of the
+// art's own lit windows (which keep breathing on show_window). Its level is the larger of two sources:
+//   * a PROGRAMME the shader evaluates per window from one channel (show_pixel) and a spatial wave
+//     (show_pixel_wave = radians per storey, radians per metre along the facade, scatter 0..1 as a fraction of TAU
+//     from the window's hash, clock-rate jitter 0..1). A vertical chase up a tower is a negative per-storey term; a
+//     sweep across a facade a per-metre term; the Vegas twinkle is scatter + jitter. Zero CPU per window per frame.
+//   * the window's own TEXEL in show_window_map, written by the CPU only for events (ShowWindowGrid: a floor-by-floor
+//     fill, set_window). r = level, g = palette override (0 = the block's colour, 1..3 magenta/cyan/amber).
+// Plus the kill ripple, which now crosses the WINDOWS of the facades nearest the kill, not only the parapet.
+// show_pixel_focus = (block, facade, map_live, 0): x/y limit the programme to one block and/or facade (-1 = all) --
+// the last-stand strobe on the facade facing the losing base rather than the whole city; z is 1 while the CPU has
+// anything in the map, so the layer is skipped entirely (one branch) when neither source can light a window.
+// Every default is the identity: show_pixel's floor and span are 0 and the map is black, so nothing changes until a
+// patch binds `pixel`.
+uniform vec4 show_pixel = vec4(0.0, 0.0, 0.0, 1.0);
+uniform vec4 show_pixel_wave = vec4(0.0, 0.0, 0.0, 0.0);
+uniform vec4 show_pixel_focus = vec4(-1.0, -1.0, 0.0, 0.0);
+uniform float show_pixel_energy = 1.8;
+uniform sampler2D show_window_map : hint_default_black, filter_nearest, repeat_disable;
+// ShowWindowGrid's layout: COLS columns, ROWS storeys per facade, FACADES facades per block.
+const int SHOW_COLS = 32;
+const int SHOW_ROWS = 16;
+
 const float SHOW_TAU = 6.28318530718;
 
 // This block's edge colour: one of the venue's three, picked by the seed the mesh already carries in COLOR.g, so
@@ -85,12 +116,16 @@ float grime_noise(vec2 p) {
 varying vec3 world_normal;
 varying float part;
 varying float block_seed;
+varying float block_index;
+varying float bay_code;
 
 void vertex() {
 	world = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	part = COLOR.r;
 	block_seed = COLOR.g;
+	block_index = COLOR.b;
+	bay_code = COLOR.a;
 }
 
 void fragment() {
@@ -108,7 +143,7 @@ void fragment() {
 		// Storeys: concrete with a pilaster between bays and a seam every floor, every window a pane of dark glass, and
 		// the city's lit ones glowing in it (the same pattern as the skyline on the horizon).
 		// Each block has its own bay width (3-4.5 m), so neighbours don't share one grid.
-		float bay_m = 3.0 + 1.5 * city_hash(vec2(seed, 7.0));
+		float bay_m = 3.0 + 1.5 * bay_code;
 		vec2 cell = vec2(along / bay_m, world.y / 3.6);
 		vec2 inside = fract(cell);
 		float pane = step(0.22, inside.x) * step(inside.x, 0.8) * step(0.3, inside.y) * step(inside.y, 0.78);
@@ -130,13 +165,44 @@ void fragment() {
 		float window_phase = city_hash(window_id + 5.1) * SHOW_TAU * show_spread;
 		glow = city_windows(vec2(along * 4.0 / bay_m, world.y), seed, seed * 1.3, window_level) * pane
 				* show_value(show_window, show_phase + window_phase);
+		// The pixel layer (see the uniforms). Skipped entirely -- one branch -- while nothing drives it.
+		if (show_pixel.x + show_pixel.y > 0.0 || show_event.w > 0.0 || show_pixel_focus.z > 0.0) {
+			int block_i = int(round(block_index * 255.0));
+			int facade = abs(world_normal.x) > abs(world_normal.z) ? (world_normal.x > 0.0 ? 0 : 1)
+					: (world_normal.z > 0.0 ? 2 : 3);
+			ivec2 wid = ivec2(floor(cell));
+			ivec2 texel = ivec2(((wid.x % SHOW_COLS) + SHOW_COLS) % SHOW_COLS,
+					(block_i * 4 + facade) * SHOW_ROWS + ((wid.y % SHOW_ROWS) + SHOW_ROWS) % SHOW_ROWS);
+			vec4 cpu = texelFetch(show_window_map, texel, 0);
+			float scatter = city_hash(vec2(wid) + vec2(float(block_i) * 13.1, float(facade) * 7.3));
+			float rate = city_hash(vec2(wid) * 1.37 + vec2(float(block_i) * 5.7 + 2.0, float(facade) * 3.1));
+			vec4 chan = show_pixel;
+			chan.z *= 1.0 + show_pixel_wave.w * (rate - 0.5);
+			float pixel_phase = float(block_i) * 2.39996 * show_spread + show_pixel_wave.x * float(wid.y)
+					+ show_pixel_wave.y * along + show_pixel_wave.z * SHOW_TAU * scatter;
+			float focus = (show_pixel_focus.x < 0.0 || abs(float(block_i) - show_pixel_focus.x) < 0.5)
+					&& (show_pixel_focus.y < 0.0 || abs(float(facade) - show_pixel_focus.y) < 0.5) ? 1.0 : 0.0;
+			float level = max(show_value(chan, pixel_phase) * focus, cpu.r);
+			if (show_event.w > 0.0) {
+				level += show_event.w * exp(-abs(distance(world.xz, show_event.xy) - show_event.z) / show_event_width);
+			}
+			int pick = int(round(cpu.g * 255.0));
+			vec3 hue = pick == 1 ? show_edge_a : (pick == 2 ? show_edge_b : (pick == 3 ? show_edge_c
+					: show_edge_palette(fract(block_seed + float(block_i) * 0.37))));
+			hue = mix(hue, show_color, show_color_mix);
+			// Far away a pane is a fraction of a pixel: fade to its share of the bay, like the art's windows do.
+			glow += hue * level * show_pixel_energy * mix(0.3, pane, detail);
+		}
 	} else if (part < 0.75) {
 		// Shopfronts: dark glass and shutters, a warm light behind some of them.
 		base = shopfront;
 		float bay = floor(along / 6.0);
 		float lit = step(0.55, city_hash(vec2(bay, seed)));
 		float window_glass = step(0.8, world.y) * step(world.y, 3.2) * step(0.12, fract(along / 6.0)) * step(fract(along / 6.0), 0.88);
-		glow = vec3(1.0, 0.7, 0.42) * lit * window_glass * 0.35 * show_value(show_shop, show_phase);
+		// Round 10: per shop bay, through the generic wave (x unused at street level, y radians per metre along
+		// the street, z scatter by the bay's hash): the shopfront band chases or shimmers bay by bay.
+		float shop_phase = show_phase + show_shop_wave.y * along + show_shop_wave.z * SHOW_TAU * city_hash(vec2(bay, seed + 3.0));
+		glow = vec3(1.0, 0.7, 0.42) * lit * window_glass * 0.35 * show_value(show_shop, shop_phase);
 		ROUGHNESS = 0.35;
 	} else if (part < 0.85) {
 		// Roof clutter: housings, ducts and tanks in the band CityBlock reserves at the top of a block. It needs its

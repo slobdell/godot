@@ -125,3 +125,39 @@ runs. After the per-window work.
 ## Status
 
 _(the worker keeps this current)_
+
+**2026-09-22, round 10 worker started at `2ee65f94` (the launch commit; its tree is the orchestrator's verified-green
+`de31eeea` code).** builder0 had nine checks queued at start (every stream launching at once), so the baseline check
+was cancelled in favour of one check on the first changed tree: the launch tree's green is the orchestrator's, read
+from the wrapper's line on `de31eeea` (1559/0).
+
+### Plan (smallest foundation first; decisions in one line each)
+
+1. **Dial 1 as a strip** — `Show.set_band(k)` scales the `window`/`shop` channels' span around the mean (idempotent
+   against the patch; floor never under 0.1), `--show-band=K`, and `make show-bands` shoots off/1×/2×/3× at ONE
+   frozen moment in ONE process (idle + battle), so the three arms differ in the band and nothing else. *Decided:*
+   one process beats three runs (lighting.md §8b "two runs are not the same run").
+2. **Per-window primitives** — `ShowWindowGrid`: one RGBA8 texel per window (32 × 1024, 128 KB), the shader finds its
+   own texel from block index (COLOR.b), facade (world normal), storey (y / 3.6) and bay (along / bay). *Decided:
+   texel, not MultiMesh* — the windows are drawn procedurally in the fragment shader, there is no mesh per window to
+   instance; a texel needs no vertex data, no instance uniform, no draw call. *Decided:* the bay width moves from a
+   GPU `sin()` hash to a CPU-chosen 8-bit code in COLOR.a, so CPU and GPU agree on where every window is (float32
+   and float64 disagree about `fract(sin(x) * 43758)`); the bay widths of the eight blocks change (still 3–4.5 m,
+   silhouette unchanged, feel reviews). `CityBlock.set_window(i, v)` / `window_count()`.
+3. **Effects composed from windows** — a `pixel` parameter (any pane, lit by the art or dark, carries a venue-palette
+   light) evaluated per window IN THE SHADER from one channel plus a spatial `wave` (per storey, per metre, scatter,
+   rate jitter): idle = Vegas twinkle; skirmish = sweep across facades; battle = vertical chase up every tower;
+   last_stand = strobe on the one facade facing the losing base; victory = sweep in the winner's colour; kill =
+   ripple crossing the windows; capture = CPU floor-by-floor fill of the nearest block. *Decided (research B10):*
+   shader-evaluated programmes, CPU writes only for events.
+4. The 1990s-baseline page (show OFF beside items 1–3 ON, two clips at 30 fps).
+5. Signs / rim / pools / shopfront segments in the same show.
+6. Round-9 leftovers (strobe arm at the cue's period, parapet-vs-outline instrument, the three reds, mood clips).
+7. Stretch: blimp screens (after feel's R7), a road/bridge patch.
+
+### Requests to other streams
+
+- **feel (owner of `game/audio/match_mood.gd`):** a public read of how many `control_changed` events the mood has
+  counted (e.g. `func control_changes() -> int`). The capture fill polls `MatchMood._control_changes` through `get()`
+  today, because S6 lets the show hear the match only through MatchMood and K5 events; a rename degrades to "no fill",
+  never to an error. Not blocking.
