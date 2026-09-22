@@ -123,6 +123,17 @@ var changed_fields: PackedStringArray = []
 ## A task was just assigned: the next decision is the element acting on it, which is worth reporting even
 ## when the shape it picks happens to be the one it already had.
 var _fresh_task := false
+## R2 (round 10): a task the PLAYER gave that no update has acted on yet. The next physics tick re-derives every crew's
+## order from it, out of the UPDATE_TICKS cycle and past the re-issue suppression, and takes back any crew the player
+## had detached: the task is his newer word to the whole squad. Only on the player's team (`preempting`), so a CPU
+## element plans on its own tick exactly as before and the sim baseline (CPU against CPU) does not move.
+var _preempt := false
+## Which player task this is (bumped by every `assign`). Carried on the element's orders as `task` once control's
+## Orders accepts the key (R2, the request in squad.md): two orders from different tasks are then never "the same
+## order", which is the only way an unchanged `follow`, or a move whose only change is the facing, reaches a crew.
+var task_seq := 0
+## The tick the last player task was acted on (-1: never), for the R2 readout and its test.
+var preempted_tick := -1
 ## How far the element was from what triggered its current drill, in meters, when the drill started.
 var drill_distance := 0.0
 ## Living members when the last decision was taken.
@@ -148,6 +159,8 @@ func assign(new_task: Variant) -> String:
 		return error
 	task = (new_task as Dictionary).duplicate(true)
 	_fresh_task = true
+	_preempt = true
+	task_seq += 1
 	# A new task starts a new movement: forget the leg, the route and any drill we were running.
 	anchor = null
 	route = []
@@ -187,12 +200,23 @@ func stand_down() -> void:
 	assign({"verb": "hold"})
 
 
+## R2: whether this element owes the player a decision THIS tick (Elements runs it out of its cycle).
+func preempting(game_match: Match) -> bool:
+	return _preempt and team == OrderFeed.player_team(game_match)
+
+
 ## One decision cycle. Returns true when anything the HUD shows changed.
 func update(game_match: Match, orders: Object) -> bool:
 	var before := _snapshot()
 	changed_fields = PackedStringArray()
+	var preempt := preempting(game_match)
+	_preempt = false
 	_prune(game_match)
-	_adopt(orders)
+	if preempt:
+		_retake()
+		preempted_tick = game_match.tick
+	else:
+		_adopt(orders)
 	var commanded := _commanded_members()
 	if commanded.is_empty():
 		return _note_changes(before)
@@ -220,7 +244,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	# its follow offset — and two rules pacing the same vehicle by different arithmetic is what A9 replaces.
 	paces = FormUp.paces(by_name, slots, etas)
 	bottleneck_ticks = FormUp.bottleneck_ticks(etas)
-	_issue(plan, orders, situation, game_match)
+	_issue(plan, orders, situation, game_match, preempt)
 	return _note_changes(before)
 
 
@@ -246,7 +270,11 @@ func state() -> Dictionary:
 			# The element's intended facing and where its formation stands (round 6): the geometry control's facing
 			# indicator and preview draw, rather than an illustration of it.
 			"heading": [heading.x, heading.z], "anchor": [anchor.x, anchor.z] if anchor is Vector3 else null,
-			"detached": _detached.keys(), "events": events}
+			"detached": _detached.keys(), "events": events,
+			# B7: the player's order is COMPLETED at operational arrival (the centre in the destination zone); the crews
+			# still dressing onto their slots after it are not the order running late. R2: the tick the last player
+			# task was acted on (-1 never), so a readout can show the acknowledgement.
+			"arrived": arrived, "preempted_tick": preempted_tick}
 
 
 ## X2 (A8): the drivable width across the heading of the leg this element is driving, measured once per leg.
@@ -305,6 +333,11 @@ func members() -> PackedStringArray:
 
 func has(unit_name: String) -> bool:
 	return roster.has(unit_name)
+
+
+## What this element last issued `unit_name` ({"id", "verb", "tick", "to", "target", ...}; {} when nothing).
+func issued_to(unit_name: String) -> Dictionary:
+	return (_issued.get(unit_name, {}) as Dictionary).duplicate()
 
 
 func is_detached(unit_name: String) -> bool:
@@ -377,6 +410,14 @@ func _adopt(orders: Object) -> void:
 				_detached[unit_name] = true
 				_log("%s taken by its commander" % unit_name)
 				revision += 1
+
+
+## R2: a new player task takes back every crew the player had sent off on its own.
+func _retake() -> void:
+	for unit_name: String in _detached.keys():
+		_detached.erase(unit_name)
+		_log("%s back under command: new task" % unit_name)
+		revision += 1
 
 
 func _commanded_members() -> PackedStringArray:
@@ -455,8 +496,9 @@ static func _drill_focus(plan: Dictionary, situation: Dictionary) -> Variant:
 	return plan.get("anchor")
 
 
-## Turn the plan into K1 commands, issuing only what actually changed.
-func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match: Match = null) -> void:
+## Turn the plan into K1 commands, issuing only what actually changed — or, on the first update after a player task
+## (`force`, R2), issuing every crew its order from the new plan whatever it was doing.
+func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match: Match = null, force := false) -> void:
 	if orders == null:
 		return
 	var positions := {}
@@ -474,15 +516,21 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 			continue
 		var desired: Dictionary = plan["orders"][unit_name]
 		var current: Dictionary = orders.call("current", unit_name)
+		var skip := false
 		# The player's authority is absolute (the lead, 2026-09-17: *"if they get sucked into combat I have no control
 		# whatsoever"*). A unit carrying an order the PLAYER gave is not taken off it by its leader, and on the player's
 		# own team a leader that has been given no task commands nobody at all — an untasked element running its SOP
 		# over the player's army is the oldest version of this bug (L1's sharp edge, round 4).
+		# A player TASK is that authority too, and the newest word wins (R2): on its first update none of the three
+		# checks below may keep a crew on what it was doing — not an older direct order, not the re-issue suppression
+		# (whose REISSUE_M and same-intention tests compare PLACES, so a re-drag near the old spot was swallowed whole).
 		if String(current.get("source", "")) == "player":
-			continue
-		if team == player_team and task.is_empty():
-			continue
-		if not _should_issue(unit_name, desired, current, positions.get(unit_name, Vector3.ZERO), int(situation["tick"])):
+			skip = true
+		elif team == player_team and task.is_empty():
+			skip = true
+		elif not _should_issue(unit_name, desired, current, positions.get(unit_name, Vector3.ZERO), int(situation["tick"])):
+			skip = true
+		if skip and not force:
 			continue
 		var mine_before: Dictionary = (_issued.get(unit_name, {}) as Dictionary).duplicate()
 		# K1's `source`: the player's own orders are the ones the response guarantee is about, and the only ones render
@@ -502,6 +550,8 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 			var look: Vector3 = desired["facing"]
 			command["facing"] = [look.x, look.z]
 			_facings_issued += 1
+		if team == player_team and _ORDERS_TAKE_TASK:
+			command["task"] = task_seq
 		if command["verb"] == "attack" and not command.has("target"):
 			command["verb"] = "hold"
 			command.erase("to")
@@ -513,7 +563,7 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 		var issued: Dictionary = orders.call("current", unit_name)
 		_issued[unit_name] = {"id": int(issued.get("id", -1)), "verb": command["verb"], "tick": int(situation["tick"]),
 				"to": desired["to"], "target": String(desired.get("target", "")),
-				"anchor": anchor, "seat": _seat_index(unit_name)}
+				"anchor": anchor, "seat": _seat_index(unit_name), "task": task_seq}
 
 
 ## Attribute a re-issued goal to the thing that moved it (see `goal_moves`). `before` is what this element had issued
@@ -531,6 +581,11 @@ func _count_goal_move(unit_name: String, desired: Dictionary, before: Dictionary
 	elif int(before.get("seat", -1)) != _seat_index(unit_name):
 		key = "reseat"
 	goal_moves[key] = int(goal_moves[key]) + 1
+
+
+## R2's adapter: control's Orders accepts a `task` key on a command (its `_same_order` then keys on it). Until it
+## does the key is not sent, because UnitCommand rejects unknown keys and the order would be refused outright.
+static var _ORDERS_TAKE_TASK: bool = UnitCommand.KEYS.has("task")
 
 
 static func _same_anchor(a: Variant, b: Variant) -> bool:
@@ -570,6 +625,11 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		if String(desired["verb"]) in ["attack", "attack_move"] and String(desired.get("target", "")) != "":
 			return String(mine.get("target", "")) != String(desired["target"]) \
 					or tick - int(mine.get("tick", -RE_ISSUE_TICKS)) >= RE_ISSUE_TICKS
+		# A crew that finished our move and went idle, now wanted on a `follow` (the new task's flow): a different
+		# intention with no place to compare, so none of the checks above can issue it. control measured it on Terminus
+		# (repath-test "arrived"): crews 3/4/6/8 idle through tick +8 while the leader drove off on the new task.
+		if not mine.is_empty() and String(desired["verb"]) == "follow" and String(mine.get("verb", "")) != "follow":
+			return true
 		return mine.is_empty() and String(desired["verb"]) != "hold"
 	if mine.is_empty() or int(current.get("id", -1)) != int(mine.get("id", -2)):
 		return false  # not ours to change

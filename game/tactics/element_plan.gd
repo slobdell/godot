@@ -219,7 +219,14 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	var holding_heading: bool = told is Vector3 and bool(plan["arrived"])
 	_group(plan, slot_order(situation), String(plan["formation"]), destination, plan["heading"],
 			table.spacing(String(situation["terrain"])), "hold" if holding_heading else "move", "",
-			false, holding and joined, told if told is Vector3 else null)
+			# Round 10 (item 3): on a plain move EVERYONE, the leader included, is seated by the least total driving (the
+			# "travel" policy: no armour tiers either, which also sent a tank through two ifvs to reach an end slot). Pinned
+			# to seat 0 (the head of the shape) it crossed through its own squad on any move that was not straight ahead:
+			# measured (squad-settle, default arena, laptop) a 20 m move to the side put the leader's slot 46.8 m away, it
+			# stalled 5 s against its own crews, and the element declared arrival at 14.8 s (6.7 s unpinned). The flow's
+			# `follow` offsets are relative to the leader's slot wherever it sits, so nothing downstream needs seat 0.
+			false, holding and joined, told if told is Vector3 else null, PIN_LEADER_ON_PLAIN_MOVE,
+			"exposure" if PIN_LEADER_ON_PLAIN_MOVE else "travel")
 	if holding_heading:
 		plan["why"] = "%s; holding the heading you drew" % String(plan["why"])
 	if told is Vector3:
@@ -247,6 +254,9 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 ## keeps station on it. Within FLOW_JOIN_M of its slot the leader is nearly there, and everyone is sent to their fixed
 ## final slot once (so the element goes quiet on arrival, X4). FLOW_ENABLED is the A/B switch.
 static var FLOW_ENABLED := true
+## Round 10 (item 3): the A/B switch for a PLAIN move's seating. true = round 9 (the leader pinned to the head of the
+## shape, heavies to the exposed slots); false = everyone, the leader included, by the least total driving.
+static var PIN_LEADER_ON_PLAIN_MOVE := false
 const FLOW_JOIN_M := 15.0
 
 
@@ -733,11 +743,12 @@ static func _hold(plan: Dictionary, members: Array, situation: Dictionary, facin
 ## `halt` puts every crew on its sector of fire instead of the direction of travel.
 ## `fixed` keeps last update's seating whatever it costs (a plain move standing on its spot).
 static func _group(plan: Dictionary, members: Array, formation: String, anchor: Vector3, heading: Vector3,
-		spacing: float, verb: String, target := "", halt := false, fixed := false, told: Variant = null) -> void:
+		spacing: float, verb: String, target := "", halt := false, fixed := false, told: Variant = null,
+		pin_leader := true, policy := "exposure") -> void:
 	if members.is_empty():
 		return
 	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing,
-			{"leader": String(plan.get("leader", "")), "policy": "exposure",
+			{"leader": String(plan.get("leader", "")) if pin_leader else "", "policy": policy,
 			"previous": _previous_seating(plan, members, formation), "fixed": fixed,
 			# X5: a halt's crews face their sectors of fire, so place() gives each entry that facing rather than the
 			# direction of travel, and the order carries it.
