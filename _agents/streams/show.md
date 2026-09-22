@@ -155,6 +155,46 @@ from the wrapper's line on `de31eeea` (1559/0).
 6. Round-9 leftovers (strobe arm at the cue's period, parapet-vs-outline instrument, the three reds, mood clips).
 7. Stretch: blimp screens (after feel's R7), a road/bridge patch.
 
+**MERGE HERE: `f19804ed` is GREEN** — `make remote T="check show-frames show-effect-clips"`, builder0: runner
+`1572 passed, 0 failed`, `>> check: 18 targets, all passed`, `>> remote: ... exited 0`, sim-baseline
+`1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`. Commits after it are docs only.
+
+**What to playtest:** `make skirmish ARENA=terminus` (watch the buildings when the fight starts, at a kill, when the
+centre point changes hands, and at a last stand). **His page:** `build/show-page/index.html` (12 show-off/show-on
+pairs at his pose, the band strip, six 30 fps clips in `build/show-clips/`); rebuild with
+`python3 tools/show_page.py build` after `make remote T="show-frames show-bands show-effect-clips"`. **Looked at**
+(the clips, 1 s apart): battle pulses whole storey rows block by block; last_stand strobes ONLY the far facade while
+the near block stays dark (the focus works); capture fills amber from the street up.
+
+### THE ROUND'S SHOW VERDICT (for the lead's morning page)
+
+**The band dial is not the lever; the pixel layer is.** Dial 1 at 1×/2×/3× on one frozen frame at his pose is near
+indistinguishable to the eye (the art lights few windows there; `build/show-bands/`), so round 9's "turn it up" would
+never have answered "it reads as nothing". What reads is every window addressable and lit by the show: the Terminus
+wide frames move the fight/venue luminance ratio **−5.8 % to −26.7 %** with the show on (idle −6 to −11 %, battle
+−16 %, kill ripple −12 to −27 %, capture −22 %; yard within ±2.7 %; null p95 1.4 %), where round 9 sat inside the
+null. **Reported, not blocking** (the brief: the number goes to him with the frame, not a quieter effect). If he
+finds the venue competing with the fight, the dials below are where to turn it down.
+
+**One line per effect: what it is, the dial, the file** (all data; `make show-report ARENA=terminus` prints them):
+
+| effect | dial | file |
+|---|---|---|
+| idle twinkle (Vegas fade, window by window) | `channels.pixels` `ceiling` 0.9, `sharpness` 6, `period` 10.5, `wave.scatter/jitter` | `arenas/terminus.json` `show` |
+| skirmish sweep across the facades | `states.skirmish.set.pixels` `period` 6.0, `wave.along` −0.25 | `game/theme/show/cues.json` |
+| battle chase up every tower | `states.battle.set.pixels` `period` 3.2, `wave.row` −0.75 | `game/theme/show/cues.json` |
+| last-stand strobe on ONE facade (facing the losing base) | `states.last_stand.set.pixels` `period` 1.6 | `game/theme/show/cues.json` |
+| victory sweep in the winner's colour | `states.victory.set.pixels` `color_mix` 0.8, `wave.along` −0.2 | `game/theme/show/cues.json` |
+| kill ripple across the windows (and the pools) | `events.kill` `gain` 1.5, `speed` 62 | `game/theme/show/cues.json` |
+| capture fill, floor by floor | `FILL_STEP_S` 0.18, `FILL_HOLD_S` 1.4, `FILL_FADE_S` 1.2 | `game/theme/show/window_effects.gd` |
+| how bright any show-lit window is | `show_pixel_energy` 1.3 | `game/theme/fx/shaders/city_block.gdshader` |
+| the art's own lit windows' swing (dial 1) | `channels.windows`/`shopfronts` `floor`/`ceiling` (2× = `[0.65, 1.25]`) | `arenas/terminus.json` `show` |
+
+**Owed: the quiet perf re-measure.** Before `2ee65f94` / after `fba345d7`, builder0 1080p terminus seed 3, taken
+while other streams' checks ran: per-phase GPU 7.99–17.06 ms (before) and 11.06–14.99 ms (after) inside each run, so
+the no_show layer's +0.42 / −1.29 ms is noise. Draw calls 257 / 258 (first phase; 230–263 with the camera),
+instance-uniform errors 0 / 0, real lights 1 / 1. Re-run `make show-perf-layer` on a quiet builder0.
+
 ### Done (with measurements; every number builder0)
 
 - **Items 1–3 at `9f68b95e` — GREEN: `make remote T=check` 1572 passed 0 failed, 18/18, sim-baseline
