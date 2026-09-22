@@ -13,13 +13,19 @@ extends RefCounted
 
 const PATH := "user://announcer_history.json"
 const SCHEMA := 1
-## How many past matches are remembered; older ones are forgotten entirely.
-const DEPTH := 8
+## How many past matches are remembered; older ones are forgotten entirely. The caller's and the Veteran's lines use
+## only the last [constant PENALTY].size() of them; the PA's use them all (see [method weight]).
+const DEPTH := 40
 ## Weight multiplier by how many matches ago a line was last heard (index 0 = the match just before this one).
 ## Measured against the brief's target (an opener heard again within five matches under ~10%): the first four
 ## entries sum to 0.44, so with N equally good lines the chance of repeating one of the last four is about
 ## 0.44 / (N - 4), which needs roughly a dozen lines per slot rather than the ten the PA had.
 const PENALTY := [0.02, 0.05, 0.12, 0.25, 0.45, 0.65, 0.82, 0.92]
+## C9 (round 10, research brief 3): the PA's one wrong detail is remembered across sessions, not minutes: a second
+## hearing is a 100 % repeat. Her lines fade back over an evening of matches instead (never faster than [constant
+## PENALTY]): 0.02 last match, 0.28 five matches ago, 0.6 after twelve, 0.85 after twenty-four.
+const PA_FADE_MATCHES := 12.0
+const PA_FLOOR := 0.02
 
 ## Oldest first; each entry is an Array of line ids.
 var matches: Array = []
@@ -78,7 +84,14 @@ func matches_ago(line_id: String) -> int:
 ## What to multiply a line's chance by tonight.
 func weight(line_id: String) -> float:
 	var ago := matches_ago(line_id)
-	return 1.0 if ago <= 0 or ago > PENALTY.size() else float(PENALTY[ago - 1])
+	if ago <= 0:
+		return 1.0
+	var recent := 1.0 if ago > PENALTY.size() else float(PENALTY[ago - 1])
+	if line_id.begins_with("pa."):
+		# Never weaker than everybody's curve in the last few matches (that is what stops two nights opening alike),
+		# and still held back long after the others are forgotten.
+		return minf(recent, maxf(PA_FLOOR, 1.0 - exp(-float(ago - 1) / PA_FADE_MATCHES)))
+	return recent
 
 
 func _reindex() -> void:
