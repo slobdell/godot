@@ -95,5 +95,8 @@ terminus-streets: import ## R4: every Terminus street at the lead's pose (21 deg
 	@echo "Now LOOK at $(STREETS_DIR)/*_before.jpg against *_after.jpg"
 
 .PHONY: terminus-streets-page
-terminus-streets-page: ## R4: the before/after street pairs with each street's narrowest width, one self-contained file -> build/terminus-streets/index.html (after make remote T=terminus-streets)
+terminus-streets-page: import ## R4: the before/after street pairs with each street's narrowest width and every map's lane readability, one self-contained file -> build/terminus-streets/index.html (after make remote T=terminus-streets)
+	mkdir -p $(STREETS_DIR)
+	$(GODOT) --headless --path . --script res://tests/arena/lane_read_probe.gd -- --out=$(CURDIR)/$(STREETS_DIR)/lane_read.json 2>&1 \
+		| grep -E 'LANE_READ_PROBE|SCRIPT ERROR|^ERROR' || true
 	$(PYTHON) tools/street_page.py --commit $$(git rev-parse --short HEAD)
