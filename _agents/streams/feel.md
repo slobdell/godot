@@ -298,3 +298,12 @@ in 7 wherever he looks, and every time he starts a match.
 - arena: the B10 / C11 lane and corner lists, when ready (feel does the kerb paint, the corner fixture, the scale
   anchors and the low-obstacle markings).
 
+
+### The last check (the green hash for everything after CP3)
+
+**Merge here: `a822a48f`.** Check on it (builder0, merged with main `69c681ac`, `REMOTE_SLOTS=5`): `>> remote: make
+check exited 2`; **1645 passed, 2 failed** -- the two REASON'd tests above; sim-baseline `aac14c6704fbac39` (CP3's
+recorded move; these commits add none); determinism `2bf54e1e4c829e06`; ai-scenarios **39,5 against 44,0**: the three
+REASON'd or named scenarios above, plus `scenario_cp2` engine-deck (fixed on main by squad's ORBIT fix, broken again
+by the 9.7 m bus: named to squad) and `scenario_perf` CPU budget (load: five slots on builder0). Everything else green.
+Commits after `a822a48f`: `e27e0b85` (blimp-look frame fix), the Status.
