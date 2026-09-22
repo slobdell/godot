@@ -27,6 +27,16 @@ and a paired series).
 
 **LAUNCHED 2026-09-22 (credits back): the nine agents were started by the lead in their worktrees at `main` = the commit of this line.** Between the briefing (2026-09-20) and the launch, two research replies were curated into the catalog and the briefs (rows B1–B14, C1–C12), a ninth stream (terrain) was added, and R1 was narrowed on the lead's playtest (CP1 withdrawn). The lead's newest playtest notes (formations still do not come together; the four causes) are at the end of `game_design.md`.
 
+### FOR THE LEAD, THE MORNING AFTER 2026-09-22 (collected here as it lands; the files are in `~/Desktop/round10-morning/`)
+
+- **The light show on the walls (show):** `~/Desktop/round10-morning/show/show-page/index.html` (12 show-off/show-on pairs at your pose, the band strip, 6 clips at 30 fps). Show's verdict: the band dial is not the lever; the per-window layer is. The luminance instrument reads the venue −6 % to −27 % brighter wide; reported, not blocking: your eye decides.
+- **The Terminus streets before/after (arena):** https://claude.ai/artifact/U3rZUei4p8YeLBS55VyCuX (7 street pairs, the corner readout with the formula, the other maps' lanes reported: yard's 7 lanes and pit's 1 are short of the bar; a round-11 call).
+- **The announcer's 518 new lines (announcer):** `cd ~/projects/godot-announcer && make announcer-demo`, open `build/announcer/demo/index.html#new`; a Play button and a veto tick per line; your veto is a list of line ids, send them to me. Balance 60,398 credits.
+- **The bus (feel, CP3 pending its final check):** the concept page for your tap at `~/projects/godot-feel/build/review_page_bus/index.html` (3 directions at 2.90 × 4.76 × 9.70 m, 27 Meshy credits); the bus lineup and the turret side-on pairs (paths in feel's Status). Copied to the Desktop folder at close.
+- **The right-click (control + squad):** fixed on main (three mechanisms in control's path, two in squad's); the repath harness reads 6/7 on main and 7/7 with control's pending commit. Play it.
+- **Form squad (control):** the greyed buttons now say why and the card has a one-click Form squad.
+- **Walls (nav):** the drive-test table in the night log below: contacts −37 %/−48 % from the streets alone, a further −68 %/−53 % from nav's two arms (not yet merged).
+
 ### Merged to `main` (round 10, in order; verdicts read from the wrapper's own line)
 
 | stream | merged at | what | branch verdict | main check |
