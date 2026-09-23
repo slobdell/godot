@@ -648,5 +648,12 @@ pitch. They are the test's hand-placed 6 m row; comment corrected on this branch
 
 1. **Round 11's first item:** the pinch escape (the mover drives out of a two-sided refusal before turning), then CP4's
    five bars on one build (five_squads, corridor, wedged rig, the refused-run bar, squad's element drive).
-2. The series' one missing site: squad's `squad_incoming` (on main after the frozen tree), its own paired cell.
-3. Stretch never run: `make a2-cusps` (A2's verdict); the duel's hide/peek regression.
+2. **The trailer bench's tune never reaches `Armor.no_damage`** (feel's hinge bench, builder0 `4c2d1716`, a quiet
+   window, verdict NOT USABLE for the fourth time): `perf-trailer-ab` passes `--tune=match.no_damage=1`, yet the census
+   freeze read OFF in 13 of 13 phases. The census stayed at 90 only because nothing died, and the kept cycles disagree
+   (−0.42 to +14.78 ms). It is the "prints applied, never reaches its predicate" class (lesson 195; the same shape as
+   tonight's muzzle-height fix). **Test first:** a differ-assertion on that bench's own launch path (the knob ON vs
+   OFF must change what `Armor.no_damage_on()` returns inside the running bench, read at the point of use), red
+   before the fix. Then trace where that path's `--tune` is dropped or read too late.
+3. The series' one missing site: squad's `squad_incoming` (on main after the frozen tree), its own paired cell.
+4. Stretch never run: `make a2-cusps` (A2's verdict); the duel's hide/peek regression.
