@@ -2192,7 +2192,8 @@ static func nose_stop_on() -> bool:
 ## Round 10 (nav item 3a): **the pressed-wall escape.** The Terminus drive test's longest contacts were hulls held
 ## against a block face or a lamp for 30-130 s at a LOW throttle (0.12-0.35: a wheeled hull's minimum creep, a slowing
 ## arrival, a tight turn) — below the 0.5 the stall rule above asks for, so nothing ever noticed. The wall-contact
-## reading says exactly what the stall rule was guessing: this hull is touching a wall, it is being asked to move, and
+## reading says exactly what the stall rule was guessing: this hull (on a ROUTED move — CombatMotion's `direct` hops
+## are its own business) is touching a wall, it is being asked to move, and
 ## it is not getting anywhere (net displacement, not velocity). After PRESS_SECONDS of that it backs away from the wall (PRESS_BACKOFF_M, at most PRESS_ESCAPE_MAX_S), in the gear that
 ## moves the touching end off it, yawing so that end swings clear; then the route resumes (and re-plans: it was off it).
 ##

@@ -38,8 +38,8 @@ ungrounded right-click goals were found: contract R2b).
 
 **Item 3's rows** (each `--nav-off=<name>`; `press` is DEFAULT ON since round 10's close — the rigs went 7 → 15 of
 16 leg arrivals on grounded goals — and the others are OPT-IN, the switch turning them ON):
-`press` (a hull in wall contact, asked to move, that nets < 0.75 m in 0.5 s backs 1.5 m off the wall in the gear and
-yaw that free the touching end), `inflate` (route corners pushed outward along the bisector by the clearance the turn
+`press` (a hull on a ROUTED move in wall contact, asked to move, that nets < 0.75 m in 0.5 s backs 1.5 m off the wall
+in the gear and yaw that free the touching end; never on CombatMotion's `direct` hops — it cost a duel a shot), `inflate` (route corners pushed outward along the bisector by the clearance the turn
 needs — half-width on a straight to the half-diagonal on a U-turn — capped at half the free ground), `nosestop` (a hull
 whose nose meets a wall at the end of its route stops there, latched until the goal moves). Default ON:
 `notready` (a route asked on an unsynced map is retried next tick; `--nav-off=notready` restores the old wait; the
