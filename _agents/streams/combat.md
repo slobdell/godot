@@ -481,6 +481,34 @@ If there are no refusals, it's not the constraint at all. Only if the trace show
 overlapping at placement) does the test's row pitch become the literal to derive from the turning envelope, with a
 REASON. The constraint does not stay off because of a hand-placed literal.
 
+### PRE-REGISTERED: the line-of-fire site flips to the box (written 2026-09-22, before the flip's own runs)
+
+**The finding that motivates it** (squad's `c0040ae4`, placement through `Tank.place()`):
+`scenario_fire_discipline::test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane`, one run per arm.
+
+| arm | laptop | builder0 |
+|---|---|---|
+| disc (default) | FAIL: first shot 251, 1 shot, 12.2 m | FAIL: 251, 1 shot, 12.2 m (identical to the tick) |
+| box everywhere (`match.hull_disc=0`) | PASS: 114, 2 shots, 4.1 m | (running) |
+| box at `lof` only | PASS: 114, 2 shots, 4.1 m | (running) |
+| box at `incoming` only | FAIL: 251, 1 shot, 12.2 m | not run |
+
+The whole effect is the friendly-fire line-of-fire site. The disc's half-diagonal reach (5.06 m for the 9.70 × 2.90
+bus) refuses lanes the box's true reach allows. The earlier inverted pair (feel's laptop: disc passed, box roamed) was
+the tick-1 teleport artefact squad attributed.
+
+**The change:** `Units.HULL_DISC_SITES` stays; the `lof` site's default becomes the box (the other sites keep the
+disc). One commit, one cause, merged after squad's next merge so the count is read on one tree.
+
+**Bars, all on one build, written before the runs:**
+1. parked-friend PASSES on the laptop AND builder0 at the flip commit;
+2. the paired pit AND yard series cell for `lof` vs control is not worse for either side: c ≤ b in the discordant pairs
+   (the clean re-run, quotable);
+3. five_squads (constraint off and on-with-world-mask) and the suppression scenario unchanged in verdict;
+4. the sim baseline MOVES, with this one cause named, recorded twice by the orchestrator; any other move is a finding.
+If bar 2 shows the box worse for gangs or law (c > b with p < 0.05), the flip does not land, and the parked-friend red
+stays with the REASON "the disc's lof reach against the 9.70 m bus; the box costs X in the series".
+
 ### Owed after CP3 (taken 2026-09-22)
 
 - `scenario_fire_discipline::test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane` fails on feel's CP3 tree
