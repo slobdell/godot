@@ -151,6 +151,13 @@ _(the worker keeps this current; newest first within each part)_
 the harness `Tank.place`, the seeded defile probe) is checking on builder0 at `18c7f9bc`; its hash and lines go to
 the orchestrator and into the line below when it lands.
 
+**MERGE HERE (post-merge set): `18c7f9bc`**, builder0: `make check exited 2`, 1661 passed / 2 failed (main's
+`test_spawn_grid` baked-list red, arena's; parked-friend, combat's), **sim-baseline `7dcc52f547f03d3f` UNMOVED**
+(6d pre-registered MOVES, measured unmoved: the baseline match's CPU slots never sit against a wall), determinism
+`ad35f217e1862ae3`, scenarios 41,3 (cover-peeking REASON'd; parked-friend combat's; `scenario_perf` 22259 µs/tick
+on a loaded builder0, NOT 6d: laptop A/B tip 17567 / no follow grounding 17690 / no 6d 17940 µs). After it:
+`e602025c` the element leash on move_to (nav's item 6, inert until nav reads it).
+
 | # | item | state | the number (commit, machine) |
 |---|---|---|---|
 | 1 | transient element API | WITHDRAWN by the lead | — |
