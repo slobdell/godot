@@ -36,6 +36,8 @@ func test_its_pose_comes_from_the_fixed_tick_and_is_a_closed_circuit() -> void:
 
 
 func test_it_flies_down_the_streets_and_never_over_a_block() -> void:
+	## (The first route, round the ring roads, passed this and was invisible from the bases -- make blimp-look -- so this
+	## is necessary, not sufficient; the sweep is the other half.)
 	## At 12 m it is below the Terminus rooftops (24 m), so it must stay on the declared lanes with its envelope
 	## inside the street. Read from the layout, so a lane arena moves or narrows (CP2) fails here, not in a frame.
 	var layout: Dictionary = Arena.load_layout("terminus")["layout"]
@@ -79,7 +81,7 @@ func test_it_is_in_his_frame_when_he_looks_at_the_street_it_is_over() -> void:
 func test_its_screens_join_the_arena_channel() -> void:
 	var blimp := _blimp()
 	var screens := blimp.find_children("Screen*", "MeshInstance3D", true, false)
-	assert_eq(screens.size(), 2, "a screen a flank")
+	assert_eq(screens.size(), 4, "two screens a flank, fore and aft")
 	for screen: MeshInstance3D in screens:
 		assert_true(screen.material_override == AdBroadcast.channel(blimp, "arena").screen_material,
 				"%s shows the arena channel's one material" % screen.name)

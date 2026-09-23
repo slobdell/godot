@@ -46,6 +46,8 @@ func run() -> void:
 	await _box_select()
 	await _whole_army()
 	await _form_squad()
+	await _armed_cancel()
+	await _formation_faces_the_drag()
 	await _element_task()
 	await _vision_report()
 	await _attack_move()
@@ -416,6 +418,76 @@ func _form_squad() -> void:
 	_step("form_squad", {"reason": reason, "group": controls.selected_group(), "selected": controls.selection.units})
 	await get_tree().create_timer(0.6).timeout
 	await _capture("7b_formed_squad")
+
+
+## Round 10 (R2, item 4): a card command armed and forgotten. The right press is spent cancelling it - and the banner
+## says so - and the NEXT right press moves.
+func _armed_cancel() -> void:
+	await _key(KEY_1)
+	var members := _alive(controls.selection.units)
+	if members.is_empty():
+		_step("armed_cancel", {"skipped": "group 1 is empty"})
+		return
+	var told: Array = []
+	var listen := func(text: String, _warning: bool) -> void: told.append(text)
+	controls.notice.connect(listen)
+	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
+	var spot := _middle(members) + forward * 20.0
+	await _key(KEY_A)
+	var before: int = int(controls.orders.current(members[0]).get("id", -1))
+	await _right_click(_screen(spot))
+	var spent: bool = controls.mode == "" and controls.orders.current(members[0]).get("id", -1) == before
+	await get_tree().create_timer(0.4).timeout
+	await _capture("7c_armed_cancel_banner")
+	await _right_click(_screen(spot))
+	await get_tree().physics_frame
+	# A whole squad's move goes down the task path: the ELEMENT's task is what the press changed.
+	var element := controls.elements.of(members[0]) if controls.elements != null else null
+	var tasked: Array = element.task.get("to", []) if element != null else []
+	var moved: bool = controls.orders.current(members[0]).get("id", -1) != before \
+			or (tasked.size() == 2 and Vector2(float(tasked[0]), float(tasked[1])).distance_to(Vector2(spot.x, spot.z)) < 3.0)
+	controls.notice.disconnect(listen)
+	_checks["armed_press_is_announced_and_the_next_moves"] = spent and told.size() == 1 and String(told[0]).begins_with("Cancelled") and moved
+	_step("armed_cancel", {"told": told, "spent": spent, "moved": moved})
+
+
+## Round 10 (item 5a): the same three hand-picked units, the same spot, twice: a plain right-click (the shape lies
+## along the travel) and a right-drag east (the front faces the drawn heading). One variable moved, a frame of each.
+func _formation_faces_the_drag() -> void:
+	# Two of squad 1 and one of squad 2: three units that are not a whole squad, so they take DIRECT orders (a whole
+	# squad goes down the task path, where the facing is squad's to honour).
+	var one := _alive(controls.groups.members(1))
+	var two := _alive(controls.groups.members(2))
+	if one.size() < 2 or two.is_empty():
+		_step("formation_facing", {"skipped": "needs two living units in squad 1 and one in squad 2"})
+		return
+	var three := [one[0], one[1], two[0]]
+	controls.selection.set_units(three)
+	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	var spot := _middle(three) + forward * 30.0
+	await _right_click(_screen(spot))
+	await get_tree().create_timer(0.8).timeout
+	await _capture("10a_plain_click_layout")
+	var from := _screen(spot)
+	var to := _screen(spot + right * 20.0)
+	_mouse(from, true, MOUSE_BUTTON_RIGHT)
+	for i in range(1, 7):
+		var motion := InputEventMouseMotion.new()
+		motion.position = from.lerp(to, i / 6.0)
+		motion.global_position = motion.position
+		motion.button_mask = MOUSE_BUTTON_MASK_RIGHT
+		_push(motion)
+		await get_tree().process_frame
+	_mouse(to, false, MOUSE_BUTTON_RIGHT)
+	await get_tree().create_timer(0.8).timeout
+	var goals := {}
+	for unit_name: String in three:
+		goals[unit_name] = controls.orders.current(unit_name).get("goal", [])
+	var facing: Array = controls.orders.current(three[0]).get("facing", [])
+	_checks["drag_turns_the_formation"] = facing.size() == 2 and not controls.can_task()
+	_step("formation_facing", {"units": three, "facing": facing, "goals": goals})
+	await _capture("10b_drag_right_layout")
 
 
 ## Whether this unit can currently see a living enemy (it is fighting, not travelling).
