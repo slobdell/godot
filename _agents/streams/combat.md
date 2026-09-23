@@ -373,6 +373,12 @@ Before on record: feel's matrix, gangs 20 % on pit and 50 % on yard (unpaired, d
 |---|---|---|---|---|---|---|---|
 | `e7d3ced6`, pre-CP3 8.62 m bus (builder0) | pit | `lof` | 64 | 28% / 20% | 8 | 3 | 0.227 |
 | `6e2d9421` **DIRTY** (untracked terrain `.uid`s at launch; `paired_arms` REFUSED it; not quotable) | pit | `lof` | 64 | 22% / 16% | 6 | 2 | 0.289 |
+| `6e2d9421` **DIRTY** (the clone: my log files written inside it; not quotable) | pit | `incoming` | 64 | 20% / 16% | 6 | 3 | 0.508 |
+
+**Determinism, measured:** the control at `6e2d9421` run from two builder0 folders (this worktree's and the clone's)
+produced the same 64 games, winner for winner, and the `lof` arm reproduced to the same rates. The dirty flags came
+from untracked files (terrain's `.uid`s; then my own logs inside the clone), not code. The rule still holds: these
+rows may be acted on, not quoted. The clean re-run (logs outside the clone, FRESH control) is running.
 
 The rest of that run was killed by slot.sh's 90-minute limit (one arm ≈ 41 min at 2 jobs). The series restarts on the
 post-CP3 tree (the 9.70 m bus, where the parked-friend question lives), one arm per invocation, at 3 jobs.
