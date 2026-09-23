@@ -81,12 +81,20 @@ func _run() -> void:
 	var yaws := [start_yaw, start_yaw + PI / 2.0, start_yaw + PI, start_yaw + 1.5 * PI]
 	var tally := {"all": [0, 0], "middle": [0, 0], "start_yaw": [0, 0], "middle_start_yaw": [0, 0]}
 	var on_screen := 0
+	var skipped_poses := 0
 	var best := {"px_w": -1}
 	var typical := {}
 	var sizes: Array = []
 	for focus: Vector3 in foci:
 		for yi in yaws.size():
 			_camera.global_transform = RtsCamera.pose_at(focus, float(yaws[yi]), DISTANCE_M, PITCH_DEG)
+			# Only poses his camera can take: the camera itself over the arena. From the grid's edge foci a yawed camera
+			# stands out in the stands, where the crowd and railings (no colliders, so the ray passes them) hide
+			# everything -- the first avenue sweep's "widest" sample was one of those.
+			var eye := _camera.global_position
+			if not Arena.contains(Vector3(eye.x, 0.0, eye.z)):
+				skipped_poses += 1
+				continue
 			for s in steps:
 				var tick := int(lap * s / steps)
 				blimp.call("_place", tick)
@@ -113,6 +121,9 @@ func _run() -> void:
 		if not typical.is_empty():
 			break
 		_camera.global_transform = RtsCamera.pose_at(focus, start_yaw, DISTANCE_M, PITCH_DEG)
+		var typical_eye := _camera.global_position
+		if not Arena.contains(Vector3(typical_eye.x, 0.0, typical_eye.z)):
+			continue
 		for s in steps:
 			var tick := int(lap * s / steps)
 			blimp.call("_place", tick)
@@ -123,7 +134,8 @@ func _run() -> void:
 	var report := {"pitch_deg": PITCH_DEG, "fov_deg": FOV_DEG, "distance_m": DISTANCE_M, "grid_m": grid,
 			"foci": foci.size(), "yaws": yaws.size(), "lap_steps": steps, "lap_s": snappedf(lap / SimClock.TICK_RATE, 0.1),
 			"altitude_m": AdBlimp.ALTITUDE, "speed_mps": AdBlimp.SPEED_MPS, "median_px_w": median_px, "widest": best,
-			"on_screen_pct_all": snappedf(100.0 * on_screen / maxi(int(tally["all"][1]), 1), 0.1)}
+			"on_screen_pct_all": snappedf(100.0 * on_screen / maxi(int(tally["all"][1]), 1), 0.1),
+			"camera_poses_outside_the_arena_skipped": skipped_poses}
 	for key: String in tally:
 		var pair: Array = tally[key]
 		report["seen_pct_" + key] = snappedf(100.0 * pair[0] / maxi(pair[1], 1), 0.1)

@@ -149,7 +149,7 @@ _(the worker keeps this current)_
   are on the roof. The gang gun truck's real machine gun (in its bed) now traverses, and the stray "barrel" sticks
   on the gun truck and the catapult are gone. The War Rig's rounds leave from under its gun.
 - **The blimp he asked for is in his frame.** A lit ad blimp drifting down the Terminus avenue at 12 m; at his pose
-  it is on screen and unoccluded in **13.4 %** of 12,960 samples (every focus x 4 yaws x its lap), and it is in his
+  it is on screen and unoccluded in **12.0 %** of 9,456 samples (every camera pose over the arena x its lap), and it is in his
   **opening camera**, 881 px wide (`references/round10/feel/blimp_opening_d9b70dc4.jpg`). The airship stays over the city.
 - **Hulls get a faint rim in their faction's colour** (amber, magenta, police blue, ivory) so they read between the
   lamp pools. The pair is his eye's call (`references/round10/feel/rim_v2_final.jpg`; `--no-faction-rim` switches it off).
@@ -196,6 +196,8 @@ _(the worker keeps this current)_
 
 - `make skirmish ARENA=terminus` -- the bus beside the garbage truck; the turrets on the roofs; the blimp coming down
   the avenue from your end at the start (it laps in ~4 minutes); the faint hull rims between the lamp pools.
+- The lane markings (B10/C11): kerb lines and centre dashes down every Terminus lane, warm pools at the junctions;
+  off with `--no-lane-marks` (same command as below). `references/round10/feel/lane_pair.jpg` is the pair.
 - The rim off, for the comparison (`make skirmish` passes no extra flags):
   `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --arena=terminus --no-faction-rim`
 
@@ -244,7 +246,12 @@ points of its lap = 12,960 samples; SEEN = in the viewport AND a clear physics r
 | route | seen, all | seen, the skirmish's start yaw | seen, the middle band | median width |
 |---|---|---|---|---|
 | ring roads + west streets (`5cfde60e`) | **0.0 %** (37.5 % "on screen" by bounding box only) | 0.0 % | 0.0 % | — |
-| **the avenue loop** (`d9b70dc4`, x = +-4, turning at z = +-86) | **13.4 %** | **14.8 %** | 10.6 % | **427 px** |
+| the avenue loop (`d9b70dc4`), every grid pose | 13.4 % | 14.8 % | 10.6 % | 427 px |
+| **the avenue loop, only camera poses over the arena** (`aa67d926`+; 146 of 540 poses skipped, 9,456 samples) | **12.0 %** | **11.8 %** | **11.8 %** | **454 px** |
+
+The last row is the number to quote. The skipped poses put the camera out in the stands (the grid's edge foci,
+yawed), where the crowd and railings have no colliders and hid what the rays passed. It is still conservative: the
+rays count a block the game's camera cutaway would hide when the camera stands in a block row.
 
 In the OPENING view (the camera he starts with) it is seen, 881 px wide: `build/blimp-look/blimp_opening.png` --
 the lit envelope over the avenue top-right, its screen showing the arena channel's ad, the resized buses below.
