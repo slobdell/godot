@@ -2168,13 +2168,15 @@ func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		_stuck_time = 0.0
 
 
-## Round 10 item 3's three arms are OPT-IN for now (like `a7` and `holdband`, the switch turns them ON:
-## `--nav-off=press,inflate,nosestop`). Measured on the Terminus drive test they cut wall contacts by two thirds, but
+## Round 10 item 3's rows. **`press` is DEFAULT ON** (`--nav-off=press` restores the old stall rule alone): on the
+## Terminus drive test with grounded right-click goals it took the War Rigs from 7 to 15 of 16 leg arrivals and their
+## wall-contact ticks 10128 -> 2315, the mixed squad unchanged (builder0, seed 1, `c148b5d5`). `inflate` and
+## `nosestop` stay OPT-IN (like `a7` and `holdband`, the switch turns them ON). Measured on the Terminus drive test they cut wall contacts by two thirds, but
 ## on `c91d8039` default-on they moved the sim baseline and reddened two element tests (inflation delays an element's
 ## drive north; see Status), so they wait for their own A/B before becoming the default. The not-ready route retry is
 ## default ON (`--nav-off=notready` restores the old wait) and is the one pre-registered baseline cause.
 static func press_on() -> bool:
-	return switched_off("press")
+	return not switched_off("press")
 
 
 static func inflate_on() -> bool:
@@ -2192,7 +2194,7 @@ static func nose_stop_on() -> bool:
 ## it is not getting anywhere (net displacement, not velocity). After PRESS_SECONDS of that it backs away from the wall (PRESS_BACKOFF_M, at most PRESS_ESCAPE_MAX_S), in the gear that
 ## moves the touching end off it, yawing so that end swings clear; then the route resumes (and re-plans: it was off it).
 ##
-## OPT-IN for now (`--nav-off=press` turns it ON; see `press_on()`).
+## DEFAULT ON since round 10's close (`--nav-off=press` switches it off; see `press_on()`).
 ## Arm counter: `press_escapes`. Deterministic: it reads only physics state already produced and the tick's command.
 const PRESS_SECONDS := 0.5
 const PRESS_ESCAPE_THROTTLE := 0.6

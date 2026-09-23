@@ -21,7 +21,8 @@ func _hull(game_match: Match, unit_id: String, at: Vector3, yaw: float) -> Order
 	return ctl
 
 
-## Item 3's arms are opt-in (`--nav-off=<name>` turns them ON): select exactly `names` for this test.
+## Select exactly `names` in `--nav-off` for this test: that turns the opt-in rows (inflate, nosestop, oriented, ...)
+## ON and the default-on ones (press, notready, ...) OFF.
 static func _arms(names: Array) -> PackedStringArray:
 	var was := Movement._off
 	Movement._off = PackedStringArray(names)
@@ -121,7 +122,7 @@ func test_polyline_distance() -> void:
 ## Item 3a's positive control: a hull ordered (`direct`, so no route bends it away) at a point BEHIND the wall presses
 ## into it and gets nowhere. The pressed-wall escape must fire, and back it off the wall.
 func test_a_hull_pressed_on_a_wall_backs_off() -> void:
-	var was := _arms(["press"])
+	var was := _arms([])  # press is DEFAULT ON: no switch
 	WallContact.reset()
 	var fired := Movement.press_escapes
 	await ArenaFixture.build(self, "foundry")
@@ -173,7 +174,8 @@ func _nose_run(arms: Array) -> Dictionary:
 
 
 func test_nose_stop_control_a_hull_sent_against_a_wall_presses_it() -> void:
-	var out := await _nose_run([])
+	# `press` is default ON and would back the hull off; the control isolates the nose stop, so it switches press off.
+	var out := await _nose_run(["press"])
 	assert_true(int(out["contacts"]) > 30, "without the arm the nose presses the face (%d contact ticks)" % out["contacts"])
 	assert_eq(int(out["stops"]), 0, "and the arm never ran")
 
