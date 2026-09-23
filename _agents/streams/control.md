@@ -145,12 +145,18 @@ axis is 2.8× more legible than one read across.
 
 ## Status
 
-_Updated 2026-09-22 ~13:30, worker session 1._
+_Updated 2026-09-22 evening, worker session 1: **FINAL REPORT.**_
 
-> **THIS COMMIT IS GREEN, MERGE HERE: `f8e8c592`.** `make remote T=check`, builder0, from the wrapper: `>> remote: make
-> check exited 0`; runner `1575 passed, 0 failed`; ai-scenarios 41,3 unchanged; sim-baseline `1ea332e7bc268d2a`
-> (unmoved); determinism `559a415887806e43`. The orchestrator has the hash (SendMessage). Later commits on the branch are
-> harness, frames and docs only, and each names its own check below.
+> **Merged to main:** `f8e8c592` (at `52254fd2`) and `0f6ded16` (at `8abba2b7`), each green on builder0 (exit 0,
+> 1575/0 and 1577/0, baseline unmoved). **Ready, not yet green:** tip `e55d1143` (main `696b581c` merged in, plus
+> `7cceceff` player-only right-click grounding and the harness fixes). Its check on builder0 read `1661 passed, 2
+> failed`, ai-scenarios 42,2 against main's 44,0, sim-baseline `7dcc52f547f03d3f` passed. **All three reds reproduce on
+> main's own tree at `696b581c`** (laptop A/B with `git checkout 696b581c -- game/`): `test_spawn_grid` (terminus_canal
+> not re-baked), `scenario_fire_discipline` parked friend, `scenario_elements` formation slot. None is control's. When
+> main is green, merge main and re-run `REMOTE_SLOTS=5 make remote T=check`, then name the hash.
+>
+> **Every backlog item is done**, plus both stretch items, B7's pin phase, the objective rings (terrain's report), and
+> the right-click goal grounding (nav's report). Nothing waits on the lead.
 
 ### THE RECORD for the unanswered right-click (main `8abba2b7` + harness fix `0097de46`, builder0)
 `make repath-test` (no-damage tune, Terminus, condemned v law, seed 3, squad 1 = 8 Guns): **`REPATH_DONE ok=true
@@ -177,6 +183,11 @@ Copied off `build/` so a later run can't overwrite them:
 - The radar in every yard frame shows the two objective rings off-centre, and none at the centre.
 
 ### Round-10 addition (nav's drive test, relayed 2026-09-22): right-click goals grounded on the navmesh
+**Corrected at `7cceceff`: PLAYER orders only.** Grounding every order through Orders broke
+`scenario_orders::test_a_move_order_is_executed_within_100_ms` (check on `8e942f20`; laptop A/B). Elements ground
+their own plans, and scripted and CPU orders keep their geometry. ⚠ nav's drive test issues orders without
+`"source": "player"`, so it must set that to exercise this path. On main the adapter takes squad's `for_unit` (on main
+at `4c5b1671`).
 nav's re-run on main `709cbeb9` (builder0) found 11 of 13 arrival misses were `move` orders whose per-unit
 formation slot from `Orders._resolve_group` sat 4-10 m inside a block. A right-click on a selection never went through
 squad's element grounding. `8e942f20`: `Orders.ground_goal` puts every goal on standable ground, using squad's
