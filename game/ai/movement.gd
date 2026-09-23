@@ -2216,7 +2216,12 @@ var _escape_turn := 0.0
 
 
 func _pressing_escape(cmd: TankCommand, delta: float) -> bool:
-	if not press_on():
+	# Not while the crew is ENGAGED: in a fight the hull's motion is the combat layer's (a duel's weave brushes walls
+	# on purpose), and the escape backing a duelling tank off cost scenario_motion's moving duel a shot (5 vs its bar
+	# of 6) on 2a2b77c1 and on bc4873f3. The acceptance test it exists for — a squad driven through the streets — has
+	# no engagement, so nothing it measured is lost.
+	if not press_on() or ctl.gunnery.engaged_target != "":
+		_press_time = 0.0
 		return false
 	var tank := ctl.tank
 	var asked := absf(cmd.throttle) >= WallContact.THROTTLE_MIN or absf(cmd.turn) >= 0.05
