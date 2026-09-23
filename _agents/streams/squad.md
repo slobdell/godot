@@ -146,6 +146,31 @@ _(the worker keeps this current; newest first within each part)_
 
 ### REPORT (round 10, 2026-09-22 evening) — read this first
 
+**For the lead, in play terms (everything below is on main at `4c5b1671`):**
+
+- **"I right-clicked and they didn't respond."** Two mechanisms in the squad layer, both fixed. (1) A squad re-planned
+  only on its own slot in a 0.1 s cycle and then kept any crew whose new spot was within 8 m of its old one, so most
+  crews stayed on their old `follow`. Now your order reaches every crew on the next tick. (2) Crews that had arrived
+  and gone idle were never handed their place in the new move; now they are. Together with control's input fixes,
+  control's re-order test passes on every living crew.
+- **Squads settle fast.** A 20 m move forward or sideways now stops in about 4–9 s (it was up to 20 s), because
+  crews are seated by who has the least driving, not with the leader forced to the front, so nobody drives through
+  a squad-mate. Moving 20 m BACKWARDS from the spawn is still slow (~16 s).
+- **Room to turn.** Formations space vehicles by their full diagonal plus 0.3 m, so a squad can turn to a new
+  heading without hulls clipping (measured, not assumed). The spawn keeps the old tight spacing so big armies fit
+  their zone; the cost is that a squad's FIRST turn from the spawn can clip. Round 11 fixes it with a staggered deploy.
+- **Formation slots no longer land inside buildings.** A slot is pushed to where the whole vehicle fits, not just
+  its centre, and the same call is what right-click moves use (control's side).
+- **Test honesty.** The scenario harness now places units the way the game does; two failures I had blamed on the
+  bigger bus were artefacts of the old placement (those explanations are withdrawn), and one "win" (peeking out of
+  cover while the enemy reloads) turned out to have no measurable effect.
+- **Numbers with a caveat:** the maze-crossing (defile) numbers from round 9 were single runs; the probe now varies
+  its seed.
+
+**Round 11 candidates (squad's):** a staggered deploy that removes the first-turn clip; the backwards move from the
+spawn (a 40 m column against the arena edge); moves with battle drills on settle in 13–45 s; the wheeled crew that
+creeps after arriving; the reload-window behaviour (no measured effect); the stretch rows (A10, A8, tube gate).
+
 **Every backlog item is done or written up; the stretch items were not started (below).** Merged to main: `e4d5e3f3`
 (at `08319e59`) and the pitch set `f27bd321` (at `b1693901`, baseline neutral). The post-merge set (6d, `for_unit`,
 the harness `Tank.place`, the seeded defile probe) is checking on builder0 at `18c7f9bc`; its hash and lines go to
