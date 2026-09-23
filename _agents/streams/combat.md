@@ -533,6 +533,26 @@ If there are no refusals, it's not the constraint at all. Only if the trace show
 overlapping at placement) does the test's row pitch become the literal to derive from the turning envelope, with a
 REASON. The constraint does not stay off because of a hand-placed literal.
 
+### The lof flip: `f694af4b` (on main `4c5b1671`+), its check and its bars
+
+Check (builder0, this exact hash): `make check exited 2`, **1672 passed, 0 failed**, sim-baseline `7dcc52f547f03d3f`
+**UNMOVED**, determinism `bcc6e1609c14e12d`, scenarios 43/1. The one scenario red is `scenario_cover::…peeking…`,
+which fails identically with the flip reverted (`TUNE=match.hull_disc_lof=1`: x3 and x4 both 4 hits, 4 fired). It's
+squad's post-placement red, not this commit's.
+
+| bar | reading | verdict |
+|---|---|---|
+| 1. parked-friend on both machines | laptop 114 ticks, 2 shots; builder0 (the check) 113 ticks, 2 shots | PASS |
+| 2. paired series, `lof` cell not worse | pit (builder0, `6e2d9421`, clean): b 6, c 2, p 0.29; yard running | pit PASS, yard pending |
+| 3. five_squads and suppression unchanged | 1672/0; the suppression scenarios all pass | PASS |
+| 4. sim baseline MOVES, one cause | **UNMOVED** | **MY PREDICTION WAS WRONG** |
+
+Bar 4 is a miss in the safe direction, and it says something: the baseline match never reaches a case where the disc
+and the box disagree at the line-of-fire site (no friend close enough to a lane for the half-diagonal and the true
+reach to differ). The site is consulted on the default path: parked-friend passes at default, having failed with the
+disc on the same tree. The pre-registration should have said "moves only if the baseline match contains a
+friend-in-lane decision near the disc's margin".
+
 ### PRE-REGISTERED: the line-of-fire site flips to the box (written 2026-09-22, before the flip's own runs)
 
 **The finding that motivates it** (squad's `c0040ae4`, placement through `Tank.place()`):
