@@ -152,10 +152,45 @@ anchors along every lane (feel's kit); a light behind every corner (show's).
 
 ## Status
 
-_(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round 10).**
+_(the worker keeps this current)_ **Last updated 2026-09-22 evening (arena worker, round 10). DONE: every backlog
+item and the stretch item complete; all of it merged to main (CP2 at `46388559`, the rim parity at `e430febf`, the
+spawn grid at `58540dd7`). The one open record is the orchestrator's baseline adopt (`11c479c3` → `7dcc52f5`).**
+
+### Report for the lead (in plain terms)
+
+**What you asked for:** *"there streets are blocked with these shipping containers so there's almost no
+passageway... vehicles are going straight through and overlapping with some of the assets (like the lights)."*
+
+- **The Terminus streets are open.** Every container, lamp and wreck now stands at a kerb or on a lot, lengthwise
+  along the street, never across it. Each street is 16-22 m clear wall to wall, which leaves room for two of the
+  widest vehicle side by side after the pathfinding margin, and every corner is wide enough for the War Rig to
+  turn. A test fails the build if anyone puts furniture back in a street. Before/after pictures of every street
+  from your camera: https://claude.ai/artifact/U3rZUei4p8YeLBS55VyCuX (private: share it from the page).
+- **The streets also LOOK open from your camera.** A second test checks that nothing hides a street's narrowest
+  point from your default view; it found a lamp doing exactly that on the ring road, and the lamp moved.
+- **"Vehicles going through the lights":** the floodlights were already solid where a vehicle can reach them. The
+  likely culprit was the neon SIGN, which has no collision and stood inside both armies' starting areas on the
+  Terminus, the Container Yard and the Pit. All three moved out, and a test keeps them out. (The War Rig's folding
+  trailer can also swing through things; that is feel's and combat's.) Two props had collision that did not match
+  their art -- the ad screen was too small, the wreck twice too long -- both fixed.
+- **Units start with room to turn.** The starting grid now fills every other spot first, so the first 28 vehicles
+  placed on it can all turn without clipping a neighbour.
+- **The other maps** (Yard, Pit, and the two you cut) were measured the same way and NOT changed: their lanes run
+  through their cover, and the Pit's west gate is open but reads shut from your camera. Listed on the page.
+
+**What to play:** `make skirmish ARENA=terminus`, select a squad, and drive it street to street: the avenue up the
+middle, the west and east streets between the blocks, the ring road, and across the plaza. Then the same on
+`ARENA=pit` through the west gate, which is the one place the instruments say reads worse than it is.
+
+**Questions for you (none blocking):** the Terminus's two objectives now measure a lower "decision spread" (0.33)
+than before the streets were cleared; worth moving them only if the map plays like the objectives are a
+formality.
+
+**Next (round 11):** a staggered deploy so large armies start with turning room too (squad + arena, written up
+in `arenas.md` *The deploy zone cannot move forward*); the Pit's west gate readability, if you agree it reads shut.
 
 ### Plan (in order; smallest foundation first)
-1. **R4 lanes (CP2)** — DONE; **CP2 green at `44315882`** (builder0), frames and page done.
+1. **R4 lanes (CP2)** — DONE; **CP2 green at `44315882`** (builder0), merged at `46388559`.
 2. **R3 prop collision parity** — DONE (`b438f72b`, `aa3ce791`).
 3. **Reads passable** — DONE as a headless instrument (`aa3ce791`); frames come with item 1's shots.
 4. **Spawn grid** — DONE (ruling A, after CP3): the same 57 lattice points fill turning-clear checkerboard cells
@@ -165,7 +200,8 @@ _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round
    zone on yard, pit, Terminus). Squad's `test_the_grid_fills_the_front_row_before_the_rows_behind_it` edited to
    the new contract (front row first within each band): squad to review.
 5. **Other arenas' lanes** — DONE (reported: `arenas.md` *Streets are lanes*, table below).
-6. **Stretch** — `hull_size` consumer status (below); terrain's `decision_report` bug fixed (`c28ac8e0`).
+6. **Stretch** — `hull_size` consumer status (below); terrain's `decision_report` bug fixed (`c28ac8e0`); the
+   report's lane table reads terrain (`2d7a2710`, green: 1630/0).
 
 ### Done (with measurements; static geometry is machine-independent, commit named)
 - **R4** (`b438f72b` + `aa3ce791`): `ArenaLanes` (game/arena/arena_lanes.gd) + `tests/test_arena_lanes.gd`. Terminus
