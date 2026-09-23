@@ -171,7 +171,8 @@ main (`c148b5d5`, merged). Commits after it are Status only.
    checked (`test_nav_wall_contact`, 10 tests).
 2. **The Terminus drive test** (`make nav-terminus-drive`): **the mixed squad's wall contacts 7866 (pre-CP2) → 4957
    (CP2) → 5959 (CP2+CP3, ungrounded slots) → 190 (grounded right-click goals)**, arrivals 6,4,6,6 of 6. The rigs:
-   15691 → 8139 → 10128 → **2430 with the press escape at its default 1.0 s window** (arrivals 7 → **14 of 16**).
+   15691 → 8139 → 10128 → **2430 with the press escape at its default 1.0 s window** (arrivals 7 → **14 of 16**, on
+   ONE seed and ONE escape — see the correction at the end).
 3. **Fixes by cause, each an arm:** the pressed-wall escape (**default ON** at `304636cc`: routed moves, crew not
    engaged, a 1.0 s pin — at 0.5 s it cost combat's moving duel a shot); corner inflation and the
    nose stop (opt-in; inflation's old tactics red was the pre-CP3 literal; the nose stop never fires on grounded
@@ -426,3 +427,11 @@ weave brushes a wall, a street pin lasts 30–130 s. Measured on builder0 (drive
 unchanged, sim-baseline MOVED `7dcc52f547f03d3f` → `457b5e830708b439` — the ONE pre-registered cause, proven:
 `make nav-sim-arms SIM_ARMS=press` on the same tree reads `7dcc52f547f03d3f` exactly.** Merge `304636cc` alone and
 adopt the baseline.
+
+**⚠ CORRECTION (same night), the flip's evidence is thin, stated plainly:** at the shipped 1.0 s window the rigs'
+drive fired **one** escape (the mixed squad none); the "56" and "50" figures were the 0.5 s and 1.5 s runs. The 7 → 14
+of 16 arrival gain on this single deterministic seed therefore rides on one escape changing the rest of the
+trajectory — a real mechanism firing, not evidence that it reliably helps. What is solid: the check (1674/0, count
+43,1), the baseline's one proven cause, the unit test (a pinned hull backs 1.37 m off a face), the duel passing.
+Round 11: give the drive test a seed knob that moves spawn order and run the press A/B over paired seeds (C6) before
+calling it the walls fix; the orchestrator decides whether 304636cc merges as a harmless default meanwhile.
