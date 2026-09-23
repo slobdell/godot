@@ -108,11 +108,15 @@ terrain-pytest: ## Terrain: the Python water/bridge mirror against the golden fi
 	$(PYTHON) -m unittest tools/test_arena_terrain.py
 
 ## Spots and scale hulls per terrain map: name:x:z for the camera, x:z:yaw for a hull. The dry twin is shot from the same pose.
-TERRAIN_SHOT_ARENAS ?= crossing sumps
+TERRAIN_SHOT_ARENAS ?= crossing sumps terminus_canal
 TERRAIN_SPOTS_crossing ?= bridge:-92:14,neck:0:22,landing:-76:-22,far_bridge:92:-14
 TERRAIN_HULLS_crossing ?= -92:12:0,-88:36:10,-78:-20:170,6:48:0,70:18:200
 TERRAIN_SPOTS_sumps ?= catwalk:-55:14,causeway:-27:14,lip:-40:40,far:-52:-22
 TERRAIN_HULLS_sumps ?= -55:10:0,-27:20:10,-44:40:0,-50:-22:170,-84:30:0
+TERRAIN_SPOTS_terminus_canal ?= avenue_bridge:0:30,west_bridge:-70:30,canal:-35:30
+TERRAIN_HULLS_terminus_canal ?= 0:28:0,-70:34:0,-40:44:90
+## A layout whose "before" frame is not `<name>_dry` (a proposal drawn on a real map).
+TERRAIN_DRY_terminus_canal ?= terminus
 
 terrain-shots: import ## Terrain: each terrain map at the lead's pose (21 deg, FOV 35, 49 m) beside its dry twin, plus an overview -> build/terrain-shots/ (needs a display: make remote T=terrain-shots)
 	rm -rf $(BUILD_DIR)/terrain-shots && mkdir -p $(BUILD_DIR)/terrain-shots
@@ -121,6 +125,7 @@ terrain-shots: import ## Terrain: each terrain map at the lead's pose (21 deg, F
 	$(foreach arena,$(TERRAIN_SHOT_ARENAS),timeout 600 $(GODOT) --path . --resolution 1920x1080 \
 		--script res://game/theme/arena_kit/terrain/tools/terrain_shots.gd -- --arena=$(arena) \
 		--out=$(CURDIR)/$(BUILD_DIR)/terrain-shots --spots=$(TERRAIN_SPOTS_$(arena)) --hulls=$(TERRAIN_HULLS_$(arena)) \
+		$(if $(TERRAIN_DRY_$(arena)),--dry=$(TERRAIN_DRY_$(arena))) \
 		> $(BUILD_DIR)/terrain-shots/$(arena).log 2>&1 || true; \
 		grep -E 'TERRAIN_SHOT|SCRIPT ERROR|^ERROR' $(BUILD_DIR)/terrain-shots/$(arena).log || true; \
 		grep -q 'TERRAIN_SHOTS_DONE ok=true' $(BUILD_DIR)/terrain-shots/$(arena).log || { echo "terrain-shots: $(arena) failed"; exit 1; };)

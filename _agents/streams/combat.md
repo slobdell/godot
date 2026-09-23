@@ -154,6 +154,14 @@ _(the worker keeps this current)_
 `>> remote: make check exited 0`, 1559 passed, 0 failed, sim-baseline `1ea332e7bc268d2a` unmoved, determinism
 `559a415887806e43`.
 
+### ✅ MERGED to main at `4a96829d` (from `6e3cd021`; the orchestrator re-records the scenario count 44,0 on main)
+
+builder0, the check on this exact hash: `>> remote: make check exited 2`, **1604 passed, 0 failed**, sim-baseline
+`1ea332e7bc268d2a` **unmoved**, determinism `559a415887806e43`, 17 of 18 targets passed. The one red is
+`ai-scenarios-check`, by design: **44 passed, 0 failed, 3 pending** against the file's 41,3, which the orchestrator
+re-records on `main` (my record reverted on request). Earlier green points: `d0445bbf` exit 0 (1564/0), start of round
+`2ee65f94` exit 0 (1559/0).
+
 ### For the lead, in one paragraph
 
 **Why the yaw fix froze your squads, and the fix.** Round 9's rule that stops a hull rotating through a wall also
@@ -359,6 +367,22 @@ Treatments: `lof` (the box at the line-of-fire site only), `incoming` (the box a
 (research C7's arm: the box for line of fire AND threat, the disc kept for spacing). Per map, per cell, never pooled.
 Before on record: feel's matrix, gangs 20 % on pit and 50 % on yard (unpaired, different build: context only).
 
+**Results so far:**
+
+| tree (machine) | map | arm vs control | pairs | gangs: treatment / control | b | c | McNemar p |
+|---|---|---|---|---|---|---|---|
+| `e7d3ced6`, pre-CP3 8.62 m bus (builder0) | pit | `lof` | 64 | 28% / 20% | 8 | 3 | 0.227 |
+| `6e2d9421` **DIRTY** (untracked terrain `.uid`s at launch; `paired_arms` REFUSED it; not quotable) | pit | `lof` | 64 | 22% / 16% | 6 | 2 | 0.289 |
+
+The rest of that run was killed by slot.sh's 90-minute limit (one arm ≈ 41 min at 2 jobs). The series restarts on the
+post-CP3 tree (the 9.70 m bus, where the parked-friend question lives), one arm per invocation, at 3 jobs.
+
+**The series tree is FROZEN at `6e2d9421`** (post-CP3 bus, before nav's route retry and squad's pair). Every arm must
+share the control's commit (`paired_arms` refuses otherwise, even for a docs-only commit), and this branch keeps
+merging `main`. So the `lof` arm runs from this worktree's builder0 folder, and the `incoming` and `both` arms run
+from a clean clone at the same commit in the scratchpad (`godot-combat-series`, its own builder0 folder, a fresh
+control at the same commit; the two controls should be byte-identical games, which doubles as a determinism check).
+
 **Predictions, stated now:**
 - C7's prediction for `both`: it recovers most of the rig's lost win rate (the round-8 loss was 9/20 → 0/20).
   Operationally: on each map, b > c for gangs with p < 0.05.
@@ -407,6 +431,43 @@ Nothing on the default path changes on this branch (the constraint stays OFF unt
 `TUNE=match.yaw_fit=1,match.yaw_world=1 make skirmish ARENA=terminus` and order squads of War Rigs and dozers
 around the blocks; compare with `TUNE=match.yaw_fit=1` (round 9's rule), where squads parked in a row can freeze.
 
+### CP3 review (`git diff 4ff45e50 69c681ac -- game/match game/units game/tank`): APPROVED, one defect fixed here
+
+- **`match.gd` jitter:** approved. Derived from the rule `pitch − 2·jitter − hull ≥ HULL_CLEAR_M` for
+  `Units.DEFAULT`, asserted by `tests/test_spawn_grid.gd`. The values are X 1.30, **Z 0.15** (the relay said 0.3;
+  the code's derivation, (12.0 − 9.70 − 2.0)/2, is the one that counts).
+- **`units.gd` bus box and mounts:** approved as carve-out values (the lead's eye, R6; the mounts measured on
+  builder0). The bus is now 2.90 × 4.76 × 9.70 m.
+- **`tank.gd` turret pose and scale:** approved. The turret's scale is pinned to `TURRET_STANDARD`, so the art
+  measurement fix does not move a muzzle, and `turret_pose` keeps y at the muzzle's height.
+- **The muzzle-inside-own-hull condition landed as a test:**
+  `test_tank_turret_mount.gd::test_no_mount_pushes_the_muzzle_further_out_of_its_own_box` (no mounted unit's muzzle
+  sits further past its nose than today's default pose puts it, and none behind its tail). Verified here: 5/5 pass.
+- **Defect, fixed on this branch:** `_apply_turret_mount` read the RAW profile, so `TUNE=tank.muzzle_height=…` moved
+  `Tank.muzzle_height` but not the pivot rounds leave from (pivot 1.09 m against an expected 1.45 m). The tank now
+  passes its own tuned value. Test: `test_combat_hull_geometry::test_a_tuned_muzzle_height_reaches_the_mounted_pivot`
+  (red before, green after). No tune means identical values: baseline pre-registered unmoved.
+
+### Where five_squads' hulls start (for CP4's re-run)
+
+Arena's finding: doctrine armies re-lay at tick 0 and never stand on the spawn grid, so its checkerboard fill (turning
+envelopes disjoint for the first 28 bare spawns) does not reach five_squads. **Neither does squad's pitch, at spawn:**
+`test_ai_player_orders._setup` places the 30 hulls by hand at `x = −90 + 6·i, z = 95`, a 6 m row. The bus's turning
+envelope needs 10.42 m (arena's figure), so every hull starts inside its neighbours' envelopes. That start is exactly
+the regime item 1 traced: the freeze happened at the spawn row. Squad's pitch governs the arrival slots only. So the
+CP4 re-run measures the world-mask fix against a start that is deliberately worst-case, which is the right test of it,
+and "hulls clip while pivoting out of a 6 m row" is expected there under the world mask (the accepted trade), not a
+regression.
+
+**Decision rule for CP4's re-run, written before it (2026-09-22, with the orchestrator):** the run happens on squad's
+merge hash (arrival slots + seating) with CP3's bus; arena's grid is not a prerequisite. Under the world mask a
+squadmate cannot refuse a yaw, so the hand-placed 6 m row cannot reproduce item 1's freeze. If five_squads still leaves
+units off their slots with the constraint on, I trace it with `YAW_TRACE` first. If the refusals name a squadmate, the
+mask arm is not applied (an arm failure, not a result). If they name the world, it's a new mechanism (write it up).
+If there are no refusals, it's not the constraint at all. Only if the trace shows the row's geometry itself (hulls
+overlapping at placement) does the test's row pitch become the literal to derive from the turning envelope, with a
+REASON. The constraint does not stay off because of a hand-placed literal.
+
 ### Owed after CP3 (taken 2026-09-22)
 
 - `scenario_fire_discipline::test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane` fails on feel's CP3 tree
@@ -431,5 +492,8 @@ around the blocks; compare with `TUNE=match.yaw_fit=1` (round 9's rule), where s
    (`yaw_fit_enabled` and `yaw_fit_world` → true), merged alone, baseline recorded twice.
 2. After CP2 + nav's drive test: the rigs on Terminus under the world mask (nav's instrument), and frames at his pose.
 3. The series: `make remote T="disc-site-series ARENA=pit"`, then `ARENA=yard`; read against the pre-registration.
+   The third site (`squad_incoming`, squad's `a8789bea`, arm-proven by `tests/test_ai_incoming_site.gd`) joins as a
+   fourth treatment arm (`squad=match.hull_disc_squad_incoming=0`) only after squad's pitch + seating merge reaches
+   this branch. Before that the knob would be accepted and never read (round 9's lesson).
 4. Stretch: A2's verdict once metrics' cusp split is read; the duel's hide/peek regression.
 

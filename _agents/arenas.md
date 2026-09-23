@@ -719,6 +719,33 @@ A 0.00 m reading means a collider stands on the lane's centre line. On a map who
 through its cover (yard's run between container walls) that can be the lane line's fault rather than the map's;
 deciding which is a redesign question for a map he has complained about, and he has not.
 
+## The deploy zone cannot move forward (round 10, measured for squad's pitch)
+
+Squad's lateral floor at the turning envelope (`max(width + 2, diagonal + 0.30)`: 10.42 m for the bus) needs about
+210 m of frontage for five 5-bus wedges; the zone is 150 m, so `ArmyLayout.plan` stepped a rank ~11 m AHEAD of the
+zone's front edge (z = 86). Measured from the colliders, the free ground ahead of that edge (worst column across the
+zone), on the working tree over main `69c681ac`:
+
+| map | free ahead of z = 86 | what is in the way |
+|---|---|---|
+| yard | 5.0 m | form-up containers at z = 80 |
+| pit | 5.0 m | form-up containers at z = 80 |
+| terminus | 4.0 m | the z = 62 blocks' base-side faces at z = 82 (between z = 42 and 82 only the avenue and \|x\| > 50 are open) |
+| crossing | 4.0 m | |
+| sumps | 0.0 m | |
+| foundry | 25.5 m | |
+
+Backwards is capped by `DRIVABLE_LIMIT` (116) and the hexagon; sideways the floor is ±81.1 m at z = 102 against the
+zone's ±75, so +12 m of frontage against ~60 m short. **The zone does not move** (the orchestrator's ruling).
+This round `ArmyLayout` deploys at the round-9 width floor (squads packed, their first dressing turn clips: the
+known cost); `tests/test_arena_deploy_zone.gd` asserts a 25-bus army on yard, pit and the Terminus stands inside its
+zone and clear of every collider.
+
+**Round 11 (arena + squad): a checkerboard-staggered deploy at the turning envelope.** Ranks offset half a pitch
+across, as the bare-spawn grid now fills (`Match._spawn_cells`): hulls a full diagonal apart within a rank and
+diagonal neighbours clear between ranks at a rank depth of ~0.87 × diagonal instead of 1 ×, which removes the
+clipping first turn without leaving the zone. The containment test is the gate it must keep green.
+
 ## The Terminus, and the trap that kept the city blocks off every map (round 8)
 
 feel built `block` (40 x 24 x 40, `prop.block`/CityBlock) in round 7 — chamfered corners, bevelled roof edges, neon

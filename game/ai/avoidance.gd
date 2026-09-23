@@ -38,6 +38,11 @@ static var _zs := PackedFloat32Array()
 static var _vxs := PackedFloat32Array()
 static var _vzs := PackedFloat32Array()
 static var _radii := PackedFloat32Array()
+## Round 10 (nav item 4): each hull's half-width, half-length and flat heading, for the oriented radius.
+static var _half_w := PackedFloat32Array()
+static var _half_l := PackedFloat32Array()
+static var _fxs := PackedFloat32Array()
+static var _fzs := PackedFloat32Array()
 static var _still: Array[bool] = []
 static var _grid := {}
 static var _index := {}
@@ -46,6 +51,34 @@ static var _radius_by_unit := {}
 ## Measurement only (make ai-perf): units that ran the solver, and ticks the chosen velocity differed from the wish.
 static var solved := 0
 static var deflected := 0
+
+
+## Round 10 (nav item 4): **the seventh disc site, oriented.** `radius_of` is `(w + l) / 4 + margin`, one number for
+## every direction: 4.58 m for the War Rig (3.32 × 14) against a real half-width of 1.66 m — too wide ABEAM (two rigs
+## side by side in a 16 m street are kept 9.2 m apart centre to centre) and too narrow END-ON (nose to tail they may
+## close to 9.2 m when their boxes need 14). With the arm on, each neighbour pair's combined radius is the two boxes'
+## SUPPORT distances along the line between their centres, `hw·|d·right| + hl·|d·forward|` for each, plus both
+## margins: 3.82 m abeam and 14.5 m end-on for two rigs. Clearance tier: STATIC FOOTPRINT (B5), measured along the
+## line of approach; still a disc per pair, so ORCA's geometry is untouched.
+##
+## OPT-IN (`--nav-off=oriented` turns it ON) until its falsifier says (the defile dispersion and the yard oscillation
+## share must not worsen). Arm counter: `oriented_pairs`.
+static var oriented_pairs := 0
+
+
+static func oriented_on() -> bool:
+	return Movement.switched_off("oriented")
+
+
+## The combined avoidance radius of rows `a` and `b` along the unit direction `d` from a to b.
+static func pair_radius(a: int, b: int, d: Vector2) -> float:
+	return _support(a, d) + _support(b, d) + 2.0 * RADIUS_MARGIN
+
+
+static func _support(i: int, d: Vector2) -> float:
+	var forward := Vector2(_fxs[i], _fzs[i])
+	var right := Vector2(-forward.y, forward.x)
+	return _half_w[i] * absf(d.dot(right)) + _half_l[i] * absf(d.dot(forward))
 
 
 ## A hull's avoidance radius by unit type (cached: the catalog doesn't change mid-match).
@@ -70,6 +103,10 @@ static func refresh(tanks_root: Node) -> void:
 	_vxs = PackedFloat32Array()
 	_vzs = PackedFloat32Array()
 	_radii = PackedFloat32Array()
+	_half_w = PackedFloat32Array()
+	_half_l = PackedFloat32Array()
+	_fxs = PackedFloat32Array()
+	_fzs = PackedFloat32Array()
 	_still.clear()
 	_grid = {}
 	_index = {}
@@ -85,6 +122,12 @@ static func refresh(tanks_root: Node) -> void:
 		_vxs.append(tank.estimated_velocity.x)
 		_vzs.append(tank.estimated_velocity.z)
 		_radii.append(radius_of(tank.unit_id))
+		var box: Array = Movement.hull_box(tank.unit_id)
+		_half_w.append(float(box[0]) * 0.5)
+		_half_l.append(float(box[2]) * 0.5)
+		var heading := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
+		_fxs.append(heading.x)
+		_fzs.append(heading.y)
 		var mover := Movement.of(tank)
 		_still.append(mover == null or not mover.is_under_way())
 		_index[String(tank.name)] = i
@@ -108,6 +151,10 @@ static func load_rows(rows: Array) -> void:
 	_vxs = PackedFloat32Array()
 	_vzs = PackedFloat32Array()
 	_radii = PackedFloat32Array()
+	_half_w = PackedFloat32Array()
+	_half_l = PackedFloat32Array()
+	_fxs = PackedFloat32Array()
+	_fzs = PackedFloat32Array()
 	_still.clear()
 	_grid = {}
 	_index = {}
@@ -119,6 +166,12 @@ static func load_rows(rows: Array) -> void:
 		_vxs.append(float(row[3]))
 		_vzs.append(float(row[4]))
 		_radii.append(float(row[5]))
+		# Optional oriented extents: [..., half_width, half_length, heading_x, heading_z]; a disc otherwise.
+		var disc := maxf(float(row[5]) - RADIUS_MARGIN, 0.0)
+		_half_w.append(float(row[7]) if row.size() > 10 else disc)
+		_half_l.append(float(row[8]) if row.size() > 10 else disc)
+		_fxs.append(float(row[9]) if row.size() > 10 else 0.0)
+		_fzs.append(float(row[10]) if row.size() > 10 else -1.0)
 		_still.append(bool(row[6]))
 		_index[String(row[0])] = i
 		var cell := Vector2i(floori(float(row[1]) / CELL), floori(float(row[2]) / CELL))
@@ -164,6 +217,8 @@ static func solve(me: String, position: Vector2, velocity: Vector2, preferred: V
 	if near.is_empty():
 		return preferred
 	solved += 1
+	var oriented := oriented_on()
+	var mine: Variant = _index.get(me)
 	var inv_horizon := 1.0 / TIME_HORIZON
 	var points: Array[Vector2] = []
 	var directions: Array[Vector2] = []
@@ -174,6 +229,9 @@ static func solve(me: String, position: Vector2, velocity: Vector2, preferred: V
 		var relative_velocity := velocity - other_velocity
 		var distance_sq := relative_position.length_squared()
 		var combined := radius + _radii[i]
+		if oriented and mine != null and distance_sq > 0.0001:
+			combined = pair_radius(int(mine), i, relative_position / sqrt(distance_sq))
+			oriented_pairs += 1
 		var combined_sq := combined * combined
 		var direction: Vector2
 		var u: Vector2

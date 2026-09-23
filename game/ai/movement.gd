@@ -181,7 +181,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband", "inflate",
-		"minpace", "nosestop", "notready", "press", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
+		"minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "wheelhold", "yield"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -259,7 +259,7 @@ static var route_not_ready := 0
 
 static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
-			"nose_stops": nose_stops,
+			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
 			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused}
@@ -270,6 +270,8 @@ static func reset_route_arms() -> void:
 	corners_kept = 0
 	press_escapes = 0
 	nose_stops = 0
+	driver_ticks = {}
+	Avoidance.oriented_pairs = 0
 	route_not_ready = 0
 	clearance_chords = 0
 	clearance_refused = 0
@@ -389,12 +391,19 @@ func note_decision(cmd: TankCommand, order: Dictionary) -> void:
 		driver = "unstick"
 	elif driver == "move_to":
 		driver = "direct" if bool(order.get("direct", false)) else "route"
+	driver_ticks[driver] = int(driver_ticks.get(driver, 0)) + ctl._step
 	var path := PackedVector3Array()
 	if driver == "route" and _path_index < _path.size():
 		path = _path.slice(maxi(_path_index - 1, 0))
 	contact.decided = {"driver": driver, "throttle": cmd.throttle, "turn": cmd.turn,
 			"deflected": _deflected and (driver == "route" or driver == "direct"),
 			"steer_to": steer_to if steer_to != Vector3.INF else null, "path": path}
+
+
+## Round 10 item 6 (the seam, measured first): unit-ticks by the layer that produced the motion — `route` (Movement's
+## navmesh drive), `direct` (CombatMotion's short hops), `yield`, `unstick`, `face`, `drive`, `stop` — every controller
+## tick, strided ticks counted by their stride. Measurement only.
+static var driver_ticks := {}
 
 
 ## Read the hull's last slide (the controller calls this every physics tick, before its stride skip).
