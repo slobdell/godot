@@ -5,6 +5,48 @@
 > `NavigationServer3D` runs A* over the navigation polygons baked from the arena's collision at startup
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
+## Round 10: what a wall contact IS, and the Terminus drive test
+
+The lead: *"Units are still driving into walls"* and *"I'll know that the units are doing what I want when I can
+navigate them through the Terminus streets."* Round 10 turned the first sentence into a counter and the second into
+a make target. The numbers and their commits are in the brief's Status (`streams/nav.md`); this is the mechanism.
+
+**`WallContact` (`game/ai/wall_contact.gd`).** Every controller tick, before the stride skip, `Movement.observe_contact()`
+reads the hull's LAST slide (`get_slide_collision_count()` through the unit; skipped when the plant parked the hull,
+because a parked hull does not slide and its list is stale). A contact is a non-`Tank` collider with a horizontal
+normal (hull-hull contacts are counted apart). Each contact tick gets ONE cause, first match wins:
+
+| cause | test | owner |
+|---|---|---|
+| `bake` | the contact point is within `bake_radius − 1.0` of the navmesh: the thing touched is not in the bake | arena |
+| `route` | the route polyline passes within half-width + 0.25 m of the contact | nav (routing) |
+| `avoid` | ORCA moved the steering point and the point lies into the wall | nav (avoidance) |
+| `steer` | the commanded motion (throttle's sign along the heading) points into the wall | nav (steering) or the `drive` order's issuer |
+| `plant` | none of these: the hull touched while not driven into it; split `sweep` (the commanded yaw swings the contact point in — combat's constraint row) / `drift` | combat |
+
+It is judged against `Movement.note_decision()` — the command the controller issued on the tick whose motion
+produced the slide — and records the `driver` layer (`route`, `direct` = CombatMotion's hops, `yield`, `unstick`,
+`face`, `drive`), the collider and the Terminus lane. Published in `Movement.state()` (`wall_contact*` keys), summed
+in `NAV_FIGHT` (`wall_contacts`, with per-cause top colliders). Classification is by collider identity, never by the
+drawn frame (arena: the War Rig's trailer art folds outside its rigid collider).
+
+**`make nav-terminus-drive`** (`tests/nav/terminus_drive.gd`): one player squad ordered through `Orders` exactly as a
+right-click does, spawn → ring road → west street → plaza → far ring road, a mixed Condemned squad and a War Rig squad
+in separate processes; 90 s legs; arrival = order complete within 7 m of the crew's slot. Deterministic. Each miss
+prints the crew's CONTROLLER move order, its Orders verb, reachability and the goal's off-mesh gap (that is how the
+ungrounded right-click goals were found: contract R2b).
+
+**Item 3's rows** (each `--nav-off=<name>`, and OPT-IN — the switch turns them ON — until their own A/B clears):
+`press` (a hull in wall contact, asked to move, that nets < 0.75 m in 0.5 s backs 1.5 m off the wall in the gear and
+yaw that free the touching end), `inflate` (route corners pushed outward along the bisector by the clearance the turn
+needs — half-width on a straight to the half-diagonal on a U-turn — capped at half the free ground), `nosestop` (a hull
+whose nose meets a wall at the end of its route stops there, latched until the goal moves). Default ON:
+`notready` (a route asked on an unsynced map is retried next tick; `--nav-off=notready` restores the old wait; the
+one cause of round 10's first baseline move). Items 4–5: `oriented` (ORCA's pair radius from the two boxes' support
+distances), `wheelhold` (B7: a turreted wheeled hull keeps its heading under a `face`, the turret covers).
+`make nav-sim-arms` reads the sim-baseline match's hash per arm; `make nav-defile-ab` runs squad's defile probe in
+both arms over paired seeds with the arm counters printed (`tests/nav/defile_arm_probe.gd`).
+
 ## Round 9: the desired-velocity layer, and what replaces what
 ### When a number is in someone else's document, it stops being yours to reason about (squad's refinement)
 
@@ -659,6 +701,10 @@ have it. Add the name to `OFF_NAMES` in the commit that adds the switch.
 | `standoff` / `commit` | round 7's standoff style / CombatMotion commitment | fixed-gun behaviour; re-aim churn (read live from `NAV_FIGHT_ARM`) |
 | `holdband` | **turns ON** round 8's standoff-hold hysteresis (HOLD_SLACK_M, hit-only break; off by default: its A/B missed) | whether hold ↔ move flips are the wheeled "yaw in place" |
 | `r5sidestep` | **turns ON** round 5's single-friend sidestep | the one thing X3 REMOVED; it alone restored squad's near-ambush timing (555 → 531 ticks) |
+| `notready` | round 10's retry of a route asked on an unsynced map (back to waiting REPATH_SECONDS) | the baseline's one round-10 cause |
+| `press`, `inflate`, `nosestop` | **turn ON** round 10's wall-contact rows (see *Round 10* above) | wall contacts vs arrival on `nav-terminus-drive` |
+| `oriented` | **turns ON** the oriented ORCA pair radius | defile dispersion, yard oscillation (`nav-defile-ab`) |
+| `wheelhold` | **turns ON** B7's held wheeled hull | shuffle and covering error (`nav-facing VERB=hold`) |
 
 **Two traps, both hit this round — read before trusting an A/B:**
 1. **A switch that silently does nothing gives you "no difference" for free.** The first `carrot` switch returned the
