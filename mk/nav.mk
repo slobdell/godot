@@ -190,6 +190,6 @@ nav-a6-ab: import ## nav: an opt-in row through A12 -- nav-fight x A12_MAPS x {d
 				--trajectory=$(CURDIR)/$(BUILD_DIR)/nav-a6/$$map-$$arm.jsonl $$flags \
 				> $(BUILD_DIR)/nav-a6/$$map-$$arm.log 2>&1; echo ">> nav-a6-ab: $$map $$arm done"' _ {}
 	@for arm in off on; do echo ">> nav-a6-ab: A12 pooled, arm $$arm (on = $(A12_ARM) ON)"; \
-		$(PYTHON) tools/metrics/run_metrics.py "$(BUILD_DIR)/nav-a6/*-$$arm.jsonl" --pool --order-verb attack_move --team 0 \
+		$(PYTHON) tools/metrics/run_metrics.py "$(BUILD_DIR)/nav-a6/*-$$arm.jsonl" $(if $(word 2,$(A12_MAPS)),--pool) --order-verb attack_move --team 0 \
 			--json $(BUILD_DIR)/nav-a6/metrics-$$arm.json | tail -25; done
 	@for f in $(BUILD_DIR)/nav-a6/*.log; do echo "$$(basename $$f .log) $$(grep -E '^NAV_FIGHT_ARM' $$f | head -1 | cut -c1-200)"; done

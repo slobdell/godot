@@ -260,7 +260,7 @@ static var route_not_ready := 0
 static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
-			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps,
+			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
 			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused}
@@ -274,6 +274,7 @@ static func reset_route_arms() -> void:
 	driver_ticks = {}
 	yield_spots_refused = 0
 	leash_clamps = 0
+	leash_orders = 0
 	Avoidance.oriented_pairs = 0
 	route_not_ready = 0
 	clearance_chords = 0
@@ -779,8 +780,10 @@ func idle() -> void:
 func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	var tank := ctl.tank
 	var goal := Vector3(order["x"], 0.0, order["z"])
-	if order.has("leash") and leash_on():
-		goal = within_leash(goal, order["leash"])
+	if order.has("leash"):
+		leash_orders += ctl._step  # the denominator: ticks a leash reached the mover, arm on or off
+		if leash_on():
+			goal = within_leash(goal, order["leash"])
 	if _goal == Vector3.INF or _flat_distance(goal, _goal) > NEW_GOAL_JUMP:
 		_order_ticks = 0  # a new destination, not a slot sliding along (brains re-issue their move every think)
 	_goal = goal
@@ -923,6 +926,9 @@ func _nose_stop(cmd: TankCommand, goal: Vector3, direct: bool) -> bool:
 ## Status); until it does, the arm has nothing to act on and `leash_clamps` says so.
 ## OPT-IN (`--nav-off=leash` turns it ON). Arm counter: `leash_clamps`.
 static var leash_clamps := 0
+## The denominator (lesson 147): unit-ticks on which a move_to carrying a leash reached `drive`. Zero means the leash
+## never arrived, which is not "every goal was inside its circle".
+static var leash_orders := 0
 
 
 static func leash_on() -> bool:
