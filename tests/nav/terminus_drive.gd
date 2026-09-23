@@ -97,7 +97,8 @@ func _run() -> void:
 		await physics_frame
 	WallContact.reset()
 	Movement.reset_route_arms()
-	print("NAV_DRIVE_ARM off=%s" % [Movement._off])
+	print("NAV_DRIVE_ARM press=%s inflate=%s nosestop=%s oriented=%s off=%s" % [Movement.press_on(), Movement.inflate_on(),
+			Movement.nose_stop_on(), Avoidance.oriented_on(), Movement._off])
 	print("NAV_DRIVE_CONTROL arena %s squad %s units %d (%s)" % [Arena.active.get("name", "?"), squad_kind, units.size(),
 			", ".join(units.map(func(t: Tank) -> String: return t.unit_id))])
 	_next_leg()
@@ -151,6 +152,9 @@ func _close_leg(elapsed: float) -> void:
 					"blocked_by": String(reading.get("blocked_by", "")), "reachable": bool(reading.get("reachable", true)),
 					"goal_off_mesh_m": snappedf(float(reading.get("goal_gap_m", 0.0)), 0.1),
 					"goal": [snappedf(leg_goal[key].x, 0.1), snappedf(leg_goal[key].z, 0.1)] if leg_goal.has(key) else null,
+					# What the crew was ACTUALLY driving to (the controller's move order, which Movement's goal_gap_m
+					# measures), beside Orders' published goal above and the verb Orders holds for it (squad's ask).
+					"move_order": _move_order_of(tank), "orders_verb": String((orders.call("current", key) as Dictionary).get("verb", "")),
 					"at": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)]})
 	var contacts := {}
 	for cause: String in WallContact.by_cause:
@@ -180,6 +184,14 @@ func _report() -> void:
 			"episodes": episodes.slice(0, 40), "pass": arrived_all and mixed_ok and int(report["observed_unit_ticks"]) > 0}
 	print("NAV_DRIVE %s" % JSON.stringify(out))
 	quit(0)
+
+
+func _move_order_of(tank: Tank) -> Variant:
+	var brain := game_match.brains.get_node_or_null(NodePath("Brain_" + String(tank.name))) as OrderController
+	if brain == null:
+		return null
+	var order: Dictionary = brain.move_order
+	return {"type": order.get("type"), "x": snappedf(float(order.get("x", 0.0)), 0.1), "z": snappedf(float(order.get("z", 0.0)), 0.1)}
 
 
 func _flat(a: Vector3, b: Vector3) -> float:

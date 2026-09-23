@@ -44,9 +44,12 @@ def img(path):
     return "<img alt='%s' src='data:image/png;base64,%s'>" % (html.escape(path.name), data)
 
 
+DRY = {"terminus_canal": "terminus"}
+
+
 def numbers(name):
     rows = []
-    for variant in (name, name + "_dry"):
+    for variant in (name, DRY.get(name, name + "_dry")):
         layout = json.load(open(HERE.parent / "arenas" / (variant + ".json")))
         report = arena_report.analyze(layout)
         measured = terrain_measure.measure(layout)
@@ -57,7 +60,7 @@ def numbers(name):
     out = ["<table><tr><th>arm</th><th>centre sees (report)</th><th>centre, ring of eyes</th><th>decision spread</th>"
            "<th>contested objective: green's route</th><th>rust's route</th></tr>"]
     for variant, c, ring, spread, g, r in rows:
-        klass = "dry" if variant.endswith("_dry") else "wet"
+        klass = "wet" if variant == rows[0][0] else "dry"
         out.append("<tr class='%s'><td>%s</td><td>%.2f</td><td>%.2f</td><td>%.2f</td><td>%s m</td><td>%s m</td></tr>"
                    % (klass, variant, c, ring, spread, g, r))
     out.append("</table>")
@@ -103,12 +106,13 @@ def main():
         parts.append("<h2>%s</h2><p class='note'>%s</p>" % (html.escape(layout.get("title", name)), html.escape(layout.get("note", ""))))
         parts.append(numbers(name))
         parts.append(series(name, args.series))
+        dry = DRY.get(name, name + "_dry")
         spots = sorted({p.name[len(name) + 1:-4] for p in shots.glob(name + "-*.png")
-                        if not p.name.startswith(name + "_dry")})
+                        if not p.name.startswith(name + "_")})
         for spot in spots:
-            parts.append("<div class='pair'><figure>%s<figcaption>%s: %s</figcaption></figure><figure>%s<figcaption>%s_dry: %s (no water)</figcaption></figure></div>"
+            parts.append("<div class='pair'><figure>%s<figcaption>%s: %s</figcaption></figure><figure>%s<figcaption>%s: %s (before)</figcaption></figure></div>"
                          % (img(shots / ("%s-%s.png" % (name, spot))), name, spot,
-                            img(shots / ("%s_dry-%s.png" % (name, spot))), name, spot))
+                            img(shots / ("%s-%s.png" % (dry, spot))), dry, spot))
     parts.append("</main></body></html>")
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     pathlib.Path(args.out).write_text("".join(parts))

@@ -33,7 +33,7 @@ uniform int wet_count = 0;
 uniform vec4 wet[16];
 // Palette: the venue's night. Concrete walls, a deep teal-black water, and the two neons it reflects.
 uniform vec3 wall_color : source_color = vec3(0.13, 0.135, 0.15);
-uniform vec3 water_deep : source_color = vec3(0.01, 0.045, 0.065);
+uniform vec3 water_deep : source_color = vec3(0.004, 0.012, 0.018);
 uniform vec3 neon_a : source_color = vec3(0.0, 0.95, 1.0);
 uniform vec3 neon_b : source_color = vec3(0.85, 0.0, 1.0);
 uniform vec3 pit_glow : source_color = vec3(1.0, 0.12, 0.02);
@@ -121,8 +121,10 @@ vec3 wall_shade(float below, vec2 along) {
 	float band = smoothstep(0.04, 0.0, abs(below - 0.18));
 	c += (is_pit ? vec3(1.0, 0.75, 0.05) : neon_a) * band * 0.9;
 	if (is_pit) {
-		// The glow from the bottom climbs the walls.
+		// The glow from the bottom climbs the walls, and the upper wall catches the kerb's amber: lit rim walls that
+		// fall to black give the drop its height.
 		c += pit_glow * 0.35 * exp(-(depth - below) * 0.6);
+		c += vec3(1.0, 0.7, 0.1) * 0.12 * exp(-below * 0.8);
 	}
 	return c;
 }
@@ -155,27 +157,29 @@ void fragment() {
 				vec2 g = abs(fract(hit.xz * 0.5) - 0.5);
 				float grid = step(0.46, max(g.x, g.y));
 				float ember = noise(hit.xz * 0.35 + vec2(TIME * 0.05, 0.0));
-				color = vec3(0.012) + pit_glow * (0.18 + 0.25 * ember) + vec3(0.05, 0.03, 0.0) * grid;
+				// Depth cue (feel's review): the glow pools at the WALLS' feet and the middle of the pan falls away to
+				// black, so the floor reads as far down rather than as a flat red sheet.
+				vec2 to_edge = min(hit.xz - box.xy, box.zw - hit.xz);
+				float edge = smoothstep(9.0, 0.0, min(to_edge.x, to_edge.y));
+				color = vec3(0.006) + pit_glow * (0.05 + 0.3 * edge) * (0.7 + 0.5 * ember) + vec3(0.05, 0.03, 0.0) * grid * edge;
 			} else {
-				// Ripples: two octaves of noise drifting at `flow`, perturbing the reflection direction.
-				vec2 q = hit.xz * 0.23 + vec2(TIME * flow, TIME * flow * 0.6);
-				vec2 ripple = vec2(noise(q) - 0.5, noise(q * 2.3 + 17.0) - 0.5);
-				vec3 r = normalize(vec3(dir.x + ripple.x * 0.12, -dir.y, dir.z + ripple.y * 0.12));
-				// Fresnel: a grazing look reflects more (Schlick with water's F0 = 0.02).
-				// Plus an art-directed floor: from the lead's 21-degree camera Schlick alone gives ~0.1 and the water
-				// reads as a black hole (the first frames, round 10), not as a surface.
-				float fresnel = 0.14 + 0.86 * pow(1.0 - clamp(r.y, 0.0, 1.0), 5.0);
-				// What the water reflects: the venue's neon at the horizon, cyan on one axis and purple on the
-				// other (the perimeter bars and the towers), a smoggy dark sky above. Streaked along the view.
+				// OILY BLACK WATER (feel's review, round 10: the first look "reads as a starfield/nebula"). A long,
+				// low-frequency swell drifting at `flow` bends the reflection; no sparkle, no contour lines.
+				vec2 q = hit.xz * 0.06 + vec2(TIME * flow * 0.25, TIME * flow * 0.15);
+				vec2 swell = vec2(noise(q) - 0.5, noise(q + 17.0) - 0.5);
+				vec3 r = normalize(vec3(dir.x + swell.x * 0.08, -dir.y, dir.z + swell.y * 0.08));
+				// Schlick with water's F0 = 0.02, plus a small art-directed floor so the surface reads at 21 degrees.
+				float fresnel = 0.06 + 0.94 * pow(1.0 - clamp(r.y, 0.0, 1.0), 5.0);
+				// What it reflects: a smoggy near-black sky, the venue's neon only as a faint band at the horizon.
+				float horizon = exp(-max(r.y, 0.0) * 6.0);
 				float azimuth = atan(r.x, r.z);
-				float horizon = exp(-max(r.y, 0.0) * 3.5);
-				float bars = 0.5 + 0.5 * sin(azimuth * 6.0 + ripple.x * 3.0);
-				vec3 sky = mix(vec3(0.03, 0.02, 0.06), mix(neon_b, neon_a, bars) * 1.4, horizon);
-				// Glints: sparse bright specks where a ripple faces the camera.
-				float glint = smoothstep(0.93, 0.99, noise(q * 6.0)) * 0.6;
-				// Slow bright ripple lines: the surface MOVES, which is what reads as water at a glance.
-				float lines = smoothstep(0.47, 0.5, abs(fract(noise(q * 0.8) * 4.0) - 0.5)) * 0.08;
-				color = mix(water_deep, sky, clamp(fresnel * reflection, 0.0, 1.0)) + neon_a * (glint + lines) * fresnel;
+				vec3 sky = mix(vec3(0.012, 0.01, 0.02), mix(neon_b, neon_a, 0.5 + 0.5 * sin(azimuth * 2.0)) * 0.35, horizon);
+				// A lamp's specular STREAK: the venue lights sit high over the far stands, so their reflection is a
+				// highlight elongated toward the viewer and broken up by the swell -- the cue that says "wet".
+				vec3 lamp = normalize(vec3(0.15, 0.32, -1.0));
+				float along = max(dot(r, lamp), 0.0);
+				float streak = pow(along, 90.0) * (0.6 + 0.8 * noise(hit.xz * vec2(0.9, 0.15) + TIME * flow));
+				color = mix(water_deep, sky, clamp(fresnel * reflection, 0.0, 1.0)) + vec3(1.0, 0.85, 0.6) * streak * 1.2;
 				// Shade the water a little under a bridge: its shadow reads the deck as ABOVE the water.
 				if (under_deck(hit.xz)) {
 					color *= 0.35;
