@@ -218,7 +218,11 @@ func apply_unit() -> void:
 	if GameTheme.slots.has("unit.%s.turret" % unit_id):
 		_turret_visual.fill("unit.%s.turret" % unit_id)
 	_apply_hull_size(Units.stat(unit_id, "hull_size"), own_hull)
-	_apply_turret_mount(Units.PROFILES.get(unit_id, {"muzzle_height": muzzle_height}))
+	# The profile's mount, with the muzzle height as this tank READ it (tunable through `Units.stat`): the raw profile's
+	# number would put the pivot rounds leave from somewhere other than `muzzle_height` says (CP3 review, combat).
+	var mount_profile: Dictionary = (Units.PROFILES.get(unit_id, {}) as Dictionary).duplicate()
+	mount_profile["muzzle_height"] = muzzle_height
+	_apply_turret_mount(mount_profile)
 	health = max_health
 	shield = max_shield
 	set_weapon(String(Units.stat(unit_id, "weapon")))

@@ -192,9 +192,83 @@ the mixed squad, every unit arriving). What remains is mostly a hull at the END 
 against a kerb, its slot 8–14 m away (probably off the mesh: the miss report now prints `reachable` and the slot's
 off-mesh gap, for squad) — item 3c, the nose stop, is that row.
 
+**MERGE HERE: `f386c63e`** — builder0 check (REMOTE_SLOTS=5): 1634 passed / 0 failed, ai-scenarios 44,0 unchanged,
+**sim-baseline MOVED `1ea332e7bc268d2a` → `7574ac017c17265b`, the ONE pre-registered cause: the not-ready route retry**
+(`--nav-off=notready` reads the recorded hash back exactly). Merge alone and adopt the baseline (`make
+sim-baseline-adopt`). Arms opt-in in that hash; the per-arm `tactics_elements` bisect (arm alone ON): press 8/0,
+nosestop 8/0, **inflate 7/1** (the element's drive north) — inflation stays opt-in until that is understood.
+
 **The arms are OPT-IN (inverted switches, like `a7`) until their own A/B clears**, because default-on at `c91d8039`
 they reddened two `test_tactics_elements` tests (bisected: corner inflation delays the element's drive north; the
 dragged-heading hold is under bisection) and moved the sim baseline. **The sim baseline's one pre-registered cause is
 the not-ready route retry** (combat's relay): hash with arms off = `7574ac017c17265b` (builder0), vs recorded
 `1ea332e7bc268d2a`; per-arm hashes: `--nav-off=press` → `630c4d0f0227bdc7`, `inflate` → `53ae702d4f43e232`
 (each arm moves it on its own too; `make nav-sim-arms`).
+
+### On main's current map and roster (CP2 + CP3 bus + turret mounts), tree `0e53c0c2` code (= main `709cbeb9` + opt-in rows)
+
+builder0, seed 1, same course; arms proven by their counters (zero in the default row).
+
+| arms | mixed contacts (of observed) | mixed arrived | rigs contacts | rigs arrived |
+|---|---|---|---|---|
+| default path (retry only) | 5959 / 34317 | 5, 4, 6, 4 | 8139 / 23349 | 2, 2, 1, 3 |
+| press + nosestop | 599 / 26252 (−90 %) | 5, 4, 4, 2 | 8079 / 24550 | 0, 1, 2, 0 |
+| press + nosestop + inflate | 424 / 29150 (−93 %) | 5, 4, 5, 3 | 2428 / 19128 (−70 %) | 0, 3, 1, 2 |
+
+**Arrival is confounded by off-mesh goals:** most misses in every arm are crews whose controller's goal is 4–10 m off
+the navmesh (`reachable=false`, the miss report's `goal_off_mesh_m`). squad grounds slots through
+`SlotGround.standable` (to the mesh EDGE, bake-radius clear only) and is adding the hull's clearance; the re-read of
+the miss list against each crew's actual move order and Orders verb (squad's two questions) is queued. Until then
+the arrival columns are not a nav finding and press/nosestop stay opt-in.
+
+**Inflation and the element's drive north:** on main's re-specified test (a speed bar, 21.6 m) the leader makes
+9.3 m with inflation ON and 9.2 m with it OFF (builder0 traces, same tree): the test is red on this tree either way
+(main's check lists it among CP3's REASON'd reds). The old 7/1 against inflation was on the pre-CP3 literal.
+
+### Item 5, the held wheeled hull (B7), `--nav-off=wheelhold` (opt-in)
+
+A turreted wheeled hull under a `face` keeps its heading and its turret takes the spot; a hull-fixed wheeled hull
+(the three scouts) turns only until the facing is inside its fire arc. `make nav-facing VERB=hold`, yard, builder0,
+tree `f056f342` code, 30 units, one seed:
+
+| arm | shuffle after arrival median / worst | covering error within 10° at +5 s | hull error median +10 s | face_giveups |
+|---|---|---|---|---|
+| off | 2.02 m / 8.38 m | 5 of 25 | 2.2° | 0 |
+| ON (18631 holds, 11136 arc stops) | 0.07 m / 4.45 m | 14 of 24 | 7.6° | 0 |
+
+The shuffle is gone and coverage nearly triples. Not yet default: the falsifier's "time-on-station and shots not
+reduced" needs a fight (`nav-fight-ab AB_OFF=wheelhold`), and the worst covering error (138°) is a turret engaged or
+held elsewhere, unread.
+
+### Item 4, the oriented pair radius, `--nav-off=oriented` (opt-in) — FALSIFIED as a default
+
+Built and unit-tested (two rigs: 3.82 m abeam, 14.5 m end-on, against the disc's 9.16 m both ways). Falsifier, `make
+nav-defile-ab` (squad's defile probe through `tests/nav/defile_arm_probe.gd`, builder0, tree `31e9d83c` code, arm
+proven: `oriented_pairs` 6483 tracked / 7206 wheeled vs 0): **tracked arrivals 4 → 2 of 5, inversions 22 → 37**
+(dispersion 14.0 → 3.93 s over the fewer arrivals); wheeled 0 of 5 arrive in BOTH arms (the scenario fails on this tree
+either way). Worse on the pre-registered bar, so it stays opt-in. The probe ignores `--seed` (8 seeds byte-identical):
+n = 1 per locomotion, stated.
+
+### Item 6, the seam — measured first
+
+`make nav-fight ARENA=terminus` (seed 3, 120 s, both armies, builder0, tree `31e9d83c`), unit-ticks by the layer that
+produced the motion (`Movement.driver_ticks`): **route 131379 (47.6 %), direct = CombatMotion's hops 47374 (17.2 %)**,
+face 42813 (15.5 %), yield 30939 (11.2 %), stop 23298 (8.4 %), unstick 56. On Terminus CombatMotion decides about a
+sixth of fight ticks, not "under a tenth". **`Movement` has no leash or corridor input on ANY tick** — structural: the
+leash exists only inside `CombatMotion.choose`. Fight wall contacts 16725 of 233122 observed: by driver route 10712,
+yield 3079, direct 2128, face 739. **Finding: 10 % of yielding ticks touch a wall** — `_free_spot` checks the navmesh
+and other hulls, not the hull's clearance from walls.
+
+### The check on the merged tree
+
+**`d2bd7ac3`** (items 4+5 opt-in, main `f29c5b7c` merged), builder0, REMOTE_SLOTS=5: 1652 passed / 2 failed,
+sim-baseline PASSES `11c479c3bec77082`, ai-scenarios 40,4 vs the recorded 44,0. Every red is main's CP3 set with its
+REASON (units: parked-friend lane, tactics_elements drive-north; scenarios: formation-slot, base-of-fire,
+parked-friend, perf under load; main's own record reads 39,5). No red is nav's.
+
+### The yield-spot clearance row, `--nav-off=yieldclear` (opt-in) — PRE-REGISTERED before its A/B
+
+A yield spot must be on the mesh with the hull's turning-envelope shortfall clear in eight directions. Falsifier on
+`make nav-fight ARENA=terminus` (seed 3, 120 s, builder0, both arms on one tree, arm proven by `yield_spots_refused`
+> 0): **wall-contact ticks with driver `yield` fall by ≥ 50 %**, the `progressing` share does not drop by more than
+0.02, and `blocked_friend` does not rise by more than 0.01. Any of the three missed = it stays opt-in.

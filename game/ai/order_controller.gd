@@ -408,6 +408,8 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			movement.drive(cmd, move_order, delta)
 		"face":
 			var spot := Vector3(move_order["x"], 0.0, move_order["z"])
+			if _wheel_hold(cmd, spot):
+				return
 			var turn_only := Steering.drive_toward(tank.global_position, -tank.global_basis.z, spot, 0.0)
 			cmd.turn = turn_only.y if absf(turn_only.y) > 0.08 else 0.0
 			if movement.wheel_radius() > 0.0 and cmd.turn != 0.0 and absf(turn_only.y) >= 1.0:
@@ -432,6 +434,44 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 				cmd.turn = move_order["turn"]
 			else:
 				move_order = {"type": "stop"}
+
+
+## Round 10 (nav item 5, narrowed by research row B7): **a held wheeled hull does not shuffle to a facing.** A car
+## cannot neutral-steer, so a `face` order made every wheeled hull creep round in short forward/reverse legs — the
+## round-8 "yaw in place" the lead saw, and round 9's residuals (ifv 41.4 / 28.5 degrees after a hold). B7: a TURRETED
+## wheeled hull keeps the heading it arrived on and its TURRET takes the facing (the aim point is the face spot unless
+## the gunnery half is engaged); only a HULL-FIXED wheeled hull (the three scouts, fire arcs 16-20 degrees) turns, and
+## only until the facing is inside its fire arc — a bounded multi-point turn, never a 2-degree polish.
+##
+## OPT-IN (`--nav-off=wheelhold` turns it ON), falsifier in Status (`make nav-facing VERB=hold`). Arm counter:
+## `wheel_holds` (ticks a turreted hull held its heading under a face; `wheel_arc_stops` for the fixed ones).
+static var wheel_holds := 0
+static var wheel_arc_stops := 0
+
+
+static func wheel_hold_on() -> bool:
+	return Movement.switched_off("wheelhold")
+
+
+func _wheel_hold(cmd: TankCommand, spot: Vector3) -> bool:
+	if not wheel_hold_on() or movement.wheel_radius() <= 0.0:
+		return false
+	if tank.mount != "fixed":
+		cmd.throttle = 0.0
+		cmd.turn = 0.0
+		cmd.aim_point = spot
+		wheel_holds += 1
+		return true
+	var to := Vector3(spot.x - tank.global_position.x, 0.0, spot.z - tank.global_position.z)
+	if to.length_squared() < 0.01:
+		return false
+	var error := rad_to_deg(absf((-tank.global_basis.z).signed_angle_to(to, Vector3.UP)))
+	if error <= float(Units.stat(tank.unit_id, "fire_arc_deg", 0.0)) * 0.5:
+		cmd.throttle = 0.0
+		cmd.turn = 0.0
+		wheel_arc_stops += 1
+		return true
+	return false
 
 
 ## The object that answers contract L2 for this match, resolved once.

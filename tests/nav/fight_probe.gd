@@ -170,10 +170,11 @@ func _run() -> void:
 	# A6 was missing from this line in the SAME commit that added A6 -- the identical defect fixed for a4 hours
 	# earlier, in the file whose comment already says why. A switched row and its arm field are one change, not two.
 	print(("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s a1=%s a4=%s a6=%s a7=%s a11=%s avoidance=%s "
-			+ "station=%s off=%s") % [
+			+ "station=%s press=%s inflate=%s nosestop=%s oriented=%s off=%s") % [
 			CombatMotion.commit_on(), CombatMotion.hold_band_on(), CombatMotion.fixed_style, Movement.a1_on(),
 			Movement.a4_on(), CombatMotion.a6_on(), CombatMotion.a7_on(), CombatMotion.a11_on(),
-			Movement.avoidance_on, Movement.station_on, Movement._off])
+			Movement.avoidance_on, Movement.station_on, Movement.press_on(), Movement.inflate_on(),
+			Movement.nose_stop_on(), Avoidance.oriented_on(), Movement._off])
 	# Round 9: the arm counters start at zero for THIS run, so a number in the report is this run's (statics outlive a
 	# single probe inside one process).
 	CombatMotion.reset_arms()

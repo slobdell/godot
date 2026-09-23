@@ -151,3 +151,20 @@ nav-sim-arms: import ## nav: the sim-baseline match's state hash under each --na
 			$(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 		echo "NAV_SIM_ARM off=$$arm hash=$$hash"; done
 	@echo "NAV_SIM_ARM recorded: $$(grep "glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)" tests/baselines/sim_state_hash.txt)"
+
+# Round 10 item 4's falsifier (and any nav arm's): squad's defile probe (tests/tactics/defile_probe.gd, read-only here)
+# over PAIRED seeds, both arms on the same seeds: "off" = the default path, "on" = --nav-off=$(AB_ARM) (an opt-in row
+# turns ON by its name). Prints one DEFILE_PROBE line per (arm, locomotion, seed) -> build/nav-defile/*.log.
+DEFILE_SEEDS ?= 1 2 3 4 5 6 7 8
+AB_ARM ?= oriented
+
+.PHONY: nav-defile-ab
+nav-defile-ab: import ## nav: squad's defile probe over DEFILE_SEEDS x ARM=wheeled,tracked x {default, --nav-off=$(AB_ARM)} (paired seeds) -> build/nav-defile/, DEFILE_PROBE lines
+	@rm -rf $(BUILD_DIR)/nav-defile && mkdir -p $(BUILD_DIR)/nav-defile
+	@for seed in $(DEFILE_SEEDS); do for loco in wheeled tracked; do for arm in off on; do echo "$$seed:$$loco:$$arm"; done; done; done | \
+		xargs -P $(NAV_JOBS) -I{} sh -c 'set -- $$(echo {} | tr ":" " "); flags=""; [ "$$3" = on ] && flags="--nav-off=$(AB_ARM)"; \
+			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/defile_arm_probe.gd -- \
+				--arm=$$2 --deform=on --seed=$$1 --seconds=$(or $(DEFILE_SECONDS),40) --formation=wedge --tube=off $$flags \
+				> $(BUILD_DIR)/nav-defile/$$3-$$2-s$$1.log 2>&1'
+	@for f in $(BUILD_DIR)/nav-defile/*.log; do echo "$$(basename $$f .log) $$(grep -E '^DEFILE_ARM' $$f | head -1)"; done
+	@! grep -l "SCRIPT ERROR" $(BUILD_DIR)/nav-defile/*.log || { echo ">> nav-defile-ab: a run errored"; exit 1; }

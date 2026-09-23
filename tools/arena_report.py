@@ -457,9 +457,15 @@ def _clearance(boxes, poly, x, z):
 def lane_table(layout, boxes, bar=None, step=1.0, reach=60.0):
     """Per declared lane: the narrowest physical width across it (every collider counts, low ones too: `boxes_of`
     keeps barricades) and where; per lane bend and lane crossing: the rig's r_eff against the clear disc. The same
-    numbers as `ArenaLanes.describe`. Terrain (water, pits) is NOT modelled here; the GDScript measures it."""
+    numbers as `ArenaLanes.describe`, terrain included (rims, rails, carved ground; corner clearance to water is
+    the one thing still GDScript-only)."""
     bar = bar or lane_bar()
     poly = perimeter_polygon(layout)
+    # Terrain (round 10): rims and bridge rails are walls, carved ground ends a width ray -- the same colliders
+    # `ArenaLanes` reads, through terrain's own Python mirror (tools/arena_terrain.py).
+    terrain = layout.get("terrain", [])
+    boxes = list(boxes) + [Box("terrain_wall", cx, cz, 0.0, [w, arena_terrain.RIM_HEIGHT, d])
+                           for cx, cz, w, d in arena_terrain.walls(terrain)]
     lanes_out, corners = [], []
     for lane in layout.get("lanes", []):
         pts = lane["points"]
@@ -482,7 +488,15 @@ def lane_table(layout, boxes, bar=None, step=1.0, reach=60.0):
                         t = entry_t(b, px, pz, px + dx * reach, pz + dz * reach)
                         if t is not None:
                             far = min(far, t * reach)
-                    width += min(far, _ray_exit_polygon(poly, px, pz, dx, dz, reach))
+                    far = min(far, _ray_exit_polygon(poly, px, pz, dx, dz, reach))
+                    if terrain:
+                        d = 0.0
+                        while d < far:
+                            if arena_terrain.in_water(terrain, px + dx * d, pz + dz * d):
+                                far = d
+                                break
+                            d += 0.25
+                    width += far
                 if width < narrow:
                     narrow, at = width, (px, pz)
         drivable = narrow - 2 * bar["bake_radius_m"]

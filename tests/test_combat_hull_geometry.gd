@@ -205,3 +205,20 @@ func test_each_disc_site_knob_moves_only_its_own_site() -> void:
 		assert_true(Units.hull_reach_along(_rig(), NORTH, EAST, site) < 2.0, "hull_disc=0 reaches %s" % site)
 	Units.apply_tuning("match.hull_disc_lof=1")
 	assert_near(Units.hull_reach_along(_rig(), NORTH, EAST, "lof"), disc, 1e-6, "a site override beats the whole knob")
+
+
+## CP3 review (combat, round 10): the turret pivot's height is the muzzle's, and `muzzle_height` is a tunable stat
+## (`Units.stat` honours `TUNE=tank.muzzle_height=...`). R5's mount write read the RAW profile, so a tuned muzzle height
+## moved `Tank.muzzle_height` and not the pivot that rounds leave from: two sources for one number. Asserted on a
+## mounted unit (the bus) so the mount path is the one exercised.
+func test_a_tuned_muzzle_height_reaches_the_mounted_pivot() -> void:
+	assert_true(Units.PROFILES["tank"].has("turret_mount"), "setup: the bus carries a turret_mount")
+	assert_eq(Units.apply_tuning("tank.muzzle_height=1.5"), "", "the muzzle height is tunable")
+	var tank: Tank = (load("res://game/tank/tank.tscn") as PackedScene).instantiate()
+	tank.set("unit_id", "tank")
+	tank.set("simulate", false)
+	add_to_tree(tank)
+	Units.tuning.erase("tank.muzzle_height")
+	assert_near(tank.muzzle_height, 1.5, 1e-6, "the tank read the tuned value")
+	assert_near(tank.turret.position.y, 1.5 - Tank.MUZZLE_ABOVE_PIVOT, 1e-6,
+			"and the pivot rounds leave from sits under it (%.3f m)" % tank.turret.position.y)

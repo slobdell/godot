@@ -43,7 +43,9 @@ func _run() -> void:
 	var hulls := _parse("hull:" + hull_text.replace(",", ",hull:")) if hull_text != "" else []
 	var yaw := deg_to_rad(float(_flag("yaw", "0")))
 	var ok := true
-	for variant: String in [arena_name, arena_name + "_dry"]:
+	# The "before" frame: the map's dry twin by default; `--dry=<layout>` for a proposal whose before is a real map
+	# (the Terminus canal's is the Terminus).
+	for variant: String in [arena_name, _flag("dry", arena_name + "_dry")]:
 		if not ResourceLoader.exists("res://arenas/%s.json" % variant) and not FileAccess.file_exists("res://arenas/%s.json" % variant):
 			print("TERRAIN_SHOT missing layout %s" % variant)
 			ok = false
@@ -83,6 +85,9 @@ func _shoot(variant: String, out: String, spots: Array, hulls: Array, yaw: float
 		# Through `Tank.place()` (combat's settle path), not a bare position write: the first frames of this tool
 		# showed hulls somewhere other than where they were put.
 		tank.place(Vector3(hull[1], 0.0, hull[2]), deg_to_rad(float(hull[3])))
+		# The debug nameplates ("Scale0 300 +150") are for a developer; these frames are for the lead.
+		for label in tank.find_children("*", "Label3D", true, false):
+			(label as Label3D).visible = false
 		index += 1
 	var camera := Camera3D.new()
 	root.add_child(camera)

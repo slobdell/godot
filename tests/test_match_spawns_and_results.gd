@@ -188,11 +188,18 @@ func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
 
 func test_the_grid_fills_the_front_row_before_the_rows_behind_it() -> void:
 	var columns := Match.SLOT_X.size()
-	for slot in columns:
-		var spot := Match.spawn_position(Match.Team.GREEN, slot)
-		assert_eq(spot.z, Match.BASE_Z, "slot %d stands in the front row" % slot)
+	# ROUND 10 (arena item 4, the orchestrator's ruling A): the grid fills its TURNING-CLEAR cells first (every other
+	# column, alternating by row; `Match._spawn_cells`), then the rest -- so the property is "front row first WITHIN
+	# each band", no longer "all 19 front-row columns first". Row-major put slots 0 and 1 7.5 m apart, inside the
+	# bare-spawn bus's 10.42 m turning envelope (tests/test_arena_spawn_envelope.gd).
+	var previous_z := Match.BASE_Z
+	for slot in Match.turning_clear_slots():
+		var z := Match.spawn_position(Match.Team.GREEN, slot).z
+		assert_true(z >= previous_z, "slot %d (z = %.1f) is not in front of slot %d's row" % [slot, z, slot - 1])
+		previous_z = z
+	assert_eq(Match.spawn_position(Match.Team.GREEN, 0).z, Match.BASE_Z, "slot 0 stands in the front row")
 	assert_true(Match.spawn_position(Match.Team.GREEN, columns).z > Match.BASE_Z,
-			"the next slot starts the second row, behind the first")
+			"a full front row's worth of slots in, the grid is already filling the rows behind")
 	# The mirror is point symmetry ON THE FLOOR PLANE. `SPAWN_LIFT_M` is a constant lift on BOTH sides, so negating a
 	# spawn point would flip it below the floor -- the mirror is asserted in x/z and the lift separately.
 	var green_deep := Match.spawn_position(Match.Team.GREEN, columns + 1)
