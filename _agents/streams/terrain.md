@@ -189,6 +189,12 @@ Winner changed between the arms on 2 of 32 seeds.
   Same reading as the Crossing: the terrain decides WHERE the crossing happens, not WHETHER the CPUs go for the far
   objective. Not claimed.
 
+**Fairness (the swap-bases control, `make arena-series ARENAS=crossing,sumps SEEDS=8`, builder0, code `e1fb2a30`):**
+the Crossing's paired south advantage **−0.019 ± 0.067** (8 pairs, 2 winner flips), the Sumps' **−0.025 ± 0.035**
+(8 pairs, 1 flip): both inside one standard error of zero, so neither base is favoured that 8 seeds can see. (Median
+hit range 28 m and 26 m; the Crossing's flank share 0.73 against the Sumps' 0.28 -- the Crossing's bridges are out on
+the flanks by design.)
+
 ### For his page (paths in `~/projects/godot-terrain`; the orchestrator copies them)
 
 - **Frames at his pose** (21°, FOV 35, 49 m), each beside the same frame of its dry twin: `build/terrain-shots/`
