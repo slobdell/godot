@@ -204,3 +204,43 @@ dragged-heading hold is under bisection) and moved the sim baseline. **The sim b
 the not-ready route retry** (combat's relay): hash with arms off = `7574ac017c17265b` (builder0), vs recorded
 `1ea332e7bc268d2a`; per-arm hashes: `--nav-off=press` → `630c4d0f0227bdc7`, `inflate` → `53ae702d4f43e232`
 (each arm moves it on its own too; `make nav-sim-arms`).
+
+### On main's current map and roster (CP2 + CP3 bus + turret mounts), tree `0e53c0c2` code (= main `709cbeb9` + opt-in rows)
+
+builder0, seed 1, same course; arms proven by their counters (zero in the default row).
+
+| arms | mixed contacts (of observed) | mixed arrived | rigs contacts | rigs arrived |
+|---|---|---|---|---|
+| default path (retry only) | 5959 / 34317 | 5, 4, 6, 4 | 8139 / 23349 | 2, 2, 1, 3 |
+| press + nosestop | 599 / 26252 (−90 %) | 5, 4, 4, 2 | 8079 / 24550 | 0, 1, 2, 0 |
+| press + nosestop + inflate | 424 / 29150 (−93 %) | 5, 4, 5, 3 | 2428 / 19128 (−70 %) | 0, 3, 1, 2 |
+
+**Arrival is confounded by off-mesh goals:** most misses in every arm are crews whose controller's goal is 4–10 m off
+the navmesh (`reachable=false`, the miss report's `goal_off_mesh_m`). squad grounds slots through
+`SlotGround.standable` (to the mesh EDGE, bake-radius clear only) and is adding the hull's clearance; the re-read of
+the miss list against each crew's actual move order and Orders verb (squad's two questions) is queued. Until then
+the arrival columns are not a nav finding and press/nosestop stay opt-in.
+
+**Inflation and the element's drive north:** on main's re-specified test (a speed bar, 21.6 m) the leader makes
+9.3 m with inflation ON and 9.2 m with it OFF (builder0 traces, same tree): the test is red on this tree either way
+(main's check lists it among CP3's REASON'd reds). The old 7/1 against inflation was on the pre-CP3 literal.
+
+### Item 5, the held wheeled hull (B7), `--nav-off=wheelhold` (opt-in)
+
+A turreted wheeled hull under a `face` keeps its heading and its turret takes the spot; a hull-fixed wheeled hull
+(the three scouts) turns only until the facing is inside its fire arc. `make nav-facing VERB=hold`, yard, builder0,
+tree `f056f342` code, 30 units, one seed:
+
+| arm | shuffle after arrival median / worst | covering error within 10° at +5 s | hull error median +10 s | face_giveups |
+|---|---|---|---|---|
+| off | 2.02 m / 8.38 m | 5 of 25 | 2.2° | 0 |
+| ON (18631 holds, 11136 arc stops) | 0.07 m / 4.45 m | 14 of 24 | 7.6° | 0 |
+
+The shuffle is gone and coverage nearly triples. Not yet default: the falsifier's "time-on-station and shots not
+reduced" needs a fight (`nav-fight-ab AB_OFF=wheelhold`), and the worst covering error (138°) is a turret engaged or
+held elsewhere, unread.
+
+### Item 4, the oriented pair radius, `--nav-off=oriented` (opt-in)
+
+Built and unit-tested (two rigs: 3.82 m abeam, 14.5 m end-on, against the disc's 9.16 m both ways). Its falsifier
+(defile dispersion and yard oscillation share not worse) is not yet run.
