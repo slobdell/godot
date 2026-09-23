@@ -2199,7 +2199,10 @@ static func nose_stop_on() -> bool:
 ##
 ## DEFAULT ON since round 10's close (`--nav-off=press` switches it off; see `press_on()`).
 ## Arm counter: `press_escapes`. Deterministic: it reads only physics state already produced and the tick's command.
-const PRESS_SECONDS := 0.5
+## A PIN, not a brush: 1.0 s of pressing without progress. Measured on builder0 (drive test rigs arrivals of 16 /
+## scenario_motion's moving duel): 0.5 s -> 15 / 5 shots (bar 6, red); 1.0 s -> 14 / passes; 1.5 s -> 8 / passes.
+## The drive test's pins last 30-130 s; a duelling tank's weave brushes a wall for well under a second.
+const PRESS_SECONDS := 1.0
 const PRESS_ESCAPE_THROTTLE := 0.6
 ## The escape ends once the hull is this far from where it was pinned, or after PRESS_ESCAPE_MAX_S (a wheeled hull
 ## from rest covers under a metre in the stall rule's 0.9 s: measured 0.78 m on the foundry wall).
