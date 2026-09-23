@@ -305,6 +305,10 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   0.87 × diagonal) removes it.**
 - `a8789bea` the `squad_incoming` disc site (no move).
 
+**MERGE HERE: `f27bd321`** (the pitch merge set + main `f29c5b7c`), builder0: `make check exited 2`, 1655 passed /
+1 failed (parked-friend, combat's), **sim-baseline `11c479c3bec77082` UNMOVED**, determinism `cd43435b56b09acf`,
+scenarios 42,2 (cover-peeking REASON'd, parked-friend combat's).
+
 ### After the pitch merge (tip, on top of the candidate `f27bd321`)
 
 - **Baseline, corrected:** the pitch merge set was pre-registered MOVES; **measured UNMOVED relative to CP3**
