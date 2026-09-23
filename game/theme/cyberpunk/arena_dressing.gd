@@ -130,7 +130,7 @@ func _build_lane_marks() -> void:
 	var layout_lanes: Array = _layout.get("lanes", []) if _layout.get("lanes") is Array else []
 	if layout_lanes.is_empty() or LaunchFlags.from_environment().has("no-lane-marks"):
 		return
-	structures.add_child(LaneMarks.new(layout_lanes))
+	structures.add_child(LaneMarks.new(layout_lanes, LaneMarks.footprints_of(_layout)))
 
 
 ## Feel X7: the Syndicate's airship over the arena (the lead, round 9). Absent on LOW, where the web build and

@@ -71,3 +71,25 @@ func test_it_is_flat_art_three_draws_no_collider() -> void:
 	for d: MultiMeshInstance3D in draws:
 		var box := d.get_aabb()
 		assert_true(box.size.y < 0.1, "%s is flat (%.2f m tall)" % [d.name, box.size.y])
+
+
+## arena's catch (2026-09-22): the kerb lines ran UNDER kerb furniture -- the avenue's into a two-high container --
+## telling him the road went on where a box stood. Every kerb piece now stops FOOTPRINT_CLEAR_M short of every collider
+## footprint the layout places; arena's named overlaps are the positive control (without footprints they ARE hit).
+func test_kerb_paint_stops_short_of_the_kerb_furniture() -> void:
+	var layout: Dictionary = Arena.load_layout("terminus")["layout"]
+	var footprints := LaneMarks.footprints_of(layout)
+	assert_true(footprints.size() > 0, "the Terminus places collider footprints (%d)" % footprints.size())
+	var near := func(plan: Dictionary) -> int:
+		var hits := 0
+		for piece: Array in plan["kerbs"]:
+			for fp: Array in footprints:
+				for t in [0.0, 0.5, 1.0]:
+					var p: Vector2 = (piece[0] as Vector2).lerp(piece[1] as Vector2, t)
+					if ArenaKit.distance_to_footprint(p, fp[0], fp[1], float(fp[2])) < LaneMarks.FOOTPRINT_CLEAR_M:
+						hits += 1
+		return hits
+	var without: int = near.call(LaneMarks.plan_for(_lanes()))
+	assert_true(without > 0, "control: blind to footprints, kerb paint runs under furniture (%d samples)" % without)
+	assert_eq(near.call(LaneMarks.plan_for(_lanes(), footprints)), 0, "with them, no kerb paint within %.1f m of one"
+			% LaneMarks.FOOTPRINT_CLEAR_M)

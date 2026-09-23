@@ -11,8 +11,11 @@ extends Node3D
 ##     his camera" (B10) -- a hull entering a street is seen against the pool beyond it. A pool is a flat additive
 ##     decal, not a light: the Compatibility renderer pays per light, and B10's row says zero lights added.
 ## Paint never crosses another street: a kerb or dash piece that falls inside another lane's carriageway is dropped,
-## so a junction is open pavement. Nothing here stands up, so arena's rule "no furniture at the kerb between
-## buildings" (it hides a throat) is kept by construction. Chokepoints (cold light, stencils) -- the Terminus has none
+## so a junction is open pavement. Nor does it run under kerb furniture (arena's catch on the first frames: the
+## avenue's kerb line ran straight into a two-high container, telling him the road went on where a box stood): a
+## piece within FOOTPRINT_CLEAR_M of any collider footprint in the layout is dropped too, so the line stops at the box.
+## Nothing here stands up, so arena's rule "no furniture at the kerb between buildings" (it hides a throat) is kept by
+## construction. Chokepoints (cold light, stencils) -- the Terminus has none
 ## after CP2 (arena), so nothing is lit cold. `--no-lane-marks` builds none, for the A/B pair.
 
 ## Paint sits this high over the floor (the ground is at 0): enough to beat z-fighting at 49 m, invisible side-on.
@@ -27,6 +30,8 @@ const KERB_PIECE_M := 1.0
 const DASH_LENGTH_M := 2.2
 const DASH_PITCH_M := 8.6
 const DASH_WIDTH_M := 0.18
+## Paint stops this far short of a collider's footprint (arena's suggested rule).
+const FOOTPRINT_CLEAR_M := 0.3
 ## A junction's warm pool: this radius (m), at ~3000 K.
 const POOL_RADIUS_M := 7.0
 const KERB_COLOR := Color(1.0, 0.93, 0.78)
@@ -35,18 +40,40 @@ const POOL_COLOR := Color(1.0, 0.71, 0.42)
 const POOL_SHADER := preload("res://game/theme/arena_kit/city/lane_pool.gdshader")
 
 var lanes: Array = []
+## [[center: Vector2, size: Vector3, rotation_deg: float]...]: what paint must stop short of.
+var footprints: Array = []
 var kerbs: MultiMeshInstance3D
 var dashes: MultiMeshInstance3D
 var pools: MultiMeshInstance3D
 
 
-func _init(layout_lanes: Array = []) -> void:
+func _init(layout_lanes: Array = [], layout_footprints: Array = []) -> void:
 	name = "LaneMarks"
 	lanes = layout_lanes
+	footprints = layout_footprints
+
+
+## Every collider footprint a layout places: its colliding kit props (containers, footings, barricades...) and its
+## `obstacles` list, as [center, size, rotation_deg].
+static func footprints_of(layout: Dictionary) -> Array:
+	var out: Array = []
+	for prop: Dictionary in layout.get("props", []):
+		var type := String(prop.get("type", ""))
+		if not ArenaKit.PROPS.has(type) or not ArenaKit.collides(type):
+			continue
+		out.append([Vector2(float(prop["position"][0]), float(prop["position"][1])), ArenaKit.size_of(prop),
+				float(prop.get("rotation_deg", 0.0))])
+	for obstacle: Dictionary in layout.get("obstacles", []):
+		if not obstacle.has("size") or not obstacle.has("position"):
+			continue
+		var size: Array = obstacle["size"]
+		out.append([Vector2(float(obstacle["position"][0]), float(obstacle["position"][1])),
+				Vector3(float(size[0]), float(size[1]), float(size[2])), float(obstacle.get("rotation_deg", 0.0))])
+	return out
 
 
 func _ready() -> void:
-	var plan := plan_for(lanes)
+	var plan := plan_for(lanes, footprints)
 	kerbs = _strips("Kerbs", plan["kerbs"], KERB_WIDTH_M, _paint(KERB_COLOR, 0.35))
 	dashes = _strips("Dashes", plan["dashes"], DASH_WIDTH_M, _paint(DASH_COLOR, 0.45))
 	pools = _pools(plan["corners"])
@@ -54,7 +81,7 @@ func _ready() -> void:
 
 ## Pure: where every piece of paint and every pool goes, for a list of lanes. {kerbs: [[from, to]...], dashes: [...],
 ## corners: [Vector2...]} in the ground plane (x, z).
-static func plan_for(layout_lanes: Array) -> Dictionary:
+static func plan_for(layout_lanes: Array, layout_footprints: Array = []) -> Dictionary:
 	var kerb_pieces: Array = []
 	var dash_pieces: Array = []
 	for li in layout_lanes.size():
@@ -75,14 +102,16 @@ static func plan_for(layout_lanes: Array) -> Dictionary:
 				while s < length:
 					var e := minf(s + KERB_PIECE_M, length)
 					var mid: Vector2 = a + along * ((s + e) / 2.0) + offset
-					if not _inside_other(mid, li, layout_lanes, 0.0):
+					if not _inside_other(mid, li, layout_lanes, 0.0) \
+							and not _near_footprint(a + along * s + offset, a + along * e + offset, layout_footprints):
 						kerb_pieces.append([a + along * s + offset, a + along * e + offset])
 					s = e
 			# Dashes: on the centre line, at the pitch, counted along the whole lane so they do not restart per segment.
 			var d := fposmod(-travelled, DASH_PITCH_M)
 			while d + DASH_LENGTH_M <= length:
 				var mid := a + along * (d + DASH_LENGTH_M / 2.0)
-				if not _inside_other(mid, li, layout_lanes, 1.0):
+				if not _inside_other(mid, li, layout_lanes, 1.0) \
+						and not _near_footprint(a + along * d, a + along * (d + DASH_LENGTH_M), layout_footprints):
 					dash_pieces.append([a + along * d, a + along * (d + DASH_LENGTH_M)])
 				d += DASH_PITCH_M
 			travelled += length
@@ -112,6 +141,16 @@ static func corners_of(layout_lanes: Array) -> Array:
 					if fresh:
 						found.append(p)
 	return found
+
+
+## Does the piece from `p` to `q` come within FOOTPRINT_CLEAR_M of any footprint? (Its ends and middle are sampled:
+## pieces are <= 2.2 m, far shorter than any footprint, so a box cannot slip between the samples.)
+static func _near_footprint(p: Vector2, q: Vector2, layout_footprints: Array) -> bool:
+	for fp: Array in layout_footprints:
+		for t in [0.0, 0.5, 1.0]:
+			if ArenaKit.distance_to_footprint(p.lerp(q, t), fp[0], fp[1], float(fp[2])) < FOOTPRINT_CLEAR_M:
+				return true
+	return false
 
 
 ## Is `p` on the carriageway of any lane other than `own` (inflated by `margin`)?
