@@ -93,3 +93,6 @@
 | 2026-09-22 18:45 | image-to-image nano-banana-pro | `01a0ca6f-c5de-77d5-be63-d8ffa309bbed` | 9 | meshy/bus_r10_a | SUCCEEDED | 79 |
 | 2026-09-22 18:46 | image-to-image nano-banana-pro | `01a0ca70-3084-75d6-a2cd-0f017a828c52` | 9 | meshy/bus_r10_b | SUCCEEDED | 70 |
 | 2026-09-22 18:46 | image-to-image nano-banana-pro | `01a0ca70-ae65-7071-a7b9-1029df3c597d` | 9 | meshy/bus_r10_c | SUCCEEDED | 61 |
+| 2026-09-22 22:16 | image-to-image nano-banana-pro | `01a0cb30-4400-73fd-b73d-9db022989b67` | 9 | meshy/burner_r10_a | SUCCEEDED | 52 |
+| 2026-09-22 22:16 | image-to-image nano-banana-pro | `01a0cb30-c151-7182-9533-90dd8f7a565f` | 9 | meshy/burner_r10_b | SUCCEEDED | 43 |
+| 2026-09-22 22:17 | image-to-image nano-banana-pro | `01a0cb31-29fe-74cd-b945-8ca26fd83ad3` | 9 | meshy/burner_r10_c | SUCCEEDED | 34 |
