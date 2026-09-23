@@ -181,7 +181,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband", "inflate",
-		"minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "wheelhold", "yield"]
+		"minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -260,6 +260,7 @@ static var route_not_ready := 0
 static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
+			"yield_spots_refused": yield_spots_refused,
 			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused}
@@ -271,6 +272,7 @@ static func reset_route_arms() -> void:
 	press_escapes = 0
 	nose_stops = 0
 	driver_ticks = {}
+	yield_spots_refused = 0
 	Avoidance.oriented_pairs = 0
 	route_not_ready = 0
 	clearance_chords = 0
@@ -1162,8 +1164,40 @@ func _free_spot(point: Vector3, me: String, other: String) -> bool:
 		var on_mesh := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, point)
 		if _flat_distance(on_mesh, point) > YIELD_MESH_SLACK:
 			return false
+		if yield_clear_on() and not _room_to_turn(tank.get_world_3d().navigation_map, point):
+			yield_spots_refused += 1
+			return false
 	for row: Array in Avoidance.neighbours(me, point.x, point.z):
 		if String(row[1]) != other and sqrt(float(row[0])) < YIELD_SPOT_CLEARANCE:
+			return false
+	return true
+
+
+## Round 10 (nav, found by item 6's measurement): **a yield spot must leave the hull room to turn.** 10 % of yielding
+## ticks in a Terminus fight touched a wall: `_free_spot` accepts a point within YIELD_MESH_SLACK of the navmesh, i.e.
+## on the bake's erosion edge 2.0 m from a face, and a hull longer than 4 m that pulls in there and turns sweeps its
+## end into the face. With the arm on, the spot must be ON the mesh and so must eight points around it at the hull's
+## turning-envelope shortfall (half-diagonal + INFLATE_MARGIN − bake): clearance tier TURNING ENVELOPE (B5).
+## OPT-IN (`--nav-off=yieldclear` turns it ON). Arm counter: `yield_spots_refused`.
+static var yield_spots_refused := 0
+const ROOM_PROBES: Array[Vector2] = [Vector2(1, 0), Vector2(0.70710678, 0.70710678), Vector2(0, 1),
+		Vector2(-0.70710678, 0.70710678), Vector2(-1, 0), Vector2(-0.70710678, -0.70710678), Vector2(0, -1),
+		Vector2(0.70710678, -0.70710678)]
+
+
+static func yield_clear_on() -> bool:
+	return switched_off("yieldclear")
+
+
+func _room_to_turn(map: RID, point: Vector3) -> bool:
+	if not _on_mesh(map, point):
+		return false
+	var size: Array = hull_box(ctl.tank.unit_id)
+	var need := Vector2(float(size[0]), float(size[2])).length() / 2.0 + INFLATE_MARGIN - bake_radius(ctl.tank)
+	if need <= 0.0:
+		return true
+	for probe: Vector2 in ROOM_PROBES:
+		if not _on_mesh(map, point + Vector3(probe.x, 0.0, probe.y) * need):
 			return false
 	return true
 

@@ -240,7 +240,35 @@ The shuffle is gone and coverage nearly triples. Not yet default: the falsifier'
 reduced" needs a fight (`nav-fight-ab AB_OFF=wheelhold`), and the worst covering error (138°) is a turret engaged or
 held elsewhere, unread.
 
-### Item 4, the oriented pair radius, `--nav-off=oriented` (opt-in)
+### Item 4, the oriented pair radius, `--nav-off=oriented` (opt-in) — FALSIFIED as a default
 
-Built and unit-tested (two rigs: 3.82 m abeam, 14.5 m end-on, against the disc's 9.16 m both ways). Its falsifier
-(defile dispersion and yard oscillation share not worse) is not yet run.
+Built and unit-tested (two rigs: 3.82 m abeam, 14.5 m end-on, against the disc's 9.16 m both ways). Falsifier, `make
+nav-defile-ab` (squad's defile probe through `tests/nav/defile_arm_probe.gd`, builder0, tree `31e9d83c` code, arm
+proven: `oriented_pairs` 6483 tracked / 7206 wheeled vs 0): **tracked arrivals 4 → 2 of 5, inversions 22 → 37**
+(dispersion 14.0 → 3.93 s over the fewer arrivals); wheeled 0 of 5 arrive in BOTH arms (the scenario fails on this tree
+either way). Worse on the pre-registered bar, so it stays opt-in. The probe ignores `--seed` (8 seeds byte-identical):
+n = 1 per locomotion, stated.
+
+### Item 6, the seam — measured first
+
+`make nav-fight ARENA=terminus` (seed 3, 120 s, both armies, builder0, tree `31e9d83c`), unit-ticks by the layer that
+produced the motion (`Movement.driver_ticks`): **route 131379 (47.6 %), direct = CombatMotion's hops 47374 (17.2 %)**,
+face 42813 (15.5 %), yield 30939 (11.2 %), stop 23298 (8.4 %), unstick 56. On Terminus CombatMotion decides about a
+sixth of fight ticks, not "under a tenth". **`Movement` has no leash or corridor input on ANY tick** — structural: the
+leash exists only inside `CombatMotion.choose`. Fight wall contacts 16725 of 233122 observed: by driver route 10712,
+yield 3079, direct 2128, face 739. **Finding: 10 % of yielding ticks touch a wall** — `_free_spot` checks the navmesh
+and other hulls, not the hull's clearance from walls.
+
+### The check on the merged tree
+
+**`d2bd7ac3`** (items 4+5 opt-in, main `f29c5b7c` merged), builder0, REMOTE_SLOTS=5: 1652 passed / 2 failed,
+sim-baseline PASSES `11c479c3bec77082`, ai-scenarios 40,4 vs the recorded 44,0. Every red is main's CP3 set with its
+REASON (units: parked-friend lane, tactics_elements drive-north; scenarios: formation-slot, base-of-fire,
+parked-friend, perf under load; main's own record reads 39,5). No red is nav's.
+
+### The yield-spot clearance row, `--nav-off=yieldclear` (opt-in) — PRE-REGISTERED before its A/B
+
+A yield spot must be on the mesh with the hull's turning-envelope shortfall clear in eight directions. Falsifier on
+`make nav-fight ARENA=terminus` (seed 3, 120 s, builder0, both arms on one tree, arm proven by `yield_spots_refused`
+> 0): **wall-contact ticks with driver `yield` fall by ≥ 50 %**, the `progressing` share does not drop by more than
+0.02, and `blocked_friend` does not rise by more than 0.01. Any of the three missed = it stays opt-in.
