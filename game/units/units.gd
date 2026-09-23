@@ -963,6 +963,12 @@ const DEFAULT := "tank"
 ## line-of-fire test and `incoming` the projectile-threat test (both in `Match`); `squad_incoming` is squad's
 ## `IncomingFire` (it passes the name when squad wires it; until then it follows `match.hull_disc`).
 const HULL_DISC_SITES := ["lof", "incoming", "squad_incoming"]
+## Round 10 (combat): the box at the friendly-fire line-of-fire site by default. The disc's half-diagonal reach (5.06 m
+## for the 9.70 x 2.90 m bus) refused the lane a tank needed past a parked bus
+## (`scenario_fire_discipline::…parked_friend…`: first shot 251 ticks, 1 shot, FAIL with the disc; 114, 2 shots, PASS
+## with the box at `lof` only; identical on the laptop and builder0 once placement went through `Tank.place()`), and
+## the paired pit series shows the box at that site no worse (b 6, c 2 of 64, builder0). 1.0 = disc, 0.0 = box.
+const HULL_DISC_SITE_DEFAULTS := {"lof": 0.0}
 const MATCH_KNOBS := ["no_damage", "hull_disc", "hull_disc_lof", "hull_disc_incoming", "hull_disc_squad_incoming",
 		"yaw_fit", "yaw_world", "yaw_slide"]
 ## Keys a v1 army entry used. Army JSON v2 rejects them with V1_KEY_HELP.
@@ -1105,10 +1111,16 @@ static func hull_reach_along(hull_size: Array, hull_forward: Vector3, direction:
 ## `match.hull_disc_<site>` (see `HULL_DISC_SITES`) overrides `match.hull_disc` for that site only; a site with no
 ## override follows `match.hull_disc`, and a caller that passes no site follows it too, so the defaults are unchanged.
 ## One knob that flips three sites can only answer "the disc or not"; the series needs "which site".
+##
+## ROUND 10 (combat): the `lof` site's DEFAULT is the box (`HULL_DISC_SITE_DEFAULTS`). Precedence: a site's own knob,
+## then an explicit `match.hull_disc` (so `=1` still means "the disc everywhere", round 9's arm), then the site's
+## default, then the disc. `match.hull_disc_lof=1` restores the pre-flip line-of-fire test alone.
 static func hull_disc_at(site: String) -> bool:
 	if site != "" and tuning.has("hull_disc_" + site):
 		return float(tuning["hull_disc_" + site]) > 0.0
-	return float(tuning.get("hull_disc", 1.0)) > 0.0
+	if tuning.has("hull_disc"):
+		return float(tuning["hull_disc"]) > 0.0
+	return float(HULL_DISC_SITE_DEFAULTS.get(site, 1.0)) > 0.0
 
 
 static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vector3, site := "") -> float:
