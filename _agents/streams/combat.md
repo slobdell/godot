@@ -218,28 +218,47 @@ counting a 1 mm touch. The contact gate exists in the code, but no case has show
 geometry, so the pivot-arming change was dropped. **Lesson: an overlap test with a recovery margin reports touching as
 inside; measure depth, not a boolean.**
 
-### For the lead, in one paragraph
+### ▶ FINAL REPORT (round 10, 2026-09-22 night), in the lead's terms
 
-**(Update, night: the constraint did NOT switch on this round; see "CP4 STOPPED" above. The mechanism below and the
-fix for five_squads stand; a leader boxed between a crate and a wall is the remaining case.)**
+**1. The trucks yawing through walls: found why, fixed most of it, NOT switched on yet.**
+The rule that stops a hull rotating through a wall (round 9) froze your squads because it treated a squadmate like a
+wall. A long vehicle told to turn round in a tight row nudged its corner into its neighbour a few millimetres at a
+time, and then held that pose forever (every refused turn we traced was against a squadmate, never a building). The
+rule now counts only buildings, and a hull flush against ONE crate or wall slides off it a few centimetres instead of
+freezing. On one build, all of it measured: every squad forms up (0 of 30 off slot), no hull is ever stuck (longest
+refusal 0 ticks, from 1268), and the semi in the narrow corridor still can't swing through the walls (11.4° instead of
+44°). **Why it's still off:** one more case, found by the full check: a bus boxed between a crate and a wall and told
+to turn in place. With the rule on it stands still; with it off it turns through the crate. The honest fix is for the
+driver to back out of a pinch before turning (round 11's first item, below). Until then you play today's behaviour.
 
-**Why the yaw fix froze your squads, and the fix.** Round 9's rule that stops a hull rotating through a wall also
-treated a squadmate as a wall. A long vehicle parked in a row, told to turn round in place, nudged its corner into
-its neighbour a few millimetres at a time until the next nudge was over the limit, and then held that exact pose
-forever. Every refused turn we traced was against a squadmate; not one was against a building. A building doesn't
-move, but a squadmate gets pushed aside, so the rule now only counts buildings. Same build, both measured:
-
-| | squads that formed up (of 5) | units off their slot (of 30) | longest freeze | rig in the wall corridor (turn / footprint) |
+| same build, builder0 | squads formed (of 5) | units off slot (of 30) | longest freeze | semi in the corridor |
 |---|---|---|---|---|
-| constraint off (what you play today) | 5 | 0 | none | 44.0° / 12.1 m, through the walls |
-| constraint on, squadmates count as walls (round 9) | 1 | 12 | 1268 ticks (42 s) | 11.6° / 6.1 m |
-| **constraint on, only buildings count (the fix)** | **5** | **0** | **1 tick** | **11.6° / 6.1 m** |
+| rule off (what you play) | 5 | 0 | none | 44° / 12.1 m, through the walls |
+| round 9's rule (squadmates count) | 2 | 6 (at 94 m) | 1206 ticks (40 s) | 11.4° / 6.0 m |
+| **this round's rule** | **5** | **0** | **0** | **11.4° / 6.0 m** |
 
-It switches on (CP4) after the bus box (CP3) and squad's new slot pitch, measured again on that tree, so you get it
-together with the formation work. Two scenarios were decided by something else: the scout's orbit around the bigger
-tank was too slow to beat its turret at any radius (measured here; squad has since rebuilt the orbit, and the scout
-now lands 27 of 29 hits on the engine deck), and the artillery was right all along (its scenario tested which frame
-the map loaded on; fixed).
+**2. Units now shoot past a parked friend (on main at `4aaf8b56`).** The friendly-fire check drew each friend as a
+circle as wide as the vehicle's diagonal (5 m for the bigger bus), so a tank would not fire down a lane that was
+actually clear. It now uses the vehicle's real box for that check. Measured on 64 paired games per map, gangs vs law:
+gangs won **36% instead of 23% on yard** (10 games won only with the box, 2 only with the circle, p 0.039) and 22% vs
+16% on pit (6 vs 2). It is the first single change to that matchup that beats noise. The other two places the circle
+is used (incoming-fire checks) stay as they were: pit showed no effect (6 vs 3; both together 2 vs 2).
+
+**3. Smaller fixes, all on main:** the artillery was right all along (its test depended on which frame the map
+loaded; fixed, and nav now retries that frame); a tuned muzzle height now moves the point shells leave from; an
+unknown unit id is a loud error again; a test proves every hull's collision box is centred where aiming assumes.
+
+**4. What I got wrong, corrected the same night:** I claimed a stationary bus rotated 143.7° through a crate; it never
+went in more than 1.3 mm (a 1 mm touch read as "inside"). I predicted the line-of-fire change would move the recorded
+baseline match; it didn't (that match never puts a friend in a lane). I listed a test as already failing on main when
+my change had broken it; the orchestrator caught it, and that's how the pinch case above was found.
+
+**Round 11's first item (combat + nav/squad):** a hull whose pivot is refused on both sides must drive out of the
+pinch before it turns (the mover reads the plant's public `yaw_refused_ticks`), then CP4 re-runs its five bars on one
+build. Measured case: squad's element test, route progress 19.0 m with the rule off vs −1.2 m on (bar 16.2).
+
+**Not done (stretch):** A2's verdict (`make a2-cusps` is built and was never run: builder0 time went to CP4 and the
+series); the duel's hide/peek regression.
 
 ### Plan (the brief's order; one-line reasons where the brief left a choice)
 
