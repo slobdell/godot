@@ -725,7 +725,12 @@ var yaw_refused_ticks := 0
 ## ROUND 10: the longest such run by any hull since a reader last zeroed it. CP4's fourth bar (research B2) is "no run
 ## of more than 3 consecutive refused ticks anywhere in five_squads", and a bar needs the quantity it reads.
 static var refused_run_max := 0
-## OFF BY DEFAULT, AND THE COST COMES BEFORE THE BENEFIT because that is the order it was learned in.
+## ✅ ON BY DEFAULT SINCE ROUND 10 (CP4), with the world-only mask and the slide-off. The verdict, builder0, one build
+## (`0bc0e214`), every arm proven by its TUNE line: five_squads 0 of 30 off slot with the refused-run bar at 0 ticks
+## (control without the slide-off: 83); nav's corridor 11.4 deg / 6.0 m, residual 1.21 m (bar 1.8), giveups 1; nav's
+## suite 8/0. `TUNE=match.yaw_fit=0` restores the round-9 default (off). What follows is the round-9 history, kept:
+##
+## OFF BY DEFAULT (round 9), AND THE COST COMES BEFORE THE BENEFIT because that is the order it was learned in.
 ##
 ## ⚠ ENABLING THIS STOPS FOUR OF FIVE SQUADS TAKING THEIR FORMATION. Bisected to this one line, one machine,
 ## `make test FILTER=ai_player_orders`:
@@ -774,7 +779,7 @@ static var refused_run_max := 0
 ## Every `yaw_fit=0` measurement taken before this fix was measuring the constraint ON. That voided a knob A/B, an
 ## "the constraint is excluded" report, and a "second cause" that probably never existed. `Units.tuning` is a
 ## dictionary on the class that parses the spec, so no cross-class initialisation order can undo it.
-static var yaw_fit_enabled := false
+static var yaw_fit_enabled := true
 
 
 ## The live value: the tune when one was given, else the default above (which tests set directly).
@@ -925,7 +930,8 @@ func _trace_yaw_candidate(label: String, have: Vector3, candidate: Vector3, dept
 ## (Charlie_3 from tick 1880: here 0.0000, candidates 0.0177 / 0.0104 / 0.0050 m against Green_Charlie_2, byte-identical
 ## for 1134 ticks). Nothing translates it out, so the state never changes. A wall does not yield; a squadmate does
 ## (`move_and_slide` depenetrates the pair), so refusing a yaw because a VEHICLE is in the way is the defect.
-static var yaw_fit_world := false
+## ROUND 10 (CP4): the world-only mask is the default -- a squadmate yields, a wall does not (backlog item 1).
+static var yaw_fit_world := true
 
 
 ## The live value, read at the point of use for the same reason as `yaw_fit_on()`.
