@@ -34,6 +34,7 @@ func test_a_slot_by_a_terminus_block_is_grounded_where_the_hull_fits() -> void:
 		var reach := envelope - SlotGround.bake_radius()
 		var edge := SlotGround.standable(node, wanted)
 		var fitted := SlotGround.standable_for(node, wanted, envelope)
+		assert_eq(SlotGround.for_unit(node, wanted, String(row[1])), fitted, "for_unit is standable_for at the unit's envelope")
 		var before := _off_mesh_probes(node, edge, reach)
 		var after := _off_mesh_probes(node, fitted, reach)
 		rows.append("%s %s: edge %s off %d/16 -> fitted %s off %d/16 (moved %.1f m, reach %.1f m)" % [row[1], wanted, edge,

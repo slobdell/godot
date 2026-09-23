@@ -38,6 +38,14 @@ const CLEARANCE_PROBES := 8
 const CLEARANCE_ITERATIONS := 3
 
 
+## THE ONE GROUNDING CALL for anyone issuing a per-unit goal (Element, Orders' group moves, the drills): the nearest
+## point to `point` where a hull of `unit_id` stands on the navmesh with its own turning envelope clear. `node` is any
+## node in the match's world (it only reaches the navigation map). Round 10: nav measured 11 of 13 Terminus arrival
+## misses as right-click moves (Orders, no Element) whose goal sat 4-10 m inside a block; one rule, one owner.
+static func for_unit(node: Node3D, point: Vector3, unit_id: String) -> Vector3:
+	return standable_for(node, point, envelope_of(unit_id))
+
+
 static func standable_for(node: Node3D, point: Vector3, clearance: float) -> Vector3:
 	var at := standable(node, point)
 	var need := clearance - bake_radius()
