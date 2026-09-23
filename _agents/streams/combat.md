@@ -169,14 +169,31 @@ re-records on `main` (my record reverted on request). Earlier green points: `d04
 drive-to-slots and combat's parked-friend; the same scenario reds 40,4) plus my one new passing test. So this branch
 adds no red. The parked-friend row is being re-read on squad's `c0040ae4` (placement through `Tank.place()`).
 
-### ✅ CP4 LANDED ON THIS BRANCH: `48569fce` (the constraint ON by default, world mask, slide-off), merge alone
+### ⛔ CP4 STOPPED (written 2026-09-22 night): the constraint stays OFF; round 11's first item
 
-The four bars on one build (`0bc0e214`, builder0): five_squads 0 of 30 off slot, longest refused run **0** (control
-without the slide-off: 83); corridor 11.4° / 6.0 m, residual 1.21 m, giveups 1; nav's suite 8/0; tank_yaw_fit 7/0.
-The flip's own check (`48569fce`, builder0): `make check exited 2`, 1666 passed, 3 failed, **sim-baseline MOVED
-`7dcc52f547f03d3f` → `50acf21d6e6a68b7`** (pre-registered, one cause), determinism `cd7a714ced4d7d49`, scenarios
-42/2. Reds: `test_spawn_grid` baked list (red with the constraint off too: terrain's fixture, fixed on main
-`1ec3f391`), squad's drive-to-slots and formation-slot (main's REASON'd), parked-friend (the lof flip, next).
+The flip (`48569fce`) passed the four pre-registered bars on one build (`0bc0e214`, builder0): five_squads 0 of 30,
+longest refused run 0 (control 83), corridor 11.4° / 6.0 m / 1.21 m, nav 8/0. Its full check moved the baseline as
+pre-registered (`7dcc52f547f03d3f` → `50acf21d6e6a68b7`, one cause). **But it failed a fifth bar that the check
+caught and I missed in my first reading** (the orchestrator caught it: I listed it as main's red, and it was green on
+main at my merge base). Reverted on the branch at `01d839ea`; the defaults are OFF again.
+
+| `FILTER=tactics_elements`, builder0, `48569fce` | route progress (bar 16.2 m) | north | spread | verdict |
+|---|---|---|---|---|
+| `TUNE=match.yaw_fit=0` | 19.0 m | 9.2 m | 31.5 → 23.2 m | PASS (8/0) |
+| `TUNE=match.yaw_fit=1` (world mask, slide-off) | **−1.2 m** | 0.0 m | 31.0 → 36.4 m | **FAIL** (7/1) |
+
+**The mechanism (YAW_TRACE, builder0):** the element's leader, the 9.70 m bus hand-placed at (−15, 60), starts 1.2 cm
+inside Crate_11 on tick 2 and is then commanded a pure pivot (throttle 0, turn +1) for 186 ticks. Every candidate
+down to 0.8° enters BOTH Crate_11 (normal −1, 0) and Wall_5 (normal 0.94, 0.33), a two-sided pinch. The slide-off
+correctly refuses (a push off one drives into the other), and the hull is refused for runs of up to 160 ticks. Without
+the constraint the bus pivots through the crate and the wall and drives off: the exact illegal yaw the constraint
+exists to stop, so the test passes today BECAUSE of the defect.
+
+**What round 11 needs (the driver, not the plant):** a hull whose pivot is refused on both sides must drive out of the
+pinch (a short creep along its free axis) before it turns. That is the mover's decision (nav's `Movement`, or squad's
+element leader), with the plant publishing the refusal (`yaw_refused_ticks`, already public) as the signal. Then CP4
+re-runs its five bars on one build. Also for squad: the test places the leader 1.2 cm inside Crate_11 (a hand-placed
+spawn literal next to a crate).
 
 ### CP4 VERDICT RUN (builder0, `6f553699` = main `b1693901` with squad's pitch; one build, every arm proven by TUNE line)
 
@@ -202,6 +219,9 @@ geometry, so the pivot-arming change was dropped. **Lesson: an overlap test with
 inside; measure depth, not a boolean.**
 
 ### For the lead, in one paragraph
+
+**(Update, night: the constraint did NOT switch on this round; see "CP4 STOPPED" above. The mechanism below and the
+fix for five_squads stand; a leader boxed between a crate and a wall is the remaining case.)**
 
 **Why the yaw fix froze your squads, and the fix.** Round 9's rule that stops a hull rotating through a wall also
 treated a squadmate as a wall. A long vehicle parked in a row, told to turn round in place, nudged its corner into
