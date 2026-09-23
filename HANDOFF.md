@@ -27,6 +27,39 @@ and a paired series).
 
 **LAUNCHED 2026-09-22 (credits back): the nine agents were started by the lead in their worktrees at `main` = the commit of this line.** Between the briefing (2026-09-20) and the launch, two research replies were curated into the catalog and the briefs (rows B1–B14, C1–C12), a ninth stream (terrain) was added, and R1 was narrowed on the lead's playtest (CP1 withdrawn). The lead's newest playtest notes (formations still do not come together; the four causes) are at the end of `game_design.md`.
 
+### ☀ THE MORNING AFTER ROUND 10's DAY (2026-09-22 → 23; written 00:30, updated at each tick)
+
+**You launched nine agents at ~09:00 and went away for eight hours. By 00:30 thirty-one branches are merged to `main`,
+every merge at a hash whose own builder0 check was read from the wrapper's line and the runner's; the sim baseline
+moved twice, each recorded twice and adopted with its causes named (`11c479c3` for the bus + nav's route retry,
+`7dcc52f5` for arena's spawn grid); the scenario count is being re-recorded for the close; the closing main check
+follows it. Nothing is pushed to `origin`; you push.** Eight of nine streams are done and idle (control, squad, arena,
+nav pending its last rows, combat pending its last cells, feel, show, announcer, terrain); the worktrees stay until
+you reset (the close commands are at the end of this section once the last check lands).
+
+**What round 10 shipped, in one paragraph (all on `main`, all verified):** the unanswered right-click is fixed at
+five mechanisms and reads 7 of 7 states on main; the greyed squad buttons say why and the card has Form squad; the
+objective rings draw where the match scores; **the Terminus streets are lanes** (every street 16–22 m drivable, every
+junction certified for the rig, the containers off the roads, the neon sign out of the spawn zones) with kerb paint,
+centre dashes and a warm pool at every corner; **nav's wall-contact instrument and the Terminus drive test** (contacts
+down 37–48 % from the streets alone, arrivals up, the rest attributed: the right-click's own goals landed inside
+blocks, now grounded with the hull's clearance by control and squad); **the bigger bus (9.70 × 4.76 m), the turret
+mounts on every hull's measured ring, and the blimp drifting down the avenue where your camera sees it**; **the light
+show on the walls** (per-window addressing, chases, sweeps, a strobe on the facade facing the losing base, kill
+ripples; show's verdict: the band dial was never the lever); **518 announcer lines recorded** on the same themes with
+the PA's one-wrong-detail audit; **two new maps with water and bridges**, the Crossing and the Sumps, whose bridges
+are used on 31 of 32 paired seeds; the lateral pitch from the turning envelope (squads open out; deploy stays packed,
+round 11's stagger); a 20 m move that settles in 4–9 s instead of 9–17; the friendly-fire line-of-fire test reading
+the hull's box, the first single change to move gangs-vs-law beyond noise (yard 36 % vs 23 %, p = 0.039); the yaw
+freeze's mechanism found (a ratchet against a squadmate) and a world-only constraint that passes four bars but stays
+OFF on a fifth (a pinch the driver must creep out of: round 11's first item). Two research replies were folded in
+and paid off (the freeze mechanism, the pool-size formula, the corner formula, the paired-seed design, the per-window
+lighting, the grounding vocabulary).
+
+**Play it:** `make skirmish ARENA=terminus`, street to street, then right-click while they are moving, box-select
+across squads and press Form squad, watch the walls; then `ARENA=crossing` and `ARENA=sumps`; then the Pit's west gate
+(open, reads shut). Your taps and vetoes are in the list below; each is one message to me.
+
 ### FOR THE LEAD, THE MORNING AFTER 2026-09-22 (collected here as it lands; the files are in `~/Desktop/round10-morning/`)
 
 - **The light show on the walls (show):** `~/Desktop/round10-morning/show/show-page/index.html` (12 show-off/show-on pairs at your pose, the band strip, 6 clips at 30 fps). Show's verdict: the band dial is not the lever; the per-window layer is. The luminance instrument reads the venue −6 % to −27 % brighter wide; reported, not blocking: your eye decides. **Four questions from show, each one edit in a named file** (its Status on main, "Questions for the lead"): 3× band or 2×; the loudness dials; keep the last_stand strobe; parapet vs outline.
