@@ -63,7 +63,9 @@ func _run() -> void:
 		rig.process_mode = Node.PROCESS_MODE_DISABLED
 	_camera.current = true
 	get_tree().paused = true
-	blimp.process_mode = Node.PROCESS_MODE_ALWAYS
+	# Posed by hand from here on: its own _process would put it back at the (paused) match tick before a frame is shot,
+	# which is how the first frames of the widest and typical samples came out showing a different pose.
+	blimp.set_process(false)
 	var lap := blimp.lap_ticks()
 	var half := float(Arena.active.get("half_size", 120.0))
 	var foci: Array[Vector3] = []
