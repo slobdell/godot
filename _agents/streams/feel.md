@@ -153,6 +153,9 @@ _(the worker keeps this current)_
   **opening camera**, 881 px wide (`references/round10/feel/blimp_opening_d9b70dc4.jpg`). The airship stays over the city.
 - **Hulls get a faint rim in their faction's colour** (amber, magenta, police blue, ivory) so they read between the
   lamp pools. The pair is his eye's call (`references/round10/feel/rim_v2_final.jpg`; `--no-faction-rim` switches it off).
+- **The Terminus streets are painted:** kerb lines and centre dashes down every lane (a ruler for depth at his
+  telephoto pose) and a warm pool at every junction, so a vehicle turning in is backlit
+  (`references/round10/feel/lane_pair.jpg`; `--no-lane-marks` switches it off).
 - **Waiting on his tap:** six concepts, three for the bus's own mesh and three for the fire engine
   (`make art-review-page TITLE="The Condemned bus and fire engine (R6)" GROUPS=R6 OUT=build/review_page_r6`).
   Meshy balance 34 (54 credits spent tonight, ledgered): enough for both vehicles' 3D after his taps, nothing more.
@@ -206,8 +209,7 @@ _(the worker keeps this current)_
 1. The check on the merged tip → name the hash for the post-CP3 commits.
 2. After his taps: image-to-3D for the chosen bus (and burner), fitted to their boxes (S1's `box_at_length` then
    derives their proportions from the mesh, and `test_only_the_two_known_units_have_no_art_of_their_own` changes).
-3. B10 / C11 kit items (warm lane lights and kerbs, corner fixtures, scale anchors, low-obstacle markings) when arena
-   sends the lane and corner list -- none received yet.
+3. ~~B10 / C11 kit items~~ DONE on arena's list (`82d77c5a`); cold chokepoint light is moot on the Terminus (none).
 4. Stretch, waiting on a quiet builder0 the orchestrator calls: the hinge's frame cost,
    `REMOTE_SLOTS=6 make remote T="perf-trailer-ab PERF_CYCLES=6"` (refuses its own number under load, by design).
    The single-variable lamp pair: not started (no one has asked for the lamp claim on stricter footing).
