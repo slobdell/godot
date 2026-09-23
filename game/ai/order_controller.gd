@@ -17,6 +17,8 @@ extends Node
 ##       reverse = back up to the point, front armor kept toward where you came from
 ##       arrive = how close counts as there (brains use ~1 m for hide and peek spots)
 ##       direct = true: steer straight at the point, no navmesh path (brains' short, already-checked hops)
+##       leash = [x, z, radius] (optional, round 10 item 6): the formation leash; with `--nav-off=leash` ON, Movement
+##        drives to the point of the leash circle nearest the goal when the goal lies outside it
 ##   {"type": "drive", "throttle": float, "turn": float, "seconds": float}
 ##   {"type": "face", "x": float, "z": float}   turn in place to point the hull (front armor) at a spot
 ## Weapon orders (one at a time):
@@ -526,6 +528,10 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 		return "'reverse' must be true or false"
 	if order.has("direct") and typeof(order["direct"]) != TYPE_BOOL:
 		return "'direct' must be true or false"
+	if order.has("leash") and not (order["leash"] is Array and (order["leash"] as Array).size() >= 3
+			and (order["leash"] as Array).slice(0, 3).all(func(v: Variant) -> bool: return typeof(v) in [TYPE_INT, TYPE_FLOAT])
+			and float(order["leash"][2]) > 0.0):
+		return "'leash' must be [x, z, radius] numbers, radius > 0"
 	if order.has("to_safety") and typeof(order["to_safety"]) != TYPE_BOOL:
 		return "'to_safety' must be true or false"
 	if order.has("fallback") and typeof(order["fallback"]) != TYPE_BOOL:

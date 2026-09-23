@@ -278,3 +278,25 @@ A yield spot must be on the mesh with the hull's turning-envelope shortfall clea
 contacts 16725 → 13640. **Not pre-registered and stated:** `blocked_no_path` 0.091 → 0.128. One seed is not a series
 (C6): the paired A/B over seeds 1, 3, 5, 7, 9 (`nav-fight-ab AB_OFF=yieldclear ARENA=terminus`) is running; the row
 stays opt-in until it and the `blocked_no_path` rise are read.
+
+**The paired series (C6), `nav-fight-ab`, Terminus for yieldclear / yard for wheelhold, seeds 1 3 5 7 9, builder0,
+tree = main `4588cb96` + opt-in rows.** (In `nav-fight-ab` the `off` arm passes `--nav-off=X`, which for these
+inverted rows is the arm ON: read the rows that way.)
+
+| row | metric | arm ON (sum) | default (sum) | discordant seeds (ON better / worse) | verdict |
+|---|---|---|---|---|---|
+| yieldclear | yield-driver wall contacts | 11062 | 14332 (−23 %) | 3 / 2 | **misses its pre-registered ≥ 50 %: stays opt-in** (seed 3 alone read −58 % on the pre-grid tree; not a series) |
+| yieldclear | progressing share | higher in 4 of 5 | | | ✓ |
+| yieldclear | blocked_friend | +0.006 worst | | | ✓ |
+| wheelhold | shots | 16617 | 17298 (−3.9 %) | 2 / 3 | **not cleanly "not reduced": stays opt-in** |
+| wheelhold | at_goal share (time on station) | lower in 3 of 5 | | | ✗ |
+
+Both arms proven applied (`yield_spots_refused` 65–216 per ON seed, 0 default; `wheel_holds` > 0 ON, per
+`nav-facing`). n = 5 paired seeds is the "large shift" size; neither shift is large.
+
+### Item 6's step: the leash reaches Movement's goal, `--nav-off=leash` (opt-in)
+
+A `move_to` may carry `leash: [x, z, radius]` (validated); with the arm on, a goal outside the circle becomes the
+circle's nearest point (A7's projection applied to the goal). **Request to squad:** put the leash the brain already
+builds for `CombatMotion` (`element_slot`, `slot_leash`) on its `move_to` orders while a crew has an element slot;
+until then the arm has nothing to act on (`leash_clamps` in `route_arms` says so).
