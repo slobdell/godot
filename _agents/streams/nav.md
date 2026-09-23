@@ -300,3 +300,12 @@ A `move_to` may carry `leash: [x, z, radius]` (validated); with the arm on, a go
 circle's nearest point (A7's projection applied to the goal). **Request to squad:** put the leash the brain already
 builds for `CombatMotion` (`element_slot`, `slot_leash`) on its `move_to` orders while a crew has an element slot;
 until then the arm has nothing to act on (`leash_clamps` in `route_arms` says so).
+
+### Round 11, first candidate (combat's relay, CP4's stop): the refused-pivot regime
+
+With the plant constraint on (combat's slide-off passes CP4's four bars), a hull pinched on BOTH sides and commanded
+a pure pivot is refused every candidate (an element's bus leader 1.2 cm inside Crate_11 against Wall_5: refused runs
+up to 160 ticks); with the constraint off it pivots THROUGH the crate. The fix is the driver's: a hull whose pivot is
+refused on both sides creeps out along the free axis (a short straight reverse or advance) before turning, reading
+the plant's public `yaw_refused_ticks` — a `refused_pivot` regime beside `wedged` in `Movement`. The constraint stays
+OFF this round; this is round 11's first nav item (or squad's, by agreement).
