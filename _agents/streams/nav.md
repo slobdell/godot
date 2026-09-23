@@ -162,8 +162,8 @@ _(the worker keeps this current)_
 
 ## REPORT (nav, round 10, 2026-09-22 night) — read this first; the sections below are the evidence, in order
 
-**Merge here:** `2a2b77c1` (the press flip, pre-registered MOVED, its check below) — everything before it is on main
-(`c148b5d5`, merged). Commits after it are Status only.
+**Merged:** `304636cc` (the press flip) is on main at `c1b92d84` as a harmless default, baseline moved by its one
+proven cause. Commits after it are Status only.
 
 **Done, with measurements (builder0 throughout; every number's tree is in its section):**
 1. **The wall-contact instrument** (`WallContact`): per unit per tick, cause (bake / route / avoid / steer / plant,
@@ -171,8 +171,12 @@ _(the worker keeps this current)_
    checked (`test_nav_wall_contact`, 10 tests).
 2. **The Terminus drive test** (`make nav-terminus-drive`): **the mixed squad's wall contacts 7866 (pre-CP2) → 4957
    (CP2) → 5959 (CP2+CP3, ungrounded slots) → 190 (grounded right-click goals)**, arrivals 6,4,6,6 of 6. The rigs:
-   15691 → 8139 → 10128 → **2315 with the press escape** (arrivals 7 → **15 of 16**).
-3. **Fixes by cause, each an arm:** the pressed-wall escape (**default ON** at `2a2b77c1`); corner inflation and the
+   15691 → 8139 → 10128 → **2430 with the press escape at its default 1.0 s window** (arrivals 7 → **14 of 16**, on
+   ONE seed and ONE escape — see the correction at the end).
+3. **Fixes by cause, each an arm:** the pressed-wall escape (**default ON** at `304636cc`, merged as a HARMLESS
+   DEFAULT at `c1b92d84`: routed moves, crew not engaged, a 1.0 s pin — at 0.5 s it cost combat's moving duel a shot.
+   ⚠ Its 7 → 14 of 16 rig arrivals ride on ONE escape on one deterministic seed: not evidence it reliably helps;
+   round 11 runs the drive test over paired seeds with a spawn-order seed knob. Opt-out: `--nav-off=press`); corner inflation and the
    nose stop (opt-in; inflation's old tactics red was the pre-CP3 literal; the nose stop never fires on grounded
    goals); the not-ready route retry (default ON since `f386c63e`, combat's ask, the baseline's one cause then).
    **The finding that closed the entry was not nav's code:** 11 of 13 misses were right-click goals 4–10 m inside
@@ -404,3 +408,32 @@ squad's `e602025c` (on main) puts `leash: [x, z, r]` on a crew's `move_to` while
 A7's note records for `element_slot()`), and the two arms' fights are identical. So the row is built, tested (10/0)
 and unmeasured; its falsifier (A12's formation residual and off-corridor share) needs a fight whose crews hold element
 slots — a squad-ordered element on the default path (round 11, with the funnel of B1).
+
+
+### The press flip, and why its window is 1.0 s
+
+Default ON, pre-registered MOVED with one cause. The first flip (`2a2b77c1`, 0.5 s) passed the units (1673/0) but
+`scenario_motion::test_two_tanks_duel_on_the_move_front_armor_first` fell to 5 shots against its bar of 6; scoping
+the escape to routed moves (`bc4873f3`) and to unengaged crews (`4b15b4ef`) did not change that (same hash, same
+duel), and with the escape switched off the count read 43,1 — so the escape's WINDOW was the cause: a duelling tank's
+weave brushes a wall, a street pin lasts 30–130 s. Measured on builder0 (drive rigs' arrivals of 16 / the duel):
+
+| window | rigs arrivals | rigs contacts | mixed contacts | duel (ai-scenarios count) |
+|---|---|---|---|---|
+| off (default before) | 7 | 10128 | 190 | passes (43,1) |
+| 0.5 s | 15 | 2315 | 188 | **red** (42,2) |
+| **1.0 s** | **14** | **2430** | 190 | passes (43,1) |
+| 1.5 s | 8 | 5203 | 190 | passes (43,1) |
+
+**`304636cc`'s check (builder0, REMOTE_SLOTS=5): 1674 passed / 0 failed, 17 of 18 targets, ai-scenarios 43,1
+unchanged, sim-baseline MOVED `7dcc52f547f03d3f` → `457b5e830708b439` — the ONE pre-registered cause, proven:
+`make nav-sim-arms SIM_ARMS=press` on the same tree reads `7dcc52f547f03d3f` exactly.** Merge `304636cc` alone and
+adopt the baseline.
+
+**⚠ CORRECTION (same night), the flip's evidence is thin, stated plainly:** at the shipped 1.0 s window the rigs'
+drive fired **one** escape (the mixed squad none); the "56" and "50" figures were the 0.5 s and 1.5 s runs. The 7 → 14
+of 16 arrival gain on this single deterministic seed therefore rides on one escape changing the rest of the
+trajectory — a real mechanism firing, not evidence that it reliably helps. What is solid: the check (1674/0, count
+43,1), the baseline's one proven cause, the unit test (a pinned hull backs 1.37 m off a face), the duel passing.
+Round 11: give the drive test a seed knob that moves spawn order and run the press A/B over paired seeds (C6) before
+calling it the walls fix; the orchestrator decides whether 304636cc merges as a harmless default meanwhile.
