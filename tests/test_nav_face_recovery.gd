@@ -166,7 +166,9 @@ var _last_span := 0.0
 
 ## Drives the wedged semi for 8 s with the recovery `on` or off, returning the metres of path it grinds out.
 func _wedged_path(on: bool) -> float:
-	# The constraint is OFF by default (it costs four of five squads their formation -- see `Tank.yaw_fit_enabled`).
+	# The constraint is OFF by default for round 10. Combat's slide-off passed CP4's four bars (five_squads 0 of 30
+	# off), but a hull pinched on BOTH sides, commanded a pure pivot, is refused every candidate: the driver must creep
+	# out of the pinch first (a refused-pivot regime in Movement, round 11). See `Tank.yaw_fit_enabled`.
 	# This row measures what it DOES, so it selects the arm itself, through the tuning key production reads.
 	Units.tuning["yaw_fit"] = 1.0
 	_refusals_at = Tank.refusals_applied

@@ -169,20 +169,23 @@ nav-defile-ab: import ## nav: squad's defile probe over DEFILE_SEEDS x ARM=wheel
 	@for f in $(BUILD_DIR)/nav-defile/*.log; do echo "$$(basename $$f .log) $$(grep -E '^DEFILE_ARM' $$f | head -1)"; done
 	@! grep -l "SCRIPT ERROR" $(BUILD_DIR)/nav-defile/*.log || { echo ">> nav-defile-ab: a run errored"; exit 1; }
 
-# Round 10 stretch: A6's falsifier, measured by A12 and nothing else (legibility.md §7). nav-fight on each map of
-# Arena.ROTATION x {default, --nav-off=a6 (A6 ON)} at FIGHT_SEED, each fight's trajectory logged, then metrics pooled
-# per arm over attack-move ticks of team 0. Pre-registered (research_catalog A6): off-corridor 30-36 % -> < 10 %,
-# without a fall in exchange ratio. Logs are large: they stay in build/nav-a6/ for the run and are summarised.
+# Round 10: an opt-in nav row judged by A12 and nothing else (legibility.md §7). nav-fight on each map of A12_MAPS
+# (default Arena.ROTATION) x {default, --nav-off=$(A12_ARM) (the row ON)} at FIGHT_SEED, each fight's trajectory
+# logged, then metrics pooled per arm over attack-move ticks of team 0. A6's pre-registration (research_catalog):
+# off-corridor 30-36 % -> < 10 % without a fall in exchange ratio; the leash clamp's: formation residual and
+# off-corridor share not worse, active fraction beside them. Logs are ~100 MB each: build/nav-a6/, summarised.
+A12_ARM ?= a6
+A12_MAPS ?= $(FIGHT_ROTATION)
 .PHONY: nav-a6-ab
-nav-a6-ab: import ## nav: A6's falsifier -- nav-fight x Arena.ROTATION x {default, A6 on} with trajectories, A12 pooled per arm (FIGHT_SEED=3 NAV_TIME=120)
+nav-a6-ab: import ## nav: an opt-in row through A12 -- nav-fight x A12_MAPS x {default, --nav-off=A12_ARM} with trajectories, pooled per arm (A12_ARM=a6|leash FIGHT_SEED=3 NAV_TIME=120)
 	@rm -rf $(BUILD_DIR)/nav-a6 && mkdir -p $(BUILD_DIR)/nav-a6
-	@for map in $(FIGHT_ROTATION); do for arm in off on; do echo "$$map:$$arm"; done; done | \
-		xargs -P $(NAV_JOBS) -I{} sh -c 'map=$${1%%:*}; arm=$${1##*:}; flags=""; [ "$$arm" = on ] && flags="--nav-off=a6"; \
+	@for map in $(A12_MAPS); do for arm in off on; do echo "$$map:$$arm"; done; done | \
+		xargs -P $(NAV_JOBS) -I{} sh -c 'map=$${1%%:*}; arm=$${1##*:}; flags=""; [ "$$arm" = on ] && flags="--nav-off=$(A12_ARM)"; \
 			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/fight_probe.gd -- \
 				--arena=$$map --seed=$(or $(FIGHT_SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(FIGHT_BUDGET),6500) \
 				--trajectory=$(CURDIR)/$(BUILD_DIR)/nav-a6/$$map-$$arm.jsonl $$flags \
 				> $(BUILD_DIR)/nav-a6/$$map-$$arm.log 2>&1; echo ">> nav-a6-ab: $$map $$arm done"' _ {}
-	@for arm in off on; do echo ">> nav-a6-ab: A12 pooled, arm $$arm (on = A6 ON)"; \
+	@for arm in off on; do echo ">> nav-a6-ab: A12 pooled, arm $$arm (on = $(A12_ARM) ON)"; \
 		$(PYTHON) tools/metrics/run_metrics.py "$(BUILD_DIR)/nav-a6/*-$$arm.jsonl" --pool --order-verb attack_move --team 0 \
 			--json $(BUILD_DIR)/nav-a6/metrics-$$arm.json | tail -25; done
 	@for f in $(BUILD_DIR)/nav-a6/*.log; do echo "$$(basename $$f .log) $$(grep -E '^NAV_FIGHT_ARM' $$f | head -1 | cut -c1-200)"; done
