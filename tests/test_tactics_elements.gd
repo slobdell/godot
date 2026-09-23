@@ -60,6 +60,8 @@ func test_the_leader_issues_one_order_per_vehicle_and_they_drive_to_their_slots(
 		assert_true(["move", "attack_move"].has(String(order["verb"])), "%s is moving" % member)
 	assert_eq(seen, 4, "every vehicle in the element has an order")
 	var before := _spread(alpha, scenario)
+	var leader_tank := scenario.game_match.tanks.get_node("Green_A_1") as Tank
+	var route_start := float(Movement.state(leader_tank).get("remaining_m", 0.0))
 	for i in SimClock.TICK_RATE * 6:
 		await scenario.step()
 	# CP3 (round 10, feel, squad's derived form -- squad reviews): both bars were literals calibrated on the 8.62 m bus.
@@ -67,12 +69,19 @@ func test_the_leader_issues_one_order_per_vehicle_and_they_drive_to_their_slots(
 	# window, from its z = 60 spawn. Spread is laid wider on purpose for a bigger hull: 1.5 slot pitches, from the
 	# element's own published pitch.
 	var leader := scenario.game_match.tanks.get_node("Green_A_1") as Tank
-	var progress := 60.0 - leader.global_position.z
-	var wanted := 0.4 * float(Units.stat(leader.unit_id, "max_forward_speed")) * 6.0
+	# ROUTE progress, not northward displacement (squad, reviewing CP3's derived form on 69c681ac): the leader starts
+	# behind an obstacle in the default arena and its navmesh route runs 7 m EAST along z = 60 before turning north
+	# (trace, laptop), so "metres north" counted a correct detour as not moving. What the claim means -- it drove
+	# toward its objective -- is the route it has left shrinking: remaining_m at the start minus at the end.
+	var progress := route_start - float(Movement.state(leader).get("remaining_m", route_start))
+	# 0.3 of top speed over the window (feel's CP3 form had 0.4): the leader's route here starts perpendicular to its
+	# nose, so it spends the first ~2 s turning ~70 degrees and accelerating. The claim separates DRIVING from STALLED
+	# (a stalled element makes ~0 m); measured on 69c681ac (laptop) 19.0 m of route against 16.2.
+	var wanted := 0.3 * float(Units.stat(leader.unit_id, "max_forward_speed")) * 6.0
 	var pitch_x := float((alpha.state()["pitch"] as Array)[0])
 	var spread := _spread(alpha, scenario)
-	print("MEASURE element_drive progress %.1f m (bar %.1f), spread %.1f -> %.1f m (bar +%.1f = 1.5 x pitch %.1f)"
-			% [progress, wanted, before, spread, 1.5 * pitch_x, pitch_x])
+	print("MEASURE element_drive route progress %.1f m (north %.1f m; bar %.1f), spread %.1f -> %.1f m (bar +%.1f = 1.5 x pitch %.1f)"
+			% [progress, 60.0 - leader.global_position.z, wanted, before, spread, 1.5 * pitch_x, pitch_x])
 	assert_true(progress >= wanted,
 			"the element actually drove north toward its objective (%.1f m, bar %.1f m)" % [progress, wanted])
 	assert_true(spread <= before + 1.5 * pitch_x,

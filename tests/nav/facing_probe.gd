@@ -13,6 +13,9 @@ const WITHIN_DEG := 15.0
 
 var facing := {}         # name -> Vector2 ordered facing (x, z)
 var errors := {}         # name -> {at: deg}
+var cover_errors := {}   # name -> {at: deg}: the turret's error on a turreted hull, the hull's on a fixed mount
+var settled_at := {}     # name -> where the hull stood when its order completed
+var shuffled := {}       # name -> the farthest it moved from there afterwards (m)
 var verb := "move"
 
 
@@ -58,11 +61,21 @@ func _sample() -> void:
 		var since := elapsed - float(completed_at[key])
 		var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
 		var err := rad_to_deg(absf(forward.angle_to(facing[key])))
+		# Round 10 (B7): what COVERS the facing is the turret on a turreted hull, the hull on a fixed mount.
+		var gun := Vector2(tank.turret_forward().x, tank.turret_forward().z).normalized()
+		var cover := err if tank.mount == "fixed" else rad_to_deg(absf(gun.angle_to(facing[key])))
 		var marks: Dictionary = errors.get(key, {})
+		var covers: Dictionary = cover_errors.get(key, {})
 		for at: float in [0.0, 2.0, 5.0, 10.0]:
 			if since >= at and not marks.has(at):
 				marks[at] = snappedf(err, 0.1)
+				covers[at] = snappedf(cover, 0.1)
 		errors[key] = marks
+		cover_errors[key] = covers
+		# The shuffle: how far the hull travels after it got there (a held hull that creeps round moves metres).
+		if not settled_at.has(key):
+			settled_at[key] = tank.global_position
+		shuffled[key] = maxf(float(shuffled.get(key, 0.0)), _flat(tank.global_position, settled_at[key]))
 	var settled := 0
 	for key: String in errors:
 		if (errors[key] as Dictionary).has(10.0):
@@ -93,7 +106,25 @@ func _report_facing(elapsed: float) -> void:
 			print("NAV_FACING_OFF %s %s %s err %.0f deg at +10s, move %s option %s speed %.1f dist-to-goal %.1f" % [key, tank.unit_id,
 					Units.stat(tank.unit_id, "locomotion", "?"), float(marks[10.0]), brain.move_order if brain else "?",
 					brain.choice.get("option", "?") if brain else "?", tank.speed(), _flat(tank.global_position, goal[key])])
+	var cover := {}
+	for at: float in [0.0, 2.0, 5.0, 10.0]:
+		var values: Array = []
+		for key: String in cover_errors:
+			if (cover_errors[key] as Dictionary).has(at):
+				values.append(float(cover_errors[key][at]))
+		values.sort()
+		cover["+%ds" % int(at)] = {"units": values.size(),
+				"within_10_deg": values.filter(func(v: float) -> bool: return v <= 10.0).size(),
+				"median_deg": values[values.size() / 2] if not values.is_empty() else -1.0,
+				"worst_deg": values[-1] if not values.is_empty() else -1.0}
+	var moves: Array = shuffled.values()
+	moves.sort()
 	var out := {"arena": String(Arena.active.get("name", "?")), "verb": verb, "units": units.size(),
-			"arrived": completed_at.size(), "seconds": snappedf(elapsed, 0.1), "error_after_arrival": summary}
+			"arrived": completed_at.size(), "seconds": snappedf(elapsed, 0.1), "error_after_arrival": summary,
+			"cover_error_after_arrival": cover,
+			"shuffle_m": {"median": snappedf(moves[moves.size() / 2], 0.01) if not moves.is_empty() else -1.0,
+				"worst": snappedf(moves[-1], 0.01) if not moves.is_empty() else -1.0},
+			"wheel_holds": OrderController.wheel_holds, "wheel_arc_stops": OrderController.wheel_arc_stops,
+			"face_giveups": OrderController.face_giveups, "wheelhold": OrderController.wheel_hold_on()}
 	print("NAV_FACING %s" % JSON.stringify(out))
 	quit(0)

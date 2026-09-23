@@ -157,6 +157,27 @@ _(the worker keeps this current; newest first within each part)_
    60° of the scout on 236 of 236 ORBIT thinks; a surface-relative radius moved deck hits 0 → 0). The fix is mine, in
    `tank_brain.gd`: the gate reads the orbit's REAL angular rate (measured, not v/r from constants), and/or the
    orbit's steering achieves the rate the gate assumes. The scenario's bar is the falsifier. After R2, settle, pitch.
+   6c. **Slot drift on the bigger bus (from CP3, 2026-09-22):** `scenario_elements::test_a_unit_fighting_from_a_formation_
+   slot_stays_in_it` on feel's box commit `055fb10f`: drift 15.2 m against its own leash + 2 m = 16.0 (laptop, PASS
+   by 0.8), over on builder0. The bar is already derived (the leash is the doctrine's 14 m spacing, not the hull), so
+   it is behaviour: a 9.7 m hull fighting from its slot carries its centre further. After the pitch + seating pair.
+   **Correction (feel's bisect, builder0):** it PASSES on the box-only tree `055fb10f` (ai-scenarios 40,4) and fails
+   only at `a138b5f1` with the R5 mounts, where the Condemned bus's turret pivot moved 0.2 m aft (z 0.2 → 0.4). The
+   knife-edge (15.2 vs 16.0) was tipped by the MOUNT, not the box. Discriminating pair: `a138b5f1` vs `055fb10f` on
+   the same seeds; the mechanism to look for is a pivot further from the hull centre changing where the hull stands
+   to fire.
+   (Its sibling, the overwatch scenario, was a start-geometry literal: fixed in CP3 by feel with a 4 m east start
+   and a setup assertion that the stay-put control is exposed; box tree 0% vs 73%.)
+   6d. **Off-mesh slots (nav, 2026-09-22; next after the pitch merge; his acceptance test):** nav's Terminus drive rows
+   (merged tree `709cbeb9`, builder0) show most arrival misses in every arm are crews whose GOAL is 4–10 m off the
+   navmesh (`goal_off_mesh_m` = Movement's route reading of the controller's move_to point). Read so far (laptop):
+   `Element.ground` → `SlotGround.standable` DOES move nav's three example slots onto the mesh by exactly those
+   distances, so the controller is chasing an ungrounded point. Two squad items, agreed with nav: (a) grounding
+   with the HULL's own clearance (the turning-envelope tier), not the bake radius: `standable` stops at the mesh
+   edge, and a bus or rig centred there has its nose in the wall; (b) ground the `follow` station (leader pose +
+   slot offset, never grounded, slides every tick). Nav's re-run prints each miss's controller move_order and
+   Orders verb, and says whether a third path exists. Test: on the Terminus every slot an element publishes is on
+   the mesh with clearance ≥ the hull's, or logged as moved. No slot finding goes on his page before that re-read.
    7. stretch.
 
 **Item 4, the orchestrator's refinement (2026-09-22):** `2 × half_diagonal` (tank 8.95 m, rig ~14.4 m) is the bound
@@ -171,6 +192,18 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
 **Machine note:** every number below says its commit and machine. The laptop is ~2.75× slower than builder0.
 
 ### Done
+
+- **On main `08319e59` (builder0, the record):** `MEASURE element_support_by_fire lane clear at 1.5 s, first shot
+  0.9 s after it, 9 shots in the 22.5 s after, through a friend 0` PASS; `MEASURE ai_cp2_scout_engine_deck x4mw
+  {deck 27, hits 29, shots 29}; x3m (no weak spots) {0, 0, 0}` PASS. `make repath-test`: 6/7; `arrived` STALE only
+  for crews destroyed before the click (six of eight dead there; the two living changed at +0 ticks). Count
+  re-recorded on main at `4ff45e50`: 44,0,3,0.
+- **MERGED to main at `08319e59`:** `e4d5e3f3` (stream/squad with main `52254fd2` = control's R2 merged in), builder0: `make check
+  exited 2`, **1587 passed / 0 failed**, sim-baseline `1ea332e7bc268d2a` UNMOVED, determinism `559a415887806e43`,
+  red ONLY on ai-scenarios-check: **43 passed, 1 failed** (was 41,3; the one red is combat's
+  `artillery_stays_dug_in`). REASONs: base-of-fire re-specified (`35f7b459`), ORBIT controller (`2ac026af`). Commits
+  after it are docs only. `make repath-test` (laptop) on it: 6 of 7 pass; `arrived` reads STALE only for two crews
+  destroyed before the click (control's dead-crew exclusion `563c9155` not yet on main).
 
 - **Baseline (start of round):** `2ee65f94`, builder0: `make check exited 0`, 1559 passed / 0 failed, sim-baseline
   `1ea332e7bc268d2a` unmoved, determinism `559a415887806e43`, ai-scenarios 41,3.
@@ -193,6 +226,26 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   6.7/13.5, Terminus side 10.7/13.1; longest leg 47.9 → 23.9 m. The paired series on builder0 decides it (pending).
   The Terminus forward tail (20 s) is one wheeled ifv `blocked/terrain` 5 m from a slot against geometry: nav's.
   Tried and reverted: lifting co-arrival pacing at arrival (Terminus fwd 20.5 → 32.7 s, one seed).
+- **Item 3, settle time, step 2** — `6d6d6264`: `_flow` runs only when the leader leads from the front (else every crew
+  goes straight to its final slot); the probe's seed jitters the start (±1.5 m, ±10°: the first series had six
+  identical seeds, n = 1). **Paired series, builder0, `a3582c82`-tree + `6d6d6264`, 8 jittered seeds per cell,
+  20 m plain move, tank/tank/ifv/ifv (median arrived / stopped, s; shipped vs round 9's pinned leader; discordant
+  stopped pairs shipped-faster/round-9-faster/tie):**
+
+  | arena | dir | arrived | stopped | pairs |
+  |---|---|---|---|---|
+  | default | forward | 1.9 / 3.8 | **4.2** / 9.2 | 7/0/1 |
+  | default | side | 2.7 / 11.7 | **4.9** / 14.8 | 8/0/0 |
+  | default | back | 8.4 / 8.4 | 15.8 / 15.3 | 4/3/1 |
+  | terminus | forward | 2.6 / 3.8 | **5.8** / 7.1 | 6/1/1 |
+  | terminus | side | 2.8 / 12.5 | **9.3** / 17.2 | 8/0/0 |
+  | terminus | back | 8.9 / 7.3 | 16.2 / 13.5 | 4/4/0 |
+
+  Overall 37 / 8 / 3. **B7's COMPLETED ≤ 8 s: met forward and side (max 2.8 s); back 8.4–8.9 s. The < 10 s settle bar:
+  met forward and side on both arenas; NOT met for back** (a wash between arms): a 20 m move BACK from the spawn lays
+  a 40 m column whose rear slots press on the arena edge (`blocked/terrain` in the trace), and one wheeled crew
+  creeps 0.5–1.8 m/s for ~15 s after its order completes. Known issue, next in item 3 if time: the plain move's
+  formation is the doctrine's COLUMN, 40 m long for four hulls, for a 20 m reposition.
 - **Item 5, base-of-fire scenario** — `35f7b459`. Re-specified with the reason: the base crews were hand-issued
   `attack` (close with and destroy: they reversed, one charged 32 m, no shot for 6.3 s after a lane cleared); the
   element issues a base crew a HOLD on its spot, and the scenario now does. The early-shots bar measured nav moving
@@ -228,6 +281,30 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
 - **Item 6a, `_is_clear`** — `80905740`. REPLACES the aligned projection in `ArmyLayout._is_clear` with the
   separating-axis rule on each placed hull's own forward. Test with a 90° neighbour (old: 3.6 m clear, true 0.5 m).
 
+### The pitch pair (after CP3, main `69c681ac` merged at `5f8376bc`)
+
+- `e11376f4` base-of-fire: a lane is clear by the game's own `lof` friend check (a hull-centre literal on the bus).
+  On the bus: lane clear 11.8 s, first shot +0.2 s, 5 shots, 0 through a friend. No baseline move.
+- `d8193e86` **pitch** (baseline MOVES, cause 1): lateral floor = diagonal + `DRESS_MARGIN_M` 0.30 m. Bus 2.90 × 9.70
+  (laptop): width 4.90 m −0.27 (2/4) / −0.56; one_turning 6.51 m −0.43 / −0.52; diagonal 10.12 m +0.02 / 0.00;
+  **dressing 10.42 m +0.27 / +0.29, 4/4 turned**.
+- `bed99012` legged-path seating: **DROPPED** (reverted in `9e075524`). Its own measurement (drills-ON settle pair,
+  builder0, 8 jittered seeds, median stopped s unpinned/pinned): default fwd 13.5/13.5, side 30.9/32.5, back 45/45;
+  Terminus fwd 14.3/14.3, side 26.7/45.0, back 28.8/28.8; pairs 8 / 4 / **36 ties**. The leader already takes seat
+  0 on the legged path. **Known issue (round 11 candidate): drills-ON 20 m moves settle in 13–45 s** (the element
+  halts in a herringbone on arrival), against 4–9 s for a plain move.
+- `ed24518c` follow-ups: a hold carrying a drawn heading replaces a move at once (two wheeled crews never finished
+  their final move at the wider slots); drive-to-slots measures ROUTE progress (the leader's route runs 7 m east
+  before turning north: `MEASURE element_drive route progress 19.0 m (north 9.2 m; bar 16.2)`, the 0.3 factor a
+  judgement call, accepted).
+- `547f87cf` **deploy at the round-9 width floor** (ruling, option 1): formations lay at the diagonal from the first
+  order on; ArmyLayout deploys at width + 2 (`DEPLOY_FLOOR`). A 25-bus army's front slot z 90.0 inside the edge 86
+  (it was 75 at the diagonal; arena: 0–5 m free ahead of every hexagonal map's zone).
+  **KNOWN COST: squads are packed at spawn, and their FIRST dressing turns clip (bus at 4.90 m: −0.27 m). Round 11:
+  a checkerboard-staggered deploy (arena's option (a): 1 × diagonal across, ranks offset half a pitch, depth ≈
+  0.87 × diagonal) removes it.**
+- `a8789bea` the `squad_incoming` disc site (no move).
+
 ### Requests to other streams
 
 - **control (R2), sent via the orchestrator 2026-09-22:** `Orders._same_order` drops an ELEMENT re-issue whose only
@@ -236,6 +313,10 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   `"task"` to `UnitCommand.KEYS` and have `_same_order` return false when `current.task != order.task`. squad's side
   already sends `command["task"] = element.task_seq` for the player's elements as soon as the key exists (runtime
   adapter `Element._ORDERS_TAKE_TASK`), and `test_tactics_preempt` asserts the leader's facing from that day.
+
+- **combat (C6), owed by squad AFTER combat merges:** pass `"squad_incoming"` as the site argument at
+  `game/ai/incoming_fire.gd:137/139` (combat's `match.hull_disc_{lof,incoming,squad_incoming}`). The helper has no
+  site argument on main at `52254fd2`, so the one line waits for combat's merge; then `git merge main` and add it.
 
 ### Questions for the lead
 

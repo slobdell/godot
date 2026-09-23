@@ -259,6 +259,39 @@ def pits(m):
                              m.region("the pump house", "centre", 0, 0, 24)])
 
 
+# ---- The Terminus with a canal (round 10, backlog 4): a PROPOSAL, a fixture, frames only -------------------------
+#
+# arena owns the Terminus; this is not it. It is the Terminus's own props with the ring road turned into a canal and
+# 20 m bridges carrying the avenue and both side streets over it, written as a FIXTURE so it can be shot and
+# measured beside the real map and never reaches a menu.
+#
+# What it costs, which is the point of drawing it: the ring road is a declared R4 lane and the plaza crossings run
+# along it, so both go; the objective pair sat ON the ring road and has to move (here to the street corners beyond
+# it). A canal on the Terminus is a redesign of the lead's acceptance map, not a dressing -- his call, with arena.
+TERMINUS_CANAL = (0.0, 30.0, 290.0, 14.0)          # z 23..37 along the ring road, past the walls both ends
+TERMINUS_BRIDGES = ((0.0, 30.0), (-70.0, 30.0), (70.0, 30.0))  # the avenue and both streets, 20 m wide
+
+
+def terminus_canal(m):
+    half = [water("the canal", *TERMINUS_CANAL)] + [bridge("the %s bridge" % n, x, z, 20.0, 22.0)
+                                                   for n, (x, z) in zip(("avenue", "west street", "east street"), TERMINUS_BRIDGES)]
+    terrain = mirrored_terrain(half)
+    # Keep the Terminus's props, minus anything standing in the canal or on its rim (one container, at a kerb).
+    def dry(p):
+        x, z = p["position"]
+        return not (abs(z) - 0.0 > 23.0 - 3.0 and abs(z) < 37.0 + 3.0 and abs(x) < 145.0)
+    props = [p for p in m.terminus if dry(p)]
+    m.write_v2("terminus_canal", "The Terminus (canal proposal)",
+               "FIXTURE, a proposal to arena and the lead: the Terminus with its ring road a canal and 20 m bridges on "
+               "the avenue and both streets. Costs the ring-road lanes and moves the objective pair off the water.",
+               props, fixture=True, terrain=terrain, shape={"kind": "hexagon"}, half_size=140.0,
+               objectives=m.objective_pair("the west ring", -75.0, -58.0, 15.0),
+               lanes=[m.lane("the avenue", [(0, 90), (0, 42), (0, 0), (0, -42), (0, -90)], 18) | {"self_mirror": True},
+                      m.lane("west street", [(-70, 90), (-70, 20), (-70, -20), (-70, -90)], 18),
+                      m.lane("east street", [(70, 90), (70, 20), (70, -20), (70, -90)], 18)])
+
+
 def author(m):
     crossing(m)
     pits(m)
+    terminus_canal(m)

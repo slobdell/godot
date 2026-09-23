@@ -81,7 +81,7 @@ func test_the_lateral_pitch_candidates_as_hulls_turn_in_place() -> void:
 	var rows: Array = []
 	var results := {}
 	for unit: String in ["tank"]:
-		for rule: String in ["width", "one_turning", "both_turning"]:
+		for rule: String in ["width", "one_turning", "both_turning", "dressing"]:
 			for opposite: bool in [false, true]:
 				var r := await _turn_in_place(unit, rule, opposite)
 				results["%s/%s/%s" % [unit, rule, "opposite" if opposite else "same"]] = r
@@ -99,6 +99,14 @@ func test_the_lateral_pitch_candidates_as_hulls_turn_in_place() -> void:
 		var r: Dictionary = results["tank/both_turning/%s" % side]
 		assert_true(float(r["gap"]) >= -0.05, "at 2 x half_diagonal the hulls turn clear (%s: %.2f m)" % [side, r["gap"]])
 		assert_eq(int(r["turned"]), 4, "and every hull got round to the new heading (%s)" % side)
+		var landed: Dictionary = results["tank/dressing/%s" % side]
+		assert_true(float(landed["gap"]) >= 0.0, "at the LANDED pitch (diagonal + margin) the hulls turn clear (%s: %.2f m)" \
+				% [side, landed["gap"]])
+	# The formations the game lays use the landed rule: a formed group's lateral floor is the diagonal + margin.
+	var hull: Array = Units.stat("tank", "hull_size")
+	var extent := Vector2(minf(float(hull[0]), float(hull[2])), maxf(float(hull[0]), float(hull[2])))
+	assert_near(TacticsFormation.hull_floor([{"unit": "tank"}]).x, extent.length() + TacticsFormation.DRESS_MARGIN_M, 1e-4,
+			"TacticsFormation lays a tank group's lateral floor at the diagonal + DRESS_MARGIN_M")
 
 
 ## Not run by the suite (no `test_` prefix): the sweep between the candidates, kept as the instrument that produced the

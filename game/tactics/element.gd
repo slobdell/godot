@@ -638,6 +638,13 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 	# are the same intention while the place is the same. Without this the plan's verb flapped between them every
 	# update, and every flap was a new order id: a marker drawn and a cue played on the player's screen, ~35 a second
 	# across an army, which is what he saw as blue dots repeating and heard as beeping.
+	# A HOLD carrying a facing (the heading the player drew, held on arrival: d29115ae) replaces a MOVE of ours at once,
+	# not when the move completes: it is a standing order the move cannot express. Round 10, after the pitch: two
+	# wheeled crews circling their (wider) slots never completed the move and sat on it 15 s after arrival, never told
+	# the heading (test_a_dragged_heading_turns_every_crew_once_the_element_arrives). One-way: a later `move` to the same
+	# place is still "the same intention" below, so a centre wobbling across ARRIVE_M cannot flap it back.
+	if String(desired["verb"]) == "hold" and desired.get("facing") is Vector3 and String(mine.get("verb", "")) == "move":
+		return true
 	var same_target := String(mine.get("target", "")) == String(desired.get("target", ""))
 	var fight := ["attack", "attack_move"]
 	var stay := ["move", "hold"]

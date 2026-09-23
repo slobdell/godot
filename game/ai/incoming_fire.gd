@@ -10,6 +10,9 @@ extends RefCounted
 
 ## Rounds arriving later than this aren't worth reacting to yet (ticks).
 const HORIZON_TICKS := SimClock.TICK_RATE * 5 / 4
+## Round 10 (combat, research C6): the name of this reader in `Units.HULL_DISC_SITES`, so `match.hull_disc_squad_incoming`
+## switches the disc or the box HERE alone while the other two sites keep theirs (a series pairs arms by seed).
+const SITE := "squad_incoming"
 ## ...nor rounds that would pass farther than this from where the unit is now (meters).
 const DANGER_RADIUS := 6.0
 
@@ -134,10 +137,10 @@ static func _count_in_flight(game_match: Match, unit: Tank) -> int:
 		var direction := Vector2(dir_x[i], dir_z[i])
 		var along := offset.dot(direction)
 		var flat_direction := Vector3(direction.x, 0.0, direction.y)
-		if along <= 0.0 or along > reach[i] + Units.hull_reach_of(half, forward, flat_direction):
+		if along <= 0.0 or along > reach[i] + Units.hull_reach_of(half, forward, flat_direction, SITE):
 			continue
 		if shooters[i] == name or Units.hull_distance_of(half, forward, unit.global_position,
-				Vector3(xs[i], 0.0, zs[i]), flat_direction) > Match.INCOMING_MARGIN:
+				Vector3(xs[i], 0.0, zs[i]), flat_direction, SITE) > Match.INCOMING_MARGIN:
 			continue
 		# for_unit's own filter, on the round's flat velocity.
 		var flat := Vector3(vxs[i], 0.0, vzs[i])

@@ -182,3 +182,18 @@ func test_a_nose_on_the_wall_at_the_end_of_the_route_stops() -> void:
 	var out := await _nose_run(["nosestop"])
 	assert_true(int(out["stops"]) > 0, "the nose stop held the hull (%d)" % out["stops"])
 	assert_true(int(out["contacts"]) <= 10, "it touched the face briefly, not for the order's length (%d ticks)" % out["contacts"])
+
+
+## Item 4: the oriented pair radius. Two War Rigs (3.32 x 14) side by side need their half-widths abeam, and their
+## half-lengths nose to tail; the disc gave 9.16 m both ways.
+func test_the_oriented_radius_is_narrow_abeam_and_long_end_on() -> void:
+	var disc := Avoidance.radius_of("gang_tank")
+	# Rows: [name, x, z, vx, vz, radius, still, half_width, half_length, heading_x, heading_z]; both face -Z.
+	Avoidance.load_rows([["A", 0.0, 0.0, 0.0, 0.0, disc, true, 1.66, 7.0, 0.0, -1.0],
+			["B", 5.0, 0.0, 0.0, 0.0, disc, true, 1.66, 7.0, 0.0, -1.0]])
+	var abeam := Avoidance.pair_radius(0, 1, Vector2(1, 0))
+	var end_on := Avoidance.pair_radius(0, 1, Vector2(0, 1))
+	assert_true(absf(abeam - (1.66 * 2 + 2 * Avoidance.RADIUS_MARGIN)) < 0.01, "abeam: two half-widths (%.2f m)" % abeam)
+	assert_true(absf(end_on - (7.0 * 2 + 2 * Avoidance.RADIUS_MARGIN)) < 0.01, "end on: two half-lengths (%.2f m)" % end_on)
+	assert_true(abeam < disc * 2.0 and end_on > disc * 2.0,
+			"narrower than the disc abeam, longer end on (disc pair %.2f m)" % (disc * 2.0))
