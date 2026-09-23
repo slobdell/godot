@@ -169,6 +169,27 @@ re-records on `main` (my record reverted on request). Earlier green points: `d04
 drive-to-slots and combat's parked-friend; the same scenario reds 40,4) plus my one new passing test. So this branch
 adds no red. The parked-friend row is being re-read on squad's `c0040ae4` (placement through `Tank.place()`).
 
+### CP4 VERDICT RUN (builder0, `6f553699` = main `b1693901` with squad's pitch; one build, every arm proven by TUNE line)
+
+| bar | constraint off | on, vehicle mask (round 9) | **on, world mask (the fix)** | verdict |
+|---|---|---|---|---|
+| 1. five_squads, off slot of 30 | 0 | 6 (Alpha 94.2, Bravo 93.7, Echo 95.4 m) | **0** (4.8/8.9/4.9/4.2/3.2 m) | PASS |
+| 2. nav's corridor: yaw / footprint / residual / giveups | (nav's test selects the constraint itself) | 11.4° / 6.0 m / 1.22 m / 1 | **11.4° / 6.0 m / 1.22 m / 1** | PASS (≤ 1.8 m) |
+| 3. nav's suite (the wedged rig) | 8/0 | 8/0 | **8/0** | PASS |
+| 4. longest refused run in five_squads | 0 | 1206 | **83 ticks** | **FAIL** (bar ≤ 3) |
+
+**Bar 4, traced** (a clean clone at the same commit, builder0): three hulls, each AT its slot and flush against ONE
+world collider, wanting a 1.6–2.7° trim that swings a corner 2–3 cm into it: Green_Charlie_1 vs Crate_7,
+Green_S4_2 vs Crate_17 (and Wall_2), Green_S5_4 vs Wall_16; runs of 80–92 ticks. **The same ratchet as item 1, against
+the world.** CP4 does not flip. The fix in progress: a refused smallest candidate may SLIDE OFF a single contact (push
+along its normal, ≤ 5 cm, accepted only if the pushed hull is no deeper); a corridor still refuses (pushing off one wall
+drives into the other).
+
+**A second hole, found building its test:** the constraint only arms after a slide contact, so a hull pivoting from
+REST is never checked. A stationary bus rotated 143.7° against foundry's centre crate unchecked. The candidate fix
+arms the check for near-stationary hulls (|speed| < 0.5 m/s). Both land with a positive control and CP4's four bars
+re-run.
+
 ### For the lead, in one paragraph
 
 **Why the yaw fix froze your squads, and the fix.** Round 9's rule that stops a hull rotating through a wall also
