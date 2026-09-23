@@ -9,7 +9,7 @@
 
 The lead: *"Units are still driving into walls"* and *"I'll know that the units are doing what I want when I can
 navigate them through the Terminus streets."* Round 10 turned the first sentence into a counter and the second into
-a make target. The numbers and their commits are in the brief's Status (`streams/nav.md`); this is the mechanism.
+a make target. The numbers and their commits are in the brief's Status (`streams/archive/round10/nav.md`); this is the mechanism.
 
 **`WallContact` (`game/ai/wall_contact.gd`).** Every controller tick, before the stride skip, `Movement.observe_contact()`
 reads the hull's LAST slide (`get_slide_collision_count()` through the unit; skipped when the plant parked the hull,
@@ -202,7 +202,7 @@ usually already exists as a constant, a fixture, or a generator's own input, and
 
 > Written at the start of round 9 (2026-09-19) and kept current as each row lands. The backlog rows are A7, A11, A1
 > and A4 in [research_catalog.md](research_catalog.md); the sequencing argument is in [workstreams.md](workstreams.md)
-> *Round 9 goal*; the brief is [streams/nav.md](streams/nav.md).
+> *Round 9 goal*; the brief is [streams/archive/round10/nav.md](streams/archive/round10/nav.md).
 
 **The Invariant 0c declaration, verbatim, because a round-9 row is only safe if it REPLACES something** (catalogue
 Part 2: *replacing is safe, adding alongside is where two techniques fight*):

@@ -1,3 +1,5 @@
+> **ARCHIVED: round 10 (2026-09-22 → 23), stream `combat`.** Every commit named here is merged to `main` (the closing check on `80e3ce90` was green; the last merges after it are listed in `HANDOFF.md`); the round-11 list at the top of Status is the live part. Relative links below were written from `_agents/streams/`.
+
 # Stream: combat (the rigs yaw through walls: the plant predicate, then the constraint back on; ORBIT reads hull length)
 
 > Read `HANDOFF.md`, [orchestration.md](../orchestration.md) (*The worker contract*), [game_design.md](../game_design.md)
