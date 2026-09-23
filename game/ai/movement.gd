@@ -2147,7 +2147,9 @@ func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			cmd.throttle = 1.0 if order.get("reverse", false) else -1.0  # back off the way you were NOT going
 		cmd.turn = 1.0
 		return
-	if String(order.get("type", "")) == "move_to" and _pressing_escape(cmd, delta):
+	# Routed moves only: a `direct` hop is CombatMotion's (it checked the straight line itself), and backing a hull out
+	# of a duel mid-fight cost `scenario_motion`'s moving duel a shot (5 vs its bar of 6) on 2a2b77c1.
+	if String(order.get("type", "")) == "move_to" and not bool(order.get("direct", false)) and _pressing_escape(cmd, delta):
 		return
 	if absf(cmd.throttle) > 0.5 and ctl.tank.estimated_velocity.length() < STUCK_SPEED:
 		_stuck_time += delta
