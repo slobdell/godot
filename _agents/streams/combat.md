@@ -162,6 +162,13 @@ builder0, the check on this exact hash: `>> remote: make check exited 2`, **1604
 re-records on `main` (my record reverted on request). Earlier green points: `d0445bbf` exit 0 (1564/0), start of round
 `2ee65f94` exit 0 (1559/0).
 
+### Latest check: `0fe728d6` (main at `f29c5b7c` merged in, + the CP3-review mount fix), builder0
+
+`>> remote: make check exited 2`, **1652 passed, 2 failed**, sim-baseline `11c479c3bec77082` **unmoved**, determinism
+`cd43435b56b09acf`. Identical to `main`'s own check at `f29c5b7c` (1651/2, the same two REASON'd reds: squad's
+drive-to-slots and combat's parked-friend; the same scenario reds 40,4) plus my one new passing test. So this branch
+adds no red. The parked-friend row is being re-read on squad's `c0040ae4` (placement through `Tank.place()`).
+
 ### For the lead, in one paragraph
 
 **Why the yaw fix froze your squads, and the fix.** Round 9's rule that stops a hull rotating through a wall also
