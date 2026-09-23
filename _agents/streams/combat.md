@@ -489,8 +489,8 @@ REASON. The constraint does not stay off because of a hand-placed literal.
 | arm | laptop | builder0 |
 |---|---|---|
 | disc (default) | FAIL: first shot 251, 1 shot, 12.2 m | FAIL: 251, 1 shot, 12.2 m (identical to the tick) |
-| box everywhere (`match.hull_disc=0`) | PASS: 114, 2 shots, 4.1 m | (running) |
-| box at `lof` only | PASS: 114, 2 shots, 4.1 m | (running) |
+| box everywhere (`match.hull_disc=0`) | PASS: 114, 2 shots, 4.1 m | PASS: 114, 2 shots, 4.1 m |
+| box at `lof` only | PASS: 114, 2 shots, 4.1 m | PASS: 114, 2 shots, 4.1 m |
 | box at `incoming` only | FAIL: 251, 1 shot, 12.2 m | not run |
 
 The whole effect is the friendly-fire line-of-fire site. The disc's half-diagonal reach (5.06 m for the 9.70 × 2.90
