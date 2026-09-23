@@ -272,3 +272,9 @@ A yield spot must be on the mesh with the hull's turning-envelope shortfall clea
 `make nav-fight ARENA=terminus` (seed 3, 120 s, builder0, both arms on one tree, arm proven by `yield_spots_refused`
 > 0): **wall-contact ticks with driver `yield` fall by ≥ 50 %**, the `progressing` share does not drop by more than
 0.02, and `blocked_friend` does not rise by more than 0.01. Any of the three missed = it stays opt-in.
+
+**Result, seed 3 (builder0, tree `5e6e608e` code, arm proven: 75 spots refused vs 0):** yield-driver wall contacts
+**3079 → 1289 (−58 %)** ✓; `progressing` 0.428 → 0.412 (−0.016) ✓; `blocked_friend` 0.007 → 0.007 ✓; all wall
+contacts 16725 → 13640. **Not pre-registered and stated:** `blocked_no_path` 0.091 → 0.128. One seed is not a series
+(C6): the paired A/B over seeds 1, 3, 5, 7, 9 (`nav-fight-ab AB_OFF=yieldclear ARENA=terminus`) is running; the row
+stays opt-in until it and the `blocked_no_path` rise are read.
