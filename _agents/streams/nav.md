@@ -309,3 +309,33 @@ up to 160 ticks); with the constraint off it pivots THROUGH the crate. The fix i
 refused on both sides creeps out along the free axis (a short straight reverse or advance) before turning, reading
 the plant's public `yaw_refused_ticks` — a `refused_pivot` regime beside `wedged` in `Movement`. The constraint stays
 OFF this round; this is round 11's first nav item (or squad's, by agreement).
+
+### THE WALLS ENTRY: the drive test on grounded right-click goals (control's R2b on main)
+
+`make nav-terminus-drive`, orders stamped `source: player` (the right-click path R2b grounds), builder0, seed 1,
+deterministic, tree **`c148b5d5`** (= main `46bbb9ac` + nav's opt-in rows). Contacts = wall-contact unit-ticks.
+
+| arms | mixed contacts / observed | mixed arrived per leg | rigs contacts / observed | rigs arrived per leg |
+|---|---|---|---|---|
+| **default path** | **190** / 19838 | **6, 4, 6, 6** | 10128 / 22914 | 1, 2, 2, 2 |
+| press + nosestop ON (56 escapes on the rigs, 0 nose stops) | 188 / 19922 | 6, 4, 6, 6 | **2315** / 12261 (−77 %) | **4, 4, 4, 3** |
+
+The mixed squad's history on this instrument: pre-CP2 7866 → CP2 4957 → CP2+CP3 ungrounded 5959 → **grounded 190**
+(−97.6 % from the start of the round). What remains for the rigs on the default path is plant drift against a wreck,
+a container and Block_1 (a 14 m hull held against something while not driven into it); the press escape frees them.
+**Proposed to the orchestrator: `press` default ON as its own commit, pre-registered MOVED with one cause** (it is the
+one row with a clean win on the acceptance test; tactics_elements 8/0 with it on). `nosestop` never fires on grounded
+goals: it stays opt-in as a guard.
+
+### A6, falsified (the stretch item)
+
+A6 runs only at A7's level 3, so the A/B is `a7` vs `a7,a6` (`make nav-a6-ab A12_BASE=a7`), arm proven
+(`a6_asked` 4909–5645 per map vs 0). A12 pooled over yard, pit, terminus (attack-move, team 0, seed 3, builder0):
+**off-corridor 0.3235 → 0.302** (active fraction 0.710 → 0.692) against the pre-registered **< 10 %**; per map pit
+0.313 → 0.274, terminus 0.344 → 0.324, yard 0.307 → 0.303. Green losses 0,0,0 → 1,1,2 (small). Stays opt-in.
+
+### `c148b5d5`'s check
+
+builder0, REMOTE_SLOTS=5: **1673 passed / 0 failed**, sim-baseline passes `7dcc52f547f03d3f`, ai-scenarios 43,1 (the
+one red, `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits`, is not on a path nav's default
+changed since the retry; asked the orchestrator to read it against main's own check).
