@@ -176,11 +176,15 @@ nav-defile-ab: import ## nav: squad's defile probe over DEFILE_SEEDS x ARM=wheel
 # off-corridor share not worse, active fraction beside them. Logs are ~100 MB each: build/nav-a6/, summarised.
 A12_ARM ?= a6
 A12_MAPS ?= $(FIGHT_ROTATION)
+comma := ,
+# Flags BOTH arms carry (a row that only runs under another, like A6 at A7's level 3: A12_BASE=a7). Empty = default.
+A12_BASE ?=
 .PHONY: nav-a6-ab
 nav-a6-ab: import ## nav: an opt-in row through A12 -- nav-fight x A12_MAPS x {default, --nav-off=A12_ARM} with trajectories, pooled per arm (A12_ARM=a6|leash FIGHT_SEED=3 NAV_TIME=120)
 	@rm -rf $(BUILD_DIR)/nav-a6 && mkdir -p $(BUILD_DIR)/nav-a6
 	@for map in $(A12_MAPS); do for arm in off on; do echo "$$map:$$arm"; done; done | \
-		xargs -P $(NAV_JOBS) -I{} sh -c 'map=$${1%%:*}; arm=$${1##*:}; flags=""; [ "$$arm" = on ] && flags="--nav-off=$(A12_ARM)"; \
+		xargs -P $(NAV_JOBS) -I{} sh -c 'map=$${1%%:*}; arm=$${1##*:}; flags="$(if $(A12_BASE),--nav-off=$(A12_BASE))"; \
+			[ "$$arm" = on ] && flags="--nav-off=$(if $(A12_BASE),$(A12_BASE)$(comma))$(A12_ARM)"; \
 			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/fight_probe.gd -- \
 				--arena=$$map --seed=$(or $(FIGHT_SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(FIGHT_BUDGET),6500) \
 				--trajectory=$(CURDIR)/$(BUILD_DIR)/nav-a6/$$map-$$arm.jsonl $$flags \
