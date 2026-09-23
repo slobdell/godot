@@ -326,6 +326,14 @@ scenarios 42,2 (cover-peeking REASON'd, parked-friend combat's).
   re-shaped to pass on a 2-of-16 effect. Next step, if the feature is to earn its keep: find what the peek timing
   does NOT change (the gun's aim model? cover exit timing?) with a positive control.
 
+### Instruments: what their numbers are
+
+- **`make squad-defile` ignored its seed until `defile_probe`'s start jitter (round 10, nav's finding): every defile
+  number published before it, the round-9 41.4 s wheeled arrival dispersion included, is n = 1 per arm, not a
+  sample.** Now ±1.5 m / ±10° per seed (laptop: wheeled seeds 3 and 4 first arrival 14.4 s vs 25.3 s; only 1 of 5
+  wheeled hulls arrives inside 40 s on either, a finding to read with more seeds).
+- `make squad-settle` got the same fix earlier (`6d6d6264`); its first series (six identical seeds) is superseded.
+
 ### Reviews
 
 - **arena's `58540dd7`, `tests/test_match_spawns_and_results.gd::test_the_grid_fills_the_front_row_before_the_rows_

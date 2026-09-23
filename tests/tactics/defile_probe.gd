@@ -53,6 +53,9 @@ const RECOVERED_M := 8.0
 ## Sampling: every tick is read, but a pair's order has to hold for this many samples before a flip counts, so a
 ## single tick of jitter across the line is not a crossing.
 const FLIP_HOLD := 6
+## The seed's reach into the setup (see `_run`): a start jitter small enough to keep the column lined up on the gap.
+const START_JITTER_M := 1.5
+const START_JITTER_DEG := 10.0
 
 ## The wheeled arm and the tracked control, both Condemned so the doctrine table and the faction are held fixed.
 const ARMS := {
@@ -106,11 +109,18 @@ func _run(arm: String, deform: bool, seed_value: int, seconds: float, technique:
 	var game_match := lab.game_match
 	var names: Array = []
 	var ids: Array = ARMS[arm]
+	# The SEED jitters each vehicle's start (+-START_JITTER_M on both axes, +-START_JITTER_DEG of yaw), round 10:
+	# before this the probe ignored its seed (nav's defile A/B: eight seeds byte-identical), so every defile number
+	# published until then -- the 41.4 s wheeled dispersion included -- is n = 1 per arm, not a sample.
+	var jitter := RandomNumberGenerator.new()
+	jitter.seed = seed_value
 	for i in ids.size():
 		# A column in the open ground north of the band, already lined up on the gap: the element's own formation
 		# decision is what is being measured, not its ability to find the gap from the far side of the map.
 		var tank := lab.unit(Match.Team.GREEN, "Green_D_%d" % (i + 1),
-				Vector3(GAP_X, 0.0, START_Z + 10.0 + i * 8.0), PI, String(ids[i]))
+				Vector3(GAP_X + jitter.randf_range(-START_JITTER_M, START_JITTER_M), 0.0,
+						START_Z + 10.0 + i * 8.0 + jitter.randf_range(-START_JITTER_M, START_JITTER_M)),
+				PI + deg_to_rad(jitter.randf_range(-START_JITTER_DEG, START_JITTER_DEG)), String(ids[i]))
 		names.append(String(tank.name))
 	# A lab table that forces the shape and the technique. Both matter: the shipped table picks a COLUMN for the
 	# maze's close terrain (nothing for A8 to squeeze) and `traveling` on an empty map (nothing for A9 to phase).
