@@ -265,3 +265,10 @@ and other hulls, not the hull's clearance from walls.
 sim-baseline PASSES `11c479c3bec77082`, ai-scenarios 40,4 vs the recorded 44,0. Every red is main's CP3 set with its
 REASON (units: parked-friend lane, tactics_elements drive-north; scenarios: formation-slot, base-of-fire,
 parked-friend, perf under load; main's own record reads 39,5). No red is nav's.
+
+### The yield-spot clearance row, `--nav-off=yieldclear` (opt-in) — PRE-REGISTERED before its A/B
+
+A yield spot must be on the mesh with the hull's turning-envelope shortfall clear in eight directions. Falsifier on
+`make nav-fight ARENA=terminus` (seed 3, 120 s, builder0, both arms on one tree, arm proven by `yield_spots_refused`
+> 0): **wall-contact ticks with driver `yield` fall by ≥ 50 %**, the `progressing` share does not drop by more than
+0.02, and `blocked_friend` does not rise by more than 0.01. Any of the three missed = it stays opt-in.
