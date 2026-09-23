@@ -181,7 +181,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband", "inflate",
-		"minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -260,7 +260,7 @@ static var route_not_ready := 0
 static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
-			"yield_spots_refused": yield_spots_refused,
+			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps,
 			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused}
@@ -273,6 +273,7 @@ static func reset_route_arms() -> void:
 	nose_stops = 0
 	driver_ticks = {}
 	yield_spots_refused = 0
+	leash_clamps = 0
 	Avoidance.oriented_pairs = 0
 	route_not_ready = 0
 	clearance_chords = 0
@@ -778,6 +779,8 @@ func idle() -> void:
 func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	var tank := ctl.tank
 	var goal := Vector3(order["x"], 0.0, order["z"])
+	if order.has("leash") and leash_on():
+		goal = within_leash(goal, order["leash"])
 	if _goal == Vector3.INF or _flat_distance(goal, _goal) > NEW_GOAL_JUMP:
 		_order_ticks = 0  # a new destination, not a slot sliding along (brains re-issue their move every think)
 	_goal = goal
@@ -909,6 +912,32 @@ func _nose_stop(cmd: TankCommand, goal: Vector3, direct: bool) -> bool:
 	nose_stops += 1
 	_nose_goal = goal
 	return true
+
+
+## Round 10 item 6, the seam's smallest step: **`Movement`'s goal selection sees the formation leash.** Measured: on
+## Terminus 47.6 % of fight ticks are Movement's route drive and 17.2 % CombatMotion's hops, and the leash (A7's
+## level-0 region: "fight from your place in the formation") existed only inside `CombatMotion.choose` — so for the
+## other ticks nothing bounded where a crew drove. A `move_to` may now carry `leash: [x, z, radius]`; with the arm on,
+## a goal outside the circle is replaced by the circle's point nearest it (the projection A7 makes, applied to the
+## goal instead of to a candidate direction). The leash itself is squad's to publish on its moves (a request in
+## Status); until it does, the arm has nothing to act on and `leash_clamps` says so.
+## OPT-IN (`--nav-off=leash` turns it ON). Arm counter: `leash_clamps`.
+static var leash_clamps := 0
+
+
+static func leash_on() -> bool:
+	return switched_off("leash")
+
+
+static func within_leash(goal: Vector3, leash: Array) -> Vector3:
+	var centre := Vector2(float(leash[0]), float(leash[1]))
+	var radius := float(leash[2])
+	var offset := Vector2(goal.x, goal.z) - centre
+	if offset.length() <= radius:
+		return goal
+	leash_clamps += 1
+	var edge := centre + offset.normalized() * radius
+	return Vector3(edge.x, 0.0, edge.y)
 
 
 ## Feed the wedged window one tick: was avoidance shaping this hull, and where is it now.

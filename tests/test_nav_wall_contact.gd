@@ -197,3 +197,15 @@ func test_the_oriented_radius_is_narrow_abeam_and_long_end_on() -> void:
 	assert_true(absf(end_on - (7.0 * 2 + 2 * Avoidance.RADIUS_MARGIN)) < 0.01, "end on: two half-lengths (%.2f m)" % end_on)
 	assert_true(abeam < disc * 2.0 and end_on > disc * 2.0,
 			"narrower than the disc abeam, longer end on (disc pair %.2f m)" % (disc * 2.0))
+
+
+## Item 6: a goal outside the leash is replaced by the circle's point nearest it; inside, it is untouched.
+func test_a_goal_outside_the_leash_is_held_to_its_edge() -> void:
+	var inside := Movement.within_leash(Vector3(3, 0, 4), [0.0, 0.0, 10.0])
+	var outside := Movement.within_leash(Vector3(30, 0, 40), [0.0, 0.0, 10.0])
+	assert_true(inside.is_equal_approx(Vector3(3, 0, 4)), "inside the leash the goal stands (%s)" % inside)
+	assert_true(outside.is_equal_approx(Vector3(6, 0, 8)), "outside, the nearest point of the circle (%s)" % outside)
+	assert_eq(OrderController._validate({"type": "move_to", "x": 1.0, "z": 2.0, "leash": [0.0, 0.0, 5.0]}, OrderController.MOVE_TYPES), "",
+			"a move_to may carry a leash")
+	assert_true(OrderController._validate({"type": "move_to", "x": 1.0, "z": 2.0, "leash": [0.0, 0.0]}, OrderController.MOVE_TYPES) != "",
+			"and a malformed one is refused")
