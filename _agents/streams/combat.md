@@ -509,6 +509,14 @@ disc). One commit, one cause, merged after squad's next merge so the count is re
 If bar 2 shows the box worse for gangs or law (c > b with p < 0.05), the flip does not land, and the parked-friend red
 stays with the REASON "the disc's lof reach against the 9.70 m bus; the box costs X in the series".
 
+### Review of arena's spawn-grid reorder (`58540dd7`, `Match.spawn_position` + `_spawn_cells`): APPROVED
+
+Deterministic (a static order built once from the `SLOT_X` constant), the same 57 lattice points, checkerboard cells
+first. The envelope arithmetic checks: the bus diagonal 10.12 m + 0.30 = 10.42 m; worst-jitter spacings 12.4 m in a row,
+12.7 m between rows. Notes, not blockers: (1) `turning_clear_slots()` re-implements `_spawn_cells()`'s loop (two copies
+of one rule can drift; it could return the clear list's size); (2) its comment said five_squads' overlaps were squad's
+pitch. They are the test's hand-placed 6 m row; comment corrected on this branch.
+
 ### Owed after CP3 (taken 2026-09-22)
 
 - `scenario_fire_discipline::test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane` fails on feel's CP3 tree
