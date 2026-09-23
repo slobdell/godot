@@ -421,3 +421,8 @@ weave brushes a wall, a street pin lasts 30–130 s. Measured on builder0 (drive
 | 0.5 s | 15 | 2315 | 188 | **red** (42,2) |
 | **1.0 s** | **14** | **2430** | 190 | passes (43,1) |
 | 1.5 s | 8 | 5203 | 190 | passes (43,1) |
+
+**`304636cc`'s check (builder0, REMOTE_SLOTS=5): 1674 passed / 0 failed, 17 of 18 targets, ai-scenarios 43,1
+unchanged, sim-baseline MOVED `7dcc52f547f03d3f` → `457b5e830708b439` — the ONE pre-registered cause, proven:
+`make nav-sim-arms SIM_ARMS=press` on the same tree reads `7dcc52f547f03d3f` exactly.** Merge `304636cc` alone and
+adopt the baseline.
