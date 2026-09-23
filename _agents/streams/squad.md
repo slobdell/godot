@@ -318,6 +318,14 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   were grid-slot artefacts and are WITHDRAWN. Cover-peeking's one-hit evidence came from the slot tick: the
   reload-window behaviour shows no effect with a clean teleport. Known issue, to re-measure on paired seeds.
 
+### Reviews
+
+- **arena's `58540dd7`, `tests/test_match_spawns_and_results.gd::test_the_grid_fills_the_front_row_before_the_rows_
+  behind_it`: ACCEPTED.** "Front row first within each band" over `Match.turning_clear_slots()` is the right restatement
+  of the property once the grid fills its turning-clear cells first (row-major put slots 0 and 1 7.5 m apart, inside
+  the bus's 10.42 m envelope). Slot 0 still asserted in the front row. Nit, not blocking: the failure message names
+  `slot - 1` as the previous slot, which is only true when the turning-clear slots are consecutive.
+
 ### Requests to other streams
 
 - **control (R2), sent via the orchestrator 2026-09-22:** `Orders._same_order` drops an ELEMENT re-issue whose only
