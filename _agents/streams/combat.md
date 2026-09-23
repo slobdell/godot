@@ -185,10 +185,12 @@ the world.** CP4 does not flip. The fix in progress: a refused smallest candidat
 along its normal, ≤ 5 cm, accepted only if the pushed hull is no deeper); a corridor still refuses (pushing off one wall
 drives into the other).
 
-**A second hole, found building its test:** the constraint only arms after a slide contact, so a hull pivoting from
-REST is never checked. A stationary bus rotated 143.7° against foundry's centre crate unchecked. The candidate fix
-arms the check for near-stationary hulls (|speed| < 0.5 m/s). Both land with a positive control and CP4's four bars
-re-run.
+**~~A second hole~~ RETRACTED:** I reported a stationary bus rotating 143.7° "through" foundry's crate unchecked.
+Measured, it never penetrated (worst 1.3 mm with the constraint off, 0.6 mm on): with zero velocity `move_and_slide`
+still depenetrates each tick, so a hull pivoting against one face scrapes along it. "Inside" came from `_overlaps`
+counting a 1 mm touch. The contact gate exists in the code, but no case has shown it letting a hull end inside
+geometry, so the pivot-arming change was dropped. **Lesson: an overlap test with a recovery margin reports touching as
+inside; measure depth, not a boolean.**
 
 ### For the lead, in one paragraph
 

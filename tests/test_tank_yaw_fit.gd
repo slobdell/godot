@@ -71,6 +71,7 @@ func _enable() -> void:
 func teardown() -> void:
 	Units.tuning.erase("yaw_fit")
 	Units.tuning.erase("yaw_world")
+	Units.tuning.erase("yaw_slide")
 	await super.teardown()
 
 
@@ -193,6 +194,68 @@ func test_a_squadmate_does_not_freeze_a_pivot_under_the_world_mask() -> void:
 func test_the_world_mask_still_stops_a_turn_through_a_wall() -> void:
 	Units.tuning["yaw_world"] = 1.0
 	await test_a_hull_against_a_wall_cannot_turn_through_it()
+
+
+## ROUND 10, CP4's fourth bar: a bus side-flush against one wall, told to pivot toward it (the five_squads freezers
+## at Crate_7 / Crate_17 / Wall_16 were each flush against ONE world collider wanting a ~2 deg trim). Returns
+## [longest refused run, degrees swept, slide-offs, ends inside the crate].
+func _pivot_against_one_wall(slide: bool) -> Array:
+	var game_match := await _world()
+	# A wall of our own, in open ground (foundry's centre crate did not reproduce it: a bus nosed into it pivoted
+	# freely, sliding along the crate's face). 30 m long, on the world layer, its face at x = 40.0.
+	var wall := StaticBody3D.new()
+	wall.collision_layer = Perception.WORLD_MASK
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(1.0, 4.0, 30.0)
+	shape.shape = box
+	wall.add_child(shape)
+	add_to_tree(wall)
+	wall.global_position = Vector3(40.5, 2.0, 40.0)
+	var tank := game_match.spawn_tank("Green_Flush_1", 0, Match.Team.GREEN, "tank")
+	# Parallel to the wall, its right side 1 cm off the face; driven sideways-in by a nudge toward it below.
+	var half_width := float((Units.stat("tank", "hull_size") as Array)[0]) / 2.0
+	tank.place(Vector3(40.0 - half_width - 0.01, 0.0, 40.0), 0.0)
+	await wait_physics_frames(3)
+	# A few ticks turning INTO the wall under throttle (the freezers' own history: they arrived touching), which gives
+	# the slide the contact and the hull the flush pose.
+	for tick in 8:
+		tank.command.throttle = 0.4
+		tank.command.turn = -1.0
+		await wait_physics_frames(1)
+	_enable()
+	Units.tuning["yaw_world"] = 1.0
+	Units.tuning["yaw_slide"] = 1.0 if slide else 0.0
+	_mark()
+	var slid_at := Tank.slide_offs
+	var before := -tank.global_basis.z
+	var longest := 0
+	for tick in SimClock.TICK_RATE * 2:
+		tank.command.throttle = 0.0
+		tank.command.turn = -1.0  # keep turning INTO the wall: the corner swings toward the face
+		await wait_physics_frames(1)
+		longest = maxi(longest, tank.yaw_refused_ticks)
+	var swept := rad_to_deg(Vector3(before.x, 0, before.z).normalized().angle_to(
+			Vector3(-tank.global_basis.z.x, 0, -tank.global_basis.z.z).normalized()))
+	var inside := _overlaps(tank)
+	print("MEASURE yaw_fit_flush slide=%s swept %.1f deg in 2 s, longest refused run %d, slide-offs %d, offered %d, inside %s, at %s" % [
+			slide, swept, longest, Tank.slide_offs - slid_at, _offered(), inside, tank.global_position])
+	return [longest, swept, Tank.slide_offs - slid_at, inside]
+
+
+## The positive control: without the slide-off, the flush hull is refused and holds (the five_squads 80-92 tick runs).
+func test_a_hull_flush_against_one_wall_freezes_without_the_slide_off() -> void:
+	var got := await _pivot_against_one_wall(false)
+	assert_true(int(got[0]) > 3, "no slide-off: the flush pivot is refused and holds (longest run %d, %.1f deg)" % [got[0], got[1]])
+
+
+## The treatment: the hull scrapes off the one wall and turns, never ending inside it; CP4's no-run-over-3 bar.
+func test_a_hull_flush_against_one_wall_slides_off_and_turns() -> void:
+	var got := await _pivot_against_one_wall(true)
+	assert_true(int(got[2]) > 0, "the slide-off engaged (%d)" % got[2])
+	assert_true(int(got[0]) <= 3, "no refused run over 3 ticks (longest %d)" % got[0])
+	assert_true(float(got[1]) > 20.0, "and it turns (%.1f deg in 2 s)" % got[1])
+	assert_true(not bool(got[3]), "without ending inside the crate")
 
 
 ## True when the hull is overlapping world geometry where it stands. NOT named `test_*`: the runner collects every

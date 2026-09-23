@@ -964,7 +964,7 @@ const DEFAULT := "tank"
 ## `IncomingFire` (it passes the name when squad wires it; until then it follows `match.hull_disc`).
 const HULL_DISC_SITES := ["lof", "incoming", "squad_incoming"]
 const MATCH_KNOBS := ["no_damage", "hull_disc", "hull_disc_lof", "hull_disc_incoming", "hull_disc_squad_incoming",
-		"yaw_fit", "yaw_world"]
+		"yaw_fit", "yaw_world", "yaw_slide"]
 ## Keys a v1 army entry used. Army JSON v2 rejects them with V1_KEY_HELP.
 const V1_UNIT_KEYS := ["weapon", "weapons", "components"]
 const V1_KEY_HELP := "units have fixed weapons since army JSON v2: pick a unit type (%s) instead of '%s'"
