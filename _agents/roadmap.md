@@ -40,7 +40,33 @@ archived stream briefs).
 | | ai: brains executing doctrine, deliberate suppression (fire at ground), beaten-zone avoidance, champion x4t9 | archive/round4/ai.md, unit_ai.md |
 | | audio: the announcer voiced for real (589 lines, 2,372 recordings, whole sentences after stitching was rejected), variance gated, the booth live, a cinematic sound mix, MatchMood, the music pipeline | archive/round4/audio.md |
 
-## Now: round 5 (not planned yet)
+## Round 10 (2026-09-22, closed 09-23): what it did, in one list
+
+- The right-click always answers (five mechanisms; 7 of 7 states on main); Form squad on the card; objective rings
+  where the match scores; every player goal grounded on the navmesh with the hull's clearance.
+- The Terminus streets are lanes (16–22 m drivable, junctions certified for the rig; kerb paint and a pool at every
+  corner); nav's wall-contact instrument and drive test; the pressed-wall escape on by default (caveat: n = 1).
+- The bigger bus, the turret mounts, the blimp on the avenue; the light show on the walls per window; 518 announcer
+  lines; two water-and-bridge maps (the Crossing, the Sumps) whose bridges are used.
+- The pitch from the turning envelope; a 20 m move settles in 4–9 s; the friendly-fire line-of-fire site reads the
+  hull's box (yard gangs 36 % vs 23 %, p 0.039, the whole effect at that one site).
+- The yaw freeze's mechanism (a ratchet against a squadmate); the world-only constraint passes four bars and stays
+  OFF on a fifth (a two-sided pinch the driver must creep out of).
+- Three research briefs and replies curated (`research_catalog.md`, rows B1–B14 and C1–C12).
+
+## Now: round 11 candidates (each archived brief's Status has its own list; the orchestrator's order)
+
+1. The driver creeps out of a two-sided pinch before pivoting (nav/squad), then the yaw constraint flips ON
+   (combat: the four bars plus drive-to-slots on one build).
+2. The checkerboard-staggered deploy (squad/arena) so packed spawns stop clipping on the first dressing turn.
+3. The drive test over paired seeds with a seed knob that moves spawn order (nav); the press escape judged on it.
+4. Squad's incoming-fire disc site cell, and the two remaining disc sites (combat's series).
+5. The blimp on every shipping map (feel); the Pit's west-gate readability (arena); yard's lanes (arena, report only).
+6. The lead's taps: the bus and the fire engine 3D (feel); show's four questions; the rim light; announcer vetoes.
+7. Cover-peeking re-measured on paired seeds (squad); the seam's next step (the funnel, nav + squad).
+8. The hinge bench and show's perf re-measure in a quiet window if round 10's window does not land them.
+
+## Round 5 (historical header kept for the links below)
 
 Round 4 is merged and green (843 tests). The next round starts from the lead's playtest and the open items in
 HANDOFF.md: the renderer's per-instance uniform limit at 30 a side (nobody owns `game/theme/**`), the road gangs' 23%
