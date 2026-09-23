@@ -676,6 +676,9 @@ func _drive(cmd: TankCommand, delta: float) -> void:
 		if forward != facing_flat:
 			global_basis = Basis.looking_at(forward, Vector3.UP)
 			_motion["forward"] = forward
+			if _yaw_push != Vector3.ZERO:
+				global_position += _yaw_push  # the slide-off `_fitting_forward` proved clear (see `_slide_off`)
+				_yaw_push = Vector3.ZERO
 	_speed = float(_motion["speed"])
 	var planar: Vector3 = _motion["velocity"]
 	velocity.x = planar.x
@@ -808,10 +811,74 @@ func _fitting_forward(have: Vector3, wanted: Vector3) -> Vector3:
 				refusals_applied += 1
 			yaw_refused_ticks = 0
 			return candidate
+	# ROUND 10 (CP4's fourth bar): before refusing outright, the smallest candidate may SLIDE OFF a single contact.
+	var smallest := Vector3(have.z, 0.0, -have.x) if reversing else have.slerp(wanted, YAW_FIT_FRACTIONS[-1])
+	var push := _slide_off(smallest, here)
+	if push != Vector3.ZERO:
+		_yaw_push = push
+		slide_offs += 1
+		refusals_applied += 1
+		yaw_refused_ticks = 0
+		return smallest
 	refusals_applied += 1
 	yaw_refused_ticks += 1
 	refused_run_max = maxi(refused_run_max, yaw_refused_ticks)
 	return have
+
+
+## ROUND 10 (combat, CP4's fourth bar): a hull flush against ONE crate or wall that wants to trim its facing a couple of
+## degrees rotates a corner a few centimetres into it, and the refusal above held three such hulls in five_squads for
+## 80-92 ticks each (builder0, `6f553699`: Green_Charlie_1 against Crate_7, Green_S4_2 against Crate_17, Green_S5_4
+## against Wall_16; each at its slot, wanting 1.6-2.7 deg). The same ratchet as backlog item 1, against the world. A
+## real hull turning against one wall scrapes along it and is shoved off, so: the rotated hull is pushed out along its
+## deepest contact's normal by that depth, and the turn is accepted if the pushed hull is no deeper than it stands now.
+## In a corridor the push off one wall drives the hull into the other, so the wedged rig is refused as before; the push
+## is capped at `SLIDE_OFF_MAX_M` so this never becomes a teleport. Returns the push, or ZERO when none fits.
+const SLIDE_OFF_MAX_M := 0.05
+const SLIDE_OFF_STEPS_M := [0.01, 0.02, 0.035, 0.05]
+static var slide_offs := 0
+var _yaw_push := Vector3.ZERO
+
+
+static func yaw_slide_on() -> bool:
+	Units._ensure_env_tuning()
+	return float(Units.tuning.get("yaw_slide", 1.0)) > 0.0
+
+
+func _slide_off(candidate: Vector3, here: float) -> Vector3:
+	if not yaw_slide_on():
+		return Vector3.ZERO
+	var params := PhysicsTestMotionParameters3D.new()
+	params.from = Transform3D(Basis.looking_at(candidate, Vector3.UP), global_position)
+	params.motion = Vector3.ZERO
+	params.margin = 0.001
+	params.recovery_as_collision = true
+	params.max_collisions = 4
+	var result := PhysicsTestMotionResult3D.new()
+	var mask := collision_mask
+	if yaw_world_on():
+		collision_mask = Perception.WORLD_MASK
+	var touching := PhysicsServer3D.body_test_motion(get_rid(), params, result)
+	collision_mask = mask
+	if not touching:
+		return Vector3.ZERO
+	var deepest := -1
+	for i in result.get_collision_count():
+		if deepest < 0 or result.get_collision_depth(i) > result.get_collision_depth(deepest):
+			deepest = i
+	var depth := result.get_collision_depth(deepest)
+	var normal := result.get_collision_normal(deepest)
+	var flat := Vector3(normal.x, 0.0, normal.z)
+	if depth > SLIDE_OFF_MAX_M or flat.length_squared() < 0.25:
+		return Vector3.ZERO
+	# The reported depth is not the push that clears the hull (measured: pushing by it took 6.3 mm to 5.2 mm), so the
+	# push is found the plant's usual way: a fixed list of distances along the contact normal, smallest first, first
+	# fit wins. No search loop, no tolerance; the same answer on every machine.
+	for distance: float in SLIDE_OFF_STEPS_M:
+		var push := flat.normalized() * distance
+		if _penetration(candidate, global_position + push) <= here + PENETRATION_SLACK_M:
+			return push
+	return Vector3.ZERO
 
 
 ## ROUND 10, backlog item 1: WHICH collider decides each candidate, and how deep. One line per candidate per tick on a
@@ -873,8 +940,8 @@ static func yaw_world_on() -> bool:
 ## query in both arms with only the collider set swapped (this body's `collision_mask` narrowed to the world layer for
 ## the duration of the call and restored), so an arm difference can only come from which colliders count. Its proof
 ## that it changed nothing else is nav's corridor, which holds no vehicles and must not move between the arms.
-func _penetration(forward: Vector3) -> float:
-	var at := Transform3D(Basis.looking_at(forward, Vector3.UP), global_position)
+func _penetration(forward: Vector3, where := Vector3.INF) -> float:
+	var at := Transform3D(Basis.looking_at(forward, Vector3.UP), global_position if where == Vector3.INF else where)
 	var mask := collision_mask
 	var world_only := yaw_world_on()
 	if world_only:

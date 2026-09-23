@@ -136,23 +136,61 @@ _Worker: terrain, started 2026-09-22 on `2ee65f94` (= `main` at launch). Every G
   `terrain: []`): the series and the before-frames need it loadable by name, and a fixture never reaches a menu.
 - Tooling that needs Godot lives in `game/theme/arena_kit/terrain/tools/` (mine), not `tests/arena/` (arena's).
 
-### Progress
+### REPORT (2026-09-22, evening)
 
-_(updated as each step lands; numbers carry machine and commit once committed)_
+**Done for the round. Everything is on main:** `ef29355f` → `4ffb4c1a` (the mechanism, the art, the Crossing, the
+Sumps), `2504b1ee` → `4cf545ac` (the uid files), `8b0a879a` → main (both paired series, fairness, feel's look notes,
+the Terminus canal proposal). **The check on `8b0a879a`** (builder0, REMOTE_SLOTS=5): 1651 passed / 2 failed,
+sim-baseline `11c479c3bec77082` unmoved, determinism `cd43435b56b09acf`, 16/18 targets; the two reds (squad's
+drive-to-slots, combat's parked-friend) and the scenario count 40,4 are main's own at `f29c5b7c`, confirmed by the
+orchestrator's main check. **Pre-registered UNMOVED held at every check: terrain never moved the sim baseline.**
 
-- **Mechanism (plan 1) — built, tests written, awaiting builder0.** Rim cut fix, bridge rails, rims/rails in the
-  bake, `MIN_DECK_M` = **13.14 m** (R4 bar 8.14 from arena's relay: `syn_artillery` 4.07 m is the widest hull, not
-  the War Rig; my test read the catalog and would have failed on the first 6.64 figure), `ArenaTerrain.build()`.
-  Tests: `tests/test_terrain_mechanism.gd`, `tests/test_terrain_golden.gd`.
-- **Report sees water (plan 2) — done (laptop, python).** `tools/arena_terrain.py` + a 3-line hook in
-  `arena_report.analyze()`; `make terrain-pytest` 7/7, mutation-checked (hook removed → the analyze test fails).
-- **Art (plan 3) — built, not yet seen.** `game/theme/arena_kit/terrain/` (water/pit interior-mapped shader, kerb
-  shader, deck and rails from the collider boxes), slot registered. Frames: `make remote T=terrain-shots`.
-- **The Crossing and the Sumps (the brief's "Pits"; plans 4–5) — authored, static numbers in `_agents/arenas.md` *Terrain maps*.**
-  Crossing: centre 0.30 (dry 0.46), spread 0.45 (dry 0.02), contested route 185 m (dry 148 m). Pits: centre 0.34
-  (ring-of-eyes), spread 0.39 wet and dry — the static instruments cannot see a kill zone; the series decides.
-- **Series tooling:** `make terrain-series TERRAIN_MAP=crossing SEEDS=32` (paired wet/dry, discordant pairs, sign test,
-  positive control on `terrain_entries`).
+| Item | State |
+|---|---|
+| 1. Art in `arena.terrain` | done; **feel ACCEPTED** the look; its two notes (water read as a starfield, pit floor had no depth cue) addressed |
+| 2. The Crossing | done: spread 0.55 (dry 0.30), centre 0.29, R4 lanes pass, fair (−0.019 ± 0.067), series: bridges used 31/32 seeds (p < 0.0001) |
+| 3. The Pits → **the Sumps** | done: centre 0.34, spread 0.35 (= dry), lanes pass, fair (−0.025 ± 0.035), series: causeways/catwalk used 29/32 seeds (p < 0.0001) |
+| 4. Terminus canal | a FIXTURE proposal (`terminus_canal`), frames only; **recommendation: do not** -- it costs the ring-road and plaza-crossing lanes, moves the objective pair, and pushes spread 0.33 → 0.83 (a formality). Orchestrator accepted the recommendation; his call |
+| 5. His page | `build/terrain-page/index.html`, frames in `build/terrain-shots/` (paths below) |
+| 6. Stretch | diagonal river PRICED (below, ~1.5 days, baker risk first); hazards already work (Furnace; `Match._apply_hazards`), nothing to build |
+
+**What the numbers say, in one paragraph:** terrain decides WHERE the fight crosses (unit-time on the bridges ×8 on the
+Crossing, ×1.8 on the Sumps' causeways, both p < 0.0001 over 32 paired seeds), and on the Crossing it is also what
+creates the decision (spread 0.55 against its dry twin's 0.30; the contested route 148 → 185 m). It does NOT change
+how much time the brains-only CPUs spend at the far objective (both maps: flat, p 0.38 and 0.22) -- that is not
+claimed; whether a player's squads take the far objective more is his game to judge.
+
+**Questions for the lead** (none block): (1) the Sumps' centre sees 0.34 -- between the Pit you kept (0.30) and the
+Boneyard you cut (0.40); a kill-zone map is open across its pits on purpose; keep it that open? (2) the Terminus canal:
+the frames are on the page beside the Terminus; it costs two lanes and moves the objectives -- still want it?
+(3) the diagonal river is ~1.5 days: worth it after you have driven the straight one?
+
+**What to playtest:** `make skirmish ARENA=crossing` and `make skirmish ARENA=sumps` (both load by name; neither is in
+the random rotation -- that is `Arena.ROTATION`, arena's, one line when you say so). Drive a squad over a bridge and
+along a bank (the rails and rims should stop a shove without touching the tracks), fire across the water.
+
+**Requests to other streams (all answered):** arena: the report hook, the objective-reachability test, `ArenaLanes`
+reading rims and rails (arena did it, `fb3a1ec7`); announcer: names and clips for `crossing`/`sumps` (landed
+`3934f234`); control: the radar and tactical map draw the centre ring on maps whose objectives are a pair (relayed).
+
+**`make water-probe`, rebuilt on the shipping `ArenaTerrain.build()` path, art in the slot (builder0, tip `8b0a879a`
++ docs):** no bridge: the channel is off the mesh (10.1 m), the crossing is unreachable, an eye-level ray crosses, a
+hull driven straight at it is stopped by the rim (z 59.1) and never falls; `BRIDGE=1`: reachable at detour 1.00, the
+hull crosses, and a hull ordered sideways off the deck ends at x 1.6 m, still on it (rails present), lowest y 0.0.
+
+**Known issues:** the deck is a flat plate at y ≈ 0.07 over a floor at 0 (no ramp; nothing collides with it, so no
+hull bumps).
+
+**Round 11, in the order I would brief it:**
+1. **His eye on the page first** (`build/terrain-page/index.html`): if the Crossing and the Sumps read as maps he wants,
+   one line in `Arena.ROTATION` (arena's) puts them in `make skirmish`'s random draw.
+2. **The far objective.** Both series say terrain moves WHERE the crossing happens and not WHETHER the CPUs go for the
+   contested objective. If he wants the far objective contested, that is the squad deciders' valuation of an
+   objective behind a crossing (squad/combat), measured on these two maps with the same paired series.
+3. **A second river map** built to the Crossing's finding (the river IS the decision: spread 0.55 vs 0.30), and the
+   diagonal river only after the half-day baker check priced below.
+4. `ArenaLanes` calls `rail_slabs` by name (arena, `fb3a1ec7`): now that terrain is on main, arena's lane test sees
+   the rails too -- confirm it once.
 
 ### The paired series (R9's second acceptance; `make terrain-series`, builder0)
 
@@ -205,7 +243,7 @@ the flanks by design.)
 - **Merged:** `ef29355f` → main `4ffb4c1a` (check on `ef29355f`: 1611/0, sim-baseline `1ea332e7bc268d2a` unmoved,
   17/18; the one red was main's scenario count, since re-recorded at `4ff45e50`).
 - **feel's look review: ACCEPTED** (2026-09-22), two non-blocking notes (water read as a starfield; the pit floor had
-  no depth cue), both addressed in `water.gdshader` after the merge; new frames pending.
+  no depth cue), both addressed in `water.gdshader` (merged with `8b0a879a`); the frames on the page are the addressed look.
 
 ### Stretch: the diagonal river, priced (not built)
 
@@ -225,12 +263,9 @@ bake) was never characterised for large CONVEX PRISMS as floor pieces. The floor
 so the trap is likely obstacle-only, but it must be measured first with the water probe on a diagonal channel
 (half a day), before anything else is built. Recommendation: build it only if the lead likes the straight river.
 
-### Waiting / blocked
+### Waiting on the lead
 
-- **Backlog 4 (a Terminus canal): deferred to after CP2.** arena is turning the Terminus streets into R4 lanes right
-  now (CP2); a canal down a 20 m street would take the lane width R4 guarantees, so a proposal drawn on today's
-  Terminus would be drawn on a map that is about to change. After CP2 merges: a proposal layout (fixture) with
-  frames, sent to arena through the orchestrator; I do not edit `terminus.json`.
+His eye on the page (item 1's frames and item 5's page), and the three questions above. Nothing is blocked.
 
 ### Merge notes (shared or other streams' files this branch touches)
 

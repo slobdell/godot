@@ -137,42 +137,106 @@ the list; pair discipline.
 
 _(the worker keeps this current)_
 
-**2026-09-22, session 1 (feel worker). Baseline: `main` at `2ee65f94`, check on builder0 launched 09:58.**
+**Session 1, 2026-09-22 (feel worker). Every number is builder0 unless it says laptop.**
 
-### Plan (in order, with the reason where the brief left a choice)
+### In his terms (read this first)
 
-1. **R5 write first, then R6's box** — the mount write is baseline-NEUTRAL (no unit carries a mount), so it can go
-   green on its own and the three baseline-moving commits stack on it.
-2. **R6, CP3, as THREE commits** (the orchestrator's condition, so a bisect can attribute the move):
-   (a) the bus box — pre-registered: MOVES the sim baseline; (b) the spawn-jitter shrink in `match.gd` (combat's
-   constants, edited here with the orchestrator's approval; combat reviews at merge) — pre-registered: MOVES;
-   (c) the turret-mount VALUES — pre-registered: MOVES (x/z move the pivot, which is sim). The write alone (R5,
-   step 1) is pre-registered UNMOVED and proven so on its own check.
-3. **R7, the blimp** — a low ad blimp on a street circuit round the Terminus's central blocks; pre-registered UNMOVED.
-4. The rim light; the arena parity requests as they come; stretch.
+- **The bus is bigger, and it is DRAWN bigger.** 2.40 x 2.40 x 8.62 → **2.90 x 4.76 x 9.70 m** (a 45 ft prison coach):
+  1.29x the garbage truck's length and 1.29x its height, as he asked. Half of "too small" was a bug: the bus was
+  drawn 1.60 m wide and 7.36 m long inside its own collider (fixed). **Merged as CP3 at `f49b5f15` → main `69c681ac`**;
+  the sim baseline moved as pre-registered, `1ea332e7bc268d2a → aac14c6704fbac39`, three causes bisected.
+- **The turrets sit where the guns are.** The bus's and the fire engine's turrets were buried inside the hull; they
+  are on the roof. The gang gun truck's real machine gun (in its bed) now traverses, and the stray "barrel" sticks
+  on the gun truck and the catapult are gone. The War Rig's rounds leave from under its gun.
+- **The blimp he asked for is in his frame.** A lit ad blimp drifting down the Terminus avenue at 12 m; at his pose
+  it is on screen and unoccluded in **12.0 %** of 9,456 samples (every camera pose over the arena x its lap), and it is in his
+  **opening camera**, 881 px wide (`references/round10/feel/blimp_opening_d9b70dc4.jpg`). The airship stays over the city.
+- **Hulls get a faint rim in their faction's colour** (amber, magenta, police blue, ivory) so they read between the
+  lamp pools. The pair is his eye's call (`references/round10/feel/rim_v2_final.jpg`; `--no-faction-rim` switches it off).
+- **Waiting on his tap:** six concepts, three for the bus's own mesh and three for the fire engine
+  (`make art-review-page TITLE="The Condemned bus and fire engine (R6)" GROUPS=R6 OUT=build/review_page_r6`).
+  Meshy balance 34 (54 credits spent tonight, ledgered): enough for both vehicles' 3D after his taps, nothing more.
 
-### Done so far (commits on `stream/feel`; every number: builder0 unless it says laptop)
+### Merge notes
+
+- **CP3 merged** at `f49b5f15` (main `69c681ac`); **the rest merged** at `a822a48f` (main `28d60a4a`). They were
+  (all visual, pre-registered UNMOVED):
+  `d9b70dc4` (blimp re-routed down the avenue), `7f1707a3` + `e27e0b85` (blimp-look frame fixes), `010456f5` +
+  `839cf3f4` (the faction rim), `a822a48f` (burner concepts), the MatchMood accessor, Status/docs. **Green hash for
+  them: see the last line of this Status** (the check on the merged tip).
+- Shared or other streams' files edited, each with the owner's ruling: `game/match/match.gd` (the two
+  `SPAWN_JITTER_MAX_*`, combat's; orchestrator-approved), `game/tank/tank.gd` (the mount write, `TURRET_STANDARD`,
+  `shared_hull_size`; combat reviews), `game/units/units.gd` (the tank/burner values and four `turret_mount`s; the
+  carve-out, plus gang_ifv/gang_tank mounts under the same key), tests in combat's and squad's files in DERIVED form
+  (`test_combat_mechanics`, `test_tactics_elements`, `scenario_fire_discipline`, `scenario_squad`,
+  `scenario_elements`) with REASON lines where the claim is a behaviour, `game/audio/match_mood.gd` (mine).
+- Temporary worktrees `~/projects/godot-feelneutral` and `~/projects/godot-feelbisect` (detached, mine, for the
+  bisect) and their builder0 folders are REMOVED.
+
+### Known issues / reds with a reason
+
+- `test_tactics_elements::…drive_to_their_slots` RED on purpose (squad's REASON: the leader pinned to its column's
+  head crosses its own row first while co-arrival pacing holds the rest; squad's fix follows the pitch).
+- `scenario_fire_discipline` parked-friend RED on purpose (combat's REASON; knife-edge: on the laptop the plain arm
+  passes and `hull_disc=0` fails, on builder0 the plain arm fails).
+- `scenario_elements` formation-slot RED on builder0 (squad's REASON; tipped by the mounts, CP3 (c)).
+- `scenario_elements` base-of-fire: passed on the pre-merge CP3 tree, failed after merging main -- named to squad.
+- `vehicle_gallery.gd` mirrors the old turret placement and scaling (a gallery, not the game); not widened into CP3.
+- The Law and Syndicate weapon parts are the same generated 3 cm "barrel" sticks (law_ifv's sits 1.07 m off-centre);
+  he named only the Condemned and the gangs, so they are untouched. A question for him below.
+
+### Questions for the lead
+
+1. The Law and Syndicate vehicles show the same thin generated "barrel" sticks the gangs had; hide them too (the
+   guns baked into those hulls would then not traverse), or leave them?
+2. The rim: keep it (faint, per faction), stronger, or off?
+3. Bus and fire-engine concepts: one per vehicle, or none (then the stretched dozer stays).
+
+### What to playtest
+
+- `make skirmish ARENA=terminus` -- the bus beside the garbage truck; the turrets on the roofs; the blimp coming down
+  the avenue from your end at the start (it laps in ~4 minutes); the faint hull rims between the lamp pools.
+- The lane markings (B10/C11): kerb lines and centre dashes down every Terminus lane, warm pools at the junctions;
+  off with `--no-lane-marks` (same command as below). `references/round10/feel/lane_pair.jpg` is the pair.
+- The rim off, for the comparison (`make skirmish` passes no extra flags):
+  `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --arena=terminus --no-faction-rim`
+
+### Next steps (in order)
+
+1. The check on the merged tip → name the hash for the post-CP3 commits.
+2. After his taps: image-to-3D for the chosen bus (and burner), fitted to their boxes (S1's `box_at_length` then
+   derives their proportions from the mesh, and `test_only_the_two_known_units_have_no_art_of_their_own` changes).
+3. B10 / C11 kit items (warm lane lights and kerbs, corner fixtures, scale anchors, low-obstacle markings) when arena
+   sends the lane and corner list -- none received yet.
+4. Stretch, waiting on a quiet builder0 the orchestrator calls: the hinge's frame cost,
+   `REMOTE_SLOTS=6 make remote T="perf-trailer-ab PERF_CYCLES=6"` (refuses its own number under load, by design).
+   The single-variable lamp pair: not started (no one has asked for the lamp claim on stricter footing).
+
+### Decisions (one line each)
+
+- **The bus's reference is a 45 ft motor coach (MCI D4505), 13.72 m x K = 9.70 m** -- the coach the US Marshals and
+  the Bureau of Prisons run as prison buses, so S1's reference x K rule keeps holding; his eye picked the proportions.
+- **`turret_mount`'s frame is the Tank node's own: +z is the REAR.** The contract said "z forward"; its quoted default
+  (+0.2, `tank.tscn`) has always been 0.2 m AFT (trip-up 2).
+- **The Turret node is simulation, so R5 splits the mount** (agreed with the orchestrator and combat): x/z move the
+  pivot (rounds leave from under the drawn gun); y stays at `muzzle_height − 0.05` (the ceiling rule) and only the
+  turret/weapon ART rises. `turret_mount[1]` is the height of the art's ORIGIN (each part carries an authored offset).
+- **The blimp flies the avenue** (the first route, the ring roads, was 0.0 % seen: walled by 24 m blocks from the
+  bases). Four flank screens yawed 35 deg fore/aft so the view down the avenue sees one.
+- **The burner's box is unchanged** (2.40 x 2.40 x 6.89): he did not ask, and its concept page is his to tap.
+
+### CP3, as built (the record)
 
 | commit | what | baseline pre-registration |
 |---|---|---|
-| `11ccc0a8` | R5 write: `turret_mount` read on all three axes (`Tank.turret_pose`), `make turret-probe` | UNMOVED (no unit carries a mount) |
-| `9dcc42d3` | R6: tank/burner DRAWN at their box (`shared_hull_size` fell back in silence); turret scale kept by name | UNMOVED |
-| `5cfde60e` | R7: the ad blimp + `make blimp-look` | UNMOVED |
-| `7001bdc8` | **CP3 (b)** spawn jitter 1.5/0.6 → 1.30/0.15, the rule beside it (combat's constants, approved) | **MOVES** |
-| `055fb10f` | **CP3 (a)** the bus 2.40 x 2.40 x 8.62 → **2.90 x 4.76 x 9.70** (45 ft MCI coach x K; 1.29x the ifv on both axes) | **MOVES** |
-| `8a9b71a2` | R6 concept page: `bus_r10_a/b/c`, 27 credits (Meshy 88 → 61), **waiting on his tap** | — |
-| `a138b5f1` | **CP3 (c)** R5 values: tank, burner (roof), gang_ifv (GUN_CUT of the bed MG), gang_tank (pivot under the cut gun); stray gang_artillery stick hidden | **MOVES** |
-
-**Frames kept in the repo, `_agents/streams/references/round10/feel/`** (JPEG; the full PNGs regenerate with the
-targets named below): `bus_sheet.jpg` (the bus at his pose: before | the draw fix alone | the chosen 2.90 x 4.76 x 9.70
-| 3.10 wide | 4.20 tall), `turret_pairs.jpg` (side-on, before | after: bus, burner, gang_ifv, gang_tank,
-gang_artillery, ifv), `blimp_opening_d9b70dc4.jpg` (the blimp in his opening camera), `rim_v1_too_strong.jpg` (the
-rim pair's first pass: show off/on x rim off/on; the rim was toned down after it). **How they were made:** the bus at his pose, before /
-the draw fix alone / the chosen box / 3.10 wide / 4.20 tall: `lineup_bus.png`, `lineup_bus_1..3.png`
-(`make remote T=roster-lineup`, `LINEUP_FLAGS=--size-look-bus=W,H,L/W,H,L`). The turrets side-on before/after:
-`make remote T=facing-audit` → `build/facing/<unit>.png`. What they show: the before-bus reads SMALLER and far lower
-than the 7.5 m garbage truck with no visible turret; at 2.90 x 4.76 x 9.70 it reads longer and taller, with its
-cannon on the roof; the gun truck's stray rod is gone and its bed MG traverses; the catapult's 5 m stick is gone.
+| `11ccc0a8` | R5 write: `turret_mount` on all three axes (`Tank.turret_pose`), `make turret-probe` | UNMOVED (proven: `5cfde60e` = `1ea332e7bc268d2a`) |
+| `9dcc42d3` | tank/burner DRAWN at their box; the turret's scale kept by name | UNMOVED (same proof) |
+| `5cfde60e` | the ad blimp + `make blimp-look` | UNMOVED (same proof) |
+| `7001bdc8` | **(b)** spawn jitter 1.5/0.6 → 1.30/0.15, the rule beside it | MOVES; alone: 29/0 on the failing files, 41,3 |
+| `055fb10f` | **(a)** the bus 2.90 x 4.76 x 9.70 | MOVES; causes all three unit reds; 40,4 |
+| `a138b5f1` | **(c)** the mount values; `GUN_CUTS["gangs/ifv"]`; stray sticks hidden | MOVES; tips formation-slot; 39,5 |
+| `835b4f26`, `f49b5f15` | **(d)** the literals derived (combat's, squad's forms) and the REASONs | — |
+| `f49b5f15` check | `exited 2`, 1624/2 (both REASON'd), `aac14c6704fbac39`, 40,4 against the pre-44,0 count | merged `69c681ac` |
 
 ### R7, the blimp: the number and the frame
 
@@ -182,29 +246,18 @@ points of its lap = 12,960 samples; SEEN = in the viewport AND a clear physics r
 | route | seen, all | seen, the skirmish's start yaw | seen, the middle band | median width |
 |---|---|---|---|---|
 | ring roads + west streets (`5cfde60e`) | **0.0 %** (37.5 % "on screen" by bounding box only) | 0.0 % | 0.0 % | — |
-| **the avenue loop** (`d9b70dc4`, x = +-4, turning at z = +-86) | **13.4 %** | **14.8 %** | 10.6 % | **427 px** |
+| the avenue loop (`d9b70dc4`), every grid pose | 13.4 % | 14.8 % | 10.6 % | 427 px |
+| **the avenue loop, only camera poses over the arena** (`aa67d926`+; 146 of 540 poses skipped, 9,456 samples) | **12.0 %** | **11.8 %** | **11.8 %** | **454 px** |
+
+The last row is the number to quote. The skipped poses put the camera out in the stands (the grid's edge foci,
+yawed), where the crowd and railings have no colliders and hid what the rays passed. It is still conservative: the
+rays count a block the game's camera cutaway would hide when the camera stands in a block row.
 
 In the OPENING view (the camera he starts with) it is seen, 881 px wide: `build/blimp-look/blimp_opening.png` --
 the lit envelope over the avenue top-right, its screen showing the arena channel's ad, the resized buses below.
 The first route was wrong for a reason worth keeping: from the bases the ring roads are walled by 24 m block rows
 his 17.5 m camera cannot see over; the avenue is the one corridor along his view. "Sometimes visible" is ~1 sample
 in 7 wherever he looks, and every time he starts a match.
-
-### Decisions (one line each)
-
-- **The bus's reference is a 45 ft motor coach (MCI D4505), 13.72 m x K = 9.70 m.** The US Marshals and the Bureau
-  of Prisons run MCI coaches as prison buses, so this is the real vehicle and S1's rule keeps holding
-  (`test_every_hull_is_its_reference_length_times_k`); his eye picked the proportions, recorded beside the box.
-- **`turret_mount`'s frame is the Tank node's own: +z is the REAR.** The contract text said "z forward"; the default it
-  quotes (+0.2, `tank.tscn`) has always been 0.2 m AFT of centre in Godot's frame (trip-up 2). Written down so nobody
-  flips a sign reading the contract.
-- **The Turret node is simulation, so R5 splits the mount** (agreed with the orchestrator and combat, 2026-09-22): x/z
-  move the pivot (rounds leave from under the drawn gun), y stays at `muzzle_height − 0.05` (the ceiling rule) and only
-  the turret/weapon ART rises to the ring.
-- **The blimp flies the ring roads and west streets, not the avenue:** along the avenue its flank screens would be
-  edge-on to a camera looking up the map; on the ring roads they face the bases.
-- **`vehicle_gallery.gd` still mirrors the old turret placement** (its own scaling differs too); left as it is, noted
-  here, not widened into this diff.
 
 ### Findings
 
@@ -222,6 +275,14 @@ in 7 wherever he looks, and every time he starts a match.
   15 m); what he saw a vehicle drive through was most likely the neon SIGN (no collider, a post and a 6.3 m board)
   standing in the spawn zones on yard, pit and Terminus; arena moved it and asserts it. The other candidate is the
   War Rig's trailer art folding outside its rigid 14 m collider (S2's accepted cost; combat's B3 stretch).
+
+- **Two traps for whoever measures art next (candidates for orientation.md's trip-ups):** (1) a `dozer_part`
+  wrapper instantiated OUT of the tree has no meshes -- it builds its model in `_ready` -- so any "measure the theme's
+  scene" code finds nothing and falls back in silence; measure the wrapper's `model_scene`, or measure a spawned Tank.
+  (2) The adaptive quality tier REBUILDS the arena dressing (airship, blimp) when it changes, which can happen the
+  moment a paused bench lets frames render again: a node reference taken before is then a freed instance. Re-find by
+  name before every shot. And a bounding-box "on screen" test lies about merged or partial meshes: the blimp read
+  "on screen" in 37 % of samples while no point of it was ever in the viewport.
 
 ### Answered for arena (R3, 2026-09-22)
 
@@ -245,6 +306,24 @@ in 7 wherever he looks, and every time he starts a match.
 
 ### Requests to other streams
 
-- combat (via the orchestrator, answered): R5 design accepted; combat asks for a per-profile test that the muzzle
-  stays inside the unit's own box once mounts move the pivot — **to be written with the mount values (commit c).**
+- combat (answered): R5 design accepted; its condition, a per-profile muzzle test, is
+  `test_no_mount_pushes_the_muzzle_further_out_of_its_own_box` (in `a138b5f1`): with its mount, a unit's muzzle is
+  inside its own box or no further past its nose than today's pose puts it (small hulls' muzzles always were).
+- squad: read `scenario_elements::test_the_base_of_fire_keeps_firing_while_the_others_move` (passes on the pre-merge
+  CP3 tree, fails after merging main with squad's fix) and the formation-slot drift (REASON'd).
+- arena: the B10 / C11 lane and corner lists, when ready (feel does the kerb paint, the corner fixture, the scale
+  anchors and the low-obstacle markings).
 
+
+### The last check (the green hash for everything after CP3)
+
+**MERGED: `a822a48f` → main `28d60a4a` (2026-09-22).** The engine-deck scenario is routed to squad as a CP3 consequence
+of its ORBIT controller; scenario_perf under five slots is load. **What is left for feel:** the hinge bench in the
+quiet window the orchestrator calls at the round's end; the bus/burner image-to-3D after his taps (his morning);
+B10/C11 kit work when arena sends the lane/corner list (asked 2026-09-22). Later commits (`e27e0b85` tool fix, Status)
+merge with the next docs hash. **Was: merge here, `a822a48f`.** Check on it (builder0, merged with main `69c681ac`, `REMOTE_SLOTS=5`): `>> remote: make
+check exited 2`; **1645 passed, 2 failed** -- the two REASON'd tests above; sim-baseline `aac14c6704fbac39` (CP3's
+recorded move; these commits add none); determinism `2bf54e1e4c829e06`; ai-scenarios **39,5 against 44,0**: the three
+REASON'd or named scenarios above, plus `scenario_cp2` engine-deck (fixed on main by squad's ORBIT fix, broken again
+by the 9.7 m bus: named to squad) and `scenario_perf` CPU budget (load: five slots on builder0). Everything else green.
+Commits after `a822a48f`: `e27e0b85` (blimp-look frame fix), the Status.

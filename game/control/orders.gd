@@ -349,6 +349,17 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 		if anchor != null:
 			var goal := Formations.to_world(anchor, layout, slots[unit_name])
 			goal = Orders.clamp_to_arena(goal)
+			# Round 10 (nav's drive test on the default path: 11 of 13 arrival misses were a right-click's formation
+			# slot 4-10 m INSIDE a block): each goal goes onto ground this hull can stand on, the way an element's are
+			# (squad's SlotGround). The order says how far its slot moved, so the card can tell the player.
+			# The PLAYER's orders only: an element grounds its own plan (Element.ground), and scripted and CPU orders
+			# keep the geometry they asked for - grounding those moved scenario_orders' 100 ms response test and the
+			# element scenarios (check on 8e942f20), and the CPU never right-clicks.
+			var ground := Orders.ground_goal(tanks[i], goal) if String(base.get("source", "")) == "player" else goal
+			var moved := Vector2(ground.x - goal.x, ground.z - goal.z).length()
+			if moved > 0.1:
+				order["grounded_m"] = snappedf(moved, 0.1)
+			goal = ground
 			order["goal"] = [goal.x, goal.z]
 			order["heading"] = [heading.x, heading.z]
 		elif verb == "hold":
@@ -358,6 +369,24 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 			order["pace_mps"] = pace
 		result[unit_name] = order
 	return result
+
+
+## Where `tank` can actually stand nearest `goal`: squad's `SlotGround.for_unit` (the hull's own turning envelope clear
+## of walls; lands with squad's round-10 merge, 82468c5b) when it exists, else `SlotGround.standable` (the navmesh,
+## whose bake already leaves a vehicle's radius clear). Unchanged without a baked navmesh (tests without an arena).
+## Called through the script resource so this file compiles against either version of SlotGround.
+static var _slot_ground: Script = null
+static var _has_for_unit := false
+
+static func ground_goal(tank: Tank, goal: Vector3) -> Vector3:
+	if tank == null:
+		return goal
+	if _slot_ground == null:
+		_slot_ground = load("res://game/tactics/slot_ground.gd") as Script
+		_has_for_unit = _slot_ground.get_script_method_list().any(func(m: Dictionary) -> bool: return String(m["name"]) == "for_unit")
+	if _has_for_unit:
+		return _slot_ground.call("for_unit", tank, goal, String(tank.unit_id))
+	return SlotGround.standable(tank, goal)
 
 
 ## Whether a unit is already carrying out exactly this order (same verb, same place, same target). Round 5: elements

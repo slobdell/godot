@@ -127,10 +127,12 @@ func _scenario(scenario: String) -> void:
 	row.merge(log)
 	element = controls.elements.of(members[0]) if controls.elements != null else null
 	row["task_after"] = element.task.duplicate(true) if element != null else {}
-	row["ok"] = log["verdicts"].values().all(func(v: String) -> bool: return v != "STALE")
+	# A right-click on ground is a MOVE: a task that came out as anything else measured a different order.
+	var after_verb := String((row["task_after"] as Dictionary).get("verb", "move"))
+	row["ok"] = log["verdicts"].values().all(func(v: String) -> bool: return v != "STALE") and after_verb == "move"
 	_results.append(row)
 	print("REPATH ", JSON.stringify({"scenario": scenario, "ok": row["ok"], "verdicts": log["verdicts"],
-			"click_tick": log["click_tick"], "via": log["via"], "dropped": log["dropped"].size(),
+			"click_tick": log["click_tick"], "via": log["via"], "nudged_m": log["nudged_m"], "dropped": log["dropped"].size(),
 			"visible_1s": "%d/%d" % [(log["visible_1s"] as Dictionary).values().count(true), members.size()],
 			"task_before": task_before.get("verb", ""), "task_after": (row["task_after"] as Dictionary).get("verb", ""),
 			"armed_spent": row.get("spent_press", {}).get("verdicts", {})}))
@@ -142,6 +144,17 @@ func _scenario(scenario: String) -> void:
 ## Click `at` (right press and release, or a right drag across it), then log every crew per tick. Returns the log.
 func _click_and_log(members: Array, at: Vector3, how: String, before: Dictionary) -> Dictionary:
 	_dropped.clear()
+	# A click on a hull is an attack or a follow, not the move being measured (main 8abba2b7: "near" landed on an
+	# enemy and became an attack task). Step the point off any vehicle, 4 m at a time around it.
+	var nudged := 0.0
+	var clear := at
+	for step in 9:
+		clear = Orders.clamp_to_arena(at + Vector3(4.0, 0.0, 0.0).rotated(Vector3.UP, step * TAU / 8.0) * (1.0 if step > 0 else 0.0))
+		var probe := await _aim(clear)
+		if probe != "screen" or controls.pick_unit(controls.camera.unproject_position(clear)) == null:
+			break
+	nudged = clear.distance_to(at)
+	at = clear
 	var via := await _aim(at)
 	var click_tick := controls.game_match.tick
 	_changed.clear()
@@ -190,7 +203,7 @@ func _click_and_log(members: Array, at: Vector3, how: String, before: Dictionary
 		var order: Dictionary = final[unit_name]
 		var leader := String(order.get("target", ""))
 		verdicts[unit_name] = "follows" if String(order["verb"]) == "follow" and verdicts.get(leader, "") == "new" else "STALE"
-	return {"click_tick": click_tick, "issued_tick": _issued_tick, "via": via, "visible_1s": visible, "ticks": ticks, "verdicts": verdicts,
+	return {"click_tick": click_tick, "issued_tick": _issued_tick, "via": via, "nudged_m": snappedf(nudged, 0.1), "visible_1s": visible, "ticks": ticks, "verdicts": verdicts,
 			"changed_after_ticks": changed_at, "dropped": _dropped.duplicate(true)}
 
 

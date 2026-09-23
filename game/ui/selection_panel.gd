@@ -287,6 +287,9 @@ func _order_words(unit_name: String, with_queue: bool) -> String:
 	var waiting := controls.orders.queue(unit_name).size()
 	if with_queue and waiting > 0:
 		words += " (+%d queued)" % waiting
+	# Round 10: its formation slot fell inside something, so it was sent to the nearest ground it can stand on.
+	if with_queue and float(order.get("grounded_m", 0.0)) >= 1.0:
+		words += " (slot moved %d m clear of a wall)" % roundi(float(order["grounded_m"]))
 	# X5: what nav says about getting there - blocked, giving way, or when it arrives.
 	var landing := controls.movement.card_line(unit_name, controls._unit_label) if with_queue else ""
 	if landing != "":

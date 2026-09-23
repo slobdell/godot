@@ -554,7 +554,8 @@ static func spawn_position(team: int, slot: int) -> Vector3:
 ## then the other 29. tests/test_arena_spawn_envelope.gd asserts it.
 ## WHAT IT DOES NOT GIVE: a bare-spawned War Rig has no turning room beyond the first row's alternate cells (it needs
 ## 17.29 m). And a DOCTRINE army never stands here: `ArmyLayout.deploy()` re-lays it by hull size before any physics
-## step (tests/test_spawn_grid.gd), so the overlaps five_squads saw are squad's formation pitch, not this grid.
+## step (tests/test_spawn_grid.gd). (five_squads never touches this grid either: `test_ai_player_orders._setup` places
+## its hulls BY HAND in a 6 m row -- combat's correction at review, round 10.)
 static var _SPAWN_CELLS: Array = _spawn_cells()
 
 
