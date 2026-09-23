@@ -91,6 +91,8 @@ func setup(layout: Dictionary) -> void:
 		half = wanted
 		_shape = wanted_shape
 		_build_structures()
+	else:
+		_build_lane_marks()  # _build_structures builds them too; without a rebuild, the lanes still arrive here
 	_apply_ground_quality()
 
 
@@ -114,6 +116,21 @@ func _build_structures() -> void:
 	# Render X5: repeated kit models (stands, towers, gates) draw as one MultiMesh per mesh.
 	StaticInstancer.instance_repeats(structures)
 	_build_airship()
+	_build_lane_marks()
+
+
+## B10 / C11 (round 10): kerb paint, centre dashes and warm junction pools on the layout's certified lanes. Three
+## MultiMeshes, flat, no collider, no light; a map without `lanes` gets none. `--no-lane-marks` for the A/B pair.
+func _build_lane_marks() -> void:
+	if structures == null or not is_instance_valid(structures):
+		return
+	var old := structures.get_node_or_null("LaneMarks")
+	if old != null:
+		old.free()
+	var layout_lanes: Array = _layout.get("lanes", []) if _layout.get("lanes") is Array else []
+	if layout_lanes.is_empty() or LaunchFlags.from_environment().has("no-lane-marks"):
+		return
+	structures.add_child(LaneMarks.new(layout_lanes, LaneMarks.footprints_of(_layout)))
 
 
 ## Feel X7: the Syndicate's airship over the arena (the lead, round 9). Absent on LOW, where the web build and
