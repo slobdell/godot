@@ -339,3 +339,12 @@ A6 runs only at A7's level 3, so the A/B is `a7` vs `a7,a6` (`make nav-a6-ab A12
 builder0, REMOTE_SLOTS=5: **1673 passed / 0 failed**, sim-baseline passes `7dcc52f547f03d3f`, ai-scenarios 43,1 (the
 one red, `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits`, is not on a path nav's default
 changed since the retry; asked the orchestrator to read it against main's own check).
+
+### The leash clamp (item 6's step): NULL BY CONSTRUCTION in the fight, and the denominator that says so
+
+squad's `e602025c` (on main) puts `leash: [x, z, r]` on a crew's `move_to` while its ElementFeed context has a slot.
+`make nav-fight ARENA=terminus NAV_FLAGS=--nav-off=leash` (builder0, seed 3, tree `c148b5d5`+): **`leash_orders` 0,
+`leash_clamps` 0** — no leash reached the mover in a CPU fight (attacking roles carry no element slot: the same gap
+A7's note records for `element_slot()`), and the two arms' fights are identical. So the row is built, tested (10/0)
+and unmeasured; its falsifier (A12's formation residual and off-corridor share) needs a fight whose crews hold element
+slots — a squad-ordered element on the default path (round 11, with the funnel of B1).
