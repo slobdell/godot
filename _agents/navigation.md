@@ -36,9 +36,10 @@ in separate processes; 90 s legs; arrival = order complete within 7 m of the cre
 prints the crew's CONTROLLER move order, its Orders verb, reachability and the goal's off-mesh gap (that is how the
 ungrounded right-click goals were found: contract R2b).
 
-**Item 3's rows** (each `--nav-off=<name>`, and OPT-IN — the switch turns them ON — until their own A/B clears):
-`press` (a hull in wall contact, asked to move, that nets < 0.75 m in 0.5 s backs 1.5 m off the wall in the gear and
-yaw that free the touching end), `inflate` (route corners pushed outward along the bisector by the clearance the turn
+**Item 3's rows** (each `--nav-off=<name>`; `press` is DEFAULT ON since round 10's close — the rigs went 7 → 15 of
+16 leg arrivals on grounded goals — and the others are OPT-IN, the switch turning them ON):
+`press` (a hull on a ROUTED move in wall contact, asked to move, that nets < 0.75 m in 0.5 s backs 1.5 m off the wall
+in the gear and yaw that free the touching end; never on CombatMotion's `direct` hops — it cost a duel a shot), `inflate` (route corners pushed outward along the bisector by the clearance the turn
 needs — half-width on a straight to the half-diagonal on a U-turn — capped at half the free ground), `nosestop` (a hull
 whose nose meets a wall at the end of its route stops there, latched until the goal moves). Default ON:
 `notready` (a route asked on an unsynced map is retried next tick; `--nav-off=notready` restores the old wait; the
@@ -702,7 +703,11 @@ have it. Add the name to `OFF_NAMES` in the commit that adds the switch.
 | `holdband` | **turns ON** round 8's standoff-hold hysteresis (HOLD_SLACK_M, hit-only break; off by default: its A/B missed) | whether hold ↔ move flips are the wheeled "yaw in place" |
 | `r5sidestep` | **turns ON** round 5's single-friend sidestep | the one thing X3 REMOVED; it alone restored squad's near-ambush timing (555 → 531 ticks) |
 | `notready` | round 10's retry of a route asked on an unsynced map (back to waiting REPATH_SECONDS) | the baseline's one round-10 cause |
-| `press`, `inflate`, `nosestop` | **turn ON** round 10's wall-contact rows (see *Round 10* above) | wall contacts vs arrival on `nav-terminus-drive` |
+| `press` | round 10's pressed-wall escape (DEFAULT ON since round 10's close) | the rigs' arrivals and wall contacts on `nav-terminus-drive` |
+| `inflate`, `nosestop` | **turn ON** round 10's two opt-in wall-contact rows (see *Round 10* above) | wall contacts vs arrival on `nav-terminus-drive` |
+| `a7,a6` vs `a7` | A6 lives at A7's level 3, so it is measured under A7 (`nav-a6-ab A12_BASE=a7`) | A12's off-corridor share |
+| `leash` | **turns ON** the leash clamp on Movement's goal | `leash_orders` is the denominator: 0 = no leash reached the mover |
+| `yieldclear` | **turns ON** the yield-spot clearance | yield-driver wall contacts (`nav-fight-ab`) |
 | `oriented` | **turns ON** the oriented ORCA pair radius | defile dispersion, yard oscillation (`nav-defile-ab`) |
 | `wheelhold` | **turns ON** B7's held wheeled hull | shuffle and covering error (`nav-facing VERB=hold`) |
 

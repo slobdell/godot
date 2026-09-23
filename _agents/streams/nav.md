@@ -160,6 +160,62 @@ term decides whether a junction is drivable for the rig.
 
 _(the worker keeps this current)_
 
+## REPORT (nav, round 10, 2026-09-22 night) — read this first; the sections below are the evidence, in order
+
+**Merge here:** `2a2b77c1` (the press flip, pre-registered MOVED, its check below) — everything before it is on main
+(`c148b5d5`, merged). Commits after it are Status only.
+
+**Done, with measurements (builder0 throughout; every number's tree is in its section):**
+1. **The wall-contact instrument** (`WallContact`): per unit per tick, cause (bake / route / avoid / steer / plant,
+   plant split sweep/drift), driver layer, collider, lane; `Movement.state()` and `NAV_FIGHT`. Test-first, mutation-
+   checked (`test_nav_wall_contact`, 10 tests).
+2. **The Terminus drive test** (`make nav-terminus-drive`): **the mixed squad's wall contacts 7866 (pre-CP2) → 4957
+   (CP2) → 5959 (CP2+CP3, ungrounded slots) → 190 (grounded right-click goals)**, arrivals 6,4,6,6 of 6. The rigs:
+   15691 → 8139 → 10128 → **2315 with the press escape** (arrivals 7 → **15 of 16**).
+3. **Fixes by cause, each an arm:** the pressed-wall escape (**default ON** at `2a2b77c1`); corner inflation and the
+   nose stop (opt-in; inflation's old tactics red was the pre-CP3 literal; the nose stop never fires on grounded
+   goals); the not-ready route retry (default ON since `f386c63e`, combat's ask, the baseline's one cause then).
+   **The finding that closed the entry was not nav's code:** 11 of 13 misses were right-click goals 4–10 m inside
+   blocks; control grounded them (R2b) and the mixed squad's contacts fell 97 %.
+4. **`radius_of` oriented** (item 4): built, **falsified as a default** (tracked defile arrivals 4 → 2).
+5. **The held wheeled hull** (item 5, B7): shuffle 2.02 → 0.07 m, covering within 10° 5/25 → 14/24; shots −3.9 % over
+   five paired seeds, so it stays opt-in.
+6. **The seam, measured** (item 6): on Terminus fights CombatMotion decides 17.2 % of unit-ticks, Movement's route
+   47.6 %, and Movement has no leash on any tick; the leash now reaches Movement's goal (opt-in) but no leash arrives
+   in a CPU fight (`leash_orders` 0). The yield-spot clearance (found by this measurement) misses its bar (−23 %, not
+   ≥ 50 %): opt-in.
+7. **Stretch:** A6 falsified under A7 (off-corridor 0.3235 → 0.302, bar < 10 %); `facing_arc` was already published in
+   `Movement.state()` (round 9's `arc_live`); N4's unreachable gates vs clothoids not run.
+
+**Decisions made (one line each):** the instrument reads the plant's public slide list rather than asking combat for
+a getter (no edit to `tank.gd`; the stale-list case is guarded by `is_parked`); every new row ships opt-in with an arm
+counter and becomes default only on the acceptance test's A/B (only `press` earned it); the drive test orders like a
+right-click (`source: player`) because that is the lead's path.
+
+**Questions for the lead:** none blocking. When you drive Terminus: do the War Rigs backing a metre off a wall and
+re-aiming read as smart or as twitchy? (`press`, now default.)
+
+**Requests to other streams (all answered or routed):** squad — ground slots with the hull's clearance (done,
+`SlotGround.for_unit`), put the leash on moves (done; fires only for crews with element slots); control — ground
+right-click goals (R2b, done); combat — a public slide getter is not needed; round 11's refused-pivot regime (below).
+
+**Known issues:** the rigs still touch walls on grounded goals (2315 unit-ticks with press on: plant sweep against
+Block_7, the long hull's yaw); the defile probe ignores its seed (n = 1 per locomotion); `nav-a6-ab`'s trajectories are
+~100 MB each (it keeps only the summaries).
+
+**What to playtest (exact commands):** `make skirmish ARENA=terminus`, select a mixed squad, right-click street to
+street (ring road → west street → plaza → far ring road); then the same with War Rigs. Headless:
+`make remote T=nav-terminus-drive` (both squads, the table above), `make remote T="nav-terminus-drive
+NAV_FLAGS=--nav-off=press"` (the rigs without the escape).
+
+**Next steps (round 11):** the refused-pivot regime (combat's CP4 stop); the funnel (B1/C1) so the corridor and the
+leash are one object Movement reads; the rigs' residual plant sweep (combat's constraint + a creep-out); make the
+leash reach attacking crews (squad) and measure the clamp; inflation re-measured on grounded goals.
+
+**Merge notes (shared files):** `game/ai/order_controller.gd` validates an optional `leash` on `move_to`;
+`OFF_NAMES` gained notready, press, inflate, nosestop, oriented, wheelhold, yieldclear, leash; `tests/nav/` gained
+terminus_drive.gd and defile_arm_probe.gd (read-only over squad's defile probe).
+
 **Plan (2026-09-22, nav worker, round 10), smallest foundation first:**
 1. `WallContact` (`game/ai/wall_contact.gd`, new, nav's) read by `Movement.observe_contact()` from the controller's
    `_physics_process` before the stride skip; the decision it judges is `Movement.note_decision()` at the end of
@@ -300,3 +356,51 @@ A `move_to` may carry `leash: [x, z, radius]` (validated); with the arm on, a go
 circle's nearest point (A7's projection applied to the goal). **Request to squad:** put the leash the brain already
 builds for `CombatMotion` (`element_slot`, `slot_leash`) on its `move_to` orders while a crew has an element slot;
 until then the arm has nothing to act on (`leash_clamps` in `route_arms` says so).
+
+### Round 11, first candidate (combat's relay, CP4's stop): the refused-pivot regime
+
+With the plant constraint on (combat's slide-off passes CP4's four bars), a hull pinched on BOTH sides and commanded
+a pure pivot is refused every candidate (an element's bus leader 1.2 cm inside Crate_11 against Wall_5: refused runs
+up to 160 ticks); with the constraint off it pivots THROUGH the crate. The fix is the driver's: a hull whose pivot is
+refused on both sides creeps out along the free axis (a short straight reverse or advance) before turning, reading
+the plant's public `yaw_refused_ticks` — a `refused_pivot` regime beside `wedged` in `Movement`. The constraint stays
+OFF this round; this is round 11's first nav item (or squad's, by agreement).
+
+### THE WALLS ENTRY: the drive test on grounded right-click goals (control's R2b on main)
+
+`make nav-terminus-drive`, orders stamped `source: player` (the right-click path R2b grounds), builder0, seed 1,
+deterministic, tree **`c148b5d5`** (= main `46bbb9ac` + nav's opt-in rows). Contacts = wall-contact unit-ticks.
+
+| arms | mixed contacts / observed | mixed arrived per leg | rigs contacts / observed | rigs arrived per leg |
+|---|---|---|---|---|
+| **default path** | **190** / 19838 | **6, 4, 6, 6** | 10128 / 22914 | 1, 2, 2, 2 |
+| press + nosestop ON (56 escapes on the rigs, 0 nose stops) | 188 / 19922 | 6, 4, 6, 6 | **2315** / 12261 (−77 %) | **4, 4, 4, 3** |
+
+The mixed squad's history on this instrument: pre-CP2 7866 → CP2 4957 → CP2+CP3 ungrounded 5959 → **grounded 190**
+(−97.6 % from the start of the round). What remains for the rigs on the default path is plant drift against a wreck,
+a container and Block_1 (a 14 m hull held against something while not driven into it); the press escape frees them.
+**Proposed to the orchestrator: `press` default ON as its own commit, pre-registered MOVED with one cause** (it is the
+one row with a clean win on the acceptance test; tactics_elements 8/0 with it on). `nosestop` never fires on grounded
+goals: it stays opt-in as a guard.
+
+### A6, falsified (the stretch item)
+
+A6 runs only at A7's level 3, so the A/B is `a7` vs `a7,a6` (`make nav-a6-ab A12_BASE=a7`), arm proven
+(`a6_asked` 4909–5645 per map vs 0). A12 pooled over yard, pit, terminus (attack-move, team 0, seed 3, builder0):
+**off-corridor 0.3235 → 0.302** (active fraction 0.710 → 0.692) against the pre-registered **< 10 %**; per map pit
+0.313 → 0.274, terminus 0.344 → 0.324, yard 0.307 → 0.303. Green losses 0,0,0 → 1,1,2 (small). Stays opt-in.
+
+### `c148b5d5`'s check
+
+builder0, REMOTE_SLOTS=5: **1673 passed / 0 failed**, sim-baseline passes `7dcc52f547f03d3f`, ai-scenarios 43,1 (the
+one red, `scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits`, is not on a path nav's default
+changed since the retry; asked the orchestrator to read it against main's own check).
+
+### The leash clamp (item 6's step): NULL BY CONSTRUCTION in the fight, and the denominator that says so
+
+squad's `e602025c` (on main) puts `leash: [x, z, r]` on a crew's `move_to` while its ElementFeed context has a slot.
+`make nav-fight ARENA=terminus NAV_FLAGS=--nav-off=leash` (builder0, seed 3, tree `c148b5d5`+): **`leash_orders` 0,
+`leash_clamps` 0** — no leash reached the mover in a CPU fight (attacking roles carry no element slot: the same gap
+A7's note records for `element_slot()`), and the two arms' fights are identical. So the row is built, tested (10/0)
+and unmeasured; its falsifier (A12's formation residual and off-corridor share) needs a fight whose crews hold element
+slots — a squad-ordered element on the default path (round 11, with the funnel of B1).

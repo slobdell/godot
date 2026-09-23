@@ -260,7 +260,7 @@ static var route_not_ready := 0
 static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
-			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps,
+			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
 			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused}
@@ -274,6 +274,7 @@ static func reset_route_arms() -> void:
 	driver_ticks = {}
 	yield_spots_refused = 0
 	leash_clamps = 0
+	leash_orders = 0
 	Avoidance.oriented_pairs = 0
 	route_not_ready = 0
 	clearance_chords = 0
@@ -779,8 +780,10 @@ func idle() -> void:
 func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	var tank := ctl.tank
 	var goal := Vector3(order["x"], 0.0, order["z"])
-	if order.has("leash") and leash_on():
-		goal = within_leash(goal, order["leash"])
+	if order.has("leash"):
+		leash_orders += ctl._step  # the denominator: ticks a leash reached the mover, arm on or off
+		if leash_on():
+			goal = within_leash(goal, order["leash"])
 	if _goal == Vector3.INF or _flat_distance(goal, _goal) > NEW_GOAL_JUMP:
 		_order_ticks = 0  # a new destination, not a slot sliding along (brains re-issue their move every think)
 	_goal = goal
@@ -923,6 +926,9 @@ func _nose_stop(cmd: TankCommand, goal: Vector3, direct: bool) -> bool:
 ## Status); until it does, the arm has nothing to act on and `leash_clamps` says so.
 ## OPT-IN (`--nav-off=leash` turns it ON). Arm counter: `leash_clamps`.
 static var leash_clamps := 0
+## The denominator (lesson 147): unit-ticks on which a move_to carrying a leash reached `drive`. Zero means the leash
+## never arrived, which is not "every goal was inside its circle".
+static var leash_orders := 0
 
 
 static func leash_on() -> bool:
@@ -2141,7 +2147,9 @@ func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			cmd.throttle = 1.0 if order.get("reverse", false) else -1.0  # back off the way you were NOT going
 		cmd.turn = 1.0
 		return
-	if String(order.get("type", "")) == "move_to" and _pressing_escape(cmd, delta):
+	# Routed moves only: a `direct` hop is CombatMotion's (it checked the straight line itself), and backing a hull out
+	# of a duel mid-fight cost `scenario_motion`'s moving duel a shot (5 vs its bar of 6) on 2a2b77c1.
+	if String(order.get("type", "")) == "move_to" and not bool(order.get("direct", false)) and _pressing_escape(cmd, delta):
 		return
 	if absf(cmd.throttle) > 0.5 and ctl.tank.estimated_velocity.length() < STUCK_SPEED:
 		_stuck_time += delta
@@ -2162,13 +2170,15 @@ func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		_stuck_time = 0.0
 
 
-## Round 10 item 3's three arms are OPT-IN for now (like `a7` and `holdband`, the switch turns them ON:
-## `--nav-off=press,inflate,nosestop`). Measured on the Terminus drive test they cut wall contacts by two thirds, but
+## Round 10 item 3's rows. **`press` is DEFAULT ON** (`--nav-off=press` restores the old stall rule alone): on the
+## Terminus drive test with grounded right-click goals it took the War Rigs from 7 to 15 of 16 leg arrivals and their
+## wall-contact ticks 10128 -> 2315, the mixed squad unchanged (builder0, seed 1, `c148b5d5`). `inflate` and
+## `nosestop` stay OPT-IN (like `a7` and `holdband`, the switch turns them ON). Measured on the Terminus drive test they cut wall contacts by two thirds, but
 ## on `c91d8039` default-on they moved the sim baseline and reddened two element tests (inflation delays an element's
 ## drive north; see Status), so they wait for their own A/B before becoming the default. The not-ready route retry is
 ## default ON (`--nav-off=notready` restores the old wait) and is the one pre-registered baseline cause.
 static func press_on() -> bool:
-	return switched_off("press")
+	return not switched_off("press")
 
 
 static func inflate_on() -> bool:
@@ -2182,13 +2192,17 @@ static func nose_stop_on() -> bool:
 ## Round 10 (nav item 3a): **the pressed-wall escape.** The Terminus drive test's longest contacts were hulls held
 ## against a block face or a lamp for 30-130 s at a LOW throttle (0.12-0.35: a wheeled hull's minimum creep, a slowing
 ## arrival, a tight turn) — below the 0.5 the stall rule above asks for, so nothing ever noticed. The wall-contact
-## reading says exactly what the stall rule was guessing: this hull is touching a wall, it is being asked to move, and
+## reading says exactly what the stall rule was guessing: this hull (on a ROUTED move — CombatMotion's `direct` hops
+## are its own business) is touching a wall, it is being asked to move, and
 ## it is not getting anywhere (net displacement, not velocity). After PRESS_SECONDS of that it backs away from the wall (PRESS_BACKOFF_M, at most PRESS_ESCAPE_MAX_S), in the gear that
 ## moves the touching end off it, yawing so that end swings clear; then the route resumes (and re-plans: it was off it).
 ##
-## OPT-IN for now (`--nav-off=press` turns it ON; see `press_on()`).
+## DEFAULT ON since round 10's close (`--nav-off=press` switches it off; see `press_on()`).
 ## Arm counter: `press_escapes`. Deterministic: it reads only physics state already produced and the tick's command.
-const PRESS_SECONDS := 0.5
+## A PIN, not a brush: 1.0 s of pressing without progress. Measured on builder0 (drive test rigs arrivals of 16 /
+## scenario_motion's moving duel): 0.5 s -> 15 / 5 shots (bar 6, red); 1.0 s -> 14 / passes; 1.5 s -> 8 / passes.
+## The drive test's pins last 30-130 s; a duelling tank's weave brushes a wall for well under a second.
+const PRESS_SECONDS := 1.0
 const PRESS_ESCAPE_THROTTLE := 0.6
 ## The escape ends once the hull is this far from where it was pinned, or after PRESS_ESCAPE_MAX_S (a wheeled hull
 ## from rest covers under a metre in the stall rule's 0.9 s: measured 0.78 m on the foundry wall).
@@ -2205,7 +2219,12 @@ var _escape_turn := 0.0
 
 
 func _pressing_escape(cmd: TankCommand, delta: float) -> bool:
-	if not press_on():
+	# Not while the crew is ENGAGED: in a fight the hull's motion is the combat layer's (a duel's weave brushes walls
+	# on purpose), and the escape backing a duelling tank off cost scenario_motion's moving duel a shot (5 vs its bar
+	# of 6) on 2a2b77c1 and on bc4873f3. The acceptance test it exists for — a squad driven through the streets — has
+	# no engagement, so nothing it measured is lost.
+	if not press_on() or ctl.gunnery.engaged_target != "":
+		_press_time = 0.0
 		return false
 	var tank := ctl.tank
 	var asked := absf(cmd.throttle) >= WallContact.THROTTLE_MIN or absf(cmd.turn) >= 0.05
