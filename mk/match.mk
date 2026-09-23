@@ -178,12 +178,17 @@ a2-cusps: import ## A2's verdict: switch-arm with trajectories on both arms (fla
 # every match proves its arm through `controls.tuning` (faction_matrix refuses a run that did not carry it).
 # SEEDS=32 is ~64 games per arm per map; `make remote T="disc-site-series ARENA=pit"`.
 DISC_SITE_ARMS := lof=match.hull_disc_lof=0 incoming=match.hull_disc_incoming=0 both=match.hull_disc_lof=0,match.hull_disc_incoming=0
-disc-site-series: import ## Item 6: gangs vs law, the disc site by site, paired seeds (ARENA=pit|yard SEEDS=32 TIME=180)
+# One arm is ~41 min on builder0 at 2 jobs (pit, 64 games), and slot.sh kills a run at 90: so ARMS= picks which
+# treatments this invocation runs (default all, for a machine with the time), and the control is run only when its
+# file is not already there (build/ persists on builder0 between runs; FRESH=1 forces it).
+disc-site-series: import ## Item 6: gangs vs law, the disc site by site, paired seeds (ARENA=pit|yard ARMS="lof incoming both" SEEDS=32 FRESH=1)
 	@test -n "$(ARENA)" || { echo "disc-site-series: ARENA= is required (one map per run)"; exit 2; }
-	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),32) --factions gangs,law \
-		--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) --arena $(ARENA) \
-		--json $(BUILD_DIR)/disc-series-$(ARENA)-control.json
-	for arm in $(DISC_SITE_ARMS); do \
+	if [ -n "$(FRESH)" ] || [ ! -f $(BUILD_DIR)/disc-series-$(ARENA)-control.json ]; then \
+		$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),32) --factions gangs,law \
+			--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) --arena $(ARENA) \
+			--json $(BUILD_DIR)/disc-series-$(ARENA)-control.json || exit 1; \
+	else echo ">> disc-site-series: reusing $(BUILD_DIR)/disc-series-$(ARENA)-control.json (FRESH=1 to rerun it)"; fi
+	for arm in $(filter $(addsuffix =%,$(or $(ARMS),lof incoming both)),$(DISC_SITE_ARMS)); do \
 		label=$${arm%%=*}; tune=$${arm#*=}; \
 		$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),32) --factions gangs,law \
 			--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) --arena $(ARENA) --tune $$tune \
