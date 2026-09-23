@@ -178,7 +178,7 @@ circle as wide as the vehicle's diagonal (5 m for the bigger bus), so a tank wou
 actually clear. It now uses the vehicle's real box for that check. Measured on 64 paired games per map, gangs vs law:
 gangs won **36% instead of 23% on yard** (10 games won only with the box, 2 only with the circle, p 0.039) and 22% vs
 16% on pit (6 vs 2). It is the first single change to that matchup that beats noise. The other two places the circle
-is used (incoming-fire checks) stay as they were: pit showed no effect (6 vs 3; both together 2 vs 2).
+is used (incoming-fire checks) stay as they were: they showed no effect on either map (pit 6 vs 3, yard 4 vs 3).
 
 **3. Smaller fixes, all on main:** the artillery was right all along (its test depended on which frame the map
 loaded; fixed, and nav now retries that frame); a tuned muzzle height now moves the point shells leave from; an
@@ -455,6 +455,16 @@ Before on record: feel's matrix, gangs 20 % on pit and 50 % on yard (unpaired, d
 | **`6e2d9421` clean** | pit | `incoming` | 64 | 20% / 16% | 6 | 3 | 0.508 |
 | **`6e2d9421` clean** | pit | `both` (C7's arm) | 64 | 16% / 16% | 2 | 2 | 1.000 |
 | **`6e2d9421` clean** | **yard** | **`lof`** | 64 | **36% / 23%** | **10** | **2** | **0.039** |
+| `6e2d9421` clean | yard | `incoming` | 64 | 25% / 23% | 4 | 3 | 1.000 |
+| `6e2d9421` clean | yard | `both` (C7's arm) | 64 | 36% / 23% | 10 | 2 | 0.039 |
+
+**Reading, per cell, never pooled:** the threat site (`incoming`) moves nothing on either map (pit 6/3, yard 4/3).
+The line-of-fire site (`lof`) carries the whole effect: yard b 10, c 2, p 0.039; pit 6/2, the same direction. `both`
+equals `lof` on yard to the game (10/2) and is null on pit (2/2). **C7's prediction** ("the box for line of fire AND
+threat recovers most of the lost win rate") is **met on yard and not on pit**, and where it's met the component is
+`lof` alone. The null for `incoming` is evidence against the threat model's disc as a cause. The pre-registered
+paired design worked: 64 pairs per cell detected a 13-point shift at p 0.039. Squad's `squad_incoming` site was not
+in this tree (it landed after the freeze): its own cell is round 11's.
 | `6e2d9421` **DIRTY** (the clone: my log files written inside it; not quotable) | pit | `incoming` | 64 | 20% / 16% | 6 | 3 | 0.508 |
 
 **Determinism, measured:** the control at `6e2d9421` run from two builder0 folders (this worktree's and the clone's)
@@ -636,5 +646,5 @@ pitch. They are the test's hand-placed 6 m row; comment corrected on this branch
 
 1. **Round 11's first item:** the pinch escape (the mover drives out of a two-sided refusal before turning), then CP4's
    five bars on one build (five_squads, corridor, wedged rig, the refused-run bar, squad's element drive).
-2. The series' remaining cells as their own findings (yard `incoming` and `both` land tonight; see item 6's table).
+2. The series' one missing site: squad's `squad_incoming` (on main after the frozen tree), its own paired cell.
 3. Stretch never run: `make a2-cusps` (A2's verdict); the duel's hide/peek regression.
