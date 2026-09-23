@@ -114,7 +114,9 @@ func _next_leg() -> void:
 	if leg_index >= LEGS.size():
 		return
 	var names: Array = units.map(func(t: Tank) -> String: return String(t.name))
-	var result := orders.issue(UnitCommand.make(names, "move", {"to": LEGS[leg_index]["to"]}))
+	# `source: player`, as `RtsControls` stamps a right-click (rts_controls.gd): the path the lead drives, and the one
+	# R2b's goal grounding applies to (control grounds player orders only).
+	var result := orders.issue(UnitCommand.make(names, "move", {"to": LEGS[leg_index]["to"], "source": "player"}))
 	if result != "":
 		push_error("nav-terminus-drive: " + result)
 
