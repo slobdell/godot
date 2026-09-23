@@ -230,6 +230,11 @@ _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round
 - Frames: `make remote T=terminus-streets` (builder0, tree = `44315882`), 7 pairs looked at; page
   `make terminus-streets-page` → published https://claude.ai/artifact/U3rZUei4p8YeLBS55VyCuX (private: share it).
 
+- **Item 4, `eeb2a6e2` (36f5871a + main f29c5b7c; builder0, REMOTE_SLOTS=5): `>> remote: make check exited 2`, as
+  explained:** sim-baseline MOVED `11c479c3bec77082` → `7dcc52f547f03d3f` (the reorder, the one pre-registered
+  cause; determinism `ad35f217e1862ae3`); test 1656 passed 2 failed = the two REASON'd CP3 reds (drive-to-slots:
+  squad's; parked-friend: combat's); ai-scenarios 41/3, the same known set. 15 of 18 targets passed.
+
 ### CP2 merge notes
 - **Merge at `44315882`** (green). Commits after it are docs and `tools/street_page.py` only (not in `make check`).
 - Touches no other stream's paths. `tests/arena/before/terminus_round9.json` is a frozen copy for the pair, not a
@@ -276,6 +281,13 @@ _(the worker keeps this current)_ **Last updated 2026-09-22 (arena worker, round
   Additive; the six old layouts regenerate byte for byte (their generator paths are untouched).
 - `tools/arena_terrain.py`: terrain's Python mirror, reading its constants through `gdscript_source` and pinned to a
   golden file both sides test. Not reviewed line by line (terrain's file); the reads-not-copies shape is right.
+
+### feel's lane marks (B10/C11 kit), reviewed 2026-09-22
+- Built from the list arena sent (7 lanes, 11 junction points, no chokepoints, the barricade pair): flat paint and
+  floor decals, no collider, nothing standing (`game/theme/arena_kit/city/lane_marks.gd`). arena caught the kerb
+  lines running UNDER kerb furniture (they were laid from the declared 18 m width); feel's fix `95966bdd` stops
+  every kerb/dash piece 0.3 m short of any collider footprint (read through `ArenaKit.size_of`), with a positive
+  control on the three named spots. Accepted.
 
 ### Requests to other streams
 - **Orchestrator / all:** R4's number is 8.14 m drivable (the widest hull is `syn_artillery` 4.07 m), not 6.64 m.
