@@ -530,9 +530,54 @@ static func spawn_position(team: int, slot: int) -> Vector3:
 	if from_layout != null:
 		# Lifted here rather than in `Arena.spawn_spot`, so BOTH sources of a spawn point get it from one place.
 		return Vector3((from_layout as Vector3).x, SPAWN_LIFT_M, (from_layout as Vector3).z)
-	var x: float = SLOT_X[slot % SLOT_X.size()]
-	var z := BASE_Z + SPAWN_ROW_SPACING * ((slot / SLOT_X.size()) % SPAWN_ROWS)
+	var cell: Vector2i = _SPAWN_CELLS[slot % _SPAWN_CELLS.size()]  # arena's carve-out (round 10): turning-clear cells first
+	var x: float = SLOT_X[cell.x]
+	var z := BASE_Z + SPAWN_ROW_SPACING * cell.y
 	return Vector3(x if south else -x, SPAWN_LIFT_M, z if south else -z)
+
+
+## Round 10 (arena, item 4; the orchestrator's ruling A, 2026-09-22): THE ORDER THE GRID FILLS IN, so the first bare
+## spawns have room to TURN. [column index into SLOT_X, row] per slot.
+##
+## THE TURNING ENVELOPE: a hull's first turn sweeps the disc of its half-diagonal, and squad measured that two hulls
+## turning together sweep the full diagonal at once (tests/test_tactics_pitch.gd), so two neighbours are
+## turning-clear when their centres are at least diagonal + 0.30 m apart at the WORST jitter:
+##   the bus (`Units.DEFAULT`, 2.90 x 9.70 m): 10.12 + 0.30 = 10.42 m, i.e. an across pitch of 10.42 + 2 x 1.30
+##     (SPAWN_JITTER_MAX_X) = 13.02 m, and a row pitch of 10.42 + 2 x 0.15 = 10.72 m (the rows' 12 m already clear);
+##   the War Rig (3.32 x 14.00 m): 14.39 + 0.30 + 2.60 = 17.29 m across.
+## WHY 57 TURNING-CLEAR SLOTS CANNOT FIT: the zone is 3 rows deep (z = 90..114: DRIVABLE_LIMIT and the hexagon) and
+## +-67.5 m wide (the Terminus screens, see SLOT_X), which holds 11 bus columns a row at 13.02 m (33) or 28 on a
+## stagger, and about 14 rigs. SPAWN_SLOTS is also every army's unit cap (Doctrine.MAX_UNITS), so it cannot shrink.
+## SO THE SAME 57 LATTICE POINTS FILL IN A DIFFERENT ORDER: first the 28 checkerboard cells (column's lattice index +
+## row even: row 0 at x = 0, +-15..+-60; row 1 at +-7.5..+-67.5; row 2 like row 0), whose worst-jitter centres are
+## 15 - 2.6 = 12.4 m apart in a row and sqrt(4.9^2 + 11.7^2) = 12.7 m between rows, both clear of the bus's 10.42 m;
+## then the other 29. tests/test_arena_spawn_envelope.gd asserts it.
+## WHAT IT DOES NOT GIVE: a bare-spawned War Rig has no turning room beyond the first row's alternate cells (it needs
+## 17.29 m). And a DOCTRINE army never stands here: `ArmyLayout.deploy()` re-lays it by hull size before any physics
+## step (tests/test_spawn_grid.gd), so the overlaps five_squads saw are squad's formation pitch, not this grid.
+static var _SPAWN_CELLS: Array = _spawn_cells()
+
+
+static func _spawn_cells() -> Array:
+	var clear: Array = []
+	var rest: Array = []
+	var pitch := absf(float(SLOT_X[1]) - float(SLOT_X[0]))
+	for row in SPAWN_ROWS:
+		for column in SLOT_X.size():
+			var lattice := roundi(absf(float(SLOT_X[column])) / pitch)
+			(clear if (lattice + row) % 2 == 0 else rest).append(Vector2i(column, row))
+	return clear + rest
+
+
+## How many slots, from slot 0, give every bare spawn room to turn (the checkerboard cells).
+static func turning_clear_slots() -> int:
+	var pitch := absf(float(SLOT_X[1]) - float(SLOT_X[0]))
+	var count := 0
+	for row in SPAWN_ROWS:
+		for column in SLOT_X.size():
+			if (roundi(absf(float(SLOT_X[column])) / pitch) + row) % 2 == 0:
+				count += 1
+	return count
 
 
 ## Green starts in the south facing north (−Z); Rust in the north facing south.
