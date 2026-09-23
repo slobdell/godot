@@ -188,7 +188,7 @@ func _strips(node_name: String, pieces: Array, width: float, material: Material)
 	var multi := MultiMesh.new()
 	multi.transform_format = MultiMesh.TRANSFORM_3D
 	multi.mesh = quad
-	multi.instance_count = pieces.size()
+	FxMultiMesh.resize(multi, pieces.size())
 	for i in pieces.size():
 		var from: Vector2 = pieces[i][0]
 		var to: Vector2 = pieces[i][1]
@@ -201,6 +201,7 @@ func _strips(node_name: String, pieces: Array, width: float, material: Material)
 	instance.name = node_name
 	instance.multimesh = multi
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	FxMultiMesh.never_interpolated(instance)  # static paint: the renderer must not interpolate it (fx_multimesh.gd)
 	add_child(instance)
 	return instance
 
@@ -216,7 +217,7 @@ func _pools(corners: Array) -> MultiMeshInstance3D:
 	var multi := MultiMesh.new()
 	multi.transform_format = MultiMesh.TRANSFORM_3D
 	multi.mesh = quad
-	multi.instance_count = corners.size()
+	FxMultiMesh.resize(multi, corners.size())
 	for i in corners.size():
 		var p: Vector2 = corners[i]
 		multi.set_instance_transform(i, Transform3D(Basis(), Vector3(p.x, LIFT_M + 0.01, p.y)))
@@ -224,5 +225,6 @@ func _pools(corners: Array) -> MultiMeshInstance3D:
 	instance.name = "Pools"
 	instance.multimesh = multi
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	FxMultiMesh.never_interpolated(instance)
 	add_child(instance)
 	return instance
