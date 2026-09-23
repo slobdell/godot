@@ -432,6 +432,10 @@ Before on record: feel's matrix, gangs 20 % on pit and 50 % on yard (unpaired, d
 |---|---|---|---|---|---|---|---|
 | `e7d3ced6`, pre-CP3 8.62 m bus (builder0) | pit | `lof` | 64 | 28% / 20% | 8 | 3 | 0.227 |
 | `6e2d9421` **DIRTY** (untracked terrain `.uid`s at launch; `paired_arms` REFUSED it; not quotable) | pit | `lof` | 64 | 22% / 16% | 6 | 2 | 0.289 |
+| **`6e2d9421` clean (the clone), builder0** | pit | `lof` | 64 | 22% / 16% | 6 | 2 | 0.289 |
+| **`6e2d9421` clean** | pit | `incoming` | 64 | 20% / 16% | 6 | 3 | 0.508 |
+| **`6e2d9421` clean** | pit | `both` (C7's arm) | 64 | 16% / 16% | 2 | 2 | 1.000 |
+| **`6e2d9421` clean** | **yard** | **`lof`** | 64 | **36% / 23%** | **10** | **2** | **0.039** |
 | `6e2d9421` **DIRTY** (the clone: my log files written inside it; not quotable) | pit | `incoming` | 64 | 20% / 16% | 6 | 3 | 0.508 |
 
 **Determinism, measured:** the control at `6e2d9421` run from two builder0 folders (this worktree's and the clone's)
@@ -543,7 +547,7 @@ squad's post-placement red, not this commit's.
 | bar | reading | verdict |
 |---|---|---|
 | 1. parked-friend on both machines | laptop 114 ticks, 2 shots; builder0 (the check) 113 ticks, 2 shots | PASS |
-| 2. paired series, `lof` cell not worse | pit (builder0, `6e2d9421`, clean): b 6, c 2, p 0.29; yard running | pit PASS, yard pending |
+| 2. paired series, `lof` cell not worse | pit (builder0, `6e2d9421`, clean): b 6, c 2, p 0.29; **yard: gangs 36% vs 23%, b 10, c 2, p 0.039** | **PASS on both maps** |
 | 3. five_squads and suppression unchanged | 1672/0; the suppression scenarios all pass | PASS |
 | 4. sim baseline MOVES, one cause | **UNMOVED** | **MY PREDICTION WAS WRONG** |
 
