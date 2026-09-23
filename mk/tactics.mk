@@ -74,7 +74,8 @@ squad-settle-series: import ## Round 10 item 3: squad-settle over paired seeds, 
 	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/squad-settle.jsonl
 	@for arena in "" terminus; do for dir in forward side back; do for seed in $(or $(SETTLE_SEEDS),1 2 3 4 5 6 7 8); do for pin in off on; do \
 		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
-			--arena=$$arena --dir=$$dir --seed=$$seed --pin=$$pin --seconds=$(or $(SETTLE_SECONDS),45) 2>&1 \
+			--arena=$$arena --dir=$$dir --seed=$$seed --pin=$$pin --seconds=$(or $(SETTLE_SECONDS),45) \
+			--drills=$(or $(SETTLE_DRILLS),off) 2>&1 \
 			| grep "^SETTLE_PROBE {" | sed 's/^SETTLE_PROBE //' >> $(BUILD_DIR)/squad-settle.jsonl & \
 		done; wait; done; done; done
 	@$(PYTHON) tools/tactics/settle_series.py $(BUILD_DIR)/squad-settle.jsonl
