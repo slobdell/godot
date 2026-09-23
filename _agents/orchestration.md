@@ -3082,3 +3082,63 @@ looked like a measurement. Lessons 181, 195, 196, 199 are the instances.
     strobe in a 6 s clip); the outline pair's measurement window moved because the camera learned to face the fight,
     not because the lighting changed; and the "frozen" pair was not frozen (FxWorld and the Show ran through the
     pause). None of the three was visible from the number; each needed the list of inputs written out and counted.
+
+**Round 10's one sentence, above its lessons (the orchestrator, 2026-09-23): a red that appears on a branch and was
+green on its merge base is the branch's until proven otherwise, and a green that depends on a defect is not green.**
+
+202. **A round-9 cost paid twice: git-ignored is not invisible.** (announcer, round 10.) `tools/remote.sh` syncs the
+    working tree, not the index, so a git-ignored folder of a format Godot imports reaches builder0 and gets imported:
+    616 fresh ElevenLabs MP3 masters segfaulted `make import` on the box. The clips folder learned this in round 4 and
+    got a `.gdignore`; the masters folder carried the same exposure for six rounds because "it's ignored" reads as
+    "it's not there". Every folder of importable files that is not source carries the marker, tracked or not.
+203. **Rescue a worktree's git-ignored inputs before removing it, or a later round pays for them twice.**
+    (announcer.) The Terminus's announcer masters were lost with a round-8 worktree; ordering two new arena names by
+    line id would have re-recorded 180 clips, 18 of them replacing shipped takes nobody asked for. `--only-values`
+    caught it; the real fix is the close-out rescue step, run every time, for masters as well as Meshy downloads.
+204. **A JSON baked on another branch and landed after a generator change carries the old order, and the test that
+    catches it is the one that compares the baked list to the constants.** (arena, round 10.) Terrain's canal
+    fixture was baked before the spawn-grid reorder merged; main went red on arena's own test the moment both were
+    in. `make arenas` after merging main is the rule for anyone who commits a generated layout.
+205. **A watcher's timeout kills the job it launched.** (the orchestrator.) A chained "wait for the check, then
+    record the baseline twice" script inside a one-hour Monitor was killed mid-record when the monitor timed out,
+    and the log read `make: Terminated`. Long jobs run detached (`setsid nohup`) and are WATCHED by a monitor that
+    only reads their log; the watcher may die, the job may not. Also: a filter that greps for "refus" matches the
+    tool's own hint text ("prefer adopt: it refuses a disagreement"); match the wrapper's exit line, not a word.
+206. **A count baseline recorded under load bakes a coin.** (the orchestrator.) The closing scenario record read
+    42,2 with `scenario_perf` failing at 28.9 s while combat's series and nav's A/B held five slots; the baseline
+    file's own header says the perf case is load-sensitive. Refused; re-recorded in an exclusive window at 43,1.
+    A record is taken in a window or it is not a record.
+207. **Hold a flip whose check adds a red that was green on its merge base, even when every bar passed.** (combat,
+    CP4.) All four pre-registered bars passed on one build; the flip's full check listed drive-to-slots red and the
+    listing called it "main's". Main's own check on the merge base had it green. The yaw_fit=0 / default pair
+    showed the constraint ON stopped the element dead (−1.2 m against 19.0 m): a fifth bar nobody had written. The
+    mechanism (a two-sided pinch the constraint correctly refuses; the test passes today because a hull can rotate
+    through a crate) is round 11's first item. A pre-registered bar list is a floor, not the ceiling.
+208. **A scenario harness that teleports bodies makes behaviour out of nothing, in both directions.** (arena's
+    catch, squad's attribution.) `ai_scenario.gd::_place` wrote `global_position` instead of `Tank.place()`, the
+    same tick-1 defect combat fixed in the game in round 9. With it fixed, two "behaviour" reds on the bigger bus
+    PASSED (engine-deck 7/12 → 47/50; formation-slot 16.1 → 15.0 m) and one PASS became an honest red
+    (cover-peeking's whole 5-vs-4 margin was the grid-slot tick). Every REASON written before the fix was withdrawn.
+    When a fixture places a body, it places it the way the game does.
+209. **A machine flip on one scenario is a placement artefact until proven otherwise.** (combat.) Parked-friend
+    passed on the laptop and failed on builder0 with identical code; under `Tank.place()` the flip vanished and the
+    arms read the same on both machines to the tick, and feel's earlier inverted pair (disc passes, box roams) was
+    the teleport swapping the arms. Read the placement before reading the machine.
+210. **Pre-register the direction and accept being wrong in the safe one.** (combat; squad.) The lof-site flip was
+    pre-registered as MOVING the baseline and did not (the baseline match never reaches a friend-in-lane decision
+    the disc and box disagree on); squad's pitch was pre-registered MOVES and measured unmoved relative to CP3
+    (deploy stays at the width floor, so the baseline match lays nothing at the diagonal). Both are recorded as
+    wrong predictions with their reasons, not as tidy nulls; both saved a record cycle.
+211. **A cheaper geometric bound is a hypothesis, not a ruling.** (the orchestrator, corrected by squad.) The
+    ruling "land the smallest pitch that passes, half_diagonal + half_width" assumed one hull turns while its
+    neighbour stands; a dressing formation turns every hull at once and each projects w|cos θ| + l|sin θ| onto the
+    line between them, peaking at the full diagonal. Measured: 5.67 m clips −0.73, 8.95 m clears by a centimetre.
+    The diagonal plus a named margin is the floor; the orchestrator's arithmetic was the thing under test.
+212. **The queue, not the machine, was the bottleneck again, and it costs a lesson number each round until someone
+    reads the load line first.** (lesson 161, round 9; this round at 15:00.) builder0 read load 0.8 on 12 cores with
+    11.8 GB free while ten runs queued for three slots. `REMOTE_SLOTS=5` for the night moved the round; the number
+    to read before raising it is the load line, not the queue length.
+213. **A stream that reports "done" with a docs commit after its merge hash leaves the brief on main saying the
+    item is in progress.** (announcer.) The code merged at the green hash; the Status that named the hash, the
+    ledger total and the launch-smoke result were two commits later and had to be asked for. The close-out reads
+    every stream's tip for docs-only commits after its last merge and fast-forwards them.
