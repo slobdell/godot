@@ -343,3 +343,14 @@ Commits after `a822a48f`: `e27e0b85` (blimp-look frame fix), the Status.
   **`11c479c3bec77082`, unmoved**; determinism `cd43435b56b09acf`; ai-scenarios 40,4 against 44,0: formation-slot,
   base-of-fire, parked-friend (REASON'd / named) and `scenario_perf`'s CPU budget (load; it passed on `f579c4a0`'s
   run). **Merge here: `82d77c5a`.**
+
+### The hinge's frame cost (stretch): REFUSED again, the fourth time -- and this time the window HELD
+
+`REMOTE_SLOTS=6 make remote-quiet T="perf-trailer-ab PERF_CYCLES=6"`, builder0, `4c2d1716`, 2026-09-23, the
+orchestrator's quiet window: **QUIET WINDOW: HELD** (alone on the box, load1 0.41-0.73). **VERDICT: NOT USABLE**:
+(1) the census freeze read OFF in 13 of 13 phases although the target passes `--tune=match.no_damage=1` -- the knob
+did not reach `Armor.no_damage` (the "prints applied, never reaches its predicate" class combat named), even though
+the census happened to stay constant (90 / 90 / 90) because nothing died; (2) the kept cycles disagree
+(-0.42, +3.48, +14.78, +13.46, +0.70 ms; mean +6.40, spread 15.20; one `all` phase at 74 ms). **Do not quote a
+number.** What would make it measurable: `no_damage` reaching `Armor` from `--tune` (combat's structural fix), then
+the same command. For scale: the M1 budget is 33.3 ms, and the phases' averages run 33-44 ms with or without the trailer.
