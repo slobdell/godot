@@ -119,8 +119,9 @@ func test_polyline_distance() -> void:
 	assert_true(absf(WallContact.distance_to_polyline(Vector3(12, 0, 5), path) - 2.0) < 0.001, "2 m off the second")
 
 
-## Item 3a's positive control: a hull ordered (`direct`, so no route bends it away) at a point BEHIND the wall presses
-## into it and gets nowhere. The pressed-wall escape must fire, and back it off the wall.
+## Item 3a's positive control: a tracked hull ROUTED to a point hard against the wall (the route ends on the mesh edge
+## 2.0 m from the face, and its 4.3 m nose reaches the face first) presses into it and gets nowhere. The escape (default
+## ON, routed moves only) must fire and back it off the wall. The nose stop is off here (opt-in), so nothing else stops it.
 func test_a_hull_pressed_on_a_wall_backs_off() -> void:
 	var was := _arms([])  # press is DEFAULT ON: no switch
 	WallContact.reset()
@@ -128,11 +129,11 @@ func test_a_hull_pressed_on_a_wall_backs_off() -> void:
 	await ArenaFixture.build(self, "foundry")
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
-	var ctl := _hull(game_match, "ifv", WALL_AT + Vector3(0, 0, 6.0), 0.0)
-	ctl.set_orders({"type": "move_to", "x": WALL_AT.x, "z": WALL_AT.z - 10.0, "direct": true}, {"type": "hold_fire"})
+	var ctl := _hull(game_match, "tank", WALL_AT + Vector3(0, 0, 14.0), 0.0)
+	ctl.set_orders({"type": "move_to", "x": WALL_AT.x, "z": WALL_AT.z + 1.25, "arrive": 0.5}, {"type": "hold_fire"})
 	var nearest := INF
 	var backed := 0.0
-	for frame in int(SimClock.TICK_RATE * 6):
+	for frame in int(SimClock.TICK_RATE * 8):
 		await tree.physics_frame
 		var gap := ctl.tank.global_position.z - (WALL_AT.z + 0.75)
 		if bool(Movement.state(ctl.tank).get("wall_contact", false)):
@@ -145,6 +146,23 @@ func test_a_hull_pressed_on_a_wall_backs_off() -> void:
 	assert_true(WallContact.ticks > 0, "the hull reached the wall (%d contact ticks)" % WallContact.ticks)
 	assert_true(Movement.press_escapes > fired, "the escape fired (%d)" % (Movement.press_escapes - fired))
 	assert_true(backed > 1.0, "and the hull backed away from the face after touching it (%.2f m)" % backed)
+
+
+## ...and never on a `direct` hop: CombatMotion checked that straight line itself, and backing a duelling hull out of
+## it cost scenario_motion's duel a shot. Same wall, a direct order through it: pressing, and no escape.
+func test_a_direct_hop_is_never_escaped() -> void:
+	var was := _arms([])
+	WallContact.reset()
+	var fired := Movement.press_escapes
+	await ArenaFixture.build(self, "foundry")
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var ctl := _hull(game_match, "ifv", WALL_AT + Vector3(0, 0, 6.0), 0.0)
+	ctl.set_orders({"type": "move_to", "x": WALL_AT.x, "z": WALL_AT.z - 10.0, "direct": true}, {"type": "hold_fire"})
+	await _run(4.0)
+	Movement._off = was
+	assert_true(WallContact.ticks > 30, "the direct hop presses the wall (%d contact ticks)" % WallContact.ticks)
+	assert_eq(Movement.press_escapes - fired, 0, "and the escape leaves it to CombatMotion")
 
 
 ## Item 3c: a hull sent to a point hard against a wall (inside the bake's erosion band, so the route ends on the mesh
