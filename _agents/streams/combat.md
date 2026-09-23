@@ -162,7 +162,66 @@ builder0, the check on this exact hash: `>> remote: make check exited 2`, **1604
 re-records on `main` (my record reverted on request). Earlier green points: `d0445bbf` exit 0 (1564/0), start of round
 `2ee65f94` exit 0 (1559/0).
 
+### Latest check: `0fe728d6` (main at `f29c5b7c` merged in, + the CP3-review mount fix), builder0
+
+`>> remote: make check exited 2`, **1652 passed, 2 failed**, sim-baseline `11c479c3bec77082` **unmoved**, determinism
+`cd43435b56b09acf`. Identical to `main`'s own check at `f29c5b7c` (1651/2, the same two REASON'd reds: squad's
+drive-to-slots and combat's parked-friend; the same scenario reds 40,4) plus my one new passing test. So this branch
+adds no red. The parked-friend row is being re-read on squad's `c0040ae4` (placement through `Tank.place()`).
+
+### ⛔ CP4 STOPPED (written 2026-09-22 night): the constraint stays OFF; round 11's first item
+
+The flip (`48569fce`) passed the four pre-registered bars on one build (`0bc0e214`, builder0): five_squads 0 of 30,
+longest refused run 0 (control 83), corridor 11.4° / 6.0 m / 1.21 m, nav 8/0. Its full check moved the baseline as
+pre-registered (`7dcc52f547f03d3f` → `50acf21d6e6a68b7`, one cause). **But it failed a fifth bar that the check
+caught and I missed in my first reading** (the orchestrator caught it: I listed it as main's red, and it was green on
+main at my merge base). Reverted on the branch at `01d839ea`; the defaults are OFF again.
+
+| `FILTER=tactics_elements`, builder0, `48569fce` | route progress (bar 16.2 m) | north | spread | verdict |
+|---|---|---|---|---|
+| `TUNE=match.yaw_fit=0` | 19.0 m | 9.2 m | 31.5 → 23.2 m | PASS (8/0) |
+| `TUNE=match.yaw_fit=1` (world mask, slide-off) | **−1.2 m** | 0.0 m | 31.0 → 36.4 m | **FAIL** (7/1) |
+
+**The mechanism (YAW_TRACE, builder0):** the element's leader, the 9.70 m bus hand-placed at (−15, 60), starts 1.2 cm
+inside Crate_11 on tick 2 and is then commanded a pure pivot (throttle 0, turn +1) for 186 ticks. Every candidate
+down to 0.8° enters BOTH Crate_11 (normal −1, 0) and Wall_5 (normal 0.94, 0.33), a two-sided pinch. The slide-off
+correctly refuses (a push off one drives into the other), and the hull is refused for runs of up to 160 ticks. Without
+the constraint the bus pivots through the crate and the wall and drives off: the exact illegal yaw the constraint
+exists to stop, so the test passes today BECAUSE of the defect.
+
+**What round 11 needs (the driver, not the plant):** a hull whose pivot is refused on both sides must drive out of the
+pinch (a short creep along its free axis) before it turns. That is the mover's decision (nav's `Movement`, or squad's
+element leader), with the plant publishing the refusal (`yaw_refused_ticks`, already public) as the signal. Then CP4
+re-runs its five bars on one build. Also for squad: the test places the leader 1.2 cm inside Crate_11 (a hand-placed
+spawn literal next to a crate).
+
+### CP4 VERDICT RUN (builder0, `6f553699` = main `b1693901` with squad's pitch; one build, every arm proven by TUNE line)
+
+| bar | constraint off | on, vehicle mask (round 9) | **on, world mask (the fix)** | verdict |
+|---|---|---|---|---|
+| 1. five_squads, off slot of 30 | 0 | 6 (Alpha 94.2, Bravo 93.7, Echo 95.4 m) | **0** (4.8/8.9/4.9/4.2/3.2 m) | PASS |
+| 2. nav's corridor: yaw / footprint / residual / giveups | (nav's test selects the constraint itself) | 11.4° / 6.0 m / 1.22 m / 1 | **11.4° / 6.0 m / 1.22 m / 1** | PASS (≤ 1.8 m) |
+| 3. nav's suite (the wedged rig) | 8/0 | 8/0 | **8/0** | PASS |
+| 4. longest refused run in five_squads | 0 | 1206 | **83 ticks** | **FAIL** (bar ≤ 3) |
+
+**Bar 4, traced** (a clean clone at the same commit, builder0): three hulls, each AT its slot and flush against ONE
+world collider, wanting a 1.6–2.7° trim that swings a corner 2–3 cm into it: Green_Charlie_1 vs Crate_7,
+Green_S4_2 vs Crate_17 (and Wall_2), Green_S5_4 vs Wall_16; runs of 80–92 ticks. **The same ratchet as item 1, against
+the world.** CP4 does not flip. The fix in progress: a refused smallest candidate may SLIDE OFF a single contact (push
+along its normal, ≤ 5 cm, accepted only if the pushed hull is no deeper); a corridor still refuses (pushing off one wall
+drives into the other).
+
+**~~A second hole~~ RETRACTED:** I reported a stationary bus rotating 143.7° "through" foundry's crate unchecked.
+Measured, it never penetrated (worst 1.3 mm with the constraint off, 0.6 mm on): with zero velocity `move_and_slide`
+still depenetrates each tick, so a hull pivoting against one face scrapes along it. "Inside" came from `_overlaps`
+counting a 1 mm touch. The contact gate exists in the code, but no case has shown it letting a hull end inside
+geometry, so the pivot-arming change was dropped. **Lesson: an overlap test with a recovery margin reports touching as
+inside; measure depth, not a boolean.**
+
 ### For the lead, in one paragraph
+
+**(Update, night: the constraint did NOT switch on this round; see "CP4 STOPPED" above. The mechanism below and the
+fix for five_squads stand; a leader boxed between a crate and a wall is the remaining case.)**
 
 **Why the yaw fix froze your squads, and the fix.** Round 9's rule that stops a hull rotating through a wall also
 treated a squadmate as a wall. A long vehicle parked in a row, told to turn round in place, nudged its corner into
@@ -373,6 +432,12 @@ Before on record: feel's matrix, gangs 20 % on pit and 50 % on yard (unpaired, d
 |---|---|---|---|---|---|---|---|
 | `e7d3ced6`, pre-CP3 8.62 m bus (builder0) | pit | `lof` | 64 | 28% / 20% | 8 | 3 | 0.227 |
 | `6e2d9421` **DIRTY** (untracked terrain `.uid`s at launch; `paired_arms` REFUSED it; not quotable) | pit | `lof` | 64 | 22% / 16% | 6 | 2 | 0.289 |
+| `6e2d9421` **DIRTY** (the clone: my log files written inside it; not quotable) | pit | `incoming` | 64 | 20% / 16% | 6 | 3 | 0.508 |
+
+**Determinism, measured:** the control at `6e2d9421` run from two builder0 folders (this worktree's and the clone's)
+produced the same 64 games, winner for winner, and the `lof` arm reproduced to the same rates. The dirty flags came
+from untracked files (terrain's `.uid`s; then my own logs inside the clone), not code. The rule still holds: these
+rows may be acted on, not quoted. The clean re-run (logs outside the clone, FRESH control) is running.
 
 The rest of that run was killed by slot.sh's 90-minute limit (one arm ≈ 41 min at 2 jobs). The series restarts on the
 post-CP3 tree (the 9.70 m bus, where the parked-friend question lives), one arm per invocation, at 3 jobs.
@@ -467,6 +532,42 @@ mask arm is not applied (an arm failure, not a result). If they name the world, 
 If there are no refusals, it's not the constraint at all. Only if the trace shows the row's geometry itself (hulls
 overlapping at placement) does the test's row pitch become the literal to derive from the turning envelope, with a
 REASON. The constraint does not stay off because of a hand-placed literal.
+
+### PRE-REGISTERED: the line-of-fire site flips to the box (written 2026-09-22, before the flip's own runs)
+
+**The finding that motivates it** (squad's `c0040ae4`, placement through `Tank.place()`):
+`scenario_fire_discipline::test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane`, one run per arm.
+
+| arm | laptop | builder0 |
+|---|---|---|
+| disc (default) | FAIL: first shot 251, 1 shot, 12.2 m | FAIL: 251, 1 shot, 12.2 m (identical to the tick) |
+| box everywhere (`match.hull_disc=0`) | PASS: 114, 2 shots, 4.1 m | PASS: 114, 2 shots, 4.1 m |
+| box at `lof` only | PASS: 114, 2 shots, 4.1 m | PASS: 114, 2 shots, 4.1 m |
+| box at `incoming` only | FAIL: 251, 1 shot, 12.2 m | not run |
+
+The whole effect is the friendly-fire line-of-fire site. The disc's half-diagonal reach (5.06 m for the 9.70 × 2.90
+bus) refuses lanes the box's true reach allows. The earlier inverted pair (feel's laptop: disc passed, box roamed) was
+the tick-1 teleport artefact squad attributed.
+
+**The change:** `Units.HULL_DISC_SITES` stays; the `lof` site's default becomes the box (the other sites keep the
+disc). One commit, one cause, merged after squad's next merge so the count is read on one tree.
+
+**Bars, all on one build, written before the runs:**
+1. parked-friend PASSES on the laptop AND builder0 at the flip commit;
+2. the paired pit AND yard series cell for `lof` vs control is not worse for either side: c ≤ b in the discordant pairs
+   (the clean re-run, quotable);
+3. five_squads (constraint off and on-with-world-mask) and the suppression scenario unchanged in verdict;
+4. the sim baseline MOVES, with this one cause named, recorded twice by the orchestrator; any other move is a finding.
+If bar 2 shows the box worse for gangs or law (c > b with p < 0.05), the flip does not land, and the parked-friend red
+stays with the REASON "the disc's lof reach against the 9.70 m bus; the box costs X in the series".
+
+### Review of arena's spawn-grid reorder (`58540dd7`, `Match.spawn_position` + `_spawn_cells`): APPROVED
+
+Deterministic (a static order built once from the `SLOT_X` constant), the same 57 lattice points, checkerboard cells
+first. The envelope arithmetic checks: the bus diagonal 10.12 m + 0.30 = 10.42 m; worst-jitter spacings 12.4 m in a row,
+12.7 m between rows. Notes, not blockers: (1) `turning_clear_slots()` re-implements `_spawn_cells()`'s loop (two copies
+of one rule can drift; it could return the clear list's size); (2) its comment said five_squads' overlaps were squad's
+pitch. They are the test's hand-placed 6 m row; comment corrected on this branch.
 
 ### Owed after CP3 (taken 2026-09-22)
 
