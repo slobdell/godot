@@ -227,14 +227,26 @@ instance-uniform errors 0 / 0, real lights 1 / 1. Re-run `make show-perf-layer` 
   Still open from item 6: the three luminance reds (moot: the round-9 frames they came from are superseded by the
   pixel layer, whose numbers are above), the mood clips re-shot as `build/show-clips/` (done, 30 fps).
 
+### The quiet perf re-measure (DONE 2026-09-23 00:2x, builder0, `make remote-quiet`: QUIET WINDOW HELD both halves)
+
+`perf-scene` 1920x1080, terminus, seed 3, budget 6500, `--perf-layers=no_show`, 4 cycles, each half alone on the box
+(load1 0.81–0.99 before, 0.41–0.54 after; all 12 slots held):
+
+| | before `2ee65f94` (launch) | after `a2d5ba26` (code = `b5f95d14`) |
+|---|---|---|
+| GPU ms, `all` phases, median (range) | 7.05 (5.79–8.59) | 7.11 (5.92–8.80) |
+| draw calls, `all`, median | 263 | 262 |
+| `no_show` layer GPU cost (within run) | −0.25 ms | −0.27 ms |
+| instance-uniform errors | 0 | 0 |
+
+**Reading: the per-window show costs nothing this instrument can resolve.** The before/after GPU medians differ by
++0.06 ms inside a 3 ms camera-driven spread per run, and the within-run layer cost is negative in both halves (the
+show cannot make a frame faster, so that is the floor of the method, ~±0.3 ms). Draw calls unchanged. Claim: **under
+~0.3 ms GPU at 1080p on builder0's Iris Xe, for the whole light show including every window**, and zero draw calls,
+lights, nodes and instance uniforms by construction. The temporary base worktree is removed.
+
 ### Waiting (not blocked on anything of mine)
 
-- **The quiet perf re-measure** — on the orchestrator's signal (builder0's queue drains after squad, arena, nav,
-  combat's last checks): `make remote-quiet T="perf-scene PERF_NAME=perf-quiet-after PERF_RES=1920x1080
-  PERF_LAYERS=no_show PERF_CYCLES=4 PERF_FLAGS=--arena=terminus"` here, and the same with `perf-quiet-before` from a
-  worktree at `2ee65f94` (a detached one is kept at the scratchpad path `…/scratchpad/godot-show-base`; `git worktree
-  remove` it after). Until then the cost claim is structural (zero draw calls, lights, nodes, instance uniforms) plus
-  a ceiling from the contended runs above.
 - **Stretch (a): the blimp's screens as fixtures** — needs feel's blimp (R7) on main; it is a `show.add_fixture` call
   and a `show_level` uniform on its screen shader, no new abstraction (lighting.md §4b).
 - **Stretch (b): a road or bridge patched** — needs terrain's `arena.terrain` art; no emissive road/bridge surface
