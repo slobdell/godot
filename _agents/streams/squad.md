@@ -320,7 +320,11 @@ scenarios 42,2 (cover-peeking REASON'd, parked-friend combat's).
   by backing each change out): engine-deck 7/12 FAIL → 47 deck hits of 50 PASS; formation-slot drift 16.1 → 15.0 m
   PASS; cover-peeking 5-vs-4 PASS → **4 vs 4 FAIL**. The engine-deck and slot "behaviour on the bus" REASONs I gave
   were grid-slot artefacts and are WITHDRAWN. Cover-peeking's one-hit evidence came from the slot tick: the
-  reload-window behaviour shows no effect with a clean teleport. Known issue, to re-measure on paired seeds.
+  reload-window behaviour shows no effect with a clean teleport. **Paired series (laptop, 16 seeds, x3 plain vs x4
+  reload windows, hits taken over 30 s): x4 fewer on 2 seeds, more on 0, TIE on 14; totals 64 / 62.** The feature is
+  at most marginal in this duel, so the scenario's claim is not supported: it stays a REASON'd red rather than being
+  re-shaped to pass on a 2-of-16 effect. Next step, if the feature is to earn its keep: find what the peek timing
+  does NOT change (the gun's aim model? cover exit timing?) with a positive control.
 
 ### Reviews
 
