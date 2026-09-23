@@ -34,6 +34,8 @@ func _use_the_box() -> void:
 ## Reaches the base, for the same reason as its siblings: owning nothing today is not a property that stays true.
 func teardown() -> void:
 	Units.tuning.erase("hull_disc")
+	for site: String in Units.HULL_DISC_SITES:
+		Units.tuning.erase("hull_disc_" + site)
 	await super.teardown()
 
 
@@ -143,11 +145,11 @@ func test_the_cached_pair_agrees_with_the_hull_size_form() -> void:
 ## id raised on the INDEX and the fallback was **unreachable by construction**. Every call site passing a fallback
 ## for a possibly-unknown id read as protection that did not exist -- which is how the pre-CP2 literals scale found
 ## managed to be stale AND dead at once. The guard is only worth having if it can be driven, so it is driven here:
-## both the given-fallback branch and the no-fallback branch, with the warning declared so a guard that stops
-## warning fails this test rather than passing it quietly.
+## both the given-fallback branch and the no-fallback branch, with the error declared (round 10: an error, not a
+## warning) so a guard that stops erroring fails this test rather than passing it quietly.
 func test_an_unknown_unit_id_returns_the_fallback_instead_of_raising() -> void:
-	expect_warning("Units.stat: no unit 'no_such_unit'*")
-	expect_warning("Units.stat: no unit 'no_such_unit'*")
+	expect_error("Units.stat: no unit 'no_such_unit'*")
+	expect_error("Units.stat: no unit 'no_such_unit'*")
 	var given: Variant = Units.stat("no_such_unit", "hull_size", [1.0, 1.0, 1.0])
 	assert_eq(given, [1.0, 1.0, 1.0], "the fallback the caller wrote is the one it gets")
 	# No fallback: DEFAULT's value, which is a unit that exists, rather than a null that fails somewhere else later.
@@ -156,3 +158,50 @@ func test_an_unknown_unit_id_returns_the_fallback_instead_of_raising() -> void:
 			"with no fallback given, %s's value stands in (%s)" % [Units.DEFAULT, defaulted])
 	# And a KNOWN id is untouched by the guard, which is the half that would be easy to break silently.
 	assert_eq(Units.stat(RIG, "hull_size"), _rig(), "a known id still reads its own profile")
+
+
+## Round 10 (combat, research row C8(a)): every aim, line-of-fire and exposure computation treats a hull's ORIGIN as the
+## centre of its box in plan (`gunnery.gd` aims at `target.global_position`; `Ballistics.aim_error` is planar; the disc
+## and box reaches are centred there). That is only true while the collider sits on the origin in x and z. R5 moves the
+## turret, not the hull, so nothing should move it; this makes an offset collider fail by name instead of quietly
+## shifting every unit's exposure.
+func test_every_hull_collider_is_centred_on_its_origin_in_plan() -> void:
+	add_to_tree(preload("res://game/arena/arena.tscn").instantiate())
+	var game_match: Match = add_to_tree(preload("res://game/match/match.tscn").instantiate())
+	var ids: Array = Units.PROFILES.keys()
+	ids.sort()
+	var checked := 0
+	for index in ids.size():
+		var unit_id := String(ids[index])
+		var tank := game_match.spawn_tank("Green_Centre_%d" % index, index, Match.Team.GREEN, unit_id)
+		var collider := tank.get_node("Collision") as CollisionShape3D
+		var size: Array = Units.stat(unit_id, "hull_size")
+		assert_near(collider.position.x, 0.0, 1e-6, "%s: the collider's centre is on the origin across (x)" % unit_id)
+		assert_near(collider.position.z, 0.0, 1e-6, "%s: the collider's centre is on the origin along (z)" % unit_id)
+		assert_near((collider.shape as BoxShape3D).size.z, float(size[2]), 1e-6, "%s: and it is the profile's box" % unit_id)
+		checked += 1
+	assert_eq(checked, ids.size(), "every profile was spawned and checked (%d)" % checked)
+
+
+## Round 10 (combat, research C6): one site's knob moves THAT site and no other. The series intervenes on one disc site
+## at a time with the disc kept in the rest, so each knob's arm proof is that it reached its reader AND left the others
+## alone; a knob that also moved its neighbours would make every per-site cell a whole-knob cell under another name.
+func test_each_disc_site_knob_moves_only_its_own_site() -> void:
+	var disc := Units.hull_reach_along(_rig(), NORTH, EAST)  # default: the disc, the half-diagonal
+	assert_true(disc > 6.0, "the default abeam reach is the disc's half-diagonal (%.2f m)" % disc)
+	for site: String in Units.HULL_DISC_SITES:
+		assert_eq(Units.apply_tuning("match.hull_disc_%s=0" % site), "", "match.hull_disc_%s is a knob" % site)
+		for other: String in Units.HULL_DISC_SITES:
+			var reach := Units.hull_reach_along(_rig(), NORTH, EAST, other)
+			if other == site:
+				assert_true(reach < 2.0, "%s=0 gives %s the box (abeam %.2f m)" % [site, other, reach])
+			else:
+				assert_near(reach, disc, 1e-6, "%s=0 leaves %s on the disc" % [site, other])
+		assert_near(Units.hull_reach_along(_rig(), NORTH, EAST), disc, 1e-6, "and an unnamed reader keeps the disc")
+		Units.tuning.erase("hull_disc_" + site)
+	# The whole-knob arm still reaches every site, and a site override beats it both ways.
+	_use_the_box()
+	for site: String in Units.HULL_DISC_SITES:
+		assert_true(Units.hull_reach_along(_rig(), NORTH, EAST, site) < 2.0, "hull_disc=0 reaches %s" % site)
+	Units.apply_tuning("match.hull_disc_lof=1")
+	assert_near(Units.hull_reach_along(_rig(), NORTH, EAST, "lof"), disc, 1e-6, "a site override beats the whole knob")

@@ -1,2 +1,2 @@
-# glibc-2.43: recorded on builder0 at 7f8eeab8, twice, agreeing (2026-09-20)
-glibc-2.43 1ea332e7bc268d2a
+# glibc-2.43: recorded on builder0 at 709cbeb9 (main with CP3 and nav merged), twice, agreeing (2026-09-22): TWO causes, CP3 (feel f49b5f15: the bus box 055fb10f, the spawn jitter 7001bdc8, the turret mounts a138b5f1; alone aac14c6704fbac39) and nav's not-ready route retry (f386c63e; alone 7574ac017c17265b)
+glibc-2.43 11c479c3bec77082

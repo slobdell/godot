@@ -28,6 +28,8 @@ const CLOSE_M := 22.0
 const CUE_T := 31.4
 ## How far into the kill ripple the frame is taken: the wavefront is 62 m/s, so this catches it crossing the blocks.
 const RIPPLE_AGE_S := 0.55
+## How far into the capture fill its frame is taken: five storeys lit, the climb still going.
+const CAPTURE_AGE_S := 0.8
 ## THE BRIGHTNESS HIERARCHY, and it is play rather than taste (feel, 2026-09-20; art_direction.md :72, the arena
 ## must be "lit well enough to read the fight"). The first strip inverted it: the brightest pixels in the frame were
 ## the building edges and the darkest were the arena floor and the vehicles. These two windows are sampled from
@@ -63,6 +65,9 @@ var ripples: Array = [0.25, 0.55, 1.1]
 ## A cue to shoot as a SEQUENCE instead of a strip: stills cannot show a chase, a sweep or a strobe, because those
 ## are motion. Empty means shoot the strip.
 var clip_cue := ""
+## Dial 1 as a strip (round 10, item 1): the same frozen moment shot at each band width, one dial moved and nothing
+## else. Empty means shoot the ordinary strip.
+var bands: Array = []
 var clip_frames := 60
 var clip_step := 0.1
 ## Long enough for the armies to leave their spawns and CLOSE. At 3 s -- the old default -- they are still on the
@@ -117,6 +122,9 @@ func _ready() -> void:
 	if ages != "":
 		ripples = Array(ages.split(",", false)).map(func(v: String) -> float: return float(v))
 	clip_cue = flags.text("show-look-clip")
+	var widths := flags.text("show-look-bands")
+	if widths != "":
+		bands = Array(widths.split(",", false)).map(func(v: String) -> float: return float(v))
 	clip_frames = int(flags.text("show-look-clip-frames", str(clip_frames)))
 	clip_step = float(flags.text("show-look-clip-step", str(clip_step)))
 	DirAccess.make_dir_recursive_absolute(out_dir)
@@ -146,6 +154,9 @@ func _run() -> void:
 	get_tree().paused = true
 	if clip_cue != "":
 		await _shoot_clip(show, arena, heading)
+		return
+	if not bands.is_empty() and show != null:
+		await _shoot_bands(show, arena, heading, centre)
 		return
 	# THE IDLE FRAMES MUST BE THE IDLE. The FIGHT cue holds for 5 s after the arena loads and the warmup is 3, so
 	# without this the first strip shot three frames of FIGHT and labelled them the slow breathe -- the lead would
@@ -187,6 +198,14 @@ func _run() -> void:
 				cue_frames += await _capture(show, arena, pose_name, "cue_kill_%ss" % stamp, CUE_T, focus,
 						float(poses[pose_name][1]), show.writes_last_frame)
 			show.settle_into(ShowCues.IDLE_STATE, CUE_T)
+			# Round 10: the capture fill (CPU-addressed windows), caught mid-climb on the block nearest the fight.
+			if show.fire_capture(focus) >= 0:
+				show.apply(CUE_T, CAPTURE_AGE_S)
+				cue_frames += await _capture(show, arena, pose_name, "cue_capture", CUE_T, focus,
+						float(poses[pose_name][1]), show.writes_last_frame)
+				show.window_effects.fills.clear()
+				show.window_grid().clear_levels()
+				show.apply(CUE_T)
 	get_tree().paused = false
 	print("SHOW_LOOK_DONE arena=%s frames=%d" % [arena, poses.size() * times.size() + cue_frames])
 	get_tree().quit()
@@ -205,12 +224,19 @@ func _shoot_clip(show: Show, arena: String, heading: float) -> void:
 	_camera.global_transform = _clear_pose(_army_centre(get_tree().current_scene), heading, DISTANCE_M)
 	var band_track: Array = []
 	var full_track: Array = []
+	# The tool drives the show's clock by hand for the whole clip. Left running, the Show's own _process re-reads
+	# the booth's mood every frame and ramps toward it, so a "last_stand" clip drifted back to whatever the match
+	# was actually doing between the tool's writes -- the clip showed a blend of two cues and labelled it one.
+	show.process_mode = Node.PROCESS_MODE_DISABLED
 	show.settle_into(StringName(clip_cue), CUE_T)
 	var t := CUE_T
 	for i in clip_frames:
 		if clip_cue == "kill" and i == 0:
 			show.settle_into(ShowCues.IDLE_STATE, t)
 			show.fire_event(Vector3(28.0, 0.0, 16.0), 1.0)
+		if clip_cue == "capture" and i == 0:
+			show.settle_into(ShowCues.IDLE_STATE, t)
+			show.fire_capture(_army_centre(get_tree().current_scene))
 		show.now = t
 		show.apply(t, clip_step)
 		t += clip_step
@@ -224,6 +250,7 @@ func _shoot_clip(show: Show, arena: String, heading: float) -> void:
 	# A clip pair is an arm like any other: it has to be shown to differ from its control. A strobe's signature is
 	# not that it is brighter on average -- it is that the band SWINGS, so the spread over the clip is the number,
 	# not the mean.
+	show.process_mode = Node.PROCESS_MODE_ALWAYS
 	var band := _swing(band_track)
 	var full := _swing(full_track)
 	print("SHOW_LOOK_CLIP " + JSON.stringify({"arena": arena, "cue": clip_cue, "frames": clip_frames,
@@ -235,6 +262,30 @@ func _shoot_clip(show: Show, arena: String, heading: float) -> void:
 			"full_swing_pct": snappedf(full.z, 0.1),
 			"vehicles_in_frame": _vehicles_in_frame(get_tree().current_scene)}))
 	print("SHOW_LOOK_DONE arena=%s frames=%d" % [arena, clip_frames])
+	get_tree().quit()
+
+
+## Dial 1, one variable moved: at the wide pose, the idle at `times[0]` and each cue in `cues`, shot once per band
+## width. Every capture also shoots the show-OFF frame at the same frozen instant, so each band has its own before.
+func _shoot_bands(show: Show, arena: String, heading: float, focus: Vector3) -> void:
+	_camera.global_transform = _clear_pose(focus, heading, DISTANCE_M)
+	show.process_mode = Node.PROCESS_MODE_DISABLED  # the tool drives the clock (see _shoot_clip)
+	var frames := 0
+	var moments: Array = [["idle", ShowCues.IDLE_STATE, times[0] if not times.is_empty() else 8.1]]
+	for cue: String in cues:
+		moments.append(["cue_%s" % cue, StringName(cue), CUE_T])
+	for moment: Array in moments:
+		for width: float in bands:
+			show.set_band(width)
+			show.settle_into(moment[1], moment[2])
+			show.now = moment[2]
+			var writes := show.apply(moment[2])
+			var tag := ("%.1f" % width).replace(".0", "").replace(".", "_")
+			frames += await _capture(show, arena, "wide", "%s_band%sx" % [moment[0], tag], moment[2], focus,
+					DISTANCE_M, writes)
+	show.set_band(1.0)
+	get_tree().paused = false
+	print("SHOW_LOOK_DONE arena=%s frames=%d" % [arena, frames])
 	get_tree().quit()
 
 
@@ -310,6 +361,7 @@ func _capture(show: Show, arena: String, pose_name: String, label: String, t: fl
 		"fov_deg": FOV_DEG, "distance_m": distance,
 		"focus": [focus.x, focus.z], "writes": writes,
 		"mood": str(show.mood_state) if show != null else "", "channels": _levels(show, t),
+		"band": show.band if show != null else 1.0,
 		"luma_ring": snappedf(ring.x, 0.0001), "luma_band": snappedf(band.x, 0.0001),
 		"luma_ring_max": snappedf(ring.y, 0.0001), "luma_band_max": snappedf(band.y, 0.0001),
 		"luma_ring_before": snappedf(before.x, 0.0001), "luma_band_before": snappedf(before_band.x, 0.0001),
@@ -376,6 +428,14 @@ func _clear_pose(at: Vector3, heading: float, distance: float) -> Transform3D:
 	# first heading whose sight line to the fight is clear, preferring the one that sees the most of it.
 	var seen := _visible_from(best)
 	_pose_blocked = RtsCamera.sight_blocked(best.origin, at)
+	# `--show-look-fixed-heading`: no sweep. The parapet-vs-outline pair is two PROCESSES, and when each swept to its
+	# own best heading the two frames looked at different amounts of building -- the pair stopped discriminating
+	# (+7..13 % became 0.00..0.35 %) because the camera moved, not the lighting (lighting.md 9).
+	if LaunchFlags.from_environment().has("show-look-fixed-heading"):
+		_pose_heading = heading
+		_camera.global_transform = best
+		_pose_pitch = _pitch_of(best, at)
+		return best
 	if _pose_blocked or seen < _tanks(get_tree().current_scene).size() / 4:
 		for step in HEADING_STEPS:
 			var candidate := _look_from(at, heading + TAU * float(step) / float(HEADING_STEPS), distance)

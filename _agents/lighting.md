@@ -199,6 +199,7 @@ to control, and the show never writes it.
 | `shop` | `show_shop` | `vec4` | `(1, 0, 0, 1)` |
 | `color` | `show_color` + `show_color_mix` | `vec3`, `float` | unused, `0.0` |
 | `spread` | `show_spread` | `float` | `0.0` — every instance in phase; the patch raises it |
+| `pixel` (round 10) | `show_pixel` (+ `show_pixel_wave`, `show_pixel_focus`, `show_window_map`) | `vec4` ×3, `sampler2D` | `(0, 0, 0, 1)`, zero wave, `(−1, −1, 0, 0)`, black — see §4c |
 
 **Every default reproduces today's look exactly**, and that is asserted by a screenshot diff at the lead's pose, not
 by reading the code.
@@ -303,6 +304,75 @@ that is lit **today**, add it to `Show.CORE_PARAMETERS` so the validator refuses
 | it moves but every instance together | `spread` is 0, or the shader is not using its per-instance `phase` |
 | the cue never fires | the state name — a typo is a load error, so read the error rather than the frame |
 | it looks wrong and you cannot say why | `make show-frames` prints every channel's live value beside each frame (lesson 44) |
+
+---
+
+## 4c. Every window addressable (round 10): the pixel layer, the window grid, the effects
+
+The lead: *"basic primitives to adjust individual lights on the building, and couple that with light show effects."*
+Round 9 drove each block's windows with ONE number (`show_window`), which can breathe a facade and can never chase,
+sweep or ripple ACROSS one. Round 10 makes the unit of the show the individual window.
+
+**Why a texel and not a MultiMesh.** The windows are not geometry: `city_block.gdshader` draws them procedurally from
+a bay grid in world metres. There is nothing to instance, so the brief's other option is the right one — **one texel
+per window in a small texture the shader samples.** The fragment finds its own texel from what it already has:
+
+| what | where it comes from |
+|---|---|
+| block | `COLOR.b` = the block's index in the show's grid, k/255 (claimed at `CityBlock.setup`) |
+| facade | the world normal: 0 = +x, 1 = −x, 2 = +z, 3 = −z (`ShowWindowGrid.facade_of`, the same tie rule) |
+| storey | `floor(world.y / 3.6)`, modulo 16 |
+| bay column | `floor(along / bay)`, modulo 32; `along` is world z on an x-facing wall, world x on a z-facing one |
+| bay width | `COLOR.a` = an 8-bit code chosen on the CPU: `bay = 3.0 + 1.5 * code` |
+
+The bay width used to be `3 + 1.5 * city_hash(seed)` computed on the GPU. `fract(sin(x) * 43758)` is not reproducible
+between float32 and float64, so the CPU could never know where a window was; the CPU now chooses the code (the
+block's layout seed, drawn after every value the look already used) and the GPU reads it. **The eight Terminus blocks'
+bay widths changed** (still 3–4.5 m; the silhouette did not).
+
+Texture: `ShowWindowGrid.image`, RGBA8, 32 × 1024 (16 blocks × 4 facades × 16 storeys), 128 KB; `r` = the window's
+level, `g` = palette override (0 = the block's colour, 1/2/3 = magenta/cyan/amber). All-zero is the identity. It is
+uploaded **only on a frame where a window was written** (`flush()`), never per window.
+
+**The pixel layer** (`show_pixel`, parameter `pixel`, identity `SHOW_OFF`): every pane — lit by the art or dark —
+can carry a show light in the venue palette, ADDED on top of the art's windows (which keep breathing on
+`show_window`). A pane's level is the larger of
+
+1. **a programme evaluated per window in the shader** from the channel and its **wave** (`show_pixel_wave`, written
+   only when it changes): `phase = block * 2.4 * spread + row * wave.row + along * wave.along + TAU * hash *
+   wave.scatter`, and the window's clock runs at `1 + wave.jitter * (hash2 − 0.5)` of the channel's; and
+2. **the window's texel**, written by the CPU only for events;
+
+plus the kill ripple (`show_event`), which now crosses the windows as well as the parapet. `show_pixel_focus` =
+(block, facade, map_live, 0) limits the programme to one block/facade (−1 = all) and tells the shader whether the
+map holds anything; with the channel off, no event and `map_live` 0 the whole layer is one skipped branch.
+
+**The effects, and what each is in data** (`cues.json`, channel `pixels`; the Terminus patch declares it):
+
+| effect | mood | programme | wave |
+|---|---|---|---|
+| **Vegas twinkle** (random-walk at a floor and ceiling) | idle (the patch) | `breathe`, sharpness 6, 10.5 s, `[0, 0.9]` | `scatter 1, jitter 0.6` |
+| **sweep across every facade** | `skirmish` | `sweep`, 6.0 s | `along −0.25` (25 m band, ~4 m/s) |
+| **vertical chase up every tower** | `battle` | `chase`, 3.2 s | `row −0.75` (~2.6 storeys/s), each block on its own beat |
+| **strobe on ONE facade** | `last_stand` | `strobe`, 1.6 s | none; `Show` focuses the facade facing the losing base |
+| **sweep in the winner's colour** | `victory` | `sweep`, 4.0 s, `color: winner` | `along −0.2` |
+| house lights down | `fight`, `defeat` | `hold` 0 | — |
+| **kill ripple across the facade nearest the kill** | event | the existing `kill` event, now on the windows | — |
+| **floor-by-floor fill** | an objective changes hands | CPU: `ShowWindowEffects.start_fill`, one storey per 0.18 s, hold 1.4 s, fade 1.2 s, amber | — |
+
+A negative per-storey wave travels UP (the peak sits where `clock + phase = π/2`, so as the clock grows the peak moves
+to lower phase = higher storey); a negative per-metre wave travels toward +along.
+
+**The primitives, for a new effect:** `CityBlock.window_count()`, `CityBlock.set_window(i, value, palette)`;
+`ShowWindowGrid.windows` (each with its world `centre`, `row`, `column`, `facade`, `block`), `set_window(index, …)`,
+`flush()`; `ShowWindowEffects.nearest_block(grid, xz)`, `facing_facade(grid, xz)`; `Show.focus_pixels(block,
+facade)`, `Show.fire_capture(position)`. **Recipe:** a new SHADER effect is a cue entry with a `wave` (ten lines of
+JSON, no code); a new EVENT effect is one function in `window_effects.gd` that writes texels, and one line in
+`Show.apply`.
+
+**Cost, structurally:** zero draw calls, zero lights, zero instance uniforms, zero nodes (`tests/test_show_windows.gd`
+asserts all four). Per frame: one extra uniform write only when the wave or focus changes; one texture upload only on
+a frame an event wrote a window.
 
 ---
 
@@ -809,6 +879,9 @@ through that leak. Re-shooting is the first action of round 10.
   that is a real alternative. **As an arm it is not**, because it moves two variables, and the call site describes
   it as "a fast breathe" while 6.0 s is not fast. Shoot the arm at the cue's own 1.6 s and keep 6.0 s as a third
   look. Left unchanged here only because changing it means re-shooting the clips, which round 10 does anyway.
+  **Fixed in round 10:** `soften_strobes()` now keeps each strobe's own period (a 1.6 s breathe against the 1.6 s
+  strobe: sharpness is the only variable); `STROBE_ALTERNATIVE_PERIOD_S` is gone, and `soften_strobes(6.0)` still
+  gives the slow look as a third arm if anyone wants it.
 
 **The five mood clips in `build/show/clips/` are from 05:47–05:56, not from this run.** `make show-clips` was not
 in the run's target list, so they are the ones shot before the frame tools learned to wait for contact — five units

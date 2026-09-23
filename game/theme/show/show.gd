@@ -23,7 +23,24 @@ const UNIFORMS := {
 	&"edge": &"show_edge",
 	&"window": &"show_window",
 	&"shop": &"show_shop",
+	# Round 10: the windows as pixels. Any pane, lit by the art or dark, carries a show light in the venue palette;
+	# the programme is evaluated PER WINDOW in the shader from this channel and its wave (lighting.md section 4c).
+	&"pixel": &"show_pixel",
 }
+## A channel's spatial wave is written beside it as `<uniform>_wave` to every fixture whose shader DECLARES that
+## uniform (the windows' `show_pixel_wave`; a sign's letters), and only on a frame where it changed. Spelled out
+## rather than built with `+ "_wave"` so the per-frame loop allocates nothing.
+const WAVE_UNIFORMS := {
+	&"show_level": &"show_level_wave",
+	&"show_edge": &"show_edge_wave",
+	&"show_window": &"show_window_wave",
+	&"show_shop": &"show_shop_wave",
+	&"show_pixel": &"show_pixel_wave",
+}
+## The per-window texture (ShowWindowGrid) and its focus/liveness vec4 (block, facade, map_live, 0).
+const WINDOW_MAP_UNIFORM := &"show_window_map"
+const PIXEL_FOCUS_UNIFORM := &"show_pixel_focus"
+const NO_FOCUS := Vector4(-1.0, -1.0, 0.0, 0.0)
 ## Written beside a channel that carries a colour (a victory sweep). Not per-instance: per-instance colour would need
 ## a second custom-data lane and buys nothing the phase does not.
 const COLOR_UNIFORM := &"show_color"
@@ -53,8 +70,13 @@ const EVENT_UNIFORM := &"show_event"
 ## "the circuit disconnected visually every cycle and looked broken"). `edge` is not here: the blocks have no edge
 ## emission today, so its identity IS zero and a floor of zero is the look we ship without a patch.
 const CORE_PARAMETERS := [&"level", &"window", &"shop"]
-## What `last_stand` becomes with `--show-no-strobe`: urgent, but not a fault light.
-const STROBE_ALTERNATIVE_PERIOD_S := 6.0
+## Dial 1 (`show_dials.md`): the parameters whose channels [method set_band] widens. The lit INTERIORS -- the
+## windows and the shopfronts -- and nothing else: the rim, the parapet and the signs have their own reasons for
+## their bands.
+const BAND_PARAMETERS := [&"window", &"shop"]
+## However wide the band goes, a lit interior never falls below this: a window grid that goes dark reads as broken
+## (lighting.md rule 5). At 3x the Terminus windows bottom out at 0.50, well clear of it.
+const BAND_FLOOR_MIN := 0.1
 
 ## Whether the show drives anything this frame. Turning it OFF writes every fixture back to its identity, so the
 ## venue renders exactly as it did before the show existed; turning it back on resumes from the same clock.
@@ -123,6 +145,23 @@ var _fight_left := 0.0
 var follows_active_arena := false
 ## The arena whose patch is loaded.
 var _arena := ""
+## channel -> Vector2(floor, ceiling) as the PATCH declared it, captured the first time [method set_band] touches
+## the channel, so every band is a multiple of the patch and never of the previous band.
+var _band_source := {}
+## The band width in force (1.0 = the patch as written).
+var band := 1.0
+## Every window of every city block, addressable one at a time (round 10). Cleared when the arena changes.
+var _grid := ShowWindowGrid.new()
+## Which block/facade the pixel programme is limited to (-1 = all). Set by an effect ([method focus_pixels]).
+var pixel_focus := Vector4(-1.0, -1.0, 0.0, 0.0)
+## The CPU-addressed window effects (the capture fill; the facing facade).
+var window_effects := ShowWindowEffects.new()
+## `control_changed` events the booth's mood had counted when the capture fill last looked.
+var _captures_seen := 0
+## The mood state the pixel focus was last chosen for, so the facade is picked once per last stand, not per frame.
+var _focus_state := &""
+## The last value written per (driven object, uniform) for the uniforms written only on change (waves, focus).
+var _last_written := {}
 ## The last patch problem, kept so `make show-report` and the tests can read it and a bad patch is never silent.
 var last_problem := ""
 
@@ -177,7 +216,7 @@ func _ensure_cues() -> void:
 	# or cut it. It is a question about DATA, so the flag edits the loaded book rather than adding a second one:
 	# every strobe becomes a fast breathe, which is what `last_stand` would be if the strobe went.
 	if LaunchFlags.from_environment().has("no-strobe"):
-		cues.soften_strobes(STROBE_ALTERNATIVE_PERIOD_S)
+		cues.soften_strobes()  # same period, breathe instead of stab: one variable
 
 
 ## Follow `Arena.active`. Called before every registration and every frame, so a fixture built during an arena's
@@ -207,6 +246,11 @@ func follow_active_arena() -> void:
 			if is_instance_valid(driven):
 				_write_identity(driven)
 	_fixtures.clear()
+	_grid.clear()
+	window_effects.fills.clear()
+	_last_written.clear()
+	pixel_focus = NO_FOCUS
+	_focus_state = &""
 	_arena = arena
 	_weights.clear()
 	_live.clear()
@@ -216,6 +260,10 @@ func follow_active_arena() -> void:
 	last_problem = load_patch(Arena.active.get("show"), arena)
 	if last_problem != "":
 		push_error("SHOW %s" % last_problem)
+	# `--show-band=2`: dial 1 moved without editing the arena file, so one commit can shoot 1x, 2x and 3x.
+	var wanted_band := LaunchFlags.from_environment().text("show-band")
+	if wanted_band != "":
+		set_band(float(wanted_band))
 
 
 ## Load an arena's `show` key. Returns "" or a readable reason, naming the arena, the key and what was expected.
@@ -224,6 +272,8 @@ func load_patch(data: Variant, arena := "") -> String:
 	channels.clear()
 	bindings.clear()
 	spreads.clear()
+	_band_source.clear()
+	band = 1.0
 	if data == null:
 		return ""
 	var where := "arena %s: 'show'" % arena if arena != "" else "'show'"
@@ -306,6 +356,28 @@ func load_patch(data: Variant, arena := "") -> String:
 	return ""
 
 
+## Dial 1: widen (or narrow) the swing of every channel that drives a lit interior (the windows, the shopfronts)
+## by `factor` AROUND ITS MEAN, so the buildings get more alive without getting brighter on average. A multiple of
+## the PATCH, never of the last call: `set_band(2)` then `set_band(3)` is 3x. The floor never goes under
+## [constant BAND_FLOOR_MIN]. The cues are clamped inside the patch's band ([method ShowCues.blend]), so they
+## widen with it.
+func set_band(factor: float) -> void:
+	band = maxf(factor, 0.0)
+	for binding: Dictionary in bindings:
+		if not BAND_PARAMETERS.has(binding["parameter"]):
+			continue
+		var key: StringName = binding["channel"]
+		var channel: ShowChannel = channels[key]
+		if not _band_source.has(key):
+			_band_source[key] = Vector2(channel.level_floor, channel.level_ceiling)
+		var source: Vector2 = _band_source[key]
+		var mean := (source.x + source.y) * 0.5
+		var half := (source.y - source.x) * 0.5 * band
+		channel.level_floor = maxf(mean - half, BAND_FLOOR_MIN)
+		channel.level_ceiling = mean + half
+	_live.clear()
+
+
 ## The style in force for `selector`: the patch's, unless `--show-style=` overrides it.
 func style_of(selector: StringName) -> StringName:
 	var available: Dictionary = STYLES.get(selector, {})
@@ -349,6 +421,8 @@ func add_fixture(selector: StringName, driven: Object) -> void:
 	list.append(driven)
 	_fixtures[selector] = list
 	_accepts[driven] = _uniforms_of(driven)
+	if _declares(driven, WINDOW_MAP_UNIFORM):
+		driven.set_shader_parameter(WINDOW_MAP_UNIFORM, _grid.texture)
 	_write_spread(selector)
 	_write_style(selector)
 	_apply_defaults(selector, driven)
@@ -368,6 +442,12 @@ func _uniforms_of(driven: Object) -> Dictionary:
 		if str(uniform).begins_with("show_"):
 			names[uniform] = true
 	return names
+
+
+## Whether `driven`'s shader KNOWS `uniform` (strict: an unknown shader declares nothing). For the uniforms that are
+## written only on change and only to the fixtures built for them -- the windows' wave, focus and map.
+func _declares(driven: Object, uniform: StringName) -> bool:
+	return (_accepts.get(driven, {}) as Dictionary).has(uniform)
 
 
 ## Whether it is worth writing `uniform` to `driven` at all.
@@ -416,6 +496,9 @@ func _apply_defaults(selector: StringName, driven: Object) -> void:
 func _write_identity(driven: Object) -> void:
 	for parameter: Variant in UNIFORMS:
 		driven.set_shader_parameter(UNIFORMS[parameter], identity_for(parameter))
+	if _declares(driven, PIXEL_FOCUS_UNIFORM):
+		driven.set_shader_parameter(PIXEL_FOCUS_UNIFORM, NO_FOCUS)
+	_last_written.erase(driven)
 	driven.set_shader_parameter(COLOR_MIX_UNIFORM, 0.0)
 	driven.set_shader_parameter(SPREAD_UNIFORM, 0.0)
 	driven.set_shader_parameter(EVENT_UNIFORM, Vector4.ZERO)
@@ -424,7 +507,29 @@ func _write_identity(driven: Object) -> void:
 ## The packed vec4 that reproduces today's look for a parameter: a constant 1.0 for a multiplier, a constant 0 for
 ## the edge emission the blocks do not have today.
 static func identity_for(parameter: StringName) -> Vector4:
-	return Vector4(0.0, 0.0, 0.0, 1.0) if parameter == &"edge" else Vector4(1.0, 0.0, 0.0, 1.0)
+	return Vector4(0.0, 0.0, 0.0, 1.0) if parameter in [&"edge", &"pixel"] else Vector4(1.0, 0.0, 0.0, 1.0)
+
+
+## The window grid, for the city blocks to claim indices from and for effects to write. Follows the arena first, so
+## a block built during an arena's construction never claims an index the arena change is about to clear.
+func window_grid() -> ShowWindowGrid:
+	follow_active_arena()
+	return _grid
+
+
+## Limit the pixel programme to one block and/or facade (-1 = all): the last-stand strobe on one facade.
+func focus_pixels(block: int, facade: int) -> void:
+	pixel_focus = Vector4(float(block), float(facade), 0.0, 0.0)
+
+
+## Write `value` to `uniform` on `driven` only if it differs from the last write. Returns 1 if it wrote.
+func _write_on_change(driven: Object, uniform: StringName, value: Variant) -> int:
+	var seen: Dictionary = _last_written.get_or_add(driven, {})
+	if seen.get(uniform) == value:
+		return 0
+	seen[uniform] = value
+	driven.set_shader_parameter(uniform, value)
+	return 1
 
 
 func _process(delta: float) -> void:
@@ -433,6 +538,7 @@ func _process(delta: float) -> void:
 	follow_active_arena()
 	_listen_for_events()
 	read_mood()
+	_listen_for_captures()
 	apply(now, delta)
 
 
@@ -453,13 +559,36 @@ func read_mood() -> void:
 
 
 func _listen_for_events() -> void:
-	if _spectacle_connected:
-		return
 	var fx := FxWorld.get_instance()
 	if fx == null:
 		return
-	fx.spectacle.connect(_on_spectacle)
-	_spectacle_connected = true
+	if not _spectacle_connected:
+		fx.spectacle.connect(_on_spectacle)
+		_spectacle_connected = true
+
+
+## The capture fill, heard the only way the show hears the match (S6: MatchMood and K5 events): the booth's mood counts
+## `control_changed` events, and each new one fills the block nearest the primary objective -- the one K5's
+## `control_changed` is about. Polled once a frame; a counter compare, nothing else.
+func _listen_for_captures() -> void:
+	if _mood == null:
+		return
+	# MatchMood keeps the count as `_control_changes` with no accessor (feel's file; a public one is requested in
+	# the brief's Status). Read through get() so a rename degrades to "no fill", never to an error.
+	var changes := int(_mood.get("_control_changes") if _mood.get("_control_changes") != null else 0)
+	if changes <= _captures_seen:
+		_captures_seen = changes
+		return
+	_captures_seen = changes
+	var objectives := Arena.objectives_of(Arena.active)
+	if not objectives.is_empty():
+		fire_capture((objectives[0] as Dictionary)["position"])
+
+
+## Start the capture fill on the block nearest `position`. Public for `make show-frames` and the tests. Returns the
+## block filled, or -1.
+func fire_capture(position: Vector3) -> int:
+	return window_effects.start_fill(_grid, Vector2(position.x, position.z))
 
 
 ## A kill (weight 1.0) or a hit (~0.15) somewhere in the venue. The same bus the crowd reacts to, read and never
@@ -506,12 +635,69 @@ func apply(t: float, delta := 0.0) -> int:
 				continue
 			driven.set_shader_parameter(uniform, packed)
 			writes += 1
+			var wave_uniform: StringName = WAVE_UNIFORMS[uniform]
+			if _declares(driven, wave_uniform):
+				writes += _write_on_change(driven, wave_uniform, channel.wave)
 			if channel.color_mix > 0.0:
 				driven.set_shader_parameter(COLOR_UNIFORM, Vector3(channel.color.r, channel.color.g, channel.color.b))
 				driven.set_shader_parameter(COLOR_MIX_UNIFORM, channel.color_mix)
 				writes += 2
 	writes += _push_event(delta)
+	window_effects.advance(_grid, delta)
+	_follow_focus()
+	writes += _push_windows()
 	writes_last_frame = writes
+	return writes
+
+
+## The last stand strobes ONE facade: the one facing the losing side's base. Chosen once when the mood enters
+## `last_stand` and released when it leaves. With no mood (a test, a muted run) the losing side is unknown and the
+## strobe runs on every facade, which is the round-9 behaviour.
+func _follow_focus() -> void:
+	if mood_state == _focus_state:
+		return
+	_focus_state = mood_state
+	pixel_focus = NO_FOCUS
+	if mood_state != &"last_stand":
+		return
+	var base := losing_base()
+	if base == Vector2.INF:
+		return
+	var facade := ShowWindowEffects.facing_facade(_grid, base)
+	if facade.x >= 0:
+		focus_pixels(facade.x, facade.y)
+
+
+## The losing side's spawn-zone centre (world x, z), or Vector2.INF when it cannot be told: the side with the smaller
+## share of its starting units left, per the booth's mood.
+func losing_base() -> Vector2:
+	if _mood == null:
+		return Vector2.INF
+	var worst := ""
+	var worst_share := INF
+	for team: String in ["green", "rust"]:
+		var share := float(_mood.alive.get(team, 0)) / maxf(float(_mood.started.get(team, 0)), 1.0)
+		if share < worst_share:
+			worst_share = share
+			worst = team
+	var zones: Variant = Arena.active.get("spawn_zones", {})
+	if typeof(zones) != TYPE_DICTIONARY or not (zones as Dictionary).has(worst):
+		return Vector2.INF
+	var centre: Variant = zones[worst].get("center")
+	if not (centre is Array) or (centre as Array).size() < 2:
+		return Vector2.INF
+	return Vector2(float(centre[0]), float(centre[1]))
+
+
+## The per-window half: upload the grid if an effect wrote to it this frame (one texture update, never per window),
+## and keep every block fixture's focus/liveness vec4 current. Nothing at all on an idle frame.
+func _push_windows() -> int:
+	_grid.flush()
+	var focus := Vector4(pixel_focus.x, pixel_focus.y, 1.0 if _grid.live else 0.0, 0.0)
+	var writes := 0
+	for driven: Object in _fixtures.get(&"city_block", []):
+		if is_instance_valid(driven) and _declares(driven, PIXEL_FOCUS_UNIFORM):
+			writes += _write_on_change(driven, PIXEL_FOCUS_UNIFORM, focus)
 	return writes
 
 

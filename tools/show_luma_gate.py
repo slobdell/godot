@@ -34,7 +34,12 @@ FLOOR_PCT = 3.0
 # it beats the 1.5% I guessed first, which the data refuted within one run.
 NULL_MULTIPLE = 2.0
 
-out_dir = sys.argv[1] if len(sys.argv) > 1 else "build/show"
+# ROUND 10: THE GATE REPORTS, IT DOES NOT DECIDE. The brief: "the bar and the gates ... stay as instruments; they
+# stop being the verdict", and "if it objects, the number goes to him with the frame, not a quieter effect". So by
+# default an objection is printed loudly and the target still succeeds; --enforce restores the round-9 behaviour.
+ENFORCE = "--enforce" in sys.argv
+args = [a for a in sys.argv[1:] if not a.startswith("--")]
+out_dir = args[0] if args else "build/show"
 rows = []
 for log in sorted(glob.glob(os.path.join(out_dir, "*.log"))):
     for line in open(log, errors="ignore"):
@@ -100,6 +105,10 @@ if failed:
           % (len(failed), tolerance))
     for key, delta in failed:
         print("           %-38s %+6.1f%%" % ("/".join(key), delta))
-    print("           Lower show_edge_energy, or the channel's ceiling in the arena's patch.")
-    sys.exit(1)
+    if ENFORCE:
+        print("           Lower show_edge_energy, or the channel's ceiling in the arena's patch.")
+        sys.exit(1)
+    print("           REPORTED, NOT ENFORCED (round 10: his eye is the verdict; these numbers go to him beside the")
+    print("           frames). --enforce makes this a failure again.")
+    sys.exit(0)
 print("show-luma: ok -- no frame is more than %.1f%% worse with the show on than with it off." % tolerance)

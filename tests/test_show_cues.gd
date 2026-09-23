@@ -90,12 +90,13 @@ func test_a_cue_ramps_in_over_its_attack_instead_of_snapping() -> void:
 	var show := _patched_show()
 	show.mood_state = &"battle"
 	var attack := float(show.cues.for_state(&"battle")["attack"])
+	var target := float(show.cues.for_state(&"battle")["set"]["rim"]["period"])  # from the book, not a copy of it
 	var before: ShowChannel = show.channels[&"rim"]
 	show.apply(0.0, 0.0)
 	assert_near(show.live_channel(&"rim").period, before.period, 0.01, "nothing has moved on the first frame")
 	var steps := 0
 	var t := 0.0
-	while steps < 600 and absf(show.live_channel(&"rim").period - 5.5) > 0.1:
+	while steps < 600 and absf(show.live_channel(&"rim").period - target) > 0.1:
 		t += 0.02
 		show.apply(t, 0.02)
 		steps += 1
@@ -155,7 +156,7 @@ func test_softening_the_strobes_changes_only_the_strobes() -> void:
 	# loaded book rather than shipping a second one that could drift.
 	var before := ShowCues.load_book(BOOK)
 	var after := ShowCues.load_book(BOOK)
-	after.soften_strobes(6.0)
+	after.soften_strobes()
 	var softened := 0
 	var untouched := 0
 	for state: Variant in before.states:
@@ -168,7 +169,8 @@ func test_softening_the_strobes_changes_only_the_strobes() -> void:
 			if str(was.get("programme", "")) == "strobe":
 				softened += 1
 				assert_eq(str(now["programme"]), "breathe", "%s/%s is a breathe now" % [state, channel])
-				assert_near(float(now["period"]), 6.0, 0.001, "%s/%s took the new period" % [state, channel])
+				assert_near(float(now["period"]), float(was["period"]), 0.001,
+						"%s/%s keeps the strobe's own period: the arms differ in sharpness only" % [state, channel])
 				assert_near(float(now.get("floor", -1.0)), float(was.get("floor", -1.0)), 0.0001,
 						"%s/%s keeps its floor: the arms differ in the PROGRAMME, not the band" % [state, channel])
 				assert_near(float(now.get("ceiling", -1.0)), float(was.get("ceiling", -1.0)), 0.0001,

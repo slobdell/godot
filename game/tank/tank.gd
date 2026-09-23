@@ -218,6 +218,7 @@ func apply_unit() -> void:
 	if GameTheme.slots.has("unit.%s.turret" % unit_id):
 		_turret_visual.fill("unit.%s.turret" % unit_id)
 	_apply_hull_size(Units.stat(unit_id, "hull_size"), own_hull)
+	_apply_turret_mount(Units.PROFILES.get(unit_id, {"muzzle_height": muzzle_height}))
 	health = max_health
 	shield = max_shield
 	set_weapon(String(Units.stat(unit_id, "weapon")))
@@ -225,6 +226,33 @@ func apply_unit() -> void:
 
 ## The turret pivot sits MUZZLE_ABOVE_PIVOT below the muzzle (see muzzle_position).
 const MUZZLE_ABOVE_PIVOT := 0.05
+## R5: where `tank.tscn` has always put the pivot along the hull when a unit has no `turret_mount`: 0.2 m AFT of
+## centre (+z is the rear, trip-up 2).
+const DEFAULT_TURRET_Z := 0.2
+
+
+## R5 (round 10, feel; carve-out, combat reviews): where a unit's turret goes, from its profile's optional
+## `turret_mount: [x, y, z]` (the Tank node's frame: x right, y up, +z toward the REAR). Returns
+## {"pivot": Vector3, "lift": float}. The `Turret` node is SIMULATION -- `muzzle_position`, Match's shell ray and
+## friendly-fire origin and Gunnery read it -- so only x and z move the pivot (a round leaves from under the gun that
+## is drawn); its height stays at the muzzle's, so rounds fly where the ceiling rule says, and `lift` raises only the
+## turret's and weapon's art to the ring. No mount: today's pose exactly, lift 0.
+static func turret_pose(profile: Dictionary) -> Dictionary:
+	var pivot_y := float(profile.get("muzzle_height", 1.27)) - MUZZLE_ABOVE_PIVOT
+	if not profile.has("turret_mount"):
+		return {"pivot": Vector3(0.0, pivot_y, DEFAULT_TURRET_Z), "lift": 0.0}
+	var mount: Array = profile["turret_mount"]
+	return {"pivot": Vector3(float(mount[0]), pivot_y, float(mount[2])), "lift": float(mount[1]) - pivot_y}
+
+
+## R5's write, on all three axes. Runs after `_apply_hull_size` because the art's lift is divided by the turret's
+## scale (the visuals are children of the scaled pivot) and that scale is set there.
+func _apply_turret_mount(profile: Dictionary) -> void:
+	var pose := turret_pose(profile)
+	turret.position = pose["pivot"]
+	var local_lift := float(pose["lift"]) / maxf(turret.scale.y, 0.001)
+	_turret_visual.position.y = local_lift
+	_weapon_visual.position.y = local_lift
 
 
 ## ROUND 9 (scale, contract S1) -- EDITED IN game/tank/, WHICH IS NOT SCALE'S FILE. Two mirrors lived here and both
@@ -244,33 +272,55 @@ const MUZZLE_ABOVE_PIVOT := 0.05
 ## it anyway. combat and feel own this file and review the diff at merge.
 func _apply_hull_size(size_list: Variant, own_hull_art := false) -> void:
 	var size := Vector3(size_list[0], size_list[1], size_list[2])
-	turret.position.y = muzzle_height - MUZZLE_ABOVE_PIVOT
 	# Scene sub-resources are shared by every instance (trip-up 13): resize a copy.
 	var box := BoxShape3D.new()
 	box.size = size
 	_collision.shape = box
 	_collision.position.y = size.y / 2.0
 	var standard := shared_hull_size()
-	var ratio := Vector3(size.x / standard.x, size.y / standard.y, size.z / standard.z)
 	if not own_hull_art:
-		_hull_visual.scale = ratio
-	turret.scale = Vector3.ONE * minf(ratio.x, ratio.z)
+		_hull_visual.scale = Vector3(size.x / standard.x, size.y / standard.y, size.z / standard.z)
+	# R6 (round 10, feel): the turret's scale is SIMULATION -- `muzzle_position` puts the muzzle 3.2 m x this ahead of
+	# the pivot -- and it has always been computed against TURRET_STANDARD, because `shared_hull_size` used to return
+	# that fallback for every unit. Fixing the art's measurement must not move where rounds leave from, so the turret
+	# keeps the size it was always scaled against, by name.
+	turret.scale = Vector3.ONE * minf(size.x / TURRET_STANDARD.x, size.z / TURRET_STANDARD.z)
 
 
+## The size every turret has been scaled against since round 2 (see `_apply_hull_size`). Not a measurement.
+const TURRET_STANDARD := Vector3(2.4, 1.6, 3.6)
 ## The shared hull art's own size in metres (the theme's `tank.hull` scene, unscaled). Measured once per theme: the
 ## scene is a handful of nodes and every vehicle without its own art asks for it.
+##
+## R6 (round 10, feel): THE MODEL IS MEASURED, NOT THE WRAPPER. The cyberpunk `tank.hull` is a `dozer_part` wrapper
+## that builds its model in `_ready`, so an instance that never entered the tree has no meshes: this used to find
+## none and return the (2.4, 1.6, 3.6) fallback in silence, and the 2.40 x 2.40 x 8.62 bus drew 1.60 wide and 7.36
+## long (tests/test_units_bus_eye.gd). A wrapper's `model_scene` is now measured under the wrapper's own yaw, which is
+## all `_ready` does to it before the tank scales the slot (putting the wrapper in the tree instead would register
+## its underglow and engine sound on a node freed a line later).
 static var _shared_hull: Dictionary = {}
 
 
 static func shared_hull_size() -> Vector3:
 	if not _shared_hull.has(GameTheme.theme_name):
 		var packed := GameTheme.scene("tank.hull")
-		var measured := Vector3(2.4, 1.6, 3.6)
+		var measured := TURRET_STANDARD
 		if packed != null:
 			var node := packed.instantiate() as Node3D
-			var bounds := FactionArt.natural_bounds(node)
+			var holder := node
+			var model_scene: Variant = node.get("model_scene")
+			if model_scene is PackedScene:
+				holder = Node3D.new()
+				var model := (model_scene as PackedScene).instantiate() as Node3D
+				model.rotation.y = deg_to_rad(float(node.get("model_yaw_deg")))
+				holder.add_child(model)
+			var bounds := FactionArt.natural_bounds(holder)
 			if bounds.size.z > 0.01:
 				measured = bounds.size
+			else:
+				push_warning("Tank.shared_hull_size: '%s' tank.hull drew no meshes; using %s" % [GameTheme.theme_name, measured])
+			if holder != node:
+				holder.free()
 			node.free()
 		_shared_hull[GameTheme.theme_name] = measured
 	return _shared_hull[GameTheme.theme_name]
@@ -665,6 +715,9 @@ static var refusals_offered := 0
 static var refusals_applied := 0
 ## Consecutive ticks this hull's yaw has been refused outright: a permanent refusal is a stuck unit, not a fix.
 var yaw_refused_ticks := 0
+## ROUND 10: the longest such run by any hull since a reader last zeroed it. CP4's fourth bar (research B2) is "no run
+## of more than 3 consecutive refused ticks anywhere in five_squads", and a bar needs the quantity it reads.
+static var refused_run_max := 0
 ## OFF BY DEFAULT, AND THE COST COMES BEFORE THE BENEFIT because that is the order it was learned in.
 ##
 ## ⚠ ENABLING THIS STOPS FOUR OF FIVE SQUADS TAKING THEIR FORMATION. Bisected to this one line, one machine,
@@ -734,46 +787,73 @@ func _fitting_forward(have: Vector3, wanted: Vector3) -> Vector3:
 	# So the rule is: a turn may not push the hull DEEPER into geometry than its current heading already is.
 	# A hull in contact can still rotate to equal-or-less penetration, which is how it works itself free.
 	var here := _penetration(have)
+	var traced := not drive_trace.is_empty() and drive_trace.has(String(name))
+	if traced:
+		_trace_yaw_candidate("here", have, have, here, here)
 	# slerp is unstable for an exact reversal (no unique arc), and a reversal is reachable: a hull told to turn about.
 	var reversing := have.dot(wanted) < -0.9999
 	for fraction: float in YAW_FIT_FRACTIONS:
 		var candidate := wanted
 		if fraction < 1.0:
 			candidate = Vector3(have.z, 0.0, -have.x) if reversing else have.slerp(wanted, fraction)
-		if _penetration(candidate) <= here + PENETRATION_SLACK_M:
+		var depth := _penetration(candidate)
+		if traced:
+			_trace_yaw_candidate("%.1f" % fraction, have, candidate, depth, here)
+		if depth <= here + PENETRATION_SLACK_M:
 			if fraction < 1.0:
 				refusals_applied += 1
 			yaw_refused_ticks = 0
 			return candidate
 	refusals_applied += 1
 	yaw_refused_ticks += 1
+	refused_run_max = maxi(refused_run_max, yaw_refused_ticks)
 	return have
 
 
-## ⚠ NOT A MASK ARM. IT IS A DIFFERENT MEASUREMENT, AND IT FREEZES A HULL. `--tune=match.yaw_world=1` was built to
-## ask "does excluding vehicles restore formation", and it cannot answer that, because it does not differ from the
-## default in only the mask: the default arm calls `test_move(..., recovery_as_collision)` and reads
-## `KinematicCollision3D.get_depth()`; this arm calls `collide_shape` and takes the widest point-pair distance.
-## Two APIs, different margin and recovery semantics.
+## ROUND 10, backlog item 1: WHICH collider decides each candidate, and how deep. One line per candidate per tick on a
+## traced hull (`DRIVE_TRACE=<crew>`): the predicate's own number (`test_move`'s depth) and then every contact the
+## same query reports, by name and by depth, so "the deepest contact is a squadmate" is read, not inferred.
+func _trace_yaw_candidate(label: String, have: Vector3, candidate: Vector3, depth: float, here: float) -> void:
+	var params := PhysicsTestMotionParameters3D.new()
+	params.from = Transform3D(Basis.looking_at(candidate, Vector3.UP), global_position)
+	params.motion = Vector3.ZERO
+	params.margin = 0.001
+	params.recovery_as_collision = true
+	params.max_collisions = 6
+	var result := PhysicsTestMotionResult3D.new()
+	var contacts := []
+	var mask := collision_mask
+	if yaw_world_on():
+		collision_mask = Perception.WORLD_MASK
+	var touching := PhysicsServer3D.body_test_motion(get_rid(), params, result)
+	collision_mask = mask
+	if touching:
+		for i in result.get_collision_count():
+			var other: Object = result.get_collider(i)
+			var kind := "tank" if other is Tank else "world"
+			contacts.append("%s[%s] d=%.4f n=(%.2f,%.2f)" % [
+					String((other as Node).name) if other is Node else str(other), kind,
+					result.get_collision_depth(i), result.get_collision_normal(i).x, result.get_collision_normal(i).z])
+	print("YAW_TRACE %-14s tick=%d cand=%s dyaw=%.2fdeg depth=%.4f here=%.4f verdict=%s refused=%d contacts[%d] %s" % [
+			name, Engine.get_physics_frames(), label, rad_to_deg(have.signed_angle_to(candidate, Vector3.UP)), depth,
+			here, "ok" if depth <= here + PENETRATION_SLACK_M else "REFUSE", yaw_refused_ticks, contacts.size(),
+			", ".join(contacts)])
+
+
+## ROUND 10: the WORLD-ONLY arm, rebuilt as a true mask arm (`test_move` in both arms, only the collider set differs:
+## see `_penetration`). Round 9's version of this knob called `collide_shape` instead, moved a corridor that holds no
+## vehicles (1.27 -> 0.70 m) and froze a wall-pinned hull for 30 ticks: two APIs, not one mask, so its results say
+## nothing about the mask and are not carried forward.
 ##
-## The tell, measured: under this arm nav's corridor residual moved from **1.27 m to 0.70 m** -- and that corridor
-## contains **no vehicles at all**, so a pure mask change must be a no-op there. It moved, therefore the METHOD
-## moved it. And the wall case came back `offered 30, applied 30, refused ticks 30, swept 0.0 deg`: a hull frozen
-## solid for 30 ticks, which is nav's N1 breach and the exact failure that ruled out `PENETRATION_SLACK_M = 0.000`.
-## Its `five_squads` pass is uninterpretable for the same reason and does not count as evidence for anything.
-##
-## It is kept selectable because the code is written and the negative is worth reproducing, NOT because it is a
-## candidate. A real mask experiment is `test_move` in BOTH arms with only the collider set differing -- a
-## temporary `collision_mask` swap around the call -- pre-registered with "the corridor must not move" as its own
-## proof that the arm changed only what it claims to.
-##
-## Why it might have to be the default: `test_move` uses the body's own `collision_mask`, and `tank.tscn` has
-## `collision_mask = 3` -- world AND vehicles. So the rule as first written treats **another tank as a wall**, and
-## the whole justification for refusing a yaw is that a wall will not move. A squadmate will. A hull nosed up
-## against a neighbour while settling onto its formation slot is then refused the arrival turn and sits wrong.
-##
-## It is an ARM and not a fix until the pair says so: nav's corridor measurement is unaffected either way (scenery
-## is scenery), so the two arms can only be separated by a case where the contact is a vehicle.
+## WHY THIS IS THE ARM THE PREDICATE IMPLIES (backlog item 1, measured with `YAW_TRACE`, laptop, `2ee65f94`+instrument,
+## five_squads with `TUNE=match.yaw_fit=1`): every refused candidate of every traced crew -- the four freezers AND the
+## seating Alpha_4 -- was refused against a SQUADMATE; the world never appeared once. The freeze is a ratchet into a
+## fixed point: a tracked 8.62 x 2.40 m hull (half-diagonal 4.48 m) in a 6 m row is told to pivot in place (throttle
+## 0, turn -1: its goal is behind it), each accepted small step deepens its corner into the neighbour by up to
+## `PENETRATION_SLACK_M`, and it stops at the one posture where even the 0.3 candidate costs just over the slack
+## (Charlie_3 from tick 1880: here 0.0000, candidates 0.0177 / 0.0104 / 0.0050 m against Green_Charlie_2, byte-identical
+## for 1134 ticks). Nothing translates it out, so the state never changes. A wall does not yield; a squadmate does
+## (`move_and_slide` depenetrates the pair), so refusing a yaw because a VEHICLE is in the way is the defect.
 static var yaw_fit_world := false
 
 
@@ -784,29 +864,22 @@ static func yaw_world_on() -> bool:
 
 
 ## How far this hull would be inside geometry facing `forward` where it stands (0.0 when clear).
+##
+## ROUND 10: the `match.yaw_world` arm is now what round 9 said a mask experiment must be -- the SAME `test_move`
+## query in both arms with only the collider set swapped (this body's `collision_mask` narrowed to the world layer for
+## the duration of the call and restored), so an arm difference can only come from which colliders count. Its proof
+## that it changed nothing else is nav's corridor, which holds no vehicles and must not move between the arms.
 func _penetration(forward: Vector3) -> float:
 	var at := Transform3D(Basis.looking_at(forward, Vector3.UP), global_position)
-	if not yaw_world_on():
-		var hit := KinematicCollision3D.new()
-		if not test_move(at, Vector3.ZERO, hit, 0.001, true):
-			return 0.0
-		return hit.get_depth()
-	if _collision == null or _collision.shape == null:
-		return 0.0
-	# `collide_shape` returns point pairs (on this shape, on the other); the distance between a pair IS the depth,
-	# and the deepest pair is what `KinematicCollision3D.get_depth()` reports in the other arm. Same quantity,
-	# different set of colliders -- which is the only difference the two arms are allowed to have.
-	var params := PhysicsShapeQueryParameters3D.new()
-	params.shape = _collision.shape
-	params.transform = at * _collision.transform
-	params.collision_mask = Perception.WORLD_MASK
-	params.exclude = [get_rid()]
-	params.margin = 0.001
-	var pairs := get_world_3d().direct_space_state.collide_shape(params, 8)
-	var deepest := 0.0
-	for index in range(0, pairs.size() - 1, 2):
-		deepest = maxf(deepest, (pairs[index] as Vector3).distance_to(pairs[index + 1] as Vector3))
-	return deepest
+	var mask := collision_mask
+	var world_only := yaw_world_on()
+	if world_only:
+		collision_mask = Perception.WORLD_MASK
+	var hit := KinematicCollision3D.new()
+	var touching := test_move(at, Vector3.ZERO, hit, 0.001, true)
+	if world_only:
+		collision_mask = mask
+	return hit.get_depth() if touching else 0.0
 
 
 ## CP1: nothing to integrate this tick (see _drive).

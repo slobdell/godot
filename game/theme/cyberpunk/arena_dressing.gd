@@ -43,6 +43,8 @@ var ground: ChunkedGround
 var crowd: CrowdSystem
 ## Feel X7 (round 9): the Syndicate airship, or null on LOW.
 var airship: SyndicateAirship
+## Feel R7 (round 10): the low ad blimp, or null on LOW and on maps without a route.
+var blimp: AdBlimp
 ## Walls, towers, stands, gates and the crowd: rebuilt when a layout changes the arena's size.
 var structures: Node3D
 ## The perimeter's half size in use (walls at ±half).
@@ -121,10 +123,18 @@ func _build_airship() -> void:
 	if airship != null and is_instance_valid(airship):
 		airship.queue_free()
 	airship = null
+	if blimp != null and is_instance_valid(blimp):
+		blimp.queue_free()
+	blimp = null
 	if structures == null or not is_instance_valid(structures) or FxQuality.tier() < FxQuality.Tier.MEDIUM:
 		return
 	airship = SyndicateAirship.new()
 	structures.add_child(airship)
+	# R7 (round 10): the low ad blimp he can see at his pose, on maps that have a street route for it.
+	var route := AdBlimp.route_for(Arena.active)
+	if not route.is_empty():
+		blimp = AdBlimp.new(route)
+		structures.add_child(blimp)
 
 
 ## Stands and their crowd along the north and south walls, gates in the middle of the east and west walls.

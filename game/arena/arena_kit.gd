@@ -17,12 +17,18 @@ const PROPS := {
 	# ISO 668 shipping containers; the visual (theme/arena_kit/containers) has its long axis along x too.
 	"container_20": {"size": [6.06, 2.59, 2.44], "cover": "hard", "max_stack": 3},
 	"container_40": {"size": [12.19, 2.59, 2.44], "cover": "hard", "max_stack": 3},
-	# The 7 x 14 m LED wall stands on legs over a concrete plinth: only the plinth is in the way of anything.
-	"ad_screen": {"size": [7.4, 1.4, 1.4], "cover": "hard"},
+	# The 7 x 14 m LED wall stands on legs over a concrete plinth (7.4 x 1.4). R3 (round 10): the panel's housing,
+	# drawn from 5.71 m up, is 7.80 x 1.92 m, and the tallest hull (6.18 m) can reach it, so the box is 7.8 x 2.0,
+	# not the plinth's footprint (tests/test_arena_prop_parity.gd measures it; the test decides, not this comment).
+	# If feel raises the housing above the tallest roof, the box can return to the plinth.
+	"ad_screen": {"size": [7.8, 1.4, 2.0], "cover": "hard"},
 	# Jersey-barrier runs: stop a hull, not a shell or a sightline.
 	"barricade": {"size": [6.0, 0.9, 0.8], "cover": "low", "fallback": "prop.wall"},
-	# A burned-out husk left as permanent cover (theme prop.wreck, scaled to this box by render).
-	"wreck": {"size": [3.2, 2.0, 6.4], "cover": "hard"},
+	# A burned-out husk left as permanent cover (theme prop.wreck). R3 (round 10): the approved husk is drawn 3.20 x
+	# 3.30 m (its model is nearly square and render keeps its proportions), so the box that was 6.4 m long left 1.5 m
+	# of invisible wall at each end; feel's call (2026-09-22) was to fit the box to the art. Two husks nose to tail
+	# give back the long cover where a layout wants it.
+	"wreck": {"size": [3.2, 2.0, 3.3], "cover": "hard"},
 	# A floodlight tower's concrete footing; the mast above it is too thin to matter.
 	"floodlight": {"size": [2.4, 3.0, 2.4], "cover": "hard", "fallback": "prop.crate"},
 	# A neon sign on a post: spectacle only.

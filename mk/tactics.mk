@@ -62,3 +62,19 @@ squad-defile: import ## Round 9 X2/X3/A1: an element through the maze's 11 m gap
 		--seconds=$(or $(DEFILE_SECONDS),40) $(if $(TECHNIQUE),--technique=$(TECHNIQUE)) \
 		--formation=$(or $(FORMATION),wedge) --tube=$(or $(TUBE),off) \
 		2>&1 | grep -E "DEFILE_PROBE|SCRIPT ERROR|ERROR" || true
+
+squad-settle: import ## Round 10 item 3: a squad's plain move end to end -- order acknowledged, arrival declared (COMPLETED), every crew stopped -- on the default path's element. ARENA= (default scene) or terminus, DIR=forward|side|back, METRES=20, UNITS=tank:tank:ifv:ifv, SEED=3
+	@echo ">> squad-settle: ARENA=$(or $(ARENA),default) SEED=$(call cmdline,SEED,3) DIR=$(or $(DIR),forward) METRES=$(or $(METRES),20)"
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
+		--arena=$(ARENA) --dir=$(or $(DIR),forward) --metres=$(or $(METRES),20) --seed=$(call cmdline,SEED,3) \
+		--units=$(or $(UNITS),tank:tank:ifv:ifv) --seconds=$(or $(SETTLE_SECONDS),45) --trace=$(or $(TRACE),off) \
+		2>&1 | grep -E "SETTLE_PROBE|SETTLE_TRACE|SCRIPT ERROR|ERROR" || true
+
+squad-settle-series: import ## Round 10 item 3: squad-settle over paired seeds, both arms of PIN (the leader pinned to the head of a plain move's shape) on the same seeds, every ARENA and DIR. SETTLE_SEEDS="1 2 3 4 5 6 7 8" -> build/squad-settle.jsonl
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/squad-settle.jsonl
+	@for arena in "" terminus; do for dir in forward side back; do for seed in $(or $(SETTLE_SEEDS),1 2 3 4 5 6 7 8); do for pin in off on; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
+			--arena=$$arena --dir=$$dir --seed=$$seed --pin=$$pin --seconds=$(or $(SETTLE_SECONDS),45) 2>&1 \
+			| grep "^SETTLE_PROBE {" | sed 's/^SETTLE_PROBE //' >> $(BUILD_DIR)/squad-settle.jsonl & \
+		done; wait; done; done; done
+	@$(PYTHON) tools/tactics/settle_series.py $(BUILD_DIR)/squad-settle.jsonl

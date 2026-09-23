@@ -4,31 +4,30 @@ result: green by elimination at 1:01.2
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
-0:07.5   CALLER   I have watched both of these crews all week and I still could not tell you how this goes.
-0:14.3   CALLER   The Condemned are out tonight. Prison steel, welded shut, and driving for their freedom!
+0:00.0   PA       A very good evening to you all. The floor has been swept, the barriers are secure, and the crews have been briefed on the new penalty for stopping.
+0:10.9   CALLER   You are looking live at the Furnace, and I promise you nobody here is sitting down tonight!
+0:17.2   CALLER   The Condemned are out tonight. Prison—
 0:19.5   ── first contact: green scout fires on a tank
-0:19.5   VETERAN  Now everybody knows where everybody is. This is where it gets honest.
-0:25.5   CALLER   Here comes the drill! This is what they train for!
-0:29.1   VETERAN  React—
+0:19.6   VETERAN  The scout found them. Now the scout has to live long enough to tell somebody.
+0:26.2   CALLER   The scout sees them first and lets them know about it!
 0:29.2   ── rust lancer destroys green scout
-0:29.6   CALLER   Upset! Upset on the floor! The Lancer gets it done!
-0:33.3   VETERAN  That scout should have won that. It sat still—
+0:30.0   CALLER   Upset! Upset on the floor! The Lancer gets it done!
+0:33.7   VETERAN  Matchups are a suggestion. That crew didn't take it.
 0:37.5   ── rust tank destroys green ifv
-0:37.5   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
 0:37.8   ── green scout destroys rust lancer
-0:49.3   CALLER   The tank round lands! You felt that one in the seats!
+0:37.9   CALLER   Both sides lose one! Neither army is backing down!
+0:41.8   CALLER   They're breaking off! They are getting out of there!
+0:45.1   VETERAN  Breaking contact. Hardest thing in the book. You have to turn your back on somebody who's shooting.
+0:53.3   CALLER   They—
 0:53.5   ── green tank destroys rust tank
-0:53.8   CALLER   The tank is down! The biggest thing on the floor is down!
-0:58.6   CALLER   Something just changed—
+0:53.8   CALLER   Good night! That one is going home on a truck!
 0:59.8   ── green ifv destroys rust scout
 0:59.8   ── rust squad Needle wiped out
-0:59.8   CALLER   The Wreckers are down to their last vehicle!
+0:59.8   CALLER   It's all on the last Wrecker vehicle now!
 1:01.2   ── green scout destroys rust tank
 1:01.2   ── rust squad Hammer wiped out
 1:01.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-1:02.7   VETERAN  The Wreckers keep feeding them one at a time. Regroup. Please regroup.
-1:08.2   CALLER   And the Condemned are the last army standing! The Condemned win!
-1:12.1   VETERAN  Artillery doesn't kill you. It moves you somewhere that does.
-1:17.3   PA       The Condemned are tonight's winner. Ticket holders may remain seated during the recovery operation.
-1:22.9   PA       The next match begins shortly. Fans who have been asked to remain in their seats should continue to do so.
+1:02.7   CALLER   And that's it! That's the last one!
+1:05.4   CALLER   Nobody is taking this one away from the Condemned! They win it!
+1:09.6   VETERAN  They kept their shape. That is the whole thing, every time.
+1:15.3   PA       Tonight's winner is the Condemned. The surviving crews will be processed shortly. Good night.

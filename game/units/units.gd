@@ -170,11 +170,16 @@ const PROFILES := {
 		"blurb": "The armored prison-bus dozer. Heavy cannon on a slow turret; thick front armor.",
 		"cost": 200,
 		"unlock_tier": 0,
-		"hull_size": [2.40, 2.40, 8.62],
-		# S1 (round 9): The lead's own example: "the bus-tanks ... definitely need resizing". A prison bus is a school bus
-		# with the windows welded over.
-		"scale_reference": {"vehicle": "Type D school bus, 40 ft (Blue Bird All American)",
-				"length_m": 12.19, "source": "40 ft = 12.19 m, the standard full-size US school bus"},
+		"hull_size": [2.90, 4.76, 9.70],
+		# R6 (round 10, feel; carve-out, combat reviews; CP3): THE LEAD'S EYE, on the Terminus: "the condemned bus is too
+		# small still. It should be longer than the garbage truck and heightened proportionally." The garbage truck is
+		# `ifv` (7.54 m, 3.70 m tall). Length: a 45 ft coach x K = 9.70 m, 1.29x the truck. Height: the truck's 3.70 x the
+		# same 1.29 = 4.76 m. Width 2.90: a coach is no wider than a truck (the ifv is 2.86); the spawn grid's jitter was
+		# re-derived for it (match.gd). Picked on lineup_bus_*.png at his pose; tests/test_units_bus_eye.gd holds the
+		# two ratios against the ifv's live box. (Round 9: a 40 ft school bus, 2.40 x 2.40 x 8.62, which he ruled too small.)
+		"scale_reference": {"vehicle": "45 ft motor coach, the US prisoner-transport bus (MCI D4505)",
+				"length_m": 13.72, "source": "45 ft = 13.72 m; the MCI D-series is the coach the US Marshals and the Bureau of Prisons run as prison buses",
+				"ruled": "the lead, 2026-09-20: longer than the garbage truck (ifv) and heightened proportionally (R6)"},
 		"max_health": 300,
 		"max_shield": 150,
 		"shield_recharge_delay": 4.0,
@@ -197,6 +202,11 @@ const PROFILES := {
 		# R2: 110 -> 50 (the lead's "slow turret"): a scout crossing at 15 m sweeps ~53°/s, faster than it turns.
 		"turret_turn_rate_deg": 50.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the turret on the ROOF, not buried in the hull (it drew at 1.55-2.11 m inside a 2.40 m
+		# box, then a 4.76 m one). `make turret-probe` (builder0, the 9.70 m box): the roof is flat at 4.71-4.76 m from
+		# z -0.6 to +3.6 and the dozer turret's art stands 0.46 m above its pivot, so its origin goes to 4.72 - 0.46 = 4.26
+		# and the pivot 0.4 m aft of centre, where the turret sits wholly on the flat. [x, y, z]: x right, y up, +z REAR.
+		"turret_mount": [0.0, 4.26, 0.4],
 		"armor": {"front": 8.0, "side": 4.0, "rear": 2.0},
 		"good_vs": ["ifv", "tank"],
 		"weak_vs": ["scout"],
@@ -350,6 +360,9 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 120.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the same buried dozer turret. Probe (builder0): roof flat at 2.36-2.40 m from z -0.4 to +2.6,
+		# the turret art 0.38 m above its pivot: origin 2.37 - 0.38 = 1.99, pivot 0.4 m aft of centre.
+		"turret_mount": [0.0, 1.99, 0.4],
 		# X6 (round 3): plow front 4 -> 6, so it survives the 25 mm while closing on IFVs (Burner > IFV).
 		"armor": {"front": 6.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["ifv", "artillery"],
@@ -438,6 +451,10 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 190.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the gun truck's real machine gun is in the BED (FactionArt.GUN_CUTS "gangs/ifv" now cuts it
+		# out and yaws it); its GunPivot is at z +0.92 in the tank frame (probe, builder0), so the simulated pivot goes under
+		# it and rounds leave from the gun that is drawn. No turret art is drawn, so y stays at the muzzle's pivot height.
+		"turret_mount": [0.0, 1.09, 0.92],
 		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"good_vs": ["scout"],
 		"weak_vs": ["tank"],
@@ -482,6 +499,9 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 60.0,
 		"muzzle_height": 1.14,
+		# R5 (round 10, feel): the War Rig's cut gun yaws about its GunPivot at z +1.75 (probe, builder0), on the tanker;
+		# the simulated pivot goes under it. No turret art is drawn, so y stays at the muzzle's pivot height.
+		"turret_mount": [0.0, 1.09, 1.75],
 		"armor": {"front": 7.0, "side": 4.0, "rear": 2.0},
 		"good_vs": ["ifv", "tank"],
 		"weak_vs": ["scout"],
@@ -939,6 +959,12 @@ const PROFILES := {
 
 ## The unit a bare spawn (network players, legacy bots) drives.
 const DEFAULT := "tank"
+## The disc/box reach sites that take their own `match.hull_disc_<site>` override (C6): `lof` is the friendly-fire
+## line-of-fire test and `incoming` the projectile-threat test (both in `Match`); `squad_incoming` is squad's
+## `IncomingFire` (it passes the name when squad wires it; until then it follows `match.hull_disc`).
+const HULL_DISC_SITES := ["lof", "incoming", "squad_incoming"]
+const MATCH_KNOBS := ["no_damage", "hull_disc", "hull_disc_lof", "hull_disc_incoming", "hull_disc_squad_incoming",
+		"yaw_fit", "yaw_world"]
 ## Keys a v1 army entry used. Army JSON v2 rejects them with V1_KEY_HELP.
 const V1_UNIT_KEYS := ["weapon", "weapons", "components"]
 const V1_KEY_HELP := "units have fixed weapons since army JSON v2: pick a unit type (%s) instead of '%s'"
@@ -1040,22 +1066,22 @@ static func with_role(role: String) -> PackedStringArray:
 ## test go through, so every consumer and both axes flip together and a series arm measures the whole change rather
 ## than the two thirds of it that live in combat's files.
 static func hull_distance_to_line(hull_size: Array, hull_forward: Vector3, hull_origin: Vector3,
-		line_origin: Vector3, line_direction: Vector3) -> float:
+		line_origin: Vector3, line_direction: Vector3, site := "") -> float:
 	var along := Vector2(line_direction.x, line_direction.z)
 	along = along.normalized() if along.length_squared() > 0.0001 else Vector2(0.0, -1.0)
 	var normal := Vector2(-along.y, along.x)
 	var offset := Vector2(hull_origin.x - line_origin.x, hull_origin.z - line_origin.z)
-	return hull_distance_of(hull_half_extents(hull_size), hull_forward, hull_origin, line_origin, line_direction)
+	return hull_distance_of(hull_half_extents(hull_size), hull_forward, hull_origin, line_origin, line_direction, site)
 
 
 ## `hull_distance_to_line` from the cached half-extents (see `hull_reach_of`).
 static func hull_distance_of(half: Vector2, hull_forward: Vector3, hull_origin: Vector3,
-		line_origin: Vector3, line_direction: Vector3) -> float:
+		line_origin: Vector3, line_direction: Vector3, site := "") -> float:
 	var along := Vector2(line_direction.x, line_direction.z)
 	along = along.normalized() if along.length_squared() > 0.0001 else Vector2(0.0, -1.0)
 	var normal := Vector2(-along.y, along.x)
 	var offset := Vector2(hull_origin.x - line_origin.x, hull_origin.z - line_origin.z)
-	return maxf(absf(offset.dot(normal)) - hull_reach_of(half, hull_forward, Vector3(normal.x, 0.0, normal.y)), 0.0)
+	return maxf(absf(offset.dot(normal)) - hull_reach_of(half, hull_forward, Vector3(normal.x, 0.0, normal.y), site), 0.0)
 
 
 ## How far a hull reaches from its own centre along `direction` -- its half-extent projected on that axis. THE SAME
@@ -1067,15 +1093,25 @@ static func hull_distance_of(half: Vector2, hull_forward: Vector3, hull_origin: 
 ## Exact for a box, because only one axis can separate a box from a line or a point along a direction:
 ## `half_width * |d . right| + half_length * |d . forward|`. Four multiplies, two adds, no branches, no trig.
 ## `--tune=match.hull_disc=1` restores the pre-round-9 disc here, so BOTH consumers and BOTH axes flip together.
-static func hull_reach_along(hull_size: Array, hull_forward: Vector3, direction: Vector3) -> float:
-	return hull_reach_of(hull_half_extents(hull_size), hull_forward, direction)
+static func hull_reach_along(hull_size: Array, hull_forward: Vector3, direction: Vector3, site := "") -> float:
+	return hull_reach_of(hull_half_extents(hull_size), hull_forward, direction, site)
 
 
 ## The same projection taking the CACHED (half width, half length) pair, for callers on a per-tick path that must not
 ## re-read `Units.stat` every call (squad's `IncomingFire` runs this per unit per shell per tick). The disc the knob
 ## restores is `half.length()`, which is `Vector2(width, length).length() / 2` -- the same number, so the arm is
 ## identical whichever entry point a caller uses.
-static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vector3) -> float:
+## ROUND 10 (combat, research C6): `site` names the reader, so ONE site can be switched while the others keep the disc.
+## `match.hull_disc_<site>` (see `HULL_DISC_SITES`) overrides `match.hull_disc` for that site only; a site with no
+## override follows `match.hull_disc`, and a caller that passes no site follows it too, so the defaults are unchanged.
+## One knob that flips three sites can only answer "the disc or not"; the series needs "which site".
+static func hull_disc_at(site: String) -> bool:
+	if site != "" and tuning.has("hull_disc_" + site):
+		return float(tuning["hull_disc_" + site]) > 0.0
+	return float(tuning.get("hull_disc", 1.0)) > 0.0
+
+
+static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vector3, site := "") -> float:
 	# THE DISC IS THE DEFAULT, and that is a deliberate hold rather than an opinion about which is right. The box is
 	# a geometry CORRECTION -- the disc is wrong by a factor varying 4.3x abeam to 1.03x end-on -- but this round's
 	# rule is that a behaviour changes default only on measurement, and the box's falsifier (the gangs-vs-law series,
@@ -1083,7 +1119,7 @@ static func hull_reach_of(half: Vector2, hull_forward: Vector3, direction: Vecto
 	# When the series says the box is no worse on every cell, the default flips in the same commit as the result,
 	# with its builder0 baseline hash recorded once. Measured on this laptop (glibc-2.39), the two arms are NOT the
 	# same simulation: sim-baseline match, seed 3 -- box `debb895da1fa288f`, disc `906d9c3df0c8e656`.
-	if tuning.get("hull_disc", 1.0) > 0.0:
+	if hull_disc_at(site):
 		return half.length()
 	var forward := Vector2(hull_forward.x, hull_forward.z)
 	forward = forward.normalized() if forward.length_squared() > 0.0001 else Vector2(0.0, -1.0)
@@ -1165,20 +1201,16 @@ static func _ensure_env_tuning() -> void:
 ## longer makes a written fallback a lie. A caller that gave no fallback gets `Units.DEFAULT`'s value for that key,
 ## which is a unit that exists rather than a null that fails somewhere further on.
 ##
-## ⚠ `push_warning`, NOT `push_error`, and the severity is a deliberate trade rather than an opinion about how bad
-## this is. The runner fails a test on any engine ERROR and has no `expect_error` to declare a deliberate one
-## (`TestCase.expect_warning` exists; its error twin does not). A `push_error` here would therefore make this guard
-## **untestable** -- and a guard nobody can drive into is exactly the unreachable protection nav objected to. So it
-## warns, the test declares the warning with `expect_warning`, and an expectation that stops arriving fails the
-## test too. **`expect_error` lands with nav's `06c7e772`**; when that is on main this becomes `push_error` and the
-## test becomes `expect_error`, a two-line follow-up.
+## `push_error` (round 10, combat): it was a `push_warning` only because the runner had no `expect_error` and an
+## error here would have made the guard untestable. `TestCase.expect_error` exists now, so an unknown id is an ERROR
+## again, which fails any test that reaches it by accident, and the guard's own test declares it.
 static func stat(unit_id: String, key: String, fallback: Variant = null) -> Variant:
 	_ensure_env_tuning()
 	var tuned_key := "%s.%s" % [unit_id, key]
 	if tuning.has(tuned_key):
 		return tuning[tuned_key]
 	if not PROFILES.has(unit_id):
-		push_warning("Units.stat: no unit '%s' (asked for '%s'); using %s" % [unit_id, key,
+		push_error("Units.stat: no unit '%s' (asked for '%s'); using %s" % [unit_id, key,
 				"the given fallback" if fallback != null else "%s's value" % DEFAULT])
 		return fallback if fallback != null else PROFILES[DEFAULT].get(key, null)
 	return PROFILES[unit_id].get(key, fallback)
@@ -1198,9 +1230,9 @@ static func apply_tuning(spec: String) -> String:
 		if parts.size() != 2 or path.size() < 2 or path.size() > 3 or not parts[1].is_valid_float():
 			return "tune: expected owner.key=number, got '%s'" % pair
 		if path[0] == "match":
-			if path.size() != 2 or not ["no_damage", "hull_disc", "yaw_fit", "yaw_world"].has(path[1]):
-				return ("tune: no match knob '%s' (have match.no_damage, match.hull_disc, match.yaw_fit, "
-						+ "match.yaw_world)") % parts[0]
+			if path.size() != 2 or not MATCH_KNOBS.has(path[1]):
+				return "tune: no match knob '%s' (have %s)" % [parts[0], ", ".join(MATCH_KNOBS.map(
+						func(knob: String) -> String: return "match." + knob))]
 			# ⚠ EVERY match knob goes into THIS class's own dictionary, and the consumer reads it at the point of
 			# use (`Tank.yaw_fit_on()`, `Tank.yaw_world_on()`, `Armor.no_damage_on()`). Writing a foreign class's
 			# static from here -- which is what this did -- is undone by that class's own initialiser whenever the

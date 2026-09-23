@@ -32,6 +32,9 @@ static func _flat_distance(a: Vector3, b: Vector3) -> float:
 
 # ---- 1. slot and sector ------------------------------------------------------------------------
 
+# REASON (CP3, round 10; squad's ruling, 2026-09-22): may read RED on builder0 -- a 9.7 m bus fighting from its slot
+# drifts 15-16+ m against its own leash + 2 m (16.0); the leash is the doctrine's spacing, not the hull; squad's row,
+# investigated after the pitch. A behaviour claim: the bar is NOT bent.
 func test_a_unit_fighting_from_a_formation_slot_stays_in_it() -> void:
 	# Three tanks in line abreast, told by their leader to attack an enemy pair 55 m ahead. Fighting on the move is
 	# right (round 3), but a unit that circles 40 m out of its slot has left the formation: mutual support, sectors
@@ -235,22 +238,40 @@ func test_the_base_of_fire_keeps_firing_while_the_others_move() -> void:
 	element.assign({"verb": "support_by_fire", "target": "Rust_A_1"})
 	element.support_by_fire(assault.map(func(t: Tank) -> String: return String(t.name)))
 	var orders := s.orders()
+	# What the element's leader issues a base-of-fire crew on its firing line (ElementPlan._line_positions): a HOLD on
+	# its spot, facing its sector, firing at will. Round 9 hand-issued `attack`, which means "close with and destroy":
+	# measured (laptop, BASE_TRACE), the base reversed 12 m, then one crew charged 32 m at the enemy at 9 m/s, and
+	# neither fired for 6.3 s after it had a lane. That was the order's meaning, not the base's behaviour.
 	for tank in base:
-		_issue(orders, [tank], "attack", {"target": "Rust_A_1"})
+		_issue(orders, [tank], "hold", {"to": [tank.global_position.x, tank.global_position.z], "facing": [0.0, -1.0]})
 	# The assault crosses the base of fire's front, left to right.
 	_issue(orders, assault, "attack_move", {"to": [-60.0, -10.0]})
 	await s.start()
-	var early := 0
-	var late := 0
+	# RE-SPECIFIED (round 10, squad item 5). The assault STARTS INSIDE the base of fire's lanes (z = 8, between the base
+	# at z = 18 and the foes at z = -28), so the round-9 bar "two shots in the first 12 s" measured how fast navigation
+	# took the assault out of the way, not the base: it passed on a neighbour's leaked navmesh state and failed drained
+	# (metrics' round-9 four-run table; 1 shot on builder0 at 2ee65f94, 2 alone on the laptop). What the scenario is
+	# ABOUT is the base: it fires as soon as it has a lane, keeps firing while the assault crosses, and never through a
+	# friend. So the clock starts when a lane first clears.
+	var clear_tick := -1
+	var first_after_clear := -1
+	var shots_after_clear := 0
 	var through_a_friend := 0
 	var fired_before := {}
 	var ticks := SimClock.TICK_RATE * 24
 	for tick in ticks:
 		await s.step()
+		if clear_tick < 0 and _a_lane_is_clear(base, foes, assault):
+			clear_tick = tick
 		for tank in base:
 			var now := s.shots_by(tank)
 			if now > int(fired_before.get(String(tank.name), 0)):
+				var new_shots: int = now - int(fired_before.get(String(tank.name), 0))
 				fired_before[String(tank.name)] = now
+				if clear_tick >= 0:
+					shots_after_clear += new_shots
+					if first_after_clear < 0:
+						first_after_clear = tick
 				var controller := s.controller_of(tank)
 				var aimed_at: Tank = null
 				for foe in foes:
@@ -260,15 +281,34 @@ func test_the_base_of_fire_keeps_firing_while_the_others_move() -> void:
 					for friend in assault:
 						if _lane_distance(tank.global_position, aimed_at.global_position, friend.global_position) < 2.0:
 							through_a_friend += 1
-		var fired: int = base.reduce(func(total: int, t: Tank) -> int: return total + s.shots_by(t), 0)
-		if tick == ticks / 2 - 1:
-			early = fired
-		elif tick == ticks - 1:
-			late = fired - early
-	print("MEASURE element_support_by_fire base shots %d then %d, through a friend %d" % [early, late, through_a_friend])
-	assert_true(early >= 2, "the base of fire opened up while the assault set off (%d shots)" % early)
-	assert_true(late >= 2, "it kept firing while the assault crossed its front (%d shots in the second half)" % late)
+	var react_s := (first_after_clear - clear_tick) / float(SimClock.TICK_RATE) if first_after_clear >= 0 else -1.0
+	var window_s := (ticks - clear_tick) / float(SimClock.TICK_RATE) if clear_tick >= 0 else 0.0
+	print("MEASURE element_support_by_fire lane clear at %.1f s, first shot %.1f s after it, %d shots in the %.1f s after, through a friend %d" \
+			% [clear_tick / float(SimClock.TICK_RATE), react_s, shots_after_clear, window_s, through_a_friend])
+	assert_true(clear_tick >= 0, "setup: the assault cleared at least one of the base's lanes")
+	assert_true(react_s >= 0.0 and react_s <= BASE_REACT_S,
+			"the base opened fire within %.0f s of having a lane (%.1f s)" % [BASE_REACT_S, react_s])
+	assert_true(shots_after_clear >= 4, "and kept firing while the assault crossed its front (%d shots)" % shots_after_clear)
 	assert_eq(through_a_friend, 0, "and it never shot through one of its own")
+
+
+## A base-of-fire crew has a shot once no assault vehicle is within this of its line of fire; and it should use it
+## within BASE_REACT_S: a reload plus a turret slew, with a second of margin.
+const LANE_CLEAR_M := 3.0
+const BASE_REACT_S := 4.0
+
+
+## Whether any base crew has a lane to any foe that no assault vehicle stands in.
+static func _a_lane_is_clear(base: Array, foes: Array, assault: Array) -> bool:
+	for gun: Tank in base:
+		for foe: Tank in foes:
+			var blocked := false
+			for friend: Tank in assault:
+				if _lane_distance(gun.global_position, foe.global_position, friend.global_position) < LANE_CLEAR_M:
+					blocked = true
+			if not blocked:
+				return true
+	return false
 
 
 ## How close `point` passes to the segment from `from` to `to` (the line of fire), in meters.

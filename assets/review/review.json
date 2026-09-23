@@ -1243,6 +1243,144 @@
       "decided": "2026-09-15",
       "model_task": "",
       "added": "2026-09-15"
+    },
+    {
+      "id": "bus_r10_a",
+      "group": "R6 the Condemned bus (tank), at 2.90 x 4.76 x 9.70",
+      "target": "unit.tank.hull",
+      "title": "Bus A: the high-deck prison coach",
+      "prompt": "Photorealistic concept art of the same arena death-race prison dozer as the reference image, identical materials and details: riveted slab armor, the spiked dozer blade, steel grilles with magenta and cyan neon light bars, welded chains and spikes, worn yellow-black hazard stripes, red warning lights, and the squat turret with the long thick-barreled cannon. Rebuilt at the size of a full 45-foot prisoner-transport coach: a long, TALL body about twice as long as it is high, clearly bigger than an armored garbage truck. A high-deck armored prison coach on heavy tank tracks: slab-sided and tall, a long row of welded-over slit windows, the turret on the flat roof just behind the middle. Full vehicle in frame, three-quarter front view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+      "concept_task": "01a0ca6f-c5de-77d5-be63-d8ffa309bbed",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "_agents/art/north_star_prison_dozer.jpg"
+      ],
+      "source_png": "assets/incoming/meshy/bus_r10_a.concept.png",
+      "image": "assets/review/images/bus_r10_a.jpg",
+      "est_3d_credits": 15,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "The reference dozer grown into a tall single-deck coach; the simplest silhouette, closest to what he approved. R6: longer than the garbage truck and heightened proportionally.",
+      "status": "waiting",
+      "lead_words": "",
+      "decided": "",
+      "model_task": "",
+      "added": "2026-09-22"
+    },
+    {
+      "id": "bus_r10_b",
+      "group": "R6 the Condemned bus (tank), at 2.90 x 4.76 x 9.70",
+      "target": "unit.tank.hull",
+      "title": "Bus B: the double-decker",
+      "prompt": "Photorealistic concept art of the same arena death-race prison dozer as the reference image, identical materials and details: riveted slab armor, the spiked dozer blade, steel grilles with magenta and cyan neon light bars, welded chains and spikes, worn yellow-black hazard stripes, red warning lights, and the squat turret with the long thick-barreled cannon. Rebuilt at the size of a full 45-foot prisoner-transport coach: a long, TALL body about twice as long as it is high, clearly bigger than an armored garbage truck. A double-deck armored prison bus on tank tracks: two rows of barred, welded-over windows, a caged upper deck, the turret on the roof above the rear half. Full vehicle in frame, three-quarter front view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+      "concept_task": "01a0ca70-3084-75d6-a2cd-0f017a828c52",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "_agents/art/north_star_prison_dozer.jpg"
+      ],
+      "source_png": "assets/incoming/meshy/bus_r10_b.concept.png",
+      "image": "assets/review/images/bus_r10_b.jpg",
+      "est_3d_credits": 15,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "Two decks of barred windows: reads TALL at his telephoto pose; the most bus-like. R6: longer than the garbage truck and heightened proportionally.",
+      "status": "waiting",
+      "lead_words": "",
+      "decided": "",
+      "model_task": "",
+      "added": "2026-09-22"
+    },
+    {
+      "id": "bus_r10_c",
+      "group": "R6 the Condemned bus (tank), at 2.90 x 4.76 x 9.70",
+      "target": "unit.tank.hull",
+      "title": "Bus C: the gun-deck coach",
+      "prompt": "Photorealistic concept art of the same arena death-race prison dozer as the reference image, identical materials and details: riveted slab armor, the spiked dozer blade, steel grilles with magenta and cyan neon light bars, welded chains and spikes, worn yellow-black hazard stripes, red warning lights, and the squat turret with the long thick-barreled cannon. Rebuilt at the size of a full 45-foot prisoner-transport coach: a long, TALL body about twice as long as it is high, clearly bigger than an armored garbage truck. An armored prison coach whose roof carries a raised armored gun deck: a stepped silhouette with the turret up on the high rear deck, spare track links and armor plates hung along the tall sides. Full vehicle in frame, three-quarter front view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+      "concept_task": "01a0ca70-ae65-7071-a7b9-1029df3c597d",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "_agents/art/north_star_prison_dozer.jpg"
+      ],
+      "source_png": "assets/incoming/meshy/bus_r10_c.concept.png",
+      "image": "assets/review/images/bus_r10_c.jpg",
+      "est_3d_credits": 15,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "A stepped roof with the turret on a raised deck: the turret reads from any angle, the most 'war machine'. R6: longer than the garbage truck and heightened proportionally.",
+      "status": "waiting",
+      "lead_words": "",
+      "decided": "",
+      "model_task": "",
+      "added": "2026-09-22"
+    },
+    {
+      "id": "burner_r10_a",
+      "group": "R6 the Condemned burner (fire engine), at 2.40 x 2.40 x 6.89",
+      "target": "unit.burner.hull",
+      "title": "Burner A: the armored pumper",
+      "prompt": "Photorealistic concept art of an arena death-race flamethrower vehicle in the same style, materials and details as the reference prison dozer: riveted slab armor, steel grilles with magenta and cyan neon light bars, welded chains and spikes, worn yellow-black hazard stripes, red warning lights, blackened gunmetal with grime and rust. A converted FIRE ENGINE with a heavy plow on the nose, about as long as a bus and lower. An armored pumper fire engine: the red paint scorched and mostly armored over, hose reels welded shut, a squat roof turret carrying a thick flamethrower nozzle with a pilot flame, fuel tanks strapped along the sides. Full vehicle in frame, three-quarter front view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+      "concept_task": "01a0cb30-4400-73fd-b73d-9db022989b67",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "_agents/art/north_star_prison_dozer.jpg"
+      ],
+      "source_png": "assets/incoming/meshy/burner_r10_a.concept.png",
+      "image": "assets/review/images/burner_r10_a.jpg",
+      "est_3d_credits": 15,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "The classic fire engine, armored: reads 'fire truck' at a glance; the turret is a squat roof nozzle.",
+      "status": "waiting",
+      "lead_words": "",
+      "decided": "",
+      "model_task": "",
+      "added": "2026-09-22"
+    },
+    {
+      "id": "burner_r10_b",
+      "group": "R6 the Condemned burner (fire engine), at 2.40 x 2.40 x 6.89",
+      "target": "unit.burner.hull",
+      "title": "Burner B: the crash tender",
+      "prompt": "Photorealistic concept art of an arena death-race flamethrower vehicle in the same style, materials and details as the reference prison dozer: riveted slab armor, steel grilles with magenta and cyan neon light bars, welded chains and spikes, worn yellow-black hazard stripes, red warning lights, blackened gunmetal with grime and rust. A converted FIRE ENGINE with a heavy plow on the nose, about as long as a bus and lower. An airport crash-tender fire truck: a huge rounded cab and a big roof-mounted monitor turret converted into a flamethrower, six heavy wheels, fuel bladders caged on the back. Full vehicle in frame, three-quarter front view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+      "concept_task": "01a0cb30-c151-7182-9533-90dd8f7a565f",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "_agents/art/north_star_prison_dozer.jpg"
+      ],
+      "source_png": "assets/incoming/meshy/burner_r10_b.concept.png",
+      "image": "assets/review/images/burner_r10_b.jpg",
+      "est_3d_credits": 15,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "A big airport crash-tender silhouette; the roof monitor is an obvious traversing turret.",
+      "status": "waiting",
+      "lead_words": "",
+      "decided": "",
+      "model_task": "",
+      "added": "2026-09-22"
+    },
+    {
+      "id": "burner_r10_c",
+      "group": "R6 the Condemned burner (fire engine), at 2.40 x 2.40 x 6.89",
+      "target": "unit.burner.hull",
+      "title": "Burner C: the ladder-boom truck",
+      "prompt": "Photorealistic concept art of an arena death-race flamethrower vehicle in the same style, materials and details as the reference prison dozer: riveted slab armor, steel grilles with magenta and cyan neon light bars, welded chains and spikes, worn yellow-black hazard stripes, red warning lights, blackened gunmetal with grime and rust. A converted FIRE ENGINE with a heavy plow on the nose, about as long as a bus and lower. A ladder truck whose ladder has been turned into a long armored flamethrower boom on a turntable at the rear, a spiked plow on the front, fuel tanks in racks along the bed. Full vehicle in frame, three-quarter front view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+      "concept_task": "01a0cb31-29fe-74cd-b945-8ca26fd83ad3",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "_agents/art/north_star_prison_dozer.jpg"
+      ],
+      "source_png": "assets/incoming/meshy/burner_r10_c.concept.png",
+      "image": "assets/review/images/burner_r10_c.jpg",
+      "est_3d_credits": 15,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "The ladder turned into a flame boom on a turntable: the most distinctive silhouette, the longest gun.",
+      "status": "waiting",
+      "lead_words": "",
+      "decided": "",
+      "model_task": "",
+      "added": "2026-09-22"
     }
   ]
 }

@@ -136,3 +136,115 @@ the list; pair discipline.
 ## Status
 
 _(the worker keeps this current)_
+
+**2026-09-22, session 1 (feel worker). Baseline: `main` at `2ee65f94`, check on builder0 launched 09:58.**
+
+### Plan (in order, with the reason where the brief left a choice)
+
+1. **R5 write first, then R6's box** — the mount write is baseline-NEUTRAL (no unit carries a mount), so it can go
+   green on its own and the three baseline-moving commits stack on it.
+2. **R6, CP3, as THREE commits** (the orchestrator's condition, so a bisect can attribute the move):
+   (a) the bus box — pre-registered: MOVES the sim baseline; (b) the spawn-jitter shrink in `match.gd` (combat's
+   constants, edited here with the orchestrator's approval; combat reviews at merge) — pre-registered: MOVES;
+   (c) the turret-mount VALUES — pre-registered: MOVES (x/z move the pivot, which is sim). The write alone (R5,
+   step 1) is pre-registered UNMOVED and proven so on its own check.
+3. **R7, the blimp** — a low ad blimp on a street circuit round the Terminus's central blocks; pre-registered UNMOVED.
+4. The rim light; the arena parity requests as they come; stretch.
+
+### Done so far (commits on `stream/feel`; every number: builder0 unless it says laptop)
+
+| commit | what | baseline pre-registration |
+|---|---|---|
+| `11ccc0a8` | R5 write: `turret_mount` read on all three axes (`Tank.turret_pose`), `make turret-probe` | UNMOVED (no unit carries a mount) |
+| `9dcc42d3` | R6: tank/burner DRAWN at their box (`shared_hull_size` fell back in silence); turret scale kept by name | UNMOVED |
+| `5cfde60e` | R7: the ad blimp + `make blimp-look` | UNMOVED |
+| `7001bdc8` | **CP3 (b)** spawn jitter 1.5/0.6 → 1.30/0.15, the rule beside it (combat's constants, approved) | **MOVES** |
+| `055fb10f` | **CP3 (a)** the bus 2.40 x 2.40 x 8.62 → **2.90 x 4.76 x 9.70** (45 ft MCI coach x K; 1.29x the ifv on both axes) | **MOVES** |
+| `8a9b71a2` | R6 concept page: `bus_r10_a/b/c`, 27 credits (Meshy 88 → 61), **waiting on his tap** | — |
+| `a138b5f1` | **CP3 (c)** R5 values: tank, burner (roof), gang_ifv (GUN_CUT of the bed MG), gang_tank (pivot under the cut gun); stray gang_artillery stick hidden | **MOVES** |
+
+**Frames kept in the repo, `_agents/streams/references/round10/feel/`** (JPEG; the full PNGs regenerate with the
+targets named below): `bus_sheet.jpg` (the bus at his pose: before | the draw fix alone | the chosen 2.90 x 4.76 x 9.70
+| 3.10 wide | 4.20 tall), `turret_pairs.jpg` (side-on, before | after: bus, burner, gang_ifv, gang_tank,
+gang_artillery, ifv), `blimp_opening_d9b70dc4.jpg` (the blimp in his opening camera), `rim_v1_too_strong.jpg` (the
+rim pair's first pass: show off/on x rim off/on; the rim was toned down after it). **How they were made:** the bus at his pose, before /
+the draw fix alone / the chosen box / 3.10 wide / 4.20 tall: `lineup_bus.png`, `lineup_bus_1..3.png`
+(`make remote T=roster-lineup`, `LINEUP_FLAGS=--size-look-bus=W,H,L/W,H,L`). The turrets side-on before/after:
+`make remote T=facing-audit` → `build/facing/<unit>.png`. What they show: the before-bus reads SMALLER and far lower
+than the 7.5 m garbage truck with no visible turret; at 2.90 x 4.76 x 9.70 it reads longer and taller, with its
+cannon on the roof; the gun truck's stray rod is gone and its bed MG traverses; the catapult's 5 m stick is gone.
+
+### R7, the blimp: the number and the frame
+
+`make blimp-look` (builder0, his pose 21 deg / FOV 35 / 49 m, the Terminus, 135 foci on a 20 m grid x 4 yaws x 24
+points of its lap = 12,960 samples; SEEN = in the viewport AND a clear physics ray past the blocks' colliders):
+
+| route | seen, all | seen, the skirmish's start yaw | seen, the middle band | median width |
+|---|---|---|---|---|
+| ring roads + west streets (`5cfde60e`) | **0.0 %** (37.5 % "on screen" by bounding box only) | 0.0 % | 0.0 % | — |
+| **the avenue loop** (`d9b70dc4`, x = +-4, turning at z = +-86) | **13.4 %** | **14.8 %** | 10.6 % | **427 px** |
+
+In the OPENING view (the camera he starts with) it is seen, 881 px wide: `build/blimp-look/blimp_opening.png` --
+the lit envelope over the avenue top-right, its screen showing the arena channel's ad, the resized buses below.
+The first route was wrong for a reason worth keeping: from the bases the ring roads are walled by 24 m block rows
+his 17.5 m camera cannot see over; the avenue is the one corridor along his view. "Sometimes visible" is ~1 sample
+in 7 wherever he looks, and every time he starts a match.
+
+### Decisions (one line each)
+
+- **The bus's reference is a 45 ft motor coach (MCI D4505), 13.72 m x K = 9.70 m.** The US Marshals and the Bureau
+  of Prisons run MCI coaches as prison buses, so this is the real vehicle and S1's rule keeps holding
+  (`test_every_hull_is_its_reference_length_times_k`); his eye picked the proportions, recorded beside the box.
+- **`turret_mount`'s frame is the Tank node's own: +z is the REAR.** The contract text said "z forward"; the default it
+  quotes (+0.2, `tank.tscn`) has always been 0.2 m AFT of centre in Godot's frame (trip-up 2). Written down so nobody
+  flips a sign reading the contract.
+- **The Turret node is simulation, so R5 splits the mount** (agreed with the orchestrator and combat, 2026-09-22): x/z
+  move the pivot (rounds leave from under the drawn gun), y stays at `muzzle_height − 0.05` (the ceiling rule) and only
+  the turret/weapon ART rises to the ring.
+- **The blimp flies the ring roads and west streets, not the avenue:** along the avenue its flank screens would be
+  edge-on to a camera looking up the map; on the ring roads they face the bases.
+- **`vehicle_gallery.gd` still mirrors the old turret placement** (its own scaling differs too); left as it is, noted
+  here, not widened into this diff.
+
+### Findings
+
+- **The bus was not drawn at its box (the second half of "too small").** `Tank.shared_hull_size()` measured the
+  cyberpunk `tank.hull` (a `dozer_part` wrapper that builds its model in `_ready`) out of the tree, found no meshes and
+  returned the (2.4, 1.6, 3.6) fallback in silence, so the 2.40 x 2.40 x 8.62 bus drew **1.60 wide and 7.36 long**
+  (`make turret-probe`, laptop, `11ccc0a8`); the burner the same way. `test_units_scale`'s shared-art test multiplied
+  the slot's scale by that same wrong measurement, so it passed against itself. Fixed by measuring the wrapper's
+  `model_scene`; the TURRET's scale (sim: the muzzle is 3.2 m x it ahead of the pivot) keeps the (2.4, 1.6, 3.6) it
+  was always scaled against, by name (`Tank.TURRET_STANDARD`), so the fix is pre-registered UNMOVED. Its own commit.
+- **Every turret part's art already sits at an authored height above its pivot** (probe: the garbage truck's turret
+  base is at 3.37 m on its 3.70 m roof with the pivot at 1.09). So `turret_mount[1]` is the height of the turret ART's
+  origin, and each value's derivation records the probe's numbers (ring height − the art's authored base offset).
+- **arena's R3 floodlight finding, for the record:** the floodlight's geometry fits its collider (the head is at
+  15 m); what he saw a vehicle drive through was most likely the neon SIGN (no collider, a post and a 6.3 m board)
+  standing in the spawn zones on yard, pit and Terminus; arena moved it and asserts it. The other candidate is the
+  War Rig's trailer art folding outside its rigid 14 m collider (S2's accepted cost; combat's B3 stretch).
+
+### Answered for arena (R3, 2026-09-22)
+
+- Ad screen housing (down to 5.71 m, 7.80 x 1.92): **keep arena's widened 7.8 x 2.0 box**; no art change.
+- Wreck husk (drawn 3.2 x 3.3 in a 3.2 x 6.4 box): **arena shrinks the box to the art**; no regeneration.
+
+### Reviews owed to others
+
+- **show's per-window layer (merged to main at `2ecda325`; post-merge review, 2026-09-22): ACCEPTED, no requests.**
+  Idle look at level 1.0: `before_yard_wide_t16_3` vs `yard_wide_t16_3` differ by a mean of **0.38 / 255** in
+  luminance (show's own page frames, builder0) -- unchanged. Terminus capture cue: the windows fill magenta and amber
+  across the facade, the hulls and floor are untouched, and the bay widths (now from a CPU code in COLOR.a) read as
+  natural storey bays; the silhouette is unchanged. `MatchMood.control_changes()` added for show (`game/audio/`).
+
+- **terrain's `arena.terrain` slot (merged to main at `4ffb4c1a`; post-merge review, 2026-09-22): ACCEPTED**, two
+  non-blocking look notes sent to terrain. On its own frames (`~/projects/godot-terrain/build/terrain-shots`,
+  dry/wet pairs): the bridge deck with hazard-striped rails over a cyan-edged river and the hazard-ringed pit read at
+  play distance and sit in the art direction's stripe motif. Notes: (1) the water surface reads as a starfield /
+  nebula rather than oily night water -- darker, low-frequency ripple, a specular streak from the lamps; (2) the pit
+  floor is flat black with no depth cue -- a gradient darkening toward the centre or lit rim walls.
+
+### Requests to other streams
+
+- combat (via the orchestrator, answered): R5 design accepted; combat asks for a per-profile test that the muzzle
+  stays inside the unit's own box once mounts move the pivot — **to be written with the mount values (commit c).**
+

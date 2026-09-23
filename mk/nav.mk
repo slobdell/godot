@@ -121,3 +121,33 @@ endif
 				> $(BUILD_DIR)/nav-maps/$$map-busy$$busy.log 2>&1; echo ">> nav-fight-maps: $$map busy=$$busy done"' _ {}
 	@for f in $(BUILD_DIR)/nav-maps/*.log; do echo "$$(basename $$f .log) $$(grep -E '^NAV_FIGHT ' $$f | head -1 | cut -c1-40)"; done
 	@! grep -l "control FAILED" $(BUILD_DIR)/nav-maps/*.log || { echo ">> nav-fight-maps: a run REFUSED (its control failed): no numbers from it"; exit 1; }
+
+# Round 10 (nav item 2): the round's bar. One player squad ordered street to street across Terminus through control's
+# Orders on the DEFAULT path (spawn -> ring road -> west street -> plaza -> far ring road), a mixed Condemned squad and
+# a squad of War Rigs, each in its own process; WallContact counts every hull-wall contact by cause. DRIVE_SQUADS,
+# DRIVE_ARENA, DRIVE_LEG_TIME (not ARENA/SQUADS: lesson 44's globals).
+DRIVE_SQUADS ?= mixed rigs
+
+.PHONY: nav-terminus-drive
+nav-terminus-drive: import ## nav (round 10): the Terminus drive test -- a mixed squad and a War Rig squad driven street to street; wall contacts by cause, arrival per leg -> build/nav-drive/*.log, NAV_DRIVE lines (DRIVE_SQUADS="mixed rigs" DRIVE_ARENA=terminus DRIVE_LEG_TIME=90)
+	@rm -rf $(BUILD_DIR)/nav-drive && mkdir -p $(BUILD_DIR)/nav-drive
+	@for squad in $(DRIVE_SQUADS); do echo $$squad; done | xargs -P $(NAV_JOBS) -I{} sh -c '\
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/terminus_drive.gd -- \
+			--squad={} --arena=$(or $(DRIVE_ARENA),terminus) --leg-time=$(or $(DRIVE_LEG_TIME),90) $(NAV_FLAGS) \
+			> $(BUILD_DIR)/nav-drive/{}.log 2>&1; echo ">> nav-terminus-drive: {} done"'
+	@for f in $(BUILD_DIR)/nav-drive/*.log; do grep -E "^NAV_DRIVE_CONTROL|^NAV_DRIVE_LEG|SCRIPT ERROR|control FAILED" $$f || true; \
+		grep -E "^NAV_DRIVE " $$f | cut -c1-600 || echo ">> nav-terminus-drive: $$f has NO NAV_DRIVE line (the run did not finish)"; done
+	@! grep -l "control FAILED\|SCRIPT ERROR" $(BUILD_DIR)/nav-drive/*.log || { echo ">> nav-terminus-drive: a run REFUSED or errored: no numbers from it"; exit 1; }
+
+# Round 10: which nav arm moves the sim baseline. The sim-baseline match (SIM_HASH_READ's exact command) read once per
+# --nav-off arm in SIM_ARMS (a comma list per arm; "none" = the default path), so a pre-registered MOVED names its cause.
+SIM_ARMS ?= none notready press,inflate,nosestop
+
+.PHONY: nav-sim-arms
+nav-sim-arms: import ## nav: the sim-baseline match's state hash under each --nav-off arm in SIM_ARMS (attributes a baseline move to one mechanism)
+	@for arm in $(SIM_ARMS); do flags=""; [ "$$arm" = none ] || flags="--nav-off=$$arm"; \
+		hash=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json \
+			--rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3 $$flags 2>/dev/null | grep MATCH_RESULT | \
+			$(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
+		echo "NAV_SIM_ARM off=$$arm hash=$$hash"; done
+	@echo "NAV_SIM_ARM recorded: $$(grep "glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)" tests/baselines/sim_state_hash.txt)"

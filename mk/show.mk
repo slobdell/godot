@@ -14,7 +14,7 @@ SHOW_BUDGET ?= 6500
 # Three moments of the idle breathe, spread across the slowest channel's period so the strip shows it moving.
 SHOW_TIMES ?= 0,8.1,16.3
 # One frame per cue, so the lead sees the SHOW and not only the ambience.
-SHOW_CUES ?= fight,battle,last_stand,victory
+SHOW_CUES ?= fight,skirmish,battle,last_stand,victory
 # --block-cutaway=off draws the city whole. control cuts a city block's VisualSlot (visibility, never a uniform --
 # it reserves nothing on the block material) when one stands between the camera and what the camera is aimed at,
 # and at the lead's pose in a Terminus street that is often the nearest block. A frame shot to judge how the block
@@ -85,7 +85,7 @@ show-decisions: import ## S6: the two calls that are the lead's -- roofline vs o
 	@# 1. THE EDGES: one frame each, same arena, seed, pose and moment.
 	for style in parapet outline; do \
 		timeout $(SHOW_TIMEOUT) $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
-			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) --show-style=$$style \
+			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) --show-style=$$style --show-look-fixed-heading \
 			--show-look=$(CURDIR)/$(DECISIONS_DIR) --show-look-times=8.1 --show-look-cues=battle \
 			2>&1 | tee $(DECISIONS_DIR)/edges_$$style.log | grep -E '^SHOW_LOOK |SCRIPT ERROR' || true; \
 		grep -q SHOW_LOOK_DONE $(DECISIONS_DIR)/edges_$$style.log || { echo "show-decisions: edges/$$style did not finish"; exit 1; }; \
@@ -135,3 +135,44 @@ show-perf-layer: import ## S6: the show's cost measured WITHIN one perf-scene ru
 show-perf-pair: import ## S6: perf-scene with the show off then on, back to back in one slot -> build/show-off.json, build/show-on.json
 	$(MAKE) perf-scene PERF_NAME=show-off PERF_RES=$(SHOW_RES) PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS)) --no-show"
 	$(MAKE) perf-scene PERF_NAME=show-on  PERF_RES=$(SHOW_RES) PERF_FLAGS="--arena=$(firstword $(SHOW_ARENAS))"
+
+# DIAL 1 AS A STRIP (round 10, item 1): the SAME frozen moment at each band width -- the idle and the battle cue,
+# at the lead's pose -- with the show-off frame shot beside every one. One process, so the three arms differ in the
+# band and in nothing else. The dial is `floor`/`ceiling` of the `windows` and `shopfronts` channels in
+# `arenas/terminus.json` (`--show-band=K` scales both spans around their means without editing the file).
+BANDS_DIR ?= $(BUILD_DIR)/show-bands
+SHOW_BANDS ?= 1,2,3
+
+show-bands: import ## S6: dial 1 -- the window/shopfront band at 1x, 2x, 3x, same frozen frame, show-off beside each -> build/show-bands/ (make remote T=show-bands)
+	rm -rf $(BANDS_DIR) && mkdir -p $(BANDS_DIR)
+	timeout $(SHOW_TIMEOUT) $(GODOT) --path . --resolution $(SHOW_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+		--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) \
+		--show-look=$(CURDIR)/$(BANDS_DIR) --show-look-times=8.1 --show-look-cues=battle --show-look-bands=$(SHOW_BANDS) \
+		2>&1 | tee $(BANDS_DIR)/$(CLIP_ARENA).log | grep -E '^SHOW_LOOK |SCRIPT ERROR' || true
+	grep -q SHOW_LOOK_DONE $(BANDS_DIR)/$(CLIP_ARENA).log || { echo "show-bands: did not finish"; exit 1; }
+	@python3 tools/show_frame_gate.py $(BANDS_DIR)
+	@python3 tools/show_luma_gate.py $(BANDS_DIR)
+
+# ROUND 10: the effects in motion, at 30 fps so a strobe is sampled rather than missed (the round-9 rule for the
+# strobe clip, now for all of them: the chase climbs ~2.6 storeys a second and the fill one storey per 0.18 s).
+# -> build/show-clips/terminus_<cue>.mp4. NOT under build/show (show-frames deletes that folder).
+EFFECT_CLIPS ?= lull battle last_stand capture kill skirmish
+EFFECT_CLIPS_DIR ?= $(BUILD_DIR)/show-clips
+
+show-effect-clips: import ## S6: each round-10 window effect as a 6 s clip at 30 fps from the lead's pose -> build/show-clips/*.mp4 (make remote T=show-effect-clips)
+	rm -rf $(EFFECT_CLIPS_DIR) && mkdir -p $(EFFECT_CLIPS_DIR)
+	for cue in $(EFFECT_CLIPS); do \
+		timeout $(SHOW_TIMEOUT) $(GODOT) --path . --resolution $(CLIP_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+			--budget=$(SHOW_BUDGET) --no-pick-faction --cinematic --mute --arena=$(CLIP_ARENA) $(SHOW_FLAGS) \
+			--show-look=$(CURDIR)/$(EFFECT_CLIPS_DIR) --show-look-clip=$$cue \
+			--show-look-clip-frames=$(STROBE_CLIP_FRAMES) --show-look-clip-step=$(STROBE_CLIP_STEP) \
+			2>&1 | tee $(EFFECT_CLIPS_DIR)/$$cue.log | grep -E '^SHOW_LOOK_CLIP|SCRIPT ERROR' || true; \
+		grep -q SHOW_LOOK_DONE $(EFFECT_CLIPS_DIR)/$$cue.log || { echo "show-effect-clips: $$cue never finished"; exit 1; }; \
+		ffmpeg -y -loglevel error -framerate 30 -i $(EFFECT_CLIPS_DIR)/clips/$(CLIP_ARENA)_$${cue}_%03d.png \
+			-c:v libx264 -pix_fmt yuv420p $(EFFECT_CLIPS_DIR)/$(CLIP_ARENA)_$$cue.mp4; \
+		rm -f $(EFFECT_CLIPS_DIR)/clips/$(CLIP_ARENA)_$${cue}_*.png; \
+	done
+	@echo "show-effect-clips: $$(ls $(EFFECT_CLIPS_DIR)/*.mp4 2>/dev/null | wc -l) clips in $(EFFECT_CLIPS_DIR)"
+
+show-page: ## S6: the lead's verdict page from whatever show-frames / show-bands / show-effect-clips left in build/ -> build/show-page/index.html (pure Python; run after the remote targets)
+	python3 tools/show_page.py $(BUILD_DIR)

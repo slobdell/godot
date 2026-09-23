@@ -642,6 +642,83 @@ range work lands: syndicate vs condemned on boulevard vs yard; gangs vs law on t
 swarm).
 
 
+## Streets are lanes (R4, round 10): what every declared lane must keep
+
+**The lead, playing the Terminus (2026-09-20):** *"there streets are blocked with these shipping containers so
+there's almost no passageway."* The round-8 layout put furniture IN the streets "so a 20 m street is a fight and
+not a corridor"; measured, every Terminus lane was 0.00 m at its narrowest (a container on its centre line).
+
+**The rule, asserted in `make check` by `tests/test_arena_lanes.gd` over `ArenaLanes` (`game/arena/arena_lanes.gd`):**
+
+- **Width.** Along every declared lane (sampled each metre), the free span across it -- every collider counts,
+  0.9 m barricades included, and the wall -- minus 2 × the live bake radius is at least **2 × the roster's widest
+  hull**. The widest hull is READ from `Units`: it is **`syn_artillery` at 4.07 m**, not the War Rig's 3.32 m that
+  contract R4's text quotes, so the bar is **8.14 m drivable, 12.14 m physical** at the 2.0 m bake. (The contract's
+  principle, "the widest hull", is what the code implements; the number in its prose was the second-widest.)
+- **Corners (C5).** At each lane's own bends (at their authored angle) and at every crossing of two lanes (certified
+  for a right-angle turn, `ArenaLanes.JUNCTION_TURN_DEG`: sharper than that at a junction is a three-point turn),
+  the clear disc around the vertex is at least `r_eff = r_a + R_min·(sec(Δψ/2) − 1)`, with `R_min` the rig's 12.0 m
+  and `r_a` the width bar's half (6.07 m). A 90° junction needs 11.04 m.
+- **Who is asserted.** Every layout except `ArenaLanes.REPORT_ONLY` (boneyard, boulevard, pit, yard: maps he has
+  not complained about; their short lanes are listed below and in the arena brief's Status, not redesigned) and
+  fixtures (the maze is single-file on purpose). **A new map is asserted by default** (terrain's bridges, R9).
+- **The report.** `make arena-report` prints `LANE` and `CORNER` lines for every layout and exits 1 on an asserted
+  short lane (`LANE_FAIL`/`CORNER_FAIL`); the round-9 corridor WATCH line stays a watch line for the open field.
+  `tools/test_arena_lanes.py` pins the Python copy to the GDScript's Terminus numbers.
+- **Authored chokepoints** live only OFF declared lanes and are named here. **The Terminus has none** since round
+  10: its two (`avenue mouth` at (0, 42), `west crossing` at (−70, 0)) stood on streets and were dropped.
+
+**The Terminus after R4** (`tools/make_arenas.py`, lanes and furniture): containers stand flush against block faces
+parallel to the street (kerb position = face ± 1.22 m); lamps moved to the kerbs, set in so R3 can widen the box;
+wrecks in lots; the form-up line and the avenue-mouth barricades are gone. Lanes declared: the avenue, west street,
+**east street** (the west street's mirror, named by `mirror_name`), the ring road ×2, **plaza crossing west/east**.
+
+| lane | round 9 | round 10 |
+|---|---|---|
+| the avenue | 0.00 m | 17.56 m physical, 13.56 drivable |
+| west street / east street | 0.00 m | 16.40 m, 12.40 |
+| the ring road ×2 | 0.00 m | 22.00 m, 18.00 (bounded by blocks only) |
+| plaza crossing west / east | (not declared) | 22.00 m, 18.00 |
+
+**It also READS passable (arena item 3, research C11; `LaneReadability`, `tests/test_arena_lane_readability.gd`).**
+Per lane, the narrowest throat is projected to a 1920 x 1080 frame from his pose (with `clear_pose` and the
+`BlockCutaway` applied, as the game does) and its ground-contact line traced back to the camera through the
+colliders. At his default heading every Terminus throat is 100% visible, and the visible width minus the widest
+hull's projected width is +329 to +472 px (the ring road, across the screen, is the narrowest on screen: 405-439 px
+for a 22 m gap, against 614 px for the avenue's 17.56 m in depth: C11's foreshortening). The rule that got there:
+**no furniture at either kerb of a street stretch bounded by buildings** -- on the near kerb it hides the throat from
+his camera, and under 180° symmetry the far kerb's mirror is the other ring road's near kerb. The ring-road lamp at
+(−35, 39.4) hid 23% of the throat this way; it and a 20 ft box moved to lots.
+
+Every junction passes (narrowest: the plaza crossings meeting the ring road at (±12, ±30), 12.00 m against 11.04).
+Lamps: the ring-road lamp is on the lot at (−55, 45) facing north across the road, the street lamp on the east
+street's west kerb (62.4, 6); the plaza lamp (14, 14) was never on a lane.
+Two round-8 authoring bugs went with the old list: three prop pairs authored on BOTH halves (so each mirror landed
+on another authored prop: two containers in one place), and form-up containers at x = ±42 standing inside the
+z = 62 blocks' footprints.
+
+**The before/after pair at his pose:** `make remote T=terminus-streets` (the round-9 layout is frozen in
+`tests/arena/before/terminus_round9.json`) then `make terminus-streets-page` → `build/terminus-streets/index.html`.
+
+**The other maps (item 5, reported, not changed; same bar):**
+
+| map | lanes short of the bar | where |
+|---|---|---|
+| yard | 7 of 7, each 0.00 m (a collider on the lane's line) | centre (0, 81), inner west (−34, 74), outer west (−67, 53), far west (−100, 37), and mirrors |
+| pit | south gate 0.00 m; west gate corners 4.88 m clear vs 8.37 m | (0, 81); corners at (±70, ±40) |
+| boneyard (cut) | 4 of 4, each 0.00 m | (4, 45), (−3, 61), (−68, 50), (67, 70) |
+| boulevard (cut) | 6 of 6, each 0.00 m (the centre avenue since the ad screen's box became 7.8 × 2.0, R3) | (∓4, 31), (−60, 81), (60, 61), (−98, 66), (98, 31) |
+
+**Readability on the other maps** (`LaneReadability` at his default heading, `make terminus-streets-page` →
+`tests/arena/lane_read_probe.gd`): every yard lane, boneyard and boulevard lane and pit's south gate is "shut on its
+line" (a collider on the lane: nothing to see through). **Pit's west gate is 18.06 m wide but only 16% of its
+throat is visible from his camera** (margin −15 px against the widest hull): open, and it reads shut. Pit's flanks
+read wide open (+777 / +959 px).
+
+A 0.00 m reading means a collider stands on the lane's centre line. On a map whose lanes were drawn as AI hints
+through its cover (yard's run between container walls) that can be the lane line's fault rather than the map's;
+deciding which is a redesign question for a map he has complained about, and he has not.
+
 ## The Terminus, and the trap that kept the city blocks off every map (round 8)
 
 feel built `block` (40 x 24 x 40, `prop.block`/CityBlock) in round 7 — chamfered corners, bevelled roof edges, neon
@@ -839,3 +916,64 @@ triangle-count criterion; whether `cell_size` 0.5 interacts with large flat span
 when the bake is **not** the half-plus-mirror arrangement (every test above used the shipping bake path). **The
 4 m slab tiling in `Arena._obstacle_shapes()` is a workaround, not an explanation**, and C2 should not assume the
 baker behaves as documented until someone knows why this happens.
+
+## Terrain maps: water, pits and bridges (terrain stream, round 10)
+
+> Owner: terrain (`game/arena/arena_terrain.gd`, `game/theme/arena_kit/terrain/`, `tools/terrain_maps.py`,
+> `tools/arena_terrain.py`, `tools/terrain_measure.py`, the `terrain-*` targets). The lead asked twice; the round-7
+> mechanism existed with no art and no map, which is why he never saw it.
+
+**The rule every map here is built to:** terrain makes risk, objectives make reason, the prize goes where the risk
+is. Every terrain map carries a mirrored objective pair (R9), and each side's CONTESTED objective sits at the far
+mouth of a crossing. `tools/terrain_maps.py` refuses to write a terrain map without one.
+
+**Every terrain map has a DRY TWIN** (`<name>_dry.json`, `fixture: true`, identical but `terrain: []`): the null
+arm of the paired series and the before-frame of every picture. Measure the map AND its twin; a number without its
+twin's beside it does not say what the terrain did.
+
+### What the mechanism gained in round 10
+
+| Change | Why |
+|---|---|
+| A rim is cut only by a deck that crosses THAT edge | round 7 cut an edge wherever a deck overlapped its axis: a second river got a gap onto open water at the first one's bridge |
+| **Bridge rails** (`rail_slabs`, 0.9 m, on the deck along every side over water) | without them a hull shoved sideways left the deck into the pan for the rest of the match |
+| Rims and rails are **navigation sources** (R3) | the mesh reached 0.8 m past the rim's outer face, so a route along a bank scraped the rim |
+| `MIN_DECK_M` = R4 bar + 2 × bake radius + 2 rails = **13.14 m** | round 7's 7 m was the maze's single-file gate; a test reads `Units` and fails when a wider hull lands (it caught 4.07 m) |
+| `ArenaTerrain.build()` owns floor, rims, rails, pans, art | `Arena._build_terrain()` is a one-line delegate |
+| `arena_report` sees terrain (`tools/arena_terrain.py` hook) | it routed straight through rivers: every figure on a river map was measured as if the river were floor |
+
+The Python mirror of the rim/rail geometry is pinned: `tests/fixtures/terrain_golden.json` is reproduced by BOTH
+`tests/test_terrain_golden.gd` and `tools/test_arena_terrain.py` (`make terrain-pytest`).
+
+### The art (`arena.terrain`, `game/theme/arena_kit/terrain/`)
+
+Five surface kinds, one draw each, no lights, no textures. **Water and pits are interior-mapped** (van Dongen 2008):
+the floor is one plane at y = 0 that feel owns, so a real sunken channel would mean cutting it; instead a quad just
+above the floor traces each view ray into the footprint's imaginary box and shades the wall, water line or pan it
+hits. From his 21° camera the far bank's wall is in view, so the channel reads as cut into the arena. Water reflects
+the venue's neon (fresnel, a horizon band, ripples on one animated scalar `flow`); a pit is a deep shaft with a red
+glow at the bottom. Kerbs and rails are built from the SAME boxes as the colliders.
+
+### Measured (laptop, python `arena_report` after CP2's instrument fixes, `terrain_measure`; static geometry, no match)
+
+| map | `centre_sees` | decision spread | contested route, plain (green / rust) | R4 lanes |
+|---|---|---|---|---|
+| **crossing** | **0.29** | **0.55** | **185 m** / 112 m | west bridge + mirror: pass (13.0 m physical over the deck with rails) |
+| crossing_dry | 0.46 | 0.30 | 148 m / 112 m | (fixture: reported only) |
+| **sumps** (the brief's "Pits"; renamed so `ARENA=pits` never sits beside the kept `pit`) | **0.34** | 0.35 | 134 m / 94 m | catwalk, west causeway, far causeway + mirrors: pass |
+| sumps_dry | 0.34 | 0.35 | 134 m / 94 m | (fixture) |
+
+- **On the Crossing the river IS the decision:** spread 0.55 against the dry twin's 0.30, the contested route grows
+  148 → 185 m, and the river halves what the middle sees (0.46 → 0.29).
+- **On the Pits the static instruments cannot see the pits:** routes, spread and centre are identical wet and dry,
+  because the chain does not lengthen the short route, it EXPOSES it (the causeways are open to the far lips). Whether
+  that changes play is the paired series' question.
+- **Two instrument findings, fixed by arena in CP2:** `standing_point` snapped 12 m, so the Pits' eye stood inside the
+  pump house and read 0.00 (it is 0.48 before the corner stacks, 0.34 after); `decision_report` routed the enemy with
+  green's exposure field, flipping the Crossing's spread 0.45 ↔ 0.03 on one alley.
+- **Lanes are measured WITH the rims and rails** (`terrain_measure.lanes_with_terrain`, run by `check_terrain`, which
+  refuses to write a failing map); `ArenaLanes` sees the carved water but not the rims or rails, so it over-reads a
+  lane along a bank by up to 2.4 m. The lanes were found by a clearance-grown A* and simplified, not drawn by hand
+  (the first hand-drawn ones clipped a block corner and two barricades 10 m apart).
+- Pits' 0.34 sits between the Pit he kept (0.30) and Boneyard he cut (0.40). A kill-zone map is open across its pits
+  by design; his eye decides.
