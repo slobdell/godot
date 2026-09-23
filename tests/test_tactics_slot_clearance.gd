@@ -47,3 +47,31 @@ func test_a_slot_by_a_terminus_block_is_grounded_where_the_hull_fits() -> void:
 		assert_eq(after, 0, "and all of it, where the street is wider than the hull's envelope (%s)" % row[1])
 	print("MEASURE slot_clearance " + " | ".join(rows))
 	lab.dispose()
+
+
+
+func test_a_crew_holding_an_element_slot_sends_its_leash_with_every_move() -> void:
+	# nav's item 6: a move_to carries `leash [x, z, r]` (the element slot and TankBrain.slot_leash) while the crew has a
+	# slot, so the mover can clamp its goal into the leash.
+	var scenario := AiScenario.create(self)
+	var names: Array = []
+	for i in 3:
+		names.append(String(scenario.brain_tank(Match.Team.GREEN, "Green_L_%d" % (i + 1),
+				Vector3(-10.0 + i * 10.0, 0.0, 60.0), 0.0, {}, "tank").name))
+	var elements := Elements.install(scenario.game_match, scenario.orders())
+	await scenario.start()
+	var alpha := elements.form(names, "Alpha")
+	alpha.assign({"verb": "move", "to": [0, 20], "drills": false})
+	var leashed := 0
+	for i in SimClock.TICK_RATE * 3:
+		await scenario.step()
+	for unit_name: String in names:
+		var brain := scenario.brain_of(scenario.game_match.tanks.get_node(unit_name) as Tank)
+		var order: Dictionary = brain.move_order
+		if String(order.get("type", "")) == "move_to" and order.has("leash"):
+			var leash: Array = order["leash"]
+			assert_eq(leash.size(), 3, "%s: the leash is [x, z, r]" % unit_name)
+			assert_true(float(leash[2]) >= TankBrain.SLOT_LEASH - 0.001, "%s: its radius is the slot leash" % unit_name)
+			leashed += 1
+	assert_true(leashed >= 1, "at least one crew driving to its slot carries the leash (%d of 3)" % leashed)
+	scenario.dispose()

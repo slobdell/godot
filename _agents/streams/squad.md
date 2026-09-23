@@ -144,6 +144,40 @@ room (B14) and the key breaks the rest.
 
 _(the worker keeps this current; newest first within each part)_
 
+### REPORT (round 10, 2026-09-22 evening) — read this first
+
+**Every backlog item is done or written up; the stretch items were not started (below).** Merged to main: `e4d5e3f3`
+(at `08319e59`) and the pitch set `f27bd321` (at `b1693901`, baseline neutral). The post-merge set (6d, `for_unit`,
+the harness `Tank.place`, the seeded defile probe) is checking on builder0 at `18c7f9bc`; its hash and lines go to
+the orchestrator and into the line below when it lands.
+
+| # | item | state | the number (commit, machine) |
+|---|---|---|---|
+| 1 | transient element API | WITHDRAWN by the lead | — |
+| 2 | R2: a player's task re-orders every crew | DONE, merged | 3 of 4 crews stale before → all re-derived within 2 ticks, every phase (`2d5945ac`, laptop); control's repath-test 6/7 on main, the 7th reds only on dead crews |
+| 3 | settle time | DONE for forward/side; back NOT met | 8 jittered seeds, builder0: stopped median fwd 4.2 / side 4.9 s (default), 5.8 / 9.3 s (Terminus); back 15.8 / 16.2 s (the column's rear presses the arena edge). COMPLETED ≤ 2.8 s fwd/side |
+| 4 | slot pitch from the turning envelope | DONE, merged | diagonal + 0.30 m; bus 10.42 m turns clear +0.27 / +0.29; deploy kept at the width floor (known cost below) |
+| 5 | base-of-fire scenario | DONE, merged | re-specified twice with the reason (HOLD not attack; the game's own `lof` lane check): bus tree lane clear 11.8 s, first shot +0.2 s |
+| 6a | `_is_clear` on each hull's own axes | DONE, merged | 90° neighbour: old 3.6 m clear, true 0.5 m |
+| 6 | Delta's margin | DISSOLVED | worst Delta crew 22.2 m (round 9) → **6.0 m** (`18c7f9bc`, laptop); all five squads ≤ 11.5 m, 0 of 30 off slot |
+| 6b | ORBIT (combat's finding) | DONE, merged | engine deck 0/13 → 27/29 (tank), 47/50 on the bus with a clean teleport |
+| 6c | slot drift on the bus | RESOLVED by the harness fix | 16.1 m → 15.0 m (bar 16.0) with `Tank.place`: the red was the grid-slot tick |
+| 6d | off-mesh slots (nav) | DONE, checking | nav's three Terminus points: hull reach off mesh 5/8/5 of 16 → 0/16; `SlotGround.for_unit` is the one grounding call (control targets it) |
+| 7 | stretch (A10 `fixed`, A8 switch, tube gate, duel bar, A9 cost) | NOT STARTED | the round went to his playtest items and the CP3 reads; each is a research row, not a one-evening item |
+
+**Known issues (carried):** the deploy stands packed at the width floor, so squads' first dressing turns clip (bus
+−0.27 m at 4.90 m) → round 11: a checkerboard-staggered deploy (arena's option (a)). A 20 m BACK move from the spawn
+settles in ~16 s (a 40 m column against the arena edge). Drills-ON moves settle in 13–45 s (herringbone halt).
+Cover-peeking: reload windows show no effect with a clean teleport (paired 2/0/14 of 16) — REASON'd red. One wheeled
+crew creeps 0.5–1.8 m/s for ~15 s after its order completes. Only 1 of 5 wheeled hulls crosses the maze defile in
+40 s (two seeds; read with more).
+
+**What to playtest:** `make skirmish ARENA=terminus`: right-click a moving squad elsewhere (every crew turns at once);
+right-drag a heading on the same spot (the leader's order takes it); order a squad 20 m to its side (it arrives in
+~3 s and stops in ~5–9 s without crews crossing); order squads beside the Terminus blocks (slots stand clear of the
+walls once 6d and control's grounding are on main). `make squad-settle ARENA=terminus DIR=side TRACE=on` prints
+the three times and a per-second trace.
+
 **Plan (2026-09-22, in order; one-line reasons):**
 1. ~~Transient-element API~~: withdrawn by the lead (R1 is control's UX item). Nothing to build; `Element.state()` keeps its split.
 2. **R2, squad's half**: FIRST, because the lead can't judge anything until a right-click is obeyed.
