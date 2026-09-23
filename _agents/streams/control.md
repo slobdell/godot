@@ -155,6 +155,10 @@ _Updated 2026-09-22 evening, worker session 1: **FINAL REPORT.**_
 > not re-baked), `scenario_fire_discipline` parked friend, `scenario_elements` formation slot. None is control's. When
 > main is green, merge main and re-run `REMOTE_SLOTS=5 make remote T=check`, then name the hash.
 >
+> **Update:** the orchestrator merged `e55d1143` to main, and named the three reds as main's. The canal spawn list was
+> re-baked at `1ec3f391`; the formation slot is fixed by `Tank.place` at `4c5b1671`; the parked friend is combat's, with
+> its fix next. The round is closed for control.
+>
 > **Every backlog item is done**, plus both stretch items, B7's pin phase, the objective rings (terrain's report), and
 > the right-click goal grounding (nav's report). Nothing waits on the lead.
 
