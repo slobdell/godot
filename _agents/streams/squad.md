@@ -305,6 +305,19 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   0.87 × diagonal) removes it.**
 - `a8789bea` the `squad_incoming` disc site (no move).
 
+### After the pitch merge (tip, on top of the candidate `f27bd321`)
+
+- **Baseline, corrected:** the pitch merge set was pre-registered MOVES; **measured UNMOVED relative to CP3**
+  (`aac14c6704fbac39` at `9e075524` is exactly feel's CP3 tree alone), because the deploy stays at the width floor and
+  the baseline match issues no formation orders. The candidate `f27bd321` (with main `f29c5b7c`, baseline
+  `11c479c3bec77082` adopted) should read it unmoved.
+- `92c1d128` 6d, clearance grounding + the follow station grounded (baseline pre-registered MOVES).
+- `c0040ae4` `AiScenario._place` via `Tank.place` (arena's finding). **It changed three verdicts** (laptop, attributed
+  by backing each change out): engine-deck 7/12 FAIL → 47 deck hits of 50 PASS; formation-slot drift 16.1 → 15.0 m
+  PASS; cover-peeking 5-vs-4 PASS → **4 vs 4 FAIL**. The engine-deck and slot "behaviour on the bus" REASONs I gave
+  were grid-slot artefacts and are WITHDRAWN. Cover-peeking's one-hit evidence came from the slot tick: the
+  reload-window behaviour shows no effect with a clean teleport. Known issue, to re-measure on paired seeds.
+
 ### Requests to other streams
 
 - **control (R2), sent via the orchestrator 2026-09-22:** `Orders._same_order` drops an ELEMENT re-issue whose only
