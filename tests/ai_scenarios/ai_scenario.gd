@@ -175,8 +175,10 @@ func shots_by(tank: Tank) -> int:
 
 
 func _place(tank: Tank, position: Vector3, yaw: float) -> void:
-	tank.global_position = position
-	tank.rotation.y = yaw
+	# Tank.place, not two writes (round 10, arena's finding): a teleport is node + physics body + interpolation +
+	# `sync_position`, and writing only the first two left the body at its grid slot for a tick, so a scenario could
+	# depend on where the spawn grid put a unit before the scenario moved it.
+	tank.place(position, yaw)
 	var ticks: Array = []
 	shots[String(tank.name)] = ticks
 	tank.fired.connect(func(_muzzle: Vector3, _direction: Vector3) -> void: ticks.append(game_match.tick))

@@ -144,6 +144,72 @@ room (B14) and the key breaks the rest.
 
 _(the worker keeps this current; newest first within each part)_
 
+### REPORT (round 10, 2026-09-22 evening) — read this first
+
+**For the lead, in play terms (everything below is on main at `4c5b1671`):**
+
+- **"I right-clicked and they didn't respond."** Two mechanisms in the squad layer, both fixed. (1) A squad re-planned
+  only on its own slot in a 0.1 s cycle and then kept any crew whose new spot was within 8 m of its old one, so most
+  crews stayed on their old `follow`. Now your order reaches every crew on the next tick. (2) Crews that had arrived
+  and gone idle were never handed their place in the new move; now they are. Together with control's input fixes,
+  control's re-order test passes on every living crew.
+- **Squads settle fast.** A 20 m move forward or sideways now stops in about 4–9 s (it was up to 20 s), because
+  crews are seated by who has the least driving, not with the leader forced to the front, so nobody drives through
+  a squad-mate. Moving 20 m BACKWARDS from the spawn is still slow (~16 s).
+- **Room to turn.** Formations space vehicles by their full diagonal plus 0.3 m, so a squad can turn to a new
+  heading without hulls clipping (measured, not assumed). The spawn keeps the old tight spacing so big armies fit
+  their zone; the cost is that a squad's FIRST turn from the spawn can clip. Round 11 fixes it with a staggered deploy.
+- **Formation slots no longer land inside buildings.** A slot is pushed to where the whole vehicle fits, not just
+  its centre, and the same call is what right-click moves use (control's side).
+- **Test honesty.** The scenario harness now places units the way the game does; two failures I had blamed on the
+  bigger bus were artefacts of the old placement (those explanations are withdrawn), and one "win" (peeking out of
+  cover while the enemy reloads) turned out to have no measurable effect.
+- **Numbers with a caveat:** the maze-crossing (defile) numbers from round 9 were single runs; the probe now varies
+  its seed.
+
+**Round 11 candidates (squad's):** a staggered deploy that removes the first-turn clip; the backwards move from the
+spawn (a 40 m column against the arena edge); moves with battle drills on settle in 13–45 s; the wheeled crew that
+creeps after arriving; the reload-window behaviour (no measured effect); the stretch rows (A10, A8, tube gate).
+
+**Every backlog item is done or written up; the stretch items were not started (below).** Merged to main: `e4d5e3f3`
+(at `08319e59`) and the pitch set `f27bd321` (at `b1693901`, baseline neutral). The post-merge set (6d, `for_unit`,
+the harness `Tank.place`, the seeded defile probe) is checking on builder0 at `18c7f9bc`; its hash and lines go to
+the orchestrator and into the line below when it lands.
+
+**MERGE HERE (post-merge set): `18c7f9bc`**, builder0: `make check exited 2`, 1661 passed / 2 failed (main's
+`test_spawn_grid` baked-list red, arena's; parked-friend, combat's), **sim-baseline `7dcc52f547f03d3f` UNMOVED**
+(6d pre-registered MOVES, measured unmoved: the baseline match's CPU slots never sit against a wall), determinism
+`ad35f217e1862ae3`, scenarios 41,3 (cover-peeking REASON'd; parked-friend combat's; `scenario_perf` 22259 µs/tick
+on a loaded builder0, NOT 6d: laptop A/B tip 17567 / no follow grounding 17690 / no 6d 17940 µs). After it:
+`e602025c` the element leash on move_to (nav's item 6, inert until nav reads it).
+
+| # | item | state | the number (commit, machine) |
+|---|---|---|---|
+| 1 | transient element API | WITHDRAWN by the lead | — |
+| 2 | R2: a player's task re-orders every crew | DONE, merged | 3 of 4 crews stale before → all re-derived within 2 ticks, every phase (`2d5945ac`, laptop); control's repath-test 6/7 on main, the 7th reds only on dead crews |
+| 3 | settle time | DONE for forward/side; back NOT met | 8 jittered seeds, builder0: stopped median fwd 4.2 / side 4.9 s (default), 5.8 / 9.3 s (Terminus); back 15.8 / 16.2 s (the column's rear presses the arena edge). COMPLETED ≤ 2.8 s fwd/side |
+| 4 | slot pitch from the turning envelope | DONE, merged | diagonal + 0.30 m; bus 10.42 m turns clear +0.27 / +0.29; deploy kept at the width floor (known cost below) |
+| 5 | base-of-fire scenario | DONE, merged | re-specified twice with the reason (HOLD not attack; the game's own `lof` lane check): bus tree lane clear 11.8 s, first shot +0.2 s |
+| 6a | `_is_clear` on each hull's own axes | DONE, merged | 90° neighbour: old 3.6 m clear, true 0.5 m |
+| 6 | Delta's margin | DISSOLVED | worst Delta crew 22.2 m (round 9) → **6.0 m** (`18c7f9bc`, laptop); all five squads ≤ 11.5 m, 0 of 30 off slot |
+| 6b | ORBIT (combat's finding) | DONE, merged | engine deck 0/13 → 27/29 (tank), 47/50 on the bus with a clean teleport |
+| 6c | slot drift on the bus | RESOLVED by the harness fix | 16.1 m → 15.0 m (bar 16.0) with `Tank.place`: the red was the grid-slot tick |
+| 6d | off-mesh slots (nav) | DONE, checking | nav's three Terminus points: hull reach off mesh 5/8/5 of 16 → 0/16; `SlotGround.for_unit` is the one grounding call (control targets it) |
+| 7 | stretch (A10 `fixed`, A8 switch, tube gate, duel bar, A9 cost) | NOT STARTED | the round went to his playtest items and the CP3 reads; each is a research row, not a one-evening item |
+
+**Known issues (carried):** the deploy stands packed at the width floor, so squads' first dressing turns clip (bus
+−0.27 m at 4.90 m) → round 11: a checkerboard-staggered deploy (arena's option (a)). A 20 m BACK move from the spawn
+settles in ~16 s (a 40 m column against the arena edge). Drills-ON moves settle in 13–45 s (herringbone halt).
+Cover-peeking: reload windows show no effect with a clean teleport (paired 2/0/14 of 16) — REASON'd red. One wheeled
+crew creeps 0.5–1.8 m/s for ~15 s after its order completes. Only 1 of 5 wheeled hulls crosses the maze defile in
+40 s (two seeds; read with more).
+
+**What to playtest:** `make skirmish ARENA=terminus`: right-click a moving squad elsewhere (every crew turns at once);
+right-drag a heading on the same spot (the leader's order takes it); order a squad 20 m to its side (it arrives in
+~3 s and stops in ~5–9 s without crews crossing); order squads beside the Terminus blocks (slots stand clear of the
+walls once 6d and control's grounding are on main). `make squad-settle ARENA=terminus DIR=side TRACE=on` prints
+the three times and a per-second trace.
+
 **Plan (2026-09-22, in order; one-line reasons):**
 1. ~~Transient-element API~~: withdrawn by the lead (R1 is control's UX item). Nothing to build; `Element.state()` keeps its split.
 2. **R2, squad's half**: FIRST, because the lead can't judge anything until a right-click is obeyed.
@@ -304,6 +370,43 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   a checkerboard-staggered deploy (arena's option (a): 1 × diagonal across, ranks offset half a pitch, depth ≈
   0.87 × diagonal) removes it.**
 - `a8789bea` the `squad_incoming` disc site (no move).
+
+**MERGE HERE: `f27bd321`** (the pitch merge set + main `f29c5b7c`), builder0: `make check exited 2`, 1655 passed /
+1 failed (parked-friend, combat's), **sim-baseline `11c479c3bec77082` UNMOVED**, determinism `cd43435b56b09acf`,
+scenarios 42,2 (cover-peeking REASON'd, parked-friend combat's).
+
+### After the pitch merge (tip, on top of the candidate `f27bd321`)
+
+- **Baseline, corrected:** the pitch merge set was pre-registered MOVES; **measured UNMOVED relative to CP3**
+  (`aac14c6704fbac39` at `9e075524` is exactly feel's CP3 tree alone), because the deploy stays at the width floor and
+  the baseline match issues no formation orders. The candidate `f27bd321` (with main `f29c5b7c`, baseline
+  `11c479c3bec77082` adopted) should read it unmoved.
+- `92c1d128` 6d, clearance grounding + the follow station grounded (baseline pre-registered MOVES).
+- `c0040ae4` `AiScenario._place` via `Tank.place` (arena's finding). **It changed three verdicts** (laptop, attributed
+  by backing each change out): engine-deck 7/12 FAIL → 47 deck hits of 50 PASS; formation-slot drift 16.1 → 15.0 m
+  PASS; cover-peeking 5-vs-4 PASS → **4 vs 4 FAIL**. The engine-deck and slot "behaviour on the bus" REASONs I gave
+  were grid-slot artefacts and are WITHDRAWN. Cover-peeking's one-hit evidence came from the slot tick: the
+  reload-window behaviour shows no effect with a clean teleport. **Paired series (laptop, 16 seeds, x3 plain vs x4
+  reload windows, hits taken over 30 s): x4 fewer on 2 seeds, more on 0, TIE on 14; totals 64 / 62.** The feature is
+  at most marginal in this duel, so the scenario's claim is not supported: it stays a REASON'd red rather than being
+  re-shaped to pass on a 2-of-16 effect. Next step, if the feature is to earn its keep: find what the peek timing
+  does NOT change (the gun's aim model? cover exit timing?) with a positive control.
+
+### Instruments: what their numbers are
+
+- **`make squad-defile` ignored its seed until `defile_probe`'s start jitter (round 10, nav's finding): every defile
+  number published before it, the round-9 41.4 s wheeled arrival dispersion included, is n = 1 per arm, not a
+  sample.** Now ±1.5 m / ±10° per seed (laptop: wheeled seeds 3 and 4 first arrival 14.4 s vs 25.3 s; only 1 of 5
+  wheeled hulls arrives inside 40 s on either, a finding to read with more seeds).
+- `make squad-settle` got the same fix earlier (`6d6d6264`); its first series (six identical seeds) is superseded.
+
+### Reviews
+
+- **arena's `58540dd7`, `tests/test_match_spawns_and_results.gd::test_the_grid_fills_the_front_row_before_the_rows_
+  behind_it`: ACCEPTED.** "Front row first within each band" over `Match.turning_clear_slots()` is the right restatement
+  of the property once the grid fills its turning-clear cells first (row-major put slots 0 and 1 7.5 m apart, inside
+  the bus's 10.42 m envelope). Slot 0 still asserted in the front row. Nit, not blocking: the failure message names
+  `slot - 1` as the previous slot, which is only true when the turning-clear slots are consecutive.
 
 ### Requests to other streams
 
