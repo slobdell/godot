@@ -57,8 +57,13 @@ func test_the_hull_floor_is_the_widest_width_and_the_longest_length() -> void:
 			widest = maxf(widest, minf(float(hull[0]), float(hull[2])))
 			longest = maxf(longest, maxf(float(hull[0]), float(hull[2])))
 		var floor_v := TacticsFormation.hull_floor(members)
-		assert_near(floor_v.x, widest + TacticsFormation.HULL_CLEAR_M, 0.001,
-				"%s: across the heading a slot is the widest hull plus clear ground" % faction)
+		# Round 10 (item 4): across the heading the floor is also the TURNING ENVELOPE, the diagonal of the widest width
+		# and the longest length + DRESS_MARGIN_M, because a dressing formation turns its hulls together and each then
+		# projects its full diagonal on the line between them (tests/test_tactics_pitch.gd measures it).
+		var across := maxf(widest + TacticsFormation.HULL_CLEAR_M,
+				Vector2(widest, longest).length() + TacticsFormation.DRESS_MARGIN_M)
+		assert_near(floor_v.x, across, 0.001,
+				"%s: across the heading a slot is the widest hull plus clear ground, or its turning envelope" % faction)
 		assert_near(floor_v.y, longest + TacticsFormation.HULL_CLEAR_M, 0.001,
 				"%s: along the heading it is the longest hull plus clear ground" % faction)
 		assert_true(floor_v.y > floor_v.x, "%s: vehicles are longer than they are wide, so the floor is anisotropic"
