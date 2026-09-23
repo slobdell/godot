@@ -6,7 +6,7 @@
 > still in force where it is not superseded here; rounds 1–9 are archived in `streams/archive/round1..9/`; the
 > round-6 material further down (contracts N1–N7, ownership, invariants) is still in force where it is not superseded.
 
-## Round 10: the nine streams (launched 2026-09-20, evening)
+## Round 10: the nine streams (launched 2026-09-20 evening, run 2026-09-22, CLOSED 2026-09-23; briefs in `streams/archive/round10/`)
 
 **Goal: the playability blockers he named, in the order they block him.** His words are in
 [`game_design.md`](game_design.md) *Round 10 direction*. He cannot judge unit intelligence until a right-click is obeyed

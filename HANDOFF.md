@@ -42,10 +42,7 @@ docs commits are merged):
     for s in control squad arena nav combat feel show announcer terrain; do git branch -D stream/$s; done   # after the ancestor check
     git branch -D stream/terrain-uid
 
-before which the orchestrator archives the nine briefs to `_agents/streams/archive/round10/` with banners, rescues any
-git-ignored payload (the announcer masters are already in the main checkout's `assets/announcer/masters/`; feel's
-Meshy downloads under `assets/incoming/` if any; every worktree's `build/` frames are in `~/Desktop/round10-morning/`),
-and writes the round's lessons into `orchestration.md`.
+**DONE at 02:30 (2026-09-23): the nine briefs are archived to `_agents/streams/archive/round10/` with banners and every link fixed; every git-ignored payload is rescued (the announcer masters and the 36 arena-name masters in `assets/announcer/masters/`, feel's Meshy downloads in `assets/incoming/meshy/`, every worktree's frames and pages in `~/Desktop/round10-morning/`); the round's lessons 202–213 are in `orchestration.md`; every `stream/*` tip is an ancestor of `main` except arena's duplicate re-bake commit (identical content, superseded). Only the last main check on `e903e08f` and the quiet window remain before you run the two lines above.**
 
 **What round 10 shipped, in one paragraph (all on `main`, all verified):** the unanswered right-click is fixed at
 five mechanisms and reads 7 of 7 states on main; the greyed squad buttons say why and the card has Form squad; the
