@@ -167,6 +167,13 @@ _(the worker keeps this current; newest first within each part)_
 - **Numbers with a caveat:** the maze-crossing (defile) numbers from round 9 were single runs; the probe now varies
   its seed.
 
+**Round 11, from combat (2026-09-22 night):** `test_tactics_elements::test_the_leader_issues_one_order_per_vehicle_and_
+they_drive_to_their_slots` passes because of a defect. Its hand-placed bus leader at (−15, 60) starts 1.2 cm inside
+Crate_11 on tick 2 and is then commanded a pure pivot in a two-sided pinch; with the plant constraint off it rotates
+through the crate. The fix: move the spawn point off the crate (a literal, mine), and give the driver a
+creep-out-of-pinch regime before pivoting (nav's Movement, or the element leader reading `yaw_refused_ticks`).
+The constraint stays off this round.
+
 **Round 11 candidates (squad's):** a staggered deploy that removes the first-turn clip; the backwards move from the
 spawn (a 40 m column against the arena edge); moves with battle drills on settle in 13–45 s; the wheeled crew that
 creeps after arriving; the reload-window behaviour (no measured effect); the stretch rows (A10, A8, tube gate).
