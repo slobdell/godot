@@ -169,6 +169,15 @@ re-records on `main` (my record reverted on request). Earlier green points: `d04
 drive-to-slots and combat's parked-friend; the same scenario reds 40,4) plus my one new passing test. So this branch
 adds no red. The parked-friend row is being re-read on squad's `c0040ae4` (placement through `Tank.place()`).
 
+### ✅ CP4 LANDED ON THIS BRANCH: `48569fce` (the constraint ON by default, world mask, slide-off), merge alone
+
+The four bars on one build (`0bc0e214`, builder0): five_squads 0 of 30 off slot, longest refused run **0** (control
+without the slide-off: 83); corridor 11.4° / 6.0 m, residual 1.21 m, giveups 1; nav's suite 8/0; tank_yaw_fit 7/0.
+The flip's own check (`48569fce`, builder0): `make check exited 2`, 1666 passed, 3 failed, **sim-baseline MOVED
+`7dcc52f547f03d3f` → `50acf21d6e6a68b7`** (pre-registered, one cause), determinism `cd7a714ced4d7d49`, scenarios
+42/2. Reds: `test_spawn_grid` baked list (red with the constraint off too: terrain's fixture, fixed on main
+`1ec3f391`), squad's drive-to-slots and formation-slot (main's REASON'd), parked-friend (the lof flip, next).
+
 ### CP4 VERDICT RUN (builder0, `6f553699` = main `b1693901` with squad's pitch; one build, every arm proven by TUNE line)
 
 | bar | constraint off | on, vehicle mask (round 9) | **on, world mask (the fix)** | verdict |
