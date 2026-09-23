@@ -162,8 +162,8 @@ _(the worker keeps this current)_
 
 ## REPORT (nav, round 10, 2026-09-22 night) — read this first; the sections below are the evidence, in order
 
-**Merge here:** `304636cc` (the press flip, pre-registered MOVED, its check below) — everything before the flip is on
-main (`c148b5d5`, merged). Commits after it are Status only.
+**Merged:** `304636cc` (the press flip) is on main at `c1b92d84` as a harmless default, baseline moved by its one
+proven cause. Commits after it are Status only.
 
 **Done, with measurements (builder0 throughout; every number's tree is in its section):**
 1. **The wall-contact instrument** (`WallContact`): per unit per tick, cause (bake / route / avoid / steer / plant,
@@ -173,8 +173,10 @@ main (`c148b5d5`, merged). Commits after it are Status only.
    (CP2) → 5959 (CP2+CP3, ungrounded slots) → 190 (grounded right-click goals)**, arrivals 6,4,6,6 of 6. The rigs:
    15691 → 8139 → 10128 → **2430 with the press escape at its default 1.0 s window** (arrivals 7 → **14 of 16**, on
    ONE seed and ONE escape — see the correction at the end).
-3. **Fixes by cause, each an arm:** the pressed-wall escape (**default ON** at `304636cc`: routed moves, crew not
-   engaged, a 1.0 s pin — at 0.5 s it cost combat's moving duel a shot); corner inflation and the
+3. **Fixes by cause, each an arm:** the pressed-wall escape (**default ON** at `304636cc`, merged as a HARMLESS
+   DEFAULT at `c1b92d84`: routed moves, crew not engaged, a 1.0 s pin — at 0.5 s it cost combat's moving duel a shot.
+   ⚠ Its 7 → 14 of 16 rig arrivals ride on ONE escape on one deterministic seed: not evidence it reliably helps;
+   round 11 runs the drive test over paired seeds with a spawn-order seed knob. Opt-out: `--nav-off=press`); corner inflation and the
    nose stop (opt-in; inflation's old tactics red was the pre-CP3 literal; the nose stop never fires on grounded
    goals); the not-ready route retry (default ON since `f386c63e`, combat's ask, the baseline's one cause then).
    **The finding that closed the entry was not nav's code:** 11 of 13 misses were right-click goals 4–10 m inside
