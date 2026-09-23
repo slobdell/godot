@@ -2771,6 +2771,13 @@ func _order_move(order: Dictionary) -> void:
 		order = order.duplicate()
 		order["x"] = inside.x
 		order["z"] = inside.z
+	# Round 10 (nav's item 6, its smallest step): a crew holding an element slot sends the leash the brain already
+	# gives CombatMotion (element_slot, slot_leash) with every move, `[x, z, r]`, so the mover can clamp a goal into it
+	# (nav's `--nav-off=leash`; inert until nav reads the key).
+	var slot: Variant = element.get("slot")
+	if order["type"] == "move_to" and slot is Vector3:
+		order = order.duplicate()
+		order["leash"] = [(slot as Vector3).x, (slot as Vector3).z, TankBrain.slot_leash(element)]
 	if order["type"] == move_order.get("type") and order.get("reverse", false) == move_order.get("reverse", false) \
 			and order.get("direct", false) == move_order.get("direct", false) \
 			and absf(float(order.get("speed", 1.0)) - float(move_order.get("speed", 1.0))) < 0.1 \
