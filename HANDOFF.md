@@ -35,7 +35,17 @@ moved twice, each recorded twice and adopted with its causes named (`11c479c3` f
 `7dcc52f5` for arena's spawn grid); the scenario count is being re-recorded for the close; the closing main check
 follows it. Nothing is pushed to `origin`; you push.** Eight of nine streams are done and idle (control, squad, arena,
 nav pending its last rows, combat pending its last cells, feel, show, announcer, terrain); the worktrees stay until
-you reset (the close commands are at the end of this section once the last check lands).
+you reset (the close commands follow, to run only after the closing check on `80e3ce90` reads green and nav's and combat's last
+docs commits are merged):
+
+    for s in control squad arena nav combat feel show announcer terrain; do make worktree-remove STREAM=$s; done
+    for s in control squad arena nav combat feel show announcer terrain; do git branch -D stream/$s; done   # after the ancestor check
+    git branch -D stream/terrain-uid
+
+before which the orchestrator archives the nine briefs to `_agents/streams/archive/round10/` with banners, rescues any
+git-ignored payload (the announcer masters are already in the main checkout's `assets/announcer/masters/`; feel's
+Meshy downloads under `assets/incoming/` if any; every worktree's `build/` frames are in `~/Desktop/round10-morning/`),
+and writes the round's lessons into `orchestration.md`.
 
 **What round 10 shipped, in one paragraph (all on `main`, all verified):** the unanswered right-click is fixed at
 five mechanisms and reads 7 of 7 states on main; the greyed squad buttons say why and the card has Form squad; the
@@ -116,6 +126,7 @@ across squads and press Form squad, watch the walls; then `ARENA=crossing` and `
 - **Carve-out granted:** combat edits `ORBIT_RADIUS` / `ORBIT_BREAK_RANGE` and their read site in squad's `tank_brain.gd` (surface-relative orbit; the engine-deck scenario); squad reviews at merge.
 - **Pitch ruling for squad:** measure overlap during the actual manoeuvre and land the smallest pitch that passes (half_diagonal + half_width ≈ 5.7 m tank / 8.85 m rig), with 2 × half_diagonal (8.95 / 14.4 m) as the fallback; a five-rig frame pair for the lead.
 - **Orchestrator item, owed:** `make test` runs without `--fixed-fps`, so many-unit filtered tests on a loaded laptop are not repeatable (combat: 12 off then 8 off, same code); I land `--fixed-fps` on the test recipe on main after CP2 with three consecutive builder0 checks (round 9's CP3 follow-up note), then tell every stream.
+- **The scenario count ADOPTED at `80e3ce90`: 44,0 → 43,1,3,0** (builder0, an exclusive window; cover-peeking the one red, squad's REASON; parked-friend green at default). **The closing main check launched on 80e3ce90 (33 merges).**
 - **The closing count record read 42,2 and was NOT adopted:** the second red was scenario_perf's CPU budget under builder0's load (28.9 s with combat's series and nav's A/B on five slots), the load-sensitive case the baseline file's own header warns against baking in; relaunched as an exclusive-window run (`TANK_SQUAD_EXCLUSIVE=1`), which waits for a natural gap and records when the box is quiet; expected 43,1 (cover-peeking only).
 - **The lof-site flip (combat f694af4b, on main 4c5b1671+): 1672/0, sim-baseline 7dcc52f5 UNMOVED (pre-registered MOVED; wrong in the safe direction: the baseline match never reaches a friend-in-lane decision where the disc and box disagree, while parked-friend now PASSES at default on both machines, 113–114 ticks / 2 shots, having failed with the disc on the same tree), count 43,1 (cover-peeking only); five_squads and suppression unchanged; the pit lof cell clean b=6 c=2 p=0.29 not worse; the yard cell running. Merges the moment yard reads not-worse, or at 02:00 on the pit cell with yard pending. No record needed.
 - **Main VERIFIED at `5fd627a2` (28 merges, builder0): 1668 passed, 1 failed (the parked-friend delegate only, combat's row), count 42,2 (cover-peeking, squad's REASON'd; parked-friend), sim-baseline 7dcc52f547f03d3f UNMOVED. Every other red of the night is gone: the canal re-bake, drive-to-slots, formation-slot, base-of-fire, engine-deck all green. `main-checked` moved here.** Remaining before close: combat's lof-site flip (its own record), the count re-record (cover-peeking's REASON; parked-friend expected green after the flip), nav's final rows and hash, the closing main check.
