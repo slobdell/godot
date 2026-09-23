@@ -26,10 +26,15 @@ def spawns():
     row_spacing = gdscript_source.const_float(MATCH_GD, "SPAWN_ROW_SPACING")
     base_z = gdscript_source.const_float(MATCH_GD, "BASE_Z")
     slots = int(gdscript_source.const(MATCH_GD, "SPAWN_SLOTS"))
-    green = []
+    # Round 10 (arena item 4): the same order as `Match._spawn_cells()` -- the turning-clear checkerboard cells
+    # (lattice index + row even) first, then the rest. tests/test_spawn_grid.gd asserts the two agree.
+    pitch = abs(float(columns[1]) - float(columns[0]))
+    clear, rest = [], []
     for row in range(rows):
         for x in columns:
-            green.append([float(x), base_z + row * row_spacing])
+            cell = [float(x), base_z + row * row_spacing]
+            (clear if (round(abs(float(x)) / pitch) + row) % 2 == 0 else rest).append(cell)
+    green = clear + rest
     if len(green) < slots:
         sys.exit("make_arenas: %d columns x %d rows is %d spawn points, fewer than Match.SPAWN_SLOTS (%d)"
                  % (len(columns), rows, len(green), slots))
