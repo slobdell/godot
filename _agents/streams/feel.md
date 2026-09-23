@@ -327,3 +327,17 @@ recorded move; these commits add none); determinism `2bf54e1e4c829e06`; ai-scena
 REASON'd or named scenarios above, plus `scenario_cp2` engine-deck (fixed on main by squad's ORBIT fix, broken again
 by the 9.7 m bus: named to squad) and `scenario_perf` CPU budget (load: five slots on builder0). Everything else green.
 Commits after `a822a48f`: `e27e0b85` (blimp-look frame fix), the Status.
+
+### After the second merge: the lane marks (B10 / C11)
+
+- `aa67d926` kerb paint, centre dashes (2.2 m every 8.6 m: the scale anchors), a ~3000 K additive pool at each of
+  arena's 11 junctions; flat, no collider, no light, 3 MultiMeshes (`game/theme/arena_kit/city/lane_marks.gd`).
+  `95966bdd`: paint stops 0.3 m short of every collider footprint (arena's catch -- the avenue's kerb line ran into a
+  two-high container; arena accepted the fix). `82d77c5a`: through `FxMultiMesh` (the check caught it).
+  Pair at his opening pose: `references/round10/feel/lane_pair.jpg` (off above, on below). No chokepoints on the
+  Terminus (arena), so nothing is lit cold; the two barricades already carry the kit's reflective strip.
+- **Check on `82d77c5a`** (builder0, merged with main incl. the adopted baseline `f29c5b7c`, `REMOTE_SLOTS=5`):
+  `>> remote: make check exited 2`; **1656 passed, 2 failed** (the two REASON'd); sim-baseline
+  **`11c479c3bec77082`, unmoved**; determinism `cd43435b56b09acf`; ai-scenarios 40,4 against 44,0: formation-slot,
+  base-of-fire, parked-friend (REASON'd / named) and `scenario_perf`'s CPU budget (load; it passed on `f579c4a0`'s
+  run). **Merge here: `82d77c5a`.**
