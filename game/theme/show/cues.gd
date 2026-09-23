@@ -98,13 +98,18 @@ func load_data(data: Dictionary, where := "cues") -> String:
 ## Replace every `strobe` in the book with a breathe at `period`. The comparison arm for the lead's call on whether
 ## the `last_stand` strobe -- the only one in the venue -- survives. Editing the loaded book rather than shipping a
 ## second one keeps the two arms honest: everything else about the cues is identical by construction.
-func soften_strobes(period: float) -> void:
+##
+## Round 10: `period` < 0 (the default) keeps each strobe's OWN period, so the arms differ in the programme's
+## sharpness and in nothing else. Round 9 compared a 1.6 s strobe against a 6.0 s breathe in a 6 s clip: one slow
+## inhale against eight stabs, which measured the tempo as much as the strobe.
+func soften_strobes(period := -1.0) -> void:
 	for state: Variant in states:
 		for channel: Variant in states[state]["set"]:
 			var override: Dictionary = states[state]["set"][channel]
 			if str(override.get("programme", "")) == "strobe":
 				override["programme"] = "breathe"
-				override["period"] = period
+				if period > 0.0:
+					override["period"] = period
 
 
 ## The cue for a mood state, falling back to the idle one. Never null: an unlisted state is the idle breathe, which

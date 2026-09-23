@@ -138,3 +138,16 @@ nav-terminus-drive: import ## nav (round 10): the Terminus drive test -- a mixed
 	@for f in $(BUILD_DIR)/nav-drive/*.log; do grep -E "^NAV_DRIVE_CONTROL|^NAV_DRIVE_LEG|SCRIPT ERROR|control FAILED" $$f || true; \
 		grep -E "^NAV_DRIVE " $$f | cut -c1-600 || echo ">> nav-terminus-drive: $$f has NO NAV_DRIVE line (the run did not finish)"; done
 	@! grep -l "control FAILED\|SCRIPT ERROR" $(BUILD_DIR)/nav-drive/*.log || { echo ">> nav-terminus-drive: a run REFUSED or errored: no numbers from it"; exit 1; }
+
+# Round 10: which nav arm moves the sim baseline. The sim-baseline match (SIM_HASH_READ's exact command) read once per
+# --nav-off arm in SIM_ARMS (a comma list per arm; "none" = the default path), so a pre-registered MOVED names its cause.
+SIM_ARMS ?= none notready press,inflate,nosestop
+
+.PHONY: nav-sim-arms
+nav-sim-arms: import ## nav: the sim-baseline match's state hash under each --nav-off arm in SIM_ARMS (attributes a baseline move to one mechanism)
+	@for arm in $(SIM_ARMS); do flags=""; [ "$$arm" = none ] || flags="--nav-off=$$arm"; \
+		hash=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-doctrine=res://doctrines/sim_baseline_green.json \
+			--rust-doctrine=res://doctrines/sim_baseline_rust.json --time-limit=40 --seed=3 $$flags 2>/dev/null | grep MATCH_RESULT | \
+			$(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
+		echo "NAV_SIM_ARM off=$$arm hash=$$hash"; done
+	@echo "NAV_SIM_ARM recorded: $$(grep "glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)" tests/baselines/sim_state_hash.txt)"

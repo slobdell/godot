@@ -16,24 +16,30 @@ extends Node3D
 ## are, so the envelope reads against the dark city without adding a light; the navigation lights are steady (red
 ## port, green starboard, white tail), instruments rather than decoration.
 ##
-## The ROUTE follows the streets because at 12 m it is below the rooftops: on the Terminus a circuit round the two
-## central blocks (the ring roads at z = +-30, the west streets at x = +-70), so on the long legs its flanks -- and
-## the screens on them -- face the two bases, and a player looking up the map sees a screen rather than an edge.
+## The ROUTE follows the streets because at 12 m it is below the rooftops -- and on the Terminus it is the AVENUE,
+## which a first version got wrong. It flew the ring roads round the central blocks, and the physics-ray sweep at his
+## pose saw it in 0% of samples: from the bases the ring road is walled by the 24 m block rows, and his camera (17.5 m
+## up) cannot see over them. The avenue is the one long corridor that runs along his view, up the map from base to
+## base, so the blimp flies a stadium loop down it: out along x = +4, back along x = -4, turning where the block rows
+## end (z = +-86). Its screens are four panels on the flanks, each yawed 35 deg toward the nose or the tail, so a
+## camera behind or ahead of it -- the usual view down the avenue -- still sees most of a panel.
 ## Maps without a route get no blimp.
 
 const ENVELOPE_LENGTH := 22.0
 const ENVELOPE_DIAMETER := 6.5
-const SCREEN := Vector2(10.0, 3.6)
+const SCREEN := Vector2(7.5, 3.4)
+## Each flank panel is yawed this far toward the nose or the tail (see the header).
+const SCREEN_YAW_DEG := 35.0
 ## Flight altitude of the envelope's centre. 12 m: the envelope's bottom (8.75 m) and the gondola's (~7.4 m) clear
 ## the tallest hull (6.18 m) and R3's lamp heads, and its top (15.25 m) stays under the camera's ~17.5 m.
 const ALTITUDE := 12.0
 const BOB_M := 0.25
-## A walking pace, the brief's word: 1.5 m/s. One lap of the Terminus circuit is ~260 s.
+## A walking pace, the brief's word: 1.5 m/s. One lap of the Terminus avenue loop is ~240 s.
 const SPEED_MPS := 1.5
 ## Corners are filleted at this radius so the hull turns through an intersection (18-20 m wide) instead of pivoting.
 const CORNER_RADIUS := 8.0
 const ROUTES := {
-	"terminus": [Vector2(-70.0, 30.0), Vector2(70.0, 30.0), Vector2(70.0, -30.0), Vector2(-70.0, -30.0)],
+	"terminus": [Vector2(4.0, 86.0), Vector2(4.0, -86.0), Vector2(-4.0, -86.0), Vector2(-4.0, 86.0)],
 }
 const HULL_COLOR := Color(0.90, 0.89, 0.86)
 const GLOW_COLOR := Color(1.0, 0.93, 0.80)
@@ -216,17 +222,23 @@ func _build() -> void:
 	CyberMaterials.box(hull, Vector3(0.4, 0.4, 0.4), Vector3(0, 0, ENVELOPE_LENGTH * 0.5 + 0.2),
 			CyberMaterials.neon(Color(1.0, 1.0, 1.0), 5.0, 0.0, &"blimp"), false)
 	StaticBatcher.merge(hull)
-	# A screen on each flank, just above the equator, tilted UP 20 deg: his camera is above the blimp, so a vertical
-	# screen would be seen foreshortened from above and a tilted one faces him.
-	for sx in [-1.0, 1.0]:
-		var screen := MeshInstance3D.new()
-		screen.name = "Screen%s" % ("Port" if sx < 0.0 else "Starboard")
-		var quad := QuadMesh.new()
-		quad.size = SCREEN
-		screen.mesh = quad
-		screen.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		# A QuadMesh faces +Z: yaw it to face outward (+-X), then tip its face up.
-		var face := Basis(Vector3.UP, PI / 2.0 * sx) * Basis(Vector3.RIGHT, deg_to_rad(-20.0))
-		screen.transform = Transform3D(face, Vector3(sx * (ENVELOPE_DIAMETER * 0.5 + 0.15), 0.9, 0.0))
-		add_child(screen)
-		_screens.append(screen)
+	# Four screens on the flanks, just above the equator, tilted UP 20 deg (his camera is above the blimp) and yawed
+	# SCREEN_YAW_DEG toward the nose (front pair) or the tail (rear pair), so the view down the avenue sees a screen.
+	for sx: float in [-1.0, 1.0]:
+		for sz: float in [-1.0, 1.0]:
+			var screen := MeshInstance3D.new()
+			screen.name = "Screen%s%s" % ["Port" if sx < 0.0 else "Starboard", "Fore" if sz < 0.0 else "Aft"]
+			var quad := QuadMesh.new()
+			quad.size = SCREEN
+			screen.mesh = quad
+			screen.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			# A QuadMesh faces +Z. Yaw it to face outward (+-X), then a further SCREEN_YAW_DEG toward -Z (fore) or +Z
+			# (aft), then tip its face up.
+			var outward := PI / 2.0 * sx
+			var toward := -deg_to_rad(SCREEN_YAW_DEG) * sx * sz  # fore (sz < 0) turns toward -Z on both flanks
+			var face := Basis(Vector3.UP, outward + toward) * Basis(Vector3.RIGHT, deg_to_rad(-20.0))
+			var along := sz * ENVELOPE_LENGTH * 0.2
+			var radius := ENVELOPE_DIAMETER * 0.5 * sqrt(maxf(0.0, 1.0 - pow(along / (ENVELOPE_LENGTH * 0.5), 2.0)))
+			screen.transform = Transform3D(face, Vector3(sx * (radius + 0.25), 0.9, along))
+			add_child(screen)
+			_screens.append(screen)
