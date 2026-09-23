@@ -106,3 +106,27 @@ func test_a_rotated_neighbour_is_measured_on_its_own_axes() -> void:
 	var nose_to_tail := [[Vector3(0.0, 0.0, -9.0), 2.4, 8.6, Vector3.FORWARD]]
 	assert_true(not ArmyLayout._is_clear(Vector3.ZERO, hull, Vector3.FORWARD, nose_to_tail),
 			"nose to tail 0.4 m apart is not clear, aligned or not")
+
+
+func test_the_deploy_stands_at_the_width_floor_while_formations_use_the_turning_envelope() -> void:
+	# Round 10 ruling: ArmyLayout deploys at width + HULL_CLEAR_M (a 25-bus army at the diagonal would stand 11 m ahead
+	# of its zone, where every hexagonal map has containers or blocks); formations use the diagonal + DRESS_MARGIN_M.
+	var members := [{"unit": "tank"}]
+	var extent := TacticsFormation.hull_extent(members)
+	assert_near(TacticsFormation.hull_floor(members, ArmyLayout.DEPLOY_FLOOR).x, extent.x + TacticsFormation.HULL_CLEAR_M,
+			1e-4, "the deploy's lateral floor is the width rule")
+	assert_near(TacticsFormation.hull_floor(members).x, extent.length() + TacticsFormation.DRESS_MARGIN_M, 1e-4,
+			"a formation's lateral floor is the diagonal + DRESS_MARGIN_M")
+	var squads: Array = []
+	for s in 5:
+		var squad_members: Array = []
+		for i in 5:
+			squad_members.append({"name": "S%d_%d" % [s, i], "unit": "tank"})
+		squads.append({"name": "S%d" % s, "members": squad_members, "leader": "S%d_0" % s})
+	var laid := ArmyLayout.plan(squads, {"center": Vector3(0, 0, 102), "size": Vector2(150, 32)},
+			{"right": Vector3.RIGHT, "forward": Vector3.FORWARD})
+	var front := INF
+	for unit: String in laid:
+		front = minf(front, (laid[unit]["position"] as Vector3).z)
+	print("MEASURE deploy_front 25 buses in 150 x 32 m: front slot at z %.1f (zone front edge 86)" % front)
+	assert_true(front >= 86.0 - 0.01, "a 25-bus army deploys inside its zone's front edge (%.1f)" % front)

@@ -274,6 +274,15 @@ static func _flow(plan: Dictionary, situation: Dictionary, state: Dictionary) ->
 	if not at.has(leader) or (at[leader] as Vector3).distance_to(plan["slots"][leader]) <= FLOW_JOIN_M:
 		plan["flow_joined"] = true
 		return
+	# Round 10 (item 3): the flow trails its leader, so it runs only when the leader is seated at the FRONT of the
+	# shape. Once a plain move seats everyone by the least driving the leader can take the tail, and then every follower
+	# keeps station AHEAD of a vehicle still behind it: measured (squad-settle, default arena, forward, laptop) the
+	# squad's centre drifted AWAY from the goal, 12.7 -> 21 m from 2 s to 8 s, crews yielding to each other, and the
+	# stop came at 16.2 s against 8.2 s pinned. Otherwise every crew goes straight to its final slot, which holds the
+	# shape as well under this seating (test_an_element_flows_in_formation_on_the_way: 7.7 m transit gap).
+	if not _leads_from_the_front(plan, leader):
+		plan["flow_joined"] = true
+		return
 	var heading: Vector3 = plan["heading"]
 	var right := Vector3(-heading.z, 0.0, heading.x)
 	var lead_slot: Vector3 = plan["slots"][leader]
@@ -284,6 +293,19 @@ static func _flow(plan: Dictionary, situation: Dictionary, state: Dictionary) ->
 		var offset: Vector3 = (plan["slots"][unit_name] as Vector3) - lead_slot
 		plan["orders"][unit_name] = {"verb": "follow", "to": null, "target": leader,
 				"slot": [offset.dot(right), -offset.dot(heading)]}
+
+
+## Whether `leader`'s slot is at the front of the shape along its heading (within half a metre of the foremost).
+static func _leads_from_the_front(plan: Dictionary, leader: String) -> bool:
+	var slots: Dictionary = plan.get("slots", {})
+	if not slots.has(leader):
+		return true
+	var heading: Vector3 = plan.get("heading", Vector3.FORWARD)
+	var mine := (slots[leader] as Vector3).dot(heading)
+	for unit_name: String in slots:
+		if (slots[unit_name] as Vector3).dot(heading) > mine + 0.5:
+			return false
+	return true
 
 
 # ---- A9: bounding overwatch as an explicit two-phase machine (round 9, X3) ------------------------------
