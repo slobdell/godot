@@ -70,8 +70,6 @@ const EVENT_UNIFORM := &"show_event"
 ## "the circuit disconnected visually every cycle and looked broken"). `edge` is not here: the blocks have no edge
 ## emission today, so its identity IS zero and a floor of zero is the look we ship without a patch.
 const CORE_PARAMETERS := [&"level", &"window", &"shop"]
-## What `last_stand` becomes with `--show-no-strobe`: urgent, but not a fault light.
-const STROBE_ALTERNATIVE_PERIOD_S := 6.0
 ## Dial 1 (`show_dials.md`): the parameters whose channels [method set_band] widens. The lit INTERIORS -- the
 ## windows and the shopfronts -- and nothing else: the rim, the parapet and the signs have their own reasons for
 ## their bands.
@@ -218,7 +216,7 @@ func _ensure_cues() -> void:
 	# or cut it. It is a question about DATA, so the flag edits the loaded book rather than adding a second one:
 	# every strobe becomes a fast breathe, which is what `last_stand` would be if the strobe went.
 	if LaunchFlags.from_environment().has("no-strobe"):
-		cues.soften_strobes(STROBE_ALTERNATIVE_PERIOD_S)
+		cues.soften_strobes()  # same period, breathe instead of stab: one variable
 
 
 ## Follow `Arena.active`. Called before every registration and every frame, so a fixture built during an arena's

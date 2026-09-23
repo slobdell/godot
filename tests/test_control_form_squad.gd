@@ -115,3 +115,21 @@ func test_the_panel_counts_units_in_no_squad() -> void:
 	assert_eq(int(panel.summary()["ungrouped"]), 1, "Bravo_2 left group 2: one unit in no squad")
 	f.controls.form_squad()
 	assert_eq(int(panel.summary()["ungrouped"]), 0, "Form squad puts it on a number key")
+
+
+## The lead's first frame of this (1920x1080) cut the reason off at "...different squads: press": a reason he cannot
+## read is no reason. The card's short form must fit in the footer beside the button, every variant, at 720p too.
+func test_the_card_reason_fits_beside_the_button() -> void:
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var panel: SelectionPanel = setup[1]
+	var font := CyberStyle.font()
+	for units: Array in [["Green_Alpha_1", "Green_Bravo_1"], ["Green_Alpha_1", "Green_Alpha_2"]]:
+		f.controls.selection.set_units(units)
+		await tree.process_frame
+		var s := maxf(panel.get_viewport_rect().size.y / 1080.0, 0.6)
+		var room := panel.form_squad_rect().position.x - SelectionPanel.PAD * s * 2.0
+		var short := f.controls.task_refusal(true)
+		var width := font.get_string_size(short, HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(13.0 * s)).x
+		assert_true(width <= room, "'%s' fits: %.0f px of %.0f" % [short, width, room])
+		assert_true(short.ends_with("or"), "and reads into the button (%s)" % short)

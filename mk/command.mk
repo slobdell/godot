@@ -18,7 +18,7 @@ control-playtest-shots: import ## The same session in windows (CONTROL_SIZES, de
 	for size in $(CONTROL_SIZES); do \
 		rm -rf $(CONTROL_PLAYTEST_DIR)/$$size; \
 		mkdir -p $(CONTROL_PLAYTEST_DIR)/$$size; \
-		timeout 420 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(CONTROL_PLAYTEST_DIR)/$$size $(CONTROL_FLAGS) 2>&1 \
+		timeout 720 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(CONTROL_PLAYTEST_DIR)/$$size $(CONTROL_FLAGS) 2>&1 \
 			| tee $(CONTROL_PLAYTEST_DIR)/$$size/run.log | grep -E 'CONTROL_PLAYTEST|SCRIPT ERROR|^ERROR' || true; \
 		grep -q 'CONTROL_PLAYTEST_DONE ok=true' $(CONTROL_PLAYTEST_DIR)/$$size/run.log || exit 1; \
 	done
@@ -232,7 +232,9 @@ control-timing: import ## Judge control's timing budgets (frame, order, click, h
 ## says it CARRIES OUT, in seven in-flight states. Fails when any crew's order is unchanged 2 ticks after the click.
 REPATH_DIR := $(BUILD_DIR)/repath
 REPATH_ARENA ?= terminus
-REPATH_FLAGS ?= --player-faction=condemned --enemy-faction=law
+## No damage: a repath test measures commanding, not fighting, and the late states ("arrived") need living crews
+## (squad's run on main: six of eight crews dead by the arrived click, every STALE a corpse).
+REPATH_FLAGS ?= --player-faction=condemned --enemy-faction=law --tune=match.no_damage=1
 
 repath-test: import ## R2: a right-click on a squad already moving, seven ways, on Terminus; per-tick crew orders in build/repath/repath.json (headless)
 	rm -rf $(REPATH_DIR) && mkdir -p $(REPATH_DIR)

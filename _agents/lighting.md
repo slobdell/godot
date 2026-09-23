@@ -879,6 +879,9 @@ through that leak. Re-shooting is the first action of round 10.
   that is a real alternative. **As an arm it is not**, because it moves two variables, and the call site describes
   it as "a fast breathe" while 6.0 s is not fast. Shoot the arm at the cue's own 1.6 s and keep 6.0 s as a third
   look. Left unchanged here only because changing it means re-shooting the clips, which round 10 does anyway.
+  **Fixed in round 10:** `soften_strobes()` now keeps each strobe's own period (a 1.6 s breathe against the 1.6 s
+  strobe: sharpness is the only variable); `STROBE_ALTERNATIVE_PERIOD_S` is gone, and `soften_strobes(6.0)` still
+  gives the slow look as a third arm if anyone wants it.
 
 **The five mood clips in `build/show/clips/` are from 05:47–05:56, not from this run.** `make show-clips` was not
 in the run's target list, so they are the ones shot before the frame tools learned to wait for contact — five units

@@ -160,6 +160,12 @@ func _start_match() -> void:
 	LoadingScreen.mark("mode_start")  # X4: where a FIGHT load's time goes (printed with LOAD_TIMING)
 	var game_match := main.game_match
 	game_match.has_local_player = false
+	# Round 10: the harness knobs the match runner takes (`--tune=match.no_damage=1`: nothing dies), for scripted
+	# skirmishes that measure commanding, not fighting (make repath-test). Never set in play.
+	if flags.text("tune") != "":
+		var tune_error := Units.apply_tuning(flags.text("tune"))
+		if tune_error != "":
+			push_error(tune_error)
 	# Directive set 2: armies are bought with a budget. The CPU army is seeded (--seed, else the clock,
 	# printed so a surprising match can be replayed). X5: a faction flag decides the side's roster and, with it,
 	# how many vehicles the budget buys.

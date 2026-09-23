@@ -260,6 +260,7 @@ func snap() -> void:
 
 func _process(delta: float) -> void:
 	_clock += delta
+	frame_short = false  # set again below only while the vision frame is what the camera is doing
 	_update_vision()
 	var keys := Vector2(float(Input.is_key_pressed(KEY_RIGHT)) - float(Input.is_key_pressed(KEY_LEFT)),
 			float(Input.is_key_pressed(KEY_DOWN)) - float(Input.is_key_pressed(KEY_UP)))
@@ -1039,7 +1040,9 @@ func _update_vision_tracking() -> void:
 				float(_vision_state.get("pad_m", 0.0)))
 	zoom = minf(minf(float(goal[1]), vision_zoom), RtsCamera.level_for(auto_frame_max_m))
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
-	frame_short = RtsCamera.cuts_off(points, focus, yaw, zoom, _aspect(), pitch)
+	# Only our own vehicles (the first `own` points; the rest are contacts and their mirrors, framed only if they fit).
+	var own := points.slice(0, int(_vision_state.get("own", points.size())))
+	frame_short = RtsCamera.cuts_off(own, focus, yaw, zoom, _aspect(), pitch)
 
 
 ## Round 10 (control stretch): whether a camera at this pose leaves any of `points` off the whole screen. At the lowest
