@@ -176,6 +176,15 @@ Copied off `build/` so a later run can't overwrite them:
   while it slid in (fixed to 3.5 s in `161d0780`, not re-shot yet).
 - The radar in every yard frame shows the two objective rings off-centre, and none at the centre.
 
+### Round-10 addition (nav's drive test, relayed 2026-09-22): right-click goals grounded on the navmesh
+nav's re-run on main `709cbeb9` (builder0) found 11 of 13 arrival misses were `move` orders whose per-unit
+formation slot from `Orders._resolve_group` sat 4-10 m inside a block. A right-click on a selection never went through
+squad's element grounding. `8e942f20`: `Orders.ground_goal` puts every goal on standable ground, using squad's
+`SlotGround.for_unit` (the hull's turning envelope clear of walls; stream/squad `82468c5b`) when it exists, else
+`SlotGround.standable`. The order keeps the click as `to` (the pin stays where he clicked), carries `grounded_m`, and
+the unit card says "(slot moved N m clear of a wall)". Tested on both SlotGround versions (laptop). Pre-registered:
+sim-baseline unmoved on this tree; it may move with squad's `for_unit` merge.
+
 ### Plan (in order) and where each stands
 1. ✅ Reproduce on the default path: `make repath-test` (new).
 2. ✅ R2, control's half: player orders compare the CLICK; K1 `task` key (squad's ask).
