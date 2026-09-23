@@ -305,6 +305,43 @@ chosen pitch beside today's, at his pose (21°, FOV 35, 49 m).
   0.87 × diagonal) removes it.**
 - `a8789bea` the `squad_incoming` disc site (no move).
 
+**MERGE HERE: `f27bd321`** (the pitch merge set + main `f29c5b7c`), builder0: `make check exited 2`, 1655 passed /
+1 failed (parked-friend, combat's), **sim-baseline `11c479c3bec77082` UNMOVED**, determinism `cd43435b56b09acf`,
+scenarios 42,2 (cover-peeking REASON'd, parked-friend combat's).
+
+### After the pitch merge (tip, on top of the candidate `f27bd321`)
+
+- **Baseline, corrected:** the pitch merge set was pre-registered MOVES; **measured UNMOVED relative to CP3**
+  (`aac14c6704fbac39` at `9e075524` is exactly feel's CP3 tree alone), because the deploy stays at the width floor and
+  the baseline match issues no formation orders. The candidate `f27bd321` (with main `f29c5b7c`, baseline
+  `11c479c3bec77082` adopted) should read it unmoved.
+- `92c1d128` 6d, clearance grounding + the follow station grounded (baseline pre-registered MOVES).
+- `c0040ae4` `AiScenario._place` via `Tank.place` (arena's finding). **It changed three verdicts** (laptop, attributed
+  by backing each change out): engine-deck 7/12 FAIL → 47 deck hits of 50 PASS; formation-slot drift 16.1 → 15.0 m
+  PASS; cover-peeking 5-vs-4 PASS → **4 vs 4 FAIL**. The engine-deck and slot "behaviour on the bus" REASONs I gave
+  were grid-slot artefacts and are WITHDRAWN. Cover-peeking's one-hit evidence came from the slot tick: the
+  reload-window behaviour shows no effect with a clean teleport. **Paired series (laptop, 16 seeds, x3 plain vs x4
+  reload windows, hits taken over 30 s): x4 fewer on 2 seeds, more on 0, TIE on 14; totals 64 / 62.** The feature is
+  at most marginal in this duel, so the scenario's claim is not supported: it stays a REASON'd red rather than being
+  re-shaped to pass on a 2-of-16 effect. Next step, if the feature is to earn its keep: find what the peek timing
+  does NOT change (the gun's aim model? cover exit timing?) with a positive control.
+
+### Instruments: what their numbers are
+
+- **`make squad-defile` ignored its seed until `defile_probe`'s start jitter (round 10, nav's finding): every defile
+  number published before it, the round-9 41.4 s wheeled arrival dispersion included, is n = 1 per arm, not a
+  sample.** Now ±1.5 m / ±10° per seed (laptop: wheeled seeds 3 and 4 first arrival 14.4 s vs 25.3 s; only 1 of 5
+  wheeled hulls arrives inside 40 s on either, a finding to read with more seeds).
+- `make squad-settle` got the same fix earlier (`6d6d6264`); its first series (six identical seeds) is superseded.
+
+### Reviews
+
+- **arena's `58540dd7`, `tests/test_match_spawns_and_results.gd::test_the_grid_fills_the_front_row_before_the_rows_
+  behind_it`: ACCEPTED.** "Front row first within each band" over `Match.turning_clear_slots()` is the right restatement
+  of the property once the grid fills its turning-clear cells first (row-major put slots 0 and 1 7.5 m apart, inside
+  the bus's 10.42 m envelope). Slot 0 still asserted in the front row. Nit, not blocking: the failure message names
+  `slot - 1` as the previous slot, which is only true when the turning-clear slots are consecutive.
+
 ### Requests to other streams
 
 - **control (R2), sent via the orchestrator 2026-09-22:** `Orders._same_order` drops an ELEMENT re-issue whose only

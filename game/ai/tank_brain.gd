@@ -711,6 +711,11 @@ func _order_context() -> Variant:
 		if order["verb"] == "follow":
 			context["goal"] = OrderFeed.point(_order_source.call("goal_position", String(tank.name))) \
 					if _order_source.has_method("goal_position") else null
+			# Round 10 (nav's Terminus finding): a follow station is the leader's pose plus a slot offset and slides every
+			# tick, so it was never grounded: a follower beside a leader driving along a block face was given a station
+			# inside the block. Grounded with this hull's own clearance, like every slot the element issues.
+			if context["goal"] is Vector3:
+				context["goal"] = SlotGround.standable_for(tank, context["goal"], SlotGround.envelope_of(tank.unit_id))
 		if _order_source.has_method("pace_factor"):
 			context["speed"] = clampf(float(_order_source.call("pace_factor", String(tank.name))), 0.2, 1.0)
 	# L1 (X1): the leader's call outranks the movement order it issued earlier. Told to stop bounding — to become the
