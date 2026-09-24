@@ -68,11 +68,11 @@ const DEFAULT_LAYOUT := "foundry"
 ## bridges or pits that I've asked for"*. **The lead KEPT both (2026-09-24, on arena's round-11 review page)**: they are
 ## verdict maps now, like yard and pit, and `test_random_deals_only_the_maps_the_lead_kept` lists them as kept.
 ## **locks (round 11, arena A3): the lead said DEAL IT (2026-09-24) and approved recording "the Locks" for the 18
-## {arena} lines.** It joins this line in the SAME commit as its recordings, never before: a dealt map without them
+## {arena} lines.** It joined this line in the SAME commit as its recordings, never before: a dealt map without them
 ## reddens announcer-check (tools/announcer/test_arena_names.py), which is what happened at f30dbf0d.
 ## `test_every_built_map_is_dealt_cut_or_a_fixture` now fails the day a non-fixture map lands and is not listed here
 ## or in CUT, so a third instance cannot be silent.
-const ROTATION := ["yard", "pit", "terminus", "crossing", "sumps"]
+const ROTATION := ["yard", "pit", "terminus", "crossing", "sumps", "locks"]
 ## The maps the lead CUT (game_design.md, *The lead's arena verdict*, 2026-09-19; foundry, furnace and scrapyard are
 ## round 1-2 layouts that predate the kit and went with the same verdict). They still load by name for tests and
 ## probes; they are never dealt. Every layout in LAYOUT_DIR is a fixture, CUT, or in ROTATION (test_arena_kit.gd).

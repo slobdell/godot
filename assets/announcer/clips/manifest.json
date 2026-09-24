@@ -8437,6 +8437,18 @@
    "text": "Ladies and gentlemen, welcome to the Furnace! It is fight night!",
    "voice": "JR1"
   },
+  "caller.intro.01@locks": {
+   "duration_s": 2.965,
+   "file": "caller/caller.intro.01@locks.ogg",
+   "kind": "line",
+   "request": "caller.intro.01@locks",
+   "request_key": "6dfe4e0a079d051a09d41ff598808b94479d9bed",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Ladies and gentlemen, welcome to The Locks. It is fight night",
+   "text": "Ladies and gentlemen, welcome to the Locks! It is fight night!",
+   "voice": "JR1"
+  },
   "caller.intro.01@pit": {
    "duration_s": 3.081,
    "file": "caller/caller.intro.01@pit.ogg",
@@ -8555,6 +8567,18 @@
    "stt_ok": true,
    "stt_text": "We are live from The Furnace, and this place is packed to the rafters",
    "text": "We are live from the Furnace, and this place is packed to the rafters!",
+   "voice": "JR1"
+  },
+  "caller.intro.02@locks": {
+   "duration_s": 4.221,
+   "file": "caller/caller.intro.02@locks.ogg",
+   "kind": "line",
+   "request": "caller.intro.02@locks",
+   "request_key": "79da7f63d580d5f79f384da3ec62d12b9eda0a71",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "We are live from the Locks, and this place is packed to the rafters",
+   "text": "We are live from the Locks, and this place is packed to the rafters!",
    "voice": "JR1"
   },
   "caller.intro.02@pit": {
@@ -8807,6 +8831,18 @@
    "stt_ok": true,
    "stt_text": "It's a full house here at The Furnace, and they came to see a fight",
    "text": "It's a full house here at the Furnace, and they came to see a fight!",
+   "voice": "JR1"
+  },
+  "caller.intro.09@locks": {
+   "duration_s": 3.131,
+   "file": "caller/caller.intro.09@locks.ogg",
+   "kind": "line",
+   "request": "caller.intro.09@locks",
+   "request_key": "a21ccd617df02856ef9a70d8869fd977fe5903e9",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "It's a full house here at The Locks, and they came to see a fight",
+   "text": "It's a full house here at the Locks, and they came to see a fight!",
    "voice": "JR1"
   },
   "caller.intro.09@pit": {
@@ -9071,6 +9107,18 @@
    "stt_ok": true,
    "stt_text": "You are looking live at The Furnace, and I promise you nobody here is sitting down tonight",
    "text": "You are looking live at the Furnace, and I promise you nobody here is sitting down tonight!",
+   "voice": "JR1"
+  },
+  "caller.intro.22@locks": {
+   "duration_s": 5.101,
+   "file": "caller/caller.intro.22@locks.ogg",
+   "kind": "line",
+   "request": "caller.intro.22@locks",
+   "request_key": "c144c37353dd7acd8dca85cc94774047dd36561a",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "You are looking live at the Locks, and I promise you nobody here is sitting down tonight",
+   "text": "You are looking live at the Locks, and I promise you nobody here is sitting down tonight!",
    "voice": "JR1"
   },
   "caller.intro.22@pit": {
@@ -27781,6 +27829,18 @@
    "text": "My last match was in the Furnace. Same lights. I didn't look up once.",
    "voice": "veteran"
   },
+  "color.lore.11@locks": {
+   "duration_s": 4.67,
+   "file": "color/color.lore.11@locks.ogg",
+   "kind": "line",
+   "request": "color.lore.11@locks",
+   "request_key": "ca6e0175eed62853a135eb280cfd062ae17064ad",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "My last match was in the locks, same lights. I didn't look up once",
+   "text": "My last match was in the Locks. Same lights. I didn't look up once.",
+   "voice": "veteran"
+  },
   "color.lore.11@pit": {
    "duration_s": 3.901,
    "file": "color/color.lore.11@pit.ogg",
@@ -32941,6 +33001,18 @@
    "text": "Tonight's arena lighting is provided by Northgrid Power, keeping the lights on in the Furnace and in selected residential areas.",
    "voice": "corporate2"
   },
+  "pa.sponsor.10@locks": {
+   "duration_s": 7.212,
+   "file": "pa/pa.sponsor.10@locks.ogg",
+   "kind": "line",
+   "request": "pa.sponsor.10@locks",
+   "request_key": "f4de7131306b722c7ca32ee471acf908e5ba6ccc",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Tonight's arena lighting is provided by North Grid Power, keeping the lights on in the locks and in selected residential areas.",
+   "text": "Tonight's arena lighting is provided by Northgrid Power, keeping the lights on in the Locks and in selected residential areas.",
+   "voice": "corporate2"
+  },
   "pa.sponsor.10@pit": {
    "duration_s": 7.377,
    "file": "pa/pa.sponsor.10@pit.ogg",
@@ -33157,6 +33229,18 @@
    "text": "Good evening, and welcome to the Furnace. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them.",
    "voice": "corporate2"
   },
+  "pa.welcome.01@locks": {
+   "duration_s": 8.147,
+   "file": "pa/pa.welcome.01@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.01@locks",
+   "request_key": "c9e29eecb3cc52818ad4f631e73b703268b8ae67",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Good evening and welcome to the Locks. Tonight's match is being broadcast in 41 districts and is required viewing in six of them",
+   "text": "Good evening, and welcome to the Locks. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them.",
+   "voice": "corporate2"
+  },
   "pa.welcome.01@pit": {
    "duration_s": 8.072,
    "file": "pa/pa.welcome.01@pit.ogg",
@@ -33275,6 +33359,18 @@
    "stt_ok": true,
    "stt_text": "Good evening. On behalf of the Syndicate, welcome to The Furnace. Please take a moment to locate the exit nearest your seat. Exits will open after the match",
    "text": "Good evening. On behalf of the Syndicate, welcome to the Furnace. Please take a moment to locate the exit nearest your seat. Exits will open after the match.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.02@locks": {
+   "duration_s": 9.403,
+   "file": "pa/pa.welcome.02@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.02@locks",
+   "request_key": "c16f1cc8fbbf9860940b1c31599aa4aabff45192",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Good evening. On behalf of the Syndicate, welcome to the Locks. Please take a moment to locate the exit nearest your seat. Exits will open after the match",
+   "text": "Good evening. On behalf of the Syndicate, welcome to the Locks. Please take a moment to locate the exit nearest your seat. Exits will open after the match.",
    "voice": "corporate2"
   },
   "pa.welcome.02@pit": {
@@ -33421,6 +33517,18 @@
    "text": "Welcome to the Furnace. Tonight's event is suitable for the whole family, and attendance is optional for children under twelve.",
    "voice": "corporate2"
   },
+  "pa.welcome.05@locks": {
+   "duration_s": 7.374,
+   "file": "pa/pa.welcome.05@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.05@locks",
+   "request_key": "642b961964e40a26cf0d7011902d387229a11f3d",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Welcome to the Locks. Tonight's event is suitable for the whole family, and attendance is optional for children under 12",
+   "text": "Welcome to the Locks. Tonight's event is suitable for the whole family, and attendance is optional for children under twelve.",
+   "voice": "corporate2"
+  },
   "pa.welcome.05@pit": {
    "duration_s": 6.935,
    "file": "pa/pa.welcome.05@pit.ogg",
@@ -33553,6 +33661,18 @@
    "text": "Welcome, everyone, to the Furnace. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.",
    "voice": "corporate2"
   },
+  "pa.welcome.07@locks": {
+   "duration_s": 8.479,
+   "file": "pa/pa.welcome.07@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.07@locks",
+   "request_key": "bb7f9ac5475013968265b4223a2e543bf09f6f7f",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Welcome everyone to the Locks. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows",
+   "text": "Welcome, everyone, to the Locks. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.",
+   "voice": "corporate2"
+  },
   "pa.welcome.07@pit": {
    "duration_s": 8.34,
    "file": "pa/pa.welcome.07@pit.ogg",
@@ -33671,6 +33791,18 @@
    "stt_ok": true,
    "stt_text": "A warm welcome to the Furnace, to everyone watching at home, and to our viewers in the detention blocks",
    "text": "A warm welcome to the Furnace, to everyone watching at home, and to our viewers in the detention blocks.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.08@locks": {
+   "duration_s": 5.971,
+   "file": "pa/pa.welcome.08@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.08@locks",
+   "request_key": "e1cc09091b51f2653507a2c531cdab5e348e0135",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "A warm welcome to the LOX, to everyone watching at home, and to our viewers in the detention blocks",
+   "text": "A warm welcome to the Locks, to everyone watching at home, and to our viewers in the detention blocks.",
    "voice": "corporate2"
   },
   "pa.welcome.08@pit": {
@@ -33805,6 +33937,18 @@
    "text": "Welcome to the Furnace. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.",
    "voice": "corporate2"
   },
+  "pa.welcome.10@locks": {
+   "duration_s": 8.126,
+   "file": "pa/pa.welcome.10@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.10@locks",
+   "request_key": "2ee96e7c42edb2d526ce03f745edb37dabf0fde4",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Welcome to the Lox. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location",
+   "text": "Welcome to the Locks. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.",
+   "voice": "corporate2"
+  },
   "pa.welcome.10@pit": {
    "duration_s": 7.902,
    "file": "pa/pa.welcome.10@pit.ogg",
@@ -33923,6 +34067,18 @@
    "stt_ok": true,
    "stt_text": "Thank you for joining us this evening at the furnace. Tonight's broadcast runs until a winner is declared, however long that takes",
    "text": "Thank you for joining us this evening at the Furnace. Tonight's broadcast runs until a winner is declared, however long that takes.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.11@locks": {
+   "duration_s": 7.368,
+   "file": "pa/pa.welcome.11@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.11@locks",
+   "request_key": "49ad3fa4597fadcf46dabf9c39c2bcfcda761fb0",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Thank you for joining us this evening at the Locks. Tonight's broadcast runs until a winner is declared, however long that takes",
+   "text": "Thank you for joining us this evening at the Locks. Tonight's broadcast runs until a winner is declared, however long that takes.",
    "voice": "corporate2"
   },
   "pa.welcome.11@pit": {
@@ -34057,6 +34213,18 @@
    "text": "Hello, and welcome to tonight's coverage from the Furnace. We have a full card, a full house, and a full medical wing on standby.",
    "voice": "corporate2"
   },
+  "pa.welcome.13@locks": {
+   "duration_s": 7.658,
+   "file": "pa/pa.welcome.13@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.13@locks",
+   "request_key": "cdebc80639ae9f4d9361bbacf7f39dad892b55ab",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Hello and welcome to tonight's coverage from The Locks. We have a full card, a full house, and a full medical wing on standby",
+   "text": "Hello, and welcome to tonight's coverage from the Locks. We have a full card, a full house, and a full medical wing on standby.",
+   "voice": "corporate2"
+  },
   "pa.welcome.13@pit": {
    "duration_s": 7.532,
    "file": "pa/pa.welcome.13@pit.ogg",
@@ -34175,6 +34343,18 @@
    "stt_ok": true,
    "stt_text": "It is a beautiful night here at the Furnace. The roof is open, the air is clear, and the outer districts can hear us from about nine miles out",
    "text": "It is a beautiful night here at the Furnace. The roof is open, the air is clear, and the outer districts can hear us from about nine miles out.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.14@locks": {
+   "duration_s": 7.96,
+   "file": "pa/pa.welcome.14@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.14@locks",
+   "request_key": "656e55aceb4927aafb3a5d8c5987797a9875b0b2",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "It is a beautiful night here at the locks. The roof is open, the air is clear, and the outer districts can hear us from about nine miles out",
+   "text": "It is a beautiful night here at the Locks. The roof is open, the air is clear, and the outer districts can hear us from about nine miles out.",
    "voice": "corporate2"
   },
   "pa.welcome.14@pit": {
@@ -34369,6 +34549,18 @@
    "text": "Here we are again at the Furnace. The stands filled early tonight, which usually means the district offices closed early too.",
    "voice": "corporate2"
   },
+  "pa.welcome.21@locks": {
+   "duration_s": 7.503,
+   "file": "pa/pa.welcome.21@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.21@locks",
+   "request_key": "e1fdbb343d9823c8a1c2e12d82647ca15a8ce035",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Here we are again at The Locks. The stands filled early tonight, which usually means the district offices closed early too",
+   "text": "Here we are again at the Locks. The stands filled early tonight, which usually means the district offices closed early too.",
+   "voice": "corporate2"
+  },
   "pa.welcome.21@pit": {
    "duration_s": 7.298,
    "file": "pa/pa.welcome.21@pit.ogg",
@@ -34501,6 +34693,18 @@
    "text": "Tonight from the Furnace, a full programme of arena combat. Our thanks to the maintenance teams, who resurfaced the floor twice this week.",
    "voice": "corporate2"
   },
+  "pa.welcome.23@locks": {
+   "duration_s": 7.811,
+   "file": "pa/pa.welcome.23@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.23@locks",
+   "request_key": "266de7b707bfbf128ccaf25a539a103b813df137",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Tonight from the Locks, a full program of arena combat. Our thanks to the maintenance teams who resurfaced the floor twice this week",
+   "text": "Tonight from the Locks, a full programme of arena combat. Our thanks to the maintenance teams, who resurfaced the floor twice this week.",
+   "voice": "corporate2"
+  },
   "pa.welcome.23@pit": {
    "duration_s": 7.922,
    "file": "pa/pa.welcome.23@pit.ogg",
@@ -34631,6 +34835,18 @@
    "stt_ok": true,
    "stt_text": "Welcome to the furnace. The center of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on",
    "text": "Welcome to the Furnace. The centre of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.25@locks": {
+   "duration_s": 7.781,
+   "file": "pa/pa.welcome.25@locks.ogg",
+   "kind": "line",
+   "request": "pa.welcome.25@locks",
+   "request_key": "54a634ae1bf790703e456ad9ed7f6afef00e5552",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Welcome to the locks. The center of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on",
+   "text": "Welcome to the Locks. The centre of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on.",
    "voice": "corporate2"
   },
   "pa.welcome.25@pit": {
@@ -34826,7 +35042,7 @@
    "voice": "corporate2"
   }
  },
- "generated": "2026-09-22",
+ "generated": "2026-09-24",
  "lines": {
   "caller.army.01": {
    "bases": [
@@ -37035,6 +37251,7 @@
     "crossing": "caller.intro.01@crossing",
     "foundry": "caller.intro.01@foundry",
     "furnace": "caller.intro.01@furnace",
+    "locks": "caller.intro.01@locks",
     "pit": "caller.intro.01@pit",
     "scrapyard": "caller.intro.01@scrapyard",
     "sumps": "caller.intro.01@sumps",
@@ -37053,6 +37270,7 @@
     "crossing": "caller.intro.02@crossing",
     "foundry": "caller.intro.02@foundry",
     "furnace": "caller.intro.02@furnace",
+    "locks": "caller.intro.02@locks",
     "pit": "caller.intro.02@pit",
     "scrapyard": "caller.intro.02@scrapyard",
     "sumps": "caller.intro.02@sumps",
@@ -37120,6 +37338,7 @@
     "crossing": "caller.intro.09@crossing",
     "foundry": "caller.intro.09@foundry",
     "furnace": "caller.intro.09@furnace",
+    "locks": "caller.intro.09@locks",
     "pit": "caller.intro.09@pit",
     "scrapyard": "caller.intro.09@scrapyard",
     "sumps": "caller.intro.09@sumps",
@@ -37222,6 +37441,7 @@
     "crossing": "caller.intro.22@crossing",
     "foundry": "caller.intro.22@foundry",
     "furnace": "caller.intro.22@furnace",
+    "locks": "caller.intro.22@locks",
     "pit": "caller.intro.22@pit",
     "scrapyard": "caller.intro.22@scrapyard",
     "sumps": "caller.intro.22@sumps",
@@ -42088,6 +42308,7 @@
     "crossing": "color.lore.11@crossing",
     "foundry": "color.lore.11@foundry",
     "furnace": "color.lore.11@furnace",
+    "locks": "color.lore.11@locks",
     "pit": "color.lore.11@pit",
     "scrapyard": "color.lore.11@scrapyard",
     "sumps": "color.lore.11@sumps",
@@ -44536,6 +44757,7 @@
     "crossing": "pa.sponsor.10@crossing",
     "foundry": "pa.sponsor.10@foundry",
     "furnace": "pa.sponsor.10@furnace",
+    "locks": "pa.sponsor.10@locks",
     "pit": "pa.sponsor.10@pit",
     "scrapyard": "pa.sponsor.10@scrapyard",
     "sumps": "pa.sponsor.10@sumps",
@@ -44610,6 +44832,7 @@
     "crossing": "pa.welcome.01@crossing",
     "foundry": "pa.welcome.01@foundry",
     "furnace": "pa.welcome.01@furnace",
+    "locks": "pa.welcome.01@locks",
     "pit": "pa.welcome.01@pit",
     "scrapyard": "pa.welcome.01@scrapyard",
     "sumps": "pa.welcome.01@sumps",
@@ -44628,6 +44851,7 @@
     "crossing": "pa.welcome.02@crossing",
     "foundry": "pa.welcome.02@foundry",
     "furnace": "pa.welcome.02@furnace",
+    "locks": "pa.welcome.02@locks",
     "pit": "pa.welcome.02@pit",
     "scrapyard": "pa.welcome.02@scrapyard",
     "sumps": "pa.welcome.02@sumps",
@@ -44660,6 +44884,7 @@
     "crossing": "pa.welcome.05@crossing",
     "foundry": "pa.welcome.05@foundry",
     "furnace": "pa.welcome.05@furnace",
+    "locks": "pa.welcome.05@locks",
     "pit": "pa.welcome.05@pit",
     "scrapyard": "pa.welcome.05@scrapyard",
     "sumps": "pa.welcome.05@sumps",
@@ -44685,6 +44910,7 @@
     "crossing": "pa.welcome.07@crossing",
     "foundry": "pa.welcome.07@foundry",
     "furnace": "pa.welcome.07@furnace",
+    "locks": "pa.welcome.07@locks",
     "pit": "pa.welcome.07@pit",
     "scrapyard": "pa.welcome.07@scrapyard",
     "sumps": "pa.welcome.07@sumps",
@@ -44703,6 +44929,7 @@
     "crossing": "pa.welcome.08@crossing",
     "foundry": "pa.welcome.08@foundry",
     "furnace": "pa.welcome.08@furnace",
+    "locks": "pa.welcome.08@locks",
     "pit": "pa.welcome.08@pit",
     "scrapyard": "pa.welcome.08@scrapyard",
     "sumps": "pa.welcome.08@sumps",
@@ -44728,6 +44955,7 @@
     "crossing": "pa.welcome.10@crossing",
     "foundry": "pa.welcome.10@foundry",
     "furnace": "pa.welcome.10@furnace",
+    "locks": "pa.welcome.10@locks",
     "pit": "pa.welcome.10@pit",
     "scrapyard": "pa.welcome.10@scrapyard",
     "sumps": "pa.welcome.10@sumps",
@@ -44746,6 +44974,7 @@
     "crossing": "pa.welcome.11@crossing",
     "foundry": "pa.welcome.11@foundry",
     "furnace": "pa.welcome.11@furnace",
+    "locks": "pa.welcome.11@locks",
     "pit": "pa.welcome.11@pit",
     "scrapyard": "pa.welcome.11@scrapyard",
     "sumps": "pa.welcome.11@sumps",
@@ -44771,6 +45000,7 @@
     "crossing": "pa.welcome.13@crossing",
     "foundry": "pa.welcome.13@foundry",
     "furnace": "pa.welcome.13@furnace",
+    "locks": "pa.welcome.13@locks",
     "pit": "pa.welcome.13@pit",
     "scrapyard": "pa.welcome.13@scrapyard",
     "sumps": "pa.welcome.13@sumps",
@@ -44789,6 +45019,7 @@
     "crossing": "pa.welcome.14@crossing",
     "foundry": "pa.welcome.14@foundry",
     "furnace": "pa.welcome.14@furnace",
+    "locks": "pa.welcome.14@locks",
     "pit": "pa.welcome.14@pit",
     "scrapyard": "pa.welcome.14@scrapyard",
     "sumps": "pa.welcome.14@sumps",
@@ -44849,6 +45080,7 @@
     "crossing": "pa.welcome.21@crossing",
     "foundry": "pa.welcome.21@foundry",
     "furnace": "pa.welcome.21@furnace",
+    "locks": "pa.welcome.21@locks",
     "pit": "pa.welcome.21@pit",
     "scrapyard": "pa.welcome.21@scrapyard",
     "sumps": "pa.welcome.21@sumps",
@@ -44874,6 +45106,7 @@
     "crossing": "pa.welcome.23@crossing",
     "foundry": "pa.welcome.23@foundry",
     "furnace": "pa.welcome.23@furnace",
+    "locks": "pa.welcome.23@locks",
     "pit": "pa.welcome.23@pit",
     "scrapyard": "pa.welcome.23@scrapyard",
     "sumps": "pa.welcome.23@sumps",
@@ -44899,6 +45132,7 @@
     "crossing": "pa.welcome.25@crossing",
     "foundry": "pa.welcome.25@foundry",
     "furnace": "pa.welcome.25@furnace",
+    "locks": "pa.welcome.25@locks",
     "pit": "pa.welcome.25@pit",
     "scrapyard": "pa.welcome.25@scrapyard",
     "sumps": "pa.welcome.25@sumps",
