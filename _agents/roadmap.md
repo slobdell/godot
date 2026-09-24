@@ -64,7 +64,32 @@ hulls, the Law's re-derived sizes, and the −Z facing test that has never exist
 climb look-ahead so it stops flying through the Terminus blocks; the camera lifting over the hull). Detail in
 [workstreams.md](workstreams.md) *Round 11*; his words in [game_design.md](game_design.md) *Round 11 direction*.
 
+**Round 12's first two candidates, found during round 11 and deliberately not taken** (airship, `verification.md`):
+
+1. **The camera asks the collider when it means the silhouette.** `RtsCamera.roof_over` / `clear_pose` /
+   `sight_blocked` read `Arena.active["obstacles"]`, which are collision boxes. A floodlight's collider is 3 m and its
+   drawn mast is **16.05 m**, so the camera can sit inside the lamp head — its tilt range reaches it at about 18°, and
+   the lead's default pose is 21°. `sight_blocked` never sees a 20.7 m LED wall whose collider is 1.4 m. **The fix is
+   to feed a drawn-extent table into those reads (`AirshipFlight.DRAWN` already exists and is tested against the
+   meshes) and never to grow the colliders**, which would move gameplay and the sim baseline.
+2. **`BlockCutaway` never cuts away an ad screen.** `_gather` keeps obstacle shapes ≥ 6 m tall; a 20.7 m ad screen
+   with a 1.4 m collider fails that test, so it is never hidden when it stands between the camera and the fight. This
+   is the same class as the complaint that produced the round-9 cutaway ("the camera ends up inside a building and we
+   can't see what's going on"), on an object the rule cannot see. Blocks are unaffected — theirs is the one collider
+   that matches what is drawn.
+
+Both are read from the code, not seen in play. Neither was taken in round 11 because the camera is a design change and
+round 11 was a defect round.
+
 **Carried forward, not scheduled this round** (from round 10's archived Status lists, the previous candidate order):
+
+## Next round (12): the first art/terrain item is already decided
+
+- **Water reads black: make it wetter** (the lead, 2026-09-24, on arena's round-11 page; he chose next round, not
+  round 11). The diagnosis, the maps, his pose, the frames and arena's suggestions are in
+  [`arenas.md`](arenas.md) *Water reads black*. Owner: whoever owns `game/theme/arena_kit/terrain/`.
+- **Ask him about the Locks' open canal again** once he has driven it (the orchestrator ruled "leave it open" on
+  2026-09-24); put the exposure number beside the question (centre sees 45%).
 
 ## Round 11 candidates as of round 10's close (each archived brief's Status has its own list)
 

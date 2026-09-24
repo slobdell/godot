@@ -60,7 +60,23 @@ const DEFAULT_LAYOUT := "foundry"
 ## entry the lead has NOT judged.** yard and pit are his verdict; the cityscape is the map he asked for twice and
 ## has never seen. It goes in so that he meets it — a map nobody plays is the failure this whole round was about —
 ## and it comes straight back out if he says no, which is one line and a test expectation.
-const ROTATION := ["yard", "pit", "terminus"]
+##
+## **crossing and sumps are here from round 11**, and they are the second instance of the same fault. Round 10's
+## terrain stream built them — **crossing**: a river through a canal district with two bridges, each landing beside
+## an objective; **sumps**: the only real pits in the game, a chain of them between causeways — exactly the bridges
+## and pits he had asked for, twice. Neither was ever on this line, so neither ever reached him: *"I haven't seen any
+## bridges or pits that I've asked for"*. **The lead KEPT both (2026-09-24, on arena's round-11 review page)**: they are
+## verdict maps now, like yard and pit, and `test_random_deals_only_the_maps_the_lead_kept` lists them as kept.
+## **locks (round 11, arena A3): the lead said DEAL IT (2026-09-24) and approved recording "the Locks" for the 18
+## {arena} lines.** It joins this line in the SAME commit as its recordings, never before: a dealt map without them
+## reddens announcer-check (tools/announcer/test_arena_names.py), which is what happened at f30dbf0d.
+## `test_every_built_map_is_dealt_cut_or_a_fixture` now fails the day a non-fixture map lands and is not listed here
+## or in CUT, so a third instance cannot be silent.
+const ROTATION := ["yard", "pit", "terminus", "crossing", "sumps"]
+## The maps the lead CUT (game_design.md, *The lead's arena verdict*, 2026-09-19; foundry, furnace and scrapyard are
+## round 1-2 layouts that predate the kit and went with the same verdict). They still load by name for tests and
+## probes; they are never dealt. Every layout in LAYOUT_DIR is a fixture, CUT, or in ROTATION (test_arena_kit.gd).
+const CUT := ["boulevard", "boneyard", "foundry", "furnace", "scrapyard"]
 const LAYOUT_DIR := "res://arenas"
 ## Obstacle types with a built-in collision size [x, height, z] (meters, before rotation). Other types need "size".
 const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}

@@ -55,6 +55,9 @@ static var ticks := 0
 static var by_cause := {}
 ## Which layer produced the motion on each contact tick (route / direct / yield / unstick / face / drive / stop).
 static var by_driver := {}
+## Round 11 (nav R1): contact ticks by the GEAR commanded ("forward" / "reverse" / "none"): backing blind into a
+## second wall is the failure a planned reverse must not add, so reverse contacts are counted apart.
+static var by_gear := {}
 ## Contact ticks per unit name, and per lane name ("" = off every declared lane).
 static var by_unit := {}
 static var by_lane := {}
@@ -76,6 +79,7 @@ static func reset() -> void:
 	ticks = 0
 	by_cause = {}
 	by_driver = {}
+	by_gear = {}
 	by_unit = {}
 	by_lane = {}
 	hull_ticks = 0
@@ -87,7 +91,7 @@ static func reset() -> void:
 
 static func report() -> Dictionary:
 	return {"observed_unit_ticks": observed, "contact_unit_ticks": ticks, "by_cause": by_cause.duplicate(),
-			"by_driver": by_driver.duplicate(), "by_unit": by_unit.duplicate(), "by_lane": by_lane.duplicate(),
+			"by_driver": by_driver.duplicate(), "by_gear": by_gear.duplicate(), "by_unit": by_unit.duplicate(), "by_lane": by_lane.duplicate(),
 			"hull_contact_unit_ticks": hull_ticks, "plant_kind": plant_kind.duplicate(),
 			"top_colliders": top_colliders(5)}
 
@@ -164,6 +168,9 @@ func observe(mover: Movement) -> void:
 	ticks += 1
 	by_cause[cause] = int(by_cause.get(cause, 0)) + 1
 	by_driver[driver] = int(by_driver.get(driver, 0)) + 1
+	var throttle := float(decided.get("throttle", 0.0))
+	var gear := "forward" if throttle > THROTTLE_MIN else ("reverse" if throttle < -THROTTLE_MIN else "none")
+	by_gear[gear] = int(by_gear.get(gear, 0)) + 1
 	by_unit[String(tank.name)] = int(by_unit.get(String(tank.name), 0)) + 1
 	by_lane[lane] = int(by_lane.get(lane, 0)) + 1
 	var colliders: Dictionary = by_cause_collider.get(cause, {})

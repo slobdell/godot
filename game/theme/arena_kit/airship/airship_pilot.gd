@@ -89,6 +89,20 @@ func reset(at: Vector2, facing: float) -> void:
 	_has_error = false
 
 
+## A ghost of this pilot: the same state, free to be flown ahead (the look-ahead) without touching this one.
+func copy() -> AirshipPilot:
+	var ghost := AirshipPilot.new()
+	ghost.position = position
+	ghost.heading = heading
+	ghost.yaw_rate = yaw_rate
+	ghost.speed = speed
+	ghost.bank = bank
+	ghost._integral = _integral
+	ghost._previous_error = _previous_error
+	ghost._has_error = _has_error
+	return ghost
+
+
 ## One fixed tick. `goal` is where the carrot is right now, in XZ metres.
 func step(dt: float, goal: Vector2) -> void:
 	var to_goal := goal - position
@@ -152,20 +166,34 @@ static func carrot(from: Vector2, centre: Vector2, radius := ORBIT_RADIUS) -> Ve
 	return centre + Vector2(cos(angle), sin(angle)) * radius
 
 
-## The carrot, pushed away from anything the hull must not fly into. `blockers` is [{x, z, radius}] in metres; the
-## push is soft and falls off with distance so it bends the path rather than kinking it.
-static func avoid(goal: Vector2, from: Vector2, blockers: Array, clearance: float) -> Vector2:
+## The carrot, pushed away from anything the hull must not fly into. `solids` are rotated boxes
+## ([{centre: Vector2, half: Vector2, yaw}], `AirshipFlight.solids_of`), and the push is measured from the nearest
+## point of each footprint -- a block's corner is 28 m from its centre, and a push measured from the centre was what
+## let the hull's beam into one. Soft and falling off with distance, so it bends the path rather than kinking it.
+## Solids whose `need` (the height that clears them) is at or under `cleared` are already being flown over and are
+## not steered round.
+static func avoid(goal: Vector2, from: Vector2, solids: Array, clearance: float, cleared := -INF) -> Vector2:
 	var out := goal
-	for blocker: Dictionary in blockers:
-		var at := Vector2(float(blocker["x"]), float(blocker["z"]))
-		var keep := float(blocker["radius"]) + clearance
-		var offset := from - at
-		var distance := offset.length()
-		if distance > keep * 2.0 or distance < 0.001:
+	for solid: Dictionary in solids:
+		if float(solid.get("need", INF)) <= cleared:
 			continue
-		# Full push at the edge of the keep-out, nothing at twice that.
-		var strength := clampf((keep * 2.0 - distance) / keep, 0.0, 1.0)
-		out += offset / distance * keep * strength
+		var centre: Vector2 = solid["centre"]
+		var half: Vector2 = solid["half"]
+		var yaw := float(solid.get("yaw", 0.0))
+		if from.distance_to(centre) > half.length() + clearance * 2.0:
+			continue
+		# Into the box's own frame (x across, z along), clamp to the footprint, and back: the nearest point on it.
+		var axis_x := Vector2(cos(yaw), -sin(yaw))
+		var axis_z := Vector2(sin(yaw), cos(yaw))
+		var local := Vector2((from - centre).dot(axis_x), (from - centre).dot(axis_z))
+		var nearest := centre + axis_x * clampf(local.x, -half.x, half.x) + axis_z * clampf(local.y, -half.y, half.y)
+		var offset := from - nearest
+		var distance := offset.length()
+		# Inside the footprint: straight out from the middle.
+		var away := offset / distance if distance > 0.001 else ((from - centre).normalized() if from != centre else Vector2.RIGHT)
+		# Full push at the footprint's edge, nothing at twice the clearance.
+		var strength := clampf((clearance * 2.0 - distance) / clearance, 0.0, 1.0)
+		out += away * clearance * strength
 	return out
 
 

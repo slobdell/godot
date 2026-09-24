@@ -28,6 +28,71 @@
   loader refuses unknown names including `random` (only `Arena.resolve_name` knows it); the random roll comes from
   `--seed`; `Arena.DEFAULT_LAYOUT` (foundry) keeps headless runs and the sim baseline stable.
 
+## Round 11 (2026-09-24): what he is dealt, the towers, and the Locks — read this before the older sections
+
+- **The rotation is `Arena.ROTATION` = yard, pit, terminus, crossing, sumps, locks**, and it is the only thing the
+  picker and `--arena=random` deal. `Arena.CUT` holds his cut list in code. **Every layout in `arenas/` must be
+  exactly one of fixture / CUT / ROTATION** (`test_every_built_map_is_dealt_cut_or_a_fixture`): a map you build and
+  forget to publish fails the suite the day it lands. That test exists because round 10's Crossing and Sumps spent a
+  round unreachable, the second time this happened.
+- **Bridges and pits, honestly:** a bridge is restored ground at y = 0 between two carved holes, drawn as a 0.07 m
+  deck with 0.9 m rails, and nothing drives under it; a pit is a hole with no navmesh and a 0.9 m kerb, and you cannot
+  fall in. Don't promise him a viaduct.
+- **The venue floodlight towers stand OUTSIDE the wall** (`arena_dressing.gd` `_tower_base`): on the corner's line,
+  past the wall's outer corner by the model's bounds half-diagonal + 1 m. They used to stand 9 m inside every corner
+  with no collider (on the Terminus, 7.8 m inside the wall on drivable navmesh), which is what he drove through.
+  Outside rather than solid-in-place because the fight loses no floor and the navmesh does not move.
+  `test_the_venue_dressing_is_solid_or_outside_the_wall` now holds the dressing layer to the same rule as the props:
+  on the old tree it found exactly the towers, and nothing else in the dressing stands inside the wall.
+- **`make terrain-drive`** orders a player squad (mixed, and War Rigs) over each terrain map's crossings on the
+  default path and counts arrivals, contacts by cause, and ticks inside a hole. **Use it on any new terrain map before
+  you show it:** on the Locks it caught three layout faults the static report cannot see (an objective on a building's
+  corner, so the slots wrapped the building; containers in a road's mouth that jammed rigs turning; a 5.8 m slot
+  between a block and a rim). A lane that clears R4 is not a road a 14 m rig can TURN in. `--trace=<unit|all>`
+  and `--trace-full=<s>` dump Movement.state when something stops.
+- **The Locks** (`tools/terrain_maps.py` `locks`): a canal wall to wall, the lock in the middle and a swing bridge on
+  each flank; the objective pair on the far quays. Spread 0.453 (dry twin 0.344); the centre sees 0.45 because a canal
+  is open across its water by design. It's flagged for his eye rather than buried in cover, as the Sumps' 0.34 was.
+  **It's a fixture until he approves it.**
+- **A new map cannot be dealt until the booth can say its name.** `tools/announcer/test_arena_names.py` (in
+  `announcer-check`, in `make check`) requires every non-fixture layout to have a spoken name in
+  `assets/announcer/lines.json` AND a recording for each of the 18 lines that say `{arena}`. Recording is paid
+  generation behind the lead's approval of the text. So the order is: build the map as a fixture, put it on his page,
+  and on his yes record the name (`make announcer-generate`), then flip `fixture` and add it to `Arena.ROTATION`.
+  The Locks went into the rotation first and reddened `announcer-check` (`f30dbf0d`); the rotation test here and the
+  announcer's test agree on what a fixture is, which is what makes this order work.
+
+## Water reads black: next round's first art/terrain item (the lead, 2026-09-24: "make it wetter", next round)
+
+**What he sees.** At his pose (pitch 21°, FOV 35, 49 m back) the Crossing's river and the Locks' canal render as
+near-black channels with smears of floodlight: it reads as a trench, and next to the Sumps' pits (black shafts with a
+red glow) the two kinds of hole are told apart mostly by kerb colour. Frames at his pose:
+`_agents/streams/references/arena/water-reads-black-2026-09-24/` (crossing-bridge, locks-lock, locks-swing_bridge,
+locks-overview; builder0, `231c838d`).
+
+**Maps with water:** `crossing` (dealt), `locks` (dealt once its name is recorded), `terminus_canal` (a fixture).
+`sumps` and `pit` carry pits, which are not water and should stay dark.
+
+**Why it is black (read from `game/theme/arena_kit/terrain/water.gdshader`, round 10's):** the surface colour is
+`mix(water_deep, sky, fresnel * reflection)` plus one lamp streak. At his 21° camera the reflected ray points ~21° up,
+where Schlick gives fresnel ≈ 0.06 + 0.94·(1 − 0.36)^5 ≈ 0.16, and the modelled `sky` there is almost black (the neon
+band is only near the horizon: `exp(-6·r.y)` ≈ 0.12). So the water is ~84% `water_deep` = (0.004, 0.012, 0.018),
+effectively black, and the streak shows only from one lamp direction. That was deliberate: feel's round-10 review
+said the first, brighter look "reads as a starfield/nebula", so it went to "oily black".
+
+**What I think it needs** (arena's read, not a spec; his eye decides):
+- **Reflect what is actually around it at HIS angles**: the stands' crowd lights, the purple wall rims and the city
+  blocks' windows sit exactly where a 21° reflected ray lands, and they are what makes a canal read wet at night. A
+  cheap version is an environment band built from the venue's real layout (the wall's neon height and colours at
+  r.y 0.1–0.4) instead of the horizon-only band. A true planar reflection is the expensive version, to be measured.
+- **Lift the body colour** off black toward a dark teal, so the channel reads as a liquid under the reflection.
+- **Specular that moves**: the floodlight pools the floor already paints (`ArenaDressing.layout_lamps`) should glint
+  on a slow swell. That is the cue that says "wet", and it must not become the starfield again.
+- **A lap line at the rim**: a thin lighter band where water meets the kerb, which also separates water from pits
+  at a glance.
+- Judge it as a pair (`make remote T=terrain-shots`: each water map beside its dry twin at his pose), on HIS page.
+  Owner next round: whoever owns `game/theme/arena_kit/terrain/` (theme layer; round 10's terrain stream built it).
+
 ## The lead's direction (2026-09-17)
 
 > *"the maps are just too simple. We probably need a dedicated agent to formulate maps. I'm also not seeing the assets

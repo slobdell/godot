@@ -30,6 +30,8 @@ const LEGS := [
 ]
 ## A crew counts as arrived when its order completed within this of its own slot goal (order_probe's FAR_M).
 const ARRIVED_M := 7.0
+## Seeds > 1: spawn jitter (metres) on top of a random starting heading.
+const SPAWN_JITTER_M := 2.0
 
 var game_match: Match
 var orders: Orders
@@ -42,6 +44,19 @@ var leg_contacts_before := {}
 var leg_results: Array = []
 var time_per_leg := 90.0
 var squad_kind := "mixed"
+## Round 11 (R1): gear changes (cusps) per unit, the brief's second observable, counted here from the plant's own
+## signed speed with a CUSP_SPEED dead band (a hull rolling at 0.1 m/s either way is not changing gear). A three-point
+## turn is 2 cusps; a good fix moves cusps EARLIER and makes them fewer per manoeuvre, it does not remove them.
+const CUSP_SPEED := 0.3
+var gear_of := {}          # name -> last gear (+1 / -1)
+var cusps := {}            # name -> gear changes
+var reverse_ticks := 0     # unit-ticks rolling backward faster than CUSP_SPEED
+## R1.8: the plant's wheeled CREEP (TankMotion: a turn with under WHEEL_CREEP_THROTTLE × |turn| of throttle becomes
+## half-second legs alternating forward/reverse), read off the live motion state's `creep_dir` every tick.
+var creep_of := {}         # name -> last creep_dir
+var creep_ticks := 0       # unit-ticks in a creep leg
+var creep_flips := 0       # creep leg reversals
+var creep_flips_at_wall := 0  # ...of them, on a tick the hull was touching a wall
 
 
 func _initialize() -> void:
@@ -67,7 +82,11 @@ func _run() -> void:
 	root.add_child(arena)
 	game_match = MATCH.instantiate()
 	root.add_child(game_match)
-	game_match.seed_spawns(int(_flag("seed", "1")), 0.0)
+	# Round 11: seed 1 is the canonical drive (no jitter, spawn headings). The drive is deterministic, so a different
+	# seed with no jitter is the SAME run (measured: seeds 1-3 byte-identical on a04d75c0); seeds > 1 add SPAWN_JITTER_M
+	# of spawn jitter and a seeded random starting heading per hull (below), which is what makes them samples.
+	var seed := int(_flag("seed", "1"))
+	game_match.seed_spawns(seed, 0.0 if seed == 1 else SPAWN_JITTER_M)
 	game_match.set_meta("player_team", Match.Team.GREEN)
 	await physics_frame
 	for frame in 300:
@@ -91,8 +110,13 @@ func _run() -> void:
 	executor.game_match = game_match
 	executor.orders = orders
 	root.add_child(executor)
+	var headings := RandomNumberGenerator.new()
+	headings.seed = seed * 7717
 	for tank: Tank in game_match.tanks.get_children():
 		units.append(tank)
+		if seed != 1:
+			tank.rotation.y = headings.randf_range(-PI, PI)
+			tank.reset_physics_interpolation()
 	for frame in SimClock.TICK_RATE:
 		await physics_frame
 	WallContact.reset()
@@ -123,6 +147,28 @@ func _next_leg() -> void:
 
 func _sample() -> void:
 	var elapsed := float(game_match.tick - leg_started_tick) / float(SimClock.TICK_RATE)
+	for tank in units:
+		var motion: Variant = tank.get("_motion")
+		var creep := int((motion as Dictionary).get("creep_dir", 0)) if motion is Dictionary else 0
+		var name := String(tank.name)
+		if creep != 0:
+			creep_ticks += 1
+			if int(creep_of.get(name, 0)) == -creep:
+				creep_flips += 1
+				if bool(Movement.state(tank).get("wall_contact", false)):
+					creep_flips_at_wall += 1
+		creep_of[name] = creep
+	for tank in units:
+		var speed := tank.speed()
+		if absf(speed) < CUSP_SPEED:
+			continue
+		var gear := 1 if speed > 0.0 else -1
+		if gear < 0:
+			reverse_ticks += 1
+		var key := String(tank.name)
+		if gear_of.has(key) and int(gear_of[key]) != gear:
+			cusps[key] = int(cusps.get(key, 0)) + 1
+		gear_of[key] = gear
 	for tank in units:
 		var key := String(tank.name)
 		if leg_done.has(key):
@@ -182,7 +228,10 @@ func _report() -> void:
 	var mixed_ok := squad_kind != "mixed" or int(report["contact_unit_ticks"]) == 0
 	var out := {"arena": String(Arena.active.get("name", "?")), "squad": squad_kind, "units": units.size(),
 			"legs": leg_results.size(), "arrived_every_leg": arrived_all, "wall_contacts": report,
-			"route_arms": Movement.route_arms(), "off": Array(Movement._off),
+			"route_arms": Movement.route_arms(), "off": Array(Movement._off), "seed": int(_flag("seed", "1")),
+			"cusps": cusps.values().reduce(func(a: int, b: int) -> int: return a + b, 0), "cusps_by_unit": cusps,
+			"reverse_unit_ticks": reverse_ticks, "creep_unit_ticks": creep_ticks, "creep_flips": creep_flips,
+			"creep_flips_at_wall": creep_flips_at_wall,
 			"episodes": episodes.slice(0, 40), "pass": arrived_all and mixed_ok and int(report["observed_unit_ticks"]) > 0}
 	print("NAV_DRIVE %s" % JSON.stringify(out))
 	quit(0)

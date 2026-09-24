@@ -2329,3 +2329,57 @@ Four separate asks, one owner:
 - **The Syndicate has vehicles facing backwards.** Godot's forward is −Z; the airship's own pass-2 bug was exactly this
   and cost a night. A per-model yaw convention that is checked by a test, not by eye, is the fix that stops it coming
   back a fourth time.
+
+### Round 11: the lead's verdicts from the two review pages (2026-09-24, answered live)
+
+**From the arena page** (https://claude.ai/artifact/DUa5fN72G9YDTjLYRFkuj6 — note: built WITHOUT the `db`
+capability, so his taps could not be recorded and every question had to be re-asked by hand in the orchestrator's
+session. **Every review page from now on declares `db`**; that is the cost of forgetting it):
+
+1. **The Crossing and the Sumps: KEEP BOTH.** They are verdict maps now, like the yard and the Pit — no longer
+   "dealt but unruled" (`Arena.ROTATION`'s comment; `test_random_deals_only_the_maps_the_lead_kept` lists them as
+   kept).
+2. **The Locks: DEAL IT**, and he approves recording *"the Locks"* for the 18 announcer lines that say `{arena}`.
+   A paid ElevenLabs run, authorised (~2,071 credits, priced as a dry run before a character was spent). It joins
+   `Arena.ROTATION` **in the same commit as its recordings, never before** — a dealt map without them reddens
+   `announcer-check`.
+3. **The Pit: DIG IT.** Four sheer pits at the ring's corners ship in `pit.json`, the map he kept in round 9, with
+   not one container moved: "The Pit" stops being a name. The undug Pit is preserved as the fixture `pit_dry` and
+   the change is one line to undo (`tools/make_arenas.py`; before/after frames in
+   `_agents/streams/references/arena/pit-dug-2026-09-24/`).
+4. **Water reads black and should read wet** — he agrees, and chose *next round* over tonight. Written up as the
+   first item of the next art/terrain round in `_agents/arenas.md` *Water reads black*, briefed from arena's own
+   frames and pointed at from `roadmap.md`. **Not started.**
+5. **Is the Locks' open canal the kill zone he wants, or does it need cover on the quays?** He did not answer, and it
+   blocked the stream, so **the orchestrator ruled: LEAVE IT OPEN**, and the ruling is recorded beside the layout.
+   The exposure IS the map's proposition — the short way over is watched, the flanks are not — and adding cover
+   before he has driven it erases the only thing that distinguishes it from the Crossing. Re-put to him on the next
+   page AFTER he has played it, with the exposure number beside the question (the centre sees 45 % of the field).
+
+**From the fleet page** (https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS — `db` declared, taps recorded in
+`decisions/<id>`, read back with `read_db`):
+
+6. **The Law at 1.25× the real-world rule: APPROVED.** Assault Gun 5.84 → 7.30 m, APC 5.01 → 6.26 m. Recorded as a
+   declared per-faction multiplier on top of the round-9 rule (`length = reference × K × FACTION_SCALE[law]`), not as
+   two hand-edited numbers, so it stays a rule a reader can check. **This is the first time a faction's scale departs
+   from the one-world-K rule, and it is his call, not a derivation.**
+7. **The burner keeping the bus's shape: REJECTED**, and his words reframe the question:
+   > *"I had no idea these were 2 separate unit that all makes more sense now. We will want to create a different unit
+   > type for the burner because it looks identical to the tank"*
+
+   So the burner returns to 2.40 m, and the real answer is that **the burner must stop being a reskinned prison bus.**
+8. **All three round-10 burner concepts: REJECTED**, with the direction:
+   > *"I had no idea there was a dedicated burner yet. To keep things ridiculous this should be based off of an actual
+   > fire engine."*
+
+   A new concept set briefed from a real fire engine (ladder, pump panel, hose reels — the silhouette a child points
+   at), from the Condemned's approved art as `REFS`, never from adjectives. `roadmap.md` already carried "the fire
+   engine 3D" as one of his round-10 taps: this is the second time he has asked.
+9. **The bus: `bus_r10_b` APPROVED for 3D** (a and c rejected). It replaces the stretched dozer the bus wears today.
+
+**And on the airship, watching the clip:** *"I opened that video and it looks fine."* — the camera lift is approved
+as shipped. **The orchestrator's ruling on the airship's own open question** (on the Terminus, "never intersect a
+building" and "in his frame at his pose" cannot both hold at any size): **keep it as a zoomed-out sight there.** The
+Terminus is the only shipping map with 40 m blocks inside the fight; he asked to see the airship *more*, not
+constantly; and the alternative re-opens a size he has already ruled on twice.
+||||||| abb5be04

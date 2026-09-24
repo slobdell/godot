@@ -108,11 +108,15 @@ terrain-pytest: ## Terrain: the Python water/bridge mirror against the golden fi
 	$(PYTHON) -m unittest tools/test_arena_terrain.py
 
 ## Spots and scale hulls per terrain map: name:x:z for the camera, x:z:yaw for a hull. The dry twin is shot from the same pose.
-TERRAIN_SHOT_ARENAS ?= crossing sumps terminus_canal
+TERRAIN_SHOT_ARENAS ?= crossing sumps locks pit terminus_canal
 TERRAIN_SPOTS_crossing ?= bridge:-92:14,neck:0:22,landing:-76:-22,far_bridge:92:-14
 TERRAIN_HULLS_crossing ?= -92:12:0,-88:36:10,-78:-20:170,6:48:0,70:18:200
 TERRAIN_SPOTS_sumps ?= catwalk:-55:14,causeway:-27:14,lip:-40:40,far:-52:-22
 TERRAIN_HULLS_sumps ?= -55:10:0,-27:20:10,-44:40:0,-50:-22:170,-84:30:0
+TERRAIN_SPOTS_locks ?= lock:0:4,swing_bridge:-92:0,far_quay:-72:-24,quay_road:-30:15
+TERRAIN_HULLS_locks ?= 0:4:0,-2:-8:180,-92:6:0,-70:-24:170,-30:15:90
+TERRAIN_SPOTS_pit ?= corner_pit:-50:40,gate:0:36,far_yard:-66:-40
+TERRAIN_HULLS_pit ?= -38:52:90,0:44:0,-62:-44:170
 TERRAIN_SPOTS_terminus_canal ?= avenue_bridge:0:30,west_bridge:-70:30,canal:-35:30
 TERRAIN_HULLS_terminus_canal ?= 0:28:0,-70:34:0,-40:44:90
 ## A layout whose "before" frame is not `<name>_dry` (a proposal drawn on a real map).
@@ -144,3 +148,22 @@ terrain-measure: ## Terrain: the ring-of-eyes centre figure and plain objective 
 .PHONY: terrain-page
 terrain-page: ## Terrain: the lead's page -- every terrain map's frames beside its dry twin, and the numbers (after make remote T=terrain-shots) -> build/terrain-page/index.html
 	$(PYTHON) tools/terrain_page.py --shots $(BUILD_DIR)/terrain-shots --series $(BUILD_DIR) --out $(BUILD_DIR)/terrain-page/index.html $(TERRAIN_SHOT_ARENAS)
+
+# Round 11 (A1.4): a player squad ordered across each terrain map's water or pits on the DEFAULT path (Orders,
+# source: player), legs to points the planner can only reach over a bridge or a causeway. Arrivals, contacts by cause,
+# and ticks any hull spent inside a carved footprint (must be zero). DRIVE_TERRAIN_MAPS / DRIVE_TERRAIN_SQUADS, and
+# DRIVE_TERRAIN_SHOTS=1 for frames at the lead's pose (needs a display: make remote T="terrain-drive DRIVE_TERRAIN_SHOTS=1").
+DRIVE_TERRAIN_MAPS ?= crossing sumps locks pit
+DRIVE_TERRAIN_SQUADS ?= mixed rigs
+
+.PHONY: terrain-drive
+terrain-drive: import ## Arena (round 11): a squad ordered over each terrain map's bridges/causeways on the default path -> build/terrain-drive/*.log, TERRAIN_DRIVE lines (DRIVE_TERRAIN_MAPS="crossing sumps" DRIVE_TERRAIN_SQUADS="mixed rigs" DRIVE_TERRAIN_SHOTS=1 for frames)
+	@rm -rf $(BUILD_DIR)/terrain-drive && mkdir -p $(BUILD_DIR)/terrain-drive
+	@$(foreach map,$(DRIVE_TERRAIN_MAPS),$(foreach squad,$(DRIVE_TERRAIN_SQUADS),\
+		timeout 900 $(GODOT) $(if $(DRIVE_TERRAIN_SHOTS),--resolution 1920x1080,--headless) --fixed-fps $(SIM_HZ) --path . \
+			--script res://tests/arena/terrain_drive.gd -- --arena=$(map) --squad=$(squad) \
+			$(if $(DRIVE_TERRAIN_SHOTS),--shots=$(CURDIR)/$(BUILD_DIR)/terrain-drive/shots) \
+			> $(BUILD_DIR)/terrain-drive/$(map)-$(squad).log 2>&1 || true; \
+		grep -E "^TERRAIN_DRIVE_LEG|^TERRAIN_DRIVE |SCRIPT ERROR|control FAILED" $(BUILD_DIR)/terrain-drive/$(map)-$(squad).log | cut -c1-900 \
+			|| echo ">> terrain-drive: $(map) $(squad) printed NO result";))
+	@! grep -l "control FAILED\|SCRIPT ERROR" $(BUILD_DIR)/terrain-drive/*.log || { echo ">> terrain-drive: a run REFUSED or errored"; exit 1; }
