@@ -160,6 +160,35 @@ _Updated 2026-09-24 ~04:00 by the arena worker. **Merge here: `abb5be04` is gree
 1689 passed / 0 failed, 18 targets, sim-baseline `457b5e830708b439` unmoved). The commits after it are Status/doc only.
 Baseline at the start: `a04d75c0` green on builder0 (1686/0)._
 
+### Round 11 verdicts (the lead, 2026-09-24, relayed by the orchestrator): landed at `91dd8b5e`
+1. **Crossing + Sumps KEPT**: in the kept list of `test_random_deals_only_the_maps_the_lead_kept`.
+2. **The Locks: DEAL IT, recording approved.** "the Locks" is in `assets/announcer/lines.json`'s vocabulary (text only).
+   **No audio generated.** The recording run below is the orchestrator's to start; the Locks is dealt in the SAME commit
+   as its clips (see *The Locks' recording run*).
+3. **The Pit DUG**: four corner pits ship in `pit.json`; the Pit he kept is the fixture `pit_dry` (one line to undo in
+   `tools/make_arenas.py`); frames in `_agents/streams/references/arena/pit-dug-2026-09-24/`.
+4. **Water: next round.** Written up in `arenas.md` *Water reads black* (diagnosis from the shader, maps, his pose,
+   frames, suggestions); a pointer at the top of `roadmap.md`'s next-round section. Not started.
+5. **The Locks' canal stays open** (orchestrator's ruling), recorded beside the layout in `terrain_maps.py`; ask him
+   again after he has driven it.
+
+### The Locks' recording run (lead-approved 2026-09-24; NOT run: waiting on the orchestrator)
+- **Dry run** (laptop, `91dd8b5e`, nothing sent): `python3 tools/announcer/generate.py --dry-run --only-values locks`
+  → **18 requests, 2,071 characters, ~2,071 credits** (Caller 4 / 285 chars, Veteran 1 / 67, PA 13 / 1,719), plus
+  speech-to-text on ~2 minutes of audio. Round 10's Crossing + Sumps run was the same shape (36 requests, 4,196).
+- **The real run** (needs `ELEVENLABS_API_KEY`; `generate.py` appends the ledger row to
+  `assets/announcer/ledger.md` itself):
+  `python3 tools/announcer/generate.py --lead-approved --only-values locks --note "r11: the Locks (arena A3), the 18 arena lines"`
+  (`make announcer-generate APPROVED=1` has no `--only-values` pass-through, so call the script directly.)
+- **The 18 lines** (each recorded with "the Locks" in place of `{arena}`): caller.intro.01, caller.intro.02,
+  caller.intro.09, caller.intro.22, pa.welcome.01, pa.welcome.02, pa.welcome.05, pa.welcome.07, pa.welcome.08,
+  pa.welcome.10, pa.welcome.11, pa.welcome.13, pa.welcome.14, pa.welcome.21, pa.welcome.23, pa.welcome.25,
+  pa.sponsor.10, color.lore.11.
+- **Then, in ONE commit with the clips and manifest:** in `tools/terrain_maps.py` `locks()` drop `fixture=True`;
+  `make arenas`; add `"locks"` to `Arena.ROTATION` and to the kept list in
+  `test_random_deals_only_the_maps_the_lead_kept`; `make announcer-check` must pass (`test_arena_names`); then
+  `make remote T=check`. arena will do this commit the moment the clips exist, if asked.
+
 ### Summary
 | item | state | commit |
 |---|---|---|
