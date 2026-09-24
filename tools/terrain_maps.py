@@ -291,7 +291,76 @@ def terminus_canal(m):
                       m.lane("east street", [(70, 90), (70, 20), (70, -20), (70, -90)], 18)])
 
 
+# ---- The Locks (round 11, arena A3): a new map, because "there have been no new maps" was also literally true ------
+#
+# A shipping canal cut straight across the arena, and three ways over it: the LOCK in the middle (the lock gates, a
+# short causeway every bank can see down) and a SWING BRIDGE out on each flank. The Crossing is a river you go
+# round; the Locks is a line you must cross, and the only question is where.
+#
+# His rule for a bridge (the header): there has to be something on the far side. The objective pair sits on the far
+# bank, placed so the two routes to it are nearly the SAME LENGTH and differ only in what watches them: over the
+# lock (straight, and the whole canal sees it) or over the swing bridge (a longer run, but behind the warehouses
+# along the quay). That is the decision spread, as a choice of exposure and not of distance.
+#
+# The canal is one long sightline by nature (open water hides nothing), so the quays carry stacked containers set
+# back from the rim at intervals, parallel to the water: they break the view ALONG the canal without closing any
+# crossing's mouth. Four lock houses (city blocks) stand round the lock, so the lock is watched down the avenue and
+# along the water, and the middle of the map is not a view of the whole field (the first draft, with one lock house a
+# side, let the centre see 48%).
+#
+# Authored on green's half (z > 0) and mirrored. The canal and the lock are centred on the origin, their own mirrors.
+LOCKS_CANAL = (0.0, 0.0, 300.0, 14.0)       # z -7..7, wall to wall
+LOCKS_LOCK = (0.0, 0.0, 16.0, 24.0)         # x -8..8, z -12..12: the lock gates, 16 m wide, 5 m onto each quay
+LOCKS_SWING = (-92.0, 0.0, 14.0, 24.0)      # x -99..-85, z -12..12: green's west swing bridge (mirror: the east one)
+LOCKS_OBJECTIVE = (-72.0, -24.0)            # on rust's quay, between the lock house and green's swing bridge
+
+
+def locks(m):
+    terrain = mirrored_terrain([water("the canal", *LOCKS_CANAL), bridge("the lock", *LOCKS_LOCK),
+                                bridge("the west swing bridge", *LOCKS_SWING)])
+    props = [
+        # The lock houses: a block on green's quay east of the lock (mirror: rust's quay, west of it). Set back 4 m
+        # behind the rim so the quay road runs in front of them.
+        # Four lock houses, one per quadrant round the lock (two here, two by the mirror): the lock's avenue runs
+        # between them 20 m wide, so the centre sees up the avenue and along the water and nothing else. Set back to
+        # z 22 so the QUAY ROAD between them and the rim is 13.8 m (over R4's 12.14 m physical bar): at z 14 it was
+        # a 5.8 m slot, drivable after the bake by 1.8 m -- a place for a hull to wedge, which is the trap he hates.
+        m.block(30, 42, tiers=2, setback=1, neon="cyan", seed=83),
+        m.block(-30, 42, tiers=3, neon="magenta", seed=89),
+        # Quay stacks, parallel to the water and set back from the rim: they cut the canal's sightline into reaches.
+        # Only out past the swing bridges: stacks at x +-60 stood in the mouths of the quay roads and jammed a War
+        # Rig squad turning home off the far quay (make terrain-drive, 1697 contact ticks on one leg).
+        m.c40(-120, 16, 0, 2, faction="law"), m.c20(118, 17, 0, 2, faction="mixed"),
+        # The objective's cover on green's own quay (its mirror is the contested one's): a holder uses it without
+        # standing on the point.
+        m.wreck(98, 50, 60),
+        m.c20(112, 40, 90, 2, faction="law"),
+        # Approaches from the base: broken cover, offset so no route is a straight line.
+        m.c40(-30, 66, 0, 1), m.wreck(-96, 62, 20), m.c20(96, 66, 90, 1),
+        # Form-up line in front of the base, split either side of the lock's avenue (the avenue is a lane).
+        m.c20(-42, 80, 0, 1), m.c20(-20, 80, 0, 1), m.c20(24, 80, 0, 1), m.c20(46, 80, 0, 1),
+        # Lamps at each crossing's mouth on green's side: the crossings are lit, the water is not.
+        m.floodlight(-14, 20), m.floodlight(-108, 20),
+        m.screen(-76, 100, 180, "arena"), m.sign(-81, 88, 180, "arena"),  # outside the spawn zone (x +-75)
+    ]
+    write_with_twin(m, "locks", "The Locks",
+                    "A shipping canal cut straight across the arena, crossed at the lock in the middle and at a swing "
+                    "bridge on each flank. The lock is the short way and the whole canal watches it; the bridges are "
+                    "the covered way round, behind the warehouses. Each side's prize is on the far bank: choose which "
+                    "crossing to be seen on.",
+                    props, terrain,
+                    shape={"kind": "hexagon"}, half_size=140.0,
+                    objectives=m.objective_pair("the far quay", *LOCKS_OBJECTIVE, 14.0),
+                    lanes=[m.lane("the lock", [(0, 86), (0, 40), (0, -40), (0, -86)], 16) | {"self_mirror": True},
+                           m.lane("west swing bridge", [(-88, 70), (-92, 30), (-92, -30), (-60, -86)], 14)],
+                    regions=[m.region("the lock", "chokepoint", 0, 0, 8),
+                             m.region("west swing bridge", "chokepoint", -92, 0, 7),
+                             m.region("the lock house", "overlook", 30, 10, 6),
+                             m.region("the west quay", "cover_cluster", -60, 30, 16)])
+
+
 def author(m):
     crossing(m)
     pits(m)
     terminus_canal(m)
+    locks(m)

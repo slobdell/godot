@@ -27,6 +27,9 @@ const COURSES := {
 	"crossing": [{"name": "the west landing", "to": [-76.0, -22.0]}, {"name": "home, east of the neck", "to": [60.0, 40.0]}],
 	# The far causeway objective is beyond the west pit; then up to the pit's lip to see hulls stop at the kerb.
 	"sumps": [{"name": "the far causeway", "to": [-52.0, -22.0]}, {"name": "the west pit's lip", "to": [-40.0, 32.0]}],
+	# The far quay is across the canal: over the lock (short, watched) or a swing bridge. Then back to his own east
+	# quay, which is the canal again.
+	"locks": [{"name": "the far quay", "to": [-72.0, -24.0]}, {"name": "home, the east quay", "to": [70.0, 20.0]}],
 	"terminus_canal": [{"name": "over the avenue bridge", "to": [0.0, -40.0]}, {"name": "back over the west bridge", "to": [-70.0, 60.0]}],
 }
 const ARRIVED_M := 7.0
