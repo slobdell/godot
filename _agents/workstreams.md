@@ -1,13 +1,13 @@
 # Workstreams: the current round
 
-> **Round 11, launched 2026-09-24 (small hours).** How rounds work (roles, lifecycle, the worker contract, the kickoff
+> **Round 11 is CLOSED (2026-09-24); its record is `HANDOFF.md` *ROUND 11*. No round is running.** How rounds work (roles, lifecycle, the worker contract, the kickoff
 > prompt) is in [orchestration.md](orchestration.md): read it first. **Round 11's four streams, ownership and its one
 > checkpoint are in the next section.** Round 10's section follows it, closed; the round-9 section after that
 > (S1–S6, the research-catalogue sequencing) is still in force where it is not superseded; rounds 1–10 are archived in
 > `streams/archive/round1..10/`; the round-6 material further down (contracts N1–N7, ownership, invariants) is still
 > in force where it is not superseded.
 
-## Round 11: the four streams (launched 2026-09-24, small hours)
+## Round 11: the four streams (launched 2026-09-24, CLOSED 2026-09-24; briefs in `streams/archive/round11/`)
 
 **Goal: the eleven defects he named in one playtest, and the maps he has asked for three times.** His words are in
 [`game_design.md`](game_design.md) *Round 11 direction*. He called it a light workload and it is: no new mechanic, no
@@ -21,10 +21,10 @@ camera lifting over it when they meet.
 
 | Stream | Brief | Round 11 |
 |---|---|---|
-| **arena** | [streams/arena.md](streams/arena.md) | **The maps he has never been dealt** (`Arena.ROTATION` is three names and `arenas/` holds fifteen; round 10's Crossing and Sumps — water, bridges and the only real pits in the game — have never been reachable), each played on the default path and judged on the arena page; **the venue floodlight towers are solid** (21 m of steel with no collider, standing 7.8 m inside the Terminus wall) and the parity test extended to the dressing layer that hid them; then one genuinely new terrain map |
-| **nav** | [streams/nav.md](streams/nav.md) | **His two-part Terminus problem, measured apart.** R2: the goal repair (`squad.gd:272` grounds a slot on the mesh centre, so a War Rig's nose is in the building; `source != "player"` is not grounded at all; `_reachable == false` is computed and thrown at a readout). R1: **a reverse decided at plan time** — run the turning-circle test against the route's first leg and emit an explicit reverse leg, instead of discovering it at the bumper through `unstick` and the pressed-wall escape |
-| **fleet** | [streams/fleet.md](streams/fleet.md) | **The vehicles, five complaints and four causes:** seven turrets spinning *inside* their hulls for want of a `turret_mount`; five stray generated barrel sticks (the Law tank's is 14 triangles, 1.8 cm across, 0.74 m off centre); the Condemned tank and burner as the only non-uniformly **stretched** meshes in the game (1.63:1 on the tank — his "deformed" one); the Law's tank and IFV re-derived under the round-9 K rule; and **a test that a nose points at −Z**, which has never existed |
-| **airship** | [streams/airship.md](streams/airship.md) | **It flies through the blocks and the camera flies through it.** Real rotated footprints instead of a circle table that is 7.28 m short at every block corner; a look-ahead by the 8.7 s it takes to climb; `contain` no longer erasing `avoid` at the (±100, 0) blocks; a 3 m floodlight no longer entered as 24 m (which is most of why it cruises low only 52 % of the time on the Terminus); and **the camera lifting over the hull** through the round-9 solid rule, which today cannot see a moving occluder at all |
+| **arena** | [streams/archive/round11/arena.md](streams/archive/round11/arena.md) | **The maps he has never been dealt** (`Arena.ROTATION` is three names and `arenas/` holds fifteen; round 10's Crossing and Sumps — water, bridges and the only real pits in the game — have never been reachable), each played on the default path and judged on the arena page; **the venue floodlight towers are solid** (21 m of steel with no collider, standing 7.8 m inside the Terminus wall) and the parity test extended to the dressing layer that hid them; then one genuinely new terrain map |
+| **nav** | [streams/archive/round11/nav.md](streams/archive/round11/nav.md) | **His two-part Terminus problem, measured apart.** R2: the goal repair (`squad.gd:272` grounds a slot on the mesh centre, so a War Rig's nose is in the building; `source != "player"` is not grounded at all; `_reachable == false` is computed and thrown at a readout). R1: **a reverse decided at plan time** — run the turning-circle test against the route's first leg and emit an explicit reverse leg, instead of discovering it at the bumper through `unstick` and the pressed-wall escape |
+| **fleet** | [streams/archive/round11/fleet.md](streams/archive/round11/fleet.md) | **The vehicles, five complaints and four causes:** seven turrets spinning *inside* their hulls for want of a `turret_mount`; five stray generated barrel sticks (the Law tank's is 14 triangles, 1.8 cm across, 0.74 m off centre); the Condemned tank and burner as the only non-uniformly **stretched** meshes in the game (1.63:1 on the tank — his "deformed" one); the Law's tank and IFV re-derived under the round-9 K rule; and **a test that a nose points at −Z**, which has never existed |
+| **airship** | [streams/archive/round11/airship.md](streams/archive/round11/airship.md) | **It flies through the blocks and the camera flies through it.** Real rotated footprints instead of a circle table that is 7.28 m short at every block corner; a look-ahead by the 8.7 s it takes to climb; `contain` no longer erasing `avoid` at the (±100, 0) blocks; a 3 m floodlight no longer entered as 24 m (which is most of why it cruises low only 52 % of the time on the Terminus); and **the camera lifting over the hull** through the round-9 solid rule, which today cannot see a moving occluder at all |
 
 **Why four, and why these four:** each is one independent problem with one owner and almost no overlap — the maps and
 their props (arena), the driver and the goal (nav), the vehicles (fleet), the airship and the camera (airship). The

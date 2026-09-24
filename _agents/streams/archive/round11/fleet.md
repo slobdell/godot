@@ -1,5 +1,10 @@
 # Stream: fleet (the vehicles are wrong in five ways, and four of them are one missing check)
 
+> **ARCHIVED — round 11 closed 2026-09-24.** This brief is kept as written, including the survey that was true when
+> it was written and the parts the stream proved wrong. What actually shipped is in `HANDOFF.md` *ROUND 11*; the
+> lead's words are in `game_design.md` *Round 11 direction* and his verdicts in *Round 11: the lead's verdicts*; the
+> round's lessons are `orchestration.md` 214-219. Do not work from this file.
+
 > Read [`game_design.md`](../game_design.md) *Round 11 direction* and *Factions*, then
 > [`art_direction.md`](../art_direction.md) and [`workstreams.md`](../workstreams.md). **You own** the vehicle art and
 > its proportions: `game/theme/factions/**`, `game/theme/roster/**`, `game/theme/prison_dozer/**`,

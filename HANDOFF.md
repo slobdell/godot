@@ -4,46 +4,84 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-24 (small hours) — **ROUND 11 IS RUNNING: four streams (arena, nav, fleet, airship) from the lead's playtest of the airship build. His words are in [`_agents/game_design.md`](_agents/game_design.md) *Round 11 direction*; the streams, ownership and the one checkpoint are in [`_agents/workstreams.md`](_agents/workstreams.md); the briefs are in `_agents/streams/`. Round 10 is CLOSED and its nine worktrees are gone. The section directly below is round 11's state; the airship sections after it are the work this round builds on; the rest of the file is round 9 and 10's record, kept as written.**_
+_Last updated: 2026-09-24 — **ROUND 11 IS CLOSED on a green tree. `main-checked` carries the verdict; the round's record is the section directly below.** All four streams (arena, nav, fleet, airship) merged, plus the orchestrator's completion fix and the goal repair flipped on. The sim baseline moved twice and both moves are attributed: `457b5e83` → `814aed46` (nav's waypoint guard + planned reverse) → `01ab39b5` (fleet's hull boxes after the lead's verdicts). A fresh orchestrator starts the next round from the `round` skill; round 12's candidates are in `_agents/roadmap.md`. The airship sections below this one are round 11's starting point, kept as written; the rest of the file is rounds 9 and 10._
 
-## ROUND 11 (2026-09-24, small hours): four streams, and the one-line bug behind his first complaint
+## ROUND 11 (2026-09-24): eleven defects from one playtest, and the one-line bug behind his first complaint
 
-**The lead played the airship build and sent eleven items in one message.** He framed it as a light workload and it
-is: no new mechanic, no new system, nothing needing a design argument. Three of the four streams are finishing work
-that already exists and does not reach him.
+**He played the airship build and sent eleven items in one message, calling it a light workload.** It was: no new
+mechanic, no new system, no design argument. **Three of the four streams were finishing work that already existed and
+did not reach him** — which is the round's whole shape, and the thing to look for first next time.
 
-**The finding that set the round's shape, found before any brief was written:** `Arena.ROTATION`
-(`game/arena/arena.gd:63`) is `["yard", "pit", "terminus"]`, and it is the only list the faction picker offers and
-the only thing `--arena=random` can deal. **`arenas/` holds fifteen layouts.** Round 10's `terrain` stream built
-**the Crossing** (3 water + 2 bridges) and **the Sumps** (4 pits + 2 bridges) — exactly the bridges and pits he has
-now asked for three times — and neither has ever been reachable from the game. `arenas/pit.json` also carries no
-terrain at all: "The Pit" is a name, not a pit. This is the third instance of *"it's missing" means "it doesn't
-reach me"* (orchestration lesson 32), and the test written after the second instance
-(`tests/test_arena_kit.gd:205`) asserts only that the CUT maps are absent — it never asked whether the maps built
-since are present. arena's first item is to publish them and to generalise that test.
+**His words are in `_agents/game_design.md` *Round 11 direction*; his nine live verdicts from the two review pages are
+in *Round 11: the lead's verdicts*. The briefs are archived in `_agents/streams/archive/round11/`.**
 
-**The four streams** (briefs in `_agents/streams/`, full detail in `workstreams.md`):
+### The finding that set the round's shape, found before any brief was written
 
-| stream | its sentence of his | the cause found in the survey |
-|---|---|---|
-| **arena** | *"we still barely have any maps… no bridges or pits"*; *"units can still drive right through the spotlight assets in Terminus"* | the rotation table above; and the **venue floodlight tower** (`arena_dressing.gd:568`) is a 21.1 m model with **no collider**, sited 9 m inside a polygon corner — on the Terminus that is ~7.8 m inside the wall, on drivable navmesh, 3 m from a 2.4 m kit floodlight that *is* solid. Round 10's parity test iterates `ArenaKit.PROPS` and layout props only, so it cannot see the dressing layer |
-| **nav** | the two-part Terminus problem (*"drive into a wall before trying to back up"*; *"a unit's target position ends up inside of a building"*) | **every reverse in the game is reactive** — `unstick` (1 s of no motion), the pressed-wall escape (1 s of wall contact), and a steering circle test that knows nothing about walls; the planner is a holonomic A* that ignores `min_turn_radius_m` by an earlier decision. And **`squad.gd:272` grounds a slot with `SlotGround.standable`** (mesh centre, 1 m) instead of the hull-aware `for_unit`, so a War Rig centred at the navmesh edge (2 m bake radius) has its nose in the building; `source != "player"` is not grounded at all; `_reachable == false` is computed and only reported |
-| **fleet** | four vehicle complaints | **the turrets ARE spinning, inside the hulls**: only 4 of ~21 units carry a `turret_mount`, and seven turrets (law_ifv fully) sit below their own roof. The "detached barrel" is a **14-triangle, 1.8 cm sliver 0.74 m off the centreline**, stretched ×3.75 to the contract's muzzle point — `FactionArt.STRAY_WEAPONS` exists for exactly this and blacklists one slot of five. The Condemned `tank` and `burner` are the **only non-uniformly stretched meshes in the game** (the tank 2.98× vertically against 1.82× horizontally — his "deformed" one), because they are the only units with no hull art of their own. And **no test has ever asserted that a model's nose is on −Z** |
-| **airship** | *"the camera can end up inside the airship"*; *"the airship intersects with the buildings in Terminus"* | `blockers()` substitutes a **circle of radius 21 for a 40 × 40 m block whose corner is 28.28 m out**; the climb needs 8.67 s and is triggered 1.61 s before the wall, with the nose 28.5 m ahead of the point being tested and **no look-ahead**; `contain` runs after `avoid` and erases it at the (±100, 0) blocks. The camera's round-9 solid rule is a pure query over `Arena.active["obstacles"]` and **cannot see a moving occluder**. Bonus: `TALL_PROPS` enters the 3 m floodlight footing as **24 m**, which is most of why the airship cruises low only 52 % of the time on the Terminus |
+`Arena.ROTATION` (`game/arena/arena.gd:63`) was `["yard", "pit", "terminus"]`, and it is the **only** list the faction
+picker offers and the only thing `--arena=random` can deal. `arenas/` held **fifteen** layouts. Round 10's `terrain`
+stream had built **the Crossing** (water, two bridges) and **the Sumps** (four pits, two bridges) — exactly the
+bridges and pits he had asked for a round earlier — and **neither had ever been reachable from the game.**
+`arenas/pit.json` also carried no terrain: "The Pit" was a name.
 
-**The one checkpoint, CP1:** fleet's `hull_size` changes (the Condemned bus's height and the Law's re-derived
-lengths) move the spawn grid, the collider and the sim baseline by construction. They merge alone, and the
-orchestrator records the baseline twice in one session.
+That is the **third** instance of *"it's missing" means "it doesn't reach me"* (lesson 32), and the test written after
+the second instance only asserted that the CUT maps were absent — it never asked whether the maps built since were
+present. It does now: **a map that is built and neither dealt, cut, nor a fixture fails the suite.**
 
-**The workspace at the start of the round was committed as `36dceaa2`** (the Syndicate broadcast airship: the asset,
-the PID pilot, the screens), and the asset locations were written into that commit message because the lead asked
-where they belong: **shipped meshes and textures in git under `game/theme/arena_kit/generated/`, concept jpgs under
-`assets/review/images/`, raw Meshy downloads git-ignored in `assets/incoming/meshy/`** where the 30-minute timer
-copies them to builder0 (`_agents/backups.md`).
+### What each stream did, in its own words where it gave them
 
-_Last updated: 2026-09-23 03:30 — **Round 10 CLOSED on a green tree (`main-checked` at e903e08f: 1674/0, 18 targets, exit 0); the morning summary, the lead's four decisions, the reset lines and round 11's candidates are in the section directly below and in `_agents/roadmap.md`.** A fresh orchestrator starts a round from the `round` skill; the nine round-10 worktrees still exist until the lead runs the reset lines. The rest of this file is round 9's record, kept as written (its own stamp follows)._
+| stream | what landed |
+|---|---|
+| **arena** | *"The maps weren't missing; they weren't being dealt."* The Crossing and the Sumps into the rotation; the **Locks** built, approved, its name recorded and dealt (rotation is now six maps); the Pit dug at the ring's corners; the 21 m venue floodlight towers — which had **no collision at all** and stood ~8 m inside the Terminus wall — moved outside it, with the prop-parity test extended to the venue dressing where they hid. Its best tool was **`make terrain-drive`**, which orders a squad across a map the way the lead would: it found nav's bridge-exit deadlock and three layout traps the static report could not see, because *"a lane wide enough by the bar can still be a road a 14 m rig can't turn in."* |
+| **nav** | **A reverse decided at plan time instead of at the bumper.** Every reverse in the game was reactive (1 s of no motion, or 1 s of wall CONTACT). Now a wheeled hull whose steering point is >45° off the nose sweeps its full-lock forward arc against the navmesh with its LEADING end, and if that would hit, searches the reverse arc with its TRAILING end — the first reverse in this game validated against what is BEHIND — then drives it as a leg with its own completion. Measured on the Terminus, 8 seeds × 4 legs × 2 squads, control and treatment on the same commit: **press/unstick-driven contacts 88 → 1** (mixed) and 393 → 227 (rigs); total wall contacts −64 % and −29 %; cusps −12 % and −24 %; arrivals up in both. Plus the goal repair: `squad.gd:272` grounded a slot on the navmesh CENTRE while the mesh edge is 2 m from a wall, so a War Rig (envelope ~7.2 m) had its nose in the building. |
+| **fleet** | **The turrets were spinning INSIDE the hulls** — only 4 of ~21 units had a `turret_mount`, and seven turrets sat below their own roof. Five gun cuts so they turn. The **"detached barrel" was a 14-triangle, 1.8 cm sliver 0.74 m off the centreline** while the real gun was already in the turret mesh; a derived rule now refuses the next generated stick rather than blacklisting it after he finds it. The Condemned tank and burner were **the only non-uniformly stretched meshes in the game** (1.63:1 on the tank — his "deformed"); the bus is 4.08 m and uniform, the burner 2.40 m and exempt until it has a mesh. The Law at his approved **1.25×** as a declared multiplier (`Units.FACTION_SCALE`), not hand-edited numbers. And **the first test in this project's history that asserts a model faces −Z**. |
+| **airship** | It was **inside something 31 % of a 240 s Terminus flight**; it is now **0 % on all nine maps**. Its blocker table used a radius-21 circle for a 40 × 40 m block whose corner is 28.28 m out, evaluated the climb at the hull's centre while its nose is 28.5 m ahead, and needed 8.7 s to climb with 1.6 s of lead-in. Real rotated footprints, drawn heights, and a look-ahead by the climb time. **The camera goes up and back over the hull when they meet**, so the airship ends up in frame — the lead watched the clip and said it looks fine. |
 
-_Last updated: 2026-09-20 16:00 (the 21:50 stamp below was a typo for 13:50). **Round 9's overnight run: sixteen branches and all three checkpoints merged; the day has merged thirty-eight more. `main` at `a6268137`+ is the CLEANEST tree of the round: the main check on `49ed1fb3` (builder0, 16:00) read `>> remote: make check exited 2`, 1535 passed, 1 failed, 16 passed 2 FAILED 0 NOT RUN, sim-baseline 1e90f69e5d6fcc46 unmoved, determinism 253adefeec657df1, and ZERO body, region or edge reports, with combat's leaking `test_tank_yaw_fit` override (and a second leaker control found, `test_combat_no_damage`, a Match per call) still in the tree: nav's sealed `_teardown()` frees and drains whether or not an override calls super, prediction confirmed. `main-checked` is the annotated tag on `49ed1fb3` with that verdict in its message. The two reds are known and named: the spawn test's settle assertion (squad's committed true positive; combat's `Tank.place()` clears it, its check on `1db4893c` running) and the engine-deck scenario (ORBIT radius reads hull length, round 10). Nothing is pushed to `origin`; you push.** The rest of this line is the morning's history: **Round 9's overnight run: sixteen branches and all three checkpoints merged; the day has merged thirty-five more (the latest: squad's hold-on-arrival, nav's accessor and expect_error, metrics' keep-going check, grouping, FILTER and REASON tooling). `main` at `0e7f884a` carries ONE known poisoner: combat's `test_tank_yaw_fit` teardown override that never calls super leaks a foundry (44 bodies, 4 regions) and takes its shard with it; combat's fix is on its tip with the settle tick (every match's first physics tick fixed) and lands as ONE hash with two causes (the plant constraint on; the settle tick) the moment its tip's check reaches sim-baseline, then a main check runs and the annotated `main-checked` tag moves. Until then the last main check that reached the baseline is `0ad28f49` (1516/2, reds listed, NOT green) and every check on any tree shows the 44-body cascade. Open: the five-squads test fails on combat's laptop at every commit and passes on builder0 on identical code (machine before branch; combat's builder0 run decides); nav's sealed teardown re-checks without its containment (which regressed the suite to 1401/117). Baseline `1e90f69e5d6fcc46`, recorded twice; the day's fifth and sixth moves pending in combat's hash. The last fully green `main` is `0808834e`. Read the morning summary first; the red-test paragraph under "Where it stood" is the full history.**_
+### The two sim-baseline moves, both attributed rather than asserted
+
+1. **`457b5e830708b439` → `814aed46b1042e62`** (nav). Attributed with `make nav-sim-arms`: R2's grounding alone leaves
+   the hash **unmoved**; the waypoint/follower-deadlock guard alone gives `bdb21d205dc97405`; the planned reverse takes
+   it the rest of the way. Two causes, and the goal repair is neither.
+2. **`814aed46b1042e62` → `01ab39b592cc9837`** (fleet's CP1). Hull boxes changed on purpose after his verdicts;
+   `hull_size` IS the collider, so the baseline match's hulls are different bodies.
+
+Adopted with **`make sim-baseline-adopt`** (reads twice, refuses a disagreement, merges the line) — *not* by copying
+`build/sim_state_hash.txt` over, which deletes every other machine's baseline.
+
+### The orchestrator's own work, and its two errors
+
+- **The integration fix (`78b26067`):** nav's goal repair could not be switched on, because a repaired goal could
+  never complete — `TankBrain._update_order_progress` judged completion against the order's ORIGINAL goal while the
+  hull drove to the repaired one. The rule chosen is deliberately **narrow**: the mover owns "did this hull arrive",
+  the brain owns "is this order done". **Not** "widen the arrival radius by `repaired_m`", which is round 6's "close
+  enough after a stall" fudge returning — at `REPAIR_MAX_M` 12 m it would complete any move from a 12 m disc.
+  Mutation-checked: without the fix the repaired case fails and the control still passes.
+- **The flip (`7c25665c`):** the repair is **ON by default**, because a behaviour behind a flag the default path never
+  passes has not shipped (lesson 23). Measured on the Terminus, one run per arm, 30 units: completed 20 → 22,
+  never_completed 10 → 8, and **the two extra completions are the two repairs**, matching unit for unit. The yard arm
+  is a null control and reads as one. Cost stated in the code: `completed_far` 0 → 1. The flag was also **inverted**
+  (`--nav-off=repair` turned it ON); it now disables, like every other mechanism name.
+- **Two errors, both written up as lessons (214, 219):** the orchestrator read a floodlight's **collider** (3.0 m) as
+  the object, put "the floodlight is 3 m" in a brief and in a report to the lead, and attached an inference that the
+  real measurement then **inverted** — time at cruise went DOWN, not up, because the old figures counted time spent
+  flying THROUGH things. And it sent a confident, detailed, **wrong** hypothesis about the War Rig's turret that fleet
+  had to kill with a measurement. Both cost nothing only because the instruction said *check this before acting on it*.
+
+### Open, and the shape of round 12
+
+`_agents/roadmap.md` carries the order. The candidates that came out of this round, all written up where the next
+owner will meet them:
+
+- **The camera asks the collider when it means the silhouette** (`verification.md`): `RtsCamera.roof_over` /
+  `sight_blocked` and `BlockCutaway._gather`. The camera can sit inside a floodlight's lamp head at ~18° (his default
+  pose is 21°), and a 20.7 m ad screen with a 1.4 m collider is never cut away from in front of the fight. **Feed a
+  drawn-extent table in; never grow the colliders.**
+- **The War Rig's muzzle**: the simulated pivot stays in the tractor frame, so the drawn gun is ~0.45 m sideways of
+  where rounds leave at a 35° bend and ~0.7 m at the 65° jackknife limit. A simulation change; deferred deliberately.
+- **Water reads black** at his pose on three maps now (`arenas.md`), his choice of next round over tonight.
+- **The bus mesh**: image-to-image keeps the reference's proportions (lesson 215), so the approved concept came back a
+  van. The way through is a reference that carries the proportion alongside one that carries the look.
+- **The War Rig's `kturn_none`** (130 against 64 kturns): a 14 m hull with a 12 m radius in an 18-22 m street often has
+  no valid 8 m back-up. The one sign a longer search or a kinematic planner would earn its keep.
 
 ## 🛩 THE AIRSHIP, PASS 2: IT FLIES ITSELF (2026-09-23, same session — read this before the pass-1 section below)
 

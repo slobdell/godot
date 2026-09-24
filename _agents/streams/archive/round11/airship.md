@@ -1,5 +1,10 @@
 # Stream: airship (it flies through the buildings, and the camera flies through it)
 
+> **ARCHIVED — round 11 closed 2026-09-24.** This brief is kept as written, including the survey that was true when
+> it was written and the parts the stream proved wrong. What actually shipped is in `HANDOFF.md` *ROUND 11*; the
+> lead's words are in `game_design.md` *Round 11 direction* and his verdicts in *Round 11: the lead's verdicts*; the
+> round's lessons are `orchestration.md` 214-219. Do not work from this file.
+
 > Read [`game_design.md`](../game_design.md) *Round 11 direction* and *THE AIRSHIP, PASS 2* in
 > [`HANDOFF.md`](../../HANDOFF.md) (the airship's whole design, its measurements and its two wrong turns), then
 > [`workstreams.md`](../workstreams.md). **You own** `game/theme/arena_kit/airship/**`, `game/camera/**`

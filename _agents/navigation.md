@@ -8,7 +8,7 @@
 ## Round 11: a goal the hull fits, and the three-point turn decided before the bumper
 
 The lead, on the Terminus: *"they'll drive into a wall before trying to back up"* and *"a unit's target position ends
-up inside of a building"*. Two problems with one owner, measured apart (numbers with commits: `streams/nav.md` Status).
+up inside of a building"*. Two problems with one owner, measured apart (numbers with commits: `streams/archive/round11/nav.md` Status).
 
 **R2, the goal.** One rule: **every per-unit goal is grounded with the hull's own turning envelope**
 (`SlotGround.for_unit`), by every issuer — the right-click (`Orders`, every source but `element`, whose plan

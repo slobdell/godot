@@ -1,5 +1,10 @@
 # Stream: arena (the maps he has never been dealt, and the 21 m spotlight he drives through)
 
+> **ARCHIVED — round 11 closed 2026-09-24.** This brief is kept as written, including the survey that was true when
+> it was written and the parts the stream proved wrong. What actually shipped is in `HANDOFF.md` *ROUND 11*; the
+> lead's words are in `game_design.md` *Round 11 direction* and his verdicts in *Round 11: the lead's verdicts*; the
+> round's lessons are `orchestration.md` 214-219. Do not work from this file.
+
 > Read [`game_design.md`](../game_design.md) *Round 11 direction* first, then [`arenas.md`](../arenas.md) and
 > [`workstreams.md`](../workstreams.md). **You own** `arenas/`, `game/arena/`, `tools/make_arenas.py`,
 > `tools/terrain_maps.py`, `tools/arena_report.py`, `mk/arena.mk`, `tests/arena/`, `tests/test_arena*.gd`,

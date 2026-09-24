@@ -54,17 +54,29 @@ archived stream briefs).
   OFF on a fifth (a two-sided pinch the driver must creep out of).
 - Three research briefs and replies curated (`research_catalog.md`, rows B1–B14 and C1–C12).
 
-## Now: ROUND 11 IS RUNNING (launched 2026-09-24, small hours) — four streams from his playtest of the airship build
+## Round 11 (2026-09-24, closed the same day): what it did, in one list
 
-His eleven items, split four ways: **arena** (publish the Crossing and the Sumps, which have never been in
-`Arena.ROTATION`, then make the 21 m venue floodlight towers solid, then one new terrain map), **nav** (a reverse
-decided at plan time instead of at the bumper; and the formation slot that lands inside a building), **fleet**
-(seven turrets spinning inside their hulls, five stray barrel sticks, the two non-uniformly stretched Condemned
-hulls, the Law's re-derived sizes, and the −Z facing test that has never existed), **airship** (real footprints and a
-climb look-ahead so it stops flying through the Terminus blocks; the camera lifting over the hull). Detail in
-[workstreams.md](workstreams.md) *Round 11*; his words in [game_design.md](game_design.md) *Round 11 direction*.
+His eleven playtest items, four streams, one day. **Three of the four streams were finishing work that already
+existed and did not reach him** — the shape to look for first next time. Full record in `HANDOFF.md` *ROUND 11*.
 
-**Round 12's first two candidates, found during round 11 and deliberately not taken** (airship, `verification.md`):
+- **The rotation was the bug, not the content.** `Arena.ROTATION` held three names while `arenas/` held fifteen;
+  round 10's Crossing and Sumps had never been reachable. Now six maps, including the new **Locks** (canal, a watched
+  lock and two covered swing bridges, its name recorded and his yes on the page), and the Pit finally dug. A map
+  built and neither dealt, cut, nor a fixture now fails the suite.
+- **The Terminus spotlights were solid-looking and not solid:** 21 m venue towers with no collision, ~8 m inside the
+  wall. Outside it now, and the prop-parity test covers the venue dressing where they hid.
+- **A reverse decided before the bumper** (nav): press/unstick-driven wall contacts 88 → 1 on the mixed squad,
+  total contacts −64 %, arrivals up; plus the formation slot that stopped landing inside buildings, on by default.
+- **The vehicles:** seven turrets were spinning inside their hulls; the "detached barrel" was a 14-triangle sliver;
+  the only two non-uniformly stretched meshes in the game are gone; the Law at his approved 1.25×; and the first
+  test that asserts a model faces −Z.
+- **The airship** was inside something 31 % of a Terminus flight and is now 0 % on nine maps; the camera lifts up and
+  over it.
+- **Six lessons** (`orchestration.md` 214-219), two of them the orchestrator's own errors.
+
+## Now: round 12's candidates (the orchestrator's order; each came out of round 11 with its measurement)
+
+**1-2. The drawing and the simulation disagree about where things are** (airship + fleet, `verification.md`) — take them together:
 
 1. **The camera asks the collider when it means the silhouette.** `RtsCamera.roof_over` / `clear_pose` /
    `sight_blocked` read `Arena.active["obstacles"]`, which are collision boxes. A floodlight's collider is 3 m and its
@@ -80,6 +92,20 @@ climb look-ahead so it stops flying through the Terminus blocks; the camera lift
 
 Both are read from the code, not seen in play. Neither was taken in round 11 because the camera is a design change and
 round 11 was a defect round.
+
+3. **The War Rig's muzzle** (fleet): the SIMULATED pivot stays in the tractor frame, so the drawn gun is ~0.45 m
+   sideways of where rounds leave at a 35° bend and ~0.7 m at the 65° jackknife limit. Same family as 1-2; deferred
+   from round 11 because it is a simulation change the lead did not report and it needs its own "can a player feel
+   it" measurement.
+4. **Water reads black** (`arenas.md`), his choice of next round over tonight, on three maps now.
+5. **The bus mesh**: image-to-image keeps the reference's proportions (lesson 215), so the approved concept came back
+   a van at 1.85:1 against a 3.34:1 box. The way through is a reference carrying the PROPORTION alongside one
+   carrying the LOOK; one test concept was authorised.
+6. **The War Rig's `kturn_none`** (nav): 130 against 64 kturns — a 14 m hull with a 12 m radius in an 18-22 m street
+   often has no valid 8 m back-up. The one measured sign that a longer search or a kinematic planner would earn its
+   keep, and the honest answer to "is the planned reverse enough".
+7. **The burner needs its own unit type** (his words: it "looks identical to the tank"); fire-engine concepts are the
+   brief.
 
 **Carried forward, not scheduled this round** (from round 10's archived Status lists, the previous candidate order):
 
