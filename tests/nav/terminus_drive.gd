@@ -51,6 +51,12 @@ const CUSP_SPEED := 0.3
 var gear_of := {}          # name -> last gear (+1 / -1)
 var cusps := {}            # name -> gear changes
 var reverse_ticks := 0     # unit-ticks rolling backward faster than CUSP_SPEED
+## R1.8: the plant's wheeled CREEP (TankMotion: a turn with under WHEEL_CREEP_THROTTLE × |turn| of throttle becomes
+## half-second legs alternating forward/reverse), read off the live motion state's `creep_dir` every tick.
+var creep_of := {}         # name -> last creep_dir
+var creep_ticks := 0       # unit-ticks in a creep leg
+var creep_flips := 0       # creep leg reversals
+var creep_flips_at_wall := 0  # ...of them, on a tick the hull was touching a wall
 
 
 func _initialize() -> void:
@@ -142,6 +148,17 @@ func _next_leg() -> void:
 func _sample() -> void:
 	var elapsed := float(game_match.tick - leg_started_tick) / float(SimClock.TICK_RATE)
 	for tank in units:
+		var motion: Variant = tank.get("_motion")
+		var creep := int((motion as Dictionary).get("creep_dir", 0)) if motion is Dictionary else 0
+		var name := String(tank.name)
+		if creep != 0:
+			creep_ticks += 1
+			if int(creep_of.get(name, 0)) == -creep:
+				creep_flips += 1
+				if bool(Movement.state(tank).get("wall_contact", false)):
+					creep_flips_at_wall += 1
+		creep_of[name] = creep
+	for tank in units:
 		var speed := tank.speed()
 		if absf(speed) < CUSP_SPEED:
 			continue
@@ -213,7 +230,8 @@ func _report() -> void:
 			"legs": leg_results.size(), "arrived_every_leg": arrived_all, "wall_contacts": report,
 			"route_arms": Movement.route_arms(), "off": Array(Movement._off), "seed": int(_flag("seed", "1")),
 			"cusps": cusps.values().reduce(func(a: int, b: int) -> int: return a + b, 0), "cusps_by_unit": cusps,
-			"reverse_unit_ticks": reverse_ticks,
+			"reverse_unit_ticks": reverse_ticks, "creep_unit_ticks": creep_ticks, "creep_flips": creep_flips,
+			"creep_flips_at_wall": creep_flips_at_wall,
 			"episodes": episodes.slice(0, 40), "pass": arrived_all and mixed_ok and int(report["observed_unit_ticks"]) > 0}
 	print("NAV_DRIVE %s" % JSON.stringify(out))
 	quit(0)
