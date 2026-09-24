@@ -49,7 +49,7 @@
         "No (write A, B or C below)"
       ],
       "cost": "about 9 credits per new concept, 15 for its 3D; nothing moves until you approve one",
-      "notes": "Bus b is built in 3D, and measured it is 1.00 long x 0.54 wide x 0.62 tall: 1.85 times as long as it is wide. That is a van. The bus box, and a real 45 ft coach, are 3.3 times as long as wide. So every way of using it is bad: A (its own shape at 9.70 m) is 5.24 m wide and 6 m tall, wider than the War Rig; B (its own shape at the box's 2.90 m width) is 5.37 m long, shorter than the garbage truck; C (squeezed into today's box) stretches it 1.8x longer against its width -- worse than the 1.63x stretch you called deformed. RECOMMENDED: D -- regenerate bus b's design as a long, narrow coach, then build the one you pick. Honest status: my first four attempts came back van-shaped again (the image generator copies the approved picture's proportions whatever the words say), so D's options are not on this page yet; the next try needs a different method, and I will bring it back to you. The bus keeps wearing today's dozer until then; nothing in the game moves."
+      "notes": "Bus b is built in 3D, and measured it is 1.00 long x 0.54 wide x 0.62 tall: 1.85 times as long as it is wide. That is a van. The bus box, and a real 45 ft coach, are 3.3 times as long as wide. So every way of using it is bad: A (its own shape at 9.70 m) is 5.24 m wide and 6 m tall, wider than the War Rig; B (its own shape at the box's 2.90 m width) is 5.37 m long, shorter than the garbage truck; C (squeezed into today's box) stretches it 1.8x longer against its width -- worse than the 1.63x stretch you called deformed. RECOMMENDED: D -- regenerate bus b's design as a long, narrow coach, then build the one you pick. Honest status: the image generator copies the reference picture's proportions whatever the words say, so four attempts came back van-shaped. Two new ones are below, H and I, each with a tradeoff: H is the right length in the wrong look, I is bus b's look at only part of the length. If neither is right, the bus keeps its current look (the dozer at 4.08 m) and a better method comes next round. The bus keeps wearing today's dozer until then; nothing in the game moves."
     },
     {
       "id": "q_r11_law_size",
@@ -1953,6 +1953,53 @@
       "status": "superseded",
       "lead_words": "fleet: the stretched-reference attempt also came back ~2:1; never shown to the lead",
       "decided": "2026-09-24",
+      "model_task": "",
+      "added": "2026-09-24"
+    },
+    {
+      "id": "bus_r11_h",
+      "group": "R11 the Condemned bus, regenerated long and narrow (2.90 x 4.08 x 9.70)",
+      "target": "unit.tank.hull",
+      "title": "Bus H: the bus you approved, at a real coach's length",
+      "prompt": "Photorealistic concept art of the long armored prison bus in the reference image, keeping its LONG, NARROW proportions exactly (a full-length 45-foot coach, over three times as long as it is wide) and its long tank tracks, rebuilt in high detail as an arena death-race prison bus: an armored yellow-school-bus nose with a short hood, steel mesh grilles over the windshield and a long row of welded-over slit windows, magenta and cyan neon light bars, riveted slab armor, welded chains and spikes, yellow-black hazard stripes, red warning lights, a spiked dozer blade on the front, and a squat riveted turret with a long thick cannon on the flat roof just behind the middle. Full vehicle in frame, three-quarter view from the front-left and slightly above, so the whole long side reads, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+      "concept_task": "01a0d450-eebb-70ef-b3c0-0129bacea6e0",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "_agents/art/bus_side_ingame_ref.jpg"
+      ],
+      "source_png": "assets/incoming/meshy/bus_r11_h.concept.png",
+      "image": "assets/review/images/bus_r11_h.jpg",
+      "est_3d_credits": 15,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "The right length at last (briefed from the in-game bus side-on, which is 9.70 m long). The look drifted: yellow school-bus panels and rear wheels, not bus b's all-black armor on tracks. Approve if the shape matters more to you than the match with bus b.",
+      "status": "waiting",
+      "lead_words": "",
+      "decided": "",
+      "model_task": "",
+      "added": "2026-09-24"
+    },
+    {
+      "id": "bus_r11_i",
+      "group": "R11 the Condemned bus, regenerated long and narrow (2.90 x 4.08 x 9.70)",
+      "target": "unit.tank.hull",
+      "title": "Bus I: the bus you approved, at a real coach's length",
+      "prompt": "Photorealistic concept art of an arena death-race armored prison bus. Take its LONG, NARROW proportions and long tank tracks from the first reference image, which is exactly the right length (a full-length 45-foot coach, over three times as long as it is wide, a long row of welded-over slit windows); take every material and detail from the second reference image: the same blackened riveted slab armor all over, the armored school-bus nose with steel mesh grilles, magenta and cyan neon light bars, welded chains and spikes, yellow-black hazard stripes, red warning lights, the spiked dozer blade, and the squat riveted turret with a long thick cannon on the flat roof just behind the middle. Tracks only, no wheels. Full vehicle in frame, three-quarter view from the front-left and slightly above, so the whole long side reads, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+      "concept_task": "01a0d451-fa59-7357-b10e-f1e5a80b0f06",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "_agents/art/bus_side_ingame_ref.jpg",
+        "assets/review/images/bus_r10_b.jpg"
+      ],
+      "source_png": "assets/incoming/meshy/bus_r11_i.concept.png",
+      "image": "assets/review/images/bus_r11_i.jpg",
+      "est_3d_credits": 15,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "Exactly bus b's look (two references: the long side-on bus for shape, bus b for look), but only partly lengthened -- the look reference pulled the shape back toward bus b's. Approve if the match with bus b matters more than the full length; it would still need some stretch to fill the box.",
+      "status": "waiting",
+      "lead_words": "",
+      "decided": "",
       "model_task": "",
       "added": "2026-09-24"
     }

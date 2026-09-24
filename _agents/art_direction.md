@@ -99,6 +99,23 @@ sinister part is what the beautiful object is *for*, never dirt or damage on it.
 > file the moment the lead approves its concepts — round 3 approved five and left this section saying "write their
 > rules here", which is what cost the two rounds.
 
+> **Rule (2026-09-24, the prison bus): THE REFERENCE DECIDES PROPORTION; THE PROMPT DECIDES DETAIL.** If the
+> silhouette you want differs from the reference's, no wording will fix it -- change the reference. Image-to-image
+> (`REFS=`) keeps the reference's proportions and ignores words about shape. Round 10's bus concepts were briefed from
+> the stubby prison dozer and all came back about 2:1; the approved one, built in 3D, measured 1.00 x 0.54 x 0.62 -- a
+> van, useless in a 9.70 x 2.90 m (3.3:1) coach box. Round 11 then spent four attempts and 36 credits (bus_r11_d-g) on
+> prompts stating "three and a half times as long as it is wide, nine windows", and on a reference stretched by hand
+> to 3.3:1: every one came back ~2:1, a near-copy of the approved picture. The fifth (bus_r11_h), whose reference was
+> the in-game bus rendered SIDE-ON at its real 9.70 m length, came back long. **So pass REFS as a list, one per job:**
+> an image whose silhouette IS the proportion you want (a side-on render at the unit's box, `make facing-audit
+> UNITS=<id>`, arrow cropped) and an approved concept for the look. But a style reference carries ITS proportion too:
+> bus_r11_h, briefed from the side-on render alone, came back the right length with the look drifted (yellow
+> school-bus panels, rear wheels); bus_r11_i, briefed from the render AND the approved bus, came back in exactly the
+> approved look but only partly lengthened -- the two references split the difference. So the style reference must
+> share the target silhouette as far as possible (an approved concept of a vehicle of the same shape), or the look
+> must be fixed at the 3D/texturing step instead. And never fall back to text-to-image from adjectives -- the airship
+> lesson above.
+
 ### The other factions
 
 Road gangs (rusted but loved hot rods, chrome, visible crews) and the Law (military and police vehicles,
