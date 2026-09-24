@@ -3142,3 +3142,45 @@ green on its merge base is the branch's until proven otherwise, and a green that
     item is in progress.** (announcer.) The code merged at the green hash; the Status that named the hash, the
     ledger total and the launch-smoke result were two commits later and had to be asked for. The close-out reads
     every stream's tip for docs-only commits after its last merge and fast-forwards them.
+214. **A collider is not a silhouette, and code that must not *look* wrong asks the wrong one.** (airship, round 11;
+    generalised by the orchestrator, who made the mistake that started it.) `ArenaKit.PROPS` sizes are COLLISION
+    boxes: a floodlight's is 3.0 m and its drawn mast is **16.05 m**; an ad screen's is 1.4 m and its panel is
+    **20.7 m**; only the city block's collider matches what is drawn. So anything whose job is visual — a camera
+    avoiding a solid, an airship avoiding a roof, a wall cutaway — is asking a question the collider cannot answer.
+    The orchestrator read "3.0" out of that table, wrote "the floodlight is 3 m" into a brief AND into a report to
+    the lead, and attached an inference ("the fix makes it fly lower and be seen more") that the real measurement
+    then **inverted**. The instrument that settled it reads the drawn mesh's own AABB (`AirshipFlight.DRAWN`).
+    Two standing consequences: **for a visual rule, measure the drawing, not the collider**; and **never grow a
+    collider to fix a rendering problem** — that moves gameplay and the sim baseline to solve a picture. Two live
+    call sites still ask the wrong one (`RtsCamera.roof_over`/`sight_blocked`, `BlockCutaway._gather`) and are
+    round 12's first candidates, in `verification.md`.
+215. **Image-to-image keeps the reference's PROPORTIONS and ignores the words about shape.** (fleet, round 11, four
+    attempts and 36 credits.) Prompts saying "3.5× as long as wide, nine windows" came back at ~2:1 every time,
+    near-copies of the reference. This also explains a defect already paid for: the round-10 bus came back a van
+    **because its reference was the stubby dozer**. The rule: **the reference decides proportion, the prompt decides
+    detail — if the silhouette you want differs from the reference's, no wording fixes it, change the reference.**
+    And the way through without breaking *brief from the images, never adjectives*: `REFS` takes a LIST, so pass a
+    reference that carries the PROPORTION you want alongside one that carries the LOOK.
+216. **A picture taken in the projection that cannot show the error certifies the error.** (fleet, round 11, in its
+    own words: *"my side-view picture hid the width"*.) A side elevation cannot show a width fault; a static lookup
+    at a block's centre cannot show a hull clipping its corner; a float bound of 0.4 m cannot catch a 0.19 m hover.
+    Round 11 produced four instances in one night. Before trusting a check, ask **which axis or state it is blind
+    to**, and add the view that would have shown the fault.
+217. **A new map cannot be dealt until the booth can say its name, and that recording is a lead gate — so build it
+    as a fixture first.** (arena, round 11.) A layout in `Arena.ROTATION` whose name has no clips reddens
+    `announcer-check`, so the map and its recordings must land in ONE commit, behind an approval that may take days.
+    Build the map as a fixture, get the verdict and the audio, then flip rotation + clips together.
+218. **A flake is not a verdict, and a verdict is not a flake: re-run the target alone before you believe either.**
+    (arena, round 11.) A full check went red on `ai-scenarios-check` with six other Godot processes on builder0; the
+    same target on the same commit, run alone, read 43,1 against its baseline and exited 0, and the re-run of the
+    full check was green. The discipline is symmetrical — round 4 wrongly blamed a loaded box for a real ffmpeg bug
+    (lesson 14), and this round would have wrongly blamed a real failure on load. **Isolate the target, keep both
+    results, and say which machine state each was taken in.**
+219. **The orchestrator's confident hypothesis is worth less than the worker's measurement, and should be sent as
+    one.** (round 11, the War Rig.) Told that the rig's turret "is disconnected and floating", the orchestrator
+    produced a detailed, plausible, WRONG mechanism (turret in the tractor frame, gun belongs to the trailer) and
+    sent it with its reasoning. fleet measured instead of implementing, and found two unrelated defects: a gun
+    standing on 0.19 m of air, and a tail fitting the rest yaw flips onto the cab. The lead's two words were two
+    bugs. What made this cost nothing: the instruction said *"check it before you act on it"* and named lesson 24.
+    **Send a hypothesis labelled as one, with the measurement that would kill it** — and when it dies, say so in the
+    merge commit, because the next agent reads that before the code.
