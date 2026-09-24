@@ -1994,7 +1994,7 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 				point = nearer
 				break
 		if point == Vector3.INF:
-			return Vector3(_path[_path_index].x, 0.0, _path[_path_index].z)
+			return _corner_beyond(here, goal)
 		return point
 	if wheel_radius() > 0.0:
 		# ...but never to a point whose chord leaves the navmesh (the round-7 pinned car steered 20 m through a wall).
@@ -2006,6 +2006,21 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		if point != Vector3.INF and point != carrot and not _off.has("chord") and not _chord_on_mesh(here, point):
 			point = carrot  # no reachable-and-drivable point further on: take the carrot and the three-point turn
 	return point if point != Vector3.INF else _route_end(goal)
+
+
+## Round 11 (arena's report, the Crossing, deterministic): the next corner, but never one the hull is standing ON. The
+## segment search keeps the EARLIER segment when the hull sits exactly on the vertex two segments share, so
+## `_path[_path_index]` can be a corner 0.4 m away - inside the 0.5 m arrive radius of a mid-route point. Steering then
+## returns zero, the stall rule never sees a stall (it needs throttle), and the hull sat "driving" at speed 0 for 90 s.
+## The first corner at least WAYPOINT_MIN_M away, or the route's end.
+const WAYPOINT_MIN_M := 1.5
+
+
+func _corner_beyond(here: Vector3, goal: Vector3) -> Vector3:
+	for i in range(_path_index, _path.size()):
+		if _flat_distance(_path[i], here) >= WAYPOINT_MIN_M:
+			return Vector3(_path[i].x, 0.0, _path[i].z)
+	return _route_end(goal)
 
 
 ## Round 10 (nav item 3b): **corner inflation — the route's corners get the hull's TURNING envelope, not the bake's.**
