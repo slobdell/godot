@@ -214,6 +214,20 @@ reverse) on the SAME commit. Expected, per arm total over 6 runs:
 5. **arrivals not down**; `kturn_none` small beside `kturns` (else the search is too short).
 Accepting being wrong on any of them; each is reported as measured.
 
+### Checks so far (builder0, read from the wrapper's own line)
+
+| commit | verdict | notes |
+|---|---|---|
+| `a04d75c0` (start) | `make check exited 0`, 1686 passed / 0 failed | sim-baseline `457b5e830708b439` unmoved |
+| `77212e8c` | exited 2, 1689 / 2 | wheeled-arrival car test (the FIRST planner build; passes after `3040b660`), the 100 ms order test (sourceless grounding; reverted in `b96b122c`); sim-baseline MOVED -> `0146969cfee27c76` |
+| `ca7c0df2` | exited 2, 1690 / 1 | the 100 ms test again (revert not yet in); sim-baseline MOVED -> `16bfe280760629ef`; ai-scenarios counts changed: the 100 ms test, `scenario_cover` peek (see below), `scenario_perf` (22.0 ms/tick) |
+
+- **`scenario_perf` is load, not nav:** laptop, alternating base (`a04d75c0`) and mine (`ca7c0df2`+): 22,013 / 21,937 µs
+  per tick mine vs 22,221 / 22,111 base, identical fights (same LOS query counts). builder0 ran check2 at load 12.5 with
+  22 other Godot processes.
+- **`scenario_cover` peek (x3 4 hits vs x4 4 hits):** fails identically on the LAPTOP at `a04d75c0` too; passed on
+  builder0 at `a04d75c0`. Being attributed on builder0 by commit (base vs `5ad73612`).
+
 ### Known issues / notes for merge
 
 - **arena's Crossing deadlock (fixed, `e62383ad`):** the follower steered at a route corner it was standing on (chord
