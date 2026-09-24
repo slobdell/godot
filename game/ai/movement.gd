@@ -2404,14 +2404,16 @@ static func _flat_distance(a: Vector3, b: Vector3) -> float:
 # This is the planned version, inside the driver (not the planner: Pathing stays holonomic by an earlier decision). At
 # PLAN time, when a wheeled hull on a routed forward move must turn hard toward its steering point, the forward arc it
 # is about to drive (full lock toward the point, the plant's own yaw law: heading turns |ds|·turn/R) is swept against
-# the navmesh with the hull's LEADING end. If it would hit, a reverse leg is searched with the TRAILING end — so the
-# reverse is validated against what is behind the hull, which no reverse before this did — for the shortest back-up
-# after which the forward arc is clear. That leg is then driven as a deliberate leg with its own completion (distance
-# backed, or contact, or a timeout), never as a recovery. No clear forward arc within KTURN_BACK_MAX_M: no leg, and the
+# the navmesh with the hull's whole outline (it yaws about its centre, so both ends swing). If the arc meets a wall
+# within KTURN_HIT_WITHIN_M, a reverse leg is searched the same way — validated against what is behind and beside the
+# hull, which no reverse before this did — for the shortest back-up after which the forward arc is clear. That leg is
+# then driven as a deliberate leg with its own completion (distance backed, a REAR contact, or a timeout), never as a
+# recovery. No clear forward arc within KTURN_BACK_MAX_M: no leg, and the
 # reactive rules stand as before (counted: `kturn_none`).
 #
 # A point is clear when it is within `bake radius - KTURN_MARGIN_M` of the navmesh: the mesh stops the bake radius
-# short of every collider, so such a point is at least the margin outside one. Measurement arm: `--nav-off=kturn`.
+# short of every collider, so such a point is at least the margin outside one. A point that already starts nearer a
+# wall than that (a nose parked on a face) may not get any deeper. Measurement arm: `--nav-off=kturn`.
 
 ## Only when the steering point is this far off the nose (a gentle bend never needs a reverse).
 const KTURN_MIN_ERROR_DEG := 45.0
@@ -2500,7 +2502,8 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	var frame := _kturn_frame(tank)
 	# Only a wall the arc meets SOON: a hit further along is a corner the route bends round, which the carrot and the
 	# steering's own easing take wider than full lock does; a reverse in the middle of a street corner is the wrong move.
-	if _arc_hit(map, frame, here, forward, turn, waypoint) > KTURN_HIT_WITHIN_M:
+	var start := _outline_offs(map, frame, here, forward)
+	if _arc_hit(map, frame, here, forward, turn, waypoint, start) > KTURN_HIT_WITHIN_M:
 		return false
 	var at := here
 	var heading := forward
@@ -2510,9 +2513,9 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		heading = TankMotion.turn_heading(heading, KTURN_BACK_STEP_M * turn / radius)
 		at -= heading * KTURN_BACK_STEP_M
 		backed += KTURN_BACK_STEP_M
-		if not _end_clear(map, frame, at, heading, -1.0):
-			break  # the tail would hit what is behind: no further back
-		if _arc_hit(map, frame, at, heading, turn, waypoint) == INF:
+		if not _outline_ok(map, frame, at, heading, start):
+			break  # the hull would hit what is behind (or swing its nose into what is beside): no further back
+		if _arc_hit(map, frame, at, heading, turn, waypoint, start) == INF:
 			_kturn_left_m = minf(backed + KTURN_BACK_EXTRA_M, KTURN_BACK_MAX_M)
 			_kturn_turn = turn
 			_kturn_from = here
@@ -2533,10 +2536,10 @@ func _kturn_frame(tank: Tank) -> Array:
 	return [float(size[0]) * 0.5, float(size[2]) * 0.5, bake_radius(tank) - KTURN_MARGIN_M]
 
 
-## Sweep the forward full-lock arc from (at, heading) until the hull points at `target`: how far it travels before a
-## leading-end point is no longer clear (INF = the whole arc is clear, or it never lines up: the point is inside the
-## turning circle, which is Steering's own circle test's case, not this rule's).
-func _arc_hit(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float, target: Vector3) -> float:
+## Sweep the forward full-lock arc from (at, heading) until the hull points at `target`: how far it travels before the
+## hull's outline is no longer clear (`start`: see _outline_ok) (INF = the whole arc is clear, or it never lines up:
+## the point is inside the turning circle, which is Steering's own circle test's case, not this rule's).
+func _arc_hit(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float, target: Vector3, start: PackedFloat32Array) -> float:
 	var radius := wheel_radius()
 	var travelled := 0.0
 	var limit := TAU * radius * KTURN_SWEEP_TURNS
@@ -2547,23 +2550,35 @@ func _arc_hit(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float
 		heading = TankMotion.turn_heading(heading, KTURN_STEP_M * turn / radius)
 		at += heading * KTURN_STEP_M
 		travelled += KTURN_STEP_M
-		if not _end_clear(map, frame, at, heading, 1.0):
+		if not _outline_ok(map, frame, at, heading, start):
 			return travelled
 	return INF
 
 
-## Are the hull's corners and the middle of its `end` (+1 nose, -1 tail), and the sides' leading half, clear at this pose?
-func _end_clear(map: RID, frame: Array, at: Vector3, heading: Vector3, end: float) -> bool:
-	var half_width: float = frame[0]
-	var half_length: float = frame[1]
-	var reach: float = frame[2]
+## The hull outline sampled as [along, across] in half-lengths / half-widths: corners, end middles, side quarters.
+## ALL of it, both ends: the plant yaws a wheeled hull about its CENTRE, so the end that is not leading swings out as
+## far as the one that is (the first build swept only the leading end, and its reverse legs scraped their noses:
+## 169 contact ticks on one laptop rig run).
+const KTURN_OUTLINE: Array[Vector2] = [Vector2(1, 1), Vector2(1, -1), Vector2(-1, 1), Vector2(-1, -1), Vector2(1, 0),
+		Vector2(-1, 0), Vector2(0.5, 1), Vector2(0.5, -1), Vector2(-0.5, 1), Vector2(-0.5, -1)]
+
+
+## How far off the navmesh each outline point is at this pose (metres).
+func _outline_offs(map: RID, frame: Array, at: Vector3, heading: Vector3) -> PackedFloat32Array:
 	var right := Vector3(-heading.z, 0.0, heading.x)
-	for along: float in [1.0, 0.5]:
-		for across: float in [-1.0, 0.0, 1.0]:
-			if along < 1.0 and across == 0.0:
-				continue
-			var point := at + heading * (end * along * half_length) + right * (across * half_width)
-			var closest := NavigationServer3D.map_get_closest_point(map, point)
-			if Vector2(closest.x - point.x, closest.z - point.z).length() > reach:
-				return false
+	var offs := PackedFloat32Array()
+	for sample: Vector2 in KTURN_OUTLINE:
+		var point := at + heading * (sample.x * float(frame[1])) + right * (sample.y * float(frame[0]))
+		var closest := NavigationServer3D.map_get_closest_point(map, point)
+		offs.append(Vector2(closest.x - point.x, closest.z - point.z).length())
+	return offs
+
+
+## Is the outline clear at this pose: every point within the clear reach of the mesh, or — for a point that was
+## already closer to a wall than that where the plan started (a nose parked against a face) — no deeper than it was.
+func _outline_ok(map: RID, frame: Array, at: Vector3, heading: Vector3, start: PackedFloat32Array) -> bool:
+	var offs := _outline_offs(map, frame, at, heading)
+	for i in offs.size():
+		if offs[i] > maxf(float(frame[2]), start[i] + 0.05):
+			return false
 	return true
