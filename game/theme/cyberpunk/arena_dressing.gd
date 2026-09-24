@@ -14,7 +14,12 @@ extends "res://game/theme/cyberpunk/cyber_prop.gd"
 const HALF := 121.0
 const WALL_HEIGHT := 3.0
 const WALL_THICK := 2.0
-const TOWER_INSET := 112.0
+## Round 11 (arena, A2): clear air between a floodlight tower's footprint and the outer corner of the wall it stands
+## behind. The towers used to stand 9 m INSIDE every corner (`TOWER_INSET` 112 against a square at 121), which on a
+## hexagon at 140 put six 21 m towers on drivable navmesh with no collider: *"units can still drive right through the
+## spotlight assets in Terminus"*. They now stand OUTSIDE the wall like the rest of the venue (stands, gates, screens),
+## so the fight loses no floor and the in-play floodlight is the kit prop, which is solid.
+const TOWER_CLEARANCE := 1.0
 ## Painted floodlight pools on the floor: [x, z, radius, intensity]. The corner towers throw theirs toward the
 ## center; the side pools stand in for the stands' lamps (X5). Emission only: no light passes (fx_tricks.md).
 const FLOODLIGHTS := [
@@ -109,10 +114,10 @@ func _build_structures() -> void:
 		_build_polygon_venue()
 	else:
 		_build_perimeter()
-		var inset := half - (HALF - TOWER_INSET)
+		var face := half - WALL_THICK / 2.0
 		for sx in [-1.0, 1.0]:
 			for sz in [-1.0, 1.0]:
-				_build_tower(Vector3(sx * inset, 0.0, sz * inset))
+				_build_tower(_tower_base(Vector2(sx * face, sz * face), 4))
 		_build_venue()
 	# Render X5: repeated kit models (stands, towers, gates) draw as one MultiMesh per mesh.
 	StaticInstancer.instance_repeats(structures)
@@ -275,8 +280,8 @@ func _build_polygon_venue() -> void:
 					var screen_at: Vector2 = gate_at + along * side * ((to_m - from_m) / 2.0 + 5.0) + outward * 2.0
 					screen.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(screen_at.x, 0.0, screen_at.y))
 					structures.add_child(screen, true)
-		# A floodlight tower at the edge's first corner, pulled in toward the centre.
-		_build_tower(Vector3(a.x, 0.0, a.y) * ((a.length() - (HALF - TOWER_INSET)) / maxf(a.length(), 1.0)))
+		# A floodlight tower at the edge's first corner, outside the wall.
+		_build_tower(_tower_base(a, n))
 	if not signs.is_empty():
 		structures.add_child(NeonSigns.build(signs))
 	if not rows.is_empty():
@@ -563,6 +568,31 @@ func _build_perimeter() -> void:
 	FxMultiMesh.never_interpolated(glow_pools)
 	glow_pools.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	structures.add_child(glow_pools)
+
+
+## Where a corner's floodlight tower stands: on the line from the centre through `corner` (a vertex of the wall's
+## INNER face, `sides` sides), past the wall's outer corner by the tower's own footprint radius plus TOWER_CLEARANCE.
+## The radius is the half-diagonal of the model's bounds (`_bounds`, the whole model: the lamp bank overhangs the
+## base), so no turn of the tower can bring it back over the wall.
+func _tower_base(corner: Vector2, sides: int) -> Vector3:
+	var outer := corner.length() + WALL_THICK / cos(PI / float(sides))
+	var at := corner.normalized() * (outer + _tower_radius() + TOWER_CLEARANCE)
+	return Vector3(at.x, 0.0, at.y)
+
+
+var _tower_radius_m := -1.0
+
+
+func _tower_radius() -> float:
+	if _tower_radius_m < 0.0:
+		_tower_radius_m = 2.1  # the procedural fallback: a 1.2 m mast under a 4 x 1.6 m lamp bar
+		var kit_tower := _kit("kit_floodlight_tower")
+		if kit_tower != null:
+			var model := kit_tower.instantiate() as Node3D
+			var box := _bounds(model)
+			model.free()
+			_tower_radius_m = Vector2(maxf(absf(box.position.x), absf(box.end.x)), maxf(absf(box.position.z), absf(box.end.z))).length()
+	return _tower_radius_m
 
 
 func _build_tower(base: Vector3) -> void:

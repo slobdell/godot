@@ -174,3 +174,72 @@ func test_decoration_stands_where_no_hull_is_sent() -> void:
 				if absf(p.x - c.x) <= s.x / 2.0 and absf(p.y - c.z) <= s.y / 2.0:
 					failures.append("%s: %s at %s is inside a spawn zone" % [layout_name, prop["type"], p])
 	assert_true(failures.is_empty(), "decoration stands where no hull is sent: %s" % "; ".join(failures))
+
+
+## Round 11 (A2): the DRESSING layer too. *"units can still drive right through the spotlight assets in Terminus;
+## solid objects should not intersect."* The two tests above iterate `ArenaKit.PROPS` and the layout's props, so they
+## never saw `arena.dressing` at all -- and the venue's 21 m floodlight towers were built by the dressing, 9 m inside
+## every polygon corner, standing on drivable navmesh with no collider.
+##
+## For every map he can be dealt (and every other non-fixture layout), build the shipping dressing exactly as a match
+## does and measure every drawn mesh -- hidden instancing originals included, since `StaticInstancer` keeps their nodes
+## and hides them -- that stands on the floor (its lowest vertex under a hull's roof) and rises off it. Anything with
+## such geometry INSIDE the drivable area (`ArenaShape.contains` on the layout's own shape and half_size, by more than
+## the tolerance: never a hard-coded coordinate, lesson 3) must lie inside a `StaticBody3D` box in the
+## `navigation_source` group, or it is a decoration a hull drives through. Unshadowed meshes are light (beams, pools)
+## and are skipped; that exemption is printed so it cannot hide anything silently.
+func test_the_venue_dressing_is_solid_or_outside_the_wall() -> void:
+	var roof := reach_height()
+	var failures: PackedStringArray = []
+	var measured := 0
+	for layout_name in Arena.layout_names():
+		var data: Dictionary = Arena.load_layout(layout_name)["layout"]
+		if Arena.is_fixture(data):
+			continue
+		var kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+		var bound := float(data.get("half_size", Match.ARENA_HALF_SIZE))
+		var dressing := (load("res://game/theme/cyberpunk/arena_dressing.tscn") as PackedScene).instantiate() as Node3D
+		add_to_tree(dressing)
+		dressing.call("setup", data)
+		await tree.process_frame
+		var solids: Array = []  # [Transform3D, half extents] of every navigation_source box in the dressing
+		for body_node in dressing.find_children("*", "StaticBody3D", true, false):
+			if not (body_node as Node).is_in_group("navigation_source"):
+				continue
+			for shape_node in (body_node as Node).find_children("*", "CollisionShape3D", true, false):
+				var cs := shape_node as CollisionShape3D
+				if cs.shape is BoxShape3D:
+					solids.append([cs.global_transform, (cs.shape as BoxShape3D).size / 2.0])
+		var intruders := {}
+		for mesh_node in dressing.find_children("*", "MeshInstance3D", true, false):
+			var mi := mesh_node as MeshInstance3D
+			if mi.mesh == null or mi.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF:
+				continue
+			var vertices := _world_vertices(mi.mesh, mi.global_transform)
+			var low := INF
+			for v in vertices:
+				low = minf(low, v.y)
+			if vertices.is_empty() or low > roof:
+				continue  # off the floor entirely (the airship, signs on a stand's rail)
+			measured += 1
+			for v in vertices:
+				if v.y > roof or not ArenaShape.contains(kind, bound, Vector2(v.x, v.z), TOLERANCE_M):
+					continue
+				var held := false
+				for solid: Array in solids:
+					var local: Vector3 = (solid[0] as Transform3D).affine_inverse() * v
+					var ext: Vector3 = solid[1]
+					if absf(local.x) <= ext.x + TOLERANCE_M and absf(local.z) <= ext.z + TOLERANCE_M:
+						held = true
+						break
+				if not held:
+					var path := String(dressing.get_path_to(mi))
+					if not intruders.has(path):
+						intruders[path] = Vector2(v.x, v.z)
+		for path: String in intruders:
+			failures.append("%s: %s stands inside the wall at %s with no collider" % [layout_name, path, intruders[path]])
+		dressing.free()
+	for line in failures:
+		print("DRESSING_PARITY " + line)
+	assert_true(measured > 50, "POSITIVE CONTROL: the dressing's floor-standing meshes were found (%d)" % measured)
+	assert_true(failures.is_empty(), "nothing the venue dressing stands inside the drivable area without a collider: %d found (DRESSING_PARITY lines)" % failures.size())
