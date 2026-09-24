@@ -663,7 +663,18 @@ func _update_order_progress() -> void:
 			# An attack-move is done when it's there and nothing is left to shoot (control's rule).
 			var fighting: bool = order["verb"] == "attack_move" and engaged_target != ""
 			var arrive := _order_arrive()
-			if not fighting and distance <= arrive:
+			# Round 11 (the orchestrator, for nav's R2): when Movement REPAIRED this goal -- re-grounded it once with
+			# the hull's envelope because the original was inside a solid -- the hull is driving to a point up to
+			# REPAIR_MAX_M away from `goal`, so the distance test above can never pass and the order hangs while the
+			# unit stands still reading "arrived" (nav measured it: a scout repaired 3.5 m, builder0, `nav-orders`).
+			# The rule is deliberately NOT "widen `arrive` by repaired_m": that is round 6's "close enough after a
+			# stall" fudge returning, and at REPAIR_MAX_M 12 m it would complete any move from a 12 m disc. Instead
+			# the mover owns "did this hull arrive" and the brain owns "is this order done": a repair is Movement
+			# telling us the goal moved, so we honour ITS arrival at the point IT was sent to. With no repair in
+			# force (`repaired_m` 0) this changes nothing, and an unreachable goal still reports blocked/no_path.
+			var reading := Movement.state(tank)
+			var repaired: bool = float(reading.get("repaired_m", 0.0)) > 0.0 and String(reading.get("phase", "")) == "arrived"
+			if not fighting and (distance <= arrive or repaired):
 				_finish_order(goal)
 		"stop":
 			# Stopped, and stopped for a moment (a unit that had barely started moving would finish at once).
