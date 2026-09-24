@@ -151,8 +151,8 @@ func test_every_unit_with_art_is_drawn_inside_its_own_box_on_every_axis() -> voi
 	var worst := {"unit": "", "axis": -1, "off": 0.0}
 	for faction in Units.FACTIONS:
 		for unit_id in Units.roster(faction):
-			if not GameTheme.slots.has("unit.%s.hull" % unit_id):
-				continue
+			# Round 11 (fleet T3): units WITHOUT hull art of their own are covered too. This test skipped them, and they
+			# were exactly the two drawn with a 1.63:1 distortion; their shape is held by test_units_bus_eye.gd.
 			var tank := _spawn(unit_id)
 			await wait_physics_frames(1)
 			# Round 11 (fleet): and one PROCESS frame. The crane carrier's outriggers start down (artillery_part
@@ -172,7 +172,7 @@ func test_every_unit_with_art_is_drawn_inside_its_own_box_on_every_axis() -> voi
 								% [unit_id, axis, drawn[axis], wanted, off * 100.0])
 			tank.queue_free()
 	GameTheme.use(previous)
-	assert_true(checked >= 18, "the whole roster with art was checked, not a handful (%d units)" % checked)
+	assert_true(checked >= 21, "the whole roster was checked, not a handful (%d units)" % checked)
 	print("UNIT_BOX_FILL %d units, worst %s axis %d at %.1f%%" % [checked, worst["unit"], worst["axis"], worst["off"] * 100.0])
 
 
@@ -201,6 +201,10 @@ func test_the_box_fill_check_can_actually_fail() -> void:
 ## traverses. 80%: every unit whose turret reads as a turret on `make facing-audit TINT=1` scored 86-100% when this was
 ## written, and every buried one 31-69%, so the line has room on both sides.
 const TURRET_ABOVE_HULL := 0.8
+## And not floating: at rest, the lowest thing that turns is within this of the hull under it. Round 11's T3 lowered
+## the bus's roof 0.68 m and left its turret hanging +0.71 m in the air; the Syndicate's hover guns, floating by
+## design, measured +0.13 (IFV pod) and +0.24 m (railgun), the War Rig's cut gun +0.19.
+const TURRET_FLOATS_M := 0.4
 
 
 func _turret_above(unit_id: String, yaw_deg: float, sink_m := 0.0) -> Dictionary:
@@ -232,6 +236,8 @@ func test_what_turns_with_every_turret_is_drawn_above_its_hull() -> void:
 				if float(fit["above"]) < TURRET_ABOVE_HULL:
 					failures.append("%s at %d deg: %.0f%% above the hull, lowest point %+.2f m" % [unit_id, yaw,
 							float(fit["above"]) * 100.0, fit["lowest"]])
+				elif yaw == 0.0 and float(fit["lowest"]) > TURRET_FLOATS_M:
+					failures.append("%s: floating %.2f m over its roof" % [unit_id, fit["lowest"]])
 	GameTheme.use(previous)
 	assert_true(checked >= 24, "the turret units were measured, both ways round (%d)" % checked)
 	assert_true(failures.is_empty(), "turrets buried in their own hulls: %s" % "; ".join(failures))

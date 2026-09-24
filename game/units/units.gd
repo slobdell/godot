@@ -833,8 +833,7 @@ const PROFILES := {
 		"turret_turn_rate_deg": 180.0,
 		"muzzle_height": 1.14,
 		# Round 11 (fleet T1): the roof pod is cut out of the hull (FactionArt.GUN_CUTS "syndicate/ifv") and yaws about
-		# GunPivot z 0.0 in the tank frame (`make turret-probe`, laptop); the simulated pivot goes under it.
-		"turret_mount": [0.0, 1.09, 0.0],
+		# GunPivot z 0.0 in the tank frame. No turret_mount, for the same reason as syn_tank's (the muzzle condition).
 		"heat_capacity": 100.0,
 		"heat_dissipation": 14.0,
 		"armor": {"front": 5.0, "side": 4.0, "rear": 2.0},
@@ -870,8 +869,9 @@ const PROFILES := {
 		"turret_turn_rate_deg": 55.0,
 		"muzzle_height": 1.14,
 		# Round 11 (fleet T1): the railgun is cut out of the hull (FactionArt.GUN_CUTS "syndicate/tank") and yaws about
-		# GunPivot z 0.0 in the tank frame (`make turret-probe`, laptop); the simulated pivot goes under it.
-		"turret_mount": [0.0, 1.09, 0.0],
+		# GunPivot z 0.0 in the tank frame (`make turret-probe`, laptop). NO turret_mount: putting the simulated pivot
+		# under it moves the pivot 0.2 m FORWARD, and combat's condition (tests/test_tank_turret_mount.gd) is that no
+		# mount pushes a muzzle further past the nose. 0.2 m between the drawn and the simulated pivot is not visible.
 		"heat_capacity": 100.0,
 		"heat_dissipation": 10.0,
 		# Thick everywhere a shell is likely to arrive and thin behind: a hover tank you have to get round.
