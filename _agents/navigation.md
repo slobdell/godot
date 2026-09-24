@@ -24,9 +24,16 @@ member because brains ask every think), follow stations (`tank_brain.gd`, round 
 **Repair, don't just report** (`Movement._repair`): where `_update_phase` would declare `blocked`/`no_path` at the end
 of an unreachable route, the goal is re-grounded ONCE with the envelope and driven to — only if a route reaches it and
 it is within `REPAIR_MAX_M` (12 m) of what was asked. Otherwise the honest report stands. `state()` carries
-`repaired_m`; counters `goal_repairs` / `goal_repairs_refused`; `--nav-off=repair`. Caveat: order COMPLETION is judged
-against the order's own goal by the brain, so a repaired ORDER goal would not complete; after R2 order goals are
-already grounded, so the repair in practice meets brain-made goals and island cases.
+`repaired_m`; counters `goal_repairs` / `goal_repairs_refused`. **OPT-IN (`--nav-off=repair` turns it ON):** order
+COMPLETION is judged against the order's own goal by the brain (`tank_brain.gd`), so a repaired ORDER goal left a scout
+reading "arrived" under an order that never completed (`nav-orders`, `e62383ad`). It defaults on once completion
+honours `repaired_m`.
+
+**Never steer at a point under the hull** (`_corner_beyond`, `WAYPOINT_MIN_M` 1.5 m): whatever branch of
+`_next_waypoint` chose it, a mid-route steering point that close is replaced by the first route corner beyond it. The
+segment search keeps the EARLIER segment on a tie at a shared vertex, so the "next corner" could be the one the hull
+stood on; steering returned zero inside the 0.5 m arrive radius and the stall rule (it needs throttle) never fired —
+arena's Crossing deadlock (90 s at speed 0) and an IFV rocking on the plant's creep in `nav-orders`.
 
 **R1, the planned reverse** (`Movement._planned_reverse`, driver tag `kturn`, `--nav-off=kturn` is the control arm).
 Every reverse before it was reactive: the stall rule, the pressed-wall escape, and Steering's circle test (which only
@@ -47,6 +54,13 @@ from `unstick` and counts `by_gear`; the drive test counts cusps (0.3 m/s dead b
 creep (ticks, reversals, reversals at a wall), and **its seeds are samples** (seed 1 canonical; > 1 adds 2 m jitter and
 a random starting heading — before this, seeds were byte-identical). `make nav-wall-clip` films the lead's case from
 his camera in both arms.
+
+**Measured (builder0, `38c385d5`, 8 seeds x 2 squads per arm, planned reverse off -> on):** mixed arrivals 170 -> 177
+of 192, wall contacts 2806 -> 996, press/unstick-driven contacts 88 -> 1, reverse-gear contacts 671 -> 206, cusps
+2260 -> 1978; War Rigs arrivals 99 -> 104 of 128, contacts 9678 -> 6917, press/unstick 393 -> 227, reverse-gear
+2240 -> 946, cusps 1585 -> 1202. The rigs' `kturn_none` (130) exceeds their `kturns` (64): a single back-up rarely
+clears a 14 m hull's arc in these streets — the open question for a multi-leg plan. Sim baseline `457b5e83 ->
+bdb21d20` (the waypoint guard) `-> 814aed46` (the planned reverse); R2 alone does not move it.
 
 **Noise, for whoever measures next:** the War Rig drive is chaotic. One change touching a handful of legs moved one
 seed's total contacts 1002 → 3163 on the laptop. Total contacts are dominated by rigs' forward scrapes in 18 m streets;
