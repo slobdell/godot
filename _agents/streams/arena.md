@@ -162,7 +162,7 @@ _Updated 2026-09-24 by the arena worker. Baseline: `a04d75c0` green on builder0 
 1. **A1** publish crossing + sumps (test first) — **done** (`3ba40e51`)
 2. **A2** venue towers solid-or-outside (test first) — **done** (`a909a14d`)
 3. A1.4 play each map on the default path — **done** headless (`make terrain-drive`); rendered frames for the page
-4. **A3** one new terrain map — **the Locks, built and in the rotation** (`231c838d`); frames → review page
+4. **A3** one new terrain map — **the Locks, built; a fixture waiting on the lead's yes** (`abb5be04`); on his page
 5. **A4** (stretch) — **a fixture proposal `pit_dug`** (`ece226b8`); before/after → review page
 
 ### Done
@@ -191,6 +191,12 @@ _Updated 2026-09-24 by the arena worker. Baseline: `a04d75c0` green on builder0 
   finish 11–15 m from their slots reporting `arrived` (the probe's 7 m bar is nav's drive-test bar; a 14 m rig's
   arrival reads wider), and one rig reads `blocked_by: terrain` at the south bridge exit.
 
+- **A3 is waiting on a LEAD GATE, by design.** The Locks went into the rotation at `231c838d` and `f30dbf0d`'s check
+  went red on `announcer-check` alone (1689/0 tests, baseline unmoved). `test_arena_names` requires every dealt map to
+  have its name recorded for the 18 `{arena}` lines, and recording new text is paid generation behind his approval.
+  So the Locks is a **fixture** on his page (`abb5be04`). **On his yes:** `make announcer-generate` for "the Locks"
+  (18 clips), drop `fixture=True` in `tools/terrain_maps.py` `locks()`, `make arenas`, add `"locks"` to
+  `Arena.ROTATION` and to the pending list in `test_random_deals_only_the_maps_the_lead_kept`.
 - **A3: the Locks** (`231c838d`, a new design, not the canal promotion). Decision and reason: `terminus_canal`
   is the lead's acceptance map redesigned (its ring road and objective pair gone). Two Terminuses in the rotation is
   not a new map, and redesigning his acceptance map is his call. The Locks: a canal wall to wall, the lock in the
@@ -237,7 +243,8 @@ _Updated 2026-09-24 by the arena worker. Baseline: `a04d75c0` green on builder0 
 - `tests/test_arena_prop_parity.gd`: one new test appended.
 
 ### Questions for the lead
-- Crossing, Sumps, **the Locks** (and Terminus) are in the rotation without your verdict; each comes out in one line if you say no.
+- Crossing and Sumps (and Terminus) are in the rotation without your verdict; each comes out in one line if you say no.
+- **The Locks: deal it?** A yes also approves recording "the Locks" for the 18 announcer lines that name the arena.
 - The Locks' centre sees 45% of the field (open water by design): the kill zone you want, or more cover on the quays?
 - Water renders as a dark channel: should it look wetter? (theme layer)
 - The Pit, dug (four pits at the ring's corners): keep it as the Pit, or leave the Pit as you kept it?
