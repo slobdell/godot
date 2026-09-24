@@ -101,14 +101,37 @@ static func _derive_scale_k(rig: Dictionary = PROFILES[RIG_UNIT]) -> float:
 	return RIG_LENGTH_M / reference
 
 
-## S1: the length this unit's hull_size[2] is derived from -- its reference vehicle's real length times SCALE_K.
+## Round 11 (fleet CP1; the lead, 2026-09-24, on the fleet review page, APPROVED "Question: make the Law 1.25x bigger
+## than the real-world rule?" -- after "The tanks for the law should be bigger, and the IFVs probably should also then
+## be bigger"). THE ONE DECLARED EXCEPTION TO K. Under the round-9 rule an 8x8 assault gun is 5.84 m beside a 9.7 m bus
+## and a 14 m War Rig, and no real 8x8 is longer; the Law is the state and should read as outweighing the scrap. So a
+## faction may carry a declared multiplier over K for named roles, and a reader can check the rule instead of trusting
+## typed numbers: length = reference x SCALE_K x FACTION_SCALE[faction].x (when the unit's role is listed).
+## tests/test_units_scale.gd's reference-times-K test reads `target_length_m`, so it holds these units to it.
+const FACTION_SCALE := {
+	"law": {"x": 1.25, "roles": ["tank", "ifv"],
+			"approved": "the lead, 2026-09-24 (fleet review page, q_r11_law_size): Assault Gun 5.84 -> 7.30 m, APC 5.01 -> 6.26 m"},
+}
+
+
+## The declared multiplier over K for this unit (FACTION_SCALE), 1.0 for everyone else.
+static func declared_scale(unit_id: String) -> float:
+	var profile: Dictionary = PROFILES.get(unit_id, {})
+	var entry: Dictionary = FACTION_SCALE.get(String(profile.get("faction", "condemned")), {})
+	if entry.is_empty() or not (entry["roles"] as Array).has(String(profile.get("role", ""))):
+		return 1.0
+	return float(entry["x"])
+
+
+## S1: the length this unit's hull_size[2] is derived from -- its reference vehicle's real length times SCALE_K
+## (times its declared FACTION_SCALE, round 11).
 ## Units without a `scale_reference` (there are none today; the key is optional so a new unit can land before its
 ## reference is chosen) keep whatever length the catalog gives them.
 static func target_length_m(unit_id: String) -> float:
 	var profile: Dictionary = PROFILES[unit_id]
 	if not profile.has("scale_reference"):
 		return float(profile["hull_size"][2])
-	return snappedf(float(profile["scale_reference"]["length_m"]) * SCALE_K, 0.01)
+	return snappedf(float(profile["scale_reference"]["length_m"]) * SCALE_K * declared_scale(unit_id), 0.01)
 
 ## Points a player spends on an army per match. A standard tank is 200.
 const DEFAULT_BUDGET := 1000
@@ -344,9 +367,11 @@ const PROFILES := {
 		# 100% of every matchup; at these values it beats IFVs 67% and artillery 83%, loses to tanks and Lancers.
 		"cost": 220,
 		"unlock_tier": 2,
-		"hull_size": [2.40, 3.38, 6.89],
-		# Round 11 (fleet T3, CP1): 2.40 -> 3.38 m tall, Tank.shared_hull_box at 2.40 wide: the burner wears the same
-		# dozer as the bus, and the lead asked for the two to be "uniform" (the same shape, SHARED_HULL_HEIGHTEN).
+		"hull_size": [2.40, 2.40, 6.89],
+		# Round 11 (fleet, CP1): briefly 3.38 m tall to match the bus's shape; the lead REJECTED that on the review page:
+		# "I had no idea these were 2 separate unit that all makes more sense now. We will want to create a different
+		# unit type for the burner because it looks identical to the tank". Back to 2.40 m; it wears the dozer only until
+		# its own fire-engine mesh exists (new concepts, round 11), so it is exempt from the shared hull's one shape.
 		# S1 (round 9): The plow-nosed fire truck.
 		"scale_reference": {"vehicle": "Pumper fire engine, 32 ft (Pierce Enforcer)",
 				"length_m": 9.75, "source": "32 ft = 9.75 m, a standard single-axle pumper"},
@@ -370,8 +395,7 @@ const PROFILES := {
 		"muzzle_height": 1.14,
 		# R5 (round 10, feel): the same buried dozer turret. Probe (builder0): roof flat at 2.36-2.40 m from z -0.4 to +2.6,
 		# the turret art 0.38 m above its pivot: origin 2.37 - 0.38 = 1.99, pivot 0.4 m aft of centre.
-		# Round 11 (fleet T3): the box is 3.38 m now; roof flat at 3.34-3.35 (probe, laptop): origin 3.35 - 0.38 = 2.97.
-		"turret_mount": [0.0, 2.97, 0.4],
+		"turret_mount": [0.0, 1.99, 0.4],
 		# X6 (round 3): plow front 4 -> 6, so it survives the 25 mm while closing on IFVs (Burner > IFV).
 		"armor": {"front": 6.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["ifv", "artillery"],
@@ -636,7 +660,7 @@ const PROFILES := {
 		"blurb": "A 6x6 MRAP that outlived its war, with a remote 25 mm. Slow, and very hard to open.",
 		"cost": 195,
 		"unlock_tier": 0,
-		"hull_size": [2.75, 3.29, 5.01],
+		"hull_size": [3.44, 4.11, 6.26],
 		# S1 (round 9): Named in game_design.md *The Law roster sketch*.
 		"scale_reference": {"vehicle": "Force Protection Cougar 6x6 MRAP",
 				"length_m": 7.08, "source": "Cougar 6x6 published length 7.08 m"},
@@ -658,10 +682,10 @@ const PROFILES := {
 		"turret_turn_rate_deg": 175.0,
 		"muzzle_height": 1.14,
 		# Round 11 (fleet T1; the lead: "The turret on the Law's IFV is not spinning"): its remote weapon station is cut
-		# out of the hull (FactionArt.GUN_CUTS "law/ifv") and yaws about its ring, whose GunPivot is at z +0.50 in the
-		# tank frame (`make turret-probe`, laptop); the simulated pivot goes under it so rounds leave from the gun that is
-		# drawn. No turret art is drawn, so y stays at the muzzle's pivot height.
-		"turret_mount": [0.0, 1.09, 0.5],
+		# out of the hull (FactionArt.GUN_CUTS "law/ifv") and yaws about its ring, whose GunPivot is at z +0.63 in the
+		# tank frame at the 6.26 m box (`make turret-probe`, laptop; +0.50 at 5.01 m); the simulated pivot goes under it
+		# so rounds leave from the gun that is drawn. No turret art is drawn, so y stays at the muzzle's pivot height.
+		"turret_mount": [0.0, 1.09, 0.63],
 		# Mine-resistant: the toughest front in the game after the war rig, on a unit that cannot chase anything.
 		# Rear 2.0 like every other hull: "everything hurts from behind" is a rule of the game, not a unit's choice
 		# (test_combat_mechanics), and an MRAP you cannot flank would break it.
@@ -676,7 +700,7 @@ const PROFILES := {
 		"blurb": "An 8x8 with a real gun: reaches farther and works faster than a dozer, and cannot trade with one.",
 		"cost": 260,
 		"unlock_tier": 0,
-		"hull_size": [2.69, 3.03, 5.84],
+		"hull_size": [3.36, 3.79, 7.30],
 		# S1 (round 9): The 8x8 wheeled assault gun with a real gun. game_design.md says Stryker-style; the Stryker MGS is
 		# 6.95 m, which would make the Law's tank SHORTER than its own 6x6 MRAP. Centauro is the 8x8 assault gun the blurb
 		# describes and keeps the role order legible.
@@ -685,7 +709,8 @@ const PROFILES := {
 		# heaviest 8x8 assault gun in service (30 t against the B1's 24 t), at its published length -- which includes the
 		# barrel overhang, as the approved mesh's length includes its gun. 8.26 x K = 5.84 m (+5%); width and height are
 		# the mesh's at that length (SizeLook.box_at_length). No 8x8 in service is longer: anything bigger than this is
-		# a declared exaggeration of the K rule, which is the lead's call (fleet brief Status, questions).
+		# a declared exaggeration of the K rule -- which the lead then APPROVED: FACTION_SCALE["law"] 1.25x, so the box
+		# is SizeLook.box_at_length at 8.26 x K x 1.25 = 7.30 m (3.36 x 3.79 x 7.30).
 		"scale_reference": {"vehicle": "Centauro II 8x8 assault gun (120 mm; length with barrel)",
 				"length_m": 8.26, "source": "Leonardo/IVECO-OTO Melara Centauro II datasheet: length 8.26 m with the 120 mm barrel"},
 		"max_health": 330,
