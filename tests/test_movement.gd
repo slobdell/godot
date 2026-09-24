@@ -145,10 +145,14 @@ func test_an_unreachable_goal_says_so_instead_of_arriving() -> void:
 
 ## Round 11 (nav R2 item 3): repair, don't just report. A goal 3 m inside a block face is one the hull can stand
 ## beside: Movement re-grounds it once with the hull's envelope and drives there, and says how far it moved it.
+## The repair is OPT-IN until order completion honours it (Movement.repair_on()); switched on here for the test.
 func test_a_goal_just_inside_a_wall_is_repaired_once_and_arrived_at() -> void:
 	Movement.reset_route_arms()
+	var saved := Movement._off
+	Movement._off = PackedStringArray(["repair"])
 	# The (40, 0) block's north face is z = 20; the goal is 3 m inside it.
 	var reading := await _drive_into_block(Vector3(40.0, 0.0, 17.0), "arrived")
+	Movement._off = saved
 	assert_eq(reading.get("phase"), "arrived", "the repaired goal is driven to and arrived at (%s)" % reading)
 	assert_true(float(reading.get("repaired_m", 0.0)) >= 3.0 and float(reading.get("repaired_m", 0.0)) <= Movement.REPAIR_MAX_M,
 			"and the reading says how far the goal was moved (%s)" % reading.get("repaired_m"))

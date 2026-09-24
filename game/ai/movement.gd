@@ -843,6 +843,12 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# unchanged" cannot be confused. This is the one place that knows, and it used to keep it nowhere.
 	arc_live = aim != goal
 	var routed := aim if direct else _next_waypoint(aim, delta)
+	# Round 11: never a mid-route steering point under the hull, whichever branch of _next_waypoint chose it (arena's
+	# Crossing deadlock was the chord fallback; nav-orders then found a route whose next vertex sat 0.07 m from the
+	# hull - an IFV rocked in place on the plant's creep for 35 s at zero throttle, and the on/off throttle kept
+	# resetting the stall rule). See _corner_beyond.
+	if not direct and routed != aim and _flat_distance(routed, tank.global_position) < WAYPOINT_MIN_M:
+		routed = _corner_beyond(tank.global_position, aim)
 	lap = OrderController._lap("move.path", lap)
 	var around_fire := _around_fire(routed, goal, order)
 	lap = OrderController._lap("move.fire", lap)
@@ -1080,10 +1086,19 @@ func _keep_station(cmd: TankCommand, goal: Vector3, delta: float) -> Vector2:
 	return Vector2(cmd.throttle, cmd.turn)
 
 
+## OPT-IN (`--nav-off=repair` turns it ON), measured on `e62383ad` (builder0, `nav-orders`): a player's scout goal was
+## repaired 3.5 m, Movement arrived at the repaired point, and the ORDER never completed, because completion is judged
+## against the order's own goal (tank_brain.gd `_update_order_progress`, not nav's). A hull reading "arrived" under an
+## order that never finishes is worse than an honest `no_path`. It becomes the default when completion honours
+## `Movement.state(tank)["repaired_m"]` (requested of the orchestrator, round 11).
+static func repair_on() -> bool:
+	return switched_off("repair")
+
+
 ## Round 11 (R2 item 3): re-ground an unreachable goal once with this hull's envelope; true when the hull now drives to
 ## the repaired point (the next tick's drive() substitutes it and re-plans), false to report `no_path` as before.
 func _repair(goal: Vector3) -> bool:
-	if _repair_for != Vector3.INF or _off.has("repair"):
+	if _repair_for != Vector3.INF or not repair_on():
 		return false
 	var tank := ctl.tank
 	_repair_for = goal

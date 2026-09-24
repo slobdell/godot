@@ -92,6 +92,25 @@ func _issue_orders() -> void:
 
 func _sample() -> void:
 	var elapsed := float(game_match.tick - issued_tick) / float(SimClock.TICK_RATE)
+	# --trace=UNIT: one line a second for that unit (position, heading, speed, phase, steering point, the arms).
+	var trace := ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--trace="):
+			trace = arg.trim_prefix("--trace=")
+	if trace != "" and (game_match.tick - issued_tick) % (SimClock.TICK_RATE / 2) == 0:
+		for tank in units:
+			if String(tank.name) == trace:
+				var r := Movement.state(tank)
+				var f := -tank.global_basis.z
+				print("NAV_ORDERS_TRACE t %.1f at (%.1f, %.1f) fwd (%.2f, %.2f) speed %.1f phase %s steer %s cmd %.2f/%.2f contact %s driver %s kturns %d none %d" % [
+						elapsed, tank.global_position.x, tank.global_position.z, f.x, f.z, tank.speed(), r.get("phase"),
+						r.get("steer_to"), tank.command.throttle, tank.command.turn, r.get("wall_contact"), r.get("wall_contact_driver"),
+						Movement.kturns, Movement.kturn_none])
+				var pts: PackedVector3Array = r.get("path_points", PackedVector3Array())
+				print("NAV_ORDERS_TRACE2 pace %.2f yield_to '%s' remaining %.1f path0 %s path1 %s nearest_hull %s est_v %.2f" % [
+						float(r.get("pace", 1.0)), r.get("yield_to"), float(r.get("remaining_m", 0.0)),
+						pts[0] if pts.size() > 0 else "-", pts[1] if pts.size() > 1 else "-", _nearest(tank), tank.estimated_velocity.length()])
+
 	for tank in units:
 		var key := String(tank.name)
 		if completed_at.has(key):
@@ -121,16 +140,34 @@ func _report(elapsed: float) -> void:
 		worst.append({"unit": key, "completed_s": snappedf(float(completed_at.get(key, -1.0)), 0.1),
 				"at_completion_m": snappedf(float(completed_far.get(key, -1.0)), 0.1), "final_m": snappedf(final, 0.1),
 				"phase": String(Movement.state(tank).get("phase", "?"))})
+		if not completed_at.has(key):
+			# Round 11: why it never completed - Movement's own goal beside the order's, and whether it was repaired.
+			var reading := Movement.state(tank)
+			worst[-1].merge({"id": tank.unit_id, "mover_goal": str(reading.get("goal")), "order_goal": str(goal.get(key)),
+					"repaired_m": snappedf(float(reading.get("repaired_m", 0.0)), 0.1), "blocked_by": String(reading.get("blocked_by", ""))})
 	worst.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["final_m"] > b["final_m"])
 	var at := func(fraction: float) -> float:
 		var need := int(ceil(float(units.size()) * fraction))
 		return snappedf(times[need - 1], 0.1) if need > 0 and times.size() >= need else -1.0
 	var out := {"arena": String(Arena.active.get("name", "?")), "units": units.size(), "seconds": snappedf(elapsed, 0.1),
 			"completed": completed_at.size(), "completed_far": far, "never_completed": units.size() - completed_at.size(),
-			"t50_s": at.call(0.5), "t90_s": at.call(0.9), "t100_s": at.call(1.0), "worst": worst.slice(0, 6)}
+			"t50_s": at.call(0.5), "t90_s": at.call(0.9), "t100_s": at.call(1.0), "worst": worst.slice(0, 6),
+			"route_arms": Movement.route_arms()}
 	print("NAV_ORDERS %s" % JSON.stringify(out))
 	quit(0)
 
 
 func _flat(a: Vector3, b: Vector3) -> float:
 	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+func _nearest(tank: Tank) -> String:
+	var best := ""
+	var best_d := INF
+	for other in units:
+		if other != tank:
+			var d := _flat(other.global_position, tank.global_position)
+			if d < best_d:
+				best_d = d
+				best = "%s %.1f m" % [other.name, d]
+	return best
