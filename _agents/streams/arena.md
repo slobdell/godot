@@ -161,9 +161,9 @@ _Updated 2026-09-24 by the arena worker. Baseline: `a04d75c0` green on builder0 
 ### Plan (in order)
 1. **A1** publish crossing + sumps (test first) — **done** (`3ba40e51`)
 2. **A2** venue towers solid-or-outside (test first) — **done** (`a909a14d`)
-3. A1.4 play each map on the default path — probe built (`make terrain-drive`, `87d83217`); rendered frames pending
-4. **A3** one new terrain map (candidate: promote `terminus_canal`, spread 0.829, the highest of any layout)
-5. **A4** (stretch) real pits inside the Pit's ring
+3. A1.4 play each map on the default path — **done** headless (`make terrain-drive`); rendered frames for the page
+4. **A3** one new terrain map — **the Locks, built and in the rotation** (`231c838d`); frames → review page
+5. **A4** (stretch) — **a fixture proposal `pit_dug`** (`ece226b8`); before/after → review page
 
 ### Done
 - **A1.** `Arena.ROTATION` = yard, pit, terminus, **crossing, sumps**. `Arena.CUT` holds his cut list in code.
@@ -191,6 +191,25 @@ _Updated 2026-09-24 by the arena worker. Baseline: `a04d75c0` green on builder0 
   finish 11–15 m from their slots reporting `arrived` (the probe's 7 m bar is nav's drive-test bar; a 14 m rig's
   arrival reads wider), and one rig reads `blocked_by: terrain` at the south bridge exit.
 
+- **A3: the Locks** (`231c838d`, a new design, not the canal promotion). Decision and reason: `terminus_canal`
+  is the lead's acceptance map redesigned (its ring road and objective pair gone). Two Terminuses in the rotation is
+  not a new map, and redesigning his acceptance map is his call. The Locks: a canal wall to wall, the lock in the
+  middle (16 m) and a swing bridge on each flank (14 m), four lock houses round the lock, and the objective pair on the
+  far quays so the lock route and the bridge route differ in exposure more than length. **arena-report** (pure Python):
+  spread **0.453** (dry twin 0.344), routes 174.9 / 110.5 m; centre sees **0.45**, flagged for his eye (a canal is
+  open across its water by design; the Sumps ships at 0.34). Every lane R4 ok, every corner clears the rig, arena
+  tests 120/0 (laptop, `231c838d`). **terrain-drive** (laptop, seed 1): mixed 6/6 both legs; rigs arrive both legs;
+  zero ticks in the water. The probe caught three layout faults the static report could not, now fixed: an objective
+  on a lock house's corner (slots wrapped the building); quay stacks in the quay roads' mouths (1697 rig contact ticks
+  turning home); a 5.8 m slot between the lock houses and the rim.
+- **A4: the Pit, dug** (`ece226b8`, a FIXTURE proposal, not an edit to his kept map). Four 14 m pits at the ring's
+  corners, outside the diagonal walls, with not one container moved. Outside rather than inside the ring because every
+  inside pit that fits leaves a 2–5 m slot against the walls. Spread 0.658 (Pit 0.67), centre 0.32 (0.31): the objective
+  routes do not cross the corners, so it is pits he can SEE, not a new fight. terrain-drive: both squads arrive both
+  legs, zero ticks in a pit. **If he says yes:** move the terrain onto `pit` in `make_arenas.py` and drop the fixture.
+- **nav fixed the Crossing deadlock** on `stream/nav` `e62383ad` (its message: the chord fallback returned the corner
+  under the hull; now the first corner ≥ 1.5 m away). Until that merges, the Crossing's mixed drive fails on it.
+
 ### Requests to other streams
 - **nav (via orchestrator; the SendMessage to `godot-83` failed twice, so this is written here first):** a
   path-follower deadlock on the Crossing's west bridge. Repro (laptop, `09dd33c7`, seed 1):
@@ -206,4 +225,5 @@ _Updated 2026-09-24 by the arena worker. Baseline: `a04d75c0` green on builder0 
 - `tests/test_arena_prop_parity.gd`: one new test appended.
 
 ### Questions for the lead
-- Crossing, Sumps (and Terminus) are in the rotation without your verdict; each comes out in one line if you say no.
+- Crossing, Sumps, **the Locks** (and Terminus) are in the rotation without your verdict; each comes out in one line if you say no.
+- The Pit, dug (four pits at the ring's corners): keep it as the Pit, or leave the Pit as you kept it?
