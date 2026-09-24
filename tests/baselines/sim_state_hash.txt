@@ -1,2 +1,2 @@
-# glibc-2.43: recorded on builder0 at c1b92d84 (main with nav's pressed-wall escape default ON), twice, agreeing (2026-09-23): ONE cause, the escape on by default (nav 304636cc; SIM_ARMS=press on the same tree reads 7dcc52f547f03d3f exactly)
-glibc-2.43 457b5e830708b439
+# glibc-2.43: recorded on builder0 at 617c6c09, twice, agreeing (2026-09-24)
+glibc-2.43 814aed46b1042e62

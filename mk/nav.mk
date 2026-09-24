@@ -66,6 +66,20 @@ nav-rotation: import ## nav (round 7): how hulls ROTATE from the lead's camera (
 		--out=$(CURDIR)/$(BUILD_DIR)/nav-rotation > $(BUILD_DIR)/nav-rotation/run.log 2>&1 || true
 	grep -E "NAV_ROTATION|SCRIPT ERROR|ERROR" $(BUILD_DIR)/nav-rotation/run.log || true
 
+# Round 11 (R1.9): the lead's complaint as a clip from his camera, both arms of the planned reverse on one tree. An IFV
+# nose-on to a Terminus block, ordered up the east street behind it; frames every 3 ticks, encoded at 10 fps (real
+# time). -> build/nav-wall-clip/{off,on}/wall_*.png, build/nav-wall-clip/wall_{off,on}.mp4 + NAV_ROTATION_WALL lines.
+.PHONY: nav-wall-clip
+nav-wall-clip: import ## nav (round 11): the planned three-point turn as a before/after clip at his pose (Terminus, an IFV nose-on to a block) -> build/nav-wall-clip/wall_{off,on}.mp4 (needs a display)
+	rm -rf $(BUILD_DIR)/nav-wall-clip && mkdir -p $(BUILD_DIR)/nav-wall-clip/off $(BUILD_DIR)/nav-wall-clip/on
+	timeout 600 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--arena=terminus --cases=wall --every=3 --yaw=30 --nav-off=kturn --out=$(CURDIR)/$(BUILD_DIR)/nav-wall-clip/off > $(BUILD_DIR)/nav-wall-clip/off.log 2>&1 || true
+	timeout 600 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--arena=terminus --cases=wall --every=3 --yaw=30 --out=$(CURDIR)/$(BUILD_DIR)/nav-wall-clip/on > $(BUILD_DIR)/nav-wall-clip/on.log 2>&1 || true
+	@for arm in off on; do ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$(BUILD_DIR)/nav-wall-clip/$$arm/wall_*.png" \
+		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/nav-wall-clip/wall_$$arm.mp4 || echo ">> nav-wall-clip: ffmpeg failed for $$arm"; done
+	@grep -hE "NAV_ROTATION_WALL|NAV_ROTATION wall|SCRIPT ERROR" $(BUILD_DIR)/nav-wall-clip/off.log $(BUILD_DIR)/nav-wall-clip/on.log || true
+
 # ROT_CASES, not $(or $(ROT_CASES),a,b,c): make's `or` splits on commas, so that default was silently just "pivot".
 ROT_CASES ?= pivot,car,wheel,truck
 
@@ -127,13 +141,15 @@ endif
 # a squad of War Rigs, each in its own process; WallContact counts every hull-wall contact by cause. DRIVE_SQUADS,
 # DRIVE_ARENA, DRIVE_LEG_TIME (not ARENA/SQUADS: lesson 44's globals).
 DRIVE_SQUADS ?= mixed rigs
+# Round 11: spawn seeds per squad (each its own process, logs named <squad>-<seed>); one seed is one sample.
+DRIVE_SEEDS ?= 1
 
 .PHONY: nav-terminus-drive
-nav-terminus-drive: import ## nav (round 10): the Terminus drive test -- a mixed squad and a War Rig squad driven street to street; wall contacts by cause, arrival per leg -> build/nav-drive/*.log, NAV_DRIVE lines (DRIVE_SQUADS="mixed rigs" DRIVE_ARENA=terminus DRIVE_LEG_TIME=90)
+nav-terminus-drive: import ## nav (round 10): the Terminus drive test -- a mixed squad and a War Rig squad driven street to street; wall contacts by cause, arrival per leg -> build/nav-drive/*.log, NAV_DRIVE lines (DRIVE_SQUADS="mixed rigs" DRIVE_SEEDS=1 DRIVE_ARENA=terminus DRIVE_LEG_TIME=90)
 	@rm -rf $(BUILD_DIR)/nav-drive && mkdir -p $(BUILD_DIR)/nav-drive
-	@for squad in $(DRIVE_SQUADS); do echo $$squad; done | xargs -P $(NAV_JOBS) -I{} sh -c '\
-		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/terminus_drive.gd -- \
-			--squad={} --arena=$(or $(DRIVE_ARENA),terminus) --leg-time=$(or $(DRIVE_LEG_TIME),90) $(NAV_FLAGS) \
+	@for squad in $(DRIVE_SQUADS); do for seed in $(DRIVE_SEEDS); do echo $$squad-$$seed; done; done | xargs -P $(NAV_JOBS) -I{} sh -c '\
+		run={}; $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/terminus_drive.gd -- \
+			--squad=$${run%-*} --seed=$${run##*-} --arena=$(or $(DRIVE_ARENA),terminus) --leg-time=$(or $(DRIVE_LEG_TIME),90) $(NAV_FLAGS) \
 			> $(BUILD_DIR)/nav-drive/{}.log 2>&1; echo ">> nav-terminus-drive: {} done"'
 	@for f in $(BUILD_DIR)/nav-drive/*.log; do grep -E "^NAV_DRIVE_CONTROL|^NAV_DRIVE_LEG|SCRIPT ERROR|control FAILED" $$f || true; \
 		grep -E "^NAV_DRIVE " $$f | cut -c1-600 || echo ">> nav-terminus-drive: $$f has NO NAV_DRIVE line (the run did not finish)"; done
