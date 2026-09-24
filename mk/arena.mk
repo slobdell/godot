@@ -144,3 +144,22 @@ terrain-measure: ## Terrain: the ring-of-eyes centre figure and plain objective 
 .PHONY: terrain-page
 terrain-page: ## Terrain: the lead's page -- every terrain map's frames beside its dry twin, and the numbers (after make remote T=terrain-shots) -> build/terrain-page/index.html
 	$(PYTHON) tools/terrain_page.py --shots $(BUILD_DIR)/terrain-shots --series $(BUILD_DIR) --out $(BUILD_DIR)/terrain-page/index.html $(TERRAIN_SHOT_ARENAS)
+
+# Round 11 (A1.4): a player squad ordered across each terrain map's water or pits on the DEFAULT path (Orders,
+# source: player), legs to points the planner can only reach over a bridge or a causeway. Arrivals, contacts by cause,
+# and ticks any hull spent inside a carved footprint (must be zero). DRIVE_TERRAIN_MAPS / DRIVE_TERRAIN_SQUADS, and
+# DRIVE_TERRAIN_SHOTS=1 for frames at the lead's pose (needs a display: make remote T="terrain-drive DRIVE_TERRAIN_SHOTS=1").
+DRIVE_TERRAIN_MAPS ?= crossing sumps
+DRIVE_TERRAIN_SQUADS ?= mixed rigs
+
+.PHONY: terrain-drive
+terrain-drive: import ## Arena (round 11): a squad ordered over each terrain map's bridges/causeways on the default path -> build/terrain-drive/*.log, TERRAIN_DRIVE lines (DRIVE_TERRAIN_MAPS="crossing sumps" DRIVE_TERRAIN_SQUADS="mixed rigs" DRIVE_TERRAIN_SHOTS=1 for frames)
+	@rm -rf $(BUILD_DIR)/terrain-drive && mkdir -p $(BUILD_DIR)/terrain-drive
+	@$(foreach map,$(DRIVE_TERRAIN_MAPS),$(foreach squad,$(DRIVE_TERRAIN_SQUADS),\
+		timeout 900 $(GODOT) $(if $(DRIVE_TERRAIN_SHOTS),--resolution 1920x1080,--headless) --fixed-fps $(SIM_HZ) --path . \
+			--script res://tests/arena/terrain_drive.gd -- --arena=$(map) --squad=$(squad) \
+			$(if $(DRIVE_TERRAIN_SHOTS),--shots=$(CURDIR)/$(BUILD_DIR)/terrain-drive/shots) \
+			> $(BUILD_DIR)/terrain-drive/$(map)-$(squad).log 2>&1 || true; \
+		grep -E "^TERRAIN_DRIVE_LEG|^TERRAIN_DRIVE |SCRIPT ERROR|control FAILED" $(BUILD_DIR)/terrain-drive/$(map)-$(squad).log | cut -c1-900 \
+			|| echo ">> terrain-drive: $(map) $(squad) printed NO result";))
+	@! grep -l "control FAILED\|SCRIPT ERROR" $(BUILD_DIR)/terrain-drive/*.log || { echo ">> terrain-drive: a run REFUSED or errored"; exit 1; }
