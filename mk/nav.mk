@@ -66,6 +66,20 @@ nav-rotation: import ## nav (round 7): how hulls ROTATE from the lead's camera (
 		--out=$(CURDIR)/$(BUILD_DIR)/nav-rotation > $(BUILD_DIR)/nav-rotation/run.log 2>&1 || true
 	grep -E "NAV_ROTATION|SCRIPT ERROR|ERROR" $(BUILD_DIR)/nav-rotation/run.log || true
 
+# Round 11 (R1.9): the lead's complaint as a clip from his camera, both arms of the planned reverse on one tree. An IFV
+# nose-on to a Terminus block, ordered up the east street behind it; frames every 3 ticks, encoded at 10 fps (real
+# time). -> build/nav-wall-clip/{off,on}/wall_*.png, build/nav-wall-clip/wall_{off,on}.mp4 + NAV_ROTATION_WALL lines.
+.PHONY: nav-wall-clip
+nav-wall-clip: import ## nav (round 11): the planned three-point turn as a before/after clip at his pose (Terminus, an IFV nose-on to a block) -> build/nav-wall-clip/wall_{off,on}.mp4 (needs a display)
+	rm -rf $(BUILD_DIR)/nav-wall-clip && mkdir -p $(BUILD_DIR)/nav-wall-clip/off $(BUILD_DIR)/nav-wall-clip/on
+	timeout 600 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--arena=terminus --cases=wall --every=3 --nav-off=kturn --out=$(CURDIR)/$(BUILD_DIR)/nav-wall-clip/off > $(BUILD_DIR)/nav-wall-clip/off.log 2>&1 || true
+	timeout 600 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--arena=terminus --cases=wall --every=3 --out=$(CURDIR)/$(BUILD_DIR)/nav-wall-clip/on > $(BUILD_DIR)/nav-wall-clip/on.log 2>&1 || true
+	@for arm in off on; do ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$(BUILD_DIR)/nav-wall-clip/$$arm/wall_*.png" \
+		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/nav-wall-clip/wall_$$arm.mp4 || echo ">> nav-wall-clip: ffmpeg failed for $$arm"; done
+	@grep -hE "NAV_ROTATION_WALL|NAV_ROTATION wall|SCRIPT ERROR" $(BUILD_DIR)/nav-wall-clip/off.log $(BUILD_DIR)/nav-wall-clip/on.log || true
+
 # ROT_CASES, not $(or $(ROT_CASES),a,b,c): make's `or` splits on commas, so that default was silently just "pivot".
 ROT_CASES ?= pivot,car,wheel,truck
 

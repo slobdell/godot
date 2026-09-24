@@ -6,6 +6,8 @@ extends SceneTree
 ##   car     a wheeled scout sent to a point behind it and to the left (inside its turning circle: a K-turn)
 ##   wheel   a squad of four ordered to a spot 25 m ahead, facing 90 degrees to the right (arrive, then swing)
 ##   truck   (round 8) the gangs' semi (gang_tank, wheels, 12 m turning circle) told to face 90 degrees to its right
+##   wall    (round 11, `--arena=terminus`) an IFV parked nose-on to a city block face, 2.5 m off it, ordered up the
+##           east street behind it: the lead's "drive into a wall before trying to back up" (make nav-wall-clip)
 ## Pre-registered for round 8, before its first run — "yawing in place" (the lead: "the semi trucks are yawing in place
 ## (should be impossible, they're not a tracker vehicle)"): a WHEELED hull that rotates >= 30 degrees while its centre
 ## stays within 1.5 m of where it started. Printed as NAV_ROTATION_INPLACE.
@@ -23,6 +25,8 @@ const PITCH := 21.0
 const DISTANCE := 49.0
 const FOV := 35.0
 const FRAME_EVERY := 10  # ticks between captured frames (1/3 s at 30 Hz)
+var frame_every := FRAME_EVERY  # --every=N (the wall clip films every 3 ticks: 10 fps of game time)
+var arena_name := "yard"        # --arena=NAME
 
 var out := "/tmp/nav-rotation"
 ## --no-frames: numbers only (headless, seconds instead of minutes); --cases=pivot,car,wheel,truck picks cases.
@@ -47,6 +51,10 @@ func _run() -> void:
 			frames_on = false
 		elif arg.begins_with("--cases="):
 			cases = arg.trim_prefix("--cases=").split(",")
+		elif arg.begins_with("--every="):
+			frame_every = maxi(int(arg.trim_prefix("--every=")), 1)
+		elif arg.begins_with("--arena="):
+			arena_name = arg.trim_prefix("--arena=")
 	DirAccess.make_dir_recursive_absolute(out)
 	GameTheme.use("cyberpunk")
 	root.size = SIZE
@@ -66,7 +74,7 @@ func _run() -> void:
 		bare["obstacles"] = []
 		arena.layout_override = bare
 	else:
-		arena.layout_name = "yard"
+		arena.layout_name = arena_name
 	root.add_child(arena)
 	game_match = MATCH.instantiate()
 	root.add_child(game_match)
@@ -90,6 +98,8 @@ func _run() -> void:
 		await _wheel()
 	if cases.has("truck"):
 		await _truck()
+	if cases.has("wall"):
+		await _wall()
 	print("NAV_ROTATION_DONE %s" % out)
 	quit()
 
@@ -121,6 +131,38 @@ func _car() -> void:
 	var orders := _controller(tank)
 	orders.set_orders({"type": "move_to", "x": 2.0, "z": 108.0}, {"type": "hold_fire"})
 	await _film("car", [tank], tank.global_position, SimClock.TICK_RATE * 7)
+	tank.queue_free()
+	orders.queue_free()
+
+
+func _wall() -> void:
+	if String(Arena.active.get("name", "")) != "terminus":
+		push_error("nav-rotation wall: needs --arena=terminus (built %s)" % Arena.active.get("name", "?"))
+		return
+	var tank := game_match.spawn_tank("Wall", 7, Match.Team.GREEN, "ifv")
+	# The (40, 0) block's north face is z = 20: the IFV's nose 2.5 m off it, facing it (-z).
+	tank.global_position = Vector3(40.0, 0.0, 26.3)
+	tank.rotation.y = 0.0
+	tank.reset_physics_interpolation()
+	Movement.reset_route_arms()
+	WallContact.reset()
+	var orders := _controller(tank)
+	orders.set_orders({"type": "move_to", "x": 70.0, "z": 70.0}, {"type": "hold_fire"})
+	var series := {String(tank.name): PackedFloat32Array()}
+	var first_contact := -1
+	var first_reverse := -1
+	for tick in SimClock.TICK_RATE * 12:
+		_log_heading(series, tank)
+		if first_contact < 0 and bool(Movement.state(tank).get("wall_contact", false)):
+			first_contact = tick
+		if first_reverse < 0 and tank.speed() < -0.3:
+			first_reverse = tick
+		await _frame("wall", tick, Vector3(52.0, 0.0, 40.0))
+	_report("wall", series)
+	var arms := Movement.route_arms()
+	print("NAV_ROTATION_WALL kturn=%s first_reverse_s=%.2f first_contact_s=%.2f contact_ticks=%d kturns=%d press=%d unstick=%d at=%s" % [
+			"on" if Movement.kturn_on() else "off", first_reverse / float(SimClock.TICK_RATE), first_contact / float(SimClock.TICK_RATE),
+			WallContact.ticks, int(arms["kturns"]), int(arms["press_escapes"]), int(arms["unstick_fires"]), tank.global_position])
 	tank.queue_free()
 	orders.queue_free()
 
@@ -219,7 +261,7 @@ func _frame(case: String, tick: int, centre: Vector3) -> void:
 	# From the arena side (the spawn aprons back onto the stands; a camera behind them looks through the railing).
 	camera.global_transform = RtsCamera.pose_at(centre, deg_to_rad(150.0), DISTANCE, PITCH)
 	await physics_frame
-	if frames_on and tick % FRAME_EVERY == 0:
+	if frames_on and tick % frame_every == 0:
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png(out.path_join("%s_%03d.png" % [case, tick]))
 
