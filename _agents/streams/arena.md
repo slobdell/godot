@@ -156,6 +156,54 @@ Nothing blocks you. A3's frames and A4's before/after go on the arena page for h
 
 ## Status
 
-_(the worker keeps this current: plan, what's done with measurements, decisions and their reasons, questions for the
-lead, requests to other streams, known issues, what to playtest, next steps, merge notes, and the commit hash whose
-own check went green)_
+_Updated 2026-09-24 by the arena worker. Baseline: `a04d75c0` green on builder0 (`make check exited 0`, 1686 passed, 0 failed)._
+
+### Plan (in order)
+1. **A1** publish crossing + sumps (test first) — **done** (`3ba40e51`)
+2. **A2** venue towers solid-or-outside (test first) — **done** (`a909a14d`)
+3. A1.4 play each map on the default path — probe built (`make terrain-drive`, `87d83217`); rendered frames pending
+4. **A3** one new terrain map (candidate: promote `terminus_canal`, spread 0.829, the highest of any layout)
+5. **A4** (stretch) real pits inside the Pit's ring
+
+### Done
+- **A1.** `Arena.ROTATION` = yard, pit, terminus, **crossing, sumps**. `Arena.CUT` holds his cut list in code.
+  `test_every_built_map_is_dealt_cut_or_a_fixture`: every layout in `arenas/` must be exactly one of fixture / CUT /
+  ROTATION. **Verified failing** on the old rotation (it named crossing and sumps) and passing on the new one. A dealt
+  map's note must name its terrain; the existing crossing/sumps notes already do (river/bridges; pits/causeways). Other
+  consumers of the list (lesson 43) re-run locally and green: `test_arena_cover_tables` (walks ROTATION),
+  `test_control_faction_pick`, `test_arena_maze`. `make nav-fight-maps` reads ROTATION from the code, so its warning
+  updates itself (nav's file, untouched).
+- **Bridges and pits as built** (one line, so nobody promises a viaduct): a bridge is restored ground at y = 0
+  between two carved holes, drawn as a 0.07 m deck with 0.9 m rails, and nothing drives under it. A pit is a hole
+  with no navmesh and a 0.9 m kerb; you cannot fall in.
+- **A2.** `test_the_venue_dressing_is_solid_or_outside_the_wall` builds the shipping dressing for every non-fixture
+  layout and fails on any floor-standing drawn mesh inside `ArenaShape.contains(shape, half_size)` that isn't inside a
+  `navigation_source` box. On the old tree it named **exactly the towers** (6 per hexagon, 4 per square map) and
+  **nothing else**: stands, gates, screens, signs and barricades all sit outside the wall. That also closes A2.4's sweep.
+  **Decision: move the towers outside the wall rather than make them solid in place.** The fight loses no floor, so the
+  navmesh and lanes don't move (no lane narrowed; nothing to re-measure), and the in-play floodlight stays the kit
+  prop, which is solid. Each tower now sits on its corner's line, past the wall's OUTER corner by the model's own
+  bounds half-diagonal (≈5.8 m) + 1 m.
+- **arena-report** (`a909a14d`, pure Python, machine-independent): decision spread crossing 0.552, sumps 0.352
+  (same as its dry twin), pit 0.67, yard 0.487, terminus 0.327, **terminus_canal 0.829**.
+- **terrain-drive** (laptop, `87d83217`, seed 1): **sumps** mixed + rigs PASS both legs, zero ticks in a pit.
+  **crossing**: zero ticks in the water for either squad; mixed FAILS on a nav path-follower deadlock (below); the rigs
+  finish 11–15 m from their slots reporting `arrived` (the probe's 7 m bar is nav's drive-test bar; a 14 m rig's
+  arrival reads wider), and one rig reads `blocked_by: terrain` at the south bridge exit.
+
+### Requests to other streams
+- **nav (via orchestrator; the SendMessage to `godot-83` failed twice, so this is written here first):** a
+  path-follower deadlock on the Crossing's west bridge. Repro (laptop, `09dd33c7`, seed 1):
+  `godot --headless --fixed-fps 30 --path . --script res://tests/arena/terrain_drive.gd -- --arena=crossing
+  --squad=mixed --trace=artillery --trace-full=45`. On leg 2 the artillery stops at (-87.4, 27.6), speed 0.0, for 90 s:
+  phase `driving`, `steer_to` = `path_points[0]` (-87.5, 28.0), 0.4 m from the hull; `stalled_s` 0.0,
+  `wedged` false, no wall contact. The follower never advances past a waypoint it is standing on, and nothing reads
+  it as a stall.
+
+### Merge notes
+- `game/theme/cyberpunk/arena_dressing.gd`: only `TOWER_INSET` → `TOWER_CLEARANCE`, the two tower placement calls,
+  and new `_tower_base` / `_tower_radius` beside `_build_tower`. `_build_airship` untouched.
+- `tests/test_arena_prop_parity.gd`: one new test appended.
+
+### Questions for the lead
+- Crossing, Sumps (and Terminus) are in the rotation without your verdict; each comes out in one line if you say no.
