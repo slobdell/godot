@@ -161,13 +161,16 @@ airship-look: import ## Feel X7: is the Syndicate airship EVER in the lead's fie
 	@grep -q AIRSHIP_LOOK_DONE $(BUILD_DIR)/airship-look/log.txt || { grep -E 'AIRSHIP_LOOK_FAILED|SCRIPT ERROR' $(BUILD_DIR)/airship-look/log.txt; echo "airship-look FAILED"; exit 1; }
 	@ls $(BUILD_DIR)/airship-look/*.png
 
-airship-shot: import ## Round 11: frames of the Syndicate broadcast airship AT the lead's pose, deterministically flown to a tick (proves the art, the screens, the scale and the attitude; it makes no claim about how OFTEN he sees it) -> build/airship-shot/ (needs a display; ARENA=terminus, TICKS=0,900,1800, SEQUENCE=1 for the climb-over-a-block and camera-meets-hull frames, AIRSHIP_EXTRA=--airship-shot-pose=x,z,yawdeg,tick)
+airship-shot: import ## Round 11: frames of the Syndicate broadcast airship AT the lead's pose, deterministically flown to a tick (proves the art, the screens, the scale and the attitude; it makes no claim about how OFTEN he sees it) -> build/airship-shot/ (needs a display; ARENA=terminus, TICKS=0,900,1800, SEQUENCE=1 for the climb-over-a-block and camera-meets-hull frames, CLIP=1 to add 20 s of the live camera meeting the hull as clip.mp4, AIRSHIP_EXTRA=--airship-shot-pose=x,z,yawdeg,tick)
 	rm -rf $(BUILD_DIR)/airship-shot && mkdir -p $(BUILD_DIR)/airship-shot
 	timeout 600 $(GODOT) --path . --resolution $(AIRSHIP_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
 		--arena=$(or $(ARENA),terminus) --airship-shot=$(CURDIR)/$(BUILD_DIR)/airship-shot \
-		$(if $(TICKS),--airship-shot-ticks=$(TICKS)) $(if $(SEQUENCE),--airship-shot-sequence) $(AIRSHIP_EXTRA) \
+		$(if $(TICKS),--airship-shot-ticks=$(TICKS)) $(if $(SEQUENCE),--airship-shot-sequence) $(if $(CLIP),--airship-shot-clip) $(AIRSHIP_EXTRA) \
 		2>&1 | tee $(BUILD_DIR)/airship-shot/log.txt | grep -E '^AIRSHIP_SHOT|SCRIPT ERROR' || true
 	@grep -q AIRSHIP_SHOT_DONE $(BUILD_DIR)/airship-shot/log.txt || { grep -E 'SCRIPT ERROR' $(BUILD_DIR)/airship-shot/log.txt; echo "airship-shot FAILED"; exit 1; }
+	@if ls $(BUILD_DIR)/airship-shot/clip_000.png >/dev/null 2>&1; then \
+		ffmpeg -loglevel error -y -framerate 10 -i $(BUILD_DIR)/airship-shot/clip_%03d.png -vf scale=960:-2 -pix_fmt yuv420p \
+			$(BUILD_DIR)/airship-shot/clip.mp4 && rm -f $(BUILD_DIR)/airship-shot/clip_*.png && echo $(BUILD_DIR)/airship-shot/clip.mp4; fi
 	@ls $(BUILD_DIR)/airship-shot/*.png
 
 airship-report: import ## Round 11: how the broadcast airship flies each map -- % of the flight inside something drawn (must be 0), % at its low cruise, % in the lead's frame (MAPS=a,b LEG_S=60 seconds per leg; headless)

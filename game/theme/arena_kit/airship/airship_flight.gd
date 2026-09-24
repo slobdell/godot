@@ -51,6 +51,11 @@ const HULL_PARTS := [
 	[6.65, 7.41, 12.35, 1.97], # the wings: screen housings and fins, from 5.7 m ahead of centre to the tail
 ]
 
+## The top of everything drawn on the hull (fins, the broadcast apparatus), as a fraction of its length: the mesh's
+## bounds are +-7.2549 m on the 38 m asset. NOT the deck screen's height (0.08): a camera parked over the deck panel
+## was still inside the fins, which is what the first clip of the camera lift showed.
+const TOP_FRACTION := 0.1910
+
 ## --- the climb --------------------------------------------------------------------------------------------------
 ## How far around the hull's footprint it keeps clear of a solid's footprint before counting itself over it.
 const SIDE_MARGIN := 2.0
@@ -317,7 +322,7 @@ func plan() -> float:
 static func hull_box(at: Vector2, heading: float, centre_y: float) -> Dictionary:
 	return {"centre": at, "half": AirshipFlight.hull_half(), "yaw": heading,
 			"bottom": centre_y + SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH,
-			"top": centre_y + SyndicateAdAirship.DECK_FRACTION * SyndicateAdAirship.LENGTH}
+			"top": centre_y + TOP_FRACTION * SyndicateAdAirship.LENGTH}
 
 
 ## The lowest the belly gets at this height, at the bottom of its float.

@@ -36,6 +36,9 @@ var ticks: Array[int] = [0, 900, 1800]
 ## Exact poses from `--airship-shot-pose`; when any are given they REPLACE the derived broadside framing.
 var poses: Array[Dictionary] = []
 var sequence := false
+## `--airship-shot-clip`: after the sequence, drive the scene's own RtsCamera (the live rule, damping and all) through
+## the meeting at 10 frames a second, so the lift can be watched as motion rather than judged from stills.
+var clip := false
 var _camera: Camera3D
 var _ship: SyndicateAdAirship
 
@@ -59,6 +62,9 @@ func _ready() -> void:
 				ticks.append(int(piece))
 		elif arg == "--airship-shot-sequence":
 			sequence = true
+		elif arg == "--airship-shot-clip":
+			sequence = true
+			clip = true
 		elif arg.begins_with("--airship-shot-pose="):
 			# An EXACT pose: x,z,yaw_deg,tick. Use it to re-shoot a sample `make blimp-look` measured, so the picture
 			# and the number come from the same place instead of from two different framings.
@@ -207,6 +213,51 @@ func _shoot_sequence() -> int:
 				await _save("meet_%+03d_lifted_t%04d.png" % [offset, tick + offset], lifted, "(with the lift)")
 				written += 1
 			print("AIRSHIP_SHOT_MEET tick=%d yaw=%.0f" % [tick, rad_to_deg(yaw)])
+			if clip:
+				written += await _shoot_clip(focus, yaw, tick)
 			return written
 	print("AIRSHIP_SHOT_MEET none in %d ticks" % horizon)
+	return written
+
+
+## The meeting as MOTION through the live camera: 20 s at 10 frames a second, from 8 s before. The rig is told his
+## pose and left alone (no auto-frame, no follow), and stepped by hand one tenth of a second per frame while the
+## airship is flown three ticks per frame -- real time, deterministically.
+func _shoot_clip(focus: Vector3, yaw: float, tick: int) -> int:
+	var rig: RtsCamera = null
+	for node in get_tree().current_scene.find_children("*", "", true, false):
+		if node is RtsCamera:
+			rig = node
+			break
+	if rig == null:
+		print("AIRSHIP_SHOT_CLIP no RtsCamera in the scene")
+		return 0
+	# Nothing else may move it: tracking and the vision frame both steer the focus on their own.
+	rig.stop_tracking("airship clip")
+	rig.vision = Callable()
+	rig.vision_region = null
+	rig.vision_zoom = 1.0
+	rig.auto_frame = false
+	rig.yaw_follow = false
+	rig.edge_pan = false
+	rig.follow_target = null
+	rig.focus = focus
+	rig.yaw = yaw
+	rig.pitch = PITCH_DEG
+	rig.zoom = RtsCamera.level_for(DISTANCE_M)
+	rig.snap()
+	rig.camera.current = true
+	var written := 0
+	for frame in 200:
+		_ship.advance_to(tick - int(SimClock.TICK_RATE * 8.0) + frame * 3)
+		rig._process(0.1)
+		for i in 2:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png(out_dir.path_join("clip_%03d.png" % frame))
+		if frame % 10 == 0:
+			print("AIRSHIP_SHOT_CLIP frame=%d tick=%d lift=%.1f m back=%.1f m camera=%v" % [frame, _ship._stepped,
+					rig.hull_lift_m, rig.hull_back_m, rig.camera.global_position])
+		written += 1
+	_camera.current = true
 	return written

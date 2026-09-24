@@ -516,3 +516,17 @@ func test_it_starts_down_as_soon_as_it_is_past_and_spends_the_rest_at_cruise() -
 	assert_true(worst <= 0.0, "every crossing clears the roof (worst %.1f m)" % worst)
 	assert_true(slow_starts.is_empty(), "it starts down within 1.5 s of leaving the roof every time (late: %s s)" % [slow_starts])
 	assert_true(cruising > ticks * 0.5, "and it is at cruise most of the flight (%.0f %%)" % (100.0 * cruising / ticks))
+
+
+func test_the_camera_box_reaches_the_top_of_what_is_drawn() -> void:
+	## A camera parked "over the hull" by a box whose top is the deck screen sat inside the fins. The box must reach the
+	## mesh's own top.
+	var node := (load(SyndicateAdAirship.MESH) as PackedScene).instantiate() as Node3D
+	var top := -INF
+	for child in node.find_children("*", "MeshInstance3D", true, false):
+		var box := AirshipTruth.to_root(child as MeshInstance3D, node) * (child as MeshInstance3D).mesh.get_aabb()
+		top = maxf(top, box.end.y)
+	node.free()
+	var hull := AirshipFlight.hull_box(Vector2.ZERO, 0.0, 0.0)
+	assert_true(float(hull["top"]) >= top * SyndicateAdAirship.SCALE - 0.02,
+			"the camera's box top (%.2f m above centre) covers the drawn top (%.2f m)" % [float(hull["top"]), top * SyndicateAdAirship.SCALE])

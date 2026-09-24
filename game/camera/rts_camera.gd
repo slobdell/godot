@@ -655,9 +655,11 @@ const HULL_BACK_MAX_M := 40.0
 ## The group a moving solid joins to be lifted over; its node answers `camera_occluder() -> Dictionary`.
 const OCCLUDER_GROUP := &"camera_occluders"
 ## The damping: seconds to rise most of the way, seconds to settle back, and how long the lift is held first.
+## The hold and the settle are long enough that a hull coming round again inside ~4 s finds the camera still up (the
+## first clip came fully down and went straight back up: a bob).
 const HULL_RISE_S := 0.3
-const HULL_FALL_S := 1.6
-const HULL_HOLD_S := 1.0
+const HULL_FALL_S := 2.0
+const HULL_HOLD_S := 2.0
 
 
 ## The top of the highest moving solid whose box holds `point` (grown by `grow` metres sideways and SOLID_CLEAR_M

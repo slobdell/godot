@@ -356,8 +356,9 @@ func test_a_hull_that_meets_the_camera_from_behind_still_ends_up_in_his_frame() 
 	var data := {"half_size": 140.0, "obstacles": []}
 	var at := Vector3.ZERO
 	var asked := RtsCamera.pose_at(at, 0.0, HIS_DISTANCE, HIS_PITCH).origin
-	# [hull yaw, how far behind the camera its centre is]: lengthways, diagonal, and broadside to the boom.
-	for case: Array in [[0.0, 20.0], [0.5, 15.0], [PI / 2.0, 7.0]]:
+	# [hull yaw, centre behind the camera, the share of it that must be in view]. Broadside the camera ends right over
+	# the middle of a 57 m hull and both ends run off a 60 deg frame (it measures 11 %); zero is the failure.
+	for case: Array in [[0.0, 20.0, 0.25], [0.5, 15.0, 0.25], [PI / 2.0, 7.0, 0.08]]:
 		var yaw := float(case[0])
 		var hull := AirshipFlight.hull_box(Vector2(asked.x, asked.z + float(case[1])), yaw, SyndicateAdAirship.ALTITUDE)
 		assert_true(RtsCamera.hull_over(asked, [hull]) > 0.0, "setup: his camera is inside the hull (yaw %.1f)" % yaw)
@@ -365,9 +366,7 @@ func test_a_hull_that_meets_the_camera_from_behind_still_ends_up_in_his_frame() 
 		var pose := RtsCamera.pose_at(at, 0.0, float(clear["distance"]), float(clear["pitch_deg"]))
 		assert_eq(RtsCamera.hull_over(pose.origin, [hull]), -1.0, "outside the hull (yaw %.1f)" % yaw)
 		var share := _hull_in_frame(pose, hull)
-		# 15 %: broadside, a 57 m hull a few metres below the lens runs off both sides of a 60 deg frame (it measured 20 %);
-		# lengthways it is most of it. Zero is the failure this test exists for.
-		assert_true(share > 0.15, "and the hull is in his frame, not behind him: %.0f %% of it in view (yaw %.1f)" % [
+		assert_true(share > float(case[2]), "and the hull is in his frame, not behind him: %.0f %% of it in view (yaw %.1f)" % [
 				share * 100.0, yaw])
 
 
