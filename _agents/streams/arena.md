@@ -172,7 +172,19 @@ Baseline at the start: `a04d75c0` green on builder0 (1686/0)._
 5. **The Locks' canal stays open** (orchestrator's ruling), recorded beside the layout in `terrain_maps.py`; ask him
    again after he has driven it.
 
-### The Locks' recording run (lead-approved 2026-09-24; NOT run: waiting on the orchestrator)
+### The Locks' recording run: DONE (2026-09-24, on the orchestrator's go; the lead's approval is quoted in game_design.md)
+- **Ran** (laptop, `~/.venvs/tank-squad-audio`, SDK 2.24.0, key from the lead's shell profile, never printed):
+  18 requests, 2,071 characters, **credits 58,306 → 56,417**; **speech-to-text flagged 0**, alignment errors 0. The
+  ledger row is `generate.py`'s own (`assets/announcer/ledger.md`, 2026-09-24).
+- **His ears first:** three clips (the Caller's caller.intro.01, the PA's pa.welcome.01, the Veteran's color.lore.11) are
+  at the top of his page (version 4), with a re-record offer. **The flip commit `b7171ac0`** (clips + manifest + ledger
+  + `locks.json` not a fixture + `Arena.ROTATION` + the kept list) is **green: builder0 `make check exited 0`, 1689/0,
+  18 targets, baseline unmoved**. Merge it once he has heard the clips. Its first check went red on `ai-scenarios-check`
+  alone (a cover-peek and the CPU-budget scenario, with 6 other Godot processes on builder0). Alone on the same commit
+  the scenarios read 43/1, the baseline, and exited 0; the re-run full check was green. The scenarios do not read the
+  rotation. Flaky under load, not this change.
+
+#### As planned before the run (kept for the record)
 - **Dry run** (laptop, `91dd8b5e`, nothing sent): `python3 tools/announcer/generate.py --dry-run --only-values locks`
   → **18 requests, 2,071 characters, ~2,071 credits** (Caller 4 / 285 chars, Veteran 1 / 67, PA 13 / 1,719), plus
   speech-to-text on ~2 minutes of audio. Round 10's Crossing + Sumps run was the same shape (36 requests, 4,196).
