@@ -303,6 +303,12 @@ tank -- the opposite of his sentence. No 8x8 in service is longer; the K rule ca
    a 45 ft coach (about 2:1 against 3.3:1); built as-is, the model would be fitted by length and come out too wide.
 
 ### The review page (lead gate: T3's before/after, T4's question, T6's concepts)
+**Published 2026-09-24 at the orchestrator's request (the lead was awake): https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS**
+(db declared; taps land in `decisions/<id>`; read them with `read_db` and `make art-apply-decisions`). It opens with two
+question cards with recommendations (`q_r11_law_size`: RECOMMENDED yes, the Law 1.25x the rule -- tank 7.30 m, IFV
+6.26 m, another baseline move; `q_r11_burner_shape`: RECOMMENDED keep 3.38 m), then the figures and the six concepts.
+Question cards are review.json items with `buttons` and `cost` (new, optional). The build below is superseded by:
+`python3 tools/assets/review_page.py build --title "Round 11: vehicle sizes and the bus's own mesh" --figure ... --figure ...` (no GROUPS).
 Nothing new was generated: round 10's six concepts (3 bus, 3 burner; 54 credits, in `assets/meshy_ledger.md`) were
 briefed from the approved dozer images and never shown to him. Build and publish (orchestrator):
 `make art-review-page TITLE="Round 11: the Condemned bus and burner" GROUPS="R6 the Condemned" FIGURE="assets/review/images/r11_fleet_bus_before_after.jpg::The bus and burner beside the garbage truck, before and after" FIGURE2="assets/review/images/r11_fleet_roster_lineup.jpg::Every unit at the current scale"`

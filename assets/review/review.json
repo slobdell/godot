@@ -26,9 +26,48 @@
     "Arena kit · Wreck": "Left where a unit dies (feel's wreck effects). One model for every unit, scaled to its hull, so it must read as a generic armored war machine.",
     "Syndicate airship · Airship": "Read as SILHOUETTE at ~880 px from the RTS camera, drifting down the avenue at 12 m between 24 m blocks. The outline must not be an ellipse: the screen structure has to stand outside the hull's profile so the shape says 'broadcast rig', not 'balloon'. Each screen opening must be a FLAT, EMPTY, vertical rectangular frame -- the engine fills it.",
     "R6 the Condemned bus (tank), at 2.90 x 4.76 x 9.70": "Round 11: the bus box is now 2.90 x 4.08 x 9.70 (his 'slightly taller, but not quite so tall'); the heading keeps round 10's numbers. All three are stubbier than a 45 ft coach (about 2:1 against the box's 3.3:1), so a model built from any of them would be fitted by length and come out too wide: say which one, and whether to stretch its body before 3D or accept a shorter bus.",
-    "R6 the Condemned burner (fire engine), at 2.40 x 2.40 x 6.89": "Round 11: the burner box is now 2.40 x 3.38 x 6.89, the same shape as the bus (they wear the same dozer until one of these is built)."
+    "R6 the Condemned burner (fire engine), at 2.40 x 2.40 x 6.89": "Round 11: the burner box is now 2.40 x 3.38 x 6.89, the same shape as the bus (they wear the same dozer until one of these is built).",
+    "R11 questions: the Law's size, the burner's shape": "Two decisions for your eye, each with a recommendation. The concepts follow."
   },
   "items": [
+    {
+      "id": "q_r11_law_size",
+      "group": "R11 questions: the Law's size, the burner's shape",
+      "target": "unit.law_tank + unit.law_ifv hull_size",
+      "title": "Question: make the Law 1.25x bigger than the real-world rule?",
+      "prompt": "(a question, not a concept: nothing is generated)",
+      "image": "assets/review/images/r11_fleet_roster_lineup.jpg",
+      "est_3d_credits": 0,
+      "concept_credits": 0,
+      "status": "waiting",
+      "decided": "",
+      "buttons": [
+        "Yes, 1.25x",
+        "No, keep the rule"
+      ],
+      "cost": "no credits · one more sim-baseline move",
+      "notes": "You asked for bigger Law tanks and IFVs. Under the real-world rule (every unit = its real vehicle x 0.707) the Law tank is already an 8x8 assault gun at full size: 5.84 m now (was 5.55), beside a 9.7 m bus and a 14 m War Rig. No real 8x8 is longer. RECOMMENDED: yes, declare the Law 1.25x the rule, like the bus's declared 1.4x height: Assault Gun 5.84 -> 7.30 m, Retired APC 5.01 -> 6.26 m, so both read as the state's heavy metal and the tank still stays under the bus. Tap Yes to do it, or No to keep the rule; type a different factor in the box if 1.25 is wrong.",
+      "references": []
+    },
+    {
+      "id": "q_r11_burner_shape",
+      "group": "R11 questions: the Law's size, the burner's shape",
+      "target": "unit.burner hull_size",
+      "title": "Question: keep the burner the same shape as the bus?",
+      "prompt": "(a question, not a concept: nothing is generated)",
+      "image": "assets/review/images/r11_fleet_bus_before_after.jpg",
+      "est_3d_credits": 0,
+      "concept_credits": 0,
+      "status": "waiting",
+      "decided": "",
+      "buttons": [
+        "Yes, keep it",
+        "No, burner back to 2.40 m"
+      ],
+      "cost": "no credits",
+      "notes": "You said the Condemned tanks 'need to be uniform'. The bus and the burner wear the same dozer, so both now have one shape: bus 4.76 -> 4.08 m tall (slightly taller, not as tall), burner 2.40 -> 3.38 m. RECOMMENDED: keep it (they read as one vehicle family). If you meant only the bus, tap No and the burner goes back to 2.40 m.",
+      "references": []
+    },
     {
       "id": "scout_a",
       "group": "Scout",

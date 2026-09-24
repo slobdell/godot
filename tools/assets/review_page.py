@@ -74,6 +74,10 @@ def build(manifest: dict, out_dir: Path, title: str, include_decided: bool = Fal
             img = "images/" + source.name
             mood = int(item.get("est_3d_credits", 0)) == 0
             cost = "mood picture · never sent to 3D" if mood else f"3D ≈ {item['est_3d_credits']} credits"
+            # Round 11 (fleet): a QUESTION card (no concept; "buttons": [yes, no], "cost": what it costs) so a decision
+            # the lead makes by eye is tapped and recorded in the same db as the concepts.
+            buttons = item.get("buttons") or (["Looks right", "Not this"] if mood else ["Approve for 3D", "Reject"])
+            cost = item.get("cost", cost)
             short = item["title"].split(": ", 1)[-1]
             cards.append(f"""
       <article class="card" data-id="{html.escape(item['id'])}" data-state="waiting">
@@ -92,8 +96,8 @@ def build(manifest: dict, out_dir: Path, title: str, include_decided: bool = Fal
           <label class="words-label" for="words-{html.escape(item['id'])}">Your words (optional)</label>
           <textarea id="words-{html.escape(item['id'])}" rows="2" placeholder="What you like, or what to change"></textarea>
           <div class="actions">
-            <button type="button" class="act approve" data-decision="approved">{'Looks right' if mood else 'Approve for 3D'}</button>
-            <button type="button" class="act reject" data-decision="rejected">{'Not this' if mood else 'Reject'}</button>
+            <button type="button" class="act approve" data-decision="approved">{html.escape(buttons[0])}</button>
+            <button type="button" class="act reject" data-decision="rejected">{html.escape(buttons[1])}</button>
           </div>
           <p class="saved" aria-live="polite"></p>
         </div>
