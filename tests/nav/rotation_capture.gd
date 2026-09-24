@@ -27,6 +27,7 @@ const FOV := 35.0
 const FRAME_EVERY := 10  # ticks between captured frames (1/3 s at 30 Hz)
 var frame_every := FRAME_EVERY  # --every=N (the wall clip films every 3 ticks: 10 fps of game time)
 var arena_name := "yard"        # --arena=NAME
+var yaw_deg := 150.0            # --yaw=DEG: the camera's heading round the focus (the wall clip picks its own side)
 
 var out := "/tmp/nav-rotation"
 ## --no-frames: numbers only (headless, seconds instead of minutes); --cases=pivot,car,wheel,truck picks cases.
@@ -55,6 +56,8 @@ func _run() -> void:
 			frame_every = maxi(int(arg.trim_prefix("--every=")), 1)
 		elif arg.begins_with("--arena="):
 			arena_name = arg.trim_prefix("--arena=")
+		elif arg.begins_with("--yaw="):
+			yaw_deg = float(arg.trim_prefix("--yaw="))
 	DirAccess.make_dir_recursive_absolute(out)
 	GameTheme.use("cyberpunk")
 	root.size = SIZE
@@ -157,7 +160,7 @@ func _wall() -> void:
 			first_contact = tick
 		if first_reverse < 0 and tank.speed() < -0.3:
 			first_reverse = tick
-		await _frame("wall", tick, Vector3(52.0, 0.0, 40.0))
+		await _frame("wall", tick, Vector3(45.0, 0.0, 28.0))
 	_report("wall", series)
 	var arms := Movement.route_arms()
 	print("NAV_ROTATION_WALL kturn=%s first_reverse_s=%.2f first_contact_s=%.2f contact_ticks=%d kturns=%d press=%d unstick=%d at=%s" % [
@@ -259,7 +262,11 @@ func _film(case: String, tanks: Array, centre: Vector3, ticks: int) -> void:
 
 func _frame(case: String, tick: int, centre: Vector3) -> void:
 	# From the arena side (the spawn aprons back onto the stands; a camera behind them looks through the railing).
-	camera.global_transform = RtsCamera.pose_at(centre, deg_to_rad(150.0), DISTANCE, PITCH)
+	camera.global_transform = RtsCamera.pose_at(centre, deg_to_rad(yaw_deg), DISTANCE, PITCH)
+	# This films the DRIVER: the show's airship (no collider, nothing to do with the hull) can park its 57 m hull over
+	# the Terminus avenue in the first seconds and fill the frame (the first wall clip, round 11). Hidden here only.
+	for node in root.find_children("*", "SyndicateAdAirship", true, false):
+		(node as Node3D).visible = false
 	await physics_frame
 	if frames_on and tick % frame_every == 0:
 		await RenderingServer.frame_post_draw

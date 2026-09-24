@@ -73,9 +73,9 @@ nav-rotation: import ## nav (round 7): how hulls ROTATE from the lead's camera (
 nav-wall-clip: import ## nav (round 11): the planned three-point turn as a before/after clip at his pose (Terminus, an IFV nose-on to a block) -> build/nav-wall-clip/wall_{off,on}.mp4 (needs a display)
 	rm -rf $(BUILD_DIR)/nav-wall-clip && mkdir -p $(BUILD_DIR)/nav-wall-clip/off $(BUILD_DIR)/nav-wall-clip/on
 	timeout 600 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
-		--arena=terminus --cases=wall --every=3 --nav-off=kturn --out=$(CURDIR)/$(BUILD_DIR)/nav-wall-clip/off > $(BUILD_DIR)/nav-wall-clip/off.log 2>&1 || true
+		--arena=terminus --cases=wall --every=3 --yaw=30 --nav-off=kturn --out=$(CURDIR)/$(BUILD_DIR)/nav-wall-clip/off > $(BUILD_DIR)/nav-wall-clip/off.log 2>&1 || true
 	timeout 600 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
-		--arena=terminus --cases=wall --every=3 --out=$(CURDIR)/$(BUILD_DIR)/nav-wall-clip/on > $(BUILD_DIR)/nav-wall-clip/on.log 2>&1 || true
+		--arena=terminus --cases=wall --every=3 --yaw=30 --out=$(CURDIR)/$(BUILD_DIR)/nav-wall-clip/on > $(BUILD_DIR)/nav-wall-clip/on.log 2>&1 || true
 	@for arm in off on; do ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$(BUILD_DIR)/nav-wall-clip/$$arm/wall_*.png" \
 		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/nav-wall-clip/wall_$$arm.mp4 || echo ">> nav-wall-clip: ffmpeg failed for $$arm"; done
 	@grep -hE "NAV_ROTATION_WALL|NAV_ROTATION wall|SCRIPT ERROR" $(BUILD_DIR)/nav-wall-clip/off.log $(BUILD_DIR)/nav-wall-clip/on.log || true
