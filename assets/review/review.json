@@ -36,7 +36,7 @@
       "id": "q_r11_bus_fit",
       "group": "R11 question: fitting the bus you approved",
       "target": "unit.tank hull fit",
-      "title": "Question: how should the bus you approved (b) fit its box?",
+      "title": "Question: bus b came out van-shaped -- regenerate it long and narrow?",
       "prompt": "(a question, not a concept: nothing is generated)",
       "image": "assets/review/images/r11_fleet_bus_fit_options.jpg",
       "est_3d_credits": 0,
@@ -45,11 +45,11 @@
       "decided": "",
       "references": [],
       "buttons": [
-        "C: stretch it into today's box",
-        "Not C (say A or B below)"
+        "D: regenerate it as a real coach",
+        "No (write A, B or C below)"
       ],
-      "cost": "no credits; C moves no box",
-      "notes": "Bus b is built in 3D (15 credits). Its own shape is short and tall -- about twice as long as it is wide -- while the bus box is 9.70 m long and 2.90 m wide. So something has to give: A, its own shape at full length, is a 5.24 m wide, 6 m tall monster, wider than the War Rig; B, its own shape at the box's width, is only 5.4 m long, shorter than the garbage truck you ruled it must out-length; C stretches it into today's box, 1.8x longer and 1.2x taller than modelled -- it reads as a long coach, and it moves no box and no gameplay. RECOMMENDED: C. Tap it, or tap 'Not C' and write A or B."
+      "cost": "about 9 credits per new concept, 15 for its 3D; nothing moves until you approve one",
+      "notes": "Bus b is built in 3D, and measured it is 1.00 long x 0.54 wide x 0.62 tall: 1.85 times as long as it is wide. That is a van. The bus box, and a real 45 ft coach, are 3.3 times as long as wide. So every way of using it is bad: A (its own shape at 9.70 m) is 5.24 m wide and 6 m tall, wider than the War Rig; B (its own shape at the box's 2.90 m width) is 5.37 m long, shorter than the garbage truck; C (squeezed into today's box) stretches it 1.8x longer against its width -- worse than the 1.63x stretch you called deformed. RECOMMENDED: D -- regenerate bus b's design from a brief that states the shape (a long, narrow coach, over three times as long as wide), three options on this page, then build the one you pick. The bus keeps wearing today's dozer until then; nothing in the game moves."
     },
     {
       "id": "q_r11_law_size",
