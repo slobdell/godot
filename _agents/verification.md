@@ -484,3 +484,24 @@ For visual questions, grow the kit types above to their drawn extent (`AirshipFl
 `test_the_flights_table_of_drawn_props_covers_what_the_kit_draws` holds against the meshes). Don't grow the collider:
 that would move gameplay and the sim baseline. The orchestrator relayed the floodlight as "3 m" to the lead from
 exactly this table.
+
+## A drawn gun is not a simulated muzzle: the War Rig's (round 11, fleet stream; a ROUND-12 CANDIDATE)
+
+The same family as the section above: the drawing and the simulation disagree about where a thing is. **Ruled not
+this round** by the orchestrator (a sim change, two baseline moves already in the round, not reported by the lead, and
+whether a player can feel it needs its own measurement). Take it with the others, not alone.
+
+The War Rig (`gang_tank`, 14.0 m) is drawn in two pieces: the trailer is cut out of the hull at the fifth wheel and
+yawed each frame by the off-tracking law (`FactionArt.TRAILER_CUTS`, `DozerPart._drive_trailer`), and its gun rides
+the TRAILER (`_cut_trailer` moves the GunPivot under the TrailerPivot). The SIMULATED turret pivot is placed by
+`Tank.turret_pose()` from `turret_mount [0.0, 1.09, 1.75]`, in the tank body's frame -- the TRACTOR's -- and
+`Tank.muzzle_position()` is pure math off it. So as the rig bends, rounds leave from where the gun WAS, not where it
+is drawn. Measured from the model (fifth wheel at model z +0.25, gun pivot at +0.45: ~0.8 m apart at the rig's scale):
+**~0.45 m sideways at a 35 deg bend** (jackknife limit 65 deg: ~0.7 m). Invisible parked or driving straight.
+What a fix needs: the simulated pivot (or the muzzle) to follow the hinge, which makes the hinge SIMULATION (it is
+art today, contract S2), so the articulation would have to be computed from sim state on every peer -- plus a
+measurement first of whether 0.45 m on a 14 m hull changes any hit a player sees.
+
+**What to check** in any unit whose art moves relative to its body (a trailer today; any future articulated or
+recoiling part): does anything in the simulation (muzzle, ray origin, collider) read the body frame for a thing the
+art has moved? `make facing-audit UNITS=gang_tank TINT=1 VIEW=top BEND=35 TURRET=70` shows the drawn side.
