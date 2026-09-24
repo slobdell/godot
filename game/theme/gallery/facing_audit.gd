@@ -85,6 +85,12 @@ func _run() -> void:
 			_:
 				camera.global_transform = Transform3D(Basis(), Vector3(distance, height * 0.6 + 0.8, -1.0)).looking_at(
 						Vector3(0, height * 0.5, -1.0), Vector3.UP)
+		if flags.has("facing-articulation"):
+			# Round 11 (fleet): bend a tractor-trailer (FactionArt.TRAILER_CUTS) and hold it there.
+			for part in tank.find_children("*", "Node3D", true, false):
+				if part.has_method("articulation") and part.get("trailer_pivot") != null:
+					part.set("hinge_enabled", false)
+					part.call("_set_articulation", deg_to_rad(float(flags.text("facing-articulation", "0"))))
 		if flags.has("facing-tint"):
 			_tint(tank.get_node("Turret/TurretVisual"), Color(1, 0, 1))
 			_tint(tank.get_node("Turret/WeaponVisual"), Color(1, 0.9, 0))

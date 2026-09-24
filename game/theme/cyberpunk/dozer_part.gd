@@ -135,7 +135,7 @@ func _cut_gun() -> void:
 	_gun_rest_yaw = deg_to_rad(float(cut.get("rest_yaw_deg", 0.0)))
 	gun_pivot = Node3D.new()
 	gun_pivot.name = "GunPivot"
-	gun_pivot.position = pivot
+	gun_pivot.position = pivot - Vector3(0.0, float(cut.get("drop", 0.0)), 0.0)  # seated, when generated hovering
 	model.add_child(gun_pivot)
 	for node in model.find_children("*", "MeshInstance3D", true, false):
 		var instance := node as MeshInstance3D
