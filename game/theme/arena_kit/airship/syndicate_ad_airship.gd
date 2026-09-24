@@ -113,8 +113,11 @@ const WALL_MARGIN := 10.0
 ## How fast it may climb or sink, and how much air it keeps over a rooftop. Gentle, but not as gentle as it was: at
 ## 2.4 m/s every roof cost ~9 s of climb before it and ~9 s of settling after, all of it out of his frame, and once
 ## the hull stopped flying THROUGH buildings that was most of the match on the dense maps. 3.2 m/s (a real airship
-## manages 3-5) measured better on every one of six maps (`make airship-report`, laptop, 45 s legs): yard cruise
-## 52 -> 61 %, pit 28 -> 32 %, sumps 12 -> 18 %, and still 0 % inside anything.
+## manages 3-5) measured better on every one of six maps (`make airship-report`, laptop, six maps x four 45 s legs,
+## the working tree just before `c58aaf16`, same flight otherwise): yard cruise 52 -> 61 %, pit 28 -> 32 %, sumps
+## 12 -> 18 %, and still 0 % inside anything. Approved by the lead (2026-09-24). WHICH WAY TO MOVE IT: down to 2.8
+## only if, in play, the rise over an ad screen reads as a LIFT rather than a drift -- that is his eye, not a number.
+## Going up buys more cruise time with the same measurement; going down costs it.
 const CLIMB_MPS := 3.2
 ## 1 m, measured against the belly at the BOTTOM of its float (the float's own 1.15 m is reserved on top of it). It was
 ## 3 m, which is harmless over a 24 m roof and ruinous over a yard: a two-high container stack (5.18 m) then sat 2 m

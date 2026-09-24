@@ -256,13 +256,14 @@ pose the frame's top edge is 3.5° below the horizon from 17.6 m up, so anything
 ### Questions for the lead (each with my recommendation)
 1. ~~The Terminus~~ **RULED (2026-09-24, via the orchestrator): keep it as a zoomed-out sight there.** Written into
    `syndicate_ad_airship.gd`'s header with the numbers that force it.
-2. **Climb speed 3.2 m/s** (was 2.4). **Recommendation: keep 3.2.** It measured better on all six maps with tall props
+2. ~~Climb speed~~ **APPROVED (2026-09-24): keep 3.2 m/s** (was 2.4); the "which way to move it" note is beside the
+   constant. Original recommendation: It measured better on all six maps with tall props
    (yard cruise 52 → 61 %, pit 28 → 32 %, sumps 12 → 18 %, 45 s legs, laptop) with still 0 % inside anything, and a real
    airship manages 3–5 m/s. Drop to 2.8 only if, in play, the rise over an ad screen reads as a lift rather than a drift.
 3. **The camera and the hull.** **Answered: he watched `6_…mp4` and said "it looks fine"; S5 is approved as shipped.**
    (My recommendation had been: no change — `HULL_BACK_MAX_M` 40 m and the 2 s hold stay.)
 
-### Time at cruise, before and after, per map (the part he will notice in play)
+### Time at cruise, before and after, per map — LAPTOP, `a04d75c0` → `c58aaf16`, 240 s per map (the part he will notice in play)
 `make airship-report`, 240 s per map (four one-minute legs), laptop; before = `a04d75c0`, after = `c58aaf16`. Cruise % is
 the share of the flight at the low cruise height (centre 18.2 m, belly 6.2–7.4 m), where he can see it.
 
