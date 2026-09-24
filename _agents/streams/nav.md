@@ -216,6 +216,11 @@ Accepting being wrong on any of them; each is reported as measured.
 
 ### Known issues / notes for merge
 
+- **arena's Crossing deadlock (fixed, `e62383ad`):** the follower steered at a route corner it was standing on (chord
+  fallback + a segment-search tie), 0 throttle, no stall. Verified on arena's repro (their `09dd33c7` + the patch,
+  laptop). After arena's branch merges, `make terrain-drive` (crossing, sumps, locks; mixed and rigs) is the
+  regression check for it (arena, 2026-09-24). arena's Locks report did not reproduce on the final layout.
+
 - `game/ai/squad.gd` (the one call site) and `game/control/orders.gd` (the `ground_goal` call site and `_resolve_group`'s
   grounding loop) are carve-out edits for the orchestrator to review. The obsolete `_slot_ground`/`_has_for_unit`
   compatibility shim in `Orders.ground_goal` was removed (for_unit landed in round 10).
