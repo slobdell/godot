@@ -54,7 +54,19 @@ archived stream briefs).
   OFF on a fifth (a two-sided pinch the driver must creep out of).
 - Three research briefs and replies curated (`research_catalog.md`, rows B1–B14 and C1–C12).
 
-## Now: round 11 candidates (each archived brief's Status has its own list; the orchestrator's order)
+## Now: ROUND 11 IS RUNNING (launched 2026-09-24, small hours) — four streams from his playtest of the airship build
+
+His eleven items, split four ways: **arena** (publish the Crossing and the Sumps, which have never been in
+`Arena.ROTATION`, then make the 21 m venue floodlight towers solid, then one new terrain map), **nav** (a reverse
+decided at plan time instead of at the bumper; and the formation slot that lands inside a building), **fleet**
+(seven turrets spinning inside their hulls, five stray barrel sticks, the two non-uniformly stretched Condemned
+hulls, the Law's re-derived sizes, and the −Z facing test that has never existed), **airship** (real footprints and a
+climb look-ahead so it stops flying through the Terminus blocks; the camera lifting over the hull). Detail in
+[workstreams.md](workstreams.md) *Round 11*; his words in [game_design.md](game_design.md) *Round 11 direction*.
+
+**Carried forward, not scheduled this round** (from round 10's archived Status lists, the previous candidate order):
+
+## Round 11 candidates as of round 10's close (each archived brief's Status has its own list)
 
 1. The driver creeps out of a two-sided pinch before pivoting (nav/squad), then the yaw constraint flips ON
    (combat: the four bars plus drive-to-slots on one build).

@@ -2244,3 +2244,88 @@ rotation needs the turning envelope (squad's pitch, arena's spawn grid); wheeled
 (they keep the approach heading, the turret covers); the mover that knows no leash or corridor (nav's seam item, the
 funnel construction). Combat's yaw freeze underneath all four. The acceptance is his: squads driven through the
 Terminus streets and seen to arrive as a formation.
+
+## Round 11 direction: the lead's playtest of the airship build (2026-09-23, night)
+
+He played a few matches and sent one message. It is a **light round** by his own framing — eleven items, most of them
+defects with a named cause, and one of them ("no new maps") turning out to be a one-line rotation table. His words,
+verbatim and unedited:
+
+> *"we still barely have any maps, I haven't seen any bridges or pits that I've asked for, there have been no new maps.
+> Syndicate has some backwards vehicles.
+> The turret on the Law's IFV is not spinning
+> The vehicle sizes on the tanks for The Condemned are not consistent. THere is some variant of the tank which is quite
+> tall. Then there are the previously sized units. They need to be uniform, but also it was good for the busses to be
+> slightly taller (as in the deformed version, but not quite so tall). Also, I notice that units can still drive right
+> through the spotlight assets in Terminus; solid objects should not intersect. In Terminus, if I tell a squad to go
+> somewhere, a lot of vehicles still look dumb because they'll drive into a wall before trying to back up (i.e. it looks
+> like our algorithm is trying to do a multi-point turn based on hitting an obstacle) - it would be more ideal if the
+> units detected that their path would bump into a wall, and therefore they need to go in reverse first; a real-world
+> driver would execute a 3 point turn as necessary. Also in terminus when I tell a squad to go to a point, it appears as
+> though a unit's target position ends up inside of a building or something, because some of them still just look dumb
+> getting stuck behind a wall. I suspect (and I could be wrong) that what I described is a 2 part problem. I also notice
+> that the camera can end up inside the airship - similar to what we did with buildings, it would be ideal if the camera
+> and airship intersected, we push the camera up above the airship (that way there's more likelihood of seeing the cool
+> airship for an in-game effect). The tanks for the law should be bigger, and the IFVs probably should also then be
+> bigger. It also looks like the turret on the law tank is disconnected (i.e. the barrel of the tank is detached at the
+> tip, there's a floating piece of the barrel that stays fixed in front of the tank). It also looks like the airship
+> itself ends up intersecting with the buildings in Terminus as it flies around"*
+
+### THE FIRST ITEM IS NOT A CONTENT GAP, IT IS A ROTATION TABLE (orchestrator, before briefing)
+
+`Arena.ROTATION` (`game/arena/arena.gd:63`) is `["yard", "pit", "terminus"]`. Those three are the **only** maps the
+faction picker offers and the only ones "Random arena" can roll, and `arena_choices()` is built from `ROTATION`, not
+from the layout directory. `arenas/` holds **fifteen** layouts. Round 10's `terrain` stream built and measured exactly
+what he asked for a round earlier — **the Crossing** (5 terrain entries: water with two bridges) and **the Sumps**
+(6) — and neither has ever been reachable from the game. The Boneyard and the Boulevard are in the same position.
+
+This is lesson 32 for the third time ("it's missing" means "it doesn't reach me"), and it is the reason the brief's
+first item is *publish what exists, with his eye on it* rather than *build more maps*. Note the second half of the
+same sentence, which is a genuine gap: **`arenas/pit.json` carries `terrain: []`** — "The Pit" is a name, not a pit.
+He has asked for pits twice; the mechanism (`ArenaTerrain`, round 7) carves them and `make water-probe` measures them,
+and no shipping map uses it for a pit.
+
+### The 2-part problem he suspects in the Terminus, named
+
+He is right that it is two problems, and they have different owners:
+
+1. **The path is not consulted before the hull commits.** Reversing today is *reactive* — something has to go wrong
+   (contact, no progress) before the driver considers reverse, which is exactly the "multi-point turn based on hitting
+   an obstacle" he describes. What he is asking for is the *planned* version: look at the next leg, ask whether this
+   hull's turning circle can take it from this heading, and if it cannot, **reverse first** — a three-point turn
+   decided before the bumper touches the wall, not after.
+2. **The destination itself can be inside a building.** A formation slot is geometry; a building is not consulted when
+   the slot is computed. A unit given an unreachable point behaves exactly as he describes — it drives at the wall
+   nearest the point and sits there — and no amount of driver intelligence fixes a goal that is inside a solid.
+
+Both halves are nav's; neither is fixed by the other.
+
+### Solid means solid, and it applies to the airship too
+
+Two of his items are the same rule at two scales: **units drive through the Terminus spotlights**, and **the airship
+flies through the Terminus blocks**. A prop the player can see is a prop the player expects to be solid. The airship's
+case is the harder one because it has no collider by design (giving it one would move the sim baseline), so its
+clearance has to come from the layout's own prop extents rather than from physics.
+
+### The camera and the airship: push up, not away
+
+> *"similar to what we did with buildings, it would be ideal if the camera and airship intersected, we push the camera
+> up above the airship (that way there's more likelihood of seeing the cool airship for an in-game effect)"*
+
+Note what he is asking for: not "don't let the camera clip the hull" but **"use the collision as an excuse to show the
+airship off"**. Up and over, so the hull comes into frame; the round-9 rule for buildings pushes the camera *outside
+the solid*, and this one has a direction.
+
+### Vehicle proportions: uniform within a faction, and The Law is too small
+
+Four separate asks, one owner:
+- **The Condemned's tanks must be one size.** A variant that is "quite tall" is a deformation, not a design choice.
+- **The buses keep some of the extra height** — "slightly taller (as in the deformed version, but not quite so tall)".
+  So: the bus's height is deliberate and stays above the stock hull; the tank's is a bug and goes.
+- **The Law's tanks should be bigger, and its IFVs with them.** Relative scale is a faction read: the Law is the state,
+  and it should look like it outweighs the scrap it polices.
+- **Two rig defects:** the Law IFV's turret does not spin at all, and the Law tank's barrel has a **detached tip that
+  stays fixed in front of the hull** — a node left parented to the wrong parent, not an art problem.
+- **The Syndicate has vehicles facing backwards.** Godot's forward is −Z; the airship's own pass-2 bug was exactly this
+  and cost a night. A per-model yaw convention that is checked by a test, not by eye, is the fix that stops it coming
+  back a fourth time.

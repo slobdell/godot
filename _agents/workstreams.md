@@ -1,12 +1,75 @@
 # Workstreams: the current round
 
-> **Round 10, launched 2026-09-20 (evening).** How rounds work (roles, lifecycle, the worker contract, the kickoff
-> prompt) is in [orchestration.md](orchestration.md): read it first. **Round 10's streams, checkpoints, ownership and
-> contracts are in the next section.** The round-9 section after it (S1–S6, the research-catalogue sequencing) is
-> still in force where it is not superseded here; rounds 1–9 are archived in `streams/archive/round1..9/`; the
-> round-6 material further down (contracts N1–N7, ownership, invariants) is still in force where it is not superseded.
+> **Round 11, launched 2026-09-24 (small hours).** How rounds work (roles, lifecycle, the worker contract, the kickoff
+> prompt) is in [orchestration.md](orchestration.md): read it first. **Round 11's four streams, ownership and its one
+> checkpoint are in the next section.** Round 10's section follows it, closed; the round-9 section after that
+> (S1–S6, the research-catalogue sequencing) is still in force where it is not superseded; rounds 1–10 are archived in
+> `streams/archive/round1..10/`; the round-6 material further down (contracts N1–N7, ownership, invariants) is still
+> in force where it is not superseded.
 
-## Round 10: the nine streams (launched 2026-09-20 evening, run 2026-09-22, CLOSED 2026-09-23; briefs in `streams/archive/round10/`)
+## Round 11: the four streams (launched 2026-09-24, small hours)
+
+**Goal: the eleven defects he named in one playtest, and the maps he has asked for three times.** His words are in
+[`game_design.md`](game_design.md) *Round 11 direction*. He called it a light workload and it is: no new mechanic, no
+new system, no design argument to settle. **Three of the four streams are finishing work that already exists and does
+not reach him**; the fourth is driver intelligence he has now described precisely enough to build.
+
+**The acceptance test for the round is his:** pick each map from the faction picker and see the bridges, the water and
+a pit; drive a squad through the Terminus streets and watch a hull reverse *before* it touches a wall; look at the
+three factions parked side by side; and watch the airship fly the Terminus without passing through a block, with the
+camera lifting over it when they meet.
+
+| Stream | Brief | Round 11 |
+|---|---|---|
+| **arena** | [streams/arena.md](streams/arena.md) | **The maps he has never been dealt** (`Arena.ROTATION` is three names and `arenas/` holds fifteen; round 10's Crossing and Sumps — water, bridges and the only real pits in the game — have never been reachable), each played on the default path and judged on the arena page; **the venue floodlight towers are solid** (21 m of steel with no collider, standing 7.8 m inside the Terminus wall) and the parity test extended to the dressing layer that hid them; then one genuinely new terrain map |
+| **nav** | [streams/nav.md](streams/nav.md) | **His two-part Terminus problem, measured apart.** R2: the goal repair (`squad.gd:272` grounds a slot on the mesh centre, so a War Rig's nose is in the building; `source != "player"` is not grounded at all; `_reachable == false` is computed and thrown at a readout). R1: **a reverse decided at plan time** — run the turning-circle test against the route's first leg and emit an explicit reverse leg, instead of discovering it at the bumper through `unstick` and the pressed-wall escape |
+| **fleet** | [streams/fleet.md](streams/fleet.md) | **The vehicles, five complaints and four causes:** seven turrets spinning *inside* their hulls for want of a `turret_mount`; five stray generated barrel sticks (the Law tank's is 14 triangles, 1.8 cm across, 0.74 m off centre); the Condemned tank and burner as the only non-uniformly **stretched** meshes in the game (1.63:1 on the tank — his "deformed" one); the Law's tank and IFV re-derived under the round-9 K rule; and **a test that a nose points at −Z**, which has never existed |
+| **airship** | [streams/airship.md](streams/airship.md) | **It flies through the blocks and the camera flies through it.** Real rotated footprints instead of a circle table that is 7.28 m short at every block corner; a look-ahead by the 8.7 s it takes to climb; `contain` no longer erasing `avoid` at the (±100, 0) blocks; a 3 m floodlight no longer entered as 24 m (which is most of why it cruises low only 52 % of the time on the Terminus); and **the camera lifting over the hull** through the round-9 solid rule, which today cannot see a moving occluder at all |
+
+**Why four, and why these four:** each is one independent problem with one owner and almost no overlap — the maps and
+their props (arena), the driver and the goal (nav), the vehicles (fleet), the airship and the camera (airship). The
+two smallest shared files are split by function and named below. No stream needs another's output to start.
+
+### The one checkpoint
+
+**CP1 — fleet's size changes (its T3 + T4), merged alone.** Any `hull_size` move changes the spawn grid, the collider
+and the sim baseline by construction. fleet lands its art items first, then puts every box change in one commit and
+names the green hash; **the orchestrator records the baseline twice in one session**, never the worker. Nobody
+publishes a size-dependent number measured across CP1. Everything else merges when it is green.
+
+### Who owns what (round 11) — changes to the tables below
+
+| Path | Owner (round 11) |
+|---|---|
+| `arenas/`, `game/arena/`, `tools/make_arenas.py`, `tools/terrain_maps.py`, `tools/arena_report.py`, `mk/arena.mk`, `tests/arena/`, `tests/test_arena*.gd`, `_agents/arenas.md`; **carve-outs:** `_build_tower` and the venue placement calls in `game/theme/cyberpunk/arena_dressing.gd`, and `tests/test_arena_prop_parity.gd` | **arena** |
+| `game/ai/movement.gd`, `pathing.gd`, `steering.gd`, `avoidance.gd`, `wall_contact.gd`, `clothoid.gd`, `game/tank/tank_motion.gd`, `tests/nav/`, `mk/nav.mk`, `_agents/navigation.md`, `_agents/algorithms.md`; **carve-out for R2 only:** `game/tactics/slot_ground.gd`, `Orders.ground_goal` in `game/control/orders.gd`, and the call site `game/ai/squad.gd:272` (no control or squad stream runs; the orchestrator reviews these three at merge) | **nav** |
+| `game/theme/factions/**`, `game/theme/roster/**`, `game/theme/prison_dozer/**`, `game/theme/cyberpunk/dozer_part.gd`, `game/theme/gallery/**`, `assets/pipeline/**`, `tools/assets/**`, `mk/assets.mk`, `mk/scale.mk`, the gallery/audit/probe targets in `mk/fx.mk`, `tools/roster_scale.py`, `tests/test_theme_unit_scale.gd`, `tests/test_units_*.gd`; **carve-outs:** the `hull_size` / `muzzle_height` / `turret_mount` VALUES in `game/units/units.gd`, and `Tank._apply_hull_size` / `Tank.turret_pose` in `game/tank/tank.gd` | **fleet** |
+| `game/theme/arena_kit/airship/**`, `game/camera/**`, `tests/test_theme_ad_airship.gd`, `tests/test_control_camera_solids.gd`, `game/theme/fx/bench/airship_shot.gd`, the airship targets in `mk/fx.mk`; **carve-out:** `_build_airship` in `game/theme/cyberpunk/arena_dressing.gd` | **airship** |
+| everything else | orchestrator / shared, as the round-6 table below |
+
+### The two shared files, split by function
+
+- **`game/theme/cyberpunk/arena_dressing.gd`:** arena owns `_build_tower` and the venue placement calls that site the
+  towers; airship owns `_build_airship` (`:140-155`). Neither touches the other's function; both list the file in
+  their merge notes.
+- **`game/units/units.gd`:** fleet changes VALUES only (`hull_size`, `muzzle_height`, `turret_mount`). Nobody changes
+  the catalogue's shape, weapons or balance this round.
+
+### Contracts (round 11)
+
+- **C11.1 — the rotation is published early.** arena's first item adds `crossing` and `sumps` to `Arena.ROTATION`.
+  Every stream that walks "every shipping map" (`SyndicateAdAirship.flies_on`/`route_for`, `make nav-fight-maps`,
+  fleet's galleries) re-runs its map walk after the orchestrator announces that merge. Until then, **say which map
+  list a number was taken on.**
+- **C11.2 — the camera's solid rule stays pure and headless.** `RtsCamera.clear_pose` is a static function over data,
+  which is why it has tests at all. airship may add a dynamic occluder parameter or registry; it may not make the rule
+  require a physics space or a running tree.
+- **C11.3 — the airship gets no collider,** and the sim baseline `457b5e830708b439` does not move for any reason
+  except CP1.
+- **C11.4 — nobody tunes balance.** fleet's sizes and arena's navmesh both reach matchups. Report the number; do not
+  chase it (his standing ruling: *"we'll worry about evening up factions later"*).
+
+## Round 10: the nine streams (launched 2026-09-20 evening, run 2026-09-22, CLOSED 2026-09-23; briefs in `streams/archive/round10/`) — CLOSED, kept for its contracts
 
 **Goal: the playability blockers he named, in the order they block him.** His words are in
 [`game_design.md`](game_design.md) *Round 10 direction*. He cannot judge unit intelligence until a right-click is obeyed
