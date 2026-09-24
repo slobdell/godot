@@ -24,10 +24,17 @@ member because brains ask every think), follow stations (`tank_brain.gd`, round 
 **Repair, don't just report** (`Movement._repair`): where `_update_phase` would declare `blocked`/`no_path` at the end
 of an unreachable route, the goal is re-grounded ONCE with the envelope and driven to — only if a route reaches it and
 it is within `REPAIR_MAX_M` (12 m) of what was asked. Otherwise the honest report stands. `state()` carries
-`repaired_m`; counters `goal_repairs` / `goal_repairs_refused`. **OPT-IN (`--nav-off=repair` turns it ON):** order
-COMPLETION is judged against the order's own goal by the brain (`tank_brain.gd`), so a repaired ORDER goal left a scout
-reading "arrived" under an order that never completed (`nav-orders`, `e62383ad`). It defaults on once completion
-honours `repaired_m`.
+`repaired_m`; counters `goal_repairs` / `goal_repairs_refused`.
+
+**ON by default since round 11** (`--nav-off=repair` turns it OFF, like every other mechanism name here). It shipped
+opt-in for one night with the flag INVERTED, because order COMPLETION is judged against the order's own goal by the
+brain (`tank_brain.gd`), so a repaired ORDER goal left a scout reading "arrived" under an order that never completed
+(`nav-orders`, `e62383ad`). Completion now honours `repaired_m` (`78b26067`, mutation-checked) and the switch was
+flipped on a measurement (`7c25665c`): on the Terminus, one run per arm, 30 ordered units, completed 20 → 22 and
+never_completed 10 → 8, with **the two extra completions being the two repairs**, unit for unit. The yard arm is a
+null control and reads as one. Cost stated where the switch lives: `completed_far` 0 → 1, one unit finishing more
+than 7 m from where the player pointed — and a player cannot tell "moved your goal 8 m" from "ignored you", so if
+that number grows the trade is worth re-opening.
 
 **Never steer at a point under the hull** (`_corner_beyond`, `WAYPOINT_MIN_M` 1.5 m): whatever branch of
 `_next_waypoint` chose it, a mid-route steering point that close is replaced by the first route corner beyond it. The
