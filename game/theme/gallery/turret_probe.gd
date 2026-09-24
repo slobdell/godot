@@ -4,6 +4,8 @@ extends SceneTree
 ## REAR). Prints one TURRET_PROBE line per unit and writes <json>:
 ##   box        the collider (hull_size)
 ##   pivot      today's Turret position; turret_art / weapon_art: those parts' drawn AABBs (tank frame)
+##   above_hull round 11 (fleet): TurretFit.measure -- the share of what turns with the turret that is drawn above the
+##              hull under it, and the lowest turning point's height over (+) or under (-) the hull
 ##   roof       the hull art's top along its length: [z, max y over the centre strip |x| <= STRIP_M] every BIN_M
 ## The ring is chosen from these plus the side-on frames (`make facing-audit`), and written as `turret_mount` with the
 ## derivation beside it. Headless is fine: it reads mesh arrays, it renders nothing.
@@ -41,10 +43,14 @@ func _run() -> void:
 				"roof": _roof(tank, tank.get_node("HullVisual")),
 				"gun_cut": not FactionArt.gun_cut(unit_id).is_empty(),
 				"gun_pivot": _gun_pivot(tank),
+				"above_hull": TurretFit.measure(tank),
 			}
 			report[unit_id] = entry
 			print("TURRET_PROBE %s box=%s pivot=%s turret_art=%s weapon_art=%s gun_pivot=%s hull_art=%s" % [unit_id,
 					entry["box"], entry["pivot"], entry["turret_art"], entry["weapon_art"], entry["gun_pivot"], entry["hull_art"]])
+			var fit: Dictionary = entry["above_hull"]
+			print("TURRET_PROBE_ABOVE %s points=%d above=%.0f%% lowest=%+.2f m" % [unit_id, fit["points"],
+					float(fit["above"]) * 100.0, fit["lowest"]])
 			tank.free()
 	var path := flags.text("turret-probe-json", "")
 	if path != "":

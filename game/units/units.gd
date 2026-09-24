@@ -536,6 +536,9 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 70.0,
 		"muzzle_height": 1.14,
+		# Round 11 (fleet T1): the crane-catapult is cut out of the hull (FactionArt.GUN_CUTS "gangs/artillery") and yaws
+		# about its post, GunPivot z +0.26 in the tank frame (`make turret-probe`, laptop); the simulated pivot goes under it.
+		"turret_mount": [0.0, 1.09, 0.26],
 		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"good_vs": ["tank", "artillery"],
 		"weak_vs": ["scout"],
@@ -645,6 +648,11 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 175.0,
 		"muzzle_height": 1.14,
+		# Round 11 (fleet T1; the lead: "The turret on the Law's IFV is not spinning"): its remote weapon station is cut
+		# out of the hull (FactionArt.GUN_CUTS "law/ifv") and yaws about its ring, whose GunPivot is at z +0.50 in the
+		# tank frame (`make turret-probe`, laptop); the simulated pivot goes under it so rounds leave from the gun that is
+		# drawn. No turret art is drawn, so y stays at the muzzle's pivot height.
+		"turret_mount": [0.0, 1.09, 0.5],
 		# Mine-resistant: the toughest front in the game after the war rig, on a unit that cannot chase anything.
 		# Rear 2.0 like every other hull: "everything hurts from behind" is a rule of the game, not a unit's choice
 		# (test_combat_mechanics), and an MRAP you cannot flank would break it.
@@ -749,6 +757,9 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 110.0,
 		"muzzle_height": 1.14,
+		# Round 11 (fleet T1): the sonic array is cut out of the hull (FactionArt.GUN_CUTS "law/special") and yaws about its
+		# mast, GunPivot z +1.14 in the tank frame (`make turret-probe`, laptop); the simulated pivot goes under it.
+		"turret_mount": [0.0, 1.09, 1.14],
 		"armor": {"front": 6.0, "side": 3.0, "rear": 2.0},
 		"good_vs": [],
 		"weak_vs": ["artillery"],
@@ -821,6 +832,8 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 180.0,
 		"muzzle_height": 1.14,
+		# Round 11 (fleet T1): the roof pod is cut out of the hull (FactionArt.GUN_CUTS "syndicate/ifv") and yaws about
+		# GunPivot z 0.0 in the tank frame. No turret_mount, for the same reason as syn_tank's (the muzzle condition).
 		"heat_capacity": 100.0,
 		"heat_dissipation": 14.0,
 		"armor": {"front": 5.0, "side": 4.0, "rear": 2.0},
@@ -855,6 +868,10 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 55.0,
 		"muzzle_height": 1.14,
+		# Round 11 (fleet T1): the railgun is cut out of the hull (FactionArt.GUN_CUTS "syndicate/tank") and yaws about
+		# GunPivot z 0.0 in the tank frame (`make turret-probe`, laptop). NO turret_mount: putting the simulated pivot
+		# under it moves the pivot 0.2 m FORWARD, and combat's condition (tests/test_tank_turret_mount.gd) is that no
+		# mount pushes a muzzle further past the nose. 0.2 m between the drawn and the simulated pivot is not visible.
 		"heat_capacity": 100.0,
 		"heat_dissipation": 10.0,
 		# Thick everywhere a shell is likely to arrive and thin behind: a hover tank you have to get round.

@@ -46,10 +46,22 @@ def groups_in_order(items: list) -> list:
 
 
 def build(manifest: dict, out_dir: Path, title: str, include_decided: bool = False, ledger: Path = review.LEDGER,
-          group_prefix: str = "", intro: str = "") -> Path:
+          group_prefix: str = "", intro: str = "", figures: list = ()) -> Path:
     items = select(manifest, include_decided, group_prefix)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "images").mkdir(exist_ok=True)
+    # Round 11 (fleet): pictures that are not concepts but belong beside them (a before/after the lead judges by eye),
+    # each "path::caption", shown under the intro. Copied into images/ like the concepts.
+    shown_figures = []
+    for figure in figures:
+        source, _, caption = figure.partition("::")
+        source_path = Path(source)
+        shutil.copyfile(source_path, out_dir / "images" / source_path.name)
+        img = "images/" + source_path.name
+        shown_figures.append(f"""
+      <figure class="figure"><button class="shot" type="button" data-full="{img}" aria-label="Enlarge {html.escape(caption)}">
+        <img src="{img}" alt="{html.escape(caption)}" loading="lazy"></button>
+        <figcaption>{html.escape(caption)}</figcaption></figure>""")
     notes = manifest.get("group_notes", {})
     sections = []
     for group in groups_in_order(items):
@@ -116,6 +128,7 @@ __CSS__
         most one option per group and only those get built; a few words on what you like or want changed go straight
         into the brief.</p>
       {f'<p class="intro">{html.escape(intro)}</p>' if intro else ''}
+      {''.join(shown_figures)}
     </div>
     <div class="tally" aria-label="Decisions so far">
       <div class="w"><b id="n-waiting">{len(items)}</b><span>waiting</span></div>
@@ -192,6 +205,8 @@ def main(argv=None) -> int:
     p_build.add_argument("--out", default=str(OUT))
     p_build.add_argument("--groups", default="", help="only groups whose name starts with this (one page per faction)")
     p_build.add_argument("--intro", default="", help="a paragraph under the title (the faction's look)")
+    p_build.add_argument("--figure", action="append", default=[],
+                         help="IMAGE::caption, a picture shown under the intro (repeatable; e.g. a before/after)")
     p_apply = sub.add_parser("apply", help="record the decisions the lead tapped (read_db out_dir)")
     p_apply.add_argument("--decisions", required=True, help="the folder read_db saved the decisions collection into")
     p_apply.add_argument("--url", default="", help="the review page's Artifact URL (quoted in the recorded words)")
@@ -199,7 +214,8 @@ def main(argv=None) -> int:
     path = Path(args.manifest)
     manifest = review.load(path)
     if args.command == "build":
-        index = build(manifest, Path(args.out), args.title, args.all, group_prefix=args.groups, intro=args.intro)
+        index = build(manifest, Path(args.out), args.title, args.all, group_prefix=args.groups, intro=args.intro,
+                      figures=args.figure)
         shown = len(select(manifest, args.all, args.groups))
         print(f"review page: {index} ({shown} concepts)")
         if shown == 0:
@@ -233,6 +249,10 @@ body { margin: 0; font: 15px/1.55 var(--body); padding-inline: 16px; padding-blo
 h1 { font: 700 clamp(28px, 5vw, 44px)/1.05 var(--display); margin: 0 0 12px; text-wrap: balance; letter-spacing: .01em; }
 .lede { margin: 0; max-width: 64ch; color: var(--dim); }
 .lede b { color: var(--text); font-weight: 500; }
+.figure { margin: 14px 0 0; max-width: 100%; }
+.figure img { width: 100%; height: auto; display: block; border: 1px solid var(--line, #333); }
+.figure .shot { padding: 0; border: 0; background: none; width: 100%; cursor: zoom-in; }
+.figure figcaption { font-size: 0.9em; margin-top: 6px; }
 .intro { margin: 12px 0 0; max-width: 64ch; color: var(--text); border-left: 3px solid var(--hazard); padding-left: 12px; }
 .tally { display: grid; grid-template-columns: repeat(3, auto); gap: 4px 28px; font-variant-numeric: tabular-nums; }
 .tally div { display: flex; flex-direction: column; }

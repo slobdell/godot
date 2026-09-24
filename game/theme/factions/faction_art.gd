@@ -14,11 +14,43 @@ const ROLES := ["scout", "ifv", "tank", "artillery", "special"]
 const CONDEMNED := {"scout": "scout", "ifv": "ifv", "tank": "tank", "artillery": "artillery", "special": "lancer"}
 const PART_WRAPPER := preload("res://game/theme/cyberpunk/dozer_part.gd")
 const NO_PART := "res://game/theme/cyberpunk/units/no_part.tscn"
-## R5 (round 10): weapon parts that draw nothing but a stray 3 cm stick, so the unit shows no weapon part at all. Every
-## generated weapon part is such a stick (tools/assets/build_faction_parts.py); on these it crossed the whole vehicle
-## (the catapult's is 5.2 m, through its crane) and read as a misplaced gun. A unit with a GUN_CUT never shows its
-## weapon part either: its real gun is cut out of the hull.
-const STRAY_WEAPONS := ["gangs/artillery"]
+## Round 11 (fleet T2; the lead: "the barrel of the tank is detached at the tip, there's a floating piece of the barrel
+## that stays fixed in front of the tank"). Round 10 listed ONE weapon part here ("gangs/artillery") as a stray stick
+## while its own comment said every generated weapon part is one, and four more were still drawn -- the Law tank's
+## 14-triangle, 1.8 cm stick 0.74 m off its centreline among them. The list is gone: a weapon part is refused by
+## what it IS (`is_stray_stick`), so the next generated stick is refused rather than waiting to be blacklisted. A unit
+## with a GUN_CUT never shows its weapon part either: its real gun is cut out of the hull.
+##
+## A stick: its THINNEST side under STICK_ASPECT of its length. Measured over every weapon part in the tree
+## (natural size, before the tank's fit): the generated sticks are 0.4-1.9% (Law tank 0.4%, gang catapult 0.6%,
+## Law special 0.6%, Law IFV 1.5%, gang IFV 1.7%, Syndicate tank 1.9%); the real weapons are 4.7% (the Condemned
+## IFV's barrel, with its breech), 15% (the scout's guns) and 39% (the lancer's coil). 3% sits between them.
+const STICK_ASPECT := 0.03
+
+
+## True when `bounds` (a weapon part's natural AABB) is a sliver no one reads as a gun.
+static func is_stray_stick(bounds: AABB) -> bool:
+	var sides := [bounds.size.x, bounds.size.y, bounds.size.z]
+	sides.sort()
+	return float(sides[2]) > 0.0 and float(sides[0]) / float(sides[2]) < STICK_ASPECT
+
+
+## Round 11 (fleet T2): gun fragments the splitter left in a HULL mesh, dropped at runtime (triangles whose centroid
+## is in any box, the model's natural space, as GUN_CUTS). They do not turn, so as the turret traverses they stay
+## pointing ahead: the lead's "floating piece of the barrel that stays fixed in front of the tank". The turret part
+## carries its own whole gun, so nothing is lost. Measured with `make assets-profile` and seen with
+## `make facing-audit TINT=1` (turret magenta, weapon yellow: a barrel still in hull colours is one of these).
+const HULL_TRIMS := {
+	# The Law tank's barrel tip: 142 triangles, |x| <= 0.03, y 1.36-1.48, z -0.65..-1.70, and nothing else of the hull
+	# in that box (unit_law_tank_hull.glb profile, CLIP). Its turret's own barrel is magenta and turns.
+	"law/tank": [AABB(Vector3(-0.1, 1.33, -1.72), Vector3(0.2, 0.2, 1.1))],
+}
+
+
+static func hull_trim(unit_id: String) -> Array:
+	var faction := String(Units.stat(unit_id, "faction", ""))
+	var role := art_role(Units.role_of(unit_id))
+	return HULL_TRIMS.get("%s/%s" % [faction, role], [])
 ## The catalog roles that have their own art role; any other role (support, suppressor, lancer) is the faction's special.
 const ART_ROLES := ["scout", "ifv", "tank", "artillery"]
 
@@ -47,7 +79,7 @@ static func unit_slots() -> Dictionary:
 			result["unit.%s.hull" % unit_id] = hull
 			for part in ["turret", "weapon"]:
 				var scene := part_scene(faction, role, part)
-				var stray: bool = part == "weapon" and (GUN_CUTS.has("%s/%s" % [faction, role]) or STRAY_WEAPONS.has("%s/%s" % [faction, role]))
+				var stray: bool = part == "weapon" and GUN_CUTS.has("%s/%s" % [faction, role])
 				result["unit.%s.%s" % [unit_id, part]] = scene if ResourceLoader.exists(scene) and not stray else NO_PART
 	return result
 
@@ -127,7 +159,7 @@ static func natural_bounds(model: Node3D) -> AABB:
 
 ## Round 7 (the lead: "the turrets on the gang tanks didn't rotate"): hulls whose gun was generated as part of the hull
 ## mesh, with only a nub as the turret part. The gun is cut out of the hull at runtime by a box in the hull model's own
-## (natural) space and yaws with the tank's turret about `pivot`, so the concept-approved model stays exactly as
+## (natural) space (or by several, `boxes`, when no one box separates it) and yaws with the tank's turret about `pivot`, so the concept-approved model stays exactly as
 ## approved (no regeneration). "<faction>/<role>" -> {box: AABB, pivot: Vector3, rest_yaw_deg?}: `rest_yaw_deg` turns a
 ## gun that was modelled pointing backwards to point forward at turret yaw 0 (the simulation's "aim ahead"). Authored
 ## and checked with `make facing-audit UNITS=... TURRET=70` (the audit holds the turret there).
@@ -144,8 +176,41 @@ const GUN_CUTS := {
 	# narrow mass at z -1.72..-0.28, |x| <= 0.42, above the bed rails (y >= 1.55); the post is at z ~ -0.95. It points
 	# forward as modelled, so no rest yaw.
 	"gangs/ifv": {"box": AABB(Vector3(-0.45, 1.55, -1.74), Vector3(0.9, 0.65, 1.47)), "pivot": Vector3(0.0, 1.55, -0.95)},
-	# Not the Syndicate IFV: its roof gun is its real turret part (it traverses). An early render taken while the tank
-	# was driving its turret home made it look baked in; a cut there hid the gun and turned a slab of roof instead.
+	# Round 11 (fleet T1; the lead: "The turret on the Law's IFV is not spinning"). It never could: the remote weapon
+	# station the player sees -- cupola, box and 25 mm barrel -- was generated INTO the hull, and the part the splitter
+	# labelled "turret" was a few roof-rail fragments, drawn buried (`make facing-audit TINT=1`). Measured with
+	# `make assets-profile IN=...unit_law_ifv_hull.glb` (model space, -Z forward, roof ~1.49 m): the station stands on
+	# the roof at z 0.00..+0.86 with its barrel out to z -0.88 at y 1.69-1.76, all within |x| <= 0.43, above y 1.52
+	# (the light bar ahead of it tops out at 1.51; the stowage behind it at 1.49). The ring is at z +0.33. It points
+	# forward as modelled.
+	"law/ifv": {"box": AABB(Vector3(-0.46, 1.52, -0.95), Vector3(0.92, 0.5, 1.87)), "pivot": Vector3(0.0, 1.52, 0.33)},
+	# Round 11 (fleet T1): the suppressor's sonic array -- a mast of loudspeaker horns -- is hull mesh too; its
+	# "turret" part was a cluster of spikes drawn 2 m down inside the horns. Profile (unit_law_special_hull.glb): the
+	# array and its mast stand on the roof (~1.16 m) at z -0.05..+0.92, |x| <= 0.55, from y 1.22 up; the mast is at
+	# z +0.40. A radial array, so no rest yaw.
+	"law/special": {"box": AABB(Vector3(-0.6, 1.22, -0.08), Vector3(1.2, 1.0, 1.02)), "pivot": Vector3(0.0, 1.22, 0.40)},
+	# Round 11 (fleet T1): the Syndicate tank's railgun -- twin rails floating over the rear deck, the faction's hover
+	# idiom -- is hull mesh; its "turret" part was a deck-sized slab (with a second pair of rails) that swept the whole
+	# rear deck as it turned. Profile (unit_syndicate_tank_hull.glb): the rails are |x| <= 0.24, y 1.12-1.22,
+	# z -1.28..+0.28, clear of the deck (<= 1.01). They yaw about their breech end's third, z 0.0.
+	"syndicate/tank": {"box": AABB(Vector3(-0.3, 1.08, -1.34), Vector3(0.6, 0.22, 1.66)), "pivot": Vector3(0.0, 1.08, 0.0)},
+	# Round 11 (fleet T1): the Syndicate IFV's gun is the pod floating over its roof (hull mesh: |x| <= 0.08,
+	# y 0.91-1.10, z -0.37..+0.38). Round 10 wrote here that its roof gun "is its real turret part (it traverses)";
+	# `make facing-audit TINT=1` shows the part that traversed was a 0.5 m fragment drawn under the roof, and the pod
+	# never moved. Symmetric fore and aft, so no rest yaw; the model's own 180 (it was generated facing +Z) turns the
+	# cut with it.
+	"syndicate/ifv": {"box": AABB(Vector3(-0.14, 0.88, -0.42), Vector3(0.28, 0.26, 0.84)), "pivot": Vector3(0.0, 0.88, 0.0)},
+	# Round 11 (fleet T1): the gang catapult is a tow-truck crane on the bed -- post, boom and a hanging bucket -- all
+	# hull mesh; its "turret" part was a few 10 cm fragments. The boom rests cocked BACK over the tail with the bucket
+	# hanging off it, which is how a throwing arm rests, so no rest yaw: it traverses with the turret and lobs over the
+	# cab. Profile (unit_gangs_artillery_hull.glb, 360 px/m ruled view): post at z -0.03..+0.33 from the bed (0.81) up;
+	# boom to the tip at z +1.6, y 1.95; bucket at z +1.55..+2.0, y 0.70-1.4, hanging past the tail. Three boxes because
+	# a crate sits on the bed between post and bucket (z +0.58..+1.08, y <= 1.04) and stays on the hull.
+	"gangs/artillery": {"boxes": [
+			AABB(Vector3(-0.5, 1.05, -0.05), Vector3(1.0, 1.0, 2.1)),  # the boom, its stay and everything above the crate
+			AABB(Vector3(-0.3, 0.84, -0.05), Vector3(0.6, 0.21, 0.4)),  # the post's foot, down to the bed
+			AABB(Vector3(-0.5, 0.6, 1.4), Vector3(1.0, 0.45, 0.65)),  # the bucket's lower half, past the bed's end
+		], "pivot": Vector3(0.0, 0.84, 0.15)},
 }
 
 
