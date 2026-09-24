@@ -253,19 +253,41 @@ cruise height), seen % (in his frame at his pose, averaged over 4 camera yaws; a
 anywhere, and on the dense maps it pays for that in time up over the roofs, where his frame cannot reach it (at his
 pose the frame's top edge is 3.5° below the horizon from 17.6 m up, so anything above ~15 m at 45 m range is out).
 
-### Questions for the lead
-1. **The Terminus: no-intersection and in-his-frame cannot both hold there, at any airship size.** Its streets are
-   20–22 m wide (narrower than even the 14.4 m keel plus margin over any useful length) and the only ground a hull can
-   cruise over is the plazas by the wall (plot: the cruise-clear map is green only beyond ~100 m out). Over the city it
-   flies at ~37 m; at his close pose that is always above the frame, and he sees it by zooming out (at a 130 m boom the
-   camera is ~65 m up and looks down on it). Shipped: never intersect, because that is what he reported. **Options if
-   he wants it seen there:** (a) a smaller airship on city maps only — even 1.0× (38 m) does not fit the grid well;
-   (b) let it patrol the plazas low (it would be far from the fight and still mostly out of frame); (c) accept it as
-   a zoomed-out sight on the Terminus. My recommendation is (c).
-2. **Climb speed 3.2 m/s** (was 2.4): chosen by measurement; if it reads as too lively, 2.8 is the compromise.
-3. **The camera and the hull (watch `6_…mp4`).** Up-and-back puts the hull big in the foreground; when it lingers it
-   hides the fight for a few seconds. If that is too much: a smaller `HULL_BACK_MAX_M` (less pull-back, less hull in
-   frame) or a shorter hold. If it is not enough: nothing to change — it already does what he described.
+### Questions for the lead (each with my recommendation)
+1. ~~The Terminus~~ **RULED (2026-09-24, via the orchestrator): keep it as a zoomed-out sight there.** Written into
+   `syndicate_ad_airship.gd`'s header with the numbers that force it.
+2. **Climb speed 3.2 m/s** (was 2.4). **Recommendation: keep 3.2.** It measured better on all six maps with tall props
+   (yard cruise 52 → 61 %, pit 28 → 32 %, sumps 12 → 18 %, 45 s legs, laptop) with still 0 % inside anything, and a real
+   airship manages 3–5 m/s. Drop to 2.8 only if, in play, the rise over an ad screen reads as a lift rather than a drift.
+3. **The camera and the hull.** **Answered: he watched `6_…mp4` and said "it looks fine"; S5 is approved as shipped.**
+   (My recommendation had been: no change — `HULL_BACK_MAX_M` 40 m and the 2 s hold stay.)
+
+### Time at cruise, before and after, per map (the part he will notice in play)
+`make airship-report`, 240 s per map (four one-minute legs), laptop; before = `a04d75c0`, after = `c58aaf16`. Cruise % is
+the share of the flight at the low cruise height (centre 18.2 m, belly 6.2–7.4 m), where he can see it.
+
+| map | cruise % before → after | in frame % before → after | inside something % before → after |
+|---|---|---|---|
+| terminus | 6.7 → 0 | 2.7 → 0 | 31.2 → 0 |
+| yard | 100 → 77 | 31 → 26 | 0 → 0 |
+| pit | 91 → 43 | 29 → 16 | 22.7 → 0 |
+| boneyard | 100 → 91 | 34 → 34 | 0.9 → 0 |
+| boulevard | 56 → 8 | 24 → 6 | 39.8 → 0 |
+| crossing | 47 → 5 | 16 → 1 | 49.0 → 0 |
+| sumps | 56 → 26 | 17 → 14 | 43.8 → 0 |
+| maze, barriers | 100 → 100 | 33 → 32 | 0 → 0 |
+
+**Two corrections to the brief's expectation, so HANDOFF does not repeat them:**
+- **The floodlight is not 3 m. It is a 16.05 m mast** (a 3 m footing, a 15 m mast and a lamp head, measured off
+  `KitYard.floodlight_mesh()`). 3 m is only its collision box. The fix was 24 m → 16 m, not 24 m → 3 m, so it saves
+  far less climbing than the brief predicted: a 57 m hull still has to go over or round each mast.
+- **Cruise time went DOWN, not up.** The old "cruise" numbers were high because the hull flew through whatever was in
+  its way at cruise height (the yard's 100 % included time inside ad screens). Now nothing is flown through, so every
+  map with tall props spends time climbing. The honest headline for him: **it never goes through anything any more;
+  on open maps he still sees it low most of the time (yard 77 %, boneyard 91 %, maze and barriers 100 %); on the
+  dense maps it is up over the roofs more.** The climb and settle rate (2.4 → 3.2 m/s), the 1 m roof clearance and the
+  orbit that bends toward open ground were each chosen because they won back cruise time without letting it go
+  through anything.
 
 ### Known issues
 - A mid-match dressing rebuild re-flies the flight from tick 0; with the planner that is 0.6–1.0 s of work on the laptop
