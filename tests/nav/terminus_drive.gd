@@ -42,6 +42,13 @@ var leg_contacts_before := {}
 var leg_results: Array = []
 var time_per_leg := 90.0
 var squad_kind := "mixed"
+## Round 11 (R1): gear changes (cusps) per unit, the brief's second observable, counted here from the plant's own
+## signed speed with a CUSP_SPEED dead band (a hull rolling at 0.1 m/s either way is not changing gear). A three-point
+## turn is 2 cusps; a good fix moves cusps EARLIER and makes them fewer per manoeuvre, it does not remove them.
+const CUSP_SPEED := 0.3
+var gear_of := {}          # name -> last gear (+1 / -1)
+var cusps := {}            # name -> gear changes
+var reverse_ticks := 0     # unit-ticks rolling backward faster than CUSP_SPEED
 
 
 func _initialize() -> void:
@@ -124,6 +131,17 @@ func _next_leg() -> void:
 func _sample() -> void:
 	var elapsed := float(game_match.tick - leg_started_tick) / float(SimClock.TICK_RATE)
 	for tank in units:
+		var speed := tank.speed()
+		if absf(speed) < CUSP_SPEED:
+			continue
+		var gear := 1 if speed > 0.0 else -1
+		if gear < 0:
+			reverse_ticks += 1
+		var key := String(tank.name)
+		if gear_of.has(key) and int(gear_of[key]) != gear:
+			cusps[key] = int(cusps.get(key, 0)) + 1
+		gear_of[key] = gear
+	for tank in units:
 		var key := String(tank.name)
 		if leg_done.has(key):
 			continue
@@ -182,7 +200,9 @@ func _report() -> void:
 	var mixed_ok := squad_kind != "mixed" or int(report["contact_unit_ticks"]) == 0
 	var out := {"arena": String(Arena.active.get("name", "?")), "squad": squad_kind, "units": units.size(),
 			"legs": leg_results.size(), "arrived_every_leg": arrived_all, "wall_contacts": report,
-			"route_arms": Movement.route_arms(), "off": Array(Movement._off),
+			"route_arms": Movement.route_arms(), "off": Array(Movement._off), "seed": int(_flag("seed", "1")),
+			"cusps": cusps.values().reduce(func(a: int, b: int) -> int: return a + b, 0), "cusps_by_unit": cusps,
+			"reverse_unit_ticks": reverse_ticks,
 			"episodes": episodes.slice(0, 40), "pass": arrived_all and mixed_ok and int(report["observed_unit_ticks"]) > 0}
 	print("NAV_DRIVE %s" % JSON.stringify(out))
 	quit(0)

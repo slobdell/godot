@@ -160,6 +160,51 @@ Nothing blocks you. Put the before/after clips from R1.9 where the orchestrator 
 
 ## Status
 
-_(the worker keeps this current: plan, what's done with measurements, decisions and their reasons, questions for the
-lead, requests to other streams, known issues, what to playtest, next steps, merge notes, and the commit hash whose
-own check went green)_
+_Worker: nav, round 11. Updated 2026-09-24 (small hours). Every number names its commit and machine._
+
+### Plan (the brief's order; R2 first because R1 cannot be measured under it)
+
+| # | item | state |
+|---|---|---|
+| R2.1 | failing test on the issued goal | **done** — `tests/nav/test_nav_grounded_goals.gd`, failed on `a04d75c0` (laptop) |
+| R2.2 | squad.gd:272 hull-aware; ground non-player sources; de-collide | **done** in `5ad73612` |
+| R2.3 | repair an unreachable goal once, else report | **done** in `5ad73612` (`Movement._repair`, `--nav-off=repair`) |
+| R2.4 | before/after on `nav-orders` and `nav-terminus-drive` | running (builder0) |
+| R1.5 | instrument the reactive reverses before the fix | built (counters below); before-arm = the same tree with `--nav-off=kturn` (paired) plus `a04d75c0` |
+| R1.6 | circle test at plan time + a reverse leg validated against the mesh | built (`Movement._planned_reverse`); scenario test passes (laptop) |
+| R1.7 | inside the driver, not the planner | holding to it; Pathing untouched |
+| R1.8 | the plant's creep at a wall | after R1.6's numbers |
+| R1.9 | before/after clip from his camera | after R1.6's numbers |
+
+### Decisions (one line each)
+
+- **Which sources are grounded:** every `Orders` source except `element`. An element's plan is already grounded with the
+  hull's envelope (`Element.ground`) and issues one crew per order, so grounding twice buys nothing. Scripts, the agent
+  bridge and sourceless moves were raw geometry only to keep two round-10 test numbers; a goal inside a block is wrong
+  whoever asked for it.
+- **The test's oracle is the layout's colliders** (`Arena.active["obstacles"]` + `ArenaKit.distance_to_footprint`), not
+  the navmesh the fix grounds on, so it cannot agree with a wrong answer. Bar: every goal clears its hull's envelope
+  (half diagonal) − 1.5 m; no two goals of one order closer than side by side (half widths summed).
+- **The pinch case:** the first fixed run still left an IFV 2.4 m from a rotated wreck (envelope 4.0 m) — a 5 m gap
+  between a wreck and a block face where the 8 clearance pushes cancel. `standable_for` now checks whether the hull
+  FITS where the pushes settled and, if not, searches two rings (of the envelope) for the nearest point where it does;
+  a street narrower than the envelope everywhere still gets the centred point (the only answer before).
+- **Repair bound:** one try per goal (a goal moving > `NEW_GOAL_JUMP` is a new goal); refused beyond 12 m
+  (`REPAIR_MAX_M`) or when no route reaches the repaired point, and then `blocked`/`no_path` exactly as before. The
+  readout carries `repaired_m`. The lesson-76 test now aims at a Terminus block CENTRE (20 m deep), since a small
+  prop's inside is now correctly repaired.
+- **R1 lives in the driver.** A wheeled hull on a routed forward move with its steering point > 45° off the nose sweeps
+  the full-lock forward arc (the plant's own yaw law) against the navmesh with its leading end; if it would hit, it
+  searches back along the reverse arc (same lock, so the hull keeps swinging toward the point) with its TRAILING end —
+  the first reverse in the game validated against what is behind — for the shortest back-up after which the forward
+  arc is clear, and drives it as a leg with its own completion (distance, rear contact, or timeout). None found:
+  counted (`kturn_none`) and the reactive rules stand.
+
+### Known issues / notes for merge
+
+- `game/ai/squad.gd` (the one call site) and `game/control/orders.gd` (the `ground_goal` call site and `_resolve_group`'s
+  grounding loop) are carve-out edits for the orchestrator to review. The obsolete `_slot_ground`/`_has_for_unit`
+  compatibility shim in `Orders.ground_goal` was removed (for_unit landed in round 10).
+- Order COMPLETION is judged against the order's own goal (`tank_brain.gd`, `order_executor.gd`, not mine), so a
+  Movement repair of an ORDER goal would not complete the order. After R2 every order goal is already hull-grounded,
+  so the repair in practice reaches brain-made goals (cover and fire spots) and island cases; its counters say how often.

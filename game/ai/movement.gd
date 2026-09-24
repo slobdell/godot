@@ -270,10 +270,14 @@ static func route_arms() -> Dictionary:
 			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
-			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused}
+			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
+			"unstick_fires": unstick_fires, "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks}
 
 
 static func reset_route_arms() -> void:
+	unstick_fires = 0
+	circle_reverses = 0
+	circle_reverse_ticks = 0
 	goal_repairs = 0
 	goal_repairs_refused = 0
 	corners_inflated = 0
@@ -341,6 +345,12 @@ var _progress_best := INF
 var _goal := Vector3.INF
 ## Round 7: does the current route end at the goal? (False = the navmesh can only get this unit near it.)
 var _reachable := true
+## Round 11 (R1's before-arm, measurement only): reverses by what started them. `unstick_fires` (the blind stall rule),
+## `press_escapes` (below), `circle_reverses` / `circle_reverse_ticks` (Steering's in-circle back-up on a forward order).
+static var unstick_fires := 0
+static var circle_reverses := 0
+static var circle_reverse_ticks := 0
+var _circling := false
 ## Round 11 (R2 item 3): the goal a repair was tried for (INF = none yet), and what it was repaired to (INF = refused).
 var _repair_for := Vector3.INF
 var _repair_to := Vector3.INF
@@ -407,7 +417,8 @@ func note_decision(cmd: TankCommand, order: Dictionary) -> void:
 	if phase == "yielding" and yield_to != "":
 		driver = "yield"
 	elif _unstick_left > 0.0:
-		driver = "unstick"
+		# Round 11 (R1's before-arm): the pressed-wall escape shares unstick's timer; split them, both are reactive.
+		driver = "press" if _escape_gear != 0.0 else "unstick"
 	elif driver == "move_to":
 		driver = "direct" if bool(order.get("direct", false)) else "route"
 	driver_ticks[driver] = int(driver_ticks.get(driver, 0)) + ctl._step
@@ -866,6 +877,14 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		drive_vector = Steering.drive_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 	cmd.throttle = drive_vector.x * speed_factor * pace
 	cmd.turn = drive_vector.y
+	# Round 11 (R1's before-arm): Steering's circle test backing a wheeled hull on a FORWARD order - the three-point
+	# turn discovered one tick at a time. Episodes (a run of reversing ticks) and ticks; measurement only.
+	var circling: bool = radius > 0.0 and not order.get("reverse", false) and drive_vector.x < 0.0
+	if circling:
+		circle_reverse_ticks += ctl._step
+		if not _circling:
+			circle_reverses += 1
+	_circling = circling
 	_nose_at_end = _nose_stop(cmd, goal, direct)
 	if _nose_at_end:
 		drive_vector = Vector2.ZERO
@@ -2213,6 +2232,7 @@ func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 					UNSTICK_CLEARANCE)
 			if not _unstick_pivot or wheel_radius() <= 0.0:
 				_unstick_left = UNSTICK_SECONDS
+				unstick_fires += 1
 			else:
 				# A car can't pivot: with a friend right behind it, ask that friend to make room, and back off next time.
 				_ask_behind(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing)
