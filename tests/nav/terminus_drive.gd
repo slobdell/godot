@@ -30,6 +30,8 @@ const LEGS := [
 ]
 ## A crew counts as arrived when its order completed within this of its own slot goal (order_probe's FAR_M).
 const ARRIVED_M := 7.0
+## Seeds > 1: spawn jitter (metres) on top of a random starting heading.
+const SPAWN_JITTER_M := 2.0
 
 var game_match: Match
 var orders: Orders
@@ -74,7 +76,11 @@ func _run() -> void:
 	root.add_child(arena)
 	game_match = MATCH.instantiate()
 	root.add_child(game_match)
-	game_match.seed_spawns(int(_flag("seed", "1")), 0.0)
+	# Round 11: seed 1 is the canonical drive (no jitter, spawn headings). The drive is deterministic, so a different
+	# seed with no jitter is the SAME run (measured: seeds 1-3 byte-identical on a04d75c0); seeds > 1 add SPAWN_JITTER_M
+	# of spawn jitter and a seeded random starting heading per hull (below), which is what makes them samples.
+	var seed := int(_flag("seed", "1"))
+	game_match.seed_spawns(seed, 0.0 if seed == 1 else SPAWN_JITTER_M)
 	game_match.set_meta("player_team", Match.Team.GREEN)
 	await physics_frame
 	for frame in 300:
@@ -98,8 +104,13 @@ func _run() -> void:
 	executor.game_match = game_match
 	executor.orders = orders
 	root.add_child(executor)
+	var headings := RandomNumberGenerator.new()
+	headings.seed = seed * 7717
 	for tank: Tank in game_match.tanks.get_children():
 		units.append(tank)
+		if seed != 1:
+			tank.rotation.y = headings.randf_range(-PI, PI)
+			tank.reset_physics_interpolation()
 	for frame in SimClock.TICK_RATE:
 		await physics_frame
 	WallContact.reset()
