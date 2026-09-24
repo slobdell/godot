@@ -2431,6 +2431,10 @@ const KTURN_MARGIN_M := 0.4
 const KTURN_THROTTLE := 0.7
 ## How often a hull not in a leg asks (ticks), and how long a leg may take per metre before it is abandoned.
 const KTURN_CHECK_TICKS := 6
+## After a leg is cut short, or no leg was found, wait this long before searching again (1 s).
+const KTURN_RETRY_TICKS := SimClock.TICK_RATE
+## Plan a reverse only for a wall the forward arc meets within this much travel (metres).
+const KTURN_HIT_WITHIN_M := 5.0
 const KTURN_SECONDS_PER_M := 1.5
 static var kturns := 0            # legs planned and driven
 static var kturn_none := 0        # forward arc blocked, no clear reverse found: left to the reactive rules
@@ -2459,12 +2463,18 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	if _kturn_left_m > 0.0:
 		var backed := _flat_distance(tank.global_position, _kturn_from)
 		_kturn_timeout -= delta
-		var rear_hit := contact.touching and float(contact.decided.get("throttle", 0.0)) < 0.0
+		# A REAR hit ends the leg: the contact point behind the centre, while backing. The nose still touching the wall
+		# the leg is backing away from is exactly what the leg is for, and ending on it made every such leg abort on its
+		# first tick (the first laptop run: 138 of 155 rig legs).
+		var rear_hit := contact.touching and float(contact.decided.get("throttle", 0.0)) < 0.0 \
+				and Vector2(contact.point.x - tank.global_position.x, contact.point.z - tank.global_position.z).dot(
+				Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)) < 0.0
 		if backed >= _kturn_left_m or _kturn_timeout <= 0.0 or rear_hit:
+			_kturn_check = 0
 			if backed < _kturn_left_m:
 				kturn_aborted += 1
+				_kturn_check = KTURN_RETRY_TICKS
 			_kturn_left_m = 0.0
-			_kturn_check = 0
 			_repath_left = 0.0
 			return false
 		cmd.throttle = -KTURN_THROTTLE
@@ -2488,7 +2498,9 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	var turn := -1.0 if error >= 0.0 else 1.0
 	var map := tank.get_world_3d().navigation_map
 	var frame := _kturn_frame(tank)
-	if _arc_clear(map, frame, here, forward, turn, waypoint):
+	# Only a wall the arc meets SOON: a hit further along is a corner the route bends round, which the carrot and the
+	# steering's own easing take wider than full lock does; a reverse in the middle of a street corner is the wrong move.
+	if _arc_hit(map, frame, here, forward, turn, waypoint) > KTURN_HIT_WITHIN_M:
 		return false
 	var at := here
 	var heading := forward
@@ -2500,7 +2512,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		backed += KTURN_BACK_STEP_M
 		if not _end_clear(map, frame, at, heading, -1.0):
 			break  # the tail would hit what is behind: no further back
-		if _arc_clear(map, frame, at, heading, turn, waypoint):
+		if _arc_hit(map, frame, at, heading, turn, waypoint) == INF:
 			_kturn_left_m = minf(backed + KTURN_BACK_EXTRA_M, KTURN_BACK_MAX_M)
 			_kturn_turn = turn
 			_kturn_from = here
@@ -2511,6 +2523,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			kturn_ticks += ctl._step
 			return true
 	kturn_none += 1
+	_kturn_check = KTURN_RETRY_TICKS  # nothing within reach: do not search again every few ticks
 	return false
 
 
@@ -2520,21 +2533,23 @@ func _kturn_frame(tank: Tank) -> Array:
 	return [float(size[0]) * 0.5, float(size[2]) * 0.5, bake_radius(tank) - KTURN_MARGIN_M]
 
 
-## Sweep the forward full-lock arc from (at, heading) until the hull points at `target`: is every leading-end point clear?
-func _arc_clear(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float, target: Vector3) -> bool:
+## Sweep the forward full-lock arc from (at, heading) until the hull points at `target`: how far it travels before a
+## leading-end point is no longer clear (INF = the whole arc is clear, or it never lines up: the point is inside the
+## turning circle, which is Steering's own circle test's case, not this rule's).
+func _arc_hit(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float, target: Vector3) -> float:
 	var radius := wheel_radius()
 	var travelled := 0.0
 	var limit := TAU * radius * KTURN_SWEEP_TURNS
 	while travelled < limit:
 		var to := Vector3(target.x - at.x, 0.0, target.z - at.z)
 		if absf(heading.signed_angle_to(to, Vector3.UP)) <= deg_to_rad(KTURN_ALIGNED_DEG):
-			return true
+			return INF
 		heading = TankMotion.turn_heading(heading, KTURN_STEP_M * turn / radius)
 		at += heading * KTURN_STEP_M
 		travelled += KTURN_STEP_M
 		if not _end_clear(map, frame, at, heading, 1.0):
-			return false
-	return true  # never lines up (the point is inside the circle): not this rule's case
+			return travelled
+	return INF
 
 
 ## Are the hull's corners and the middle of its `end` (+1 nose, -1 tail), and the sides' leading half, clear at this pose?
