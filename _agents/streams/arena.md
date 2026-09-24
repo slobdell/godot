@@ -210,6 +210,18 @@ _Updated 2026-09-24 by the arena worker. Baseline: `a04d75c0` green on builder0 
 - **nav fixed the Crossing deadlock** on `stream/nav` `e62383ad` (its message: the chord fallback returned the corner
   under the hull; now the first corner ≥ 1.5 m away). Until that merges, the Crossing's mixed drive fails on it.
 
+- **His review page: https://claude.ai/artifact/DUa5fN72G9YDTjLYRFkuj6** (private to the lead's account; version 1
+  built from `f30dbf0d`). What changed for him, the Locks (overview, the lock and swing bridge at his pose, a mixed
+  squad crossing over and back, the numbers), the Crossing and the Sumps with squads crossing, the dug-Pit before/after,
+  the Terminus tower before/after at his pose, and four questions. Frames: builder0, 1920×1080; the tower pair was
+  rendered on the laptop with round 10's `arena_dressing.gd` swapped in for the "before", then restored.
+- **Rendered drive runs on builder0** (`f30dbf0d`, seed 1, mixed): Sumps 6/6 + 6/6, dug Pit 6/6 + 6/6, Locks 6/6 + 5/6
+  (an IFV 6.4 m from its slot, `blocked_by` a squadmate that parked on it: squad crowding, not terrain), Crossing
+  6/6 + 3/6 (the IFV and the artillery `driving` 140 m short on the far bank; looks like nav's follower bug at a
+  second spot, unconfirmed, and pre-dates nav's fix). Zero ticks in any hole, on every map.
+- **The water reads black** at his pose (round 10's `water.gdshader`, `water_deep` ≈ 0.01, theme layer, not mine):
+  on his page as a question, not changed.
+
 ### Requests to other streams
 - **nav (via orchestrator; the SendMessage to `godot-83` failed twice, so this is written here first):** a
   path-follower deadlock on the Crossing's west bridge. Repro (laptop, `09dd33c7`, seed 1):
@@ -226,4 +238,6 @@ _Updated 2026-09-24 by the arena worker. Baseline: `a04d75c0` green on builder0 
 
 ### Questions for the lead
 - Crossing, Sumps, **the Locks** (and Terminus) are in the rotation without your verdict; each comes out in one line if you say no.
+- The Locks' centre sees 45% of the field (open water by design): the kill zone you want, or more cover on the quays?
+- Water renders as a dark channel: should it look wetter? (theme layer)
 - The Pit, dug (four pits at the ring's corners): keep it as the Pit, or leave the Pit as you kept it?
