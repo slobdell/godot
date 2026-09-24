@@ -200,6 +200,20 @@ _Worker: nav, round 11. Updated 2026-09-24 (small hours). Every number names its
   arc is clear, and drives it as a leg with its own completion (distance, rear contact, or timeout). None found:
   counted (`kturn_none`) and the reactive rules stand.
 
+### R1 pre-registration (written 2026-09-24 before any drive-test result for either arm)
+
+Workload: `make nav-terminus-drive DRIVE_SEEDS="1 2 3"` (mixed + rigs squads, 4 legs each, seed 1 canonical, seeds
+2-3 with 2 m jitter and random starting headings), builder0, arms `--nav-off=kturn` (control) vs default (planned
+reverse) on the SAME commit. Expected, per arm total over 6 runs:
+1. **contact ticks whose driver is `press`/`unstick` DOWN** (the number he is complaining about);
+2. **total wall-contact ticks DOWN**, and `steer`-caused contacts down most;
+3. **reverse-gear contact ticks NOT UP** (the leg is validated against what is behind; if this rises, the validation is
+   wrong);
+4. **cusps DOWN or flat** — reverses happen earlier and once, instead of bump-back-bump; if cusps rise sharply with
+   contacts flat, the planner is reversing for nothing;
+5. **arrivals not down**; `kturn_none` small beside `kturns` (else the search is too short).
+Accepting being wrong on any of them; each is reported as measured.
+
 ### Known issues / notes for merge
 
 - `game/ai/squad.gd` (the one call site) and `game/control/orders.gd` (the `ground_goal` call site and `_resolve_group`'s
