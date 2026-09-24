@@ -224,28 +224,58 @@ the only check that counts for proportions.
 
 ## Status
 
-_Updated 2026-09-24 (small hours) by the fleet worker. Numbers: laptop unless marked builder0; commit named._
+_Updated 2026-09-24 (afternoon) by the fleet worker. Numbers: laptop unless marked builder0; commit named._
 
-### Plan and where each item stands
+### Where it stands (read this first)
 
 | item | state | commit |
 |---|---|---|
-| T1 turrets buried in hulls | **done**, green | `03d3a839` + `8991e0c9` |
-| T2 stray barrels | **done** | `03d3a839` |
-| T5 nose check | **done** (syn_ifv turned round) | `03d3a839` |
-| T3 the Condemned bus/burner shape | **done, CP1** | `1c2e514f` |
-| T4 the Law tank/IFV re-derived | **done, CP1** (tank only; a lead question) | `1c2e514f` |
-| T6 the bus's own mesh | **waiting on the lead** (page built; no new spend needed) | -- |
+| T1 turrets buried in hulls | **done, merged** | `03d3a839` + `8991e0c9` |
+| T2 stray barrels | **done, merged** | `03d3a839` |
+| T5 nose check | **done, merged** (syn_ifv turned round) | `03d3a839` |
+| T3 + T4 = CP1 v2 | **done, merged** (main `9f867385`; baseline `01ab39b592cc9837` recorded on main `9ed7fccf`) | `2cc44030` |
+| War Rig "disconnected and floating" (live feedback) | **done, merged** (main `3f878009`) | `f222b7c8` |
+| War Rig simulated muzzle vs drawn gun | **round-12 candidate** (ruled not this round), in verification.md | `397de636` |
+| T6 the bus's own mesh | **waiting on the lead**: bus b built but van-shaped (1.85:1); D recommended; H and I on page 2 | `eb82692d` |
+| the burner as a fire engine | **waiting on the lead**: burner_r11_a/b/c on page 2 | `5426558d` |
 
-Baseline before any work: `a04d75c0`, builder0, `>> remote: make check exited 0`, 1686 passed, 0 failed.
+**Review page (all rounds): https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS** (version 5, db; read taps with
+`read_db` into a folder, then `make art-apply-decisions DIR=... URL=...`). Page 2 carries `q_r11_bus_fit` (D
+recommended: regenerate; A/B/C all deform or break a ruling), `bus_r11_h` (right length, look drifted), `bus_r11_i`
+(bus b's look, partly lengthened) and the three fire-engine burners. **Next after his taps:** a picked burner -> 3D
+(15 credits) -> its own hull art and box (a CP: the burner's box moves); a picked bus concept -> 3D -> `unit.tank.hull`
+(a CP if its proportions move the 9.70 x 2.90 x 4.08 box). **Credits this round:** concepts 9 each (burner x3,
+bus x6 of which 4 superseded), bus b 3D 15; see `assets/meshy_ledger.md`.
+**The rule the bus bought** is in `art_direction.md`: the reference decides proportion, the prompt decides detail.
 
-**Checks (all builder0, read from the wrapper's own line):**
-- `03d3a839`: exited 2, 1692 passed, **1 failed** (`test_tank_turret_mount`: syn mounts moved the muzzle forward) -> fixed.
-- **`8991e0c9` GREEN, merge here for T1/T2/T5:** `>> remote: make check exited 0`, 1693 passed, 0 failed, 18 targets,
-  sim-baseline `457b5e830708b439` UNMOVED.
-- **`1c2e514f` = CP1:** `>> remote: make check exited 2`, **1695 passed, 0 failed**, 17 of 18 targets; the one red is
-  `sim-baseline` = **`4294e30351180af1`** (expected `457b5e830708b439`): the pre-registered move (bus/burner heights,
-  law_tank's box). Nothing else moved; for the orchestrator to record twice (`make sim-baseline-adopt`).
+**The lead's answers on page 1** (https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS, recorded with
+`make art-apply-decisions`): Law 1.25x APPROVED; burner same-shape REJECTED ("I had no idea these were 2 separate unit
+... We will want to create a different unit type for the burner because it looks identical to the tank"); burner
+concepts all REJECTED ("To keep things ridiculous this should be based off of an actual fire engine"); bus_r10_b
+APPROVED, a and c rejected.
+
+**CP1 v2 = `2cc44030`** (builder0): `>> remote: make check exited 2`, 1695 passed, 0 failed, 17 of 18 targets; the one
+red is sim-baseline `01ab39b592cc9837` (intended; the orchestrator records it on main after nav's branch, which moves it
+too -- do not chase this hash). Contents: bus 4.76 -> 4.08 m; burner unchanged at 2.40 (exempt from the shared shape
+until its own mesh); `Units.FACTION_SCALE = {law: x1.25, roles [tank, ifv], approved ...}` read by
+`target_length_m`, `tools/roster_scale.py` and `tests/scale/roster_boxes.gd`: law_tank 3.36 x 3.79 x 7.30 (Centauro
+II 8.26 m x K x 1.25), law_ifv 3.44 x 4.11 x 6.26 (Cougar 7.08 x K x 1.25) -- the IFV comes out wider and taller than
+the tank (both are their meshes' proportions). Measured, not tuned: spawn grid (War Rig 14.0 m) and lane bar (widest,
+syn_artillery 4.07 m) unmoved; navmesh bake 2.0 m unchanged, the half-diagonal the Law needs grows (tank 3.03 -> 4.02,
+IFV 2.86 -> 3.57 m). A 7.30 m Law tank in the Terminus streets is NOT yet driven: the next map walk after the merges.
+
+**War Rig** (the lead: "the tank barrel and the turret ... disconnected and floating relative to the rigger"). The
+orchestrator's hypothesis (gun rides the tractor, not the trailer) is WRONG: `_cut_trailer` already moves the GunPivot
+onto the trailer. Measured causes: the generated gun stands on nothing (base y 1.12 vs tanker top < 1.00: +0.19 m at
+scale) and the cut box took a tail fitting the 180 rest yaw put on the cab. `GUN_CUTS` `drop` seats it (+0.01 m), the
+box ends at z +1.28. Float bound tightened 0.4 -> 0.1 m for non-hover units (it had passed the rig as "design").
+Reported, not changed: the SIMULATED pivot stays in the tractor frame, ~0.45 m sideways of the drawn gun at a 35 deg
+bend (a sim change; the orchestrator's call).
+
+**Page 2 (same URL, version 2), waiting on the lead:** `q_r11_bus_fit` -- bus b as built is ~1.85:1, so at 9.70 m it is
+A 5.24 m wide / B 5.37 m long / C stretched into today's box (RECOMMENDED: moves no box); burner_r11_a/b/c.
+Next after his taps: normalize bus b into `unit.tank.hull` per his fit answer (C = art only, no CP), then 3D the
+picked burner and give the burner its own hull.
 
 ### What was actually wrong (the survey's numbers checked, several corrected)
 
