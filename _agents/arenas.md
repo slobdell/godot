@@ -62,6 +62,37 @@
   The Locks went into the rotation first and reddened `announcer-check` (`f30dbf0d`); the rotation test here and the
   announcer's test agree on what a fixture is, which is what makes this order work.
 
+## Water reads black: next round's first art/terrain item (the lead, 2026-09-24: "make it wetter", next round)
+
+**What he sees.** At his pose (pitch 21°, FOV 35, 49 m back) the Crossing's river and the Locks' canal render as
+near-black channels with smears of floodlight: it reads as a trench, and next to the Sumps' pits (black shafts with a
+red glow) the two kinds of hole are told apart mostly by kerb colour. Frames at his pose:
+`_agents/streams/references/arena/water-reads-black-2026-09-24/` (crossing-bridge, locks-lock, locks-swing_bridge,
+locks-overview; builder0, `231c838d`).
+
+**Maps with water:** `crossing` (dealt), `locks` (dealt once its name is recorded), `terminus_canal` (a fixture).
+`sumps` and `pit` carry pits, which are not water and should stay dark.
+
+**Why it is black (read from `game/theme/arena_kit/terrain/water.gdshader`, round 10's):** the surface colour is
+`mix(water_deep, sky, fresnel * reflection)` plus one lamp streak. At his 21° camera the reflected ray points ~21° up,
+where Schlick gives fresnel ≈ 0.06 + 0.94·(1 − 0.36)^5 ≈ 0.16, and the modelled `sky` there is almost black (the neon
+band is only near the horizon: `exp(-6·r.y)` ≈ 0.12). So the water is ~84% `water_deep` = (0.004, 0.012, 0.018),
+effectively black, and the streak shows only from one lamp direction. That was deliberate: feel's round-10 review
+said the first, brighter look "reads as a starfield/nebula", so it went to "oily black".
+
+**What I think it needs** (arena's read, not a spec; his eye decides):
+- **Reflect what is actually around it at HIS angles**: the stands' crowd lights, the purple wall rims and the city
+  blocks' windows sit exactly where a 21° reflected ray lands, and they are what makes a canal read wet at night. A
+  cheap version is an environment band built from the venue's real layout (the wall's neon height and colours at
+  r.y 0.1–0.4) instead of the horizon-only band. A true planar reflection is the expensive version, to be measured.
+- **Lift the body colour** off black toward a dark teal, so the channel reads as a liquid under the reflection.
+- **Specular that moves**: the floodlight pools the floor already paints (`ArenaDressing.layout_lamps`) should glint
+  on a slow swell. That is the cue that says "wet", and it must not become the starfield again.
+- **A lap line at the rim**: a thin lighter band where water meets the kerb, which also separates water from pits
+  at a glance.
+- Judge it as a pair (`make remote T=terrain-shots`: each water map beside its dry twin at his pose), on HIS page.
+  Owner next round: whoever owns `game/theme/arena_kit/terrain/` (theme layer; round 10's terrain stream built it).
+
 ## The lead's direction (2026-09-17)
 
 > *"the maps are just too simple. We probably need a dedicated agent to formulate maps. I'm also not seeing the assets

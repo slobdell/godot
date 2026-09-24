@@ -75,7 +75,11 @@ def check_terrain(layout, clearance):
             sys.exit("%s: objective %s at %s has part of its %.0f m disc in the water" % (name, o["name"], o["position"], o["radius"]))
     # R4: every declared lane two widest hulls wide after the bake, corners cleared for the rig -- measured WITH the
     # water, rims and rails (terrain_measure; arena's `test_arena_lanes.gd` is the game-side assertion).
-    if not layout.get("fixture"):
+    # A map whose lanes are REPORTED rather than asserted (ArenaLanes.REPORT_ONLY, read the way arena_report reads it)
+    # keeps that status when it gains terrain: the Pit's 12 m gate lanes were short of the bar before a pit was dug
+    # (round 11), and digging corner pits did not make them a new map.
+    import arena_report
+    if not layout.get("fixture") and layout["name"] not in arena_report.lane_bar()["report_only"]:
         import terrain_measure
         for lane in terrain_measure.lanes_with_terrain(layout):
             bad = [c for c in lane["corners"] if not c["pass"]]
@@ -309,6 +313,11 @@ def terminus_canal(m):
 # along the water, and the middle of the map is not a view of the whole field (the first draft, with one lock house a
 # side, let the centre see 48%).
 #
+# **The canal stays OPEN: ruled by the orchestrator, 2026-09-24** (the lead did not answer the question and it
+# blocked shipping). The exposure IS the map's proposition -- the short way over is watched, the flanks are not --
+# and cover on the quays before he has played it would erase what makes it different from the Crossing. The centre
+# sees 45% (arena-report); the question goes back to him on the next page AFTER he has driven it, with that number.
+#
 # Authored on green's half (z > 0) and mirrored. The canal and the lock are centred on the origin, their own mirrors.
 LOCKS_CANAL = (0.0, 0.0, 300.0, 14.0)       # z -7..7, wall to wall
 LOCKS_LOCK = (0.0, 0.0, 16.0, 24.0)         # x -8..8, z -12..12: the lock gates, 16 m wide, 5 m onto each quay
@@ -364,34 +373,8 @@ def locks(m):
                              m.region("the west quay", "cover_cluster", -60, 30, 16)])
 
 
-# ---- The Pit, dug (round 11, arena A4 stretch): a PROPOSAL, a fixture beside the Pit he KEPT -----------------------
-#
-# *"I haven't seen any pits"*, and "The Pit" was a name, not a pit. This is the Pit exactly as he kept it -- not one
-# container moved -- with four sheer pits dug at the ring's CORNERS, outside the diagonal walls. Written as a FIXTURE so
-# it goes on his page beside the Pit and reaches no menu; if he says yes, it becomes the Pit (one line: move the
-# terrain onto `pit` and drop this).
-#
-# Why outside, not inside (the brief suggested inside): the ring's quadrants are 20-odd metres of pillars and wrecks,
-# and every pit that fits leaves a 2-5 m slot against the diagonal walls -- the wedge trap terrain-drive catches.
-# At the corners the pits make the gates the only ways in and turn the open ground between gates into causeways:
-# circling the ring means going round the drops or through the ring. The road between each wall and its pit is 20 m.
-PIT_DUG = (50.0, 52.0, 14.0, 14.0)   # x 43..57, z 45..59 and its mirror; the other two by (-x, z)
-
-
-def pit_dug(m):
-    x, z, w, d = PIT_DUG
-    terrain = mirrored_terrain([pit_area("the south-east pit", x, z, w, d), pit_area("the south-west pit", -x, z, w, d)])
-    m.write_v2("pit_dug", "The Pit (dug: a proposal)",
-               "FIXTURE, a proposal to the lead: the Pit he kept, every container where it was, with four sheer pits "
-               "dug at the ring's corners. The gates become the only ways in, and circling the ring means going round "
-               "the drops.",
-               m.pit, fixture=True, terrain=terrain, shape={"kind": "hexagon"}, half_size=140.0,
-               objectives=m.objective_pair("the west yard", -74.0, -50.0, 15.0))
-
-
 def author(m):
     crossing(m)
     pits(m)
     terminus_canal(m)
     locks(m)
-    pit_dug(m)

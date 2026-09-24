@@ -65,10 +65,11 @@ const DEFAULT_LAYOUT := "foundry"
 ## terrain stream built them — **crossing**: a river through a canal district with two bridges, each landing beside
 ## an objective; **sumps**: the only real pits in the game, a chain of them between causeways — exactly the bridges
 ## and pits he had asked for, twice. Neither was ever on this line, so neither ever reached him: *"I haven't seen any
-## bridges or pits that I've asked for"*. Neither has his verdict yet; each comes back out in one line if he says no.
-## **locks (round 11, arena A3) is built and NOT here yet, on purpose:** a new map needs the booth to be able to say
-## its name, which is 18 recordings (tools/announcer/test_arena_names.py), and new spoken text is behind the lead's
-## approval (lead gate 1). It is a fixture on his review page; his yes adds it here with the recordings.
+## bridges or pits that I've asked for"*. **The lead KEPT both (2026-09-24, on arena's round-11 review page)**: they are
+## verdict maps now, like yard and pit, and `test_random_deals_only_the_maps_the_lead_kept` lists them as kept.
+## **locks (round 11, arena A3): the lead said DEAL IT (2026-09-24) and approved recording "the Locks" for the 18
+## {arena} lines.** It joins this line in the SAME commit as its recordings, never before: a dealt map without them
+## reddens announcer-check (tools/announcer/test_arena_names.py), which is what happened at f30dbf0d.
 ## `test_every_built_map_is_dealt_cut_or_a_fixture` now fails the day a non-fixture map lands and is not listed here
 ## or in CUT, so a third instance cannot be silent.
 const ROTATION := ["yard", "pit", "terminus", "crossing", "sumps"]
