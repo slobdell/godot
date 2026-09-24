@@ -295,3 +295,103 @@ func test_the_cutaway_finds_the_arenas_buildings_and_hides_the_one_in_the_way() 
 		if found:
 			break
 	assert_true(found, "setup: some street on the Terminus has a building on the sight line at his pose")
+
+
+# ---- Round 11: the airship. *"if the camera and airship intersected, we push the camera up above the airship (that
+# way there's more likelihood of seeing the cool airship for an in-game effect)"* ------------------------------------
+
+## A hull-sized box around the point the camera asked for: 57 x 22 m, belly 7.4 m, deck 22.8 m (the cruise heights).
+func _hull_around(point: Vector3, yaw := 0.3) -> Dictionary:
+	return AirshipFlight.hull_box(Vector2(point.x, point.z), yaw, SyndicateAdAirship.ALTITUDE)
+
+
+func test_the_camera_is_lifted_over_the_airship_not_pulled_in() -> void:
+	var data := {"half_size": 140.0, "obstacles": []}
+	var at := Vector3(10.0, 0.0, 5.0)
+	var asked := RtsCamera.pose_at(at, 0.0, HIS_DISTANCE, HIS_PITCH).origin
+	var hull := _hull_around(asked)
+	assert_true(RtsCamera.hull_over(asked, [hull]) > 0.0, "setup: his camera (%.1f m up) is inside the hull" % asked.y)
+	var clear := RtsCamera.clear_pose(at, 0.0, HIS_DISTANCE, HIS_PITCH, data, [hull])
+	var got := RtsCamera.pose_at(at, 0.0, float(clear["distance"]), float(clear["pitch_deg"])).origin
+	assert_near(float(clear["distance"]), HIS_DISTANCE, 0.001, "the boom keeps its length -- up, never in")
+	assert_true(got.y >= float(hull["top"]) + RtsCamera.SOLID_CLEAR_M - 0.01,
+			"the camera ends above the deck (%.1f m over a %.1f m deck)" % [got.y, float(hull["top"])])
+	assert_true(got.y <= float(hull["top"]) + RtsCamera.SOLID_CLEAR_M + 1.5, "and no higher than that takes (%.1f m)" % got.y)
+	assert_eq(RtsCamera.hull_over(got, [hull]), -1.0, "so it is outside the hull")
+	# ...and the hull is now BELOW the camera, in front of it: that is the point of the lift.
+	var to_hull := (Vector3(asked.x, float(hull["top"]), asked.z) - got)
+	assert_true(to_hull.y < 0.0, "the deck is below the lifted camera, so the hull is in his frame")
+	assert_true(not bool(clear["hull_passing"]), "and it did not give up")
+
+
+func test_no_occluders_means_exactly_the_building_rule() -> void:
+	var data := _layout(TERMINUS)
+	for at: Vector3 in _street_points(data).slice(0, 60):
+		for step in 4:
+			var yaw := TAU * float(step) / 4.0
+			var old := RtsCamera.clear_pose(at, yaw, HIS_DISTANCE, HIS_PITCH, data)
+			var new := RtsCamera.clear_pose(at, yaw, HIS_DISTANCE, HIS_PITCH, data, [])
+			assert_true(is_equal_approx(float(old["pitch_deg"]), float(new["pitch_deg"]))
+					and is_equal_approx(float(old["distance"]), float(new["distance"])), "unchanged at %s yaw %d" % [at, step])
+
+
+func test_a_hull_no_tilt_can_clear_is_let_pass_rather_than_yanking_the_boom() -> void:
+	## "Lift, don't shorten": a camera jerked in during a fight is worse than a moment of hull, and the hull moves on.
+	var data := {"half_size": 140.0, "obstacles": []}
+	var at := Vector3.ZERO
+	var asked := RtsCamera.pose_at(at, 0.0, HIS_DISTANCE, HIS_PITCH).origin
+	var tower := _hull_around(asked)
+	tower["top"] = 80.0  # taller than any tilt of a 49 m boom can clear
+	var clear := RtsCamera.clear_pose(at, 0.0, HIS_DISTANCE, HIS_PITCH, data, [tower])
+	assert_near(float(clear["distance"]), HIS_DISTANCE, 0.001, "the boom is not pulled in for a hull")
+	assert_true(bool(clear["hull_passing"]), "it says it let the hull pass")
+
+
+func test_a_passing_airship_lifts_the_camera_once_and_does_not_pump() -> void:
+	## It MOVES: a hull sliding through the frame must raise the camera once and let it down once, not make it bob.
+	## Fly the real flight on the yard for three minutes past a camera parked on its orbit, at 60 frames a second
+	## through the same damping the live camera uses, and count how often the lift changes direction.
+	var layout: Dictionary = Arena.load_layout("yard")["layout"]
+	var flight := AirshipFlight.new(layout)
+	# The camera sits 45.75 m south of its focus at yaw PI; park it on the orbit (radius 62 round the middle).
+	var focus := Vector3(0.0, 0.0, -AirshipPilot.ORBIT_RADIUS + SyndicateAdAirship.camera_run())
+	var yaw := PI
+	var lift := 0.0
+	var held := 0.0
+	var direction := 0
+	var reversals := 0
+	var episodes := 0
+	var inside := 0
+	var frames := 0
+	var delta := 1.0 / 60.0
+	for tick in int(SimClock.TICK_RATE * 180.0):
+		flight.step()
+		var box := AirshipFlight.hull_box(flight.pilot.position, flight.pilot.heading,
+				flight.altitude + float(SyndicateAdAirship.float_offsets(float(tick) / SimClock.TICK_RATE)["rise"]))
+		for frame in 2:
+			frames += 1
+			var base := RtsCamera.clear_pose(focus, yaw, HIS_DISTANCE, HIS_PITCH, layout)
+			var over := RtsCamera.clear_pose(focus, yaw, HIS_DISTANCE, HIS_PITCH, layout, [box], RtsCamera.HULL_LEAD_M)
+			var wanted := maxf(0.0, float(over["pitch_deg"]) - float(base["pitch_deg"]))
+			var eased := RtsCamera.ease_hull_lift(lift, wanted, held, delta)
+			var moved := float(eased[0]) - lift
+			lift = float(eased[0])
+			held = float(eased[1])
+			if absf(moved) > 0.002:
+				var now := 1 if moved > 0.0 else -1
+				if direction == 0 and now > 0:
+					episodes += 1
+				elif direction != 0 and now != direction:
+					reversals += 1
+					if now > 0:
+						episodes += 1
+				direction = now
+			elif lift < 0.01:
+				direction = 0
+			var shown := RtsCamera.clear_pose(focus, yaw, HIS_DISTANCE, minf(HIS_PITCH + lift, RtsCamera.MAX_PITCH_DEG), layout)
+			if RtsCamera.hull_over(RtsCamera.pose_at(focus, yaw, float(shown["distance"]), float(shown["pitch_deg"])).origin, [box]) > 0.0:
+				inside += 1
+	assert_true(episodes >= 1, "setup: the airship passed through his camera at least once in three minutes (%d)" % episodes)
+	# One rise and one fall per pass is a reversal of one; anything more is the camera bobbing.
+	assert_true(reversals <= episodes * 2, "the lift does not pump: %d direction changes over %d passes" % [reversals, episodes])
+	assert_true(inside <= frames / 200, "and the camera is almost never inside the hull (%d of %d frames)" % [inside, frames])

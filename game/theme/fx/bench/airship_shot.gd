@@ -12,7 +12,14 @@ extends Node
 ## It is a LOOK tool, not a visibility claim: it proves the art, the screens, the scale and the attitude, and says
 ## nothing about how often he sees it. `SyndicateAdAirship.seen_fraction` answers that one, in closed form.
 ##
-## Flags: --airship-shot=<abs dir>  --airship-shot-warmup=S (6)  --airship-shot-ticks=a,b,c
+## Round 11 (airship stream): every frame is posed through `RtsCamera.clear_pose` WITH the airship as an occluder,
+## exactly as the live camera is, so a frame shows the real building-lift and hull-lift rules rather than a pose the
+## game would never hold. `--airship-shot-sequence` shoots the two things the lead asked about, found by flying ahead
+## rather than by guessing ticks: the hull CLIMBING OVER a building it used to fly through (a fixed camera, frames
+## through the approach), and his camera MEETING the hull (the same moment twice: where the camera used to be, inside
+## the hull, and where the lift puts it, above the deck).
+##
+## Flags: --airship-shot=<abs dir>  --airship-shot-warmup=S (6)  --airship-shot-ticks=a,b,c  --airship-shot-sequence
 
 const PITCH_DEG := 21.0
 const FOV_DEG := 35.0
@@ -28,7 +35,9 @@ var warmup := 6.0
 var ticks: Array[int] = [0, 900, 1800]
 ## Exact poses from `--airship-shot-pose`; when any are given they REPLACE the derived broadside framing.
 var poses: Array[Dictionary] = []
+var sequence := false
 var _camera: Camera3D
+var _ship: SyndicateAdAirship
 
 
 static func wanted() -> bool:
@@ -48,6 +57,8 @@ func _ready() -> void:
 			ticks.clear()
 			for piece in arg.trim_prefix("--airship-shot-ticks=").split(","):
 				ticks.append(int(piece))
+		elif arg == "--airship-shot-sequence":
+			sequence = true
 		elif arg.begins_with("--airship-shot-pose="):
 			# An EXACT pose: x,z,yaw_deg,tick. Use it to re-shoot a sample `make blimp-look` measured, so the picture
 			# and the number come from the same place instead of from two different framings.
@@ -77,10 +88,17 @@ func _run() -> void:
 	_camera.current = true
 	ship.set_process(false)
 	get_tree().paused = true
+	_ship = ship
 	var written := 0
+	if sequence:
+		written += await _shoot_sequence()
+		get_tree().paused = false
+		print("AIRSHIP_SHOT_DONE files=%d in %s" % [written, out_dir])
+		get_tree().quit()
+		return
 	for pose: Dictionary in poses:
 		ship.advance_to(int(pose["tick"]))
-		_camera.global_transform = RtsCamera.pose_at(pose["focus"], float(pose["yaw"]), DISTANCE_M, PITCH_DEG)
+		_camera.global_transform = _clear(pose["focus"], float(pose["yaw"]), DISTANCE_M)
 		_camera.current = true
 		for i in 3:
 			await get_tree().process_frame
@@ -98,7 +116,7 @@ func _run() -> void:
 		var heading := hull.basis.get_euler().y
 		var yaw := heading + PI / 2.0
 		for shot: Array in [["", DISTANCE_M], ["_wide", ESTABLISH_M]]:
-			_camera.global_transform = RtsCamera.pose_at(focus, yaw, float(shot[1]), PITCH_DEG)
+			_camera.global_transform = _clear(focus, yaw, float(shot[1]))
 			_camera.current = true
 			for i in 3:
 				await get_tree().process_frame
@@ -113,3 +131,73 @@ func _run() -> void:
 	get_tree().paused = false
 	print("AIRSHIP_SHOT_DONE files=%d in %s" % [written, out_dir])
 	get_tree().quit()
+
+
+## His pose, as the live camera would hold it: lifted over any building, and over the airship.
+func _clear(focus: Vector3, yaw: float, distance: float) -> Transform3D:
+	var clear := RtsCamera.clear_pose(focus, yaw, distance, PITCH_DEG, Arena.active, [_ship.camera_occluder()])
+	return RtsCamera.pose_at(focus, yaw, float(clear["distance"]), float(clear["pitch_deg"]))
+
+
+func _save(file: String, transform: Transform3D, note: String) -> void:
+	_camera.global_transform = transform
+	_camera.current = true
+	for i in 3:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(out_dir.path_join(file))
+	print("AIRSHIP_SHOT_FRAME %s tick=%d hull=%v alt=%.1f camera=%v %s" % [file, _ship._stepped, _ship.global_position,
+			_ship.hull_centre_y(), transform.origin, note])
+
+
+## The two moments, found by flying ahead (the pilot is deterministic, and the match is paused, so the fight's centre
+## is fixed at wherever the warm-up left it).
+func _shoot_sequence() -> int:
+	var written := 0
+	var horizon := int(SimClock.TICK_RATE * 300.0)
+	# 1. A climb: the first tick the flight WANTS height, then frames every 3 s from a camera parked at his pose,
+	#    square onto the hull's flank where the climb began, until it has crossed and come back down.
+	var start := -1
+	for tick in range(0, horizon, 6):
+		_ship.advance_to(tick)
+		if _ship.flight.wanted_altitude > SyndicateAdAirship.ALTITUDE + 1.0 and _ship.hull_centre_y() < SyndicateAdAirship.ALTITUDE + 0.5:
+			start = tick
+			break
+	if start >= 0:
+		_ship.advance_to(start)
+		var hull := _ship.global_transform
+		# Look along the direction of travel from off its flank, far enough back to see the building ahead of it.
+		var ahead := Vector3(hull.origin.x, 0.0, hull.origin.z) + (-hull.basis.z.normalized()) * 30.0
+		var yaw := hull.basis.get_euler().y + PI / 2.0
+		for step in 9:
+			_ship.advance_to(start + step * int(SimClock.TICK_RATE * 3.0))
+			await _save("climb_%02d_t%04d.png" % [step, _ship._stepped], _clear(Vector3(ahead.x, 0.0, ahead.z), yaw, 90.0),
+					"(climb: fixed camera, 90 m boom so the building is in frame)")
+			written += 1
+		print("AIRSHIP_SHOT_CLIMB start_tick=%d" % start)
+	else:
+		print("AIRSHIP_SHOT_CLIMB none in %d ticks" % horizon)
+	# 2. His camera, on the fight, at his own pose, from eight sides: the first moment the hull is where the camera is.
+	var focus := Vector3(_ship.flight.action.x, 0.0, _ship.flight.action.y)
+	for tick in range(start + 1 if start >= 0 else 0, horizon, 3):
+		_ship.advance_to(tick)
+		var box := _ship.camera_occluder()
+		for side in 8:
+			var yaw := TAU * side / 8.0
+			var building := RtsCamera.clear_pose(focus, yaw, DISTANCE_M, PITCH_DEG)
+			var raw := RtsCamera.pose_at(focus, yaw, float(building["distance"]), float(building["pitch_deg"]))
+			if RtsCamera.hull_over(raw.origin, [box]) < 0.0:
+				continue
+			# Shoot the approach from 2 s before, the moment itself (as it was, and as the lift has it), and after.
+			for offset: int in [-60, 0, 30, 60]:
+				_ship.advance_to(tick + offset)
+				var lifted := _clear(focus, yaw, DISTANCE_M)
+				if offset == 0:
+					await _save("meet_%+03d_inside_t%04d.png" % [offset, tick], raw, "(his camera WITHOUT the lift: inside the hull)")
+					written += 1
+				await _save("meet_%+03d_lifted_t%04d.png" % [offset, tick + offset], lifted, "(with the lift)")
+				written += 1
+			print("AIRSHIP_SHOT_MEET tick=%d yaw=%.0f" % [tick, rad_to_deg(yaw)])
+			return written
+	print("AIRSHIP_SHOT_MEET none in %d ticks" % horizon)
+	return written

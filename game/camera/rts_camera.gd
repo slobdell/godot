@@ -299,6 +299,9 @@ func _process(delta: float) -> void:
 		_shown_zoom = lerpf(_shown_zoom, zoom, weight)
 	_shown_yaw = lerp_angle(_shown_yaw, yaw, weight)
 	_shown_pitch = lerpf(_shown_pitch, pitch, weight)
+	var eased := RtsCamera.ease_hull_lift(hull_lift_deg, _hull_wanted, _hull_held, delta)
+	hull_lift_deg = float(eased[0])
+	_hull_held = float(eased[1])
 	_apply()
 
 
@@ -306,6 +309,22 @@ func _process(delta: float) -> void:
 ## readout shows it, because this is the second place the camera overrides the player's tilt and the first one is
 ## flagged to him too.
 var lifted_deg := 0.0
+## Round 11: the damped lift over the airship (degrees on top of the building rule), what it wants this frame, and how
+## long it has wanted less (see `ease_hull_lift`).
+var hull_lift_deg := 0.0
+var _hull_wanted := 0.0
+var _hull_held := 0.0
+
+
+## The moving solids in this camera's world this frame: every `camera_occluders` node's box (the airship).
+func _occluders() -> Array:
+	var boxes: Array = []
+	if not is_inside_tree():
+		return boxes
+	for node in get_tree().get_nodes_in_group(OCCLUDER_GROUP):
+		if node.has_method("camera_occluder"):
+			boxes.append(node.call("camera_occluder"))
+	return boxes
 
 
 func _apply() -> void:
@@ -316,7 +335,17 @@ func _apply() -> void:
 		# from whatever the solid test leaves - otherwise a camera pulled in by a building would also un-tilt itself.
 		var tilt := RtsCamera.tilt_at(_shown_pitch, distance)
 		var clear := RtsCamera.clear_pose(_shown_focus, _shown_yaw, distance, tilt)
-		lifted_deg = float(clear["lifted_deg"])
+		# The airship: what lifting over it would take is measured from the pose WITHOUT the lift already applied, so
+		# the camera rising out of the hull's box cannot talk itself back down (no pump); the lift itself is damped.
+		var occluders := _occluders()
+		_hull_wanted = 0.0
+		if not occluders.is_empty():
+			var over := RtsCamera.clear_pose(_shown_focus, _shown_yaw, distance, tilt, Arena.active, occluders, HULL_LEAD_M)
+			_hull_wanted = maxf(0.0, float(over["pitch_deg"]) - float(clear["pitch_deg"]))
+		if hull_lift_deg > 0.01:
+			clear = RtsCamera.clear_pose(_shown_focus, _shown_yaw, float(clear["distance"]),
+					minf(float(clear["pitch_deg"]) + hull_lift_deg, MAX_PITCH_DEG))
+		lifted_deg = float(clear["pitch_deg"]) - tilt
 		camera.global_transform = RtsCamera.pose_at(_shown_focus, _shown_yaw, float(clear["distance"]), float(clear["pitch_deg"]))
 		camera.near = RtsCamera.cutaway_near(_shown_focus, _shown_yaw, float(clear["distance"]), float(clear["pitch_deg"]),
 				RtsCamera.perimeter_half())
@@ -583,28 +612,92 @@ static func segment_hits_box(a: Vector3, b: Vector3, centre: Vector3, half: Vect
 	return near <= far
 
 
-## The pose to actually use: `{"distance", "pitch_deg", "lifted_deg"}`. Equal to what was asked for whenever the
-## camera is in the open, which is every arena without a cityscape and most of the Terminus. Pure, for tests.
+# ---- Round 11: the camera is lifted OVER the airship ---------------------------------------------------------
+#
+# The lead: *"the camera can end up inside the airship - similar to what we did with buildings, it would be ideal if
+# the camera and airship intersected, we push the camera up above the airship (that way there's more likelihood of
+# seeing the cool airship for an in-game effect)."* Not "stop the camera clipping the hull" but **use the collision as
+# an excuse to show it off**: up and over, so the hull comes into frame below the camera.
+#
+# The hull is a MOVING solid, so it cannot live in `Arena.active["obstacles"]`, and the rule above must stay a pure
+# function over data (contract C11.2: that purity is why it has tests at all). So it is a PARAMETER: `occluders`, a
+# list of boxes `{centre: Vector2, half: Vector2 (x across, z along), yaw, bottom, top}`, which the live camera gathers
+# each frame from the `camera_occluders` group (`SyndicateAdAirship.camera_occluder`) and a test simply writes.
+# Two things differ from a building, both decided rather than inherited:
+#   * **Lift, never shorten.** He wants to be ABOVE it so the hull is in frame; a boom yanked in during a fight is
+#     worse than a moment of hull, and the hull is gone in a few seconds anyway. If even MAX_PITCH_DEG cannot clear
+#     its deck, the hull is let pass through the camera (`hull_passing`).
+#   * **It moves, so the live camera damps it** (`ease_hull_lift`): quick to rise, slow to settle, with a hold, so a
+#     hull sliding past cannot make the camera pump. The boxes are also grown by HULL_LEAD_M, so the rise begins
+#     before the hull arrives rather than after the camera is already inside it.
+## How far ahead of a moving hull the lift begins: ~0.8 s of the airship's 7.5 m/s cruise.
+const HULL_LEAD_M := 6.0
+## The group a moving solid joins to be lifted over; its node answers `camera_occluder() -> Dictionary`.
+const OCCLUDER_GROUP := &"camera_occluders"
+## The damping: seconds to rise most of the way, seconds to settle back, and how long the lift is held first.
+const HULL_RISE_S := 0.3
+const HULL_FALL_S := 1.6
+const HULL_HOLD_S := 1.0
+
+
+## The top of the highest moving solid whose box holds `point` (grown by `grow` metres sideways and SOLID_CLEAR_M
+## under its belly), or -1.0. The same shape of answer as `roof_over`, over data the caller passes. Pure.
+static func hull_over(point: Vector3, occluders: Array, grow := 0.0) -> float:
+	var top := -1.0
+	for box: Dictionary in occluders:
+		if point.y >= float(box["top"]) or point.y < float(box["bottom"]) - SOLID_CLEAR_M or float(box["top"]) <= top:
+			continue
+		var yaw := float(box.get("yaw", 0.0))
+		var offset := Vector2(point.x, point.z) - (box["centre"] as Vector2)
+		var half: Vector2 = box["half"]
+		if absf(offset.dot(Vector2(cos(yaw), -sin(yaw)))) <= half.x + grow \
+				and absf(offset.dot(Vector2(sin(yaw), cos(yaw)))) <= half.y + grow:
+			top = float(box["top"])
+	return top
+
+
+## One frame of the damped hull lift: `current` degrees toward `wanted`, rising fast, settling slowly after a hold.
+## `held` is the seconds since the lift was last wanted at `current` or more. Returns [lift, held]. Pure.
+static func ease_hull_lift(current: float, wanted: float, held: float, delta: float) -> Array:
+	if wanted >= current:
+		return [lerpf(current, wanted, 1.0 - exp(-delta / HULL_RISE_S)), 0.0]
+	held += delta
+	if held < HULL_HOLD_S:
+		return [current, held]
+	var next := lerpf(current, wanted, 1.0 - exp(-delta / HULL_FALL_S))
+	return [wanted if absf(next - wanted) < 0.01 else next, held]
+
+
+## The pose to actually use: `{"distance", "pitch_deg", "lifted_deg", "hull_passing"}`. Equal to what was asked for
+## whenever the camera is in the open, which is every arena without a cityscape and most of the Terminus. `occluders`
+## are the moving solids (above); `grow` widens them. Pure, for tests.
 static func clear_pose(at: Vector3, heading: float, distance: float, pitch_deg: float,
-		data: Dictionary = Arena.active) -> Dictionary:
+		data: Dictionary = Arena.active, occluders: Array = [], grow := 0.0) -> Dictionary:
 	var tilt := pitch_deg
 	var reach := distance
+	var passing := false
 	for pass_index in SOLID_PASSES:
-		var roof := RtsCamera.roof_over(at + RtsCamera.boom(heading, reach, tilt), data)
-		if roof < 0.0:
-			return {"distance": reach, "pitch_deg": tilt, "lifted_deg": tilt - pitch_deg}
-		var needed := roof + SOLID_CLEAR_M
+		var camera := at + RtsCamera.boom(heading, reach, tilt)
+		var roof := RtsCamera.roof_over(camera, data)
+		var hull := -1.0 if passing else RtsCamera.hull_over(camera, occluders, grow)
+		if roof < 0.0 and hull < 0.0:
+			return {"distance": reach, "pitch_deg": tilt, "lifted_deg": tilt - pitch_deg, "hull_passing": passing}
+		var needed := maxf(roof, hull) + SOLID_CLEAR_M
 		if needed < reach:
 			var lifted := rad_to_deg(asin(clampf(needed / reach, 0.0, 1.0)))
 			if lifted > tilt + 0.01 and lifted <= MAX_PITCH_DEG:
 				tilt = lifted
 				continue
+		if hull >= roof:
+			# Only the hull is in the way and no tilt clears it: let it pass rather than yank the boom in.
+			passing = true
+			continue
 		# The roof is higher than the boom is long, or higher than the steepest tilt reaches: pull the camera in.
 		# One step per pass, so a stack of blocks resolves over the passes instead of jumping to the floor at once.
 		reach = maxf(SOLID_MIN_DISTANCE_M, reach * 0.6)
 		if is_equal_approx(reach, SOLID_MIN_DISTANCE_M):
 			break
-	return {"distance": reach, "pitch_deg": tilt, "lifted_deg": tilt - pitch_deg}
+	return {"distance": reach, "pitch_deg": tilt, "lifted_deg": tilt - pitch_deg, "hull_passing": passing}
 
 
 ## How far out a zoom level puts the camera. Eased, so the middle of the range isn't all long distance.

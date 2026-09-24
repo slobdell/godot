@@ -156,6 +156,19 @@ Nothing blocks you. S6's frames go to him for the morning.
 
 ## Status
 
-_(the worker keeps this current: plan, what's done with measurements, decisions and their reasons, questions for the
-lead, requests to other streams, known issues, what to playtest, next steps, merge notes, and the commit hash whose
-own check went green)_
+_Worker: airship. Last updated 2026-09-24 (morning). **IN PROGRESS** -- see *Next steps*._
+
+### Plan (in order, smallest foundation first)
+1. S1 the flying test (red on the old tree, with its number) → 2. S2+S3 one flight object (`AirshipFlight`): real rotated
+boxes grown to what is DRAWN, the hull as the parts that can hit something, a climb planned by flying a ghost ahead →
+3. `make airship-report` (inside / cruise / seen per map, before and after) → 4. S4 the ordering, decided and tested
+at the (±100, 0) blocks → 5. S5 `clear_pose` takes moving occluders; the live camera lifts over the hull, damped →
+6. S6 `airship-shot` posed through `clear_pose`, with a Terminus sequence → 7. check on builder0, frames, Status.
+
+### Done so far (numbers: laptop, working tree on `a04d75c0`; builder0 check pending)
+- **S1.** `test_it_flies_the_terminus_for_four_minutes_without_entering_a_building` flies the node for 240 s (the fight
+  in the middle, then pushed to each side). **Before-arm on the old tree: the hull was inside something 37.5 % of the
+  flight; worst 17.8 m of the (40, 0) block above its belly, at t = 0.1 s — the START POSITION was inside the block's
+  corner.** Its ground truth is `AirshipTruth`, which shares no geometry with the flight: the layout's boxes grown to
+  the kit's own meshes, and the hull's own mesh rasterised to a 1 m underside heightmap. Mutation-checked: a late
+  climb (`CLIMB_LEAD` 5.0) fails it with 10.5 m of block.

@@ -95,16 +95,20 @@ const AVOID_CLEARANCE := 8.0
 ## How far inside the perimeter wall the hull keeps. The venue's grandstands stand just outside `half_size`, and an
 ## airship that leaves the map flies into them and vanishes -- which is what the lead saw.
 const WALL_MARGIN := 10.0
-## Everything tall enough to fly into, as [half-width, height] in metres. The heights are what let the airship CLIMB
-## over what it cannot go round, which at this size it often cannot: a 57 m hull has a 22.2 m beam and the Terminus
-## streets are 18 m wide, so it no longer fits between the city blocks at all. Steering alone could not fix that --
-## the first version bent the goal away from blocks and the hull, with its deliberately heavy rudder, flew straight
-## through one anyway. Half-widths as before; block and floodlight heights from the kit's slot contracts.
-const TALL_PROPS := {"block": [21.0, 24.0], "floodlight": [4.5, 24.0], "ad_screen": [4.0, 20.0], "sign": [4.0, 12.0]}
-## How fast it may climb or sink, and how much air it keeps over a rooftop. Slow on purpose: a gentle rise over the
-## city and a long settle back down is the most airship-like motion it makes, and it costs nothing to watch.
-const CLIMB_MPS := 2.4
-const ROOF_CLEARANCE := 3.0
+## What it must not fly into is the layout's own rotated boxes, grown to what is drawn (`AirshipFlight.solids_of`).
+## At 1.5x the beam is 22.2 m and the Terminus streets are 18-22 m, so it does not fit between the city blocks and
+## often cannot go round: it CLIMBS over what it cannot go round. Steering alone could not do it -- the first version
+## bent the goal away from blocks and the hull, with its deliberately heavy rudder, flew straight through one anyway.
+## How fast it may climb or sink, and how much air it keeps over a rooftop. Gentle, but not as gentle as it was: at
+## 2.4 m/s every roof cost ~9 s of climb before it and ~9 s of settling after, all of it out of his frame, and once
+## the hull stopped flying THROUGH buildings that was most of the match on the dense maps. 3.2 m/s (a real airship
+## manages 3-5) measured better on every one of six maps (`make airship-report`, laptop, 45 s legs): yard cruise
+## 52 -> 61 %, pit 28 -> 32 %, sumps 12 -> 18 %, and still 0 % inside anything.
+const CLIMB_MPS := 3.2
+## 1 m, measured against the belly at the BOTTOM of its float (the float's own 1.15 m is reserved on top of it). It was
+## 3 m, which is harmless over a 24 m roof and ruinous over a yard: a two-high container stack (5.18 m) then sat 2 m
+## over the cruise belly, and the maze -- 152 of them -- kept the hull climbing the whole match.
+const ROOF_CLEARANCE := 1.0
 
 ## The lead's camera, held here so the geometry above is checkable.
 const CAMERA_PITCH_DEG := 21.0
@@ -117,33 +121,28 @@ var broadcast: AdBroadcast
 ## The landscape cut of the same channel, for the wide flank panels (see `_apply_channel`).
 var wide_broadcast: AdBroadcast
 var channel_name := "arena"
-var pilot := AirshipPilot.new()
-var home := Vector2.ZERO
+## The flight itself (pilot, height, solids): one object shared with the tests and the report.
+var flight: AirshipFlight
+var pilot: AirshipPilot:
+	get:
+		return flight.pilot
 var _layout := {}
-var _blockers: Array = []
 var _screens: Array[MeshInstance3D] = []
 var _tick_source: Node
 var _stepped := -1
-var _action := Vector2.ZERO
 var _action_known := false
-## Current hull-centre height. State, because climbing over a block and settling back is a motion, not a lookup.
-var _altitude := ALTITUDE
-var _play_radius := 100.0
 
 
 func _init(layout: Dictionary = {}) -> void:
 	name = "SyndicateAdAirship"
 	_layout = layout.duplicate(true) if not layout.is_empty() else {}
+	flight = AirshipFlight.new(_layout)
 
 
 func _ready() -> void:
-	_blockers = blockers(_layout)
-	_play_radius = play_radius(_layout)
-	home = start_position(_layout)
-	_action = home
 	scale = Vector3(SCALE, SCALE, SCALE)
-	pilot.reset(home, 0.0)
-	_altitude = required_altitude(home, _blockers)
+	# The lead's camera lifts itself over the hull rather than sitting inside it (RtsCamera, round 11).
+	add_to_group(RtsCamera.OCCLUDER_GROUP)
 	_build()
 	_apply_channel()
 	_place(0)
@@ -154,71 +153,9 @@ static func flies_on(layout: Dictionary) -> bool:
 	return not layout.is_empty()
 
 
-## Where it starts: the clearest point on a ring around the middle. The ring is searched at several RADII as well as
-## several bearings, because on the Terminus every bearing at one radius is inside a block's keep-out (its eight
-## blocks sit at x = +-30 and +-40 with a 21 m footprint, and the hull wants 11 m of its own) -- a bearings-only
-## search returned a start 2.1 m INSIDE a building. Pure.
-static func start_position(layout: Dictionary) -> Vector2:
-	if layout.is_empty():
-		return Vector2.ZERO
-	var half := float(layout.get("half_size", 120.0))
-	var best := Vector2(0.0, -minf(AirshipPilot.ORBIT_RADIUS, half * 0.7))
-	var best_clear := -INF
-	for ring in 6:
-		var radius := lerpf(AirshipPilot.ORBIT_RADIUS * 0.6, half * 0.92, float(ring) / 5.0)
-		for i in 24:
-			var angle := TAU * i / 24.0
-			var at := Vector2(cos(angle), sin(angle)) * radius
-			var clear := clearance_at(layout, at)
-			# Among clear starts prefer the one nearest the orbit radius, so it begins where it will settle.
-			var score := minf(clear, 6.0) - absf(radius - AirshipPilot.ORBIT_RADIUS) * 0.01
-			if score > best_clear:
-				best_clear = score
-				best = at
-	return best
-
-
-## Everything on a map tall enough for the airship to fly into, as [{x, z, radius}]. Radii are half-widths from the
-## kit's slot contracts, except the city block, whose footprint is authored per arena; 21 m is the Terminus's, the
-## widest the game ships, so using it everywhere errs toward keeping clear.
-static func blockers(layout: Dictionary) -> Array:
-	var out: Array = []
-	for prop: Dictionary in layout.get("props", []):
-		var spec: Variant = TALL_PROPS.get(String(prop.get("type", "")), null)
-		if spec == null:
-			continue
-		var position: Array = prop.get("position", [])
-		if position.size() >= 2:
-			out.append({"x": float(position[0]), "z": float(position[1]),
-					"radius": float((spec as Array)[0]), "height": float((spec as Array)[1])})
-	return out
-
-
-## The lowest the hull's CENTRE may sit at `at` and still clear everything under it: the cruise height over open
-## ground, or a rooftop plus clearance where something tall is beneath. Pure.
-static func required_altitude(at: Vector2, from: Array) -> float:
-	var wanted := ALTITUDE
-	for blocker: Dictionary in from:
-		var offset := at - Vector2(float(blocker["x"]), float(blocker["z"]))
-		if offset.length() > float(blocker["radius"]) + BEAM * 0.5:
-			continue
-		# Its belly must clear the roof: centre = roof + clearance + the float + how far the belly hangs below centre.
-		wanted = maxf(wanted, float(blocker["height"]) + ROOF_CLEARANCE + FLOAT_RISE_TOTAL - BELLY_FRACTION * LENGTH)
-	return wanted
-
-
-## Room at `at`: metres from the hull's edge to the nearest tall prop's edge (negative means it would fly through).
 ## The radius the hull's CENTRE must stay inside: the perimeter, less its own beam and a margin. Pure.
 static func play_radius(layout: Dictionary) -> float:
 	return maxf(20.0, float(layout.get("half_size", 120.0)) - BEAM * 0.5 - WALL_MARGIN)
-
-
-static func clearance_at(layout: Dictionary, at: Vector2) -> float:
-	var clear := INF
-	for blocker: Dictionary in blockers(layout):
-		var offset := at - Vector2(float(blocker["x"]), float(blocker["z"]))
-		clear = minf(clear, offset.length() - float(blocker["radius"]) - BEAM * 0.5)
-	return clear if clear < INF else 999.0
 
 
 ## --- the geometry the whole design is fitted to (pure, and asserted by the test) -----------------------------
@@ -265,35 +202,41 @@ static func feed_rect_for(size: Vector2, feed := Vector2i(320, 640)) -> Vector4:
 	return Vector4(0.0, 0.5 - scale_y * 0.5, 1.0, scale_y)
 
 
-## What fraction of a `seconds`-long flight the airship spends inside his frame, if he watches the fight at
-## `action` from his own pose. CLOSED FORM, and that is the point: round 10's answer to this question came from a
-## bench that swept the map, searched the scene for the airship, and got both the subject and the arithmetic wrong.
-## Here there is nothing to search -- the pilot is deterministic, so the flight is known, and "in frame" is two
-## inequalities: the hull must be nearer than the range at which his frame's ceiling drops below it, and within the
-## FOV either side of where he is looking. It ignores occlusion (a block between them still hides it), so read it as
-## an UPPER bound on how often he sees it, and as the honest way to compare two flight tunes.
-static func seen_fraction(action: Vector2, seconds := 180.0, start := Vector2.ZERO) -> Dictionary:
-	var pilot := AirshipPilot.new()
-	pilot.reset(start if start != Vector2.ZERO else action + Vector2(0.0, -AirshipPilot.ORBIT_RADIUS), 0.0)
-	var dt := 1.0 / SimClock.TICK_RATE
+## Is a hull whose belly is `belly` metres up at `at` inside his frame when he watches `action` from camera yaw
+## `yaw` at his own pose? Two inequalities: the belly is under the frame's ceiling at that range, and the hull is
+## within the horizontal FOV. It ignores occlusion (a block between them still hides it). Pure.
+static func in_frame(at: Vector2, belly: float, action: Vector2, yaw: float) -> bool:
+	var back := Vector2(sin(yaw), cos(yaw))
+	var offset := at - (action + back * camera_run())
+	if belly > visible_ceiling_at(offset.length()):
+		return false
+	return absf(offset.angle_to(-back)) <= deg_to_rad(CAMERA_FOV_DEG / 2.0) * (16.0 / 9.0)
+
+
+## The camera yaws "seen" is averaged over: he looks at the fight from each side in turn, not only from his own base.
+const SEEN_YAWS := [0.0, PI * 0.5, PI, PI * 1.5]
+
+
+## What fraction of a `seconds`-long flight over `layout` the airship spends inside his frame, if he watches the fight
+## at `action` from his own pose, averaged over SEEN_YAWS. CLOSED FORM, and that is the point: round 10's answer to
+## this question came from a bench that swept the map, searched the scene for the airship, and got both the subject
+## and the arithmetic wrong. Here the flight is deterministic, so it is flown, and "in frame" is `in_frame`. Read it as
+## an UPPER bound on how often he sees it (no occlusion), and as the honest way to compare two flight tunes.
+## `at_cruise_pct` is the share of the flight at its low cruise height rather than climbing over something.
+static func seen_fraction(layout: Dictionary, action: Vector2, seconds := 180.0) -> Dictionary:
+	var flight := AirshipFlight.new(layout)
+	flight.action = action
 	var ticks := int(seconds * SimClock.TICK_RATE)
 	var seen := 0
-	var half_fov := deg_to_rad(CAMERA_FOV_DEG / 2.0)
+	var cruising := 0
 	for i in ticks:
-		pilot.step(dt, AirshipPilot.carrot(pilot.position, action))
-		# His camera orbits `action` at the boom; take the yaw that has him looking at the fight from behind his own
-		# army, which is the pose the opening frame uses.
-		var eye := action + Vector2(0.0, -camera_run())
-		var offset := pilot.position - eye
-		var distance := offset.length()
-		var lowest := ALTITUDE + BELLY_FRACTION * LENGTH
-		if lowest > visible_ceiling_at(distance):
-			continue
-		if absf(wrapf(atan2(offset.x, offset.y) - 0.0, -PI, PI)) > half_fov * (16.0 / 9.0):
-			continue
-		seen += 1
-	return {"seen_pct": 100.0 * seen / maxi(ticks, 1), "ticks": ticks,
-			"orbit_m": AirshipPilot.ORBIT_RADIUS, "length_m": LENGTH, "altitude_m": ALTITUDE}
+		flight.step()
+		if flight.altitude <= ALTITUDE + 0.5:
+			cruising += 1
+		for yaw: float in SEEN_YAWS:
+			seen += int(in_frame(flight.pilot.position, flight.belly() + FLOAT_RISE_TOTAL, action, yaw))
+	return {"seen_pct": 100.0 * seen / maxi(ticks * SEEN_YAWS.size(), 1), "at_cruise_pct": 100.0 * cruising / maxi(ticks, 1),
+			"ticks": ticks, "orbit_m": AirshipPilot.ORBIT_RADIUS, "length_m": LENGTH, "altitude_m": ALTITUDE}
 
 
 ## The wallow: rise in metres and pitch/roll/heading trim in radians at `seconds`. Pure, and deliberately built from
@@ -333,26 +276,35 @@ func _match_tick() -> int:
 ## earlier moment) re-flies from the start rather than integrating backwards, which a PID cannot do.
 func advance_to(tick: int) -> void:
 	if tick < _stepped:
-		pilot.reset(home, 0.0)
-		_altitude = required_altitude(home, _blockers)
+		flight.reset()
 		_stepped = -1
 	var steps := mini(tick - _stepped, MAX_CATCHUP)
-	if steps <= 0:
-		_place(tick)
-		return
-	var dt := 1.0 / SimClock.TICK_RATE
 	for i in steps:
 		var at := _stepped + 1 + i
 		if at % ACTION_EVERY == 0:
 			_read_action()
-		var goal := AirshipPilot.carrot(pilot.position, _action)
-		goal = AirshipPilot.avoid(goal, pilot.position, _blockers, BEAM * 0.5 + AVOID_CLEARANCE)
-		# Containment LAST, so neither the orbit nor an avoidance push can send it through the wall.
-		goal = AirshipPilot.contain(goal, pilot.position, _play_radius)
-		pilot.step(dt, goal)
-		_altitude = move_toward(_altitude, required_altitude(pilot.position, _blockers), CLIMB_MPS * dt)
-	_stepped = tick
+		# A long catch-up plans only its tail: only the height it ends at is ever drawn.
+		flight.step(steps - i <= AirshipFlight.PLAN_TAIL_TICKS)
+	_stepped = maxi(_stepped, tick)
 	_place(tick)
+
+
+## The hull as the camera sees it: a box from belly to deck over its footprint, where it is drawn right now. The
+## camera lifts itself over this (`RtsCamera.clear_pose`'s `occluders`) -- the airship still has no collider, and
+## nothing in the simulation can see it.
+func camera_occluder() -> Dictionary:
+	return AirshipFlight.hull_box(pilot.position, pilot.heading, position.y)
+
+
+## Pin the action centre (a bench, a test): the pilot circles `centre` until the next live read replaces it.
+func fly_toward(centre: Vector2) -> void:
+	flight.action = centre
+	_action_known = true
+
+
+## The hull centre's height right now, before the float's rise.
+func hull_centre_y() -> float:
+	return flight.altitude
 
 
 ## The action centre: the living units' centroid, each weighted by how close its nearest ENEMY is, so the airship
@@ -390,10 +342,10 @@ func _read_action() -> void:
 	var centre: Vector2 = sum / weight
 	# Keep the orbit CENTRE far enough in that the orbit itself fits inside the arena: an action centre out at the
 	# edge would otherwise put half the circle beyond the wall.
-	var room := maxf(0.0, _play_radius - AirshipPilot.ORBIT_RADIUS - AirshipPilot.TRACK_MARGIN)
+	var room := maxf(0.0, flight.play_radius - AirshipPilot.ORBIT_RADIUS - AirshipPilot.TRACK_MARGIN)
 	if centre.length() > room:
 		centre = centre.normalized() * room
-	_action = centre if not _action_known else _action.lerp(centre, ACTION_EASE)
+	flight.action = centre if not _action_known else flight.action.lerp(centre, ACTION_EASE)
 	_action_known = true
 
 
@@ -404,7 +356,7 @@ func _place(tick: int) -> void:
 	basis *= Basis(Vector3.RIGHT, float(wallow["pitch"]))
 	basis *= Basis(Vector3.FORWARD, float(wallow["roll"]) + deg_to_rad(BANK_DEG) * pilot.bank)
 	transform = Transform3D(basis.scaled(Vector3(SCALE, SCALE, SCALE)),
-			Vector3(pilot.position.x, _altitude + float(wallow["rise"]), pilot.position.y))
+			Vector3(pilot.position.x, flight.altitude + float(wallow["rise"]), pilot.position.y))
 
 
 ## Each screen joins the cut of the channel that matches ITS shape: the tall deck panel takes the portrait feed the

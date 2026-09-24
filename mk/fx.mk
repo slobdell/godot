@@ -161,14 +161,19 @@ airship-look: import ## Feel X7: is the Syndicate airship EVER in the lead's fie
 	@grep -q AIRSHIP_LOOK_DONE $(BUILD_DIR)/airship-look/log.txt || { grep -E 'AIRSHIP_LOOK_FAILED|SCRIPT ERROR' $(BUILD_DIR)/airship-look/log.txt; echo "airship-look FAILED"; exit 1; }
 	@ls $(BUILD_DIR)/airship-look/*.png
 
-airship-shot: import ## Round 11: frames of the Syndicate broadcast airship AT the lead's pose, deterministically flown to a tick (proves the art, the screens, the scale and the attitude; it makes no claim about how OFTEN he sees it) -> build/airship-shot/ (needs a display; ARENA=terminus, TICKS=0,900,1800, AIRSHIP_EXTRA=--airship-shot-pose=x,z,yawdeg,tick)
+airship-shot: import ## Round 11: frames of the Syndicate broadcast airship AT the lead's pose, deterministically flown to a tick (proves the art, the screens, the scale and the attitude; it makes no claim about how OFTEN he sees it) -> build/airship-shot/ (needs a display; ARENA=terminus, TICKS=0,900,1800, SEQUENCE=1 for the climb-over-a-block and camera-meets-hull frames, AIRSHIP_EXTRA=--airship-shot-pose=x,z,yawdeg,tick)
 	rm -rf $(BUILD_DIR)/airship-shot && mkdir -p $(BUILD_DIR)/airship-shot
 	timeout 600 $(GODOT) --path . --resolution $(AIRSHIP_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
 		--arena=$(or $(ARENA),terminus) --airship-shot=$(CURDIR)/$(BUILD_DIR)/airship-shot \
-		$(if $(TICKS),--airship-shot-ticks=$(TICKS)) $(AIRSHIP_EXTRA) \
+		$(if $(TICKS),--airship-shot-ticks=$(TICKS)) $(if $(SEQUENCE),--airship-shot-sequence) $(AIRSHIP_EXTRA) \
 		2>&1 | tee $(BUILD_DIR)/airship-shot/log.txt | grep -E '^AIRSHIP_SHOT|SCRIPT ERROR' || true
 	@grep -q AIRSHIP_SHOT_DONE $(BUILD_DIR)/airship-shot/log.txt || { grep -E 'SCRIPT ERROR' $(BUILD_DIR)/airship-shot/log.txt; echo "airship-shot FAILED"; exit 1; }
 	@ls $(BUILD_DIR)/airship-shot/*.png
+
+airship-report: import ## Round 11: how the broadcast airship flies each map -- % of the flight inside something drawn (must be 0), % at its low cruise, % in the lead's frame (MAPS=a,b LEG_S=60 seconds per leg; headless)
+	$(GODOT) --headless --path . --script res://game/theme/arena_kit/airship/airship_report.gd -- \
+		$(if $(MAPS),--maps=$(MAPS)) $(if $(LEG_S),--seconds=$(LEG_S)) 2>&1 | grep -E '^AIRSHIP_REPORT|SCRIPT ERROR'
+	@echo
 
 facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg)
 	rm -rf $(BUILD_DIR)/facing && mkdir -p $(BUILD_DIR)/facing

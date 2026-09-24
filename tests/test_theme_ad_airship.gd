@@ -43,9 +43,10 @@ func test_every_shipping_map_gets_one_and_it_starts_clear_of_the_buildings() -> 
 	for name: String in SHIPPING:
 		var layout := _layout(name)
 		assert_true(SyndicateAdAirship.flies_on(layout), "%s flies an airship" % name)
-		var start := SyndicateAdAirship.start_position(layout)
-		assert_true(SyndicateAdAirship.clearance_at(layout, start) > 0.0,
-				"%s starts it clear of every tall prop (%.1f m)" % [name, SyndicateAdAirship.clearance_at(layout, start)])
+		var solids := AirshipFlight.solids_of(layout)
+		var start := AirshipFlight.start_of(layout, solids)
+		var clear := AirshipFlight.clearance(start["at"], start["heading"], solids)
+		assert_true(clear > 0.0, "%s starts its whole footprint clear of every solid it would climb over (%.1f m)" % [name, clear])
 	assert_true(not SyndicateAdAirship.flies_on({}), "but no layout means no airship")
 
 
@@ -177,9 +178,12 @@ func test_it_follows_the_action_when_the_action_moves() -> void:
 
 func test_it_steers_around_what_it_must_not_fly_into() -> void:
 	## The airship has no collider, so nothing stops it drawing through a 24 m tower except this.
-	var blockers := [{"x": 0.0, "z": 0.0, "radius": 21.0}]
+	var blockers := [{"centre": Vector2.ZERO, "half": Vector2(20.0, 20.0), "yaw": 0.0}]
 	var pushed := AirshipPilot.avoid(Vector2(0.0, 0.0), Vector2(6.0, 0.0), blockers, 8.0)
 	assert_true(pushed.x > 6.0, "a goal inside a block is pushed out of it (x %.1f)" % pushed.x)
+	# Off a CORNER, the push is measured from the corner -- 28 m from the centre, where the circle table was 7 m short.
+	var cornered := AirshipPilot.avoid(Vector2(24.0, 24.0), Vector2(24.0, 24.0), blockers, 8.0)
+	assert_true(cornered.x > 24.0 and cornered.y > 24.0, "a goal just off a corner is pushed away from it (%v)" % cornered)
 	var clear := AirshipPilot.avoid(Vector2(200.0, 0.0), Vector2(200.0, 0.0), blockers, 8.0)
 	assert_true(clear.is_equal_approx(Vector2(200.0, 0.0)), "and a goal far away is left alone")
 
@@ -309,18 +313,18 @@ func test_it_climbs_over_what_it_cannot_fly_around() -> void:
 	## rudder flew the hull straight through anyway. So it climbs. Over open ground it comes back down, which is the
 	## most airship-like motion it makes and the reason this is a behaviour rather than a fixed cruise height.
 	var layout := _layout()
-	var blockers := SyndicateAdAirship.blockers(layout)
+	var blockers := AirshipFlight.solids_of(layout)
 	assert_true(blockers.size() > 0, "the Terminus has tall props")
-	var block: Dictionary = blockers[0]
-	var over := Vector2(float(block["x"]), float(block["z"]))
-	var roof: float = float(block["height"])
-	var above := SyndicateAdAirship.required_altitude(over, blockers)
+	var block: Dictionary = blockers.filter(func(s: Dictionary) -> bool: return s["type"] == "block")[0]
+	var over: Vector2 = block["centre"]
+	var roof: float = float(block["top"])
+	var above := AirshipFlight.need_at(over, 0.0, blockers)
 	var belly_above := above + SyndicateAdAirship.BELLY_FRACTION * SyndicateAdAirship.LENGTH - SyndicateAdAirship.FLOAT_RISE_TOTAL
 	assert_true(belly_above >= roof,
 			"over a %.0f m block its belly is at %.1f m, above the roof" % [roof, belly_above])
 	# ...and far from anything it returns to the low cruise, which is where it can actually be seen.
 	var open := Vector2(1000.0, 1000.0)
-	assert_near(SyndicateAdAirship.required_altitude(open, blockers), SyndicateAdAirship.ALTITUDE, 0.01,
+	assert_near(AirshipFlight.need_at(open, 0.0, blockers), SyndicateAdAirship.ALTITUDE, 0.01,
 			"over open ground it settles back to its cruise height")
 
 
@@ -333,22 +337,182 @@ func test_it_never_leaves_the_arena() -> void:
 		var layout := _layout(name)
 		var half := float(layout.get("half_size", 120.0))
 		var radius := SyndicateAdAirship.play_radius(layout)
-		var blockers := SyndicateAdAirship.blockers(layout)
-		var pilot := AirshipPilot.new()
-		pilot.reset(SyndicateAdAirship.start_position(layout), 0.0)
-		var dt := 1.0 / SimClock.TICK_RATE
+		var flight := AirshipFlight.new(layout)
+		var pilot := flight.pilot
 		var worst := 0.0
 		for corner: Vector2 in [Vector2(half * 0.9, half * 0.9), Vector2(-half * 0.9, 0.0)]:
 			var centre := corner
 			var room := maxf(0.0, radius - AirshipPilot.ORBIT_RADIUS)
 			if centre.length() > room:
 				centre = centre.normalized() * room
+			flight.action = centre
 			for i in int(SimClock.TICK_RATE * 120.0):
-				var goal := AirshipPilot.carrot(pilot.position, centre)
-				goal = AirshipPilot.avoid(goal, pilot.position, blockers,
-						SyndicateAdAirship.BEAM * 0.5 + SyndicateAdAirship.AVOID_CLEARANCE)
-				goal = AirshipPilot.contain(goal, pilot.position, radius)
-				pilot.step(dt, goal)
+				flight.step(false)
 				worst = maxf(worst, pilot.position.length())
 		assert_true(worst < half,
 				"%s: the hull's centre stays inside the wall (furthest %.1f m of %.0f m)" % [name, worst, half])
+
+
+# ---- Round 11 (airship stream): it flies THROUGH the Terminus, and nothing here used to fly ----------------------
+#
+# The lead: *"It also looks like the airship itself ends up intersecting with the buildings in Terminus as it flies
+# around."* Every test above either looks up a height at a block's own centre or checks distance from the ORIGIN; none
+# of them flies the hull past a building and asks whether it went through. These do, and the ground truth they use
+# is deliberately NOT the airship's own model (`AirshipTruth`): the layout's real rotated boxes grown to the kit's own
+# meshes -- because the lead sees the mast, not the collision box under it -- and the hull's own mesh, cell by cell.
+
+## The worst intrusion of the flying hull into anything drawn, over a flight of `legs` ([action centre, seconds]):
+## {depth (m of solid above the hull's underside; <= 0 is clear), where, type, tick, inside_pct}.
+func _worst_intrusion(layout: Dictionary, legs: Array) -> Dictionary:
+	var ship := SyndicateAdAirship.new(layout)
+	add_to_tree(ship)
+	var solids := AirshipTruth.drawn_solids(layout)
+	var worst := {"depth": -INF, "where": Vector2.ZERO, "type": "", "tick": 0, "top": 0.0}
+	var tick := 0
+	var inside := 0
+	var sampled := 0
+	for leg: Array in legs:
+		ship.fly_toward(leg[0])
+		for i in int(float(leg[1]) * SimClock.TICK_RATE):
+			tick += 1
+			ship.advance_to(tick)
+			if tick % 3 != 0:
+				continue
+			sampled += 1
+			var hit := false
+			for solid: Dictionary in solids:
+				var depth := AirshipTruth.intrusion(ship.pilot.position, ship.pilot.heading, ship.hull_centre_y(), solid)
+				hit = hit or depth > 0.0
+				if depth > float(worst["depth"]):
+					worst = {"depth": depth, "where": ship.pilot.position, "type": solid["type"], "tick": tick,
+							"top": solid["top"], "solid": solid["centre"]}
+			inside += int(hit)
+	worst["inside_pct"] = 100.0 * inside / maxi(sampled, 1)
+	return worst
+
+
+func test_it_flies_the_terminus_for_four_minutes_without_entering_a_building() -> void:
+	## His sentence, as a flight. Four legs of a minute each with the fight in the middle and then pushed toward each
+	## side, which is what carries the orbit over the city blocks and past the (+-100, 0) pair by the wall.
+	var legs := [[Vector2.ZERO, 60.0], [Vector2(36.0, 0.0), 60.0], [Vector2(-36.0, 0.0), 60.0], [Vector2(0.0, 36.0), 60.0]]
+	var worst := _worst_intrusion(_layout("terminus"), legs)
+	assert_true(float(worst["depth"]) <= 0.0,
+			"the hull never enters anything drawn (it was inside something %.1f%% of the flight): worst was %.1f m of a %s (top %.1f m, centred %v) above the hull's underside, with the hull at %v, t=%.1f s" % [
+			float(worst["inside_pct"]), float(worst["depth"]), worst["type"], float(worst["top"]), worst.get("solid", Vector2.ZERO),
+			worst["where"], float(worst["tick"]) / SimClock.TICK_RATE])
+
+
+func test_the_flights_hull_model_is_never_below_the_drawn_hull() -> void:
+	## The flight climbs over things with a two-part hull (a keel down to the belly, wings eight metres higher). That is
+	## only safe if every drawn cell of the underside is covered by a part whose underside is at or below it.
+	var underside := AirshipTruth.underside()
+	assert_true(underside.size() > 500, "setup: the mesh rasterised to %d cells" % underside.size())
+	var worst := -INF
+	var at := Vector2i.ZERO
+	for key: Vector2i in underside:
+		var point := Vector2(key.x + 0.5, key.y + 0.5)
+		# The lowest underside among the parts covering this cell (INF: no part covers it at all).
+		var covered := INF
+		for part: Array in AirshipFlight.HULL_PARTS:
+			var half := Vector2(float(part[1]), float(part[2])) * SyndicateAdAirship.SCALE
+			if absf(point.x) <= half.x + 0.71 and absf(point.y - float(part[0]) * SyndicateAdAirship.SCALE) <= half.y + 0.71:
+				covered = minf(covered, -float(part[3]) * SyndicateAdAirship.SCALE)
+		var miss := covered - float(underside[key])  # > 0: the drawn hull hangs below every part over it
+		if miss > worst:
+			worst = miss
+			at = key
+	assert_true(worst <= 0.05, "no drawn cell hangs below the flight's model (worst %.2f m, cell %v)" % [worst, at])
+
+
+func test_the_flights_table_of_drawn_props_covers_what_the_kit_draws() -> void:
+	## The flight grows a floodlight to its mast, a sign to its board and an ad screen to its beacon (`DRAWN`). If the
+	## kit art changes, this is where the table is found out.
+	var layout := {"name": "t", "half_size": 60.0, "obstacles": [], "props": [
+			{"type": "floodlight", "position": [0.0, 0.0]}, {"type": "sign", "position": [20.0, 0.0]},
+			{"type": "ad_screen", "position": [-20.0, 0.0]}]}
+	var truth := AirshipTruth.drawn_solids(layout)
+	var flight := AirshipFlight.solids_of(layout)
+	assert_eq(truth.size(), 3, "setup: three props drawn tall enough to matter")
+	for drawn: Dictionary in truth:
+		var mine: Array = flight.filter(func(s: Dictionary) -> bool: return s["type"] == drawn["type"])
+		assert_eq(mine.size(), 1, "the flight knows about the %s" % drawn["type"])
+		if mine.is_empty():
+			continue
+		assert_true(float(mine[0]["top"]) >= float(drawn["top"]) - 0.01,
+				"%s: the flight's top %.2f m covers the drawn %.2f m" % [drawn["type"], float(mine[0]["top"]), float(drawn["top"])])
+		assert_true((mine[0]["half"] as Vector2).x >= (drawn["half"] as Vector2).x - 0.01
+				and (mine[0]["half"] as Vector2).y >= (drawn["half"] as Vector2).y - 0.01,
+				"%s: the flight's footprint %v covers the drawn %v" % [drawn["type"], mine[0]["half"], drawn["half"]])
+
+
+func test_by_the_wall_it_stays_inside_and_goes_over_the_outer_blocks() -> void:
+	## The Terminus's (+-100, 0) blocks stand 80-120 m out, entirely inside the band where containment bites (from 72 %
+	## of the play radius, 85.6 m), and containment ran last and erased the avoidance push there. The composition now:
+	## CONTAINMENT WINS SIDEWAYS, HEIGHT WINS OVER BUILDINGS -- the wall has a crowd behind it and only steering can
+	## keep the hull off it, while a building is a constraint height alone can satisfy. So with the fight pushed as far
+	## toward each block as the orbit ever follows it, the hull must stay inside the wall AND out of both blocks.
+	var layout := _layout("terminus")
+	var radius := SyndicateAdAirship.play_radius(layout)
+	var room := radius - AirshipPilot.ORBIT_RADIUS - AirshipPilot.TRACK_MARGIN
+	var ship := SyndicateAdAirship.new(layout)
+	add_to_tree(ship)
+	var outer := AirshipTruth.drawn_solids(layout).filter(
+			func(solid: Dictionary) -> bool: return solid["type"] == "block" and absf((solid["centre"] as Vector2).x) > 90.0)
+	assert_eq(outer.size(), 2, "setup: the two outer blocks")
+	var worst_depth := -INF
+	var furthest := 0.0
+	var near := 0
+	var tick := 0
+	for side: float in [1.0, -1.0]:
+		ship.fly_toward(Vector2(room * side, 0.0))
+		for i in int(SimClock.TICK_RATE * 120.0):
+			tick += 1
+			ship.advance_to(tick)
+			furthest = maxf(furthest, ship.pilot.position.length())
+			if tick % 3 != 0:
+				continue
+			for block: Dictionary in outer:
+				var depth := AirshipTruth.intrusion(ship.pilot.position, ship.pilot.heading, ship.hull_centre_y(), block)
+				worst_depth = maxf(worst_depth, depth)
+				if depth > -12.0:
+					near += 1
+	assert_true(near > 0, "setup: the flight actually came near the outer blocks (%d samples within 12 m of a roof)" % near)
+	assert_true(worst_depth <= 0.0, "it never enters either outer block (worst %.1f m)" % worst_depth)
+	assert_true(furthest < radius, "and its centre stays inside the play radius (furthest %.1f of %.1f m)" % [furthest, radius])
+
+
+func test_it_starts_down_as_soon_as_it_is_past_and_spends_the_rest_at_cruise() -> void:
+	## The converse of climbing early: a hull that stays up after the roof has passed spends the match where he cannot
+	## see it. One block on its orbit, nothing else: every crossing must be clear, it must start down within a second
+	## and a half of its footprint leaving the roof, and most of the flight must be at the low cruise.
+	var layout := {"name": "one_block", "half_size": 140.0, "obstacles": [],
+			"props": [{"type": "block", "position": [AirshipPilot.ORBIT_RADIUS, 0.0]}]}
+	var flight := AirshipFlight.new(layout)
+	var block: Dictionary = AirshipTruth.drawn_solids(layout)[0]
+	var was_over := false
+	var left_at := -1
+	var slow_starts: Array = []
+	var crossings := 0
+	var cruising := 0
+	var worst := -INF
+	var previous := flight.altitude
+	var ticks := int(SimClock.TICK_RATE * 240.0)
+	for tick in ticks:
+		flight.step()
+		var over := AirshipFlight.need_at(flight.pilot.position, flight.pilot.heading, flight.solids) > SyndicateAdAirship.ALTITUDE
+		if was_over and not over:
+			left_at = tick
+			crossings += 1
+		if left_at >= 0 and flight.altitude < previous - 0.001:
+			if tick - left_at > int(SimClock.TICK_RATE * 1.5):
+				slow_starts.append((tick - left_at) / float(SimClock.TICK_RATE))
+			left_at = -1
+		was_over = over
+		previous = flight.altitude
+		cruising += int(flight.altitude <= SyndicateAdAirship.ALTITUDE + 0.5)
+		if tick % 3 == 0:
+			worst = maxf(worst, AirshipTruth.intrusion(flight.pilot.position, flight.pilot.heading, flight.altitude, block))
+	assert_true(crossings >= 2, "setup: it crossed the block more than once in four minutes (%d)" % crossings)
+	assert_true(worst <= 0.0, "every crossing clears the roof (worst %.1f m)" % worst)
+	assert_true(slow_starts.is_empty(), "it starts down within 1.5 s of leaving the roof every time (late: %s s)" % [slow_starts])
+	assert_true(cruising > ticks * 0.5, "and it is at cruise most of the flight (%.0f %%)" % (100.0 * cruising / ticks))
