@@ -162,6 +162,16 @@ func _sample() -> void:
 			leg_goal[key] = g
 		elif leg_goal.has(key) and orders.is_idle(key):
 			leg_done[key] = elapsed
+	var trace := _flag("trace", "")
+	if trace != "" and game_match.tick % SimClock.TICK_RATE == 0:
+		for tank in units:
+			if trace == "all" or tank.unit_id == trace:
+				var reading := Movement.state(tank)
+				print("TERRAIN_DRIVE_TRACE %s leg %d t %.0f at (%.1f, %.1f) yaw %.0f speed %.1f phase %s blocked_by %s" % [tank.unit_id, leg_index, elapsed,
+						tank.global_position.x, tank.global_position.z, rad_to_deg(tank.rotation.y), tank.speed(),
+						reading.get("phase", "?"), reading.get("blocked_by", "")])
+				if _flag("trace-full", "") == str(int(elapsed)):
+					print("TERRAIN_DRIVE_STATE %s %s" % [tank.unit_id, JSON.stringify(reading)])
 	if camera != null and not shooting and elapsed >= next_shot_s:
 		next_shot_s += shot_every
 		_shoot(elapsed)
