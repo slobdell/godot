@@ -337,6 +337,7 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 	if base.has("facing"):
 		var direction := Vector2(float(base["facing"][0]), float(base["facing"][1])).normalized()
 		facing = [direction.x, direction.y]
+	var taken: Array = []  # [grounded goal, half width] of the crews placed so far (SlotGround.apart)
 	for i in tanks.size():
 		var unit_name: String = names[i]
 		var order := base.duplicate()
@@ -352,10 +353,14 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 			# Round 10 (nav's drive test on the default path: 11 of 13 arrival misses were a right-click's formation
 			# slot 4-10 m INSIDE a block): each goal goes onto ground this hull can stand on, the way an element's are
 			# (squad's SlotGround). The order says how far its slot moved, so the card can tell the player.
-			# The PLAYER's orders only: an element grounds its own plan (Element.ground), and scripted and CPU orders
-			# keep the geometry they asked for - grounding those moved scenario_orders' 100 ms response test and the
-			# element scenarios (check on 8e942f20), and the CPU never right-clicks.
-			var ground := Orders.ground_goal(tanks[i], goal) if String(base.get("source", "")) == "player" else goal
+			# Round 11 (nav R2): EVERY source but an element's. An element grounds its own plan with the hull's envelope
+			# (Element.ground) and issues one crew per order, so grounding it again buys nothing. A script's, the agent
+			# bridge's and any sourceless move used to keep raw formation geometry, which put a slot inside a block
+			# as surely as a right-click's did (round 10 grounded the player's only, to keep two tests' numbers).
+			var ground := goal if String(base.get("source", "")) == "element" else Orders.ground_goal(tanks[i], goal)
+			# And no two crews of one order are handed the same spot: two slots pushed out of one block land together.
+			ground = SlotGround.apart(tanks[i], ground, String(tanks[i].unit_id), taken)
+			taken.append([ground, SlotGround.half_width_of(String(tanks[i].unit_id))])
 			var moved := Vector2(ground.x - goal.x, ground.z - goal.z).length()
 			if moved > 0.1:
 				order["grounded_m"] = snappedf(moved, 0.1)
@@ -371,22 +376,13 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 	return result
 
 
-## Where `tank` can actually stand nearest `goal`: squad's `SlotGround.for_unit` (the hull's own turning envelope clear
-## of walls; lands with squad's round-10 merge, 82468c5b) when it exists, else `SlotGround.standable` (the navmesh,
-## whose bake already leaves a vehicle's radius clear). Unchanged without a baked navmesh (tests without an arena).
-## Called through the script resource so this file compiles against either version of SlotGround.
-static var _slot_ground: Script = null
-static var _has_for_unit := false
+## Where `tank` can actually stand nearest `goal`: `SlotGround.for_unit` (the hull's own turning envelope clear of
+## walls). Unchanged without a baked navmesh (tests without an arena).
 
 static func ground_goal(tank: Tank, goal: Vector3) -> Vector3:
 	if tank == null:
 		return goal
-	if _slot_ground == null:
-		_slot_ground = load("res://game/tactics/slot_ground.gd") as Script
-		_has_for_unit = _slot_ground.get_script_method_list().any(func(m: Dictionary) -> bool: return String(m["name"]) == "for_unit")
-	if _has_for_unit:
-		return _slot_ground.call("for_unit", tank, goal, String(tank.unit_id))
-	return SlotGround.standable(tank, goal)
+	return SlotGround.for_unit(tank, goal, String(tank.unit_id))
 
 
 ## Whether a unit is already carrying out exactly this order (same verb, same place, same target). Round 5: elements

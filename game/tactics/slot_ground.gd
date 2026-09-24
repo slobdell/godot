@@ -36,6 +36,10 @@ static func standable(node: Node3D, point: Vector3) -> Vector3:
 ## envelope the pushes from the two walls cancel, and the hull ends in the middle, which is the best there is.
 const CLEARANCE_PROBES := 8
 const CLEARANCE_ITERATIONS := 3
+## Round 11 (nav R2): how far off the mesh a clearance probe may fall before it pushes. It was TOLERANCE_M (1 m), which
+## stacked on the mesh's own edge error left an IFV 2.4 m from a rotated wreck with a 4.0 m envelope
+## (tests/nav/test_nav_grounded_goals.gd). The centre's tolerance stays 1 m: that one is about not moving a good goal.
+const PROBE_TOLERANCE_M := 0.25
 
 
 ## THE ONE GROUNDING CALL for anyone issuing a per-unit goal (Element, Orders' group moves, the drills): the nearest
@@ -52,19 +56,109 @@ static func standable_for(node: Node3D, point: Vector3, clearance: float) -> Vec
 	if need <= 0.0 or node == null or not node.is_inside_tree() or not Pathing.enabled or not Pathing.is_ready(node):
 		return at
 	var map := node.get_world_3d().navigation_map
+	at = _settle(node, map, at, need)
+	if _fits(map, at, need):
+		return at
+	# Round 11 (nav R2): the pushes cancelled in a pinch - between a wreck and a block face, a gap narrower than the
+	# envelope - and the point they left is one the hull does not fit. Look around it for the nearest point that DOES,
+	# ring by ring out to FIT_RINGS envelopes; a street that is narrower than the envelope everywhere keeps the
+	# centred point, which is the best there is (and was the only answer before).
+	for ring in range(1, FIT_RINGS + 1):
+		var best: Variant = null
+		var best_d := INF
+		for k in CLEARANCE_PROBES:
+			var angle := TAU * float(k) / float(CLEARANCE_PROBES)
+			var candidate := _settle(node, map, standable(node, at + Vector3(cos(angle), 0.0, sin(angle)) * need * float(ring)), need)
+			if not _fits(map, candidate, need):
+				continue
+			var d := Vector2(candidate.x - at.x, candidate.z - at.z).length()
+			if d < best_d:
+				best_d = d
+				best = candidate
+		if best != null:
+			return best
+	return at
+
+
+## How many envelope-widths out standable_for looks for a point the hull fits, when the one it settled on does not.
+const FIT_RINGS := 2
+
+
+## The push loop: every clearance probe that falls off the mesh pushes the point back by how far off it fell.
+static func _settle(node: Node3D, map: RID, at: Vector3, need: float) -> Vector3:
 	for iteration in CLEARANCE_ITERATIONS:
 		var push := Vector3.ZERO
 		for k in CLEARANCE_PROBES:
-			var angle := TAU * float(k) / float(CLEARANCE_PROBES)
-			var probe := Vector3(at.x + cos(angle) * need, 0.0, at.z + sin(angle) * need)
-			var closest := NavigationServer3D.map_get_closest_point(map, probe)
-			var back := Vector3(closest.x - probe.x, 0.0, closest.z - probe.z)
-			if back.length() > TOLERANCE_M:
+			var back := _off_mesh(map, at, need, k)
+			if back.length() > PROBE_TOLERANCE_M:
 				push += back
-		if push.length() <= TOLERANCE_M:
+		if push.length() <= PROBE_TOLERANCE_M:
 			break
 		at = standable(node, at + push / float(CLEARANCE_PROBES) * 2.0)
 	return at
+
+
+## Whether every clearance probe around `at` is on the mesh (within the mesh's own edge noise, TOLERANCE_M / 2).
+static func _fits(map: RID, at: Vector3, need: float) -> bool:
+	for k in CLEARANCE_PROBES:
+		if _off_mesh(map, at, need, k).length() > TOLERANCE_M * 0.5:
+			return false
+	return true
+
+
+## Probe `k`'s way back onto the mesh (zero when it is on it).
+static func _off_mesh(map: RID, at: Vector3, need: float, k: int) -> Vector3:
+	var angle := TAU * float(k) / float(CLEARANCE_PROBES)
+	var probe := Vector3(at.x + cos(angle) * need, 0.0, at.z + sin(angle) * need)
+	var closest := NavigationServer3D.map_get_closest_point(map, probe)
+	return Vector3(closest.x - probe.x, 0.0, closest.z - probe.z)
+
+
+## Round 11 (nav R2, leak 4): slots are grounded one at a time, so two slots pushed out of the same block can land on
+## the same point, and in a street narrower than the envelope a wing slot collapses onto the centreline (leak 5) — onto
+## whoever is already there. Two crews handed one spot means one of them never arrives, which on the lead's screen is a
+## hull "stuck behind a wall". `apart` takes a grounded goal and the spots already handed out ([point, half width]
+## pairs) and, when it overlaps one, searches rings around it for the nearest grounded point that overlaps none. The
+## rings step by this hull's width, so the first ring is "the next spot over"; APART_RINGS bounds both the work (only
+## ever paid on a conflict) and how far from where he pointed a crew may be moved. Nothing found: the goal as it was.
+const APART_RINGS := 3
+const APART_DIRECTIONS := 8
+
+
+static func half_width_of(unit_id: String) -> float:
+	if not Units.exists(unit_id):
+		return 0.0
+	return 0.5 * float((Units.stat(unit_id, "hull_size", [0.0, 0.0, 0.0]) as Array)[0])
+
+
+static func overlaps(point: Vector3, half_width: float, taken: Array) -> bool:
+	for spot: Array in taken:
+		var other: Vector3 = spot[0]
+		if Vector2(point.x - other.x, point.z - other.z).length() < half_width + float(spot[1]) - 0.01:
+			return true
+	return false
+
+
+static func apart(node: Node3D, goal: Vector3, unit_id: String, taken: Array) -> Vector3:
+	var half := half_width_of(unit_id)
+	if not overlaps(goal, half, taken):
+		return goal
+	var step := maxf(2.0 * half, 2.0)
+	for ring in range(1, APART_RINGS + 1):
+		var best: Variant = null
+		var best_d := INF
+		for k in APART_DIRECTIONS:
+			var angle := TAU * float(k) / float(APART_DIRECTIONS)
+			var candidate := for_unit(node, goal + Vector3(cos(angle), 0.0, sin(angle)) * step * float(ring), unit_id)
+			if overlaps(candidate, half, taken):
+				continue
+			var d := Vector2(candidate.x - goal.x, candidate.z - goal.z).length()
+			if d < best_d:
+				best_d = d
+				best = candidate
+		if best != null:
+			return best
+	return goal
 
 
 ## The navmesh bake's agent radius (ArenaLanes reads it off arena.tscn); cached, it is a scene constant.

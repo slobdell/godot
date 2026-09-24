@@ -268,9 +268,34 @@ func context_for(tank_name: String, tanks: Dictionary) -> Dictionary:
 		# A formation hugging a wall would put slots inside it; keep every slot drivable: inside the arena...
 		var slot: Vector3 = context["slot"]
 		slot = Vector3(clampf(slot.x, -SLOT_LIMIT, SLOT_LIMIT), 0.0, clampf(slot.z, -SLOT_LIMIT, SLOT_LIMIT))
-		# X2: and never inside an obstacle (the navmesh's nearest standable point).
-		context["slot"] = SlotGround.standable(tanks.get(tank_name) as Node3D, slot)
+		# X2: and never inside an obstacle. Round 11 (nav R2): with THIS hull's clearance, not the mesh centre's - the
+		# navmesh edge is only the bake radius (2 m) off a wall, so a War Rig given a slot there had its nose in the
+		# building (the lead: "a unit's target position ends up inside of a building"); and never on a squad-mate's spot.
+		context["slot"] = _grounded_slot(tank_name, tanks, slot)
 	return context
+
+
+## Per member: [the raw slot, where it was grounded]. A slot that has not moved is not re-grounded (an anchored
+## formation asks the same question every think, and the hull-aware answer costs ~30 navmesh queries).
+var _grounded := {}
+const REGROUND_M := 0.25
+
+
+func _grounded_slot(tank_name: String, tanks: Dictionary, slot: Vector3) -> Vector3:
+	var tank := tanks.get(tank_name) as Tank
+	if tank == null:
+		return slot
+	var memo: Array = _grounded.get(tank_name, [])
+	if not memo.is_empty() and Vector2(slot.x - memo[0].x, slot.z - memo[0].z).length() < REGROUND_M:
+		return memo[1]
+	var taken: Array = []
+	for other: String in _grounded:
+		if other != tank_name and tanks.has(other):  # a dead squad-mate's spot is free
+			taken.append([_grounded[other][1], _grounded[other][2]])
+	var unit_id := String(tank.unit_id)
+	var ground := SlotGround.apart(tank, SlotGround.for_unit(tank, slot, unit_id), unit_id, taken)
+	_grounded[tank_name] = [slot, ground, SlotGround.half_width_of(unit_id)]
+	return ground
 
 
 func _raw_context(tank_name: String, tanks: Dictionary) -> Dictionary:

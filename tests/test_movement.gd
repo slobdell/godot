@@ -134,29 +134,47 @@ func test_asked_to_give_way_it_steps_off_the_line_and_resumes() -> void:
 func test_an_unreachable_goal_says_so_instead_of_arriving() -> void:
 	# Lesson 76: the navmesh answers an unreachable goal with a route to the nearest reachable point. A goal inside a
 	# solid obstacle must read as blocked / no_path at the end of that route — never as arrived, never as driving on.
-	var arena := await ArenaFixture.build(self, "yard")  # its OWN navmesh, not the last test's (ArenaFixture header)
+	# Round 11: the goal is the CENTRE of a 40 m Terminus block, 20 m from any face — beyond Movement.REPAIR_MAX_M, so
+	# the one repair is refused and the honest report stands (a small prop's inside is now repaired: the test below).
+	var reading := await _drive_into_block(Vector3(40.0, 0.0, 0.0))
+	assert_eq(reading.get("reachable"), false, "the route is known not to reach the goal (%s)" % reading)
+	assert_eq(reading.get("phase"), "blocked", "and at the end of it the unit says blocked, not arrived (%s)" % reading)
+	assert_eq(reading.get("blocked_by"), "no_path", "because there is no path there (%s)" % reading)
+	assert_eq(float(reading.get("repaired_m", -1.0)), 0.0, "and it was not quietly sent somewhere else (%s)" % reading)
+
+
+## Round 11 (nav R2 item 3): repair, don't just report. A goal 3 m inside a block face is one the hull can stand
+## beside: Movement re-grounds it once with the hull's envelope and drives there, and says how far it moved it.
+func test_a_goal_just_inside_a_wall_is_repaired_once_and_arrived_at() -> void:
+	Movement.reset_route_arms()
+	# The (40, 0) block's north face is z = 20; the goal is 3 m inside it.
+	var reading := await _drive_into_block(Vector3(40.0, 0.0, 17.0), "arrived")
+	assert_eq(reading.get("phase"), "arrived", "the repaired goal is driven to and arrived at (%s)" % reading)
+	assert_true(float(reading.get("repaired_m", 0.0)) >= 3.0 and float(reading.get("repaired_m", 0.0)) <= Movement.REPAIR_MAX_M,
+			"and the reading says how far the goal was moved (%s)" % reading.get("repaired_m"))
+	assert_eq(int(Movement.route_arms()["goal_repairs"]), 1, "one repair, counted (%s)" % Movement.route_arms())
+
+
+## Drive a tank from the ring road at `goal` inside a Terminus block until `until` (or blocked); the last reading.
+func _drive_into_block(goal: Vector3, until := "blocked") -> Dictionary:
+	await ArenaFixture.build(self, "terminus")  # its OWN navmesh, not the last test's (ArenaFixture header)
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
-	var inside: Variant = ArenaFixture.inside_cover(arena.layout)
-	assert_true(inside != null, "setup: yard has a solid prop to aim into")
-	var target: Vector3 = inside
 	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN)
-	var start := NavigationServer3D.map_get_closest_point(arena.get_world_3d().navigation_map, target + Vector3(0, 0, 25))
-	tank.global_position = Vector3(start.x, 0.0, start.z)
+	tank.global_position = Vector3(goal.x, 0.0, 31.0)  # the ring road, north of the block
+	tank.rotation.y = 0.0  # nose north... it has to turn round: the goal is behind it
 	var orders := OrderController.new()
 	orders.tank = tank
 	orders.tanks_root = game_match.tanks
 	add_to_tree(orders)
-	orders.set_orders({"type": "move_to", "x": target.x, "z": target.z}, {"type": "hold_fire"})
+	orders.set_orders({"type": "move_to", "x": goal.x, "z": goal.z}, {"type": "hold_fire"})
 	var reading := {}
-	for frame in SimClock.TICK_RATE * 12:
+	for frame in SimClock.TICK_RATE * 15:
 		await tree.physics_frame
 		reading = Movement.state(tank)
-		if reading["phase"] == "blocked":
+		if reading["phase"] == until or reading["phase"] == "blocked":
 			break
-	assert_eq(reading.get("reachable"), false, "the route is known not to reach the goal (%s)" % reading)
-	assert_eq(reading.get("phase"), "blocked", "and at the end of it the unit says blocked, not arrived (%s)" % reading)
-	assert_eq(reading.get("blocked_by"), "no_path", "because there is no path there (%s)" % reading)
+	return reading
 
 
 func test_two_hulls_spawned_on_one_spot_separate_and_both_drive_off() -> void:

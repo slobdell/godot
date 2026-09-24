@@ -89,6 +89,12 @@ const BLOCKER_AHEAD_COS := 0.5
 const NO_PATH_MARGIN := 3.0
 ## ...and a unit within this of the end of such a route has gone as far as it can: `blocked`, `no_path`, at once.
 const UNREACHABLE_AT_END := 4.0
+## Round 11 (nav R2 item 3): **repair, don't just report.** Before that `blocked`/`no_path`, the goal is re-grounded ONCE
+## with this hull's own envelope (SlotGround.for_unit) and driven to instead — if a route reaches the repaired point and
+## it is within REPAIR_MAX_M of what was asked. A unit that quietly drives somewhere else is worse than one that says it
+## is stuck, so a repair further than that, or one no route reaches, is refused and today's honest report stands. One
+## try per goal (a goal that moves more than NEW_GOAL_JUMP is a new goal), so a genuinely impossible order cannot spin.
+const REPAIR_MAX_M := 12.0
 ## eta(): the share of top speed a route is driven at on average (corners, the slow-down at the end).
 const ETA_CRUISE_SHARE := 0.85
 
@@ -181,7 +187,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -263,10 +269,13 @@ static func route_arms() -> Dictionary:
 			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
 			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
-			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused}
+			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
+			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused}
 
 
 static func reset_route_arms() -> void:
+	goal_repairs = 0
+	goal_repairs_refused = 0
 	corners_inflated = 0
 	corners_kept = 0
 	press_escapes = 0
@@ -332,6 +341,12 @@ var _progress_best := INF
 var _goal := Vector3.INF
 ## Round 7: does the current route end at the goal? (False = the navmesh can only get this unit near it.)
 var _reachable := true
+## Round 11 (R2 item 3): the goal a repair was tried for (INF = none yet), and what it was repaired to (INF = refused).
+var _repair_for := Vector3.INF
+var _repair_to := Vector3.INF
+## Arm counters: repairs driven, and repairs refused (too far, or no route reaches them either).
+static var goal_repairs := 0
+static var goal_repairs_refused := 0
 ## The last Pathing.query for this route (its gaps go into Movement.state for anyone who needs the numbers).
 var _route_reading := {}
 var _arrive := 0.0
@@ -710,6 +725,7 @@ func reading() -> Dictionary:
 			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
 			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
+			"repaired_m": _flat_distance(_repair_to, _repair_for) if _repair_to != Vector3.INF else 0.0,
 			"facing_arc": arc_live, "legibility": legibility(), "corridor": corridor(),
 			"clearance_shortfall_m": clearance_shortfall(ctl.tank, ctl.tank.unit_id) if ctl.tank != null else 0.0,
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE), "replan": last_replan, "wedged": wedged,
@@ -733,6 +749,8 @@ func reset() -> void:
 	_progress_goal = Vector3.INF
 	yield_to = ""  # a new order outranks giving way (K1 response guarantee)
 	_order_ticks = 0
+	_repair_for = Vector3.INF
+	_repair_to = Vector3.INF
 
 
 ## How close a hull of `unit_id` can settle on a point: 0 for tracks and hover (they pivot), and for wheels
@@ -784,6 +802,12 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		leash_orders += ctl._step  # the denominator: ticks a leash reached the mover, arm on or off
 		if leash_on():
 			goal = within_leash(goal, order["leash"])
+	if _repair_for != Vector3.INF:
+		if _flat_distance(goal, _repair_for) > NEW_GOAL_JUMP:
+			_repair_for = Vector3.INF  # a new goal: it gets its own one try
+			_repair_to = Vector3.INF
+		elif _repair_to != Vector3.INF:
+			goal = _repair_to
 	if _goal == Vector3.INF or _flat_distance(goal, _goal) > NEW_GOAL_JUMP:
 		_order_ticks = 0  # a new destination, not a slot sliding along (brains re-issue their move every think)
 	_goal = goal
@@ -1019,6 +1043,29 @@ func _keep_station(cmd: TankCommand, goal: Vector3, delta: float) -> Vector2:
 	return Vector2(cmd.throttle, cmd.turn)
 
 
+## Round 11 (R2 item 3): re-ground an unreachable goal once with this hull's envelope; true when the hull now drives to
+## the repaired point (the next tick's drive() substitutes it and re-plans), false to report `no_path` as before.
+func _repair(goal: Vector3) -> bool:
+	if _repair_for != Vector3.INF or _off.has("repair"):
+		return false
+	var tank := ctl.tank
+	_repair_for = goal
+	_repair_to = Vector3.INF
+	var fixed := SlotGround.for_unit(tank, goal, tank.unit_id)
+	var moved := _flat_distance(fixed, goal)
+	if moved < 0.5 or moved > REPAIR_MAX_M:
+		goal_repairs_refused += 1
+		return false
+	var route := Pathing.query(tank, tank.global_position, fixed)
+	if not bool(route["ready"]) or not bool(route["reachable"]) or float(route["goal_gap_m"]) > NO_PATH_MARGIN:
+		goal_repairs_refused += 1
+		return false
+	_repair_to = fixed
+	_repath_left = 0.0
+	goal_repairs += 1
+	return true
+
+
 ## N1: what this tick amounts to. Arrived when steering has nothing left to do, blocked after BLOCKED_SECONDS without
 ## progress (with the cause), pathing while the navmesh isn't ready, else driving.
 func _update_phase(goal: Vector3, drive_vector: Vector2, direct: bool) -> void:
@@ -1029,7 +1076,10 @@ func _update_phase(goal: Vector3, drive_vector: Vector2, direct: bool) -> void:
 		return
 	if not _reachable and not direct and not _path.is_empty() \
 			and _flat_distance(ctl.tank.global_position, _path[_path.size() - 1]) <= UNREACHABLE_AT_END:
-		# As near as the navmesh goes: say so now rather than after BLOCKED_SECONDS of grinding.
+		# As near as the navmesh goes. Round 11: first, once, a goal this hull can stand on near the one it was given;
+		# only if there is none, say so now rather than after BLOCKED_SECONDS of grinding.
+		if _repair(goal):
+			return
 		phase = "blocked"
 		blocked_by = "no_path"
 		return
