@@ -19,10 +19,22 @@ const MONO_FONT := preload("res://assets/fonts/ShareTechMono-Regular.ttf")
 ## The layout is designed at 320 × 640 and rendered at the tier's size.
 const LAYOUT := Vector2i(320, 640)
 const FEED_SIZE := {FxQuality.Tier.LOW: Vector2i(192, 384), FxQuality.Tier.MEDIUM: Vector2i(256, 512), FxQuality.Tier.HIGH: Vector2i(320, 640)}
+## ...and a LANDSCAPE cut of the same ad, for panels that are wider than they are tall. The airship's flank screens
+## are 1.9:1; showing them the portrait feed left the ad as a tall strip with black either side, which the lead saw
+## at once: *"the actual video display on the airship is just portrait video data instead of landscape video so it
+## doesn't actually fill the screen."* Cropping the portrait feed to fill a wide panel was the other option and it
+## is worse -- at these aspects it keeps only the middle quarter of the ad's width, cutting the brand and headline
+## off at both ends. So the ad is LAID OUT again for the shape, which costs one more small 2D viewport per channel
+## that asks for it and nothing at all for the ground screens, which never do.
+const WIDE_LAYOUT := Vector2i(640, 320)
+const WIDE_FEED_SIZE := {FxQuality.Tier.LOW: Vector2i(384, 192), FxQuality.Tier.MEDIUM: Vector2i(512, 256), FxQuality.Tier.HIGH: Vector2i(640, 320)}
 const GLITCH_SECONDS := 0.5
 const LIGHT_RATE := 3.0
 
 var channel_name := "arena"
+## True for the landscape cut. The layout's own size; every position below is written against it.
+var wide := false
+var layout_size := LAYOUT
 var ads: Array = []
 var index := 0
 ## 0..1: how hard the screens tear and split right now.
@@ -56,13 +68,17 @@ var _showing_live := false
 
 
 ## The channel named `name` in `node`'s viewport, created on first use.
-static func channel(node: Node, name := "arena") -> AdBroadcast:
+## The channel named `name`, portrait by default. `wide` gives the landscape cut of the same playlist -- a separate
+## channel object with its own layout and its own material, so a wide panel and a tall one can share a playlist
+## without either being stretched. Screens of the same shape still share one layout and one material.
+static func channel(node: Node, name := "arena", wide := false) -> AdBroadcast:
 	var viewport := node.get_viewport() if node.is_inside_tree() else (Engine.get_main_loop() as SceneTree).root
 	var channels: Dictionary = viewport.get_meta("ad_channels", {})
-	if channels.has(name) and is_instance_valid(channels[name]):
-		return channels[name]
-	var created := AdBroadcast.new(name, channels.size() * 3)
-	channels[name] = created
+	var key := name + ("~wide" if wide else "")
+	if channels.has(key) and is_instance_valid(channels[key]):
+		return channels[key]
+	var created := AdBroadcast.new(name, channels.size() * 3, wide)
+	channels[key] = created
 	viewport.set_meta("ad_channels", channels)
 	viewport.add_child.call_deferred(created)
 	return created
@@ -74,9 +90,11 @@ static func load_playlist() -> Array:
 	return (data as Dictionary).get("ads", []) if data is Dictionary else []
 
 
-func _init(name := "arena", start := 0) -> void:
+func _init(name := "arena", start := 0, landscape := false) -> void:
 	channel_name = name
-	self.name = "AdBroadcast_" + name
+	wide = landscape
+	layout_size = WIDE_LAYOUT if landscape else LAYOUT
+	self.name = "AdBroadcast_" + name + ("_wide" if landscape else "")
 	ads = load_playlist()
 	_build_layout()
 	screen_material.shader = SCREEN_SHADER
@@ -152,7 +170,7 @@ func advance(delta: float) -> void:
 	# Ken Burns: a slow push in with a drift, so a still never looks frozen.
 	var progress := clampf(_clock / float(ad["seconds"]), 0.0, 1.0)
 	_art.scale = Vector2.ONE * lerpf(1.04, 1.14, progress)
-	_art.position = Vector2(lerpf(-6.0, 6.0, progress), lerpf(4.0, -8.0, progress)) - (_art.scale - Vector2.ONE) * Vector2(LAYOUT) / 2.0
+	_art.position = Vector2(lerpf(-6.0, 6.0, progress), lerpf(4.0, -8.0, progress)) - (_art.scale - Vector2.ONE) * Vector2(layout_size) / 2.0
 	var frames: Array = ad.get("frames", [1, 1])
 	var count := int(frames[0]) * int(frames[1])
 	if count > 1 and _atlas.atlas != null:
@@ -308,7 +326,7 @@ func _on_spectacle(_position: Vector3, weight: float) -> void:
 
 
 func _apply_quality() -> void:
-	viewport.size = FEED_SIZE[FxQuality.tier()]
+	viewport.size = (WIDE_FEED_SIZE if wide else FEED_SIZE)[FxQuality.tier()]
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 
 
@@ -325,57 +343,62 @@ func _build_layout() -> void:
 	viewport.name = "Feed"
 	viewport.disable_3d = true
 	viewport.transparent_bg = false
-	viewport.size = FEED_SIZE[FxQuality.Tier.HIGH]
-	viewport.size_2d_override = LAYOUT
+	viewport.size = (WIDE_FEED_SIZE if wide else FEED_SIZE)[FxQuality.Tier.HIGH]
+	viewport.size_2d_override = layout_size
 	viewport.size_2d_override_stretch = true
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	add_child(viewport)
+	var size := Vector2(layout_size)
 	var root := Control.new()
-	root.size = Vector2(LAYOUT)
+	root.size = size
 	root.clip_contents = true
 	viewport.add_child(root)
 	var ground := ColorRect.new()
 	ground.color = Color(0.01, 0.01, 0.02)
-	ground.size = Vector2(LAYOUT)
+	ground.size = size
 	root.add_child(ground)
-	_art.size = Vector2(LAYOUT)
+	_art.size = size
 	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	root.add_child(_art)
-	# A dark wash behind the copy so it reads over any art.
+	# A dark wash behind the copy so it reads over any art. Portrait puts it across the bottom half; landscape puts
+	# it down the LEFT, because a wide ad reads as picture-beside-copy rather than picture-above-copy.
 	var wash := TextureRect.new()
 	var gradient := Gradient.new()
 	gradient.set_color(0, Color(0, 0, 0, 0))
 	gradient.set_color(1, Color(0, 0, 0, 0.85))
 	var fill := GradientTexture2D.new()
 	fill.gradient = gradient
-	fill.fill_from = Vector2(0, 0)
-	fill.fill_to = Vector2(0, 1)
+	fill.fill_from = Vector2(1, 0) if wide else Vector2(0, 0)
+	fill.fill_to = Vector2(0, 0) if wide else Vector2(0, 1)
 	wash.texture = fill
 	wash.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	wash.position = Vector2(0, 300)
-	wash.size = Vector2(LAYOUT.x, LAYOUT.y - 300)
+	var copy_top := 300.0 if not wide else 0.0
+	wash.position = Vector2.ZERO if wide else Vector2(0, copy_top)
+	wash.size = Vector2(size.x * 0.62, size.y) if wide else Vector2(size.x, size.y - copy_top)
 	root.add_child(wash)
+	var strip_h := 30.0 if not wide else 26.0
 	_style(_brand, _display(500, 3), 19, Vector2(18, 18))
 	root.add_child(_brand)
-	_style(_headline, _display(700, 1), 46, Vector2(16, 360))
+	# The headline sits above the fine print in both cuts; only the box it lives in changes shape.
+	_style(_headline, _display(700, 1), 46 if not wide else 40, Vector2(16, 360) if not wide else Vector2(18, 96))
 	_headline.add_theme_constant_override("line_spacing", -12)
 	_headline.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	root.add_child(_headline)
 	_bar.size = Vector2(56, 4)
-	_bar.position = Vector2(18, 540)
+	_bar.position = Vector2(18, 540) if not wide else Vector2(18, 222)
 	root.add_child(_bar)
-	_style(_fine, MONO_FONT, 12, Vector2(18, 552))
+	_style(_fine, MONO_FONT, 12, Vector2(18, 552) if not wide else Vector2(18, 234))
 	_fine.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_fine.add_theme_color_override("font_color", Color(0.78, 0.78, 0.74))
 	root.add_child(_fine)
 	var strip := ColorRect.new()
 	strip.color = Color(0.0, 0.0, 0.0, 0.9)
-	strip.position = Vector2(0, LAYOUT.y - 30)
-	strip.size = Vector2(LAYOUT.x, 30)
+	strip.position = Vector2(0, size.y - strip_h)
+	strip.size = Vector2(size.x, strip_h)
 	root.add_child(strip)
 	var line := "  //  ".join(ads.map(func(ad: Dictionary) -> String: return String(ad["brand"]))) + "  //  TANK SQUAD ARENA  //  "
-	_style(_ticker, MONO_FONT, 14, Vector2(0, LAYOUT.y - 25))
+	_style(_ticker, MONO_FONT, 14, Vector2(0, size.y - strip_h + 5))
 	_ticker.text = line + line
 	_ticker.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3))
 	strip.add_child(_ticker)
@@ -399,6 +422,14 @@ func _style(label: Label, font: Font, size: int, at: Vector2) -> void:
 
 ## Labels outside containers grow with their text (orientation trip-up 42): pin their boxes after every change.
 func _pin_labels() -> void:
+	if wide:
+		# Landscape: the copy column is the washed left side, the picture keeps the rest.
+		var column := WIDE_LAYOUT.x * 0.58
+		_headline.size = Vector2(column - 32, 120)
+		_headline.position = Vector2(16, 216 - 120)
+		_fine.size = Vector2(column - 36, 52)
+		_brand.size = Vector2(column - 36, 30)
+		return
 	_headline.size = Vector2(LAYOUT.x - 32, 176)
 	_headline.position = Vector2(16, 530 - 176)
 	_fine.size = Vector2(LAYOUT.x - 36, 52)

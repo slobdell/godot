@@ -37,3 +37,20 @@ normalize barrier_a prop.wall "--forward=+x --repeat=4x1x1"
 normalize stands_a kit.stands "--forward=${STANDS_FORWARD:-+z}"
 normalize gate_a kit.gate "--forward=+z"
 normalize tower_a kit.floodlight_tower "--forward=+z"
+
+# The Syndicate broadcast airship (round 11, the lead's approved airship_r11_m). Fitted by LENGTH, not "contain":
+# `arena.airship`'s guide.z IS the design length, and the whole size is forced by the lead's camera (see
+# SyndicateAdAirship.LENGTH). Its textures stay at 1024, not the kit's 512 -- it is ONE instance and the biggest thing
+# on screen when it passes (1446 px of 1920), where the kit's props are small and many.
+AIRSHIP="assets/incoming/meshy/airship_m.glb"
+if [ -s "$AIRSHIP" ]; then
+	make --no-print-directory assets-normalize IN="$AIRSHIP" SLOT=arena.airship THEME=$THEME \
+		ARGS="--forward=-x --emission-energy=3 \
+			--texture-caps=albedo_texture:1024,normal_texture:1024,roughness_texture:512,metallic_texture:512 \
+			--source='Meshy image-to-3D meshy-t2 from review item airship_r11_m' $LICENSE" 2>&1 \
+		| grep -E "note: (tiled|decimated)|size \(|triangles:|contract|CONTRACT|warning" || true
+else
+	echo "skipping arena.airship: $AIRSHIP is missing (git-ignored; regenerate with"
+	echo "  tools/assets/generate.py --provider meshy --slot unit.tank --review-item airship_r11_m \\"
+	echo "      --smart-topology --polycount 30000 --name meshy/airship_m )"
+fi

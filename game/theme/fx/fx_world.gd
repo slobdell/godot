@@ -166,8 +166,8 @@ func _init() -> void:
 		add_child(RigHinge.new())
 	if LaunchFlags.from_environment().has("airship-look"):
 		add_child(AirshipLook.new())
-	if LaunchFlags.from_environment().has("blimp-look"):
-		add_child(BlimpLook.new())
+	if LaunchFlags.from_environment().has("airship-shot"):
+		add_child(AirshipShot.new())
 
 
 func _ready() -> void:

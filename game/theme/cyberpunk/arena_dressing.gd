@@ -43,8 +43,9 @@ var ground: ChunkedGround
 var crowd: CrowdSystem
 ## Feel X7 (round 9): the Syndicate airship, or null on LOW.
 var airship: SyndicateAirship
-## Feel R7 (round 10): the low ad blimp, or null on LOW and on maps without a route.
-var blimp: AdBlimp
+## Round 11: the Syndicate broadcast airship the lead sees while he plays, or null on LOW. Every map gets one
+## (`SyndicateAdAirship.route_for` derives a circuit for any layout); it replaces round 10's `AdBlimp`.
+var blimp: SyndicateAdAirship
 ## Walls, towers, stands, gates and the crowd: rebuilt when a layout changes the arena's size.
 var structures: Node3D
 ## The perimeter's half size in use (walls at ±half).
@@ -147,10 +148,10 @@ func _build_airship() -> void:
 		return
 	airship = SyndicateAirship.new()
 	structures.add_child(airship)
-	# R7 (round 10): the low ad blimp he can see at his pose, on maps that have a street route for it.
-	var route := AdBlimp.route_for(Arena.active)
-	if not route.is_empty():
-		blimp = AdBlimp.new(route)
+	# Round 11: the Syndicate broadcast airship. It flies itself (AirshipPilot circles wherever the fight is), so the
+	# layout is all it needs -- every map has one. An empty layout (no arena: a gallery, a bench) still gets none.
+	if SyndicateAdAirship.flies_on(Arena.active):
+		blimp = SyndicateAdAirship.new(Arena.active)
 		structures.add_child(blimp)
 
 

@@ -545,3 +545,43 @@ failed twice in one morning — nav's check on `96bbf38e` was voided and scale l
 - `make check` runs its 36 known-answer tests (`remote-guard-test`, ~1 s, no Godot). **That is the point**: every
   defect round 9 found — the inert exclusion groups, the re-derived shard count, `lint`'s empty file list,
   `check-hashes` reporting "unmoved" with no data — was a guard nobody had ever exercised.
+
+## trip-up 80: the wrapper dies, the run does not — and the verdict line goes with it (2026-09-23, the airship)
+
+Three checks were lost in one session to two mistakes that compound. Both are cheap to avoid and neither is obvious.
+
+**1. A backgrounded wrapper is not a detached one.** `make remote T=check` launched through the harness's
+`run_in_background` is a child of this session's shell. The laptop hit its memory ceiling (7.6 GB total, ~1.9 GB
+free with Godot running locally), the OOM killer took the *wrapper*, and **builder0 carried on regardless** — the
+ssh side had already started. The result is the worst of both: the box is busy for another five minutes, the guard
+correctly refuses the next launch, and the one line CLAUDE.md tells you to read — `>> remote: make check exited <N>`
+— is gone forever, because only the wrapper prints it. Launch long remote jobs so the local shell cannot take them
+down with it:
+
+    cat > "$SCRATCH/run_check.sh" <<'SH'
+    #!/usr/bin/env bash
+    cd /home/slobdell/projects/godot
+    make remote T=check > "$LOG" 2>&1; echo "WRAPPER_EXIT=$?" >> "$LOG"
+    SH
+    chmod +x "$SCRATCH/run_check.sh"
+    setsid nohup "$SCRATCH/run_check.sh" </dev/null >/dev/null 2>&1 & disown
+
+(The round-10 lesson was "launch long jobs detached and watch them, never inside a watcher", after a monitor's
+timeout killed its own job. This is the same lesson from the other side: the killer was the OOM, not a timeout, and
+`run_in_background` is not detached enough.)
+
+**2. `pkill -f "make remote"` kills the shell running it.** The pattern matches the invoking `bash -c …` whose
+command line *contains that text*, so the command dies at its own first statement — visible only as a bare
+`Exit code 144`, with the work after it silently never running. This is trip-up 19 ("never by pattern") biting
+inside your own process rather than a sibling checkout's. Kill by PID, or by a pattern that cannot match the caller.
+
+**3. `pgrep -c -f run_tests.gd` returning 1 does not mean the box is clear** — the 1 is the pgrep itself (trip-up 79
+again). It reported "clear" twice while twenty processes were live in the run directory, which is exactly why the
+guard exists and why it refused the relaunch. **The cwd test is the only authority**; to sweep a directory's run:
+
+    ssh builder0 'ps -eo pid= | while read p; do d=$(readlink /proc/$p/cwd 2>/dev/null); \
+        case "$d" in /home/slobdell/tank_squad/godot) kill -9 $p 2>/dev/null;; esac; done'
+
+**The guard came out of this well:** it refused the second launch with the live run's pid, label, launch time and a
+process list, and named `REMOTE_FORCE=1` as the deliberate escape. It cost nothing and saved a `--delete` rsync into
+a directory a suite was reading.

@@ -1,0 +1,28 @@
+{
+  "name": "Round 11: the Syndicate rigid airship (replaces the ad blimp)",
+  "why": "The lead (2026-09-23): the rendered blimp is a make-or-break staple and the current one is a lit primitive ellipsoid with four screen quads floating off its curve. He asked for an AIRSHIP WITH A RIGID BODY, not a blimp, and authorised a new asset for it. Generated at STREET scale (~26 m), the size that flies the Terminus avenue at 12 m altitude, which round 9 measured as the only place his camera can see an aircraft at all (at 21 deg tilt the top of the frame is 3.5 deg BELOW the horizon: the sky is never on screen). The same GLB can be instanced large over the city later at no further Meshy cost. EVERY direction carries a BLANK RECESSED BILLBOARD PANEL on each flank: the AdBroadcast screen is a separate quad with a shared material override (ad_screen.gd:34), so a bezel in the mesh is all the model has to provide and the feed stays undistorted on our own UVs.",
+  "tail": "Full aircraft in frame, three-quarter front view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+  "est_3d": 15,
+  "factions": {
+    "syndicate": {
+      "label": "Syndicate airship",
+      "target": "arena.airship",
+      "intro": "The airship that drifts down the Terminus avenue while you fight. A RIGID hull with a real structural frame, not a gasbag: it should read as a machine that was built, not inflated. The Syndicate is the one faction in the game allowed to look clean. Each flank carries a blank recessed screen panel; the live feed of your kills renders into it in engine. Pick one.",
+      "lead": "Photorealistic concept art of a small {role}, roughly 26 metres long, a corporate surveillance and broadcast craft flying low over a neon city at night.",
+      "look": "Immaculate ivory and warm off-white duralumin panels with almost no rust or grime, fine panel seams and flush rivet lines, brushed dark gunmetal structural members and trim, one deep-set blank rectangular screen bezel filling the middle of each flank, steady navigation lights only (red port, green starboard, white tail) and a warm glow from the gondola windows. Expensive, clinical and slightly sinister: the ivory tower, not a war machine.",
+      "roles": {"airship": "rigid-framed airship"},
+      "role_notes": {"airship": "Seen from the RTS camera at 12 m altitude, roughly 880 px wide in the opening frame, drifting down the avenue between 24 m blocks. The silhouette has to read as RIGID at a glance: hard longitudinal keel lines, visible ring frames, a structural nose cone, fins that are built structures rather than flat slabs. The flank panel must be FLAT and vertical enough to seat a screen quad without floating."},
+      "concepts": [
+        {"id": "airship_r11_a", "role": "airship", "title": "Zeppelin liner: the corporate flagship",
+         "subject": "A classic 1930s-style rigid passenger Zeppelin shrunk to a corporate runabout: a long streamlined duralumin hull with visible circumferential ring frames and longitudinal girder lines pressed through the skin, a rounded structural nose cone with a mooring spindle, four clean cruciform tail fins braced with struts, a slender glazed gondola faired into the belly under the forward third, and two small engine nacelles on short outriggers at the rear quarters.",
+         "notes": "The most beautiful and the most obviously 'airship' from any angle. RISK: the hull is a body of revolution, so the flank is curved and the screen bezel has to be a deliberate flat inset; if the generator rounds it off, the panel floats like today's does."},
+        {"id": "airship_r11_b", "role": "airship", "title": "Patrol cutter: the one that is watching you",
+         "subject": "An armoured rigid patrol airship built like an aerial coast-guard cutter: a faceted hull with hard chines and flat slab flanks instead of a tube, exposed external frame ribs and tensioned bracing cables, a blunt armoured nose with a sensor radome, a long warship-style gondola running most of the belly with a raised glazed bridge at the front, a stub sensor mast, and four ducted engine pods on braced outriggers.",
+         "notes": "Flat slab flanks seat the screen panel perfectly and the exposed ribs sell 'rigid' instantly. Closest to the Blade Runner spinner-era police airship the lead first described. RISK: reads more Law than Syndicate if it comes back too military."},
+        {"id": "airship_r11_c", "role": "airship", "title": "Lifting body: the flying billboard",
+         "subject": "A modern hybrid air vehicle: a wide flattened multi-lobed lifting-body hull, three fused longitudinal lobes seen from the front, broad and whale-like, with a rigid internal frame showing as raised seams between the lobes, a smooth blended nose, swept V tail surfaces, a wide flat vertical flank filling most of the side, and a low aerodynamic gondola pod slung tight under the centre with landing skids.",
+         "notes": "The tallest, flattest flank of the three: the biggest possible screen with no bezel trickery, and a silhouette nothing else in the game shares. RISK: least like the word 'airship'; it may read as a drone or a whale rather than a Zeppelin."}
+      ]
+    }
+  }
+}

@@ -96,3 +96,19 @@
 | 2026-09-22 22:16 | image-to-image nano-banana-pro | `01a0cb30-4400-73fd-b73d-9db022989b67` | 9 | meshy/burner_r10_a | SUCCEEDED | 52 |
 | 2026-09-22 22:16 | image-to-image nano-banana-pro | `01a0cb30-c151-7182-9533-90dd8f7a565f` | 9 | meshy/burner_r10_b | SUCCEEDED | 43 |
 | 2026-09-22 22:17 | image-to-image nano-banana-pro | `01a0cb31-29fe-74cd-b945-8ca26fd83ad3` | 9 | meshy/burner_r10_c | SUCCEEDED | 34 |
+| 2026-09-23 08:41 | text-to-image nano-banana-pro | `01a0cd6d-4171-73cb-8edb-91507f305017` | 9 | meshy/airship_r11_c | SUCCEEDED | 1037 |
+| 2026-09-23 08:42 | text-to-image nano-banana-pro | `01a0cd6d-416f-72d2-9607-cfd0a30359b6` | 9 | meshy/airship_r11_b | SUCCEEDED | 1037 |
+| 2026-09-23 08:42 | text-to-image nano-banana-pro | `01a0cd6d-416e-71b1-b3a2-7194ed752c0c` | 9 | meshy/airship_r11_a | SUCCEEDED | 1037 |
+| 2026-09-23 09:15 | text-to-image nano-banana-pro | `01a0cd8c-0b71-756a-9e2b-fce84cbb95c1` | 9 | meshy/airship_r11_d | SUCCEEDED | 1010 |
+| 2026-09-23 09:15 | text-to-image nano-banana-pro | `01a0cd8c-0b72-76e8-8ab9-ba977e7300b9` | 9 | meshy/airship_r11_f | SUCCEEDED | 1010 |
+| 2026-09-23 09:15 | text-to-image nano-banana-pro | `01a0cd8c-0b73-71b4-82f2-59e0b8e5e501` | 9 | meshy/airship_r11_e | SUCCEEDED | 1010 |
+| 2026-09-23 09:20 | image-to-image nano-banana-pro | `01a0cd8f-ee07-70f4-9600-b2bd3f2de880` | 9 | meshy/airship_r11_g | SUCCEEDED | 1001 |
+| 2026-09-23 09:21 | image-to-image nano-banana-pro | `01a0cd90-d4bf-729f-936c-84ec875eea95` | 9 | meshy/airship_r11_h | SUCCEEDED | 992 |
+| 2026-09-23 09:22 | image-to-image nano-banana-pro | `01a0cd91-c0e3-754b-af15-c9ce5ae85dbe` | 9 | meshy/airship_r11_i | SUCCEEDED | 983 |
+| 2026-09-23 09:25 | image-to-image nano-banana-pro | `01a0cd95-16ad-72f1-af51-508787971fc5` | 9 | meshy/airship_r11_j | SUCCEEDED | 974 |
+| 2026-09-23 09:26 | image-to-image nano-banana-pro | `01a0cd95-d423-713e-a0d7-a0814913a0e9` | 9 | meshy/airship_r11_k | SUCCEEDED | 965 |
+| 2026-09-23 09:27 | image-to-image nano-banana-pro | `01a0cd96-9216-752f-b232-7fc97d8b309f` | 9 | meshy/airship_r11_l | SUCCEEDED | 956 |
+| 2026-09-23 09:32 | image-to-image nano-banana-pro | `01a0cd9b-c024-7738-aaa1-295e4e715fff` | 9 | meshy/airship_r11_m | SUCCEEDED | 938 |
+| 2026-09-23 09:33 | image-to-image nano-banana-pro | `01a0cd9c-7a2f-7540-abf2-1f3cca49e7a8` | 9 | meshy/airship_r11_n | SUCCEEDED | 929 |
+| 2026-09-23 09:34 | image-to-image nano-banana-pro | `01a0cd9c-f7b5-75e8-87ad-fc34637e03de` | 9 | meshy/airship_r11_o | SUCCEEDED | 920 |
+| 2026-09-23 09:40 | image-to-3d meshy-t2 smart-topology | `01a0cda1-db89-7382-a434-05ea336a90be` | 15 | airship_r11_m | SUCCEEDED | 905 |

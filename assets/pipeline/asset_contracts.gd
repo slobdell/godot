@@ -84,6 +84,21 @@ const SLOTS := {
 		"guide": Vector3(320.0, 30.0, 320.0), "fit": "none", "anchor": "world",
 		"tris": 50000, "methods": [], "file": "arena_dressing",
 	},
+	# The Syndicate broadcast airship (round 11, the lead's airship_r11_m). Fitted by LENGTH, because length is the
+	# only dimension the lead's camera leaves free: at his pose (21 deg, FOV 35, boom 49 m) the camera sits at 17.56 m
+	# and the frame's top edge is 3.5 deg BELOW the horizon, so the hull's deck -- which is where its screens are --
+	# must stay under 17.31 m or it turns away from him, while the belly must stay above 6.45 m or it passes through
+	# the tallest hull (6.18 m). Those two walls are 10.86 m apart, and this mesh is 0.2704 of its length from belly to
+	# deck, which puts a HARD CEILING of 40.2 m on the airship. 38 m is that ceiling with ~0.3 m of margin at each
+	# wall (belly 6.74 m, deck 17.02 m, altitude 14.0 m). Seen broadside at 45 m that is ~1446 px of a 1920 frame
+	# against the round-10 blimp's ~837 -- GEOMETRY, not a measurement: it is 38 m subtended at that range, and what
+	# he actually sees is usually a three-quarter view, often part-occluded. `test_theme_ad_airship.gd` holds the
+	# arithmetic so a later resize cannot quietly break the look.
+	"arena.airship": {
+		"guide": Vector3(14.8, 14.5, 38.0), "max": Vector3(100.0, 100.0, 38.0), "fit": "length",
+		"anchor": "center",
+		"tris": 30000, "methods": [], "elongated": "z", "file": "arena_airship",
+	},
 }
 
 ## Candidate props that don't fill a gameplay slot yet (A4 procedural kit): same pipeline, looser rules.

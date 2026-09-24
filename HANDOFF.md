@@ -8,7 +8,159 @@ _Last updated: 2026-09-23 03:30 — **Round 10 CLOSED on a green tree (`main-che
 
 _Last updated: 2026-09-20 16:00 (the 21:50 stamp below was a typo for 13:50). **Round 9's overnight run: sixteen branches and all three checkpoints merged; the day has merged thirty-eight more. `main` at `a6268137`+ is the CLEANEST tree of the round: the main check on `49ed1fb3` (builder0, 16:00) read `>> remote: make check exited 2`, 1535 passed, 1 failed, 16 passed 2 FAILED 0 NOT RUN, sim-baseline 1e90f69e5d6fcc46 unmoved, determinism 253adefeec657df1, and ZERO body, region or edge reports, with combat's leaking `test_tank_yaw_fit` override (and a second leaker control found, `test_combat_no_damage`, a Match per call) still in the tree: nav's sealed `_teardown()` frees and drains whether or not an override calls super, prediction confirmed. `main-checked` is the annotated tag on `49ed1fb3` with that verdict in its message. The two reds are known and named: the spawn test's settle assertion (squad's committed true positive; combat's `Tank.place()` clears it, its check on `1db4893c` running) and the engine-deck scenario (ORBIT radius reads hull length, round 10). Nothing is pushed to `origin`; you push.** The rest of this line is the morning's history: **Round 9's overnight run: sixteen branches and all three checkpoints merged; the day has merged thirty-five more (the latest: squad's hold-on-arrival, nav's accessor and expect_error, metrics' keep-going check, grouping, FILTER and REASON tooling). `main` at `0e7f884a` carries ONE known poisoner: combat's `test_tank_yaw_fit` teardown override that never calls super leaks a foundry (44 bodies, 4 regions) and takes its shard with it; combat's fix is on its tip with the settle tick (every match's first physics tick fixed) and lands as ONE hash with two causes (the plant constraint on; the settle tick) the moment its tip's check reaches sim-baseline, then a main check runs and the annotated `main-checked` tag moves. Until then the last main check that reached the baseline is `0ad28f49` (1516/2, reds listed, NOT green) and every check on any tree shows the 44-body cascade. Open: the five-squads test fails on combat's laptop at every commit and passes on builder0 on identical code (machine before branch; combat's builder0 run decides); nav's sealed teardown re-checks without its containment (which regressed the suite to 1401/117). Baseline `1e90f69e5d6fcc46`, recorded twice; the day's fifth and sixth moves pending in combat's hash. The last fully green `main` is `0808834e`. Read the morning summary first; the red-test paragraph under "Where it stood" is the full history.**_
 
-## ✅ ROUND 10 IS CLOSED (2026-09-23, 03:30) — read this first; the morning summary and the lead's list follow, then the launch record as written
+## 🛩 THE AIRSHIP, PASS 2: IT FLIES ITSELF (2026-09-23, same session — read this before the pass-1 section below)
+
+The lead on pass 1: *"the airship is too small … it's just moving in straight lines. We need to invest whatever
+effort necessary to make it appear floating … and splining or circling behavior throughout the match. Also the
+airship should ideally generally fly to where the action is … I think the airship would have its own PID controller
+to try to fly the path of a target spline, and since it's an airship, slightly bad PID tunes might create a
+realistic effect for high rotational inertia."*
+
+**The route is gone.** `AirshipPilot` (new) is a PID rudder on a body with high rotational inertia, chasing a carrot
+that circles wherever the units are fighting. `SyndicateAdAirship` owns the tick loop, the float and the screens.
+It is stepped once per FIXED tick, so 30 fps and 144 fps fly the same line; `test_the_same_ticks_always_fly_the_same_path`
+is the property that replaces the old pose function's purity.
+
+**The tuning is the interesting part, and the first attempt was wrong in a way worth keeping.** The gains looked
+under-damped but the loop was not: the closed-loop damping ratio is `(KD/YAW_INERTIA + YAW_DAMPING) / (2·√(KP/YAW_INERTIA))`,
+and at `YAW_DAMPING = 0.55` that is **ζ = 1.01 — critically damped**, gliding onto every heading without ever
+crossing it. Worse, `MAX_YAW_RATE = 0.22` saturated on every correction, and a rate-limited turn slews to its
+heading and stops dead, so no gain could have produced an overshoot. Fixed by making the airframe physical rather
+than the gains clever: **damping 0.12, rate cap 0.30 as a SAFETY limit, KD 1.60 → ζ = 0.38**, which overshoots a 40°
+correction by 12.5°, crosses back twice and settles in ~5 s. Measured, not eyeballed.
+
+**Four separable things make it read as floating** (`syndicate_ad_airship.gd` header): it never flies straight (the
+carrot is always off to one side, mean |yaw rate| 8.5°/s); it leans LATE (bank lags yaw by ~2.2 s); it wallows on
+three axes on periods with no common multiple; and it slips outward through its own turns like the sail it is.
+
+**Size: 1.5×, 57 m, and 2× is refused with a number.** Scaling pins the belly at 6.2 m and lifts everything else, so
+the flank screens rise through the top of his frame (14.76 m over his focus). Readable screen area: **1.0× → 39 m²
+(84 % of the panel), 1.5× → 26 m² (25 %), 2.0× → 0 m² — the screens leave his frame entirely.** `TUNE=airship.scale`
+to see it; the test asserts some flank panel stays under the ceiling, so a later resize fails here rather than in
+play.
+
+**Two wrong turns, both now written into the code as the reason something ISN'T there:**
+- **A belly screen was built and cannot be seen.** The logic was "scaling lifts the flanks, so put a screen under the
+  keel where it stays low". But his camera (17.56 m) sits INSIDE this hull's height range (belly 6.2 m, deck 22.8 m),
+  so it views the hull edge-on and a downward panel faces away exactly as the upward deck panel does. **Only the
+  flanks can ever work**, which is also why size costs readable screen and nothing buys it back.
+- **Steering alone could not keep it out of the buildings.** At 1.5× the beam is 22.2 m and the Terminus streets are
+  18 m: it no longer fits between the city blocks. Bending the goal away from a block just let the heavy rudder fly
+  through it anyway (seen in a frame). It now **climbs over what it cannot go round** (rooftop + 3 m, at 2.4 m/s),
+  which is both the fix and the most airship-like motion it makes. Cost, measured over 240 s per map: it is at its
+  low cruise height **96 % of the time on yard, 90 % on pit, 62 % on crossing, 52 % on the Terminus**.
+
+**`make blimp-look` is RETIRED** (it was built on the blimp's constants and a route model that no longer exists; its
+frames came back empty and its pixel readings were wrong by 3×). `make airship-shot` takes the pictures;
+`SyndicateAdAirship.seen_fraction` answers "how often" in closed form, as an upper bound that ignores occlusion.
+
+**Four bugs the lead found by PLAYING it, all fixed, and three of them were mine in an embarrassing way:**
+- ***"flew into the crowd and disappeared"*** — nothing kept the hull inside the arena. The venue's grandstands
+  stand just outside `half_size`; the orbit carries the hull outward and `avoid` pushes it further out past every
+  perimeter floodlight. `AirshipPilot.contain` now pulls it back from 72 % of the play radius and **the carrot is
+  hard-clamped inside the wall**, because the gradual pull alone lost to the avoidance push (measured: 141.1 m on a
+  140 m map). The orbit centre is also kept `TRACK_MARGIN` further in, since a heavy hull flies a wider circle than
+  the one it is given.
+- ***"flying backwards"*** — a straight convention bug. Godot's forward is −Z, so a node at heading h points
+  `(−sin h, −cos h)`; the pilot used `(sin h, cos h)`. Self-consistent, and exactly 180° from the model, so the
+  airship flew its whole flight in reverse. The convention now lives in two functions, `heading_toward` and
+  `forward_of`, and nowhere else. **The overshoot test had the same bug** and had been passing on a goal that was
+  straight ahead rather than dead astern.
+- ***"stationary yaw … yaw more like a boat"*** — the rudder had full authority at any speed, so the hull could
+  pivot on the spot like a turret. Torque now scales with speed (`flow`), which is what a rudder actually does and
+  closes a loop with `TURN_DRAG`: a hard turn scrubs speed, which costs authority, which limits the turn.
+- ***"just portrait video data … doesn't actually fill the screen"*** — the ad layout is authored portrait (320×640)
+  and the flank panels are 1.9:1, so the feed was a narrow strip in a dark panel. `AdBroadcast` now builds a
+  **landscape cut** (640×320, copy down the left, picture to the right) and each screen joins the cut matching its
+  own shape. Measured fill of a flank panel: **26 % → 97 %**. Cropping the portrait feed instead was rejected —
+  at these aspects it keeps only the middle quarter and cuts the brand and headline off at both ends. The ground
+  screens are untouched (334 ad tests and 89 theme tests green).
+
+**VERIFIED GREEN on the tree WITH all four fixes** (builder0, read from the wrapper's own line):
+`>> remote: make check exited 0`, `check passed: 18 targets`, **1686 passed, 0 failed**, sim-baseline
+`457b5e830708b439` **UNMOVED** (round 10's adopted hash — the airship still has no collider and still moves nothing
+in the simulation), ai-scenarios `43,1` unchanged. 18 of those tests are `tests/test_theme_ad_airship.gd`.
+
+## 🛩 THE SYNDICATE BROADCAST AIRSHIP, PASS 1 (2026-09-23, the same session — the asset and the screens)
+
+**The lead asked to work on the rendered blimp alone, outside the orchestrator/worker pattern.** His words:
+*"the blimp rendering just looks no good … I realize that the blimp is a make-or-break staple to the game, and
+therefore it's worth adding a new asset … I don't want a blimp, I want an airship with a rigid body."* Round 10's
+`AdBlimp` (a lit ellipsoid with four screen quads floating off its curve) is **deleted** and replaced by
+`SyndicateAdAirship` built on a new Meshy asset, `airship_r11_m`.
+
+**The concept gate took five rounds and fifteen concepts (135 credits, balance 905), and the two rejections that
+mattered are lessons, not taste:**
+
+1. *"still just kind of looks like a blimp instead of slightly satirical dystopian broadcasting airship of the
+   syndicate"* — the first three briefs optimised the word RIGID and produced gas envelopes with a screen attached.
+   At ~880 px the lead reads SILHOUETTE, and an ellipse is a blimp whatever detail is pressed into the skin: the
+   broadcast apparatus has to BREAK the outline, not decorate the hull.
+2. *"it doesn't have the consistent look of The Syndicate vehicles in the game. A player would have no idea these
+   were part of the same organization"* — **the root cause is a documentation gap and it is now fixed.**
+   `art_direction.md` described the Syndicate in one line ("curvy hover vehicles, immaculate ivory tower") and said
+   *"write their rules here when a faction is scheduled"*, while five approved Syndicate concepts had been sitting in
+   the repo since round 3. Briefing from those adjectives produced riveted grey municipal barges; the faction is
+   actually **pearlescent cream lacquer, gold pinstripe, one continuous cyan light line, seamless and rivet-free.**
+   The rules are now written into `art_direction.md`, with the rule that produced the accepted concepts:
+   **when a faction has approved art, brief from the IMAGES and pass them to Meshy as `--reference`
+   (`make art-concept REFS="a.png b.png"`), never from adjectives.**
+
+**The lead's three requirements on the final asset, and how each was answered by a measurement:**
+
+| his ask | answer |
+|---|---|
+| *"Ensure the vidoe screen is overlay properly on the intended area"* | **`make assets-apertures`** (new, `game/theme/gallery/screen_apertures.gd`) reads every triangle's albedo through its own UVs, keeps the dark ones, groups them into planes and prints each panel's centre, normal and extent. `SyndicateAdAirship`'s screen constants are that tool's output, so a regenerated hull is re-measured rather than re-guessed. **Second half of the same problem:** `ad_screen.gdshader` mapped UV straight onto a PORTRAIT 320×640 feed, so any non-portrait panel squashed the ad (the round-10 blimp did). It now takes a **`feed_rect` INSTANCE uniform** — per-screen crop, one shared material kept, so "ten screens cost one layout" still holds — and each panel letterboxes the feed at its own aspect. |
+| *"I want this airship rendered in all maps"* | `route_for` **derives** a circuit for any layout instead of round 10's hand-written table with ONE entry (eight of nine maps silently had no blimp). It prefers a declared straight up-the-map lane wide enough for the 14.8 m beam, else the clearest offset, scoring by clearance from tall props (`TALL_PROPS`: blocks 21 m, floodlights 4.5 m, ad screens and signs 4 m) and tie-breaking toward the middle where his camera looks. `test_every_shipping_map_gets_an_airship` walks nine maps. |
+| *"the blimp was smaller than I would have expected … This should be a large airship"* | **38 m, and that is within 6 % of the hard ceiling of 40.2 m.** At his pose the camera sits at 17.56 m and the frame's top edge is 3.5° BELOW the horizon, so the hull lives between two walls: its DECK under 17.31 m (or the screens tip away from him) and its BELLY over 6.45 m (or it drives through a 6.18 m tank). Those walls are 10.86 m apart and this mesh is 0.2704 of its length belly-to-deck. **Going bigger means changing the camera, not the airship** — that is the lead's call and the one lever left. |
+
+**Verified:** nine tests in `tests/test_theme_ad_airship.gd` pass (collider-free, fixed-tick pose, all nine maps, the
+Terminus lane, both camera walls, the size ceiling, screens seated inside the hull's own bounds, the feed fitted, and
+the deck panel's honesty). **In the game:** `build/airship-shot/airship_t0600_wide.png` (ARENA=yard) shows the hull
+over the yard with the flank screen seated in its bezel playing the live feed at the right aspect.
+
+**The derived circuit, map by map** (`SyndicateAdAirship.corridor_pair`, legs as x offsets with their clearance from
+the nearest tall prop). Two legs on the map is better than one, because a leg outside the arena is time he cannot see
+it at all:
+
+| map | legs (x) | clearance | note |
+|---|---|---|---|
+| terminus | 0 / 198 | 1.6 m / — | the avenue, and a return leg OUTSIDE the map: a 14.8 m beam fits only one Terminus street, the side streets each have a floodlight 7.6 m off them |
+| yard | 0 / −48 | 22.6 / 2.6 m | both over the map |
+| pit | −14 / 26 | 2.6 / 14.6 m | both over the map |
+| boneyard | 0 / −40 | 54.6 / 14.6 m | both over the map |
+| boulevard | −14 / −74 | 2.6 / 2.6 m | both over the map |
+| crossing | −94 / 94 | 1.6 / 1.6 m | **flanks only** — props stand on its centreline |
+| sumps | −94 / 94 | 1.6 / 1.6 m | **flanks only** — sumps has a city block at dead centre (0, 0) |
+| maze, barriers | 0 / −40 | nothing tall at all | both over the map |
+
+**Consequence worth his eye: on the Crossing and the Sumps it will be seen rarely**, because the only clear corridors
+are 94 m out and the camera geometry (altitude ≤ 17.56 − 0.061 × distance) puts anything that far away above the
+frame. That is the derivation refusing to fly through buildings, not a bug — but if he wants it over those two maps'
+middles, the fix is theirs (move a prop) or a lower, smaller airship for them specifically.
+
+**Two things the lead should know, both reported rather than hidden:**
+- **The DECK screen is near-invisible at his pose (~89° grazing).** His camera is barely above the deck, so a panel
+  facing straight up is edge-on. The FLANK screens carry the video. No resize fixes this at pitch 21°;
+  `deck_grazing_deg()` and a test pin the number so nobody later claims otherwise.
+- **`make blimp-look`'s numbers for this hull are not trustworthy** — it was built around the blimp's `ENVELOPE_*`
+  constants, its frames came back empty (it re-finds a rebuilt instance that poses at the origin) and it reported
+  1573 px for a hull the geometry puts out of frame at that range. Use the new **`make airship-shot`** for pictures;
+  `blimp_look` needs a rewrite before its fraction is quoted again. Written up in `verification.md`.
+
+**THE CHECK IS GREEN (builder0, 2026-09-23 ~03:30, read from the wrapper's own line):
+`>> remote: make check exited 0`, `check passed: 18 targets`, `1677 passed, 0 failed`, **sim-baseline
+`457b5e830708b439` UNMOVED** (round 10's adopted hash: the airship has no collider and moved nothing),
+determinism passed, ai-scenarios `43,1` unchanged against the baseline. The test count 1674 → 1677 is exactly the
+nine new airship tests minus the six deleted blimp tests, which is a small confirmation that nothing else moved.**
+
+**Still open:** the working tree is **UNCOMMITTED on `main`** (51 paths; the lead was asked twice and has not said to
+commit, so nothing was committed and nothing was pushed). When it is committed, the commit should name this verdict.
+`blimp_look.gd` should be rewritten or retired before its numbers are quoted again. The only tree drift against the
+green check is two comment-only edits made while it ran (a "geometry, not a measurement" qualifier on the px figure
+in `asset_contracts.gd` and `syndicate_ad_airship.gd`); no code changed after the sync.
+
+## ✅ ROUND 10 IS CLOSED (2026-09-23, 03:30) — the round before this session; the morning summary and the lead's list follow, then the launch record as written
 
 **Nine streams — control, squad, arena, nav, combat, feel, show, announcer, and (added the same evening on his ask) terrain — each with a brief in
 `_agents/streams/<stream>.md` and a worktree at `~/projects/godot-<stream>`.** The lead's playtest words are verbatim in

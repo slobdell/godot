@@ -359,6 +359,31 @@ vehicle, and the unit nameplates covered the rest. Before quoting a look as evid
 - frame the camera on the army's middle and keep it there as the army moves;
 - look at a frame from the middle of the march, not only the first and last.
 
+## A "look" bench and a "how often" bench are different tools, and one cannot stand in for the other (round 11, the airship)
+
+`blimp_look.gd` sweeps every focus × yaw × tick and reports what fraction of the time a thing is in frame. That is the
+right question for "is it ever visible", and it was built for the round-10 blimp. It is the WRONG tool for "does the
+art look right", and when the airship replaced the blimp it produced two silent failures at once:
+
+- **Its frames came back empty.** It shoots by re-finding the object after the sweep, and a dressing rebuild (the
+  adaptive quality tier flips once frames render again) hands it a fresh instance whose route has not been sampled
+  yet, which poses at the world origin. The frames exit 0, contain no airship, and say `seen=false px_w=0` in a line
+  that is easy to read past.
+- **Its pixel numbers stopped meaning anything.** It measured 1573 px for a hull that the camera geometry puts
+  entirely above the frame at that range. The reading is built on the old blimp's `ENVELOPE_*` constants and its
+  probe points; swapping the object under it does not swap the assumptions.
+
+So: **`make airship-shot` for the picture, `make blimp-look` for the fraction, and never quote one as the other.**
+The shot tool works because `SyndicateAdAirship.pose_on` is pure and static — the pose at any tick is known without a
+match, so the camera can be aimed at a position that is computed rather than hunted, and the subject cannot be
+missing. The general rule this is an instance of: *a bench that finds its subject by searching the tree can fail to
+find it and still exit 0; prefer one that computes where the subject is.*
+
+Two framing lessons from the same afternoon, both costing a run each: on a map with 24 m blocks a broadside shot puts
+a block between the lens and the subject (shoot the maps without towers, or shoot along the corridor it flies), and an
+"establishing" boom that clears the rooftops also clears the subject — the wide shot has to be labelled as not the
+lead's pose, because at his pose a 38 m airship does not fit in frame at all.
+
 ## Timing numbers under builder0's 4 heavy slots (nav, round 8 close)
 
 builder0 now runs 4 heavy slots (derived from `/proc/meminfo`, clamped [2, 4]) rather than 2. That is good for queue
@@ -375,3 +400,37 @@ For nav's instruments specifically:
 - A fixed-tick simulation makes this subtler than it looks: the SIM clock is unaffected, so a saturated run gives the
   same sim-seconds. What inflates is wall-clock, and anything that samples wall-clock inside the run (profiling, a
   timeout, a budget in real seconds) inherits it.
+
+## A control loop's tuning is arithmetic, not taste (round 11, the airship's PID)
+
+The airship's rudder was asked to feel *"slightly badly tuned … high rotational inertia"*. The first attempt set
+gains that looked under-damped and produced a hull that glided onto every heading without ever crossing it. Two
+things were wrong, and neither was visible by staring at the constants:
+
+- **The loop, not the gains, sets the damping.** Closing a PID rudder over a body with inertia `I` and aerodynamic
+  damping `D` gives a standard second-order system: `ω = √(KP/I)` and `2ζω = KD/I + D`. The plant's own `D` is IN
+  the damping ratio, so a large `D` swamps whatever `KD` says. At `D = 0.55` the ratio was **ζ = 1.01** — critically
+  damped by accident. Write the ζ expression in the file next to the constants; it is one line and it is the
+  difference between tuning and guessing.
+- **A rate limiter hides the dynamics entirely.** `MAX_YAW_RATE` was set at the value a normal correction reached,
+  so the rudder saturated every time, and a rate-limited turn slews at a constant rate and stops dead on arrival.
+  **No gain can overshoot through a saturated limiter.** A limiter must be a SAFETY bound, comfortably above the
+  operating point, or it silently becomes the controller.
+
+**And the test that measures it can be wrong in the same direction as the code.** The overshoot test counted sign
+changes of the heading error between ADJACENT samples, with a deadband to ignore noise — but an error sweeping
+through zero spends several samples inside any deadband, so the neighbours either side of a crossing share a sign
+and the crossing is never counted. It reported zero overshoot from a loop that overshoots by 12°. **Count sign
+changes of the last SIGNIFICANT sample, never of the previous one.**
+
+Sweep the parameter in a throwaway script and print `(crossings, settle time, overshoot, ζ)` per row before
+choosing; the shipped tune (ζ = 0.38, 12.5° overshoot on a 40° correction, ~5 s settle) came out of a 5-row table,
+not out of an opinion.
+
+## An "it can't be seen" fix needs the viewer's height, not just the thing's (round 11, the belly screen)
+
+Scaling the airship lifted its flank screens through the top of the lead's frame, so a screen was added under the
+keel — low whatever the hull does. It rendered correctly and is invisible from everywhere, because **his camera at
+17.56 m sits INSIDE the hull's height range** (belly 6.2 m, deck 22.8 m): it views the hull edge-on from the side,
+and a downward-facing panel faces away from him exactly as the upward-facing deck panel does. Before adding a
+surface to be looked at, check which side of it the eye is on — at every pitch in range, not the convenient one.

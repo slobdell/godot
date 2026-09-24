@@ -72,11 +72,38 @@ cartoon or toy-like.**
 | **Neon lives behind or inside things**: light bars behind grilles, strips in armor seams, magenta + cyan, plus red warning and amber beacon lights | Neon as outlines on everything, or a cartoon glow |
 | Heavy, low, wide, top-heavy silhouettes that read from an RTS camera; a distinct turret or weapon on top | Thin, spindly, or detail-only silhouettes that vanish at 40 m |
 
+### The Syndicate (written 2026-09-23 from the lead's five APPROVED round-3 concepts; see the lesson below)
+
+Read from the art, not from adjectives: `assets/incoming/meshy/syndicate_{tank_c,special_b,scout_a,ifv_b,artillery_b}.concept.png`.
+The Syndicate is **luxury automotive**, not clean-industrial. It is the exact inverse of the Condemned on every row.
+
+| Do | Don't |
+|---|---|
+| **Seamless pearlescent cream-white automotive lacquer** over curved monolithic volumes; deep gloss, like a hypercar's paint | Matte enamel, painted panels, industrial off-white; anything that reads bureaucratic or municipal |
+| **Thin polished gold / brass pinstripe trim** following every body line and bezelling every opening — the faction's single strongest tell | Steel or gunmetal trim; chrome (that's the road gangs) |
+| **One continuous thin cyan light line tracing the whole silhouette**, plus cyan lens rings on weapons | Neon behind grilles (that's the Condemned); light bars, outlines on everything |
+| Flush **gloss-black glazing with gold surrounds**; small **flush black sensor spheres** set into the bodywork | Framed windows, exposed cockpits, stalked or bolted-on sensors |
+| **Gold-bezelled louvre slots** where an opening is needed; everything faired in under smooth covers | Grilles, mesh, exposed machinery, trusses, scaffolding |
+| **No rivets, no panel gaps, no exposed structure**; hover, no visible wheels or propellers | Visible seams, stencils, hatches, bolts, weathering of any kind |
+| Wear: **almost none.** The only faction in the game allowed to look new | Rust, grime, soot, chipping |
+
+**The register is "expensive, serene and faintly predatory."** Where the Syndicate needs to look sinister, the
+sinister part is what the beautiful object is *for*, never dirt or damage on it.
+
+> **Lesson (2026-09-23, the airship).** Six concepts were rejected across two rounds because their briefs were
+> written from this file's old one-line description ("curvy hover vehicles, immaculate ivory tower") instead of from
+> the approved art. "Immaculate ivory" was read as matte and municipal and produced riveted grey broadcast barges;
+> the lead: *"A player would have no idea these were part of the same organization."* **When a faction has approved
+> concepts, brief from the images and pass them to Meshy as `--reference` (image-to-image), which carries the house
+> style far better than any adjective.** `make art-concept REFS="a.png b.png"`. Write a faction's rules into this
+> file the moment the lead approves its concepts — round 3 approved five and left this section saying "write their
+> rules here", which is what cost the two rounds.
+
 ### The other factions
 
-Road gangs (rusted but loved hot rods, chrome, visible crews), the Law (military and police vehicles, professional
-but neglected), and the Syndicate (curvy hover vehicles, immaculate ivory tower): see *Factions* and the wear
-spectrum in [game_design.md](game_design.md). Write their rules here when a faction is scheduled.
+Road gangs (rusted but loved hot rods, chrome, visible crews) and the Law (military and police vehicles,
+professional but neglected): see *Factions* and the wear spectrum in [game_design.md](game_design.md). Write their
+rules here the moment the lead approves their concepts — not "when the faction is scheduled".
 
 **Paint and team identity** (the lead's standing direction): players **paint the whole vehicle** (cosmetic, over
 the grime), and **friend or foe is shown by accent lights** (the neon light bars and warning lights), not by hull

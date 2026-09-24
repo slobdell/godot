@@ -192,3 +192,9 @@ export-desktop: import $(TEMPLATES_OK) ## Export the Linux desktop build (factio
 	mkdir -p $(BUILD_DIR)/desktop
 	$(GODOT) --headless --path . --export-release "Linux Desktop" $(BUILD_DIR)/desktop/tank_squad.x86_64
 	@ls -l $(BUILD_DIR)/desktop/tank_squad.pck | awk '{printf "desktop pack: %.1f MB\n", $$5 / 1048576}'
+
+.PHONY: assets-apertures
+assets-apertures: import ## Find a model's dark flat screen panels and print the quad transform each one needs: IN=path.glb [ALBEDO= DARK=0.16 MIN_AREA=2.0]
+	@$(GODOT) --headless --path . --script res://game/theme/gallery/screen_apertures.gd -- $(IN) \
+		$(if $(ALBEDO),--albedo=$(ALBEDO)) $(if $(DARK),--dark=$(DARK)) $(if $(MIN_AREA),--min-area=$(MIN_AREA)) 2>&1 \
+		| grep -vE '^Godot Engine|^$$' || true
