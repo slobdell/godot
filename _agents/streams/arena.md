@@ -156,95 +156,99 @@ Nothing blocks you. A3's frames and A4's before/after go on the arena page for h
 
 ## Status
 
-_Updated 2026-09-24 by the arena worker. Baseline: `a04d75c0` green on builder0 (`make check exited 0`, 1686 passed, 0 failed)._
+_Updated 2026-09-24 ~04:00 by the arena worker. **Merge here: `abb5be04` is green** (builder0: `make check exited 0`,
+1689 passed / 0 failed, 18 targets, sim-baseline `457b5e830708b439` unmoved). The commits after it are Status/doc only.
+Baseline at the start: `a04d75c0` green on builder0 (1686/0)._
 
-### Plan (in order)
-1. **A1** publish crossing + sumps (test first) — **done** (`3ba40e51`)
-2. **A2** venue towers solid-or-outside (test first) — **done** (`a909a14d`)
-3. A1.4 play each map on the default path — **done** headless (`make terrain-drive`); rendered frames for the page
-4. **A3** one new terrain map — **the Locks, built; a fixture waiting on the lead's yes** (`abb5be04`); on his page
-5. **A4** (stretch) — **a fixture proposal `pit_dug`** (`ece226b8`); before/after → review page
+### Summary
+| item | state | commit |
+|---|---|---|
+| **A1** deal Crossing + Sumps; fail on any built-and-unpublished map | **done** | `3ba40e51` (green in `87d83217`) |
+| **A2** venue floodlight towers | **done**: moved outside the wall; parity test covers the dressing | `a909a14d` (green in `87d83217`) |
+| A1.4 play each map on the default path | **done**: `make terrain-drive` + frames | `87d83217`, `f30dbf0d` |
+| **A3** a new map | **built, measured, on his page; waiting on a LEAD GATE** (recording its name) | `abb5be04` |
+| **A4** (stretch) the Pit gets pits | **fixture proposal on his page** | `ece226b8` |
 
-### Done
+**His review page: https://claude.ai/artifact/DUa5fN72G9YDTjLYRFkuj6** (private to his account; version 3 built from
+`abb5be04`). It covers the rotation now, the Locks, the Crossing and Sumps with squads crossing, the dug-Pit
+before/after, the Terminus tower before/after at his pose, and five questions.
+
+### Done, with measurements
 - **A1.** `Arena.ROTATION` = yard, pit, terminus, **crossing, sumps**. `Arena.CUT` holds his cut list in code.
   `test_every_built_map_is_dealt_cut_or_a_fixture`: every layout in `arenas/` must be exactly one of fixture / CUT /
-  ROTATION. **Verified failing** on the old rotation (it named crossing and sumps) and passing on the new one. A dealt
-  map's note must name its terrain; the existing crossing/sumps notes already do (river/bridges; pits/causeways). Other
-  consumers of the list (lesson 43) re-run locally and green: `test_arena_cover_tables` (walks ROTATION),
-  `test_control_faction_pick`, `test_arena_maze`. `make nav-fight-maps` reads ROTATION from the code, so its warning
-  updates itself (nav's file, untouched).
-- **Bridges and pits as built** (one line, so nobody promises a viaduct): a bridge is restored ground at y = 0
-  between two carved holes, drawn as a 0.07 m deck with 0.9 m rails, and nothing drives under it. A pit is a hole
-  with no navmesh and a 0.9 m kerb; you cannot fall in.
-- **A2.** `test_the_venue_dressing_is_solid_or_outside_the_wall` builds the shipping dressing for every non-fixture
-  layout and fails on any floor-standing drawn mesh inside `ArenaShape.contains(shape, half_size)` that isn't inside a
-  `navigation_source` box. On the old tree it named **exactly the towers** (6 per hexagon, 4 per square map) and
-  **nothing else**: stands, gates, screens, signs and barricades all sit outside the wall. That also closes A2.4's sweep.
-  **Decision: move the towers outside the wall rather than make them solid in place.** The fight loses no floor, so the
-  navmesh and lanes don't move (no lane narrowed; nothing to re-measure), and the in-play floodlight stays the kit
-  prop, which is solid. Each tower now sits on its corner's line, past the wall's OUTER corner by the model's own
-  bounds half-diagonal (≈5.8 m) + 1 m.
-- **arena-report** (`a909a14d`, pure Python, machine-independent): decision spread crossing 0.552, sumps 0.352
-  (same as its dry twin), pit 0.67, yard 0.487, terminus 0.327, **terminus_canal 0.829**.
-- **terrain-drive** (laptop, `87d83217`, seed 1): **sumps** mixed + rigs PASS both legs, zero ticks in a pit.
-  **crossing**: zero ticks in the water for either squad; mixed FAILS on a nav path-follower deadlock (below); the rigs
-  finish 11–15 m from their slots reporting `arrived` (the probe's 7 m bar is nav's drive-test bar; a 14 m rig's
-  arrival reads wider), and one rig reads `blocked_by: terrain` at the south bridge exit.
+  ROTATION. **Verified failing** on the old rotation (it named crossing and sumps) and passing on the new one.
+  `test_every_dealt_map_has_a_title_and_a_note_that_names_its_terrain`: the existing notes already qualify. Other
+  consumers of the list (lesson 43), re-run green: `test_arena_cover_tables`, `test_control_faction_pick`,
+  `test_arena_maze`, `announcer-check` (crossing and sumps were already recorded in round 10). `make nav-fight-maps`
+  reads ROTATION from the code (nav's file, untouched).
+- **Bridges and pits as built:** a bridge is restored ground at y = 0 between two carved holes, drawn as a 0.07 m deck
+  with 0.9 m rails, and nothing drives under it. A pit is a hole with no navmesh and a 0.9 m kerb; you cannot fall in.
+- **A2.** `test_the_venue_dressing_is_solid_or_outside_the_wall` builds the shipping dressing per non-fixture layout
+  and fails on any floor-standing drawn mesh inside `ArenaShape.contains(shape, half_size)` that isn't inside a
+  `navigation_source` box. On the old tree it named **exactly the towers** (6 per hexagon, 4 per square) and nothing
+  else, which also closes A2.4's sweep. **Decision: move the towers outside the wall** rather than make them solid in
+  place. The fight loses no floor, the navmesh and lanes don't move (no lane narrowed), and the in-play floodlight
+  stays the solid kit prop. Each tower sits on its corner's line, past the wall's outer corner by the model's bounds
+  half-diagonal (≈5.8 m) + 1 m. Looked at: before/after at his pose on the Terminus's east corner, and the overview
+  (six towers between the stand banks, nothing clipping).
+- **terrain-drive** (`make terrain-drive`, new): a player squad ordered over each terrain map's crossings via
+  `Orders` (source: player), with arrivals, contacts by cause, ticks inside a hole, `--trace`/`--trace-full` dumps,
+  and `DRIVE_TERRAIN_SHOTS=1` frames at his pose. Results (seed 1): **Sumps** mixed + rigs pass both legs;
+  **dug Pit** passes; **Locks** passes on the laptop, builder0 rendered 6/6 + 5/6 (an IFV 6.4 m short, `blocked_by`
+  a parked squadmate); **Crossing** fails on nav's follower deadlock (below). **Zero ticks in any hole, every map,
+  every run.** War Rigs report `arrived` 8–15 m off their slots (their arrival reads wider than the probe's 7 m bar).
+- **A3: the Locks** (`tools/terrain_maps.py` `locks`), my own design rather than promoting `terminus_canal`, which is
+  his acceptance map redesigned (ring road and objective pair gone). A canal wall to wall, the lock in the middle
+  (16 m) and a swing bridge on each flank (14 m), four lock houses round the lock, 13.8 m quay roads, the objective
+  pair on the far quays. **arena-report** (pure Python): spread **0.453** (dry twin 0.344), routes 174.9 / 110.5 m,
+  centre sees **0.45** (flagged for his eye: open water; the Sumps ships at 0.34). R4: every lane ok, every corner
+  clears the rig. **Paired series** (builder0, `abb5be04`, 32 seeds, condemned mirror, 180 s, `make terrain-series
+  TERRAIN_MAP=locks`): crossing share 0.0182 vs dry 0.0062, higher on 31/32 (sign test p ≈ 0); contested-objective
+  share 0.535 vs 0.643, lower on 27/32 (p = 0.0001); hits +42.5 median (22/10, p = 0.05); 3 winner flips. **Both routes
+  are used:** crossing time is lock 63%, swing bridges 18% + 19%; the lock appears in 32/32 matches and a swing bridge
+  in 31/32. terrain-drive caught three layout faults the static report cannot see, all fixed: an objective on a lock
+  house's corner, quay stacks in the quay roads' mouths (1697 rig contact ticks), and a 5.8 m slot against the rim.
+- **A3 is waiting on a LEAD GATE.** The Locks went into the rotation at `231c838d`; `f30dbf0d`'s check went red on
+  `announcer-check` only, because `test_arena_names` requires every dealt map's name recorded for the 18 `{arena}`
+  lines, and new spoken text is paid generation behind his approval. So it's a fixture (`abb5be04`). **On his
+  yes:** `make announcer-generate` for "the Locks" (18 clips), drop `fixture=True` in `locks()`, `make arenas`, and add
+  `"locks"` to `Arena.ROTATION` and to the pending list in `test_random_deals_only_the_maps_the_lead_kept`.
+- **A4: the Pit, dug** (`pit_dug`, fixture): four 14 m pits at the ring's corners outside the diagonal walls, with
+  not one container moved (inside the ring every pit that fits leaves a 2–5 m slot against the walls). Spread 0.658
+  (Pit 0.67), centre 0.32 (0.31): the fight is unchanged and the pits become visible. **On his yes:** move the terrain
+  onto `pit` in `make_arenas.py` and drop the fixture (the Pit is already recorded, so no gate).
 
-- **A3 is waiting on a LEAD GATE, by design.** The Locks went into the rotation at `231c838d` and `f30dbf0d`'s check
-  went red on `announcer-check` alone (1689/0 tests, baseline unmoved). `test_arena_names` requires every dealt map to
-  have its name recorded for the 18 `{arena}` lines, and recording new text is paid generation behind his approval.
-  So the Locks is a **fixture** on his page (`abb5be04`). **On his yes:** `make announcer-generate` for "the Locks"
-  (18 clips), drop `fixture=True` in `tools/terrain_maps.py` `locks()`, `make arenas`, add `"locks"` to
-  `Arena.ROTATION` and to the pending list in `test_random_deals_only_the_maps_the_lead_kept`.
-- **A3: the Locks** (`231c838d`, a new design, not the canal promotion). Decision and reason: `terminus_canal`
-  is the lead's acceptance map redesigned (its ring road and objective pair gone). Two Terminuses in the rotation is
-  not a new map, and redesigning his acceptance map is his call. The Locks: a canal wall to wall, the lock in the
-  middle (16 m) and a swing bridge on each flank (14 m), four lock houses round the lock, and the objective pair on the
-  far quays so the lock route and the bridge route differ in exposure more than length. **arena-report** (pure Python):
-  spread **0.453** (dry twin 0.344), routes 174.9 / 110.5 m; centre sees **0.45**, flagged for his eye (a canal is
-  open across its water by design; the Sumps ships at 0.34). Every lane R4 ok, every corner clears the rig, arena
-  tests 120/0 (laptop, `231c838d`). **terrain-drive** (laptop, seed 1): mixed 6/6 both legs; rigs arrive both legs;
-  zero ticks in the water. The probe caught three layout faults the static report could not, now fixed: an objective
-  on a lock house's corner (slots wrapped the building); quay stacks in the quay roads' mouths (1697 rig contact ticks
-  turning home); a 5.8 m slot between the lock houses and the rim.
-- **A4: the Pit, dug** (`ece226b8`, a FIXTURE proposal, not an edit to his kept map). Four 14 m pits at the ring's
-  corners, outside the diagonal walls, with not one container moved. Outside rather than inside the ring because every
-  inside pit that fits leaves a 2–5 m slot against the walls. Spread 0.658 (Pit 0.67), centre 0.32 (0.31): the objective
-  routes do not cross the corners, so it is pits he can SEE, not a new fight. terrain-drive: both squads arrive both
-  legs, zero ticks in a pit. **If he says yes:** move the terrain onto `pit` in `make_arenas.py` and drop the fixture.
-- **nav fixed the Crossing deadlock** on `stream/nav` `e62383ad` (its message: the chord fallback returned the corner
-  under the hull; now the first corner ≥ 1.5 m away). Until that merges, the Crossing's mixed drive fails on it.
+### Known issues
+- **Crossing: nav's follower deadlock** (artillery parked on a waypoint at a bridge exit, `stalled_s` 0, nothing
+  fires). Reported to nav directly (the orchestrator session refused four SendMessages); **nav fixed it on
+  `stream/nav` `e62383ad`** (the chord fallback returned the corner under the hull). builder0's rendered run showed two
+  more units `driving` 140 m short on the Crossing's far bank; this looks like the same bug but is unconfirmed. Re-run
+  `make terrain-drive` after nav merges.
+- **Water renders near-black** at his pose (round 10's `water.gdshader`, `water_deep` ≈ 0.01, theme layer, not
+  arena's). It's a question on his page; I haven't changed it.
+- The rendered and headless runs of the same seed differ (Locks leg 2: 6/6 laptop headless vs 5/6 builder0 rendered).
+  Treat one seed as one sample, not a regression test.
 
-- **His review page: https://claude.ai/artifact/DUa5fN72G9YDTjLYRFkuj6** (private to the lead's account; version 1
-  built from `f30dbf0d`). What changed for him, the Locks (overview, the lock and swing bridge at his pose, a mixed
-  squad crossing over and back, the numbers), the Crossing and the Sumps with squads crossing, the dug-Pit before/after,
-  the Terminus tower before/after at his pose, and four questions. Frames: builder0, 1920×1080; the tower pair was
-  rendered on the laptop with round 10's `arena_dressing.gd` swapped in for the "before", then restored.
-- **Rendered drive runs on builder0** (`f30dbf0d`, seed 1, mixed): Sumps 6/6 + 6/6, dug Pit 6/6 + 6/6, Locks 6/6 + 5/6
-  (an IFV 6.4 m from its slot, `blocked_by` a squadmate that parked on it: squad crowding, not terrain), Crossing
-  6/6 + 3/6 (the IFV and the artillery `driving` 140 m short on the far bank; looks like nav's follower bug at a
-  second spot, unconfirmed, and pre-dates nav's fix). Zero ticks in any hole, on every map.
-- **The water reads black** at his pose (round 10's `water.gdshader`, `water_deep` ≈ 0.01, theme layer, not mine):
-  on his page as a question, not changed.
+### What to playtest
+- `make skirmish ARENA=crossing`, `ARENA=sumps` (or Random: they're in the deal now); `ARENA=locks` and
+  `ARENA=pit_dug` load by name even as fixtures. Order a squad over a bridge and watch the exits.
+- Look at a Terminus corner: the 21 m towers are outside the wall now; the 3 m floodlight footing is the solid one.
 
 ### Requests to other streams
-- **nav (via orchestrator; the SendMessage to `godot-83` failed twice, so this is written here first):** a
-  path-follower deadlock on the Crossing's west bridge. Repro (laptop, `09dd33c7`, seed 1):
-  `godot --headless --fixed-fps 30 --path . --script res://tests/arena/terrain_drive.gd -- --arena=crossing
-  --squad=mixed --trace=artillery --trace-full=45`. On leg 2 the artillery stops at (-87.4, 27.6), speed 0.0, for 90 s:
-  phase `driving`, `steer_to` = `path_points[0]` (-87.5, 28.0), 0.4 m from the hull; `stalled_s` 0.0,
-  `wedged` false, no wall contact. The follower never advances past a waypoint it is standing on, and nothing reads
-  it as a stall.
+- **nav:** the Crossing repro above (sent directly, fixed at `e62383ad`); after merge, `make terrain-drive` is a cheap
+  regression for it.
+- **airship / fleet (C11.1):** the rotation now includes crossing and sumps; re-walk your map lists after the merge.
 
-### Merge notes
+### Merge notes (shared files)
 - `game/theme/cyberpunk/arena_dressing.gd`: only `TOWER_INSET` → `TOWER_CLEARANCE`, the two tower placement calls,
   and new `_tower_base` / `_tower_radius` beside `_build_tower`. `_build_airship` untouched.
 - `tests/test_arena_prop_parity.gd`: one new test appended.
+- Everything else is in arena's paths: `game/arena/arena.gd`, `tests/test_arena_kit.gd`, `tests/arena/terrain_drive.gd`,
+  `tools/terrain_maps.py`, `mk/arena.mk`, `arenas/{locks,locks_dry,pit_dug}.json`, `_agents/arenas.md`.
 
 ### Questions for the lead
 - Crossing and Sumps (and Terminus) are in the rotation without your verdict; each comes out in one line if you say no.
 - **The Locks: deal it?** A yes also approves recording "the Locks" for the 18 announcer lines that name the arena.
 - The Locks' centre sees 45% of the field (open water by design): the kill zone you want, or more cover on the quays?
+- The Pit, dug (four pits at the ring's corners): make it the Pit, or leave the Pit as you kept it?
 - Water renders as a dark channel: should it look wetter? (theme layer)
-- The Pit, dug (four pits at the ring's corners): keep it as the Pit, or leave the Pit as you kept it?
