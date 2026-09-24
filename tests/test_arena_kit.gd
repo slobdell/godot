@@ -212,13 +212,14 @@ func test_random_deals_only_the_maps_the_lead_kept() -> void:
 	for cut: String in Arena.CUT:
 		assert_true(not Arena.ROTATION.has(cut),
 				"%s was CUT (game_design.md, the lead's arena verdict) and --arena=random must never deal it" % cut)
-	for kept in ["yard", "pit"]:
+	# yard and pit: his verdict of 2026-09-19. crossing and sumps: KEPT on arena's round-11 review page (2026-09-24),
+	# the river and the pits he had asked for three times.
+	for kept in ["yard", "pit", "crossing", "sumps"]:
 		assert_true(Arena.ROTATION.has(kept), "%s was KEPT and --arena=random must be able to deal it" % kept)
-	# terminus, crossing and sumps are in the rotation without a verdict of his: the cityscape he asked for twice
-	# (round 8), and the river and the pits he asked for three times (round 11). The Locks (round 11's new map) is a
-	# fixture until he approves it AND its name is recorded (see Arena.ROTATION's comment). Listed explicitly so that when he
-	# does rule, whoever acts on it can see exactly which line to change.
-	for pending in ["terminus", "crossing", "sumps"]:
+	# terminus is still in the rotation without a verdict of his (the cityscape, round 8). Listed explicitly so that
+	# when he does rule, whoever acts on it can see exactly which line to change. The Locks has his yes (2026-09-24)
+	# and joins the rotation with its 18 recordings, in the same commit (see Arena.ROTATION's comment).
+	for pending in ["terminus"]:
 		assert_true(Arena.ROTATION.has(pending), "%s is in the rotation, pending the lead's verdict" % pending)
 	# A fixture is not a map he plays: barriers and maze are instruments, reachable only by name.
 	for fixture in ["maze", "barriers"]:

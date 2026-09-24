@@ -429,11 +429,22 @@ pit += [
     # those sit inside the spawn block, and check_spawn_clearance refused them at 3.8 m from a spawn point.
     screen(0, 52, 180, "arena"), floodlight(-128, 0), floodlight(-94, 60), sign(-81, 88, 180, "pit"),
 ]
-write_v2("pit", "The Pit",
-         "A control-point brawl behind walls: four gates into a ring of stacked containers, open killing ground "
-         "outside. Hold a gate and you own the approach; go inside and it's knife range. Tanks and burners take the "
-         "ring; artillery punishes whoever crowds it.",
+# **THE PIT IS DUG (the lead, 2026-09-24, on arena's round-11 page: "dig it").** "The Pit" was a name, not a pit;
+# four sheer pits now stand at the ring's corners, outside the diagonal walls, with not one container moved. The Pit
+# he KEPT (2026-09-19) is preserved exactly as `pit_dry`, a fixture: the before-frame and the null arm. To undo,
+# pass `terrain=[]` here (one line); the before/after frames are in
+# _agents/streams/references/arena/pit-dug-2026-09-24/. Corner pits, not pits inside the ring: every pit that fits
+# inside leaves a 2-5 m slot against the diagonal walls, where a hull wedges. The road between each wall and its pit
+# is 20 m. arena-report: spread 0.658 (undug 0.67), centre 0.32 (0.31) -- the fight he kept, with pits he can see.
+import terrain_maps as _terrain_maps
+PIT_CORNER_PIT = (50.0, 52.0, 14.0, 14.0)   # x 43..57, z 45..59; its mirror, and the other two by (-x, z)
+_terrain_maps.write_with_twin(sys.modules[__name__], "pit", "The Pit",
+         "A control-point brawl behind walls: four gates into a ring of stacked containers, sheer pits at its corners "
+         "and open killing ground outside. The gates are the only ways in; hold one and you own the approach, go "
+         "inside and it's knife range. Tanks and burners take the ring; artillery punishes whoever crowds it.",
          pit,
+         _terrain_maps.mirrored_terrain([_terrain_maps.pit_area("the south-east pit", *PIT_CORNER_PIT),
+                                         _terrain_maps.pit_area("the south-west pit", -PIT_CORNER_PIT[0], *PIT_CORNER_PIT[1:])]),
          shape={"kind": "hexagon"}, half_size=140.0,
          # As yard: the ring is still the centre, but holding it is no longer the whole game -- you must leave it
          # to score at full rate.

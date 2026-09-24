@@ -2329,3 +2329,23 @@ Four separate asks, one owner:
 - **The Syndicate has vehicles facing backwards.** Godot's forward is −Z; the airship's own pass-2 bug was exactly this
   and cost a night. A per-model yaw convention that is checked by a test, not by eye, is the fix that stops it coming
   back a fourth time.
+
+### The lead's verdicts on arena's round-11 review page (2026-09-24, relayed by the orchestrator)
+
+The page: https://claude.ai/artifact/DUa5fN72G9YDTjLYRFkuj6. Every verdict below is also in the code beside the line
+it touches (a decision that lives only in prose is a decision the game does not have).
+
+1. **The Crossing and the Sumps: KEEP BOTH.** They are verdict maps now, like yard and pit (`Arena.ROTATION`'s comment;
+   `test_random_deals_only_the_maps_the_lead_kept` lists them as kept).
+2. **The Locks: DEAL IT**, and he approved recording "the Locks" for the 18 announcer lines that say `{arena}`. It
+   joins `Arena.ROTATION` in the same commit as its recordings, never before (a dealt map without them reddens
+   `announcer-check`).
+3. **The Pit: DIG IT.** Four sheer pits at the ring's corners ship in `pit.json`, the map he kept, with not one
+   container moved. The undug Pit is preserved as the fixture `pit_dry`; the change is one line to undo
+   (`tools/make_arenas.py`, and the before/after frames are in `_agents/streams/references/arena/pit-dug-2026-09-24/`).
+4. **Water reads black: make it look wetter, NEXT round** (his choice, not tonight). Written up as the first item of
+   next round's art/terrain work in `_agents/arenas.md` *Water reads black* and pointed at from `roadmap.md`.
+5. **The Locks' open canal: LEAVE IT OPEN** (ruled by the orchestrator: he did not answer, and it blocked shipping).
+   The exposure IS the map's proposition: the short way over is watched, the flanks are not. Ask him again on the
+   next page AFTER he has driven it, with the exposure number beside the question (the centre sees 45%).
+

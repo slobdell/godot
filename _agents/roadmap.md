@@ -66,6 +66,14 @@ climb look-ahead so it stops flying through the Terminus blocks; the camera lift
 
 **Carried forward, not scheduled this round** (from round 10's archived Status lists, the previous candidate order):
 
+## Next round (12): the first art/terrain item is already decided
+
+- **Water reads black: make it wetter** (the lead, 2026-09-24, on arena's round-11 page; he chose next round, not
+  round 11). The diagnosis, the maps, his pose, the frames and arena's suggestions are in
+  [`arenas.md`](arenas.md) *Water reads black*. Owner: whoever owns `game/theme/arena_kit/terrain/`.
+- **Ask him about the Locks' open canal again** once he has driven it (the orchestrator ruled "leave it open" on
+  2026-09-24); put the exposure number beside the question (centre sees 45%).
+
 ## Round 11 candidates as of round 10's close (each archived brief's Status has its own list)
 
 1. The driver creeps out of a two-sided pinch before pivoting (nav/squad), then the yaw constraint flips ON

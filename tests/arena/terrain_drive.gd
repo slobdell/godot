@@ -30,8 +30,8 @@ const COURSES := {
 	# The far quay is across the canal: over the lock (short, watched) or a swing bridge. Then back to his own east
 	# quay, which is the canal again.
 	"locks": [{"name": "the far quay", "to": [-72.0, -24.0]}, {"name": "home, the east quay", "to": [70.0, 20.0]}],
-	# The Pit with pits at the ring's corners (a proposal): to the far yard past a corner pit, then through the ring.
-	"pit_dug": [{"name": "the west yard", "to": [-74.0, -50.0]}, {"name": "through the ring, home east", "to": [60.0, 30.0]}],
+	# The Pit, dug at the ring's corners (the lead's verdict, round 11): to the far yard past a corner pit, then home.
+	"pit": [{"name": "the west yard", "to": [-74.0, -50.0]}, {"name": "through the ring, home east", "to": [60.0, 30.0]}],
 	"terminus_canal": [{"name": "over the avenue bridge", "to": [0.0, -40.0]}, {"name": "back over the west bridge", "to": [-70.0, 60.0]}],
 }
 const ARRIVED_M := 7.0

@@ -1,8 +1,8 @@
 {
- "name": "pit_dug",
+ "name": "pit_dry",
  "schema": 2,
- "title": "The Pit (dug: a proposal)",
- "note": "FIXTURE, a proposal to the lead: the Pit he kept, every container where it was, with four sheer pits dug at the ring's corners. The gates become the only ways in, and circling the ring means going round the drops.",
+ "title": "The Pit (dry: no water)",
+ "note": "FIXTURE: The Pit with its terrain removed -- the null arm of its paired series and the before-frame of every picture of it. Not a map.",
  "half_size": 140.0,
  "fixture": true,
  "obstacles": [],
@@ -1000,8 +1000,205 @@
    ]
   }
  },
- "lanes": [],
- "regions": [],
+ "lanes": [
+  {
+   "name": "south gate",
+   "points": [
+    [
+     0.0,
+     90.0
+    ],
+    [
+     0.0,
+     42.0
+    ],
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -42.0
+    ],
+    [
+     0.0,
+     -90.0
+    ]
+   ],
+   "width": 12.0
+  },
+  {
+   "name": "west gate",
+   "points": [
+    [
+     -40.0,
+     90.0
+    ],
+    [
+     -70.0,
+     40.0
+    ],
+    [
+     -42.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0
+    ],
+    [
+     42.0,
+     0.0
+    ],
+    [
+     70.0,
+     -40.0
+    ],
+    [
+     40.0,
+     -90.0
+    ]
+   ],
+   "width": 12.0
+  },
+  {
+   "name": "west flank",
+   "points": [
+    [
+     -66.0,
+     90.0
+    ],
+    [
+     -100.0,
+     0.0
+    ],
+    [
+     -66.0,
+     -90.0
+    ]
+   ],
+   "width": 30.0
+  },
+  {
+   "name": "west flank (far)",
+   "points": [
+    [
+     66.0,
+     90.0
+    ],
+    [
+     100.0,
+     0.0
+    ],
+    [
+     66.0,
+     -90.0
+    ]
+   ],
+   "width": 30.0
+  }
+ ],
+ "regions": [
+  {
+   "name": "the ring",
+   "kind": "centre",
+   "position": [
+    0.0,
+    0.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "south gate",
+   "kind": "chokepoint",
+   "position": [
+    0.0,
+    42.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "south gate (far)",
+   "kind": "chokepoint",
+   "position": [
+    0.0,
+    -42.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "west gate",
+   "kind": "chokepoint",
+   "position": [
+    -42.0,
+    0.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "west gate (far)",
+   "kind": "chokepoint",
+   "position": [
+    42.0,
+    0.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "south approach",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    62.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "south approach (far)",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    -62.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "west approach",
+   "kind": "open_ground",
+   "position": [
+    -66.0,
+    30.0
+   ],
+   "radius": 18.0
+  },
+  {
+   "name": "west approach (far)",
+   "kind": "open_ground",
+   "position": [
+    66.0,
+    -30.0
+   ],
+   "radius": 18.0
+  },
+  {
+   "name": "south-west corner gap",
+   "kind": "overlook",
+   "position": [
+    -30.0,
+    30.0
+   ],
+   "radius": 6.0
+  },
+  {
+   "name": "south-west corner gap (far)",
+   "kind": "overlook",
+   "position": [
+    30.0,
+    -30.0
+   ],
+   "radius": 6.0
+  }
+ ],
  "control_point": {
   "radius": 16.0
  },
@@ -1025,47 +1222,5 @@
  ],
  "shape": {
   "kind": "hexagon"
- },
- "terrain": [
-  {
-   "kind": "pit",
-   "name": "the south-east pit",
-   "rect": [
-    50.0,
-    52.0,
-    14.0,
-    14.0
-   ]
-  },
-  {
-   "kind": "pit",
-   "name": "the south-east pit (far)",
-   "rect": [
-    -50.0,
-    -52.0,
-    14.0,
-    14.0
-   ]
-  },
-  {
-   "kind": "pit",
-   "name": "the south-west pit",
-   "rect": [
-    -50.0,
-    52.0,
-    14.0,
-    14.0
-   ]
-  },
-  {
-   "kind": "pit",
-   "name": "the south-west pit (far)",
-   "rect": [
-    50.0,
-    -52.0,
-    14.0,
-    14.0
-   ]
-  }
- ]
+ }
 }
