@@ -66,6 +66,24 @@ Adopted with **`make sim-baseline-adopt`** (reads twice, refuses a disagreement,
   flying THROUGH things. And it sent a confident, detailed, **wrong** hypothesis about the War Rig's turret that fleet
   had to kill with a measurement. Both cost nothing only because the instruction said *check this before acting on it*.
 
+### Housekeeping at the close (2026-09-24)
+
+- **`main-checked` is on `f83f25e0`**, the commit a check actually ran on: builder0, `>> remote: make check exited 0`,
+  18 targets, **1716 passed, 0 failed**, sim-baseline `01ab39b592cc9837` unmoved, determinism `b83a374ce2fcde37`.
+  The commits after it on main touch only `_agents/*.md` (verified with `git diff --name-only`).
+- **Paid inputs rescued before the worktrees came down** (the round-3/round-4 lesson, and it mattered again): 72
+  ElevenLabs master files for *"the Locks"* from `godot-arena` and 24 Meshy files from `godot-fleet`. Both sets
+  existed in ONE place until they were copied into the main checkout, where the 30-minute timer takes them to
+  builder0.
+- **All four worktrees removed.** `stream/fleet` and `stream/airship` are ancestors of main and their branches are
+  deleted. **`stream/arena` (`84e706eb`) and `stream/nav` (`70201d30`) are KEPT**: their final Status commits landed
+  after the hash I merged, so their content was folded onto the archived brief paths by hand (`0c7d23a3`) rather than
+  merged, and the branches stay as the evidence of where it came from. Delete them once you are satisfied.
+- **Two docs were stale within the hour of being written** and were corrected in place, not appended to:
+  `navigation.md` said the goal repair was opt-in with an inverted flag (true when nav wrote it, false after the
+  flip), and `orchestration.md` lesson 215 recommended a two-reference trick that fleet then measured and
+  half-refuted. Both are the ordinary hazard of documenting a thing someone else is about to change.
+
 ### Open, and the shape of round 12
 
 `_agents/roadmap.md` carries the order. The candidates that came out of this round, all written up where the next
