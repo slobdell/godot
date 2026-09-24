@@ -123,6 +123,11 @@ func _run() -> void:
 		camera.current = true
 		camera.fov = FOV_DEG
 		camera.far = 900.0
+		# Render only for a shot: at 1920x1080 the whole venue drawn every tick runs the sim near 1 fps on builder0
+		# (the first rendered run managed 30 s of sim in 15 min). `_shoot` turns the loop on for its two frames.
+		for frame in 60:
+			await process_frame  # let the theme fill its slots and the shaders compile first
+		RenderingServer.render_loop_enabled = false
 	for frame in SimClock.TICK_RATE:
 		await physics_frame
 	WallContact.reset()
@@ -199,12 +204,14 @@ func _shoot(elapsed: float) -> void:
 	var back := Vector3(0.0, 0.0, 1.0) * DISTANCE_M * cos(deg_to_rad(PITCH_DEG))
 	camera.global_position = centre + back + Vector3.UP * DISTANCE_M * sin(deg_to_rad(PITCH_DEG))
 	camera.look_at(centre, Vector3.UP)
+	RenderingServer.render_loop_enabled = true
 	await RenderingServer.frame_post_draw
 	await RenderingServer.frame_post_draw
 	var path := shots_dir.path_join("%s-%s-leg%d-%03ds.png" % [Arena.active.get("name", "?"), squad_kind, leg_index, int(elapsed)])
 	var err := root.get_viewport().get_texture().get_image().save_png(path)
 	shot_count += 1
 	print("TERRAIN_DRIVE_SHOT %s %s" % [path, "ok" if err == OK else error_string(err)])
+	RenderingServer.render_loop_enabled = false
 	shooting = false
 
 
