@@ -22,6 +22,9 @@ extends TestCase
 ## These tests drive the REAL mover (an `OrderController` on the Terminus, nav's own fixture geometry) and then ask
 ## the brain's rule about the state it produced. The brain's own processing is off, so `order` is exactly what the
 ## test set and nothing polls it away — the question here is the completion rule, not the order feed.
+##
+## They run on the DEFAULT configuration (the repair is on since round 11) rather than switching it on themselves:
+## a behaviour tested only with a flag the default path never passes has not been tested where it ships.
 
 const MATCH := preload("res://game/match/match.tscn")
 
@@ -51,8 +54,9 @@ func test_an_unrepaired_unreachable_order_still_does_not_complete() -> void:
 ## then ask the brain's completion rule about that state. Returns the mover's reading and whether the order finished.
 func _run(goal: Vector3, until: String) -> Dictionary:
 	Movement.reset_route_arms()
-	var saved := Movement._off
-	Movement._off = PackedStringArray(["repair"])  # the repair is opt-in on the tree; on for these tests
+	# The repair is the DEFAULT since round 11; these tests deliberately exercise the shipping path and switch
+	# nothing on, so that a future flip back to opt-in reddens here rather than passing quietly.
+	assert_true(Movement.repair_on(), "setup: the goal repair is on by default, which is what these tests measure")
 	await ArenaFixture.build(self, "terminus")
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
@@ -88,6 +92,5 @@ func _run(goal: Vector3, until: String) -> Dictionary:
 				await tree.physics_frame
 				brain._update_order_progress()
 			break
-	Movement._off = saved
 	return {"phase": String(reading.get("phase", "")), "repaired_m": float(reading.get("repaired_m", 0.0)),
 			"finished": brain._finished_key != ""}

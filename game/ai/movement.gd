@@ -1086,13 +1086,35 @@ func _keep_station(cmd: TankCommand, goal: Vector3, delta: float) -> Vector2:
 	return Vector2(cmd.throttle, cmd.turn)
 
 
-## OPT-IN (`--nav-off=repair` turns it ON), measured on `e62383ad` (builder0, `nav-orders`): a player's scout goal was
-## repaired 3.5 m, Movement arrived at the repaired point, and the ORDER never completed, because completion is judged
-## against the order's own goal (tank_brain.gd `_update_order_progress`, not nav's). A hull reading "arrived" under an
-## order that never finishes is worse than an honest `no_path`. It becomes the default when completion honours
-## `Movement.state(tank)["repaired_m"]` (requested of the orchestrator, round 11).
+## ON by default since round 11 (`--nav-off=repair` turns it off, like every other mechanism name here).
+##
+## It shipped opt-in for one night, for a good reason that is now gone: nav measured on `e62383ad` (builder0,
+## `nav-orders`) that a player's scout goal was repaired 3.5 m, Movement arrived at the repaired point, and the ORDER
+## never completed, because completion was judged against the order's own goal. A hull reading "arrived" under an
+## order that never finishes is worse than an honest `no_path`. `TankBrain._update_order_progress` now honours
+## `Movement.state(tank)["repaired_m"]` (`78b26067`, mutation-checked), so that failure mode cannot recur.
+##
+## **Flipped on the measurement, not on the argument** (the orchestrator, `9ed7fccf`, builder0, `nav-orders`, ONE run
+## per arm, 30 ordered units, arms differing only in this switch):
+##
+##   terminus  off: completed 20, never_completed 10, goal_repairs 0,  t50 38.3 s
+##   terminus  on:  completed 22, never_completed  8, goal_repairs 2,  t50 37.1 s, goal_repairs_refused 3,
+##                  completed_far 1
+##   yard      off: completed 30, never_completed  0, goal_repairs 0
+##   yard      on:  completed 30, never_completed  0, goal_repairs 1   (every other counter identical)
+##
+## The Terminus is the honest place to judge this and the yard is not: on open ground a formation slot almost never
+## lands inside a building, so the mechanism has nothing to do there and the yard arm is a null control — which is
+## exactly what it reads as. On the Terminus **the two extra completions are the two repairs**: the counter and the
+## outcome match unit for unit, which is a mechanism rather than a correlation.
+##
+## **The cost, stated because it is real:** `completed_far` went 0 -> 1, i.e. one unit finished more than 7 m from
+## where the player pointed. That is the repair doing what it is for (the point he clicked was not standable), but a
+## player cannot see the difference between "moved your goal 8 m" and "ignored you", so if that number grows this
+## trade is worth re-opening. And this is ONE run per arm: 10 -> 8 is two units. The claim here is "the mechanism
+## acts and nothing got worse", not a measured effect size.
 static func repair_on() -> bool:
-	return switched_off("repair")
+	return not switched_off("repair")
 
 
 ## Round 11 (R2 item 3): re-ground an unreachable goal once with this hull's envelope; true when the hull now drives to
