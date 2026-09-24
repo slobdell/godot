@@ -160,12 +160,21 @@ static func natural_bounds(model: Node3D) -> AABB:
 ## Round 7 (the lead: "the turrets on the gang tanks didn't rotate"): hulls whose gun was generated as part of the hull
 ## mesh, with only a nub as the turret part. The gun is cut out of the hull at runtime by a box in the hull model's own
 ## (natural) space (or by several, `boxes`, when no one box separates it) and yaws with the tank's turret about `pivot`, so the concept-approved model stays exactly as
-## approved (no regeneration). "<faction>/<role>" -> {box: AABB, pivot: Vector3, rest_yaw_deg?}: `rest_yaw_deg` turns a
+## approved (no regeneration). "<faction>/<role>" -> {box: AABB, pivot: Vector3, rest_yaw_deg?, drop?} (`drop`, model
+## units: lowers a gun generated hovering over its hull onto it; round 11): `rest_yaw_deg` turns a
 ## gun that was modelled pointing backwards to point forward at turret yaw 0 (the simulation's "aim ahead"). Authored
 ## and checked with `make facing-audit UNITS=... TURRET=70` (the audit holds the turret there).
 const GUN_CUTS := {
-	"gangs/tank": {"box": AABB(Vector3(-0.5, 1.12, -0.3), Vector3(1.0, 0.6, 2.2)), "pivot": Vector3(0.0, 1.12, 0.45),
-			"rest_yaw_deg": 180.0},
+	# Round 11 (fleet; the lead: "the tank barrel and the turret in general associated with the gang's rigger is
+	# disconnected and floating relative to the rigger"). Two defects, measured (unit_gangs_tank_hull.glb profile and
+	# `make facing-audit UNITS=gang_tank TINT=1 VIEW=side|top TURRET=70 BEND=35`): the gun as generated stands on
+	# NOTHING -- its lowest part is y 1.12-1.15 and the tanker's top under it is below y 1.00, a 0.47 m gap at the rig's
+	# scale -- so `drop` seats it on the tanker; and the box reached z +1.9, taking a 20-triangle fitting at the tanker's
+	# tail (z +1.33..+1.40) that the 180 rest yaw flipped onto the CAB and swung out on its own as the gun traversed. The
+	# barrel ends at z +0.98, so the box now stops at +1.28. (The gun already rides the trailer, not the tractor:
+	# DozerPart._cut_trailer moves the GunPivot under the TrailerPivot and takes the swing back out of its lay.)
+	"gangs/tank": {"box": AABB(Vector3(-0.5, 1.12, -0.3), Vector3(1.0, 0.6, 1.58)), "pivot": Vector3(0.0, 1.12, 0.45),
+			"rest_yaw_deg": 180.0, "drop": 0.045},
 	# The rocket pod on the truck's bed (the bed tops out near 1.2 m; the pod and its turntable stand above it).
 	"law/artillery": {"box": AABB(Vector3(-0.9, 1.2, 0.1), Vector3(1.8, 1.3, 2.1)), "pivot": Vector3(0.0, 1.2, 0.9),
 			"rest_yaw_deg": 180.0},

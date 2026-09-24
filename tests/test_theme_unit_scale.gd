@@ -202,9 +202,10 @@ func test_the_box_fill_check_can_actually_fail() -> void:
 ## written, and every buried one 31-69%, so the line has room on both sides.
 const TURRET_ABOVE_HULL := 0.8
 ## And not floating: at rest, the lowest thing that turns is within this of the hull under it. Round 11's T3 lowered
-## the bus's roof 0.68 m and left its turret hanging +0.71 m in the air; the Syndicate's hover guns, floating by
-## design, measured +0.13 (IFV pod) and +0.24 m (railgun), the War Rig's cut gun +0.19.
-const TURRET_FLOATS_M := 0.4
+## the bus's roof 0.68 m and left its turret hanging +0.71 m in the air; then the lead saw the War Rig's gun
+## "disconnected and floating" at +0.19 m, which an earlier 0.4 m bound here had passed as design. Only HOVER units
+## float their guns on purpose (the Syndicate's idiom: pod +0.13, railgun +0.24 m), and only they are exempt.
+const TURRET_FLOATS_M := 0.1
 
 
 func _turret_above(unit_id: String, yaw_deg: float, sink_m := 0.0) -> Dictionary:
@@ -236,11 +237,11 @@ func test_what_turns_with_every_turret_is_drawn_above_its_hull() -> void:
 				if float(fit["above"]) < TURRET_ABOVE_HULL:
 					failures.append("%s at %d deg: %.0f%% above the hull, lowest point %+.2f m" % [unit_id, yaw,
 							float(fit["above"]) * 100.0, fit["lowest"]])
-				elif yaw == 0.0 and float(fit["lowest"]) > TURRET_FLOATS_M:
+				elif yaw == 0.0 and float(fit["lowest"]) > TURRET_FLOATS_M and Units.stat(unit_id, "locomotion") != "hover":
 					failures.append("%s: floating %.2f m over its roof" % [unit_id, fit["lowest"]])
 	GameTheme.use(previous)
 	assert_true(checked >= 24, "the turret units were measured, both ways round (%d)" % checked)
-	assert_true(failures.is_empty(), "turrets buried in their own hulls: %s" % "; ".join(failures))
+	assert_true(failures.is_empty(), "turrets buried in, or floating over, their own hulls: %s" % "; ".join(failures))
 
 
 func test_the_turret_check_sees_a_buried_turret() -> void:
