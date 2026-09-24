@@ -291,6 +291,28 @@ func _apply_hull_size(size_list: Variant, own_hull_art := false) -> void:
 	turret.scale = Vector3.ONE * minf(size.x / TURRET_STANDARD.x, size.z / TURRET_STANDARD.z)
 
 
+## Round 11 (fleet T3; the lead: "The vehicle sizes on the tanks for The Condemned are not consistent. There is some
+## variant of the tank which is quite tall. Then there are the previously sized units. They need to be uniform, but also
+## it was good for the busses to be slightly taller (as in the deformed version, but not quite so tall)").
+## THE ONE DECLARED DISTORTION OF THE SHARED HULL. A unit without hull art of its own wears the shared dozer stretched
+## to its box, and until round 11 each such box was typed by hand: the bus (`tank`) came out 1.63x taller than its
+## width asked for and the `burner` 1.0x -- one mesh in two shapes, his "not consistent". Now every unit that wears it
+## has the SAME shape: its cross-section keeps the dozer's own width:height, heightened by this factor, and only length
+## is free (a coach is a long body; that is what the round-9 K rule sizes). `shared_hull_box` derives the box from it,
+## and tests/test_units_bus_eye.gd holds every such unit's catalog box to that derivation.
+## 1.40: between the undeformed dozer (1.0, a 2.92 m bus) and the round-10 bus he now calls too tall (1.63, 4.76 m), and
+## the lowest round tenth that still stands the bus clearly over the 3.70 m garbage truck (4.08 m, 1.10x).
+const SHARED_HULL_HEIGHTEN := 1.40
+
+
+## The box a unit wearing the shared hull must have at `width` x `length` (see SHARED_HULL_HEIGHTEN), in metres,
+## rounded to the centimetre like every catalog box.
+static func shared_hull_box(width: float, length: float) -> Vector3:
+	var standard := shared_hull_size()
+	var height := standard.y * (width / standard.x) * SHARED_HULL_HEIGHTEN
+	return Vector3(width, snappedf(height, 0.01), length)
+
+
 ## The size every turret has been scaled against since round 2 (see `_apply_hull_size`). Not a measurement.
 const TURRET_STANDARD := Vector3(2.4, 1.6, 3.6)
 ## The shared hull art's own size in metres (the theme's `tank.hull` scene, unscaled). Measured once per theme: the

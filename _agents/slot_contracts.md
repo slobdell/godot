@@ -84,6 +84,9 @@ the concept he approved.
 | Cut | Owner | What it is | Pivot's law |
 |---|---|---|---|
 | `FactionArt.GUN_CUTS` (round 7) | feel | a gun generated **into** the hull mesh, with only a nub as the turret part (`gangs/tank`, `law/artillery`) | follows the tank's turret yaw each frame; `rest_yaw_deg` turns a gun modelled pointing backwards |
+| `FactionArt.GUN_CUTS` (round 11 additions) | fleet | the same, found by `make facing-audit TINT=1` on five more: `law/ifv`, `law/special`, `syndicate/tank`, `syndicate/ifv`, `gangs/artillery`; a cut may list `boxes` | a turret part that is a fragment is hidden by the cut; tests/test_theme_unit_scale.gd asserts whatever turns is drawn >= 80% above its hull, derived per unit |
+| `FactionArt.is_stray_stick` / `HULL_TRIMS` (round 11) | fleet | a generated weapon part whose thinnest side is < 3% of its length; a gun fragment left in a hull mesh | the stick is not drawn (rule, not a list: `STRAY_WEAPONS` is gone); the trimmed triangles are dropped |
+| `Tank.SHARED_HULL_HEIGHTEN` (round 11) | fleet | units with no hull art of their own wear the shared dozer | ONE shape: height = dozer height x (width / dozer width) x 1.40 (`Tank.shared_hull_box`); tests/test_units_bus_eye.gd holds every wearer's catalog box to it |
 | `FactionArt.TRAILER_CUTS` (round 9, contract **S2**) | feel | the War Rig's tanker trailer, cut at the fifth wheel | tractor-trailer off-tracking from the **drawn** motion each frame, clamped at a jackknife limit measured against the mesh |
 
 Rules that apply to any cut added later, each of them earned:

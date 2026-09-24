@@ -74,6 +74,10 @@ def build(manifest: dict, out_dir: Path, title: str, include_decided: bool = Fal
             img = "images/" + source.name
             mood = int(item.get("est_3d_credits", 0)) == 0
             cost = "mood picture · never sent to 3D" if mood else f"3D ≈ {item['est_3d_credits']} credits"
+            # Round 11 (fleet): a QUESTION card (no concept; "buttons": [yes, no], "cost": what it costs) so a decision
+            # the lead makes by eye is tapped and recorded in the same db as the concepts.
+            buttons = item.get("buttons") or (["Looks right", "Not this"] if mood else ["Approve for 3D", "Reject"])
+            cost = item.get("cost", cost)
             short = item["title"].split(": ", 1)[-1]
             cards.append(f"""
       <article class="card" data-id="{html.escape(item['id'])}" data-state="waiting">
@@ -92,8 +96,8 @@ def build(manifest: dict, out_dir: Path, title: str, include_decided: bool = Fal
           <label class="words-label" for="words-{html.escape(item['id'])}">Your words (optional)</label>
           <textarea id="words-{html.escape(item['id'])}" rows="2" placeholder="What you like, or what to change"></textarea>
           <div class="actions">
-            <button type="button" class="act approve" data-decision="approved">{'Looks right' if mood else 'Approve for 3D'}</button>
-            <button type="button" class="act reject" data-decision="rejected">{'Not this' if mood else 'Reject'}</button>
+            <button type="button" class="act approve" data-decision="approved">{html.escape(buttons[0])}</button>
+            <button type="button" class="act reject" data-decision="rejected">{html.escape(buttons[1])}</button>
           </div>
           <p class="saved" aria-live="polite"></p>
         </div>
@@ -249,10 +253,6 @@ body { margin: 0; font: 15px/1.55 var(--body); padding-inline: 16px; padding-blo
 h1 { font: 700 clamp(28px, 5vw, 44px)/1.05 var(--display); margin: 0 0 12px; text-wrap: balance; letter-spacing: .01em; }
 .lede { margin: 0; max-width: 64ch; color: var(--dim); }
 .lede b { color: var(--text); font-weight: 500; }
-.figure { margin: 14px 0 0; max-width: 100%; }
-.figure img { width: 100%; height: auto; display: block; border: 1px solid var(--line, #333); }
-.figure .shot { padding: 0; border: 0; background: none; width: 100%; cursor: zoom-in; }
-.figure figcaption { font-size: 0.9em; margin-top: 6px; }
 .intro { margin: 12px 0 0; max-width: 64ch; color: var(--text); border-left: 3px solid var(--hazard); padding-left: 12px; }
 .tally { display: grid; grid-template-columns: repeat(3, auto); gap: 4px 28px; font-variant-numeric: tabular-nums; }
 .tally div { display: flex; flex-direction: column; }
@@ -276,6 +276,9 @@ h1 { font: 700 clamp(28px, 5vw, 44px)/1.05 var(--display); margin: 0 0 12px; tex
 .shot { all: unset; display: block; cursor: zoom-in; background: #2e2e32; }
 .shot img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; max-width: 100%; }
 .shot:focus-visible { outline: 2px solid var(--hazard); outline-offset: -2px; }
+.figure { margin: 14px 0 0; max-width: 100%; }
+.figure .shot img { aspect-ratio: auto; object-fit: contain; height: auto; border: 1px solid #333; }
+.figure figcaption { font-size: 0.9em; margin-top: 6px; }
 .card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .id { font: 14px var(--mono); color: var(--hazard); }

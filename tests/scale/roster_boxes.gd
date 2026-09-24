@@ -39,7 +39,7 @@ func _run() -> void:
 		if overrides.has(unit_id):
 			target = float(overrides[unit_id])
 		elif Units.PROFILES[unit_id].has("scale_reference"):
-			target = float(Units.PROFILES[unit_id]["scale_reference"]["length_m"]) * Units.SCALE_K
+			target = Units.target_length_m(unit_id)  # reference x K x any declared FACTION_SCALE (round 11)
 		units[unit_id] = {
 			"natural": [snappedf(natural.x, 0.001), snappedf(natural.y, 0.001), snappedf(natural.z, 0.001)],
 			"has_mesh": natural.z > 0.01,

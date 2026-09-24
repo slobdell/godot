@@ -219,6 +219,136 @@ the only check that counts for proportions.
 
 ## Status
 
-_(the worker keeps this current: plan, what's done with measurements, decisions and their reasons, questions for the
-lead, requests to other streams, known issues, what to playtest, next steps, merge notes, and the commit hash whose
-own check went green)_
+_Updated 2026-09-24 (small hours) by the fleet worker. Numbers: laptop unless marked builder0; commit named._
+
+### Plan and where each item stands
+
+| item | state | commit |
+|---|---|---|
+| T1 turrets buried in hulls | **done**, green | `03d3a839` + `8991e0c9` |
+| T2 stray barrels | **done** | `03d3a839` |
+| T5 nose check | **done** (syn_ifv turned round) | `03d3a839` |
+| T3 the Condemned bus/burner shape | **done, CP1** | `1c2e514f` |
+| T4 the Law tank/IFV re-derived | **done, CP1** (tank only; a lead question) | `1c2e514f` |
+| T6 the bus's own mesh | **waiting on the lead** (page built; no new spend needed) | -- |
+
+Baseline before any work: `a04d75c0`, builder0, `>> remote: make check exited 0`, 1686 passed, 0 failed.
+
+**Checks (all builder0, read from the wrapper's own line):**
+- `03d3a839`: exited 2, 1692 passed, **1 failed** (`test_tank_turret_mount`: syn mounts moved the muzzle forward) -> fixed.
+- **`8991e0c9` GREEN, merge here for T1/T2/T5:** `>> remote: make check exited 0`, 1693 passed, 0 failed, 18 targets,
+  sim-baseline `457b5e830708b439` UNMOVED.
+- **`1c2e514f` = CP1:** `>> remote: make check exited 2`, **1695 passed, 0 failed**, 17 of 18 targets; the one red is
+  `sim-baseline` = **`4294e30351180af1`** (expected `457b5e830708b439`): the pre-registered move (bus/burner heights,
+  law_tank's box). Nothing else moved; for the orchestrator to record twice (`make sim-baseline-adopt`).
+
+### What was actually wrong (the survey's numbers checked, several corrected)
+
+**T1 -- "the Law's IFV turret is not spinning".** The brief's fix (add `turret_mount` to seven units) was right for
+none of the worst five. `make facing-audit TINT=1` (new: turret part magenta, weapon part yellow, cut gun cyan)
+showed that on **law_ifv, law_suppressor, syn_tank, syn_ifv and gang_artillery the visible gun is HULL MESH** and the
+splitter's "turret" part is a fragment (roof rails, spikes among the horns, a deck-sized slab, a 10 cm chip). No mount
+could make those turn. Fixed with five new `FactionArt.GUN_CUTS` authored from `make assets-profile` (the Law IFV's
+weapon station, the suppressor's horn array, the Syndicate railgun and roof pod, the gang crane-catapult -- cuts may now
+list several boxes). law_tank's turret was fine (97% above its roof; the brief's "half buried" read the mast in its
+AABB). Round 10's comment that the Syndicate IFV's "roof gun is its real turret part (it traverses)" was wrong and is
+corrected in place.
+- **The test** (`test_what_turns_with_every_turret_is_drawn_above_its_hull`, derived per unit, no list): whatever
+  turns must be >= 80% drawn above the hull's height field under it, at 0 and 90 deg, and not float more than 0.4 m.
+  Measured: good units 86-100%, the five buried ones 31-69%. Mutation: the Condemned tank's turret sunk 1 m fails.
+  New instrument `TurretFit` (`make turret-probe` prints `TURRET_PROBE_ABOVE`).
+- Simulated pivots moved under the cut guns only where that moves the pivot AFT (law_ifv +0.5, law_suppressor +1.14,
+  gang_artillery +0.26; none in the sim-baseline match). syn_tank/syn_ifv keep today's pose: combat's round-10
+  condition (`test_tank_turret_mount`) caught that their mounts moved the muzzle 0.2 m further past the nose.
+
+**T2 -- "a floating piece of the barrel that stays fixed in front of the tank".** Two causes on the Law tank: the
+14-triangle weapon stick AND **a barrel tip left in the hull mesh** (142 triangles, z -0.65..-1.70 model space) -- the
+second is the piece that "stays fixed": it does not turn. `STRAY_WEAPONS` (a one-entry list) is replaced by a rule,
+`FactionArt.is_stray_stick`: thinnest side under 3% of the length. Every generated stick measures 0.4-1.9%, the real
+guns 4.7% (Condemned IFV barrel), 15% (scout), 39% (lancer). `FactionArt.HULL_TRIMS` drops the tip. Tests for both,
+mutation-checked (rule off: the Law tank's 7.07 m stick is caught).
+
+**T5 -- "Syndicate has some backwards vehicles".** `FacingCheck` judges each drawn nose from geometry, independent of
+the tables that set it: end taper (front end lower than rear) AND tall-mass position (aft of centre); both must agree.
+The Syndicate IFV was the only unit both called backwards -- and it was (long hood, headlights and intake at +Z in its
+ruled profile): `MODEL_YAW_DEG` turns it. Now 15 units forward by geometry, 0 backwards, 6 "unsure" with a recorded
+human look (`FACING_EYE_CHECKED`); all 4 models tried turned round are caught.
+**Models I LOOKED at** (`make facing-audit`, all 21 side-on, plus quarter views): every unit's nose leads. Checked
+against the approved concepts for the three the brief doubted: law_scout (push bar and hood lead, law_scout_a.jpg),
+syn_scout (pointed nose with its gun leads, syndicate_scout_a.jpg), syn_artillery (grille leads,
+syndicate_artillery_b.jpg). syn_special's round-7 correction still right.
+
+**T3 -- "They need to be uniform, but ... the busses slightly taller ... not quite so tall".** The bus and the burner
+wear the same dozer and had two shapes (bus 1.63x taller than its width asked, burner 1.0x). Read as: ONE shape for
+every unit wearing the shared hull. `Tank.SHARED_HULL_HEIGHTEN = 1.40` is the one declared distortion;
+`Tank.shared_hull_box` derives the height; `test_units_bus_eye.gd` holds every wearer to it (found from the theme).
+**Why 1.40:** between the undeformed dozer (1.0, a 2.92 m bus) and round 10's 1.63 (4.76 m, "not quite so tall"),
+the lowest round tenth that keeps the bus clearly over the 3.70 m garbage truck. Bus 4.76 -> **4.08 m**, burner
+2.40 -> **3.38 m**; widths and lengths unchanged (spawn grid untouched). The skipped units are now covered by the
+box-fill test. Before/after on the review page (`assets/review/images/r11_fleet_bus_before_after.jpg`).
+
+**T4 -- "The tanks for the law should be bigger".** `units.gd`: under K both were ALREADY at their references (Centauro
+B1 hull 7.85 m -> 5.55; Cougar 6x6 7.08 m -> 5.01). The Law tank moves to the **Centauro II** (current 120 mm, 30 t;
+published 8.26 m with barrel, as the mesh's length includes its gun): **5.84 m, box 2.69 x 3.03 x 5.84** (+5%). The
+IFV is **not** moved: the cited bigger 6x6 (Buffalo, 8.2 m) gives 3.18 x 3.80 x 5.80, wider and taller than the
+tank -- the opposite of his sentence. No 8x8 in service is longer; the K rule caps this. See the question below.
+
+### Questions for the lead (on the review page too)
+1. **The Law's size.** The real-world rule puts the Law's Assault Gun at 5.84 m beside a 9.7 m bus and a 14 m War Rig.
+   Bigger means a declared exaggeration of the rule for the Law (like the bus's 1.4x height). Want one, and how much
+   (e.g. 1.25x makes the tank 7.3 m, the IFV 6.3 m)?
+2. **The burner grew with the bus** (2.40 -> 3.38 m tall) because they wear one mesh and he asked for them to be
+   uniform. If he meant only the bus, set the burner back and give it its own shape (or build one of its concepts).
+3. **T6's concepts** (round 10's, never shown): pick at most one bus and one burner. All three buses are stubbier than
+   a 45 ft coach (about 2:1 against 3.3:1); built as-is, the model would be fitted by length and come out too wide.
+
+### The review page (lead gate: T3's before/after, T4's question, T6's concepts)
+**Published 2026-09-24 at the orchestrator's request (the lead was awake): https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS**
+(db declared; taps land in `decisions/<id>`; read them with `read_db` and `make art-apply-decisions`). It opens with two
+question cards with recommendations (`q_r11_law_size`: RECOMMENDED yes, the Law 1.25x the rule -- tank 7.30 m, IFV
+6.26 m, another baseline move; `q_r11_burner_shape`: RECOMMENDED keep 3.38 m), then the figures and the six concepts.
+Question cards are review.json items with `buttons` and `cost` (new, optional). The build below is superseded by:
+`python3 tools/assets/review_page.py build --title "Round 11: vehicle sizes and the bus's own mesh" --figure ... --figure ...` (no GROUPS).
+Nothing new was generated: round 10's six concepts (3 bus, 3 burner; 54 credits, in `assets/meshy_ledger.md`) were
+briefed from the approved dozer images and never shown to him. Build and publish (orchestrator):
+`make art-review-page TITLE="Round 11: the Condemned bus and burner" GROUPS="R6 the Condemned" FIGURE="assets/review/images/r11_fleet_bus_before_after.jpg::The bus and burner beside the garbage truck, before and after" FIGURE2="assets/review/images/r11_fleet_roster_lineup.jpg::Every unit at the current scale"`
+plus `INTRO="The bus and the burner wear the same prison dozer and were drawn in two different shapes (the bus
+stretched 1.63:1 tall). They now share one shape with a declared 1.4x height: bus 4.08 m (was 4.76), burner 3.38 m (was
+2.40), both still taller than the 3.70 m garbage truck. The six concepts are round 10's own mesh for each (never shown
+to you): approve at most one per group. The Law's Assault Gun is 5.84 m because the real-world rule caps an 8x8 assault
+gun there; if you want the Law bigger than that, say by how much and it becomes a declared exaggeration like the
+bus's."` (Rendered in Chrome and looked at: figures labelled, cards render.) Publish as a private Artifact with `{"db": {}}`, then `make art-apply-decisions`.
+
+### Known issues / not done on purpose
+- Four turret units draw a gun that cannot turn because it is hull mesh and nobody asked: syn_scout (nose gun),
+  syn_artillery (missile wings on the ring), syn_lancer (emitter grown out of the tail fin) and gang_support (the spray
+  arm on the cab). They read as fixed-weapon designs; gang_support's arm is the one plausible cut if he wants it.
+- The Condemned IFV's barrel is real (4.7% thin, kept by the stick rule) but reaches 2.4 m past its nose at rest, and
+  the scout's guns sit ahead of its bumper: both are round-2 art stretched to the contract's muzzle point. Not his
+  complaint; noted.
+- The orchestrator session refused cross-session delivery twice (SendMessage "Failed to send to godot-83") when fleet
+  announced 8991e0c9; this Status is the announcement of record.
+
+### Requests to other streams
+None. (CP1 needs the orchestrator: below.)
+
+### Merge notes
+- **Merge order:** `03d3a839` + `8991e0c9` (art only; sim-baseline UNMOVED -- `03d3a839` read 457b5e830708b439 on
+  builder0) first, then **CP1 = `1c2e514f` ALONE**: it moves the sim baseline by construction (tank and law_tank are in
+  the baseline match; the burner and law_tank colliders change). The orchestrator records the baseline.
+- Shared files touched: `game/units/units.gd` (values + comments only: hull_size, turret_mount, scale_reference of
+  law_tank), `game/tank/tank.gd` (a constant and a static beside `_apply_hull_size`, carve-out).
+  `game/theme/factions/syndicate/parts/ifv_hull.tscn` regenerated by `tools/assets/build_faction_parts.py`.
+- Known issue fixed on the way: `test_every_unit_with_art_is_drawn_inside_its_own_box_on_every_axis` failed
+  intermittently (artillery "4.74 m wide"): the outriggers start down and are stowed on the first _process frame; the
+  test waited a physics frame only.
+
+### What to playtest
+- `make skirmish` as the Law: the IFV's weapon station and the suppressor's horn array turn toward targets; the Law tank
+  has no stick and no fixed barrel tip. As the Syndicate: the Limousine drives nose-first, its pod and the railgun turn.
+- Any Condemned army: bus and burner are one shape at two sizes; the bus still tops the garbage truck.
+- Pictures: `make facing-audit TINT=1 VIEW=quarter TURRET=90` (turning parts in colour), `make roster-lineup`.
+
+### Next steps
+- Orchestrator: merge `8991e0c9`, then CP1 `1c2e514f` alone and record the baseline.
+- T6: the lead's picks -> `make art-apply-decisions` -> image-to-3D (Meshy) for the picked bus/burner.

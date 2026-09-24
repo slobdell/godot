@@ -23,6 +23,7 @@ import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import gdscript_source
 import units_catalog
 
 
@@ -42,12 +43,16 @@ def scale_k(profiles: dict, rig_length_m: float, rig_unit: str) -> float:
     return rig_length_m / length
 
 
-def rows(profiles: dict, boxes: dict, k: float) -> list:
+def rows(profiles: dict, boxes: dict, k: float, faction_scale: dict | None = None) -> list:
+    faction_scale = faction_scale or {}
     out = []
     for unit_id, profile in profiles.items():
         reference = profile.get("scale_reference") or {}
         box = [float(v) for v in profile["hull_size"]]
-        target = round(float(reference["length_m"]) * k, 2) if reference else box[2]
+        # Round 11: times the unit's declared FACTION_SCALE (units.gd), exactly as Units.target_length_m does.
+        declared = faction_scale.get(profile.get("faction", "condemned"), {})
+        x = float(declared.get("x", 1.0)) if profile.get("role", "") in declared.get("roles", []) else 1.0
+        target = round(float(reference["length_m"]) * k * x, 2) if reference else box[2]
         measured = boxes.get(unit_id, {})
         out.append({
             "unit": unit_id,
@@ -93,7 +98,7 @@ def main() -> int:
     else:
         print("!! no %s: run `make roster-scale` (it renders the boxes first). Mesh columns are blank." % path)
 
-    table = rows(profiles, measured, k)
+    table = rows(profiles, measured, k, gdscript_source.const(units_catalog.UNITS_GD, "FACTION_SCALE"))
     print("ROSTER SCALE -- one factor for the whole world, anchored by the War Rig")
     print("  anchor   %s at %.2f m (the lead's ruling)" % (rig_unit, rig_length_m))
     print("  reference %s, %.2f m" % (profiles[rig_unit]["scale_reference"]["vehicle"],
