@@ -200,21 +200,66 @@ func test_random_picks_a_proven_arena_the_same_way_for_the_same_seed() -> void:
 ## rotation read the old list. Half of every skirmish he played was a map he had already cut, and nothing failed,
 ## because nothing was asking. A decision that lives only in prose is a decision the game does not have.
 ##
-## If a map is added to the rotation, it is because he asked for it — and then this list changes with the same
-## commit, which is the point.
+## **And then it failed to catch the second instance of the same bug (round 11).** It asserted only that the CUT
+## maps were absent and the kept ones present — it never asked whether the maps BUILT SINCE were present. Round
+## 10's terrain stream built the Crossing (a river and two bridges) and the Sumps (the only real pits in the game),
+## exactly what he had asked for twice, and neither was reachable from the picker or from `--arena=random` for a
+## whole round: *"we still barely have any maps, I haven't seen any bridges or pits"*. So the test below is the
+## generalisation: EVERY layout in `arenas/` must be accounted for — a fixture (`"fixture": true`, never dealt),
+## CUT by his verdict (`Arena.CUT`), or in the rotation. A map someone builds and forgets to publish fails here
+## the day it lands, whatever it is called.
 func test_random_deals_only_the_maps_the_lead_kept() -> void:
-	for cut in ["boulevard", "boneyard", "foundry", "furnace", "scrapyard"]:
+	for cut: String in Arena.CUT:
 		assert_true(not Arena.ROTATION.has(cut),
 				"%s was CUT (game_design.md, the lead's arena verdict) and --arena=random must never deal it" % cut)
 	for kept in ["yard", "pit"]:
 		assert_true(Arena.ROTATION.has(kept), "%s was KEPT and --arena=random must be able to deal it" % kept)
-	# terminus is the one map in the rotation the lead has not ruled on: the cityscape he asked for twice, added
-	# after the render was reviewed (round 8). Listed explicitly rather than left implicit so that when he does
-	# give a verdict, whoever acts on it can see exactly which line to change.
-	assert_true(Arena.ROTATION.has("terminus"), "terminus is in the rotation, pending the lead's verdict")
+	# terminus, crossing and sumps are in the rotation without a verdict of his: the cityscape he asked for twice
+	# (round 8), and the river and the pits he asked for three times (round 11). Listed explicitly so that when he
+	# does rule, whoever acts on it can see exactly which line to change.
+	for pending in ["terminus", "crossing", "sumps"]:
+		assert_true(Arena.ROTATION.has(pending), "%s is in the rotation, pending the lead's verdict" % pending)
 	# A fixture is not a map he plays: barriers and maze are instruments, reachable only by name.
 	for fixture in ["maze", "barriers"]:
 		assert_true(not Arena.ROTATION.has(fixture), "%s is a fixture, not a map in the rotation" % fixture)
+
+
+## The generalisation (round 11): no layout is unaccounted for. Every file in `arenas/` is exactly one of a fixture,
+## a map he cut, or a map in the rotation. A new non-fixture map that is not in `Arena.ROTATION` fails HERE, named.
+func test_every_built_map_is_dealt_cut_or_a_fixture() -> void:
+	var names := Arena.layout_names()
+	assert_true(names.size() >= 10, "the layout directory was read (%d layouts)" % names.size())
+	for name: String in names:
+		var loaded := Arena.load_layout(name)
+		assert_true(not loaded.has("error"), "%s loads (%s)" % [name, loaded.get("error", "")])
+		var fixture := bool(loaded.get("layout", {}).get("fixture", false))
+		var cut := Arena.CUT.has(name)
+		var dealt := Arena.ROTATION.has(name)
+		if fixture:
+			assert_true(not dealt and not cut, "%s is a fixture: never dealt, never on the cut list" % name)
+		else:
+			assert_true(dealt != cut, ("%s is a map (not a fixture) and must be EITHER in Arena.ROTATION (the picker "
+					+ "and --arena=random deal it) OR in Arena.CUT (the lead rejected it). dealt=%s cut=%s. A map that is "
+					+ "neither is a map he asked for and has never seen.") % [name, dealt, cut])
+	for name: String in Arena.ROTATION + Arena.CUT:
+		assert_true(names.has(name), "%s is named in the rotation or the cut list and exists in arenas/" % name)
+
+
+## Every map he can be dealt says what it is in the picker (faction_picker draws both), and a map with terrain names
+## it in the note: the note is the only place he is told there is a river or a pit before the match starts.
+func test_every_dealt_map_has_a_title_and_a_note_that_names_its_terrain() -> void:
+	var words := {"water": ["river", "water", "canal"], "bridge": ["bridge", "causeway"], "pit": ["pit"]}
+	for name: String in Arena.ROTATION:
+		var layout: Dictionary = Arena.load_layout(name)["layout"]
+		var note := String(layout.get("note", "")).to_lower()
+		assert_true(String(layout.get("title", "")) != "", "%s has a title" % name)
+		assert_true(note.length() > 40, "%s has a note that says what the fight is about" % name)
+		for piece: Dictionary in layout.get("terrain", []):
+			var kind := String(piece.get("kind", ""))
+			var said := false
+			for word: String in words.get(kind, [kind]):
+				said = said or note.contains(word)
+			assert_true(said, "%s has %s terrain and its note never says so (%s)" % [name, kind, words.get(kind, [kind])])
 
 
 func test_a_random_arena_records_the_arena_it_built_and_unknown_names_stay_loud() -> void:
