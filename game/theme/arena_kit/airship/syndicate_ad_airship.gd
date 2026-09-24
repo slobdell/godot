@@ -19,6 +19,17 @@ extends Node3D
 ##      motion never visibly repeats and never looks like a sine.
 ##   4. **It slips.** A turning airship is a sail; the hull tracks a little outside its own turn.
 ##
+## ON THE TERMINUS IT IS A ZOOMED-OUT SIGHT, AND THAT IS A RULING, NOT A BUG (round 11, the lead via the orchestrator,
+## 2026-09-24). "Never inside a building" and "in his frame at his pose" cannot both hold there at ANY size. His frame's
+## top edge is 3.5 deg below the horizon from 17.56 m up, so nothing above ~15 m is in frame at 45 m range; the blocks
+## are 24 m tall, and the streets between them (20-22 m) are narrower than even the 14.4 m keel plus its 2 m margin
+## each side over any useful length, so over the city the hull must fly at ~37 m. The only ground it can cruise over
+## is the plazas by the wall, ~100 m from any fight. Measured (`make airship-report`, 240 s): 0 % at cruise and 0 % in
+## frame on the Terminus once it stopped flying through blocks (it was 31 % inside something). Kept that way because
+## the Terminus is one map of ten and the only one with 40 m blocks inside the fight, he asked to see it MORE (the
+## camera lift), not always, and a smaller or lower airship for one map re-opens a size he has ruled on twice. He
+## sees it there by zooming out: at a 130 m boom the camera is ~65 m up and looks down on it.
+##
 ## Constraints that survive from round 9, each earned from a failure this project already paid for:
 ##   * NO collision body of any kind; the sim baseline is pre-registered unchanged.
 ##   * The pose advances on the FIXED tick, never the wall clock, so 30 fps and 144 fps look the same.
@@ -102,8 +113,11 @@ const WALL_MARGIN := 10.0
 ## How fast it may climb or sink, and how much air it keeps over a rooftop. Gentle, but not as gentle as it was: at
 ## 2.4 m/s every roof cost ~9 s of climb before it and ~9 s of settling after, all of it out of his frame, and once
 ## the hull stopped flying THROUGH buildings that was most of the match on the dense maps. 3.2 m/s (a real airship
-## manages 3-5) measured better on every one of six maps (`make airship-report`, laptop, 45 s legs): yard cruise
-## 52 -> 61 %, pit 28 -> 32 %, sumps 12 -> 18 %, and still 0 % inside anything.
+## manages 3-5) measured better on every one of six maps (`make airship-report`, laptop, six maps x four 45 s legs,
+## the working tree just before `c58aaf16`, same flight otherwise): yard cruise 52 -> 61 %, pit 28 -> 32 %, sumps
+## 12 -> 18 %, and still 0 % inside anything. Approved by the lead (2026-09-24). WHICH WAY TO MOVE IT: down to 2.8
+## only if, in play, the rise over an ad screen reads as a LIFT rather than a drift -- that is his eye, not a number.
+## Going up buys more cruise time with the same measurement; going down costs it.
 const CLIMB_MPS := 3.2
 ## 1 m, measured against the belly at the BOTTOM of its float (the float's own 1.15 m is reserved on top of it). It was
 ## 3 m, which is harmless over a 24 m roof and ruinous over a yard: a two-high container stack (5.18 m) then sat 2 m

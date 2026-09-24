@@ -156,7 +156,10 @@ Nothing blocks you. S6's frames go to him for the morning.
 
 ## Status
 
-_Worker: airship. Last updated 2026-09-24 (morning). **IN PROGRESS** -- see *Next steps*._
+_Worker: airship. Last updated 2026-09-24 (morning). **DONE: all six backlog items complete. THIS COMMIT IS GREEN, MERGE HERE:
+`1a79f392`** (builder0: `make check exited 0`, `check passed: 18 targets`, **1697 passed, 0 failed**, sim-baseline
+`457b5e830708b439` unmoved, determinism `bcc6e1609c14e12d`). Lead gate: his eye on the frames and the clip. `c58aaf16` (S1–S5 first version) is green on builder0: `make check exited 0`,
+1695 passed / 0 failed, sim-baseline `457b5e830708b439` unmoved._
 
 ### Plan (in order, smallest foundation first)
 1. S1 the flying test (red on the old tree, with its number) → 2. S2+S3 one flight object (`AirshipFlight`): real rotated
@@ -195,14 +198,41 @@ at the (±100, 0) blocks → 5. S5 `clear_pose` takes moving occluders; the live
   off it, whereas a building is cleared by the climb whatever the steering does. Containment stays last and absolute;
   the hull goes over the outer blocks. Test: `test_by_the_wall_it_stays_inside_and_goes_over_the_outer_blocks`.
 - **S5.** `RtsCamera.clear_pose(..., occluders := [], grow := 0.0)`: moving solids are a PARAMETER (C11.2 holds: pure,
-  headless, the six existing callers untouched). The live camera gathers boxes from the `camera_occluders` group
-  (`SyndicateAdAirship.camera_occluder()`), grows them `HULL_LEAD_M` 6 m so the lift starts before the hull arrives,
-  and **lifts, never shortens**: if no tilt clears the deck it lets the hull pass (`hull_passing`). The lift is damped
-  (`ease_hull_lift`: 0.3 s rise, 1.0 s hold, 1.6 s fall) and measured from the pose WITHOUT the lift, so the camera
-  rising out of the box cannot talk itself back down. Tests: lifted above the deck with the boom unchanged; an
-  unclearable hull is let pass; no occluders = exactly the building rule over the Terminus grid; three minutes of the
-  real flight past a parked camera at 60 fps — the lift does not pump, and the camera is inside the hull on almost no
-  frames.
+  headless, the six existing callers untouched and provably unchanged over the Terminus grid). The live camera gathers
+  boxes from the `camera_occluders` group (`SyndicateAdAirship.camera_occluder()`: the hull's footprint from belly to
+  the top of its FINS, 10.9 m above centre, not the deck screen), grows them `HULL_LEAD_M` 6 m so it moves before the
+  hull arrives, and then — **decided from the frames, after two wrong versions:**
+  1. *Tilt about the focus* (the building rule) carried the camera in toward the fight and left the hull behind it:
+     the fight from 43 m up and no airship.
+  2. *Straight up* still left it behind the lens: when they meet, the hull's centre is as often behind the camera as in
+     front (the Pit's frame: 28 m behind).
+  3. **Shipped: up over the fins AND back along the boom until the hull's far end is in front of the camera** (at most
+     `HULL_BACK_MAX_M` 40 m back), so the hull lies between him and the fight, under the sight line. **Never in**: if no
+     tilt ≤ 70° clears it, the hull is let pass (`hull_passing`). Damped per axis (`ease_hull_lift`: 0.3 s rise, 2 s
+     hold, 2 s settle), measured from the pose WITHOUT the lift so rising out of the box cannot talk it back down.
+  Tests: lifted above the top, never nearer the fight; the hull behind the camera at three yaws still ends in frame
+  (≥ 25 % of its samples lengthways, ≥ 8 % broadside, where it runs off both sides); an unclearable hull is let pass;
+  three minutes of the real flight past a parked camera at 60 fps do not pump and put the camera inside the hull on
+  almost no frames.
+- **S6.** `airship-shot` poses every frame through `clear_pose` with the airship as an occluder. `SEQUENCE=1` flies ahead
+  to find (a) the first time the hull's footprint goes from open ground onto a roof and shoots the approach from a fixed
+  camera, and (b) the first moment the hull reaches his camera, shot as it was (inside) and as the lift has it.
+  `CLIP=1` drives the scene's own `RtsCamera` — the real damping — through the meeting at 10 fps into `clip.mp4`.
+  Benches that jump about in time set `exact_replay` (a long catch-up otherwise skips planning to avoid a hitch, which
+  flies a slightly different line — found because the first "lifted" frame was not lifted).
+
+### Frames for the lead — `assets/review/airship_r11_frames/` (laptop render, `1a79f392`)
+- `1_…BEFORE_inside` / `2_…AFTER_up_and_back` — the Pit, the tick his camera meets the hull: before, the camera is
+  inside it; after, the hull fills the right third of the frame over the fight.
+- `3_pit_climbs_over_ad_screen_*` — the hull rising ahead of a 20.7 m ad screen, passing over it clear, settling back.
+- `4_terminus_camera_meets_hull_AFTER`, `5_terminus_hull_up_over_the_roofs_110m_boom` — the Terminus trade-off in one
+  picture: even from a 110 m boom the hull is up over the roofs at the top edge.
+- `6_pit_live_camera_meets_hull_20s.mp4` — **the one to watch.** 20 s of the live camera: the hull arrives, the camera
+  rises and backs off, the hull passes, it settles; the hull comes round again and for several seconds it fills most
+  of the frame (dish, fins, the flank screen playing the feed). That second pass is his "see the cool airship" and it
+  also hides the fight: **his call** (question 3).
+- Known bench artifact: in the Terminus meet frames at ±2 s the camera sits 2 m over a block roof (the round-9
+  building rule) and the roof fills the frame; the game's `BlockCutaway` removes that block, the bench camera does not.
 
 ### The numbers (240 s per map, four one-minute legs; laptop; before = `a04d75c0`, after = `c58aaf16`)
 `make airship-report` — inside % (any part of the hull inside anything drawn; must be 0), cruise % (at the low
@@ -223,19 +253,66 @@ cruise height), seen % (in his frame at his pose, averaged over 4 camera yaws; a
 anywhere, and on the dense maps it pays for that in time up over the roofs, where his frame cannot reach it (at his
 pose the frame's top edge is 3.5° below the horizon from 17.6 m up, so anything above ~15 m at 45 m range is out).
 
-### Questions for the lead
-1. **The Terminus: no-intersection and in-his-frame cannot both hold there, at any airship size.** Its streets are
-   20–22 m wide (narrower than even the 14.4 m keel plus margin over any useful length) and the only ground a hull can
-   cruise over is the plazas by the wall (plot: the cruise-clear map is green only beyond ~100 m out). Over the city it
-   flies at ~37 m; at his close pose that is always above the frame, and he sees it by zooming out (at a 130 m boom the
-   camera is ~65 m up and looks down on it). Shipped: never intersect, because that is what he reported. **Options if
-   he wants it seen there:** (a) a smaller airship on city maps only — even 1.0× (38 m) does not fit the grid well;
-   (b) let it patrol the plazas low (it would be far from the fight and still mostly out of frame); (c) accept it as
-   a zoomed-out sight on the Terminus. My recommendation is (c).
-2. **Climb speed 3.2 m/s** (was 2.4): chosen by measurement; if it reads as too lively, 2.8 is the compromise.
+### Questions for the lead (each with my recommendation)
+1. ~~The Terminus~~ **RULED (2026-09-24, via the orchestrator): keep it as a zoomed-out sight there.** Written into
+   `syndicate_ad_airship.gd`'s header with the numbers that force it.
+2. ~~Climb speed~~ **APPROVED (2026-09-24): keep 3.2 m/s** (was 2.4); the "which way to move it" note is beside the
+   constant. Original recommendation: It measured better on all six maps with tall props
+   (yard cruise 52 → 61 %, pit 28 → 32 %, sumps 12 → 18 %, 45 s legs, laptop) with still 0 % inside anything, and a real
+   airship manages 3–5 m/s. Drop to 2.8 only if, in play, the rise over an ad screen reads as a lift rather than a drift.
+3. **The camera and the hull.** **Answered: he watched `6_…mp4` and said "it looks fine"; S5 is approved as shipped.**
+   (My recommendation had been: no change — `HULL_BACK_MAX_M` 40 m and the 2 s hold stay.)
+
+### Time at cruise, before and after, per map — LAPTOP, `a04d75c0` → `c58aaf16`, 240 s per map (the part he will notice in play)
+`make airship-report`, 240 s per map (four one-minute legs), laptop; before = `a04d75c0`, after = `c58aaf16`. Cruise % is
+the share of the flight at the low cruise height (centre 18.2 m, belly 6.2–7.4 m), where he can see it.
+
+| map | cruise % before → after | in frame % before → after | inside something % before → after |
+|---|---|---|---|
+| terminus | 6.7 → 0 | 2.7 → 0 | 31.2 → 0 |
+| yard | 100 → 77 | 31 → 26 | 0 → 0 |
+| pit | 91 → 43 | 29 → 16 | 22.7 → 0 |
+| boneyard | 100 → 91 | 34 → 34 | 0.9 → 0 |
+| boulevard | 56 → 8 | 24 → 6 | 39.8 → 0 |
+| crossing | 47 → 5 | 16 → 1 | 49.0 → 0 |
+| sumps | 56 → 26 | 17 → 14 | 43.8 → 0 |
+| maze, barriers | 100 → 100 | 33 → 32 | 0 → 0 |
+
+**Two corrections to the brief's expectation, so HANDOFF does not repeat them:**
+- **The floodlight is not 3 m. It is a 16.05 m mast** (a 3 m footing, a 15 m mast and a lamp head, measured off
+  `KitYard.floodlight_mesh()`). 3 m is only its collision box. The fix was 24 m → 16 m, not 24 m → 3 m, so it saves
+  far less climbing than the brief predicted: a 57 m hull still has to go over or round each mast.
+- **Cruise time went DOWN, not up.** The old "cruise" numbers were high because the hull flew through whatever was in
+  its way at cruise height (the yard's 100 % included time inside ad screens). Now nothing is flown through, so every
+  map with tall props spends time climbing. The honest headline for him: **it never goes through anything any more;
+  on open maps he still sees it low most of the time (yard 77 %, boneyard 91 %, maze and barriers 100 %); on the
+  dense maps it is up over the roofs more.** The climb and settle rate (2.4 → 3.2 m/s), the 1 m roof clearance and the
+  orbit that bends toward open ground were each chosen because they won back cruise time without letting it go
+  through anything.
 
 ### Known issues
 - A mid-match dressing rebuild re-flies the flight from tick 0; with the planner that is 0.6–1.0 s of work on the laptop
   under load (≈0.2–0.4 s on builder0-class hardware) for a 40 000-tick match. The catch-up already skips planning;
   bounding it further would change what `advance_to(tick)` means for the shot tool, so it is left and reported.
 - Live cost: 80–250 µs per 30 Hz tick on the laptop (boulevard is the worst: many masts).
+
+### What to playtest
+- `make skirmish ARENA=pit` (and `yard`, `boneyard`): watch the airship climb over the ad screens and settle; pan the
+  camera onto its path and let it come through — the camera should rise and back off with the hull in front of it.
+- `make skirmish ARENA=terminus`: it should never be inside a block; it will be up over the roofs, seen by zooming out.
+- Numbers: `make airship-report` (headless, ~2 min on builder0 for nine maps). Frames: `make remote T="airship-shot
+  ARENA=pit CLIP=1"`.
+
+### Merge notes
+- Shared file edits: none. `arena_dressing.gd` is untouched (the carve-out was not needed). `rts_camera.gd` is ours this
+  round; `clear_pose`'s new parameters default to the old behaviour, so the six other callers are unchanged.
+- `SyndicateAdAirship.seen_fraction` now takes the layout first (`seen_fraction(layout, action, seconds)`); its only
+  callers are ours. `blockers`, `required_altitude`, `start_position`, `clearance_at` and `TALL_PROPS` are gone
+  (replaced by `AirshipFlight`).
+- C11.1: when arena's rotation merge is announced, `git merge main` and re-run `make airship-report` and the airship
+  tests (they already walk crossing and sumps).
+
+### Next steps
+- Stretch, if the lead wants more of it on dense maps: a per-map
+  "cruise corridor" planner (the orbit choice is local; a global route through the green of the cruise-clear map would
+  raise cruise % on the Boulevard and Crossing).
