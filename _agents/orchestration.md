@@ -3159,8 +3159,14 @@ green on its merge base is the branch's until proven otherwise, and a green that
     near-copies of the reference. This also explains a defect already paid for: the round-10 bus came back a van
     **because its reference was the stubby dozer**. The rule: **the reference decides proportion, the prompt decides
     detail — if the silhouette you want differs from the reference's, no wording fixes it, change the reference.**
-    And the way through without breaking *brief from the images, never adjectives*: `REFS` takes a LIST, so pass a
-    reference that carries the PROPORTION you want alongside one that carries the LOOK.
+    **The obvious way through does NOT cleanly work, and the orchestrator's confident version of it was measured
+    and half-refuted within the hour:** `REFS` takes a LIST, so the plan was to pass a reference carrying the
+    PROPORTION alongside one carrying the LOOK. Measured (fleet, two more concepts): the long side-on render ALONE
+    gave the right length and drifted the look (yellow school-bus panels); render + approved concept gave exactly the
+    right look and only PART of the length, **because the style reference carries its own proportion too**. Multiple
+    references AVERAGE their proportions; they do not separate concerns. So the honest statement of the rule is:
+    **proportion comes from the references as a set, and no weighting of words overrides it** — if you need a
+    silhouette none of your references has, you need a new reference that has it, or a different tool.
 216. **A picture taken in the projection that cannot show the error certifies the error.** (fleet, round 11, in its
     own words: *"my side-view picture hid the width"*.) A side elevation cannot show a width fault; a static lookup
     at a block's centre cannot show a hull clipping its corner; a float bound of 0.4 m cannot catch a 0.19 m hover.
