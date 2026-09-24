@@ -5,6 +5,53 @@
 > `NavigationServer3D` runs A* over the navigation polygons baked from the arena's collision at startup
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
+## Round 11: a goal the hull fits, and the three-point turn decided before the bumper
+
+The lead, on the Terminus: *"they'll drive into a wall before trying to back up"* and *"a unit's target position ends
+up inside of a building"*. Two problems with one owner, measured apart (numbers with commits: `streams/nav.md` Status).
+
+**R2, the goal.** One rule: **every per-unit goal is grounded with the hull's own turning envelope**
+(`SlotGround.for_unit`), by every issuer — the right-click (`Orders`, every source but `element`, whose plan
+`Element.ground` already grounds), the squad path (`Squad.context_for`, CPU commander and tactical map; memoised per
+member because brains ask every think), follow stations (`tank_brain.gd`, round 10). Three additions to `SlotGround`:
+- **`apart`**: no two crews of one order or one squad are handed overlapping spots (rings of this hull's width round
+  the grounded point, nearest first, at most `APART_RINGS`).
+- **the fit check**: where the eight clearance pushes cancel in a PINCH (a wreck beside a block face), the settled
+  point is not one the hull fits; `standable_for` then searches `FIT_RINGS` envelopes for the nearest point that is.
+  A street narrower than the envelope everywhere still gets the centred point.
+- clearance probes push at 0.25 m (`PROBE_TOLERANCE_M`), not the centre's 1 m tolerance.
+
+**Repair, don't just report** (`Movement._repair`): where `_update_phase` would declare `blocked`/`no_path` at the end
+of an unreachable route, the goal is re-grounded ONCE with the envelope and driven to — only if a route reaches it and
+it is within `REPAIR_MAX_M` (12 m) of what was asked. Otherwise the honest report stands. `state()` carries
+`repaired_m`; counters `goal_repairs` / `goal_repairs_refused`; `--nav-off=repair`. Caveat: order COMPLETION is judged
+against the order's own goal by the brain, so a repaired ORDER goal would not complete; after R2 order goals are
+already grounded, so the repair in practice meets brain-made goals and island cases.
+
+**R1, the planned reverse** (`Movement._planned_reverse`, driver tag `kturn`, `--nav-off=kturn` is the control arm).
+Every reverse before it was reactive: the stall rule, the pressed-wall escape, and Steering's circle test (which only
+fires when the point is INSIDE the turning circle and consults no wall). A wheeled hull nose-on to a face with its
+route leaving behind it therefore drove a full-lock arc into the face. Now, for a wheeled hull on a routed forward move
+whose steering point is > 45° off the nose: sweep the full-lock forward arc (the plant's yaw law: heading turns
+`|ds|·turn/R` in either gear) with the hull's WHOLE outline (it yaws about its centre, so both ends swing) against the
+navmesh; if it meets a wall within `KTURN_HIT_WITHIN_M`, search the reverse arc (same lock, so the hull keeps
+swinging toward the point) for the shortest back-up after which the forward arc is clear, validated the same way, and
+drive it as a leg that ends on distance, a REAR contact, or a timeout. Nothing found: `kturn_none`, and the reactive
+rules stand. Three things the first builds got wrong, each measured: ending a leg on ANY contact (the nose still on
+the face) aborted 138 of 155 legs on their first tick; no retry delay made it re-plan every 6 ticks; sweeping only the
+leading/trailing end let the other end swing into what was beside it.
+
+**Instruments added** (measurement only): `route_arms()` gains `unstick_fires`, `circle_reverses`,
+`circle_reverse_ticks`, `kturns`, `kturn_none`, `kturn_aborted`, `kturn_ticks`; `WallContact` splits driver `press`
+from `unstick` and counts `by_gear`; the drive test counts cusps (0.3 m/s dead band), reverse ticks and the plant's
+creep (ticks, reversals, reversals at a wall), and **its seeds are samples** (seed 1 canonical; > 1 adds 2 m jitter and
+a random starting heading — before this, seeds were byte-identical). `make nav-wall-clip` films the lead's case from
+his camera in both arms.
+
+**Noise, for whoever measures next:** the War Rig drive is chaotic. One change touching a handful of legs moved one
+seed's total contacts 1002 → 3163 on the laptop. Total contacts are dominated by rigs' forward scrapes in 18 m streets;
+read the named numbers (press/unstick-driven contacts, reverse-gear contacts) and take 8+ seeds per arm.
+
 ## Round 10: what a wall contact IS, and the Terminus drive test
 
 The lead: *"Units are still driving into walls"* and *"I'll know that the units are doing what I want when I can
