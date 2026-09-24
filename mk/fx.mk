@@ -170,10 +170,10 @@ airship-shot: import ## Round 11: frames of the Syndicate broadcast airship AT t
 	@grep -q AIRSHIP_SHOT_DONE $(BUILD_DIR)/airship-shot/log.txt || { grep -E 'SCRIPT ERROR' $(BUILD_DIR)/airship-shot/log.txt; echo "airship-shot FAILED"; exit 1; }
 	@ls $(BUILD_DIR)/airship-shot/*.png
 
-facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg)
+facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg VIEW=side|top|quarter TINT=1: turret magenta, weapon yellow, cut gun cyan)
 	rm -rf $(BUILD_DIR)/facing && mkdir -p $(BUILD_DIR)/facing
 	timeout 300 $(GODOT) --path . --resolution 960x540 --script res://game/theme/gallery/facing_audit.gd -- \
-		--facing-dir=$(CURDIR)/$(BUILD_DIR)/facing $(if $(UNITS),--facing-units=$(UNITS)) $(if $(TURRET),--facing-turret=$(TURRET)) 2>&1 | grep -E 'FACING_AUDIT|SCRIPT ERROR|SHADER ERROR' || true
+		--facing-dir=$(CURDIR)/$(BUILD_DIR)/facing $(if $(UNITS),--facing-units=$(UNITS)) $(if $(TURRET),--facing-turret=$(TURRET)) $(if $(VIEW),--facing-view=$(VIEW)) $(if $(TINT),--facing-tint) 2>&1 | grep -E 'FACING_AUDIT|SCRIPT ERROR|SHADER ERROR' || true
 	@grep -q . $(BUILD_DIR)/facing/*.png 2>/dev/null || { echo "facing-audit FAILED: no images"; exit 1; }
 
 .PHONY: turret-probe

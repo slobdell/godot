@@ -20,6 +20,11 @@ MODEL_YAW_DEG = {
     # Found by the audit, not reported: the approved concept (assets/review/images/syndicate_special_b.jpg) has the
     # pointed nose and the emitter's lens leading; the model had both trailing.
     ("syndicate", "special", "hull"): 180.0,
+    # Round 11 (fleet T5; the lead: "Syndicate has some backwards vehicles"). The Limousine Gunship was declared `+x` in
+    # the same batch as the special and never corrected: its long hood, headlight strip and intake were at +Z and its
+    # fastback tail led (`make assets-profile ... RENDER=1`). Caught by tests/test_theme_unit_scale.gd's nose check
+    # (FacingCheck: end taper and tall-mass position both called it backwards) and confirmed by eye.
+    ("syndicate", "ifv", "hull"): 180.0,
 }
 
 TEMPLATE = """[gd_scene format=3]

@@ -5,6 +5,10 @@ extends SceneTree
 ## a 90 degree one more so. Saves <dir>/<unit>.png and a contact sheet order in FACING_AUDIT lines, then quits.
 ## Visual only. Flags: --facing-dir=<abs dir> [--facing-units=a,b] [--facing-turret=DEG] (turn every turret: a gun
 ## cut out of its hull, FactionArt.GUN_CUTS, must turn with it and leave the hull whole)
+## Round 11 (fleet): [--facing-view=side|top|quarter] (top: straight down, forward to the right; quarter: from above
+## the right-front corner) and [--facing-tint] (the turret part drawn magenta, the weapon part yellow, a cut gun cyan:
+## whatever keeps the hull's own colours is HULL MESH and cannot turn -- the instrument for "is that barrel the
+## turret's or the hull's?").
 
 const SIZE := Vector2i(960, 540)
 
@@ -70,8 +74,22 @@ func _run() -> void:
 		var height := float(Units.stat(unit_id, "hull_size")[1])
 		var distance := maxf(length + 4.0, 6.0) * 1.15
 		camera.fov = 40.0
-		camera.global_transform = Transform3D(Basis(), Vector3(distance, height * 0.6 + 0.8, -1.0)).looking_at(
-				Vector3(0, height * 0.5, -1.0), Vector3.UP)
+		match flags.text("facing-view", "side"):
+			"top":
+				# Straight down, forward (-Z) to the right of the picture: the camera's own up is -X.
+				camera.global_transform = Transform3D(Basis(), Vector3(0, height + distance, -1.0)).looking_at(
+						Vector3(0, 0, -1.0), Vector3(-1, 0, 0))
+			"quarter":
+				camera.global_transform = Transform3D(Basis(), Vector3(distance * 0.6, height + distance * 0.55,
+						-1.0 - distance * 0.45)).looking_at(Vector3(0, height * 0.5, -0.5), Vector3.UP)
+			_:
+				camera.global_transform = Transform3D(Basis(), Vector3(distance, height * 0.6 + 0.8, -1.0)).looking_at(
+						Vector3(0, height * 0.5, -1.0), Vector3.UP)
+		if flags.has("facing-tint"):
+			_tint(tank.get_node("Turret/TurretVisual"), Color(1, 0, 1))
+			_tint(tank.get_node("Turret/WeaponVisual"), Color(1, 0.9, 0))
+			for pivot in tank.find_children("GunPivot", "Node3D", true, false):
+				_tint(pivot, Color(0, 1, 1))
 		for i in 8:
 			if hold_turret:  # the tank drives its turret itself: hold it where the audit wants it (0 = straight ahead)
 				(tank.get_node("Turret") as Node3D).rotation.y = deg_to_rad(turret_deg)
@@ -91,3 +109,11 @@ func _run() -> void:
 		await process_frame
 	print("FACING_AUDIT_DONE")
 	quit()
+
+
+func _tint(node: Node, color: Color) -> void:
+	var paint := StandardMaterial3D.new()
+	paint.albedo_color = color
+	paint.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for mesh in node.find_children("*", "MeshInstance3D", true, false):
+		(mesh as MeshInstance3D).material_override = paint

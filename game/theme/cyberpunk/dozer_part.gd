@@ -34,10 +34,13 @@ func _ready() -> void:
 		add_child(model)
 		_prepare_model()
 		if part == "hull":
+			_trim_hull()
 			_cut_gun()
 			_cut_trailer()
 		elif part == "turret" and _tank() != null and not FactionArt.gun_cut(String(_tank().get("unit_id"))).is_empty():
 			model.visible = false  # the nub that stood in for a turret: the real gun is cut out of the hull
+		elif part == "cannon" and FactionArt.is_stray_stick(FactionArt.natural_bounds(model)):
+			model.visible = false  # round 11: a generated stick, not a gun (FactionArt.STICK_ASPECT)
 		bounds = _model_bounds()
 		if part == "hull":
 			_fit_to_hull()
@@ -93,6 +96,25 @@ func _fit_to_hull() -> void:
 		bounds = _model_bounds()
 
 
+## Round 11 (fleet T2): drop the gun fragments the splitter left in this hull (FactionArt.HULL_TRIMS).
+func _trim_hull() -> void:
+	var tank := _tank()
+	if tank == null:
+		return
+	var boxes := FactionArt.hull_trim(String(tank.get("unit_id")))
+	if boxes.is_empty():
+		return
+	for node in model.find_children("*", "MeshInstance3D", true, false):
+		var instance := node as MeshInstance3D
+		if instance.mesh == null:
+			continue
+		var pieces := FactionArt.split_mesh_boxes(instance.mesh, _relative_to(instance, model), boxes)
+		if pieces[1] == null:
+			continue
+		instance.mesh = pieces[0]
+		instance.visible = pieces[0] != null
+
+
 ## Round 7: a hull whose gun was generated into its mesh (FactionArt.GUN_CUTS) gives the gun to a pivot of its own,
 ## which follows the tank's turret yaw every frame. The hull and gun keep the approved model's exact geometry.
 var gun_pivot: Node3D
@@ -106,7 +128,9 @@ func _cut_gun() -> void:
 	var cut := FactionArt.gun_cut(String(tank.get("unit_id")))
 	if cut.is_empty():
 		return
-	var box: AABB = cut["box"]
+	# Round 11 (fleet): a gun that no single box separates from its hull (the gang catapult's boom, post and bucket
+	# around a crate on the bed) lists `boxes`, exactly as a trailer cut does.
+	var boxes: Array = cut.get("boxes", [cut.get("box")])
 	var pivot: Vector3 = cut["pivot"]
 	_gun_rest_yaw = deg_to_rad(float(cut.get("rest_yaw_deg", 0.0)))
 	gun_pivot = Node3D.new()
@@ -118,7 +142,7 @@ func _cut_gun() -> void:
 		if instance.mesh == null or gun_pivot.is_ancestor_of(instance):
 			continue
 		var to_model := _relative_to(instance, model)
-		var pieces := FactionArt.split_mesh(instance.mesh, to_model, box)
+		var pieces := FactionArt.split_mesh_boxes(instance.mesh, to_model, boxes)
 		if pieces[1] == null:
 			continue
 		instance.mesh = pieces[0]
