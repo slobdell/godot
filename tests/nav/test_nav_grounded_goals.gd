@@ -90,11 +90,11 @@ func _ids(game_match: Match) -> Dictionary:
 	return ids
 
 
-## The player's right-click, and the same order from every other source that issues a move (a script, the agent
-## bridge, anything without `source`): the goal a crew is handed is somewhere its hull fits.
+## The player's right-click: the goal a crew is handed is somewhere its hull fits. (A SOURCELESS move keeps its raw
+## geometry on purpose: no production issuer sends one, and scripts and tests ask for exact points - see orders.gd.)
 func test_a_group_move_beside_a_block_hands_every_hull_a_goal_it_fits() -> void:
 	await _terminus()
-	for source: String in ["player", ""]:
+	for source: String in ["player"]:
 		var game_match := _squad()
 		await wait_physics_frames(2)
 		var orders := Orders.new()

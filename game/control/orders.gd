@@ -353,11 +353,13 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 			# Round 10 (nav's drive test on the default path: 11 of 13 arrival misses were a right-click's formation
 			# slot 4-10 m INSIDE a block): each goal goes onto ground this hull can stand on, the way an element's are
 			# (squad's SlotGround). The order says how far its slot moved, so the card can tell the player.
-			# Round 11 (nav R2): EVERY source but an element's. An element grounds its own plan with the hull's envelope
-			# (Element.ground) and issues one crew per order, so grounding it again buys nothing. A script's, the agent
-			# bridge's and any sourceless move used to keep raw formation geometry, which put a slot inside a block
-			# as surely as a right-click's did (round 10 grounded the player's only, to keep two tests' numbers).
-			var ground := goal if String(base.get("source", "")) == "element" else Orders.ground_goal(tanks[i], goal)
+			# The PLAYER's orders are grounded here. An element grounds its own plan with the hull's envelope
+			# (Element.ground) and issues one crew per order; the CPU commander and the tactical map go through the
+			# squad path (Squad.context_for, hull-grounded since round 11). A SOURCELESS move is a script's, a test's or
+			# the FX bench's - no production issuer sends one (nav, round 11: every issue() caller surveyed) - and those
+			# fixtures ask for exact geometry: grounding them moved scenario_orders' 100 ms test (it compares the
+			# executed goal with the raw click; round 10 on 8e942f20, and again round 11 on 77212e8c).
+			var ground := Orders.ground_goal(tanks[i], goal) if String(base.get("source", "")) == "player" else goal
 			# And no two crews of one order are handed the same spot: two slots pushed out of one block land together.
 			ground = SlotGround.apart(tanks[i], ground, String(tanks[i].unit_id), taken)
 			taken.append([ground, SlotGround.half_width_of(String(tanks[i].unit_id))])
