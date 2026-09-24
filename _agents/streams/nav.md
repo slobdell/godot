@@ -336,3 +336,29 @@ Accepting being wrong on any of them; each is reported as measured.
 18 targets`, **1691 passed, 0 failed**, sim-baseline `814aed46b1042e62` (the adopted hash, `6602e1f9`), determinism
 `bcc6e1609c14e12d`. Commits after it are documentation only (`_agents/`). The merge moves the sim baseline
 `457b5e83 -> 814aed46` for the two named causes above; it merges on its own or with the orchestrator recording it.
+
+### For the orchestrator's integration (answers to its three asks, 2026-09-24)
+
+**1. The sim-baseline attribution** (builder0, `make nav-sim-arms`, the sim-baseline match's exact command):
+
+| tree | arm | hash | reading |
+|---|---|---|---|
+| `5ad73612` (R2 only; repair ON by default there) | none | `457b5e830708b439` | **R2 does not move it** — grounding, de-collision and the repair all leave the baseline match alone |
+| `9ea3b4ad` (= `c666f6ca` code) | `--nav-off=kturn` | `bdb21d205dc97405` | **the follower-deadlock / waypoint guard** (`e62383ad` + `38c385d5`) moves it on its own |
+| `9ea3b4ad` | none (default: planned reverse ON, repair OFF) | `814aed46b1042e62` | **plus the planned reverse leg** — the adopted hash |
+| `9ea3b4ad` | `--nav-off=repair` (turns the repair ON) | `814aed46b1042e62` | **the repair does not change the hash**: its default and the baseline are independent decisions |
+
+Two causes, both nav's: the waypoint guard and the planned reverse. The repair is neither.
+
+**2. The `nav-orders` numbers, exactly as measured:** `make remote T=nav-orders` (defaults: `ARENA=yard NAV_TIME=90`,
+no `NAV_FLAGS`), one run per arm, builder0. Arms: **base** = a clone at `a04d75c0` (30/30, t50 29.9 / t90 39.5 /
+t100 43.8 s); **final** = `38c385d5` default, i.e. planned reverse ON, repair OFF (30/30, t50 29.5 / t90 46.9 / t100
+47.7 s). For the repair-ON re-measure: the same command with `NAV_FLAGS=--nav-off=repair` (the switch turns it ON), and
+after the flip the default. `tests/nav/order_probe.gd` now prints, for any never-completed unit, its id, Movement's
+goal beside the order's, `repaired_m` and `blocked_by`, and `--trace=UNIT` for a per-half-second trace — the repair's
+failure mode (a scout "arrived" 3.5 m off an order goal that never completed) is visible there directly.
+
+**3. arena's relay, credited:** the follower deadlock was arena's deterministic repro on `stream/arena` `09dd33c7`:
+`godot --headless --fixed-fps 30 --path . --script res://tests/arena/terrain_drive.gd -- --arena=crossing --squad=mixed
+--trace=artillery --trace-full=45` (laptop, seed 1: the artillery sat "driving" at (-87.4, 27.6), speed 0, for 90 s on
+leg 2). Fixed at `e62383ad`, generalised at `38c385d5`; the same repro with the fix finishes leg 2 at 79.7 s.
