@@ -28,6 +28,32 @@
   loader refuses unknown names including `random` (only `Arena.resolve_name` knows it); the random roll comes from
   `--seed`; `Arena.DEFAULT_LAYOUT` (foundry) keeps headless runs and the sim baseline stable.
 
+## Round 11 (2026-09-24): what he is dealt, the towers, and the Locks — read this before the older sections
+
+- **The rotation is `Arena.ROTATION` = yard, pit, terminus, crossing, sumps, locks**, and it is the only thing the
+  picker and `--arena=random` deal. `Arena.CUT` holds his cut list in code. **Every layout in `arenas/` must be
+  exactly one of fixture / CUT / ROTATION** (`test_every_built_map_is_dealt_cut_or_a_fixture`): a map you build and
+  forget to publish fails the suite the day it lands. That test exists because round 10's Crossing and Sumps spent a
+  round unreachable, the second time this happened.
+- **Bridges and pits, honestly:** a bridge is restored ground at y = 0 between two carved holes, drawn as a 0.07 m
+  deck with 0.9 m rails, and nothing drives under it; a pit is a hole with no navmesh and a 0.9 m kerb, and you cannot
+  fall in. Don't promise him a viaduct.
+- **The venue floodlight towers stand OUTSIDE the wall** (`arena_dressing.gd` `_tower_base`): on the corner's line,
+  past the wall's outer corner by the model's bounds half-diagonal + 1 m. They used to stand 9 m inside every corner
+  with no collider (on the Terminus, 7.8 m inside the wall on drivable navmesh), which is what he drove through.
+  Outside rather than solid-in-place because the fight loses no floor and the navmesh does not move.
+  `test_the_venue_dressing_is_solid_or_outside_the_wall` now holds the dressing layer to the same rule as the props:
+  on the old tree it found exactly the towers, and nothing else in the dressing stands inside the wall.
+- **`make terrain-drive`** orders a player squad (mixed, and War Rigs) over each terrain map's crossings on the
+  default path and counts arrivals, contacts by cause, and ticks inside a hole. **Use it on any new terrain map before
+  you show it:** on the Locks it caught three layout faults the static report cannot see (an objective on a building's
+  corner, so the slots wrapped the building; containers in a road's mouth that jammed rigs turning; a 5.8 m slot
+  between a block and a rim). A lane that clears R4 is not a road a 14 m rig can TURN in. `--trace=<unit|all>`
+  and `--trace-full=<s>` dump Movement.state when something stops.
+- **The Locks** (`tools/terrain_maps.py` `locks`): a canal wall to wall, the lock in the middle and a swing bridge on
+  each flank; the objective pair on the far quays. Spread 0.453 (dry twin 0.344); the centre sees 0.45 because a canal
+  is open across its water by design. It's flagged for his eye rather than buried in cover, as the Sumps' 0.34 was.
+
 ## The lead's direction (2026-09-17)
 
 > *"the maps are just too simple. We probably need a dedicated agent to formulate maps. I'm also not seeing the assets
