@@ -359,8 +359,34 @@ def locks(m):
                              m.region("the west quay", "cover_cluster", -60, 30, 16)])
 
 
+# ---- The Pit, dug (round 11, arena A4 stretch): a PROPOSAL, a fixture beside the Pit he KEPT -----------------------
+#
+# *"I haven't seen any pits"*, and "The Pit" was a name, not a pit. This is the Pit exactly as he kept it -- not one
+# container moved -- with four sheer pits dug at the ring's CORNERS, outside the diagonal walls. Written as a FIXTURE so
+# it goes on his page beside the Pit and reaches no menu; if he says yes, it becomes the Pit (one line: move the
+# terrain onto `pit` and drop this).
+#
+# Why outside, not inside (the brief suggested inside): the ring's quadrants are 20-odd metres of pillars and wrecks,
+# and every pit that fits leaves a 2-5 m slot against the diagonal walls -- the wedge trap terrain-drive catches.
+# At the corners the pits make the gates the only ways in and turn the open ground between gates into causeways:
+# circling the ring means going round the drops or through the ring. The road between each wall and its pit is 20 m.
+PIT_DUG = (50.0, 52.0, 14.0, 14.0)   # x 43..57, z 45..59 and its mirror; the other two by (-x, z)
+
+
+def pit_dug(m):
+    x, z, w, d = PIT_DUG
+    terrain = mirrored_terrain([pit_area("the south-east pit", x, z, w, d), pit_area("the south-west pit", -x, z, w, d)])
+    m.write_v2("pit_dug", "The Pit (dug: a proposal)",
+               "FIXTURE, a proposal to the lead: the Pit he kept, every container where it was, with four sheer pits "
+               "dug at the ring's corners. The gates become the only ways in, and circling the ring means going round "
+               "the drops.",
+               m.pit, fixture=True, terrain=terrain, shape={"kind": "hexagon"}, half_size=140.0,
+               objectives=m.objective_pair("the west yard", -74.0, -50.0, 15.0))
+
+
 def author(m):
     crossing(m)
     pits(m)
     terminus_canal(m)
     locks(m)
+    pit_dug(m)
