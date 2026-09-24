@@ -214,10 +214,11 @@ func test_random_deals_only_the_maps_the_lead_kept() -> void:
 				"%s was CUT (game_design.md, the lead's arena verdict) and --arena=random must never deal it" % cut)
 	for kept in ["yard", "pit"]:
 		assert_true(Arena.ROTATION.has(kept), "%s was KEPT and --arena=random must be able to deal it" % kept)
-	# terminus, crossing, sumps and locks are in the rotation without a verdict of his: the cityscape he asked for
-	# twice (round 8), the river and the pits he asked for three times, and the canal built for him (round 11). Listed explicitly so that when he
+	# terminus, crossing and sumps are in the rotation without a verdict of his: the cityscape he asked for twice
+	# (round 8), and the river and the pits he asked for three times (round 11). The Locks (round 11's new map) is a
+	# fixture until he approves it AND its name is recorded (see Arena.ROTATION's comment). Listed explicitly so that when he
 	# does rule, whoever acts on it can see exactly which line to change.
-	for pending in ["terminus", "crossing", "sumps", "locks"]:
+	for pending in ["terminus", "crossing", "sumps"]:
 		assert_true(Arena.ROTATION.has(pending), "%s is in the rotation, pending the lead's verdict" % pending)
 	# A fixture is not a map he plays: barriers and maze are instruments, reachable only by name.
 	for fixture in ["maze", "barriers"]:

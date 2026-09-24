@@ -53,6 +53,14 @@
 - **The Locks** (`tools/terrain_maps.py` `locks`): a canal wall to wall, the lock in the middle and a swing bridge on
   each flank; the objective pair on the far quays. Spread 0.453 (dry twin 0.344); the centre sees 0.45 because a canal
   is open across its water by design. It's flagged for his eye rather than buried in cover, as the Sumps' 0.34 was.
+  **It's a fixture until he approves it.**
+- **A new map cannot be dealt until the booth can say its name.** `tools/announcer/test_arena_names.py` (in
+  `announcer-check`, in `make check`) requires every non-fixture layout to have a spoken name in
+  `assets/announcer/lines.json` AND a recording for each of the 18 lines that say `{arena}`. Recording is paid
+  generation behind the lead's approval of the text. So the order is: build the map as a fixture, put it on his page,
+  and on his yes record the name (`make announcer-generate`), then flip `fixture` and add it to `Arena.ROTATION`.
+  The Locks went into the rotation first and reddened `announcer-check` (`f30dbf0d`); the rotation test here and the
+  announcer's test agree on what a fixture is, which is what makes this order work.
 
 ## The lead's direction (2026-09-17)
 

@@ -4,7 +4,7 @@
  "title": "The Locks",
  "note": "A shipping canal cut straight across the arena, crossed at the lock in the middle and at a swing bridge on each flank. The lock is the short way and the whole canal watches it; the bridges are the covered way round, behind the warehouses. Each side's prize is on the far bank: choose which crossing to be seen on.",
  "half_size": 140.0,
- "fixture": false,
+ "fixture": true,
  "obstacles": [],
  "props": [
   {

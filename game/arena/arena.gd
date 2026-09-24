@@ -66,12 +66,12 @@ const DEFAULT_LAYOUT := "foundry"
 ## an objective; **sumps**: the only real pits in the game, a chain of them between causeways — exactly the bridges
 ## and pits he had asked for, twice. Neither was ever on this line, so neither ever reached him: *"I haven't seen any
 ## bridges or pits that I've asked for"*. Neither has his verdict yet; each comes back out in one line if he says no.
-## **locks is here from round 11 too, and it is the one genuinely new map** (arena A3): a canal cut straight across
-## the arena, crossed at the lock in the middle and at a swing bridge on each flank; the objective pair on the far
-## quays. Built, measured and driven before it went in; like the other two, it comes back out in one line.
+## **locks (round 11, arena A3) is built and NOT here yet, on purpose:** a new map needs the booth to be able to say
+## its name, which is 18 recordings (tools/announcer/test_arena_names.py), and new spoken text is behind the lead's
+## approval (lead gate 1). It is a fixture on his review page; his yes adds it here with the recordings.
 ## `test_every_built_map_is_dealt_cut_or_a_fixture` now fails the day a non-fixture map lands and is not listed here
 ## or in CUT, so a third instance cannot be silent.
-const ROTATION := ["yard", "pit", "terminus", "crossing", "sumps", "locks"]
+const ROTATION := ["yard", "pit", "terminus", "crossing", "sumps"]
 ## The maps the lead CUT (game_design.md, *The lead's arena verdict*, 2026-09-19; foundry, furnace and scrapyard are
 ## round 1-2 layouts that predate the kit and went with the same verdict). They still load by name for tests and
 ## probes; they are never dealt. Every layout in LAYOUT_DIR is a fixture, CUT, or in ROTATION (test_arena_kit.gd).

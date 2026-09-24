@@ -108,6 +108,7 @@ def write_with_twin(m, name, title, fight, props, terrain, **kwargs):
     """The map, then its dry twin: identical but `terrain: []` and `fixture: true`."""
     m.write_v2(name, title, fight, props, terrain=terrain, **kwargs)
     kwargs = dict(kwargs)
+    kwargs.pop("fixture", None)  # the twin is always a fixture, whatever the map is
     m.write_v2(name + "_dry", title + " (dry: no water)",
                "FIXTURE: %s with its terrain removed -- the null arm of its paired series and the before-frame of every "
                "picture of it. Not a map." % title, props, fixture=True, **kwargs)
@@ -343,12 +344,16 @@ def locks(m):
         m.floodlight(-14, 20), m.floodlight(-108, 20),
         m.screen(-76, 100, 180, "arena"), m.sign(-81, 88, 180, "arena"),  # outside the spawn zone (x +-75)
     ]
+    # A FIXTURE until the lead says yes (round 11): the booth names every dealt arena from a RECORDING
+    # (tools/announcer/test_arena_names.py, 18 lines x one clip each), and recording a new name is paid generation
+    # behind his approval of the text (lead gate 1). His yes on the review page unlocks both: record "the Locks"
+    # (make announcer-generate), drop `fixture=True` here, add "locks" to Arena.ROTATION.
     write_with_twin(m, "locks", "The Locks",
                     "A shipping canal cut straight across the arena, crossed at the lock in the middle and at a swing "
                     "bridge on each flank. The lock is the short way and the whole canal watches it; the bridges are "
                     "the covered way round, behind the warehouses. Each side's prize is on the far bank: choose which "
                     "crossing to be seen on.",
-                    props, terrain,
+                    props, terrain, fixture=True,
                     shape={"kind": "hexagon"}, half_size=140.0,
                     objectives=m.objective_pair("the far quay", *LOCKS_OBJECTIVE, 14.0),
                     lanes=[m.lane("the lock", [(0, 86), (0, 40), (0, -40), (0, -86)], 16) | {"self_mirror": True},
