@@ -249,10 +249,6 @@ body { margin: 0; font: 15px/1.55 var(--body); padding-inline: 16px; padding-blo
 h1 { font: 700 clamp(28px, 5vw, 44px)/1.05 var(--display); margin: 0 0 12px; text-wrap: balance; letter-spacing: .01em; }
 .lede { margin: 0; max-width: 64ch; color: var(--dim); }
 .lede b { color: var(--text); font-weight: 500; }
-.figure { margin: 14px 0 0; max-width: 100%; }
-.figure img { width: 100%; height: auto; display: block; border: 1px solid var(--line, #333); }
-.figure .shot { padding: 0; border: 0; background: none; width: 100%; cursor: zoom-in; }
-.figure figcaption { font-size: 0.9em; margin-top: 6px; }
 .intro { margin: 12px 0 0; max-width: 64ch; color: var(--text); border-left: 3px solid var(--hazard); padding-left: 12px; }
 .tally { display: grid; grid-template-columns: repeat(3, auto); gap: 4px 28px; font-variant-numeric: tabular-nums; }
 .tally div { display: flex; flex-direction: column; }
@@ -276,6 +272,9 @@ h1 { font: 700 clamp(28px, 5vw, 44px)/1.05 var(--display); margin: 0 0 12px; tex
 .shot { all: unset; display: block; cursor: zoom-in; background: #2e2e32; }
 .shot img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; max-width: 100%; }
 .shot:focus-visible { outline: 2px solid var(--hazard); outline-offset: -2px; }
+.figure { margin: 14px 0 0; max-width: 100%; }
+.figure .shot img { aspect-ratio: auto; object-fit: contain; height: auto; border: 1px solid #333; }
+.figure figcaption { font-size: 0.9em; margin-top: 6px; }
 .card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .id { font: 14px var(--mono); color: var(--hazard); }

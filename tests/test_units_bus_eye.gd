@@ -33,13 +33,47 @@ func test_the_bus_is_longer_than_the_garbage_truck() -> void:
 			% [bus.z, LONGER_BY, truck.z, bus.z / truck.z])
 
 
-func test_the_bus_is_heightened_in_proportion() -> void:
+## Round 11 (fleet T3): his round-10 "heightened proportionally" (4.76 m, 1.29x the truck) is superseded by his
+## round-11 words: "it was good for the busses to be slightly taller (as in the deformed version, but not quite so
+## tall)". Both halves, as bounds: taller than the garbage truck, and below the 4.76 m he now calls too tall.
+const ROUND_10_BUS_HEIGHT := 4.76
+
+
+func test_the_bus_is_taller_than_the_truck_but_not_as_tall_as_round_10s() -> void:
 	var bus := _box("tank")
 	var truck := _box("ifv")
-	var length_ratio := bus.z / truck.z
-	assert_true(bus.y / truck.y >= length_ratio - RATIO_SLACK,
-			"the bus is %.2fx the truck's length, so it is at least %.2fx its height (%.2f m): it is %.2f m, %.2fx"
-			% [length_ratio, length_ratio, truck.y, bus.y, bus.y / truck.y])
+	assert_true(bus.y >= truck.y * 1.05,
+			"the bus (%.2f m) stands clearly over the garbage truck (%.2f m)" % [bus.y, truck.y])
+	assert_true(bus.y < ROUND_10_BUS_HEIGHT - 0.3,
+			"and clearly under the %.2f m he called 'not quite so tall' (it is %.2f m)" % [ROUND_10_BUS_HEIGHT, bus.y])
+
+
+## "They need to be uniform": every unit wearing the shared dozer has ONE shape -- its catalog box is exactly what
+## Tank.shared_hull_box derives from its width and length at the declared SHARED_HULL_HEIGHTEN. Found from the theme,
+## not listed: a unit is covered when it has no hull art of its own.
+func test_every_unit_wearing_the_shared_hull_has_the_one_declared_shape() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var wearers: Array = []
+	for faction in Units.FACTIONS:
+		for unit_id in Units.roster(faction):
+			if GameTheme.slots.has("unit.%s.hull" % unit_id):
+				continue
+			wearers.append(unit_id)
+			var box := _box(unit_id)
+			var derived := Tank.shared_hull_box(box.x, box.z)
+			assert_near(box.y, derived.y, 0.011,
+					"%s is %.2f m tall; the shared hull's one shape at %.2f m wide is %.2f m" % [unit_id, box.y, box.x, derived.y])
+	GameTheme.use(previous)
+	assert_true(wearers.size() >= 2, "the bus and the burner at least (%s)" % str(wearers))
+	assert_true(Tank.SHARED_HULL_HEIGHTEN > 1.0 and Tank.SHARED_HULL_HEIGHTEN < 1.63,
+			"the declared exaggeration is some, and less than round 10's 1.63")
+
+
+func test_the_shape_check_sees_the_round_10_bus() -> void:
+	## Invariant 0: the deformed 4.76 m bus must fail the derivation above.
+	var derived := Tank.shared_hull_box(2.90, 9.70)
+	assert_true(absf(derived.y - 4.76) > 0.3, "round 10's 4.76 m is not the one shape (%.2f m)" % derived.y)
 
 
 ## The number came from his eye, but the reference it lands on is still written down beside the box (R6: "record the
