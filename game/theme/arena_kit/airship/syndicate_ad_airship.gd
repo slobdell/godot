@@ -131,6 +131,8 @@ var _screens: Array[MeshInstance3D] = []
 var _tick_source: Node
 var _stepped := -1
 var _action_known := false
+## Plan every tick of a catch-up too (slower, but any tick reached any way flies the same path). Benches set it.
+var exact_replay := false
 
 
 func _init(layout: Dictionary = {}) -> void:
@@ -283,8 +285,10 @@ func advance_to(tick: int) -> void:
 		var at := _stepped + 1 + i
 		if at % ACTION_EVERY == 0:
 			_read_action()
-		# A long catch-up plans only its tail: only the height it ends at is ever drawn.
-		flight.step(steps - i <= AirshipFlight.PLAN_TAIL_TICKS)
+		# A long catch-up plans only its tail: only the height it ends at is ever drawn. That makes a big jump fly a
+		# slightly different line from small steps, so a bench that jumps about and must match itself sets
+		# `exact_replay`.
+		flight.step(exact_replay or steps - i <= AirshipFlight.PLAN_TAIL_TICKS)
 	_stepped = maxi(_stepped, tick)
 	_place(tick)
 

@@ -89,6 +89,8 @@ func _run() -> void:
 	ship.set_process(false)
 	get_tree().paused = true
 	_ship = ship
+	# Frames jump back and forth in time; each must show the same flight.
+	ship.exact_replay = true
 	var written := 0
 	if sequence:
 		written += await _shoot_sequence()
@@ -155,24 +157,31 @@ func _save(file: String, transform: Transform3D, note: String) -> void:
 func _shoot_sequence() -> int:
 	var written := 0
 	var horizon := int(SimClock.TICK_RATE * 300.0)
-	# 1. A climb: the first tick the flight WANTS height, then frames every 3 s from a camera parked at his pose,
-	#    square onto the hull's flank where the climb began, until it has crossed and come back down.
+	# 1. A crossing: the first time the hull's footprint goes from open ground onto something it must climb over. The
+	#    frames start 9 s before (the climb is planned ahead, so it is already rising) from a camera parked at his
+	#    pitch on the far side of what it crosses, and run until it is over and past.
 	var start := -1
+	var was_clear := false
+	var crossing := Vector2.ZERO
 	for tick in range(0, horizon, 6):
 		_ship.advance_to(tick)
-		if _ship.flight.wanted_altitude > SyndicateAdAirship.ALTITUDE + 1.0 and _ship.hull_centre_y() < SyndicateAdAirship.ALTITUDE + 0.5:
-			start = tick
+		var flight := _ship.flight
+		var over := AirshipFlight.need_at(flight.pilot.position, flight.pilot.heading, flight.solids) > SyndicateAdAirship.ALTITUDE
+		if over and was_clear and tick > int(SimClock.TICK_RATE * 9.0):
+			start = tick - int(SimClock.TICK_RATE * 9.0)
+			crossing = flight.pilot.position
 			break
+		was_clear = not over
 	if start >= 0:
 		_ship.advance_to(start)
-		var hull := _ship.global_transform
-		# Look along the direction of travel from off its flank, far enough back to see the building ahead of it.
-		var ahead := Vector3(hull.origin.x, 0.0, hull.origin.z) + (-hull.basis.z.normalized()) * 30.0
-		var yaw := hull.basis.get_euler().y + PI / 2.0
+		var from := _ship.flight.pilot.position
+		# Side-on to the line it is flying, focused where it meets the roof.
+		var along := (crossing - from).normalized() if crossing != from else Vector2(0.0, -1.0)
+		var yaw := atan2(along.y, -along.x)
 		for step in 9:
 			_ship.advance_to(start + step * int(SimClock.TICK_RATE * 3.0))
-			await _save("climb_%02d_t%04d.png" % [step, _ship._stepped], _clear(Vector3(ahead.x, 0.0, ahead.z), yaw, 90.0),
-					"(climb: fixed camera, 90 m boom so the building is in frame)")
+			await _save("climb_%02d_t%04d.png" % [step, _ship._stepped], _clear(Vector3(crossing.x, 0.0, crossing.y), yaw, 110.0),
+					"(crossing: fixed camera side-on, 110 m boom so the building and the hull are both in frame)")
 			written += 1
 		print("AIRSHIP_SHOT_CLIMB start_tick=%d" % start)
 	else:

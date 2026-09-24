@@ -170,9 +170,13 @@ static func carrot(from: Vector2, centre: Vector2, radius := ORBIT_RADIUS) -> Ve
 ## ([{centre: Vector2, half: Vector2, yaw}], `AirshipFlight.solids_of`), and the push is measured from the nearest
 ## point of each footprint -- a block's corner is 28 m from its centre, and a push measured from the centre was what
 ## let the hull's beam into one. Soft and falling off with distance, so it bends the path rather than kinking it.
-static func avoid(goal: Vector2, from: Vector2, solids: Array, clearance: float) -> Vector2:
+## Solids whose `need` (the height that clears them) is at or under `cleared` are already being flown over and are
+## not steered round.
+static func avoid(goal: Vector2, from: Vector2, solids: Array, clearance: float, cleared := -INF) -> Vector2:
 	var out := goal
 	for solid: Dictionary in solids:
+		if float(solid.get("need", INF)) <= cleared:
+			continue
 		var centre: Vector2 = solid["centre"]
 		var half: Vector2 = solid["half"]
 		var yaw := float(solid.get("yaw", 0.0))

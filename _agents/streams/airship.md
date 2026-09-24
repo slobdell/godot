@@ -172,3 +172,70 @@ at the (±100, 0) blocks → 5. S5 `clear_pose` takes moving occluders; the live
   corner.** Its ground truth is `AirshipTruth`, which shares no geometry with the flight: the layout's boxes grown to
   the kit's own meshes, and the hull's own mesh rasterised to a 1 m underside heightmap. Mutation-checked: a late
   climb (`CLIMB_LEAD` 5.0) fails it with 10.5 m of block.
+- **S2 + S3.** `AirshipFlight` (new) is the whole flight: pilot, height, solids, orbit. The node, the tests,
+  `seen_fraction` and the report all step the same object, so what is measured is what is drawn.
+  - **Solids** are the layout's own rotated boxes (obstacles incl. stacks, plus non-colliding props), grown to what is
+    drawn (`DRAWN`): floodlight **16.05 m** (its mast and lamp head, 4.2 m wide), sign **7.65 m**, ad screen **20.7 m**
+    (beacon). The brief's "3 m floodlight" was the collision footing: the mast would have gone through the hull. A
+    test measures the kit meshes to hold the table honest.
+  - **The hull is two parts, not a 57 × 22 m box**, measured off `arena_airship` in 20 slices: a **14.4 m keel** down
+    to the belly, and **wings to the full 22.2 m beam whose underside is 2.95 m below the centre** (8 m above the
+    belly). A test rasterises the mesh's underside and fails if any drawn cell hangs below the model.
+  - **The climb rule (S3):** fly a ghost pilot ahead; for every roof `r` its footprint will cross at `t` s, hold at least
+    `r − 0.8 × CLIMB_MPS × t` now (the latest the climb can start, a fifth held in reserve). The converse falls out:
+    once the footprint is off the last roof and nothing is ahead, it sinks straight back (test: it starts down within
+    1.5 s of leaving a roof, every crossing, and spends most of a one-block flight at cruise).
+  - **Tuning, each measured with `make airship-report`:** `ROOF_CLEARANCE` 3 → **1 m** (at 3 m the maze's 152
+    two-high container stacks held it 2 m over cruise all match); `CLIMB_MPS` 2.4 → **3.2** (better on all six tall
+    maps, still 0 % inside); **the orbit bends toward open ground**, re-choosing its radius from 1.0–1.6 × 62 m by the
+    climb the next stretch would cost (never smaller: a 40 m orbit made it loop on the spot on the Sumps); avoidance
+    ignores what it is already high enough to clear (steering off a roof it is flying over swung the carrot behind it).
+- **S4, decided: containment wins sideways, height wins over buildings.** The (±100, 0) blocks run to within 1 m of the
+  play radius, so no goal satisfies both in that band; the wall has a crowd behind it and only steering keeps the hull
+  off it, whereas a building is cleared by the climb whatever the steering does. Containment stays last and absolute;
+  the hull goes over the outer blocks. Test: `test_by_the_wall_it_stays_inside_and_goes_over_the_outer_blocks`.
+- **S5.** `RtsCamera.clear_pose(..., occluders := [], grow := 0.0)`: moving solids are a PARAMETER (C11.2 holds: pure,
+  headless, the six existing callers untouched). The live camera gathers boxes from the `camera_occluders` group
+  (`SyndicateAdAirship.camera_occluder()`), grows them `HULL_LEAD_M` 6 m so the lift starts before the hull arrives,
+  and **lifts, never shortens**: if no tilt clears the deck it lets the hull pass (`hull_passing`). The lift is damped
+  (`ease_hull_lift`: 0.3 s rise, 1.0 s hold, 1.6 s fall) and measured from the pose WITHOUT the lift, so the camera
+  rising out of the box cannot talk itself back down. Tests: lifted above the deck with the boom unchanged; an
+  unclearable hull is let pass; no occluders = exactly the building rule over the Terminus grid; three minutes of the
+  real flight past a parked camera at 60 fps — the lift does not pump, and the camera is inside the hull on almost no
+  frames.
+
+### The numbers (240 s per map, four one-minute legs; laptop; before = `a04d75c0`, after = `c58aaf16`)
+`make airship-report` — inside % (any part of the hull inside anything drawn; must be 0), cruise % (at the low
+cruise height), seen % (in his frame at his pose, averaged over 4 camera yaws; an upper bound, no occlusion):
+
+| map | inside % | cruise % | seen % |
+|---|---|---|---|
+| terminus | 31.2 → **0** | 6.7 → 0 | 2.7 → 0 |
+| yard | 0 → 0 | 100 → 77 | 31 → 26 |
+| pit | 22.7 → **0** | 91 → 43 | 29 → 16 |
+| boneyard | 0.9 → **0** | 100 → 91 | 34 → 34 |
+| boulevard | 39.8 → **0** | 56 → 8 | 24 → 6 |
+| crossing | 49.0 → **0** | 47 → 5 | 16 → 1 |
+| sumps | 43.8 → **0** | 56 → 26 | 17 → 14 |
+| maze, barriers | 0 → 0 | 100 → 100 | 33 → 32 |
+
+**Read it honestly: much of the old "cruise" and "seen" was the hull flying through buildings.** It no longer does
+anywhere, and on the dense maps it pays for that in time up over the roofs, where his frame cannot reach it (at his
+pose the frame's top edge is 3.5° below the horizon from 17.6 m up, so anything above ~15 m at 45 m range is out).
+
+### Questions for the lead
+1. **The Terminus: no-intersection and in-his-frame cannot both hold there, at any airship size.** Its streets are
+   20–22 m wide (narrower than even the 14.4 m keel plus margin over any useful length) and the only ground a hull can
+   cruise over is the plazas by the wall (plot: the cruise-clear map is green only beyond ~100 m out). Over the city it
+   flies at ~37 m; at his close pose that is always above the frame, and he sees it by zooming out (at a 130 m boom the
+   camera is ~65 m up and looks down on it). Shipped: never intersect, because that is what he reported. **Options if
+   he wants it seen there:** (a) a smaller airship on city maps only — even 1.0× (38 m) does not fit the grid well;
+   (b) let it patrol the plazas low (it would be far from the fight and still mostly out of frame); (c) accept it as
+   a zoomed-out sight on the Terminus. My recommendation is (c).
+2. **Climb speed 3.2 m/s** (was 2.4): chosen by measurement; if it reads as too lively, 2.8 is the compromise.
+
+### Known issues
+- A mid-match dressing rebuild re-flies the flight from tick 0; with the planner that is 0.6–1.0 s of work on the laptop
+  under load (≈0.2–0.4 s on builder0-class hardware) for a 40 000-tick match. The catch-up already skips planning;
+  bounding it further would change what `advance_to(tick)` means for the shot tool, so it is left and reported.
+- Live cost: 80–250 µs per 30 Hz tick on the laptop (boulevard is the worst: many masts).

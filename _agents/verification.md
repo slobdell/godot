@@ -434,3 +434,22 @@ keel — low whatever the hull does. It rendered correctly and is invisible from
 17.56 m sits INSIDE the hull's height range** (belly 6.2 m, deck 22.8 m): it views the hull edge-on from the side,
 and a downward-facing panel faces away from him exactly as the upward-facing deck panel does. Before adding a
 surface to be looked at, check which side of it the eye is on — at every pitch in range, not the convenient one.
+
+## A clearance test has to MOVE the thing, against a ground truth the thing does not share (round 11, airship stream)
+
+The lead watched the airship fly through the Terminus blocks while 18 airship tests were green. Two gaps let it through,
+and both are general:
+- **Nothing flew.** The climb test looked a height up at a block's own centre; the containment test flew the hull but
+  asserted only its distance from the ORIGIN. So look-ahead, footprint and ordering bugs were all outside the envelope
+  by construction. `test_it_flies_the_terminus_for_four_minutes_without_entering_a_building` flies the real node for
+  240 s and measures every sampled tick.
+- **The only geometry was the airship's own.** A circle table that is 7.28 m short at a block corner cannot be caught
+  by a test that reads the same circle table. `AirshipTruth` is the ground truth and shares nothing with
+  `AirshipFlight`: the layout's boxes grown to the kit's own meshes (a floodlight is its 16 m mast, which neither the
+  24 m table nor the 3 m collision box was), the hull's own mesh rasterised to a 1 m underside heightmap, and
+  `ArenaKit.distance_to_footprint` for containment. The flight's simplified hull (keel + wings) is then held BELOW that
+  heightmap by its own test, and the flying test is mutation-checked (a late climb fails it with 10.5 m of block).
+
+`make airship-report` prints the same three numbers per map (inside %, cruise %, seen %) for any version of the flight,
+because it drives the node only through `fly_toward` / `advance_to` / `pilot` / `hull_centre_y`. That is also how the
+before-arm was measured: the report copied into an export of the old commit.

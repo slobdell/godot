@@ -243,20 +243,21 @@ func goal_for(at: Vector2) -> Vector2:
 	var goal := AirshipPilot.carrot(at, action, orbit)
 	# Steer round only what it cannot already clear at the height it is flying: pushing the goal off a roof it is
 	# passing over anyway just swings the carrot behind the hull and makes it circle.
-	var in_the_way := solids.filter(func(solid: Dictionary) -> bool: return float(solid["need"]) > altitude + 0.5)
-	goal = AirshipPilot.avoid(goal, at, in_the_way, SyndicateAdAirship.BEAM * 0.5 + SyndicateAdAirship.AVOID_CLEARANCE)
+	goal = AirshipPilot.avoid(goal, at, solids, SyndicateAdAirship.BEAM * 0.5 + SyndicateAdAirship.AVOID_CLEARANCE,
+			altitude + 0.5)
 	# Containment LAST, so neither the orbit nor an avoidance push can send it through the wall.
 	return AirshipPilot.contain(goal, at, play_radius)
 
 
-## One fixed tick. `plan_now` false skips the look-ahead (a catch-up re-fly), keeping the last plan.
+## One fixed tick. `plan_now` false is a catch-up re-fly: it keeps the orbit and the height it has and only flies,
+## because only where a catch-up ENDS is ever drawn and a rebuild must not hitch (40 000 ticks planned took 2.6 s).
 func step(plan_now := true) -> void:
 	var dt := 1.0 / SimClock.TICK_RATE
 	pilot.step(dt, goal_for(pilot.position))
 	ticks += 1
-	if ticks % LOOK_EVERY == 0:
+	if plan_now and ticks % LOOK_EVERY == 0:
 		choose_orbit()
-		wanted_altitude = plan() if plan_now else AirshipFlight.need_at(pilot.position, pilot.heading, solids)
+		wanted_altitude = plan()
 	altitude = move_toward(altitude, wanted_altitude, SyndicateAdAirship.CLIMB_MPS * dt)
 
 
