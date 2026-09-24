@@ -187,7 +187,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -271,10 +271,15 @@ static func route_arms() -> Dictionary:
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
-			"unstick_fires": unstick_fires, "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks}
+			"unstick_fires": unstick_fires, "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks}
 
 
 static func reset_route_arms() -> void:
+	kturns = 0
+	kturn_none = 0
+	kturn_aborted = 0
+	kturn_ticks = 0
 	unstick_fires = 0
 	circle_reverses = 0
 	circle_reverse_ticks = 0
@@ -419,6 +424,8 @@ func note_decision(cmd: TankCommand, order: Dictionary) -> void:
 	elif _unstick_left > 0.0:
 		# Round 11 (R1's before-arm): the pressed-wall escape shares unstick's timer; split them, both are reactive.
 		driver = "press" if _escape_gear != 0.0 else "unstick"
+	elif _kturn_left_m > 0.0:
+		driver = "kturn"
 	elif driver == "move_to":
 		driver = "direct" if bool(order.get("direct", false)) else "route"
 	driver_ticks[driver] = int(driver_ticks.get(driver, 0)) + ctl._step
@@ -762,6 +769,8 @@ func reset() -> void:
 	_order_ticks = 0
 	_repair_for = Vector3.INF
 	_repair_to = Vector3.INF
+	_kturn_left_m = 0.0
+	_kturn_check = 0
 
 
 ## How close a hull of `unit_id` can settle on a point: 0 for tracks and hover (they pivot), and for wheels
@@ -871,15 +880,24 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			drive_vector = Steering.reverse_toward_wheels(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
 		else:
 			drive_vector = Steering.drive_toward_wheels(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
+			# Round 11 (R1): a forward arc that would hit a wall is preceded by a planned reverse leg (see _planned_reverse).
+			if not direct and kturn_on() and drive_vector != Vector2.ZERO and Pathing.enabled and Pathing.is_ready(tank):
+				var leg := TankCommand.new()
+				if _planned_reverse(leg, waypoint, delta):
+					drive_vector = Vector2(leg.throttle, leg.turn)
+			elif _kturn_left_m > 0.0:
+				_kturn_left_m = 0.0
 	elif order.get("reverse", false):
 		drive_vector = Steering.reverse_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 	else:
 		drive_vector = Steering.drive_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 	cmd.throttle = drive_vector.x * speed_factor * pace
 	cmd.turn = drive_vector.y
+	if _kturn_left_m > 0.0:
+		cmd.throttle = drive_vector.x  # a planned leg is driven as planned: pace or a slow order would drop it into the plant's creep
 	# Round 11 (R1's before-arm): Steering's circle test backing a wheeled hull on a FORWARD order - the three-point
 	# turn discovered one tick at a time. Episodes (a run of reversing ticks) and ticks; measurement only.
-	var circling: bool = radius > 0.0 and not order.get("reverse", false) and drive_vector.x < 0.0
+	var circling: bool = radius > 0.0 and not order.get("reverse", false) and drive_vector.x < 0.0 and _kturn_left_m <= 0.0
 	if circling:
 		circle_reverse_ticks += ctl._step
 		if not _circling:
@@ -2369,3 +2387,168 @@ func _hull_within(direction: Vector2, reach: float) -> bool:
 
 static func _flat_distance(a: Vector3, b: Vector3) -> float:
 	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+# ---- Round 11 (nav R1): the three-point turn a driver would do, decided before the bumper ------------------------
+#
+# The lead: *"a lot of vehicles still look dumb because they'll drive into a wall before trying to back up ... it would
+# be more ideal if the units detected that their path would bump into a wall, and therefore they need to go in reverse
+# first; a real-world driver would execute a 3 point turn as necessary."*
+#
+# Every reverse before this was REACTIVE: the stall rule (`unstick`, 1 s of no motion), the pressed-wall escape (1 s
+# of wall contact) and Steering's circle test (the point inside the turning circle: no wall consulted). A wheeled hull
+# nose-on to a wall whose route leaves BEHIND it, with the point outside its turning circle, drives a full-lock
+# forward arc straight into the wall, and only then backs off 1.5 m and tries again: a multi-point turn discovered at
+# the bumper, one contact at a time.
+#
+# This is the planned version, inside the driver (not the planner: Pathing stays holonomic by an earlier decision). At
+# PLAN time, when a wheeled hull on a routed forward move must turn hard toward its steering point, the forward arc it
+# is about to drive (full lock toward the point, the plant's own yaw law: heading turns |ds|·turn/R) is swept against
+# the navmesh with the hull's LEADING end. If it would hit, a reverse leg is searched with the TRAILING end — so the
+# reverse is validated against what is behind the hull, which no reverse before this did — for the shortest back-up
+# after which the forward arc is clear. That leg is then driven as a deliberate leg with its own completion (distance
+# backed, or contact, or a timeout), never as a recovery. No clear forward arc within KTURN_BACK_MAX_M: no leg, and the
+# reactive rules stand as before (counted: `kturn_none`).
+#
+# A point is clear when it is within `bake radius - KTURN_MARGIN_M` of the navmesh: the mesh stops the bake radius
+# short of every collider, so such a point is at least the margin outside one. Measurement arm: `--nav-off=kturn`.
+
+## Only when the steering point is this far off the nose (a gentle bend never needs a reverse).
+const KTURN_MIN_ERROR_DEG := 45.0
+## The forward arc counts as done (the hull points at the steering point) within this.
+const KTURN_ALIGNED_DEG := 20.0
+## Sweep steps (metres of travel) and how much of a full circle a forward sweep may take before giving up (a point
+## inside the turning circle is never aimed at by a forward arc: Steering's own circle test handles that case).
+const KTURN_STEP_M := 1.0
+const KTURN_SWEEP_TURNS := 0.75
+## A reverse leg is at most this long, searched in KTURN_BACK_STEP_M steps, and has this much added past the first
+## clear pose so the forward arc starts with room rather than on the edge.
+const KTURN_BACK_MAX_M := 8.0
+const KTURN_BACK_STEP_M := 0.5
+const KTURN_BACK_EXTRA_M := 0.5
+## Clearance margin (metres) inside the bake radius; the reverse throttle (above the plant's creep, 0.5 × |turn|).
+const KTURN_MARGIN_M := 0.4
+const KTURN_THROTTLE := 0.7
+## How often a hull not in a leg asks (ticks), and how long a leg may take per metre before it is abandoned.
+const KTURN_CHECK_TICKS := 6
+const KTURN_SECONDS_PER_M := 1.5
+static var kturns := 0            # legs planned and driven
+static var kturn_none := 0        # forward arc blocked, no clear reverse found: left to the reactive rules
+static var kturn_aborted := 0     # a leg cut short by a rear contact or its timeout
+static var kturn_ticks := 0       # unit-ticks spent on a planned reverse leg
+var _kturn_left_m := 0.0
+var _kturn_turn := 0.0
+var _kturn_from := Vector3.ZERO
+var _kturn_timeout := 0.0
+var _kturn_check := 0
+
+
+static func kturn_on() -> bool:
+	return not switched_off("kturn")
+
+
+## Is a planned reverse leg being driven?
+func in_kturn() -> bool:
+	return _kturn_left_m > 0.0
+
+
+## Called by drive() for a wheeled hull on a routed forward move: fills `cmd` and returns true while a planned reverse
+## leg is being driven (planning one first when the forward arc toward `waypoint` would hit a wall).
+func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool:
+	var tank := ctl.tank
+	if _kturn_left_m > 0.0:
+		var backed := _flat_distance(tank.global_position, _kturn_from)
+		_kturn_timeout -= delta
+		var rear_hit := contact.touching and float(contact.decided.get("throttle", 0.0)) < 0.0
+		if backed >= _kturn_left_m or _kturn_timeout <= 0.0 or rear_hit:
+			if backed < _kturn_left_m:
+				kturn_aborted += 1
+			_kturn_left_m = 0.0
+			_kturn_check = 0
+			_repath_left = 0.0
+			return false
+		cmd.throttle = -KTURN_THROTTLE
+		cmd.turn = _kturn_turn
+		kturn_ticks += ctl._step
+		return true
+	_kturn_check -= ctl._step
+	if _kturn_check > 0:
+		return false
+	_kturn_check = KTURN_CHECK_TICKS
+	var here := tank.global_position
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	var to := Vector3(waypoint.x - here.x, 0.0, waypoint.z - here.z)
+	if to.length() < 0.5:
+		return false
+	var error := forward.signed_angle_to(to, Vector3.UP)
+	if absf(error) < deg_to_rad(KTURN_MIN_ERROR_DEG):
+		return false
+	# Positive error = the point is to the LEFT, which is a negative turn (Steering's convention; the plant yaws the
+	# hull the way of `turn` in EITHER gear, so the reverse leg keeps the same lock and keeps swinging toward it).
+	var turn := -1.0 if error >= 0.0 else 1.0
+	var map := tank.get_world_3d().navigation_map
+	var frame := _kturn_frame(tank)
+	if _arc_clear(map, frame, here, forward, turn, waypoint):
+		return false
+	var at := here
+	var heading := forward
+	var backed := 0.0
+	var radius := wheel_radius()
+	while backed < KTURN_BACK_MAX_M:
+		heading = TankMotion.turn_heading(heading, KTURN_BACK_STEP_M * turn / radius)
+		at -= heading * KTURN_BACK_STEP_M
+		backed += KTURN_BACK_STEP_M
+		if not _end_clear(map, frame, at, heading, -1.0):
+			break  # the tail would hit what is behind: no further back
+		if _arc_clear(map, frame, at, heading, turn, waypoint):
+			_kturn_left_m = minf(backed + KTURN_BACK_EXTRA_M, KTURN_BACK_MAX_M)
+			_kturn_turn = turn
+			_kturn_from = here
+			_kturn_timeout = _kturn_left_m * KTURN_SECONDS_PER_M + 1.0
+			kturns += 1
+			cmd.throttle = -KTURN_THROTTLE
+			cmd.turn = turn
+			kturn_ticks += ctl._step
+			return true
+	kturn_none += 1
+	return false
+
+
+## The hull's footprint as [half width, half length, bake radius - margin] (cached per unit id by hull_box).
+func _kturn_frame(tank: Tank) -> Array:
+	var size: Array = hull_box(tank.unit_id)
+	return [float(size[0]) * 0.5, float(size[2]) * 0.5, bake_radius(tank) - KTURN_MARGIN_M]
+
+
+## Sweep the forward full-lock arc from (at, heading) until the hull points at `target`: is every leading-end point clear?
+func _arc_clear(map: RID, frame: Array, at: Vector3, heading: Vector3, turn: float, target: Vector3) -> bool:
+	var radius := wheel_radius()
+	var travelled := 0.0
+	var limit := TAU * radius * KTURN_SWEEP_TURNS
+	while travelled < limit:
+		var to := Vector3(target.x - at.x, 0.0, target.z - at.z)
+		if absf(heading.signed_angle_to(to, Vector3.UP)) <= deg_to_rad(KTURN_ALIGNED_DEG):
+			return true
+		heading = TankMotion.turn_heading(heading, KTURN_STEP_M * turn / radius)
+		at += heading * KTURN_STEP_M
+		travelled += KTURN_STEP_M
+		if not _end_clear(map, frame, at, heading, 1.0):
+			return false
+	return true  # never lines up (the point is inside the circle): not this rule's case
+
+
+## Are the hull's corners and the middle of its `end` (+1 nose, -1 tail), and the sides' leading half, clear at this pose?
+func _end_clear(map: RID, frame: Array, at: Vector3, heading: Vector3, end: float) -> bool:
+	var half_width: float = frame[0]
+	var half_length: float = frame[1]
+	var reach: float = frame[2]
+	var right := Vector3(-heading.z, 0.0, heading.x)
+	for along: float in [1.0, 0.5]:
+		for across: float in [-1.0, 0.0, 1.0]:
+			if along < 1.0 and across == 0.0:
+				continue
+			var point := at + heading * (end * along * half_length) + right * (across * half_width)
+			var closest := NavigationServer3D.map_get_closest_point(map, point)
+			if Vector2(closest.x - point.x, closest.z - point.z).length() > reach:
+				return false
+	return true
