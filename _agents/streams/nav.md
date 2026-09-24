@@ -329,3 +329,10 @@ Accepting being wrong on any of them; each is reported as measured.
 - Order COMPLETION is judged against the order's own goal (`tank_brain.gd`, `order_executor.gd`, not mine), so a
   Movement repair of an ORDER goal would not complete the order. After R2 every order goal is already hull-grounded,
   so the repair in practice reaches brain-made goals (cover and fire spots) and island cases; its counters say how often.
+
+### Green hash
+
+**`c666f6ca` is green, merge here** (builder0, 2026-09-24 ~02:50): `>> remote: make check exited 0`, `check passed:
+18 targets`, **1691 passed, 0 failed**, sim-baseline `814aed46b1042e62` (the adopted hash, `6602e1f9`), determinism
+`bcc6e1609c14e12d`. Commits after it are documentation only (`_agents/`). The merge moves the sim baseline
+`457b5e83 -> 814aed46` for the two named causes above; it merges on its own or with the orchestrator recording it.
