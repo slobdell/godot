@@ -225,14 +225,22 @@ _Updated 2026-09-24 (small hours) by the fleet worker. Numbers: laptop unless ma
 
 | item | state | commit |
 |---|---|---|
-| T1 turrets buried in hulls | **done**, check pending on the fixup | `03d3a839` + `8991e0c9` |
+| T1 turrets buried in hulls | **done**, green | `03d3a839` + `8991e0c9` |
 | T2 stray barrels | **done** | `03d3a839` |
 | T5 nose check | **done** (syn_ifv turned round) | `03d3a839` |
-| T3 the Condemned bus/burner shape | **done, CP1** | `1cbbdbac` |
-| T4 the Law tank/IFV re-derived | **done, CP1** (tank only; a lead question) | `1cbbdbac` |
+| T3 the Condemned bus/burner shape | **done, CP1** | `1c2e514f` |
+| T4 the Law tank/IFV re-derived | **done, CP1** (tank only; a lead question) | `1c2e514f` |
 | T6 the bus's own mesh | **waiting on the lead** (page built; no new spend needed) | -- |
 
 Baseline before any work: `a04d75c0`, builder0, `>> remote: make check exited 0`, 1686 passed, 0 failed.
+
+**Checks (all builder0, read from the wrapper's own line):**
+- `03d3a839`: exited 2, 1692 passed, **1 failed** (`test_tank_turret_mount`: syn mounts moved the muzzle forward) -> fixed.
+- **`8991e0c9` GREEN, merge here for T1/T2/T5:** `>> remote: make check exited 0`, 1693 passed, 0 failed, 18 targets,
+  sim-baseline `457b5e830708b439` UNMOVED.
+- **`1c2e514f` = CP1:** `>> remote: make check exited 2`, **1695 passed, 0 failed**, 17 of 18 targets; the one red is
+  `sim-baseline` = **`4294e30351180af1`** (expected `457b5e830708b439`): the pre-registered move (bus/burner heights,
+  law_tank's box). Nothing else moved; for the orchestrator to record twice (`make sim-baseline-adopt`).
 
 ### What was actually wrong (the survey's numbers checked, several corrected)
 
@@ -305,12 +313,22 @@ to you): approve at most one per group. The Law's Assault Gun is 5.84 m because 
 gun there; if you want the Law bigger than that, say by how much and it becomes a declared exaggeration like the
 bus's."` (Rendered in Chrome and looked at: figures labelled, cards render.) Publish as a private Artifact with `{"db": {}}`, then `make art-apply-decisions`.
 
+### Known issues / not done on purpose
+- Four turret units draw a gun that cannot turn because it is hull mesh and nobody asked: syn_scout (nose gun),
+  syn_artillery (missile wings on the ring), syn_lancer (emitter grown out of the tail fin) and gang_support (the spray
+  arm on the cab). They read as fixed-weapon designs; gang_support's arm is the one plausible cut if he wants it.
+- The Condemned IFV's barrel is real (4.7% thin, kept by the stick rule) but reaches 2.4 m past its nose at rest, and
+  the scout's guns sit ahead of its bumper: both are round-2 art stretched to the contract's muzzle point. Not his
+  complaint; noted.
+- The orchestrator session refused cross-session delivery twice (SendMessage "Failed to send to godot-83") when fleet
+  announced 8991e0c9; this Status is the announcement of record.
+
 ### Requests to other streams
 None. (CP1 needs the orchestrator: below.)
 
 ### Merge notes
 - **Merge order:** `03d3a839` + `8991e0c9` (art only; sim-baseline UNMOVED -- `03d3a839` read 457b5e830708b439 on
-  builder0) first, then **CP1 = `1cbbdbac` ALONE**: it moves the sim baseline by construction (tank and law_tank are in
+  builder0) first, then **CP1 = `1c2e514f` ALONE**: it moves the sim baseline by construction (tank and law_tank are in
   the baseline match; the burner and law_tank colliders change). The orchestrator records the baseline.
 - Shared files touched: `game/units/units.gd` (values + comments only: hull_size, turret_mount, scale_reference of
   law_tank), `game/tank/tank.gd` (a constant and a static beside `_apply_hull_size`, carve-out).
@@ -326,5 +344,5 @@ None. (CP1 needs the orchestrator: below.)
 - Pictures: `make facing-audit TINT=1 VIEW=quarter TURRET=90` (turning parts in colour), `make roster-lineup`.
 
 ### Next steps
-- CP1's check (`1cbbdbac`) after the fixup's; then tell the orchestrator.
+- Orchestrator: merge `8991e0c9`, then CP1 `1c2e514f` alone and record the baseline.
 - T6: the lead's picks -> `make art-apply-decisions` -> image-to-3D (Meshy) for the picked bus/burner.
