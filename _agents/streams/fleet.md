@@ -225,13 +225,23 @@ _Updated 2026-09-24 (afternoon) by the fleet worker. Numbers: laptop unless mark
 
 | item | state | commit |
 |---|---|---|
-| T1 turrets buried in hulls | **done, green** | `03d3a839` + `8991e0c9` |
-| T2 stray barrels | **done, green** | `03d3a839` |
-| T5 nose check | **done, green** (syn_ifv turned round) | `03d3a839` |
-| T3 + T4 = **CP1 v2** | **ready: merge `2cc44030` alone** | `2cc44030` |
-| War Rig "disconnected and floating" (live feedback) | **done**, art only | `f222b7c8` |
-| T6 the bus's own mesh | bus_r10_b **built in 3D**; how it fits its box is **on the page** | `5426558d` |
-| the burner as a fire engine (lead, page 1) | three concepts **on the page** | `5426558d` |
+| T1 turrets buried in hulls | **done, merged** | `03d3a839` + `8991e0c9` |
+| T2 stray barrels | **done, merged** | `03d3a839` |
+| T5 nose check | **done, merged** (syn_ifv turned round) | `03d3a839` |
+| T3 + T4 = CP1 v2 | **done, merged** (main `9f867385`; baseline `01ab39b592cc9837` recorded on main `9ed7fccf`) | `2cc44030` |
+| War Rig "disconnected and floating" (live feedback) | **done, merged** (main `3f878009`) | `f222b7c8` |
+| War Rig simulated muzzle vs drawn gun | **round-12 candidate** (ruled not this round), in verification.md | `397de636` |
+| T6 the bus's own mesh | **waiting on the lead**: bus b built but van-shaped (1.85:1); D recommended; H and I on page 2 | `eb82692d` |
+| the burner as a fire engine | **waiting on the lead**: burner_r11_a/b/c on page 2 | `5426558d` |
+
+**Review page (all rounds): https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS** (version 5, db; read taps with
+`read_db` into a folder, then `make art-apply-decisions DIR=... URL=...`). Page 2 carries `q_r11_bus_fit` (D
+recommended: regenerate; A/B/C all deform or break a ruling), `bus_r11_h` (right length, look drifted), `bus_r11_i`
+(bus b's look, partly lengthened) and the three fire-engine burners. **Next after his taps:** a picked burner -> 3D
+(15 credits) -> its own hull art and box (a CP: the burner's box moves); a picked bus concept -> 3D -> `unit.tank.hull`
+(a CP if its proportions move the 9.70 x 2.90 x 4.08 box). **Credits this round:** concepts 9 each (burner x3,
+bus x6 of which 4 superseded), bus b 3D 15; see `assets/meshy_ledger.md`.
+**The rule the bus bought** is in `art_direction.md`: the reference decides proportion, the prompt decides detail.
 
 **The lead's answers on page 1** (https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS, recorded with
 `make art-apply-decisions`): Law 1.25x APPROVED; burner same-shape REJECTED ("I had no idea these were 2 separate unit
