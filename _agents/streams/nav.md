@@ -160,28 +160,82 @@ Nothing blocks you. Put the before/after clips from R1.9 where the orchestrator 
 
 ## Status
 
-_Worker: nav, round 11. Updated 2026-09-24 (small hours). Every number names its commit and machine._
+_Worker: nav, round 11. Updated 2026-09-24 02:30. Every number names its commit and machine. **Merge point: see
+"Green hash" at the end.**_
+
+### Report in one screen
+
+- **R2 (goal inside a building): fixed.** Every goal the player's right-click, the squad path (CPU commander, tactical
+  map) and the follow station hand a crew is grounded with THAT hull's turning envelope; no two crews of one order or
+  squad share a spot; pinches (a wreck beside a block face) search for a spot the hull fits. Test first
+  (`tests/nav/test_nav_grounded_goals.gd`, failed on `a04d75c0`). R2 alone does not move the sim baseline.
+- **R1 (drives into the wall before backing up): fixed for the case he described**, inside the driver: a wheeled hull
+  whose forward arc would meet a wall within 5 m backs up FIRST, on a reverse leg checked against what is behind and
+  beside it. Scenario test (IFV nose-on to a Terminus block): control touches the wall before any reverse; with the leg,
+  reverse first, zero contacts, arrives. **Clip for him:** `assets/review/nav_r11/wall_side_by_side.mp4`.
+- **Found on the way and fixed:** the path follower could steer at a route corner it was standing on and sit at zero
+  throttle forever (arena's Crossing deadlock; then an IFV in `nav-orders`). And the goal repair made a unit read
+  "arrived" under an order that never completes, so the repair is OPT-IN until completion honours it (request below).
+- **Sim baseline moved, attributed, adopted:** `457b5e83 -> 814aed46` (the waypoint guard, then the planned reverse).
 
 ### Plan (the brief's order; R2 first because R1 cannot be measured under it)
 
 | # | item | state |
 |---|---|---|
 | R2.1 | failing test on the issued goal | **done** — `tests/nav/test_nav_grounded_goals.gd`, failed on `a04d75c0` (laptop) |
-| R2.2 | squad.gd:272 hull-aware; ground non-player sources; de-collide | **done** in `5ad73612` |
-| R2.3 | repair an unreachable goal once, else report | **done** in `5ad73612` (`Movement._repair`, `--nav-off=repair`) |
-| R2.4 | before/after on `nav-orders` and `nav-terminus-drive` | running (builder0) |
-| R1.5 | instrument the reactive reverses before the fix | built (counters below); before-arm = the same tree with `--nav-off=kturn` (paired) plus `a04d75c0` |
-| R1.6 | circle test at plan time + a reverse leg validated against the mesh | built (`Movement._planned_reverse`); scenario test passes (laptop) |
-| R1.7 | inside the driver, not the planner | holding to it; Pathing untouched |
-| R1.8 | the plant's creep at a wall | after R1.6's numbers |
-| R1.9 | before/after clip from his camera | after R1.6's numbers |
+| R2.2 | squad.gd:272 hull-aware; which sources; de-collide | **done** `5ad73612`; sources settled in `b96b122c` (below) |
+| R2.3 | repair an unreachable goal once, else report | **built, OPT-IN** (`38c385d5`): see Requests |
+| R2.4 | before/after on `nav-orders` and `nav-terminus-drive` | **done**, table below |
+| R1.5 | instrument the reactive reverses before the fix | **done** `4f898560` (+ pre-registration `c043feac`) |
+| R1.6 | the circle test at plan time + a mesh-checked reverse leg | **done** `77212e8c` -> `3040b660` -> `27bea0e2` (three measured corrections) |
+| R1.7 | inside the driver, not the planner | **held**: Pathing untouched; not needed for his bar (numbers below). The War Rig's `kturn_none` is the one sign a longer search or a kinematic planner would help — see Next steps |
+| R1.8 | the plant's creep at a wall | **measured, threshold NOT changed** (below) |
+| R1.9 | before/after clip from his camera | **done** `617c6c09`, looked at |
+
+### Measurements (builder0 unless stated)
+
+**Workload:** `make nav-terminus-drive DRIVE_SEEDS="1 2 3 4 5 6 7 8"` — the mixed Condemned squad and the War Rig squad,
+4 legs each, 8 seeds each (seed 1 canonical; seeds 2-8: 2 m spawn jitter + a random starting heading), 16 runs per arm.
+Arms: **base** = `a04d75c0` with the same harness; **off** = `38c385d5` with `--nav-off=kturn` (R2 + the waypoint guard,
+= R1's control); **on** = `38c385d5` default. Map list: `Arena.ROTATION` of `a04d75c0` (arena's crossing/sumps not merged here).
+
+| squad | arm | arrived | leg time s | wall-contact ticks | press/unstick-driven contacts | reverse-gear contacts | cusps | creep reversals (at a wall) | kturns / none / aborted |
+|---|---|---|---|---|---|---|---|---|---|
+| mixed | base | 165/192 | 1796 | 2165 | 56 | — | 2281 | — | — |
+| mixed | off | 170/192 | 1623 | 2806 | 88 | 671 | 2260 | 2602 (82) | — |
+| mixed | **on** | **177/192** | 1441 | **996** | **1** | **206** | **1978** | 2157 (**33**) | 75 / 29 / 0 |
+| rigs | base | 98/128 | 1420 | 15773 | 541 | — | 1866 | — | — |
+| rigs | off | 99/128 | 1613 | 9678 | 393 | 2240 | 1585 | 2414 (248) | — |
+| rigs | **on** | **104/128** | 1277 | **6917** | **227** | **946** | **1202** | 1735 (**113**) | 64 / 130 / 2 |
+
+**R1's pre-registration, scored** (on vs off): (1) press/unstick-driven contacts DOWN — yes, 88 -> 1 and 393 -> 227;
+(2) total contacts DOWN — yes, -64 % and -29 %; (3) reverse-gear contacts NOT UP — yes, down 69 % and 58 %; (4) cusps
+down or flat — yes, -12 % and -24 %; (5) arrivals not down — yes, +7 and +5; **`kturn_none` small beside `kturns` —
+NO for the War Rigs (130 vs 64)**: for a 14 m hull with a 12 m radius in 18-22 m streets the 8 m reverse search often
+finds no single back-up that clears the forward arc. Unexpected: Steering's own in-circle back-ups for the mixed squad
+went 647 -> 770 (the leg leaves some hulls with the point inside the circle); cusps still fell.
+
+**R2 (base vs off):** mixed arrivals 165 -> 170, leg time 1796 -> 1623 s, but wall contacts 2165 -> 2806 (+30 %);
+rigs arrivals 98 -> 99, contacts 15773 -> 9678, press/unstick contacts 541 -> 393. The off arm also carries the waypoint
+guard, so this is R2 + guard, not R2 alone. `nav-orders` (yard, 5 squads, one run each): base 30/30, t50 29.9 / t90 39.5
+/ t100 43.8 s; final (`38c385d5`) 30/30, t50 29.5 / t90 46.9 / t100 47.7 s — **the tail is slower by ~4 s on this run**;
+laptop runs of the same pair gave 29/30 (base) and 30/30 (mine, t100 40.3 s), so one yard run is within its own noise.
+
+**R1.8, the creep:** creep leg reversals AT A WALL fell 82 -> 33 (mixed) and 248 -> 113 (rigs) with the planned leg. I
+did **not** raise `WHEEL_CREEP_THROTTLE`: the creep is also what turns a wheeled hull on a `face` order, and the
+reversals away from walls barely moved (2602 -> 2157, 2414 -> 1735 total) — it is doing its other job. A threshold change
+would need its own A/B on `nav-rotation` and the facing scenarios; recorded as a next step, not done at 3 a.m.
+
+**The clip** (`make nav-wall-clip`, laptop render, `617c6c09`): off — first wall contact 0.73 s, 22 contact ticks, never
+reverses (scrapes the face through its turn); on — reverses at the first tick, 0 contact ticks, one leg, same end point.
 
 ### Decisions (one line each)
 
-- **Which sources are grounded:** every `Orders` source except `element`. An element's plan is already grounded with the
-  hull's envelope (`Element.ground`) and issues one crew per order, so grounding twice buys nothing. Scripts, the agent
-  bridge and sourceless moves were raw geometry only to keep two round-10 test numbers; a goal inside a block is wrong
-  whoever asked for it.
+- **Which sources are grounded (revised `b96b122c`):** `player` (Orders) and the squad path (`Squad.context_for`, which
+  the CPU commander and the tactical map use); `element` grounds its own plan (`Element.ground`). **Sourceless Orders
+  moves stay raw geometry on purpose:** every `issue()` caller was surveyed and none in production sends one (tests,
+  scripts, the FX bench); grounding them reddened `scenario_orders`' 100 ms response test on `77212e8c` exactly as
+  round 10 found, because that test compares the executed goal with the raw click.
 - **The test's oracle is the layout's colliders** (`Arena.active["obstacles"]` + `ArenaKit.distance_to_footprint`), not
   the navmesh the fix grounds on, so it cannot agree with a wrong answer. Bar: every goal clears its hull's envelope
   (half diagonal) − 1.5 m; no two goals of one order closer than side by side (half widths summed).
@@ -189,7 +243,8 @@ _Worker: nav, round 11. Updated 2026-09-24 (small hours). Every number names its
   between a wreck and a block face where the 8 clearance pushes cancel. `standable_for` now checks whether the hull
   FITS where the pushes settled and, if not, searches two rings (of the envelope) for the nearest point where it does;
   a street narrower than the envelope everywhere still gets the centred point (the only answer before).
-- **Repair bound:** one try per goal (a goal moving > `NEW_GOAL_JUMP` is a new goal); refused beyond 12 m
+- **Repair: OPT-IN (`38c385d5`).** On by default it made a scout read "arrived" 3.5 m from an order goal that then never
+  completed (`nav-orders`, builder0 `e62383ad`, reproduced on the laptop). Bound when on: (a goal moving > `NEW_GOAL_JUMP` is a new goal); refused beyond 12 m
   (`REPAIR_MAX_M`) or when no route reaches the repaired point, and then `blocked`/`no_path` exactly as before. The
   readout carries `repaired_m`. The lesson-76 test now aims at a Terminus block CENTRE (20 m deep), since a small
   prop's inside is now correctly repaired.
@@ -220,13 +275,46 @@ Accepting being wrong on any of them; each is reported as measured.
 |---|---|---|
 | `a04d75c0` (start) | `make check exited 0`, 1686 passed / 0 failed | sim-baseline `457b5e830708b439` unmoved |
 | `77212e8c` | exited 2, 1689 / 2 | wheeled-arrival car test (the FIRST planner build; passes after `3040b660`), the 100 ms order test (sourceless grounding; reverted in `b96b122c`); sim-baseline MOVED -> `0146969cfee27c76` |
-| `ca7c0df2` | exited 2, 1690 / 1 | the 100 ms test again (revert not yet in); sim-baseline MOVED -> `16bfe280760629ef`; ai-scenarios counts changed: the 100 ms test, `scenario_cover` peek (see below), `scenario_perf` (22.0 ms/tick) |
+| `ca7c0df2` | exited 2, 1690 / 1 | the 100 ms test again (revert not yet in); sim-baseline MOVED -> `16bfe280760629ef`; ai-scenarios counts changed: the 100 ms test and `scenario_perf` (22.0 ms/tick, load) |
+| `38c385d5` | exited 2, **1691 / 0**, ai-scenarios back to its baseline | the only red: sim-baseline MOVED -> `814aed46b1042e62` — attributed and adopted in `6602e1f9` |
 
 - **`scenario_perf` is load, not nav:** laptop, alternating base (`a04d75c0`) and mine (`ca7c0df2`+): 22,013 / 21,937 µs
   per tick mine vs 22,221 / 22,111 base, identical fights (same LOS query counts). builder0 ran check2 at load 12.5 with
   22 other Godot processes.
-- **`scenario_cover` peek (x3 4 hits vs x4 4 hits):** fails identically on the LAPTOP at `a04d75c0` too; passed on
-  builder0 at `a04d75c0`. Being attributed on builder0 by commit (base vs `5ad73612`).
+- **`scenario_cover` peek (x3 4 hits vs x4 4 hits) is NOT a change:** it is the one expected failure already in
+  `tests/baselines/ai_scenarios_count.txt` (43,1: "the reload-window arm shows no effect, 4 vs 4 ... squad re-measures in
+  round 11"). It fails at `a04d75c0` on both machines.
+
+### Requests to other streams / the orchestrator
+
+- **tank_brain.gd (no owner this round; orchestrator):** order completion (`_update_order_progress`, the move /
+  attack_move branch) should also complete when `Movement.state(tank)["repaired_m"] > 0` and its phase is `"arrived"`.
+  Then `Movement.repair_on()` can default to ON (flip the switch semantics and the note above it). The orchestrator's
+  session refused a direct message (2026-09-24 02:00), so this is its only copy.
+
+### Questions for the lead
+
+- None blocking. For his eye: `assets/review/nav_r11/wall_side_by_side.mp4` (left: today's reactive driver; right: the
+  planned reverse), and a Terminus playtest (below).
+
+### What to playtest (exact commands)
+
+- `make skirmish` on the Terminus: select a mixed squad parked facing a block, right-click behind it — wheeled hulls
+  should back up first, not nose into the face. Then right-click a point hard against a block: every crew should get a
+  spot it fits (the card shows how far a goal moved).
+- `make nav-wall-clip` (display) re-renders the clip; `make nav-terminus-drive DRIVE_SEEDS="1 2 3 4 5 6 7 8"` and
+  `NAV_FLAGS=--nav-off=kturn` for the control; `make nav-orders`.
+
+### Next steps (not done, in order)
+
+1. When completion honours `repaired_m`, turn the repair on by default and re-run `nav-orders` + the drive test.
+2. The War Rig's `kturn_none` (130 of 194 searches found no single clearing back-up): try a two-leg plan (reverse,
+   forward, reverse) within the driver before reaching for a kinematic planner; if the rigs' arrivals do not move, that
+   is the measurement that opens the planner question (brief R1.7).
+3. The mixed squad's in-circle back-ups rose 647 -> 770: check whether the leg's end pose should aim the hull a little
+   past the point so pure pursuit takes it forward.
+4. `WHEEL_CREEP_THROTTLE`: an A/B on `nav-rotation` + the facing scenarios before any change (R1.8).
+5. After arena merges: `make terrain-drive` (crossing, sumps, locks) as the deadlock regression.
 
 ### Known issues / notes for merge
 
