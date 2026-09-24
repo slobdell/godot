@@ -313,6 +313,11 @@ the share of the flight at the low cruise height (centre 18.2 m, belly 6.2–7.4
   tests (they already walk crossing and sumps).
 
 ### Next steps
+- **Next-round item (camera owner):** `RtsCamera.roof_over`/`sight_blocked` and `BlockCutaway` ask the COLLIDER where
+  they mean the silhouette. An ad screen is 1.4 m to them and 20.7 m drawn, so a 20 m LED wall between the camera and
+  the fight is never cut away. Written up with the table in `verification.md` ("A collider is not a silhouette"). These
+  are risks from reading the code, not seen in play. Fixing it means `AirshipFlight.DRAWN` (or a shared drawn-extent
+  table) feeding those three reads, never growing the colliders.
 - Stretch, if the lead wants more of it on dense maps: a per-map
   "cruise corridor" planner (the orbit choice is local; a global route through the green of the cruise-clear map would
   raise cruise % on the Boulevard and Crossing).

@@ -453,3 +453,34 @@ and both are general:
 `make airship-report` prints the same three numbers per map (inside %, cruise %, seen %) for any version of the flight,
 because it drives the node only through `fly_toward` / `advance_to` / `pilot` / `hull_centre_y`. That is also how the
 before-arm was measured: the report copied into an export of the old commit.
+
+## A collider is not a silhouette: which camera code asks the wrong one (round 11, airship stream)
+
+`ArenaKit.PROPS` sizes, `Arena.active["obstacles"]` and the bodies under the `Obstacles` node are **COLLISION** boxes,
+sized for gameplay (cover, hulls, shells). For three kit types they are far smaller than what is DRAWN, measured off
+the kit's own meshes (`AirshipTruth.drawn_solids`, and the flight's `AirshipFlight.DRAWN`):
+
+| type | collider (x × h × z) | drawn | the gap |
+|---|---|---|---|
+| floodlight | 2.4 × **3.0** × 2.4 | **16.05 m** tall, 4.2 m lamp head | a 13 m mast and lamp head |
+| ad_screen | 7.8 × **1.4** × 2.0 | **20.7 m** tall (a 7 × 14 m LED wall from 6 m up, beacon on top) | 19 m of panel |
+| sign | no collider at all | 7.65 m, a 6.3 m board | all of it |
+| block | 40 × 24 × 40 | the same | none |
+
+Anything that must not VISUALLY intersect or be hidden by a prop — a camera, an airship, a cutaway — has to ask the
+drawn extent. Two systems ask the collider instead. Neither has been seen to fail in play; these are risks found by
+reading the code, left for their owner to decide:
+- **`RtsCamera.roof_over` / `clear_pose` / `sight_blocked`** (`game/camera/rts_camera.gd`) read
+  `Arena.active["obstacles"]`. To them an ad screen is 1.4 m tall and a floodlight 3 m, so the camera can be parked in
+  a floodlight's lamp head (15–16 m: his camera reaches that height at a ~18° tilt) or right against an LED wall's
+  0.7 m-deep housing. `sight_blocked` also never reports a view that is blocked by an LED wall.
+- **`BlockCutaway._gather`** (`game/camera/block_cutaway.gd`) reads the obstacle bodies' own `CollisionShape3D`s and
+  keeps only solids at least `MIN_HEIGHT_M` (6 m) tall. An ad screen's collider is 1.4 m, so **a 20 m LED wall between
+  his camera and the fight is never cut away**, and neither is a floodlight's mast. For blocks, collider = drawn, so
+  the cutaway is right.
+
+**What to check** in any code that asks "is something in the way / am I inside something": which object does it read?
+For visual questions, grow the kit types above to their drawn extent (`AirshipFlight.DRAWN`, which
+`test_the_flights_table_of_drawn_props_covers_what_the_kit_draws` holds against the meshes). Don't grow the collider:
+that would move gameplay and the sim baseline. The orchestrator relayed the floodlight as "3 m" to the lead from
+exactly this table.
