@@ -25,7 +25,14 @@ extends RefCounted
 const VERBS := ["move", "attack", "screen", "support_by_fire", "ambush", "hold"]
 const NEEDS_TO := ["move", "screen", "support_by_fire", "ambush"]
 const NEEDS_TARGET := ["attack"]
-const KEYS := ["verb", "to", "target", "drills", "facing"]
+const KEYS := ["verb", "to", "target", "drills", "facing", "formation"]
+## Round 11 (the lead, 2026-09-25: *"they're still not really forming up when I give them a formation to use"*).
+## His 2026-09-16 ruling stands as the DEFAULT -- "there's essentially always a formation for any given task OR
+## there's always a central decision maker ... that automatically determines what the formation is" -- so a task with
+## no `formation` lets the leader pick from its DoctrineTable exactly as before. But until now there was no channel
+## at all for a shape the player chose with G: picking one took the order down the DIRECT path, which dissolves the
+## element and hands out per-unit slots, so he could have his shape OR the squad's brain and never both. A task may
+## now name a formation, and the leader uses it.
 
 
 ## "" when `task` is well formed, else a human-readable reason (a typo from a script or an LLM fails loudly).
@@ -49,6 +56,12 @@ static func validate(task: Variant) -> String:
 			return "'target' must be a unit name"
 	elif NEEDS_TARGET.has(verb):
 		return "'%s' needs a 'target' unit" % verb
+	if task.has("formation"):
+		var shape: Variant = task["formation"]
+		if typeof(shape) != TYPE_STRING and typeof(shape) != TYPE_STRING_NAME:
+			return "'formation' must be a shape name"
+		if String(shape) != UnitCommand.AUTO and not TacticsFormation.NAMES.has(String(shape)):
+			return "'formation' must be %s or one of %s" % [UnitCommand.AUTO, ", ".join(TacticsFormation.NAMES)]
 	if task.has("facing"):
 		var facing: Variant = task["facing"]
 		if typeof(facing) != TYPE_ARRAY or (facing as Array).size() != 2 or not _finite(facing[0]) or not _finite(facing[1]) \

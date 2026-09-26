@@ -85,6 +85,14 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	plan["formation"] = pick["formation"]
 	plan["technique"] = pick["technique"]
 	plan["why"] = pick["why"]
+	# Round 11 (the lead, 2026-09-25): a shape he chose with G beats the table's pick. Before this there was no way
+	# for his choice to reach a squad at all -- choosing one sent the order down the direct path, which dissolves the
+	# element -- so "give them a formation" and "let the squad think" were mutually exclusive. `AUTO` (the default,
+	# and every CPU task) leaves his 2026-09-16 ruling untouched: the leader decides from its DoctrineTable.
+	var asked := String((task as Dictionary).get("formation", UnitCommand.AUTO))
+	if asked != UnitCommand.AUTO and TacticsFormation.NAMES.has(asked):
+		plan["formation"] = asked
+		plan["why"] = "%s, as ordered" % asked.replace("_", " ")
 	plan["drill"] = drill["drill"]
 	if drill["drill"] != "":
 		plan["why"] = drill["why"]

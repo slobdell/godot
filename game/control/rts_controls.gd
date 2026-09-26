@@ -560,11 +560,23 @@ func selected_element() -> Element:
 	return element
 
 
-## Whether this order should go to a leader as a task rather than to the units as geometry. An explicit formation
-## is the player overriding doctrine, so it drops back to direct orders (the brief: let them override, never
-## require it), and a queued order is a route the player is drawing by hand.
+## Whether this order should go to a leader as a task rather than to the units as geometry. A queued order is a
+## route the player is drawing by hand, so it stays direct.
+##
+## Round 11 (the lead, 2026-09-25: *"are you saying that we're not adequately applying our squad properties to a
+## unit I've regrouped as squad 1? … they're still not really forming up when I give them a formation to use"*).
+## **`formation == AUTO` used to be required here too**, on the reasoning that an explicit formation is the player
+## overriding doctrine and should drop back to direct orders. The consequence, which nobody had stated: choosing a
+## shape DISSOLVED the squad (a direct order disbands the element two functions below), so "regroup as squad 1, then
+## give them a formation" silently bought him per-vehicle geometry with no leader at all — his squad's brain and his
+## chosen shape were mutually exclusive, and he could not see which he had. It also turned every element-only verb
+## into an invalid unit order, which is the "screen button isn't working" bug.
+##
+## A task can now CARRY the shape (`ElementTask` gained a `formation` key), so overriding doctrine no longer means
+## abandoning the leader: the element forms what he asked for and keeps thinking. That is the override the old
+## comment intended, delivered where it belongs.
 func _is_task(verb: String, extra: Dictionary) -> bool:
-	return elements != null and formation == UnitCommand.AUTO and not bool(extra.get("queue", false)) \
+	return elements != null and not bool(extra.get("queue", false)) \
 			and ELEMENT_TASKS.has(verb) and (selected_element() != null or selected_group() > 0)
 
 
@@ -592,6 +604,11 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 	# carry it until they do.
 	if extra.has("facing"):
 		task["facing"] = extra["facing"]
+	# Round 11 (the lead, 2026-09-25: *"they're still not really forming up when I give them a formation to use"*).
+	# The shape he picked with G rides the task, so a squad uses it instead of the doctrine table's pick. AUTO is
+	# not sent: that is the leader-decides default his own 2026-09-16 ruling asked for.
+	if formation != UnitCommand.AUTO:
+		task["formation"] = formation
 	if task["verb"] == "move" and not task.has("to"):
 		return _refuse("a move task needs somewhere to go")
 	if verb == "move":
@@ -830,6 +847,39 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	if selection.units.is_empty():
 		return ""
 	if _is_task(verb, extra):
+		return assign_task(verb, extra)
+	# Round 11 (the lead, playing: *"I get warning when I try to use screen: Can't 'verb' must be one of move,
+	# attack..."*). An ELEMENT-ONLY verb — screen, support-by-fire, ambush — is not a thing one vehicle can be told
+	# to do: `OrderFeed.VERBS` and `UnitCommand.VERBS` hold six unit orders and none of them is a task. Falling
+	# through to the direct path below therefore reached `UnitCommand.validate`, which refused it with a developer's
+	# sentence listing the six, and the squad did nothing.
+	#
+	# THE CAUSE, found by comparing the two predicates rather than by reading either one: `can_task()` — which the
+	# key, the card button and the armed CLICK all gate on — asks only "is this selection a squad". `_is_task()`,
+	# which decides whether the verb goes down the task path two lines above, asks that AND two more things:
+	# `formation == UnitCommand.AUTO` and `not queue`. So **pressing G to choose a formation (wedge, line, column,
+	# vee) silently stops every element task from being a task**, and so does shift-queuing one. The guards all pass,
+	# the click arrives here, and the selection gets a *unit* order whose verb no unit has — which is why he saw
+	# "'verb' must be one of move, attack, attack_move, follow, hold, stop" and his squad did nothing. Two predicates
+	# for one question, disagreeing on two conditions, is the whole bug (cf. trip-up 60: the same concept implemented
+	# twice).
+	#
+	# A chosen formation must not cancel a task: a screen IS a line, and the element picks the shape its doctrine
+	# calls for. A queued task is not a thing either — tasks replace, they do not stack — so it applies now.
+	#
+	# And the guard is no longer a refusal, because a refusal is not what he wants (the lead, 2026-09-25, after the
+	# better wording still left him stuck: *"I'm telling you that the screen button isn't working. I can't get the
+	# units to set up a screen."*). Round 10 ruled that no TRANSIENT element is formed from an arbitrary selection,
+	# because an unnamed element the player cannot re-select ends up fighting his own orders. That ruling stands —
+	# what changes is who presses the button: a task on an ungrouped selection now does the Form-squad step ITSELF
+	# (`form_squad()`: the lowest empty control group, exactly what Ctrl+N does, and it says which number it took),
+	# then gives the task. The squad is real, numbered and re-selectable, so the ruling's reason is satisfied while
+	# the player gets one action instead of two he had no way to know about.
+	if ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb):
+		if elements == null:
+			return _refuse("tasks need the doctrine layer, which this match is running without")
+		if form_squad() == 0:
+			return task_refusal() if task_refusal() != "" else "all nine groups hold units: Ctrl+1-9 to reuse one"
 		return assign_task(verb, extra)
 	# A direct order is the player taking the wheel: dissolve the element so its leader stops commanding. The
 	# next task re-forms it. (Doctrine detaches per unit too, but only from its next update, which is late
