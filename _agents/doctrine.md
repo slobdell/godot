@@ -274,10 +274,37 @@ not close on the line until the crew whose station is ahead of it has passed —
 up on the spot**, which is the visible half of his "formula to form up". The mean station error while travelling is
 6–9 m against a 10.6 m pitch; the control arm has no shape to measure. A human watching it is the check that counts.
 
-**Not done, deliberately:** the AUTO icon still shows a wedge whatever the table picks (control's card, round 12's
-legibility candidate); a G-chosen formation is still overridden by the halt shape at the end of a drills-on move
-(`_halt`); the direct path (a box-selection that is not a numbered squad, `Orders._resolve_group`) still sends each
+**Not done, deliberately:** ~~the AUTO icon still shows a wedge whatever the table picks~~ (done in round 12, S1: the
+card reads the leader's pick); ~~a G-chosen formation is still overridden by the halt shape at the end of a drills-on
+move (`_halt`)~~ (done in round 12, S2: *Whose shape it is, phase by phase* below); the direct path (a box-selection that is not a numbered squad, `Orders._resolve_group`) still sends each
 vehicle to its slot on its own.
+
+### Whose shape it is, phase by phase (round 12, S1/S2; C12.4, C12.5)
+
+**The player's G choice (`task.formation`) is the shape at every phase of the move; the doctrine table decides only
+under AUTO; a battle drill under fire may take the squad into its own shape, and the card says so.**
+
+| Phase | Under AUTO | With a shape chosen with G |
+|---|---|---|
+| the order (t0), the plain move's form-up (`_plan_form_up`) | the faction table's `move` pick | **his shape** (round 11) |
+| in transit (`Element._advance_transit`, `stations_along`) | the same pick, fixed at the order | **his shape** (round 12) |
+| a drills-on move's legs (`_plan_movement`, traveling / bounding) | the table's pick; a traveling-overwatch trail section in a wedge | **his shape**, trail section included (round 12) |
+| the halt on arrival, or a hold (`_halt`) | the table's `hold` pick (herringbone in cover, coil in the open) | **his shape** (round 12: before this a chosen wedge dissolved into a coil on arrival) |
+| a battle drill (react to contact, ambushes, assault, break contact) | the drill's shape | **the drill's shape**: that is the doctrine's job under fire |
+| an attack inside its guns' band | a line (every gun in the fight) | a line: the verb's posture, not a table pick |
+
+**The card reads the same truth** (`CommandIcons.formation_readout`): *"Auto: Column"* under AUTO with an element (the
+leader's actual pick, updated as it changes), *"Auto"* on its own glyph (a ring round an A) before the squad has an
+element, *"Wedge"* for his choice, and *"Line: drill"* while a drill has his squad in another shape (the doctrine line
+under the header names the drill). The AUTO glyph used to be a wedge whatever the leader picked.
+
+**What AUTO actually picks for his squads (measured, `make tactics-terrain`, 2026-09-26).** The brief assumed the
+yard and the Terminus both classify as *dense*, so the standard table's `dense -> column` row picks a column there.
+Two corrections: (1) at the spawns only the **yard** (and the sumps' centre slot) is dense; the Terminus, the pit, the
+crossing and the locks are *lanes*; (2) more to the point, **no squad he fields uses the standard table**: a squad
+fights by its units' FACTION table (`Elements._table_for`), and the Condemned and the Law both end in a catch-all
+**column** whatever the terrain; the Syndicate's is a wedge and the gangs' a swarm. So a Condemned or Law squad under
+AUTO forms a column on every map, and the wedge the card showed was wrong for both factions on every map.
 
 ## Selection rules: how a leader chooses
 

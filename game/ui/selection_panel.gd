@@ -209,10 +209,13 @@ func summary() -> Dictionary:
 		return result
 	var commandable := not controls.selection.units.is_empty()
 	var is_element := controls.can_task()
+	# Round 12 (C12.4, squad's carve-out): the Formation button reads the shape the squad is FORMING -- his G pick, or
+	# under AUTO the leader's -- not a wedge drawn for every AUTO (CommandIcons.formation_readout).
+	result["formation"] = CommandIcons.formation_readout(String(controls.formation), controls.element_state())
 	for command in COMMANDS:
 		var label: String = command[1]
 		if command[0] == "formation":
-			label = "Formation: %s" % String(controls.formation).capitalize()
+			label = "Formation: %s" % String(result["formation"]["label"])
 		result["commands"].append({"id": command[0], "label": label, "hotkey": command[2],
 				"then": String(TaskPalette.row(command[0]).get("then", "now")),
 				"line": String(TaskPalette.row(command[0]).get("line", "")),
@@ -559,8 +562,8 @@ func _draw() -> void:
 				Vector2.ONE * button.size.y * 0.62)
 		var tint := Color(CyberStyle.CYAN if not armed else CyberStyle.YELLOW, 1.0 if enabled else 0.3)
 		if command["id"] == "formation":
-			label = String(controls.formation).capitalize()
-			batch.texture(CommandIcons.formation_texture(String(controls.formation)), glyph, tint)
+			label = String(info["formation"]["label"])
+			batch.texture(CommandIcons.formation_texture(String(info["formation"]["shape"])), glyph, tint)
 		else:
 			batch.texture(CommandIcons.task_texture(command["id"]), glyph, tint)
 		_label(batch, font, button, label, 14.0 * s, ink)

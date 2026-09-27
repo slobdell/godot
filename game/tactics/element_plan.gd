@@ -89,8 +89,8 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	# for his choice to reach a squad at all -- choosing one sent the order down the direct path, which dissolves the
 	# element -- so "give them a formation" and "let the squad think" were mutually exclusive. `AUTO` (the default,
 	# and every CPU task) leaves his 2026-09-16 ruling untouched: the leader decides from its DoctrineTable.
-	var asked := String((task as Dictionary).get("formation", UnitCommand.AUTO))
-	if asked != UnitCommand.AUTO and TacticsFormation.NAMES.has(asked):
+	var asked := chosen_formation(task)
+	if asked != "":
 		plan["formation"] = asked
 		plan["why"] = "%s, as ordered" % asked.replace("_", " ")
 	plan["drill"] = drill["drill"]
@@ -100,6 +100,14 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	else:
 		_plan_movement(plan, situation, state, table)
 	return plan
+
+
+## The shape the player chose for `task` with G, or "" under AUTO (the table decides). Pure.
+static func chosen_formation(task: Variant) -> String:
+	if typeof(task) != TYPE_DICTIONARY:
+		return ""
+	var asked := String((task as Dictionary).get("formation", UnitCommand.AUTO))
+	return asked if asked != UnitCommand.AUTO and TacticsFormation.NAMES.has(asked) else ""
 
 
 # ---- Movement (no contact): formation, technique, legs -------------------------------------------------
@@ -167,7 +175,10 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 					halves[0], spacing)
 			_group(plan, halves[0], String(plan["formation"]), anchor, heading, spacing, order_verb)
 			var trail_anchor := anchor - heading * table.leg("overwatch_gap_m")
-			_group(plan, halves[1], "wedge", trail_anchor, heading, spacing, "attack_move")
+			# Round 12 (C12.5): the trail section takes his shape too when he chose one; the doctrine's wedge otherwise.
+			var trail_shape := chosen_formation(task)
+			_group(plan, halves[1], trail_shape if trail_shape != "" else "wedge", trail_anchor, heading, spacing,
+					"attack_move")
 		_:
 			var anchor := _advance(plan, situation, state, table, center, destination, heading, ordered, spacing)
 			_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb)
@@ -561,12 +572,20 @@ static func _names_of(members: Array) -> PackedStringArray:
 ## and the crews face their sectors instead of the way they drove in.
 ## `at` is where the halt stands; the heading is the one the element arrived with, kept while it stays halted (the
 ## averaged hull facing turns as crews face their sectors, and a formation that turned with it would never settle).
+##
+## Round 12 (C12.5): a shape the player chose with G (`task.formation`) is the halt's shape too. Before this a chosen
+## wedge on a drills-on move dissolved into the table's coil or herringbone on arrival -- round 11 made the task carry
+## the shape and this was the phase it missed. The table's hold pick decides only under AUTO.
 static func _halt(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable, at: Vector3) -> void:
 	var pick := table.select({"task": "hold", "threat": String(situation["threat"]),
 			"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})
 	plan["formation"] = pick["formation"]
 	plan["technique"] = pick["technique"]
 	plan["why"] = pick["why"]
+	var asked := chosen_formation(state.get("task", {}))
+	if asked != "":
+		plan["formation"] = asked
+		plan["why"] = "%s, as ordered: halted" % asked.replace("_", " ")
 	plan["anchor"] = clamp_to_arena(at)
 	if bool(state.get("arrived", false)) and state.get("heading") is Vector3:
 		plan["heading"] = state["heading"]

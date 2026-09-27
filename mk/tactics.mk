@@ -63,6 +63,9 @@ squad-defile: import ## Round 9 X2/X3/A1: an element through the maze's 11 m gap
 		--formation=$(or $(FORMATION),wedge) --tube=$(or $(TUBE),off) \
 		2>&1 | grep -E "DEFILE_PROBE|SCRIPT ERROR|ERROR" || true
 
+tactics-terrain: import ## Round 12 (S1/S5): the doctrine's terrain class (open/lanes/dense) at every rotation map's spawns and every 10 m along an 80 m move forward and to the side, with AUTO's pick at the order. Light (no physics)
+	$(GODOT) --headless --path . --script res://tests/tactics/terrain_probe.gd 2>&1 | grep -E "^TERRAIN|SCRIPT ERROR|ERROR" || true
+
 squad-settle: import ## Round 10 item 3: a squad's plain move end to end -- order acknowledged, arrival declared (COMPLETED), every crew stopped -- on the default path's element. ARENA= (default scene) or terminus, DIR=forward|side|back, METRES=20, UNITS=tank:tank:ifv:ifv, SEED=3. Round 12: TRANSIT=off is the control arm (no travelling anchor); transit_gap_m / transit_s report the shape on the way
 	@echo ">> squad-settle: ARENA=$(or $(ARENA),default) SEED=$(call cmdline,SEED,3) DIR=$(or $(DIR),forward) METRES=$(or $(METRES),20) TRANSIT=$(or $(TRANSIT),on)"
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
