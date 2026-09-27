@@ -347,7 +347,7 @@ func _apply() -> void:
 		_hull_wanted = 0.0
 		_hull_wanted_back = 0.0
 		if not occluders.is_empty():
-			var over := RtsCamera.clear_pose(_shown_focus, _shown_yaw, distance, tilt, Arena.active, occluders, HULL_LEAD_M)
+			var over := RtsCamera.clear_pose(_shown_focus, _shown_yaw, distance, tilt, RtsCamera.seen(), occluders, HULL_LEAD_M)
 			var went := RtsCamera.boom(0.0, float(over["distance"]), float(over["pitch_deg"]))
 			var was := RtsCamera.boom(0.0, float(clear["distance"]), float(clear["pitch_deg"]))
 			_hull_wanted = maxf(0.0, went.y - was.y)
@@ -573,16 +573,16 @@ const SOLID_PASSES := 6
 const SOLID_MIN_DISTANCE_M := 6.0
 
 ## The height of the tallest solid whose footprint covers this point and whose roof is above it, or -1.0 when the
-## point is in the open. Reads the layout's own boxes (`Arena.active["obstacles"]`, which already folds in the kit
-## props a cityscape is built from), so it needs no physics and works headless. Pure, for tests.
-## The live camera passes `RtsCamera.seen()`, the same boxes grown to what is DRAWN (round 12, below).
-static func roof_over(point: Vector3, data: Dictionary = Arena.active) -> float:
+## point is in the open. Reads a layout's own boxes (`data["obstacles"]`), so it needs no physics and works headless.
+## Pure, for tests. **The default is `RtsCamera.seen()`: the arena's boxes grown to what is DRAWN** (round 12, below),
+## because every question asked here is a visual one; pass `Arena.active` to ask the colliders.
+static func roof_over(point: Vector3, data: Dictionary = RtsCamera.seen()) -> float:
 	var solid := RtsCamera.solid_at(point, data)
 	return Arena.obstacle_size(solid).y if not solid.is_empty() else -1.0
 
 
 ## The tallest solid (its layout entry) whose footprint covers this point and whose roof is above it, or {}. Pure.
-static func solid_at(point: Vector3, data: Dictionary = Arena.active) -> Dictionary:
+static func solid_at(point: Vector3, data: Dictionary = RtsCamera.seen()) -> Dictionary:
 	var found := {}
 	var roof := -1.0
 	var flat := Vector2(point.x, point.z)
@@ -600,13 +600,13 @@ static func solid_at(point: Vector3, data: Dictionary = Arena.active) -> Diction
 ## Whether the straight line from `a` to `b` passes through a solid: the second half of the lead's sentence, because
 ## a camera that is outside every building can still be looking at the side of one. Slab test per box in the box's own
 ## frame, restricted to the segment. Pure, for tests and for the alley frames.
-static func sight_blocked(a: Vector3, b: Vector3, data: Dictionary = Arena.active, min_height := 0.0) -> bool:
+static func sight_blocked(a: Vector3, b: Vector3, data: Dictionary = RtsCamera.seen(), min_height := 0.0) -> bool:
 	return not RtsCamera.sight_blockers(a, b, data, min_height, true).is_empty()
 
 
 ## Every solid (its layout entry) at least `min_height` tall that the segment a→b passes through; `first` stops at the
 ## first one. Pure.
-static func sight_blockers(a: Vector3, b: Vector3, data: Dictionary = Arena.active, min_height := 0.0, first := false) -> Array:
+static func sight_blockers(a: Vector3, b: Vector3, data: Dictionary = RtsCamera.seen(), min_height := 0.0, first := false) -> Array:
 	var out: Array = []
 	for obstacle: Dictionary in data.get("obstacles", []):
 		var size := Arena.obstacle_size(obstacle)
@@ -790,10 +790,11 @@ static func raise_pose(distance: float, pitch_deg: float, metres: float, back :=
 
 
 ## The pose to actually use: `{"distance", "pitch_deg", "lifted_deg", "hull_passing"}`. Equal to what was asked for
-## whenever the camera is in the open, which is every arena without a cityscape and most of the Terminus. `occluders`
+## whenever the camera is in the open, which is every arena without a cityscape and most of the Terminus. `data` is the
+## solids, by default what is DRAWN (`seen`: a camera must not sit in a lamp head a 3 m collider knows nothing of). `occluders`
 ## are the moving solids (above); `grow` widens them. Pure, for tests.
 static func clear_pose(at: Vector3, heading: float, distance: float, pitch_deg: float,
-		data: Dictionary = Arena.active, occluders: Array = [], grow := 0.0) -> Dictionary:
+		data: Dictionary = RtsCamera.seen(), occluders: Array = [], grow := 0.0) -> Dictionary:
 	var tilt := pitch_deg
 	var reach := distance
 	var passing := false

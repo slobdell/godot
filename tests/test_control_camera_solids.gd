@@ -79,10 +79,13 @@ func test_on_the_terminus_the_camera_is_never_left_inside_a_building() -> void:
 func test_a_camera_in_the_open_is_left_exactly_where_the_player_put_it() -> void:
 	# The yard has no cityscape: nothing here may move, or the fix has become a tax on every other arena.
 	var data := _layout("yard")
+	var drawn := RtsCamera.drawn_layout(data)
 	var touched := 0
 	for at: Vector3 in _street_points(data):
 		for step in 8:
-			var clear := RtsCamera.clear_pose(at, TAU * float(step) / 8.0, HIS_DISTANCE, HIS_PITCH, data)
+			# Against what is DRAWN (round 12), as the live camera asks: the yard's ad screens and floodlights are
+			# drawn 16-21 m tall, and at his pose the camera (17.6 m up) is still never inside one there.
+			var clear := RtsCamera.clear_pose(at, TAU * float(step) / 8.0, HIS_DISTANCE, HIS_PITCH, drawn)
 			if float(clear["lifted_deg"]) > 0.001 or not is_equal_approx(float(clear["distance"]), HIS_DISTANCE):
 				touched += 1
 	assert_eq(touched, 0, "an arena with nothing tall to be inside of leaves the camera alone")
@@ -513,3 +516,57 @@ func test_every_shipping_map_measured_against_what_is_drawn() -> void:
 				assert_true(int(counts["poses"]) > 1000, "setup: %s has open ground to stand on (%d poses)" % [name, counts["poses"]])
 				assert_eq(int(counts["inside_collider"]["any"]), 0,
 						"%s at %.0f deg, posed from the %s: round 9 holds, the camera is outside every collider" % [name, pitch, arm])
+				if arm == "drawn":
+					# K2's bar: posed as the live camera now poses itself, it is inside nothing drawn.
+					assert_eq(int(counts["inside_drawn"]["any"]), 0,
+							"%s at %.0f deg: the camera is outside everything DRAWN (%s)" % [name, pitch, counts["inside_drawn"]])
+
+
+func test_the_camera_reads_the_drawing_and_the_colliders_are_untouched() -> void:
+	## C12.3: the collider never grows to fix a picture. The drawn list is a separate list; `Arena.active` is the
+	## gameplay's and must come out of this exactly as it went in.
+	var data := _layout(TERMINUS)
+	var before := JSON.stringify(data)
+	var drawn := RtsCamera.drawn_layout(data)
+	assert_eq(JSON.stringify(data), before, "building the drawn list leaves the layout's colliders as they were")
+	var grown := {}
+	for entry: Dictionary in drawn["obstacles"]:
+		if bool(entry.get("drawn", false)):
+			grown[String(entry["type"])] = Arena.obstacle_size(entry)
+	for type: String in ["floodlight", "ad_screen", "sign"]:
+		assert_true(grown.has(type), "the Terminus's %s is on the drawn list" % type)
+		if grown.has(type):
+			assert_true(is_equal_approx((grown[type] as Vector3).y, float(AirshipFlight.DRAWN[type][1])),
+					"%s stands %.2f m, the drawn height (the collider says %.2f)" % [type, (grown[type] as Vector3).y,
+					float(ArenaKit.PROPS[type]["size"][1])])
+	# The default is what the live camera reads: point it at the Terminus and it asks the drawing.
+	var was := Arena.active
+	Arena.active = data
+	var seen := RtsCamera.seen()
+	assert_eq((seen["obstacles"] as Array).size(), (drawn["obstacles"] as Array).size(), "`seen()` is the drawn list of Arena.active")
+	assert_true(is_same(RtsCamera.seen(), seen), "and it is built once per arena, not once per frame")
+	var flood: Dictionary = (data["obstacles"] as Array).filter(func(o: Dictionary) -> bool: return o["type"] == "floodlight")[0]
+	var lamp := Vector3(float(flood["position"][0]), 15.0, float(flood["position"][1]))
+	assert_true(RtsCamera.roof_over(lamp) > 15.0, "by default a point in the lamp head is inside the floodlight")
+	assert_eq(RtsCamera.roof_over(lamp, data), -1.0, "and the colliders, asked explicitly, still say it is open air")
+	Arena.active = was
+
+
+func test_the_drawn_list_covers_what_the_kit_meshes_draw() -> void:
+	## The camera reads `AirshipFlight.DRAWN` (C12.2); this holds the camera's use of it against the meshes
+	## themselves (`AirshipTruth`, which shares no geometry with the table), so a kit change is found out here too.
+	var layout := {"name": "t", "half_size": 60.0, "obstacles": [], "props": [
+			{"type": "floodlight", "position": [0.0, 0.0]}, {"type": "sign", "position": [20.0, 0.0]},
+			{"type": "ad_screen", "position": [-20.0, 0.0], "rotation_deg": 30.0}]}
+	var truth := AirshipTruth.drawn_solids(layout)
+	var drawn := RtsCamera.drawn_layout(Arena.normalize(layout))
+	assert_eq(truth.size(), 3, "setup: three props drawn tall enough to matter")
+	for solid: Dictionary in truth:
+		var mine: Array = (drawn["obstacles"] as Array).filter(func(o: Dictionary) -> bool: return o["type"] == solid["type"])
+		assert_eq(mine.size(), 1, "the camera knows about the %s" % solid["type"])
+		if mine.is_empty():
+			continue
+		var size := Arena.obstacle_size(mine[0])
+		assert_true(size.y >= float(solid["top"]) - 0.01, "%s: top %.2f covers the drawn %.2f" % [solid["type"], size.y, solid["top"]])
+		assert_true(size.x / 2.0 >= (solid["half"] as Vector2).x - 0.01 and size.z / 2.0 >= (solid["half"] as Vector2).y - 0.01,
+				"%s: footprint %v covers the drawn half %v" % [solid["type"], size, solid["half"]])
