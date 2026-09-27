@@ -50,6 +50,11 @@ func _run_probe() -> void:
 	ElementPlan.TRANSIT_ENABLED = _flag("transit", "on") != "off"
 	# Round 12, S3: `--fallin=off` is the fall-in rule's control arm (every crew closes on its station at once).
 	# `--fallin=lane|wait` picks how a held crew is held (ElementPlan.FALLIN_MODE); `on` is the shipped mode.
+	# Round 13, Q2 (S6): `--idle-face=on` is the arm where a no-pivot fixed gun with nothing in sight is not told to face
+	# (TankBrain.IDLE_FACE_NO_PIVOT); `off` is the control; `default` leaves the shipped value.
+	var idle_face := _flag("idle-face", "default")
+	if idle_face != "default":
+		TankBrain.IDLE_FACE_NO_PIVOT = idle_face == "on"
 	var fallin := _flag("fallin", "default")
 	if fallin != "default":
 		ElementPlan.FALLIN_ENABLED = fallin != "off"
@@ -247,6 +252,14 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 		else:
 			still_since = -1
 	var off := {}
+	var idle_faces := {}
+	var idle_declined := 0
+	for unit_name: String in names:
+		var brain := game_match.brains.get_node_or_null(NodePath("Brain_" + unit_name)) as TankBrain
+		if brain != null:
+			idle_declined += brain.idle_faces_declined
+			for source: String in brain.idle_faces:
+				idle_faces[source] = int(idle_faces.get(source, 0)) + int(brain.idle_faces[source])
 	for unit_name: String in names:
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		var slot: Variant = element.slots.get(unit_name)
@@ -261,7 +274,8 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"bottleneck_s": _s(element.bottleneck_ticks), "transit": ElementPlan.TRANSIT_ENABLED,
 			"fallin": ElementPlan.FALLIN_MODE if ElementPlan.FALLIN_ENABLED else "off", "shape": _flag("shape", "auto"),
 			"transit_gap_m": snappedf(gap_sum / gap_n, 0.1) if gap_n > 0 else -1.0,
-			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done)}
+			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done),
+			"idle_face": TankBrain.IDLE_FACE_NO_PIVOT, "idle_faces": idle_faces, "idle_faces_declined": idle_declined}
 
 
 static func _s(ticks: int) -> Variant:

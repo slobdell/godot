@@ -43,7 +43,7 @@
      "why": "contact possible: wedge, trail element overwatching"},
 
     {"when": {},
-     "formation": "column", "technique": "traveling",
-     "why": "route march: column, best control"}
+     "formation": "wedge", "technique": "traveling",
+     "why": "wedge (default), route march: quickest to settle, trail crews covering the flanks"}
   ]
 }

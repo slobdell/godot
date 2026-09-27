@@ -103,6 +103,16 @@ squad-shape-series: import ## Round 12 (S5): a plain move 80 m ordered as a COLU
 		done; wait; done; done; done; done
 	@$(PYTHON) tools/tactics/transit_series.py $(BUILD_DIR)/squad-shape.jsonl --arm=shape --off=column
 
+squad-idleface-series: import ## Round 13 (Q2, S6): a plain move of METRES 80, both arms of IDLE_FACE (on = a no-pivot fixed gun with nothing in sight is not told to face) on the same seeds, the yard and the Terminus, forward and side, the mixed squad (scouts) and the tracked/wheeled control (no scouts: must not move). IDLEFACE_SEEDS="1 2 3 4 5 6 7 8" -> build/squad-idleface.jsonl
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/squad-idleface.jsonl
+	@for arena in yard terminus; do for dir in forward side; do for units in tank:tank:ifv:ifv scout:scout:ifv:ifv:tank; do for seed in $(or $(IDLEFACE_SEEDS),1 2 3 4 5 6 7 8); do for arm in off on; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
+			--arena=$$arena --dir=$$dir --seed=$$seed --units=$$units --idle-face=$$arm --metres=$(or $(METRES),80) \
+			--seconds=$(or $(SETTLE_SECONDS),90) --drills=off 2>&1 \
+			| grep "^SETTLE_PROBE {" | sed 's/^SETTLE_PROBE //' >> $(BUILD_DIR)/squad-idleface.jsonl & \
+		done; wait; done; done; done; done
+	@$(PYTHON) tools/tactics/idleface_series.py $(BUILD_DIR)/squad-idleface.jsonl
+
 tactics-terrain: import ## Round 12 (S1/S5): the doctrine's terrain class (open/lanes/dense) at every rotation map's spawns and every 10 m along an 80 m move forward and to the side, with AUTO's pick at the order. Light (no physics)
 	$(GODOT) --headless --path . --script res://tests/tactics/terrain_probe.gd 2>&1 | grep -E "^TERRAIN|SCRIPT ERROR|ERROR" || true
 

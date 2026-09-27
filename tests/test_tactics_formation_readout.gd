@@ -6,6 +6,10 @@ extends TestCase
 ## yet the word "Auto" on its own glyph -- never a wedge it has not chosen.
 
 
+## Q1's dense row: set by the paired series (squad.md Status, pre-registered rule).
+const YARD_DEFAULT := "wedge"
+
+
 func test_a_chosen_formation_reads_as_itself_whatever_the_leader_picked() -> void:
 	var readout := CommandIcons.formation_readout("wedge", {"formation": "column"})
 	assert_eq(readout["shape"], "wedge", "his G choice is the glyph")
@@ -32,13 +36,12 @@ func test_auto_with_no_element_is_the_word_not_a_wedge() -> void:
 	assert_true(auto_image.get_data() != wedge_image.get_data(), "the AUTO glyph is not a wedge")
 
 
-## The integration: a real element on a real map, ordered the way his right-click orders it. The brief's premise was
-## that both maps he plays classify as DENSE, so the standard table's `dense -> column` row picks a column.
-## `make tactics-terrain` says otherwise: the yard's spawns are dense, the Terminus's are LANES. It is a column on both
-## anyway, for a different reason: a tank/ifv squad fights by the CONDEMNED table (Elements._table_for, the units'
-## faction), whose catch-all is `column` whatever the terrain ("column when nothing is in sight", doctrine.md X6). The
-## standard table decides for no squad the player fields. Either way the old wedge glyph was wrong on both maps.
-func _auto_pick_on(arena_name: String) -> Dictionary:
+## The integration: a real element on a real map, ordered the way his right-click orders it. A tank/ifv squad fights
+## by the CONDEMNED table (Elements._table_for, the units' faction); the standard table decides for no squad the player
+## fields. `make tactics-terrain`: the yard's spawns are DENSE, the Terminus's are LANES.
+## Round 12 pinned a column on both maps (the Condemned catch-all was "column in any terrain"). Round 13 (the lead,
+## answer 2: *"Default wedge."*): a plain move with nothing in sight is a WEDGE, and the card says it is the default.
+func _auto_pick_on(arena_name: String, seconds: float = 2.0) -> Dictionary:
 	var lab := TacticsLab.create(self, 3, arena_name)
 	var home := Match.spawn_position(Match.Team.GREEN, 0)
 	var toward := TacticsFormation.flat(Vector3(-home.x, 0.0, -home.z))
@@ -54,26 +57,29 @@ func _auto_pick_on(arena_name: String) -> Dictionary:
 	var goal := home + toward * 80.0
 	# The player's right-click on a whole squad: a plain move, AUTO (no formation key), no drills.
 	element.assign({"verb": "move", "to": [goal.x, goal.z], "drills": false})
-	for tick in SimClock.TICK_RATE * 2:
+	for tick in int(SimClock.TICK_RATE * seconds):
 		await lab.step()
 	var state := element.state()
+	var line := element.describe()
 	lab.dispose()
-	return {"terrain": terrain, "state": state}
+	return {"terrain": terrain, "state": state, "line": line}
 
 
-func test_an_auto_squad_on_the_yard_reads_column() -> void:
+func test_an_auto_squad_on_the_yard_reads_its_default() -> void:
 	var run: Dictionary = await _auto_pick_on("yard")
 	assert_eq(run["terrain"], "dense", "setup: the yard's spawn classifies as dense")
-	assert_eq(String(run["state"]["formation"]), "column", "a column (the Condemned catch-all; dense would pick one on the standard table too)")
+	assert_eq(String(run["state"]["formation"]), YARD_DEFAULT, "the Condemned plain move in dense ground")
 	var readout := CommandIcons.formation_readout(UnitCommand.AUTO, run["state"])
-	assert_eq(readout["shape"], "column", "so the AUTO icon draws a column, not the wedge it used to")
-	assert_eq(readout["label"], "Auto: Column", "and says so")
+	assert_eq(readout["shape"], YARD_DEFAULT, "the AUTO icon draws the shape the squad forms")
+	assert_eq(readout["label"], "Auto: %s" % YARD_DEFAULT.capitalize(), "and says so")
 
 
-func test_an_auto_squad_on_the_terminus_reads_column() -> void:
-	var run: Dictionary = await _auto_pick_on("terminus")
+func test_a_condemned_plain_move_on_the_terminus_is_a_wedge_at_ten_seconds() -> void:
+	var run: Dictionary = await _auto_pick_on("terminus", 10.0)
 	assert_eq(run["terrain"], "lanes", "setup: the Terminus spawn classifies as LANES, not dense (make tactics-terrain)")
-	assert_eq(String(run["state"]["formation"]), "column", "the Condemned table's catch-all: a column in any terrain")
+	assert_eq(String(run["state"]["formation"]), "wedge", "ten seconds into his right-click, the squad is a wedge")
 	var readout := CommandIcons.formation_readout(UnitCommand.AUTO, run["state"])
-	assert_eq(readout["shape"], "column", "so the AUTO icon draws a column")
-	assert_eq(readout["label"], "Auto: Column", "and says so")
+	assert_eq(readout["shape"], "wedge", "so the AUTO icon draws a wedge")
+	assert_eq(readout["label"], "Auto: Wedge", "and says so")
+	assert_true(String(run["line"]).contains("wedge (default)"),
+			"the card's doctrine line says it is the default: %s" % run["line"])

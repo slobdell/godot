@@ -51,6 +51,6 @@
 
     {"when": {},
      "formation": "wedge", "technique": "traveling",
-     "why": "open ground, nothing in sight: wedge, and keep moving"}
+     "why": "wedge (default), nothing in sight: quickest to settle, and it keeps its shape on the way"}
   ]
 }
