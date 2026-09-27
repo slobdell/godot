@@ -63,11 +63,10 @@ prompt* is canonical):
 
 **Waiting on the lead (round 12, live list; lesson 220: a page's `db` is UNCONSUMED until the repo has it):**
 
-- **The bus: `bus_r12_mv` on the fleet page** (https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS, version 6, published
-  2026-09-27 ~05:40 UTC). `bus_r11_i` came back a van again in 3D (2.04:1), so nothing shipped and the bus still wears
-  the dozer. The one card is a multi-view turnaround of it; **Approve = multi-image-to-3D, ~30 credits.** The page
-  also shows the Burner before/after, the turret and flame frames, for his eye. fleet last read its `db` at 06:08 UTC:
-  absent. The orchestrator reads it at close (`read_db` … `decisions/bus_r12_mv`).
+- **The bus: CLOSED (2026-09-27, in chat).** His words: *"The firetruck looks great, I don't know why it's giving me
+  the condemned tank for approval. There was nothing wrong with the tank"*. The Condemned tank keeps its look; fleet
+  records `bus_r12_mv` rejected with those words and spends nothing more (`game_design.md` *Round 12: the lead's
+  verdicts*).
 - **The partial or mixed selection** (squad's S4): it scatters, by the round-10 R1 design he narrowed himself; squad
   recommends leaving it. His call, on the next page or in chat.
 - **The Locks' open canal**, on arena's page once it is up, after he has driven it.

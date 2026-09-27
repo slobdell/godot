@@ -2451,6 +2451,17 @@ Read against the page's option labels by the camera stream (its Status has the m
 to be confirmed there: the camera-placement fix stays, and the cutaway hides blocks only — no ad screens, masts or
 signs.
 
+**The Condemned tank (the prison bus), on the fleet page's `bus_r12_mv` card (2026-09-27), his words verbatim:**
+
+> *"I don't understand what this URL is asking from me? The firetruck looks great, I don't know why it's giving me the
+> condemned tank for approval. There was nothing wrong with the tank"*
+
+**Ruling from that:** the fire engine is approved as shipped; **the Condemned `tank` keeps its current look** (the
+dozer at 2.90 × 4.08 × 9.70) and the bus item is CLOSED. `bus_r12_mv` is rejected with these words; no further bus
+concept or 3D unless he raises it. The earlier approvals (`bus_r10_b`, `bus_r11_i`, `q_r11_bus_fit`) stand as history:
+he approved a look, the tool could not deliver its proportions, and he does not want the slot chased. Lesson for pages:
+a card must say in one line WHY it exists and what "approve" costs; this one read as "approve the tank" to him.
+
 **A correction to the squad brief (squad, 2026-09-26):** the brief said the yard and the Terminus both classify as
 *dense*. `make tactics-terrain` shows only the yard's spawns are dense and the Terminus is *lanes*; and no squad the
 lead fields uses the standard table — a squad uses its units' FACTION table, and the Condemned and Law catch-alls pick a
