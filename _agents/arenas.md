@@ -124,10 +124,13 @@ pixels under 0.03 luma), `mean_luma`, and `changed_inside_px` (on a pit map it m
 tools/water_page.py` builds the page from the pairs. `make remote T=water-gpu` measures the water's GPU cost with
 one frame held still.
 
-**Numbers** (`c4c39a38`, builder0, round 10 → now, same frame, same instant): near-black share of water pixels,
+**Numbers** (`35ab155c`, builder0, round 10 → now, same frame, same instant): near-black share of water pixels,
 Crossing bridge 0.49 → 0.44, far bridge 0.72 → 0.37, neck 0.57 → 0.50; Locks lock 0.18 → 0.07, swing bridge
-0.39 → 0.20, far quay 0.98 → 0.54, canal 0.70 → 0.39; Terminus canal west bridge 0.65 → 0.38, avenue bridge
-0.58 → 0.51. Pits: at most 64 of 34k–274k pit pixels differ between steps (vehicles at the rim).
+0.39 → 0.20, far quay 0.98 → 0.55, canal 0.70 → 0.39; Terminus canal west bridge 0.66 → 0.38, avenue bridge
+0.58 → 0.49. Pits: at most 48 of 34k–274k pit pixels differ between steps (vehicles at the rim). **Cost**
+(`make water-gpu`, 1080p, Iris Xe): ~1 ms GPU where the river fills a fifth of the frame, ~0.2 ms on the Locks' strip,
+0 added draw calls. The first version cost ~3 ms. The venue trace marched every stands profile point per pixel, and
+per-pixel trig was NOT the cost (removing it changed nothing). Bisect with `WATER_GPU_LOOKS=` before optimizing.
 
 ## The lead's direction (2026-09-17)
 

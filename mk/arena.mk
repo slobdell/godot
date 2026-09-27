@@ -171,7 +171,7 @@ terrain-series: import ## Terrain (R9): a terrain map vs its dry twin on the SAM
 		| grep -E '^TERRAIN_(RUN|SERIES)'
 
 terrain-measure: ## Terrain: the ring-of-eyes centre figure and plain objective routes beside arena-report's (no Godot)
-	$(PYTHON) tools/terrain_measure.py arenas/crossing.json arenas/crossing_dry.json arenas/sumps.json arenas/sumps_dry.json
+	$(PYTHON) tools/terrain_measure.py arenas/crossing.json arenas/crossing_dry.json arenas/sumps.json arenas/sumps_dry.json arenas/locks.json arenas/locks_dry.json
 
 .PHONY: terrain-page
 terrain-page: ## Terrain: the lead's page -- every terrain map's frames beside its dry twin, and the numbers (after make remote T=terrain-shots) -> build/terrain-page/index.html

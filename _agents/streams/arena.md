@@ -88,6 +88,78 @@ His taps on A2 (and the Locks question once he has driven it). Nothing blocks A1
 
 _(the worker keeps this current)_
 
+### REPORT (2026-09-27, round 12 arena): water reads wet, on his page, pits untouched
+
+**Green, merge here: `35ab155c`** (builder0, `>> remote: make check exited 0`, 18 targets, **1773 passed, 0 failed**,
+sim-baseline `6313a38d7ecd99bb` **UNMOVED** (nav's CP2 baseline; the water is visual), determinism `550d53790035ddb4`).
+It carries both of the orchestrator's checkpoints. The commits after it touch only docs, `tools/water_page.py`
+and `mk/arena.mk`'s `terrain-measure` list; the tip's own check is recorded below when it lands.
+
+**His page:** https://claude.ai/artifact/1PsZA4HnRWGCSgajuyamKN (version 2, `db` declared; taps land in
+`decisions/<id>` as `{decision, words, at}`, the fleet page's schema). It asks first "have you driven the Locks
+yet?", then gives an overall tap; every water spot as dry twin | round 10 | now with a tap; each map's build as
+one-dial steps (keep/drop); the pits; the Locks question with its exposure; and the numbers. **Read its `db` at
+close** (lesson 220).
+
+**Done:**
+- **A1, the wet look, as pairs** (`WaterLook.STEPS`, one decision per step, each caption naming its dial):
+  r10 → a_body (teal body) → a_flood (lit by the floor's light map) → b_venue (the venue as built: blocks,
+  containers, wall bars, stands, crowd) → c_lamps (real lamp heads as columns of light, plus the pools glinting on
+  the crests; round 10's fake streak off) → c_swell (the slow swell that moves them) → d_lap (the lap line).
+  Near-black share of water pixels, round 10 → now, same frame, same instant (`35ab155c`, builder0): Crossing bridge
+  0.49 → 0.44, far bridge 0.72 → 0.37, neck 0.57 → 0.50; Locks lock 0.18 → 0.07, swing bridge 0.39 → 0.20, far quay
+  0.98 → 0.55, canal 0.70 → 0.39; Terminus canal west bridge 0.66 → 0.38, avenue bridge 0.58 → 0.49. Cost: about
+  **1 ms GPU** at 1080p on an Iris Xe where the river fills a fifth of the frame, ~0.2 ms on the Locks' strip, **0
+  added draw calls, 0 lights** (the table below). The planar reflection was never needed.
+- **A2:** the page above, with `db`, sent to the orchestrator.
+- **A3, pits stay pits:** pits have their own shader (`pit.gdshader`; the trace is shared through
+  `terrain_trace.gdshaderinc`, the look is not). Pit pixels that change between round 10 and the shipped water: Sumps
+  catwalk 8 of 274,452, causeway 0 of 89,996, lip 4 of 52,728; Pit corner 16 of 167,812, far yard 48 of 34,372 (vehicles
+  at the rim). Test: `test_the_pits_are_their_own_shader_with_none_of_the_waters_dials`.
+- **A4 (stretch), numbers re-checked:** `terrain-measure` (now including the Locks): the Locks' centre sees **0.451**
+  of the field (dry twin 0.511), so the page's 45 % is current; the Crossing 0.28 mean / 0.35 max, the Sumps 0.32 /
+  0.42. No geometry changed, so no report number moved. The rest of A4 waits on his taps.
+
+**Tests** (`tests/test_arena_water.gd`, 7): the pairs move one decision at a time; they end at the shader's defaults
+(what ships); round 10 is reproducible from the dials; the pits' shader has none of the water's dials; the water
+reflects every wall, bar, stands profile, lamp and the flood map of the venue as built; every reflected lamp is one
+the venue built; the Locks' canal reflects the obstacles beside it.
+
+**Tools:** `make remote T=water-pairs` (every step, five maps, frozen, WATER_STATS), `make remote T=water-gpu`
+(the cost held still, `WATER_GPU_LOOKS=` per step), `python3 tools/water_page.py` (the page).
+
+**Decisions (one line each):**
+- An analytic trace of the real venue, not a planar reflection: zero draw calls, and it reads the layout (Invariant 0).
+- Lamps as anisotropic columns: a physically sharp glint almost never lands at his 21° pose.
+- The smear is laid out in the view's frame: round noise drew the neon as scribbles.
+- Pits split into their own shader rather than gated by a flag: a flag is one typo from a leak.
+- The Locks' `quay_road` spot moved to `canal:-55:0`: its camera sat inside a block.
+
+**Questions for the lead (on the page):** does the water read wet now (overall, and per spot)? Keep or drop each
+step? Have you driven the Locks, and is the open canal the kill zone you want or does it need cover on the quays
+(it ships open)?
+
+**Requests to other streams:** none open.
+
+**Known issues:** the cost is measured on builder0's integrated GPU only, not on a phone. If phones need it, the next
+cut is fewer lamps (only those whose column can reach water in view) and a cheaper bank distance. `perf-scene` on a
+shared builder0 cannot resolve a sub-millisecond change (its average swung 92 → 13 ms across cycles).
+
+**What to playtest:** `make skirmish ARENA=crossing` and `make skirmish ARENA=locks` at his usual camera; look at the
+river and the canal while the fight moves (the swell and the lamp columns move; the pairs are frozen stills).
+
+**Next steps:** read his taps from the page's `db` and act on them (A4); if he says "too much", the dials are in
+`WaterLook` and each has a pair; the Locks cover question on his answer.
+
+**Merge notes (shared files):** `game/theme/cyberpunk/arena_dressing.gd` (the carve-out, additive): `GROUP`
+(`add_to_group` in `_ready`), `RIM_BAR`/`FOOT_BAR`/`CROWD_ROWS` consts, which replace identical literals in the bar
+and seat-row placement (same values), the recording of edges/bars/lamps/stands size where they are built, and
+`reflection_venue()`. `tools/water_page.py` is new (tools/ is shared; it is arena's page generator, like
+`terrain_page.py`). Also note the `arena-before` worktree (`../godot-arena-arena-before`, branch
+`stream/arena-before`, nothing committed, now clean): please remove it at close.
+
+### The log (in order)
+
 **Started 2026-09-26 21:20.** Baseline green: `46bac1a3`, builder0, `>> remote: make check exited 0`, 1726 passed,
 0 failed, sim-baseline `01ab39b592cc9837`.
 
@@ -137,11 +209,24 @@ _(the worker keeps this current)_
 **Green:** `d23125c7` (my water + checkpoint 1), builder0, `>> remote: make check exited 0`, 18 targets, 1746 passed,
 0 failed, sim-baseline `01ab39b592cc9837` UNMOVED, determinism `b83a374ce2fcde37`.
 
-**Cost, before (`46bac1a3`, builder0, `perf-scene --arena=crossing`, 3 cycles):** too noisy to compare. Average frame
-time falls from 92 ms to 13 ms across cycles with five other streams on builder0; the last cycle's `all` phase reads
-gpu 4.6–5.8 ms, 183–195 draws. So the controlled measure is `make water-gpu`: one frame held still at his pose,
-water drawn vs hidden, run alternately in a `46bac1a3` worktree and this branch.
+**Cost** (`make water-gpu`: builder0, Iris Xe, 1920×1080, his pose, one frame held still, the water toggled in 40
+blocks, cost = median of paired drawn−hidden differences, IQR in brackets; `perf-scene` was useless here, its average
+swung 92 → 13 ms across cycles with five streams on builder0):
 
+| arm | Crossing bridge (water ≈ 19 % of the frame) | Locks lock (a narrow strip) |
+|---|---|---|
+| round 10 (`46bac1a3` worktree, two rounds) | −0.89 [−1.47, 0.24]; +0.35 [−1.09, 0.45] | +0.10; +0.09 |
+| first wet look (`479a67b3`) | **+2.99 [2.87, 4.24]** | +0.80 |
+| no per-pixel trig (`180309d7`) | +3.78 [2.58, 5.08] (trig was not it) | +0.92 |
+| per step, `71689123` | r10 −0.03, a_flood 0.44, **b_venue 2.45**, c_lamps 2.53, d_lap 2.79 | — |
+| boxes culled by bounding circle, stands solved as one line (`35ab155c`) | b_venue 0.07–0.34, c 0.5–1.3, **d_lap 1.04 [0.91, 2.4] twice** | d_lap +0.22 |
+
+So the wet water costs **about 1 ms of GPU at 1080p on an integrated GPU at the most water-heavy pose**, about
+0.2 ms on the Locks' strip, with **zero added draw calls and zero lights** (still one draw for all the water,
+`TerrainVisual.draw_calls()`). The venue trace was the cost: it marched every stands profile point per pixel. What
+is left is the lamps and the swell (≈ 0.5 ms) and the lap line (≈ 0.4 ms). The next cut, if phones need it: fewer
+lamps (only those whose column can reach the water in view), and a cheaper bank distance. Not done: no phone
+measurement exists (none of this has been profiled on Android).
 
 **INCIDENT (2026-09-26 ~23:28, mine): a remote run from a non-git folder rsynced the laptop's `/` over
 `builder0:~/tank_squad/`.** For a "before" `perf-scene` I ran `tools/remote.sh` from a `git archive` copy of
