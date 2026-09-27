@@ -178,18 +178,24 @@ func _box_uniforms(material: ShaderMaterial, arena: Node) -> void:
 	var boxes := PackedVector4Array()
 	var info := PackedVector4Array()
 	var looks := PackedVector4Array()
+	var rots := PackedVector2Array()
 	for candidate: Array in candidates.slice(0, MAX_BOXES):
 		var obstacle: Dictionary = candidate[1]
 		var size: Vector3 = candidate[2]
 		boxes.append(Vector4(float(obstacle["position"][0]), float(obstacle["position"][1]), size.x / 2.0, size.z / 2.0))
 		var band := _neon_band(candidate[3])
-		info.append(Vector4(deg_to_rad(float(obstacle.get("rotation_deg", 0.0))), size.y, band[0], band[1]))
+		var yaw := deg_to_rad(float(obstacle.get("rotation_deg", 0.0)))
+		info.append(Vector4(yaw, size.y, band[0], band[1]))
+		rots.append(Vector2(cos(yaw), sin(yaw)))
 		var tint: Color = band[2]
 		looks.append(Vector4(tint.r, tint.g, tint.b, 1.0 if String(obstacle.get("type", "")) == "block" else 0.0))
 	material.set_shader_parameter("box_count", boxes.size())
 	material.set_shader_parameter("boxes", _pad4(boxes, MAX_BOXES))
 	material.set_shader_parameter("box_info", _pad4(info, MAX_BOXES))
 	material.set_shader_parameter("box_look", _pad4(looks, MAX_BOXES))
+	while rots.size() < MAX_BOXES:
+		rots.append(Vector2(1.0, 0.0))
+	material.set_shader_parameter("box_rot", rots)
 	reflection_counts["boxes"] = boxes.size()
 	reflection_counts["box_candidates"] = candidates.size()
 

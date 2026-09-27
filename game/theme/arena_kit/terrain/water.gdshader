@@ -51,6 +51,8 @@ uniform int box_count = 0;
 uniform vec4 boxes[16];
 uniform vec4 box_info[16];
 uniform vec4 box_look[16];
+// Each box's yaw as (cos, sin), computed once on the CPU rather than per pixel.
+uniform vec2 box_rot[16];
 
 // (c) Glints: lamp heads (xyz, energy) with linear colours, on a swell of this amplitude (radians of normal tilt,
 // long and short waves). Round 10 had ONE fake lamp direction (`legacy_streak`).
@@ -160,9 +162,8 @@ vec3 venue(vec3 p, vec3 r) {
 		if (i >= box_count) {
 			break;
 		}
-		float yaw = box_info[i].x;
-		float cy = cos(yaw);
-		float sy = sin(yaw);
+		float cy = box_rot[i].x;
+		float sy = box_rot[i].y;
 		vec2 rel = p.xz - boxes[i].xy;
 		vec2 lp = vec2(cy * rel.x - sy * rel.y, sy * rel.x + cy * rel.y);
 		vec2 ld = vec2(cy * h.x - sy * h.y, sy * h.x + cy * h.y);
@@ -290,43 +291,51 @@ void fragment() {
 			vec3 r_env = normalize(vec3(r.x, max(r.y + jitter, 0.001), r.z));
 			// Schlick with water's F0 = 0.02, plus a small art-directed floor so the surface reads at 21 degrees.
 			float fresnel = 0.06 + 0.94 * pow(1.0 - clamp(r.y, 0.0, 1.0), 5.0);
-			vec3 env = mix(horizon_sky(r), venue(hit, r_env), venue_reflect);
+			vec3 env = venue_reflect >= 1.0 ? venue(hit, r_env)
+					: mix(horizon_sky(r), venue(hit, r_env), venue_reflect);
 			vec3 body = water_deep;
+			vec3 pool = vec3(0.0);
 			if (has_flood_map) {
-				vec2 uv = (hit.xz + flood_half) / (2.0 * flood_half);
+				pool = texture(flood_map, (hit.xz + flood_half) / (2.0 * flood_half)).rgb * flood_scale;
 				// By the light's LUMINANCE, so a sodium pool brightens the teal instead of turning it olive.
-				vec3 flood = texture(flood_map, uv).rgb * flood_scale;
-				body *= 1.0 + body_flood * dot(flood, vec3(0.2126, 0.7152, 0.0722));
+				body *= 1.0 + body_flood * dot(pool, vec3(0.2126, 0.7152, 0.0722));
 			}
 			color = mix(body, env, clamp(fresnel * reflection, 0.0, 1.0));
 			// (c) The lamps' columns: each real lamp head against the reflected ray, split into azimuth and elevation.
-			vec3 spec = vec3(0.0);
-			float az_r = atan(r.x, r.z);
-			float el_r = atan(r.y, length(r.xz));
-			float breakup = 0.3 + 1.4 * noise(hit.xz * vec2(0.8, 2.2) + vec2(t * flow * 1.1, -t * flow * 0.7));
-			for (int i = 0; i < 12; i++) {
-				if (i >= lamp_count) {
-					break;
+			// Small-angle vector math, no atan (the lobe is ~3 degrees wide, where sin(a) = a to 0.05 %): the azimuth
+			// gap is the cross product of the two horizontal directions, the elevation gap the difference of the sines
+			// over the ray's cosine. A lamp behind the ray is skipped.
+			if (glint > 0.0) {
+				vec3 spec = vec3(0.0);
+				float r_flat = length(r.xz);
+				vec2 r_dir = r.xz / r_flat;
+				for (int i = 0; i < 12; i++) {
+					if (i >= lamp_count) {
+						break;
+					}
+					vec3 l = lamps[i].xyz - hit;
+					float l_flat = length(l.xz);
+					vec2 l_dir = l.xz / l_flat;
+					if (dot(l_dir, r_dir) <= 0.0) {
+						continue;
+					}
+					float daz = l_dir.x * r_dir.y - l_dir.y * r_dir.x;
+					float del = (l.y * inversesqrt(l_flat * l_flat + l.y * l.y) - r.y) / r_flat;
+					spec += lamp_colors[i] * lamps[i].w
+							* exp(-0.5 * (daz * daz / (glint_az * glint_az) + del * del / (glint_el * glint_el)));
 				}
-				vec3 l = lamps[i].xyz - hit;
-				float daz = atan(l.x, l.z) - az_r;
-				daz = daz - 6.2831853 * floor((daz + 3.1415927) / 6.2831853);
-				float del = atan(l.y, length(l.xz)) - el_r;
-				float lobe = exp(-0.5 * (daz * daz / (glint_az * glint_az) + del * del / (glint_el * glint_el)));
-				spec += lamp_colors[i] * lamps[i].w * lobe;
-			}
-			color += min(spec * breakup * glint_gain, vec3(1.4)) * glint;
-			if (has_flood_map) {
-				vec2 uv = (hit.xz + flood_half) / (2.0 * flood_half);
-				vec3 pool = texture(flood_map, uv).rgb * flood_scale;
+				float breakup = 0.3 + 1.4 * noise(hit.xz * vec2(0.8, 2.2) + vec2(t * flow * 1.1, -t * flow * 0.7));
+				color += min(spec * breakup * glint_gain, vec3(1.4)) * glint;
 				float crest = smoothstep(0.55, 0.8, noise(q * 1.6 + vec2(3.7, 1.3)));
 				color += pool * crest * pool_sheen * fresnel * 4.0 * glint;
 			}
 			// Round 10's streak: one lamp direction that no lamp stood in.
-			vec3 lamp = normalize(vec3(0.15, 0.32, -1.0));
-			float along = max(dot(r, lamp), 0.0);
-			float streak = pow(along, 90.0) * (0.6 + 0.8 * noise(hit.xz * vec2(0.9, 0.15) + t * flow));
-			color += vec3(1.0, 0.85, 0.6) * streak * 1.2 * legacy_streak;
+			if (legacy_streak > 0.0) {
+				vec3 lamp = normalize(vec3(0.15, 0.32, -1.0));
+				float along = max(dot(r, lamp), 0.0);
+				float streak = pow(along, 90.0) * (0.6 + 0.8 * noise(hit.xz * vec2(0.9, 0.15) + t * flow));
+				color += vec3(1.0, 0.85, 0.6) * streak * 1.2 * legacy_streak;
+			}
 			// (d) The lap line: a thin pale band where the surface meets a bank, wavering with the swell.
 			float bank = bank_dist(hit.xz) + (swell.x + chop.y) * 0.12;
 			color += lap_color * lap * smoothstep(lap_width, 0.0, bank) * 0.9;
