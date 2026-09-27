@@ -73,8 +73,9 @@ prompt* is canonical):
 - **Audio's three (merged at `785bc293`):** the web pack grew (`assets/music/` 13 → 29 MB, all in the web build) —
   ruled *leave it, decide at the next web release*; **by ear**, the two weakest placements are `defeat_hunt`
   (Predatory Hunt) and `defeat_ragnarok` (Ragnarok's Engine), one `states` edit each in `assets/music/manifest.json`;
-  the garage has no music (not this round). **His veto list:** `make announcer-demo-audio
-  CLIPS=assets/announcer/clips`, open `build/announcer/demo/index.html#new` — 67 new lines, 20 of them trade calls.
+  the garage has no music (not this round). **His veto page, with `db`:** https://claude.ai/artifact/6kWUqopgyKkiv6Ahf669A5
+  — all 67 new lines with their clips, Keep / Veto per line; taps land in the `verdicts` collection (doc id = the
+  line id with `.` → `_`). UNCONSUMED until read at close; a veto removes the line and its clip.
 - **Playtest for him:** `make skirmish` twice from the title — the opening should be a different track the second
   time; in a big fight, listen for the trade calls; the Condemned burner is a fire engine.
 - **Camera: ANSWERED** (2026-09-26 evening: keep the lamp-head fix, don't cut screens, leave masts and signs standing);
