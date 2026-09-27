@@ -215,6 +215,12 @@ ElevenLabs 51,851 → 44,495 settled (ledger row; the earlier batch settled 148 
 **0.62 → 0.93 a match**, airtime 16 % → 18 %; the caller unchanged (827 lines), the Veteran 28 % → 26 % (40 broadcasts,
 laptop). Review transcripts re-cut; `test_announcer` 41 passed, 0 failed; announcer pytest OK (laptop).
 
+**VERIFIED GREEN — merge here: `159f8645`** (M6 + main at `bcd9dd4f`; builder0, 2026-09-27): `>> remote: make check
+exited 0`, 18 targets, **1766 passed, 0 failed**, `sim-baseline passed: 6313a38d7ecd99bb` (main's value after nav's
+CP2; audio moves nothing), `announcer transcripts current`, `music-smoke` and `announcer-record-smoke` both `(matches
+the same match without …)`. The run at `8dcc59ad` read `sim-baseline FAILED … got 6313a38d7ecd99bb`: that tree had
+main at `c8e80f5b`, before main recorded nav's move in `d6094cef`; merging main fixed it, no audio change.
+
 **Her veto page (same shape as the first; `verdicts`, doc id = line id with `.` → `_`):
 https://claude.ai/artifact/Kkj5VrQPuw8HNDLJUsPtjk** — 49 lines grouped by where she says them; a result line plays
 the Law's take. Empty at publish. **Read its `db` at the round's close.**
