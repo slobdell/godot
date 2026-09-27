@@ -80,6 +80,19 @@ nav-wall-clip: import ## nav (round 11): the planned three-point turn as a befor
 		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/nav-wall-clip/wall_$$arm.mp4 || echo ">> nav-wall-clip: ffmpeg failed for $$arm"; done
 	@grep -hE "NAV_ROTATION_WALL|NAV_ROTATION wall|SCRIPT ERROR" $(BUILD_DIR)/nav-wall-clip/off.log $(BUILD_DIR)/nav-wall-clip/on.log || true
 
+# Round 12 (N3): the back-and-fill as a before/after clip at his pose (Terminus, a War Rig 95 deg off its goal on the north
+# spawn line, the single back-up blocked after 2 m) -> build/nav-rig-clip/rigfill_{off,on}.mp4 + NAV_ROTATION_RIGFILL.
+.PHONY: nav-rig-clip
+nav-rig-clip: import ## nav (round 12): a War Rig's back-and-fill as a before/after clip at his pose (Terminus north spawn line) -> build/nav-rig-clip/rigfill_{off,on}.mp4 (needs a display)
+	rm -rf $(BUILD_DIR)/nav-rig-clip && mkdir -p $(BUILD_DIR)/nav-rig-clip/off $(BUILD_DIR)/nav-rig-clip/on
+	timeout 600 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--arena=terminus --cases=rigfill --every=3 --yaw=200 --nav-off=kturnfill --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/off > $(BUILD_DIR)/nav-rig-clip/off.log 2>&1 || true
+	timeout 600 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--arena=terminus --cases=rigfill --every=3 --yaw=200 --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/on > $(BUILD_DIR)/nav-rig-clip/on.log 2>&1 || true
+	@for arm in off on; do ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$(BUILD_DIR)/nav-rig-clip/$$arm/rigfill_*.png" \
+		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/nav-rig-clip/rigfill_$$arm.mp4 || echo ">> nav-rig-clip: ffmpeg failed for $$arm"; done
+	@grep -hE "NAV_ROTATION_RIGFILL|NAV_ROTATION rigfill|SCRIPT ERROR" $(BUILD_DIR)/nav-rig-clip/off.log $(BUILD_DIR)/nav-rig-clip/on.log || true
+
 # ROT_CASES, not $(or $(ROT_CASES),a,b,c): make's `or` splits on commas, so that default was silently just "pivot".
 ROT_CASES ?= pivot,car,wheel,truck
 
