@@ -280,6 +280,17 @@ to its own address worked (page URL and db time sent 06:08 UTC).
   regenerated and draw as before. Re-running `build_roster.sh` for them would now place their turrets as generated
   relative to the hull at the tank's pivot -- look at the turret-probe numbers before committing such a rebuild.
 
+### Git-ignored files that exist ONLY in this worktree (rescue before removing it)
+
+Checked 2026-09-27 against `~/projects/godot/assets/incoming/meshy/`; everything else in this worktree's
+`assets/incoming/meshy/` was copied FROM main and is already there.
+- `assets/incoming/meshy/burner_r11_b.{glb,json,base_color.png,metallic.png,normal.png,roughness.png}` -- the fire
+  engine's raw 3D (`build_roster.sh` ONLY=burner rebuilds from it; 30 credits of work between it and the bus).
+- `assets/incoming/meshy/bus_r11_i.{glb,json,base_color.png,metallic.png,normal.png,roughness.png}` -- bus I's van 3D
+  (unused; the record of why).
+- `assets/incoming/meshy/bus_r12_mv.concept{,1,2}.png` + `bus_r12_mv.concept.json` -- the rejected turnaround.
+Not needed: `local.mk`, `override.cfg`, `assets/review/review.lock`, `__pycache__/`.
+
 ### Merge notes
 
 - **A lesson for orchestration.md at close (the orchestrator asked for this sentence):** *A review card must say in its
