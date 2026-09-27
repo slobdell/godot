@@ -83,6 +83,8 @@ const UNSTICK_CLEARANCE := 2.0
 const BLOCKED_SECONDS := 2.0
 ## A hull whose centre is within this of mine (flat metres), ahead of me, is what I'm blocked by.
 const BLOCKER_REACH := 8.0
+## Round 12: ...or, for long hulls, their half-lengths plus this gap (`--nav-off=blockreach` restores the flat reach).
+const BLOCKER_GAP_M := 2.0
 ## ...and "ahead" means within this cosine of the direction I'm trying to go (~60°).
 const BLOCKER_AHEAD_COS := 0.5
 ## A route that ends further than this from the goal did not reach it: the goal is inside something or cut off.
@@ -186,7 +188,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
 		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
 
 
@@ -1439,7 +1441,9 @@ func _blocker(goal: Vector3, direct: bool) -> String:
 		toward = -tank.global_basis.z
 	toward = toward.normalized()
 	var best := ""
-	var best_distance := BLOCKER_REACH
+	var best_distance := INF
+	var sized := not _off.has("blockreach")
+	var my_half := float(hull_box(tank.unit_id)[2]) * 0.5 if sized else 0.0
 	if ctl.tanks_root != null:
 		for other in ctl.tanks_root.get_children():
 			var hull := other as Tank
@@ -1448,7 +1452,14 @@ func _blocker(goal: Vector3, direct: bool) -> String:
 			var offset := hull.global_position - here
 			offset.y = 0.0
 			var distance := offset.length()
-			if distance >= best_distance or distance < 0.01:
+			# Round 12: "within reach" is hull-sized for pairs the flat 8 m cannot hold. Two War Rigs nose to tail are
+			# 14 m centre to centre, so a rig pressed against a parked friend's tail found nobody ahead, called it
+			# terrain, never asked, and pushed at full throttle for 80 s (the drive test's rigs, far ring road).
+			# Unchanged for every pair whose half-lengths sum to under BLOCKER_REACH - BLOCKER_GAP_M.
+			var reach := BLOCKER_REACH
+			if sized:
+				reach = maxf(BLOCKER_REACH, my_half + float(hull_box(hull.unit_id)[2]) * 0.5 + BLOCKER_GAP_M)
+			if distance >= reach or distance >= best_distance or distance < 0.01:
 				continue
 			if offset.dot(toward) / distance < BLOCKER_AHEAD_COS:
 				continue

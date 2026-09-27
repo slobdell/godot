@@ -169,6 +169,7 @@ whose carrot chord leaves the mesh while it sits on a route vertex.
 
 | commit | machine | verdict |
 |---|---|---|
+| `203db8d8` (fill + guard fix) | builder0, loaded | `make check exited 2`: 16 of 18, **1731 passed, 0 failed**; **sim-baseline MOVED `01ab39b592cc9837 -> 3db293a32607fdcf`** (CP2, expected: attribution below); determinism `3996fb15c03ca932`; `ai-scenarios-check` 42,2 exactly as on unmodified main (`scenario_perf` 22842 us/tick + `scenario_cover`, the baselined expected failure) |
 | `46bac1a3` (start, unmodified main) | builder0, 3 other checks beside it | `make check exited 2`: 17 of 18 targets, **1726 passed, 0 failed**, sim-baseline `01ab39b592cc9837` unmoved, determinism `b83a374ce2fcde37`; the one red is `ai-scenarios-check` 43,1 -> 42,2: `scenario_perf` read **21620 us/tick** over its CPU budget (load: round 11's nav recorded the same test as load, 22.0 ms at load 12.5) |
 
 ### Requests to other streams / the orchestrator
