@@ -15,19 +15,19 @@ result: green by elimination at 1:01.2
 0:33.7   VETERAN  Matchups are a suggestion. That crew didn't take it.
 0:37.5   ── rust tank destroys green ifv
 0:37.8   ── green scout destroys rust lancer
-0:37.9   CALLER   Both sides lose one! Neither army is backing down!
-0:41.8   CALLER   They're breaking off! They are getting out of there!
-0:45.1   VETERAN  Breaking contact. Hardest thing in the book. You have to turn your back on somebody who's shooting.
-0:53.3   CALLER   They—
+0:37.9   CALLER   An even exchange! And the pace does not slow down one bit!
+0:42.7   CALLER   They're breaking off! They are getting out of there!
+0:46.0   VETERAN  Breaking contact. Hardest thing in the book. You have to turn your back on somebody who's shooting.
 0:53.5   ── green tank destroys rust tank
-0:53.8   CALLER   Good night! That one is going home on a truck!
+0:54.1   VETERAN  You lose one, you tighten up. Watch whether they tighten up.
 0:59.8   ── green ifv destroys rust scout
 0:59.8   ── rust squad Needle wiped out
-0:59.8   CALLER   It's all on the last Wrecker vehicle now!
+0:59.8   CALLER   One left! The Wreckers have one left!
 1:01.2   ── green scout destroys rust tank
 1:01.2   ── rust squad Hammer wiped out
 1:01.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-1:02.7   CALLER   And that's it! That's the last one!
-1:05.4   CALLER   Nobody is taking this one away from the Condemned! They win it!
-1:09.6   VETERAN  They kept their shape. That is the whole thing, every time.
-1:15.3   PA       Tonight's winner is the Condemned. The surviving crews will be processed shortly. Good night.
+1:02.5   CALLER   And another one! The Condemned isn't done!
+1:05.2   CALLER   Unbelievable finish! What a way to end it!
+1:08.2   VETERAN  The crews that won tonight get to come back. That's the prize, really.
+1:14.1   CALLER   That's why we're here, folks!
+1:16.8   PA       The Condemned are tonight's winner. Ticket holders may remain seated during the recovery operation.

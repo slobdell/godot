@@ -33,8 +33,8 @@ result: rust by elimination at 1:24.2
 1:09.0   ── rust squad Spotter wiped out
 1:09.0   ── green scout destroys rust tank
 1:09.8   ── rust tank destroys green scout
-1:10.9   CALLER   Vehicles are going down all over the floor! Three in a matter of seconds!
-1:16.3   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
+1:10.9   CALLER   Good night! That one is going home on a truck!
+1:15.1   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
 1:24.2   ── rust tank destroys green scout
 1:24.2   ── green squad Wasps wiped out
 1:24.2   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)

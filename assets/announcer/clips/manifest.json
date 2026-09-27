@@ -11125,6 +11125,102 @@
    "text": "That one saw it coming and could not get out of the way!",
    "voice": "JR1"
   },
+  "caller.kill.102": {
+   "duration_s": 2.811,
+   "file": "caller/caller.kill.102.ogg",
+   "kind": "line",
+   "request": "caller.kill.102",
+   "request_key": "1355325c1077030d3f2de5cac88b190621a2cf67",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "One goes down, then the other. This is a slugfest",
+   "text": "One goes down, then the other! This is a slugfest!",
+   "voice": "JR1"
+  },
+  "caller.kill.103": {
+   "duration_s": 2.953,
+   "file": "caller/caller.kill.103.ogg",
+   "kind": "line",
+   "request": "caller.kill.103",
+   "request_key": "301c562db1ecd8f57ebd816e2ec5e68f6ae1f497",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, they're exchanging. Both sides just lost one",
+   "text": "Oh, they're exchanging! Both sides just lost one!",
+   "voice": "JR1"
+  },
+  "caller.kill.104": {
+   "duration_s": 3.672,
+   "file": "caller/caller.kill.104.ogg",
+   "kind": "line",
+   "request": "caller.kill.104",
+   "request_key": "b6502449e06e8b4d3dc27f3cf555b11c7dc17ac4",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Toe to toe. They are standing in the pocket and letting it fly",
+   "text": "Toe to toe! They are standing in the pocket and letting it fly!",
+   "voice": "JR1"
+  },
+  "caller.kill.105": {
+   "duration_s": 3.198,
+   "file": "caller/caller.kill.105.ogg",
+   "kind": "line",
+   "request": "caller.kill.105",
+   "request_key": "588c9dc076c23216527402b64b875e4e3aa80568",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Neither side will take a step back and both of them pay for it",
+   "text": "Neither side will take a step back, and both of them pay for it!",
+   "voice": "JR1"
+  },
+  "caller.kill.106": {
+   "duration_s": 3.026,
+   "file": "caller/caller.kill.106.ogg",
+   "kind": "line",
+   "request": "caller.kill.106",
+   "request_key": "568511bcec592fab0289bf0fb73c7d0ee1ed9b20",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Wrecks on both sides. This is an absolute war out there",
+   "text": "Wrecks on both sides! This is an absolute war out there!",
+   "voice": "JR1"
+  },
+  "caller.kill.107": {
+   "duration_s": 3.687,
+   "file": "caller/caller.kill.107.ogg",
+   "kind": "line",
+   "request": "caller.kill.107",
+   "request_key": "80581c9a688b955bf1f283cabf8e1125af8ac7c2",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "An even exchange, and the pace does not slow down one bit",
+   "text": "An even exchange! And the pace does not slow down one bit!",
+   "voice": "JR1"
+  },
+  "caller.kill.108": {
+   "duration_s": 3.139,
+   "file": "caller/caller.kill.108.ogg",
+   "kind": "line",
+   "request": "caller.kill.108",
+   "request_key": "fdcb34c60dc00a76bf43fdde7b3238f73c17f02c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Both armies bleeding, both armies still coming forward",
+   "text": "Both armies bleeding! Both armies still coming forward!",
+   "voice": "JR1"
+  },
+  "caller.kill.109": {
+   "duration_s": 3.002,
+   "file": "caller/caller.kill.109.ogg",
+   "kind": "line",
+   "request": "caller.kill.109",
+   "request_key": "a722fce6dfaa8a076e39e13a92515c67adbb1714",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "It's a firefight, folks. Everybody is getting tagged",
+   "text": "It's a firefight, folks! Everybody is getting tagged!",
+   "voice": "JR1"
+  },
   "caller.kill.10@artillery": {
    "duration_s": 2.38,
    "file": "caller/caller.kill.10@artillery.ogg",
@@ -11195,6 +11291,66 @@
    "stt_ok": true,
    "stt_text": "It's gone. That tank is gone",
    "text": "It's gone! That tank is gone!",
+   "voice": "JR1"
+  },
+  "caller.kill.110": {
+   "duration_s": 2.691,
+   "file": "caller/caller.kill.110.ogg",
+   "kind": "line",
+   "request": "caller.kill.110",
+   "request_key": "ce152a8013c5ede95bb01345a0966145c84913a3",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "One for one. Nobody out there is willing to blink",
+   "text": "One for one! Nobody out there is willing to blink!",
+   "voice": "JR1"
+  },
+  "caller.kill.111": {
+   "duration_s": 2.452,
+   "file": "caller/caller.kill.111.ogg",
+   "kind": "line",
+   "request": "caller.kill.111",
+   "request_key": "6244950693a2e7abbd1a5fd8878cf430e6681de5",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "But they are throwing everything they have at each other",
+   "text": "They are throwing everything they have at each other!",
+   "voice": "JR1"
+  },
+  "caller.kill.112": {
+   "duration_s": 3.612,
+   "file": "caller/caller.kill.112.ogg",
+   "kind": "line",
+   "request": "caller.kill.112",
+   "request_key": "073f4043f4e83caa45869dbca819b838760b585e",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "A big loss on one side, a big loss on the other. What a sequence",
+   "text": "A big loss on one side, a big loss on the other! What a sequence!",
+   "voice": "JR1"
+  },
+  "caller.kill.113": {
+   "duration_s": 3.249,
+   "file": "caller/caller.kill.113.ogg",
+   "kind": "line",
+   "request": "caller.kill.113",
+   "request_key": "a1cb71b71f114eb72dbdc3ceb80b100f9bf1084c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Nobody wants to back up. Two wrecks in a matter of seconds",
+   "text": "Nobody wants to back up! Two wrecks in a matter of seconds!",
+   "voice": "JR1"
+  },
+  "caller.kill.114": {
+   "duration_s": 2.906,
+   "file": "caller/caller.kill.114.ogg",
+   "kind": "line",
+   "request": "caller.kill.114",
+   "request_key": "c4932755f5be92ed482cc19fa281f443ccbfab5a",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Give and take. That's a war of attrition right there",
+   "text": "Give and take! That's a war of attrition right there!",
    "voice": "JR1"
   },
   "caller.kill.11@artillery": {
@@ -27649,6 +27805,78 @@
    "text": "That's the flank I was talking about. Nobody was watching it then either.",
    "voice": "veteran"
   },
+  "color.kill.42": {
+   "duration_s": 3.762,
+   "file": "color/color.kill.42.ogg",
+   "kind": "line",
+   "request": "color.kill.42",
+   "request_key": "cb3792045aa9390b5724921e6bdb22c73595532e",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Neither side wanted that exchange. They both got it anyway",
+   "text": "Neither side wanted that exchange. They both got it anyway.",
+   "voice": "veteran"
+  },
+  "color.kill.43": {
+   "duration_s": 6.081,
+   "file": "color/color.kill.43.ogg",
+   "kind": "line",
+   "request": "color.kill.43",
+   "request_key": "d7bf6706c36379cca6451a6c459ad13c897b9874",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Two crews saw each other at the same time. Nobody blinked, so nobody walks away clean",
+   "text": "Two crews saw each other at the same time. Nobody blinked, so nobody walks away clean.",
+   "voice": "veteran"
+  },
+  "color.kill.44": {
+   "duration_s": 5.859,
+   "file": "color/color.kill.44.ogg",
+   "kind": "line",
+   "request": "color.kill.44",
+   "request_key": "663ca7493acef88a050dfeb90f07c50e0eace5be",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Both of those crews stayed in the open to finish the shot. That's the price of finishing the shot",
+   "text": "Both of those crews stayed in the open to finish the shot. That's the price of finishing the shot.",
+   "voice": "veteran"
+  },
+  "color.kill.45": {
+   "duration_s": 3.454,
+   "file": "color/color.kill.45.ogg",
+   "kind": "line",
+   "request": "color.kill.45",
+   "request_key": "ae6cc625829cc7f3b71377ca5e14d93c9e9212b9",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "You don't win a trade, you survive it, and then you count",
+   "text": "You don't win a trade. You survive it, and then you count.",
+   "voice": "veteran"
+  },
+  "color.kill.46": {
+   "duration_s": 4.437,
+   "file": "color/color.kill.46.ogg",
+   "kind": "line",
+   "request": "color.kill.46",
+   "request_key": "3f5e5c9854c8e71da7870664bb858e3145d10f6d",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Somebody on each side should have backed off one corner. Neither did",
+   "text": "Somebody on each side should have backed off one corner. Neither did.",
+   "voice": "veteran"
+  },
+  "color.kill.47": {
+   "duration_s": 4.465,
+   "file": "color/color.kill.47.ogg",
+   "kind": "line",
+   "request": "color.kill.47",
+   "request_key": "5b3d4e49be3e2f1109778e3b01d32e7fbb0b456f",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "They'll both call that a good trade in the debrief. One of them is wrong",
+   "text": "They'll both call that a good trade in the debrief. One of them is wrong.",
+   "voice": "veteran"
+  },
   "color.lore.01": {
    "duration_s": 5.201,
    "file": "color/color.lore.01.ogg",
@@ -35042,7 +35270,7 @@
    "voice": "corporate2"
   }
  },
- "generated": "2026-09-24",
+ "generated": "2026-09-26",
  "lines": {
   "caller.army.01": {
    "bases": [
@@ -37794,6 +38022,62 @@
     "": "caller.kill.101"
    }
   },
+  "caller.kill.102": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.102"
+   }
+  },
+  "caller.kill.103": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.103"
+   }
+  },
+  "caller.kill.104": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.104"
+   }
+  },
+  "caller.kill.105": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.105"
+   }
+  },
+  "caller.kill.106": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.106"
+   }
+  },
+  "caller.kill.107": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.107"
+   }
+  },
+  "caller.kill.108": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.108"
+   }
+  },
+  "caller.kill.109": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.109"
+   }
+  },
   "caller.kill.11": {
    "bases": [
     "victim_unit"
@@ -37806,6 +38090,41 @@
     "lancer": "caller.kill.11@lancer",
     "scout": "caller.kill.11@scout",
     "tank": "caller.kill.11@tank"
+   }
+  },
+  "caller.kill.110": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.110"
+   }
+  },
+  "caller.kill.111": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.111"
+   }
+  },
+  "caller.kill.112": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.112"
+   }
+  },
+  "caller.kill.113": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.113"
+   }
+  },
+  "caller.kill.114": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.114"
    }
   },
   "caller.kill.12": {
@@ -42225,6 +42544,48 @@
    "speaker": "color",
    "variants": {
     "": "color.kill.41"
+   }
+  },
+  "color.kill.42": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.42"
+   }
+  },
+  "color.kill.43": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.43"
+   }
+  },
+  "color.kill.44": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.44"
+   }
+  },
+  "color.kill.45": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.45"
+   }
+  },
+  "color.kill.46": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.46"
+   }
+  },
+  "color.kill.47": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.47"
    }
   },
   "color.lore.01": {

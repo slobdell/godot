@@ -25,18 +25,18 @@ result: rust by elimination at 1:21.8
 1:06.8   ── green ifv destroys rust lancer
 1:06.8   ── rust squad Lance wiped out
 1:10.8   ── rust tank destroys green ifv
-1:11.2   CALLER   They're trading! They are trading in the middle of the floor!
-1:15.7   CALLER   They are executing! They are executing out there!
-1:18.7   VETERAN  Good—
+1:11.2   CALLER   Oh, they're exchanging! Both sides just lost one!
+1:14.9   CALLER   They are executing! They are executing out there!
+1:17.9   VETERAN  Good—
 1:18.8   ── rust ifv destroys green artillery
 1:18.8   ── green squad Bravo wiped out
-1:19.2   CALLER   It's all on the last Law vehicle now!
+1:18.8   CALLER   It's all on the last Law vehicle now!
+1:21.7   VETERAN  That—
 1:21.8   ── rust ifv destroys green ifv
 1:21.8   ── green squad Alpha wiped out
 1:21.8   ── MATCH OVER: rust wins by elimination (0 green, 2 rust left)
-1:22.1   CALLER   The Syndicate finish it! The last IFV is gone!
-1:25.4   CALLER   And the floor goes quiet. We have a winner.
-1:28.7   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
-1:36.5   CALLER   Listen to this crowd!
-1:38.8   PA       The Syndicate are tonight's winner. Ticket holders may remain seated during the recovery operation.
-1:44.4   PA       Relatives of tonight's crews are asked to wait at the lower concourse, where representatives will meet them with forms, and refreshments will be provided.
+1:22.2   CALLER   Whoa! Look at this!
+1:24.0   CALLER   That's three in a row for the Syndicate! They cannot miss!
+1:27.9   CALLER   And the floor goes quiet. We have a winner.
+1:31.8   PA       That concludes tonight's match. Congratulations to the Syndicate. On behalf of the Syndicate, good night, and please drive safely.
+1:39.6   PA       That concludes tonight's broadcast. Sections will be released in the order they were sold, beginning with the upper tier, over the next hour.

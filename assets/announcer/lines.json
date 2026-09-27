@@ -12416,6 +12416,228 @@
    ],
    "text": "That artillery decides this if nobody gets to it. Somebody usually gets to it.",
    "added": "r10"
+  },
+  {
+   "id": "caller.kill.102",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "One goes down, then the other! This is a slugfest!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.103",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Oh, they're exchanging! Both sides just lost one!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.104",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Toe to toe! They are standing in the pocket and letting it fly!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.105",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Neither side will take a step back, and both of them pay for it!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.106",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Wrecks on both sides! This is an absolute war out there!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.107",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "An even exchange! And the pace does not slow down one bit!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.108",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Both armies bleeding! Both armies still coming forward!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.109",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "It's a firefight, folks! Everybody is getting tagged!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.110",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "One for one! Nobody out there is willing to blink!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.111",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "They are throwing everything they have at each other!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.112",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "A big loss on one side, a big loss on the other! What a sequence!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.113",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Nobody wants to back up! Two wrecks in a matter of seconds!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.114",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Give and take! That's a war of attrition right there!",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.42",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "Neither side wanted that exchange. They both got it anyway.",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.43",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "Two crews saw each other at the same time. Nobody blinked, so nobody walks away clean.",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.44",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "Both of those crews stayed in the open to finish the shot. That's the price of finishing the shot.",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.45",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "You don't win a trade. You survive it, and then you count.",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.46",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "Somebody on each side should have backed off one corner. Neither did.",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.47",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "They'll both call that a good trade in the debrief. One of them is wrong.",
+   "added": "r12"
   }
  ]
 }

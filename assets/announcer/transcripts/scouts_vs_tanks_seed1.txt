@@ -33,8 +33,8 @@ result: rust by elimination at 1:24.2
 1:09.0   ── rust squad Spotter wiped out
 1:09.0   ── green scout destroys rust tank
 1:09.8   ── rust tank destroys green scout
-1:12.5   CALLER   It is chaos down there! I can't even keep up!
-1:16.7   VETERAN  There it is: a near ambush. That's trained, not improvised.
+1:12.5   CALLER   Toe to toe! They are standing in the pocket and letting it fly!
+1:17.6   VETERAN  There it is: a near ambush. That's trained, not improvised.
 1:24.2   ── rust tank destroys green scout
 1:24.2   ── green squad Wasps wiped out
 1:24.2   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
