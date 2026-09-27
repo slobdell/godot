@@ -138,7 +138,7 @@ Nothing blocks F0–F3: the two approvals are recorded (C12.1). F2(c) and any NE
 ## Status
 
 _Updated 2026-09-26 (late evening, laptop clock) by the fleet worker. Numbers: laptop unless marked builder0; commit
-named. The fleet page's `db` was last read **2026-09-27 06:08 UTC**: `decisions/bus_r12_mv` absent (UNCONSUMED); at 04:1x UTC all
+named. The fleet page's `db` was last read **2026-09-27 06:08 UTC**: `decisions/bus_r12_mv` absent -- he answered in chat instead (CLOSED, see below); at 04:1x UTC all
 14 older decisions were identical to the round-12 dump._
 
 ### Where it stands
