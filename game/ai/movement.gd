@@ -189,7 +189,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldshort"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -278,7 +278,7 @@ static func route_arms() -> Dictionary:
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs,
 			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter,
-			"yield_spots_shortened": yield_spots_shortened}
+			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds}
 
 
 static func reset_route_arms() -> void:
@@ -294,6 +294,7 @@ static func reset_route_arms() -> void:
 	yield_swaps = 0
 	yield_swaps_shorter = 0
 	yield_spots_shortened = 0
+	yield_holds = 0
 	kturn_aborted = 0
 	kturn_multi = 0
 	kturn_multi_legs = 0
@@ -1337,6 +1338,12 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		_start_yield(other, short_target, along, short_label, via)
 		_yield_stop_m = _flat_distance(short_best, here)
 		return true
+	# OPT-IN (`--nav-off=yieldhold` turns it ON): nothing fits even shortened, so give way IN PLACE — stop pushing and
+	# let the other through — rather than refuse (a refusal leaves both hulls pushing).
+	if _yield_unfit_last and yield_fit_on() and switched_off("yieldhold"):
+		yield_holds += 1
+		_start_yield(other, here, along, "hold", via)
+		return true
 	return false
 
 
@@ -1431,6 +1438,7 @@ static var yield_spots_unfit := 0
 static var yield_swaps := 0
 static var yield_swaps_shorter := 0
 static var yield_spots_shortened := 0
+static var yield_holds := 0
 ## A sized give-way: where it began, and how far from there it ends (0 = at its spot, round 6's rule).
 var _yield_from := Vector3.ZERO
 var _yield_stop_m := 0.0
