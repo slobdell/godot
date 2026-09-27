@@ -28,7 +28,7 @@ result: green by elimination at 1:01.2
 1:01.2   ── green scout destroys rust tank
 1:01.2   ── rust squad Hammer wiped out
 1:01.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-1:01.3   CALLER   The Condemned finish it! The last tank is gone!
-1:04.6   CALLER   Nobody is taking this one away from the Condemned! They win it!
-1:08.8   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
-1:17.3   PA       Tonight's winner is the Condemned. The surviving crews will be processed shortly. Good night.
+1:01.3   CALLER   Somebody has to answer this! They're taking everything!
+1:04.3   CALLER   Nobody is taking this one away from the Condemned! They win it!
+1:08.5   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
+1:17.0   PA       Tonight's winner is the Condemned. The surviving crews will be processed shortly. Good night.

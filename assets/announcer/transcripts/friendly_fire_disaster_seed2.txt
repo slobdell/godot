@@ -18,7 +18,7 @@ result: green by elimination at 0:33.0
 0:28.8   ── green ifv destroys rust artillery
 0:29.0   ── green scout destroys rust artillery
 0:29.0   ── rust squad Battery wiped out
-0:32.2   CALLER   It—
+0:32.2   CALLER   The—
 0:32.2   ── rust ifv destroyed by its own tank
 0:32.7   VETERAN  Artillery doesn't kill you. It moves you somewhere that does.
 0:33.0   ── green tank destroys rust tank

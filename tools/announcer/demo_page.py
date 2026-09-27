@@ -23,7 +23,7 @@ HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE / "demo_template.html"
 LINES = HERE.parents[1] / "assets" / "announcer" / "lines.json"
 BEATS = HERE.parents[1] / "assets" / "announcer" / "beats.json"
-ROUND = "r10"
+ROUND = "r12"
 KEEP_CUE = ("t", "end", "speaker", "line_id", "text", "act", "moment", "reason", "cut", "full_seconds")
 
 

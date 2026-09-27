@@ -36,21 +36,22 @@ result: green by control at 2:34.0
 1:25.0   ── control point: green
 1:29.7   PA       Crews holding the centre are asked to keep their identification visible on the outside of the vehicle, for the benefit of the scorers.
 1:38.5   ── green ifv destroys rust ifv
-1:38.6   CALLER   That's lights out for that crew!
-1:40.9   VETERAN  See, that's what happens when you lead with the wrong... Well. You saw it.
-1:48.2   CALLER   Contact, and they answer right away! The guns are coming around!
+1:38.6   CALLER   The momentum has completely shifted! What a turnaround!
+1:41.6   VETERAN  See, that's what happens when you lead with the wrong... Well. You saw it.
 1:48.2   ── close call: rust lancer at 6% hull
-1:52.2   VETERAN  Nobody in that element is thinking right now. That's the point of a drill.
+1:48.9   CALLER   Oh, that was too close! Way too close!
+1:52.0   VETERAN  You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
 2:03.0   ── green tank destroys rust lancer
 2:03.0   ── rust squad Dart wiped out
-2:03.0   CALLER   Are you kidding me? The tank takes it out!
-2:06.3   VETERAN  Matchups are a suggestion. That crew—
+2:03.1   CALLER   Another one for the Law! This is a clinic!
+2:06.4   CALLER   The Law have taken out three in a—
 2:09.0   ── rust tank destroys green tank
-2:09.0   CALLER   The Law are down to their last vehicle!
-2:12.5   VETERAN  Near ambush, you go straight at them. Every instinct you have says run. Every instinct you have is wrong.
-2:29.5   CALLER   You always talk about cover. Why does it matter so much in here?
+2:09.0   CALLER   Oh, they lit that one up!
+2:12.0   VETERAN  A near ambush. Every crew says they'll do it. Almost nobody does it under fire.
+2:22.9   CALLER   Who was the toughest driver you ever faced?
+2:25.8   VETERAN  There isn't one. The toughest one is whoever you forgot about.
+2:30.8   CALLER   Can't argue with that.
 2:34.0   ── MATCH OVER: green wins by control (1 green, 1 rust left)
-2:34.0   CALLER   The point was theirs when it counted! What a finish!
-2:37.6   VETERAN  The winning crew kept their spacing all night. Look at the replay. It's all spacing.
-2:44.9   PA       Tonight's match goes to the Law. Settlement of wagers will begin within the hour.
-2:50.5   PA       That concludes tonight's broadcast. Sections will be released in the order they were sold, beginning with the upper tier, over the next hour.
+2:34.0   CALLER   What a war! That one went the distance, and the Law come out on top!
+2:39.2   VETERAN  You don't come back from that. Except they just did.
+2:44.4   PA       The match has been decided in favor of the Law. Highlights will air throughout the week on all district screens.

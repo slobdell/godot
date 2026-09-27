@@ -390,9 +390,11 @@ func test_the_nose_check_catches_a_model_turned_round() -> void:
 	var previous := GameTheme.theme_name
 	GameTheme.use("cyberpunk")
 	var caught: Array = []
-	for unit_id in ["gang_tank", "law_tank", "syn_lancer", "syn_ifv"]:
+	# Round 12 (fleet F1): the burner's fire engine joins them -- forward by geometry (taper +0.26, mass +0.043 on
+	# builder0 at 3b2fb346), and it must be caught if the -x model is ever turned the wrong way in build_roster.sh.
+	for unit_id in ["gang_tank", "law_tank", "syn_lancer", "syn_ifv", "burner"]:
 		var facing: Dictionary = await _facing(unit_id, true)
 		if facing["verdict"] == "backwards":
 			caught.append(unit_id)
 	GameTheme.use(previous)
-	assert_eq(caught.size(), 4, "each of them, drawn tail-first, is called backwards (caught: %s)" % str(caught))
+	assert_eq(caught.size(), 5, "each of them, drawn tail-first, is called backwards (caught: %s)" % str(caught))

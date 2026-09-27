@@ -20,12 +20,12 @@ music-check: audio-deps ## Every track against the contract in assets/music/PROM
 music-stems: ## Split a Suno track into drums/bass/other/vocals with demucs on builder0: IN=~/Downloads/track.mp3 [OUT=folder]
 	tools/audio/split_stems.sh "$(IN)" $(OUT)
 
-music-import: audio-deps ## Import a Suno track: IN=~/Downloads/battle.mp3 STATE=battle BPM=110 [RIGHTS=...]; stems: IN=<folder> STATE=fight LAYERS="Synth=0 Drums=0.35 Bass=0.5 FX=last_stand"
+music-import: audio-deps ## Import a Suno track: IN=~/Downloads/battle.mp3 STATE=battle BPM=110 [RIGHTS=...] [ID=battle_b for a second take]; stems: IN=<folder> STATE=fight LAYERS="Synth=0 Drums=0.35 Bass=0.5 FX=last_stand"
 	@test -n "$(IN)" || { echo "usage: make music-import IN=<file> STATE=<state> BPM=<tempo>"; exit 2; }
 	@test -n "$(STATE)" || { echo "STATE is required (garage, pre_match, lull, skirmish, battle, last_stand, victory, defeat)"; exit 2; }
 	@test -n "$(BPM)" || { echo "BPM is required: the crossfade lands on a bar line"; exit 2; }
 	$(AUDIO_PYTHON) tools/audio/import_music.py "$(IN)" --state $(STATE) --bpm $(BPM) --out $(MUSIC_DIR) \
-		$(if $(RIGHTS),--rights "$(RIGHTS)") $(if $(LAYERS),--layers "$(LAYERS)") $(if $(FROM),--from $(FROM)) $(if $(TO),--to $(TO)) $(if $(STATES),--states $(STATES))
+		$(if $(RIGHTS),--rights "$(RIGHTS)") $(if $(LAYERS),--layers "$(LAYERS)") $(if $(FROM),--from $(FROM)) $(if $(TO),--to $(TO)) $(if $(STATES),--states $(STATES)) $(if $(ID),--id $(ID))
 
 # The sim-baseline match again (mk/core.mk), with the soundtrack following it: the music must change with the match
 # and must not change the match. Same shape as announcer-record-smoke, and the same guarantee.

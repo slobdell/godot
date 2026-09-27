@@ -3208,3 +3208,24 @@ a decision the project has until something in the repo has read it.**
     applies or files every decision before a brief is archived; a brief that puts a page in front of him names, in
     its Status, the last time the `db` was read; and a lead decision recorded only in a page's `db` is listed in
     HANDOFF's *Waiting on the lead* as UNCONSUMED until the repo has it.
+221. **A script that derives its paths from `git rev-parse` and runs `rsync --delete` must refuse when the derivation
+    fails, because with `set -e` off an empty variable is a valid path: the laptop's root.** (round 12, 2026-09-26
+    23:28, the arena worker's detached run.) `tools/remote.sh` was launched from a scratchpad directory that is not
+    a git repository (arena's own account: a `git archive 46bac1a3 | tar -x` copy made to shoot a "before"
+    `perf-scene`, launched with `setsid nohup` from that copy; it killed the rsync itself seven minutes in);
+    `repo_root="$(git rev-parse --show-toplevel)"` printed *"fatal: not a git repository"* and
+    assigned the empty string; `name` became empty; the guard script was "missing" (its path was
+    `/tools/remote_guard.sh`), so the run went UNGUARDED with a warning that read as routine; and the rsync ran
+    `-az --delete` with source `/` and destination `~/tank_squad/` on builder0. It copied the laptop's root
+    filesystem — 2.2 GB of `/home/slobdell`, including `.ssh`, `.claude`, `.credentials`, `.gnupg` — into
+    `~/tank_squad/home/`, and `--delete` emptied all 35 stream folders there except what the `P build/`,
+    `P .godot/` and `P node_modules/` filters protected, mid-run: the main checkout's check read *"Couldn't open
+    directory at path res://arenas"* on two shards and went 1672/23, and every remote result whose run began
+    between 23:28 and its stream's next sync was void. The first symptom (a red check with "file not found" for
+    tracked files under load) looked exactly like lesson 218's flake, and the orchestrator nearly re-ran instead
+    of looking at the remote folder. Rules: the wrapper refuses unless `git rev-parse` succeeded, the name is
+    non-empty and `$repo_root/Makefile` exists (done, in the same commit as this lesson); a detached launcher
+    script `cd`s into the checkout before it does anything; a worker runs `make remote` from its worktree, never
+    from `/tmp`; and a red check is read from the REMOTE FOLDER's state as well as the log before it is called a
+    flake (`ssh builder0 ls ~/tank_squad/<folder>/arenas`). The copied secrets were deleted from builder0 the same
+    night; builder0 is the lead's own machine, but a key that has been copied anywhere is a key to rotate.

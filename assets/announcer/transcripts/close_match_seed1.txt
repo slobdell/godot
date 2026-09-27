@@ -14,8 +14,8 @@ result: rust by elimination at 1:21.8
 0:25.0   ── green ifv destroys rust scout
 0:29.1   VETERAN  You don't take the scout into that. You just don't.
 0:30.0   ── green tank destroys rust ifv
-0:34.3   CALLER   The Law's tank puts it away!
-0:36.6   PA       Quite so, Joseph. For the record, that crew has completed their appearance, and the arena thanks them for it.
+0:34.3   CALLER   Oh, they blew that IFV wide open!
+0:37.0   PA       Quite so, Joseph. For the record, that crew has completed their appearance, and the arena thanks them for it.
 0:47.2   ── rust lancer destroys green tank
 0:47.3   CALLER   The Syndicate machine takes it clean. That was surgical.
 0:48.0   ── friendly fire: green artillery hits its own ifv
@@ -25,18 +25,14 @@ result: rust by elimination at 1:21.8
 1:06.8   ── green ifv destroys rust lancer
 1:06.8   ── rust squad Lance wiped out
 1:10.8   ── rust tank destroys green ifv
-1:11.2   CALLER   They're trading! They are trading in the middle of the floor!
-1:15.7   CALLER   They are executing! They are executing out there!
-1:18.7   VETERAN  Good—
+1:11.2   CALLER   Toe to toe! They are standing in the pocket and letting it fly!
+1:16.3   CALLER   They are executing! They are executing out there!
 1:18.8   ── rust ifv destroys green artillery
 1:18.8   ── green squad Bravo wiped out
-1:19.2   CALLER   It's all on the last Law vehicle now!
+1:19.3   CALLER   It's all on the last Law vehicle now!
 1:21.8   ── rust ifv destroys green ifv
 1:21.8   ── green squad Alpha wiped out
 1:21.8   ── MATCH OVER: rust wins by elimination (0 green, 2 rust left)
-1:22.1   CALLER   The Syndicate finish it! The last IFV is gone!
-1:25.4   CALLER   And the floor goes quiet. We have a winner.
-1:28.7   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
-1:36.5   CALLER   Listen to this crowd!
-1:38.8   PA       The Syndicate are tonight's winner. Ticket holders may remain seated during the recovery operation.
-1:44.4   PA       Relatives of tonight's crews are asked to wait at the lower concourse, where representatives will meet them with forms, and refreshments will be provided.
+1:22.2   CALLER   And another one! The Syndicate isn't done!
+1:24.9   CALLER   It's all over! The Syndicate win it!
+1:28.2   PA       The Syndicate take tonight's match. We thank our participants, and our sponsors, in that order.

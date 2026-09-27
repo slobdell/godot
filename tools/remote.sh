@@ -68,9 +68,24 @@ host=${REMOTE_HOST:-slobdell@builder0}
 root=${REMOTE_ROOT:-tank_squad}
 slots=${REMOTE_SLOTS:-3}
 node_version=v22.14.0
-repo_root="$(git rev-parse --show-toplevel)"
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"
 name="$(basename "$repo_root")"
 remote_dir="$root/$name"
+
+# ---- Refuse to run from anywhere but a checkout (2026-09-26, round 12, lesson 221) ------------------------
+# `set -e` is deliberately off in this script, so when the cwd was not a git repository the substitution above
+# FAILED SILENTLY and left repo_root EMPTY: name became "", remote_dir became "tank_squad/", and the rsync below
+# ran with source "$repo_root/" = "/" -- the laptop's ROOT FILESYSTEM, including ~/.ssh and ~/.claude -- and
+# `--delete` against ~/tank_squad/, which emptied every stream's remote folder mid-run (35 of them) and took the
+# main checkout's check red with "Couldn't open directory res://arenas". The guard script was "missing" for the
+# same reason, so the run went UNGUARDED too. A worker had launched a detached copy of this script from its
+# scratchpad directory. Nothing below is safe unless all three of these hold.
+if [ -z "$repo_root" ] || [ "$repo_root" = "/" ] || [ -z "$name" ] || [ ! -f "$repo_root/Makefile" ] \
+		|| [ ! -f "$repo_root/tools/remote.sh" ]; then
+	echo ">> remote: REFUSED: the working directory is not a Tank Squad checkout (git rev-parse gave '$repo_root')." >&2
+	echo ">>   cd into the checkout or worktree first; nothing was synced and nothing was run." >&2
+	exit 2
+fi
 ssh_opts=(-o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=30)
 
 [ $# -gt 0 ] || { echo "usage: tools/remote.sh <make target> [VAR=value ...] | --status" >&2; exit 2; }
