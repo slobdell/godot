@@ -115,8 +115,9 @@ failed**; the two reds are (1) **sim-baseline MOVED `01ab39b592cc9837 -> 6313a38
 (causes: the steering-guard fix and blockreach; `make nav-sim-arms` on `5b5e3a6a`: HEAD `6313a38d…`, `--nav-off=guardnear`
 `8c10f21d…`, `--nav-off=blockreach` `3db293a3…`, `kturnfill` / `creepbound` / `kturnslide` off: unchanged, all five off
 `01ab39b5…`) and (2) `scenario_perf`'s CPU budget under load (29.8 s; accepted by the orchestrator as load this round).
-It carries main `9afb507f`. Commits after it are documentation and measurement records only (`_agents/`).
-**Merge it alone and record the baseline twice (CP2).**
+It carries main `9afb507f`. **Merged to main alone by the orchestrator; main's check on `db0cc74f` green (1753/0) at the
+recorded `6313a38d7ecd99bb`.** Commits after it: `_agents/` docs, and ONE tooling change, `0852e539` (`mk/nav.mk`:
+`nav-rig-clip`'s camera yaw and per-arm timeout; no game code, no test).
 
 ### Report in one screen
 
@@ -312,6 +313,41 @@ null is outweighed by the machine the numbers are published from.
 `8c10f21dfb0e43c4`; all five off `01ab39b592cc9837` = the recorded baseline. **Two causes, both nav's: the steering
 guard fix and blockreach.** The fill and N6 do not move it.
 
+### The regression net: `nav-fight-maps FIGHT_MAPS=rotation` (builder0, `5b5e3a6a`, seed 3, ONE run per map x tempo)
+
+HEAD against round 11's behaviour (`NAV_FLAGS=--nav-off=kturnfill,guardnear,blockreach,creepbound,kturnslide`), two
+~30-unit armies, 120 s. "Stalled" = the ordered unit-time share in any `blocked_*` state.
+
+| map / player tempo | round 11: lost G/R, stalled, wall-contact ticks | HEAD |
+|---|---|---|
+| yard, scripted | 1/0, 7.5 %, 12850 | 1/1, 7.0 %, 13395 |
+| yard, busy 4 s | 0/0, 9.0 %, 9851 | 1/1, 8.1 %, 11928 |
+| pit, scripted | 0/0, 10.9 %, 9010 | 0/1, 7.8 %, 11343 |
+| pit, busy 4 s | 1/2, 9.9 %, 7738 | 2/0, 7.6 %, 10010 |
+| terminus, scripted | 2/0, 9.9 %, 11043 | 2/1, 6.7 %, 11203 |
+| terminus, busy 4 s | 0/0, 10.5 %, 10409 | 0/1, 9.4 %, 11253 |
+| crossing, scripted | 0/1, 10.0 %, 21596 | 1/1, 9.2 %, 24713 |
+| crossing, busy 4 s | 1/1, 14.0 %, 17989 | 1/2, 10.8 %, 18993 |
+| sumps, scripted | 1/1, 7.9 %, 17423 | 1/0, 10.1 %, 15118 |
+| sumps, busy 4 s | 1/1, 10.8 %, 15598 | 0/0, 8.6 %, 13007 |
+| locks, scripted | 2/1, 8.7 %, 16429 | 1/0, 6.8 %, 16351 |
+| locks, busy 4 s | 0/0, 8.0 %, 13187 | 1/0, 9.1 %, 13499 |
+
+Stalled share falls on 10 of 12 runs; wall-contact ticks rise on 9 of 12 (by ~5-30 %), the same trade the drive test
+shows (the give-way cost). Single runs of chaotic fights: a direction, not an effect size.
+
+### The clips (builder0 renders, LOOKED AT)
+
+- `nav-wall-clip` (round 11's bar, IFV nose-on to a block): unchanged — control first contact 0.73 s, 22 contact ticks;
+  HEAD reverses at once, 0 contacts, one leg.
+- `nav-rig-clip`, first render (yaw 200): **useless** — a city block fills the frame and the rig is behind it the whole
+  clip in both arms (only its label shows). Re-aimed (`RIG_YAW`, default 0, `0852e539`) and re-rendered on builder0:
+  **looked at** — the rig starts across the street at the north spawn line, swings ~90 deg in a handful of short
+  forward/back legs clear of the block and the containers, and drives off down the street toward its goal; it reads as
+  a truck making a tight multi-point turn. Builder0's numbers match the laptop's exactly: control 67 wall-contact ticks
+  / 4 cusps, the fill 0 / 5 (one five-leg plan), both reach the goal. Files: `build/nav-rig-clip/rigfill_{off,on}.mp4`
+  (`make remote T=nav-rig-clip`; not copied into `assets/review/`, which is fleet's path this round).
+
 **The mixed squad's guard-fix contacts, traced on builder0** (the same arm re-run with `--trace`, reproduced exactly):
 not the guard steering along a wall. The artillery reaches `Block_0`'s corner (20, -20) with three friends, yields, is
 shoved, and ends squeezed between a friend and the block face (`press` contacts). The guard changed an earlier leg's
@@ -348,6 +384,7 @@ which `nav-rotation`'s truck case caught. Builder0 numbers owed (r4 carries it i
 
 | commit | machine | verdict |
 |---|---|---|
+| `0852e539` (= `5b5e3a6a` code + a `mk/nav.mk` clip parameter) | builder0 | `ai-scenarios-check` ALONE: **43,1 unchanged**, exit 0 — the red in `5b5e3a6a`'s full check was load (lesson 218) |
 | **`5b5e3a6a`** (HEAD + main `9afb507f` merged at the orchestrator's checkpoint) | builder0, 2 checks at once | `make check exited 2`: 16 of 18, **1748 passed, 0 failed**; sim-baseline **MOVED `01ab39b592cc9837 -> 6313a38d7ecd99bb`** (CP2, declared; the merge did not change it); determinism `550d53790035ddb4`; `ai-scenarios-check` 42,2 = `scenario_perf` 29.8 s under load + the baselined `scenario_cover`. `nav-sim-arms` on this tree reproduces the attribution exactly (below) |
 | `be7e556f` (pre-merge HEAD) | builder0 | `make check exited 2`: 17 of 18, **1735 passed, 0 failed**; the one red: sim-baseline MOVED to `6313a38d7ecd99bb` (CP2); `ai-scenarios-check` passed; determinism `550d53790035ddb4` |
 | `0a19a612` | builder0 | `ai-scenarios-check` ALONE: 43,1 unchanged against its baseline, exit 0 (lesson 218: the full check's red was load) |
