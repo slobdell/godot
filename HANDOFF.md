@@ -41,6 +41,10 @@ these items?"* (verbatim in `game_design.md` *Round 12 becomes a round*).
 **Start order if the laptop is short of memory** (it had ~2 GB free with Chrome open at launch; six sessions are
 ~2.1 GB): fleet, squad, audio first; camera, arena, nav as memory allows. Every Godot run of any size goes to builder0.
 
+**`main-checked` moved to `8a6a88a6` (2026-09-27 00:1x, builder0): `>> remote: make check exited 0`, 1732 passed, 0 failed,
+sim-baseline `01ab39b592cc9837` unmoved, determinism `b83a374ce2fcde37` — the tree with fleet's CP1 and the remote.sh guard;
+the checkpoint went to squad, nav, camera and arena at that hash.** Audio (`785bc293`) merged after it on its own green.
+
 **Green baseline at launch:** `main` at the docs commit that carries this section; the code is `0299e05e`, whose
 check on builder0 read `>> remote: make check exited 0`, 18 targets, **1726 passed, 0 failed**, sim-baseline
 `01ab39b592cc9837`, determinism `b83a374ce2fcde37`. `main-checked` is annotated with that line. The two kept branches
