@@ -2484,6 +2484,12 @@ lands on the crews' or the fans' bodies and homes (a cell reassigned for tomorro
 block, a hearing check, the medical team's rounds, younger fans' district selection); what he kept is the venue's
 corporate deadpan about itself. Worth carrying into the next batch's brief as a boundary to test, not a rule.
 
+**Arena's water page (2026-09-27), answered in chat:** *"ok there's a bunch of review feedback on that URL. Everything looks
+good, can we just get things wrapped up?"* — the wet look is APPROVED as shipped (every step kept); the pits stand; **the
+Locks' open canal stays open** (the orchestrator's 2026-09-24 ruling, now with his "everything looks good" over it; re-ask
+only if he raises it after driving it). His taps on the page did not reach its `decisions` collection (empty when read
+twice; the page's save path is `db.doc("decisions/"+id).set`), so the chat words are the record.
+
 **A correction to the squad brief (squad, 2026-09-26):** the brief said the yard and the Terminus both classify as
 *dense*. `make tactics-terrain` shows only the yard's spawns are dense and the Terminus is *lanes*; and no squad the
 lead fields uses the standard table — a squad uses its units' FACTION table, and the Condemned and Law catch-alls pick a

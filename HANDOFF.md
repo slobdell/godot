@@ -41,8 +41,9 @@ Briefs are archived in `streams/archive/round12/`; the rescued evidence (page du
 
 ### Waiting on the lead (live)
 
-- **Arena's water page, UNCONSUMED:** https://claude.ai/artifact/1PsZA4HnRWGCSgajuyamKN — the wet look per spot, the
-  one-dial steps, the pits, and **the Locks' open-canal question (45 % exposure)**. Read `decisions/*` when he has tapped.
+- **Arena's water page: ANSWERED in chat 2026-09-27** (*"Everything looks good, can we just get things wrapped up?"*):
+  the wet look approved as shipped, the Locks' canal stays open. His taps never reached the page's `decisions`
+  collection (read twice, empty), so the chat words are the record (`game_design.md`).
 - **Column or wedge** (squad's S5; recommended wedge in lanes/open, column in dense) and **the partial selection**
   (recommended leave). Frames in `streams/references/round12/squad/`. Both are round-13 candidates in `roadmap.md`.
 - **Key rotation** after the incident (his call).
