@@ -73,6 +73,19 @@ prompt* is canonical):
 - **Camera: ANSWERED** (2026-09-26 evening: keep the lamp-head fix, don't cut screens, leave masts and signs standing);
   applied at `806dd794` on `stream/camera`, recorded in `game_design.md`.
 
+**⚠ INCIDENT 2026-09-26 23:28 — builder0's `~/tank_squad/` was emptied by a runaway rsync, and the laptop's home
+directory was copied there** (lesson 221). A worker launched a detached copy of `tools/remote.sh` from a scratchpad
+directory; `git rev-parse` failed silently, the sync ran with source `/` and `--delete` against `~/tank_squad/`.
+Consequences and what was done: (1) every stream's remote folder was gutted; each repairs itself on that stream's
+next `make remote` (the sync is a full `--delete` mirror), and every stream was told that any remote result whose run
+began between 23:28 and its next sync is VOID; (2) `main`'s first round-12 check (commit `14c0f62a`) read 1672/23 with
+"file not found" for tracked files — that red is the incident, not the merge; re-run below; (3) the copied root
+filesystem, including `~/tank_squad/home/slobdell/{.ssh,.claude,.credentials,.gnupg,…}` (2.2 GB), was deleted from
+builder0 the same night; **the lead should consider rotating the SSH key in `~/.ssh` and the Meshy/ElevenLabs keys,
+since they were copied to a second machine**; (4) `tools/remote.sh` now REFUSES to run unless the cwd is a checkout
+with a Makefile (the commit that carries this note). The remote folders `squad-legs` and `squad-main` on builder0
+are round-9 leftovers, gutted, harmless.
+
 **For the orchestrator running this round:** merge at the hash each stream names green; CP1 (fleet's boxes) and CP2
 (nav's planner) are the two baseline moves, each merged alone and recorded twice with `make sim-baseline-adopt`; at the
 close, **read every review page's `db`** (arena's, fleet's if it makes one, the Booth Monitor's if it has one) before
