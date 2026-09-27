@@ -72,11 +72,12 @@ func test_every_box_is_its_meshs_proportions_at_that_length() -> void:
 	GameTheme.use(previous)
 
 
-## The two units with no `unit.<id>.hull` art of their own wear the shared dozer, which Tank stretches to their box
+## The units with no `unit.<id>.hull` art of their own wear the shared dozer, which Tank stretches to their box
 ## on every axis, so they take a LENGTH from the rule and keep the width and height the catalog already had.
+## Round 12 (fleet F1): the burner has its own fire engine now, so only the bus is left.
 ## Pinned by name in both directions: a unit that gains art must take its proportions from that art, and a unit that
 ## silently LOSES its art must not keep a box nothing draws.
-func test_only_the_two_known_units_have_no_art_of_their_own() -> void:
+func test_only_the_known_units_have_no_art_of_their_own() -> void:
 	var previous := GameTheme.theme_name
 	GameTheme.use("cyberpunk")
 	var without: Array = []
@@ -85,7 +86,7 @@ func test_only_the_two_known_units_have_no_art_of_their_own() -> void:
 			without.append(unit_id)
 	GameTheme.use(previous)
 	without.sort()
-	assert_eq(without, ["burner", "tank"], "the roster's units without hull art of their own")
+	assert_eq(without, ["tank"], "the roster's units without hull art of their own")
 
 
 ## Rounds fly flat at muzzle height and the ceiling is MUZZLE_CLEARANCE under the SHORTEST hull in the catalog, so
@@ -175,12 +176,13 @@ func test_a_unit_wearing_the_shared_hull_art_is_drawn_at_its_own_box() -> void:
 	assert_true(shared.z > 0.01, "the shared hull art measures as something (%s)" % shared)
 	assert_true(absf(shared.z - float(Units.PROFILES[Units.DEFAULT]["hull_size"][2])) > 0.05,
 			"and it is NOT the DEFAULT unit's catalog length -- which is why assuming they were equal was a mirror")
+	# Round 12 (fleet F1): the bus, since the burner stopped wearing the shared art.
 	for box: Array in [[2.4, 2.4, 6.89], [3.1, 2.0, 11.0]]:
-		Units.tuning["burner.hull_size"] = box
-		var tank := _spawn("burner")
+		Units.tuning["tank.hull_size"] = box
+		var tank := _spawn("tank")
 		await wait_physics_frames(2)
 		var drawn: Vector3 = (tank.get_node("HullVisual") as Node3D).scale * shared
-		Units.tuning.erase("burner.hull_size")
+		Units.tuning.erase("tank.hull_size")
 		for axis in 3:
 			assert_near(drawn[axis], float(box[axis]), 0.02,
 					"a shared-art hull is drawn at its box on axis %d (box %s, drew %s)" % [axis, box, drawn])

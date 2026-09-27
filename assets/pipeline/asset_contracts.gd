@@ -126,13 +126,7 @@ const CANDIDATES := {
 ## `muzzle_height`, with no test tying it to `Units.PROFILES` -- and it had already drifted (the tank 1.6 m tall here
 ## against 2.4 m in the catalog, the IFV 1.6 against 3.0). Inert for gameplay, but every model generated after the
 ## roster resize would have been normalised to the old toy sizes, silently. The catalog is the only source now.
-const UNITS := ["scout", "tank", "ifv", "artillery", "lancer"]
-## The hull the turret scale is measured against (`Tank._apply_hull_size`): the Condemned tank's, read from the
-## catalog like everything else.
-static var STANDARD_HULL: Vector3:
-	get: return hull_size_of("tank")
-
-
+const UNITS := ["scout", "tank", "ifv", "artillery", "lancer", "burner"]
 ## A unit's collision box from the catalog, as a Vector3.
 static func hull_size_of(unit_id: String) -> Vector3:
 	var size: Variant = Units.stat(unit_id, "hull_size")
@@ -189,12 +183,20 @@ static func catalog_unit(unit: String) -> String:
 	return ""
 
 
-## Where a unit's turret node sits in hull space, and its scale (both from Tank._apply_hull_size on stream/rules).
+## Where a unit's turret ART is anchored in hull space, and the scale it is drawn at relative to the hull -- both as
+## the GAME places generated parts: the pivot is the tank's (`Tank.turret_pose`, which honours `turret_mount`) raised
+## by its lift, and the scale is 1, because `dozer_part._fit_to_hull` undoes the turret node's scale and draws every
+## part of a unit at the hull's one fit.
+## Round 12 (fleet): this used to put the pivot at a fixed z 0.2 (ignoring `turret_mount`) and divide the art by
+## min(width, length) against the catalog tank's box -- a scale the wrapper then undid. Harmless while that ratio
+## was ~1; with the bus at 9.70 m it was 0.78 and the fire engine's turntable head floated 1.39 m over its pedestal
+## (`make turret-probe`). tests/test_units_burner.gd holds the placement to what the game draws.
 static func unit_pivot(unit: String) -> Dictionary:
-	var info := unit_info(unit)
-	var size: Vector3 = info["hull_size"]
-	var turret_scale := 1.0 if size.is_equal_approx(STANDARD_HULL) else minf(size.x / STANDARD_HULL.x, size.z / STANDARD_HULL.z)
-	return {"pivot": Vector3(0.0, float(info["muzzle_height"]) - MUZZLE_ABOVE_PIVOT, TURRET_Z), "turret_scale": turret_scale}
+	var unit_id := catalog_unit(unit)
+	var profile: Dictionary = (Units.PROFILES.get(unit_id, {}) as Dictionary).duplicate()
+	profile["muzzle_height"] = unit_info(unit)["muzzle_height"]
+	var pose := Tank.turret_pose(profile)
+	return {"pivot": (pose["pivot"] as Vector3) + Vector3(0.0, float(pose["lift"]), 0.0), "turret_scale": 1.0}
 
 
 ## "unit.scout.hull" → "scout", "unit.gangs.tank.hull" → "gangs.tank" (or "" for any other slot).

@@ -52,9 +52,9 @@ func test_the_bus_is_taller_than_the_truck_but_not_as_tall_as_round_10s() -> voi
 ## Tank.shared_hull_box derives from its width and length at the declared SHARED_HULL_HEIGHTEN. Found from the theme,
 ## not listed: a unit is covered when it has no hull art of its own.
 ## Units that wear the shared dozer only until their own mesh exists, and are held to their own box meanwhile.
-const SHAPE_EXEMPT := {
-	"burner": "the lead, 2026-09-24: \"We will want to create a different unit type for the burner because it looks identical to the tank\" -- its own fire-engine mesh is coming; 2.40 m until then",
-}
+## Round 12 (fleet F1): empty -- the burner, exempt in round 11 "until its own fire-engine mesh exists", has it now
+## (burner_r11_b) and leaves the shared shape by having hull art, which the loop below finds from the theme.
+const SHAPE_EXEMPT := {}
 
 
 func test_every_unit_wearing_the_shared_hull_has_the_one_declared_shape() -> void:
@@ -100,7 +100,7 @@ func test_the_bus_records_the_reference_it_settled_on() -> void:
 func test_the_units_wearing_the_shared_dozer_are_drawn_at_their_box() -> void:
 	var previous := GameTheme.theme_name
 	GameTheme.use("cyberpunk")
-	for unit_id: String in ["tank", "burner"]:
+	for unit_id: String in ["tank"]:  # round 12: the burner has its own art (tests/test_units_burner.gd)
 		var tank: Tank = (load("res://game/tank/tank.tscn") as PackedScene).instantiate()
 		tank.set("unit_id", unit_id)
 		tank.set("simulate", false)

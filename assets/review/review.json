@@ -41,15 +41,16 @@
       "image": "assets/review/images/r11_fleet_bus_fit_options.jpg",
       "est_3d_credits": 0,
       "concept_credits": 0,
-      "status": "waiting",
-      "decided": "",
+      "status": "approved",
+      "decided": "2026-09-26",
       "references": [],
       "buttons": [
         "D: regenerate it as a real coach",
         "No (write A, B or C below)"
       ],
       "cost": "about 9 credits per new concept, 15 for its 3D; nothing moves until you approve one",
-      "notes": "Bus b is built in 3D, and measured it is 1.00 long x 0.54 wide x 0.62 tall: 1.85 times as long as it is wide. That is a van. The bus box, and a real 45 ft coach, are 3.3 times as long as wide. So every way of using it is bad: A (its own shape at 9.70 m) is 5.24 m wide and 6 m tall, wider than the War Rig; B (its own shape at the box's 2.90 m width) is 5.37 m long, shorter than the garbage truck; C (squeezed into today's box) stretches it 1.8x longer against its width -- worse than the 1.63x stretch you called deformed. RECOMMENDED: D -- regenerate bus b's design as a long, narrow coach, then build the one you pick. Honest status: the image generator copies the reference picture's proportions whatever the words say, so four attempts came back van-shaped. Two new ones are below, H and I, each with a tradeoff: H is the right length in the wrong look, I is bus b's look at only part of the length. If neither is right, the bus keeps its current look (the dozer at 4.08 m) and a better method comes next round. The bus keeps wearing today's dozer until then; nothing in the game moves."
+      "notes": "Bus b is built in 3D, and measured it is 1.00 long x 0.54 wide x 0.62 tall: 1.85 times as long as it is wide. That is a van. The bus box, and a real 45 ft coach, are 3.3 times as long as wide. So every way of using it is bad: A (its own shape at 9.70 m) is 5.24 m wide and 6 m tall, wider than the War Rig; B (its own shape at the box's 2.90 m width) is 5.37 m long, shorter than the garbage truck; C (squeezed into today's box) stretches it 1.8x longer against its width -- worse than the 1.63x stretch you called deformed. RECOMMENDED: D -- regenerate bus b's design as a long, narrow coach, then build the one you pick. Honest status: the image generator copies the reference picture's proportions whatever the words say, so four attempts came back van-shaped. Two new ones are below, H and I, each with a tradeoff: H is the right length in the wrong look, I is bus b's look at only part of the length. If neither is right, the bus keeps its current look (the dozer at 4.08 m) and a better method comes next round. The bus keeps wearing today's dozer until then; nothing in the game moves.",
+      "lead_words": "Approved on the review page https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS (tapped Approve, no comment), 2026-09-24 17:27 UTC"
     },
     {
       "id": "q_r11_law_size",
@@ -1807,10 +1808,10 @@
       "est_3d_credits": 15,
       "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
       "notes": "The most fire-engine silhouette there is, and the ladder turret turns for free: the aerial ladder's turntable carries the flamethrower at the ladder's base, ladder folded back over the body. RISK: a ladder truck is really a longer vehicle than a 32 ft pumper, so the model will be squashed a little to fit the box.",
-      "status": "waiting",
-      "lead_words": "",
-      "decided": "",
-      "model_task": "",
+      "status": "approved",
+      "lead_words": "Approved on the review page https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS (tapped Approve, no comment), 2026-09-24 17:27 UTC",
+      "decided": "2026-09-26",
+      "model_task": "01a0e118-15ff-7017-8aec-e15f827ab33d",
       "added": "2026-09-24"
     },
     {
@@ -1831,9 +1832,9 @@
       "est_3d_credits": 15,
       "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
       "notes": "The truest to 'an actual fire engine' and to the unit's scale reference: a modern cab-forward pumper, ladders racked on the side, the deck gun turned flamethrower. RISK: the most ordinary silhouette of the three.",
-      "status": "waiting",
-      "lead_words": "",
-      "decided": "",
+      "status": "rejected",
+      "lead_words": "Rejected on the review page https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS (tapped Reject, no comment), 2026-09-24 17:27 UTC",
+      "decided": "2026-09-26",
       "model_task": "",
       "added": "2026-09-24"
     },
@@ -1855,9 +1856,9 @@
       "est_3d_credits": 15,
       "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
       "notes": "Leans hardest into 'ridiculous': a 1950s open-cab engine with a chrome bell, running boards and whitewall-era curves, armored up and armed. RISK: the old rounded body reads 'antique' before 'armored' and may look fragile beside the bus.",
-      "status": "waiting",
-      "lead_words": "",
-      "decided": "",
+      "status": "rejected",
+      "lead_words": "Rejected on the review page https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS (tapped Reject, no comment), 2026-09-24 17:27 UTC",
+      "decided": "2026-09-26",
       "model_task": "",
       "added": "2026-09-24"
     },
@@ -1973,9 +1974,9 @@
       "est_3d_credits": 15,
       "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
       "notes": "The right length at last (briefed from the in-game bus side-on, which is 9.70 m long). The look drifted: yellow school-bus panels and rear wheels, not bus b's all-black armor on tracks. Approve if the shape matters more to you than the match with bus b.",
-      "status": "waiting",
-      "lead_words": "",
-      "decided": "",
+      "status": "rejected",
+      "lead_words": "Rejected on the review page https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS (tapped Reject, no comment), 2026-09-24 17:26 UTC",
+      "decided": "2026-09-26",
       "model_task": "",
       "added": "2026-09-24"
     },
@@ -1997,10 +1998,10 @@
       "est_3d_credits": 15,
       "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
       "notes": "Exactly bus b's look (two references: the long side-on bus for shape, bus b for look), but only partly lengthened -- the look reference pulled the shape back toward bus b's. Approve if the match with bus b matters more than the full length; it would still need some stretch to fill the box.",
-      "status": "waiting",
-      "lead_words": "",
-      "decided": "",
-      "model_task": "",
+      "status": "approved",
+      "lead_words": "Approved on the review page https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS (tapped Approve, no comment), 2026-09-24 17:26 UTC",
+      "decided": "2026-09-26",
+      "model_task": "01a0e118-1600-74ee-9e10-c7ca3cfd719c",
       "added": "2026-09-24"
     }
   ]

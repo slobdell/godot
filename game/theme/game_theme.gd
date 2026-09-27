@@ -103,6 +103,10 @@ const CYBERPUNK_SLOTS := {
 	"unit.lancer.hull": "res://game/theme/cyberpunk/units/unit_lancer_hull.tscn",
 	"unit.lancer.turret": "res://game/theme/cyberpunk/units/unit_lancer_turret.tscn",
 	"unit.lancer.weapon": "res://game/theme/cyberpunk/units/unit_lancer_weapon.tscn",
+	# Round 12 (fleet F1): the burner's own fire engine (burner_r11_b, approved 2026-09-24), no longer the stretched dozer.
+	"unit.burner.hull": "res://game/theme/cyberpunk/units/unit_burner_hull.tscn",
+	"unit.burner.turret": "res://game/theme/cyberpunk/units/unit_burner_turret.tscn",
+	"unit.burner.weapon": "res://game/theme/cyberpunk/units/unit_burner_weapon.tscn",
 }
 
 ## Vehicle parts receive the team's neon and derive their dark paint from it (cyber_vehicle.gd).
