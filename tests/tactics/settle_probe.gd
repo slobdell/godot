@@ -49,7 +49,12 @@ func _run_probe() -> void:
 	# Round 12: `--transit=off` is the control arm (every crew straight to its final slot, round 10's path).
 	ElementPlan.TRANSIT_ENABLED = _flag("transit", "on") != "off"
 	# Round 12, S3: `--fallin=off` is the fall-in rule's control arm (every crew closes on its station at once).
-	ElementPlan.FALLIN_ENABLED = _flag("fallin", "on") != "off"
+	# `--fallin=lane|wait` picks how a held crew is held (ElementPlan.FALLIN_MODE); `on` is the shipped mode.
+	var fallin := _flag("fallin", "default")
+	if fallin != "default":
+		ElementPlan.FALLIN_ENABLED = fallin != "off"
+		if fallin in ["lane", "wait"]:
+			ElementPlan.FALLIN_MODE = fallin
 	var report := await _run(_flag("arena", ""), _flag("dir", "forward"), _flag("units", "tank:tank:ifv:ifv").split(":"),
 			float(_flag("metres", "20")), int(_flag("seed", "3")), float(_flag("seconds", "45")))
 	print("SETTLE_PROBE " + JSON.stringify(report))
@@ -171,6 +176,20 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			for b in range(a + 1, names.size()):
 				if at.has(names[a]) and at.has(names[b]):
 					closest = minf(closest, _flat(at[names[a]]).distance_to(_flat(at[names[b]])))
+		if trace and now % maxi(SimClock.TICK_RATE / 4, 1) == 0:
+			# S3: the world tracks four times a second, for a top-down plot (tools/tactics/plot_tracks.py).
+			var track := {"t": _s(now), "anchor": null, "crews": {}, "stations": {}}
+			if element.in_transit():
+				var a: Vector3 = element.transit["anchor"]
+				track["anchor"] = [snappedf(a.x, 0.1), snappedf(a.z, 0.1)]
+			for unit_name: String in names:
+				var t := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+				if t != null:
+					track["crews"][unit_name] = [snappedf(t.global_position.x, 0.1), snappedf(t.global_position.z, 0.1)]
+				var st: Variant = element.shape_stations.get(unit_name)
+				if st is Vector3:
+					track["stations"][unit_name] = [snappedf((st as Vector3).x, 0.1), snappedf((st as Vector3).z, 0.1)]
+			print("SETTLE_TRACK " + JSON.stringify(track))
 		if trace and now % SimClock.TICK_RATE == 0:
 			var parts: Array = []
 			for unit_name: String in names:
@@ -186,6 +205,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 					var tangent: Vector3 = TacticsFormation.flat(element.transit.get("heading", Vector3.FORWARD))
 					var rel := _flat(tank.global_position) - _flat(element.transit.get("anchor", Vector3.ZERO))
 					frame = " @%+.0f/%+.0f" % [rel.dot(tangent), rel.dot(Vector3(-tangent.z, 0.0, tangent.x))]
+				frame += " w%.1f,%.1f" % [tank.global_position.x, tank.global_position.z]
 				parts.append("%s%s %s v%.1f p%.2f slot%.1f%s %s%s" % [unit_name.right(1), frame, String(order.get("verb", "-")),
 						tank.estimated_velocity.length(), float(element.paces.get(unit_name, 1.0)),
 						_flat(tank.global_position).distance_to(_flat(slot)) if slot is Vector3 else -1.0,
@@ -231,7 +251,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"ordered_s": _s(ordered), "arrived_s": _s(arrived), "in_slot_s": _s(in_slot), "stopped_s": _s(stopped),
 			"off_slot_m": off, "closest_m": snappedf(closest, 0.01), "goal_moves": element.goal_moves,
 			"bottleneck_s": _s(element.bottleneck_ticks), "transit": ElementPlan.TRANSIT_ENABLED,
-			"fallin": ElementPlan.FALLIN_ENABLED,
+			"fallin": ElementPlan.FALLIN_MODE if ElementPlan.FALLIN_ENABLED else "off",
 			"transit_gap_m": snappedf(gap_sum / gap_n, 0.1) if gap_n > 0 else -1.0,
 			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done)}
 

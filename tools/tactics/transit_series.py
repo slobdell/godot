@@ -32,7 +32,7 @@ def main(path, arm="transit"):
             continue
         row = json.loads(line)
         cell = (row["arena"], row["dir"], row["units"])
-        runs[cell].setdefault(row["seed"], {})["on" if row.get(arm, True) else "off"] = row
+        runs[cell].setdefault(row["seed"], {})["on" if row.get(arm, True) not in (False, "off") else "off"] = row
     print("arms: %s off / on" % arm.upper())
     print("%-9s %-7s %-24s %2s | %-15s | %-15s | %-15s | %-13s | %-13s | %s" % (
         "arena", "dir", "units", "n", "arrived off/on", "stopped off/on", "in_slot off/on", "gap off/on",

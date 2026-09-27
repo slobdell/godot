@@ -451,7 +451,10 @@ func _transit_pace(situation: Dictionary) -> float:
 	var heading: Vector3 = TacticsFormation.flat(transit.get("heading", Vector3.FORWARD))
 	var worst := 0.0
 	for member: Dictionary in situation.get("members", []):
-		var station: Variant = stations.get(String(member["name"]))
+		# S3: a crew the fall-in rule is standing still on purpose is not a laggard to wait for (last update's list).
+		if ElementPlan.FALLIN_MODE == "wait" and falling_in.has(String(member["name"])):
+			continue
+		var station: Variant = shape_stations.get(String(member["name"]), stations.get(String(member["name"])))
 		if not (station is Vector3):
 			continue
 		var behind := ((station as Vector3) - (member["position"] as Vector3)).dot(heading)

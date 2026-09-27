@@ -443,7 +443,14 @@ static func stations_along(plan: Dictionary, transit: Dictionary) -> Dictionary:
 ## across to where the crew already is, at the same distance along the route -- and falls in once that crew is by. Crews
 ## are taken head first, so a crew that is itself held counts only its own lane. Bounded: nobody is held once the move is
 ## FALLIN_MAX_S old (never zero, never forever, lesson 17). FALLIN_ENABLED is the A/B switch.
+##
+## Two ways to hold a crew (FALLIN_MODE): "lane" keeps it driving straight on in its own lane (the first build), "wait"
+## stands it where it is until the crew ahead is by -- a column falling in behind its head. The yard trace is why both
+## exist: the yard spawn has a 20-ft container dead ahead of its centre, the route goes round one side, and a crew
+## held in its own lane on the other side drives into the container. A crew that is waiting on purpose does not hold
+## the anchor back through the lag rule (Element._transit_pace skips `falling_in`).
 static var FALLIN_ENABLED := false
+static var FALLIN_MODE := "lane"
 ## A crew ahead in the shape has "passed" once it is this far ahead along the route (about a hull and a half).
 const FALLIN_CLEAR_M := 6.0
 ## Two sideways paths cross when they come within this far of each other (about a hull's width).
@@ -497,7 +504,10 @@ static func fall_in(stations: Dictionary, members: Array, transit: Dictionary, e
 		var unit := String(crew["name"])
 		if blocked:
 			held.append(unit)
-			adjusted[unit] = (stations[unit] as Vector3) + right * (lat - goal)
+			if FALLIN_MODE == "wait":
+				adjusted[unit] = anchor + tangent * float(crew["along"]) + right * lat  # where it stands
+			else:
+				adjusted[unit] = (stations[unit] as Vector3) + right * (lat - goal)
 			lanes[unit] = [lat - FALLIN_LANE_M, lat + FALLIN_LANE_M]
 		else:
 			lanes[unit] = [low, high]
