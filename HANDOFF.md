@@ -4,7 +4,69 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-26 — **the lead's fine-tuning session (no round): a plain squad move now travels AS a formation, COMMITTED on `main` with his verdict *"this is now really good"*; `main-checked` moves to that commit.** The section directly below is that session. **The next thing he will ask about is the announcer's repeating filler and the music rotation — start at *For the next agent* at the end of that section.** Everything from ROUND 11 down is as it was._
+_Last updated: 2026-09-26, evening — **ROUND 12 IS LAUNCHED: six streams (fleet, arena, camera, squad, nav, audio) in worktrees, briefs in `_agents/streams/`, the split in `workstreams.md` *Round 12*.** The section directly below is the launch record; the fine-tuning session that preceded it follows; everything from ROUND 11 down is as it was._
+
+## 🚀 ROUND 12 IS LAUNCHED (2026-09-26, evening) — read this first
+
+**What he asked for**, shown the pending list: *"ok that all looks good but note that some of it might be stale. I
+believe direct path doesn't scatter of the last fix. Another note: I believe I'd approved a render for a fire truck for
+the condemned and I haven't seen that materialize yet. Can you set up our workspaces to orchestrated workloads for all
+these items?"* (verbatim in `game_design.md` *Round 12 becomes a round*).
+
+**Both of his notes checked out, and the first is the round's finding:**
+
+- **The fire engine was approved and never built.** The fleet review page's `db`
+  (https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS) holds his taps at **2026-09-24 17:27 UTC**: `burner_r11_b`
+  APPROVED (the turntable-ladder fire engine), `bus_r11_i` APPROVED, `q_r11_bus_fit` APPROVED. The round-11 fleet
+  stream last read the page at 16:00 UTC; the round closed that day; `review.json` still says `waiting`; no image-to-3D
+  was ever requested for a fire engine. Dump: `_agents/streams/references/round12/fleet_page_db/`. Lesson 220.
+- **The direct path does not scatter for the selections he makes.** Every spawned squad is on a number key (round 8),
+  and `RtsControls._is_task()` routes a whole-squad or whole-group move down the task path, where the travelling anchor
+  lives. Only a partial or mixed selection (or a shift-queued order) is direct. Roadmap item 10 is now a question for
+  squad, not a defect.
+- **Two stale numbers corrected:** Meshy has **809** credits (the ledger, 2026-09-24), not 88; the laptop disk is at
+  90 % with 12 GB free, not 95 %.
+
+**The six streams** (one line each; the table and the contracts are in `workstreams.md` *Round 12*):
+
+| stream | offset | the job |
+|---|---|---|
+| fleet | 1 | record his taps; `burner_r11_b` → 3D → the burner's own hull/turret/box; `bus_r11_i` → 3D → the bus; the −Z and turret tests; stretch: the rig's muzzle. **CP1** = the boxes, merged alone, orchestrator records |
+| squad | 2 | the AUTO icon shows the leader's pick (carve-out `command_icons.gd`); a G-chosen shape survives `_halt`; the fall-in rule; the partial-selection question; is *dense → column* right here |
+| audio | 3 | the `trade` pool (5 lines) deepened and the director's pick widened; the 23 Suno tracks imported so every state rotates; generation authorised under his round-10 words (C12.7) |
+| camera | 4 | `RtsCamera` and `BlockCutaway` read drawn extents (`AirshipFlight.DRAWN`, read not copied); no collider grows |
+| arena | 5 | water reads wet (Crossing, Locks) as pairs at his pose on a page with `db`; the Locks question re-put; pits stay pits |
+| nav | 6 | why `kturn_none` is 130 against 64 on the rig drive; a multi-leg back-and-fill validated with both ends; 8+ seeds. **CP2** = its baseline move |
+
+**Start order if the laptop is short of memory** (it had ~2 GB free with Chrome open at launch; six sessions are
+~2.1 GB): fleet, squad, audio first; camera, arena, nav as memory allows. Every Godot run of any size goes to builder0.
+
+**Green baseline at launch:** `main` at the docs commit that carries this section; the code is `0299e05e`, whose
+check on builder0 read `>> remote: make check exited 0`, 18 targets, **1726 passed, 0 failed**, sim-baseline
+`01ab39b592cc9837`, determinism `b83a374ce2fcde37`. `main-checked` is annotated with that line. The two kept branches
+from round 11 (`stream/arena` at `84e706eb`, `stream/nav` at `70201d30`) held only docs already folded by `0c7d23a3`
+and were deleted so this round's worktrees start from `main`.
+
+**The kickoff prompt** (the same for every stream; the stream comes from the folder — `orchestration.md` *The kickoff
+prompt* is canonical):
+
+> /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your
+> working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and
+> `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an
+> answer except at lead gates; record questions in your brief's Status and keep working. Read CLAUDE.md, HANDOFF.md,
+> `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`,
+> `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch
+> items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and
+> look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item
+> is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the
+> Status holds your report.
+
+**For the orchestrator running this round:** merge at the hash each stream names green; CP1 (fleet's boxes) and CP2
+(nav's planner) are the two baseline moves, each merged alone and recorded twice with `make sim-baseline-adopt`; at the
+close, **read every review page's `db`** (arena's, fleet's if it makes one, the Booth Monitor's if it has one) before
+archiving — that is the step whose absence lost the fire engine.
+
+_The fine-tuning session's record follows, as written earlier on 2026-09-26:_
 
 ## 2026-09-26: the travelling anchor (the lead fine-tuning in the main checkout, no orchestration)
 

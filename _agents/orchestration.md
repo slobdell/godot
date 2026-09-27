@@ -126,6 +126,9 @@ make remote T=check                                     # or make check; fix int
 4. Archive briefs: `git mv _agents/streams/<s>.md _agents/streams/archive/roundN/`, add an archive banner, fix links
    (code comments reference briefs too: grep the whole repo).
 5. Fold streams' requests into docs: contract additions into workstreams.md, the lead's answers into game_design.md.
+5a. **Read the `db` of every review page the round published** (`read_db` on each URL, dumped under
+   `streams/references/round<N>/`), and apply or file every decision before the brief that made the page is archived
+   (lesson 220: the fire engine he approved sat unread in a page's `db` for two days).
 6. Update `HANDOFF.md` (current state, open questions, follow-ups) and `roadmap.md`. The lead pushes.
 
 ## The worker contract
@@ -3190,3 +3193,18 @@ green on its merge base is the branch's until proven otherwise, and a green that
     bugs. What made this cost nothing: the instruction said *"check it before you act on it"* and named lesson 24.
     **Send a hypothesis labelled as one, with the measurement that would kill it** — and when it dies, say so in the
     merge commit, because the next agent reads that before the code.
+
+**Round 12's one sentence, above its lessons (the orchestrator, 2026-09-26): a decision the lead made on a page is not
+a decision the project has until something in the repo has read it.**
+
+220. **A review page's database is read at the round's CLOSE, by the orchestrator, not only when the worker last
+    looked.** (round 11 → 12, the fire engine.) The fleet page declared `db` — the fix for round 11's arena page,
+    which had no `db` and cost every answer a re-ask — and it worked: the lead tapped `burner_r11_b` APPROVED,
+    `bus_r11_i` APPROVED and `q_r11_bus_fit` APPROVED at 17:27 UTC on 2026-09-24. The worker had read the page at
+    16:00 and moved on; the round closed the same day; `review.json` kept saying `waiting`; nobody ran
+    `art-apply-decisions` again; two days later the lead asked why the fire truck he approved had not materialised.
+    The page did its job and the process had no step that consumed it. Rules: the close-out checklist reads the `db`
+    of every page the round published (`read_db` on each URL, dumped under `streams/references/round<N>/`) and
+    applies or files every decision before a brief is archived; a brief that puts a page in front of him names, in
+    its Status, the last time the `db` was read; and a lead decision recorded only in a page's `db` is listed in
+    HANDOFF's *Waiting on the lead* as UNCONSUMED until the repo has it.

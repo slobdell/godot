@@ -1,11 +1,107 @@
 # Workstreams: the current round
 
-> **Round 11 is CLOSED (2026-09-24); its record is `HANDOFF.md` *ROUND 11*. No round is running.** How rounds work (roles, lifecycle, the worker contract, the kickoff
-> prompt) is in [orchestration.md](orchestration.md): read it first. **Round 11's four streams, ownership and its one
-> checkpoint are in the next section.** Round 10's section follows it, closed; the round-9 section after that
-> (S1–S6, the research-catalogue sequencing) is still in force where it is not superseded; rounds 1–10 are archived in
-> `streams/archive/round1..10/`; the round-6 material further down (contracts N1–N7, ownership, invariants) is still
+> **Round 12 is RUNNING (launched 2026-09-26 evening).** How rounds work (roles, lifecycle, the worker contract, the
+> kickoff prompt) is in [orchestration.md](orchestration.md): read it first. **Round 12's six streams, ownership,
+> checkpoints and contracts are in the next section.** Round 11's section follows it (closed; its record is
+> `HANDOFF.md` *ROUND 11*), then round 10's (closed, kept for its contracts R1–R9); the round-9 section after that
+> (S1–S6, the research-catalogue sequencing) is still in force where it is not superseded; rounds 1–11 are archived in
+> `streams/archive/round1..11/`; the round-6 material further down (contracts N1–N7, ownership, invariants) is still
 > in force where it is not superseded.
+
+## Round 12: the six streams (launched 2026-09-26; briefs in `streams/`)
+
+**Goal: every pending item on the list he approved, after his two corrections.** His words are in
+[`game_design.md`](game_design.md) *Round 12 direction* (both parts: the fine-tuning session and *Round 12 becomes a
+round*). The list is `roadmap.md` *Now* as it stood on 2026-09-26, minus "the direct path still scatters" (a whole-squad
+box-select already takes the task path; a partial one is a question, not a defect) and plus **the fire engine he
+approved on 2026-09-24 that nobody built** (the page's `db` held the tap; the repo never read it).
+
+**The acceptance test for the round is his:** the Condemned field a fire engine that is not a prison bus and a bus that
+is not a van; the water on the Crossing and the Locks reads wet at his pose; the camera never sits inside a floodlight's
+lamp head and an ad screen between him and the fight is cut away; the AUTO icon shows the shape the squad is actually
+forming and a G-chosen wedge is still a wedge when the squad halts; a War Rig squad gets through the Terminus streets
+with fewer refused back-ups; the booth stops saying *"they are trading"* every match and the opening music is not the
+same track every time.
+
+| Stream | Brief | Round 12 | Checkpoint |
+|---|---|---|---|
+| **fleet** | [streams/fleet.md](streams/fleet.md) | **The fire engine he approved and the bus he approved, built** (`burner_r11_b` → 3D → the burner's own hull, turntable turret and box; `bus_r11_i` → 3D → `unit.tank.hull`; his taps recorded first); the burner's `turret_mount` and the −Z test; stretch: the War Rig's muzzle, measured before moved | **CP1** = the burner's (and the bus's, if it moves) `hull_size`, merged alone; the orchestrator records the baseline |
+| **arena** | [streams/arena.md](streams/arena.md) | **Water reads wet** (the Crossing, the Locks, the canal fixture) at his pose, judged as pairs on his page with `db`; the Locks' open-canal question re-put with the exposure number; pits stay dark and read as pits | — (visual; sim baseline pre-registered UNMOVED, navmesh untouched) |
+| **camera** | [streams/camera.md](streams/camera.md) | **The camera asks the drawing, not the collider**: `RtsCamera.roof_over` / `clear_pose` / `sight_blocked` and `BlockCutaway._gather` read a drawn-extent table (floodlight 16 m, ad screen 20.7 m, sign 7.65 m) instead of the collision boxes; measured over the Terminus pose sweep; **no collider grows** | — (visual; baseline UNMOVED) |
+| **squad** | [streams/squad.md](streams/squad.md) | **The formation he sees is the one the squad forms**: the AUTO icon and card show the leader's actual pick (control's `command_icons.gd`, a carve-out); a G-chosen formation survives `_halt`; the fall-in rule for the first seconds of a move from the spawn line; the partial-selection question answered on the default path; whether *dense → column* is the right row for a plain move on the maps he plays | — (a sim move is a finding; declare it) |
+| **nav** | [streams/nav.md](streams/nav.md) | **The War Rig's refused back-ups** (`kturn_none` 130 against 64 `kturns` on the Terminus drive): why the single planned reverse finds nothing in an 18–22 m street, then a multi-leg plan (back-and-fill) validated against the navmesh with both ends, measured on the drive test over 8+ seeds; stretch: the kinematic planner the count is asking for | **CP2** = any change that moves the sim baseline, declared, merged alone; attributed with `make nav-sim-arms` |
+| **audio** | [streams/audio.md](streams/audio.md) | **The trade call and the opening track**: the `trade` pool (5 lines: 3 caller, 2 color) deepened and the director's pick audited with the pool report; the 23 Suno tracks in `assets/incoming/music/` imported and assigned so every state with one bed has several and the per-match rotation is TESTED to rotate; generation authorised under his round-10 words, on the ledger, on the Booth Monitor for his veto | — (runs in isolation; `music-smoke` and `announcer-record-smoke` prove the sim unmoved) |
+
+**Why six, and why these six:** each is one problem with one owner and one set of paths — the vehicles (fleet), the
+water (arena, holding the terrain art this round since no feel stream runs), the camera's occlusion rules (camera),
+the formation the player sees and gets (squad, with one carve-out into control's icon file), the rig's manoeuvre
+planner (nav), the booth and the soundtrack (audio). No stream needs another's output to start. Six sessions are
+~2.1 GB on this 7.6 GB laptop, which had ~2 GB free at launch with Chrome open: **start fleet, squad and audio first;
+camera, arena and nav when memory allows**, and every Godot run of any size goes to builder0.
+
+### Checkpoints (round 12)
+
+- **CP1 — fleet's hull boxes.** A `hull_size` change is a sim-baseline move by construction (spawn grid, collider).
+  fleet lands its art first, then puts every box change in ONE commit and names the green hash; **the orchestrator
+  records the baseline twice in the same session** (`make sim-baseline-adopt`, never a copied file). Nobody publishes
+  a size-dependent number measured across CP1.
+- **CP2 — nav's planner.** A manoeuvre plan that changes when a hull reverses moves the sim baseline (round 11's did:
+  `457b5e83 → 814aed46`). nav declares it in its green report, attributes it with `make nav-sim-arms`, and the
+  orchestrator records it alone. Not before nav's drive-test numbers are in its Status.
+- Everything else pre-registers **UNMOVED** (`01ab39b592cc9837`) and treats a move as a finding.
+
+### Who owns what (round 12) — changes to the tables below
+
+| Path | Owner (round 12) |
+|---|---|
+| `game/theme/factions/**`, `game/theme/roster/**`, `game/theme/prison_dozer/**`, `game/theme/cyberpunk/dozer_part.gd`, `game/theme/gallery/**`, `assets/pipeline/**`, `assets/review/**`, `assets/meshy_ledger.md`, `tools/assets/**`, `mk/assets.mk`, `mk/scale.mk`, the gallery/audit/probe targets in `mk/fx.mk`, `tools/roster_scale.py`, `tests/test_theme_unit_scale.gd`, `tests/test_units_*.gd`; **carve-outs:** the `hull_size` / `muzzle_height` / `turret_mount` / `scale_reference` VALUES of `tank` and `burner` in `game/units/units.gd`, and `Tank._apply_hull_size` / `Tank.turret_pose` in `game/tank/tank.gd` | **fleet** |
+| `arenas/`, `game/arena/`, `game/theme/arena_kit/terrain/**` (the water and pit art, the shaders), `tools/make_arenas.py`, `tools/terrain_maps.py`, `tools/arena_report.py`, `mk/arena.mk`, `tests/arena/`, `tests/test_arena*.gd`, `_agents/arenas.md`; **carve-out:** the lamp-pool and environment inputs the water shader reads from `game/theme/cyberpunk/arena_dressing.gd` / `arena_environment` (ADDITIVE accessors only, listed in merge notes) | **arena** |
+| `game/camera/**`, `tests/test_control_camera_solids.gd`, the camera tests under `tests/`; **read-only:** `AirshipFlight.DRAWN` (`game/theme/arena_kit/airship/airship_flight.gd`) — see C12.2 | **camera** |
+| `game/tactics/**`, `game/ai/{formations,squad,squad_tactics,tank_brain,element_feed,directives}.gd`, `doctrines/`, `mk/tactics.mk`, `tools/tactics/**`, `tests/test_tactics_*.gd`, `tests/ai_scenarios/`, `_agents/{doctrine,tank_brain,squad_ai_design}.md`; **carve-outs into control:** `game/ui/command_icons.gd` (the AUTO glyph and its label) and the formation readout on the selection card in `game/control/` (the consumer of `UnitCommand.AUTO` there) — additive, no other control paths; **and, if the partial-selection answer is "give it the anchor":** the route from `RtsControls.order_selection` into a transient element, one function, listed in merge notes (the orchestrator reviews at merge; no control stream runs) | **squad** |
+| `game/ai/movement.gd`, `pathing.gd`, `steering.gd`, `avoidance.gd`, `wall_contact.gd`, `clothoid.gd`, `game/tank/tank_motion.gd`, `tests/nav/`, `mk/nav.mk`, `_agents/navigation.md`, `_agents/algorithms.md` | **nav** |
+| `game/announcer/`, `assets/announcer/`, `tools/announcer/`, `tests/announcer/`, `mk/announcer.mk`; `game/audio/`, `assets/music/`, `assets/incoming/music/` (ignored), `tools/audio/`, `mk/audio.mk`, `tests/test_audio_*.gd`, `assets/announcer/ledger.md` | **audio** |
+| everything else | orchestrator / shared, as the round-6 table below |
+
+### Contracts (round 12)
+
+- **C12.1 — the fleet page's taps are the lead's decisions.** `burner_r11_b`, `bus_r11_i` and `q_r11_bus_fit` are
+  APPROVED (2026-09-24 17:27 UTC; the dump is in `streams/references/round12/fleet_page_db/`). fleet records them with
+  `make art-apply-decisions` (or `art-decide` per id) as its first commit, so `review.json` and the page agree. Lead
+  gate 1 is satisfied for exactly those two image-to-3D runs; any further concept or 3D goes back to a page with `db`.
+- **C12.2 — one drawn-extent table, read, not copied** (Invariant 0). `AirshipFlight.DRAWN` is held against the kit's
+  meshes by `test_the_flights_table_of_drawn_props_covers_what_the_kit_draws`. camera READS it. If camera needs it
+  somewhere the airship's file is the wrong home for, it moves it in ONE additive commit to a `drawn` field beside
+  `ArenaKit.PROPS` (arena's file; arena reviews at merge) with the test moving with it, and the airship reads the new
+  home. Two tables of drawn heights is the defect this round exists to fix, one layer up.
+- **C12.3 — the collider never grows to fix a picture.** Nothing in `ArenaKit.PROPS` sizes, `Arena.active["obstacles"]`
+  or the `Obstacles` bodies changes for a visual reason. camera and arena pre-register the sim baseline UNMOVED.
+- **C12.4 — the icon shows what the leader picked.** squad publishes the element's chosen formation where the card
+  can read it (`Element.state()["formation"]` already exists; the icon must read THAT for an AUTO selection, and the
+  requested shape for a G-chosen one). control's file changes only in the glyph/label lookup; the palette, hotkeys and
+  the six-verb popup are untouched.
+- **C12.5 — a G-chosen formation is the shape at every phase.** `task.formation`, when present, wins over the table's
+  pick in `_plan_form_up`, `_advance_transit`'s stations AND `_halt`; the table decides only under AUTO. Test: a wedge
+  ordered with G is a wedge at t0, in transit and after arrival, on a drills-on move.
+- **C12.6 — nobody tunes balance.** fleet's sizes reach matchups; nav's planner reaches arrivals. Report the number;
+  do not chase it (*"we'll worry about evening up factions later"*).
+- **C12.7 — generation is authorised, scoped by count, on the ledger.** ElevenLabs for audio under his round-10
+  words (*"let's burn through some ElevenLabs credits"*) and the standing humour direction: text through
+  `make announcer-audit`, every run on `assets/announcer/ledger.md` with the balance before and after, every clip
+  speech-to-text verified, the new lines on the Booth Monitor for his veto. Meshy for fleet: the two approved runs
+  (~15 credits each) plus what the splitter needs; balance 809. Both streams stop and ask at half the remaining
+  balance.
+
+### Standing rules for round 12
+
+- **Play the default path** (`make skirmish` with no flags, the maps in the rotation) before reporting anything
+  shipped; a behaviour behind a flag the default path never passes has not shipped.
+- **Every visual claim is a pair at his pose** (21°, FOV 35, 49 m): before/after, one variable moved, on a page with
+  `db` so his tap is recorded — and **the orchestrator reads that page's `db` at the round's close** (lesson 220).
+- **Every number carries its commit and its machine**; the laptop is ~2.75× slower than builder0; merge at the hash
+  whose check went green; read the wrapper's own `>> remote: make check exited <N>` line.
+- **Baseline moves are declared and merged alone** (CP1, CP2); every other stream pre-registers UNMOVED.
+- **Series compare arms on the same seeds** and print discordant pairs; nav's drive test takes 8+ seeds per arm.
+- **A hypothesis from the orchestrator is labelled as one** (lesson 219), with the measurement that would kill it.
 
 ## Round 11: the four streams (launched 2026-09-24, CLOSED 2026-09-24; briefs in `streams/archive/round11/`)
 

@@ -74,7 +74,27 @@ existed and did not reach him** — the shape to look for first next time. Full 
   over it.
 - **Six lessons** (`orchestration.md` 214-219), two of them the orchestrator's own errors.
 
-## Now: round 12's candidates (the orchestrator's order; each came out of round 11 with its measurement)
+## Round 12 is RUNNING (launched 2026-09-26 evening; six streams, briefs in `_agents/streams/`)
+
+The list below went to the lead on 2026-09-26; he approved it with two corrections (`game_design.md` *Round 12 becomes
+a round*) and asked for workspaces. Where each item went:
+
+| item | stream | note |
+|---|---|---|
+| 1–2 camera asks the collider; the cutaway misses the ad screen | **camera** | |
+| 3 the War Rig's muzzle | **fleet** (stretch) | measured before moved |
+| 4 water reads black | **arena** | plus the Locks question on its page |
+| 5 the bus mesh | **fleet** | `bus_r11_i` and `q_r11_bus_fit` were APPROVED on the page 2026-09-24 17:27 UTC and never recorded |
+| 6 the War Rig's `kturn_none` | **nav** | |
+| 7 the burner as a fire engine | **fleet** | **`burner_r11_b` APPROVED 2026-09-24 17:27 UTC, never read back, never built** — his "I haven't seen that materialize" |
+| 8 the AUTO icon lies | **squad** | carve-out into `command_icons.gd` |
+| 9 a G-chosen formation is overridden at `_halt` | **squad** | |
+| 10 ~~the direct path still scatters~~ | **squad** (a question) | a whole-squad box-select already takes the task path (every spawned squad is on a number key); only a PARTIAL or mixed selection is direct — decide, do not assume |
+| 11 the announcer's filler and the music rotation | **audio** | the `trade` pool is 5 lines; `pre_match` has ONE bed and 23 Suno tracks were never imported |
+| the fall-in rule (from the anchor's write-up) | **squad** | |
+| the Locks' open canal, re-asked after he has driven it | **arena** | on its page, with the 45 % exposure number |
+
+## Now: round 12's candidates as they stood on 2026-09-26 before launch (kept as the record of the order)
 
 **1-2. The drawing and the simulation disagree about where things are** (airship + fleet, `verification.md`) — take them together:
 

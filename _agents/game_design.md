@@ -2408,3 +2408,32 @@ trading in the middle of the floor' quite often — do we not have enough random
 filler? And do we have a wide selection of music tracks? I can't tell if it's playing the same music over and over on
 opening — if there are comparable moods across tracks (which there should be, I did a few variations), it would be good
 if we can randomize the selection."*
+
+### Round 12 becomes a round (2026-09-26, later the same day; the lead asks for workspaces)
+
+Shown the list of pending items (roadmap items 1–11, the fall-in rule, the Locks question, the housekeeping), the lead:
+
+> *"ok that all looks good but note that some of it might be stale. I believe direct path doesn't scatter of the last
+> fix. Another note: I believe I'd approved a render for a fire truck for the condemned and I haven't seen that
+> materialize yet. Can you set up our workspaces to orchestrated workloads for all these items?"*
+
+**What the record shows on both notes (the orchestrator, checked before briefing):**
+
+- **The fire truck: he is right, and the approval was lost between the page and the repo.** The fleet review page
+  (https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS, `db` declared) holds taps at **2026-09-24 17:27 UTC**:
+  **`burner_r11_b` APPROVED** (the turntable-ladder fire engine: the flamethrower rides the ladder's turntable),
+  `burner_r11_a` and `_c` rejected; **`bus_r11_i` APPROVED** (bus b's look at part of a coach's length), `bus_r11_h`
+  rejected; and **`q_r11_bus_fit` APPROVED** (regenerate the van-shaped bus b as a long, narrow coach). The round-11
+  fleet stream's last read of the page was at 16:00 UTC and the round closed the same day, so `assets/review/review.json`
+  still says `waiting` for all six, `make art-apply-decisions` was never run on them, and **no image-to-3D was ever
+  requested for the fire engine.** The taps are dumped verbatim in `_agents/streams/references/round12/fleet_page_db/`.
+  Lesson: a review page's database is read at the round's CLOSE, not only when the worker last looked (orchestration.md
+  lesson 220). Meshy balance is **809 credits** (`assets/meshy_ledger.md`, 2026-09-24), not the 88 an old HANDOFF line
+  still says.
+- **The direct path: he is right for the selections he makes.** Round 8 puts every spawned squad on a number key
+  (`ControlGroups`, `groups.save(number, roster)` at spawn), and `RtsControls._is_task()` routes any move whose
+  selection is a whole element or a whole control group down the TASK path — which is where the travelling anchor
+  lives. So a box-select that happens to be a whole squad travels as a formation. The direct path
+  (`Orders._resolve_group`, one route per vehicle) is reached only by a PARTIAL squad, a mixed selection, or a
+  shift-queued order. Round 12 verifies that on the default path and decides whether a partial selection deserves the
+  anchor too; it is no longer listed as "still scatters".
