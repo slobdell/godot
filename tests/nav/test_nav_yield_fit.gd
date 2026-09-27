@@ -31,12 +31,12 @@ func _controller(game_match: Match, tank: Tank) -> OrderController:
 	return orders
 
 
-func _ask(fit: bool) -> Dictionary:
+func _ask(fit: bool, off: Array = []) -> Dictionary:
 	await ArenaFixture.build(self, "terminus")
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var saved := Movement._off
-	Movement._off = PackedStringArray() if fit else PackedStringArray(["yieldfit"])
+	Movement._off = PackedStringArray(off) if fit else PackedStringArray(["yieldfit"])
 	var rig := game_match.spawn_tank("Rig", 0, Match.Team.GREEN, "gang_tank")
 	var asker := game_match.spawn_tank("Asker", 1, Match.Team.GREEN, "gang_tank")
 	var h := deg_to_rad(RIG_HDG)
@@ -87,6 +87,15 @@ func test_a_rig_accepts_only_a_spot_it_fits_and_gives_way_without_the_wall() -> 
 		assert_true(fixed["run_ok"], "an accepted spot's run keeps the whole outline clear (%s)" % fixed)
 	# The control scrapes >= 10 ticks (the test above); the fix at most a couple (the plant is not the model).
 	assert_true(int(fixed["yield_contacts"]) <= 2, "giving way costs (almost) no wall contact (%s)" % fixed)
+	# Nothing fits here even shortened (the tail is 0.5 m from Block_6, the table's spots all swing an end into a
+	# block), so the rig gives way IN PLACE rather than refuse.
+	assert_true(fixed["accepted"] and fixed["spot"] == "hold", "it gives way in place (%s)" % fixed)
+
+
+func test_the_refusing_build_declines_when_nothing_fits() -> void:
+	var refusing := await _ask(true, ["yieldhold"])
+	assert_true(not refusing["accepted"], "--nav-off=yieldhold: the rig refuses, as round 6 could (%s)" % refusing)
+	assert_eq(int(refusing["yield_contacts"]), 0, "and touches nothing giving way (%s)" % refusing)
 
 
 ## The sweep itself: a spot straight ahead down an open street fits; one behind a tail pressed to a block does not.

@@ -1338,9 +1338,9 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		_start_yield(other, short_target, along, short_label, via)
 		_yield_stop_m = _flat_distance(short_best, here)
 		return true
-	# OPT-IN (`--nav-off=yieldhold` turns it ON): nothing fits even shortened, so give way IN PLACE — stop pushing and
-	# let the other through — rather than refuse (a refusal leaves both hulls pushing).
-	if _yield_unfit_last and yield_fit_on() and switched_off("yieldhold"):
+	# Nothing fits even shortened, so give way IN PLACE — stop pushing and let the other through — rather than refuse
+	# (a refusal leaves both hulls pushing: the refusing build's rigs lost 10 arrivals of 128). `--nav-off=yieldhold`.
+	if _yield_unfit_last and yield_fit_on() and not switched_off("yieldhold"):
 		yield_holds += 1
 		_start_yield(other, here, along, "hold", via)
 		return true
@@ -1428,11 +1428,13 @@ func _yield_diagnose(other: String, point: Vector3, spot: String, via: String) -
 # the hull gives way as far along the best candidate's run as it DOES fit (at least YIELD_SHORT_MIN_M; `short:` in the
 # log). Refusing outright was built first and measured worse (builder0, `26f4ac33`, 8 seeds: rigs' yield reverse
 # contacts 661 -> 22 but arrivals 115 -> 105 and press/unstick 83 -> 313 — a rig that will not move keeps the jam, and
-# the scrapes came back as kturn and press contacts); `--nav-off=yieldshort` is that build. When nothing fits even
-# shortened, `_begin_yield` fails as it always could: an asked hull refuses (the asker gives way itself, round 6), and
-# a hull that had to give way asks the other instead (`yield_swaps`: the short car backs up for the truck).
+# the scrapes came back as kturn and press contacts); `--nav-off=yieldshort,yieldhold` is that build. When nothing
+# fits even shortened, the hull **gives way in place** (`hold`: it stops pushing and holds, round 6's hold and release)
+# — a refusal leaves both hulls pushing; `--nav-off=yieldhold` refuses instead, as round 6 always could: an asked hull
+# refuses (the asker gives way itself), and a hull that had to give way asks the other (`yield_swaps`: the short car
+# backs up for the truck).
 # `--nav-off=yieldfit` restores round 6's choice. Arm counters: `yield_spots_unfit`, `yield_spots_shortened`,
-# `yield_swaps`, `yield_swaps_shorter`.
+# `yield_holds`, `yield_swaps`, `yield_swaps_shorter`. Measured: `_agents/streams/nav.md` (round 13) Status.
 
 static var yield_spots_unfit := 0
 static var yield_swaps := 0
