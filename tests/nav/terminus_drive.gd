@@ -121,6 +121,8 @@ func _run() -> void:
 		await physics_frame
 	WallContact.reset()
 	Movement.reset_route_arms()
+	# Round 12 (N1): log what the planned reverse's search saw at every refusal (measurement only).
+	Movement.kturn_log = OS.get_cmdline_user_args().has("--kturn-log")
 	print("NAV_DRIVE_ARM press=%s inflate=%s nosestop=%s oriented=%s off=%s" % [Movement.press_on(), Movement.inflate_on(),
 			Movement.nose_stop_on(), Avoidance.oriented_on(), Movement._off])
 	print("NAV_DRIVE_CONTROL arena %s squad %s units %d (%s)" % [Arena.active.get("name", "?"), squad_kind, units.size(),
@@ -234,6 +236,8 @@ func _report() -> void:
 			"creep_flips_at_wall": creep_flips_at_wall,
 			"episodes": episodes.slice(0, 40), "pass": arrived_all and mixed_ok and int(report["observed_unit_ticks"]) > 0}
 	print("NAV_DRIVE %s" % JSON.stringify(out))
+	for row: Dictionary in Movement.kturn_none_log:
+		print("NAV_KTURN_NONE %s" % JSON.stringify(row))
 	quit(0)
 
 

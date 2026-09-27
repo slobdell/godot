@@ -155,6 +155,24 @@ nav-terminus-drive: import ## nav (round 10): the Terminus drive test -- a mixed
 		grep -E "^NAV_DRIVE " $$f | cut -c1-600 || echo ">> nav-terminus-drive: $$f has NO NAV_DRIVE line (the run did not finish)"; done
 	@! grep -l "control FAILED\|SCRIPT ERROR" $(BUILD_DIR)/nav-drive/*.log || { echo ">> nav-terminus-drive: a run REFUSED or errored: no numbers from it"; exit 1; }
 
+# Round 12 (nav N1): why the planned reverse refuses. The drive with --kturn-log (every `kturn_none` logs what the
+# search saw), then the refusals bucketed (pressed / no_room / cap / short_room) with what WOULD have cleared each.
+.PHONY: nav-kturn-buckets
+nav-kturn-buckets: import ## nav (round 12): the Terminus drive with every refused planned reverse logged, bucketed by why (DRIVE_SQUADS, DRIVE_SEEDS, NAV_FLAGS as nav-terminus-drive) -> NAV_KTURN_BUCKETS table
+	@$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$(NAV_FLAGS) --kturn-log" > $(BUILD_DIR)/nav-kturn-drive.log 2>&1 || { tail -20 $(BUILD_DIR)/nav-kturn-drive.log; exit 1; }
+	@$(PYTHON) tests/nav/kturn_buckets.py $(BUILD_DIR)/nav-drive/*.log
+
+# Round 12 (nav N3): the drive in both arms of ONE build (`--nav-off=$(DRIVE_AB_OFF)` is the control), same seeds,
+# the named numbers side by side with the discordant seeds -> build/nav-drive-ab/{off,on}/*.log.
+DRIVE_AB_OFF ?= kturnfill
+.PHONY: nav-drive-ab
+nav-drive-ab: import ## nav (round 12): nav-terminus-drive in both arms (control --nav-off=$(DRIVE_AB_OFF)) over DRIVE_SEEDS, the named numbers per squad and arm + discordant seeds
+	@rm -rf $(BUILD_DIR)/nav-drive-ab && mkdir -p $(BUILD_DIR)/nav-drive-ab
+	@for arm in off on; do flags="$(NAV_FLAGS)"; [ $$arm = off ] && flags="$$flags --nav-off=$(DRIVE_AB_OFF)"; \
+		$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$$flags" > $(BUILD_DIR)/nav-drive-ab/$$arm.out 2>&1 || { tail -20 $(BUILD_DIR)/nav-drive-ab/$$arm.out; exit 1; }; \
+		mv $(BUILD_DIR)/nav-drive $(BUILD_DIR)/nav-drive-ab/$$arm; done
+	@$(PYTHON) tests/nav/drive_table.py off=$(BUILD_DIR)/nav-drive-ab/off on=$(BUILD_DIR)/nav-drive-ab/on
+
 # Round 10: which nav arm moves the sim baseline. The sim-baseline match (SIM_HASH_READ's exact command) read once per
 # --nav-off arm in SIM_ARMS (a comma list per arm; "none" = the default path), so a pre-registered MOVED names its cause.
 SIM_ARMS ?= none notready press,inflate,nosestop
