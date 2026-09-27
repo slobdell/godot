@@ -67,7 +67,7 @@ _Worker: nav, round 13. Started 2026-09-27 from `8f96a43c`. Every number names i
 |---|---|---|
 | 0 | green start: `make remote T=check` on `8f96a43c` | **green**: builder0, `make check exited 0`, 18 targets, 1773 passed / 0 failed, sim-baseline `6313a38d7ecd99bb` unmoved, determinism `550d53790035ddb4` |
 | R1 | instrument the give-way; buckets before design | **done** `5866e387` (below); round-11 arm's buckets running |
-| R2 | yield spots sized by hull (`--nav-off=yieldfit`) | next |
+| R2 | yield spots sized by hull (`--nav-off=yieldfit`) | **built** `26f4ac33`, `tests/nav/test_nav_yield_fit.gd` (laptop 3/3; control reproduces the drive's 72 reverse ticks exactly); measuring |
 | R3 | drive 8 seeds x 2, fight-maps rotation both arms, clips, `nav-sim-arms`, CP1 | — |
 | R4 | whatever R1 names that R2 does not cover | — |
 
@@ -109,4 +109,18 @@ two containers 286. Begun via: asked 44 (359 reverse), self 37 (302) — both ro
 
 **Design read:** validating the run to the spot with the outline sweep addresses ~89 % of the yield share on both
 squads; the other 44 % + 38 % of the rigs' reverse contacts (`route` 559, `kturn` 226) are not right-of-way (R4).
+
+### R2 pre-registration (written 2026-09-27, BEFORE any drive result with `yieldfit` on)
+
+Arms of ONE build (`26f4ac33`), builder0, `nav-drive-arms` 8 seeds x 2 squads, control `--nav-off=yieldfit`:
+- **Rigs' reverse-gear contact ticks fall by most of round 12's +542** (946 -> 1488): at HEAD <= ~1217 (at least half
+  of the rise gone); the `yield/reverse` row (661 at `5866e387`) falls by more than half.
+- **No regression:** rigs' arrivals not below the control's by more than 3 of 128; refusals (`kturn_none`) not up by
+  more than 10; press/unstick-driven contacts (the stall-escape regime) not up by more than 25 %.
+- **Mixed is the control of the squad:** arrivals within 3 of 192, total contacts not up; its yield reverse contacts
+  (93) may fall (the rule is general by hull; its tank/artillery pairs are in the refused buckets).
+- **`nav-fight-maps` rotation, both arms, seed 3:** the `blocked_*` stall share not up on more than 6 of 12 runs
+  (a refused give-way is a hull that holds: this is where a wedge would show).
+- **Sim baseline:** pre-registered **MOVED** (the yield protocol runs in the baseline match); attributed with
+  `nav-sim-arms` `SIM_ARMS="none yieldfit"`: the `yieldfit`-off arm must reproduce `6313a38d7ecd99bb`.
 
