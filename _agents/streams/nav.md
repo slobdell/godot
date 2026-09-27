@@ -103,7 +103,7 @@ machine. **Merge point: see "Green hash" at the end** (none yet)._
 
 | # | item | state |
 |---|---|---|
-| 0 | green start: `make remote T=check` on `46bac1a3` | queued on builder0 (three other streams' checks held every slot at launch) |
+| 0 | green start: `make remote T=check` on `46bac1a3` | **exited 2 on unmodified main**: 1726 passed / 0 failed, baseline + determinism unmoved, ai-scenarios `scenario_perf` over budget under load (below) |
 | N1 | log every `kturn_none` (`--kturn-log`), bucket it | **done on the laptop** (below); builder0 re-run owed |
 | N2 | the back-and-fill for the bucket the data names | built, `tests/nav/test_nav_back_and_fill.gd` (mutation-checked); measuring |
 | N3 | drive test both arms, 8 seeds, builder0; `nav-wall-clip` looked at | `make nav-drive-ab` + `tests/nav/drive_table.py` built for it |
@@ -153,6 +153,30 @@ Candidates and their signatures (rigs unless stated; laptop numbers are the base
   the 36 near-point refusals move into the other buckets or vanish; no effect on the mixed squad (2 rows).
 - **(c) a kinematic planner** (N5): the 55 with no manoeuvre of this family. Written up, not built, unless (a)+(b)
   leave the rigs' arrivals short.
+
+### Found on the way: the steering guard undid round 11's "never under the hull" rule (`203db8d8`)
+
+Tracing the fill arm's one new miss (rigs seed 3, plaza leg, a rig 79 m from its goal at 90 s, laptop): after a
+back-and-fill it sat at speed 0 in phase `driving` for 80 s, steering at a route vertex **0.47 m** from its centre
+(2371 ticks). `_guard_steer` (round 7: the last word on a steering point) falls back to `_path[_path_index]` when the
+carrot's chord leaves the mesh — and round 11's `_corner_beyond` guard runs BEFORE it, so the vertex under the hull came
+back. Fixed with round 11's own rule inside the guard; `--nav-off=guardnear` restores the old pick (the attribution
+arm, since it can move the sim baseline). `tests/nav/test_nav_guard_corner.gd` at that rig's pose: the control
+reproduces the vertex under the hull, the fix steers at the next corner up the street. Not a rig-only bug: any hull
+whose carrot chord leaves the mesh while it sits on a route vertex.
+
+### Checks (read from the wrapper's own line)
+
+| commit | machine | verdict |
+|---|---|---|
+| `46bac1a3` (start, unmodified main) | builder0, 3 other checks beside it | `make check exited 2`: 17 of 18 targets, **1726 passed, 0 failed**, sim-baseline `01ab39b592cc9837` unmoved, determinism `b83a374ce2fcde37`; the one red is `ai-scenarios-check` 43,1 -> 42,2: `scenario_perf` read **21620 us/tick** over its CPU budget (load: round 11's nav recorded the same test as load, 22.0 ms at load 12.5) |
+
+### Requests to other streams / the orchestrator
+
+- **`scenario_perf` is red on `main` under round-12 load** (above), not by any code change: every stream's check can
+  trip on it. It likely wants `verification.md`'s rule 3 (refuse, not judge, when the reference workload says the box
+  is loaded). The orchestrator's session refused a direct message (2026-09-26 22:10, as in round 11), so this is its
+  only copy. Until told otherwise nav reads "17 of 18, the only red `scenario_perf`'s budget" as green and names it.
 
 ### Decisions (one line each)
 

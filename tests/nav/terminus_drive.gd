@@ -163,6 +163,12 @@ func _sample() -> void:
 						leg_index, elapsed, tank.global_position.x, tank.global_position.z, rad_to_deg(atan2(nose.x, -nose.z)),
 						tank.speed(), reading.get("phase", "?"), reading.get("wall_contact_driver", ""), reading.get("steer_to", "?"),
 						reading.get("wall_contact", false), reading.get("in_kturn", "?"), reading.get("stalled_ticks", "?")])
+				for i in tank.get_slide_collision_count():
+					var hit := tank.get_slide_collision(i)
+					print("NAV_DRIVE_TRACE_HIT %s n=%s at=%s" % [(hit.get_collider() as Node).name if hit.get_collider() is Node else "?",
+							hit.get_normal().snappedf(0.01), hit.get_position().snappedf(0.1)])
+				print("NAV_DRIVE_TRACE_CMD throttle=%.2f turn=%.2f vel=%s simulate=%s" % [tank.command.throttle, tank.command.turn,
+						tank.velocity.snappedf(0.01), tank.simulate])
 	for tank in units:
 		var motion: Variant = tank.get("_motion")
 		var creep := int((motion as Dictionary).get("creep_dir", 0)) if motion is Dictionary else 0
@@ -225,6 +231,8 @@ func _close_leg(elapsed: float) -> void:
 					# What the crew was ACTUALLY driving to (the controller's move order, which Movement's goal_gap_m
 					# measures), beside Orders' published goal above and the verb Orders holds for it (squad's ask).
 					"move_order": _move_order_of(tank), "orders_verb": String((orders.call("current", key) as Dictionary).get("verb", "")),
+					# Round 12: what the hull is pressed against at the leg's end (a friend's name, or a prop), from its slide.
+					"touching": _touching(tank),
 					"at": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)]})
 	var contacts := {}
 	for cause: String in WallContact.by_cause:
@@ -269,6 +277,16 @@ func _move_order_of(tank: Tank) -> Variant:
 		return null
 	var order: Dictionary = brain.move_order
 	return {"type": order.get("type"), "x": snappedf(float(order.get("x", 0.0)), 0.1), "z": snappedf(float(order.get("z", 0.0)), 0.1)}
+
+
+func _touching(tank: Tank) -> Array:
+	var names: Array = []
+	for i in tank.get_slide_collision_count():
+		var collider := tank.get_slide_collision(i).get_collider()
+		var name := String((collider as Node).name) if collider is Node else "?"
+		if absf(tank.get_slide_collision(i).get_normal().y) < 0.7 and not names.has(name):
+			names.append(name)
+	return names
 
 
 func _flat(a: Vector3, b: Vector3) -> float:
