@@ -278,6 +278,8 @@ func _report() -> void:
 		print("NAV_KTURN_FILL %s" % JSON.stringify(row))
 	for row: Dictionary in Movement.yield_log_rows:
 		print("NAV_YIELD %s" % JSON.stringify(row))
+	for row: Dictionary in Movement.yield_unfit_log:
+		print("NAV_YIELD_UNFIT %s" % JSON.stringify(row))
 	quit(0)
 
 

@@ -287,6 +287,7 @@ static func reset_route_arms() -> void:
 	kturn_none_log.clear()
 	kturn_fill_log.clear()
 	yield_log_rows.clear()
+	yield_unfit_log.clear()
 	yield_spots_unfit = 0
 	yields_started = 0
 	asks_refused = 0
@@ -1201,7 +1202,8 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 	var here := tank.global_position
 	_yield_left -= ctl._step
 	var asker := ctl.tanks_root.get_node_or_null(NodePath(yield_to)) as Tank if ctl.tanks_root != null else null
-	var there := _flat_distance(here, _yield_point) <= YIELD_REACHED
+	var there := _flat_distance(here, _yield_point) <= YIELD_REACHED \
+			or (_yield_stop_m > 0.0 and _flat_distance(here, _yield_from) >= _yield_stop_m)
 	if there:
 		_yield_held += ctl._step
 	var passed := asker == null or not asker.is_alive() or _flat_distance(here, asker.global_position) > YIELD_CLEAR \
@@ -1269,6 +1271,7 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 	var across := Vector2(-along.y, along.x)
 	_yield_unfit_last = false
 	var short_best := Vector3.INF
+	var short_target := Vector3.INF
 	var short_label := ""
 	# Step off to the side of its line I'm already on (ties: its left), so I never cut across its bow.
 	var side := 1.0 if across.dot(Vector2(here.x - from.x, here.z - from.z)) >= 0.0 else -1.0
@@ -1293,10 +1296,11 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 				continue
 			if not _yield_fits(point):
 				var short := _yield_shorten(point) if yield_short_on() else Vector3.INF
-				if short != Vector3.INF and _flat_distance(short, here) > _flat_distance(short_best, here) \
+				if short != Vector3.INF and (short_best == Vector3.INF or _flat_distance(short, here) > _flat_distance(short_best, here)) \
 						and (spot.y == 0.0 or _distance_to_ray(short, from, along) >= line_clear) \
 						and _flat_distance(short, from) >= _flat_distance(here, from) and _free_spot(short, String(tank.name), other):
 					short_best = short
+					short_target = point
 					short_label = "short:spot(%d,%d)" % [int(spot.x), int(spot.y * flip)]
 				continue
 			_start_yield(other, point, along, "spot(%d,%d)" % [int(spot.x), int(spot.y * flip)], via)
@@ -1304,7 +1308,8 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 	if _off.has("backup"):
 		if short_best != Vector3.INF:
 			yield_spots_shortened += 1
-			_start_yield(other, short_best, along, short_label, via)
+			_start_yield(other, short_target, along, short_label, via)
+			_yield_stop_m = _flat_distance(short_best, here)
 			return true
 		return false
 	# Last resort (round 7, nav-fight: two cars nose to nose for 30 s with no legal spot): back straight up along my own
@@ -1320,15 +1325,17 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 			_start_yield(other, point, along, "back(%d)" % int(distance), via)
 			return true
 		var short := _yield_shorten(point) if yield_short_on() else Vector3.INF
-		if short != Vector3.INF and _flat_distance(short, here) > _flat_distance(short_best, here) \
+		if short != Vector3.INF and (short_best == Vector3.INF or _flat_distance(short, here) > _flat_distance(short_best, here)) \
 				and _flat_distance(short, from) >= _flat_distance(here, from) and _free_spot(short, String(tank.name), other):
 			short_best = short
+			short_target = point
 			short_label = "short:back(%d)" % int(distance)
 	# R2: nothing fits whole, so give way as far as the hull DOES fit along the best of them (the displacement a
 	# scraping give-way used to buy, without the scrape).
 	if short_best != Vector3.INF:
 		yield_spots_shortened += 1
-		_start_yield(other, short_best, along, short_label, via)
+		_start_yield(other, short_target, along, short_label, via)
+		_yield_stop_m = _flat_distance(short_best, here)
 		return true
 	return false
 
@@ -1339,6 +1346,8 @@ func _start_yield(other: String, point: Vector3, along: Vector2, spot := "", via
 		yield_log_rows.append(_yield_rec)
 	yield_to = other
 	_yield_point = point
+	_yield_from = ctl.tank.global_position
+	_yield_stop_m = 0.0
 	_yield_dir = along
 	_yield_left = int(YIELD_MAX_SECONDS * SimClock.TICK_RATE)
 	_yield_held = 0
@@ -1422,6 +1431,11 @@ static var yield_spots_unfit := 0
 static var yield_swaps := 0
 static var yield_swaps_shorter := 0
 static var yield_spots_shortened := 0
+## A sized give-way: where it began, and how far from there it ends (0 = at its spot, round 6's rule).
+var _yield_from := Vector3.ZERO
+var _yield_stop_m := 0.0
+## Measurement only (`--yield-log`): every candidate refused for fit, with how far its run stayed clear.
+static var yield_unfit_log: Array = []
 ## Did the last spot search refuse at least one candidate for fit (so a swap is about room, not a refused asker)?
 var _yield_unfit_last := false
 ## The run is stepped in this much travel (metres); a pivoting tracked hull in this much yaw (degrees).
@@ -1448,8 +1462,14 @@ func _yield_fits(point: Vector3) -> bool:
 	var tank := ctl.tank
 	if not (Pathing.enabled and Pathing.is_ready(tank)):
 		return true
-	if _yield_run_ok(tank.get_world_3d().navigation_map, point):
+	var poses: Array = []
+	if _yield_run_ok(tank.get_world_3d().navigation_map, point, poses):
 		return true
+	if yield_log:
+		yield_unfit_log.append({"unit": String(tank.name), "frame": Engine.get_physics_frames(),
+				"clear_m": snappedf(_flat_distance(poses[-1], tank.global_position), 0.1) if not poses.is_empty() else 0.0,
+				"steps": poses.size(), "behind": _straight_behind(point),
+				"to_m": snappedf(_flat_distance(point, tank.global_position), 0.1)})
 	yield_spots_unfit += 1
 	_yield_unfit_last = true
 	return false
@@ -1496,31 +1516,28 @@ func _yield_run_ok(map: RID, point: Vector3, poses: Array = []) -> bool:
 	return false
 
 
-## R2's sizing: the run to `point` does not fit, so how far along it DOES the hull fit? The furthest clear pose of
-## the run at least YIELD_SHORT_MIN_M from here whose own run fits (the steering to a nearer point curves differently,
-## so it is re-swept), trying at most YIELD_SHORT_TRIES from the far end; Vector3.INF when none.
+## R2's sizing: the run to `point` does not fit whole, so how far along it DOES the hull fit? The give-way keeps
+## `point` as its steering target (so it drives exactly the run that was swept) and ends once the hull is as far from
+## where it started as the last clear pose less YIELD_SHORT_MARGIN_M. Returns that pose (Vector3.INF when the clear
+## part is shorter than YIELD_SHORT_MIN_M).
 const YIELD_SHORT_MIN_M := 2.0
-const YIELD_SHORT_TRIES := 4
+const YIELD_SHORT_MARGIN_M := 1.0
 
 
 func _yield_shorten(point: Vector3) -> Vector3:
 	var tank := ctl.tank
 	if not (Pathing.enabled and Pathing.is_ready(tank)):
 		return Vector3.INF
-	var map := tank.get_world_3d().navigation_map
 	var poses: Array = []
-	_yield_run_ok(map, point, poses)
+	_yield_run_ok(tank.get_world_3d().navigation_map, point, poses)
+	if poses.is_empty():
+		return Vector3.INF
 	var here := tank.global_position
-	var tries := 0
+	var furthest := _flat_distance(poses[-1], here)
 	for i in range(poses.size() - 1, -1, -1):
 		var pose: Vector3 = poses[i]
-		if _flat_distance(pose, here) < YIELD_SHORT_MIN_M or tries >= YIELD_SHORT_TRIES:
-			break
-		if i % 2 != (poses.size() - 1) % 2:
-			continue  # every other pose (1 m apart): four tries reach 4 m back along the run
-		tries += 1
-		if _yield_run_ok(map, pose):
-			return pose
+		if _flat_distance(pose, here) <= furthest - YIELD_SHORT_MARGIN_M:
+			return pose if _flat_distance(pose, here) >= YIELD_SHORT_MIN_M else Vector3.INF
 	return Vector3.INF
 
 
