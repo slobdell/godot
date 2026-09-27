@@ -189,7 +189,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -277,7 +277,8 @@ static func route_arms() -> Dictionary:
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs,
 			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
-			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter}
+			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter,
+			"yield_spots_shortened": yield_spots_shortened}
 
 
 static func reset_route_arms() -> void:
@@ -291,6 +292,7 @@ static func reset_route_arms() -> void:
 	asks_refused = 0
 	yield_swaps = 0
 	yield_swaps_shorter = 0
+	yield_spots_shortened = 0
 	kturn_aborted = 0
 	kturn_multi = 0
 	kturn_multi_legs = 0
@@ -1266,6 +1268,8 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		return false
 	var across := Vector2(-along.y, along.x)
 	_yield_unfit_last = false
+	var short_best := Vector3.INF
+	var short_label := ""
 	# Step off to the side of its line I'm already on (ties: its left), so I never cut across its bow.
 	var side := 1.0 if across.dot(Vector2(here.x - from.x, here.z - from.z)) >= 0.0 else -1.0
 	var other_tank := ctl.tanks_root.get_node_or_null(NodePath(other)) as Tank if ctl.tanks_root != null else null
@@ -1288,10 +1292,20 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 			if not _free_spot(point, String(tank.name), other):
 				continue
 			if not _yield_fits(point):
+				var short := _yield_shorten(point) if yield_short_on() else Vector3.INF
+				if short != Vector3.INF and _flat_distance(short, here) > _flat_distance(short_best, here) \
+						and (spot.y == 0.0 or _distance_to_ray(short, from, along) >= line_clear) \
+						and _flat_distance(short, from) >= _flat_distance(here, from) and _free_spot(short, String(tank.name), other):
+					short_best = short
+					short_label = "short:spot(%d,%d)" % [int(spot.x), int(spot.y * flip)]
 				continue
 			_start_yield(other, point, along, "spot(%d,%d)" % [int(spot.x), int(spot.y * flip)], via)
 			return true
 	if _off.has("backup"):
+		if short_best != Vector3.INF:
+			yield_spots_shortened += 1
+			_start_yield(other, short_best, along, short_label, via)
+			return true
 		return false
 	# Last resort (round 7, nav-fight: two cars nose to nose for 30 s with no legal spot): back straight up along my own
 	# hull, as long as that isn't toward the unit being let past.
@@ -1300,9 +1314,22 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		var point := Vector3(here.x + back.x * distance, 0.0, here.z + back.y * distance)
 		if _flat_distance(point, from) < _flat_distance(here, from):
 			continue
-		if _free_spot(point, String(tank.name), other) and _yield_fits(point):
+		if not _free_spot(point, String(tank.name), other):
+			continue
+		if _yield_fits(point):
 			_start_yield(other, point, along, "back(%d)" % int(distance), via)
 			return true
+		var short := _yield_shorten(point) if yield_short_on() else Vector3.INF
+		if short != Vector3.INF and _flat_distance(short, here) > _flat_distance(short_best, here) \
+				and _flat_distance(short, from) >= _flat_distance(here, from) and _free_spot(short, String(tank.name), other):
+			short_best = short
+			short_label = "short:back(%d)" % int(distance)
+	# R2: nothing fits whole, so give way as far as the hull DOES fit along the best of them (the displacement a
+	# scraping give-way used to buy, without the scrape).
+	if short_best != Vector3.INF:
+		yield_spots_shortened += 1
+		_start_yield(other, short_best, along, short_label, via)
+		return true
 	return false
 
 
@@ -1381,14 +1408,20 @@ func _yield_diagnose(other: String, point: Vector3, spot: String, via: String) -
 # accepted only if the drive right_of_way() will make to it — the same steering law (`Steering._wheels` or
 # `drive_toward` / `reverse_toward`, the gear `_straight_behind` picks), stepped kinematically with the plant's yaw law —
 # keeps the hull's WHOLE outline inside the clear reach at every step (`_outline_ok`: the planned reverse's own test,
-# so an end already pressed against a face may not get deeper). When no candidate fits, `_begin_yield` fails as it
-# always could: an asked hull refuses (the asker gives way itself, round 6), and a hull that had to give way and found
-# nothing that fits asks the other instead (`yield_swaps`: the short car backs up for the truck).
-# `--nav-off=yieldfit` restores round 6's choice. Arm counters: `yield_spots_unfit`, `yield_swaps`, `yield_swaps_shorter`.
+# so an end already pressed against a face may not get deeper). **Sized, not refused:** when no candidate fits whole,
+# the hull gives way as far along the best candidate's run as it DOES fit (at least YIELD_SHORT_MIN_M; `short:` in the
+# log). Refusing outright was built first and measured worse (builder0, `26f4ac33`, 8 seeds: rigs' yield reverse
+# contacts 661 -> 22 but arrivals 115 -> 105 and press/unstick 83 -> 313 — a rig that will not move keeps the jam, and
+# the scrapes came back as kturn and press contacts); `--nav-off=yieldshort` is that build. When nothing fits even
+# shortened, `_begin_yield` fails as it always could: an asked hull refuses (the asker gives way itself, round 6), and
+# a hull that had to give way asks the other instead (`yield_swaps`: the short car backs up for the truck).
+# `--nav-off=yieldfit` restores round 6's choice. Arm counters: `yield_spots_unfit`, `yield_spots_shortened`,
+# `yield_swaps`, `yield_swaps_shorter`.
 
 static var yield_spots_unfit := 0
 static var yield_swaps := 0
 static var yield_swaps_shorter := 0
+static var yield_spots_shortened := 0
 ## Did the last spot search refuse at least one candidate for fit (so a swap is about room, not a refused asker)?
 var _yield_unfit_last := false
 ## The run is stepped in this much travel (metres); a pivoting tracked hull in this much yaw (degrees).
@@ -1401,6 +1434,11 @@ const YIELD_FIT_MIN_STEPS := 40
 
 static func yield_fit_on() -> bool:
 	return not switched_off("yieldfit")
+
+
+## R2's sizing (`--nav-off=yieldshort`: refuse a spot that does not fit whole, R2's first build, measured worse).
+static func yield_short_on() -> bool:
+	return yield_fit_on() and not switched_off("yieldshort")
 
 
 ## Does the hull fit its drive to `point`? True when the arm is off or the navmesh is not ready (round 6's choice).
@@ -1418,7 +1456,7 @@ func _yield_fits(point: Vector3) -> bool:
 
 
 ## Step the drive right_of_way() makes to `point` and sweep the whole outline at every pose.
-func _yield_run_ok(map: RID, point: Vector3) -> bool:
+func _yield_run_ok(map: RID, point: Vector3, poses: Array = []) -> bool:
 	var tank := ctl.tank
 	var frame := _kturn_frame(tank)
 	var at := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
@@ -1454,7 +1492,36 @@ func _yield_run_ok(map: RID, point: Vector3) -> bool:
 		rolling = gear
 		if not _outline_ok(map, frame, at, heading, start):
 			return false
+		poses.append(at)
 	return false
+
+
+## R2's sizing: the run to `point` does not fit, so how far along it DOES the hull fit? The furthest clear pose of
+## the run at least YIELD_SHORT_MIN_M from here whose own run fits (the steering to a nearer point curves differently,
+## so it is re-swept), trying at most YIELD_SHORT_TRIES from the far end; Vector3.INF when none.
+const YIELD_SHORT_MIN_M := 2.0
+const YIELD_SHORT_TRIES := 4
+
+
+func _yield_shorten(point: Vector3) -> Vector3:
+	var tank := ctl.tank
+	if not (Pathing.enabled and Pathing.is_ready(tank)):
+		return Vector3.INF
+	var map := tank.get_world_3d().navigation_map
+	var poses: Array = []
+	_yield_run_ok(map, point, poses)
+	var here := tank.global_position
+	var tries := 0
+	for i in range(poses.size() - 1, -1, -1):
+		var pose: Vector3 = poses[i]
+		if _flat_distance(pose, here) < YIELD_SHORT_MIN_M or tries >= YIELD_SHORT_TRIES:
+			break
+		if i % 2 != (poses.size() - 1) % 2:
+			continue  # every other pose (1 m apart): four tries reach 4 m back along the run
+		tries += 1
+		if _yield_run_ok(map, pose):
+			return pose
+	return Vector3.INF
 
 
 ## Is `point` straight behind this hull (within ~25 degrees of its tail)? A car reaches that by reversing.
