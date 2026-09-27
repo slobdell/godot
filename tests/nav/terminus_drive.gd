@@ -152,6 +152,17 @@ func _next_leg() -> void:
 
 func _sample() -> void:
 	var elapsed := float(game_match.tick - leg_started_tick) / float(SimClock.TICK_RATE)
+	# `--trace=<unit name>`: that crew's driving, twice a second (diagnosis only).
+	var trace := _flag("trace", "")
+	if trace != "" and (game_match.tick - leg_started_tick) % (SimClock.TICK_RATE / 2) == 0:
+		for tank in units:
+			if String(tank.name) == trace:
+				var reading := Movement.state(tank)
+				var nose := -tank.global_basis.z
+				print("NAV_DRIVE_TRACE leg=%d t=%.1f at=(%.1f,%.1f) hdg=%.0f v=%.2f phase=%s driver=%s steer=%s contact=%s kturn=%s stalled=%s" % [
+						leg_index, elapsed, tank.global_position.x, tank.global_position.z, rad_to_deg(atan2(nose.x, -nose.z)),
+						tank.speed(), reading.get("phase", "?"), reading.get("wall_contact_driver", ""), reading.get("steer_to", "?"),
+						reading.get("wall_contact", false), reading.get("in_kturn", "?"), reading.get("stalled_ticks", "?")])
 	for tank in units:
 		var motion: Variant = tank.get("_motion")
 		var creep := int((motion as Dictionary).get("creep_dir", 0)) if motion is Dictionary else 0
@@ -247,6 +258,8 @@ func _report() -> void:
 	print("NAV_DRIVE %s" % JSON.stringify(out))
 	for row: Dictionary in Movement.kturn_none_log:
 		print("NAV_KTURN_NONE %s" % JSON.stringify(row))
+	for row: Dictionary in Movement.kturn_fill_log:
+		print("NAV_KTURN_FILL %s" % JSON.stringify(row))
 	quit(0)
 
 

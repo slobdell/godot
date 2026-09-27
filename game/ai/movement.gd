@@ -186,7 +186,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband", "inflate",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
 		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
 
 
@@ -280,6 +280,7 @@ static func reset_route_arms() -> void:
 	kturns = 0
 	kturn_none = 0
 	kturn_none_log.clear()
+	kturn_fill_log.clear()
 	kturn_aborted = 0
 	kturn_multi = 0
 	kturn_multi_legs = 0
@@ -2194,8 +2195,17 @@ func _corner_waypoint(goal: Vector3) -> Vector3:
 func _guard_steer(here: Vector3, waypoint: Vector3) -> Vector3:
 	if _chord_on_mesh(here, waypoint):
 		return waypoint
-	if _path_index < _path.size():
-		var corner := Vector3(_path[_path_index].x, 0.0, _path[_path_index].z)
+	# Round 12 (nav, found tracing a back-and-fill's War Rig): the next corner, but never one the hull stands ON —
+	# round 11's rule (_corner_beyond), which this fallback ran AFTER and so undid. A rig whose carrot chord left the
+	# mesh was handed the route vertex 0.47 m from its centre for 2371 ticks: inside the 0.5 m arrive radius, zero
+	# throttle, no stall, 79 m from its goal at the leg's end (laptop, rigs seed 3, the plaza leg). `--nav-off=guardnear`
+	# restores the old pick (the attribution arm).
+	var first := _path_index
+	if not _off.has("guardnear"):
+		while first < _path.size() - 1 and _flat_distance(_path[first], here) < WAYPOINT_MIN_M:
+			first += 1
+	if first < _path.size():
+		var corner := Vector3(_path[first].x, 0.0, _path[first].z)
 		if _chord_on_mesh(here, corner):
 			return corner
 	# (A "steer back onto the mesh" rescue was tried here and removed: in a narrow corridor a hull is legitimately in the
@@ -2540,6 +2550,10 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			if backed < _kturn_left_m:
 				kturn_aborted += 1
 				_kturn_check = KTURN_RETRY_TICKS
+				if kturn_log:
+					kturn_fill_log.append({"unit": String(tank.name), "frame": Engine.get_physics_frames(), "aborted": true,
+							"gear": _kturn_gear, "backed_m": snappedf(backed, 0.1), "left_m": snappedf(_kturn_left_m, 0.1),
+							"lead_hit": lead_hit, "legs_left": _kturn_legs.size()})
 			_kturn_left_m = 0.0
 			_kturn_legs.clear()
 			_repath_left = 0.0
@@ -2600,6 +2614,12 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			_kturn_start_leg(_kturn_legs.pop_front())
 			kturn_multi += 1
 			kturn_multi_legs += plan.size() + 1
+			if kturn_log:
+				kturn_fill_log.append({"unit": String(tank.name), "frame": Engine.get_physics_frames(),
+						"at": [snappedf(here.x, 0.1), snappedf(here.z, 0.1)], "to": [snappedf(waypoint.x, 0.1), snappedf(waypoint.z, 0.1)],
+						"heading_deg": snappedf(rad_to_deg(atan2(forward.x, -forward.z)), 1.0),
+						"plan": ([_kturn_gear * _kturn_left_m] + plan.map(func(leg: Vector2) -> float: return leg.x * leg.y)),
+						"goal_m": snappedf(_flat_distance(here, _goal), 0.1) if _goal != Vector3.INF else -1.0})
 			cmd.throttle = KTURN_THROTTLE * _kturn_gear
 			cmd.turn = turn
 			kturn_ticks += ctl._step
@@ -2681,6 +2701,7 @@ static var kturn_log := false
 static var kturn_multi := 0        # back-and-fills planned (the single back-up found none; this did)
 static var kturn_multi_legs := 0   # ...and their legs, summed
 static var kturn_none_log: Array = []
+static var kturn_fill_log: Array = []   # ...and every back-and-fill planned (measurement only)
 ## A back-and-fill leg is at most this long, is backed off this far from the first pose that is not clear, and a leg
 ## shorter than KTURN_FILL_LEG_MIN_M after that is no progress (the plan fails rather than dither).
 const KTURN_FILL_LEG_MAX_M := 10.0
