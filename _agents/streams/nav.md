@@ -166,7 +166,7 @@ Rigs' drivers (16 seeds): yield reverse 1560 -> 143; route 1395 -> 820; kturn 56
 in place, 12 sized, 119 candidates refused for fit), refused asks 6 -> 6.
 
 **Against the pre-registration (seeds 1-8), honestly:** rigs' reverse-gear contacts 1488 -> 892 — **met** (all of the
-+542 gone, below round 11's 946); the yield row 661 -> 67 — **met**; mixed arrivals +3 and contacts down — **met**.
++542 gone, below round 11's 946); the yield row 661 -> 85 — **met**; mixed arrivals +3 and contacts down — **met**.
 **Three no-regression clauses FAILED on seeds 1-8:** rigs' arrivals -5 (bound -3), refusals +16 (bound +10),
 press/unstick +36 % (bound +25 %). On seeds 9-16 (fresh) all three go the right way (arrivals +1, refusals -44,
 press/unstick -69 %), and pooled over 16 seeds they sit inside the bounds scaled (-4 of 256, -28, +3 %). Mixed's
