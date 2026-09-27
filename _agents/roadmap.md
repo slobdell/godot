@@ -89,7 +89,7 @@ a round*) and asked for workspaces. Where each item went:
 | 7 the burner as a fire engine | **fleet** | **`burner_r11_b` APPROVED 2026-09-24 17:27 UTC, never read back, never built** — his "I haven't seen that materialize" |
 | 8 the AUTO icon lies | **squad** | carve-out into `command_icons.gd` |
 | 9 a G-chosen formation is overridden at `_halt` | **squad** | |
-| 10 ~~the direct path still scatters~~ | **squad** (a question) | a whole-squad box-select already takes the task path (every spawned squad is on a number key); only a PARTIAL or mixed selection is direct — decide, do not assume |
+| 10 ~~the direct path still scatters~~ | **squad** (answered, round 12 S4) | measured on the default path: a whole squad takes the task path and travels as one column; a PARTIAL (3 of 5) or MIXED (2+2) selection goes direct and each crew takes its own route (and leaves its squad). Left as the lead ruled on 2026-09-20 (FORM SQUAD / Ctrl+N makes it a squad); the question whether a partial selection should travel as a formation too is his (squad brief Status) |
 | 11 the announcer's filler and the music rotation | **audio** | the `trade` pool is 5 lines; `pre_match` has ONE bed and 23 Suno tracks were never imported |
 | the fall-in rule (from the anchor's write-up) | **squad** | |
 | the Locks' open canal, re-asked after he has driven it | **arena** | on its page, with the 45 % exposure number |

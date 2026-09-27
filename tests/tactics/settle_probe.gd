@@ -210,6 +210,10 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 					var rel := _flat(tank.global_position) - _flat(element.transit.get("anchor", Vector3.ZERO))
 					frame = " @%+.0f/%+.0f" % [rel.dot(tangent), rel.dot(Vector3(-tangent.z, 0.0, tangent.x))]
 				frame += " w%.1f,%.1f" % [tank.global_position.x, tank.global_position.z]
+				# S6: what the crew's own brain is doing (its utility option and the move it handed nav).
+				var brain := game_match.brains.get_node_or_null(NodePath("Brain_" + unit_name)) as TankBrain
+				if brain != null:
+					frame += " [%s/%s]" % [String(brain.choice.get("option", "?")), String(brain.move_order.get("type", "?"))]
 				parts.append("%s%s %s v%.1f p%.2f slot%.1f%s %s%s" % [unit_name.right(1), frame, String(order.get("verb", "-")),
 						tank.estimated_velocity.length(), float(element.paces.get(unit_name, 1.0)),
 						_flat(tank.global_position).distance_to(_flat(slot)) if slot is Vector3 else -1.0,

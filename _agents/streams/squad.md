@@ -124,4 +124,75 @@ Nothing blocks. S5's outcome and S4's decision go into Status with frames; if ei
 
 ## Status
 
-_(the worker keeps this current)_
+_Worker, 2026-09-26/27 (in progress; every number carries its commit and machine; laptop traces are read, not reported)._
+
+**Baseline:** `46bac1a3` on builder0: `>> remote: make check exited 0`, 1726 passed, 0 failed.
+
+### Plan (the order taken, and why)
+
+S1 → S2 (both small, and S2's "wedge (yours)" readout builds on S1's) → S3 (needs the trace) → S4 (a probe on the
+default path) → S5 (reuses S2: a G-chosen shape now holds through every phase, so the two arms are two G orders) → S6.
+
+### Done
+
+- **S1 (C12.4) — the card shows the shape the squad forms** (`2d208035`). `CommandIcons.formation_readout`: under AUTO
+  with an element the button draws and names the leader's pick (*"Auto: Column"*, live: the panel redraws each frame);
+  his G choice reads as itself; a drill that has his squad in another shape reads *"Line: drill"*; before an element
+  exists AUTO is its own glyph (a ring round an A), never a wedge. `selection_panel.gd` reads it (the carve-out: the
+  consumer of AUTO on the card lives in `game/ui/selection_panel.gd`, not `game/control/`). Tests:
+  `tests/test_tactics_formation_readout.gd` (5), including a real element on the yard AND the Terminus reading column.
+- **Finding that corrects the brief (S1/S5):** `make tactics-terrain` (new, light): at the spawns only the **yard** is
+  *dense*; the Terminus, pit, crossing and locks are *lanes*. And **no squad he fields uses the standard table**: a
+  squad fights by its units' FACTION table, and the Condemned and the Law both end in a catch-all **column** in any
+  terrain (the Syndicate's is a wedge, the gangs' a swarm). So under AUTO a Condemned or Law squad forms a column on
+  every map, and the wedge the card showed was wrong for them everywhere. doctrine.md *Whose shape it is*.
+- **S2 (C12.5) — a chosen shape is the shape at every phase** (`2d208035`). `_halt` keeps `task.formation`; the
+  traveling-overwatch trail section takes it too; `ElementPlan.chosen_formation` is the one reading. A drill under
+  fire still takes the drill's shape (the doctrine's job), and the card says so. Tests in `test_tactics_tasks.gd`
+  (wedge at t0 / en route / at the halt and after; AUTO control arm still halts in a coil; a chosen line in transit and
+  on the spot; a drill's shape reads "…: drill"). doctrine.md *Whose shape it is, phase by phase* (the table).
+  **CPU claim checked:** no `ElementCommander` task carries `formation` (grep: the only `"formation"` keys a CPU sends
+  are the opt-in legacy `CpuCommander`'s squad commands), so the halt change cannot reach a CPU element.
+
+### In progress
+
+- **S3 — the fall-in rule** (`0b0124da`, `9aed5a3f`; **shipped OFF** pending the series). `ElementPlan.fall_in` (pure,
+  4 tests): in the first 8 s a crew whose sideways path would cross the lane of a crew seated ahead of it that has not
+  passed it is held -- `lane` mode (keeps driving in its own lane) or `wait` mode (stands; not a laggard to the lag
+  rule). **The trace says the brief's model of the stall is not what happens on the yard**: a top-down plot
+  (`tools/tactics/plot_tracks.py` over the new `SETTLE_TRACK` lines) shows the anchor's route threading a ~5 m gap
+  between the wreck at (9, 68) and the container stack at x = 17, twenty metres from the spawn; the "middle pair
+  stall" is a QUEUE at that gap, while the tail crew takes a different gap west of the wreck and comes out ahead of
+  them. Holding a crew in its own lane can aim it into the 20-ft container dead ahead of the spawn. Paired series
+  queued on builder0 (`make squad-fallin-series`, and `FALLIN_ARM=wait`).
+- **S4 — decided (a), with measurements.** See doctrine.md *A partial or mixed selection*. Builder0 series queued
+  (`make squad-partial-series`).
+- **S5** — tools built (`161465ef`): `make squad-shape-series` (column vs wedge ordered with G, same seeds) and
+  `make formation-shots` (frames at his pose, 10 s and arrival). Queued on builder0.
+- **S6 (stretch) — the trace (laptop, Terminus side, mixed, seed 1):** the squad declares arrival at 10.6 s and
+  stops at 30.4 s, for three reasons: (1) both **scouts**, with NO order and no enemy anywhere, are handed `face`
+  orders by their brains (HOLD/face, then ADVANCE/face: a refused advance becomes a face) -- a scout's gun is fixed
+  to its hull, so round 8's "turret wheels decline a face" does not apply -- and a wheeled hull can only face by a
+  multi-point turn, which WALKS it: 1.5 m → 8.6 m off its slot over 15 s at a steady 2.8 m/s; (2) an ifv stands wedged
+  against a neighbour (`yielding/Green_S_3`) with its position fixed for 5 s while `estimated_velocity` reads 7.7 m/s
+  (the post-`move_and_slide` velocity of a hull at full throttle into another), which the settle probe counts as
+  moving; (3) the tank's order completed 18.3 m from its element slot. **Proposal (to nav, and partly mine):** (1) is
+  decided in the brain (`tank_brain.gd`, squad's) and executed by `TankMotion` (nav's): either the brain stops asking
+  a no-pivot hull to face an idle sector when nothing is in sight (a sim-baseline move, since CPU scouts face too), or
+  nav bounds a multi-point turn's drift from where it started. (2) is a probe measurement question (mine): stop should
+  read position change, not the velocity estimate.
+
+### Questions for the lead
+
+- **S4:** a partial selection's move (3 of a 5-unit squad) or a mixed one (units from two squads) still sends each
+  vehicle by its own route -- measured and plotted. Your 2026-09-20 ruling (regroup with Ctrl+N or FORM SQUAD and it
+  travels as a formation) stands and the card says so. Do you want a partial selection to travel as a formation too
+  (a temporary squad formed on the order and dissolved on arrival), or is FORM SQUAD the answer?
+
+### Merge notes (shared files)
+
+- `game/ui/command_icons.gd` (carve-out): `formation_texture` AUTO glyph, `formation_readout`, the letter "A".
+- `game/ui/selection_panel.gd` (the card's formation readout, the carve-out's consumer): `summary()` adds
+  `result["formation"]`; the button draws it.
+- `_agents/roadmap.md` item 10's table row: replaced by the measurement.
+

@@ -276,7 +276,9 @@ up on the spot**, which is the visible half of his "formula to form up". The mea
 
 **Not done, deliberately:** ~~the AUTO icon still shows a wedge whatever the table picks~~ (done in round 12, S1: the
 card reads the leader's pick); ~~a G-chosen formation is still overridden by the halt shape at the end of a drills-on
-move (`_halt`)~~ (done in round 12, S2: *Whose shape it is, phase by phase* below); the direct path (a box-selection that is not a numbered squad, `Orders._resolve_group`) still sends each
+move (`_halt`)~~ (done in round 12, S2: *Whose shape it is, phase by phase* below); ~~the direct path~~ (measured and
+decided in round 12, S4: *A partial or mixed selection* below -- it does scatter, and it is left as his 2026-09-20 ruling
+has it); the direct path (a box-selection that is not a numbered squad, `Orders._resolve_group`) still sends each
 vehicle to its slot on its own.
 
 ### Whose shape it is, phase by phase (round 12, S1/S2; C12.4, C12.5)
@@ -305,6 +307,30 @@ crossing and the locks are *lanes*; (2) more to the point, **no squad he fields 
 fights by its units' FACTION table (`Elements._table_for`), and the Condemned and the Law both end in a catch-all
 **column** whatever the terrain; the Syndicate's is a wedge and the gangs' a swarm. So a Condemned or Law squad under
 AUTO forms a column on every map, and the wedge the card showed was wrong for both factions on every map.
+
+### A partial or mixed selection: measured on the default path, and left as he ruled (round 12, S4)
+
+**What happens** (`make squad-partial CASE=partial|mixed|whole`, `tests/tactics/partial_probe.gd`: a Condemned army of
+Alpha (tank, tank, ifv, ifv, scout) and Bravo (tank, ifv, scout), deployed and put on number keys exactly as skirmish
+does, the order through the real `RtsControls.order_selection`, 80 m toward the enemy, yard):
+
+| selection | path | the card | what the crews do |
+|---|---|---|---|
+| all of Alpha | TASK (a numbered squad) | "Auto: Column", the doctrine line | one column on one route, riding the anchor |
+| 3 of Alpha's 5 | DIRECT (`Orders._resolve_group`) | "Part of Alpha: press 1, or [FORM SQUAD]" | a GroupFormation wedge laid on the click; **each crew by its own navmesh route** -- on the yard two went west of the container stack and one east of it; all three **leave Alpha's element** |
+| 2 of Alpha + 2 of Bravo | DIRECT | "In different squads: Ctrl+1-9 or [FORM SQUAD]" | each pair takes its own lane from its own spawn and they meet only at the click |
+
+So the scatter he described is real for a partial or mixed selection, and it is what he would notice (plots from
+`tools/tactics/plot_tracks.py` over the probe's `SETTLE_TRACK` lines; builder0 numbers in the brief's Status).
+
+**Decision: (a), leave it.** The brief recommended (a) unless the frames showed a scatter he would notice, and they do;
+but the transient element that (b) needs is exactly what **the lead withdrew himself on 2026-09-20**: *"if I just
+regroup the unit, they can operate as a formation. That is good behavior, but the UX just needs to clarify that"*
+(`game_design.md`, *Squad orders for a mixed selection*; round 10 R1 narrowed). Reversing his ruling is his call, not a
+stream's. What stands: Ctrl+N or the card's one-click FORM SQUAD makes any selection a numbered squad, and from then on
+it travels as a formation; the card already says so for both partial and mixed selections. The question -- *"a
+partial selection's move still scatters; do you want it to travel as a formation too (a temporary squad formed on the
+order and dissolved on arrival), or is FORM SQUAD the answer?"* -- is in the brief's Status for him, with the plots.
 
 ## Selection rules: how a leader chooses
 
