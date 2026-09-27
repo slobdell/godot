@@ -239,6 +239,9 @@ refreshments, the cell reassigned, the hearing check, the informant, the upper-d
 power cut to the home block, the younger fans' selection, the medical rounds, the vehicles recovered first. What he
 kept is the corporate deadpan about the venue and its paperwork. Write the next PA batch toward the venue.
 
+**VERIFIED GREEN — merge here: `aa049f5f`** (main at `ae3f3ff8`+ merged; builder0, 2026-09-27): `>> remote: make check
+exited 0`, 18 targets, **1773 passed, 0 failed**, `sim-baseline passed: 6313a38d7ecd99bb`, `announcer transcripts current`.
+
 ### Questions for the lead
 1. **Web size.** `assets/music/` went from 13 MB to 29 MB and all of it ships in the web pack. Options: accept; drop the
    web build to one track per state and keep the rotation on desktop/Android; or the music-pack-after-start the design
