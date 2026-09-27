@@ -4,7 +4,27 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-27 — **ROUND 12 IS CLOSED on a green tree. `main-checked` is `ae3f3ff8` (builder0: 1773 passed, 0 failed, sim-baseline `6313a38d7ecd99bb`, determinism `550d53790035ddb4`); audio's M7 (`05e72d31`) merged after it on its own green (1773/0, same hashes). All six worktrees removed, all six branches ancestors of main and deleted. The section directly below is the round's record; the launch record and the fine-tuning session follow; everything from ROUND 11 down is as it was._
+_Last updated: 2026-09-27 — **ROUND 13 IS LAUNCHED: three small streams (squad, nav, audio) from the lead's answers to round 12's list (`game_design.md` *Round 13 direction*, verbatim); briefs in `_agents/streams/`; the split in `workstreams.md` *Round 13*. Round 12 is CLOSED; its record is the section after this one. `main-checked` is `ae3f3ff8` (1773/0, sim-baseline `6313a38d7ecd99bb`); everything after it is docs plus audio's own-green M7.**_
+
+## 🚀 ROUND 13 IS LAUNCHED (2026-09-27) — read this first
+
+**His answers** (verbatim in `game_design.md` *Round 13 direction*): 2 *"Default wedge"*; 4 *"leave"*; 5 *"29 MB of music is fine"*;
+6 *"Yes let's add garage music, but I've never even smoke tested the garage"*; 7 *"ok"*; 8 *"don't worry about this"*;
+1 and 3 *"I need clarification"* / *"I don't understand the question"* — the clarifications are recorded there; 1 starts
+on the orchestrator's recommendation (his veto stands), 3 is measured rather than asked again.
+
+| stream | offset | the job |
+|---|---|---|
+| squad | 1 | the wedge is the default plain-move shape (column only where the paired series still says so); S6 measured (no idle `face` for a no-pivot hull with nothing in sight), baseline pre-registered MOVED |
+| nav | 2 | right-of-way sized for long hulls: the rig's +57 % reverse-gear contacts from yielding into small-hull spots; **CP1** = its baseline move, merged alone |
+| audio | 3 | the garage smoke-tested like a player from the title (frames at both aspects; an hour's fixes; the rest as a round-14 list), then the `garage` state plays and rotates |
+
+**Closed by his answers:** the partial selection stays; the web music pack stays at 29 MB; the key rotation is his
+not-worry. **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream).
+Merge at the hash each stream names green; nav's move is recorded twice with `make sim-baseline-adopt` (run LOCALLY:
+it calls the remote wrapper itself); at close read every page's `db` (step 5a) and rescue git-ignored payload.
+
+_Round 12's record follows:_
 
 ## ✅ ROUND 12 IS CLOSED (2026-09-27) — read this first
 

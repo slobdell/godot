@@ -2490,6 +2490,40 @@ Locks' open canal stays open** (the orchestrator's 2026-09-24 ruling, now with h
 only if he raises it after driving it). His taps on the page did not reach its `decisions` collection (empty when read
 twice; the page's save path is `db.doc("decisions/"+id).set`), so the chat words are the record.
 
+## Round 13 direction: the lead's answers to round 12's candidate list (2026-09-27)
+
+Shown the eight candidates at round 12's close, the lead:
+
+> *"ok I feel like we can resolve some of these issues now. For some of these I need clarification on what you're asking
+> but here are my known answers: 1. I need clarification. 2. Default wedge. 3. I don't understand the question. 4. leave
+> 5. 29 MB of music is fine. 6. Yes let's add garage music, but I've never even smoke tested the garage. 7. ok 8. don't
+> worry about this"*
+
+Read against the list he was shown (`roadmap.md` *Round 13 candidates*):
+
+1. **Right-of-way sized for long hulls** — clarification owed (below); started as nav's item on the orchestrator's
+   recommendation, his veto stands.
+2. **The default plain-move shape is the WEDGE.** Squad's measurement (wedge faster in 23 of 32 paired runs, column
+   only better through the yard's chokepoint) becomes the rule: a plain move forms a wedge by default; the doctrine
+   tables' `dense → column` row survives only where squad shows it still wins on the same seeds.
+3. **Squad's S6 candidate** — clarification owed (below); measured, not assumed.
+4. **A partial or mixed selection stays as it is** (round 10's R1 design). Closed.
+5. **The web music pack at 29 MB is fine.** Closed.
+6. **Garage music: yes.** And: *"I've never even smoke tested the garage"* — so the garage gets a player's smoke test from
+   the title before its music, and whatever that finds is the item.
+7. The next PA batch carries the boundary from his vetoes. Acknowledged; not scheduled until he asks for more lines.
+8. Key rotation after the incident: *"don't worry about this."* Closed.
+
+**The two clarifications, as put to him:**
+- **(1)** Nav's back-and-fill made the War Rig get through the Terminus streets far more often, but when a rig now
+  GIVES WAY to another vehicle it backs up into a yield spot sized for a small hull (round 6's right-of-way), so its
+  reverse-gear wall scrapes rose 57 %. The item is: teach the give-way rule the hull's length so a 14 m rig yields into
+  room it fits in. Not a question about whether the rig should yield; a fix for how far.
+- **(3)** After a squad arrives, wheeled scouts with fixed guns are told to face a direction even when nothing is in
+  sight; a wheeled hull turns in place with a multi-point turn, which used to walk them off their slot (nav bounded
+  that this round). Squad's candidate is to stop issuing the pointless face order when nothing is in sight, which may
+  remove the turn altogether. The ask was only whether to measure it; it is measured now, in the same stream as (2).
+
 **A correction to the squad brief (squad, 2026-09-26):** the brief said the yard and the Terminus both classify as
 *dense*. `make tactics-terrain` shows only the yard's spawns are dense and the Terminus is *lanes*; and no squad the
 lead fields uses the standard table — a squad uses its units' FACTION table, and the Condemned and Law catch-alls pick a

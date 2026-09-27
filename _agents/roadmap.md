@@ -92,7 +92,14 @@ Six streams, one night. Full record in `HANDOFF.md` *ROUND 12*; briefs in `strea
 - **Water reads wet** at his pose (near-black pixels 0.98 → 0.55 on the Locks' far quay), ~1 ms GPU, 0 draw calls.
 - **Lessons 220–222**, and the builder0 incident (a runaway rsync from outside a checkout; the wrapper now refuses).
 
-## Round 13 candidates (each came out of round 12 with its measurement)
+## Round 13 is RUNNING (launched 2026-09-27; three streams from his answers below, `game_design.md` *Round 13 direction*)
+
+His answers to the list: 1 clarification owed (started on the orchestrator's recommendation, his veto stands) → **nav**;
+2 *"Default wedge"* → **squad**; 3 measured → **squad**; 4 *"leave"* → closed; 5 *"29 MB of music is fine"* → closed;
+6 garage music, and the garage has never been smoke-tested → **audio**; 7 *"ok"* → next PA batch when he asks; 8
+*"don't worry about this"* → closed.
+
+## Round 13 candidates as they stood at round 12's close (kept as the record)
 
 1. **Right-of-way sized for long hulls** (nav): the back-and-fill's declared cost is rigs' reverse-gear contacts +57 %
    (giving way back into walls with round 6's small-hull yield spots); on the rotation, stalled share fell on 10 of 12
