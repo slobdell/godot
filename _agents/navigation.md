@@ -5,6 +5,41 @@
 > `NavigationServer3D` runs A* over the navigation polygons baked from the arena's collision at startup
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
+## Round 12: the back-and-fill, and why the rig refused
+
+The lead approved "the War Rig's refused back-ups" for round 12; round 11 had left the rigs' `kturn_none` (130) above
+their `kturns` (64). Numbers with commits and machines: the brief's Status (`streams/nav.md`, archived at the round's
+close).
+
+**N1, the instrument** (`--kturn-log`, `make nav-kturn-buckets`): every refusal logs the forward-arc hit, where and by
+which END the single back-up was stopped, whether a longer / straight back-up or a back-and-fill would have cleared,
+the street's spans through the hull's centre, the nearest friend, and (stamped by the drive test) the leg and seconds
+into it. What it found: 36 of 132 were the search aiming at a route corner under the hull; most of the rest were a 14 m
+hull lying across a ~21 m street at the START of a leg (parked by the previous one), rear corner blocking the back-up;
+a three-point turn cleared only 20-29, a five-point 39.
+
+**N2, `_plan_fill`** (`--nav-off=kturnfill`): legs alternating gear on ONE lock (the plant yaws a wheeled hull the way
+of `turn` in either gear, so every leg keeps swinging the nose toward the point), each as far as the whole outline
+stays inside the clear reach less `KTURN_FILL_MARGIN_M` (0.25 m), done at the first REVERSE pose whose forward arc
+clears; reverse-first or forward-first, fewer legs then less travel; at most `KTURN_FILL_LEGS` (5). It replaces the
+single planned reverse's "nothing found" branch and nothing else. Driven like round 11's leg: each leg ends on
+distance, the LEADING end's contact (the rear backing, the nose going forward) or a timeout; a cut leg drops the plan
+(`kturn_aborted`) and the reactive rules stand. Counters `kturn_multi`, `kturn_multi_legs`.
+
+**The steering guard's hole** (`--nav-off=guardnear`): `_guard_steer` fell back to `_path[_path_index]` when the
+carrot's chord left the mesh — AFTER round 11's `_corner_beyond` rule, which it therefore undid. It now takes the first
+corner at least `WAYPOINT_MIN_M` away. Found tracing a rig that sat 80 s at zero throttle on a vertex 0.47 m away.
+
+**What is left, and it is not the planner's:** the rigs' arrival misses are slot fit (four 14 m hulls, "arrived" 7-15 m
+from a slot) and rigs pinned in the street by a FRIEND (hull-hull contact, invisible to the wall counters: the drive
+test's misses now carry `touching`). Refusals barely cost arrivals (28 of 34 refusing crew-legs arrived before the fill;
+after it 1 of 21 missed). The kinematic planner's case and falsifier: `algorithms.md` *The kinematic planner the count
+asked for*.
+
+**Tools added:** `make nav-drive-ab` (both arms of one build, same seeds, `tests/nav/drive_table.py`: the named numbers
+and discordant seeds), `make nav-rig-clip` (the rig's back-and-fill at his pose, both arms), `--trace=<unit>` on the
+drive test (a crew's driving twice a second with its slide collisions and command).
+
 ## Round 11: a goal the hull fits, and the three-point turn decided before the bumper
 
 The lead, on the Terminus: *"they'll drive into a wall before trying to back up"* and *"a unit's target position ends
