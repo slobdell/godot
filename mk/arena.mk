@@ -157,8 +157,11 @@ water-pairs: import ## Arena (round 12): each water and pit map at the lead's po
 WATER_GPU_SPOTS ?= crossing:-92:14 locks:0:4
 .PHONY: water-gpu
 water-gpu: import ## Arena (round 12): the water's GPU ms at the lead's pose, held still, drawn vs hidden (WATER_GPU_SPOTS="crossing:-92:14 locks:0:4") -> WATER_GPU lines (needs a display: make remote T=water-gpu)
-	@$(foreach s,$(WATER_GPU_SPOTS),timeout 600 $(GODOT) --path . --resolution 1920x1080 --script res://tests/arena/water_gpu_probe.gd -- \
-		--arena=$(word 1,$(subst :, ,$(s))) --spot=$(word 2,$(subst :, ,$(s))):$(word 3,$(subst :, ,$(s))) 2>&1 | grep -E '^WATER_GPU|SCRIPT ERROR' || true;)
+	@mkdir -p $(BUILD_DIR)/water-gpu
+	@$(foreach s,$(WATER_GPU_SPOTS),timeout 900 $(GODOT) --path . --resolution 1920x1080 --script res://tests/arena/water_gpu_probe.gd -- \
+		--arena=$(word 1,$(subst :, ,$(s))) --spot=$(word 2,$(subst :, ,$(s))):$(word 3,$(subst :, ,$(s))) \
+		> $(BUILD_DIR)/water-gpu/$(subst :,_,$(s)).log 2>&1; echo ">> water-gpu $(s): godot exited $$?"; \
+		grep -E '^WATER_GPU|ERROR|Error' $(BUILD_DIR)/water-gpu/$(subst :,_,$(s)).log | head -20 || true;)
 
 .PHONY: terrain-series terrain-measure
 terrain-series: import ## Terrain (R9): a terrain map vs its dry twin on the SAME seeds -- unit-time on the crossings, time at the contested objective, discordant pairs (TERRAIN_MAP=crossing SEEDS=32 FIRST_SEED=1 ARENA_FACTION=condemned ARENA_TIME=180) -> build/terrain-series-<map>.json
