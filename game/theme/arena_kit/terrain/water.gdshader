@@ -69,7 +69,7 @@ uniform float glint_gain = 0.9;
 uniform float pool_sheen = 0.35;
 // The reflection's vertical smear (radians of elevation jitter from the short waves): rippled water stretches what it
 // reflects into vertical streaks, which is what separates a reflection from a picture pasted on the surface.
-uniform float smear = 0.12;
+uniform float smear = 0.09;
 uniform float swell_amp = 0.08;
 uniform float swell_fine = 0.025;
 uniform float legacy_streak = 0.0;
@@ -280,8 +280,13 @@ void fragment() {
 			vec2 chop = vec2(noise(q2) - 0.5, noise(q2 + 31.0) - 0.5);
 			vec2 tilt = swell * 2.0 * swell_amp + chop * 2.0 * swell_fine;
 			vec3 r = normalize(vec3(dir.x + tilt.x, -dir.y, dir.z + tilt.y));
-			// The environment is looked up along a ray smeared in ELEVATION by the short waves (see `smear`).
-			float jitter = (noise(hit.xz * vec2(1.7, 0.6) + vec2(t * flow * 1.3, 0.0)) - 0.5) * 2.0 * smear;
+			// The environment is looked up along a ray smeared in ELEVATION by the short waves (see `smear`). The
+			// waves are laid out in the VIEW's frame, long across it and short along it, so a neon line breaks into
+			// horizontal dashes stacked toward the eye; round noise drew closed contours (scribbles, 2026-09-27).
+			vec2 ahead = normalize(dir.xz + vec2(1e-5, 0.0));
+			vec2 across = vec2(-ahead.y, ahead.x);
+			vec2 wave = vec2(dot(hit.xz, across) * 0.35, dot(hit.xz, ahead) * 3.2 + t * flow * 2.0);
+			float jitter = (noise(wave) - 0.5) * 2.0 * smear;
 			vec3 r_env = normalize(vec3(r.x, max(r.y + jitter, 0.001), r.z));
 			// Schlick with water's F0 = 0.02, plus a small art-directed floor so the surface reads at 21 degrees.
 			float fresnel = 0.06 + 0.94 * pow(1.0 - clamp(r.y, 0.0, 1.0), 5.0);
