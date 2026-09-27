@@ -115,9 +115,32 @@ _(the worker keeps this current)_
 - *The `quay_road` spot on the Locks moved to `canal:-55:0`:* its camera sat inside the block at (-30, 42) and every
   frame there was a wall (both in round 11's terrain-shots and here).
 
-**Progress:** tests `tests/test_arena_water.gd` (7); first Locks pairs looked at (22:23): b_venue puts the blocks'
-windows in the canal; windows read as pasted squares → softened, dimmed and smeared in elevation; the lap line was
-invisible → wider and brighter; body_flood 0.45 → 0.3 (the sodium pools turned the teal olive).
+**Progress (what the frames taught, in order; every frame at his pose, builder0):**
+- First Locks pairs (22:23): b_venue puts the blocks' windows in the canal, but they read as pasted squares, so I
+  softened, dimmed and smeared them in elevation. The lap line was invisible, so it got wider and brighter.
+  body_flood 0.45 → 0.3 (the sodium pools turned the teal olive).
+- The composite came out DARKER than round 10 (Crossing bridge mean water luma 0.166 → 0.073). A physically sharp
+  mirror at 21° over the middle of a 140 m arena reflects open sky; the real lamps' glints almost never line up
+  with his pose; and removing round 10's fake streak took its glare away. Fixes: each lamp became an anisotropic
+  COLUMN (azimuth σ 0.05 rad, elevation σ 0.3 rad), the harbour-lights look; the floodlight pools glint on the long
+  swell's crests (smooth noise at ~10–16 m, so never a sparkle); the flood-lit body goes by the light's luminance,
+  so it stays teal; body (0.025, 0.09, 0.1).
+- With that, the near-black share of water pixels at the Locks swing bridge went 0.39 → 0.20 and at the Crossing
+  bridge 0.49 → 0.44 (round 10 → now, same frame, same instant; `d23125c7`-era pairs).
+- The Terminus canal and the Locks showed the reflected neon as thin looping SCRIBBLES (round noise makes closed
+  contours). The smear is now laid out in the view's frame, long across and short along it, so a neon line breaks
+  into horizontal dashes; smear 0.12 → 0.09 (`504473f2`).
+- Pit frames differed between steps: the Sumps has no water, so `set_water_look` never froze its pits and their
+  ember moved; and a whole-frame count also catches the crowd and the show. Pits now freeze and mask too, and
+  WATER_STATS reports `changed_inside_px` (`9fc09308`).
+
+**Green:** `d23125c7` (my water + checkpoint 1), builder0, `>> remote: make check exited 0`, 18 targets, 1746 passed,
+0 failed, sim-baseline `01ab39b592cc9837` UNMOVED, determinism `b83a374ce2fcde37`.
+
+**Cost, before (`46bac1a3`, builder0, `perf-scene --arena=crossing`, 3 cycles):** too noisy to compare. Average frame
+time falls from 92 ms to 13 ms across cycles with five other streams on builder0; the last cycle's `all` phase reads
+gpu 4.6–5.8 ms, 183–195 draws. So the controlled measure is `make water-gpu`: one frame held still at his pose,
+water drawn vs hidden, run alternately in a `46bac1a3` worktree and this branch.
 
 
 **INCIDENT (2026-09-26 ~23:28, mine): a remote run from a non-git folder rsynced the laptop's `/` over
