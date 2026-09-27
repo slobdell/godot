@@ -186,7 +186,12 @@ Commits after it touch only `_agents/streams/audio.md`.
   another stream's rsync at 23:28 (orchestrator lesson 221); its log read `Cannot open file 'res://game/main.tscn'`.
   The green `make check` above finished at 23:17, before the incident.
 - **Not done: a real `make skirmish` with ears.** Nobody on the agent side can listen; that check is his.
-- **The Booth Monitor** for his veto: `make announcer-demo-audio CLIPS=assets/announcer/clips`, then open
+- **The veto page (with `db`, for his taps): https://claude.ai/artifact/6kWUqopgyKkiv6Ahf669A5** — all 67 r12 lines
+  with their clips, grouped by pool, Keep / Veto per line; taps land in its `verdicts` collection (doc id = the line
+  id with `.` → `_`, fields `line_id`, `verdict`, `text`, `at`). **Read that `db` at the round's close** (lesson
+  220). Private to the owner until shared. Rebuild: `tools`-free, the generator is in the audio worker's scratchpad;
+  the local equivalent is the Booth Monitor below.
+- **The Booth Monitor** (local) for his veto: `make announcer-demo-audio CLIPS=assets/announcer/clips`, then open
   `build/announcer/demo/index.html#new` — the New tab lists every r12 line with its clip.
 
 ### Questions for the lead
