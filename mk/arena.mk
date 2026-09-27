@@ -159,7 +159,7 @@ WATER_GPU_SPOTS ?= crossing:-92:14 locks:0:4
 water-gpu: import ## Arena (round 12): the water's GPU ms at the lead's pose, held still, drawn vs hidden (WATER_GPU_SPOTS="crossing:-92:14 locks:0:4") -> WATER_GPU lines (needs a display: make remote T=water-gpu)
 	@mkdir -p $(BUILD_DIR)/water-gpu
 	@$(foreach s,$(WATER_GPU_SPOTS),timeout 900 $(GODOT) --path . --resolution 1920x1080 --disable-vsync --script res://tests/arena/water_gpu_probe.gd -- \
-		--arena=$(word 1,$(subst :, ,$(s))) --spot=$(word 2,$(subst :, ,$(s))):$(word 3,$(subst :, ,$(s))) --frames=$(or $(WATER_GPU_FRAMES),480) \
+		--arena=$(word 1,$(subst :, ,$(s))) --spot=$(word 2,$(subst :, ,$(s))):$(word 3,$(subst :, ,$(s))) --frames=$(or $(WATER_GPU_FRAMES),480) $(if $(WATER_GPU_LOOKS),--looks=$(WATER_GPU_LOOKS)) \
 		> $(BUILD_DIR)/water-gpu/$(subst :,_,$(s)).log 2>&1; echo ">> water-gpu $(s): godot exited $$?"; \
 		grep -E '^WATER_GPU|ERROR|Error' $(BUILD_DIR)/water-gpu/$(subst :,_,$(s)).log | head -20 || true;)
 

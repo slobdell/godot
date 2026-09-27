@@ -57,6 +57,24 @@ func _run() -> void:
 	# builder0's GPU is shared with other streams' runs, so the load drifts by milliseconds within a minute. Toggle
 	# the water in short blocks and pair each drawn block with the hidden block right after it: the drift cancels in
 	# the difference, and the median of the differences is the water's cost.
+	# `--looks=r10,b_venue,...` (this branch only: WaterLook's steps) measures each look in turn, to find what costs.
+	var looks := _flag("looks", "").split(",", false)
+	if looks.is_empty():
+		looks = PackedStringArray([""])
+	for look in looks:
+		if look != "":
+			var visual: Node = water.get_parent()
+			visual.call("set_water_look", _look(look), -1.0)
+		await _measure(arena_name, spot, frames, water, viewport_rid, look)
+	quit(0)
+
+
+func _look(name: String) -> Dictionary:
+	var script: GDScript = load("res://game/theme/arena_kit/terrain/water_look.gd")
+	return script.call("at", name)
+
+
+func _measure(arena_name: String, spot: PackedStringArray, frames: int, water: MeshInstance3D, viewport_rid: RID, look: String) -> void:
 	var blocks := int(_flag("blocks", "40"))
 	var per := maxi(4, frames / blocks)
 	var diffs := PackedFloat64Array()
@@ -74,12 +92,11 @@ func _run() -> void:
 	diffs.sort()
 	drawn.sort()
 	hidden.sort()
-	var result := {"arena": arena_name, "spot": spot, "blocks": blocks, "frames_per_block": per,
+	var result := {"arena": arena_name, "spot": spot, "look": look, "blocks": blocks, "frames_per_block": per,
 		"shader": String((water.material_override as ShaderMaterial).shader.resource_path),
 		"drawn_median_ms": _pct(drawn, 0.5), "hidden_median_ms": _pct(hidden, 0.5),
 		"water_ms": _pct(diffs, 0.5), "water_q25_ms": _pct(diffs, 0.25), "water_q75_ms": _pct(diffs, 0.75)}
 	print("WATER_GPU " + JSON.stringify(result))
-	quit(0)
 
 
 func _sample(viewport_rid: RID, count: int) -> PackedFloat64Array:

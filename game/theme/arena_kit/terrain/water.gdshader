@@ -292,7 +292,7 @@ void fragment() {
 			// Schlick with water's F0 = 0.02, plus a small art-directed floor so the surface reads at 21 degrees.
 			float fresnel = 0.06 + 0.94 * pow(1.0 - clamp(r.y, 0.0, 1.0), 5.0);
 			vec3 env = venue_reflect >= 1.0 ? venue(hit, r_env)
-					: mix(horizon_sky(r), venue(hit, r_env), venue_reflect);
+					: (venue_reflect <= 0.0 ? horizon_sky(r) : mix(horizon_sky(r), venue(hit, r_env), venue_reflect));
 			vec3 body = water_deep;
 			vec3 pool = vec3(0.0);
 			if (has_flood_map) {
@@ -337,8 +337,10 @@ void fragment() {
 				color += vec3(1.0, 0.85, 0.6) * streak * 1.2 * legacy_streak;
 			}
 			// (d) The lap line: a thin pale band where the surface meets a bank, wavering with the swell.
-			float bank = bank_dist(hit.xz) + (swell.x + chop.y) * 0.12;
-			color += lap_color * lap * smoothstep(lap_width, 0.0, bank) * 0.9;
+			if (lap > 0.0) {
+				float bank = bank_dist(hit.xz) + (swell.x + chop.y) * 0.12;
+				color += lap_color * lap * smoothstep(lap_width, 0.0, bank) * 0.9;
+			}
 			// Shade the water a little under a bridge: its shadow reads the deck as ABOVE the water.
 			if (under_deck(hit.xz)) {
 				color *= 0.35;
