@@ -2399,7 +2399,7 @@ func _act(s: Dictionary) -> void:
 			# ordered directly is detached from its element and has no sector.)
 			var told: Variant = intended_facing()
 			if watch != null:
-				_order_move({"type": "face", "x": watch.x, "z": watch.z, "from": _sector_source() if sector_watch else "contact"})
+				_order_move({"type": "face", "x": watch.x, "z": watch.z, "from": _sector_source(sector) if sector_watch else "contact"})
 			elif told != null:
 				_order_move(_face_intended_or({"type": "stop"}))
 			elif s.get("squad") != null:
@@ -2676,10 +2676,13 @@ func _face_intended_or(fallback: Dictionary) -> Dictionary:
 	return {"type": "face", "x": look.x, "z": look.z, "told": true, "from": "order" if _ordered_facing() else "post"}
 
 
-## Round 13: a sector watched with nothing in sight is an ORDERED facing when the crew's K1 order carries one (a halt
-## hands each crew its sector as its order's facing; a hold's facing is everyone's), else the formation's own ("sector").
-func _sector_source() -> String:
-	return "order" if _ordered_facing() else "sector"
+## Round 13: a sector watched with nothing in sight is an ORDERED facing ("order", never declined) when the crew's K1
+## order carries one, or when the element's task is a posture -- a hold (its `facing`), an ambush, a screen, support by
+## fire -- rather than a move; a move's arrival sector is the formation's own ("sector": the S6 case).
+func _sector_source(element_context: Dictionary) -> String:
+	if _ordered_facing() or not String(element_context.get("task", "")) in ["move", "attack", ""]:
+		return "order"
+	return "sector"
 
 
 ## Whether this unit's current K1 order itself carries a `facing`.

@@ -59,7 +59,6 @@ func test_a_hold_with_an_ordered_facing_still_turns_the_scouts() -> void:
 	var hold := {"verb": "hold", "to": [-51.0, 60.0], "facing": [1.0, 0.0]}
 	var on: Dictionary = await _squad(true, hold, 12.0)
 	print("MEASURE idle_face hold with facing: on %s" % on)
-	assert_true(int(on["scout_faces"].get("order", 0)) > 0 or int(on["scout_faces"].get("sector", 0)) > 0,
-			"setup: the halted scouts are given a facing (%s)" % on["scout_faces"])
-	assert_eq(int(on["scout_faces"].get("order", 0)) > 0, true,
-			"a hold's facing reaches the scouts as their ORDER's facing (%s)" % on["scout_faces"])
+	assert_true(int(on["scout_faces"].get("order", 0)) > 0,
+			"a hold's facing reaches the scouts as an ORDERED facing (%s)" % on["scout_faces"])
+	assert_eq(int(on["scout_declined"]), 0, "and none of it is declined: the hold's facing is untouched")
