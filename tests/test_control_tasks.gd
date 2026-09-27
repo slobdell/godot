@@ -126,20 +126,35 @@ func test_the_hud_reads_back_what_the_leader_decided() -> void:
 	assert_true(line.length() > 8, "with something in it: %s" % line)
 
 
-func test_the_player_can_override_the_formation_and_hand_it_back() -> void:
+## REWRITTEN round 11 (the lead, 2026-09-25, after playing): *"are you saying that we're not adequately applying our
+## squad properties to a unit I've regrouped as squad 1? ... they're still not really forming up when I give them a
+## formation to use"*.
+##
+## This test used to assert the OPPOSITE of what it asserts now, and it was not wrong when it was written: the design
+## was that an overridden formation is geometry, so the element DISSOLVES and the units are ordered directly. What
+## nobody had written down is what that cost him — choosing a shape silently threw away the squad's leader, so his
+## squad's brain and his chosen shape were mutually exclusive and the HUD gave him no way to tell which he had. He
+## reported it as "they don't form up", which is exactly what a leaderless clump looks like.
+##
+## The override now lives on the task instead (`ElementTask`'s `formation` key), so he gets both. The old assertion is
+## REPLACED rather than deleted, with this note, because the next reader will otherwise re-derive the old design from
+## its absence.
+func test_the_player_can_override_the_formation_and_keep_the_squad() -> void:
 	var f := await _setup()
 	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	assert_eq(f.controls.formation, UnitCommand.AUTO, "elements run on doctrine by default")
 	f.controls.formation = "line"
 	await f.key(KEY_A)
 	await f.click(f.ground(Vector3(-20, 0, -20)))
-	assert_true(f.controls.elements.of("Green_Alpha_1") == null, "an overridden formation is geometry, not a task")
-	assert_eq(f.orders.current("Green_Alpha_1").get("verb", ""), "attack_move", "so the units are ordered directly")
-	assert_eq(f.orders.current("Green_Alpha_1").get("formation", ""), "line", "in the formation the player asked for")
+	var element: Element = f.controls.elements.of("Green_Alpha_1")
+	assert_true(element != null, "the squad SURVIVES an overridden formation: it is his shape, not his leader, he chose")
+	assert_eq(String(element.task.get("formation", "")), "line", "and the shape he asked for rides the task")
 	f.controls.formation = UnitCommand.AUTO
 	await f.key(KEY_A)
 	await f.click(f.ground(Vector3(-25, 0, -25)))
-	assert_eq(f.controls.elements.of("Green_Alpha_1").task.get("verb", ""), "move", "back to auto, back to doctrine")
+	element = f.controls.elements.of("Green_Alpha_1")
+	assert_eq(String(element.task.get("verb", "")), "move", "back to auto, back to doctrine")
+	assert_true(not element.task.has("formation"), "and the leader is choosing the shape again")
 
 
 ## Round 6: Ambush (squad's verb, earned 9ba36681) is B then a click on the kill zone, for a whole squad.

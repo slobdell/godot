@@ -114,10 +114,16 @@ func test_a_task_refused_on_the_spot_is_announced() -> void:
 	f.controls.elements = Elements.install(f.game_match, f.orders)
 	var heard: Array = []
 	f.controls.command_issued.connect(func(_command: Dictionary, error: String) -> void: heard.append(error))
-	f.controls.selection.set_units(["Green_Alpha_1", "Green_Bravo_2"])  # not a whole element: no task can be given
+	# Round 11: a selection that is not yet a squad is no longer a refusal — Screen FORMS the squad and gets on with
+	# it (the lead, 2026-09-25: *"the screen button isn't working. I can't get the units to set up a screen"*). The
+	# invariant this test exists for is unchanged and still worth guarding, so it now uses a refusal a player can
+	# actually reach: every control group already holds units, so there is no free number to form into.
+	for number in range(1, ControlGroups.COUNT + 1):
+		f.controls.groups.save(number, ["Green_Bravo_2"])
+	f.controls.selection.set_units(["Green_Alpha_1"])
 	var error := f.controls.order_selection("screen", {"to": [0.0, -30.0]})
 	assert_true(error != "", "the task is refused (%s)" % error)
-	assert_eq(heard, [error], "and the refusal is announced, not just returned")
+	assert_eq(heard, [error], "and the refusal is announced ONCE, and is the text that was announced")
 
 
 ## squad's cb02c0ef: a flanker's order names the target while it swings round. That is carrying the order out.

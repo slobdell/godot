@@ -826,8 +826,15 @@ func center_on(names: Array) -> void:
 ## Round 8: a refusal the player never hears is an order that silently didn't happen. Everything refused before it
 ## reaches Orders goes out on command_issued like an Orders error does (the HUD posts it as "Can't: ...").
 func _refuse(error: String) -> String:
+	_last_refusal = error  # so a caller that refuses THROUGH another refusing call returns what was announced
 	command_issued.emit({"verb": "", "units": selection.units.duplicate()}, error)
 	return error
+
+
+## The text of the last refusal this object announced. `order_selection` needs it because `form_squad()` announces
+## its own reason ("all nine groups hold units") and returning a DIFFERENT string from here would either say
+## something the player never saw or announce a second, contradictory line.
+var _last_refusal := ""
 
 
 func issue(command: Dictionary) -> String:
@@ -879,7 +886,7 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 		if elements == null:
 			return _refuse("tasks need the doctrine layer, which this match is running without")
 		if form_squad() == 0:
-			return task_refusal() if task_refusal() != "" else "all nine groups hold units: Ctrl+1-9 to reuse one"
+			return _last_refusal  # form_squad announced why (no free group); say the same thing back
 		return assign_task(verb, extra)
 	# A direct order is the player taking the wheel: dissolve the element so its leader stops commanding. The
 	# next task re-forms it. (Doctrine detaches per unit too, but only from its next update, which is late

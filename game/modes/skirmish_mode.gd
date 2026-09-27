@@ -25,7 +25,9 @@ extends GameMode
 ##   --camera-readout=off  hide the live camera values (round 6: on, so the lead can find the camera; P copies the pose)
 ##   --hints=off|fresh  no control hints (X6; they retire themselves as each control is used), or all of them, remembering nothing
 ##   --squad-orders-test=DIR  the lead's sequence: order every squad in turn, then where each unit actually ends up
+##   --no-record        do not write the match recording (build/recordings/*.jsonl; on by default)
 ##   --repath-test=DIR  R2: squad 1 en route, a right-click 40 m off its line; per tick what each crew carries (RepathPlaytest)
+##   --screen-test=DIR  The lead's "screen did nothing": a Screen task grouped, ungrouped, near, and a move control (ScreenPlaytest)
 ##   --response-test=DIR  click → order → ack → first visible movement, in ms, at this army size (ResponsePlaytest)
 ##   --hud-cost=PATH  X4: what each HUD widget costs in draw calls and _process at ~30 a side (HudCostProbe)
 ##   --shell-playtest=DIR  the first minutes through real input: faction menu, planning, the camera in battle (ShellPlaytest)
@@ -263,7 +265,7 @@ func _start_match() -> void:
 	rig.name = "RtsCamera"
 	rig.camera = main.camera
 	rig.edge_pan = not (flags.has("scripted") or flags.has("command-playtest") or flags.has("control-playtest") \
-			or flags.has("repath-test"))
+			or flags.has("repath-test") or flags.has("screen-test"))
 	var frame := Match.team_frame(Match.Team.GREEN)
 	rig.yaw = 0.0 if frame["forward"] == Vector3.FORWARD else PI
 	# C5: start where the vehicles read as vehicles: frame the whole army and the ground just ahead of it,
@@ -354,6 +356,15 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	markers.game_match = game_match
 	markers.selection = controls.selection
 	main.add_child(markers)
+	# Round 11 (the lead, 2026-09-25: *"let's at least add indicators of shield health"*). Hull and shield over every
+	# unit he can see, so "is my fire doing anything" is answered while he watches the fight instead of only on the
+	# card of a unit he has clicked. `--no-unit-bars` hides them.
+	if not flags.has("no-unit-bars"):
+		var bars := UnitBars.new()
+		bars.name = "UnitBars"
+		bars.controls = controls
+		bars.game_match = game_match
+		main.hud.add_child(bars)
 	var radar := Radar.new()
 	radar.name = "Radar"
 	radar.game_match = game_match
@@ -441,6 +452,28 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 			repath.only = flags.text("repath-only").split(",")
 		main.add_child(repath)
 		repath.run()
+	# THE BLACK BOX, ON BY DEFAULT (the lead, 2026-09-25: *"we should make it the default while we debug and develop
+	# such that make skirmish records the match to a file that you can easily play back"*). Every skirmish writes one
+	# JSONL of what he ordered, what the crews carried and what the guns did, so a report like "several squads on one
+	# IFV and it would not die" is read rather than reconstructed. `--no-record` turns it off; scripted harnesses
+	# (which run their own instrumentation and would otherwise litter the directory) do not record.
+	# A SPECTATED match records too: it is AI against AI with nobody to press Space, which makes it the only way to
+	# verify the recorder end to end (the planning pause means an unattended player match never ticks, so its
+	# recording is one census row and nothing else). Only `--scripted` harnesses are excluded, because they carry
+	# their own instrumentation and would fill the directory.
+	if not flags.has("no-record") and not flags.has("scripted"):
+		MatchRecorder.start(game_match, controls.orders, controls, controls.elements,
+				flags.text("record-dir", "build/recordings"), flags.text("arena", ""),
+				flags.integer("seed", -1))
+	if flags.has("screen-test"):
+		var screener := ScreenPlaytest.new()
+		screener.name = "ScreenPlaytest"
+		screener.controls = controls
+		screener.out_dir = flags.text("screen-test")
+		if flags.text("screen-only") != "":
+			screener.only = flags.text("screen-only").split(",")
+		main.add_child(screener)
+		screener.run()
 	if flags.has("response-test"):
 		var response := ResponsePlaytest.new()
 		response.name = "ResponsePlaytest"

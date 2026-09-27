@@ -242,3 +242,15 @@ repath-test: import ## R2: a right-click on a squad already moving, seven ways, 
 		$(REPATH_FLAGS) --repath-test=$(CURDIR)/$(REPATH_DIR) $(if $(ONLY),--repath-only=$(ONLY)) 2>&1 \
 		| tee $(REPATH_DIR)/run.log | grep -E '^REPATH|SCRIPT ERROR|^ERROR' || true
 	grep -q 'REPATH_DONE ok=true' $(REPATH_DIR)/run.log
+
+SCREEN_DIR ?= build/screen
+SCREEN_ARENA ?= terminus
+SCREEN_FLAGS ?= --player-faction=gangs --enemy-faction=law --tune=match.no_damage=1
+
+.PHONY: screen-probe
+screen-probe: import ## The lead's "screen did nothing": a Screen task grouped / ungrouped / near, and a move control, through real input on Terminus (ONLY=grouped,near) -> build/screen/screen.json
+	rm -rf $(SCREEN_DIR) && mkdir -p $(SCREEN_DIR)
+	timeout 300 $(GODOT) --headless --path . -- --skirmish --seed=3 --no-pick-faction --mute --arena=$(SCREEN_ARENA) \
+		$(SCREEN_FLAGS) --screen-test=$(CURDIR)/$(SCREEN_DIR) $(if $(ONLY),--screen-only=$(ONLY)) 2>&1 \
+		| tee $(SCREEN_DIR)/run.log | grep -E '^SCREEN|SCRIPT ERROR|^ERROR' || true
+	@grep -q 'SCREEN_DONE' $(SCREEN_DIR)/run.log || { echo "screen-probe FAILED: no SCREEN_DONE line"; exit 1; }

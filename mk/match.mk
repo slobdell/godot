@@ -299,3 +299,7 @@ pace: import ## Match pace with seeded CPU armies like a skirmish (first shot, f
 	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),24) --jobs $(JOBS) --time-limit 300 --score-limit 0 \
 		--json $(BUILD_DIR)/pace$(if $(CONTROL),-control).json \
 		--extra="--green-doctrine=cpu --rust-doctrine=cpu --elimination --budget=$(or $(BUDGET),1000) $(if $(CONTROL),--control)"
+
+.PHONY: recording
+recording: ## Read the newest match recording (the black box every skirmish writes): orders, refusals, and what damage landed (FILE=path UNIT=name DAMAGE=1 ORDERS=1)
+	@$(PYTHON) tools/read_recording.py $(FILE) $(if $(UNIT),--unit $(UNIT)) $(if $(DAMAGE),--damage) $(if $(ORDERS),--orders)

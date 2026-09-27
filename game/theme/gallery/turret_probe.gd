@@ -33,7 +33,13 @@ func _run() -> void:
 			tank.set("unit_id", unit_id)
 			tank.set("simulate", false)
 			root.add_child(tank)
-			await process_frame
+			# Round 11: ONE process frame is not enough. DozerPart._fit_to_hull scales and LIFTS every mounted part
+			# on a deferred call, so a probe that measures after a single frame reads a half-fitted rig -- the hull
+			# at its final size and the gun still where the mesh put it. That is how this probe came to report the
+			# War Rig's gun 0.175 m INSIDE the tanker while the render plainly showed it hanging in the air.
+			# tests/test_theme_unit_scale.gd already waits two PHYSICS frames for exactly this reason.
+			await physics_frame
+			await physics_frame
 			var entry := {
 				"box": Units.stat(unit_id, "hull_size"),
 				"pivot": _v(tank.turret.position),
@@ -44,6 +50,8 @@ func _run() -> void:
 				"gun_cut": not FactionArt.gun_cut(unit_id).is_empty(),
 				"gun_pivot": _gun_pivot(tank),
 				"above_hull": TurretFit.measure(tank),
+				"seat_gap": TurretFit.seat_gap(tank),
+				"gun_seat": TurretFit.gun_seat(tank),
 			}
 			report[unit_id] = entry
 			print("TURRET_PROBE %s box=%s pivot=%s turret_art=%s weapon_art=%s gun_pivot=%s hull_art=%s" % [unit_id,
@@ -51,6 +59,17 @@ func _run() -> void:
 			var fit: Dictionary = entry["above_hull"]
 			print("TURRET_PROBE_ABOVE %s points=%d above=%.0f%% lowest=%+.2f m" % [unit_id, fit["points"],
 					float(fit["above"]) * 100.0, fit["lowest"]])
+			var seat: Dictionary = entry["seat_gap"]
+			var gun: Dictionary = entry["gun_seat"]
+			if bool(gun.get("has_gun", false)):
+				print("TURRET_PROBE_GUN %s air=%+.3f m at %s (hull under that point %+.3f; %d points measured, %d over nothing)" % [
+						unit_id, gun.get("air", 0.0), gun.get("at", Vector3.ZERO), gun.get("under", 0.0),
+						gun.get("measured", 0), gun.get("floating", 0)])
+				print("TURRET_PROBE_AIR %s over_nothing=%.0f%% of the gun's drawn points have no hull in their own column" % [
+						unit_id, float(gun.get("over_nothing", 0.0)) * 100.0])
+			if int(seat["measured"]) > 0:
+				print("TURRET_PROBE_SEAT %s gap=%+.3f m (nearest hull within %d cells, %d of %d points)" % [unit_id,
+						seat["gap"], TurretFit.REACH_CELLS, seat["measured"], seat["points"]])
 			tank.free()
 	var path := flags.text("turret-probe-json", "")
 	if path != "":

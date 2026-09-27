@@ -113,5 +113,13 @@ func test_a_task_is_checked_before_it_is_accepted() -> void:
 	assert_true(ElementTask.validate({"verb": "move"}).contains("needs a destination"), "a move without one is not")
 	assert_true(ElementTask.validate({"verb": "attack"}).contains("needs a 'target'"), "an attack needs an enemy")
 	assert_true(ElementTask.validate({"verb": "charge", "to": [0, 0]}).contains("verb"), "unknown verbs are refused")
-	assert_true(ElementTask.validate({"verb": "hold", "formation": "wedge"}).contains("unknown key"),
-			"and so is commanding geometry: the leader picks the formation, not the commander")
+	# REPLACED round 11 (the lead, 2026-09-25: *"they're still not really forming up when I give them a formation to
+	# use"*). This used to assert that a task may NOT name a formation — "the leader picks the formation, not the
+	# commander" — which was his own 2026-09-16 ruling read strictly. The cost, unwritten until he hit it: the only
+	# way to command a shape was the DIRECT path, which dissolves the element, so choosing a shape threw away the
+	# leader entirely. A task may now carry one; AUTO (the default, and every CPU task) still leaves the leader to
+	# decide, so the ruling stands where it was aimed.
+	assert_eq(ElementTask.validate({"verb": "hold", "formation": "wedge"}), "",
+			"a task MAY name the shape the commander chose")
+	assert_true(ElementTask.validate({"verb": "hold", "formation": "banana"}).contains("formation"),
+			"but not a shape that does not exist")
