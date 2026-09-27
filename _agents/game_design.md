@@ -2437,3 +2437,25 @@ Shown the list of pending items (roadmap items 1–11, the fall-in rule, the Loc
   (`Orders._resolve_group`, one route per vehicle) is reached only by a PARTIAL squad, a mixed selection, or a
   shift-queued order. Round 12 verifies that on the default path and decides whether a partial selection deserves the
   anchor too; it is no longer listed as "still scatters".
+
+### Round 12: the lead's verdicts as they land
+
+**Camera, the drawn-solids page (2026-09-26 evening), his words verbatim:**
+
+> *"Camera: drawn solids, my answers*
+> *- 1 · The camera in a floodlight's lamp head: Keep it*
+> *- 2 · An ad screen between you and the fight: Don't cut screens*
+> *- 3 · What I left standing: floodlight masts and signs: Leave them standing"*
+
+Read against the page's option labels by the camera stream (its Status has the mapping); the orchestrator's reading,
+to be confirmed there: the camera-placement fix stays, and the cutaway hides blocks only — no ad screens, masts or
+signs.
+
+**A correction to the squad brief (squad, 2026-09-26):** the brief said the yard and the Terminus both classify as
+*dense*. `make tactics-terrain` shows only the yard's spawns are dense and the Terminus is *lanes*; and no squad the
+lead fields uses the standard table — a squad uses its units' FACTION table, and the Condemned and Law catch-alls pick a
+**column in any terrain**. So the question is "column vs wedge for a Condemned/Law plain move", measured that way.
+
+**Squad's S4, decided (a):** a partial or mixed selection does scatter (plots in squad's Status), and the lead himself
+withdrew transient elements on 2026-09-20 (R1 narrowed). **Open for the lead:** does a partial selection deserve the
+travelling anchor, or is "Part of Squad N: press N" the answer? Recommended: leave it.
