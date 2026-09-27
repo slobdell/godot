@@ -2440,16 +2440,20 @@ Shown the list of pending items (roadmap items 1–11, the fall-in rule, the Loc
 
 ### Round 12: the lead's verdicts as they land
 
-**Camera, the drawn-solids page (2026-09-26 evening), his words verbatim:**
+**Camera (2026-09-26 evening, the camera page https://claude.ai/artifact/We5PxYjNqXZDqXmuoNurxp; `db` doc
+`answers/camera` read back at 06:00 UTC 2026-09-27: `lamp: keep`, `screen: nocut`, `left: leave`, no note).** His
+words, as he sent them to the orchestrator:
 
 > *"Camera: drawn solids, my answers*
 > *- 1 · The camera in a floodlight's lamp head: Keep it*
 > *- 2 · An ad screen between you and the fight: Don't cut screens*
 > *- 3 · What I left standing: floodlight masts and signs: Leave them standing"*
 
-Read against the page's option labels by the camera stream (its Status has the mapping); the orchestrator's reading,
-to be confirmed there: the camera-placement fix stays, and the cutaway hides blocks only — no ad screens, masts or
-signs.
+What each means in the code (`_agents/streams/camera.md`): **1** the camera's placement asks the DRAWN extents
+(`RtsCamera.seen()`), so it rises out of a floodlight's lamp head at a low tilt (kept); **2** `BlockCutaway` does NOT
+hide ad screens, and `BlockCutaway.DRAWN_CUT` is empty, so the cutaway takes building-height colliders only, as before
+round 12 (the screens are the show; they stay drawn); **3** floodlight masts and signs are not cut either (never were).
+Confirmed by the camera stream against its own page's labels (`db` version 3).
 
 **The Condemned tank (the prison bus), on the fleet page's `bus_r12_mv` card (2026-09-27), his words verbatim:**
 

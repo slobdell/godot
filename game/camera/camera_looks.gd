@@ -94,6 +94,8 @@ func run() -> void:
 					RtsCamera.FOV_DEG, {"row": "arena", "label": "behind wall %d" % k}))
 	if grid == "alleys":
 		frames.append_array(await _alley_frames())
+	if grid == "drawn":
+		frames.append_array(await _drawn_frames())
 	for level: float in (WELDED_LEVELS if grid == "full" and show_today else []):
 		var distance := RtsCamera.distance_for(level)
 		var pitch := RtsCamera.welded_pitch(level)
@@ -226,6 +228,119 @@ func _alley_frames() -> Array:
 	return frames
 
 
+## Round 12 (camera K2-K5): the pairs for "the camera asks the drawing, not the collider", each ONE variable moved at
+## his pose (FOV 35, 49 m): the camera by a floodlight at 18 deg posed from the colliders / from the drawing; an ad
+## screen between the camera and the fight with the cutaway reading colliders / the drawing; and, unpaired, the
+## things deliberately not cut (a floodlight mast and a sign board on the sight line), so the decision can be seen.
+const DRAWN_LAMP_PITCH := 18.0
+
+
+func _drawn_frames() -> Array:
+	var frames: Array = []
+	var data: Dictionary = Arena.active
+	var drawn := RtsCamera.seen(data)
+	var cutaway := get_tree().root.find_child("BlockCutaway", true, false) as BlockCutaway
+	var lamp: Variant = CameraLooks.drawn_lamp_pose(data, drawn)
+	if lamp != null:
+		var at: Vector3 = lamp[0]
+		var yaw: float = lamp[1]
+		for arm: String in ["collider", "drawn"]:
+			var clear := RtsCamera.clear_pose(at, yaw, ALLEY_DISTANCE, DRAWN_LAMP_PITCH, data if arm == "collider" else drawn)
+			var eye := RtsCamera.pose_at(at, yaw, float(clear["distance"]), float(clear["pitch_deg"])).origin
+			var inside := RtsCamera.solid_at(eye, drawn)
+			frames.append(await _shoot("drawn_lamp_%s" % arm, at, yaw, float(clear["distance"]), float(clear["pitch_deg"]),
+					RtsCamera.FOV_DEG, {"row": "drawn lamp", "label": "%s: camera posed from the %s, %.1f m up" % [
+					"before" if arm == "collider" else "after", "colliders" if arm == "collider" else "drawing", eye.y],
+					"inside_a_solid": not inside.is_empty(), "inside": String(inside.get("type", ""))}))
+	var screen: Variant = CameraLooks.drawn_screen_pose(data, drawn)
+	# The lead's verdict (2026-09-26): screens are not cut, so with `DRAWN_CUT` empty there is no pair to shoot.
+	if screen != null and cutaway != null and not BlockCutaway.DRAWN_CUT.is_empty():
+		var at: Vector3 = screen[0]
+		var yaw: float = screen[1]
+		var clear := RtsCamera.clear_pose(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH, drawn)
+		for arm: String in ["collider", "drawn"]:
+			cutaway.drawn = arm == "drawn"
+			var shot := await _shoot("drawn_screen_%s" % arm, at, yaw, float(clear["distance"]), float(clear["pitch_deg"]),
+					RtsCamera.FOV_DEG, {"row": "drawn screen", "label": "%s: the cutaway reads the %s" % [
+					"before" if arm == "collider" else "after", "colliders" if arm == "collider" else "drawing"]})
+			shot["cut"] = cutaway.cut_blocks()
+			frames.append(shot)
+		cutaway.drawn = true
+	for type: String in ["floodlight", "sign"]:
+		var pose: Variant = CameraLooks.drawn_blocked_pose(data, drawn, type)
+		if pose == null:
+			continue
+		var clear := RtsCamera.clear_pose(pose[0], pose[1], ALLEY_DISTANCE, ALLEY_PITCH, drawn)
+		var shot := await _shoot("drawn_left_%s" % type, pose[0], pose[1], float(clear["distance"]), float(clear["pitch_deg"]),
+				RtsCamera.FOV_DEG, {"row": "drawn left", "label": "not cut: a %s's drawn box on the sight line" % type})
+		shot["cut"] = cutaway.cut_blocks() if cutaway != null else []
+		frames.append(shot)
+	return frames
+
+
+## A focus and yaw where the camera, posed from the colliders at DRAWN_LAMP_PITCH, sits inside a floodlight's drawn
+## lamp head: [focus, yaw], or null. Searched outward from each floodlight, nearest first. Pure.
+static func drawn_lamp_pose(data: Dictionary, drawn: Dictionary) -> Variant:
+	for obstacle: Dictionary in data.get("obstacles", []):
+		if obstacle["type"] != "floodlight":
+			continue
+		var base := Vector3(float(obstacle["position"][0]), 0.0, float(obstacle["position"][1]))
+		for step in 32:
+			var yaw := TAU * float(step) / 32.0
+			var back := RtsCamera.boom(yaw, ALLEY_DISTANCE, DRAWN_LAMP_PITCH)
+			var at := Vector3(base.x - back.x, 0.0, base.z - back.z)  # the camera's ground point on the tower
+			if RtsCamera.roof_over(at + Vector3.UP * 1.5, data) >= 0.0 or not Arena.contains(at, data):
+				continue
+			var clear := RtsCamera.clear_pose(at, yaw, ALLEY_DISTANCE, DRAWN_LAMP_PITCH, data)
+			var eye := RtsCamera.pose_at(at, yaw, float(clear["distance"]), float(clear["pitch_deg"])).origin
+			if String(RtsCamera.solid_at(eye, drawn).get("type", "")) == "floodlight":
+				return [at, yaw]
+	return null
+
+
+## A focus in front of (or behind) an ad screen and the yaw that puts his camera on the far side of it, with the LED
+## wall on the sight line: [focus, yaw], or null. Pure.
+static func drawn_screen_pose(data: Dictionary, drawn: Dictionary) -> Variant:
+	for obstacle: Dictionary in data.get("obstacles", []):
+		if obstacle["type"] != "ad_screen":
+			continue
+		var turn := deg_to_rad(float(obstacle.get("rotation_deg", 0.0)))
+		for side: float in [1.0, -1.0]:
+			var face := Vector3(0.0, 0.0, -side).rotated(Vector3.UP, turn)
+			for ahead: float in [20.0, 14.0, 26.0, 10.0]:
+				var at := Vector3(float(obstacle["position"][0]), 0.0, float(obstacle["position"][1])) + face * ahead
+				if RtsCamera.roof_over(at + Vector3.UP * 1.5, data) >= 0.0 or not Arena.contains(at, data):
+					continue
+				var yaw := RtsCamera.yaw_facing(face)
+				var clear := RtsCamera.clear_pose(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH, drawn)
+				var eye := RtsCamera.pose_at(at, yaw, float(clear["distance"]), float(clear["pitch_deg"])).origin
+				if RtsCamera.sight_blockers(eye, at + Vector3.UP * BlockCutaway.AIM_HEIGHT_M, drawn).any(
+						func(solid: Dictionary) -> bool: return solid["type"] == "ad_screen"):
+					return [at, yaw]
+	return null
+
+
+## A focus and yaw at his pose where the sight line passes through a `type` prop's drawn box and nothing the
+## cutaway cuts: [focus, yaw], or null. Pure.
+static func drawn_blocked_pose(data: Dictionary, drawn: Dictionary, type: String) -> Variant:
+	for obstacle: Dictionary in drawn.get("obstacles", []):
+		if obstacle["type"] != type:
+			continue
+		var base := Vector3(float(obstacle["position"][0]), 0.0, float(obstacle["position"][1]))
+		for step in 16:
+			var yaw := TAU * float(step) / 16.0
+			var toward := Vector3(-sin(yaw), 0.0, -cos(yaw))  # the way the camera looks, on the ground
+			var at := base + toward * 18.0
+			if RtsCamera.roof_over(at + Vector3.UP * 1.5, data) >= 0.0 or not Arena.contains(at, data):
+				continue
+			var clear := RtsCamera.clear_pose(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH, drawn)
+			var eye := RtsCamera.pose_at(at, yaw, float(clear["distance"]), float(clear["pitch_deg"])).origin
+			var blockers := RtsCamera.sight_blockers(eye, at + Vector3.UP * BlockCutaway.AIM_HEIGHT_M, drawn)
+			if blockers.size() == 1 and blockers[0]["type"] == type:
+				return [at, yaw]
+	return null
+
+
 func _shoot(shot_name: String, focus: Vector3, heading: float, distance: float, pitch: float, fov: float,
 		extra: Dictionary) -> Dictionary:
 	camera.fov = fov
@@ -350,6 +465,17 @@ static func page(meta: Dictionary) -> String:
 				html.append("<figure><img loading=\"lazy\" src=\"%s\" alt=\"\"><figcaption><b>%s</b> · pitch %.0f° · %.0f m out%s</figcaption></figure>"
 						% [frame["file"], String(frame.get("label", frame["file"])), float(frame["pitch"]), float(frame["distance"]),
 						(" · <b>" + " · ".join(flags) + "</b>") if flags.size() > 0 else ""])
+			html.append("</div>")
+	var drawn_rows: Array = frames.filter(func(f: Dictionary) -> bool: return String(f.get("row", "")).begins_with("drawn "))
+	if not drawn_rows.is_empty():
+		html.append("<h2>The camera asks the drawing, not the collider (round 12)</h2>")
+		html.append("<p>A floodlight's collider is its 3 m footing and it is drawn 16 m tall; an ad screen's is a 1.4 m plinth under a 20.7 m LED wall. Each pair is the same spot and yaw at your pose (FOV 35, 49 m): left as the camera read the colliders, right as it reads the drawing. The last row is what is deliberately NOT cut.</p>")
+		for row_name: String in ["drawn lamp", "drawn screen", "drawn left"]:
+			html.append("<div class=\"row\">")
+			for frame: Dictionary in drawn_rows.filter(func(f: Dictionary) -> bool: return f["row"] == row_name):
+				html.append("<figure><img loading=\"lazy\" src=\"%s\" alt=\"\"><figcaption><b>%s</b> · pitch %.1f° · %.0f m out%s</figcaption></figure>"
+						% [frame["file"], String(frame.get("label", frame["file"])), float(frame["pitch"]), float(frame["distance"]),
+						(" · <b>INSIDE A " + String(frame.get("inside", "solid")).to_upper() + "</b>") if bool(frame.get("inside_a_solid", false)) else ""])
 			html.append("</div>")
 	html.append("<h2>What you played in round 5</h2><p>Zooming out also tilted the camera toward top-down (25° to 82°): the same slider did both.</p><div class=\"row\">")
 	for frame: Dictionary in frames:
