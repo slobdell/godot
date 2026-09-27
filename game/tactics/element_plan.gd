@@ -89,8 +89,8 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	# for his choice to reach a squad at all -- choosing one sent the order down the direct path, which dissolves the
 	# element -- so "give them a formation" and "let the squad think" were mutually exclusive. `AUTO` (the default,
 	# and every CPU task) leaves his 2026-09-16 ruling untouched: the leader decides from its DoctrineTable.
-	var asked := String((task as Dictionary).get("formation", UnitCommand.AUTO))
-	if asked != UnitCommand.AUTO and TacticsFormation.NAMES.has(asked):
+	var asked := chosen_formation(task)
+	if asked != "":
 		plan["formation"] = asked
 		plan["why"] = "%s, as ordered" % asked.replace("_", " ")
 	plan["drill"] = drill["drill"]
@@ -100,6 +100,14 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	else:
 		_plan_movement(plan, situation, state, table)
 	return plan
+
+
+## The shape the player chose for `task` with G, or "" under AUTO (the table decides). Pure.
+static func chosen_formation(task: Variant) -> String:
+	if typeof(task) != TYPE_DICTIONARY:
+		return ""
+	var asked := String((task as Dictionary).get("formation", UnitCommand.AUTO))
+	return asked if asked != UnitCommand.AUTO and TacticsFormation.NAMES.has(asked) else ""
 
 
 # ---- Movement (no contact): formation, technique, legs -------------------------------------------------
@@ -167,7 +175,10 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 					halves[0], spacing)
 			_group(plan, halves[0], String(plan["formation"]), anchor, heading, spacing, order_verb)
 			var trail_anchor := anchor - heading * table.leg("overwatch_gap_m")
-			_group(plan, halves[1], "wedge", trail_anchor, heading, spacing, "attack_move")
+			# Round 12 (C12.5): the trail section takes his shape too when he chose one; the doctrine's wedge otherwise.
+			var trail_shape := chosen_formation(task)
+			_group(plan, halves[1], trail_shape if trail_shape != "" else "wedge", trail_anchor, heading, spacing,
+					"attack_move")
 		_:
 			var anchor := _advance(plan, situation, state, table, center, destination, heading, ordered, spacing)
 			_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb)
@@ -259,6 +270,13 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		# `move` to the final slots, and the brain drives to its station while one is published (TankBrain._order_context).
 		# No follow orders: the flow's leader-relative station is what this replaces.
 		plan["stations"] = stations_along(plan, transit)
+		# S3: in the first seconds a crew does not cut across the lane of a crew seated ahead of it until that crew is by.
+		var elapsed := float(int(situation.get("tick", 0)) - int(transit.get("start_tick", situation.get("tick", 0)))) \
+				/ float(SimClock.TICK_RATE)
+		plan["shape_stations"] = plan["stations"]  # the shape's own stations: what "in formation" is measured against
+		var fell := fall_in(plan["stations"], situation.get("members", []), transit, elapsed)
+		plan["stations"] = fell["stations"]
+		plan["falling_in"] = fell["held"]
 		plan["flow_joined"] = false
 	elif not transit.is_empty():
 		# The anchor has arrived: everyone already holds a move to the slot its last station became. Nothing to flow.
@@ -414,6 +432,93 @@ static func stations_along(plan: Dictionary, transit: Dictionary) -> Dictionary:
 	return result
 
 
+## Round 12, S3: THE FALL-IN RULE. A squad moving off from its spawn line (abreast) into a column had every crew close
+## on the line at once: the middle pair converged from either side onto the same lane, met, and ORCA had them yield to
+## each other for seconds while the lag rule held the anchor at its floor pace (`make squad-settle ARENA=yard
+## DIR=forward METRES=80 SEED=1 TRACE=on`: both middle crews at 0-1.5 m/s from t=4 to t=8 s, 17-31 m off station).
+## A column forms the way a column does: the head pulls out, and each crew falls in BEHIND the one ahead of it.
+##
+## So: a crew whose sideways path onto its station would cross the lane of a crew seated AHEAD of it in the shape, while
+## that crew has not yet passed it along the route (by FALLIN_CLEAR_M), keeps its OWN lane -- its station is moved
+## across to where the crew already is, at the same distance along the route -- and falls in once that crew is by. Crews
+## are taken head first, so a crew that is itself held counts only its own lane. Bounded: nobody is held once the move is
+## FALLIN_MAX_S old (never zero, never forever, lesson 17). FALLIN_ENABLED is the A/B switch.
+##
+## Two ways to hold a crew (FALLIN_MODE): "lane" keeps it driving straight on in its own lane (the first build), "wait"
+## stands it where it is until the crew ahead is by -- a column falling in behind its head. The yard trace is why both
+## exist: the yard spawn has a 20-ft container dead ahead of its centre, the route goes round one side, and a crew
+## held in its own lane on the other side drives into the container. A crew that is waiting on purpose does not hold
+## the anchor back through the lag rule (Element._transit_pace skips `falling_in`).
+## MEASURED AND REJECTED (builder0, round 12): lane mode left the stop time a wash (9/9/14) and the first-10-s station
+## error worse in 6 of 8 cells; wait mode lost the stop time 19/9/4. The stall it was aimed at is a queue at a chokepoint
+## (doctrine.md *The fall-in rule*). OFF; kept as the measured control for the next attempt.
+static var FALLIN_ENABLED := false
+static var FALLIN_MODE := "lane"
+## A crew ahead in the shape has "passed" once it is this far ahead along the route (about a hull and a half).
+const FALLIN_CLEAR_M := 6.0
+## Two sideways paths cross when they come within this far of each other (about a hull's width).
+const FALLIN_LANE_M := 3.0
+## No crew is held once the transit is this old (seconds).
+const FALLIN_MAX_S := 8.0
+
+
+## `stations` with the fall-in rule applied: {"stations": {unit: Vector3}, "held": [unit, ...]}. `members` are
+## [{"name", "position"}], `transit` the anchor ({"anchor", "heading"}), `elapsed_s` how long the move has run. Pure.
+static func fall_in(stations: Dictionary, members: Array, transit: Dictionary, elapsed_s: float) -> Dictionary:
+	var result := {"stations": stations, "held": []}
+	if not FALLIN_ENABLED or elapsed_s > FALLIN_MAX_S or stations.size() < 2:
+		return result
+	var anchor: Vector3 = transit.get("anchor", Vector3.ZERO)
+	var tangent := TacticsFormation.flat(transit.get("heading", Vector3.FORWARD))
+	var right := Vector3(-tangent.z, 0.0, tangent.x)
+	var crews: Array = []
+	for member: Dictionary in members:
+		var unit := String(member["name"])
+		if not stations.has(unit):
+			continue
+		var at: Vector3 = member["position"]
+		var station: Vector3 = stations[unit]
+		crews.append({"name": unit, "along": (at - anchor).dot(tangent), "lat": (at - anchor).dot(right),
+				"station_along": (station - anchor).dot(tangent), "station_lat": (station - anchor).dot(right)})
+	# Head first: whether a crew is held depends only on the crews seated ahead of it.
+	crews.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if absf(float(a["station_along"]) - float(b["station_along"])) > 0.01:
+			return float(a["station_along"]) > float(b["station_along"])
+		return String(a["name"]) < String(b["name"]))
+	var adjusted := stations.duplicate()
+	var held: Array = []
+	var lanes := {}  # unit -> [low, high]: the lateral band the crew will sweep this update
+	for crew: Dictionary in crews:
+		var lat := float(crew["lat"])
+		var goal := float(crew["station_lat"])
+		var low := minf(lat, goal) - FALLIN_LANE_M
+		var high := maxf(lat, goal) + FALLIN_LANE_M
+		var blocked := false
+		if absf(goal - lat) > FALLIN_LANE_M:
+			for ahead: Dictionary in crews:
+				if ahead == crew or float(ahead["station_along"]) <= float(crew["station_along"]) + 0.01:
+					continue
+				if float(ahead["along"]) >= float(crew["along"]) + FALLIN_CLEAR_M:
+					continue  # it has passed
+				var band: Array = lanes.get(String(ahead["name"]), [])
+				if not band.is_empty() and float(band[0]) <= high and low <= float(band[1]):
+					blocked = true
+					break
+		var unit := String(crew["name"])
+		if blocked:
+			held.append(unit)
+			if FALLIN_MODE == "wait":
+				adjusted[unit] = anchor + tangent * float(crew["along"]) + right * lat  # where it stands
+			else:
+				adjusted[unit] = (stations[unit] as Vector3) + right * (lat - goal)
+			lanes[unit] = [lat - FALLIN_LANE_M, lat + FALLIN_LANE_M]
+		else:
+			lanes[unit] = [low, high]
+	result["stations"] = adjusted
+	result["held"] = held
+	return result
+
+
 static func _flow(plan: Dictionary, situation: Dictionary, state: Dictionary) -> void:
 	var leader := String(plan.get("leader", ""))
 	# Once the element has joined its final slots for this task it never flows again: a leader fighting near its slot
@@ -561,12 +666,20 @@ static func _names_of(members: Array) -> PackedStringArray:
 ## and the crews face their sectors instead of the way they drove in.
 ## `at` is where the halt stands; the heading is the one the element arrived with, kept while it stays halted (the
 ## averaged hull facing turns as crews face their sectors, and a formation that turned with it would never settle).
+##
+## Round 12 (C12.5): a shape the player chose with G (`task.formation`) is the halt's shape too. Before this a chosen
+## wedge on a drills-on move dissolved into the table's coil or herringbone on arrival -- round 11 made the task carry
+## the shape and this was the phase it missed. The table's hold pick decides only under AUTO.
 static func _halt(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable, at: Vector3) -> void:
 	var pick := table.select({"task": "hold", "threat": String(situation["threat"]),
 			"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})
 	plan["formation"] = pick["formation"]
 	plan["technique"] = pick["technique"]
 	plan["why"] = pick["why"]
+	var asked := chosen_formation(state.get("task", {}))
+	if asked != "":
+		plan["formation"] = asked
+		plan["why"] = "%s, as ordered: halted" % asked.replace("_", " ")
 	plan["anchor"] = clamp_to_arena(at)
 	if bool(state.get("arrived", false)) and state.get("heading") is Vector3:
 		plan["heading"] = state["heading"]
