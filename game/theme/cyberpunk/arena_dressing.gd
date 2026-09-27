@@ -43,6 +43,14 @@ const STANDS_ROWS := 9
 const SIDE_STANDS_FROM := 56.0
 ## Behind the wall, before the stands begin (m). StandsProfile publishes the stands' heights from the same numbers.
 const GAP := StandsProfile.GAP
+## The seated crowd's rows climb from this fraction of a stands module's height to this one (`_add_stands`).
+const CROWD_ROWS := Vector2(0.32, 0.8)
+## The group the terrain water finds the dressing by (round 12: it reads `reflection_venue()`).
+const GROUP := &"arena_dressing"
+## The inner-face light bars (y of the bar's centre, its height, energy): the one under the rim on every venue, and
+## the low one at the wall's foot that only the square venue draws. Named so the water's reflection reads THESE.
+const RIM_BAR := Vector3(WALL_HEIGHT - 0.35, 0.18, 4.0)
+const FOOT_BAR := Vector3(0.5, 0.072, 2.0)
 
 var ground: ChunkedGround
 var crowd: CrowdSystem
@@ -55,6 +63,12 @@ var blimp: SyndicateAdAirship
 var structures: Node3D
 ## The perimeter's half size in use (walls at ±half).
 var half := HALF
+## Round 12 (arena's carve-out, ADDITIVE): what the terrain water reflects, recorded as the venue is BUILT so the
+## water reads the real layout instead of a copied table (Invariant 0). `reflection_venue()` publishes it.
+var _reflect_edges: Array = []
+var _reflect_lamps: Array = []
+var _reflect_bars: Array = []
+var _stands_size := Vector3.ZERO
 var _flood_maps := {}
 ## The last layout setup() received (its floodlight props light the floor).
 var _layout := {}
@@ -63,6 +77,7 @@ var _shape := {}
 
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	ground = ChunkedGround.new()
 	ground.name = "Ground"
 	_apply_ground_quality()
@@ -107,6 +122,9 @@ func _build_structures() -> void:
 		clear_streaks()
 		structures.free()
 	crowd = null
+	_reflect_edges.clear()
+	_reflect_lamps.clear()
+	_reflect_bars.clear()
 	structures = Node3D.new()
 	structures.name = "Structures"
 	add_child(structures)
@@ -115,6 +133,7 @@ func _build_structures() -> void:
 	else:
 		_build_perimeter()
 		var face := half - WALL_THICK / 2.0
+		_record_square_venue(face)
 		for sx in [-1.0, 1.0]:
 			for sz in [-1.0, 1.0]:
 				_build_tower(_tower_base(Vector2(sx * face, sz * face), 4))
@@ -167,6 +186,7 @@ func _build_venue() -> void:
 		var probe := stands_scene.instantiate() as Node3D
 		var size := _bounds(probe).size
 		probe.free()
+		_stands_size = size
 		var modules := int((2.0 * half) / size.x)
 		var rows := []
 		var signs := []
@@ -233,6 +253,8 @@ func _build_polygon_venue() -> void:
 		probe.free()
 	var rows := []
 	var signs := []
+	_stands_size = stands_size
+	_reflect_bars = [[RIM_BAR, CyberMaterials.PURPLE]]
 	var n := edges.size()
 	var overlap := WALL_THICK * tan(PI / float(n))  # walls meet at the corners without a gap
 	for edge: Dictionary in edges:
@@ -252,8 +274,13 @@ func _build_polygon_venue() -> void:
 		CyberMaterials.box(segment, Vector3(length, WALL_HEIGHT, WALL_THICK), Vector3(0, WALL_HEIGHT / 2.0, 0), concrete)
 		CyberMaterials.top_quad(segment, Vector2(length, 0.9), Vector3(0, WALL_HEIGHT + 0.36, 0),
 				rim_material(CyberMaterials.PURPLE, 0.9, 0.03))
-		CyberMaterials.box(segment, Vector3(length - 8.0, 0.18, 0.12), Vector3(0, WALL_HEIGHT - 0.35, -WALL_THICK / 2.0 - 0.07),
-				rim_material(CyberMaterials.PURPLE, 4.0, 0.05), false)
+		CyberMaterials.box(segment, Vector3(length - 8.0, RIM_BAR.y, 0.12), Vector3(0, RIM_BAR.x, -WALL_THICK / 2.0 - 0.07),
+				rim_material(CyberMaterials.PURPLE, RIM_BAR.z, 0.05), false)
+		var stands_spans: Array = []
+		for span: Dictionary in edge["spans"]:
+			if String(span["kind"]) == "stands":
+				stands_spans.append(Vector2(float(span["from_m"]), float(span["to_m"])))
+		_reflect_edges.append({"from": a, "to": b, "stands": stands_spans})
 		StaticBatcher.merge(segment)
 		for span: Dictionary in edge["spans"]:
 			var from_m := float(span["from_m"])
@@ -304,8 +331,58 @@ func _add_stands(stands_scene: PackedScene, xform: Transform3D, size: Vector3, r
 	for r in STANDS_ROWS:
 		var f := float(r) / (STANDS_ROWS - 1)
 		var local_z := -size.z / 2.0 + size.z * lerpf(0.16, 0.7, f)
-		var local_y := size.y * lerpf(0.32, 0.8, f)
+		var local_y := size.y * lerpf(CROWD_ROWS.x, CROWD_ROWS.y, f)
 		rows.append([xform * Vector3(-size.x / 2.0 + 1.0, local_y, local_z), xform * Vector3(size.x / 2.0 - 1.0, local_y, local_z)])
+
+
+## The square venue's edges for `reflection_venue()`: the long (z) sides are stands end to end; the short (x) sides
+## carry the gate and its screens in the middle and stands only beyond SIDE_STANDS_FROM (`_build_venue`).
+func _record_square_venue(face: float) -> void:
+	_reflect_bars = [[RIM_BAR, CyberMaterials.PURPLE], [FOOT_BAR, CyberMaterials.PURPLE]]
+	var corners := [Vector2(-face, -face), Vector2(face, -face), Vector2(face, face), Vector2(-face, face)]
+	var length := 2.0 * face
+	for i in 4:
+		var a: Vector2 = corners[i]
+		var b: Vector2 = corners[(i + 1) % 4]
+		var stands: Array = [Vector2(0.0, length)]
+		if absf(a.x - b.x) < 0.01:  # an east or west wall: gate in the middle
+			var clear := face - SIDE_STANDS_FROM
+			stands = [Vector2(0.0, clear), Vector2(length - clear, length)]
+		_reflect_edges.append({"from": a, "to": b, "stands": stands})
+
+
+## Round 12 (arena's carve-out, ADDITIVE, read by the terrain water): what a reflected ray from the floor can meet,
+## as this venue was actually BUILT. `edges`: the wall's inner face, [{from, to, stands: [Vector2(from_m, to_m)]}]
+## with the stands' spans along each edge; `wall_height`; `bars`: [[Vector3(y, height, energy), colour]] the inner
+## face's light bars; `stands`: StandsProfile.points() (out from the inner face, height), the profile a ray climbs;
+## `crowd`: the heights the seated crowd occupies (`_add_stands`' seat rows); `lamps`: [[Vector3 lamp head, colour,
+## energy]] for every venue tower and every layout floodlight (KitYard's lamp head); `flood_map` and its scale, the
+## floor's light the water's body can take. Nothing here is copied: it is recorded where the geometry is placed.
+func reflection_venue() -> Dictionary:
+	var lamps: Array = []
+	for lamp: Array in _reflect_lamps:
+		lamps.append([lamp[0], lamp[1], 1.0])
+	for prop: Dictionary in _layout.get("props", []):
+		if String(prop.get("type", "")) != "floodlight":
+			continue
+		var at := Vector3(float(prop["position"][0]), 0.0, float(prop["position"][1]))
+		var turn := Basis(Vector3.UP, deg_to_rad(float(prop.get("rotation_deg", 0.0))))
+		# The lamp bank tops KitYard's mast (its glow boxes sit 0.4 m above MAST_HEIGHT, 0.27 m forward: close enough
+		# for a reflection that a swell breaks up; the mast height is read, not copied).
+		lamps.append([at + turn * Vector3(0.0, KitYard.MAST_HEIGHT, 0.0), KitYard.LAMP, 1.0])
+	if not _flood_maps.has("map"):
+		_flood_maps["map"] = flood_map(_scaled_floodlights(), wear_map(_layout))
+	return {
+		"edges": _reflect_edges.duplicate(true),
+		"wall_height": WALL_HEIGHT,
+		"bars": _reflect_bars.duplicate(true),
+		"stands": StandsProfile.points(),
+		"crowd": CROWD_ROWS * _stands_size.y,
+		"lamps": lamps,
+		"flood_map": _flood_maps["map"],
+		"flood_half": FLOOD_HALF,
+		"flood_scale": FLOOD_SCALE,
+	}
 
 
 ## FX lab: hide the venue (stands, crowd, gates) to measure what it costs.
@@ -544,12 +621,12 @@ func _build_perimeter() -> void:
 				rim_material(neon_color, 0.9, 0.03))
 		# The light bar runs along the inner face, just under the rim.
 		var along_x := extent.x > extent.z
-		var bar_size := Vector3(extent.x - 8.0, 0.18, 0.12) if along_x else Vector3(0.12, 0.18, extent.z - 8.0)
+		var bar_size := Vector3(extent.x - 8.0, RIM_BAR.y, 0.12) if along_x else Vector3(0.12, RIM_BAR.y, extent.z - 8.0)
 		var face := Vector3(0, 0, inward * (WALL_THICK / 2.0 + 0.07)) if along_x else Vector3(inward * (WALL_THICK / 2.0 + 0.07), 0, 0)
-		CyberMaterials.box(segment, bar_size, center + face + Vector3(0, WALL_HEIGHT - 0.35, 0),
-				rim_material(neon_color, 4.0, 0.05), false)
-		CyberMaterials.box(segment, bar_size * Vector3(1, 0.4, 1), center + face + Vector3(0, 0.5, 0),
-				rim_material(neon_color, 2.0, 0.3), false)
+		CyberMaterials.box(segment, bar_size, center + face + Vector3(0, RIM_BAR.x, 0),
+				rim_material(neon_color, RIM_BAR.z, 0.05), false)
+		CyberMaterials.box(segment, bar_size * Vector3(1, FOOT_BAR.y / RIM_BAR.y, 1), center + face + Vector3(0, FOOT_BAR.x, 0),
+				rim_material(neon_color, FOOT_BAR.z, 0.3), false)
 		StaticBatcher.merge(segment)
 		# Painted glow pools on the floor along the bar (one batched draw for all of them).
 		var length := extent.x if along_x else extent.z
@@ -617,6 +694,7 @@ func _build_tower(base: Vector3) -> void:
 		# Lamp faces: hot white neon.
 		lamp_pos = base + Vector3(0, height - 0.3, 0) + toward_center * 0.9
 		CyberMaterials.box(tower, Vector3(3.2, 0.4, 0.3), lamp_pos, CyberMaterials.neon(Color(0.85, 0.95, 1.0), 6.0, 0.02), false)
+	_reflect_lamps.append([lamp_pos, TOWER_LIGHT])
 	# Beam: an open cone from the lamp angled down toward the arena.
 	var target := base * 0.78
 	var beam_length := lamp_pos.distance_to(target)
