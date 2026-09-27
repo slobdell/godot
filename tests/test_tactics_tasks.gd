@@ -5,6 +5,15 @@ extends TestCase
 ## the react-to-contact and far-ambush drills outranked it and took the element forward and round a flank.
 
 
+## The fall-in tests switch the rule on for the pure function under test; every test ends on the shipped default.
+func teardown() -> void:
+	ElementPlan.FALLIN_ENABLED = _fallin_shipped
+	super.teardown()
+
+
+var _fallin_shipped := ElementPlan.FALLIN_ENABLED
+
+
 func _table(faction := "standard") -> DoctrineTable:
 	DoctrineTable.clear_cache()
 	var loaded := DoctrineTable.load_table(faction)
@@ -408,3 +417,68 @@ func test_a_drill_under_fire_may_change_his_shape_and_says_so() -> void:
 		assert_true(String(readout["label"]).ends_with("drill"), "and says a drill has it (%s)" % readout["label"])
 	else:
 		assert_eq(readout["label"], "Wedge", "a drill that kept his wedge reads as his wedge")
+
+
+# ---- Round 12, S3: the fall-in rule (the first seconds of a move from the spawn line) --------------------------------
+
+## Four crews abreast across -Z at x = -12, -4, 4, 12 (Green_1..4), the anchor 20 m ahead on a straight route, and a
+## column seated head-first from the right: Green_4 at the head, then 3, 2, 1. The column's stations all sit on x = 0.
+func _fall_in_case(positions: Array) -> Dictionary:
+	ElementPlan.FALLIN_ENABLED = true  # the rule under test, whatever the shipped default (restored in teardown)
+	var members: Array = []
+	for i in positions.size():
+		members.append({"name": "Green_%d" % (i + 1), "position": positions[i]})
+	var route: Array = [Vector3(0, 0, 0), Vector3(0, 0, -100)]
+	var transit := {"route": route, "s": 20.0, "anchor": Vector3(0, 0, -20), "heading": Vector3(0, 0, -1)}
+	var plan := {"formation": "column", "pitch": Vector2(10, 10),
+			"seats": {"Green_4": ["column", 4, 0], "Green_3": ["column", 4, 1], "Green_2": ["column", 4, 2], "Green_1": ["column", 4, 3]}}
+	var stations := ElementPlan.stations_along(plan, transit)
+	return {"members": members, "transit": transit, "plan": plan, "stations": stations}
+
+
+func test_a_crew_behind_in_the_shape_holds_its_lane_until_the_crew_ahead_has_passed() -> void:
+	var case := _fall_in_case([Vector3(-12, 0, 0), Vector3(-4, 0, 0), Vector3(4, 0, 0), Vector3(12, 0, 0)])
+	var result := ElementPlan.fall_in(case["stations"], case["members"], case["transit"], 0.5)
+	var held: Array = result["held"]
+	# The head (Green_4) closes at once; everyone behind it would cross the lane of a crew seated ahead that has not passed.
+	assert_true(not held.has("Green_4"), "the head of the shape is never held (%s)" % [held])
+	for unit in ["Green_3", "Green_2", "Green_1"]:
+		assert_true(held.has(unit), "%s is held: the crew ahead of it in the column has not passed it yet" % unit)
+		var station: Vector3 = result["stations"][unit]
+		var raw: Vector3 = case["stations"][unit]
+		var at: Vector3 = (case["members"] as Array)[int(unit.right(1)) - 1]["position"]
+		assert_true(is_equal_approx(station.x, at.x), "%s's held station keeps its own lane (x %.1f, crew at %.1f)" % [unit, station.x, at.x])
+		assert_true(is_equal_approx(station.z, raw.z), "%s's held station keeps its place ALONG the route" % unit)
+
+
+func test_once_the_crew_ahead_has_passed_the_next_closes_on_the_line() -> void:
+	# Green_4 and Green_3 have driven 15 m up the route: Green_2 (behind Green_3 in the column) may now close.
+	var case := _fall_in_case([Vector3(-12, 0, 0), Vector3(-4, 0, 0), Vector3(1, 0, -15), Vector3(0, 0, -22)])
+	var result := ElementPlan.fall_in(case["stations"], case["members"], case["transit"], 2.0)
+	assert_true(not (result["held"] as Array).has("Green_2"), "Green_3 has passed: Green_2 falls in (%s)" % [result["held"]])
+	assert_eq(result["stations"]["Green_2"], case["stations"]["Green_2"], "and drives to its real station")
+
+
+func test_the_fall_in_rule_is_bounded_in_time_and_switchable() -> void:
+	var case := _fall_in_case([Vector3(-12, 0, 0), Vector3(-4, 0, 0), Vector3(4, 0, 0), Vector3(12, 0, 0)])
+	var late := ElementPlan.fall_in(case["stations"], case["members"], case["transit"], ElementPlan.FALLIN_MAX_S + 0.1)
+	assert_true((late["held"] as Array).is_empty(), "never zero, never forever (lesson 17): after FALLIN_MAX_S nobody is held")
+	assert_eq(late["stations"], case["stations"], "and the stations are the shape's")
+	ElementPlan.FALLIN_ENABLED = false
+	var off := ElementPlan.fall_in(case["stations"], case["members"], case["transit"], 0.5)
+	assert_true((off["held"] as Array).is_empty(), "FALLIN_ENABLED off: the control arm holds nobody")
+
+
+func test_a_shape_whose_lanes_do_not_cross_holds_nobody() -> void:
+	# A line abreast from a line abreast: every crew stands straight behind its own station, so no lateral path crosses.
+	var transit := {"route": [Vector3(0, 0, 0), Vector3(0, 0, -100)], "s": 20.0, "anchor": Vector3(0, 0, -20),
+			"heading": Vector3(0, 0, -1)}
+	var plan := {"formation": "line", "pitch": Vector2(10, 10),
+			"seats": {"Green_1": ["line", 4, 0], "Green_2": ["line", 4, 1], "Green_3": ["line", 4, 2], "Green_4": ["line", 4, 3]}}
+	var stations := ElementPlan.stations_along(plan, transit)
+	ElementPlan.FALLIN_ENABLED = true
+	var members: Array = []
+	for unit: String in stations:
+		members.append({"name": unit, "position": Vector3((stations[unit] as Vector3).x, 0, 0)})
+	var result := ElementPlan.fall_in(stations, members, transit, 0.5)
+	assert_true((result["held"] as Array).is_empty(), "abreast to abreast: nobody waits (%s, stations %s)" % [result["held"], stations])

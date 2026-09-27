@@ -48,6 +48,8 @@ func _run_probe() -> void:
 	ElementPlan.PIN_LEADER_ON_PLAIN_MOVE = _flag("pin", "off") == "on"
 	# Round 12: `--transit=off` is the control arm (every crew straight to its final slot, round 10's path).
 	ElementPlan.TRANSIT_ENABLED = _flag("transit", "on") != "off"
+	# Round 12, S3: `--fallin=off` is the fall-in rule's control arm (every crew closes on its station at once).
+	ElementPlan.FALLIN_ENABLED = _flag("fallin", "on") != "off"
 	var report := await _run(_flag("arena", ""), _flag("dir", "forward"), _flag("units", "tank:tank:ifv:ifv").split(":"),
 			float(_flag("metres", "20")), int(_flag("seed", "3")), float(_flag("seconds", "45")))
 	print("SETTLE_PROBE " + JSON.stringify(report))
@@ -116,6 +118,9 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	# `transit_s`. Without an anchor (a short move, or --transit=off) both read -1.
 	var gap_sum := 0.0
 	var gap_n := 0
+	# S3: the same error over the first 10 s only (the fall-in rule's target), against the SHAPE's stations.
+	var gap10_sum := 0.0
+	var gap10_n := 0
 	var transit_done := -1
 	var transit_seen := false
 	for tick in int(seconds * SimClock.TICK_RATE):
@@ -129,10 +134,15 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			transit_seen = true
 			for unit_name: String in names:
 				var t := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
-				var station: Variant = element.stations.get(unit_name)
+				# The SHAPE's station, not the fall-in rule's lane-held one (which sits beside the crew by design).
+				var station: Variant = element.shape_stations.get(unit_name)
 				if t != null and station is Vector3:
-					gap_sum += _flat(t.global_position).distance_to(_flat(station))
+					var error := _flat(t.global_position).distance_to(_flat(station))
+					gap_sum += error
 					gap_n += 1
+					if now < 10 * SimClock.TICK_RATE:
+						gap10_sum += error
+						gap10_n += 1
 		elif transit_seen and transit_done < 0:
 			transit_done = now
 		for unit_name: String in names:
@@ -169,7 +179,14 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 				var slot: Variant = element.slots.get(unit_name)
 				var station: Variant = element.stations.get(unit_name)
 				var mover := Movement.state(tank)
-				parts.append("%s %s v%.1f p%.2f slot%.1f%s %s%s" % [unit_name.right(1), String(order.get("verb", "-")),
+				# S3: where the crew is in the anchor's frame (metres along the route, metres to its right), so a tangle
+				# reads as geometry rather than as speeds.
+				var frame := ""
+				if element.in_transit():
+					var tangent: Vector3 = TacticsFormation.flat(element.transit.get("heading", Vector3.FORWARD))
+					var rel := _flat(tank.global_position) - _flat(element.transit.get("anchor", Vector3.ZERO))
+					frame = " @%+.0f/%+.0f" % [rel.dot(tangent), rel.dot(Vector3(-tangent.z, 0.0, tangent.x))]
+				parts.append("%s%s %s v%.1f p%.2f slot%.1f%s %s%s" % [unit_name.right(1), frame, String(order.get("verb", "-")),
 						tank.estimated_velocity.length(), float(element.paces.get(unit_name, 1.0)),
 						_flat(tank.global_position).distance_to(_flat(slot)) if slot is Vector3 else -1.0,
 						(" stn%.1f" % _flat(tank.global_position).distance_to(_flat(station))) if station is Vector3 else "",
@@ -186,6 +203,8 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 				var seat: Variant = element.seats.get(unit_name)
 				seat_list.append(str(seat[2]) if seat is Array and (seat as Array).size() > 2 else "?")
 			anchor_note += " seats %s detached %d" % ["".join(seat_list), (element.state()["detached"] as Array).size()]
+			if not element.falling_in.is_empty():
+				anchor_note += " holding-lane %s" % ",".join(element.falling_in.map(func(n: String) -> String: return n.right(1)))
 			print("SETTLE_TRACE t=%ds centre %.1f m arrived=%s joined=%s%s | %s" % [now / SimClock.TICK_RATE,
 					_centre(game_match, names).distance_to(goal), element.arrived, element.flow_joined, anchor_note,
 					" | ".join(parts)])
@@ -212,7 +231,9 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"ordered_s": _s(ordered), "arrived_s": _s(arrived), "in_slot_s": _s(in_slot), "stopped_s": _s(stopped),
 			"off_slot_m": off, "closest_m": snappedf(closest, 0.01), "goal_moves": element.goal_moves,
 			"bottleneck_s": _s(element.bottleneck_ticks), "transit": ElementPlan.TRANSIT_ENABLED,
-			"transit_gap_m": snappedf(gap_sum / gap_n, 0.1) if gap_n > 0 else -1.0, "transit_s": _s(transit_done)}
+			"fallin": ElementPlan.FALLIN_ENABLED,
+			"transit_gap_m": snappedf(gap_sum / gap_n, 0.1) if gap_n > 0 else -1.0,
+			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done)}
 
 
 static func _s(ticks: int) -> Variant:

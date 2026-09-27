@@ -87,6 +87,10 @@ var transit := {}
 ## The crews' places on the way ({unit: Vector3}), from the last plan; {} when the element is not in transit. Published
 ## for the brains (ElementFeed "station"), which drive to it instead of the final slot while it exists.
 var stations := {}
+## Round 12, S3: the crews the fall-in rule is holding in their own lane this update (ElementPlan.fall_in); [] otherwise.
+var falling_in: Array = []
+## ...and where the SHAPE puts each crew, before that rule (what a probe measures "in formation" against).
+var shape_stations := {}
 ## The task (task_seq) whose move was too short for an anchor, so the question is not re-asked every update.
 var _transit_declined_seq := -1
 
@@ -179,6 +183,8 @@ func assign(new_task: Variant) -> String:
 	route_index = 0
 	transit = {}
 	stations = {}
+	shape_stations = {}
+	falling_in = []
 	flow_joined = false
 	facing_sent = false
 	arrived = false
@@ -207,6 +213,8 @@ func retarget(new_task: Variant) -> String:
 		route_index = 0
 		transit = {}
 		stations = {}
+		shape_stations = {}
+		falling_in = []
 	_log("task: %s" % ElementTask.describe(task))
 	return ""
 
@@ -405,7 +413,7 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 				_doctrine().spacing(String(situation["terrain"]))),
 				maxf(ElementPlan.route_length(found) - ElementPlan.TRANSIT_HANDOFF_M, 0.0))
 		var first := ElementPlan.route_pose(found, start)
-		transit = {"route": found, "length": ElementPlan.route_length(found), "s": start, "tick": tick,
+		transit = {"route": found, "length": ElementPlan.route_length(found), "s": start, "tick": tick, "start_tick": tick,
 				"speed": (slowest if is_finite(slowest) else 9.0) * ElementPlan.TRANSIT_CRUISE, "pace": 1.0,
 				"anchor": first["point"], "heading": first["tangent"],
 				"velocity": Vector2.ZERO, "final_heading": final_heading, "arrived": false}
@@ -635,6 +643,8 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	route = plan["route"]
 	route_index = int(plan["route_index"])
 	stations = plan.get("stations", {})
+	falling_in = plan.get("falling_in", [])
+	shape_stations = plan.get("shape_stations", stations)
 	strength = (situation["members"] as Array).size()
 	_last_members = situation["members"]
 	var new_drill := String(plan["drill"])
