@@ -70,6 +70,15 @@ three-point turn in a street should read as a driver, not a robot (round 7's pre
 green report; the orchestrator records it alone. If the baseline does NOT move, that is a finding too (the baseline
 match may never field a rig in a street) — say so.
 
+**N6 (added 2026-09-26 late by the orchestrator, from squad's S6 measurement). A no-pivot hull's turn-in-place does
+not walk it off its spot.** After arrival, scouts (wheeled, fixed gun) get idle `face` orders with no enemy in sight, and
+`TankMotion`'s multi-point turn (the creep) walks them 1.5 m -> 8.6 m off their slot over 15 s at 2.8 m/s — most of the
+mixed squad's 30 s stop time (squad.md Status on `stream/squad`). The orchestrator's ruling: nav owns the bound (N1's
+guarantee: a hull that has arrived stays arrived), as its own commit behind `--nav-off`, pre-registered as a baseline
+move under CP2 if the baseline match ever multi-point-turns a scout, measured with `make squad-settle
+UNITS=scout:scout:ifv:ifv:tank` both arms, same seeds. squad keeps its half (dropping the idle face) as a candidate to
+measure AFTER nav's lands.
+
 **N5 (stretch). The planner the count is asking for.** If N1 shows a large "no manoeuvre of this family clears" bucket,
 write the case for a kinematic planner (state lattice or Reeds–Shepp over the navmesh for the rig class only) in
 `algorithms.md`: the cost, what it replaces, its falsifier. Build a prototype only if the arithmetic says the drive test
@@ -108,7 +117,8 @@ machine. **Merge point: see "Green hash" at the end** (none yet)._
 | N2 | the back-and-fill for the bucket the data names | built, `tests/nav/test_nav_back_and_fill.gd` (mutation-checked); measuring |
 | N3 | drive test both arms, 8 seeds, builder0; `nav-wall-clip` looked at | `make nav-drive-ab` + `tests/nav/drive_table.py` built for it |
 | N4 | `make nav-sim-arms` with the arm | after N3 |
-| N5 | the planner write-up in `algorithms.md` | stretch |
+| N5 | the planner write-up in `algorithms.md` | **written** (`0a19a612`): not built, the arithmetic says the drive test would not show it |
+| N6 | a no-pivot hull's turn-in-place stays near its spot (orchestrator, from squad) | after N3/N4 |
 
 ### N1: why the rigs refuse (laptop, `54f39923` + the leg stamp, `make nav-kturn-buckets`, 8 seeds; builder0 re-run owed)
 
@@ -138,6 +148,12 @@ mixed 24 / 65. Repeatable: the same 132 rows on two runs. Buckets for the rigs, 
 35 pressed), as it guessed — but a THREE-point back-and-fill clears only 20-29 of 132. The manoeuvre that exists is
 usually a 3-8-leg shuffle of ~10 m total (median). 55 of 132 have no manoeuvre of this family at all: that is N5's
 count. And 36 are a different defect: the search aims at a route corner under the hull.
+
+**Builder0 confirms the shape** (`0a19a612`, the control arm `--nav-off=kturnfill,guardnear` with `--kturn-log`, i.e.
+round 11's behaviour; 8 seeds): rigs **130** refusals (round 11 published 130 on `38c385d5`: the control reproduces
+round 11's rig row EXACTLY — 104/128, 6917 contacts, 227 press/unstick, 946 reverse, 1202 cusps, 64 legs), buckets
+near-point 40 / pressed 29 / no room 16 / cap 3 / short room 42; a fill of <=3 legs clears 26, <=5 legs 39, <=16 legs
+78; 64 distinct episodes. Mixed 34 refusals (laptop 24), 14 with a <=3-leg plan.
 
 ### Pre-registration (written 2026-09-26 ~22:15, BEFORE any drive result with the fill on)
 

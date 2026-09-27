@@ -188,7 +188,7 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
 		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
 
 
