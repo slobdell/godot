@@ -449,6 +449,9 @@ static func stations_along(plan: Dictionary, transit: Dictionary) -> Dictionary:
 ## exist: the yard spawn has a 20-ft container dead ahead of its centre, the route goes round one side, and a crew
 ## held in its own lane on the other side drives into the container. A crew that is waiting on purpose does not hold
 ## the anchor back through the lag rule (Element._transit_pace skips `falling_in`).
+## MEASURED AND REJECTED (builder0, round 12): lane mode left the stop time a wash (9/9/14) and the first-10-s station
+## error worse in 6 of 8 cells; wait mode lost the stop time 19/9/4. The stall it was aimed at is a queue at a chokepoint
+## (doctrine.md *The fall-in rule*). OFF; kept as the measured control for the next attempt.
 static var FALLIN_ENABLED := false
 static var FALLIN_MODE := "lane"
 ## A crew ahead in the shape has "passed" once it is this far ahead along the route (about a hull and a half).

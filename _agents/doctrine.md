@@ -267,8 +267,9 @@ slower march for a tidier traversal is better, yes."*
 **The weak phase is the first five seconds of a move from the spawn line** — an abreast line becoming a column — and it
 is the same in kind for both arms: paths cross, ORCA yields, and on some seeds the middle pair stall together for
 several seconds (yard forward seed 1 trace, both starts). Under the anchor that stall also holds the squad back
-(the lag rule), which is why the yard forward arrival is 1.6 s later. The proper answer is a fall-in rule — a crew does
-not close on the line until the crew whose station is ahead of it has passed — and it is the next thing to build here.
+(the lag rule), which is why the yard forward arrival is 1.6 s later. Round 12 built the fall-in rule proposed here (a crew
+does not close on the line until the crew whose station is ahead of it has passed) and measured it worse: the stall is a
+queue at a chokepoint, not a lane conflict (*The fall-in rule: built, measured, rejected* below).
 
 **What the anchor buys is not speed but the shape: the same order now reads as a squad moving off together and closing
 up on the spot**, which is the visible half of his "formula to form up". The mean station error while travelling is
@@ -280,6 +281,38 @@ move (`_halt`)~~ (done in round 12, S2: *Whose shape it is, phase by phase* belo
 decided in round 12, S4: *A partial or mixed selection* below -- it does scatter, and it is left as his 2026-09-20 ruling
 has it); the direct path (a box-selection that is not a numbered squad, `Orders._resolve_group`) still sends each
 vehicle to its slot on its own.
+
+### The fall-in rule: built, measured, rejected (round 12, S3)
+
+The anchor's weak phase is the first seconds of a move from the spawn line. The brief's model was **two crews
+converging onto the same lane from either side**, and its answer a fall-in rule. `ElementPlan.fall_in` (pure, 4 tests):
+in the first `FALLIN_MAX_S` (8 s), a crew whose sideways path onto its station would cross the lane of a crew seated
+AHEAD of it that has not yet passed it (`FALLIN_CLEAR_M` 6 m) is held, either **lane** (keeps driving in its own lane)
+or **wait** (stands, and is not a laggard to the lag rule). `FALLIN_ENABLED` (**false**), `FALLIN_MODE`; `make
+squad-fallin-series [FALLIN_ARM=wait]`.
+
+**Measured (builder0, 80 m plain moves, 4 jittered seeds x 8 cells, both arms on the same seeds; `gap10` = the mean
+distance from the SHAPE's station over the first 10 s, the rule's own target):**
+
+| arm | stopped: off faster / on faster / tie | gap10, cells worse / better |
+|---|---|---|
+| lane (`0b0124da`) | 9 / 9 / 14 | 6 / 1 (yard forward mixed 16.0 -> 19.0 m) |
+| wait (`9aed5a3f`) | **19 / 9 / 4** | 7 / 0 (yard forward mixed 16.0 -> 23.7 m; Terminus side tracked stop 15.2 -> 27.1 s) |
+
+**Neither ships.** The rule costs the shape in exactly the seconds it aims at and buys no time.
+
+**Why: the model was wrong.** A top-down plot of the yard trace (`make squad-settle ARENA=yard DIR=forward METRES=80
+SEED=1 TRACE=on`, then `tools/tactics/plot_tracks.py <log> yard out.png`) shows what the middle pair are doing: the
+anchor's route threads a ~5 m gap between the wreck at (9, 68) and the container stack at x = 17, twenty metres from
+the spawn, behind a 20-ft container that sits dead ahead of the spawn's centre. The "stall" is a QUEUE at that gap.
+Meanwhile the column's TAIL crew, path-finding to a station already past the gap, takes a different gap west of the
+wreck and comes out AHEAD of the middle pair. Holding a crew in its lane aims it into the container; standing it still
+makes the queue longer.
+
+**Next, if anyone takes it up:** the shape of the fix the plot suggests is *join the route, behind the crew ahead*: a crew
+far off the anchor's route drives to the route first, at a point behind the crew seated ahead of it, instead of
+path-finding to a station on the far side of a chokepoint (which is how the tail finds its own gap). Not built; the
+code above stays behind its switch as the measured control, the way the braking attempt is recorded in `transit_speed`.
 
 ### Whose shape it is, phase by phase (round 12, S1/S2; C12.4, C12.5)
 
