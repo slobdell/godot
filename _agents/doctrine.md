@@ -345,6 +345,37 @@ lanes and open ground (faster to settle and tidier by the number almost everywhe
 terrain** (the yard, where the chokepoint is) -- i.e. the standard table's own two rows. Until he answers, the card says
 which it is and why: "Auto: Column", with the doctrine line's reason under the header (S1).
 
+### Round 13: the wedge is the default plain move (the lead: *"Default wedge."*)
+
+The Condemned, Law and standard catch-alls (a move with nothing in sight) are a **wedge in every terrain**, with the
+reason `wedge (default), ...` in the row's `why`; under AUTO a plain move's card line carries that row's reason
+(`ElementPlan._plan_form_up`: "moving as ordered: wedge (default), nothing in sight: quickest to settle, and it keeps its
+shape on the way"), so the card reads "Auto: Wedge" and says it is the default. The contact rows are untouched (the
+Law's `possible + dense -> column` bounding, the standard's `likely + dense -> column`): those are doctrine under a
+threat, not the plain-move default. The Syndicate's catch-all was already a wedge and the Gangs' a swarm.
+
+**Dense was re-measured before it was decided**, on the rule pre-registered in the squad brief (keep a column for
+`dense` only if, over the yard's 16 paired runs, it stops first in 9 or more AND its first-10-s station error is lower
+in at least 2 of the 4 cells). `make squad-shape-series`, builder0, the working tree of `736ea624` with Q1's edits
+(G-ordered shapes do not read the table), seeds 1-4, 80 m:
+
+| arena | dir | squad | stopped col / wedge | gap10 col / wedge | stop: col faster / wedge faster / tie |
+|---|---|---|---|---|---|
+| Terminus | forward | mixed | 20.2 / 19.9 | 11.4 / 9.8 | 1 / 1 / 2 |
+| Terminus | forward | tracked | 14.0 / 13.4 | 10.9 / 8.6 | 1 / 2 / 1 |
+| Terminus | side | mixed | 19.6 / 19.6 | 13.3 / 12.3 | 0 / 1 / 3 |
+| Terminus | side | tracked | 16.6 / 13.2 | 13.0 / 12.4 | 2 / 2 / 0 |
+| yard | forward | mixed | **21.0** / 23.1 | 14.8 / **8.4** | 3 / 0 / 1 |
+| yard | forward | tracked | 19.7 / **15.5** | 15.8 / **10.3** | 2 / 2 / 0 |
+| yard | side | mixed | 19.4 / **18.5** | 13.9 / **9.1** | 0 / 4 / 0 |
+| yard | side | tracked | 14.1 / **11.4** | 11.4 / **10.4** | 0 / 4 / 0 |
+
+The yard: column first in **5** of 16, lower gap10 in **0** of 4 -- the bar was not met, so the wedge is the default in
+dense ground too. Overall 9 / 16 / 7 (round 12 at `161465ef`, before nav's N6: 9 / 23). The column still
+wins the yard's forward move for the mixed squad (the chokepoint 20 m from the spawn), as in round 12, and nowhere
+else. Since nav's N6 is on this tree the mixed squad's Terminus side-move stop fell from ~30 s (round 12, column) to
+~20 s for both shapes.
+
 ### Whose shape it is, phase by phase (round 12, S1/S2; C12.4, C12.5)
 
 **The player's G choice (`task.formation`) is the shape at every phase of the move; the doctrine table decides only
@@ -370,7 +401,8 @@ Two corrections: (1) at the spawns only the **yard** (and the sumps' centre slot
 crossing and the locks are *lanes*; (2) more to the point, **no squad he fields uses the standard table**: a squad
 fights by its units' FACTION table (`Elements._table_for`), and the Condemned and the Law both end in a catch-all
 **column** whatever the terrain; the Syndicate's is a wedge and the gangs' a swarm. So a Condemned or Law squad under
-AUTO forms a column on every map, and the wedge the card showed was wrong for both factions on every map.
+AUTO forms a column on every map, and the wedge the card showed was wrong for both factions on every map. *(Round 13:
+the catch-alls are now a wedge -- his answer "Default wedge" -- so the card reads "Auto: Wedge"; next section.)*
 
 ### A partial or mixed selection: measured on the default path, and left as he ruled (round 12, S4)
 
@@ -421,8 +453,7 @@ always overwatching the other"). The standard table, in words:
 7. contact possible + light element → **vee**, traveling overwatch (*the lead's "a V formation of scouts coming at you would be scary"*)
 8. contact possible + support element → **column**, traveling overwatch (artillery and Lancers move behind the guns)
 9. contact possible → **wedge**, traveling overwatch
-10. nothing known, dense → **column**, traveling
-11. anything else → **wedge**, traveling
+10. anything else → **wedge (default)**, traveling (round 13: the `dense → column` row before it was removed; *Round 13: the wedge is the default plain move*)
 
 ## Battle drills
 
@@ -559,7 +590,7 @@ Same engine, different tables (`doctrines/doctrine_<faction>.json`).
 
 | Faction | How they move | How they react |
 |---|---|---|
-| **The Condemned** | Close up (12 m in the open), line up and grind forward; column when nothing is in sight | Charge ambushes from 42 m; `break_contact_ratio` 0.25 — they almost never withdraw |
+| **The Condemned** | Close up (12 m in the open), line up and grind forward; a wedge when nothing is in sight (round 13: the default plain move; a column until then) | Charge ambushes from 42 m; `break_contact_ratio` 0.25 — they almost never withdraw |
 | **Road gangs** | Vee at every threat level, always traveling, widest spacing (18 m), longest legs: a pack that never stops to cover itself | Charge from 55 m, flank 60 m wide, react in 0.7 s, and **no break-contact drill at all** |
 | **The Law** | Bounding overwatch whenever contact is possible or worse, longest bounds with the widest supporting range | Deliberate: react for 1.5 s, flank 48 m, withdraw at 0.6 — the professionals leave a losing fight |
 | **The Syndicate** | Echelon and line, traveling overwatch, stand-off ranges (110 m supporting range) | Only charge an ambush inside 22 m; `break_contact_ratio` 0.75 and a 115 m break distance: they reposition constantly |
