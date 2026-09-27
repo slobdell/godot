@@ -72,7 +72,12 @@ prompt* is canonical):
   records `bus_r12_mv` rejected with those words and spends nothing more (`game_design.md` *Round 12: the lead's
   verdicts*).
 - **The partial or mixed selection** (squad's S4): it scatters, by the round-10 R1 design he narrowed himself; squad
-  recommends leaving it. His call, on the next page or in chat.
+  recommends leaving it. His call, on the next page or in chat. Frames: `streams/references/round12/squad/s4_yard_*`.
+- **Column or wedge for a Condemned/Law plain move** (squad's S5, `161465ef`, builder0, 4 seeds × 8 cells, same
+  seeds): the wedge settles faster in 23 of 32 paired runs and its first-10-s station error is lower in 7 of 8 cells
+  (yard forward mixed 16.0 → 9.1 m); the column wins only the yard's forward move through the chokepoint and looks
+  tidier in a Terminus street. Row kept as column. **Recommended: wedge in lanes and open ground, column in dense.**
+  Frames: `streams/references/round12/squad/s5_*_sheet.jpg`. Put in front of him 2026-09-27.
 - **The Locks' open canal**, on arena's page once it is up, after he has driven it.
 - **Audio's three (merged at `785bc293`):** the web pack grew (`assets/music/` 13 → 29 MB, all in the web build) —
   ruled *leave it, decide at the next web release*; **by ear**, the two weakest placements are `defeat_hunt`
