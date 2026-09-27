@@ -189,7 +189,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -2517,6 +2517,8 @@ const KTURN_RETRY_TICKS := SimClock.TICK_RATE
 ## Plan a reverse only for a wall the forward arc meets within this much travel (metres).
 const KTURN_HIT_WITHIN_M := 5.0
 const KTURN_SECONDS_PER_M := 1.5
+## A leg's leading end is hitting a wall when its motion points into the wall's normal by more than this (cosine).
+const KTURN_INTO_WALL_COS := 0.5
 static var kturns := 0            # legs planned and driven
 static var kturn_none := 0        # forward arc blocked, no clear reverse found: left to the reactive rules
 static var kturn_aborted := 0     # a leg cut short by a rear contact or its timeout
@@ -2551,9 +2553,14 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		# back-and-fill's forward leg). The other end still touching the wall the leg is moving away from is exactly
 		# what the leg is for, and ending on it made every such leg abort on its first tick (the first laptop run:
 		# 138 of 155 rig legs).
+		var nose := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
 		var lead_hit := contact.touching and float(contact.decided.get("throttle", 0.0)) * _kturn_gear > 0.0 \
-				and Vector2(contact.point.x - tank.global_position.x, contact.point.z - tank.global_position.z).dot(
-				Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)) * _kturn_gear > 0.0
+				and Vector2(contact.point.x - tank.global_position.x, contact.point.z - tank.global_position.z).dot(nose) * _kturn_gear > 0.0
+		# Round 12: ...and only when that end is driving INTO the wall. A plan may start with an end already near a face
+		# (a pressed start is allowed not to get deeper), and a leg that slides that end ALONG the face is the plan
+		# working: aborting on it cut 9 of 20 rig plans on builder0, most within 0.1 m of the leg's start.
+		if lead_hit and not _off.has("kturnslide"):
+			lead_hit = Vector2(contact.normal.x, contact.normal.z).dot(nose * _kturn_gear) < -KTURN_INTO_WALL_COS
 		if backed >= _kturn_left_m and not _kturn_legs.is_empty():
 			_kturn_start_leg(_kturn_legs.pop_front())  # the next leg of a back-and-fill, from where this one ended
 		elif backed >= _kturn_left_m or _kturn_timeout <= 0.0 or lead_hit:
