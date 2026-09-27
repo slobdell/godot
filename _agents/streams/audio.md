@@ -225,6 +225,23 @@ main at `c8e80f5b`, before main recorded nav's move in `d6094cef`; merging main 
 https://claude.ai/artifact/Kkj5VrQPuw8HNDLJUsPtjk** — 49 lines grouped by where she says them; a result line plays
 the Law's take. Empty at publish. **Read its `db` at the round's close.**
 
+### M7 — his PA veto pass, applied (2026-09-27)
+
+He kept 39 of the 49 and vetoed ten (read from the page's `db` by the orchestrator and again by this worker; dump
+in `_agents/streams/references/round12/audio_pa_veto_db/`): `pa.kill.14, 15, 16, 17, 19, 26, 31`,
+`pa.signoff.15, 19, 22`. Removed from `lines.json` with their clips, their 20 clip-manifest entries and this
+worktree's masters; audit 0 errors; transcripts re-cut. The PA pools after: kill notices 32 (was 18 before the round),
+sign-off 37 (was 24), so the `beats.json` weights stay.
+
+**An observation read from his taps (not a rule he stated):** the ten he cut are the ones where the wrong detail
+lands on the crews' or the fans' bodies and homes: the reserve crew watching with their school groups, the escorted
+refreshments, the cell reassigned, the hearing check, the informant, the upper-district crew home for supper, the
+power cut to the home block, the younger fans' selection, the medical rounds, the vehicles recovered first. What he
+kept is the corporate deadpan about the venue and its paperwork. Write the next PA batch toward the venue.
+
+**VERIFIED GREEN — merge here: `aa049f5f`** (main at `ae3f3ff8`+ merged; builder0, 2026-09-27): `>> remote: make check
+exited 0`, 18 targets, **1773 passed, 0 failed**, `sim-baseline passed: 6313a38d7ecd99bb`, `announcer transcripts current`.
+
 ### Questions for the lead
 1. **Web size.** `assets/music/` went from 13 MB to 29 MB and all of it ships in the web pack. Options: accept; drop the
    web build to one track per state and keep the rotation on desktop/Android; or the music-pack-after-start the design

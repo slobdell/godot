@@ -32593,54 +32593,6 @@
    "text": "That's right, Joseph. The crew's last transmission has been kept for training purposes, along with the others from this season, and the match continues.",
    "voice": "corporate2"
   },
-  "pa.kill.14": {
-   "duration_s": 9.156,
-   "file": "pa/pa.kill.14.ogg",
-   "kind": "line",
-   "request": "pa.kill.14",
-   "request_key": "35c96dc7dda2876aee2d4847649f95251d865521",
-   "speaker": "pa",
-   "stt_ok": true,
-   "stt_text": "The vehicle's reserve crew will take its place next week. Several of them are watching tonight with their school groups in the north stand as part of the program",
-   "text": "The vehicle's reserve crew will take its place next week. Several of them are watching tonight with their school groups, in the north stand, as part of the programme.",
-   "voice": "corporate2"
-  },
-  "pa.kill.15": {
-   "duration_s": 7.915,
-   "file": "pa/pa.kill.15.ogg",
-   "kind": "line",
-   "request": "pa.kill.15",
-   "request_key": "bc519a24788c62c61152e975d59a675e92742ec1",
-   "speaker": "pa",
-   "stt_ok": true,
-   "stt_text": "Spectators in section four may now leave their seats for refreshments in groups of six under escort until the next kill",
-   "text": "Spectators in section four may now leave their seats for refreshments, in groups of six, under escort, until the next kill.",
-   "voice": "corporate2"
-  },
-  "pa.kill.16": {
-   "duration_s": 7.504,
-   "file": "pa/pa.kill.16.ogg",
-   "kind": "line",
-   "request": "pa.kill.16",
-   "request_key": "d898dd9e68e3bc017a68fddad4aacb165c9b256a",
-   "speaker": "pa",
-   "stt_ok": true,
-   "stt_text": "The crew's cell has been reassigned for tomorrow's arrivals, and their personal effects will be kept at the steward's office in the meantime",
-   "text": "The crew's cell has been reassigned for tomorrow's arrivals, and their personal effects will be kept at the stewards' office in the meantime.",
-   "voice": "corporate2"
-  },
-  "pa.kill.17": {
-   "duration_s": 6.491,
-   "file": "pa/pa.kill.17.ogg",
-   "kind": "line",
-   "request": "pa.kill.17",
-   "request_key": "f8950fd5e1882fc5f60246f8f79afacca8d707a8",
-   "speaker": "pa",
-   "stt_ok": true,
-   "stt_text": "Anyone near the floor for that one will be offered a hearing check next season as usual, and the match continues",
-   "text": "Anyone near the floor for that one will be offered a hearing check next season, as usual, and the match continues.",
-   "voice": "corporate2"
-  },
   "pa.kill.18": {
    "duration_s": 8.405,
    "file": "pa/pa.kill.18.ogg",
@@ -32651,18 +32603,6 @@
    "stt_ok": true,
    "stt_text": "Well called, Joseph. That crew's apartment in the eastern blocks is now available, and applications open tomorrow morning at the housing office",
    "text": "Well called, Joseph. That crew's apartment in the eastern blocks is now available, and applications open tomorrow morning at the housing office.",
-   "voice": "corporate2"
-  },
-  "pa.kill.19": {
-   "duration_s": 6.631,
-   "file": "pa/pa.kill.19.ogg",
-   "kind": "line",
-   "request": "pa.kill.19",
-   "request_key": "e91605918f3b9a1fd9f65b853a23aefa35c74dd8",
-   "speaker": "pa",
-   "stt_ok": true,
-   "stt_text": "The stewards thank the fan who shared that crew's route beforehand and remind everyone the reporting desk is open",
-   "text": "The stewards thank the fan who shared that crew's route beforehand, and remind everyone the reporting desk is open.",
    "voice": "corporate2"
   },
   "pa.kill.20": {
@@ -32737,18 +32677,6 @@
    "text": "That's right, Joseph. Crews wishing to dispute that result may do so in writing, in person, at the stewards' office, before the end of the match.",
    "voice": "corporate2"
   },
-  "pa.kill.26": {
-   "duration_s": 6.385,
-   "file": "pa/pa.kill.26.ogg",
-   "kind": "line",
-   "request": "pa.kill.26",
-   "request_key": "e6fdf9a7ded843e8cecd06b0194287d10d4fbb77",
-   "speaker": "pa",
-   "stt_ok": true,
-   "stt_text": "The crew who made that shot are from the upper districts and will be home in time for supper as their contract provides",
-   "text": "The crew who made that shot are from the upper districts, and will be home in time for supper, as their contract provides.",
-   "voice": "corporate2"
-  },
   "pa.kill.27": {
    "duration_s": 7.721,
    "file": "pa/pa.kill.27.ogg",
@@ -32795,18 +32723,6 @@
    "stt_ok": true,
    "stt_text": "Our floor stewards will wait for a pause before attending, a policy introduced last season, and the match continues",
    "text": "Our floor stewards will wait for a pause before attending, a policy introduced last season, and the match continues.",
-   "voice": "corporate2"
-  },
-  "pa.kill.31": {
-   "duration_s": 6.193,
-   "file": "pa/pa.kill.31.ogg",
-   "kind": "line",
-   "request": "pa.kill.31",
-   "request_key": "d00d724603654a6c5d92c36b2b56c9e7bda49a14",
-   "speaker": "pa",
-   "stt_ok": true,
-   "stt_text": "The vehicle's power has been cut at source, as has its crew's home block until the morning shift as standard",
-   "text": "The vehicle's power has been cut at source, as has its crew's home block, until the morning shift, as standard.",
    "voice": "corporate2"
   },
   "pa.kill.32": {
@@ -34177,18 +34093,6 @@
    "text": "Tonight's match will be kept in the district archive alongside the crews' records, and may be requested by relatives in the usual way.",
    "voice": "corporate2"
   },
-  "pa.signoff.15": {
-   "duration_s": 7.306,
-   "file": "pa/pa.signoff.15.ogg",
-   "kind": "line",
-   "request": "pa.signoff.15",
-   "request_key": "48e4370a9c2c066c0cbef61f465e316d76749e6c",
-   "speaker": "pa",
-   "stt_ok": true,
-   "stt_text": "Younger fans are reminded that tonight's match counts toward their district selection and school resumes as normal in the morning",
-   "text": "Younger fans are reminded that tonight's match counts toward their district's selection, and school resumes as normal in the morning.",
-   "voice": "corporate2"
-  },
   "pa.signoff.16": {
    "duration_s": 7.287,
    "file": "pa/pa.signoff.16.ogg",
@@ -34225,18 +34129,6 @@
    "text": "Fans leaving the lower bowl may find conversation difficult for a day or two, which is normal, and staff at the gates will point the way.",
    "voice": "corporate2"
   },
-  "pa.signoff.19": {
-   "duration_s": 7.543,
-   "file": "pa/pa.signoff.19.ogg",
-   "kind": "line",
-   "request": "pa.signoff.19",
-   "request_key": "5b8acfd5f373f2e3678c7594199fa3cdcfd3b686",
-   "speaker": "pa",
-   "stt_ok": true,
-   "stt_text": "The medical team will now begin their rounds of the floor, starting with the winning side, and the concourse remains open meanwhile",
-   "text": "The medical team will now begin their rounds of the floor, starting with the winning side, and the concourse remains open meanwhile.",
-   "voice": "corporate2"
-  },
   "pa.signoff.20": {
    "duration_s": 7.999,
    "file": "pa/pa.signoff.20.ogg",
@@ -34259,18 +34151,6 @@
    "stt_ok": true,
    "stt_text": "Please have your ticket and district papers ready at the gates where some fans will be asked to stay behind for a short conversation with the stewards.",
    "text": "Please have your ticket and district papers ready at the gates, where some fans will be asked to stay behind for a short conversation with the stewards.",
-   "voice": "corporate2"
-  },
-  "pa.signoff.22": {
-   "duration_s": 7.77,
-   "file": "pa/pa.signoff.22.ogg",
-   "kind": "line",
-   "request": "pa.signoff.22",
-   "request_key": "97e90086d9bceb6bf415cdfd40e3b3be7596c833",
-   "speaker": "pa",
-   "stt_ok": true,
-   "stt_text": "The floor crew will recover tonight's vehicles first as they are needed on Thursday and the remaining items in the order they are found",
-   "text": "The floor crew will recover tonight's vehicles first, as they are needed on Thursday, and the remaining items in the order they are found.",
    "voice": "corporate2"
   },
   "pa.signoff.23": {
@@ -46239,46 +46119,11 @@
     "": "pa.kill.13"
    }
   },
-  "pa.kill.14": {
-   "bases": [],
-   "speaker": "pa",
-   "variants": {
-    "": "pa.kill.14"
-   }
-  },
-  "pa.kill.15": {
-   "bases": [],
-   "speaker": "pa",
-   "variants": {
-    "": "pa.kill.15"
-   }
-  },
-  "pa.kill.16": {
-   "bases": [],
-   "speaker": "pa",
-   "variants": {
-    "": "pa.kill.16"
-   }
-  },
-  "pa.kill.17": {
-   "bases": [],
-   "speaker": "pa",
-   "variants": {
-    "": "pa.kill.17"
-   }
-  },
   "pa.kill.18": {
    "bases": [],
    "speaker": "pa",
    "variants": {
     "": "pa.kill.18"
-   }
-  },
-  "pa.kill.19": {
-   "bases": [],
-   "speaker": "pa",
-   "variants": {
-    "": "pa.kill.19"
    }
   },
   "pa.kill.20": {
@@ -46323,13 +46168,6 @@
     "": "pa.kill.25"
    }
   },
-  "pa.kill.26": {
-   "bases": [],
-   "speaker": "pa",
-   "variants": {
-    "": "pa.kill.26"
-   }
-  },
   "pa.kill.27": {
    "bases": [],
    "speaker": "pa",
@@ -46356,13 +46194,6 @@
    "speaker": "pa",
    "variants": {
     "": "pa.kill.30"
-   }
-  },
-  "pa.kill.31": {
-   "bases": [],
-   "speaker": "pa",
-   "variants": {
-    "": "pa.kill.31"
    }
   },
   "pa.kill.32": {
@@ -46939,13 +46770,6 @@
     "": "pa.signoff.14"
    }
   },
-  "pa.signoff.15": {
-   "bases": [],
-   "speaker": "pa",
-   "variants": {
-    "": "pa.signoff.15"
-   }
-  },
   "pa.signoff.16": {
    "bases": [],
    "speaker": "pa",
@@ -46967,13 +46791,6 @@
     "": "pa.signoff.18"
    }
   },
-  "pa.signoff.19": {
-   "bases": [],
-   "speaker": "pa",
-   "variants": {
-    "": "pa.signoff.19"
-   }
-  },
   "pa.signoff.20": {
    "bases": [],
    "speaker": "pa",
@@ -46986,13 +46803,6 @@
    "speaker": "pa",
    "variants": {
     "": "pa.signoff.21"
-   }
-  },
-  "pa.signoff.22": {
-   "bases": [],
-   "speaker": "pa",
-   "variants": {
-    "": "pa.signoff.22"
    }
   },
   "pa.signoff.23": {

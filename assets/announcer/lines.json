@@ -13238,62 +13238,6 @@
    "added": "r12"
   },
   {
-   "id": "pa.kill.14",
-   "speaker": "pa",
-   "act": "notice",
-   "tags": [
-    "kill"
-   ],
-   "text": "The vehicle's reserve crew will take its place next week. Several of them are watching tonight with their school groups, in the north stand, as part of the programme.",
-   "oddity": {
-    "span": "with their school groups",
-    "category": "children"
-   },
-   "added": "r12"
-  },
-  {
-   "id": "pa.kill.15",
-   "speaker": "pa",
-   "act": "notice",
-   "tags": [
-    "kill"
-   ],
-   "text": "Spectators in section four may now leave their seats for refreshments, in groups of six, under escort, until the next kill.",
-   "oddity": {
-    "span": "under escort",
-    "category": "confinement"
-   },
-   "added": "r12"
-  },
-  {
-   "id": "pa.kill.16",
-   "speaker": "pa",
-   "act": "notice",
-   "tags": [
-    "kill"
-   ],
-   "text": "The crew's cell has been reassigned for tomorrow's arrivals, and their personal effects will be kept at the stewards' office in the meantime.",
-   "oddity": {
-    "span": "The crew's cell has been reassigned",
-    "category": "detention"
-   },
-   "added": "r12"
-  },
-  {
-   "id": "pa.kill.17",
-   "speaker": "pa",
-   "act": "notice",
-   "tags": [
-    "kill"
-   ],
-   "text": "Anyone near the floor for that one will be offered a hearing check next season, as usual, and the match continues.",
-   "oddity": {
-    "span": "a hearing check next season",
-    "category": "hearing"
-   },
-   "added": "r12"
-  },
-  {
    "id": "pa.kill.18",
    "speaker": "pa",
    "act": "notice",
@@ -13305,20 +13249,6 @@
    "oddity": {
     "span": "is now available",
     "category": "housing"
-   },
-   "added": "r12"
-  },
-  {
-   "id": "pa.kill.19",
-   "speaker": "pa",
-   "act": "notice",
-   "tags": [
-    "kill"
-   ],
-   "text": "The stewards thank the fan who shared that crew's route beforehand, and remind everyone the reporting desk is open.",
-   "oddity": {
-    "span": "who shared that crew's route beforehand",
-    "category": "informants"
    },
    "added": "r12"
   },
@@ -13409,20 +13339,6 @@
    "added": "r12"
   },
   {
-   "id": "pa.kill.26",
-   "speaker": "pa",
-   "act": "notice",
-   "tags": [
-    "kill"
-   ],
-   "text": "The crew who made that shot are from the upper districts, and will be home in time for supper, as their contract provides.",
-   "oddity": {
-    "span": "home in time for supper",
-    "category": "privilege"
-   },
-   "added": "r12"
-  },
-  {
    "id": "pa.kill.27",
    "speaker": "pa",
    "act": "notice",
@@ -13479,20 +13395,6 @@
    "added": "r12"
   },
   {
-   "id": "pa.kill.31",
-   "speaker": "pa",
-   "act": "notice",
-   "tags": [
-    "kill"
-   ],
-   "text": "The vehicle's power has been cut at source, as has its crew's home block, until the morning shift, as standard.",
-   "oddity": {
-    "span": "as has its crew's home block",
-    "category": "utilities"
-   },
-   "added": "r12"
-  },
-  {
    "id": "pa.kill.32",
    "speaker": "pa",
    "act": "notice",
@@ -13532,20 +13434,6 @@
    "oddity": {
     "span": "alongside the crews' records",
     "category": "archive"
-   },
-   "added": "r12"
-  },
-  {
-   "id": "pa.signoff.15",
-   "speaker": "pa",
-   "act": "notice",
-   "tags": [
-    "outro"
-   ],
-   "text": "Younger fans are reminded that tonight's match counts toward their district's selection, and school resumes as normal in the morning.",
-   "oddity": {
-    "span": "counts toward their district's selection",
-    "category": "children"
    },
    "added": "r12"
   },
@@ -13592,20 +13480,6 @@
    "added": "r12"
   },
   {
-   "id": "pa.signoff.19",
-   "speaker": "pa",
-   "act": "notice",
-   "tags": [
-    "outro"
-   ],
-   "text": "The medical team will now begin their rounds of the floor, starting with the winning side, and the concourse remains open meanwhile.",
-   "oddity": {
-    "span": "starting with the winning side",
-    "category": "medical"
-   },
-   "added": "r12"
-  },
-  {
    "id": "pa.signoff.20",
    "speaker": "pa",
    "act": "notice",
@@ -13630,20 +13504,6 @@
    "oddity": {
     "span": "asked to stay behind",
     "category": "papers"
-   },
-   "added": "r12"
-  },
-  {
-   "id": "pa.signoff.22",
-   "speaker": "pa",
-   "act": "notice",
-   "tags": [
-    "outro"
-   ],
-   "text": "The floor crew will recover tonight's vehicles first, as they are needed on Thursday, and the remaining items in the order they are found.",
-   "oddity": {
-    "span": "as they are needed on Thursday",
-    "category": "salvage"
    },
    "added": "r12"
   },

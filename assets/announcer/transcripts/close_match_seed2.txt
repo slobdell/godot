@@ -30,7 +30,7 @@ result: rust by elimination at 1:21.8
 1:09.8   CALLER   Smart! They're backing out before it gets any worse!
 1:10.8   ── rust tank destroys green ifv
 1:13.7   CALLER   Smoke pouring out, and that one is done for the night!
-1:17.6   PA       The crew's—
+1:17.6   PA       That's right—
 1:18.8   ── rust ifv destroys green artillery
 1:18.8   ── green squad Bravo wiped out
 1:18.8   CALLER   Whoa, whoa, whoa!
@@ -42,4 +42,4 @@ result: rust by elimination at 1:21.8
 1:26.4   CALLER   And the Syndicate are the last army standing! The Syndicate win!
 1:30.3   VETERAN  The losing side will want to talk about the one exchange that went wrong. It was more than one.
 1:39.1   PA       The Syndicate take tonight's match. We thank our participants, and our sponsors, in that order.
-1:45.3   PA       The air outside the arena is within limits for walking tonight, for most residents, so please take your time on the way home.
+1:45.3   PA       Our next broadcast is tomorrow evening at the usual time, with the same crews where available, and we hope you will join us.
