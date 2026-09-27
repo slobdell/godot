@@ -53,6 +53,14 @@ const AIM_HEIGHT_M := 1.5
 const MIN_SIGHT_M := 2.0
 
 var camera: Camera3D
+## Round 12: grow `DRAWN_CUT` types to what is drawn. Off only for a "before" frame (`make camera-drawn`), which is
+## how the pair moves one variable.
+var drawn := true:
+	set(value):
+		if value != drawn:
+			restore()
+			_built_for = -1
+		drawn = value
 ## The arena's `Obstacles` node (every kit prop and obstacle is one StaticBody3D under it).
 var obstacles_root: Node3D
 
@@ -146,7 +154,7 @@ func _gather() -> void:
 			continue
 		var type := BlockCutaway.kit_type_of(String(body.name))
 		var parts: Array = [visual]
-		if DRAWN_CUT.has(type):
+		if drawn and DRAWN_CUT.has(type):
 			var drawn: Array = AirshipFlight.DRAWN[type]
 			low = low.min(Vector3(-float(drawn[0]) / 2.0, 0.0, -float(drawn[2]) / 2.0))
 			high = high.max(Vector3(float(drawn[0]) / 2.0, float(drawn[1]), float(drawn[2]) / 2.0))

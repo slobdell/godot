@@ -663,3 +663,21 @@ func test_an_ad_screen_in_the_sight_line_is_cut_and_comes_back() -> void:
 	await tree.process_frame
 	assert_true(not cutaway.cut_blocks().has(String(body.name)), "with the camera moved on it is not cut")
 	assert_true(not BlockCutaway.is_hidden(solid), "and it is drawn again")
+
+
+## `make camera-drawn` finds its poses from pure searches; on the two maps he plays most they must find something,
+## or the page is empty and says nothing. The lamp pose really is inside the lamp head when posed from colliders.
+func test_the_drawn_frames_find_their_poses() -> void:
+	for name: String in ["terminus", "yard"]:
+		var data := _layout(name)
+		var drawn := RtsCamera.drawn_layout(data)
+		var lamp: Variant = CameraLooks.drawn_lamp_pose(data, drawn)
+		assert_true(lamp != null, "%s: a pose with the camera in a lamp head" % name)
+		if lamp != null:
+			var clear := RtsCamera.clear_pose(lamp[0], lamp[1], HIS_DISTANCE, CameraLooks.DRAWN_LAMP_PITCH, data)
+			var eye := RtsCamera.pose_at(lamp[0], lamp[1], float(clear["distance"]), float(clear["pitch_deg"])).origin
+			assert_eq(String(RtsCamera.solid_at(eye, drawn).get("type", "")), "floodlight", "%s: posed from colliders it is in the lamp head" % name)
+			var fixed := RtsCamera.clear_pose(lamp[0], lamp[1], HIS_DISTANCE, CameraLooks.DRAWN_LAMP_PITCH, drawn)
+			var out := RtsCamera.pose_at(lamp[0], lamp[1], float(fixed["distance"]), float(fixed["pitch_deg"])).origin
+			assert_true(RtsCamera.solid_at(out, drawn).is_empty(), "%s: posed from the drawing it is not (%.1f m up)" % [name, out.y])
+		assert_true(CameraLooks.drawn_screen_pose(data, drawn) != null, "%s: a pose with an ad screen in the sight line" % name)
