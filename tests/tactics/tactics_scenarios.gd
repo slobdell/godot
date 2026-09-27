@@ -608,11 +608,15 @@ static func attack_move_decisions(case: TestCase, seconds := 60.0) -> Dictionary
 ## end? Four tanks in a loose clump get a plain move 110 m down the strip. While the leader is still travelling, each other
 ## member's distance from its formation place — the leader's position plus its slot offset turned to the leader's facing —
 ## is averaged; then the arrival time and the orders in the last 10 s. `flow` switches ElementPlan.FLOW_ENABLED (A/B).
-static func element_transit(case: TestCase, flow: bool, seconds := 40.0, pin := false) -> Dictionary:
+## Round 12: `transit` switches ElementPlan.TRANSIT_ENABLED (the travelling anchor); with it off, the run is round 10's
+## shipped path (every crew straight to its slot, the flow only when the leader happens to lead from the front).
+static func element_transit(case: TestCase, flow: bool, seconds := 40.0, pin := false, transit := true) -> Dictionary:
 	var was := ElementPlan.FLOW_ENABLED
 	var pinned_was := ElementPlan.PIN_LEADER_ON_PLAIN_MOVE
+	var transit_was := ElementPlan.TRANSIT_ENABLED
 	ElementPlan.FLOW_ENABLED = flow
 	ElementPlan.PIN_LEADER_ON_PLAIN_MOVE = pin
+	ElementPlan.TRANSIT_ENABLED = transit
 	var lab := TacticsLab.create(case, 37)
 	var names: Array = []
 	for i in 4:
@@ -664,7 +668,9 @@ static func element_transit(case: TestCase, flow: bool, seconds := 40.0, pin := 
 			"arrived_s": snappedf(arrived / float(SimClock.TICK_RATE), 0.1) if arrived >= 0 else -1.0,
 			"worst_off_slot_m": snappedf(off, 0.1), "orders_last_10s": int(issued["late"])}
 	result["pin"] = pin
+	result["transit"] = transit
 	lab.dispose()
 	ElementPlan.FLOW_ENABLED = was
 	ElementPlan.PIN_LEADER_ON_PLAIN_MOVE = pinned_was
+	ElementPlan.TRANSIT_ENABLED = transit_was
 	return result

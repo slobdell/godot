@@ -163,6 +163,16 @@ const ATTACK_MOVE_FIGHT := 0.5
 const ATTACK_MOVE_REACH_MARGIN := 10.0
 ## A move or attack-move counts as done within this distance of the unit's slot (meters)...
 const ORDER_ARRIVE := 3.5
+## Round 12, a crew keeping station on its element's travelling anchor (ElementPlan's TRANSIT block): the station is
+## led by this much of the anchor's motion, which is about how stale it is by the time a think reads it (the element
+## publishes at 10 Hz, the brain reads at the near rate of 5 Hz); and the mover's arrive radius on that sliding goal
+## (nav clamps it to 0.5 m and up, and a wheeled hull's settle radius still applies on top).
+const STATION_LEAD_S := 0.15
+const TRANSIT_ARRIVE_M := 1.0
+## A crew whose station is this far BEHIND it along the route waits for it rather than turning back to it...
+const TRANSIT_WAIT_M := 3.0
+## ...and a crew off to the side of its station aims this far ahead of it at most (its lateral gap, capped).
+const TRANSIT_LEAD_MAX_M := 20.0
 ## (Round 6, nav: there is no "close enough after a stall" any more. Round 5 completed a stalled move from up to 12 m away,
 ## which is what made a jammed horde look like it had decided to stop. An order completes when the unit arrives; a unit
 ## that cannot says so through Movement.state() — phase "blocked", and what blocks it — and keeps trying.)
@@ -673,7 +683,12 @@ func _update_order_progress() -> void:
 			# telling us the goal moved, so we honour ITS arrival at the point IT was sent to. With no repair in
 			# force (`repaired_m` 0) this changes nothing, and an unreachable goal still reports blocked/no_path.
 			var reading := Movement.state(tank)
-			var repaired: bool = float(reading.get("repaired_m", 0.0)) > 0.0 and String(reading.get("phase", "")) == "arrived"
+			# Round 12: while my element is travelling as a formation the mover drives to my STATION, not to this order's
+			# goal (_order_context), so a repair the mover reports is a repair of the station and says nothing about the
+			# slot. Honouring it completed a crew's move 12 m short of its slot (Terminus, squad-settle side, seed 2).
+			var to_station: bool = element.get("station") is Vector3
+			var repaired: bool = not to_station and float(reading.get("repaired_m", 0.0)) > 0.0 \
+					and String(reading.get("phase", "")) == "arrived"
 			if not fighting and (distance <= arrive or repaired):
 				_finish_order(goal)
 		"stop":
@@ -727,6 +742,32 @@ func _order_context() -> Variant:
 			# inside the block. Grounded with this hull's own clearance, like every slot the element issues.
 			if context["goal"] is Vector3:
 				context["goal"] = SlotGround.standable_for(tank, context["goal"], SlotGround.envelope_of(tank.unit_id))
+		elif order["verb"] == "move" and element.get("station") is Vector3 and String(element.get("task", "")) == "move":
+			# Round 12: my element is travelling as a formation and publishes where I should be NOW (its station on the
+			# route, riding the anchor); the order itself still says where I END UP (its goal, the final slot, which is
+			# what completion is judged against in _update_order_progress). Drive to the station while there is one:
+			# grounded with this hull's own clearance like a follow's, and led by the anchor's motion so the hull points
+			# along the formation's travel rather than chasing a point that has moved on.
+			var station: Vector3 = element["station"]
+			var velocity: Variant = element.get("station_velocity")
+			var here := _flat(tank.global_position)
+			if velocity is Vector3 and (velocity as Vector3).length() > 0.1:
+				var tangent := (velocity as Vector3).normalized()
+				var to_station := _flat(station) - here
+				var along := to_station.dot(tangent)
+				var across := (to_station - tangent * along).length()
+				if along < -TRANSIT_WAIT_M:
+					# My station is BEHIND me: it is coming. Turning round to drive back to a point that is driving toward
+					# me cost the tail crew of a column two U-turns and 19 m of lag (squad-settle default, 80 m, seed 3);
+					# a crew that is ahead of its place stands and lets the formation come alongside.
+					context["transit_wait"] = true
+				# Aim ahead of the station by the lateral gap: a crew 16 m to the side of its place then merges on a
+				# diagonal instead of turning 90 degrees toward a point beside it (a tracked hull PIVOTS for that, and the
+				# tank of a mixed squad stood pivoting for 4 s while its station drove off, same probe). The lead shrinks
+				# to nothing as the crew closes on its station, plus the anchor's own motion over a think's staleness.
+				station += tangent * (minf(across, TRANSIT_LEAD_MAX_M) + (velocity as Vector3).length() * STATION_LEAD_S)
+			context["goal"] = SlotGround.standable_for(tank, station, SlotGround.envelope_of(tank.unit_id))
+			context["transit"] = true
 		if _order_source.has_method("pace_factor"):
 			context["speed"] = clampf(float(_order_source.call("pace_factor", String(tank.name))), 0.2, 1.0)
 	# L1 (X1): the leader's call outranks the movement order it issued earlier. Told to stop bounding — to become the
@@ -813,6 +854,10 @@ func _think_rate() -> float:
 	var my_position := tank.global_position
 	var my_reach := float(tank.weapon["range"]) + FIGHT_MARGIN
 	var rate := IDLE_THINK_HZ
+	# Round 12: a crew keeping station on a travelling formation re-reads its station every think, so it thinks at the
+	# near rate while its element is in transit (at the idle rate the station stepped ~2.3 m between reads at cruise).
+	if element.get("station") is Vector3:
+		rate = NEAR_THINK_HZ
 	for known: Dictionary in AiTickCache.contact_prototypes(game_match, tank.team).values():
 		var distance := my_position.distance_to(known["position"])
 		if distance > LOD_RADIUS:
@@ -1947,7 +1992,19 @@ func _act(s: Dictionary) -> void:
 			var o: Dictionary = s["order"]
 			var goal: Vector3 = o["goal"]
 			why = TankBrain._join(why, "attack-move" if o["verb"] == "attack_move" else "ordered")
-			if _flat(my_position).distance_to(goal) <= _order_arrive():
+			if bool(o.get("transit_wait", false)):
+				# Round 12: ahead of my place in the travelling formation; it is coming to me.
+				why = TankBrain._join(why, "waiting for the formation")
+				_order_move({"type": "stop"})
+			elif bool(o.get("transit", false)):
+				# Round 12: keeping station on my element's travelling anchor. The goal slides every update, so never
+				# "arrive" and stop at it (nav's station PID holds the hull on a moving point, and the anchor never
+				# stops until it is the final slot); the arrival facing is for the final leg, not for a place on the way.
+				why = TankBrain._join(why, "in formation")
+				var sliding := _move_to(goal, false, 1.0, TRANSIT_ARRIVE_M)
+				sliding["sliding"] = true
+				_order_move(sliding)
+			elif _flat(my_position).distance_to(goal) <= _order_arrive():
 				_order_move(_face_intended_or({"type": "stop"}))
 			else:
 				_order_move(_arrive_facing(_move_to(goal, false, float(o["speed"]), _order_arrive())))
@@ -2795,7 +2852,11 @@ func _order_move(order: Dictionary) -> void:
 			and is_equal_approx(float(order.get("arrive", 0.0)), float(move_order.get("arrive", 0.0))):
 		if not order.has("x"):
 			return
-		if Vector2(float(order["x"]) - float(move_order["x"]), float(order["z"]) - float(move_order["z"])).length() < 2.0:
+		# Round 12: a SLIDING goal (a station on a travelling formation) reaches the mover on every think, however little it
+		# moved: nav's `_track_goal` estimates the goal's speed from those steps, and a step swallowed here would read as
+		# the station stopping. A near-duplicate of a fixed point is still dropped, as it always was.
+		var near := 0.05 if bool(order.get("sliding", false)) else 2.0
+		if Vector2(float(order["x"]) - float(move_order["x"]), float(order["z"]) - float(move_order["z"])).length() < near:
 			return
 	set_orders(order, null)
 

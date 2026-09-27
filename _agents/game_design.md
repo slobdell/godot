@@ -2382,4 +2382,29 @@ as shipped. **The orchestrator's ruling on the airship's own open question** (on
 building" and "in his frame at his pose" cannot both hold at any size): **keep it as a zoomed-out sight there.** The
 Terminus is the only shipping map with 40 m blocks inside the fight; he asked to see the airship *more*, not
 constantly; and the alternative re-opens a size he has already ruled on twice.
-||||||| abb5be04
+
+## Round 12 direction: fine-tuning, not a round (2026-09-26, the lead in the main checkout)
+
+The lead: *"we are not going to orchestrate work we are just going to fine tune some things now. This game is getting
+pretty good, and the issues I see now are rather fine tuned."*
+
+**Navigation and formations.** *"The maps are small, and it seems to take a long time for units to form up in the
+desired formation. It's hard to tell if the formations even work — I think they do but I think the units are just so
+inefficient at getting to that state that it's almost unusable (although, perhaps it's an element of the game that it
+takes time for units to get in formation). … I just started a game where my first action was to click a location for a
+squad, they were in auto formation (which I assume is a wedge based on the UI), and they all split apart and navigated
+their own way to the destination."*
+
+What was found and built is in `doctrine.md` *A plain move travels AS a formation*: the scatter was the design of the
+plain move (one shape on the click, every crew by its own route, the round-7 flow gated on a leader-at-the-front that
+round 10's seating made rare), and the shape he was looking for was not the one being formed (the AUTO icon shows a
+wedge; the doctrine picks a column on the maps he plays, which classify as dense). A travelling anchor now carries the
+squad's shape along the route. He asked *"go ahead to build"* after the diagnosis, adding: *"The game felt right, but I
+was also playing with The Law."* His verdict on the build, the same evening: *"ok commit your changes, this is now really
+good."*
+
+**Music and announcer** (parked at his request until the formation work landed): *"I hear 'they are trading, they are
+trading in the middle of the floor' quite often — do we not have enough random phrases that accomplish the same
+filler? And do we have a wide selection of music tracks? I can't tell if it's playing the same music over and over on
+opening — if there are comparable moods across tracks (which there should be, I did a few variations), it would be good
+if we can randomize the selection."*

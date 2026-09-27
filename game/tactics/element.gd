@@ -78,6 +78,18 @@ var paces := {}
 var _etas_tick := -1_000_000
 var events: PackedStringArray = []
 
+## Round 12: the plain move's TRAVELLING ANCHOR (ElementPlan's TRANSIT block): {"route": Array[Vector3], "length",
+## "s" (metres along the route), "tick" (last advance), "speed" (m/s at full pace), "pace" (0..1, the lag rule),
+## "anchor": Vector3, "heading": Vector3, "velocity": Vector2 (m/s), "final_heading": Vector3, "arrived": bool}.
+## {} for any task that is not a plain move to a point (or a move too short to travel). Impure to create (a navmesh
+## route), pure to advance; passed to the plan as `state.transit`.
+var transit := {}
+## The crews' places on the way ({unit: Vector3}), from the last plan; {} when the element is not in transit. Published
+## for the brains (ElementFeed "station"), which drive to it instead of the final slot while it exists.
+var stations := {}
+## The task (task_seq) whose move was too short for an anchor, so the question is not re-asked every update.
+var _transit_declined_seq := -1
+
 ## Plan state carried between updates.
 var anchor: Variant = null
 ## X7: the covered route the element is following (waypoints) and which one it is driving to.
@@ -165,6 +177,8 @@ func assign(new_task: Variant) -> String:
 	anchor = null
 	route = []
 	route_index = 0
+	transit = {}
+	stations = {}
 	flow_joined = false
 	facing_sent = false
 	arrived = false
@@ -191,6 +205,8 @@ func retarget(new_task: Variant) -> String:
 		anchor = null
 		route = []
 		route_index = 0
+		transit = {}
+		stations = {}
 	_log("task: %s" % ElementTask.describe(task))
 	return ""
 
@@ -224,10 +240,11 @@ func update(game_match: Match, orders: Object) -> bool:
 			{"heading": heading, "arrived": arrived, "known": _known})
 	_known = situation["known"]
 	situation["corridor_m"] = _corridor(game_match, situation)
+	_advance_transit(game_match, situation)
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation, "flow_joined": flow_joined,
-			"facing_sent": facing_sent,
+			"facing_sent": facing_sent, "transit": transit,
 			"route": route, "route_index": route_index, "bound": bound}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
@@ -243,6 +260,18 @@ func update(game_match: Match, orders: Object) -> bool:
 	# second rule here — `_pace_leader_for_flow`, which eased the leader off by how far the worst follower trailed
 	# its follow offset — and two rules pacing the same vehicle by different arithmetic is what A9 replaces.
 	paces = FormUp.paces(by_name, slots, etas)
+	if not transit.is_empty():
+		# Round 12: on a move that travels as a formation the ANCHOR is the pace (it drives at the slowest cruise and
+		# waits for laggards), and a crew keeping station on a moving point must be free to close on it. After the
+		# hand-off the crews are within TRANSIT_HANDOFF_M of their slots IN FILE, and restarting co-arrival pacing there
+		# slowed the crew whose slot was nearest -- the one in FRONT -- under a faster crew behind it with a farther
+		# slot, which deflected round it into a crate (default arena, squad-settle forward, seed 1: stopped 20.8 s
+		# against 10.1). So no co-arrival pacing for the whole of a travelled move. TRIED AND REVERTED: one uniform pace
+		# of 0.6 for everyone after the hand-off (the arrival speed round 10's co-arrival gave its wheeled crews) --
+		# builder0, paired series, 4 seeds: default forward stopped median 16.6 -> 22.2 s, every cell slower. Under one
+		# factor the faster hulls (IFVs, at the tail of a column) still close on the tanks ahead, and slowly.
+		for unit_name: String in paces:
+			paces[unit_name] = 1.0
 	bottleneck_ticks = FormUp.bottleneck_ticks(etas)
 	_issue(plan, orders, situation, game_match, preempt)
 	return _note_changes(before)
@@ -274,7 +303,11 @@ func state() -> Dictionary:
 			# B7: the player's order is COMPLETED at operational arrival (the centre in the destination zone); the crews
 			# still dressing onto their slots after it are not the order running late. R2: the tick the last player
 			# task was acted on (-1 never), so a readout can show the acknowledgement.
-			"arrived": arrived, "preempted_tick": preempted_tick}
+			"arrived": arrived, "preempted_tick": preempted_tick,
+			# Round 12: the shape on the way. `stations` is where each crew should be NOW ({} unless in transit), and
+			# `transit` the anchor they ride: where it is, which way the route runs there, how fast it is moving (m/s,
+			# so a brain can lead it) and the lag rule's pace. The brains read these; nothing else does.
+			"stations": stations.duplicate(), "transit": _transit_readout()}
 
 
 ## X2 (A8): the drivable width across the heading of the leg this element is driving, measured once per leg.
@@ -309,6 +342,126 @@ func _corridor(game_match: Match, situation: Dictionary) -> float:
 ## X3: seconds until the element is formed up — until its slowest member reaches its slot (the lead's estimate).
 func form_up_eta() -> float:
 	return FormUp.group_eta(etas)
+
+
+# ---- Round 12: the travelling anchor (ElementPlan's TRANSIT block has the argument) ----------------------------------
+
+## Whether the element is on its way as a formation: a plain move whose anchor has not reached the click yet.
+func in_transit() -> bool:
+	return not transit.is_empty() and not bool(transit.get("arrived", true))
+
+
+## Create the anchor on the first update of a plain move (the ONE impure step: the navmesh route from the squad's centre
+## to the click, like `_corridor`), then advance it every update by the slowest member's cruise times the lag rule.
+## Deterministic: the route is the navmesh's, dt is a tick count, the pace reads member positions from the situation.
+func _advance_transit(game_match: Match, situation: Dictionary) -> void:
+	var destination: Variant = ElementTask.destination(task)
+	if not ElementPlan.TRANSIT_ENABLED or ElementTask.runs_drills(task) or String(task.get("verb", "")) != "move" \
+			or not (destination is Vector3):
+		transit = {}
+		return
+	var tick := int(situation["tick"])
+	if transit.is_empty():
+		if _transit_declined_seq == task_seq:
+			return  # decided once per task: a short move never grows an anchor later
+		var center: Vector3 = situation["center"]
+		var to := Vector3((destination as Vector3).x, 0.0, (destination as Vector3).z)
+		var from := Vector3(center.x, 0.0, center.z)
+		if from.distance_to(to) < ElementPlan.TRANSIT_MIN_M:
+			_transit_declined_seq = task_seq
+			return  # a short reposition: everyone drives straight to its slot (round 10's measured path)
+		var found: Array = [from, to]
+		var ground := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
+				and game_match.tanks.get_child_count() > 0 else null
+		if ground != null:
+			var points := Pathing.find_path(ground, from, to)
+			if points.size() >= 2:
+				found = []
+				for point: Vector3 in points:
+					var flat := Vector3(point.x, 0.0, point.z)
+					# Godot's path may repeat a corner; a zero-length leg has no tangent to steer stations by.
+					if found.is_empty() or (found[found.size() - 1] as Vector3).distance_to(flat) > 0.05:
+						found.append(flat)
+		if found.size() < 2:
+			found = [from, to]
+		var slowest := INF
+		for member: Dictionary in situation.get("members", []):
+			slowest = minf(slowest, maxf(float(member.get("speed", 9.0)), 0.5))
+		var last := found[found.size() - 1] as Vector3
+		var before_last := found[found.size() - 2] as Vector3
+		var final_heading := TacticsFormation.flat(last - before_last) if last.distance_to(before_last) > 0.05 \
+				else TacticsFormation.flat(to - from)
+		# The anchor starts AHEAD of the squad's centre by half the shape's depth (ElementPlan.transit_start_m), so at the
+		# moment of the order every station is in front of every crew and the squad moves off the way a column does:
+		# the head first, each crew falling in behind. Started ON the centre, half the crews were ahead of their
+		# stations (waiting) and the middle pair converging onto the line from either side met head-on and yielded to
+		# each other for 8 s while the anchor idled at its floor pace (yard, forward from the spawn, seed 1).
+		# The plan has not run for this task yet, so the shape is the one it WILL pick: his G choice, else the table's.
+		var shape := String(task.get("formation", UnitCommand.AUTO))
+		if shape == UnitCommand.AUTO or not TacticsFormation.NAMES.has(shape):
+			shape = String(_doctrine().select({"task": "move", "threat": String(situation["threat"]),
+					"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})["formation"])
+		var start := minf(ElementPlan.transit_start_m(shape, situation.get("members", []),
+				_doctrine().spacing(String(situation["terrain"]))),
+				maxf(ElementPlan.route_length(found) - ElementPlan.TRANSIT_HANDOFF_M, 0.0))
+		var first := ElementPlan.route_pose(found, start)
+		transit = {"route": found, "length": ElementPlan.route_length(found), "s": start, "tick": tick,
+				"speed": (slowest if is_finite(slowest) else 9.0) * ElementPlan.TRANSIT_CRUISE, "pace": 1.0,
+				"anchor": first["point"], "heading": first["tangent"],
+				"velocity": Vector2.ZERO, "final_heading": final_heading, "arrived": false}
+		_log("moving off in formation, %.0f m" % float(transit["length"]))
+		return
+	if bool(transit.get("arrived", false)):
+		return
+	var dt := float(tick - int(transit["tick"])) / float(SimClock.TICK_RATE)
+	transit["tick"] = tick
+	var pace := _transit_pace(situation)
+	var speed := ElementPlan.transit_speed(float(transit["speed"]), pace,
+			float(transit["length"]) - float(transit["s"]))
+	var s := float(transit["s"]) + speed * dt
+	if s >= float(transit["length"]) - ElementPlan.TRANSIT_HANDOFF_M:
+		# Hand over short of the click (TRANSIT_HANDOFF_M): the stations stop here and every crew's standing move to its
+		# final slot does the last metres as an approach.
+		s = minf(s, float(transit["length"]))
+		transit["arrived"] = true
+		speed = 0.0
+		_log("formation closing on the spot")
+	var pose := ElementPlan.route_pose(transit["route"], s)
+	var tangent: Vector3 = pose["tangent"]
+	transit["s"] = s
+	transit["pace"] = pace
+	transit["anchor"] = pose["point"]
+	transit["heading"] = tangent
+	transit["velocity"] = Vector2(tangent.x, tangent.z) * speed
+
+
+## The lag rule: full pace until a crew is TRANSIT_LAG_SLACK_M behind its station along the route, then down to
+## TRANSIT_MIN_PACE over TRANSIT_LAG_FALLOFF_M more. Only lag ALONG the heading counts: a crew off to the side closes by
+## cutting across, and counting it made a freshly ordered squad crawl (Squad._commander_pace, the CPU's rule since
+## round 3). Stations are last update's, 0.1 s old.
+func _transit_pace(situation: Dictionary) -> float:
+	var heading: Vector3 = TacticsFormation.flat(transit.get("heading", Vector3.FORWARD))
+	var worst := 0.0
+	for member: Dictionary in situation.get("members", []):
+		var station: Variant = stations.get(String(member["name"]))
+		if not (station is Vector3):
+			continue
+		var behind := ((station as Vector3) - (member["position"] as Vector3)).dot(heading)
+		worst = maxf(worst, behind)
+	return clampf(1.0 - (worst - ElementPlan.TRANSIT_LAG_SLACK_M) / ElementPlan.TRANSIT_LAG_FALLOFF_M,
+			ElementPlan.TRANSIT_MIN_PACE, 1.0)
+
+
+## `state()`'s transit entry: {} when not in transit, else the anchor's pose and motion as plain numbers.
+func _transit_readout() -> Dictionary:
+	if not in_transit():
+		return {}
+	var at: Vector3 = transit["anchor"]
+	var heading: Vector3 = transit["heading"]
+	var velocity: Vector2 = transit["velocity"]
+	return {"anchor": [at.x, at.z], "heading": [heading.x, heading.z], "velocity": [velocity.x, velocity.y],
+			"pace": float(transit.get("pace", 1.0)), "s": float(transit.get("s", 0.0)),
+			"length": float(transit.get("length", 0.0))}
 
 
 ## N2 for TacticsFormation.slots(element, ...): this element as formation data (members where they were last update).
@@ -353,6 +506,7 @@ func remove(unit_name: String) -> void:
 	slots.erase(unit_name)
 	sectors.erase(unit_name)
 	seats.erase(unit_name)
+	stations.erase(unit_name)
 	etas.erase(unit_name)
 	paces.erase(unit_name)
 	if leader == unit_name:
@@ -480,6 +634,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	facing_sent = bool(plan.get("facing_sent", false))
 	route = plan["route"]
 	route_index = int(plan["route_index"])
+	stations = plan.get("stations", {})
 	strength = (situation["members"] as Array).size()
 	_last_members = situation["members"]
 	var new_drill := String(plan["drill"])

@@ -137,23 +137,20 @@ func test_attack_move_decisions_measured() -> void:
 	assert_true(float(result["unit_minutes"]) > 3.0, "setup: six units fought for most of a minute")
 
 
-func test_an_element_flows_in_formation_on_the_way() -> void:
+func test_an_element_travels_in_formation_on_the_way() -> void:
 	# The lead: "a formula to form up" — the visible half is holding the shape while travelling, not only at the end.
-	var flowing: Dictionary = await TacticsScenarios.element_transit(self, true)
-	var snapping: Dictionary = await TacticsScenarios.element_transit(self, false)
-	var round9: Dictionary = await TacticsScenarios.element_transit(self, true, 40.0, true)
-	print("MEASURE element_transit flow %s; without %s; round-9 seating %s" % [flowing, snapping, round9])
-	# RE-SPECIFIED (round 10, squad item 3). Round 9 asserted the flow's transit gap beats snapping's. Once a plain move
-	# seats every crew by the least driving (no leader pinned to the head, no armour tiers), snapping stops crossing
-	# paths and holds the shape nearly as well: builder0 at 96915bfc read 8.0 m flowing against 7.7 m snapping, laptop
-	# 8.1 / 7.7, with round 9's flow at 10.0 against 11.0. So the claim is now what the lead sees: the shape on the way
-	# is no worse than round 9 shipped, and the flow still earns its keep at the end (tighter dressing, and quiet).
-	assert_true(float(flowing["transit_gap_m"]) <= float(round9["transit_gap_m"]),
-			"on the way, members hold their places around the leader no worse than round 9 (%.1f m vs %.1f m)"
-			% [flowing["transit_gap_m"], round9["transit_gap_m"]])
-	assert_true(float(flowing["worst_off_slot_m"]) <= float(snapping["worst_off_slot_m"]),
-			"and the flow dresses at least as tightly as snapping (%.1f m vs %.1f m)"
-			% [flowing["worst_off_slot_m"], snapping["worst_off_slot_m"]])
-	assert_true(float(flowing["arrived_s"]) > 0.0, "and it still gets there (%.1f s)" % flowing["arrived_s"])
-	assert_true(float(flowing["worst_off_slot_m"]) <= 8.0, "formed up on the spot (worst %.1f m)" % flowing["worst_off_slot_m"])
-	assert_true(int(flowing["orders_last_10s"]) <= 2, "and quiet after (%d orders in the last 10 s)" % flowing["orders_last_10s"])
+	# RE-SPECIFIED (round 12). The lead, playing 2026-09-26: *"they all split apart and navigated their own way to the
+	# destination"*. Round 10 had made that true: its least-driving seating rarely puts the leader at the front, and
+	# the round-7 flow only ran when it did, so a plain move had NO shape in transit. The travelling anchor (ElementPlan's
+	# TRANSIT block) replaces the flow on this path. The measure is unchanged — each member's distance from its place
+	# around the leader while the squad is on the way — and the control arm is round 10's shipped path, transit off.
+	var travelling: Dictionary = await TacticsScenarios.element_transit(self, true)
+	var snapping: Dictionary = await TacticsScenarios.element_transit(self, true, 40.0, false, false)
+	print("MEASURE element_transit travelling %s; round-10 path %s" % [travelling, snapping])
+	assert_true(float(travelling["transit_gap_m"]) < float(snapping["transit_gap_m"]),
+			"on the way, members hold their places around the leader tighter than when each drove its own route (%.1f m vs %.1f m)"
+			% [travelling["transit_gap_m"], snapping["transit_gap_m"]])
+	assert_true(int(travelling["samples"]) > 0, "setup: the squad was measured while travelling")
+	assert_true(float(travelling["arrived_s"]) > 0.0, "and it still gets there (%.1f s)" % travelling["arrived_s"])
+	assert_true(float(travelling["worst_off_slot_m"]) <= 8.0, "formed up on the spot (worst %.1f m)" % travelling["worst_off_slot_m"])
+	assert_true(int(travelling["orders_last_10s"]) <= 2, "and quiet after (%d orders in the last 10 s)" % travelling["orders_last_10s"])

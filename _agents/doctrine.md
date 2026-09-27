@@ -195,6 +195,90 @@ worst follower trailed its follow offset; it is deleted, because one bottleneck 
 guarantee is untouched by construction: a member within `PACE_NEAR` of its slot drives flat out, so co-arrival slows
 the **cruise**, never the start.
 
+### A plain move travels AS a formation: the travelling anchor (round 12, 2026-09-26)
+
+The lead, playing: *"my first action was to click a location for a squad, they were in auto formation … and they all
+split apart and navigated their own way to the destination."* They did, and it was a design choice, not a defect: a
+plain move (`ElementPlan._plan_form_up`) laid ONE shape on the click and sent every crew to its final slot by its own
+route, and the round-7 flow (followers keeping station on the leader) only ran when the leader's slot was at the
+FRONT of the shape — which round 10's least-driving seating made rare (`_leads_from_the_front`). So a 60–150 m order
+had no formation in its transit, which is most of what he watches; the shape formed only at the end, and there it was
+the doctrine's **column** (both the default arena and the Terminus classify as *dense*), not the wedge the AUTO icon
+shows.
+
+**The mechanism.** `Element._advance_transit` gives a plain move at least `TRANSIT_MIN_M` (25 m) long a **travelling
+anchor**: a point that drives the navmesh route from the squad's centre to the click (the one impure step, like the
+corridor measurement) at the slowest member's cruise (`TRANSIT_CRUISE` 0.85 × top speed), held back by the crew
+furthest BEHIND its place along the route (`TRANSIT_LAG_SLACK_M` 8 m, falling to `TRANSIT_MIN_PACE` 0.35 over 30 m
+more — never zero, lesson 17). `ElementPlan.stations_along` lays every crew's **station** on the route around it,
+each slot at its own distance along the route and its lateral offset across the tangent *there*, so a column takes a
+corner as a column does instead of the shape swinging rigidly. The K1 orders are untouched: one `move` per crew to its
+final slot, issued once, completion judged against it. The brain (`TankBrain._order_context`) simply drives to its
+published station (`ElementFeed` "station", `Element.state()["stations"]`) while one exists, at the near think rate,
+with the goal handed to nav on every think (`sliding`) so its station PID reads the goal's speed cleanly. Co-arrival
+pacing is off in transit: the anchor is the pace. `TRANSIT_HANDOFF_M` (12 m) before the click the stations stop and the
+standing moves do the last metres as an ordinary approach. Seating is fixed from the first update (a translation
+along the heading does not change the least-driving seating, so this costs nothing at t0). `TRANSIT_ENABLED` is the
+A/B switch; the settle probe's `--transit=off` is round 10's path, byte for byte (its numbers reproduce exactly).
+
+**Three rules the first build got wrong, each read from a `make squad-settle ... TRACE=on` trace and fixed:**
+
+1. **A crew AHEAD of its station waits** (`TRANSIT_WAIT_M`). The column's tail crew turned round to drive back to a
+   station that was driving toward it, then turned again — two U-turns and 19 m of lag, and the anchor slowed for it.
+2. **A crew beside its station aims ahead of it by the lateral gap** (`TRANSIT_LEAD_MAX_M`). Sixteen metres to the
+   side of its place, a tracked tank was asked to turn 90° toward a point beside it and PIVOTED for 4 s while its
+   station drove off; the anchor then ran at 0.5–0.8 pace for the whole trip waiting for it. Aiming at a point ahead
+   by the lateral gap makes the merge a diagonal, and the lead shrinks to nothing as the crew closes.
+3. **Hand over short of the click, not on it.** On the click, a wheeled scout met its final slot at cruise 4 m ahead
+   of it and circled it for 15 s (mixed squad stopped 28.6 s against 15.0 without the anchor). **Braking the anchor
+   into the click was tried first and was worse everywhere** (a station creeping at 2 m/s sits inside a wheeled
+   settle radius for seconds, so the mover parks on it and the order completes up to 4 m off); it is written up in
+   `transit_speed` and not repeated.
+
+**The anchor starts half a shape AHEAD of the squad's centre** (`ElementPlan.transit_start_m`): at the moment of the
+order every station is in front of every crew, so the squad moves off the way a column does — the head first, each crew
+falling in behind. Started ON the centre, half the crews were ahead of their stations and waiting, and the middle pair
+converging onto the line from either side met head-on and yielded to each other for 8 s while the anchor idled at its
+floor pace (yard, forward from the spawn, seed 1). The cost of the ahead start is a looser shape in the first seconds
+(the mean station error over the transit rose from 6–9 m to 10–14 m) for a start that does not tangle.
+
+**Measured — the paired series (`make squad-transit-series`, `tools/tactics/transit_series.py`; builder0, uncommitted
+tree over `37698d7d` with the ahead start, 80 m plain moves, 4 jittered seeds per cell, both arms on the same seeds;
+medians, s; `gap` = the ON arm's mean distance from station while travelling; the two maps he plays most — the default
+scene is the foundry, which is not dealt):**
+
+| arena | dir | squad | arrived off / on | stopped off / on | gap | stopped: off faster / on faster / tie |
+|---|---|---|---|---|---|---|
+| Terminus | forward | tank·tank·ifv·ifv | 11.0 / 12.8 | 13.5 / 14.9 | 9.8 m | 1 / 1 / 2 |
+| Terminus | forward | scout·scout·ifv·ifv·tank | 10.7 / **9.9** | 23.8 / **21.8** | 11.2 m | 2 / 2 / 0 |
+| Terminus | side | tank·tank·ifv·ifv | 13.8 / **10.6** | 15.2 / 15.2 | 12.6 m | 2 / 1 / 1 |
+| Terminus | side | scout·scout·ifv·ifv·tank | 10.1 / 10.4 | 31.3 / **30.2** | 13.1 m | 0 / 3 / 1 |
+| yard | forward | tank·tank·ifv·ifv | 14.5 / 16.1 | 29.4 / **19.3** | 14.1 m | 2 / 2 / 0 |
+| yard | forward | scout·scout·ifv·ifv·tank | 14.0 / 14.4 | 29.0 / 33.5 | 13.9 m | 2 / 2 / 0 |
+| yard | side | tank·tank·ifv·ifv | 9.8 / **9.3** | 11.1 / 14.1 | 11.4 m | 3 / 0 / 1 |
+| yard | side | scout·scout·ifv·ifv·tank | 10.4 / **10.1** | 30.5 / **29.2** | 13.8 m | 0 / 3 / 1 |
+
+Overall, on the stop time: off faster 12, on faster 14, tie 6 — **a wash in time, with the shape as the difference.**
+(The same series with the anchor started on the centre read off faster 18 / on faster 11 / tie 3, gap 6–9 m; it is
+in the session's HANDOFF entry.) The mixed squad's 22–34 s stop times are the same in both arms: a wheeled scout
+creeping after its order completes, round 10's known issue, not the anchor's. Round 9's ruling is the frame: *"a 4s
+slower march for a tidier traversal is better, yes."*
+
+**The weak phase is the first five seconds of a move from the spawn line** — an abreast line becoming a column — and it
+is the same in kind for both arms: paths cross, ORCA yields, and on some seeds the middle pair stall together for
+several seconds (yard forward seed 1 trace, both starts). Under the anchor that stall also holds the squad back
+(the lag rule), which is why the yard forward arrival is 1.6 s later. The proper answer is a fall-in rule — a crew does
+not close on the line until the crew whose station is ahead of it has passed — and it is the next thing to build here.
+
+**What the anchor buys is not speed but the shape: the same order now reads as a squad moving off together and closing
+up on the spot**, which is the visible half of his "formula to form up". The mean station error while travelling is
+6–9 m against a 10.6 m pitch; the control arm has no shape to measure. A human watching it is the check that counts.
+
+**Not done, deliberately:** the AUTO icon still shows a wedge whatever the table picks (control's card, round 12's
+legibility candidate); a G-chosen formation is still overridden by the halt shape at the end of a drills-on move
+(`_halt`); the direct path (a box-selection that is not a numbered squad, `Orders._resolve_group`) still sends each
+vehicle to its slot on its own.
+
 ## Selection rules: how a leader chooses
 
 Inputs, all computed in `ElementSituation.build()`:

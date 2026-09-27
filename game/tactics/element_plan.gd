@@ -187,11 +187,20 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	var holding: bool = kept is Vector3 and (kept as Vector3).distance_to(destination) < 0.5
 	var center: Vector3 = situation["center"]
 	var told: Variant = ElementTask.facing(state.get("task", {}))
+	# Round 12: the element's travelling anchor (Element._advance_transit), when it has one. `in_transit` is the whole
+	# of the move until the anchor reaches the click; after that the transit dictionary stays with `arrived` true.
+	var transit: Dictionary = state.get("transit", {}) if typeof(state.get("transit")) == TYPE_DICTIONARY else {}
+	var in_transit: bool = TRANSIT_ENABLED and not transit.is_empty() and not bool(transit.get("arrived", true)) \
+			and transit.get("anchor") is Vector3 and transit.get("heading") is Vector3
 	if holding and state.get("heading") is Vector3 and String(state.get("formation", "")) != "":
 		plan["heading"] = state["heading"]
 		plan["formation"] = String(state["formation"])
 	elif told is Vector3:
 		plan["heading"] = told  # the player said which way: lay the formation facing it
+	elif transit.get("final_heading") is Vector3:
+		# The shape stands the way the ROUTE arrives, so the last transit stations and the final slots are the same
+		# points and the hand-off from travelling to standing moves nobody.
+		plan["heading"] = TacticsFormation.flat(transit["final_heading"])
 	else:
 		plan["heading"] = TacticsFormation.flat(destination - center) if center.distance_to(destination) > 2.0 \
 				else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
@@ -203,10 +212,14 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	plan["corridor_m"] = INF
 	plan["arrived"] = center.distance_to(destination) <= ARRIVE_M
 	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
+	if in_transit:
+		plan["why"] = "moving as ordered: travelling in %s" % String(plan["formation"]).replace("_", " ")
 	# Sent once means SEATED once: when everyone has been sent to their final slot (the flow joined, or no flow) the
 	# seating stands. A CPU crew fights from within its slot's leash and drifts ~10 m off it; left to "saves real
 	# driving", the seating re-shuffled around the drift and re-ordered idle units (round 7: the CPU five-squad test).
-	var joined: bool = not FLOW_ENABLED or bool(state.get("flow_joined", false))
+	# In transit the seating is also fixed from the first update: the shape travels with the seats it left with (a
+	# translation along the heading does not change the least-driving seating anyway, so this costs nothing at t0).
+	var joined: bool = not FLOW_ENABLED or bool(state.get("flow_joined", false)) or in_transit
 	# `told` goes through to the per-unit orders: a facing the player dragged is an ARRIVAL heading, and K1 has carried
 	# one since round 5 (`TankBrain.intended_facing`, and `test_wheeled_arrival` covers the per-unit case).
 	# ARRIVED, WITH A HEADING THE PLAYER DREW: the posture is a HOLD on that heading, and it is the plan's STEADY
@@ -241,7 +254,17 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		# A facing the player chose is everyone's facing, not the formation's all-round sectors.
 		for unit_name: String in plan["sectors"]:
 			plan["sectors"][unit_name] = 0.0
-	_flow(plan, situation, state)
+	if in_transit:
+		# The shape on the way: every crew's STATION rides the travelling anchor (see `stations_along`), the orders stay
+		# `move` to the final slots, and the brain drives to its station while one is published (TankBrain._order_context).
+		# No follow orders: the flow's leader-relative station is what this replaces.
+		plan["stations"] = stations_along(plan, transit)
+		plan["flow_joined"] = false
+	elif not transit.is_empty():
+		# The anchor has arrived: everyone already holds a move to the slot its last station became. Nothing to flow.
+		plan["flow_joined"] = true
+	else:
+		_flow(plan, situation, state)
 	# THE DRAGGED HEADING REACHES THE CREWS THAT WERE FOLLOWING (option 3, ruled by the orchestrator).
 	#
 	# `23b1d1a7` got the facing into the order of any crew driving to its own slot, which is the LEADER and, once the
@@ -266,6 +289,129 @@ static var FLOW_ENABLED := true
 ## shape, heavies to the exposed slots); false = everyone, the leader included, by the least total driving.
 static var PIN_LEADER_ON_PLAIN_MOVE := false
 const FLOW_JOIN_M := 15.0
+
+# ---- Round 12: the plain move travels AS a formation (the lead, 2026-09-26) ----------------------------------------
+#
+# The lead, playing: *"my first action was to click a location for a squad, they were in auto formation ... and they
+# all split apart and navigated their own way to the destination"*. They did: a plain move laid ONE shape on the click
+# and sent every crew to its final slot by its own route, and the round-7 flow (followers keeping station on the
+# leader) only ran when the leader's slot happened to be at the FRONT of the shape — which round 10's least-driving
+# seating made rare — so on a 60-150 m order the transit, most of what he watches, had no formation in it at all.
+#
+# Now the squad has a TRAVELLING ANCHOR (Element._advance_transit): a point that drives the navmesh route from the
+# squad's centre to the click at the slowest member's cruise, slowing when a crew falls behind its place. Every crew's
+# STATION is the shape laid on the route around that anchor, each slot at its own distance along the route (a column
+# takes a corner as a column does; the lateral offset stays across the local tangent). The K1 orders are untouched:
+# `move` to the final slot, issued once, completion judged against it. The brain simply drives to its published
+# station while the element publishes one (ElementFeed "station"); when the anchor reaches the click the stations
+# ARE the final slots and the hand-off moves nobody. Co-arrival pacing is off in transit: the anchor is the pace.
+#
+# Stations replace the flow's leader-relative follow on this path (the flow still serves a task whose plan has no
+# transit — a test's pure state, or TRANSIT_ENABLED off). A move shorter than TRANSIT_MIN_M gets no anchor: round
+# 10's 20 m settle numbers stand as they were measured.
+## The A/B switch (the settle probe's `--transit=off` is the control arm).
+static var TRANSIT_ENABLED := true
+## A move at least this long travels as a formation; shorter, everyone drives straight to its slot (round 10's path).
+const TRANSIT_MIN_M := 25.0
+## The anchor's cruise as a share of the slowest member's top speed (nav's ETA_CRUISE_SHARE: what a hull really holds).
+const TRANSIT_CRUISE := 0.85
+## The anchor slows when a crew is further BEHIND its station along the heading than this (metres)...
+const TRANSIT_LAG_SLACK_M := 8.0
+## ...falling to TRANSIT_MIN_PACE when it is this much further behind again. Never to zero (lesson 17): a crew stuck
+## behind a wreck must not park the squad; the anchor arrives, the stations become slots, and nav gets it the rest of
+## the way as it does today.
+const TRANSIT_LAG_FALLOFF_M := 30.0
+const TRANSIT_MIN_PACE := 0.35
+## TRIED AND REVERTED (2026-09-26, laptop, `squad-settle` 80 m, seed 3): braking the anchor over its last 20 m to a
+## 2 m/s creep, so the formation would halt as one. It made every cell WORSE: default forward stopped 14.4 -> 14.9 s
+## and lost "every crew within 3 m" (14.2 s -> never), Terminus 15.2 -> 14.9 but likewise lost it, mixed 29.8 -> 30.4.
+## Cause, read from the traces: a station creeping at 2 m/s stays inside a wheeled hull's settle radius for seconds,
+## so the mover parks on it and the crew's order completes up to 4 m off the slot; at cruise the stations arrive at
+## speed and the crews dress closer. The anchor therefore runs at cruise x pace to the end, and stops there.
+## The anchor's speed at `cruise` m/s under the lag rule's `pace`. Pure, and one place, so the next attempt at shaping
+## the arrival changes one function.
+static func transit_speed(cruise: float, pace: float, _remaining: float) -> float:
+	return cruise * clampf(pace, 0.0, 1.0)
+
+
+## The anchor hands the squad over to its final slots this far BEFORE the click: the stations stop, every crew's standing
+## `move` to its slot takes over, and the last metres are an ordinary approach at the crew's own pace. Handing over ON
+## the click put a wheeled scout onto its slot at cruise, and a car cannot stop on a point 4 m ahead of it at 7.6 m/s: it
+## circled the slot and crept for 15 s (`squad-settle` mixed, 80 m, seed 3, stopped 28.6 s against 15.0 without the
+## anchor). Roughly a wheeled settle radius plus the arrive radius, with room to slow.
+const TRANSIT_HANDOFF_M := 12.0
+
+
+## How far along its route the anchor STARTS: half the depth of `formation` for `members` at the doctrine `spacing`
+## (the shape's rearmost station then sits on the squad's centre and every other station is ahead of it). Pure.
+static func transit_start_m(formation: String, members: Array, spacing: float) -> float:
+	var count := maxi(members.size(), 1)
+	var pitch_v := TacticsFormation.pitch(members, spacing)
+	return 0.5 * TacticsFormation.depth(formation, count, pitch_v.y)
+
+
+## Where a point `s` metres along `route` (an Array of Vector3 corners) is, and which way the route runs there:
+## {"point": Vector3, "tangent": Vector3}. Before the start it extrapolates back along the first leg, past the end
+## along the last, so a shape whose rear or point overhangs the route still has a place. Pure.
+static func route_pose(route: Array, s: float) -> Dictionary:
+	if route.is_empty():
+		return {"point": Vector3.ZERO, "tangent": Vector3.FORWARD}
+	if route.size() == 1:
+		return {"point": Vector3(route[0].x, 0.0, route[0].z), "tangent": Vector3.FORWARD}
+	var walked := 0.0
+	for i in range(1, route.size()):
+		var a := Vector3(route[i - 1].x, 0.0, route[i - 1].z)
+		var b := Vector3(route[i].x, 0.0, route[i].z)
+		var leg := a.distance_to(b)
+		var tangent := TacticsFormation.flat(b - a)
+		var last: bool = i == route.size() - 1
+		if s <= walked + leg or last:
+			if leg <= 1e-6:
+				return {"point": a, "tangent": tangent}
+			return {"point": a + tangent * (s - walked), "tangent": tangent}
+		walked += leg
+	return {"point": Vector3(route[route.size() - 1].x, 0.0, route[route.size() - 1].z), "tangent": Vector3.FORWARD}
+
+
+## The length of `route` (flat metres).
+static func route_length(route: Array) -> float:
+	var length := 0.0
+	for i in range(1, route.size()):
+		length += Vector2(route[i].x - route[i - 1].x, route[i].z - route[i - 1].z).length()
+	return length
+
+
+## The travelling stations for a plan whose shape is seated (`plan["seats"]`, `plan["formation"]`, `plan["pitch"]`):
+## {unit: Vector3}. Slot i's place is the route point `back_i` metres behind the anchor's progress, pushed `right_i`
+## across the tangent THERE — so the shape follows the road rather than swinging rigidly round each corner. With no
+## route in `transit` (a bare anchor and heading) the shape is laid rigidly at the anchor. Pure.
+static func stations_along(plan: Dictionary, transit: Dictionary) -> Dictionary:
+	var result := {}
+	var seats: Dictionary = plan.get("seats", {})
+	if seats.is_empty():
+		return result
+	var formation := String(plan.get("formation", TacticsFormation.DEFAULT))
+	var count := seats.size()
+	for unit_name: String in seats:
+		count = maxi(count, int((seats[unit_name] as Array)[1]))
+	var pitch_v: Vector2 = plan.get("pitch", Vector2(TacticsFormation.DEFAULT_SPACING, TacticsFormation.DEFAULT_SPACING))
+	var shape := TacticsFormation.centered(TacticsFormation.offsets_at(formation, count, pitch_v))
+	var route: Array = transit.get("route", [])
+	var s := float(transit.get("s", 0.0))
+	var anchor: Vector3 = transit.get("anchor", Vector3.ZERO)
+	var heading: Vector3 = TacticsFormation.flat(transit.get("heading", Vector3.FORWARD))
+	for unit_name: String in seats:
+		var index := int((seats[unit_name] as Array)[2])
+		if index < 0 or index >= shape.size():
+			continue
+		var offset: Vector2 = shape[index]
+		if route.size() >= 2:
+			var pose := route_pose(route, s - offset.y)
+			var tangent: Vector3 = pose["tangent"]
+			result[unit_name] = clamp_to_arena((pose["point"] as Vector3) + Vector3(-tangent.z, 0.0, tangent.x) * offset.x)
+		else:
+			result[unit_name] = clamp_to_arena(TacticsFormation.to_world(anchor, heading, offset))
+	return result
 
 
 static func _flow(plan: Dictionary, situation: Dictionary, state: Dictionary) -> void:

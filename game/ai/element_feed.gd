@@ -117,6 +117,17 @@ static func normalize(element: Object, unit_name: String, order_verb := "") -> D
 	var paces: Variant = state.get("pace")
 	context["pace"] = clampf(float((paces as Dictionary).get(unit_name, 1.0)), 0.0, 1.0) \
 			if typeof(paces) == TYPE_DICTIONARY else 1.0
+	# Round 12: where this crew should be NOW while its element travels as a formation (Element.stations), and how the
+	# anchor it rides is moving (m/s), or null when the element is not in transit. Read like the slot and the pace, not
+	# part of the key: it slides every update by design.
+	context["station"] = null
+	context["station_velocity"] = null
+	var stations: Variant = state.get("stations")
+	if typeof(stations) == TYPE_DICTIONARY and (stations as Dictionary).has(unit_name):
+		context["station"] = OrderFeed.point((stations as Dictionary)[unit_name])
+		var transit: Variant = state.get("transit")
+		if typeof(transit) == TYPE_DICTIONARY and (transit as Dictionary).has("velocity"):
+			context["station_velocity"] = OrderFeed.point((transit as Dictionary)["velocity"])
 	context["key"] = "%s|%s|%s|%s|%s|%s" % [context["id"], context["technique"], context["drill"], context["task"],
 			context["role"], context["slot"]]
 	return context

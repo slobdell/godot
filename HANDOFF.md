@@ -4,7 +4,98 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-24 — **ROUND 11 IS CLOSED on a green tree. `main-checked` carries the verdict; the round's record is the section directly below.** All four streams (arena, nav, fleet, airship) merged, plus the orchestrator's completion fix and the goal repair flipped on. The sim baseline moved twice and both moves are attributed: `457b5e83` → `814aed46` (nav's waypoint guard + planned reverse) → `01ab39b5` (fleet's hull boxes after the lead's verdicts). A fresh orchestrator starts the next round from the `round` skill; round 12's candidates are in `_agents/roadmap.md`. The airship sections below this one are round 11's starting point, kept as written; the rest of the file is rounds 9 and 10._
+_Last updated: 2026-09-26 — **the lead's fine-tuning session (no round): a plain squad move now travels AS a formation, COMMITTED on `main` with his verdict *"this is now really good"*; `main-checked` moves to that commit.** The section directly below is that session. **The next thing he will ask about is the announcer's repeating filler and the music rotation — start at *For the next agent* at the end of that section.** Everything from ROUND 11 down is as it was._
+
+## 2026-09-26: the travelling anchor (the lead fine-tuning in the main checkout, no orchestration)
+
+**Closed by the lead the same evening:** *"ok commit your changes, this is now really good."* Committed on `main` as the
+commit that carries this section (its hash is `main-checked`'s, moved here because the full check below ran on exactly
+this code; the doc edits after it touch only `_agents/*.md` and this file).
+
+**His words** (`_agents/game_design.md` *Round 12 direction*): *"it seems to take a long time for units to form up in
+the desired formation … I just started a game where my first action was to click a location for a squad, they were in
+auto formation (which I assume is a wedge based on the UI), and they all split apart and navigated their own way to the
+destination."* Then, after the diagnosis: *"go ahead to build."* He also asked about the announcer's repeating filler
+(*"they are trading in the middle of the floor"*) and whether the music rotates between matches — **parked at his request,
+his words recorded, nothing investigated beyond the first grep** (roadmap item 11).
+
+**The finding** (`_agents/doctrine.md` *A plain move travels AS a formation*): the scatter was the plain move's design —
+one shape laid on the click, every crew to its final slot by its own route, and the round-7 flow gated on a
+leader-at-the-front that round 10's least-driving seating made rare. And the shape he was looking for was not the one
+being formed: the AUTO icon draws a wedge; the doctrine picks a column on dense terrain, which both the default arena and
+the Terminus are.
+
+**What was built** (all on the plain-move path only; CPU tasks run drills and never take it):
+- `Element._advance_transit` + `ElementPlan.stations_along`: a travelling anchor on the navmesh route at the slowest
+  hull's cruise, held back by the crew furthest behind its place; every crew's STATION rides it along the route. The K1
+  orders are unchanged (`move` to the final slot, once). `TankBrain._order_context` drives to the station while one is
+  published (`ElementFeed` "station"), thinks at the near rate, hands nav the goal on every think (`sliding`). Hand-off
+  12 m short of the click. Co-arrival pacing is off for a travelled move. `ElementPlan.TRANSIT_ENABLED` is the switch.
+- Three rules found by trace and fixed: a crew ahead of its station WAITS; a crew beside its station aims ahead by the
+  lateral gap; a nav repair of the STATION goal no longer completes the ORDER (`_update_order_progress`).
+- Two things tried and reverted with their numbers in the code: braking the anchor into the click; one uniform 0.6
+  approach pace after the hand-off.
+- `make squad-settle TRANSIT=off` is the control arm (reproduces round 10's numbers byte for byte);
+  `make squad-transit-series` is the paired series (yard + Terminus, 4 seeds, both squads); `--transit` on the probe.
+- The anchor starts half a shape AHEAD of the squad's centre (`ElementPlan.transit_start_m`), so the head moves off
+  first and the rest fall in — started on the centre, the middle pair of an abreast line tangled for 8 s (yard trace).
+- Tests: three pure tests in `tests/test_tactics_tasks.gd`; `test_an_element_travels_in_formation_on_the_way`
+  re-specified against the round-10 path as control.
+- Housekeeping: two stray `|||||||` diff3 markers removed from `game_design.md` and `verification.md`.
+
+**VERIFIED GREEN on this tree (builder0, 2026-09-26 evening, read from the wrapper's own line):** `>> remote: make check
+exited 0`, `check passed: 18 targets`, **1726 passed, 0 failed**, sim-baseline `01ab39b592cc9837` **UNMOVED** (the CPU's
+tasks run drills and never take the plain-move path), determinism `b83a374ce2fcde37`. The same verdict came back once
+before, on the tree without the ahead start. Committed after his verdict (see the head of this section).
+
+**The measurement, honestly** (the paired table is in `doctrine.md`; both series builder0, 4 jittered seeds, yard and
+Terminus, both squads): with the ahead start the stop time is a wash (off faster 12 / on faster 14 / tie 6) and the
+order completes within a second either way; the shape on the way holds a 10–14 m mean station error against a 10.6 m
+pitch where before there was no shape. With the anchor started on the centre it was off faster 18 / on 11 / tie 3 with a
+tighter 6–9 m shape but a tangled start. The weak phase is the first seconds of a move from the spawn line — an abreast
+line becoming a column — where paths cross and a middle pair can stall together; the next thing to build is a fall-in
+rule (a crew does not close on the line until the crew whose station is ahead of it has passed). **The lead's eye is the
+check that counts; nothing here is tuned past what the traces explained.**
+
+**Two things about the tooling learned the hard way tonight** (`_agents/remote_builds.md`): the laptop kills a long
+local background wrapper when its memory runs low (Chrome had it), so heavy remote runs go through a detached
+`setsid nohup` script that writes a done-file; and `pgrep -f <pattern>` matches the shell running it — bracket the first
+character (`[m]ake squad-transit-series`) or a wait loop never ends and a `pkill -f` kills its own command.
+
+### For the next agent: the announcer's filler and the music rotation (his next question, parked tonight)
+
+**His words** (`_agents/game_design.md` *Round 12 direction*, verbatim there): he hears *"They're trading! They are
+trading in the middle of the floor!"* often and asks whether there are enough phrases for the same filler; and whether
+the music has a wide selection and rotates, since he cannot tell if the opening plays the same track every time — *"if
+there are comparable moods across tracks (which there should be, I did a few variations), it would be good if we can
+randomize the selection."* This is still fine-tuning in the main checkout, not a round.
+
+**What one grep found before he parked it — start here, verify before acting (lesson: check, then act):**
+
+- The line is `caller.kill.69` in `assets/announcer/lines.json` (1119 lines: caller 472, color 421, pa 226), tagged
+  `["kill", "trade"]`, intensity 3, with a recorded clip in `assets/announcer/clips/manifest.json`. So it is not a lull
+  filler; it is a KILL call for a mutual trade, and the question is how many lines carry the `trade` tag and how the
+  director picks among them. `game/announcer/announcer_director.gd` (507 lines) has per-kind cooldowns, "no line repeats
+  in a match while another fits", and lull banter with a back-off; `announcer_variance.gd` and `announcer_history.gd`
+  are where repetition is supposed to be prevented. Count the `trade`-tagged lines first; if it is one or two, the fix is
+  more lines (a paid ElevenLabs run: the lead limits scope, not spend — see the memory notes) or a wider tag match.
+- Music: `game/audio/music_director.gd` reads `assets/music/manifest.json`. `track_for(state)` picks the best track for
+  a mood state and, among tracks that tie, `tied[posmod(rotation, tied.size())]` — **one pick per match**, `rotation`
+  drawn from a randomised RNG in `attach()`. So rotation across matches exists IF several tracks share a state and
+  intensity; a stem set outranks a single bed (+10). `assets/music/` holds beds (pre_match, lull, garage, victory,
+  defeat, last_stand), three fight stem sets (hydraulic, ritual, rust) and one stinger; `assets/incoming/music/` holds
+  23 Suno mp3s including the variations he mentions (Wasteland Blues ×3, Mechanical Predator ×2) that may never have
+  been imported (`make music-import`, `tools/audio/import_music.py`, `assets/music/PROMPTS.md`). First check which
+  states have only ONE track in the manifest — the opening (`pre_match`) probably does, which would be exactly what he
+  hears — and whether the incoming variations are imported at all.
+- Both are audio's paths (`_agents/workstreams.md`); tests in `tests/test_audio_music_director.gd` and the announcer
+  suite (`make announcer-check` is in the check).
+
+**Open, for whoever picks it up** (roadmap items 8–11): the AUTO icon should show the leader's actual pick; a G-chosen
+formation is overridden by the halt shape at the end of a drills-on move (`_halt`); the direct path (a box-selection that
+is not a numbered squad) still scatters; the announcer filler and the music rotation.
+
+_Round 11's record follows, as written on 2026-09-24:_ **ROUND 11 IS CLOSED on a green tree. `main-checked` carries the verdict; the round's record is the section directly below.** All four streams (arena, nav, fleet, airship) merged, plus the orchestrator's completion fix and the goal repair flipped on. The sim baseline moved twice and both moves are attributed: `457b5e83` → `814aed46` (nav's waypoint guard + planned reverse) → `01ab39b5` (fleet's hull boxes after the lead's verdicts). A fresh orchestrator starts the next round from the `round` skill; round 12's candidates are in `_agents/roadmap.md`. The airship sections below this one are round 11's starting point, kept as written; the rest of the file is rounds 9 and 10._
 
 ## ROUND 11 (2026-09-24): eleven defects from one playtest, and the one-line bug behind his first complaint
 

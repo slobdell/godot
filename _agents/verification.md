@@ -166,7 +166,6 @@ same process delta is consistent. Those are not exposed.
 `make check` green with the tag. Other streams' timing assertions are still gates (the survey above). `test_theme_factions.gd:63` (cache hit < 5 ms,
 one sample) is routed to feel.
 
-||||||| baf04ead
 
 ## Attributing a behaviour's cost: switch it off (nav, round 7)
 

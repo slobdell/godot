@@ -107,6 +107,20 @@ round 11 was a defect round.
 7. **The burner needs its own unit type** (his words: it "looks identical to the tank"); fire-engine concepts are the
    brief.
 
+**From the lead's fine-tuning session (2026-09-26, `doctrine.md` *A plain move travels AS a formation*), three
+follow-ups the travelling anchor deliberately did not take:**
+
+8. **The AUTO formation icon lies** (control): `command_icons.gd` shows a wedge for AUTO whatever the doctrine picks,
+   and on the maps he plays (dense terrain) the pick is a column. Show the leader's actual pick on the card and icon.
+   Then decide whether "dense → column" is the right row for a plain move on the yard-type maps.
+9. **A G-chosen formation is overridden at the end of a drills-on move** (squad): `ElementPlan._halt` takes the table's
+   halt shape (coil, herringbone) and ignores `task.formation`, so a chosen wedge dissolves into a coil on arrival.
+10. **The direct path still scatters** (control): a box-selection that is not a numbered squad goes through
+    `Orders._resolve_group`, one route per vehicle to its slot. Either give it the anchor or route every multi-unit move
+    through a squad.
+11. **The announcer's filler and the music rotation** (audio, his words in `game_design.md` *Round 12 direction*):
+    *"they are trading in the middle of the floor"* repeats; whether the fight beds rotate between matches.
+
 **Carried forward, not scheduled this round** (from round 10's archived Status lists, the previous candidate order):
 
 ## Next round (12): the first art/terrain item is already decided

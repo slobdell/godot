@@ -263,3 +263,79 @@ func test_a_base_of_fire_is_not_ambushed_by_the_enemy_it_is_firing_at() -> void:
 			"near_ambush"]}})
 	assert_eq(ElementPlan.build(outgunned, _state(task), breaks)["drill"], "break_contact",
 			"an element clearly beaten still breaks contact, if its doctrine does")
+
+
+# ---- Round 12: a long plain move travels AS a formation (ElementPlan's TRANSIT block) ----------------------------------
+
+## A straight 100 m route, the anchor 30 m along it, heading down -Z.
+func _transit(s: float, arrived := false) -> Dictionary:
+	var route: Array = [Vector3(0, 0, 0), Vector3(0, 0, -100)]
+	var pose := ElementPlan.route_pose(route, s)
+	return {"route": route, "length": 100.0, "s": s, "anchor": pose["point"], "heading": pose["tangent"],
+			"velocity": Vector2(0, -7.65), "final_heading": Vector3.FORWARD, "arrived": arrived, "pace": 1.0}
+
+
+func test_a_travelling_plain_move_publishes_a_station_per_crew_on_the_route_and_keeps_its_orders() -> void:
+	var table := _table()
+	var task := {"verb": "move", "to": [0, -100], "drills": false}
+	var still := ElementPlan.build(_situation([], Vector3(0, 0, -20)), _state(task), table)
+	var moving := ElementPlan.build(_situation([], Vector3(0, 0, -20)), _state(task, {"transit": _transit(30.0)}), table)
+	assert_eq(moving["slots"], still["slots"], "the FINAL slots are where they always were: the shape stands on the click")
+	assert_eq(moving["seats"], still["seats"], "seated the same way")
+	var stations: Dictionary = moving["stations"]
+	assert_eq(stations.size(), 4, "every crew has a station on the way")
+	assert_true(not bool(moving["flow_joined"]), "the flow has not joined: the anchor is still travelling")
+	for unit: String in moving["orders"]:
+		var order: Dictionary = moving["orders"][unit]
+		assert_eq(String(order["verb"]), "move", "%s still holds a MOVE (no follow orders: the station is read, not issued)" % unit)
+		assert_true((order["to"] as Vector3).is_equal_approx(moving["slots"][unit]), "%s's order still goes to its final slot" % unit)
+		var station: Vector3 = stations[unit]
+		var slot: Vector3 = moving["slots"][unit]
+		# Straight route down -Z: a station is its slot translated back along the route by (route length - anchor progress).
+		assert_true(is_equal_approx(station.x, slot.x), "%s's station keeps its lateral place (%.1f vs %.1f)" % [unit, station.x, slot.x])
+		assert_true(absf((station.z - slot.z) - 70.0) < 0.01, "%s's station is 70 m short of its slot along the route (%.1f)" % [unit, station.z - slot.z])
+	assert_true(String(moving["why"]).contains("travelling"), "the card says the squad is travelling (%s)" % moving["why"])
+	# The anchor has arrived: no stations, the flow counts as joined, and nothing else changes.
+	var there := ElementPlan.build(_situation([], Vector3(0, 0, -95)), _state(task, {"transit": _transit(100.0, true)}), table)
+	assert_true(not there.has("stations"), "arrived: no stations are published")
+	assert_true(bool(there["flow_joined"]), "arrived: the flow is joined, everyone drives to its slot")
+	assert_eq(there["slots"], still["slots"], "and the slots are still the shape on the click")
+
+
+func test_stations_follow_the_route_round_a_corner_rather_than_swinging_rigidly() -> void:
+	# An L: 50 m down -Z, then 50 m along +X. The anchor is 10 m past the corner; a column's tail (16 m behind) is still
+	# on the first leg, its head (16 m ahead) well along the second.
+	var route: Array = [Vector3(0, 0, 0), Vector3(0, 0, -50), Vector3(50, 0, -50)]
+	assert_true(is_equal_approx(ElementPlan.route_length(route), 100.0), "route length")
+	var behind := ElementPlan.route_pose(route, 44.0)
+	assert_true((behind["point"] as Vector3).is_equal_approx(Vector3(0, 0, -44)), "44 m along is on the first leg (%s)" % behind["point"])
+	assert_true((behind["tangent"] as Vector3).is_equal_approx(Vector3(0, 0, -1)), "heading down the first leg")
+	var ahead := ElementPlan.route_pose(route, 76.0)
+	assert_true((ahead["point"] as Vector3).is_equal_approx(Vector3(26, 0, -50)), "76 m along is on the second leg (%s)" % ahead["point"])
+	assert_true((ahead["tangent"] as Vector3).is_equal_approx(Vector3(1, 0, 0)), "heading along the second leg")
+	var before := ElementPlan.route_pose(route, -10.0)
+	assert_true((before["point"] as Vector3).is_equal_approx(Vector3(0, 0, 10)), "before the start extrapolates back along the first leg")
+	var past := ElementPlan.route_pose(route, 110.0)
+	assert_true((past["point"] as Vector3).is_equal_approx(Vector3(60, 0, -50)), "past the end extrapolates along the last leg")
+	# The same through stations_along: a two-slot column at pitch 20 (slots at back -10 and +10 around the centre).
+	var plan := {"formation": "column", "pitch": Vector2(20, 20), "seats": {"A": ["column", 2, 0], "B": ["column", 2, 1]}}
+	var pose := ElementPlan.route_pose(route, 55.0)
+	var stations := ElementPlan.stations_along(plan, {"route": route, "s": 55.0, "anchor": pose["point"], "heading": pose["tangent"]})
+	assert_true((stations["A"] as Vector3).is_equal_approx(Vector3(15, 0, -50)), "the head is 10 m ahead on the second leg (%s)" % stations["A"])
+	assert_true((stations["B"] as Vector3).is_equal_approx(Vector3(0, 0, -45)), "the tail is 10 m behind, still on the first leg (%s)" % stations["B"])
+
+
+func test_the_anchor_runs_at_cruise_under_the_lag_rule() -> void:
+	assert_true(is_equal_approx(ElementPlan.transit_speed(7.65, 1.0, 80.0), 7.65), "open road: the cruise")
+	assert_true(is_equal_approx(ElementPlan.transit_speed(7.65, 0.5, 80.0), 3.825), "held back by a laggard: cruise x pace")
+	# Braking into the click was tried and measured worse (element_plan.gd, transit_speed): the last metre is still cruise.
+	assert_true(is_equal_approx(ElementPlan.transit_speed(7.65, 1.0, 0.5), 7.65), "the last metre: still the cruise")
+
+
+func test_a_short_plain_move_has_no_transit_and_keeps_round_10s_path() -> void:
+	# The pure plan with no transit in its state is exactly round 10's: the flow runs (or not) as before.
+	var table := _table()
+	var task := {"verb": "move", "to": [0, -20], "drills": false}
+	var plan := ElementPlan.build(_situation([]), _state(task), table)
+	assert_true(not plan.has("stations"), "no transit state, no stations")
+	assert_eq((plan["slots"] as Dictionary).size(), 4, "everyone has a slot on the click")

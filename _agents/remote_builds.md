@@ -35,6 +35,15 @@ analyse or put in front of the lead.
 screenshots). Run light things locally (editing, `make lint`, a single quick test if builder0 is unreachable).
 Interactive targets that open a window for the lead (`make skirmish`, `make editor`) stay local.
 
+**Long remote runs from a session on the laptop (2026-09-26).** The laptop kills a long-lived local background
+command when its memory runs low (Chrome had most of it that night; three waits and a probe batch died mid-run), and the
+remote make is orphaned with it. Run anything longer than a few minutes through a detached script that writes a
+done-file when it finishes — `setsid nohup script.sh > out 2>&1 < /dev/null & disown` — and poll the file. Two traps
+inside such scripts: `pgrep -f <pattern>` matches the shell that is running the pgrep, so a wait loop on
+`pgrep -f 'make foo'` never ends (bracket the first character: `pgrep -f '[m]ake foo'`), and `pkill -f <pattern>` kills
+the command that contains the pattern — including the one you are typing. Two remote runs must not share a checkout
+folder at once (the wrapper rsyncs the tree in and `build/` out); chain them in one script.
+
 ## How it works (`tools/remote.sh`)
 
 | Step | Detail |

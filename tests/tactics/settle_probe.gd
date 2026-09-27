@@ -46,6 +46,8 @@ func _run_probe() -> void:
 	case = TestCase.new()
 	case.tree = self
 	ElementPlan.PIN_LEADER_ON_PLAIN_MOVE = _flag("pin", "off") == "on"
+	# Round 12: `--transit=off` is the control arm (every crew straight to its final slot, round 10's path).
+	ElementPlan.TRANSIT_ENABLED = _flag("transit", "on") != "off"
 	var report := await _run(_flag("arena", ""), _flag("dir", "forward"), _flag("units", "tank:tank:ifv:ifv").split(":"),
 			float(_flag("metres", "20")), int(_flag("seed", "3")), float(_flag("seconds", "45")))
 	print("SETTLE_PROBE " + JSON.stringify(report))
@@ -109,6 +111,13 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var stopped := -1
 	var closest := INF
 	var trace := _flag("trace", "off") == "on"
+	# Round 12: the shape ON THE WAY. While the element is in transit, each crew's distance from its station is averaged
+	# (`transit_gap_m`: the lead's "they all split apart" as a number), and the moment the anchor reaches the click is
+	# `transit_s`. Without an anchor (a short move, or --transit=off) both read -1.
+	var gap_sum := 0.0
+	var gap_n := 0
+	var transit_done := -1
+	var transit_seen := false
 	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		var now: int = game_match.tick - given
@@ -116,6 +125,16 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			ordered = now
 		if arrived < 0 and element.arrived:
 			arrived = now
+		if element.in_transit():
+			transit_seen = true
+			for unit_name: String in names:
+				var t := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+				var station: Variant = element.stations.get(unit_name)
+				if t != null and station is Vector3:
+					gap_sum += _flat(t.global_position).distance_to(_flat(station))
+					gap_n += 1
+		elif transit_seen and transit_done < 0:
+			transit_done = now
 		for unit_name: String in names:
 			if acked.has(unit_name):
 				continue
@@ -148,14 +167,28 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 				var order: Dictionary = lab.orders.call("current", unit_name)
 				var slot: Variant = element.slots.get(unit_name)
+				var station: Variant = element.stations.get(unit_name)
 				var mover := Movement.state(tank)
-				parts.append("%s %s v%.1f p%.2f slot%.1f %s%s" % [unit_name.right(1), String(order.get("verb", "-")),
+				parts.append("%s %s v%.1f p%.2f slot%.1f%s %s%s" % [unit_name.right(1), String(order.get("verb", "-")),
 						tank.estimated_velocity.length(), float(element.paces.get(unit_name, 1.0)),
 						_flat(tank.global_position).distance_to(_flat(slot)) if slot is Vector3 else -1.0,
+						(" stn%.1f" % _flat(tank.global_position).distance_to(_flat(station))) if station is Vector3 else "",
 						String(mover.get("phase", "?")), ("/" + String(mover.get("blocked_by", ""))) \
 						if String(mover.get("blocked_by", "")) != "" else ""])
-			print("SETTLE_TRACE t=%ds centre %.1f m arrived=%s joined=%s | %s" % [now / SimClock.TICK_RATE,
-					_centre(game_match, names).distance_to(goal), element.arrived, element.flow_joined, " | ".join(parts)])
+			var anchor_note := ""
+			if element.in_transit():
+				anchor_note = " anchor %.0f/%.0f m pace %.2f" % [float(element.transit.get("s", 0.0)),
+						float(element.transit.get("length", 0.0)), float(element.transit.get("pace", 1.0))]
+			# Who sits where (slot index per crew, in `names` order) and how many crews the element is not commanding:
+			# a seat that changes mid-move or a crew that detaches is a re-order, and the trace should say so.
+			var seat_list: Array = []
+			for unit_name: String in names:
+				var seat: Variant = element.seats.get(unit_name)
+				seat_list.append(str(seat[2]) if seat is Array and (seat as Array).size() > 2 else "?")
+			anchor_note += " seats %s detached %d" % ["".join(seat_list), (element.state()["detached"] as Array).size()]
+			print("SETTLE_TRACE t=%ds centre %.1f m arrived=%s joined=%s%s | %s" % [now / SimClock.TICK_RATE,
+					_centre(game_match, names).distance_to(goal), element.arrived, element.flow_joined, anchor_note,
+					" | ".join(parts)])
 		if in_slot < 0 and arrived >= 0 and worst_slot <= IN_SLOT_M:
 			in_slot = now
 		if arrived >= 0 and fastest < STILL_MPS:
@@ -178,7 +211,8 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"ack_s": _s(acked.values().max()) if acked.size() == names.size() else null,
 			"ordered_s": _s(ordered), "arrived_s": _s(arrived), "in_slot_s": _s(in_slot), "stopped_s": _s(stopped),
 			"off_slot_m": off, "closest_m": snappedf(closest, 0.01), "goal_moves": element.goal_moves,
-			"bottleneck_s": _s(element.bottleneck_ticks)}
+			"bottleneck_s": _s(element.bottleneck_ticks), "transit": ElementPlan.TRANSIT_ENABLED,
+			"transit_gap_m": snappedf(gap_sum / gap_n, 0.1) if gap_n > 0 else -1.0, "transit_s": _s(transit_done)}
 
 
 static func _s(ticks: int) -> Variant:
