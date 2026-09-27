@@ -1811,7 +1811,7 @@
       "status": "approved",
       "lead_words": "Approved on the review page https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS (tapped Approve, no comment), 2026-09-24 17:27 UTC",
       "decided": "2026-09-26",
-      "model_task": "",
+      "model_task": "01a0e118-15ff-7017-8aec-e15f827ab33d",
       "added": "2026-09-24"
     },
     {
@@ -2001,7 +2001,7 @@
       "status": "approved",
       "lead_words": "Approved on the review page https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS (tapped Approve, no comment), 2026-09-24 17:26 UTC",
       "decided": "2026-09-26",
-      "model_task": "",
+      "model_task": "01a0e118-1600-74ee-9e10-c7ca3cfd719c",
       "added": "2026-09-24"
     }
   ]
