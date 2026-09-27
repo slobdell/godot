@@ -367,14 +367,14 @@ const PROFILES := {
 		# 100% of every matchup; at these values it beats IFVs 67% and artillery 83%, loses to tanks and Lancers.
 		"cost": 220,
 		"unlock_tier": 2,
-		"hull_size": [2.40, 2.40, 6.89],
+		"hull_size": [2.99, 3.30, 7.54],
 		# Round 11 (fleet, CP1): briefly 3.38 m tall to match the bus's shape; the lead REJECTED that on the review page:
 		# "I had no idea these were 2 separate unit that all makes more sense now. We will want to create a different
 		# unit type for the burner because it looks identical to the tank". Back to 2.40 m; it wears the dozer only until
 		# its own fire-engine mesh exists (new concepts, round 11), so it is exempt from the shared hull's one shape.
 		# S1 (round 9): The plow-nosed fire truck.
-		"scale_reference": {"vehicle": "Pumper fire engine, 32 ft (Pierce Enforcer)",
-				"length_m": 9.75, "source": "32 ft = 9.75 m, a standard single-axle pumper"},
+		"scale_reference": {"vehicle": "Rear-mount aerial ladder truck on a single rear axle (75 ft quint class)",
+				"length_m": 10.67, "source": "35 ft = 10.67 m, a class figure: single-rear-axle 75 ft rear-mount aerials run about 34-36 ft overall; the approved model (burner_r11_b) has two axles, so a tandem 100 ft aerial (40 ft and up) would overstate it"},
 		"max_health": 220,
 		"max_shield": 100,
 		"shield_recharge_delay": 3.5,
@@ -393,9 +393,10 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 120.0,
 		"muzzle_height": 1.14,
-		# R5 (round 10, feel): the same buried dozer turret. Probe (builder0): roof flat at 2.36-2.40 m from z -0.4 to +2.6,
-		# the turret art 0.38 m above its pivot: origin 2.37 - 0.38 = 1.99, pivot 0.4 m aft of centre.
-		"turret_mount": [0.0, 1.99, 0.4],
+		# Round 12 (fleet F1): the fire engine's own turntable. The flamethrower head sits on a pedestal column behind the
+		# cab; its ring is at model x +0.03 (of a 1.0 length, nose -x) and y 0.145 (`make assets-profile` slices of
+		# burner_r11_b), so at 7.54 m: z +0.23 (aft of centre), 3.20 m up. The head turns about the ring, the column stays.
+		"turret_mount": [0.0, 3.20, 0.23],
 		# X6 (round 3): plow front 4 -> 6, so it survives the 25 mm while closing on IFVs (Burner > IFV).
 		"armor": {"front": 6.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["ifv", "artillery"],

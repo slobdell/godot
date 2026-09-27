@@ -8,7 +8,7 @@ extends SceneTree
 ##   --manifest=PATH     a clip manifest: lines last as long as their recorded clips (else estimated)
 ##   --audit             prints library coverage instead (lines per moment kind, speaker, and act)
 ##   --variance=DIR      replays every fixture as consecutive broadcasts and reports how much the booth repeats
-##                       itself across matches: --matches=50 --window=5 --history=on|off --hot=N
+##                       itself across matches: --matches=50 --window=5 --history=on|off --hot=N --tag=trade
 ## Prints ANNOUNCER_CLI_EXIT=<code> last, so wrappers can find the result among Godot's own output.
 
 const SPEAKER_LABELS := {"caller": "CALLER", "color": "VETERAN", "pa": "PA"}
@@ -64,7 +64,7 @@ func _run_variance(library: AnnouncerLibrary, args: Dictionary) -> int:
 		# Each fixture gets its own history, so one fixture's broadcasts can't mask another's repetition.
 		var history: AnnouncerHistory = AnnouncerHistory.new() if with_history else null
 		results[file.get_basename()] = AnnouncerVariance.measure_fixture(library, loaded["events"], matches, window,
-				history)
+				history, String(args.get("tag", AnnouncerVariance.DEFAULT_TAG)))
 	print("VARIANCE %d matches per fixture, window %d, cross-match history %s" % [matches, window,
 			"on" if with_history else "off"])
 	print(AnnouncerVariance.report(results))
@@ -78,7 +78,11 @@ func _run_variance(library: AnnouncerLibrary, args: Dictionary) -> int:
 	print("VARIANCE_RESULT %s" % JSON.stringify({"in_match_repeats": totals["in_match_repeats"],
 			"opener_repeat_rate": snappedf(totals["opener_repeat_rate"], 0.0001),
 			"welcome_repeat_rate": snappedf(totals["welcome_repeat_rate"], 0.0001),
-			"carryover_rate": snappedf(totals["carryover_rate"], 0.0001)}))
+			"carryover_rate": snappedf(totals["carryover_rate"], 0.0001),
+			"tag": String(args.get("tag", AnnouncerVariance.DEFAULT_TAG)),
+			"tag_calls_per_match": snappedf(float(totals["tag_calls"]) / float(maxi(int(totals["matches"]), 1)), 0.01),
+			"tag_answered_share": snappedf(float(totals["tag_answered"]) / float(maxi(int(totals["tag_calls"]), 1)), 0.0001),
+			"tag_repeat_rate": snappedf(totals["tag_repeat_rate"], 0.0001)}))
 	return 0
 
 
@@ -134,6 +138,8 @@ static func clean_cues(cues: Array) -> Array:
 	var cleaned: Array = []
 	for cue in cues:
 		var copy: Dictionary = cue.duplicate()
+		# What the call was about (a merged kill carries "flurry" and "trade"): the pool report reads it.
+		copy["moment_tags"] = cue["_moment"].get("tags", []) if cue.has("_moment") else []
 		copy.erase("_moment")
 		cleaned.append(copy)
 	return cleaned

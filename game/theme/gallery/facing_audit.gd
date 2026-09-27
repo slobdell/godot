@@ -103,6 +103,28 @@ func _run() -> void:
 		if hold_turret:
 			(tank.get_node("Turret") as Node3D).rotation.y = deg_to_rad(turret_deg)
 			await process_frame
+		# Round 12 (fleet F4): --facing-muzzle marks where rounds LEAVE (Tank.muzzle_position, simulation) with a green
+		# ball and prints how far the simulated pivot is from each drawn gun pivot: the War Rig's drawn gun rides the
+		# trailer, its simulated pivot the tractor (verification.md "A drawn gun is not a simulated muzzle").
+		var ball: MeshInstance3D = null
+		if flags.has("facing-muzzle") and tank.has_method("muzzle_position"):
+			ball = MeshInstance3D.new()
+			var sphere := SphereMesh.new()
+			sphere.radius = 0.3
+			sphere.height = 0.6
+			ball.mesh = sphere
+			var green := StandardMaterial3D.new()
+			green.albedo_color = Color(0.1, 1, 0.2)
+			green.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			ball.material_override = green
+			world.add_child(ball)
+			ball.global_position = tank.call("muzzle_position")
+			var sim_pivot := (tank.get_node("Turret") as Node3D).global_position
+			for gun in tank.find_children("GunPivot", "Node3D", true, false):
+				var gap := Vector2(gun.global_position.x - sim_pivot.x, gun.global_position.z - sim_pivot.z)
+				print("FACING_MUZZLE %s bend=%s gap_m=%.2f (drawn gun pivot vs simulated pivot, ground plane)" % [unit_id,
+						flags.text("facing-articulation", "0"), gap.length()])
+			await process_frame
 		await RenderingServer.frame_post_draw
 		var path := out.path_join("%s.png" % unit_id)
 		root.get_texture().get_image().save_png(path)
@@ -112,6 +134,8 @@ func _run() -> void:
 				str(pivots.map(func(p: Node) -> float: return snappedf(rad_to_deg((p as Node3D).rotation.y), 0.1)))])
 		tank.queue_free()
 		arrow.queue_free()
+		if ball != null:
+			ball.queue_free()
 		await process_frame
 	print("FACING_AUDIT_DONE")
 	quit()

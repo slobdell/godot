@@ -15,9 +15,9 @@ result: green by elimination at 1:01.2
 0:33.7   VETERAN  Matchups are a suggestion. That crew didn't take it.
 0:37.5   ── rust tank destroys green ifv
 0:37.8   ── green scout destroys rust lancer
-0:37.9   CALLER   Both sides lose one! Neither army is backing down!
-0:41.8   CALLER   They're breaking off! They are getting out of there!
-0:45.1   VETERAN  Breaking contact. Hardest thing in the book. You have to turn your back on somebody who's shooting.
+0:37.9   CALLER   Hit for hit! Neither of them flinches!
+0:41.2   CALLER   They're breaking off! They are getting out of there!
+0:44.5   VETERAN  Breaking contact. Hardest thing in the book. You have to turn your back on somebody who's shooting.
 0:53.3   CALLER   They—
 0:53.5   ── green tank destroys rust tank
 0:53.8   CALLER   Good night! That one is going home on a truck!

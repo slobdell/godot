@@ -33,7 +33,7 @@ result: green by control at 2:34.0
 1:25.0   ── control point: green
 1:37.7   PA       The—
 1:38.5   ── green ifv destroys rust ifv
-1:38.5   CALLER   Oh, you do not come back from that!
+1:38.5   CALLER   The momentum has completely shifted! What a turnaround!
 1:41.5   VETERAN  Spacing is the whole game. Too close and one shell takes two of you. Too far and nobody can help anybody.
 1:48.2   ── close call: rust lancer at 6% hull
 1:51.2   CALLER   They are hurt, but they are not out!
@@ -44,7 +44,7 @@ result: green by control at 2:34.0
 2:06.5   CALLER   Somebody called it, and the whole crew answered!
 2:09.0   ── rust tank destroys green tank
 2:09.5   CALLER   It's all on the last Law vehicle now!
-2:18.0   VETERAN  Best driver I ever saw in here never fired first. Not once. Nine seasons.
+2:18.0   VETERAN  The crews talk before the match. Not about the match. About food, mostly.
 2:34.0   ── MATCH OVER: green wins by control (1 green, 1 rust left)
 2:34.0   CALLER   What a war! That one went the distance, and the Law come out on top!
 2:39.2   VETERAN  Holding the point takes nerve. The Law had it.

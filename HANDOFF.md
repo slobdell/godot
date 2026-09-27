@@ -41,6 +41,10 @@ these items?"* (verbatim in `game_design.md` *Round 12 becomes a round*).
 **Start order if the laptop is short of memory** (it had ~2 GB free with Chrome open at launch; six sessions are
 ~2.1 GB): fleet, squad, audio first; camera, arena, nav as memory allows. Every Godot run of any size goes to builder0.
 
+**`main-checked` moved to `8a6a88a6` (2026-09-27 00:1x, builder0): `>> remote: make check exited 0`, 1732 passed, 0 failed,
+sim-baseline `01ab39b592cc9837` unmoved, determinism `b83a374ce2fcde37` — the tree with fleet's CP1 and the remote.sh guard;
+the checkpoint went to squad, nav, camera and arena at that hash.** Audio (`785bc293`) merged after it on its own green.
+
 **Green baseline at launch:** `main` at the docs commit that carries this section; the code is `0299e05e`, whose
 check on builder0 read `>> remote: make check exited 0`, 18 targets, **1726 passed, 0 failed**, sim-baseline
 `01ab39b592cc9837`, determinism `b83a374ce2fcde37`. `main-checked` is annotated with that line. The two kept branches
@@ -60,6 +64,41 @@ prompt* is canonical):
 > look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item
 > is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the
 > Status holds your report.
+
+**Waiting on the lead (round 12, live list; lesson 220: a page's `db` is UNCONSUMED until the repo has it):**
+
+- **The bus: CLOSED (2026-09-27, in chat).** His words: *"The firetruck looks great, I don't know why it's giving me
+  the condemned tank for approval. There was nothing wrong with the tank"*. The Condemned tank keeps its look; fleet
+  records `bus_r12_mv` rejected with those words and spends nothing more (`game_design.md` *Round 12: the lead's
+  verdicts*).
+- **The partial or mixed selection** (squad's S4): it scatters, by the round-10 R1 design he narrowed himself; squad
+  recommends leaving it. His call, on the next page or in chat.
+- **The Locks' open canal**, on arena's page once it is up, after he has driven it.
+- **Audio's three (merged at `785bc293`):** the web pack grew (`assets/music/` 13 → 29 MB, all in the web build) —
+  ruled *leave it, decide at the next web release*; **by ear**, the two weakest placements are `defeat_hunt`
+  (Predatory Hunt) and `defeat_ragnarok` (Ragnarok's Engine), one `states` edit each in `assets/music/manifest.json`;
+  the garage has no music (not this round). **His veto page, with `db`:** https://claude.ai/artifact/6kWUqopgyKkiv6Ahf669A5
+  — all 67 new lines with their clips, Keep / Veto per line; taps land in the `verdicts` collection (doc id = the
+  line id with `.` → `_`). UNCONSUMED until read at close; a veto removes the line and its clip.
+- **Playtest for him:** `make skirmish` twice from the title — the opening should be a different track the second
+  time; in a big fight, listen for the trade calls; the Condemned burner is a fire engine.
+- **Camera: ANSWERED** (2026-09-26 evening: keep the lamp-head fix, don't cut screens, leave masts and signs standing);
+  applied at `806dd794` on `stream/camera`, recorded in `game_design.md`.
+
+**⚠ INCIDENT 2026-09-26 23:28 — builder0's `~/tank_squad/` was emptied by a runaway rsync, and the laptop's home
+directory was copied there** (lesson 221). A worker launched a detached copy of `tools/remote.sh` from a scratchpad
+directory; `git rev-parse` failed silently, the sync ran with source `/` and `--delete` against `~/tank_squad/`.
+Consequences and what was done: (1) every stream's remote folder was gutted; each repairs itself on that stream's
+next `make remote` (the sync is a full `--delete` mirror), and every stream was told that any remote result whose run
+began between 23:28 and its next sync is VOID; (2) `main`'s first round-12 check (commit `14c0f62a`) read 1672/23 with
+"file not found" for tracked files — that red is the incident, not the merge; re-run below; (3) the copied root
+filesystem, including `~/tank_squad/home/slobdell/{.ssh,.claude,.credentials,.gnupg,…}` (2.2 GB), was deleted from
+builder0 the same night; **the lead should consider rotating the SSH key in `~/.ssh` and the Meshy/ElevenLabs keys,
+since they were copied to a second machine**; (4) `tools/remote.sh` now REFUSES to run unless the cwd is a checkout
+with a Makefile (the commit that carries this note). The remote folders `squad-legs` and `squad-main` on builder0
+are round-9 leftovers, gutted, harmless. **A seventh worktree exists for the round:** `../godot-arena-arena-before`
+(branch `stream/arena-before`, at `46bac1a3`, offset 7), arena's "before" tree for the Crossing perf pair; nothing
+is committed there; **remove it at close** (`git worktree remove ../godot-arena-arena-before`, then delete the branch).
 
 **For the orchestrator running this round:** merge at the hash each stream names green; CP1 (fleet's boxes) and CP2
 (nav's planner) are the two baseline moves, each merged alone and recorded twice with `make sim-baseline-adopt`; at the

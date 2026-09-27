@@ -178,10 +178,10 @@ airship-report: import ## Round 11: how the broadcast airship flies each map -- 
 		$(if $(MAPS),--maps=$(MAPS)) $(if $(LEG_S),--seconds=$(LEG_S)) 2>&1 | grep -E '^AIRSHIP_REPORT|SCRIPT ERROR'
 	@echo
 
-facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg VIEW=side|top|quarter TINT=1: turret magenta, weapon yellow, cut gun cyan; BEND=deg: a trailer's hinge)
+facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b TURRET=deg VIEW=side|top|quarter TINT=1: turret magenta, weapon yellow, cut gun cyan; BEND=deg: a trailer's hinge; MUZZLE=1: the simulated muzzle as a green ball + FACING_MUZZLE gap)
 	rm -rf $(BUILD_DIR)/facing && mkdir -p $(BUILD_DIR)/facing
 	timeout 300 $(GODOT) --path . --resolution 960x540 --script res://game/theme/gallery/facing_audit.gd -- \
-		--facing-dir=$(CURDIR)/$(BUILD_DIR)/facing $(if $(UNITS),--facing-units=$(UNITS)) $(if $(TURRET),--facing-turret=$(TURRET)) $(if $(VIEW),--facing-view=$(VIEW)) $(if $(TINT),--facing-tint) $(if $(BEND),--facing-articulation=$(BEND)) 2>&1 | grep -E 'FACING_AUDIT|SCRIPT ERROR|SHADER ERROR' || true
+		--facing-dir=$(CURDIR)/$(BUILD_DIR)/facing $(if $(UNITS),--facing-units=$(UNITS)) $(if $(TURRET),--facing-turret=$(TURRET)) $(if $(VIEW),--facing-view=$(VIEW)) $(if $(TINT),--facing-tint) $(if $(BEND),--facing-articulation=$(BEND)) $(if $(MUZZLE),--facing-muzzle) 2>&1 | grep -E 'FACING_AUDIT|FACING_MUZZLE|SCRIPT ERROR|SHADER ERROR' || true
 	@grep -q . $(BUILD_DIR)/facing/*.png 2>/dev/null || { echo "facing-audit FAILED: no images"; exit 1; }
 
 .PHONY: turret-probe
