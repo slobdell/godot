@@ -253,7 +253,8 @@ func _drawn_frames() -> Array:
 					"before" if arm == "collider" else "after", "colliders" if arm == "collider" else "drawing", eye.y],
 					"inside_a_solid": not inside.is_empty(), "inside": String(inside.get("type", ""))}))
 	var screen: Variant = CameraLooks.drawn_screen_pose(data, drawn)
-	if screen != null and cutaway != null:
+	# The lead's verdict (2026-09-26): screens are not cut, so with `DRAWN_CUT` empty there is no pair to shoot.
+	if screen != null and cutaway != null and not BlockCutaway.DRAWN_CUT.is_empty():
 		var at: Vector3 = screen[0]
 		var yaw: float = screen[1]
 		var clear := RtsCamera.clear_pose(at, yaw, ALLEY_DISTANCE, ALLEY_PITCH, drawn)

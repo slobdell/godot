@@ -26,20 +26,22 @@ extends Node
 ##
 ## **Round 12: a solid's height is what is DRAWN, not its collider** (`verification.md` *A collider is not a
 ## silhouette*). An ad screen's collider is its 1.4 m plinth, so the 20.7 m LED wall above it was never a building to
-## this node and was never cut, whatever it hid. Kit types in `DRAWN_CUT` are grown to `AirshipFlight.DRAWN` (read,
+## this node and was never cut, whatever it hid. Kit types in `DRAWN_CUT` (empty since his verdict, below) are grown to `AirshipFlight.DRAWN` (read,
 ## not copied: C12.2) before the height test and the sight test, and the cut hides their STANDING geometry only: the
 ## light a screen throws on the floor in front of it stays, so cutting a screen does not switch the floor's light off.
 ## The show keeps running on a cut screen (its channel writes the material; this writes visibility, contract S6).
 
-## The kit types grown to their drawn extent here, and why only these (round 12, decided on the kit's own meshes):
-##   * `ad_screen`: a 7 x 14 m LED wall from 6 m up in a 7.5 x 14.5 m housing -- a building's worth of wall.
-##   * NOT `floodlight`: what stands above its 3 m footing is a 0.64 m mast and a 4.2 x 1.3 m lamp head at 15 m
-##     (`KitYard.floodlight_mesh`). The mast hides a sliver; the head is only in a sight line when the camera is
-##     beside it, which is the lamp-head case `RtsCamera.clear_pose` now lifts out of. Its drawn BOX (4.2 x 16 m) would
-##     cut a tower for hiding what a pole does not hide. And it is drawn in the kit yard's shared MultiMesh with its
-##     floor pool, so hiding it means removing instances, pool and all.
-##   * NOT `sign`: a 6.3 x 1.8 m board on a 0.28 m post, the same MultiMesh; see the brief's K5 for the frames.
-const DRAWN_CUT := ["ad_screen"]
+## The kit types grown to their drawn extent here: NONE, by the lead's verdict (2026-09-26, the camera page's `db`,
+## `answers/camera`): *"An ad screen between you and the fight: Don't cut screens"* and *"floodlight masts and signs:
+## Leave them standing"*. The round-12 build cut `ad_screen` (a 7 x 14 m LED wall, 22-64 sight lines a map) and he saw
+## the pair and said no: the screens are the show, and they stay drawn. The machinery stays so the decision is one line
+## to reverse (`["ad_screen"]` restores it, with the tests in `test_control_camera_solids.gd` to flip back):
+##   * floodlights were never grown: above the 3 m footing is a 0.64 m mast and a 4.2 x 1.3 m lamp head
+##     (`KitYard.floodlight_mesh`), in the kit yard's shared MultiMesh with its floor pool.
+##   * signs neither: a 6.3 x 1.8 m board on a 0.28 m post, the same MultiMesh.
+## The camera's own placement still asks the drawing (`RtsCamera.seen`): he kept that ("The camera in a floodlight's
+## lamp head: Keep it").
+const DRAWN_CUT: Array[String] = []
 ## Geometry flatter than this lies on the floor (a screen's light spill) and is never hidden.
 const FLAT_M := 0.05
 

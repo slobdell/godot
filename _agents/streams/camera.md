@@ -95,7 +95,15 @@ Nothing. The frame pairs go into Status for him; if K5 is a taste call, put the 
 
 _Updated 2026-09-26, camera worker (session in `~/projects/godot-camera`)._
 
-**State: K1–K4 done, K5 decided (below); the frames are on his page for his taps.** Commits on `stream/camera`:
+**The lead's verdicts (2026-09-26 evening, his page's `db` `answers/camera`, read back and agreeing with his words as
+relayed by the orchestrator):** *"1 · The camera in a floodlight's lamp head: Keep it · 2 · An ad screen between you and
+the fight: Don't cut screens · 3 · What I left standing: floodlight masts and signs: Leave them standing"*. So **K2
+stands; K3 is withdrawn**: `BlockCutaway.DRAWN_CUT` is now empty (the growth machinery stays, so restoring it is one
+line), the tests assert no screen is cut and a screen in his sight line stays drawn, and `make camera-drawn` skips the
+screen pair while the list is empty. Recorded in `game_design.md` *Round 12: the lead's verdicts*. The K3 text below
+is the build he judged.
+
+**State: K1–K5 done; K3 reversed by his verdict.** Commits on `stream/camera`:
 `fa094ed4` K1 (instrument) · `c645ad54` K2 (camera asks the drawing) · `4a54bca2` K3 (cutaway cuts ad screens) ·
 `65071cc0` `make camera-drawn` (the pairs) · then docs. **`4a54bca2` checked green on builder0:** `>> remote: make check
 exited 0`, 18 targets, **1730 passed, 0 failed**, sim-baseline `01ab39b592cc9837` **UNMOVED** (as pre-registered),
@@ -198,13 +206,11 @@ cutaway grows (`DRAWN_CUT`), so leaving signs out of that list settles it. His t
   `BlockCutaway.kit_type_of`. It is name-coupled on purpose (no arena change), and the Terminus test fails if the naming
   moves.
 
-**Questions for the lead** (on the page): (1) the lamp-head lift: keep? (2) cut ad screens: keep? (3) floodlight
-masts and signs left standing: agree?
+**Questions for the lead:** none open (all three answered, above).
 
 **Requests to other streams** (none blocking):
-- *arena* (`game/arena/lane_readability.gd`): it measures "what the player sees" with collider boxes and the old cut rule,
-  so it cannot count an ad screen in the way. To match the game: judge sight against `RtsCamera.drawn_layout(data)` and
-  treat `BlockCutaway.DRAWN_CUT` types as cut. Information only; its numbers are its own.
+- *arena* (`game/arena/lane_readability.gd`): nothing needed. Since his verdict the cutaway cuts only what its
+  collider-based rule already models.
 - *show* (`game/theme/show/tools/show_look.gd`): its `clear_pose` / `sight_blocked` calls use the defaults, so they now
   ask the drawing too. The only effect is that a capture beside a floodlight or screen lifts like the game does.
 
@@ -213,8 +219,7 @@ floodlight's DRAWN box (4.2 × 16 × 2.4) is conservative for the camera's insid
 box, not just the lamp head. That is a lift of ≤ 3.6° at 18° only, and zero at his 21°.
 
 **What to playtest:** `make skirmish ARENA=terminus`, then `ARENA=yard`. Tilt to ~18° (PageDown) and pan over a
-floodlight: the camera should step up over the lamp, never into it. Swing so an ad screen is between you and a squad:
-the screen vanishes and its floor glow stays. `make remote T="camera-drawn DRAWN_ARENA=terminus"` re-shoots the pairs.
+floodlight: the camera should step up over the lamp, never into it. Ad screens stay drawn (his verdict). `make remote T="camera-drawn DRAWN_ARENA=terminus"` re-shoots the pairs.
 
 **Merge notes (shared files):** `mk/command.mk` gains `camera-drawn` (additive); `_agents/verification.md` *A collider
 is not a silhouette* updated to say both call sites now ask the drawing. Everything else is in `game/camera/**` and

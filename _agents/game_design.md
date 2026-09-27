@@ -2437,3 +2437,19 @@ Shown the list of pending items (roadmap items 1–11, the fall-in rule, the Loc
   (`Orders._resolve_group`, one route per vehicle) is reached only by a PARTIAL squad, a mixed selection, or a
   shift-queued order. Round 12 verifies that on the default path and decides whether a partial selection deserves the
   anchor too; it is no longer listed as "still scatters".
+
+### Round 12: the lead's verdicts
+
+**Camera (2026-09-26 evening, the camera page https://claude.ai/artifact/We5PxYjNqXZDqXmuoNurxp; `db` doc
+`answers/camera` read back at 06:00 UTC 2026-09-27: `lamp: keep`, `screen: nocut`, `left: leave`, no note).** His
+words, as he sent them to the orchestrator:
+
+> *"Camera: drawn solids, my answers*
+> *- 1 · The camera in a floodlight's lamp head: Keep it*
+> *- 2 · An ad screen between you and the fight: Don't cut screens*
+> *- 3 · What I left standing: floodlight masts and signs: Leave them standing"*
+
+What each means in the code (`_agents/streams/camera.md`): **1** the camera's placement asks the DRAWN extents
+(`RtsCamera.seen()`), so it rises out of a floodlight's lamp head at a low tilt (kept); **2** `BlockCutaway` does NOT
+hide ad screens, and `BlockCutaway.DRAWN_CUT` is empty, so the cutaway takes building-height colliders only, as before
+round 12 (the screens are the show; they stay drawn); **3** floodlight masts and signs are not cut either (never were).

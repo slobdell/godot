@@ -552,9 +552,9 @@ func test_every_shipping_map_measured_against_what_is_drawn() -> void:
 					# K2's bar: posed as the live camera now poses itself, it is inside nothing drawn.
 					assert_eq(int(counts["inside_drawn"]["any"]), 0,
 							"%s at %.0f deg: the camera is outside everything DRAWN (%s)" % [name, pitch, counts["inside_drawn"]])
-					# K3's bar: no ad screen is left standing between the camera and what it looks at.
-					assert_eq(int(counts["blocked_after_cut"].get("ad_screen", 0)), 0,
-							"%s at %.0f deg: an ad screen in the sight line is always cut (%s)" % [name, pitch, counts["blocked_after_cut"]])
+					# The lead's verdict on K3 ("Don't cut screens"): every ad screen that is in a sight line stays there.
+					assert_eq(int(counts["blocked_after_cut"].get("ad_screen", 0)), int(counts["blocked_drawn"].get("ad_screen", 0)),
+							"%s at %.0f deg: no ad screen is cut (%s)" % [name, pitch, counts["blocked_after_cut"]])
 
 
 func test_the_camera_reads_the_drawing_and_the_colliders_are_untouched() -> void:
@@ -610,11 +610,11 @@ func test_the_drawn_list_covers_what_the_kit_meshes_draw() -> void:
 
 # ---- Round 12 (camera K3): the cutaway cuts what is DRAWN ------------------------------------------------------
 
-## The ad screen on the real Terminus node tree. Its collider is a 1.4 m plinth, so before round 12 it was never a
-## building to the cutaway and a 20 m LED wall stood between his camera and the fight. Now: it is gathered at its
-## drawn height, cut when it is in the sight line (the wall and its panel, NOT the light it throws on the floor), and
-## drawn again when the camera moves on.
-func test_an_ad_screen_in_the_sight_line_is_cut_and_comes_back() -> void:
+## The ad screen on the real Terminus node tree, after the lead's verdict (2026-09-26, his page: *"An ad screen between
+## you and the fight: Don't cut screens"*). Round 12 built the cut (the 20.7 m LED wall on a 1.4 m collider, grown by
+## `DRAWN`); he saw the pair and kept the screens. So: a screen squarely in his sight line is NOT cut and stays drawn,
+## and the only things the cutaway gathers are building-height colliders (the Terminus's blocks).
+func test_an_ad_screen_in_the_sight_line_stays_drawn() -> void:
 	var arena := preload("res://game/arena/arena.tscn").instantiate()
 	arena.layout_name = TERMINUS
 	add_to_tree(arena)
@@ -628,41 +628,23 @@ func test_an_ad_screen_in_the_sight_line_is_cut_and_comes_back() -> void:
 	add_to_tree(cutaway)
 	await tree.process_frame
 	await tree.process_frame
+	assert_true(BlockCutaway.DRAWN_CUT.is_empty(), "his verdict: no kit type is grown for the cutaway")
 	var screens: Array = cutaway._solids.filter(func(solid: Dictionary) -> bool: return solid["type"] == "ad_screen")
-	var layout_screens: Array = (Arena.active["obstacles"] as Array).filter(func(o: Dictionary) -> bool: return o["type"] == "ad_screen")
-	assert_eq(screens.size(), layout_screens.size(), "every Terminus ad screen is a building to the cutaway (%d)" % screens.size())
-	if screens.is_empty():
+	assert_eq(screens.size(), 0, "no ad screen is a building to the cutaway (%d)" % screens.size())
+	var data := RtsCamera.drawn_layout(Arena.active)
+	var pose: Variant = CameraLooks.drawn_screen_pose(Arena.active, data)
+	assert_true(pose != null, "setup: a pose with an ad screen on his sight line")
+	if pose == null:
 		return
-	for solid: Dictionary in screens:
-		var top := (solid["centre"] as Vector3).y + (solid["half"] as Vector3).y
-		assert_true(top >= float(AirshipFlight.DRAWN["ad_screen"][1]) - 0.01, "gathered at its drawn top (%.1f m)" % top)
-		var names: Array = (solid["parts"] as Array).map(func(part: Node) -> String: return String(part.name))
-		assert_true(names.has("Panel"), "the LED panel is among what it hides (%s)" % [names])
-		assert_true(not names.has("Spill"), "the light on the floor is not (%s)" % [names])
-	# His pose, aimed at a tank's height 20 m in front of the first screen's face (-Z), camera behind the screen.
-	var solid: Dictionary = screens[0]
-	var body: Node3D = solid["body"]
-	var face := -body.global_basis.z
-	var at := body.global_position + face * 20.0
-	at.y = 0.0
-	var yaw := RtsCamera.yaw_facing(face)
-	var eye := RtsCamera.pose_at(at, yaw, HIS_DISTANCE, HIS_PITCH)
-	assert_true(RtsCamera.sight_blocked(eye.origin, at + Vector3.UP * BlockCutaway.AIM_HEIGHT_M, RtsCamera.drawn_layout(Arena.active)),
-			"setup: from behind the screen, the LED wall is on his sight line")
-	camera.global_transform = eye
+	var clear := RtsCamera.clear_pose(pose[0], pose[1], HIS_DISTANCE, HIS_PITCH, data)
+	camera.global_transform = RtsCamera.pose_at(pose[0], pose[1], float(clear["distance"]), float(clear["pitch_deg"]))
 	await tree.process_frame
 	await tree.process_frame
-	var cut := cutaway.cut_blocks()
-	assert_true(cut.has(String(body.name)), "the screen in the way is cut (%s)" % [cut])
-	assert_true(BlockCutaway.is_hidden(solid), "its wall and panel are not drawn")
-	var spill := body.find_child("Spill", true, false) as Node3D
-	assert_true(spill == null or spill.is_visible_in_tree(), "its light on the floor still is")
-	# Swing round to look at it from its front: nothing in the way, and it is drawn again.
-	camera.global_transform = RtsCamera.pose_at(at, yaw + PI, HIS_DISTANCE, HIS_PITCH)
-	await tree.process_frame
-	await tree.process_frame
-	assert_true(not cutaway.cut_blocks().has(String(body.name)), "with the camera moved on it is not cut")
-	assert_true(not BlockCutaway.is_hidden(solid), "and it is drawn again")
+	for name: String in cutaway.cut_blocks():
+		assert_true(not name.begins_with("AdScreen_"), "the screen in the way is not cut (%s)" % [cutaway.cut_blocks()])
+	for body in obstacles.get_children():
+		if String(body.name).begins_with("AdScreen_"):
+			assert_true((body.get_node("Visual") as Node3D).is_visible_in_tree(), "%s is drawn" % body.name)
 
 
 ## `make camera-drawn` finds its poses from pure searches; on the two maps he plays most they must find something,
