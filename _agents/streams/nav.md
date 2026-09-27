@@ -66,8 +66,8 @@ _Worker: nav, round 13. Started 2026-09-27 from `8f96a43c`. Every number names i
 | # | item | state |
 |---|---|---|
 | 0 | green start: `make remote T=check` on `8f96a43c` | **green**: builder0, `make check exited 0`, 18 targets, 1773 passed / 0 failed, sim-baseline `6313a38d7ecd99bb` unmoved, determinism `550d53790035ddb4` |
-| R1 | instrument the give-way; buckets before design | **done** `5866e387` (below); round-11 arm's buckets running |
-| R2 | yield spots sized by hull (`--nav-off=yieldfit`) | **built** `26f4ac33`, `tests/nav/test_nav_yield_fit.gd` (laptop 3/3; control reproduces the drive's 72 reverse ticks exactly); measuring |
+| R1 | instrument the give-way; buckets before design | **done** `5866e387` (below), attributed against round 11 |
+| R2 | yield spots sized by hull (`--nav-off=yieldfit`) | **done, third build** `42497bba` (the first two measured worse, below); `tests/nav/test_nav_yield_fit.gd` 4/4, `test_nav_yield_log.gd` 3/3 (builder0) |
 | R3 | drive 8 seeds x 2, fight-maps rotation both arms, clips, `nav-sim-arms`, CP1 | — |
 | R4 | whatever R1 names that R2 does not cover | — |
 
@@ -107,6 +107,11 @@ two containers 286. Begun via: asked 44 (359 reverse), self 37 (302) — both ro
 **Mixed (the control):** 284 reverse-gear ticks: route 128, `yield` 93, kturn 58, press 5; 111 give-ways, 84 of the
 93 yield reverse contacts are in sweep-refused buckets (the tank/artillery pairs backing into Block_0/Block_1).
 
+**Attributed against round 11 (builder0, `5866e387`, `nav-drive-arms` base = `--nav-off=kturnfill,guardnear,blockreach,creepbound,kturnslide`, 8 seeds):**
+round 11's rigs gave way **6** times with **0** yield reverse contacts; HEAD's 81 times with 661. Round 11's reverse
+contacts were route 719, kturn 139, unstick 67, press 21; HEAD's route 559. **The whole +542 is right-of-way** (the
+rigs finding each other through blockreach, then taking spots they do not fit).
+
 **Design read:** validating the run to the spot with the outline sweep addresses ~89 % of the yield share on both
 squads; the other 44 % + 38 % of the rigs' reverse contacts (`route` 559, `kturn` 226) are not right-of-way (R4).
 
@@ -123,4 +128,52 @@ Arms of ONE build (`26f4ac33`), builder0, `nav-drive-arms` 8 seeds x 2 squads, c
   (a refused give-way is a hull that holds: this is where a wedge would show).
 - **Sim baseline:** pre-registered **MOVED** (the yield protocol runs in the baseline match); attributed with
   `nav-sim-arms` `SIM_ARMS="none yieldfit"`: the `yieldfit`-off arm must reproduce `6313a38d7ecd99bb`.
+
+### R2: what was built, and the two builds that measured worse (all builder0, `nav-drive-arms`, `--yield-log`)
+
+**What it replaces: the yield-SPOT CHOICE** (`_begin_yield`'s acceptance of a candidate). The protocol — who asks,
+who gives way, the spot table's order, the hold and release — is round 6's. A candidate is accepted only if the drive
+`right_of_way()` will make to it (the same steering law, stepped with the plant's yaw law) keeps the whole outline in
+the clear reach at every step (`_outline_ok`, the planned reverse's test). Then:
+
+1. **Refuse** what does not fit (`26f4ac33`; now `--nav-off=yieldshort,yieldhold`). Seeds 1-8: rigs' yield reverse
+   contacts 661 -> 22, but total reverse 1488 -> 1502 (the scrapes came back as `kturn` 226 -> 522 and `press` 42 ->
+   232), arrivals **115 -> 105**, press/unstick 83 -> 313, refused asks 4 -> 24. **Falsified** by its own
+   pre-registration: a rig that will not move keeps the jam.
+2. **Sized** (`88fa5563`; now `--nav-off=yieldhold`): no spot fits whole -> give way along the best one's run as far as
+   the hull does fit (>= 2 m, less 1 m), steering at the spot so the run driven is the run swept. Its first build ran
+   byte-identical to (1) — `yield_spots_shortened` 0: the best-candidate test compared against `Vector3.INF`
+   (navigation.md's trap 1, caught by the counter). Fixed: seeds 1-8 rigs arrivals 105, reverse 1441. Still worse.
+3. **Sized, then in place** (`42497bba`, **the default**): nothing fits even shortened -> give way IN PLACE (`hold`:
+   stop pushing, round 6's hold and release). Never seen before its first 16-seed run, so every seed is out of sample.
+
+**The default against round 12 (`d7d2f5d7` = the code of `42497bba`, arm `hold` vs `--nav-off=yieldfit`):**
+
+| squad, seeds | arm | arrived | leg s | contacts | press/unstick | reverse-gear | cusps | kturn_none |
+|---|---|---|---|---|---|---|---|---|
+| rigs 1-8 | round 12 | 115/128 | 1140 | 5715 | 83 | 1488 | 1267 | 56 |
+| rigs 1-8 | **R2** | 110/128 | 1039 | 3951 | 113 | **892** | 1218 | 72 |
+| rigs 9-16 | round 12 | 114/128 | 1151 | 9414 | 112 | 2114 | 1311 | 87 |
+| rigs 9-16 | **R2** | 115/128 | 876 | 3354 | 35 | **864** | 1075 | 43 |
+| rigs 1-16 | round 12 | 229/256 | 2292 | 15129 | 195 | 3602 | 2578 | 143 |
+| rigs 1-16 | **R2** | **225/256** | **1915** | **7305** | 201 | **1756** | 2293 | 115 |
+| mixed 1-8 | round 12 | 179/192 | 1009 | 2660 | 60 | 284 | 2111 | 4 |
+| mixed 1-8 | **R2** | 182/192 | 955 | 1433 | 165 | 126 | 1808 | 15 |
+| mixed 1-16 | round 12 | 364/384 | 2036 | 4282 | 127 | 503 | 4043 | 15 |
+| mixed 1-16 | **R2** | **366/384** | 1911 | **2114** | 178 | **300** | 3449 | 22 |
+
+Rigs' drivers (16 seeds): yield reverse 1560 -> 143; route 1395 -> 820; kturn 566 -> 713. Give-ways 155 -> 169 (30
+in place, 12 sized, 119 candidates refused for fit), refused asks 6 -> 6.
+
+**Against the pre-registration (seeds 1-8), honestly:** rigs' reverse-gear contacts 1488 -> 892 — **met** (all of the
++542 gone, below round 11's 946); the yield row 661 -> 67 — **met**; mixed arrivals +3 and contacts down — **met**.
+**Three no-regression clauses FAILED on seeds 1-8:** rigs' arrivals -5 (bound -3), refusals +16 (bound +10),
+press/unstick +36 % (bound +25 %). On seeds 9-16 (fresh) all three go the right way (arrivals +1, refusals -44,
+press/unstick -69 %), and pooled over 16 seeds they sit inside the bounds scaled (-4 of 256, -28, +3 %). Mixed's
+press/unstick rose on seeds 1-8 (60 -> 165, seed 4 alone 28 -> 108) and fell on 9-16 (67 -> 0).
+
+**Decision: ship it ON, the failed clauses on the record.** Contacts halve on both squads, the march is faster
+(rigs 2292 -> 1915 s over 16 seeds), arrivals are a wash pooled — the lead's standing trade (*"a 4s slower march for
+a tidier traversal is better"*) and this one is tidier AND quicker. The orchestrator can veto; every build is one
+switch away (`--nav-off=yieldfit` = round 12; `yieldhold` = sized only; `yieldshort,yieldhold` = refusing).
 
