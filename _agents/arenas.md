@@ -93,6 +93,42 @@ said the first, brighter look "reads as a starfield/nebula", so it went to "oily
 - Judge it as a pair (`make remote T=terrain-shots`: each water map beside its dry twin at his pose), on HIS page.
   Owner next round: whoever owns `game/theme/arena_kit/terrain/` (theme layer; round 10's terrain stream built it).
 
+## Water reads wet (round 12, arena): what the water does now, and how to change it
+
+**Built** (`game/theme/arena_kit/terrain/water.gdshader`; the pairs and numbers are on his page,
+https://claude.ai/artifact/1PsZA4HnRWGCSgajuyamKN, `db` declared, taps in `decisions/<id>`):
+- **It reflects the venue as built, read from the scene** (Invariant 0). `ArenaDressing.reflection_venue()` records,
+  where it places them, the wall's inner-face edges with their stands spans, the light bars (`RIM_BAR`, `FOOT_BAR`),
+  `StandsProfile.points()`, the crowd's band (`CROWD_ROWS`), every tower's lamp head, each layout floodlight's (on
+  KitYard's mast), and the flood map. `TerrainVisual._bind_reflection()` finds the dressing by its group
+  (`arena_dressing`) after the arena finishes building. It also takes the obstacles within 3× their height of the
+  water from the layout, and reads a city block's neon band off its DRAWN mesh (surface 1's height range and
+  colour). The shader traces all of it analytically: no second render, no added draw call.
+- **Lamps are columns, not points**: on rippled water a light's reflection is narrow in azimuth and long in
+  elevation. A sharp mirror glint almost never lands at his 21° pose, which is why round 10's fake streak (from a
+  direction no lamp stood in) was the only light on the water.
+- **The floodlight pools glint on the swell's crests**, smooth noise at ~10–16 m wavelength, so never a sparkle
+  (feel's round-10 "starfield" warning).
+- **The reflection is smeared in elevation along the VIEW's frame** (long waves across the view, short along it), so
+  a neon line breaks into stacked horizontal dashes. Round noise here draws closed contours, which read as
+  scribbles.
+- **A lap line** on the surface at every bank and on the wall at the water line; pits have none.
+- **Pits are their own shader** (`pit.gdshader`); the shared trace is `terrain_trace.gdshaderinc`. Nothing the water
+  adds exists in anything a pit compiles (`test_the_pits_are_their_own_shader_with_none_of_the_waters_dials`).
+
+**Changing it:** every step has a dial whose zero is round 10 (`WaterLook.STEPS`: r10 → a_body → a_flood → b_venue →
+c_lamps → c_swell → d_lap). The shader's defaults ARE the last step (`test_the_water_pairs_end_at_what_ships`). Add a
+step rather than retune one silently, and shoot it with `make remote T=water-pairs` (all steps, all five maps, frozen
+at one instant; `WATER_LOOKS=` and `WATER_PAIR_ARENAS=` narrow it). WATER_STATS gives each look's `black_share` (water
+pixels under 0.03 luma), `mean_luma`, and `changed_inside_px` (on a pit map it must stay ~0). `python3
+tools/water_page.py` builds the page from the pairs. `make remote T=water-gpu` measures the water's GPU cost with
+one frame held still.
+
+**Numbers** (`c4c39a38`, builder0, round 10 → now, same frame, same instant): near-black share of water pixels,
+Crossing bridge 0.49 → 0.44, far bridge 0.72 → 0.37, neck 0.57 → 0.50; Locks lock 0.18 → 0.07, swing bridge
+0.39 → 0.20, far quay 0.98 → 0.54, canal 0.70 → 0.39; Terminus canal west bridge 0.65 → 0.38, avenue bridge
+0.58 → 0.51. Pits: at most 64 of 34k–274k pit pixels differ between steps (vehicles at the rim).
+
 ## The lead's direction (2026-09-17)
 
 > *"the maps are just too simple. We probably need a dedicated agent to formulate maps. I'm also not seeing the assets

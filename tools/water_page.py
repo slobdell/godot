@@ -165,7 +165,7 @@ def words_box(ident):
 
 def card(ident, title, imgs, options, stat, pair=False):
     figures = "".join(
-        f"""<figure><img src="{src}" alt="{html.escape(title)}: {html.escape(label)}" loading="lazy"><figcaption>{html.escape(label)}</figcaption></figure>"""
+        f"""<figure><a href="{src}" target="_blank" rel="noopener"><img src="{src}" alt="{html.escape(title)}: {html.escape(label)}" loading="lazy"></a><figcaption>{html.escape(label)} · tap for full size</figcaption></figure>"""
         for label, src in imgs if src)
     return f"""<article class="card"><header><h3>{html.escape(title)}</h3><span class="stat">{html.escape(stat)}</span></header>
 <div class="frames {'two' if pair else 'three'}">{figures}</div>{choice_buttons(ident, options)}{words_box(ident)}</article>"""
@@ -187,7 +187,7 @@ section {{ display:grid; gap:14px; }} .note {{ color:var(--dim); margin:0; max-w
 .card {{ background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px; display:grid; gap:10px; }}
 .card header {{ display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:6px 16px; }}
 .stat {{ font:13px "IBM Plex Mono", monospace; color:var(--amber); font-variant-numeric:tabular-nums; }}
-.frames {{ display:grid; gap:8px; }} .frames.three {{ grid-template-columns:repeat(3, minmax(0, 1fr)); }}
+.frames {{ display:grid; gap:8px; }} .frames.three {{ grid-template-columns:minmax(0, .62fr) minmax(0, 1fr) minmax(0, 1fr); align-items:end; }}
 .frames.two {{ grid-template-columns:repeat(2, minmax(0, 1fr)); }}
 figure {{ margin:0; display:grid; gap:4px; }} figure img {{ width:100%; height:auto; border-radius:3px; display:block; }}
 figcaption {{ font-size:13px; color:var(--dim); }} figcaption b {{ color:var(--fg); font-weight:600; }}
