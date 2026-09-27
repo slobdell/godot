@@ -2462,6 +2462,17 @@ concept or 3D unless he raises it. The earlier approvals (`bus_r10_b`, `bus_r11_
 he approved a look, the tool could not deliver its proportions, and he does not want the slot chased. Lesson for pages:
 a card must say in one line WHY it exists and what "approve" costs; this one read as "approve the tank" to him.
 
+**The booth's 67 new lines, on audio's veto page (2026-09-27): ALL 67 KEPT** (the page's `verdicts` collection,
+dumped to `streams/references/round12/audio_veto_db/`). His words, verbatim:
+
+> *"ok I finished approving the announcers, those are great - with all the new voice overs for the 2 male announcers it
+> makes me feel like there's more good content that can be created for the female announcer"*
+
+**Direction from that:** the female announcer — the PA voice (`pa`, 226 lines against the caller's 521 and the
+Veteran's 439; round 12 added 49 caller and 18 color lines and **zero** PA lines) — gets her own deepening: more
+content in her register, under the standing humour direction, generated under C12.7, on a veto page. Routed to audio
+as item M6 the same night.
+
 **A correction to the squad brief (squad, 2026-09-26):** the brief said the yard and the Terminus both classify as
 *dense*. `make tactics-terrain` shows only the yard's spawns are dense and the Terminus is *lanes*; and no squad the
 lead fields uses the standard table — a squad uses its units' FACTION table, and the Condemned and Law catch-alls pick a
