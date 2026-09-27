@@ -230,7 +230,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	if in_transit:
 		plan["why"] = "moving as ordered: travelling in %s" % String(plan["formation"]).replace("_", " ")
 	if table_why != "" and String(plan["formation"]) == picked:
-		plan["why"] = "moving as ordered: %s" % table_why
+		plan["why"] = "moving as ordered, %s: %s" % ["travelling" if in_transit else "forming up", table_why]
 	# Sent once means SEATED once: when everyone has been sent to their final slot (the flow joined, or no flow) the
 	# seating stands. A CPU crew fights from within its slot's leash and drifts ~10 m off it; left to "saves real
 	# driving", the seating re-shuffled around the drift and re-ordered idle units (round 7: the CPU five-squad test).
