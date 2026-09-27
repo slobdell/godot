@@ -15,7 +15,7 @@ result: rust by elimination at 1:21.8
 0:29.1   VETERAN  You don't take the scout into that. You just don't.
 0:30.0   ── green tank destroys rust ifv
 0:34.3   CALLER   Oh, they blew that IFV wide open!
-0:37.0   PA       Quite so, Joseph. For the record, that crew has completed their appearance, and the arena thanks them for it.
+0:37.0   PA       The Law's observer confirmed that kill a moment before it happened, which is within his discretion, and the result stands.
 0:47.2   ── rust lancer destroys green tank
 0:47.3   CALLER   The Syndicate machine takes it clean. That was surgical.
 0:48.0   ── friendly fire: green artillery hits its own ifv
@@ -35,4 +35,4 @@ result: rust by elimination at 1:21.8
 1:21.8   ── MATCH OVER: rust wins by elimination (0 green, 2 rust left)
 1:22.2   CALLER   And another one! The Syndicate isn't done!
 1:24.9   CALLER   It's all over! The Syndicate win it!
-1:28.2   PA       The Syndicate take tonight's match. We thank our participants, and our sponsors, in that order.
+1:28.2   PA       That is the conclusion of tonight's event. Congratulations to the Syndicate from all of us at the arena.

@@ -32581,6 +32581,258 @@
    "text": "Seats have become available on tonight's last train to the outer districts, and may be booked at the Meridian desk before the final whistle.",
    "voice": "corporate2"
   },
+  "pa.kill.13": {
+   "duration_s": 8.552,
+   "file": "pa/pa.kill.13.ogg",
+   "kind": "line",
+   "request": "pa.kill.13",
+   "request_key": "676ac4d33cfe15d4763b70b78b8ea08d54ed1f63",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "That's right, Joseph. The crew's last transmission has been kept for training purposes, along with the others from this season, and the match continues",
+   "text": "That's right, Joseph. The crew's last transmission has been kept for training purposes, along with the others from this season, and the match continues.",
+   "voice": "corporate2"
+  },
+  "pa.kill.14": {
+   "duration_s": 9.156,
+   "file": "pa/pa.kill.14.ogg",
+   "kind": "line",
+   "request": "pa.kill.14",
+   "request_key": "35c96dc7dda2876aee2d4847649f95251d865521",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The vehicle's reserve crew will take its place next week. Several of them are watching tonight with their school groups in the north stand as part of the program",
+   "text": "The vehicle's reserve crew will take its place next week. Several of them are watching tonight with their school groups, in the north stand, as part of the programme.",
+   "voice": "corporate2"
+  },
+  "pa.kill.15": {
+   "duration_s": 7.915,
+   "file": "pa/pa.kill.15.ogg",
+   "kind": "line",
+   "request": "pa.kill.15",
+   "request_key": "bc519a24788c62c61152e975d59a675e92742ec1",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Spectators in section four may now leave their seats for refreshments in groups of six under escort until the next kill",
+   "text": "Spectators in section four may now leave their seats for refreshments, in groups of six, under escort, until the next kill.",
+   "voice": "corporate2"
+  },
+  "pa.kill.16": {
+   "duration_s": 7.504,
+   "file": "pa/pa.kill.16.ogg",
+   "kind": "line",
+   "request": "pa.kill.16",
+   "request_key": "d898dd9e68e3bc017a68fddad4aacb165c9b256a",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The crew's cell has been reassigned for tomorrow's arrivals, and their personal effects will be kept at the steward's office in the meantime",
+   "text": "The crew's cell has been reassigned for tomorrow's arrivals, and their personal effects will be kept at the stewards' office in the meantime.",
+   "voice": "corporate2"
+  },
+  "pa.kill.17": {
+   "duration_s": 6.491,
+   "file": "pa/pa.kill.17.ogg",
+   "kind": "line",
+   "request": "pa.kill.17",
+   "request_key": "f8950fd5e1882fc5f60246f8f79afacca8d707a8",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Anyone near the floor for that one will be offered a hearing check next season as usual, and the match continues",
+   "text": "Anyone near the floor for that one will be offered a hearing check next season, as usual, and the match continues.",
+   "voice": "corporate2"
+  },
+  "pa.kill.18": {
+   "duration_s": 8.405,
+   "file": "pa/pa.kill.18.ogg",
+   "kind": "line",
+   "request": "pa.kill.18",
+   "request_key": "3db55deadc5c01a3f7542ad47d359341fbf217f3",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Well called, Joseph. That crew's apartment in the eastern blocks is now available, and applications open tomorrow morning at the housing office",
+   "text": "Well called, Joseph. That crew's apartment in the eastern blocks is now available, and applications open tomorrow morning at the housing office.",
+   "voice": "corporate2"
+  },
+  "pa.kill.19": {
+   "duration_s": 6.631,
+   "file": "pa/pa.kill.19.ogg",
+   "kind": "line",
+   "request": "pa.kill.19",
+   "request_key": "e91605918f3b9a1fd9f65b853a23aefa35c74dd8",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The stewards thank the fan who shared that crew's route beforehand and remind everyone the reporting desk is open",
+   "text": "The stewards thank the fan who shared that crew's route beforehand, and remind everyone the reporting desk is open.",
+   "voice": "corporate2"
+  },
+  "pa.kill.20": {
+   "duration_s": 7.023,
+   "file": "pa/pa.kill.20.ogg",
+   "kind": "line",
+   "request": "pa.kill.20",
+   "request_key": "85a9c0d486af7be5431f646d49eecd56fa28833d",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "That vehicle passed its inspection this morning, the crew compartment accepted, and we wish its replacement the same result",
+   "text": "That vehicle passed its inspection this morning, the crew compartment excepted, and we wish its replacement the same result.",
+   "voice": "corporate2"
+  },
+  "pa.kill.21": {
+   "duration_s": 8.076,
+   "file": "pa/pa.kill.21.ogg",
+   "kind": "line",
+   "request": "pa.kill.21",
+   "request_key": "7c4de0cb5c4cd60eb5d0c73485fc645425a35828",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Quite so, Joseph. The crew's cover lapsed when the gates closed, as all cover does, and the arena's own policy remains in force",
+   "text": "Quite so, Joseph. The crew's cover lapsed when the gates closed, as all cover does, and the arena's own policy remains in force.",
+   "voice": "corporate2"
+  },
+  "pa.kill.22": {
+   "duration_s": 6.962,
+   "file": "pa/pa.kill.22.ogg",
+   "kind": "line",
+   "request": "pa.kill.22",
+   "request_key": "6640472351f7ebde9c439e99ea8ef2bcdb7c5bf9",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The crew had been offered a work placement on release, which now passes down the list within the same district from Monday",
+   "text": "The crew had been offered a work placement on release, which now passes down the list, within the same district, from Monday.",
+   "voice": "corporate2"
+  },
+  "pa.kill.23": {
+   "duration_s": 7.001,
+   "file": "pa/pa.kill.23.ogg",
+   "kind": "line",
+   "request": "pa.kill.23",
+   "request_key": "3ad196ca930be419a265480f0900dbfe93135a1f",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The law's observer confirmed that kill a moment before it happened, which is within his discretion, and the result stands",
+   "text": "The Law's observer confirmed that kill a moment before it happened, which is within his discretion, and the result stands.",
+   "voice": "corporate2"
+  },
+  "pa.kill.24": {
+   "duration_s": 6.506,
+   "file": "pa/pa.kill.24.ogg",
+   "kind": "line",
+   "request": "pa.kill.24",
+   "request_key": "ee12f405d573bd78cc4138c2e7b82b0eb624fa0f",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The vehicle returns to its owners, the crew to their district in that order of priority once the floor is clear",
+   "text": "The vehicle returns to its owners, the crew to their district, in that order of priority, once the floor is clear.",
+   "voice": "corporate2"
+  },
+  "pa.kill.25": {
+   "duration_s": 8.635,
+   "file": "pa/pa.kill.25.ogg",
+   "kind": "line",
+   "request": "pa.kill.25",
+   "request_key": "304578508800dfbc47503756f99a704cc8a203c4",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "That's right, Joseph. Crews wishing to dispute that result may do so in writing, in person, at the steward's office before the end of the match",
+   "text": "That's right, Joseph. Crews wishing to dispute that result may do so in writing, in person, at the stewards' office, before the end of the match.",
+   "voice": "corporate2"
+  },
+  "pa.kill.26": {
+   "duration_s": 6.385,
+   "file": "pa/pa.kill.26.ogg",
+   "kind": "line",
+   "request": "pa.kill.26",
+   "request_key": "e6fdf9a7ded843e8cecd06b0194287d10d4fbb77",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The crew who made that shot are from the upper districts and will be home in time for supper as their contract provides",
+   "text": "The crew who made that shot are from the upper districts, and will be home in time for supper, as their contract provides.",
+   "voice": "corporate2"
+  },
+  "pa.kill.27": {
+   "duration_s": 7.721,
+   "file": "pa/pa.kill.27.ogg",
+   "kind": "line",
+   "request": "pa.kill.27",
+   "request_key": "2ae62c768445d2a4110b655b91b057d94a212f65",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Fans who correctly predicted that result have earned a half ration of water collectible at the concourse, and the windows remain open",
+   "text": "Fans who correctly predicted that result have earned a half ration of water, collectable at the concourse, and the windows remain open.",
+   "voice": "corporate2"
+  },
+  "pa.kill.28": {
+   "duration_s": 7.435,
+   "file": "pa/pa.kill.28.ogg",
+   "kind": "line",
+   "request": "pa.kill.28",
+   "request_key": "502c8216dd43e3212843ec1fce8c11532835a1da",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "That crew was due on again on Thursday, and the Thursday card will run as printed with a substitute at the usual time",
+   "text": "That crew was due on again on Thursday, and the Thursday card will run as printed, with a substitute, at the usual time.",
+   "voice": "corporate2"
+  },
+  "pa.kill.29": {
+   "duration_s": 6.878,
+   "file": "pa/pa.kill.29.ogg",
+   "kind": "line",
+   "request": "pa.kill.29",
+   "request_key": "b666462065d16dbe3196710461693b1ccfdff8d6",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "That kill scores three points plus a bonus for vehicle condition, which was good, and the scoreboard has been updated",
+   "text": "That kill scores three points, plus a bonus for vehicle condition, which was good, and the scoreboard has been updated.",
+   "voice": "corporate2"
+  },
+  "pa.kill.30": {
+   "duration_s": 6.943,
+   "file": "pa/pa.kill.30.ogg",
+   "kind": "line",
+   "request": "pa.kill.30",
+   "request_key": "f55f75baa0f622fee35e884062624f09cb147819",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Our floor stewards will wait for a pause before attending, a policy introduced last season, and the match continues",
+   "text": "Our floor stewards will wait for a pause before attending, a policy introduced last season, and the match continues.",
+   "voice": "corporate2"
+  },
+  "pa.kill.31": {
+   "duration_s": 6.193,
+   "file": "pa/pa.kill.31.ogg",
+   "kind": "line",
+   "request": "pa.kill.31",
+   "request_key": "d00d724603654a6c5d92c36b2b56c9e7bda49a14",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The vehicle's power has been cut at source, as has its crew's home block until the morning shift as standard",
+   "text": "The vehicle's power has been cut at source, as has its crew's home block, until the morning shift, as standard.",
+   "voice": "corporate2"
+  },
+  "pa.kill.32": {
+   "duration_s": 8.326,
+   "file": "pa/pa.kill.32.ogg",
+   "kind": "line",
+   "request": "pa.kill.32",
+   "request_key": "c12e66f99f86d3bcb788d91e328e306e06ca0bcf",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Thank you, Joseph. That crew had volunteered for tonight's match twice, the second time in writing, and the arena thanks them for their commitment",
+   "text": "Thank you, Joseph. That crew had volunteered for tonight's match twice, the second time in writing, and the arena thanks them for their commitment.",
+   "voice": "corporate2"
+  },
+  "pa.kill.33": {
+   "duration_s": 6.461,
+   "file": "pa/pa.kill.33.ogg",
+   "kind": "line",
+   "request": "pa.kill.33",
+   "request_key": "5467667ffeaa94bdfeffe5ae0976f5cdb7b45953",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The smoke from that vehicle will drift toward the eastern districts overnight as scheduled, and play continues",
+   "text": "The smoke from that vehicle will drift toward the eastern districts overnight, as scheduled, and play continues.",
+   "voice": "corporate2"
+  },
   "pa.momentum.01": {
    "duration_s": 6.85,
    "file": "pa/pa.momentum.01.ogg",
@@ -32867,6 +33119,102 @@
    "stt_ok": true,
    "stt_text": "The concourse bars stay open until the final whistle for guests from the upper districts, and a limited menu is available elsewhere",
    "text": "The concourse bars stay open until the final whistle for guests from the upper districts, and a limited menu is available elsewhere.",
+   "voice": "corporate2"
+  },
+  "pa.notice.15": {
+   "duration_s": 9.474,
+   "file": "pa/pa.notice.15.ogg",
+   "kind": "line",
+   "request": "pa.notice.15",
+   "request_key": "128b8bfb4c91fc3d71896a89a3b87714873a2fb9",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "A note for fans traveling home. Tonight's air is rated fair for adults, and children are advised to use a cloth outdoors, as on most evenings this month",
+   "text": "A note for fans travelling home: tonight's air is rated fair for adults, and children are advised to use a cloth outdoors, as on most evenings this month.",
+   "voice": "corporate2"
+  },
+  "pa.notice.16": {
+   "duration_s": 8.824,
+   "file": "pa/pa.notice.16.ogg",
+   "kind": "line",
+   "request": "pa.notice.16",
+   "request_key": "da0ada54de65941c5d20c09a3060bd1f9df05d0c",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The camera above section 11 is not working this evening, and fans in that section are asked to behave as though it were for the remainder of the match",
+   "text": "The camera above section eleven is not working this evening, and fans in that section are asked to behave as though it were, for the remainder of the match.",
+   "voice": "corporate2"
+  },
+  "pa.notice.17": {
+   "duration_s": 9.205,
+   "file": "pa/pa.notice.17.ogg",
+   "kind": "line",
+   "request": "pa.notice.17",
+   "request_key": "b2cbe19e68161bc4708f7fda177a3fc621eb0729",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Meridian Transport advises that the eastern line is running, and the western line will run once the crews are returned at about eleven from platform two",
+   "text": "Meridian Transport advises that the eastern line is running, and the western line will run once the crews are returned, at about eleven, from platform two.",
+   "voice": "corporate2"
+  },
+  "pa.notice.18": {
+   "duration_s": 7.905,
+   "file": "pa/pa.notice.18.ogg",
+   "kind": "line",
+   "request": "pa.notice.18",
+   "request_key": "c8a60fc43cc31b348e32e1e185816b606eb12e70",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The arena's junior program is recruiting in the family stand tonight, and a representative will visit each row before the final whistle",
+   "text": "The arena's junior programme is recruiting in the family stand tonight, and a representative will visit each row before the final whistle.",
+   "voice": "corporate2"
+  },
+  "pa.notice.19": {
+   "duration_s": 7.441,
+   "file": "pa/pa.notice.19.ogg",
+   "kind": "line",
+   "request": "pa.notice.19",
+   "request_key": "28a0ef3e32006ad8a7a3e357d85bd2a953eebf52",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Fans in the front rows may notice the floor staff standing by with the larger brooms this evening, which is routine for a full card",
+   "text": "Fans in the front rows may notice the floor staff standing by with the larger brooms this evening, which is routine for a full card.",
+   "voice": "corporate2"
+  },
+  "pa.notice.20": {
+   "duration_s": 8.24,
+   "file": "pa/pa.notice.20.ogg",
+   "kind": "line",
+   "request": "pa.notice.20",
+   "request_key": "6ab89b0b2accd96d9f908a37e3abf202144d973d",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The crowd noise tonight has peaked at 112 decibels, which the stewards consider a success, and earplugs remain on sale",
+   "text": "The crowd noise tonight has peaked at one hundred and twelve decibels, which the stewards consider a success, and earplugs remain on sale.",
+   "voice": "corporate2"
+  },
+  "pa.notice.21": {
+   "duration_s": 8.405,
+   "file": "pa/pa.notice.21.ogg",
+   "kind": "line",
+   "request": "pa.notice.21",
+   "request_key": "7fe9a7c0fa47db528fb1c83bb9f468f677691473",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The law's representative in the officials box has placed his usual wager and asks that the booth not mention which crew in fairness",
+   "text": "The Law's representative in the officials' box has placed his usual wager, and asks that the booth not mention which crew, in fairness.",
+   "voice": "corporate2"
+  },
+  "pa.notice.22": {
+   "duration_s": 7.671,
+   "file": "pa/pa.notice.22.ogg",
+   "kind": "line",
+   "request": "pa.notice.22",
+   "request_key": "d45d3e3d0c007ffb8bbef8f4faad21310dfaf1ee",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Tonight's crowd includes this month's draft from the Southern Districts, who are seated in the upper tier, and we welcome them warmly",
+   "text": "Tonight's crowd includes this month's draft from the southern districts, who are seated in the upper tier, and we welcome them warmly.",
    "voice": "corporate2"
   },
   "pa.odds.01@condemned": {
@@ -33421,6 +33769,150 @@
    "text": "The Syndicate are tonight's winner. Ticket holders may remain seated during the recovery operation.",
    "voice": "corporate2"
   },
+  "pa.result.12@condemned": {
+   "duration_s": 7.547,
+   "file": "pa/pa.result.12@condemned.ogg",
+   "kind": "line",
+   "request": "pa.result.12@condemned",
+   "request_key": "fa1262df30941e53c2c44f9b4716e570213a1f38",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The condemned take tonight's match. The final count is by vehicles with crews listed separately, and the result has been confirmed.",
+   "text": "The Condemned take tonight's match. The final count is by vehicles, with crews listed separately, and the result has been confirmed.",
+   "voice": "corporate2"
+  },
+  "pa.result.12@gangs": {
+   "duration_s": 7.955,
+   "file": "pa/pa.result.12@gangs.ogg",
+   "kind": "line",
+   "request": "pa.result.12@gangs",
+   "request_key": "7f92dda18230277a4d92fbc93cec815274646983",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The Wreckers take tonight's match. The final count is by vehicles, with crews listed separately, and the result has been confirmed",
+   "text": "The Wreckers take tonight's match. The final count is by vehicles, with crews listed separately, and the result has been confirmed.",
+   "voice": "corporate2"
+  },
+  "pa.result.12@law": {
+   "duration_s": 7.83,
+   "file": "pa/pa.result.12@law.ogg",
+   "kind": "line",
+   "request": "pa.result.12@law",
+   "request_key": "e8fea10defda5c0b55ad8124b4264ddc20778d71",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The law take tonight's match. The final count is by vehicles, with crews listed separately, and the result has been confirmed",
+   "text": "The Law take tonight's match. The final count is by vehicles, with crews listed separately, and the result has been confirmed.",
+   "voice": "corporate2"
+  },
+  "pa.result.12@syndicate": {
+   "duration_s": 7.473,
+   "file": "pa/pa.result.12@syndicate.ogg",
+   "kind": "line",
+   "request": "pa.result.12@syndicate",
+   "request_key": "24d3b7c4de15e236b00f0dacb06b55866a6dc813",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The Syndicate take tonight's match. The final count is by vehicles with crews listed separately, and the result has been confirmed",
+   "text": "The Syndicate take tonight's match. The final count is by vehicles, with crews listed separately, and the result has been confirmed.",
+   "voice": "corporate2"
+  },
+  "pa.result.13@condemned": {
+   "duration_s": 8.012,
+   "file": "pa/pa.result.13@condemned.ogg",
+   "kind": "line",
+   "request": "pa.result.13@condemned",
+   "request_key": "408d78a805d9faf06fa75127b918774ff01d3abd",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Victory tonight goes to The Condemned. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement",
+   "text": "Victory tonight goes to the Condemned. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement.",
+   "voice": "corporate2"
+  },
+  "pa.result.13@gangs": {
+   "duration_s": 8.229,
+   "file": "pa/pa.result.13@gangs.ogg",
+   "kind": "line",
+   "request": "pa.result.13@gangs",
+   "request_key": "1a7411aad0a755d5b0d3af781059b2e5d12ada43",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Victory tonight goes to the Wreckers. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement",
+   "text": "Victory tonight goes to the Wreckers. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement.",
+   "voice": "corporate2"
+  },
+  "pa.result.13@law": {
+   "duration_s": 8.328,
+   "file": "pa/pa.result.13@law.ogg",
+   "kind": "line",
+   "request": "pa.result.13@law",
+   "request_key": "36d8aafd915f48fcdc71c017840a2d2d33e893d0",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Victory tonight goes to The Law. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement",
+   "text": "Victory tonight goes to the Law. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement.",
+   "voice": "corporate2"
+  },
+  "pa.result.13@syndicate": {
+   "duration_s": 8.391,
+   "file": "pa/pa.result.13@syndicate.ogg",
+   "kind": "line",
+   "request": "pa.result.13@syndicate",
+   "request_key": "8b2792e31446f77cfca6a51f48647c3db49cf34f",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Victory tonight goes to The Syndicate. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement",
+   "text": "Victory tonight goes to the Syndicate. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement.",
+   "voice": "corporate2"
+  },
+  "pa.result.14@condemned": {
+   "duration_s": 7.53,
+   "file": "pa/pa.result.14@condemned.ogg",
+   "kind": "line",
+   "request": "pa.result.14@condemned",
+   "request_key": "4ea3355064f9adf7a617b47ee0801d5b919c374b",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The Condemned are tonight's winners. Their crews will travel home through the upper districts tonight by the usual courtesy, and good night to you all",
+   "text": "The Condemned are tonight's winners. Their crews will travel home through the upper districts tonight, by the usual courtesy, and good night to you all.",
+   "voice": "corporate2"
+  },
+  "pa.result.14@gangs": {
+   "duration_s": 7.797,
+   "file": "pa/pa.result.14@gangs.ogg",
+   "kind": "line",
+   "request": "pa.result.14@gangs",
+   "request_key": "f53cb70c069815579e99c48db716650946a1a4dc",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The Wreckers are tonight's winners. Their crews will travel home through the upper districts tonight by the usual courtesy. And good night to you all",
+   "text": "The Wreckers are tonight's winners. Their crews will travel home through the upper districts tonight, by the usual courtesy, and good night to you all.",
+   "voice": "corporate2"
+  },
+  "pa.result.14@law": {
+   "duration_s": 7.664,
+   "file": "pa/pa.result.14@law.ogg",
+   "kind": "line",
+   "request": "pa.result.14@law",
+   "request_key": "771af4dd5f0646324418bb2213ca530993f16ed3",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The Law are tonight's winners. Their crews will travel home through the upper districts tonight by the usual courtesy, and good night to you all",
+   "text": "The Law are tonight's winners. Their crews will travel home through the upper districts tonight, by the usual courtesy, and good night to you all.",
+   "voice": "corporate2"
+  },
+  "pa.result.14@syndicate": {
+   "duration_s": 8.358,
+   "file": "pa/pa.result.14@syndicate.ogg",
+   "kind": "line",
+   "request": "pa.result.14@syndicate",
+   "request_key": "f3be7026d49e4f4175fbe4b000678f0246bd54ca",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The Syndicate are tonight's winners. Their crews will travel home through the upper districts tonight by the usual courtesy, and good night to you all",
+   "text": "The Syndicate are tonight's winners. Their crews will travel home through the upper districts tonight, by the usual courtesy, and good night to you all.",
+   "voice": "corporate2"
+  },
   "pa.screen.01": {
    "duration_s": 8.08,
    "file": "pa/pa.screen.01.ogg",
@@ -33671,6 +34163,162 @@
    "stt_ok": true,
    "stt_text": "The air outside the arena is within limits for walking tonight for most residents, so please take your time on the way home",
    "text": "The air outside the arena is within limits for walking tonight, for most residents, so please take your time on the way home.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.14": {
+   "duration_s": 7.553,
+   "file": "pa/pa.signoff.14.ogg",
+   "kind": "line",
+   "request": "pa.signoff.14",
+   "request_key": "5bc05221124de9c4963394b129da1eede5e18025",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Tonight's match will be kept in the district archive alongside the crew's records and may be requested by relatives in the usual way.",
+   "text": "Tonight's match will be kept in the district archive alongside the crews' records, and may be requested by relatives in the usual way.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.15": {
+   "duration_s": 7.306,
+   "file": "pa/pa.signoff.15.ogg",
+   "kind": "line",
+   "request": "pa.signoff.15",
+   "request_key": "48e4370a9c2c066c0cbef61f465e316d76749e6c",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Younger fans are reminded that tonight's match counts toward their district selection and school resumes as normal in the morning",
+   "text": "Younger fans are reminded that tonight's match counts toward their district's selection, and school resumes as normal in the morning.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.16": {
+   "duration_s": 7.287,
+   "file": "pa/pa.signoff.16.ogg",
+   "kind": "line",
+   "request": "pa.signoff.16",
+   "request_key": "c02ae0b277a39e79f8c87674250f92b9029d777d",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Tonight's crews will now return to their blocks by the north tunnel, and fans are asked not to wave as it slows the line",
+   "text": "Tonight's crews will now return to their blocks by the north tunnel, and fans are asked not to wave, as it slows the line.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.17": {
+   "duration_s": 7.303,
+   "file": "pa/pa.signoff.17.ogg",
+   "kind": "line",
+   "request": "pa.signoff.17",
+   "request_key": "7d2ce180ef6e8d0a2195029eb86767cce7f28c0d",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Our thanks to tonight's crews, including those who have concluded their participation and to everyone who made the evening possible",
+   "text": "Our thanks to tonight's crews, including those who have concluded their participation, and to everyone who made the evening possible.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.18": {
+   "duration_s": 8.088,
+   "file": "pa/pa.signoff.18.ogg",
+   "kind": "line",
+   "request": "pa.signoff.18",
+   "request_key": "58fada08ef776497525a128c346335b7acbd582d",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Fans leaving the lower bowl may find conversation difficult for a day or two, which is normal, and staff at the gates will point the way",
+   "text": "Fans leaving the lower bowl may find conversation difficult for a day or two, which is normal, and staff at the gates will point the way.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.19": {
+   "duration_s": 7.543,
+   "file": "pa/pa.signoff.19.ogg",
+   "kind": "line",
+   "request": "pa.signoff.19",
+   "request_key": "5b8acfd5f373f2e3678c7594199fa3cdcfd3b686",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The medical team will now begin their rounds of the floor, starting with the winning side, and the concourse remains open meanwhile",
+   "text": "The medical team will now begin their rounds of the floor, starting with the winning side, and the concourse remains open meanwhile.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.20": {
+   "duration_s": 7.999,
+   "file": "pa/pa.signoff.20.ogg",
+   "kind": "line",
+   "request": "pa.signoff.20",
+   "request_key": "2bbe38fb87c272cb5d622cb46cb6e6c7f971c45d",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Parts from tonight's vehicles and some personal items are available at the souvenir stand from tomorrow with certificates of authenticity",
+   "text": "Parts from tonight's vehicles, and some personal items, are available at the souvenir stand from tomorrow, with certificates of authenticity.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.21": {
+   "duration_s": 8.328,
+   "file": "pa/pa.signoff.21.ogg",
+   "kind": "line",
+   "request": "pa.signoff.21",
+   "request_key": "fd5b14ff4a31f746729dc411739d3a521b7efc8b",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Please have your ticket and district papers ready at the gates where some fans will be asked to stay behind for a short conversation with the stewards.",
+   "text": "Please have your ticket and district papers ready at the gates, where some fans will be asked to stay behind for a short conversation with the stewards.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.22": {
+   "duration_s": 7.77,
+   "file": "pa/pa.signoff.22.ogg",
+   "kind": "line",
+   "request": "pa.signoff.22",
+   "request_key": "97e90086d9bceb6bf415cdfd40e3b3be7596c833",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The floor crew will recover tonight's vehicles first as they are needed on Thursday and the remaining items in the order they are found",
+   "text": "The floor crew will recover tonight's vehicles first, as they are needed on Thursday, and the remaining items in the order they are found.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.23": {
+   "duration_s": 7.221,
+   "file": "pa/pa.signoff.23.ogg",
+   "kind": "line",
+   "request": "pa.signoff.23",
+   "request_key": "c94dc1c551f496f5a8027fb47151d39a1cacd6af",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "For the crews who finish tonight's match, one week has been taken off their sentences, and the results are posted by the east gate",
+   "text": "For the crews who finished tonight's match, one week has been taken off their sentences, and the results are posted by the east gate.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.24": {
+   "duration_s": 9.047,
+   "file": "pa/pa.signoff.24.ogg",
+   "kind": "line",
+   "request": "pa.signoff.24",
+   "request_key": "86588bcd02d9557c8e9834922f9cca73e47b9716",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Winning tickets may be collected at the main windows, and tickets on the cruise themselves are settled with their next of kin by post within the month",
+   "text": "Winning tickets may be collected at the main windows, and tickets on the crews themselves are settled with their next of kin, by post, within the month.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.25": {
+   "duration_s": 6.94,
+   "file": "pa/pa.signoff.25.ogg",
+   "kind": "line",
+   "request": "pa.signoff.25",
+   "request_key": "39c183f6b5c2e8dea4711a6d5c4e8b3691e1d094",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Our thanks to the arena stewards, several promoted to crew for next season for another evening without incident",
+   "text": "Our thanks to the arena stewards, several promoted to crew for next season, for another evening without incident.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.26": {
+   "duration_s": 7.381,
+   "file": "pa/pa.signoff.26.ogg",
+   "kind": "line",
+   "request": "pa.signoff.26",
+   "request_key": "cc69df6771603e5295ac6267d938bfa9dc0d8c2f",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Fans from the Eastern blocks are reminded that their building's lifts have been reserved for tonight's winners, and the stairs are open",
+   "text": "Fans from the eastern blocks are reminded that their building's lifts have been reserved for tonight's winners, and the stairs are open.",
    "voice": "corporate2"
   },
   "pa.sponsor.01": {
@@ -33971,6 +34619,54 @@
    "stt_ok": true,
    "stt_text": "Syndicate Life: coverage that stays with your family, whatever tonight brings",
    "text": "Syndicate Life. Coverage that stays with your family, whatever tonight brings.",
+   "voice": "corporate2"
+  },
+  "pa.sponsor.16": {
+   "duration_s": 9.825,
+   "file": "pa/pa.sponsor.16.ogg",
+   "kind": "line",
+   "request": "pa.sponsor.16",
+   "request_key": "fa80cdc3d893944490c72df48eadc467f680d5e4",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "This quiet spell is brought to you by Syndicate Life, whose family plans pay out in full, less damage to the vehicle within one calendar year of the claim",
+   "text": "This quiet spell is brought to you by Syndicate Life, whose family plans pay out in full, less damage to the vehicle, within one calendar year of the claim.",
+   "voice": "corporate2"
+  },
+  "pa.sponsor.17": {
+   "duration_s": 8.308,
+   "file": "pa/pa.sponsor.17.ogg",
+   "kind": "line",
+   "request": "pa.sponsor.17",
+   "request_key": "c08e6050a58064156b036ad262d30ceb974f8a41",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Vireo Nutrition Bars are on sale at every stand and count toward your weekly allowance at half their weight during tonight's broadcast only",
+   "text": "Vireo nutrition bars are on sale at every stand, and count toward your weekly allowance at half their weight, during tonight's broadcast only.",
+   "voice": "corporate2"
+  },
+  "pa.sponsor.18": {
+   "duration_s": 8.583,
+   "file": "pa/pa.sponsor.18.ogg",
+   "kind": "line",
+   "request": "pa.sponsor.18",
+   "request_key": "c68a786d82e57a78a2e6f2383aa25636c62e6253",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Syndicate Works is hiring at the North Gate tonight, with priority for applicants whose relatives are on the floor and interviews run until the whistle",
+   "text": "Syndicate Works is hiring at the north gate tonight, with priority for applicants whose relatives are on the floor, and interviews run until the whistle.",
+   "voice": "corporate2"
+  },
+  "pa.sponsor.19": {
+   "duration_s": 8.098,
+   "file": "pa/pa.sponsor.19.ogg",
+   "kind": "line",
+   "request": "pa.sponsor.19",
+   "request_key": "cdaef3264ff1272f4a7ef40b6c60a251f75689bc",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Syndicate Housing reminds tonight's crews that their rooms are held until noon tomorrow, after which they will be reallocated as usual.",
+   "text": "Syndicate Housing reminds tonight's crews that their rooms are held until noon tomorrow, after which they will be reallocated, as usual.",
    "voice": "corporate2"
   },
   "pa.syndicate.01": {
@@ -35882,7 +36578,7 @@
    "voice": "corporate2"
   }
  },
- "generated": "2026-09-26",
+ "generated": "2026-09-27",
  "lines": {
   "caller.army.01": {
    "bases": [
@@ -45536,6 +46232,153 @@
     "": "pa.kill.12"
    }
   },
+  "pa.kill.13": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.13"
+   }
+  },
+  "pa.kill.14": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.14"
+   }
+  },
+  "pa.kill.15": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.15"
+   }
+  },
+  "pa.kill.16": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.16"
+   }
+  },
+  "pa.kill.17": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.17"
+   }
+  },
+  "pa.kill.18": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.18"
+   }
+  },
+  "pa.kill.19": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.19"
+   }
+  },
+  "pa.kill.20": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.20"
+   }
+  },
+  "pa.kill.21": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.21"
+   }
+  },
+  "pa.kill.22": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.22"
+   }
+  },
+  "pa.kill.23": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.23"
+   }
+  },
+  "pa.kill.24": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.24"
+   }
+  },
+  "pa.kill.25": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.25"
+   }
+  },
+  "pa.kill.26": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.26"
+   }
+  },
+  "pa.kill.27": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.27"
+   }
+  },
+  "pa.kill.28": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.28"
+   }
+  },
+  "pa.kill.29": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.29"
+   }
+  },
+  "pa.kill.30": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.30"
+   }
+  },
+  "pa.kill.31": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.31"
+   }
+  },
+  "pa.kill.32": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.32"
+   }
+  },
+  "pa.kill.33": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.kill.33"
+   }
+  },
   "pa.momentum.01": {
    "bases": [],
    "speaker": "pa",
@@ -45704,6 +46547,62 @@
     "": "pa.notice.14"
    }
   },
+  "pa.notice.15": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.notice.15"
+   }
+  },
+  "pa.notice.16": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.notice.16"
+   }
+  },
+  "pa.notice.17": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.notice.17"
+   }
+  },
+  "pa.notice.18": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.notice.18"
+   }
+  },
+  "pa.notice.19": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.notice.19"
+   }
+  },
+  "pa.notice.20": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.notice.20"
+   }
+  },
+  "pa.notice.21": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.notice.21"
+   }
+  },
+  "pa.notice.22": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.notice.22"
+   }
+  },
   "pa.odds.01": {
    "bases": [
     "faction"
@@ -45848,6 +46747,42 @@
     "gangs": "pa.result.11@gangs",
     "law": "pa.result.11@law",
     "syndicate": "pa.result.11@syndicate"
+   }
+  },
+  "pa.result.12": {
+   "bases": [
+    "faction"
+   ],
+   "speaker": "pa",
+   "variants": {
+    "condemned": "pa.result.12@condemned",
+    "gangs": "pa.result.12@gangs",
+    "law": "pa.result.12@law",
+    "syndicate": "pa.result.12@syndicate"
+   }
+  },
+  "pa.result.13": {
+   "bases": [
+    "faction"
+   ],
+   "speaker": "pa",
+   "variants": {
+    "condemned": "pa.result.13@condemned",
+    "gangs": "pa.result.13@gangs",
+    "law": "pa.result.13@law",
+    "syndicate": "pa.result.13@syndicate"
+   }
+  },
+  "pa.result.14": {
+   "bases": [
+    "faction"
+   ],
+   "speaker": "pa",
+   "variants": {
+    "condemned": "pa.result.14@condemned",
+    "gangs": "pa.result.14@gangs",
+    "law": "pa.result.14@law",
+    "syndicate": "pa.result.14@syndicate"
    }
   },
   "pa.screen.01": {
@@ -45997,6 +46932,97 @@
     "": "pa.signoff.13"
    }
   },
+  "pa.signoff.14": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.14"
+   }
+  },
+  "pa.signoff.15": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.15"
+   }
+  },
+  "pa.signoff.16": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.16"
+   }
+  },
+  "pa.signoff.17": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.17"
+   }
+  },
+  "pa.signoff.18": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.18"
+   }
+  },
+  "pa.signoff.19": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.19"
+   }
+  },
+  "pa.signoff.20": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.20"
+   }
+  },
+  "pa.signoff.21": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.21"
+   }
+  },
+  "pa.signoff.22": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.22"
+   }
+  },
+  "pa.signoff.23": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.23"
+   }
+  },
+  "pa.signoff.24": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.24"
+   }
+  },
+  "pa.signoff.25": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.25"
+   }
+  },
+  "pa.signoff.26": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.26"
+   }
+  },
   "pa.sponsor.01": {
    "bases": [],
    "speaker": "pa",
@@ -46112,6 +47138,34 @@
    "speaker": "pa",
    "variants": {
     "": "pa.sponsor.15"
+   }
+  },
+  "pa.sponsor.16": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.sponsor.16"
+   }
+  },
+  "pa.sponsor.17": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.sponsor.17"
+   }
+  },
+  "pa.sponsor.18": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.sponsor.18"
+   }
+  },
+  "pa.sponsor.19": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.sponsor.19"
    }
   },
   "pa.syndicate.01": {

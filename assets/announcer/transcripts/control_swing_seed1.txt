@@ -19,7 +19,7 @@ result: green by control at 2:34.0
 0:45.0   ── green squad Bravo wiped out
 0:45.8   CALLER   The Law loses one, and this building absolutely loves it!
 0:49.0   ── close call: rust scout at 8% hull
-0:49.4   PA       What—
+0:49.4   PA       Wagers—
 0:50.0   ── control point: rust
 0:50.0   CALLER   Stolen! They steal the point right out from under them!
 0:53.6   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
@@ -34,18 +34,18 @@ result: green by control at 2:34.0
 1:37.7   PA       The—
 1:38.5   ── green ifv destroys rust ifv
 1:38.5   CALLER   The momentum has completely shifted! What a turnaround!
-1:41.5   VETERAN  Spacing is the whole game. Too close and one shell takes two of you. Too far and nobody can help anybody.
+1:41.5   PA       That's right, Joseph. Medical staff will reach the vehicle at the end of the match, in keeping with arena rules, as they do every night.
 1:48.2   ── close call: rust lancer at 6% hull
-1:51.2   CALLER   They are hurt, but they are not out!
-2:01.4   CALLER   It's two a side—
+1:52.1   CALLER   They are hurt, but they are not out!
+2:02.3   PA       The—
 2:03.0   ── green tank destroys rust lancer
 2:03.0   ── rust squad Dart wiped out
-2:03.0   CALLER   The Condemned are down to their last vehicle!
-2:06.5   CALLER   Somebody called it, and the whole crew answered!
+2:03.0   CALLER   Somebody has to answer this! They're taking everything!
+2:06.6   VETERAN  Breaking contact. Hardest thing in the book. You have to turn your back on somebody who's shooting.
 2:09.0   ── rust tank destroys green tank
-2:09.5   CALLER   It's all on the last Law vehicle now!
-2:18.0   VETERAN  The crews talk before the match. Not about the match. About food, mostly.
+2:21.1   CALLER   It's one a side, and neither army is giving an inch.
+2:25.0   VETERAN  We used to have a whole system for this. Hand signals, the works. Couldn't tell you a single one of them now.
 2:34.0   ── MATCH OVER: green wins by control (1 green, 1 rust left)
-2:34.0   CALLER   What a war! That one went the distance, and the Law come out on top!
-2:39.2   VETERAN  Holding the point takes nerve. The Law had it.
-2:44.0   PA       The Law take tonight's match. We thank our participants, and our sponsors, in that order.
+2:34.6   CALLER   That one went on forever, and I loved every second of it!
+2:38.8   VETERAN  Long match. Everybody down there is exhausted. The Law were a little less exhausted.
+2:45.7   PA       That concludes tonight's match. Congratulations to the Law. On behalf of the Syndicate, good night, and please drive safely.

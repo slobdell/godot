@@ -692,7 +692,7 @@
     },
     {
      "name": "Joseph is corrected",
-     "weight": 2,
+     "weight": 4,
      "steps": [
       {
        "speaker": "caller",
@@ -1123,7 +1123,7 @@
     },
     {
      "name": "sponsor read",
-     "weight": 2,
+     "weight": 3,
      "unless": [
       "phase_final"
      ],
@@ -1141,7 +1141,7 @@
     },
     {
      "name": "arena notice",
-     "weight": 2,
+     "weight": 3,
      "unless": [
       "phase_final"
      ],

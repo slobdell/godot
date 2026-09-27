@@ -37,5 +37,5 @@ result: green by elimination at 1:20.2
 1:23.0   CALLER   Dead stop! That thing is scrap!
 1:25.4   CALLER   And the Wreckers are the last army standing! The Wreckers win!
 1:29.3   VETERAN  You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
-1:41.0   PA       The result is final. The Wreckers win, and the floor will be cleared before the next session.
-1:47.8   PA       Before you leave, tonight's ticket stubs may be exchanged for a day's water ration at any district office until the end of the month.
+1:41.0   PA       The Wreckers are tonight's winner. Ticket holders may remain seated during the recovery operation.
+1:46.6   PA       Younger fans are reminded that tonight's match counts toward their district's selection, and school resumes as normal in the morning.

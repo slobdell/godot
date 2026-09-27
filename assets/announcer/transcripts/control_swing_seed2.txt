@@ -19,39 +19,38 @@ result: green by control at 2:34.0
 0:41.1   CALLER   The Condemned draw first blood, and this crowd is on its feet!
 0:45.0   ── rust lancer destroys green ifv
 0:45.0   ── green squad Bravo wiped out
-0:45.3   CALLER   Upset! Upset on the floor! The Lancer gets it done!
+0:45.3   CALLER   Nobody saw that coming! The Lancer wins that one!
 0:49.0   ── close call: rust scout at 8% hull
-0:49.6   CALLER   The Condemned scout is hanging on by a thread!
+0:49.2   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
 0:50.0   ── control point: rust
-0:53.4   CALLER   And the point changes hands! What a swing!
-0:57.0   VETERAN  When it goes wrong in here, it goes wrong all at once.
-1:04.8   CALLER   The Condemned land a heavy one!
+0:57.7   CALLER   One side is winning the war of attrition, and it's not close!
+1:04.8   VETERAN  That's the seam under—
 1:06.8   ── green ifv destroys rust scout
-1:07.7   CALLER   Right on target, and that's another hull on the scrap pile!
+1:06.8   CALLER   Textbook! The IFV eats it alive!
 1:07.8   ── friendly fire: green tank hits its own ifv
-1:12.2   CALLER   Ambush! And they drive right back into it!
-1:15.2   VETERAN  That's the drill nobody wants. You're already inside the killzone, so the only way out is through whoever put you there.
+1:09.8   CALLER   Ambush! And they drive right back into it!
+1:12.8   VETERAN  Near ambush, you go straight at them. Every instinct you have says run. Every instinct you have is wrong.
 1:23.2   ── close call: rust ifv at 6% hull
-1:24.9   CALLER   That IFV should be scrap, and it is still in the fight!
+1:23.3   CALLER   Look at that IFV! Smoking, burning, and still going!
 1:25.0   ── control point: green
-1:29.7   PA       Crews holding the centre are asked to keep their identification visible on the outside of the vehicle, for the benefit of the scorers.
+1:27.4   CALLER   And the point changes hands! What a swing!
+1:34.7   VETERAN  You can tell a lot about a crew—
 1:38.5   ── green ifv destroys rust ifv
-1:38.6   CALLER   The momentum has completely shifted! What a turnaround!
-1:41.6   VETERAN  See, that's what happens when you lead with the wrong... Well. You saw it.
+1:38.5   CALLER   They were on the ropes a minute ago! Not anymore!
+1:42.1   PA       That's right, Joseph. The crew's last transmission has been kept for training purposes, along with the others from this season, and the match continues.
 1:48.2   ── close call: rust lancer at 6% hull
-1:48.9   CALLER   Oh, that was too close! Way too close!
-1:52.0   VETERAN  You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
+1:58.1   VETERAN  The crews talk before the match. Not about the match. About food, mostly.
 2:03.0   ── green tank destroys rust lancer
 2:03.0   ── rust squad Dart wiped out
-2:03.1   CALLER   Another one for the Law! This is a clinic!
-2:06.4   CALLER   The Law have taken out three in a—
+2:04.1   CALLER   They are dominating this stretch! Absolutely dominating!
+2:06.8   VETERAN  The Condemned have one—
 2:09.0   ── rust tank destroys green tank
-2:09.0   CALLER   Oh, they lit that one up!
-2:12.0   VETERAN  A near ambush. Every crew says they'll do it. Almost nobody does it under fire.
-2:22.9   CALLER   Who was the toughest driver you ever faced?
-2:25.8   VETERAN  There isn't one. The toughest one is whoever you forgot about.
-2:30.8   CALLER   Can't argue with that.
+2:09.0   CALLER   Here it comes!
+2:10.4   CALLER   Oh, you do not come back from that!
+2:14.0   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
+2:25.3   VETERAN  Even match. Even matches get decided by whoever gets impatient first.
+2:30.3   CALLER   Listen to this crowd!
 2:34.0   ── MATCH OVER: green wins by control (1 green, 1 rust left)
-2:34.0   CALLER   What a war! That one went the distance, and the Law come out on top!
-2:39.2   VETERAN  You don't come back from that. Except they just did.
-2:44.4   PA       The match has been decided in favor of the Law. Highlights will air throughout the week on all district screens.
+2:34.0   CALLER   From the edge of the cliff to the top of the card! What a comeback!
+2:39.1   VETERAN  Discipline. Every result in here comes down to that word, one way or the other.
+2:46.4   PA       That concludes tonight's match. Congratulations to the Law. On behalf of the Syndicate, good night, and please drive safely.
