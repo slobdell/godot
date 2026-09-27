@@ -186,6 +186,17 @@ nav-drive-ab: import ## nav (round 12): nav-terminus-drive in both arms (control
 		mv $(BUILD_DIR)/nav-drive $(BUILD_DIR)/nav-drive-ab/$$arm; done
 	@$(PYTHON) tests/nav/drive_table.py off=$(BUILD_DIR)/nav-drive-ab/off on=$(BUILD_DIR)/nav-drive-ab/on
 
+# Round 12: any number of arms of ONE build, same seeds: DRIVE_ARMS="name=offlist ..." (offlist is a --nav-off comma
+# list, or none) -> build/nav-drive-arms/<name>/*.log and the named numbers per arm (discordant seeds: first two arms).
+DRIVE_ARMS ?= off=kturnfill on=none
+.PHONY: nav-drive-arms
+nav-drive-arms: import ## nav (round 12): nav-terminus-drive per arm in DRIVE_ARMS ("name=offlist|none ...") over DRIVE_SEEDS, one build, the named numbers side by side
+	@rm -rf $(BUILD_DIR)/nav-drive-arms && mkdir -p $(BUILD_DIR)/nav-drive-arms
+	@for arm in $(DRIVE_ARMS); do name=$${arm%%=*}; off=$${arm#*=}; flags="$(NAV_FLAGS)"; [ "$$off" = none ] || flags="$$flags --nav-off=$$off"; \
+		$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$$flags" > $(BUILD_DIR)/nav-drive-arms/$$name.out 2>&1 || { tail -20 $(BUILD_DIR)/nav-drive-arms/$$name.out; exit 1; }; \
+		mv $(BUILD_DIR)/nav-drive $(BUILD_DIR)/nav-drive-arms/$$name; done
+	@$(PYTHON) tests/nav/drive_table.py $(foreach arm,$(DRIVE_ARMS),$(firstword $(subst =, ,$(arm)))=$(BUILD_DIR)/nav-drive-arms/$(firstword $(subst =, ,$(arm))))
+
 # Round 10: which nav arm moves the sim baseline. The sim-baseline match (SIM_HASH_READ's exact command) read once per
 # --nav-off arm in SIM_ARMS (a comma list per arm; "none" = the default path), so a pre-registered MOVED names its cause.
 SIM_ARMS ?= none notready press,inflate,nosestop
