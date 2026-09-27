@@ -110,12 +110,12 @@ His veto on the new lines (the Booth Monitor) and his ears on the opening. Neith
 _(the worker keeps this current)_ — updated 2026-09-26 late, by the audio worker.
 
 ### Plan (in order, smallest foundation first)
-1. M1+M2 together (one change to one function): the director's draw per state, then the imports. **DONE, `75a9cce8`**.
-2. M3 measure: follow the `trade` tag across matches, on real default-size matches (`announcer-real-report`). **Built,
-   `965b8a55`; the builder0 run is in flight.**
-3. M3(a) the director's widening, decided from that number; M3(b) new trade lines → audit → DRY_RUN → APPROVED=1.
-4. M4 the other thin pools, batched, stop at half the balance.
-5. M5 stretch: the opening's hand-off with ears (`audio-launch-smoke`), transcripts re-cut.
+1. M1+M2: the director's draw per state, then the imports. **DONE** (`75a9cce8`).
+2. M3 measure: follow the `trade` tag across matches on REAL default-size matches. **DONE** (`965b8a55`, `6cf67f0e`).
+3. M3(b) new trade lines, voiced. **DONE** (`3f06d507`). M3(a) the widening: **exists already** (see Findings).
+4. Found on the way: the booth sent faction unit ids. **FIXED** (`b5d8fafd`, `33d6133a`).
+5. M4 the thin pools the real matches hammer, voiced. **DONE** (`da9edaec`).
+6. M5 stretch: `audio-launch-smoke` on builder0, the transcripts re-cut (done with each batch).
 
 ### Findings the brief did not have
 - **The opening was never the pre_match bed.** `MatchMood` starts every match at `lull` and has no `pre_match` state;
@@ -123,26 +123,62 @@ _(the worker keeps this current)_ — updated 2026-09-26 late, by the audio work
   (Subterranean Anvil). Fixed in the director (`music_state_for`: lull before the first shot = `pre_match`).
 - **9 of the 23 Suno tracks were already imported** (`190dea27`, 2026-09-17), not 0; PROMPTS.md still called every
   track a placeholder. 14 were unused; all 23 are placed now.
-- **A trade is a tag, not a moment:** the director merges kills queued within 4 s and tags the call `trade` when both
-  sides lost units. A generic `kill` line is already eligible for it (a line is eligible when all ITS tags are on the
-  moment), so M3(a)'s widening exists structurally; the thin part is the weight: each extra matched tag is ×8, so a
-  trade call at intensity 3 lands on one of the 3 caller trade lines ~30 % of the time, on one of 4 flurry lines
-  ~40 %, and on 33 generic kill lines ~30 %. Within a match a line never repeats, so a match with ≥3 trade calls
-  uses all three trade lines. The number to fix is measured in step 2.
+- **A trade is a tag, not a moment**, so the round-10 pool report could not see it: the director merges kills queued
+  within 4 s and tags the call `trade` when both sides lost units. M3(a)'s widening **already exists**: a generic
+  `kill` line is eligible for a trade call (a line is eligible when all ITS tags are on the moment). What was thin
+  was the pool and the weight (each extra matched tag is ×8, so the 3 trade lines took about half of all trade calls).
+- **The fixtures understate the booth's load by half.** Real default-path matches (5200, faction armies, recorded
+  with `make announcer-real-matches`, builder0) have 26-63 kills, most in 1-2 minutes; the caller's kill calls run at
+  7.6/min against 3.6 in the fixtures, and the trade merge fires 4.1-4.3 times a match.
+- **The booth sent faction unit ids (`gang_ifv`) in K5**, which neither validator nor the vocabulary knows. In every
+  faction match (every default-path match) each line naming a unit (`{unit}`, `{victim_unit}`, `victim_tank`…) was
+  ineligible, and every recording failed the contract (413 of 427 events). `MatchEventAdapter.booth_unit` sends the
+  role now. Two faction roles have no words yet (`support`: the Resupply Tanker; `suppressor`: the Sonic Emitter);
+  they are valid K5 types and simply aren't named.
 
-### Done
+### VERIFIED GREEN — merge here: `da9edaec`
+builder0, 2026-09-26 late: `>> remote: make check exited 0`, 18 targets, **1733 passed, 0 failed**, `sim-baseline passed:
+01ab39b592cc9837` (**UNMOVED**, as pre-registered), determinism passed, `announcer transcripts current`,
+`music-smoke passed: 3 bed changes across 3 beds … hash 4ee36a82dcd9444f (matches the same match without the music)`
+with `MUSIC_TRACK state=pre_match track=pre_match_hymn` → `battle fight_hydraulic` → `victory garage`,
+`announcer-record-smoke passed: hash 4ee36a82dcd9444f (matches the same match without the booth)`.
+Commits after it touch only `_agents/streams/audio.md`.
+
+### Done (measurements; every number names its commit and machine)
 - **M1 + M2 (`75a9cce8`).** Director: `pre_match` for the opening; `candidates_for(state)`; one draw per set of equally
   fitting tracks per match (skirmish and battle share the fight set), from `match_seed` mixed with the set (states do
   not move in lockstep) and `MusicHistory` (least recently heard first: every opening before any repeat).
   `--music-seed=N`, `--music-history=PATH|off` (off when headless). Importer `--id` / `make music-import ID=`.
   **14 tracks imported** (11 beds, 3 fight stem sets via demucs on builder0): every state rotates between 3 and 6
-  tracks (the garage/victory pool has 4, which counts for both states).
+  tracks (pre_match 3, lull 4, fight 6, last_stand 3, defeat 3, garage/victory one pool of 4).
   Mapping and reasons: `assets/music/PROMPTS.md` *The mapping, and why*.
-  - Tests first: on the committed manifest, 3 of the new director tests **FAIL** (`every_music_state_rotates…`,
-    `the_opening_is_not_the_same…`, `a_match_draws_each_state…`); on the new manifest **24 passed, 0 failed** (laptop,
-    `make test FILTER=music_director`, `75a9cce8`'s tree). Python: `test_music_stems.py` 7 OK (laptop).
-  - `music-check` (laptop, `75a9cce8`): **0 problems over 23 tracks**; beds −16.1…−16.3 LUFS, true peak −4.4…−7.4 dB,
-    seams ≤ 0.041 (limit 0.25); stems −16.1…−16.9 LUFS.
+  - Tests first: on the committed manifest 3 of the new director tests **FAIL**; on the new one **24 passed, 0 failed**
+    (laptop, `FILTER=music_director`). `music-check` (laptop): **0 problems over 23 tracks**; beds −16.1…−16.3 LUFS,
+    true peak −4.4…−7.4 dB, seams ≤ 0.041 (limit 0.25).
+  - builder0 `make check` at `965b8a55`: `music-smoke passed: 3 bed changes across 3 beds … (matches the same match
+    without the music)`, `announcer-record-smoke passed … (matches the same match without the booth)`; 1732 passed,
+    1 failed (my own new variance test, fixed in `6cf67f0e`).
+- **M3 + M4, the booth.** 67 new lines (`added: r12`), all through `make announcer-audit` (0 errors), all voiced,
+  speech-to-text flagged 0 of 70 recordings. Caller trade calls 3 → 20, Veteran trade analyses 2 → 8, another 5 → 13,
+  streak 5 → 11, comeback 2 → 6, flurry 4 → 10, caller post-contact lull +8, Veteran lull +12.
+  **ElevenLabs:** batch 1 19 requests / 1,171 chars, 56,183 → 54,982 settled; batch 2 51 / 3,055, 54,982 → 51,999.
+  Both on `assets/announcer/ledger.md`. Balance 51,999; the C12.7 stop line would be ~26k.
+  **The number he hears** (laptop, the CLI's `--variance --tag=trade`, 8 recorded real matches × 20 consecutive
+  broadcasts, history on; same recordings for every column):
+
+  | | before round 12 | + trade lines (`3f06d507`) | + M4 (`da9edaec`) |
+  |---|---|---|---|
+  | trade calls per match | 4.14 | 4.18 | 4.29 |
+  | answered by a trade line | 49 % | 79 % | 75 % |
+  | a trade call's line also a trade call in the previous 4 matches | **48 %** | 37 % | **23 %** |
+  | carryover (a match's lines also said the match before) | 13 % | 8 % | **2 %** |
+  | the booth's most-said line, uses in 160 broadcasts | 109 ("Blow for blow!"; "They're trading!…" 107) | 82 | **44** |
+
+  The recordings' `match_end` summaries were remapped by role after the fact (the second fix landed after they were
+  recorded); every other event is as recorded. Copies: kept in the worker's scratchpad, regenerate with
+  `make remote T="announcer-real-report REAL_MATCHES=8"`.
+- **The Booth Monitor** for his veto: `make announcer-demo-audio CLIPS=assets/announcer/clips`, then open
+  `build/announcer/demo/index.html#new` — the New tab lists every r12 line with its clip.
 
 ### Questions for the lead
 1. **Web size.** `assets/music/` went from 13 MB to 29 MB and all of it ships in the web pack. Options: accept; drop the
@@ -154,8 +190,21 @@ _(the worker keeps this current)_ — updated 2026-09-26 late, by the audio work
 3. **The garage has no music** (nothing plays the `garage` state; `game/garage/` is not audio's path). Want it?
 
 ### Requests to other streams
-- None yet.
+- None. (Nothing outside audio's paths was edited.)
+
+### Merge notes (for the orchestrator)
+- **Rescue the ElevenLabs masters before this worktree is removed:** `assets/announcer/masters/` is git-ignored and
+  holds the 70 new masters (lesson from round 10: the Terminus masters were lost that way). Copy them into the main
+  checkout's `assets/announcer/masters/` (additive; no file there has these names).
+- **The Suno masters** stay where they were (`~/projects/godot/assets/incoming/music/`); nothing new to rescue there.
+  The demucs stems are in this worktree's `build/audio/stems/` (regenerable).
+- K5 (`tests/announcer/fixtures/README.md`): the `unit` fields now carry the unit's ROLE; `support` and `suppressor`
+  are valid types. Additive for every consumer (MatchMood reads counts only).
+- `assets/music/` is 29 MB (was 13 MB) and all of it is in the web pack; question 1 below.
 
 ### What to playtest
-- `make skirmish` twice from the title: the opening (before the first shot) should differ between the two
-  (`MUSIC_TRACK state=pre_match track=…` in the log names it).
+- `make skirmish` twice from the title: the opening (before the first shot) should be a different track the second
+  time (`MUSIC_TRACK state=pre_match track=…` in the log names it; `user://music_history.json` remembers).
+- In a big fight, listen for the trade calls: "Toe to toe! They are standing in the pocket and letting it fly!",
+  "Oh, they're exchanging! Both sides just lost one!" and 18 more.
+- The Booth Monitor's New tab (above) is the veto list: any line he vetoes comes out of `lines.json` and its clip.
