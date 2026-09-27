@@ -2477,6 +2477,13 @@ Veteran's 439; round 12 added 49 caller and 18 color lines and **zero** PA lines
 content in her register, under the standing humour direction, generated under C12.7, on a veto page. Routed to audio
 as item M6 the same night.
 
+**The PA's 49 new lines, on audio's second veto page (2026-09-27): 39 KEPT, 10 VETOED** (`streams/references/round12/
+audio_pa_veto_db/`). Vetoed: `pa.kill.14, .15, .16, .17, .19, .26, .31`, `pa.signoff.15, .19, .22`. **An observation
+from the taps, labelled as the orchestrator's reading and not his words:** the ten he cut are the ones where the joke
+lands on the crews' or the fans' bodies and homes (a cell reassigned for tomorrow's arrivals, power cut to a crew's home
+block, a hearing check, the medical team's rounds, younger fans' district selection); what he kept is the venue's
+corporate deadpan about itself. Worth carrying into the next batch's brief as a boundary to test, not a rule.
+
 **A correction to the squad brief (squad, 2026-09-26):** the brief said the yard and the Terminus both classify as
 *dense*. `make tactics-terrain` shows only the yard's spawns are dense and the Terminus is *lanes*; and no squad the
 lead fields uses the standard table — a squad uses its units' FACTION table, and the Condemned and Law catch-alls pick a
