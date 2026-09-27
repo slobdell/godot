@@ -2022,9 +2022,9 @@
       "est_3d_credits": 30,
       "mode_3d": "multi-image-to-3D meshy-7 from the three views (front first)",
       "notes": "Bus I (approved 2026-09-24) went to 3D tonight and came back a van again: 2.04 times as long as it is wide, blade included, against the 3.3 of a real coach and of the bus's box -- the 3D service squashes a three-quarter picture the same way the image service copies its reference. So nothing about the bus changed in the game. This is the same design drawn as a turnaround from bus I plus a side view of today's bus: the side and top views carry a coach's length (about 2.9:1 from above). Building it from the three views at once is the method most likely to keep that length. APPROVE builds it in 3D (about 30 credits), then it replaces today's stretched dozer only if it measures at least 2.8:1; REJECT keeps today's bus.",
-      "status": "waiting",
-      "lead_words": "",
-      "decided": "",
+      "status": "rejected",
+      "lead_words": "\"I don't understand what this URL is asking from me? The firetruck looks great, I don't know why it's giving me the condemned tank for approval. There was nothing wrong with the tank\" (the lead, in chat, relayed by the orchestrator, ~2026-09-27 06:16 UTC; ruled: the bus item is CLOSED, the Condemned tank keeps its current look)",
+      "decided": "2026-09-26",
       "model_task": "",
       "added": "2026-09-26"
     }

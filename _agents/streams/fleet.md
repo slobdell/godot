@@ -143,6 +143,11 @@ named. The fleet page's `db` was last read **2026-09-27 06:08 UTC**: `decisions/
 
 ### Where it stands
 
+**The lead's verdict (2026-09-27, in chat, relayed by the orchestrator):** *"I don't understand what this URL is asking from me? The firetruck looks great, I don't know why it's giving me the condemned tank for approval. There was nothing wrong with the tank"*
+So **the fire engine is APPROVED as shipped**, and **F2 is CLOSED: the lead does not want the slot chased.** The
+Condemned tank keeps its current look; `bus_r12_mv` is recorded `rejected` with his words (`review.json`); nothing more is
+spent on the bus. The earlier bus approvals stay in `review.json` as history, not re-opened.
+
 **Tip green, merge here: `a765143b`**: builder0 `>> remote: make check exited 0`, 18 targets, **1732 passed, 0 failed**
 (test_units_burner's 6 in the log), sim-baseline `01ab39b592cc9837` unmoved, determinism `b83a374ce2fcde37`. Everything
 after it is docs (this Status). CP1 (`3b2fb346`) is already on main as `0d5abb4e`.
@@ -152,7 +157,7 @@ after it is docs (this Status). CP1 (`3b2fb346`) is already on main as `0d5abb4e
 |---|---|---|
 | F0 his taps recorded | **done** (6 decisions from the dump; nothing from round 11 left `waiting`) | `d4f7cfc9` (builder0 check green: 1726 passed, 0 failed, sim-baseline `01ab39b592cc9837` unmoved) |
 | F1 the fire engine | **built** -- art `fcb1a725`, **CP1 = `3b2fb346`**: builder0 `>> remote: make check exited 0`, 18 targets, **1732 passed, 0 failed**, sim-baseline `01ab39b592cc9837` **UNMOVED** (the burner is not in the baseline match), determinism `b83a374ce2fcde37` | see below |
-| F2 the bus | **not shipped (F2(c))**: bus I's 3D is a van (2.04:1). A turnaround of the same design (`bus_r12_mv`) is registered for his page | `093ef868`, `cfe8d947` |
+| F2 the bus | **CLOSED by the lead** ("There was nothing wrong with the tank"): bus I's 3D was a van (2.04:1), not shipped; `bus_r12_mv` rejected; the tank keeps its look | `093ef868`, `cfe8d947`, this commit |
 | F3 the burner in play | **done (measured, not tuned)**: matchups before/after below; flame frames | `d0979a20` |
 | F4 War Rig muzzle (stretch) | **measured, NOT changed**: does not read at 49 m (below) | this commit |
 
@@ -242,21 +247,16 @@ hinge simulation on every peer, S2, and move the baseline for an offset hidden i
 firing frame at his exact pose with the tracer -- the arithmetic above is the evidence; if he ever says "the rig's shots
 come from the wrong place", that frame is the next step.
 
-### The page (lead gate; `db` declared)
+### The page (`db` declared)
 
-**https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS, version 6** (published 2026-09-27 ~05:40 UTC, the same page as
-round 11, so his old taps stay in its `db`): the Burner before/after at his pose (`r12_fleet_burner_before_after.jpg`,
-`lineup_bus.png` from builder0 on `d4f7cfc9` vs `3b2fb346`), the turret + flame frames, bus I's van-shaped 3D, and ONE
-card: `bus_r12_mv`. **Read its `db` (`decisions/bus_r12_mv`) before this brief is archived** (lesson 220), then
-`make art-apply-decisions DIR=<read_db dir> URL=<page>`; on APPROVE:
-`tools/assets/generate.py --provider meshy --slot tank.hull --multi-image --review-item bus_r12_mv --ai-model meshy-7
---view <concept.png> --view <concept1.png> --view <concept2.png> --name meshy/bus_r12_mv` (views in
-`assets/incoming/meshy/`, git-ignored; the concept task is `01a0e138-20b2-777c-8371-c86a2f66e1c3`).
+**https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS, version 7** (2026-09-27): the bus card is REMOVED; the page now
+shows only the Burner's before/after and turret/flame frames, and says there is nothing to decide. Version 6 (~05:40
+UTC) carried the `bus_r12_mv` card; he answered it in chat, not on the page (its `db` never got a
+`decisions/bus_r12_mv`: last read 06:08 UTC). Nothing on the page is waiting.
 
 ### Questions for the lead
 
-1. **The bus:** approve `bus_r12_mv` for 3D (~30 credits)? It replaces today's bus only if the 3D measures >= 2.8:1.
-   (On the page. UNCONSUMED until the repo has read its `db`.)
+None open.
 
 ### Requests to other streams
 
@@ -273,7 +273,7 @@ to its own address worked (page URL and db time sent 06:08 UTC).
 
 ### Known issues
 
-- The bus is still the stretched dozer (by design until he answers `bus_r12_mv`).
+- The bus is still the stretched dozer -- by his ruling ("There was nothing wrong with the tank"); not a defect.
 - The flame cone reads faintly side-on (`burner_flame_stream`); it is the theme's flamethrower unchanged, only moved.
 - `tools/matchup_matrix.py` fails its `law.json` pairings (`unknown unit 'law'`), before and after this work.
 - Pipeline note: parts normalised BEFORE round 12 were placed with the old `unit_pivot` formula; they were not
@@ -281,6 +281,12 @@ to its own address worked (page URL and db time sent 06:08 UTC).
   relative to the hull at the tank's pivot -- look at the turret-probe numbers before committing such a rebuild.
 
 ### Merge notes
+
+- **A lesson for orchestration.md at close (the orchestrator asked for this sentence):** *A review card must say in its
+  first line why it exists and what APPROVE costs and changes* -- `bus_r12_mv`'s card opened with the bus's look and
+  read to him as "approve the tank"; he answered "I don't understand what this URL is asking from me ... There was
+  nothing wrong with the tank". The question it carried ("rebuild the bus you approved in 3D, ~30 credits, or keep
+  today's?") was in the middle of a paragraph.
 
 - **Merge `fcb1a725` (art) and CP1 `3b2fb346` together, CP1 last**; the art commit is inert without CP1's wiring.
   Pre-registered MOVED "if the burner is in the baseline match"; measured **UNMOVED** (`01ab39b592cc9837` on
