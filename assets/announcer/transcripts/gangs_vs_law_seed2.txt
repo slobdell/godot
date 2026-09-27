@@ -18,11 +18,11 @@ result: green by elimination at 1:20.2
 0:29.8   ── rust tank destroys green ifv
 0:31.5   ── close call: rust ifv at 9% hull
 0:31.8   ── green scout destroys rust ifv
-0:33.3   CALLER   An even exchange! And the pace does not slow down one bit!
+0:33.3   CALLER   One for one! Nobody out there is willing to blink!
 0:34.0   ── rust tank destroys green burner
-0:38.1   CALLER   And that vehicle is not getting back up!
-0:41.0   CALLER   What a moment!
-0:47.4   PA       The Syndicate would like to—
+0:37.5   CALLER   And that vehicle is not getting back up!
+0:40.4   CALLER   What a moment!
+0:46.8   PA       The Syndicate would like to remind—
 0:49.5   ── green scout destroys rust ifv
 0:49.5   CALLER   Whoa, whoa, whoa!
 0:51.1   CALLER   It's all on the last Law vehicle now!

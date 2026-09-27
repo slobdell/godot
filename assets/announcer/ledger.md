@@ -24,3 +24,4 @@ Every paid generation run, appended by tools/announcer/generate.py. Lead gate: t
 | 2026-09-22 | ElevenLabs | eleven_multilingual_v2 | 36 | 4196 | 4196 | 62609 → 60398 | r10: the Crossing and the Sumps (terrain R9), the 18 arena lines each |
 | 2026-09-24 | ElevenLabs | eleven_multilingual_v2 | 18 | 2071 | 2071 | 58306 → 56417 | r11: the Locks (arena A3), the 18 arena lines; lead-approved on arena round-11 page 2026-09-24 |
 | 2026-09-26 | ElevenLabs | eleven_multilingual_v2 | 19 | 1171 | 1171 | 56183 → 56183 | r12 batch 1: the trade call, 13 caller + 6 Veteran (C12.7; audit clean). Read unsettled at the end of the run; settled at 54,982: 1,201 including speech-to-text |
+| 2026-09-26 | ElevenLabs | eleven_multilingual_v2 | 51 | 3055 | 3055 | 54982 → 51999 | r12 batch 2 (M4): the thin caller kill funnels from real-size matches (another, streak, comeback, flurry, +4 trade), caller post-contact lull, Veteran lull (C12.7; audit clean) |

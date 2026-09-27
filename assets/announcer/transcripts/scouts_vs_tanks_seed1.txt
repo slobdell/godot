@@ -8,38 +8,37 @@ result: rust by elimination at 1:24.2
 0:08.5   ── first contact: rust ifv fires on a scout
 0:10.9   CALLER   There's the first shot! Buckle up, folks!
 0:13.7   VETERAN  Whoever shot first just told everybody where they are. Now we see if it was worth it.
-0:28.3   VETERAN  Hard cover stops a shell. Soft cover just stops them seeing you. Knowing which is which is most of it.
-0:38.8   CALLER   That one's going to leave a dent. A big dent.
-0:42.4   VETERAN  Hit like that, the—
+0:28.3   VETERAN  Turrets turn slower than vehicles do. That's the whole trick. That's it, that's the trick.
+0:35.7   VETERAN  He angled the hull a little. Not enough, but a little.
+0:41.4   VETERAN  Hard cover stops a shell. Soft—
 0:44.2   ── rust ifv destroys green scout
-0:44.3   CALLER   The Syndicate machine takes it clean. That was surgical.
+0:44.3   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
 0:44.8   ── rust tank destroys green scout
 0:46.8   ── friendly fire: rust tank hits its own ifv
-0:47.6   CALLER   The scout runs out of road!
 0:48.8   ── rust tank destroys green scout
-0:49.9   CALLER   And the scout goes down right behind it!
+0:49.2   CALLER   They cannot be stopped right now! Everything they touch goes down!
 0:50.8   ── rust tank destroys green scout
 0:50.8   ── green squad Hornets wiped out
 0:50.8   ── close call: rust ifv at 8% hull
-0:52.8   CALLER   The Syndicate are on a tear! That's four straight!
-0:56.1   PA       Tonight's targeting systems are the same ones protecting Syndicate facilities in all eleven districts.
-1:02.2   CALLER   The tank is smoking, and they smell blood!
-1:05.2   VETERAN  That's not the one—
+0:53.1   CALLER   Oh, and another! They smell blood out there!
+1:02.0   CALLER   They found the soft spot on that tank!
+1:04.9   VETERAN  That's the seam under the—
 1:06.0   ── close call: rust tank at 3% hull
 1:07.2   ── rust tank destroyed by a hazard
-1:07.3   CALLER   Oh, wait, wait!
-1:08.9   CALLER   It went in, and it is not coming back out!
+1:07.3   CALLER   That's the arena doing the work. Nobody touched that one.
 1:09.0   ── green scout destroys rust ifv
 1:09.0   ── rust squad Spotter wiped out
 1:09.0   ── green scout destroys rust tank
 1:09.8   ── rust tank destroys green scout
-1:12.5   CALLER   Toe to toe! They are standing in the pocket and letting it fly!
-1:17.6   VETERAN  There it is: a near ambush. That's trained, not improvised.
+1:10.9   CALLER   One goes down, then the other! This is a slugfest!
+1:15.2   CALLER   They're turning into it! They're driving straight at them!
+1:23.1   VETERAN  Circling looks—
 1:24.2   ── rust tank destroys green scout
 1:24.2   ── green squad Wasps wiped out
 1:24.2   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
-1:24.3   CALLER   Oh, you do not come back from that!
-1:27.3   CALLER   And the Syndicate are the last army standing! The Syndicate win!
-1:31.2   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
-1:38.8   PA       The result is final. The Syndicate win, and the floor will be cleared before the next session.
-1:45.6   PA       Before you leave, tonight's ticket stubs may be exchanged for a day's water ration at any district office until the end of the month.
+1:24.3   CALLER   Sorry to cut you off, but look!
+1:27.0   CALLER   Smoke pouring out, and that one is done for the night!
+1:30.9   CALLER   And the Syndicate are the last army standing! The Syndicate win!
+1:34.8   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
+1:42.4   PA       The result is final. The Syndicate win, and the floor will be cleared before the next session.
+1:49.2   PA       Before you leave, tonight's ticket stubs may be exchanged for a day's water ration at any district office until the end of the month.

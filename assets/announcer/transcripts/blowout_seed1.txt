@@ -17,9 +17,9 @@ result: green by elimination at 1:14.2
 0:39.5   CALLER   The scout runs out of road!
 0:42.4   CALLER   Smart! They're backing out before it gets any worse!
 0:43.8   ── green tank destroys rust artillery
-0:45.7   CALLER   That's three in a row for the Syndicate! They cannot miss!
-0:49.6   PA       Tonight's targeting systems are the same ones protecting Syndicate facilities in all eleven districts.
-1:01.6   PA       Stay with us after the match for highlights, brought to you by Syndicate Housing, now accepting applications in the eastern districts.
+0:45.7   CALLER   Another one for the Syndicate! This is a clinic!
+0:49.0   PA       Tonight's targeting systems are the same ones protecting Syndicate facilities in all eleven districts.
+1:01.0   PA       Stay with us after the match for highlights, brought to you by Syndicate Housing, now accepting applications in the eastern districts.
 1:11.0   ── close call: rust scout at 10% hull
 1:11.0   CALLER   That one should be finished, and it's still rolling!
 1:14.2   ── green scout destroys rust artillery
@@ -27,6 +27,6 @@ result: green by elimination at 1:14.2
 1:14.2   ── green tank destroys rust scout
 1:14.2   ── rust squad Swarm wiped out
 1:14.2   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
-1:14.3   CALLER   One shot! One shot from the big gun and it's over for that scout!
-1:19.1   CALLER   It's all over! The Syndicate win it!
-1:22.4   PA       The Syndicate win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
+1:14.3   CALLER   That's five in a row for the Syndicate! They cannot miss!
+1:18.2   CALLER   It's all over! The Syndicate win it!
+1:21.5   PA       The Syndicate win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
