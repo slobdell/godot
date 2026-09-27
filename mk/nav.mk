@@ -178,6 +178,13 @@ nav-kturn-buckets: import ## nav (round 12): the Terminus drive with every refus
 	@$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$(NAV_FLAGS) --kturn-log" > $(BUILD_DIR)/nav-kturn-drive.log 2>&1 || { tail -20 $(BUILD_DIR)/nav-kturn-drive.log; exit 1; }
 	@$(PYTHON) tests/nav/kturn_buckets.py $(BUILD_DIR)/nav-drive/*.log
 
+# Round 13 (nav R1): where a hull backs into walls when it gives way. The drive with --yield-log (every give-way logs its
+# spot, the hull, the room behind it, the outline sweep to the spot, and what it hit), bucketed.
+.PHONY: nav-yield-buckets
+nav-yield-buckets: import ## nav (round 13): the Terminus drive with every give-way logged, reverse-gear contacts by driver, give-ways bucketed by gear/spot/sweep (DRIVE_SQUADS, DRIVE_SEEDS, NAV_FLAGS as nav-terminus-drive) -> NAV yield table
+	@$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$(NAV_FLAGS) --yield-log" > $(BUILD_DIR)/nav-yield-drive.log 2>&1 || { tail -20 $(BUILD_DIR)/nav-yield-drive.log; exit 1; }
+	@$(PYTHON) tests/nav/yield_buckets.py $(BUILD_DIR)/nav-drive/*.log
+
 # Round 12 (nav N3): the drive in both arms of ONE build (`--nav-off=$(DRIVE_AB_OFF)` is the control), same seeds,
 # the named numbers side by side with the discordant seeds -> build/nav-drive-ab/{off,on}/*.log.
 DRIVE_AB_OFF ?= kturnfill
