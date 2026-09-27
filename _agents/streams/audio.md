@@ -115,7 +115,8 @@ _(the worker keeps this current)_ — updated 2026-09-26 late, by the audio work
 3. M3(b) new trade lines, voiced. **DONE** (`3f06d507`). M3(a) the widening: **exists already** (see Findings).
 4. Found on the way: the booth sent faction unit ids. **FIXED** (`b5d8fafd`, `33d6133a`).
 5. M4 the thin pools the real matches hammer, voiced. **DONE** (`da9edaec`).
-6. M5 stretch: `audio-launch-smoke` on builder0, the transcripts re-cut (done with each batch).
+6. M5 stretch: `audio-launch-smoke` on builder0 **PASSED**; the transcripts re-cut with each batch (**current** in the
+   green check).
 
 ### Findings the brief did not have
 - **The opening was never the pre_match bed.** `MatchMood` starts every match at `lull` and has no `pre_match` state;
@@ -177,6 +178,14 @@ Commits after it touch only `_agents/streams/audio.md`.
   The recordings' `match_end` summaries were remapped by role after the fact (the second fix landed after they were
   recorded); every other event is as recorded. Copies: kept in the worker's scratchpad, regenerate with
   `make remote T="announcer-real-report REAL_MATCHES=8"`.
+- **M5 (`2c1be0cc`, code = `da9edaec`, builder0): `audio-launch-smoke passed`** — the player's own path (title →
+  SKIRMISH → faction menu → FIGHT, no audio flags), two launches in the run: `MUSIC on: 23 beds, 6 stingers` both
+  times, and the two openings were **different tracks** (`pre_match_outrun`, then `pre_match`), with the first shot
+  handing over to `fight_hydraulic` at 10.6 s. The caption frame (`build/audio-launch/4_caption.png`) shows the
+  caller naming the faction. **An earlier run of this target at 23:32 is VOID**: builder0's folders were emptied by
+  another stream's rsync at 23:28 (orchestrator lesson 221); its log read `Cannot open file 'res://game/main.tscn'`.
+  The green `make check` above finished at 23:17, before the incident.
+- **Not done: a real `make skirmish` with ears.** Nobody on the agent side can listen; that check is his.
 - **The Booth Monitor** for his veto: `make announcer-demo-audio CLIPS=assets/announcer/clips`, then open
   `build/announcer/demo/index.html#new` — the New tab lists every r12 line with its clip.
 
