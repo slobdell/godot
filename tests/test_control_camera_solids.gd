@@ -79,10 +79,13 @@ func test_on_the_terminus_the_camera_is_never_left_inside_a_building() -> void:
 func test_a_camera_in_the_open_is_left_exactly_where_the_player_put_it() -> void:
 	# The yard has no cityscape: nothing here may move, or the fix has become a tax on every other arena.
 	var data := _layout("yard")
+	var drawn := RtsCamera.drawn_layout(data)
 	var touched := 0
 	for at: Vector3 in _street_points(data):
 		for step in 8:
-			var clear := RtsCamera.clear_pose(at, TAU * float(step) / 8.0, HIS_DISTANCE, HIS_PITCH, data)
+			# Against what is DRAWN (round 12), as the live camera asks: the yard's ad screens and floodlights are
+			# drawn 16-21 m tall, and at his pose the camera (17.6 m up) is still never inside one there.
+			var clear := RtsCamera.clear_pose(at, TAU * float(step) / 8.0, HIS_DISTANCE, HIS_PITCH, drawn)
 			if float(clear["lifted_deg"]) > 0.001 or not is_equal_approx(float(clear["distance"]), HIS_DISTANCE):
 				touched += 1
 	assert_eq(touched, 0, "an arena with nothing tall to be inside of leaves the camera alone")
@@ -285,11 +288,10 @@ func test_the_cutaway_finds_the_arenas_buildings_and_hides_the_one_in_the_way() 
 			assert_true(cut.size() > 0, "a building on the sight line is cut (%s)" % [cut])
 			for solid: Dictionary in solids:
 				var body: Node3D = solid["body"]
-				var visual: Node3D = solid["visual"]
 				if cut.has(String(body.name)):
-					assert_true(not visual.visible, "%s is the one in the way, so it is not drawn" % body.name)
+					assert_true(BlockCutaway.is_hidden(solid), "%s is the one in the way, so it is not drawn" % body.name)
 				else:
-					assert_true(visual.visible, "%s is not in the way, so it is still drawn" % body.name)
+					assert_true(not BlockCutaway.is_hidden(solid), "%s is not in the way, so it is still drawn" % body.name)
 			found = true
 			break
 		if found:
@@ -449,3 +451,215 @@ func test_a_passing_airship_lifts_the_camera_once_and_does_not_pump() -> void:
 	# One rise and one fall per pass is a reversal of one; anything more is the camera bobbing.
 	assert_true(reversals <= episodes * 2, "the lift does not pump: %d direction changes over %d passes" % [reversals, episodes])
 	assert_true(inside <= frames / 200, "and the camera is almost never inside the hull (%d of %d frames)" % [inside, frames])
+
+
+# ---- Round 12 (camera K1): the camera asks the DRAWING, not the collider --------------------------------------
+# `verification.md` *A collider is not a silhouette*: a floodlight's collider is 3 m and its drawn mast and lamp head
+# 16 m; an ad screen's is 1.4 m and its LED wall 20.7 m; a sign has no collider and a 7.65 m board. The round-9
+# measurement (703 of 4328 Terminus poses inside a solid, 0 after `clear_pose`) was against COLLIDERS. This sweep
+# asks the same poses against both, per kit type, on every map he can be dealt.
+
+## One sweep of `data`'s street grid at his pose, eight yaws each, the camera posed by `clear_pose` over `pose_data`
+## (the colliders are what the camera read before round 12; `RtsCamera.drawn_layout` is what it reads after). Every
+## camera is then judged against the colliders AND the drawing: inside a solid, and the sight line to the aim point
+## blocked, counted per kit type (a pose blocked by two types counts under both; `any` counts it once).
+func _drawn_sweep(data: Dictionary, pose_data: Dictionary, pitch: float) -> Dictionary:
+	var drawn := RtsCamera.drawn_layout(data)
+	var counts := {"poses": 0}
+	for key: String in ["inside_collider", "inside_drawn", "blocked_collider", "blocked_drawn", "blocked_drawn_tall",
+			"blocked_after_cut", "blocked_after_cut_mesh"]:
+		counts[key] = {"any": 0}
+	for at: Vector3 in _street_points(data):
+		for step in 8:
+			var yaw := TAU * float(step) / 8.0
+			var clear := RtsCamera.clear_pose(at, yaw, HIS_DISTANCE, pitch, pose_data)
+			var eye := RtsCamera.pose_at(at, yaw, float(clear["distance"]), float(clear["pitch_deg"])).origin
+			var aim := at + Vector3.UP * BlockCutaway.AIM_HEIGHT_M
+			counts["poses"] += 1
+			_tally(counts["inside_collider"], [RtsCamera.solid_at(eye, data)])
+			_tally(counts["inside_drawn"], [RtsCamera.solid_at(eye, drawn)])
+			_tally(counts["blocked_collider"], RtsCamera.sight_blockers(eye, aim, data))
+			_tally(counts["blocked_drawn"], RtsCamera.sight_blockers(eye, aim, drawn))
+			# What the cutaway would have to take away: drawn solids tall enough to be a building to it.
+			_tally(counts["blocked_drawn_tall"], RtsCamera.sight_blockers(eye, aim, drawn, BlockCutaway.MIN_HEIGHT_M))
+			# ...and what is still in the way once it has: everything drawn it does not cut (K3).
+			var left := RtsCamera.sight_blockers(eye, aim, drawn).filter(func(solid: Dictionary) -> bool: return not _cutaway_cuts(solid))
+			_tally(counts["blocked_after_cut"], left)
+			# The drawn BOX of a floodlight is 4.2 m wide for 16 m; what stands there is a 0.64 m mast and a lamp head.
+			# So for the kit meshes, ask the triangles: is the sight line really through the drawing?
+			_tally(counts["blocked_after_cut_mesh"], left.filter(func(solid: Dictionary) -> bool: return _hits_the_mesh(solid, eye, aim)))
+	return counts
+
+
+var _kit_meshes := {}
+
+
+## Whether the segment really passes through this solid's drawn triangles: the kit's own mesh for a floodlight or a
+## sign (`KitYard`, placed at the prop, unscaled, as `kit_prop.gd` places it), the box for anything else.
+func _hits_the_mesh(solid: Dictionary, a: Vector3, b: Vector3) -> bool:
+	var type := String(solid.get("type", ""))
+	if _kit_meshes.is_empty():
+		_kit_meshes = {"floodlight": KitYard.floodlight_mesh().generate_triangle_mesh(),
+				"sign": KitYard.sign_post_mesh().generate_triangle_mesh()}
+	if not _kit_meshes.has(type):
+		return true
+	var place := Transform3D(Basis(Vector3.UP, deg_to_rad(float(solid.get("rotation_deg", 0.0)))),
+			Vector3(float(solid["position"][0]), 0.0, float(solid["position"][1]))).affine_inverse()
+	return not (_kit_meshes[type] as TriangleMesh).intersect_segment(place * a, place * b).is_empty()
+
+
+## Whether `BlockCutaway` cuts this entry of the drawn list: a kit type it grows to its drawn extent, or anything
+## whose own (collider = drawn) box is building height.
+func _cutaway_cuts(solid: Dictionary) -> bool:
+	var type := String(solid.get("type", ""))
+	if BlockCutaway.DRAWN_CUT.has(type):
+		return true
+	return not bool(solid.get("drawn", false)) and Arena.obstacle_size(solid).y >= BlockCutaway.MIN_HEIGHT_M
+
+
+func _tally(into: Dictionary, solids: Array) -> void:
+	var types := {}
+	for solid: Dictionary in solids:
+		if not solid.is_empty():
+			types[String(solid.get("type", "?"))] = true
+	if types.is_empty():
+		return
+	into["any"] += 1
+	for type: String in types:
+		into[type] = int(into.get(type, 0)) + 1
+
+
+## His default tilt, and the tilt where his camera (49 m boom) is at a floodlight's lamp head: 15.1 m up, inside the
+## 16.05 m drawn top. At 21 deg it is 17.6 m up and clears it, so the default pose alone cannot show the lamp head.
+const DRAWN_PITCHES := [HIS_PITCH, 18.0]
+
+
+func test_every_shipping_map_measured_against_what_is_drawn() -> void:
+	## K1's table: the camera as posed from the COLLIDERS (the game before round 12) and as posed from the DRAWING,
+	## each judged against both. Printed per map and tilt; the assertions are the round-9 invariant and the setup.
+	for name: String in Arena.ROTATION:
+		var data := _layout(name)
+		var drawn := RtsCamera.drawn_layout(data)
+		for pitch: float in DRAWN_PITCHES:
+			for arm: String in ["collider", "drawn"]:
+				var counts := _drawn_sweep(data, data if arm == "collider" else drawn, pitch)
+				print("MEASURE camera_drawn_solids ", JSON.stringify({"map": name, "posed_from": arm, "counts": counts,
+						"pitch_deg": pitch, "distance_m": HIS_DISTANCE}))
+				assert_true(int(counts["poses"]) > 1000, "setup: %s has open ground to stand on (%d poses)" % [name, counts["poses"]])
+				assert_eq(int(counts["inside_collider"]["any"]), 0,
+						"%s at %.0f deg, posed from the %s: round 9 holds, the camera is outside every collider" % [name, pitch, arm])
+				if arm == "drawn":
+					# K2's bar: posed as the live camera now poses itself, it is inside nothing drawn.
+					assert_eq(int(counts["inside_drawn"]["any"]), 0,
+							"%s at %.0f deg: the camera is outside everything DRAWN (%s)" % [name, pitch, counts["inside_drawn"]])
+					# The lead's verdict on K3 ("Don't cut screens"): every ad screen that is in a sight line stays there.
+					assert_eq(int(counts["blocked_after_cut"].get("ad_screen", 0)), int(counts["blocked_drawn"].get("ad_screen", 0)),
+							"%s at %.0f deg: no ad screen is cut (%s)" % [name, pitch, counts["blocked_after_cut"]])
+
+
+func test_the_camera_reads_the_drawing_and_the_colliders_are_untouched() -> void:
+	## C12.3: the collider never grows to fix a picture. The drawn list is a separate list; `Arena.active` is the
+	## gameplay's and must come out of this exactly as it went in.
+	var data := _layout(TERMINUS)
+	var before := JSON.stringify(data)
+	var drawn := RtsCamera.drawn_layout(data)
+	assert_eq(JSON.stringify(data), before, "building the drawn list leaves the layout's colliders as they were")
+	var grown := {}
+	for entry: Dictionary in drawn["obstacles"]:
+		if bool(entry.get("drawn", false)):
+			grown[String(entry["type"])] = Arena.obstacle_size(entry)
+	for type: String in ["floodlight", "ad_screen", "sign"]:
+		assert_true(grown.has(type), "the Terminus's %s is on the drawn list" % type)
+		if grown.has(type):
+			assert_true(is_equal_approx((grown[type] as Vector3).y, float(AirshipFlight.DRAWN[type][1])),
+					"%s stands %.2f m, the drawn height (the collider says %.2f)" % [type, (grown[type] as Vector3).y,
+					float(ArenaKit.PROPS[type]["size"][1])])
+	# The default is what the live camera reads: point it at the Terminus and it asks the drawing.
+	var was := Arena.active
+	Arena.active = data
+	var seen := RtsCamera.seen()
+	assert_eq((seen["obstacles"] as Array).size(), (drawn["obstacles"] as Array).size(), "`seen()` is the drawn list of Arena.active")
+	assert_true(is_same(RtsCamera.seen(), seen), "and it is built once per arena, not once per frame")
+	var flood: Dictionary = (data["obstacles"] as Array).filter(func(o: Dictionary) -> bool: return o["type"] == "floodlight")[0]
+	var lamp := Vector3(float(flood["position"][0]), 15.0, float(flood["position"][1]))
+	assert_true(RtsCamera.roof_over(lamp) > 15.0, "by default a point in the lamp head is inside the floodlight")
+	assert_eq(RtsCamera.roof_over(lamp, data), -1.0, "and the colliders, asked explicitly, still say it is open air")
+	Arena.active = was
+
+
+func test_the_drawn_list_covers_what_the_kit_meshes_draw() -> void:
+	## The camera reads `AirshipFlight.DRAWN` (C12.2); this holds the camera's use of it against the meshes
+	## themselves (`AirshipTruth`, which shares no geometry with the table), so a kit change is found out here too.
+	var layout := {"name": "t", "half_size": 60.0, "obstacles": [], "props": [
+			{"type": "floodlight", "position": [0.0, 0.0]}, {"type": "sign", "position": [20.0, 0.0]},
+			{"type": "ad_screen", "position": [-20.0, 0.0], "rotation_deg": 30.0}]}
+	var truth := AirshipTruth.drawn_solids(layout)
+	var drawn := RtsCamera.drawn_layout(Arena.normalize(layout))
+	assert_eq(truth.size(), 3, "setup: three props drawn tall enough to matter")
+	for solid: Dictionary in truth:
+		var mine: Array = (drawn["obstacles"] as Array).filter(func(o: Dictionary) -> bool: return o["type"] == solid["type"])
+		assert_eq(mine.size(), 1, "the camera knows about the %s" % solid["type"])
+		if mine.is_empty():
+			continue
+		var size := Arena.obstacle_size(mine[0])
+		assert_true(size.y >= float(solid["top"]) - 0.01, "%s: top %.2f covers the drawn %.2f" % [solid["type"], size.y, solid["top"]])
+		assert_true(size.x / 2.0 >= (solid["half"] as Vector2).x - 0.01 and size.z / 2.0 >= (solid["half"] as Vector2).y - 0.01,
+				"%s: footprint %v covers the drawn half %v" % [solid["type"], size, solid["half"]])
+
+
+
+# ---- Round 12 (camera K3): the cutaway cuts what is DRAWN ------------------------------------------------------
+
+## The ad screen on the real Terminus node tree, after the lead's verdict (2026-09-26, his page: *"An ad screen between
+## you and the fight: Don't cut screens"*). Round 12 built the cut (the 20.7 m LED wall on a 1.4 m collider, grown by
+## `DRAWN`); he saw the pair and kept the screens. So: a screen squarely in his sight line is NOT cut and stays drawn,
+## and the only things the cutaway gathers are building-height colliders (the Terminus's blocks).
+func test_an_ad_screen_in_the_sight_line_stays_drawn() -> void:
+	var arena := preload("res://game/arena/arena.tscn").instantiate()
+	arena.layout_name = TERMINUS
+	add_to_tree(arena)
+	await wait_physics_frames(2)
+	var obstacles := arena.get_node_or_null("Obstacles") as Node3D
+	var camera := Camera3D.new()
+	add_to_tree(camera)
+	var cutaway := BlockCutaway.new()
+	cutaway.camera = camera
+	cutaway.obstacles_root = obstacles
+	add_to_tree(cutaway)
+	await tree.process_frame
+	await tree.process_frame
+	assert_true(BlockCutaway.DRAWN_CUT.is_empty(), "his verdict: no kit type is grown for the cutaway")
+	var screens: Array = cutaway._solids.filter(func(solid: Dictionary) -> bool: return solid["type"] == "ad_screen")
+	assert_eq(screens.size(), 0, "no ad screen is a building to the cutaway (%d)" % screens.size())
+	var data := RtsCamera.drawn_layout(Arena.active)
+	var pose: Variant = CameraLooks.drawn_screen_pose(Arena.active, data)
+	assert_true(pose != null, "setup: a pose with an ad screen on his sight line")
+	if pose == null:
+		return
+	var clear := RtsCamera.clear_pose(pose[0], pose[1], HIS_DISTANCE, HIS_PITCH, data)
+	camera.global_transform = RtsCamera.pose_at(pose[0], pose[1], float(clear["distance"]), float(clear["pitch_deg"]))
+	await tree.process_frame
+	await tree.process_frame
+	for name: String in cutaway.cut_blocks():
+		assert_true(not name.begins_with("AdScreen_"), "the screen in the way is not cut (%s)" % [cutaway.cut_blocks()])
+	for body in obstacles.get_children():
+		if String(body.name).begins_with("AdScreen_"):
+			assert_true((body.get_node("Visual") as Node3D).is_visible_in_tree(), "%s is drawn" % body.name)
+
+
+## `make camera-drawn` finds its poses from pure searches; on the two maps he plays most they must find something,
+## or the page is empty and says nothing. The lamp pose really is inside the lamp head when posed from colliders.
+func test_the_drawn_frames_find_their_poses() -> void:
+	for name: String in ["terminus", "yard"]:
+		var data := _layout(name)
+		var drawn := RtsCamera.drawn_layout(data)
+		var lamp: Variant = CameraLooks.drawn_lamp_pose(data, drawn)
+		assert_true(lamp != null, "%s: a pose with the camera in a lamp head" % name)
+		if lamp != null:
+			var clear := RtsCamera.clear_pose(lamp[0], lamp[1], HIS_DISTANCE, CameraLooks.DRAWN_LAMP_PITCH, data)
+			var eye := RtsCamera.pose_at(lamp[0], lamp[1], float(clear["distance"]), float(clear["pitch_deg"])).origin
+			assert_eq(String(RtsCamera.solid_at(eye, drawn).get("type", "")), "floodlight", "%s: posed from colliders it is in the lamp head" % name)
+			var fixed := RtsCamera.clear_pose(lamp[0], lamp[1], HIS_DISTANCE, CameraLooks.DRAWN_LAMP_PITCH, drawn)
+			var out := RtsCamera.pose_at(lamp[0], lamp[1], float(fixed["distance"]), float(fixed["pitch_deg"])).origin
+			assert_true(RtsCamera.solid_at(out, drawn).is_empty(), "%s: posed from the drawing it is not (%.1f m up)" % [name, out.y])
+		assert_true(CameraLooks.drawn_screen_pose(data, drawn) != null, "%s: a pose with an ad screen in the sight line" % name)

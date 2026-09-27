@@ -1,0 +1,100 @@
+{
+  "arena": "terminus",
+  "arena_note": "A block city dropped into the arena: 20 m streets between sheer neon-edged towers, a plaza at the crossroads and a ring road across each half. Sightlines end at the next corner, so a flank is a street away and an ambush is a doorway. Scouts and IFVs own the grid; artillery has to be walked into it.",
+  "arena_title": "The Terminus",
+  "arenas": [],
+  "contact": true,
+  "distances": [
+    28.0,
+    50.0,
+    90.0
+  ],
+  "first_shot_s": 4.5,
+  "focus": [
+    -63.0,
+    40.9
+  ],
+  "fovs": [
+    45.0,
+    60.0
+  ],
+  "frames": [
+    {
+      "distance": 49.0,
+      "file": "drawn_lamp_collider.jpg",
+      "fov": 35.0,
+      "height": 15.1,
+      "inside": "floodlight",
+      "inside_a_solid": true,
+      "label": "before: camera posed from the colliders, 15.1 m up",
+      "pitch": 18.0,
+      "row": "drawn lamp"
+    },
+    {
+      "distance": 49.0,
+      "file": "drawn_lamp_drawn.jpg",
+      "fov": 35.0,
+      "height": 18.0,
+      "inside": "",
+      "inside_a_solid": false,
+      "label": "after: camera posed from the drawing, 18.0 m up",
+      "pitch": 21.6149615670264,
+      "row": "drawn lamp"
+    },
+    {
+      "cut": [],
+      "distance": 49.0,
+      "file": "drawn_screen_collider.jpg",
+      "fov": 35.0,
+      "height": 17.6,
+      "label": "before: the cutaway reads the colliders",
+      "pitch": 21.0,
+      "row": "drawn screen"
+    },
+    {
+      "cut": [
+        "AdScreen_38"
+      ],
+      "distance": 49.0,
+      "file": "drawn_screen_drawn.jpg",
+      "fov": 35.0,
+      "height": 17.6,
+      "label": "after: the cutaway reads the drawing",
+      "pitch": 21.0,
+      "row": "drawn screen"
+    },
+    {
+      "cut": [],
+      "distance": 49.0,
+      "file": "drawn_left_floodlight.jpg",
+      "fov": 35.0,
+      "height": 17.6,
+      "label": "not cut: a floodlight's drawn box on the sight line",
+      "pitch": 21.0,
+      "row": "drawn left"
+    },
+    {
+      "cut": [],
+      "distance": 49.0,
+      "file": "drawn_left_sign.jpg",
+      "fov": 35.0,
+      "height": 17.6,
+      "label": "not cut: a sign's drawn box on the sight line",
+      "pitch": 21.0,
+      "row": "drawn left"
+    }
+  ],
+  "heading_deg": 9.8,
+  "pitches": [
+    25.0,
+    35.0,
+    45.0,
+    60.0
+  ],
+  "seconds_in": 10.5,
+  "seed": 3,
+  "window": [
+    1920.0,
+    1080.0
+  ]
+}

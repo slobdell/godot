@@ -267,17 +267,134 @@ slower march for a tidier traversal is better, yes."*
 **The weak phase is the first five seconds of a move from the spawn line** — an abreast line becoming a column — and it
 is the same in kind for both arms: paths cross, ORCA yields, and on some seeds the middle pair stall together for
 several seconds (yard forward seed 1 trace, both starts). Under the anchor that stall also holds the squad back
-(the lag rule), which is why the yard forward arrival is 1.6 s later. The proper answer is a fall-in rule — a crew does
-not close on the line until the crew whose station is ahead of it has passed — and it is the next thing to build here.
+(the lag rule), which is why the yard forward arrival is 1.6 s later. Round 12 built the fall-in rule proposed here (a crew
+does not close on the line until the crew whose station is ahead of it has passed) and measured it worse: the stall is a
+queue at a chokepoint, not a lane conflict (*The fall-in rule: built, measured, rejected* below).
 
 **What the anchor buys is not speed but the shape: the same order now reads as a squad moving off together and closing
 up on the spot**, which is the visible half of his "formula to form up". The mean station error while travelling is
 6–9 m against a 10.6 m pitch; the control arm has no shape to measure. A human watching it is the check that counts.
 
-**Not done, deliberately:** the AUTO icon still shows a wedge whatever the table picks (control's card, round 12's
-legibility candidate); a G-chosen formation is still overridden by the halt shape at the end of a drills-on move
-(`_halt`); the direct path (a box-selection that is not a numbered squad, `Orders._resolve_group`) still sends each
+**Not done, deliberately:** ~~the AUTO icon still shows a wedge whatever the table picks~~ (done in round 12, S1: the
+card reads the leader's pick); ~~a G-chosen formation is still overridden by the halt shape at the end of a drills-on
+move (`_halt`)~~ (done in round 12, S2: *Whose shape it is, phase by phase* below); ~~the direct path~~ (measured and
+decided in round 12, S4: *A partial or mixed selection* below -- it does scatter, and it is left as his 2026-09-20 ruling
+has it); the direct path (a box-selection that is not a numbered squad, `Orders._resolve_group`) still sends each
 vehicle to its slot on its own.
+
+### The fall-in rule: built, measured, rejected (round 12, S3)
+
+The anchor's weak phase is the first seconds of a move from the spawn line. The brief's model was **two crews
+converging onto the same lane from either side**, and its answer a fall-in rule. `ElementPlan.fall_in` (pure, 4 tests):
+in the first `FALLIN_MAX_S` (8 s), a crew whose sideways path onto its station would cross the lane of a crew seated
+AHEAD of it that has not yet passed it (`FALLIN_CLEAR_M` 6 m) is held, either **lane** (keeps driving in its own lane)
+or **wait** (stands, and is not a laggard to the lag rule). `FALLIN_ENABLED` (**false**), `FALLIN_MODE`; `make
+squad-fallin-series [FALLIN_ARM=wait]`.
+
+**Measured (builder0, 80 m plain moves, 4 jittered seeds x 8 cells, both arms on the same seeds; `gap10` = the mean
+distance from the SHAPE's station over the first 10 s, the rule's own target):**
+
+| arm | stopped: off faster / on faster / tie | gap10, cells worse / better |
+|---|---|---|
+| lane (`0b0124da`) | 9 / 9 / 14 | 6 / 1 (yard forward mixed 16.0 -> 19.0 m) |
+| wait (`9aed5a3f`) | **19 / 9 / 4** | 7 / 0 (yard forward mixed 16.0 -> 23.7 m; Terminus side tracked stop 15.2 -> 27.1 s) |
+
+**Neither ships.** The rule costs the shape in exactly the seconds it aims at and buys no time.
+
+**Why: the model was wrong.** A top-down plot of the yard trace (`make squad-settle ARENA=yard DIR=forward METRES=80
+SEED=1 TRACE=on`, then `tools/tactics/plot_tracks.py <log> yard out.png`) shows what the middle pair are doing: the
+anchor's route threads a ~5 m gap between the wreck at (9, 68) and the container stack at x = 17, twenty metres from
+the spawn, behind a 20-ft container that sits dead ahead of the spawn's centre. The "stall" is a QUEUE at that gap.
+Meanwhile the column's TAIL crew, path-finding to a station already past the gap, takes a different gap west of the
+wreck and comes out AHEAD of the middle pair. Holding a crew in its lane aims it into the container; standing it still
+makes the queue longer.
+
+**Next, if anyone takes it up:** the shape of the fix the plot suggests is *join the route, behind the crew ahead*: a crew
+far off the anchor's route drives to the route first, at a point behind the crew seated ahead of it, instead of
+path-finding to a station on the far side of a chokepoint (which is how the tail finds its own gap). Not built; the
+code above stays behind its switch as the measured control, the way the braking attempt is recorded in `transit_speed`.
+
+### Column or wedge for a plain move: measured, and put to him (round 12, S5)
+
+The row that decides his squads' plain move is not the standard table's `dense -> column` (no squad he fields uses the
+standard table) but the **Condemned and Law catch-all: column in any terrain** ("column when nothing is in sight", X6).
+Measured as two G orders on the same seeds (`make squad-shape-series`; C12.5 holds each shape through every phase):
+
+**builder0, `161465ef`, 80 m plain moves, 4 jittered seeds x 8 cells, column "off" / wedge "on", medians:**
+
+| arena | dir | squad | stopped col / wedge | gap10 col / wedge | stop: col faster / wedge faster |
+|---|---|---|---|---|---|
+| Terminus | forward | mixed | 21.8 / 20.1 | 11.5 / 9.9 | 1 / 3 |
+| Terminus | forward | tracked | 14.9 / 18.1 | 11.1 / 8.7 | 2 / 2 |
+| Terminus | side | mixed | 30.2 / **18.8** | 13.2 / 11.6 | 0 / 4 |
+| Terminus | side | tracked | 15.2 / **12.1** | 12.6 / 12.5 | 0 / 4 |
+| yard | forward | mixed | **33.5** / 38.3 | 16.0 / **9.1** | 4 / 0 |
+| yard | forward | tracked | 19.3 / 23.9 | 16.4 / **10.4** | 2 / 2 |
+| yard | side | mixed | 29.2 / **25.2** | 13.8 / **9.2** | 0 / 4 |
+| yard | side | tracked | 14.1 / **11.4** | 11.4 / 10.4 | 0 / 4 |
+
+Overall on the stop time: **column faster 9, wedge faster 23**; the first-10-s station error is lower in the wedge in 7 of
+8 cells. The exception is the yard's forward move -- the chokepoint 20 m from the spawn (*The fall-in rule*) -- where a
+column is the natural shape and the wedge stops 4-5 s later. The frames at his pose (`make formation-shots`, 10 s and
+arrival; `streams/references/round12/squad/s5_*_sheet.jpg`) show the other side: in the Terminus's 20 m street the
+column rides tidily down the middle and the wedge spans it wall to wall, one hull against a block.
+
+**Kept, for now, and put to the lead.** The row is faction character he approved on the doctrine page, and the
+orchestrator's ruling is that he decides on the picture. Recommendation: a **wedge** for the Condemned/Law plain move in
+lanes and open ground (faster to settle and tidier by the number almost everywhere), keeping the **column in dense
+terrain** (the yard, where the chokepoint is) -- i.e. the standard table's own two rows. Until he answers, the card says
+which it is and why: "Auto: Column", with the doctrine line's reason under the header (S1).
+
+### Whose shape it is, phase by phase (round 12, S1/S2; C12.4, C12.5)
+
+**The player's G choice (`task.formation`) is the shape at every phase of the move; the doctrine table decides only
+under AUTO; a battle drill under fire may take the squad into its own shape, and the card says so.**
+
+| Phase | Under AUTO | With a shape chosen with G |
+|---|---|---|
+| the order (t0), the plain move's form-up (`_plan_form_up`) | the faction table's `move` pick | **his shape** (round 11) |
+| in transit (`Element._advance_transit`, `stations_along`) | the same pick, fixed at the order | **his shape** (round 12) |
+| a drills-on move's legs (`_plan_movement`, traveling / bounding) | the table's pick; a traveling-overwatch trail section in a wedge | **his shape**, trail section included (round 12) |
+| the halt on arrival, or a hold (`_halt`) | the table's `hold` pick (herringbone in cover, coil in the open) | **his shape** (round 12: before this a chosen wedge dissolved into a coil on arrival) |
+| a battle drill (react to contact, ambushes, assault, break contact) | the drill's shape | **the drill's shape**: that is the doctrine's job under fire |
+| an attack inside its guns' band | a line (every gun in the fight) | a line: the verb's posture, not a table pick |
+
+**The card reads the same truth** (`CommandIcons.formation_readout`): *"Auto: Column"* under AUTO with an element (the
+leader's actual pick, updated as it changes), *"Auto"* on its own glyph (a ring round an A) before the squad has an
+element, *"Wedge"* for his choice, and *"Line: drill"* while a drill has his squad in another shape (the doctrine line
+under the header names the drill). The AUTO glyph used to be a wedge whatever the leader picked.
+
+**What AUTO actually picks for his squads (measured, `make tactics-terrain`, 2026-09-26).** The brief assumed the
+yard and the Terminus both classify as *dense*, so the standard table's `dense -> column` row picks a column there.
+Two corrections: (1) at the spawns only the **yard** (and the sumps' centre slot) is dense; the Terminus, the pit, the
+crossing and the locks are *lanes*; (2) more to the point, **no squad he fields uses the standard table**: a squad
+fights by its units' FACTION table (`Elements._table_for`), and the Condemned and the Law both end in a catch-all
+**column** whatever the terrain; the Syndicate's is a wedge and the gangs' a swarm. So a Condemned or Law squad under
+AUTO forms a column on every map, and the wedge the card showed was wrong for both factions on every map.
+
+### A partial or mixed selection: measured on the default path, and left as he ruled (round 12, S4)
+
+**What happens** (`make squad-partial CASE=partial|mixed|whole`, `tests/tactics/partial_probe.gd`: a Condemned army of
+Alpha (tank, tank, ifv, ifv, scout) and Bravo (tank, ifv, scout), deployed and put on number keys exactly as skirmish
+does, the order through the real `RtsControls.order_selection`, 80 m toward the enemy, yard):
+
+| selection | path | the card | what the crews do |
+|---|---|---|---|
+| all of Alpha | TASK (a numbered squad) | "Auto: Column", the doctrine line | one column on one route, riding the anchor |
+| 3 of Alpha's 5 | DIRECT (`Orders._resolve_group`) | "Part of Alpha: press 1, or [FORM SQUAD]" | a GroupFormation wedge laid on the click; **each crew by its own navmesh route** -- on the yard two went west of the container stack and one east of it; all three **leave Alpha's element** |
+| 2 of Alpha + 2 of Bravo | DIRECT | "In different squads: Ctrl+1-9 or [FORM SQUAD]" | each pair takes its own lane from its own spawn and they meet only at the click |
+
+So the scatter he described is real for a partial or mixed selection, and it is what he would notice (plots from
+`tools/tactics/plot_tracks.py` over the probe's `SETTLE_TRACK` lines; builder0 numbers in the brief's Status).
+
+**Decision: (a), leave it.** The brief recommended (a) unless the frames showed a scatter he would notice, and they do;
+but the transient element that (b) needs is exactly what **the lead withdrew himself on 2026-09-20**: *"if I just
+regroup the unit, they can operate as a formation. That is good behavior, but the UX just needs to clarify that"*
+(`game_design.md`, *Squad orders for a mixed selection*; round 10 R1 narrowed). Reversing his ruling is his call, not a
+stream's. What stands: Ctrl+N or the card's one-click FORM SQUAD makes any selection a numbered squad, and from then on
+it travels as a formation; the card already says so for both partial and mixed selections. The question -- *"a
+partial selection's move still scatters; do you want it to travel as a formation too (a temporary squad formed on the
+order and dissolved on arrival), or is FORM SQUAD the answer?"* -- is in the brief's Status for him, with the plots.
 
 ## Selection rules: how a leader chooses
 
