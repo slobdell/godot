@@ -1,0 +1,542 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS  test_announcer_events::test_every_fixture_is_valid
+  PASS  test_announcer_events::test_shared_broken_cases_are_rejected
+  PASS  test_announcer_events::test_parse_errors_name_the_line
+  PASS  test_announcer_events::test_a_kill_credited_to_a_dead_shooter_is_legal
+  PASS  test_announcer_events::test_relaxing_the_shooter_does_not_relax_the_victim
+  PASS  test_audio_defaults::test_a_game_with_a_window_sounds_unless_told_not_to
+  PASS  test_audio_defaults::test_headless_runs_stay_silent_by_default
+  PASS  test_audio_defaults::test_the_title_backdrop_is_not_announced
+  PASS  test_audio_sfx_mix::test_the_most_repeated_sounds_have_several_takes
+  PASS  test_audio_sfx_mix::test_the_takes_are_actually_different_recordings
+  PASS  test_audio_sfx_mix::test_a_burst_does_not_play_one_take_over_and_over
+  PASS  test_audio_sfx_mix::test_a_sound_with_one_take_still_plays
+  PASS  test_audio_sfx_mix::test_layered_takes_replace_the_synthesised_ones
+  PASS  test_audio_sfx_mix::test_every_loop_loops_over_its_whole_length
+  PASS  test_audio_sfx_mix::test_world_sound_goes_through_one_bus_that_can_be_limited_and_ducked
+  PASS  test_audio_sfx_mix::test_distance_dulls_the_big_sounds_and_leaves_the_small_ones_alone
+  PASS  test_audio_sfx_mix::test_feel_s_engine_and_crowd_loops_still_get_a_wav_to_duplicate
+  PASS  test_audio_sfx_mix::test_a_sound_too_far_to_hear_never_takes_a_voice
+  PASS  test_audio_sfx_mix::test_a_quiet_sound_never_cuts_a_loud_one_when_the_pool_is_full
+  PASS  test_audio_sfx_mix::test_the_level_a_sound_is_heard_at_falls_with_distance
+  PASS  test_audio_sfx_mix::test_a_shell_landing_ducks_the_fight_underneath_it
+  PASS  test_audio_sfx_mix::test_nothing_reaches_the_speakers_unlimited
+  PASS  test_ai_combat_motion::test_in_its_band_a_turret_unit_circles_instead_of_parking
+  PASS  test_ai_combat_motion::test_the_side_decides_which_way_around
+  PASS  test_ai_combat_motion::test_a_heavy_hull_keeps_its_front_toward_the_target_while_moving
+  PASS  test_ai_combat_motion::test_out_of_its_band_it_closes_in_or_backs_off
+  PASS  test_ai_combat_motion::test_it_works_toward_the_targets_side_and_rear
+MEASURE ai_motion free (11.08655, 0.0, -4.592201), with a wall (8.485281, 0.0, 8.485281)
+  PASS  test_ai_combat_motion::test_it_never_drives_into_a_wall
+  PASS  test_ai_combat_motion::test_it_keeps_its_distance_from_friends
+  PASS  test_ai_combat_motion::test_a_fixed_gun_runs_at_the_target_then_breaks_away
+  PASS  test_ai_combat_motion::test_wheels_only_pick_turns_they_can_drive
+  PASS  test_ai_combat_motion::test_the_same_request_gives_the_same_answer
+  PASS  test_ai_combat_motion::test_it_steers_out_of_the_path_of_an_incoming_shell
+  PASS  test_ai_combat_motion::test_closest_approach
+  PASS  test_ai_combat_motion::test_boxed_in_by_obstacles_it_still_picks_a_way_out
+  PASS  test_ai_combat_motion::test_a_holding_fixed_gun_keeps_its_spot_just_past_the_band_edge
+  PASS  test_ai_combat_motion::test_a_holding_fixed_gun_only_breaks_its_hold_for_a_round_that_would_hit
+  PASS  test_ai_elements::test_it_reads_a_slot_with_a_position_a_sector_and_a_role
+  PASS  test_ai_elements::test_a_leaner_state_leaves_the_brain_where_it_was
+  PASS  test_ai_elements::test_a_bare_position_per_unit_is_a_slot_too
+  PASS  test_ai_elements::test_slots_may_be_a_list_parallel_to_the_members
+  PASS  test_ai_elements::test_a_technique_a_drill_or_a_task_we_dont_know_is_dropped
+  PASS  test_ai_elements::test_the_half_that_moves_can_be_named_instead_of_a_role_per_unit
+  PASS  test_ai_elements::test_only_the_halves_that_shoot_are_held_in_place
+  PASS  test_ai_elements::test_every_element_member_fights_from_the_slot_it_was_given
+  PASS  test_ai_elements::test_the_leash_radius_is_the_elements_own_spacing
+  PASS  test_ai_elements::test_a_sector_of_fire_is_a_cone_around_my_facing
+  PASS  test_ai_elements::test_a_brain_re_decides_only_when_the_leaders_call_changes
+  PASS  test_ai_orders::test_a_move_order_beats_every_brain_state
+  PASS  test_ai_orders::test_without_an_order_the_same_tank_would_not_move_there
+  PASS  test_ai_orders::test_hold_follow_and_attack_beat_every_brain_state_too
+  PASS  test_ai_orders::test_an_attack_order_on_a_target_out_of_sight_chases_it
+  PASS  test_ai_orders::test_attack_move_fights_what_it_meets_and_otherwise_drives_on
+  PASS  test_ai_orders::test_attack_move_retreats_only_when_about_to_die
+  PASS  test_ai_orders::test_an_idle_unit_doesnt_roam_off_to_scout_or_contest
+  PASS  test_ai_orders::test_an_idle_unit_far_from_its_post_goes_back
+  PASS  test_ai_orders::test_an_option_on_cooldown_gives_way
+  PASS  test_ai_orders::test_order_feed_reads_k1_orders
+MEASURE ai_clear_lane shots 2 in 8 s
+  PASS  test_ai_scenarios::test_a_brain_fires_at_a_visible_enemy_with_a_clear_lane
+MEASURE ai_hurt_to_cover first hidden after 100 ticks, longest hidden 83 ticks, alive true
+  PASS  test_ai_scenarios::test_a_hurt_tank_under_fire_gets_out_of_sight
+Green_A_4 destroyed Rust_A_4 (score Green 1 : 0 Rust)
+Green_A_4 destroyed Rust_A_1 (score Green 2 : 0 Rust)
+Green_A_4 destroyed Rust_A_2 (score Green 3 : 0 Rust)
+MEASURE ai_order_response worst 1 ticks over 14 orders (0 missed); interrupted options (worst ticks, -1 = missed) { "RECHARGE": 1, "SPOT": 1, "COVER_FIRE": 1, "RETREAT": 1, "ADVANCE": 1, "HOLD": 1 }
+  PASS  test_ai_scenarios::test_a_move_order_is_executed_within_100_ms_whatever_the_brain_was_doing
+Green_A_1 destroyed Rust_Scout_1 (score Green 1 : 0 Rust)
+MEASURE ai_attack_move shots 2, prey alive false (hull 0), arrived after 18.6 s, 3.3 m off
+  PASS  test_ai_scenarios::test_attack_move_fights_on_the_way_then_arrives
+MEASURE ai_regroup back at its post after 7.1 s
+  PASS  test_ai_scenarios::test_an_idle_unit_pushed_off_its_post_regroups
+  PASS  test_ai_scenarios::test_no_option_is_kept_forever
+MEASURE ai_parked_friend first shot after 113 ticks, 2 shots, through the friend 0, moved 4.2 m (last: ENGAGE Rust_Target_1 - weaving, front armor on it, held 0 ticks)
+  PASS  test_ai_scenarios::test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane
+MEASURE element_sectors { "Green_A_1": { "Rust_Ahead_1": 478 }, "Green_A_2": { "Rust_West_1": 478 } }
+  PASS  test_ai_scenarios::test_each_unit_covers_its_own_sector_of_fire
+MEASURE element_bound rush 8.3 m/s of 9.0 top, watchers 0.0 m/s, halted after 1 ticks
+  PASS  test_ai_scenarios::test_a_bounding_unit_rushes_and_halts_on_the_leaders_call
+MEASURE suppression_beaten_zone 0 ticks in the beaten zone avoiding it vs 16 ignoring it; arrived true / true, worst suppression 0.06 / 0.40, rounds down the lane 188 / 120, peak density 0.19 / 1.33 (beaten at 1.0)
+      steered off its route on 91 / 0 ticks, looked and found no way round on 0 / 0
+      route ahead beaten on 26 / 61 ticks; swung 25 m / 0 m off the straight line to the goal
+  PASS  test_ai_scenarios::test_a_unit_ordered_across_a_swept_lane_keeps_out_of_the_fire
+MEASURE suppression_enables_flank target suppression 0.75 vs 0.28; it landed 10 of 11 shells vs 9 of 9; the flanker dealt 5278 vs 2728, spending its time on { "PURSUE": 2, "COVER_FIRE": 707, "ENGAGE": 1091 } vs { "PURSUE": 2, "COVER_FIRE": 1798 }
+  PASS  test_ai_scenarios::test_holding_a_crew_down_lets_a_teammate_work_on_it
+  PASS  test_ammo_heat::test_a_cannon_runs_out_of_shells
+  PASS  test_ammo_heat::test_the_base_resupplies_shells_slowly_and_only_at_base
+  PASS  test_ammo_heat::test_the_laser_hits_instantly_and_never_runs_out
+  PASS  test_ammo_heat::test_a_shot_that_would_overheat_is_refused_until_the_tank_cools
+  PASS  test_ammo_heat::test_heat_dissipates_over_time
+  PASS  test_ammo_heat::test_low_on_shells_it_skips_long_shots
+  PASS  test_arena_lane_readability::test_something_in_front_of_a_throat_hides_it
+LANE_READ terminus the avenue             heading   0.0  throat 17.56 m =  614 px, 100% visible =  614 px, widest hull 142 px, margin +472 px
+LANE_READ terminus west street            heading   0.0  throat 16.40 m =  573 px, 100% visible =  573 px, widest hull 142 px, margin +431 px
+LANE_READ terminus east street            heading   0.0  throat 16.40 m =  573 px, 100% visible =  573 px, widest hull 142 px, margin +431 px
+LANE_READ terminus the ring road          heading   0.0  throat 22.00 m =  439 px, 100% visible =  439 px, widest hull  76 px, margin +363 px
+LANE_READ terminus the ring road (far)    heading   0.0  throat 22.00 m =  409 px, 100% visible =  409 px, widest hull  76 px, margin +333 px
+LANE_READ terminus plaza crossing west    heading   0.0  throat 22.00 m =  439 px, 100% visible =  439 px, widest hull  76 px, margin +363 px
+LANE_READ terminus plaza crossing east    heading   0.0  throat 22.00 m =  439 px, 100% visible =  439 px, widest hull  76 px, margin +363 px
+LANE_READ terminus the avenue             along   0.0    throat 17.56 m =  614 px, 100% visible =  614 px, widest hull 142 px, margin +472 px
+LANE_READ terminus west street            along   0.0    throat 16.40 m =  573 px, 100% visible =  573 px, widest hull 142 px, margin +431 px
+LANE_READ terminus east street            along   0.0    throat 16.40 m =  573 px, 100% visible =  573 px, widest hull 142 px, margin +431 px
+LANE_READ terminus the ring road          along -90.0    throat 22.00 m =  769 px, 100% visible =  769 px, widest hull 142 px, margin +627 px
+LANE_READ terminus the ring road (far)    along -90.0    throat 22.00 m =  769 px, 100% visible =  769 px, widest hull 142 px, margin +627 px
+LANE_READ terminus plaza crossing west    along -90.0    throat 22.00 m =  769 px, 100% visible =  769 px, widest hull 142 px, margin +627 px
+LANE_READ terminus plaza crossing east    along  90.0    throat 22.00 m =  769 px, 100% visible =  769 px, widest hull 142 px, margin +627 px
+  PASS  test_arena_lane_readability::test_every_terminus_street_reads_passable_at_his_default_heading
+PROP_PARITY container_20  box 6.06 x 2.44  drawn below 6.18 m: 6.06 x 2.44, 0.00 m past the box (at local (3.030029, 0.12, 1.079956), 612 vertices)
+PROP_PARITY container_40  box 12.19 x 2.44  drawn below 6.18 m: 12.19 x 2.44, 0.00 m past the box (at local (0.0, 0.0, 0.0), 628 vertices)
+PROP_PARITY ad_screen     box 7.80 x 2.00  drawn below 6.18 m: 7.80 x 1.92, 0.00 m past the box (at local (0.0, 0.0, 0.0), 170 vertices)
+PROP_PARITY barricade     box 6.00 x 0.80  drawn below 6.18 m: 6.00 x 0.80, 0.00 m past the box (at local (3.0, 0.0, 0.400024), 180 vertices)
+PROP_PARITY wreck         box 3.20 x 3.30  drawn below 6.18 m: 3.20 x 3.30, 0.00 m past the box (at local (1.600098, 0.561345, 0.329956), 5815 vertices)
+PROP_PARITY floodlight    box 2.40 x 2.40  drawn below 6.18 m: 2.42 x 2.42, 0.01 m past the box (at local (1.209961, 0.24, 1.209961), 144 vertices)
+PROP_PARITY sign          box 0.40 x 0.40  drawn below 6.18 m: 6.30 x 0.90, 2.95 m past the box (at local (3.149902, 5.85, 0.160034), 92 vertices)  [decoration]
+PROP_PARITY block         box 40.00 x 40.00  drawn below 6.18 m: 40.12 x 40.12, 0.06 m past the box (at local (20.06006, 3.85, -19.22485), 186 vertices)
+  PASS  test_arena_prop_parity::test_every_prop_a_hull_can_touch_is_inside_its_collider
+  PASS  test_arena_prop_parity::test_decoration_stands_where_no_hull_is_sent
+  PASS  test_arena_prop_parity::test_the_venue_dressing_is_solid_or_outside_the_wall
+  PASS  test_army_draft::test_the_game_catalog_is_v2_shaped_with_c2_limits
+  PASS  test_army_draft::test_units_list_starters_first_then_by_cost
+  PASS  test_army_draft::test_matchup_text_reads_like_a_sentence
+  PASS  test_army_draft::test_buying_refuses_with_reasons_a_player_can_act_on
+  PASS  test_army_draft::test_squads_hold_five_and_armies_five_squads
+  PASS  test_army_draft::test_problems_name_what_to_fix
+  PASS  test_army_draft::test_saves_are_army_json_v2
+  PASS  test_army_draft::test_a_ready_game_army_loads_into_a_real_match
+  PASS  test_army_draft::test_round_one_saves_migrate_to_fixed_units
+  PASS  test_army_draft::test_every_shipped_doctrine_opens_in_the_builder
+  PASS  test_army_draft::test_presets_are_legal_spend_the_budget_and_use_only_unlocked_units
+  PASS  test_army_draft::test_a_preset_uses_its_signature_unit_once_unlocked
+  PASS  test_army_draft::test_codes_round_trip_every_preset
+  PASS  test_army_draft::test_bad_codes_are_refused_politely
+  PASS  test_army_draft::test_round_one_codes_still_decode
+  PASS  test_army_draft::test_advice_names_an_uncovered_weakness_and_its_counter
+  PASS  test_army_draft::test_compare_table_marks_the_best_values
+  PASS  test_army_draft::test_the_matchup_grid_shows_intent_and_prefers_measured_rates
+  PASS  test_army_results::test_the_lesson_names_what_they_fielded_and_its_counter
+  PASS  test_army_results::test_the_next_goal_is_the_cheapest_unlock
+  PASS  test_army_results::test_the_screen_shows_the_outcome_credits_and_best_unit_and_its_buttons_work
+  PASS  test_army_results::test_restarts_carry_the_automation_flags_and_consume_one_auto_step
+  PASS  test_assets_factions::test_faction_slots_have_contracts_fitted_to_the_role
+  PASS  test_assets_factions::test_the_pipeline_sizes_art_from_the_CATALOG_and_not_a_copy_of_it
+  PASS  test_assets_factions::test_the_condemned_fill_every_role_from_todays_roster
+  PASS  test_assets_factions::test_every_faction_fills_every_role_with_the_approved_model
+  PASS  test_assets_factions::test_the_wreck_husk_fills_its_slot_in_both_themes
+  PASS  test_brain_decide::test_with_nothing_known_it_advances
+  PASS  test_brain_decide::test_a_visible_enemy_in_range_is_engaged
+  PASS  test_brain_decide::test_badly_hurt_with_enemies_in_sight_it_retreats
+  PASS  test_brain_decide::test_cautious_and_under_fire_it_takes_nearby_cover
+  PASS  test_brain_decide::test_a_flanker_goes_for_the_side_of_an_enemy_busy_with_a_teammate
+  PASS  test_brain_decide::test_a_flanker_already_seeing_the_side_just_shoots
+  PASS  test_brain_decide::test_an_anchor_at_its_objective_holds
+  PASS  test_brain_decide::test_a_leashed_tank_returns_to_its_objective
+  PASS  test_brain_decide::test_a_stale_contact_is_investigated
+  PASS  test_brain_decide::test_commitment_prevents_flip_flopping
+  PASS  test_brain_decide::test_decide_is_deterministic
+  PASS  test_brain_decide::test_the_turret_watches_the_most_pressing_known_threat
+  PASS  test_brain_decide::test_a_move_order_beats_a_committed_fight
+  PASS  test_brain_decide::test_under_orders_only_a_dying_tank_breaks_off
+  PASS  test_brain_decide::test_an_empty_gun_goes_home_to_resupply
+  PASS  test_brain_decide::test_directives_resolve_in_layers
+  PASS  test_brain_decide::test_team_relative_coordinates_are_mirror_images
+  PASS  test_brain_decide::test_doctrine_validation
+  PASS  test_combat_deploy::test_only_artillery_deploys
+  PASS  test_combat_deploy::test_a_battery_fires_only_once_its_legs_are_down
+  PASS  test_combat_deploy::test_a_deployed_battery_packs_up_before_it_drives
+  PASS  test_combat_deploy::test_a_nudge_between_rounds_keeps_the_legs_down
+  PASS  test_combat_deploy::test_an_order_to_fire_stops_a_moving_battery_and_digs_it_in
+  PASS  test_combat_deploy::test_a_brief_pause_does_not_start_deploying
+  PASS  test_combat_deploy::test_other_units_fire_on_the_move
+  PASS  test_combat_factions::test_the_schema_names_all_four_factions
+  PASS  test_combat_factions::test_every_unit_belongs_to_a_known_faction
+  PASS  test_combat_factions::test_the_condemned_are_todays_roster
+  PASS  test_combat_factions::test_an_unknown_faction_has_an_empty_roster_rather_than_a_surprise
+  PASS  test_combat_factions::test_every_playable_faction_fills_the_core_roles
+  PASS  test_combat_factions::test_a_faction_army_spends_its_budget_on_its_own_units
+MEASURE faction_sizes at 5200 points: { "condemned": 28, "gangs": 39, "law": 24, "syndicate": 15 }
+  PASS  test_combat_factions::test_unit_counts_fall_out_of_cost_in_the_order_the_lead_asked_for
+  PASS  test_combat_factions::test_a_real_army_is_about_as_big_as_the_costs_promise
+  PASS  test_combat_factions::test_a_faction_army_is_seeded_and_repeatable
+  PASS  test_combat_factions::test_a_named_archetype_must_belong_to_the_faction
+  PASS  test_combat_factions::test_an_army_bigger_than_five_squads_still_obeys_every_other_doctrine_rule
+  PASS  test_combat_factions::test_faction_units_spawn_and_fight
+  PASS  test_combat_factions::test_fairness_controls_choose_which_army_each_team_draws
+  PASS  test_combat_mechanics::test_the_cannon_against_a_tank_keeps_round_ones_armor_table
+  PASS  test_combat_mechanics::test_light_guns_barely_scratch_heavy_fronts
+  PASS  test_combat_mechanics::test_everything_hurts_from_behind
+  PASS  test_combat_mechanics::test_penetration_math_edges
+  PASS  test_combat_mechanics::test_an_ifv_cannot_crack_a_tank_front_in_a_real_fight
+  PASS  test_combat_mechanics::test_a_fixed_gun_swings_only_inside_its_arc
+  PASS  test_combat_mechanics::test_a_scout_only_hits_what_it_points_at
+  PASS  test_combat_mechanics::test_a_slow_tank_turret_loses_a_close_scout_that_an_ifv_tracks
+  PASS  test_combat_mechanics::test_autocannon_rounds_fall_short_past_its_range
+  PASS  test_combat_mechanics::test_unspotted_artillery_fire_scatters_wide
+  PASS  test_combat_suppression::test_the_grid_covers_the_arena_and_ignores_what_is_outside
+  PASS  test_combat_suppression::test_a_round_stamps_every_cell_it_flies_through
+  PASS  test_combat_suppression::test_concentrated_fire_adds_up_and_decays_away
+  PASS  test_combat_suppression::test_a_burst_marks_the_ground_around_where_it_lands
+  PASS  test_combat_suppression::test_a_path_through_the_beaten_zone_reads_worse_than_a_way_around
+  PASS  test_combat_suppression::test_a_machine_gun_stream_suppresses_what_it_is_aimed_at
+  PASS  test_combat_suppression::test_suppression_fades_once_the_shooting_stops
+  PASS  test_combat_suppression::test_being_pinned_spoils_a_crews_aim
+  PASS  test_combat_suppression::test_pinned_is_a_state_others_can_read
+  PASS  test_combat_suppression::test_a_pinned_battery_cannot_get_its_legs_down
+  PASS  test_combat_suppression::test_a_dead_crew_is_not_suppressed
+  PASS  test_combat_suppression::test_the_match_answers_whether_a_move_crosses_a_beaten_zone
+Green_A_1 destroyed Rust_A_1 (score Green 1 : 0 Rust)
+  PASS  test_combat_suppression::test_k2_events_report_the_suppression_a_round_applied
+  PASS  test_combat_suppression::test_shots_past_effective_range_spread_wider_and_inside_it_do_not
+  PASS  test_combat_suppression::test_a_pinned_crew_sees_less_and_turns_its_hull_slower_then_recovers
+  PASS  test_combat_suppression::test_a_pinned_crew_really_fails_to_see_a_flanker_it_would_have_seen_calm
+  PASS  test_combat_weak_spots::test_the_engine_deck_is_a_narrow_cone_inside_the_rear
+  PASS  test_combat_weak_spots::test_flanks_punish_through_armor_for_every_direct_weapon
+  PASS  test_combat_weak_spots::test_a_scout_on_a_tanks_engine_deck_hurts_and_says_so
+  PASS  test_combat_weak_spots::test_two_rear_shells_still_needed_for_a_full_tank
+  PASS  test_command_messages::test_losses_merge_per_squad_and_name_the_unit_type
+  PASS  test_command_messages::test_friendly_fire_is_called_out
+  PASS  test_command_messages::test_enemy_kills_merge_too
+  PASS  test_command_messages::test_order_acknowledgements_do_not_spam
+  PASS  test_command_messages::test_duplicates_and_bursts_are_limited_but_warnings_get_through
+  PASS  test_command_messages::test_announcer_lines_pass_through_except_the_ones_replaced
+  PASS  test_command_messages::test_the_control_point_warns_when_a_side_is_close_to_winning
+MEASURE terminus_camera_solids {"distance_m":49.0,"inside_after":0,"inside_before":731,"lifted":731,"pitch_deg":21.0,"poses":4392,"pulled_in":0,"worst_lift_deg":11.0}
+  PASS  test_control_camera_solids::test_on_the_terminus_the_camera_is_never_left_inside_a_building
+  PASS  test_control_camera_solids::test_a_camera_in_the_open_is_left_exactly_where_the_player_put_it
+  PASS  test_control_camera_solids::test_the_lift_is_what_it_takes_to_clear_that_roof_and_no_more
+  PASS  test_control_camera_solids::test_a_solid_taller_than_the_boom_pulls_the_camera_in_instead
+  PASS  test_control_camera_solids::test_a_sight_line_knows_when_a_building_is_in_the_way
+MEASURE terminus_alley_sight {"alley_walled_after":546,"alley_walled_before":728,"distance_m":49.0,"pitch_deg":21.0,"poses_inside_a_block":731}
+  PASS  test_control_camera_solids::test_the_lift_does_not_trade_being_inside_a_block_for_staring_at_one
+MEASURE terminus_block_cutaway {"distance_m":49.0,"min_height_m":6.0,"pitch_deg":21.0,"poses":731,"walled_after_cutaway":0,"walled_before_cutaway":546,"walled_by_a_building":546}
+  PASS  test_control_camera_solids::test_cutting_the_building_in_the_way_clears_the_alley
+  PASS  test_control_camera_solids::test_only_buildings_are_cut_and_only_when_they_are_in_the_way
+MEASURE block_cutaway_gather {"bodies":42,"buildings":12}
+MEASURE block_cutaway_one_pose {"aim":"(-128.3057, 1.5, -38.30567)","at":[-130.0,-40.0],"cut":["Block_3"],"yaw_deg":45.0}
+  PASS  test_control_camera_solids::test_the_cutaway_finds_the_arenas_buildings_and_hides_the_one_in_the_way
+  PASS  test_control_camera_solids::test_the_camera_is_lifted_over_the_airship_not_pulled_in
+  PASS  test_control_camera_solids::test_a_hull_that_meets_the_camera_from_behind_still_ends_up_in_his_frame
+  PASS  test_control_camera_solids::test_no_occluders_means_exactly_the_building_rule
+  PASS  test_control_camera_solids::test_a_hull_no_tilt_can_clear_is_let_pass_rather_than_yanking_the_boom
+  PASS  test_control_camera_solids::test_a_passing_airship_lifts_the_camera_once_and_does_not_pump
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":444,"container_20":62,"container_40":306,"floodlight":52,"sign":18,"wreck":6},"blocked_after_cut_mesh":{"any":396,"container_20":62,"container_40":306,"floodlight":18,"sign":4,"wreck":6},"blocked_collider":{"any":380,"container_20":62,"container_40":306,"floodlight":6,"wreck":6},"blocked_drawn":{"ad_screen":22,"any":462,"container_20":62,"container_40":306,"floodlight":52,"sign":18,"wreck":6},"blocked_drawn_tall":{"ad_screen":22,"any":92,"floodlight":52,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5608},"distance_m":49.0,"map":"yard","pitch_deg":21.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":444,"container_20":62,"container_40":306,"floodlight":52,"sign":18,"wreck":6},"blocked_after_cut_mesh":{"any":396,"container_20":62,"container_40":306,"floodlight":18,"sign":4,"wreck":6},"blocked_collider":{"any":380,"container_20":62,"container_40":306,"floodlight":6,"wreck":6},"blocked_drawn":{"ad_screen":22,"any":462,"container_20":62,"container_40":306,"floodlight":52,"sign":18,"wreck":6},"blocked_drawn_tall":{"ad_screen":22,"any":92,"floodlight":52,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5608},"distance_m":49.0,"map":"yard","pitch_deg":21.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":520,"container_20":70,"container_40":374,"floodlight":54,"sign":20,"wreck":6},"blocked_after_cut_mesh":{"any":468,"container_20":70,"container_40":374,"floodlight":16,"sign":6,"wreck":6},"blocked_collider":{"any":454,"container_20":70,"container_40":374,"floodlight":6,"wreck":6},"blocked_drawn":{"ad_screen":26,"any":542,"container_20":70,"container_40":374,"floodlight":54,"sign":20,"wreck":6},"blocked_drawn_tall":{"ad_screen":26,"any":100,"floodlight":54,"sign":20},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":4,"any":6,"floodlight":2},"poses":5608},"distance_m":49.0,"map":"yard","pitch_deg":18.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":520,"container_20":70,"container_40":374,"floodlight":52,"sign":20,"wreck":6},"blocked_after_cut_mesh":{"any":468,"container_20":70,"container_40":374,"floodlight":14,"sign":6,"wreck":6},"blocked_collider":{"any":454,"container_20":70,"container_40":374,"floodlight":6,"wreck":6},"blocked_drawn":{"ad_screen":22,"any":538,"container_20":70,"container_40":374,"floodlight":52,"sign":20,"wreck":6},"blocked_drawn_tall":{"ad_screen":22,"any":94,"floodlight":52,"sign":20},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5608},"distance_m":49.0,"map":"yard","pitch_deg":18.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":160,"container_20":74,"floodlight":68,"sign":18},"blocked_after_cut_mesh":{"any":112,"container_20":74,"floodlight":34,"sign":4},"blocked_collider":{"any":138,"container_20":74,"container_40":64,"floodlight":8},"blocked_drawn":{"ad_screen":44,"any":254,"container_20":74,"container_40":64,"floodlight":68,"sign":18},"blocked_drawn_tall":{"ad_screen":44,"any":194,"container_40":64,"floodlight":68,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":4,"any":4},"poses":5736},"distance_m":49.0,"map":"pit","pitch_deg":21.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":160,"container_20":74,"floodlight":68,"sign":18},"blocked_after_cut_mesh":{"any":112,"container_20":74,"floodlight":34,"sign":4},"blocked_collider":{"any":138,"container_20":74,"container_40":64,"floodlight":8},"blocked_drawn":{"ad_screen":40,"any":250,"container_20":74,"container_40":64,"floodlight":68,"sign":18},"blocked_drawn_tall":{"ad_screen":40,"any":190,"container_40":64,"floodlight":68,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5736},"distance_m":49.0,"map":"pit","pitch_deg":21.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":176,"container_20":84,"floodlight":72,"sign":20},"blocked_after_cut_mesh":{"any":124,"container_20":84,"floodlight":34,"sign":6},"blocked_collider":{"any":172,"container_20":84,"container_40":86,"floodlight":10},"blocked_drawn":{"ad_screen":44,"any":292,"container_20":84,"container_40":86,"floodlight":72,"sign":20},"blocked_drawn_tall":{"ad_screen":44,"any":222,"container_40":86,"floodlight":72,"sign":20},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":4,"any":6,"floodlight":2},"poses":5736},"distance_m":49.0,"map":"pit","pitch_deg":18.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":174,"container_20":84,"floodlight":70,"sign":20},"blocked_after_cut_mesh":{"any":122,"container_20":84,"floodlight":32,"sign":6},"blocked_collider":{"any":172,"container_20":84,"container_40":86,"floodlight":10},"blocked_drawn":{"ad_screen":40,"any":286,"container_20":84,"container_40":86,"floodlight":70,"sign":20},"blocked_drawn_tall":{"ad_screen":40,"any":216,"container_40":86,"floodlight":70,"sign":20},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5736},"distance_m":49.0,"map":"pit","pitch_deg":18.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":98,"container_20":12,"floodlight":68,"sign":18},"blocked_after_cut_mesh":{"any":52,"container_20":12,"floodlight":36,"sign":4},"blocked_collider":{"any":829,"block":817,"container_20":12,"floodlight":6},"blocked_drawn":{"ad_screen":68,"any":956,"block":817,"container_20":12,"floodlight":68,"sign":18},"blocked_drawn_tall":{"ad_screen":68,"any":944,"block":817,"floodlight":68,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":4,"any":4},"poses":4392},"distance_m":49.0,"map":"terminus","pitch_deg":21.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":98,"container_20":12,"floodlight":68,"sign":18},"blocked_after_cut_mesh":{"any":52,"container_20":12,"floodlight":36,"sign":4},"blocked_collider":{"any":829,"block":817,"container_20":12,"floodlight":6},"blocked_drawn":{"ad_screen":64,"any":952,"block":817,"container_20":12,"floodlight":68,"sign":18},"blocked_drawn_tall":{"ad_screen":64,"any":940,"block":817,"floodlight":68,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":4392},"distance_m":49.0,"map":"terminus","pitch_deg":21.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":110,"container_20":16,"container_40":4,"floodlight":70,"sign":20},"blocked_after_cut_mesh":{"any":58,"container_20":16,"container_40":4,"floodlight":32,"sign":6},"blocked_collider":{"any":831,"block":817,"container_20":16,"container_40":4,"floodlight":6},"blocked_drawn":{"ad_screen":72,"any":964,"block":817,"container_20":16,"container_40":4,"floodlight":70,"sign":20},"blocked_drawn_tall":{"ad_screen":72,"any":950,"block":817,"floodlight":70,"sign":20},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":8,"any":10,"floodlight":2},"poses":4392},"distance_m":49.0,"map":"terminus","pitch_deg":18.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":108,"container_20":16,"container_40":4,"floodlight":68,"sign":20},"blocked_after_cut_mesh":{"any":58,"container_20":16,"container_40":4,"floodlight":32,"sign":6},"blocked_collider":{"any":831,"block":817,"container_20":16,"container_40":4,"floodlight":6},"blocked_drawn":{"ad_screen":64,"any":956,"block":817,"container_20":16,"container_40":4,"floodlight":68,"sign":20},"blocked_drawn_tall":{"ad_screen":64,"any":942,"block":817,"floodlight":68,"sign":20},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":4392},"distance_m":49.0,"map":"terminus","pitch_deg":18.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":146,"container_20":26,"container_40":54,"floodlight":50,"sign":16},"blocked_after_cut_mesh":{"any":86,"container_20":26,"container_40":54,"floodlight":4,"sign":2},"blocked_collider":{"any":656,"block":588,"container_20":26,"container_40":54,"floodlight":2},"blocked_drawn":{"ad_screen":46,"any":758,"block":588,"container_20":26,"container_40":54,"floodlight":50,"sign":16},"blocked_drawn_tall":{"ad_screen":46,"any":692,"block":588,"floodlight":50,"sign":16},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":4,"any":4},"poses":5256},"distance_m":49.0,"map":"crossing","pitch_deg":21.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":146,"container_20":26,"container_40":54,"floodlight":50,"sign":16},"blocked_after_cut_mesh":{"any":86,"container_20":26,"container_40":54,"floodlight":4,"sign":2},"blocked_collider":{"any":656,"block":588,"container_20":26,"container_40":54,"floodlight":2},"blocked_drawn":{"ad_screen":42,"any":754,"block":588,"container_20":26,"container_40":54,"floodlight":50,"sign":16},"blocked_drawn_tall":{"ad_screen":42,"any":688,"block":588,"floodlight":50,"sign":16},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5256},"distance_m":49.0,"map":"crossing","pitch_deg":21.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":170,"container_20":28,"container_40":64,"floodlight":60,"sign":18},"blocked_after_cut_mesh":{"any":104,"container_20":28,"container_40":64,"floodlight":8,"sign":4},"blocked_collider":{"any":665,"block":585,"container_20":28,"container_40":64,"floodlight":2},"blocked_drawn":{"ad_screen":46,"any":777,"block":585,"container_20":28,"container_40":64,"floodlight":60,"sign":18},"blocked_drawn_tall":{"ad_screen":46,"any":699,"block":585,"floodlight":60,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":4,"any":10,"floodlight":6},"poses":5256},"distance_m":49.0,"map":"crossing","pitch_deg":18.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":164,"container_20":28,"container_40":64,"floodlight":54,"sign":18},"blocked_after_cut_mesh":{"any":100,"container_20":28,"container_40":64,"floodlight":4,"sign":4},"blocked_collider":{"any":665,"block":585,"container_20":28,"container_40":64,"floodlight":2},"blocked_drawn":{"ad_screen":42,"any":769,"block":585,"container_20":28,"container_40":64,"floodlight":54,"sign":18},"blocked_drawn_tall":{"ad_screen":42,"any":691,"block":585,"floodlight":54,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5256},"distance_m":49.0,"map":"crossing","pitch_deg":18.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":216,"container_20":56,"container_40":52,"floodlight":90,"sign":18,"wreck":4},"blocked_after_cut_mesh":{"any":154,"container_20":56,"container_40":52,"floodlight":40,"sign":4,"wreck":4},"blocked_collider":{"any":555,"block":411,"container_20":64,"container_40":86,"floodlight":12,"wreck":4},"blocked_drawn":{"ad_screen":48,"any":695,"block":411,"container_20":64,"container_40":86,"floodlight":90,"sign":18,"wreck":4},"blocked_drawn_tall":{"ad_screen":48,"any":602,"block":411,"container_20":8,"container_40":34,"floodlight":90,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":4,"any":4},"poses":5264},"distance_m":49.0,"map":"sumps","pitch_deg":21.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":216,"container_20":56,"container_40":52,"floodlight":90,"sign":18,"wreck":4},"blocked_after_cut_mesh":{"any":154,"container_20":56,"container_40":52,"floodlight":40,"sign":4,"wreck":4},"blocked_collider":{"any":555,"block":411,"container_20":64,"container_40":86,"floodlight":12,"wreck":4},"blocked_drawn":{"ad_screen":44,"any":691,"block":411,"container_20":64,"container_40":86,"floodlight":90,"sign":18,"wreck":4},"blocked_drawn_tall":{"ad_screen":44,"any":598,"block":411,"container_20":8,"container_40":34,"floodlight":90,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5264},"distance_m":49.0,"map":"sumps","pitch_deg":21.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":234,"container_20":66,"container_40":54,"floodlight":94,"sign":20,"wreck":4},"blocked_after_cut_mesh":{"any":166,"container_20":66,"container_40":54,"floodlight":38,"sign":6,"wreck":4},"blocked_collider":{"any":575,"block":411,"container_20":74,"container_40":96,"floodlight":12,"wreck":4},"blocked_drawn":{"ad_screen":48,"any":721,"block":411,"container_20":74,"container_40":96,"floodlight":94,"sign":20,"wreck":4},"blocked_drawn_tall":{"ad_screen":48,"any":618,"block":411,"container_20":10,"container_40":42,"floodlight":94,"sign":20},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":4,"any":6,"floodlight":2},"poses":5264},"distance_m":49.0,"map":"sumps","pitch_deg":18.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":232,"container_20":66,"container_40":54,"floodlight":92,"sign":20,"wreck":4},"blocked_after_cut_mesh":{"any":164,"container_20":66,"container_40":54,"floodlight":36,"sign":6,"wreck":4},"blocked_collider":{"any":575,"block":411,"container_20":74,"container_40":96,"floodlight":12,"wreck":4},"blocked_drawn":{"ad_screen":44,"any":715,"block":411,"container_20":74,"container_40":96,"floodlight":92,"sign":20,"wreck":4},"blocked_drawn_tall":{"ad_screen":44,"any":612,"block":411,"container_20":10,"container_40":42,"floodlight":92,"sign":20},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5264},"distance_m":49.0,"map":"sumps","pitch_deg":18.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":158,"container_20":36,"container_40":20,"floodlight":80,"sign":18,"wreck":8},"blocked_after_cut_mesh":{"any":106,"container_20":36,"container_40":20,"floodlight":38,"sign":4,"wreck":8},"blocked_collider":{"any":546,"block":478,"container_20":36,"container_40":20,"floodlight":8,"wreck":8},"blocked_drawn":{"ad_screen":48,"any":680,"block":478,"container_20":36,"container_40":20,"floodlight":80,"sign":18,"wreck":8},"blocked_drawn_tall":{"ad_screen":48,"any":624,"block":478,"floodlight":80,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":4,"any":4},"poses":5160},"distance_m":49.0,"map":"locks","pitch_deg":21.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":158,"container_20":36,"container_40":20,"floodlight":80,"sign":18,"wreck":8},"blocked_after_cut_mesh":{"any":106,"container_20":36,"container_40":20,"floodlight":38,"sign":4,"wreck":8},"blocked_collider":{"any":546,"block":478,"container_20":36,"container_40":20,"floodlight":8,"wreck":8},"blocked_drawn":{"ad_screen":44,"any":676,"block":478,"container_20":36,"container_40":20,"floodlight":80,"sign":18,"wreck":8},"blocked_drawn_tall":{"ad_screen":44,"any":620,"block":478,"floodlight":80,"sign":18},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5160},"distance_m":49.0,"map":"locks","pitch_deg":21.0,"posed_from":"drawn"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":170,"container_20":40,"container_40":20,"floodlight":86,"sign":20,"wreck":8},"blocked_after_cut_mesh":{"any":114,"container_20":40,"container_40":20,"floodlight":40,"sign":6,"wreck":8},"blocked_collider":{"any":552,"block":478,"container_20":40,"container_40":20,"floodlight":10,"wreck":8},"blocked_drawn":{"ad_screen":48,"any":692,"block":478,"container_20":40,"container_40":20,"floodlight":86,"sign":20,"wreck":8},"blocked_drawn_tall":{"ad_screen":48,"any":632,"block":478,"floodlight":86,"sign":20},"inside_collider":{"any":0},"inside_drawn":{"ad_screen":4,"any":8,"floodlight":4},"poses":5160},"distance_m":49.0,"map":"locks","pitch_deg":18.0,"posed_from":"collider"}
+MEASURE camera_drawn_solids {"counts":{"blocked_after_cut":{"any":166,"container_20":40,"container_40":20,"floodlight":82,"sign":20,"wreck":8},"blocked_after_cut_mesh":{"any":110,"container_20":40,"container_40":20,"floodlight":36,"sign":6,"wreck":8},"blocked_collider":{"any":552,"block":478,"container_20":40,"container_40":20,"floodlight":10,"wreck":8},"blocked_drawn":{"ad_screen":44,"any":684,"block":478,"container_20":40,"container_40":20,"floodlight":82,"sign":20,"wreck":8},"blocked_drawn_tall":{"ad_screen":44,"any":624,"block":478,"floodlight":82,"sign":20},"inside_collider":{"any":0},"inside_drawn":{"any":0},"poses":5160},"distance_m":49.0,"map":"locks","pitch_deg":18.0,"posed_from":"drawn"}
+  PASS  test_control_camera_solids::test_every_shipping_map_measured_against_what_is_drawn
+  PASS  test_control_camera_solids::test_the_camera_reads_the_drawing_and_the_colliders_are_untouched
+  PASS  test_control_camera_solids::test_the_drawn_list_covers_what_the_kit_meshes_draw
+  PASS  test_control_camera_solids::test_an_ad_screen_in_the_sight_line_is_cut_and_comes_back
+  PASS  test_control_element_log::test_an_elements_decisions_are_kept_and_shown_on_the_card
+MEASURE control_follow_slot worst goal step per tick 0.52 m (leader turning 90°/s, slot 10 m out)
+  PASS  test_control_follow_slot::test_a_follower_keeps_its_slot_in_the_leaders_frame_as_the_leader_turns
+  PASS  test_control_follow_slot::test_a_slot_is_one_units_place_and_only_for_follow
+  PASS  test_control_hints::test_a_new_player_sees_three_hints_in_order
+  PASS  test_control_hints::test_doing_it_retires_the_hint_for_good
+  PASS  test_control_hints::test_once_everything_is_learned_nothing_shows
+  PASS  test_control_hints::test_hints_never_swallow_input
+  PASS  test_control_orders::test_unit_command_validation_names_the_problem
+  PASS  test_control_orders::test_unit_command_round_trips_through_json
+  PASS  test_control_orders::test_issue_checks_units_and_targets_against_the_match
+  PASS  test_control_orders::test_a_new_order_replaces_the_current_one_and_signals
+  PASS  test_control_orders::test_shift_queues_orders_and_complete_advances_the_queue
+  PASS  test_control_orders::test_an_unqueued_order_clears_the_queue_and_stop_clears_everything
+  PASS  test_control_orders::test_group_moves_give_each_unit_its_own_slot_around_the_destination
+  PASS  test_control_orders::test_destinations_outside_the_arena_are_pulled_inside
+  PASS  test_control_orders::test_a_destroyed_unit_forgets_its_orders
+  PASS  test_control_orders::test_orders_is_reachable_from_the_match
+  PASS  test_control_orders::test_an_order_can_say_which_way_to_face_on_arrival
+  PASS  test_control_orders::test_re_issuing_the_same_order_does_not_restart_it
+Green_Alpha_2 destroyed Rust_Bait_1 (score Green 1 : 0 Rust)
+MEASURE control_response_ticks { "fighting (SUPPRESS, SUPPRESS, KEEP_SLOT)": 1, "driving the other way": 1, "holding": 1, "hurt, just stopped": 1 }
+  PASS  test_control_response::test_units_respond_within_three_ticks_whatever_their_brain_was_doing
+  PASS  test_control_response::test_a_group_move_arrives_and_completes
+  PASS  test_control_response::test_queued_waypoints_are_driven_in_order
+  PASS  test_control_response::test_stop_halts_and_hold_keeps_position
+  PASS  test_control_response::test_attack_closes_on_the_target_and_completes_when_it_dies
+  PASS  test_control_response::test_follow_keeps_station_behind_a_moving_friend
+  PASS  test_control_response::test_attack_move_stops_to_fight_what_it_meets
+  PASS  test_control_tasks::test_a_whole_element_is_recognised_and_a_handful_of_units_is_not
+  PASS  test_control_tasks::test_every_order_to_a_whole_squad_is_a_task_and_a_plain_move_runs_no_drills
+  PASS  test_control_tasks::test_a_handful_of_units_still_gets_a_direct_order
+  PASS  test_control_tasks::test_screen_and_support_by_fire_are_tasks_you_can_actually_give
+  PASS  test_control_tasks::test_a_direct_order_dissolves_the_element_so_its_leader_stops_fighting_the_player
+  PASS  test_control_tasks::test_the_hud_reads_back_what_the_leader_decided
+  PASS  test_control_tasks::test_the_player_can_override_the_formation_and_keep_the_squad
+  PASS  test_control_tasks::test_b_then_a_click_sets_an_ambush_on_the_kill_zone
+  PASS  test_engine_warnings::test_an_engine_error_fails_the_test_and_is_counted_as_an_error
+  PASS  test_engine_warnings::test_an_undeclared_warning_still_fails_the_test
+  PASS  test_engine_warnings::test_errors_and_warnings_are_counted_separately_in_the_failure
+  PASS  test_engine_warnings::test_a_clean_test_gets_no_count_line_at_all
+  PASS  test_engine_warnings::test_a_declared_warning_is_consumed_and_does_not_fail
+  PASS  test_engine_warnings::test_a_declared_warning_that_never_arrives_fails
+  PASS  test_engine_warnings::test_one_declaration_consumes_exactly_one_warning
+  PASS  test_engine_warnings::test_a_declaration_does_not_excuse_an_error
+  PASS  test_engine_warnings::test_a_glob_pattern_matches
+  PASS  test_engine_warnings::test_an_empty_pattern_swallows_nothing
+  PASS  test_engine_warnings::test_expect_warning_records_the_pattern
+  PASS  test_engine_warnings::test_the_messages_a_test_is_charged_with_are_reported_back
+  PASS  test_engine_warnings::test_a_declared_warning_is_not_charged_to_the_test_that_declared_it
+  PASS  test_engine_warnings::test_a_clean_test_is_charged_with_nothing
+  PASS  test_engine_warnings::test_an_error_prints_its_numeric_type_when_it_is_known
+  PASS  test_engine_warnings::test_an_error_without_a_known_type_says_nothing_it_cannot_support
+  PASS  test_engine_warnings::test_an_allowed_message_does_not_fail_the_test
+  PASS  test_engine_warnings::test_an_allowed_message_is_not_charged_to_the_test_it_landed_on
+  PASS  test_engine_warnings::test_an_allowed_pattern_reports_that_it_matched
+  PASS  test_engine_warnings::test_an_allowed_pattern_covers_an_ERROR_too
+  PASS  test_engine_warnings::test_an_unrelated_message_is_still_a_failure_with_an_allowlist_present
+  PASS  test_engine_warnings::test_an_empty_allow_pattern_exempts_nothing
+  PASS  test_engine_warnings::test_no_allowlist_behaves_exactly_as_before
+WARNING: deliberate warning from test_engine_warnings
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] test_a_real_warning_declared_by_a_real_test_passes_end_to_end (res://tests/test_engine_warnings.gd:212)
+         [1] _run (res://tests/run_tests.gd:128)
+         [2] _teardown (res://tests/test_case.gd:304)
+         [3] drain_navigation (res://tests/test_case.gd:240)
+  PASS  test_engine_warnings::test_a_real_warning_declared_by_a_real_test_passes_end_to_end
+  PASS  test_friendly_fire::test_a_laser_through_a_teammate_hurts_it_and_scores_nothing
+Green_Alpha_1 destroyed teammate Green_Alpha_2 (friendly fire)
+  PASS  test_friendly_fire::test_a_friendly_kill_scores_nothing_and_is_announced
+  PASS  test_friendly_fire::test_direct_fire_line_finds_teammates_in_the_corridor
+  PASS  test_friendly_fire::test_splash_and_flame_lines
+  PASS  test_fx_kill_cam::test_the_final_kill_slows_time_then_gives_it_back
+  PASS  test_fx_kill_cam::test_no_kill_cam_for_a_networked_match_or_without_a_final_kill
+  PASS  test_fx_kill_cam::test_leaving_mid_kill_cam_restores_time
+  PASS  test_fx_skyline::test_the_skyline_ring_wraps_the_arena_facing_in
+  PASS  test_fx_skyline::test_the_arena_environment_has_a_sky_and_a_city
+  PASS  test_fx_skyline::test_the_city_has_streets_out_to_the_skyline
+  PASS  test_loading_screen::test_it_names_the_matchup_and_the_arena_and_teaches_a_task
+LOAD_TIMING total_ms=1 scene=1 arena=0 armies=0 first_frame=0
+  PASS  test_loading_screen::test_stages_are_timed_in_order_and_it_fades_out_when_done
+  PASS  test_loading_screen::test_a_doctrine_army_without_factions_has_no_matchup_line
+MEASURE a4_arrival straight (A4 off): arrived true after 4.6 s, heading error 67.0 deg, 3.9 m from the goal
+MEASURE a4_arrival curved (A4 ON): arrived false after 45.0 s, heading error 56.4 deg, 21.7 m from the goal
+MEASURE a4_arrival DEFECT: A4 turned a 4.6 s arrival into a non-arrival 21.7 m short. The heading question this file exists to ask cannot be asked until that is fixed.
+  PASS  test_nav_arrival_heading::test_a_curved_entry_still_arrives_on_the_ordered_heading
+  PASS  test_nav_legibility::test_a6_binds_by_mount_and_the_style_mapping_still_carries_it
+  PASS  test_nav_legibility::test_a6_reports_when_it_had_no_corridor_rather_than_looking_inert
+MEASURE a6_nose: control dot 0.383, A6 dot 0.383 (bound 25 deg)
+  PASS  test_nav_legibility::test_a6a_brings_a_turreted_nose_toward_the_corridor_tangent
+MEASURE a6_shoulder: step dot tangent 0.383
+  PASS  test_nav_legibility::test_a6b_takes_the_shoulder_that_advances_along_the_corridor
+  PASS  test_navigation::test_path_goes_around_a_wall
+  PASS  test_navigation::test_bot_reaches_target_hidden_behind_wall
+  PASS  test_navigation::test_navigation_is_point_symmetric
+  PASS  test_pid::test_proportional_alone
+  PASS  test_pid::test_no_derivative_kick_when_the_setpoint_jumps
+  PASS  test_pid::test_integral_is_clamped_and_does_not_wind_up_while_saturated
+  PASS  test_pid::test_regulates_a_lagging_plant_to_the_setpoint
+  PASS  test_pid::test_reset_forgets
+  PASS  test_render_floor_light::test_a_warm_lamp_bakes_warm_light_and_nothing_far_away
+  PASS  test_render_floor_light::test_plain_lamps_still_bake_white
+  PASS  test_render_floor_light::test_a_layouts_floodlight_towers_throw_pools_ahead_of_them
+  PASS  test_render_floor_light::test_lanes_wrecks_and_spawns_wear_the_floor_where_the_layout_puts_them
+  PASS  test_render_floor_light::test_the_flood_map_carries_wear_in_alpha_at_higher_resolution
+MEASURE g3_ticks_to_react per tank [7, 3, 1], slowest 7; commander 5 m after 30 ticks, 20 m after 80
+  PASS  test_responsiveness::test_every_tank_reacts_to_a_move_order_within_a_quarter_second
+MEASURE g3_order_followed 100% of thinks; ticks to first obey [1, 1]
+  PASS  test_responsiveness::test_ordered_tanks_follow_the_order_instead_of_chasing_a_fight
+  PASS  test_show_fixtures::test_every_shipped_arena_has_a_patch_that_loads_or_no_patch_at_all
+  PASS  test_show_fixtures::test_an_arena_with_no_show_key_drives_nothing_at_all
+  PASS  test_show_fixtures::test_the_patched_arenas_never_let_a_lit_surface_go_dark
+  PASS  test_show_fixtures::test_every_show_uniform_defaults_to_the_value_that_changes_nothing
+  PASS  test_show_fixtures::test_the_identity_is_applied_multiplicatively_so_level_one_is_a_no_op
+  PASS  test_show_fixtures::test_the_block_shader_still_multiplies_rather_than_replacing_what_feel_shipped
+  PASS  test_show_fixtures::test_the_neon_shader_keeps_its_own_flicker_and_breathe_underneath_the_show
+  PASS  test_show_fixtures::test_no_prop_shares_a_cached_material_with_the_perimeter_rim
+  PASS  test_show_fixtures::test_the_rim_helper_is_the_only_place_the_rim_is_built
+  PASS  test_show_fixtures::test_every_city_block_shares_one_facade_material
+  PASS  test_show_fixtures::test_a_blocks_seed_reaches_the_shader_as_its_phase
+  PASS  test_show_fixtures::test_the_blocks_edge_run_is_the_parapet_and_the_outline_is_only_a_variant
+  PASS  test_show_fixtures::test_the_edge_palette_is_the_venues_and_spends_no_signal_colour
+  PASS  test_show_fixtures::test_the_parapet_is_dimmer_than_the_windows_which_are_dimmer_than_the_fight
+  PASS  test_show_fixtures::test_turning_the_show_off_puts_every_fixture_back_to_todays_look
+  PASS  test_show_fixtures::test_the_perf_harness_can_ask_for_the_shows_own_layer
+  PASS  test_show_fixtures::test_the_show_only_writes_uniforms_a_fixture_actually_declares
+SPAWN_ISO_POLLUTER active=scrapyard obstacles=36
+  PASS  test_spawn_isolation::test_a_polluter_builds_and_drops_a_scrapyard_arena
+SPAWN_ISO_VICTIM active=foundry obstacles=19 bodies=111 units=90
+SPAWN_ISO_PLACEMENT closest pair gap 2.532 m; 0 overlapping pairs at placement
+SPAWN_ISO_GROUND Arena/Ground box (320.0, 1.0, 320.0) centred y=-0.5000 -> top=+0.0000 bottom=-1.0000
+SPAWN_ISO_PLACED Green_S0_1   unit=tank       at (-103.2099, 0.0, 90.0)  box_h=4.07999992370605 bottom=0.0  simulate=true sync_position=(-103.2099, 0.0, 90.0) smoothing=18.0
+SPAWN_ISO_PLACED Green_S2_1   unit=scout      at (-54.32099, 0.0, 90.0)  box_h=1.5 bottom=0.0  simulate=true sync_position=(-54.32099, 0.0, 90.0) smoothing=18.0
+SPAWN_ISO_PLACED Green_S2_2   unit=artillery  at (-51.60494, 0.0, 101.7)  box_h=2.8199999332428 bottom=0.0  simulate=true sync_position=(-51.60494, 0.0, 101.7) smoothing=18.0
+SPAWN_ISO_PLACED Green_S2_3   unit=lancer     at (-46.17284, 0.0, 101.7)  box_h=3.84999990463257 bottom=0.0  simulate=true sync_position=(-46.17284, 0.0, 101.7) smoothing=18.0
+SPAWN_ISO_PLACED Green_S2_4   unit=tank       at (-48.88889, 0.0, 90.0)  box_h=4.07999992370605 bottom=0.0  simulate=true sync_position=(-48.88889, 0.0, 90.0) smoothing=18.0
+SPAWN_ISO_PLACED Green_S2_5   unit=ifv        at (-43.45679, 0.0, 90.0)  box_h=3.70000004768372 bottom=0.0  simulate=true sync_position=(-43.45679, 0.0, 90.0) smoothing=18.0
+SPAWN_ISO_PLACED Green_S5_1   unit=tank       at (19.01235, 0.0, 90.0)  box_h=4.07999992370605 bottom=0.0  simulate=true sync_position=(19.01235, 0.0, 90.0) smoothing=18.0
+SPAWN_ISO_PLACED Rust_S5_1    unit=tank       at (-19.01235, 0.0, -90.0)  box_h=4.07999992370605 bottom=0.0  simulate=true sync_position=(-19.01235, 0.0, -90.0) smoothing=18.0
+SPAWN_ISO_WRITER f1 Green_S0_1   unit=tank       at (-103.2099, 0.0, 90.0) delta=(-103.2099, 0.0, 90.0) vel=(0.0, 0.0, 0.0) floor=false contacts[0] 
+SPAWN_ISO_WRITER f1 Green_S2_1   unit=scout      at (-54.32099, 0.0, 90.0) delta=(-54.32099, 0.0, 90.0) vel=(0.0, 0.0, 0.0) floor=false contacts[0] 
+SPAWN_ISO_WRITER f1 Green_S2_2   unit=artillery  at (-51.60494, 0.0, 101.7) delta=(-51.60494, 0.0, 101.7) vel=(0.0, 0.0, 0.0) floor=false contacts[0] 
+SPAWN_ISO_WRITER f1 Green_S2_3   unit=lancer     at (-46.17284, 0.0, 101.7) delta=(-46.17284, 0.0, 101.7) vel=(0.0, 0.0, 0.0) floor=false contacts[0] 
+SPAWN_ISO_WRITER f1 Green_S2_4   unit=tank       at (-48.88889, 0.0, 90.0) delta=(-48.88889, 0.0, 90.0) vel=(0.0, 0.0, 0.0) floor=false contacts[0] 
+SPAWN_ISO_WRITER f1 Green_S2_5   unit=ifv        at (-43.45679, 0.0, 90.0) delta=(-43.45679, 0.0, 90.0) vel=(0.0, 0.0, 0.0) floor=false contacts[0] 
+SPAWN_ISO_WRITER f1 Green_S5_1   unit=tank       at (19.01235, 0.0, 90.0) delta=(19.01235, 0.0, 90.0) vel=(0.0, 0.0, 0.0) floor=false contacts[0] 
+SPAWN_ISO_WRITER f1 Rust_S5_1    unit=tank       at (-19.01235, 0.0, -90.0) delta=(-19.01235, 0.0, -90.0) vel=(0.0, 0.0, 0.0) floor=false contacts[0] 
+SPAWN_ISO_WRITER f2 Green_S0_1   unit=tank       at (-103.2099, 0.00087, 90.0) delta=(0.0, 0.00087, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0001
+SPAWN_ISO_WRITER f2 Green_S2_1   unit=scout      at (-54.32099, 0.00087, 90.01778) delta=(0.0, 0.00087, 0.017776) vel=(0.0, 0.0, 0.533333) floor=false contacts[0] 
+SPAWN_ISO_WRITER f2 Green_S2_2   unit=artillery  at (-51.60494, 0.00087, 101.7067) delta=(0.0, 0.00087, 0.006668) vel=(0.0, 0.0, 0.2) floor=false contacts[0] 
+SPAWN_ISO_WRITER f2 Green_S2_3   unit=lancer     at (-46.17284, 0.00087, 101.7089) delta=(0.0, 0.00087, 0.008888) vel=(0.0, 0.0, 0.266667) floor=false contacts[0] 
+SPAWN_ISO_WRITER f2 Green_S2_4   unit=tank       at (-48.88889, 0.00087, 90.0) delta=(0.0, 0.00087, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0001
+SPAWN_ISO_WRITER f2 Green_S2_5   unit=ifv        at (-43.45679, 0.00087, 89.99) delta=(0.0, 0.00087, -0.010002) vel=(0.0, 0.0, -0.3) floor=false contacts[0] 
+SPAWN_ISO_WRITER f2 Green_S5_1   unit=tank       at (19.01235, 0.00087, 90.0) delta=(0.0, 0.00087, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0001
+SPAWN_ISO_WRITER f2 Rust_S5_1    unit=tank       at (-19.01235, 0.00087, -90.0) delta=(0.0, 0.00087, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0001
+SPAWN_ISO_WRITER f3 Green_S0_1   unit=tank       at (-103.2099, 0.000983, 90.0) delta=(0.0, 0.000113, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0000
+SPAWN_ISO_WRITER f3 Green_S2_1   unit=scout      at (-54.32109, 0.000983, 90.05333) delta=(-0.000107, 0.000113, 0.035553) vel=(-0.003219, 0.0, 1.066658) floor=false contacts[0] 
+SPAWN_ISO_WRITER f3 Green_S2_2   unit=artillery  at (-51.60493, 0.000983, 101.72) delta=(0.000011, 0.000113, 0.013336) vel=(0.000293, 0.0, 0.4) floor=false contacts[0] 
+SPAWN_ISO_WRITER f3 Green_S2_3   unit=lancer     at (-46.17286, 0.000983, 101.7267) delta=(-0.000019, 0.000113, 0.017776) vel=(-0.000612, 0.0, 0.533333) floor=false contacts[0] 
+SPAWN_ISO_WRITER f3 Green_S2_4   unit=tank       at (-48.88889, 0.000983, 90.0) delta=(0.0, 0.000113, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0001
+SPAWN_ISO_WRITER f3 Green_S2_5   unit=ifv        at (-43.45676, 0.000983, 89.97) delta=(0.000027, 0.000113, -0.019997) vel=(0.000819, 0.0, -0.599999) floor=false contacts[0] 
+SPAWN_ISO_WRITER f3 Green_S5_1   unit=tank       at (19.01235, 0.000983, 90.0) delta=(0.0, 0.000113, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0001
+SPAWN_ISO_WRITER f3 Rust_S5_1    unit=tank       at (-19.01235, 0.000983, -90.0) delta=(0.0, 0.000113, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0000
+SPAWN_ISO_WRITER f4 Green_S0_1   unit=tank       at (-103.2099, 0.000998, 90.0) delta=(0.0, 0.000015, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0000
+SPAWN_ISO_WRITER f4 Green_S2_1   unit=scout      at (-54.32158, 0.000998, 90.10666) delta=(-0.000488, 0.000015, 0.053329) vel=(-0.014598, 0.0, 1.599901) floor=false contacts[0] 
+SPAWN_ISO_WRITER f4 Green_S2_2   unit=artillery  at (-51.60488, 0.000998, 101.74) delta=(0.000046, 0.000015, 0.019997) vel=(0.00132, 0.0, 0.599998) floor=false contacts[0] 
+SPAWN_ISO_WRITER f4 Green_S2_3   unit=lancer     at (-46.17295, 0.000998, 101.7533) delta=(-0.000092, 0.000015, 0.026665) vel=(-0.002764, 0.0, 0.799994) floor=false contacts[0] 
+SPAWN_ISO_WRITER f4 Green_S2_4   unit=tank       at (-48.88889, 0.000998, 90.0) delta=(0.0, 0.000015, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0000
+SPAWN_ISO_WRITER f4 Green_S2_5   unit=ifv        at (-43.45664, 0.000998, 89.94) delta=(0.000122, 0.000015, -0.029999) vel=(0.003699, 0.0, -0.89999) floor=false contacts[0] 
+SPAWN_ISO_WRITER f4 Green_S5_1   unit=tank       at (19.01235, 0.000998, 90.0) delta=(0.0, 0.000015, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0000
+SPAWN_ISO_WRITER f4 Rust_S5_1    unit=tank       at (-19.01235, 0.000998, -90.0) delta=(0.0, 0.000015, 0.0) vel=(0.0, 0.0, 0.0) floor=false contacts[1] Ground n=(0.0, 1.0, 0.0) depth=0.0000
+SPAWN_ISO_NEIGHBOURS of Green_S2_2 at -51.6,101.7 within 12 m: Green_S2_3(lancer) at -46.2,101.7 d=5.43 gap=2.60
+SPAWN_ISO_PAIR Green_S2_2/Green_S2_3 placed 5.432 m apart -> now 5.432 m apart (0.000 m of convergence)
+SPAWN_ISO_DONE blocked=0 of 90
+SPAWN_ISO_AABB passing  Green_S0_1   unit=tank       origin_y=0.0000 local_y=2.0400 box_h=4.0800 -> bottom=+0.0000 top=+4.0800 bottom at/above ground
+SPAWN_ISO_AABB passing  Green_S0_2   unit=ifv        origin_y=0.0000 local_y=1.8500 box_h=3.7000 -> bottom=+0.0000 top=+3.7000 bottom at/above ground
+SPAWN_ISO_AABB passing  Green_S0_3   unit=scout      origin_y=0.0000 local_y=0.7500 box_h=1.5000 -> bottom=+0.0000 top=+1.5000 bottom at/above ground
+SPAWN_ISO_AABB passing  Green_S0_4   unit=artillery  origin_y=0.0000 local_y=1.4100 box_h=2.8200 -> bottom=+0.0000 top=+2.8200 bottom at/above ground
+SPAWN_ISO_AABB passing  Green_S0_5   unit=lancer     origin_y=0.0000 local_y=1.9250 box_h=3.8500 -> bottom=+0.0000 top=+3.8500 bottom at/above ground
+  PASS  test_spawn_isolation::test_b_victim_deploys_a_full_army_and_reports_what_it_sees
+SPAWN_ISO_REGIONS before=0 with_arena=2 then after free: [2, 0, 0, 0] (frames 0,1,2,3)
+  PASS  test_spawn_isolation::test_c_do_navigation_regions_drain_after_an_arena_is_freed
+  PASS  test_tactics_deform::test_an_unknown_corridor_is_the_identity
+  PASS  test_tactics_deform::test_a_wide_corridor_deforms_nothing
+  PASS  test_tactics_deform::test_hulls_stay_clear_at_every_corridor_width
+  PASS  test_tactics_deform::test_the_depth_order_never_inverts_as_the_corridor_narrows
+  PASS  test_tactics_deform::test_the_frontage_narrows_with_the_corridor_and_never_snaps
+  PASS  test_tactics_deform::test_a_wedge_files_through_a_defile_and_re_expands_after_it
+  PASS  test_tactics_deform::test_a_formation_that_cannot_fit_says_so_instead_of_stacking_hulls
+  PASS  test_tactics_formations::test_a_column_is_single_file_and_a_line_is_abreast
+  PASS  test_tactics_formations::test_a_wedge_puts_the_leader_in_front_and_the_rest_out_to_both_sides
+  PASS  test_tactics_formations::test_a_vee_leads_with_two_vehicles_and_an_echelon_leans_to_one_side
+  PASS  test_tactics_formations::test_a_herringbone_alternates_the_flanks_it_watches
+  PASS  test_tactics_formations::test_sectors_of_fire_cover_the_element_where_its_shape_is_blind
+  PASS  test_tactics_formations::test_spreading_out_is_what_saves_an_element_from_one_shell
+  PASS  test_tactics_formations::test_slots_land_where_the_element_is_pointed
+  PASS  test_tactics_formations::test_centering_moves_the_shape_onto_the_anchor_without_changing_it
+  PASS  test_tactics_formations::test_the_swarm_is_wider_and_raggeder_than_anything_in_a_manual
+  PASS  test_tactics_formations::test_a_ring_surrounds_what_it_is_anchored_on
+  PASS  test_tactics_formations::test_the_exposed_slots_go_to_whatever_can_take_a_hit
+  PASS  test_tactics_formations::test_the_ends_of_a_column_are_the_exposed_places
+Rust_Anvil_2 destroyed Green_Eyes_1 (score Green 0 : 1 Rust)
+MEASURE element_reissue 12.0 orders a second across 10 units, of which 0.0 a second repeat what the unit was already doing; by verb and source: { "attack_move/element": 30, "move/element": 22, "attack/element": 8, "hold/element": 12 }
+  PASS  test_tactics_reissue::test_elements_do_not_re_issue_orders_while_nothing_changes
+Rust_Hammer_2 destroyed Green_Guns_1 (score Green 0 : 1 Rust)
+Rust_Hammer_2 destroyed Green_Guns_2 (score Green 0 : 2 Rust)
+Green_Guns_2 destroyed Rust_Hammer_1 (score Green 1 : 2 Rust)
+Green_Guns_3 destroyed Rust_Hammer_2 (score Green 2 : 2 Rust)
+Rust_Anvil_3 destroyed Green_Guns_3 (score Green 2 : 3 Rust)
+      Green_Guns_1: 12 m from the spot, order (none), choice ?, alive false
+      Green_Guns_2: 22 m from the spot, order (none), choice ?, alive false
+      Green_Guns_3: 6 m from the spot, order (none), choice ?, alive false
+MEASURE element_vs_player 0 of 3 units of the ordered squad reached the spot; 0 orders from anything but the player: {  }
+  PASS  test_tactics_reissue::test_an_element_leaves_the_players_orders_alone
+MEASURE slot_clearance ifv (-23.9, 0.0, 18.0): edge (-23.83933, 0.0, 22.06477) off 5/16 -> fitted (-23.81577, 0.0, 23.64335) off 0/16 (moved 5.6 m, reach 2.0 m) | lancer (-87.3, 0.0, 0.3): edge (-78.0, 0.0, -0.499993) off 8/16 -> fitted (-76.69256, 0.0, -1.421618) off 0/16 (moved 10.7 m, reach 1.5 m) | ifv (29.8, 0.0, -47.3): edge (29.8, 0.0, -40.0) off 5/16 -> fitted (29.8, 0.0, -38.42106) off 0/16 (moved 8.9 m, reach 2.0 m)
+  PASS  test_tactics_slot_clearance::test_a_slot_by_a_terminus_block_is_grounded_where_the_hull_fits
+  PASS  test_tactics_slot_clearance::test_a_crew_holding_an_element_slot_sends_its_leash_with_every_move
+  PASS  test_tank_motion::test_throttle_accelerates_toward_forward_cap
+  PASS  test_tank_motion::test_reverse_uses_lower_cap
+  PASS  test_tank_motion::test_zero_throttle_brakes_to_stop
+  PASS  test_tank_motion::test_yaw_toward_straight_ahead_is_zero
+  PASS  test_tank_motion::test_yaw_toward_right_is_negative
+  PASS  test_tank_motion::test_step_yaw_takes_short_way_across_pi
+  PASS  test_terrain_mechanism::test_a_rim_is_cut_only_where_a_deck_crosses_it
+  PASS  test_terrain_mechanism::test_a_deck_has_rails_where_it_borders_water_and_none_where_it_meets_the_bank
+  PASS  test_terrain_mechanism::test_a_rail_stops_a_hull_and_not_a_shot
+  PASS  test_terrain_mechanism::test_the_narrowest_legal_deck_is_a_lane_for_the_widest_hull
+  PASS  test_terrain_mechanism::test_rims_and_rails_are_in_the_bake
+  PASS  test_terrain_mechanism::test_a_hull_shoved_sideways_on_a_bridge_stays_on_it
+  PASS  test_theme_factions::test_every_faction_unit_with_art_gets_its_own_slots
+  PASS  test_theme_factions::test_a_part_without_its_own_model_is_empty_not_the_condemned_dozer
+  PASS  test_theme_factions::test_the_cyberpunk_theme_registers_the_faction_slots_and_a_tank_wears_them
+  PASS  test_theme_factions::test_special_roles_share_the_faction_special_art
+MEASURE slot_cache hit 1 us, from disk 122 us (0.008)
+  PASS  test_theme_factions::test_a_slot_scene_stays_loaded_after_its_last_instance_is_freed
+  PASS  test_theme_vehicles::test_every_part_is_one_mesh_with_at_most_two_surfaces
+  PASS  test_theme_vehicles::test_team_color_rebuilds_vertex_colors_not_materials
+  PASS  test_theme_vehicles::test_cannon_heat_swaps_a_shared_material_not_an_instance_uniform
+  PASS  test_theme_vehicles::test_no_vehicle_part_uses_instance_uniforms_whatever_it_is_doing
+  PASS  test_theme_vehicles::test_flamethrower_shows_its_flame_only_while_firing
+  PASS  test_theme_vehicles::test_shield_events_show_then_hide_the_shell
+  PASS  test_theme_vehicles::test_a_unit_without_a_shield_never_shows_one
+  PASS  test_theme_vehicles::test_laser_parts_and_beams_follow_the_gameplay_contract
+  PASS  test_theme_vehicles::test_beam_system_batches_and_expires_pulses
+  PASS  test_theme_vehicles::test_paint_is_full_body_and_never_changes_the_team_accents
+  PASS  test_theme_vehicles::test_camera_shake_falls_off_with_distance_and_scales_with_trauma
+  PASS  test_theme_vehicles::test_the_generated_dozer_wears_team_neon_paint_heat_and_a_shield
+  PASS  test_theme_vehicles::test_the_round_2_roster_fills_every_unit_slot_with_one_material_per_unit
+  PASS  test_units_roster::test_the_catalog_is_where_stats_come_from
+  PASS  test_units_roster::test_v1_armies_are_rejected_with_reasons
+  PASS  test_units_roster::test_the_burner_is_the_flamethrowers_unit
+  PASS  test_units_roster::test_scouts_spot_from_a_distance_instead_of_brawling
+  PASS  test_units_roster::test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range
+  PASS  test_units_roster::test_every_roster_role_can_be_put_in_a_squad
+  PASS  test_units_roster::test_faction_directives_can_be_ablated_for_a_measurement
+  PASS  test_units_roster::test_the_spawn_grid_holds_the_unit_a_bare_spawn_drives
+MEASURE wheeled_face truck { "faces": 0, "declined": 72, "shots": 3 }; tracked control { "faces": 318, "declined": 0, "shots": 3 }
+  PASS  test_wheeled_face::test_a_held_turreted_truck_lets_its_turret_aim
+
+expected engine messages: 0 seen, from 1 allowed pattern(s) in res://tests/baselines/engine_expected.txt
+  1 pattern(s) matched nothing this run -- tighten res://tests/baselines/engine_expected.txt:
+      Jolt Physics job system exceeded the maximum number of jobs
+
+SHARD-ENGINE 3/5: 0 errors, 0 warnings
+SHARD 3/5: 50 files, 373 passed, 0 failed
+WARNING: 6 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 3 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
