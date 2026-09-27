@@ -194,6 +194,37 @@ Commits after it touch only `_agents/streams/audio.md`.
 - **The Booth Monitor** (local) for his veto: `make announcer-demo-audio CLIPS=assets/announcer/clips`, then open
   `build/announcer/demo/index.html#new` — the New tab lists every r12 line with its clip.
 
+### M6 — more of the PA (2026-09-27, after the lead's veto pass)
+
+**His words** (the orchestrator relayed them; he said the same here): *"ok I finished approving the announcers, those
+are great - with all the new voice overs for the 2 male announcers it makes me feel like there's more good content
+that can be created for the female announcer"*, and in this session: *"I just approved all announcer audio, those were
+awesome and hilarious. This makes me feel like more good audio content can be created for the female announcer"*.
+He KEPT all 67 lines on the first veto page (dump: `_agents/streams/references/round12/audio_veto_db/`).
+
+**Measured first** (8 recorded real 5200 matches, laptop): she said ~2.7 lines a match, 1.5 of them the sign-off;
+kill notices 0.5, welcome 0.4, lull 0.25; during play 0.62 a match. Her army / control / drill / formation /
+momentum pools (70 lines) never fire at that density. With her cross-session memory (C9: one hearing is remembered
+all evening), the sign-off and the kill notices are what an evening of matches exhausts.
+
+**Built (`8dcc59ad`):** 49 lines in her register, each naming its one wrong detail as data (`oddity {span, category}`;
+audit 0 errors), each a category its pool had not used: 21 kill notices (18 → 39), 13 sign-off notices + 3 results
+(outro 24 → 40), 12 lull notices / sponsor reads (31 → 43). 58 recordings, 7,875 characters, speech-to-text flagged 0,
+ElevenLabs 51,851 → 44,495 settled (ledger row; the earlier batch settled 148 lower than logged, noted there).
+`beats.json`: kill *Joseph is corrected* 2 → 4, lull *sponsor read* and *arena notice* 2 → 3. Her lines during play
+**0.62 → 0.93 a match**, airtime 16 % → 18 %; the caller unchanged (827 lines), the Veteran 28 % → 26 % (40 broadcasts,
+laptop). Review transcripts re-cut; `test_announcer` 41 passed, 0 failed; announcer pytest OK (laptop).
+
+**VERIFIED GREEN — merge here: `159f8645`** (M6 + main at `bcd9dd4f`; builder0, 2026-09-27): `>> remote: make check
+exited 0`, 18 targets, **1766 passed, 0 failed**, `sim-baseline passed: 6313a38d7ecd99bb` (main's value after nav's
+CP2; audio moves nothing), `announcer transcripts current`, `music-smoke` and `announcer-record-smoke` both `(matches
+the same match without …)`. The run at `8dcc59ad` read `sim-baseline FAILED … got 6313a38d7ecd99bb`: that tree had
+main at `c8e80f5b`, before main recorded nav's move in `d6094cef`; merging main fixed it, no audio change.
+
+**Her veto page (same shape as the first; `verdicts`, doc id = line id with `.` → `_`):
+https://claude.ai/artifact/Kkj5VrQPuw8HNDLJUsPtjk** — 49 lines grouped by where she says them; a result line plays
+the Law's take. Empty at publish. **Read its `db` at the round's close.**
+
 ### Questions for the lead
 1. **Web size.** `assets/music/` went from 13 MB to 29 MB and all of it ships in the web pack. Options: accept; drop the
    web build to one track per state and keep the rotation on desktop/Android; or the music-pack-after-start the design

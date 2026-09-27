@@ -40,5 +40,5 @@ result: rust by elimination at 1:24.2
 1:27.0   CALLER   Smoke pouring out, and that one is done for the night!
 1:30.9   CALLER   And the Syndicate are the last army standing! The Syndicate win!
 1:34.8   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
-1:42.4   PA       The result is final. The Syndicate win, and the floor will be cleared before the next session.
-1:49.2   PA       Before you leave, tonight's ticket stubs may be exchanged for a day's water ration at any district office until the end of the month.
+1:42.4   PA       The Syndicate are tonight's winner. Ticket holders may remain seated during the recovery operation.
+1:48.0   PA       Younger fans are reminded that tonight's match counts toward their district's selection, and school resumes as normal in the morning.

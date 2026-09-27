@@ -40,4 +40,4 @@ result: rust by elimination at 1:24.2
 1:29.1   CALLER   The last engine stops, and this place erupts!
 1:32.1   VETERAN  You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
 1:43.2   CALLER   What a night!
-1:45.2   PA       Tonight's match goes to the Syndicate. Settlement of wagers will begin within the hour.
+1:45.2   PA       The Syndicate take tonight's match. We thank our participants, and our sponsors, in that order.

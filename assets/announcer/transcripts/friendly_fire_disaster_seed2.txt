@@ -27,5 +27,5 @@ result: green by elimination at 0:33.0
 0:37.3   CALLER   That's the last one! The Wreckers wipe them out!
 0:40.6   CALLER   That is the match! The Wreckers take it!
 0:43.6   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
-0:50.0   PA       The Wreckers win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
-0:57.7   PA       Our next broadcast is tomorrow evening at the usual time, with the same crews where available, and we hope you will join us.
+0:50.0   PA       The Wreckers take tonight's match. We thank our participants, and our sponsors, in that order.
+0:56.2   PA       For the crews who finished tonight's match, one week has been taken off their sentences, and the results are posted by the east gate.

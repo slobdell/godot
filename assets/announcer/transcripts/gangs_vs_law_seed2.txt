@@ -22,7 +22,7 @@ result: green by elimination at 1:20.2
 0:34.0   ── rust tank destroys green burner
 0:37.5   CALLER   And that vehicle is not getting back up!
 0:40.4   CALLER   What a moment!
-0:46.8   PA       The Syndicate would like to remind—
+0:46.8   PA       Due to high demand, water service—
 0:49.5   ── green scout destroys rust ifv
 0:49.5   CALLER   Whoa, whoa, whoa!
 0:51.1   CALLER   It's all on the last Law vehicle now!
@@ -37,4 +37,4 @@ result: green by elimination at 1:20.2
 1:20.3   CALLER   And that's it! That's the last one!
 1:23.0   CALLER   It's all over! The Wreckers win it!
 1:25.7   VETERAN  Hard cover stops a shell. Soft cover just stops them seeing you. Knowing which is which is most of it.
-1:35.0   PA       The result is final. The Wreckers win, and the floor will be cleared before the next session.
+1:35.0   PA       The Wreckers are tonight's winner. Ticket holders may remain seated during the recovery operation.

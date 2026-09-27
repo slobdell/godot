@@ -13221,6 +13221,697 @@
    ],
    "text": "A crew that's been together a full season is rare. The schedule doesn't really allow for it.",
    "added": "r12"
+  },
+  {
+   "id": "pa.kill.13",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. The crew's last transmission has been kept for training purposes, along with the others from this season, and the match continues.",
+   "oddity": {
+    "span": "kept for training purposes",
+    "category": "archive"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.14",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The vehicle's reserve crew will take its place next week. Several of them are watching tonight with their school groups, in the north stand, as part of the programme.",
+   "oddity": {
+    "span": "with their school groups",
+    "category": "children"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.15",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "Spectators in section four may now leave their seats for refreshments, in groups of six, under escort, until the next kill.",
+   "oddity": {
+    "span": "under escort",
+    "category": "confinement"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.16",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The crew's cell has been reassigned for tomorrow's arrivals, and their personal effects will be kept at the stewards' office in the meantime.",
+   "oddity": {
+    "span": "The crew's cell has been reassigned",
+    "category": "detention"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.17",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "Anyone near the floor for that one will be offered a hearing check next season, as usual, and the match continues.",
+   "oddity": {
+    "span": "a hearing check next season",
+    "category": "hearing"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.18",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill",
+    "after_caller"
+   ],
+   "text": "Well called, Joseph. That crew's apartment in the eastern blocks is now available, and applications open tomorrow morning at the housing office.",
+   "oddity": {
+    "span": "is now available",
+    "category": "housing"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.19",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The stewards thank the fan who shared that crew's route beforehand, and remind everyone the reporting desk is open.",
+   "oddity": {
+    "span": "who shared that crew's route beforehand",
+    "category": "informants"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.20",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "That vehicle passed its inspection this morning, the crew compartment excepted, and we wish its replacement the same result.",
+   "oddity": {
+    "span": "the crew compartment excepted",
+    "category": "inspection"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.21",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill",
+    "after_caller"
+   ],
+   "text": "Quite so, Joseph. The crew's cover lapsed when the gates closed, as all cover does, and the arena's own policy remains in force.",
+   "oddity": {
+    "span": "lapsed when the gates closed",
+    "category": "insurance"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.22",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The crew had been offered a work placement on release, which now passes down the list, within the same district, from Monday.",
+   "oddity": {
+    "span": "passes down the list",
+    "category": "labour"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.23",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The Law's observer confirmed that kill a moment before it happened, which is within his discretion, and the result stands.",
+   "oddity": {
+    "span": "a moment before it happened",
+    "category": "officials"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.24",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The vehicle returns to its owners, the crew to their district, in that order of priority, once the floor is clear.",
+   "oddity": {
+    "span": "in that order of priority",
+    "category": "ownership"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.25",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. Crews wishing to dispute that result may do so in writing, in person, at the stewards' office, before the end of the match.",
+   "oddity": {
+    "span": "in person",
+    "category": "paperwork"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.26",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The crew who made that shot are from the upper districts, and will be home in time for supper, as their contract provides.",
+   "oddity": {
+    "span": "home in time for supper",
+    "category": "privilege"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.27",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "Fans who correctly predicted that result have earned a half ration of water, collectable at the concourse, and the windows remain open.",
+   "oddity": {
+    "span": "a half ration of water",
+    "category": "rationing"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.28",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "That crew was due on again on Thursday, and the Thursday card will run as printed, with a substitute, at the usual time.",
+   "oddity": {
+    "span": "will run as printed",
+    "category": "schedule"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.29",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "That kill scores three points, plus a bonus for vehicle condition, which was good, and the scoreboard has been updated.",
+   "oddity": {
+    "span": "a bonus for vehicle condition",
+    "category": "scoring"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.30",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "Our floor stewards will wait for a pause before attending, a policy introduced last season, and the match continues.",
+   "oddity": {
+    "span": "a policy introduced last season",
+    "category": "staffing"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.31",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The vehicle's power has been cut at source, as has its crew's home block, until the morning shift, as standard.",
+   "oddity": {
+    "span": "as has its crew's home block",
+    "category": "utilities"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.32",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill",
+    "after_caller"
+   ],
+   "text": "Thank you, Joseph. That crew had volunteered for tonight's match twice, the second time in writing, and the arena thanks them for their commitment.",
+   "oddity": {
+    "span": "the second time in writing",
+    "category": "volunteering"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.kill.33",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill"
+   ],
+   "text": "The smoke from that vehicle will drift toward the eastern districts overnight, as scheduled, and play continues.",
+   "oddity": {
+    "span": "toward the eastern districts",
+    "category": "weather"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.14",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Tonight's match will be kept in the district archive alongside the crews' records, and may be requested by relatives in the usual way.",
+   "oddity": {
+    "span": "alongside the crews' records",
+    "category": "archive"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.15",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Younger fans are reminded that tonight's match counts toward their district's selection, and school resumes as normal in the morning.",
+   "oddity": {
+    "span": "counts toward their district's selection",
+    "category": "children"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.16",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Tonight's crews will now return to their blocks by the north tunnel, and fans are asked not to wave, as it slows the line.",
+   "oddity": {
+    "span": "return to their blocks",
+    "category": "detention"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.17",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Our thanks to tonight's crews, including those who have concluded their participation, and to everyone who made the evening possible.",
+   "oddity": {
+    "span": "concluded their participation",
+    "category": "euphemism"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.18",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Fans leaving the lower bowl may find conversation difficult for a day or two, which is normal, and staff at the gates will point the way.",
+   "oddity": {
+    "span": "for a day or two",
+    "category": "hearing"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.19",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "The medical team will now begin their rounds of the floor, starting with the winning side, and the concourse remains open meanwhile.",
+   "oddity": {
+    "span": "starting with the winning side",
+    "category": "medical"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.20",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Parts from tonight's vehicles, and some personal items, are available at the souvenir stand from tomorrow, with certificates of authenticity.",
+   "oddity": {
+    "span": "and some personal items",
+    "category": "merchandise"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.21",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Please have your ticket and district papers ready at the gates, where some fans will be asked to stay behind for a short conversation with the stewards.",
+   "oddity": {
+    "span": "asked to stay behind",
+    "category": "papers"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.22",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "The floor crew will recover tonight's vehicles first, as they are needed on Thursday, and the remaining items in the order they are found.",
+   "oddity": {
+    "span": "as they are needed on Thursday",
+    "category": "salvage"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.23",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "For the crews who finished tonight's match, one week has been taken off their sentences, and the results are posted by the east gate.",
+   "oddity": {
+    "span": "one week has been taken off",
+    "category": "sentence"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.24",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Winning tickets may be collected at the main windows, and tickets on the crews themselves are settled with their next of kin, by post, within the month.",
+   "oddity": {
+    "span": "settled with their next of kin",
+    "category": "wagers"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.25",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Our thanks to the arena stewards, several promoted to crew for next season, for another evening without incident.",
+   "oddity": {
+    "span": "several promoted to crew",
+    "category": "staffing"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.signoff.26",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Fans from the eastern blocks are reminded that their building's lifts have been reserved for tonight's winners, and the stairs are open.",
+   "oddity": {
+    "span": "reserved for tonight's winners",
+    "category": "housing"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.result.12",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "{faction} take tonight's match. The final count is by vehicles, with crews listed separately, and the result has been confirmed.",
+   "oddity": {
+    "span": "with crews listed separately",
+    "category": "scoring"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.result.13",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "Victory tonight goes to {faction}. The winning crews remain on loan to the arena until Friday, and we thank their owners for the arrangement.",
+   "oddity": {
+    "span": "remain on loan to the arena",
+    "category": "ownership"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.result.14",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "{faction} are tonight's winners. Their crews will travel home through the upper districts tonight, by the usual courtesy, and good night to you all.",
+   "oddity": {
+    "span": "through the upper districts",
+    "category": "privilege"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.sponsor.16",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "This quiet spell is brought to you by Syndicate Life, whose family plans pay out in full, less damage to the vehicle, within one calendar year of the claim.",
+   "oddity": {
+    "span": "less damage to the vehicle",
+    "category": "insurance"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.notice.15",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "A note for fans travelling home: tonight's air is rated fair for adults, and children are advised to use a cloth outdoors, as on most evenings this month.",
+   "oddity": {
+    "span": "use a cloth outdoors",
+    "category": "weather"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.notice.16",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "The camera above section eleven is not working this evening, and fans in that section are asked to behave as though it were, for the remainder of the match.",
+   "oddity": {
+    "span": "as though it were",
+    "category": "surveillance"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.sponsor.17",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Vireo nutrition bars are on sale at every stand, and count toward your weekly allowance at half their weight, during tonight's broadcast only.",
+   "oddity": {
+    "span": "at half their weight",
+    "category": "rationing"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.notice.17",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Meridian Transport advises that the eastern line is running, and the western line will run once the crews are returned, at about eleven, from platform two.",
+   "oddity": {
+    "span": "once the crews are returned",
+    "category": "transit"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.notice.18",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "The arena's junior programme is recruiting in the family stand tonight, and a representative will visit each row before the final whistle.",
+   "oddity": {
+    "span": "is recruiting in the family stand",
+    "category": "children"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.notice.19",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Fans in the front rows may notice the floor staff standing by with the larger brooms this evening, which is routine for a full card.",
+   "oddity": {
+    "span": "with the larger brooms",
+    "category": "cleanup"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.sponsor.18",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Syndicate Works is hiring at the north gate tonight, with priority for applicants whose relatives are on the floor, and interviews run until the whistle.",
+   "oddity": {
+    "span": "whose relatives are on the floor",
+    "category": "labour"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.notice.20",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "The crowd noise tonight has peaked at one hundred and twelve decibels, which the stewards consider a success, and earplugs remain on sale.",
+   "oddity": {
+    "span": "which the stewards consider a success",
+    "category": "hearing"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.notice.21",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "The Law's representative in the officials' box has placed his usual wager, and asks that the booth not mention which crew, in fairness.",
+   "oddity": {
+    "span": "has placed his usual wager",
+    "category": "officials"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.notice.22",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Tonight's crowd includes this month's draft from the southern districts, who are seated in the upper tier, and we welcome them warmly.",
+   "oddity": {
+    "span": "this month's draft",
+    "category": "quotas"
+   },
+   "added": "r12"
+  },
+  {
+   "id": "pa.sponsor.19",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Syndicate Housing reminds tonight's crews that their rooms are held until noon tomorrow, after which they will be reallocated, as usual.",
+   "oddity": {
+    "span": "held until noon tomorrow",
+    "category": "housing"
+   },
+   "added": "r12"
   }
  ]
 }
