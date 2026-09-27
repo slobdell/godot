@@ -130,8 +130,8 @@ func _try_start() -> void:
 		var units: Array = []
 		for tank in game_match.sorted_team_tanks(team):
 			var id := String(tank.name)
-			units.append({"id": id, "unit": tank.unit_id, "squad": game_match.squad_of(tank)})
-			_units[id] = {"tank": tank, "team": team, "unit": tank.unit_id, "alive": tank.is_alive(), "hull": _hull(tank),
+			units.append({"id": id, "unit": booth_unit(tank.unit_id), "squad": game_match.squad_of(tank)})
+			_units[id] = {"tank": tank, "team": team, "unit": booth_unit(tank.unit_id), "alive": tank.is_alive(), "hull": _hull(tank),
 					"low_since": -1.0, "close_call": false, "reported": -100.0}
 			tank.fired.connect(_on_fired.bind(id))
 		teams.append({"team": TEAM_KEYS[team], "faction": team_faction(team), "units": units})
@@ -262,8 +262,18 @@ func _on_finished(result: Dictionary) -> void:
 	for key in TEAM_KEYS:
 		kills[key] = {}
 		for unit in result["kills_by_unit"][key]:
-			kills[key][unit] = int(result["kills_by_unit"][key][unit])
+			var role := booth_unit(String(unit))
+			kills[key][role] = int(kills[key].get(role, 0)) + int(result["kills_by_unit"][key][unit])
 	_emit("match_end", {"winner": String(result["winner"]).to_lower(), "reason": reasons.get(result["reason"], "time"),
 			"duration_seconds": float(result["duration_seconds"]),
 			"units_left": {"green": int(result["units_left"]["green"]), "rust": int(result["units_left"]["rust"])},
 			"kills_by_unit": kills})
+
+
+## The unit type the booth speaks of: a faction's own vehicle ("gang_ifv", the Gun Truck) by its role ("ifv"). K5's
+## unit fields are the six types the booth has words for; the faction is already on the team (round 12: sending the
+## faction id made every unit-naming line ineligible in every faction match, and every recording invalid).
+static func booth_unit(unit_id: String) -> String:
+	var role := Units.role_of(unit_id)
+	return role if role in AnnouncerEvents.UNIT_TYPES else unit_id
+

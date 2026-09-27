@@ -12,7 +12,16 @@ extends Node
 ##     add_child(music)
 ##     music.follow(mood)          # or music.set_state("battle") by hand
 ##
-## Launch flags (game/main.gd): `--music=on|off`, `--music-volume=DB`, `--music-dir=PATH`.
+## Launch flags (game/main.gd): `--music=on|off`, `--music-volume=DB`, `--music-dir=PATH`, `--music-seed=N` (which
+## tracks this match draws; default a new draw each match), `--music-history=PATH|off` (the cross-match memory; off
+## by default in a headless run, which nobody hears).
+##
+## **Round 12: the opening, and a soundtrack that rotates.** The mood starts every match at `lull`, so the pre-match
+## bed was never asked for and every match opened on the one lull bed. The director's own states are the mood's plus
+## `pre_match` (the quiet before anybody has fired: [method music_state_for]). Every state has several tracks; each
+## set of equally fitting tracks is drawn once per match from the match's seed and the [MusicHistory] (the least
+## recently heard first), so the opening, the lull and the result each rotate on their own rather than one index
+## picking "track 2 of everything".
 ##
 ## Why beat-aligned: a crossfade that lands mid-bar sounds like a mistake even when both tracks are good. The
 ## director waits for the next bar line of the bed that is *playing*, up to [constant MAX_WAIT_S], then fades.
@@ -40,6 +49,8 @@ const STEM_FADE_S := 1.2
 ## A stem stays in until the intensity is this far under its `from`.
 const STEM_HYSTERESIS := 0.08
 const SILENT_DB := -60.0
+## The states the director plays: the mood's, the opening before them, and the garage outside a match.
+const STATES := ["pre_match", "lull", "skirmish", "battle", "last_stand", "victory", "defeat", "garage"]
 ## The soundtrack's level under --music-volume. Until the stems looped (bc1ce8f) the fight music stopped after 8 s,
 ## so the whole mix was balanced against silence; the first full match with it playing measured -15.2 LUFS and a
 ## battle that was mostly music (-11 dB RMS). The battle leads; the music sits under it.
@@ -56,8 +67,11 @@ var volume_db := 0.0:
 ## Replaceable for tests: path -> AudioStream (or null when there is no file).
 var load_stream: Callable = func(path: String) -> AudioStream: return _load_any(path)
 
-## Which of several equally fitting tracks this match plays (attach() picks one per match; 0 in tests).
-var rotation := 0
+## The match's own dice for which of several equally fitting tracks it plays (attach() draws one per match, or
+## --music-seed; 0 in tests). Never the simulation's generator.
+var match_seed := 0
+## The cross-match memory of what was heard (null: none, every draw is the dice alone).
+var history: MusicHistory
 var tracks := {}
 var stingers := {}
 var dir := ""
@@ -80,6 +94,9 @@ var _stems: AudioStreamSynchronized
 var _stem_fade: Tween
 var _last_bar := -1
 var _stems_started_usec := 0
+## This match's pick for each set of equally fitting tracks, keyed by the set: skirmish and battle share one fight set,
+## so they share one pick.
+var _picks := {}
 
 
 ## Adds a music director to the running game if `--music` asks for one, following the booth's mood. Returns it,
@@ -93,16 +110,25 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 	var music := MusicDirector.new()
 	music.name = "Music"
 	# Presentation randomness from its own generator, never the simulation's.
-	var dice := RandomNumberGenerator.new()
-	dice.randomize()
-	music.rotation = dice.randi() & 0xffff
+	var seed_text := flags.text("music-seed")
+	if seed_text.is_valid_int():
+		music.match_seed = int(seed_text)
+	else:
+		var dice := RandomNumberGenerator.new()
+		dice.randomize()
+		music.match_seed = dice.randi() & 0x7fffffff
+	var history_path := flags.text("music-history",
+			"off" if DisplayServer.get_name() == "headless" else MusicHistory.PATH)
+	if history_path != "off":
+		music.history = MusicHistory.load_from(history_path)
 	music.volume_db = float(flags.text("music-volume", "0"))
 	if not music.load_tracks(flags.text("music-dir", DEFAULT_DIR)):
 		print("MUSIC no tracks in %s yet: silence" % flags.text("music-dir", DEFAULT_DIR))
 		return null
 	main.game_match.add_child(music)
 	music.follow(booth.mood)
-	print("MUSIC on: %d beds, %d stingers, following the match mood" % [music.tracks.size(), music.stingers.size()])
+	print("MUSIC on: %d beds, %d stingers, following the match mood (seed %d, memory %s)" % [music.tracks.size(),
+			music.stingers.size(), music.match_seed, history_path])
 	return music
 
 
@@ -168,11 +194,17 @@ func _ready() -> void:
 func follow(mood: MatchMood) -> void:
 	_mood = mood
 	mood.state_changed.connect(_on_mood_changed)
-	set_state(mood.current()["state"])
+	set_state(music_state_for(mood.current()["state"], mood.started_contact))
+
+
+## The director's state for a mood reading: the mood's own, except that the quiet before anybody has fired is the
+## opening (`pre_match`), not a lull.
+static func music_state_for(mood_state: String, started_contact: bool) -> String:
+	return "pre_match" if mood_state == "lull" and not started_contact else mood_state
 
 
 func _on_mood_changed(reading: Dictionary) -> void:
-	set_state(String(reading["state"]))
+	set_state(music_state_for(String(reading["state"]), _mood != null and _mood.started_contact))
 	match String(reading["state"]):
 		"victory":
 			play_stinger("sting.victory")
@@ -211,28 +243,56 @@ func set_state(next: String) -> void:
 		_crossfade_now()
 
 
-## The best track for a state: the one whose `states` list it in, a stem set first, then the highest intensity;
-## "" when none fits.
+## The best track for a state: this match's pick among [method candidates_for]; "" when none fits.
 func track_for(wanted: String) -> String:
+	var tied := candidates_for(wanted)
+	if tied.size() <= 1:
+		return "" if tied.is_empty() else String(tied[0])
+	var key := ",".join(tied)
+	if not _picks.has(key):
+		_picks[key] = pick_among(tied, match_seed, history)
+	return _picks[key]
+
+
+## Every track that fits a state equally well, sorted: the ones whose `states` list it, a stem set first, then the
+## highest intensity.
+func candidates_for(wanted: String) -> Array:
 	var tied: Array = []
 	var best_intensity := -1.0
 	var ids: Array = tracks.keys()
-	ids.sort()  # deterministic order for the rotation below
+	ids.sort()  # deterministic order for the draw
 	for id in ids:
 		var track: Dictionary = tracks[id]
 		if not wanted in track.get("states", []):
 			continue
 		# A stem set outranks a single bed for the same state: it follows the fight instead of stepping.
 		var intensity := float(track.get("intensity", 0.0)) + (10.0 if track.has("stems") else 0.0)
-		if intensity > best_intensity:
+		if intensity > best_intensity + 0.0001:
 			tied = [id]
 			best_intensity = intensity
 		elif is_equal_approx(intensity, best_intensity):
 			tied.append(id)
-	if tied.is_empty():
-		return ""
-	# Several tracks that fit equally (the lead's three fight tracks): this match's pick, the same all match long.
-	return tied[posmod(rotation, tied.size())]
+	return tied
+
+
+## Which of `tied` a match plays: among those heard least recently (all of them, with no memory), the one this
+## match's seed lands on. The seed is mixed with the set itself, so each state draws for itself.
+static func pick_among(tied: Array, seed_value: int, memory: MusicHistory = null) -> String:
+	var freshest: Array = []
+	var oldest := 0x7fffffffffffffff
+	for id in tied:
+		var heard_at := memory.last_heard(id) if memory != null else -1
+		if heard_at < oldest:
+			freshest = [id]
+			oldest = heard_at
+		elif heard_at == oldest:
+			freshest.append(id)
+	return freshest[posmod(hash("%d|%s" % [seed_value, ",".join(tied)]), freshest.size())]
+
+
+## A new match: draw every state again (the seed or the memory has changed).
+func forget_picks() -> void:
+	_picks.clear()
 
 
 ## A one-shot over the bed (a kill, a comeback, the result). Rate-limited so a flurry gets one hit, not five.
@@ -420,6 +480,9 @@ func _crossfade_now() -> void:
 	if _stems == null:
 		layers = []
 		stem_db = []
+	if history != null:
+		history.heard(track_id)
+		history.save()
 	# Marker for make music-smoke: the soundtrack is the one thing here that a headless run can prove.
 	print("MUSIC_TRACK state=%s track=%s t=%.1f" % [state, track_id, _clock])
 	track_changed.emit(state, track_id)

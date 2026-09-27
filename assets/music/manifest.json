@@ -9,9 +9,10 @@
    "beats_per_bar": 4,
    "loop_start_s": 2.878,
    "loop_end_s": 57.554,
-   "intensity": 0.1,
+   "intensity": 0.4,
    "states": [
-    "garage"
+    "garage",
+    "victory"
    ],
    "lufs": -16.1,
    "peak_db": -6.0,
@@ -37,8 +38,9 @@
    "beats_per_bar": 4,
    "loop_start_s": 12.392,
    "loop_end_s": 45.439,
-   "intensity": 0.7,
+   "intensity": 0.4,
    "states": [
+    "garage",
     "victory"
    ],
    "lufs": -16.1,
@@ -158,6 +160,240 @@
    "beats_per_bar": 4,
    "loop_start_s": 0.0,
    "loop_end_s": 63.158,
+   "intensity": 0.6,
+   "states": [
+    "skirmish",
+    "battle"
+   ],
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "blues_wasteland": {
+   "file": "bed_blues_wasteland.ogg",
+   "bpm": 82.0,
+   "beats_per_bar": 4,
+   "loop_start_s": 8.78,
+   "loop_end_s": 55.61,
+   "intensity": 0.4,
+   "states": [
+    "garage",
+    "victory"
+   ],
+   "lufs": -16.1,
+   "peak_db": -5.8,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "blues_neon": {
+   "file": "bed_blues_neon.ogg",
+   "bpm": 70.8,
+   "beats_per_bar": 4,
+   "loop_start_s": 0.0,
+   "loop_end_s": 61.017,
+   "intensity": 0.4,
+   "states": [
+    "garage",
+    "victory"
+   ],
+   "lufs": -16.1,
+   "peak_db": -5.4,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "pre_match_outrun": {
+   "file": "bed_pre_match_outrun.ogg",
+   "bpm": 126.0,
+   "beats_per_bar": 4,
+   "loop_start_s": 0.0,
+   "loop_end_s": 55.238,
+   "intensity": 0.25,
+   "states": [
+    "pre_match"
+   ],
+   "lufs": -16.2,
+   "peak_db": -4.8,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "pre_match_hymn": {
+   "file": "bed_pre_match_hymn.ogg",
+   "bpm": 112.3,
+   "beats_per_bar": 4,
+   "loop_start_s": 2.137,
+   "loop_end_s": 61.977,
+   "intensity": 0.25,
+   "states": [
+    "pre_match"
+   ],
+   "lufs": -16.2,
+   "peak_db": -4.4,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "lull_predator": {
+   "file": "bed_lull_predator.ogg",
+   "bpm": 110.0,
+   "beats_per_bar": 4,
+   "loop_start_s": 4.364,
+   "loop_end_s": 63.273,
+   "intensity": 0.3,
+   "states": [
+    "lull"
+   ],
+   "lufs": -16.2,
+   "peak_db": -5.6,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "lull_predator_b": {
+   "file": "bed_lull_predator_b.ogg",
+   "bpm": 126.0,
+   "beats_per_bar": 4,
+   "loop_start_s": 0.0,
+   "loop_end_s": 57.143,
+   "intensity": 0.3,
+   "states": [
+    "lull"
+   ],
+   "lufs": -16.3,
+   "peak_db": -5.3,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "lull_factory": {
+   "file": "bed_lull_factory.ogg",
+   "bpm": 112.3,
+   "beats_per_bar": 4,
+   "loop_start_s": 2.137,
+   "loop_end_s": 59.84,
+   "intensity": 0.3,
+   "states": [
+    "lull"
+   ],
+   "lufs": -16.2,
+   "peak_db": -5.3,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "last_stand_rusted": {
+   "file": "bed_last_stand_rusted.ogg",
+   "bpm": 178.2,
+   "beats_per_bar": 4,
+   "loop_start_s": 1.347,
+   "loop_end_s": 60.606,
+   "intensity": 0.95,
+   "states": [
+    "last_stand"
+   ],
+   "lufs": -16.2,
+   "peak_db": -5.3,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "last_stand_brass": {
+   "file": "bed_last_stand_brass.ogg",
+   "bpm": 112.3,
+   "beats_per_bar": 4,
+   "loop_start_s": 0.0,
+   "loop_end_s": 59.84,
+   "intensity": 0.95,
+   "states": [
+    "last_stand"
+   ],
+   "lufs": -16.2,
+   "peak_db": -5.8,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "defeat_ragnarok": {
+   "file": "bed_defeat_ragnarok.ogg",
+   "bpm": 112.3,
+   "beats_per_bar": 4,
+   "loop_start_s": 2.137,
+   "loop_end_s": 61.977,
+   "intensity": 0.2,
+   "states": [
+    "defeat"
+   ],
+   "lufs": -16.2,
+   "peak_db": -5.5,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "defeat_hunt": {
+   "file": "bed_defeat_hunt.ogg",
+   "bpm": 126.0,
+   "beats_per_bar": 4,
+   "loop_start_s": 1.905,
+   "loop_end_s": 60.952,
+   "intensity": 0.2,
+   "states": [
+    "defeat"
+   ],
+   "lufs": -16.3,
+   "peak_db": -5.7,
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "fight_machine": {
+   "stems": [
+    {
+     "file": "fight_machine_other.ogg",
+     "from": 0.0
+    },
+    {
+     "file": "fight_machine_bass.ogg",
+     "from": 0.35
+    },
+    {
+     "file": "fight_machine_drums.ogg",
+     "from": 0.6
+    }
+   ],
+   "bpm": 105.5,
+   "beats_per_bar": 4,
+   "loop_start_s": 2.275,
+   "loop_end_s": 63.697,
+   "intensity": 0.6,
+   "states": [
+    "skirmish",
+    "battle"
+   ],
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "fight_momentum": {
+   "stems": [
+    {
+     "file": "fight_momentum_other.ogg",
+     "from": 0.0
+    },
+    {
+     "file": "fight_momentum_bass.ogg",
+     "from": 0.35
+    },
+    {
+     "file": "fight_momentum_drums.ogg",
+     "from": 0.6
+    }
+   ],
+   "bpm": 120.2,
+   "beats_per_bar": 4,
+   "loop_start_s": 0.0,
+   "loop_end_s": 67.887,
+   "intensity": 0.6,
+   "states": [
+    "skirmish",
+    "battle"
+   ],
+   "rights": "Suno (plan to confirm), 2026-09-17"
+  },
+  "fight_convoy": {
+   "stems": [
+    {
+     "file": "fight_convoy_other.ogg",
+     "from": 0.0
+    },
+    {
+     "file": "fight_convoy_bass.ogg",
+     "from": 0.35
+    },
+    {
+     "file": "fight_convoy_drums.ogg",
+     "from": 0.6
+    }
+   ],
+   "bpm": 110.0,
+   "beats_per_bar": 4,
+   "loop_start_s": 0.0,
+   "loop_end_s": 67.636,
    "intensity": 0.6,
    "states": [
     "skirmish",

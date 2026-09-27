@@ -11125,6 +11125,102 @@
    "text": "That one saw it coming and could not get out of the way!",
    "voice": "JR1"
   },
+  "caller.kill.102": {
+   "duration_s": 2.811,
+   "file": "caller/caller.kill.102.ogg",
+   "kind": "line",
+   "request": "caller.kill.102",
+   "request_key": "1355325c1077030d3f2de5cac88b190621a2cf67",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "One goes down, then the other. This is a slugfest",
+   "text": "One goes down, then the other! This is a slugfest!",
+   "voice": "JR1"
+  },
+  "caller.kill.103": {
+   "duration_s": 2.953,
+   "file": "caller/caller.kill.103.ogg",
+   "kind": "line",
+   "request": "caller.kill.103",
+   "request_key": "301c562db1ecd8f57ebd816e2ec5e68f6ae1f497",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, they're exchanging. Both sides just lost one",
+   "text": "Oh, they're exchanging! Both sides just lost one!",
+   "voice": "JR1"
+  },
+  "caller.kill.104": {
+   "duration_s": 3.672,
+   "file": "caller/caller.kill.104.ogg",
+   "kind": "line",
+   "request": "caller.kill.104",
+   "request_key": "b6502449e06e8b4d3dc27f3cf555b11c7dc17ac4",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Toe to toe. They are standing in the pocket and letting it fly",
+   "text": "Toe to toe! They are standing in the pocket and letting it fly!",
+   "voice": "JR1"
+  },
+  "caller.kill.105": {
+   "duration_s": 3.198,
+   "file": "caller/caller.kill.105.ogg",
+   "kind": "line",
+   "request": "caller.kill.105",
+   "request_key": "588c9dc076c23216527402b64b875e4e3aa80568",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Neither side will take a step back and both of them pay for it",
+   "text": "Neither side will take a step back, and both of them pay for it!",
+   "voice": "JR1"
+  },
+  "caller.kill.106": {
+   "duration_s": 3.026,
+   "file": "caller/caller.kill.106.ogg",
+   "kind": "line",
+   "request": "caller.kill.106",
+   "request_key": "568511bcec592fab0289bf0fb73c7d0ee1ed9b20",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Wrecks on both sides. This is an absolute war out there",
+   "text": "Wrecks on both sides! This is an absolute war out there!",
+   "voice": "JR1"
+  },
+  "caller.kill.107": {
+   "duration_s": 3.687,
+   "file": "caller/caller.kill.107.ogg",
+   "kind": "line",
+   "request": "caller.kill.107",
+   "request_key": "80581c9a688b955bf1f283cabf8e1125af8ac7c2",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "An even exchange, and the pace does not slow down one bit",
+   "text": "An even exchange! And the pace does not slow down one bit!",
+   "voice": "JR1"
+  },
+  "caller.kill.108": {
+   "duration_s": 3.139,
+   "file": "caller/caller.kill.108.ogg",
+   "kind": "line",
+   "request": "caller.kill.108",
+   "request_key": "fdcb34c60dc00a76bf43fdde7b3238f73c17f02c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Both armies bleeding, both armies still coming forward",
+   "text": "Both armies bleeding! Both armies still coming forward!",
+   "voice": "JR1"
+  },
+  "caller.kill.109": {
+   "duration_s": 3.002,
+   "file": "caller/caller.kill.109.ogg",
+   "kind": "line",
+   "request": "caller.kill.109",
+   "request_key": "a722fce6dfaa8a076e39e13a92515c67adbb1714",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "It's a firefight, folks. Everybody is getting tagged",
+   "text": "It's a firefight, folks! Everybody is getting tagged!",
+   "voice": "JR1"
+  },
   "caller.kill.10@artillery": {
    "duration_s": 2.38,
    "file": "caller/caller.kill.10@artillery.ogg",
@@ -11195,6 +11291,126 @@
    "stt_ok": true,
    "stt_text": "It's gone. That tank is gone",
    "text": "It's gone! That tank is gone!",
+   "voice": "JR1"
+  },
+  "caller.kill.110": {
+   "duration_s": 2.691,
+   "file": "caller/caller.kill.110.ogg",
+   "kind": "line",
+   "request": "caller.kill.110",
+   "request_key": "ce152a8013c5ede95bb01345a0966145c84913a3",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "One for one. Nobody out there is willing to blink",
+   "text": "One for one! Nobody out there is willing to blink!",
+   "voice": "JR1"
+  },
+  "caller.kill.111": {
+   "duration_s": 2.452,
+   "file": "caller/caller.kill.111.ogg",
+   "kind": "line",
+   "request": "caller.kill.111",
+   "request_key": "6244950693a2e7abbd1a5fd8878cf430e6681de5",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "But they are throwing everything they have at each other",
+   "text": "They are throwing everything they have at each other!",
+   "voice": "JR1"
+  },
+  "caller.kill.112": {
+   "duration_s": 3.612,
+   "file": "caller/caller.kill.112.ogg",
+   "kind": "line",
+   "request": "caller.kill.112",
+   "request_key": "073f4043f4e83caa45869dbca819b838760b585e",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "A big loss on one side, a big loss on the other. What a sequence",
+   "text": "A big loss on one side, a big loss on the other! What a sequence!",
+   "voice": "JR1"
+  },
+  "caller.kill.113": {
+   "duration_s": 3.249,
+   "file": "caller/caller.kill.113.ogg",
+   "kind": "line",
+   "request": "caller.kill.113",
+   "request_key": "a1cb71b71f114eb72dbdc3ceb80b100f9bf1084c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Nobody wants to back up. Two wrecks in a matter of seconds",
+   "text": "Nobody wants to back up! Two wrecks in a matter of seconds!",
+   "voice": "JR1"
+  },
+  "caller.kill.114": {
+   "duration_s": 2.906,
+   "file": "caller/caller.kill.114.ogg",
+   "kind": "line",
+   "request": "caller.kill.114",
+   "request_key": "c4932755f5be92ed482cc19fa281f443ccbfab5a",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Give and take. That's a war of attrition right there",
+   "text": "Give and take! That's a war of attrition right there!",
+   "voice": "JR1"
+  },
+  "caller.kill.115": {
+   "duration_s": 2.236,
+   "file": "caller/caller.kill.115.ogg",
+   "kind": "line",
+   "request": "caller.kill.115",
+   "request_key": "85b7c171dc9a1b7aa1f18f347f26f8ca66af5b56",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Hit for hit, neither of them flinches",
+   "text": "Hit for hit! Neither of them flinches!",
+   "voice": "JR1"
+  },
+  "caller.kill.116": {
+   "duration_s": 2.704,
+   "file": "caller/caller.kill.116.ogg",
+   "kind": "line",
+   "request": "caller.kill.116",
+   "request_key": "5f177c12d311d46b4f5cfd36edf8b9ca4c9456b4",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Both sides answer at once. What an exchange",
+   "text": "Both sides answer at once! What an exchange!",
+   "voice": "JR1"
+  },
+  "caller.kill.117": {
+   "duration_s": 3.647,
+   "file": "caller/caller.kill.117.ogg",
+   "kind": "line",
+   "request": "caller.kill.117",
+   "request_key": "09c642b09b6feed1fcddfeed05ac5eb10a47f499",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They're swapping wrecks out there. Nobody is winning this one clean",
+   "text": "They're swapping wrecks out there! Nobody is winning this one clean!",
+   "voice": "JR1"
+  },
+  "caller.kill.118": {
+   "duration_s": 2.347,
+   "file": "caller/caller.kill.118.ogg",
+   "kind": "line",
+   "request": "caller.kill.118",
+   "request_key": "83f03e873d52cf6d520f690cfbbea022c663a89f",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Back and forth, and both of them bleed for it",
+   "text": "Back and forth, and both of them bleed for it!",
+   "voice": "JR1"
+  },
+  "caller.kill.119": {
+   "duration_s": 2.364,
+   "file": "caller/caller.kill.119.ogg",
+   "kind": "line",
+   "request": "caller.kill.119",
+   "request_key": "9745f41fde70950fdd9e7e9205cfcda794565663",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They're not stopping. That's another one",
+   "text": "They're not stopping! That's another one!",
    "voice": "JR1"
   },
   "caller.kill.11@artillery": {
@@ -11269,6 +11485,126 @@
    "text": "They pick off the tank. Clean work.",
    "voice": "JR1"
   },
+  "caller.kill.120": {
+   "duration_s": 2.988,
+   "file": "caller/caller.kill.120.ogg",
+   "kind": "line",
+   "request": "caller.kill.120",
+   "request_key": "dd8ac320235747ef12014d93195b0b45c8a34358",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "And they do it again, right on top of the last one",
+   "text": "And they do it again! Right on top of the last one!",
+   "voice": "JR1"
+  },
+  "caller.kill.121": {
+   "duration_s": 2.287,
+   "file": "caller/caller.kill.121.ogg",
+   "kind": "line",
+   "request": "caller.kill.121",
+   "request_key": "c13c6b06932647348c1c61d64e70a94e39233e5c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, and another. They smell blood out there",
+   "text": "Oh, and another! They smell blood out there!",
+   "voice": "JR1"
+  },
+  "caller.kill.122": {
+   "duration_s": 2.605,
+   "file": "caller/caller.kill.122.ogg",
+   "kind": "line",
+   "request": "caller.kill.122",
+   "request_key": "eb4197f05353d2718e0acef2e7a9975270fb0e1e",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Same crew, same result. Another vehicle down",
+   "text": "Same crew, same result! Another vehicle down!",
+   "voice": "JR1"
+  },
+  "caller.kill.123": {
+   "duration_s": 2.335,
+   "file": "caller/caller.kill.123.ogg",
+   "kind": "line",
+   "request": "caller.kill.123",
+   "request_key": "1ce609560a0d8078f887748cece4db8a7d348145",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "It keeps happening. One more off the board",
+   "text": "It keeps happening! One more off the board!",
+   "voice": "JR1"
+  },
+  "caller.kill.124": {
+   "duration_s": 2.004,
+   "file": "caller/caller.kill.124.ogg",
+   "kind": "line",
+   "request": "caller.kill.124",
+   "request_key": "e903a48dc810880c52fe07b9e95df27fab194b79",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Right behind it. Another one goes",
+   "text": "Right behind it! Another one goes!",
+   "voice": "JR1"
+  },
+  "caller.kill.125": {
+   "duration_s": 2.176,
+   "file": "caller/caller.kill.125.ogg",
+   "kind": "line",
+   "request": "caller.kill.125",
+   "request_key": "4a04c8aaa8ec6225ce569c368b363ef01651265f",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They are relentless. That's one more",
+   "text": "They are relentless! That's one more!",
+   "voice": "JR1"
+  },
+  "caller.kill.126": {
+   "duration_s": 2.573,
+   "file": "caller/caller.kill.126.ogg",
+   "kind": "line",
+   "request": "caller.kill.126",
+   "request_key": "89bb33f8414fdc24d92eb112e9dd5b566c5a47cb",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Here comes another. The pressure is suffocating",
+   "text": "Here comes another! The pressure is suffocating!",
+   "voice": "JR1"
+  },
+  "caller.kill.127": {
+   "duration_s": 3.617,
+   "file": "caller/caller.kill.127.ogg",
+   "kind": "line",
+   "request": "caller.kill.127",
+   "request_key": "3931dc6069a6a9d521b873b38bc1480264b7cbfc",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They cannot be stopped right now. Everything they touch goes down",
+   "text": "They cannot be stopped right now! Everything they touch goes down!",
+   "voice": "JR1"
+  },
+  "caller.kill.128": {
+   "duration_s": 2.533,
+   "file": "caller/caller.kill.128.ogg",
+   "kind": "line",
+   "request": "caller.kill.128",
+   "request_key": "5bc874951eb4f9ccbeef6d98bb68a428694ff414",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "This is a run. This is a real run, folks",
+   "text": "This is a run! This is a real run, folks!",
+   "voice": "JR1"
+  },
+  "caller.kill.129": {
+   "duration_s": 2.658,
+   "file": "caller/caller.kill.129.ogg",
+   "kind": "line",
+   "request": "caller.kill.129",
+   "request_key": "9adad64f34a45d75f6c8a392e3d7fda17bc0ce5d",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Somebody has to answer this. They're taking everything",
+   "text": "Somebody has to answer this! They're taking everything!",
+   "voice": "JR1"
+  },
   "caller.kill.12@artillery": {
    "duration_s": 2.123,
    "file": "caller/caller.kill.12@artillery.ogg",
@@ -11341,6 +11677,162 @@
    "text": "Oh, they blew that tank wide open!",
    "voice": "JR1"
   },
+  "caller.kill.130": {
+   "duration_s": 2.797,
+   "file": "caller/caller.kill.130.ogg",
+   "kind": "line",
+   "request": "caller.kill.130",
+   "request_key": "55c647e3980c7b5135dd4e2d976b93a65ae9aeb4",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Unanswered. Kill after kill and nothing coming back",
+   "text": "Unanswered! Kill after kill, and nothing coming back!",
+   "voice": "JR1"
+  },
+  "caller.kill.131@condemned": {
+   "duration_s": 2.573,
+   "file": "caller/caller.kill.131@condemned.ogg",
+   "kind": "line",
+   "request": "caller.kill.131@condemned",
+   "request_key": "2eead929561c15fa31a8a5e6ea3d6d8f5650742d",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The condemned are rolling. I don't know who stops this",
+   "text": "The Condemned are rolling! I don't know who stops this!",
+   "voice": "JR1"
+  },
+  "caller.kill.131@gangs": {
+   "duration_s": 2.627,
+   "file": "caller/caller.kill.131@gangs.ogg",
+   "kind": "line",
+   "request": "caller.kill.131@gangs",
+   "request_key": "2c459acba748b1f9138010851f53596e55fe7bd8",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The wreckers are rolling. I don't know who stops this",
+   "text": "The Wreckers are rolling! I don't know who stops this!",
+   "voice": "JR1"
+  },
+  "caller.kill.131@law": {
+   "duration_s": 2.686,
+   "file": "caller/caller.kill.131@law.ogg",
+   "kind": "line",
+   "request": "caller.kill.131@law",
+   "request_key": "636b4a49a9020b69f5528feda36415122ca67a6e",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Let the law ruling. I don't know who stops this",
+   "text": "The Law are rolling! I don't know who stops this!",
+   "voice": "JR1"
+  },
+  "caller.kill.131@syndicate": {
+   "duration_s": 2.889,
+   "file": "caller/caller.kill.131@syndicate.ogg",
+   "kind": "line",
+   "request": "caller.kill.131@syndicate",
+   "request_key": "3cf74059ce200774c30f9f081227b368383c72bd",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The Syndicate are rolling. I don't know who stops this",
+   "text": "The Syndicate are rolling! I don't know who stops this!",
+   "voice": "JR1"
+  },
+  "caller.kill.132": {
+   "duration_s": 3.687,
+   "file": "caller/caller.kill.132.ogg",
+   "kind": "line",
+   "request": "caller.kill.132",
+   "request_key": "1b860eb62131aaf58bd68d772d003ec22dfa5911",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They are dominating this stretch. Absolutely dominating",
+   "text": "They are dominating this stretch! Absolutely dominating!",
+   "voice": "JR1"
+  },
+  "caller.kill.133": {
+   "duration_s": 2.723,
+   "file": "caller/caller.kill.133.ogg",
+   "kind": "line",
+   "request": "caller.kill.133",
+   "request_key": "82409874c17104d119d8e066114ec342de04ad79",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Do not count them out. They are clawing their way back",
+   "text": "Do not count them out! They are clawing their way back!",
+   "voice": "JR1"
+  },
+  "caller.kill.134": {
+   "duration_s": 2.466,
+   "file": "caller/caller.kill.134.ogg",
+   "kind": "line",
+   "request": "caller.kill.134",
+   "request_key": "ba49efc646a4cec9acd1018196cde679c0241c69",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, this is a whole new fight. Look who's back in it",
+   "text": "This is a whole new fight! Look who's back in it!",
+   "voice": "JR1"
+  },
+  "caller.kill.135": {
+   "duration_s": 2.717,
+   "file": "caller/caller.kill.135.ogg",
+   "kind": "line",
+   "request": "caller.kill.135",
+   "request_key": "28422093974f32392b6f37ce43bf8f3b2bfb89c8",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They were on the ropes a minute ago. Not anymore",
+   "text": "They were on the ropes a minute ago! Not anymore!",
+   "voice": "JR1"
+  },
+  "caller.kill.136": {
+   "duration_s": 3.316,
+   "file": "caller/caller.kill.136.ogg",
+   "kind": "line",
+   "request": "caller.kill.136",
+   "request_key": "283eb1efa4752a4f4d970a470b33188fc4510154",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The momentum has completely shifted. What a turnaround!",
+   "text": "The momentum has completely shifted! What a turnaround!",
+   "voice": "JR1"
+  },
+  "caller.kill.137": {
+   "duration_s": 2.667,
+   "file": "caller/caller.kill.137.ogg",
+   "kind": "line",
+   "request": "caller.kill.137",
+   "request_key": "250ad7b00855280f3c46f8df33a571db2fe1b60d",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Wrecks everywhere. I can't count them fast enough",
+   "text": "Wrecks everywhere! I can't count them fast enough!",
+   "voice": "JR1"
+  },
+  "caller.kill.138": {
+   "duration_s": 2.068,
+   "file": "caller/caller.kill.138.ogg",
+   "kind": "line",
+   "request": "caller.kill.138",
+   "request_key": "6bebd86adda44c9130aa4eaf543bb15310b97f32",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Everything is going off at once down there",
+   "text": "Everything is going off at once down there!",
+   "voice": "JR1"
+  },
+  "caller.kill.139": {
+   "duration_s": 3.019,
+   "file": "caller/caller.kill.139.ogg",
+   "kind": "line",
+   "request": "caller.kill.139",
+   "request_key": "b69cfca39faca936daff1b1ee6e9765091c0a77d",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "But that was a storm. Vehicles falling all over the place",
+   "text": "That was a storm! Vehicles falling all over the place!",
+   "voice": "JR1"
+  },
   "caller.kill.13@condemned": {
    "duration_s": 2.012,
    "file": "caller/caller.kill.13@condemned.ogg",
@@ -11387,6 +11879,42 @@
    "stt_ok": true,
    "stt_text": "First blood goes to the Syndicates",
    "text": "First blood goes to the Syndicate!",
+   "voice": "JR1"
+  },
+  "caller.kill.140": {
+   "duration_s": 2.968,
+   "file": "caller/caller.kill.140.ogg",
+   "kind": "line",
+   "request": "caller.kill.140",
+   "request_key": "7e564e1ba68acb9e1d9f71cf55be8490d6056bae",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Where do I even look? It's going off all over the floor",
+   "text": "Where do I even look? It's going off all over the floor!",
+   "voice": "JR1"
+  },
+  "caller.kill.141": {
+   "duration_s": 3.205,
+   "file": "caller/caller.kill.141.ogg",
+   "kind": "line",
+   "request": "caller.kill.141",
+   "request_key": "1a41643592f4944bc0d1aaa5ebd93704b8d5e7d7",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Three, four at a time. This crowd doesn't know where to look",
+   "text": "Three, four at a time! This crowd doesn't know where to look!",
+   "voice": "JR1"
+  },
+  "caller.kill.142": {
+   "duration_s": 2.903,
+   "file": "caller/caller.kill.142.ogg",
+   "kind": "line",
+   "request": "caller.kill.142",
+   "request_key": "e2fd4981a2f4be3b414824c294db8332e87f672c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "In the space of a breath, the whole picture changes",
+   "text": "In the space of a breath, the whole picture changes!",
    "voice": "JR1"
   },
   "caller.kill.14@condemned": {
@@ -16979,6 +17507,102 @@
    "stt_ok": true,
    "stt_text": "And that's the end of that one",
    "text": "And that's the end of that one.",
+   "voice": "JR1"
+  },
+  "caller.lull.01": {
+   "duration_s": 3.014,
+   "file": "caller/caller.lull.01.ogg",
+   "kind": "line",
+   "request": "caller.lull.01",
+   "request_key": "40180072e6c389776c17a61ece07dfe50df9ec76",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "A breather now. Both sides pulling back to regroup",
+   "text": "A breather now. Both sides pulling back to regroup.",
+   "voice": "JR1"
+  },
+  "caller.lull.02": {
+   "duration_s": 2.928,
+   "file": "caller/caller.lull.02.ogg",
+   "kind": "line",
+   "request": "caller.lull.02",
+   "request_key": "ed363a504e605c5219e42fd76e15255846eea30c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "It's gone quiet. Nobody wants to be the one to step out",
+   "text": "It's gone quiet. Nobody wants to be the one to step out.",
+   "voice": "JR1"
+  },
+  "caller.lull.03": {
+   "duration_s": 3.179,
+   "file": "caller/caller.lull.03.ogg",
+   "kind": "line",
+   "request": "caller.lull.03",
+   "request_key": "6993e678ccaee7cd5a0f4c91b9abeb728ddba309",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They're repositioning. You can feel the next wave coming",
+   "text": "They're repositioning. You can feel the next wave coming.",
+   "voice": "JR1"
+  },
+  "caller.lull.04": {
+   "duration_s": 3.025,
+   "file": "caller/caller.lull.04.ogg",
+   "kind": "line",
+   "request": "caller.lull.04",
+   "request_key": "7be483a197acd0a770751177f273d72421801c3c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The smoke is clearing and they're looking for each other again",
+   "text": "The smoke is clearing, and they're looking for each other again.",
+   "voice": "JR1"
+  },
+  "caller.lull.05": {
+   "duration_s": 2.592,
+   "file": "caller/caller.lull.05.ogg",
+   "kind": "line",
+   "request": "caller.lull.05",
+   "request_key": "5489a6dc30a3e6a92fdc5667adaca533a83a1616",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "A little lull here. Don't blink, it won't last",
+   "text": "A little lull here. Don't blink, it won't last.",
+   "voice": "JR1"
+  },
+  "caller.lull.06": {
+   "duration_s": 3.656,
+   "file": "caller/caller.lull.06.ogg",
+   "kind": "line",
+   "request": "caller.lull.06",
+   "request_key": "4e08b0732d2ea60a3e4d37f4e774489a8c6a8488",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Everybody catching their breath. This is where the plans get made",
+   "text": "Everybody catching their breath. This is where the plans get made.",
+   "voice": "JR1"
+  },
+  "caller.lull.07": {
+   "duration_s": 3.498,
+   "file": "caller/caller.lull.07.ogg",
+   "kind": "line",
+   "request": "caller.lull.07",
+   "request_key": "e9f330c9d435586caaa08aba6ad452dca8260ff4",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They've backed off, but nobody has left. This is just the calm",
+   "text": "They've backed off, but nobody has left. This is just the calm.",
+   "voice": "JR1"
+  },
+  "caller.lull.08": {
+   "duration_s": 4.108,
+   "file": "caller/caller.lull.08.ogg",
+   "kind": "line",
+   "request": "caller.lull.08",
+   "request_key": "dd5cb3e06089cae0fa7be6376a47c6750fe3b6bb",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Crews resetting after that last exchange. The floor is holding its breath",
+   "text": "Crews resetting after that last exchange. The floor is holding its breath.",
    "voice": "JR1"
   },
   "caller.momentum.01@condemned": {
@@ -27649,6 +28273,78 @@
    "text": "That's the flank I was talking about. Nobody was watching it then either.",
    "voice": "veteran"
   },
+  "color.kill.42": {
+   "duration_s": 3.762,
+   "file": "color/color.kill.42.ogg",
+   "kind": "line",
+   "request": "color.kill.42",
+   "request_key": "cb3792045aa9390b5724921e6bdb22c73595532e",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Neither side wanted that exchange. They both got it anyway",
+   "text": "Neither side wanted that exchange. They both got it anyway.",
+   "voice": "veteran"
+  },
+  "color.kill.43": {
+   "duration_s": 6.081,
+   "file": "color/color.kill.43.ogg",
+   "kind": "line",
+   "request": "color.kill.43",
+   "request_key": "d7bf6706c36379cca6451a6c459ad13c897b9874",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Two crews saw each other at the same time. Nobody blinked, so nobody walks away clean",
+   "text": "Two crews saw each other at the same time. Nobody blinked, so nobody walks away clean.",
+   "voice": "veteran"
+  },
+  "color.kill.44": {
+   "duration_s": 5.859,
+   "file": "color/color.kill.44.ogg",
+   "kind": "line",
+   "request": "color.kill.44",
+   "request_key": "663ca7493acef88a050dfeb90f07c50e0eace5be",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Both of those crews stayed in the open to finish the shot. That's the price of finishing the shot",
+   "text": "Both of those crews stayed in the open to finish the shot. That's the price of finishing the shot.",
+   "voice": "veteran"
+  },
+  "color.kill.45": {
+   "duration_s": 3.454,
+   "file": "color/color.kill.45.ogg",
+   "kind": "line",
+   "request": "color.kill.45",
+   "request_key": "ae6cc625829cc7f3b71377ca5e14d93c9e9212b9",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "You don't win a trade, you survive it, and then you count",
+   "text": "You don't win a trade. You survive it, and then you count.",
+   "voice": "veteran"
+  },
+  "color.kill.46": {
+   "duration_s": 4.437,
+   "file": "color/color.kill.46.ogg",
+   "kind": "line",
+   "request": "color.kill.46",
+   "request_key": "3f5e5c9854c8e71da7870664bb858e3145d10f6d",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Somebody on each side should have backed off one corner. Neither did",
+   "text": "Somebody on each side should have backed off one corner. Neither did.",
+   "voice": "veteran"
+  },
+  "color.kill.47": {
+   "duration_s": 4.465,
+   "file": "color/color.kill.47.ogg",
+   "kind": "line",
+   "request": "color.kill.47",
+   "request_key": "5b3d4e49be3e2f1109778e3b01d32e7fbb0b456f",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "They'll both call that a good trade in the debrief. One of them is wrong",
+   "text": "They'll both call that a good trade in the debrief. One of them is wrong.",
+   "voice": "veteran"
+  },
   "color.lore.01": {
    "duration_s": 5.201,
    "file": "color/color.lore.01.ogg",
@@ -28021,6 +28717,90 @@
    "text": "My loader was a quiet kid. Good hands. I think about him most nights before the broadcast.",
    "voice": "veteran"
   },
+  "color.lore.22": {
+   "duration_s": 5.934,
+   "file": "color/color.lore.22.ogg",
+   "kind": "line",
+   "request": "color.lore.22",
+   "request_key": "f911bc343314243b825c8e6404e38b35c40ae832",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "The engine block in mine came off a harvester. You could still smell the grain in the summer",
+   "text": "The engine block in mine came off a harvester. You could still smell the grain in the summer.",
+   "voice": "veteran"
+  },
+  "color.lore.23": {
+   "duration_s": 5.896,
+   "file": "color/color.lore.23.ogg",
+   "kind": "line",
+   "request": "color.lore.23",
+   "request_key": "bb6cf7b1652044cfca6c2ca68dac3864cbc45f54",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "We had a rule, nobody talks about release until you're out the gate. Most of us kept it",
+   "text": "We had a rule: nobody talks about release until you're out the gate. Most of us kept it.",
+   "voice": "veteran"
+  },
+  "color.lore.24": {
+   "duration_s": 6.452,
+   "file": "color/color.lore.24.ogg",
+   "kind": "line",
+   "request": "color.lore.24",
+   "request_key": "4b373ca63be820956a1cc37e289c721a03261b17",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "The first time I saw the floor from up here, I didn't recognize it. It looked smaller from the booth",
+   "text": "The first time I saw the floor from up here, I didn't recognise it. It looks smaller from the booth.",
+   "voice": "veteran"
+  },
+  "color.lore.25": {
+   "duration_s": 5.956,
+   "file": "color/color.lore.25.ogg",
+   "kind": "line",
+   "request": "color.lore.25",
+   "request_key": "9e0e6f22b28f09e3162abec684973956b28f3d60",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "I had a gunner who sang under his breath. Same song every match. I never learned the words",
+   "text": "I had a gunner who sang under his breath. Same song, every match. I never learned the words.",
+   "voice": "veteran"
+  },
+  "color.lore.26": {
+   "duration_s": 4.951,
+   "file": "color/color.lore.26.ogg",
+   "kind": "line",
+   "request": "color.lore.26",
+   "request_key": "5643119e65aca94ccacff3a99c6bc4f4e3a1bff4",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "They used to announce our real names, then they stopped. I think it tested better",
+   "text": "They used to announce our real names. Then they stopped. I think it tested better.",
+   "voice": "veteran"
+  },
+  "color.lore.27": {
+   "duration_s": 3.417,
+   "file": "color/color.lore.27.ogg",
+   "kind": "line",
+   "request": "color.lore.27",
+   "request_key": "2a5849b28e02412298e32c8e3b58de087f177e05",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "The seats in those cabs don't adjust, you adjust",
+   "text": "The seats in those cabs don't adjust. You adjust.",
+   "voice": "veteran"
+  },
+  "color.lore.28": {
+   "duration_s": 5.712,
+   "file": "color/color.lore.28.ogg",
+   "kind": "line",
+   "request": "color.lore.28",
+   "request_key": "f8da9857918a7d0ee04d6bd9dd0a3d712a20fa22",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "A crew that's been together a full season is rare. The schedule doesn't really allow for it",
+   "text": "A crew that's been together a full season is rare. The schedule doesn't really allow for it.",
+   "voice": "veteran"
+  },
   "color.lull.01": {
    "duration_s": 5.431,
    "file": "color/color.lull.01.ogg",
@@ -28067,6 +28847,66 @@
    "stt_ok": true,
    "stt_text": "If the crowd settles, you can hear the engines idling. That's a dozen people thinking very hard",
    "text": "If the crowd settles, you can hear the engines idling. That's a dozen people thinking very hard.",
+   "voice": "veteran"
+  },
+  "color.lull.05": {
+   "duration_s": 6.813,
+   "file": "color/color.lull.05.ogg",
+   "kind": "line",
+   "request": "color.lull.05",
+   "request_key": "296eb7c963f6f85273a62b475957fb11bf2f3c20",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "They'll use this pause to swap who's leading. The lead vehicle takes the first hit, so they share it out",
+   "text": "They'll use this pause to swap who's leading. The lead vehicle takes the first hit, so they share it out.",
+   "voice": "veteran"
+  },
+  "color.lull.06": {
+   "duration_s": 5.323,
+   "file": "color/color.lull.06.ogg",
+   "kind": "line",
+   "request": "color.lull.06",
+   "request_key": "327c344ab82ec09c3f44c3832889c88693c080e0",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Watch the ones who stop in the open. Either they know something or they've stopped thinking",
+   "text": "Watch the ones who stop in the open. Either they know something, or they've stopped thinking.",
+   "voice": "veteran"
+  },
+  "color.lull.07": {
+   "duration_s": 4.69,
+   "file": "color/color.lull.07.ogg",
+   "kind": "line",
+   "request": "color.lull.07",
+   "request_key": "918a96ba0c7fe09ff586798c24db79c58b0b93bf",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Nobody out there is relaxing. The engine's idling. The driver isn't",
+   "text": "Nobody out there is relaxing. The engine's idling. The driver isn't.",
+   "voice": "veteran"
+  },
+  "color.lull.08": {
+   "duration_s": 5.428,
+   "file": "color/color.lull.08.ogg",
+   "kind": "line",
+   "request": "color.lull.08",
+   "request_key": "e08784c4b76ab5385860a4d21bb2f1440ccc2fc7",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "A quiet spell is when the good crews fix what broke. The bad ones just wait",
+   "text": "A quiet spell is when the good crews fix what broke. The bad ones just wait.",
+   "voice": "veteran"
+  },
+  "color.lull.09": {
+   "duration_s": 5.75,
+   "file": "color/color.lull.09.ogg",
+   "kind": "line",
+   "request": "color.lull.09",
+   "request_key": "12bbc62b3e9c0e05c818361fef25c2934bdfe7f7",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "This is where the lead changes hands, usually not in the shooting, in the waiting after it",
+   "text": "This is where the lead changes hands, usually. Not in the shooting. In the waiting after it.",
    "voice": "veteran"
   },
   "color.momentum.01@condemned.gangs": {
@@ -35042,7 +35882,7 @@
    "voice": "corporate2"
   }
  },
- "generated": "2026-09-24",
+ "generated": "2026-09-26",
  "lines": {
   "caller.army.01": {
    "bases": [
@@ -37794,6 +38634,62 @@
     "": "caller.kill.101"
    }
   },
+  "caller.kill.102": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.102"
+   }
+  },
+  "caller.kill.103": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.103"
+   }
+  },
+  "caller.kill.104": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.104"
+   }
+  },
+  "caller.kill.105": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.105"
+   }
+  },
+  "caller.kill.106": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.106"
+   }
+  },
+  "caller.kill.107": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.107"
+   }
+  },
+  "caller.kill.108": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.108"
+   }
+  },
+  "caller.kill.109": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.109"
+   }
+  },
   "caller.kill.11": {
    "bases": [
     "victim_unit"
@@ -37806,6 +38702,76 @@
     "lancer": "caller.kill.11@lancer",
     "scout": "caller.kill.11@scout",
     "tank": "caller.kill.11@tank"
+   }
+  },
+  "caller.kill.110": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.110"
+   }
+  },
+  "caller.kill.111": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.111"
+   }
+  },
+  "caller.kill.112": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.112"
+   }
+  },
+  "caller.kill.113": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.113"
+   }
+  },
+  "caller.kill.114": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.114"
+   }
+  },
+  "caller.kill.115": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.115"
+   }
+  },
+  "caller.kill.116": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.116"
+   }
+  },
+  "caller.kill.117": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.117"
+   }
+  },
+  "caller.kill.118": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.118"
+   }
+  },
+  "caller.kill.119": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.119"
    }
   },
   "caller.kill.12": {
@@ -37822,6 +38788,76 @@
     "tank": "caller.kill.12@tank"
    }
   },
+  "caller.kill.120": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.120"
+   }
+  },
+  "caller.kill.121": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.121"
+   }
+  },
+  "caller.kill.122": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.122"
+   }
+  },
+  "caller.kill.123": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.123"
+   }
+  },
+  "caller.kill.124": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.124"
+   }
+  },
+  "caller.kill.125": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.125"
+   }
+  },
+  "caller.kill.126": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.126"
+   }
+  },
+  "caller.kill.127": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.127"
+   }
+  },
+  "caller.kill.128": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.128"
+   }
+  },
+  "caller.kill.129": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.129"
+   }
+  },
   "caller.kill.13": {
    "bases": [
     "faction"
@@ -37834,6 +38870,81 @@
     "syndicate": "caller.kill.13@syndicate"
    }
   },
+  "caller.kill.130": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.130"
+   }
+  },
+  "caller.kill.131": {
+   "bases": [
+    "faction"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "condemned": "caller.kill.131@condemned",
+    "gangs": "caller.kill.131@gangs",
+    "law": "caller.kill.131@law",
+    "syndicate": "caller.kill.131@syndicate"
+   }
+  },
+  "caller.kill.132": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.132"
+   }
+  },
+  "caller.kill.133": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.133"
+   }
+  },
+  "caller.kill.134": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.134"
+   }
+  },
+  "caller.kill.135": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.135"
+   }
+  },
+  "caller.kill.136": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.136"
+   }
+  },
+  "caller.kill.137": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.137"
+   }
+  },
+  "caller.kill.138": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.138"
+   }
+  },
+  "caller.kill.139": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.139"
+   }
+  },
   "caller.kill.14": {
    "bases": [
     "faction"
@@ -37844,6 +38955,27 @@
     "gangs": "caller.kill.14@gangs",
     "law": "caller.kill.14@law",
     "syndicate": "caller.kill.14@syndicate"
+   }
+  },
+  "caller.kill.140": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.140"
+   }
+  },
+  "caller.kill.141": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.141"
+   }
+  },
+  "caller.kill.142": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.kill.142"
    }
   },
   "caller.kill.15": {
@@ -38920,6 +40052,62 @@
    "speaker": "caller",
    "variants": {
     "": "caller.kill.99"
+   }
+  },
+  "caller.lull.01": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.lull.01"
+   }
+  },
+  "caller.lull.02": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.lull.02"
+   }
+  },
+  "caller.lull.03": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.lull.03"
+   }
+  },
+  "caller.lull.04": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.lull.04"
+   }
+  },
+  "caller.lull.05": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.lull.05"
+   }
+  },
+  "caller.lull.06": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.lull.06"
+   }
+  },
+  "caller.lull.07": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.lull.07"
+   }
+  },
+  "caller.lull.08": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.lull.08"
    }
   },
   "caller.momentum.01": {
@@ -42227,6 +43415,48 @@
     "": "color.kill.41"
    }
   },
+  "color.kill.42": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.42"
+   }
+  },
+  "color.kill.43": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.43"
+   }
+  },
+  "color.kill.44": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.44"
+   }
+  },
+  "color.kill.45": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.45"
+   }
+  },
+  "color.kill.46": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.46"
+   }
+  },
+  "color.kill.47": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.kill.47"
+   }
+  },
   "color.lore.01": {
    "bases": [],
    "speaker": "color",
@@ -42386,6 +43616,55 @@
     "": "color.lore.21"
    }
   },
+  "color.lore.22": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lore.22"
+   }
+  },
+  "color.lore.23": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lore.23"
+   }
+  },
+  "color.lore.24": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lore.24"
+   }
+  },
+  "color.lore.25": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lore.25"
+   }
+  },
+  "color.lore.26": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lore.26"
+   }
+  },
+  "color.lore.27": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lore.27"
+   }
+  },
+  "color.lore.28": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lore.28"
+   }
+  },
   "color.lull.01": {
    "bases": [],
    "speaker": "color",
@@ -42412,6 +43691,41 @@
    "speaker": "color",
    "variants": {
     "": "color.lull.04"
+   }
+  },
+  "color.lull.05": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lull.05"
+   }
+  },
+  "color.lull.06": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lull.06"
+   }
+  },
+  "color.lull.07": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lull.07"
+   }
+  },
+  "color.lull.08": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lull.08"
+   }
+  },
+  "color.lull.09": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.lull.09"
    }
   },
   "color.momentum.01": {

@@ -3,7 +3,8 @@
 # No target here calls ElevenLabs except announcer-generate APPROVED=1 (lead gate 2: the text is approved first).
 
 .PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-variance announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate \
-        announcer-transcripts-check announcer-record-smoke announcer-shots announcer-check announcer-pool-report
+        announcer-transcripts-check announcer-record-smoke announcer-shots announcer-check announcer-pool-report \
+        announcer-real-matches announcer-real-report
 
 ANNOUNCER_FIXTURES := tests/announcer/fixtures
 ANNOUNCER_CLI := $(GODOT) --headless --path . --script res://game/announcer/announcer_cli.gd --
@@ -34,6 +35,36 @@ announcer-pool-report: import ## Lines per (speaker, moment), the director's poo
 		| grep -E 'ANNOUNCER_CLI_EXIT=0' >/dev/null || { echo "announcer CLI failed"; exit 1; }
 	@$(PYTHON) tools/announcer/pool_report.py --cues $(BUILD_DIR)/announcer/pool --json $(BUILD_DIR)/announcer/pool_report.json \
 		| tee $(BUILD_DIR)/announcer/pool_report.txt
+
+## Round 12: the fixtures are small matches (4-9 kills); the lead plays the default path, faction armies on the
+## skirmish's baseline budget, where kills come in clusters and the director's "trade" merge fires far more often.
+## This records REAL_MATCHES CPU-vs-CPU matches of that size as K5 timelines (build/announcer/real/*.jsonl, the
+## factions rotating), then runs the pool report and the trade-following variance over them. Heavy, and nothing in
+## it touches the simulation (the booth only records): make remote T="announcer-real-report REAL_MATCHES=8".
+REAL_MATCHES ?= 8
+REAL_BUDGET ?= 5200
+REAL_JOBS ?= 4
+announcer-real-matches: import ## Record REAL_MATCHES default-size CPU matches as K5 timelines in build/announcer/real (heavy: builder0)
+	@rm -rf $(BUILD_DIR)/announcer/real && mkdir -p $(BUILD_DIR)/announcer/real
+	@seq 1 $(REAL_MATCHES) | xargs -P $(REAL_JOBS) -I{} sh -c 'n={}; set -- condemned gangs law syndicate; \
+		eval g=\$${$$(( (n - 1) % 4 + 1 ))}; eval r=\$${$$(( n % 4 + 1 ))}; \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --green-faction=$$g --rust-faction=$$r \
+			--budget=$(REAL_BUDGET) --time-limit=480 --seed=$$n \
+			--announcer-record=$(CURDIR)/$(BUILD_DIR)/announcer/real/real_$$n.jsonl > $(BUILD_DIR)/announcer/real/real_$$n.log 2>&1; \
+		grep -q "ANNOUNCER_RECORDED .* problems=0" $(BUILD_DIR)/announcer/real/real_$$n.log \
+			|| { echo "match $$n ($$g v $$r) FAILED to record"; grep -E "ANNOUNCER|ERROR" $(BUILD_DIR)/announcer/real/real_$$n.log | head -5; exit 1; }; \
+		echo "match $$n: $$g v $$r, $$(grep -c unit_destroyed $(BUILD_DIR)/announcer/real/real_$$n.jsonl) kills, $$(tail -1 $(BUILD_DIR)/announcer/real/real_$$n.jsonl | cut -c1-60)"'
+	@$(PYTHON) tools/announcer/events.py $(BUILD_DIR)/announcer/real/*.jsonl
+
+announcer-real-report: announcer-real-matches ## The pool report and the trade repeat rate over real default-size matches (heavy: builder0) [REAL_MATCHES=8 POOL_SEEDS=3]
+	@rm -rf $(BUILD_DIR)/announcer/real_pool && mkdir -p $(BUILD_DIR)/announcer/real_pool
+	@$(ANNOUNCER_CLI) --all=$(CURDIR)/$(BUILD_DIR)/announcer/real --seeds=$$(seq -s, 1 $(POOL_SEEDS)) \
+		--out-dir=$(BUILD_DIR)/announcer/real_pool 2>&1 | grep -E 'ANNOUNCER_CLI_EXIT=0' >/dev/null || { echo "announcer CLI failed"; exit 1; }
+	@$(PYTHON) tools/announcer/pool_report.py --cues $(BUILD_DIR)/announcer/real_pool --json $(BUILD_DIR)/announcer/real_pool_report.json \
+		| tee $(BUILD_DIR)/announcer/real_pool_report.txt
+	@$(ANNOUNCER_CLI) --variance=$(CURDIR)/$(BUILD_DIR)/announcer/real --matches=$(or $(MATCHES),20) --window=5 --history=on \
+		--hot=15 --tag=trade 2>&1 | grep -vE '^(Godot Engine|--- Debug|OpenGL|Vulkan)' | tee $(BUILD_DIR)/announcer/real_variance.txt
+	@grep -q 'ANNOUNCER_CLI_EXIT=0' $(BUILD_DIR)/announcer/real_variance.txt || { echo "announcer-real-report: variance FAILED"; exit 1; }
 
 ## X1: the lead heard the PA open the same way in several matches. This replays every fixture as MATCHES
 ## consecutive broadcasts and fails when the booth repeats itself too much across them.
