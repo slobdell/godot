@@ -68,6 +68,28 @@ class StemTest(unittest.TestCase):
                          "and goes once a real track covers everything it did")
         self.assertIn("treadmill", manifest["tracks"], "a real track is never retired")
 
+    def test_a_second_bed_for_a_state_gets_its_own_row_and_ties_with_the_first(self):
+        import numpy as np
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            (tmp / "out").mkdir()
+            manifest = {"schema": 1, "target_lufs": -16.0, "stingers": {}, "tracks": {
+                "lull": {"file": "bed_lull.ogg", "states": ["lull"], "intensity": 0.3},
+                "fight": {"stems": [], "states": ["lull"], "intensity": 0.9}}}
+            (tmp / "out" / "manifest.json").write_text(json.dumps(manifest))
+            t = np.arange(int(44100 * 20)) / 44100.0
+            beat = (np.sin(2 * np.pi * 110 * t) * (0.5 + 0.5 * np.sin(2 * np.pi * 2 * t))) * 0.3
+            make_music_placeholders._write_np_wav(beat, tmp / "take.wav", 0.2)
+            import_music.main([str(tmp / "take.wav"), "--state", "lull", "--id", "lull_b", "--bpm", "120",
+                               "--out", str(tmp / "out"), "--rights", "test"])
+            tracks = json.loads((tmp / "out" / "manifest.json").read_text())["tracks"]
+            self.assertIn("lull", tracks, "the first bed is kept")
+            self.assertEqual(tracks["lull_b"]["file"], "bed_lull_b.ogg")
+            self.assertTrue((tmp / "out" / "bed_lull_b.ogg").exists())
+            self.assertEqual(tracks["lull_b"]["states"], ["lull"])
+            self.assertEqual(tracks["lull_b"]["intensity"], 0.3, "the same intensity as the bed it rotates with, "
+                             "not the stem set's")
+
     def test_stems_that_do_not_line_up_are_refused(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
