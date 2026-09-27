@@ -148,7 +148,7 @@ named. The fleet page's `db` was last read **2026-09-27 04:1x UTC** (all 14 deci
 | F1 the fire engine | **built** -- art `fcb1a725`, **CP1 = `3b2fb346`**: builder0 `>> remote: make check exited 0`, 18 targets, **1732 passed, 0 failed**, sim-baseline `01ab39b592cc9837` **UNMOVED** (the burner is not in the baseline match), determinism `b83a374ce2fcde37` | see below |
 | F2 the bus | **not shipped (F2(c))**: bus I's 3D is a van (2.04:1). A turnaround of the same design (`bus_r12_mv`) is registered for his page | `093ef868`, `cfe8d947` |
 | F3 the burner in play | in progress | |
-| F4 War Rig muzzle (stretch) | not started | |
+| F4 War Rig muzzle (stretch) | **measured, NOT changed**: does not read at 49 m (below) | this commit |
 
 **Credits:** 809 -> 779 (the two approved image-to-3D, 15 each) -> 770 (the bus turnaround concept, 9). All on
 `assets/meshy_ledger.md`. Half-balance stop (C12.7) would be ~385; nowhere near.
@@ -194,6 +194,22 @@ reference. **The better method:** `bus_r12_mv`, a multi-view turnaround of bus I
 whose side and top views DO carry a coach's length (~2.9:1 from above). Building it with multi-image-to-3D (the three
 views at once, ~30 credits) is the likeliest way to keep that length. It is a lead gate (C12.1: any further 3D goes to
 a page with `db`), registered in `review.json` as `waiting`, going on the page with the burner's frames.
+
+### F4: the War Rig's muzzle, measured before moved -- and left alone
+
+New instrument: `make facing-audit UNITS=gang_tank VIEW=top TINT=1 BEND=<deg> TURRET=<deg> MUZZLE=1` draws the
+SIMULATED muzzle (`Tank.muzzle_position`) as a green ball and prints `FACING_MUZZLE ... gap_m`, the ground-plane
+distance between the drawn gun's pivot (on the trailer) and the simulated pivot (tractor frame). Laptop, this tree:
+**bend 0: 0.00 m; bend 35 deg: 0.47 m; bend 65 deg (jackknife limit): 0.84 m** (round 11 estimated ~0.45 / ~0.7).
+Frames: `_agents/streams/references/round12/fleet_f4/` (top view, turret 70 and 0).
+**Does a player feel it?** At his pose (FOV 35, 49 m, 1080 rows) the frame is 30.9 m tall, ~35 px/m: 0.47 m is ~16 px,
+0.84 m ~29 px, and only while the rig is bent AND firing. For scale, every unit's rounds already leave from
+`3.2 x turret scale` ahead of the pivot -- for the rig ~2 m past its drawn barrel tip, even straight (the bend-0 frame)
+-- and the muzzle fireballs are 2.2-3.4 m across. With the turret at 70 deg the bend's offset lies mostly ALONG the
+barrel line (~0.3 m across it). Verdict: **it does not read at 49 m; no simulation change** (the fix would make the
+hinge simulation on every peer, S2, and move the baseline for an offset hidden inside the flash). Not rendered: a
+firing frame at his exact pose with the tracer -- the arithmetic above is the evidence; if he ever says "the rig's shots
+come from the wrong place", that frame is the next step.
 
 ### The page (lead gate; `db` declared)
 
