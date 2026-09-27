@@ -25,6 +25,9 @@ const SCENES := {
 			"shots": [["muzzle", 0.3, "shooter"], ["tracers", 0.75, "mid"], ["hits", 1.2, "target"], ["rts", 1.4, "rts"]]},
 	"scout_stream": {"shooter": "scout", "target": "ifv", "distance": 26.0, "aim_offset": 0.0, "kill": false, "hold": 2.0,
 			"shots": [["muzzle", 0.65, "shooter"], ["stream", 1.07, "mid"], ["hits", 1.5, "target"], ["rts", 1.91, "rts"]]},
+	# Round 12 (fleet F1): the fire engine's flamethrower -- the fire must leave the nozzle drawn on the turntable.
+	"burner_flame": {"shooter": "burner", "target": "ifv", "distance": 15.0, "aim_offset": 0.0, "kill": false, "hold": 2.0,
+			"shots": [["muzzle", 0.6, "shooter"], ["stream", 1.0, "mid"], ["hits", 1.4, "target"], ["rts", 1.8, "rts"]]},
 }
 const SHOOTER_Z := 18.0
 ## Feel X5: the controls stand-in (team and selection) for the orders scene.
@@ -127,6 +130,10 @@ func _stage(scene_name: String, scene: Dictionary) -> void:
 	var fired_at := [-1.0]
 	var clock := [0.0]
 	shooter.fired.connect(func(_muzzle: Vector3, _direction: Vector3) -> void:
+		if fired_at[0] < 0.0:
+			fired_at[0] = clock[0])
+	# Round 12 (fleet): a flamethrower sprays (a cone every tick) and never emits `fired`.
+	shooter.sprayed.connect(func(_origin: Vector3, _direction: Vector3, _delta: float) -> void:
 		if fired_at[0] < 0.0:
 			fired_at[0] = clock[0])
 	shooter.command.fire = true
