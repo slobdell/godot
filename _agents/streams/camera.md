@@ -103,6 +103,14 @@ line), the tests assert no screen is cut and a screen in his sight line stays dr
 screen pair while the list is empty. Recorded in `game_design.md` *Round 12: the lead's verdicts*. The K3 text below
 is the build he judged.
 
+**MERGE HERE: `fe4f79fb`** (stream/camera with `main` at `4397be31` merged, the orchestrator's checkpoint): builder0,
+`>> remote: make check exited 0`, 18 targets, **1744 passed, 0 failed**, sim-baseline `01ab39b592cc9837` **UNMOVED**,
+determinism `b83a374ce2fcde37`. The one commit after it touches only this Status. Earlier: `806dd794` (the verdict,
+unmerged) was also green on its clean re-run (1731 / 0). Its first run synced inside the 23:28 builder0 folder
+incident and failed only `scenario_perf::test_the_brains_stay_inside_the_cpu_budget` (a wall-clock budget, builder0
+loaded with several streams' runs); that run is void. The merge resolved one conflict in `game_design.md` (*Round 12:
+the lead's verdicts as they land*): main's section kept, its camera paragraph replaced by the confirmed reading.
+
 **State: K1–K5 done; K3 reversed by his verdict.** Commits on `stream/camera`:
 `fa094ed4` K1 (instrument) · `c645ad54` K2 (camera asks the drawing) · `4a54bca2` K3 (cutaway cuts ad screens) ·
 `65071cc0` `make camera-drawn` (the pairs) · then docs. **`4a54bca2` checked green on builder0:** `>> remote: make check
