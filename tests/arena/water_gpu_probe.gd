@@ -3,10 +3,11 @@ extends SceneTree
 ## skirmish (`perf-scene`) moves its camera and its fight, and on a shared builder0 its frame time swings 5x between
 ## cycles, so a sub-millisecond shader change drowns in it. This holds ONE frame still: a terrain map at the lead's
 ## pose (21 deg, FOV 35, 49 m) over a water spot, nothing moving but the swell, and reads the viewport's measured GPU
-## time over `--frames` frames, then again with the water hidden. The difference is the water's cost at that pose.
+## time with the water drawn and hidden in alternating blocks (`--blocks`, `--frames` in all); the median of the paired
+## block differences is the water's cost at that pose, and its quartiles say how far to trust it.
 ##
 ##   godot --path . --resolution 1920x1080 --script res://tests/arena/water_gpu_probe.gd -- --arena=crossing --spot=-92:14
-## Prints WATER_GPU {json}: median and p90 GPU ms with the water drawn and hidden, the difference, frames, pixels.
+## Prints WATER_GPU {json}: the water's ms (median of paired differences) with its quartiles, and the medians drawn/hidden.
 ## Self-contained on purpose: the same file runs unchanged in a "before" worktree, so both arms are measured alike.
 
 const ARENA := preload("res://game/arena/arena.tscn")
@@ -53,23 +54,36 @@ func _run() -> void:
 		return
 	var viewport_rid := root.get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(viewport_rid, true)
-	var drawn := await _sample(viewport_rid, frames)
-	water.visible = false
-	var hidden := await _sample(viewport_rid, frames)
+	# builder0's GPU is shared with other streams' runs, so the load drifts by milliseconds within a minute. Toggle
+	# the water in short blocks and pair each drawn block with the hidden block right after it: the drift cancels in
+	# the difference, and the median of the differences is the water's cost.
+	var blocks := int(_flag("blocks", "40"))
+	var per := maxi(4, frames / blocks)
+	var diffs := PackedFloat64Array()
+	var drawn := PackedFloat64Array()
+	var hidden := PackedFloat64Array()
+	for pair in blocks / 2:
+		water.visible = true
+		var on := _pct(await _sample(viewport_rid, per), 0.5)
+		water.visible = false
+		var off := _pct(await _sample(viewport_rid, per), 0.5)
+		drawn.append(on)
+		hidden.append(off)
+		diffs.append(on - off)
 	water.visible = true
-	var drawn_again := await _sample(viewport_rid, frames)
-	var result := {"arena": arena_name, "spot": spot, "frames": frames,
+	diffs.sort()
+	drawn.sort()
+	hidden.sort()
+	var result := {"arena": arena_name, "spot": spot, "blocks": blocks, "frames_per_block": per,
 		"shader": String((water.material_override as ShaderMaterial).shader.resource_path),
-		"drawn_median_ms": _pct(drawn, 0.5), "drawn_p90_ms": _pct(drawn, 0.9),
-		"hidden_median_ms": _pct(hidden, 0.5), "hidden_p90_ms": _pct(hidden, 0.9),
-		"drawn_again_median_ms": _pct(drawn_again, 0.5),
-		"water_ms": snappedf((_pct(drawn, 0.5) + _pct(drawn_again, 0.5)) / 2.0 - _pct(hidden, 0.5), 0.001)}
+		"drawn_median_ms": _pct(drawn, 0.5), "hidden_median_ms": _pct(hidden, 0.5),
+		"water_ms": _pct(diffs, 0.5), "water_q25_ms": _pct(diffs, 0.25), "water_q75_ms": _pct(diffs, 0.75)}
 	print("WATER_GPU " + JSON.stringify(result))
 	quit(0)
 
 
 func _sample(viewport_rid: RID, count: int) -> PackedFloat64Array:
-	for frame in 30:
+	for frame in 3:
 		await process_frame
 	var out := PackedFloat64Array()
 	for frame in count:
