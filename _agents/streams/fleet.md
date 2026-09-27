@@ -138,16 +138,22 @@ Nothing blocks F0–F3: the two approvals are recorded (C12.1). F2(c) and any NE
 ## Status
 
 _Updated 2026-09-26 (late evening, laptop clock) by the fleet worker. Numbers: laptop unless marked builder0; commit
-named. The fleet page's `db` was last read **2026-09-27 04:1x UTC** (all 14 decisions identical to the round-12 dump)._
+named. The fleet page's `db` was last read **2026-09-27 06:08 UTC**: `decisions/bus_r12_mv` absent (UNCONSUMED); at 04:1x UTC all
+14 older decisions were identical to the round-12 dump._
 
 ### Where it stands
+
+**Tip green, merge here: `a765143b`**: builder0 `>> remote: make check exited 0`, 18 targets, **1732 passed, 0 failed**
+(test_units_burner's 6 in the log), sim-baseline `01ab39b592cc9837` unmoved, determinism `b83a374ce2fcde37`. Everything
+after it is docs (this Status). CP1 (`3b2fb346`) is already on main as `0d5abb4e`.
+
 
 | item | state | commit |
 |---|---|---|
 | F0 his taps recorded | **done** (6 decisions from the dump; nothing from round 11 left `waiting`) | `d4f7cfc9` (builder0 check green: 1726 passed, 0 failed, sim-baseline `01ab39b592cc9837` unmoved) |
 | F1 the fire engine | **built** -- art `fcb1a725`, **CP1 = `3b2fb346`**: builder0 `>> remote: make check exited 0`, 18 targets, **1732 passed, 0 failed**, sim-baseline `01ab39b592cc9837` **UNMOVED** (the burner is not in the baseline match), determinism `b83a374ce2fcde37` | see below |
 | F2 the bus | **not shipped (F2(c))**: bus I's 3D is a van (2.04:1). A turnaround of the same design (`bus_r12_mv`) is registered for his page | `093ef868`, `cfe8d947` |
-| F3 the burner in play | in progress | |
+| F3 the burner in play | **done (measured, not tuned)**: matchups before/after below; flame frames | `d0979a20` |
 | F4 War Rig muzzle (stretch) | **measured, NOT changed**: does not read at 49 m (below) | this commit |
 
 **Credits:** 809 -> 779 (the two approved image-to-3D, 15 each) -> 770 (the bus turnaround concept, 9). All on
@@ -195,6 +201,31 @@ whose side and top views DO carry a coach's length (~2.9:1 from above). Building
 views at once, ~30 credits) is the likeliest way to keep that length. It is a lead gate (C12.1: any further 3D goes to
 a page with `db`), registered in `review.json` as `waiting`, going on the page with the burner's frames.
 
+### F3: the burner in play (C12.6: reported, not tuned)
+
+`make remote T="matchups FOCUS=burner SEEDS=3 JOBS=4"` on builder0, the same command on `d4f7cfc9` (before) and on this
+branch after CP1; 12 matches a pair (3 seeds x both bases x both colours), W:L:D for the burner:
+
+| vs | before | after | | vs | before | after |
+|---|---|---|---|---|---|---|
+| gang_scout | 8:0:4 | 11:0:1 | | law_artillery | 12:0:0 | 12:0:0 |
+| gang_ifv | 7:5:0 | 8:4:0 | | law_suppressor | 3:9:0 | 6:6:0 |
+| gang_tank | 6:6:0 | 7:5:0 | | syn_scout | 12:0:0 | 12:0:0 |
+| gang_artillery | 12:0:0 | 12:0:0 | | syn_ifv | 8:4:0 | 6:6:0 |
+| gang_support | 10:2:0 | 9:3:0 | | syn_tank | 0:12:0 | 0:12:0 |
+| law_scout | 12:0:0 | 12:0:0 | | syn_artillery | 12:0:0 | 12:0:0 |
+| law_ifv | 10:2:0 | 10:2:0 | | syn_lancer | 10:2:0 | 7:5:0 |
+| law_tank | 8:4:0 | 8:4:0 | | | | |
+
+**130 -> 132 wins of 180: a wash overall**; the largest moves (law_suppressor +3, gang_scout +3, syn_lancer -3) are
+inside what 12 matches can resolve. It drives, reaches and burns as it did; the new box (wider, 0.65 m longer) and the
+muzzle at the plow's edge change no matchup a series this size can see. Both arms also print 12 `FAILED ... unknown unit
+'law'` lines for a `law.json` pairing -- a pre-existing fault of `tools/matchup_matrix.py` (not fleet's file), identical
+before and after. Turret traverse: the ladder rides the hull, the nozzle turns above the rack (nozzle underside 3.59 m
+over a 3.30 m roof, `make turret-probe`), and `test_what_turns_with_every_turret_is_drawn_above_its_hull` holds it at 0
+and 90 deg -- no traverse limit needed. Not done: an interactive `make skirmish` on the laptop (it opens on the lead's
+desktop, trip-up 32) -- that is his playtest below.
+
 ### F4: the War Rig's muzzle, measured before moved -- and left alone
 
 New instrument: `make facing-audit UNITS=gang_tank VIEW=top TINT=1 BEND=<deg> TURRET=<deg> MUZZLE=1` draws the
@@ -229,8 +260,25 @@ card: `bus_r12_mv`. **Read its `db` (`decisions/bus_r12_mv`) before this brief i
 
 ### Requests to other streams
 
-None. **To the orchestrator:** SendMessage to `godot-83` failed ("Failed to send to godot-83", 2026-09-27 ~05:30 UTC),
-as it did in round 11; this Status is the announcement of record: **CP1 green, merge at `3b2fb346`** (with `fcb1a725`).
+None. The orchestrator merged CP1 as main `0d5abb4e` (`3b2fb346`, --no-ff). A first SendMessage by name failed; the reply
+to its own address worked (page URL and db time sent 06:08 UTC).
+
+### What to playtest
+
+- `make garage` (tier 2 unlocks the Burner): buy Burners, FIGHT, and pick the Condemned in the faction picker; or `make skirmish` and pick the Condemned:
+  a red fire engine with a ladder rack, its flamethrower head turning on the pedestal behind the cab, the flame leaving
+  the nozzle. Beside the bus it should never be mistaken for one.
+- Pictures without playing: the review page above; `make remote T=roster-lineup` (`lineup_bus.png`);
+  `make fx-shots SHOWCASE=burner_flame`; `make facing-audit UNITS=burner VIEW=quarter TINT=1`.
+
+### Known issues
+
+- The bus is still the stretched dozer (by design until he answers `bus_r12_mv`).
+- The flame cone reads faintly side-on (`burner_flame_stream`); it is the theme's flamethrower unchanged, only moved.
+- `tools/matchup_matrix.py` fails its `law.json` pairings (`unknown unit 'law'`), before and after this work.
+- Pipeline note: parts normalised BEFORE round 12 were placed with the old `unit_pivot` formula; they were not
+  regenerated and draw as before. Re-running `build_roster.sh` for them would now place their turrets as generated
+  relative to the hull at the tank's pivot -- look at the turret-probe numbers before committing such a rebuild.
 
 ### Merge notes
 
@@ -242,4 +290,5 @@ as it did in round 11; this Status is the announcement of record: **CP1 green, m
 - Shared files touched: `game/theme/game_theme.gd` (three slot lines, additive); `game/units/units.gd` (burner's
   `hull_size`, `scale_reference`, `turret_mount` values + comments); new wrappers in `game/theme/cyberpunk/units/`
   (`unit_burner_{hull,turret,weapon}.tscn`); `tests/test_assets_factions.gd` (the pipeline's own test, one assertion
-  replaced); `game/theme/fx/bench/weapon_showcase.gd` (a `burner_flame` scene and a `sprayed` hook, additive).
+  replaced); `game/theme/fx/bench/weapon_showcase.gd` (a `burner_flame` scene and a `sprayed` hook, additive);
+  `_agents/verification.md` (the War Rig section closed with F4's numbers).
