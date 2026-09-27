@@ -43,11 +43,14 @@ static func measure_fixture(library: AnnouncerLibrary, events: Array, matches: i
 		var opener := ""
 		var welcome := ""
 		var calls: Array = []
+		var called := {}
 		for cue in cues:
 			var id: String = cue["line_id"]
-			# The call itself, not the Veteran's follow-up to it: the first line of the beat is the caller's.
+			# The call itself: the caller's first line for the moment, not his button after it or the Veteran's
+			# analysis.
 			if cue.has("_moment") and tag in cue["_moment"].get("tags", []) and cue["speaker"] == "caller" \
-					and cue["act"] != "interrupt":
+					and cue["act"] != "interrupt" and not called.has(_moment_key(cue["_moment"])):
+				called[_moment_key(cue["_moment"])] = true
 				calls.append(id)
 				if tag in library.by_id.get(id, {}).get("tags", []):
 					tag_answered += 1
@@ -80,6 +83,10 @@ static func measure_fixture(library: AnnouncerLibrary, events: Array, matches: i
 		"tag_answered": tag_answered,
 		"tag_repeat_rate": _tag_repeat_rate(tagged, window),
 	}
+
+
+static func _moment_key(moment: Dictionary) -> String:
+	return "%s@%.2f:%s" % [moment.get("kind", ""), float(moment.get("t", 0.0)), moment.get("detail", "")]
 
 
 static func _total(per_match: Array[Array]) -> int:
