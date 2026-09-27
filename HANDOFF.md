@@ -61,6 +61,19 @@ prompt* is canonical):
 > is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the
 > Status holds your report.
 
+**Waiting on the lead (round 12, live list; lesson 220: a page's `db` is UNCONSUMED until the repo has it):**
+
+- **The bus: `bus_r12_mv` on the fleet page** (https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS, version 6, published
+  2026-09-27 ~05:40 UTC). `bus_r11_i` came back a van again in 3D (2.04:1), so nothing shipped and the bus still wears
+  the dozer. The one card is a multi-view turnaround of it; **Approve = multi-image-to-3D, ~30 credits.** The page
+  also shows the Burner before/after, the turret and flame frames, for his eye. fleet last read its `db` at 06:08 UTC:
+  absent. The orchestrator reads it at close (`read_db` … `decisions/bus_r12_mv`).
+- **The partial or mixed selection** (squad's S4): it scatters, by the round-10 R1 design he narrowed himself; squad
+  recommends leaving it. His call, on the next page or in chat.
+- **The Locks' open canal**, on arena's page once it is up, after he has driven it.
+- **Camera: ANSWERED** (2026-09-26 evening: keep the lamp-head fix, don't cut screens, leave masts and signs standing);
+  applied at `806dd794` on `stream/camera`, recorded in `game_design.md`.
+
 **For the orchestrator running this round:** merge at the hash each stream names green; CP1 (fleet's boxes) and CP2
 (nav's planner) are the two baseline moves, each merged alone and recorded twice with `make sim-baseline-adopt`; at the
 close, **read every review page's `db`** (arena's, fleet's if it makes one, the Booth Monitor's if it has one) before
