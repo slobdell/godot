@@ -115,3 +115,31 @@ func test_the_director_actually_uses_it() -> void:
 			"most of tonight's lines are ones last night didn't use (%d of %d repeated)" % [repeated, second.size()])
 	assert_true(first[0]["line_id"] != second[0]["line_id"],
 			"and the same seed opens the broadcast differently, which is what the lead noticed")
+
+
+## Round 12: the lead heard *"they are trading in the middle of the floor"* too often. A trade is not a moment of its
+## own, it is a tag the director puts on merged kills, so the variance tool follows the tag.
+func test_the_variance_tool_follows_the_trade_call_across_matches() -> void:
+	var library := AnnouncerLibrary.load_default()
+	var loaded := AnnouncerEvents.load_file("res://tests/announcer/fixtures/close_match.jsonl")
+	var events: Array = []
+	for event in loaded["events"]:
+		if float(event["t"]) < 22.0:
+			events.append(event)
+	# One kill being called while two more, one each side, queue behind it: the director merges those into a trade.
+	events.append(_kill(22.0, "Green_Bravo_1", "scout", "green", "Rust_Lance_2", "ifv"))
+	events.append(_kill(22.5, "Rust_Anvil_3", "scout", "rust", "Green_Alpha_3", "ifv"))
+	events.append(_kill(23.0, "Green_Alpha_2", "ifv", "green", "Rust_Lance_2", "ifv"))
+	var measured := AnnouncerVariance.measure_fixture(library, events, 6, 5, AnnouncerHistory.new(), "trade")
+	assert_eq(int(measured["tag_calls"]), 6, "one trade call a match: %s" % str(measured))
+	assert_true(int(measured["tag_answered"]) >= 1, "some of them with a line written for a trade")
+	assert_true(float(measured["tag_repeat_rate"]) >= 0.0 and float(measured["tag_repeat_rate"]) <= 1.0,
+			"the repeat rate is a share")
+	var report := AnnouncerVariance.report({"trade_case": measured})
+	assert_true("trade/m" in report, "the report names the tag it followed:\n%s" % report)
+
+
+func _kill(t: float, victim: String, victim_unit: String, victim_team: String, killer: String, killer_unit: String) -> Dictionary:
+	return {"tick": int(t * 60.0), "t": t, "type": "unit_destroyed", "victim": victim, "victim_unit": victim_unit,
+			"victim_team": victim_team, "killer": killer, "killer_unit": killer_unit,
+			"killer_team": AnnouncerMemory.other(victim_team), "friendly": false, "cause": "weapon"}
