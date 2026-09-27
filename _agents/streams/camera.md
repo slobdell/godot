@@ -111,6 +111,12 @@ incident and failed only `scenario_perf::test_the_brains_stay_inside_the_cpu_bud
 loaded with several streams' runs); that run is void. The merge resolved one conflict in `game_design.md` (*Round 12:
 the lead's verdicts as they land*): main's section kept, its camera paragraph replaced by the confirmed reading.
 
+**Git-ignored record kept in this worktree** (`~/projects/godot-camera/build/camera-round12/`, 37 MB; builder0 frames
+at `65071cc0`, the build he judged): `drawn_terminus/` and `drawn_yard/` (the pairs, each with `looks.json` and
+`index.html`), `airship/` (`airship-shot SEQUENCE=1`), `alleys/` (`terminus-alleys`), `page_camera_drawn.html` (the
+published page's source, frames embedded), `sweep_builder0_4a54bca2.log` (the test shard with the six-map
+`MEASURE camera_drawn_solids` lines). All of it can be regenerated with the make targets named above.
+
 **State: K1–K5 done; K3 reversed by his verdict.** Commits on `stream/camera`:
 `fa094ed4` K1 (instrument) · `c645ad54` K2 (camera asks the drawing) · `4a54bca2` K3 (cutaway cuts ad screens) ·
 `65071cc0` `make camera-drawn` (the pairs) · then docs. **`4a54bca2` checked green on builder0:** `>> remote: make check
