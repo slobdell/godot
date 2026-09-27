@@ -42,8 +42,10 @@ uniform int bar_count = 0;
 uniform vec3 bars[4];
 uniform vec3 bar_colors[4];
 // The stands' profile (metres out from the inner face, height), nearest first, and the crowd's band of heights.
-uniform int stands_count = 0;
-uniform vec2 stands[24];
+// The profile as one rising line (StandsProfile: "rising in a straight line"): (out, height) of its front and back,
+// so a ray meets it in one solve instead of a march over every profile point.
+uniform vec4 stands_line = vec4(0.0);
+uniform bool has_stands = false;
 uniform vec2 crowd = vec2(3.0, 8.0);
 // Obstacles near the water: centre.xz, half extents (local x, z); yaw (rad), height, neon band (bottom, top); the
 // band's linear colour and 1 for a block's windows.
@@ -162,6 +164,12 @@ vec3 venue(vec3 p, vec3 r) {
 		if (i >= box_count) {
 			break;
 		}
+		// Cheap reject first: the ray's horizontal line must pass within the box's bounding circle, ahead of the point.
+		vec2 to_box = boxes[i].xy - p.xz;
+		float radius = length(boxes[i].zw);
+		if (abs(h.x * to_box.y - h.y * to_box.x) > radius || dot(h, to_box) < -radius) {
+			continue;
+		}
 		float cy = box_rot[i].x;
 		float sy = box_rot[i].y;
 		vec2 rel = p.xz - boxes[i].xy;
@@ -203,23 +211,25 @@ vec3 venue(vec3 p, vec3 r) {
 		}
 		return c;
 	}
-	if (in_stands(ew, wall_along)) {
-		for (int i = 1; i < 24; i++) {
-			if (i >= stands_count) {
-				break;
+	if (has_stands && in_stands(ew, wall_along)) {
+		// Where the climbing ray meets the stands' line: at its front if it is already below it there, else where
+		// the two lines cross (only if the ray climbs slower than the stands do), within the profile's depth.
+		float of = stands_line.x;
+		float hf = stands_line.y;
+		float slope = (stands_line.w - hf) / max(stands_line.z - of, 0.01);
+		float y_front = p.y + k * (tw + of);
+		float o_hit = y_front <= hf ? of : (k < slope ? of + (y_front - hf) / (slope - k) : 1e6);
+		if (o_hit <= stands_line.z) {
+			float ys = p.y + k * (tw + o_hit);
+			// The grandstand: dark steel, and the seated crowd as a scatter of dim colour.
+			vec3 c = vec3(0.014, 0.013, 0.018);
+			if (ys > crowd.x && ys < crowd.y) {
+				vec2 cell = floor(vec2(wall_along * 1.6, ys * 2.4));
+				float seat = hash(cell);
+				vec3 shirt = 0.5 + 0.5 * cos(6.2831 * (hash(cell + 3.1) + vec3(0.0, 0.33, 0.67)));
+				c += shirt * step(0.45, seat) * 0.16;
 			}
-			float ys = p.y + k * (tw + stands[i].x);
-			if (ys < stands[i].y) {
-				// The grandstand: dark steel, and the seated crowd as a scatter of dim colour.
-				vec3 c = vec3(0.014, 0.013, 0.018);
-				if (ys > crowd.x && ys < crowd.y) {
-					vec2 cell = floor(vec2(wall_along * 1.6, ys * 2.4));
-					float seat = hash(cell);
-					vec3 shirt = 0.5 + 0.5 * cos(6.2831 * (hash(cell + 3.1) + vec3(0.0, 0.33, 0.67)));
-					c += shirt * step(0.45, seat) * 0.16;
-				}
-				return c;
-			}
+			return c;
 		}
 	}
 	return horizon_sky(r);

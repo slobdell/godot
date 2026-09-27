@@ -33,7 +33,6 @@ const MAX_WET := 16
 ## REFLECT_REACH times its own height of a water footprint (a ray climbing at ~18 degrees still meets its top).
 const MAX_EDGES := 8
 const MAX_BARS := 4
-const MAX_STANDS := 24
 const MAX_BOXES := 16
 const MAX_LAMPS := 12
 const REFLECT_REACH := 3.0
@@ -111,10 +110,12 @@ func _venue_uniforms(material: ShaderMaterial, venue: Dictionary) -> void:
 		bars.append(bar[0])
 		var linear := (bar[1] as Color).srgb_to_linear()
 		bar_colors.append(Vector3(linear.r, linear.g, linear.b))
-	var profile := PackedVector2Array()
-	for point: Vector2 in (venue.get("stands", PackedVector2Array()) as PackedVector2Array):
-		if profile.size() < MAX_STANDS:
-			profile.append(point)
+	# The stands' profile as one line, front (the first point past the wall's top) to back: the shader solves a ray
+	# against it once (StandsProfile rises in a straight line from its front to its back).
+	var profile: PackedVector2Array = venue.get("stands", PackedVector2Array())
+	var has_stands := profile.size() >= 3
+	var front: Vector2 = profile[1] if has_stands else Vector2.ZERO
+	var back: Vector2 = profile[profile.size() - 1] if has_stands else Vector2.ZERO
 	var lamps := PackedVector4Array()
 	var lamp_colors := PackedVector3Array()
 	for lamp: Array in (venue.get("lamps", []) as Array).slice(0, MAX_LAMPS):
@@ -129,10 +130,8 @@ func _venue_uniforms(material: ShaderMaterial, venue: Dictionary) -> void:
 	material.set_shader_parameter("bar_count", bars.size())
 	material.set_shader_parameter("bars", _pad3(bars, MAX_BARS))
 	material.set_shader_parameter("bar_colors", _pad3(bar_colors, MAX_BARS))
-	material.set_shader_parameter("stands_count", profile.size())
-	while profile.size() < MAX_STANDS:
-		profile.append(Vector2.ZERO)
-	material.set_shader_parameter("stands", profile)
+	material.set_shader_parameter("has_stands", has_stands)
+	material.set_shader_parameter("stands_line", Vector4(front.x, front.y, back.x, back.y))
 	material.set_shader_parameter("crowd", venue.get("crowd", Vector2(3.0, 8.0)))
 	material.set_shader_parameter("lamp_count", lamps.size())
 	material.set_shader_parameter("lamps", _pad4(lamps, MAX_LAMPS))
@@ -145,7 +144,7 @@ func _venue_uniforms(material: ShaderMaterial, venue: Dictionary) -> void:
 		material.set_shader_parameter("flood_scale", float(venue["flood_scale"]))
 	reflection_counts["edges"] = edges.size()
 	reflection_counts["bars"] = bars.size()
-	reflection_counts["stands"] = mini((venue.get("stands", PackedVector2Array()) as PackedVector2Array).size(), MAX_STANDS)
+	reflection_counts["stands"] = profile.size()
 	reflection_counts["lamps"] = lamps.size()
 	reflection_counts["flood_map"] = flood is Texture2D
 
