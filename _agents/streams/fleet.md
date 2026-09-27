@@ -195,13 +195,26 @@ whose side and top views DO carry a coach's length (~2.9:1 from above). Building
 views at once, ~30 credits) is the likeliest way to keep that length. It is a lead gate (C12.1: any further 3D goes to
 a page with `db`), registered in `review.json` as `waiting`, going on the page with the burner's frames.
 
+### The page (lead gate; `db` declared)
+
+**https://claude.ai/artifact/JPb1bfR79qKr5amxeEG7RS, version 6** (published 2026-09-27 ~05:40 UTC, the same page as
+round 11, so his old taps stay in its `db`): the Burner before/after at his pose (`r12_fleet_burner_before_after.jpg`,
+`lineup_bus.png` from builder0 on `d4f7cfc9` vs `3b2fb346`), the turret + flame frames, bus I's van-shaped 3D, and ONE
+card: `bus_r12_mv`. **Read its `db` (`decisions/bus_r12_mv`) before this brief is archived** (lesson 220), then
+`make art-apply-decisions DIR=<read_db dir> URL=<page>`; on APPROVE:
+`tools/assets/generate.py --provider meshy --slot tank.hull --multi-image --review-item bus_r12_mv --ai-model meshy-7
+--view <concept.png> --view <concept1.png> --view <concept2.png> --name meshy/bus_r12_mv` (views in
+`assets/incoming/meshy/`, git-ignored; the concept task is `01a0e138-20b2-777c-8371-c86a2f66e1c3`).
+
 ### Questions for the lead
 
 1. **The bus:** approve `bus_r12_mv` for 3D (~30 credits)? It replaces today's bus only if the 3D measures >= 2.8:1.
+   (On the page. UNCONSUMED until the repo has read its `db`.)
 
 ### Requests to other streams
 
-None.
+None. **To the orchestrator:** SendMessage to `godot-83` failed ("Failed to send to godot-83", 2026-09-27 ~05:30 UTC),
+as it did in round 11; this Status is the announcement of record: **CP1 green, merge at `3b2fb346`** (with `fcb1a725`).
 
 ### Merge notes
 
