@@ -92,8 +92,9 @@ _(the worker keeps this current)_
 
 **Green, merge here: `35ab155c`** (builder0, `>> remote: make check exited 0`, 18 targets, **1773 passed, 0 failed**,
 sim-baseline `6313a38d7ecd99bb` **UNMOVED** (nav's CP2 baseline; the water is visual), determinism `550d53790035ddb4`).
-It carries both of the orchestrator's checkpoints. The commits after it touch only docs, `tools/water_page.py`
-and `mk/arena.mk`'s `terrain-measure` list; the tip's own check is recorded below when it lands.
+It carries both of the orchestrator's checkpoints. **The tip `fcc45829` is green too** (builder0, `make check exited
+0`, 1773 passed, 0 failed, same baseline and determinism); it adds only docs, `tools/water_page.py` and the
+`terrain-measure` list, so **merge `fcc45829`**. The one commit after it is this line.
 
 **His page:** https://claude.ai/artifact/1PsZA4HnRWGCSgajuyamKN (version 2, `db` declared; taps land in
 `decisions/<id>` as `{decision, words, at}`, the fleet page's schema). It asks first "have you driven the Locks
