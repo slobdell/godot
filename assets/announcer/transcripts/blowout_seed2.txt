@@ -34,4 +34,4 @@ result: green by elimination at 1:14.2
 1:17.6   CALLER   They did it! They actually did it!
 1:20.3   VETERAN  Nobody lost a vehicle. I'd like to meet whoever drew up that plan.
 1:26.7   PA       That is the conclusion of tonight's event. Congratulations to the Syndicate from all of us at the arena.
-1:33.8   PA       Younger fans are reminded that tonight's match counts toward their district's selection, and school resumes as normal in the morning.
+1:33.8   PA       The air outside the arena is within limits for walking tonight, for most residents, so please take your time on the way home.

@@ -38,4 +38,4 @@ result: green by elimination at 1:20.2
 1:25.4   CALLER   And the Wreckers are the last army standing! The Wreckers win!
 1:29.3   VETERAN  You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
 1:41.0   PA       The Wreckers are tonight's winner. Ticket holders may remain seated during the recovery operation.
-1:46.6   PA       Younger fans are reminded that tonight's match counts toward their district's selection, and school resumes as normal in the morning.
+1:46.6   PA       The air outside the arena is within limits for walking tonight, for most residents, so please take your time on the way home.
