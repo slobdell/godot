@@ -2440,16 +2440,20 @@ Shown the list of pending items (roadmap items 1–11, the fall-in rule, the Loc
 
 ### Round 12: the lead's verdicts as they land
 
-**Camera, the drawn-solids page (2026-09-26 evening), his words verbatim:**
+**Camera (2026-09-26 evening, the camera page https://claude.ai/artifact/We5PxYjNqXZDqXmuoNurxp; `db` doc
+`answers/camera` read back at 06:00 UTC 2026-09-27: `lamp: keep`, `screen: nocut`, `left: leave`, no note).** His
+words, as he sent them to the orchestrator:
 
 > *"Camera: drawn solids, my answers*
 > *- 1 · The camera in a floodlight's lamp head: Keep it*
 > *- 2 · An ad screen between you and the fight: Don't cut screens*
 > *- 3 · What I left standing: floodlight masts and signs: Leave them standing"*
 
-Read against the page's option labels by the camera stream (its Status has the mapping); the orchestrator's reading,
-to be confirmed there: the camera-placement fix stays, and the cutaway hides blocks only — no ad screens, masts or
-signs.
+What each means in the code (`_agents/streams/camera.md`): **1** the camera's placement asks the DRAWN extents
+(`RtsCamera.seen()`), so it rises out of a floodlight's lamp head at a low tilt (kept); **2** `BlockCutaway` does NOT
+hide ad screens, and `BlockCutaway.DRAWN_CUT` is empty, so the cutaway takes building-height colliders only, as before
+round 12 (the screens are the show; they stay drawn); **3** floodlight masts and signs are not cut either (never were).
+Confirmed by the camera stream against its own page's labels (`db` version 3).
 
 **The Condemned tank (the prison bus), on the fleet page's `bus_r12_mv` card (2026-09-27), his words verbatim:**
 
@@ -2461,6 +2465,17 @@ dozer at 2.90 × 4.08 × 9.70) and the bus item is CLOSED. `bus_r12_mv` is rejec
 concept or 3D unless he raises it. The earlier approvals (`bus_r10_b`, `bus_r11_i`, `q_r11_bus_fit`) stand as history:
 he approved a look, the tool could not deliver its proportions, and he does not want the slot chased. Lesson for pages:
 a card must say in one line WHY it exists and what "approve" costs; this one read as "approve the tank" to him.
+
+**The booth's 67 new lines, on audio's veto page (2026-09-27): ALL 67 KEPT** (the page's `verdicts` collection,
+dumped to `streams/references/round12/audio_veto_db/`). His words, verbatim:
+
+> *"ok I finished approving the announcers, those are great - with all the new voice overs for the 2 male announcers it
+> makes me feel like there's more good content that can be created for the female announcer"*
+
+**Direction from that:** the female announcer — the PA voice (`pa`, 226 lines against the caller's 521 and the
+Veteran's 439; round 12 added 49 caller and 18 color lines and **zero** PA lines) — gets her own deepening: more
+content in her register, under the standing humour direction, generated under C12.7, on a veto page. Routed to audio
+as item M6 the same night.
 
 **A correction to the squad brief (squad, 2026-09-26):** the brief said the yard and the Terminus both classify as
 *dense*. `make tactics-terrain` shows only the yard's spawns are dense and the Terminus is *lanes*; and no squad the

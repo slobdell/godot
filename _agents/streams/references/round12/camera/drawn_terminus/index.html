@@ -1,0 +1,59 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camera looks</title><style>
+:root{--bg:#101318;--fg:#e8ecf1;--muted:#98a2b0;--line:#2a313b;--accent:#ffd34d}
+@media (prefers-color-scheme: light){:root:not([data-theme=dark]){--bg:#f6f7f9;--fg:#15191f;--muted:#5b6573;--line:#d5dae1;--accent:#8a6400}}
+body{margin:0;padding:16px;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,sans-serif}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:17px;margin:28px 0 8px}p{max-width:70ch;color:var(--muted)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+figure{margin:0}img{width:100%;display:block;border:1px solid var(--line);border-radius:4px}
+figcaption{font-size:13px;color:var(--muted);padding:4px 2px}figcaption b{color:var(--accent)}
+table{border-collapse:collapse;width:100%}td,th{padding:4px;vertical-align:top}th{font-size:13px;color:var(--muted);text-align:left}
+@media (max-width:700px){table,tbody,tr,td,th{display:block}th:empty{display:none}}
+</style></head><body>
+<h1>Camera looks</h1>
+<p>One frozen moment of a 30-a-side fight (arena <b>terminus</b>, 6 s after the first shot), photographed from every pose. Only the camera changes. Pick the frame closest to "between StarCraft 2 and Twisted Metal" - its label is all the game needs.</p>
+<h2>The camera asks the drawing, not the collider (round 12)</h2>
+<p>A floodlight's collider is its 3 m footing and it is drawn 16 m tall; an ad screen's is a 1.4 m plinth under a 20.7 m LED wall. Each pair is the same spot and yaw at your pose (FOV 35, 49 m): left as the camera read the colliders, right as it reads the drawing. The last row is what is deliberately NOT cut.</p>
+<div class="row">
+<figure><img loading="lazy" src="drawn_lamp_collider.jpg" alt=""><figcaption><b>before: camera posed from the colliders, 15.1 m up</b> · pitch 18.0° · 49 m out · <b>INSIDE A FLOODLIGHT</b></figcaption></figure>
+<figure><img loading="lazy" src="drawn_lamp_drawn.jpg" alt=""><figcaption><b>after: camera posed from the drawing, 18.0 m up</b> · pitch 21.6° · 49 m out</figcaption></figure>
+</div>
+<div class="row">
+<figure><img loading="lazy" src="drawn_screen_collider.jpg" alt=""><figcaption><b>before: the cutaway reads the colliders</b> · pitch 21.0° · 49 m out</figcaption></figure>
+<figure><img loading="lazy" src="drawn_screen_drawn.jpg" alt=""><figcaption><b>after: the cutaway reads the drawing</b> · pitch 21.0° · 49 m out</figcaption></figure>
+</div>
+<div class="row">
+<figure><img loading="lazy" src="drawn_left_floodlight.jpg" alt=""><figcaption><b>not cut: a floodlight's drawn box on the sight line</b> · pitch 21.0° · 49 m out</figcaption></figure>
+<figure><img loading="lazy" src="drawn_left_sign.jpg" alt=""><figcaption><b>not cut: a sign's drawn box on the sight line</b> · pitch 21.0° · 49 m out</figcaption></figure>
+</div>
+<h2>What you played in round 5</h2><p>Zooming out also tilted the camera toward top-down (25° to 82°): the same slider did both.</p><div class="row">
+</div>
+<h2>Field of view 45°</h2><p>Rows: pitch below the horizon. Columns: distance from the fight.</p><table><tr><th></th>
+<th>28 m out</th>
+<th>50 m out</th>
+<th>90 m out</th>
+</tr>
+<tr><th>25°</th>
+</tr>
+<tr><th>35°</th>
+</tr>
+<tr><th>45°</th>
+</tr>
+<tr><th>60°</th>
+</tr>
+</table>
+<h2>Field of view 60°</h2><p>Rows: pitch below the horizon. Columns: distance from the fight.</p><table><tr><th></th>
+<th>28 m out</th>
+<th>50 m out</th>
+<th>90 m out</th>
+</tr>
+<tr><th>25°</th>
+</tr>
+<tr><th>35°</th>
+</tr>
+<tr><th>45°</th>
+</tr>
+<tr><th>60°</th>
+</tr>
+</table>
+</body></html>

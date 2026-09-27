@@ -95,6 +95,15 @@ static func step(state: Dictionary, throttle: float, turn: float, delta: float) 
 const WHEEL_CREEP_THROTTLE := 0.5
 const CREEP_REVERSE_SPEED := 0.5
 const CREEP_LEG_TICKS := SimClock.TICK_RATE / 2
+## Round 12 (nav N6, from squad's S6): a forward arc and a reverse arc on the same yaw curve round OPPOSITE centres, so
+## strict alternation walks the hull off its spot (squad measured a scout 1.5 m -> 8.6 m off its slot over 15 s of idle
+## facing). The creep remembers where it began (`creep_anchor`); at a leg change, once the hull is more than this far
+## from it — the hull's own SETTLE radius (Movement.settle_radius: 0.6 of the turning radius, at most 6 m; the scout
+## 3 m, the War Rig 6 m), never under CREEP_DRIFT_M — the next leg is the gear that heads back toward it. Not a flat
+## metre: the lead's round-8 complaint was semis "yawing in place (should be impossible)", and a 14 m truck held within
+## 1 m of its spot does exactly that (nav-rotation's truck case flagged it). `--nav-off=creepbound` restores strict
+## alternation.
+const CREEP_DRIFT_M := 1.0
 
 
 ## One tick of driving, updating `state` in place (the Tank keeps one state and steps it every physics tick).
@@ -122,9 +131,18 @@ static func step_in_place(state: Dictionary, throttle: float, turn: float, delta
 			if direction == 0:
 				direction = -1 if throttle_c < 0.0 or (throttle_c == 0.0 and speed < -CREEP_REVERSE_SPEED) else 1
 				leg = 0
+				state["creep_anchor"] = state.get("position", Vector3.INF)
 			elif leg >= CREEP_LEG_TICKS:
 				direction = -direction
 				leg = 0
+				var anchor: Vector3 = state.get("creep_anchor", Vector3.INF)
+				if anchor != Vector3.INF and state.has("position") and not Movement.switched_off("creepbound"):
+					var back: Vector3 = anchor - Vector3(state["position"])
+					back.y = 0.0
+					var allowance := clampf(float(state.get("min_turn_radius_m", 0.0)) * Movement.WHEELS_SETTLE_RADII,
+							CREEP_DRIFT_M, Movement.WHEELS_SETTLE_MAX)
+					if back.length() > allowance:
+						direction = 1 if back.dot(forward) >= 0.0 else -1
 			state["creep_dir"] = direction
 			state["creep_ticks"] = leg + 1
 			throttle_c = creep * direction

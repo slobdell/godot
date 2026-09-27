@@ -83,6 +83,8 @@ const UNSTICK_CLEARANCE := 2.0
 const BLOCKED_SECONDS := 2.0
 ## A hull whose centre is within this of mine (flat metres), ahead of me, is what I'm blocked by.
 const BLOCKER_REACH := 8.0
+## Round 12: ...or, for long hulls, their half-lengths plus this gap (`--nav-off=blockreach` restores the flat reach).
+const BLOCKER_GAP_M := 2.0
 ## ...and "ahead" means within this cosine of the direction I'm trying to go (~60°).
 const BLOCKER_AHEAD_COS := 0.5
 ## A route that ends further than this from the goal did not reach it: the goal is inside something or cut off.
@@ -186,8 +188,8 @@ static var _off_parsed := false
 ## disabled into nothing", which is a third treatment rather than a control. `a7` is currently INVERTED (like
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
-const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "carrot", "chord", "clearance", "commit", "facegiveup", "grace", "guard", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
+const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -272,13 +274,18 @@ static func route_arms() -> Dictionary:
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
-			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks}
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
+			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs}
 
 
 static func reset_route_arms() -> void:
 	kturns = 0
 	kturn_none = 0
+	kturn_none_log.clear()
+	kturn_fill_log.clear()
 	kturn_aborted = 0
+	kturn_multi = 0
+	kturn_multi_legs = 0
 	kturn_ticks = 0
 	unstick_fires = 0
 	circle_reverses = 0
@@ -770,6 +777,7 @@ func reset() -> void:
 	_repair_for = Vector3.INF
 	_repair_to = Vector3.INF
 	_kturn_left_m = 0.0
+	_kturn_legs.clear()
 	_kturn_check = 0
 
 
@@ -893,6 +901,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 					drive_vector = Vector2(leg.throttle, leg.turn)
 			elif _kturn_left_m > 0.0:
 				_kturn_left_m = 0.0
+				_kturn_legs.clear()
 	elif order.get("reverse", false):
 		drive_vector = Steering.reverse_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 	else:
@@ -1432,7 +1441,9 @@ func _blocker(goal: Vector3, direct: bool) -> String:
 		toward = -tank.global_basis.z
 	toward = toward.normalized()
 	var best := ""
-	var best_distance := BLOCKER_REACH
+	var best_distance := INF
+	var sized := not _off.has("blockreach")
+	var my_half := float(hull_box(tank.unit_id)[2]) * 0.5 if sized else 0.0
 	if ctl.tanks_root != null:
 		for other in ctl.tanks_root.get_children():
 			var hull := other as Tank
@@ -1441,7 +1452,14 @@ func _blocker(goal: Vector3, direct: bool) -> String:
 			var offset := hull.global_position - here
 			offset.y = 0.0
 			var distance := offset.length()
-			if distance >= best_distance or distance < 0.01:
+			# Round 12: "within reach" is hull-sized for pairs the flat 8 m cannot hold. Two War Rigs nose to tail are
+			# 14 m centre to centre, so a rig pressed against a parked friend's tail found nobody ahead, called it
+			# terrain, never asked, and pushed at full throttle for 80 s (the drive test's rigs, far ring road).
+			# Unchanged for every pair whose half-lengths sum to under BLOCKER_REACH - BLOCKER_GAP_M.
+			var reach := BLOCKER_REACH
+			if sized:
+				reach = maxf(BLOCKER_REACH, my_half + float(hull_box(hull.unit_id)[2]) * 0.5 + BLOCKER_GAP_M)
+			if distance >= reach or distance >= best_distance or distance < 0.01:
 				continue
 			if offset.dot(toward) / distance < BLOCKER_AHEAD_COS:
 				continue
@@ -2188,8 +2206,17 @@ func _corner_waypoint(goal: Vector3) -> Vector3:
 func _guard_steer(here: Vector3, waypoint: Vector3) -> Vector3:
 	if _chord_on_mesh(here, waypoint):
 		return waypoint
-	if _path_index < _path.size():
-		var corner := Vector3(_path[_path_index].x, 0.0, _path[_path_index].z)
+	# Round 12 (nav, found tracing a back-and-fill's War Rig): the next corner, but never one the hull stands ON —
+	# round 11's rule (_corner_beyond), which this fallback ran AFTER and so undid. A rig whose carrot chord left the
+	# mesh was handed the route vertex 0.47 m from its centre for 2371 ticks: inside the 0.5 m arrive radius, zero
+	# throttle, no stall, 79 m from its goal at the leg's end (laptop, rigs seed 3, the plaza leg). `--nav-off=guardnear`
+	# restores the old pick (the attribution arm).
+	var first := _path_index
+	if not _off.has("guardnear"):
+		while first < _path.size() - 1 and _flat_distance(_path[first], here) < WAYPOINT_MIN_M:
+			first += 1
+	if first < _path.size():
+		var corner := Vector3(_path[first].x, 0.0, _path[first].z)
 		if _chord_on_mesh(here, corner):
 			return corner
 	# (A "steer back onto the mesh" rescue was tried here and removed: in a narrow corridor a hull is legitimately in the
@@ -2490,6 +2517,8 @@ const KTURN_RETRY_TICKS := SimClock.TICK_RATE
 ## Plan a reverse only for a wall the forward arc meets within this much travel (metres).
 const KTURN_HIT_WITHIN_M := 5.0
 const KTURN_SECONDS_PER_M := 1.5
+## A leg's leading end is hitting a wall when its motion points into the wall's normal by more than this (cosine).
+const KTURN_INTO_WALL_COS := 0.5
 static var kturns := 0            # legs planned and driven
 static var kturn_none := 0        # forward arc blocked, no clear reverse found: left to the reactive rules
 static var kturn_aborted := 0     # a leg cut short by a rear contact or its timeout
@@ -2499,6 +2528,9 @@ var _kturn_turn := 0.0
 var _kturn_from := Vector3.ZERO
 var _kturn_timeout := 0.0
 var _kturn_check := 0
+## Round 12 (N2): the gear of the leg being driven (-1 back, +1 forward) and the back-and-fill's legs still to drive.
+var _kturn_gear := -1
+var _kturn_legs: Array = []
 
 
 static func kturn_on() -> bool:
@@ -2517,21 +2549,34 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	if _kturn_left_m > 0.0:
 		var backed := _flat_distance(tank.global_position, _kturn_from)
 		_kturn_timeout -= delta
-		# A REAR hit ends the leg: the contact point behind the centre, while backing. The nose still touching the wall
-		# the leg is backing away from is exactly what the leg is for, and ending on it made every such leg abort on its
-		# first tick (the first laptop run: 138 of 155 rig legs).
-		var rear_hit := contact.touching and float(contact.decided.get("throttle", 0.0)) < 0.0 \
-				and Vector2(contact.point.x - tank.global_position.x, contact.point.z - tank.global_position.z).dot(
-				Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)) < 0.0
-		if backed >= _kturn_left_m or _kturn_timeout <= 0.0 or rear_hit:
+		# The LEADING end's hit ends the leg: the contact point behind the centre while backing (ahead of it on a
+		# back-and-fill's forward leg). The other end still touching the wall the leg is moving away from is exactly
+		# what the leg is for, and ending on it made every such leg abort on its first tick (the first laptop run:
+		# 138 of 155 rig legs).
+		var nose := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
+		var lead_hit := contact.touching and float(contact.decided.get("throttle", 0.0)) * _kturn_gear > 0.0 \
+				and Vector2(contact.point.x - tank.global_position.x, contact.point.z - tank.global_position.z).dot(nose) * _kturn_gear > 0.0
+		# Round 12: ...and only when that end is driving INTO the wall. A plan may start with an end already near a face
+		# (a pressed start is allowed not to get deeper), and a leg that slides that end ALONG the face is the plan
+		# working: aborting on it cut 9 of 20 rig plans on builder0, most within 0.1 m of the leg's start.
+		if lead_hit and not _off.has("kturnslide"):
+			lead_hit = Vector2(contact.normal.x, contact.normal.z).dot(nose * _kturn_gear) < -KTURN_INTO_WALL_COS
+		if backed >= _kturn_left_m and not _kturn_legs.is_empty():
+			_kturn_start_leg(_kturn_legs.pop_front())  # the next leg of a back-and-fill, from where this one ended
+		elif backed >= _kturn_left_m or _kturn_timeout <= 0.0 or lead_hit:
 			_kturn_check = 0
 			if backed < _kturn_left_m:
 				kturn_aborted += 1
 				_kturn_check = KTURN_RETRY_TICKS
+				if kturn_log:
+					kturn_fill_log.append({"unit": String(tank.name), "frame": Engine.get_physics_frames(), "aborted": true,
+							"gear": _kturn_gear, "backed_m": snappedf(backed, 0.1), "left_m": snappedf(_kturn_left_m, 0.1),
+							"lead_hit": lead_hit, "legs_left": _kturn_legs.size()})
 			_kturn_left_m = 0.0
+			_kturn_legs.clear()
 			_repath_left = 0.0
 			return false
-		cmd.throttle = -KTURN_THROTTLE
+		cmd.throttle = KTURN_THROTTLE * _kturn_gear
 		cmd.turn = _kturn_turn
 		kturn_ticks += ctl._step
 		return true
@@ -2561,23 +2606,45 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	var heading := forward
 	var backed := 0.0
 	var radius := wheel_radius()
+	var blocked_at := -1.0  # round 12 (N1), measurement only: where the reverse search met something, if it did
 	while backed < KTURN_BACK_MAX_M:
 		heading = TankMotion.turn_heading(heading, KTURN_BACK_STEP_M * turn / radius)
 		at -= heading * KTURN_BACK_STEP_M
 		backed += KTURN_BACK_STEP_M
 		if not _outline_ok(map, frame, at, heading, start):
+			blocked_at = backed
 			break  # the hull would hit what is behind (or swing its nose into what is beside): no further back
 		if _arc_hit(map, frame, at, heading, turn, waypoint, start) == INF:
-			_kturn_left_m = minf(backed + KTURN_BACK_EXTRA_M, KTURN_BACK_MAX_M)
 			_kturn_turn = turn
-			_kturn_from = here
-			_kturn_timeout = _kturn_left_m * KTURN_SECONDS_PER_M + 1.0
+			_kturn_start_leg(Vector2(-1.0, minf(backed + KTURN_BACK_EXTRA_M, KTURN_BACK_MAX_M)))
 			kturns += 1
 			cmd.throttle = -KTURN_THROTTLE
 			cmd.turn = turn
 			kturn_ticks += ctl._step
 			return true
+	# Round 12 (N2): no single back-up clears. The back-and-fill replaces THIS branch only (Invariant 0c): what it
+	# cannot plan falls through to `kturn_none` and the reactive rules exactly as before.
+	if fill_on():
+		var plan := _best_fill(map, frame, here, forward, turn, waypoint, start)
+		if not plan.is_empty():
+			_kturn_turn = turn
+			_kturn_legs = plan
+			_kturn_start_leg(_kturn_legs.pop_front())
+			kturn_multi += 1
+			kturn_multi_legs += plan.size() + 1
+			if kturn_log:
+				kturn_fill_log.append({"unit": String(tank.name), "frame": Engine.get_physics_frames(),
+						"at": [snappedf(here.x, 0.1), snappedf(here.z, 0.1)], "to": [snappedf(waypoint.x, 0.1), snappedf(waypoint.z, 0.1)],
+						"heading_deg": snappedf(rad_to_deg(atan2(forward.x, -forward.z)), 1.0),
+						"plan": ([_kturn_gear * _kturn_left_m] + plan.map(func(leg: Vector2) -> float: return leg.x * leg.y)),
+						"goal_m": snappedf(_flat_distance(here, _goal), 0.1) if _goal != Vector3.INF else -1.0})
+			cmd.throttle = KTURN_THROTTLE * _kturn_gear
+			cmd.turn = turn
+			kturn_ticks += ctl._step
+			return true
 	kturn_none += 1
+	if kturn_log:
+		kturn_none_log.append(_kturn_diagnose(map, frame, here, forward, turn, waypoint, start, blocked_at))
 	_kturn_check = KTURN_RETRY_TICKS  # nothing within reach: do not search again every few ticks
 	return false
 
@@ -2634,3 +2701,220 @@ func _outline_ok(map: RID, frame: Array, at: Vector3, heading: Vector3, start: P
 		if offs[i] > maxf(float(frame[2]), start[i] + 0.05):
 			return false
 	return true
+
+
+# --- Round 12 (nav N1/N2): the back-and-fill, and the instrument that asked for it ------------------------------------
+#
+# The round-11 planned reverse searches ONE back-up (same lock, up to KTURN_BACK_MAX_M) after which the forward arc is
+# clear. For the War Rig (14 m, 12 m radius) in an 18-22 m street it found none 130 times against 64 legs (builder0,
+# `38c385d5`, 8 seeds). N1 logs, for every such refusal, what the search saw; `_plan_fill` is the manoeuvre a driver does
+# when one back-up is not enough: legs alternating gear, every leg on the SAME lock (the plant yaws the hull the way of
+# `turn` in either gear — TankMotion.step's wheels branch — so every leg keeps swinging the nose toward the point), each
+# leg driven as far as the hull's outline stays clear of the navmesh edge less KTURN_FILL_MARGIN_M, and the manoeuvre
+# done at the first reverse pose from which the forward arc is clear. Validated with the WHOLE outline at every step
+# (both ends swing: `_outline_ok`), so the end leading a leg is always checked.
+
+## Measurement only (the drive test's `--kturn-log`): every `kturn_none` appends what the search saw.
+static var kturn_log := false
+static var kturn_multi := 0        # back-and-fills planned (the single back-up found none; this did)
+static var kturn_multi_legs := 0   # ...and their legs, summed
+static var kturn_none_log: Array = []
+static var kturn_fill_log: Array = []   # ...and every back-and-fill planned (measurement only)
+## A back-and-fill leg is at most this long, is backed off this far from the first pose that is not clear, and a leg
+## shorter than KTURN_FILL_LEG_MIN_M after that is no progress (the plan fails rather than dither).
+const KTURN_FILL_LEG_MAX_M := 10.0
+const KTURN_FILL_MARGIN_M := 0.25
+const KTURN_FILL_LEG_MIN_M := 0.5
+## The most legs a plan may have (the last is always a reverse; the forward arc after it is the ordinary driver's).
+## N1 (laptop, 8 seeds, the rigs' 132 refusals): a plan of at most 3 legs existed for 29, at most 5 for 39, at most 8
+## for 57, at most 16 for 77. Five: a five-point turn is still a driver's manoeuvre; eight half-metre shuffles are not.
+const KTURN_FILL_LEGS := 5
+
+
+static func fill_on() -> bool:
+	return kturn_on() and not switched_off("kturnfill")
+
+
+## Start driving one leg, Vector2(gear, metres), from where the hull is now.
+func _kturn_start_leg(leg: Vector2) -> void:
+	_kturn_gear = int(leg.x)
+	_kturn_left_m = leg.y
+	_kturn_from = ctl.tank.global_position
+	_kturn_timeout = leg.y * KTURN_SECONDS_PER_M + 1.0
+
+
+## The back-and-fill to drive: reverse-first or forward-first, fewer legs first, then less travel (reverse-first on a
+## tie: it keeps the nose off the wall the forward arc was about to meet).
+func _best_fill(map: RID, frame: Array, here: Vector3, forward: Vector3, turn: float, target: Vector3,
+		start: PackedFloat32Array) -> Array:
+	var best: Array = []
+	for first in [-1, 1]:
+		var plan := _plan_fill(map, frame, here, forward, turn, target, start, first, KTURN_FILL_LEGS)
+		if plan.is_empty():
+			continue
+		if best.is_empty() or plan.size() < best.size() or (plan.size() == best.size() and _fill_metres(plan) < _fill_metres(best)):
+			best = plan
+	return best
+
+
+static func _fill_metres(plan: Array) -> float:
+	var metres := 0.0
+	for leg: Vector2 in plan:
+		metres += leg.y
+	return metres
+
+
+## One step of `metres` along the plant's yaw law in `gear` (+1 forward, -1 reverse) on lock `turn`.
+static func _fill_step(at: Vector3, heading: Vector3, gear: int, turn: float, radius: float, metres: float) -> Array:
+	heading = TankMotion.turn_heading(heading, metres * turn / radius)
+	return [at + heading * (metres * gear), heading]
+
+
+## The back-and-fill from (here, forward): legs as Vector2(gear, metres), in order, the first in `first_gear`; empty if
+## no plan of at most `max_legs` legs clears the forward arc toward `target`. Deterministic: fixed steps, fixed order.
+func _plan_fill(map: RID, frame: Array, here: Vector3, forward: Vector3, turn: float, target: Vector3,
+		start: PackedFloat32Array, first_gear: int, max_legs: int, margin := KTURN_FILL_MARGIN_M,
+		leg_min := KTURN_FILL_LEG_MIN_M) -> Array:
+	var radius := wheel_radius()
+	var at := here
+	var heading := forward
+	var legs: Array = []
+	var gear := first_gear
+	for leg in max_legs:
+		var travelled := 0.0
+		var poses: Array = []  # the pose after each step, so the leg can be backed off without re-simulating
+		var cleared := false
+		while travelled < KTURN_FILL_LEG_MAX_M:
+			var next := _fill_step(at if poses.is_empty() else poses[-1][0], heading if poses.is_empty() else poses[-1][1],
+					gear, turn, radius, KTURN_BACK_STEP_M)
+			if not _outline_ok(map, frame, next[0], next[1], start):
+				break
+			poses.append(next)
+			travelled += KTURN_BACK_STEP_M
+			if gear < 0 and _arc_hit(map, frame, next[0], next[1], turn, target, start) == INF:
+				cleared = true
+				break
+		if cleared:
+			# As the single leg does: a little past the first clear pose, if that is clear too.
+			var extra := _fill_step(poses[-1][0], poses[-1][1], gear, turn, radius, KTURN_BACK_EXTRA_M)
+			if _outline_ok(map, frame, extra[0], extra[1], start):
+				travelled += KTURN_BACK_EXTRA_M
+			legs.append(Vector2(gear, travelled))
+			return legs
+		var usable := travelled - margin
+		if usable < leg_min:
+			return []
+		var steps := int(floor(usable / KTURN_BACK_STEP_M))
+		usable = steps * KTURN_BACK_STEP_M
+		at = poses[steps - 1][0]
+		heading = poses[steps - 1][1]
+		legs.append(Vector2(gear, usable))
+		gear = -gear
+	return []
+
+
+## N1: what the search saw at one `kturn_none` (measurement only; reads the navmesh and the other hulls, changes nothing).
+func _kturn_diagnose(map: RID, frame: Array, here: Vector3, forward: Vector3, turn: float, target: Vector3,
+		start: PackedFloat32Array, blocked_at: float) -> Dictionary:
+	var tank := ctl.tank
+	var radius := wheel_radius()
+	var reach := float(frame[2])
+	var pressed := 0
+	for off: float in start:
+		if off > reach:
+			pressed += 1
+	var out := {"unit": String(tank.name), "id": tank.unit_id, "frame": Engine.get_physics_frames(),
+			"at": [snappedf(here.x, 0.1), snappedf(here.z, 0.1)], "to": [snappedf(target.x, 0.1), snappedf(target.z, 0.1)],
+			"error_deg": snappedf(rad_to_deg(forward.signed_angle_to(target - here, Vector3.UP)), 1.0),
+			"hit_m": _arc_hit(map, frame, here, forward, turn, target, start), "reach_m": snappedf(reach, 0.01),
+			"pressed_points": pressed, "start_max_off_m": snappedf(Array(start).max(), 0.01),
+			"blocked_at_m": blocked_at, "goal_m": snappedf(_flat_distance(here, _goal), 0.1) if _goal != Vector3.INF else -1.0,
+			"point_is_goal": _goal != Vector3.INF and _flat_distance(target, _goal) < 0.5}
+	# Which part of the outline stopped the single back-up.
+	if blocked_at > 0.0:
+		var pose := [here, forward]
+		for i in int(round(blocked_at / KTURN_BACK_STEP_M)):
+			pose = _fill_step(pose[0], pose[1], -1, turn, radius, KTURN_BACK_STEP_M)
+		out["blocked_by"] = _outline_part(map, frame, pose[0], pose[1], start)
+	# A longer single back-up (no 8 m cap): does one exist at all?
+	out["longer_m"] = _single_backup(map, frame, here, forward, turn, turn, target, start, 30.0)
+	# A straight back-up (no lock) before the same forward arc.
+	out["straight_m"] = _single_backup(map, frame, here, forward, 0.0, turn, target, start, KTURN_BACK_MAX_M)
+	# The back-and-fill, both first gears, up to five legs (the planner's own cap is KTURN_FILL_LEGS).
+	for first in [-1, 1]:
+		var plan := _plan_fill(map, frame, here, forward, turn, target, start, first, 5)
+		out["fill_%s" % ("rev" if first < 0 else "fwd")] = plan.map(func(leg: Vector2) -> float: return snappedf(leg.x * leg.y, 0.1))
+	# How many legs a tight many-point turn would take (0.25 m margin, 0.5 m legs, up to 16 legs): is there ANY?
+	for first in [-1, 1]:
+		var many := _plan_fill(map, frame, here, forward, turn, target, start, first, 16, 0.25, 0.5)
+		out["many_%s" % ("rev" if first < 0 else "fwd")] = [many.size(), snappedf(many.reduce(
+				func(sum: float, leg: Vector2) -> float: return sum + leg.y, 0.0), 0.1)]
+	# The street: free run of the hull's CENTRE on the mesh along four axes relative to the heading.
+	var spans := []
+	for deg in [0.0, 45.0, 90.0, 135.0]:
+		var axis := forward.rotated(Vector3.UP, deg_to_rad(deg))
+		spans.append(snappedf(_free_run(map, here, axis, reach) + _free_run(map, here, -axis, reach), 0.1))
+	out["spans_m"] = spans  # [along heading, 45, across, 135]; physical width ~ span + 2 × bake radius
+	out["bake_radius_m"] = snappedf(bake_radius(tank), 0.01)
+	# Friends: the nearest other hull, and whether one sits in the box the back-up sweeps (behind, within a leg).
+	var nearest := INF
+	var behind := false
+	var half_w := float(frame[0])
+	var half_l := float(frame[1])
+	if ctl.tanks_root != null:
+		for other in ctl.tanks_root.get_children():
+			if other == tank or not (other is Tank):
+				continue
+			var rel := (other as Tank).global_position - here
+			rel.y = 0.0
+			nearest = minf(nearest, rel.length())
+			var along := rel.dot(forward)
+			var across := absf(rel.dot(Vector3(-forward.z, 0.0, forward.x)))
+			if along < 0.0 and along > -(half_l * 2.0 + KTURN_BACK_MAX_M) and across < half_w + 3.0:
+				behind = true
+	out["friend_nearest_m"] = snappedf(nearest, 0.1) if nearest < INF else -1.0
+	out["friend_behind"] = behind
+	return out
+
+
+## The shortest back-up on lock `back_turn` (up to `limit` m) after which the forward arc on `turn` is clear, or -1
+## (-2 - metres when the outline was blocked first, so the log says how far it got).
+func _single_backup(map: RID, frame: Array, here: Vector3, forward: Vector3, back_turn: float, turn: float,
+		target: Vector3, start: PackedFloat32Array, limit: float) -> float:
+	var radius := wheel_radius()
+	var pose := [here, forward]
+	var backed := 0.0
+	while backed < limit:
+		pose = _fill_step(pose[0], pose[1], -1, back_turn, radius, KTURN_BACK_STEP_M)
+		backed += KTURN_BACK_STEP_M
+		if not _outline_ok(map, frame, pose[0], pose[1], start):
+			return -2.0 - backed
+		if _arc_hit(map, frame, pose[0], pose[1], turn, target, start) == INF:
+			return backed
+	return -1.0
+
+
+## Which part of the outline is not clear at this pose: nose, rear, side_fore, side_aft (the first failing sample).
+func _outline_part(map: RID, frame: Array, at: Vector3, heading: Vector3, start: PackedFloat32Array) -> String:
+	var offs := _outline_offs(map, frame, at, heading)
+	for i in offs.size():
+		if offs[i] > maxf(float(frame[2]), start[i] + 0.05):
+			var sample: Vector2 = KTURN_OUTLINE[i]
+			if sample.y == 0.0:
+				return "nose" if sample.x > 0.0 else "rear"
+			if absf(sample.x) == 1.0:
+				return "nose_corner" if sample.x > 0.0 else "rear_corner"
+			return "side_fore" if sample.x > 0.0 else "side_aft"
+	return "none"
+
+
+## How far a point can go from `at` along `axis` before it is more than `reach` off the mesh (0.5 m steps, 40 m cap).
+static func _free_run(map: RID, at: Vector3, axis: Vector3, reach: float) -> float:
+	var run := 0.0
+	while run < 40.0:
+		var point := at + axis * (run + 0.5)
+		var closest := NavigationServer3D.map_get_closest_point(map, point)
+		if Vector2(closest.x - point.x, closest.z - point.z).length() > reach:
+			break
+		run += 0.5
+	return run

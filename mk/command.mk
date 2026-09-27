@@ -216,6 +216,20 @@ terminus-alleys: import ## Round 9: the camera forced outside a city block, befo
 	grep -q 'CAMERA_LOOKS_DONE ok=true' $(ALLEYS_DIR)/run.log
 	@echo "Now LOOK at $(ALLEYS_DIR)/index.html"
 
+## Round 12 (camera stream): the camera asks the DRAWING, not the collider. Pairs at the lead's pose on one arena: the
+## camera by a floodlight at 18 deg (posed from colliders / drawing), an ad screen between the camera and the fight
+## (cutaway reading colliders / drawing), and the floodlight and sign left uncut.
+DRAWN_DIR := $(BUILD_DIR)/camera-drawn
+DRAWN_ARENA ?= terminus
+
+camera-drawn: import ## Round 12: the camera and the cutaway asking what is DRAWN, before/after pairs at the lead's pose -> build/camera-drawn/<arena>/index.html (DRAWN_ARENA=terminus; needs a display: make remote T=camera-drawn)
+	rm -rf $(DRAWN_DIR)/$(DRAWN_ARENA) && mkdir -p $(DRAWN_DIR)/$(DRAWN_ARENA) && touch $(BUILD_DIR)/.gdignore
+	timeout 420 $(GODOT) --path . --resolution 1920x1080 -- $(CAMERA_LOOKS_FLAGS) --arena=$(DRAWN_ARENA) \
+		--camera-looks-grid=drawn --camera-looks=$(CURDIR)/$(DRAWN_DIR)/$(DRAWN_ARENA) 2>&1 \
+		| tee $(DRAWN_DIR)/$(DRAWN_ARENA)/run.log | grep -E 'CAMERA_LOOKS|SCRIPT ERROR|^ERROR' || true
+	grep -q 'CAMERA_LOOKS_DONE ok=true' $(DRAWN_DIR)/$(DRAWN_ARENA)/run.log
+	@echo "Now LOOK at $(DRAWN_DIR)/$(DRAWN_ARENA)/index.html"
+
 ## Control X4: what spawning a 30-a-side army costs per vehicle (FIGHT's stall). SPAWN_THEME=default compares the box art.
 spawn-cost: import ## Headless: ms per spawned vehicle, first of each type vs the rest, per faction army
 	$(GODOT) --headless --path . --script res://game/ui/spawn_cost_bench.gd -- $(if $(SPAWN_THEME),--theme=$(SPAWN_THEME)) 2>&1 | grep -E 'SPAWN_COST|SCRIPT ERROR|^ERROR'

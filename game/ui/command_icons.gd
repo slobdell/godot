@@ -292,6 +292,7 @@ const _LETTERS := {
 	"C": [[Vector2(0.24, -0.24), Vector2(0.12, -0.35), Vector2(-0.12, -0.35), Vector2(-0.25, -0.2), Vector2(-0.25, 0.2),
 		Vector2(-0.12, 0.35), Vector2(0.12, 0.35), Vector2(0.24, 0.24)]],
 	"F": [[Vector2(0.24, -0.35), Vector2(-0.2, -0.35), Vector2(-0.2, 0.35)], [Vector2(-0.2, 0.0), Vector2(0.14, 0.0)]],
+	"A": [[Vector2(-0.26, 0.35), Vector2(0.0, -0.35), Vector2(0.26, 0.35)], [Vector2(-0.15, 0.08), Vector2(0.15, 0.08)]],
 	"B": [[Vector2(-0.2, 0.35), Vector2(-0.2, -0.35), Vector2(0.1, -0.35), Vector2(0.22, -0.25), Vector2(0.22, -0.1),
 		Vector2(0.1, 0.0), Vector2(-0.2, 0.0)], [Vector2(0.1, 0.0), Vector2(0.25, 0.1), Vector2(0.25, 0.25),
 		Vector2(0.12, 0.35), Vector2(-0.2, 0.35)]],
@@ -390,18 +391,43 @@ static func _ring(canvas: Object, center: Vector2, radius: float, color: Color, 
 static var _formation_textures := {}
 
 
-## X2: the Formation button's glyph - the formation's real shape (formation_points), drawn once into a texture. "auto"
-## shows a wedge, the shape a mixed group most often picks for itself.
+## X2: the Formation button's glyph - the formation's real shape (formation_points), drawn once into a texture.
+## Round 12 (C12.4): "auto" is its OWN glyph, a ring round an A (the leader decides), not a wedge. It used to draw a
+## wedge, and the lead read it as one (*"they were in auto formation (which I assume is a wedge based on the UI)"*)
+## while the doctrine formed a column. With an element selected the card draws the leader's pick instead
+## (`formation_readout`); this glyph is for the moment before there is one.
 static func formation_texture(formation: String) -> Texture2D:
-	var shape := "wedge" if formation == UnitCommand.AUTO else formation
 	if not _formation_textures.has(formation):
 		var raster := IconRaster.new(TASK_TEXTURE_PX)
-		var box := Rect2(Vector2.ONE * TASK_TEXTURE_PX * 0.08, Vector2.ONE * TASK_TEXTURE_PX * 0.84)
-		var points := formation_points(shape, box, 4)
-		for i in points.size():
-			draw_unit(raster, "scout", points[i], TASK_TEXTURE_PX * 0.34, Color.WHITE if i == 0 else Color(1, 1, 1, 0.75))
+		if formation == UnitCommand.AUTO:
+			var middle := Vector2.ONE * TASK_TEXTURE_PX * 0.5
+			_ring(raster, middle, TASK_TEXTURE_PX * 0.4, Color(1, 1, 1, 0.75), TASK_TEXTURE_PX * 0.05)
+			_letter(raster, "A", middle, TASK_TEXTURE_PX * 0.8, Color.WHITE, TASK_TEXTURE_PX * 0.08)
+		else:
+			var box := Rect2(Vector2.ONE * TASK_TEXTURE_PX * 0.08, Vector2.ONE * TASK_TEXTURE_PX * 0.84)
+			var points := formation_points(formation, box, 4)
+			for i in points.size():
+				draw_unit(raster, "scout", points[i], TASK_TEXTURE_PX * 0.34, Color.WHITE if i == 0 else Color(1, 1, 1, 0.75))
 		_formation_textures[formation] = raster.texture()
 	return _formation_textures[formation]
+
+
+## Round 12 (C12.4): what the Formation button shows, {"shape": a formation name or AUTO (the glyph), "label"}.
+## `chosen` is the player's G pick; `element_state` is the selected element's `Element.state()` ({} when the selection
+## is not an element yet). His pick reads as itself ("Wedge"), or "Line: drill" while a battle drill has the squad in
+## another shape; under AUTO the glyph is the shape the LEADER picked ("Auto: Column"), so the card never shows a shape
+## the squad is not forming. Pure.
+static func formation_readout(chosen: String, element_state: Dictionary) -> Dictionary:
+	var picked := String(element_state.get("formation", ""))
+	if chosen != UnitCommand.AUTO:
+		# His shape governs every phase (C12.5) except a battle drill under fire, which is the doctrine's job: then the
+		# glyph is the shape the drill formed and the label says a drill has it (the doctrine line names which).
+		if String(element_state.get("drill", "")) != "" and TacticsFormation.NAMES.has(picked) and picked != chosen:
+			return {"shape": picked, "label": "%s: drill" % picked.capitalize()}
+		return {"shape": chosen, "label": chosen.capitalize()}
+	if TacticsFormation.NAMES.has(picked):
+		return {"shape": picked, "label": "Auto: %s" % picked.capitalize()}
+	return {"shape": UnitCommand.AUTO, "label": "Auto"}
 
 
 static var _pointer_texture: Texture2D = null

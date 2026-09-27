@@ -103,6 +103,8 @@ func _run() -> void:
 		await _truck()
 	if cases.has("wall"):
 		await _wall()
+	if cases.has("rigfill"):
+		await _rigfill()
 	print("NAV_ROTATION_DONE %s" % out)
 	quit()
 
@@ -241,6 +243,46 @@ func _wheel() -> void:
 
 
 ## Run `ticks`, capturing a frame every FRAME_EVERY ticks from the lead's pose, logging headings.
+## Round 12 (N2/N3): a War Rig on the Terminus north spawn line, 95 degrees off a goal 52 m away, where the single
+## planned back-up is blocked after 2 m (tests/nav/test_nav_back_and_fill.gd's pose): the back-and-fill, or with
+## `--nav-off=kturnfill` the round-11 behaviour. `make nav-rig-clip`.
+func _rigfill() -> void:
+	if String(Arena.active.get("name", "")) != "terminus":
+		push_error("nav-rotation rigfill: needs --arena=terminus (built %s)" % Arena.active.get("name", "?"))
+		return
+	const START := Vector3(-0.7, 0.0, 78.1)
+	const GOAL := Vector3(-19.1, 0.0, 29.7)
+	var tank := game_match.spawn_tank("Rig", 8, Match.Team.GREEN, "gang_tank")
+	var forward := Vector3(GOAL.x - START.x, 0.0, GOAL.z - START.z).normalized().rotated(Vector3.UP, deg_to_rad(95.0))
+	tank.global_position = START
+	tank.rotation.y = atan2(-forward.x, -forward.z)
+	tank.reset_physics_interpolation()
+	Movement.reset_route_arms()
+	WallContact.reset()
+	var orders := _controller(tank)
+	orders.set_orders({"type": "move_to", "x": GOAL.x, "z": GOAL.z}, {"type": "hold_fire"})
+	var series := {String(tank.name): PackedFloat32Array()}
+	var cusps := 0
+	var gear := 0
+	for tick in SimClock.TICK_RATE * 20:
+		_log_heading(series, tank)
+		if absf(tank.speed()) > 0.3:
+			var now := 1 if tank.speed() > 0.0 else -1
+			if gear != 0 and now != gear:
+				cusps += 1
+			gear = now
+		await _frame("rigfill", tick, Vector3(-6.0, 0.0, 66.0))
+	_report("rigfill", series)
+	var arms := Movement.route_arms()
+	print("NAV_ROTATION_RIGFILL fill=%s contact_ticks=%d cusps=%d kturns=%d multi=%d multi_legs=%d none=%d aborted=%d press=%d unstick=%d goal_m=%.1f at=%s" % [
+			"on" if Movement.fill_on() else "off", WallContact.ticks, cusps, int(arms["kturns"]), int(arms["kturn_multi"]),
+			int(arms["kturn_multi_legs"]), int(arms["kturn_none"]), int(arms["kturn_aborted"]), int(arms["press_escapes"]),
+			int(arms["unstick_fires"]), Vector2(GOAL.x - tank.global_position.x, GOAL.z - tank.global_position.z).length(),
+			tank.global_position])
+	tank.queue_free()
+	orders.queue_free()
+
+
 func _film(case: String, tanks: Array, centre: Vector3, ticks: int) -> void:
 	var series := {}
 	for tank: Tank in tanks:
