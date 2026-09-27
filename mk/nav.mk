@@ -80,6 +80,19 @@ nav-wall-clip: import ## nav (round 11): the planned three-point turn as a befor
 		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/nav-wall-clip/wall_$$arm.mp4 || echo ">> nav-wall-clip: ffmpeg failed for $$arm"; done
 	@grep -hE "NAV_ROTATION_WALL|NAV_ROTATION wall|SCRIPT ERROR" $(BUILD_DIR)/nav-wall-clip/off.log $(BUILD_DIR)/nav-wall-clip/on.log || true
 
+# Round 12 (N3): the back-and-fill as a before/after clip at his pose (Terminus, a War Rig 95 deg off its goal on the north
+# spawn line, the single back-up blocked after 2 m) -> build/nav-rig-clip/rigfill_{off,on}.mp4 + NAV_ROTATION_RIGFILL.
+.PHONY: nav-rig-clip
+nav-rig-clip: import ## nav (round 12): a War Rig's back-and-fill as a before/after clip at his pose (Terminus north spawn line) -> build/nav-rig-clip/rigfill_{off,on}.mp4 (needs a display)
+	rm -rf $(BUILD_DIR)/nav-rig-clip && mkdir -p $(BUILD_DIR)/nav-rig-clip/off $(BUILD_DIR)/nav-rig-clip/on
+	timeout 600 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--arena=terminus --cases=rigfill --every=3 --yaw=200 --nav-off=kturnfill --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/off > $(BUILD_DIR)/nav-rig-clip/off.log 2>&1 || true
+	timeout 600 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--arena=terminus --cases=rigfill --every=3 --yaw=200 --out=$(CURDIR)/$(BUILD_DIR)/nav-rig-clip/on > $(BUILD_DIR)/nav-rig-clip/on.log 2>&1 || true
+	@for arm in off on; do ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$(BUILD_DIR)/nav-rig-clip/$$arm/rigfill_*.png" \
+		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/nav-rig-clip/rigfill_$$arm.mp4 || echo ">> nav-rig-clip: ffmpeg failed for $$arm"; done
+	@grep -hE "NAV_ROTATION_RIGFILL|NAV_ROTATION rigfill|SCRIPT ERROR" $(BUILD_DIR)/nav-rig-clip/off.log $(BUILD_DIR)/nav-rig-clip/on.log || true
+
 # ROT_CASES, not $(or $(ROT_CASES),a,b,c): make's `or` splits on commas, so that default was silently just "pivot".
 ROT_CASES ?= pivot,car,wheel,truck
 
@@ -154,6 +167,35 @@ nav-terminus-drive: import ## nav (round 10): the Terminus drive test -- a mixed
 	@for f in $(BUILD_DIR)/nav-drive/*.log; do grep -E "^NAV_DRIVE_CONTROL|^NAV_DRIVE_LEG|SCRIPT ERROR|control FAILED" $$f || true; \
 		grep -E "^NAV_DRIVE " $$f | cut -c1-600 || echo ">> nav-terminus-drive: $$f has NO NAV_DRIVE line (the run did not finish)"; done
 	@! grep -l "control FAILED\|SCRIPT ERROR" $(BUILD_DIR)/nav-drive/*.log || { echo ">> nav-terminus-drive: a run REFUSED or errored: no numbers from it"; exit 1; }
+
+# Round 12 (nav N1): why the planned reverse refuses. The drive with --kturn-log (every `kturn_none` logs what the
+# search saw), then the refusals bucketed (pressed / no_room / cap / short_room) with what WOULD have cleared each.
+.PHONY: nav-kturn-buckets
+nav-kturn-buckets: import ## nav (round 12): the Terminus drive with every refused planned reverse logged, bucketed by why (DRIVE_SQUADS, DRIVE_SEEDS, NAV_FLAGS as nav-terminus-drive) -> NAV_KTURN_BUCKETS table
+	@$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$(NAV_FLAGS) --kturn-log" > $(BUILD_DIR)/nav-kturn-drive.log 2>&1 || { tail -20 $(BUILD_DIR)/nav-kturn-drive.log; exit 1; }
+	@$(PYTHON) tests/nav/kturn_buckets.py $(BUILD_DIR)/nav-drive/*.log
+
+# Round 12 (nav N3): the drive in both arms of ONE build (`--nav-off=$(DRIVE_AB_OFF)` is the control), same seeds,
+# the named numbers side by side with the discordant seeds -> build/nav-drive-ab/{off,on}/*.log.
+DRIVE_AB_OFF ?= kturnfill
+.PHONY: nav-drive-ab
+nav-drive-ab: import ## nav (round 12): nav-terminus-drive in both arms (control --nav-off=$(DRIVE_AB_OFF)) over DRIVE_SEEDS, the named numbers per squad and arm + discordant seeds
+	@rm -rf $(BUILD_DIR)/nav-drive-ab && mkdir -p $(BUILD_DIR)/nav-drive-ab
+	@for arm in off on; do flags="$(NAV_FLAGS)"; [ $$arm = off ] && flags="$$flags --nav-off=$(DRIVE_AB_OFF)"; \
+		$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$$flags" > $(BUILD_DIR)/nav-drive-ab/$$arm.out 2>&1 || { tail -20 $(BUILD_DIR)/nav-drive-ab/$$arm.out; exit 1; }; \
+		mv $(BUILD_DIR)/nav-drive $(BUILD_DIR)/nav-drive-ab/$$arm; done
+	@$(PYTHON) tests/nav/drive_table.py off=$(BUILD_DIR)/nav-drive-ab/off on=$(BUILD_DIR)/nav-drive-ab/on
+
+# Round 12: any number of arms of ONE build, same seeds: DRIVE_ARMS="name=offlist ..." (offlist is a --nav-off comma
+# list, or none) -> build/nav-drive-arms/<name>/*.log and the named numbers per arm (discordant seeds: first two arms).
+DRIVE_ARMS ?= off=kturnfill on=none
+.PHONY: nav-drive-arms
+nav-drive-arms: import ## nav (round 12): nav-terminus-drive per arm in DRIVE_ARMS ("name=offlist|none ...") over DRIVE_SEEDS, one build, the named numbers side by side
+	@rm -rf $(BUILD_DIR)/nav-drive-arms && mkdir -p $(BUILD_DIR)/nav-drive-arms
+	@for arm in $(DRIVE_ARMS); do name=$${arm%%=*}; off=$${arm#*=}; flags="$(NAV_FLAGS)"; [ "$$off" = none ] || flags="$$flags --nav-off=$$off"; \
+		$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$$flags" > $(BUILD_DIR)/nav-drive-arms/$$name.out 2>&1 || { tail -20 $(BUILD_DIR)/nav-drive-arms/$$name.out; exit 1; }; \
+		mv $(BUILD_DIR)/nav-drive $(BUILD_DIR)/nav-drive-arms/$$name; done
+	@$(PYTHON) tests/nav/drive_table.py $(foreach arm,$(DRIVE_ARMS),$(firstword $(subst =, ,$(arm)))=$(BUILD_DIR)/nav-drive-arms/$(firstword $(subst =, ,$(arm))))
 
 # Round 10: which nav arm moves the sim baseline. The sim-baseline match (SIM_HASH_READ's exact command) read once per
 # --nav-off arm in SIM_ARMS (a comma list per arm; "none" = the default path), so a pre-registered MOVED names its cause.

@@ -38,6 +38,8 @@ var orders: Orders
 var units: Array[Tank] = []
 var leg_index := -1
 var leg_started_tick := 0
+var leg_started_frame := 0
+var kturn_logged := 0      # N1: refusals already stamped with their leg
 var leg_goal := {}         # name -> slot goal Orders gave it this leg (Vector3)
 var leg_done := {}         # name -> seconds to completion
 var leg_contacts_before := {}
@@ -121,6 +123,8 @@ func _run() -> void:
 		await physics_frame
 	WallContact.reset()
 	Movement.reset_route_arms()
+	# Round 12 (N1): log what the planned reverse's search saw at every refusal (measurement only).
+	Movement.kturn_log = OS.get_cmdline_user_args().has("--kturn-log")
 	print("NAV_DRIVE_ARM press=%s inflate=%s nosestop=%s oriented=%s off=%s" % [Movement.press_on(), Movement.inflate_on(),
 			Movement.nose_stop_on(), Avoidance.oriented_on(), Movement._off])
 	print("NAV_DRIVE_CONTROL arena %s squad %s units %d (%s)" % [Arena.active.get("name", "?"), squad_kind, units.size(),
@@ -135,6 +139,7 @@ func _next_leg() -> void:
 	leg_done = {}
 	leg_contacts_before = WallContact.by_cause.duplicate()
 	leg_started_tick = game_match.tick
+	leg_started_frame = Engine.get_physics_frames()
 	if leg_index >= LEGS.size():
 		return
 	var names: Array = units.map(func(t: Tank) -> String: return String(t.name))
@@ -147,6 +152,23 @@ func _next_leg() -> void:
 
 func _sample() -> void:
 	var elapsed := float(game_match.tick - leg_started_tick) / float(SimClock.TICK_RATE)
+	# `--trace=<unit name>`: that crew's driving, twice a second (diagnosis only).
+	var trace := _flag("trace", "")
+	if trace != "" and (game_match.tick - leg_started_tick) % (SimClock.TICK_RATE / 2) == 0:
+		for tank in units:
+			if String(tank.name) == trace:
+				var reading := Movement.state(tank)
+				var nose := -tank.global_basis.z
+				print("NAV_DRIVE_TRACE leg=%d t=%.1f at=(%.1f,%.1f) hdg=%.0f v=%.2f phase=%s driver=%s steer=%s contact=%s kturn=%s stalled=%s" % [
+						leg_index, elapsed, tank.global_position.x, tank.global_position.z, rad_to_deg(atan2(nose.x, -nose.z)),
+						tank.speed(), reading.get("phase", "?"), reading.get("wall_contact_driver", ""), reading.get("steer_to", "?"),
+						reading.get("wall_contact", false), reading.get("in_kturn", "?"), reading.get("stalled_ticks", "?")])
+				for i in tank.get_slide_collision_count():
+					var hit := tank.get_slide_collision(i)
+					print("NAV_DRIVE_TRACE_HIT %s n=%s at=%s" % [(hit.get_collider() as Node).name if hit.get_collider() is Node else "?",
+							hit.get_normal().snappedf(0.01), hit.get_position().snappedf(0.1)])
+				print("NAV_DRIVE_TRACE_CMD throttle=%.2f turn=%.2f vel=%s simulate=%s" % [tank.command.throttle, tank.command.turn,
+						tank.velocity.snappedf(0.01), tank.simulate])
 	for tank in units:
 		var motion: Variant = tank.get("_motion")
 		var creep := int((motion as Dictionary).get("creep_dir", 0)) if motion is Dictionary else 0
@@ -186,6 +208,12 @@ func _sample() -> void:
 
 
 func _close_leg(elapsed: float) -> void:
+	# Round 12 (N1): stamp this leg's refusals with the leg and how far into it they came.
+	for i in range(kturn_logged, Movement.kturn_none_log.size()):
+		var row: Dictionary = Movement.kturn_none_log[i]
+		row["leg"] = leg_index
+		row["into_leg_s"] = snappedf(float(int(row["frame"]) - leg_started_frame) / float(SimClock.TICK_RATE), 0.1)
+	kturn_logged = Movement.kturn_none_log.size()
 	var arrived := 0
 	var misses: Array = []
 	for tank in units:
@@ -203,6 +231,8 @@ func _close_leg(elapsed: float) -> void:
 					# What the crew was ACTUALLY driving to (the controller's move order, which Movement's goal_gap_m
 					# measures), beside Orders' published goal above and the verb Orders holds for it (squad's ask).
 					"move_order": _move_order_of(tank), "orders_verb": String((orders.call("current", key) as Dictionary).get("verb", "")),
+					# Round 12: what the hull is pressed against at the leg's end (a friend's name, or a prop), from its slide.
+					"touching": _touching(tank),
 					"at": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)]})
 	var contacts := {}
 	for cause: String in WallContact.by_cause:
@@ -234,6 +264,10 @@ func _report() -> void:
 			"creep_flips_at_wall": creep_flips_at_wall,
 			"episodes": episodes.slice(0, 40), "pass": arrived_all and mixed_ok and int(report["observed_unit_ticks"]) > 0}
 	print("NAV_DRIVE %s" % JSON.stringify(out))
+	for row: Dictionary in Movement.kturn_none_log:
+		print("NAV_KTURN_NONE %s" % JSON.stringify(row))
+	for row: Dictionary in Movement.kturn_fill_log:
+		print("NAV_KTURN_FILL %s" % JSON.stringify(row))
 	quit(0)
 
 
@@ -243,6 +277,16 @@ func _move_order_of(tank: Tank) -> Variant:
 		return null
 	var order: Dictionary = brain.move_order
 	return {"type": order.get("type"), "x": snappedf(float(order.get("x", 0.0)), 0.1), "z": snappedf(float(order.get("z", 0.0)), 0.1)}
+
+
+func _touching(tank: Tank) -> Array:
+	var names: Array = []
+	for i in tank.get_slide_collision_count():
+		var collider := tank.get_slide_collision(i).get_collider()
+		var name := String((collider as Node).name) if collider is Node else "?"
+		if absf(tank.get_slide_collision(i).get_normal().y) < 0.7 and not names.has(name):
+			names.append(name)
+	return names
 
 
 func _flat(a: Vector3, b: Vector3) -> float:
