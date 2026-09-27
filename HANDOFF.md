@@ -82,7 +82,11 @@ prompt* is canonical):
   (yard forward mixed 16.0 → 9.1 m); the column wins only the yard's forward move through the chokepoint and looks
   tidier in a Terminus street. Row kept as column. **Recommended: wedge in lanes and open ground, column in dense.**
   Frames: `streams/references/round12/squad/s5_*_sheet.jpg`. Put in front of him 2026-09-27.
-- **The Locks' open canal**, on arena's page once it is up, after he has driven it.
+- **Arena's water page, with `db`, UNCONSUMED:** https://claude.ai/artifact/1PsZA4HnRWGCSgajuyamKN — "have you driven
+  the Locks yet?", an overall tap, the Crossing / Locks / Terminus-canal spots (dry twin | round 10 | now), each map's
+  build as one-dial steps, the pits unchanged, and **the Locks' open-canal question with its 45 % exposure number**.
+  Taps land in `decisions/<id>` (the fleet page's schema). Arena's green code hash `b05b87c4` (builder0, 1773/0,
+  baseline unmoved); its tip's final check pending.
 - **Audio's three (merged at `785bc293`):** the web pack grew (`assets/music/` 13 → 29 MB, all in the web build) —
   ruled *leave it, decide at the next web release*; **by ear**, the two weakest placements are `defeat_hunt`
   (Predatory Hunt) and `defeat_ragnarok` (Ragnarok's Engine), one `states` edit each in `assets/music/manifest.json`;
