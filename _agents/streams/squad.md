@@ -181,6 +181,14 @@ default path) → S5 (reuses S2: a G-chosen shape now holds through every phase,
   a no-pivot hull to face an idle sector when nothing is in sight (a sim-baseline move, since CPU scouts face too), or
   nav bounds a multi-point turn's drift from where it started. (2) is a probe measurement question (mine): stop should
   read position change, not the velocity estimate.
+  **Orchestrator's ruling (2026-09-26):** nav owns bounding a multi-point turn's drift (N1's arrive guarantee), as its
+  own commit after its N2, pre-registered as a baseline move under CP2. Squad's half -- the brain stops asking a
+  no-pivot hull (wheeled, hull-fixed gun) to `face` an idle sector when nothing is in sight -- stays a
+  **pre-registered candidate, measured only AFTER nav's bound is on main**, so the two are attributed apart.
+  **Expected signature** (`make squad-settle ARENA=terminus DIR=side METRES=80 UNITS=scout:scout:ifv:ifv:tank`, both
+  arms, 4+ seeds, builder0): the mixed squad's `stopped_s` falls from ~30 s toward the tracked squad's ~15 s, with
+  `arrived_s` unmoved (~10.4 s) and the scouts' `off_slot_m` at stop falling from ~8 m to under 4 m; the tracked
+  squad (tank:tank:ifv:ifv) unmoved in every column; the sim baseline MOVES (CPU scouts face too) and is declared.
 
 ### Questions for the lead
 
