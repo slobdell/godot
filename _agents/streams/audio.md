@@ -107,4 +107,55 @@ His veto on the new lines (the Booth Monitor) and his ears on the opening. Neith
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current)_ — updated 2026-09-26 late, by the audio worker.
+
+### Plan (in order, smallest foundation first)
+1. M1+M2 together (one change to one function): the director's draw per state, then the imports. **DONE, `75a9cce8`**.
+2. M3 measure: follow the `trade` tag across matches, on real default-size matches (`announcer-real-report`). **Built,
+   `965b8a55`; the builder0 run is in flight.**
+3. M3(a) the director's widening, decided from that number; M3(b) new trade lines → audit → DRY_RUN → APPROVED=1.
+4. M4 the other thin pools, batched, stop at half the balance.
+5. M5 stretch: the opening's hand-off with ears (`audio-launch-smoke`), transcripts re-cut.
+
+### Findings the brief did not have
+- **The opening was never the pre_match bed.** `MatchMood` starts every match at `lull` and has no `pre_match` state;
+  nothing in `game/` asked for `pre_match` (or `garage`). So what he heard every opening was the ONE `lull` bed
+  (Subterranean Anvil). Fixed in the director (`music_state_for`: lull before the first shot = `pre_match`).
+- **9 of the 23 Suno tracks were already imported** (`190dea27`, 2026-09-17), not 0; PROMPTS.md still called every
+  track a placeholder. 14 were unused; all 23 are placed now.
+- **A trade is a tag, not a moment:** the director merges kills queued within 4 s and tags the call `trade` when both
+  sides lost units. A generic `kill` line is already eligible for it (a line is eligible when all ITS tags are on the
+  moment), so M3(a)'s widening exists structurally; the thin part is the weight: each extra matched tag is ×8, so a
+  trade call at intensity 3 lands on one of the 3 caller trade lines ~30 % of the time, on one of 4 flurry lines
+  ~40 %, and on 33 generic kill lines ~30 %. Within a match a line never repeats, so a match with ≥3 trade calls
+  uses all three trade lines. The number to fix is measured in step 2.
+
+### Done
+- **M1 + M2 (`75a9cce8`).** Director: `pre_match` for the opening; `candidates_for(state)`; one draw per set of equally
+  fitting tracks per match (skirmish and battle share the fight set), from `match_seed` mixed with the set (states do
+  not move in lockstep) and `MusicHistory` (least recently heard first: every opening before any repeat).
+  `--music-seed=N`, `--music-history=PATH|off` (off when headless). Importer `--id` / `make music-import ID=`.
+  **14 tracks imported** (11 beds, 3 fight stem sets via demucs on builder0): every state rotates between 3 and 6
+  tracks (the garage/victory pool has 4, which counts for both states).
+  Mapping and reasons: `assets/music/PROMPTS.md` *The mapping, and why*.
+  - Tests first: on the committed manifest, 3 of the new director tests **FAIL** (`every_music_state_rotates…`,
+    `the_opening_is_not_the_same…`, `a_match_draws_each_state…`); on the new manifest **24 passed, 0 failed** (laptop,
+    `make test FILTER=music_director`, `75a9cce8`'s tree). Python: `test_music_stems.py` 7 OK (laptop).
+  - `music-check` (laptop, `75a9cce8`): **0 problems over 23 tracks**; beds −16.1…−16.3 LUFS, true peak −4.4…−7.4 dB,
+    seams ≤ 0.041 (limit 0.25); stems −16.1…−16.9 LUFS.
+
+### Questions for the lead
+1. **Web size.** `assets/music/` went from 13 MB to 29 MB and all of it ships in the web pack. Options: accept; drop the
+   web build to one track per state and keep the rotation on desktop/Android; or the music-pack-after-start the design
+   doc already plans. Nothing chosen; the most reversible is to leave it and decide at the next web release.
+2. **By ear:** the placements are by measurement and title (nobody on the agent side can listen). The two weakest are
+   `defeat_hunt` (Predatory Hunt) and `defeat_ragnarok` (Ragnarok's Engine). A wrong one is one `states` edit in
+   `assets/music/manifest.json`.
+3. **The garage has no music** (nothing plays the `garage` state; `game/garage/` is not audio's path). Want it?
+
+### Requests to other streams
+- None yet.
+
+### What to playtest
+- `make skirmish` twice from the title: the opening (before the first shot) should differ between the two
+  (`MUSIC_TRACK state=pre_match track=…` in the log names it).
