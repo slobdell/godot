@@ -106,7 +106,17 @@ Nothing. N5 is a write-up unless the numbers say otherwise.
 ## Status
 
 _Worker: nav, round 12. Started 2026-09-26 21:15 from `46bac1a3` (code = `0299e05e`). Every number names its commit and
-machine. **Merge point: see "Green hash" at the end** (none yet)._
+machine. **Merge point: `5b5e3a6a`** (see "Green hash")._
+
+### Green hash
+
+**`5b5e3a6a` is green, merge here** (builder0, 2026-09-27): `>> remote: make check exited 2` with **1748 passed, 0
+failed**; the two reds are (1) **sim-baseline MOVED `01ab39b592cc9837 -> 6313a38d7ecd99bb`, the declared CP2 move**
+(causes: the steering-guard fix and blockreach; `make nav-sim-arms` on `5b5e3a6a`: HEAD `6313a38d…`, `--nav-off=guardnear`
+`8c10f21d…`, `--nav-off=blockreach` `3db293a3…`, `kturnfill` / `creepbound` / `kturnslide` off: unchanged, all five off
+`01ab39b5…`) and (2) `scenario_perf`'s CPU budget under load (29.8 s; accepted by the orchestrator as load this round).
+It carries main `9afb507f`. Commits after it are documentation and measurement records only (`_agents/`).
+**Merge it alone and record the baseline twice (CP2).**
 
 ### Report in one screen
 
@@ -338,6 +348,8 @@ which `nav-rotation`'s truck case caught. Builder0 numbers owed (r4 carries it i
 
 | commit | machine | verdict |
 |---|---|---|
+| **`5b5e3a6a`** (HEAD + main `9afb507f` merged at the orchestrator's checkpoint) | builder0, 2 checks at once | `make check exited 2`: 16 of 18, **1748 passed, 0 failed**; sim-baseline **MOVED `01ab39b592cc9837 -> 6313a38d7ecd99bb`** (CP2, declared; the merge did not change it); determinism `550d53790035ddb4`; `ai-scenarios-check` 42,2 = `scenario_perf` 29.8 s under load + the baselined `scenario_cover`. `nav-sim-arms` on this tree reproduces the attribution exactly (below) |
+| `be7e556f` (pre-merge HEAD) | builder0 | `make check exited 2`: 17 of 18, **1735 passed, 0 failed**; the one red: sim-baseline MOVED to `6313a38d7ecd99bb` (CP2); `ai-scenarios-check` passed; determinism `550d53790035ddb4` |
 | `0a19a612` | builder0 | `ai-scenarios-check` ALONE: 43,1 unchanged against its baseline, exit 0 (lesson 218: the full check's red was load) |
 | `203db8d8` (fill + guard fix) | builder0, loaded | `make check exited 2`: 16 of 18, **1731 passed, 0 failed**; **sim-baseline MOVED `01ab39b592cc9837 -> 3db293a32607fdcf`** (CP2, expected: attribution below); determinism `3996fb15c03ca932`; `ai-scenarios-check` 42,2 exactly as on unmodified main (`scenario_perf` 22842 us/tick + `scenario_cover`, the baselined expected failure) |
 | `46bac1a3` (start, unmodified main) | builder0, 3 other checks beside it | `make check exited 2`: 17 of 18 targets, **1726 passed, 0 failed**, sim-baseline `01ab39b592cc9837` unmoved, determinism `b83a374ce2fcde37`; the one red is `ai-scenarios-check` 43,1 -> 42,2: `scenario_perf` read **21620 us/tick** over its CPU budget (load: round 11's nav recorded the same test as load, 22.0 ms at load 12.5) |
