@@ -3,11 +3,10 @@
 Owner: the feel stream ([../../_agents/streams/archive/round10/feel.md](../../_agents/streams/archive/round10/feel.md)); round 5 it was audio ([../../_agents/streams/archive/round5/audio.md](../../_agents/streams/archive/round5/audio.md)). Design:
 [../../_agents/game_design.md](../../_agents/game_design.md) *Audio: cinematic, and alive*.
 
-> **Every track in the repo today is a placeholder,** synthesised to exercise the music director. The lead's verdict
-> on them (2026-09-17): *"the music is not matching the vibe I wanted."* The prompts below are **his own**, ones he
-> has already generated and marked, copied verbatim from his notes. When his tracks land, the mix balance measured with
-> the placeholders (music 9 dB under the battle) **has to be re-checked**: `make remote T="audio-pass PASS_SECONDS=90"`
-> and `PASS_FLAGS=--audio-solo=music`, then listen (the brief's *Never skip the whole-match pass*).
+> **The soundtrack is the lead's own Suno tracks** (all 23 of `assets/incoming/music/`, round 12; the first nine went
+> in on 2026-09-17, `190dea27`). Only the six stingers are still placeholders. *The mapping, and why* (below) says which
+> track plays where. The mix balance (music 9 dB under the battle) was set against the placeholders and has not
+> been re-checked by ear against the real beds: `make remote T="audio-pass PASS_SECONDS=90"`, then listen.
 
 The direction, in his words: *"a cyberpunk tank video game meant to exist in some futuristic world (Death Race meets
 Mad Max meets Blade Runner) … heavy metal gaming music combined with synthwave combined with heavy grit."*
@@ -19,9 +18,9 @@ Mad Max meets Blade Runner) … heavy metal gaming music combined with synthwave
 
 | Bed (MatchMood state) | His prompt | BPM | His note | How it plays |
 |---|---|---|---|---|
-| `garage` | Victory Pit / Scrapyard Smuggler | 80 | *"good for mech equipping and stuff"* | one track, loops |
-| `pre_match` | Hangar / Pre-Match Tank Customization | 95 | noir synthwave, tactical preparation | one track, loops |
-| `lull` (before contact, quiet spells) | Lockdown Protocol | 98 | *"good but slow"*, which suits a lull | one track, loops |
+| `garage` | Victory Pit / Scrapyard Smuggler | 80 | *"good for mech equipping and stuff"* | a pool of takes (above) |
+| `pre_match` | Hangar / Pre-Match Tank Customization | 95 | noir synthwave, tactical preparation | the opening, before the first shot; rotates |
+| `lull` (quiet spells after contact) | Lockdown Protocol | 98 | *"good but slow"*, which suits a lull | rotates |
 | **the fight** (`skirmish` and `battle`) | The Grinding Treadmill | 100 | **GOOD** | **stems that build** |
 | **the fight**, second set | The Scrap Foundry | 105 | **GOOD** | stems that build |
 | **the fight**, third set | High-Tech Grime & Dystopian Sludge | 110 | **GOOD** | stems that build |
@@ -40,6 +39,39 @@ the fight at first contact and into a last stand are moments where a change of s
 **One unassigned prompt** of yours (*Instrumental Industrial Sludge Doom, 60 BPM, monolithic wall of sound…*, below):
 too slow to sit under a fight. It would make a strong `defeat` alternative, or a pre-match build at a boss arena later.
 
+## The mapping, and why (round 12)
+
+His words (2026-09-26): *"do we have a wide selection of music tracks? I can't tell if it's playing the same music
+over and over on opening — if there are comparable moods across tracks (which there should be, I did a few
+variations), it would be good if we can randomize the selection."*
+
+**What he heard was real.** The match opens in the mood's `lull` state, which had one bed (Subterranean Anvil), and
+the `pre_match` bed was never asked for by anything. Now the director plays `pre_match` while the mood is `lull` and
+nobody has fired (`MusicDirector.music_state_for`), `lull` only for a quiet spell after contact, and **every state
+rotates between 2-5 tracks**. Each set of equally fitting tracks is drawn once per match from the music's own seed
+(`--music-seed`) and `MusicHistory` (`user://music_history.json`): the director picks among the tracks heard *least
+recently*, so every opening plays once before any plays twice. Skirmish and battle share one fight set per match (the
+fight builds in layers; it never changes song).
+
+**How the tracks were sorted.** Nobody on the agent side can listen. `tools/audio/survey_tracks.py` measured tempo,
+loudness, tone and the steady window, and a second pass measured percussive density, the share above 4 kHz and the
+intro-versus-body level. The four blues takes stand apart on every measure (dark, sparse top end, very dynamic). The
+metal tracks are close together on all of them, so they were placed by tempo, tone and title. **His ears decide:**
+a track in the wrong state is one line in `manifest.json` (its `states`), no re-import.
+
+| State | Tracks (manifest id ← Suno file) | Why |
+|---|---|---|
+| `pre_match` (the opening, before the first shot) | `pre_match` ← Anvil of Doom; `pre_match_outrun` ← Neon Outrun; `pre_match_hymn` ← Apocalyptic Machine Hymn | tension, not combat. Anvil of Doom is dark (2.4 % above 4 kHz) with a quiet intro; Neon Outrun is the most synth-led of the set (45 % under 250 Hz, the lowest), nearest his *"noir synthwave, tactical preparation"* prompt; the Hymn is one of the three least percussive metal tracks |
+| `lull` (a quiet spell after contact) | `lull` ← Subterranean Anvil; `lull_predator` ← Mechanical Predator; `lull_predator_b` ← Mechanical Predator (1); `lull_factory` ← Factory Silence | stalking, not attacking. **His two Mechanical Predator takes are in one state**, so the rotation is between comparable moods; Factory Silence has the narrowest loudness range of the 23 (6.3 dB), which suits a bed that must not surge |
+| `skirmish` + `battle` (stem sets that build) | `fight_hydraulic` ← Hydraulic Wasteland; `fight_ritual` ← Ritual of Iron; `fight_rust` ← Rust & Hydraulic Pressure; **new:** `fight_machine` ← Machine Combat; `fight_momentum` ← Mechanical Momentum; `fight_convoy` ← Post-Apocalyptic Convoy | the most percussive of the metal tracks (onset peakiness 2.1-2.3 against 1.8-2.0), each split with demucs on builder0 and layered other → bass (0.35) → drums (0.6) like the first three |
+| `last_stand` | `last_stand` ← Anvil Protocol; `last_stand_rusted` ← Rusted Steel Sky; `last_stand_brass` ← Warzone Brass | a deliberate change of song. Rusted Steel Sky is the fastest of the 23 (178 BPM); Warzone Brass is the brightest (6.7 % above 4 kHz), with brass over the chug |
+| `defeat` | `defeat` ← Mechanical Dread; `defeat_ragnarok` ← Ragnarok's Engine; `defeat_hunt` ← Predatory Hunt | Mechanical Dread is the darkest metal track (2.3 % above 4 kHz); Predatory Hunt is the least percussive of all 23 (1.79); Ragnarok's Engine by its title. **The weakest placements: listen to these two first** |
+| `garage` + `victory` (one pool) | `garage` ← Wasteland Blues (2); `victory` ← Wasteland Blues (1); `blues_wasteland` ← Wasteland Blues; `blues_neon` ← Neon Wasteland Blues | **his three Wasteland Blues takes and the neon variation, all in one pool.** They are his *Victory Pit / Scrapyard Smuggler* prompt, which this file already gave to both states. Nothing in the game asks for `garage` yet (the garage screen has no music director), so today they play on the victory |
+
+Every bed is -16.1 to -16.3 LUFS, true peak -4.4 to -7.4 dB, loop seam ≤ 0.041 (limit 0.25), about 60 s of loop at
+112 kbps (~0.8 MB); a stem set is ~2.6 MB. `assets/music/` went from 13 MB to ~30 MB, **and all of it ships in the web
+pack** (question for the lead in `_agents/streams/audio.md`).
+
 ## Step by step
 
 ### Whole tracks (garage, pre_match, lull, last_stand, victory, defeat)
@@ -53,7 +85,8 @@ too slow to sit under a fight. It would make a strong `defeat` alternative, or a
        make music-import IN=~/Downloads/lockdown.mp3 STATE=lull BPM=98 FROM=0:24 TO=2:08 RIGHTS="Suno Pro, 2026-09-18"
 
    It trims to your section, puts the loop points on whole bars inside it, normalises to -16 LUFS, encodes Ogg and
-   writes the manifest row. For `victory`, import the Victory Pit track a second time with `STATE=victory`.
+   writes the manifest row. **A second take for a state** needs its own row: add `ID=lull_foundry` (the file becomes
+   `bed_lull_foundry.ogg`); it takes the intensity the state's other beds have, so the director rotates between them. For `victory`, import the Victory Pit track a second time with `STATE=victory`.
 4. `make music-check`: it measures loudness and peak and prints the **loop seam**. Over the limit, the loop clicks
    every time it repeats: move `FROM`/`TO` by a bar or two and import again.
 

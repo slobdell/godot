@@ -7,7 +7,9 @@ extends RefCounted
 ## "integer" here is a float with no fractional part.
 
 const TEAMS := ["green", "rust"]
-const UNIT_TYPES := ["scout", "tank", "ifv", "artillery", "lancer", "burner"]
+## Round 12: the faction roles too (the gangs' Resupply Tanker is "support", the Law's Sonic Emitter "suppressor"). The
+## booth has no words for those two yet, so lines that would name them stay ineligible; the rest of the call works.
+const UNIT_TYPES := ["scout", "tank", "ifv", "artillery", "lancer", "burner", "support", "suppressor"]
 ## K5 event files (tests/announcer/fixtures) write `tick` in SIXTIETHS of a second, whatever rate the simulation runs
 ## at: a fixture is recorded data, and its timeline must not change when the tick rate does. Live matches carry the
 ## engine's own tick (MatchEventAdapter converts through SimClock) and every consumer reads `t`, the seconds.

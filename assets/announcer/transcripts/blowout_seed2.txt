@@ -19,12 +19,12 @@ result: green by elimination at 1:14.2
 0:39.6   CALLER   Nobody saw that coming! The tank wins that one!
 0:43.5   CALLER   Oh, here we go! They're going by the book!
 0:43.8   ── green tank destroys rust artillery
-0:46.9   CALLER   The tank round lands, and the artillery just comes apart!
-0:50.5   CALLER   Wow. Just wow.
-0:52.6   CALLER   Right in the weak spot! What a shot!
-1:03.1   VETERAN  The side that's ahead can wait. The side that's behind can't. That's the whole shape of it now.
+0:46.9   CALLER   They got to the artillery! The Syndicate get in close and silences the big guns!
+0:52.0   CALLER   Wow. Just wow.
+0:54.1   CALLER   Right in the weak spot! What a shot!
+1:04.6   VETERAN  Watch the ones who stop in the open. Either they know something, or they've stopped thinking.
 1:11.0   ── close call: rust scout at 10% hull
-1:11.6   VETERAN  You hear that ringing? Everybody inside—
+1:12.3   VETERAN  You hear that ringing—
 1:14.2   ── green scout destroys rust artillery
 1:14.2   ── rust squad Battery wiped out
 1:14.2   ── green tank destroys rust scout

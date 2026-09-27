@@ -508,6 +508,12 @@ What a fix needs: the simulated pivot (or the muzzle) to follow the hinge, which
 art today, contract S2), so the articulation would have to be computed from sim state on every peer -- plus a
 measurement first of whether 0.45 m on a 14 m hull changes any hit a player sees.
 
+**Measured in round 12 (fleet F4) and left alone:** `make facing-audit UNITS=gang_tank VIEW=top TINT=1 BEND=35
+TURRET=70 MUZZLE=1` (the green ball is the simulated muzzle; `FACING_MUZZLE` prints the pivot gap): 0.47 m at 35 deg,
+0.84 m at 65 deg -- ~16 / ~29 px at his pose, only while bent and firing, and smaller than the ~2 m every unit's rounds
+already leave ahead of its drawn barrel. Does not read at 49 m; no sim change. Frames in
+`streams/references/round12/fleet_f4/`.
+
 **What to check** in any unit whose art moves relative to its body (a trailer today; any future articulated or
 recoiling part): does anything in the simulation (muzzle, ray origin, collider) read the body frame for a thing the
 art has moved? `make facing-audit UNITS=gang_tank TINT=1 VIEW=top BEND=35 TURRET=70` shows the drawn side.

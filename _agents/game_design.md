@@ -2438,7 +2438,7 @@ Shown the list of pending items (roadmap items 1–11, the fall-in rule, the Loc
   shift-queued order. Round 12 verifies that on the default path and decides whether a partial selection deserves the
   anchor too; it is no longer listed as "still scatters".
 
-### Round 12: the lead's verdicts
+### Round 12: the lead's verdicts as they land
 
 **Camera (2026-09-26 evening, the camera page https://claude.ai/artifact/We5PxYjNqXZDqXmuoNurxp; `db` doc
 `answers/camera` read back at 06:00 UTC 2026-09-27: `lamp: keep`, `screen: nocut`, `left: leave`, no note).** His
@@ -2453,3 +2453,24 @@ What each means in the code (`_agents/streams/camera.md`): **1** the camera's pl
 (`RtsCamera.seen()`), so it rises out of a floodlight's lamp head at a low tilt (kept); **2** `BlockCutaway` does NOT
 hide ad screens, and `BlockCutaway.DRAWN_CUT` is empty, so the cutaway takes building-height colliders only, as before
 round 12 (the screens are the show; they stay drawn); **3** floodlight masts and signs are not cut either (never were).
+Confirmed by the camera stream against its own page's labels (`db` version 3).
+
+**The Condemned tank (the prison bus), on the fleet page's `bus_r12_mv` card (2026-09-27), his words verbatim:**
+
+> *"I don't understand what this URL is asking from me? The firetruck looks great, I don't know why it's giving me the
+> condemned tank for approval. There was nothing wrong with the tank"*
+
+**Ruling from that:** the fire engine is approved as shipped; **the Condemned `tank` keeps its current look** (the
+dozer at 2.90 × 4.08 × 9.70) and the bus item is CLOSED. `bus_r12_mv` is rejected with these words; no further bus
+concept or 3D unless he raises it. The earlier approvals (`bus_r10_b`, `bus_r11_i`, `q_r11_bus_fit`) stand as history:
+he approved a look, the tool could not deliver its proportions, and he does not want the slot chased. Lesson for pages:
+a card must say in one line WHY it exists and what "approve" costs; this one read as "approve the tank" to him.
+
+**A correction to the squad brief (squad, 2026-09-26):** the brief said the yard and the Terminus both classify as
+*dense*. `make tactics-terrain` shows only the yard's spawns are dense and the Terminus is *lanes*; and no squad the
+lead fields uses the standard table — a squad uses its units' FACTION table, and the Condemned and Law catch-alls pick a
+**column in any terrain**. So the question is "column vs wedge for a Condemned/Law plain move", measured that way.
+
+**Squad's S4, decided (a):** a partial or mixed selection does scatter (plots in squad's Status), and the lead himself
+withdrew transient elements on 2026-09-20 (R1 narrowed). **Open for the lead:** does a partial selection deserve the
+travelling anchor, or is "Part of Squad N: press N" the answer? Recommended: leave it.

@@ -17,29 +17,27 @@ result: rust by elimination at 1:24.2
 0:44.5   CALLER   First blood goes to the Syndicate!
 0:44.8   ── rust tank destroys green scout
 0:46.8   ── friendly fire: rust tank hits its own ifv
-0:46.8   CALLER   Back to back! The Syndicate take out the scout too!
+0:46.8   CALLER   And they do it again! Right on top of the last one!
 0:48.8   ── rust tank destroys green scout
-0:50.4   CALLER   That's three in a row for the Syndicate! They cannot miss!
 0:50.8   ── rust tank destroys green scout
 0:50.8   ── green squad Hornets wiped out
 0:50.8   ── close call: rust ifv at 8% hull
-0:54.3   CALLER   They got another one! Oh my goodness!
-1:02.0   CALLER   It's hurt! It is badly hurt! Can it get out of there?
+0:51.0   CALLER   The Syndicate are on a tear! That's four straight!
+1:01.5   VETERAN  Watch the ones who stop in the open. Either they know something, or they've stopped thinking.
 1:06.0   ── close call: rust tank at 3% hull
-1:06.3   VETERAN  Good shot—
 1:07.2   ── rust tank destroyed by a hazard
-1:07.3   CALLER   It went in, and it is not coming back out!
 1:09.0   ── green scout destroys rust ifv
 1:09.0   ── rust squad Spotter wiped out
 1:09.0   ── green scout destroys rust tank
+1:09.0   CALLER   Where do I even look? It's going off all over the floor!
 1:09.8   ── rust tank destroys green scout
-1:10.9   CALLER   Vehicles are going down all over the floor! Three in a matter of seconds!
-1:16.3   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
+1:13.2   CALLER   That leaves the Wreckers with one. One!
+1:16.5   CALLER   Ambush! And they drive right back into it!
 1:24.2   ── rust tank destroys green scout
 1:24.2   ── green squad Wasps wiped out
 1:24.2   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
-1:24.3   CALLER   That's the last one! The Syndicate wipe them out!
-1:27.6   CALLER   And the Syndicate are the last army standing! The Syndicate win!
-1:31.5   VETERAN  Hard match to watch from up here. Harder down there.
-1:36.7   PA       Tonight's match goes to the Syndicate. Settlement of wagers will begin within the hour.
-1:42.3   PA       Meridian buses are waiting at gates two and five, and will depart once full, or at dawn, whichever comes first, for all outer districts.
+1:24.3   CALLER   One shot! One shot from the big gun and it's over for that scout!
+1:29.1   CALLER   The last engine stops, and this place erupts!
+1:32.1   VETERAN  You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
+1:43.2   CALLER   What a night!
+1:45.2   PA       Tonight's match goes to the Syndicate. Settlement of wagers will begin within the hour.
