@@ -8,6 +8,10 @@ render_mode unshaded, cull_back, fog_disabled;
 #define PIT
 #include "res://game/theme/arena_kit/terrain/terrain_trace.gdshaderinc"
 
+// Measurement: 1 paints every pit pixel flat magenta, so a frame can be masked (`water-pairs` counts the pit pixels
+// that change between the water's steps: it must be 0).
+uniform float mask_out = 0.0;
+
 void fragment() {
 	vec3 dir = normalize(world_pos - CAMERA_POSITION_WORLD);
 	vec3 origin = vec3(world_pos.x, 0.0, world_pos.z);
@@ -38,5 +42,5 @@ void fragment() {
 			color = vec3(0.006) + pit_glow * (0.05 + 0.3 * edge) * (0.7 + 0.5 * ember) + vec3(0.05, 0.03, 0.0) * grid * edge;
 		}
 	}
-	ALBEDO = color;
+	ALBEDO = mix(color, vec3(1.0, 0.0, 1.0), mask_out);
 }

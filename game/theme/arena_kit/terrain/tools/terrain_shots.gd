@@ -14,8 +14,9 @@ extends SceneTree
 ## frozen at `--freeze=<s>` of the swell so the frames of a pair show one instant, as `<arena>-<spot>-<look>.png`;
 ## the dry twin is shot once. Each look's water pixels are then measured through a mask frame (the water painted
 ## flat magenta) and printed as `WATER_STATS {json}`: how many pixels are water, their mean sRGB luma, the share
-## darker than 0.03 (what "reads black" means as a number), and how many pixels differ from the first look
-## (a map with no water must show 0: its pits cannot take the wet look).
+## darker than 0.03 (what "reads black" means as a number), and how many pixels differ from the first look, in the
+## whole frame (`changed_px`: the crowd and the show move, so never 0) and inside the mask (`changed_inside_px`: on
+## a map with no water, its pits, which must show 0 -- they cannot take the wet look).
 
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
@@ -169,6 +170,7 @@ func _stats(variant: String, spot: String, look: String, image: Image, first: Im
 	var black := 0
 	var mean := Vector3.ZERO
 	var changed := 0
+	var changed_inside := 0
 	var width := image.get_width()
 	var height := image.get_height()
 	for y in range(0, height, 2):
@@ -185,6 +187,8 @@ func _stats(variant: String, spot: String, look: String, image: Image, first: Im
 			var m := mask.get_pixel(x, y)
 			var f0 := first.get_pixel(x, y) if first != null else c
 			if m.r - m.g > 0.35 and m.b - m.g > 0.35 and (absf(m.r - f0.r) + absf(m.g - f0.g) + absf(m.b - f0.b)) > 0.3:
+				if absf(c.r - f0.r) > 2.0 / 255.0 or absf(c.g - f0.g) > 2.0 / 255.0 or absf(c.b - f0.b) > 2.0 / 255.0:
+					changed_inside += 1
 				water += 1
 				var l := 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
 				luma += l
@@ -195,7 +199,7 @@ func _stats(variant: String, spot: String, look: String, image: Image, first: Im
 	return {"arena": variant, "spot": spot, "look": look, "water_px": water * 4, "mean_luma": snappedf(luma / n, 0.0001),
 			"black_share": snappedf(float(black) / n, 0.001),
 			"mean_rgb": [snappedf(mean.x / n, 0.001), snappedf(mean.y / n, 0.001), snappedf(mean.z / n, 0.001)],
-			"changed_px": changed * 4}
+			"changed_px": changed * 4, "changed_inside_px": changed_inside * 4}
 
 
 func _save(path: String) -> bool:

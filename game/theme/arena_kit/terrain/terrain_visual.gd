@@ -237,20 +237,21 @@ static func _pad3(values: PackedVector3Array, size: int) -> PackedVector3Array:
 ## Pairs (round 12): put the water in one of WaterLook's steps (`{}` = what ships), frozen at `instant` seconds of
 ## its swell when `instant` >= 0, so both frames of a pair show the same moment.
 func set_water_look(look: Dictionary, instant := -1.0) -> void:
-	if water == null:
-		return
-	var material := water.material_override as ShaderMaterial
-	for dial: String in WaterLook.DIALS:
-		material.set_shader_parameter(dial, look.get(dial, WaterLook.shipped(dial)))
-	material.set_shader_parameter("freeze_time", instant)
+	if water != null:
+		var material := water.material_override as ShaderMaterial
+		for dial: String in WaterLook.DIALS:
+			material.set_shader_parameter(dial, look.get(dial, WaterLook.shipped(dial)))
+		material.set_shader_parameter("freeze_time", instant)
+	# A map with pits and no water still freezes its pits (the Sumps' ember moved between the frames of a pair).
 	if pits != null:
 		(pits.material_override as ShaderMaterial).set_shader_parameter("freeze_time", instant)
 
 
-## Measurement: paint the water flat magenta (a mask for frame statistics) or restore it.
+## Measurement: paint the water and the pits flat magenta (a mask for frame statistics) or restore them.
 func set_water_mask(on: bool) -> void:
-	if water != null:
-		(water.material_override as ShaderMaterial).set_shader_parameter("mask_out", 1.0 if on else 0.0)
+	for part: MeshInstance3D in [water, pits]:
+		if part != null:
+			(part.material_override as ShaderMaterial).set_shader_parameter("mask_out", 1.0 if on else 0.0)
 
 
 ## Draw calls this visual costs: one per non-empty surface kind (the R9 budget is one per kind).
