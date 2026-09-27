@@ -478,6 +478,12 @@ reading the code, left for their owner to decide:
   his camera and the fight is never cut away**, and neither is a floodlight's mast. For blocks, collider = drawn, so
   the cutaway is right.
 
+**Round 12 (camera stream): both call sites now ask the drawing.** `RtsCamera.roof_over` / `clear_pose` /
+`sight_blocked` default to `RtsCamera.seen()` (the arena's obstacles grown by `AirshipFlight.DRAWN`, plus signs), and
+`BlockCutaway` grows `ad_screen` to its drawn extent and cuts it. Floodlights and signs are deliberately not cut
+(measured on their triangles; `streams/camera.md` K3/K5). The six-map sweep that holds it is
+`test_every_shipping_map_measured_against_what_is_drawn`.
+
 **What to check** in any code that asks "is something in the way / am I inside something": which object does it read?
 For visual questions, grow the kit types above to their drawn extent (`AirshipFlight.DRAWN`, which
 `test_the_flights_table_of_drawn_props_covers_what_the_kit_draws` holds against the meshes). Don't grow the collider:
