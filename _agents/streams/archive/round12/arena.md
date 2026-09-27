@@ -1,5 +1,10 @@
 # Stream: arena (water reads wet)
 
+> **ARCHIVED — round 12 closed 2026-09-27.** This brief is kept as written, including the survey that was true when
+> it was written and the parts the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 12*; the lead's words
+> are in `game_design.md` *Round 12 direction* and his verdicts in *Round 12: the lead's verdicts as they land*; the
+> round's lessons are `orchestration.md` 220–222. Do not work from this file.
+
 > Read [`arenas.md`](../arenas.md) — *Water reads black* first, then the rest; [`game_design.md`](../game_design.md)
 > *Round 11: the lead's verdicts* (items 4 and 5) and *Round 12 direction*; [`art_direction.md`](../art_direction.md);
 > [`workstreams.md`](../workstreams.md) (round 12: ownership, C12.3, the standing rules) and the round-10 contract R9

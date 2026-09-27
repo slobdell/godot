@@ -74,7 +74,44 @@ existed and did not reach him** — the shape to look for first next time. Full 
   over it.
 - **Six lessons** (`orchestration.md` 214-219), two of them the orchestrator's own errors.
 
-## Round 12 is RUNNING (launched 2026-09-26 evening; six streams, briefs in `_agents/streams/`)
+## Round 12 (2026-09-26 → 27, closed): what it did, in one list
+
+Six streams, one night. Full record in `HANDOFF.md` *ROUND 12*; briefs in `streams/archive/round12/`.
+
+- **The fire engine he approved on the 24th, built:** the Condemned burner draws its own turntable-ladder truck
+  (box 2.99 × 3.30 × 7.54, the flame from the drawn nozzle). The bus stays the dozer by his word ("there was nothing
+  wrong with the tank"); the War Rig's muzzle gap measured at 16–29 px and left alone.
+- **The booth and the music:** the opening had never played the pre-match bed (nothing asked for the state); every
+  state now rotates 3–6 tracks; 67 + 39 new voiced lines (the trade pool 3 → 20; the PA where she actually speaks),
+  all through his veto pages; the booth's faction unit ids fixed (413 of 427 events had been unmatchable).
+- **The camera asks the drawing:** out of the floodlight's lamp head; the cutaway stays buildings-only by his verdict.
+- **The formation he sees is the one formed:** the AUTO icon and card read the leader's pick; a G-chosen shape survives
+  the halt; the fall-in rule measured worse and ships OFF; a partial selection scatters by his round-10 design.
+- **The rig's refused back-ups 130 → 56**, arrivals 104 → 115/128, a five-leg turn on the clip with 0 contacts (vs 67);
+  an arrived scout stays arrived (mixed stop time 18.9 → 12.1 s); sim baseline → `6313a38d7ecd99bb`.
+- **Water reads wet** at his pose (near-black pixels 0.98 → 0.55 on the Locks' far quay), ~1 ms GPU, 0 draw calls.
+- **Lessons 220–222**, and the builder0 incident (a runaway rsync from outside a checkout; the wrapper now refuses).
+
+## Round 13 candidates (each came out of round 12 with its measurement)
+
+1. **Right-of-way sized for long hulls** (nav): the back-and-fill's declared cost is rigs' reverse-gear contacts +57 %
+   (giving way back into walls with round 6's small-hull yield spots); on the rotation, stalled share fell on 10 of 12
+   runs and wall contacts rose on 9 of 12. The honest next step; the multi-leg planner's N5 write-up says when a
+   kinematic planner would earn its keep.
+2. **Column or wedge for a Condemned/Law plain move** (squad's S5): wedge faster in 23 of 32 paired runs; column wins
+   only the yard's chokepoint. Recommended: wedge in lanes and open ground, column in dense. **His call, frames in
+   `streams/references/round12/squad/`.**
+3. **Squad's S6 candidate** (dropping the idle `face` on a no-pivot hull with nothing in sight): pre-registered with its
+   signature; measured AFTER nav's bound, which is now on main.
+4. **The partial or mixed selection** (squad's S4): scatters by his round-10 design; recommended leave. His call.
+5. **The web music pack** (13 → 29 MB, all in the web build): decide at the next web release.
+6. **The garage has no music** (nothing plays the `garage` state); the two placements by title, not by ear
+   (`defeat_hunt`, `defeat_ragnarok`).
+7. **The Locks' open canal**, on arena's water page, after he has driven it.
+8. **The next PA batch** carries the boundary read from his ten vetoes (the joke lands on the venue, not on the crews'
+   or fans' bodies and homes) as a thing to test.
+
+## Round 12 launch record (2026-09-26 evening; six streams; kept as written)
 
 The list below went to the lead on 2026-09-26; he approved it with two corrections (`game_design.md` *Round 12 becomes
 a round*) and asked for workspaces. Where each item went:

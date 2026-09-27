@@ -8,7 +8,7 @@
 ## Round 12: the back-and-fill, and why the rig refused
 
 The lead approved "the War Rig's refused back-ups" for round 12; round 11 had left the rigs' `kturn_none` (130) above
-their `kturns` (64). Numbers with commits and machines: the brief's Status (`streams/nav.md`, archived at the round's
+their `kturns` (64). Numbers with commits and machines: the brief's Status (`streams/archive/round12/nav.md`, archived at the round's
 close).
 
 **N1, the instrument** (`--kturn-log`, `make nav-kturn-buckets`): every refusal logs the forward-arc hit, where and by

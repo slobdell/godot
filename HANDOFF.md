@@ -4,7 +4,65 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-26, evening — **ROUND 12 IS LAUNCHED: six streams (fleet, arena, camera, squad, nav, audio) in worktrees, briefs in `_agents/streams/`, the split in `workstreams.md` *Round 12*.** The section directly below is the launch record; the fine-tuning session that preceded it follows; everything from ROUND 11 down is as it was._
+_Last updated: 2026-09-27 — **ROUND 12 IS CLOSED on a green tree. `main-checked` is `ae3f3ff8` (builder0: 1773 passed, 0 failed, sim-baseline `6313a38d7ecd99bb`, determinism `550d53790035ddb4`); audio's M7 (`05e72d31`) merged after it on its own green (1773/0, same hashes). All six worktrees removed, all six branches ancestors of main and deleted. The section directly below is the round's record; the launch record and the fine-tuning session follow; everything from ROUND 11 down is as it was._
+
+## ✅ ROUND 12 IS CLOSED (2026-09-27) — read this first
+
+**One night, six streams, every item on the list he approved, and one that was not on any list until he asked about it.**
+His words are in `game_design.md` *Round 12 direction* (three parts) and *Round 12: the lead's verdicts as they land*.
+Briefs are archived in `streams/archive/round12/`; the rescued evidence (page dumps, frames, clips) in
+`streams/references/round12/`; the lessons are `orchestration.md` 220–222.
+
+### Merged to `main` (in order; verdicts read from the wrapper's own line)
+
+| stream | green code hash | what landed |
+|---|---|---|
+| fleet | `3b2fb346` (CP1), tip `d497a1b1` | **the fire engine he approved on 2026-09-24 and nobody read back**: the burner's own turntable-ladder hull, turret on the pedestal, flame from the drawn nozzle, box 2.40×2.40×6.89 → 2.99×3.30×7.54 (baseline pre-registered MOVED, measured unmoved: the burner is not in the baseline match); a pipeline fix (`AssetContracts.unit_pivot` floated new turret art 1.39 m); the bus: `bus_r11_i` came back a van (2.04:1) and was not shipped; the rig's muzzle gap 0.47/0.84 m = 16–29 px at his pose, left alone; matchups 130 → 132 of 180, a wash. Meshy 809 → 779 |
+| audio | `da9edaec`, then M6 `159f8645`, M7 `aa049f5f` | the opening had NEVER played the pre-match bed (MatchMood starts at `lull`; nothing asked for `pre_match`); the director draws per state per match, least-recently-heard first; 14 tracks imported, every state rotates 3–6; the booth's faction unit ids fixed (413 of 427 events unmatchable before); 67 lines (trade 3 → 20), then 49 PA lines where she actually speaks (0.62 → 0.93 a match during play), then the ten he vetoed removed; repeat of the most-said line 109 → 44 in 160 broadcasts. ElevenLabs 56,183 → 44,495 |
+| nav | `5b5e3a6a` (CP2), tip `5e3c4b0e` | of 132 refused back-ups, 36 were the search aiming under the hull; a ≤5-leg back-and-fill, the steering-guard fix, a blocker reach that sees a 14 m friend, and N6 (an arrived no-pivot hull stays arrived). Rigs: refusals 130 → 56, arrivals 104 → 115/128, press/unstick 227 → 83; declared cost reverse-gear contacts +57 %; mixed stop time 18.9 → 12.1 s. **Sim baseline `01ab39b5` → `6313a38d7ecd99bb`**, two causes, both attributed by arm; recorded `d6094cef`, read twice |
+| camera | `fe4f79fb`, tip `206939ab` | the camera's visual questions read drawn extents (`AirshipFlight.DRAWN`, one table): out of the lamp head at low tilt. **His verdict:** keep that; **don't cut screens; leave masts and signs standing** — the cutaway is buildings-only, the machinery kept |
+| squad | `bb51ca06`, tip `39184e14` | the AUTO icon and card read the leader's pick; a G-chosen shape survives `_halt`; the brief's terrain claim corrected (the Terminus is *lanes*; his factions' tables pick column everywhere); the fall-in rule measured WORSE both ways and ships OFF; a partial selection scatters by his round-10 design (his call); S5: wedge faster in 23 of 32 paired runs (his call) |
+| arena | `fcc45829`, tip `a306706d` | water reads wet: the surface reflects the venue that is there at his angles, teal body, lamp glints on a swell, a lap line; near-black pixels 0.98 → 0.55 (Locks far quay), 0.72 → 0.37 (Crossing far bridge); pits unchanged; ~1 ms GPU, 0 draw calls (the first version cost 3 ms, bisected with `make water-gpu`) |
+
+### The three findings that were not on the list
+
+1. **A lead decision on a page is not a project decision until the repo has read it** (lesson 220). The fleet page held
+   his fire-engine approval for two days. Now: the close-out reads every page's `db` (step 5a), and HANDOFF lists any
+   page as UNCONSUMED until it has been read.
+2. **The builder0 incident** (lesson 221, 23:28): a detached `tools/remote.sh` launched from a non-git copy resolved its
+   repo root to `/` and ran `rsync --delete` of the laptop's root into `~/tank_squad/` — every stream folder gutted
+   mid-run, `/home/slobdell` (with `.ssh`, `.claude`, `.credentials`) copied to builder0. Contained the same night: the
+   copies deleted, the folders self-repaired on each stream's next sync, every run in the window declared void and
+   re-run, the wrapper now REFUSES outside a checkout (`8a6a88a6`). **The lead should consider rotating the SSH key
+   and the Meshy/ElevenLabs keys.** The 35 old round folders on builder0 that nothing re-synced stay gutted (junk).
+3. **Two of his answers came in chat, not on a page:** the bus card (*"there was nothing wrong with the tank"* — the
+   item closed; lesson 222's card rule) and the female announcer (*"more good content … for the female announcer"* —
+   audio's M6, built and vetoed the same night).
+
+### Waiting on the lead (live)
+
+- **Arena's water page, UNCONSUMED:** https://claude.ai/artifact/1PsZA4HnRWGCSgajuyamKN — the wet look per spot, the
+  one-dial steps, the pits, and **the Locks' open-canal question (45 % exposure)**. Read `decisions/*` when he has tapped.
+- **Column or wedge** (squad's S5; recommended wedge in lanes/open, column in dense) and **the partial selection**
+  (recommended leave). Frames in `streams/references/round12/squad/`. Both are round-13 candidates in `roadmap.md`.
+- **Key rotation** after the incident (his call).
+- **Playtest list:** `make skirmish` twice from the title (a different opening track the second time); a big fight for
+  the trade calls and the PA; the Condemned burner as a fire engine; a War Rig squad through the Terminus streets; the
+  Crossing and the Locks at his pose.
+
+### Housekeeping at the close
+
+- Rescued into the main checkout before the worktrees came down: fleet's 16 Meshy files (the fire engine's raw 3D, the
+  van-shaped bus, the rejected turnaround), audio's 70 + 58 ElevenLabs masters (the ten vetoed PA masters kept as paid
+  records), camera's judged pairs and sweep, nav's two rig clips, squad's contact sheets — the last three committed under
+  `streams/references/round12/`.
+- Worktrees removed: fleet, camera, squad, nav, arena, audio, and arena's `arena-before`; branches deleted after the
+  ancestor check. Older branches not touched this round (`feel-rig-check`, `measure/facing-arc`, `stream/terrain-uid`,
+  `tmp/metrics-r8-control`) are for a quiet hour, not tonight.
+- `scenario_perf`'s CPU-budget test trips under builder0 load (three streams saw it; each isolated re-run was green).
+  Candidate: make it refuse rather than judge when the reference workload says the box is loaded (verification.md rule 3).
+
+_The launch record follows, as written on 2026-09-26:_
 
 ## 🚀 ROUND 12 IS LAUNCHED (2026-09-26, evening) — read this first
 

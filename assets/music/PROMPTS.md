@@ -70,7 +70,7 @@ a track in the wrong state is one line in `manifest.json` (its `states`), no re-
 
 Every bed is -16.1 to -16.3 LUFS, true peak -4.4 to -7.4 dB, loop seam ≤ 0.041 (limit 0.25), about 60 s of loop at
 112 kbps (~0.8 MB); a stem set is ~2.6 MB. `assets/music/` went from 13 MB to ~30 MB, **and all of it ships in the web
-pack** (question for the lead in `_agents/streams/audio.md`).
+pack** (question for the lead in `_agents/streams/archive/round12/audio.md`).
 
 ## Step by step
 

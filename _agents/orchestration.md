@@ -3229,3 +3229,15 @@ a decision the project has until something in the repo has read it.**
     from `/tmp`; and a red check is read from the REMOTE FOLDER's state as well as the log before it is called a
     flake (`ssh builder0 ls ~/tank_squad/<folder>/arenas`). The copied secrets were deleted from builder0 the same
     night; builder0 is the lead's own machine, but a key that has been copied anywhere is a key to rotate.
+222. **A drawn BOX is not the drawing either.** (camera, round 12; lesson 214's second half.) Growing the collider to
+    the drawn AABB fixed "is the camera INSIDE something" — a box is conservative, and for a camera the safe side is a
+    small lift. For "is something IN THE WAY", the floodlight's box claimed 50–94 blocked sight lines a map while its
+    triangles claimed 4–40, and the box would have cut away a whole tower for a pole. Rule: for a visual question,
+    ask the box when being wrong costs a small lift; ask the triangles (`TriangleMesh.intersect_segment`, headless)
+    when being wrong removes something from the picture. And the lead's verdict closed the cutaway question the
+    measurement had opened: keep the lamp-head fix, cut nothing but buildings — a legibility rule he holds that no
+    sight-line count would have found.
+    **And a review card says in its first line why it exists and what APPROVE costs** (fleet, the bus card): a card
+    showing a unit he thought was fine, with no sentence saying "the mesh you approved came back a van; approve = 30
+    credits for one more try", read to him as "approve the tank"; his answer was *"I don't understand what this URL is
+    asking from me"*, and the item closed on that. The page did its job; the card did not say its job.

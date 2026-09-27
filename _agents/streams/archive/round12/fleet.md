@@ -1,5 +1,10 @@
 # Stream: fleet (the fire engine he approved and the bus he approved, built)
 
+> **ARCHIVED — round 12 closed 2026-09-27.** This brief is kept as written, including the survey that was true when
+> it was written and the parts the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 12*; the lead's words
+> are in `game_design.md` *Round 12 direction* and his verdicts in *Round 12: the lead's verdicts as they land*; the
+> round's lessons are `orchestration.md` 220–222. Do not work from this file.
+
 > Read [`game_design.md`](../game_design.md) *Round 12 direction* (both parts), *Round 11: the lead's verdicts* and
 > *Factions*; then [`art_direction.md`](../art_direction.md), [`workstreams.md`](../workstreams.md) (round 12: ownership,
 > CP1, C12.1, C12.6, C12.7), and the archived round-11 brief `archive/round11/fleet.md` for the survey, the tools and

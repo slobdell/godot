@@ -1,5 +1,10 @@
 # Stream: squad (the formation he sees is the one the squad forms)
 
+> **ARCHIVED — round 12 closed 2026-09-27.** This brief is kept as written, including the survey that was true when
+> it was written and the parts the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 12*; the lead's words
+> are in `game_design.md` *Round 12 direction* and his verdicts in *Round 12: the lead's verdicts as they land*; the
+> round's lessons are `orchestration.md` 220–222. Do not work from this file.
+
 > Read [`doctrine.md`](../doctrine.md) *A plain move travels AS a formation* (round 12's travelling anchor: the
 > mechanism, the three rules, the paired table, and its **Not done, deliberately** list — your backlog is that list),
 > then the rest of `doctrine.md`; [`game_design.md`](../game_design.md) *Round 12 direction* (both parts) and the

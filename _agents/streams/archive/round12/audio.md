@@ -1,5 +1,10 @@
 # Stream: audio (the trade call and the opening track)
 
+> **ARCHIVED — round 12 closed 2026-09-27.** This brief is kept as written, including the survey that was true when
+> it was written and the parts the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 12*; the lead's words
+> are in `game_design.md` *Round 12 direction* and his verdicts in *Round 12: the lead's verdicts as they land*; the
+> round's lessons are `orchestration.md` 220–222. Do not work from this file.
+
 > Read [`game_design.md`](../game_design.md) *Round 12 direction* (his words on the booth and the music), *The arena
 > announcer* (the humour direction and the 2026-09-15 ruling: satire subtle and believable, the caller authentic UFC
 > hype, never punchlines), and [`workstreams.md`](../workstreams.md) (round 12: ownership, C12.7; round 10's R8 is the
@@ -143,7 +148,7 @@ builder0, 2026-09-26 late: `>> remote: make check exited 0`, 18 targets, **1733 
 `music-smoke passed: 3 bed changes across 3 beds … hash 4ee36a82dcd9444f (matches the same match without the music)`
 with `MUSIC_TRACK state=pre_match track=pre_match_hymn` → `battle fight_hydraulic` → `victory garage`,
 `announcer-record-smoke passed: hash 4ee36a82dcd9444f (matches the same match without the booth)`.
-Commits after it touch only `_agents/streams/audio.md`.
+Commits after it touch only `_agents/streams/archive/round12/audio.md`.
 
 ### Done (measurements; every number names its commit and machine)
 - **M1 + M2 (`75a9cce8`).** Director: `pre_match` for the opening; `candidates_for(state)`; one draw per set of equally

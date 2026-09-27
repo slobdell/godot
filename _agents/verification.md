@@ -482,7 +482,7 @@ reading the code, left for their owner to decide:
 `sight_blocked` default to `RtsCamera.seen()` (the arena's obstacles grown by `AirshipFlight.DRAWN`, plus signs), and
 `BlockCutaway` was built to grow `ad_screen` to its drawn extent and cut it; **the lead saw the pair and said
 "Don't cut screens"**, so `BlockCutaway.DRAWN_CUT` is empty and the cutaway takes building-height colliders only.
-Floodlights and signs are not cut either (his "Leave them standing"; measured on their triangles, `streams/camera.md`). The six-map sweep that holds it is
+Floodlights and signs are not cut either (his "Leave them standing"; measured on their triangles, `streams/archive/round12/camera.md`). The six-map sweep that holds it is
 `test_every_shipping_map_measured_against_what_is_drawn`.
 
 **What to check** in any code that asks "is something in the way / am I inside something": which object does it read?

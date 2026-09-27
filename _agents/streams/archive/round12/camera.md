@@ -1,5 +1,10 @@
 # Stream: camera (the camera asks the drawing, not the collider)
 
+> **ARCHIVED — round 12 closed 2026-09-27.** This brief is kept as written, including the survey that was true when
+> it was written and the parts the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 12*; the lead's words
+> are in `game_design.md` *Round 12 direction* and his verdicts in *Round 12: the lead's verdicts as they land*; the
+> round's lessons are `orchestration.md` 220–222. Do not work from this file.
+
 > Read [`verification.md`](../verification.md) *A collider is not a silhouette* first; then
 > [`orchestration.md`](../orchestration.md) lesson 214; [`game_design.md`](../game_design.md) *Round 9 addition*
 > (*The camera inside a block*) and *Round 11 direction* (*The camera and the airship: push up, not away*);

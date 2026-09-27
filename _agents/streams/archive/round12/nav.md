@@ -1,5 +1,10 @@
 # Stream: nav (the War Rig's refused back-ups)
 
+> **ARCHIVED — round 12 closed 2026-09-27.** This brief is kept as written, including the survey that was true when
+> it was written and the parts the stream proved wrong. What shipped is in `HANDOFF.md` *ROUND 12*; the lead's words
+> are in `game_design.md` *Round 12 direction* and his verdicts in *Round 12: the lead's verdicts as they land*; the
+> round's lessons are `orchestration.md` 220–222. Do not work from this file.
+
 > Read [`navigation.md`](../navigation.md) first (the planned reverse, the drive test, the counters, the noise note),
 > then [`algorithms.md`](../algorithms.md) (what was parked and why), [`game_design.md`](../game_design.md) *Round 11
 > direction* (*The 2-part problem he suspects in the Terminus*) and *Round 12 direction*; [`workstreams.md`](../workstreams.md)
