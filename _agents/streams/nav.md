@@ -205,6 +205,56 @@ trajectory-specific. Traced on builder0 next (r3) before any default is decided.
 `3db293a3…` (the fill does NOT move it), `--nav-off=guardnear` `01ab39b5…`, both off `01ab39b5…` = the recorded
 baseline. **The guard fix alone moves it.** blockreach and N6 are re-read at HEAD (r4).
 
+### N3 at HEAD: every mechanism attributed on builder0 (`6cb00162`, r4b, 8 seeds x 2 squads, six arms of ONE build)
+
+Each row ADDS one mechanism to the row above (the `--nav-off` list shrinks); **base** is round 11's behaviour.
+
+| squad | arm | arrived | leg s | contacts | press/unstick | reverse-gear | cusps | kturns | multi | none | aborted |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| rigs | base | 104/128 | 1277 | 6917 | 227 | 946 | 1202 | 64 | 0 | 130 | 2 |
+| rigs | + creepbound (N6) | 110/128 | 1472 | 6558 | 344 | 1111 | 1220 | 58 | 0 | 95 | 0 |
+| rigs | + kturnfill | 107/128 | 1590 | 3196 | 95 | 626 | 1004 | 37 | 19 | 70 | 6 |
+| rigs | + kturnslide | 110/128 | 1533 | 3518 | 70 | 844 | 1034 | 40 | 19 | 66 | 4 |
+| rigs | + blockreach | 106/128 | 1293 | 8464 | 149 | 1820 | 1344 | 63 | 19 | 77 | 4 |
+| rigs | **+ guardnear = HEAD** | **115/128** | 1140 | **5715** | **83** | 1488 | 1267 | 57 | 9 | **56** | 4 |
+| mixed | base | 172/192 | 1617 | 1939 | 170 | 315 | 2164 | 67 | 0 | 34 | 1 |
+| mixed | + creepbound (N6) | 171/192 | 1458 | 3354 | 410 | 564 | 2084 | 47 | 0 | 48 | 1 |
+| mixed | + kturnfill | 170/192 | 1435 | 3034 | 411 | 691 | 1957 | 41 | 11 | 22 | 3 |
+| mixed | + kturnslide | 169/192 | 1560 | 4497 | 468 | 533 | 1990 | 44 | 14 | 19 | 1 |
+| mixed | + blockreach | 178/192 | 1243 | 1306 | 52 | 241 | 1887 | 51 | 12 | 9 | 1 |
+| mixed | **+ guardnear = HEAD** | **179/192** | 1009 | 2660 | **60** | 284 | 2111 | 39 | 12 | **4** | 0 |
+
+**HEAD against round 11 (base), the named numbers:** rigs arrivals **104 -> 115** of 128, refusals **130 -> 56**,
+press/unstick-driven contacts **227 -> 83**, total contacts 6917 -> 5715, reverse-gear contacts **946 -> 1488 (+57 %)**,
+cusps 1202 -> 1267; mixed arrivals **172 -> 179** of 192, press/unstick **170 -> 60**, refusals 34 -> 4, total contacts
+1939 -> 2660 (+37 %), reverse-gear 315 -> 284. Leg time falls on both (rigs 1277 -> 1140 s, mixed 1617 -> 1009 s).
+
+**Decision: all ON by default.** The complete set is the best arrivals on both squads; every mechanism keeps its own
+switch. **The cost, declared:** the rigs' reverse-gear contacts rise, and the rows put it on blockreach (844 -> 1820):
+a rig asked to give way uses round 6's yield spots, fixed offsets sized for small hulls, and backs into the street's
+walls. Sizing right-of-way for long hulls is the next step (below), not this round's. The drive is chaotic (single
+mechanisms swing a squad's contacts by 2x between adjacent rows); read the endpoints and the named numbers, 8 seeds.
+
+**`kturnslide` kept:** builder0 aborts 6 -> 4 (rigs), 3 -> 1 (mixed), arrivals +3 / -1: small, no cost; the laptop's
+null is outweighed by the machine the numbers are published from.
+
+**Sim baseline (CP2), builder0 `nav-sim-arms` at `6cb00162`:** HEAD **`6313a38d7ecd99bb`**; `--nav-off=creepbound`,
+`kturnslide`: the same (they do not move it); `--nav-off=blockreach` `3db293a32607fdcf`; `--nav-off=guardnear`
+`8c10f21dfb0e43c4`; all five off `01ab39b592cc9837` = the recorded baseline. **Two causes, both nav's: the steering
+guard fix and blockreach.** The fill and N6 do not move it.
+
+**The mixed squad's guard-fix contacts, traced on builder0** (the same arm re-run with `--trace`, reproduced exactly):
+not the guard steering along a wall. The artillery reaches `Block_0`'s corner (20, -20) with three friends, yields, is
+shoved, and ends squeezed between a friend and the block face (`press` contacts). The guard changed an earlier leg's
+trajectory and this is where one seed's squad landed; with blockreach on, the same squad reads 95.
+
+**`kturnslide` (a leg aborts only when its leading end drives INTO a wall), `6cb00162`: a laptop NULL** — mixed
+byte-identical in both arms, rigs aborts 6 -> 5, everything else within noise. The builder0 aborts were not mostly
+sliding contacts. Builder0 (r4b) shows a small gain; kept (above).
+
+**Lost run (not nav's):** arena's misdirected rsync deleted the source in every stream's builder0 folder at ~23:28; my
+r4 at 23:29 failed at once (`No rule to make target`), nothing half-ran; relaunched as r4b at `6cb00162`.
+
 ### Found on the way: the steering guard undid round 11's "never under the hull" rule (`203db8d8`)
 
 Tracing the fill arm's one new miss (rigs seed 3, plaza leg, a rig 79 m from its goal at 90 s, laptop): after a
