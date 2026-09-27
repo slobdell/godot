@@ -142,14 +142,15 @@ func test_it_follows_a_mood_signal() -> void:
 	await wait_physics_frames(1)
 	var mood := MatchMood.new("green")
 	music.follow(mood)
-	assert_eq(music.current_track(), music.track_for("lull"), "a match starts on the quiet bed")
+	assert_eq(music.current_track(), music.track_for("pre_match"),
+			"a match opens on the pre-match bed: the mood says lull, but nobody has fired yet")
 	mood.push_event({"tick": 0, "t": 0.0, "type": "match_start", "arena": "foundry", "budget": 1000, "teams": [
 		{"team": "green", "faction": "condemned", "units": [{"id": "g1", "unit": "tank"}]},
 		{"team": "rust", "faction": "condemned", "units": [{"id": "r1", "unit": "tank"}]}]})
 	mood.push_event({"tick": 60, "t": 1.0, "type": "first_contact", "team": "green", "unit": "tank",
 			"target_unit": "tank"})
 	assert_eq(music.pending, music.track_for("skirmish"), "contact queues the fight track, at the next bar line")
-	assert_eq(music.current_track(), music.track_for("lull"), "the lull bed plays until then")
+	assert_eq(music.current_track(), music.track_for("pre_match"), "the opening plays until then")
 	assert_true(music.current_intensity() > 0.0, "and the layers will read the match's intensity")
 
 
@@ -235,13 +236,109 @@ func test_a_stem_track_waits_for_its_first_bar_line() -> void:
 func test_equally_fitting_tracks_rotate_by_match_not_by_moment() -> void:
 	var music := _director()
 	music.tracks = {
-		"treadmill": {"stems": [{"file": "a.ogg", "from": 0.0}], "states": ["battle"], "intensity": 0.6},
-		"foundry": {"stems": [{"file": "b.ogg", "from": 0.0}], "states": ["battle"], "intensity": 0.6},
+		"treadmill": {"stems": [{"file": "a.ogg", "from": 0.0}], "states": ["skirmish", "battle"], "intensity": 0.6},
+		"foundry": {"stems": [{"file": "b.ogg", "from": 0.0}], "states": ["skirmish", "battle"], "intensity": 0.6},
 		"bed": {"file": "c.ogg", "states": ["battle"], "intensity": 0.9},
 	}
 	var seen := {}
-	for match_pick in 4:
-		music.rotation = match_pick
+	for match_seed in 40:
+		music.match_seed = match_seed
+		music.forget_picks()
 		seen[music.track_for("battle")] = true
 		assert_eq(music.track_for("battle"), music.track_for("battle"), "one match keeps its pick")
+		assert_eq(music.track_for("skirmish"), music.track_for("battle"),
+				"skirmish and battle are one fight set: the fight builds, it never changes song")
 	assert_eq(seen.keys().size(), 2, "both fight tracks get played across matches, the single bed never")
+
+
+## Round 12 (the lead): *"I can't tell if it's playing the same music over and over on opening."* He was right: the
+## match opened on `lull`, which had one bed, and the pre-match bed was never asked for by anything.
+func test_every_music_state_rotates_between_at_least_two_tracks() -> void:
+	var music := _director()
+	for state in MusicDirector.STATES:
+		assert_true(music.candidates_for(state).size() >= 2, "%s rotates between %s" % [state,
+				str(music.candidates_for(state))])
+
+
+func test_the_opening_is_not_the_same_track_every_match() -> void:
+	var dice := RandomNumberGenerator.new()
+	dice.seed = 12
+	var openings := {}
+	for match_index in 50:
+		var music := _director()
+		music.match_seed = dice.randi() & 0x7fffffff
+		music.follow(MatchMood.new("green"))
+		openings[music.pending if music.pending != "" else music.current_track()] = true
+	assert_true(openings.keys().size() >= 2, "50 fresh matches open on %s" % str(openings.keys()))
+	var candidates := _director().candidates_for("pre_match")
+	for id in openings:
+		assert_true(id in candidates, "%s is an opening bed" % id)
+
+
+func test_the_opening_hands_over_and_a_later_quiet_spell_is_the_lull() -> void:
+	assert_eq(MusicDirector.music_state_for("lull", false), "pre_match", "before contact the quiet is the opening")
+	assert_eq(MusicDirector.music_state_for("lull", true), "lull", "after it, a quiet spell")
+	assert_eq(MusicDirector.music_state_for("skirmish", true), "skirmish", "everything else passes through")
+	assert_eq(MusicDirector.music_state_for("victory", true), "victory", "the result too")
+
+
+func test_a_match_draws_each_state_by_its_own_seed_and_reproducibly() -> void:
+	var music := _director()
+	var picks_by_seed := {}
+	for match_seed in [3, 4, 5, 6, 7, 8]:
+		music.match_seed = match_seed
+		music.forget_picks()
+		var picks := []
+		for state in MusicDirector.STATES:
+			picks.append(music.track_for(state))
+		music.forget_picks()
+		var again := []
+		for state in MusicDirector.STATES:
+			again.append(music.track_for(state))
+		assert_eq(again, picks, "seed %d draws the same soundtrack twice" % match_seed)
+		picks_by_seed[match_seed] = picks
+	var combinations := {}
+	for match_seed in picks_by_seed:
+		combinations[str(picks_by_seed[match_seed])] = true
+	assert_true(combinations.size() >= 3, "six seeds give %d different evenings, not one index into every state"
+			% combinations.size())
+	# One index for every tie made "track 2 of everything" an evening: the states must not move in lockstep.
+	var lockstep := true
+	for match_seed in picks_by_seed:
+		var picks: Array = picks_by_seed[match_seed]
+		var first_index := music.candidates_for(MusicDirector.STATES[0]).find(picks[0])
+		for i in MusicDirector.STATES.size():
+			var candidates := music.candidates_for(MusicDirector.STATES[i])
+			lockstep = lockstep and posmod(first_index, candidates.size()) == candidates.find(picks[i])
+	assert_true(not lockstep, "each state draws for itself")
+
+
+func test_the_track_heard_last_time_waits_its_turn() -> void:
+	var music := _director()
+	music.history = MusicHistory.new()
+	var candidates := music.candidates_for("pre_match")
+	var heard := {}
+	for match_index in candidates.size():
+		music.forget_picks()
+		music.match_seed = 99  # the same dice every match: only the memory can move the pick
+		var pick := music.track_for("pre_match")
+		assert_true(not heard.has(pick), "match %d opens on %s, not a repeat of %s" % [match_index, pick, str(heard.keys())])
+		heard[pick] = true
+		music.history.heard(pick)
+	assert_eq(heard.size(), candidates.size(), "every opening is heard before any comes round again")
+
+
+func test_the_music_memory_survives_a_restart_and_a_bad_file() -> void:
+	var path := "user://test_music_history.json"
+	var history := MusicHistory.load_from(path)
+	history.heard("a")
+	history.heard("b")
+	assert_true(history.save(), "it saves")
+	var again := MusicHistory.load_from(path)
+	assert_true(again.last_heard("b") > again.last_heard("a"), "and remembers the order")
+	assert_eq(again.last_heard("never"), -1, "a track never heard is the freshest")
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_string("{not json")
+	file.close()
+	assert_eq(MusicHistory.load_from(path).last_heard("b"), -1, "a broken memory is no memory, not an error")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

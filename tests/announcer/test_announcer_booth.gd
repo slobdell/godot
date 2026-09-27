@@ -142,6 +142,14 @@ func test_each_side_is_called_by_the_faction_it_fielded() -> void:
 	assert_true(not events.is_empty() and events[0]["type"] == "match_start", "the match started")
 	assert_eq(events[0]["teams"][0]["faction"], "gangs", "green fielded the gangs, and is called that")
 	assert_eq(events[0]["teams"][1]["faction"], "law", "rust fielded the Law")
+	# Round 12 (audio): the adapter sent the faction's unit ids ("gang_ifv"), which neither validator nor the booth's
+	# vocabulary knows, so every line that names a unit was ineligible in every faction match and every recording
+	# failed the K5 contract. The booth speaks of a unit by its role.
+	for team in events[0]["teams"]:
+		for unit in team["units"]:
+			assert_true(unit["unit"] in AnnouncerEvents.UNIT_TYPES, "%s is called a %s, a unit type the booth can say"
+					% [unit["id"], unit["unit"]])
+	assert_eq(Array(AnnouncerEvents.validate_event(events[0])), [], "and the faction match's roster keeps the contract")
 
 
 func test_match_time_follows_the_simulation_tick_rate() -> void:

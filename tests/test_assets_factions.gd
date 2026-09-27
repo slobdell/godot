@@ -45,8 +45,12 @@ func test_the_pipeline_sizes_art_from_the_CATALOG_and_not_a_copy_of_it() -> void
 				"%s's contract muzzle IS its catalog muzzle" % unit_id)
 		assert_eq(AssetContracts.get_contract("unit.%s.hull" % unit_id)["guide"], info["hull_size"],
 				"and the contract the pipeline enforces is built from it")
-	assert_eq(AssetContracts.STANDARD_HULL, AssetContracts.unit_info("tank")["hull_size"],
-			"the turret-scale reference is the catalog's tank, not a frozen 2.4 x 1.6 x 3.6")
+	# Round 12 (fleet): there is no turret-scale reference any more -- generated parts are drawn at the hull's one fit
+	# (`dozer_part._fit_to_hull` undoes the turret node's scale), so the pipeline places them at scale 1 and at the
+	# tank's own pivot. tests/test_units_burner.gd holds that placement to what a spawned tank draws.
+	for unit_id in AssetContracts.UNITS:
+		assert_eq(float(AssetContracts.unit_pivot(unit_id)["turret_scale"]), 1.0,
+				"%s's turret art is placed at the scale the wrapper draws it" % unit_id)
 
 
 func test_the_condemned_fill_every_role_from_todays_roster() -> void:

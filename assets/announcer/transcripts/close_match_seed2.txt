@@ -15,9 +15,9 @@ result: rust by elimination at 1:21.8
 0:25.0   ── green ifv destroys rust scout
 0:27.6   CALLER   All square! This thing is dead even!
 0:30.0   ── green tank destroys rust ifv
-0:30.9   CALLER   Two in a row! The Law strike again!
-0:34.5   CALLER   Oh, here we go! They're going by the book!
-0:37.9   VETERAN  Break contact. They practised that until it stopped being a decision.
+0:30.9   CALLER   And the IFV goes down right behind it!
+0:34.4   CALLER   Oh, here we go! They're going by the book!
+0:37.8   VETERAN  Break contact. They practised that until it stopped being a decision.
 0:47.2   ── rust lancer destroys green tank
 0:47.3   CALLER   That's the matchup! The Lancer does exactly what it was built to do!
 0:48.0   ── friendly fire: green artillery hits its own ifv

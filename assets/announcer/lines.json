@@ -12416,6 +12416,811 @@
    ],
    "text": "That artillery decides this if nobody gets to it. Somebody usually gets to it.",
    "added": "r10"
+  },
+  {
+   "id": "caller.kill.102",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "One goes down, then the other! This is a slugfest!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.103",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Oh, they're exchanging! Both sides just lost one!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.104",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Toe to toe! They are standing in the pocket and letting it fly!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.105",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Neither side will take a step back, and both of them pay for it!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.106",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Wrecks on both sides! This is an absolute war out there!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.107",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "An even exchange! And the pace does not slow down one bit!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.108",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Both armies bleeding! Both armies still coming forward!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.109",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "It's a firefight, folks! Everybody is getting tagged!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.110",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "One for one! Nobody out there is willing to blink!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.111",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "They are throwing everything they have at each other!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.112",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "A big loss on one side, a big loss on the other! What a sequence!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.113",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Nobody wants to back up! Two wrecks in a matter of seconds!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.114",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Give and take! That's a war of attrition right there!",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.42",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "Neither side wanted that exchange. They both got it anyway.",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.43",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "Two crews saw each other at the same time. Nobody blinked, so nobody walks away clean.",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.44",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "Both of those crews stayed in the open to finish the shot. That's the price of finishing the shot.",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.45",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "You don't win a trade. You survive it, and then you count.",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.46",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "Somebody on each side should have backed off one corner. Neither did.",
+   "added": "r12"
+  },
+  {
+   "id": "color.kill.47",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "They'll both call that a good trade in the debrief. One of them is wrong.",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.115",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Hit for hit! Neither of them flinches!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.116",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Both sides answer at once! What an exchange!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.117",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "They're swapping wrecks out there! Nobody is winning this one clean!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.118",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Back and forth, and both of them bleed for it!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.119",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "They're not stopping! That's another one!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.120",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "And they do it again! Right on top of the last one!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.121",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Oh, and another! They smell blood out there!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.122",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Same crew, same result! Another vehicle down!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.123",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "It keeps happening! One more off the board!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.124",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 2,
+   "text": "Right behind it! Another one goes!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.125",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "They are relentless! That's one more!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.126",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Here comes another! The pressure is suffocating!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.127",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "They cannot be stopped right now! Everything they touch goes down!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.128",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "This is a run! This is a real run, folks!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.129",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Somebody has to answer this! They're taking everything!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.130",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Unanswered! Kill after kill, and nothing coming back!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.131",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "{faction} are rolling! I don't know who stops this!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.132",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "They are dominating this stretch! Absolutely dominating!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.133",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "comeback"
+   ],
+   "intensity": 3,
+   "text": "Do not count them out! They are clawing their way back!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.134",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "comeback"
+   ],
+   "intensity": 3,
+   "text": "This is a whole new fight! Look who's back in it!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.135",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "comeback"
+   ],
+   "intensity": 3,
+   "text": "They were on the ropes a minute ago! Not anymore!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.136",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "comeback"
+   ],
+   "intensity": 3,
+   "text": "The momentum has completely shifted! What a turnaround!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.137",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Wrecks everywhere! I can't count them fast enough!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.138",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Everything is going off at once down there!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.139",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "That was a storm! Vehicles falling all over the place!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.140",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Where do I even look? It's going off all over the floor!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.141",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Three, four at a time! This crowd doesn't know where to look!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.kill.142",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "In the space of a breath, the whole picture changes!",
+   "added": "r12"
+  },
+  {
+   "id": "caller.lull.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "A breather now. Both sides pulling back to regroup.",
+   "added": "r12"
+  },
+  {
+   "id": "caller.lull.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "It's gone quiet. Nobody wants to be the one to step out.",
+   "added": "r12"
+  },
+  {
+   "id": "caller.lull.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "They're repositioning. You can feel the next wave coming.",
+   "added": "r12"
+  },
+  {
+   "id": "caller.lull.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "The smoke is clearing, and they're looking for each other again.",
+   "added": "r12"
+  },
+  {
+   "id": "caller.lull.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "intensity": 2,
+   "text": "A little lull here. Don't blink, it won't last.",
+   "added": "r12"
+  },
+  {
+   "id": "caller.lull.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "Everybody catching their breath. This is where the plans get made.",
+   "added": "r12"
+  },
+  {
+   "id": "caller.lull.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "They've backed off, but nobody has left. This is just the calm.",
+   "added": "r12"
+  },
+  {
+   "id": "caller.lull.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "Crews resetting after that last exchange. The floor is holding its breath.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lull.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "They'll use this pause to swap who's leading. The lead vehicle takes the first hit, so they share it out.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lull.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "Watch the ones who stop in the open. Either they know something, or they've stopped thinking.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lull.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "Nobody out there is relaxing. The engine's idling. The driver isn't.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lull.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "A quiet spell is when the good crews fix what broke. The bad ones just wait.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lull.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "This is where the lead changes hands, usually. Not in the shooting. In the waiting after it.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lore.22",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "The engine block in mine came off a harvester. You could still smell the grain in the summer.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lore.23",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "We had a rule: nobody talks about release until you're out the gate. Most of us kept it.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lore.24",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "The first time I saw the floor from up here, I didn't recognise it. It looks smaller from the booth.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lore.25",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "I had a gunner who sang under his breath. Same song, every match. I never learned the words.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lore.26",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "They used to announce our real names. Then they stopped. I think it tested better.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lore.27",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "The seats in those cabs don't adjust. You adjust.",
+   "added": "r12"
+  },
+  {
+   "id": "color.lore.28",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "A crew that's been together a full season is rare. The schedule doesn't really allow for it.",
+   "added": "r12"
   }
  ]
 }

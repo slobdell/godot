@@ -26,7 +26,7 @@ Unknown extra fields are allowed (the adapter may add more); unknown `type`s are
 - **Teams:** `"green"` or `"rust"` (lowercase). The announcer says "Green" and "Rust".
 - **Unit instances:** opaque ids, the `Match` tank name today (`"Green_Alpha_1"`). Fields that hold an instance id are
   `unit_id`, `shooter`, `victim`, `killer`, `target_id`.
-- **Unit types:** `Units.PROFILES` ids (`scout`, `tank`, `ifv`, `artillery`, `lancer`, `burner`). Fields that hold a type
+- **Unit types:** the unit's ROLE (`scout`, `tank`, `ifv`, `artillery`, `lancer`, `burner`, and the faction roles `support`, `suppressor`), never a faction's own id (`gang_ifv` is sent as `ifv`; round 12). Fields that hold a type
   end in `unit`: `unit`, `shooter_unit`, `victim_unit`, `killer_unit`, `target_unit`.
 - **Never player names.** The announcer speaks of units by type and team color.
 - **Ratios** (`hull`, `shield`, `hull_left`, `army_health`) are fractions of the maximum, `0.0`–`1.0`.

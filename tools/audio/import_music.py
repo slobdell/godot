@@ -2,6 +2,11 @@
 """Turns one track the lead generated in Suno into a bed the music director can use.
 
     python3 tools/audio/import_music.py ~/Downloads/battle.mp3 --state battle --bpm 110
+    python3 tools/audio/import_music.py ~/Downloads/other_take.mp3 --state lull --id lull_foundry --bpm 98
+
+A state may have several beds (round 12): `--id` names the row and the file (`bed_<id>.ogg`) and `--state` is the
+state it plays under. A new row takes the intensity the state's other tracks already have, so the director counts it
+as equally fitting and rotates between them per match instead of always preferring one.
 
 Decodes whatever Suno returned, trims the silence off both ends, picks loop points on **bar lines** so the
 director's beat-aligned crossfade lands where it should, normalises to the manifest's loudness target with a
@@ -87,6 +92,18 @@ def retire_placeholders(manifest: dict, kept: str, states: list[str]) -> list[st
             del manifest["tracks"][track_id]
             dropped.append(track_id)
     return dropped
+
+
+def tie_intensity(manifest: dict, track_id: str, states: list[str], fallback: float) -> float:
+    """The intensity a new row needs to tie with the tracks already serving its first state: the director rotates
+    only between equally fitting tracks, and a different number would make one of them win every match."""
+    existing = manifest.get("tracks", {}).get(track_id)
+    if existing and "intensity" in existing:
+        return existing["intensity"]
+    for other_id, track in sorted(manifest.get("tracks", {}).items()):
+        if other_id != track_id and "stems" not in track and states and states[0] in track.get("states", []):
+            return track.get("intensity", fallback)
+    return fallback
 
 
 def parse_layers(spec: str) -> list[tuple[str, dict]]:
@@ -189,6 +206,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("source", type=Path, help="what Suno gave you (mp3, wav, anything ffmpeg reads)")
     parser.add_argument("--state", required=True, help="which MatchMood state this bed is for (stems: the track id, e.g. fight)")
     parser.add_argument("--bpm", type=float, required=True, help="the tempo you asked Suno for")
+    parser.add_argument("--id", dest="track_id", default="", help="the manifest row and file name (default: the "
+                        "state): several beds for one state each need their own")
     parser.add_argument("--beats-per-bar", type=int, default=4)
     parser.add_argument("--out", type=Path, default=Path("assets/music"))
     parser.add_argument("--rights", default="", help="the Suno plan it was generated under, and the date")
@@ -220,7 +239,8 @@ def main(argv: list[str] | None = None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
 
     start_s, end_s = section(*trimmed_length(args.source), seconds(args.cut_from), seconds(args.cut_to))
-    destination = args.out / ("bed_%s.ogg" % args.state)
+    track_id = args.track_id or args.state
+    destination = args.out / ("bed_%s.ogg" % track_id)
     with tempfile.TemporaryDirectory() as scratch:
         trimmed = Path(scratch) / "trimmed.wav"
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", "%.3f" % start_s, "-i", str(args.source),
@@ -241,16 +261,17 @@ def main(argv: list[str] | None = None) -> int:
     manifest_path = args.out / "manifest.json"
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else \
         {"schema": 1, "target_lufs": TARGET_LUFS, "tracks": {}, "stingers": {}}
-    existing = manifest["tracks"].get(args.state, {})
-    manifest["tracks"][args.state] = {
+    existing = manifest["tracks"].get(track_id, {})
+    states = [x for x in args.states.split(",") if x] or existing.get("states", [args.state])
+    manifest["tracks"][track_id] = {
         "file": destination.name, "bpm": args.bpm, "beats_per_bar": args.beats_per_bar,
         "loop_start_s": loop_start, "loop_end_s": loop_end,
-        "intensity": existing.get("intensity", DEFAULT_INTENSITY.get(args.state, 0.5)),
-        "states": [x for x in args.states.split(",") if x] or existing.get("states", [args.state]),
+        "intensity": tie_intensity(manifest, track_id, states, DEFAULT_INTENSITY.get(args.state, 0.5)),
+        "states": states,
         "lufs": round(final_lufs, 1), "peak_db": round(peak, 1),
         "rights": args.rights or existing.get("rights", "UNRECORDED: which Suno plan was this generated under?"),
     }
-    for gone in retire_placeholders(manifest, args.state, manifest["tracks"][args.state]["states"]):
+    for gone in retire_placeholders(manifest, track_id, states):
         print("retired placeholder track %s" % gone)
     manifest_path.write_text(json.dumps(manifest, indent=1) + "\n")
     print("imported %s -> %s" % (args.source.name, destination))
@@ -258,7 +279,7 @@ def main(argv: list[str] | None = None) -> int:
           % (final_lufs, peak, loop_start, loop_end,
              round((loop_end - loop_start) / (args.beats_per_bar * 60.0 / args.bpm)), args.bpm, seam,
              destination.stat().st_size / 1024))
-    if not args.rights and "UNRECORDED" in manifest["tracks"][args.state]["rights"]:
+    if not args.rights and "UNRECORDED" in manifest["tracks"][track_id]["rights"]:
         print("  NOTE: pass --rights \"Suno <plan>, <date>\" before this ships (PROMPTS.md, Rights)")
     print("  now run: make music-check")
     return 0
