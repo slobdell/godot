@@ -14,7 +14,9 @@ import sys
 from pathlib import Path
 
 TEAMS = ("green", "rust")
-UNIT_TYPES = ("scout", "tank", "ifv", "artillery", "lancer", "burner")
+# Round 12: the faction roles too (support: the Resupply Tanker; suppressor: the Sonic Emitter); the booth has no
+# words for those two yet. Keep in step with game/announcer/announcer_events.gd.
+UNIT_TYPES = ("scout", "tank", "ifv", "artillery", "lancer", "burner", "support", "suppressor")
 # Fixture timelines are written in sixtieths of a second, whatever rate the simulation runs at: a fixture is recorded
 # data and must not change when the tick rate does (GDScript twin: AnnouncerEvents.TICKS_PER_SECOND).
 TICKS_PER_SECOND = 60
