@@ -262,7 +262,8 @@ func _on_finished(result: Dictionary) -> void:
 	for key in TEAM_KEYS:
 		kills[key] = {}
 		for unit in result["kills_by_unit"][key]:
-			kills[key][unit] = int(result["kills_by_unit"][key][unit])
+			var role := booth_unit(String(unit))
+			kills[key][role] = int(kills[key].get(role, 0)) + int(result["kills_by_unit"][key][unit])
 	_emit("match_end", {"winner": String(result["winner"]).to_lower(), "reason": reasons.get(result["reason"], "time"),
 			"duration_seconds": float(result["duration_seconds"]),
 			"units_left": {"green": int(result["units_left"]["green"]), "rust": int(result["units_left"]["rust"])},
