@@ -59,4 +59,54 @@ His clarification answer, if it changes the item; nothing blocks R1.
 
 ## Status
 
-_(the worker keeps this current)_
+_Worker: nav, round 13. Started 2026-09-27 from `8f96a43c`. Every number names its commit and machine._
+
+### Plan (the brief's order)
+
+| # | item | state |
+|---|---|---|
+| 0 | green start: `make remote T=check` on `8f96a43c` | **green**: builder0, `make check exited 0`, 18 targets, 1773 passed / 0 failed, sim-baseline `6313a38d7ecd99bb` unmoved, determinism `550d53790035ddb4` |
+| R1 | instrument the give-way; buckets before design | **done** `5866e387` (below); round-11 arm's buckets running |
+| R2 | yield spots sized by hull (`--nav-off=yieldfit`) | next |
+| R3 | drive 8 seeds x 2, fight-maps rotation both arms, clips, `nav-sim-arms`, CP1 | — |
+| R4 | whatever R1 names that R2 does not cover | — |
+
+### R1: where the rig backs into walls when it gives way (builder0, `5866e387`, `make nav-yield-buckets`, 8 seeds x 2 squads, default path)
+
+The instrument (`--yield-log`, measurement only; `tests/nav/test_nav_yield_log.gd`): every give-way logs the spot it
+chose (round 6's `spot(along,across)` table, or the straight `back(m)` last resort), the hull (length, radius), the
+room behind its tail, and whether the straight run to the spot keeps the WHOLE outline inside the clear reach (the
+sweep the planned reverse validates with); WallContact adds the contacts made while giving way by gear, collider and
+end, and a `driver/gear` cross-tab. The run's totals reproduce round 12's HEAD exactly (rigs 5715 contacts / 1488
+reverse-gear; mixed 2660 / 284): the instrument moves nothing.
+
+**Rigs' 1488 reverse-gear contact ticks by the layer driving:** `yield` **661 (44 %)**, `route` 559 (38 %), `kturn`
+226 (15 %), `press` 42. Every one of the 81 give-ways is a 14 m rig for a 14 m rig; only 27 reached their spot.
+
+| gear to the spot | spot | the straight run's outline sweep | give-ways | contact ticks | reverse-gear | reached |
+|---|---|---|---|---|---|---|
+| forward | table | nose_corner leaves the clear reach | 12 | 638 | **251** | 5 |
+| reverse | `back(6)` | rear_corner (median room behind the tail **2.5 m**) | 5 | 325 | **213** | 0 |
+| reverse | table | clear | 22 | 81 | 65 | 2 |
+| reverse | table | rear_corner | 6 | 72 | 44 | 1 |
+| forward | table | side_fore / side_aft | 5 | 369 | 54 | 1 |
+| reverse | table | nose_corner | 2 | 19 | 19 | 1 |
+| reverse | `back(6)` | clear | 6 | 35 | 10 | 3 |
+| forward | table | clear | 16 | 54 | 1 | 12 |
+| (4 more buckets) | | | 7 | 129 | 4 | 5 |
+
+**What it says:** **585 of the 661 (89 %)** yield reverse-gear contacts are give-ways whose run to the spot the
+outline sweep would have refused; the spot's centre was on the mesh (`_free_spot`), the hull's ends were not. The
+largest single mechanism is round 7's last resort `back(6)`: 6 m straight back from a CENTRE 7 m from the tail, i.e. a
+point inside the hull's own footprint, so the centre check passes whatever is behind (13 give-ways, 223 reverse
+contacts). The second: forward spots a 12 m-radius hull cannot drive onto without its nose corner meeting a block;
+the wheeled pursuit then shuffles gears against the face (forward give-ways, 251 reverse contacts). Ends: reverse/rear
+298, reverse/nose 286 (a hull swinging while it backs). Hit: Block_6 343, Block_1 286, Block_7 276, Block_0 233, the
+two containers 286. Begun via: asked 44 (359 reverse), self 37 (302) — both routes.
+
+**Mixed (the control):** 284 reverse-gear ticks: route 128, `yield` 93, kturn 58, press 5; 111 give-ways, 84 of the
+93 yield reverse contacts are in sweep-refused buckets (the tank/artillery pairs backing into Block_0/Block_1).
+
+**Design read:** validating the run to the spot with the outline sweep addresses ~89 % of the yield share on both
+squads; the other 44 % + 38 % of the rigs' reverse contacts (`route` 559, `kturn` 226) are not right-of-way (R4).
+
