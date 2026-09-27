@@ -98,7 +98,11 @@ const CREEP_LEG_TICKS := SimClock.TICK_RATE / 2
 ## Round 12 (nav N6, from squad's S6): a forward arc and a reverse arc on the same yaw curve round OPPOSITE centres, so
 ## strict alternation walks the hull off its spot (squad measured a scout 1.5 m -> 8.6 m off its slot over 15 s of idle
 ## facing). The creep remembers where it began (`creep_anchor`); at a leg change, once the hull is more than this far
-## from it, the next leg is the gear that heads back toward it. `--nav-off=creepbound` restores strict alternation.
+## from it — the hull's own SETTLE radius (Movement.settle_radius: 0.6 of the turning radius, at most 6 m; the scout
+## 3 m, the War Rig 6 m), never under CREEP_DRIFT_M — the next leg is the gear that heads back toward it. Not a flat
+## metre: the lead's round-8 complaint was semis "yawing in place (should be impossible)", and a 14 m truck held within
+## 1 m of its spot does exactly that (nav-rotation's truck case flagged it). `--nav-off=creepbound` restores strict
+## alternation.
 const CREEP_DRIFT_M := 1.0
 
 
@@ -135,7 +139,9 @@ static func step_in_place(state: Dictionary, throttle: float, turn: float, delta
 				if anchor != Vector3.INF and state.has("position") and not Movement.switched_off("creepbound"):
 					var back: Vector3 = anchor - Vector3(state["position"])
 					back.y = 0.0
-					if back.length() > CREEP_DRIFT_M:
+					var allowance := clampf(float(state.get("min_turn_radius_m", 0.0)) * Movement.WHEELS_SETTLE_RADII,
+							CREEP_DRIFT_M, Movement.WHEELS_SETTLE_MAX)
+					if back.length() > allowance:
 						direction = 1 if back.dot(forward) >= 0.0 else -1
 			state["creep_dir"] = direction
 			state["creep_ticks"] = leg + 1

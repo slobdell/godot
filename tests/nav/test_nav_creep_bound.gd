@@ -51,5 +51,6 @@ func test_control_strict_alternation_walks_the_scout_off_its_spot() -> void:
 
 func test_a_wheeled_hull_turning_in_place_stays_near_its_spot_and_still_turns() -> void:
 	var bound := await _face_round(true)
-	assert_true(bound["farthest_m"] < 3.5, "it stays within a few metres of where it started (%s)" % bound)
+	# The scout's settle radius (0.6 × its 5 m turning radius) is the allowance; a leg of overshoot past it on top.
+	assert_true(bound["farthest_m"] < Movement.settle_radius("scout") + 1.5, "it stays within its settle radius of where it started (%s)" % bound)
 	assert_true(bound["worst_error_deg"] < 25.0, "and still ends each facing on its heading (%s)" % bound)
