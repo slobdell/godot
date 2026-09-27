@@ -70,6 +70,13 @@ prompt* is canonical):
 - **The partial or mixed selection** (squad's S4): it scatters, by the round-10 R1 design he narrowed himself; squad
   recommends leaving it. His call, on the next page or in chat.
 - **The Locks' open canal**, on arena's page once it is up, after he has driven it.
+- **Audio's three (merged at `785bc293`):** the web pack grew (`assets/music/` 13 → 29 MB, all in the web build) —
+  ruled *leave it, decide at the next web release*; **by ear**, the two weakest placements are `defeat_hunt`
+  (Predatory Hunt) and `defeat_ragnarok` (Ragnarok's Engine), one `states` edit each in `assets/music/manifest.json`;
+  the garage has no music (not this round). **His veto list:** `make announcer-demo-audio
+  CLIPS=assets/announcer/clips`, open `build/announcer/demo/index.html#new` — 67 new lines, 20 of them trade calls.
+- **Playtest for him:** `make skirmish` twice from the title — the opening should be a different track the second
+  time; in a big fight, listen for the trade calls; the Condemned burner is a fire engine.
 - **Camera: ANSWERED** (2026-09-26 evening: keep the lamp-head fix, don't cut screens, leave masts and signs standing);
   applied at `806dd794` on `stream/camera`, recorded in `game_design.md`.
 
@@ -84,7 +91,9 @@ filesystem, including `~/tank_squad/home/slobdell/{.ssh,.claude,.credentials,.gn
 builder0 the same night; **the lead should consider rotating the SSH key in `~/.ssh` and the Meshy/ElevenLabs keys,
 since they were copied to a second machine**; (4) `tools/remote.sh` now REFUSES to run unless the cwd is a checkout
 with a Makefile (the commit that carries this note). The remote folders `squad-legs` and `squad-main` on builder0
-are round-9 leftovers, gutted, harmless.
+are round-9 leftovers, gutted, harmless. **A seventh worktree exists for the round:** `../godot-arena-arena-before`
+(branch `stream/arena-before`, at `46bac1a3`, offset 7), arena's "before" tree for the Crossing perf pair; nothing
+is committed there; **remove it at close** (`git worktree remove ../godot-arena-arena-before`, then delete the branch).
 
 **For the orchestrator running this round:** merge at the hash each stream names green; CP1 (fleet's boxes) and CP2
 (nav's planner) are the two baseline moves, each merged alone and recorded twice with `make sim-baseline-adopt`; at the
