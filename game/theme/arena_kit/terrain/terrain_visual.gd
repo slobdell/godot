@@ -9,14 +9,15 @@ extends Node3D
 ## `rail_slabs`, so what a hull stops against is exactly what the player sees (R3's rule, by construction).
 ##
 ## Five surface kinds, ONE draw call each whatever the map holds, no lights, no textures (R9):
-##   water  interior-mapped channel: walls, a still dark surface reflecting the venue's neon (`water.gdshader`)
-##   pit    the same trace, deep, black, a red glow at the bottom (the kill zone's floor)
+##   water  interior-mapped channel: walls, a dark teal surface reflecting the venue as built (`water.gdshader`)
+##   pit    the same trace, deep, black, a red glow at the bottom (the kill zone's floor; `pit.gdshader`)
 ##   kerb   the rim, concrete with an emissive lip; hazard stripes around a pit (`kerb.gdshader`)
 ##   deck   the bridge roadway in kit steel, the container palette, a tread and kerb strips
 ##   rail   the bridge rails, 0.9 m -- below the 1.3 m eye line, like the rim they continue
 ## Visual only: nothing here collides, and the sim never reads it (pre-registered: the sim baseline does not move).
 
 const WATER_SHADER := preload("res://game/theme/arena_kit/terrain/water.gdshader")
+const PIT_SHADER := preload("res://game/theme/arena_kit/terrain/pit.gdshader")
 const KERB_SHADER := preload("res://game/theme/arena_kit/terrain/kerb.gdshader")
 ## Just above the arena floor plane (y = 0), under everything a unit could stand on. The deck sits above it.
 const SURFACE_Y := 0.03
@@ -28,6 +29,14 @@ const HAZARD := Color(0.95, 0.68, 0.05)
 const RAIL_POST_PITCH := 2.4
 const MAX_DECKS := 8
 const MAX_WET := 16
+## Round 12: the water's reflection (water.gdshader's arrays). An obstacle is reflected when it stands within
+## REFLECT_REACH times its own height of a water footprint (a ray climbing at ~18 degrees still meets its top).
+const MAX_EDGES := 8
+const MAX_BARS := 4
+const MAX_STANDS := 24
+const MAX_BOXES := 16
+const MAX_LAMPS := 12
+const REFLECT_REACH := 3.0
 
 var water: MeshInstance3D
 var pits: MeshInstance3D
@@ -52,6 +61,196 @@ func setup(terrain: Array) -> void:
 	kerbs = _surface("Kerbs", _kerb_mesh(terrain), _kerb_material())
 	deck = _surface("Decks", _deck_mesh(deck_rects), _steel_material(0.35))
 	rails = _surface("Rails", _rail_mesh(terrain), _steel_material(0.55))
+	_terrain = terrain
+	if water != null:
+		# The venue and the obstacles are built AFTER the terrain (Arena._ready: terrain, then the dressing), so what
+		# the water reflects is read once the arena has finished building.
+		_bind_reflection.call_deferred()
+
+
+var _terrain: Array = []
+## What the water was last given to reflect, by part (for tests and the pairs tool): edges, bars, stands, boxes, lamps.
+var reflection_counts := {}
+
+
+## Feed the water what is really around it: the venue's inner face, bars, stands and lamps from the dressing
+## (`ArenaDressing.reflection_venue()`, found by its group), and the obstacles near the water from the arena's own
+## layout, a block's neon band read off its drawn mesh. With no dressing (the default theme) the water keeps round
+## 10's horizon band.
+func _bind_reflection() -> void:
+	if water == null or not is_inside_tree():
+		return
+	var material := water.material_override as ShaderMaterial
+	var dressing: Node = get_tree().get_first_node_in_group(&"arena_dressing")
+	var venue: Dictionary = dressing.call("reflection_venue") if dressing != null and dressing.has_method("reflection_venue") else {}
+	_venue_uniforms(material, venue)
+	_box_uniforms(material, _find_arena())
+
+
+func _find_arena() -> Node:
+	var node: Node = get_parent()
+	while node != null and not node is Arena:
+		node = node.get_parent()
+	return node
+
+
+func _venue_uniforms(material: ShaderMaterial, venue: Dictionary) -> void:
+	var edges := PackedVector4Array()
+	var spans := PackedVector4Array()
+	for edge: Dictionary in (venue.get("edges", []) as Array).slice(0, MAX_EDGES):
+		var a: Vector2 = edge["from"]
+		var b: Vector2 = edge["to"]
+		edges.append(Vector4(a.x, a.y, b.x, b.y))
+		var stands: Array = edge.get("stands", [])
+		var first: Vector2 = stands[0] if stands.size() > 0 else Vector2.ZERO
+		var second: Vector2 = stands[1] if stands.size() > 1 else Vector2.ZERO
+		spans.append(Vector4(first.x, first.y, second.x, second.y))
+	var bars := PackedVector3Array()
+	var bar_colors := PackedVector3Array()
+	for bar: Array in (venue.get("bars", []) as Array).slice(0, MAX_BARS):
+		bars.append(bar[0])
+		var linear := (bar[1] as Color).srgb_to_linear()
+		bar_colors.append(Vector3(linear.r, linear.g, linear.b))
+	var profile := PackedVector2Array()
+	for point: Vector2 in (venue.get("stands", PackedVector2Array()) as PackedVector2Array):
+		if profile.size() < MAX_STANDS:
+			profile.append(point)
+	var lamps := PackedVector4Array()
+	var lamp_colors := PackedVector3Array()
+	for lamp: Array in (venue.get("lamps", []) as Array).slice(0, MAX_LAMPS):
+		var at: Vector3 = lamp[0]
+		lamps.append(Vector4(at.x, at.y, at.z, float(lamp[2])))
+		var linear := (lamp[1] as Color).srgb_to_linear()
+		lamp_colors.append(Vector3(linear.r, linear.g, linear.b))
+	material.set_shader_parameter("edge_count", edges.size())
+	material.set_shader_parameter("edges", _pad4(edges, MAX_EDGES))
+	material.set_shader_parameter("edge_stands", _pad4(spans, MAX_EDGES))
+	material.set_shader_parameter("wall_height", float(venue.get("wall_height", 3.0)))
+	material.set_shader_parameter("bar_count", bars.size())
+	material.set_shader_parameter("bars", _pad3(bars, MAX_BARS))
+	material.set_shader_parameter("bar_colors", _pad3(bar_colors, MAX_BARS))
+	material.set_shader_parameter("stands_count", profile.size())
+	while profile.size() < MAX_STANDS:
+		profile.append(Vector2.ZERO)
+	material.set_shader_parameter("stands", profile)
+	material.set_shader_parameter("crowd", venue.get("crowd", Vector2(3.0, 8.0)))
+	material.set_shader_parameter("lamp_count", lamps.size())
+	material.set_shader_parameter("lamps", _pad4(lamps, MAX_LAMPS))
+	material.set_shader_parameter("lamp_colors", _pad3(lamp_colors, MAX_LAMPS))
+	var flood: Variant = venue.get("flood_map")
+	material.set_shader_parameter("has_flood_map", flood is Texture2D)
+	if flood is Texture2D:
+		material.set_shader_parameter("flood_map", flood)
+		material.set_shader_parameter("flood_half", float(venue["flood_half"]))
+		material.set_shader_parameter("flood_scale", float(venue["flood_scale"]))
+	reflection_counts["edges"] = edges.size()
+	reflection_counts["bars"] = bars.size()
+	reflection_counts["stands"] = mini((venue.get("stands", PackedVector2Array()) as PackedVector2Array).size(), MAX_STANDS)
+	reflection_counts["lamps"] = lamps.size()
+	reflection_counts["flood_map"] = flood is Texture2D
+
+
+## The obstacles a climbing ray from the water can meet: every layout obstacle within REFLECT_REACH x its height of a
+## water footprint, nearest (relative to its height) first. A city block's neon band is read off its DRAWN mesh
+## (CityBlock's surface 1, the band: its colour and its height range), so the reflection moves when the art does.
+func _box_uniforms(material: ShaderMaterial, arena: Node) -> void:
+	var wet: Array = []
+	for entry: Dictionary in _terrain:
+		if String(entry["kind"]) == "water":
+			wet.append(ArenaTerrain.bounds(entry))
+	var candidates: Array = []
+	var obstacles: Array = (arena.get("layout") as Dictionary).get("obstacles", []) if arena != null else []
+	var bodies: Array = arena.get("obstacles_root").get_children() if arena != null else []
+	for index in obstacles.size():
+		var obstacle: Dictionary = obstacles[index]
+		var size := Arena.obstacle_size(obstacle)  # a container stack's height is already resolved (Arena.normalize)
+		var at := Vector2(float(obstacle["position"][0]), float(obstacle["position"][1]))
+		var reach := Vector2(size.x, size.z).length() / 2.0
+		var gap := INF
+		for rect: PackedFloat32Array in wet:
+			var dx := maxf(0.0, maxf(rect[0] - at.x, at.x - rect[2]))
+			var dz := maxf(0.0, maxf(rect[1] - at.y, at.y - rect[3]))
+			gap = minf(gap, maxf(0.0, Vector2(dx, dz).length() - reach))
+		if size.y <= 0.0 or gap > size.y * REFLECT_REACH:
+			continue
+		candidates.append([gap / size.y, obstacle, size, bodies[index] if index < bodies.size() else null])
+	candidates.sort_custom(func(x: Array, y: Array) -> bool: return x[0] < y[0])
+	var boxes := PackedVector4Array()
+	var info := PackedVector4Array()
+	var looks := PackedVector4Array()
+	for candidate: Array in candidates.slice(0, MAX_BOXES):
+		var obstacle: Dictionary = candidate[1]
+		var size: Vector3 = candidate[2]
+		boxes.append(Vector4(float(obstacle["position"][0]), float(obstacle["position"][1]), size.x / 2.0, size.z / 2.0))
+		var band := _neon_band(candidate[3])
+		info.append(Vector4(deg_to_rad(float(obstacle.get("rotation_deg", 0.0))), size.y, band[0], band[1]))
+		var tint: Color = band[2]
+		looks.append(Vector4(tint.r, tint.g, tint.b, 1.0 if String(obstacle.get("type", "")) == "block" else 0.0))
+	material.set_shader_parameter("box_count", boxes.size())
+	material.set_shader_parameter("boxes", _pad4(boxes, MAX_BOXES))
+	material.set_shader_parameter("box_info", _pad4(info, MAX_BOXES))
+	material.set_shader_parameter("box_look", _pad4(looks, MAX_BOXES))
+	reflection_counts["boxes"] = boxes.size()
+	reflection_counts["box_candidates"] = candidates.size()
+
+
+## [bottom, top, linear colour x energy] of a city block's neon band, read from the block's drawn mesh; no band -> zeros.
+func _neon_band(body: Node) -> Array:
+	if body == null:
+		return [0.0, 0.0, Color.BLACK]
+	for node in body.find_children("*", "", true, false):
+		if not node is CityBlock:
+			continue
+		var mesh := (node as CityBlock).mesh_instance.mesh
+		if mesh == null or mesh.get_surface_count() < 2:
+			break
+		var low := INF
+		var high := -INF
+		for v: Vector3 in mesh.surface_get_arrays(1)[Mesh.ARRAY_VERTEX]:
+			low = minf(low, v.y)
+			high = maxf(high, v.y)
+		var neon := mesh.surface_get_material(1) as ShaderMaterial
+		var tint := Color.BLACK
+		if neon != null:
+			var color: Variant = neon.get_shader_parameter("color")
+			var energy: Variant = neon.get_shader_parameter("energy")
+			if color is Color:
+				tint = (color as Color).srgb_to_linear() * (float(energy) / 3.0 if energy != null else 1.0)
+		return [low, high, tint]
+	return [0.0, 0.0, Color.BLACK]
+
+
+static func _pad4(values: PackedVector4Array, size: int) -> PackedVector4Array:
+	var out := values.duplicate()
+	while out.size() < size:
+		out.append(Vector4.ZERO)
+	return out
+
+
+static func _pad3(values: PackedVector3Array, size: int) -> PackedVector3Array:
+	var out := values.duplicate()
+	while out.size() < size:
+		out.append(Vector3.ZERO)
+	return out
+
+
+## Pairs (round 12): put the water in one of WaterLook's steps (`{}` = what ships), frozen at `instant` seconds of
+## its swell when `instant` >= 0, so both frames of a pair show the same moment.
+func set_water_look(look: Dictionary, instant := -1.0) -> void:
+	if water == null:
+		return
+	var material := water.material_override as ShaderMaterial
+	for dial: String in WaterLook.DIALS:
+		material.set_shader_parameter(dial, look.get(dial, WaterLook.shipped(dial)))
+	material.set_shader_parameter("freeze_time", instant)
+	if pits != null:
+		(pits.material_override as ShaderMaterial).set_shader_parameter("freeze_time", instant)
+
+
+## Measurement: paint the water flat magenta (a mask for frame statistics) or restore it.
+func set_water_mask(on: bool) -> void:
+	if water != null:
+		(water.material_override as ShaderMaterial).set_shader_parameter("mask_out", 1.0 if on else 0.0)
 
 
 ## Draw calls this visual costs: one per non-empty surface kind (the R9 budget is one per kind).
@@ -133,8 +332,7 @@ func _quad(tool: SurfaceTool, cell: PackedFloat32Array, box: PackedFloat32Array)
 
 func _trace_material(pit: bool, deck_rects: Array) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
-	material.shader = WATER_SHADER
-	material.set_shader_parameter("is_pit", pit)
+	material.shader = PIT_SHADER if pit else WATER_SHADER
 	var depth := float(ArenaTerrain.KINDS["pit" if pit else "water"]["pan_depth"])
 	material.set_shader_parameter("depth", depth)
 	var packed := PackedVector4Array()

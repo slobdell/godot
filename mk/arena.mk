@@ -113,7 +113,7 @@ TERRAIN_SPOTS_crossing ?= bridge:-92:14,neck:0:22,landing:-76:-22,far_bridge:92:
 TERRAIN_HULLS_crossing ?= -92:12:0,-88:36:10,-78:-20:170,6:48:0,70:18:200
 TERRAIN_SPOTS_sumps ?= catwalk:-55:14,causeway:-27:14,lip:-40:40,far:-52:-22
 TERRAIN_HULLS_sumps ?= -55:10:0,-27:20:10,-44:40:0,-50:-22:170,-84:30:0
-TERRAIN_SPOTS_locks ?= lock:0:4,swing_bridge:-92:0,far_quay:-72:-24,quay_road:-30:15
+TERRAIN_SPOTS_locks ?= lock:0:4,swing_bridge:-92:0,far_quay:-72:-24,canal:-55:0
 TERRAIN_HULLS_locks ?= 0:4:0,-2:-8:180,-92:6:0,-70:-24:170,-30:15:90
 TERRAIN_SPOTS_pit ?= corner_pit:-50:40,gate:0:36,far_yard:-66:-40
 TERRAIN_HULLS_pit ?= -38:52:90,0:44:0,-62:-44:170
@@ -134,6 +134,31 @@ terrain-shots: import ## Terrain: each terrain map at the lead's pose (21 deg, F
 		grep -E 'TERRAIN_SHOT|SCRIPT ERROR|^ERROR' $(BUILD_DIR)/terrain-shots/$(arena).log || true; \
 		grep -q 'TERRAIN_SHOTS_DONE ok=true' $(BUILD_DIR)/terrain-shots/$(arena).log || { echo "terrain-shots: $(arena) failed"; exit 1; };)
 	ls $(BUILD_DIR)/terrain-shots/*.png
+
+# Round 12 (arena, A1/A3): the wet look as PAIRS at the lead's pose, one dial per step (WaterLook.STEPS), every water
+# map and both pit maps (a pit must not change between steps: changed_px 0), frozen at one instant of the swell.
+WATER_PAIR_ARENAS ?= crossing locks terminus_canal sumps pit
+WATER_LOOKS ?= r10,a_body,a_flood,b_venue,c_lamps,c_swell,d_lap
+.PHONY: water-pairs
+water-pairs: import ## Arena (round 12): each water and pit map at the lead's pose once per WaterLook step (r10 -> what ships) + WATER_STATS (water luma, black share, changed pixels) -> build/water-pairs/ (needs a display: make remote T=water-pairs)
+	rm -rf $(BUILD_DIR)/water-pairs && mkdir -p $(BUILD_DIR)/water-pairs
+	$(foreach arena,$(WATER_PAIR_ARENAS),timeout 900 $(GODOT) --path . --resolution 1920x1080 \
+		--script res://game/theme/arena_kit/terrain/tools/terrain_shots.gd -- --arena=$(arena) \
+		--out=$(CURDIR)/$(BUILD_DIR)/water-pairs --spots=$(TERRAIN_SPOTS_$(arena)) --hulls=$(TERRAIN_HULLS_$(arena)) \
+		$(if $(TERRAIN_DRY_$(arena)),--dry=$(TERRAIN_DRY_$(arena))) --looks=$(WATER_LOOKS) --freeze=$(or $(WATER_FREEZE),7.0) \
+		> $(BUILD_DIR)/water-pairs/$(arena).log 2>&1 || true; \
+		grep -E 'SCRIPT ERROR|^ERROR' $(BUILD_DIR)/water-pairs/$(arena).log || true; \
+		grep -h '^WATER_STATS' $(BUILD_DIR)/water-pairs/$(arena).log | cut -c1-400; \
+		grep -q 'TERRAIN_SHOTS_DONE ok=true' $(BUILD_DIR)/water-pairs/$(arena).log || { echo "water-pairs: $(arena) failed"; exit 1; };)
+	@grep -h '^WATER_STATS' $(BUILD_DIR)/water-pairs/*.log | sed 's/^WATER_STATS //' > $(BUILD_DIR)/water-pairs/stats.jsonl
+	@ls $(BUILD_DIR)/water-pairs/*.png | wc -l
+
+# Round 12 (arena, A1): the water's GPU cost at the lead's pose, one frame held still, water drawn vs hidden.
+WATER_GPU_SPOTS ?= crossing:-92:14 locks:0:4
+.PHONY: water-gpu
+water-gpu: import ## Arena (round 12): the water's GPU ms at the lead's pose, held still, drawn vs hidden (WATER_GPU_SPOTS="crossing:-92:14 locks:0:4") -> WATER_GPU lines (needs a display: make remote T=water-gpu)
+	@$(foreach s,$(WATER_GPU_SPOTS),timeout 600 $(GODOT) --path . --resolution 1920x1080 --script res://tests/arena/water_gpu_probe.gd -- \
+		--arena=$(word 1,$(subst :, ,$(s))) --spot=$(word 2,$(subst :, ,$(s))):$(word 3,$(subst :, ,$(s))) 2>&1 | grep -E '^WATER_GPU|SCRIPT ERROR' || true;)
 
 .PHONY: terrain-series terrain-measure
 terrain-series: import ## Terrain (R9): a terrain map vs its dry twin on the SAME seeds -- unit-time on the crossings, time at the contested objective, discordant pairs (TERRAIN_MAP=crossing SEEDS=32 FIRST_SEED=1 ARENA_FACTION=condemned ARENA_TIME=180) -> build/terrain-series-<map>.json

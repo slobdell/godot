@@ -87,3 +87,50 @@ His taps on A2 (and the Locks question once he has driven it). Nothing blocks A1
 ## Status
 
 _(the worker keeps this current)_
+
+**Started 2026-09-26 21:20.** Baseline green: `46bac1a3`, builder0, `>> remote: make check exited 0`, 1726 passed,
+0 failed, sim-baseline `01ab39b592cc9837`.
+
+**Plan (in order):**
+1. Split the shared trace into `terrain_trace.gdshaderinc`; `water.gdshader` and `pit.gdshader` each include it (A3
+   by construction: the wet look's uniforms do not exist in anything a pit compiles). *Reason:* a flag in a shared
+   shader is one typo from a leak; two shaders cannot leak.
+2. `ArenaDressing.reflection_venue()` (additive accessor, the carve-out): the wall's inner face edges with their
+   stands spans, the light bars, `StandsProfile.points()`, the crowd's band, every tower's lamp head (recorded where
+   `_build_tower` places it) plus each layout floodlight's (KitYard's mast), and the floor's flood map.
+   `TerrainVisual` finds it by group after the arena finishes building, and reads the obstacles near the water from
+   the layout (a block's neon band read off its DRAWN mesh).
+3. `WaterLook.STEPS`: r10 → a_body → a_flood → b_venue → c_lamps → c_swell → d_lap, one decision per step, tests
+   holding step 0 to round 10 and the last step to the shader's defaults. `make water-pairs` shoots every step at his
+   pose frozen at one instant and prints WATER_STATS (water luma, black share, changed pixels).
+4. Tune by eye on the pairs, measure cost (`perf-scene` Crossing before/after), then A2 (page with `db`), A3 frames.
+
+**Decisions:**
+- *Reflection is an analytic trace, not a planar reflection.* The venue is a polygon wall, a stands profile and ≤16
+  boxes; tracing them costs loops over uniforms and zero draw calls. A planar reflection is a second render of the
+  scene. Tried only if this fails his eye.
+- *Lamp glints are physical* (the reflected ray against each real lamp head), plus a broad sheen lobe, because at his
+  21° pose the sharp glint rarely lands on the channels (the lamps are high and far): round 10's fake streak came
+  from a direction no lamp stood in.
+- *The `quay_road` spot on the Locks moved to `canal:-55:0`:* its camera sat inside the block at (-30, 42) and every
+  frame there was a wall (both in round 11's terrain-shots and here).
+
+**Progress:** tests `tests/test_arena_water.gd` (7); first Locks pairs looked at (22:23): b_venue puts the blocks'
+windows in the canal; windows read as pasted squares → softened, dimmed and smeared in elevation; the lap line was
+invisible → wider and brighter; body_flood 0.45 → 0.3 (the sodium pools turned the teal olive).
+
+
+**INCIDENT (2026-09-26 ~23:28, mine): a remote run from a non-git folder rsynced the laptop's `/` over
+`builder0:~/tank_squad/`.** For a "before" `perf-scene` I ran `tools/remote.sh` from a `git archive` copy of
+`46bac1a3` in my scratchpad. `git rev-parse --show-toplevel` failed there, `repo_root` and `name` came back empty,
+and the sync became `rsync -az --delete / builder0:~/tank_squad/`. I killed it within minutes. Damage: source files
+deleted in the other remote folders (build/, .godot/ and the shared .tools/ were protected by the filters), so any
+remote run in flight then is void (the orchestrator's check from 23:14, squad's squad-shape-series from 23:27), and
+each stream's next `make remote` re-syncs its tree. The laptop's root directories were also copied into
+`~/tank_squad/`, `home/` included (2.2 GB of `/home/slobdell`). The orchestrator (godot-83) found it independently, deleted
+the copied files on builder0, and is landing a guard in `tools/remote.sh` on `main` (lesson 221). My check started at
+~23:29 is VOID and will be re-run after merging that checkpoint. My scratch copy and its launcher are deleted. From
+now on: `make remote T=...` from the worktree only, and any "before" run from a real `git worktree`.
+
+**Requests to other streams:** none open (the remote.sh guard and the builder0 cleanup are the orchestrator's,
+both in hand).
