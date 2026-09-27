@@ -170,6 +170,41 @@ Candidates and their signatures (rigs unless stated; laptop numbers are the base
 - **(c) a kinematic planner** (N5): the 55 with no manoeuvre of this family. Written up, not built, unless (a)+(b)
   leave the rigs' arrivals short.
 
+### N3: the drive on builder0 (`11d6a3c7`, 8 seeds x 2 squads, four arms of ONE build, `make nav-drive-arms`)
+
+Arms: **base** = round 11's behaviour (`--nav-off=kturnfill,guardnear,blockreach`), **fill** = + the back-and-fill,
+**fillguard** = + the steering-guard fix, **all** = + blockreach. N6 is not in this build.
+
+| squad | arm | arrived | leg s | contacts | press/unstick | reverse-gear | cusps | kturns | multi | none | aborted |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| rigs | base | 104/128 | 1277 | 6917 | 227 | 946 | 1202 | 64 | 0 | 130 | 2 |
+| rigs | fill | 105/128 | 1476 | **5182** | **158** | 911 | 1143 | 55 | 20 | **75** | 9 |
+| rigs | fillguard | **112/128** | 1218 | 8133 | 340 | 1298 | 1257 | 54 | 14 | 74 | 8 |
+| rigs | all | 109/128 | 1079 | 9064 | 300 | 2052 | 1414 | 67 | 18 | 71 | 11 |
+| mixed | base | 172/192 | 1617 | 1939 | 170 | 315 | 2164 | 67 | 0 | 34 | 1 |
+| mixed | fill | 175/192 | 1516 | 1571 | 169 | 229 | 2043 | 66 | 13 | 16 | 4 |
+| mixed | fillguard | 172/192 | 1362 | 5374 | **1346** | 374 | 2058 | 38 | 16 | 11 | 4 |
+| mixed | all | **185/192** | 927 | 2219 | 95 | 163 | 1888 | 38 | 15 | 7 | 1 |
+
+**The fill's pre-registration, scored on builder0 (base -> fill):** `kturn_none` 130 -> 75 (bar <= 105: **pass**);
+`kturn_multi` 20 (>= 20: **pass**); press/unstick 227 -> 158 (not up: **pass**, -30 %); reverse-gear 946 -> 911 (**pass**);
+arrivals 104 -> 105 (**pass**); aborted 2 -> 9, i.e. 7 of 20 plans (< 1/3: **FAIL, narrowly**, 35 %). Mixed: `kturn_none`
+34 -> 16 (bar <= 12 from a laptop base of 24: **fail** against the number, the base itself was 34 here), multi 13 (**pass**),
+arrivals 172 -> 175 (**pass**). Total contacts fall 25 % (rigs) and 19 % (mixed).
+
+**Misses by kind** (the drive test now records what a missing crew is pressed against): base rigs 10 "arrived" 7-15 m
+from the slot + **14 pinned against a friend**; all rigs 14 + 4. Mixed base 6 + 9 + 5 driving; all 5 + 2. **blockreach
+does what it is for** (pinned-by-a-friend 14 -> 4 rigs, 9 -> 2 mixed), and the mixed squad's arrivals go 172 -> 185; its
+cost is the rigs' reverse-gear contacts (a rig giving way backs into the street's walls: 1298 -> 2052).
+
+**The guard fix's cost is the one unexplained number:** mixed press/unstick 169 -> 1346, almost all one artillery
+scraping `Block_0`'s south face for 745 ticks with a route 1.96 m off it (seeds 2 and 7). The laptop's same arm read 0:
+trajectory-specific. Traced on builder0 next (r3) before any default is decided.
+
+**Sim baseline attribution** (`make nav-sim-arms`, builder0, `0a19a612`): none `3db293a32607fdcf`, `--nav-off=kturnfill`
+`3db293a3…` (the fill does NOT move it), `--nav-off=guardnear` `01ab39b5…`, both off `01ab39b5…` = the recorded
+baseline. **The guard fix alone moves it.** blockreach and N6 are re-read at HEAD (r4).
+
 ### Found on the way: the steering guard undid round 11's "never under the hull" rule (`203db8d8`)
 
 Tracing the fill arm's one new miss (rigs seed 3, plaza leg, a rig 79 m from its goal at 90 s, laptop): after a
@@ -181,10 +216,20 @@ arm, since it can move the sim baseline). `tests/nav/test_nav_guard_corner.gd` a
 reproduces the vertex under the hull, the fix steers at the next corner up the street. Not a rig-only bug: any hull
 whose carrot chord leaves the mesh while it sits on a route vertex.
 
+### N6: the creep's bound (laptop, `25fdd0fe`, `squad-settle` default arena, forward 20 m, `scout:scout:ifv:ifv:tank`)
+
+8 seeds, both arms (`--nav-off=creepbound` the control): **time until every crew has stopped, mean 18.9 s -> 12.1 s**
+(sum 151.3 -> 96.9; better on 6 seeds, 0.6 s and 1.2 s worse on seeds 2 and 4); **the worst crew's distance off its
+slot 3.8-9.1 m -> 2.9-3.5 m** (the scout's settle radius); arrival time identical on every seed. `nav-rotation`
+(pivot, car, wheel x4, truck) identical in both arms. The allowance is the hull's settle radius, NOT a flat metre: the
+first build (1 m) made the War Rig turn 63 deg within 1.5 m of its start — the lead's round-8 "yawing in place" —
+which `nav-rotation`'s truck case caught. Builder0 numbers owed (r4 carries it in every arm but base).
+
 ### Checks (read from the wrapper's own line)
 
 | commit | machine | verdict |
 |---|---|---|
+| `0a19a612` | builder0 | `ai-scenarios-check` ALONE: 43,1 unchanged against its baseline, exit 0 (lesson 218: the full check's red was load) |
 | `203db8d8` (fill + guard fix) | builder0, loaded | `make check exited 2`: 16 of 18, **1731 passed, 0 failed**; **sim-baseline MOVED `01ab39b592cc9837 -> 3db293a32607fdcf`** (CP2, expected: attribution below); determinism `3996fb15c03ca932`; `ai-scenarios-check` 42,2 exactly as on unmodified main (`scenario_perf` 22842 us/tick + `scenario_cover`, the baselined expected failure) |
 | `46bac1a3` (start, unmodified main) | builder0, 3 other checks beside it | `make check exited 2`: 17 of 18 targets, **1726 passed, 0 failed**, sim-baseline `01ab39b592cc9837` unmoved, determinism `b83a374ce2fcde37`; the one red is `ai-scenarios-check` 43,1 -> 42,2: `scenario_perf` read **21620 us/tick** over its CPU budget (load: round 11's nav recorded the same test as load, 22.0 ms at load 12.5) |
 
