@@ -30,11 +30,35 @@ distance, the LEADING end's contact (the rear backing, the nose going forward) o
 carrot's chord left the mesh — AFTER round 11's `_corner_beyond` rule, which it therefore undid. It now takes the first
 corner at least `WAYPOINT_MIN_M` away. Found tracing a rig that sat 80 s at zero throttle on a vertex 0.47 m away.
 
-**What is left, and it is not the planner's:** the rigs' arrival misses are slot fit (four 14 m hulls, "arrived" 7-15 m
-from a slot) and rigs pinned in the street by a FRIEND (hull-hull contact, invisible to the wall counters: the drive
-test's misses now carry `touching`). Refusals barely cost arrivals (28 of 34 refusing crew-legs arrived before the fill;
-after it 1 of 21 missed). The kinematic planner's case and falsifier: `algorithms.md` *The kinematic planner the count
-asked for*.
+**A long friend ahead is found** (`--nav-off=blockreach`): `_blocker` — who a stalled mover asks to give way — took
+"ahead" as within `BLOCKER_REACH` (8 m) centre to centre, so two 14 m rigs nose to tail (14 m apart) never found each
+other: the rear rig called it terrain and pushed at full throttle into its friend's tail for the rest of the leg (the
+rigs' largest miss: 14 of 24 on builder0). Reach is now `max(8 m, both half-lengths + BLOCKER_GAP_M)`; unchanged for
+every pair under 12 m of summed length. **Its cost:** the asked rig gives way with round 6's `YIELD_SPOTS` — fixed
+offsets sized for small hulls, only the spot's centre checked against the mesh — and a 14 m rig backs into the
+street's walls doing it (rigs' reverse-gear contacts +57 % at HEAD). Sizing right-of-way for long hulls is the next step.
+
+**A leg's leading end "hits" only when it drives INTO the wall** (`--nav-off=kturnslide`): the contact normal must
+oppose the leading end's motion (cos > `KTURN_INTO_WALL_COS`); a plan whose end slides along a face is working.
+
+**N6, a no-pivot hull's turn-in-place stays near its spot** (`TankMotion`, `--nav-off=creepbound`): the creep's forward
+and reverse legs on one yaw curve round opposite centres, so strict alternation walks a hull off its spot (squad
+measured an arrived scout going 1.5 -> 8.6 m off its slot under idle `face` orders). The creep remembers where it began;
+at a leg change, beyond the hull's SETTLE radius from there (0.6 R, at most 6 m — `Movement.settle_radius`), the next
+leg is the gear heading back. Not a flat metre: that made the War Rig rotate 63 deg within 1.5 m of its start, the
+lead's round-8 "yawing in place". Does not move the sim baseline.
+
+**Measured (builder0, `6cb00162`, `make nav-drive-arms`, 8 seeds x 2 squads, round 11's behaviour -> HEAD):** rigs
+arrivals 104 -> 115 of 128, refusals (`kturn_none`) 130 -> 56, press/unstick-driven contacts 227 -> 83, total contacts
+6917 -> 5715, reverse-gear contacts 946 -> 1488, leg time 1277 -> 1140 s; mixed arrivals 172 -> 179 of 192,
+press/unstick 170 -> 60, refusals 34 -> 4, total contacts 1939 -> 2660. Every mechanism's own row: the brief's Status.
+Sim baseline `01ab39b5 -> 6313a38d`, two causes: the guard fix and blockreach. N6 on `squad-settle` (laptop, 8 seeds):
+the mixed squad's time to all-stopped 18.9 -> 12.1 s, the worst crew off its slot 3.8-9.1 -> 2.9-3.5 m.
+
+**What is left, and it is not the planner's:** the rigs' arrival misses are now mostly slot fit (four 14 m hulls,
+"arrived" 7-15 m from a slot). Refusals barely cost arrivals (before the fill 28 of 34 refusing crew-legs still
+arrived; after it 1 of 21 missed). The kinematic planner's case and falsifier: `algorithms.md` *The kinematic planner
+the count asked for*.
 
 **Tools added:** `make nav-drive-ab` (both arms of one build, same seeds, `tests/nav/drive_table.py`: the named numbers
 and discordant seeds), `make nav-rig-clip` (the rig's back-and-fill at his pose, both arms), `--trace=<unit>` on the

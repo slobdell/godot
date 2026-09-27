@@ -108,6 +108,65 @@ Nothing. N5 is a write-up unless the numbers say otherwise.
 _Worker: nav, round 12. Started 2026-09-26 21:15 from `46bac1a3` (code = `0299e05e`). Every number names its commit and
 machine. **Merge point: see "Green hash" at the end** (none yet)._
 
+### Report in one screen
+
+- **N1, why the rig refused:** every refusal logged with what the search saw (`make nav-kturn-buckets`). Builder0
+  reproduces round 11 exactly (130 refusals). Most are a 14 m rig lying across a ~21 m street at the START of a leg,
+  its rear corner blocking the back-up; 40 are the search aiming at a route corner under the hull. A three-point turn
+  would clear 26 of 130, five points 39, sixteen 78; 52 have no manoeuvre of this family at all.
+- **N2, the back-and-fill** (`_plan_fill`, `--nav-off=kturnfill`): up to five legs on one lock, each validated with
+  the whole outline against the navmesh, driven as legs. On its own it takes the rigs' refusals 130 -> 70 and their
+  press/unstick-driven contacts 227 -> 95, and does not move the sim baseline.
+- **Found tracing it, and fixed:** the steering guard handed back the route vertex UNDER a hull (a rig sat 80 s at
+  zero throttle); a stalled hull could not see a 14 m friend ahead of it (8 m centre-to-centre reach), so rigs pushed
+  into a parked friend's tail for whole legs — the rigs' largest arrival loss; a planned leg aborted on ANY contact at
+  its leading end, including a face it was sliding along.
+- **N6 (added by the orchestrator from squad):** an arrived wheeled hull's turn-in-place no longer walks it off its
+  spot (scout 1.5 -> 8.6 m before; bounded at its settle radius now). Mixed squad all-stopped 18.9 -> 12.1 s (laptop).
+- **HEAD against round 11 (builder0, 8 seeds x 2 squads):** rigs arrivals **104 -> 115**/128, refusals **130 -> 56**,
+  press/unstick contacts **227 -> 83**; mixed **172 -> 179**/192, press/unstick **170 -> 60**. **Cost:** rigs'
+  reverse-gear contacts +57 % (a rig giving way backs into walls: round 6's yield spots are sized for small hulls).
+- **N5:** the kinematic planner is written up, not built: refusals barely cost arrivals now (1 of 21 refusing
+  crew-legs missed), so the drive test could not show it (`algorithms.md`).
+- **CP2:** sim baseline `01ab39b592cc9837 -> 6313a38d7ecd99bb`, two causes (the guard fix, blockreach), attributed
+  with `make nav-sim-arms`; the orchestrator records it alone.
+
+### What to playtest (exact commands)
+
+- `make skirmish` on the Terminus with the Condemned: a War Rig squad (number key), ordered back the way it came and
+  round the plaza's corners. Expect five-point shuffles where it used to bump; rigs no longer sit nose-to-tail pushing.
+- `make nav-rig-clip` (display; builder0: `make remote T=nav-rig-clip`) — the rig case at his pose, both arms ->
+  `build/nav-rig-clip/rigfill_{off,on}.mp4`.
+- `make nav-drive-arms DRIVE_SEEDS="1 2 3 4 5 6 7 8"` (default arms: fill off/on) and `make nav-kturn-buckets`.
+- Every mechanism is switchable: `--nav-off=kturnfill,guardnear,blockreach,creepbound,kturnslide` is round 11.
+
+### Next steps (not done, in order)
+
+1. **Right-of-way sized for long hulls:** `YIELD_SPOTS` / `YIELD_BACK_UP` are fixed offsets for small hulls and only
+   the spot's centre is checked against the mesh; a rig giving way in a 22 m street backs into walls (the +57 %).
+   Validate a yield leg with the outline sweep the planned reverse uses, and scale the offsets with the hull.
+2. **The search aims at a corner under the hull** (40 of 130 refusals): candidate (b) in the pre-registration — give
+   the planned reverse the route point a lookahead (1.2 R) along, not the carrot.
+3. The rigs' remaining misses are slot fit (four 14 m hulls, "arrived" 7-15 m from a slot): squad's formation spacing
+   for the rig class, or nav's goal grounding with the apart rings, measured on the drive test.
+4. The kinematic planner (`algorithms.md`): only if 1-3 leave refusal-driven misses.
+
+### Merge notes
+
+- Only nav's paths: `game/ai/movement.gd`, `game/tank/tank_motion.gd`, `tests/nav/`, `mk/nav.mk`,
+  `_agents/{navigation,algorithms}.md`, this brief. `TankMotion` reads `Movement.switched_off`, `WHEELS_SETTLE_RADII` and
+  `WHEELS_SETTLE_MAX` (the creep bound). No shared file touched.
+- New `--nav-off` names (in `OFF_NAMES`): `kturnfill`, `kturnslide`, `guardnear`, `blockreach`, `creepbound`.
+- New tests: `tests/nav/test_nav_back_and_fill.gd`, `test_nav_guard_corner.gd`, `test_nav_blocker_reach.gd`,
+  `test_nav_creep_bound.gd` — each has a control arm that reproduces the defect (the mutation check built in).
+- New targets: `nav-kturn-buckets`, `nav-drive-ab`, `nav-drive-arms`, `nav-rig-clip`; `terminus_drive.gd` gains
+  `--kturn-log`, `--trace=<unit>` and `touching` on every miss.
+
+### Questions for the lead
+
+- None blocking. For his eye: `nav-rig-clip` (a War Rig's five-point turn against round 11's scrape), and the trade
+  above — the rigs arrive more often and refuse less, and back into walls more when they give way to each other.
+
 ### Plan (the brief's order)
 
 | # | item | state |
@@ -115,10 +174,10 @@ machine. **Merge point: see "Green hash" at the end** (none yet)._
 | 0 | green start: `make remote T=check` on `46bac1a3` | **exited 2 on unmodified main**: 1726 passed / 0 failed, baseline + determinism unmoved, ai-scenarios `scenario_perf` over budget under load (below) |
 | N1 | log every `kturn_none` (`--kturn-log`), bucket it | **done on the laptop** (below); builder0 re-run owed |
 | N2 | the back-and-fill for the bucket the data names | built, `tests/nav/test_nav_back_and_fill.gd` (mutation-checked); measuring |
-| N3 | drive test both arms, 8 seeds, builder0; `nav-wall-clip` looked at | `make nav-drive-ab` + `tests/nav/drive_table.py` built for it |
-| N4 | `make nav-sim-arms` with the arm | after N3 |
+| N3 | drive test both arms, 8 seeds, builder0; `nav-wall-clip` looked at | **done** (builder0 tables below); clips + `nav-fight-maps` last |
+| N4 | `make nav-sim-arms` with the arm | **done**: `01ab39b5 -> 6313a38d`, guard fix + blockreach |
 | N5 | the planner write-up in `algorithms.md` | **written** (`0a19a612`): not built, the arithmetic says the drive test would not show it |
-| N6 | a no-pivot hull's turn-in-place stays near its spot (orchestrator, from squad) | after N3/N4 |
+| N6 | a no-pivot hull's turn-in-place stays near its spot (orchestrator, from squad) | **done** `25fdd0fe` (laptop measured; builder0 drive rows above) |
 
 ### N1: why the rigs refuse (laptop, `54f39923` + the leg stamp, `make nav-kturn-buckets`, 8 seeds; builder0 re-run owed)
 
