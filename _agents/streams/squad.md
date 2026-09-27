@@ -124,83 +124,92 @@ Nothing blocks. S5's outcome and S4's decision go into Status with frames; if ei
 
 ## Status
 
-_Worker, 2026-09-26/27 (in progress; every number carries its commit and machine; laptop traces are read, not reported)._
+_Worker report, 2026-09-27 (every number: commit + machine; laptop traces were read, never reported)._
 
-**Baseline:** `46bac1a3` on builder0: `>> remote: make check exited 0`, 1726 passed, 0 failed.
-
-### Plan (the order taken, and why)
-
-S1 → S2 (both small, and S2's "wedge (yours)" readout builds on S1's) → S3 (needs the trace) → S4 (a probe on the
-default path) → S5 (reuses S2: a G-chosen shape now holds through every phase, so the two arms are two G orders) → S6.
+**GREEN: merge here: `bb51ca06`** -- builder0, `>> remote: make check exited 0`, 1752 passed, 0 failed (main `4397be31`
+merged at the orchestrator's checkpoint; sim baseline `01ab39b592cc9837` UNMOVED as pre-registered). Anything after
+`bb51ca06` on this branch is docs only (this Status, doctrine.md S5). Earlier: baseline `46bac1a3` exited 0 (1726/0);
+`0160d1b9` exited 0 (1739/0); `2d208035` exited 2 on `scenario_perf`'s CPU budget alone during builder0 contention --
+re-run isolated, `ai-scenarios-check` exited 0 (43/1, unchanged).
 
 ### Done
 
 - **S1 (C12.4) — the card shows the shape the squad forms** (`2d208035`). `CommandIcons.formation_readout`: under AUTO
-  with an element the button draws and names the leader's pick (*"Auto: Column"*, live: the panel redraws each frame);
-  his G choice reads as itself; a drill that has his squad in another shape reads *"Line: drill"*; before an element
-  exists AUTO is its own glyph (a ring round an A), never a wedge. `selection_panel.gd` reads it (the carve-out: the
-  consumer of AUTO on the card lives in `game/ui/selection_panel.gd`, not `game/control/`). Tests:
-  `tests/test_tactics_formation_readout.gd` (5), including a real element on the yard AND the Terminus reading column.
-- **Finding that corrects the brief (S1/S5):** `make tactics-terrain` (new, light): at the spawns only the **yard** is
-  *dense*; the Terminus, pit, crossing and locks are *lanes*. And **no squad he fields uses the standard table**: a
-  squad fights by its units' FACTION table, and the Condemned and the Law both end in a catch-all **column** in any
-  terrain (the Syndicate's is a wedge, the gangs' a swarm). So under AUTO a Condemned or Law squad forms a column on
-  every map, and the wedge the card showed was wrong for them everywhere. doctrine.md *Whose shape it is*.
-- **S2 (C12.5) — a chosen shape is the shape at every phase** (`2d208035`). `_halt` keeps `task.formation`; the
-  traveling-overwatch trail section takes it too; `ElementPlan.chosen_formation` is the one reading. A drill under
-  fire still takes the drill's shape (the doctrine's job), and the card says so. Tests in `test_tactics_tasks.gd`
-  (wedge at t0 / en route / at the halt and after; AUTO control arm still halts in a coil; a chosen line in transit and
-  on the spot; a drill's shape reads "…: drill"). doctrine.md *Whose shape it is, phase by phase* (the table).
-  **CPU claim checked:** no `ElementCommander` task carries `formation` (grep: the only `"formation"` keys a CPU sends
-  are the opt-in legacy `CpuCommander`'s squad commands), so the halt change cannot reach a CPU element.
-
-### In progress
-
-- **S3 — the fall-in rule** (`0b0124da`, `9aed5a3f`; **shipped OFF** pending the series). `ElementPlan.fall_in` (pure,
-  4 tests): in the first 8 s a crew whose sideways path would cross the lane of a crew seated ahead of it that has not
-  passed it is held -- `lane` mode (keeps driving in its own lane) or `wait` mode (stands; not a laggard to the lag
-  rule). **The trace says the brief's model of the stall is not what happens on the yard**: a top-down plot
-  (`tools/tactics/plot_tracks.py` over the new `SETTLE_TRACK` lines) shows the anchor's route threading a ~5 m gap
-  between the wreck at (9, 68) and the container stack at x = 17, twenty metres from the spawn; the "middle pair
-  stall" is a QUEUE at that gap, while the tail crew takes a different gap west of the wreck and comes out ahead of
-  them. Holding a crew in its own lane can aim it into the 20-ft container dead ahead of the spawn. Paired series
-  queued on builder0 (`make squad-fallin-series`, and `FALLIN_ARM=wait`).
-- **S4 — decided (a), with measurements.** See doctrine.md *A partial or mixed selection*. Builder0 series queued
-  (`make squad-partial-series`).
-- **S5** — tools built (`161465ef`): `make squad-shape-series` (column vs wedge ordered with G, same seeds) and
-  `make formation-shots` (frames at his pose, 10 s and arrival). Queued on builder0.
-- **S6 (stretch) — the trace (laptop, Terminus side, mixed, seed 1):** the squad declares arrival at 10.6 s and
-  stops at 30.4 s, for three reasons: (1) both **scouts**, with NO order and no enemy anywhere, are handed `face`
-  orders by their brains (HOLD/face, then ADVANCE/face: a refused advance becomes a face) -- a scout's gun is fixed
-  to its hull, so round 8's "turret wheels decline a face" does not apply -- and a wheeled hull can only face by a
-  multi-point turn, which WALKS it: 1.5 m → 8.6 m off its slot over 15 s at a steady 2.8 m/s; (2) an ifv stands wedged
-  against a neighbour (`yielding/Green_S_3`) with its position fixed for 5 s while `estimated_velocity` reads 7.7 m/s
-  (the post-`move_and_slide` velocity of a hull at full throttle into another), which the settle probe counts as
-  moving; (3) the tank's order completed 18.3 m from its element slot. **Proposal (to nav, and partly mine):** (1) is
-  decided in the brain (`tank_brain.gd`, squad's) and executed by `TankMotion` (nav's): either the brain stops asking
-  a no-pivot hull to face an idle sector when nothing is in sight (a sim-baseline move, since CPU scouts face too), or
-  nav bounds a multi-point turn's drift from where it started. (2) is a probe measurement question (mine): stop should
-  read position change, not the velocity estimate.
-  **Orchestrator's ruling (2026-09-26):** nav owns bounding a multi-point turn's drift (N1's arrive guarantee), as its
-  own commit after its N2, pre-registered as a baseline move under CP2. Squad's half -- the brain stops asking a
-  no-pivot hull (wheeled, hull-fixed gun) to `face` an idle sector when nothing is in sight -- stays a
-  **pre-registered candidate, measured only AFTER nav's bound is on main**, so the two are attributed apart.
+  with an element the Formation button draws and names the leader's actual pick (*"Auto: Column"*, live); his G choice
+  reads as itself; a drill with his squad in another shape reads *"Line: drill"*; before an element exists AUTO is its
+  own glyph (a ring round an A), never a wedge. Consumer: `game/ui/selection_panel.gd`. Tests:
+  `tests/test_tactics_formation_readout.gd` (5; the yard AND the Terminus read column). **Frames** (builder0, 1920x1080,
+  `make control-playtest-shots`, before `46bac1a3` / after `2d208035`; `references/round12/squad/s1_card_pair_*.png`):
+  a mixed selection's wedge-glyph "Auto" becomes the ring-A "Auto"; a squad whose doctrine line says "line" showed a
+  wedge "Auto" and now shows a line, "Auto: Line".
+- **The brief's premise, corrected** (accepted by the orchestrator): `make tactics-terrain` -- only the yard's spawns
+  are dense; the Terminus is lanes; and no squad he fields uses the standard table -- the Condemned and Law catch-alls
+  are column in any terrain.
+- **S2 (C12.5) — a chosen shape is the shape at every phase** (`2d208035`). `_halt` keeps `task.formation` (a chosen
+  wedge no longer dissolves into a coil on arrival); the traveling-overwatch trail takes it; a drill under fire still
+  takes the drill's shape and the card says so. Tests in `test_tactics_tasks.gd`. doctrine.md *Whose shape it is, phase
+  by phase*. No CPU element task carries `formation` (checked), and the baseline did not move.
+- **S3 — the fall-in rule: built, measured, REJECTED; shipped OFF.** builder0, 4 seeds x 8 cells, same seeds: lane mode
+  (`0b0124da`) stop a wash 9/9/14 and first-10-s station error worse in 6 of 8 cells; wait mode (`9aed5a3f`) stop worse
+  19/9/4, gap10 worse in 7 of 8. **Cause** (top-down plots, `tools/tactics/plot_tracks.py`): the stall is a QUEUE at a
+  5 m gap between a wreck and a container stack 20 m from the yard spawn, and the column's tail takes its own gap and
+  cuts in ahead -- not two crews converging on a lane. Proposed next shape of fix: *join the route behind the crew ahead*
+  (not built). doctrine.md *The fall-in rule*.
+- **S4 — decided (a)** (orchestrator: stands). `make squad-partial[-series]` (builder0, `9aed5a3f`; the probe has no
+  start jitter, so every seed is the same run: n = 1 per cell): whole squad = TASK path, one column ("Auto: Column");
+  3 of 5 = DIRECT, a wedge, each crew by its own route, all three leave the squad (yard: arrived 10.2 s, spread 10.4 m;
+  Terminus 13.5 s, 7.4 m); 2+2 across squads = DIRECT, two lanes meeting at the click (yard 21.0 s, 13.3 m). Plots:
+  `references/round12/squad/s4_yard_*_tracks.png`. Left as the lead ruled on 2026-09-20; the question is below.
+- **S5 — measured; kept; put to him.** Wedge faster to stop 23 / column 9, and tidier in the first 10 s in 7 of 8 cells;
+  column better only on the yard's chokepoint move; the frames favour the column in the Terminus street. Table and
+  recommendation in doctrine.md *Column or wedge for a plain move*; frames `references/round12/squad/s5_*_sheet.jpg`.
+- **S6 (stretch) — traced; ruled.** Mixed squad arrives ~10.4 s, stops ~30 s: the scouts' brains hand a no-pivot hull
+  idle `face` orders with nothing in sight and the multi-point turn walks it 1.5 -> 8.6 m off its slot (plus a wedged
+  ifv whose velocity estimate reads 7.7 m/s standing still, and a tank completing 18 m off its slot). **Orchestrator's
+  ruling:** nav bounds the multi-point turn's drift (its own commit, CP2); squad's half (stop asking a no-pivot hull to
+  face when nothing is in sight) is a **pre-registered candidate measured only AFTER nav's bound is on main**.
   **Expected signature** (`make squad-settle ARENA=terminus DIR=side METRES=80 UNITS=scout:scout:ifv:ifv:tank`, both
-  arms, 4+ seeds, builder0): the mixed squad's `stopped_s` falls from ~30 s toward the tracked squad's ~15 s, with
-  `arrived_s` unmoved (~10.4 s) and the scouts' `off_slot_m` at stop falling from ~8 m to under 4 m; the tracked
-  squad (tank:tank:ifv:ifv) unmoved in every column; the sim baseline MOVES (CPU scouts face too) and is declared.
+  arms, 4+ seeds, builder0): mixed `stopped_s` ~30 s -> toward the tracked squad's ~15 s, `arrived_s` unmoved (~10.4
+  s), the scouts' off-slot at stop from ~8 m to under 4 m; the tracked squad unmoved; the sim baseline MOVES (CPU scouts
+  face too), declared.
 
-### Questions for the lead
+### Questions for the lead (for his next page, with the frames)
 
-- **S4:** a partial selection's move (3 of a 5-unit squad) or a mixed one (units from two squads) still sends each
-  vehicle by its own route -- measured and plotted. Your 2026-09-20 ruling (regroup with Ctrl+N or FORM SQUAD and it
-  travels as a formation) stands and the card says so. Do you want a partial selection to travel as a formation too
-  (a temporary squad formed on the order and dissolved on arrival), or is FORM SQUAD the answer?
+1. **S5:** under AUTO a Condemned or Law squad forms a **column** on every map (their faction's rule). Measured: a
+   **wedge** settles faster (23 of 32 paired runs) and keeps its shape better in the first 10 s (7 of 8 cells); the
+   column is better only through the yard's chokepoint, and it looks tidier in a Terminus street
+   (`s5_*_sheet.jpg`). Recommendation: wedge in lanes and open ground, column in dense terrain. Keep the column, or
+   switch?
+2. **S4:** a partial selection (3 of a 5-unit squad) or a mixed one still sends each vehicle by its own route
+   (`s4_yard_*_tracks.png`). Your 2026-09-20 ruling (Ctrl+N / FORM SQUAD makes it a squad) stands. Should a partial
+   selection travel as a formation too (a temporary squad formed on the order and dissolved on arrival)?
+
+### Requests to other streams
+
+- **nav:** bound a multi-point turn's drift (S6; relayed by the orchestrator, CP2).
+
+### Known issues
+
+- The settle probe's `stopped_s` reads `estimated_velocity`, which is non-zero for a hull wedged at full throttle
+  against a neighbour; stop times include such stand-offs. Not changed this round (it would move every historic number).
+- The partial probe has no start jitter: its series is n = 1 per cell.
+- The fall-in code stays behind `FALLIN_ENABLED` (off) as the measured control.
+
+### What to playtest
+
+`make skirmish`: select a whole squad (its number key), right-click 80 m away -- the Formation button reads "Auto:
+Column" (or the leader's pick); press G to Wedge and order again, and watch it stay a wedge when it halts; box-select 3
+of a squad -- the button shows the ring-A "Auto" and the footer "Part of <squad>: press N, or [FORM SQUAD]".
+
+### New tools
+
+`make tactics-terrain`, `make squad-fallin-series [FALLIN_ARM=wait]`, `make squad-partial[-series]`,
+`make squad-shape-series`, `make formation-shots` (his pose), settle probe `--fallin= --shape=` and `TRACE=on` world
+tracks, `tools/tactics/plot_tracks.py`.
 
 ### Merge notes (shared files)
 
-- `game/ui/command_icons.gd` (carve-out): `formation_texture` AUTO glyph, `formation_readout`, the letter "A".
-- `game/ui/selection_panel.gd` (the card's formation readout, the carve-out's consumer): `summary()` adds
-  `result["formation"]`; the button draws it.
-- `_agents/roadmap.md` item 10's table row: replaced by the measurement.
+- `game/ui/command_icons.gd` (carve-out): the AUTO glyph, `formation_readout`, the letter "A".
+- `game/ui/selection_panel.gd` (the card's formation readout): `summary()` adds `result["formation"]`; the button draws it.
+- `_agents/roadmap.md`: item 10's table row replaced by the measurement.
 

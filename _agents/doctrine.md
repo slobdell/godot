@@ -314,6 +314,37 @@ far off the anchor's route drives to the route first, at a point behind the crew
 path-finding to a station on the far side of a chokepoint (which is how the tail finds its own gap). Not built; the
 code above stays behind its switch as the measured control, the way the braking attempt is recorded in `transit_speed`.
 
+### Column or wedge for a plain move: measured, and put to him (round 12, S5)
+
+The row that decides his squads' plain move is not the standard table's `dense -> column` (no squad he fields uses the
+standard table) but the **Condemned and Law catch-all: column in any terrain** ("column when nothing is in sight", X6).
+Measured as two G orders on the same seeds (`make squad-shape-series`; C12.5 holds each shape through every phase):
+
+**builder0, `161465ef`, 80 m plain moves, 4 jittered seeds x 8 cells, column "off" / wedge "on", medians:**
+
+| arena | dir | squad | stopped col / wedge | gap10 col / wedge | stop: col faster / wedge faster |
+|---|---|---|---|---|---|
+| Terminus | forward | mixed | 21.8 / 20.1 | 11.5 / 9.9 | 1 / 3 |
+| Terminus | forward | tracked | 14.9 / 18.1 | 11.1 / 8.7 | 2 / 2 |
+| Terminus | side | mixed | 30.2 / **18.8** | 13.2 / 11.6 | 0 / 4 |
+| Terminus | side | tracked | 15.2 / **12.1** | 12.6 / 12.5 | 0 / 4 |
+| yard | forward | mixed | **33.5** / 38.3 | 16.0 / **9.1** | 4 / 0 |
+| yard | forward | tracked | 19.3 / 23.9 | 16.4 / **10.4** | 2 / 2 |
+| yard | side | mixed | 29.2 / **25.2** | 13.8 / **9.2** | 0 / 4 |
+| yard | side | tracked | 14.1 / **11.4** | 11.4 / 10.4 | 0 / 4 |
+
+Overall on the stop time: **column faster 9, wedge faster 23**; the first-10-s station error is lower in the wedge in 7 of
+8 cells. The exception is the yard's forward move -- the chokepoint 20 m from the spawn (*The fall-in rule*) -- where a
+column is the natural shape and the wedge stops 4-5 s later. The frames at his pose (`make formation-shots`, 10 s and
+arrival; `streams/references/round12/squad/s5_*_sheet.jpg`) show the other side: in the Terminus's 20 m street the
+column rides tidily down the middle and the wedge spans it wall to wall, one hull against a block.
+
+**Kept, for now, and put to the lead.** The row is faction character he approved on the doctrine page, and the
+orchestrator's ruling is that he decides on the picture. Recommendation: a **wedge** for the Condemned/Law plain move in
+lanes and open ground (faster to settle and tidier by the number almost everywhere), keeping the **column in dense
+terrain** (the yard, where the chokepoint is) -- i.e. the standard table's own two rows. Until he answers, the card says
+which it is and why: "Auto: Column", with the doctrine line's reason under the header (S1).
+
 ### Whose shape it is, phase by phase (round 12, S1/S2; C12.4, C12.5)
 
 **The player's G choice (`task.formation`) is the shape at every phase of the move; the doctrine table decides only
