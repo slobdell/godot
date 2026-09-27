@@ -38,6 +38,8 @@ var orders: Orders
 var units: Array[Tank] = []
 var leg_index := -1
 var leg_started_tick := 0
+var leg_started_frame := 0
+var kturn_logged := 0      # N1: refusals already stamped with their leg
 var leg_goal := {}         # name -> slot goal Orders gave it this leg (Vector3)
 var leg_done := {}         # name -> seconds to completion
 var leg_contacts_before := {}
@@ -137,6 +139,7 @@ func _next_leg() -> void:
 	leg_done = {}
 	leg_contacts_before = WallContact.by_cause.duplicate()
 	leg_started_tick = game_match.tick
+	leg_started_frame = Engine.get_physics_frames()
 	if leg_index >= LEGS.size():
 		return
 	var names: Array = units.map(func(t: Tank) -> String: return String(t.name))
@@ -188,6 +191,12 @@ func _sample() -> void:
 
 
 func _close_leg(elapsed: float) -> void:
+	# Round 12 (N1): stamp this leg's refusals with the leg and how far into it they came.
+	for i in range(kturn_logged, Movement.kturn_none_log.size()):
+		var row: Dictionary = Movement.kturn_none_log[i]
+		row["leg"] = leg_index
+		row["into_leg_s"] = snappedf(float(int(row["frame"]) - leg_started_frame) / float(SimClock.TICK_RATE), 0.1)
+	kturn_logged = Movement.kturn_none_log.size()
 	var arrived := 0
 	var misses: Array = []
 	for tank in units:

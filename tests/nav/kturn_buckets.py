@@ -4,6 +4,7 @@
 Usage: kturn_buckets.py build/nav-drive/*.log
 
 One bucket per refusal, first match wins, in the order the brief asks the question:
+  near_point   the steering point is within NEAR_M of the centre: settling onto a spot, not a turn into a street
   pressed      the hull's outline already started deeper than the clear reach (a nose on a face): a recovery case
   no_room      the single back-up was blocked within its first metre: nothing behind to use
   cap          the back-up ran its whole 8 m without clearing the forward arc (a longer one might)
@@ -13,11 +14,21 @@ back-and-fill (`_plan_fill`, reverse-first or forward-first) and how many legs i
 reported beside the bucket, never as one: the search reads the navmesh only, so a friend cannot cause a refusal.
 """
 import json
+
+## A steering point closer than this (the War Rig's half length) is a hull settling onto its spot, not one turning into
+## a street: no manoeuvre of any family is the answer, the arrival rule is.
+NEAR_M = 7.0
 import sys
 from collections import Counter, defaultdict
 
 
+def dist(row):
+    return ((row["at"][0] - row["to"][0]) ** 2 + (row["at"][1] - row["to"][1]) ** 2) ** 0.5
+
+
 def bucket(row):
+    if dist(row) < NEAR_M:
+        return "near_point"
     if row["pressed_points"] > 0:
         return "pressed"
     blocked = row["blocked_at_m"]
@@ -41,6 +52,7 @@ def main(paths):
                 row = json.loads(line[len("NAV_KTURN_NONE "):])
                 row["run"] = run
                 rows.append(row)
+
     if not rows:
         print("NAV_KTURN_BUCKETS none logged (was the drive run with --kturn-log?)")
         return
@@ -52,7 +64,7 @@ def main(paths):
     header = "%-11s %5s %6s %6s %8s %9s %9s %9s %s" % ("bucket", "n", "longer", "straight", "fill<=3", "fill<=5",
                                                          "friend_bh", "width", "fill legs (rev-first | fwd-first)")
     print(header)
-    for name in ["pressed", "no_room", "cap", "short_room"]:
+    for name in ["near_point", "pressed", "no_room", "cap", "short_room"]:
         group = by_bucket.get(name, [])
         if not group:
             print("%-11s %5d" % (name, 0))
@@ -65,12 +77,24 @@ def main(paths):
         friend = sum(1 for r in group if r["friend_behind"])
         spans = sorted(min(r["spans_m"]) + 2 * r["bake_radius_m"] for r in group)
         median = spans[len(spans) // 2]
-        dist = Counter(best)
+        by_legs = Counter(best)
         print("%-11s %5d %6d %8d %8d %9d %9d %8.1fm %s" % (name, len(group), longer, straight, fill3, fill5, friend,
-                                                         median, dict(sorted(dist.items()))))
+                                                         median, dict(sorted(by_legs.items()))))
+    many = []
+    for r in rows:
+        options = [m for m in (r.get("many_rev", [0, 0]), r.get("many_fwd", [0, 0])) if m[0] > 0]
+        many.append(min(options) if options else None)
+    found = [m for m in many if m]
+    print("NAV_KTURN_MANY found %d of %d; legs %s; metres %s" % (len(found), len(rows),
+          dict(sorted(Counter(m[0] for m in found).items())), sorted(round(m[1]) for m in found)))
+    print("NAV_KTURN_BY_LEG %s" % json.dumps(dict(sorted(Counter(r.get("leg", -1) for r in rows).items()))))
+    print("NAV_KTURN_INTO_LEG_S %s" % json.dumps(dict(sorted(Counter(min(int(r.get("into_leg_s", -1) // 5 * 5), 60)
+                                                               for r in rows).items()))))
     blocked_by = Counter(r.get("blocked_by", "-") for r in rows)
     print("NAV_KTURN_BLOCKED_BY %s" % json.dumps(dict(blocked_by.most_common())))
     errors = Counter(int(abs(r["error_deg"]) // 30 * 30) for r in rows)
+    dists = Counter(min(int(dist(r) // 5 * 5), 40) for r in rows)
+    print("NAV_KTURN_POINT_M %s" % json.dumps(dict(sorted(dists.items()))))
     print("NAV_KTURN_ERROR_DEG %s" % json.dumps(dict(sorted(errors.items()))))
     # The same hull refusing again a second later is one episode seen twice: count distinct (run, unit, place).
     episodes = {(r["run"], r["unit"], round(r["at"][0] / 4), round(r["at"][1] / 4)) for r in rows}

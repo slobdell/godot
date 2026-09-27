@@ -96,4 +96,72 @@ Nothing. N5 is a write-up unless the numbers say otherwise.
 
 ## Status
 
-_(the worker keeps this current)_
+_Worker: nav, round 12. Started 2026-09-26 21:15 from `46bac1a3` (code = `0299e05e`). Every number names its commit and
+machine. **Merge point: see "Green hash" at the end** (none yet)._
+
+### Plan (the brief's order)
+
+| # | item | state |
+|---|---|---|
+| 0 | green start: `make remote T=check` on `46bac1a3` | queued on builder0 (three other streams' checks held every slot at launch) |
+| N1 | log every `kturn_none` (`--kturn-log`), bucket it | **done on the laptop** (below); builder0 re-run owed |
+| N2 | the back-and-fill for the bucket the data names | built, `tests/nav/test_nav_back_and_fill.gd` (mutation-checked); measuring |
+| N3 | drive test both arms, 8 seeds, builder0; `nav-wall-clip` looked at | `make nav-drive-ab` + `tests/nav/drive_table.py` built for it |
+| N4 | `make nav-sim-arms` with the arm | after N3 |
+| N5 | the planner write-up in `algorithms.md` | stretch |
+
+### N1: why the rigs refuse (laptop, `54f39923` + the leg stamp, `make nav-kturn-buckets`, 8 seeds; builder0 re-run owed)
+
+The run reproduces round 11's shape: **rigs 132 refusals against 78 single legs** (builder0 `38c385d5`: 130 / 64);
+mixed 24 / 65. Repeatable: the same 132 rows on two runs. Buckets for the rigs, first match wins:
+
+| bucket | n | what it is | a longer single back-up clears | a <=3-leg fill (0.75 m margin) | a fill of any length <=16 legs (0.25 m margin) |
+|---|---|---|---|---|---|
+| steering point < 7 m (a route corner beside the hull; the goal is 20-80 m away in ALL 36) | 36 | the search is asked about a point inside the turning circle: no forward arc ever lines up | 1 | 4 | 17 |
+| pressed (outline already deeper than the clear reach) | 35 | a recovery case | 3 | 4 | (in the 77) |
+| no room (back-up blocked within 1 m) | 13 | nothing behind | 0 | 0 | |
+| cap (8 m run, never clear) | 5 | the 8 m cap | **5** | 5 | |
+| short room (blocked 1-8 m, never clear) | 43 | the street is too narrow for ONE back-up | 0 | 7 | |
+| **all** | **132** | | 9 | 20 | **77** (29 need <=3 legs, 39 <=5, 57 <=8) |
+
+- **Friends: 12 of 132 have a friend in the box the back-up sweeps; none is caused by one** — the search reads the
+  navmesh only, so a friend cannot make a refusal (it can abort a leg).
+- **"A shorter back-up would have cleared": 0 by construction** — the search is shortest-first.
+- **Where:** 74 on the plaza leg, 44 on the first leg; **90 of 132 within the first 10 s of a leg**: a rig parked by the
+  previous leg, handed a point 60-120 deg off its nose. The single back-up is stopped by the REAR CORNER in 84 of 123.
+- **Street width at the refusal: median 21-22 m physical** (the narrowest of four spans through the centre, + 2 × bake
+  radius). A 14.4 m hull diagonal in 21 m: every leg is 1-2 m, and 1 m of travel yaws a 12 m-radius hull 4.8 deg.
+- **The mixed squad is NOT a null control for the fill:** 17 of its 24 refusals have a plan (all <=3 legs; artillery at
+  the west street's mouth, 10 m back-ups). State it before measuring rather than discover it.
+
+**Answer to the brief's question:** the big bucket is "no single back-up clears" (short room + no room + cap = 61, plus
+35 pressed), as it guessed — but a THREE-point back-and-fill clears only 20-29 of 132. The manoeuvre that exists is
+usually a 3-8-leg shuffle of ~10 m total (median). 55 of 132 have no manoeuvre of this family at all: that is N5's
+count. And 36 are a different defect: the search aims at a route corner under the hull.
+
+### Pre-registration (written 2026-09-26 ~22:15, BEFORE any drive result with the fill on)
+
+Candidates and their signatures (rigs unless stated; laptop numbers are the base, builder0 re-measures both arms):
+
+- **(a) back-and-fill, <=5 legs, 0.25 m margin, 0.5 m min leg — BUILT (N2), switch `--nav-off=kturnfill`.** N1 says it
+  plans 39 of the 132. Expect: `kturn_none` 132 -> <= 105 (a refusal repeats about twice per episode, and a plan
+  changes what follows, so not the full 39); `kturn_multi` >= 20; press/unstick-driven contacts NOT up (> +10 % of
+  475 is a fail); reverse-gear contacts not up > 10 %; arrivals not down (>= 107/128); `kturn_aborted` small beside
+  `kturn_multi` (< 1/3, else the plan's margins are too tight for the plant). Mixed: `kturn_none` 24 -> <= 12,
+  `kturn_multi` >= 5, arrivals not down. **Wrong on any of these is reported as measured.**
+- **(b) the steering point for the search is at least a lookahead (1.2 R) along the route** (not built). Signature:
+  the 36 near-point refusals move into the other buckets or vanish; no effect on the mixed squad (2 rows).
+- **(c) a kinematic planner** (N5): the 55 with no manoeuvre of this family. Written up, not built, unless (a)+(b)
+  leave the rigs' arrivals short.
+
+### Decisions (one line each)
+
+- **The back-and-fill keeps ONE lock on every leg.** The plant yaws a wheeled hull the way of `turn` in either gear
+  (`TankMotion.step`, wheels: *"`turn` is the way the HULL should yaw in either gear"*), so a three-point turn is the
+  same `turn` with the gear alternating, exactly as a driver's forward-left / reverse-right. The search is over leg
+  LENGTHS and first gear only, which is why it is cheap enough to run in the driver.
+- **N1 runs the N2 candidate as a diagnostic** (`_plan_fill`, both first gears, up to five legs) at every refusal, so the
+  buckets say directly whether the proposed fix would have found a plan, before any of it drives a hull.
+- **Exploration on the laptop, published numbers from builder0.** At launch both machines were saturated (builder0: three
+  checks in all three slots; the laptop: two local slots held by other streams), and a rig drive run is ~20 s of laptop
+  CPU. Every laptop number below says so; nothing laptop-measured is compared with a builder0 number.
