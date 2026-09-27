@@ -20,6 +20,13 @@ tactics-shots: import ## Doctrine in pictures: elements moving, ambushed and bou
 		2>&1 | tee $(BUILD_DIR)/tactics-shots/log.txt | grep -E "TACTICS_SHOT|ERROR" || true
 	grep -q TACTICS_SHOTS_DONE $(BUILD_DIR)/tactics-shots/log.txt
 
+formation-shots: import ## Round 12 (S5): a plain move at HIS pose (21 deg, FOV 35, 49 m, following from behind) as a column and as a wedge, frames at 10 s and at arrival: build/formation-shots/<arena>_<shape>_{10s,arrival}.png (needs a display: make remote T=formation-shots). ARENAS="yard terminus" SHAPES="column wedge" SEED=3
+	mkdir -p $(BUILD_DIR)/formation-shots
+	$(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x720 --script res://tests/tactics/formation_shots.gd -- \
+		--arenas="$(or $(ARENAS),yard terminus)" --shapes="$(or $(SHAPES),column wedge)" --seed=$(or $(SEED),3) \
+		2>&1 | tee $(BUILD_DIR)/formation-shots/log.txt | grep -E "FORMATION_SHOT|ERROR" || true
+	grep -q FORMATION_SHOTS_DONE $(BUILD_DIR)/formation-shots/log.txt
+
 tactics-parity: import ## X5: a scripted match where BOTH sides run doctrine; prints what a spectator sees
 	@echo ">> tactics-parity: PARITY_SECONDS=$(PARITY_SECONDS)"
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/run_parity.gd -- $(if $(PARITY_SECONDS),--seconds=$(PARITY_SECONDS)) \
@@ -86,6 +93,16 @@ squad-partial-series: import ## Round 12 (S4): squad-partial for every CASE on t
 		done; wait; done; done
 	@$(PYTHON) tools/tactics/partial_series.py $(BUILD_DIR)/squad-partial.jsonl
 
+squad-shape-series: import ## Round 12 (S5): a plain move 80 m ordered as a COLUMN (reported "off") and as a WEDGE ("on"), both with G so each holds its shape at every phase (C12.5), same seeds, the yard and the Terminus, forward and side, a tracked/wheeled squad and a mixed one: stop, arrival, station error in transit and its first 10 s. TRANSIT_SEEDS="1 2 3 4" -> build/squad-shape.jsonl
+	@mkdir -p $(BUILD_DIR); : > $(BUILD_DIR)/squad-shape.jsonl
+	@for arena in yard terminus; do for dir in forward side; do for units in tank:tank:ifv:ifv scout:scout:ifv:ifv:tank; do for seed in $(or $(TRANSIT_SEEDS),1 2 3 4); do for shape in column wedge; do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
+			--arena=$$arena --dir=$$dir --seed=$$seed --units=$$units --shape=$$shape --metres=$(or $(TRANSIT_METRES),80) \
+			--seconds=$(or $(SETTLE_SECONDS),90) --drills=off 2>&1 \
+			| grep "^SETTLE_PROBE {" | sed 's/^SETTLE_PROBE //' >> $(BUILD_DIR)/squad-shape.jsonl & \
+		done; wait; done; done; done; done
+	@$(PYTHON) tools/tactics/transit_series.py $(BUILD_DIR)/squad-shape.jsonl --arm=shape --off=column
+
 tactics-terrain: import ## Round 12 (S1/S5): the doctrine's terrain class (open/lanes/dense) at every rotation map's spawns and every 10 m along an 80 m move forward and to the side, with AUTO's pick at the order. Light (no physics)
 	$(GODOT) --headless --path . --script res://tests/tactics/terrain_probe.gd 2>&1 | grep -E "^TERRAIN|SCRIPT ERROR|ERROR" || true
 
@@ -94,7 +111,7 @@ squad-settle: import ## Round 10 item 3: a squad's plain move end to end -- orde
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/settle_probe.gd -- \
 		--arena=$(ARENA) --dir=$(or $(DIR),forward) --metres=$(or $(METRES),20) --seed=$(call cmdline,SEED,3) \
 		--units=$(or $(UNITS),tank:tank:ifv:ifv) --seconds=$(or $(SETTLE_SECONDS),45) --trace=$(or $(TRACE),off) \
-		--transit=$(or $(TRANSIT),on) --fallin=$(or $(FALLIN),default) \
+		--transit=$(or $(TRANSIT),on) --fallin=$(or $(FALLIN),default) $(if $(SHAPE),--shape=$(SHAPE)) \
 		2>&1 | grep -E "SETTLE_PROBE|SETTLE_TRACE|SETTLE_TRACK|SCRIPT ERROR|ERROR" || true
 
 squad-settle-series: import ## Round 10 item 3: squad-settle over paired seeds, both arms of PIN (the leader pinned to the head of a plain move's shape) on the same seeds, every ARENA and DIR. SETTLE_SEEDS="1 2 3 4 5 6 7 8" -> build/squad-settle.jsonl

@@ -110,6 +110,10 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 	var task := {"verb": "move", "to": [goal.x, goal.z]}
 	if _flag("drills", "off") != "on":
 		task["drills"] = false
+	# Round 12, S5: `--shape=column|wedge|...` orders the shape as his G key does (task.formation, which C12.5 holds
+	# through every phase); unset = AUTO, the doctrine's pick.
+	if _flag("shape", "") != "":
+		task["formation"] = _flag("shape", "")
 	element.assign(task)
 	var ordered := -1
 	var arrived := -1
@@ -251,7 +255,7 @@ func _run(arena_name: String, dir: String, unit_ids: PackedStringArray, metres: 
 			"ordered_s": _s(ordered), "arrived_s": _s(arrived), "in_slot_s": _s(in_slot), "stopped_s": _s(stopped),
 			"off_slot_m": off, "closest_m": snappedf(closest, 0.01), "goal_moves": element.goal_moves,
 			"bottleneck_s": _s(element.bottleneck_ticks), "transit": ElementPlan.TRANSIT_ENABLED,
-			"fallin": ElementPlan.FALLIN_MODE if ElementPlan.FALLIN_ENABLED else "off",
+			"fallin": ElementPlan.FALLIN_MODE if ElementPlan.FALLIN_ENABLED else "off", "shape": _flag("shape", "auto"),
 			"transit_gap_m": snappedf(gap_sum / gap_n, 0.1) if gap_n > 0 else -1.0,
 			"transit_gap10_m": snappedf(gap10_sum / gap10_n, 0.1) if gap10_n > 0 else -1.0, "transit_s": _s(transit_done)}
 

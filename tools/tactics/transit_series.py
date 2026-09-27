@@ -9,7 +9,8 @@ has no stations and reads -1), and the discordant pairs on the stop time.
 
 Round 12, S3: `--arm=fallin` pairs the two arms of FALLIN instead (the fall-in rule; both arms ride the anchor), and
 both arms then have a station error: `gap` over the whole transit and `gap10` over its first 10 s (the rule's target),
-each against the SHAPE's stations.
+each against the SHAPE's stations. S5: `--arm=shape --off=column` pairs a column (reported as "off") against a wedge
+("on") ordered with G.
 """
 import json
 import statistics
@@ -24,7 +25,7 @@ def val(row, key):
     return CAP_S if v is None else float(v)
 
 
-def main(path, arm="transit"):
+def main(path, arm="transit", off_value="off"):
     runs = defaultdict(dict)
     for line in open(path):
         line = line.strip()
@@ -32,7 +33,7 @@ def main(path, arm="transit"):
             continue
         row = json.loads(line)
         cell = (row["arena"], row["dir"], row["units"])
-        runs[cell].setdefault(row["seed"], {})["on" if row.get(arm, True) not in (False, "off") else "off"] = row
+        runs[cell].setdefault(row["seed"], {})["on" if row.get(arm, True) not in (False, off_value) else "off"] = row
     print("arms: %s off / on" % arm.upper())
     print("%-9s %-7s %-24s %2s | %-15s | %-15s | %-15s | %-13s | %-13s | %s" % (
         "arena", "dir", "units", "n", "arrived off/on", "stopped off/on", "in_slot off/on", "gap off/on",
@@ -63,6 +64,7 @@ def main(path, arm="transit"):
 
 
 if __name__ == "__main__":
-    args = [a for a in sys.argv[1:] if not a.startswith("--arm=")]
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
     arms = [a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--arm=")]
-    main(args[0] if args else "build/squad-transit.jsonl", arms[0] if arms else "transit")
+    offs = [a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--off=")]
+    main(args[0] if args else "build/squad-transit.jsonl", arms[0] if arms else "transit", offs[0] if offs else "off")
