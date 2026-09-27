@@ -64,6 +64,9 @@
 
 ## Water reads black: next round's first art/terrain item (the lead, 2026-09-24: "make it wetter", next round)
 
+> **Addressed in round 12:** see *Water reads wet* below (what was built, the pairs, the cost). This section is the
+> diagnosis it was built from.
+
 **What he sees.** At his pose (pitch 21°, FOV 35, 49 m back) the Crossing's river and the Locks' canal render as
 near-black channels with smears of floodlight: it reads as a trench, and next to the Sumps' pits (black shafts with a
 red glow) the two kinds of hole are told apart mostly by kerb colour. Frames at his pose:
