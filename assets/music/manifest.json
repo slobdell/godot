@@ -11,8 +11,7 @@
    "loop_end_s": 57.554,
    "intensity": 0.4,
    "states": [
-    "garage",
-    "victory"
+    "garage"
    ],
    "lufs": -16.1,
    "peak_db": -6.0,
@@ -40,7 +39,6 @@
    "loop_end_s": 45.439,
    "intensity": 0.4,
    "states": [
-    "garage",
     "victory"
    ],
    "lufs": -16.1,
@@ -175,7 +173,6 @@
    "loop_end_s": 55.61,
    "intensity": 0.4,
    "states": [
-    "garage",
     "victory"
    ],
    "lufs": -16.1,
@@ -190,8 +187,7 @@
    "loop_end_s": 61.017,
    "intensity": 0.4,
    "states": [
-    "garage",
-    "victory"
+    "garage"
    ],
    "lufs": -16.1,
    "peak_db": -5.4,

@@ -60,6 +60,15 @@ music-smoke: import ## A real headless match with the music on: the beds change,
 	if [ -z "$$expected" ] || [ "$$actual" != "$$expected" ]; then echo "music-smoke FAILED: the soundtrack changed the simulation ($$actual, without it $$expected)"; exit 1; fi; \
 	echo "music-smoke passed: $$beds bed changes across $$distinct beds, $$layers layer changes, hash $$actual$${expected:+ (matches the same match without the music)}"; \
 	grep -E '^MUSIC_(TRACK|LAYERS)' $(BUILD_DIR)/audio/music-smoke.log | sed 's/^/  /'
+	@# Round 13 (G2): the garage plays its own bed, and FIGHT hands it to the match's opening, in one process.
+	timeout 300 $(GODOT) --headless --path . -- --garage --garage-scratch --garage-autofight=3 --music=on --enemy=cpu:siege \
+		--seed=4 --army-loop-time=12 --army-loop-delay=0.5 --army-loop-auto=quit > $(BUILD_DIR)/audio/music-garage-smoke.log 2>&1 || true
+	@$(PYTHON) -c "import re,sys; log=open('$(BUILD_DIR)/audio/music-garage-smoke.log').read(); \
+		cues=re.findall(r'^MUSIC_TRACK state=(\S+) track=(\S+)', log, re.M); fight=log.find('GARAGE_FIGHT'); \
+		after=[c for c in re.finditer(r'^MUSIC_TRACK state=(\S+)', log, re.M) if c.start() > fight]; \
+		ok=bool(cues) and cues[0][0]=='garage' and fight>0 and bool(after) and after[0].group(1)=='pre_match' and 'ERROR' not in log; \
+		print('music-smoke (garage) %s: %s' % ('passed' if ok else 'FAILED', ' -> '.join('%s:%s' % c for c in cues) or 'no cues')); \
+		sys.exit(0 if ok else 1)"
 
 ## Round 5 X1-X2: sound effects from ElevenLabs, layered under the synthesised transients.
 ## Lead gate 1 (approved round 5): pilot first (PILOT=1), the lead listens, then the batch. Every real run is ledgered.
@@ -133,4 +142,14 @@ audio-launch-smoke: import ## A player's launch with no audio flags gets the ann
 	@grep -q 'ANNOUNCER_BOOTH mode=voice' $(AUDIO_LAUNCH_DIR)/run.log || { echo "audio-launch-smoke FAILED: no speaking booth in a flagless launch"; exit 1; }
 	@grep -q '^MUSIC on' $(AUDIO_LAUNCH_DIR)/run.log || { echo "audio-launch-smoke FAILED: no music in a flagless launch"; exit 1; }
 	@! awk '/TITLE_START/{exit} /ANNOUNCER_BOOTH/{found=1} END{exit !found}' $(AUDIO_LAUNCH_DIR)/run.log 		|| { echo "audio-launch-smoke FAILED: the title's backdrop fight got a booth"; exit 1; }
+	@# Round 13 (G2): the title's GARAGE, by taps and with no audio flags (tests/garage/garage_tour.gd): the garage's bed,
+	@# then the match's opening after FIGHT.
+	timeout 400 $(GODOT) --path . --resolution 1920x1080 --script res://tests/garage/garage_tour.gd -- --tour-fresh \
+		--tour-out=$(CURDIR)/$(AUDIO_LAUNCH_DIR)/garage --tour-match=15 > $(AUDIO_LAUNCH_DIR)/garage.log 2>&1 || true
+	@grep -E '^(MUSIC_TRACK|MUSIC on|GARAGE_FIGHT|TOUR_DONE)' $(AUDIO_LAUNCH_DIR)/garage.log | sed 's/^/  /'
+	@$(PYTHON) -c "import re,sys; log=open('$(AUDIO_LAUNCH_DIR)/garage.log').read(); fight=log.find('GARAGE_FIGHT'); \
+		states=[(m.start(), m.group(1)) for m in re.finditer(r'^MUSIC_TRACK state=(\S+)', log, re.M)]; \
+		before=[s for at, s in states if at < fight]; after=[s for at, s in states if at > fight]; \
+		ok=fight > 0 and before[:1]==['garage'] and after[:1]==['pre_match'] and 'ANNOUNCER_BOOTH mode=voice' in log; \
+		print('audio-launch-smoke (garage) %s: before FIGHT %s, after %s' % ('passed' if ok else 'FAILED', before, after)); sys.exit(0 if ok else 1)"
 	@echo "audio-launch-smoke passed: a flagless player launch has the announcer's voice and the music"
