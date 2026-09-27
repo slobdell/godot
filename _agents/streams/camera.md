@@ -93,4 +93,22 @@ Nothing. The frame pairs go into Status for him; if K5 is a taste call, put the 
 
 ## Status
 
-_(the worker keeps this current)_
+_Updated 2026-09-26, camera worker (session in `~/projects/godot-camera`)._
+
+**Plan (in order; smallest foundation first):**
+1. K1: pure `RtsCamera.drawn_layout(data)` (reads `AirshipFlight.DRAWN`, C12.2) + `solid_at` / `sight_blockers`
+   (per-solid versions of `roof_over` / `sight_blocked`, same maths) → the six-map sweep test
+   `test_every_shipping_map_measured_against_what_is_drawn`, printing per kit type both arms (posed from colliders =
+   the game today; posed from the drawing = K2). Behaviour unchanged.
+2. K2: the live camera's visual questions default to `RtsCamera.seen()` (the drawn list, cached per arena); assert
+   inside-drawn == 0 on every map; a test that `drawn_layout` covers `AirshipTruth.drawn_solids` (the meshes).
+   Frame pair at ~18° near a floodlight.
+3. K3: `BlockCutaway._gather` grows a body's box by `DRAWN` for its type; ad screens and floodlights qualify.
+   Real-node test on the Terminus; frame pair with an ad screen between camera and fight.
+4. K4: play on builder0 at his pose (terminus, yard), airship shot.
+5. K5: signs and `MIN_HEIGHT_M`, decided on frames.
+
+**Decisions:**
+- The drawn list is a SEPARATE list; `Arena.active` and every collider are untouched (C12.3). The functions keep
+  taking the list as a parameter (C11.2); only the DEFAULT changes, to `RtsCamera.seen()` — every caller of these
+  functions asks a visual question (grep: camera, show's `show_look`, the airship bench; nothing in gameplay).

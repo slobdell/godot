@@ -449,3 +449,67 @@ func test_a_passing_airship_lifts_the_camera_once_and_does_not_pump() -> void:
 	# One rise and one fall per pass is a reversal of one; anything more is the camera bobbing.
 	assert_true(reversals <= episodes * 2, "the lift does not pump: %d direction changes over %d passes" % [reversals, episodes])
 	assert_true(inside <= frames / 200, "and the camera is almost never inside the hull (%d of %d frames)" % [inside, frames])
+
+
+# ---- Round 12 (camera K1): the camera asks the DRAWING, not the collider --------------------------------------
+# `verification.md` *A collider is not a silhouette*: a floodlight's collider is 3 m and its drawn mast and lamp head
+# 16 m; an ad screen's is 1.4 m and its LED wall 20.7 m; a sign has no collider and a 7.65 m board. The round-9
+# measurement (703 of 4328 Terminus poses inside a solid, 0 after `clear_pose`) was against COLLIDERS. This sweep
+# asks the same poses against both, per kit type, on every map he can be dealt.
+
+## One sweep of `data`'s street grid at his pose, eight yaws each, the camera posed by `clear_pose` over `pose_data`
+## (the colliders are what the camera read before round 12; `RtsCamera.drawn_layout` is what it reads after). Every
+## camera is then judged against the colliders AND the drawing: inside a solid, and the sight line to the aim point
+## blocked, counted per kit type (a pose blocked by two types counts under both; `any` counts it once).
+func _drawn_sweep(data: Dictionary, pose_data: Dictionary, pitch: float) -> Dictionary:
+	var drawn := RtsCamera.drawn_layout(data)
+	var counts := {"poses": 0}
+	for key: String in ["inside_collider", "inside_drawn", "blocked_collider", "blocked_drawn", "blocked_drawn_tall"]:
+		counts[key] = {"any": 0}
+	for at: Vector3 in _street_points(data):
+		for step in 8:
+			var yaw := TAU * float(step) / 8.0
+			var clear := RtsCamera.clear_pose(at, yaw, HIS_DISTANCE, pitch, pose_data)
+			var eye := RtsCamera.pose_at(at, yaw, float(clear["distance"]), float(clear["pitch_deg"])).origin
+			var aim := at + Vector3.UP * BlockCutaway.AIM_HEIGHT_M
+			counts["poses"] += 1
+			_tally(counts["inside_collider"], [RtsCamera.solid_at(eye, data)])
+			_tally(counts["inside_drawn"], [RtsCamera.solid_at(eye, drawn)])
+			_tally(counts["blocked_collider"], RtsCamera.sight_blockers(eye, aim, data))
+			_tally(counts["blocked_drawn"], RtsCamera.sight_blockers(eye, aim, drawn))
+			# What the cutaway would have to take away: drawn solids tall enough to be a building to it.
+			_tally(counts["blocked_drawn_tall"], RtsCamera.sight_blockers(eye, aim, drawn, BlockCutaway.MIN_HEIGHT_M))
+	return counts
+
+
+func _tally(into: Dictionary, solids: Array) -> void:
+	var types := {}
+	for solid: Dictionary in solids:
+		if not solid.is_empty():
+			types[String(solid.get("type", "?"))] = true
+	if types.is_empty():
+		return
+	into["any"] += 1
+	for type: String in types:
+		into[type] = int(into.get(type, 0)) + 1
+
+
+## His default tilt, and the tilt where his camera (49 m boom) is at a floodlight's lamp head: 15.1 m up, inside the
+## 16.05 m drawn top. At 21 deg it is 17.6 m up and clears it, so the default pose alone cannot show the lamp head.
+const DRAWN_PITCHES := [HIS_PITCH, 18.0]
+
+
+func test_every_shipping_map_measured_against_what_is_drawn() -> void:
+	## K1's table: the camera as posed from the COLLIDERS (the game before round 12) and as posed from the DRAWING,
+	## each judged against both. Printed per map and tilt; the assertions are the round-9 invariant and the setup.
+	for name: String in Arena.ROTATION:
+		var data := _layout(name)
+		var drawn := RtsCamera.drawn_layout(data)
+		for pitch: float in DRAWN_PITCHES:
+			for arm: String in ["collider", "drawn"]:
+				var counts := _drawn_sweep(data, data if arm == "collider" else drawn, pitch)
+				print("MEASURE camera_drawn_solids ", JSON.stringify({"map": name, "posed_from": arm, "counts": counts,
+						"pitch_deg": pitch, "distance_m": HIS_DISTANCE}))
+				assert_true(int(counts["poses"]) > 1000, "setup: %s has open ground to stand on (%d poses)" % [name, counts["poses"]])
+				assert_eq(int(counts["inside_collider"]["any"]), 0,
+						"%s at %.0f deg, posed from the %s: round 9 holds, the camera is outside every collider" % [name, pitch, arm])

@@ -575,7 +575,15 @@ const SOLID_MIN_DISTANCE_M := 6.0
 ## The height of the tallest solid whose footprint covers this point and whose roof is above it, or -1.0 when the
 ## point is in the open. Reads the layout's own boxes (`Arena.active["obstacles"]`, which already folds in the kit
 ## props a cityscape is built from), so it needs no physics and works headless. Pure, for tests.
+## The live camera passes `RtsCamera.seen()`, the same boxes grown to what is DRAWN (round 12, below).
 static func roof_over(point: Vector3, data: Dictionary = Arena.active) -> float:
+	var solid := RtsCamera.solid_at(point, data)
+	return Arena.obstacle_size(solid).y if not solid.is_empty() else -1.0
+
+
+## The tallest solid (its layout entry) whose footprint covers this point and whose roof is above it, or {}. Pure.
+static func solid_at(point: Vector3, data: Dictionary = Arena.active) -> Dictionary:
+	var found := {}
 	var roof := -1.0
 	var flat := Vector2(point.x, point.z)
 	for obstacle: Dictionary in data.get("obstacles", []):
@@ -585,21 +593,85 @@ static func roof_over(point: Vector3, data: Dictionary = Arena.active) -> float:
 		var centre := Vector2(float(obstacle["position"][0]), float(obstacle["position"][1]))
 		if ArenaKit.distance_to_footprint(flat, centre, size, float(obstacle.get("rotation_deg", 0.0))) <= 0.0:
 			roof = size.y
-	return roof
+			found = obstacle
+	return found
 
 
 ## Whether the straight line from `a` to `b` passes through a solid: the second half of the lead's sentence, because
 ## a camera that is outside every building can still be looking at the side of one. Slab test per box in the box's own
 ## frame, restricted to the segment. Pure, for tests and for the alley frames.
 static func sight_blocked(a: Vector3, b: Vector3, data: Dictionary = Arena.active, min_height := 0.0) -> bool:
+	return not RtsCamera.sight_blockers(a, b, data, min_height, true).is_empty()
+
+
+## Every solid (its layout entry) at least `min_height` tall that the segment a→b passes through; `first` stops at the
+## first one. Pure.
+static func sight_blockers(a: Vector3, b: Vector3, data: Dictionary = Arena.active, min_height := 0.0, first := false) -> Array:
+	var out: Array = []
 	for obstacle: Dictionary in data.get("obstacles", []):
 		var size := Arena.obstacle_size(obstacle)
 		if size.y < min_height:
 			continue
 		var centre := Vector3(float(obstacle["position"][0]), size.y / 2.0, float(obstacle["position"][1]))
 		if RtsCamera.segment_hits_box(a, b, centre, size / 2.0, deg_to_rad(float(obstacle.get("rotation_deg", 0.0)))):
-			return true
-	return false
+			out.append(obstacle)
+			if first:
+				break
+	return out
+
+
+# ---- Round 12: the camera asks the DRAWING, not the collider -------------------------------------------------
+#
+# `Arena.active["obstacles"]` holds COLLISION boxes, sized for gameplay: a floodlight is its 3 m footing, an ad screen
+# its 1.4 m plinth, and a sign collides with nothing. What the player sees is a 16 m mast with a lamp head, a 20.7 m
+# LED wall and a 7.65 m board (`verification.md` *A collider is not a silhouette*; lesson 214). A camera that must not
+# be parked inside a lamp head, or must know an LED wall is between it and the fight, has to ask what is drawn.
+#
+# The drawn extents are `AirshipFlight.DRAWN`, READ here, never copied (contract C12.2): that table is held against the
+# kit's own meshes by `test_the_flights_table_of_drawn_props_covers_what_the_kit_draws`, so a kit change is caught
+# in one place. The collider never grows (C12.3): this is a separate list for the visual questions only, and anything
+# that decides where a HULL can be keeps reading `Arena.active`.
+
+## `data` with every obstacle grown to its drawn extent, and the kit props that collide with nothing but are drawn
+## tall (signs) added as boxes. Grown, never shrunk: each axis is the larger of the drawn size and the collider. Each
+## entry keeps its `type` and gains `drawn: true` where it grew. Pure; `seen` caches it per arena.
+static func drawn_layout(data: Dictionary) -> Dictionary:
+	var out := data.duplicate()
+	var grown: Array = []
+	var entries: Array = data.get("obstacles", []).duplicate()
+	for prop: Dictionary in data.get("props", []):
+		var type := String(prop.get("type", ""))
+		if ArenaKit.is_kit(type) and not ArenaKit.collides(type) and AirshipFlight.DRAWN.has(type):
+			var copy := prop.duplicate(true)
+			var size := ArenaKit.size_of(prop)
+			copy["size"] = [size.x, size.y, size.z]
+			entries.append(copy)
+	for entry: Dictionary in entries:
+		var type := String(entry.get("type", ""))
+		if not AirshipFlight.DRAWN.has(type):
+			grown.append(entry)
+			continue
+		var drawn: Array = AirshipFlight.DRAWN[type]
+		var size := Arena.obstacle_size(entry)
+		var copy := entry.duplicate(true)
+		copy["size"] = [maxf(size.x, float(drawn[0])), maxf(size.y, float(drawn[1])), maxf(size.z, float(drawn[2]))]
+		copy["drawn"] = true
+		grown.append(copy)
+	out["obstacles"] = grown
+	return out
+
+
+static var _seen_for: Dictionary = {}
+static var _seen: Dictionary = {}
+
+
+## `drawn_layout(data)`, built once per arena (the layout `Arena.active` points at is replaced, never edited, when an
+## arena is built). What the live camera's visual questions read.
+static func seen(data: Dictionary = Arena.active) -> Dictionary:
+	if not is_same(data, _seen_for) or _seen.is_empty():
+		_seen_for = data
+		_seen = RtsCamera.drawn_layout(data)
+	return _seen
 
 
 ## Does the SEGMENT a→b cross this box? Slab test in the box's own frame, clipped to the segment, so a box behind
