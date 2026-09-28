@@ -150,6 +150,14 @@ The control reproduces round 13 exactly in every run below (rigs 110/128, 1039 s
 contacts, press/unstick and leg time all failed too. Mixed is roughly a null in 2b, as registered. Not run on the
 acceptance seeds: nothing to accept, and seeds 9-16 stay fresh for whoever builds the next variant.
 
+What each build predicted, and what killed it:
+
+| build | predicted (from N1) | killed by (the leg / episode log) |
+|---|---|---|
+| 1 | the ~189 rear-into-wall contacts go (swept reverse) AND the ~227 roll-out contacts go (planned from where the hull stops) -> `route/reverse` well under half | a committed leg overrides the rule's tick-by-tick let-go (long reverses where the rule backed centimetres); the 10-point outline passed legs that scraped their sides; `route/reverse` 431 -> 1272 |
+| 2 | keep the rule tick by tick; a dense sweep stops only the reverses that hit; the ~189 go, the roll-out stays -> `route/reverse` about halves | where the reverse does not fit a forward arc rarely does either: `route/forward` 2646 -> 5550; the turn-away latch pinned a rig on a floodlight 51 s; `route/reverse` 431 -> 342 |
+| 2b | the latch releases on contact / no progress, so 2's reverse saving stands without the wedge | the wedge went (contacts 7220 -> 5708) but `route/reverse` 431 -> 410: once the forward arcs stop wedging, the rule reverses into the same walls a few ticks later; still +44 % contacts vs control |
+
 What each build taught (all from the leg/episode logs, not guessed):
 1. **A committed leg overrides the rule's own let-go.** The rule re-decides every tick and often lets go after a few
    centimetres (N1: median driven 0.3 m); a leg planned from a roll-out 6 m ahead at 10 m/s committed rigs to 5-20 m
