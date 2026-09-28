@@ -12,12 +12,18 @@ extends RefCounted
 
 ## A slot this close to the navmesh counts as standable already (meters): the mesh is a coarse surface.
 const TOLERANCE_M := 1.0
+## How many `standable` calls returned their point unchecked because there was no baked navigation map to ask.
+static var unchecked := 0
 
 
 ## The nearest point to `point` a vehicle can stand on (flat), or `point` itself when it already is one, or when the
 ## navigation map isn't ready (early frames, tests without an arena): then there is nothing better to say.
 static func standable(node: Node3D, point: Vector3) -> Vector3:
 	if node == null or not node.is_inside_tree() or not Pathing.enabled or not Pathing.is_ready(node):
+		# Round 14 (A0): this no-op is SILENT to its caller, and a skirmish deploys before the bake -- so every slot
+		# of the lead's army went unchecked and two War Rigs were placed inside a building. Counted, so a caller (and
+		# a test) can say how many points it could not check.
+		unchecked += 1
 		return point
 	var map := node.get_world_3d().navigation_map
 	var closest := NavigationServer3D.map_get_closest_point(map, Vector3(point.x, 0.0, point.z))

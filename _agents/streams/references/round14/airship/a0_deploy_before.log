@@ -1,0 +1,18 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.6 (Core Profile) Mesa 26.0.3-1ubuntu1 - Compatibility - Using Device: Intel - Mesa Intel(R) Iris(R) Xe Graphics (RPL-U)
+
+SKIRMISH_ARMY Green cpu (gangs): 7 rat rods, 15 gun trucks, 13 war rigs, 6 resupply tankers (5195 pts)
+SKIRMISH_ARMY Rust cpu (condemned): 4 tanks, 4 IFVs, 4 lancers, 13 burners (5060 pts)
+SKIRMISH_CAMERA focus=(-54, 78) zoom=0.59 vehicles=13
+CONTROL_GROUPS squads=5 (Guns:13 Hunters:8 Hunters II:7 Spears:7 Wrenches:6) groups=5 ungrouped=0 [] engaged_of=wired
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "no-pick-faction": "", "mute": "", "no-record": "", "hints": "off", "arena": "locks", "seed": "76424", "player-faction": "gangs", "enemy-faction": "condemned", "rig-vanish": "/home/slobdell/tank_squad/godot-airship/build/rig-vanish", "rig-vanish-deploy": "" }
+TANK_OFF_FLOOR Green_Guns_9 (gang_tank) y=-5.79 at (-45.0, 58.6): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Green_Hunters_1 (gang_ifv) y=-1.29 at (-30.0, 56.4): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Green_Hunters_4 (gang_ifv) y=-1.29 at (-24.0, 56.4): separated from something along the vertical; it is now drawn under the floor
+TANK_OFF_FLOOR Green_Hunters_6 (gang_ifv) y=-1.29 at (-18.0, 56.4): separated from something along the vertical; it is now drawn under the floor
+RIG_VANISH_OFF_FLOOR Green_Guns_9 y=-5.79 at (-45.0, 58.6)
+RIG_VANISH_OFF_FLOOR Green_Hunters_1 y=-1.29 at (-30.0, 56.4)
+RIG_VANISH_OFF_FLOOR Green_Hunters_4 y=-1.29 at (-24.0, 56.4)
+RIG_VANISH_OFF_FLOOR Green_Hunters_6 y=-1.29 at (-18.0, 56.4)
+RIG_VANISH_SUMMARY deploy green=41 off_floor=4
+RIG_VANISH_DONE /home/slobdell/tank_squad/godot-airship/build/rig-vanish
