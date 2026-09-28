@@ -53,8 +53,12 @@ func _run() -> void:
 	var screen: GarageScreen = await _wait_for(func() -> Variant: return root.find_child("GarageScreen", true, false), 60.0)
 	if not await _check("GARAGE opens the builder", screen != null, "" if screen else "no GarageScreen after 60 s"):
 		return _finish()
-	await _seconds(2.0)
-	await _shot("garage_open", true, "")
+	# The loading screen (GameLauncher's, on the root) is still up when the builder exists: frame it, then wait for it
+	# to fade, which is when a player can use the builder.
+	await _shot("garage_loading", true, "the loading screen %s" % ("is up" if LoadingScreen.current != null else "is gone"))
+	var loaded: Variant = await _wait_for(func() -> Variant: return true if LoadingScreen.current == null else null, 60.0)
+	await _seconds(0.5)
+	await _shot("garage_open", loaded != null, "" if loaded != null else "the loading screen never went away")
 
 	# The starter army leaves 100 of the budget, less than any unit: make room the way a player would, with REMOVE.
 	var before := _units(screen)

@@ -1064,8 +1064,10 @@ func add_unit(unit_id: String) -> String:
 	if draft.unit_count() >= draft.catalog.max_units:
 		return _act("The army is full: %d units max." % draft.catalog.max_units)
 	if draft.catalog.unit_cost(unit_id) > draft.remaining_budget():
-		return _act("Not enough budget: a %s costs %d, %d left." % [draft.catalog.display_name(unit_id),
-				draft.catalog.unit_cost(unit_id), draft.remaining_budget()])
+		# Round 13 (G1): the starter army leaves less than any unit costs, so a first + ADD always lands here; say what
+		# to do about it, not only what went wrong.
+		return _act("Not enough budget: a %s costs %d, %d left. Tap a unit and REMOVE it to make room." % [
+				draft.catalog.display_name(unit_id), draft.catalog.unit_cost(unit_id), draft.remaining_budget()])
 	var target := draft.squad_with_room(selected_squad)
 	if target < 0:
 		return _act("Every squad is full.")
