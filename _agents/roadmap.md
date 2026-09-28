@@ -92,7 +92,44 @@ Six streams, one night. Full record in `HANDOFF.md` *ROUND 12*; briefs in `strea
 - **Water reads wet** at his pose (near-black pixels 0.98 → 0.55 on the Locks' far quay), ~1 ms GPU, 0 draw calls.
 - **Lessons 220–222**, and the builder0 incident (a runaway rsync from outside a checkout; the wrapper now refuses).
 
-## Round 13 is RUNNING (launched 2026-09-27; three streams from his answers below, `game_design.md` *Round 13 direction*)
+## Round 13 (2026-09-27, one afternoon, closing): what it did, in one list
+
+Three streams, every item built, no sim-baseline move (two streams pre-registered one; neither happened). Full record
+in `HANDOFF.md` *ROUND 13*; briefs in `streams/archive/round13/`; evidence in `streams/references/round13/`.
+
+- **The wedge is the default plain-move shape in every terrain** (his *"Default wedge"*): the yard re-measured on the
+  same seeds, column first in 5 of 16 paired runs and tidier in 0 of 4 cells against a pre-registered bar of 9 and 2.
+- **S6 ON, his call pending:** a wheeled fixed-gun hull with nothing in sight is not told to face; mixed-squad stop
+  ~20 → ~13 s, faster in 32 of 32 pairs; the scouts sit up to 2.7 m off their slot and no longer angle out along their
+  sector (frames in `references/round13/squad/`). **OFF is one line if he prefers tidy.**
+- **A give-way the hull fits:** the WHOLE of round 12's +57 % rig reverse-contact rise was right-of-way (spots checked
+  at the centre; the 6 m last resort aimed inside the rig's own footprint). Rigs' reverse contacts 3602 → 1756 and all
+  contacts halved over 16 seeds; four pre-registered clauses failed on the design seeds and reversed on fresh ones; the
+  fight-maps stall share rose on 7 of 12 (a hull that yields in place holds) — shipped ON on his tidier-traversal trade.
+- **The garage, smoke-tested like a player, then given music:** the title had no way into the garage; a windowed FIGHT
+  opened the faction menu at 0 v 0. Both fixed; `make garage-tour` shoots the loop at both aspects; the garage bed
+  plays and hands FIGHT to `pre_match`; the garage and victory pools split.
+- Lessons 223–224.
+
+## Round 14 candidates (from round 13's Status reports; his call on the order)
+
+1. **S6 ON or OFF** (squad's frames; one line).
+2. **The garage list** (audio's Status, in the order a player hits them): the starter army leaves no room to add a unit;
+   the turntable shows a short turreted tank while the match fields the dozer-bus (the hull-box fit is not applied on
+   the turntable — theme-side); a stalemate time-out reads DEFEAT (or VICTORY) by chance; the camera readout sits over
+   the HUD at 20:9 (or should be off for players); the loader shows a command-card tip on a garage load; delete
+   `catalog_stub.gd` (dead since catalog v2).
+3. **Nav R4 — the other 53 %:** after the give-way fix, route legs (38 %) and k-turns (15 %) are the rigs' remaining
+   reverse-gear contacts; R1's buckets name them (`references/round13/nav/r1_yield_buckets.txt`). And the fight-maps
+   stall share that rose on 7 of 12: does a rig that holds instead of yielding block the street behind it?
+4. **Two music placements by title, for his ear** (`defeat_hunt`, `defeat_ragnarok`): `make garage` → FIGHT → lose, or
+   `make remote T="audio-pass PASS_SECONDS=90"`. And whether the garage's two blues are right.
+5. **`make tactics-drills` fails 2 gang-pack assertions on main already** (not in `check`; same with S6 off and on).
+6. **`scenario_perf` under builder0 load** (round 12's housekeeping item): make it refuse rather than judge when the box
+   is loaded — audio's first check went red on it again this round.
+7. The next PA batch when he asks (his *"ok"*); the web release's 29 MB pack (closed: fine).
+
+## Round 13 launch record (launched 2026-09-27; three streams from his answers below, `game_design.md` *Round 13 direction*)
 
 His answers to the list: 1 clarification owed (started on the orchestrator's recommendation, his veto stands) → **nav**;
 2 *"Default wedge"* → **squad**; 3 measured → **squad**; 4 *"leave"* → closed; 5 *"29 MB of music is fine"* → closed;

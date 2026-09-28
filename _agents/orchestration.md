@@ -3241,3 +3241,27 @@ a decision the project has until something in the repo has read it.**
     showing a unit he thought was fine, with no sentence saying "the mesh you approved came back a van; approve = 30
     credits for one more try", read to him as "approve the tank"; his answer was *"I don't understand what this URL is
     asking from me"*, and the item closed on that. The page did its job; the card did not say its job.
+
+**Round 13's one sentence, above its lessons (the orchestrator, 2026-09-27): a pre-registered DIRECTION is a claim
+about the baseline match, and it needs the same evidence as any other claim — that the match actually reaches the code.**
+
+223. **Pre-register a baseline move only with the reason the baseline match reaches the changed code; otherwise
+    pre-register UNMOVED and treat a move as the finding.** (round 13, squad's S6 and nav's R2.) Both streams
+    pre-registered the sim baseline MOVED with a plausible sentence ("scouts are in the baseline match, wheeled,
+    fixed gun"; "the yield protocol runs in the baseline match") and both were wrong: the hash was unmoved in every
+    arm, both times. Nobody was harmed — the workers declared it and the orchestrator recorded nothing — but the
+    orchestrator planned a CP1 merge-alone and a squad re-read on top of it, and squad kept a session open for a
+    checkpoint that never came. The plausible sentence was about the UNITS present, not about whether the 40 s
+    elimination ever puts a scout idle with nothing in sight or ever makes a rig give way. Rule: the pre-registration
+    names the path (which unit, which state, which second of the baseline match) or it says UNMOVED; and the
+    orchestrator does not plan a checkpoint around a move until a hash has actually moved.
+224. **The seeds you designed on are not the seeds you measure on.** (round 13, nav's R2.) Four of R2's
+    pre-registered clauses FAILED on seeds 1–8 (rig arrivals −5, refusals +16, press/unstick +36 %, and the fight-maps
+    stall share up on 7 of 12 against a bound of 6) and reversed on seeds 9–16. Seeds 1–8 had been driven through four
+    variants of the rule in an hour (refuse → size → drive-the-sweep → hold-in-place); every variant was chosen by
+    looking at those seeds, so their result is in-sample by construction. The worker declared the failures, added
+    fresh seeds, and reported both — the right thing, and only because the pre-registration existed to fail. Rule: when
+    a design iterates on a measurement, the acceptance run uses seeds the design never saw, named in the
+    pre-registration before the first variant is built; the design seeds are reported beside them, never instead of
+    them. And a clause that still fails on the fresh seeds (the fight-maps stall share, seed 3 only) is a declared
+    cost in the merge commit, not a footnote.
