@@ -68,6 +68,70 @@ Nothing. If he plays and says the rigs wait too long, `yieldhold` is the arm to 
 
 _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names its commit and machine._
 
+### Report in one screen
+
+- **N1 (done):** `--reverse-log` / `make nav-reverse-buckets` log every circle-rule reverse and every k-turn leg. The
+  rigs' `route/reverse` is Steering's circle rule, all of it, and the biggest single mechanism in BOTH buckets is
+  **momentum**: a reverse commanded on a rig still rolling forward at ~6 m/s (2-3 m to stop), nose into the face.
+- **N2 (falsified, OPT-IN):** the circle rule's reverse gated on an outline sweep — three builds, all worse on the
+  design seeds (the forward alternatives scrape; half the contacts are momentum anyway). `--nav-off=circlefit` turns
+  it on. Kept: the dense outline (a 14 m hull's 10-point outline misses block corners) and the roll-out model.
+- **N3 (ON, moves the sim baseline — CP1):** a planned leg ends within its stopping distance and counts from where the
+  hull moves in its gear. Target (kturn reverse contacts -50 %) FAILED on both seed sets (-12 %, -25 %); on the fresh
+  seeds every other clause held: rigs' contacts -19 %, leg time -13 %, arrivals equal, mixed contacts 3252 -> 870.
+  Shipped on the lead's standing trade; veto `--nav-off=kturnbrake`. Baseline `6313a38d7ecd99bb` -> `784069348a1b5423`
+  (attributed: the `kturnbrake`-off arm reads the recorded hash).
+- **N4 (done):** round 13's stall-share rise is a coin flip (25 of 48 runs, seeds 1-4); a holding hull queues ~3.4x
+  more hull-seconds per second than a moving give-way, but holds are 6 % of yielding and queues max 4 hulls: +13 %
+  queued time overall.
+- **N5 (stretch):** named, not built: first k-turn legs planned inside the stopping distance, and the circle rule's
+  reverses — a planner that looks earlier from a moving hull (the pieces are written: `_rollout`, `_dense_outline`).
+
+### What to playtest (exact commands)
+
+- `make skirmish` on the Terminus with the Condemned: a War Rig squad sent back and forth through the streets. Expect:
+  a rig's multi-point turn in a tight street stops at each end instead of rolling its nose into the block, and
+  finishes sooner.
+- `make nav-rig-clip RIG_CLIP_OFF=kturnbrake` (display; builder0: `make remote T="nav-rig-clip RIG_CLIP_OFF=kturnbrake"`)
+  -> `build/nav-rig-clip/rigfill_{off,on}.mp4`. Looked at (sheets in `references/round14/nav/rigfill_kturnbrake_*`):
+  with N3 the five-point turn is done ~2 s sooner, heading up the street by the 8th sheet frame against the 13th; in
+  THIS episode N3 then touches the container on the way out (21 contact ticks, round 13's arm 0) — one episode, the
+  aggregate is above.
+- `make nav-reverse-buckets DRIVE_SEEDS="1 2 3 4 5 6 7 8"`; the A/B: `tools/remote.sh nav-drive-arms
+  'DRIVE_SEEDS=9 10 11 12 13 14 15 16' 'DRIVE_ARMS=ctl=kturnbrake on=none' NAV_FLAGS=--reverse-log`.
+
+### Merge notes
+
+- **CP1: merge ALONE; the sim baseline moves** `6313a38d7ecd99bb` -> `784069348a1b5423` (N3, `kturnbrake`), attributed
+  by `nav-sim-arms SIM_ARMS="none kturnbrake circlefit"` on builder0. `make check` reads MOVED until the orchestrator
+  runs `make sim-baseline-adopt`.
+- Only nav's paths: `game/ai/movement.gd`, `game/ai/wall_contact.gd`, `tests/nav/`, `mk/nav.mk`, `_agents/navigation.md`,
+  this brief, `references/round14/nav/`. No shared file touched.
+- New `--nav-off` names: `kturnbrake` (off = round 13), `circlefit` (INVERTED: turns the gate ON). `route_arms()` gains
+  `circle_kept`, `circle_forward`, `circle_none`. `WallContact.report()` gains `by_reverse_why`; `NAV_DRIVE` and
+  `NAV_FIGHT` gain `queues`. Movement gains `yield_spot`, `queue_census()`, `QueueTally`, `reverse_log` (+ logs).
+- New tests: `test_nav_reverse_log` (3), `test_nav_circle_fit` (3), `test_nav_kturn_brake` (2), `test_nav_queue_census` (2).
+- New targets / tools: `nav-reverse-buckets`; `nav-rig-clip RIG_CLIP_OFF=`; `tests/nav/reverse_buckets.py`, `queue_table.py`.
+- Drive note: the airship A0 deploy fix (main `197364a8`) moved the rigs' drive control (seeds 1-8: 892 -> 1082
+  reverse-gear contacts); compare across it only through a control on the same tree.
+
+### Questions for the lead
+
+- None blocking. For his eye: a War Rig's multi-point turn in a narrow street now stops at each end instead of rolling
+  2 m on into the wall, and finishes sooner. Does it read like a driver?
+
+### Requests to other streams / the orchestrator
+
+- CP1 as above (merge alone, adopt the hash). Nothing else.
+
+### Next steps (not done, in order)
+
+1. **N5, a planner that looks earlier from a moving hull.** The count that names it: on the merged tree, 25 of 80
+   first k-turn legs (190 reverse contacts, rigs, seeds 1-8, control) are planned when the forward arc's hit is 1-3 m
+   and the rig needs 3.5 m to stop; and the circle rule's reverse (rigs' `route/reverse` 588-791 per 8 seeds). Start
+   state = `_rollout`; sweep = `_dense_run_ok`; pre-register on seeds 17-24 (1-16 are now spent).
+2. The give-way hold: if the lead finds rigs waiting, `--nav-off=yieldhold` (N4: holds queue ~3.4x more per second).
+
 ### Plan (the brief's order)
 
 | # | item | state |
