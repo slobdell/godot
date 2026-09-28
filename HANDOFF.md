@@ -4,9 +4,45 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-27 — **ROUND 13 IS LAUNCHED: three small streams (squad, nav, audio) from the lead's answers to round 12's list (`game_design.md` *Round 13 direction*, verbatim); briefs in `_agents/streams/`; the split in `workstreams.md` *Round 13*. Round 12 is CLOSED; its record is the section after this one. `main-checked` is `7325a1d7` (round 13's nav merge: builder0 1784/0, sim-baseline `6313a38d7ecd99bb` unmoved); the audio merge `13a5f009` and the close-out docs are after it, their check running.**_
+_Last updated: 2026-09-27 evening — **ROUND 13 IS CLOSED: three streams (squad, nav, audio), every item merged, worktrees removed, briefs in `streams/archive/round13/`, evidence in `streams/references/round13/`. No round is running. `main-checked` is `5b3c49f9` (the final check: builder0 1790/0, 18 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round); after it only docs (`dad3ca23`, `9313eb70`, this). The lead pushes. ONE decision open: S6 ON or OFF (below).**_
 
-## 🚀 ROUND 13 IS LAUNCHED (2026-09-27) — read this first
+## ✅ ROUND 13 IS CLOSED (2026-09-27, one afternoon) — read this first
+
+**Three streams, every item built and merged, the sim baseline unmoved all round.** His words are in `game_design.md`
+*Round 13 direction*. Briefs in `streams/archive/round13/`; evidence in `streams/references/round13/` (squad's Q1 and
+Q2 frames, nav's yield sheet and two clips and every log, audio's tour sheets and logs); lessons 223–224; round 14's
+candidates in `roadmap.md`. The merge table below was kept live during the round and is the record; each row names
+the green code hash, the merge, and main's own verdict read from the wrapper's line.
+
+### Waiting on the lead
+
+- **S6 ON or OFF** (squad's Q2, shipped ON at `73060fa2`): an 8 s faster stop for the mixed squad against scouts that
+  can sit 2–3 m off their slot and no longer angle out along their sector. Frames:
+  `streams/references/round13/squad/q2_scouts_crop_s6_off_on.jpg` (the Terminus F_1 short of its cross by the block
+  corner) and `q2_{yard,terminus}_s6_off_on.jpg` at his pose. His standing words argue OFF; the numbers argue ON.
+  OFF is `TankBrain.IDLE_FACE_NO_PIVOT := false`. **UNANSWERED.**
+- **For his ear, not a decision:** the garage's two blues; the two defeat placements by title (`make garage` → FIGHT →
+  lose, or `make remote T="audio-pass PASS_SECONDS=90"`).
+- **Playtest list:** from the title, GARAGE → build → FIGHT (the loop that had never been played); a Condemned squad's
+  plain move on the Terminus (a wedge now); the War Rig squad through the Terminus streets (they yield into room they
+  fit, and sometimes hold instead); a mixed squad's stop (S6).
+- No review page was published this round, so step 5a (read every page's `db`) had nothing to read.
+
+### Housekeeping at the close
+
+- Worktrees squad, nav, audio removed after the ancestor check; branches deleted. Nothing git-ignored in them was
+  evidence (each stream committed its sheets, clips and logs under `references/round13/`).
+- Two idle audio sessions were open at launch (`godot-audio-dc` alongside the working `godot-audio-30`); only one
+  worked the branch. Close stray sessions before a kickoff.
+- `make tactics-drills` fails 2 gang-pack assertions on main (pre-existing at `8f96a43c`, not in `check`);
+  `scenario_perf` went red once more under builder0 load (audio's first check). Both on the round-14 list.
+- The laptop's memory guard killed the orchestrator's foreground waiters twice; detached `setsid nohup make remote`
+  plus a 60 s-poll monitor on the log survived. Three worker sessions plus the orchestrator is the practical limit
+  with Chrome open.
+
+_The launch record follows, as written:_
+
+## 🚀 ROUND 13 IS LAUNCHED (2026-09-27) — kept as written
 
 **His answers** (verbatim in `game_design.md` *Round 13 direction*): 2 *"Default wedge"*; 4 *"leave"*; 5 *"29 MB of music is fine"*;
 6 *"Yes let's add garage music, but I've never even smoke tested the garage"*; 7 *"ok"*; 8 *"don't worry about this"*;
@@ -36,7 +72,7 @@ it calls the remote wrapper itself); at close read every page's `db` (step 5a) a
 
 | nav | `80f8c522` (builder0 1780/0, baseline unmoved in EVERY arm although pre-registered MOVED — no CP1) | `51a0dcd9` + docs `7325a1d7`, main's own check 1784/0, baseline `6313a38d7ecd99bb` | **A give-way the hull fits (R1+R2).** R1: the WHOLE round-12 +542 rig reverse-contact rise was right-of-way: spots were checked only at the hull's centre, and the 6 m last-resort back-up aims at a point inside a 14 m hull's own footprint. R2 (`--nav-off=yieldfit` restores round 12; `yieldshort` = the refusing build, measured worse; `yieldhold` = give way in place): a spot is accepted only if the steering-law drive to it keeps the whole outline clear, else give way as far as it fits, else in place. builder0, 16 seeds × 2 squads: rigs' reverse contacts 3602 → 1756, all contacts 15129 → 7305, leg time 2292 → 1915 s, arrivals 229 → 225 of 256; mixed 4282 → 2114 contacts, arrivals 364 → 366; fight-maps net wall ticks down 12 of 12. **Declared:** four pre-registered clauses FAILED on seeds 1–8 (the design seeds: arrivals −5, refusals +16, press/unstick +36 %) and reversed on fresh seeds 9–16; the fight-maps `blocked_*` share rose on 7 of 12 against a bound of 6 (a hull that yields in place is a hull that holds). Shipped ON on his standing trade (*"a 4s slower march for a tidier traversal"*); one switch to veto. Evidence merged (`8af1eb5d`): `references/round13/nav/` — the yield sheet (seed 7, first leg, both arms; **looked at by the orchestrator: OFF, the three rigs are through the gap by 5 s and gone by 8 s; ON, two are still in the gap at 8 s, one holding** — this leg is the slower march, though the 16-seed leg time is 16 % lower in aggregate), the two clips, R1's buckets, the 16-seed table, every log |
 
-| audio | `c4d11015` (builder0 1779/0, 18 targets, baseline unmoved; `audio-launch-smoke` on a display passed) | `13a5f009` + docs `4504a9f3`, main's check pending | **The garage smoke-tested like a player, then given music (G1+G2).** Two findings a player hits first, fixed: **the title had no way into the garage** (a GARAGE row: the one shared line, `game/ui/widgets/title/title_screen.gd`); **a windowed FIGHT opened the skirmish's faction menu at 0 v 0** and restarted without the army (every earlier garage check was headless). `make garage-tour`: a tap-by-tap loop from the title with a frame per step at both aspects (`references/round13/audio/`, looked at by the orchestrator: the loop runs end to end). The director holds `garage` while the builder is up; FIGHT hands back to `pre_match`; the garage and victory pools split (one director follows the player into the match; a shared pool replayed the garage's take on the win). **The round-14 garage list** (audio's Status): the starter army leaves no room to add a unit; the turntable shows a short turreted tank while the match fields the dozer-bus (the hull-box fit is not applied on the turntable, theme-side); a stalemate time-out reads DEFEAT; the camera readout sits over the HUD at 20:9; `catalog_stub.gd` is dead code. **For his ear:** the garage's two blues; the two defeat placements by title (G3) |
+| audio | `c4d11015` (builder0 1779/0, 18 targets, baseline unmoved; `audio-launch-smoke` on a display passed) | `13a5f009` + docs `4504a9f3`, main's own check at `5b3c49f9` 1790/0, baseline `6313a38d7ecd99bb` | **The garage smoke-tested like a player, then given music (G1+G2).** Two findings a player hits first, fixed: **the title had no way into the garage** (a GARAGE row: the one shared line, `game/ui/widgets/title/title_screen.gd`); **a windowed FIGHT opened the skirmish's faction menu at 0 v 0** and restarted without the army (every earlier garage check was headless). `make garage-tour`: a tap-by-tap loop from the title with a frame per step at both aspects (`references/round13/audio/`, looked at by the orchestrator: the loop runs end to end). The director holds `garage` while the builder is up; FIGHT hands back to `pre_match`; the garage and victory pools split (one director follows the player into the match; a shared pool replayed the garage's take on the win). **The round-14 garage list** (audio's Status): the starter army leaves no room to add a unit; the turntable shows a short turreted tank while the match fields the dozer-bus (the hull-box fit is not applied on the turntable, theme-side); a stalemate time-out reads DEFEAT; the camera readout sits over the HUD at 20:9; `catalog_stub.gd` is dead code. **For his ear:** the garage's two blues; the two defeat placements by title (G3) |
 
 **In flight (was):** Nav's R2 (sized give-way: at `d7d2f5d7`, builder0, 16 seeds × 2, rigs' reverse-gear contacts 3602 → 1756, arrivals 229 → 225 of 256, mixed 4282 → 2114 contacts, arrivals 364 → 366; R1's buckets: the give-way layer is 44 % of the rigs' reverse contacts, route 38 %, k-turn 15 %; CP1 pending its attribution). Audio's G1+G2 done in Status at `1dae1959` (two player findings fixed: no GARAGE on the title; a windowed FIGHT opened the faction menu at 0 v 0; a round-14 garage list of five; FIGHT lands in `pre_match`; garage/victory pools split), check re-running after a `scenario_perf` load flake.
 
