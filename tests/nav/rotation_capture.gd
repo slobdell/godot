@@ -336,6 +336,7 @@ func _rigyield() -> void:
 			int(gears.get("yield/forward", 0)) + int(gears.get("yield/reverse", 0)) + int(gears.get("yield/none", 0)),
 			int(gears.get("yield/reverse", 0)), int(WallContact.by_gear.get("reverse", 0)), int(arms["yields_started"]),
 			int(arms["yield_spots_unfit"]), int(arms["yield_spots_shortened"]), int(arms["yield_holds"]), int(arms["asks_refused"])])
+	print("NAV_ROTATION_RIGYIELD_DRIVERS %s" % JSON.stringify(gears))
 	for tank: Tank in tanks:
 		tank.queue_free()
 	executor.queue_free()
