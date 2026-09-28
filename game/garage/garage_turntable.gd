@@ -1,21 +1,28 @@
 class_name GarageTurntable
 extends SubViewportContainer
-## A 3D preview of one unit, built from the same visual slots the match uses (so look & feel and
-## assets art shows up here for free), turning slowly. Swipe/drag across it to spin it by hand.
+## A 3D preview of one unit, turning slowly. Swipe/drag across it to spin it by hand.
 ##
-## Slots per unit type (contract C6): "unit.<id>.hull" / ".turret" / ".weapon" when the theme has them, else
-## "tank.hull", "tank.turret", and "weapon.<the unit's weapon>" (_agents/slot_contracts.md: turret ring at
-## y ≈ 1.22, z ≈ +0.2).
+## Round 14 (G2; round 13's tour: "the tank in the garage isn't the tank I fought with"): the preview IS a match
+## vehicle -- a `Tank` from tank.tscn with `simulate` off and processing disabled -- so `Tank.apply_unit` fits the art
+## to the unit's `hull_size` (`_apply_hull_size`, the turret mount, DozerPart._fit_to_hull and the gun cuts) exactly as
+## the match does. Until then the turntable filled the three visual slots itself and applied none of that: the
+## Condemned's 8.62 m dozer-bus drew as a short turreted tank. The slots (contract C6: "unit.<id>.hull" / ".turret" /
+## ".weapon", else the shared tank's) are the Tank's own. The camera frames whatever size that is.
 
 const SPIN_DEG_PER_SEC := 20.0
-const TURRET_OFFSET := Vector3(0.0, 1.22, 0.2)
 ## Radians of spin per pixel dragged.
 const DRAG_SPIN := 0.01
+## The camera's direction from the vehicle (the pre-round-14 pose, normalised) and the room left around it.
+const CAMERA_DIRECTION := Vector3(6.0, 4.2, 7.5)
+const FRAME_MARGIN := 1.12
+const TANK_SCENE := preload("res://game/tank/tank.tscn")
 
 var unit_id := ""
 
 var _viewport: SubViewport
 var _pivot: Node3D
+var _floor: CylinderMesh
+var _tank: Tank
 var _hull: VisualSlot
 var _turret: VisualSlot
 var _weapon: VisualSlot
@@ -53,56 +60,119 @@ func _init() -> void:
 	_viewport.add_child(rim_light)
 
 	var floor_mesh := MeshInstance3D.new()
-	var disc := CylinderMesh.new()
-	disc.top_radius = 3.2
-	disc.bottom_radius = 3.2
-	disc.height = 0.08
+	_floor = CylinderMesh.new()
+	_floor.top_radius = 3.2
+	_floor.bottom_radius = 3.2
+	_floor.height = 0.08
 	var floor_material := StandardMaterial3D.new()
 	floor_material.albedo_color = Color(0.13, 0.14, 0.17)
-	disc.material = floor_material
-	floor_mesh.mesh = disc
+	_floor.material = floor_material
+	floor_mesh.mesh = _floor
 	floor_mesh.position.y = -0.04
 	_viewport.add_child(floor_mesh)
 
 	_pivot = Node3D.new()
 	_viewport.add_child(_pivot)
-	_hull = VisualSlot.new()
-	_pivot.add_child(_hull)
-	var turret_mount := Node3D.new()
-	turret_mount.position = TURRET_OFFSET
-	_pivot.add_child(turret_mount)
-	_turret = VisualSlot.new()
-	turret_mount.add_child(_turret)
-	_weapon = VisualSlot.new()
-	turret_mount.add_child(_weapon)
 
 	_camera = Camera3D.new()
 	_camera.fov = 40.0
 	_viewport.add_child(_camera)
-	_camera.position = Vector3(6.0, 4.2, 7.5)
 	_pivot.rotation.y = deg_to_rad(-30.0)
+	resized.connect(_frame)
 
 
 func _ready() -> void:
-	_camera.look_at(Vector3(0.0, 0.9, 0.0))
+	_frame()
 
 
-## Show `entry` (an army unit: {"unit": id}) painted `color`. `weapon_id` is the unit's catalog weapon.
-func show_unit(entry: Dictionary, color: Color, weapon_id := "") -> void:
+## Show `entry` (an army unit: {"unit": id}) painted `color`. `weapon_id` is the unit's catalog weapon; the Tank reads
+## the same one from `Units` (catalog v2), so it is kept for callers and not needed here.
+func show_unit(entry: Dictionary, color: Color, _weapon_id := "") -> void:
 	unit_id = String(entry.get("unit", "tank"))
-	_hull.fill(slot_for(unit_id, "hull"))
-	_turret.fill(slot_for(unit_id, "turret"))
-	var weapon_slot := "unit.%s.weapon" % unit_id
-	if not GameTheme.slots.has(weapon_slot):
-		weapon_slot = "weapon." + weapon_id
-	if weapon_id != "" and GameTheme.slots.has(weapon_slot):
-		_weapon.fill(weapon_slot)
-		_weapon.invoke("setup", [Weapons.profile(weapon_id)])
-	elif _weapon.visual != null:
-		_weapon.visual.free()
-		_weapon.visual = null
-	for slot in [_hull, _turret, _weapon]:
-		slot.invoke("set_team_color", [color])
+	if _tank != null:
+		# Hidden now, freed at the frame's end: its parts' deferred fits still run on a node in the tree.
+		_tank.visible = false
+		_tank.name = "Leaving"
+		_tank.queue_free()
+	_tank = TANK_SCENE.instantiate() as Tank
+	_tank.name = "Vehicle"
+	_tank.unit_id = unit_id
+	_tank.simulate = false
+	# A preview, not a combatant: no ticking, no smoothing toward snapshots. `_ready` (apply_unit, the fit) and the
+	# art's deferred fit still run.
+	_tank.process_mode = Node.PROCESS_MODE_DISABLED
+	_pivot.add_child(_tank)
+	_tank.nameplate.visible = false
+	_hull = _tank.get_node("HullVisual") as VisualSlot
+	_turret = _tank.get_node("Turret/TurretVisual") as VisualSlot
+	_weapon = _tank.get_node("Turret/WeaponVisual") as VisualSlot
+	_tank.set_team_accent(color)
+	_frame()
+
+
+## The hull's size in metres as the match would draw it (hull_size): the tank's -Z length in z, from the hull model's
+## meshes only (a shield shell is bigger than the hull; a gun cut from the hull overhangs it). As
+## tests/test_theme_unit_scale.gd measures a match vehicle.
+func drawn_hull_size() -> Vector3:
+	if _tank == null:
+		return Vector3.ZERO
+	var hull: Node = _hull
+	var models := hull.find_children("Model", "Node3D", true, false)
+	if not models.is_empty():
+		hull = models[0]
+	var result := AABB()
+	var first := true
+	for child in hull.find_children("*", "MeshInstance3D", true, false):
+		var instance := child as MeshInstance3D
+		if instance.mesh == null or not instance.is_visible_in_tree() or instance.mesh.get_surface_count() == 0:
+			continue
+		if child.get_path().get_concatenated_names().contains("GunPivot"):
+			continue
+		var box := (_tank.global_transform.affine_inverse() * instance.global_transform) * instance.mesh.get_aabb()
+		result = box if first else result.merge(box)
+		first = false
+	return result.size
+
+
+## The unit's box (hull_size), standing on the floor at the turntable's centre.
+func _box() -> AABB:
+	var size_list: Variant = Units.stat(unit_id, "hull_size") if Units.exists(unit_id) else [2.4, 1.6, 3.6]
+	var size := Vector3(size_list[0], size_list[1], size_list[2])
+	return AABB(Vector3(-size.x / 2.0, 0.0, -size.z / 2.0), size)
+
+
+## Frame the unit whole at any spin: the camera backs off along CAMERA_DIRECTION until the box's bounding sphere fits
+## the narrower of the view's two angles; the floor disc grows with it.
+func _frame() -> void:
+	if _camera == null:
+		return
+	var box := _box()
+	var centre := box.get_center()
+	var radius := box.size.length() / 2.0
+	# Before layout the container can be 0 wide: frame for a wide panel until it has a size (resized re-frames).
+	var aspect := clampf(size.x / size.y, 0.5, 4.0) if size.x > 1.0 and size.y > 1.0 else 16.0 / 9.0
+	var half_v := deg_to_rad(_camera.fov / 2.0)
+	var half_h := atan(tan(half_v) * aspect)
+	var distance := radius * FRAME_MARGIN / sin(minf(half_v, half_h))
+	_camera.position = centre + CAMERA_DIRECTION.normalized() * distance
+	_camera.look_at_from_position(_camera.position, centre)
+	_camera.near = maxf(0.05, distance - radius * 2.0)
+	_camera.far = distance + radius * 4.0 + 10.0
+	var footprint := Vector2(box.size.x, box.size.z).length() / 2.0
+	_floor.top_radius = maxf(3.2, footprint + 0.6)
+	_floor.bottom_radius = _floor.top_radius
+
+
+## How many of the unit's 8 box corners fall outside the view (or behind the camera) with the turntable at `yaw`.
+func corners_outside_view(yaw: float) -> int:
+	var box := _box()
+	var rect := Rect2(Vector2.ZERO, Vector2(_viewport.size))
+	var outside := 0
+	for i in 8:
+		var corner := Basis(Vector3.UP, yaw) * box.get_endpoint(i)
+		if _camera.is_position_behind(corner) or not rect.has_point(_camera.unproject_position(corner)):
+			outside += 1
+	return outside
 
 
 ## Slot contract C6: "unit.<id>.<part>" when the theme has it, else the tank's.
