@@ -106,4 +106,42 @@ Nothing. His words are in. If A3 finds the two goals cannot both hold, the trade
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current; newest first within each section)_
+
+**Baseline:** `b5c11813` (branch start) builder0 `>> remote: make check exited 0`, 1790 passed / 0 failed, 18 targets,
+sim-baseline `6313a38d7ecd99bb` unmoved.
+
+### Plan (in order)
+1. **A0** — replay his Locks match (`make rig-vanish REPLAY=…`), measure, name the mechanism, fix with a regression test.
+2. **A1** — `make airship-view`: the live camera in a real skirmish, per map and arm; design seed 7 named before any
+   variant; acceptance on fresh seeds 11 and 12 (lesson 224).
+3. **A2** — the view term in the orbit chooser (`AirshipFlight`), behind `--airship-off=viewavoid`.
+4. **A3** — both arms, same seeds; the clip. **A4** — drift rate against the 8.5°/s stately bound.
+
+### A0: the invisible War Rigs — MECHANISM FOUND, fix built (check pending)
+- **What he saw:** *"the trucks just became completely invisible when I was moving them around. Their graphic was gone
+  and instead it was just a blue circle"* (Locks, seed 76424, Gangs v Condemned; his log confirms the launch flags).
+- **The mechanism, measured:** his two rigs were **deployed inside the city block at (−30, 42)** (40×24×40 m, x −50…−10,
+  z 22…62). His recording's tick 0: `Green_Guns_7` (−39.5, 57) and `Green_Guns_9` (−35, 57) — exactly his two — plus
+  several Hunters, inside the building. The replay (`make rig-vanish REPLAY=…`, builder0, working tree on `a3aee344`)
+  caught the next step: on tick 2 `move_and_slide`'s depenetration separated the buried 14 m hull along its shortest
+  way out, **down, 6.24 m under the floor** (Guns_9 y = −6.241 from tick 3 to the end; every other rig y ≤ 0.002).
+  Hulls float (`MOTION_MODE_FLOATING`, `velocity.y = 0`) and nothing holds their height, so it drove the whole match
+  under the ground: art hidden under the opaque floor and water, ring drawn on top. He noticed when he moved them.
+- **Why the deploy put them there:** `ArmyLayout.deploy` promises every slot on standable ground via
+  `SlotGround.standable`, which is a navmesh query on the hull's CENTRE only and **returns the point unchanged when the
+  navigation map is not baked** — which is when a skirmish deploys. 13 × 14 m rigs overflow the Locks' 32 m-deep zone
+  forward into the block. The same measurement found the class wider: on the Locks' chamfered corners three hulls were
+  deployed astride the 3 m perimeter wall and physics set them ON it (y = 3.0), and two rigs through the ad screen.
+- **The fix** (carve-out granted by the orchestrator, additive): `ArmyLayout._clear_spot` takes a spot only if the whole
+  hull clears every layout obstacle and stays inside the arena's shape, off water and pits (`_clear_of_obstacles`: the
+  layout's own geometry, no navmesh needed). `SlotGround.standable` counts its unchecked calls (`unchecked`) and the
+  deploy prints `ARMY_LAYOUT_UNCHECKED`. `Tank` prints `TANK_OFF_FLOOR` once per hull that leaves the floor by > 0.5 m
+  (a log, not a silent correction: the orchestrator's ruling).
+- **Regression test:** `tests/test_deploy_faction_armies.gd` — his army on the Locks, deployed before and after the bake:
+  no hull inside a collider and every hull on the floor after 10 ticks (FAILS without the fix: 2 inside, 3 off the
+  floor at y 1.4–3.0); and every faction × Locks, Terminus, Crossing, yard: 16 of 16 clean (laptop).
+- **Killed by reading:** fog of war (enemies only), the cutaway (≥ 6 m solids), a bridge roof (none), LOD/visibility
+  ranges (none), the water shader (opaque, no depth writes).
+- Instrument: `game/theme/fx/bench/rig_vanish.gd`, `make rig-vanish` (placed, `DRIVE=1`, or `REPLAY=`).
+
