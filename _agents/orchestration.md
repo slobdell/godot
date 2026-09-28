@@ -3265,3 +3265,38 @@ about the baseline match, and it needs the same evidence as any other claim — 
     pre-registration before the first variant is built; the design seeds are reported beside them, never instead of
     them. And a clause that still fails on the fresh seeds (the fight-maps stall share, seed 3 only) is a declared
     cost in the merge commit, not a footnote.
+
+**Round 14's one sentence, above its lessons (the orchestrator, 2026-09-28): the recording is the witness — read it
+before you ask the lead what he saw, and before you guess.**
+
+225. **Read the match recording before asking the lead for details, and label every mechanism a hypothesis until a
+    replay has measured it.** (round 14, the invisible War Rigs.) The lead: *"I have 2 war rigs … that turned
+    invisible"*, then *"dude I don't know the name of the map - are you not able to just pull up the recording of the
+    last game played?"* The recorder (`build/recordings/latest.txt`, a census every second, every order with its tick)
+    named the map, the seed, the two units and his own orders in five minutes. Then THREE mechanisms died in a row:
+    the orchestrator's (parked under a covered bridge — killed by his next sentence: the ring was drawn, the art was
+    not, in motion), the worker's first (depenetration against the canal rim), and only the replay found the truth
+    (deployed INSIDE a city block, pushed 6.24 m under the floor on tick 2). Rules: the first question about a play
+    defect is answered from the recording, not from him; a hypothesis is sent as one with the measurement that kills
+    it (lesson 219), and the worker replays the recorded orders at their ticks before it explains anything.
+226. **A silent no-op in a placement check is a spawn bug waiting for a bigger army.** `SlotGround.standable`
+    returned the point UNCHANGED before the navmesh bake (which is when every skirmish deploys — 1279 unchecked
+    queries a match) and tested only the hull's centre; nothing complained until 13 rigs of 14 m overflowed a 32 m
+    zone into a building. Rules: a check that cannot judge says so (a counter, a print: `ARMY_LAYOUT_UNCHECKED`) — the
+    same rule as `scenario_perf` refusing under load (verification.md rule 3), now applied to placement; a placement
+    test uses the whole footprint against the obstacle boxes, no navmesh needed; and a hull more than 0.5 m off the
+    floor after settle is LOGGED (`TANK_OFF_FLOOR`), never silently corrected, so the next spawn bug is seen.
+227. **Killing the local wrapper does not stop the remote run; the wrapper's refusal is the safety, so read it.** The
+    orchestrator killed `make remote T=check` locally (by PID, its own) after a merge aborted, relaunched, and the
+    wrapper REFUSED: the remote half was still running in the same folder (trip-up 66's guard), and the orchestrator's
+    monitor waited an hour on a log that said "nothing was synced". Rules: stop a remote run on the box by
+    cwd-verified PID or wait for `tools/remote.sh --status` to say IDLE; a launch log is read within a minute for
+    "REFUSING" before anything waits on it; and `pkill -f <pattern>` is never used — it matched the orchestrator's own
+    shell (exit 144) and would match seven checkouts' identical commands.
+228. **An edit script that slices between two markers must assert the slice is non-empty.** (airship, the brief at
+    92 MB.) `text.replace('', section)` inserts the section between EVERY character; the brief went from 210 lines to
+    906,840 in one commit and the worker did not notice until the orchestrator read the diff stat (`1,210 →
+    1,906840`). Rules: a doc edit asserts its anchor was found and its slice is non-empty, and checks `wc -l` after; the
+    orchestrator reads every merge's `--stat` for a file whose line count is absurd; and a blob like that never reaches
+    `main` — the unmerged commits are squashed on the branch (nothing merged, nothing pushed: not the forbidden
+    rewrite), never carried into a history every clone would download.
