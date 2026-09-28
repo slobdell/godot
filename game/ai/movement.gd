@@ -2859,6 +2859,12 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			_kturn_legs.clear()
 			_repath_left = 0.0
 			return false
+		if reverse_log and _kturn_rec.has("_from"):
+			# Round 14 (N1): how far the hull went the WRONG way (against the leg's gear) before the leg took hold.
+			var from: Array = _kturn_rec["_from"]
+			var along := (Vector2(tank.global_position.x - float(from[0]), tank.global_position.z - float(from[1]))
+					.dot(Vector2(float(from[2]), float(from[3])))) * _kturn_gear
+			_kturn_rec["wrong_way_m"] = snappedf(maxf(float(_kturn_rec["wrong_way_m"]), -along), 0.01)
 		cmd.throttle = KTURN_THROTTLE * _kturn_gear
 		cmd.turn = _kturn_turn
 		kturn_ticks += ctl._step
@@ -3273,7 +3279,7 @@ func _kturn_leg_diagnose(leg: Vector2) -> Dictionary:
 			"kind": _kturn_plan_kind, "leg_no": _kturn_leg_no, "legs_left": _kturn_legs.size(), "gear": int(leg.x),
 			"planned_m": snappedf(leg.y, 0.01), "turn": _kturn_turn, "at": _flat_xz(here),
 			"heading_deg": snappedf(_heading_deg(forward), 0.1), "contacts": 0, "reverse_contacts": 0, "hit": {}, "ends": {},
-			"_from": [here.x, here.z, forward.x, forward.z]}
+			"moving": {}, "v0": snappedf(tank.speed(), 0.01), "wrong_way_m": 0.0, "_from": [here.x, here.z, forward.x, forward.z]}
 	if Pathing.enabled and Pathing.is_ready(tank):
 		var map := tank.get_world_3d().navigation_map
 		var frame := _kturn_frame(tank)
@@ -3357,8 +3363,8 @@ func _circle_diagnose(waypoint: Vector3, goal: Vector3, remaining: float, radius
 			"at": _flat_xz(here), "heading_deg": snappedf(_heading_deg(forward), 0.1), "radius_m": snappedf(radius, 0.1),
 			"ahead_m": snappedf(to.dot(forward), 0.1), "right_m": snappedf(to.dot(right), 0.1),
 			"point_is_goal": _flat_distance(waypoint, goal) < 0.5, "remaining_m": snappedf(remaining, 0.1),
-			"arrive_m": snappedf(_arrive, 0.1), "turn": turn, "phase": phase,
-			"driven_m": 0.0, "contacts": 0, "reverse_contacts": 0, "hit": {}, "ends": {}}
+			"arrive_m": snappedf(_arrive, 0.1), "turn": turn, "phase": phase, "v0": snappedf(tank.speed(), 0.01),
+			"driven_m": 0.0, "contacts": 0, "reverse_contacts": 0, "hit": {}, "ends": {}, "moving": {}}
 	if not (Pathing.enabled and Pathing.is_ready(tank)):
 		return row
 	var map := tank.get_world_3d().navigation_map

@@ -237,6 +237,12 @@ static func _note_yield(rec: Dictionary, tank: Tank, gear: String, what: String,
 	var ends: Dictionary = rec["ends"]
 	var key := "%s/%s" % [gear, end]
 	ends[key] = int(ends.get(key, 0)) + 1
+	# Round 14 (N1): which way the hull was ACTUALLY rolling (a reverse command on a hull still rolling forward is momentum).
+	if rec.has("moving"):
+		var moving: Dictionary = rec["moving"]
+		var roll := "fwd" if tank.speed() > 0.3 else ("back" if tank.speed() < -0.3 else "still")
+		var mkey := "%s/%s/%s" % [gear, end, roll]
+		moving[mkey] = int(moving.get(mkey, 0)) + 1
 
 
 func _classify(mover: Movement, tank: Tank, at: Vector3, wall_normal: Vector3) -> String:

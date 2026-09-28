@@ -53,6 +53,13 @@ def med(values):
     return round(statistics.median(values), 2) if values else "-"
 
 
+def moving(rows):
+    out = Counter()
+    for row in rows:
+        out.update(row.get("moving", {}))
+    return out
+
+
 def circle_bucket(row):
     where = "goal" if row.get("point_is_goal") else "mid"
     sweep = "fits" if row.get("fits") else ("blocked:" + row.get("blocked_by", "?") if "blocked_by" in row else "never_lets_go")
@@ -104,6 +111,9 @@ def main(paths):
             for k, v in row.get("hit", {}).items():
                 hits[k] += v
         print("circle contacts by end: %s; hit: %s" % (dict(ends.most_common()), dict(hits.most_common(6))))
+        print("circle contacts by gear/end/actual roll: %s; median v0 of episodes with contacts %s, without %s" % (
+            dict(moving(circles).most_common(8)), med([r.get("v0") for r in circles if r["contacts"]]),
+            med([r.get("v0") for r in circles if not r["contacts"]])))
 
         legs = entry["legs"]
         groups = defaultdict(list)
@@ -130,6 +140,10 @@ def main(paths):
                 parts[row.get("end_part", "?")] += row["contacts"]
         print("leg contacts by end: %s; hit: %s; outline part out at the leg's end (contact-weighted): %s" % (
             dict(ends.most_common()), dict(hits.most_common(6)), dict(parts.most_common())))
+        print("leg contacts by gear/end/actual roll: %s; legs with contacts: median v0 %s, wrong-way %s m; without: %s, %s m" % (
+            dict(moving(legs).most_common(8)), med([r.get("v0") for r in legs if r["contacts"]]),
+            med([r.get("wrong_way_m") for r in legs if r["contacts"]]), med([r.get("v0") for r in legs if not r["contacts"]]),
+            med([r.get("wrong_way_m") for r in legs if not r["contacts"]])))
         # Planned vs driven, contact legs only: is the leg short of its plan (cut) or on plan and still in a wall?
         with_contact = [r for r in legs if r.get("contacts", 0) > 0]
         planned_ok = [r for r in with_contact if (r.get("pred_margin_m") or 0) >= 0]
