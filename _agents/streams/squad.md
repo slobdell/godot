@@ -61,6 +61,9 @@ Nothing; his answers are in.
 
 _Worker report, 2026-09-27. Every number carries its commit and machine (all builder0; laptop numbers were never taken)._
 
+**FINAL. Both items merged:** Q1 at `57ab6597` (main `cee83fd2`), the branch at `07b276c4` (main `73060fa2`, S6 ON).
+The brief has no stretch items. Open: the lead's S6 call (*Questions for the lead*), and the orchestrator's merge-main
+baseline re-read after nav's CP1 (a formality: unmoved in both arms).
 **Q1 merged** by the orchestrator at `57ab6597` (main `cee83fd2`). **Q2: code green at `21864680`** (builder0, `>> remote:
 make check exited 0`, 1777 passed, 0 failed, sim baseline `6313a38d7ecd99bb` unmoved); the merge hash for the whole
 branch is named in *Merge here* at the bottom once the tip's check is in.
@@ -165,10 +168,16 @@ branch is named in *Merge here* at the bottom once the tip's check is in.
 
 ### What to playtest
 
-`make skirmish`: select a whole Condemned or Law squad (its number key), right-click ~80 m away — it travels as a
-wedge and the card reads "Auto: Wedge" with the line "moving as ordered, travelling: wedge (default), …". With a
-squad that has scouts, watch the arrival: the scouts stop pointing the way they drove instead of shuffling round to
-their arcs; put an enemy in sight and they turn to it.
+1. `make skirmish` (the Condemned or Law army the garage deals): press a squad's number key, right-click ~80 m away.
+   It travels as a **wedge**; the Formation button reads "Auto: Wedge" and the doctrine line "moving as ordered,
+   travelling: wedge (default), …". Once on the yard (dense) and once in a Terminus street (`make skirmish` again until
+   the Terminus is dealt): on the yard it spreads between the container rows; in a 20 m street it spans the street.
+2. Same order with a squad that has **scouts**: watch the arrival. They stop pointing the way they drove (no
+   back-and-forth turn), and the squad is still within ~13 s instead of ~20 s. Put an enemy in sight and they turn to it.
+3. To see the other arm of S6: set `IDLE_FACE_NO_PIVOT := false` in `game/ai/tank_brain.gd` and repeat 2; the scouts
+   then shuffle round to face outward along their arcs.
+4. Frames without playing: `make remote T="formation-shots SHAPES=auto UNITS=scout:scout:ifv:ifv:tank IDLE_FACE=on SETTLE=on"`
+   (and `IDLE_FACE=off`) → `build/formation-shots/`.
 
 ### New tools
 
@@ -191,3 +200,9 @@ their arcs; put an enemy in sight and they turn to it.
   what the player reads (the row's `why` alone never reached the card: `_plan_form_up` overwrote it).
 - S6 shipped ON on the numbers; the frame cost (one scout visibly short of its slot on the Terminus, scouts not
   angled to their arcs) is put to the lead above. OFF is one line (`IDLE_FACE_NO_PIVOT := false`).
+
+### Merge here
+
+**`07b276c4` is green, merge here** — builder0, `>> remote: make check exited 0`, 1777 passed, 0 failed, 18 of 18
+targets, sim baseline `6313a38d7ecd99bb` unmoved, determinism `550d53790035ddb4`. Anything after it on this branch is
+this Status line only. Q1 alone was merged earlier at `57ab6597` (main `cee83fd2`).
