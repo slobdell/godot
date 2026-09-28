@@ -67,4 +67,134 @@ Nothing.
 
 ## Status
 
-_(the worker keeps this current)_
+_(the worker keeps this current; last updated 2026-09-28 ~02:30)_
+
+**Summary: Q1–Q4 done.** Merge hash and its check are at the bottom (*Merge notes*).
+
+### Done (every number: builder0 unless marked; commit named)
+
+- **Q3, `dca1d6cc`.** The four ladder variants take `doctrine_standard.json`'s movement rows verbatim (wedge
+  default). New test `test_a_ladder_variant_differs_from_the_standard_table_only_in_what_it_names`: a variant may
+  differ from the live table only in name, summary, drills and traits. It was red on all four before the fix (row 10,
+  the old `dense → column`) and is green after. Past ladder numbers stand: they were taken when the live table had
+  the same row.
+- **Q2, `470491be`.** `scenario_perf` times a reference workload (20 × `ControlFixture.reference_work`) 9× before the
+  fight and every 30 ticks during it. If the median during the fight is more than 1.5× this machine's nominal
+  (`tests/ai_scenarios/perf_nominal.json`), or the machine has no nominal, it prints
+  `SCENARIO_NOT_JUDGED reason=… ref=…x` and skips only the budget assertion. The runner counts NOT JUDGED apart from
+  passed (`scenarios not judged: N`). The gate compares passed + not judged with the baseline, prints *NOT JUDGED …
+  not a pass*, and leaves a marker. `check`'s verdict has a fourth state:
+  `>> check: 17 passed, 1 NOT JUDGED` + the row, never "all passed", exit 0. Tests first: 8 gate cases and 8 verdict
+  cases were red before. `make ai-perf-nominal` records a machine; `ai-perf PERF_REFUSE=off` is the mutation arm.
+  - End to end (check at dca1d6cc + this code, before any nominal existed): `1791 passed, 0 failed`,
+    `>> check: 17 passed, 1 NOT JUDGED`, the row `scenario_perf … (reason=no_nominal machine=builder0)`,
+    `>> remote: make check exited 0`.
+  - At `070476be` with the nominal: `perf_reference 0.824 ms … nominal 0.819: 1.01x`, `scenarios not judged: 0`,
+    `43 passed, 1 failed` (the baseline's), `18 targets, all passed`.
+  - Nominals: builder0 **0.774 ms** (idle, load 1.12, `9d618587`; replaced a provisional 0.819 taken during a check), flightdeck
+    1.48 ms (idle, load 0.45). At builder0 load 16.6 / 24 Godot the reference read 1.457 ms (1.78×) while the budget
+    read 19 256 µs/tick against 12 106 alone: the yardstick tracks the load that inflates the budget.
+  - Loaded / alone / mutation proofs: see *Q2 proofs* below.
+- **Q1, `070476be`** (+ frames `c9c8fdad`). **When:** never green on builder0. `git bisect run` (12 steps, each the
+  commit's own `make tactics-drills FILTER=gang_pack`, in a separate clone `~/tank_squad/squad-bisect`) named
+  `231994b5`. Its parent `9247ef48`, the commit that WROTE the assertions and the bisect's assumed-good end, was run
+  directly and is red too. **Why:** that same commit switched encircle off in every shipped table (measured worse)
+  and made bait require a contact that follows (`bait_chaser_mps`), while the drill stages two dug-in guns. So
+  "rings them or baits them" could not pass by design. The ASSERTION was stale; the behaviour did not regress, and
+  nothing in `game/` changed. **Now:** against guns the pack must not lure, must not circle, must fight
+  (`react_to_contact`), and must come from ≥ 3 arcs. In `bait_chase` (chasers) the gangs must lure and the no-bait arm
+  must not. "More sides than standard" was dropped (it read 4–8 arcs across commits on one seed; 9247ef48 itself found
+  standard covers as many). **Mutation-checked** (builder0): bait without the follower rule → "does not lure" red;
+  gangs without bait → "send a lure" red; gangs with encircle → "nor circle" + "fights them instead" red; unmutated
+  `failures=0`. `make remote T=tactics-drills` at `070476be`: `TACTICS_DONE failures=0`, `exited 0`.
+  **Frames:** `streams/references/round14/squad/q1_gang_pack_*.jpg`: the gangs vs guns (top-down and his pose),
+  vs chasers (top-down and his pose: at 6 s one scout draws the hunters north while the pack pulls back), and
+  standard vs guns at his pose; 3/6/10/16/26 s. `make remote T=tactics-shots STAGE=gang_pack` with
+  `SHOT_ARGS="--pose=his --chasers --table=standard"` (call `tools/remote.sh` directly: `make remote` refuses the
+  quotes).
+- **Q4, `14f3091d`.** `tactics-drills` is in `CHECK_TARGETS`. Three builder0 runs of the full drills (code of
+  `070476be`, load ~1.2): 14.77 s, 15.05 s, 15.90 s, all `failures=0`, md5 of every `TACTICS` line
+  `3f9543682478` ×3. Laptop: 20.19 s and 20.29 s, `failures=0`, `46df3d0df1de` ×2 (a different fight, glibc; the
+  assertions hold on both). No port, no `user://`, so no exclusion edge.
+
+### Q2 proofs (builder0, `tools/remote.sh`, the wrapper's own lines)
+
+- **In the wild, check at `5f67f91e`** (the checkpoint merge; load 3.4, other streams' checks running): budget
+  18 006 µs/tick, `perf_reference 1.415 ms … nominal 0.819: 1.73x`, `SCENARIO_NOT_JUDGED reason=loaded ref=1.73x`,
+  `>> check: 18 passed, 1 NOT JUDGED` + its row, `1793 passed, 0 failed`, `>> remote: make check exited 0`.
+- A first "alone" attempt was not alone (19 Godot processes on the box): it refused at 1.66×, which is correct.
+- The burner-loaded proof was stopped at the orchestrator's request (garage's check was running, and Q2 is not on
+  main yet, so my load would have tripped its judging `scenario_perf`). It runs again on the orchestrator's go.
+  Scripts: 14 busy loops on builder0 (15-minute cap, stopped by PID), then `ai-scenarios-check` and
+  `ai-perf PERF_REFUSE=off`.
+- **ALONE, judged, at `14256cc5`** (builder0 load 0.85, 0 Godot): `tools/remote.sh ai-perf` →
+  `ai_usec_per_tick 9619`, `perf_reference 0.779 ms … nominal 0.774: 1.01x`,
+  `PASS  scenario_perf::test_the_brains_stay_inside_the_cpu_budget`, `>> remote: make ai-perf exited 0`.
+  The `ai-scenarios-check` right after it caught nav and airship starting (24 Godot): 17 730 µs/tick, `1.83x`,
+  `NOT JUDGED -- … this is not a pass`, `exited 0`. That's the refusal again, in the wild, on the same code.
+- **LOADED, at `e358e476`** (14 busy loops on builder0's 12 threads, the orchestrator's go; load 1.55 at the start,
+  21.7 by the mutation): `tools/remote.sh ai-scenarios-check` → budget **22 600 µs/tick, OVER the 20 000 line**,
+  `perf_reference 1.584 ms … nominal 0.774: 2.05x`, `SCENARIO_NOT_JUDGED reason=loaded ref=2.05x`,
+  `ai-scenarios-check: NOT JUDGED -- 1 scenario(s) refused to judge; this is not a pass.`,
+  `>> remote: make ai-scenarios-check exited 0`. Before Q2, this run would have failed the check.
+- **MUTATION, same load:** `tools/remote.sh ai-perf PERF_REFUSE=off` → 20 808 µs/tick at 1.97x,
+  `FAIL  scenario_perf::test_the_brains_stay_inside_the_cpu_budget … AI cost stays near budget (20808 usec per tick)`,
+  `>> remote: make ai-perf PERF_REFUSE=off exited 2`. The pre-Q2 behaviour, reproduced with the refusal switched off.
+  Burners stopped by PID, 0 alive.
+- **Merge condition (the orchestrator):** the named hash comes with an isolated `scenario_perf` JUDGED PASS on the same
+  code, quoted beside it.
+
+### Decisions
+
+- **Q3: update, don't keep.** Each variant is an ablation; with the old row it differed from its control in two things.
+- **Q2: the reference is sampled DURING the fight**, because the load that inflates the budget is the load during the
+  30 s being measured. The yardstick is the control stream's (preloaded, not copied). No nominal is a refusal too.
+- **Q2: NOT JUDGED does not fail `check`, and never reads as a pass.** A red check on a busy box is the false alarm this
+  item removes. The gate's passed + not-judged arithmetic means a refusal stands in for exactly the scenario it names.
+- **Q1: fix the assertion, not the behaviour**, and keep the drill staged as it was. The positive "it lures" check went
+  where the design says a lure works (`bait_chase`), which is what keeps the drill able to fail (the orchestrator's
+  condition).
+- **Q4: into `check`**, not `check-all`: green, deterministic, 15 s.
+
+### Questions for the lead (none blocking)
+
+1. **Two of the gangs' 09-16 verdicts have flipped since** (one seed each, builder0, `dca1d6cc`; `doctrine.md`
+   *Round 14 (squad Q1)*). With encircle switched on, the enemy is left at **0.002** (0.66 when it was switched off
+   for being worse). With the shipped lure against chasers, the pack keeps 0.196 against 0.258 without it (0.58 vs
+   0.43 when it was kept). Re-measuring over seeds, and then maybe shipping encircle or dropping bait, is a balance
+   and design call (C12.6), so it is not acted on. Worth a round-15 item?
+
+### Requests to other streams
+
+None.
+
+### Known issues
+
+- `scenario_perf`'s fight is not the same fight run alone as run in the full suite (LOS 148 100 vs 156 382 queries,
+  26 vs 24 alive): the budget line is compared across different battles. Not investigated.
+- In the gang-pack frames the eastern flanker (Green_A_4) loops in tight circles by a crate from ~16 s to 26 s
+  (`q1_gang_pack_gangs_26s.jpg`). That's the brains' flank movement, not a drill; noted, not investigated.
+- **Garage's time-limit rule (main `5f562dd0`) changes what `make tactics-ladder` scores.** An elimination match that
+  ends on time is now won on points destroyed (equal = draw). `tools/tactics_ladder.py` turns `winner` into ELO
+  (draws included), so ladder numbers before and after that merge are not comparable for matches that hit
+  `TIME=240`. `squad-coherence` records `winner` but reports nothing from it. The drills don't read a winner. No ladder
+  was run this round.
+- `gang_pack_swarm_only` (`gangs-no-encircle`) is identical to `gang_pack_gangs`, since encircle is already off. It is
+  kept because it costs ~1 s.
+
+### What to playtest
+
+Nothing player-facing changed. To see the drills: `make remote T=tactics-drills`; to see the pack:
+`tools/remote.sh tactics-shots STAGE=gang_pack "SHOT_ARGS=--pose=his --chasers"` → `build/tactics-shots/`.
+
+### Merge notes (shared-file edits, all additive)
+
+- `mk/core.mk`: `tactics-drills` appended to `CHECK_TARGETS` (Q4), with a comment.
+- `tools/check_verdict.sh` + `tools/test_check_verdict.sh`: the NOT JUDGED state.
+- `tools/metrics/ai_scenarios_gate.sh` + `test_ai_scenarios_gate.py`: NOT JUDGED arithmetic and marker.
+- `mk/metrics.mk`: one env var (`AI_SCENARIOS_NOT_JUDGED_MARKER`) on the gate's call.
+- Uses (read-only) `tests/support/control_fixture.gd`'s `reference_work`.
+- Sim baseline: pre-registered UNMOVED (no `game/` file changed); read `6313a38d7ecd99bb` unmoved at `dca1d6cc` and
+  `070476be`.
+- Merged `main` at the checkpoint (`5f67f91e`, clean) and again after nav withdrew CP1 (`e358e476`, clean; two untracked
+  import `.uid` files identical to main's were removed first). Baseline stays `6313a38d7ecd99bb`.

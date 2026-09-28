@@ -73,5 +73,26 @@ grep -q 'all passed  \[test x6\]' <<<"$out" && ok "a passing verdict carries it 
 out=$(verdict lint test)
 grep -q '\[' <<<"$out" && bad "no context means no empty brackets" || ok "no context means no empty brackets"
 
+# NOT JUDGED (round 14, squad Q2; verification.md rule 3): a target that finished but refused a timing verdict on a
+# loaded machine leaves check/notjudged/<target> holding what it refused. It does not fail the check (the box was
+# busy; nothing is wrong), and it never reads as a pass: no "all passed", its own row, its reason.
+setup; done_ lint; done_ ai-scenarios-check; done_ sim-baseline
+mkdir -p "$tmp/check/notjudged"; echo "scenario_perf::test_x (reason=loaded ref=2.10x)" > "$tmp/check/notjudged/ai-scenarios-check"
+out=$(verdict lint ai-scenarios-check sim-baseline); rc=$?
+[ "$rc" = 0 ] && ok "a refusal alone does not fail the check" || bad "a refusal alone does not fail the check" "exit $rc: $out"
+grep -q 'all passed' <<<"$out" && bad "a refusal is never 'all passed'" "$out" || ok "a refusal is never 'all passed'"
+grep -q '2 passed, 1 NOT JUDGED' <<<"$out" && ok "NOT JUDGED is counted on its own" || bad "NOT JUDGED is counted on its own" "$out"
+grep -qE '^   NOT JUDGED +ai-scenarios-check: scenario_perf::test_x \(reason=loaded ref=2.10x\)$' <<<"$out" \
+	&& ok "the row names the target and what it refused" || bad "the row names the target and what it refused" "$out"
+grep -q 'not a pass' <<<"$out" && ok "it says so in words" || bad "NOT JUDGED says so in words" "$out"
+started test
+out=$(verdict lint test ai-scenarios-check sim-baseline); rc=$?
+[ "$rc" = 1 ] && ok "a failure beside a refusal still fails" || bad "a failure beside a refusal still fails" "exit $rc"
+grep -q '2 passed, 1 FAILED, 0 NOT RUN, 1 NOT JUDGED' <<<"$out" && ok "and both are counted" || bad "and both are counted" "$out"
+# A marker for a target that did NOT finish is its failure, not a refusal.
+setup; started ai-scenarios-check; mkdir -p "$tmp/check/notjudged"; echo x > "$tmp/check/notjudged/ai-scenarios-check"
+out=$(verdict ai-scenarios-check); rc=$?
+grep -qE '^   FAIL +ai-scenarios-check$' <<<"$out" && ok "an unfinished target is FAIL even with a marker" || bad "unfinished + marker is FAIL" "$out"
+
 printf '\ncheck-verdict: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

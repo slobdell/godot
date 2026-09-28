@@ -622,6 +622,30 @@ The deeper lesson is the same one bounding overwatch taught: *doctrine that driv
 brains that are already fighting well*. A drill earns its place by deciding **where an element goes and what
 it points at**, not by micromanaging vehicles that have their own tactics.
 
+### Round 14 (squad Q1): the drill that judged this was stale from birth, and today's numbers disagree
+
+`make tactics-drills` failed two gang-pack assertions (*"the pack rings them or baits them"*, *"from more sides
+than a standard element would"*). Bisected on builder0: **red at `9247ef48`, the commit that wrote them**, and at
+every commit tested since (12 bisect steps plus that endpoint run directly). That same commit switched encircle off
+(above) and made bait require a contact that follows, while the drill stages two dug-in guns, so neither drill
+could fire there by design. The assertion was stale, not the behaviour. Now: against guns the pack must NOT lure,
+must NOT circle, must fight (react to contact) from at least three arcs; against chasers (`bait_chase`) the gangs
+must lure and the no-bait arm must not. Mutation-checked on builder0: bait without the follower rule, the gangs
+without bait, and the gangs with encircle each turn it red. "More sides than standard" was dropped: it read 4–8
+arcs across commits on one seed.
+
+**Two readings for the lead, NOT acted on (C12.6; one seed each, builder0, the squad branch at `dca1d6cc`):**
+
+| Arm | Pack survived | Enemy left | Note |
+|---|---|---|---|
+| gangs vs guns (encircle off, shipped) | 0.629 | 0.067 | today |
+| gangs vs guns, **encircle switched on** | 0.632 | **0.002** | the 09-16 table read 0.66 with it on |
+| gangs vs chasers, bait on (shipped) | **0.196** | 0.773 | 09-16: 0.58 alive with bait |
+| gangs vs chasers, bait off | 0.258 | 0.541 | 09-16: 0.43 |
+
+Both of the 09-16 verdicts have flipped since, on one seed each. Whether to re-measure them over seeds (and ship
+encircle / drop bait) is a design question, written up for the lead in the squad brief.
+
 ### What the swarm costs today
 
 The gangs' loose shape survives worse than military shapes in the one scenario measured (0.47 against 0.62)

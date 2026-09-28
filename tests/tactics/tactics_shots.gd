@@ -6,7 +6,7 @@ extends SceneTree
 ## Needs a display: `make remote T=tactics-shots`. `--stage=<name>` runs one stage.
 
 const OUT := "res://build/tactics-shots"
-const STAGES := ["wedge_advance", "bounding", "near_ambush", "herringbone", "parity"]
+const STAGES := ["wedge_advance", "bounding", "near_ambush", "herringbone", "parity", "gang_pack"]
 const TRAIL_SAMPLES := 90
 const TRAIL_EVERY_TICKS := 4
 const LANE_X := TacticsScenarios.LANE_X
@@ -19,6 +19,13 @@ var trail_mesh: ImmediateMesh
 var green_material: StandardMaterial3D
 var rust_material: StandardMaterial3D
 var watched: Array = []
+## Round 14 (squad Q1): `--pose=his` frames a stage from the skirmish camera's pose (formation_shots.gd: 21 deg pitch,
+## FOV 35, 49 m) following `followed` from behind along `heading`, instead of the top-down orthographic view.
+var followed: Array = []
+var heading := Vector3.FORWARD
+const HIS_PITCH_DEG := 21.0
+const HIS_FOV_DEG := 35.0
+const HIS_DISTANCE_M := 49.0
 
 
 func _initialize() -> void:
@@ -91,6 +98,8 @@ func _play(stage: String, seconds: float, shots: Array, on_tick: Callable = Call
 			_sample_trails()
 		if next_shot < shots.size() and tick >= roundi(float(shots[next_shot]) * SimClock.TICK_RATE):
 			_sample_trails()
+			if not followed.is_empty() and OS.get_cmdline_user_args().has("--pose=his"):
+				_his_pose()
 			RenderingServer.render_loop_enabled = true
 			await process_frame
 			await process_frame
@@ -102,6 +111,15 @@ func _play(stage: String, seconds: float, shots: Array, on_tick: Callable = Call
 				print("TACTICS_SHOT %s %02ds %s" % [stage, int(shots[next_shot]), element.describe()])
 			print("TACTICS_SHOT ", path)
 			next_shot += 1
+
+
+func _his_pose() -> void:
+	var focus := lab.center_of(followed)
+	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
+	camera.fov = HIS_FOV_DEG
+	camera.global_position = focus - heading * HIS_DISTANCE_M * cos(deg_to_rad(HIS_PITCH_DEG)) \
+			+ Vector3.UP * HIS_DISTANCE_M * sin(deg_to_rad(HIS_PITCH_DEG))
+	camera.look_at(focus, Vector3.UP)
 
 
 func _sample_trails() -> void:
@@ -175,6 +193,40 @@ func _stage_near_ambush() -> void:
 				lab.gun(Match.Team.RUST, "Rust_Ambush_%d" % (i + 1),
 						Vector3(LANE_X + 25.0, 0.0, center.z - 6.0 + i * 8.0), -PI * 0.5))
 
+
+
+## Round 14 (squad Q1): the gang-pack drill in pictures -- the same four vehicles, the same two guns and the same seed
+## as `TacticsScenarios.gang_pack` (make tactics-drills), so the frames show the fight the assertions judge: does the
+## pack ring the guns, or line up and trade? `--table=standard` stages the comparison element; `--chasers` the
+## bait_chase variant; `--pose=his` the lead's camera.
+func _stage_gang_pack() -> void:
+	var table_name := "gangs"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--table="):
+			table_name = arg.trim_prefix("--table=")
+	_setup(Vector3(LANE_X, 0, 5), 150.0, 53)
+	var names: Array = []
+	for i in 4:
+		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1),
+				Vector3(LANE_X - 12.0 + i * 8.0, 0.0, 45.0), 0.0, "scout" if i > 0 else "ifv").name))
+	# `--chasers` stages bait_chase's enemy instead: two brain-driven IFVs that follow a lure.
+	var chasers := OS.get_cmdline_user_args().has("--chasers")
+	var enemy: Array = []
+	for i in 2:
+		var spot := Vector3(LANE_X - 6.0 + i * 12.0, 0.0, -35.0)
+		if chasers:
+			enemy.append(String(lab.unit(Match.Team.RUST, "Rust_Hunt_%d" % (i + 1), spot, PI, "ifv").name))
+		else:
+			enemy.append(String(lab.gun(Match.Team.RUST, "Rust_Gun_%d" % (i + 1), spot, PI,
+					"lancer" if i == 0 else "artillery").name))
+	var pack := lab.element(names, "Pack", TacticsScenarios.table_for(table_name))
+	watched = [pack]
+	followed = names
+	heading = Vector3.FORWARD
+	await lab.start()
+	pack.assign({"verb": "attack", "target": enemy[0]})
+	await _play("gang_pack_%s%s%s" % [table_name, "_chasers" if chasers else "",
+			"_his" if OS.get_cmdline_user_args().has("--pose=his") else ""], 26.0, [3, 6, 10, 16, 26])
 
 
 ## A halt: the herringbone, every flank watched.

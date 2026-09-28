@@ -15,6 +15,29 @@ const FAIL_USEC := 20000.0
 const DEFAULT_UNITS := 60
 const PER_SQUAD := 5
 
+## ---- Round 14 (squad Q2): the budget REFUSES on a loaded machine (verification.md rule 3) -----------------------
+## This scenario tripped whenever builder0 ran several checks at once (22 ms/tick against the 20 ms line in round 13's
+## audio check; 17-18 ms with three running; 11.9 alone) and every isolated re-run was green: it judged a busy
+## machine, not the brains. So it times a fixed reference workload (the control stream's yardstick,
+## `ControlFixture.reference_work`) before the fight and every REF_EVERY_TICKS ticks during it, and compares the
+## median with this machine's recorded nominal (`perf_nominal.json`, recorded idle with `make ai-perf-nominal`).
+## Above LOADED_RATIO it prints `SCENARIO_NOT_JUDGED reason=loaded ref=<x>x` and sets `not_judged`: the runner
+## counts it outside `passed` and the gate and `check`'s verdict say NOT JUDGED -- never a pass. The fight still
+## runs and its other assertion is still judged, so a script error here is still caught. A machine with no
+## nominal refuses the same way (reason=no_nominal): no yardstick, no verdict. `--perf-refuse=off` is the
+## mutation arm: it judges regardless, which is how it failed under load before.
+const ControlFixture := preload("res://tests/support/control_fixture.gd")
+const NOMINAL_PATH := "res://tests/ai_scenarios/perf_nominal.json"
+const LOADED_RATIO := 1.5
+## One reference sample: this many `reference_work` calls (~1-2 ms on builder0), long enough to read above the
+## microsecond clock's granularity and short enough not to disturb the fight it is interleaved with.
+const REF_CALLS := 20
+const REF_PRE_SAMPLES := 9
+const REF_EVERY_TICKS := 30
+
+## Read by tests/ai_scenarios/run_scenarios.gd: non-empty = the budget was refused, and why.
+var not_judged := ""
+
 
 static func _units() -> int:
 	for arg in OS.get_cmdline_user_args():
@@ -47,10 +70,16 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	var queries_before := CoverMap.los_queries
 	var ticks := SimClock.TICK_RATE * 30
 	var fighting_ticks := 0
+	var pre: Array[float] = []
+	for i in REF_PRE_SAMPLES:
+		pre.append(reference_ms())
+	var during: Array[float] = []
 	for tick in ticks:
 		await s.step()
 		if s.game_match.stats["first_shot_seconds"] >= 0.0:
 			fighting_ticks += 1
+		if tick % REF_EVERY_TICKS == REF_EVERY_TICKS - 1:
+			during.append(reference_ms())
 	OrderController.profiling = false
 	OrderController.profile_detail = false
 	var per_tick := float(OrderController.profile_usec) / ticks
@@ -73,4 +102,61 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	if not OS.get_cmdline_user_args().has("--profile-parts"):
 		print("      (--profile-parts, i.e. make ai-perf DETAIL=1, adds the finer laps inside moving and shooting)")
 	assert_true(fighting_ticks > SimClock.TICK_RATE * 5, "the armies actually fight during the measurement (%d ticks)" % fighting_ticks)
+	var machine := machine_name()
+	var nominal := nominal_ms(machine)
+	var window := median(during)
+	var ratio := window / nominal if nominal > 0.0 else 0.0
+	print("MEASURE perf_reference %.3f ms median during the fight (%d samples), %.3f before it, nominal %s on %s: %.2fx (refuses above %.1fx)" % [
+			window, during.size(), median(pre), ("%.3f" % nominal) if nominal > 0.0 else "NONE", machine, ratio, LOADED_RATIO])
+	if OS.get_cmdline_user_args().has("--perf-record-nominal"):
+		var all: Array[float] = pre.duplicate()
+		all.append_array(during)
+		print("PERF_NOMINAL %s" % JSON.stringify({"machine": machine, "ref_ms": snappedf(median(all), 0.001),
+				"samples": all.size(), "ai_usec_per_tick": roundi(per_tick)}))
+	var refuse := not OS.get_cmdline_user_args().has("--perf-refuse=off")
+	if refuse and nominal <= 0.0:
+		not_judged = "reason=no_nominal machine=%s" % machine
+	elif refuse and ratio > LOADED_RATIO:
+		not_judged = "reason=loaded ref=%.2fx" % ratio
+	if not not_judged.is_empty():
+		print("SCENARIO_NOT_JUDGED %s (the CPU budget was not judged: %.0f usec per tick %s the %.0f line; not a pass)" % [
+				not_judged, per_tick, "under" if per_tick < FAIL_USEC else "OVER", FAIL_USEC])
+		return
 	assert_true(per_tick < FAIL_USEC, "AI cost stays near budget (%.0f usec per tick)" % per_tick)
+
+
+## One sample of the yardstick, in milliseconds.
+static func reference_ms() -> float:
+	var started := Time.get_ticks_usec()
+	for i in REF_CALLS:
+		ControlFixture.reference_work()
+	return (Time.get_ticks_usec() - started) / 1000.0
+
+
+static func median(values: Array[float]) -> float:
+	if values.is_empty():
+		return 0.0
+	var sorted: Array[float] = values.duplicate()
+	sorted.sort()
+	return sorted[sorted.size() / 2]
+
+
+## `--perf-machine=NAME` or the kernel's hostname: the key into perf_nominal.json.
+static func machine_name() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--perf-machine="):
+			return arg.trim_prefix("--perf-machine=")
+	# /etc/hostname, not /proc/sys/kernel/hostname: FileAccess reads a /proc file as empty (it reports size 0).
+	var host := FileAccess.get_file_as_string("/etc/hostname").strip_edges()
+	if host == "":
+		host = OS.get_environment("HOSTNAME")
+	return host if host != "" else "unknown"
+
+
+## This machine's recorded reference time, or 0 when it has none.
+static func nominal_ms(machine: String) -> float:
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(NOMINAL_PATH))
+	if not data is Dictionary:
+		return 0.0
+	var entry: Variant = (data as Dictionary).get("machines", {}).get(machine, {})
+	return float((entry as Dictionary).get("ref_ms", 0.0)) if entry is Dictionary else 0.0

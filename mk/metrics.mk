@@ -74,7 +74,8 @@ ai-scenarios-check: import ## The AI behaviour scenarios, gated on a CHANGE in t
 	@mkdir -p $(BUILD_DIR)
 	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
 		> $(BUILD_DIR)/ai-scenarios.log 2>&1 || true
-	@$(METRICS_DIR)/ai_scenarios_gate.sh check $(BUILD_DIR)/ai-scenarios.log $(AI_SCENARIOS_BASELINE)
+	@AI_SCENARIOS_NOT_JUDGED_MARKER=$(BUILD_DIR)/check/notjudged/ai-scenarios-check \
+		$(METRICS_DIR)/ai_scenarios_gate.sh check $(BUILD_DIR)/ai-scenarios.log $(AI_SCENARIOS_BASELINE)
 
 # Writes to build/ rather than straight into tests/baselines/, exactly like `sim-baseline-record`: `make remote`
 # copies build/ back AND NOTHING ELSE, so a target that writes into the repo records the number onto builder0 and

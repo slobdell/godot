@@ -141,3 +141,59 @@ func test_a_task_is_checked_before_it_is_accepted() -> void:
 			"a task MAY name the shape the commander chose")
 	assert_true(ElementTask.validate({"verb": "hold", "formation": "banana"}).contains("formation"),
 			"but not a shape that does not exist")
+
+
+## Round 14 (squad Q3): the tactics ladder's variant tables (tests/tactics/variants/) are ABLATIONS of the standard
+## table, and an ablation is only read against its control if it differs from it in exactly the thing its label names.
+## Round 13 changed the live table's plain move to the wedge and left these copies on the old `dense -> column` row, so
+## every variant quietly carried a second change. A variant may differ from `doctrine_standard.json` only in its
+## name, its summary, the drills it enables and its traits (the commander); everything else -- the movement rows,
+## spacing, legs -- is the live table's, so the next change to the live table fails here instead of forking them.
+const VARIANT_DIR := "res://tests/tactics/variants"
+const VARIANT_MAY_DIFFER := ["name", "summary", "drills", "traits"]
+
+
+func _json(path: String) -> Dictionary:
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	return parsed if parsed is Dictionary else {}
+
+
+## Where two tables' rows part, in one line: a full-table dump in a failure message is unreadable.
+func _first_difference(got: Variant, want: Variant) -> String:
+	if not (got is Array and want is Array):
+		return ""
+	for index in maxi((got as Array).size(), (want as Array).size()):
+		var a: Variant = (got as Array)[index] if index < (got as Array).size() else null
+		var b: Variant = (want as Array)[index] if index < (want as Array).size() else null
+		if JSON.stringify(a, "", true) != JSON.stringify(b, "", true):
+			return "; row %d is %s, the live table's is %s" % [index, JSON.stringify(a, "", true), JSON.stringify(b, "", true)]
+	return ""
+
+
+func test_a_ladder_variant_differs_from_the_standard_table_only_in_what_it_names() -> void:
+	var live := _json("%s/doctrine_standard.json" % DoctrineTable.DIR)
+	assert_true(not live.is_empty(), "the standard table reads")
+	var found := 0
+	for file_name in DirAccess.get_files_at(VARIANT_DIR):
+		if not file_name.ends_with(".json"):
+			continue
+		found += 1
+		var variant := _json(VARIANT_DIR.path_join(file_name))
+		assert_true(not variant.is_empty(), "%s reads" % file_name)
+		var keys: Array = live.keys()
+		for key in variant.keys():
+			if not keys.has(key):
+				keys.append(key)
+		for key in keys:
+			if VARIANT_MAY_DIFFER.has(key):
+				continue
+			assert_true(JSON.stringify(variant.get(key), "", true) == JSON.stringify(live.get(key), "", true),
+					"%s: `%s` is the live standard table's (a variant changes only %s)%s"
+					% [file_name, key, ", ".join(VARIANT_MAY_DIFFER), _first_difference(variant.get(key), live.get(key))])
+		var loaded := DoctrineTable.load_table("%s/%s" % [VARIANT_DIR, file_name])
+		assert_true(loaded.has("table"), "%s loads: %s" % [file_name, loaded.get("error", "")])
+		if loaded.has("table"):
+			var pick: Dictionary = (loaded["table"] as DoctrineTable).select(
+					{"task": "move", "threat": "none", "terrain": "dense", "composition": "balanced"})
+			assert_eq(pick["formation"], "wedge", "%s: a plain move in dense ground is the live default" % file_name)
+	assert_true(found >= 4, "the four ladder variants are here (found %d)" % found)

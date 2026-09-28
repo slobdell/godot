@@ -284,9 +284,13 @@ test: _filter-ok import ## Run the headless test suite (FILTER=substring, | for 
 # one laptop-speed-sensitive perf case cannot redden the gate while a new script error still does (mk/metrics.mk).
 # **It needs no exclusion edge, and that was checked rather than assumed:** `run_scenarios.gd` binds no port and
 # touches no `user://` path, and the target writes only `build/ai-scenarios.log`.
+# `tactics-drills` joins in round 14 (squad Q4): red on every commit since the one that wrote it (9247ef48) because
+# nothing ran it; fixed in squad Q1 and mutation-checked, then measured green and byte-identical over three builder0
+# runs (14.8-15.9 s, load ~1.2) and two laptop runs (20.2 s). Like ai-scenarios-check it needs no exclusion edge: it
+# binds no port, touches no `user://` path, and writes only build/tactics-drills.log and build/tactics/.
 CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
-                 ai-scenarios-check remote-guard-test
+                 ai-scenarios-check remote-guard-test tactics-drills
 
 # ---- T1: `check` runs its targets CONCURRENTLY -------------------------------------------------
 #

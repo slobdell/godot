@@ -70,7 +70,7 @@ func _run() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--filter="):
 			filter = arg.trim_prefix("--filter=")
-	var counts := {"passed": 0, "failed": 0, "pending": 0, "unexpected": 0}
+	var counts := {"passed": 0, "failed": 0, "pending": 0, "unexpected": 0, "not_judged": 0}
 	var files := Array(DirAccess.get_files_at(ROOT)).filter(func(f: String) -> bool:
 		return f.begins_with("scenario_") and f.ends_with(".gd"))
 	files.sort()
@@ -112,7 +112,14 @@ func _run() -> void:
 			allowed_total += int(engine["allowed_seen"])
 			var seconds := (Time.get_ticks_msec() - started) / 1000.0
 			var is_pending := pending.has(method_name)
-			if case.failures.is_empty():
+			# Round 14 (squad Q2; verification.md rule 3): a scenario that REFUSED its verdict (a timing budget on a
+			# machine too loaded to judge it) sets `not_judged`. It is counted apart -- never as a pass -- and the
+			# gate compares passed + not judged with the baseline, so it still stands in for exactly one scenario.
+			var refused := str(case.get("not_judged")) if "not_judged" in case else ""
+			if case.failures.is_empty() and refused != "" and not is_pending:
+				counts["not_judged"] += 1
+				print("  NOT JUDGED  %s (%s) (%.1fs)" % [label, refused, seconds])
+			elif case.failures.is_empty():
 				counts["unexpected" if is_pending else "passed"] += 1
 				print("  %s  %s (%.1fs)" % ["UNEXPECTED PASS" if is_pending else "PASS", label, seconds])
 			else:
@@ -124,6 +131,8 @@ func _run() -> void:
 	if not allowed.is_empty():
 		print("\nexpected engine messages: %d seen, from %d allowed pattern(s) in %s"
 				% [allowed_total, allowed.size(), ALLOWLIST])
-	print("\nscenarios: %d passed, %d failed, %d pending, %d unexpectedly passing" % [counts["passed"], counts["failed"],
+	# Always printed, directly above the summary, so the gate pairs it with the run it describes.
+	print("\nscenarios not judged: %d" % counts["not_judged"])
+	print("scenarios: %d passed, %d failed, %d pending, %d unexpectedly passing" % [counts["passed"], counts["failed"],
 			counts["pending"], counts["unexpected"]])
 	quit(1 if counts["failed"] + counts["unexpected"] > 0 else 0)

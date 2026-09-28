@@ -11,7 +11,17 @@ cmdline = $(if $(filter command line,$(origin $(1))),$($(1)),$(2))
 AI_UNITS ?= $(call cmdline,UNITS,60)
 ai-perf: import ## AI CPU cost: AI_UNITS brains fighting (default 60, the round-4 target), prints MEASURE ai_usec_per_tick (budget in _agents/unit_ai.md); BRAIN=a6 profiles another brain variant; DETAIL=1 breaks moving and shooting down further
 	@echo ">> ai-perf: AI_UNITS=$(AI_UNITS) BRAIN=$(BRAIN)"
-	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- --filter=scenario_perf --units=$(AI_UNITS) $(if $(DETAIL),--profile-parts) $(if $(BRAIN),--green-brain=$(BRAIN) --rust-brain=$(BRAIN))
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- --filter=scenario_perf --units=$(AI_UNITS) $(if $(DETAIL),--profile-parts) $(if $(BRAIN),--green-brain=$(BRAIN) --rust-brain=$(BRAIN)) $(if $(PERF_REFUSE),--perf-refuse=$(PERF_REFUSE))
+
+# Round 14 (squad Q2; verification.md rule 3): scenario_perf refuses to judge its budget when its reference workload
+# runs more than 1.5x this machine's nominal. The nominal is recorded HERE, on an idle machine, and copied by hand
+# into tests/ai_scenarios/perf_nominal.json (make remote copies back build/ and nothing else). PERF_REFUSE=off on
+# ai-perf is the mutation arm: it judges regardless of load, as the scenario did before round 14.
+ai-perf-nominal: import ## Record this machine's scenario_perf yardstick (run it IDLE; on builder0: make remote T=ai-perf-nominal) -> build/perf_nominal.txt, then copy the line into tests/ai_scenarios/perf_nominal.json
+	@echo ">> ai-perf-nominal on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | load $$(cut -d' ' -f1-3 /proc/loadavg) | $$(pgrep -c -f 'Godot_v' || echo 0) other godot"
+	@$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- --filter=scenario_perf \
+		--perf-record-nominal --perf-refuse=off 2>&1 | grep -E "PERF_NOMINAL|MEASURE (perf_reference|ai_usec_per_tick )|PASS|FAIL|ERROR" | tee $(BUILD_DIR)/perf_nominal.txt
+	@grep -q '^PERF_NOMINAL ' $(BUILD_DIR)/perf_nominal.txt
 
 AI_VARIANTS_DEFAULT := r1,a4,a6
 AI_VARIANTS ?= $(call cmdline,VARIANTS,$(AI_VARIANTS_DEFAULT))
