@@ -18,12 +18,12 @@ const KTURN_AT := Vector3(40.0, 0.0, 26.3)
 const KTURN_GOAL := Vector3(10.0, 0.0, 31.0)
 
 
-func _drive(at: Vector3, yaw: float, goal: Vector3, logging: bool, seconds: int) -> Dictionary:
+func _drive(at: Vector3, yaw: float, goal: Vector3, logging: bool, seconds: int, off := PackedStringArray()) -> Dictionary:
 	await ArenaFixture.build(self, "terminus")
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var saved := Movement._off
-	Movement._off = PackedStringArray()
+	Movement._off = off
 	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN, "ifv")
 	tank.global_position = at
 	tank.rotation.y = yaw
@@ -45,7 +45,8 @@ func _drive(at: Vector3, yaw: float, goal: Vector3, logging: bool, seconds: int)
 
 
 func test_a_circle_reverse_is_logged_with_its_sweep_and_its_contacts() -> void:
-	var run := await _drive(CIRCLE_AT, PI, CIRCLE_GOAL, true, 8)
+	# The rule's own reverse (round 14's N2 turns it into a planned leg; this measures the rule).
+	var run := await _drive(CIRCLE_AT, PI, CIRCLE_GOAL, true, 8, PackedStringArray(["circlefit"]))
 	var circles: Array = run["circles"]
 	assert_true(not circles.is_empty(), "the circle rule's reverse is logged (%s)" % run)
 	var row: Dictionary = circles[0]
@@ -87,6 +88,6 @@ func test_a_kturn_leg_is_logged_planned_against_driven() -> void:
 
 
 func test_nothing_is_logged_unless_asked() -> void:
-	var run := await _drive(CIRCLE_AT, PI, CIRCLE_GOAL, false, 4)
+	var run := await _drive(CIRCLE_AT, PI, CIRCLE_GOAL, false, 4, PackedStringArray(["circlefit"]))
 	assert_true((run["circles"] as Array).is_empty() and (run["legs"] as Array).is_empty(), "measurement only (%s)" % run)
 	assert_true(int(run["arms"]["circle_reverses"]) > 0, "control: the circle rule still reversed (%s)" % run)

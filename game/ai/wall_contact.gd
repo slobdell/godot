@@ -185,9 +185,9 @@ func observe(mover: Movement) -> void:
 	if driver == "route" and gear == "reverse":
 		var key := why if why != "" else "none"
 		by_reverse_why[key] = int(by_reverse_why.get(key, 0)) + 1
-	if driver == "kturn" and not mover._kturn_rec.is_empty():
-		_note_yield(mover._kturn_rec, tank, gear, collider, point)
-	if driver == "route" and why == "circle" and not mover._circle_rec.is_empty():
+	if bool(decided.get("leg", false)) and not mover._kturn_rec.is_empty():
+		_note_yield(mover._kturn_rec, tank, gear, collider, point)  # a planned leg (k-turn, or round 14's circle leg)
+	elif driver == "route" and why == "circle" and not mover._circle_rec.is_empty():
 		_note_yield(mover._circle_rec, tank, gear, collider, point)
 	by_unit[String(tank.name)] = int(by_unit.get(String(tank.name), 0)) + 1
 	by_lane[lane] = int(by_lane.get(lane, 0)) + 1
