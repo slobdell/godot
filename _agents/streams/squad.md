@@ -163,6 +163,11 @@ None.
   26 vs 24 alive): the budget line is compared across different battles. Not investigated.
 - In the gang-pack frames the eastern flanker (Green_A_4) loops in tight circles by a crate from ~16 s to 26 s
   (`q1_gang_pack_gangs_26s.jpg`). That's the brains' flank movement, not a drill; noted, not investigated.
+- **Garage's time-limit rule (main `5f562dd0`) changes what `make tactics-ladder` scores.** An elimination match that
+  ends on time is now won on points destroyed (equal = draw). `tools/tactics_ladder.py` turns `winner` into ELO
+  (draws included), so ladder numbers before and after that merge are not comparable for matches that hit
+  `TIME=240`. `squad-coherence` records `winner` but reports nothing from it. The drills don't read a winner. No ladder
+  was run this round.
 - `gang_pack_swarm_only` (`gangs-no-encircle`) is identical to `gang_pack_gangs`, since encircle is already off. It is
   kept because it costs ~1 s.
 
