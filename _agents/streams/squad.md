@@ -132,6 +132,15 @@ _(the worker keeps this current; last updated 2026-09-28 ~02:30)_
   `PASS  scenario_perf::test_the_brains_stay_inside_the_cpu_budget`, `>> remote: make ai-perf exited 0`.
   The `ai-scenarios-check` right after it caught nav and airship starting (24 Godot): 17 730 µs/tick, `1.83x`,
   `NOT JUDGED -- … this is not a pass`, `exited 0`. That's the refusal again, in the wild, on the same code.
+- **LOADED, at `e358e476`** (14 busy loops on builder0's 12 threads, the orchestrator's go; load 1.55 at the start,
+  21.7 by the mutation): `tools/remote.sh ai-scenarios-check` → budget **22 600 µs/tick, OVER the 20 000 line**,
+  `perf_reference 1.584 ms … nominal 0.774: 2.05x`, `SCENARIO_NOT_JUDGED reason=loaded ref=2.05x`,
+  `ai-scenarios-check: NOT JUDGED -- 1 scenario(s) refused to judge; this is not a pass.`,
+  `>> remote: make ai-scenarios-check exited 0`. Before Q2, this run would have failed the check.
+- **MUTATION, same load:** `tools/remote.sh ai-perf PERF_REFUSE=off` → 20 808 µs/tick at 1.97x,
+  `FAIL  scenario_perf::test_the_brains_stay_inside_the_cpu_budget … AI cost stays near budget (20808 usec per tick)`,
+  `>> remote: make ai-perf PERF_REFUSE=off exited 2`. The pre-Q2 behaviour, reproduced with the refusal switched off.
+  Burners stopped by PID, 0 alive.
 - **Merge condition (the orchestrator):** the named hash comes with an isolated `scenario_perf` JUDGED PASS on the same
   code, quoted beside it.
 
@@ -187,4 +196,5 @@ Nothing player-facing changed. To see the drills: `make remote T=tactics-drills`
 - Uses (read-only) `tests/support/control_fixture.gd`'s `reference_work`.
 - Sim baseline: pre-registered UNMOVED (no `game/` file changed); read `6313a38d7ecd99bb` unmoved at `dca1d6cc` and
   `070476be`.
-- Merged `main` at the checkpoint (`5f67f91e`, clean).
+- Merged `main` at the checkpoint (`5f67f91e`, clean) and again after nav withdrew CP1 (`e358e476`, clean; two untracked
+  import `.uid` files identical to main's were removed first). Baseline stays `6313a38d7ecd99bb`.
