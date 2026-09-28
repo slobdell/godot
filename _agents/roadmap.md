@@ -111,7 +111,7 @@ in `HANDOFF.md` *ROUND 13*; briefs in `streams/archive/round13/`; evidence in `s
   plays and hands FIGHT to `pre_match`; the garage and victory pools split.
 - Lessons 223–224.
 
-## Round 14 candidates (from round 13's Status reports and his 2026-09-27 evening direction; his call on the order)
+## Round 14 candidates (LAUNCHED 2026-09-27 evening as airship, garage, nav, squad — `workstreams.md` *Round 14*; items 1, 3, 4, 6, 7 are in the briefs; 5 is his ear; 8 waits on him)
 
 1. **The airship steers clear of the player's view** (his words, verbatim, in `game_design.md` *Round 14 direction,
    first item*): *"frequently when we're playing the airship flies right in front of the camera and disrupting the

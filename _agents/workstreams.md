@@ -1,9 +1,36 @@
 # Workstreams: the current round
 
-> **Round 13 is CLOSED (launched and closed 2026-09-27): three small streams from the lead's answers to round 12's list,
-> every item merged, the sim baseline unmoved; its record is `HANDOFF.md` *ROUND 13*, its section below is kept for its
-> ownership and the garage carve-out. Round 12 is CLOSED (its record is `HANDOFF.md` *ROUND 12*); its section follows.
-> No round is running: the next one starts from `roadmap.md` *Round 14 candidates*.**
+> **Round 14 is RUNNING (launched 2026-09-27, evening): four streams — airship (his item), garage, nav, squad; the
+> section below. Round 13 is CLOSED (its record is `HANDOFF.md` *ROUND 13*); its section follows, kept for the garage
+> carve-out it introduced. Round 12's section after that.**
+
+## Round 14: four streams (launched 2026-09-27 evening; briefs in `streams/`)
+
+**Goal: his airship item, and round 13's own list.** His words are in [`game_design.md`](game_design.md) *Round 14
+direction, first item*; the list is `roadmap.md` *Round 14 candidates*. Same rules as rounds 12–13.
+
+| Stream | Brief | Round 14 | Checkpoint |
+|---|---|---|---|
+| **airship** | [streams/airship.md](streams/airship.md) | **The airship steers clear of the player's view** (his words): measure the intrusion with the LIVE camera first, then the carrot avoids the wedge between camera and focus, looking ahead; opaque, visible, in the venue; the PID and the climb-over stay | — (dressing; baseline UNMOVED) |
+| **garage** | [streams/garage.md](streams/garage.md) | **The list a player's first visit produced** (round 13's G1 table): room to build, the turntable at match proportions, a stalemate is a draw, a clean HUD at 20:9, the loader, the dead stub | — (baseline UNMOVED; the time-limit rule is outside the 40 s baseline match) |
+| **nav** | [streams/nav.md](streams/nav.md) | **The other 53 %**: route-driver circle reverses and k-turn legs, instrumented then validated with the sweep; the stall share re-read on more seeds; does a holding rig block the street | **CP1** = a baseline move, declared and attributed, merged alone |
+| **squad** | [streams/squad.md](streams/squad.md) | **Two red instruments**: the gang-pack drills bisected and fixed; `scenario_perf` refuses under load (rule 3); the ladder variants' stale row | — (a drill change may move the baseline: declare it) |
+
+**Ownership:** as round 11's table for airship (`game/theme/arena_kit/airship/**`, its tests and bench, the airship
+targets in `mk/fx.mk`, the `_build_airship` carve-out) with `game/camera/**` READ-ONLY (one additive accessor allowed,
+listed); as rounds 12–13 for nav and squad; garage as round 1's garage stream (`game/garage/**`,
+`game/modes/garage_mode.gd`, `mk/garage.mk`, `tests/garage/**`) **plus three carve-outs** (the time-limit winner rule in
+`game/match/match.gd`, `game/ui/camera_readout.gd`, and a read of `Tank._apply_hull_size` — additive, listed, the
+orchestrator reviews at merge). Squad's carve-out: the `scenario_perf` targets in `mk/ai.mk` and an additive read of the
+box's load.
+
+**Contracts:** C12.6 (nobody tunes balance) and C12.7 (generation on the ledger) stand. **C14.1** the sim baseline is
+`6313a38d7ecd99bb`; only nav may move it on purpose; anyone else pre-registers UNMOVED **with the path** or treats a
+move as a finding (lesson 223); design seeds are named before the first variant and acceptance runs on seeds the design
+never saw (lesson 224). **C14.2** the airship stays opaque and visible, never faded or cut away (the lead, rounds 10 and
+14). **C14.3** `TankBrain.IDLE_FACE_NO_PIVOT` is the lead's toggle: nobody flips it.
+
+
 
 ## Round 13: three streams (launched and CLOSED 2026-09-27; briefs in `streams/archive/round13/`)
 

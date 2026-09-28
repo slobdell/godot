@@ -4,7 +4,21 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-27 evening — **ROUND 13 IS CLOSED: three streams (squad, nav, audio), every item merged, worktrees removed, briefs in `streams/archive/round13/`, evidence in `streams/references/round13/`. No round is running. `main-checked` is `5b3c49f9` (the final check: builder0 1790/0, 18 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round); after it only docs (`dad3ca23`, `9313eb70`, this). The lead pushes. S6 decided in chat: ON, with the toggle documented at the code site (`game_design.md` *Round 13: S6 decided*). Nothing is waiting on him. **Round 14's first item is his (2026-09-27 evening): the airship steers clear of the player's view** — `game_design.md` *Round 14 direction, first item*; `roadmap.md` *Round 14 candidates* 1.**_
+_Last updated: 2026-09-27 evening — **ROUND 14 IS LAUNCHED: four streams (airship, garage, nav, squad); briefs in `_agents/streams/`; the split and contracts in `workstreams.md` *Round 14*; his airship words verbatim in `game_design.md` *Round 14 direction, first item*. Round 13's record is the section after the launch table. `main-checked` is `5b3c49f9` (1790/0, sim-baseline `6313a38d7ecd99bb`); after it only docs.**_
+
+## 🚀 ROUND 14 IS LAUNCHED (2026-09-27, evening) — read this first
+
+| stream | offset | the job |
+|---|---|---|
+| airship | 1 | **his item:** the airship steers clear of the player's view — measure the intrusion with the LIVE camera, then the carrot avoids the wedge between camera and focus (looking ahead; opaque, visible, the PID and climb-over kept); ship ON only if it is still seen |
+| garage | 2 | round 13's G1 list: room to build, the turntable at match proportions, a stalemate is a draw, a clean HUD at 20:9, the loader, delete the dead stub; three listed carve-outs |
+| nav | 3 | the other 53 % of the rigs' reverse scrapes (route circle reverses, k-turn legs): instrument, validate with the sweep, fresh acceptance seeds; the stall share re-read; **CP1** if the baseline moves |
+| squad | 4 | the two red instruments: bisect and fix the gang-pack drills; `scenario_perf` refuses under load (rule 3); the ladder variants' stale row |
+
+**Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream). Merge at the
+hash each stream names green; read every review page's `db` at close (none expected); rescue git-ignored payload.
+
+_Previous state:_ **ROUND 13 IS CLOSED: three streams (squad, nav, audio), every item merged, worktrees removed, briefs in `streams/archive/round13/`, evidence in `streams/references/round13/`. No round is running. `main-checked` is `5b3c49f9` (the final check: builder0 1790/0, 18 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round); after it only docs (`dad3ca23`, `9313eb70`, this). The lead pushes. S6 decided in chat: ON, with the toggle documented at the code site (`game_design.md` *Round 13: S6 decided*). Nothing is waiting on him. **Round 14's first item is his (2026-09-27 evening): the airship steers clear of the player's view** — `game_design.md` *Round 14 direction, first item*; `roadmap.md` *Round 14 candidates* 1.**_
 
 ## ✅ ROUND 13 IS CLOSED (2026-09-27, one afternoon) — read this first
 
