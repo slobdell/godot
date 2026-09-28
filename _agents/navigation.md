@@ -5,6 +5,36 @@
 > `NavigationServer3D` runs A* over the navigation polygons baked from the arena's collision at startup
 > (`Pathing.find_path`). What was missing in round 5 was everything about *other units*.
 
+## Round 13: a give-way the hull fits
+
+Round 12's declared cost was the rigs' reverse-gear wall contacts, +57 %. Numbers with commits and machines: the
+brief's Status (`streams/nav.md`, archived at the round's close).
+
+**R1, the instrument** (`--yield-log`, `make nav-yield-buckets`): every give-way logs its spot (round 6's
+`spot(along,across)` table or round 7's `back(m)`), the hull, the room behind its tail, and whether the straight run
+to the spot keeps the whole outline clear; WallContact adds the contacts made while giving way (by gear, collider,
+end) and a `driver/gear` cross-tab (`by_driver_gear`). It found the whole +542 was right-of-way: blockreach let rigs
+find each other, and the asked rig took spots checked only at their CENTRE — `back(6)` is a point inside a 14 m hull's
+own footprint, so it passed whatever was behind the tail.
+
+**R2, the spot choice** (`_yield_fits`, `_yield_run_ok`, `_yield_shorten` in `movement.gd`): a candidate is accepted
+only if the drive `right_of_way()` makes to it — the same steering law, stepped with the plant's yaw law — keeps the
+whole outline inside the clear reach at every step (`_outline_ok`, the planned reverse's test). None fits whole: give
+way along the best candidate's run as far as the hull fits (>= 2 m, less 1 m; the spot stays the steering target and
+the give-way ends at that distance, `_yield_stop_m`). Not even that: give way IN PLACE (`hold`). Only the spot choice
+changed; the protocol (who asks, who gives way, hold, release) is round 6's. Switches: `yieldfit` (round 12),
+`yieldhold` (sized only), `yieldshort,yieldhold` (refuse what does not fit — built first, measured worse: a rig that
+will not move keeps the jam). A hull that must give way and finds nothing asks the other instead (`yield_swaps`; only
+reachable with `yieldhold` off).
+
+**Measured (builder0, 16 seeds x 2 squads, round 12 -> R2):** rigs reverse-gear contacts 3602 -> 1756, all contacts
+15129 -> 7305, leg time 2292 -> 1915 s, arrivals 229 -> 225 of 256; mixed contacts 4282 -> 2114, arrivals 364 -> 366;
+the rotation fight net's wall-contact ticks down on 12 of 12 runs, its `blocked_*` share up on 7 of 12. Sim baseline
+unmoved (`6313a38d`). Clip: `make nav-yield-clip` (rigs seed 7's first leg at his pose, both arms).
+
+**What is left is not right-of-way:** the rigs' reverse contacts are now `route` (Steering's circle reverse, no wall
+consulted) and `kturn` legs — the planner's case (`algorithms.md`).
+
 ## Round 12: the back-and-fill, and why the rig refused
 
 The lead approved "the War Rig's refused back-ups" for round 12; round 11 had left the rigs' `kturn_none` (130) above
@@ -835,6 +865,9 @@ have it. Add the name to `OFF_NAMES` in the commit that adds the switch.
 | `a7,a6` vs `a7` | A6 lives at A7's level 3, so it is measured under A7 (`nav-a6-ab A12_BASE=a7`) | A12's off-corridor share |
 | `leash` | **turns ON** the leash clamp on Movement's goal | `leash_orders` is the denominator: 0 = no leash reached the mover |
 | `yieldclear` | **turns ON** the yield-spot clearance | yield-driver wall contacts (`nav-fight-ab`) |
+| `yieldfit` | round 13's spot choice (back to round 6's centre check) | yield-driver reverse contacts, arrivals (`nav-drive-arms`, `--yield-log`) |
+| `yieldhold` | round 13's give-way in place (refuse instead, as round 6) | refused asks, press/unstick, arrivals |
+| `yieldshort` | round 13's sized give-way (with `yieldhold`: the refusing build) | `yield_spots_shortened` |
 | `oriented` | **turns ON** the oriented ORCA pair radius | defile dispersion, yard oscillation (`nav-defile-ab`) |
 | `wheelhold` | **turns ON** B7's held wheeled hull | shuffle and covering error (`nav-facing VERB=hold`) |
 
