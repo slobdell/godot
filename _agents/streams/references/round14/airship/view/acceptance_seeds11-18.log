@@ -1,0 +1,168 @@
+>> remote: syncing godot-airship to slobdell@builder0:~/tank_squad/godot-airship
+>> remote: make airship-view VIEW_SEEDS=11 12 13 14 15 16 17 18 VIEW_MAPS=terminus yard pit locks on slobdell@builder0
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (2 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | AirshipFlight[39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | AirshipSight[39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+rm -rf build/airship-view && mkdir -p build/airship-view
+AIRSHIP_VIEW locks     viewavoid=climb ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 9.6deg/s
+AIRSHIP_VIEW locks     viewavoid=climb ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 9.8deg/s
+AIRSHIP_VIEW locks     viewavoid=climb ticks= 7200 frame=  0.6% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw=10.2deg/s
+AIRSHIP_VIEW locks     viewavoid=climb ticks= 7200 frame=  0.9% hides_fight=  0.5% intrusions=  1 longest=  1.1s mean= 1.1s hidden_while=96.4% cover=98.9% yaw= 9.1deg/s
+AIRSHIP_VIEW locks     viewavoid=climb ticks= 7200 frame=  2.0% hides_fight=  1.8% intrusions=  2 longest=  2.7s mean= 2.2s hidden_while=100.0% cover=99.5% yaw=10.2deg/s
+AIRSHIP_VIEW locks     viewavoid=climb ticks= 7200 frame=  2.1% hides_fight=  1.9% intrusions=  1 longest=  4.5s mean= 4.5s hidden_while=67.7% cover=69.5% yaw= 9.4deg/s
+AIRSHIP_VIEW locks     viewavoid=climb ticks= 7200 frame=  2.4% hides_fight=  2.0% intrusions=  3 longest=  3.3s mean= 1.6s hidden_while=83.7% cover=83.7% yaw= 8.2deg/s
+AIRSHIP_VIEW locks     viewavoid=climb ticks= 7200 frame=  3.1% hides_fight=  3.1% intrusions=  2 longest=  4.4s mean= 3.7s hidden_while=80.0% cover=84.3% yaw=10.0deg/s
+AIRSHIP_VIEW_CAUSES locks viewavoid=climb camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES locks viewavoid=climb camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES locks viewavoid=climb camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES locks viewavoid=climb camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES locks viewavoid=climb camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES locks viewavoid=climb camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES locks viewavoid=climb camera=1 hull=0 both=0
+AIRSHIP_VIEW_CAUSES locks viewavoid=climb camera=2 hull=0 both=1
+AIRSHIP_VIEW locks     viewavoid=off ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 8.9deg/s
+AIRSHIP_VIEW locks     viewavoid=off ticks= 7200 frame=  0.4% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 9.3deg/s
+AIRSHIP_VIEW locks     viewavoid=off ticks= 7200 frame=  0.4% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 9.4deg/s
+AIRSHIP_VIEW locks     viewavoid=off ticks= 7200 frame=  1.6% hides_fight=  1.2% intrusions=  1 longest=  3.0s mean= 3.0s hidden_while=61.4% cover=66.6% yaw= 9.4deg/s
+AIRSHIP_VIEW locks     viewavoid=off ticks= 7200 frame=  2.4% hides_fight=  1.4% intrusions=  1 longest=  3.5s mean= 3.5s hidden_while=67.3% cover=68.0% yaw= 9.1deg/s
+AIRSHIP_VIEW locks     viewavoid=off ticks= 7200 frame=  3.3% hides_fight=  2.4% intrusions=  2 longest=  3.4s mean= 2.8s hidden_while=70.1% cover=77.2% yaw=10.5deg/s
+AIRSHIP_VIEW locks     viewavoid=off ticks= 7200 frame=  3.8% hides_fight=  3.0% intrusions=  2 longest=  5.8s mean= 3.6s hidden_while=86.7% cover=92.3% yaw= 9.2deg/s
+AIRSHIP_VIEW locks     viewavoid=off ticks= 7200 frame=  5.8% hides_fight=  5.4% intrusions=  2 longest=  6.5s mean= 6.5s hidden_while=79.3% cover=88.4% yaw= 9.6deg/s
+AIRSHIP_VIEW_CAUSES locks viewavoid=off camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES locks viewavoid=off camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES locks viewavoid=off camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES locks viewavoid=off camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES locks viewavoid=off camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES locks viewavoid=off camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES locks viewavoid=off camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES locks viewavoid=off camera=0 hull=0 both=2
+AIRSHIP_VIEW pit       viewavoid=climb ticks= 7200 frame=  1.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw=10.1deg/s
+AIRSHIP_VIEW pit       viewavoid=climb ticks= 7200 frame=  1.7% hides_fight=  0.9% intrusions=  1 longest=  2.1s mean= 2.1s hidden_while=100.0% cover=100.0% yaw= 9.5deg/s
+AIRSHIP_VIEW pit       viewavoid=climb ticks= 7200 frame=  2.5% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 9.3deg/s
+AIRSHIP_VIEW pit       viewavoid=climb ticks= 7200 frame=  4.9% hides_fight=  2.8% intrusions=  2 longest=  3.4s mean= 3.3s hidden_while=66.9% cover=72.0% yaw= 9.4deg/s
+AIRSHIP_VIEW pit       viewavoid=climb ticks= 7200 frame=  5.1% hides_fight=  3.2% intrusions=  2 longest=  4.0s mean= 3.9s hidden_while=65.3% cover=73.8% yaw=10.7deg/s
+AIRSHIP_VIEW pit       viewavoid=climb ticks= 7200 frame=  5.2% hides_fight=  3.6% intrusions=  2 longest=  5.2s mean= 4.3s hidden_while=92.4% cover=92.2% yaw=10.2deg/s
+AIRSHIP_VIEW pit       viewavoid=climb ticks= 7200 frame=  5.2% hides_fight=  4.1% intrusions=  4 longest=  6.2s mean= 2.4s hidden_while=95.1% cover=95.4% yaw=10.2deg/s
+AIRSHIP_VIEW pit       viewavoid=climb ticks= 7200 frame=  9.1% hides_fight=  4.0% intrusions=  3 longest=  5.6s mean= 3.2s hidden_while=66.8% cover=76.5% yaw= 9.8deg/s
+AIRSHIP_VIEW_CAUSES pit viewavoid=climb camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES pit viewavoid=climb camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES pit viewavoid=climb camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES pit viewavoid=climb camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES pit viewavoid=climb camera=0 hull=0 both=3
+AIRSHIP_VIEW_CAUSES pit viewavoid=climb camera=0 hull=1 both=3
+AIRSHIP_VIEW_CAUSES pit viewavoid=climb camera=1 hull=0 both=0
+AIRSHIP_VIEW_CAUSES pit viewavoid=climb camera=2 hull=0 both=0
+AIRSHIP_VIEW pit       viewavoid=off ticks= 7200 frame=  9.6% hides_fight=  7.1% intrusions=  2 longest= 14.1s mean= 8.5s hidden_while=49.9% cover=56.2% yaw=10.6deg/s
+AIRSHIP_VIEW pit       viewavoid=off ticks= 7200 frame= 11.1% hides_fight=  4.1% intrusions=  3 longest=  3.8s mean= 3.3s hidden_while=31.0% cover=40.1% yaw=10.3deg/s
+AIRSHIP_VIEW pit       viewavoid=off ticks= 7200 frame= 11.6% hides_fight=  7.1% intrusions=  4 longest= 10.2s mean= 4.2s hidden_while=58.6% cover=64.0% yaw=10.6deg/s
+AIRSHIP_VIEW pit       viewavoid=off ticks= 7200 frame= 13.0% hides_fight=  8.7% intrusions=  5 longest= 11.8s mean= 4.2s hidden_while=47.5% cover=51.9% yaw=10.0deg/s
+AIRSHIP_VIEW pit       viewavoid=off ticks= 7200 frame= 14.5% hides_fight= 11.0% intrusions=  3 longest= 14.5s mean= 8.8s hidden_while=56.4% cover=70.2% yaw= 9.4deg/s
+AIRSHIP_VIEW pit       viewavoid=off ticks= 7200 frame= 14.7% hides_fight=  5.5% intrusions=  1 longest= 13.3s mean=13.3s hidden_while=82.4% cover=77.8% yaw=10.4deg/s
+AIRSHIP_VIEW pit       viewavoid=off ticks= 7200 frame= 17.2% hides_fight=  5.6% intrusions=  3 longest= 12.5s mean= 4.5s hidden_while=62.5% cover=72.6% yaw= 9.7deg/s
+AIRSHIP_VIEW pit       viewavoid=off ticks= 7200 frame= 20.2% hides_fight= 13.0% intrusions=  2 longest= 20.9s mean=15.6s hidden_while=88.4% cover=82.0% yaw=10.5deg/s
+AIRSHIP_VIEW_CAUSES pit viewavoid=off camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES pit viewavoid=off camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES pit viewavoid=off camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES pit viewavoid=off camera=0 hull=0 both=3
+AIRSHIP_VIEW_CAUSES pit viewavoid=off camera=0 hull=1 both=2
+AIRSHIP_VIEW_CAUSES pit viewavoid=off camera=0 hull=2 both=1
+AIRSHIP_VIEW_CAUSES pit viewavoid=off camera=0 hull=2 both=3
+AIRSHIP_VIEW_CAUSES pit viewavoid=off camera=1 hull=0 both=3
+AIRSHIP_VIEW terminus  viewavoid=climb ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 9.8deg/s
+AIRSHIP_VIEW terminus  viewavoid=climb ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw=10.4deg/s
+AIRSHIP_VIEW terminus  viewavoid=climb ticks= 7200 frame=  1.2% hides_fight=  0.6% intrusions=  1 longest=  1.5s mean= 1.5s hidden_while=88.6% cover=92.0% yaw= 8.9deg/s
+AIRSHIP_VIEW terminus  viewavoid=climb ticks= 7200 frame=  1.4% hides_fight=  0.9% intrusions=  1 longest=  2.2s mean= 2.2s hidden_while=47.3% cover=86.2% yaw= 8.7deg/s
+AIRSHIP_VIEW terminus  viewavoid=climb ticks= 7200 frame=  1.6% hides_fight=  1.6% intrusions=  1 longest=  3.8s mean= 3.8s hidden_while=84.7% cover=87.4% yaw= 9.7deg/s
+AIRSHIP_VIEW terminus  viewavoid=climb ticks= 7200 frame=  1.9% hides_fight=  1.9% intrusions=  2 longest=  4.5s mean= 2.3s hidden_while=98.0% cover=99.8% yaw= 9.8deg/s
+AIRSHIP_VIEW terminus  viewavoid=climb ticks= 7200 frame=  3.1% hides_fight=  2.3% intrusions=  2 longest=  2.9s mean= 2.7s hidden_while=88.5% cover=95.6% yaw=10.0deg/s
+AIRSHIP_VIEW terminus  viewavoid=climb ticks= 7200 frame=  3.1% hides_fight=  2.3% intrusions=  2 longest=  3.0s mean= 2.7s hidden_while=72.9% cover=93.3% yaw=10.0deg/s
+AIRSHIP_VIEW_CAUSES terminus viewavoid=climb camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES terminus viewavoid=climb camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES terminus viewavoid=climb camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES terminus viewavoid=climb camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES terminus viewavoid=climb camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES terminus viewavoid=climb camera=0 hull=1 both=1
+AIRSHIP_VIEW_CAUSES terminus viewavoid=climb camera=1 hull=0 both=0
+AIRSHIP_VIEW_CAUSES terminus viewavoid=climb camera=1 hull=0 both=1
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 8.1deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 8.9deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  2.0% hides_fight=  2.0% intrusions=  1 longest=  4.7s mean= 4.7s hidden_while=94.4% cover=94.6% yaw= 9.3deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  3.3% hides_fight=  2.8% intrusions=  1 longest=  6.7s mean= 6.7s hidden_while=74.8% cover=78.6% yaw=10.5deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  4.5% hides_fight=  4.2% intrusions=  1 longest= 10.2s mean=10.2s hidden_while=91.9% cover=88.8% yaw= 9.4deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  4.6% hides_fight=  3.1% intrusions=  1 longest=  7.5s mean= 7.5s hidden_while=75.8% cover=83.0% yaw= 9.1deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  5.1% hides_fight=  3.6% intrusions=  3 longest=  5.4s mean= 2.9s hidden_while=90.3% cover=89.6% yaw= 9.4deg/s
+AIRSHIP_VIEW terminus  viewavoid=off ticks= 7200 frame=  5.7% hides_fight=  2.9% intrusions=  4 longest=  3.4s mean= 1.8s hidden_while=56.4% cover=64.0% yaw= 9.9deg/s
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=0 hull=0 both=3
+AIRSHIP_VIEW_CAUSES terminus viewavoid=off camera=1 hull=0 both=3
+AIRSHIP_VIEW yard      viewavoid=climb ticks= 7200 frame=  0.0% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 9.6deg/s
+AIRSHIP_VIEW yard      viewavoid=climb ticks= 7200 frame=  1.8% hides_fight=  0.0% intrusions=  1 longest=  0.1s mean= 0.1s hidden_while=11.1% cover=27.1% yaw= 9.4deg/s
+AIRSHIP_VIEW yard      viewavoid=climb ticks= 7200 frame=  2.8% hides_fight=  1.4% intrusions=  1 longest=  3.3s mean= 3.3s hidden_while=43.2% cover=49.0% yaw= 9.8deg/s
+AIRSHIP_VIEW yard      viewavoid=climb ticks= 7200 frame=  3.7% hides_fight=  0.0% intrusions=  0 longest=  0.0s mean= 0.0s hidden_while= 0.0% cover= 0.0% yaw= 8.8deg/s
+AIRSHIP_VIEW yard      viewavoid=climb ticks= 7200 frame=  4.8% hides_fight=  4.0% intrusions=  2 longest=  5.6s mean= 4.8s hidden_while=98.3% cover=97.0% yaw= 9.2deg/s
+AIRSHIP_VIEW yard      viewavoid=climb ticks= 7200 frame=  5.0% hides_fight=  4.8% intrusions=  2 longest=  6.0s mean= 5.7s hidden_while=86.1% cover=78.0% yaw= 8.5deg/s
+AIRSHIP_VIEW yard      viewavoid=climb ticks= 7200 frame=  5.6% hides_fight=  3.9% intrusions=  3 longest=  4.7s mean= 3.1s hidden_while=67.4% cover=65.6% yaw= 8.9deg/s
+AIRSHIP_VIEW yard      viewavoid=climb ticks= 7200 frame=  7.0% hides_fight=  5.8% intrusions=  4 longest=  4.5s mean= 3.5s hidden_while=96.6% cover=94.5% yaw= 9.3deg/s
+AIRSHIP_VIEW_CAUSES yard viewavoid=climb camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES yard viewavoid=climb camera=0 hull=0 both=0
+AIRSHIP_VIEW_CAUSES yard viewavoid=climb camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES yard viewavoid=climb camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES yard viewavoid=climb camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES yard viewavoid=climb camera=0 hull=0 both=3
+AIRSHIP_VIEW_CAUSES yard viewavoid=climb camera=0 hull=0 both=4
+AIRSHIP_VIEW_CAUSES yard viewavoid=climb camera=1 hull=0 both=1
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame=  3.4% hides_fight=  1.9% intrusions=  2 longest=  2.8s mean= 2.3s hidden_while=22.1% cover=29.2% yaw= 9.3deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame=  5.0% hides_fight=  3.6% intrusions=  2 longest=  7.4s mean= 4.3s hidden_while=80.4% cover=78.4% yaw= 8.9deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame=  5.2% hides_fight=  3.5% intrusions=  4 longest=  5.6s mean= 2.1s hidden_while=77.8% cover=85.9% yaw= 8.1deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame=  7.1% hides_fight=  6.6% intrusions=  1 longest= 15.8s mean=15.8s hidden_while=78.5% cover=77.3% yaw= 9.7deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame=  7.5% hides_fight=  4.6% intrusions=  3 longest=  8.6s mean= 3.7s hidden_while=62.0% cover=59.0% yaw= 9.3deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame=  7.8% hides_fight=  7.1% intrusions=  1 longest= 17.0s mean=17.0s hidden_while=67.6% cover=75.5% yaw= 9.6deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame=  8.2% hides_fight=  6.2% intrusions=  2 longest= 11.9s mean= 7.4s hidden_while=54.7% cover=56.1% yaw= 8.5deg/s
+AIRSHIP_VIEW yard      viewavoid=off ticks= 7200 frame= 12.0% hides_fight=  6.3% intrusions=  4 longest=  7.1s mean= 3.8s hidden_while=67.1% cover=69.7% yaw=10.1deg/s
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=0 hull=0 both=1
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=0 hull=0 both=2
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=0 hull=1 both=0
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=0 hull=1 both=2
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=0 hull=2 both=2
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=1 hull=0 both=1
+AIRSHIP_VIEW_CAUSES yard viewavoid=off camera=1 hull=0 both=3
+AIRSHIP_VIEW_POOL map        arm  seeds  frame%%  hides%%  intrusions  longest_s  hidden_while%%  yaw_deg_s  causes(camera/hull/both)
+AIRSHIP_VIEW_POOL locks      climb     8     1.4    1.16           9        4.5           83.1        9.6  3/0/6
+AIRSHIP_VIEW_POOL locks      off      8     2.2    1.68           8        6.5           76.4        9.4  0/0/8
+AIRSHIP_VIEW_POOL pit        climb     8     4.4    2.32          14        6.2           79.3        9.9  3/1/10
+AIRSHIP_VIEW_POOL pit        off      8    14.0    7.76          23       20.9           62.6       10.2  1/5/17
+AIRSHIP_VIEW_POOL terminus   climb     8     1.5    1.19           9        4.5           82.0        9.6  2/1/6
+AIRSHIP_VIEW_POOL terminus   off      8     3.1    2.34          11       10.2           81.0        9.3  1/0/10
+AIRSHIP_VIEW_POOL yard       climb     8     3.8    2.50          13        6.0           84.8        9.2  1/0/12
+AIRSHIP_VIEW_POOL yard       off      8     7.0    4.98          19       17.0           66.5        9.2  2/4/13
+AIRSHIP_VIEW_VERDICT locks      climb      hides 1.68% -> 1.16%; paired seeds on better 4, worse 3, tied 1; not scored (off < 2 %)
+AIRSHIP_VIEW_VERDICT pit        climb      hides 7.76% -> 2.32%; paired seeds on better 8, worse 0, tied 0; (a) PASS ratio 0.30 <= 0.40 (b) FAIL longest 6.2 s <= 3.0 (c) FAIL frame 4.4 >= 0.5 x 14.0 (c') FAIL seen-not-hiding 2.0 >= 0.5 x 6.2
+AIRSHIP_VIEW_VERDICT terminus   climb      hides 2.34% -> 1.19%; paired seeds on better 5, worse 3, tied 0; (a) FAIL ratio 0.51 <= 0.40 (b) FAIL longest 4.5 s <= 3.0 (c) FAIL frame 1.5 >= 0.5 x 3.1 (c') FAIL seen-not-hiding 0.4 >= 0.5 x 0.8
+AIRSHIP_VIEW_VERDICT yard       climb      hides 4.98% -> 2.50%; paired seeds on better 7, worse 1, tied 0; (a) FAIL ratio 0.50 <= 0.40 (b) FAIL longest 6.0 s <= 3.0 (c) PASS frame 3.8 >= 0.5 x 7.0 (c') PASS seen-not-hiding 1.3 >= 0.5 x 2.0
+>> remote: copy-back verified, 234 files, sha256
+>> remote: make airship-view VIEW_SEEDS=11 12 13 14 15 16 17 18 VIEW_MAPS=terminus yard pit locks exited 0 (build/ copied back)

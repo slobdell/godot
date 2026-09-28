@@ -1,0 +1,32 @@
+{
+  "arena": "yard",
+  "between_pct": 7.09722222222222,
+  "causes": {
+    "both": 1,
+    "camera": 0,
+    "hull": 0
+  },
+  "cover_pct_while_between": 75.5377156245246,
+  "frame_pct": 7.84722222222222,
+  "hidden_pct_while_between": 67.6233963905193,
+  "intrusions": 1,
+  "longest_s": 17.0333333333333,
+  "mean_s": 17.0333333333333,
+  "mean_yaw_deg_s": 9.64294389463048,
+  "ticks": 7200,
+  "viewavoid": "off",
+  "worst": [
+    {
+      "cover": 1.0,
+      "tick": 1081
+    },
+    {
+      "cover": 1.0,
+      "tick": 1240
+    },
+    {
+      "cover": 0.837684690952301,
+      "tick": 1390
+    }
+  ]
+}

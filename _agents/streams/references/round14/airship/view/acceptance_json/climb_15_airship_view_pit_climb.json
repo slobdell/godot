@@ -1,0 +1,24 @@
+{
+  "arena": "pit",
+  "between_pct": 0.861111111111111,
+  "causes": {
+    "both": 0,
+    "camera": 1,
+    "hull": 0
+  },
+  "cover_pct_while_between": 100.0,
+  "frame_pct": 1.70833333333333,
+  "hidden_pct_while_between": 100.0,
+  "intrusions": 1,
+  "longest_s": 2.06666666666667,
+  "mean_s": 2.06666666666667,
+  "mean_yaw_deg_s": 9.49149799889547,
+  "ticks": 7200,
+  "viewavoid": "climb",
+  "worst": [
+    {
+      "cover": 1.0,
+      "tick": 4623
+    }
+  ]
+}

@@ -102,11 +102,34 @@ Look at your frames and the clip.
 
 ## Waiting on the lead
 
-Nothing. His words are in. If A3 finds the two goals cannot both hold, the trade goes in Status for him with frames.
+**The climb over his view (A2/A3): ON or OFF?** Shipped OFF because the pre-registration failed (Status, the table).
+ON: the hull hides the fight about half as often and never for more than ~6 s (was up to 21 s); he sees the airship
+about half as often. Try it: `AIRSHIP_ON=viewclimb make skirmish ARENA=pit`. UNANSWERED.
 
 ## Status
 
 _(the worker keeps this current; newest first within each section)_
+
+### Report (2026-09-28 early morning)
+- **A0 DONE, merge `62658311`** (green). His invisible War Rigs were deployed inside a building and pushed 6.24 m under
+  the floor on tick 2; the deploy now keeps every hull clear of obstacles and inside the arena. Merge notes below.
+- **A1 DONE:** `make airship-view` measures his complaint with the live camera: round 13's flight hides the fight
+  1.7–7.8 % of the time depending on the map, 60–86 % of it while it does, for up to 21 s.
+- **A2/A3 DONE, shipped OFF, his call:** climbing over his view halves that (pit 7.8 → 2.3 %, yard 5.0 → 2.5 %,
+  Terminus 2.3 → 1.2 %) but misses the pre-registered bar and halves how often he sees the airship.
+- **A4 DONE (measured):** no turning to flee; mean |yaw rate| 9.2–9.9°/s in both arms. Nothing to tune.
+- **Playtest:** `make skirmish SEED=76424 ARENA=locks` with the Gangs from the faction menu: every War Rig drawn, none a
+  ring alone; then `AIRSHIP_ON=viewclimb make skirmish ARENA=pit` against `make skirmish ARENA=pit` — does the airship
+  in front of the camera bother him less, and does he miss it?
+- **Requests to other streams:** none. **For the orchestrator:** round 11's camera lift over the hull is part of the
+  disruption (the frame); a camera-stream item if he wants it looked at.
+- **Known issues:** the Gangs army still deploys forward of the Locks' zone (front rank z ≈ 75 vs 86; open ground now,
+  but outside the zone the arena ruling asks for) — an arena/squad item. `make airship-view` runs are not tick-for-tick
+  repeatable (quote pooled series only). Display runs on builder0 are ~6 fps or slower. My own slip, repaired: an edit
+  script turned this brief into 92 MB at `ed5ffe59` (an empty slice passed to `str.replace`); repaired in the next
+  commit from `ea755f2a`'s copy.
+- **Next steps if he wants the climb ON:** diagnose the 39–49 s cluster (11 of 13 remaining intrusions), then re-run
+  acceptance on fresh seeds (19–26).
 
 **Baseline:** `b5c11813` (branch start) builder0 `>> remote: make check exited 0`, 1790 passed / 0 failed, 18 targets,
 sim-baseline `6313a38d7ecd99bb` unmoved.
@@ -119,6 +142,9 @@ sim-baseline `6313a38d7ecd99bb` unmoved.
 4. **A3** — both arms, same seeds; the clip. **A4** — drift rate against the 8.5°/s stately bound.
 
 ### Merge notes (shared files, all additive)
+- A1–A3 (`ea755f2a`, `ed5ffe59`): all inside the airship's own paths plus `tools/airship_view_pool.py` (new) and
+  the `airship-view` / `rig-vanish` targets in `mk/fx.mk`; `camera/` untouched (the live camera is read from the
+  viewport; `RtsCamera.pose_at` / `yaw_facing` / `segment_hits_box` are read, not changed).
 - A0 (`62658311`): `game/tactics/army_layout.gd` (`_clear_spot` → `_clear_of_obstacles`, the `ARMY_LAYOUT_UNCHECKED`
   print), `game/tactics/slot_ground.gd` (`unchecked` counter), `game/tank/tank.gd` (`OFF_FLOOR_M`, `off_floor`,
   `_note_off_floor`, one call after `move_and_slide`), new `tests/test_deploy_faction_armies.gd`, new `make rig-vanish`
@@ -150,7 +176,7 @@ sim-baseline `6313a38d7ecd99bb` unmoved.
 - **Cost:** the view term's CPU per tick reported both arms (laptop working tree: yard 0.19 → 0.84 ms, Terminus
   0.11 → 0.83 ms, pit 0.42 → 1.28 ms a tick for `AirshipFlight.step` in isolation; builder0 to follow).
 
-### A1: the disruption as he sees it — MEASURED (instrument built; uncommitted until A2's check)
+### A1: the disruption as he sees it — DONE (`make airship-view`)
 - `make airship-view` (headless, builder0; `game/theme/arena_kit/airship/airship_view.gd`, `airship_sight.gd`,
   `tools/airship_view_pool.py`). His complaint is real in the live game and it is **rare and total**: round 13's
   flight (OFF) hides the fight **1.5 % of the time on the Terminus and 5.5 % on the yard** (seeds 1–4, 7, 240 s each,
@@ -165,17 +191,50 @@ sim-baseline `6313a38d7ecd99bb` unmoved.
   loop now stops and says so. (3) Headless there is no FxWorld, so the airship never moved (yaw 0.0°/s) until the
   instrument handed it the match (`SyndicateAdAirship.follow_match`).
 
-### A2: the view term — IN PROGRESS (design iterations, all builder0, design seeds only)
-- Mechanism: the orbit chooser (`AirshipFlight.choose_orbit`, every 6 ticks) prices candidate circles by flying a
-  GHOST of the pilot 10 s ahead toward each (real rudder, real inertia) and counting poses that hide the fight from
-  the live camera (1.0) or from any squad's likely view (0.5), × `VIEW_COST` 24 against the existing climb price.
-  PID gains, carrot, containment and climb-over untouched. Switch: `--airship-off=viewavoid`. Cost with the early-out
-  in `AirshipSight.hidden`: +0.2–0.3 ms a tick for `AirshipFlight.step` in isolation (laptop).
-- v0 (samples on the ideal circle, fixed camera): failed — a heavy hull switching circles cuts 10–20 m inside the new
-  one and swept through the lens while the samples said "behind the camera". → the ghost.
-- v1 (centres toward the live camera; fixed-camera test: yard 11 % → 0–2 %): **live, worse on the yard**, 5.5 → 9.6 %
-  (4 of 5 seeds worse), Terminus 1.5 → 1.0 %: a circle toward the camera is a circle over his own squads, and the
-  camera travels to them. → squad views priced, and circles pushed away from his army offered too (v2, running).
+### A2/A3: the climb over his view — BUILT, MEASURED, SHIPPED OFF (pre-registration failed); his call
+**Acceptance, fresh seeds 11–18, builder0, `ea755f2a`, `make airship-view`, climb vs off:**
+
+| map | hides the fight | paired seeds better | longest intrusion | in frame | seen without hiding |
+|---|---|---|---|---|---|
+| pit | 7.76 → **2.32 %** | **8 of 8** | 20.9 → 6.2 s | 14.0 → 4.4 % | 6.2 → 2.0 % |
+| yard | 4.98 → **2.50 %** | **7 of 8** | 17.0 → 6.0 s | 7.0 → 3.8 % | 2.0 → 1.3 % |
+| Terminus | 2.34 → 1.19 % | 5 of 8 | 10.2 → 4.5 s | 3.1 → 1.5 % | 0.8 → 0.4 % |
+| Locks (not scored, off < 2 %) | 1.68 → 1.16 % | 4 of 8 | 6.5 → 4.5 s | 2.2 → 1.4 % | — |
+
+Pre-registered (a) ratio ≤ 0.4: pit PASS 0.30, yard FAIL 0.50, Terminus FAIL 0.51; (b) longest ≤ 3 s: FAIL on all;
+(c′) seen without hiding ≥ 0.5 × off: yard PASS, pit and Terminus FAIL. **So it ships OFF** (the brief's rule), one
+switch away: `AIRSHIP_ON=viewclimb` on any launch, or `static var view_climb := true` in `airship_flight.gd`.
+**What it buys:** the hull hides the fight about half as often, better on 20 of 24 paired seeds on the three scored
+maps, and the worst single intrusion drops from 10–21 s to 4.5–6.2 s. **What it costs:** he sees the airship about half
+as often, because a hull over his lens is over the top of his frame. Mean |yaw rate| unchanged (9.2–9.9°/s both arms):
+it does not turn to flee; it rises (A4).
+- **What it is:** sight lines only DESCEND from the lens (17.6 m up at his pose) to the fight, so they are above the
+  6.2 m belly only over the first ~70 % of the way from the camera — the hull can only hide the fight within ~32–43 m
+  of the CAMERA, and a 62 m orbit round a fight he watches from 45.7 m back passes ~16 m from the lens every lap. A
+  belly over the camera is over every sight line. So the lens's near wedge — the live camera's and the camera behind
+  each of his squads (where the vision camera goes when he recalls one) — is one more thing the flight CLIMBS OVER,
+  planned ahead by the same ghost and the same "latest the climb can start" rule as a roof (`AirshipFlight.view_need`,
+  `view_top`, `over_camera`). PID, carrot, orbit, containment, climb rate: untouched. Opaque, no fade, no cut (C14.2).
+- **Built, measured, kept OFF (reasons in the code):** (1) the STEERING term — candidate orbit centres priced by a
+  ghost against the views (`view_avoid`, `--airship-on=viewsteer`): with a fixed camera it worked (yard 11 % → 0–2 %),
+  live it did not (toward-camera circles are circles over his own squads: yard 5.5 → 9.6 %, 4 of 5 seeds worse; with
+  away-from-army circles too 3.4 → 7.7 %; steering + climb 4.0 % against climb alone 0.9 %). (2) Climbing for the live
+  camera alone: no better. (3) Climbing only as high as the sight lines where the hull is (~10.6 m at 20 m out):
+  Terminus 4.8 → 0.6 % but yard 5.5 → 3.8 %, 2 of 5 seeds — a height with no margin loses to a camera that moves.
+  Logs of every design run in `references/round14/airship/view/`.
+- **Design seeds (1–4, 7), builder0, climb vs off:** yard 6.52 → 0.92 % (5 of 5 seeds better) and, repeated,
+  7.49 → 2.11 % (4 of 5); Terminus 2.74 → 0.72 % and 2.14 → 1.13 %.
+- **Noise, declared:** runs of the same seeds give different OFF numbers (yard 6.5, 7.5, 5.5, 3.4 %): the live skirmish
+  is not tick-for-tick repeatable headless, so only pooled series are quoted.
+- **Where the remaining intrusions come from:** 11 of 13 of the climb arm's fall at 39–49 s into the match, across
+  seeds — a systematic moment not yet diagnosed (display runs at builder0's iGPU are too slow to film it: a 55 s run did
+  not finish in 25 min). The one frame filmed, `references/round14/airship/view/a3_pit_seed17_off_t753_hull_in_front.png`
+  (round 13's flight), shows the complaint exactly: the deck filling the lower third in front of the fight, with the
+  camera ABOVE it — round 11's camera lift (`RtsCamera.clear_pose`, which lifts the camera over the deck "so the hull
+  lies between him and the fight, under the sight line, in the lower frame") is part of the disruption. That lift is
+  `game/camera/` (read-only here): a lever for him, not touched.
+- **CPU:** the climb check prices the live camera and ≤ 5 squad views per ghost step with an early-out
+  (`AirshipSight.hidden`); `AirshipFlight.step` in isolation +0.2–0.3 ms a tick on the laptop. Off by default: zero.
 
 ### A0: the invisible War Rigs — DONE. Green, merge here: `62658311`
 (builder0 `>> remote: make check exited 0`, 1792 passed / 0 failed, 18 targets, sim-baseline `6313a38d7ecd99bb` unmoved;

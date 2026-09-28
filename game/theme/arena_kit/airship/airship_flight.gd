@@ -162,25 +162,31 @@ func _init(layout: Dictionary = {}) -> void:
 	reset()
 
 
-## The switches, read once from the command line (the same shape as nav's `--nav-off`): `--airship-off=viewclimb`
-## flies round 13's line (no climb over his view), `climbsquads` climbs for the live camera alone, `viewavoid` the
-## steering (already off); `--airship-on=viewsteer` turns the steering on.
+## The switches, read once: `--airship-on=a,b` / `--airship-off=a,b` on the command line (the shape of nav's
+## `--nav-off`), or the same lists in the environment as AIRSHIP_ON / AIRSHIP_OFF, so any launch can take them without
+## a make variable (`AIRSHIP_ON=viewclimb make skirmish`). Names: `viewclimb` (climb over his view), `viewsteer` (the
+## steering term; `viewavoid` in --airship-off for the same), `climbsquads` (climb for his squads' views too).
 static func _read_switches() -> void:
 	if _switches_read:
 		return
 	_switches_read = true
+	var on := PackedStringArray(OS.get_environment("AIRSHIP_ON").split(",", false))
+	var off := PackedStringArray(OS.get_environment("AIRSHIP_OFF").split(",", false))
 	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--airship-off="):
-			var off := arg.trim_prefix("--airship-off=").split(",")
-			if off.has("viewavoid"):
-				view_avoid = false
-			if off.has("viewclimb"):
-				view_climb = false
-			if off.has("climbsquads"):
-				climb_squads = false
-		elif arg.begins_with("--airship-on="):
-			if arg.trim_prefix("--airship-on=").split(",").has("viewsteer"):
-				view_avoid = true
+		if arg.begins_with("--airship-on="):
+			on.append_array(arg.trim_prefix("--airship-on=").split(",", false))
+		elif arg.begins_with("--airship-off="):
+			off.append_array(arg.trim_prefix("--airship-off=").split(",", false))
+	if on.has("viewclimb"):
+		view_climb = true
+	if on.has("viewsteer"):
+		view_avoid = true
+	if off.has("viewclimb"):
+		view_climb = false
+	if off.has("viewavoid") or off.has("viewsteer"):
+		view_avoid = false
+	if off.has("climbsquads"):
+		climb_squads = false
 
 
 func reset() -> void:
@@ -478,7 +484,14 @@ func plan() -> float:
 ## lens, so a hull whose belly is over the camera is over every one of them. So the lens's near wedge -- the live
 ## camera's, and each squad's likely view -- is one more thing the flight climbs over, planned ahead by the same ghost
 ## and the same "latest the climb can start" rule as a roof. `--airship-off=viewclimb` turns it off.
-static var view_climb := true
+##
+## SHIPPED OFF, AND WHY (the brief: "ship ON only if A1's pre-registration holds"). Acceptance, fresh seeds 11-18,
+## builder0, `ea755f2a`, `make airship-view`: it roughly HALVES how often the hull hides the fight -- pit 7.8 -> 2.3 %
+## (8 of 8 seeds better), yard 5.0 -> 2.5 % (7 of 8), Terminus 2.3 -> 1.2 % (5 of 8) -- and cuts the worst intrusion
+## from 10-21 s to 4.5-6.2 s, but the pre-registered bar was "falls by most of itself (<= 0.4 x), no intrusion over
+## 3 s, still seen half as often", and it passed that only on the pit, and it is in his frame about half as often. The
+## trade is his: `AIRSHIP_ON=viewclimb` on any launch turns it on (this line to make it the default).
+static var view_climb := false
 ## Air kept between the belly and the camera it is passing over.
 const VIEW_CLEAR_M := 1.5
 ## Climb over each squad's LIKELY view too, not only the live camera's. `--airship-off=climbsquads` climbs for the live
