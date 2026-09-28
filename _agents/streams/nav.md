@@ -68,6 +68,12 @@ Nothing. If he plays and says the rigs wait too long, `yieldhold` is the arm to 
 
 _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names its commit and machine._
 
+### Green hash
+
+**`36c0547e` is green, merge here** (builder0, 2026-09-28, the tree with main `3955efec` merged): `>> remote: make check
+exited 0`, 18 targets, **1814 passed, 0 failed**, sim-baseline **`6313a38d7ecd99bb` unmoved**, determinism
+`ca7e3cbe26cf708d`; `test_nav_` 92/0. Commits after it: `_agents/` docs only (this Status). **No CP1.**
+
 ### Report in one screen
 
 - **N1 (done):** `--reverse-log` / `make nav-reverse-buckets` log every circle-rule reverse and every k-turn leg. The
@@ -134,6 +140,12 @@ _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names i
 
 ### Next steps (not done, in order)
 
+0. **Round-15 item: one exit test cannot serve both the rig and the scout.** The War Rig wants a planned leg to really
+   STOP and reverse (N3: contacts -19 %, leg time -13 % on fresh seeds); the orbiting scout wants the same leg to be a
+   brake tap (its engine-deck orbit, `scenario_cp2`, goes 41/43 -> 3/13 with N3 on). Do not rebuild N3 as-is: key it by
+   hull class (long hulls, where the stopping distance is a large share of the street) or by the plan's PURPOSE (a
+   k-turn in a street vs a tap inside an orbit), pre-register on fresh seeds (17-24), and keep
+   `make nav-scenario-arms SCEN_ARMS="none kturnbrake"` green as a gate beside the drive.
 1. **N5, a planner that looks earlier from a moving hull.** The count that names it: on the merged tree, 25 of 80
    first k-turn legs (190 reverse contacts, rigs, seeds 1-8, control) are planned when the forward arc's hit is 1-3 m
    and the rig needs 3.5 m to stop; and the circle rule's reverse (rigs' `route/reverse` 588-791 per 8 seeds). Start
