@@ -2561,3 +2561,15 @@ and the cutaway never touches the airship (his round-12 verdict: don't cut scree
 is asking for the opposite dependency: **the carrot, not the camera, avoids the player's view.** Transparency stays
 refused; the airship stays visible and in the venue; what changes is where it chooses to fly. Not a design pillar
 change; a round-14 item (`roadmap.md` *Round 14 candidates*, item 1).
+
+### Round 14 direction, second item: two War Rigs turned invisible (2026-09-27, evening, in chat, while playing)
+
+> *"ok there's also clearly a bug in the game (I'm playing now in case you need the recording). I have 2 war rigs for
+> the game that turned invisible during gameplay"*
+
+A defect, first in the airship brief's backlog (A0): it is about what is and is not visible in his view, the same
+family as the airship item, and no fleet or camera stream runs. His recording is the evidence; the map and the moment
+are asked for below the quote in `HANDOFF.md`. Candidates the worker must measure rather than assume: the cutaway
+(`BlockCutaway`, buildings-only by his round-12 verdict — does it ever hide a vehicle?), the rig's own hull art
+(`game/theme/` rig files: a mesh that stops drawing, a LOD, a visibility range), the airship's occlusion logic, or a
+rig driven under something that hides it (a covered bridge, the Locks). Not to be fixed by guessing (lesson 219).

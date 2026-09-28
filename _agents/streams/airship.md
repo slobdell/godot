@@ -35,6 +35,19 @@ touches it; it flies from the FIXED tick (30 fps and 144 fly the same line); it 
 
 ## Backlog (in order)
 
+**A0. FIRST: two War Rigs turned invisible during his play (2026-09-27 evening).** His words, verbatim, in
+`game_design.md` *Round 14 direction, second item*: *"I have 2 war rigs for the game that turned invisible during
+gameplay"*. He has a recording; the map and the moment go in `HANDOFF.md` when he answers. Reproduce before you
+explain: a War Rig squad on the Terminus and the maps with cover (the Locks' covered swing bridges, the Crossing), his
+pose, following the squad, 240 s, and a per-tick log of each rig's `visible`, its mesh instances' visibility and
+cull state, whether the cutaway hides anything that is not a building, and what the camera is inside. Candidates to
+KILL by measurement, not to assume (lesson 219): the cutaway (`BlockCutaway`, round 12's verdict is buildings-only);
+the rig's hull art (`game/theme/` rig files: a mesh that stops drawing, a LOD or visibility range at 72 m, the trailer
+vs the tractor); the airship's occlusion logic; a rig under a covered bridge. The fix lands in whichever file it is
+in — **carve-out for A0 only:** `game/camera/block_cutaway.gd` (or wherever the cutaway lives) and the rig's theme
+files, additive, listed in merge notes, the orchestrator reviews — with a regression test that fails without it, and
+frames before/after at his pose. Report in Status with the mechanism named; message the orchestrator when it is known.
+
 **A1. Measure the disruption as he sees it.** Extend `airship-report` (or add `airship-view`) so the camera is the
 REAL one: a scripted match on the Terminus (and the yard, the Crossing) with the camera driven the way he drives it
 (follow the selected squad, his pitch/distance/FOV), 240 s, and per map: **share of ticks the hull is inside the
