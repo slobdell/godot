@@ -6,6 +6,7 @@ extends SceneTree
 ##   --drills     every drill fires on its trigger (exit 1 if one never does)
 ##   --measure    doctrinal shape vs. the naive one, under identical conditions
 ##   --filter=x   only scenarios whose name contains x
+##   --idle-face=on|off  TankBrain.IDLE_FACE_NO_PIVOT for the run (round 13, S6)
 
 const OUT := "res://build/tactics"
 
@@ -26,6 +27,9 @@ func _run() -> void:
 	for arg in args:
 		if arg.begins_with("--filter="):
 			filter = arg.trim_prefix("--filter=")
+		# Round 13 (squad Q2): the S6 arm, so the drills can be compared with a no-pivot scout's idle face on and off.
+		if arg.begins_with("--idle-face="):
+			TankBrain.IDLE_FACE_NO_PIVOT = arg.trim_prefix("--idle-face=") == "on"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT))
 	if want_drills:
 		await _drills(filter)

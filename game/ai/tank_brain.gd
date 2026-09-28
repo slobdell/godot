@@ -415,7 +415,10 @@ var faces_declined := 0
 ## its aim, so a face order with no enemy in sight buys nothing but a shuffle off its slot. With this ON such a face
 ## becomes a stop, unless it is a facing the unit was explicitly ORDERED (its current K1 order's `facing`: a hold's
 ## facing, an ambush's, a drawn arrival heading). The switch is the A/B arm (`--idle-face=on|off` in the settle probe).
-static var IDLE_FACE_NO_PIVOT := false
+## ON since round 13 on the numbers (builder0, `fda69463`, `make squad-idleface-series`, 8 seeds x 8 cells): the mixed
+## squad stopped ~7 s sooner in 32 of 32 pairs, arrival and the tracked control unchanged, the scouts 2.7 m from their
+## slots at the stop (0.9 m before; in-slot is 3 m), every drill identical (doctrine.md *S6*).
+static var IDLE_FACE_NO_PIVOT := true
 ## Round 13: faces turned into stops by IDLE_FACE_NO_PIVOT, and every face this brain issued with nothing in sight,
 ## keyed by where it came from ("sector", "squad", "post", "order", "other"), for the probe and tests.
 var idle_faces_declined := 0
