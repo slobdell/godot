@@ -45,8 +45,7 @@ func _drive(at: Vector3, yaw: float, goal: Vector3, logging: bool, seconds: int,
 
 
 func test_a_circle_reverse_is_logged_with_its_sweep_and_its_contacts() -> void:
-	# The rule's own reverse (round 14's N2 turns it into a planned leg; this measures the rule).
-	var run := await _drive(CIRCLE_AT, PI, CIRCLE_GOAL, true, 8, PackedStringArray(["circlefit"]))
+	var run := await _drive(CIRCLE_AT, PI, CIRCLE_GOAL, true, 8)
 	var circles: Array = run["circles"]
 	assert_true(not circles.is_empty(), "the circle rule's reverse is logged (%s)" % run)
 	var row: Dictionary = circles[0]
@@ -88,6 +87,6 @@ func test_a_kturn_leg_is_logged_planned_against_driven() -> void:
 
 
 func test_nothing_is_logged_unless_asked() -> void:
-	var run := await _drive(CIRCLE_AT, PI, CIRCLE_GOAL, false, 4, PackedStringArray(["circlefit"]))
+	var run := await _drive(CIRCLE_AT, PI, CIRCLE_GOAL, false, 4)
 	assert_true((run["circles"] as Array).is_empty() and (run["legs"] as Array).is_empty(), "measurement only (%s)" % run)
 	assert_true(int(run["arms"]["circle_reverses"]) > 0, "control: the circle rule still reversed (%s)" % run)

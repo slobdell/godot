@@ -2904,7 +2904,8 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	# Only a wall the arc meets SOON: a hit further along is a corner the route bends round, which the carrot and the
 	# steering's own easing take wider than full lock does; a reverse in the middle of a street corner is the wrong move.
 	var start := _outline_offs(map, frame, here, forward)
-	if _arc_hit(map, frame, here, forward, turn, waypoint, start) > KTURN_HIT_WITHIN_M:
+	_kturn_hit_m = _arc_hit(map, frame, here, forward, turn, waypoint, start)
+	if _kturn_hit_m > KTURN_HIT_WITHIN_M:
 		return false
 	var at := here
 	var heading := forward
@@ -3315,6 +3316,25 @@ func _kturn_leg_diagnose(leg: Vector2) -> Dictionary:
 		row["pred_heading_deg"] = snappedf(_heading_deg(pose[1]), 0.1)
 		row["pred_margin_m"] = snappedf(least, 0.01) if least < INF else null
 		row["start_margin_m"] = snappedf(_outline_margin(map, frame, here, forward, _kturn_start_offs), 0.01)
+		# Round 14 (N3): planned in time? The forward arc's hit distance when planned, the forward roll-out before the
+		# leg can take hold (v^2 / 2b on the leg's lock), and the least clearance along that roll-out.
+		var speed := tank.speed() * float(-leg.x)  # rolling AGAINST the leg's gear
+		row["hit_m"] = snappedf(_kturn_hit_m, 0.01) if _kturn_hit_m < INF else -1.0
+		if speed > KTURN_ROLLING_SPEED:
+			var braking := maxf(float(Units.stat(tank.unit_id, "braking_mps2", 8.0)), 0.1)
+			var stop := speed * speed / (2.0 * braking)
+			row["stop_m"] = snappedf(stop, 0.01)
+			var rolled := [here, forward]
+			var least_roll := INF
+			var gone := 0.0
+			while gone < stop - 0.001:
+				var step := minf(KTURN_BACK_STEP_M, stop - gone)
+				rolled = _fill_step(rolled[0], rolled[1], int(-leg.x), _kturn_turn, wheel_radius(), step)
+				gone += step
+				least_roll = minf(least_roll, _outline_margin(map, frame, rolled[0], rolled[1], _kturn_start_offs))
+			row["roll_margin_m"] = snappedf(least_roll, 0.01)
+		else:
+			row["stop_m"] = 0.0
 	return row
 
 
@@ -3445,8 +3465,13 @@ const CIRCLE_SWEEP_MAX_M := 20.0
 # Build 1 (`0df01263`, falsified on the design seeds, builder0): the rule's reverse as a COMMITTED planned leg from the
 # roll-out pose. Rigs' reverse-gear contacts 892 -> 2136 and leg time +60 %: a committed leg overrides the rule's own
 # tick-by-tick let-go, and its 10-point sweep passed legs that scraped their sides along Block_1 (one rig looped there
-# for ~700 contact ticks). `--nav-off=circlefit` restores the rule. Arm counters (unit-ticks): `circle_kept`,
-# `circle_forward`, `circle_none`.
+# for ~700 contact ticks). Arm counters (unit-ticks): `circle_kept`, `circle_forward`, `circle_none`.
+#
+# **Not shipped: OPT-IN** (`--nav-off=circlefit` turns it ON). Build 2 (this code, `d8fba199`, builder0, design seeds
+# 1-8, rigs): `route/reverse` contacts 431 -> 410 (target: below 215), all contacts 3951 -> 5708, arrivals 110 -> 104
+# of 128, leg time +22 %. Half the rule's reverse contacts are the forward ROLL-OUT (N1), which no gate on the reverse
+# touches; where the reverse does not fit, the forward arc scrapes instead (`route/forward` 2646 -> 4025). What is left
+# is the planner's case (algorithms.md: the kinematic planner). Kept for that work: the dense outline and the gate.
 
 static var circle_kept := 0
 ## The lock of the forward arc a blocked circle reverse turned into (0 = none): held until the point is out of the circle.
@@ -3466,8 +3491,9 @@ const CIRCLE_THROTTLE := 0.6
 const DENSE_OUTLINE_STEP_M := 1.0
 
 
+## OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`): falsified on the design seeds in three builds (Status N2).
 static func circle_fit_on() -> bool:
-	return kturn_on() and not switched_off("circlefit")
+	return kturn_on() and switched_off("circlefit")
 
 
 ## The hull outline sampled at most DENSE_OUTLINE_STEP_M apart, as [along, across] in half-lengths / half-widths.
@@ -3575,3 +3601,5 @@ const KTURN_ROLLING_SPEED := 0.3
 var _kturn_rolling := true
 ## The pose a leg was planned from when it is not where the hull is (the roll-out), for the leg log only.
 var _kturn_plan_pose: Array = []
+## Round 14 (N3), measurement: the forward arc's hit distance when the planner last looked (metres).
+var _kturn_hit_m := INF

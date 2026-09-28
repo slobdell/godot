@@ -144,6 +144,14 @@ def main(paths):
             dict(moving(legs).most_common(8)), med([r.get("v0") for r in legs if r["contacts"]]),
             med([r.get("wrong_way_m") for r in legs if r["contacts"]]), med([r.get("v0") for r in legs if not r["contacts"]]),
             med([r.get("wrong_way_m") for r in legs if not r["contacts"]])))
+        # Round 14 (N3): planned in time? The roll-out (v^2/2b against the leg's gear) vs the arc's hit distance.
+        firsts = [r for r in legs if r.get("leg_no") == 1 and r.get("kind") in ("single", "fill")]
+        late = [r for r in firsts if (r.get("roll_margin_m") is not None and r["roll_margin_m"] < 0)]
+        print("first legs %d: roll-out NOT clear %d (their contacts %d, reverse %d; median stop %s m, hit %s m); "
+              "roll-out clear or none %d (contacts %d, reverse %d)" % (
+                  len(firsts), len(late), sum(r["contacts"] for r in late), sum(r["reverse_contacts"] for r in late),
+                  med([r.get("stop_m") for r in late]), med([r.get("hit_m") for r in late]), len(firsts) - len(late),
+                  sum(r["contacts"] for r in firsts if r not in late), sum(r["reverse_contacts"] for r in firsts if r not in late)))
         # Planned vs driven, contact legs only: is the leg short of its plan (cut) or on plan and still in a wall?
         with_contact = [r for r in legs if r.get("contacts", 0) > 0]
         planned_ok = [r for r in with_contact if (r.get("pred_margin_m") or 0) >= 0]

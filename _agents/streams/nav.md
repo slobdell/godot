@@ -74,7 +74,7 @@ _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names i
 |---|---|---|
 | 0 | green start: `make remote T=check` on `b5c11813` | **green**: builder0, `make check exited 0`, 1790 passed / 0 failed, sim-baseline `6313a38d7ecd99bb` unmoved, determinism `ca7e3cbe26cf708d` |
 | N1 | the instrument: circle reverses vs other, k-turn legs planned vs driven | **done** `8554f3b8` (below) |
-| N2 | the circle rule consults the wall (`--nav-off=circlefit`) | pre-registered (below), building |
+| N2 | the circle rule consults the wall (`--nav-off=circlefit`) | **falsified on the design seeds in three builds; shipped OPT-IN** (the switch turns it on); default = round 13. Acceptance seeds 9-16 never run with it (nothing to accept) |
 | N3 | k-turn legs that end in a wall | N1 names the mechanism: momentum (below) |
 | N4 | the stall share re-read; does a holding rig block the street | — |
 | N5 | stretch: the kinematic planner | only if N1–N3 leave a count that names it |
@@ -133,3 +133,34 @@ Design seeds **1-8**; acceptance seeds **9-16** (never run with the arm on befor
   per mixed drive leg, so **MOVED** is expected (path: any wheeled unit whose route carrot falls inside its turning
   circle while above flicker size); attributed with `nav-sim-arms SIM_ARMS="none circlefit"` — the `circlefit`-off
   arm must read `6313a38d7ecd99bb`. If it reads UNMOVED, no CP1.
+
+
+### N2: what was built, and why it does not ship (builder0, `nav-drive-arms` 8 design seeds x 2, control = the same build with the rule as round 13)
+
+The control reproduces round 13 exactly in every run below (rigs 110/128, 1039 s, 3951 contacts, 892 reverse).
+
+| build | rigs arrived | leg s | contacts | reverse-gear | `route/reverse` | press+unstick | mixed arrived / contacts |
+|---|---|---|---|---|---|---|---|
+| control (round 13) | 110/128 | 1039 | 3951 | 892 | 431 | 113 | 178/192, 1729 |
+| 1 `0df01263`: the rule's reverse as a committed leg planned from the roll-out pose (fits / shorter / forward arc / the rule) | 108 | 1668 | 8029 | 2136 | 1272 | 448 | 175, 1240 |
+| 2 `8291a371`: tick-by-tick gate on a DENSE-outline sweep (side samples <= 1 m apart); blocked -> a latched forward arc on the other lock | 102 | 1306 | 7220 | 1055 | 342 | 221 | 177, 1855 |
+| 2b `d8fba199`: + the latch releases on a nose contact or no progress | 104 | 1263 | 5708 | 1048 | 410 | 192 | 180, 1627 |
+
+**Against the pre-registration: the target failed in every build** (`route/reverse` needed to fall below ~215); arrivals,
+contacts, press/unstick and leg time all failed too. Mixed is roughly a null in 2b, as registered. Not run on the
+acceptance seeds: nothing to accept, and seeds 9-16 stay fresh for whoever builds the next variant.
+
+What each build taught (all from the leg/episode logs, not guessed):
+1. **A committed leg overrides the rule's own let-go.** The rule re-decides every tick and often lets go after a few
+   centimetres (N1: median driven 0.3 m); a leg planned from a roll-out 6 m ahead at 10 m/s committed rigs to 5-20 m
+   reverses. And the **10-point outline misses block corners** between a 14 m hull's side samples: legs predicted
+   clear by 0.1-0.4 m scraped their sides along `Block_1` (seed 5, one rig looped there ~700 contact ticks).
+2. **Where the reverse does not fit, there is rarely a clean alternative.** With a dense sweep, 1391 of the 5394 unit-
+   ticks the rule wanted to reverse had neither the reverse nor a 2 m forward arc clear; the forward arcs that were
+   chosen scraped (`route/forward` contacts 2646 -> 4025-5550). The first latch pinned a rig nose-on against
+   `Floodlight_31` for 51 s: the sweep lets a pressed point stay where it is, and the pose never changed.
+3. **Half the rule's contacts are momentum, which no reverse gate touches** (N1: ~227 of 429 are the forward roll-out).
+
+**Decision:** OPT-IN (`--nav-off=circlefit` turns it ON, like `a7`), default path = round 13 (so the sim baseline cannot
+move from N2). The dense outline (`_dense_outline`, `_dense_run_ok`) is kept: it is the sweep any later planner needs.
+The remaining `route/reverse` count names the kinematic planner (N5), not another rule on the rule.
