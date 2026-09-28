@@ -926,7 +926,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 				# Round 14 (N2): the circle rule's reverse is a swept, planned leg (see _circle_leg).
 				if _kturn_left_m <= 0.0 and circle_fit_on() and (drive_vector.x < 0.0 or _circle_away != 0.0):
 					drive_vector = _circle_gate(waypoint, radius, drive_vector)
-				if drive_vector.x >= 0.0 and _planned_reverse(leg, waypoint, delta):
+				if _planned_reverse(leg, waypoint, delta):
 					drive_vector = Vector2(leg.throttle, leg.turn)
 			elif _kturn_left_m > 0.0:
 				_kturn_end("cancelled")
