@@ -330,23 +330,3 @@ hulls, up to 4 links) ends at a yielder is queued behind it. Table: `references/
 - **What a player would see:** a hull that stops to let a friend by now and then holds up the one or two behind it for
   a moment. If the lead reads it as rigs waiting too long, `--nav-off=yieldhold` is the arm (round 13: fewer holds,
   more scrapes).
-
-### N3b: CP1 held — a scenario moved, attributed, and the variant that answers it (pre-registered 2026-09-28 BEFORE any run of it)
-
-`make check` on the merged tree (`edad0ba7`, builder0): runner 1814 passed / 0 failed, sim-baseline MOVED as declared,
-**`ai-scenarios-check` FAILED**. `make nav-scenario-arms` (new; the suite once per `--nav-off` arm; twice each, identical):
-`scenario_cp2::test_a_scout_works_onto_a_tanks_engine_deck` fails with N3 ON (deck hits **41/43 -> 3/13**) and passes
-with `kturnbrake` off — N3's. (`scenario_cover::test_peeking_while_the_enemy_reloads_takes_fewer_hits` fails on main
-`3955efec` too, in both arms: main's recorded count, not nav's.) Mechanism: the orbiting scout (~14 m/s) plans short
-reverse legs; before N3 the forward roll counted as the leg's progress, so a leg was a brake tap; N3's count-from-rest
-made it a full stop and back-up mid-orbit.
-
-**N3b:** count-from-rest only for a leg that CONTINUES a plan (a back-and-fill's second and later legs — where the
-rigs' 241 momentum contacts were); a plan's FIRST leg counts as round 13 did. The stopping-distance exit test is
-unchanged. Pre-registered, on the merged tree, arms of one build (control `--nav-off=kturnbrake`):
-- **Scenario:** `scenario_cp2` engine-deck passes (deck share >= 0.5) with the arm ON; the suite's counts equal main's.
-- **Sim baseline:** MOVED or not, attributed by `nav-sim-arms` (the off arm must read `6313a38d7ecd99bb`).
-- **Drive, design seeds 1-8 and FRESH acceptance seeds 17-24** (9-16 were spent on N3): rigs' all contacts down;
-  total reverse-gear not up; arrivals not below control by more than 3; `kturn_none` not up 10; press+unstick not up
-  25 %; leg time not up 10 %; mixed arrivals within 3, contacts not up. (N3's failed target is not re-registered: an
-  exit test does not reach the first-leg bucket; that is N5.)

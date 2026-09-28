@@ -3057,15 +3057,12 @@ func _kturn_start_leg(leg: Vector2) -> void:
 	_kturn_left_m = leg.y
 	_kturn_from = ctl.tank.global_position
 	_kturn_timeout = leg.y * KTURN_SECONDS_PER_M + 1.0
-	_kturn_leg_no += 1
-	# Round 14 (N3): rolling the other way at the start of a leg that CONTINUES a plan (the last leg's momentum): the
-	# distance counts from where the hull starts moving in this leg's gear, and the timeout allows the braking. Not a
-	# plan's first leg (N3b): there the hull arrives at cruise speed — an orbiting scout at ~14 m/s — and counting from
-	# rest turned its brief planned reverses into full stops and back-ups mid-orbit (scenario_cp2's engine-deck scout:
-	# 41 of 43 deck hits -> 3 of 13, builder0, `edad0ba7`).
-	_kturn_rolling = not kturn_brake_on() or _kturn_leg_no == 1 or ctl.tank.speed() * leg.x > -KTURN_ROLLING_SPEED
+	# Round 14 (N3): rolling the other way at the start (the last leg's momentum): the distance counts from where the
+	# hull starts moving in this leg's gear, and the timeout allows the braking.
+	_kturn_rolling = not kturn_brake_on() or ctl.tank.speed() * leg.x > -KTURN_ROLLING_SPEED
 	if not _kturn_rolling:
 		_kturn_timeout += absf(ctl.tank.speed()) / _braking()
+	_kturn_leg_no += 1
 	if reverse_log:
 		_kturn_rec = _kturn_leg_diagnose(leg)
 		kturn_leg_log.append(_kturn_rec)
