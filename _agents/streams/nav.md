@@ -75,7 +75,7 @@ _Worker: nav, round 14. Started 2026-09-27 from `b5c11813`. Every number names i
 | 0 | green start: `make remote T=check` on `b5c11813` | **green**: builder0, `make check exited 0`, 1790 passed / 0 failed, sim-baseline `6313a38d7ecd99bb` unmoved, determinism `ca7e3cbe26cf708d` |
 | N1 | the instrument: circle reverses vs other, k-turn legs planned vs driven | **done** `8554f3b8` (below) |
 | N2 | the circle rule consults the wall (`--nav-off=circlefit`) | **falsified on the design seeds in three builds; shipped OPT-IN** (the switch turns it on); default = round 13. Acceptance seeds 9-16 never run with it (nothing to accept) |
-| N3 | k-turn legs that end in a wall (`--nav-off=kturnbrake`) | pre-registered (below), building |
+| N3 | k-turn legs that end in a wall (`--nav-off=kturnbrake`) | **built `0974fd4b`, ON**: the target failed on both seed sets (below), every other clause held on the fresh seeds; shipped on the lead's standing trade, the veto is one switch |
 | N4 | the stall share re-read; does a holding rig block the street | — |
 | N5 | stretch: the kinematic planner | only if N1–N3 leave a count that names it |
 
@@ -199,3 +199,43 @@ acceptance seeds **9-16**; control = the same build with the switch.
 - **Sim baseline:** path = a wheeled hull in the 40 s baseline match driving a planned k-turn leg. I do not know that
   one is driven; pre-registered **UNMOVED unless it is**, decided by `nav-sim-arms SIM_ARMS="none kturnbrake"` (any
   move must be reproduced by the `kturnbrake` arm reading `6313a38d7ecd99bb`).
+
+### N3: the leg ends where the hull can stop (builder0, `0974fd4b` on the merged tree, `nav-drive-arms`, control `--nav-off=kturnbrake`, same build)
+
+What it changes: the planned leg's EXIT TEST only (the planner's geometry is round 13's). A leg is done when what is
+left is within the stopping distance in its gear (v^2 / 2b, the catalog's braking), so the next leg's opposite throttle
+brakes the hull to rest at the planned end; a leg that starts with the hull rolling the other way counts its distance
+from where the hull begins to move in its gear (the control counted a forward roll as a reverse leg's progress: in
+`test_nav_kturn_brake`'s control the reverse leg is never driven at all). `test_nav_kturn_brake` 2/2.
+
+The merge moved the rigs' control (the airship A0 deploy fix changes where rigs start): design seeds 1-8 read 1082
+reverse-gear contacts on the merged tree against 892 before it; mixed is identical (188). Every comparison below is the
+two arms of one build.
+
+| squad, seeds | arm | arrived | leg s | contacts | press+unstick | reverse-gear | `kturn/reverse` | kturn_none |
+|---|---|---|---|---|---|---|---|---|
+| rigs 1-8 (design) | control | 111/128 | 1172 | 6415 | 257 | 1082 | 313 | 53 |
+| rigs 1-8 (design) | **N3** | **113** | **1106** | **4900** | **133** | 1153 | 276 | 38 |
+| rigs 9-16 (acceptance) | control | 109/128 | 1283 | 9147 | 162 | 1400 | 552 | 69 |
+| rigs 9-16 (acceptance) | **N3** | **109** | **1113** | **7386** | **138** | **1266** | 416 | 70 |
+| mixed 1-8 | control | 178/192 | 1139 | 1729 | 105 | 188 | 40 | 8 |
+| mixed 1-8 | **N3** | 174 | 1265 | 1670 | 27 | 199 | 11 | 12 |
+| mixed 9-16 | control | 173/192 | 1198 | 3252 | 198 | 208 | 20 | 7 |
+| mixed 9-16 | **N3** | **175** | **965** | **870** | **0** | **151** | 0 | 6 |
+
+**Against the pre-registration, honestly:**
+- **Target FAILED on both sets:** rigs' `kturn/reverse` -12 % (design) and -25 % (acceptance); registered: more than half.
+  On the design seeds the forward-roll nose contacts halved (`reverse/nose/fwd` 201 -> 99), but on the merged tree the
+  biggest kturn bucket is FIRST legs planned too late (the forward arc's hit 1-3 m when the planner first looks, the
+  rig's stop 3.5 m: 25 legs, 190 reverse contacts in the control), which an exit test cannot reach.
+- **No displacement:** failed on design (total reverse-gear 1082 -> 1153; `route/reverse` 588 -> 791), met on acceptance
+  (1400 -> 1266). All contacts down on both (-24 %, -19 %).
+- **No regression:** arrivals +2 / 0 (met), `kturn_none` -15 / +1 (met), press+unstick -48 % / -15 % (met), leg time -6 % /
+  -13 % (met).
+- **Mixed null:** arrivals -4 on design (bound 3: FAILED by one), +2 on acceptance; contacts down on both.
+
+**Decision: ON.** The count it was built for moved a quarter, not half; everything a player sees moved the right way
+on the fresh seeds (fewer scrapes, a faster march, the same arrivals), which is the lead's standing trade (*"a 4s slower
+march for a tidier traversal is better"*: this one is tidier and quicker). The orchestrator's veto: `--nav-off=kturnbrake`.
+The remaining `kturn` count names the planner that looks earlier (first legs planned inside the stopping distance) —
+N5's case, with the roll-out model (`_rollout`) and the dense outline already written.
