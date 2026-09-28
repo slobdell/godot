@@ -14,9 +14,9 @@ tactics-measure: import ## X4: what each formation and technique is worth, under
 		2>&1 | tee $(BUILD_DIR)/tactics-measure.log | grep -E "TACTICS|ERROR" || true
 	grep -q "TACTICS_DONE" $(BUILD_DIR)/tactics-measure.log
 
-tactics-shots: import ## Doctrine in pictures: elements moving, ambushed and bounding, frames in build/tactics-shots/ (needs a display: make remote T=tactics-shots)
+tactics-shots: import ## Doctrine in pictures: elements moving, ambushed and bounding, frames in build/tactics-shots/ (needs a display: make remote T=tactics-shots; round 14: STAGE=gang_pack SHOT_ARGS="--pose=his --chasers --table=standard")
 	mkdir -p $(BUILD_DIR)/tactics-shots
-	$(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x960 --script res://tests/tactics/tactics_shots.gd -- $(if $(STAGE),--stage=$(STAGE)) \
+	$(GODOT) --path . --fixed-fps $(SIM_HZ) --resolution 1280x960 --script res://tests/tactics/tactics_shots.gd -- $(if $(STAGE),--stage=$(STAGE)) $(SHOT_ARGS) \
 		2>&1 | tee $(BUILD_DIR)/tactics-shots/log.txt | grep -E "TACTICS_SHOT|ERROR" || true
 	grep -q TACTICS_SHOTS_DONE $(BUILD_DIR)/tactics-shots/log.txt
 

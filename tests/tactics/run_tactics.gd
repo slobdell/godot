@@ -84,12 +84,20 @@ func _drills(filter: String) -> void:
 		_begin()
 		var drilled: Dictionary = await TacticsScenarios.gang_pack(case, "standard")
 		_record("gang_pack_standard", drilled)
-		_expect(pack, "drills", "the pack rings them or baits them",
-				(pack["drills"] as Array).has("encircle") or (pack["drills"] as Array).has("bait"))
+		# Round 14 (squad Q1): these two assertions were stale from the commit that wrote them (9247ef48, red there on
+		# builder0 and at every commit since). The SAME commit measured encircle and switched it off in every shipped
+		# table (enemy survival 0.66 with it, 0.19 without), and made bait require a contact that FOLLOWS (its first
+		# version lost three of four vehicles luring two dug-in guns). Against these two guns the gangs' design is to
+		# fight, not to lure or circle, so that is what is asserted; bait is asserted where it belongs, in bait_chase.
+		# "More sides than a standard element" is dropped, not loosened: the same commit found a standard element
+		# covers as many arcs by fighting, and the comparison flipped 4-8 arcs across commits on one seed (a coin).
+		var pack_drills: Array = pack["drills"]
+		_expect(pack, "drills", "against dug-in guns the pack does not lure (a lure needs something that follows)",
+				not pack_drills.has("bait"))
+		_expect(pack, "drills", "nor circle (encircle is in no shipped table)", not pack_drills.has("encircle"))
+		_expect(pack, "drills", "it fights them instead", pack_drills.has("react_to_contact"))
 		_expect(pack, "arcs_covered", "and comes at them from more than one side",
 				int(pack["arcs_covered"]) >= 3)
-		_expect(pack, "arcs_covered", "from more sides than a standard element would",
-				int(pack["arcs_covered"]) >= int(drilled["arcs_covered"]))
 	if _wanted("bait_chase", filter):
 		# Bait only means anything against something that follows, so measure it against one that does.
 		_begin()
@@ -98,6 +106,11 @@ func _drills(filter: String) -> void:
 		_begin()
 		var straight: Dictionary = await TacticsScenarios.gang_pack(case, "gangs-no-bait", 26.0, true)
 		_record("bait_chase_no_bait", straight)
+		# Round 14 (squad Q1): the positive half of the gangs' lure, never asserted until now. Only that it FIRES
+		# against something that follows, and that the control arm really lacks it -- not that it wins: what the
+		# lure is worth is a balance question (C12.6), and on one seed it is reported, not judged.
+		_expect(lured, "drills", "against a contact that follows, the gangs send a lure", (lured["drills"] as Array).has("bait"))
+		_expect(straight, "drills", "and without the drill they do not", not (straight["drills"] as Array).has("bait"))
 	if _wanted("herringbone", filter):
 		_begin()
 		var halt: Dictionary = await TacticsScenarios.herringbone(case)
