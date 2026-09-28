@@ -178,6 +178,20 @@ nav-kturn-buckets: import ## nav (round 12): the Terminus drive with every refus
 	@$(MAKE) --no-print-directory nav-terminus-drive NAV_FLAGS="$(NAV_FLAGS) --kturn-log" > $(BUILD_DIR)/nav-kturn-drive.log 2>&1 || { tail -20 $(BUILD_DIR)/nav-kturn-drive.log; exit 1; }
 	@$(PYTHON) tests/nav/kturn_buckets.py $(BUILD_DIR)/nav-drive/*.log
 
+# Round 13 (nav R2): a War Rig asked to give way with its tail 0.5 m from a block, at his pose, both arms
+# (--nav-off=yieldfit = round 12) -> build/nav-yield-clip/rigyield_{off,on}.mp4 + NAV_ROTATION_RIGYIELD.
+YIELD_YAW ?= 0
+.PHONY: nav-yield-clip
+nav-yield-clip: import ## nav (round 13): a War Rig giving way to another in a Terminus street as a before/after clip at his pose -> build/nav-yield-clip/rigyield_{off,on}.mp4 (needs a display)
+	rm -rf $(BUILD_DIR)/nav-yield-clip && mkdir -p $(BUILD_DIR)/nav-yield-clip/off $(BUILD_DIR)/nav-yield-clip/on
+	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--arena=terminus --cases=rigyield --every=3 --yaw=$(YIELD_YAW) --nav-off=yieldfit --out=$(CURDIR)/$(BUILD_DIR)/nav-yield-clip/off > $(BUILD_DIR)/nav-yield-clip/off.log 2>&1 || true
+	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--arena=terminus --cases=rigyield --every=3 --yaw=$(YIELD_YAW) --out=$(CURDIR)/$(BUILD_DIR)/nav-yield-clip/on > $(BUILD_DIR)/nav-yield-clip/on.log 2>&1 || true
+	@for arm in off on; do ffmpeg -loglevel error -y -framerate 10 -pattern_type glob -i "$(BUILD_DIR)/nav-yield-clip/$$arm/rigyield_*.png" \
+		-c:v libx264 -pix_fmt yuv420p $(BUILD_DIR)/nav-yield-clip/rigyield_$$arm.mp4 || echo ">> nav-yield-clip: ffmpeg failed for $$arm"; done
+	@grep -hE "NAV_ROTATION_RIGYIELD|NAV_ROTATION rigyield|SCRIPT ERROR" $(BUILD_DIR)/nav-yield-clip/off.log $(BUILD_DIR)/nav-yield-clip/on.log || true
+
 # Round 13 (nav R1): where a hull backs into walls when it gives way. The drive with --yield-log (every give-way logs its
 # spot, the hull, the room behind it, the outline sweep to the spot, and what it hit), bucketed.
 .PHONY: nav-yield-buckets
