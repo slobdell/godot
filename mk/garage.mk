@@ -97,3 +97,19 @@ army-loop-shots: import ## Results screen screenshots after a real 70 s skirmish
 .PHONY: economy-sim
 economy-sim: import ## Simulated players earning credits with the real Progression numbers: matches and hours to each unlock (ECON_PLAYERS=400) -> _agents/balance.md "Economy"
 	$(GODOT) --headless --path . --script res://tests/garage/economy_sim.gd -- --players=$(or $(ECON_PLAYERS),400) 2>&1 | grep -E '^\||ECONOMY_SIM|Typical|ERROR'
+
+.PHONY: garage-tour
+TOUR_DIR := $(BUILD_DIR)/screenshots/garage-tour
+TOUR_MATCH ?= 25
+
+# Round 13 (G1): the garage as a player meets it, from the title, by taps (tests/garage/garage_tour.gd). The phone run
+# uses the touch UI and a 20:9 window that fits builder0's monitor (the same size as garage-shots).
+garage-tour: import ## A player's garage loop with a display: title → GARAGE → build → FIGHT → results → REMATCH → ARMY, a frame per step at 1920x1080 and 20:9 -> build/screenshots/garage-tour/{desktop,phone}/
+	rm -rf $(TOUR_DIR) && mkdir -p $(TOUR_DIR)/desktop $(TOUR_DIR)/phone
+	status=0; \
+	timeout 600 $(GODOT) --path . --resolution 1920x1080 --script res://tests/garage/garage_tour.gd -- --tour-fresh \
+		--tour-out=$(CURDIR)/$(TOUR_DIR)/desktop --tour-match=$(TOUR_MATCH) > $(TOUR_DIR)/desktop.log 2>&1 || status=1; \
+	timeout 600 $(GODOT) --path . --resolution 1800x810 --script res://tests/garage/garage_tour.gd -- --tour-fresh --ui-touch \
+		--tour-out=$(CURDIR)/$(TOUR_DIR)/phone --tour-match=$(TOUR_MATCH) > $(TOUR_DIR)/phone.log 2>&1 || status=1; \
+	grep -hE '^(TOUR_|MUSIC_TRACK|GARAGE_FIGHT|ARMY_RESULTS|ANNOUNCER_BOOTH|MUSIC on)|ERROR' $(TOUR_DIR)/desktop.log $(TOUR_DIR)/phone.log; \
+	echo "Now LOOK at $(TOUR_DIR)/*/*.png"; exit $$status

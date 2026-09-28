@@ -50,6 +50,10 @@ const STEM_FADE_S := 1.2
 const STEM_HYSTERESIS := 0.08
 const SILENT_DB := -60.0
 ## The states the director plays: the mood's, the opening before them, and the garage outside a match.
+## **Round 13: the garage.** GarageMode holds the director on `garage` ([method hold]) while the army builder is up, so
+## the match mood underneath it (the booth keeps one from launch) cannot pull the bed; FIGHT [method release]s it back
+## to the mood, which before anybody has fired is `pre_match`: the garage's blues crossfade into the match's opening on
+## a bar line, in the same process (FIGHT does not reload the scene, so this is one director with one set of draws).
 const STATES := ["pre_match", "lull", "skirmish", "battle", "last_stand", "victory", "defeat", "garage"]
 ## The soundtrack's level under --music-volume. Until the stems looped (bc1ce8f) the fight music stopped after 8 s,
 ## so the whole mix was balanced against silence; the first full match with it playing measured -15.2 LUFS and a
@@ -97,6 +101,8 @@ var _stems_started_usec := 0
 ## This match's pick for each set of equally fitting tracks, keyed by the set: skirmish and battle share one fight set,
 ## so they share one pick.
 var _picks := {}
+## A state the director keeps playing whatever the mood says ("" = follow the mood): the garage.
+var held := ""
 
 
 ## Adds a music director to the running game if `--music` asks for one, following the booth's mood. Returns it,
@@ -126,10 +132,18 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 		print("MUSIC no tracks in %s yet: silence" % flags.text("music-dir", DEFAULT_DIR))
 		return null
 	main.game_match.add_child(music)
+	if main.get("mode") is GarageMode:
+		music.held = (main.get("mode") as GarageMode).music_state()
 	music.follow(booth.mood)
-	print("MUSIC on: %d beds, %d stingers, following the match mood (seed %d, memory %s)" % [music.tracks.size(),
-			music.stingers.size(), music.match_seed, history_path])
+	print("MUSIC on: %d beds, %d stingers, following the match mood (seed %d, memory %s)%s" % [music.tracks.size(),
+			music.stingers.size(), music.match_seed, history_path, " held on %s" % music.held if music.held != "" else ""])
 	return music
+
+
+## The running game's director (attach() puts it on the match), or null when the launch has no music.
+static func find(main: Node) -> MusicDirector:
+	var game_match: Node = main.get("game_match")
+	return game_match.get_node_or_null("Music") as MusicDirector if game_match != null else null
 
 
 ## Adds the Music bus and ducks it under the announcer, the way AnnouncerVoice ducks the world.
@@ -194,7 +208,26 @@ func _ready() -> void:
 func follow(mood: MatchMood) -> void:
 	_mood = mood
 	mood.state_changed.connect(_on_mood_changed)
-	set_state(music_state_for(mood.current()["state"], mood.started_contact))
+	set_state(held if held != "" else mood_music_state())
+
+
+## Plays `hold_state` and keeps it whatever the mood does, until [method release] (the garage).
+func hold(hold_state: String) -> void:
+	held = hold_state
+	set_state(held)
+
+
+## Back to following the mood: the state it is in now, which straight after the garage is the opening.
+func release() -> void:
+	held = ""
+	set_state(mood_music_state())
+
+
+## What the mood asks for right now (the opening when there is no mood yet).
+func mood_music_state() -> String:
+	if _mood == null:
+		return "pre_match"
+	return music_state_for(String(_mood.current()["state"]), _mood.started_contact)
 
 
 ## The director's state for a mood reading: the mood's own, except that the quiet before anybody has fired is the
@@ -204,6 +237,8 @@ static func music_state_for(mood_state: String, started_contact: bool) -> String
 
 
 func _on_mood_changed(reading: Dictionary) -> void:
+	if held != "":
+		return
 	set_state(music_state_for(String(reading["state"]), _mood != null and _mood.started_contact))
 	match String(reading["state"]):
 		"victory":

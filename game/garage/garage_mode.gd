@@ -13,13 +13,16 @@ extends GameMode
 ##   --profile=PATH        the progression profile (default user://profile.json; "none" = in memory)
 ##   --credits=N           automated runs only (with --garage-scratch): start the scratch profile with N credits
 ##   --garage-panel=NAME   open an overlay on start: compare | share | unlocks | challenges (screenshots)
-##   --garage-autofight    tap FIGHT as soon as the garage opens (smoke tests, screenshots of the handover)
+##   --garage-autofight[=S]  tap FIGHT as soon as the garage opens, or after S seconds (smoke tests, screenshots of the
+##                         handover; a delay lets music-smoke hear the garage's bed hand over to the match's opening)
 ##   --garage-army=PATH    open this saved army (the match loop's ARMY and REMATCH)
 ##   --tier=N              the budget tier to fight at (clamped to the tiers the player owns)
 ##   --garage-rematch      fight straight away with --garage-army, --enemy, --seed, --tier (REMATCH)
 ##   --challenge=ID        play challenge mission ID (Challenges) straight away
 ##   --garage-keep         with --garage-scratch: keep the scratch folder (a restart inside an automated run)
 ## After FIGHT an ArmyLoop shows results and offers REMATCH / ARMY (its flags: game/garage/army_loop.gd).
+## Music (round 13): the garage holds the director on its own `garage` bed ([method music_state]); FIGHT releases it to
+## the match mood, which before the first shot is the opening, `pre_match` (MusicDirector.release).
 ## Prints GARAGE_FIGHT player=<path> enemy=<opponent> enemy_path=<doctrine> seed=<n> budget=<n> green=<tanks> rust=<tanks>
 ## when the skirmish starts.
 
@@ -87,10 +90,29 @@ func start() -> void:
 			screen.toggle_challenges(true)
 	if flags.has("challenge"):
 		start_challenge.call_deferred(flags.text("challenge"))
-	elif flags.has("garage-autofight") or flags.has("garage-rematch"):
+	elif flags.has("garage-rematch") or _autofight_delay() == 0.0:
 		screen.fight.call_deferred()
+	elif _autofight_delay() > 0.0:
+		main.get_tree().create_timer(_autofight_delay()).timeout.connect(func() -> void: screen.fight())
 	elif flags.text("army-loop-auto").split(",", false).slice(0, 1) == PackedStringArray(["quit"]):
 		main.get_tree().quit.call_deferred()  # an automated loop that ended back in the builder
+
+
+## The music this launch holds while the builder is up (MusicDirector.attach asks): the garage's own bed, or "" when
+## the garage hands straight over to a match (REMATCH, a challenge, an immediate autofight), so the match opens on its
+## own opening instead of a bar of blues.
+func music_state() -> String:
+	if flags.has("garage-rematch") or flags.has("challenge") or _autofight_delay() == 0.0:
+		return ""
+	return "garage"
+
+
+## --garage-autofight: 0 for straight away, the seconds to wait when it names some, -1 when it is not set.
+func _autofight_delay() -> float:
+	if not flags.has("garage-autofight"):
+		return -1.0
+	var text := flags.text("garage-autofight")
+	return maxf(0.0, float(text)) if text.is_valid_float() else 0.0
 
 
 ## Leave the garage and start the skirmish with the saved army at `player_path`.
@@ -134,9 +156,16 @@ func _write_game_copy(army: Dictionary, stem: String) -> String:
 ## Hand over to SkirmishMode in this process and attach the match loop (results, rematch).
 func _start_skirmish(player_path: String, enemy_path: String, budget: int, seed_value: int, army: Dictionary) -> ArmyLoop:
 	_layer.queue_free()
+	var music := MusicDirector.find(main)
+	if music != null:
+		music.release()
 	main.hud.visible = true
 	main.flags.values.erase("garage")
 	main.flags.values["skirmish"] = ""
+	# Round 13 (G1): the army IS the faction choice. Without this, a windowed FIGHT opened the skirmish's faction menu
+	# with nothing spawned (green=0 rust=0), and picking there restarted a plain skirmish without the player's army;
+	# every garage check before was headless, where that menu never opens.
+	main.flags.values["no-pick-faction"] = ""
 	main.flags.values["player"] = player_path
 	main.flags.values["budget"] = str(budget)
 	main.flags.values["enemy"] = enemy_path

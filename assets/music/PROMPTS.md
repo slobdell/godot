@@ -18,14 +18,14 @@ Mad Max meets Blade Runner) … heavy metal gaming music combined with synthwave
 
 | Bed (MatchMood state) | His prompt | BPM | His note | How it plays |
 |---|---|---|---|---|
-| `garage` | Victory Pit / Scrapyard Smuggler | 80 | *"good for mech equipping and stuff"* | a pool of takes (above) |
+| `garage` | Victory Pit / Scrapyard Smuggler | 80 | *"good for mech equipping and stuff"* | two of his blues takes, its own pool (round 13) |
 | `pre_match` | Hangar / Pre-Match Tank Customization | 95 | noir synthwave, tactical preparation | the opening, before the first shot; rotates |
 | `lull` (quiet spells after contact) | Lockdown Protocol | 98 | *"good but slow"*, which suits a lull | rotates |
 | **the fight** (`skirmish` and `battle`) | The Grinding Treadmill | 100 | **GOOD** | **stems that build** |
 | **the fight**, second set | The Scrap Foundry | 105 | **GOOD** | stems that build |
 | **the fight**, third set | High-Tech Grime & Dystopian Sludge | 110 | **GOOD** | stems that build |
 | `last_stand` | Cyber Metal / Dark Techno, "lethal John Wick club combat" | 115 | relentless momentum | one track, a deliberate change |
-| `victory` | Victory Pit / Scrapyard Smuggler | 80 | written for a results screen | the same track as `garage` |
+| `victory` | Victory Pit / Scrapyard Smuggler | 80 | written for a results screen | the other two blues takes (round 13) |
 | `defeat` | Acid Rain Wasteland | 85 | sludge / doom, rusted steel | one track, loops |
 | stingers | his percussion palette (below) | — | anvils, brake drums, iron pipe | short one-shots |
 
@@ -66,7 +66,16 @@ a track in the wrong state is one line in `manifest.json` (its `states`), no re-
 | `skirmish` + `battle` (stem sets that build) | `fight_hydraulic` ← Hydraulic Wasteland; `fight_ritual` ← Ritual of Iron; `fight_rust` ← Rust & Hydraulic Pressure; **new:** `fight_machine` ← Machine Combat; `fight_momentum` ← Mechanical Momentum; `fight_convoy` ← Post-Apocalyptic Convoy | the most percussive of the metal tracks (onset peakiness 2.1-2.3 against 1.8-2.0), each split with demucs on builder0 and layered other → bass (0.35) → drums (0.6) like the first three |
 | `last_stand` | `last_stand` ← Anvil Protocol; `last_stand_rusted` ← Rusted Steel Sky; `last_stand_brass` ← Warzone Brass | a deliberate change of song. Rusted Steel Sky is the fastest of the 23 (178 BPM); Warzone Brass is the brightest (6.7 % above 4 kHz), with brass over the chug |
 | `defeat` | `defeat` ← Mechanical Dread; `defeat_ragnarok` ← Ragnarok's Engine; `defeat_hunt` ← Predatory Hunt | Mechanical Dread is the darkest metal track (2.3 % above 4 kHz); Predatory Hunt is the least percussive of all 23 (1.79); Ragnarok's Engine by its title. **The weakest placements: listen to these two first** |
-| `garage` + `victory` (one pool) | `garage` ← Wasteland Blues (2); `victory` ← Wasteland Blues (1); `blues_wasteland` ← Wasteland Blues; `blues_neon` ← Neon Wasteland Blues | **his three Wasteland Blues takes and the neon variation, all in one pool.** They are his *Victory Pit / Scrapyard Smuggler* prompt, which this file already gave to both states. Nothing in the game asks for `garage` yet (the garage screen has no music director), so today they play on the victory |
+| `garage` (round 13: its own pool) | `garage` ← Wasteland Blues (2); `blues_neon` ← Neon Wasteland Blues | the prompt he wrote *"good for mech equipping and stuff"*. The garage now asks for this state (`GarageMode.music_state`), and FIGHT hands the same director to the match's opening (`pre_match`) on a bar line |
+| `victory` (round 13: its own pool) | `victory` ← Wasteland Blues (1); `blues_wasteland` ← Wasteland Blues | the other two takes of the same prompt. **Why split the pool of four:** FIGHT does not reload the scene, so one director follows a player from the garage into the match, and a draw is kept per set of tracks — a shared pool played the garage's blues again on the win. Each pool still rotates (2 each, least recently heard first) |
+
+**The garage's other candidates (round 13), for his ear:** *Factory Silence* (`lull_factory`) and *Neon Outrun*
+(`pre_match_outrun`) read like a garage by title. They stay where they are: the blues are the prompt he wrote for
+this screen, and Neon Outrun opening the match straight after a Neon Outrun garage would be the same song twice. To
+try one there, copy its manifest row under a new id (`garage_factory`, the same `file`, `"states": ["garage"]`,
+`"intensity": 0.4`). Not by adding `"garage"` to its own row: the director rotates only the tracks of the highest
+equal intensity for a state, so at its 0.3 it would never play in the garage, and raised to 0.4 it would become the
+only lull.
 
 Every bed is -16.1 to -16.3 LUFS, true peak -4.4 to -7.4 dB, loop seam ≤ 0.041 (limit 0.25), about 60 s of loop at
 112 kbps (~0.8 MB); a stem set is ~2.6 MB. `assets/music/` went from 13 MB to ~30 MB, **and all of it ships in the web

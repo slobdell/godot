@@ -1,0 +1,90 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.6 (Core Profile) Mesa 26.0.3-1ubuntu1 - Compatibility - Using Device: Intel - Mesa Intel(R) Iris(R) Xe Graphics (RPL-U)
+
+TOUR_STEP 01 title ok
+TOUR_STEP 02 title offers GARAGE ok
+TITLE_START garage
+ANNOUNCER_BOOTH mode=voice
+MUSIC_TRACK state=garage track=garage t=0.0
+MUSIC on: 23 beds, 6 stingers, following the match mood (seed 1189219961, memory user://music_history.json) held on garage
+TANK_SQUAD_READY role=GARAGE flags={ "garage": "", "seed": "56293" }
+TOUR_STEP 03 GARAGE opens the builder ok
+TOUR_STEP 04 garage_loading ok  the loading screen is up
+LOAD_TIMING total_ms=5439 scene=1433 arena=2128 armies=96 first_frame=1779
+TOUR_STEP 05 garage_open ok
+TOUR_STEP 06 removed_unit ok  REMOVE on the inspected unit: 4 -> 3 units
+TOUR_STEP 07 added_unit ok  + ADD a Scout: 3 -> 4 units ()
+TOUR_STEP 08 dragged_card ok  drag an IFV card onto squad 2: 4 -> 5 units (a drag started; )
+TOUR_STEP 09 preset_menu_open ok  tapping PRESETS opens its list
+TOUR_STEP 10 preset_applied ok  preset 'Anvil & Hammer': 4 units, Preset: Anvil & Hammer. Tanks hold the center (the anvil) while fast IFVs swing around a flank (the hammer).
+TOUR_STEP 11 share ok  the army code: 'TS2cbf424adeJyrVspTslJyzCvLzFFQU_BIzM1NLVLSUSpWsoquVkoDSuVk5qUCBTKUrAx1IGpzCjISgSJFQHZiXnJGPkh9KVC9UkliXjaQDaZia3Ug-stTU9JRDXAqSizLhxqQlgNUnAo3ITOtDMgEkbG1sbUAnBctEA'
+TOUR_STEP 12 imported_code ok  IMPORT of its own code closes the panel (Imported Anvil & Hammer)
+TOUR_STEP 13 compare ok
+TOUR_STEP 14 unlocks ok
+TOUR_STEP 15 challenges ok
+TOUR_STEP 16 before_fight ok
+SKIRMISH_ARMY Green user://doctrines/anvil_hammer.json: 2 tanks, 2 IFVs (700 pts)
+SKIRMISH_ARMY Rust cpu: 4 scouts, 2 IFVs (740 pts)
+SKIRMISH_CAMERA focus=(-8, 78) zoom=0.45 vehicles=2
+CONTROL_GROUPS squads=2 (Alpha:2 Bravo:2) groups=2 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-09-27T17-45-34.jsonl
+HUD_MESSAGE [info] Your squads hold position until you give orders.
+HUD_MESSAGE [info] Drag a box or press 1-5 to select, then right-click the ground to move (A: attack-move).
+HUD_MESSAGE [info] Planning pause: give orders first, then press Space to start the battle.
+GARAGE_FIGHT player=user://doctrines/anvil_hammer.json enemy=cpu enemy_path=cpu seed=56293 budget=800 green=4 rust=6
+HUD_MESSAGE [info] PA: Coming to you live from the arena floor. Our crews have spent the last six weeks in preparation, and the last four days here.
+MUSIC_TRACK state=pre_match track=pre_match_outrun t=3.7
+TOUR_STEP 17 fight_6s ok  FIGHT starts the garage's match (faction menu instead: false)
+MUSIC_STATE t=5.0 track=pre_match_outrun playing=true pos=12.843 stems=[]
+TOUR_STEP 18 match_mid ok
+MUSIC_STATE t=10.0 track=pre_match_outrun playing=true pos=7.013 stems=[]
+HUD_MESSAGE [info] PA: Our thanks to Syndicate Life, whose representatives will be available on the lower concourse after the match to speak with crews' families.
+MUSIC_STATE t=15.0 track=pre_match_outrun playing=true pos=1.000 stems=[]
+HUD_MESSAGE [warning] The enemy took the center
+HUD_MESSAGE [info] CALLER: The Condemned are on the point, and the clock is ticking for the Condemned!
+MUSIC_STATE t=20.0 track=pre_match_outrun playing=true pos=51.051 stems=[]
+HUD_MESSAGE [info] CALLER: The Condemned are on the floor, and every one of those crews has something to prove!
+HUD_MESSAGE [info] Match over
+ARMY_RESULTS outcome=loss credits=0 balance=0 tier=0 enemy={"ifv":2,"scout":4}
+ANNOUNCER_CUT lost=3.94 of=caller.faction.05 ticks_ms=261273
+MUSIC_STATE t=25.0 track=pre_match_outrun playing=true pos=45.107 stems=[]
+MUSIC_TRACK state=defeat track=defeat_hunt t=25.0
+HUD_MESSAGE [info] CALLER: And there it is. The Condemned close it out.
+TOUR_STEP 19 results after the match ok
+TOUR_STEP 20 results ok
+ARMY_LOOP action=rematch
+ANNOUNCER_BOOTH mode=voice
+MUSIC_TRACK state=pre_match track=pre_match t=0.0
+MUSIC on: 23 beds, 6 stingers, following the match mood (seed 203923211, memory user://music_history.json)
+TANK_SQUAD_READY role=GARAGE flags={ "garage": "", "garage-rematch": "", "garage-army": "user://doctrines/anvil_hammer.json", "enemy": "cpu", "seed": "56293", "tier": "0", "garage-keep": "", "army-loop-time": "25.0", "army-loop-delay": "1" }
+SKIRMISH_ARMY Green user://doctrines/anvil_hammer.json: 2 tanks, 2 IFVs (700 pts)
+SKIRMISH_ARMY Rust cpu: 4 scouts, 2 IFVs (740 pts)
+SKIRMISH_CAMERA focus=(-11, 78) zoom=0.42 vehicles=2
+CONTROL_GROUPS squads=2 (Alpha:2 Bravo:2) groups=2 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-09-27T17-49-19.jsonl
+GARAGE_FIGHT player=user://doctrines/anvil_hammer.json enemy=cpu enemy_path=cpu seed=56293 budget=800 green=4 rust=6
+HUD_MESSAGE [info] PA: Welcome in. The crews are staged, the gates are down, and we are told the count will begin once the last of the paperwork clears.
+MUSIC_STATE t=5.1 track=pre_match playing=true pos=56.509 stems=[]
+HUD_MESSAGE [info] CALLER: Two armies, one floor, and nowhere to hide. Here we go!
+MUSIC_STATE t=10.0 track=pre_match playing=false pos=0.000 stems=[]
+HUD_MESSAGE [info] CALLER: The Condemned. Old buses, old trucks, and crews that have waited a long time for this.
+HUD_MESSAGE [warning] The enemy took the center
+HUD_MESSAGE [info] CALLER: The center of the floor is where this one gets decided!
+MUSIC_STATE t=15.0 track=pre_match playing=false pos=0.000 stems=[]
+HUD_MESSAGE [info] PA: Thank you, Joseph. A claim on the centre can be filed by any crew, in writing, and is processed within the match, time permitting.
+MUSIC_STATE t=20.0 track=pre_match playing=false pos=0.000 stems=[]
+HUD_MESSAGE [info] Match over
+ARMY_RESULTS outcome=loss credits=0 balance=0 tier=0 enemy={"ifv":2,"scout":4}
+MUSIC_STATE t=25.0 track=pre_match playing=false pos=0.000 stems=[]
+MUSIC_TRACK state=defeat track=defeat t=25.0
+HUD_MESSAGE [info] CALLER: Not a scratch! They won it without a single loss!
+TOUR_STEP 21 REMATCH plays again ok
+TOUR_STEP 22 rematch_results ok
+ARMY_LOOP action=army
+ANNOUNCER_BOOTH mode=voice
+MUSIC_TRACK state=garage track=blues_neon t=0.0
+MUSIC on: 23 beds, 6 stingers, following the match mood (seed 866252799, memory user://music_history.json) held on garage
+TANK_SQUAD_READY role=GARAGE flags={ "garage": "", "enemy": "cpu", "tier": "0", "garage-army": "user://doctrines/anvil_hammer.json", "garage-keep": "", "army-loop-time": "25.0", "army-loop-delay": "1" }
+TOUR_STEP 23 ARMY returns to the builder ok
+TOUR_STEP 24 back_in_garage ok
+TOUR_DONE failed=0 out=/home/slobdell/tank_squad/godot-audio/build/screenshots/garage-tour/desktop

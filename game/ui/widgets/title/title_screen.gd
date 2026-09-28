@@ -11,6 +11,7 @@ const ARENA := preload("res://game/arena/arena.tscn")
 const SESSION_FLAGS := ["ui-touch", "shell-playtest", "announcer", "music", "hints"]
 const MENU := [
 	["SKIRMISH", "skirmish", "Command your squads vs the CPU"],
+	["GARAGE", "garage", "Build an army on a budget, then fight with it"],
 	["SPECTATE", "skirmish cinematic player=cpu enemy=cpu no-pick-faction arena=random", "Watch two CPU armies fight; the camera directs itself"],
 	["MULTIPLAYER", "connect", "Join the game server"],
 	["FX LAB", "fx-bench", "Lighting and effects benchmark"],

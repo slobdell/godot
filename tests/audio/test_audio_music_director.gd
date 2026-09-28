@@ -342,3 +342,58 @@ func test_the_music_memory_survives_a_restart_and_a_bad_file() -> void:
 	file.close()
 	assert_eq(MusicHistory.load_from(path).last_heard("b"), -1, "a broken memory is no memory, not an error")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+## Round 13 (G2, the lead: *"Yes let's add garage music"*). The garage asks for its own state and the match's mood
+## cannot take it away; FIGHT hands the director back to the mood, which is the opening (`pre_match`).
+func test_the_garage_holds_its_own_bed_until_fight_hands_back_to_the_opening() -> void:
+	var music := _director()
+	add_to_tree(music)
+	await wait_physics_frames(1)
+	var mood := MatchMood.new("green")
+	music.hold("garage")
+	music.follow(mood)
+	assert_eq(music.state, "garage", "a director that starts in the garage plays the garage, not the match's opening")
+	assert_eq(music.current_track(), music.track_for("garage"), "straight away: nothing was playing")
+	mood.push_event({"tick": 0, "t": 0.0, "type": "match_start", "arena": "foundry", "budget": 1000, "teams": [
+		{"team": "green", "faction": "condemned", "units": [{"id": "g1", "unit": "tank"}]},
+		{"team": "rust", "faction": "condemned", "units": [{"id": "r1", "unit": "tank"}]}]})
+	assert_eq(music.state, "garage", "the mood moving underneath does not pull the garage's bed")
+	music.release()
+	assert_eq(music.state, "pre_match", "FIGHT hands over to the match's opening: nobody has fired yet")
+	assert_eq(music.pending, music.track_for("pre_match"), "crossfaded on the garage bed's next bar line")
+	mood.push_event({"tick": 60, "t": 1.0, "type": "first_contact", "team": "green", "unit": "tank", "target_unit": "tank"})
+	assert_eq(music.state, "skirmish", "and from then on it follows the match like any other")
+
+
+func test_a_released_director_with_no_match_mood_plays_the_opening() -> void:
+	var music := _director()
+	music.hold("garage")
+	music.release()
+	assert_eq(music.state, "pre_match", "with no mood yet, the hand-back is still the opening")
+
+
+## The garage's pool must not be the victory's: one director follows the garage into the match (FIGHT does not reload
+## the scene), and a draw is kept per set of tracks, so a shared pool played the garage's blues again on the win.
+func test_the_garage_has_its_own_pool_not_the_victory_screens() -> void:
+	var music := _director()
+	var garage := music.candidates_for("garage")
+	var victory := music.candidates_for("victory")
+	assert_true(garage.size() >= 2 and victory.size() >= 2, "both rotate: garage %s, victory %s" % [garage, victory])
+	for id in garage:
+		assert_true(not id in victory, "%s is the garage's, not also the win's" % id)
+
+
+func test_the_garage_bed_heard_last_time_waits_its_turn() -> void:
+	var music := _director()
+	music.history = MusicHistory.new()
+	var candidates := music.candidates_for("garage")
+	var heard := {}
+	for visit in candidates.size():
+		music.forget_picks()
+		music.match_seed = 7  # the same dice every visit: only the memory can move the pick
+		var pick := music.track_for("garage")
+		assert_true(not heard.has(pick), "visit %d plays %s, not a repeat of %s" % [visit, pick, str(heard.keys())])
+		heard[pick] = true
+		music.history.heard(pick)
+	assert_eq(heard.size(), candidates.size(), "every garage bed is heard before any comes round again")
