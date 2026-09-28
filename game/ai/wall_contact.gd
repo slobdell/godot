@@ -58,6 +58,8 @@ static var by_driver := {}
 ## Round 11 (nav R1): contact ticks by the GEAR commanded ("forward" / "reverse" / "none"): backing blind into a
 ## second wall is the failure a planned reverse must not add, so reverse contacts are counted apart.
 static var by_gear := {}
+## Round 13 (nav R1): contact ticks by "driver/gear" — which layer's motion the reverse-gear contacts belong to.
+static var by_driver_gear := {}
 ## Contact ticks per unit name, and per lane name ("" = off every declared lane).
 static var by_unit := {}
 static var by_lane := {}
@@ -80,6 +82,7 @@ static func reset() -> void:
 	by_cause = {}
 	by_driver = {}
 	by_gear = {}
+	by_driver_gear = {}
 	by_unit = {}
 	by_lane = {}
 	hull_ticks = 0
@@ -91,7 +94,7 @@ static func reset() -> void:
 
 static func report() -> Dictionary:
 	return {"observed_unit_ticks": observed, "contact_unit_ticks": ticks, "by_cause": by_cause.duplicate(),
-			"by_driver": by_driver.duplicate(), "by_gear": by_gear.duplicate(), "by_unit": by_unit.duplicate(), "by_lane": by_lane.duplicate(),
+			"by_driver": by_driver.duplicate(), "by_gear": by_gear.duplicate(), "by_driver_gear": by_driver_gear.duplicate(), "by_unit": by_unit.duplicate(), "by_lane": by_lane.duplicate(),
 			"hull_contact_unit_ticks": hull_ticks, "plant_kind": plant_kind.duplicate(),
 			"top_colliders": top_colliders(5)}
 
@@ -171,6 +174,10 @@ func observe(mover: Movement) -> void:
 	var throttle := float(decided.get("throttle", 0.0))
 	var gear := "forward" if throttle > THROTTLE_MIN else ("reverse" if throttle < -THROTTLE_MIN else "none")
 	by_gear[gear] = int(by_gear.get(gear, 0)) + 1
+	var driver_gear := "%s/%s" % [driver, gear]
+	by_driver_gear[driver_gear] = int(by_driver_gear.get(driver_gear, 0)) + 1
+	if driver == "yield" and not mover._yield_rec.is_empty():
+		_note_yield(mover._yield_rec, tank, gear, collider, point)
 	by_unit[String(tank.name)] = int(by_unit.get(String(tank.name), 0)) + 1
 	by_lane[lane] = int(by_lane.get(lane, 0)) + 1
 	var colliders: Dictionary = by_cause_collider.get(cause, {})
@@ -201,6 +208,23 @@ func observe(mover: Movement) -> void:
 				"turn": snappedf(float(decided.get("turn", 0.0)), 0.01),
 				"route_gap_m": snappedf(float(decided.get("_route_gap", -1.0)), 0.01),
 				"mesh_gap_m": snappedf(float(decided.get("_mesh_gap", -1.0)), 0.01)})
+
+
+## Round 13 (nav R1): a contact while giving way, added to that give-way's record (`Movement.yield_log`): by gear, by
+## collider, and by which END of the hull touched (the contact point along the heading, in half-lengths).
+static func _note_yield(rec: Dictionary, tank: Tank, gear: String, what: String, at: Vector3) -> void:
+	rec["contacts"] = int(rec["contacts"]) + 1
+	if gear == "reverse":
+		rec["reverse_contacts"] = int(rec["reverse_contacts"]) + 1
+	var hit: Dictionary = rec["hit"]
+	hit[what] = int(hit.get(what, 0)) + 1
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	var half := maxf(float(Movement.hull_box(tank.unit_id)[2]) * 0.5, 0.1)
+	var along := Vector3(at.x - tank.global_position.x, 0.0, at.z - tank.global_position.z).dot(forward) / half
+	var end := "nose" if along > 0.5 else ("rear" if along < -0.5 else "side")
+	var ends: Dictionary = rec["ends"]
+	var key := "%s/%s" % [gear, end]
+	ends[key] = int(ends.get(key, 0)) + 1
 
 
 func _classify(mover: Movement, tank: Tank, at: Vector3, wall_normal: Vector3) -> String:

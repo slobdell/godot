@@ -189,7 +189,7 @@ static var _off_parsed := false
 ## `holdband` and `r5sidestep`, it turns its mechanism ON): A7 is built and measured but not the default, because it
 ## costs squad's slot-drift scenario. See `CombatMotion.a7_on()` for the numbers and the open contract question.
 const OFF_NAMES: Array[String] = ["a1", "a4", "a6", "a7", "a11", "backup", "blockreach", "carrot", "chord", "clearance", "commit", "creepbound", "facegiveup", "grace", "guard", "guardnear", "holdband", "inflate",
-		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear"]
+		"leash", "minpace", "nosestop", "notready", "oriented", "press", "pushidle", "kturn", "kturnfill", "kturnslide", "r5sidestep", "repair", "repath", "standoff", "unstick", "wheelhold", "yield", "yieldclear", "yieldfit", "yieldhold", "yieldshort"]
 
 
 static func _parse_off() -> PackedStringArray:
@@ -275,7 +275,10 @@ static func route_arms() -> Dictionary:
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
-			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs}
+			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs,
+			"yields_started": yields_started, "asks_refused": asks_refused, "yield_spots_unfit": yield_spots_unfit,
+			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter,
+			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds}
 
 
 static func reset_route_arms() -> void:
@@ -283,6 +286,15 @@ static func reset_route_arms() -> void:
 	kturn_none = 0
 	kturn_none_log.clear()
 	kturn_fill_log.clear()
+	yield_log_rows.clear()
+	yield_unfit_log.clear()
+	yield_spots_unfit = 0
+	yields_started = 0
+	asks_refused = 0
+	yield_swaps = 0
+	yield_swaps_shorter = 0
+	yield_spots_shortened = 0
+	yield_holds = 0
 	kturn_aborted = 0
 	kturn_multi = 0
 	kturn_multi_legs = 0
@@ -1191,7 +1203,8 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 	var here := tank.global_position
 	_yield_left -= ctl._step
 	var asker := ctl.tanks_root.get_node_or_null(NodePath(yield_to)) as Tank if ctl.tanks_root != null else null
-	var there := _flat_distance(here, _yield_point) <= YIELD_REACHED
+	var there := _flat_distance(here, _yield_point) <= YIELD_REACHED \
+			or (_yield_stop_m > 0.0 and _flat_distance(here, _yield_from) >= _yield_stop_m)
 	if there:
 		_yield_held += ctl._step
 	var passed := asker == null or not asker.is_alive() or _flat_distance(here, asker.global_position) > YIELD_CLEAR \
@@ -1223,16 +1236,21 @@ func right_of_way(cmd: TankCommand, delta: float) -> bool:
 ## Another unit asks this one to give way: `asker` wants to go along `direction` from `from`. True when this unit
 ## found a validated spot and is giving way; false when it can't (it is already giving way, it just gave way to the
 ## same asker, or there is no room) — and then the asker gives way itself.
-func ask(asker: String, from: Vector3, direction: Vector2) -> bool:
+func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bool:
 	if yield_to != "" or asker == _last_yielded_to:
 		return false
-	if _begin_yield(asker, from, direction):
+	if _begin_yield(asker, from, direction, via):
 		return true
 	asks_refused += 1
 	return false
 
 
 func _end_yield() -> void:
+	if not _yield_rec.is_empty() and not _yield_rec.has("ended_frame"):
+		var here := ctl.tank.global_position
+		_yield_rec["ended_frame"] = Engine.get_physics_frames()
+		_yield_rec["reached"] = _flat_distance(here, _yield_point) <= YIELD_REACHED
+		_yield_rec["end_gap_m"] = snappedf(_flat_distance(here, _yield_point), 0.1)
 	_last_yielded_to = yield_to
 	yield_to = ""
 	_yield_point = Vector3.INF
@@ -1244,7 +1262,7 @@ func _end_yield() -> void:
 
 
 ## Give way to `other`, travelling along `direction` from `from`: find the nearest validated spot off its line.
-func _begin_yield(other: String, from: Vector3, direction: Vector2) -> bool:
+func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self") -> bool:
 	var tank := ctl.tank
 	var here := tank.global_position
 	var along := direction.normalized() if direction.length_squared() > 0.0001 else \
@@ -1252,6 +1270,10 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2) -> bool:
 	if along == Vector2.ZERO:
 		return false
 	var across := Vector2(-along.y, along.x)
+	_yield_unfit_last = false
+	var short_best := Vector3.INF
+	var short_target := Vector3.INF
+	var short_label := ""
 	# Step off to the side of its line I'm already on (ties: its left), so I never cut across its bow.
 	var side := 1.0 if across.dot(Vector2(here.x - from.x, here.z - from.z)) >= 0.0 else -1.0
 	var other_tank := ctl.tanks_root.get_node_or_null(NodePath(other)) as Tank if ctl.tanks_root != null else null
@@ -1273,9 +1295,23 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2) -> bool:
 				continue
 			if not _free_spot(point, String(tank.name), other):
 				continue
-			_start_yield(other, point, along)
+			if not _yield_fits(point):
+				var short := _yield_shorten(point) if yield_short_on() else Vector3.INF
+				if short != Vector3.INF and (short_best == Vector3.INF or _flat_distance(short, here) > _flat_distance(short_best, here)) \
+						and (spot.y == 0.0 or _distance_to_ray(short, from, along) >= line_clear) \
+						and _flat_distance(short, from) >= _flat_distance(here, from) and _free_spot(short, String(tank.name), other):
+					short_best = short
+					short_target = point
+					short_label = "short:spot(%d,%d)" % [int(spot.x), int(spot.y * flip)]
+				continue
+			_start_yield(other, point, along, "spot(%d,%d)" % [int(spot.x), int(spot.y * flip)], via)
 			return true
 	if _off.has("backup"):
+		if short_best != Vector3.INF:
+			yield_spots_shortened += 1
+			_start_yield(other, short_target, along, short_label, via)
+			_yield_stop_m = _flat_distance(short_best, here)
+			return true
 		return false
 	# Last resort (round 7, nav-fight: two cars nose to nose for 30 s with no legal spot): back straight up along my own
 	# hull, as long as that isn't toward the unit being let past.
@@ -1284,21 +1320,235 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2) -> bool:
 		var point := Vector3(here.x + back.x * distance, 0.0, here.z + back.y * distance)
 		if _flat_distance(point, from) < _flat_distance(here, from):
 			continue
-		if _free_spot(point, String(tank.name), other):
-			_start_yield(other, point, along)
+		if not _free_spot(point, String(tank.name), other):
+			continue
+		if _yield_fits(point):
+			_start_yield(other, point, along, "back(%d)" % int(distance), via)
 			return true
+		var short := _yield_shorten(point) if yield_short_on() else Vector3.INF
+		if short != Vector3.INF and (short_best == Vector3.INF or _flat_distance(short, here) > _flat_distance(short_best, here)) \
+				and _flat_distance(short, from) >= _flat_distance(here, from) and _free_spot(short, String(tank.name), other):
+			short_best = short
+			short_target = point
+			short_label = "short:back(%d)" % int(distance)
+	# R2: nothing fits whole, so give way as far as the hull DOES fit along the best of them (the displacement a
+	# scraping give-way used to buy, without the scrape).
+	if short_best != Vector3.INF:
+		yield_spots_shortened += 1
+		_start_yield(other, short_target, along, short_label, via)
+		_yield_stop_m = _flat_distance(short_best, here)
+		return true
+	# Nothing fits even shortened, so give way IN PLACE — stop pushing and let the other through — rather than refuse
+	# (a refusal leaves both hulls pushing: the refusing build's rigs lost 10 arrivals of 128). `--nav-off=yieldhold`.
+	if _yield_unfit_last and yield_fit_on() and not switched_off("yieldhold"):
+		yield_holds += 1
+		_start_yield(other, here, along, "hold", via)
+		return true
 	return false
 
 
-func _start_yield(other: String, point: Vector3, along: Vector2) -> void:
+func _start_yield(other: String, point: Vector3, along: Vector2, spot := "", via := "") -> void:
+	if yield_log:
+		_yield_rec = _yield_diagnose(other, point, spot, via)
+		yield_log_rows.append(_yield_rec)
 	yield_to = other
 	_yield_point = point
+	_yield_from = ctl.tank.global_position
+	_yield_stop_m = 0.0
 	_yield_dir = along
 	_yield_left = int(YIELD_MAX_SECONDS * SimClock.TICK_RATE)
 	_yield_held = 0
 	phase = "yielding"
 	blocked_by = other
 	yields_started += 1
+
+
+## Round 13 (nav R1), measurement only (the drive test's `--yield-log`): every give-way begun — the spot it chose, the
+## hull that took it, the room behind and ahead of it, and whether the straight run to the spot keeps the WHOLE outline
+## clear (the sweep the planned reverse validates with) — and, filled in by WallContact while it drives there, the
+## contact ticks by gear, what it hit and with which end. Never read by a decision.
+static var yield_log := false
+static var yield_log_rows: Array = []
+var _yield_rec := {}
+
+
+func _yield_diagnose(other: String, point: Vector3, spot: String, via: String) -> Dictionary:
+	var tank := ctl.tank
+	var here := tank.global_position
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	var to := Vector3(point.x - here.x, 0.0, point.z - here.z)
+	var frame := _kturn_frame(tank)
+	var other_tank := ctl.tanks_root.get_node_or_null(NodePath(other)) as Tank if ctl.tanks_root != null else null
+	var row := {"unit": String(tank.name), "unit_id": tank.unit_id, "frame": Engine.get_physics_frames(), "via": via,
+			"spot": spot, "asker": other, "asker_id": other_tank.unit_id if other_tank != null else "",
+			"asker_length_m": snappedf(float(hull_box(other_tank.unit_id)[2]), 0.1) if other_tank != null else 0.0,
+			"length_m": snappedf(float(frame[1]) * 2.0, 0.1), "width_m": snappedf(float(frame[0]) * 2.0, 0.1),
+			"radius_m": snappedf(wheel_radius(), 0.1), "at": [snappedf(here.x, 0.1), snappedf(here.z, 0.1)],
+			"heading_deg": snappedf(rad_to_deg(atan2(forward.x, -forward.z)), 1.0),
+			"ahead_m": snappedf(to.dot(forward), 0.1), "right_m": snappedf(to.dot(right), 0.1),
+			"gear": "reverse" if _straight_behind(point) else "forward",
+			"contacts": 0, "reverse_contacts": 0, "hit": {}, "ends": {}}
+	if Pathing.enabled and Pathing.is_ready(tank):
+		var map := tank.get_world_3d().navigation_map
+		row["room_behind_m"] = _free_run(map, here - forward * float(frame[1]), -forward, float(frame[2]))
+		row["room_ahead_m"] = _free_run(map, here + forward * float(frame[1]), forward, float(frame[2]))
+		var start := _outline_offs(map, frame, here, forward)
+		# The straight run to the spot with the heading held (what a reverse to a spot straight behind is), in
+		# KTURN_BACK_STEP_M steps: "clear", or the first outline part that leaves the clear reach and how far in.
+		var run := to.length()
+		row["sweep"] = "clear"
+		var travelled := KTURN_BACK_STEP_M
+		while travelled < run + KTURN_BACK_STEP_M * 0.5:
+			var at := here + to.normalized() * minf(travelled, run)
+			var part := _outline_part(map, frame, at, forward, start)
+			if part != "none":
+				row["sweep"] = part
+				row["sweep_at_m"] = snappedf(minf(travelled, run), 0.1)
+				break
+			travelled += KTURN_BACK_STEP_M
+	return row
+
+
+# ---- Round 13 (nav R2): a yield spot the hull fits, and the drive to it -----------------------------------------------
+#
+# Round 6's give-way validated a spot by its CENTRE: on the navmesh within YIELD_MESH_SLACK and clear of other hulls.
+# For hulls of the day (<= 4 m) that was the hull. A 14 m War Rig's centre 6 m back (`back(6)`, round 7's last
+# resort) is a point inside its own footprint, so it passed whatever was behind the tail; and a forward spot 7 m ahead
+# of a 12 m-radius hull is one its nose corner reaches only through a block face. R1 (builder0, `5866e387`, 8 seeds):
+# 44 % of the rigs' reverse-gear wall contacts were give-ways, and 89 % of those were to spots whose run the outline
+# sweep refuses.
+#
+# **What this replaces: the yield-SPOT CHOICE only** (`_begin_yield`'s acceptance of a candidate), not the protocol:
+# who asks whom, who gives way, the spot table's order, the hold and the release are round 6's. A candidate is
+# accepted only if the drive right_of_way() will make to it — the same steering law (`Steering._wheels` or
+# `drive_toward` / `reverse_toward`, the gear `_straight_behind` picks), stepped kinematically with the plant's yaw law —
+# keeps the hull's WHOLE outline inside the clear reach at every step (`_outline_ok`: the planned reverse's own test,
+# so an end already pressed against a face may not get deeper). **Sized, not refused:** when no candidate fits whole,
+# the hull gives way as far along the best candidate's run as it DOES fit (at least YIELD_SHORT_MIN_M; `short:` in the
+# log). Refusing outright was built first and measured worse (builder0, `26f4ac33`, 8 seeds: rigs' yield reverse
+# contacts 661 -> 22 but arrivals 115 -> 105 and press/unstick 83 -> 313 — a rig that will not move keeps the jam, and
+# the scrapes came back as kturn and press contacts); `--nav-off=yieldshort,yieldhold` is that build. When nothing
+# fits even shortened, the hull **gives way in place** (`hold`: it stops pushing and holds, round 6's hold and release)
+# — a refusal leaves both hulls pushing; `--nav-off=yieldhold` refuses instead, as round 6 always could: an asked hull
+# refuses (the asker gives way itself), and a hull that had to give way asks the other (`yield_swaps`: the short car
+# backs up for the truck).
+# `--nav-off=yieldfit` restores round 6's choice. Arm counters: `yield_spots_unfit`, `yield_spots_shortened`,
+# `yield_holds`, `yield_swaps`, `yield_swaps_shorter`. Measured: `_agents/streams/nav.md` (round 13) Status.
+
+static var yield_spots_unfit := 0
+static var yield_swaps := 0
+static var yield_swaps_shorter := 0
+static var yield_spots_shortened := 0
+static var yield_holds := 0
+## A sized give-way: where it began, and how far from there it ends (0 = at its spot, round 6's rule).
+var _yield_from := Vector3.ZERO
+var _yield_stop_m := 0.0
+## Measurement only (`--yield-log`): every candidate refused for fit, with how far its run stayed clear.
+static var yield_unfit_log: Array = []
+## Did the last spot search refuse at least one candidate for fit (so a swap is about room, not a refused asker)?
+var _yield_unfit_last := false
+## The run is stepped in this much travel (metres); a pivoting tracked hull in this much yaw (degrees).
+const YIELD_FIT_STEP_M := 0.5
+const YIELD_FIT_PIVOT_DEG := 15.0
+## A run that has not arrived after this many steps (per metre of straight distance, plus a floor) never does cleanly.
+const YIELD_FIT_STEPS_PER_M := 6
+const YIELD_FIT_MIN_STEPS := 40
+
+
+static func yield_fit_on() -> bool:
+	return not switched_off("yieldfit")
+
+
+## R2's sizing (`--nav-off=yieldshort`: refuse a spot that does not fit whole, R2's first build, measured worse).
+static func yield_short_on() -> bool:
+	return yield_fit_on() and not switched_off("yieldshort")
+
+
+## Does the hull fit its drive to `point`? True when the arm is off or the navmesh is not ready (round 6's choice).
+func _yield_fits(point: Vector3) -> bool:
+	if not yield_fit_on():
+		return true
+	var tank := ctl.tank
+	if not (Pathing.enabled and Pathing.is_ready(tank)):
+		return true
+	var poses: Array = []
+	if _yield_run_ok(tank.get_world_3d().navigation_map, point, poses):
+		return true
+	if yield_log:
+		yield_unfit_log.append({"unit": String(tank.name), "frame": Engine.get_physics_frames(),
+				"clear_m": snappedf(_flat_distance(poses[-1], tank.global_position), 0.1) if not poses.is_empty() else 0.0,
+				"steps": poses.size(), "behind": _straight_behind(point),
+				"to_m": snappedf(_flat_distance(point, tank.global_position), 0.1)})
+	yield_spots_unfit += 1
+	_yield_unfit_last = true
+	return false
+
+
+## Step the drive right_of_way() makes to `point` and sweep the whole outline at every pose.
+func _yield_run_ok(map: RID, point: Vector3, poses: Array = []) -> bool:
+	var tank := ctl.tank
+	var frame := _kturn_frame(tank)
+	var at := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+	var heading := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	var start := _outline_offs(map, frame, at, heading)
+	var behind := _straight_behind(point)
+	var radius := wheel_radius()
+	var reach := YIELD_REACHED * 0.5
+	var target := Vector3(point.x, 0.0, point.z)
+	var steps := YIELD_FIT_MIN_STEPS + int(at.distance_to(target) * YIELD_FIT_STEPS_PER_M)
+	var rolling := 0.0  # the signed speed the steering law sees (its backing hysteresis)
+	for i in steps:
+		if Vector2(target.x - at.x, target.z - at.z).length() <= reach:
+			return true
+		var drive := Vector2.ZERO
+		if radius > 0.0:
+			drive = Steering.reverse_toward_wheels(at, heading, target, reach, radius, rolling) if behind \
+					else Steering.drive_toward_wheels(at, heading, target, reach, radius, rolling)
+		else:
+			drive = Steering.reverse_toward(at, heading, target, reach) if behind \
+					else Steering.drive_toward(at, heading, target, reach)
+		if drive == Vector2.ZERO:
+			return true
+		var gear := signf(drive.x)
+		if gear == 0.0:
+			# A tracked hull turning in place: the whole outline swings round its centre.
+			heading = heading.rotated(Vector3.UP, -signf(drive.y) * deg_to_rad(YIELD_FIT_PIVOT_DEG))
+		else:
+			# The plant's yaw law (TankMotion): |ds| x turn / R in either gear; a tracked hull turns as it rolls.
+			var yaw := YIELD_FIT_STEP_M * drive.y / radius if radius > 0.0 else drive.y * deg_to_rad(YIELD_FIT_PIVOT_DEG)
+			heading = TankMotion.turn_heading(heading, yaw)
+			at += heading * YIELD_FIT_STEP_M * gear
+		rolling = gear
+		if not _outline_ok(map, frame, at, heading, start):
+			return false
+		poses.append(at)
+	return false
+
+
+## R2's sizing: the run to `point` does not fit whole, so how far along it DOES the hull fit? The give-way keeps
+## `point` as its steering target (so it drives exactly the run that was swept) and ends once the hull is as far from
+## where it started as the last clear pose less YIELD_SHORT_MARGIN_M. Returns that pose (Vector3.INF when the clear
+## part is shorter than YIELD_SHORT_MIN_M).
+const YIELD_SHORT_MIN_M := 2.0
+const YIELD_SHORT_MARGIN_M := 1.0
+
+
+func _yield_shorten(point: Vector3) -> Vector3:
+	var tank := ctl.tank
+	if not (Pathing.enabled and Pathing.is_ready(tank)):
+		return Vector3.INF
+	var poses: Array = []
+	_yield_run_ok(tank.get_world_3d().navigation_map, point, poses)
+	if poses.is_empty():
+		return Vector3.INF
+	var here := tank.global_position
+	var furthest := _flat_distance(poses[-1], here)
+	for i in range(poses.size() - 1, -1, -1):
+		var pose: Vector3 = poses[i]
+		if _flat_distance(pose, here) <= furthest - YIELD_SHORT_MARGIN_M:
+			return pose if _flat_distance(pose, here) >= YIELD_SHORT_MIN_M else Vector3.INF
+	return Vector3.INF
 
 
 ## Is `point` straight behind this hull (within ~25 degrees of its tail)? A car reaches that by reversing.
@@ -1411,7 +1661,15 @@ func _negotiate(goal: Vector3, direct: bool, still_only := false) -> void:
 	var its_way := mover._travel_direction(mover._goal, false) if mover.is_under_way() else Vector2.ZERO
 	if its_way == Vector2.ZERO:
 		its_way = Vector2(here.x - other.global_position.x, here.z - other.global_position.z)
-	_begin_yield(name, other.global_position, its_way)
+	if _begin_yield(name, other.global_position, its_way):
+		return
+	# Round 13 (R2): I was the one to give way and no spot fits THIS hull (a 14 m rig in a 21 m street): I hold, and
+	# the other gives way instead if it has room — the asymmetry a driver uses (the short car backs up for the truck).
+	# Only when I had not already asked it (a refused ask means it had no room either).
+	if i_give_way and yield_fit_on() and _yield_unfit_last and mover.ask(String(tank.name), here, my_way, "swap"):
+		yield_swaps += 1
+		if float(hull_box(other.unit_id)[2]) < float(hull_box(tank.unit_id)[2]):
+			yield_swaps_shorter += 1
 
 
 ## The flat direction this unit is trying to go: toward its next waypoint (or the goal).
@@ -2441,7 +2699,7 @@ func _ask_behind(direction: Vector2) -> void:
 		var other := ctl.tanks_root.get_node_or_null(NodePath(String(row[1]))) as Tank
 		var mover := Movement.of(other) if other != null and other.team == tank.team else null
 		if mover != null:
-			mover.ask(String(tank.name), here, direction)
+			mover.ask(String(tank.name), here, direction, "behind")
 		return
 
 

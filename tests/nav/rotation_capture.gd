@@ -105,6 +105,8 @@ func _run() -> void:
 		await _wall()
 	if cases.has("rigfill"):
 		await _rigfill()
+	if cases.has("rigyield"):
+		await _rigyield()
 	print("NAV_ROTATION_DONE %s" % out)
 	quit()
 
@@ -281,6 +283,63 @@ func _rigfill() -> void:
 			tank.global_position])
 	tank.queue_free()
 	orders.queue_free()
+
+
+## Round 13 (R2): the drive's worst `back(6)` give-way, filmed. The Terminus drive's War Rig squad, seed 7, set up
+## exactly as `tests/nav/terminus_drive.gd` does (spawn seed, jitter, headings, the first leg ordered through
+## `Orders` as a right-click), 25 s of its first leg: at +3 s a rig gives way to its friend with its tail 0.5 m from
+## Block_6. Round 12 (`--nav-off=yieldfit`) backs into the block; R2 gives way only as far as it fits, or in place.
+## `make nav-yield-clip`.
+func _rigyield() -> void:
+	if String(Arena.active.get("name", "")) != "terminus":
+		push_error("nav-rotation rigyield: needs --arena=terminus (built %s)" % Arena.active.get("name", "?"))
+		return
+	const SEED := 7
+	game_match.seed_spawns(SEED, 2.0)
+	game_match.set_meta("player_team", Match.Team.GREEN)
+	var error := game_match.load_doctrine(Match.Team.GREEN, {"name": "NavDrive", "squads": [{"name": "S0",
+			"units": [{"unit": "gang_tank"}, {"unit": "gang_tank"}, {"unit": "gang_tank"}, {"unit": "gang_tank"}]}]})
+	if error != "":
+		push_error("nav-rotation rigyield: " + error)
+		return
+	var orders := Orders.new()
+	Orders.attach(game_match, orders)
+	var executor := OrderExecutor.new()
+	executor.game_match = game_match
+	executor.orders = orders
+	root.add_child(executor)
+	var headings := RandomNumberGenerator.new()
+	headings.seed = SEED * 7717
+	var tanks: Array = []
+	for tank: Tank in game_match.tanks.get_children():
+		tanks.append(tank)
+		tank.rotation.y = headings.randf_range(-PI, PI)
+		tank.reset_physics_interpolation()
+	for frame in SimClock.TICK_RATE:
+		await physics_frame
+	WallContact.reset()
+	Movement.reset_route_arms()
+	var names: Array = tanks.map(func(t: Tank) -> String: return String(t.name))
+	orders.issue(UnitCommand.make(names, "move", {"to": [-40.0, 30.0], "source": "player"}))
+	var series := {}
+	for tank: Tank in tanks:
+		series[String(tank.name)] = PackedFloat32Array()
+	for tick in SimClock.TICK_RATE * 25:
+		for tank: Tank in tanks:
+			_log_heading(series, tank)
+		await _frame("rigyield", tick, Vector3(-3.5, 0.0, 68.0))
+	_report("rigyield", series)
+	var arms := Movement.route_arms()
+	var gears: Dictionary = WallContact.report()["by_driver_gear"]
+	print("NAV_ROTATION_RIGYIELD fit=%s contact_ticks=%d yield_contacts=%d yield_reverse=%d reverse=%d yields=%d unfit=%d shortened=%d holds=%d refused=%d" % [
+			"on" if Movement.yield_fit_on() else "off", WallContact.ticks,
+			int(gears.get("yield/forward", 0)) + int(gears.get("yield/reverse", 0)) + int(gears.get("yield/none", 0)),
+			int(gears.get("yield/reverse", 0)), int(WallContact.by_gear.get("reverse", 0)), int(arms["yields_started"]),
+			int(arms["yield_spots_unfit"]), int(arms["yield_spots_shortened"]), int(arms["yield_holds"]), int(arms["asks_refused"])])
+	print("NAV_ROTATION_RIGYIELD_DRIVERS %s" % JSON.stringify(gears))
+	for tank: Tank in tanks:
+		tank.queue_free()
+	executor.queue_free()
 
 
 func _film(case: String, tanks: Array, centre: Vector3, ticks: int) -> void:

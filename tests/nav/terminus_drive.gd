@@ -40,6 +40,7 @@ var leg_index := -1
 var leg_started_tick := 0
 var leg_started_frame := 0
 var kturn_logged := 0      # N1: refusals already stamped with their leg
+var yields_logged := 0     # round 13 R1: give-ways already stamped with their leg
 var leg_goal := {}         # name -> slot goal Orders gave it this leg (Vector3)
 var leg_done := {}         # name -> seconds to completion
 var leg_contacts_before := {}
@@ -125,6 +126,8 @@ func _run() -> void:
 	Movement.reset_route_arms()
 	# Round 12 (N1): log what the planned reverse's search saw at every refusal (measurement only).
 	Movement.kturn_log = OS.get_cmdline_user_args().has("--kturn-log")
+	# Round 13 (R1): log every give-way (spot, hull, room behind, sweep, what it hit) (measurement only).
+	Movement.yield_log = OS.get_cmdline_user_args().has("--yield-log")
 	print("NAV_DRIVE_ARM press=%s inflate=%s nosestop=%s oriented=%s off=%s" % [Movement.press_on(), Movement.inflate_on(),
 			Movement.nose_stop_on(), Avoidance.oriented_on(), Movement._off])
 	print("NAV_DRIVE_CONTROL arena %s squad %s units %d (%s)" % [Arena.active.get("name", "?"), squad_kind, units.size(),
@@ -214,6 +217,11 @@ func _close_leg(elapsed: float) -> void:
 		row["leg"] = leg_index
 		row["into_leg_s"] = snappedf(float(int(row["frame"]) - leg_started_frame) / float(SimClock.TICK_RATE), 0.1)
 	kturn_logged = Movement.kturn_none_log.size()
+	for i in range(yields_logged, Movement.yield_log_rows.size()):
+		var row: Dictionary = Movement.yield_log_rows[i]
+		row["leg"] = leg_index
+		row["into_leg_s"] = snappedf(float(int(row["frame"]) - leg_started_frame) / float(SimClock.TICK_RATE), 0.1)
+	yields_logged = Movement.yield_log_rows.size()
 	var arrived := 0
 	var misses: Array = []
 	for tank in units:
@@ -268,6 +276,10 @@ func _report() -> void:
 		print("NAV_KTURN_NONE %s" % JSON.stringify(row))
 	for row: Dictionary in Movement.kturn_fill_log:
 		print("NAV_KTURN_FILL %s" % JSON.stringify(row))
+	for row: Dictionary in Movement.yield_log_rows:
+		print("NAV_YIELD %s" % JSON.stringify(row))
+	for row: Dictionary in Movement.yield_unfit_log:
+		print("NAV_YIELD_UNFIT %s" % JSON.stringify(row))
 	quit(0)
 
 
