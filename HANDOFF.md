@@ -18,6 +18,14 @@ _Last updated: 2026-09-27 evening — **ROUND 14 IS LAUNCHED: four streams (airs
 **Kickoff:** the one-line prompt in `orchestration.md` *The kickoff prompt* (the same for every stream). Merge at the
 hash each stream names green; read every review page's `db` at close (none expected); rescue git-ignored payload.
 
+**Merged so far (the orchestrator, live):**
+
+| stream | green code hash | merge | what landed |
+|---|---|---|---|
+| airship (A0) | `62658311` (builder0 1792/0, 18 targets, baseline unmoved, measured) | `197364a8`, main's check pending | **The invisible War Rigs: deployed INSIDE a city block and pushed under the floor.** Replay of his Locks recording (seed 76424, his flags): 13 × 14 m rigs overflow the 32 m spawn zone; `SlotGround.standable` is a silent no-op before the bake (1279 unchecked queries live); depenetration pushed two rigs 6.24 m down for the whole match — art under the floor, ring on top. Fix (carve-outs): `_clear_spot` keeps the whole hull clear of obstacles, inside the arena, off water/pits; the unchecked count printed; `TANK_OFF_FLOOR` logged. Live: 4 hulls under the floor → 0 of 41; the class was wider (3 hulls on the perimeter wall at chamfered corners). **His playtest:** `make skirmish` with `--seed=76424 --arena=locks --player-faction=gangs --enemy-faction=condemned`: the rigs start in front of the west block; no ring without a truck |
+
+**In flight:** garage (all six items built at `842db812`, check running: a judged time-out, the starter leaves room, the readout off for players, the turntable a real `Tank`); squad (Q1 the drill corrected with three mutation runs at `070476be`, Q3 done, Q2 in a check; a one-seed finding for him: the 09-16 encircle/bait verdicts have flipped, C12.6 untouched); nav (N1: momentum is the biggest mechanism — 236 of 305 k-turn reverse contacts nose-end while still rolling forward; N2 build 2 on the design seeds, acceptance seeds 9–16 pre-registered).
+
 _Previous state:_ **ROUND 13 IS CLOSED: three streams (squad, nav, audio), every item merged, worktrees removed, briefs in `streams/archive/round13/`, evidence in `streams/references/round13/`. No round is running. `main-checked` is `5b3c49f9` (the final check: builder0 1790/0, 18 targets, sim-baseline `6313a38d7ecd99bb` UNMOVED all round); after it only docs (`dad3ca23`, `9313eb70`, this). The lead pushes. S6 decided in chat: ON, with the toggle documented at the code site (`game_design.md` *Round 13: S6 decided*). Nothing is waiting on him. **Round 14's first item is his (2026-09-27 evening): the airship steers clear of the player's view** — `game_design.md` *Round 14 direction, first item*; `roadmap.md` *Round 14 candidates* 1.**_
 
 ## ✅ ROUND 13 IS CLOSED (2026-09-27, one afternoon) — read this first
