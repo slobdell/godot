@@ -61,6 +61,94 @@ His clarification answer, if it changes the item; nothing blocks R1.
 
 _Worker: nav, round 13. Started 2026-09-27 from `8f96a43c`. Every number names its commit and machine._
 
+### Green hash
+
+**`80f8c522` is green, merge here** (builder0, 2026-09-27): `>> remote: make check exited 0`, 18 targets, **1780
+passed, 0 failed**, sim-baseline **`6313a38d7ecd99bb` unmoved**, determinism `ca7e3cbe26cf708d` (was `550d53790035ddb4`
+on main: the determinism match takes a give-way R2 changes; same seed twice still agrees). Its code is `42497bba` + the
+clip case. Commits after it: `_agents/` docs only (this Status, `navigation.md`). **No baseline move, no CP1.**
+
+### Report in one screen
+
+- **R1, where the rig backs into walls when it gives way** (`--yield-log`, `make nav-yield-buckets`, `5866e387`,
+  builder0): 44 % of the rigs' reverse-gear contacts were give-ways; **the whole round-12 rise (+542) is
+  right-of-way** (round 11's rigs gave way 6 times with 0 such contacts, HEAD's 81 with 661); 89 % of them were to
+  spots whose run the outline sweep refuses. The biggest single spot: round 7's `back(6)` — 6 m back from a centre 7 m
+  from the tail, a point inside the rig's own footprint, so the centre check passed whatever was behind it.
+- **R2, yield spots sized by hull** (`42497bba`, `--nav-off=yieldfit` = round 12): a spot is accepted only if the drive
+  to it keeps the whole outline clear at every step (the planned reverse's `_outline_ok`); if none fits whole, give
+  way as far along the best run as it does fit; if not even that, give way IN PLACE. Replaces the yield-spot choice
+  only. Two earlier builds measured worse and are kept as switches (refuse: `yieldshort,yieldhold`; sized only:
+  `yieldhold`).
+- **Measured, 16 seeds x 2 squads, builder0:** rigs' reverse-gear contacts **3602 -> 1756**, all contacts **15129 ->
+  7305**, leg time 2292 -> 1915 s, arrivals 229 -> 225 of 256; mixed contacts 4282 -> 2114, arrivals 364 -> 366. On
+  the rotation fight net wall-contact ticks fall on **12 of 12** runs.
+- **Pre-registration, honestly:** the target met (seeds 1-8: 1488 -> 892, the +542 gone); **four clauses failed** —
+  on seeds 1-8 rigs' arrivals -5 (bound -3), refusals +16 (bound +10), press/unstick +36 % (bound +25 %), all three
+  reversing on the fresh seeds 9-16; and the fight net's `blocked_*` share up on 7 of 12 (bound 6). Shipped ON on the
+  lead's standing trade (tidier, and here also quicker); the orchestrator's veto is one switch.
+- **Sim baseline UNMOVED** (`6313a38d7ecd99bb` in every arm): pre-registered MOVED, wrong. **No CP1.**
+- **The clips, looked at:** `nav-yield-clip` (new, the drive's worst `back(6)`, rigs seed 7) — round 12's rig backs
+  into the block by the container (72 reverse ticks, the drive's own number); R2's does not (0), but in this one
+  episode the squad clears the corner more slowly (at 16 s two rigs are still in the street; forward route scrapes
+  108 -> 306 in the 25 s filmed). `nav-rig-clip` and `nav-wall-clip`: numbers identical to round 12 (67 -> 0; 22 -> 0).
+
+### What to playtest (exact commands)
+
+- `make skirmish` on the Terminus with the Condemned: a War Rig squad (number key) sent back and forth through the
+  streets, so rigs meet head-on and ask each other to give way. Expect: a rig that is asked no longer reverses its
+  trailer into a block; in a tight spot it stops and waits for its friend instead.
+- `make nav-yield-clip` (display; builder0: `make remote T=nav-yield-clip`) -> `build/nav-yield-clip/rigyield_{off,on}.mp4`.
+- `make nav-yield-buckets DRIVE_SEEDS="1 2 3 4 5 6 7 8"`; the A/B: `tools/remote.sh nav-drive-arms 'DRIVE_SEEDS=1 2 3 4
+  5 6 7 8' 'DRIVE_ARMS=r12=yieldfit r13=none'`.
+
+### Next steps (not done, in order)
+
+1. **R4 (stretch), written up not built:** after R2 the rigs' reverse-gear contacts (16 seeds) are `route` 820 and
+   `kturn` 713 (up from 566), `yield` 143. Neither is right-of-way: `route`-driver reverses are Steering's circle rule
+   (a point inside the turning circle: reverse at full lock with no wall consulted) and `kturn` are planned-reverse /
+   back-and-fill legs whose leading end meets a wall. Both are the planner's case in `algorithms.md` (*The kinematic
+   planner the count asked for*). The next instrument: split `route/reverse` contacts into circle reverses vs other,
+   and log each kturn leg's end (distance, lead hit, what) the way `--yield-log` logs a give-way.
+2. The fight net's `blocked_*` share (7 of 12 up, one seed): re-run at seeds 1-4 both arms before reading it as an effect.
+3. If the lead finds rigs waiting too long for each other: `--nav-off=yieldhold` is the sized-only build (fewer holds,
+   more refused asks; measured worse on arrivals at 8 seeds).
+
+### Merge notes
+
+- Only nav's paths: `game/ai/movement.gd`, `game/ai/wall_contact.gd`, `tests/nav/`, `mk/nav.mk`, `_agents/navigation.md`,
+  this brief. No shared file touched. **No baseline move** (merge like any branch; `make check`'s sim-baseline reads
+  `6313a38d7ecd99bb`).
+- New `--nav-off` names (in `OFF_NAMES`): `yieldfit`, `yieldshort`, `yieldhold`. `Movement.ask()` gained an optional
+  `via` argument (default "asked"); `route_arms()` gains `yields_started`, `asks_refused`, `yield_spots_unfit`,
+  `yield_spots_shortened`, `yield_holds`, `yield_swaps`, `yield_swaps_shorter` (and `reset_route_arms()` now resets
+  `yields_started` / `asks_refused`, which `tests/nav/nav_probe.gd` prints — they now count from the reset).
+- `WallContact.report()` gains `by_driver_gear`.
+- New tests: `tests/nav/test_nav_yield_log.gd` (3), `test_nav_yield_fit.gd` (4; the control reproduces the drive's 72).
+- New targets: `nav-yield-buckets`, `nav-yield-clip`; `terminus_drive.gd` gains `--yield-log` (`NAV_YIELD`,
+  `NAV_YIELD_UNFIT` lines); `rotation_capture.gd` gains the `rigyield` case.
+
+### Questions for the lead
+
+- None blocking. For his eye: `nav-yield-clip` — a War Rig that used to back its trailer into a block when a friend
+  asked it to move now stops and waits instead; the squad scrapes the walls about half as often overall, but in a
+  tight corner a rig may now wait for its friend rather than shove backwards. Does the waiting read right?
+
+### Requests to other streams / the orchestrator
+
+- None. (The check's `scenario_perf` CPU budget may still trip under builder0 load, as in round 12.)
+
+### Decisions (one line each)
+
+- **Sized, not refused**, because the refusing build kept the jam (rigs arrivals 115 -> 105 at 8 seeds): a rig that
+  will not move is worse than one that scrapes.
+- **In place when nothing fits**, because a refused ask leaves both hulls pushing; round 6's hold-and-release already
+  ends a give-way when the asker is past, so a zero-length give-way needed no new protocol.
+- **The fit sweep simulates the steering law**, not a straight line: a car's give-way to a forward spot is a pursuit
+  arc, and a straight-line check passes spots whose arc swings the nose corner into a block.
+- **The pre-registration's failed clauses stay on the record** and the arm ships on the lead's standing trade; the
+  16-seed pooled numbers are inside the bounds scaled, the 8-seed ones are not.
+
 ### Plan (the brief's order)
 
 | # | item | state |
@@ -68,7 +156,8 @@ _Worker: nav, round 13. Started 2026-09-27 from `8f96a43c`. Every number names i
 | 0 | green start: `make remote T=check` on `8f96a43c` | **green**: builder0, `make check exited 0`, 18 targets, 1773 passed / 0 failed, sim-baseline `6313a38d7ecd99bb` unmoved, determinism `550d53790035ddb4` |
 | R1 | instrument the give-way; buckets before design | **done** `5866e387` (below), attributed against round 11 |
 | R2 | yield spots sized by hull (`--nav-off=yieldfit`) | **done, third build** `42497bba` (the first two measured worse, below); `tests/nav/test_nav_yield_fit.gd` 4/4, `test_nav_yield_log.gd` 3/3 (builder0) |
-| R3 | drive 8 seeds x 2, fight-maps rotation both arms, clips, `nav-sim-arms`, CP1 | drive 16 seeds done; fight-maps done; `nav-sim-arms` **UNMOVED** (no CP1 needed); clips rendering |
+| R3 | drive 8 seeds x 2, fight-maps rotation both arms, clips, `nav-sim-arms`, CP1 | **done**: drive 16 seeds, fight net both arms, clips looked at, `nav-sim-arms` **UNMOVED** (no CP1); check green `80f8c522` |
+| R4 | stretch | **written up, not built** (Next steps 1) |
 | R4 | whatever R1 names that R2 does not cover | — |
 
 ### R1: where the rig backs into walls when it gives way (builder0, `5866e387`, `make nav-yield-buckets`, 8 seeds x 2 squads, default path)
