@@ -1,0 +1,188 @@
+# R2 16 seeds, builder0, d7d2f5d7 (= 42497bba code): r12 = --nav-off=yieldfit, sized = --nav-off=yieldhold (then), hold = R2 default
+
+mixed — seeds 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+arm          arrived         leg_s      contacts press_unstick       reverse         cusps        kturns   kturn_multi    kturn_none kturn_aborted
+r12         364/384           2036          4282           127           503          4043            80            24            15             1
+sized       361/384           2041          2563           110           367          3716            80            25            20             0
+hold        366/384           1911          2114           165           300          3449            84            19            22             0
+discordant arrivals (sized vs r12): better on seeds [2, 5, 11, 14], worse on seeds [1, 3, 4, 6, 10]
+  press_unstick per seed 1:0>0 2:0>0 3:0>0 4:28>56 5:5>0 6:0>21 7:27>15 8:0>14 9:3>0 10:0>0 11:0>4 12:0>0 13:64>0 14:0>0 15:0>0 16:0>0
+  reverse       per seed 1:1>0 2:20>16 3:14>2 4:50>94 5:62>8 6:53>7 7:22>38 8:62>13 9:55>58 10:0>15 11:22>44 12:23>23 13:99>3 14:8>28 15:6>4 16:6>14
+  kturn_none    per seed 1:0>1 2:0>0 3:1>1 4:0>2 5:0>1 6:0>0 7:3>3 8:0>0 9:0>0 10:0>2 11:3>4 12:0>0 13:4>4 14:4>0 15:0>0 16:0>2
+
+rigs — seeds 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+arm          arrived         leg_s      contacts press_unstick       reverse         cusps        kturns   kturn_multi    kturn_none kturn_aborted
+r12         229/256           2292         15129           195          3602          2578           116            33           143            15
+sized       215/256           2325         11256           229          2250          2672           117            39           107            13
+hold        225/256           1915          7305           148          1756          2293            97            39           115             8
+discordant arrivals (sized vs r12): better on seeds [8, 12, 15], worse on seeds [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 13, 16]
+  press_unstick per seed 1:19>2 2:18>0 3:7>55 4:28>27 5:0>0 6:8>104 7:3>14 8:0>0 9:32>6 10:0>0 11:7>3 12:0>0 13:0>0 14:35>1 15:0>0 16:38>17
+  reverse       per seed 1:358>224 2:198>107 3:179>291 4:175>134 5:64>92 6:215>496 7:93>33 8:206>64 9:296>131 10:114>72 11:145>158 12:258>83 13:118>42 14:569>89 15:171>56 16:443>178
+  kturn_none    per seed 1:1>12 2:19>12 3:5>4 4:2>12 5:6>1 6:5>12 7:3>5 8:15>6 9:22>15 10:3>0 11:6>3 12:2>2 13:9>7 14:30>0 15:5>5 16:10>11
+
+## yield buckets, arm r12
+
+== mixed: 16 runs; reverse-gear contact ticks 503 (of 4282)
+  reverse-gear contacts by driver: route 276 (55%), yield 121 (24%), kturn 74 (15%), unstick 27 (5%), press 5 (1%)
+  give-ways 208; their contact ticks 1245, reverse-gear 121 (driver 'yield' reverse in the totals: 121)
+  gear     spot  sweep        yields contacts  reverse  reached   room_behind
+  reverse  spot  nose_corner       7       60       42        5      med 40.0
+  reverse  spot  rear_corner       6       72       41        4       med 5.5
+  forward  spot  clear           118      663       18       96      med 31.0
+  reverse  back  side_fore         1       33       12        0      med 37.0
+  forward  spot  nose              1       37        6        1      med 19.0
+  reverse  spot  clear            47        6        2       36      med 33.5
+  reverse  spot  side_fore         4        0        0        3      med 27.5
+  forward  spot  rear_corner       7      218        0        4       med 7.5
+  forward  spot  nose_corner      10      156        0        9      med 22.5
+  reverse  back  clear             4        0        0        2      med 40.0
+  reverse  back  side_aft          1        0        0        1      med 40.0
+  forward  spot  side_aft          2        0        0        2      med 40.0
+  who gave way for whom: artillery (8 m) for tank (10 m): 3, 39 contacts, 35 reverse; tank (10 m) for artillery (8 m): 5, 30 contacts, 30 reverse; ifv (8 m) for scout (3 m): 18, 69 contacts, 15 reverse; artillery (8 m) for ifv (8 m): 20, 279 contacts, 13 reverse; ifv (8 m) for lancer (6 m): 4, 31 contacts, 10 reverse; scout (3 m) for lancer (6 m): 10, 116 contacts, 9 reverse; tank (10 m) for ifv (8 m): 18, 184 contacts, 5 reverse; lancer (6 m) for tank (10 m): 13, 40 contacts, 4 reverse; ifv (8 m) for ifv (8 m): 24, 0 contacts, 0 reverse; artillery (8 m) for scout (3 m): 7, 0 contacts, 0 reverse; lancer (6 m) for ifv (8 m): 4, 2 contacts, 0 reverse; ifv (8 m) for tank (10 m): 28, 399 contacts, 0 reverse; ifv (8 m) for artillery (8 m): 19, 0 contacts, 0 reverse; lancer (6 m) for scout (3 m): 5, 0 contacts, 0 reverse; scout (3 m) for ifv (8 m): 6, 56 contacts, 0 reverse; scout (3 m) for tank (10 m): 6, 0 contacts, 0 reverse; tank (10 m) for scout (3 m): 9, 0 contacts, 0 reverse; artillery (8 m) for lancer (6 m): 2, 0 contacts, 0 reverse; tank (10 m) for lancer (6 m): 3, 0 contacts, 0 reverse; lancer (6 m) for artillery (8 m): 2, 0 contacts, 0 reverse; scout (3 m) for artillery (8 m): 2, 0 contacts, 0 reverse
+  spots (yields / reverse contacts): spot(0,5) 19/72, spot(5,-9) 18/15, back(6) 4/12, spot(5,9) 13/10, spot(3,-6) 16/6, spot(0,-5) 35/6, spot(-3,6) 11/0, spot(16,0) 10/0, spot(24,0) 3/0, spot(0,8) 8/0, spot(10,0) 29/0, spot(-3,-6) 11/0, spot(3,6) 14/0, spot(0,-8) 5/0, back(10) 2/0, spot(0,11) 4/0, spot(0,-11) 6/0
+  begun via: asked 130/42, self 78/79
+  contact ends (gear/end): forward/nose 575, forward/rear 511, reverse/nose 68, reverse/rear 52, forward/side 38, reverse/side 1
+  what they hit: Block_7 399, Block_1 303, Floodlight_35 235, Block_3 80, Block_6 66, Floodlight_31 55, Block_0 40, Container40_8 33
+  worst give-ways:
+    seed 5 leg 2 +5.3s Green_S0_5 self spot(0,5) gear=reverse ahead=-4.8 right=-1.4 behind=5.5 sweep=nose_corner@2.0 reached=True rev=35 hit={'Block_1': 39}
+    seed 8 leg 3 +40.2s Green_S0_1 asked spot(0,5) gear=reverse ahead=-4.7 right=1.7 behind=5.5 sweep=rear_corner@2.5 reached=None rev=30 hit={'Block_0': 30}
+    seed 4 leg 0 +24.4s Green_S0_5 self back(6) gear=reverse ahead=-6.0 right=0.0 behind=37.0 sweep=side_fore@3.5 reached=False rev=12 hit={'Block_4': 26, 'Container20_12': 7}
+    seed 11 leg 1 +33.0s Green_S0_6 self spot(5,9) gear=reverse ahead=-10.2 right=-1.2 behind=40.0 sweep=rear_corner@8.0 reached=False rev=10 hit={'Container40_8': 31}
+    seed 4 leg 2 +6.4s Green_S0_3 self spot(5,-9) gear=forward ahead=10.1 right=-1.9 behind=1.5 sweep=clear@- reached=False rev=9 hit={'Block_1': 116}
+    seed 13 leg 2 +20.9s Green_S0_6 self spot(0,5) gear=reverse ahead=-4.9 right=1.1 behind=40.0 sweep=nose_corner@1.5 reached=False rev=7 hit={'Block_1': 21}
+
+== rigs: 16 runs; reverse-gear contact ticks 3602 (of 15129)
+  reverse-gear contacts by driver: yield 1560 (43%), route 1395 (39%), kturn 566 (16%), press 80 (2%), unstick 1 (0%)
+  give-ways 155; their contact ticks 3381, reverse-gear 1560 (driver 'yield' reverse in the totals: 1560)
+  gear     spot  sweep        yields contacts  reverse  reached   room_behind
+  forward  spot  nose_corner      21     1028      412       10      med 28.5
+  reverse  spot  rear_corner      13      522      390        1       med 4.0
+  reverse  back  rear_corner       9      373      220        1       med 4.0
+  forward  spot  side_aft          6      356      128        2      med 40.0
+  forward  spot  clear            43      351      104       30      med 25.5
+  forward  spot  rear_corner       6      236       91        4      med 40.0
+  reverse  spot  clear            36      119       65        5      med 40.0
+  forward  spot  side_fore         2      203       43        0      med 40.0
+  reverse  back  side_fore         4       61       36        3      med 38.5
+  reverse  spot  rear              1       36       31        0       med 1.5
+  reverse  spot  nose_corner       2       19       19        1      med 34.0
+  forward  spot  nose              2       42       11        1      med 16.0
+  reverse  back  clear             9       35       10        4      med 34.0
+  reverse  spot  side_fore         1        0        0        0      med 20.0
+  who gave way for whom: gang_tank (14 m) for gang_tank (14 m): 155, 3381 contacts, 1560 reverse
+  spots (yields / reverse contacts): spot(10,0) 37/408, back(6) 22/266, spot(0,-5) 10/167, spot(3,6) 5/167, spot(16,0) 16/151, spot(24,0) 11/127, spot(-3,6) 11/117, spot(0,8) 3/96, spot(5,9) 6/40, spot(0,-8) 3/17, spot(0,11) 2/4, spot(-3,-6) 13/0, spot(0,5) 6/0, spot(5,-9) 2/0, spot(3,-6) 6/0, spot(0,-11) 2/0
+  begun via: asked 80/683, self 75/877
+  contact ends (gear/end): forward/nose 1033, reverse/nose 812, reverse/rear 669, forward/rear 667, forward/side 121, reverse/side 79
+  what they hit: Block_6 619, Block_0 596, Block_7 480, Block_1 472, Container20_12 338, Container40_8 263, Container40_10 169, Block_4 125
+  worst give-ways:
+    seed 1 leg 0 +14.4s Green_S0_1 asked spot(3,6) gear=forward ahead=6.7 right=0.0 behind=9.0 sweep=nose_corner@3.5 reached=False rev=128 hit={'Block_1': 142}
+    seed 15 leg 3 +4.9s Green_S0_4 self spot(10,0) gear=forward ahead=9.4 right=3.5 behind=40.0 sweep=side_aft@3.5 reached=False rev=109 hit={'Block_0': 111, 'Floodlight_30': 4}
+    seed 14 leg 0 +8.0s Green_S0_1 asked spot(0,8) gear=reverse ahead=-7.9 right=0.9 behind=1.5 sweep=rear_corner@0.5 reached=False rev=96 hit={'Container20_12': 117}
+    seed 9 leg 3 +4.4s Green_S0_4 self spot(10,0) gear=forward ahead=9.5 right=3.0 behind=40.0 sweep=rear_corner@1.0 reached=False rev=87 hit={'Block_0': 98}
+    seed 16 leg 0 +15.0s Green_S0_1 self spot(16,0) gear=forward ahead=13.7 right=-8.3 behind=32.0 sweep=clear@- reached=False rev=79 hit={'Container40_10': 82}
+    seed 14 leg 1 +15.3s Green_S0_3 self spot(24,0) gear=reverse ahead=-23.1 right=-6.5 behind=40.0 sweep=rear_corner@0.5 reached=False rev=73 hit={'Container40_8': 74}
+
+## yield buckets, arm sized
+
+== mixed: 16 runs; reverse-gear contact ticks 367 (of 2563)
+  reverse-gear contacts by driver: route 249 (68%), yield 76 (21%), kturn 29 (8%), unstick 13 (4%)
+  give-ways 188; their contact ticks 469, reverse-gear 76 (driver 'yield' reverse in the totals: 76)
+  gear     spot  sweep        yields contacts  reverse  reached   room_behind
+  reverse  back  clear            17      101       58       12      med 40.0
+  forward  spot  clear           106      251       11       93      med 28.5
+  reverse  spot  clear            49       12        7       40      med 38.0
+  forward  spot  nose_corner       7        0        0        2       med 9.0
+  reverse  spot  rear_corner       4        0        0        2      med 40.0
+  forward  spot  rear_corner       4      105        0        1       med 7.5
+  forward  spot  side_aft          1        0        0        0      med 40.0
+  who gave way for whom: artillery (8 m) for ifv (8 m): 17, 206 contacts, 58 reverse; scout (3 m) for ifv (8 m): 8, 103 contacts, 11 reverse; tank (10 m) for lancer (6 m): 1, 6 contacts, 5 reverse; ifv (8 m) for scout (3 m): 14, 2 contacts, 2 reverse; ifv (8 m) for ifv (8 m): 20, 0 contacts, 0 reverse; artillery (8 m) for scout (3 m): 6, 0 contacts, 0 reverse; ifv (8 m) for lancer (6 m): 10, 0 contacts, 0 reverse; ifv (8 m) for artillery (8 m): 20, 0 contacts, 0 reverse; lancer (6 m) for ifv (8 m): 4, 0 contacts, 0 reverse; ifv (8 m) for tank (10 m): 18, 148 contacts, 0 reverse; lancer (6 m) for artillery (8 m): 2, 0 contacts, 0 reverse; artillery (8 m) for lancer (6 m): 6, 0 contacts, 0 reverse; tank (10 m) for ifv (8 m): 11, 0 contacts, 0 reverse; lancer (6 m) for scout (3 m): 6, 0 contacts, 0 reverse; scout (3 m) for lancer (6 m): 15, 0 contacts, 0 reverse; tank (10 m) for artillery (8 m): 2, 0 contacts, 0 reverse; scout (3 m) for tank (10 m): 13, 0 contacts, 0 reverse; artillery (8 m) for tank (10 m): 3, 0 contacts, 0 reverse; tank (10 m) for scout (3 m): 6, 0 contacts, 0 reverse; lancer (6 m) for tank (10 m): 5, 4 contacts, 0 reverse; scout (3 m) for artillery (8 m): 1, 0 contacts, 0 reverse
+  spots (yields / reverse contacts): back(6) 11/58, spot(5,-9) 12/11, spot(5,9) 17/5, spot(0,-5) 19/2, spot(-3,6) 12/0, spot(0,5) 16/0, spot(3,-6) 18/0, short:spot(3,-6) 1/0, spot(-3,-6) 10/0, spot(10,0) 26/0, spot(0,8) 2/0, back(10) 6/0, spot(16,0) 9/0, spot(3,6) 12/0, short:spot(24,0) 1/0, spot(0,-8) 2/0, spot(0,11) 4/0, spot(0,-11) 4/0, short:back(6) 2/0, spot(24,0) 2/0, short:spot(10,0) 1/0, short:spot(16,0) 1/0
+  begun via: asked 108/2, self 77/74, swap 3/0
+  contact ends (gear/end): forward/nose 187, forward/rear 187, reverse/nose 76, forward/side 19
+  what they hit: Block_7 148, Floodlight_35 105, Block_4 72, Block_6 56, Block_0 53, Container20_12 29, Block_1 6
+  worst give-ways:
+    seed 4 leg 0 +26.8s Green_S0_5 self back(6) gear=reverse ahead=-6.0 right=0.0 behind=37.0 sweep=clear@- reached=False rev=58 hit={'Block_4': 72, 'Container20_12': 29}
+    seed 7 leg 3 +7.3s Green_S0_3 self spot(5,-9) gear=forward ahead=0.6 right=-10.3 behind=0.0 sweep=clear@- reached=False rev=11 hit={'Block_0': 47}
+    seed 7 leg 3 +22.5s Green_S0_1 self spot(5,9) gear=reverse ahead=-10.3 right=0.3 behind=40.0 sweep=clear@- reached=True rev=5 hit={'Block_0': 6}
+    seed 15 leg 0 +23.7s Green_S0_6 asked spot(0,-5) gear=reverse ahead=-4.9 right=-1.0 behind=16.5 sweep=clear@- reached=True rev=2 hit={'Block_1': 2}
+    seed 10 leg 0 +1.0s Green_S0_2 asked spot(-3,6) gear=reverse ahead=-6.3 right=2.2 behind=35.5 sweep=clear@- reached=True rev=0 hit={}
+    seed 10 leg 0 +1.3s Green_S0_5 self spot(0,5) gear=reverse ahead=-4.8 right=-1.3 behind=30.0 sweep=clear@- reached=True rev=0 hit={}
+
+== rigs: 16 runs; reverse-gear contact ticks 2250 (of 11256)
+  reverse-gear contacts by driver: route 1215 (54%), kturn 725 (32%), press 166 (7%), yield 117 (5%), unstick 27 (1%)
+  give-ways 157; their contact ticks 201, reverse-gear 117 (driver 'yield' reverse in the totals: 117)
+  gear     spot  sweep        yields contacts  reverse  reached   room_behind
+  reverse  spot  rear_corner      10       47       47        1       med 5.5
+  forward  spot  clear            53       56       37       42      med 28.0
+  reverse  spot  nose_corner       1       19       19        1      med 34.0
+  reverse  back  clear            23        7        7       14      med 34.0
+  forward  spot  side_aft          4        9        4        2      med 40.0
+  reverse  spot  clear            43        3        2       11      med 31.0
+  reverse  spot  side_fore         4        1        1        0      med 40.0
+  forward  spot  nose_corner      12        0        0        5      med 28.0
+  forward  spot  rear_corner       7       59        0        3      med 18.5
+  who gave way for whom: gang_tank (14 m) for gang_tank (14 m): 157, 201 contacts, 117 reverse
+  spots (yields / reverse contacts): short:back(10) 2/45, spot(0,11) 3/37, spot(-3,6) 6/19, back(6) 18/7, spot(24,0) 19/4, spot(10,0) 25/2, spot(0,-11) 5/2, short:spot(10,0) 7/1, spot(0,5) 11/0, spot(3,-6) 5/0, spot(0,-5) 8/0, spot(16,0) 13/0, spot(-3,-6) 12/0, short:spot(24,0) 4/0, short:back(6) 3/0, spot(3,6) 4/0, spot(5,-9) 2/0, short:spot(3,-6) 1/0, spot(0,-8) 3/0, back(10) 5/0, short:spot(5,-9) 1/0
+  begun via: self 56/10, asked 97/107, swap 4/0
+  contact ends (gear/end): forward/rear 83, reverse/nose 54, reverse/rear 44, reverse/side 19, forward/nose 1
+  what they hit: Block_4 64, Container20_12 59, Block_7 37, Block_6 19, Container40_8 9, Block_0 8, Floodlight_31 3, Block_1 2
+  worst give-ways:
+    seed 14 leg 3 +9.3s Green_S0_1 asked spot(0,11) gear=forward ahead=10.3 right=3.9 behind=26.0 sweep=clear@- reached=False rev=37 hit={'Block_7': 37}
+    seed 16 leg 0 +1.0s Green_S0_1 asked short:back(10) gear=reverse ahead=-10.0 right=0.0 behind=5.5 sweep=rear_corner@5.5 reached=False rev=23 hit={'Block_4': 23}
+    seed 11 leg 0 +1.0s Green_S0_1 asked short:back(10) gear=reverse ahead=-10.0 right=0.0 behind=5.0 sweep=rear_corner@5.0 reached=False rev=22 hit={'Block_4': 22}
+    seed 6 leg 0 +1.7s Green_S0_3 asked spot(-3,6) gear=reverse ahead=-6.3 right=2.4 behind=34.0 sweep=nose_corner@6.0 reached=True rev=19 hit={'Block_4': 19}
+    seed 9 leg 3 +11.0s Green_S0_3 self back(6) gear=reverse ahead=-6.0 right=0.0 behind=17.5 sweep=clear@- reached=True rev=7 hit={'Block_0': 7}
+    seed 1 leg 1 +6.2s Green_S0_3 asked spot(24,0) gear=forward ahead=18.3 right=15.5 behind=37.0 sweep=side_aft@1.0 reached=True rev=4 hit={'Container40_8': 9}
+
+## yield buckets, arm hold
+
+== mixed: 16 runs; reverse-gear contact ticks 300 (of 2114)
+  reverse-gear contacts by driver: route 224 (75%), kturn 61 (20%), unstick 13 (4%), yield 2 (1%)
+  give-ways 171; their contact ticks 168, reverse-gear 2 (driver 'yield' reverse in the totals: 2)
+  gear     spot  sweep        yields contacts  reverse  reached   room_behind
+  reverse  spot  clear            38        6        2       31      med 35.5
+  forward  spot  clear           110       57        0      100      med 31.0
+  forward  spot  nose_corner       5        0        0        3      med 10.0
+  reverse  back  clear            13        0        0        6      med 40.0
+  reverse  spot  rear_corner       3        0        0        2       med 7.5
+  forward  spot  side_aft          1        0        0        0      med 30.0
+  forward  spot  rear_corner       1      105        0        0       med 7.5
+  who gave way for whom: ifv (8 m) for scout (3 m): 11, 2 contacts, 2 reverse; ifv (8 m) for ifv (8 m): 21, 0 contacts, 0 reverse; artillery (8 m) for scout (3 m): 8, 0 contacts, 0 reverse; artillery (8 m) for ifv (8 m): 19, 106 contacts, 0 reverse; lancer (6 m) for ifv (8 m): 6, 0 contacts, 0 reverse; ifv (8 m) for artillery (8 m): 21, 0 contacts, 0 reverse; ifv (8 m) for lancer (6 m): 7, 0 contacts, 0 reverse; tank (10 m) for scout (3 m): 7, 0 contacts, 0 reverse; ifv (8 m) for tank (10 m): 17, 0 contacts, 0 reverse; artillery (8 m) for tank (10 m): 5, 0 contacts, 0 reverse; tank (10 m) for ifv (8 m): 14, 0 contacts, 0 reverse; lancer (6 m) for scout (3 m): 5, 0 contacts, 0 reverse; scout (3 m) for lancer (6 m): 8, 0 contacts, 0 reverse; artillery (8 m) for lancer (6 m): 4, 0 contacts, 0 reverse; scout (3 m) for tank (10 m): 5, 0 contacts, 0 reverse; scout (3 m) for ifv (8 m): 5, 56 contacts, 0 reverse; lancer (6 m) for tank (10 m): 3, 4 contacts, 0 reverse; tank (10 m) for artillery (8 m): 3, 0 contacts, 0 reverse; lancer (6 m) for artillery (8 m): 1, 0 contacts, 0 reverse; scout (3 m) for artillery (8 m): 1, 0 contacts, 0 reverse
+  spots (yields / reverse contacts): spot(0,-5) 16/2, spot(-3,6) 7/0, spot(0,5) 15/0, spot(3,-6) 19/0, hold 19/0, spot(5,-9) 14/0, spot(10,0) 20/0, spot(-3,-6) 9/0, spot(0,8) 2/0, spot(5,9) 10/0, back(10) 8/0, spot(16,0) 6/0, spot(3,6) 11/0, spot(0,-8) 2/0, spot(0,11) 1/0, back(6) 5/0, short:back(6) 1/0, spot(24,0) 1/0, short:spot(10,0) 1/0, spot(0,-11) 3/0, short:spot(24,0) 1/0
+  begun via: asked 113/2, self 58/0
+  contact ends (gear/end): forward/nose 109, forward/rear 37, forward/side 20, reverse/nose 2
+  what they hit: Floodlight_35 105, Block_6 56, Block_1 6, Block_4 1
+  worst give-ways:
+    seed 15 leg 0 +23.7s Green_S0_6 asked spot(0,-5) gear=reverse ahead=-4.9 right=-1.0 behind=16.5 sweep=clear@- reached=True rev=2 hit={'Block_1': 2}
+    seed 10 leg 0 +1.0s Green_S0_2 asked spot(-3,6) gear=reverse ahead=-6.3 right=2.2 behind=35.5 sweep=clear@- reached=True rev=0 hit={}
+    seed 10 leg 0 +1.3s Green_S0_5 self spot(0,5) gear=reverse ahead=-4.8 right=-1.3 behind=30.0 sweep=clear@- reached=True rev=0 hit={}
+    seed 10 leg 0 +3.0s Green_S0_6 self spot(3,-6) gear=forward ahead=6.7 right=0.2 behind=40.0 sweep=clear@- reached=True rev=0 hit={}
+    seed 10 leg 0 +10.2s Green_S0_5 asked spot(0,5) gear=reverse ahead=-4.9 right=1.1 behind=24.0 sweep=clear@- reached=True rev=0 hit={}
+    seed 10 leg 1 +11.7s Green_S0_4 asked hold gear=forward ahead=0.0 right=0.0 behind=40.0 sweep=clear@- reached=True rev=0 hit={}
+
+== rigs: 16 runs; reverse-gear contact ticks 1756 (of 7305)
+  reverse-gear contacts by driver: route 820 (47%), kturn 713 (41%), yield 143 (8%), press 53 (3%), unstick 27 (2%)
+  give-ways 169; their contact ticks 554, reverse-gear 143 (driver 'yield' reverse in the totals: 143)
+  gear     spot  sweep        yields contacts  reverse  reached   room_behind
+  reverse  spot  rear_corner       8       45       45        0       med 5.0
+  forward  spot  side_fore         1       74       31        0      med 31.5
+  forward  spot  clear            87      375       20       70      med 20.0
+  reverse  spot  nose_corner       1       19       19        1      med 34.0
+  reverse  spot  clear            40       13       12        8      med 31.5
+  forward  spot  nose_corner       7       18       11        2      med 40.0
+  forward  spot  side_aft          3        9        4        1      med 40.0
+  reverse  spot  side_fore         2        1        1        0      med 40.0
+  reverse  back  clear            13        0        0       11      med 30.0
+  forward  spot  rear_corner       7        0        0        3      med 18.5
+  who gave way for whom: gang_tank (14 m) for gang_tank (14 m): 169, 554 contacts, 143 reverse
+  spots (yields / reverse contacts): short:back(10) 2/45, spot(24,0) 17/35, spot(10,0) 21/20, spot(-3,6) 8/19, spot(16,0) 13/11, spot(0,5) 10/10, spot(0,-11) 7/2, short:spot(10,0) 5/1, hold 30/0, spot(-3,-6) 14/0, spot(0,11) 4/0, back(6) 12/0, short:spot(24,0) 3/0, short:back(6) 1/0, spot(3,-6) 4/0, spot(0,-5) 9/0, spot(3,6) 2/0, spot(5,-9) 1/0, short:spot(3,-6) 1/0, spot(0,-8) 1/0, back(10) 1/0, spot(5,9) 1/0, spot(0,8) 2/0
+  begun via: asked 104/88, self 65/55
+  contact ends (gear/end): forward/rear 350, reverse/nose 88, forward/nose 45, reverse/rear 36, reverse/side 19, none/rear 15, forward/side 1
+  what they hit: Block_7 248, Block_4 97, Floodlight_33 84, Container20_12 58, Block_6 22, Block_0 19, Block_1 13, Container40_8 9
+  worst give-ways:
+    seed 2 leg 0 +11.0s Green_S0_3 self spot(24,0) gear=forward ahead=23.4 right=5.4 behind=31.5 sweep=side_fore@5.0 reached=False rev=31 hit={'Block_4': 16, 'Container20_12': 58}
+    seed 16 leg 0 +1.0s Green_S0_1 asked short:back(10) gear=reverse ahead=-10.0 right=0.0 behind=5.5 sweep=rear_corner@5.5 reached=False rev=23 hit={'Block_4': 23}
+    seed 11 leg 0 +1.0s Green_S0_1 asked short:back(10) gear=reverse ahead=-10.0 right=0.0 behind=5.0 sweep=rear_corner@5.0 reached=False rev=22 hit={'Block_4': 22}
+    seed 8 leg 3 +28.9s Green_S0_3 asked spot(10,0) gear=forward ahead=9.9 right=1.3 behind=40.0 sweep=clear@- reached=False rev=20 hit={'Floodlight_33': 84}
+    seed 6 leg 0 +1.7s Green_S0_3 asked spot(-3,6) gear=reverse ahead=-6.3 right=2.4 behind=34.0 sweep=nose_corner@6.0 reached=True rev=19 hit={'Block_4': 19}
+    seed 10 leg 0 +2.0s Green_S0_3 self spot(16,0) gear=forward ahead=12.6 right=-9.8 behind=23.0 sweep=nose_corner@12.5 reached=True rev=11 hit={'Block_4': 17}
