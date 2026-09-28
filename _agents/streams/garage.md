@@ -98,7 +98,7 @@ G1 → G2 → G3 → G4 → G5 → G6 (every one done), then G7 (the tour again,
   lighter. Why not "a unit fewer" (550, 250 left, any unit fits): that fields 550 against the CPU's 800 for a player
   who hits FIGHT first; a Scout fitting is the first tap that works without weakening the first fight. The + ADD
   refusal still says REMOVE when an add does not fit. Test: `test_garage_first_visit` (every budget tier).
-- **G2 the turntable shows the vehicle he fights with** (`aaa4bde5`). Carve-out (c) taken as **call it, not mirror
+- **G2 the turntable shows the vehicle he fights with** (`aaa4bde5`, framing fixed at `a75154be` and `d71e7ea4`). Carve-out (c) taken as **call it, not mirror
   it**: the preview is now a real `Tank` from tank.tscn (`simulate = false`, processing disabled, nameplate hidden),
   so `apply_unit` → `_apply_hull_size`, the turret mount, `DozerPart._fit_to_hull` and the gun cuts run exactly as in
   the match. A mirror was not possible anyway: the art's fit (`_fit_to_hull`) only runs under a `Tank` ancestor.
@@ -106,13 +106,14 @@ G1 → G2 → G3 → G4 → G5 → G6 (every one done), then G7 (the tour again,
   Tests (`test_garage_turntable`): every garage unit drawn within 5 % of its `hull_size` length (measured as
   `test_theme_unit_scale` measures a match vehicle); the shortest and longest unit have all 8 box corners in view
   at three spins.
-- **G3 a stalemate is a draw** (`83c2aa1d`). Rule chosen: **judged**. On `time_limit` under elimination the side that
+- **G3 a stalemate is a draw** (`83c2aa1d`; the results line at `a75154be`). Rule chosen: **judged**. On `time_limit` under elimination the side that
   **destroyed more points** (catalogue cost of the other side's losses, `Match._points_lost`) wins; **equal —
   including nothing — is a DRAW**. The control point (skirmish default ON) still decides first when its score
   differs. Why judged rather than only "no losses → draw": the old tie-break (more tanks alive, then health) also
   made a *real* win on time read as a draw (1 v 2, Green kills one, loses none → 1 v 1 at full health → draw) and
   favours the bigger army of cheap units (the gang swarm). Points, not unit count, for the same reason. Results
-  screen: "Time ran out — draw"; a draw pays the existing `AWARD.draw` (30, nothing new). The skirmish's finish
+  screen: "Time ran out — draw", or what decided it ("— they held the centre longer (7 to 0)", "— you destroyed
+  more": `ArmyLoop` keeps the result's control score on the report); a draw pays the existing `AWARD.draw` (30, nothing new). The skirmish's finish
   banner said DEFEAT on any non-win: it now says DRAW on a draw. Tests (`test_garage_time_limit`): a real 5 s
   time-out with no contact, 1 tank v 2 → draw; a kill with no losses → that side wins; a tank each → draw; a scout
   lost against a tank lost → the scout's side wins.
@@ -132,13 +133,37 @@ G1 → G2 → G3 → G4 → G5 → G6 (every one done), then G7 (the tour again,
 - `garage-tour` (`75fb0e25`) now checks round 14: the first + ADD before any REMOVE, the loader's army card, no camera
   readout in the fight, a quiet time-out reads DRAW.
 
-### Verification
-- `tools/remote.sh test 'FILTER=garage|army_screen|army_draft|army_progression|rts_camera|army_challenges|theme_unit_scale'`
-  at the tree committed as `75fb0e25`: **97 passed, 0 failed** (builder0), including the 12 new tests.
-- `make check` and `make remote T=garage-tour` at `75fb0e25`: _running_.
-- **Sim baseline `6313a38d7ecd99bb` pre-registered UNMOVED**, with the path: G3 changes only `Match.result`'s winner
-  for `reason == "time_limit"`, which the baseline match (a 40 s elimination) never reaches, and the winner is not in
-  the state hash; everything else is garage/UI.
+### Verification (every number builder0)
+- Baseline `b5c11813`: `make check` exited 0, 18 targets, 1790 passed / 0 failed.
+- `75fb0e25` (G1–G6): `make check` exited 0, 18 targets, **1801 / 0**. `garage-tour`: failed=1 at both aspects — the
+  tour's own drag step (an IFV after REMOVE, correctly refused) and, looked at, **DEFEAT with nothing lost**: the CPU
+  held the control point 7–0 while the tour's army idled (judged right, but the screen said only "Time ran out").
+  And the frames showed the turntable's bus small in its panel.
+- `842db812` (the tour's findings fixed: the results line says what a time-out was judged on; the tour drags a Scout):
+  `make check` exited 0, **1802 / 0**; `garage-tour` **TOUR_DONE failed=0** at both aspects. Its frames showed the
+  bus OVERFLOWING the turntable (the fit read the SubViewport's lagging size) — fixed at `d71e7ea4` (own projection;
+  the test also checks with the real camera and a ≥ 35 % width floor).
+- **`25d1c9b7` = main `197364a8` merged in: `make check` exited 0, 18 targets, 1804 passed / 0 failed;
+  `garage-tour` TOUR_DONE failed=0 at 1920×1080 and 1800×810 (`--ui-touch`), no ERROR in either log.** Frames looked
+  at: the loader's army card; 660 / 800 and the whole bus on the turntable; the first + ADD lands; the fight with no
+  readout, the score on one line, FX/QUALITY clear; results "Time ran out — they held the centre longer (7 to 0)".
+  Sheet: `references/round14/garage/garage_tour_after.jpg` (before: `references/round13/audio/garage_tour_*.jpg`);
+  logs beside it.
+- **Sim baseline `6313a38d7ecd99bb` UNMOVED** (pre-registered with the path: G3 changes only `Match.result`'s winner
+  on `time_limit`, which the 40 s elimination baseline never reaches, and the winner is not in the state hash;
+  `sim-baseline` passed inside every check above).
+
+### G7 (stretch): the next list, from the tour frames at `25d1c9b7`, in a player's words
+1. *"I didn't do anything and lost."* A first fight where the player gives no orders is lost on the control point
+   (7–0 in 25 s, both aspects, every tour). The results now say why; nothing yet says *before* the fight that the
+   centre scores (the PA line mentions it in passing). A first-visit tip ("take the centre") is the candidate.
+2. *"Is the scout as big as the bus?"* The turntable frames every unit to its panel, so a 3 m buggy and a 14 m rig
+   look the same size. A length on the card ("8.6 m") or a fixed scale per army would give back the sense of size.
+3. *"I can't read the loader's small print on my phone."* The army card's hint line is ~9 px at 810 tall.
+4. *"The top-left box on my phone says '(seed' on one line and '81549)' on the next."* The status line wraps at
+   20:9 (the score line under it no longer does).
+5. *"My tanks and IFVs look the same in the fight."* In the fight frames the Condemned tank and IFV read as the same
+   dozer-bus from the play camera; the turntable shows them apart. Art (a fleet item), not the garage's.
 
 ### Questions for the lead
 - None blocking. G3's rule (points destroyed, then draw) is a recommendation, recorded above; the one-line alternative
@@ -155,7 +180,7 @@ G1 → G2 → G3 → G4 → G5 → G6 (every one done), then G7 (the tour again,
 - `game/ui/camera_readout.gd` (carve-out b): `wanted`, `placement`, the draw position.
 - `game/modes/skirmish_mode.gd` (not a listed carve-out, two small edits in the spirit of a and b): the finish
   banner reads DRAW on a draw; the readout's condition calls `CameraReadout.wanted` (the default lived here).
-- `game/ui/widgets/hud_skin.gd` (not listed): `_fit_scoreboard_line`, the score line kept on one line (the brief's
+- `game/ui/widgets/hud_skin.gd` (**a fourth carve-out, additive**, the orchestrator agreed): `_fit_scoreboard_line`, the score line kept on one line (the brief's
   "the score box does not wrap at 20:9").
 - `game/ui/loading_screen.gd` (not listed; G5 is the brief's item): `garage_card` and its drawing.
 - `mk/play.mk`: `make skirmish` passes `--camera-readout=$(or $(CAMERA_READOUT),on)`.
@@ -169,5 +194,9 @@ G1 → G2 → G3 → G4 → G5 → G6 (every one done), then G7 (the tour again,
   the banner and the results say DRAW. At 20:9: `--resolution 1800x810 --ui-touch`: no camera text over the HUD.
 - `make skirmish`: the camera readout is still there for you (P copies the pose); `CAMERA_READOUT=off` hides it.
 
+### Done report
+Every backlog item is complete (G1–G6) and the stretch (G7) is written above. **Green, merge here: `25d1c9b7`**
+(main `197364a8` merged in; everything after it is this brief's Status and the reference sheet, docs only).
+
 ### Next steps
-- G7 (stretch): the tour again, every frame looked at, the next list (below once written).
+- The G7 list above, for round 15's garage brief.
